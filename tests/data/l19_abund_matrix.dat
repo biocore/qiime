@@ -1,0 +1,11 @@
+#comment line
+#OTU ID	sam1	sam2	sam3	sam4	sam5	sam6	sam7	sam8	sam9	sam_middle	sam11	sam12	sam13	sam14	sam15	sam16	sam17	sam18	sam19
+tax1	7	4	2	1	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+tax2	1	2	4	7	8	7	4	2	1	0	0	0	0	0	0	0	0	0	0
+tax3	0	0	0	0	0	1	2	4	7	8	7	4	2	1	0	0	0	0	0
+tax4	0	0	0	0	0	0	0	0	0	0	1	2	4	7	8	7	4	2	1
+endbigtaxon	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	2	4	7
+tax6	0	1	1	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+tax7	0	0	0	0	0	0	2	1	0	0	0	0	0	0	0	0	0	0	0
+tax8	0	0	0	0	0	0	0	0	0	0	0	3	1	0	0	0	0	0	0
+tax9	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	4	1	0
