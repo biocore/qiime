@@ -23,7 +23,7 @@ from optparse import OptionParser
 from cogent import LoadSeqs, DNA
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.app.util import get_tmp_filename
-from pipe454.util import FunctionWithParams
+from qiime.util import FunctionWithParams
 #app controllers that implement align_unaligned_seqs
 import cogent.app.muscle
 import cogent.app.clustalw

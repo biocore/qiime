@@ -39,12 +39,12 @@ from optparse import OptionParser
 
 import cogent.maths.stats.alpha_diversity as alph
 
-from pipe454.parse import parse_otus, make_envs_dict
-from pipe454.util import FunctionWithParams, make_safe_f
-from pipe454.format import format_matrix
+from qiime.parse import parse_otus, make_envs_dict
+from qiime.util import FunctionWithParams, make_safe_f
+from qiime.format import format_matrix
 from sys import exit, stderr
 import os.path
-import pipe454.alpha_diversity
+import qiime.alpha_diversity
 
 class AlphaDiversityCalc(FunctionWithParams):
     """An AlphaDiversityCalc takes taxon x sample counts, returns diversities.
@@ -320,7 +320,7 @@ def single_file_alpha(infilepath, metrics, outfilepath, tree_path):
 
 
 def multiple_file_alpha(options, args):
-    alpha_script = pipe454.alpha_diversity.__file__
+    alpha_script = qiime.alpha_diversity.__file__
     file_names = os.listdir(options.input_path)
     for fname in file_names:
         # future: try to make sure fname is a valid otu file

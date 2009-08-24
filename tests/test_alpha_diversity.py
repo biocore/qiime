@@ -16,8 +16,8 @@ from cogent.maths.unifrac.fast_unifrac import DndParser, PD_whole_tree
 from cogent.maths.stats.alpha_diversity import (observed_species, osd)
 from numpy import array
 import numpy
-from pipe454.alpha_diversity import AlphaDiversityCalc, AlphaDiversityCalcs
-import pipe454.alpha_diversity as alph454
+from qiime.alpha_diversity import AlphaDiversityCalc, AlphaDiversityCalcs
+import qiime.alpha_diversity as alph454
 
 class AlphaDiversityCalcTests(TestCase):
     """Tests of the AlphaDiversityCalc class"""

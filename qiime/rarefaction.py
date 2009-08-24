@@ -18,9 +18,9 @@ this takes an otu table and generates a series of subsampled (without
 replacement) otu tables.
 """
 from optparse import OptionParser
-from pipe454.parse import parse_otus, filter_otus_by_lineage
-from pipe454.format import format_otu_table
-from pipe454.util import FunctionWithParams
+from qiime.parse import parse_otus, filter_otus_by_lineage
+from qiime.format import format_otu_table
+from qiime.util import FunctionWithParams
 import os.path
 import os
 import numpy

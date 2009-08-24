@@ -16,7 +16,7 @@ from cogent.util.unit_test import TestCase, main
 from cogent import LoadSeqs
 from cogent.app.util import get_tmp_filename
 from os import remove
-from pipe454.assign_taxonomy import TaxonAssigner, BlastTaxonAssigner,\
+from qiime.assign_taxonomy import TaxonAssigner, BlastTaxonAssigner,\
  RdpTaxonAssigner
  
 def remove_files(list_of_filepaths,error_on_missing=True):

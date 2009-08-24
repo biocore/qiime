@@ -15,7 +15,7 @@ __status__ = "Prototype"
 from os import remove
 from cogent.util.unit_test import TestCase, main
 from cogent.app.util import get_tmp_filename
-from pipe454.pick_otus import CdHitOtuPicker, DoturOtuPicker, OtuPicker
+from qiime.pick_otus import CdHitOtuPicker, DoturOtuPicker, OtuPicker
 
 class OtuPickerTests(TestCase):
     """Tests of the abstract OtuPicker class"""

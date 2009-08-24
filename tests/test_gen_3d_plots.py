@@ -17,7 +17,7 @@ from cogent.util.unit_test import TestCase, main
 from os import remove
 from random import choice, randrange
 import shutil
-from pipe454.gen_3d_plots import (make_3d_plots,scale_pc_data_matrix,\
+from qiime.gen_3d_plots import (make_3d_plots,scale_pc_data_matrix,\
                                     auto_radius,make_mage_output,\
                                     get_map,get_coord,create_dir,\
                                     _make_path,combine_map_label_cols,\

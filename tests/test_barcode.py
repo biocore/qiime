@@ -11,7 +11,7 @@ __status__ = "Prototype"
 
 from cogent.util.unit_test import TestCase, main
 
-import pipe454.barcode as barcode
+import qiime.barcode as barcode
 
 class BarcodeTests(TestCase):
     """Tests of top-level functions"""

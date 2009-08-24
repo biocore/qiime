@@ -16,7 +16,7 @@ __email__ = "rob@spot.colorado.edu"
 __status__ = "Prototype"
 
 from cogent.util.unit_test import TestCase, main
-from pipe454.hamming import decode_barcode_8
+from qiime.hamming import decode_barcode_8
 
 class GeneralSetUp(TestCase):
 

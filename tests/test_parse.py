@@ -13,7 +13,7 @@ __status__ = "Prototype"
 from numpy import array
 from StringIO import StringIO
 from cogent.util.unit_test import TestCase, main
-from pipe454.parse import (parse_map, group_by_field, group_by_fields, 
+from qiime.parse import (parse_map, group_by_field, group_by_fields, 
     parse_distmat, parse_rarefaction_rec, parse_rarefaction, parse_coords, 
     otu_file_to_lineages, parse_otus, otu_table_to_envs, parse_sequences_by_otu,
     make_envs_dict, fields_to_dict, parse_rarefaction_fname)

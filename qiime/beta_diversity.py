@@ -27,13 +27,13 @@ The output is a sample x sample matrix of distances, incl. row/col headers.
     is expected to be a tab.
 """
 from StringIO import StringIO
-from pipe454.util import FunctionWithParams, TreeMissingError, OtuMissingError
-from pipe454.parse import parse_otus
-from pipe454.format import format_distance_matrix
+from qiime.util import FunctionWithParams, TreeMissingError, OtuMissingError
+from qiime.parse import parse_otus
+from qiime.format import format_distance_matrix
 from optparse import OptionParser
 import cogent.maths.distance_transform #avoid hard-coding metrics
-import pipe454.beta_metrics
-import pipe454.beta_diversity
+import qiime.beta_metrics
+import qiime.beta_diversity
 from sys import exit, stderr
 import os.path
 
@@ -52,7 +52,7 @@ def get_phylogenetic_metric(name):
     
     Metrics should be f(matrix) -> distances.
     """
-    return getattr(pipe454.beta_metrics, name.lower())
+    return getattr(qiime.beta_metrics, name.lower())
 
 def list_known_nonphylogenetic_metrics():
     """Lists known metrics by name from cogent.maths.distance_transform.
@@ -69,7 +69,7 @@ def list_known_nonphylogenetic_metrics():
 def list_known_phylogenetic_metrics():
     """Lists known phylogenetic metrics from cogent.maths.unifrac."""
     result = []
-    for name in dir(pipe454.beta_metrics):
+    for name in dir(qiime.beta_metrics):
         if name.startswith('dist_'):
             result.append(name)
     result.sort()
@@ -209,7 +209,7 @@ def single_file_beta(options, args):
         exit(1)
 
 def multiple_file_beta(options, args):
-    beta_script = pipe454.beta_diversity.__file__
+    beta_script = qiime.beta_diversity.__file__
     file_names = os.listdir(options.input_path)
     for fname in file_names:
         beta_div_cmd = 'python ' + beta_script + ' -i '+\

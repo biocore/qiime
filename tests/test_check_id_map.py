@@ -15,7 +15,7 @@ from numpy import array
 from string import strip
 from cogent.util.unit_test import TestCase, main
 from StringIO import StringIO
-from pipe454.check_id_map import (find_diff_length, CharFilter, lwu, 
+from qiime.check_id_map import (find_diff_length, CharFilter, lwu, 
     DupChecker, SameChecker, 
     run_checks, filename_has_space, run_description_missing, adapt_dupchecker,
     sampleid_missing, blank_header, bad_char_in_header, pad_rows, 

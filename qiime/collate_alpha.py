@@ -28,10 +28,10 @@ from optparse import OptionParser
 import numpy
 import os
 
-from pipe454.parse import (parse_otus, filter_otus_by_lineage, parse_matrix,
+from qiime.parse import (parse_otus, filter_otus_by_lineage, parse_matrix,
     parse_rarefaction_fname)
-from pipe454.format import format_otu_table, format_matrix
-from pipe454.util import FunctionWithParams
+from qiime.format import format_otu_table, format_matrix
+from qiime.util import FunctionWithParams
 
 def main(input_dir, output_dir):
     file_names = os.listdir(input_dir)

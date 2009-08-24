@@ -15,9 +15,9 @@ __status__ = "Prototype"
 from cogent.util.unit_test import TestCase, main
 from cogent.parse.tree import DndParser
 from cogent.core.tree import PhyloNode
-from pipe454.format import format_otu_table
-from pipe454.beta_diversity import BetaDiversityCalc
-from pipe454.beta_metrics import dist_unweighted_unifrac
+from qiime.format import format_otu_table
+from qiime.beta_diversity import BetaDiversityCalc
+from qiime.beta_metrics import dist_unweighted_unifrac
 from cogent.maths.distance_transform import dist_chisq
 import numpy
 

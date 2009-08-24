@@ -15,15 +15,15 @@ with distances to specified output file
 from optparse import OptionParser
 
 
-from pipe454.parse import parse_distmat
+from qiime.parse import parse_distmat
 
 from cogent.core.tree import PhyloNode
 from cogent.cluster.UPGMA import UPGMA_cluster
-import pipe454.upgma
+import qiime.upgma
 import os.path
 
 def multiple_file_upgma(options, args):
-    upgma_script = pipe454.upgma.__file__
+    upgma_script = qiime.upgma.__file__
     file_names = os.listdir(options.input_path)
     for fname in file_names:
         upgma_cmd = 'python ' + upgma_script + ' -i '+\

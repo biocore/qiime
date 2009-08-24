@@ -21,7 +21,7 @@ from cogent.app.cd_hit import cdhit_clusters_from_seqs
 from cogent.app.dotur import dotur_from_alignment
 from cogent.core.sequence import DnaSequence
 from cogent import LoadSeqs, DNA, Alignment
-from pipe454.util import FunctionWithParams
+from qiime.util import FunctionWithParams
 
 
 class OtuPicker(FunctionWithParams):

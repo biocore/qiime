@@ -16,8 +16,8 @@ __status__ = "Prototype"
 
 from cogent.parse.fasta import FastaFinder, MinimalFastaParser
 from numpy import array, mean, arange, histogram
-from pipe454.check_id_map import parse_id_map
-from pipe454.barcode import correct_barcode
+from qiime.check_id_map import parse_id_map
+from qiime.barcode import correct_barcode
 from gzip import GzipFile
 from optparse import OptionParser
 from os import mkdir, stat

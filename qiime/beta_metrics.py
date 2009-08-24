@@ -17,7 +17,7 @@ but some need wrappers to look like f(data, taxon_names, tree)-> dist_mtx
 from cogent.maths.unifrac.fast_tree import (unifrac, unnormalized_unifrac,
     G, unnormalized_G, weighted_unifrac)
 from cogent.maths.unifrac.fast_unifrac import fast_unifrac
-from pipe454.parse import make_envs_dict
+from qiime.parse import make_envs_dict
 import numpy
 
 def make_unifrac_metric(weighted, metric, is_symmetric):

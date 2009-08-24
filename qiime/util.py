@@ -16,7 +16,7 @@ A lot of this might migrate into cogent at some point.
 """
 
 from StringIO import StringIO
-from pipe454.parse import parse_otus
+from qiime.parse import parse_otus
 from cogent.parse.tree import DndParser, PhyloNode
 from cogent.core.alignment import Alignment
 from cogent import LoadSeqs

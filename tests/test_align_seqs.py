@@ -17,7 +17,7 @@ from cogent import LoadSeqs, DNA
 from cogent.util.unit_test import TestCase, main
 from cogent.app.util import get_tmp_filename
 import cogent.app.muscle
-from pipe454.align_seqs import Aligner, CogentAligner,\
+from qiime.align_seqs import Aligner, CogentAligner,\
     PyNastAligner
 
 def remove_files(list_of_filepaths,error_on_missing=True):

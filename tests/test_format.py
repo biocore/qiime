@@ -12,7 +12,7 @@ __status__ = "Prototype"
 
 from cogent.util.unit_test import TestCase, main
 from numpy import array, nan
-from pipe454.format import (format_distance_matrix, format_otu_table,
+from qiime.format import (format_distance_matrix, format_otu_table,
     format_coords, format_array_row, format_rarefaction_table)
 
 class TopLevelTests(TestCase):

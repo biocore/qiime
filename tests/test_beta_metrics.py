@@ -15,8 +15,8 @@ import os.path
 import numpy
 from cogent.util.unit_test import TestCase, main
 from cogent.maths.unifrac.fast_unifrac import fast_unifrac
-from pipe454.parse import make_envs_dict
-from pipe454.beta_metrics import _reorder_unifrac_res, dist_unweighted_unifrac
+from qiime.parse import make_envs_dict
+from qiime.beta_metrics import _reorder_unifrac_res, dist_unweighted_unifrac
 from cogent.parse.tree import DndParser
 from cogent.core.tree import PhyloNode
 

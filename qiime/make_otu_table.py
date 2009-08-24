@@ -21,8 +21,8 @@ from numpy import array
 from optparse import OptionParser
 from cogent.util.misc import flatten, InverseDict
 from numpy import zeros
-from pipe454.format import format_otu_table
-from pipe454.parse import fields_to_dict
+from qiime.format import format_otu_table
+from qiime.parse import fields_to_dict
 
 def libs_from_seqids(seq_ids, delim='_'):
     """Returns set of libraries."""

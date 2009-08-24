@@ -48,7 +48,7 @@ from os.path import basename
 from cogent.util.transform import (keep_chars, exclude_chars, trans_except,
     trans_all)
 from numpy import array
-from pipe454.parse import parse_map
+from qiime.parse import parse_map
 from optparse import OptionParser
 
 DESC_KEY = "Description"

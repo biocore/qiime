@@ -11,7 +11,7 @@ __status__ = "Prototype"
 
 """Contains tests for producing rarefied OTU tables."""
 
-from pipe454.rarefaction import RarefactionMaker
+from qiime.rarefaction import RarefactionMaker
 from cogent.util.unit_test import TestCase, main
 import numpy
 

@@ -28,7 +28,7 @@ from cogent.app.util import get_tmp_filename
 from cogent.app.blast import blast_seqs, Blastall, BlastResult
 from cogent.app.rdp_classifier import assign_taxonomy
 from cogent.parse.fasta import MinimalFastaParser
-from pipe454.util import FunctionWithParams
+from qiime.util import FunctionWithParams
 
 class TaxonAssigner(FunctionWithParams):
     """A TaxonAssigner assigns a taxon to each of a set of sequences.

@@ -13,7 +13,7 @@ __status__ = "Prototype"
 from cogent.util.unit_test import TestCase, main
 from StringIO import StringIO
 from numpy import array
-from pipe454.split_libraries import (
+from qiime.split_libraries import (
     generate_possibilities, get_infile, count_mismatches,
     ok_mm_primer, check_map, get_primer_seqs, fasta_ids, qual_score,
     qual_scores, count_ambig, split_seq, primer_exceeds_mismatches,

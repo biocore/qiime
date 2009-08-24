@@ -2,7 +2,7 @@
 #unit tests for util.py
 
 from cogent.util.unit_test import TestCase, main
-from pipe454.util import make_safe_f, FunctionWithParams
+from qiime.util import make_safe_f, FunctionWithParams
 
 __author__ = "YOUR NAME HERE"
 __copyright__ = "Copyright 2009, the PyCogent Project" #consider project name

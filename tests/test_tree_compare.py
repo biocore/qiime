@@ -13,7 +13,7 @@ __status__ = "Prototype"
 
 from cogent.util.unit_test import TestCase, main
 from cogent.maths.unifrac.fast_unifrac import DndParser
-from pipe454.tree_compare import bootstrap_support
+from qiime.tree_compare import bootstrap_support
 
 class TreeCompareTests(TestCase):
     """ tests only top level functions

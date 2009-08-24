@@ -11,7 +11,7 @@ __email__ = "rob@spot.colorado.edu"
 __status__ = "Prototype"
 
 from cogent.util.unit_test import TestCase, main
-from pipe454.make_otu_table import (libs_from_seqids,
+from qiime.make_otu_table import (libs_from_seqids,
         seqids_from_otu_to_seqid, make_otu_map)
 
 class TopLevelTests(TestCase):

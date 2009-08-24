@@ -11,7 +11,7 @@ __status__ = "Prototype"
 
 from cogent.util.unit_test import TestCase, main
 
-import pipe454.golay as golay
+import qiime.golay as golay
 """ tests the golay DNA barcode decode/encode functionality"""
 
 class GolayTests(TestCase):

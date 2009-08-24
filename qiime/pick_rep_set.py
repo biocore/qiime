@@ -20,8 +20,8 @@ This is heavily based on pick_otus.py.
 """
 
 from optparse import OptionParser
-from pipe454.util import FunctionWithParams
-from pipe454.parse import fields_to_dict
+from qiime.util import FunctionWithParams
+from qiime.parse import fields_to_dict
 from random import choice
 from numpy import argmax
 from cogent.util.misc import InverseDictMulti #inverts dict

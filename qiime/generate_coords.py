@@ -2,8 +2,8 @@
 import numpy
 from optparse import OptionParser
 import cogent.cluster.metric_scaling as ms
-from pipe454.format import format_coords
-from pipe454.parse import parse_distmat
+from qiime.format import format_coords
+from qiime.parse import parse_distmat
 
 __author__ = "Justin Kuzynski"
 __copyright__ = "Copyright 2009, the PyCogent Project"
