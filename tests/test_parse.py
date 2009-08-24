@@ -3,7 +3,7 @@
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2009, the PyCogent Project" #consider project name
-__credits__ = ["Rob Knight"] #remember to add yourself
+__credits__ = ["Rob Knight", "Justin Kuczynski"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "0.1"
 __maintainer__ = "Rob Knight"
@@ -130,7 +130,7 @@ c\t1\t3.5\t0
             'rarefaction_data':array([[1,1,1,1],[51,26.878000,26.032290,27.723710],
                 [101,44.007000,43.212590,44.801410]])}
         obs = parse_rarefaction_rec(rec)
-        self.assertEqual(obs.keys(), exp.keys())
+        self.assertEqual(set(obs.keys()), set(exp.keys()))
         for k, v in obs.items():
             self.assertFloatEqual(v, exp[k])
 
