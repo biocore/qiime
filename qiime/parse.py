@@ -3,7 +3,7 @@
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2009, the PyCogent Project" #consider project name
-__credits__ = ["Rob Knight"] #remember to add yourself
+__credits__ = ["Rob Knight", "Daniel McDonald"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "0.1"
 __maintainer__ = "Rob Knight"
@@ -12,6 +12,7 @@ __status__ = "Prototype"
 
 from string import strip
 from collections import defaultdict
+from cogent.util.misc import unzip
 from cogent.maths.stats.rarefaction import subsample
 from numpy import array, concatenate, repeat, zeros
 from numpy.random import permutation
@@ -360,6 +361,34 @@ def fields_to_dict(lines, delim='\t', strip_f=strip):
         result[fields[0]] = fields[1:]
     return result
     
+def envs_to_otu_counts(lines):
+    """Reads envs lines into OTU counts {(sampleid,otu_id):count}."""
+    result = defaultdict(int)
+    for line in lines:
+        fields = map(strip, line.split('\t'))
+        if len(fields) != 3:
+            continue
+        result[(fields[1], fields[0])] += int(fields[2])
+    return result
+    
+def otu_counts_to_matrix(otu_counts):
+    """Build otu matrix from dict of {(sampleid, otu_id):count}.
+
+    Adapted from Daniel McDonald's script.
+    """
+    all_sampleids, all_otus = unzip(otu_counts.keys())
+    all_sampleids = sorted(set(all_sampleids))
+    all_otus = sorted(set(all_otus))
+    matrix = zeros((len(all_otus), len(all_sampleids)), int)
+    for row, otu in enumerate(all_otus):
+        for col, sampleid in enumerate(all_sampleids):
+            matrix[row, col] += otu_counts.get((sampleid, otu), 0)
+    return matrix, all_otus, all_sampleids
+
+def envs_to_matrix(lines):
+    """Reads envs lines into matrix of OTU counts, plus row/col"""
+    return otu_counts_to_matrix(envs_to_otu_counts(lines))
+
 
 if __name__ == '__main__':
     from sys import argv

@@ -16,7 +16,8 @@ from cogent.util.unit_test import TestCase, main
 from qiime.parse import (parse_map, group_by_field, group_by_fields, 
     parse_distmat, parse_rarefaction_rec, parse_rarefaction, parse_coords, 
     otu_file_to_lineages, parse_otus, otu_table_to_envs, parse_sequences_by_otu,
-    make_envs_dict, fields_to_dict, parse_rarefaction_fname)
+    make_envs_dict, fields_to_dict, parse_rarefaction_fname, envs_to_otu_counts,
+    otu_counts_to_matrix, envs_to_matrix)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -346,7 +347,34 @@ CTGGGCCGTGTCTCAGTCCCAATGTGGCCGTTCACCCTCTCAGGCCGGCTACCCATCATCGCCTTGGTGAGCCGTTACCT
         self.assertEqual(obs, exp)
 
 
+    def test_envs_to_otu_counts(self):
+        """envs_to_otu_counts should produce right dict"""
+        s="""s01\ta\t3
+s02\ta\t1
+s01\tb\t4
+s03\tc\t5""".splitlines()
+        res = envs_to_otu_counts(s)
+        self.assertEqual(res, {('a','s01'):3,('a','s02'):1,('b','s01'):4,
+            ('c','s03'):5})
 
+    def test_otu_counts_to_matrix(self):
+        """otu_counts_to_matrix should produce right matrix/order"""
+        data = {('a','s01'):3,('a','s02'):1,('b','s01'):4, ('c','s03'):5}
+        matrix, all_otus, all_sampleids = otu_counts_to_matrix(data)
+        self.assertEqual(all_sampleids, ['a','b','c'])
+        self.assertEqual(all_otus, ['s01','s02','s03'])
+        self.assertEqual(matrix, array([[3,4,0],[1,0,0],[0,0,5]]))
+
+    def test_envs_to_matrix(self):
+        """envs_to_matrix should take envs file, convert to OTU matrix"""
+        s="""s01\ta\t3
+s02\ta\t1
+s01\tb\t4
+s03\tc\t5""".splitlines()
+        matrix, all_otus, all_sampleids = envs_to_matrix(s)
+        self.assertEqual(all_sampleids, ['a','b','c'])
+        self.assertEqual(all_otus, ['s01','s02','s03'])
+        self.assertEqual(matrix, array([[3,4,0],[1,0,0],[0,0,5]]))
 
 if __name__ =='__main__':
     main()
