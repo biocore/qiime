@@ -22,6 +22,7 @@ from os.path import exists
 from commands import getoutput
 from optparse import OptionParser
 from cogent import LoadSeqs, DNA
+from cogent.core.alignment import DenseAlignment
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.app.util import get_tmp_filename, ApplicationNotFoundError
 from qiime.util import FunctionWithParams
@@ -130,7 +131,8 @@ class PyNastAligner(Aligner):
 
         # load template sequences
         template_alignment = LoadSeqs(
-            self.Params['template_filepath'], moltype=DNA, format='fasta')
+            self.Params['template_filepath'], moltype=DNA, 
+            format='fasta', aligned=DenseAlignment)
 
         # initialize_logger
         logger = NastLogger(log_path)
@@ -162,7 +164,7 @@ class PyNastAligner(Aligner):
             return None
         else:
             try:
-                return LoadSeqs(data=pynast_aligned)
+                return LoadSeqs(data=pynast_aligned,aligned=DenseAlignment)
             except ValueError:
                 return {}
 

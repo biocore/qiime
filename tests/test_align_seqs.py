@@ -14,6 +14,7 @@ __status__ = "Prototype"
 from os import remove
 from os.path import getsize
 from cogent import LoadSeqs, DNA
+from cogent.core.alignment import DenseAlignment
 from cogent.util.unit_test import TestCase, main
 from cogent.app.util import get_tmp_filename
 import cogent.app.muscle
@@ -114,7 +115,7 @@ class PyNastAlignerTests(SharedSetupTestCase):
                 'min_len': 15,
                 })
         self.pynast_test1_expected_aln = \
-         LoadSeqs(data=pynast_test1_expected_alignment)
+         LoadSeqs(data=pynast_test1_expected_alignment,aligned=DenseAlignment)
         self.pynast_test1_expected_fail = \
          LoadSeqs(data=pynast_test1_expected_failure,aligned=False)
 
@@ -130,7 +131,7 @@ class PyNastAlignerTests(SharedSetupTestCase):
          "Result should be None when result path provided.")
          
         expected_aln = self.pynast_test1_expected_aln
-        actual_aln = LoadSeqs(self.result_fp)
+        actual_aln = LoadSeqs(self.result_fp,aligned=DenseAlignment)
         self.assertEqual(actual_aln,expected_aln)
 
         actual_fail = LoadSeqs(self.failure_fp,aligned=False)
