@@ -413,26 +413,30 @@ def preprocess(fasta_files, qual_files, mapping_file,
     # and ids match between fasta and qual files
     all_fasta_ids = fasta_ids(fasta_files)
     all_qual_ids = fasta_ids(qual_files)
-    if len(all_fasta_ids) != len(all_qual_ids):
+    if qual_files and (len(all_fasta_ids) != len(all_qual_ids)):
         f_ids = all_fasta_ids.difference(all_qual_ids)
         q_ids = all_qual_ids.difference(all_fasta_ids)
         raise ValueError, "Found %d ids in fasta file not in qual file, %d ids in qual file not in fasta"  % (len(f_ids), len(q_ids))
 
-    for q in qual_files:
-        q.seek(0)
     for f in fasta_files:
         f.seek(0)
-    # Load quality scores 
-    qual_mappings = qual_scores(qual_files)
-    for q in qual_files:
-        q.close()
+    if qual_files:
+        for q in qual_files:
+            q.seek(0)
+        # Load quality scores 
+        qual_mappings = qual_scores(qual_files)
+        for q in qual_files:
+            q.close()
+    else:
+        qual_mappings = {}
 
     #make filters
     filters = []
-    filters.append(QualMissing)
-    filters.append(SeqQualBad(
-        'Mean qual score below minimum of %s' % min_qual_score, 
-        lambda id_, seq, qual: mean(qual) < min_qual_score))
+    if qual_mappings:
+        filters.append(QualMissing)
+        filters.append(SeqQualBad(
+            'Mean qual score below minimum of %s' % min_qual_score, 
+            lambda id_, seq, qual: mean(qual) < min_qual_score))
     #seq len filter depends on whether we're including the barcode
     if trim_seq_len:
         trim = barcode_len + primer_seq_len
@@ -523,7 +527,10 @@ if __name__ == "__main__":
     options = make_cmd_parser()
     mapping_file = options.map_fname
     fasta_files = set(options.fasta_fnames.split(','))
-    qual_files = set(options.qual_fnames.split(','))
+    if options.qual_fnames:
+        qual_files = set(options.qual_fnames.split(','))
+    else:
+        qual_files = set()
 
     for q in qual_files:
         if not q.endswith('qual'):
@@ -536,8 +543,9 @@ if __name__ == "__main__":
             stderr.write(
             "Fasta file does not end with .fna: is it really a seq file?\n%s\n" 
             % f)
-     
+
     preprocess(fasta_files, qual_files, mapping_file,
+    primer_seq_pats = options.primers,
     barcode_type=options.barcode_type,
     starting_ix = options.start_index,
     min_seq_len = options.min_seq_len,
