@@ -512,6 +512,9 @@ def make_cmd_parser():
     parser.add_option('-e', '--max-barcode-errors', dest='max_bc_errors',
         default=2, type=int,
         help='maximum number of errors in barcode permitted')
+    parser.add_option('-s', '--start-numbering-at', dest='start_index',
+        default=1, type=int,
+        help='seq id to use for the first sequence')
     options, args = parser.parse_args()
     return options
     
@@ -536,6 +539,7 @@ if __name__ == "__main__":
      
     preprocess(fasta_files, qual_files, mapping_file,
     barcode_type=options.barcode_type,
+    starting_ix = options.start_index,
     min_seq_len = options.min_seq_len,
     max_seq_len = options.max_seq_len, 
     min_qual_score=options.min_qual_score,
