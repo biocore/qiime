@@ -34,7 +34,9 @@ import cogent.app.mafft
 # Load PyNAST if it's available. If it's not, skip it if not but set up
 # to raise errors if the user tries to use it.
 try:
-    from pynast.util import pynast_seqs
+    from pynast.util import pynast_seqs, classic_align_unaligned_seqs,\
+        muscle_align_unaligned_seqs, mafft_align_unaligned_seqs,\
+        clustal_align_unaligned_seqs, blast_align_unaligned_seqs
     from pynast.logger import NastLogger
 except ImportError:
     def pynast_seqs(*args, **kwargs):
@@ -117,6 +119,7 @@ class PyNastAligner(Aligner):
             'min_len': 1000,
             'blast_db': None,
             'template_filepath': None,
+            'pairwise_alignment_method': 'classic',
             'Application': 'PyNAST',
             'Algorithm': 'NAST',
             }
@@ -137,12 +140,17 @@ class PyNastAligner(Aligner):
         # initialize_logger
         logger = NastLogger(log_path)
 
+        # get function for pairwise alignment method
+        pairwise_alignment_fcn = pairwise_alignment_methods[
+            self.Params['pairwise_alignment_method']]
+
         pynast_aligned, pynast_failed = pynast_seqs(
             candidate_sequences,
             template_alignment,
             min_pct=self.Params['min_pct'],
             min_len=self.Params['min_len'],
             blast_db=self.Params['blast_db'],
+            align_unaligned_seqs_f=pairwise_alignment_fcn,
             logger=logger,
             )
 
@@ -179,10 +187,15 @@ def parse_command_line_parameters():
           type='string',dest='alignment_method',help='Method for aligning'+\
           ' sequences [default: %default]')
           
+    parser.add_option('-a','--pairwise_alignment_method',action='store',\
+          type='string',dest='pairwise_alignment_method',help='method '+\
+          'for performing pairwise alignment in NAST algorithm' +\
+          '[default: %default]')
+
     parser.add_option('-b','--blast_db',action='store',\
           type='string',dest='blast_db',help='Database to blast'+\
           ' against [default: None for alignment methods other' +\
-          ' than NAST; default: %s when alignment method is NAST'\
+          ' than NAST; default: %s when alignment method is NAST]'\
           % NAST_DEFAULT_BLAST_DB)
           
     parser.add_option('-t','--template_fp',action='store',\
@@ -210,8 +223,8 @@ def parse_command_line_parameters():
           type='string',dest='fail_fp',help='Path to store '+\
           'seqs which fail to align [default: No fail file created.]')
 
-    parser.set_defaults(verbose=False,alignment_method='muscle',\
-     min_percent_id=75.0,min_length=1000,\
+    parser.set_defaults(verbose=False, alignment_method='muscle',\
+     pairwise_alignment_method='classic', min_percent_id=75.0,min_length=1000,\
      blast_db=None)
 
     opts,args = parser.parse_args()
@@ -227,6 +240,12 @@ def parse_command_line_parameters():
          % (opts.alignment_method,\
             ' '.join(alignment_method_constructors.keys() +
                 alignment_module_names.keys())))
+
+    if opts.pairwise_alignment_method not in pairwise_alignment_methods:
+        parser.error(
+            'Invalid pairwise alignment method: %s.\nValid choices are: %s'\
+                % (opts.pairwise_alignment_method,
+                   ' '.join(pairwise_alignment_methods.keys())))
             
     if opts.min_percent_id <= 1.0:
         opts.min_percent_id *= 100
@@ -246,6 +265,16 @@ alignment_method_constructors = dict([\
 alignment_module_names = {'muscle':cogent.app.muscle, 
     'clustalw':cogent.app.clustalw, 'mafft':cogent.app.mafft}
 
+pairwise_alignment_methods = {
+    'muscle':muscle_align_unaligned_seqs,
+    'mafft':mafft_align_unaligned_seqs,
+    'clustal':clustal_align_unaligned_seqs,
+    'blast':blast_align_unaligned_seqs,
+    'classic':classic_align_unaligned_seqs,
+}
+
+NAST_DEFAULT_BLAST_DB = None
+
 if __name__ == "__main__":
     opts,args = parse_command_line_parameters()
 
@@ -264,7 +293,8 @@ if __name__ == "__main__":
         params = {'min_len':opts.min_length,\
                   'min_pct':opts.min_percent_id,\
                   'template_filepath':opts.template_fp,\
-                  'blast_db':opts.blast_db}
+                  'blast_db':opts.blast_db,
+                  'pairwise_alignment_method': opts.pairwise_alignment_method}
         failure_path = opts.fail_fp
         # build the aligner object
         aligner = aligner_constructor(params)

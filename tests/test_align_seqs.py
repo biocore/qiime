@@ -170,6 +170,18 @@ class PyNastAlignerTests(SharedSetupTestCase):
         self.assertEqual(actual_aln.Names, expected_names)
         self.assertEqual(actual_aln, expected_aln)
         
+    def test_call_pynast_alt_pairwise_method(self):
+        """PyNastAligner: alternate pairwise alignment method produces correct alignment
+        """
+        aligner = PyNastAligner({
+                'pairwise_alignment_method': 'muscle',
+                'template_filepath': self.pynast_test1_template_fp,
+                'min_len': 15,
+                })
+        actual_aln = aligner(self.pynast_test1_input_fp)
+        expected_aln = self.pynast_test1_expected_aln
+        self.assertEqual(actual_aln, expected_aln)
+        
     def test_call_pynast_test1_alt_min_len(self):
         """PyNastAligner: returns no result when min_len too high
         """
