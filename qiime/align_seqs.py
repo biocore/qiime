@@ -63,12 +63,12 @@ class Aligner(FunctionWithParams):
         """Return new Aligner object with specified params.
         
         Note: expect params to contain both generic and per-method (e.g. for
-        infernal vs. NAST vs. whatever) params, so leaving it as a dict 
+        infernal vs. PyNAST vs. whatever) params, so leaving it as a dict 
         rather than setting attributes. Some standard entries in params are:
 
         Application: 3rd-party application used, if any, e.g. infernal
         [can't actually think of any other params that apply to all of
-         e.g. NAST, infernal, and muscle]
+         e.g. PyNAST, infernal, and muscle]
         """
         self.Params = params
 
@@ -189,14 +189,12 @@ def parse_command_line_parameters():
           
     parser.add_option('-a','--pairwise_alignment_method',action='store',\
           type='string',dest='pairwise_alignment_method',help='method '+\
-          'for performing pairwise alignment in NAST algorithm' +\
+          'for performing pairwise alignment in PyNAST ' +\
           '[default: %default]')
 
     parser.add_option('-b','--blast_db',action='store',\
           type='string',dest='blast_db',help='Database to blast'+\
-          ' against [default: None for alignment methods other' +\
-          ' than NAST; default: %s when alignment method is NAST]'\
-          % NAST_DEFAULT_BLAST_DB)
+          ' against [default: %default]')
           
     parser.add_option('-t','--template_fp',action='store',\
           type='string',dest='template_fp',help='Filepath for '+\
@@ -272,8 +270,6 @@ pairwise_alignment_methods = {
     'blast':blast_align_unaligned_seqs,
     'classic':classic_align_unaligned_seqs,
 }
-
-NAST_DEFAULT_BLAST_DB = None
 
 if __name__ == "__main__":
     opts,args = parse_command_line_parameters()
