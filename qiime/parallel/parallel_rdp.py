@@ -15,24 +15,27 @@ from qiime.parallel.util import split_fasta, get_random_job_prefix, write_jobs_f
     submit_jobs, compute_seqs_per_file, build_filepaths_from_filepaths
 
 def get_commands(python_exe_fp,assign_taxonomy_fp,confidence,fasta_fps,\
-    rdp_jar_fp,out_fps,log_fps,setup_command):
+    rdp_jar_fp,out_fps,log_fps,command_prefix=None,command_suffix=None):
     """Generate RDP classifier commands which should be submitted to cluster
     """
     
-    setup_command = setup_command or\
+    command_prefix = command_prefix or\
      '/bin/bash; export RDP_JAR_PATH=%s; ' % rdp_jar_fp
+    command_suffix = command_suffix or\
+     '; exit'
     
     commands = []
     
     for out_fp,log_fp,fasta_fp in zip(out_fps,log_fps,fasta_fps):
-        command = '%s %s %s -c %1.2f -m rdp -o %s -l %s %s; exit' %\
-         (setup_command,\
+        command = '%s %s %s -c %1.2f -m rdp -o %s -l %s %s %s' %\
+         (command_prefix,\
           python_exe_fp,\
           assign_taxonomy_fp,\
           confidence,
           out_fp,
           log_fp,
-          fasta_fp)
+          fasta_fp,
+          command_suffix)
           
         commands.append(command)
         
@@ -75,7 +78,7 @@ def parse_command_line_parameters():
     
     parser.add_option('-o','--output_dir',action='store',\
            type='string',help='path to store output files '+\
-           '[default: dir containing INPUT_FP]')
+           '[default: %default]',default='.')
            
     parser.add_option('-x','--job_prefix',action='store',\
            type='string',help='job prefix '+\
@@ -83,7 +86,7 @@ def parse_command_line_parameters():
     
     parser.add_option('-l','--log_dir',action='store',\
            type='string',help='path to store log files '+\
-           '[default: dir containing INPUT_FP]')
+           '[default: %default]',default='.')
 
     parser.add_option('-r','--rdp_classifier_jar_path',action='store',\
            type='string',help='full path to rdp classifier jar file '+\
@@ -125,15 +128,12 @@ if __name__ == "__main__":
     path_to_cluster_jobs = opts.path_to_cluster_jobs
     input_fasta_fp = opts.input_fasta_fp 
     jobs_to_start = opts.jobs_to_start
-    
+    output_dir = opts.output_dir
+    log_dir = opts.log_dir
     
     # split the input filepath into directory and filename
     input_dir, input_fasta_fn = split(input_fasta_fp)
     
-    # define the output dir by what the user passed, or the input dir, 
-    # or the current directory
-    output_dir = opts.output_dir or input_dir or '.'
-    log_dir = opts.log_dir or input_dir or '.'
     
     # set the job_prefix either based on what the user passed in,
     # or a random string beginning with RDP
@@ -160,7 +160,7 @@ if __name__ == "__main__":
     # generate the list of commands to be pushed out to nodes
     commands = \
      get_commands(python_exe_fp,assign_taxonomy_fp,confidence,tmp_fasta_fps,\
-     rdp_classifier_jar_path,out_fps,log_fps,setup_command=None)
+     rdp_classifier_jar_path,out_fps,log_fps)
      
     # write the commands to the 'jobs files'
     jobs_fp = write_jobs_file(commands,job_prefix=job_prefix)
