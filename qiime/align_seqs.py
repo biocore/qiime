@@ -192,9 +192,14 @@ def parse_command_line_parameters():
           'for performing pairwise alignment in PyNAST ' +\
           '[default: %default]')
 
-    parser.add_option('-b','--blast_db',action='store',\
+    parser.add_option('-d','--blast_db',action='store',\
           type='string',dest='blast_db',help='Database to blast'+\
           ' against [default: %default]')
+          
+    parser.add_option('-b','--blast_executable',action='store',\
+        type='string',
+        default='/home/caporaso/bin/blastall',
+        help='Path to blast executable [default: %default]')
           
     parser.add_option('-t','--template_fp',action='store',\
           type='string',dest='template_fp',help='Filepath for '+\
