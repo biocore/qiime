@@ -481,7 +481,6 @@ def _process_prefs(options):
 
     filepath=options.coord_fname
     filename=filepath.strip().split('/')[-1]
-
     _do_3d_plots(prefs, data, dir_path,filename)
 
 if __name__ == '__main__':

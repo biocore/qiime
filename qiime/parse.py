@@ -56,7 +56,11 @@ def group_by_field(table, name):
 
     Use to extract info from table based on a single field.
     """
-    col_index = table[0].index(name)
+    try:
+        col_index = table[0].index(name)
+    except ValueError, e:
+        raise ValueError, "Couldn't find name %s in headers: %s" % \
+            (name, table[0])
     result = defaultdict(list)
     for row in table[1:]:
         header, state = row[0], row[col_index]
