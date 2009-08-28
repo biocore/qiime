@@ -17,11 +17,12 @@ from cogent.util.unit_test import TestCase, main
 from os import remove
 from random import choice, randrange
 import shutil
-from qiime.gen_3d_plots import (make_3d_plots,scale_pc_data_matrix,\
-                                    auto_radius,make_mage_output,\
-                                    get_map,get_coord,create_dir,\
-                                    _make_path,combine_map_label_cols,\
-                                    process_colorby)
+from qiime.gen_3d_plots import (make_3d_plots,scale_pc_data_matrix,
+                                    auto_radius,make_mage_output,
+                                    get_map,get_coord,create_dir,
+                                    _make_path,combine_map_label_cols,
+                                    process_colorby, linear_gradient,
+                                    natsort, make_color_dict)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -60,6 +61,12 @@ class TopLevelTests(TestCase):
         map(remove,self._paths_to_clean_up)
         if self._dir_to_clean_up != '':
             shutil.rmtree(self._dir_to_clean_up)
+
+    def test_natsort(self):
+        """natsort should perform numeric comparisons on strings"""
+        s = 'sample1 sample2 sample11 sample12'.split()
+        self.assertEqual(natsort(s), 
+            'sample1 sample2 sample11 sample12'.split())
 
     def test_make_3d_plots(self):
         """make_3d_plots: main script to create kinemage and html file"""
@@ -141,18 +148,36 @@ from mapping file to color by"""
         exp='/tmp/test_pca.txt/'
 
         self.assertEqual(obs,exp)
+
+    def test_make_linear_gradient(self):
+        """make_linear_gradient: returns linear gradient of colors"""
+        self.assertEqual(linear_gradient([0,1,2],[1,0,0],5),
+            [[0,1,2],
+             [0.25,0.75,1.5],
+             [0.5,0.5,1],
+             [0.75,0.25,0.5],
+             [1,0,0]])
+
+    def test_make_color_dict(self):
+        """make_color_dict: returns dict of named colors"""
+        self.assertEqual(make_color_dict('red',(0,100,100),'white',(0,0,100),3),
+            {   'redtowhite3_0':[0,100,100],
+                'redtowhite3_1':[0,50,100],
+                'redtowhite3_2':[0,0,100],
+            })
+
         
 exp_kin_full=['@kinemage {Day_unscaled}', '@dimension {PC_1} {PC_2} {PC_3}', \
 '@dimminmax -0.219044992 0.080504323 -0.212014503 0.079674486 -0.088353435 0.09233683', \
-'@master {points}', '@master {labels}', '@hsvcolor {aqua} 180 100 100', \
-'@hsvcolor {blue} 240 100 100', \
-'@hsvcolor {fuchsia} 300 100 100', '@hsvcolor {gray} 300 0 50.2', \
-'@hsvcolor {green} 120 100 50.2', '@hsvcolor {lime} 120 100 100', \
-'@hsvcolor {maroon} 0 100 50.2', \
-'@hsvcolor {olive} 60 100 50.2', '@hsvcolor {purple} 300 100 50.2', \
-'@hsvcolor {red} 0 100 100', '@hsvcolor {silver} 0 0 75.3', \
-'@hsvcolor {teal} 180 100 50.2', '@hsvcolor {white} 180 0 100', \
-'@hsvcolor {yellow} 60 100 100', '@group {Day1 (n=3)} collapsible', \
+'@master {points}', '@master {labels}', '@hsvcolor {aqua} 180.0 100.0 100.0', \
+'@hsvcolor {blue} 240.0 100.0 100.0', \
+'@hsvcolor {fuchsia} 300.0 100.0 100.0', '@hsvcolor {gray} 300.0 0.0 50.2', \
+'@hsvcolor {green} 120.0 100.0 50.2', '@hsvcolor {lime} 120.0 100.0 100.0', \
+'@hsvcolor {maroon} 0.0 100.0 50.2', \
+'@hsvcolor {olive} 60.0 100.0 50.2', '@hsvcolor {purple} 300.0 100.0 50.2', \
+'@hsvcolor {red} 0.0 100.0 100.0', '@hsvcolor {silver} 0.0 0.0 75.3', \
+'@hsvcolor {teal} 180.0 100.0 50.2', '@hsvcolor {white} 180.0 0.0 100.0', \
+'@hsvcolor {yellow} 60.0 100.0 100.0', '@group {Day1 (n=3)} collapsible', \
 '@balllist color=blue radius=0.00299549315 alpha=0.75 dimension=3 master={points} nobutton', \
 '{Sample1} -0.219044992 0.079674486 0.09233683\n{Sample2} -0.042258081 0.000204041 0.024837603\n{Sample3} 0.080504323 -0.212014503 -0.088353435', \
 '@labellist color=blue radius=0.00299549315 alpha=0.75 dimension=3 master={labels} nobutton', \
@@ -174,15 +199,15 @@ exp_kin_full=['@kinemage {Day_unscaled}', '@dimension {PC_1} {PC_2} {PC_3}', \
 '{PC3 (35%)}-0.2299972416 -0.22261522815 0.101801355075 white', \
 '@kinemage {Day_scaled}', '@dimension {PC_1} {PC_2} {PC_3}', \
 '@dimminmax -0.156460708571 0.0575030878571 -0.181726716857 0.0682924165714 -0.088353435 0.09233683', \
-'@master {points}', '@master {labels}', '@hsvcolor {aqua} 180 100 100', \
-'@hsvcolor {blue} 240 100 100', \
-'@hsvcolor {fuchsia} 300 100 100', '@hsvcolor {gray} 300 0 50.2', \
-'@hsvcolor {green} 120 100 50.2', '@hsvcolor {lime} 120 100 100', \
-'@hsvcolor {maroon} 0 100 50.2', \
-'@hsvcolor {olive} 60 100 50.2', '@hsvcolor {purple} 300 100 50.2', \
-'@hsvcolor {red} 0 100 100', '@hsvcolor {silver} 0 0 75.3', \
-'@hsvcolor {teal} 180 100 50.2', '@hsvcolor {white} 180 0 100', \
-'@hsvcolor {yellow} 60 100 100', '@group {Day1 (n=3)} collapsible', \
+'@master {points}', '@master {labels}', '@hsvcolor {aqua} 180.0 100.0 100.0', \
+'@hsvcolor {blue} 240.0 100.0 100.0', \
+'@hsvcolor {fuchsia} 300.0 100.0 100.0', '@hsvcolor {gray} 300.0 0.0 50.2', \
+'@hsvcolor {green} 120.0 100.0 50.2', '@hsvcolor {lime} 120.0 100.0 100.0', \
+'@hsvcolor {maroon} 0.0 100.0 50.2', \
+'@hsvcolor {olive} 60.0 100.0 50.2', '@hsvcolor {purple} 300.0 100.0 50.2', \
+'@hsvcolor {red} 0.0 100.0 100.0', '@hsvcolor {silver} 0.0 0.0 75.3', \
+'@hsvcolor {teal} 180.0 100.0 50.2', '@hsvcolor {white} 180.0 0.0 100.0', \
+'@hsvcolor {yellow} 60.0 100.0 100.0', '@group {Day1 (n=3)} collapsible', \
 '@balllist color=blue radius=0.00213963796429 alpha=0.75 dimension=3 master={points} nobutton', \
 '{Sample1} -0.156460708571 0.0682924165714 0.09233683\n{Sample2} -0.0301843435714 0.000174892285714 0.024837603\n{Sample3} 0.0575030878571 -0.181726716857 -0.088353435', \
 '@labellist color=blue radius=0.00213963796429 alpha=0.75 dimension=3 master={labels} nobutton', \
@@ -204,15 +229,15 @@ exp_kin_full=['@kinemage {Day_unscaled}', '@dimension {PC_1} {PC_2} {PC_3}', \
 
 exp_kin_partial=['@kinemage {_unscaled}', '@dimension {PC_1} {PC_2} {PC_3}', \
 '@dimminmax -0.219044992 0.080504323 -0.212014503 0.079674486 -0.088353435 0.09233683', \
-'@master {points}', '@master {labels}', '@hsvcolor {aqua} 180 100 100', \
-'@hsvcolor {blue} 240 100 100', \
-'@hsvcolor {fuchsia} 300 100 100', '@hsvcolor {gray} 300 0 50.2', \
-'@hsvcolor {green} 120 100 50.2', '@hsvcolor {lime} 120 100 100', \
-'@hsvcolor {maroon} 0 100 50.2', \
-'@hsvcolor {olive} 60 100 50.2', '@hsvcolor {purple} 300 100 50.2', \
-'@hsvcolor {red} 0 100 100', '@hsvcolor {silver} 0 0 75.3', \
-'@hsvcolor {teal} 180 100 50.2', '@hsvcolor {white} 180 0 100', \
-'@hsvcolor {yellow} 60 100 100', '@group {Day1 (n=3)} collapsible', \
+'@master {points}', '@master {labels}', '@hsvcolor {aqua} 180.0 100.0 100.0', \
+'@hsvcolor {blue} 240.0 100.0 100.0', \
+'@hsvcolor {fuchsia} 300.0 100.0 100.0', '@hsvcolor {gray} 300.0 0.0 50.2', \
+'@hsvcolor {green} 120.0 100.0 50.2', '@hsvcolor {lime} 120.0 100.0 100.0', \
+'@hsvcolor {maroon} 0.0 100.0 50.2', \
+'@hsvcolor {olive} 60.0 100.0 50.2', '@hsvcolor {purple} 300.0 100.0 50.2', \
+'@hsvcolor {red} 0.0 100.0 100.0', '@hsvcolor {silver} 0.0 0.0 75.3', \
+'@hsvcolor {teal} 180.0 100.0 50.2', '@hsvcolor {white} 180.0 0.0 100.0', \
+'@hsvcolor {yellow} 60.0 100.0 100.0', '@group {Day1 (n=3)} collapsible', \
 '@balllist color=blue radius=0.00299549315 alpha=0.75 dimension=3 master={points} nobutton', \
 '{Sample1} -0.219044992 0.079674486 0.09233683\n{Sample2} -0.042258081 0.000204041 0.024837603\n{Sample3} 0.080504323 -0.212014503 -0.088353435', \
 '@labellist color=blue radius=0.00299549315 alpha=0.75 dimension=3 master={labels} nobutton', \
