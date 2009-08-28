@@ -259,7 +259,8 @@ def make_mage_output(groups, colors, coord_header, coords, pct_var, name='', \
    
     #Write the groups, colors and coords
     coord_dict = dict(zip(coord_header, coords))
-    for group_name, ids in sorted(groups.items()):
+    for group_name in natsort(groups):
+        ids = groups[group_name]
         result.append('@group {%s (n=%s)} collapsible' % (group_name, len(ids)))
         color = colors[group_name]
         coord_lines = []
