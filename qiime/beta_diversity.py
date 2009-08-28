@@ -131,6 +131,9 @@ class BetaDiversityCalc(FunctionWithParams):
         
         sample_names, taxon_names, data, lineages = \
             self.getOtuTable(data_path)
+        #prune tree so we only look at otus actually present
+        if tree:
+            tree = tree.getSubTree(taxon_names)
 
         # get the 2d dist matrix from beta diversity analysis
         if self.IsPhylogenetic:
