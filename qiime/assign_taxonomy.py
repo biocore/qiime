@@ -16,17 +16,20 @@ This module has the responsibility for taking a set of sequences and
 providing a taxon assignment for each sequence.
 """
 
+import csv
 import logging
 import re
 from os import system, remove
 from glob import glob
-from itertools import imap
+from itertools import count
 from shutil import copy as copy_file
 from optparse import OptionParser
+from tempfile import NamedTemporaryFile
 from cogent import LoadSeqs, DNA
 from cogent.app.util import get_tmp_filename
 from cogent.app.blast import blast_seqs, Blastall, BlastResult
-from cogent.app.rdp_classifier import assign_taxonomy
+from cogent.app.rdp_classifier import assign_taxonomy, \
+    train_rdp_classifier_and_assign_taxonomy
 from cogent.parse.fasta import MinimalFastaParser
 from qiime.util import FunctionWithParams
 
@@ -62,6 +65,18 @@ class TaxonAssigner(FunctionWithParams):
         log_path: path to log, which should include dump of params.
         """
         raise NotImplementedError, "TaxonAssigner is an abstract class"
+
+    @staticmethod
+    def _parse_id_to_taxonomy_file(f):
+        """ parse the id_to_taxonomy file into a dict mapping id -> taxonomy
+        """
+        result = {}
+        for line in f:
+            line = line.strip()
+            if line:
+                identifier, taxonomy = line.split('\t')
+                result[identifier] = taxonomy
+        return result 
 
 
 class BlastTaxonAssigner(TaxonAssigner):
@@ -171,17 +186,6 @@ class BlastTaxonAssigner(TaxonAssigner):
 
         return hits
         
-    def _parse_id_to_taxonomy_file(self,f):
-        """ parse the id_to_taxonomy file into a dict mapping id -> taxonomy
-        """
-        result = {}
-        for line in f:
-            line = line.strip()
-            if line:
-                identifier, taxonomy = line.split('\t')
-                result[identifier] = taxonomy
-        return result 
-
     def _get_blast_hits(self,blast_db,seq_coll):
         """ blast each seq in seq_coll against blast_db and retain good hits
         """
@@ -273,18 +277,177 @@ class RdpTaxonAssigner(TaxonAssigner):
         reference_sequences_fp = self.Params['reference_sequences_fp']
         id_to_taxonomy_fp = self.Params['id_to_taxonomy_fp']
         
+        seq_file = open(seq_path, 'r')
+
         if reference_sequences_fp and id_to_taxonomy_fp:
-            raise NotImplementedError,\
-             "Training on-the-fly is not yet implemented."
-        
-        results = assign_taxonomy(\
-             open(seq_path),min_confidence=min_confidence,\
-             output_fp=result_path)
+            # Train and assign taxonomy
+            taxonomy_file, training_seqs_file = self._generate_training_files()
+            results = train_rdp_classifier_and_assign_taxonomy(
+                training_seqs_file, taxonomy_file, seq_file, 
+                min_confidence=min_confidence,
+                classification_output_fp=result_path)
+        else:
+            # Just assign taxonomy
+            results = assign_taxonomy(
+                seq_file, min_confidence=min_confidence, output_fp=result_path)
 
         if log_path:
             self.writeLog(log_path)
 
         return results
+
+    def _generate_training_files(self):
+        """Returns a tuple of file objects suitable for passing to the
+        RdpTrainer application controller.
+        """
+        id_to_taxonomy_file = open(self.Params['id_to_taxonomy_fp'], 'r')
+        reference_seqs_file = open(self.Params['reference_sequences_fp'], 'r')
+
+        # Generate taxonomic tree and write to file 
+        tree = self._build_tree(id_to_taxonomy_file)
+        id_to_taxonomy_file.seek(0)
+
+        rdp_taxonomy_file = NamedTemporaryFile(
+            prefix='RdpTaxonAssigner_taxonomy_', suffix='.txt')
+        rdp_taxonomy_file.write(tree.rdp_taxonomy())
+        rdp_taxonomy_file.seek(0)
+
+        # Generate a set of training seqs and write to file
+        training_seqs = self._generate_training_seqs(
+            reference_seqs_file, id_to_taxonomy_file)
+
+        rdp_training_seqs_file = NamedTemporaryFile(
+            prefix='RdpTaxonAssigner_training_seqs_', suffix='.fasta')
+        for rdp_id, seq in training_seqs:
+            rdp_training_seqs_file.write('>%s\n%s\n' % (rdp_id, seq))
+        rdp_training_seqs_file.seek(0)
+
+        return rdp_taxonomy_file, rdp_training_seqs_file
+
+    @staticmethod
+    def _generate_training_seqs(reference_seqs_file, id_to_taxonomy_file):
+        """Returns an iterator of valid training sequences in
+        RDP-compatible format
+
+        Each training sequence is represented by a tuple (rdp_id,
+        seq).  The rdp_id consists of two items: the original sequence
+        ID with whitespace replaced by underscores, and the lineage
+        with taxa separated by semicolons.
+        """
+        # Rdp requires unique sequence IDs without whitespace.  Can't
+        # trust user IDs to not have whitespace, so we replace all
+        # whitespace with an underscore.  Classification may fail if
+        # the replacement method generates a name collision.
+
+        id_to_taxonomy_map = RdpTaxonAssigner._parse_id_to_taxonomy_file(
+            id_to_taxonomy_file)
+
+        for id, seq in MinimalFastaParser(reference_seqs_file):
+            taxonomy = id_to_taxonomy_map[id]
+            lineage = RdpTaxonAssigner._parse_lineage(taxonomy)
+            rdp_id = '%s %s' % (re.sub('\s', '_', id), ';'.join(lineage))
+            yield rdp_id, seq
+
+    @staticmethod
+    def _build_tree(id_to_taxonomy_file):
+        """Returns an RdpTree object representing the taxonomic tree
+        derived from the id_to_taxonomy file.
+        """
+        tree = RdpTaxonAssigner.RdpTree()
+        for line in id_to_taxonomy_file:
+            id, taxonomy = line.split('\t')
+            lineage = RdpTaxonAssigner._parse_lineage(taxonomy)
+            tree.insert_lineage(lineage)
+        return tree
+
+    @staticmethod
+    def _parse_lineage(lineage_as_csv):
+        """Returns a list of taxa from the comma-separated lineage of
+        an id_to_taxonomy file.
+        """
+        # Official hack to parse strings in Python's csv module,
+        # see <http://docs.python.org/library/csv.html>.  Since
+        # csv.reader() returns an iterator, we use the next()
+        # method to pop off the first item, which contains the
+        # lineage in list form.
+        return csv.reader([lineage_as_csv]).next()
+
+    # The RdpTree class is defined as a nested class to prevent the
+    # implementation details of creating RDP-compatible training files
+    # from being exposed at the module level.
+    class RdpTree(object):
+        """Simple, specialized tree class used to generate a taxonomy
+        file for the Rdp Classifier.
+        """
+        taxonomic_ranks = ['domain', 'phylum', 'class', 
+                           'order', 'family', 'genus']
+
+        def __init__(self, name='Root', parent=None):
+            self.name = name
+            self.parent = parent
+            if parent is None:
+                self.depth = 0
+            else:
+                self.depth = parent.depth + 1
+            self.children = dict()  # name => subtree
+
+        def insert_lineage(self, lineage):
+            """Inserts a lineage into the taxonomic tree.
+            
+            Lineage must support the iterator interface, or provide an
+            __iter__() method that returns an iterator.
+            """
+            lineage = lineage.__iter__()
+            try:
+                taxon = lineage.next()
+                if taxon not in self.children:
+                    self.children[taxon] = RdpTaxonAssigner.RdpTree(name=taxon, parent=self)
+                self.children[taxon].insert_lineage(lineage)
+            except StopIteration:
+                pass
+            return self
+
+        def rdp_taxonomy(self, counter=None):
+            """Returns a string, in Rdp-compatible format.
+            """
+            if counter is None:
+                # initialize a new counter to assign IDs
+                counter = count(0)
+
+            # Assign ID to current node; used by child nodes
+            self.id = counter.next()
+
+            if self.parent is None:
+                # do not print line for Root node
+                retval = ''
+            else:
+                # Rdp taxonomy file does not count the root node
+                # when considering the depth of the taxon.  We
+                # therefore specify a taxon depth which is one
+                # less than the tree depth.
+                taxon_depth = self.depth - 1
+
+                # In this simplest-possible implementation, we
+                # also use the taxon depth to retrieve the string
+                # value of the taxonomic rank.  Taxa beyond the
+                # depth of our master list are given a rank of ''.
+                try:
+                    taxon_rank = self.taxonomic_ranks[taxon_depth]
+                except IndexError:
+                    taxon_rank = ''
+
+                fields = [self.id, self.name, self.parent.id, taxon_depth,
+                          taxon_rank]
+                retval = '*'.join(map(str, fields)) + "\n"
+
+            # Recursively append lines from sorted list of subtrees
+            child_names = self.children.keys()
+            child_names.sort()
+            subtrees = [self.children[name] for name in child_names]
+            for subtree in subtrees:
+                retval += subtree.rdp_taxonomy(counter)
+            return retval
+
 
 def parse_command_line_parameters():
     """ Parses command line arguments """
@@ -325,9 +488,14 @@ def parse_command_line_parameters():
        parser.error(\
         'Exactly two arguments are required when assigning with blast.')
        
-    if opts.assignment_method == 'rdp' and len(args) != 1:
-       parser.error(\
-        'Exactly one argument is required when assigning with RDP.')
+    if opts.assignment_method == 'rdp':
+        if len(args) == 2 and opts.reference_seqs_fp is None:
+            parser.error('A filepath for reference sequences must be '
+                         'specified along with the id_to_taxonomy file '
+                         'to train the Rdp Classifier.')
+        if len(args) not in (1, 2):
+            parser.error('Only one or two arguments are allowed when '
+                         'assigning with RDP.')
        
     if opts.assignment_method not in assignment_method_constructors:
         parser.error(\

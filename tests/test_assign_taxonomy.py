@@ -12,10 +12,12 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Prototype"
 
+from cStringIO import StringIO
+from os import remove
+from tempfile import NamedTemporaryFile
 from cogent.util.unit_test import TestCase, main
 from cogent import LoadSeqs
 from cogent.app.util import get_tmp_filename
-from os import remove
 from qiime.assign_taxonomy import TaxonAssigner, BlastTaxonAssigner,\
  RdpTaxonAssigner
  
@@ -303,6 +305,18 @@ class RdpTaxonAssignerTests(TestCase):
         self._paths_to_clean_up = \
          [self.tmp_seq_filepath, self.tmp_res_filepath, self.tmp_log_filepath]
          
+        self.id_to_taxonomy_file = NamedTemporaryFile(
+            prefix='RdpTaxonAssignerTest_', suffix='.txt')
+        self.id_to_taxonomy_file.write(rdp_id_to_taxonomy)
+        self.id_to_taxonomy_file.seek(0)
+
+        self.reference_seqs_file = NamedTemporaryFile(
+            prefix='RdpTaxonAssignerTest_', suffix='.fasta')
+        self.reference_seqs_file.write(rdp_reference_seqs)
+        self.reference_seqs_file.seek(0)
+        
+
+
         self.default_app = RdpTaxonAssigner({})
         
         # Why is this giving weird results (strings get increasingly longer)
@@ -318,12 +332,60 @@ class RdpTaxonAssignerTests(TestCase):
         self.assertEqual(a.Name, 'RdpTaxonAssigner')
         
     def test_train_on_the_fly(self):
-        """ Attmepting to train on-the-fly raises error
+        """Training on-the-fly classifies reference sequence correctly with 100% certainty
         """
-        app = RdpTaxonAssigner({\
-         'id_to_taxonomy_fp':'/some/path',
-         'reference_sequences_fp':'/some/other/path'})
-        self.assertRaises(NotImplementedError,app,self.tmp_seq_filepath)
+        input_seqs_file = NamedTemporaryFile(
+            prefix='RdpTaxonAssignerTest_', suffix='.fasta')
+        input_seqs_file.write(test_seq_coll.toFasta())
+        input_seqs_file.seek(0)
+
+        expected = rdp_trained_test1_expected_dict
+        
+        app = RdpTaxonAssigner({
+                'id_to_taxonomy_fp': self.id_to_taxonomy_file.name,
+                'reference_sequences_fp': self.reference_seqs_file.name,
+                })
+        actual = app(self.tmp_seq_filepath)
+        
+        key = 'X67228 some description'
+        self.assertEqual(actual[key], expected[key])
+
+    def test_parse_lineage(self):
+        """Lineage in csv format is correctly parsed to a list
+        """
+        str = 'Archaea,Euryarchaeota,Methanomicrobiales,Methanomicrobium et rel.'
+        actual = RdpTaxonAssigner._parse_lineage(str)
+        expected = ['Archaea', 'Euryarchaeota', 'Methanomicrobiales', 'Methanomicrobium et rel.']
+        self.assertEqual(actual, expected)
+
+    def test_build_tree(self):
+        """RdpTaxonAssigner._build_tree() should return a tree with correct Rdp-format taxonomy
+        """
+        tree = RdpTaxonAssigner._build_tree(self.id_to_taxonomy_file)
+        actual = tree.rdp_taxonomy()
+        # The order of the lines in this file depends on python's
+        # dict() implementation, so we should ideally build two sets
+        # of lines and check that their contents match.
+        expected = rdp_expected_taxonomy
+        self.assertEqual(actual, expected)
+
+    def test_generate_training_seqs(self):
+        seqs = RdpTaxonAssigner._generate_training_seqs(
+            self.reference_seqs_file, self.id_to_taxonomy_file)
+        actual = LoadSeqs(data=seqs, aligned=False).toFasta()
+        self.assertEqual(actual, rdp_expected_training_seqs)
+        
+    def test_generate_training_files(self):
+        app = RdpTaxonAssigner({
+                'id_to_taxonomy_fp': self.id_to_taxonomy_file.name,
+                'reference_sequences_fp': self.reference_seqs_file.name,
+                })
+        actual_taxonomy_file, actual_training_seqs_file = \
+            app._generate_training_files()
+
+        # see note in test_build_tree()
+        self.assertEqual(actual_taxonomy_file.read(), rdp_expected_taxonomy)
+        
 
     def test_call_result_as_dict(self):
         """RdpTaxonAssigner should return correct taxonomic assignment
@@ -444,11 +506,87 @@ rdp_test1_expected_dict = {\
  'EF503697': ('Root,Archaea,Crenarchaeota,Thermoprotei',0.88)
 }
 
+
+rdp_trained_test1_expected_dict = {
+    'X67228 some description': ('Bacteria,Proteobacteria,Alphaproteobacteria,Rhizobiales,Rhizobiaceae,Rhizobium', 1.0),
+    'EF503697': ('Bacteria,Proteobacteria,Gammaproteobacteria', 0.83999999999999997),
+    }
+
 rdp_test1_expected_lines = [\
  "\t".join(["X67228 some description",\
   "Root,Bacteria,Proteobacteria,Alphaproteobacteria,Rhizobiales,Rhizobiaceae,Rhizobium",\
   "0.9"]),
  "\t".join(['EF503697','Root,Archaea,Crenarchaeota,Thermoprotei','0.8'])]
+
+rdp_id_to_taxonomy = \
+"""X67228	Bacteria,Proteobacteria,Alphaproteobacteria,Rhizobiales,Rhizobiaceae,Rhizobium
+X73443	Bacteria,Firmicutes,Clostridia,Clostridiales,Clostridiaceae,Clostridium
+AB004750	Bacteria,Proteobacteria,Gammaproteobacteria,Enterobacteriales,Enterobacteriaceae,Enterobacter
+xxxxxx	Bacteria,Proteobacteria,Gammaproteobacteria,Pseudomonadales,Pseudomonadaceae,Pseudomonas
+AB004748	Bacteria,Proteobacteria,Gammaproteobacteria,Enterobacteriales,Enterobacteriaceae,Enterobacter
+AB000278	Bacteria,Proteobacteria,Gammaproteobacteria,Vibrionales,Vibrionaceae,Photobacterium
+AB000390	Bacteria,Proteobacteria,Gammaproteobacteria,Vibrionales,Vibrionaceae,Vibrio
+"""
+
+rdp_reference_seqs = \
+""">X67228
+aacgaacgctggcggcaggcttaacacatgcaagtcgaacgctccgcaaggagagtggcagacgggtgagtaacgcgtgggaatctacccaaccctgcggaatagctctgggaaactggaattaataccgcatacgccctacgggggaaagatttatcggggatggatgagcccgcgttggattagctagttggtggggtaaaggcctaccaaggcgacgatccatagctggtctgagaggatgatcagccacattgggactgagacacggcccaaa
+>X73443
+nnnnnnngagatttgatcctggctcaggatgaacgctggccggccgtgcttacacatgcagtcgaacgaagcgcttaaactggatttcttcggattgaagtttttgctgactgagtggcggacgggtgagtaacgcgtgggtaacctgcctcatacagggggataacagttagaaatgactgctaataccnnataagcgcacagtgctgcatggcacagtgtaaaaactccggtggtatgagatggacccgcgtctgattagctagttggtggggt
+>AB004750
+acgctggcggcaggcctaacacatgcaagtcgaacggtagcagaaagaagcttgcttctttgctgacgagtggcggacgggtgagtaatgtctgggaaactgcccgatggagggggataactactggaaacggtagctaataccgcataacgtcttcggaccaaagagggggaccttcgggcctcttgccatcggatgtgcccagatgggattagctagtaggtggggtaacggctcacctaggcgacgatccctagctggtctgagaggatgaccagccacactggaactgagacacggtccagactcctacgggaggcagcagtggggaatattgca
+>xxxxxx
+ttgaacgctggcggcaggcctaacacatgcaagtcgagcggcagcannnncttcgggaggctggcgagcggcggacgggtgagtaacgcatgggaacttacccagtagtgggggatagcccggggaaacccggattaataccgcatacgccctgagggggaaagcgggctccggtcgcgctattggatgggcccatgtcggattagttagttggtggggtaatggcctaccaaggcgacgatccgtagctggtctgagaggatgatcagccacaccgggactgagacacggcccggactcctacgggaggcagcagtggggaatattggacaatgggggcaaccctgatccagccatgccg
+>AB004748
+acgctggcggcaggcctaacacatgcaagtcgaacggtagcagaaagaagcttgcttctttgctgacgagtggcggacgggtgagtaatgtctgggaaactgcccgatggagggggataactactggaaacggtagctaataccgcataacgtcttcggaccaaagagggggaccttcgggcctcttgccatcggatgtgcccagatgggattagctagtaggtggggtaacggctcacctaggcgacgatccctagctggtctgagaggatgaccagccacactggaactgagacacggtccagactcctacgggaggcagcagtggggaatattgcacaatgggcgcaagcctgatgcagccatgccgcgtgtatgaagaaggccttcgggttg
+>AB000278
+caggcctaacacatgcaagtcgaacggtaanagattgatagcttgctatcaatgctgacgancggcggacgggtgagtaatgcctgggaatataccctgatgtgggggataactattggaaacgatagctaataccgcataatctcttcggagcaaagagggggaccttcgggcctctcgcgtcaggattagcccaggtgggattagctagttggtggggtaatggctcaccaaggcgacgatccctagctggtctgagaggatgatcagccacactggaactgagacacggtccagactcctacgggaggcagcagtggggaatattgcacaatgggggaaaccctgatgcagccatgccgcgtgta
+>AB000390
+tggctcagattgaacgctggcggcaggcctaacacatgcaagtcgagcggaaacgantnntntgaaccttcggggnacgatnacggcgtcgagcggcggacgggtgagtaatgcctgggaaattgccctgatgtgggggataactattggaaacgatagctaataccgcataatgtctacggaccaaagagggggaccttcgggcctctcgcttcaggatatgcccaggtgggattagctagttggtgaggtaatggctcaccaaggcgacgatccctagctggtctgagaggatgatcagccacactggaactgag
+"""
+
+
+rdp_expected_taxonomy = \
+"""1*Bacteria*0*0*domain
+2*Firmicutes*1*1*phylum
+3*Clostridia*2*2*class
+4*Clostridiales*3*3*order
+5*Clostridiaceae*4*4*family
+6*Clostridium*5*5*genus
+7*Proteobacteria*1*1*phylum
+8*Alphaproteobacteria*7*2*class
+9*Rhizobiales*8*3*order
+10*Rhizobiaceae*9*4*family
+11*Rhizobium*10*5*genus
+12*Gammaproteobacteria*7*2*class
+13*Enterobacteriales*12*3*order
+14*Enterobacteriaceae*13*4*family
+15*Enterobacter*14*5*genus
+16*Pseudomonadales*12*3*order
+17*Pseudomonadaceae*16*4*family
+18*Pseudomonas*17*5*genus
+19*Vibrionales*12*3*order
+20*Vibrionaceae*19*4*family
+21*Photobacterium*20*5*genus
+22*Vibrio*20*5*genus
+"""
+
+# newline at the end makes a difference
+rdp_expected_training_seqs = \
+""">AB000278 Bacteria;Proteobacteria;Gammaproteobacteria;Vibrionales;Vibrionaceae;Photobacterium
+caggcctaacacatgcaagtcgaacggtaanagattgatagcttgctatcaatgctgacgancggcggacgggtgagtaatgcctgggaatataccctgatgtgggggataactattggaaacgatagctaataccgcataatctcttcggagcaaagagggggaccttcgggcctctcgcgtcaggattagcccaggtgggattagctagttggtggggtaatggctcaccaaggcgacgatccctagctggtctgagaggatgatcagccacactggaactgagacacggtccagactcctacgggaggcagcagtggggaatattgcacaatgggggaaaccctgatgcagccatgccgcgtgta
+>AB000390 Bacteria;Proteobacteria;Gammaproteobacteria;Vibrionales;Vibrionaceae;Vibrio
+tggctcagattgaacgctggcggcaggcctaacacatgcaagtcgagcggaaacgantnntntgaaccttcggggnacgatnacggcgtcgagcggcggacgggtgagtaatgcctgggaaattgccctgatgtgggggataactattggaaacgatagctaataccgcataatgtctacggaccaaagagggggaccttcgggcctctcgcttcaggatatgcccaggtgggattagctagttggtgaggtaatggctcaccaaggcgacgatccctagctggtctgagaggatgatcagccacactggaactgag
+>AB004748 Bacteria;Proteobacteria;Gammaproteobacteria;Enterobacteriales;Enterobacteriaceae;Enterobacter
+acgctggcggcaggcctaacacatgcaagtcgaacggtagcagaaagaagcttgcttctttgctgacgagtggcggacgggtgagtaatgtctgggaaactgcccgatggagggggataactactggaaacggtagctaataccgcataacgtcttcggaccaaagagggggaccttcgggcctcttgccatcggatgtgcccagatgggattagctagtaggtggggtaacggctcacctaggcgacgatccctagctggtctgagaggatgaccagccacactggaactgagacacggtccagactcctacgggaggcagcagtggggaatattgcacaatgggcgcaagcctgatgcagccatgccgcgtgtatgaagaaggccttcgggttg
+>AB004750 Bacteria;Proteobacteria;Gammaproteobacteria;Enterobacteriales;Enterobacteriaceae;Enterobacter
+acgctggcggcaggcctaacacatgcaagtcgaacggtagcagaaagaagcttgcttctttgctgacgagtggcggacgggtgagtaatgtctgggaaactgcccgatggagggggataactactggaaacggtagctaataccgcataacgtcttcggaccaaagagggggaccttcgggcctcttgccatcggatgtgcccagatgggattagctagtaggtggggtaacggctcacctaggcgacgatccctagctggtctgagaggatgaccagccacactggaactgagacacggtccagactcctacgggaggcagcagtggggaatattgca
+>X67228 Bacteria;Proteobacteria;Alphaproteobacteria;Rhizobiales;Rhizobiaceae;Rhizobium
+aacgaacgctggcggcaggcttaacacatgcaagtcgaacgctccgcaaggagagtggcagacgggtgagtaacgcgtgggaatctacccaaccctgcggaatagctctgggaaactggaattaataccgcatacgccctacgggggaaagatttatcggggatggatgagcccgcgttggattagctagttggtggggtaaaggcctaccaaggcgacgatccatagctggtctgagaggatgatcagccacattgggactgagacacggcccaaa
+>X73443 Bacteria;Firmicutes;Clostridia;Clostridiales;Clostridiaceae;Clostridium
+nnnnnnngagatttgatcctggctcaggatgaacgctggccggccgtgcttacacatgcagtcgaacgaagcgcttaaactggatttcttcggattgaagtttttgctgactgagtggcggacgggtgagtaacgcgtgggtaacctgcctcatacagggggataacagttagaaatgactgctaataccnnataagcgcacagtgctgcatggcacagtgtaaaaactccggtggtatgagatggacccgcgtctgattagctagttggtggggt
+>xxxxxx Bacteria;Proteobacteria;Gammaproteobacteria;Pseudomonadales;Pseudomonadaceae;Pseudomonas
+ttgaacgctggcggcaggcctaacacatgcaagtcgagcggcagcannnncttcgggaggctggcgagcggcggacgggtgagtaacgcatgggaacttacccagtagtgggggatagcccggggaaacccggattaataccgcatacgccctgagggggaaagcgggctccggtcgcgctattggatgggcccatgtcggattagttagttggtggggtaatggcctaccaaggcgacgatccgtagctggtctgagaggatgatcagccacaccgggactgagacacggcccggactcctacgggaggcagcagtggggaatattggacaatgggggcaaccctgatccagccatgccg"""
 
 id_to_taxonomy_string = \
 """AY800210\tArchaea,Euryarchaeota,Halobacteriales,uncultured
