@@ -16,8 +16,8 @@ from qiime.parallel.util import split_fasta, get_random_job_prefix, write_jobs_f
 from pynast.util import build_temp_blast_db_from_alignment_fp
 
 def get_commands(python_exe_fp,align_seqs_fp,fasta_fps,template_aln_fp,\
-    pairwise_alignment_method,out_fps,log_fps,blast_db,blast_executable,
-    command_prefix=None,command_suffix=None):
+    pairwise_alignment_method,out_fps,log_fps,blast_db,blast_executable,\
+     min_length,min_percent_id,command_prefix=None,command_suffix=None):
     """Generate PyNAST commands which should be submitted to cluster
     """
     
@@ -36,11 +36,14 @@ def get_commands(python_exe_fp,align_seqs_fp,fasta_fps,template_aln_fp,\
         blast_option = ''
     
     for out_fp,log_fp,fasta_fp in zip(out_fps,log_fps,fasta_fps):
-        command = '%s %s %s %s -b %s -m pynast -t %s -a %s -o %s -l %s %s %s' %\
+        command = \
+         '%s %s %s %s -p %1.2f -e %d -b %s -m pynast -t %s -a %s -o %s -l %s %s %s' %\
          (command_prefix,\
           python_exe_fp,\
           align_seqs_fp,\
           blast_option,\
+          min_percent_id,\
+          min_length,\
           blast_executable,\
           template_aln_fp,\
           pairwise_alignment_method,
@@ -88,7 +91,7 @@ def parse_command_line_parameters():
     parser.add_option('-j','--jobs_to_start',action='store',type='int',\
             help='Number of jobs to start [default: %default]',default=24)
 
-    parser.add_option('-p','--python_exe_fp',action='store',\
+    parser.add_option('-y','--python_exe_fp',action='store',\
            type='string',help='full path to python '+\
            'executable [default: %default]',\
            default='/home/caporaso/bin/python')
@@ -133,6 +136,16 @@ def parse_command_line_parameters():
             type='string',help='path to cluster_jobs.py script ' +\
             ' [default: %default]',\
             default='/home/caporaso/bin/cluster_jobs.py')
+            
+    parser.add_option('-e','--min_length',action='store',\
+          type='int',dest='min_length',help='Minimum sequence '+\
+          'length to include in alignment [default: %default]',\
+          default=1000)
+          
+    parser.add_option('-p','--min_percent_id',action='store',\
+          type='float',dest='min_percent_id',help='Minimum percent '+\
+          'sequence identity to closest blast hit to include sequence in'+\
+          ' alignment [default: %default]',default=75.0)
                              
     opts,args = parser.parse_args()
     
@@ -159,6 +172,8 @@ if __name__ == "__main__":
     pairwise_alignment_method = opts.pairwise_alignment_method
     formatdb_executable = opts.formatdb_executable
     blast_executable = opts.blast_executable
+    min_length = opts.min_length
+    min_percent_id = opts.min_percent_id
     
 
     blast_db = opts.blast_db
@@ -200,7 +215,8 @@ if __name__ == "__main__":
     # generate the list of commands to be pushed out to nodes
     commands = \
      get_commands(python_exe_fp,align_seqs_fp,tmp_fasta_fps,template_aln_fp,\
-     pairwise_alignment_method,out_fps,log_fps,blast_db,blast_executable)
+     pairwise_alignment_method,out_fps,log_fps,blast_db,blast_executable,\
+     min_length,min_percent_id)
      
     # write the commands to the 'jobs files'
     jobs_fp = write_jobs_file(commands,job_prefix=job_prefix)
