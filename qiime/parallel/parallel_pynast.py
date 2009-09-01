@@ -130,7 +130,7 @@ def parse_command_line_parameters():
     parser.add_option('-a','--pairwise_alignment_method',action='store',\
           type='string',help='Method to use for pairwise alignments'+\
           ' (applicable with -m pynast) [default: %default]',\
-          default='classic')
+          default='pair_hmm')
             
     parser.add_option('-u','--path_to_cluster_jobs',action='store',\
             type='string',help='path to cluster_jobs.py script ' +\

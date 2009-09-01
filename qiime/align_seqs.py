@@ -34,7 +34,7 @@ import cogent.app.mafft
 # Load PyNAST if it's available. If it's not, skip it if not but set up
 # to raise errors if the user tries to use it.
 try:
-    from pynast.util import pynast_seqs, classic_align_unaligned_seqs,\
+    from pynast.util import pynast_seqs, pair_hmm_align_unaligned_seqs,\
         muscle_align_unaligned_seqs, mafft_align_unaligned_seqs,\
         clustal_align_unaligned_seqs, blast_align_unaligned_seqs
     from pynast.logger import NastLogger
@@ -44,7 +44,7 @@ except ImportError:
         raise ApplicationNotFoundError,\
          "PyNAST not installed - pynast aligner currently unavailable." 
     # set functions which cannot be imported to raise_pynast_not_found_error
-    pynast_seqs = NastLogger = classic_align_unaligned_seqs = \
+    pynast_seqs = NastLogger = pair_hmm_align_unaligned_seqs = \
     muscle_align_unaligned_seqs = mafft_align_unaligned_seqs =\
     clustal_align_unaligned_seqs = blast_align_unaligned_seqs = \
     raise_pynast_not_found_error
@@ -122,7 +122,7 @@ class PyNastAligner(Aligner):
             'min_len': 1000,
             'blast_db': None,
             'template_filepath': None,
-            'pairwise_alignment_method': 'classic',
+            'pairwise_alignment_method': 'pair_hmm',
             'Application': 'PyNAST',
             'Algorithm': 'NAST',
             }
@@ -230,7 +230,7 @@ def parse_command_line_parameters():
           'seqs which fail to align [default: No fail file created.]')
 
     parser.set_defaults(verbose=False, alignment_method='muscle',\
-     pairwise_alignment_method='classic', min_percent_id=75.0,min_length=1000,\
+     pairwise_alignment_method='pair_hmm', min_percent_id=75.0,min_length=1000,\
      blast_db=None)
 
     opts,args = parser.parse_args()
@@ -274,7 +274,7 @@ pairwise_alignment_methods = {
     'mafft':mafft_align_unaligned_seqs,
     'clustal':clustal_align_unaligned_seqs,
     'blast':blast_align_unaligned_seqs,
-    'classic':classic_align_unaligned_seqs,
+    'pair_hmm':pair_hmm_align_unaligned_seqs,
 }
 
 alignment_module_names = {'muscle':cogent.app.muscle, 
