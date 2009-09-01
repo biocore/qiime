@@ -38,13 +38,16 @@ try:
         muscle_align_unaligned_seqs, mafft_align_unaligned_seqs,\
         clustal_align_unaligned_seqs, blast_align_unaligned_seqs
     from pynast.logger import NastLogger
+
 except ImportError:
-    def pynast_seqs(*args, **kwargs):
+    def raise_pynast_not_found_error(*args, **kwargs):
         raise ApplicationNotFoundError,\
-         "PyNAST not installed - pynast aligner currently unavailable."
-    def NastLogger(*args, **kwargs):
-        raise ApplicationNotFoundError,\
-         "PyNAST not installed - pynast aligner currently unavailable."
+         "PyNAST not installed - pynast aligner currently unavailable." 
+    # set functions which cannot be imported to raise_pynast_not_found_error
+    pynast_seqs = NastLogger = classic_align_unaligned_seqs = \
+    muscle_align_unaligned_seqs = mafft_align_unaligned_seqs =\
+    clustal_align_unaligned_seqs = blast_align_unaligned_seqs = \
+    raise_pynast_not_found_error
 
 
 class Aligner(FunctionWithParams):
@@ -262,11 +265,9 @@ def parse_command_line_parameters():
 
     return opts,args
 
-alignment_method_constructors = dict([\
- ('pynast',PyNastAligner)])
 
-alignment_module_names = {'muscle':cogent.app.muscle, 
-    'clustalw':cogent.app.clustalw, 'mafft':cogent.app.mafft}
+alignment_method_constructors = dict([\
+        ('pynast',PyNastAligner)])
 
 pairwise_alignment_methods = {
     'muscle':muscle_align_unaligned_seqs,
@@ -275,6 +276,10 @@ pairwise_alignment_methods = {
     'blast':blast_align_unaligned_seqs,
     'classic':classic_align_unaligned_seqs,
 }
+
+alignment_module_names = {'muscle':cogent.app.muscle, 
+    'clustalw':cogent.app.clustalw, 'mafft':cogent.app.mafft}
+
 
 if __name__ == "__main__":
     opts,args = parse_command_line_parameters()
