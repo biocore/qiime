@@ -292,7 +292,7 @@ screen and a log file summarizing the options used and results obtained. A copy 
 sequences useful for excluding human genomic contamination from sequencing runs 
 can be found at:  ftp://ftp.genome.jp/pub/kegg/genes/organisms/hsa/h.sapiens.nuc
 """
-    usage = """\n\texclude_seqs_by_blast.py [options]\n\nExample:\n\tpython exclude_seqs_by_blast.py -i /Users/zaneveld/test_query_data.fasta -d /Users/zaneveld/data/h.sapiens.nuc -e 1e-20 -p 0.97 -f ./pos1_control_test -i /Users/zaneveld/test_query_data.nuc --debug"""
+    usage = """\n\tpython exclude_seqs_by_blast.py [options]\n\nExample:\n\tpython exclude_seqs_by_blast.py -i /Users/zaneveld/test_query_data.fasta -d /Users/zaneveld/data/h.sapiens.nuc -e 1e-20 -p 0.97 -f ./pos1_control_test --debug"""
 
     parser=OptionParser(usage=usage,description=description)
     parser.add_option("-i","--querydb",dest='querydb',default = None,\
@@ -334,6 +334,7 @@ def check_options(parser,options):
                 "Please check -i option: must specify path to a FASTA file")  
     try:
         f=open(options.querydb,'r')
+        f.close()
     except IOError:
         parser.error(\
                 "Please check -i option: cannot read from query FASTA filepath")  
@@ -342,9 +343,20 @@ def check_options(parser,options):
                 "Please check -d option: must specify path to a FASTA file")  
     try:
         f=open(options.subjectdb,'r')
+        f.close()
     except IOError:
         parser.error(\
-              "Please check -d option: cannot read from subject FASTA filepath")  
+              "Please check -d option: cannot read from subject FASTA filepath")
+    if options.outputfilename is None:
+        parser.error(\
+                "Please check -f option: must specify base output path")  
+    try:
+        f=open(options.outputfilename,'w')
+        f.close()
+    except IOError:
+        parser.error(\
+              "Please check -f option: cannot write to output file")  
+
 
 def format_options_as_lines(options):
     """Format options as a string for log file"""
