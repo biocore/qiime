@@ -320,8 +320,27 @@ def single_file_alpha(infilepath, metrics, outfilepath, tree_path):
 
 
 def multiple_file_alpha(options, args):
+    """ performs minimal error checking on input args, then calls os.system
+    to execute single_file_alpha for each file in the input directory
+
+    this is to facilitate future task farming - replace os.system with 
+    write to file, each command is independant
+
+    """
     alpha_script = qiime.alpha_diversity.__file__
     file_names = os.listdir(options.input_path)
+    if not os.path.exists(options.output_path):
+        raise ValueError("output path does not appear to exist")
+
+    for metric in options.metrics:
+        try:
+            metric_f = get_nonphylogenetic_metric(metric)
+        except AttributeError:
+            try:
+                metric_f = get_phylogenetic_metric(metric)
+            except AttributeError:
+                raise ValueError("could not find metric.  %s.\n Known metrics are: %s\n" \
+                    % (metric, ', '.join(list_known_metrics())))
     for fname in file_names:
         # future: try to make sure fname is a valid otu file
         #~ f = open(os.path.join(dir,fname))
@@ -355,5 +374,5 @@ if __name__ == '__main__':
         single_file_alpha(options.input_path, options.metrics, 
             options.output_path, options.tree_path)
     else:
-        print("io error")
+        print("io error, input path not valid. does it exist?")
         exit(1)

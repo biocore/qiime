@@ -212,8 +212,27 @@ def single_file_beta(options, args):
         exit(1)
 
 def multiple_file_beta(options, args):
+    """ performs minimal error checking on input args, then calls os.system
+    to execute single_file_beta for each file in the input directory
+
+    this is to facilitate future task farming - replace os.system with 
+    write to file, each command is independant
+
+    """
+
     beta_script = qiime.beta_diversity.__file__
     file_names = os.listdir(options.input_path)
+    if not os.path.exists(options.output_path):
+        raise ValueError("output path does not appear to exist")
+    try:
+        metric_f = get_nonphylogenetic_metric(metric)
+    except AttributeError:
+        try:
+            metric_f = get_phylogenetic_metric(metric)
+        except AttributeError:
+            raise ValueError("Could not find metric %s.\n\nKnown metrics are: %s\n" \
+                % (metric, ', '.join(list_known_metrics())))
+
     for fname in file_names:
         beta_div_cmd = 'python ' + beta_script + ' -i '+\
             os.path.join(options.input_path, fname) + " -m " + options.metric\
@@ -235,5 +254,5 @@ if __name__ == '__main__':
     elif os.path.isfile(options.input_path):
         single_file_beta(options, args)
     else:
-        print("io error")
+        print("io error, input path not valid.  Does it exist?")
         exit(1)
