@@ -3,7 +3,7 @@
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2009, the PyCogent Project" #consider project name
-__credits__ = ["Rob Knight"] #remember to add yourself
+__credits__ = ["Rob Knight", "Justin Kuczynski"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "0.1"
 __maintainer__ = "Rob Knight"
@@ -51,14 +51,14 @@ z\t0\t1\t0\t1"""
                         'x':['GHI_2', 'GHI_3','GHI_77'],
                         'z':['DEF_3','XYZ_1']
                         }
-        taxonomy = {'0':'Bacteria;Firmicutes', 'x':'Bacteria:Bacteroidetes'}
+        taxonomy = {'0':'Bacteria;Firmicutes', 'x':'Bacteria;Bacteroidetes'}
         obs = make_otu_map(otu_to_seqid, taxonomy)
         exp = """#Full OTU Counts
 #OTU ID\tABC\tDEF\tGHI\tXYZ\tConsensus Lineage
 0\t1\t1\t0\t0\tBacteria;Firmicutes
-1\t1\t0\t0\t0\tUnknown
-x\t0\t0\t3\t0\tUnknown
-z\t0\t1\t0\t1\tBacteria;Bacteroidetes"""
+1\t1\t0\t0\t0\tNone
+x\t0\t0\t3\t0\tBacteria;Bacteroidetes
+z\t0\t1\t0\t1\tNone"""
         self.assertEqual(obs, exp)
 
 
