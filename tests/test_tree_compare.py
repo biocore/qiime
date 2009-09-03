@@ -19,7 +19,9 @@ class TreeCompareTests(TestCase):
     """ tests only top level functions
     """
     def test_bootstrap_support(self):
-        """ tree with unlabeled internal nodes should have correct bootstrap
+        """ bootstrap_support should have correct bootstrap for a tree with 
+
+        unlabeled internal nodes 
         values"""
         master_tree = DndParser('((a:2,b:3):2,(c:1,d:2):7);')
         """
@@ -34,7 +36,9 @@ class TreeCompareTests(TestCase):
         self.assertFloatEqual(sorted(bootstraps.values()),sorted([1.0, .5, .5]))
         
     def test_bootstrap_support_labeled(self):
-        """ tree with labeled internal nodes should have correct bootstrap
+        """ bootstrap_support should have correct bootstrap on a tree 
+
+        with labeled internal nodes
         values"""
         master_tree = DndParser('((a:2,b:3)ab:2,(c:1,d:2)cd:7)rt;')
         """

@@ -85,8 +85,8 @@ class AlphaDiversityCalcsTests(TestCase):
         self.tree = DndParser('((a:2,b:3):2,(c:1,d:2):7);')
 
     def test1(self):
-        """ checks that output is the right shape when run on 
-        phylo, multiple return value nonphylo, and another nonphylo
+        """ checks that output from AlphaDiversityCalcs is the right shape 
+        when run on phylo, multiple return value nonphylo, and another nonphylo
         """
         calc1 = AlphaDiversityCalc(metric=observed_species)
         calc2 = AlphaDiversityCalc(metric=PD_whole_tree,

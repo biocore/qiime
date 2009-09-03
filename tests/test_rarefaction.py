@@ -28,7 +28,8 @@ class FunctionTests(TestCase):
         None)
     
     def test_rarefy_to_list(self):
-        """should rarefy correctly, same names, and rm empty samples
+        """rarefy_to_list should rarefy correctly, same names, 
+        and rm empty samples
         
         """
         maker = RarefactionMaker(self.otu_tuple, 0, 1, 1, 1)

@@ -20,7 +20,8 @@ class BarcodeTests(TestCase):
         """Set up shared variables"""
 
     def test_correct_barcode(self):
-        """ should correctly assign barcode to 2nd possibility, 2 errors
+        """ correct_barcode should correctly assign barcode to 2nd possibility, 
+        2 errors
         """
         original = 'ATTTTTTTTTCG'
         recieved = 'ATTTTTTTTTTT'
@@ -31,7 +32,8 @@ class BarcodeTests(TestCase):
         self.assertEqual(num_errors, 2)
     
     def test_correct_barcode_bitwise(self):
-        """ should correctly assign barcode to 2nd possibility, 2 base errors,
+        """ correct_barcode should correctly assign barcode to 2nd possibility, 
+        2 base errors,
         3 bit errors with this nt_to_bits
         """
         nt_to_bits = { "A":"11",  "C":"00", "T":"10", "G":"01"}
@@ -46,7 +48,7 @@ class BarcodeTests(TestCase):
         self.assertEqual(num_errors, 3)
     
     def test_correct_barcode_bitwise_tie(self):
-        """ should not assign barcode to to a tie situation
+        """ correct_barcode should not assign barcode to to a tie situation
         """
         nt_to_bits = { "A":"11",  "C":"00", "T":"10", "G":"01"}
 

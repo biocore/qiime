@@ -54,7 +54,8 @@ class FunctionTests(TestCase):
 
     
     def test_reorder_unifrac_res(self):
-        """ reorder should correctly reorder a misordered 3x3 matrix"""
+        """ reorder_unifrac_res should correctly reorder a misordered 3x3 matrix
+        """
         mtx = numpy.array([ [1,2,3],
                             [4,5,6],
                             [7,8,9]], 'float')
@@ -68,7 +69,7 @@ class FunctionTests(TestCase):
         self.assertFloatEqual(reordered_mtx, mtx)
     
     def test_dist_unweighted_unifrac(self):
-        """ exercise the unweighted unifrac metric"""
+        """ exercise of the unweighted unifrac metric should not throw errors"""
         tree = DndParser(self.l19_treestr, PhyloNode)
         res = dist_unweighted_unifrac(self.l19_data, self.l19_taxon_names, tree)
         envs = make_envs_dict(self.l19_data, self.l19_sample_names,
