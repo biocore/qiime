@@ -2,7 +2,7 @@
 #make_otu_table: makes sample x OTU table
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2009, the PyCogent Project" #consider project name
-__credits__ = ["Rob Knight"] #remember to add yourself
+__credits__ = ["Rob Knight", "Justin Kuczynski"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "0.1"
 __maintainer__ = "Rob Knight"
@@ -77,9 +77,13 @@ if __name__ == "__main__":
         infile = open(options.taxonomy_fname,'U')
         for line in infile:
             fields = line.split('\t')
+            # typically this looks like: 3 SAM1_32 \t Root,Bacteria,Fi... \t 0.9
+            # implying otu 3; sample 1, seq 32 (the representative of otu 3);
+            # followed by the taxonomy and confidence
             if not len(fields) == 3:
                 continue
-            res[fields[0]] = fields[1]
+            otu = fields[0].split(' ')[0]
+            res[otu] = fields[1]
         otu_to_taxonomy = res
 
     otu_to_seqid = fields_to_dict(open(options.otu_fname, 'U'))
