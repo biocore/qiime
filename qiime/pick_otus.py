@@ -285,6 +285,10 @@ def parse_command_line_parameters():
     parser.add_option('-m','--otu_picking_method',action='store',\
           type='string',dest='otu_picking_method',help='Method for picking'+\
           ' OTUs [default: %default]')
+    
+    parser.add_option('-M','--max_cdhit_memory',action='store',\
+          type=int,help='max available memory to cdhit (cd-hit\'s -M)'+\
+          ' (Mbyte) [default: %default]',default=400)
           
     parser.add_option('-o','--result_fp',action='store',\
           type='string',dest='result_fp',help='Path to store '+\
@@ -331,7 +335,7 @@ if __name__ == "__main__":
      
     log_path = opts.log_fp
     
-    params = {'Similarity':opts.similarity}
+    params = {'Similarity':opts.similarity,'-M':opts.max_cdhit_memory}
     
     otu_picker = otu_picker_constructor(params)
     otu_picker(input_seqs_filepath,\
