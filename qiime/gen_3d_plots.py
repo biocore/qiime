@@ -36,6 +36,8 @@ import os
 from optparse import OptionParser
 from random import choice, randrange
 import re
+from time import strftime
+import shutil
 
 def _natsort_key(item):
     """Provides normalized version of item for sorting with digits.
@@ -320,13 +322,15 @@ def create_dir(dir_path):
 
     if dir_path==None or dir_path=='':
         random_dir_name=''.join([choice(alphabet) for i in range(10)])
-        dir_path = './'+random_dir_name+'/'
+        dir_path = './'+strftime("%Y_%m_%d_%H_%M_%S")+random_dir_name+'/'
+
 
     if dir_path:
         try:
             os.mkdir(dir_path)
         except OSError:
             pass
+
 
     return dir_path
 
@@ -404,11 +408,13 @@ def linear_gradient(start, end, nbins):
         result.append(list((start*(n_minus_1-i)/n_minus_1)+(end*(i/n_minus_1))))
     return result
 
-def _do_3d_plots(prefs, data, dir_path='', filename=None, \
+def _do_3d_plots(prefs, data, dir_path='',data_file_path='', filename=None, \
                 default_filename='out'):
     """Make 3d plots according to coloring options in prefs."""
-    kinpath = _make_path([dir_path, filename])
-    htmlpath = './'
+    kinpath = _make_path([(dir_path+data_file_path), filename])
+    kinlink = './'+data_file_path+'/' + filename +'.kin'
+
+    htmlpath = dir_path
     if kinpath:
         if filename:
             kinpath = kinpath[:-1]
@@ -421,7 +427,7 @@ def _do_3d_plots(prefs, data, dir_path='', filename=None, \
     outf=kinpath+'.kin'
     
     res = make_3d_plots(coord_header, coords, pct_var,mapping,prefs)
-    
+
     #Write kinemage file
     f = open(outf, 'w')
     f.write('\n'.join(res))
@@ -430,8 +436,8 @@ def _do_3d_plots(prefs, data, dir_path='', filename=None, \
     #Write html page with the kinemage embedded
     f2 = open(htmlpath+filename+'_3D.html', 'w')
     f2.write("<html><head></head><body><applet code='king/Kinglet.class' \
-archive='./king.jar' width=800 height=600> \
-<param name='kinSource' value='%s'></body></html>" % (outf)) 
+archive='./jar/king.jar' width=800 height=600> \
+<param name='kinSource' value='%s'></body></html>" % (kinlink)) 
     f2.write('\n'.join(res))
     f2.close()
     
@@ -456,7 +462,23 @@ def _make_cmd_parser():
 def _process_prefs(options):
     """Opens files as necessary based on prefs"""
     data = {}
-    dir_path = create_dir(options.dir_path)
+    dir_path = create_dir(options.dir_path)    
+
+    alphabet = "ABCDEFGHIJKLMNOPQRSTUZWXYZ"
+    alphabet += alphabet.lower()
+    alphabet += "01234567890"
+    
+    data_file_path=''.join([choice(alphabet) for i in range(10)])
+    data_file_path=strftime("%Y_%m_%d_%H_%M_%S")+data_file_path
+    data_file_dir_path = dir_path+data_file_path
+    
+    data_file_dir_path=create_dir(data_file_dir_path)
+    js_dir_path = create_dir(dir_path+'js/')
+    shutil.copyfile('./js/overlib.js', js_dir_path+'overlib.js')
+    
+    data_file_dir_path=create_dir(data_file_dir_path)
+    js_dir_path = create_dir(dir_path+'jar/')
+    shutil.copyfile('./jar/king.jar', js_dir_path+'king.jar')
     
     #Open and get coord data
     data['coord'] = get_coord(options, data)
@@ -482,7 +504,7 @@ def _process_prefs(options):
 
     filepath=options.coord_fname
     filename=filepath.strip().split('/')[-1]
-    _do_3d_plots(prefs, data, dir_path,filename)
+    _do_3d_plots(prefs, data, dir_path, data_file_path,filename)
 
 if __name__ == '__main__':
     from sys import argv, exit
