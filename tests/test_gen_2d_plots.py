@@ -47,6 +47,7 @@ class TopLevelTests(TestCase):
         self.prefs['Sample']['column']='Day'
         
         self.dir_path='/tmp/'
+        self.data_file_link='/tmp/'
         self.xy_coords={}
         self.xy_coords['Sample1']=([-0.2], [0.07], ['Sample1: Day1'],\
                                    ['#0000FF'])
@@ -86,7 +87,7 @@ images"""
 
         self._paths_to_clean_up = [filename1,filename2]
 
-        obs1,obs2,obs3=make_interactive_scatter(self.dir_path,self.xy_coords, 
+        obs1,obs2,obs3=make_interactive_scatter(self.dir_path,self.data_file_link,self.xy_coords, 
                         self.props, self.x_len, self.y_len, self.size,
                         draw_axes=False, generate_eps=True)
 
@@ -138,7 +139,7 @@ plot into html spatial coords which allows for mouseovers"""
 
         self._paths_to_clean_up = [filename1,filename2]
 
-        obs1,obs2=draw_pca_graph(self.dir_path,self.coord_1,self.coord_2,
+        obs1,obs2=draw_pca_graph(self.dir_path,self.data_file_link,self.coord_1,self.coord_2,
                                  self.data,self.prefs,self.groups,self.colors,
                                  generate_eps=True)
 
