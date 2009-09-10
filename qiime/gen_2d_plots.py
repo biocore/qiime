@@ -39,6 +39,9 @@ from string import strip
 from parse import parse_map,parse_coords,group_by_field,group_by_fields
 from numpy import array
 from optparse import OptionParser
+from time import strftime
+import shutil
+from random import choice, randrange
 from gen_3d_plots import combine_map_label_cols,get_map,get_coord,\
                          process_colorby,create_dir
 
@@ -113,7 +116,7 @@ data_colors={'blue':'#0000FF','lime':'#00FF00','red':'#FF0000', \
 default_colors=['blue','lime','red','aqua','fuchsia','yellow','green', \
                'maroon','teal','purple','olive','white','silver','gray']
 
-def make_interactive_scatter(dir_path,xy_coords, 
+def make_interactive_scatter(dir_path,data_file_link,xy_coords, 
                                 props, x_len=8, y_len=4, size=10,
                                 draw_axes=False, generate_eps=True):
     """Write interactive plot  
@@ -170,7 +173,7 @@ def make_interactive_scatter(dir_path,xy_coords,
 
     points_id = int(x_label[1:2]+y_label[1:2])
 
-    return IMG_MAP_SRC % (dir_path + img_name, points_id, img_width, \
+    return IMG_MAP_SRC % (data_file_link + img_name, points_id, img_width, \
                           img_height), MAP_SRC % (points_id, ''.join(xmap)), \
                           eps_link 
 
@@ -235,7 +238,7 @@ def transform_xy_coords(xy_coords,sc_plot):
     
     return all_cids,all_xcoords,all_ycoords
     
-def draw_pca_graph(dir_path,coord_1,coord_2,data,prefs,groups,colors,\
+def draw_pca_graph(dir_path,data_file_link,coord_1,coord_2,data,prefs,groups,colors,\
                    generate_eps=True):
     """Draw PCA graphs"""
     coords,pct_var=convert_coord_data_to_dict(data)
@@ -276,7 +279,7 @@ def draw_pca_graph(dir_path,coord_1,coord_2,data,prefs,groups,colors,\
 
     xy_coords=extract_and_color_xy_coords(p1d,p2d,colors,groups,coords)
  
-    img_src, img_map, eps_link =  make_interactive_scatter(dir_path,
+    img_src, img_map, eps_link =  make_interactive_scatter(dir_path,data_file_link,
                                      xy_coords=xy_coords,props=props,x_len=4.5, 
                                      y_len=4.5,size=20,draw_axes=True,
                                      generate_eps=generate_eps)
@@ -355,6 +358,9 @@ def _process_prefs(options):
 
     dir_path = create_dir(options.dir_path)
     
+    js_dir_path = create_dir(dir_path+'js/')
+    shutil.copyfile('./js/overlib.js', js_dir_path+'overlib.js')
+    
     #Open and get coord data
     data['coord'] = get_coord(options, data)
 
@@ -389,7 +395,7 @@ def _process_prefs(options):
     if action:
         action(prefs, data, dir_path,filename)
 
-def _do_2d_plots(prefs, data, dir_path, filename):
+def _do_2d_plots(prefs,data,dir_path,filename):
     """Generate interactive 2D scatterplots"""
     coord_tups = [("1", "2"), ("3", "2"), ("1", "3")]
     mapping=data['map']
@@ -399,7 +405,17 @@ def _do_2d_plots(prefs, data, dir_path, filename):
         group_num=-1
         col_name = p['column']
         new_col_name=col_name.strip('#')
-        dir_path= dir_path+new_col_name
+        
+        alphabet = "ABCDEFGHIJKLMNOPQRSTUZWXYZ"
+        alphabet += alphabet.lower()
+        alphabet += "01234567890"
+
+        data_file_path=''.join([choice(alphabet) for i in range(10)])
+        data_file_path=strftime("%Y_%m_%d_%H_%M_%S")+data_file_path+new_col_name+'/'
+        data_file_dir_path = dir_path+data_file_path
+        data_file_link='./'+data_file_path
+
+        data_file_dir_path=create_dir(data_file_dir_path)
         colors={}
         groups = group_by_field(mapping, col_name)
         
@@ -414,15 +430,16 @@ def _do_2d_plots(prefs, data, dir_path, filename):
         img_data = {}
         for coord_tup in coord_tups: 
             coord_1, coord_2 = coord_tup
-            img_data[coord_tup] = draw_pca_graph(dir_path,coord_1,coord_2,data,\
+            img_data[coord_tup] = draw_pca_graph(data_file_dir_path,data_file_link,coord_1,coord_2,data,\
                                                  prefs,groups,colors,\
                                                  generate_eps=True)    
         
-        outpath = create_html_filename(filename+new_col_name,'_pca_2D.html')
+        outfile = create_html_filename(filename+new_col_name,'_pca_2D.html')
+        outfile=dir_path+outfile
         out_table = TABLE_HTML % ("<br>".join(img_data[("1", "2")]),
                                   "<br>".join(img_data[("3", "2")]),
                                    "<br>".join(img_data[("1", "3")]))
-        write_html_file(out_table,outpath)
+        write_html_file(out_table,outfile)
 
 if __name__ == "__main__":
     from sys import argv, exit
