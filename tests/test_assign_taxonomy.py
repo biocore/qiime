@@ -13,27 +13,33 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Prototype"
 
 from cStringIO import StringIO
-from os import remove
+from os import remove, system
+from glob import glob
 from tempfile import NamedTemporaryFile
+from shutil import copy as copy_file
 from cogent.util.unit_test import TestCase, main
 from cogent import LoadSeqs
 from cogent.app.util import get_tmp_filename
+from cogent.util.misc import remove_files
 from qiime.assign_taxonomy import TaxonAssigner, BlastTaxonAssigner,\
  RdpTaxonAssigner
- 
-def remove_files(list_of_filepaths,error_on_missing=True):
-    missing = []
-    for fp in list_of_filepaths:
-        try:
-            remove(fp)
-        except OSError:
-            missing.append(fp)
 
-    if error_on_missing and missing:
-        raise OSError,\
-         "Some filepaths were not accessible: %s" % '\t'.join(missing) 
+def build_temp_blast_db(seq_filepath,\
+    formatdb_executable='formatdb'): 
+    # NEED TO TEST
+   
+    # create the blast db
+    if system('%s -i %s -o T -p F' % (formatdb_executable,seq_filepath)) != 0:
+        # WHAT TYPE OF ERROR SHOULD BE RAISED IF THE BLAST_DB
+        # BUILD FAILS?
+        raise RuntimeError,\
+         "Creation of temporary Blast database failed."
+    
+    # create a list of the files to clean-up
+    db_files_to_remove = glob(seq_filepath + '*') + ['formatdb.log']
+    
+    return seq_filepath, db_files_to_remove
 
- 
 class TaxonAssignerTests(TestCase):
     """Tests of the abstract TaxonAssigner class"""
 
@@ -76,7 +82,7 @@ class BlastTaxonAssignerTests(TestCase):
          's6':None}
         
     def tearDown(self):
-        remove_files(self._paths_to_clean_up)
+        remove_files(set(self._paths_to_clean_up))
 
     def test_init(self):
         """BlastTaxonAssigner __init__ should store name, params"""
@@ -142,20 +148,16 @@ class BlastTaxonAssignerTests(TestCase):
     def test_get_blast_hits(self):
         """BlastTaxonAssigner._get_blast_hits functions w existing db
         
-            This test is kind of a hack until I figure out a better way. The
-             sequences in test_seq_coll are pulled directly from the sequences
-             in the blast database that is being tested against. So, this 
-             test requires that for each of the three query sequences, the 
-             exact match in the database is returned with an E-value of 0.0. 
-             All other blast results for each query sequence are ignored. 
-        
-        
         """
+        # build the blast database and keep track of the files to clean up
+        blast_db, files_to_remove = \
+         build_temp_blast_db(self.reference_seqs_fp)
+        self._paths_to_clean_up += files_to_remove
+        
         p = BlastTaxonAssigner({})
-        blast_db = 'ribosomal_v11'
         seq_coll_blast_results = p._get_blast_hits(blast_db,test_seq_coll)
         # mapping from identifier in test_seq_coll to the id of the sequence
-        # in my ribosomal_v11 database (a silva derivative)
+        # in the refseq collection (a silva derivative)
         expected_matches = {\
          's1':'AY800210',
          's2':'EU883771',\
@@ -175,27 +177,24 @@ class BlastTaxonAssignerTests(TestCase):
             # pulling it out (this is redundant, but allows for a useful
             # error message if the data wasn't in there b/c e.g. there 
             # were no blast results returned)
-            self.assertTrue(expected_matches[seq_id] in blast_results_d, \
-             msg='** May be missing blast or necessary blast database: %s'\
-             % blast_db)
+            self.assertTrue(expected_matches[seq_id] in blast_results_d)
             # now check that the perfect match got a 0.0 e-value as it should
             # on this data
-            self.assertEqual(blast_results_d[expected_matches[seq_id]],0.0,\
-             msg='** May be missing blast or necessary blast database: %s'\
-             % blast_db)
+            self.assertEqual(blast_results_d[expected_matches[seq_id]],0.0)
             
     def test_call_existing_blast_db(self):
         """BlastTaxonAssigner.__call__ functions w existing db
         """
-        blast_db = 'ribosomal_v11'
+        # build the blast database and keep track of the files to clean up
+        blast_db, files_to_remove = \
+         build_temp_blast_db(self.reference_seqs_fp)
+        self._paths_to_clean_up += files_to_remove
         
         p = BlastTaxonAssigner({'blast_db':blast_db,\
          'id_to_taxonomy_filepath':self.id_to_taxonomy_fp})
         actual = p(self.input_seqs_fp)
         
-        self.assertEqual(actual,self.expected1,\
-             msg='** May be missing blast or necessary blast database: %s'\
-             % blast_db)
+        self.assertEqual(actual,self.expected1)
         
     def test_call_on_the_fly_blast_db(self):
         """BlastTaxonAssigner.__call__ functions w creating blast db
@@ -244,9 +243,14 @@ class BlastTaxonAssignerTests(TestCase):
          prefix='BlastTaxonAssignerTests_',suffix='.fasta')
         self._paths_to_clean_up.append(log_path) 
         
+        # build the blast database and keep track of the files to clean up
+        blast_db, files_to_remove = \
+         build_temp_blast_db(self.reference_seqs_fp)
+        self._paths_to_clean_up += files_to_remove
+        
         p = BlastTaxonAssigner({\
          'id_to_taxonomy_filepath':self.id_to_taxonomy_fp,\
-         'blast_db':'ribosomal_v11'})
+         'blast_db':blast_db})
         actual = p(self.input_seqs_fp,log_path=log_path)
         
         log_file = open(log_path)
@@ -257,7 +261,7 @@ class BlastTaxonAssignerTests(TestCase):
          'Min percent identity:0.9','Application:blastn/megablast',\
          'Max E value:1e-30',\
          'Result path: None, returned as dict.',
-         'blast_db:ribosomal_v11',\
+         'blast_db:%s' % self.reference_seqs_fp,\
          'id_to_taxonomy_filepath:%s' % self.id_to_taxonomy_fp,\
          '']
         # compare data in log file to fake expected log file
