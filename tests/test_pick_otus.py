@@ -15,6 +15,7 @@ __status__ = "Prototype"
 from os import remove
 from cogent.util.unit_test import TestCase, main
 from cogent.app.util import get_tmp_filename
+from cogent.util.misc import remove_files
 from qiime.pick_otus import CdHitOtuPicker, DoturOtuPicker, OtuPicker
 
 class OtuPickerTests(TestCase):
@@ -36,16 +37,26 @@ class CdHitOtuPickerTests(TestCase):
     """ Tests of the cd-hit-based OTU picker """
 
     def setUp(self):
-        # create the temporary input file
-        self.tmp_seq_filepath = get_tmp_filename(\
+        # create the temporary input files
+        self.tmp_seq_filepath1 = get_tmp_filename(\
          prefix='CdHitOtuPickerTest_',\
          suffix='.fasta')
-        seq_file = open(self.tmp_seq_filepath,'w')
-        seq_file.write(dna_seqs)
+        seq_file = open(self.tmp_seq_filepath1,'w')
+        seq_file.write(dna_seqs_1)
+        seq_file.close()        
+        
+        self.tmp_seq_filepath2 = get_tmp_filename(\
+         prefix='CdHitOtuPickerTest_',\
+         suffix='.fasta')
+        seq_file = open(self.tmp_seq_filepath2,'w')
+        seq_file.write(dna_seqs_2)
         seq_file.close()
         
+        self._files_to_remove =\
+         [self.tmp_seq_filepath1, self.tmp_seq_filepath2]
+        
     def tearDown(self):
-        remove(self.tmp_seq_filepath)
+        remove_files(self._files_to_remove)
 
     def test_call_default_params(self):
         """CdHitOtuPicker.__call__ returns expected clusters default params"""
@@ -64,7 +75,7 @@ class CdHitOtuPickerTests(TestCase):
                9:['cdhit_test_seqs_9']}
         
         app = CdHitOtuPicker(params={})
-        obs = app(self.tmp_seq_filepath)
+        obs = app(self.tmp_seq_filepath1)
         self.assertEqual(obs, exp)
         
     def test_call_alt_threshold(self):
@@ -83,7 +94,7 @@ class CdHitOtuPickerTests(TestCase):
                8:['cdhit_test_seqs_9']}
 
         app = CdHitOtuPicker(params={'Similarity':0.90})
-        obs = app(self.tmp_seq_filepath)
+        obs = app(self.tmp_seq_filepath1)
         self.assertEqual(obs, exp)
         
     def test_call_output_to_file(self):
@@ -95,7 +106,7 @@ class CdHitOtuPickerTests(TestCase):
          suffix='.txt')
         
         app = CdHitOtuPicker(params={'Similarity':0.90})
-        obs = app(self.tmp_seq_filepath,result_path=tmp_result_filepath)
+        obs = app(self.tmp_seq_filepath1,result_path=tmp_result_filepath)
         
         result_file = open(tmp_result_filepath)
         result_file_str = result_file.read()
@@ -121,7 +132,7 @@ class CdHitOtuPickerTests(TestCase):
          suffix='.txt')
         
         app = CdHitOtuPicker(params={'Similarity':0.99})
-        obs = app(self.tmp_seq_filepath,\
+        obs = app(self.tmp_seq_filepath1,\
          result_path=tmp_result_filepath,log_path=tmp_log_filepath)
         
         log_file = open(tmp_log_filepath)
@@ -135,14 +146,177 @@ class CdHitOtuPickerTests(TestCase):
         log_file_99_exp = ["CdHitOtuPicker parameters:",\
          "Similarity:0.99","Application:cdhit",\
          'Algorithm:cdhit: "longest-sequence-first list removal algorithm"',\
-         "Result path: %s" % tmp_result_filepath,'']
+         'No prefix-based prefiltering.',\
+         "Result path: %s" % tmp_result_filepath]
         # compare data in log file to fake expected log file
         # NOTE: Since app.params is a dict, the order of lines is not
         # guaranteed, so testing is performed to make sure that 
         # the equal unordered lists of lines is present in actual and expected
         self.assertEqualItems(log_file_str.split('\n'), log_file_99_exp)
         
-
+    def test_prefilter_exact_prefixes_no_filtering(self):
+        """ CdHitOtuPicker._prefilter_exact_prefixes fns as expected when no seqs get filtered
+        """
+        app = CdHitOtuPicker(params={})
+        seqs = [('s1','ACGTAA'),\
+                ('s2','ACGTACAA'),\
+                ('s3','ACGTAG'),\
+                ('s4','ACGTAT'),\
+                ('s5','ACGTCAA'),\
+                ('s6','ACGTCCAAAAAAAAAAAA')]
+        
+        prefix_length = 6
+        actual = app._prefilter_exact_prefixes(seqs,prefix_length)
+        actual[0].sort()
+        expected = seqs, {'s1':['s1'], 's2':['s2'], \
+                            's3':['s3'], 's4':['s4'], \
+                            's5':['s5'], 's6':['s6']}
+        self.assertEqual(actual,expected)
+        
+        # same result if prefix_length is too long
+        app = CdHitOtuPicker(params={})
+        seqs = [('s1','ACGTAA'),\
+                ('s2','ACGTACAA'),\
+                ('s3','ACGTAG'),\
+                ('s4','ACGTAT'),\
+                ('s5','ACGTCAA'),\
+                ('s6','ACGTCCAAAAAAAAAAAA')]
+        prefix_length = 42
+        actual = app._prefilter_exact_prefixes(seqs,prefix_length)
+        actual[0].sort()
+        expected = seqs, {'s1':['s1'], 's2':['s2'], \
+                            's3':['s3'], 's4':['s4'], \
+                            's5':['s5'], 's6':['s6']}
+        self.assertEqual(actual,expected)
+        
+    def test_prefilter_exact_prefixes_all_to_one_filtering(self):
+        """ CdHitOtuPicker._prefilter_exact_prefixes fns as expected when all seqs map to one
+        """
+        # maps to first when all are same length
+        app = CdHitOtuPicker(params={})
+        seqs = [('s1 comment','ACGTAA'),\
+                ('s2','ACGTAC'),\
+                ('s3','ACGTAG'),\
+                ('s4','ACGTAT'),\
+                ('s5','ACGTCA'),\
+                ('s6','ACGTCC')]
+        
+        prefix_length = 4
+        actual = app._prefilter_exact_prefixes(seqs,prefix_length)
+        actual[0].sort()
+        expected = [('s1','ACGTAA')], {'s1':['s1','s2','s3','s4','s5','s6']}
+        self.assertEqual(actual,expected)
+        
+        # maps to longest seq
+        app = CdHitOtuPicker(params={})
+        seqs = [('s1','ACGTAA'),\
+                ('s2','ACGTACA'),\
+                ('s3','ACGTAG'),\
+                ('s4','ACGTAT'),\
+                ('s5','ACGTCA'),\
+                ('s6','ACGTCC')]
+        
+        prefix_length = 4
+        actual = app._prefilter_exact_prefixes(seqs,prefix_length)
+        actual[0].sort()
+        expected = [('s2','ACGTACA')], {'s2':['s1','s2','s3','s4','s5','s6']}
+        self.assertEqual(actual,expected)
+        
+        # maps to longest seq
+        app = CdHitOtuPicker(params={})
+        seqs = [('s1','ACGTAA'),\
+                ('s2','ACGTACA'),\
+                ('s3','ACGTAGAA'),\
+                ('s4','ACGTATAAA'),\
+                ('s5','ACGTCAAAAA'),\
+                ('s6','ACGTCCAAAAA')]
+        
+        prefix_length = 4
+        actual = app._prefilter_exact_prefixes(seqs,prefix_length)
+        actual[0].sort()
+        expected = [('s6','ACGTCCAAAAA')], {'s6':['s1','s2','s3','s4','s5','s6']}
+        self.assertEqual(actual,expected)
+        
+    def test_prefilter_exact_prefixes_filtering(self):
+        """ CdHitOtuPicker._prefilter_exact_prefixes fns as expected when filtering occurs
+        """
+        # maps to first when all are same length
+        app = CdHitOtuPicker(params={})
+        seqs = [('s1','ACGTAA'),\
+                ('s2','ACGTAC'),\
+                ('s3','ACGTAG'),\
+                ('s4','ACGTAT'),\
+                ('s5','ACGTCA'),\
+                ('s6','ACGTCC')]
+        
+        prefix_length = 5
+        actual = app._prefilter_exact_prefixes(seqs,prefix_length)
+        actual[0].sort()
+        expected = [('s1','ACGTAA'),('s5','ACGTCA')], \
+                   {'s1':['s1','s2','s3','s4'],'s5':['s5','s6']}
+        self.assertEqual(actual,expected) 
+        
+        # maps to first when all are same length
+        app = CdHitOtuPicker(params={})
+        seqs = [('s1','ACGTAA'),\
+                ('s2','ACGTAC'),\
+                ('s3','ACGTAGAAAA'),\
+                ('s4','ACGTAT'),\
+                ('s5','ACGTCA'),\
+                ('s6','ACGTCC')]
+        
+        prefix_length = 5
+        actual = app._prefilter_exact_prefixes(seqs,prefix_length)
+        actual[0].sort()
+        expected = [('s3','ACGTAGAAAA'),('s5','ACGTCA')], \
+                   {'s3':['s1','s2','s3','s4'],'s5':['s5','s6']}
+        self.assertEqual(actual,expected)  
+        
+    def test_map_filtered_clusters_to_full_clusters(self):
+        """CdHitOtuPicker._map_filtered_clusters_to_full_clusters functions as expected
+        """
+        # original and mapped full clusters are the same
+        app = CdHitOtuPicker(params={})
+        filter_map = {'s1':['s1'], 's2':['s2'], \
+                      's3':['s3'], 's4':['s4'], \
+                      's5':['s5'], 's6':['s6']}
+        clusters = [['s1'], ['s2'], ['s3'], ['s4'], ['s5'], ['s6']]
+        actual = app._map_filtered_clusters_to_full_clusters(clusters,filter_map)
+        expected = clusters
+        self.assertEqual(actual,expected)
+        
+        # original and mapped full clusters are not the same
+        filter_map = {'s1':['s1','s2','s3','s4'],'s5':['s5','s6']}
+        clusters = [['s1','s5']]
+        actual = app._map_filtered_clusters_to_full_clusters(clusters,filter_map)
+        for e in actual: e.sort()
+        expected = [['s1','s2','s3','s4','s5','s6']]
+        self.assertEqual(actual,expected)
+        
+        filter_map = {'s1':['s1','s2','s6'],'s3':['s3'],'s5':['s4','s5']}
+        clusters = [['s1','s3'],['s5']]
+        actual = app._map_filtered_clusters_to_full_clusters(clusters,filter_map)
+        for e in actual: e.sort()
+        expected = [['s1','s2','s3','s6'],['s4','s5']]
+        self.assertEqual(actual,expected)
+        
+    def test_call_prefilters_when_requested(self):
+        """ CdHitOtuPicker.__call__ prefilters when requested
+        """
+        # no pre-filtering results in one cluster per sequence as they all
+        # differ at their 3' ends
+        app = CdHitOtuPicker(params={})
+        app = CdHitOtuPicker(params={'Similarity':0.99})
+        self.assertEqual(app(self.tmp_seq_filepath2),dna_seqs_2_result)
+        
+        # no pre-filtering results in one cluster per sequence as they are all
+        # the same at their 5' ends
+        app = CdHitOtuPicker(params={})
+        app = CdHitOtuPicker(params={'Similarity':0.99},)
+        self.assertEqual(app(self.tmp_seq_filepath2,prefix_prefilter_length=5),\
+                             dna_seqs_2_result_prefilter)
+        
+        
 class DorurOtuPickerTests(TestCase):
     """Tests for the Dotur-based OTU picker."""
 
@@ -156,14 +330,14 @@ UAGGCUCUGAUAUAAUAGCUCUC---------
 """
 
         # create the temporary input file
-        self.tmp_seq_filepath = get_tmp_filename(prefix='CdHitOtuPickerTest_',
+        self.tmp_seq_filepath1 = get_tmp_filename(prefix='CdHitOtuPickerTest_',
                                                  suffix='.fasta')
-        seq_file = open(self.tmp_seq_filepath, 'w')
+        seq_file = open(self.tmp_seq_filepath1, 'w')
         seq_file.write(self.seqs)
         seq_file.close()
 
     def tearDown(self):
-        remove(self.tmp_seq_filepath)
+        remove(self.tmp_seq_filepath1)
 
     def test_init(self):
         """DoturOtuPicker.__init__ should set default attributes and params"""
@@ -176,7 +350,16 @@ UAGGCUCUGAUAUAAUAGCUCUC---------
 
         params = {}
         d = DoturOtuPicker(params)
-        self.assertEquals(d(self.tmp_seq_filepath), exp)
+        self.assertEquals(d(self.tmp_seq_filepath1), exp)
+        
+    def test_call_prefilters_when_requested(self):
+        """DoturOtuPicker.__call__ raise NotImplementedError on pre-filter
+        """
+        # no pre-filtering results in one cluster per sequence as they all
+        # differ at their 3' ends
+        app = DoturOtuPicker(params={'Similarity':0.99})
+        self.assertRaises(NotImplementedError,app,self.tmp_seq_filepath1,\
+         prefix_prefilter_length=5)
 
     def test_call_output_to_file(self):
         """DoturOtuPicker.__call__ should write output to file when expected"""
@@ -187,7 +370,7 @@ UAGGCUCUGAUAUAAUAGCUCUC---------
             suffix='.txt')
         
         app = DoturOtuPicker(params={})
-        obs = app(self.tmp_seq_filepath, result_path=tmp_result_filepath)
+        obs = app(self.tmp_seq_filepath1, result_path=tmp_result_filepath)
         
         result_file = open(tmp_result_filepath)
         result_file_str = result_file.read()
@@ -211,7 +394,7 @@ UAGGCUCUGAUAUAAUAGCUCUC---------
             suffix='.txt')
 
         app = DoturOtuPicker(params={})
-        obs = app(self.tmp_seq_filepath,
+        obs = app(self.tmp_seq_filepath1,
                   result_path=tmp_result_filepath,
                   log_path=tmp_log_filepath)
 
@@ -229,7 +412,7 @@ UAGGCUCUGAUAUAAUAGCUCUC---------
         self.assertEqual(log_file_str, exp)
 
 
-dna_seqs = """>cdhit_test_seqs_0 comment fields, not part of sequence identifiers
+dna_seqs_1 = """>cdhit_test_seqs_0 comment fields, not part of sequence identifiers
 AACCCCCACGGTGGATGCCACACGCCCCATACAAAGGGTAGGATGCTTAAGACACATCGCGTCAGGTTTGTGTCAGGCCT
 > cdhit_test_seqs_1
 ACCCACACGGTGGATGCAACAGATCCCATACACCGAGTTGGATGCTTAAGACGCATCGCGTGAGTTTTGCGTCAAGGCT
@@ -261,7 +444,20 @@ dna_seqs_result_file_90_exp = """0\tcdhit_test_seqs_0
 8\tcdhit_test_seqs_9
 """
 
+dna_seqs_2 = """>cdhit_test_seqs_0 comment fields, not part of sequence identifiers
+ACACCCCGGGGGTTTACATTTTTTTTTTTTTTTTTTTTTTTT
+>cdhit_test_seqs_1
+ACACCCCGGGGGTTTACACCAACATACACCGAGTTGGA
+>cdhit_test_seqs_2
+ACACCCCGGGGGTTTACGGGGGGGGGGGGGGGGGGGGGGGGGG"""
 
+# results are in length order
+dna_seqs_2_result = {0: ['cdhit_test_seqs_2'],\
+                     1: ['cdhit_test_seqs_0'],\
+                     2: ['cdhit_test_seqs_1']}
+
+dna_seqs_2_result_prefilter =\
+ {0: ['cdhit_test_seqs_0','cdhit_test_seqs_1','cdhit_test_seqs_2']}
 
 #run unit tests if run from command-line
 if __name__ == '__main__':

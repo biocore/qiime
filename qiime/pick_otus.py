@@ -17,6 +17,7 @@ grouping those sequences by similarity.
 
 from copy import copy
 from optparse import OptionParser
+from cogent.parse.fasta import MinimalFastaParser
 from cogent.app.cd_hit import cdhit_clusters_from_seqs
 from cogent.app.dotur import dotur_from_alignment
 from cogent.core.sequence import DnaSequence
@@ -56,7 +57,53 @@ class OtuPicker(FunctionWithParams):
         log_path: path to log, which should include dump of params.
         """
         raise NotImplementedError, "OtuPicker is an abstract class"
+        
 
+    def _prefilter_exact_prefixes(self,seqs,prefix_length=100):
+        """
+        """
+        unique_prefixes = {}
+        for seq_id,seq in seqs:
+            seq_len = len(seq)
+            seq_id = seq_id.split()[0]
+            current_prefix = seq[:prefix_length]
+            try:
+                prefix_data = unique_prefixes[current_prefix]
+                if seq_len > prefix_data[2]:
+                    # if this is the longest seq with this prefix so far,
+                    # update the list of seq_ids, the best seq_len, and the
+                    # best hit seq_id
+                    prefix_data[0].append(seq_id)
+                    prefix_data[1] = seq_id
+                    prefix_data[2] = seq_len
+                    prefix_data[3] = seq
+                else:
+                    # if longer have been seen, only update the list of seq_ids
+                    prefix_data[0].append(seq_id)
+            except KeyError:
+                # list of seq_ids mapped to this prefix, best hit seq_id, best hit seq_len
+                unique_prefixes[current_prefix] = [[seq_id],seq_id,seq_len,seq]
+
+        # construct the result objects
+        filtered_seqs = []
+        seq_id_map = {}
+        for data in unique_prefixes.values():
+            filtered_seqs.append((data[1],data[3]))
+            seq_id_map[data[1]] = data[0]
+        return filtered_seqs, seq_id_map
+
+
+    def _map_filtered_clusters_to_full_clusters(self,clusters,filter_map):
+        """
+        """
+        results = []
+        for cluster in clusters:
+            full_cluster = []
+            for seq_id in cluster:
+                full_cluster += filter_map[seq_id]
+            results.append(full_cluster)
+        return results
+        
 
 class CdHitOtuPicker(OtuPicker):
     
@@ -85,7 +132,8 @@ class CdHitOtuPicker(OtuPicker):
         _params.update(params)
         OtuPicker.__init__(self, _params)
     
-    def __call__ (self, seq_path, result_path=None, log_path=None, id_len=0):
+    def __call__ (self, seq_path, result_path=None, log_path=None, 
+        id_len=0, prefix_prefilter_length=None):
         """Returns dict mapping {otu_id:[seq_ids]} for each otu.
         
         Parameters:
@@ -94,17 +142,16 @@ class CdHitOtuPicker(OtuPicker):
         dumps the result to the desired path instead of returning it.
         log_path: path to log, which includes dump of params.
         id_len: if set, truncates ids to n chars (you don't want this!)
+        prefix_prefilter_length: prefilters the sequence collection so 
+         sequences whose first prefix_prefilter_length characters are 
+         identical will automatically be grouped into the same OTU [off by 
+         default, 100 is typically a good value if this filtering is 
+         desired] -- useful for large sequence collections, when cdhit doesn't
+         scale well
 
         """
         moltype = DNA
-        
-        # Load the seq path. Right now, cdhit_clusters_from_seqs
-        # doesn't support being passed a file path even though the 
-        # seqs do get written to a fasta file before being passed
-        # to cd-hit-est. We may want to change that in the future 
-        # to avoid the overhead of loading large sequence collections
-        # during this step. 
-        seqs = LoadSeqs(seq_path,moltype=moltype,aligned=False)
+        log_lines = []
         
         # create the params dict to pass to cd-hit-est -- IS THERE A
         # BETTER WAY TO MAKE self.Params INTO THE params DICT TO PASS
@@ -114,11 +161,36 @@ class CdHitOtuPicker(OtuPicker):
         del cd_hit_params['Algorithm']
         cd_hit_params['-d'] = id_len  #turn off id truncation
         
+
+        if prefix_prefilter_length != None:
+            log_lines.append(\
+             'Prefix-based prefiltering, prefix length: %d' \
+             % prefix_prefilter_length )
+            seqs, filter_map = self._prefilter_exact_prefixes(\
+             MinimalFastaParser(open(seq_path)),prefix_prefilter_length)
+            log_lines.append(\
+             'Prefix-based prefiltering, post-filter num seqs: %d' \
+             % len(seqs))
+        else:
+            log_lines.append('No prefix-based prefiltering.')
+            # Load the seq path. Right now, cdhit_clusters_from_seqs
+            # doesn't support being passed a file path even though the 
+            # seqs do get written to a fasta file before being passed
+            # to cd-hit-est. We may want to change that in the future 
+            # to avoid the overhead of loading large sequence collections
+            # during this step. 
+            seqs = LoadSeqs(seq_path,moltype=moltype,aligned=False)
+        
+        
         # Get the clusters by running cd-hit-est against the
         # sequence collection
         clusters = cdhit_clusters_from_seqs(\
          seqs=seqs,moltype=moltype,params=cd_hit_params)
-
+        
+        if prefix_prefilter_length != None:
+            clusters = self._map_filtered_clusters_to_full_clusters(\
+             clusters,filter_map)
+        
         if result_path:
             # if the user provided a result_path, write the 
             # results to file with one tab-separated line per 
@@ -128,24 +200,26 @@ class CdHitOtuPicker(OtuPicker):
                 of.write('%s\t%s\n' % (i,'\t'.join(cluster)))
             of.close()
             result = None
-            log_str = 'Result path: %s' % result_path
+            log_lines.append('Result path: %s' % result_path)
         else:
             # if the user did not provide a result_path, store
                 # the clusters in a dict of {otu_id:[seq_ids]}, where
             # otu_id is arbitrary
             result = dict(enumerate(clusters))
-            log_str = 'Result path: None, returned as dict.'
+            log_lines.append('Result path: None, returned as dict.')
  
         if log_path:
             # if the user provided a log file path, log the run
             log_file = open(log_path,'w')
-            log_file.write(str(self))
-            log_file.write('\n')
-            log_file.write('%s\n' % log_str)
+            log_lines = [str(self)] + log_lines
+            log_file.write('\n'.join(log_lines))
     
         # return the result (note this is None if the data was
         # written to file)
         return result
+
+
+
 
 
 class DoturOtuPicker(OtuPicker):
@@ -181,7 +255,8 @@ class DoturOtuPicker(OtuPicker):
 
         OtuPicker.__init__(self, params)
 
-    def __call__(self, seq_path, result_path=None, log_path=None):
+    def __call__(self, seq_path, result_path=None, log_path=None,\
+        prefix_prefilter_length=None):
         """Returns dict mapping {otu_id:[seq_ids]} for each otu.
         
         Parameters:
@@ -190,6 +265,9 @@ class DoturOtuPicker(OtuPicker):
         dumps the result to the desired path instead of returning it.
         log_path: path to log, which includes dump of params.
         """
+        if prefix_prefilter_length != None:
+            raise NotImplementedError,\
+             "DOTUR otu-picking does not currently support prefix-based pre-filtering."
         moltype = self.Params['Moltype']
         distance_function = self.Params['Distance Function']
         similarity_threshold = self.Params['Similarity']
@@ -277,11 +355,6 @@ def parse_command_line_parameters():
     version = 'Version: %prog ' +  __version__
     parser = OptionParser(usage=usage, version=version)
 
-    # 
-    # parser.add_option('-v','--verbose',action='store_true',\
-    #     dest='verbose',help='Print information during execution -- '+\
-    #     'useful for debugging [default: %default]')
-
     parser.add_option('-m','--otu_picking_method',action='store',\
           type='string',dest='otu_picking_method',help='Method for picking'+\
           ' OTUs [default: %default]')
@@ -301,6 +374,13 @@ def parse_command_line_parameters():
     parser.add_option('-s','--similarity',action='store',\
           type='float',dest='similarity',help='Sequence similarity '+\
           'threshold [default: %default]')
+    
+    parser.add_option('-n','--prefix_prefilter_length',action='store',\
+          type=int,help='prefilter data so seqs with identical first '+\
+          'prefix_prefilter_length are automatically grouped into a '+\
+          'single OTU; useful for large sequence collections where OTU '+\
+          'picking doesn\'t scale well '+\
+          '[default: %default; 100 is a good value]',default=None)
 
     parser.set_defaults(verbose=False,otu_picking_method='cdhit',\
         similarity=0.96)
@@ -323,7 +403,7 @@ otu_picking_method_constructors = dict([\
 
 if __name__ == "__main__":
     opts,args = parse_command_line_parameters()
-    #verbose = opts.verbose
+    prefix_prefilter_length = opts.prefix_prefilter_length
  
     otu_picker_constructor =\
      otu_picking_method_constructors[opts.otu_picking_method]
@@ -339,6 +419,7 @@ if __name__ == "__main__":
     
     otu_picker = otu_picker_constructor(params)
     otu_picker(input_seqs_filepath,\
-     result_path=result_path,log_path=log_path)
+     result_path=result_path,log_path=log_path,\
+     prefix_prefilter_length=prefix_prefilter_length)
     
     
