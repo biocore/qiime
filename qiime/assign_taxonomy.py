@@ -22,6 +22,7 @@ import re
 from os import system, remove
 from glob import glob
 from itertools import count
+from string import strip
 from shutil import copy as copy_file
 from optparse import OptionParser
 from tempfile import NamedTemporaryFile
@@ -74,7 +75,7 @@ class TaxonAssigner(FunctionWithParams):
         for line in f:
             line = line.strip()
             if line:
-                identifier, taxonomy = line.split('\t')
+                identifier, taxonomy = map(strip, line.split('\t'))
                 result[identifier] = taxonomy
         return result 
 
@@ -355,7 +356,7 @@ class RdpTaxonAssigner(TaxonAssigner):
         """
         tree = RdpTaxonAssigner.RdpTree()
         for line in id_to_taxonomy_file:
-            id, taxonomy = line.split('\t')
+            id, taxonomy = map(strip, line.split('\t'))
             lineage = RdpTaxonAssigner._parse_lineage(taxonomy)
             tree.insert_lineage(lineage)
         return tree
