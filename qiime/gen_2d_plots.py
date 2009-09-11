@@ -41,6 +41,7 @@ from numpy import array
 from optparse import OptionParser
 from time import strftime
 import shutil
+import os
 from random import choice, randrange
 from gen_3d_plots import combine_map_label_cols,get_map,get_coord,\
                          process_colorby,create_dir
@@ -349,6 +350,8 @@ def _make_cmd_parser():
         help='map header to color by')
     parser.add_option('-x', '--dir-prefix', dest='dir_path',\
         help='directory prefix for all analyses')
+    parser.add_option('-q', '--qiime-dir', dest='qiime_dir',\
+        help='qiime directory where python script is located')
     options, args = parser.parse_args()
     return options
 
@@ -357,9 +360,10 @@ def _process_prefs(options):
     data = {}
 
     dir_path = create_dir(options.dir_path)
-    
+
     js_dir_path = create_dir(dir_path+'js/')
-    shutil.copyfile('./js/overlib.js', js_dir_path+'overlib.js')
+    shutil.copyfile(options.qiime_dir+'/js/overlib.js', js_dir_path+'overlib.js')
+   
     
     #Open and get coord data
     data['coord'] = get_coord(options, data)
