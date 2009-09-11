@@ -313,7 +313,7 @@ def combine_map_label_cols(combinecolorby,mapping):
     return mapping
 
 def create_dir(dir_path):
-    """Creates directory where data is stored.  If directory is not supplied in \
+    """Creates directory where data is stored.  If directory is not supplied in\
        the command line, a random folder is generated"""
        
     alphabet = "ABCDEFGHIJKLMNOPQRSTUZWXYZ"
@@ -323,7 +323,6 @@ def create_dir(dir_path):
     if dir_path==None or dir_path=='':
         random_dir_name=''.join([choice(alphabet) for i in range(10)])
         dir_path = './'+strftime("%Y_%m_%d_%H_%M_%S")+random_dir_name+'/'
-
 
     if dir_path:
         try:
@@ -456,6 +455,8 @@ def _make_cmd_parser():
         help='map header to color by')
     parser.add_option('-p', '--prefs', dest='prefs_path',\
         help='prefs for detailed color settings')
+    parser.add_option('-q', '--qiime-dir', dest='qiime_dir',\
+        help='qiime directory where python script is located')
     options, args = parser.parse_args()
     return options
 
@@ -474,11 +475,11 @@ def _process_prefs(options):
     
     data_file_dir_path=create_dir(data_file_dir_path)
     js_dir_path = create_dir(dir_path+'js/')
-    shutil.copyfile('./js/overlib.js', js_dir_path+'overlib.js')
+    shutil.copyfile(options.qiime_dir+'/js/overlib.js', js_dir_path+'overlib.js')
     
     data_file_dir_path=create_dir(data_file_dir_path)
     js_dir_path = create_dir(dir_path+'jar/')
-    shutil.copyfile('./jar/king.jar', js_dir_path+'king.jar')
+    shutil.copyfile(options.qiime_dir+'/jar/king.jar', js_dir_path+'king.jar')
     
     #Open and get coord data
     data['coord'] = get_coord(options, data)
