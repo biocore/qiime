@@ -223,9 +223,9 @@ Default is to write to stdout for non-batch file processing"""
     parser.add_option('-o', '--out_path', dest='output_path', default=None,
         help='output path')
     parser.add_option('-i', '--in_path', dest='input_path', default=None,
-        help='output path')
+        help='input path')
     parser.add_option('-m', '--metrics', dest='metrics', default=None,
-        help='output path')    
+        help='metrics to use, comma delimited')    
 
     options, args = parser.parse_args()
     if (len(args) != 0 and options.show_metrics != True) :
