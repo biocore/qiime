@@ -31,7 +31,7 @@ def split_delim_f(delim):
         return (k,v)
     return inner_f
 
-def DemarkedParser(lines, delim, recordtype=dict, start='BEGIN', end='END'):
+def DemarkedParser(lines, delim='=', recordtype=dict, start='BEGIN', end='END'):
     """Yields successive recordtype objects from lines
 
     Records start with start and end with end.
