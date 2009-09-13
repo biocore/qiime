@@ -27,7 +27,7 @@ def split_fasta(infile, seqs_per_file, out_prefix):
     
     for seq_id,seq in MinimalFastaParser(infile):
         if seq_counter == 0:
-            current_out_fp = out_prefix +'.'+str(len(out_files))
+            current_out_fp = out_prefix +'.'+str(len(out_files))+'.fasta'
             current_out_file = open(current_out_fp, 'w')
             out_files.append(current_out_fp)
         current_out_file.write('>%s\n%s\n' % (seq_id, seq))

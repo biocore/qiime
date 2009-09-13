@@ -183,7 +183,7 @@ class BlastTaxonAssigner(TaxonAssigner):
                 hits[query_id] = \
                   (id_to_taxonomy_map.get(hit_id, None),None)
             except TypeError:
-                hits[query_id] = None
+                hits[query_id] = ('No blast hit', None)
 
         return hits
         

@@ -79,7 +79,7 @@ class BlastTaxonAssignerTests(TestCase):
          's3':('Archaea,Crenarchaeota,uncultured,uncultured',None),\
          's4':('Archaea,Euryarchaeota,Methanobacteriales,Methanobacterium',None),\
          's5':('Archaea,Crenarchaeota,uncultured,uncultured',None),\
-         's6':None}
+         's6':('No blast hit', None)}
         
     def tearDown(self):
         remove_files(set(self._paths_to_clean_up))
@@ -128,7 +128,7 @@ class BlastTaxonAssignerTests(TestCase):
           'Archaea,Euryarchaeota,Methanomicrobiales,Methanomicrobium et rel.',\
           None),
          's3':("Archaea,Euryarchaeota,Methanobacteriales,Methanobacterium",None),\
-         's4':None}
+         's4':('No blast hit', None)}
         actual = p._map_ids_to_taxonomy(hits,id_to_taxonomy_map)
         self.assertEqual(actual,expected)
         
