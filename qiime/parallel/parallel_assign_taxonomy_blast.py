@@ -15,12 +15,14 @@ from qiime.parallel.util import split_fasta, get_random_job_prefix, write_jobs_f
     submit_jobs, compute_seqs_per_file, build_filepaths_from_filepaths
 
 def get_commands(python_exe_fp,assign_taxonomy_fp,id_to_taxonomy_fp,reference_seqs_fp,\
-    blastmat_path,fasta_fps,out_fps,log_fps,command_prefix=None,command_suffix=None):
+    blastmat_path,fasta_fps,out_fps,log_fps,working_dir,\
+    command_prefix=None,command_suffix=None):
     """Generate BlastTaxonAssiger classifier commands to be submitted to cluster
     """
     
     command_prefix = command_prefix or\
-     '/bin/bash; export BLASTMAT=%s;' % blastmat_path
+     '/bin/bash; cd %s; export BLASTMAT=%s;' \
+       % (working_dir,blastmat_path)
     command_suffix = command_suffix or\
      '; exit'
     
@@ -88,6 +90,12 @@ def parse_command_line_parameters():
             ' [default: %default]',\
             default='/home/caporaso/bin/cluster_jobs.py')
 
+    parser.add_option('-w','--working_dir',action='store',\
+            type='string',help='directory to do work in' +\
+            ' [default: %default]',\
+            default='/home/caporaso/quicksand')
+
+
     parser.add_option('-r','--reference_seqs_fp',action='store',\
            type='string',help='full path to reference sequence filepath '+\
            '[default: %default]',\
@@ -106,7 +114,7 @@ def parse_command_line_parameters():
     parser.add_option('-b','--blastmat_fp',action='store',\
            type='string',help='full path to '+\
            'blastmat file [default: %default]',\
-           default='/quicksand/rob/data')
+           default='/home/caporaso/blast-2.2.16/data/')
                              
     opts,args = parser.parse_args()
     
@@ -132,6 +140,7 @@ if __name__ == "__main__":
     reference_seqs_fp = opts.reference_seqs_fp
     id_to_taxonomy_fp = opts.id_to_taxonomy_fp
     blastmat_fp = opts.blastmat_fp
+    working_dir = opts.working_dir
     
     # split the input filepath into directory and filename
     input_dir, input_fasta_fn = split(input_fasta_fp)
@@ -146,7 +155,7 @@ if __name__ == "__main__":
      
     # split the fasta files and get the list of resulting files
     tmp_fasta_fps =\
-      split_fasta(open(input_fasta_fp),num_seqs_per_file,job_prefix)
+      split_fasta(open(input_fasta_fp),num_seqs_per_file,job_prefix,working_dir)
      
     # build the list of output filepaths from the set of input files
     # by appending '.tax_assignments.txt' to the end of each
@@ -161,7 +170,7 @@ if __name__ == "__main__":
     # generate the list of commands to be pushed out to nodes
     commands = \
      get_commands(python_exe_fp,assign_taxonomy_fp,id_to_taxonomy_fp,reference_seqs_fp,\
-     blastmat_fp,tmp_fasta_fps,out_fps,log_fps)
+     blastmat_fp,tmp_fasta_fps,out_fps,log_fps,working_dir)
      
     # write the commands to the 'jobs files'
     jobs_fp = write_jobs_file(commands,job_prefix=job_prefix)

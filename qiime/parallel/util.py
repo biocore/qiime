@@ -11,23 +11,28 @@ RANDOM_JOB_PREFIX_CHARS = "abcdefghigklmnopqrstuvwxyz"
 RANDOM_JOB_PREFIX_CHARS += RANDOM_JOB_PREFIX_CHARS.upper()
 RANDOM_JOB_PREFIX_CHARS += "0123456790"
 
-def split_fasta(infile, seqs_per_file, out_prefix):
+def split_fasta(infile, seqs_per_file, outfile_prefix, working_dir=''):
     """ Split infile into files with seqs_per_file sequences in each
     
         infile: list of fasta lines or open file object
         seqs_per_file: the number of sequences to include in each file
-        out_prefix: string used to create output filepath - output filepaths
-         are <out_prefix>.<i> where i runs from 0 to number of output files
+        out_fileprefix: string used to create output filepath - output filepaths
+         are <out_prefix>.<i>.fasta where i runs from 0 to number of output files
+        working_dir: directory to prepend to temp filepaths (defaults to 
+         empty string -- files written to cwd)
          
         List of output filepaths is returned.
     
     """
     seq_counter = 0
     out_files = []
+    if working_dir and not working_dir.endswith('/'):
+        working_dir += '/'
     
     for seq_id,seq in MinimalFastaParser(infile):
         if seq_counter == 0:
-            current_out_fp = out_prefix +'.'+str(len(out_files))+'.fasta'
+            current_out_fp = '%s%s.%d.fasta' \
+              % (working_dir,outfile_prefix,len(out_files))
             current_out_file = open(current_out_fp, 'w')
             out_files.append(current_out_fp)
         current_out_file.write('>%s\n%s\n' % (seq_id, seq))

@@ -152,7 +152,7 @@ class UtilTests(TestCase):
             actual_seqs += list(open(fp))
         remove_files(actual)
         
-        expected = ['%s.%d' % (filename_prefix,i) for i in range(3)]
+        expected = ['%s.%d.fasta' % (filename_prefix,i) for i in range(3)]
         
         self.assertEqual(actual,expected)
         self.assertEqual(\
@@ -174,7 +174,7 @@ class UtilTests(TestCase):
             actual_seqs += list(open(fp))
         remove_files(actual)
         
-        expected = ['%s.%d' % (filename_prefix,i) for i in range(2)]
+        expected = ['%s.%d.fasta' % (filename_prefix,i) for i in range(2)]
         # list of file paths is as expected
         self.assertEqual(actual,expected)
         # building seq collections from infile and the split files result in
