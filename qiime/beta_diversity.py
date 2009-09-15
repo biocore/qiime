@@ -219,7 +219,7 @@ def multiple_file_beta(options, args):
     write to file, each command is independant
 
     """
-
+    metric = options.metric
     beta_script = qiime.beta_diversity.__file__
     file_names = os.listdir(options.input_path)
     if not os.path.exists(options.output_path):
