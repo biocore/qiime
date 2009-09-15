@@ -474,10 +474,6 @@ def _process_prefs(options):
     data_file_dir_path = dir_path+data_file_path
     
     data_file_dir_path=create_dir(data_file_dir_path)
-    js_dir_path = create_dir(dir_path+'js/')
-    shutil.copyfile(options.qiime_dir+'/js/overlib.js', js_dir_path+'overlib.js')
-    
-    data_file_dir_path=create_dir(data_file_dir_path)
     js_dir_path = create_dir(dir_path+'jar/')
     shutil.copyfile(options.qiime_dir+'/jar/king.jar', js_dir_path+'king.jar')
     
