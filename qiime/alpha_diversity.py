@@ -332,7 +332,8 @@ def multiple_file_alpha(options, args):
     if not os.path.exists(options.output_path):
         raise ValueError("output path does not appear to exist")
 
-    for metric in options.metrics:
+    metrics_list = options.metrics.split(',')
+    for metric in metrics_list:
         try:
             metric_f = get_nonphylogenetic_metric(metric)
         except AttributeError:
