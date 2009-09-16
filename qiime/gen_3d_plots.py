@@ -403,8 +403,11 @@ def linear_gradient(start, end, nbins):
     end = array(end)
     result = []
     n_minus_1 = float(nbins-1)
+    if n_minus_1==0:
+        n_minus_1=0.000000000000000000000001
     for i in range(nbins):
         result.append(list((start*(n_minus_1-i)/n_minus_1)+(end*(i/n_minus_1))))
+
     return result
 
 def _do_3d_plots(prefs, data, dir_path='',data_file_path='', filename=None, \
