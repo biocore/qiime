@@ -352,8 +352,6 @@ def _make_cmd_parser():
         help='map header to color by')
     parser.add_option('-x', '--dir-prefix', dest='dir_path',\
         help='directory prefix for all analyses')
-    parser.add_option('-q', '--qiime-dir', dest='qiime_dir',\
-        help='qiime directory where python script is located')
     options, args = parser.parse_args()
     return options
 
