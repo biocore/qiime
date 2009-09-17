@@ -32,6 +32,7 @@ Usage: python gen_2d_plots.py -c raw_pca_data.txt -m input_map.txt
 """
 
 import matplotlib,re
+
 matplotlib.use('Agg')
 from matplotlib.pylab import *
 from commands import getoutput
@@ -42,6 +43,7 @@ from optparse import OptionParser
 from time import strftime
 import shutil
 import os
+
 from random import choice, randrange
 from gen_3d_plots import combine_map_label_cols,get_map,get_coord,\
                          process_colorby,create_dir
@@ -358,13 +360,7 @@ def _make_cmd_parser():
 def _process_prefs(options):
     """opens files as necessary based on prefs"""
     data = {}
-
-    dir_path = create_dir(options.dir_path)
-
-    js_dir_path = create_dir(dir_path+'js/')
-    shutil.copyfile(options.qiime_dir+'/js/overlib.js', js_dir_path+'overlib.js')
-   
-    
+        
     #Open and get coord data
     data['coord'] = get_coord(options, data)
 
@@ -386,9 +382,19 @@ def _process_prefs(options):
         prefs['Sample']={}
         prefs['Sample']['column']='#SampleID'
     
-    
     filepath=options.coord_fname
     filename=filepath.strip().split('/')[-1]
+
+    file_path=__file__.split('/')
+    qiime_dir='';
+    for i in range(len(file_path)-1):
+        qiime_dir+=file_path[i]+'/'
+    qiime_dir
+    
+    dir_path = create_dir(options.dir_path)
+
+    js_dir_path = create_dir(dir_path+'js/')
+    shutil.copyfile(qiime_dir+'/js/overlib.js', js_dir_path+'overlib.js')
 
     action_str = '_do_2d_plots'
     try:

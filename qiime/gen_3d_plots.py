@@ -39,6 +39,7 @@ import re
 from time import strftime
 import shutil
 
+
 def _natsort_key(item):
     """Provides normalized version of item for sorting with digits.
 
@@ -458,28 +459,13 @@ def _make_cmd_parser():
         help='map header to color by')
     parser.add_option('-p', '--prefs', dest='prefs_path',\
         help='prefs for detailed color settings')
-    parser.add_option('-q', '--qiime-dir', dest='qiime_dir',\
-        help='qiime directory where python script is located')
     options, args = parser.parse_args()
     return options
 
 def _process_prefs(options):
     """Opens files as necessary based on prefs"""
     data = {}
-    dir_path = create_dir(options.dir_path)    
 
-    alphabet = "ABCDEFGHIJKLMNOPQRSTUZWXYZ"
-    alphabet += alphabet.lower()
-    alphabet += "01234567890"
-    
-    data_file_path=''.join([choice(alphabet) for i in range(10)])
-    data_file_path=strftime("%Y_%m_%d_%H_%M_%S")+data_file_path
-    data_file_dir_path = dir_path+data_file_path
-    
-    data_file_dir_path=create_dir(data_file_dir_path)
-    js_dir_path = create_dir(dir_path+'jar/')
-    shutil.copyfile(options.qiime_dir+'/jar/king.jar', js_dir_path+'king.jar')
-    
     #Open and get coord data
     data['coord'] = get_coord(options, data)
     
@@ -501,6 +487,26 @@ def _process_prefs(options):
         prefs,data=process_colorby(options.colorby,data)
     else:
         prefs={'Sample':{'column':'#SampleID'}}
+
+    dir_path = create_dir(options.dir_path)    
+
+    alphabet = "ABCDEFGHIJKLMNOPQRSTUZWXYZ"
+    alphabet += alphabet.lower()
+    alphabet += "01234567890"
+
+    file_path=__file__.split('/')
+    qiime_dir='';
+    for i in range(len(file_path)-1):
+        qiime_dir+=file_path[i]+'/'
+    qiime_dir
+
+    data_file_path=''.join([choice(alphabet) for i in range(10)])
+    data_file_path=strftime("%Y_%m_%d_%H_%M_%S")+data_file_path
+    data_file_dir_path = dir_path+data_file_path
+
+    data_file_dir_path=create_dir(data_file_dir_path)
+    js_dir_path = create_dir(dir_path+'jar/')
+    shutil.copyfile(qiime_dir+'/jar/king.jar', js_dir_path+'king.jar')
 
     filepath=options.coord_fname
     filename=filepath.strip().split('/')[-1]
