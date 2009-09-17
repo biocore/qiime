@@ -18,12 +18,13 @@ this takes an otu table and generates a series of subsampled (without
 replacement) otu tables.
 """
 from optparse import OptionParser
-from qiime.parse import parse_otus, filter_otus_by_lineage
+from qiime.parse import parse_otus
 from qiime.format import format_otu_table
 from qiime.util import FunctionWithParams
 import os.path
 import os
 import numpy
+from cogent.maths.stats.rarefaction import subsample
 
 
 class RarefactionMaker(FunctionWithParams):
@@ -38,17 +39,15 @@ class RarefactionMaker(FunctionWithParams):
         self.max_num_taxa = (self.otu_table.sum(1)).max()
 
 
-    def rarefy_to_files(self, output_dir, include_full=False):
+    def rarefy_to_files(self, output_dir, small_included=False, include_full=False):
         """ computes rarefied otu tables and writes them, one at a time
         this prevents large memory usage"""
         self.output_dir = output_dir
-
         for depth in self.rare_depths:
             for rep in range(self.num_reps):
-                sub_sample_ids, sub_otu_ids, sub_otu_table, sub_lineages = \
-                filter_otus_by_lineage(self.sample_names, self.taxon_names,
-                    self.otu_table, lineages=None, wanted_lineage=None,
-                    max_seqs_per_sample=depth, min_seqs_per_sample=depth)
+                sub_sample_ids, sub_otu_ids, sub_otu_table = \
+                get_rare_data(self.sample_names, self.taxon_names,
+                    self.otu_table, depth, small_included)
                 self._write_rarefaction(depth, rep, sub_sample_ids, sub_otu_ids,\
                     sub_otu_table)
 
@@ -57,7 +56,7 @@ class RarefactionMaker(FunctionWithParams):
                 self.taxon_names,\
                 self.otu_table)
     
-    def rarefy_to_list(self, include_full=False):
+    def rarefy_to_list(self, small_included=False, include_full=False):
         """ computes rarefied otu tables and returns a list, each element
         is (depth, rep, sample_ids, taxon_ids, otu_table)
         depth is string "full" for one instance
@@ -65,10 +64,9 @@ class RarefactionMaker(FunctionWithParams):
         res = []
         for depth in self.rare_depths:
             for rep in range(self.num_reps):
-                sub_sample_ids, sub_otu_ids, sub_otu_table, sub_lineages = \
-                filter_otus_by_lineage(self.sample_names, self.taxon_names,
-                    self.otu_table, lineages=None, wanted_lineage=None,
-                    max_seqs_per_sample=depth, min_seqs_per_sample=depth)
+                sub_sample_ids, sub_otu_ids, sub_otu_table = \
+                get_rare_data(self.sample_names, self.taxon_names,
+                    self.otu_table, depth, small_included)
                 res.append([depth, rep, sub_sample_ids, sub_otu_ids, \
                     sub_otu_table])
 
@@ -89,16 +87,36 @@ class RarefactionMaker(FunctionWithParams):
             sub_otu_table, None, comment=fname))
         f.close()
 
+def get_rare_data(sample_ids, otu_ids, otu_table, \
+	seqs_per_sample, include_small_samples=False):
+    """Filter OTU table to keep only desired sample sizes.
+    
+    include_small_sampes=False => 
+    sample has 100 seqs, rarefy """
+    res_otu_table = otu_table.copy()
+    res_sample_ids = sample_ids
+    #figure out which samples will be dropped because too small
+    if not include_small_samples:
+        big_enough_samples = (otu_table.sum(0)>=seqs_per_sample).nonzero()
+        res_otu_table = otu_table[:,big_enough_samples[0]]
+        res_sample_ids = map(sample_ids.__getitem__, big_enough_samples[0])
+    #figure out which samples will be reduced because too big
+    too_big_samples = (otu_table.sum(0)>seqs_per_sample).nonzero()[0]
+    if too_big_samples.shape[0]:    #means that there were some
+        for i in too_big_samples:
+            res_otu_table[:,i] = subsample(otu_table[:,i].ravel(), seqs_per_sample)
+    return res_sample_ids, otu_ids, res_otu_table
 
 def make_cmd_parser():
     """returns command-line options"""
     usage = '%prog input_filepath [options]\n' +\
-    'use %prog -h for help.\n\n'+\
+    'use %prog -h for help.'
+    description=\
         'input_filepath is an otu table, output will be a '+\
         'series of otu table files, named e.g.: rarefaction_4_2.txt '+\
         '(4 seqs per sample, iteration 2 (3rd such file written)\n'+\
         'example: %prog otu_table.txt -m 10 -x 100 -s 10 -n 2'
-    parser = OptionParser(usage=usage)
+    parser = OptionParser(usage=usage, description=description)
     parser.add_option('-d', '--dest', dest='output_dir', 
         default=os.getcwd(),
         help='write output rarefied otu tables here (directory) '+\
@@ -111,6 +129,10 @@ def make_cmd_parser():
         help='levels: min, min+step... for level <= max, default 1')
     parser.add_option('-n', '--num-reps', dest='num_reps', default=1, type=int,
         help='num reps at each seqs/sample level, default 1')
+    parser.add_option('--small_included', dest='small_included', default=False, 
+    	action="store_true",
+        help="""samples containing fewer seqs than the rarefaction
+level are included in the output but not rarefied""")
     options, args = parser.parse_args()
     if (len(args) != 1) :
         parser.error("incorrect number of arguments")
@@ -123,4 +145,4 @@ if __name__ == '__main__':
     otu_path = args[0]
     maker = RarefactionMaker(otu_path, options.min, options.max,
         options.step, options.num_reps)
-    maker.rarefy_to_files(options.output_dir)
+    maker.rarefy_to_files(options.output_dir, options.small_included)
