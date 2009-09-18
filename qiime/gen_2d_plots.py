@@ -384,10 +384,12 @@ def _process_prefs(options):
     filename=filepath.strip().split('/')[-1]
 
     file_path=__file__.split('/')
-    qiime_dir='';
-    for i in range(len(file_path)-1):
-        qiime_dir+=file_path[i]+'/'
-    qiime_dir
+    if len(file_path)==1:
+        qiime_dir='./'
+    else:
+        qiime_dir='';
+        for i in range(len(file_path)-1):
+            qiime_dir+=file_path[i]+'/'
     
     dir_path = create_dir(options.dir_path)
 

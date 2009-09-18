@@ -498,10 +498,12 @@ def _process_prefs(options):
     alphabet += "01234567890"
 
     file_path=__file__.split('/')
-    qiime_dir='';
-    for i in range(len(file_path)-1):
-        qiime_dir+=file_path[i]+'/'
-    qiime_dir
+    if len(file_path)==1:
+        qiime_dir='./'
+    else:
+        qiime_dir='';
+        for i in range(len(file_path)-1):
+            qiime_dir+=file_path[i]+'/'
 
     data_file_path=''.join([choice(alphabet) for i in range(10)])
     data_file_path=strftime("%Y_%m_%d_%H_%M_%S")+data_file_path
