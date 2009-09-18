@@ -96,15 +96,15 @@ def get_rare_data(sample_ids, otu_ids, otu_table, \
     res_otu_table = otu_table.copy()
     res_sample_ids = sample_ids
     #figure out which samples will be dropped because too small
-    if not include_small_samples:
-        big_enough_samples = (otu_table.sum(0)>=seqs_per_sample).nonzero()
-        res_otu_table = otu_table[:,big_enough_samples[0]]
-        res_sample_ids = map(sample_ids.__getitem__, big_enough_samples[0])
-    #figure out which samples will be reduced because too big
     too_big_samples = (otu_table.sum(0)>seqs_per_sample).nonzero()[0]
     if too_big_samples.shape[0]:    #means that there were some
         for i in too_big_samples:
             res_otu_table[:,i] = subsample(otu_table[:,i].ravel(), seqs_per_sample)
+    if not include_small_samples:
+        big_enough_samples = (res_otu_table.sum(0)>=seqs_per_sample).nonzero()
+        res_otu_table = res_otu_table[:,big_enough_samples[0]]
+        res_sample_ids = map(sample_ids.__getitem__, big_enough_samples[0])
+    #figure out which samples will be reduced because too big
     return res_sample_ids, otu_ids, res_otu_table
 
 def make_cmd_parser():
