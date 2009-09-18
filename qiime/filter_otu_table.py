@@ -36,12 +36,21 @@ def make_cmd_parser():
         help='otu file name')
     return parser.parse_args()
 
+def strip_quotes(s):
+    """splits leading/trailing quotes from string s"""
+    if not s or len(s) < 2:
+        return s
+    if s[0] == s[-1]:
+        if s[0] in '"\'':
+            s = s[1:-1]
+    return s
+
 def split_tax(tax):
     """splits tax string on semicolon and comma"""
     fields = tax.split(';')
     if len(fields) == 1:
         fields = fields[0].split(',')
-    return fields
+    return map(strip_quotes, fields)
     
 
 if __name__ == '__main__':
