@@ -488,7 +488,10 @@ def _process_prefs(options):
     else:
         prefs={'Sample':{'column':'#SampleID'}}
 
-    dir_path = create_dir(options.dir_path)    
+    dir_path = options.dir_path
+    if dir_path and not dir_path.endswith('/'):
+        dir_path = dir_path + '/'
+    dir_path = create_dir(dir_path)    
 
     alphabet = "ABCDEFGHIJKLMNOPQRSTUZWXYZ"
     alphabet += alphabet.lower()
