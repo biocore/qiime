@@ -72,7 +72,7 @@ if __name__ == '__main__':
                 taxa = None
             except ValueError:
                 vals = array(map(int, fields[1:-1]), dtype=int)
-                taxa = set(map(strip, fields[-1].split(';')))
+                taxa = set(map(strip, split_tax(fields[-1])))
             if vals.sum() >= min_otu_count and \
                 (vals > 0).sum() > min_otu_samples:
                 if not taxa:
