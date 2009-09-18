@@ -36,17 +36,27 @@ def make_cmd_parser():
         help='otu file name')
     return parser.parse_args()
 
+def split_tax(tax):
+    """splits tax string on semicolon and comma"""
+    fields = tax.split(';')
+    if len(fields) == 1:
+        fields = fields[0].split(',')
+    return fields
+    
+
 if __name__ == '__main__':
     from sys import argv, stdout
     opts, args = make_cmd_parser()
     min_otu_count = opts.min_count
     min_otu_samples = opts.min_samples
     if opts.include_taxonomy:
-        included_taxa = set(map(strip, opts.include_taxonomy.split(';')))
+        tax = opts.include_taxonomy.split(';')
+        if len(tax) == 1:
+            included_taxa = set(map(strip, split_tax(opts.include_taxonomy)))
     else:
         included_taxa = set()
     if opts.exclude_taxonomy:
-        excluded_taxa = set(map(strip, opts.exclude_taxonomy.split(';')))
+        excluded_taxa = set(map(strip, split_tax(opts.exclude_taxonomy)))
     else:
         excluded_taxa=set()
     
