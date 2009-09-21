@@ -254,7 +254,7 @@ def compose_logfile_lines(start_time,db_format_time,blast_time,option_lines,\
     log_lines.append("Query hits from BLAST: %i" % (len(hit_ids)+len(removed_hit_ids)))
     log_lines.append("Query hits from BLAST lacking minimal percent alignment: %i" % len(removed_hit_ids))
     log_lines.append("Final hits: %i" % len(hit_ids))
-    log_lines.append("Ouput screened sequences: %i" % len(included_ids))
+    log_lines.append("Output screened sequences: %i" % len(included_ids))
     
     log_lines.append(FORMAT_BAR)
     log_lines.append("|                       Output                             |")
@@ -432,7 +432,7 @@ def main(options):
     #Record included (screened) seqs
     all_ids = ids_from_fasta_lines(open(options.querydb).readlines()) 
     included_ids  = set(all_ids) - hit_ids
-    ids_to_seq_file(hit_ids,options.querydb,options.outputfilename,".screened")
+    ids_to_seq_file(included_ids,options.querydb,options.outputfilename,".screened")
    
     log_lines = compose_logfile_lines(start_time, db_format_time, blast_time,\
                                                    option_lines,formatdb_cmd,\
