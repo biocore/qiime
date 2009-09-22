@@ -33,7 +33,7 @@ class TopLevelTests(TestCase):
         self.data['coord']=[['Sample1','Sample2'],array([[-0.2,0.07],\
                             [-0.04,0.2]]),array([0.7,0.6]),\
                             array([25.00,30.00])]
-        self.data['map']=[['#SampleID','Day'],['Sample1','Day1'],['Sample2',\
+        self.data['map']=[['#Sample-ID','Day'],['Sample1','Day1'],['Sample2',\
                           'Day1']]
                           
         self.coord_header=["Sample1","Sample2","Sample3"]
@@ -52,7 +52,7 @@ class TopLevelTests(TestCase):
         self.prefs={}
         self.prefs['Sample']={}   
         self.prefs['Sample']['column']="Day"
-        self.mapping=[["SampleID","Day","Type"],["Sample1","Day1","Soil"],\
+        self.mapping=[["Sample-ID","Day","Type"],["Sample1","Day1","Soil"],\
                       ["Sample2","Day1","Soil"],["Sample3","Day1","Soil"]]
         self._paths_to_clean_up = []
         self._dir_to_clean_up = ''
@@ -105,7 +105,7 @@ class TopLevelTests(TestCase):
 mapping file"""
         self.combinecolorby=['Day','Type']
 
-        exp=[["SampleID","Day","Type","DayType"],\
+        exp=[["Sample-ID","Day","Type","DayType"],\
              ["Sample1","Day1","Soil","Day1Soil"],\
              ["Sample2","Day1","Soil","Day1Soil"],\
              ["Sample3","Day1","Soil","Day1Soil"]]
