@@ -162,6 +162,14 @@ def primer_exceeds_mismatches(primer_seq, all_primer_seqs, max_primer_mm):
             return True
     return False
 
+def seq_exceeds_homopolymers(curr_seq, max_len=6):
+    """Returns False if primer contains any homopolymer > allowed length"""
+    for base in 'ATGC':
+        curr = base * (max_len+1)
+        if curr in curr_seq:
+            return True
+    return False
+
 def check_barcode(curr_barcode, barcode_type, valid_map):
     """Return whether barcode is valid, and attempt at correction."""
     if curr_barcode in valid_map:
@@ -324,7 +332,7 @@ def preprocess(fasta_files, qual_files, mapping_file,
     barcode_type="golay_12",
     min_seq_len=200, max_seq_len=1000, min_qual_score=25, starting_ix=1,
     keep_primer=True, max_ambig=0, max_primer_mm=1, trim_seq_len=True,
-    dir_prefix='.', max_bc_errors=2):
+    dir_prefix='.', max_bc_errors=2, max_homopolymer=4):
     """
     Preprocess barcoded libraries, e.g. from 454.
 
@@ -456,6 +464,10 @@ def preprocess(fasta_files, qual_files, mapping_file,
         lambda id_, seq, qual: primer_exceeds_mismatches(
             seq[barcode_len:barcode_len+primer_seq_len], all_primer_seqs,
             max_primer_mm)))
+    filters.append(SeqQualBad(
+        'Max homopolymer run exceeds limit of %s' % max_homopolymer,
+        lambda id_, seq, qual: seq_exceeds_homopolymers(
+            seq[barcode_len+primer_seq_len:], max_homopolymer)))
 
     # Check seqs and write out
     fasta_out = open(dir_prefix + '/' + 'seqs.fna', 'w+')
@@ -504,6 +516,9 @@ def make_cmd_parser():
     parser.add_option('-a', '--max-ambig', dest='max_ambig',
         type=int, default=0,
         help='maximum number of ambiguous bases permitted')
+    parser.add_option('-H', '--max-homopolymer', dest='max_homopolymer',
+        type=int, default=6,
+        help='maximum length of homopolymer run permitted')
     parser.add_option('-M', '--max-primer-mismatch', dest='max_primer_mm',
         type=int, default=0,
         help='maximum number of primer mismatches permitted')
@@ -557,5 +572,6 @@ if __name__ == "__main__":
     trim_seq_len=options.trim_seq_len,
     dir_prefix=options.dir_prefix,
     max_bc_errors = options.max_bc_errors,
+    max_homopolymer = options.max_homopolymer,
     )
  

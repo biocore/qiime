@@ -17,7 +17,8 @@ from qiime.split_libraries import (
     generate_possibilities, get_infile, count_mismatches,
     ok_mm_primer, check_map, get_primer_seqs, fasta_ids, qual_score,
     qual_scores, count_ambig, split_seq, primer_exceeds_mismatches,
-    check_barcode, make_histograms, format_histograms, SeqQualBad
+    check_barcode, make_histograms, format_histograms, SeqQualBad,
+    seq_exceeds_homopolymers,
 )
 
 class TopLevelTests(TestCase):
@@ -124,6 +125,13 @@ z\tGG\t5\tsample z"""
             False)
         self.assertEqual(primer_exceeds_mismatches(mismatch_bad, primers, 2), 
             True)
+
+    def test_seq_exceeds_homopolymers(self):
+        """seq_exceeds_homopolymers returns True if too many homopolymers"""
+        self.assertEqual(seq_exceeds_homopolymers('AAACGA',3), False)
+        self.assertEqual(seq_exceeds_homopolymers('AAACGA',2), True)
+        self.assertEqual(seq_exceeds_homopolymers('AAACGA',1), True)
+        self.assertEqual(seq_exceeds_homopolymers('AAACGATTTT',3), True)
 
     def test_check_barcode(self):
         """check_barcode should return False if barcode ok, True otherwise"""
