@@ -231,14 +231,12 @@ def _process_prefs(options):
        for i in range(len(file_path)-1):
            qiime_dir+=file_path[i]+'/'
     
-    shutil.copyfile(qiime_dir+'/js_library/overlib.js', js_dir_path+'overlib.js')
-    shutil.copyfile(qiime_dir+'/js_library/otu_count_display.js', js_dir_path+\
+    shutil.copyfile(qiime_dir+'/js/overlib.js', js_dir_path+'overlib.js')
+    shutil.copyfile(qiime_dir+'/js/otu_count_display.js', js_dir_path+\
                     'otu_count_display.js')
-    shutil.copyfile(qiime_dir+'./js_library/jquery.js', js_dir_path+'jquery.js')
-    shutil.copyfile(qiime_dir+'./js_library/jquery.tablednd_0_5.js', js_dir_path+\
+    shutil.copyfile(qiime_dir+'./js/jquery.js', js_dir_path+'jquery.js')
+    shutil.copyfile(qiime_dir+'./js/jquery.tablednd_0_5.js', js_dir_path+\
                     'jquery.tablednd_0_5.js')
-
-    
     
     action_str = '_do_heatmap_plots'
     try:
