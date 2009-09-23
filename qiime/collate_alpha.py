@@ -33,10 +33,11 @@ from qiime.parse import (parse_otus, filter_otus_by_lineage, parse_matrix,
 from qiime.format import format_otu_table, format_matrix
 from qiime.util import FunctionWithParams
 
-def main(input_dir, output_dir):
+def main(input_dir, output_dir, example_filepath=None):
     file_names = os.listdir(input_dir)
-    example_file = os.path.join(input_dir, file_names[0])
-    f = open(example_file, 'r')
+    if example_filepath is None:
+        example_filepath = os.path.join(input_dir,file_names[0])
+    f = open(example_filepath, 'r')
     all_metrics, all_samples, example_data = parse_matrix(f)
     num_cols = len(all_samples)
     f.close()
@@ -70,7 +71,7 @@ def main(input_dir, output_dir):
             output_row.insert(2, iter)
             metric_file_data.append(output_row)
         # now have matrix where output_row is rarefaction analysis
-        metric_file_data = sorted(metric_file_data, key=operator.itemgetter(1,2))
+        metric_file_data = sorted(metric_file_data,key=operator.itemgetter(1,2))
         row_names = [row.pop(0) for row in metric_file_data]
         col_names = ['sequences per sample', 'iteration'] + all_samples
         out_str = format_matrix(numpy.array(metric_file_data), row_names, \
@@ -81,19 +82,25 @@ def main(input_dir, output_dir):
 
 def make_cmd_parser():
     """returns command-line options"""
-    usage = """python collate_alpha.py -i TEST/rare_chao1_PD -o TEST/rare_collated
+    usage = """python collate_alpha.py -i TEST/rare_chao1_PD -o TEST/rare_collated -e TEST/rare_chao1_PD/alpha_rarefaction_200_0.txt 
 this creates the files TEST/rare_collated/chao1.txt (and PD_whole_tree.txt)
-each is a matrix of rarefaction by sample."""
+each is a matrix of rarefaction by sample.
+
+"""
 
     parser = OptionParser(usage=usage)
     parser.add_option('-i', '--in_path', dest='input_path', default=None,
-        help='output path (a directory)')
+        help='input path (a directory)')
     parser.add_option('-o', '--out_path', dest='output_path', default=None,
         help='output path (a directory)')
+    parser.add_option('-e', '--example_path', dest='example_path', 
+        default=None,
+        help='example alpha_diversity analysis file, containing all samples'+\
+            ' and all metrics to be included in the collated result')
     options, args = parser.parse_args()
     return options, args
 
 
 if __name__ == '__main__':
     options,args = make_cmd_parser()
-    main(options.input_path, options.output_path)
+    main(options.input_path, options.output_path, options.example_path)
