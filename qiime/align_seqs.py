@@ -18,7 +18,7 @@ already in cogent.app.*, to which wrappers for e.g. PyNAST need to be
 added..
 """
 from os import remove
-from os.path import exists
+from os.path import exists, splitext
 from commands import getoutput
 from optparse import OptionParser
 from cogent import LoadSeqs, DNA
@@ -285,9 +285,11 @@ if __name__ == "__main__":
     opts,args = parse_command_line_parameters()
 
     input_seqs_filepath = args[0]
-   
-    result_path = opts.result_fp or\
-     input_seqs_filepath.replace('.fasta','_aligned.fasta')
+    
+    result_path = opts.result_fp 
+    if not result_path: # empty or None
+        fpath, ext = splitext(input_seqs_filepath) # fpath omits extension
+        result_path = fpath + "_aligned" + ext
      
     log_path = opts.log_fp
  
