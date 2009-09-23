@@ -202,7 +202,7 @@ def make_cmd_parser():
 use %prog -h for help.
 
 example: 
-python alpha_diversity.py -i TEST/otu_table.txt -m osd,PD_whole_tree -o TEST/alpha_osd_PD.txt -t TEST/repr_set.tre
+python alpha_diversity.py -i TEST/otu_table.txt -m observed_species,chao1,PD_whole_tree -o TEST/alpha_osd_PD.txt -t TEST/repr_set.tre
 
 or batch example: 
 python alpha_diversity.py -i TEST/alpha_rare -m chao1,PD_whole_tree -t TEST/repr_set.tre -o TEST/rare_chao1_PD
