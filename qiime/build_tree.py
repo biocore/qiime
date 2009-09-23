@@ -2,7 +2,7 @@
 
 __author__ = "YOUR NAME HERE"
 __copyright__ = "Copyright 2009, the PyCogent Project" #consider project name
-__credits__ = ["Rob Knight"] #remember to add yourself if you make changes
+__credits__ = ["Rob Knight", "Justin Kuczynski"] #remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "0.1"
 __maintainer__ = "YOUR NAME HERE"
@@ -18,6 +18,7 @@ already in cogent.app.*, to which wrappers for e.g. NAST need to be
 added..
 """
 from os import remove
+from os.path import splitext
 from commands import getoutput
 from optparse import OptionParser
 from cogent import LoadSeqs, DNA
@@ -118,13 +119,13 @@ def parse_command_line_parameters():
           
     parser.add_option('-o','--result_fp',action='store',\
           type='string',dest='result_fp',help='Path to store '+\
-          'result file [default: <input_sequences_filename>_aligned.fasta]')
+          'result file [default: <input_sequences_filename>.tre]')
           
     parser.add_option('-l','--log_fp',action='store',\
           type='string',dest='log_fp',help='Path to store '+\
           'log file [default: No log file created.]')
           
-    parser.set_defaults(tree_method='fasttree')
+    parser.set_defaults(tree_method='fasttree',result_fp=None)
 
     opts,args = parser.parse_args()
     num_args = 1
@@ -166,9 +167,10 @@ if __name__ == "__main__":
         tree_builder_type = 'Cogent'
      
     input_seqs_filepath = args[0]
-   
-    result_path = opts.result_fp or\
-     input_seqs_filepath.replace('.fasta','_aligned.fasta')
+    result_path = opts.result_fp
+    if not result_path: # empty or None
+        fpath, ext = splitext(input_seqs_filepath) # fpath omits extension
+        result_path = fpath + ".tre"
      
     log_path = opts.log_fp
 
