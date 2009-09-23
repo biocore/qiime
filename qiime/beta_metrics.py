@@ -40,14 +40,18 @@ def make_unifrac_metric(weighted, metric, is_symmetric):
     return result
 
 # these should start with dist_ to be discoverable by beta_diversity.py
+# unweighted full tree => keep the full tree relating all samples.  Compute how much branch
+# length is present in one sample but not (both samples OR NEITHER
+# SAMPLE).  Divide by total branch length of full tree.  
+# G is asymmetric unifrac
 dist_unweighted_unifrac = make_unifrac_metric(False, unifrac, True)
-dist_unweighted_unnormalized_unifrac = make_unifrac_metric(False, 
+dist_unweighted_unifrac_full_tree = make_unifrac_metric(False, 
     unnormalized_unifrac, True)
 dist_weighted_unifrac = make_unifrac_metric(True, weighted_unifrac, True)
 dist_weighted_normalized_unifrac = make_unifrac_metric('correct',
     weighted_unifrac, True)
-dist_G = make_unifrac_metric(False, G, False)
-dist_unnormalized_G = make_unifrac_metric(False, unnormalized_G, False)
+dist_unifrac_G = make_unifrac_metric(False, G, False)
+dist_unifrac_G_full_tree = make_unifrac_metric(False, unnormalized_G, False)
 
 def _reorder_unifrac_res(unifrac_res, sample_names_in_desired_order):
     sample_names = sample_names_in_desired_order
