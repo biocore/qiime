@@ -149,9 +149,9 @@ def create_javascript_array(rows):
     for i in range(len(rows)):
         for j in range(len(rows[i])):
             if i==0 or j==0 or i==len(rows)-1:
-                js_array+='OTU_table[%i][%i]="%s";\n' % (i,j,(rows[i][j]))
+                js_array+="OTU_table[%i][%i]='%s';\n" % (i,j,(rows[i][j]))
             else:
-                js_array+='OTU_table[%i][%i]=%i;\n' % (i,j,(rows[i][j]))
+                js_array+="OTU_table[%i][%i]=%i;\n" % (i,j,(rows[i][j]))
             
     return js_array
 
