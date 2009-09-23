@@ -14,7 +14,7 @@ __status__ = "Prototype"
 
 from optparse import OptionParser
 from os.path import split
-from cogent.core.alignment import eps, Alignment
+from cogent.core.alignment import eps, DenseAlignment
 from cogent import LoadSeqs
 
 usage_string = """usage: %prog [options] {-f INPUT_FASTA_FILE -d OUTPUT_DIR}
@@ -122,7 +122,7 @@ if __name__ == "__main__":
         raise IOError, "Can't open output_filepath for writing: %s" % output_filepath
     
     # load the input alignment
-    aln = LoadSeqs(input_fasta_file,aligned=Alignment)
+    aln = LoadSeqs(input_fasta_file,aligned=DenseAlignment)
     
     # read the lane_mask, if one was provided
     if lane_mask_fp:
