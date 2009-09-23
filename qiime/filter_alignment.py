@@ -14,7 +14,7 @@ __status__ = "Prototype"
 
 from optparse import OptionParser
 from os.path import split
-from cogent.core.alignment import eps, DenseAlignment
+from cogent.core.alignment import eps, Alignment
 from cogent import LoadSeqs
 
 usage_string = """usage: %prog [options] {-f INPUT_FASTA_FILE -d OUTPUT_DIR}
@@ -88,7 +88,7 @@ def apply_gap_filter(aln,allowed_gap_frac=1.-eps):
     """
     return aln.omitGapPositions(allowed_gap_frac=allowed_gap_frac)
     
-def apply_lane_make_and_gap_filters(aln,lane_mask,allowed_gap_frac=1.-eps):
+def apply_lane_mask_and_gap_filters(aln,lane_mask,allowed_gap_frac=1.-eps):
     
     # must apply the lane mask first as it relies on the original positions
     if lane_mask:
@@ -122,7 +122,7 @@ if __name__ == "__main__":
         raise IOError, "Can't open output_filepath for writing: %s" % output_filepath
     
     # load the input alignment
-    aln = LoadSeqs(input_fasta_file,aligned=DenseAlignment)
+    aln = LoadSeqs(input_fasta_file,aligned=Alignment)
     
     # read the lane_mask, if one was provided
     if lane_mask_fp:
@@ -135,7 +135,7 @@ if __name__ == "__main__":
         lane_mask = None
         
     # apply the filters
-    filtered_aln = apply_lane_make_and_gap_filters(aln,lane_mask,allowed_gap_frac)
+    filtered_aln = apply_lane_mask_and_gap_filters(aln,lane_mask,allowed_gap_frac)
     
     # write the alignment to the output_file
     output_file.write(filtered_aln.toFasta())
