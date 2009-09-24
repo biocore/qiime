@@ -159,7 +159,7 @@ or batch example:
 python beta_diversity.py -i TEST/beta_rare/ -m dist_unweighted_unifrac -t TEST/repr_set.tre -o TEST/rare_unifrac
 processes every file in beta_rare, and creates a file "beta_" + fname
 in results folder
--o is mandatory here
+-o is mandatory here, and created if it doesn't exist
 
 
 use -s to see metric options.
@@ -223,7 +223,7 @@ def multiple_file_beta(options, args):
     beta_script = qiime.beta_diversity.__file__
     file_names = os.listdir(options.input_path)
     if not os.path.exists(options.output_path):
-        raise ValueError("output path does not appear to exist")
+        os.mkdir(options.output_path)
     try:
         metric_f = get_nonphylogenetic_metric(metric)
     except AttributeError:

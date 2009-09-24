@@ -25,7 +25,8 @@ python tree_compare.py -m TEST/sample_cluster.tre -s TEST/rare_unifrac_upgma -o 
 
 def main(options):
     tree_file_names = os.listdir(options.support_path)
-
+    if not os.path.exists(options.output_path):
+        os.mkdir(options.output_path)
     support_trees = []
     for fname in tree_file_names:
         f = open(os.path.join(options.support_path, fname))
@@ -39,7 +40,7 @@ def main(options):
 
     # write out modified master tree with internal nodes, and bootstrap support
     # values to 2 files
-    fname = os.path.join(options.output_path, "sample_tree.tre")
+    fname = os.path.join(options.output_path, "master_tree.tre")
     f = open(fname, 'w')
     f.write(new_master.getNewick(with_distances=True))
     f.close()
@@ -97,7 +98,10 @@ def compare(master, subsampled_tree):
     """
     if set(master.getTipNames()) != set(subsampled_tree.getTipNames()):
         raise ValueError(\
-            "different number of tips in subsampled_tree and master")
+            "different number of tips in subsampled_tree and master.\n"+\
+            "typically some sapmples with few sequences were skipped in"+\
+            " the support trees.  remove offending samples from the master"+\
+            " tree, and try again")
     # list of lists.  each elem is list of tip names for a node
     subsampled_tree_nodes_names = [node.getTipNames() for node in \
         subsampled_tree.iterNontips(include_self=True)]
@@ -109,7 +113,14 @@ def compare(master, subsampled_tree):
 def make_cmd_parser():
     """returns command-line options"""
     usage="""
-example: python tree_compare.py -m TEST/sample_cluster.tre -s TEST/rare_unifrac_upgma/ -o TEST/unifrac_jackknife/"""
+example: python tree_compare.py -m TEST/sample_cluster.tre -s TEST/rare_unifrac_upgma/ -o TEST/unifrac_jackknife/
+this makes the folder TEST/unifrac_jackknife.  In that is the master tree,
+with internal nodes named, and a separate bootstrap/jackknife support file
+
+master tree must have the same tips as support trees.  if your support trees
+omit (e.g.:) samples with few sequences, make a new master tree with those tips
+omitted
+"""
 
     parser = OptionParser(usage=usage)
     parser.add_option('-m', '--master', dest='master_tree_path',

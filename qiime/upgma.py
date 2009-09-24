@@ -23,12 +23,15 @@ import qiime.upgma
 import os.path
 
 def multiple_file_upgma(options, args):
+    if not os.path.exists(options.output_path):
+        os.mkdir(options.output_path)
     upgma_script = qiime.upgma.__file__
     file_names = os.listdir(options.input_path)
     for fname in file_names:
+        base_fname, ext = os.path.splitext(fname)
         upgma_cmd = 'python ' + upgma_script + ' -i '+\
             os.path.join(options.input_path, fname) + ' -o ' +\
-            os.path.join(options.output_path,'upgma_'+fname)
+            os.path.join(options.output_path,'upgma_'+base_fname+'.tre')
         os.system(upgma_cmd)
 
 def single_file_upgma(options, args):
@@ -65,7 +68,10 @@ or batch example:
 python upgma.py -i TEST/rare_unifrac -o TEST/rare_unifrac_upgma
 processes every file in rare_unifrac, and creates a file "upgma_" + fname
 in rare_unifrac_upgma folder
--o is mandatory here
+-o is mandatory here, created if doesn't exist
+
+description:
+relate samples with UPGMA (resulting in a tree), using a distance matrix.
 """
     parser = OptionParser(usage=usage)
     parser.add_option('-i', '--input_path', dest='input_path',
