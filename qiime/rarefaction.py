@@ -120,7 +120,7 @@ def make_cmd_parser():
     parser.add_option('-d', '--dest', dest='output_dir', 
         default=os.getcwd(),
         help='write output rarefied otu tables here (directory) '+\
-            'default current dir')
+            "default current dir.  makes dir if it doesn't exist")
     parser.add_option('-m', '--min', dest='min', default=1, type=int,
         help='min seqs/sample, default 1')
     parser.add_option('-x', '--max', dest='max', default=10, type=int,
@@ -141,8 +141,10 @@ level are included in the output but not rarefied""")
 
 if __name__ == '__main__':
     #if called from command-line, should run the analysis.
-    options, args = make_cmd_parser()
+    opts, args = make_cmd_parser()
     otu_path = args[0]
-    maker = RarefactionMaker(otu_path, options.min, options.max,
-        options.step, options.num_reps)
-    maker.rarefy_to_files(options.output_dir, options.small_included)
+    if not os.path.exists(opts.output_dir):
+    	os.mkdir(opts.output_dir)
+    maker = RarefactionMaker(otu_path, opts.min, opts.max,
+        opts.step, opts.num_reps)
+    maker.rarefy_to_files(opts.output_dir, opts.small_included)

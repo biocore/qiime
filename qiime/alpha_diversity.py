@@ -205,10 +205,10 @@ example:
 python alpha_diversity.py -i TEST/otu_table.txt -m observed_species,chao1,PD_whole_tree -o TEST/alpha_osd_PD.txt -t TEST/repr_set.tre
 
 or batch example: 
-python alpha_diversity.py -i TEST/alpha_rare -m chao1,PD_whole_tree -t TEST/repr_set.tre -o TEST/rare_chao1_PD
+python alpha_diversity.py -i TEST/alpha_rare -m observed_species,chao1,PD_whole_tree -t TEST/repr_set.tre -o TEST/rare_chao1_PD
 processes every file in alpha_rare, and creates a file "alpha_" + fname
 in results folder
--o is mandatory here
+-o is mandatory here, and created if it doesn't exist
 
 Metrics is comma delimited, use -s to see options.
 Output will be a sample by metric matrix. 
@@ -221,7 +221,8 @@ Default is to write to stdout for non-batch file processing"""
     parser.add_option('-t', '--tree', dest='tree_path', default=None,
         help='path to newick tree file, required for phylogenetic metrics')
     parser.add_option('-o', '--out_path', dest='output_path', default=None,
-        help='output path')
+        help='output path, directory for batch processing, '+\
+         'filename for single file operation')
     parser.add_option('-i', '--in_path', dest='input_path', default=None,
         help='input path')
     parser.add_option('-m', '--metrics', dest='metrics', default=None,
@@ -300,8 +301,9 @@ def single_file_alpha(infilepath, metrics, outfilepath, tree_path):
                 metric_f = get_phylogenetic_metric(metric)
                 is_phylogenetic = True
             except AttributeError:
-                stderr.write("Could not find metric %s.\n Known metrics are: %s\n" \
-                    % (metric, ', '.join(list_known_metrics())))
+                stderr.write(
+                 "Could not find metric %s.\n Known metrics are: %s\n" \
+                 % (metric, ', '.join(list_known_metrics())))
                 exit(1)
         c = AlphaDiversityCalc(metric_f, is_phylogenetic)
         calcs.append(c)
@@ -330,7 +332,7 @@ def multiple_file_alpha(options, args):
     alpha_script = qiime.alpha_diversity.__file__
     file_names = os.listdir(options.input_path)
     if not os.path.exists(options.output_path):
-        raise ValueError("output path does not appear to exist")
+        os.mkdir(options.output_path)
 
     metrics_list = options.metrics.split(',')
     for metric in metrics_list:
@@ -340,8 +342,9 @@ def multiple_file_alpha(options, args):
             try:
                 metric_f = get_phylogenetic_metric(metric)
             except AttributeError:
-                raise ValueError("could not find metric.  %s.\n Known metrics are: %s\n" \
-                    % (metric, ', '.join(list_known_metrics())))
+                raise ValueError(
+                 "could not find metric.  %s.\n Known metrics are: %s\n" \
+                 % (metric, ', '.join(list_known_metrics())))
     for fname in file_names:
         # future: try to make sure fname is a valid otu file
         #~ f = open(os.path.join(dir,fname))
