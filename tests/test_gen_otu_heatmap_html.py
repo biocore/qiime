@@ -55,14 +55,14 @@ exp_js_array='''\
     var i=0;\n\
     for (i==0;i<4;i++) {\n\
     OTU_table[i]=new Array();}\n\
-OTU_table[0][0]="#OTU ID";\n\
-OTU_table[0][1]="OTU2";\n\
-OTU_table[1][0]="Sample1";\n\
+OTU_table[0][0]='#OTU ID';\n\
+OTU_table[0][1]='OTU2';\n\
+OTU_table[1][0]='Sample1';\n\
 OTU_table[1][1]=1;\n\
-OTU_table[2][0]="Sample2";\n\
+OTU_table[2][0]='Sample2';\n\
 OTU_table[2][1]=5;\n\
-OTU_table[3][0]="Consensus";\n\
-OTU_table[3][1]="Archaea";\n\
+OTU_table[3][0]='Consensus';\n\
+OTU_table[3][1]='Archaea';\n\
 '''
 
 exp_html_script = \
