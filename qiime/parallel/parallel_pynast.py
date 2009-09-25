@@ -15,6 +15,15 @@ from qiime.parallel.util import split_fasta, get_random_job_prefix, write_jobs_f
     submit_jobs, compute_seqs_per_file, build_filepaths_from_filepaths
 from pynast.util import build_temp_blast_db_from_alignment_fp
 
+__author__ = "Greg Caporaso"
+__copyright__ = "Copyright 2009, the Qiime Project"
+__credits__ = ["Greg Caporaso"] 
+__license__ = "GPL"
+__version__ = "0.1"
+__maintainer__ = "Greg Caporaso"
+__email__ = "gregcaporaso@gmail.com"
+__status__ = "Prototype"
+
 def get_commands(python_exe_fp,align_seqs_fp,fasta_fps,template_aln_fp,\
     pairwise_alignment_method,out_fps,log_fps,blast_db,blast_executable,\
      min_length,min_percent_id,command_prefix=None,command_suffix=None):
@@ -73,7 +82,7 @@ Split the input file (-i) into five jobs (-j) to align against
 def parse_command_line_parameters():
     """ Parses command line arguments """
     usage = usage_str
-    version = 'Version: %prog 0.1'
+    version = '%prog ' + str(__version__)
     parser = OptionParser(usage=usage, version=version)
           
     parser.add_option('-i','--input_fasta_fp',action='store',\
@@ -116,7 +125,7 @@ def parse_command_line_parameters():
            
     parser.add_option('-x','--job_prefix',action='store',\
            type='string',help='job prefix '+\
-           '[default: RDP_ + 5 random chars]')
+           '[default: ALIGN_ + 4 random chars]')
     
     parser.add_option('-l','--log_dir',action='store',\
            type='string',help='path to store log files '+\
@@ -138,12 +147,12 @@ def parse_command_line_parameters():
             default='/home/caporaso/bin/cluster_jobs.py')
             
     parser.add_option('-e','--min_length',action='store',\
-          type='int',dest='min_length',help='Minimum sequence '+\
+          type='int',help='Minimum sequence '+\
           'length to include in alignment [default: %default]',\
           default=1000)
           
     parser.add_option('-p','--min_percent_id',action='store',\
-          type='float',dest='min_percent_id',help='Minimum percent '+\
+          type='float',help='Minimum percent '+\
           'sequence identity to closest blast hit to include sequence in'+\
           ' alignment [default: %default]',default=75.0)
                              
