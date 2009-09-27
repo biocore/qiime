@@ -2,7 +2,7 @@
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2009, the PyCogent Project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Justin Kuczynski"]
 __license__ = "GPL"
 __version__ = "0.1"
 __maintainer__ = "Greg Caporaso"
@@ -13,7 +13,8 @@ __status__ = "Prototype"
 """
 
 from optparse import OptionParser
-from os.path import split
+from os.path import split, exists
+from os import mkdir
 from cogent.core.alignment import eps, DenseAlignment
 from cogent import LoadSeqs
 
@@ -114,6 +115,8 @@ if __name__ == "__main__":
     
     # build the output filepath and open it any problems can be caught before starting
     # the work
+    if not exists(output_dir):
+        mkdir(output_dir)
     input_dir, input_filename = split(input_fasta_file)
     output_filepath = '%s/%s_filtered.fasta' % (output_dir,input_filename)
     try:
