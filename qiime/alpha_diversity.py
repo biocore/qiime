@@ -43,6 +43,7 @@ from qiime.parse import parse_otus, make_envs_dict
 from qiime.util import FunctionWithParams, make_safe_f
 from qiime.format import format_matrix
 from sys import exit, stderr
+import sys
 import os.path
 import qiime.alpha_diversity
 
@@ -195,44 +196,6 @@ class AlphaDiversityCalcs(FunctionWithParams):
         res = format_matrix(data, sample_names, calc_names)
         return res
 
-
-def make_cmd_parser():
-    """returns command-line options"""
-    usage = """ %prog [options]
-use %prog -h for help.
-
-example: 
-python alpha_diversity.py -i TEST/otu_table.txt -m observed_species,chao1,PD_whole_tree -o TEST/alpha_osd_PD.txt -t TEST/repr_set.tre
-
-or batch example: 
-python alpha_diversity.py -i TEST/alpha_rare -m observed_species,chao1,PD_whole_tree -t TEST/repr_set.tre -o TEST/rare_chao1_PD
-processes every file in alpha_rare, and creates a file "alpha_" + fname
-in results folder
--o is mandatory here, and created if it doesn't exist
-
-Metrics is comma delimited, use -s to see options.
-Output will be a sample by metric matrix. 
-Default is to write to stdout for non-batch file processing"""
-    
-    parser = OptionParser(usage=usage)
-    parser.add_option('-s', '--show_metrics', action='store_true', 
-        dest="show_metrics",
-        help='show available alpha diversity metrics and quit')
-    parser.add_option('-t', '--tree', dest='tree_path', default=None,
-        help='path to newick tree file, required for phylogenetic metrics')
-    parser.add_option('-o', '--out_path', dest='output_path', default=None,
-        help='output path, directory for batch processing, '+\
-         'filename for single file operation')
-    parser.add_option('-i', '--in_path', dest='input_path', default=None,
-        help='input path')
-    parser.add_option('-m', '--metrics', dest='metrics', default=None,
-        help='metrics to use, comma delimited')    
-
-    options, args = parser.parse_args()
-    if (len(args) != 0 and options.show_metrics != True) :
-        parser.error("incorrect number of arguments")
-    return options, args
-
 def get_nonphylogenetic_metric(name):
     """Gets metric by name from list in this module
     """
@@ -365,12 +328,73 @@ def multiple_file_alpha(options, args):
             alpha_div_cmd += ' -t ' + options.tree_path
         os.system(alpha_div_cmd)
 
-if __name__ == '__main__':
-    options, args = make_cmd_parser()
-    if options.show_metrics:
+usage_str = """usage: %prog [options] {-i INPUT_PATH -o OUTPUT_PATH -m METRICS}
+
+[] indicates optional input (order unimportant)
+{} indicates required input (order unimportant)
+
+Example usage:
+
+single analysis: 
+python %prog -i otu_table.txt -m observed_species,chao1,PD_whole_tree -o alpha_osd_PD.txt -t repr_set.tre
+
+or batch example: 
+python %prog -i TEST/alpha_rare -m observed_species,chao1,PD_whole_tree -t TEST/repr_set.tre -o TEST/rare_chao1_PD
+processes every file in alpha_rare, and creates a file "alpha_" + fname
+in results folder
+
+
+Metrics is comma delimited, use -s to see options.
+Output will be a sample by metric matrix. 
+"""
+def parse_command_line_parameters():
+    """returns command-line options"""
+
+    if len(sys.argv) == 1:
+        sys.argv.append('-h')
+    usage = usage_str
+    version = '%prog ' + str(__version__)
+    parser = OptionParser(usage=usage, version=version)
+    
+    parser.add_option('-i', '--input_path',
+        help='input path.  directory for batch processing, '+\
+         'filename for single file operation [REQUIRED]')
+        
+    parser.add_option('-o', '--output_path',
+        help='output path. directory for batch processing, '+\
+         'filename for single file operation [REQUIRED]')
+
+    parser.add_option('-m', '--metrics',
+        help='metrics to use, comma delimited [REQUIRED]')
+
+    parser.add_option('-s', '--show_metrics', action='store_true', 
+        dest="show_metrics",
+        help='show available alpha diversity metrics and quit')
+    
+    parser.add_option('-t', '--tree_path', default=None,
+        help='path to newick tree file, required for phylogenetic metrics'+\
+        ' [default: %default]')    
+
+    opts, args = parser.parse_args()
+    if opts.show_metrics:
         print("Known metrics are: %s\n" \
                 % (', '.join(list_known_metrics()),))
         exit(0)
+        
+    if len(args) != 0:
+        parser.error("positional argument detected.  make sure all"+\
+         ' parameters are identified.' +\
+         '\ne.g.: include the \"-m\" in \"-m MINIMUM_LENGTH\"')
+         
+    required_options = ['input_path','output_path','metrics']
+    for option in required_options:
+        if eval('opts.%s' % option) == None:
+            parser.error('Required option --%s omitted.' % option) 
+    return opts, args
+
+if __name__ == '__main__':
+    options, args = parse_command_line_parameters()
+
 
     if os.path.isdir(options.input_path):
         multiple_file_alpha(options, args)

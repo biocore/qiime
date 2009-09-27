@@ -35,6 +35,7 @@ import cogent.maths.distance_transform #avoid hard-coding metrics
 import qiime.beta_metrics
 import qiime.beta_diversity
 from sys import exit, stderr
+import sys
 import os.path
 
 def get_nonphylogenetic_metric(name):
@@ -146,45 +147,6 @@ class BetaDiversityCalc(FunctionWithParams):
         data, sample_names = result
         return format_distance_matrix(sample_names, data)
 
-
-
-def make_cmd_parser():
-    """returns command-line options"""
-    usage = """ %prog [options]
-use %prog -h for help.
-
-example: 
-python beta_diversity.py -i TEST/otu_table.txt -m dist_unweighted_unifrac -o TEST/beta_unweighted_unifrac.txt -t TEST/repr_set.tre
-or batch example: 
-python beta_diversity.py -i TEST/beta_rare/ -m dist_unweighted_unifrac -t TEST/repr_set.tre -o TEST/rare_unifrac
-processes every file in beta_rare, and creates a file "beta_" + fname
-in results folder
--o is mandatory here, and created if it doesn't exist
-
-
-use -s to see metric options.
-Output will be a sample by sample distance matrix. 
-Default is to write to stdout for non-batch file processing."""
-    
-    parser = OptionParser(usage=usage)
-    parser.add_option('-s', '--show_metrics', action='store_true', 
-        dest="show_metrics",
-        help='show available beta diversity metrics and quit')
-    parser.add_option('-t', '--tree', dest='tree_path', default=None,
-        help='path to newick tree file, required for phylogenetic metrics')
-    parser.add_option('-o', '--out_path', dest='output_path', default=None,
-        help='output path')
-    parser.add_option('-i', '--in_path', dest='input_path', default=None,
-        help='input path')
-    parser.add_option('-m', '--metric', dest='metric', default=None,
-        help='metric to use')    
-
-    options, args = parser.parse_args()
-    if (len(args) != 0 and options.show_metrics != True) :
-        parser.error("incorrect number of arguments")
-    return options, args
-
-
 def single_file_beta(options, args):
     metric = options.metric
     try:
@@ -241,9 +203,71 @@ def multiple_file_beta(options, args):
             beta_div_cmd += ' -t ' + options.tree_path
         os.system(beta_div_cmd)
 
+usage_str = """ %prog [options] {-i INPUT_PATH -o OUTPUT_PATH -m METRIC}
 
+[] indicates optional input (order unimportant)
+{} indicates required input (order unimportant)
+
+Example:
+
+python %prog -i TEST/otu_table.txt -m dist_unweighted_unifrac -o TEST/beta_unweighted_unifrac.txt -t TEST/repr_set.tre
+
+or batch example: 
+python beta_diversity.py -i TEST/beta_rare/ -m dist_unweighted_unifrac -t TEST/repr_set.tre -o TEST/rare_unifrac
+processes every file in beta_rare, and creates a file "beta_" + fname
+in results folder
+-o is mandatory here, and created if it doesn't exist
+
+
+use -s to see metric options.
+Output will be a sample by sample distance matrix. 
+"""
+def parse_command_line_parameters():
+    """returns command-line options"""
+
+    if len(sys.argv) == 1:
+        sys.argv.append('-h')
+    usage = usage_str
+    version = '%prog ' + str(__version__)
+    parser = OptionParser(usage=usage, version=version)
+
+    parser.add_option('-i', '--input_path',
+        help='input path [REQUIRED]')
+        
+    parser.add_option('-o', '--output_path',
+        help='output path, directory for batch processing, '+\
+         'filename for single file operation [REQUIRED]')
+
+    parser.add_option('-m', '--metric',
+        help='metric to use [REQUIRED]')  
+        
+    parser.add_option('-s', '--show_metrics', action='store_true', 
+        dest="show_metrics",
+        help='show available beta diversity metrics and quit')
+
+    parser.add_option('-t', '--tree_path', default=None,
+        help='path to newick tree file, required for phylogenetic metrics'+\
+        ' [default: %default]')  
+
+    opts, args = parser.parse_args()
+    if opts.show_metrics:
+        print("Known metrics are: %s\n" \
+                % (', '.join(list_known_metrics()),))
+        exit(0)
+        
+    if len(args) != 0:
+        parser.error("positional argument detected.  make sure all"+\
+         ' parameters are identified.' +\
+         '\ne.g.: include the \"-m\" in \"-m MINIMUM_LENGTH\"')
+         
+    required_options = ['input_path','output_path']
+    for option in required_options:
+        if eval('opts.%s' % option) == None:
+            parser.error('Required option --%s omitted.' % option) 
+    return opts, args
+    
 if __name__ == '__main__':
-    options, args = make_cmd_parser()
+    options, args = parse_command_line_parameters()
     if options.show_metrics:
         print("Known metrics are: %s\n" \
                 % (', '.join(list_known_metrics()),))

@@ -4,6 +4,7 @@ from optparse import OptionParser
 from cogent.core.tree import PhyloNode
 from cogent.parse.tree import DndParser
 import os.path
+import sys
 
 __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2009, the PyCogent Project" #consider project name
@@ -24,28 +25,28 @@ python tree_compare.py -m TEST/sample_cluster.tre -s TEST/rare_unifrac_upgma -o 
 
 
 def main(options):
-    tree_file_names = os.listdir(options.support_path)
-    if not os.path.exists(options.output_path):
-        os.mkdir(options.output_path)
+    tree_file_names = os.listdir(options.support_dir)
+    if not os.path.exists(options.output_dir):
+        os.mkdir(options.output_dir)
     support_trees = []
     for fname in tree_file_names:
-        f = open(os.path.join(options.support_path, fname))
+        f = open(os.path.join(options.support_dir, fname))
         tree = DndParser(f, PhyloNode)
         support_trees.append(tree)
         f.close()
-    master_tree = DndParser(open(options.master_tree_path), PhyloNode)
+    master_tree = DndParser(open(options.master_tree), PhyloNode)
 
     # get support of each node in master
     new_master, bootstraps = bootstrap_support(master_tree, support_trees)
 
     # write out modified master tree with internal nodes, and bootstrap support
     # values to 2 files
-    fname = os.path.join(options.output_path, "master_tree.tre")
+    fname = os.path.join(options.output_dir, "master_tree.tre")
     f = open(fname, 'w')
     f.write(new_master.getNewick(with_distances=True))
     f.close()
     
-    f = open(os.path.join(options.output_path, 'jackknife_support.txt'), 'w')
+    f = open(os.path.join(options.output_dir, 'jackknife_support.txt'), 'w')
     for key, val in bootstraps.items():
         f.write("\t".join([str(key),str(val)]) + "\n")
     f.close()
@@ -109,30 +110,56 @@ def compare(master, subsampled_tree):
         if set(master_node.getTipNames()) in \
             map(set, subsampled_tree_nodes_names):
             master_node.bootstrap_support += 1
+            
+            
+usage_str = """usage: %prog [options] {-i INPUT_PATH -o OUTPUT_DIR -m MASTER_TREE -s SUPPORT_DIR}
 
-def make_cmd_parser():
-    """returns command-line options"""
-    usage="""
-example: python tree_compare.py -m TEST/sample_cluster.tre -s TEST/rare_unifrac_upgma/ -o TEST/unifrac_jackknife/
+[] indicates optional input (order unimportant)
+{} indicates required input (order unimportant)
+
+Example usage:
+python %prog -m TEST/sample_cluster.tre -s TEST/rare_unifrac_upgma/ -o TEST/unifrac_jackknife/
 this makes the folder TEST/unifrac_jackknife.  In that is the master tree,
 with internal nodes named, and a separate bootstrap/jackknife support file
 
 master tree must have the same tips as support trees.  if your support trees
-omit (e.g.:) samples with few sequences, make a new master tree with those tips
-omitted
+omit some tips (e.g.: samples with few sequences),
+make a new master tree with those tips omitted
 """
+def parse_command_line_parameters():
+    """returns command-line options"""
 
-    parser = OptionParser(usage=usage)
-    parser.add_option('-m', '--master', dest='master_tree_path',
-        help='master tree path')
-    parser.add_option('-s', '--support', dest='support_path',
-        help='path to dir containing support trees')
-    parser.add_option('-o', '--output', dest='output_path',
-        help='output directory, writes two files here')
-    options, args = parser.parse_args()
-    return options
+    if len(sys.argv) == 1:
+        sys.argv.append('-h')
+    usage = usage_str
+    version = '%prog ' + str(__version__)
+    parser = OptionParser(usage=usage, version=version)
+
+    parser.add_option('-m', '--master_tree',
+        help='master tree filepath [REQUIRED]')
+
+    parser.add_option('-s', '--support_dir',
+        help='path to dir containing support trees [REQUIRED]')
+
+    parser.add_option('-o', '--output_dir',
+        help='output directory, writes two files here'+\
+        "makes dir if it doesn't exist [REQUIRED]")
+
+    opts, args = parser.parse_args()
+    if len(args) != 0:
+        parser.error("positional argument detected.  make sure all"+\
+         ' parameters are identified.' +\
+         '\ne.g.: include the \"-m\" in \"-m MINIMUM_LENGTH\"')
+         
+    required_options = ['master_tree','support_dir','output_dir']
+    for option in required_options:
+        if eval('opts.%s' % option) == None:
+            parser.error('Required option --%s omitted.' % option) 
+    return opts, args
 
 
 if __name__ == '__main__':
-    options = make_cmd_parser()
-    main(options)
+    opts,args = parse_command_line_parameters()
+    if not os.path.exists(opts.output_dir):
+    	os.mkdir(opts.output_dir)
+    main(opts)

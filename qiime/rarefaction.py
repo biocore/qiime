@@ -24,6 +24,7 @@ from qiime.util import FunctionWithParams
 import os.path
 import os
 import numpy
+import sys
 from cogent.maths.stats.rarefaction import subsample
 
 
@@ -106,43 +107,75 @@ def get_rare_data(sample_ids, otu_ids, otu_table, \
         res_sample_ids = map(sample_ids.__getitem__, big_enough_samples[0])
     #figure out which samples will be reduced because too big
     return res_sample_ids, otu_ids, res_otu_table
+    
+    
+usage_str = """usage: %prog [options] {-i INPUT_PATH -o OUTPUT_PATH -m MIN -x MAX -s STEP}
 
-def make_cmd_parser():
+[] indicates optional input (order unimportant)
+{} indicates required input (order unimportant)
+
+Example usage:
+python %prog otu_table.txt -m 100 -x 1200 -s 100 -n 2 -o mo/rare
+(subsample otu_table.txt w/ replacement at 100 seqs per sample (twice),
+200 seqs per sample (twice) ... 1200 seqs per sample (twice).
+write 24 files total to mo/rare directory
+
+Description:
+input_filepath is an otu table, output will be a
+series of otu table files, named e.g.: rarefaction_4_2.txt
+(4 seqs per sample, iteration 2 (3rd such file written)
+"""
+def parse_command_line_parameters():
     """returns command-line options"""
-    usage = '%prog input_filepath [options]\n' +\
-    'use %prog -h for help.'
-    description=\
-        'input_filepath is an otu table, output will be a '+\
-        'series of otu table files, named e.g.: rarefaction_4_2.txt '+\
-        '(4 seqs per sample, iteration 2 (3rd such file written)\n'+\
-        'example: %prog otu_table.txt -m 10 -x 100 -s 10 -n 2'
-    parser = OptionParser(usage=usage, description=description)
-    parser.add_option('-d', '--dest', dest='output_dir', 
-        default=os.getcwd(),
+
+    if len(sys.argv) == 1:
+        sys.argv.append('-h')
+    usage = usage_str
+    version = '%prog ' + str(__version__)
+    parser = OptionParser(usage=usage, version=version)
+    
+    parser.add_option('-i', '--input_path',
+        help='input filepath, and otu table [REQUIRED]')
+        
+    parser.add_option('-o', '--output_dir',
         help='write output rarefied otu tables here (directory) '+\
-            "default current dir.  makes dir if it doesn't exist")
-    parser.add_option('-m', '--min', dest='min', default=1, type=int,
-        help='min seqs/sample, default 1')
-    parser.add_option('-x', '--max', dest='max', default=10, type=int,
-        help='max seqs/sample (inclusive), default 10')
-    parser.add_option('-s', '--step', dest='step', default=1, type=int,
-        help='levels: min, min+step... for level <= max, default 1')
+            "makes dir if it doesn't exist [REQUIRED]")
+
+    parser.add_option('-m', '--min', type=int,
+        help='min seqs/sample, [REQUIRED]')
+        
+    parser.add_option('-x', '--max', default=10, type=int,
+        help='max seqs/sample (inclusive) [REQUIRED]')
+        
+    parser.add_option('-s', '--step', type=int,
+        help='levels: min, min+step... for level <= max [REQUIRED]')
+   
     parser.add_option('-n', '--num-reps', dest='num_reps', default=1, type=int,
-        help='num reps at each seqs/sample level, default 1')
+        help='num iterations at each seqs/sample level [default: %default]')
+    
     parser.add_option('--small_included', dest='small_included', default=False, 
     	action="store_true",
         help="""samples containing fewer seqs than the rarefaction
-level are included in the output but not rarefied""")
-    options, args = parser.parse_args()
-    if (len(args) != 1) :
-        parser.error("incorrect number of arguments")
-    return options, args
+level are included in the output but not rarefied [default: %default]""")
+
+    opts, args = parser.parse_args()
+        
+    if len(args) != 0:
+        parser.error("positional argument detected.  make sure all"+\
+         ' parameters are identified.' +\
+         '\ne.g.: include the \"-m\" in \"-m MINIMUM_LENGTH\"')
+         
+    required_options = ['input_path','output_dir','min','max','step']
+    for option in required_options:
+        if eval('opts.%s' % option) == None:
+            parser.error('Required option --%s omitted.' % option) 
+    return opts, args
 
 
 if __name__ == '__main__':
     #if called from command-line, should run the analysis.
-    opts, args = make_cmd_parser()
-    otu_path = args[0]
+    opts, args = parse_command_line_parameters()
+    otu_path = opts.input_path
     if not os.path.exists(opts.output_dir):
     	os.mkdir(opts.output_dir)
     maker = RarefactionMaker(otu_path, opts.min, opts.max,

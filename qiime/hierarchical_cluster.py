@@ -21,6 +21,7 @@ from cogent.core.tree import PhyloNode
 from cogent.cluster.UPGMA import UPGMA_cluster
 import qiime.hierarchical_cluster
 import os.path
+import sys
 
 def multiple_file_upgma(options, args):
     if not os.path.exists(options.output_path):
@@ -53,37 +54,59 @@ def single_file_upgma(options, args):
     f.write(c.getNewick(with_distances=True))
     f.close()
 
+usage_str = """usage: %prog [options] {-i INPUT_PATH -o OUTPUT_PATH}
 
-def make_cmd_parser():
-    """returns command-line options"""
+[] indicates optional input (order unimportant)
+{} indicates required input (order unimportant)
 
-    usage = """ %prog [options]
-use %prog -h for help.
-
-example: 
+Example usage:
 python %prog -i TEST/beta_unweighted_unifrac.txt -o TEST/sample_cluster.tre
-creates file TEST/sample_cluster.tre, newick format of upgma clustering based on unifrac of otu_table.
+creates file TEST/sample_cluster.tre, newick format of upgma clustering based on
+distance matrix in beta_unweighted_unifrac.txt
 
 or batch example: 
 python %prog -i TEST/rare_unifrac -o TEST/rare_unifrac_upgma
-processes every file in rare_unifrac, and creates a file "upgma_" + fname
+processes every file in rare_unifrac, and creates a file "upgma_" + 
+"base_fname.tre"
 in rare_unifrac_upgma folder
 -o is mandatory here, created if doesn't exist
 
 description:
 relate samples with UPGMA (resulting in a tree), using a distance matrix.
 """
-    parser = OptionParser(usage=usage)
-    parser.add_option('-i', '--input_path', dest='input_path',
-        help='input path ')
-    parser.add_option('-o', '--output_path', dest='output_path',
-        help='output path')
-    options, args = parser.parse_args()
-    return options, args
+def parse_command_line_parameters():
+    """returns command-line options"""
+
+    if len(sys.argv) == 1:
+        sys.argv.append('-h')
+    usage = usage_str
+    version = '%prog ' + str(__version__)
+    parser = OptionParser(usage=usage, version=version)
+    
+    parser.add_option('-i', '--input_path',
+        help='input path.  directory for batch processing, '+\
+         'filename for single file operation [REQUIRED]')
+        
+    parser.add_option('-o', '--output_path',
+        help='output path. directory for batch processing, '+\
+         'filename for single file operation [REQUIRED]')
+
+    opts, args = parser.parse_args()
+        
+    if len(args) != 0:
+        parser.error("positional argument detected.  make sure all"+\
+         ' parameters are identified.' +\
+         '\ne.g.: include the \"-m\" in \"-m MINIMUM_LENGTH\"')
+         
+    required_options = ['input_path','output_path']
+    for option in required_options:
+        if eval('opts.%s' % option) == None:
+            parser.error('Required option --%s omitted.' % option) 
+    return opts, args
 
 
 if __name__ == '__main__':
-    options, args = make_cmd_parser()
+    options, args = parse_command_line_parameters()
     if os.path.isdir(options.input_path):
         multiple_file_upgma(options, args)
     elif os.path.isfile(options.input_path):

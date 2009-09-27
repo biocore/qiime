@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import numpy
+import sys
 from optparse import OptionParser
 import cogent.cluster.metric_scaling as ms
 from qiime.format import format_coords
@@ -25,29 +26,50 @@ def pcoa(file):
     pcnts = (numpy.abs(eigvals)/sum(numpy.abs(eigvals)))*100
     return format_coords(samples, coords.T, eigvals, pcnts)
 
-def make_cmd_parser():
-    """returns command-line options"""
-    usage = 'usage: %prog dist_mtx_filepath [options]\n' +\
-        'Default is to write to stdout'
-    parser = OptionParser(usage=usage)
-    parser.add_option('-o', '--out_path', dest='output_path', default=None,
-        help='output path')   
+usage_str = """usage: %prog [options] {-i INPUT_PATH -o OUTPUT_PATH}
 
-    options, args = parser.parse_args()
-    if (len(args) != 1 ):
-        parser.error("incorrect number of arguments")
-    return options, args
+[] indicates optional input (order unimportant)
+{} indicates required input (order unimportant)
+
+Example usage:
+
+python %prog -i unifrac_dist_mtx.txt -o unifrac_pcoa.txt
+"""
+def parse_command_line_parameters():
+    """returns command-line options"""
+    
+    if len(sys.argv) == 1:
+        sys.argv.append('-h')
+    usage = usage_str
+    version = '%prog ' + str(__version__)
+    parser = OptionParser(usage=usage, version=version)
+    
+    parser.add_option('-i', '--input_path',
+        help='input filepath. [REQUIRED]')
+        
+    parser.add_option('-o', '--output_path',
+        help='output filepath. [REQUIRED]')
+
+    opts, args = parser.parse_args()
+    if len(args) != 0:
+        parser.error("positional argument detected.  make sure all"+\
+         ' parameters are identified.' +\
+         '\ne.g.: include the \"-m\" in \"-m MINIMUM_LENGTH\"')
+         
+    required_options = ['input_path','output_path']
+    for option in required_options:
+        if eval('opts.%s' % option) == None:
+            parser.error('Required option --%s omitted.' % option) 
+    return opts, args
 
 if __name__ == '__main__':
-    options, args = make_cmd_parser()
+    opts, args = parse_command_line_parameters()
 
-    infilepath = args[0]
+    infilepath = opts.input_path
     f = open(infilepath)
     pcoa_res_string = pcoa(f)
     f.close()
-    if options.output_path:
-        f = open(options.output_path, 'w')
-        f.write(pcoa_res_string)
-        f.close()
-    else:
-        print pcoa_res_string
+
+    f = open(opts.output_path, 'w')
+    f.write(pcoa_res_string)
+    f.close()
