@@ -17,7 +17,7 @@ from cogent import LoadSeqs, DNA
 from cogent.util.unit_test import TestCase, main
 from cogent.app.util import get_tmp_filename
 import cogent.app.fasttree
-from qiime.build_tree import TreeBuilder, CogentTreeBuilder
+from qiime.make_phylogeny import TreeBuilder, CogentTreeBuilder
 
 def safe_remove(f):
     try:
