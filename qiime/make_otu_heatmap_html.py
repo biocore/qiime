@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#file gen_otu_heatmap_html.py
+#file make_otu_heatmap_html.py
 
 __author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2009, the 454 Project" #consider project name
@@ -18,14 +18,14 @@ Requirements:
 Python 2.5
 
 Example 1: Create html file and javascript array from otu counts table:
-Usage: python gen_otu_heatmap_html.py -o otu_counts.txt
+Usage: python make_otu_heatmap_html.py -o otu_counts.txt
 
 Example 2: Create html file, then javascript array in specified directory:
-Usage: python gen_otu_heatmap_html.py -o otu_counts.txt -x ./test/
+Usage: python make_otu_heatmap_html.py -o otu_counts.txt -x ./test/
 
 Example 3: Create html file, then javascript array where the number of hits
 per otu are speified:
-Usage: python gen_otu_heatmap_html.py -o otu_counts.txt -n 50
+Usage: python make_otu_heatmap_html.py -o otu_counts.txt -n 50
 
 """
 
@@ -33,7 +33,7 @@ import numpy
 from numpy import array
 from cogent.parse.table import SeparatorFormatParser
 from optparse import OptionParser
-from gen_3d_plots import create_dir
+from make_3d_plots import create_dir
 import shutil
 
 def make_html_doc(js_filename):

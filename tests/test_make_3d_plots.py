@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#file test_gen_3d_plots.py
+#file test_make_3d_plots.py
 
 __author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2009, the 454 Project" #consider project name
@@ -17,7 +17,7 @@ from cogent.util.unit_test import TestCase, main
 from os import remove
 from random import choice, randrange
 import shutil
-from qiime.gen_3d_plots import (make_3d_plots,scale_pc_data_matrix,
+from qiime.make_3d_plots import (make_3d_plots,scale_pc_data_matrix,
                                     auto_radius,make_mage_output,
                                     get_map,get_coord,create_dir,
                                     _make_path,combine_map_label_cols,

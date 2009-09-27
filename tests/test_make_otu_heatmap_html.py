@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#file test_gen_otu_heatmap_html.py
+#file test_make_otu_heatmap_html.py
 
 __author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2009, the 454 Project" #consider project name
@@ -12,7 +12,7 @@ __status__ = "Prototype"
 
 import numpy
 from cogent.util.unit_test import TestCase, main
-from qiime.gen_otu_heatmap_html import (make_html_doc,create_javascript_array,\
+from qiime.make_otu_heatmap_html import (make_html_doc,create_javascript_array,\
                                        filter_by_otu_hits,line_converter)
 
 class TopLevelTests(TestCase):

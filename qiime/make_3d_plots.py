@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#file gen_3d_plots.py
+#file make_3d_plots.py
 
 __author__ = "Jesse Stombaugh and Micah Hamady"
 __copyright__ = "Copyright 2009, the 454 Project" #consider project name
@@ -18,14 +18,14 @@ Requirements:
 Python 2.5
 
 Example 1: Create 3D plot from only the pca/pcoa data, where each ID is colored:
-Usage: python gen_3d_plots.py -c raw_pca_data.txt
+Usage: python make_3d_plots.py -c raw_pca_data.txt
 
 Example 2: Create a Kinemage with two coloring schemes (Day and Type):
-Usage: python gen_3d_plots.py -c raw_pca_data.txt -m input_map.txt -b 'Day,Type'
+Usage: python make_3d_plots.py -c raw_pca_data.txt -m input_map.txt -b 'Day,Type'
 
 Example 3: Create 3D plots for a combination of label headers from a mapping 
 file:
-Usage: python gen_3d_plots.py -c raw_pca_data.txt -m input_map.txt 
+Usage: python make_3d_plots.py -c raw_pca_data.txt -m input_map.txt 
 -b 'Type&&Day' -x ./test/
 
 """

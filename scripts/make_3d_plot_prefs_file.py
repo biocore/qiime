@@ -17,9 +17,9 @@ def parse_command_line_parameters():
     usage = """usage: %prog [options] {-b COLOR_BY_STRING -p OUTPUT_PREFS_FILE}
 
 This is a quick-and-dirty script to write prefs files to be passed via -p to 
-gen_3d_plots.py. The prefs file allow for gradient coloring of continuous 
+make_3d_plots.py. The prefs file allow for gradient coloring of continuous 
 values in the 3D plots. The -b value passed in is the same as that passed in
-via -b to gen_3D_plots.py: the command delimited list of fields that data 
+via -b to make_3D_plots.py: the command delimited list of fields that data 
 should be included for. Currently there is only one color gradient: red to
 blue, because, as mentioned, this is a quick-and-dirty script. If we decide to
 stick with the pref file method for defining color gradients, we'll update

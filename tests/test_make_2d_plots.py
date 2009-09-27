@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#file test_gen_2d_plots.py
+#file test_make_2d_plots.py
 
 __author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2009, the 454 Project" #consider project name
@@ -16,7 +16,7 @@ from os.path import exists
 from StringIO import StringIO
 from cogent.util.unit_test import TestCase, main
 from os import remove
-from qiime.gen_2d_plots import (make_interactive_scatter,transform_xy_coords,
+from qiime.make_2d_plots import (make_interactive_scatter,transform_xy_coords,
                                   draw_scatterplot,draw_pca_graph,
                                   extract_and_color_xy_coords,write_html_file,
                                   create_html_filename,

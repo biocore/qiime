@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#file gen_2d_plots.py
+#file make_2d_plots.py
 
 __author__ = "Jesse Stombaugh and Micah Hamady"
 __copyright__ = "Copyright 2009, the 454 Project" #consider project name
@@ -19,14 +19,14 @@ MatPlotLib 0.98.5.2
 Python 2.5
 
 Example 1: Create 2D plots from only the pca/pcoa data:
-Usage: python gen_2d_plots.py -c raw_pca_data.txt
+Usage: python make_2d_plots.py -c raw_pca_data.txt
 
 Example 2: Create two separate html files, one for Day and one for Type:
-Usage: python gen_2d_plots.py -c raw_pca_data.txt -m input_map.txt -b 'Day,Type'
+Usage: python make_2d_plots.py -c raw_pca_data.txt -m input_map.txt -b 'Day,Type'
 
 Example 3: Create 2D plots for a combination of label headers from a mapping 
 file:
-Usage: python gen_2d_plots.py -c raw_pca_data.txt -m input_map.txt 
+Usage: python make_2d_plots.py -c raw_pca_data.txt -m input_map.txt 
 -b 'Type&&Day' -x ./test/
 
 """
@@ -45,7 +45,7 @@ import shutil
 import os
 
 from random import choice, randrange
-from gen_3d_plots import combine_map_label_cols,get_map,get_coord,\
+from make_3d_plots import combine_map_label_cols,get_map,get_coord,\
                          process_colorby,create_dir
 
 matplotlib_version = re.split("[^\d]", matplotlib.__version__)
