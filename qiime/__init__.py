@@ -25,6 +25,6 @@ __all__ = ['align_seqs',
  'rarefaction',
  'split_libraries',
  'tree_compare',
- 'upgma',
+ 'hierarchical_cluster',
  'util',
  'workflow']

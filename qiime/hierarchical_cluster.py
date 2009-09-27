@@ -19,13 +19,13 @@ from qiime.parse import parse_distmat
 
 from cogent.core.tree import PhyloNode
 from cogent.cluster.UPGMA import UPGMA_cluster
-import qiime.upgma
+import qiime.hierarchical_cluster
 import os.path
 
 def multiple_file_upgma(options, args):
     if not os.path.exists(options.output_path):
         os.mkdir(options.output_path)
-    upgma_script = qiime.upgma.__file__
+    upgma_script = qiime.hierarchical_cluster.__file__
     file_names = os.listdir(options.input_path)
     for fname in file_names:
         base_fname, ext = os.path.splitext(fname)
@@ -61,11 +61,11 @@ def make_cmd_parser():
 use %prog -h for help.
 
 example: 
-python upgma.py -i TEST/beta_unweighted_unifrac.txt -o TEST/sample_cluster.tre
+python %prog -i TEST/beta_unweighted_unifrac.txt -o TEST/sample_cluster.tre
 creates file TEST/sample_cluster.tre, newick format of upgma clustering based on unifrac of otu_table.
 
 or batch example: 
-python upgma.py -i TEST/rare_unifrac -o TEST/rare_unifrac_upgma
+python %prog -i TEST/rare_unifrac -o TEST/rare_unifrac_upgma
 processes every file in rare_unifrac, and creates a file "upgma_" + fname
 in rare_unifrac_upgma folder
 -o is mandatory here, created if doesn't exist
