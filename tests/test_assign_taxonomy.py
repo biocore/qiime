@@ -20,25 +20,10 @@ from shutil import copy as copy_file
 from cogent.util.unit_test import TestCase, main
 from cogent import LoadSeqs
 from cogent.app.util import get_tmp_filename
+from cogent.app.formatdb import build_blast_db_from_fasta_path
 from cogent.util.misc import remove_files
 from qiime.assign_taxonomy import TaxonAssigner, BlastTaxonAssigner,\
  RdpTaxonAssigner
-
-def build_temp_blast_db(seq_filepath,\
-    formatdb_executable='formatdb'): 
-    # NEED TO TEST
-   
-    # create the blast db
-    if system('%s -i %s -o T -p F' % (formatdb_executable,seq_filepath)) != 0:
-        # WHAT TYPE OF ERROR SHOULD BE RAISED IF THE BLAST_DB
-        # BUILD FAILS?
-        raise RuntimeError,\
-         "Creation of temporary Blast database failed."
-    
-    # create a list of the files to clean-up
-    db_files_to_remove = glob(seq_filepath + '*') + ['formatdb.log']
-    
-    return seq_filepath, db_files_to_remove
 
 class TaxonAssignerTests(TestCase):
     """Tests of the abstract TaxonAssigner class"""
@@ -151,7 +136,7 @@ class BlastTaxonAssignerTests(TestCase):
         """
         # build the blast database and keep track of the files to clean up
         blast_db, files_to_remove = \
-         build_temp_blast_db(self.reference_seqs_fp)
+         build_blast_db_from_fasta_path(self.reference_seqs_fp)
         self._paths_to_clean_up += files_to_remove
         
         p = BlastTaxonAssigner({})
@@ -187,7 +172,7 @@ class BlastTaxonAssignerTests(TestCase):
         """
         # build the blast database and keep track of the files to clean up
         blast_db, files_to_remove = \
-         build_temp_blast_db(self.reference_seqs_fp)
+         build_blast_db_from_fasta_path(self.reference_seqs_fp)
         self._paths_to_clean_up += files_to_remove
         
         p = BlastTaxonAssigner({'blast_db':blast_db,\
@@ -245,7 +230,7 @@ class BlastTaxonAssignerTests(TestCase):
         
         # build the blast database and keep track of the files to clean up
         blast_db, files_to_remove = \
-         build_temp_blast_db(self.reference_seqs_fp)
+         build_blast_db_from_fasta_path(self.reference_seqs_fp)
         self._paths_to_clean_up += files_to_remove
         
         p = BlastTaxonAssigner({\
@@ -263,7 +248,7 @@ class BlastTaxonAssignerTests(TestCase):
             'Application:blastn/megablast',
             'Max E value:1e-30',
             'Result path: None, returned as dict.',
-            'blast_db:%s' % self.reference_seqs_fp,
+            'blast_db:%s' % str(self.reference_seqs_fp)[1:-1],
             'id_to_taxonomy_filepath:%s' % self.id_to_taxonomy_fp,
             'Number of sequences inspected: 6',
             'Number with no blast hits: 0',
