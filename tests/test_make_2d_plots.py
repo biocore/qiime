@@ -66,7 +66,7 @@ class TopLevelTests(TestCase):
         self.all_cids=['Sample1: Day1', 'Sample2: Day1']
         self.all_xcoords=[100.79999999999998, 279.36000000000001] 
         self.all_ycoords=[54.000000000000014, 288.0]
-        
+        self.plot_label='SampleID'
         self.coords={'pc vector number':['Sample1','Sample2'],'1':\
                      array([-0.2,-0.04]),'2':array([0.07, 0.2])}
         self.x_len=4.5
@@ -87,7 +87,7 @@ images"""
 
         self._paths_to_clean_up = [filename1,filename2]
 
-        obs1,obs2,obs3=make_interactive_scatter(self.dir_path,self.data_file_link,self.xy_coords, 
+        obs1,obs2,obs3=make_interactive_scatter(self.plot_label,self.dir_path,self.data_file_link,self.xy_coords, 
                         self.props, self.x_len, self.y_len, self.size,
                         draw_axes=False, generate_eps=True)
 
@@ -139,7 +139,7 @@ plot into html spatial coords which allows for mouseovers"""
 
         self._paths_to_clean_up = [filename1,filename2]
 
-        obs1,obs2=draw_pca_graph(self.dir_path,self.data_file_link,self.coord_1,self.coord_2,
+        obs1,obs2=draw_pca_graph(self.plot_label,self.dir_path,self.data_file_link,self.coord_1,self.coord_2,
                                  self.data,self.prefs,self.groups,self.colors,
                                  generate_eps=True)
 
@@ -193,15 +193,15 @@ the appropriate location')
 #expected results for the unit testing       
 exparea=['<AREA shape="circle" coords="100,306,5" href="#Sample1: Day1"  onmouseover="return overlib(\'Sample1: Day1\');" onmouseout="return nd();">\n', '<AREA shape="circle" coords="279,72,5" href="#Sample2: Day1"  onmouseover="return overlib(\'Sample2: Day1\');" onmouseout="return nd();">\n']
 
-expsrcmap1 = '<img src="/tmp/P1_vs_P2_plot.png" border="0" ismap usemap="#points12" width="360" height="360" />\n'
-expimgmap1 = '\n<MAP name="points12">\n\
+expsrcmap1 = '<img src="/tmp/P1_vs_P2_plot.png" border="0" ismap usemap="#pointsSampleID12" width="360" height="360" />\n'
+expimgmap1 = '\n<MAP name="pointsSampleID12">\n\
 <AREA shape="circle" coords="100,306,5" href="#Sample1: Day1"  onmouseover="return overlib(\'Sample1: Day1\');" onmouseout="return nd();">\n\
 <AREA shape="circle" coords="279,72,5" href="#Sample2: Day1"  onmouseover="return overlib(\'Sample2: Day1\');" onmouseout="return nd();">\n\n\
 </MAP>\n'
 expeps1='<a href="/tmp/P1vsP2plot.eps.gz" >Download Figure</a>'
 
-expsrcmap2 = '<img src="/tmp/P1_vs_P2_plot.png" border="0" ismap usemap="#points12" width="360" height="360" />\n'
-expimgmap2 = '\n<MAP name="points12">\n\
+expsrcmap2 = '<img src="/tmp/P1_vs_P2_plot.png" border="0" ismap usemap="#pointsSampleID12" width="360" height="360" />\n'
+expimgmap2 = '\n<MAP name="pointsSampleID12">\n\
 <AREA shape="circle" coords="100,243,5" href="#Sample1: Day1"  onmouseover="return overlib(\'Sample1: Day1\');" onmouseout="return nd();">\n\
 <AREA shape="circle" coords="279,93,5" href="#Sample2: Day1"  onmouseover="return overlib(\'Sample2: Day1\');" onmouseout="return nd();">\n\n\
 </MAP>\n'
