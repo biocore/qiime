@@ -125,7 +125,7 @@ mapping file"""
             
         self._dir_to_clean_up = foldername
         
-        obs=create_dir(foldername)
+        obs=create_dir(foldername,'')
         
         self.assertEqual(obs,foldername)
         self.assertTrue(exists(foldername),'The file was not created in \

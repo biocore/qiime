@@ -18,15 +18,15 @@ Requirements:
 Python 2.5
 
 Example 1: Create 3D plot from only the pca/pcoa data, where each ID is colored:
-Usage: python make_3d_plots.py -c raw_pca_data.txt
+Usage: python make_3d_plots.py -i raw_pca_data.txt
 
 Example 2: Create a Kinemage with two coloring schemes (Day and Type):
-Usage: python make_3d_plots.py -c raw_pca_data.txt -m input_map.txt -b 'Day,Type'
+Usage: python make_3d_plots.py -i raw_pca_data.txt -m input_map.txt -b 'Day,Type'
 
 Example 3: Create 3D plots for a combination of label headers from a mapping 
 file:
-Usage: python make_3d_plots.py -c raw_pca_data.txt -m input_map.txt 
--b 'Type&&Day' -x ./test/
+Usage: python make_3d_plots.py -i raw_pca_data.txt -m input_map.txt 
+-b 'Type&&Day' -o ./test/
 
 """
 from cogent.util.misc import flatten
@@ -313,7 +313,7 @@ def combine_map_label_cols(combinecolorby,mapping):
         mapping[i].append(combinedmapdata[i])
     return mapping
 
-def create_dir(dir_path):
+def create_dir(dir_path,plot_type):
     """Creates directory where data is stored.  If directory is not supplied in\
        the command line, a random folder is generated"""
        
@@ -321,9 +321,11 @@ def create_dir(dir_path):
     alphabet += alphabet.lower()
     alphabet += "01234567890"
 
+    
     if dir_path==None or dir_path=='':
+        dir_path=''
         random_dir_name=''.join([choice(alphabet) for i in range(10)])
-        dir_path = './'+strftime("%Y_%m_%d_%H_%M_%S")+random_dir_name+'/'
+        dir_path ='./'+plot_type+strftime("%Y_%m_%d_%H_%M_%S")+random_dir_name+'/'
 
     if dir_path:
         try:
@@ -446,19 +448,19 @@ archive='./jar/king.jar' width=800 height=600> \
     
 def _make_cmd_parser():
     """Returns the command-line options"""
-    parser = OptionParser(usage="Usage: this_file.py -c <pca/pcoa output files>\
-\nor\nUsage: this_file.py -c <pca/pcoa output files> -m <mapping output file>\
--b 'Mapping column to color by' -x <write to directory>")
-    parser.add_option('-m', '--map', dest='map_fname', \
-        help='name of mapping file')
-    parser.add_option('-c', '--coord', dest='coord_fname', \
-        help='name of coords file')
-    parser.add_option('-x', '--dir-prefix', dest='dir_path',\
-        help='directory prefix for all analyses')
-    parser.add_option('-b', '--by', dest='colorby',\
-        help='map header to color by')
-    parser.add_option('-p', '--prefs', dest='prefs_path',\
-        help='prefs for detailed color settings')
+    parser = OptionParser(usage="Usage: this_file.py -i <pca/pcoa output files>\
+\nor\nUsage: this_file.py -i <pca/pcoa output files> -m <mapping output file>\
+-b 'Mapping column to color by' -o <write to directory>")
+    parser.add_option('-i', '--coord_fname', \
+        help='name of coords file [REQUIRED]')
+    parser.add_option('-m', '--map_fname', \
+        help='name of mapping file [default: %default]')
+    parser.add_option('-b', '--colorby',\
+        help='map header to color by [default: %default]')
+    parser.add_option('-p', '--prefs_path',\
+        help='prefs for detailed color settings [default: %default]')
+    parser.add_option('-o', '--dir_path',\
+        help='directory prefix for all analyses [default: %default]',default='')
     options, args = parser.parse_args()
     return options
 
@@ -491,7 +493,7 @@ def _process_prefs(options):
     dir_path = options.dir_path
     if dir_path and not dir_path.endswith('/'):
         dir_path = dir_path + '/'
-    dir_path = create_dir(dir_path)    
+    dir_path = create_dir(dir_path,'3d_plots_')    
 
     alphabet = "ABCDEFGHIJKLMNOPQRSTUZWXYZ"
     alphabet += alphabet.lower()
@@ -509,8 +511,8 @@ def _process_prefs(options):
     data_file_path=strftime("%Y_%m_%d_%H_%M_%S")+data_file_path
     data_file_dir_path = dir_path+data_file_path
 
-    data_file_dir_path=create_dir(data_file_dir_path)
-    js_dir_path = create_dir(dir_path+'jar/')
+    data_file_dir_path=create_dir(data_file_dir_path,'')
+    js_dir_path = create_dir(dir_path+'jar/','')
     shutil.copyfile(qiime_dir+'/jar/king.jar', js_dir_path+'king.jar')
 
     filepath=options.coord_fname
