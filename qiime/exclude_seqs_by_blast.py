@@ -292,16 +292,32 @@ screen and a log file summarizing the options used and results obtained. A copy 
 sequences useful for excluding human genomic contamination from sequencing runs 
 can be found at:  ftp://ftp.genome.jp/pub/kegg/genes/organisms/hsa/h.sapiens.nuc
 """
-    usage = """\n\tpython exclude_seqs_by_blast.py [options]\n\nExample:\n\tpython exclude_seqs_by_blast.py -i /Users/zaneveld/test_query_data.fasta -d /Users/zaneveld/data/h.sapiens.nuc -e 1e-20 -p 0.97 -f ./pos1_control_test --debug"""
+    usage = """\n\t python exclude_seqs_by_blast.py {-i QUERY_FASTA_FP -d SUBJECT_FASTA_FP -o
+    OUTPUT_FP} [options]
+
+    [] indicates optional input (order unimportant)
+    {} indicates required input (order unimportant)
+    \nExample:\n\tpython exclude_seqs_by_blast.py -i
+    /Users/zaneveld/test_query_data.fasta -d /Users/zaneveld/data/h.sapiens.nuc
+    -o ./seq_exclusion_pos_control -e 1e-20 -p 0.97 --debug
+    
+    (For help run: \n\tpython exclude_seqs_by_blast.py --help)
+    """
+
+
+
 
     parser=OptionParser(usage=usage,description=description)
     parser.add_option("-i","--querydb",dest='querydb',default = None,\
-        help="REQUIRED: The path to a FASTA file containing query sequences")
+        help="The path to a FASTA file containing query sequences [REQUIRED]")
     parser.add_option("-d","--subjectdb",dest='subjectdb',default = None,\
-        help="REQUIRED: The path to a FASTA file to BLAST against")
-    parser.add_option("-f","--outputfilename",dest='outputfilename',\
+        help="The path to a FASTA file to BLAST against [REQUIRED]")
+    parser.add_option("-o","--outputfilename",dest='outputfilename',\
         default = None,\
-        help="""REQUIRED: The base path/filename to save results.  Sequences passing the screen, failing the screen, raw BLAST results and the log will be saved to your filename + '.screened', '.excluded', '.raw_blast_results', and '.sequence_exclusion_log' respectively.""")
+        help=""" The base path/filename to save results.  Sequences passing the
+        screen, failing the screen, raw BLAST results and the log will be saved
+        to your filename + '.screened', '.excluded', '.raw_blast_results', and
+        '.sequence_exclusion_log' respectively.[REQUIRED]""")
     parser.add_option("-e","--e_value",type='float',dest='e_value',\
         default = 1e-10,\
         help="The e-value cutoff for blast queries [DEFAULT: %default]")
@@ -410,7 +426,7 @@ def main(options):
         print "Formatting subject db took: %2.f seconds" % db_format_time
         print FORMAT_BAR 
 
-    blast_results,hit_ids, removed_hit_ids=find_homologs(options.querydb,\
+    blast_results,hit_ids, removed_hit_ids = find_homologs(options.querydb,\
         options.subjectdb, options.e_value,options.max_hits,\
         options.working_dir,options.blastmatroot, options.wordsize,\
                             options.percent_aligned, DEBUG=DEBUG)
