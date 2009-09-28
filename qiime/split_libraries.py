@@ -7,21 +7,40 @@ renames each read with the appropriate library id.
 """
 __author__ = "Rob Knight and Micah Hamady"
 __copyright__ = "Copyright 2009, the PyCogent Project" #consider project name
-__credits__ = ["Rob Knight", "Micah Hamady"] #remember to add yourself
+__credits__ = ["Rob Knight", "Micah Hamady", "Greg Caporaso"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "0.1"
 __maintainer__ = "Rob Knight"
 __email__ = "rob@spot.colorado.edu"
 __status__ = "Prototype"
 
+import re
 from cogent.parse.fasta import FastaFinder, MinimalFastaParser
 from numpy import array, mean, arange, histogram
+from numpy import __version__ as numpy_version
 from qiime.check_id_map import parse_id_map
 from qiime.barcode import correct_barcode
 from gzip import GzipFile
 from optparse import OptionParser
 from os import mkdir, stat
 from collections import defaultdict
+
+## Including new=True in the histogram() call is necessary to 
+## get the correct result in versions prior to NumPy 1.2.0,
+## but the new keyword will be removed in NumPy 1.4. In NumPy 1.2.0 
+## or later, new=True raises a Warning regarding 
+## deprecation of new. One solution to this is to check the 
+## numpy version, and if it's less than 1.2.0, overwrite histogram 
+## with new=True as the default. This avoids a deprecation warning message 
+## in versions 1.2.0 through 1.3.*, and a try/except to handle errors from 
+## versions 1.4.0 or later. 
+numpy_version = re.split("[^\d]", numpy_version)
+numpy_version = tuple([int(i) for i in numpy_version if i.isdigit()])
+if numpy_version < (1,2,0):
+    numpy_histogram = histogram
+    def histogram(a, bins=10, range=None, normed=False, weights=None):
+        return numpy_histogram(a,bins=bins,range=range,\
+         normed=normed,weights=weights,new=True)
 
 IUPAC_DNA = {'U':'T','T':'T','C':'C','A':'A','G':'G', 'R':'AG','Y':'TC',
              'W':'TA','S':'CG','M':'CA','K':'TG','B':'TCG','D':'TAG','H':'TCA',
