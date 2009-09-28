@@ -98,6 +98,9 @@ class BlastTaxonAssigner(TaxonAssigner):
     def __call__(self, seq_path, result_path=None, log_path=None):
         """Returns dict mapping {seq_id:(taxonomy, confidence)} for each seq.
         """
+        logger = self._get_logger(log_path)
+        logger.info(str(self))
+
         # Load the sequence collection containing the files to blast
         seq_coll = LoadSeqs(seq_path,aligned=False,moltype=DNA).degap()
         
@@ -133,6 +136,7 @@ class BlastTaxonAssigner(TaxonAssigner):
          open(self.Params['id_to_taxonomy_filepath'])) 
         # blast the sequence collection against the database
         blast_hits = self._get_blast_hits(blast_db,seq_coll)
+
         # select the best blast hit for each query sequence
         best_blast_hit_ids = self._get_first_blast_hit_per_seq(blast_hits)
          
@@ -144,35 +148,41 @@ class BlastTaxonAssigner(TaxonAssigner):
             # if the user provided a result_path, write the 
             # results to file
             of = open(result_path,'w')
-            for seq_id, data in seq_id_to_taxonomy.items():
-                if data:
-                    of.write('%s\t%s\t%s\n' % (seq_id,data[0],str(data[1])))
-                else:
-                    # write to failures report file -- need specs on where
-                    # this file comes from; for now, just ignore it
-                    pass
+            for seq_id, (lineage, confidence) in seq_id_to_taxonomy.items():
+                of.write('%s\t%s\t%s\n' % (seq_id, lineage, confidence))
             of.close()
             result = None
-            log_str = 'Result path: %s' % result_path
+            logger.info('Result path: %s' % result_path)
         else:
             # if no result_path was provided, return the data as a dict
             result = seq_id_to_taxonomy
-            log_str = 'Result path: None, returned as dict.'
+            logger.info('Result path: None, returned as dict.')
 
         # clean-up temp blastdb files, if a temp blastdb was created
         if 'reference_seqs_filepath' in self.Params:
             map(remove,db_files_to_remove)
-            
-        if log_path:
-            # if the user provided a log file path, log the run
-            log_file = open(log_path,'w')
-            log_file.write(str(self))
-            log_file.write('\n')
-            log_file.write('%s\n' % log_str)
-        
+
+        if log_path is not None:
+            num_inspected = len(best_blast_hit_ids)
+            logger.info('Number of sequences inspected: %s' % num_inspected)
+            num_null_hits = best_blast_hit_ids.values().count(None)
+            logger.info('Number with no blast hits: %s' % num_null_hits)
+
         # return the result
         return result
-        
+
+    def _get_logger(self, log_path=None):
+        if log_path is not None:
+            handler = logging.FileHandler(log_path, mode='w')
+        else:
+            class NullHandler(logging.Handler):
+                def emit(self, record): pass
+            handler = NullHandler()
+        logger = logging.getLogger("BlastTaxonAssigner logger")
+        logger.addHandler(handler)
+        logger.setLevel(logging.INFO)
+        return logger
+
     def _map_ids_to_taxonomy(self,hits,id_to_taxonomy_map): 
         """ map {query_id:(best_blast_seq_id,e-val)} to {query_id:(tax,None)}
         """

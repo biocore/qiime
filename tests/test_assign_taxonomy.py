@@ -256,14 +256,19 @@ class BlastTaxonAssignerTests(TestCase):
         log_file = open(log_path)
         log_file_str = log_file.read()
         log_file.close()
-        
-        log_file_exp = ["BlastTaxonAssigner parameters:",\
-         'Min percent identity:0.9','Application:blastn/megablast',\
-         'Max E value:1e-30',\
-         'Result path: None, returned as dict.',
-         'blast_db:%s' % self.reference_seqs_fp,\
-         'id_to_taxonomy_filepath:%s' % self.id_to_taxonomy_fp,\
-         '']
+
+        log_file_exp = [
+            "BlastTaxonAssigner parameters:",
+            'Min percent identity:0.9',
+            'Application:blastn/megablast',
+            'Max E value:1e-30',
+            'Result path: None, returned as dict.',
+            'blast_db:%s' % self.reference_seqs_fp,
+            'id_to_taxonomy_filepath:%s' % self.id_to_taxonomy_fp,
+            'Number of sequences inspected: 6',
+            'Number with no blast hits: 0',
+            '',
+         ]
         # compare data in log file to fake expected log file
         # NOTE: Since p.params is a dict, the order of lines is not
         # guaranteed, so testing is performed to make sure that 
