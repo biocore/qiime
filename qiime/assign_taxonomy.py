@@ -19,7 +19,7 @@ providing a taxon assignment for each sequence.
 import csv
 import logging
 import re
-from os import system, remove
+from os import system, remove, path
 from glob import glob
 from itertools import count
 from string import strip
@@ -462,51 +462,64 @@ class RdpTaxonAssigner(TaxonAssigner):
 
 def parse_command_line_parameters():
     """ Parses command line arguments """
-    usage =\
-     'usage: %prog [options] input_sequences_filepath [id_to_taxonomy_filepath]'
+    usage = 'usage: %prog [options] -i INPUT_SEQS_FILEPATH'
     version = 'Version: %prog ' +  __version__
     parser = OptionParser(usage=usage, version=version)
 
-    parser.add_option('-m','--assignment_method',action='store',\
-          type='string',dest='assignment_method',help='Method for assigning'+\
-          ' taxonomy [default: %default]')
-          
-    parser.add_option('-b','--blast_db',action='store',\
-          type='string',dest='blast_db',help='Database to blast'+\
-          ' against [default: %default]')
-          
-    parser.add_option('-c','--confidence',action='store',\
-          type='float',dest='confidence',help='Minimum confidence to'+\
-          ' record an assignment [default: %default]')
-          
-    parser.add_option('-r','--reference_seqs_fp',action='store',\
-          type='string',dest='reference_seqs_fp',help='Path to reference '+\
-          ' sequences to blast against [default: %default]')
-          
-    parser.add_option('-o','--result_fp',action='store',\
-          type='string',dest='result_fp',help='Path to store '+\
-          'result file [default: <input_sequences_filepath>.txt]')
-          
-    parser.add_option('-l','--log_fp',action='store',\
-          type='string',dest='log_fp',help='Path to store '+\
-          'log file [default: No log file created.]')
+    parser.add_option('-i', '--input_seqs_fp',
+        help='Path to fasta file of sequences to be assigned [REQUIRED]')
 
-    parser.set_defaults(verbose=False,assignment_method='blast',\
-     confidence=0.80)
+    parser.add_option('-t', '--id_to_taxonomy_fp',
+        help='Path to tab-delimited file mapping sequences to assigned '
+        'taxonomy [REQUIRED when method is blast]')
 
-    opts,args = parser.parse_args()
-    if opts.assignment_method == 'blast' and len(args) != 2:
-       parser.error(\
-        'Exactly two arguments are required when assigning with blast.')
-       
+    parser.add_option('-m', '--assignment_method',
+        help='Method for assigning taxonomy; choices are "blast" and "rdp" '
+        '[default: %default]')
+          
+    parser.add_option('-b', '--blast_db',
+        help='Database to blast against.  Must provide either --blast_db or '
+        '--reference_seqs_db for assignment with blast [default: %default]')
+
+    parser.add_option('-r', '--reference_seqs_fp',
+        help='Path to reference sequences.  For assignment with blast, these '
+        'are used to generate a blast database. For assignment with rdp, they '
+        'are used as training sequences for the classifier [default: %default]')
+
+    parser.add_option('-c', '--confidence', type='float',
+        help='Minimum confidence to record an assignment, only used for rdp '
+        'method [default: %default]')
+
+    parser.add_option('-o', '--result_fp',
+        help='Path to store result file [default: <input_seqs_fp>.txt]')
+
+    parser.add_option('-l', '--log_fp',
+        help='Path to store log file [default: No log file created.]')
+
+    parser.set_defaults(
+        verbose=False,
+        assignment_method='blast',
+        confidence=0.80,
+        )
+
+    opts, args = parser.parse_args()
+    if opts.input_seqs_fp is None:
+        parser.error('Required option --input_seqs_fp omitted.')
+
+    if opts.assignment_method == 'blast':
+        if not opts.id_to_taxonomy_fp:
+            parser.error('Option --id_to_taxonomy_fp is required when ' 
+                         'assigning with blast.')
+        if not (opts.reference_seqs_fp or opts.blast_db):
+            parser.error('Either a blast db (via -b) or a collection of '
+                         'reference sequences (via -r) must be passed to '
+                         'assign taxonomy using blast.')
+
     if opts.assignment_method == 'rdp':
-        if len(args) == 2 and opts.reference_seqs_fp is None:
-            parser.error('A filepath for reference sequences must be '
-                         'specified along with the id_to_taxonomy file '
-                         'to train the Rdp Classifier.')
-        if len(args) not in (1, 2):
-            parser.error('Only one or two arguments are allowed when '
-                         'assigning with RDP.')
+        if opts.id_to_taxonomy_fp and not opts.reference_seqs_fp:
+                parser.error('A filepath for reference sequences must be '
+                             'specified along with the id_to_taxonomy file '
+                             'to train the Rdp Classifier.')
        
     if opts.assignment_method not in assignment_method_constructors:
         parser.error(\
@@ -514,54 +527,47 @@ def parse_command_line_parameters():
          % (opts.assignment_method,\
             ' '.join(assignment_method_constructors.keys())))
             
-    if opts.assignment_method == 'blast' and \
-     not (opts.reference_seqs_fp or opts.blast_db):
-        parser.error('Either a blast db (via -b) or a ' +\
-        'collection of reference sequences (via -r) must be ' +\
-        'passed to assign taxonomy using blast.')
+    return opts, args
 
-    return opts,args
 
-assignment_method_constructors = dict([
-        ('blast', BlastTaxonAssigner),
-        ('rdp', RdpTaxonAssigner),
-        ])
+assignment_method_constructors = {
+    'blast': BlastTaxonAssigner,
+    'rdp': RdpTaxonAssigner,
+    }
+
 
 if __name__ == "__main__":
-    opts,args = parse_command_line_parameters()
+    opts, args = parse_command_line_parameters()
  
-    taxon_assigner_constructor =\
-     assignment_method_constructors[opts.assignment_method]
-     
-    input_seqs_filepath = args[0]
-    try:
-        id_to_taxonomy_fp = args[1] 
-        params = {'id_to_taxonomy_filepath':id_to_taxonomy_fp}
-    except IndexError:
-        params = {}
-   
-    result_path = opts.result_fp or \
-     input_seqs_filepath.replace('.fasta','_tax_assignments.txt')
-     
-    log_path = opts.log_fp
-    
+    taxon_assigner_constructor = \
+        assignment_method_constructors[opts.assignment_method]
+    params = {}
+
+    if opts.id_to_taxonomy_fp is not None: 
+        params['id_to_taxonomy_filepath'] = opts.id_to_taxonomy_fp
+
     if opts.assignment_method == 'blast':
-        # one of these must have a value, otherwise we'd have 
-        # an optparse error
         if opts.blast_db:
             params['blast_db'] = opts.blast_db
-        else:
+        elif opts.reference_seqs_fp:
             params['reference_seqs_filepath'] = opts.reference_seqs_fp
+        else:
+            # should not be able to get here as failure to set either
+            # option would have raised an optparse error
+            exit(1)
     elif opts.assignment_method == 'rdp':
         params['Confidence'] = opts.confidence
     else:
-        # should not be able to get here as an unknown classifier would
-        # have raised an optparse error
+        # should not be able to get here as an unknown classifier
+        # would have raised an optparse error
         exit(1)
-            
-    
+
+    if opts.result_fp is None:
+        basename, ext = path.splitext(opts.input_seqs_fp)
+        opts.result_fp = basename + '_tax_assignments.txt'
+
     taxon_assigner = taxon_assigner_constructor(params)
-    taxon_assigner(input_seqs_filepath,\
-     result_path=result_path,log_path=log_path)
+    taxon_assigner(opts.input_seqs_fp, result_path=opts.result_fp,
+                   log_path=opts.log_fp)
 
 
