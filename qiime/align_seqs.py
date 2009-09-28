@@ -17,8 +17,8 @@ returning an alignment. Mostly, it will be thin wrappers for code
 already in cogent.app.*, to which wrappers for e.g. PyNAST need to be
 added..
 """
-from os import remove
-from os.path import exists, splitext
+from os import remove, mkdir
+from os.path import exists, splitext, split
 from commands import getoutput
 from optparse import OptionParser
 from cogent import LoadSeqs, DNA
@@ -42,7 +42,8 @@ try:
 except ImportError:
     def raise_pynast_not_found_error(*args, **kwargs):
         raise ApplicationNotFoundError,\
-         "PyNAST not installed - pynast aligner currently unavailable." 
+         "PyNAST cannot be found.\nIs PyNAST installed? Is it in your $PYTHONPATH?"+\
+         "\nYou can obtain PyNAST from http://pynast.sourceforge.net/." 
     # set functions which cannot be imported to raise_pynast_not_found_error
     pynast_seqs = NastLogger = pair_hmm_align_unaligned_seqs = \
     muscle_align_unaligned_seqs = mafft_align_unaligned_seqs =\
@@ -179,80 +180,80 @@ class PyNastAligner(Aligner):
             except ValueError:
                 return {}
 
+usage_str = """usage: %prog [options] {-i INPUT_SEQUENCES_FILEPATH}
+
+[] indicates optional input (order unimportant) 
+{} indicates required input (order unimportant) 
+
+Example usage:
+
+Align 10_seq.fasta (-i) using muscle (-m). Output files will be stored in 
+ ./muscle_aligned/
+ python align_seqs.py -i 10_seq.fasta -m muscle
+ 
+Align 10_seq.fasta (-i) with pynast (default) against template_aln.fasta (-t).
+ Output files will be stored in ./pynast_aligned/
+ python align_seqs.py -i 10_seq.fasta -t template_aln.fasta
+"""
+
 def parse_command_line_parameters():
     """ Parses command line arguments """
-    usage =\
-     'usage: %prog [options] input_sequences_filepath'
+    usage = usage_str
     version = 'Version: %prog ' +  __version__
     parser = OptionParser(usage=usage, version=version)
 
-    parser.add_option('-m','--alignment_method',action='store',\
-          type='string',dest='alignment_method',help='Method for aligning'+\
-          ' sequences [default: %default]')
+    parser.add_option('-i','--input_fasta_fp',\
+        help='Input sequences to align [REQUIRED]')
           
-    parser.add_option('-a','--pairwise_alignment_method',action='store',\
-          type='string',dest='pairwise_alignment_method',help='method '+\
-          'for performing pairwise alignment in PyNAST ' +\
-          '[default: %default]')
-
-    parser.add_option('-d','--blast_db',action='store',\
-          type='string',dest='blast_db',help='Database to blast'+\
-          ' against [default: %default]')
-          
-    parser.add_option('-b','--blast_executable',action='store',\
-        type='string',
-        default='/home/caporaso/bin/blastall',
-        help='Path to blast executable [default: %default]')
-          
-    parser.add_option('-t','--template_fp',action='store',\
+    parser.add_option('-t','--template_fp',\
           type='string',dest='template_fp',help='Filepath for '+\
-          'template against [default: %default]')
+          'template against [default: %default; REQUIRED if -m pynast]')
+
+    alignment_method_choices = \
+     alignment_method_constructors.keys() + alignment_module_names.keys()
+    parser.add_option('-m','--alignment_method',\
+          type='choice',help='Method for aligning'+\
+          ' sequences [default: %default]',choices=alignment_method_choices)
           
-    parser.add_option('-o','--result_fp',action='store',\
-          type='string',dest='result_fp',help='Path to store '+\
-          'result file [default: <input_sequences_filename>_aligned.fasta]')
+    pairwise_alignment_method_choices = pairwise_alignment_methods.keys()
+    parser.add_option('-a','--pairwise_alignment_method',\
+          type='choice',help='method for performing pairwise ' +\
+          'alignment in PyNAST [default: %default]',\
+          choices=pairwise_alignment_method_choices)
+
+    parser.add_option('-d','--blast_db',\
+          dest='blast_db',help='Database to blast against when -m pynast '+\
+          '[default: created on-the-fly from template_alignment]')
           
-    parser.add_option('-l','--log_fp',action='store',\
-          type='string',dest='log_fp',help='Path to store '+\
-          'log file [default: No log file created.]')
+    parser.add_option('-b','--blast_executable',\
+        help='Path to blast executable when -m pynast [default: %default]')
           
-    parser.add_option('-e','--min_length',action='store',\
-          type='int',dest='min_length',help='Minimum sequence '+\
+    parser.add_option('-o','--output_dir',\
+          help='Path to store '+\
+          'result file [default: <ALIGNMENT_METHOD>_aligned]')
+          
+    parser.add_option('-e','--min_length',\
+          type='int',help='Minimum sequence '+\
           'length to include in alignment [default: %default]')
           
-    parser.add_option('-p','--min_percent_id',action='store',\
-          type='float',dest='min_percent_id',help='Minimum percent '+\
+    parser.add_option('-p','--min_percent_id',\
+          type='float',help='Minimum percent '+\
           'sequence identity to closest blast hit to include sequence in'+\
           ' alignment [default: %default]')
           
-    parser.add_option('-f','--fail_fp',action='store',\
-          type='string',dest='fail_fp',help='Path to store '+\
-          'seqs which fail to align [default: No fail file created.]')
 
-    parser.set_defaults(verbose=False, alignment_method='muscle',\
-     pairwise_alignment_method='pair_hmm', min_percent_id=75.0,min_length=1000,\
-     blast_db=None)
+    parser.set_defaults(verbose=False, alignment_method='pynast',\
+     pairwise_alignment_method='blast', min_percent_id=75.0,min_length=1000,\
+     blast_db=None,blast_executable='/home/caporaso/bin/blastall')
 
     opts,args = parser.parse_args()
     
-    num_args = 1
-    if len(args) != num_args:
-       parser.error('Exactly one argument is required.')
-       
-    if not (opts.alignment_method in alignment_method_constructors or
-            opts.alignment_method in alignment_module_names):
-        parser.error(\
-         'Invalid alignment method: %s.\nValid choices are: %s'\
-         % (opts.alignment_method,\
-            ' '.join(alignment_method_constructors.keys() +
-                alignment_module_names.keys())))
-
-    if opts.pairwise_alignment_method not in pairwise_alignment_methods:
-        parser.error(
-            'Invalid pairwise alignment method: %s.\nValid choices are: %s'\
-                % (opts.pairwise_alignment_method,
-                   ' '.join(pairwise_alignment_methods.keys())))
-            
+    required_options = ['input_fasta_fp']
+    
+    for option in required_options:
+        if eval('opts.%s' % option) == None:
+            parser.error('Required option --%s omitted.' % option) 
+    
     if opts.min_percent_id <= 1.0:
         opts.min_percent_id *= 100
         
@@ -266,8 +267,7 @@ def parse_command_line_parameters():
     return opts,args
 
 
-alignment_method_constructors = dict([\
-        ('pynast',PyNastAligner)])
+alignment_method_constructors ={'pynast':PyNastAligner}
 
 pairwise_alignment_methods = {
     'muscle':muscle_align_unaligned_seqs,
@@ -284,26 +284,32 @@ alignment_module_names = {'muscle':cogent.app.muscle,
 if __name__ == "__main__":
     opts,args = parse_command_line_parameters()
 
-    input_seqs_filepath = args[0]
+    input_seqs_filepath = opts.input_fasta_fp
+    alignment_method = opts.alignment_method
+    output_dir = opts.output_dir or alignment_method + '_aligned'
+    try:
+        mkdir(output_dir)
+    except OSError:
+        # output directory exists
+        pass
     
-    result_path = opts.result_fp 
-    if not result_path: # empty or None
-        fpath, ext = splitext(input_seqs_filepath) # fpath omits extension
-        result_path = fpath + "_aligned" + ext
-     
-    log_path = opts.log_fp
+    fpath, ext = splitext(input_seqs_filepath)
+    input_dir, fname = split(fpath)
+    
+    result_path = output_dir + '/' + fname + "_aligned" + ext
+    log_path = output_dir + '/' + fname + "_log.txt"
+    failure_path = output_dir + '/' + fname + "_failures.fasta"
  
     try:
         # define the aligner params
         aligner_constructor =\
-         alignment_method_constructors[opts.alignment_method]
-        aligner_type = opts.alignment_method
+         alignment_method_constructors[alignment_method]
+        aligner_type = alignment_method
         params = {'min_len':opts.min_length,\
                   'min_pct':opts.min_percent_id,\
                   'template_filepath':opts.template_fp,\
                   'blast_db':opts.blast_db,
                   'pairwise_alignment_method': opts.pairwise_alignment_method}
-        failure_path = opts.fail_fp
         # build the aligner object
         aligner = aligner_constructor(params)
         # apply the aligner
@@ -313,8 +319,8 @@ if __name__ == "__main__":
     except KeyError:
         # define the aligner params
         aligner = CogentAligner({
-        'Module':alignment_module_names[opts.alignment_method],
-        'Method':opts.alignment_method
+        'Module':alignment_module_names[alignment_method],
+        'Method':alignment_method
         })
         # build the aligner
         aligner_type = 'Cogent'
