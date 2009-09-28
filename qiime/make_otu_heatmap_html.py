@@ -18,14 +18,14 @@ Requirements:
 Python 2.5
 
 Example 1: Create html file and javascript array from otu counts table:
-Usage: python make_otu_heatmap_html.py -o otu_counts.txt
+Usage: python make_otu_heatmap_html.py -i otu_counts.txt
 
 Example 2: Create html file, then javascript array in specified directory:
-Usage: python make_otu_heatmap_html.py -o otu_counts.txt -x ./test/
+Usage: python make_otu_heatmap_html.py -i otu_counts.txt -o ./test/
 
 Example 3: Create html file, then javascript array where the number of hits
 per otu are speified:
-Usage: python make_otu_heatmap_html.py -o otu_counts.txt -n 50
+Usage: python make_otu_heatmap_html.py -i otu_counts.txt -n 50
 
 """
 
@@ -196,23 +196,20 @@ def get_otu_counts(options, data):
 
 def _make_cmd_parser():
     """Returns the command-line options"""
-    parser = OptionParser(usage="Usage: this_file.py -o <otu count output files>\
--n <num of otu hits: default=5> -x <write to directory: default=random dir>")
-    parser.add_option('-o', '--otu_count', dest='otu_count_fname', \
-        help='name of otu count file')
-    parser.add_option('-x', '--dir-prefix', dest='dir_path',\
-        help='directory prefix for all analyses')
-    parser.add_option('-n', '--num_otu_hits', dest='num_otu_hits',\
-        help='number of hits per OTU')
+    parser = OptionParser(usage="Usage: this_file.py -i <otu table file>\
+-n <num of otu hits: default=5> -o <write to directory: default=random dir>")
+    parser.add_option('-i', '--otu_count_fname', \
+        help='name of otu count file [REQUIRED]')
+    parser.add_option('-n', '--num_otu_hits', \
+        help='number of hits per OTU [default: %default]',default=5)
+    parser.add_option('-o', '--dir_path',\
+        help='directory prefix for all analyses [default: %default]',default='')
     options, args = parser.parse_args()
     return options
 
 def _process_prefs(options):
     """opens files as necessary based on prefs"""
     data = {}
-    
-    if not options.num_otu_hits:
-        options.num_otu_hits=5
 
     #Open and get coord data
     data['otu_counts'] = get_otu_counts(options, data)
@@ -220,8 +217,8 @@ def _process_prefs(options):
     filepath=options.otu_count_fname
     filename=filepath.strip().split('/')[-1].split('.')[0]
     
-    dir_path = create_dir(options.dir_path)
-    js_dir_path = create_dir(dir_path+'js/')
+    dir_path = create_dir(options.dir_path,'otu_table_')
+    js_dir_path = create_dir(dir_path+'js/','')
     
     file_path=__file__.split('/')
     if len(file_path)==1:
