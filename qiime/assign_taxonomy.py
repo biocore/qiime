@@ -582,8 +582,12 @@ if __name__ == "__main__":
             params['blast_db'] = opts.blast_db
         else:
             params['reference_seqs_filepath'] = opts.reference_seqs_fp
+
     elif opts.assignment_method == 'rdp':
         params['Confidence'] = opts.confidence
+        params['id_to_taxonomy_fp'] = opts.id_to_taxonomy_fp
+        params['reference_sequences_fp'] = opts.reference_seqs_fp
+
     else:
         # should not be able to get here as an unknown classifier would
         # have raised an optparse error
