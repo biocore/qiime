@@ -17,6 +17,8 @@ grouping those sequences by similarity.
 
 from copy import copy
 from optparse import OptionParser
+from os.path import splitext, split
+from os import mkdir
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.app.cd_hit import cdhit_clusters_from_seqs
 from cogent.app.dotur import dotur_from_alignment
@@ -346,55 +348,65 @@ class DoturOtuPicker(OtuPicker):
         retval = prev_res[i_otu_list]
 
         return retval
+usage_str = """usage: %prog [options] {-i INPUT_SEQS_FILEPATH}
 
+[] indicates optional input (order unimportant) 
+{} indicates required input (order unimportant) 
+
+Example usage:
+
+    # Get detailed usage information
+    python pick_otus.py -h
+    
+    # Pick OTUs from at_inseqs.fasta (-i) with cd-hit-est (default) and
+    # store output files in ./cdhit_picked_otus/ (default).
+    python pick_otus.py -i at_inseqs.fasta
+ 
+"""
 
 def parse_command_line_parameters():
     """ Parses command line arguments """
-    usage =\
-     'usage: %prog [options] input_sequences_filepath'
+    usage = usage_str
     version = 'Version: %prog ' +  __version__
     parser = OptionParser(usage=usage, version=version)
 
-    parser.add_option('-m','--otu_picking_method',action='store',\
-          type='string',dest='otu_picking_method',help='Method for picking'+\
-          ' OTUs [default: %default]')
+    parser.add_option('-i','--input_seqs_filepath',\
+          help='Path to input sequences file [REQUIRED]')
+
+    otu_picking_method_choices = otu_picking_method_constructors.keys()
+    parser.add_option('-m','--otu_picking_method',type='choice',\
+          help='Method for picking OTUs [default: %default]',\
+          choices=otu_picking_method_choices)
     
-    parser.add_option('-M','--max_cdhit_memory',action='store',\
-          type=int,help='max available memory to cdhit (cd-hit\'s -M)'+\
+    parser.add_option('-M','--max_cdhit_memory',type=int,\
+          help='max available memory to cdhit (cd-hit\'s -M)'+\
           ' (Mbyte) [default: %default]',default=400)
           
-    parser.add_option('-o','--result_fp',action='store',\
-          type='string',dest='result_fp',help='Path to store '+\
-          'result file [default: <input_sequences_filepath>.otu]')
-          
-    parser.add_option('-l','--log_fp',action='store',\
-          type='string',dest='log_fp',help='Path to store '+\
-          'log file [default: No log file created.]')
+    parser.add_option('-o','--output_dir',\
+          help='Path to store '+\
+          'result file [default: ./<OTU_METHOD>_picked_otus/]')
           
     parser.add_option('-s','--similarity',action='store',\
           type='float',dest='similarity',help='Sequence similarity '+\
           'threshold [default: %default]')
     
-    parser.add_option('-n','--prefix_prefilter_length',action='store',\
+    parser.add_option('-n','--prefix_prefilter_length',\
           type=int,help='prefilter data so seqs with identical first '+\
           'prefix_prefilter_length are automatically grouped into a '+\
           'single OTU; useful for large sequence collections where OTU '+\
           'picking doesn\'t scale well '+\
-          '[default: %default; 100 is a good value]',default=None)
+          '[default: %default; 100 is a good value]')
 
     parser.set_defaults(verbose=False,otu_picking_method='cdhit',\
         similarity=0.96)
 
     opts,args = parser.parse_args()
-    num_args = 1
-    if len(args) != num_args:
-       parser.error('Exactly one argument is required.')
-       
-    if opts.otu_picking_method not in otu_picking_method_constructors:
-        parser.error(\
-         'Invalid assignment method: %s.\nValid choices are: %s'\
-         % (opts.otu_picking_method,\
-            ' '.join(otu_picking_method_constructors.keys())))
+
+    required_options = ['input_seqs_filepath']
+    
+    for option in required_options:
+        if eval('opts.%s' % option) == None:
+            parser.error('Required option --%s omitted.' % option) 
 
     return opts,args
 
@@ -404,16 +416,23 @@ otu_picking_method_constructors = dict([\
 if __name__ == "__main__":
     opts,args = parse_command_line_parameters()
     prefix_prefilter_length = opts.prefix_prefilter_length
+    otu_picking_method = opts.otu_picking_method
  
     otu_picker_constructor =\
-     otu_picking_method_constructors[opts.otu_picking_method]
+     otu_picking_method_constructors[otu_picking_method]
      
-    input_seqs_filepath = args[0]
-   
-    result_path = opts.result_fp or\
-     '%s.otu' % input_seqs_filepath
-     
-    log_path = opts.log_fp
+    input_seqs_filepath = opts.input_seqs_filepath
+    input_seqs_dir, input_seqs_filename = split(input_seqs_filepath)
+    input_seqs_basename, ext = splitext(input_seqs_filename)
+    
+    output_dir = opts.output_dir or otu_picking_method + '_picked_otus'
+    try:
+        mkdir(output_dir)
+    except OSError:
+        # output_dir exists
+        pass
+    result_path = '%s/%s_otus.txt' % (output_dir,input_seqs_basename)
+    log_path = '%s/%s.log' % (output_dir,input_seqs_basename)
     
     params = {'Similarity':opts.similarity,'-M':opts.max_cdhit_memory}
     
@@ -421,5 +440,4 @@ if __name__ == "__main__":
     otu_picker(input_seqs_filepath,\
      result_path=result_path,log_path=log_path,\
      prefix_prefilter_length=prefix_prefilter_length)
-    
     
