@@ -2,7 +2,7 @@
 
 __author__ = "Daniel McDonald"
 __copyright__ = "Copyright 2009, the PyCogent Project" #consider project name
-__credits__ = ["Rob Knight", "Daniel McDonald"] #remember to add yourself if you make changes
+__credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso"] #remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "0.1"
 __maintainer__ = "Rob Knight"
@@ -10,12 +10,14 @@ __email__ = "rob@spot.colorado.edu"
 __status__ = "Prototype"
 
 
-"""Contains general utility code in support of the 454 project.
+"""Contains general utility code in support of the Qiime project.
 
 A lot of this might migrate into cogent at some point.
 """
 
 from StringIO import StringIO
+from os import getenv
+from os.path import split
 from qiime.parse import parse_otus
 from cogent.parse.tree import DndParser, PhyloNode
 from cogent.core.alignment import Alignment
@@ -194,6 +196,60 @@ class FunctionWithParams(object):
         else:
             return result
 
+# Begin functions for handling qiime_config file
+def parse_qiime_config_file(qiime_config_file):
+    """ Parse lines in a qiime_config file
+    """
+    result = {}
+    for line in qiime_config_file:
+        line = line.strip()
+        # ignore blank lines or lines beginning with '#'
+        if not line or line.startswith('#'): continue
+        fields = line.split()
+        result[fields[0]] = fields[1:]
+    return result
 
+def parse_qiime_config_filepaths(qiime_config_filepaths):
+    """ Parse files in (ordered!) list of qiime_config_filepaths
+    
+        The order of file paths must be least important to most important.
+         Values defined in earlier filepaths will be overwritten if the same 
+         values are defined in later filepaths.
+    """
+    files_read = []
+    
+    results = {}
+    for qiime_config_filepath in qiime_config_filepaths:
+        try:
+            results.update(parse_qiime_config_file(open(qiime_config_filepath)))
+            files_read.append(qiime_config_filepath)
+        except IOError:
+            pass
+            
+    # If no qiime_config file could be read, raise an error
+    if not files_read:
+        raise IOError,\
+         "No qiime_config were read.\n Tried %s\n Do these exist? Do you have read access?"\
+         % ' '.join(qiime_config_filepaths)
+         
+    return results
 
-
+def load_qiime_config():
+    """Return default parameters read in from file"""
+    result = {}
+    qiime_config_filepaths = []
+    qiime_parallel_dir = split(__file__)[0]
+    qiime_config_filepaths.append(qiime_parallel_dir + '/../qiime_config')
+    
+    home_dir = getenv('HOME')
+    if home_dir:
+        qiime_config_home_filepath = home_dir + '/.qiime_config'
+        qiime_config_filepaths.append(qiime_config_home_filepath)
+    
+    qiime_config_env_filepath = getenv('QIIME_CONFIG_FP')
+    if qiime_config_env_filepath:
+        qiime_config_filepaths.append(qiime_config_env_filepath)
+    return parse_qiime_config_filepaths(qiime_config_filepaths)
+    
+qiime_config = load_qiime_config()
+# End functions for handling qiime_config file

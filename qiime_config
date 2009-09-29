@@ -1,0 +1,14 @@
+# qiime_config
+# WARNING: DO NOT EDIT OR DELETE Qiime/qiime_config
+# To overwrite defaults, copy this file to $HOME/.qiime_config or a full path
+# specified by $QIIME_CONFIG_FP and edit that copy of the file.
+
+formatdb_fp	/software/bin/formatdb
+cluster_jobs_fp	/software/scripts/cluster_jobs.py
+python_exe_fp	/software/bin/python
+align_seqs_fp	/software/Qiime/qiime/align_seqs.py
+working_dir	/quicksand
+assign_taxonomy_fp	/software/Qiime/qiime/assign_taxonomy.py
+blastmat_dir	/software/blast-2.2.16/data
+blastall_fp	/software/bin/blastall
+rdp_classifier_fp	/software/rdp_classifier/rdp_classifier-2.0.jar

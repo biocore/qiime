@@ -13,7 +13,8 @@ from os.path import split
 from cogent.app.util import get_tmp_filename
 from qiime.parallel.util import split_fasta, get_random_job_prefix, write_jobs_file,\
     submit_jobs, compute_seqs_per_file, build_filepaths_from_filepaths
-from pynast.util import build_temp_blast_db_from_alignment_fp
+from qiime.util import qiime_config
+from pynast.util import pairwise_alignment_methods
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2009, the Qiime Project"
@@ -25,7 +26,7 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Prototype"
 
 def get_commands(python_exe_fp,align_seqs_fp,fasta_fps,template_aln_fp,\
-    pairwise_alignment_method,out_fps,log_fps,blast_db,blast_executable,\
+    pairwise_alignment_method,output_dir,blast_db,blast_executable,\
      min_length,min_percent_id,command_prefix=None,command_suffix=None):
     """Generate PyNAST commands which should be submitted to cluster
     """
@@ -44,9 +45,9 @@ def get_commands(python_exe_fp,align_seqs_fp,fasta_fps,template_aln_fp,\
     else:
         blast_option = ''
     
-    for out_fp,log_fp,fasta_fp in zip(out_fps,log_fps,fasta_fps):
+    for fasta_fp in fasta_fps:
         command = \
-         '%s %s %s %s -p %1.2f -e %d -b %s -m pynast -t %s -a %s -o %s -l %s %s %s' %\
+         '%s %s %s %s -p %1.2f -e %d -b %s -m pynast -t %s -a %s -o %s -i %s %s' %\
          (command_prefix,\
           python_exe_fp,\
           align_seqs_fp,\
@@ -56,8 +57,7 @@ def get_commands(python_exe_fp,align_seqs_fp,fasta_fps,template_aln_fp,\
           blast_executable,\
           template_aln_fp,\
           pairwise_alignment_method,
-          out_fp,
-          log_fp,
+          output_dir,
           fasta_fp,
           command_suffix)
           
@@ -65,7 +65,7 @@ def get_commands(python_exe_fp,align_seqs_fp,fasta_fps,template_aln_fp,\
         
     return commands
 
-usage_str = """usage: %prog [options] {-i INPUT_FP -t TEMPLATE_ALN_FP}
+usage_str = """usage: %prog [options] {-i INPUT_FP -t TEMPLATE_ALN_FP -o OUTPUT_DIR}
 
 [] indicates optional input (order unimportant)
 {} indicates required input (order unimportant)
@@ -73,10 +73,10 @@ usage_str = """usage: %prog [options] {-i INPUT_FP -t TEMPLATE_ALN_FP}
 Example usage:
 
 Split the input file (-i) into five jobs (-j) to align against 
- pynast_test_template.fasta (-t) and submit the jobs (-s)
- to the cluster:
+ pynast_test_template.fasta (-t), submit the jobs to the cluster (default)
+ and write the output (-o) to /home/caporaso/out:
 
- parallel_pynast.py -s -i 10_seq.fasta -j 5 -t /data/pynast_test_template.fasta
+ parallel_pynast.py -i 10_seq.fasta -j 5 -t /data/pynast_test_template.fasta -o /home/caporaso/out
 """
 
 def parse_command_line_parameters():
@@ -85,67 +85,33 @@ def parse_command_line_parameters():
     version = '%prog ' + str(__version__)
     parser = OptionParser(usage=usage, version=version)
           
+    # define relevant align_seqs.py parameters
     parser.add_option('-i','--input_fasta_fp',action='store',\
            type='string',help='full path to '+\
            'input_fasta_fp [REQUIRED]') 
           
     parser.add_option('-t','--template_aln_fp',action='store',\
            type='string',help='full path to '+\
-           'template alignment [REQUIRED]') 
-
-    parser.add_option('-s','--submit_jobs',action='store_true',\
-            help='Submit jobs in addition to splitting input and '+\
-            'writing commands file  [default: %default]',default=False)
-        
-    parser.add_option('-j','--jobs_to_start',action='store',type='int',\
-            help='Number of jobs to start [default: %default]',default=24)
-
-    parser.add_option('-y','--python_exe_fp',action='store',\
-           type='string',help='full path to python '+\
-           'executable [default: %default]',\
-           default='/home/caporaso/bin/python')
+           'template alignment [REQUIRED]')
     
     parser.add_option('-o','--output_dir',action='store',\
            type='string',help='path to store output files '+\
-           '[default: %default]',default='.')
+           '[REQUIRED]')
+            
+    pairwise_alignment_method_choices = pairwise_alignment_methods.keys()
+    parser.add_option('-a','--pairwise_alignment_method',\
+          type='choice',help='Method to use for pairwise alignments'+\
+          ' (applicable with -m pynast) [default: %default]',\
+          default='blast',choices=pairwise_alignment_method_choices)
     
     parser.add_option('-d','--blast_db',action='store',\
            type='string',help='database to blast against '+\
            '[default: formatted from template alignment]')
            
-    parser.add_option('-b','--blast_executable',action='store',\
-        type='string',
-        default='/home/caporaso/bin/blastall',
-        help='Path to blast executable [default: %default]')
+    parser.add_option('-b','--blastall_fp',
+        default=qiime_config['blastall_fp'][0],
+        help='Path to blastall [default: %default]')
         
-    parser.add_option('-f','--formatdb_executable',action='store',\
-        type='string',
-        default='/home/caporaso/bin/formatdb',
-        help='Path to formatdb executable [default: %default]')
-           
-    parser.add_option('-x','--job_prefix',action='store',\
-           type='string',help='job prefix '+\
-           '[default: ALIGN_ + 4 random chars]')
-    
-    parser.add_option('-l','--log_dir',action='store',\
-           type='string',help='path to store log files '+\
-           '[default: %default]',default='.')
-           
-    parser.add_option('-n','--align_seqs_fp',action='store',\
-           type='string',help='full path to '+\
-           'qiime/assign_taxonomy.py [default: %default]',\
-           default='/home/caporaso/Qiime/qiime/align_seqs.py')
-          
-    parser.add_option('-a','--pairwise_alignment_method',action='store',\
-          type='string',help='Method to use for pairwise alignments'+\
-          ' (applicable with -m pynast) [default: %default]',\
-          default='blast')
-            
-    parser.add_option('-u','--path_to_cluster_jobs',action='store',\
-            type='string',help='path to cluster_jobs.py script ' +\
-            ' [default: %default]',\
-            default='/home/caporaso/bin/cluster_jobs.py')
-            
     parser.add_option('-e','--min_length',action='store',\
           type='int',help='Minimum sequence '+\
           'length to include in alignment [default: %default]',\
@@ -155,10 +121,39 @@ def parse_command_line_parameters():
           type='float',help='Minimum percent '+\
           'sequence identity to closest blast hit to include sequence in'+\
           ' alignment [default: %default]',default=75.0)
+          
+    # Define parallel-script-specific parameters
+    parser.add_option('-n','--align_seqs_fp',action='store',\
+           type='string',help='full path to '+\
+           'qiime/align_seqs.py [default: %default]',\
+           default=qiime_config['align_seqs_fp'][0])
+           
+    parser.add_option('-f','--formatdb_fp',
+        default=qiime_config['formatdb_fp'][0],
+        help='Path to formatdb executable [default: %default]')
+           
+    parser.add_option('-x','--job_prefix',help='job prefix '+\
+           '[default: ALIGN_ + 4 random chars]')
+            
+    parser.add_option('-u','--cluster_jobs_fp',
+            help='path to cluster_jobs.py script ' +\
+            ' [default: %default]',\
+            default=qiime_config['cluster_jobs_fp'][0])
+
+    parser.add_option('-S','--suppress_submit_jobs',action='store_true',\
+            help='Only split input and write commands file - don\'t submit '+\
+            'jobs [default: %default]',default=False)
+        
+    parser.add_option('-j','--jobs_to_start',type='int',\
+            help='Number of jobs to start [default: %default]',default=24)
+
+    parser.add_option('-y','--python_exe_fp',
+           help='full path to python executable [default: %default]',\
+           default=qiime_config['python_exe_fp'][0])
                              
     opts,args = parser.parse_args()
     
-    required_options = ['input_fasta_fp','template_aln_fp']
+    required_options = ['input_fasta_fp','template_aln_fp','output_dir']
     
     for option in required_options:
         if eval('opts.%s' % option) == None:
@@ -172,15 +167,14 @@ if __name__ == "__main__":
     # create local copies of command-line options
     python_exe_fp = opts.python_exe_fp
     align_seqs_fp = opts.align_seqs_fp
-    path_to_cluster_jobs = opts.path_to_cluster_jobs
+    cluster_jobs_fp = opts.cluster_jobs_fp
     input_fasta_fp = opts.input_fasta_fp 
     jobs_to_start = opts.jobs_to_start
     output_dir = opts.output_dir
-    log_dir = opts.log_dir
     template_aln_fp = opts.template_aln_fp
     pairwise_alignment_method = opts.pairwise_alignment_method
-    formatdb_executable = opts.formatdb_executable
-    blast_executable = opts.blast_executable
+    formatdb_fp = opts.formatdb_fp
+    blastall_fp = opts.blastall_fp
     min_length = opts.min_length
     min_percent_id = opts.min_percent_id
     
@@ -189,12 +183,8 @@ if __name__ == "__main__":
     ## If the user doesn't provide a blast database, one option is to
     ## to create it here so it doesn't get repeated on every proc. The 
     ## problem with creating it here is that it makes it harder to 
-    ## clean-up. For now, will let each proc build the db itself.
-    # if not blast_db:
-    #     blast_db, files_to_remove = \
-    #       build_temp_blast_db_from_alignment_fp(\
-    #       template_aln_fp,formatdb_executable)
-    #     blast_db = str(blast_db)
+    ## clean-up because we don't know when all procs are done with it. 
+    ## For now, will let each proc build the db itself.
     
     # split the input filepath into directory and filename
     input_dir, input_fasta_fn = split(input_fasta_fp)
@@ -210,30 +200,20 @@ if __name__ == "__main__":
     # split the fasta files and get the list of resulting files
     tmp_fasta_fps =\
       split_fasta(open(input_fasta_fp),num_seqs_per_file,job_prefix)
-     
-    # build the list of output filepaths from the set of input files
-    # by appending '.tax_assignments.txt' to the end of each
-    out_fps = build_filepaths_from_filepaths(tmp_fasta_fps,\
-     directory=output_dir,suffix='.aligned.fasta')
-     
-    # build the list of log filepaths from the set of input files
-    # by appending '.tax_assignments.log' to the end of each
-    log_fps = build_filepaths_from_filepaths(tmp_fasta_fps,\
-     directory=log_dir,suffix='.aligned.log')
     
     # generate the list of commands to be pushed out to nodes
     commands = \
      get_commands(python_exe_fp,align_seqs_fp,tmp_fasta_fps,template_aln_fp,\
-     pairwise_alignment_method,out_fps,log_fps,blast_db,blast_executable,\
+     pairwise_alignment_method,output_dir,blast_db,blastall_fp,\
      min_length,min_percent_id)
      
     # write the commands to the 'jobs files'
     jobs_fp = write_jobs_file(commands,job_prefix=job_prefix)
     
-    # submit the jobs file using cluster_jobs, if requested by the
+    # submit the jobs file using cluster_jobs, if not suppressed by the
     # user
-    if opts.submit_jobs:
-        submit_jobs(path_to_cluster_jobs,jobs_fp,job_prefix)
+    if not opts.suppress_submit_jobs:
+        submit_jobs(cluster_jobs_fp,jobs_fp,job_prefix)
     
     
     
