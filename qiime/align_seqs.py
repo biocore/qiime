@@ -25,7 +25,7 @@ from cogent import LoadSeqs, DNA
 from cogent.core.alignment import DenseAlignment
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.app.util import get_tmp_filename, ApplicationNotFoundError
-from qiime.util import FunctionWithParams
+from qiime.util import FunctionWithParams, qiime_config
 #app controllers that implement align_unaligned_seqs
 import cogent.app.muscle
 import cogent.app.clustalw
@@ -244,7 +244,7 @@ def parse_command_line_parameters():
 
     parser.set_defaults(verbose=False, alignment_method='pynast',\
      pairwise_alignment_method='blast', min_percent_id=75.0,min_length=1000,\
-     blast_db=None,blast_executable='/home/caporaso/bin/blastall')
+     blast_db=None,blast_executable=qiime_config['blastall_fp'][0])
 
     opts,args = parser.parse_args()
     
