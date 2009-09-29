@@ -3,7 +3,7 @@
 
 from __future__ import division
 from random import choice
-from os import popen, system
+from os import popen, system, getenv
 from os.path import split
 from cogent.parse.fasta import MinimalFastaParser
 
@@ -125,10 +125,4 @@ def build_filepaths_from_filepaths(filepaths,prefix='',directory='',\
         results.append(result)
     
     return results
-
-# if __name__ == '__main__':
-#     from sys import argv
-#     infilename = argv[1]
-#     infile = open(infilename, 'U')
-#     seqs_per_file = int(argv[2])
-#     split_fasta(infile, seqs_per_file, infilename)
+    
