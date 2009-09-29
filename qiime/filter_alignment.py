@@ -13,12 +13,12 @@ __status__ = "Prototype"
 """
 
 from optparse import OptionParser
-from os.path import split, exists
+from os.path import split, exists, splitext
 from os import mkdir
 from cogent.core.alignment import eps, DenseAlignment
 from cogent import LoadSeqs
 
-usage_string = """usage: %prog [options] {-f INPUT_FASTA_FILE -d OUTPUT_DIR}
+usage_string = """usage: %prog [options] {-i INPUT_FASTA_FILE}
 
 Description:
  %prog is intended to be applied as a pre-filter for building trees from 
@@ -28,21 +28,23 @@ Description:
  greengenes), and positions which are 100% gap characters.
 
 Example usage:
+
+ # Get detailed usage information
+ python filter_alignment.py -h
+
  # filter 1.fasta using the lanemask in lm.txt, but filtering no gaps (b/c
  # --allowed_gap_frac=1.0, meaning positions can be up to 100% gap); output
- # written to ./1.fasta_filtered.fasta
- python ~/repo/Qiime/qiime/filter_alignment.py -f 1.fasta -d ./ -g 1.0 -l lm.txt
+ # written to ./1_filtered.fasta
+ python filter_alignment.py -i 1.fasta -g 1.0 -l lm.txt
  
  # filter 1.fasta using the lanemask in lm.txt and filter positions which are
- # 100% gap (default -g behavior); output written to ./1.fasta_filtered.fasta
- python ~/repo/Qiime/qiime/filter_alignment.py -f 1.fasta -d ./ -l lm.txt
+ # 100% gap (default -g behavior); output written to ./1_filtered.fasta
+ python filter_alignment.py -i 1.fasta -o ./ -l lm.txt
  
  # filter 1.fasta positions which are 100% gap (default -g behavior) but no lane mask
  # filtering (because no lane mask file provided with -l); output written to 
- # ./1.fasta_filtered.fasta
- python ~/repo/Qiime/qiime/filter_alignment.py -f 1.fasta -d ./ -l lm.txt
-
-"""
+ # ./1_filtered.fasta
+ python filter_alignment.py -i 1.fasta -o ./ -l lm.txt"""
 
 def parse_command_line_parameters():
     """ Parses command line arguments """
@@ -51,12 +53,12 @@ def parse_command_line_parameters():
     parser = OptionParser(usage=usage, version=version)
 
     # An example string option
-    parser.add_option('-f','--input_fasta_file',action='store',\
+    parser.add_option('-i','--input_fasta_file',action='store',\
            type='string',help='the input directory '+\
            '[REQUIRED]')
-    parser.add_option('-d','--output_dir',action='store',\
+    parser.add_option('-o','--output_dir',action='store',\
            type='string',help='the output directory '+\
-           '[REQUIRED]')
+           '[default: %default]',default='.')
     parser.add_option('-l','--lane_mask_fp',action='store',\
             type='string',help='path to lanemask file '+\
             '[default: %default]')
@@ -68,7 +70,7 @@ def parse_command_line_parameters():
 
     opts,args = parser.parse_args()
 
-    required_options = ['input_fasta_file','output_dir']
+    required_options = ['input_fasta_file']
     
     for option in required_options:
         if eval('opts.%s' % option) == None:
@@ -115,10 +117,14 @@ if __name__ == "__main__":
     
     # build the output filepath and open it any problems can be caught before starting
     # the work
-    if not exists(output_dir):
+    try:
         mkdir(output_dir)
+    except OSError:
+        pass
     input_dir, input_filename = split(input_fasta_file)
-    output_filepath = '%s/%s_filtered.fasta' % (output_dir,input_filename)
+    input_basename, ext = splitext(input_filename)
+    output_filepath = '%s/%s_filtered.fasta' % (output_dir,input_basename)
+    
     try:
         output_file = open(output_filepath,'w')
     except IOError:
