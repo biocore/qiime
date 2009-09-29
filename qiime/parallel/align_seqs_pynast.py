@@ -109,7 +109,7 @@ def parse_command_line_parameters():
            '[default: formatted from template alignment]')
            
     parser.add_option('-b','--blastall_fp',
-        default=qiime_config['blastall_fp'][0],
+        default=qiime_config['blastall_fp'],
         help='Path to blastall [default: %default]')
         
     parser.add_option('-e','--min_length',action='store',\
@@ -126,10 +126,10 @@ def parse_command_line_parameters():
     parser.add_option('-n','--align_seqs_fp',action='store',\
            type='string',help='full path to '+\
            'qiime/align_seqs.py [default: %default]',\
-           default=qiime_config['align_seqs_fp'][0])
+           default=qiime_config['align_seqs_fp'])
            
     parser.add_option('-f','--formatdb_fp',
-        default=qiime_config['formatdb_fp'][0],
+        default=qiime_config['formatdb_fp'],
         help='Path to formatdb executable [default: %default]')
            
     parser.add_option('-x','--job_prefix',help='job prefix '+\
@@ -138,7 +138,7 @@ def parse_command_line_parameters():
     parser.add_option('-u','--cluster_jobs_fp',
             help='path to cluster_jobs.py script ' +\
             ' [default: %default]',\
-            default=qiime_config['cluster_jobs_fp'][0])
+            default=qiime_config['cluster_jobs_fp'])
 
     parser.add_option('-S','--suppress_submit_jobs',action='store_true',\
             help='Only split input and write commands file - don\'t submit '+\
@@ -149,7 +149,7 @@ def parse_command_line_parameters():
 
     parser.add_option('-y','--python_exe_fp',
            help='full path to python executable [default: %default]',\
-           default=qiime_config['python_exe_fp'][0])
+           default=qiime_config['python_exe_fp'])
                              
     opts,args = parser.parse_args()
     

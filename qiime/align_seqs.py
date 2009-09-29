@@ -244,7 +244,7 @@ def parse_command_line_parameters():
 
     parser.set_defaults(verbose=False, alignment_method='pynast',\
      pairwise_alignment_method='blast', min_percent_id=75.0,min_length=1000,\
-     blast_db=None,blast_executable=qiime_config['blastall_fp'][0])
+     blast_db=None,blast_executable=qiime_config['blastall_fp'])
 
     opts,args = parser.parse_args()
     

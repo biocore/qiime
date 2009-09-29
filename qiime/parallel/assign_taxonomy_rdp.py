@@ -81,7 +81,7 @@ def parse_command_line_parameters():
     parser.add_option('-r','--rdp_classifier_fp',action='store',\
            type='string',help='full path to rdp classifier jar file '+\
            '[default: %default]',\
-           default=qiime_config['rdp_classifier_fp'][0])
+           default=qiime_config['rdp_classifier_fp'])
           
     parser.add_option('-c','--confidence',action='store',\
           type='float',help='Minimum confidence to'+\
@@ -102,17 +102,17 @@ def parse_command_line_parameters():
     parser.add_option('-p','--python_exe_fp',action='store',\
            type='string',help='full path to python '+\
            'executable [default: %default]',\
-           default=qiime_config['python_exe_fp'][0])
+           default=qiime_config['python_exe_fp'])
            
     parser.add_option('-a','--assign_taxonomy_fp',action='store',\
            type='string',help='full path to '+\
            'qiime/assign_taxonomy.py [default: %default]',\
-           default=qiime_config['assign_taxonomy_fp'][0])
+           default=qiime_config['assign_taxonomy_fp'])
             
     parser.add_option('-u','--cluster_jobs_fp',action='store',\
             type='string',help='path to cluster_jobs.py script ' +\
             ' [default: %default]',\
-            default=qiime_config['cluster_jobs_fp'][0])
+            default=qiime_config['cluster_jobs_fp'])
                              
     opts,args = parser.parse_args()
     

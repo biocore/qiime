@@ -205,8 +205,8 @@ def parse_qiime_config_file(qiime_config_file):
         line = line.strip()
         # ignore blank lines or lines beginning with '#'
         if not line or line.startswith('#'): continue
-        fields = line.split()
-        result[fields[0]] = fields[1:]
+        fields = line.split('\t')
+        result[fields[0]] = '\t'.join(fields[1:])
     return result
 
 def parse_qiime_config_filepaths(qiime_config_filepaths):
