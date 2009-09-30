@@ -36,7 +36,7 @@ from collections import defaultdict
 ## versions 1.4.0 or later. 
 numpy_version = re.split("[^\d]", numpy_version)
 numpy_version = tuple([int(i) for i in numpy_version if i.isdigit()])
-if numpy_version < (1,2,0):
+if numpy_version < (1,3,0):
     numpy_histogram = histogram
     def histogram(a, bins=10, range=None, normed=False, weights=None):
         return numpy_histogram(a,bins=bins,range=range,\
