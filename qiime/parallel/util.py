@@ -3,7 +3,7 @@
 
 from __future__ import division
 from random import choice
-from os import popen, system, getenv
+from os import popen, system, getenv, mkdir
 from os.path import split
 from cogent.parse.fasta import MinimalFastaParser
 
@@ -28,6 +28,10 @@ def split_fasta(infile, seqs_per_file, outfile_prefix, working_dir=''):
     out_files = []
     if working_dir and not working_dir.endswith('/'):
         working_dir += '/'
+        try:
+            mkdir(working_dir)
+        except OSError:
+            pass
     
     for seq_id,seq in MinimalFastaParser(infile):
         if seq_counter == 0:
@@ -60,20 +64,20 @@ def get_random_job_prefix(fixed_prefix='',max_job_prefix_len=10,\
     else:
         return fixed_prefix + ''.join(result)
 
-def write_jobs_file(commands,job_prefix=None,job_fp=None):
-    """ Write commands to job_fp and return job_fp
+def write_jobs_file(commands,job_prefix=None,jobs_fp=None):
+    """ Write commands to jobs_fp and return jobs_fp
     """
     
-    if job_fp:
-        job_fp = job_fp
+    if jobs_fp:
+        jobs_fp = jobs_fp
     elif job_prefix:
-        job_fp = job_prefix + 'jobs.txt'
+        jobs_fp = job_prefix + 'jobs.txt'
     else:
-        job_fp = 'jobs.txt'
+        jobs_fp = 'jobs.txt'
         
-    open(job_fp,'w').write('\n'.join(commands))
+    open(jobs_fp,'w').write('\n'.join(commands))
     
-    return job_fp
+    return jobs_fp
     
 def submit_jobs(path_to_cluster_jobs, jobs_fp, job_prefix):
     """ Submit the jobs to the queue using cluster_jobs.py
@@ -125,4 +129,107 @@ def build_filepaths_from_filepaths(filepaths,prefix='',directory='',\
         results.append(result)
     
     return results
+
+
+def get_poller_command(python_exe_fp,poller_fp,expected_files_filepath,\
+    merge_map_filepath,deletion_list_filepath,seconds_to_sleep,\
+    command_prefix=None,command_suffix=None):
+    """Generate command to initiate a poller to monitior/process completed runs
+    """
     
+    command_prefix = command_prefix or '/bin/bash; '
+    command_suffix = command_suffix or '; exit'
+    
+    result = '%s %s %s -f %s -m %s -d %s -t %d %s' % \
+     (command_prefix,
+      python_exe_fp,
+      poller_fp,
+      expected_files_filepath,
+      merge_map_filepath,
+      deletion_list_filepath,
+      seconds_to_sleep,
+      command_suffix)
+      
+    return result, []
+        
+def get_rename_command(out_filenames,tmp_output_dir,output_dir):
+    """Generate commands to move out_filenames from tmp_output_dir to output_dir
+    """
+    result = ''
+    result_filepaths = []
+    for fn in out_filenames:
+        tmp_result_filepath = '%s/%s' % (tmp_output_dir,fn)
+        result_filepath = '%s/%s' % (output_dir,fn)
+        result += \
+         '; mv %s %s' % (tmp_result_filepath,result_filepath)
+        result_filepaths.append(result_filepath)
+    return result, result_filepaths
+    
+        
+def write_filepaths_to_file(job_result_filepaths,expected_files_filepath):
+    f = open(expected_files_filepath,'w')
+    f.write('\n'.join(job_result_filepaths))
+    f.close()  
+    
+    
+def write_merge_map_file_align_seqs(job_result_filepaths,output_dir,\
+    merge_map_filepath,input_file_basename):
+    
+    f = open(merge_map_filepath,'w')
+    
+    out_filepaths = ['%s/%s_aligned.fasta' % (output_dir,input_file_basename),
+                     '%s/%s_failures.fasta' % (output_dir,input_file_basename),
+                     '%s/%s_log.txt' % (output_dir,input_file_basename)]
+    
+    aligned_fps = []
+    failures_fps = []
+    log_fps = []
+    
+    for fp in job_result_filepaths:
+        if fp.endswith('_aligned.fasta'):
+            aligned_fps.append(fp)
+        elif fp.endswith('_failures.fasta'):
+            failures_fps.append(fp)
+        else:
+            log_fps.append(fp)
+    
+    for in_files, out_file in\
+     zip([aligned_fps,failures_fps,log_fps],out_filepaths):
+        f.write('\t'.join(in_files + [out_file]))
+        f.write('\n')
+    f.close()
+    
+
+def write_merge_map_file_assign_taxonomy(job_result_filepaths,output_dir,\
+    merge_map_filepath,input_file_basename):
+    
+    f = open(merge_map_filepath,'w')
+    
+    out_filepaths = [\
+     '%s/%s_tax_assignments.txt' % (output_dir,input_file_basename),
+     '%s/%s_tax_assignments.log' % (output_dir,input_file_basename)]
+    
+    assignment_fps = []
+    log_fps = []
+    
+    for fp in job_result_filepaths:
+        if fp.endswith('_tax_assignments.txt'):
+            assignment_fps.append(fp)
+        else:
+            log_fps.append(fp)
+    
+    for in_files, out_file in\
+     zip([assignment_fps,log_fps],out_filepaths):
+        f.write('\t'.join(in_files + [out_file]))
+        f.write('\n')
+    f.close()
+    
+def write_merge_map_file_blast(job_result_filepaths,output_dir,\
+    merge_map_filepath,input_file_basename):
+    
+    f = open(merge_map_filepath,'w')
+    out_filepath =\
+     '%s/%s_blast_out.txt' % (output_dir,input_file_basename)
+    f.write('\t'.join(job_result_filepaths + [out_filepath]))
+    f.write('\n')
+    f.close()

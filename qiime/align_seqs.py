@@ -17,7 +17,7 @@ returning an alignment. Mostly, it will be thin wrappers for code
 already in cogent.app.*, to which wrappers for e.g. PyNAST need to be
 added..
 """
-from os import remove, mkdir
+from os import remove, makedirs
 from os.path import exists, splitext, split
 from commands import getoutput
 from optparse import OptionParser
@@ -288,7 +288,7 @@ if __name__ == "__main__":
     alignment_method = opts.alignment_method
     output_dir = opts.output_dir or alignment_method + '_aligned'
     try:
-        mkdir(output_dir)
+        makedirs(output_dir)
     except OSError:
         # output directory exists
         pass

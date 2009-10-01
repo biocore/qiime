@@ -8,17 +8,23 @@ File created on 25 Aug 2009.
 """
 from __future__ import division
 from optparse import OptionParser
-from os import popen, system
-from os.path import split
+from os import popen, system, mkdir
+from os.path import split, splitext
 from cogent.app.util import get_tmp_filename
 from qiime.parallel.util import split_fasta, get_random_job_prefix, write_jobs_file,\
-    submit_jobs, compute_seqs_per_file, build_filepaths_from_filepaths
+    submit_jobs, compute_seqs_per_file, build_filepaths_from_filepaths,\
+    get_poller_command, get_rename_command, write_filepaths_to_file,\
+    write_merge_map_file_assign_taxonomy
 from qiime.util import qiime_config
 
 def get_commands(python_exe_fp,assign_taxonomy_fp,confidence,fasta_fps,\
-    rdp_jar_fp,output_dir,command_prefix=None,command_suffix=None):
+    rdp_jar_fp,output_dir,working_dir,command_prefix=None,command_suffix=None):
     """Generate RDP classifier commands which should be submitted to cluster
     """
+    # Create basenames for each of the output files. These will be filled
+    # in to create the full list of files created by all of the runs.
+    out_filenames = [job_prefix + '.%d_tax_assignments.log', 
+                     job_prefix + '.%d_tax_assignments.txt']
     
     command_prefix = command_prefix or\
      '/bin/bash; export RDP_JAR_PATH=%s; ' % rdp_jar_fp
@@ -26,20 +32,27 @@ def get_commands(python_exe_fp,assign_taxonomy_fp,confidence,fasta_fps,\
      '; exit'
     
     commands = []
+    result_filepaths = []
     
-    for fasta_fp in fasta_fps:
-        command = '%s %s %s -c %1.2f -m rdp -o %s -i %s %s' %\
+    for i,fasta_fp in enumerate(fasta_fps):
+        # Each run ends with moving the output file from the tmp dir to
+        # the output_dir. Build the command to perform the move here.
+        rename_command, current_result_filepaths = get_rename_command(\
+         [fn % i for fn in out_filenames],working_dir,output_dir)
+        result_filepaths += current_result_filepaths
+        command = '%s %s %s -c %1.2f -m rdp -o %s -i %s %s %s' %\
          (command_prefix,\
           python_exe_fp,\
           assign_taxonomy_fp,\
           confidence,
-          output_dir,
+          working_dir,
           fasta_fp,
+          rename_command,
           command_suffix)
           
         commands.append(command)
         
-    return commands
+    return commands, result_filepaths
 
 usage_str = """usage: %prog [options] {-i INPUT_FP -o OUTPUT_DIR}
 
@@ -113,6 +126,25 @@ def parse_command_line_parameters():
             type='string',help='path to cluster_jobs.py script ' +\
             ' [default: %default]',\
             default=qiime_config['cluster_jobs_fp'])
+           
+    parser.add_option('-P','--poller_fp',action='store',\
+           type='string',help='full path to '+\
+           'qiime/parallel/poller.py [default: %default]',\
+           default=qiime_config['poller_fp'])
+           
+    parser.add_option('-R','--retain_temp_files',action='store_true',\
+           help='retain temporary files after runs complete '+\
+           '(useful for debugging) [default: %default]',\
+           default=False)
+        
+    parser.add_option('-Z','--seconds_to_sleep',type='int',\
+            help='Number of seconds to sleep between checks for run '+\
+            ' completion when polling runs [default: %default]',default=60)
+
+    parser.add_option('-W','--suppress_polling',action='store_true',
+           help='suppress polling of jobs and merging of results '+\
+           'upon completion [default: %default]',\
+           default=False)
                              
     opts,args = parser.parse_args()
     
@@ -140,13 +172,34 @@ if __name__ == "__main__":
     input_fasta_fp = opts.input_fasta_fp 
     jobs_to_start = opts.jobs_to_start
     output_dir = opts.output_dir
+    poller_fp = opts.poller_fp
+    retain_temp_files = opts.retain_temp_files
+    suppress_polling = opts.suppress_polling
+    seconds_to_sleep = opts.seconds_to_sleep
+
+    created_temp_paths = []
     
-    # split the input filepath into directory and filename
+    # split the input filepath into directory and filename, base filename and
+    # extension
     input_dir, input_fasta_fn = split(input_fasta_fp)
+    input_file_basename, input_fasta_ext = splitext(input_fasta_fn)
     
     # set the job_prefix either based on what the user passed in,
     # or a random string beginning with RDP
     job_prefix = opts.job_prefix or get_random_job_prefix('RDP')
+
+    # A temporary output directory is created in output_dir named
+    # job_prefix. Output files are then moved from the temporary 
+    # directory to the output directory when they are complete, allowing
+    # a poller to detect when runs complete by the presence of their
+    # output files.
+    working_dir = '%s/%s' % (output_dir,job_prefix)
+    try:
+        mkdir(working_dir)
+        created_temp_paths.append(working_dir)
+    except OSError:
+        # working dir already exists
+        pass
     
     # compute the number of sequences that should be included in
     # each file after splitting the input fasta file   
@@ -154,15 +207,60 @@ if __name__ == "__main__":
      
     # split the fasta files and get the list of resulting files
     tmp_fasta_fps =\
-      split_fasta(open(input_fasta_fp),num_seqs_per_file,job_prefix)
+      split_fasta(open(input_fasta_fp),num_seqs_per_file,job_prefix,output_dir)
+    created_temp_paths += tmp_fasta_fps
     
+    # build the filepath for the 'jobs script'
+    jobs_fp = '%s/%sjobs.txt' % (output_dir, job_prefix)
+    created_temp_paths.append(jobs_fp)
+
     # generate the list of commands to be pushed out to nodes
-    commands = \
+    commands, job_result_filepaths = \
      get_commands(python_exe_fp,assign_taxonomy_fp,confidence,tmp_fasta_fps,\
-     rdp_classifier_fp,output_dir)
-     
+     rdp_classifier_fp,output_dir,working_dir)
+    created_temp_paths += job_result_filepaths
+
+    # Set up poller apparatus if the user does not suppress polling
+    if not suppress_polling:
+        # Write the list of files which must exist for the jobs to be 
+        # considered complete
+        expected_files_filepath = '%s/expected_out_files.txt' % working_dir
+        write_filepaths_to_file(job_result_filepaths,expected_files_filepath)
+        created_temp_paths.append(expected_files_filepath)
+        
+        # Write the mapping file which described how the output files from
+        # each job should be merged into the final output files
+        merge_map_filepath = '%s/merge_map.txt' % working_dir
+        write_merge_map_file_assign_taxonomy(job_result_filepaths,output_dir,\
+            merge_map_filepath,input_file_basename)
+        created_temp_paths.append(merge_map_filepath)
+        
+        # Create the filepath listing the temporary files to be deleted,
+        # but don't write it yet
+        deletion_list_filepath = '%s/deletion_list.txt' % working_dir
+        created_temp_paths.append(deletion_list_filepath)
+        
+        # Generate the command to run the poller, and the list of temp files
+        # created by the poller
+        poller_command, poller_result_filepaths =\
+         get_poller_command(python_exe_fp,poller_fp,expected_files_filepath,\
+         merge_map_filepath,deletion_list_filepath,\
+         seconds_to_sleep=seconds_to_sleep)
+        created_temp_paths += poller_result_filepaths
+        
+        # append the poller command to the list of job commands
+        commands.append(poller_command)
+        
+        if not retain_temp_files:
+            # If the user wants temp files deleted, now write the list of 
+            # temp files to be deleted
+            write_filepaths_to_file(created_temp_paths,deletion_list_filepath)
+        else:
+            # Otherwise just write an empty file
+            write_filepaths_to_file([],deletion_list_filepath)
+
     # write the commands to the 'jobs files'
-    jobs_fp = write_jobs_file(commands,job_prefix=job_prefix)
+    write_jobs_file(commands,job_prefix=job_prefix,jobs_fp=jobs_fp)
     
     # submit the jobs file using cluster_jobs, if not suppressed by the
     # user

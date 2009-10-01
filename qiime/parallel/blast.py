@@ -4,29 +4,40 @@
 __version__ = '0.01'
 
 from os import mkdir, system
-from os.path import exists
+from os.path import exists, split, splitext
 from optparse import OptionParser
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from qiime.parallel.util import split_fasta, get_random_job_prefix, write_jobs_file,\
-    submit_jobs, compute_seqs_per_file, build_filepaths_from_filepaths
+    submit_jobs, compute_seqs_per_file, build_filepaths_from_filepaths,\
+    get_poller_command, get_rename_command, write_filepaths_to_file,\
+    write_merge_map_file_blast
 from qiime.util import qiime_config
 
-def format_blast_database(db_path,formatdb_executable):
-    system('%s -p F -i %s' % (formatdb_executable,db_path))
-
-def get_commands(infile_paths,outfile_paths,db_path,blast_executable_path,\
-    blastmat_path,e_value,word_size,num_hits,command_prefix=None,\
-    command_suffix=None):
+def get_commands(infile_paths,db_path,blast_executable_path,\
+    blastmat_path,e_value,word_size,num_hits,output_dir,working_dir,\
+    command_prefix=None,command_suffix=None):
     
     command_prefix = command_prefix or\
      '/bin/bash; export BLASTMAT=%s;' % blastmat_path
     command_suffix = command_suffix or\
      '; exit'
-     
+    
     commands = []
-    for infile_path, outfile_path in zip(infile_paths,outfile_paths):
+    result_filepaths = []
+    
+    for i, infile_path in enumerate(infile_paths):
+        
+        infile_basename = splitext(split(infile_path)[1])[0]
+        working_outfile_path = '%s/%s_blast_out.txt' %\
+          (working_dir,infile_basename)
+        outfile_path = '%s/%s_blast_out.txt' % (output_dir,infile_basename)
+        
+        rename_command = '; mv %s %s' % (working_outfile_path, outfile_path)
+        
+        result_filepaths.append(outfile_path)
+        
         command = \
-         "%s %s -p blastn -m 9 -e %s -W %s -b %s -i %s -d %s > %s %s" % \
+         "%s %s -p blastn -m 9 -e %s -W %s -b %s -i %s -d %s > %s %s %s" % \
          (command_prefix,\
           blast_executable_path,\
           e_value,\
@@ -34,11 +45,12 @@ def get_commands(infile_paths,outfile_paths,db_path,blast_executable_path,\
           num_hits, 
           infile_path,\
           db_path,\
-          outfile_path,\
+          working_outfile_path,\
+          rename_command,\
           command_suffix)
         commands.append(command)
     
-    return commands
+    return commands, result_filepaths
     
 usage_str = """usage: %prog [options] {-i INPUT_FP -d  -d REFERENCE_SEQS_FP -o OUTPUT_DIR}
 
@@ -77,7 +89,7 @@ def parse_command_line_parameters():
         type='int', default=1, dest='num_hits',
         help='number of hits per query for blast results [default: %default]')
 
-    parser.add_option('-W','--word_size',action='store',\
+    parser.add_option('-w','--word_size',action='store',\
         type='int', default=30, dest='word_size',
         help='word size for blast searches [default: %default]')
 
@@ -113,6 +125,30 @@ def parse_command_line_parameters():
     
     parser.add_option('-j','--jobs_to_start',action='store',type='int',\
             help='Number of jobs to start [default: %default]',default=24)
+            
+    parser.add_option('-p','--python_exe_fp',action='store',\
+           type='string',help='full path to python '+\
+           'executable [default: %default]',\
+           default=qiime_config['python_exe_fp'])
+           
+    parser.add_option('-P','--poller_fp',action='store',\
+           type='string',help='full path to '+\
+           'qiime/parallel/poller.py [default: %default]',\
+           default=qiime_config['poller_fp'])
+           
+    parser.add_option('-R','--retain_temp_files',action='store_true',\
+           help='retain temporary files after runs complete '+\
+           '(useful for debugging) [default: %default]',\
+           default=False)
+        
+    parser.add_option('-Z','--seconds_to_sleep',type='int',\
+            help='Number of seconds to sleep between checks for run '+\
+            ' completion when polling runs [default: %default]',default=60)
+
+    parser.add_option('-W','--suppress_polling',action='store_true',
+           help='suppress polling of jobs and merging of results '+\
+           'upon completion [default: %default]',\
+           default=False)
 
     opts,args = parser.parse_args()
     
@@ -132,6 +168,7 @@ if __name__ == '__main__':
     # create local copies of command-line options
     input_fasta_fp = opts.infile_path 
     db_path = opts.db_path
+    python_exe_fp = opts.python_exe_fp
     num_jobs_to_start = opts.jobs_to_start
     blastall_fp = opts.blastall_fp
     blastmat_dir = opts.blastmat_dir
@@ -142,31 +179,101 @@ if __name__ == '__main__':
     output_dir = opts.output_dir
     formatdb_fp = opts.formatdb_fp
     suppress_format_blastdb = opts.suppress_format_blastdb
+    poller_fp = opts.poller_fp
+    retain_temp_files = opts.retain_temp_files
+    suppress_polling = opts.suppress_polling
+    seconds_to_sleep = opts.seconds_to_sleep
+
+    created_temp_paths = []
     
+    # split the input filepath into directory and filename, base filename and
+    # extension
+    input_dir, input_fasta_fn = split(input_fasta_fp)
+    input_file_basename, input_fasta_ext = splitext(input_fasta_fn)
+
+    # set the job_prefix either based on what the user passed in,
+    # or a random string beginning with BLAST
     job_prefix = opts.job_prefix or get_random_job_prefix('BLAST')
     
+    # A temporary output directory is created in output_dir named
+    # job_prefix. Output files are then moved from the temporary 
+    # directory to the output directory when they are complete, allowing
+    # a poller to detect when runs complete by the presence of their
+    # output files.
+    working_dir = '%s/%s' % (output_dir,job_prefix)
+    try:
+        mkdir(working_dir)
+        created_temp_paths.append(working_dir)
+    except OSError:
+        # working dir already exists
+        pass
+        
+    # compute the number of sequences that should be included in
+    # each file after splitting the input fasta file   
     num_seqs_per_file = compute_seqs_per_file(input_fasta_fp,num_jobs_to_start)
     
+    # Build the blast database if necessary
     if not suppress_format_blastdb:
         blast_db, db_files_to_remove = \
          build_blast_db_from_fasta_path(db_path)
-        
+    created_temp_paths += db_files_to_remove
+    
     # split the fasta files and get the list of resulting files        
     tmp_fasta_fps =\
      split_fasta(open(input_fasta_fp),num_seqs_per_file,job_prefix,output_dir)
-      
-    # build the list of output filepaths from the set of input files
-    # by appending '.blast_out.txt' to the end of each
-    out_fps = build_filepaths_from_filepaths(tmp_fasta_fps,\
-     directory=output_dir,suffix='.blast_out.txt')
+    created_temp_paths += tmp_fasta_fps
+    
+    # build the filepath for the 'jobs script'
+    jobs_fp = '%s/%sjobs.txt' % (output_dir, job_prefix)
+    created_temp_paths.append(jobs_fp)
 
     # generate the list of commands to be pushed out to nodes    
-    commands = get_commands(tmp_fasta_fps,out_fps,db_path,\
-     blastall_fp,blastmat_dir,e_value,word_size,num_hits,\
+    commands, job_result_filepaths = get_commands(tmp_fasta_fps,db_path,\
+     blastall_fp,blastmat_dir,e_value,word_size,num_hits,output_dir,working_dir,\
      command_prefix=None,command_suffix=None)
+    created_temp_paths += job_result_filepaths
+    
+    # Set up poller apparatus if the user does not suppress polling
+    if not suppress_polling:
+        # Write the list of files which must exist for the jobs to be 
+        # considered complete
+        expected_files_filepath = '%s/expected_out_files.txt' % working_dir
+        write_filepaths_to_file(job_result_filepaths,expected_files_filepath)
+        created_temp_paths.append(expected_files_filepath)
+        
+        # Write the mapping file which described how the output files from
+        # each job should be merged into the final output files
+        merge_map_filepath = '%s/merge_map.txt' % working_dir
+        write_merge_map_file_blast(job_result_filepaths,output_dir,\
+            merge_map_filepath,input_file_basename)
+        created_temp_paths.append(merge_map_filepath)
+        
+        # Create the filepath listing the temporary files to be deleted,
+        # but don't write it yet
+        deletion_list_filepath = '%s/deletion_list.txt' % working_dir
+        created_temp_paths.append(deletion_list_filepath)
+        
+        # Generate the command to run the poller, and the list of temp files
+        # created by the poller
+        poller_command, poller_result_filepaths =\
+         get_poller_command(python_exe_fp,poller_fp,expected_files_filepath,\
+         merge_map_filepath,deletion_list_filepath,\
+         seconds_to_sleep=seconds_to_sleep)
+        created_temp_paths += poller_result_filepaths
+        
+        # append the poller command to the list of job commands
+        commands.append(poller_command)
+        
+        if not retain_temp_files:
+            # If the user wants temp files deleted, now write the list of 
+            # temp files to be deleted
+            write_filepaths_to_file(created_temp_paths,deletion_list_filepath)
+        else:
+            # Otherwise just write an empty file
+            write_filepaths_to_file([],deletion_list_filepath)
     
     # write the commands to the 'jobs files'
-    jobs_fp = write_jobs_file(commands,job_prefix=job_prefix)
+    write_jobs_file(commands,job_prefix=job_prefix,jobs_fp=jobs_fp)
     
     # submit the jobs file using cluster_jobs, if not suppressed by the
     # user
