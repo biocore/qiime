@@ -14,26 +14,27 @@ from os.path import exists, isdir
 from shutil import rmtree
 from cogent.util.misc import remove_files
 
-usage_str = """usage: %prog [options] {(-r CHECK_RUN_COMPLETE_F | -f RUN_OUTPUT_FILES) (-c CLEAN_UP_CALLBACK_F | -m TMP_TO_FINAL_FILEPATH_MAP)}
+usage_str = """usage: %prog [options] {(-r CHECK_RUN_COMPLETE_F | -f RUN_OUTPUT_FILES) (-p PROCESS_RUN_RESULTS_F | -m TMP_TO_FINAL_FILEPATH_MAP) (-c CLEAN_UP_F | -d DELETION_LIST)}
 
 [] indicates optional input (order unimportant)
 {} indicates required input (order unimportant)
 
 Example usage:
- Call the poller with the example_check_run_complete_callback (-r) function
+ Call the poller with the example_check_run_complete_f (-r) function
  which waits for three files to be created:
   $HOME/poller_test/poller_test_0.txt
   $HOME/poller_test/poller_test_1.txt
   $HOME/poller_test/poller_test_2.txt
   
  Existence of these three files is checked every 5 seconds (-t), and when
- they all exist qiime.parallel.poller.example_clean_up_callback (-c) is called.
+ they all exist example_process_run_results_f (-c) is called.
  This clean-up function cats all the files into a single file:
   $HOME/poller_test/poller_test_completed.txt
   
- and removes the original three files it was waiting on.
+ Finally, example_clean_up_f is call (-c) which removes the original three 
+  files the poller was waiting on.
   
- python Qiime/qiime/parallel/poller.py -r qiime.parallel.poller.example_check_run_complete_callback -p qiime.parallel.poller.example_clean_up_callback -t 5
+ python Qiime/qiime/parallel/poller.py -r qiime.parallel.poller.example_check_run_complete_f -p qiime.parallel.poller.example_process_run_results_f -c qiime.parallel.poller.example_clean_up_f -t 5
  
  poller.py is designed for use on the cluster to clean up parallel jobs. However,
  you can see it in action by running the above command and in a new terminal 
@@ -122,30 +123,7 @@ def remove_all(paths_to_remove):
                 # File doesn't exist
                 pass
     return
-
-# # Defining an example check_run_complete_f which returns True
-# # if the following files all exist:
-# #   $HOME/poller_test/poller_test_0.txt
-# #   $HOME/poller_test/poller_test_1.txt
-# #   $HOME/poller_test/poller_test_2.txt
-# home_dir = getenv('HOME')
-# example_filepaths = [home_dir + '/poller_test/poller_test_%d.txt'\
-#       % i for i in range(3)]
-# example_check_run_complete_callback = \
-#  get_basic_check_run_complete_callback(example_filepaths,True)
-# 
-# ## Defining an example process_run_results_f
-# # Merges the text from the three 'original' files:
-# #   $HOME/poller_test/poller_test_0.txt
-# #   $HOME/poller_test/poller_test_1.txt
-# #   $HOME/poller_test/poller_test_2.txt
-# # into a single output file:
-# #   $HOME/poller_test/poller_test_completed.txt      
-# # and removes the original files.
-# example_out_filepath = home_dir + '/poller_test/poller_test_completed.txt'
-# example_clean_up_callback = \
-#  get_basic_clean_up_callback([example_filepaths],[example_out_filepath],True)
-
+    
 def get_basic_check_run_complete_f(filepaths,verbose=False):
     """ Return a function which returns True if all filepaths exist
     
@@ -181,16 +159,17 @@ def get_basic_process_run_results_f(infiles_lists,out_filepaths,verbose=False):
                    of.write(line)
             of.close()
     
-        if verbose: print "Clean up completed."
+        if verbose: print "Post-run processing complete."
         # It is a good idea to have your clean_up_callback return True.
         # That way, if you get mixed up and pass it as check_run_complete_callback, 
         # you'll get an error right away rather than going into an infinite loop
         return True
     return result
     
-def get_basic_clean_up_f(deletion_list):
+def get_basic_clean_up_f(deletion_list,verbose=False):
     def result():
         remove_all(deletion_list)
+        if verbose: print "Post-run clean-up complete."
         return True
     return result
     
@@ -206,6 +185,44 @@ def poller(check_run_complete_f,process_run_results_f,clean_up_f,\
     clean_up_f()
     est_per_proc_run_time = number_of_loops * seconds_to_sleep
     return est_per_proc_run_time
+
+#####
+# Start example functions: This code is currently in place to allow for an interactive
+# example run of the poller on any system. Call Qiime/qiime/parallel/poller.py -h for 
+# a description of how to use the example.
+
+# Defining an example check_run_complete_f which returns True
+# if the following files all exist:
+#   $HOME/poller_test/poller_test_0.txt
+#   $HOME/poller_test/poller_test_1.txt
+#   $HOME/poller_test/poller_test_2.txt
+home_dir = getenv('HOME')
+example_filepaths = [home_dir + '/poller_test/poller_test_%d.txt'\
+      % i for i in range(3)]
+example_check_run_complete_f = \
+ get_basic_check_run_complete_f(example_filepaths,True)
+
+# Defining an example process_run_results_f
+# Merges the text from the three 'original' files:
+#   $HOME/poller_test/poller_test_0.txt
+#   $HOME/poller_test/poller_test_1.txt
+#   $HOME/poller_test/poller_test_2.txt
+# into a single output file:
+#   $HOME/poller_test/poller_test_completed.txt
+example_out_filepath = home_dir + '/poller_test/poller_test_completed.txt'
+example_process_run_results_f = \
+ get_basic_process_run_results_f([example_filepaths],[example_out_filepath],True)
+ 
+# Defining an example basic_clean_up_f which removes 
+# the following files:
+#   $HOME/poller_test/poller_test_0.txt
+#   $HOME/poller_test/poller_test_1.txt
+#   $HOME/poller_test/poller_test_2.txt
+example_clean_up_f = \
+ get_basic_clean_up_f(example_filepaths,True)
+
+# End example functions
+####
 
 if __name__ == "__main__":
     opts,args = parse_command_line_parameters()
