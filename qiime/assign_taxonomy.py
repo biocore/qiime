@@ -370,7 +370,17 @@ class RdpTaxonAssigner(TaxonAssigner):
         # csv.reader() returns an iterator, we use the next()
         # method to pop off the first item, which contains the
         # lineage in list form.
-        return csv.reader([lineage_as_csv]).next()
+        lineage = csv.reader([lineage_as_csv]).next()
+        # The RDP Classifier can only deal with a lineage that is 6
+        # levels deep.  We detect this problem now to avoid an
+        # ApplicationError later on.
+        if len(lineage) != 6:
+            raise ValueError(
+                'Each reference assignment must contain 6 items, specifying '
+                'domain, phylum, class, order, family, and genus.  '
+                'Detected %s items in "%s": %s.' % \
+                (len(lineage), lineage_as_csv, lineage))
+        return lineage
 
     # The RdpTree class is defined as a nested class to prevent the
     # implementation details of creating RDP-compatible training files
@@ -480,7 +490,10 @@ def parse_command_line_parameters():
 
     parser.add_option('-t', '--id_to_taxonomy_fp',
         help='Path to tab-delimited file mapping sequences to assigned '
-        'taxonomy [default: %default; REQUIRED when method is blast]')
+        'taxonomy. Each assigned taxonomy is provided as a comma-separated '
+        'list. For assignment with rdp, each assigned taxonomy must be '
+        'exactly 6 levels deep. [default: %default; REQUIRED when method is '
+        'blast]')
 
     parser.add_option('-r', '--reference_seqs_fp',
         help='Path to reference sequences.  For assignment with blast, these '
