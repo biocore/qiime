@@ -347,9 +347,10 @@ class RdpTaxonAssignerTests(TestCase):
     def test_parse_lineage(self):
         """Lineage in csv format is correctly parsed to a list
         """
-        str = 'Archaea,Euryarchaeota,Methanomicrobiales,Methanomicrobium et rel.'
+        str = 'Archaea,Euryarchaeota,Methanomicrobiales,Methanomicrobium et rel.,a,b'
         actual = RdpTaxonAssigner._parse_lineage(str)
-        expected = ['Archaea', 'Euryarchaeota', 'Methanomicrobiales', 'Methanomicrobium et rel.']
+        expected = ['Archaea', 'Euryarchaeota', 'Methanomicrobiales', 
+                    'Methanomicrobium et rel.', 'a', 'b']
         self.assertEqual(actual, expected)
 
     def test_build_tree(self):
