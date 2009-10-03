@@ -116,7 +116,31 @@ class GenericRepSetPickerTests(SharedSetupTestCase):
         self.assertEqual(result_file_str, rep_seqs_result_file_exp)
         # confirm that nothing is returned when result_path is specified
         self.assertEqual(obs,None)
+
+    def test_call_output_to_file_sorted(self):
+        """GenericRepSetPicker.__call__ output to file sorts when requested
+        """
         
+        tmp_result_filepath = get_tmp_filename(\
+         prefix='GenericRepSetPickerTest.test_call_output_to_file_',\
+         suffix='.txt')
+        
+        app = GenericRepSetPicker(params=self.params)
+        obs = app(self.tmp_seq_filepath, self.tmp_otu_filepath, \
+            result_path=tmp_result_filepath, sort_by='seq_id')
+        
+        result_file = open(tmp_result_filepath)
+        result_file_str = result_file.read()
+        result_file.close()
+        # remove the result file before running the test, so in 
+        # case it fails the temp file is still cleaned up
+        remove(tmp_result_filepath)
+        
+        # compare data in result file to fake expected file
+        self.assertEqual(result_file_str, rep_seqs_result_file_sorted_exp)
+        # confirm that nothing is returned when result_path is specified
+        self.assertEqual(obs,None)
+         
     def test_call_log_file(self):
         """GenericRepSetPicker.__call__ writes log when expected
         """
@@ -260,6 +284,16 @@ TTGGACCGTG
 TTGGGCCGTGTCTCAGT
 >3 R27DLI_3243
 CTGGACCGTGTCT
+"""
+
+rep_seqs_result_file_sorted_exp = """>3 R27DLI_3243
+CTGGACCGTGTCT
+>0 R27DLI_4812
+CTGGGCCGTATCTC
+>2 W3Cecum_4858
+TTGGGCCGTGTCTCAGT
+>1 U1PLI_7889
+TTGGACCGTG
 """
 
 

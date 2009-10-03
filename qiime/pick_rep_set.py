@@ -94,7 +94,8 @@ class RepSetPicker(FunctionWithParams):
         """
         self.Params = params
 
-    def __call__ (self, seq_path, otu_path, result_path=None, log_path=None):
+    def __call__ (self, seq_path, otu_path, result_path=None, log_path=None,
+            sort_by='otu'):
         """Returns dict mapping {otu_id: seq} for each otu.
         
         Parameters:
@@ -103,6 +104,7 @@ class RepSetPicker(FunctionWithParams):
         result_path: path to file of results. If specified, should
         dump the result to the desired path instead of returning it.
         log_path: path to log, which should include dump of params.
+        sort_by: which parameter to sort by.
         """
         raise NotImplementedError, "RepSetPicker is an abstract class"
 
@@ -134,7 +136,8 @@ class GenericRepSetPicker(RepSetPicker):
         _params.update(params)
         RepSetPicker.__init__(self, _params)
     
-    def __call__ (self, seq_path, otu_path, result_path=None, log_path=None):
+    def __call__ (self, seq_path, otu_path, result_path=None, log_path=None,
+        sort_by='otu'):
         """Returns dict mapping {otu_id:[seq_ids]} for each otu.
         
         Parameters:
@@ -143,6 +146,7 @@ class GenericRepSetPicker(RepSetPicker):
         result_path: path to file of results. If specified,
         dumps the result to the desired path instead of returning it.
         log_path: path to log, which includes dump of params.
+        sort_by: sort by otu or seq_id
         """
         # Load the seq path. We may want to change that in the future 
         # to avoid the overhead of loading large sequence collections
@@ -171,7 +175,15 @@ class GenericRepSetPicker(RepSetPicker):
             # results to file with one tab-separated line per 
             # cluster
             of = open(result_path,'w')
-            for cluster,id_ in sorted(result.items()):
+            if sort_by == 'seq_id':
+                def key(s):
+                    try: 
+                        return int(s[1].split('_',1)[-1])
+                    except ValueError:
+                        return s
+            else:
+                key = lambda s: s
+            for cluster,id_ in sorted(result.items(), key=key):
                 of.write('>%s %s\n%s\n' % (cluster, id_, seqs[id_]))
             of.close()
             result = None
@@ -191,7 +203,6 @@ class GenericRepSetPicker(RepSetPicker):
         # return the result (note this is None if the data was
         # written to file)
         return result
-
 
 def parse_command_line_parameters():
     """ Parses command line arguments """
@@ -220,6 +231,10 @@ def parse_command_line_parameters():
     parser.add_option('-O','--otu_file',action='store',\
           type='string',dest='otu_fp',help='Path to read '+\
           'otu file [required]')
+
+    parser.add_option('-s', '--sort_by', action='store',\
+            type='string',dest='sort_by', default='otu',
+            help = 'sort by otu or seq_id [default: %default]')
            
     parser.set_defaults(rep_set_picking_method='most_abundant')
 
@@ -259,6 +274,6 @@ if __name__ == "__main__":
     log_path = opts.log_fp
     
     rep_set_picker(input_seqs_filepath, input_otu_filepath,
-     result_path=result_path,log_path=log_path)
+     result_path=result_path,log_path=log_path, sort_by=opts.sort_by)
     
     
