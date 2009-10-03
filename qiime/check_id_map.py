@@ -514,7 +514,7 @@ def check_bad_chars((data, field_types), filter_f=subcat_filter):
                 row[j] = new_val
                 problems.append(
             "Removed bad chars from cell %s (now %s) in sample id %s, col %s." %
-                (val, new_val, row[i], headers[j]))
+                (val, new_val, row[0], headers[j]))
     return (data, field_types), '\n'.join(problems)
 
 def check_mixed_caps((data, field_types), dup_f=lwu, 
