@@ -59,11 +59,11 @@ class BlastTaxonAssignerTests(TestCase):
         open(self.reference_seqs_fp,'w').write(test_refseq_coll.toFasta())
         
         self.expected1 = {\
-         's1':('Archaea,Euryarchaeota,Halobacteriales,uncultured',None),
-         's2':('Archaea,Euryarchaeota,Methanomicrobiales,Methanomicrobium et rel.',None),\
-         's3':('Archaea,Crenarchaeota,uncultured,uncultured',None),\
-         's4':('Archaea,Euryarchaeota,Methanobacteriales,Methanobacterium',None),\
-         's5':('Archaea,Crenarchaeota,uncultured,uncultured',None),\
+         's1':('Archaea;Euryarchaeota;Halobacteriales;uncultured',None),
+         's2':('Archaea;Euryarchaeota;Methanomicrobiales;Methanomicrobium et rel.',None),\
+         's3':('Archaea;Crenarchaeota;uncultured;uncultured',None),\
+         's4':('Archaea;Euryarchaeota;Methanobacteriales;Methanobacterium',None),\
+         's5':('Archaea;Crenarchaeota;uncultured;uncultured',None),\
          's6':('No blast hit', None)}
         
     def tearDown(self):
@@ -85,11 +85,11 @@ class BlastTaxonAssignerTests(TestCase):
         lines = id_to_taxonomy_string.splitlines()
         p = BlastTaxonAssigner({})
         expected = {\
-         "AY800210":"Archaea,Euryarchaeota,Halobacteriales,uncultured",\
-         "EU883771":"Archaea,Euryarchaeota,Methanomicrobiales,Methanomicrobium et rel.",\
-         "EF503699":"Archaea,Crenarchaeota,uncultured,uncultured",\
-         "DQ260310":"Archaea,Euryarchaeota,Methanobacteriales,Methanobacterium",\
-         "EF503697":"Archaea,Crenarchaeota,uncultured,uncultured"}
+         "AY800210":"Archaea;Euryarchaeota;Halobacteriales;uncultured",\
+         "EU883771":"Archaea;Euryarchaeota;Methanomicrobiales;Methanomicrobium et rel.",\
+         "EF503699":"Archaea;Crenarchaeota;uncultured;uncultured",\
+         "DQ260310":"Archaea;Euryarchaeota;Methanobacteriales;Methanobacterium",\
+         "EF503697":"Archaea;Crenarchaeota;uncultured;uncultured"}
         self.assertEqual(p._parse_id_to_taxonomy_file(lines),expected)
         
     def test_map_ids_to_taxonomy(self):
@@ -97,22 +97,22 @@ class BlastTaxonAssignerTests(TestCase):
         """
         p = BlastTaxonAssigner({})
         id_to_taxonomy_map = {\
-         "AY800210":"Archaea,Euryarchaeota,Halobacteriales,uncultured",\
-         "EU883771":"Archaea,Euryarchaeota,Methanomicrobiales,Methanomicrobium et rel.",\
-         "EF503699":"Archaea,Crenarchaeota,uncultured,uncultured",\
-         "DQ260310":"Archaea,Euryarchaeota,Methanobacteriales,Methanobacterium",\
-         "EF503697":"Archaea,Crenarchaeota,uncultured,uncultured"}
+         "AY800210":"Archaea;Euryarchaeota;Halobacteriales;uncultured",\
+         "EU883771":"Archaea;Euryarchaeota;Methanomicrobiales;Methanomicrobium et rel.",\
+         "EF503699":"Archaea;Crenarchaeota;uncultured;uncultured",\
+         "DQ260310":"Archaea;Euryarchaeota;Methanobacteriales;Methanobacterium",\
+         "EF503697":"Archaea;Crenarchaeota;uncultured;uncultured"}
         
         hits = {'s1':("AY800210",1e-99),\
          's5':("EU883771",'weird confidence value'),
          's3':("DQ260310",42.),\
          's4':None}
         expected = {\
-         's1':("Archaea,Euryarchaeota,Halobacteriales,uncultured",None),\
+         's1':("Archaea;Euryarchaeota;Halobacteriales;uncultured",None),\
          's5':(
-          'Archaea,Euryarchaeota,Methanomicrobiales,Methanomicrobium et rel.',\
+          'Archaea;Euryarchaeota;Methanomicrobiales;Methanomicrobium et rel.',\
           None),
-         's3':("Archaea,Euryarchaeota,Methanobacteriales,Methanobacterium",None),\
+         's3':("Archaea;Euryarchaeota;Methanobacteriales;Methanobacterium",None),\
          's4':('No blast hit', None)}
         actual = p._map_ids_to_taxonomy(hits,id_to_taxonomy_map)
         self.assertEqual(actual,expected)
@@ -347,7 +347,7 @@ class RdpTaxonAssignerTests(TestCase):
     def test_parse_lineage(self):
         """Lineage in csv format is correctly parsed to a list
         """
-        str = 'Archaea,Euryarchaeota,Methanomicrobiales,Methanomicrobium et rel.,a,b'
+        str = 'Archaea;Euryarchaeota;Methanomicrobiales;Methanomicrobium et rel.;a;b'
         actual = RdpTaxonAssigner._parse_lineage(str)
         expected = ['Archaea', 'Euryarchaeota', 'Methanomicrobiales', 
                     'Methanomicrobium et rel.', 'a', 'b']
@@ -497,30 +497,30 @@ id_to_taxonomy_fp:None
 reference_sequences_fp:None"""
 
 rdp_test1_expected_dict = {\
- 'X67228 some description': ('Root,Bacteria,Proteobacteria,Alphaproteobacteria,Rhizobiales,Rhizobiaceae,Rhizobium',0.95),\
- 'EF503697': ('Root,Archaea,Crenarchaeota,Thermoprotei',0.88)
+ 'X67228 some description': ('Root;Bacteria;Proteobacteria;Alphaproteobacteria;Rhizobiales;Rhizobiaceae;Rhizobium',0.95),\
+ 'EF503697': ('Root;Archaea;Crenarchaeota;Thermoprotei',0.88)
 }
 
 
 rdp_trained_test1_expected_dict = {
-    'X67228 some description': ('Bacteria,Proteobacteria,Alphaproteobacteria,Rhizobiales,Rhizobiaceae,Rhizobium', 1.0),
-    'EF503697': ('Bacteria,Proteobacteria,Gammaproteobacteria', 0.83999999999999997),
+    'X67228 some description': ('Bacteria;Proteobacteria;Alphaproteobacteria;Rhizobiales;Rhizobiaceae;Rhizobium', 1.0),
+    'EF503697': ('Bacteria;Proteobacteria;Gammaproteobacteria', 0.83999999999999997),
     }
 
 rdp_test1_expected_lines = [\
  "\t".join(["X67228 some description",\
-  "Root,Bacteria,Proteobacteria,Alphaproteobacteria,Rhizobiales,Rhizobiaceae,Rhizobium",\
+  "Root;Bacteria;Proteobacteria;Alphaproteobacteria;Rhizobiales;Rhizobiaceae;Rhizobium",\
   "0.9"]),
- "\t".join(['EF503697','Root,Archaea,Crenarchaeota,Thermoprotei','0.8'])]
+ "\t".join(['EF503697','Root;Archaea;Crenarchaeota;Thermoprotei','0.8'])]
 
 rdp_id_to_taxonomy = \
-"""X67228	Bacteria,Proteobacteria,Alphaproteobacteria,Rhizobiales,Rhizobiaceae,Rhizobium
-X73443	Bacteria,Firmicutes,Clostridia,Clostridiales,Clostridiaceae,Clostridium
-AB004750	Bacteria,Proteobacteria,Gammaproteobacteria,Enterobacteriales,Enterobacteriaceae,Enterobacter
-xxxxxx	Bacteria,Proteobacteria,Gammaproteobacteria,Pseudomonadales,Pseudomonadaceae,Pseudomonas
-AB004748	Bacteria,Proteobacteria,Gammaproteobacteria,Enterobacteriales,Enterobacteriaceae,Enterobacter
-AB000278	Bacteria,Proteobacteria,Gammaproteobacteria,Vibrionales,Vibrionaceae,Photobacterium
-AB000390	Bacteria,Proteobacteria,Gammaproteobacteria,Vibrionales,Vibrionaceae,Vibrio
+"""X67228	Bacteria;Proteobacteria;Alphaproteobacteria;Rhizobiales;Rhizobiaceae;Rhizobium
+X73443	Bacteria;Firmicutes;Clostridia;Clostridiales;Clostridiaceae;Clostridium
+AB004750	Bacteria;Proteobacteria;Gammaproteobacteria;Enterobacteriales;Enterobacteriaceae;Enterobacter
+xxxxxx	Bacteria;Proteobacteria;Gammaproteobacteria;Pseudomonadales;Pseudomonadaceae;Pseudomonas
+AB004748	Bacteria;Proteobacteria;Gammaproteobacteria;Enterobacteriales;Enterobacteriaceae;Enterobacter
+AB000278	Bacteria;Proteobacteria;Gammaproteobacteria;Vibrionales;Vibrionaceae;Photobacterium
+AB000390	Bacteria;Proteobacteria;Gammaproteobacteria;Vibrionales;Vibrionaceae;Vibrio
 """
 
 rdp_reference_seqs = \
@@ -584,11 +584,11 @@ nnnnnnngagatttgatcctggctcaggatgaacgctggccggccgtgcttacacatgcagtcgaacgaagcgcttaaac
 ttgaacgctggcggcaggcctaacacatgcaagtcgagcggcagcannnncttcgggaggctggcgagcggcggacgggtgagtaacgcatgggaacttacccagtagtgggggatagcccggggaaacccggattaataccgcatacgccctgagggggaaagcgggctccggtcgcgctattggatgggcccatgtcggattagttagttggtggggtaatggcctaccaaggcgacgatccgtagctggtctgagaggatgatcagccacaccgggactgagacacggcccggactcctacgggaggcagcagtggggaatattggacaatgggggcaaccctgatccagccatgccg"""
 
 id_to_taxonomy_string = \
-"""AY800210\tArchaea,Euryarchaeota,Halobacteriales,uncultured
-EU883771\tArchaea,Euryarchaeota,Methanomicrobiales,Methanomicrobium et rel.
-EF503699\tArchaea,Crenarchaeota,uncultured,uncultured
-DQ260310\tArchaea,Euryarchaeota,Methanobacteriales,Methanobacterium
-EF503697\tArchaea,Crenarchaeota,uncultured,uncultured"""
+"""AY800210\tArchaea;Euryarchaeota;Halobacteriales;uncultured
+EU883771\tArchaea;Euryarchaeota;Methanomicrobiales;Methanomicrobium et rel.
+EF503699\tArchaea;Crenarchaeota;uncultured;uncultured
+DQ260310\tArchaea;Euryarchaeota;Methanobacteriales;Methanobacterium
+EF503697\tArchaea;Crenarchaeota;uncultured;uncultured"""
 
 test_seq_coll = LoadSeqs(data=[\
  ('s1','TTCCGGTTGATCCTGCCGGACCCGACTGCTATCCGGATGCGACTAAGCCATGCTAGTCTAACGGATCTTCGGATCCGTGGCATACCGCTCTGTAACACGTAGATAACCTACCCTGAGGTCGGGGAAACTCCCGGGAAACTGGGCCTAATCCCCGATAGATAATTTGTACTGGAATGTCTTTTTATTGAAACCTCCGAGGCCTCAGGATGGGTCTGCGCCAGATTATGGTCGTAGGTGGGGTAACGGCCCACCTAGCCTTTGATCTGTACCGGACATGAGAGTGTGTGCCGGGAGATGGCCACTGAGACAAGGGGCCAGGCCCTACGGGGCGCAGCAGGCGCGAAAACTTCACAATGCCCGCAAGGGTGATGAGGGTATCCGAGTGCTACCTTAGCCGGTAGCTTTTATTCAGTGTAAATAGCTAGATGAATAAGGGGAGGGCAAGGCTGGTGCCAGCCGCCGCGGTAAAACCAGCTCCCGAGTGGTCGGGATTTTTATTGGGCCTAAAGCGTCCGTAGCCGGGCGTGCAAGTCATTGGTTAAATATCGGGTCTTAAGCCCGAACCTGCTAGTGATACTACACGCCTTGGGACCGGAAGAGGCAAATGGTACGTTGAGGGTAGGGGTGAAATCCTGTAATCCCCAACGGACCACCGGTGGCGAAGCTTGTTCAGTCATGAACAACTCTACACAAGGCGATTTGCTGGGACGGATCCGACGGTGAGGGACGAAACCCAGGGGAGCGAGCGGGATTAGATACCCCGGTAGTCCTGGGCGTAAACGATGCGAACTAGGTGTTGGCGGAGCCACGAGCTCTGTCGGTGCCGAAGCGAAGGCGTTAAGTTCGCCGCCAGGGGAGTACGGCCGCAAGGCTGAAACTTAAAGGAATTGGCGGGGGAGCAC'),\
