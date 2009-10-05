@@ -34,16 +34,16 @@ Example usage:
 
  # filter 1.fasta using the lanemask in lm.txt, but filtering no gaps (b/c
  # --allowed_gap_frac=1.0, meaning positions can be up to 100% gap); output
- # written to ./1_filtered.fasta
+ # written to ./1_pfiltered.fasta
  python filter_alignment.py -i 1.fasta -g 1.0 -l lm.txt
  
  # filter 1.fasta using the lanemask in lm.txt and filter positions which are
- # 100% gap (default -g behavior); output written to ./1_filtered.fasta
+ # 100% gap (default -g behavior); output written to ./1_pfiltered.fasta
  python filter_alignment.py -i 1.fasta -o ./ -l lm.txt
  
  # filter 1.fasta positions which are 100% gap (default -g behavior) but no lane mask
  # filtering (because no lane mask file provided with -l); output written to 
- # ./1_filtered.fasta
+ # ./1_pfiltered.fasta
  python filter_alignment.py -i 1.fasta -o ./ -l lm.txt"""
 
 def parse_command_line_parameters():
@@ -123,7 +123,7 @@ if __name__ == "__main__":
         pass
     input_dir, input_filename = split(input_fasta_file)
     input_basename, ext = splitext(input_filename)
-    output_filepath = '%s/%s_filtered.fasta' % (output_dir,input_basename)
+    output_filepath = '%s/%s_pfiltered.fasta' % (output_dir,input_basename)
     
     try:
         output_file = open(output_filepath,'w')
