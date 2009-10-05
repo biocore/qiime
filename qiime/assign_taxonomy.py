@@ -361,11 +361,21 @@ class RdpTaxonAssigner(TaxonAssigner):
         return tree
 
     @staticmethod
-    def _parse_lineage(lineage):
-        """Returns a list of taxa from the semi-colon-separated lineage of
-        an id_to_taxonomy file.
+    def _parse_lineage(lineage_str):
+        """Returns a list of taxa from the semi-colon-separated
+        lineage string of an id_to_taxonomy file.
         """
-        return lineage.strip().split(';')
+        lineage = lineage_str.strip().split(';')
+        # The RDP Classifier can only deal with a lineage that is 6
+        # levels deep.  We detect this problem now to avoid an
+        # ApplicationError later on.
+        if len(lineage) != 6:
+            raise ValueError(
+                'Each reference assignment must contain 6 items, specifying '
+                'domain, phylum, class, order, family, and genus.  '
+                'Detected %s items in "%s": %s.' % \
+                (len(lineage), lineage_str, lineage))
+        return lineage
 
     # The RdpTree class is defined as a nested class to prevent the
     # implementation details of creating RDP-compatible training files
