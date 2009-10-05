@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 #file make_3d_plots.py
 
-__author__ = "Jesse Stombaugh and Micah Hamady"
+__author__ = "Jesse Stombaugh and Rob Knight"
 __copyright__ = "Copyright 2009, the 454 Project" #consider project name
-__credits__ = ["Jesse Stombaugh"] #remember to add yourself
+__credits__ = ["Jesse Stombaugh", "Rob Knight"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "0.1"
-__maintainer__ = "Rob Knight"
+__maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 __status__ = "Prototype"
 
