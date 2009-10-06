@@ -228,9 +228,9 @@ def parse_command_line_parameters():
           type='string',dest='fasta_fp',help='Path to read '+\
           'fasta file [required]')
 
-    parser.add_option('-O','--otu_file',action='store',\
+    parser.add_option('-i','--input_file',action='store',\
           type='string',dest='otu_fp',help='Path to read '+\
-          'otu file [required]')
+          'input otu file [required]')
 
     parser.add_option('-s', '--sort_by', action='store',\
             type='string',dest='sort_by', default='otu',

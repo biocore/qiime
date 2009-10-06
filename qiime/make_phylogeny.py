@@ -109,7 +109,7 @@ class CogentTreeBuilder(TreeBuilder):
 def parse_command_line_parameters():
     """ Parses command line arguments """
     usage =\
-     'usage: %prog [options] input_alignment_filepath'
+     'usage: %prog [options] -i input_alignment_filepath'
     version = 'Version: %prog ' +  __version__
     parser = OptionParser(usage=usage, version=version)
 
@@ -124,14 +124,14 @@ def parse_command_line_parameters():
     parser.add_option('-l','--log_fp',action='store',\
           type='string',dest='log_fp',help='Path to store '+\
           'log file [default: No log file created.]')
-          
+    
+    parser.add_option('-i','--input_fp',action='store',\
+          type='string',dest='input_fp',help='Path to read '+\
+          'input alignment [Required.]')
+
     parser.set_defaults(tree_method='fasttree',result_fp=None)
 
     opts,args = parser.parse_args()
-    num_args = 1
-    if len(args) != num_args:
-       parser.error('Exactly one argument is required.')
-       
     if not (opts.tree_method in tree_method_constructors or
             opts.tree_method in tree_module_names):
         parser.error(\
@@ -166,7 +166,7 @@ if __name__ == "__main__":
         })
         tree_builder_type = 'Cogent'
      
-    input_seqs_filepath = args[0]
+    input_seqs_filepath = opts.input_fp
     result_path = opts.result_fp
     if not result_path: # empty or None
         fpath, ext = splitext(input_seqs_filepath) # fpath omits extension

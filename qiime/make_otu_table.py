@@ -60,18 +60,24 @@ def make_otu_map(otu_to_seqid, otu_to_taxonomy=None, delim='_'):
 def make_cmd_parser():
     """Returns command-line options"""
     parser = OptionParser()
-    parser.add_option('-o', '--otu', dest='otu_fname',
-        help='name of otu file')
+    parser.add_option('-i', '--input_otu_fname', dest='otu_fname',
+        help='name of otu file [Required]')
     parser.add_option('-t', '--taxonomy', dest='taxonomy_fname',
         help='name of taxonomy file', default=None)
+    parser.add_option('-o', '--output_fname', dest='output_fname',
+        help='name of output file [Default is stdout]')
     options, args = parser.parse_args()
     return options, args
 
 if __name__ == "__main__":
-    from sys import argv, exit, stderr
+    from sys import argv, exit, stderr, stdout
     options, args = make_cmd_parser()
     if not options.taxonomy_fname:
         otu_to_taxonomy = None
+    if options.output_fname:
+        outfile = open(output_fname, 'w')
+    else:
+        outfile = stdout
     else:
         res = {}
         infile = open(options.taxonomy_fname,'U')
@@ -88,4 +94,4 @@ if __name__ == "__main__":
 
     otu_to_seqid = fields_to_dict(open(options.otu_fname, 'U'))
 
-    print make_otu_map(otu_to_seqid, otu_to_taxonomy)
+    outfile.write(make_otu_map(otu_to_seqid, otu_to_taxonomy))
