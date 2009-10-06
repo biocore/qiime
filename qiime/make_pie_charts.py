@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#file gen_pie_charts.py
+#file make_pie_charts.py
 
 __author__ = "Julia Goodrich and Michah Hamady"
 __copyright__ = "Copyright 2009, Qiime" #consider project name
@@ -20,7 +20,7 @@ MatPlotLib 0.98.5.2
 Python 2.5
 
 Example: Create 2D pie charts using taxonomy counts:
-Usage: python gen_pie_charts.py -c phylum.txt,class.txt,genus.txt -x ./webfiles
+Usage: python make_pie_charts.py -c phylum.txt,class.txt,genus.txt -x ./webfiles
 
 """
 
@@ -377,12 +377,12 @@ MatPlotLib 0.98.5.2
 Python 2.5
 
 Example: Create pie charts using taxonomy counts for combined samples:
-python gen_pie_charts.py -i phylum.txt,class.txt,genus.txt  \
+python make_pie_charts.py -i phylum.txt,class.txt,genus.txt  \
 -l phylum,class,genus -o ./webfiles
 
 Create pie charts using taxonomy counts for combined samples and individual \
 samples:
-python gen_pie_charts.py -i phylum.txt,class.txt,genus.txt  \
+python make_pie_charts.py -i phylum.txt,class.txt,genus.txt  \
 -l phylum,class,genus -o ./webfiles -s
 
 """

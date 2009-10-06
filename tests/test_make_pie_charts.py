@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#file test_gen_2d_plots.py
+#file test_make_2d_plots.py
 
 __author__ = "Julia Goodrich"
 __copyright__ = "Copyright 2009, Qiime" #consider project name
@@ -17,7 +17,7 @@ from os.path import exists
 from StringIO import StringIO
 from cogent.util.unit_test import TestCase, main
 from os import remove, mkdir, removedirs,listdir
-from qiime.gen_pie_charts import (make_pie_chart,make_img_name,
+from qiime.make_pie_charts import (make_pie_chart,make_img_name,
                                 get_counts,write_html_file,
                                   make_HTML_table,get_fracs, _do_pie_charts)
 
