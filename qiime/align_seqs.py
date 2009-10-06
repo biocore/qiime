@@ -2,7 +2,7 @@
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2009, the PyCogent Project"
-__credits__ = ["Rob Knight","Greg Caporaso"]
+__credits__ = ["Rob Knight","Greg Caporaso","Jeremy Widmann"]
 __license__ = "GPL"
 __version__ = "0.1"
 __maintainer__ = "Greg Caporaso"
@@ -22,10 +22,13 @@ from os.path import exists, splitext, split
 from commands import getoutput
 from optparse import OptionParser
 from cogent import LoadSeqs, DNA
-from cogent.core.alignment import DenseAlignment
+from cogent.core.alignment import DenseAlignment, SequenceCollection, Alignment
+from cogent.core.sequence import DnaSequence as Dna
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.app.util import get_tmp_filename, ApplicationNotFoundError
 from qiime.util import FunctionWithParams, qiime_config
+from cogent.app.infernal import cmalign_from_alignment
+from cogent.parse.rfam import MinimalRfamParser, ChangedSequence
 #app controllers that implement align_unaligned_seqs
 import cogent.app.muscle
 import cogent.app.clustalw
@@ -111,6 +114,95 @@ class CogentAligner(Aligner):
         """Calls superclass method to align seqs"""
         return FunctionWithParams.__call__(self, result_path=result_path,
             log_path=log_path, *args, **kwargs)
+            
+class InfernalAligner(Aligner):
+    Name = 'InfernalAligner'
+
+    def __init__(self, params):
+        """Return new InfernalAligner object with specified params.
+        """
+        _params = {
+            'moltype': DNA,
+            'Application': 'Infernal',
+            }
+        _params.update(params)
+        Aligner.__init__(self, _params)
+
+    def __call__(self, seq_path, result_path=None, log_path=None, \
+        failure_path=None, cmbuild_params=None, cmalign_params=None):
+        
+        log_params = []
+        # load candidate sequences
+        candidate_sequences = dict(MinimalFastaParser(open(seq_path,'U')))
+        
+        # load template sequences
+        info, template_alignment, struct = list(MinimalRfamParser(open(\
+            self.Params['template_filepath'],'U'),\
+            seq_constructor=ChangedSequence))[0]
+        
+        moltype = self.Params['moltype']
+        
+        #Need to make separate mapping for unaligned sequences
+        unaligned = SequenceCollection(candidate_sequences,MolType=moltype)
+        int_map, int_keys = unaligned.getIntMap(prefix='unaligned_')
+        int_map = SequenceCollection(int_map,MolType=moltype)
+        
+        #Turn on --gapthresh option in cmbuild to force alignment to full model
+        if cmbuild_params is None:
+            cmbuild_params = {}
+        cmbuild_params.update({'--gapthresh':1.0})
+        
+        #record cmbuild parameters
+        log_params.append('cmbuild parameters:')
+        log_params.append(str(cmbuild_params))
+        
+        #Turn on --sub option in Infernal, since we know the unaligned sequences
+        # are fragments.
+        #Also turn on --gapthresh to use same gapthresh as was used to build
+        # model
+        
+        if cmalign_params is None:
+            cmalign_params = {}
+        cmalign_params.update({'--sub':True,'--gapthresh':1.0})
+        
+        #record cmalign parameters
+        log_params.append('cmalign parameters:')
+        log_params.append(str(cmalign_params))
+        
+        #Align sequences to alignment including alignment gaps.
+        aligned, struct_string = cmalign_from_alignment(aln=template_alignment,\
+            structure_string=struct,\
+            seqs=int_map,\
+            moltype=moltype,\
+            include_aln=True,\
+            params=cmalign_params,\
+            cmbuild_params=cmbuild_params)
+        
+        #Pull out original sequences from full alignment.
+        infernal_aligned={}
+        aligned_dict = aligned.NamedSeqs
+        for key in int_map.Names:
+            infernal_aligned[int_keys.get(key,key)]=aligned_dict[key]
+        
+        #Create an Alignment object from alignment dict
+        infernal_aligned = Alignment(infernal_aligned,MolType=moltype)
+        
+        if log_path is not None:
+            log_file = open(log_path,'w')
+            log_file.write('\n'.join(log_params))
+            log_file.close()
+        
+        if result_path is not None:
+            result_file = open(result_path,'w')
+            result_file.write(infernal_aligned.toFasta())
+            result_file.close()
+            return None
+        else:
+            try:
+                return infernal_aligned
+            except ValueError:
+                return {}
+
 
 class PyNastAligner(Aligner):
     Name = 'PyNastAligner'
@@ -194,6 +286,10 @@ Align 10_seq.fasta (-i) using muscle (-m). Output files will be stored in
 Align 10_seq.fasta (-i) with pynast (default) against template_aln.fasta (-t).
  Output files will be stored in ./pynast_aligned/
  python align_seqs.py -i 10_seq.fasta -t template_aln.fasta
+
+Align 10_seq.fasta (-i) with infernal against template_aln.sto (-t).
+ Output files will be stored in ./infernal_aligned/
+ python align_seqs.py -i 10_seq.fasta -t template_aln.sto -m infernal
 """
 
 def parse_command_line_parameters():
@@ -207,7 +303,8 @@ def parse_command_line_parameters():
           
     parser.add_option('-t','--template_fp',\
           type='string',dest='template_fp',help='Filepath for '+\
-          'template against [default: %default; REQUIRED if -m pynast]')
+          'template against [default: %default; REQUIRED if -m pynast'+\
+          'or -m infernal]')
 
     alignment_method_choices = \
      alignment_method_constructors.keys() + alignment_module_names.keys()
@@ -267,7 +364,8 @@ def parse_command_line_parameters():
     return opts,args
 
 
-alignment_method_constructors ={'pynast':PyNastAligner}
+alignment_method_constructors ={'pynast':PyNastAligner,\
+    'infernal':InfernalAligner}
 
 pairwise_alignment_methods = {
     'muscle':muscle_align_unaligned_seqs,
@@ -278,7 +376,8 @@ pairwise_alignment_methods = {
 }
 
 alignment_module_names = {'muscle':cogent.app.muscle, 
-    'clustalw':cogent.app.clustalw, 'mafft':cogent.app.mafft}
+    'clustalw':cogent.app.clustalw, 'mafft':cogent.app.mafft, \
+    'infernal':cogent.app.infernal}
 
 
 if __name__ == "__main__":
