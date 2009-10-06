@@ -4,7 +4,7 @@
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2009, the PyCogent Project" 
-__credits__ = ["Greg Caporaso"] 
+__credits__ = ["Greg Caporaso","Jeremy Widmann"] 
 __license__ = "GPL"
 __version__ = "0.1"
 __maintainer__ = "Greg Caporaso"
@@ -14,12 +14,12 @@ __status__ = "Prototype"
 from os import remove
 from os.path import getsize
 from cogent import LoadSeqs, DNA
-from cogent.core.alignment import DenseAlignment
+from cogent.core.alignment import DenseAlignment, Alignment
 from cogent.util.unit_test import TestCase, main
 from cogent.app.util import get_tmp_filename
 import cogent.app.muscle
 from qiime.align_seqs import Aligner, CogentAligner,\
-    PyNastAligner
+    PyNastAligner, InfernalAligner
 
 def remove_files(list_of_filepaths,error_on_missing=True):
     missing = []
@@ -76,6 +76,68 @@ class CogentAlignerTests(SharedSetupTestCase):
         #note: lines in diff order w/ diff versions
         self.assertEqualItems(str(actual).splitlines(),expected.splitlines())
  
+class InfernalAlignerTests(SharedSetupTestCase):
+    """Tests of the InfernalAligner class"""
+    
+    def setUp(self):
+        self.infernal_test1_input_fp = get_tmp_filename(
+            prefix='InfernalAlignerTests_',suffix='.fasta')
+        open(self.infernal_test1_input_fp,'w').write(infernal_test1_input_fasta)
+
+        self.infernal_test1_template_fp = get_tmp_filename(
+            prefix='InfernalAlignerTests_',suffix='template.sto')
+        open(self.infernal_test1_template_fp,'w').\
+         write(infernal_test1_template_stockholm)
+
+        # create temp file names (and touch them so we can reliably 
+        # clean them up)
+        self.result_fp = get_tmp_filename(
+            prefix='InfernalAlignerTests_',suffix='.fasta')
+        open(self.result_fp,'w').close()
+        
+        self.log_fp = get_tmp_filename(
+            prefix='InfernalAlignerTests_',suffix='.log')
+        open(self.log_fp,'w').close()
+
+        self._paths_to_clean_up = [
+            self.infernal_test1_input_fp,
+            self.result_fp,
+            self.log_fp,
+            self.infernal_test1_template_fp,
+            ]
+
+        self.infernal_test1_aligner = InfernalAligner({
+                'template_filepath': self.infernal_test1_template_fp,
+                })
+        self.infernal_test1_expected_aln = \
+         LoadSeqs(data=infernal_test1_expected_alignment,aligned=Alignment,\
+            moltype=DNA)
+
+    def test_call_infernal_test1_file_output(self):
+        """InfernalAligner writes correct output files for infernal_test1 seqs
+        """
+        # do not collect results; check output files instead
+        actual = self.infernal_test1_aligner(\
+         self.infernal_test1_input_fp, result_path=self.result_fp,
+         log_path=self.log_fp)
+         
+        self.assertTrue(actual == None,\
+         "Result should be None when result path provided.")
+         
+        expected_aln = self.infernal_test1_expected_aln
+        actual_aln = LoadSeqs(self.result_fp,aligned=Alignment)
+        self.assertEqual(actual_aln,expected_aln)
+
+    def test_call_infernal_test1(self):
+        """InfernalAligner: functions as expected when returing objects
+        """
+        actual_aln = self.infernal_test1_aligner(self.infernal_test1_input_fp)
+        expected_aln = self.infernal_test1_expected_aln
+
+        expected_names = ['seq_1', 'seq_2', 'seq_3']
+        self.assertEqual(actual_aln.Names, expected_names)
+        self.assertEqual(actual_aln, expected_aln)
+
 
 class PyNastAlignerTests(SharedSetupTestCase):
     """Tests of the PyNastAligner class"""
@@ -226,6 +288,23 @@ ACAGACACTT
 TTACAC"""
 
 expected_muscle_alignment = """>jkl\n--TTACAC--\n>abc\nACACACAC--\n>ghi\nACAGACACTT\n>def\nACAGACAC--\n"""
+
+infernal_test1_input_fasta = """>seq_1
+ACTGCTAGCTAGTAGCGTACGTA
+>seq_2
+GCTACGTAGCTAC
+>seq_3
+GCGGCTATTAGATCGTA"""
+
+infernal_test1_template_stockholm = """# STOCKHOLM 1.0
+seq_a           TAGGCTCTGATATAATAGC-TCTC---------
+seq_b           ----TATCGCTTCGACGAT-TCTCTGATAGAGA
+seq_c           ------------TGACTAC-GCAT---------
+#=GC SS_cons    ............((.(....)))..........
+//"""
+
+infernal_test1_expected_alignment = """>seq_1-----ACTGCTA-GCTAGTAGCGTACGTA---->seq_2--------GCTACG-TAGCTAC----------->seq_3-----GCGGCTATTAGATC-GTA----------
+"""
 
 pynast_test1_template_fasta = """>1
 ACGT--ACGTAC-ATA-C-----CC-T-G-GTA-G-T---
