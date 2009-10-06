@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
-__author__ = "YOUR NAME HERE"
+__author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2009, the PyCogent Project" #consider project name
 __credits__ = ["Rob Knight", "Justin Kuczynski"] #remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "0.1"
-__maintainer__ = "YOUR NAME HERE"
-__email__ = "YOUR EMAIL ADDRESS HERE"
+__maintainer__ = "Justin Kuczynski"
+__email__ = "justinak@gmail.com"
 __status__ = "Prototype"
 
 
