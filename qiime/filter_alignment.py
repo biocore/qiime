@@ -59,7 +59,7 @@ def parse_command_line_parameters():
     parser.add_option('-o','--output_dir',action='store',\
            type='string',help='the output directory '+\
            '[default: %default]',default='.')
-    parser.add_option('-l','--lane_mask_fp',action='store',\
+    parser.add_option('-m','--lane_mask_fp',action='store',\
             type='string',help='path to lanemask file '+\
             '[default: %default]')
     parser.add_option('-g','--allowed_gap_frac',action='store',\
