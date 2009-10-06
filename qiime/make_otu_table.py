@@ -73,7 +73,7 @@ if __name__ == "__main__":
     from sys import argv, exit, stderr, stdout
     options, args = make_cmd_parser()
     if options.output_fname:
-        outfile = open(output_fname, 'w')
+        outfile = open(options.output_fname, 'w')
     else:
         outfile = stdout
     if not options.taxonomy_fname:
