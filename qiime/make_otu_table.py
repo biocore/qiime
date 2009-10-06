@@ -72,12 +72,12 @@ def make_cmd_parser():
 if __name__ == "__main__":
     from sys import argv, exit, stderr, stdout
     options, args = make_cmd_parser()
-    if not options.taxonomy_fname:
-        otu_to_taxonomy = None
     if options.output_fname:
         outfile = open(output_fname, 'w')
     else:
         outfile = stdout
+    if not options.taxonomy_fname:
+        otu_to_taxonomy = None
     else:
         res = {}
         infile = open(options.taxonomy_fname,'U')
