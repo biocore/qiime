@@ -105,15 +105,96 @@ class BlastFragmentsChimeraCheckerTests(TestCase):
         self.assertEqual(self.bcc.fragmentSeq('ACCGTTATATTTCC'),\
             ['ACCGT','TATAT','TTCC'])
         
-    def test_isChimeric(self):
-        """BlastFragmentsChimeraChecker:isChimeric functions as expected
+    def test_isChimericStrict(self):
+        """BlastFragmentsChimeraChecker: isChimericStrict functions as expected
         """
         params = {'id_to_taxonomy_fp':self.id_to_taxonomy_fp,\
                   'reference_seqs_fp':self.reference_seqs_fp}
         self.bcc = BlastFragmentsChimeraChecker(params)
-        self.assertTrue(self.bcc.isChimeric(['ABCD','ABCE','ABCD']))
+        self.assertTrue(self.bcc.isChimericStrict(['AB;CD','AB;CE','AB;CD']))
         
-        self.assertFalse(self.bcc.isChimeric(['ABCD','ABCD','ABCD']))
+        self.assertFalse(self.bcc.isChimericStrict(['AB;CD','AB;CD','AB;CD']))
+        
+        
+    def test_isChimeric(self):
+        """BlastFragmentsChimeraChecker: isChimeric functions as expected
+        """
+        params = {'id_to_taxonomy_fp':self.id_to_taxonomy_fp,\
+                  'reference_seqs_fp':self.reference_seqs_fp}
+        self.bcc = BlastFragmentsChimeraChecker(params)
+        # Basic cases, fewer than 4 assignments deep
+        self.assertTrue(self.bcc.isChimeric(\
+            ['AB;CD','AB;CE','AB;CD'],depth=4))
+        self.assertFalse(self.bcc.isChimeric(\
+            ['AB;CD','AB;CD','AB;CD'],depth=4))
+        
+        # Basic cases, exactly 4 assignments deep
+        self.assertFalse(self.bcc.isChimeric(\
+            ['AB;CD;EF;GH','AB;CD;EF;GH','AB;CD;EF;GH'],depth=4))
+        self.assertTrue(self.bcc.isChimeric(\
+            ['AB;CD;EF;GH','AB;CD;EF;GH','AB;CD;EF;XY'],depth=4))
+            
+        # Leading/trialing spaces in taxa don't affect results
+        self.assertFalse(self.bcc.isChimeric(\
+            ['AB;CD;EF; GH ','AB ;CD;EF;GH','AB;CD; EF;GH'],depth=4))
+            
+        # More complex cases -- only first four levels are considered
+        self.assertFalse(self.bcc.isChimeric(\
+            ['AB;CD;EF;GH','AB;CD;EF;GH;IJ','AB;CD;EF;GH'],depth=4))
+        self.assertFalse(self.bcc.isChimeric(\
+            ['AB;CD;EF;GH;LM;XY','AB;CD;EF;GH;IJ','AB;CD;EF;GH;JK'],depth=4))
+            
+        # unlikely case (but possible) where 5th level is identical,
+        # but 4th is not
+        self.assertFalse(self.bcc.isChimeric(\
+            ['AB;CD;EF;GH;XY','AB;CD;EF;JK;XY','AB;CD;EF;GH;XY'],depth=3))
+        self.assertTrue(self.bcc.isChimeric(\
+            ['AB;CD;EF;GH;XY','AB;CD;EF;JK;XY','AB;CD;EF;GH;XY'],depth=4))
+        self.assertTrue(self.bcc.isChimeric(\
+            ['AB;CD;EF;GH;XY','AB;CD;EF;JK;XY','AB;CD;EF;GH;XY'],depth=5))
+            
+    def test_isChimeric_no_blast_hit(self):
+        """BlastFragmentsChimeraChecker: no blast hit is lack of evidence for chimeric
+        """
+        params = {'id_to_taxonomy_fp':self.id_to_taxonomy_fp,\
+                  'reference_seqs_fp':self.reference_seqs_fp}
+        self.bcc = BlastFragmentsChimeraChecker(params)
+        # 'No blast hit' values ignored (lack of evidence to claim sequence
+        # is chimeric) 
+        self.assertFalse(self.bcc.isChimeric(\
+            ['AB;CD;EF','No blast hit','AB;CD;EF'],depth=3))
+        self.assertFalse(self.bcc.isChimeric(\
+            ['No blast hit','No blast hit','No blast hit'],depth=3))
+        self.assertFalse(self.bcc.isChimeric(\
+            ['No blast hit','AB;CD;EF','AB;CD;EF'],depth=3))
+            
+        # Still called a chimera though if other assignments suggest that it is
+        self.assertTrue(self.bcc.isChimeric(\
+            ['No blast hit','AB;CD;EF','AB;CD;XY'],depth=3))
+            
+    def test_isChimeric_alt_depth(self):
+        """BlastFragmentsChimeraChecker: isChimeric functions as expected with alt depth
+        """
+        params = {'id_to_taxonomy_fp':self.id_to_taxonomy_fp,\
+                  'reference_seqs_fp':self.reference_seqs_fp}
+        self.bcc = BlastFragmentsChimeraChecker(params)
+        
+        # chimeric at depth 5
+        self.assertTrue(self.bcc.isChimeric(\
+            ['AB;CD;EF;GH','AB;CD;EF;GH','AB;CD;EF;XY'],depth=5))
+        # chimeric at depth 4
+        self.assertTrue(self.bcc.isChimeric(\
+            ['AB;CD;EF;GH','AB;CD;EF;GH','AB;CD;EF;XY'],depth=4))
+        # non-chimeric at depth 3
+        self.assertFalse(self.bcc.isChimeric(\
+            ['AB;CD;EF;GH','AB;CD;EF;GH','AB;CD;EF;XY'],depth=3))
+        # non-chimeric at depth 2
+        self.assertFalse(self.bcc.isChimeric(\
+            ['AB;CD;EF;GH','AB;CD;EF;GH','AB;CD;EF;XY'],depth=2))
+        # non-chimeric at depth 1
+        self.assertFalse(self.bcc.isChimeric(\
+            ['AB;CD;EF;GH','AB;CD;EF;GH','AB;CD;EF;XY'],depth=1))
+        
         
     def test_getTaxonomy(self):
         """BlastFragmentsChimeraChecker: getTaxonomy functions with full-length sequence

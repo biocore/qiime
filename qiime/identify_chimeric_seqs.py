@@ -179,8 +179,8 @@ class BlastFragmentsChimeraChecker(ChimeraChecker):
             if self.isChimeric(taxon_assignments):
                 # If so, yield the seq_id and the list of taxon_assignments
                 yield seq_id, taxon_assignments
-        
-    def isChimeric(self,taxon_assignments):
+
+    def isChimericStrict(self,taxon_assignments):
         """From list of taxon assignments, determine if sequence is chimeric 
         
             ** This method needs to be parameterized, as there are other ways
@@ -192,8 +192,50 @@ class BlastFragmentsChimeraChecker(ChimeraChecker):
             of interesting sequences representing a new genus.
             
         """
-        # Return True if all taxon_assignments are not identical
         return len(set(taxon_assignments)) > 1
+        
+    def isChimeric(self,taxon_assignments,depth=4):
+        """From list of taxon assignments, determine if sequence is chimeric 
+        
+            ** This method needs to be parameterized, as there are other ways
+            we might want to test for chimeras based on taxon_assignments. 
+            
+            
+            This method checks that taxon assignments are identical to a 
+            depth of depth (the input parameter). Assignments to
+            'No blast hit' are ignored, as these cannot provide evidence
+            for a sequence being chimeric. This function considers a sequnce
+            non-chimeric until it finds evidence that it is chimeric.
+            Currently only the first blast hit is considered -- this is 
+            something we will want to change. 
+            
+            When tested against a balanced test set containing 84 chimeric 
+             sequences and 84 non-chimeric sequences 
+             (precision, recall, f-measure)
+             respectively are: 
+              @ depth=3 (0.67,0.36,0.47)
+              @ depth=4 (0.67,0.60,0.63)
+              @ depth=5 (0.56,0.64,0.60)
+            
+        """
+        # split the assignments, ignoring fragments which had no blast
+        # result (as these cannot provide evidence for a sequence being
+        # chimeric)
+        split_assignments = [ta.split(';') \
+         for ta in taxon_assignments if ta != 'No blast hit']
+        for i in range(depth):
+            try:
+                assignments_at_depth_i =\
+                 [a[i].strip() for a in split_assignments]
+            except IndexError:
+                # We return False if there is no information at current
+                # depth because there is not enough information to call
+                # the sequence chimeric
+                return False
+            if len(set(assignments_at_depth_i)) > 1:
+                return True
+                
+        return False
         
     def getTaxonomy(self,fragment):
         """ Return the taxonomy of fragment 
@@ -328,9 +370,11 @@ if __name__ == "__main__":
     reference_seqs_fp = opts.reference_seqs_fp
     chimera_detection_method = opts.chimera_detection_method
     num_fragments = opts.num_fragments
+    output_fp = opts.output_fp
     
-    input_basename = splitext(split(input_seqs_fp)[1])[0]
-    output_fp = '%s_chimeric.txt' % input_basename
+    if not output_fp:
+        input_basename = splitext(split(input_seqs_fp)[1])[0]
+        output_fp = '%s_chimeric.txt' % input_basename
     
     if chimera_detection_method == 'blast_fragments':
         blast_fragments_identify_chimeras(input_seqs_fp,id_to_taxonomy_fp,\
