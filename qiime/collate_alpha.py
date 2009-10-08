@@ -39,14 +39,6 @@ def main(input_dir, output_dir, example_filepath=None):
         os.mkdir(options.output_path)
     file_names = os.listdir(input_dir)
     file_names = [fname for fname in file_names if not fname.startswith('.')]
-    
-    # remove hidden
-    hidden_fnames = []
-    for fname in file_names:
-        if fname.startswith('.'):
-            hidden_fnames.append(fname)
-    for hidden in hidden_fnames:
-        file_names.remove(hidden)
      
     if example_filepath is None:    
         # table row is base_name, seqs_per_sam, iters, ext
