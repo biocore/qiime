@@ -16,12 +16,15 @@ grouping those sequences by similarity.
 """
 
 from copy import copy
+from itertools import ifilter
 from optparse import OptionParser
 from os.path import splitext, split
 from os import mkdir
 from cogent.parse.fasta import MinimalFastaParser
+from cogent.parse.mothur import parse_otu_list as mothur_parse
 from cogent.app.cd_hit import cdhit_clusters_from_seqs
 from cogent.app.dotur import dotur_from_alignment
+from cogent.app.mothur import Mothur
 from cogent.core.sequence import DnaSequence
 from cogent import LoadSeqs, DNA, Alignment
 from qiime.util import FunctionWithParams
@@ -348,6 +351,112 @@ class DoturOtuPicker(OtuPicker):
         retval = prev_res[i_otu_list]
 
         return retval
+
+
+class MothurOtuPicker(OtuPicker):
+    Name = 'MothurOtuPicker'
+    _supported_algorithms = ['furthest', 'nearest', 'average']
+
+    def __init__(self, params):
+        """Return new MothurOtuPicker object with specified params.
+        
+        Valid params are:
+
+        Algorithm
+            Algorithm used for clustering (valid choices are nearest,
+            furthest, average)
+        Similarity
+            Similarity threshold for OTUs (default 0.97)
+        """
+        params['Application'] = 'mothur'
+        if 'Algorithm' not in params:
+            params['Algorithm'] = 'furthest'
+        if 'Similarity' not in params:
+            params['Similarity'] = 0.97
+        if params['Algorithm'] not in self._supported_algorithms:
+            raise ValueError('Unsupported algorithm %s.  Choices are %s' % \
+                             (params['Algorithm'], self._supported_algorithms))
+        super(MothurOtuPicker, self).__init__(params)
+
+    def __call__ (self, seq_path, result_path=None, log_path=None):
+        """Returns dict mapping {otu_id:[seq_ids]} for each otu.
+        
+        Parameters:
+        seq_path: path to file of sequences
+        result_path: path to file of results. If specified, should
+        dump the result to the desired path instead of returning it.
+        log_path: path to log, which should include dump of params.
+        """
+        app = Mothur(InputHandler='_input_as_path')
+        app.Parameters['method'].on(self.Params['Algorithm'])
+        results = app(seq_path)
+        parsed_otus = mothur_parse(results['otu list'])
+        clusters = self.__pick_clusters(parsed_otus)
+
+        # From here down, this is all copied straight from
+        # CdHitOtuPicker, and prime for refactoring into a private
+        # method of OtuPicker
+
+        if result_path:
+            # if the user provided a result_path, write the 
+            # results to file with one tab-separated line per 
+            # cluster
+            of = open(result_path,'w')
+            for i,cluster in enumerate(clusters):
+                of.write('%s\t%s\n' % (i,'\t'.join(cluster)))
+            of.close()
+            result = None
+            log_str = 'Result path: %s' % result_path
+        else:
+            # if the user did not provide a result_path, store
+            # the clusters in a dict of {otu_id:[seq_ids]}, where
+            # otu_id is arbitrary
+            result = dict(enumerate(clusters))
+            log_str = 'Result path: None, returned as dict.'
+ 
+        if log_path:
+            # if the user provided a log file path, log the run
+            log_file = open(log_path,'w')
+            log_file.write(str(self))
+            log_file.write('\n')
+            log_file.write('%s\n' % log_str)
+
+        # return the result (note this is None if the data was
+        # written to file)
+        return result
+
+    def __pick_clusters(self, mothur_results):
+        """Returns OTU's that satisfy the given similarity threshold.
+        """
+        # Sanity check
+        if not 0 <= self.Params['Similarity'] <= 1:
+            raise ValueError(
+                'Similarity threshold must be number between 0 and 1 '
+                '(received %)' % similarity_threshold)
+
+        # A lower mothur score means more otu's.  To find otu's that
+        # satisfy a similarity threshold of 0.9, we must find the
+        # largest score less than or equal to (1 - 0.9 =) 0.1.
+        score_threshold = 1 - self.Params['Similarity']
+
+        my_score, my_otus = mothur_results.next()
+        for score, otus in mothur_results:
+
+            # Sanity check
+            if score < my_score:
+                raise ValueError(
+                    'Mothur results not in ascending order.  This is an error '
+                    'in the Mothur application controller, and it should be '
+                    'reported to the PyCogent developers.')
+
+            if score <= score_threshold:
+                my_score, my_otus = score, otus
+            else:
+                # Scores are only getting larger, so bail out now
+                break
+        return my_otus
+
+
 usage_str = """usage: %prog [options] {-i INPUT_SEQS_FILEPATH}
 
 [] indicates optional input (order unimportant) 
@@ -440,4 +549,4 @@ if __name__ == "__main__":
     otu_picker(input_seqs_filepath,\
      result_path=result_path,log_path=log_path,\
      prefix_prefilter_length=prefix_prefilter_length)
-    
+

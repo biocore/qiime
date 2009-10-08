@@ -16,7 +16,8 @@ from os import remove
 from cogent.util.unit_test import TestCase, main
 from cogent.app.util import get_tmp_filename
 from cogent.util.misc import remove_files
-from qiime.pick_otus import CdHitOtuPicker, DoturOtuPicker, OtuPicker
+from qiime.pick_otus import CdHitOtuPicker, DoturOtuPicker, OtuPicker, \
+    MothurOtuPicker
 
 class OtuPickerTests(TestCase):
     """Tests of the abstract OtuPicker class"""
@@ -31,6 +32,40 @@ class OtuPickerTests(TestCase):
         """Abstract OtuPicker __call__ should raise NotImplementedError"""
         p = OtuPicker({})
         self.assertRaises(NotImplementedError, p, '/path/to/seqs')
+
+
+class MothurOtuPickerTests(TestCase):
+    def setUp(self):
+        self.small_seq_path = get_tmp_filename(
+            prefix='MothurOtuPickerTest_', suffix='.fasta')
+        f = open(self.small_seq_path, 'w')
+        f.write(
+            '>aaaaaa\nTAGGCTCTGATATAATAGCTCTC---------\n'
+            '>cccccc\n------------TGACTACGCAT---------\n'
+            '>bbbbbb\n----TATCGCTTCGACGATTCTCTGATAGAGA\n'
+            )
+        f.close()
+
+    def tearDown(self):
+        remove(self.small_seq_path)
+
+    def test_call(self):
+        app = MothurOtuPicker({})
+        observed_otus = app(self.small_seq_path)
+        expected_otus = {0: ['cccccc'], 1: ['bbbbbb'], 2: ['aaaaaa']}
+        self.assertEqual(observed_otus, expected_otus)
+
+    def test_call_low_similarity(self):
+        app = MothurOtuPicker({'Similarity': 0.35})
+        observed_otus = app(self.small_seq_path)
+        expected_otus = {0: ['bbbbbb', 'cccccc'], 1: ['aaaaaa']}
+        self.assertEqual(observed_otus, expected_otus)
+
+    def test_call_nearest_neighbor(self):
+        app = MothurOtuPicker({'Algorithm': 'nearest', 'Similarity': 0.35})
+        observed_otus = app(self.small_seq_path)
+        expected_otus = {0: ['bbbbbb', 'cccccc'], 1: ['aaaaaa']}
+        self.assertEqual(observed_otus, expected_otus)
 
 
 class CdHitOtuPickerTests(TestCase):
