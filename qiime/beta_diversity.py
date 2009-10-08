@@ -143,7 +143,7 @@ class BetaDiversityCalc(FunctionWithParams):
             return self.Metric(data.T), sample_names
 
     def formatResult(self, result):
-        """Generate formatted distance matrix - result is (data, sample_names)"""
+        """Generate formatted distance matrix. result is (data, sample_names)"""
         data, sample_names = result
         return format_distance_matrix(sample_names, data)
 
@@ -157,7 +157,7 @@ def single_file_beta(options, args):
             metric_f = get_phylogenetic_metric(metric)
             is_phylogenetic = True
         except AttributeError:
-            stderr.write("Could not find metric %s.\n\nKnown metrics are: %s\n" \
+            stderr.write("Could not find metric %s.\n\nKnown metrics are: %s\n"\
                 % (metric, ', '.join(list_known_metrics())))
             exit(1)
 
@@ -184,6 +184,7 @@ def multiple_file_beta(options, args):
     metric = options.metric
     beta_script = qiime.beta_diversity.__file__
     file_names = os.listdir(options.input_path)
+    file_names = [fname for fname in file_names if not fname.startswith('.')]
     if not os.path.exists(options.output_path):
         os.mkdir(options.output_path)
     try:
@@ -192,7 +193,8 @@ def multiple_file_beta(options, args):
         try:
             metric_f = get_phylogenetic_metric(metric)
         except AttributeError:
-            raise ValueError("Could not find metric %s.\n\nKnown metrics are: %s\n" \
+            raise ValueError(
+                "Could not find metric %s.\n\nKnown metrics are: %s\n" \
                 % (metric, ', '.join(list_known_metrics())))
 
     for fname in file_names:

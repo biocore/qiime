@@ -294,6 +294,7 @@ def multiple_file_alpha(options, args):
     """
     alpha_script = qiime.alpha_diversity.__file__
     file_names = os.listdir(options.input_path)
+    file_names = [fname for fname in file_names if not fname.startswith('.')]
     if not os.path.exists(options.output_path):
         os.mkdir(options.output_path)
 

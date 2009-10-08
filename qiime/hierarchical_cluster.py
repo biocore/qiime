@@ -28,6 +28,8 @@ def multiple_file_upgma(options, args):
         os.mkdir(options.output_path)
     upgma_script = qiime.hierarchical_cluster.__file__
     file_names = os.listdir(options.input_path)
+    file_names = [fname for fname in file_names if not fname.startswith('.')]
+
     for fname in file_names:
         base_fname, ext = os.path.splitext(fname)
         upgma_cmd = 'python ' + upgma_script + ' -i '+\

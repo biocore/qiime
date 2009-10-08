@@ -26,6 +26,9 @@ python tree_compare.py -m TEST/sample_cluster.tre -s TEST/rare_unifrac_upgma -o 
 
 def main(options):
     tree_file_names = os.listdir(options.support_dir)
+    tree_file_names = [fname for fname in tree_file_names if not \
+        fname.startswith('.')]
+
     if not os.path.exists(options.output_dir):
         os.mkdir(options.output_dir)
     support_trees = []

@@ -38,6 +38,7 @@ def main(input_dir, output_dir, example_filepath=None):
     if not os.path.exists(options.output_path):
         os.mkdir(options.output_path)
     file_names = os.listdir(input_dir)
+    file_names = [fname for fname in file_names if not fname.startswith('.')]
     
     # remove hidden
     hidden_fnames = []
