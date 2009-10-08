@@ -218,7 +218,7 @@ def parse_command_line_parameters():
           
     parser.add_option('-o','--result_fp',action='store',\
           type='string',dest='result_fp',help='Path to store '+\
-          'result file [default: <input_sequences_filepath>.otu]')
+          'result file [default: <input_sequences_filepath>.otu.fasta]')
           
     parser.add_option('-l','--log_fp',action='store',\
           type='string',dest='log_fp',help='Path to store '+\
@@ -269,7 +269,7 @@ if __name__ == "__main__":
     input_otu_filepath = opts.otu_fp
    
     result_path = opts.result_fp or\
-     '%s.otu' % input_seqs_filepath
+     '%s.otu.fasta' % input_seqs_filepath
      
     log_path = opts.log_fp
     
