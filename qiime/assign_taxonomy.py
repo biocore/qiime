@@ -2,7 +2,7 @@
 
 __author__ = "Rob Knight, Greg Caporaso"
 __copyright__ = "Copyright 2009, the PyCogent Project"
-__credits__ = ["Rob Knight","Greg Caporaso", "Kyle Bittinger"] 
+__credits__ = ["Rob Knight", "Greg Caporaso", "Kyle Bittinger"] 
 __license__ = "GPL"
 __version__ = "0.1"
 __maintainer__ = "Greg Caporaso"
@@ -35,6 +35,7 @@ from cogent.app.rdp_classifier import assign_taxonomy, \
     train_rdp_classifier_and_assign_taxonomy
 from cogent.parse.fasta import MinimalFastaParser
 from qiime.util import FunctionWithParams
+
 
 class TaxonAssigner(FunctionWithParams):
     """A TaxonAssigner assigns a taxon to each of a set of sequences.
@@ -87,13 +88,14 @@ class BlastTaxonAssigner(TaxonAssigner):
     """
     Name = 'BlastTaxonAssigner'
     
-    def __init__(self,params):
+    def __init__(self, params):
         """ Initialize the object
-        
         """
-        _params = {'Min percent identity':0.90,\
-         'Max E value':1e-30,\
-         'Application':'blastn/megablast'}
+        _params = {
+            'Min percent identity': 0.90,
+            'Max E value': 1e-30,
+            'Application': 'blastn/megablast'
+            }
         _params.update(params)
         TaxonAssigner.__init__(self, _params)
     
@@ -172,7 +174,7 @@ class BlastTaxonAssigner(TaxonAssigner):
         logger.setLevel(logging.INFO)
         return logger
 
-    def _map_ids_to_taxonomy(self,hits,id_to_taxonomy_map): 
+    def _map_ids_to_taxonomy(self, hits, id_to_taxonomy_map):
         """ map {query_id:(best_blast_seq_id,e-val)} to {query_id:(tax,None)}
         """
         for query_id, hit in hits.items():
@@ -180,7 +182,7 @@ class BlastTaxonAssigner(TaxonAssigner):
             try:
                 hit_id, e_value = hit 
                 hits[query_id] = \
-                  (id_to_taxonomy_map.get(hit_id, None),None)
+                  (id_to_taxonomy_map.get(hit_id, None),e_value)
             except TypeError:
                 hits[query_id] = ('No blast hit', None)
 
@@ -510,6 +512,10 @@ def parse_command_line_parameters():
         help='Minimum confidence to record an assignment, only used for rdp '
         'method [default: %default]')
 
+    parser.add_option('-e', '--e_value', type='float',
+        help='Maximum e-value to record an assignment, only used for blast '
+        'method [default: %default]')
+
     parser.add_option('-o','--output_dir',\
           help='Path to store result file '+\
           '[default: <ASSIGNMENT_METHOD>_assigned_taxonomy]')
@@ -518,6 +524,7 @@ def parse_command_line_parameters():
         verbose=False,
         assignment_method='blast',
         confidence=0.80,
+        e_value=0.001,
         )
 
     opts,args = parser.parse_args()
@@ -591,6 +598,7 @@ if __name__ == "__main__":
             params['blast_db'] = opts.blast_db
         else:
             params['reference_seqs_filepath'] = opts.reference_seqs_fp
+        params['Max E value'] = opts.e_value
 
     elif opts.assignment_method == 'rdp':
         params['Confidence'] = opts.confidence

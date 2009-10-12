@@ -12,6 +12,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Prototype"
 
+
 from cStringIO import StringIO
 from os import remove, system
 from glob import glob
@@ -24,6 +25,7 @@ from cogent.app.formatdb import build_blast_db_from_fasta_path
 from cogent.util.misc import remove_files
 from qiime.assign_taxonomy import TaxonAssigner, BlastTaxonAssigner,\
  RdpTaxonAssigner
+
 
 class TaxonAssignerTests(TestCase):
     """Tests of the abstract TaxonAssigner class"""
@@ -39,11 +41,11 @@ class TaxonAssignerTests(TestCase):
         p = TaxonAssigner({})
         self.assertRaises(NotImplementedError, p, '/path/to/seqs')
         
+
 class BlastTaxonAssignerTests(TestCase):
     """Tests of the BlastTaxonAssigner class"""
     
     def setUp(self):
-        """ """        
         self.id_to_taxonomy_fp = get_tmp_filename(\
          prefix='BlastTaxonAssignerTests_',suffix='.txt') 
         self.input_seqs_fp = get_tmp_filename(\
@@ -58,13 +60,14 @@ class BlastTaxonAssignerTests(TestCase):
         open(self.input_seqs_fp,'w').write(test_seq_coll.toFasta())
         open(self.reference_seqs_fp,'w').write(test_refseq_coll.toFasta())
         
-        self.expected1 = {\
-         's1':('Archaea;Euryarchaeota;Halobacteriales;uncultured',None),
-         's2':('Archaea;Euryarchaeota;Methanomicrobiales;Methanomicrobium et rel.',None),\
-         's3':('Archaea;Crenarchaeota;uncultured;uncultured',None),\
-         's4':('Archaea;Euryarchaeota;Methanobacteriales;Methanobacterium',None),\
-         's5':('Archaea;Crenarchaeota;uncultured;uncultured',None),\
-         's6':('No blast hit', None)}
+        self.expected1 = {
+            's1': ('Archaea;Euryarchaeota;Halobacteriales;uncultured', 0.0),
+            's2': ('Archaea;Euryarchaeota;Methanomicrobiales;Methanomicrobium et rel.', 0.0),
+            's3': ('Archaea;Crenarchaeota;uncultured;uncultured', 0.0),
+            's4': ('Archaea;Euryarchaeota;Methanobacteriales;Methanobacterium', 0.0),
+            's5': ('Archaea;Crenarchaeota;uncultured;uncultured', 0.0),
+            's6': ('No blast hit', None),
+            }
         
     def tearDown(self):
         remove_files(set(self._paths_to_clean_up))
@@ -96,24 +99,26 @@ class BlastTaxonAssignerTests(TestCase):
         """Mapping sequence ids to taxonomy functions as expected
         """
         p = BlastTaxonAssigner({})
-        id_to_taxonomy_map = {\
-         "AY800210":"Archaea;Euryarchaeota;Halobacteriales;uncultured",\
-         "EU883771":"Archaea;Euryarchaeota;Methanomicrobiales;Methanomicrobium et rel.",\
-         "EF503699":"Archaea;Crenarchaeota;uncultured;uncultured",\
-         "DQ260310":"Archaea;Euryarchaeota;Methanobacteriales;Methanobacterium",\
-         "EF503697":"Archaea;Crenarchaeota;uncultured;uncultured"}
-        
-        hits = {'s1':("AY800210",1e-99),\
-         's5':("EU883771",'weird confidence value'),
-         's3':("DQ260310",42.),\
-         's4':None}
-        expected = {\
-         's1':("Archaea;Euryarchaeota;Halobacteriales;uncultured",None),\
-         's5':(
-          'Archaea;Euryarchaeota;Methanomicrobiales;Methanomicrobium et rel.',\
-          None),
-         's3':("Archaea;Euryarchaeota;Methanobacteriales;Methanobacterium",None),\
-         's4':('No blast hit', None)}
+        id_to_taxonomy_map = {
+            "AY800210": "Archaea;Euryarchaeota;Halobacteriales;uncultured",
+            "EU883771": "Archaea;Euryarchaeota;Methanomicrobiales;Methanomicrobium et rel.",
+            "EF503699": "Archaea;Crenarchaeota;uncultured;uncultured",
+            "DQ260310": "Archaea;Euryarchaeota;Methanobacteriales;Methanobacterium",
+            "EF503697": "Archaea;Crenarchaeota;uncultured;uncultured",
+            }
+        hits = {
+            's1': ("AY800210", 1e-99),
+            's5': ("EU883771", 'weird confidence value'),
+            's3': ("DQ260310", 42.),
+            's4': None,
+            }
+        expected = {
+            's1': ("Archaea;Euryarchaeota;Halobacteriales;uncultured", 1e-99),
+            's5': ('Archaea;Euryarchaeota;Methanomicrobiales;Methanomicrobium et rel.',
+                   'weird confidence value'),
+            's3': ("Archaea;Euryarchaeota;Methanobacteriales;Methanobacterium", 42.),
+            's4': ('No blast hit', None),
+            }
         actual = p._map_ids_to_taxonomy(hits,id_to_taxonomy_map)
         self.assertEqual(actual,expected)
         
@@ -184,7 +189,6 @@ class BlastTaxonAssignerTests(TestCase):
     def test_call_on_the_fly_blast_db(self):
         """BlastTaxonAssigner.__call__ functions w creating blast db
         """
-
         p = BlastTaxonAssigner({\
          'reference_seqs_filepath':self.reference_seqs_fp,\
          'id_to_taxonomy_filepath':self.id_to_taxonomy_fp})
@@ -192,34 +196,36 @@ class BlastTaxonAssignerTests(TestCase):
         
         self.assertEqual(actual,self.expected1)
             
-            
     def test_call_output_to_file(self):
         """BlastTaxonAssigner.__call__ functions w output to file
         """
-         
-        result_path = get_tmp_filename(\
-         prefix='BlastTaxonAssignerTests_',suffix='.fasta')
-        self._paths_to_clean_up.append(result_path) 
+        result_path = get_tmp_filename(
+            prefix='BlastTaxonAssignerTests_', suffix='.fasta')
+        self._paths_to_clean_up.append(result_path)
 
-        p = BlastTaxonAssigner({\
-         'reference_seqs_filepath':self.reference_seqs_fp,\
-         'id_to_taxonomy_filepath':self.id_to_taxonomy_fp})
-        
-        actual = p(self.input_seqs_fp,result_path=result_path)
-        
-        # because the order of the lines is not guaranteed, check
-        # that on parsing each line we end up with the expected data
-        of = open(result_path)
-        for line in of:
-            fields = line.strip().split('\t')
-            self.assertEqual(\
-             (fields[1],fields[2]),(self.expected1[fields[0]][0],'None'))
-        of.close()
+        p = BlastTaxonAssigner({
+            'reference_seqs_filepath': self.reference_seqs_fp,
+            'id_to_taxonomy_filepath': self.id_to_taxonomy_fp,
+            })
+        actual = p(self.input_seqs_fp, result_path=result_path)
+
+        expected_lines = set([
+            's1\tArchaea;Euryarchaeota;Halobacteriales;uncultured\t0.0\n',
+            's2\tArchaea;Euryarchaeota;Methanomicrobiales;Methanomicrobium et rel.\t0.0\n',
+            's3\tArchaea;Crenarchaeota;uncultured;uncultured\t0.0\n',
+            's4\tArchaea;Euryarchaeota;Methanobacteriales;Methanobacterium\t0.0\n',
+            's5\tArchaea;Crenarchaeota;uncultured;uncultured\t0.0\n',
+            's6\tNo blast hit\tNone\n',
+            ])
+        f = open(result_path)
+        observed_lines = set(f.readlines())
+        f.close()
+        self.assertEqual(observed_lines, expected_lines)
         
         # Return value is None when result_path is provided (Not sure
         # if this is what we want yet, or if we would want both so 
         # results could be logged to file...)
-        self.assertEqual(actual,None)
+        self.assertEqual(actual, None)
         
     def test_call_logs_run(self):
         """BlastTaxonAssigner.__call__ logs the run when expected
