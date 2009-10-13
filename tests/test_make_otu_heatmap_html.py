@@ -10,7 +10,7 @@ __maintainer__ = "Rob Knight"
 __email__ = "jesse.stombaugh@colorado.edu"
 __status__ = "Prototype"
 
-import numpy
+from numpy import array
 from cogent.util.unit_test import TestCase, main
 from qiime.make_otu_heatmap_html import (make_html_doc,create_javascript_array,\
                                        filter_by_otu_hits,line_converter)
@@ -20,31 +20,37 @@ class TopLevelTests(TestCase):
 
     def setUp(self):
         """define some top-level data"""
-        self.otu_counts=[['#OTU ID', 'Sample1', 'Sample2','Consensus'],\
-                         ['OTU1',0,0,'Bacteria'],['OTU2',1,5,'Archaea']]
+        self.col_header=['Sample1', 'Sample2']
+        self.row_header=['OTU1','OTU2']
+        self.otu_table=array([[0,0],[1,5]])
+        self.lineages=[['Bacteria'],['Archaea']]
+
         self.data={}
-        self.data['otu_counts']=numpy.asarray(self.otu_counts, dtype='O')
+        self.data['otu_counts']=self.col_header,self.row_header,self.otu_table,\
+                                self.lineages
 
         self.num_otu_hits=5
             
     def test_make_html_doc(self):
-
+        """make_html_doc: create the web interface for otu heatmaps"""
         obs = make_html_doc('./test/test_otu_count_table.js')
 
         self.assertEqual(obs,exp_html_script)
             
     def test_create_javascript_array(self):
+        """create_javascript_array: takes a numpy array and generates a
+javascript array"""
         self.rows=[['#OTU ID', 'OTU2'],['Sample1',1],['Sample2',5],\
-                   ['Consensus','Archaea']]
+                   ['Consensus Lineage','Archaea']]
 
         obs=create_javascript_array(self.rows)
 
         self.assertEqual(obs,exp_js_array)        
             
     def test_filter_by_otu_hits(self):
-        """make_3d_plots: main script to create kinemage and html file"""
-        exp=[['#OTU ID', 'OTU2'],['Sample1',1],['Sample2',5],
-             ['Consensus','Archaea']]
+        """filter_by_otu_hits: filters the table by otu hits per otu"""
+        exp=array([['#OTU ID', 'OTU2'],['Sample1',1],['Sample2',5],\
+             ['Consensus Lineage','Archaea']])
         
         obs=filter_by_otu_hits(self.num_otu_hits,self.data)
  
@@ -61,7 +67,7 @@ OTU_table[1][0]='Sample1';\n\
 OTU_table[1][1]=1;\n\
 OTU_table[2][0]='Sample2';\n\
 OTU_table[2][1]=5;\n\
-OTU_table[3][0]='Consensus';\n\
+OTU_table[3][0]='Consensus Lineage';\n\
 OTU_table[3][1]='Archaea';\n\
 '''
 

@@ -30,9 +30,10 @@ Usage: python make_otu_heatmap_html.py -i otu_counts.txt -n 50
 """
 
 import numpy
-from numpy import array
+from numpy import array,concatenate
 from cogent.parse.table import SeparatorFormatParser
 from optparse import OptionParser
+from qiime.parse import parse_otus
 from make_3d_plots import create_dir
 import shutil
 
@@ -151,22 +152,28 @@ def create_javascript_array(rows):
             if i==0 or j==0 or i==len(rows)-1:
                 js_array+="OTU_table[%i][%i]='%s';\n" % (i,j,(rows[i][j]))
             else:
-                js_array+="OTU_table[%i][%i]=%i;\n" % (i,j,(rows[i][j]))
+                js_array+="OTU_table[%i][%i]=%i;\n" % (i,j,int(rows[i][j]))
             
     return js_array
 
 def filter_by_otu_hits(num_otu_hits,data):
     """Filter the OTU table by the number of otus per sample"""
-    rows=data['otu_counts']
+    col_header,row_header,otu_table,lineages=data['otu_counts']
 
     rows_filtered=[]
-    for i in range(len(rows)):
-        if (rows[i,1:len(rows[i])-1].sum())>num_otu_hits:
-            rows_filtered.append(rows[i])
-    rows_filtered=array(rows_filtered)
-    rows = rows_filtered.transpose()
+    row_head=concatenate((['#OTU ID'],col_header))
+    lineage_head=array(['Consensus Lineage'])
+    row_head2=concatenate((row_head,lineage_head))
+    rows_filtered.append(row_head2)
+    lineages=array(lineages)
+    for i in range(len(otu_table)):
+        if otu_table[i].sum()>num_otu_hits:
+            row_head_otu_count=concatenate(([row_header[i]],otu_table[i],lineages[i]))
+            rows_filtered.append(row_head_otu_count)
 
-    return rows
+    rows_filtered=array(rows_filtered) 
+    trans_rows_filtered=rows_filtered.transpose()
+    return trans_rows_filtered
     
 def line_converter():
     """Converts line elements into int's if possible"""
@@ -184,15 +191,13 @@ def line_converter():
 def get_otu_counts(options, data):
     """Reads the OTU table file into memory"""
     try:
-        reader = SeparatorFormatParser(converter=line_converter(), sep='\t')
-        rows = [line for line in reader(open(options.otu_count_fname))]
-        title = rows.pop(0)[0]
+        sample_ids,otu_ids,otu_table,lineages=parse_otus(open(options.otu_count_fname))
+        print otu_ids[0]
+
     except (TypeError, IOError):
         raise MissingFileError, 'OTU Count file required for this analysis'
 
-    data['otu_counts'] = numpy.asarray(rows, dtype='O')
-
-    return data['otu_counts']
+    return sample_ids,otu_ids,otu_table,lineages
 
 def _make_cmd_parser():
     """Returns the command-line options"""
