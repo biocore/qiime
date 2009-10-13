@@ -192,7 +192,6 @@ def get_otu_counts(options, data):
     """Reads the OTU table file into memory"""
     try:
         sample_ids,otu_ids,otu_table,lineages=parse_otus(open(options.otu_count_fname))
-        print otu_ids[0]
 
     except (TypeError, IOError):
         raise MissingFileError, 'OTU Count file required for this analysis'
