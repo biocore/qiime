@@ -110,26 +110,9 @@ def parse_command_line_parameters():
         help='Path to blastall [default: %default]')
 
     # Define parallel-script-specific parameters
-    parser.add_option('-x', '--job_prefix', action='store', \
-        type='string', dest='job_prefix', default=None,
-        help='job prefix, max 10 chars [default: %default]')
     
-    parser.add_option('-u','--cluster_jobs_fp',action='store',\
-            type='string',help='path to cluster_jobs.py script ' +\
-            ' [default: %default]',\
-            default=qiime_config['cluster_jobs_fp'])
-
-    parser.add_option('-S','--suppress_submit_jobs',action='store_true',\
-            help='Only split input and write commands file - don\'t submit '+\
-            'jobs [default: %default]',default=False)
-    
-    parser.add_option('-j','--jobs_to_start',action='store',type='int',\
+    parser.add_option('-O','--jobs_to_start',action='store',type='int',\
             help='Number of jobs to start [default: %default]',default=24)
-            
-    parser.add_option('-p','--python_exe_fp',action='store',\
-           type='string',help='full path to python '+\
-           'executable [default: %default]',\
-           default=qiime_config['python_exe_fp'])
            
     parser.add_option('-P','--poller_fp',action='store',\
            type='string',help='full path to '+\
@@ -140,15 +123,33 @@ def parse_command_line_parameters():
            help='retain temporary files after runs complete '+\
            '(useful for debugging) [default: %default]',\
            default=False)
-        
-    parser.add_option('-Z','--seconds_to_sleep',type='int',\
-            help='Number of seconds to sleep between checks for run '+\
-            ' completion when polling runs [default: %default]',default=60)
+
+    parser.add_option('-S','--suppress_submit_jobs',action='store_true',\
+            help='Only split input and write commands file - don\'t submit '+\
+            'jobs [default: %default]',default=False)
+    
+    parser.add_option('-U','--cluster_jobs_fp',action='store',\
+            type='string',help='path to cluster_jobs.py script ' +\
+            ' [default: %default]',\
+            default=qiime_config['cluster_jobs_fp'])
 
     parser.add_option('-W','--suppress_polling',action='store_true',
            help='suppress polling of jobs and merging of results '+\
            'upon completion [default: %default]',\
            default=False)
+           
+    parser.add_option('-X', '--job_prefix', action='store', \
+        type='string', dest='job_prefix', default=None,
+        help='job prefix, max 10 chars [default: %default]')
+            
+    parser.add_option('-Y','--python_exe_fp',action='store',\
+           type='string',help='full path to python '+\
+           'executable [default: %default]',\
+           default=qiime_config['python_exe_fp'])
+        
+    parser.add_option('-Z','--seconds_to_sleep',type='int',\
+            help='Number of seconds to sleep between checks for run '+\
+            ' completion when polling runs [default: %default]',default=60)
 
     opts,args = parser.parse_args()
     
