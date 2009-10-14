@@ -288,9 +288,12 @@ files are generated based on the supplied outputpath + unique suffixes:
 a FASTA file of sequences that passed the screen,
 a FASTA file of sequences that did not pass the screen (i.e. 
 matched the database and passed all filters), the raw BLAST results from the
-screen and a log file summarizing the options used and results obtained. A copy of human nucleotide 
-sequences useful for excluding human genomic contamination from sequencing runs 
-can be found at:  ftp://ftp.genome.jp/pub/kegg/genes/organisms/hsa/h.sapiens.nuc
+screen and a log file summarizing the options used and results obtained. 
+
+For human screening, you MUST screen against the complete human genome, e.g.
+at ftp.ncbi.nlm.nih.gov/genomes/H_sapiens/Assembled_chromosomes/hs_ref*.fa.gz.
+DO NOT screen only against e.g. the coding sequences in KEGG. This point is
+CRITICAL because submitting human sequences that are not IRB-approved is BAD.
 """
     usage = """\n\t python exclude_seqs_by_blast.py {-i QUERY_FASTA_FP -d SUBJECT_FASTA_FP -o
     OUTPUT_FP} [options]
