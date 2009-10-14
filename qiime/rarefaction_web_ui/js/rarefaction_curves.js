@@ -37,25 +37,44 @@ function plotLines(series, seriestitles, xaxisvals, gtitle, legend){
     var data = new google.visualization.DataTable();
 	data.addColumn('number', 'Sequences Per Sample');
 	
+	console.log("len(seriestitles) " + seriestitles.length)
+	
 	for(var i = 0; i < series.length; i++)
 	{
 		data.addColumn('number',seriestitles[i]);
 	}
-	data.addRows(series.length+1);
-	for(var i = 0; i < xaxisvals.length; i++)
-	{
-		//console.log(xaxisvals[i])
-		data.setValue(i, 0, xaxisvals[i]);
+	//console.log(xaxisvals)
+	//console.log(series[0].length)
+	data.addRows(xaxisvals.length+1);
+	try {
+		for(var i = 0; i < xaxisvals.length; i++)
+		{
+			console.log(xaxisvals[i])
+			data.setValue(i, 0, xaxisvals[i]);
+		}
 	}
-	for(var i = 0; i < series.length; i++) // for every sample
+	catch(err)
+	{
+		console.log("problem with xaxis")
+		console.log(err)
+	}
+	
+	try {
+	for(var i = 0; i < series.length; i++)
 	{
 		//console.log("****")
-		for(var j = 0; j < series[i].length; j++) // for every number of seqs/sample
+		for(var j = 0; j < series[i].length; j++)
 		{
 			//console.log(series[i][j] + ', ' + j)
 			if(series[i][j] != 0)
 				data.setValue(j, i+1, series[i][j]); // i+1 because 0 is for the xaxisvals
 		}
+	}
+	}
+	catch(err)
+	{
+		console.log("problem with setValue loop")
+		console.log(err)
 	}
 	document.getElementById('graph_container').innerHTML = "";
 	var chart = new google.visualization.ScatterChart(document.getElementById('graph_container'));
@@ -127,57 +146,6 @@ function loadMapping() {
         }
 		//console.log(sampleMat[sampleIDsarry[i-2]])
     }
-	/*
-	var slices = new Array();
-
-	for(var j = 0; j < sampleMat[sampleIDsarry[0]].length; j++)
-	{
-		var current = sampleMat[sampleIDsarry[0]][j];
-		var same = true;
-		for(var k = 0; k < sampleIDsarry.length; k++)
-		{
-			if(current != sampleMat[sampleIDsarry[k]][j])
-				same = false;
-		}
-		
-		if(same)
-			slices.push(j);
-	}
-
-	var newcatops = new Array();
-	
-	for(var n = 0; n <categories.length; n++)
-		console.log(categoryOps[categories[n]][0])
-	
-	for(var n = 0; n <categories.length; n++)
-	{
-		if(!contains(slices, n))
-			newcatops[categories[n]] = categoryOps[categories[n]]
-	}
-	
-	categoryOps = new Array();
-	categoryOps = newcatops;
-	
-	console.log(slices)
-	var sum = 0;
-	
-	for(var j = 0; j < sampleIDsarry.length; j++)
-	{
-		for(var m = 0; m < slices.length; m++)
-		{
-			//sampleMat[sampleIDsarry[j]] = sampleMat[sampleIDsarry[j]].splice(slices[m]-sum,1)
-			sampleMat[sampleIDsarry[j]].splice(slices[m]-sum,1)
-			//categories = categories.splice(slices[m]-sum,1)
-			categories.splice(slices[m]-sum,1)
-			sum += 1
-		}
-	}
-	console.log("*****************************************")
-	console.log(categories)
-	console.log("*****************************************")
-	for(var n = 0; n <categories.length; n++)
-		console.log(categoryOps[categories[n]][0])
-	*/
     makeOpsPanel(categories, categoryOps, sampleMat);
 }
 
@@ -190,35 +158,146 @@ function contains(a, obj){
   return false;
 }
 
+function makeErrorBarSeries(series){
+	var errSeries = new Array();
+	var aveSer = new Array();
+	for(var col = 0; col < series[0].length; col++)
+	{
+		var stdDev = new Array();
+		var values = new Array();
+		
+		for(var m = 0; m < series[0].length*2; m++) // init std devs all to zero
+			stdDev[m] = 0;
+		
+		for(var row = 0; row < series.length; row++)
+		{
+			var value = series[row][col];
+			values.push(value)
+		}
+		aveSer.push(average(values).mean)
+		console.log(average(values).mean)
+		console.log(average(values).deviation)
+		aveSer.push(average(values).mean)
+		stdDev[col*2] = average(values).mean - average(values).deviation;
+		stdDev[col*2+1] = average(values).mean + average(values).deviation;
+		errSeries.push(stdDev)
+	}
+	errSeries.push(aveSer)
+	return errSeries;
+}
+
 function showOnly(option, catOp) {
 	recolor(option); // make sure graph is set to this option
 	var catToColor = new Array();
 	colours = new Array();
 	var data = loadFileData(currentGraph);
 	var ave = makeAverageSeries(data[0], data[1], data[2]);
+	var series = new Array();
 	
-	console.log(option)
-	console.log(catOp)
-	/*
+	//var seriesNames = new Array();//categoryOps[option].slice();
+	var key = categories.indexOf(option)
+	//console.log(key)
+	
 	for(var j = 0; j < sampleIDsarry.length; j++)
 	{
-		var vals = sampleMat[sampleIDsarry[j]]; //all different options to color by (ie. sex)
-		key = "";
-		for(var k = 0; k < vals.length; k++)
-		{
-			if(categories[k] == option)
-				key = vals[k] // need to group samples by this category
+		if(sampleMat[sampleIDsarry[j]][key] == catOp)
+			series.push(ave[j])
+	}
+	
+	var newSeries = makeErrorBarSeries(series);
+	
+	var newXaxis = new Array();
+	for(var p = 0; p < data[3].length; p++)
+	{
+		newXaxis[p*2] = data[3][p]
+		newXaxis[p*2+1] = data[3][p]
+	}
+	console.log(newSeries)
+	console.log("length of series " + newSeries.length)
+	console.log("number of vals in newSeries[0] " + newSeries[0].length)
+	console.log("number of vals in xAxis " + newXaxis.length)
+	
+	var graphName = "Average Colored By " + option + " category " + catOp;
+	plotLines(newSeries, new Array(newSeries.length), newXaxis, currentGraph.split('.')[0]+ graphName, 'none')
+}
+
+function showOnly2(option, catOp) {
+	recolor(option); // make sure graph is set to this option
+	var catToColor = new Array();
+	colours = new Array();
+	var data = loadFileData(currentGraph);
+	var ave = makeAverageSeries(data[0], data[1], data[2]);
+	var series = new Array();
+	
+	//var seriesNames = new Array();//categoryOps[option].slice();
+	var key = categories.indexOf(option)
+	//console.log(key)
+	
+	for(var j = 0; j < sampleIDsarry.length; j++)
+	{
+		if(sampleMat[sampleIDsarry[j]][key] == catOp)
+		{	
+			series.push(ave[j])
+			//seriesNames.push("")
 		}
-		//console.log(key)
-		if(categoryArray[key] == null)
-			categoryArray[key] = new Array();
-		categoryArray[key].push(ave[j]); // (ie. categoryArray['M'].push(...))
-	}*/
+	}
+	//console.log(series.length)
+	//console.log(seriesNames.length)
+	//plotLines(series, seriesNames, data[3], currentGraph.split('.')[0]+ "testing", 'none')
+	
+	//console.log(series)
+	
+	var newSeries = new Array();
+	var currAve = new Array();
+	var seriesNames = categoryOps[option].slice();
+	var graphName = "Average Colored By " + option + " category " + catOp;
+	
+	for(var l = 0; l < series[0].length; l++) // for each sequence line value
+	{
+		var values = new Array();
+		var stdDev = new Array();
+		for(var m = 0; m < series[0].length*2; m++) // init std devs all to zero
+			stdDev[m] = 0;
+		for(var n = 0; n < series.length; n++) // for each sequence
+		{
+			var value = series[n][l];
+			values.push(value);
+		}
+		//console.log(value)
+		currAve.push(average(values).mean);
+		currAve.push(average(values).mean);
+		//console.log(average(values).mean)
+		stdDev[l*2] = average(values).mean + average(values).deviation;
+		stdDev[l*2+1] = average(values).mean - average(values).deviation;
+		//stdDev[2] = data[2][l]; // seqsPerSample
+		//console.log(stdDev);
+		//stdDevSeries.push(stdDev);
+		//colours.push(catToColor[categoryOps[option][i]])
+		newSeries.push(stdDev);
+		seriesNames.push("");
+		//console.log("*****");
+	}
+	//console.log(currAve)
+	//seriesNames.push("");
+	newSeries.push(currAve);
+	//console.log(newSeries)
+	
+	var newXaxis = new Array();
+	for(var p = 0; p < data[3].length; p++)
+	{
+		newXaxis[p*2] = data[3][p]
+		newXaxis[p*2+1] = data[3][p]
+	}
+	console.log(newSeries[0])
+	console.log("len series names " + seriesNames.length)
+	console.log("len newSeries " + newSeries.length)
+	//console.log("len newxaxis " + newXaxis.length)
+	plotLines(newSeries, seriesNames, newXaxis, currentGraph.split('.')[0]+ graphName, 'none')
+	
 }
 
 function collapseSeries(option) {
 	recolor(option); // make sure graph is set to this option
-	//console.log(option)
 	var catToColor = new Array();
 	colours = new Array();
 
@@ -297,7 +376,11 @@ function collapseSeries(option) {
 		newXaxis[p*2] = data[3][p]
 		newXaxis[p*2+1] = data[3][p]
 	}
-	//console.log(newXaxis)
+	
+	console.log(newSeries)
+	console.log("length of series " + newSeries.length)
+	console.log("number of vals in newSeries[0] " + newSeries[0].length)
+	console.log("number of vals in xAxis " + newXaxis.length)
 	
 	plotLines(newSeries, seriesNames, newXaxis, currentGraph.split('.')[0]+ ' Average Colored By ' + option, 'none')
 	//plotErrorLines(newSeries, stdDevSeries, seriesNames, data[3], 'Average ' + option);	
@@ -343,6 +426,7 @@ function makeColorGradient(frequency1, frequency2, frequency3,phase1, phase2, ph
 }
 
 function colorBy(option) {
+	//console.log(option)
 	var catToColor = new Array();
 	colours = new Array();
 	
@@ -381,7 +465,11 @@ function makeOpsPanel(categories, catops, matrix) {
 		htmllines += "<ul class=\"onoff\">";
 		htmllines += "<span style=\"display:none\" id=\""+categories[i]+"\">";
 		for(j = 0; j < catops[categories[i]].length; j++)
-			htmllines += "<li><a onMouseOver=\"javascript:showOnly(\'"+categories[i]+","+catops[categories[i]][j]+"\');\" onMouseOut=\"javascript:recolor(\'"+categories[i]+"\');\">"+catops[categories[i]][j]+"</a></li>"
+		{
+			//htmllines += "<li><a onMouseOver=\"javascript:showOnly(\'"+categories[i]+"\',\'"+catops[categories[i]][j]+"\');\" onMouseOut=\"javascript:recolor(\'"+categories[i]+"\');\">"+catops[categories[i]][j]+"</a></li>"
+			htmllines += "<li><a onMouseOver=\"javascript:showOnly(\'"+categories[i]+"\',\'"+catops[categories[i]][j]+"\');\">"+catops[categories[i]][j]+"</a></li>"
+			
+		}
 		htmllines += "</span>";
 		htmllines += "</ul>";
 		htmllines += "<br />"
