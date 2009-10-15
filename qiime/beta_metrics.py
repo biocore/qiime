@@ -29,7 +29,8 @@ def make_unifrac_metric(weighted, metric, is_symmetric):
     is_symmetric: saves calc time if metric is symmetric.
     """
     def result(data, taxon_names, tree):
-        """ wraps the fast_unifrac fn to return just a matrix, in correct order"""
+        """ wraps the fast_unifrac fn to return just a matrix, in correct order
+        """
         sample_names = [str(i) for i in range(len(data))]
         envs = make_envs_dict(data, sample_names, taxon_names)
         unifrac_res = fast_unifrac(tree, envs, weighted=weighted, metric=metric,
@@ -40,7 +41,8 @@ def make_unifrac_metric(weighted, metric, is_symmetric):
     return result
 
 # these should start with dist_ to be discoverable by beta_diversity.py
-# unweighted full tree => keep the full tree relating all samples.  Compute how much branch
+# unweighted full tree => keep the full tree relating all samples.  
+# Compute how much branch
 # length is present in one sample but not (both samples OR NEITHER
 # SAMPLE).  Divide by total branch length of full tree.  
 # G is asymmetric unifrac
