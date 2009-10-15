@@ -12,23 +12,26 @@ img {
 
 div.spacer {
     width: 100%;
+	min-width: 1000px;
     height: 1px;
     background-color: #000;
 }
 
 div.wrapper {
-    width: 100%;
+    width: 85%;
     height: 100%;
 }
 
 div.midwrapper {
 	width: 100%;
+	min-width: 1000px;
 }
 
 div.colorops {
 	height: 400px;
-	width:25%;
-	border: 1px solid black;
+	width:30%;
+	min-width: 200px;
+	/*border: 1px solid black;*/
 	margin: 2px;
 	font-size: 9pt;
 	font-family: courier;
@@ -37,9 +40,8 @@ div.colorops {
 }
 
 div.coloropsheader {
-	width: 20%;
-	background: #ddd;
-	font-size: 14pt;
+	width: 25%;
+	font-size: 10pt;
 }
 
 div.graphing_area {
@@ -49,6 +51,7 @@ div.graphing_area {
 
 div.raretablewrapper {
     width: 100%;
+	min-width: 1000px;
 }
 a.ops {
 	padding-left: 1em;
