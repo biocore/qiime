@@ -37,14 +37,10 @@ function plotLines(series, seriestitles, xaxisvals, gtitle, legend){
     var data = new google.visualization.DataTable();
 	data.addColumn('number', 'Sequences Per Sample');
 	
-	//console.log("len(seriestitles) " + seriestitles.length)
-	
 	for(var i = 0; i < series.length; i++)
 	{
 		data.addColumn('number',seriestitles[i]);
 	}
-	//console.log(xaxisvals)
-	//console.log(series[0].length)
 	data.addRows(xaxisvals.length+1);
 	for(var i = 0; i < xaxisvals.length; i++)
 	{
@@ -54,10 +50,8 @@ function plotLines(series, seriestitles, xaxisvals, gtitle, legend){
 	
 	for(var i = 0; i < series.length; i++)
 	{
-		//console.log("****")
 		for(var j = 0; j < series[i].length; j++)
 		{
-			//console.log(series[i][j] + ', ' + j)
 			if(series[i][j] != 0)
 				data.setValue(j, i+1, series[i][j]); // i+1 because 0 is for the xaxisvals
 		}
@@ -88,9 +82,7 @@ function loadDiversityMeasures() {
 		*/
 		tempave = makeAverageSeries(tempData[0], tempData[1], tempData[2]);	
 		sampleIDs = tempData[2]
-		//plotLines2(ave, sampleIDs, seqsPerSamp);
 		tempaave[f] = aveAverageSeries(tempave);
-		//console.log(tempaave)
 	}
 	makeTable(tempaave, headers, sampleIDs);
 }
@@ -99,7 +91,6 @@ function loadMapping() {
     sampleMat = new Array();
     sampleIDsarry = new Array();
     
-    //var mappingfl = getFile("test_input_map.txt");
 	var mappingfl = getFile("Ley_Backhed_mouth_Mapping_v1_barcodes.txt");
     //var mappingFileLines = mappingfl.split(/(\r|\n)/);
 	var mappingFileLines = mappingfl.split("\r");
@@ -131,7 +122,6 @@ function loadMapping() {
 				categoryOps[categories[j]] = [categ[j]]; //
             sampleMat[categ[0]][j] = categ[j];
         }
-		//console.log(sampleMat[sampleIDsarry[i-2]])
     }
     makeOpsPanel(categories, categoryOps, sampleMat);
 }
@@ -239,7 +229,7 @@ function collapseSeries(option) {
 	{
 		// need to do it for each first point of each series, then each second point, etc
 		var currAve = new Array();
-		colours.push(catToColor[categoryOps[option][i]])
+		colours.push(catToColor[categoryOps[option][i]]);
 		for(var l = 0; l < categoryArray[categoryOps[option][i]][0].length; l++) // for length of sequence line
 		{
 			var values = new Array();
@@ -258,7 +248,7 @@ function collapseSeries(option) {
 			currAve.push(average(values).mean);
 			stdDev[l*2] = average(values).mean + average(values).deviation;
 			stdDev[l*2+1] = average(values).mean - average(values).deviation;
-			colours.push(catToColor[categoryOps[option][i]])
+			colours.push(catToColor[categoryOps[option][i]]);
 			newSeries.push(stdDev);
 			seriesNames.push("");
 		}
@@ -268,8 +258,8 @@ function collapseSeries(option) {
 	var newXaxis = new Array();
 	for(var p = 0; p < data[3].length; p++)
 	{
-		newXaxis[p*2] = data[3][p]
-		newXaxis[p*2+1] = data[3][p]
+		newXaxis[p*2] = data[3][p];
+		newXaxis[p*2+1] = data[3][p];
 	}
 	
 	var graphName = currentGraph.split('.')[0]+ ' Average Colored By ' + option;
@@ -539,7 +529,6 @@ function aveAverageSeries(ave) {
 
 function makeAverageSeries(matrix, IDs, samIDs) {
 	var sseries = makeSeries(matrix, IDs, samIDs);
-	//console.log(samIDs)
 	var aveser = new Array();
 	for(var k = 0; k < sseries.length; k++) 		// for each sample
 	{
@@ -548,14 +537,13 @@ function makeAverageSeries(matrix, IDs, samIDs) {
 		var nextiter;
 		var sum = 0;
 		var num = 0;
-		curriter = String(sseries[k][0][0])
+		curriter = String(sseries[k][0][0]);
 		for(var l = 0; l < sseries[k].length; l++) 	// for each iteration and number of seqs/sample
 		{
 			nextiter = String(sseries[k][l][0]);
 			if(nextiter != curriter)
 			{
-				aveser[k][l/num] = sum/num;
-				//console.log(aveser[k][l/num])
+				aveser[k][l/num-1] = sum/num;
 				sum = 0;
 				num = 0;
 				curriter = nextiter;
@@ -566,9 +554,8 @@ function makeAverageSeries(matrix, IDs, samIDs) {
 			}
 			num += 1;
 		}
-		aveser[k].shift();
+		aveser[k][sseries[k].length/num-1] = sum/num;
 	}
-	//console.log(aveser)
 	return aveser;
 }
 
@@ -604,9 +591,11 @@ function makeAverageSeries1(matrix, IDs, samIDs) {
 	return aveser;
 }
 
+//this function transposes the matrix
 function makeSeries(matrix, IDs, samIDs) {
-    var series = new Array(); 						// [ *[-[x,y]-,-[x,y]-]*, *[-[x,y]-,-[x,y]-]* ]
+    var series = new Array(); 	
 	var sseries = new Array();
+	//console.log( matrix[IDs[0]]);
 	for(var j = 3; j < matrix[IDs[0]].length; j++){
 		sseries[j-3] = new Array();
 		for(i = 0; i < IDs.length; i++)
