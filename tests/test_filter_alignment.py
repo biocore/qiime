@@ -13,182 +13,266 @@ from cogent.util.unit_test import TestCase, main
 from cogent import LoadSeqs
 from cogent.core.alignment import DenseAlignment
 from qiime.filter_alignment import apply_lane_mask, apply_gap_filter,\
- apply_lane_mask_and_gap_filters
+ apply_lane_mask_and_gap_filter
 
 class FilterAlignmentTests(TestCase):
 
     def setUp(self):
         """Init variables for the tests """
-        self.aln1 = LoadSeqs(data=[\
-         ('s1','ACC--T'),\
-         ('s2','AC---T'),\
-         ('s3','TCT--T'),\
-         ('s4','ACG--T'),\
-         ('s5','---A--'),\
-         ],aligned=DenseAlignment)
-        self.aln2 = LoadSeqs(data=aln2_fasta.split('\n'))
+        self.aln1 = [\
+            '>s1','ACC--T',\
+            '>s2','AC---T',\
+            '>s3','TCT--T',\
+            '>s4','ACG--T',\
+            '>s5','---A--'\
+            ]
+        self.aln2 = aln2_fasta.split('\n')
         self.aln2_lm = aln2_lm
         
-    def test_apply_lane_mask_and_gap_filters_real(self):
-        """apply_lane_mask_and_gap_filters: no error on full length seqs
+    def test_apply_lane_mask_and_gap_filter_real(self):
+        """apply_lane_mask_and_gap_filter: no error on full length seqs
         """
         # No error when applying to full-length sequence
-        actual = apply_lane_mask_and_gap_filters(\
+        actual = apply_lane_mask_and_gap_filter(\
          self.aln2,self.aln2_lm)
         
 
-    def test_apply_lane_mask_and_gap_filters(self):
-        """apply_lane_mask_and_gap_filters: functions as expected
+    def test_apply_lane_mask_and_gap_filter(self):
+        """apply_lane_mask_and_gap_filter: functions as expected
         """
         lm = '111111'
-        expected = self.aln1
-        self.assertEqual(apply_lane_mask_and_gap_filters(\
-         self.aln1,lm,1.0),expected)
-         
+        expected = self.aln1.__iter__()
+        for result in apply_lane_mask_and_gap_filter(self.aln1,lm,1.0):
+            self.assertEqual(result,expected.next()+'\n')
+
         lm = None
-        expected = self.aln1
-        self.assertEqual(apply_lane_mask_and_gap_filters(\
-         self.aln1,lm,1.0),expected)
+        expected = self.aln1.__iter__()
+        for result in apply_lane_mask_and_gap_filter(self.aln1,lm,1.0):
+            self.assertEqual(result,expected.next()+'\n')
          
         # gap filter only
         lm = '111111'
-        expected = LoadSeqs(data=[\
-         ('s1','ACC-T'),\
-         ('s2','AC--T'),\
-         ('s3','TCT-T'),\
-         ('s4','ACG-T'),\
-         ('s5','---A-'),\
-         ],aligned=DenseAlignment)
-        self.assertEqual(apply_lane_mask_and_gap_filters(\
-         self.aln1,lm),expected)
+        expected = [\
+            '>s1','ACC-T',\
+            '>s2','AC--T',\
+            '>s3','TCT-T',\
+            '>s4','ACG-T',\
+            '>s5','---A-'\
+            ].__iter__()
+
+        for result in apply_lane_mask_and_gap_filter(self.aln1,lm):
+            self.assertEqual(result,expected.next()+'\n')
          
         # lm filter only
         lm = '011111'
-        expected = LoadSeqs(data=[\
-         ('s1','CC--T'),\
-         ('s2','C---T'),\
-         ('s3','CT--T'),\
-         ('s4','CG--T'),\
-         ('s5','--A--'),\
-         ],aligned=DenseAlignment)
-        self.assertEqual(apply_lane_mask_and_gap_filters(\
-         self.aln1,lm,1.0),expected)
+        expected = [\
+         '>s1','CC--T',\
+         '>s2','C---T',\
+         '>s3','CT--T',\
+         '>s4','CG--T',\
+         '>s5','--A--'\
+         ].__iter__()
+
+        for result in apply_lane_mask_and_gap_filter(self.aln1,lm,1.0):
+            self.assertEqual(result,expected.next()+'\n')
          
         # gap and lm filter
         lm = '011111'
-        expected = LoadSeqs(data=[\
-         ('s1','CC-T'),\
-         ('s2','C--T'),\
-         ('s3','CT-T'),\
-         ('s4','CG-T'),\
-         ('s5','--A-'),\
-         ],aligned=DenseAlignment)
-        self.assertEqual(apply_lane_mask_and_gap_filters(\
-         self.aln1,lm),expected)
+        expected = [\
+         '>s1','CC-T',\
+         '>s2','C--T',\
+         '>s3','CT-T',\
+         '>s4','CG-T',\
+         '>s5','--A-'\
+         ].__iter__()
+
+        for result in apply_lane_mask_and_gap_filter(self.aln1,lm):
+            self.assertEqual(result,expected.next()+'\n')
 
     def test_apply_lane_mask(self):
         """ apply_lane_mask: functions as expected with varied lane masks
         """
         lm1 = '111111'
-        expected = self.aln1
-        self.assertEqual(apply_lane_mask(self.aln1,lm1),expected)        
-        
+        expected = self.aln1.__iter__()
+        for result in apply_lane_mask(self.aln1,lm1):
+            self.assertEqual(result,expected.next()+'\n')
+
         lm2 = '000000'
-        expected = LoadSeqs(data=[\
-         ('s1',''),\
-         ('s2',''),\
-         ('s3',''),\
-         ('s4',''),\
-         ('s5',''),\
-         ],aligned=DenseAlignment)
-        self.assertEqual(apply_lane_mask(self.aln1,lm2),expected)
+        expected = [\
+         '>s1','',\
+         '>s2','',\
+         '>s3','',\
+         '>s4','',\
+         '>s5',''\
+         ].__iter__()
+
+        for result in apply_lane_mask(self.aln1,lm2):
+            self.assertEqual(result,expected.next()+'\n')
         
         lm3 = '101010'
-        expected = LoadSeqs(data=[\
-         ('s1','AC-'),\
-         ('s2','A--'),\
-         ('s3','TT-'),\
-         ('s4','AG-'),\
-         ('s5','---'),\
-         ],aligned=DenseAlignment)
-        self.assertEqual(apply_lane_mask(self.aln1,lm3),expected)
-        
+        expected = [\
+         '>s1','AC-',\
+         '>s2','A--',\
+         '>s3','TT-',\
+         '>s4','AG-',\
+         '>s5','---'\
+         ].__iter__()
+
+        for result in apply_lane_mask(self.aln1,lm3):
+            self.assertEqual(result,expected.next()+'\n')
+
+
         lm4 = '000111'
-        expected = LoadSeqs(data=[\
-         ('s1','--T'),\
-         ('s2','--T'),\
-         ('s3','--T'),\
-         ('s4','--T'),\
-         ('s5','A--'),\
-         ],aligned=DenseAlignment)
-        self.assertEqual(apply_lane_mask(self.aln1,lm4),expected)
+        expected = [\
+         '>s1','--T',\
+         '>s2','--T',\
+         '>s3','--T',\
+         '>s4','--T',\
+         '>s5','A--'\
+         ].__iter__()
+
+        for result in apply_lane_mask(self.aln1,lm4):
+            self.assertEqual(result,expected.next()+'\n')
+
         
     def test_apply_gap_filter(self):
         """ apply_gap_filter: functions as expected with varied allowed_gap_frac
         """
-        expected = self.aln1
-        self.assertEqual(apply_gap_filter(self.aln1,1.0),expected)
+        expected = self.aln1.__iter__()
+                
+        for result in apply_gap_filter(self.aln1,1.0):
+            self.assertEqual(result,expected.next()+'\n')
+
+        expected = [\
+         '>s1','ACC-T',\
+         '>s2','AC--T',\
+         '>s3','TCT-T',\
+         '>s4','ACG-T',\
+         '>s5','---A-'\
+         ].__iter__()
+
+        for result in apply_gap_filter(self.aln1):
+            self.assertEqual(result,expected.next()+'\n')
+
+
+        expected = [\
+         '>s1','ACCT',\
+         '>s2','AC-T',\
+         '>s3','TCTT',\
+         '>s4','ACGT',\
+         '>s5','----'\
+         ].__iter__()
+
+        for result in apply_gap_filter(self.aln1,0.75):
+            self.assertEqual(result,expected.next()+'\n')
+
+        expected = [\
+         '>s1','ACCT',\
+         '>s2','AC-T',\
+         '>s3','TCTT',\
+         '>s4','ACGT',\
+         '>s5','----'\
+         ].__iter__()
+
+        for result in apply_gap_filter(self.aln1,0.40):
+            self.assertEqual(result,expected.next()+'\n')
+
+
+        expected = [\
+         '>s1','ACT',\
+         '>s2','ACT',\
+         '>s3','TCT',\
+         '>s4','ACT',\
+         '>s5','---'\
+         ].__iter__()
+
+        for result in apply_gap_filter(self.aln1,0.30):
+            self.assertEqual(result,expected.next()+'\n')
+
         
-        expected = LoadSeqs(data=[\
-         ('s1','ACC-T'),\
-         ('s2','AC--T'),\
-         ('s3','TCT-T'),\
-         ('s4','ACG-T'),\
-         ('s5','---A-'),\
-         ],aligned=DenseAlignment)
-        self.assertEqual(apply_gap_filter(self.aln1),expected)
+        expected = [\
+         '>s1','',\
+         '>s2','',\
+         '>s3','',\
+         '>s4','',\
+         '>s5',''\
+         ].__iter__()
+
+        for result in apply_gap_filter(self.aln1,0.10):
+            self.assertEqual(result,expected.next()+'\n')
+
+        # the following tests were adapted from test_alignment.py in PyCogent
+
+        aln = [\
+            '>a','--A-BC-',\
+            '>b','-CB-A--',\
+            '>c','--D-EF-'\
+            ]
+
+        #default should strip out cols that are 100% gaps
+        expected = [\
+            '>a','-ABC',\
+            '>b','CBA-',\
+            '>c','-DEF'\
+            ].__iter__()
+        for result in apply_gap_filter(aln):
+            self.assertEqual(result,expected.next()+'\n')
+
+        # if allowed_gap_frac is 1, shouldn't delete anything
+        expected = [\
+            '>a','--A-BC-',\
+            '>b','-CB-A--',\
+            '>c','--D-EF-'\
+            ].__iter__()
+        for result in apply_gap_filter(aln,1):
+            self.assertEqual(result,expected.next()+'\n')
+
+
+        #if allowed_gap_frac is 0, should strip out any cols containing gaps
+        expected = [\
+            '>a','AB',\
+            '>b','BA',\
+            '>c','DE'\
+            ].__iter__()
+        for result in apply_gap_filter(aln,0):
+            self.assertEqual(result,expected.next()+'\n')
+
+        #intermediate numbers should work as expected
+        expected = [\
+            '>a','ABC',\
+            '>b','BA-',\
+            '>c','DEF'\
+            ].__iter__()
+        for result in apply_gap_filter(aln,0.4):
+            self.assertEqual(result,expected.next()+'\n')
+        expected = [\
+            '>a','-ABC',\
+            '>b','CBA-',\
+            '>c','-DEF'\
+            ].__iter__()
+        for result in apply_gap_filter(aln,0.7):
+            self.assertEqual(result,expected.next()+'\n')
         
-        expected = LoadSeqs(data=[\
-         ('s1','ACCT'),\
-         ('s2','AC-T'),\
-         ('s3','TCTT'),\
-         ('s4','ACGT'),\
-         ('s5','----'),\
-         ],aligned=DenseAlignment)
-        self.assertEqual(apply_gap_filter(self.aln1,0.75),expected)
-           
-        expected = LoadSeqs(data=[\
-         ('s1','ACCT'),\
-         ('s2','AC-T'),\
-         ('s3','TCTT'),\
-         ('s4','ACGT'),\
-         ('s5','----'),\
-         ],aligned=DenseAlignment)
-        self.assertEqual(apply_gap_filter(self.aln1,0.40),expected)
-         
-        expected = LoadSeqs(data=[\
-         ('s1','ACT'),\
-         ('s2','ACT'),\
-         ('s3','TCT'),\
-         ('s4','ACT'),\
-         ('s5','---'),\
-         ],aligned=DenseAlignment)
-        self.assertEqual(apply_gap_filter(self.aln1,0.30),expected)
-        
-        expected = LoadSeqs(data=[\
-         ('s1',''),\
-         ('s2',''),\
-         ('s3',''),\
-         ('s4',''),\
-         ('s5',''),\
-         ],aligned=DenseAlignment)
-        self.assertEqual(apply_gap_filter(self.aln1,0.10),expected)
-        
-    def test_apply_lane_mask_and_gap_filters_alternate_alignment(self):
-        """apply_lane_mask_and_gap_filters: functions as expected with alt aln
+    def test_apply_lane_mask_and_gap_filter_alternate_alignment(self):
+        """apply_lane_mask_and_gap_filter: functions as expected with alt aln
         """
-        aln = LoadSeqs(data=[\
-         ('ACT009','AACT-'),\
-         ('ACT019','AACT-'),\
-         ('ACT011','-TCT-')],aligned=DenseAlignment)
-        self.assertEqual(apply_lane_mask_and_gap_filters(aln,None,1.0),aln)
+        aln = [\
+         '>ACT009','AACT-',\
+         '>ACT019','AACT-',\
+         '>ACT011','-TCT-'\
+         ]
+        expected = aln.__iter__()
+        for result in apply_lane_mask_and_gap_filter(aln,None,1.0):
+            self.assertEqual(result,expected.next()+'\n')
         
         lm = '00111'
-        expected = LoadSeqs(data=[\
-         ('ACT009','CT'),\
-         ('ACT019','CT'),\
-         ('ACT011','CT')],aligned=DenseAlignment)
-        self.assertEqual(apply_lane_mask_and_gap_filters(aln,lm),expected)
+        expected = [\
+         '>ACT009','CT',\
+         '>ACT019','CT',\
+         '>ACT011','CT'\
+         ].__iter__()
+        for result in apply_lane_mask_and_gap_filter(aln,lm):
+            self.assertEqual(result,expected.next()+'\n')
 
 aln2_fasta = """>1121 HalF20SW_57886 RC:1..219
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------A--AT-GT-A-T-A-GT---TAA--T-CT-G--C-C-CCA--TA-G------------------------------------------------------------------T-GG----AGG-AC-AA-CAG-------------------------T-T-A-----------------------GAA-A---TGA-CTG-CTAA-TA---CT-C--C-AT-A----------C--------------------T-C--C-T-T--C--T-----------------T----AT-C-----------------------------------------------------------------------------------------------------------------------A-TA-A--------------------------------------------------------------------------------------------------------------------------------------G-T-T----A---------------A--G-T-C-G-G-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------GAAA--G-T----------------------------------------------------------------------------------------------------------------------------------------TTT------------------------------------------------------------------------------------------------------------------------------------T---C-G--------------C----T-A---T-GG-G---AT---G-A-----G-ACT-ATA--T-CGT--A------TC--A--G-CT-A----G---TTGG-T-A-AG-G-T----AAT-GG-C-T-T-ACCA--A-GG-C-T--A-TG-A------------CGC-G-T------AA-CT-G-G-TCT-G-AG----A--GG-AT--G-AT-C-AG-TCAC-A-TTGGA--A-C-TG-A-GA-C-AC-G-G-TCCAA------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
