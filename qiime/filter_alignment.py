@@ -1,22 +1,25 @@
 #!/usr/bin/env python
+from numpy import nonzero, array, fromstring, repeat, bitwise_or, uint8, zeros
+from random import sample
+from cogent.parse.fasta import MinimalFastaParser
+from cogent.core.alignment import eps
+from optparse import OptionParser
+from sys import stdout
+from string import lowercase
+from os.path import split, exists, splitext
+from os import mkdir, remove
 
-__author__ = "Greg Caporaso"
+__author__ = "Dan Knights"
 __copyright__ = "Copyright 2009, the PyCogent Project"
-__credits__ = ["Greg Caporaso", "Justin Kuczynski"]
+__credits__ = ["Greg Caporaso", "Justin Kuczynski", "Dan Knights"]
 __license__ = "GPL"
 __version__ = "0.1"
-__maintainer__ = "Greg Caporaso"
-__email__ = "gregcaporaso@gmail.com"
+__maintainer__ = "Dan Knights"
+__email__ = "danknights@gmail.com"
 __status__ = "Prototype"
 
-"""Contains code filtering alignments before building trees from them
+"""Contains code for filtering alignments before building trees from them
 """
-
-from optparse import OptionParser
-from os.path import split, exists, splitext
-from os import mkdir
-from cogent.core.alignment import eps, DenseAlignment
-from cogent import LoadSeqs
 
 usage_string = """usage: %prog [options] {-i INPUT_FASTA_FILE}
 
@@ -25,26 +28,148 @@ Description:
  alignments. It removes positions which are highly variable based on a 
  lane mask file (a string of 1s and 0s which is the length of the alignment
  and where 1s indicate positions to keep; e.g., lanemask_in_1s_and_0s.txt from
- greengenes), and positions which are 100% gap characters.
+ greengenes), and positions which are 100% gap characters. Uses a minimal
+ fasta parser, safe to use on large sequence collections.
 
 Example usage:
 
  # Get detailed usage information
- python filter_alignment.py -h
+ python minimal_filter_alignment.py -h
 
  # filter 1.fasta using the lanemask in lm.txt, but filtering no gaps (b/c
  # --allowed_gap_frac=1.0, meaning positions can be up to 100% gap); output
  # written to ./1_pfiltered.fasta
- python filter_alignment.py -i 1.fasta -g 1.0 -l lm.txt
+ python minimal_filter_alignment.py -i 1.fasta -g 1.0 -m lm.txt
  
  # filter 1.fasta using the lanemask in lm.txt and filter positions which are
  # 100% gap (default -g behavior); output written to ./1_pfiltered.fasta
- python filter_alignment.py -i 1.fasta -o ./ -l lm.txt
+ python minimal_filter_alignment.py -i 1.fasta -o ./ -m lm.txt
  
  # filter 1.fasta positions which are 100% gap (default -g behavior) but no lane mask
  # filtering (because no lane mask file provided with -l); output written to 
  # ./1_pfiltered.fasta
- python filter_alignment.py -i 1.fasta -o ./ -l lm.txt"""
+ python minimal_filter_alignment.py -i 1.fasta -o ./"""
+
+
+def mask_to_positions(maskstring):
+    """Converts lanemask binary string to array of valid indices."""
+    return nonzero(array(map(int, maskstring)))[0]
+
+def get_masked_string(s, p):
+    """Extracts valid positions in string s using index array p."""
+    return (fromstring(s,dtype=uint8))[p].tostring()
+
+def find_gaps(s, gapcode=45):
+    """Returns index array indicating locations of gaps ('-') in string s"""
+    return nonzero(fromstring(s,dtype=uint8) == gapcode)
+
+def apply_lane_mask(fastalines, lane_mask, verbose=False):
+    """ Applies lanemask to fasta-formatted data, yielding filtered seqs."""
+    return apply_lane_mask_and_gap_filter(fastalines, lane_mask, allowed_gap_frac=1, verbose=False)
+
+def apply_gap_filter(fastalines, allowed_gap_frac=1-eps, verbose=False):
+    """ Applies gap filter to fasta-formatted data, yielding filtered seqs."""
+    return apply_lane_mask_and_gap_filter(fastalines, None, allowed_gap_frac=allowed_gap_frac, verbose=False)
+
+def apply_lane_mask_and_gap_filter(fastalines, lane_mask, allowed_gap_frac=1-eps, verbose=False):
+    """Applies lanemask and gap filter to fasta file with minimal parser, yielding filtered seqs.
+    """
+    
+    if lane_mask:
+        # convert lane_mask to a numpy index array
+        p = mask_to_positions(lane_mask)
+        
+        # special case: lanemask is all zeros
+        if sum(p) == 0:
+            for line in fastalines:
+                if line.startswith(">"):
+                    yield line + '\n'
+                else:
+                    yield '\n'
+            return
+
+    # random temporary file for first-pass results
+    tmpfilename = "".join(sample(lowercase, 20)) + ".tmp"
+    try:
+        tmpfile = open(tmpfilename,'w')
+    except IOError:
+        raise IOError, "Can't open temporary file for writing: %s" % tmpfilename
+
+    # the number of gaps seen in each position (length may be unknown here)
+    gapcounts = None
+
+    # First pass: apply filter, and track gaps
+    if verbose: print "First pass: applying lanemask..."
+    seq_count = 0
+    for k, v in MinimalFastaParser(fastalines):
+        seq_count += 1
+        # print progress in verbose mode
+        if verbose and (seq_count % 100) == 0: status(seq_count)
+
+        # apply lanemask if there is one
+        if lane_mask:
+            masked = get_masked_string(v,p)
+        else:
+            masked = v
+
+        # initialize gapcount array to proper length
+        if gapcounts == None:
+            gapcounts = zeros(len(masked))
+
+        # increment gap counts if requested
+        if allowed_gap_frac < 1:
+            gapcounts[find_gaps(masked)] += 1
+
+        # write masked sequence to temporary file
+        tmpfile.write('>%s\n%s\n' % (k, masked))
+    if verbose: print; print
+    tmpfile.close()
+    tmpfile = open(tmpfilename,'r')
+
+
+    # if we're not removing gaps, we're done; yield the temp file contents
+    if allowed_gap_frac == 1:
+        for line in tmpfile:
+            yield line
+            
+    # else we are removing gaps; do second pass
+    else:
+
+        # convert gapcounts to true/false mask
+        gapcounts = (gapcounts / float(seq_count) ) <= allowed_gap_frac
+    
+        # Second pass: remove all-gap positions
+        if verbose: print "Second pass: remove all-gap positions..."
+        seq_count = 0
+        for k, v in MinimalFastaParser(tmpfile):
+            seq_count += 1
+            # print progress in verbose mode
+            if verbose and (seq_count % 100) == 0: status(seq_count)
+            
+            if allowed_gap_frac < 1:
+                masked = get_masked_string(v,gapcounts)
+            else: 
+                masked = v
+                yield '>%s\n' % (k)
+                yield '%s\n' % (masked)
+        if verbose: print 
+
+    # delete temporary file
+    tmpfile.close()
+    remove(tmpfilename)
+
+
+def status(message,dest=stdout,overwrite=True, max_len=100):
+    """Writes a status message over the current line of stdout
+    """
+    message = str(message)
+    message_len = max(len(message),max_len)
+    if overwrite:
+        dest.write('\b' * (message_len+2))
+    dest.write(message[0:message_len])
+    if not overwrite:
+        dest.write('\n')
+    dest.flush()
 
 def parse_command_line_parameters():
     """ Parses command line arguments """
@@ -52,7 +177,6 @@ def parse_command_line_parameters():
     version = 'Version: %prog 0.1'
     parser = OptionParser(usage=usage, version=version)
 
-    # An example string option
     parser.add_option('-i','--input_fasta_file',action='store',\
            type='string',help='the input directory '+\
            '[REQUIRED]')
@@ -67,6 +191,8 @@ def parse_command_line_parameters():
             'filters positions which are gaps in > allowed_gap_frac '+\
             'of the sequences [default: %default]',
             default=1.-eps)
+    parser.add_option('--verbose',action='store_true',\
+            help='print all information [default: %default]')
 
     opts,args = parser.parse_args()
 
@@ -77,76 +203,38 @@ def parse_command_line_parameters():
             parser.error('Required option --%s omitted.' % option) 
 
     return opts,args
-
-def apply_lane_mask(aln,lane_mask):
-    """ Remove positions corresponding to zeros in lane_mask
-    """
-    zero_values = {}.fromkeys([0,'0'])
-    positions_to_keep = \
-     [i for i in range(len(lane_mask)) if lane_mask[i] not in zero_values]
-    return aln.takePositions(positions_to_keep)
-    
-def apply_gap_filter(aln,allowed_gap_frac=1.-eps):
-    """ Remove positions that contain gaps in > allowed_gap_frac of sequences
-    """
-    return aln.omitGapPositions(allowed_gap_frac=allowed_gap_frac)
-    
-def apply_lane_mask_and_gap_filters(aln,lane_mask,allowed_gap_frac=1.-eps):
-    
-    # must apply the lane mask first as it relies on the original positions
-    if lane_mask:
-        result = apply_lane_mask(aln,lane_mask)
-    else:
-        # if no lane mask, don't do anything to the alignment
-        result = aln
-    
-    # apply the gap filter
-    result = apply_gap_filter(result,allowed_gap_frac)
-    
-    # return the result
-    return result
     
 if __name__ == "__main__":
     opts,args = parse_command_line_parameters()
     
-    # create local copies of the options
-    lane_mask_fp = opts.lane_mask_fp
-    allowed_gap_frac = opts.allowed_gap_frac
-    input_fasta_file = opts.input_fasta_file
-    output_dir = opts.output_dir
-    
     # build the output filepath and open it any problems can be caught before starting
     # the work
     try:
-        mkdir(output_dir)
+        mkdir(opts.output_dir)
     except OSError:
         pass
-    input_dir, input_filename = split(input_fasta_file)
+    input_dir, input_filename = split(opts.input_fasta_file)
     input_basename, ext = splitext(input_filename)
-    output_filepath = '%s/%s_pfiltered.fasta' % (output_dir,input_basename)
+    output_fp = '%s/%s_pfiltered.fasta' % (opts.output_dir,input_basename)
     
     try:
-        output_file = open(output_filepath,'w')
+        outfile = open(output_fp,'w')
     except IOError:
         raise IOError, "Can't open output_filepath for writing: %s" % output_filepath
-    
-    # load the input alignment
-    aln = LoadSeqs(input_fasta_file,aligned=DenseAlignment)
+
     
     # read the lane_mask, if one was provided
-    if lane_mask_fp:
-        lane_mask = open(lane_mask_fp).read().strip()
-        if len(aln) != len(lane_mask):
-            raise ValueError,\
-             "Lane mask (%s) and alignment (%s) differ in number of positions." %\
-             (lane_mask_fp, input_fasta_file)
+    if opts.verbose: print "Reading lane mask..."
+    if opts.lane_mask_fp:
+        lane_mask = open(opts.lane_mask_fp).read().strip()
     else:
         lane_mask = None
-        
-    # apply the filters
-    filtered_aln = apply_lane_mask_and_gap_filters(aln,lane_mask,allowed_gap_frac)
-    
-    # write the alignment to the output_file
-    output_file.write(filtered_aln.toFasta())
-    output_file.close()
-    
+    # open the input and output files        
+    infile = open(opts.input_fasta_file,'U')
+
+    # apply the lanemask/gap removal
+    for result in apply_lane_mask_and_gap_filter(infile, lane_mask, opts.allowed_gap_frac, verbose=opts.verbose):
+        outfile.write(result)
+    infile.close()
+    outfile.close()
+
