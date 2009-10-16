@@ -159,16 +159,23 @@ def create_javascript_array(rows):
 def filter_by_otu_hits(num_otu_hits,data):
     """Filter the OTU table by the number of otus per sample"""
     col_header,row_header,otu_table,lineages=data['otu_counts']
-
+    lineages_update=[]
+    for i in range(len(lineages)):
+        new_lineages=''
+        for j in lineages[i]:
+            new_lineages+=j.strip('"')+';'
+        lineages_update.append(new_lineages)
+    lineages_update=array(lineages_update)
     rows_filtered=[]
     row_head=concatenate((['#OTU ID'],col_header))
     lineage_head=array(['Consensus Lineage'])
     row_head2=concatenate((row_head,lineage_head))
     rows_filtered.append(row_head2)
-    lineages=array(lineages)
+
     for i in range(len(otu_table)):
         if otu_table[i].sum()>num_otu_hits:
-            row_head_otu_count=concatenate(([row_header[i]],otu_table[i],lineages[i]))
+            row_head_otu_count=concatenate(([row_header[i]],otu_table[i],[lineages_update[i]]))
+
             rows_filtered.append(row_head_otu_count)
 
     rows_filtered=array(rows_filtered) 
@@ -192,7 +199,7 @@ def get_otu_counts(options, data):
     """Reads the OTU table file into memory"""
     try:
         sample_ids,otu_ids,otu_table,lineages=parse_otus(open(options.otu_count_fname))
-
+        
     except (TypeError, IOError):
         raise MissingFileError, 'OTU Count file required for this analysis'
 

@@ -50,7 +50,7 @@ javascript array"""
     def test_filter_by_otu_hits(self):
         """filter_by_otu_hits: filters the table by otu hits per otu"""
         exp=array([['#OTU ID', 'OTU2'],['Sample1',1],['Sample2',5],\
-             ['Consensus Lineage','Archaea']])
+             ['Consensus Lineage','Archaea;']])
         
         obs=filter_by_otu_hits(self.num_otu_hits,self.data)
  
