@@ -541,7 +541,7 @@ if __name__ == "__main__":
         # output_dir exists
         pass
     result_path = '%s/%s_otus.txt' % (output_dir,input_seqs_basename)
-    log_path = '%s/%s.log' % (output_dir,input_seqs_basename)
+    log_path = '%s/%s_otus.log' % (output_dir,input_seqs_basename)
     
     params = {'Similarity':opts.similarity,'-M':opts.max_cdhit_memory}
     
