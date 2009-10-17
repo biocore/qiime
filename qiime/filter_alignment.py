@@ -119,7 +119,7 @@ def apply_lane_mask_and_gap_filter(fastalines, lane_mask, allowed_gap_frac=1-eps
         # increment gap counts if requested
         if allowed_gap_frac < 1:
             gapcounts[find_gaps(masked)] += 1
-
+                     
         # write masked sequence to temporary file
         tmpfile.write('>%s\n%s\n' % (k, masked))
     if verbose: print; print
@@ -137,7 +137,7 @@ def apply_lane_mask_and_gap_filter(fastalines, lane_mask, allowed_gap_frac=1-eps
 
         # convert gapcounts to true/false mask
         gapcounts = (gapcounts / float(seq_count) ) <= allowed_gap_frac
-    
+        
         # Second pass: remove all-gap positions
         if verbose: print "Second pass: remove all-gap positions..."
         seq_count = 0
@@ -146,12 +146,9 @@ def apply_lane_mask_and_gap_filter(fastalines, lane_mask, allowed_gap_frac=1-eps
             # print progress in verbose mode
             if verbose and (seq_count % 100) == 0: status(seq_count)
             
-            if allowed_gap_frac < 1:
-                masked = get_masked_string(v,gapcounts)
-            else: 
-                masked = v
-                yield '>%s\n' % (k)
-                yield '%s\n' % (masked)
+            masked = get_masked_string(v,gapcounts)
+            yield '>%s\n' % (k)
+            yield '%s\n' % (masked)
         if verbose: print 
 
     # delete temporary file
