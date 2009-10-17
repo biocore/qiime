@@ -17,7 +17,7 @@ from cogent.util.unit_test import TestCase, main
 from cogent.app.util import get_tmp_filename
 from cogent.util.misc import remove_files
 from qiime.pick_otus import CdHitOtuPicker, DoturOtuPicker, OtuPicker, \
-    MothurOtuPicker
+    MothurOtuPicker, PrefixSuffixOtuPicker
 
 class OtuPickerTests(TestCase):
     """Tests of the abstract OtuPicker class"""
@@ -66,6 +66,128 @@ class MothurOtuPickerTests(TestCase):
         observed_otus = app(self.small_seq_path)
         expected_otus = {0: ['bbbbbb', 'cccccc'], 1: ['aaaaaa']}
         self.assertEqual(observed_otus, expected_otus)
+
+class PrefixSuffixOtuPickerTests(TestCase):
+    """ Tests of the prefix/suffix-based OTU picker """
+    
+    def setUp(self):
+        """
+        """
+        self.otu_picker = PrefixSuffixOtuPicker({})
+        self.seqs = [\
+         ('s1','ACGTAATGGT'),\
+         ('s2','ATTTAATGGT'),\
+         ('s3','ACGTAATTTT'),\
+         ('s4','AAATAAAAA'),\
+         ('s5','ACGTTGGT'),\
+         ('s6','ACGTATTTTAATTTGGCATGGT'),\
+        ]
+        
+        self.small_seq_path = get_tmp_filename(
+            prefix='PrefixSuffixOtuPickerTest_', suffix='.fasta')
+        self._files_to_remove = [self.small_seq_path]
+        f = open(self.small_seq_path, 'w')
+        f.write('\n'.join(['>%s\n%s' % s for s in self.seqs]))
+        f.close()
+        
+    def tearDown(self):
+        """
+        """
+        remove_files(self._files_to_remove)
+        
+    def test_call(self):
+        """Prefix/suffix OTU Picker functions as expected
+        """
+        expected = {3:['s1','s5','s6'],\
+                    1:['s2'],\
+                    0:['s3'],\
+                    2:['s4']}
+        actual = self.otu_picker(self.small_seq_path,\
+            prefix_length=4,suffix_length=4)
+        self.assertEqual(actual,expected)
+        
+        
+    def test_collapse_exact_matches_prefix_and_suffix(self):
+        """Prefix/suffix: collapse_exact_matches fns with pref/suf len > 0
+        """
+        expected = [['s1','s5','s6'],['s2'],['s3'],['s4']]
+        actual = self.otu_picker._collapse_exact_matches(self.seqs,4,4)
+        actual.sort()
+        expected.sort()
+        self.assertEqual(actual,expected)
+        
+        expected = [['s1','s2','s3','s5','s6'],['s4']]
+        actual = self.otu_picker._collapse_exact_matches(self.seqs,1,1)
+        actual.sort()
+        expected.sort()
+        self.assertEqual(actual,expected)   
+             
+    def test_collapse_exact_matches_prefix_zero(self):
+        """Prefix/suffix: collapse_exact_matches fns with prefix len = 0
+        """
+        expected = [['s1','s2','s5','s6'],['s3'],['s4']]
+        actual = self.otu_picker._collapse_exact_matches(self.seqs,0,4)
+        actual.sort()
+        expected.sort()
+        self.assertEqual(actual,expected)
+        
+        expected = [['s1','s2','s3','s5','s6'],['s4']]
+        actual = self.otu_picker._collapse_exact_matches(self.seqs,0,1)
+        actual.sort()
+        expected.sort()
+        self.assertEqual(actual,expected)
+             
+    def test_collapse_exact_matches_suffix_zero(self):
+        """Prefix/suffix: collapse_exact_matches fns with suffix len = 0
+        """
+        expected = [['s1','s3','s5','s6'],['s2'],['s4']]
+        actual = self.otu_picker._collapse_exact_matches(self.seqs,4,0)
+        actual.sort()
+        expected.sort()
+        self.assertEqual(actual,expected)
+        
+        expected = [['s1','s2','s3','s4','s5','s6']]
+        actual = self.otu_picker._collapse_exact_matches(self.seqs,1,0)
+        actual.sort()
+        expected.sort()
+        self.assertEqual(actual,expected)
+    
+    def test_build_seq_hash(self):
+        """ """
+        self.assertEqual(self.otu_picker._build_seq_hash(\
+            'ATGTACGT',0,0),'')
+            
+        self.assertEqual(self.otu_picker._build_seq_hash(\
+            'ATGTACGT',2,2),'ATGT')
+        self.assertEqual(self.otu_picker._build_seq_hash(\
+            'ATTACGT',2,1),'ATT')
+        self.assertEqual(self.otu_picker._build_seq_hash(\
+            'ATGTACGT',1,2),'AGT')
+        self.assertEqual(self.otu_picker._build_seq_hash(\
+            'ATGTACGT',1,1),'AT')
+        self.assertEqual(self.otu_picker._build_seq_hash(\
+            'ATGTACGT',4,3),'ATGTCGT')
+        self.assertEqual(self.otu_picker._build_seq_hash(\
+            'ATGTACGT',3,4),'ATGACGT')
+            
+        self.assertEqual(self.otu_picker._build_seq_hash(\
+            'ATGTACGT',4,4),'ATGTACGT')
+        self.assertEqual(self.otu_picker._build_seq_hash(\
+            'ATGTACGT',5,3),'ATGTACGT')
+        self.assertEqual(self.otu_picker._build_seq_hash(\
+            'ATGTACGT',8,0),'ATGTACGT')
+        self.assertEqual(self.otu_picker._build_seq_hash(\
+            'ATGTACGT',3,5),'ATGTACGT')
+        self.assertEqual(self.otu_picker._build_seq_hash(\
+            'ATGTACGT',0,8),'ATGTACGT')
+        self.assertEqual(self.otu_picker._build_seq_hash(\
+            'ATGTACGT',4,5),'ATGTACGT')
+        self.assertEqual(self.otu_picker._build_seq_hash(\
+            'ATGTACGT',5,4),'ATGTACGT')
+        self.assertEqual(self.otu_picker._build_seq_hash(\
+            'ATGTACGT',300,0),'ATGTACGT')
+        self.assertEqual(self.otu_picker._build_seq_hash(\
+            'ATGTACGT',0,300),'ATGTACGT')
 
 
 class CdHitOtuPickerTests(TestCase):

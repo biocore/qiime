@@ -109,13 +109,113 @@ class OtuPicker(FunctionWithParams):
             results.append(full_cluster)
         return results
         
+class PrefixSuffixOtuPicker(OtuPicker):
+    
+    Name = 'PrefixSuffixOtuPicker'
+    
+    def __init__(self, params):
+        """Return new OtuPicker object with specified params.
+        
+        params contains both generic and per-method (e.g. for
+        cdhit application controller) params.
+        
+        Some generic entries in params are:
+    
+        Algorithm: algorithm used
+        Similarity: similarity threshold, default 0.96, corresponding to
+         genus-level OTUs ('Similarity' is a synonym for the '-c' parameter
+         to the cd-hit application controllers)
+        Application: 3rd-party application used
+        """
+        _params = {'Similarity':0.96,\
+         'Algorithm':'Prefix/suffix exact matching'}
+        _params.update(params)
+        OtuPicker.__init__(self, _params)
+    
+    def __call__ (self, seq_path, result_path=None, log_path=None, 
+        prefix_length=50,suffix_length=50):
+        """Returns dict mapping {otu_id:[seq_ids]} for each otu.
+        
+        Parameters:
+        seq_path: path to file of sequences
+        result_path: path to file of results. If specified,
+        dumps the result to the desired path instead of returning it.
+        log_path: path to log, which includes dump of params.
+        prefix_prefilter_length: prefilters the sequence collection so 
+         sequences whose first prefix_prefilter_length characters are 
+         identical will automatically be grouped into the same OTU [off by 
+         default, 100 is typically a good value if this filtering is 
+         desired] -- useful for large sequence collections, when cdhit doesn't
+         scale well
+
+        """
+        log_lines = []
+        log_lines.append('Prefix length: %d' % suffix_length)
+        log_lines.append('Suffix length: %d' % suffix_length)
+        
+        assert prefix_length >= 0, 'Prefix length (%d) must be >= 0' % prefix_length
+        assert suffix_length >= 0, 'Suffix length (%d) must be >= 0' % suffix_length
+
+        clusters = self._collapse_exact_matches(\
+         MinimalFastaParser(open(seq_path)),prefix_length,suffix_length)
+        log_lines.append('Num OTUs: %d' % len(clusters))
+        
+        if result_path:
+            # if the user provided a result_path, write the 
+            # results to file with one tab-separated line per 
+            # cluster
+            of = open(result_path,'w')
+            for i,cluster in enumerate(clusters):
+                of.write('%s\t%s\n' % (i,'\t'.join(cluster)))
+            of.close()
+            result = None
+            log_lines.append('Result path: %s' % result_path)
+        else:
+            # if the user did not provide a result_path, store
+                # the clusters in a dict of {otu_id:[seq_ids]}, where
+            # otu_id is arbitrary
+            result = dict(enumerate(clusters))
+            log_lines.append('Result path: None, returned as dict.')
+ 
+        if log_path:
+            # if the user provided a log file path, log the run
+            log_file = open(log_path,'w')
+            log_lines = [str(self)] + log_lines
+            log_file.write('\n'.join(log_lines))
+    
+        # return the result (note this is None if the data was
+        # written to file)
+        return result
+    
+    def _build_seq_hash(self,seq,prefix_length,suffix_length): 
+        """ Merge the prefix and suffix into a hash for the OTU
+        """
+        len_seq = len(seq)
+        
+        if len_seq <= prefix_length + suffix_length:
+            return seq
+            
+        prefix = seq[:prefix_length]
+        suffix = seq[len_seq-suffix_length:]
+            
+        return prefix + suffix
+    
+    def _collapse_exact_matches(self,seqs,prefix_length,suffix_length):
+        """ Cluster sequences into sets with identical prefix/suffix
+        """
+        cluster_map = {}
+        for seq_id, seq in seqs:
+            seq_hash = self._build_seq_hash(seq,prefix_length,suffix_length)
+            try:
+                cluster_map[seq_hash].append(seq_id)
+            except KeyError:
+                cluster_map[seq_hash] = [seq_id]
+        
+        return cluster_map.values()
 
 class CdHitOtuPicker(OtuPicker):
     
     Name = 'CdHitOtuPicker'
-    # Application = 'cd-hit-est'
-    # Algorithm = 'cdhit: "longest-sequence-first list removal algorithm"'
-    # Params = {'Similarity':0.96}
     
     def __init__(self, params):
         """Return new OtuPicker object with specified params.
@@ -505,9 +605,18 @@ def parse_command_line_parameters():
           'single OTU; useful for large sequence collections where OTU '+\
           'picking doesn\'t scale well '+\
           '[default: %default; 100 is a good value]')
+    
+    parser.add_option('-p','--prefix_length',\
+          type=int,help='prefix length when using the prefix_suffix'+\
+          ' otu picker; WARNING: CURRENTLY DIFFERENT FROM'+\
+          ' prefix_prefilter_length (-n)! [default: %default]')
+    
+    parser.add_option('-u','--suffix_length',\
+          type=int,help='suffix length when using the prefix_suffix'+\
+          ' otu picker [default: %default]')
 
     parser.set_defaults(verbose=False,otu_picking_method='cdhit',\
-        similarity=0.96)
+        similarity=0.96,prefix_length=50,suffix_length=50)
 
     opts,args = parser.parse_args()
 
@@ -520,12 +629,14 @@ def parse_command_line_parameters():
     return opts,args
 
 otu_picking_method_constructors = dict([\
- ('cdhit',CdHitOtuPicker)])#,('dotur',DoturOtuPicker)])
+ ('cdhit',CdHitOtuPicker),('prefix_suffix',PrefixSuffixOtuPicker)])
 
 if __name__ == "__main__":
     opts,args = parse_command_line_parameters()
     prefix_prefilter_length = opts.prefix_prefilter_length
     otu_picking_method = opts.otu_picking_method
+    prefix_length = opts.prefix_length
+    suffix_length = opts.suffix_length
  
     otu_picker_constructor =\
      otu_picking_method_constructors[otu_picking_method]
@@ -540,13 +651,21 @@ if __name__ == "__main__":
     except OSError:
         # output_dir exists
         pass
+        
     result_path = '%s/%s_otus.txt' % (output_dir,input_seqs_basename)
     log_path = '%s/%s_otus.log' % (output_dir,input_seqs_basename)
     
-    params = {'Similarity':opts.similarity,'-M':opts.max_cdhit_memory}
+    if otu_picking_method == 'cdhit':
     
-    otu_picker = otu_picker_constructor(params)
-    otu_picker(input_seqs_filepath,\
-     result_path=result_path,log_path=log_path,\
-     prefix_prefilter_length=prefix_prefilter_length)
-
+        params = {'Similarity':opts.similarity,\
+                  '-M':opts.max_cdhit_memory}
+        otu_picker = otu_picker_constructor(params)
+        otu_picker(input_seqs_filepath,\
+         result_path=result_path,log_path=log_path,\
+         prefix_prefilter_length=prefix_prefilter_length)
+    elif otu_picking_method == 'prefix_suffix':
+        otu_picker = otu_picker_constructor({})
+        otu_picker(input_seqs_filepath,\
+         result_path=result_path,log_path=log_path,\
+         prefix_length=prefix_length,suffix_length=suffix_length)
+        
