@@ -455,7 +455,7 @@ class DoturOtuPicker(OtuPicker):
 
 class MothurOtuPicker(OtuPicker):
     Name = 'MothurOtuPicker'
-    _supported_algorithms = ['furthest', 'nearest', 'average']
+    ClusteringAlgorithms = ['furthest', 'nearest', 'average']
 
     def __init__(self, params):
         """Return new MothurOtuPicker object with specified params.
@@ -473,9 +473,9 @@ class MothurOtuPicker(OtuPicker):
             params['Algorithm'] = 'furthest'
         if 'Similarity' not in params:
             params['Similarity'] = 0.97
-        if params['Algorithm'] not in self._supported_algorithms:
+        if params['Algorithm'] not in self.ClusteringAlgorithms:
             raise ValueError('Unsupported algorithm %s.  Choices are %s' % \
-                             (params['Algorithm'], self._supported_algorithms))
+                             (params['Algorithm'], self.ClusteringAlgorithms))
         super(MothurOtuPicker, self).__init__(params)
 
     def __call__ (self, seq_path, result_path=None, log_path=None):
@@ -492,6 +492,7 @@ class MothurOtuPicker(OtuPicker):
         results = app(seq_path)
         parsed_otus = mothur_parse(results['otu list'])
         clusters = self.__pick_clusters(parsed_otus)
+        results.cleanUp()
 
         # From here down, this is all copied straight from
         # CdHitOtuPicker, and prime for refactoring into a private
@@ -570,7 +571,11 @@ Example usage:
     # Pick OTUs from at_inseqs.fasta (-i) with cd-hit-est (default) and
     # store output files in ./cdhit_picked_otus/ (default).
     python pick_otus.py -i at_inseqs.fasta
- 
+
+    # Pick OTUs from at_inseqs.fasta with Mothur, using a nearest-
+    # neighbor clustering algorithm and a similarity threshold of 90%.
+    # Output files will be stored in ./mothur_picked_otus/ (default).
+    python pick_otus.py -i at_inseqs.fasta -m mothur -c nearest -s 0.90
 """
 
 def parse_command_line_parameters():
@@ -583,10 +588,17 @@ def parse_command_line_parameters():
           help='Path to input sequences file [REQUIRED]')
 
     otu_picking_method_choices = otu_picking_method_constructors.keys()
-    parser.add_option('-m','--otu_picking_method',type='choice',\
-          help='Method for picking OTUs [default: %default]',\
-          choices=otu_picking_method_choices)
-    
+    parser.add_option('-m', '--otu_picking_method', type='choice',
+        choices=otu_picking_method_choices,
+        help=('Method for picking OTUs.  Valid choices are: cdhit, '
+        'prefix_suffix, and mothur.  The mothur method requires an input file '
+        'of aligned sequences [default: %default]'))
+
+    parser.add_option('-c', '--clustering_algorithm', type='choice',
+        choices=MothurOtuPicker.ClusteringAlgorithms,
+        help=('Clustering algorithm for mothur otu picking method.  Valid '
+        'choices are: nearest, furthest, and average [default: %default]'))
+
     parser.add_option('-M','--max_cdhit_memory',type=int,\
           help='max available memory to cdhit (cd-hit\'s -M)'+\
           ' (Mbyte) [default: %default]',default=400)
@@ -615,8 +627,9 @@ def parse_command_line_parameters():
           type=int,help='suffix length when using the prefix_suffix'+\
           ' otu picker [default: %default]')
 
-    parser.set_defaults(verbose=False,otu_picking_method='cdhit',\
-        similarity=0.96,prefix_length=50,suffix_length=50)
+    parser.set_defaults(verbose=False, otu_picking_method='cdhit',
+        similarity=0.96, prefix_length=50, suffix_length=50,
+        clustering_algorithm='furthest',)
 
     opts,args = parser.parse_args()
 
@@ -628,8 +641,11 @@ def parse_command_line_parameters():
 
     return opts,args
 
-otu_picking_method_constructors = dict([\
- ('cdhit',CdHitOtuPicker),('prefix_suffix',PrefixSuffixOtuPicker)])
+otu_picking_method_constructors = {
+    'cdhit': CdHitOtuPicker,
+    'prefix_suffix': PrefixSuffixOtuPicker,
+    'mothur': MothurOtuPicker,
+    }
 
 if __name__ == "__main__":
     opts,args = parse_command_line_parameters()
@@ -656,7 +672,6 @@ if __name__ == "__main__":
     log_path = '%s/%s_otus.log' % (output_dir,input_seqs_basename)
     
     if otu_picking_method == 'cdhit':
-    
         params = {'Similarity':opts.similarity,\
                   '-M':opts.max_cdhit_memory}
         otu_picker = otu_picker_constructor(params)
@@ -668,4 +683,11 @@ if __name__ == "__main__":
         otu_picker(input_seqs_filepath,\
          result_path=result_path,log_path=log_path,\
          prefix_length=prefix_length,suffix_length=suffix_length)
-        
+    elif otu_picking_method == 'mothur':
+        params = {'Similarity': opts.similarity,
+                  'Algorithm': opts.clustering_algorithm}
+        otu_picker = otu_picker_constructor(params)
+        otu_picker(input_seqs_filepath,
+                   result_path=result_path, log_path=log_path)
+
+
