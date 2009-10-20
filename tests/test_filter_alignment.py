@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
-__author__ = "Greg Caporaso"
+__author__ = "Dan Knights"
 __copyright__ = "Copyright 2009, the PyCogent Project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso","Dan Knights"]
 __license__ = "GPL"
 __version__ = "0.1"
-__maintainer__ = "Greg Caporaso"
-__email__ = "gregcaporaso@gmail.com"
+__maintainer__ = "Dan Knights"
+__email__ = "danknights@gmail.com"
 __status__ = "Prototype"
 
 from cogent.util.unit_test import TestCase, main
