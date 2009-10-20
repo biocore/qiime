@@ -75,23 +75,3 @@ def format_coords(coord_header, coords, eigvals, pct_var):
         '\t'.join(map(str, pct_var)))
     return '\n'.join(result)
 
-def format_array_row(row):
-    """format array row, replacing 0 with ''"""
-    result = []
-    for i in row:
-        if i and not isnan(i):
-            result.append(str(i))
-        else:
-            result.append('')
-    return result
-
-def format_rarefaction_table(header, sizes, min_vals, table):
-    """format rarefaction table"""
-    result = []
-    result.append(['n'] + map(str, header))
-    for size, row in zip(sizes, table):
-        formatted = format_array_row(row)
-        if len(filter(None, formatted)) >= min_vals:
-            result.append([str(size)] + formatted)
-    return '\n'.join(['\t'.join(r) for r in result])
-

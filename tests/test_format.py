@@ -13,7 +13,7 @@ __status__ = "Prototype"
 from cogent.util.unit_test import TestCase, main
 from numpy import array, nan
 from qiime.format import (format_distance_matrix, format_otu_table,
-    format_coords, format_array_row, format_rarefaction_table)
+    format_coords)
 
 class TopLevelTests(TestCase):
     """Tests of top-level module functions."""
@@ -50,21 +50,6 @@ class TopLevelTests(TestCase):
         res = format_coords(header, a, eigvals, pct_var)
         self.assertEqual(res, "pc vector number\t1\t2\t3\na\t1\t2\t3\nb\t4\t5\t6\nc\t7\t8\t9\n\n\neigvals\t2\t4\t6\n% variation explained\t3\t2\t1")
 
-    def test_format_array_row(self):
-        """format_array_row should strip zeros and nans out of array"""
-        a = array([1,0,50,nan,3], int)
-        res = format_array_row(a)
-        self.assertEqual(res, ['1','','50','','3'])
-
-    def test_format_rarefaction_table(self):
-        """format_rarefaction_table should strip bad vals, omit zeros"""
-        header = list('abc')
-        sizes = [100, 200, 300, 400]
-        table = array([[50,60,70],[80,0,100],[110,120,130],[140,0,160]], int)
-        res = format_rarefaction_table(header, sizes, 3, table)
-        self.assertEqual(res, 'n\ta\tb\tc\n100\t50\t60\t70\n300\t110\t120\t130')
-        res = format_rarefaction_table(header, sizes, 0, table)
-        self.assertEqual(res, 'n\ta\tb\tc\n100\t50\t60\t70\n200\t80\t\t100\n300\t110\t120\t130\n400\t140\t\t160')
 
 #run unit tests if run from command-line
 if __name__ == '__main__':
