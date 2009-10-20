@@ -2,14 +2,14 @@
 
 """Tests of code for building tree from aligned sequences"""
 
-__author__ = "Rob Knight and Greg Caporaso"
+__author__ = "Rob Knight"
 __copyright__ = "Copyright 2009, the PyCogent Project" 
 #remember to add yourself if you make changes
-__credits__ = ["Rob Knight", "Greg Caporaso"] 
+__credits__ = ["Rob Knight"] 
 __license__ = "GPL"
 __version__ = "0.1"
-__maintainer__ = "Greg Caporaso"
-__email__ = "gregcaporaso@gmail.com"
+__maintainer__ = "Rob Knight"
+__email__ = "rob.knight@colorado.edu"
 __status__ = "Prototype"
 
 from os import remove
