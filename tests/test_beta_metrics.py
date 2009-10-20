@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
-__author__ = "justin kuczynski"
+__author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2009, the PyCogent Project"
-__credits__ = ["Rob Knight", "justin kuczynski"]
+__credits__ = ["Rob Knight", "Justin Kuczynski"]
 __license__ = "GPL"
 __version__ = "0.1"
 __maintainer__ = "justin kuczynski"
