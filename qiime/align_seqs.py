@@ -2,7 +2,7 @@
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2009, the PyCogent Project"
-__credits__ = ["Rob Knight","Greg Caporaso","Jeremy Widmann"]
+__credits__ = ["Rob Knight", "Greg Caporaso", "Jeremy Widmann", "Kyle Bittinger"]
 __license__ = "GPL"
 __version__ = "0.1"
 __maintainer__ = "Greg Caporaso"
