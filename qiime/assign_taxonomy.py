@@ -87,7 +87,7 @@ class BlastTaxonAssigner(TaxonAssigner):
     """ Assign taxon best on best blast hit above a threshold
     """
     Name = 'BlastTaxonAssigner'
-    
+    SeqsPerBlastRun = 1000
     def __init__(self, params):
         """ Initialize the object
         """
@@ -99,14 +99,15 @@ class BlastTaxonAssigner(TaxonAssigner):
         _params.update(params)
         TaxonAssigner.__init__(self, _params)
     
-    def __call__(self, seq_path, result_path=None, log_path=None):
+    def __call__(self, seq_path=None, seqs=None, result_path=None, log_path=None):
         """Returns dict mapping {seq_id:(taxonomy, confidence)} for each seq.
         """
+        assert seq_path or seqs, \
+         "Must provide either seqs or seq_path when calling a BlastTaxonAssigner."
+         
+        # initialize the logger
         logger = self._get_logger(log_path)
         logger.info(str(self))
-
-        # Load the sequence collection containing the files to blast
-        seq_coll = LoadSeqs(seq_path,aligned=False,moltype=DNA).degap()
         
         # assign the blast database, either as a pre-exisiting database
         # specified as self.Params['blast_db'] or by creating a 
@@ -121,46 +122,96 @@ class BlastTaxonAssigner(TaxonAssigner):
             blast_db, db_files_to_remove = \
              build_blast_db_from_fasta_path(reference_seqs_path)
         
-        # build the mapping of sequence identifier (wrt to the blast db seqs)
-        # to taxonomy
+        # build the mapping of sequence identifier 
+        # (wrt to the blast db seqs) to taxonomy
         id_to_taxonomy_map = self._parse_id_to_taxonomy_file(\
          open(self.Params['id_to_taxonomy_filepath'])) 
-        # blast the sequence collection against the database
-        blast_hits = self._get_blast_hits(blast_db,seq_coll)
+        
+        ## Iterate over the input self.SeqsPerBlastRun seqs at a time. 
+        # There are two competing issues here when dealing with very large
+        # inputs. If all sequences are read in at once, the containing object
+        # can be very large, causing the system to page. On the other hand,
+        # in such cases it would be very slow to treat each sequence 
+        # individually, since blast requires a filepath. Each call would
+        # therefore involve writing a single sequence to file, opening/closing
+        # and removing the file. To balance this, sequences are read in and
+        # blasted in chunks of self.SeqsPerBlastRun (defualt: 1000) at a time.
+        # This appears to solve the problem with the largest sets I've worked
+        # with so far. 
+        
+        if seq_path:
+            # Get a seq iterator
+            seqs = MinimalFastaParser(open(seq_path))
+        # Build object to keep track of the current set of sequence to be
+        # blasted, and the results (i.e., seq_id -> (taxonomy,quaility score) 
+        # mapping)
+        current_seqs = []
+        result = {}
+        
+        # Iterate over the (seq_id, seq) pairs
+        for seq_id, seq in seqs:
+            # append the current seq_id,seq to list of seqs to be blasted
+            current_seqs.append((seq_id,seq))
+            
+            # When there are 1000 in the list, blast them
+            if len(current_seqs) == self.SeqsPerBlastRun:
+                # update the result object
+                result.update(self._seqs_to_taxonomy(\
+                 current_seqs,blast_db,id_to_taxonomy_map))
+                # reset the list of seqs to be blasted
+                current_seqs = []
+        # Assign taxonomy to the remaining sequences
+        result.update(self._seqs_to_taxonomy(\
+         current_seqs,blast_db,id_to_taxonomy_map))
+        ## End iteration over the input self.SeqsPerBlastRun seqs at a time. 
+        
+        # Write log data if we have a path (while the logger can handle
+        # being called if we are not logging, some of these steps are slow).
+        if log_path is not None:
+            num_inspected = len(result)
+            logger.info('Number of sequences inspected: %s' % num_inspected)
+            num_null_hits = [r[1] for r in result.values()].count(None)
+            logger.info('Number with no blast hits: %s' % num_null_hits)
 
-        # select the best blast hit for each query sequence
-        best_blast_hit_ids = self._get_first_blast_hit_per_seq(blast_hits)
-         
-        # map the identifier of the best blast hit to (taxonomy, e-value)
-        seq_id_to_taxonomy = self._map_ids_to_taxonomy(\
-             best_blast_hit_ids,id_to_taxonomy_map)
-             
         if result_path:
             # if the user provided a result_path, write the 
             # results to file
             of = open(result_path,'w')
-            for seq_id, (lineage, confidence) in seq_id_to_taxonomy.items():
+            for seq_id, (lineage, confidence) in result.items():
                 of.write('%s\t%s\t%s\n' % (seq_id, lineage, confidence))
             of.close()
             result = None
             logger.info('Result path: %s' % result_path)
         else:
+            # Returning the data as a dict, so no modification to result
+            # is necessary.
+            pass
+                 
             # if no result_path was provided, return the data as a dict
-            result = seq_id_to_taxonomy
             logger.info('Result path: None, returned as dict.')
 
         # clean-up temp blastdb files, if a temp blastdb was created
         if 'reference_seqs_filepath' in self.Params:
             map(remove,db_files_to_remove)
 
-        if log_path is not None:
-            num_inspected = len(best_blast_hit_ids)
-            logger.info('Number of sequences inspected: %s' % num_inspected)
-            num_null_hits = best_blast_hit_ids.values().count(None)
-            logger.info('Number with no blast hits: %s' % num_null_hits)
-
         # return the result
         return result
+        
+    def _seqs_to_taxonomy(self,seqs,blast_db,id_to_taxonomy_map):
+        """ Assign taxonomy to (seq_id,seq) pairs
+        """
+        # Handle the case of no seqs passed in
+        if not seqs: 
+            return {}
+        # blast the seqs
+        blast_hits = self._get_blast_hits(blast_db,seqs)
+
+        # select the best blast hit for each query sequence
+        best_blast_hit_ids = self._get_first_blast_hit_per_seq(blast_hits)
+ 
+        # map the identifier of the best blast hit to (taxonomy, e-value)
+        return self._map_ids_to_taxonomy(\
+             best_blast_hit_ids,id_to_taxonomy_map)
 
     def _get_logger(self, log_path=None):
         if log_path is not None:
@@ -188,27 +239,26 @@ class BlastTaxonAssigner(TaxonAssigner):
 
         return hits
         
-    def _get_blast_hits(self,blast_db,seq_coll):
-        """ blast each seq in seq_coll against blast_db and retain good hits
+    def _get_blast_hits(self,blast_db,seqs):
+        """ blast each seq in seqs against blast_db and retain good hits
         """
         max_evalue = self.Params['Max E value']
         min_percent_identity = self.Params['Min percent identity']
+        seq_ids = [s[0] for s in seqs]
         result = {}
         
         blast_result = blast_seqs(\
-         seq_coll.toFasta(),Blastall,blast_db=blast_db,\
+         seqs,Blastall,blast_db=blast_db,\
          params={'-p':'blastn','-n':'T'},\
-         input_handler='_input_as_multiline_string',
          add_seq_names=False)
          
         if blast_result['StdOut']:
             lines = [x for x in blast_result['StdOut']]
             blast_result = BlastResult(lines)
         else:
-            return {}.fromkeys(seq_coll.Names,[])
+            return {}.fromkeys(seq_ids,[])
             
-        for seq in seq_coll.iterSeqs():
-            seq_id = seq.Name
+        for seq_id in seq_ids:
             blast_result_id = seq_id.split()[0]
             try:
                 result[seq_id] = [(e['SUBJECT ID'],float(e['E-VALUE'])) \

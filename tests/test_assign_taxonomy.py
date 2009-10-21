@@ -23,6 +23,7 @@ from cogent import LoadSeqs
 from cogent.app.util import get_tmp_filename
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from cogent.util.misc import remove_files
+from cogent.parse.fasta import MinimalFastaParser
 from qiime.assign_taxonomy import TaxonAssigner, BlastTaxonAssigner,\
  RdpTaxonAssigner
 
@@ -58,6 +59,7 @@ class BlastTaxonAssignerTests(TestCase):
         
         open(self.id_to_taxonomy_fp,'w').write(id_to_taxonomy_string)
         open(self.input_seqs_fp,'w').write(test_seq_coll.toFasta())
+        self.test_seqs = test_seq_coll.items()
         open(self.reference_seqs_fp,'w').write(test_refseq_coll.toFasta())
         
         self.expected1 = {
@@ -145,7 +147,7 @@ class BlastTaxonAssignerTests(TestCase):
         self._paths_to_clean_up += files_to_remove
         
         p = BlastTaxonAssigner({})
-        seq_coll_blast_results = p._get_blast_hits(blast_db,test_seq_coll)
+        seq_coll_blast_results = p._get_blast_hits(blast_db,self.test_seqs)
         # mapping from identifier in test_seq_coll to the id of the sequence
         # in the refseq collection (a silva derivative)
         expected_matches = {\
@@ -185,6 +187,64 @@ class BlastTaxonAssignerTests(TestCase):
         actual = p(self.input_seqs_fp)
         
         self.assertEqual(actual,self.expected1)
+        
+    def test_call_alt_input_types(self):
+        """BlastTaxonAssigner.__call__ functions w alt input types """
+        p = BlastTaxonAssigner({\
+         'reference_seqs_filepath':self.reference_seqs_fp,\
+         'id_to_taxonomy_filepath':self.id_to_taxonomy_fp})
+         
+        # neither seqs or seq_fp passed results in AssertionError
+        self.assertRaises(AssertionError,p)
+        
+        # Functions with a list of (seq_id, seq) pairs
+        seqs = list(MinimalFastaParser(open(self.input_seqs_fp)))
+        actual = p(seqs=seqs)
+        self.assertEqual(actual,self.expected1)
+        
+        # Functions with input path
+        actual = p(self.input_seqs_fp)
+        self.assertEqual(actual,self.expected1)
+        
+        # same result when passing fp or seqs
+        self.assertEqual(p(seqs=seqs),p(self.input_seqs_fp))
+        
+    def test_seqs_to_taxonomy(self):
+        """BlastTaxonAssigner._seqs_to_taxonomy: functions as expected
+        """
+        p = BlastTaxonAssigner({\
+         'reference_seqs_filepath':self.reference_seqs_fp,\
+         'id_to_taxonomy_filepath':self.id_to_taxonomy_fp})
+         
+        # build the id_to_taxonomy_map as this test doesn't execute __call__
+        id_to_taxonomy_map = {
+            "AY800210": \
+             "Archaea;Euryarchaeota;Halobacteriales;uncultured",
+            "EU883771": \
+             "Archaea;Euryarchaeota;Methanomicrobiales;Methanomicrobium et rel.",
+            "EF503699": \
+             "Archaea;Crenarchaeota;uncultured;uncultured",
+            "DQ260310": \
+             "Archaea;Euryarchaeota;Methanobacteriales;Methanobacterium",
+            "EF503697": \
+             "Archaea;Crenarchaeota;uncultured;uncultured",
+            }
+        
+        # build the blast database and keep track of the files to clean up
+        blast_db, files_to_remove = \
+         build_blast_db_from_fasta_path(self.reference_seqs_fp)
+        self._paths_to_clean_up += files_to_remove
+        
+        # read the input file into (seq_id, seq) pairs
+        seqs = list(MinimalFastaParser(open(self.input_seqs_fp)))
+        
+        actual = p._seqs_to_taxonomy(seqs,blast_db,id_to_taxonomy_map)
+        self.assertEqual(actual,self.expected1)
+        
+        # passing empty list of seqs functions as expected
+        actual = p._seqs_to_taxonomy([],blast_db,id_to_taxonomy_map)
+        self.assertEqual(actual,{})
+        
         
     def test_call_on_the_fly_blast_db(self):
         """BlastTaxonAssigner.__call__ functions w creating blast db
@@ -257,7 +317,7 @@ class BlastTaxonAssignerTests(TestCase):
             'blast_db:%s' % str(self.reference_seqs_fp)[1:-1],
             'id_to_taxonomy_filepath:%s' % self.id_to_taxonomy_fp,
             'Number of sequences inspected: 6',
-            'Number with no blast hits: 0',
+            'Number with no blast hits: 1',
             '',
          ]
         # compare data in log file to fake expected log file
