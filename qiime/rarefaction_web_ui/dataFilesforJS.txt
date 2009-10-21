@@ -1,3 +1,0 @@
-Ley_Backhed_mouth_Mapping_v1_barcodes.txt
-PD_whole_tree_mouth.txt
-chao1_mouth.txt
