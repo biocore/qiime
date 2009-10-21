@@ -7,7 +7,7 @@ renames each read with the appropriate library id.
 """
 __author__ = "Rob Knight and Micah Hamady"
 __copyright__ = "Copyright 2009, the PyCogent Project" #consider project name
-__credits__ = ["Rob Knight", "Micah Hamady", "Greg Caporaso"] #remember to add yourself
+__credits__ = ["Rob Knight", "Micah Hamady", "Greg Caporaso", "Kyle Bittinger"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "0.1"
 __maintainer__ = "Rob Knight"
@@ -505,57 +505,88 @@ def preprocess(fasta_files, qual_files, mapping_file,
         (*make_histograms(pre_lens, post_lens)))
     histogram_file.close()
 
+
+usage_str = \
+"""usage: %prog [options] {-i FASTA_FNAMES -q QUAL_FNAMES -m MAP_FNAME}
+
+[] indicates optional input (order unimportant) 
+{} indicates required input (order unimportant) 
+
+FASTA_FNAMES: Comma-delimited paths of sequence files, in FASTA format.
+QUAL_FNAMES: Comma-delimited paths of quality files, in FASTA-like
+  format.
+MAP_FNAME: Path to tab-delimited mapping file.  Must contain a header
+  line indicating SampleID in the first column and BarcodeSequence in
+  the second.
+
+Example usage:
+
+Process sequences from two files (a.fna, b.fna) using the sample-to-
+barcode associations in samples.txt.  The quality files for the
+sequences (a.qual, b.qual) must also be provided.
+
+python %prog -i a.fna,b.fna -q a.qual,b.qual -m samples.txt
+"""
+
+
 def make_cmd_parser():
     """Returns the command-line options."""
     parser = OptionParser()
+    parser.usage = usage_str
+    parser.version = 'Version: %prog ' +  __version__
     parser.add_option('-m', '--map', dest='map_fname', 
-        help='name of mapping file')
+        help='name of mapping file [REQUIRED]')
     parser.add_option('-f', '--fasta', dest='fasta_fnames', 
-        help='names of fasta files, comma-delimited')
+        help='names of fasta files, comma-delimited [REQUIRED]')
     parser.add_option('-q', '--qual', dest='qual_fnames', 
-        help='names of qual files, comma-delimited')
-    parser.add_option('-p', '--primers', dest='primers',
-        default = STANDARD_BACTERIAL_PRIMER,
-        help='degen sequences of primers, comma-delimited')
+        help='names of qual files, comma-delimited [REQUIRED]')
+    parser.add_option('-p', '--primers', default=STANDARD_BACTERIAL_PRIMER,
+        help='degen sequences of primers, comma-delimited [default: %default]')
     parser.add_option('-l', '--min-seq-length', dest='min_seq_len',
         type=int, default=200,
-        help='minimum sequence length, in nucleotides')
+        help='minimum sequence length, in nucleotides [default: %default]')
     parser.add_option('-L', '--max-seq-length', dest='max_seq_len',
         type=int, default=1000,
-        help='maximum sequence length, in nucleotides')
+        help='maximum sequence length, in nucleotides [default: %default]')
     parser.add_option('-t', '--trim-seq-length', dest='trim_seq_len',
-        type=int, default=1,
-        help='calculate sequence lengths after trimming primers/barcodes')
-    parser.add_option('-Q', '--min-qual-score', dest='min_qual_score',
-        type=int, default=25,
-        help='min qual score allowed in read')
-    parser.add_option('-P', '--keep-primer', dest='keep_primer',
-        type=int, default=0,
-        help='if q (default is 0), leaves primer on seq')
-    parser.add_option('-a', '--max-ambig', dest='max_ambig',
-        type=int, default=0,
-        help='maximum number of ambiguous bases permitted')
-    parser.add_option('-H', '--max-homopolymer', dest='max_homopolymer',
-        type=int, default=6,
-        help='maximum length of homopolymer run permitted')
+        action='store_true',
+        help='calculate sequence lengths after trimming primers and barcodes')
+    parser.add_option('-Q', '--min-qual-score', type=int, default=25,
+        help='min qual score allowed in read [default: %default]')
+    parser.add_option('-k', '--keep-primer', action='store_true',
+        help='do not remove primer from sequences')
+    parser.add_option('-a', '--max-ambig', type=int, default=0,
+        help='maximum number of ambiguous bases [default: %default]')
+    parser.add_option('-H', '--max-homopolymer', type=int, default=6,
+        help='maximum length of homopolymer run [default: %default]')
     parser.add_option('-M', '--max-primer-mismatch', dest='max_primer_mm',
         type=int, default=0,
-        help='maximum number of primer mismatches permitted')
-    parser.add_option('-b', '--barcode-type', dest='barcode_type',
-        default='golay_12', 
-        help = 'barcode type, e.g. hamming_8 or golay_12')
-    parser.add_option('-d', '--dir-prefix', dest='dir_prefix',
-        default='.',
-        help = 'directory prefix to write output files into.')
+        help='maximum number of primer mismatches [default: %default]')
+    parser.add_option('-b', '--barcode-type', default='golay_12', 
+        choices=BARCODE_TYPES.keys(),
+        help='barcode type, e.g. hamming_8 or golay_12 [default: %default]')
+    parser.add_option('-d', '--dir-prefix', default='.',
+        help='directory prefix for output files [default: %default]')
     parser.add_option('-e', '--max-barcode-errors', dest='max_bc_errors',
         default=2, type=int,
-        help='maximum number of errors in barcode permitted')
+        help='maximum number of errors in barcode [default: %default]')
     parser.add_option('-s', '--start-numbering-at', dest='start_index',
         default=1, type=int,
-        help='seq id to use for the first sequence')
+        help='seq id to use for the first sequence [default: %default]')
     options, args = parser.parse_args()
+
+    required_options = [
+        ('map_fname', '-m'),
+        ('fasta_fnames', '-f'), 
+        ('qual_fnames', '-q')]
+    for attr_name, flag in required_options:
+        if not getattr(options, attr_name):
+            parser.error('Required option %s not found.  Must provide a '
+                         'mapping file (-m), at least one fasta input file '
+                         '(-i), and at least one qual file (-q).' % flag)
     return options
-    
+
+
 if __name__ == "__main__":
     from sys import exit, stderr
     options = make_cmd_parser()
