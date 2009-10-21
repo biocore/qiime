@@ -3,7 +3,7 @@
 
 __author__ = "Jesse Stombaugh and Rob Knight"
 __copyright__ = "Copyright 2009, the 454 Project" #consider project name
-__credits__ = ["Jesse Stombaugh", "Rob Knight"] #remember to add yourself
+__credits__ = ["Jesse Stombaugh", "Rob Knight", "Micah Hamady"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "0.1"
 __maintainer__ = "Jesse Stombaugh"
