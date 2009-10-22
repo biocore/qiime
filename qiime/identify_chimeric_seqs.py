@@ -175,8 +175,7 @@ class BlastFragmentsChimeraChecker(ChimeraChecker):
         """From list of taxon assignments, determine if sequence is chimeric 
         
             ** This method needs to be parameterized, as there are other ways
-            we might want to test for chimeras based on taxon_assignments. 
-            
+            we might want to test for chimeras based on taxon_assignments.
             
             This method checks that taxon assignments are identical to a 
             depth of depth (the input parameter). Assignments to
@@ -321,6 +320,10 @@ def parse_command_line_parameters():
           type='int',help='Number of taxonomic divisions to consider' +\
           ' when comparing taxonomy assignments [default: %default]')
           
+    parser.add_option('-e','--max_e_value',\
+          type='float',help='Max e-value to assign taxonomy' +\
+          ' [default: %default]')
+          
     parser.add_option('-o', '--output_fp',
         help='Path to store output [derived from input_seqs_fp]')
 
@@ -330,7 +333,7 @@ def parse_command_line_parameters():
 
     # Set default values here if they should be other than None
     parser.set_defaults(verbose=False,chimera_detection_method='blast_fragments',\
-        num_fragments=3,taxonomy_depth=4)
+        num_fragments=3,taxonomy_depth=4,max_e_value=1e-30)
 
     opts,args = parser.parse_args()
     required_options = ['input_seqs_fp']
@@ -355,6 +358,7 @@ if __name__ == "__main__":
     num_fragments = opts.num_fragments
     output_fp = opts.output_fp
     taxonomy_depth = opts.taxonomy_depth
+    max_e_value = opts.max_e_value
     
     if not output_fp:
         input_basename = splitext(split(input_seqs_fp)[1])[0]
@@ -363,6 +367,7 @@ if __name__ == "__main__":
     if chimera_detection_method == 'blast_fragments':
         blast_fragments_identify_chimeras(input_seqs_fp,id_to_taxonomy_fp,\
             reference_seqs_fp,num_fragments=opts.num_fragments,\
+            max_e_value=max_e_value,\
             output_fp=output_fp,taxonomy_depth=taxonomy_depth)
         
     
