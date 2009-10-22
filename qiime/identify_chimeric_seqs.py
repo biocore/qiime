@@ -217,26 +217,18 @@ class BlastFragmentsChimeraChecker(ChimeraChecker):
     def _get_taxonomy(self,fragment):
         """ Return the taxonomy of fragment 
         
-            This function is awful right now, because the taxon 
-             assigners take a file. Will update this to either do
-             all fragments at once, or will update the taxonomy 
-             assigners to optionally take a sequence.
-        
+            This function is awful right now, because the blast app 
+             controller takes a file. This therefore results in each 
+             fragment being written to file and subsequently cleaned up.
+             This can be _very_ slow. I recently updated BlastTaxonAssigner
+             to handle this better, but it will involve some re-writes here
+             to get it all going. 
         """
-        # Write the fragment to a temporary file
-        tmp_filename = get_tmp_filename(prefix='%s_' % self.Name,\
-            suffix='.fasta')
-        f = open(tmp_filename,'w')
-        f.write('>fragment\n%s\n' % fragment)
-        f.close()
         
         # Pass the temporary file to the taxon assigner, and get the 
         # taxonomy and quality score back 
         taxonomy, quality_score = \
-         self._taxon_assigner(tmp_filename)['fragment']
-        
-        # Clean up the temp file
-        remove_files([tmp_filename])
+         self._taxon_assigner(seqs=[('fragment',fragment)])['fragment']
         
         # Return the taxonomy
         return taxonomy
