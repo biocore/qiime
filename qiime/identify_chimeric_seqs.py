@@ -96,20 +96,11 @@ class BlastFragmentsChimeraChecker(ChimeraChecker):
         """Return new BlastFragmentsChimeraChecker object with specified params.
         
         """
-        try:
-            max_e_value = params['max_e_value']
-        except KeyError:
-            max_e_value = 1e-30
-            
-        try:
-            min_pct_id = params['min_pct_id']
-        except KeyError:
-            min_pct_id = 0.90
-            
-        try:
-            self.num_fragments = params['num_fragments']
-        except KeyError:
-            self.num_fragments = 3
+        _params = {'max_e_value':1e-30,\
+                   'min_pct_id':0.90,\
+                   'num_fragments':3,\
+                   'taxonomy_depth':4}
+        _params.update(params)
             
         try:
             id_to_taxonomy_fp = params['id_to_taxonomy_fp']
@@ -130,11 +121,11 @@ class BlastFragmentsChimeraChecker(ChimeraChecker):
         self._taxon_assigner = BlastTaxonAssigner(\
          {'blast_db':blast_db,\
           'id_to_taxonomy_filepath':id_to_taxonomy_fp,
-          'Max E value':max_e_value,
-          'Min percent identity':min_pct_id
+          'Max E value':_params['max_e_value'],
+          'Min percent identity':_params['min_pct_id']
          })
         
-        ChimeraChecker.__init__(self, params)
+        ChimeraChecker.__init__(self, _params)
         
     def cleanUp(self):
         """ Remove temporary blast database files, if applicable
@@ -142,7 +133,7 @@ class BlastFragmentsChimeraChecker(ChimeraChecker):
         remove_files(self._db_files_to_remove,error_on_missing=False)
         
 
-    def fragmentSeq(self,seq):
+    def _fragment_seq(self,seq):
         """ Returns list of n roughly equal-sized fragments of seq
         
             Modified from Python Cookbook entry comment at:
@@ -153,7 +144,7 @@ class BlastFragmentsChimeraChecker(ChimeraChecker):
             specify breakpoints. Currently, this will split seq into 
             self.num_fragments roughly equal-sized fragments.
         """
-        num_fragments = self.num_fragments
+        num_fragments = self.Params['num_fragments']
         results = []
         start = 0
         for i in range(num_fragments): 
@@ -170,31 +161,17 @@ class BlastFragmentsChimeraChecker(ChimeraChecker):
         # Iterate over seq_id, seq pairs from seq_path
         for seq_id, seq in MinimalFastaParser(open(seq_path)):
             # Generate a list of fragments 
-            fragments = self.fragmentSeq(seq)
+            fragments = self._fragment_seq(seq)
             # Assign the taxonomy for each of the fragments
             taxon_assignments = \
-             [self.getTaxonomy(fragment) for fragment in fragments]
+             [self._get_taxonomy(fragment) for fragment in fragments]
             # Test whether the taxon_assignments suggest that the 
             # current seq is a chimera
-            if self.isChimeric(taxon_assignments):
+            if self._is_chimeric(taxon_assignments):
                 # If so, yield the seq_id and the list of taxon_assignments
                 yield seq_id, taxon_assignments
-
-    def isChimericStrict(self,taxon_assignments):
-        """From list of taxon assignments, determine if sequence is chimeric 
         
-            ** This method needs to be parameterized, as there are other ways
-            we might want to test for chimeras based on taxon_assignments. 
-            This method requires fully identical taxonomy assignments,
-            but we may want to be more flexible. For example, in cases 
-            where assignments differ only in the most specific assignment 
-            (species or genus, depending on the taxonomy)  we may be losing
-            of interesting sequences representing a new genus.
-            
-        """
-        return len(set(taxon_assignments)) > 1
-        
-    def isChimeric(self,taxon_assignments,depth=4):
+    def _is_chimeric(self,taxon_assignments):
         """From list of taxon assignments, determine if sequence is chimeric 
         
             ** This method needs to be parameterized, as there are other ways
@@ -218,6 +195,7 @@ class BlastFragmentsChimeraChecker(ChimeraChecker):
               @ depth=5 (0.56,0.64,0.60)
             
         """
+        depth = self.Params['taxonomy_depth']
         # split the assignments, ignoring fragments which had no blast
         # result (as these cannot provide evidence for a sequence being
         # chimeric)
@@ -237,7 +215,7 @@ class BlastFragmentsChimeraChecker(ChimeraChecker):
                 
         return False
         
-    def getTaxonomy(self,fragment):
+    def _get_taxonomy(self,fragment):
         """ Return the taxonomy of fragment 
         
             This function is awful right now, because the taxon 
@@ -266,14 +244,15 @@ class BlastFragmentsChimeraChecker(ChimeraChecker):
 
 def blast_fragments_identify_chimeras(seqs_fp,id_to_taxonomy_fp,\
     reference_seqs_fp=None,blast_db=None,min_pct_id=0.90,\
-    max_e_value=1e-30,num_fragments=3,output_fp=None):
+    max_e_value=1e-30,num_fragments=3,output_fp=None,taxonomy_depth=4):
     """ """
     params = {'id_to_taxonomy_fp': id_to_taxonomy_fp,\
               'reference_seqs_fp':reference_seqs_fp,\
               'blast_db':blast_db,\
               'min_pct_id':min_pct_id,\
               'max_e_value':max_e_value,\
-              'num_fragments':num_fragments}
+              'num_fragments':num_fragments,\
+              'taxonomy_depth':taxonomy_depth}
     bcc = BlastFragmentsChimeraChecker(params)
     
     if output_fp:
@@ -305,7 +284,7 @@ Test whether each seq in inseqs.fasta (-i) is chimeric by splitting into
  inseqs_chimeric.txt (default, derived from -i) along with the taxonomies 
  assigned to each fragment.
 
- python /Qiime/qiime/identify_chimeric_seqs.py -i inseqs.fasta -t id_to_taxonomy.txt -r refseqs.fasta -n 4
+ python Qiime/qiime/identify_chimeric_seqs.py -i inseqs.fasta -t id_to_taxonomy.txt -r refseqs.fasta -n 4
 """
 
 chimera_detection_method_choices = ['blast_fragments']
@@ -338,6 +317,10 @@ def parse_command_line_parameters():
           type='int',help='Number of fragments to split sequences into' +\
           ' (i.e., number of expected breakpoints + 1) [default: %default]')
           
+    parser.add_option('-d','--taxonomy_depth',\
+          type='int',help='Number of taxonomic divisions to consider' +\
+          ' when comparing taxonomy assignments [default: %default]')
+          
     parser.add_option('-o', '--output_fp',
         help='Path to store output [derived from input_seqs_fp]')
 
@@ -347,7 +330,7 @@ def parse_command_line_parameters():
 
     # Set default values here if they should be other than None
     parser.set_defaults(verbose=False,chimera_detection_method='blast_fragments',\
-        num_fragments=3)
+        num_fragments=3,taxonomy_depth=4)
 
     opts,args = parser.parse_args()
     required_options = ['input_seqs_fp']
@@ -371,6 +354,7 @@ if __name__ == "__main__":
     chimera_detection_method = opts.chimera_detection_method
     num_fragments = opts.num_fragments
     output_fp = opts.output_fp
+    taxonomy_depth = opts.taxonomy_depth
     
     if not output_fp:
         input_basename = splitext(split(input_seqs_fp)[1])[0]
@@ -378,6 +362,7 @@ if __name__ == "__main__":
     
     if chimera_detection_method == 'blast_fragments':
         blast_fragments_identify_chimeras(input_seqs_fp,id_to_taxonomy_fp,\
-            reference_seqs_fp,num_fragments=opts.num_fragments,output_fp=output_fp)
+            reference_seqs_fp,num_fragments=opts.num_fragments,\
+            output_fp=output_fp,taxonomy_depth=taxonomy_depth)
         
     
