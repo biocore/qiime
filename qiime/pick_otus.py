@@ -2,7 +2,7 @@
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2009, the PyCogent Project" #consider project name
-__credits__ = ["Rob Knight","Greg Caporaso", "Kyle Bittinger"] #remember to add yourself if you make changes
+__credits__ = ["Rob Knight","Greg Caporaso", "Kyle Bittinger","Jens Reeder"] #remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "0.1"
 __maintainer__ = "Greg Caporaso"
@@ -27,6 +27,7 @@ from cogent.app.dotur import dotur_from_alignment
 from cogent.app.mothur import Mothur
 from cogent.core.sequence import DnaSequence
 from cogent import LoadSeqs, DNA, Alignment
+from cogent.util.trie import build_prefix_map
 from qiime.util import FunctionWithParams
 
 
@@ -212,6 +213,76 @@ class PrefixSuffixOtuPicker(OtuPicker):
                 cluster_map[seq_hash] = [seq_id]
         
         return cluster_map.values()
+
+
+class TrieOtuPicker(OtuPicker):
+    
+    Name = 'TrieOtuPicker'
+    
+    def __init__(self, params):
+        """Return new OtuPicker object with specified params.
+        
+        params contains both generic and per-method (e.g. for
+        cdhit application controller) params.
+        
+        Some generic entries in params are:
+    
+        Algorithm: algorithm used
+        Similarity: similarity threshold, default 0.96, corresponding to
+         genus-level OTUs ('Similarity' is a synonym for the '-c' parameter
+         to the cd-hit application controllers)
+        Application: 3rd-party application used
+        """
+        _params = {'Similarity':0.96,\
+         'Algorithm':'Trie prefix matching'}
+        _params.update(params)
+        OtuPicker.__init__(self, _params)
+    
+    def __call__ (self, seq_path, result_path=None, log_path=None):
+        """Returns dict mapping {otu_id:[seq_ids]} for each otu.
+        
+        Parameters:
+        seq_path: path to file of sequences
+        result_path: path to file of results. If specified,
+        dumps the result to the desired path instead of returning it.
+        log_path: path to log, which includes dump of params.
+
+        """
+        log_lines = []
+        
+        mapping=build_prefix_map(MinimalFastaParser(open(seq_path)))
+        log_lines.append('Num OTUs: %d' % len(mapping))
+        
+        if result_path:
+            # if the user provided a result_path, write the 
+            # results to file with one tab-separated line per 
+            # cluster
+            of = open(result_path,'w')
+            for i,(id,members) in enumerate(mapping.iteritems()):
+                of.write('%s\t%s\t%s\n' % (i,id,'\t'.join(members)))
+            of.close()
+            result = None
+            log_lines.append('Result path: %s' % result_path)
+        else:
+            # if the user did not provide a result_path, store
+                # the clusters in a dict of {otu_id:[seq_ids]}, where
+            # otu_id is arbitrary
+            #add key to cluster_members
+            for key in mapping.keys():
+                mapping[key].append(key)
+            result = dict(enumerate(mapping.values()))
+            log_lines.append('Result path: None, returned as dict.')
+ 
+        if log_path:
+            # if the user provided a log file path, log the run
+            log_file = open(log_path,'w')
+            log_lines = [str(self)] + log_lines
+            log_file.write('\n'.join(log_lines))
+    
+        # return the result (note this is None if the data was
+        # written to file)
+        return result
+
 
 class CdHitOtuPicker(OtuPicker):
     
@@ -648,6 +719,7 @@ otu_picking_method_constructors = {
     'cdhit': CdHitOtuPicker,
     'prefix_suffix': PrefixSuffixOtuPicker,
     'mothur': MothurOtuPicker,
+    'trie':TrieOtuPicker
     }
 
 if __name__ == "__main__":
@@ -692,5 +764,10 @@ if __name__ == "__main__":
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,
                    result_path=result_path, log_path=log_path)
-
+    elif otu_picking_method == 'trie':
+        params = {'Similarity': opts.similarity,
+                  'Algorithm': opts.clustering_algorithm}
+        otu_picker = otu_picker_constructor(params)
+        otu_picker(input_seqs_filepath,
+                   result_path=result_path, log_path=log_path)
 

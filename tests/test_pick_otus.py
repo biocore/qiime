@@ -5,7 +5,7 @@
 __author__ = "Kyle Bittinger, Greg Caporaso"
 __copyright__ = "Copyright 2009, the PyCogent Project" 
 #remember to add yourself if you make changes
-__credits__ = ["Kyle Bittinger", "Greg Caporaso", "Rob Knight"] 
+__credits__ = ["Kyle Bittinger", "Greg Caporaso", "Rob Knight", "Jens Reeder"] 
 __license__ = "GPL"
 __version__ = "0.1"
 __maintainer__ = "Kyle Bittinger"
@@ -17,7 +17,7 @@ from cogent.util.unit_test import TestCase, main
 from cogent.app.util import get_tmp_filename
 from cogent.util.misc import remove_files
 from qiime.pick_otus import CdHitOtuPicker, DoturOtuPicker, OtuPicker, \
-    MothurOtuPicker, PrefixSuffixOtuPicker
+    MothurOtuPicker, PrefixSuffixOtuPicker, TrieOtuPicker
 
 class OtuPickerTests(TestCase):
     """Tests of the abstract OtuPicker class"""
@@ -189,6 +189,46 @@ class PrefixSuffixOtuPickerTests(TestCase):
         self.assertEqual(self.otu_picker._build_seq_hash(\
             'ATGTACGT',0,300),'ATGTACGT')
 
+class TrieOtuPickerTests(TestCase):
+    """ Tests of the Trie-based OTU picker """
+    
+    def setUp(self):
+        """
+        """
+        self.otu_picker = TrieOtuPicker({})
+        self.seqs = [\
+         ('s1','ACGTAATGGT'),\
+         ('s2','ACGTATTTTAATTTGGCATGGT'),\
+         ('s3','ACGTAAT'),\
+         ('s4','ACGTA'),\
+         ('s5','ATTTAATGGT'),\
+         ('s6','ATTTAAT'),\
+         ('s7','AAATAAAAA')
+        ]
+        
+        self.small_seq_path = get_tmp_filename(
+            prefix='TrieOtuPickerTest_', suffix='.fasta')
+        self._files_to_remove = [self.small_seq_path]
+        f = open(self.small_seq_path, 'w')
+        f.write('\n'.join(['>%s\n%s' % s for s in self.seqs]))
+        f.close()
+        
+    def tearDown(self):
+        """
+        """
+        remove_files(self._files_to_remove)
+        
+    def test_call(self):
+        """Trie OTU Picker functions as expected
+        """
+        expected = {0:['s2'],\
+                    1:['s3','s4','s1'],\
+                    2:['s7'],\
+                    3:['s6','s5']}
+        actual = self.otu_picker(self.small_seq_path)
+        self.assertEqual(actual,expected)
+        
+        
 
 class CdHitOtuPickerTests(TestCase):
     """ Tests of the cd-hit-based OTU picker """
