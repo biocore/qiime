@@ -60,8 +60,10 @@ def decode(seq, nt_to_bits=DEFAULT_GOLAY_NT_TO_BITS, code=None):
     * code: a list of valid 24 bit codewords, or omit to use default 
 
     returns:
-    (match_seq, num_biterrors).  match_seq is best match, eg 'ACATCCGCACAA', 
-    or None if the query seq is equidistant from multiple words (4 bit errors)
+    (match_seq, num_biterrors/2).  match_seq is best match, eg 'ACATCCGCACAA', 
+    or None if the query seq is equidistant from multiple words (4 bit errors).
+    num_biterrors is divided by 2 to maintain compatibility with API for
+    general decoder, which works in terms of # bases.
     """
     if code == None:
         code = DEFAULT_GOLAY_CODE
@@ -72,7 +74,7 @@ def decode(seq, nt_to_bits=DEFAULT_GOLAY_NT_TO_BITS, code=None):
         return None, num_errors
     else:
         # put match into nucleotide format
-        return _bits_to_seq(corrected_bits, nt_to_bits), num_errors
+        return _bits_to_seq(corrected_bits, nt_to_bits), num_errors/2.0
 
 def encode(bits, nt_to_bits=None, generator_mtx=None):
     """ takes 12 bits, returns the golay 24bit codeword in nucleotide format

@@ -55,7 +55,7 @@ class GeneralSetUp(TestCase):
         self.single_error_7 =   "AACCATTC"   
 
         # G->A
-        self.single_error_8 =   "AACCATGC"   
+        self.single_error_8 =   "AACCATAC"   
 
         # double error reference 
         self.double_error_ref = "AACCATGC"
@@ -79,32 +79,43 @@ class StandaloneHammingTests(GeneralSetUp):
     
     def test_decode_barcode_8_ok(self):
         """ Should decode valid codewords w/o error  """
-        self.assertEqual(decode_barcode_8(self.valid_bc_1), self.valid_bc_1) 
-        self.assertEqual(decode_barcode_8(self.valid_bc_2), self.valid_bc_2) 
-        self.assertEqual(decode_barcode_8(self.valid_bc_3), self.valid_bc_3) 
-        self.assertEqual(decode_barcode_8(self.valid_bc_4), self.valid_bc_4) 
-        self.assertEqual(decode_barcode_8(self.valid_bc_5), self.valid_bc_5) 
+        self.assertEqual(decode_barcode_8(self.valid_bc_1), \
+            (self.valid_bc_1, 0)) 
+        self.assertEqual(decode_barcode_8(self.valid_bc_2), \
+            (self.valid_bc_2, 0)) 
+        self.assertEqual(decode_barcode_8(self.valid_bc_3), \
+            (self.valid_bc_3, 0)) 
+        self.assertEqual(decode_barcode_8(self.valid_bc_4), \
+            (self.valid_bc_4, 0)) 
+        self.assertEqual(decode_barcode_8(self.valid_bc_5), \
+            (self.valid_bc_5, 0)) 
 
     def test_decode_barcode_8_one_error(self):
         """ Should correct single bit errors w/o error """ 
-        self.assertEqual(decode_barcode_8(self.single_error_1), self.single_error_ref) 
-        self.assertEqual(decode_barcode_8(self.single_error_2), self.single_error_ref) 
-        self.assertEqual(decode_barcode_8(self.single_error_3), self.single_error_ref) 
-        self.assertEqual(decode_barcode_8(self.single_error_4), self.single_error_ref) 
-        self.assertEqual(decode_barcode_8(self.single_error_5), self.single_error_ref) 
-        self.assertEqual(decode_barcode_8(self.single_error_6), self.single_error_ref) 
-        self.assertEqual(decode_barcode_8(self.single_error_7), self.single_error_ref) 
-        self.assertEqual(decode_barcode_8(self.single_error_8), self.single_error_ref) 
+        self.assertEqual(decode_barcode_8(self.single_error_1), \
+            (self.single_error_ref, 0.5)) 
+        self.assertEqual(decode_barcode_8(self.single_error_2), \
+            (self.single_error_ref, 0.5)) 
+        self.assertEqual(decode_barcode_8(self.single_error_3), \
+            (self.single_error_ref, 0.5)) 
+        self.assertEqual(decode_barcode_8(self.single_error_4), \
+            (self.single_error_ref, 0.5)) 
+        self.assertEqual(decode_barcode_8(self.single_error_5), \
+            (self.single_error_ref, 0.5)) 
+        self.assertEqual(decode_barcode_8(self.single_error_6), \
+            (self.single_error_ref, 0.5)) 
+        self.assertEqual(decode_barcode_8(self.single_error_7), \
+            (self.single_error_ref, 0.5)) 
+        self.assertEqual(decode_barcode_8(self.single_error_8), \
+            (self.single_error_ref, 0.5)) 
 
  
     def test_decode_barcode_8_two_error(self):
         """ Should raise error when double error detected """ 
-        self.assertRaises(ValueError, decode_barcode_8, self.double_error_1)
-        self.assertRaises(ValueError, decode_barcode_8, self.double_error_2)
-        self.assertRaises(ValueError, decode_barcode_8, self.double_error_3)
-        self.assertRaises(ValueError, decode_barcode_8, self.double_error_4)
- 
-
+        self.assertEqual(decode_barcode_8(self.double_error_1), (None, 1))
+        self.assertEqual(decode_barcode_8(self.double_error_1), (None, 1))
+        self.assertEqual(decode_barcode_8(self.double_error_1), (None, 1))
+        self.assertEqual(decode_barcode_8(self.double_error_1), (None, 1))
 
 if __name__ == '__main__':
     main()

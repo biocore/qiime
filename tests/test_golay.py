@@ -28,11 +28,11 @@ class GolayTests(TestCase):
         rec = sent[:-1] + 'C' # possible error here
         decoded, errors = golay.decode(rec)
         self.assertEqual(decoded, sent)
-        self.assertLessThan(errors, 3)
+        self.assertLessThan(errors, 1.5)
         rec = sent[:-1] + 'T' # possible error here
         decoded, errors = golay.decode(rec)
         self.assertEqual(decoded, sent)
-        self.assertLessThan(errors, 3)
+        self.assertLessThan(errors, 1.5)
 
     def test_golay_matches_old_code(self):
         """ decode should behave as micah's code did, i.e., same golay encoding

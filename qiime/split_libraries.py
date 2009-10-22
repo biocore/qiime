@@ -24,6 +24,8 @@ from gzip import GzipFile
 from optparse import OptionParser
 from os import mkdir, stat
 from collections import defaultdict
+from hamming import decode_barcode_8
+from golay import decode as decode_golay_12
 
 ## Including new=True in the histogram() call is necessary to 
 ## get the correct result in versions prior to NumPy 1.2.0,
@@ -49,9 +51,10 @@ IUPAC_DNA = {'U':'T','T':'T','C':'C','A':'A','G':'G', 'R':'AG','Y':'TC',
 STANDARD_BACTERIAL_PRIMER = "CATGCTGCCTCCCGTAGGAGT" #R357
 STANDARD_FUNGAL_PRIMER = "ACTCTGGACCTGGTGAGTTTC" #need region info from Noah
 
-# Supported barcode types 
-BARCODE_TYPES = { "golay_12":(12, correct_barcode), 
-        "hamming_8":(8, correct_barcode)}
+# Supported barcode types - need to adapt these functions to ignore list
+# of valid barcodes that the generic decoder requires
+BARCODE_TYPES = { "golay_12":(12, lambda bc, bcodes: decode_golay_12(bc)), 
+        "hamming_8":(8, lambda bc, bcodes: decode_barcode_8(bc))}
 
 def generate_possibilities(seq_str):
     """Generate non-degenerate patterns for given degenerate pattern"""
@@ -202,8 +205,8 @@ def check_barcode(curr_barcode, barcode_type, valid_map):
 
 def make_histograms(pre_lengths, post_lengths, binwidth=10):
     """Makes histogram data for pre and post lengths"""
-    min_len = min(min(pre_lengths), min(post_lengths))
-    max_len = max(max(pre_lengths), max(post_lengths))
+    min_len = min(pre_lengths)
+    max_len = max(pre_lengths)
     floor = (min_len/binwidth)*binwidth
     ceil = ((max_len/binwidth)+2)*binwidth
     bins = arange(floor, ceil, binwidth)
@@ -572,7 +575,7 @@ def make_cmd_parser():
     parser.add_option('-d', '--dir-prefix', default='.',
         help='directory prefix for output files [default: %default]')
     parser.add_option('-e', '--max-barcode-errors', dest='max_bc_errors',
-        default=2, type=int,
+        default=1.5, type=float,
         help='maximum number of errors in barcode [default: %default]')
     parser.add_option('-s', '--start-numbering-at', dest='start_index',
         default=1, type=int,

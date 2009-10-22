@@ -143,12 +143,12 @@ z\tGG\t5\tsample z"""
     def test_make_histograms(self):
         """make_histograms should make correct histograms"""
         pre_lengths = [100, 110, 105, 130, 135]
-        post_lengths = [130, 135, 150]
+        post_lengths = [130, 135]
         pre_hist, post_hist, bin_edges = \
             make_histograms(pre_lengths, post_lengths)
-        self.assertEqual(pre_hist, array([2,1,0,2,0,0]))
-        self.assertEqual(post_hist, array([0,0,0,2,0,1]))
-        self.assertEqual(bin_edges, array([100,110,120,130,140,150,160]))
+        self.assertEqual(pre_hist, array([2,1,0,2]))
+        self.assertEqual(post_hist, array([0,0,0,2]))
+        self.assertEqual(bin_edges, array([100,110,120,130,140]))
 
     def test_format_histograms(self):
         """format_histograms should print histograms correctly"""

@@ -61,15 +61,13 @@ def decode_barcode_8(nt_barcode):
     decoded = nt_to_cw(CUR_ENC_FO, nt_barcode)
     num_errors, sym = calc_syndrome(decoded, 16)
 
-    # check errors  
-    if num_errors > 1:
-        raise ValueError, "2 bit error detected."
-    
     # convert corrected codeword back to nt sequence
     if num_errors == 1:
         nt_barcode = unpack_bitstr(CUR_REV_ENC_SI, ''.join(map(str, decoded)))
+    elif num_errors > 1:
+        nt_barcode = None
     
-    return nt_barcode
+    return nt_barcode, num_errors/2.0
 
 # mapping from barcode used to original sample id 
 DEMO_SAMPLE_MAPPING = {
