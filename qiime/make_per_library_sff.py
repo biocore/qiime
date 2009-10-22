@@ -2,8 +2,8 @@
 #file make_library_id_lists.py: make id list for each lib from fasta file
 from optparse import OptionParser
 from string import strip
-from os import walk
-from os.path import splitext
+from os import walk, system
+from os.path import splitext, join
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2009, the PyCogent Project"
@@ -68,5 +68,5 @@ if __name__ == '__main__':
             if fname.startswith('.'):
                 continue
             basename, ext = splitext(fname)
-            system(cmd % (options.sfffile, join(dirpath,fname), 
-                join(dirpath, basename+'.sff'), input_sff_names)
+            system(cmd % (options.sfffile_path, join(dirpath,fname), 
+                join(dirpath, basename+'.sff'), input_sff_names))
