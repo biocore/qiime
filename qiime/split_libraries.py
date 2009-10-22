@@ -567,8 +567,8 @@ def make_cmd_parser():
         type=int, default=0,
         help='maximum number of primer mismatches [default: %default]')
     parser.add_option('-b', '--barcode-type', default='golay_12', 
-        choices=BARCODE_TYPES.keys(),
-        help='barcode type, e.g. hamming_8 or golay_12 [default: %default]')
+        help=\
+        'barcode type, e.g. 4 or hamming_8 or golay_12 [default: %default]')
     parser.add_option('-d', '--dir-prefix', default='.',
         help='directory prefix for output files [default: %default]')
     parser.add_option('-e', '--max-barcode-errors', dest='max_bc_errors',
