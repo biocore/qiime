@@ -638,6 +638,9 @@ def parse_command_line_parameters():
     for option in required_options:
         if eval('opts.%s' % option) == None:
             parser.error('Required option --%s omitted.' % option) 
+            
+    if opts.otu_picking_method == 'cdhit' and opts.similarity < 0.80:
+        parser.error('cdhit requires similarity >= 0.80.')
 
     return opts,args
 
