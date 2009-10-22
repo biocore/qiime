@@ -430,8 +430,12 @@ def preprocess(fasta_files, qual_files, mapping_file,
 
     # Check barcode type
     if barcode_type not in BARCODE_TYPES:
-        raise ValueError, "Unsupported barcode type: %s" % barcode_type
-    barcode_len, barcode_fun = BARCODE_TYPES[barcode_type]
+        try:
+            barcode_len, barcode_fun = int(barcode_type), correct_barcode
+        except ValueError:
+            raise ValueError, "Unsupported barcode type: %s" % barcode_type
+    else:
+        barcode_len, barcode_fun = BARCODE_TYPES[barcode_type]
 
     fasta_files = map(get_infile, fasta_files)
     qual_files = map(get_infile, qual_files)
