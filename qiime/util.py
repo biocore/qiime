@@ -241,14 +241,14 @@ def load_qiime_config():
     qiime_parallel_dir = split(__file__)[0]
     qiime_config_filepaths.append(qiime_parallel_dir + '/../qiime_config')
     
+    qiime_config_env_filepath = getenv('QIIME_CONFIG_FP')
+    if qiime_config_env_filepath:
+        qiime_config_filepaths.append(qiime_config_env_filepath)
+    
     home_dir = getenv('HOME')
     if home_dir:
         qiime_config_home_filepath = home_dir + '/.qiime_config'
         qiime_config_filepaths.append(qiime_config_home_filepath)
-    
-    qiime_config_env_filepath = getenv('QIIME_CONFIG_FP')
-    if qiime_config_env_filepath:
-        qiime_config_filepaths.append(qiime_config_env_filepath)
     return parse_qiime_config_filepaths(qiime_config_filepaths)
     
 qiime_config = load_qiime_config()
