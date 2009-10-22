@@ -93,11 +93,11 @@ usage_str = """usage: %prog [options] {-i INPUT_FP -t TEMPLATE_ALN_FP -o OUTPUT_
 
 Example usage:
 
-Split the input file (-i) into five jobs (-j) to align against 
+Split the input file (-i) into five jobs (-O) to align against 
  pynast_test_template.fasta (-t), submit the jobs to the cluster (default)
  and write the output (-o) to /home/caporaso/out:
 
- parallel_pynast.py -i 10_seq.fasta -j 5 -t /data/pynast_test_template.fasta -o /home/caporaso/out
+ python ~/Qiime/qiime/parallel/align_seqs_pynast.py -i 10_seq.fasta -O 5 -t /data/pynast_test_template.fasta -o /home/caporaso/out
 """
 
 def parse_command_line_parameters():
