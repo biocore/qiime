@@ -262,7 +262,7 @@ def get_seq_lengths(seq_lengths, bc_counts):
  
 def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings, 
     filters, barcode_len, primer_seq_len, keep_primer, barcode_type, 
-    max_bc_errors):
+    max_bc_errors,remove_unassigned):
     """Checks fasta-format sequences and qual files for validity."""
     seq_lengths = {}
     bc_counts = defaultdict(list)
@@ -295,13 +295,20 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
                 continue
             bc_counts[curr_bc].append(curr_rid)
             curr_samp_id = valid_map.get(curr_bc, 'Unassigned')
+            
             new_id = "%s_%d" % (curr_samp_id, curr_ix)
             # check if writing out primer
             write_seq = cres
             if keep_primer:
                 write_seq = cpr + cres
-            fasta_out.write(">%s %s orig_bc=%s new_bc=%s bc_diffs=%s\n%s\n" % 
-                (new_id, curr_rid, cbc, curr_bc, int(bc_diffs), write_seq))
+                
+            if remove_unassigned:
+                if curr_samp_id!="Unassigned":
+                    fasta_out.write(">%s %s orig_bc=%s new_bc=%s bc_diffs=%s\n%s\n" % 
+                    (new_id, curr_rid, cbc, curr_bc, int(bc_diffs), write_seq))
+            else:    
+                fasta_out.write(">%s %s orig_bc=%s new_bc=%s bc_diffs=%s\n%s\n" % 
+                    (new_id, curr_rid, cbc, curr_bc, int(bc_diffs), write_seq))
             curr_ix += 1
     log_out = format_log(bc_counts, corr_ct, seq_lengths, valid_map, filters)
     all_seq_lengths, good_seq_lengths = get_seq_lengths(seq_lengths, bc_counts)
@@ -354,7 +361,7 @@ def preprocess(fasta_files, qual_files, mapping_file,
     barcode_type="golay_12",
     min_seq_len=200, max_seq_len=1000, min_qual_score=25, starting_ix=1,
     keep_primer=True, max_ambig=0, max_primer_mm=1, trim_seq_len=True,
-    dir_prefix='.', max_bc_errors=2, max_homopolymer=4):
+    dir_prefix='.', max_bc_errors=2, max_homopolymer=4,remove_unassigned=False):
     """
     Preprocess barcoded libraries, e.g. from 454.
 
@@ -499,7 +506,8 @@ def preprocess(fasta_files, qual_files, mapping_file,
     fasta_out = open(dir_prefix + '/' + 'seqs.fna', 'w+')
     log_stats, pre_lens, post_lens = check_seqs(fasta_out, fasta_files, 
         starting_ix, valid_map, qual_mappings, filters, barcode_len,
-        primer_seq_len, keep_primer, barcode_type, max_bc_errors)
+        primer_seq_len, keep_primer, barcode_type, max_bc_errors,
+        remove_unassigned)
 
     # Write log file
     log_file = open(dir_prefix + '/' + "split_library_log.txt", 'w+')
@@ -584,6 +592,9 @@ def make_cmd_parser():
     parser.add_option('-s', '--start-numbering-at', dest='start_index',
         default=1, type=int,
         help='seq id to use for the first sequence [default: %default]')
+    parser.add_option('-r', '--remove_unassigned', default=False,
+        action='store_true', help='remove sequences which are Unassigned from \
+            output [default: %default]')
     options, args = parser.parse_args()
 
     required_options = [
@@ -633,5 +644,6 @@ if __name__ == "__main__":
     dir_prefix=options.dir_prefix,
     max_bc_errors = options.max_bc_errors,
     max_homopolymer = options.max_homopolymer,
+    remove_unassigned=options.remove_unassigned,
     )
  
