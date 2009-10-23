@@ -13,3 +13,4 @@ poller_fp	/software/Qiime/qiime/parallel/poller.py
 blastmat_dir	/software/blast-2.2.16/data
 blastall_fp	/software/bin/blastall
 rdp_classifier_fp	/software/rdp_classifier/rdp_classifier-2.0.jar
+qiime_home	/software/Qiime/qiime/
