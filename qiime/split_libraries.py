@@ -7,7 +7,7 @@ renames each read with the appropriate library id.
 """
 __author__ = "Rob Knight and Micah Hamady"
 __copyright__ = "Copyright 2009, the PyCogent Project" #consider project name
-__credits__ = ["Rob Knight", "Micah Hamady", "Greg Caporaso", "Kyle Bittinger"] #remember to add yourself
+__credits__ = ["Rob Knight", "Micah Hamady", "Greg Caporaso", "Kyle Bittinger","Jesse Stombaugh"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "0.1"
 __maintainer__ = "Rob Knight"
@@ -514,7 +514,7 @@ def preprocess(fasta_files, qual_files, mapping_file,
 
 
 usage_str = \
-"""usage: %prog [options] {-i FASTA_FNAMES -q QUAL_FNAMES -m MAP_FNAME}
+"""usage: %prog [options] {-i FASTA_FNAMES -m MAP_FNAME}
 
 [] indicates optional input (order unimportant) 
 {} indicates required input (order unimportant) 
@@ -546,7 +546,7 @@ def make_cmd_parser():
     parser.add_option('-f', '--fasta', dest='fasta_fnames', 
         help='names of fasta files, comma-delimited [REQUIRED]')
     parser.add_option('-q', '--qual', dest='qual_fnames', 
-        help='names of qual files, comma-delimited [REQUIRED]')
+        help='names of qual files, comma-delimited [default: %default]')
     parser.add_option('-p', '--primers', default=STANDARD_BACTERIAL_PRIMER,
         help='degen sequences of primers, comma-delimited [default: %default]')
     parser.add_option('-l', '--min-seq-length', dest='min_seq_len',
@@ -584,13 +584,12 @@ def make_cmd_parser():
 
     required_options = [
         ('map_fname', '-m'),
-        ('fasta_fnames', '-f'), 
-        ('qual_fnames', '-q')]
+        ('fasta_fnames', '-f')]
     for attr_name, flag in required_options:
         if not getattr(options, attr_name):
             parser.error('Required option %s not found.  Must provide a '
-                         'mapping file (-m), at least one fasta input file '
-                         '(-i), and at least one qual file (-q).' % flag)
+                         'mapping file (-m) and at least one fasta input file '
+                         '(-i).' % flag)
     return options
 
 
