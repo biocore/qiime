@@ -530,7 +530,11 @@ Example usage:
 
 Process sequences from two files (a.fna, b.fna) using the sample-to-
 barcode associations in samples.txt.  The quality files for the
-sequences (a.qual, b.qual) must also be provided.
+sequences (a.qual, b.qual) can also be provided.
+
+python %prog -i a.fna,b.fna -m samples.txt
+
+or
 
 python %prog -i a.fna,b.fna -q a.qual,b.qual -m samples.txt
 """
