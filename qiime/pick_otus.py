@@ -206,6 +206,7 @@ class PrefixSuffixOtuPicker(OtuPicker):
         """
         cluster_map = {}
         for seq_id, seq in seqs:
+            seq_id = seq_id.split()[0]
             seq_hash = self._build_seq_hash(seq,prefix_length,suffix_length)
             try:
                 cluster_map[seq_hash].append(seq_id)
