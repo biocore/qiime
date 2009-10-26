@@ -30,7 +30,17 @@ FORMAT_BAR =   """------------------------------"""*2
 
 def blast_genome(seqs,blast_db,e_value,max_hits, word_size, working_dir,\
                   blast_mat_root, extra_params=[],DEBUG=True):
-    """Blast sequences against all genes in a genome"""
+    """Blast sequences against all genes in a genome
+    
+    seqs -- input sequences as strings
+    blast_db -- path to blast database
+    e_value -- e_value (float)
+    max_hits -- maximum sequences detected by BLAST  to show
+    word_size -- word size for initial BLAST screen.
+    blast_mat_root -- location of BLAST matrix files
+    extra_params -- additional paramters to pass to BLAST
+    DEBUG -- display verbose debugging outout
+    """
     
     # set up params to use with blastp or 
     params = {
@@ -93,7 +103,6 @@ def find_homologs(query_file,subject_genome,e_value,max_hits,\
     start_time=time()
     raw_blast_output=[]
     seqs=open(query_file,"U").readlines()
-    subj_seqs=open(subject_genome,"U").readlines()
     
     if DEBUG:
         print "BLASTING %s vs. %s" %(query_file,subject_genome)
