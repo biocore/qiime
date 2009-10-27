@@ -1,0 +1,283 @@
+#!/usr/bin/env python
+# File created on 27 Oct 2009.
+from __future__ import division
+
+__author__ = "Greg Caporaso"
+__copyright__ = "Copyright 2009, Qiime"
+__credits__ = ["Greg Caporaso"]
+__license__ = "GPL"
+__version__ = "0.1"
+__maintainer__ = "Greg Caporaso"
+__email__ = "gregcaporaso@gmail.com"
+__status__ = "Prototype"
+
+from optparse import OptionParser
+from subprocess import call, check_call, CalledProcessError
+from os import makedirs
+from os.path import split, splitext
+
+from qiime.util import load_qiime_config
+# This is the Qiime workflow script, and will hopefully get to the 
+# point where it is the primary script that users interact with.
+
+usage_str = """usage: %prog [options] {-i INPUT_FP -o OUTPUT_DIR}
+
+[] indicates optional input (order unimportant)
+{} indicates required input (order unimportant)
+
+This is a first pass at the workflow script, and is currently not very 
+flexible. A limited subset of Qiime's functionality is available, and 
+users have little (if any) control over the parameters to the individual 
+steps. In other words, THIS SCRIPT IS IN EARLY DEVELOPMENT STATUS.
+
+Example usage:
+
+The following command will start an analysis on inseq1.fasta (-i), which is a 
+ post-split_libraries fasta file. The sequence identifiers in this file
+ should be of the form <sample_id>_<unique_seq_id>. The following steps,
+ corresponding to the preliminary data preparation, are applied:
+  1) Pick OTUs with cdhit at similarity of 0.96;
+  2) Pick a representative set with the most_abundant method;
+  3) Align the representative set with PyNAST (specify template alignment 
+   with -t);
+  4) Assign taxonomy with blast (default, specify db and id_to_tax with -r 
+   and -x, respectively) or with the RDP classifier (pass -d);
+  5) Filter the alignment prior to tree building - remove positions which 
+   are all gaps, and specified as 0 in the lanemask (specify lanemask with -m);
+  6) Build a phylogenetic tree with FastTree;
+  7) Build an OTU table.
+ 
+ All output files will be written to the directory specified by -o, or 
+ subdirectories as appropriate. The is currently no support for the data 
+ analysis steps using the workflow script.
+
+qiime -i /Users/caporaso/data/qiime_test_data/workflow/inseqs1.fasta -o /Users/caporaso/data/qiime_test_data/workflow/wf1/
+"""
+qiime_config = load_qiime_config()
+
+def parse_command_line_parameters():
+    """ Parses command line arguments """
+    usage = usage_str
+    version = 'Version: %prog ' + __version__
+    parser = OptionParser(usage=usage, version=version)
+
+    parser.add_option('-i','--input_fp',\
+            help='the input fasta file [REQUIRED]')
+    parser.add_option('-o','--output_dir',\
+            help='the output directory [REQUIRED]')
+
+    parser.add_option('-v','--verbose',action='store_true',\
+        dest='verbose',help='Print information during execution -- '+\
+        'useful for debugging [default: %default]')
+    
+    # parallel not supported yet!    
+    # parser.add_option('-p','--parallel',action='store_true',\
+    #     dest='parallel',help='Use parallel scripts where applicable'+\
+    #     ' [default: %default]')
+    
+    parser.add_option('-f','--force',action='store_true',\
+        dest='force',help='Force overwrite of existing output directory'+\
+        ' (note: existing files in output_dir will not be removed)'+\
+        ' [default: %default]')
+    parser.add_option('-w','--print_only',action='store_true',\
+        dest='print_only',help='Print the commands but don\'t call them -- '+\
+        'useful for debugging [default: %default]')
+    parser.add_option('-d','--rdp_assign_taxonomy',action='store_true',\
+        help='assign taxonomy with RDP classifier'+\
+        ' [default: %default; assigns with blast]')
+        
+    parser.add_option('-t','--template_aln_fp',\
+        help='template alignment for PyNAST alignment '+\
+        '[default: %default]')
+    parser.add_option('-m','--lanemask_fp',\
+        help='lanemask for filtering alignments prior to '+\
+        'tree building [default: %default]')
+    parser.add_option('-r','--tax_ref_db_fp',\
+        help='sequence databast used for blast'+\
+        'taxonomy assignments [default: %default]')
+    parser.add_option('-x','--id_to_tax_fp',\
+        help='seq_id to taxonomy mapping file used for blast'+\
+        'taxonomy assignments [default: %default]')
+
+    # Set default values here if they should be other than None
+    parser.set_defaults(verbose=False,print_only=False,parallel=False,
+     template_aln_fp=qiime_config['template_aln_fp'],\
+     lanemask_fp=qiime_config['lanemask_fp'],\
+     tax_ref_db_fp=qiime_config['tax_ref_db_fp'],\
+     id_to_tax_fp=qiime_config['id_to_tax_fp'],\
+     rdp_assign_taxonomy=False)
+
+    required_options = ['input_fp', 'output_dir']
+
+    opts,args = parser.parse_args()
+        
+    for option in required_options:
+        if eval('opts.%s' % option) == None:
+            parser.error('Required option --%s omitted.' % option)
+
+    return opts,args
+    
+def print_commands(commands,verbose):
+    """Print list of commands to run """
+    for c in commands:
+        for e in c:
+            if verbose: print '#%s' % e[0]
+            print '%s' % e[1]
+            
+def call_commands_serially(commands,verbose):
+    """Run list of commands, one after another """
+    for c in commands:
+        for e in c:
+            if verbose: print '%s\n%s' % e
+            check_call(e[1].split())
+
+
+def run_qiime_data_preparation(input_fp, output_dir, template_aln_fp, \
+    lanemask_fp, tax_ref_db_fp, id_to_tax_fp, command_handler, \
+    qiime_config=qiime_config, rdp_assign_taxonomy=False, verbose=False,\
+    parallel=False):
+    """ Run the data preparation steps of Qiime 
+    
+    """
+    # Prepare some variables for the later steps
+    input_dir, input_filename = split(input_fp)
+    input_basename, input_ext = splitext(input_filename)
+    commands = []
+    python_exe_fp = qiime_config['python_exe_fp']
+    qiime_home = qiime_config['qiime_home']
+    qiime_dir = qiime_config['qiime_dir']
+    
+    # Build the OTU picking command
+    pick_otu_dir = '%s/cdhit_picked_otus/' % output_dir
+    otu_fp = '%s/%s_otus.txt' % (pick_otu_dir,input_basename)
+    pick_otus_cmd = '%s %s/pick_otus.py -i %s -s 0.97 -n 100 -o %s' %\
+     (python_exe_fp, qiime_dir, input_fp, pick_otu_dir)
+    commands.append([('Pick OTUs', pick_otus_cmd)])
+    
+    # Build the Representative set picking command
+    rep_set_dir = '%s/rep_set/' % output_dir
+    try:
+        makedirs(rep_set_dir)
+    except OSError:
+        pass
+    rep_set_fp = '%s/%s_rep_set.fasta' % (rep_set_dir,input_basename)
+    rep_set_log_fp = '%s/%s_pick_rep_set.log' % (rep_set_dir,input_basename)
+    pick_rep_set_cmd = '%s %s/pick_rep_set.py -i %s -f %s -l %s -o %s' %\
+     (python_exe_fp, qiime_dir, otu_fp, input_fp, rep_set_log_fp, rep_set_fp)
+    commands.append([('Pick representative set', pick_rep_set_cmd)])
+    
+    # Set script file paths based on whether the run is in parallel or not
+    if parallel:
+        align_seqs_fp = '%s/parallel/align_seqs_pynast.py' % qiime_dir
+        if rdp:
+            assign_taxonomy_fp = '%s/parallel/assign_taxonomy_rdp.py' \
+             % qiime_dir
+        else:
+            assign_taxonomy_fp = '%s/parallel/assign_taxonomy_blast.py' \
+             % qiime_dir
+    else:
+        align_seqs_fp = '%s/align_seqs.py -m pynast' % qiime_dir
+        if rdp_assign_taxonomy:
+            assign_taxonomy_fp = '%s/assign_taxonomy.py -m rdp' % qiime_dir
+        else:
+            assign_taxonomy_fp = '%s/assign_taxonomy.py -m blast' % qiime_dir
+            
+        
+    # Build the pynast alignment command
+    min_len = 150
+    pynast_out_dir = '%s/pynast_e%d' % (output_dir, min_len)
+    aln_fp = '%s/%s_rep_set_aligned.fasta' % (pynast_out_dir,input_basename)
+    align_seqs_cmd = '%s %s -i %s -o %s -t %s -e %d' %\
+     (python_exe_fp, align_seqs_fp, rep_set_fp, pynast_out_dir, \
+      template_aln_fp, min_len)
+    
+    # Build the taxonomy assignment command
+    if rdp_assign_taxonomy:
+        assign_taxonomy_dir = '%s/rdp_assigned_taxonomy/' % output_dir
+        taxonomy_fp = '%s/%s_rep_set_tax_assignments.txt' % \
+         (assign_taxonomy_dir,input_basename)
+        assign_taxonomy_cmd = '%s %s -o %s -i %s' %\
+         (python_exe_fp, assign_taxonomy_fp, assign_taxonomy_dir, rep_set_fp)
+    else:
+        assign_taxonomy_dir = '%s/blast_assigned_taxonomy/' % output_dir
+        taxonomy_fp = '%s/%s_rep_set_tax_assignments.txt' % \
+         (assign_taxonomy_dir,input_basename)
+        assign_taxonomy_cmd = '%s %s -o %s -i %s -r %s -t %s' %\
+         (python_exe_fp, assign_taxonomy_fp, assign_taxonomy_dir, rep_set_fp,\
+          tax_ref_db_fp, id_to_tax_fp)
+    
+    # Append commands which can be run simulataneously in parallel
+    commands.append([('Align sequences', align_seqs_cmd),\
+                     ('Assign taxonomy',assign_taxonomy_cmd)])
+    
+    # Build the alignment filtering command
+    phylogeny_dir = '%s/phylogeny/' % output_dir
+    filtered_aln_fp = '%s/%s_rep_set_aligned_pfiltered.fasta' %\
+     (phylogeny_dir,input_basename)
+    filter_alignment_cmd = '%s %s/filter_alignment.py -o %s -i %s -m %s' %\
+     (python_exe_fp, qiime_dir, phylogeny_dir, aln_fp, lanemask_fp)
+    commands.append([('Filter alignment', filter_alignment_cmd)])
+    
+    # Build the tree building command
+    tree_fp = '%s/%s_rep_set.tre' % (phylogeny_dir,input_basename)
+    log_fp = '%s/%s_rep_set_phylogeny.log' % (phylogeny_dir,input_basename)
+    make_phylogeny_cmd = '%s %s/make_phylogeny.py -i %s -o %s -l %s' %\
+     (python_exe_fp, qiime_dir, filtered_aln_fp, tree_fp, log_fp)
+    
+    # Build the OTU table building command
+    otu_table_dir = '%s/otu_table/' % output_dir
+    try:
+        makedirs(otu_table_dir)
+    except OSError:
+        pass
+    otu_table_fp = '%s/%s_otu_table.txt' % (otu_table_dir,input_basename)
+    make_otu_table_cmd = '%s %s/make_otu_table.py -i %s -t %s -o %s' %\
+     (python_exe_fp, qiime_dir, otu_fp, taxonomy_fp, otu_table_fp)
+    
+    # Append commands which can be run simulataneously in parallel
+    commands.append([('Build phylogenetic tree', make_phylogeny_cmd),\
+                     ('Make OTU table', make_otu_table_cmd)])
+    
+    # Call the command handler on the list of commands
+    command_handler(commands,verbose)
+
+
+if __name__ == "__main__":
+    opts,args = parse_command_line_parameters()
+    verbose = opts.verbose
+    
+    input_fp = opts.input_fp
+    output_dir = opts.output_dir
+    verbose = opts.verbose
+    print_only = opts.print_only
+    template_aln_fp = opts.template_aln_fp
+    lanemask_fp = opts.lanemask_fp
+    tax_ref_db_fp = opts.tax_ref_db_fp
+    id_to_tax_fp = opts.id_to_tax_fp
+    rdp_assign_taxonomy = opts.rdp_assign_taxonomy
+    
+    ## REMEMBER TO GRAB opts.parallel WHEN IT BECOMES SUPPORTED.
+    parallel = False
+    
+    try:
+        makedirs(output_dir)
+    except OSError:
+        if opts.force:
+            pass
+        else:
+            # Since the analysis can take quite a while, I put this check
+            # in to help users avoid overwriting previous output.
+            print "Output directory already exists. Please choose '+\
+             'a different directory, or force overwrite with -f."
+            exit(1)
+        
+    if print_only:
+        command_handler = print_commands
+    else:
+        command_handler = call_commands_serially
+    
+    run_qiime_data_preparation(input_fp, output_dir, template_aln_fp,\
+     lanemask_fp,tax_ref_db_fp, id_to_tax_fp, command_handler, qiime_config, \
+     rdp_assign_taxonomy=rdp_assign_taxonomy, verbose=verbose, \
+     parallel=parallel)
+    
