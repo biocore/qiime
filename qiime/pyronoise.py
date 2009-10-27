@@ -114,7 +114,7 @@ def writePyronoiseFile(flowgrams, num_flows, filename=None, prefix = "/tmp/"):
     fh.write("%d %d\n" % (num_flows, 400))
 
     id_mapping = {}
-    for (i,f) in enumerate(flowgrams,start=0):
+    for (i,f) in enumerate(flowgrams):
         id_mapping["Id_"+str(i)] = f.Name
         tabbed_flowgram_seq = " ".join(map(lambda a: "%.2f" %a, f.flowgram))
         l = len(f)
