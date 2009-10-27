@@ -20,9 +20,10 @@ from re import search
 
 from cogent.app.util import get_tmp_filename
 from cogent.parse.fasta import MinimalFastaParser
-from cogent.util.misc import remove_files
+from cogent.util.misc import remove_files, app_path
 from cogent.core.alignment import SequenceCollection
 from cogent.parse.flowgram_parser import LazySFFParser
+from cogent.app.util import ApplicationNotFoundError
 
 
 def parse_command_line_parameters(commandline_args=None):
@@ -135,6 +136,14 @@ def pyroNoise_app(flows, num_flows, num_cpus=2, outdir = "/tmp/", log_fh=None,
 
     num_cpus: number of cpus requested from mpirun
     """
+    
+    if(not (app_path("FDist") and app_path("QCluster") and app_path("PCluster"))):
+        raise ApplicationNotFoundError,"PyroNoise binaries (FDist,QCluster,PCluster) not found."
+
+    if(num_cpus>1 and not app_path("mpirun")):
+        num_cpus = 1 #set to a save value
+        if log_fh:
+            log_fh.write("Warning: mpirun not found. Falling back to one cpu")
 
     basename = get_tmp_filename(tmp_dir=outdir, prefix = "", suffix="")
     #copy flowgrams from input sff.txt to pyronoise-formatted file
