@@ -41,8 +41,8 @@ Example usage:
     #Denoise flowgrams in file 454Reads.sff.txt 
     python pyronoise.py -i 454Reads.sff.txt 
 
-    #Denoise flowgrams in file 454Reads.sff.txt using 2 core
-    # on your machine in parallel (requires mpirun)
+    #Denoise flowgrams in file 454Reads.sff.txt using 2 cores
+    #son your machine in parallel (requires mpirun)
     python pyronoise.py -n 2 -i 454Reads.sff.txt
 
 """
@@ -52,16 +52,12 @@ Example usage:
     # A binary 'verbose' flag
     parser.add_option('-v','--verbose',action='store_true',\
                           dest='verbose',\
-                          help='Print information during execution -- '+\
+                          help='Print information during execution to log file-- '+\
                           'useful for debugging [default: %default]')
-    parser.add_option('-k','--keep_intermediates', action='store_true',\
-                          dest='keep',\
-                          help='Print information during execution -- '+\
-                          'useful for debugging [default: %default]')
-    parser.add_option('-i','--inpupt_file', action='store',\
+    parser.add_option('-i','--input_file', action='store',\
                           type='string', dest='sff_fp',\
-                          help='path to flowgram file (*.sff.txt)'+\
-                          '[default: %default]')
+                          help='path to flowgram file (*.sff.txt) '+\
+                          '[REQUIRED]')
     parser.add_option('-o','--output_dir', action='store',\
                           type='string', dest='output_dir',\
                           help='path to output directory '+\
@@ -78,9 +74,14 @@ Example usage:
                           type='float', dest='cut_off',\
                           help='(passed to pyroNoise) '+\
                           '[default: %default]')
+    parser.add_option('-k','--keep_intermediates', action='store_true',\
+                          dest='keep',\
+                          help='Print information during execution -- '+\
+                          'useful for debugging [default: %default]')
 
      # Define defaults
-    parser.set_defaults(verbose=False, keep=False, sff_fp=None, output_dir="/tmp/",
+    parser.set_defaults(verbose=False, keep=False, sff_fp=None,
+                        output_dir="pyronoise_picked_otus/",
                         num_cpus=1, precision=15.0, cut_off=0.05)
     
     opts,args = parser.parse_args(commandline_args)
