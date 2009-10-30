@@ -19,9 +19,8 @@ from cogent.maths.stats.test import t_two_sample
 from numpy import array, mean, average
 from collections import defaultdict
 from string import strip
-from pylab import hist, savefig, clf, gca, gcf, draw, Circle, legend, plot, \
-    axhspan
-from matplotlib.patches import Ellipse, Line2D, Polygon
+from pylab import hist, savefig, clf, gca, gcf
+from matplotlib.patches import Ellipse, Polygon
 from random import choice
 from numpy.random import permutation
 from sys import argv
@@ -242,8 +241,7 @@ def draw_histogram(distances, color, nbins, outfile_name,\
     #draw line at center of circle
     y1 = -height/2.
     y2 = height/2.
-    #line = axhspan(ymin=y1,ymax=y2,xmin=average,xmax=average, facecolor=color)
-    #axis.add_artist(line)
+
     line = Polygon([[average, y1] ,[average, y2]], edgecolor=color)
     axis.add_artist(line)
 
