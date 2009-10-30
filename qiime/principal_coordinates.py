@@ -20,10 +20,13 @@ def pcoa(file):
     samples, distmtx = parse_distmat(file)
     # coords, each row is an axis
     coords, eigvals = ms.principal_coordinates_analysis(distmtx)
-    idxs_descending = eigvals.argsort()[::-1]
+    
+    pcnts = (numpy.abs(eigvals)/sum(numpy.abs(eigvals)))*100
+    idxs_descending = pcnts.argsort()[::-1]
     coords = coords[idxs_descending]
     eigvals = eigvals[idxs_descending]
-    pcnts = (numpy.abs(eigvals)/sum(numpy.abs(eigvals)))*100
+    pcnts = pcnts[idxs_descending]
+    
     return format_coords(samples, coords.T, eigvals, pcnts)
 
 usage_str = """usage: %prog [options] {-i INPUT_PATH -o OUTPUT_PATH}
