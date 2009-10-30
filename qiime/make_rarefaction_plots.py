@@ -59,7 +59,7 @@ def get_map(options, data):
 def get_rarefactions(options, data):
     """Parses and then tries to open rarefaction files to make sure they exist"""
     try:
-        print options.rarefactions
+        #print options.rarefactions
         filenms = options.rarefactions.split(',')
         for f in filenms:
             open(f)
@@ -68,6 +68,15 @@ def get_rarefactions(options, data):
     except (TypeError, IOError):
         print 'At least one rarefaction file required for this analysis'
         return None
+
+def _get_script_dir(script_path):
+    """Returns directory current script is running in.
+    """
+    if '/' in script_path:
+        script_dir = script_path.rsplit('/',1)[0]+'/'
+    else:
+        script_dir = './'
+    return script_dir
 
 def _process_prefs(options):    
     dir_path = "."
@@ -78,14 +87,10 @@ def _process_prefs(options):
     alphabet = "ABCDEFGHIJKLMNOPQRSTUZWXYZ"
     alphabet += alphabet.lower()
     alphabet += "01234567890"
-
+    
     file_path=__file__.split('/')
-    if len(file_path)==1:
-        qiime_dir='./'
-    else:
-        qiime_dir='';
-        for i in range(len(file_path)-1):
-            qiime_dir+=file_path[i]+'/'
+    
+    qiime_dir = _get_script_dir(argv[0])
 
     data_file_path=''.join([choice(alphabet) for i in range(10)])
     data_file_path=strftime("%Y_%m_%d_%H_%M_%S")+data_file_path
@@ -105,7 +110,7 @@ def _process_prefs(options):
     filenms.append(data['map'])
     for r in data['rarefactions']:
         filenms.append(r)
-    print filenms
+    #print filenms
     
     open(data_file_dir_path + "/dataFilesforJS.txt",'w').writelines([f+'\n' for f in filenms])
     for f in filenms:
