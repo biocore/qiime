@@ -347,8 +347,12 @@ def make_envs_dict(abund_mtx, sample_names, taxon_names):
             "Shape of matrix %s doesn't match # samples and # taxa (%s and %s)"%\
             (abund_mtx.shape, num_samples, num_seqs)
     envs_dict = {}
+    sample_names=array(sample_names)
     for i, taxon in enumerate(abund_mtx.T):
-        envs_dict[taxon_names[i]] = dict(zip(sample_names, taxon))
+        
+        nonzeros=taxon.nonzero() # this removes zero values to reduce memory
+        envs_dict[taxon_names[i]] = dict(zip(sample_names[nonzeros], \
+                                             taxon[nonzeros]))
     return envs_dict
 
 def fields_to_dict(lines, delim='\t', strip_f=strip):
