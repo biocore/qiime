@@ -353,7 +353,7 @@ def ANOVA_wrapper(otu_table, category_mapping, category, threshold, \
     category_info, category_values = parse_category_mapping(category_mapping, category, threshold)
     OTU_list = filter_OTUs(otu_sample_info, filter, num_samples, False)
     ANOVA_results = run_ANOVA_OTUs(OTU_list, category_info, otu_sample_info, category_values)
-    output = output_results_ANOVA(ANOVA_results)
+    output = output_results_ANOVA(ANOVA_results, category_values, taxonomy_info)
     of = open(output_fp, 'w')
     of.write('\n'.join(output))
 
@@ -369,8 +369,8 @@ if __name__ == "__main__":
     filter = opts.filter
     category = opts.category
     threshold = opts.threshold
-    if threshold:
-        threshold = float(threshold)
+    if threshold and threshold != 'None':
+        float(threshold)
     test = opts.test
 
     if test == 'g_test':
