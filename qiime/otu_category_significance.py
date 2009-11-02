@@ -132,23 +132,23 @@ def parse_category_mapping(category_mapping, category, threshold=None):
     category_mapping = [line.strip().split('\t') for line in category_mapping]
     category_index = category_mapping[0].index(category)
     result = {}
-    if threshold:
+    if threshold and threshold != 'None':
         category_values = ['0', '1']
     else:
         category_values = []
     for line in category_mapping[1:]:
         sample_name = line[0]
-        if not threshold:
-            category_val = line[category_index]
-            result[sample_name] = category_val
-            if category_val not in category_values:
-                category_values.append(category_val)
-        else:
+        if threshold and threshold != 'None':
             val = float(line[category_index])
             if val > threshold:
                 result[sample_name] = '1'
             else:
                 result[sample_name] = '0'
+        else:
+            category_val = line[category_index]
+            result[sample_name] = category_val
+            if category_val not in category_values:
+                category_values.append(category_val)
     return result, category_values
 
 def filter_OTUs(OTU_sample_info, filter, num_samples, all_samples=True):
