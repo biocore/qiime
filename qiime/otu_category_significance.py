@@ -369,7 +369,8 @@ if __name__ == "__main__":
     filter = opts.filter
     category = opts.category
     threshold = opts.threshold
-    threshold = float(threshold)
+    if threshold:
+        threshold = float(threshold)
     test = opts.test
 
     if test == 'g_test':
