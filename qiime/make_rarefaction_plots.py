@@ -29,6 +29,7 @@ from time import strftime
 import os.path
 from optparse import OptionParser
 from os.path import exists, splitext, split
+import shutil
 
 def _make_cmd_parser():
     parser = OptionParser(usage="Usage: rfFileMaker.py -m <mapping file> \
@@ -121,6 +122,7 @@ def _process_prefs(options):
     open(data_file_dir_path + "/js/jquery.dataTables.min.js",'w').writelines(open(qiime_dir + "/js/jquery.dataTables.min.js").readlines())
     open(data_file_dir_path + "/css/rarefaction_plots.css",'w').writelines(open(qiime_dir + "/css/rarefaction_plots.css").readlines())
     
+    shutil.copyfile(qiime_dir+"/qiime_header.png", data_file_dir_path+"/qiime_header.png")
 
 if __name__ == '__main__':
     from sys import argv, exit
