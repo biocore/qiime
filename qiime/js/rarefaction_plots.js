@@ -103,8 +103,8 @@ function loadMapping(filenm) {
     
 	var mappingfl = getFile(filenm);
     //var mappingFileLines = mappingfl.split(/(\r|\n)/);
-	var mappingFileLines = mappingfl.split("\n");
-	//var mappingFileLines = mappingfl.split("\r");
+	//var mappingFileLines = mappingfl.split("\n");
+	var mappingFileLines = mappingfl.split("\r");
     categories = mappingFileLines[0].split("\t");
     var categ = "";
     
