@@ -94,7 +94,6 @@ def ok_mm_primer(primer_seq, all_primer_seqs, primer_mm):
     faster algorithm.
     """ 
     for curr_pat in all_primer_seqs:
-        curr_mm = count_mismatches(primer_seq, curr_pat, primer_mm)
         if count_mismatches(primer_seq, curr_pat, primer_mm) <= primer_mm:
             return True
     return False
