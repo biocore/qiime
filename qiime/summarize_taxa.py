@@ -2,7 +2,7 @@
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2009, the PyCogent Project" #consider project name
-__credits__ = ["Rob Knight"] #remember to add yourself if you make changes
+__credits__ = ["Rob Knight", "Catherine Lozupone"] #remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "0.1"
 __maintainer__ = "Rob Knight"
@@ -56,7 +56,8 @@ if __name__ == "__main__":
             outfile.write(line)
         else:
             fields = line.split('\t')
-            data = array(fields[1:-1], dtype=int)
+            vals = [int(i) for i in fields[1:-1]]
+            data = array(vals, dtype=int)
             tax = map(strip, fields[-1].split(';'))[:level]
             if len(tax) < level:
                 tax.append('Other')
