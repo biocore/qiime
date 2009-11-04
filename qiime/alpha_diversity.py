@@ -118,8 +118,17 @@ class AlphaDiversityCalc(FunctionWithParams):
         if self.IsPhylogenetic:
             tree = self.getTree(tree_path)
             envs = make_envs_dict(data, sample_names, taxon_names)
-            new_taxon_names, result = self.Metric(tree, envs, **self.Params)
-            return numpy.array(result)
+            new_sample_names, result = self.Metric(tree, envs, **self.Params)
+            ordered_res = numpy.zeros(len(sample_names), 'float')
+            for i, sample in enumerate(sample_names):
+                try:
+                   # idx is sample's index in result from metric
+                   idx = new_sample_names.index(sample)
+                   ordered_res[i] = result[idx]
+                except ValueError:
+                   pass # already is zero
+            return numpy.array(ordered_res)
+            
         else:
             def metric(row):
                 return self.Metric(row, **self.Params)
