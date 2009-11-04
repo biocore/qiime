@@ -25,7 +25,10 @@ from cogent.parse.mothur import parse_otu_list as mothur_parse
 from cogent.app.cd_hit import cdhit_clusters_from_seqs
 from cogent.app.dotur import dotur_from_alignment
 from cogent.app.mothur import Mothur
+from cogent.app.formatdb import build_blast_db_from_fasta_path
+from cogent.app.blast import blast_seqs, Blastall, BlastResult
 from cogent.core.sequence import DnaSequence
+from cogent.util.misc import remove_files
 from cogent import LoadSeqs, DNA, Alignment
 from cogent.util.trie import build_prefix_map
 from qiime.util import FunctionWithParams
@@ -110,6 +113,162 @@ class OtuPicker(FunctionWithParams):
             results.append(full_cluster)
         return results
         
+class BlastOtuPicker(OtuPicker):
+    """Blast-based OTU picker which clusters sequence by their best blast hit
+    """
+    SeqsPerBlastRun = 1000
+    
+    def __call__(self,seq_path,result_path=None,log_path=None,
+        blast_db=None,reference_fasta_fp=None):
+        print "**\nWARNING: BlastOtuPicker pending tests additional tests.\n**"
+        
+        self.log_lines = []
+        
+        if not blast_db:
+            self.blast_db, self.db_files_to_remove = \
+                build_blast_db_from_fasta_path(reference_fasta_fp)
+            self.log_lines.append('Reference seqs fp (to build blast db): %s'%\
+             reference_fasta_fp)
+        else:
+            self.blast_db = blast_db
+             
+        self.log_lines.append('Blast database: %s' % self.blast_db)
+        
+        clusters = self._cluster_seqs(\
+         MinimalFastaParser(open(seq_path)))
+        self.log_lines.append('Num OTUs: %d' % len(clusters))
+        
+        if result_path:
+            # if the user provided a result_path, write the 
+            # results to file with one tab-separated line per 
+            # cluster
+            of = open(result_path,'w')
+            for cluster_id,cluster in clusters.items():
+                of.write('%s\t%s\n' % (cluster_id,'\t'.join(cluster)))
+            of.close()
+            result = None
+            self.log_lines.append('Result path: %s' % result_path)
+        else:
+            # if the user did not provide a result_path, store
+                # the clusters in a dict of {otu_id:[seq_ids]}, where
+            # otu_id is arbitrary
+            result = clusters
+            self.log_lines.append('Result path: None, returned as dict.')
+ 
+        if log_path:
+            # if the user provided a log file path, log the run
+            log_file = open(log_path,'w')
+            self.log_lines = [str(self)] + self.log_lines
+            log_file.write('\n'.join(self.log_lines))
+    
+        remove_files(self.db_files_to_remove,error_on_missing=False)
+        # return the result (note this is None if the data was
+        # written to file)
+        return result
+        
+    def _cluster_seqs(self,seqs):
+        """
+        """
+        # blast seqs self.SeqsPerBlastRun at a time
+        # Build object to keep track of the current set of sequences to be
+        # blasted, and the results (i.e., seq_id -> (taxonomy,quaility score) 
+        # mapping)
+        current_seqs = []
+        result = {}
+        
+        # Iterate over the (seq_id, seq) pairs
+        for seq_id, seq in seqs:
+            # append the current seq_id,seq to list of seqs to be blasted
+            current_seqs.append((seq_id,seq))
+            
+            # When there are self.SeqsPerBlastRun in the list, blast them
+            if len(current_seqs) == self.SeqsPerBlastRun:
+                # update the result object
+                result = self._update_cluster_map(result,\
+                    self._blast_seqs(current_seqs))
+                # reset the list of seqs to be blasted
+                current_seqs = []
+        # Cluster the remaining sequences
+        result = self._update_cluster_map(result,\
+            self._blast_seqs(current_seqs))
+        return result
+         
+    def _update_cluster_map(self,cluster_map,new_clusters):
+        for cluster_id, seq_ids in new_clusters.items():
+            try:
+                cluster_map[cluster_id] += seq_ids
+            except KeyError:
+                cluster_map[cluster_id] = seq_ids
+        return cluster_map
+        
+    def _blast_seqs(self,seqs):
+        """
+        """
+        result = {}
+        blast_hits = get_blast_hits(seqs,self.blast_db)
+        seq_id_to_best_blast_hit = \
+         get_first_blast_hit_per_seq(blast_hits)
+        for seq_id, blast_hit in seq_id_to_best_blast_hit.items():
+            cluster_id = blast_hit[0]
+            try:
+                result[cluster_id].append(seq_id)
+            except KeyError:
+                result[cluster_id] = [seq_id]
+        return result
+  
+## START MOVE TO BLAST APP CONTROLLER
+## The following two functions should be move to the blast application
+## controller. When that's done, qiime.assign_taxonomy needs to be updated
+## to use these functions rather that the member functions which these 
+## are replicas of. Note that when moving to the blast app controller,
+## tests should be extractable from test_assign_taxonomy.py.
+def get_first_blast_hit_per_seq(blast_hits):
+    """ discard all blast hits except the best for each query sequence
+    """
+    result = {}
+    for k,v in blast_hits.items():
+        k = k.split()[0]    #get rid of spaces
+        try:
+            result[k] = v[0]
+        except IndexError:
+            result[k] = None
+    return result
+
+# THIS FUNCTION SHOULD DO THE SeqsPerBlastRun splitting, would be _much_
+# cleaner that way. 
+def get_blast_hits(seqs,blast_db,max_e_value=1e-3,min_pct_identity=0.75):
+    """ blast each seq in seqs against blast_db and retain good hits
+    """
+    max_evalue = max_e_value
+    min_percent_identity = min_pct_identity
+    seq_ids = [s[0] for s in seqs]
+    result = {}
+    
+    blast_result = blast_seqs(\
+     seqs,Blastall,blast_db=blast_db,\
+     params={'-p':'blastn','-n':'F'},\
+     add_seq_names=False)
+     
+    if blast_result['StdOut']:
+        lines = [x for x in blast_result['StdOut']]
+        blast_result = BlastResult(lines)
+    else:
+        return {}.fromkeys(seq_ids,[])
+        
+    for seq_id in seq_ids:
+        blast_result_id = seq_id.split()[0]
+        try:
+            result[seq_id] = [(e['SUBJECT ID'],float(e['E-VALUE'])) \
+             for e in blast_result[blast_result_id][0]
+             if (float(e['E-VALUE']) <= max_evalue and \
+              float(e['% IDENTITY']) >= min_percent_identity)]
+        except KeyError:
+            result[seq_id] = []
+
+    return result
+## END MOVE TO BLAST APP CONTROLLER
+
+
 class PrefixSuffixOtuPicker(OtuPicker):
     
     Name = 'PrefixSuffixOtuPicker'

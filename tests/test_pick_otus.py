@@ -16,8 +16,9 @@ from os import remove
 from cogent.util.unit_test import TestCase, main
 from cogent.app.util import get_tmp_filename
 from cogent.util.misc import remove_files
+from cogent.app.formatdb import build_blast_db_from_fasta_path
 from qiime.pick_otus import CdHitOtuPicker, DoturOtuPicker, OtuPicker, \
-    MothurOtuPicker, PrefixSuffixOtuPicker, TrieOtuPicker
+    MothurOtuPicker, PrefixSuffixOtuPicker, TrieOtuPicker, BlastOtuPicker
 
 class OtuPickerTests(TestCase):
     """Tests of the abstract OtuPicker class"""
@@ -66,6 +67,63 @@ class MothurOtuPickerTests(TestCase):
         observed_otus = app(self.small_seq_path)
         expected_otus = {0: ['bbbbbb', 'cccccc'], 1: ['aaaaaa']}
         self.assertEqual(observed_otus, expected_otus)
+
+class BlastOtuPickerTests(TestCase):
+    """ Tests of the blast-based otu picker """
+    
+    def setUp(self):
+        """
+        """
+        self.otu_picker = BlastOtuPicker({})
+        self.seqs = [\
+         ('s1','TGCAGCTTGAGCCACAGGAGAGAGAGAGCTTC'),\
+         ('s2','TGCAGCTTGAGCCACAGGAGAGAGCCTTC'),\
+         ('s3','TGCAGCTTGAGCCACAGGAGAGAGAGAGCTTC'),\
+         ('s4','ACCGATGAGATATTAGCACAGGGGAATTAGAACCA'),\
+         ('s5','TGTCGAGAGTGAGATGAGATGAGAACA'),\
+         ('s6','ACGTATTTTAATTTGGCATGGT'),\
+        ]
+        
+        self.ref_seqs = [\
+         ('ref1','TGCAGCTTGAGCCACAGGAGAGAGAGAGCTTC'),\
+         ('ref2','ACCGATGAGATATTAGCACAGGGGAATTAGAACCA'),\
+         ('ref3','TGTCGAGAGTGAGATGAGATGAGAACA'),\
+         ('ref4','ACGTATTTTAATGGGGCATGGT'),\
+        ]
+        
+        self.seqs_fp = get_tmp_filename(
+            prefix='BlastOtuPickerTest_', suffix='.fasta')
+        self.reference_seqs_fp = get_tmp_filename(
+            prefix='BlastOtuPickerTest_', suffix='.fasta')
+        #self.blast_db, db_files_to_remove = \
+        #    build_blast_db_from_fasta_path(self.reference_seqs_fp)
+            
+        f = open(self.seqs_fp, 'w')
+        f.write('\n'.join(['>%s\n%s' % s for s in self.seqs]))
+        f.close()
+        
+        f = open(self.reference_seqs_fp, 'w')
+        f.write('\n'.join(['>%s\n%s' % s for s in self.ref_seqs]))
+        f.close()
+        
+        self._files_to_remove = \
+         [self.seqs_fp,self.reference_seqs_fp] #+ db_files_to_remove
+        
+    def tearDown(self):
+        """
+        """
+        remove_files(self._files_to_remove)
+        
+    def test_call(self):
+        """Prefix/suffix OTU Picker functions as expected
+        """
+        expected = {'ref1':['s3','s2','s1'],\
+                    'ref2':['s4'],\
+                    'ref3':['s5'],\
+                    'ref4':['s6']}
+        actual = self.otu_picker(self.seqs_fp,\
+            reference_fasta_fp=self.reference_seqs_fp)
+        self.assertEqual(actual,expected)
 
 class PrefixSuffixOtuPickerTests(TestCase):
     """ Tests of the prefix/suffix-based OTU picker """
