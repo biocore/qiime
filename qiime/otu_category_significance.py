@@ -19,6 +19,7 @@ from cogent.util.dict2d import Dict2D
 from cogent.maths.stats.test import calc_contingency_expected, G_fit_from_Dict2D,\
     ANOVA_one_way
 from cogent.maths.stats.util import Numbers
+from numpy import array
 
 usage_str = """usage: %prog [-o output_file] {-i OTU table, -m category mapping -f filter -c category, -t None}
 
@@ -121,6 +122,45 @@ def parse_otu_table(otu_table):
             taxonomy_info[OTU_name] = line[-1]
     return result, num_samples, taxonomy_info
 
+def convert_OTU_table_relative_abundance(otu_table):
+    """converts the OTU table to have relative abundances rather than raw counts
+    """
+    output = []
+    data_lines = []
+    otu_ids = []
+    tax_strings = []
+    taxonomy=False
+    for line in otu_table:
+        line = line.strip().split('\t')
+        if line[0].startswith('#OTU ID'):
+            output.append('\t'.join(line))
+            if line[-1] == 'Consensus Lineage':
+                taxonomy=True
+        elif line[0].startswith('#'):
+            output.append('\t'.join(line))
+        else:
+            if taxonomy:
+                vals = [float(i) for i in line[1:-1]]
+                tax_strings.append(line[-1])
+            else:
+                vals = [float(i) for i in line[1:]]
+                tax_string = None
+            data = array(vals, dtype=float)
+            data_lines.append(data)
+            otu_ids.append(line[0])
+    data_lines = array(data_lines)
+    totals = sum(data_lines)
+    new_values = []
+    for i in data_lines:
+        new_values.append(i/totals)
+    for index, i in enumerate(new_values):
+        line = [otu_ids[index]]
+        line.extend([str(j) for j in i])
+        if taxonomy:
+            line.append(tax_strings[index])
+        output.append('\t'.join(line))
+    return output
+
 def parse_category_mapping(category_mapping, category, threshold=None):
     """parse category mapping file
     
@@ -163,7 +203,7 @@ def filter_OTUs(OTU_sample_info, filter, num_samples, all_samples=True):
     for OTU in OTU_sample_info:
         samples = []
         for sample in OTU_sample_info[OTU]:
-            if int(OTU_sample_info[OTU][sample]) > 0:
+            if float(OTU_sample_info[OTU][sample]) > 0:
                 samples.append(sample)
         if len(samples) > int(filter):
             if all_samples:
@@ -349,6 +389,8 @@ def G_test_wrapper(otu_table, category_mapping, category, threshold, \
 def ANOVA_wrapper(otu_table, category_mapping, category, threshold, \
                 filter, output_fp):
     """runs ANOVA to look for category/OTU associations"""
+
+    otu_table = convert_OTU_table_relative_abundance(otu_table)
     otu_sample_info, num_samples, taxonomy_info = parse_otu_table(otu_table)
     category_info, category_values = parse_category_mapping(category_mapping, category, threshold)
     OTU_list = filter_OTUs(otu_sample_info, filter, num_samples, False)
@@ -370,7 +412,7 @@ if __name__ == "__main__":
     category = opts.category
     threshold = opts.threshold
     if threshold and threshold != 'None':
-        float(threshold)
+        threshold = float(threshold)
     test = opts.test
 
     if test == 'g_test':
