@@ -119,18 +119,18 @@ class BlastOtuPicker(OtuPicker):
     SeqsPerBlastRun = 1000
     
     def __call__(self,seq_path,result_path=None,log_path=None,
-        blast_db=None,reference_fasta_fp=None):
-        print "**\nWARNING: BlastOtuPicker pending tests additional tests.\n**"
+        blast_db=None,refseqs_fp=None):
         
         self.log_lines = []
         
         if not blast_db:
             self.blast_db, self.db_files_to_remove = \
-                build_blast_db_from_fasta_path(reference_fasta_fp)
+                build_blast_db_from_fasta_path(refseqs_fp)
             self.log_lines.append('Reference seqs fp (to build blast db): %s'%\
-             reference_fasta_fp)
+             refseqs_fp)
         else:
             self.blast_db = blast_db
+            self.db_files_to_remove = []
              
         self.log_lines.append('Blast database: %s' % self.blast_db)
         
@@ -180,7 +180,6 @@ class BlastOtuPicker(OtuPicker):
         for seq_id, seq in seqs:
             # append the current seq_id,seq to list of seqs to be blasted
             current_seqs.append((seq_id,seq))
-            
             # When there are self.SeqsPerBlastRun in the list, blast them
             if len(current_seqs) == self.SeqsPerBlastRun:
                 # update the result object
@@ -190,7 +189,7 @@ class BlastOtuPicker(OtuPicker):
                 current_seqs = []
         # Cluster the remaining sequences
         result = self._update_cluster_map(result,\
-            self._blast_seqs(current_seqs))
+         self._blast_seqs(current_seqs))
         return result
          
     def _update_cluster_map(self,cluster_map,new_clusters):
@@ -204,6 +203,8 @@ class BlastOtuPicker(OtuPicker):
     def _blast_seqs(self,seqs):
         """
         """
+        if not seqs: 
+            return {}
         result = {}
         blast_hits = get_blast_hits(seqs,self.blast_db)
         seq_id_to_best_blast_hit = \
@@ -838,6 +839,14 @@ def parse_command_line_parameters():
           help='Path to store '+\
           'result file [default: ./<OTU_METHOD>_picked_otus/]')
           
+    parser.add_option('-r','--refseqs_fp',
+          help='Path to reference sequences to blast against when'+\
+          ' using -m blast [default: %default]')
+          
+    parser.add_option('-b','--blast_db',
+          help='Pre-existing database to blast against when'+\
+          ' using -m blast [default: %default]')
+          
     parser.add_option('-s','--similarity',action='store',\
           type='float',dest='similarity',help='Sequence similarity '+\
           'threshold [default: %default]')
@@ -872,6 +881,11 @@ def parse_command_line_parameters():
             
     if opts.otu_picking_method == 'cdhit' and opts.similarity < 0.80:
         parser.error('cdhit requires similarity >= 0.80.')
+            
+    if opts.otu_picking_method == 'blast' and \
+       opts.refseqs_fp == None and \
+       opts.blast_db == None:
+        parser.error('blast requires refseqs_fp or blast_db')
 
     return opts,args
 
@@ -879,7 +893,8 @@ otu_picking_method_constructors = {
     'cdhit': CdHitOtuPicker,
     'prefix_suffix': PrefixSuffixOtuPicker,
     'mothur': MothurOtuPicker,
-    'trie':TrieOtuPicker
+    'trie':TrieOtuPicker,
+    'blast':BlastOtuPicker
     }
 
 if __name__ == "__main__":
@@ -930,4 +945,11 @@ if __name__ == "__main__":
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,
                    result_path=result_path, log_path=log_path)
+    elif otu_picking_method == 'blast':
+        params = {}
+        otu_picker = otu_picker_constructor(params)
+        otu_picker(input_seqs_filepath,
+                   result_path=result_path, log_path=log_path,\
+                   blast_db=opts.blast_db,refseqs_fp=opts.refseqs_fp)
+        
 

@@ -95,8 +95,6 @@ class BlastOtuPickerTests(TestCase):
             prefix='BlastOtuPickerTest_', suffix='.fasta')
         self.reference_seqs_fp = get_tmp_filename(
             prefix='BlastOtuPickerTest_', suffix='.fasta')
-        #self.blast_db, db_files_to_remove = \
-        #    build_blast_db_from_fasta_path(self.reference_seqs_fp)
             
         f = open(self.seqs_fp, 'w')
         f.write('\n'.join(['>%s\n%s' % s for s in self.seqs]))
@@ -107,23 +105,103 @@ class BlastOtuPickerTests(TestCase):
         f.close()
         
         self._files_to_remove = \
-         [self.seqs_fp,self.reference_seqs_fp] #+ db_files_to_remove
+         [self.seqs_fp,self.reference_seqs_fp]
         
     def tearDown(self):
         """
         """
         remove_files(self._files_to_remove)
         
+    def test_blast_seqs(self):
+        """ blast_seqs: functions as expected
+        """
+        blast_db, db_files_to_remove = \
+            build_blast_db_from_fasta_path(self.reference_seqs_fp)
+        self._files_to_remove += db_files_to_remove
+        self.otu_picker.blast_db = blast_db
+        
+        actual = self.otu_picker._blast_seqs(self.seqs)
+        for v in actual.values(): v.sort()
+        expected = {'ref1':['s1','s2','s3'],'ref2':['s4'],\
+                    'ref3':['s5'],'ref4':['s6']}
+        self.assertEqual(actual,expected)
+        
+    def test_update_cluster_map(self):
+        """update_cluster_map: functions as expected
+        """
+        # nothing in original cm
+        cm = {}
+        new_cm = {'c1':['1','2','5'],'c2':['4','3']}
+        expected = new_cm
+        actual = self.otu_picker._update_cluster_map(cm,new_cm)
+        self.assertEqual(actual,expected)
+        
+        # no new clusters
+        cm = {'c1':['1','2','5'],'c2':['4','3']}
+        new_cm = {}
+        expected = cm
+        actual = self.otu_picker._update_cluster_map(cm,new_cm)
+        self.assertEqual(actual,expected)
+        
+        # overlapping clusters
+        cm = {'c1':['1','2','5'],'c2':['4','3']}
+        new_cm = {'c1':['8'],'c2':['10','14'],'3':['42']}
+        expected = {'c1':['1','2','5','8'],'c2':['4','3','10','14'],'3':['42']}
+        actual = self.otu_picker._update_cluster_map(cm,new_cm)
+        self.assertEqual(actual,expected)
+        
+        # no duplicate seq_id checking 
+        cm = {'c1':['1']}
+        new_cm = cm
+        expected = {'c1':['1','1']}
+        actual = self.otu_picker._update_cluster_map(cm,new_cm)
+        self.assertEqual(actual,expected)
+        
+        # no clusters at all
+        actual = self.otu_picker._update_cluster_map({},{})
+        self.assertEqual(actual,{})
+        
+        
     def test_call(self):
-        """Prefix/suffix OTU Picker functions as expected
+        """BLAST OTU Picker functions as expected
         """
         expected = {'ref1':['s3','s2','s1'],\
                     'ref2':['s4'],\
                     'ref3':['s5'],\
                     'ref4':['s6']}
         actual = self.otu_picker(self.seqs_fp,\
-            reference_fasta_fp=self.reference_seqs_fp)
+            refseqs_fp=self.reference_seqs_fp)
         self.assertEqual(actual,expected)
+        
+    def test_call_preexisting_blast_db(self):
+        """BLAST OTU Picker functions w preexisting blast db
+        """
+        blast_db, db_files_to_remove = \
+            build_blast_db_from_fasta_path(self.reference_seqs_fp)
+        self._files_to_remove += db_files_to_remove
+        expected = {'ref1':['s3','s2','s1'],\
+                    'ref2':['s4'],\
+                    'ref3':['s5'],\
+                    'ref4':['s6']}
+        actual = self.otu_picker(self.seqs_fp,blast_db=blast_db)
+        self.assertEqual(actual,expected)
+        
+    def test_call_multiple_blast_runs(self):
+        """BLAST OTU Picker not affected by alt SeqsPerBlastRun
+        """
+        expected = {'ref1':['s1','s2','s3'],\
+                    'ref2':['s4'],\
+                    'ref3':['s5'],\
+                    'ref4':['s6']}
+        for v in expected.values():
+            v.sort()
+        for SeqsPerBlastRun in [1,2,4,6,7,8,100]:
+            self.otu_picker.SeqsPerBlastRun = SeqsPerBlastRun
+            actual = self.otu_picker(self.seqs_fp,\
+                refseqs_fp=self.reference_seqs_fp)
+            for v in actual.values():
+                v.sort()
+            self.assertEqual(actual,expected)
 
 class PrefixSuffixOtuPickerTests(TestCase):
     """ Tests of the prefix/suffix-based OTU picker """
