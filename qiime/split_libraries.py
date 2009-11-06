@@ -418,7 +418,7 @@ def preprocess(fasta_files, qual_files, mapping_file,
     if max_primer_mm < 0:
         raise ValueError, "Max primer mismatches must be >= 0."
     if min_qual_score < 5:
-        raise ValueError, "Min qual score must be >= 0."
+        raise ValueError, "Min qual score must be >= 5."
 
     try:
         stat(dir_prefix)
@@ -570,7 +570,7 @@ def make_cmd_parser():
         action='store_true',
         help='calculate sequence lengths after trimming primers and barcodes')
     parser.add_option('-Q', '--min-qual-score', type=int, default=25,
-        help='min qual score allowed in read [default: %default]')
+        help='min average qual score allowed in read [default: %default]')
     parser.add_option('-k', '--keep-primer', action='store_true',
         help='do not remove primer from sequences')
     parser.add_option('-a', '--max-ambig', type=int, default=0,
