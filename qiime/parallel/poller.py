@@ -14,33 +14,13 @@ from os.path import exists, isdir
 from shutil import rmtree
 from cogent.util.misc import remove_files
 
-usage_str = """usage: %prog [options] {(-r CHECK_RUN_COMPLETE_F | -f RUN_OUTPUT_FILES) (-p PROCESS_RUN_RESULTS_F | -m TMP_TO_FINAL_FILEPATH_MAP) (-c CLEAN_UP_F | -d DELETION_LIST)}
+usage_str = """usage: %prog [options] {-f RUN_OUTPUT_FILES}
 
 [] indicates optional input (order unimportant)
 {} indicates required input (order unimportant)
 
 Example usage:
- Call the poller with the example_check_run_complete_f (-r) function
- which waits for three files to be created:
-  $HOME/poller_test/poller_test_0.txt
-  $HOME/poller_test/poller_test_1.txt
-  $HOME/poller_test/poller_test_2.txt
-  
- Existence of these three files is checked every 5 seconds (-t), and when
- they all exist example_process_run_results_f (-c) is called.
- This clean-up function cats all the files into a single file:
-  $HOME/poller_test/poller_test_completed.txt
-  
- Finally, example_clean_up_f is call (-c) which removes the original three 
-  files the poller was waiting on.
-  
- python Qiime/qiime/parallel/poller.py -r qiime.parallel.poller.example_check_run_complete_f -p qiime.parallel.poller.example_process_run_results_f -c qiime.parallel.poller.example_clean_up_f -t 5
- 
- poller.py is designed for use on the cluster to clean up parallel jobs. However,
- you can see it in action by running the above command and in a new terminal 
- creating the three files above in $HOME/poller_test. Put some text in each file
- and once all three exist, the poller will join them into a single new file and 
- remove the originals.
+ See Qiime/scripts/poller_examples.py
  
 """
 
@@ -57,20 +37,23 @@ def parse_command_line_parameters():
 
     parser.add_option('-r','--check_run_complete_f',\
            help='function which returns True when run is completed '+\
-           '[default: %default]')
-    parser.add_option('-f','--run_output_file',\
+           '[default: %default]',\
+           default='qiime.parallel.poller.basic_check_run_complete_f')
+    parser.add_option('-f','--check_run_complete_file',\
            help='path to file containing a list of files that must exist to' +\
-           ' declare a run complete [default: %default]')
+           ' declare a run complete [REQUIRED]')
            
     parser.add_option('-p','--process_run_results_f',\
-           help='function to be called when runs complete [default: %default]')
-    parser.add_option('-m','--tmp_to_final_filepath_map',\
+           help='function to be called when runs complete [default: %default]',\
+           default='qiime.parallel.poller.basic_process_run_results_f')
+    parser.add_option('-m','--process_run_results_file',\
            help='path to file containing a map of tmp filepaths which should' +\
            ' be written to final output filepaths [default: %default]')
            
     parser.add_option('-c','--clean_up_f',\
-           help='function to be called after processing result [default: %default]')
-    parser.add_option('-d','--deletion_list',
+           help='function called after processing result [default: %default]',\
+           default='qiime.parallel.poller.basic_clean_up_f')
+    parser.add_option('-d','--clean_up_file',
            help='List of files and directories to remove after run'+\
            ' [default: %default]')
     
@@ -84,11 +67,7 @@ def parse_command_line_parameters():
     opts,args = parser.parse_args()
     
     if not opts.check_run_complete_f and not opts.run_output_file:
-        parser.error('Must supply either -r or -f.')
-    if not opts.process_run_results_f and not opts.tmp_to_final_filepath_map:
-        parser.error('Must supply either -p or -m.')
-    # if not opts.clean_up_f and not opts.deletion_list:
-    #     parser.error('Must supply either -c or -d.')
+        parser.error('Must supply -r and/or -f.')
 
     return opts,args
 
@@ -123,147 +102,104 @@ def remove_all(paths_to_remove):
                 # File doesn't exist
                 pass
     return
-    
-def get_basic_check_run_complete_f(filepaths,verbose=False):
+ 
+def basic_check_run_complete_f(f,verbose=False):
     """ Return a function which returns True if all filepaths exist
     
-        filepaths: list of file paths which should be checked for existence
+        f: file containing list of filepaths
         verbose: if True, the resulting function will print information to
          stdout (default:False)
     """
-    def result():
-        for fp in filepaths:
-            if not exists(fp):
-                if verbose:
-                    print "At least one fp doesn't exist: %s" % fp
-                return False
-        if verbose: print "All filepaths exist."
-        return True
+    filepaths = parse_filepath_list_file(f)
+    for fp in filepaths:
+        if not exists(fp):
+            if verbose:
+                print "At least one fp doesn't exist: %s" % fp
+            return False
+    if verbose: print "All filepaths exist."
+    return True
     
-    return result
-
-def get_basic_process_run_results_f(infiles_lists,out_filepaths,verbose=False):
+def basic_process_run_results_f(f,verbose=False):
     """ Copy each list of infiles to each outfile and delete infiles
     """
-    def result():
-        for infiles_list, out_filepath in zip(infiles_lists,out_filepaths):
-            try:
-                of = open(out_filepath,'w')
-            except IOError:
-                raise IOError,\
-                 "Poller can't open final output file: %s" % out_filepath  +\
-                 "\nLeaving individual jobs output.\n Do you have write access?"
+    infiles_lists,out_filepaths = parse_tmp_to_final_filepath_map_file(f)
+    for infiles_list, out_filepath in zip(infiles_lists,out_filepaths):
+        try:
+            of = open(out_filepath,'w')
+        except IOError:
+            raise IOError,\
+             "Poller can't open final output file: %s" % out_filepath  +\
+             "\nLeaving individual jobs output.\n Do you have write access?"
+
+        for fp in infiles_list:
+            for line in open(fp):
+               of.write(line)
+        of.close()
+
+    if verbose: print "Post-run processing complete."
+    # It is a good idea to have your clean_up_callback return True.
+    # That way, if you get mixed up and pass it as check_run_complete_callback, 
+    # you'll get an error right away rather than going into an infinite loop
+    return True
     
-            for fp in infiles_list:
-                for line in open(fp):
-                   of.write(line)
-            of.close()
+def basic_clean_up_f(f,verbose=False):
+    deletion_list = parse_filepath_list_file(f)
+    remove_all(deletion_list)
+    if verbose: 
+        print "Post-run clean-up complete."
+    return True
+ 
     
-        if verbose: print "Post-run processing complete."
-        # It is a good idea to have your clean_up_callback return True.
-        # That way, if you get mixed up and pass it as check_run_complete_callback, 
-        # you'll get an error right away rather than going into an infinite loop
-        return True
-    return result
+def poller(check_run_complete_f,\
+            process_run_results_f,\
+            clean_up_f,\
+            check_run_complete_file,\
+            process_run_results_file,\
+            clean_up_file,\
+            seconds_to_sleep,\
+            verbose=False,
+            log_filepath=None):
+    """ Polls for completion of job(s) and then processes/cleans up results
     
-def get_basic_clean_up_f(deletion_list,verbose=False):
-    def result():
-        remove_all(deletion_list)
-        if verbose: print "Post-run clean-up complete."
-        return True
-    return result
-    
-def poller(check_run_complete_f,process_run_results_f,clean_up_f,\
-           seconds_to_sleep=60,log_filepath=None):
-    """ The core poller function
+        check_run_complete_f: function which returns True when polled
+         job(s) complete and False otherwise 
+        process_run_results_f: function applied to process the results
+         of the polled job(s) -- run only after check_run_complete_f => True
+        clean_up_f: function applied to clean up after the polled 
+         job(s) -- run after process_run_results_f
+        check_run_complete_file: file passed to check_run_complete_f
+         on each call
+        process_run_results_file: file passed to process_run_results_f
+        clean_up_file: file passed to clean_up_f
+        seconds_to_sleep: number of seconds to sleep between calls
+         to check_run_complete_f
+        verbose: turn on verbose output [default: False]
+        log_filepath: path to store log file [default: None]
+        
     """
     number_of_loops = 0
-    while(not check_run_complete_f()):
+    while(not check_run_complete_f(check_run_complete_file,verbose)):
         sleep(seconds_to_sleep)
         number_of_loops += 1
-    process_run_results_f()
-    clean_up_f()
+    process_run_results_f(process_run_results_file,verbose)
+    clean_up_f(clean_up_file,verbose)
     est_per_proc_run_time = number_of_loops * seconds_to_sleep
     return est_per_proc_run_time
 
-#####
-# Start example functions: This code is currently in place to allow for an interactive
-# example run of the poller on any system. Call Qiime/qiime/parallel/poller.py -h for 
-# a description of how to use the example.
 
-# Defining an example check_run_complete_f which returns True
-# if the following files all exist:
-#   $HOME/poller_test/poller_test_0.txt
-#   $HOME/poller_test/poller_test_1.txt
-#   $HOME/poller_test/poller_test_2.txt
-home_dir = getenv('HOME')
-example_filepaths = [home_dir + '/poller_test/poller_test_%d.txt'\
-      % i for i in range(3)]
-example_check_run_complete_f = \
- get_basic_check_run_complete_f(example_filepaths,True)
-
-# Defining an example process_run_results_f
-# Merges the text from the three 'original' files:
-#   $HOME/poller_test/poller_test_0.txt
-#   $HOME/poller_test/poller_test_1.txt
-#   $HOME/poller_test/poller_test_2.txt
-# into a single output file:
-#   $HOME/poller_test/poller_test_completed.txt
-example_out_filepath = home_dir + '/poller_test/poller_test_completed.txt'
-example_process_run_results_f = \
- get_basic_process_run_results_f([example_filepaths],[example_out_filepath],True)
- 
-# Defining an example basic_clean_up_f which removes 
-# the following files:
-#   $HOME/poller_test/poller_test_0.txt
-#   $HOME/poller_test/poller_test_1.txt
-#   $HOME/poller_test/poller_test_2.txt
-example_clean_up_f = \
- get_basic_clean_up_f(example_filepaths,True)
-
-# End example functions
-####
 
 if __name__ == "__main__":
     opts,args = parse_command_line_parameters()
-    verbose = opts.verbose
-    seconds_to_sleep = opts.time_to_sleep
-    
-    if opts.check_run_complete_f:
-        check_run_complete_f = \
-         get_function_handle(opts.check_run_complete_f)
-    else:
-        output_filepaths = \
-         parse_filepath_list_file(open(opts.run_output_file))
-        check_run_complete_f = \
-         get_basic_check_run_complete_f(output_filepaths,verbose)
-    
-    if opts.process_run_results_f:
-        process_run_results_f = \
-         get_function_handle(opts.process_run_results_f)
-    else:
-        infiles_lists, out_filepaths = \
-         parse_tmp_to_final_filepath_map_file(\
-         open(opts.tmp_to_final_filepath_map))
-        process_run_results_f = \
-         get_basic_process_run_results_f(infiles_lists,out_filepaths,verbose)
-    
-    if opts.clean_up_f:
-        clean_up_f = \
-         get_function_handle(opts.clean_up_f)
-    elif opts.deletion_list:
-        deletion_list = \
-         parse_filepath_list_file(open(opts.deletion_list))
-        clean_up_f = \
-         get_basic_clean_up_f(deletion_list)
-    else:
-        clean_up_f = \
-         get_basic_clean_up_f([])
-    
-    poller(check_run_complete_f,process_run_results_f,clean_up_f,\
-     seconds_to_sleep=seconds_to_sleep,log_filepath=None)
-    
-    
-    
-    
-    
+
+    poller(get_function_handle(opts.check_run_complete_f),\
+            get_function_handle(opts.process_run_results_f),\
+            get_function_handle(opts.clean_up_f),\
+            list(open(opts.check_run_complete_file)),\
+            list(open(opts.process_run_results_file)),\
+            list(open(opts.clean_up_file)),\
+            seconds_to_sleep=opts.time_to_sleep,\
+            verbose=opts.verbose,\
+            log_filepath=None)
+
+
+  
