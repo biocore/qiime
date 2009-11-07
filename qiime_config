@@ -19,3 +19,4 @@ template_aln_fp	/data/greengenes_core_sets/core_set_aligned_imputed.fasta_11_8_0
 lanemask_fp	/data/greengenes_core_sets/lanemask_in_1s_and_0s.txt
 tax_ref_db_fp	/data/silva_97/silva_97.fasta
 id_to_tax_fp	/data/silva_97/silva_tax.txt
+pick_otus_fp	/software/Qiime/qiime/pick_otus.py

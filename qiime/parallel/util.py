@@ -198,6 +198,30 @@ def write_merge_map_file_align_seqs(job_result_filepaths,output_dir,\
         f.write('\t'.join(in_files + [out_file]))
         f.write('\n')
     f.close()
+  
+def write_merge_map_file_pick_otus(job_result_filepaths,output_dir,\
+    merge_map_filepath,input_file_basename):
+    
+    f = open(merge_map_filepath,'w')
+    
+    out_filepaths = ['%s/%s_non_unique_otus.txt' \
+                        % (output_dir,input_file_basename),
+                     '%s/%s_otus.log' % (output_dir,input_file_basename)]
+    
+    otus_fps = []
+    log_fps = []
+    
+    for fp in job_result_filepaths:
+        if fp.endswith('_otus.txt'):
+            otus_fps.append(fp)
+        else:
+            log_fps.append(fp)
+    
+    for in_files, out_file in\
+     zip([otus_fps,log_fps],out_filepaths):
+        f.write('\t'.join(in_files + [out_file]))
+        f.write('\n')
+    f.close()
     
 
 def write_merge_map_file_assign_taxonomy(job_result_filepaths,output_dir,\
