@@ -30,11 +30,6 @@ def parse_command_line_parameters():
     version = 'Version: %prog 0.1'
     parser = OptionParser(usage=usage, version=version)
 
-    # A binary 'verbose' flag
-    parser.add_option('-v','--verbose',action='store_true',\
-        help='Print information during execution -- '+\
-        'useful for debugging [default: %default]')
-
     parser.add_option('-r','--check_run_complete_f',\
            help='function which returns True when run is completed '+\
            '[default: %default]',\
@@ -103,24 +98,38 @@ def remove_all(paths_to_remove):
                 pass
     return
  
-def basic_check_run_complete_f(f,verbose=False):
-    """ Return a function which returns True if all filepaths exist
+def basic_check_run_complete_f(f):
+    """ Return True if all filepaths exist
     
         f: file containing list of filepaths
-        verbose: if True, the resulting function will print information to
-         stdout (default:False)
+        
+        example f:
+         f1.txt
+         f2.txt
+         f3.txt
+         
+        If f contains the three lines above, this function would return
+         False if any of these three files did not exist, and True otherwise.
+        
     """
     filepaths = parse_filepath_list_file(f)
     for fp in filepaths:
         if not exists(fp):
-            if verbose:
-                print "At least one fp doesn't exist: %s" % fp
             return False
-    if verbose: print "All filepaths exist."
     return True
     
-def basic_process_run_results_f(f,verbose=False):
+def basic_process_run_results_f(f):
     """ Copy each list of infiles to each outfile and delete infiles
+    
+        f: file containing one set of mapping instructions per line
+        
+        example f:
+         f1.txt f2.txt f3.txt f_combined.txt
+         f1.log f2.log f3.log f_combined.log
+         
+        If f contained the two lines above, this function would 
+         concatenate f1.txt, f2.txt, and f3.txt into f_combined.txt
+         and f1.log, f2.log, and f3.log into f_combined.log
     """
     infiles_lists,out_filepaths = parse_tmp_to_final_filepath_map_file(f)
     for infiles_list, out_filepath in zip(infiles_lists,out_filepaths):
@@ -135,30 +144,110 @@ def basic_process_run_results_f(f,verbose=False):
             for line in open(fp):
                of.write(line)
         of.close()
-
-    if verbose: print "Post-run processing complete."
     # It is a good idea to have your clean_up_callback return True.
     # That way, if you get mixed up and pass it as check_run_complete_callback, 
     # you'll get an error right away rather than going into an infinite loop
     return True
     
-def basic_clean_up_f(f,verbose=False):
+def basic_clean_up_f(f):
+    """ Removes list of files in f
+    
+        f: file containing list of filepaths
+        
+        example f:
+         f1.txt
+         f2.txt
+         f3.txt
+         temp_dir
+         
+        If f contains the four lines above, this function would delete
+         those three files/directories.
+        
+    """
     deletion_list = parse_filepath_list_file(f)
     remove_all(deletion_list)
-    if verbose: 
-        print "Post-run clean-up complete."
     return True
  
+def verbose_check_run_complete_f(f):
+    """ Return True if all filepaths exist
     
+        f: file containing list of filepaths
+        
+        example f:
+         f1.txt
+         f2.txt
+         f3.txt
+         
+        If f contains the three lines above, this function would return
+         False if any of these three files did not exist, and True otherwise.
+        
+    """
+    filepaths = [l.strip() for l in f]
+    for fp in filepaths:
+        if not exists(fp):
+            print "At least one fp doesn't exist: %s" % fp
+            return False
+    print "All filepaths exist."
+    return True
+    
+def verbose_process_run_results_f(f):
+    """ Copy each list of infiles to each outfile and delete infiles (verbose)
+    
+        f: file containing one set of mapping instructions per line
+        
+        example f:
+         f1.txt f2.txt f3.txt f_combined.txt
+         f1.log f2.log f3.log f_combined.log
+         
+        If f contained the two lines above, this function would 
+         concatenate f1.txt, f2.txt, and f3.txt into f_combined.txt
+         and f1.log, f2.log, and f3.log into f_combined.log
+    """
+    infiles_lists,out_filepaths = parse_tmp_to_final_filepath_map_file(f)
+    for infiles_list, out_filepath in zip(infiles_lists,out_filepaths):
+        try:
+            of = open(out_filepath,'w')
+            print 'Final result file (%s) contains temp files:'\
+             % out_filepath
+        except IOError:
+            raise IOError,\
+             "Poller can't open final output file: %s" % out_filepath  +\
+             "\nLeaving individual jobs output.\n Do you have write access?"
+
+        for fp in infiles_list:
+            print '\t%s' % fp
+            for line in open(fp):
+               of.write(line)
+        of.close()
+    return True
+
+def verbose_clean_up_f(f):
+    """ Removes list of files in f (verbose)
+    
+        f: file containing list of filepaths
+        
+        example f:
+         f1.txt
+         f2.txt
+         f3.txt
+         temp_dir
+         
+        If f contains the four lines above, this function would delete
+         those three files/directories.
+        
+    """
+    deletion_list = [l.strip() for l in f]
+    remove_all(deletion_list)
+    print "Post-run clean-up complete."
+    return True
+
 def poller(check_run_complete_f,\
             process_run_results_f,\
             clean_up_f,\
             check_run_complete_file,\
             process_run_results_file,\
             clean_up_file,\
-            seconds_to_sleep,\
-            verbose=False,
-            log_filepath=None):
+            seconds_to_sleep):
     """ Polls for completion of job(s) and then processes/cleans up results
     
         check_run_complete_f: function which returns True when polled
@@ -173,20 +262,16 @@ def poller(check_run_complete_f,\
         clean_up_file: file passed to clean_up_f
         seconds_to_sleep: number of seconds to sleep between calls
          to check_run_complete_f
-        verbose: turn on verbose output [default: False]
-        log_filepath: path to store log file [default: None]
         
     """
     number_of_loops = 0
-    while(not check_run_complete_f(check_run_complete_file,verbose)):
+    while(not check_run_complete_f(check_run_complete_file)):
         sleep(seconds_to_sleep)
         number_of_loops += 1
-    process_run_results_f(process_run_results_file,verbose)
-    clean_up_f(clean_up_file,verbose)
+    process_run_results_f(process_run_results_file)
+    clean_up_f(clean_up_file)
     est_per_proc_run_time = number_of_loops * seconds_to_sleep
     return est_per_proc_run_time
-
-
 
 if __name__ == "__main__":
     opts,args = parse_command_line_parameters()
@@ -197,9 +282,4 @@ if __name__ == "__main__":
             list(open(opts.check_run_complete_file)),\
             list(open(opts.process_run_results_file)),\
             list(open(opts.clean_up_file)),\
-            seconds_to_sleep=opts.time_to_sleep,\
-            verbose=opts.verbose,\
-            log_filepath=None)
-
-
-  
+            seconds_to_sleep=opts.time_to_sleep)
