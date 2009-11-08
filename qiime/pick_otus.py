@@ -116,7 +116,15 @@ class OtuPicker(FunctionWithParams):
 class BlastOtuPicker(OtuPicker):
     """Blast-based OTU picker which clusters sequence by their best blast hit
     """
-    SeqsPerBlastRun = 1000
+    
+    def __init__(self, params):
+        """Return new BlastOtuPicker object with specified params.
+        
+        """
+        _params = {'max_e_value':1e-30,'seqs_per_blast_run':1000,\
+         'min_pct_identity':0.75}
+        _params.update(params)
+        OtuPicker.__init__(self, _params)
     
     def __call__(self,seq_path,result_path=None,log_path=None,
         blast_db=None,refseqs_fp=None):
@@ -172,10 +180,11 @@ class BlastOtuPicker(OtuPicker):
     def _cluster_seqs(self,seqs):
         """
         """
-        # blast seqs self.SeqsPerBlastRun at a time
+        # blast seqs seq_per_blast_run at a time
         # Build object to keep track of the current set of sequences to be
         # blasted, and the results (i.e., seq_id -> (taxonomy,quaility score) 
         # mapping)
+        seqs_per_blast_run = self.Params['seqs_per_blast_run']
         current_seqs = []
         result = {}
         failures = []
@@ -185,7 +194,7 @@ class BlastOtuPicker(OtuPicker):
             # append the current seq_id,seq to list of seqs to be blasted
             current_seqs.append((seq_id,seq))
             # When there are self.SeqsPerBlastRun in the list, blast them
-            if len(current_seqs) == self.SeqsPerBlastRun:
+            if len(current_seqs) == seqs_per_blast_run:
                 # update the result object
                 current_clusters, current_failures =\
                  self._blast_seqs(current_seqs)
@@ -214,7 +223,9 @@ class BlastOtuPicker(OtuPicker):
         failures = []
         if not seqs: 
             return result, failures
-        blast_hits = get_blast_hits(seqs,self.blast_db)
+        blast_hits = get_blast_hits(seqs,self.blast_db,\
+         max_e_value=self.Params['max_e_value'],\
+         min_pct_identity=self.Params['min_pct_identity'])
         seq_id_to_best_blast_hit = \
          get_first_blast_hit_per_seq(blast_hits)
         for seq_id, blast_hit in seq_id_to_best_blast_hit.items():
@@ -248,7 +259,7 @@ def get_first_blast_hit_per_seq(blast_hits):
 
 # THIS FUNCTION SHOULD DO THE SeqsPerBlastRun splitting, would be _much_
 # cleaner that way. 
-def get_blast_hits(seqs,blast_db,max_e_value=1e-3,min_pct_identity=0.75):
+def get_blast_hits(seqs,blast_db,max_e_value=1e-30,min_pct_identity=0.75):
     """ blast each seq in seqs against blast_db and retain good hits
     """
     max_evalue = max_e_value

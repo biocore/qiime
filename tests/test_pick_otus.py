@@ -74,7 +74,7 @@ class BlastOtuPickerTests(TestCase):
     def setUp(self):
         """
         """
-        self.otu_picker = BlastOtuPicker({})
+        self.otu_picker = BlastOtuPicker({'max_e_value':1e-3})
         self.seqs = [\
          ('s0','CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC'),\
          ('s1','TGCAGCTTGAGCCACAGGAGAGAGAGAGCTTC'),\
@@ -182,6 +182,24 @@ class BlastOtuPickerTests(TestCase):
             refseqs_fp=self.reference_seqs_fp)
         self.assertEqual(actual,expected)
         
+    def test_call_alt_params(self):
+        """BLAST OTU Picker functions as expected with alt params
+        """
+        # default max_e_value (1e-30) -- too stringent here, so no results
+        otu_picker = BlastOtuPicker({})
+        expected = {}
+        actual = otu_picker(self.seqs_fp,\
+            refseqs_fp=self.reference_seqs_fp)
+        self.assertEqual(actual,expected)
+        
+        otu_picker = BlastOtuPicker({'max_e_value':1e-10})
+        expected = {'ref1':['s3','s2','s1'],\
+                    'ref2':['s4'],\
+                    'ref3':['s5']}
+        actual = otu_picker(self.seqs_fp,\
+            refseqs_fp=self.reference_seqs_fp)
+        self.assertEqual(actual,expected)
+        
     def test_call_preexisting_blast_db(self):
         """BLAST OTU Picker functions w preexisting blast db
         """
@@ -205,7 +223,8 @@ class BlastOtuPickerTests(TestCase):
         for v in expected.values():
             v.sort()
         for SeqsPerBlastRun in [1,2,4,6,7,8,100]:
-            self.otu_picker.SeqsPerBlastRun = SeqsPerBlastRun
+            self.otu_picker.Params['seqs_per_blast_run'] \
+             = SeqsPerBlastRun
             actual = self.otu_picker(self.seqs_fp,\
                 refseqs_fp=self.reference_seqs_fp)
             for v in actual.values():
