@@ -872,6 +872,10 @@ def parse_command_line_parameters():
     parser.add_option('-s','--similarity',action='store',\
           type='float',dest='similarity',help='Sequence similarity '+\
           'threshold [default: %default]')
+          
+    parser.add_option('-e','--max_e_value',action='store',\
+          type='float',dest='max_e_value',help='Max E-value when '+\
+          'clustering with BLAST [default: %default]')
     
     parser.add_option('-n','--prefix_prefilter_length',\
           type=int,help='prefilter data so seqs with identical first '+\
@@ -891,7 +895,7 @@ def parse_command_line_parameters():
 
     parser.set_defaults(verbose=False, otu_picking_method='cdhit',
         similarity=0.96, prefix_length=50, suffix_length=50,
-        clustering_algorithm='furthest',)
+        clustering_algorithm='furthest',max_e_value=1e-30)
 
     opts,args = parser.parse_args()
 
@@ -968,7 +972,7 @@ if __name__ == "__main__":
         otu_picker(input_seqs_filepath,
                    result_path=result_path, log_path=log_path)
     elif otu_picking_method == 'blast':
-        params = {}
+        params = {'max_e_value':opts.max_e_value}
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,
                    result_path=result_path, log_path=log_path,\

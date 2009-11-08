@@ -204,9 +204,9 @@ def write_merge_map_file_pick_otus(job_result_filepaths,output_dir,\
     
     f = open(merge_map_filepath,'w')
     
-    out_filepaths = ['%s/%s_otus.txt' \
-                        % (output_dir,input_file_basename),
-                     '%s/%s_otus.log' % (output_dir,input_file_basename)]
+    out_filepaths = [\
+     '%s/%s_otus.txt' % (output_dir,input_file_basename),
+     '%s/%s_otus.log' % (output_dir,input_file_basename)]
     
     otus_fps = []
     log_fps = []
