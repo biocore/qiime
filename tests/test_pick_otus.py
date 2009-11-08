@@ -76,12 +76,14 @@ class BlastOtuPickerTests(TestCase):
         """
         self.otu_picker = BlastOtuPicker({})
         self.seqs = [\
+         ('s0','CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC'),\
          ('s1','TGCAGCTTGAGCCACAGGAGAGAGAGAGCTTC'),\
          ('s2','TGCAGCTTGAGCCACAGGAGAGAGCCTTC'),\
          ('s3','TGCAGCTTGAGCCACAGGAGAGAGAGAGCTTC'),\
          ('s4','ACCGATGAGATATTAGCACAGGGGAATTAGAACCA'),\
          ('s5','TGTCGAGAGTGAGATGAGATGAGAACA'),\
          ('s6','ACGTATTTTAATTTGGCATGGT'),\
+         ('s7','TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT'),\
         ]
         
         self.ref_seqs = [\
@@ -120,11 +122,18 @@ class BlastOtuPickerTests(TestCase):
         self._files_to_remove += db_files_to_remove
         self.otu_picker.blast_db = blast_db
         
-        actual = self.otu_picker._blast_seqs(self.seqs)
-        for v in actual.values(): v.sort()
-        expected = {'ref1':['s1','s2','s3'],'ref2':['s4'],\
+        actual_clusters, actual_failures =\
+         self.otu_picker._blast_seqs(self.seqs)
+         
+        for v in actual_clusters.values(): v.sort()
+        actual_failures.sort()
+        
+        expected_clusters = {'ref1':['s1','s2','s3'],'ref2':['s4'],\
                     'ref3':['s5'],'ref4':['s6']}
-        self.assertEqual(actual,expected)
+        expected_failures = ['s0','s7']
+        
+        self.assertEqual(actual_clusters,expected_clusters)
+        self.assertEqual(actual_failures,expected_failures)
         
     def test_update_cluster_map(self):
         """update_cluster_map: functions as expected

@@ -134,7 +134,7 @@ class BlastOtuPicker(OtuPicker):
              
         self.log_lines.append('Blast database: %s' % self.blast_db)
         
-        clusters = self._cluster_seqs(\
+        clusters, failures = self._cluster_seqs(\
          MinimalFastaParser(open(seq_path)))
         self.log_lines.append('Num OTUs: %d' % len(clusters))
         
@@ -147,7 +147,7 @@ class BlastOtuPicker(OtuPicker):
                 of.write('%s\t%s\n' % (cluster_id,'\t'.join(cluster)))
             of.close()
             result = None
-            self.log_lines.append('Result path: %s' % result_path)
+            self.log_lines.append('Result path: %s\n' % result_path)
         else:
             # if the user did not provide a result_path, store
                 # the clusters in a dict of {otu_id:[seq_ids]}, where
@@ -160,6 +160,9 @@ class BlastOtuPicker(OtuPicker):
             log_file = open(log_path,'w')
             self.log_lines = [str(self)] + self.log_lines
             log_file.write('\n'.join(self.log_lines))
+            failures.sort()
+            log_file.write('Num failures: %d\n' % len(failures))
+            log_file.write('Failures: %s\n' % '\t'.join(failures))
     
         remove_files(self.db_files_to_remove,error_on_missing=False)
         # return the result (note this is None if the data was
@@ -175,6 +178,7 @@ class BlastOtuPicker(OtuPicker):
         # mapping)
         current_seqs = []
         result = {}
+        failures = []
         
         # Iterate over the (seq_id, seq) pairs
         for seq_id, seq in seqs:
@@ -183,14 +187,17 @@ class BlastOtuPicker(OtuPicker):
             # When there are self.SeqsPerBlastRun in the list, blast them
             if len(current_seqs) == self.SeqsPerBlastRun:
                 # update the result object
-                result = self._update_cluster_map(result,\
-                    self._blast_seqs(current_seqs))
+                current_clusters, current_failures =\
+                 self._blast_seqs(current_seqs)
+                result = self._update_cluster_map(result,current_clusters)
+                failures += current_failures
                 # reset the list of seqs to be blasted
                 current_seqs = []
         # Cluster the remaining sequences
-        result = self._update_cluster_map(result,\
-         self._blast_seqs(current_seqs))
-        return result
+        current_clusters, current_failures = self._blast_seqs(current_seqs)
+        result = self._update_cluster_map(result,current_clusters)
+        failures += current_failures
+        return result, failures
          
     def _update_cluster_map(self,cluster_map,new_clusters):
         for cluster_id, seq_ids in new_clusters.items():
@@ -203,19 +210,23 @@ class BlastOtuPicker(OtuPicker):
     def _blast_seqs(self,seqs):
         """
         """
-        if not seqs: 
-            return {}
         result = {}
+        failures = []
+        if not seqs: 
+            return result, failures
         blast_hits = get_blast_hits(seqs,self.blast_db)
         seq_id_to_best_blast_hit = \
          get_first_blast_hit_per_seq(blast_hits)
         for seq_id, blast_hit in seq_id_to_best_blast_hit.items():
-            cluster_id = blast_hit[0]
-            try:
-                result[cluster_id].append(seq_id)
-            except KeyError:
-                result[cluster_id] = [seq_id]
-        return result
+            if blast_hit == None:
+                failures.append(seq_id)
+            else:
+                cluster_id = blast_hit[0]
+                try:
+                    result[cluster_id].append(seq_id)
+                except KeyError:
+                    result[cluster_id] = [seq_id]
+        return result, failures
   
 ## START MOVE TO BLAST APP CONTROLLER
 ## The following two functions should be move to the blast application
