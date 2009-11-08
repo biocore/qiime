@@ -8,7 +8,7 @@ File created on 13 Sep 2009.
 """
 from __future__ import division
 from optparse import OptionParser
-from os import popen, system, mkdir
+from os import popen, system, mkdir, makedirs
 from os.path import split, splitext
 from cogent.app.util import get_tmp_filename
 from cogent.app.formatdb import build_blast_db_from_fasta_path
@@ -192,7 +192,7 @@ if __name__ == "__main__":
     # output files.
     working_dir = '%s/%s' % (output_dir,job_prefix)
     try:
-        mkdir(working_dir)
+        makedirs(working_dir)
         created_temp_paths.append(working_dir)
     except OSError:
         # working dir already exists
