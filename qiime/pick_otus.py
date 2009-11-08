@@ -31,8 +31,9 @@ from cogent.core.sequence import DnaSequence
 from cogent.util.misc import remove_files
 from cogent import LoadSeqs, DNA, Alignment
 from cogent.util.trie import build_prefix_map
+from cogent.util.misc import flatten
 from qiime.util import FunctionWithParams
-
+from qiime.parse import fields_to_dict
 
 class OtuPicker(FunctionWithParams):
     """An OtuPicker dereplicates a set of sequences at a given similarity.
@@ -811,6 +812,34 @@ class MothurOtuPicker(OtuPicker):
                 break
         return my_otus
 
+# Some functions to support merging OTU tables
+# generated one after another. This functionality is currently available
+# via Qiime/scripts/merge_otu_maps.py and will be incorporated into the
+# MetaPickOtus or ChainedPickOtus class when that comes into existence.
+
+def expand_otu_map_seq_ids(otu_map,seq_id_map):
+    for otu_id, seq_ids in otu_map.items():
+        mapped_seq_ids = flatten(\
+         [seq_id_map[seq_id] for seq_id in seq_ids])
+        otu_map[otu_id] = mapped_seq_ids
+    return otu_map
+                
+def map_otu_map_files(otu_files):
+    result = fields_to_dict(otu_files[0])
+    for otu_file in otu_files[1:]:
+        current_otu_map = fields_to_dict(otu_file)
+        result = expand_otu_map_seq_ids(current_otu_map,result)
+    return result
+
+def write_otu_map(otu_map,output_fp):
+    """
+    """
+    of = open(output_fp,'w')
+    for otu_id in sorted(otu_map.keys()):
+        of.write('\t'.join([otu_id] + otu_map[otu_id]))
+        of.write('\n')
+    of.close()
+# End functions to support merging OTU tables
 
 usage_str = """usage: %prog [options] {-i INPUT_SEQS_FILEPATH}
 

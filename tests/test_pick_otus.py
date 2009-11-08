@@ -18,7 +18,8 @@ from cogent.app.util import get_tmp_filename
 from cogent.util.misc import remove_files
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from qiime.pick_otus import CdHitOtuPicker, DoturOtuPicker, OtuPicker, \
-    MothurOtuPicker, PrefixSuffixOtuPicker, TrieOtuPicker, BlastOtuPicker
+    MothurOtuPicker, PrefixSuffixOtuPicker, TrieOtuPicker, BlastOtuPicker,\
+    expand_otu_map_seq_ids, map_otu_map_files, write_otu_map
 
 class OtuPickerTests(TestCase):
     """Tests of the abstract OtuPicker class"""
@@ -772,6 +773,88 @@ UAGGCUCUGAUAUAAUAGCUCUC---------
         # compare data in log file to fake expected log file
         self.assertEqual(log_file_str, exp)
 
+class PickOtusStandaloneFunctions(TestCase):
+    """ Tests of stand-alone functions in pick_otus.py """
+    
+    def setUp(self):
+        """
+        """
+        self.otu_map1 = {'0':['seq1','seq2','seq5'],\
+                         '1':['seq3','seq4'],\
+                         '2':['seq6','seq7','seq8']}
+        self.otu_map2 = {'110':['0','2'],\
+                         '221':['1']}
+        self.otu_map3 = {'a':['110','221']}
+        
+        
+        self.otu_map1_file = ['0\tseq1\tseq2\tseq5',\
+                              '1\tseq3\tseq4',\
+                              '2\tseq6\tseq7\tseq8']
+        self.otu_map2_file = ['110\t0\t2',\
+                              '221\t1']
+        self.otu_map3_file = ['a\t110\t221']
+        
+    def test_expand_otu_map_seq_ids_error(self):
+        """expand_otu_map_seq_ids: error on missing seq_ids
+        """
+        self.assertRaises(KeyError,expand_otu_map_seq_ids,\
+         self.otu_map3,self.otu_map1)
+        
+    def test_expand_otu_map_seq_ids_two(self):
+        """expand_otu_map_seq_ids: correctly maps seq_ids from two otu maps
+        """
+        exp12 = {'110':['seq1','seq2','seq5','seq6','seq7','seq8'],\
+                 '221':['seq3','seq4']}
+        actual12 = expand_otu_map_seq_ids(self.otu_map2,self.otu_map1)
+        self.assertEqual(actual12,exp12)
+                 
+    def test_expand_otu_map_seq_ids_three(self):
+        """expand_otu_map_seq_ids: correctly maps seq_ids from three otu maps
+        """
+        exp123 = {'a':['seq1','seq2','seq5','seq6',\
+                       'seq7','seq8','seq3','seq4']}
+        actual123 = expand_otu_map_seq_ids(self.otu_map3,\
+         expand_otu_map_seq_ids(self.otu_map2,self.otu_map1))
+        self.assertEqual(actual123,exp123)
+        
+    def test_map_otu_map_files_two(self):
+        """map_otu_map_files: correctly maps two otu files
+        """
+        exp12 = {'110':['seq1','seq2','seq5','seq6','seq7','seq8'],\
+                 '221':['seq3','seq4']}
+        actual12 = map_otu_map_files([self.otu_map1_file,self.otu_map2_file])
+        self.assertEqual(exp12,actual12)
+        
+    def test_map_otu_map_files_three(self):
+        """map_otu_map_files: correctly maps three otu files
+        """
+        exp123 = {'a':['seq1','seq2','seq5','seq6',\
+                       'seq7','seq8','seq3','seq4']}
+        actual123 = map_otu_map_files(\
+         [self.otu_map1_file,self.otu_map2_file,self.otu_map3_file])
+        self.assertEqual(exp123,actual123)
+    
+    def test_write_otu_map(self):
+        """write_otu_map: functions as expected
+        """
+        fp = get_tmp_filename(prefix='PickOtusStandaloneFunctions_',\
+         suffix='.txt')
+         
+        write_otu_map(self.otu_map1,fp)
+        lines = [l.strip() for l in list(open(fp))]
+        remove(fp)
+        self.assertEqual(lines,self.otu_map1_file)
+        
+        write_otu_map(self.otu_map2,fp)
+        lines = [l.strip() for l in list(open(fp))]
+        remove(fp)
+        self.assertEqual(lines,self.otu_map2_file)
+        
+        write_otu_map(self.otu_map3,fp)
+        lines = [l.strip() for l in list(open(fp))]
+        remove(fp)
+        self.assertEqual(lines,self.otu_map3_file)
+    
 
 dna_seqs_1 = """>cdhit_test_seqs_0 comment fields, not part of sequence identifiers
 AACCCCCACGGTGGATGCCACACGCCCCATACAAAGGGTAGGATGCTTAAGACACATCGCGTCAGGTTTGTGTCAGGCCT
