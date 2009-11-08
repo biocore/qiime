@@ -14,7 +14,7 @@ from cogent.app.util import get_tmp_filename
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from qiime.parallel.util import split_fasta, get_random_job_prefix, write_jobs_file,\
     submit_jobs, compute_seqs_per_file, build_filepaths_from_filepaths,\
-    get_poller_command, get_rename_command, write_filepaths_to_file,\
+    get_rename_command, write_filepaths_to_file,\
     write_merge_map_file_pick_otus
 from qiime.util import qiime_config
 
@@ -68,52 +68,73 @@ def get_job_commands(python_exe_fp,pick_otus_fp,fasta_fps,\
 
     return commands, result_filepaths
 
-def unique_otu_map_from_non_unique_otu_file(f):
-    """ Read a 'unique' OTU file into otu map: {otu_id: [seq_ids...]}
+def parallel_blast_process_run_results_f(f):
+    """ Copy each list of infiles to each outfile and delete infiles
     
-        a 'unique' OTU file is one where no otu identifier is repeated
-        a 'non-unique' OTU file is one where OTU idnetifiers can be repeated
-         (but these should not contain overlapping seq_ids)
+        f: file containing one set of mapping instructions per line
         
-        This function merges OTUs to create a unique OTU file from 
-         a non-unique OTU file. 
+        example f:
+         f1.txt f2.txt f3.txt f_combined.txt
+         f1.log f2.log f3.log f_combined.log
          
-         For example:
-         
-         'non-unique' (input):
-           otu_id1 seq1 seq2
-           otu_id2 seq3
-           otu_id1 seq4
-          
-         'unique' (output):
-           otu_id1 seq1 seq2 seq4
-           otu_id2 seq3
-          
+        If f contained the two lines above, this function would 
+         concatenate f1.txt, f2.txt, and f3.txt into f_combined.txt
+         and f1.log, f2.log, and f3.log into f_combined.log
     """
-    result = {}
-    for line in f:
-        fields = line.strip().split()
-        try:
-            # if this otu_id has already been seen, update its
-            # list of seq_ids
-            result[fields[0]] += fields[1:]
-        except KeyError:
-            # if this otu_id hasn't already been seen, create its
-            # list of seq_ids
-            result[fields[0]] = fields[1:]
-    return result
+    fields = list(f)[0].strip().split()
+    infiles_list = fields[:-1]
+    out_filepath = fields[-1] 
+    try:
+        of = open(out_filepath,'w')
+    except IOError:
+        raise IOError,\
+         "Poller can't open final output file: %s" % out_filepath  +\
+         "\nLeaving individual jobs output.\n Do you have write access?"
 
-def unique_otu_fp_from_non_unique_otu_fp(otu_fp,output_fp=None):
-    """ Read a 'non-unique' OTU file and write as a 'unique' otu file
-    """
-    otu_map = unique_otu_map_from_non_unique_otu_file(open(otu_fp))
-    output_fp = output_fp or otu_fp
-    of = open(output_fp,'w')
-    for otu_id, seq_ids in otu_map.items():
+    unique_otu_map = {}
+    for fp in infiles_list:
+        for line in open(fp):
+            fields = line.strip().split()
+            try:
+                # current otu_id already exists, so append this
+                # set of seq_ids
+                unique_otu_map[fields[0]] += fields[1:]
+            except KeyError:
+                # current otu_id has not been seen yet, so 
+                # create it with the current set of otus
+                unique_otu_map[fields[0]] = fields[1:]
+    
+    for otu_id, seq_ids in unique_otu_map.items():
         of.write('\t'.join([otu_id] + seq_ids))
-        of.write('\n')
+        of.write('\n')            
     of.close()
-    return
+    
+    # It is a good idea to have your clean_up_callback return True.
+    # That way, if you get mixed up and pass it as check_run_complete_callback, 
+    # you'll get an error right away rather than going into an infinite loop
+    return True
+
+def get_poller_command(python_exe_fp,poller_fp,expected_files_filepath,\
+    merge_map_filepath,deletion_list_filepath,process_run_results_f,\
+    seconds_to_sleep,command_prefix=None,command_suffix=None):
+    """Generate command to initiate a poller to monitior/process completed runs
+    """
+    
+    command_prefix = command_prefix or '/bin/bash; '
+    command_suffix = command_suffix or '; exit'
+    
+    result = '%s %s %s -f %s -p %s -m %s -d %s -t %d %s' % \
+     (command_prefix,
+      python_exe_fp,
+      poller_fp,
+      expected_files_filepath,
+      process_run_results_f,
+      merge_map_filepath,
+      deletion_list_filepath,
+      seconds_to_sleep,
+      command_suffix)
+      
+    return result, []
 
 usage_str = """usage: %prog [options] {-i INPUT_FP -o OUTPUT_DIR}
 
@@ -294,6 +315,8 @@ if __name__ == "__main__":
         # Write the mapping file which described how the output files from
         # each job should be merged into the final output files
         merge_map_filepath = '%s/merge_map.txt' % working_dir
+        process_run_results_f =\
+         'qiime.parallel.pick_otus_blast.parallel_blast_process_run_results_f'
         write_merge_map_file_pick_otus(job_result_filepaths,output_dir,\
             merge_map_filepath,input_file_basename)
         created_temp_paths.append(merge_map_filepath)
@@ -307,7 +330,7 @@ if __name__ == "__main__":
         # created by the poller
         poller_command, poller_result_filepaths =\
          get_poller_command(python_exe_fp,poller_fp,expected_files_filepath,\
-         merge_map_filepath,deletion_list_filepath,\
+         merge_map_filepath,deletion_list_filepath,process_run_results_f,\
          seconds_to_sleep=seconds_to_sleep)
         created_temp_paths += poller_result_filepaths
         
