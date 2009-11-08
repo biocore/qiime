@@ -8,7 +8,7 @@ File created on 25 Aug 2009.
 """
 from __future__ import division
 from optparse import OptionParser
-from os import popen, system, mkdir
+from os import popen, system, mkdir, makedirs
 from os.path import split, splitext
 from cogent.app.util import get_tmp_filename
 from qiime.parallel.util import split_fasta, get_random_job_prefix, write_jobs_file,\
@@ -176,6 +176,12 @@ if __name__ == "__main__":
     retain_temp_files = opts.retain_temp_files
     suppress_polling = opts.suppress_polling
     seconds_to_sleep = opts.seconds_to_sleep
+
+    try:
+        makedirs(output_dir)
+    except OSError:
+        # output dir already exists
+        pass
 
     created_temp_paths = []
     
