@@ -19,7 +19,7 @@ from cogent.maths.stats.test import t_two_sample
 from numpy import array, mean, average
 from collections import defaultdict
 from string import strip
-from pylab import hist, savefig, clf, gca, gcf
+from matplotlib.pylab import hist, savefig, clf, gca, gcf
 from matplotlib.patches import Ellipse, Polygon
 from random import choice
 from numpy.random import permutation
@@ -49,7 +49,7 @@ def within_category_distances_grouped(single_field):
             if data[0] == data[1]:
                 all = array(data[2])
                 distances[field+\
-                    '_All_Within_Catgegory_Distances'].extend(all.flat)
+                    '_All_Within_Category_Distances'].extend(all.flat)
     return distances
 
 def within_category_distances(single_field):
@@ -456,7 +456,6 @@ def group_distances(mapping_file,dmatrix_file,fields,dir_prefix='',\
     return single_field, paired_field, distance_matrix
 
 def monte_carlo_group_distances(mapping_file, dmatrix_file, prefs, \
-    num_iters,\
     dir_prefix = '', subdir_prefix='monte_carlo_group_distances'):
     """Calculate Monte Carlo stats for specified group distances.
     
@@ -573,7 +572,7 @@ OPTIONS = [
             help='''File containing prefs for analysis.  NOTE: This is a file with a dict containing preferences for the analysis.  This dict must have a "Fields" key mapping to a list of desired fields.[REQUIRED]'''),\
         make_option('-o', '--dir_path', dest='dir_path',\
             help='directory prefix for all analyses [default: %default]',\
-            default=''),\
+            default='.'),\
         make_option('--monte_carlo',dest='monte_carlo',default=False,\
             action='store_true',help='''Perform Monte Carlo on distances.  [Default: %default]'''),\
         make_option('--html_output',dest='html_output',default=False,\
@@ -660,7 +659,6 @@ def main(args,args_parsed=None):
         monte_carlo_group_distances(mapping_file=opts.mapping_file,\
             dmatrix_file=opts.distance_matrix_file,\
             prefs=prefs, \
-            num_iters=opts.num_iterations,\
             dir_prefix = opts.dir_path)
             
 if __name__ == "__main__":
