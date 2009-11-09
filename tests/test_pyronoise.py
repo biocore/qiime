@@ -20,30 +20,37 @@ from cogent.util.misc import remove_files
 from cogent.app.util import get_tmp_filename
 from cogent.parse.flowgram import Flowgram
 from cogent.parse.flowgram_collection import FlowgramCollection
-from cogent.parse.flowgram_parser import getHeaderInfo
-from qiime.pyronoise import writePyronoiseFile, pyroNoise, pyroNoise_otu_picker
+from cogent.parse.flowgram_parser import get_header_info
+from qiime.pyronoise import write_pyronoise_file, pyroNoise, pyroNoise_otu_picker
 
 
 class PyroNoiseTests(TestCase):
-    """Tests of the abstract OtuPicker class"""
+    """Tests of the abstract PyroNoise OTU Picker class"""
     def setUp(self):
         self.file_content = file_content
-        self.header = getHeaderInfo(header.split('\n'))
+        self.header = get_header_info(header.split('\n'))
         self.small_flowgram_collection = FlowgramCollection(flowgrams, header_info=self.header)
         self.large_flowgram_collection = FlowgramCollection(large_example)
-
+        
+        self.small_sff_path = get_tmp_filename(
+            prefix='pyroNoiseTest_', suffix='.sff.txt')
+        self.small_flowgram_collection.writeToFile(self.small_sff_path)
+        
+    def tearDown(self):
+        remove(self.small_sff_path)
+        
     def test_writePyronoisefile(self):
         """writePyroNoise writes flowgrams in pyronoise format."""
   
         small_seq_path = get_tmp_filename(
             prefix='writePyroNoiseTest_', suffix='.dat')
-        writePyronoiseFile(self.small_flowgram_collection.iterFlows(),
+        write_pyronoise_file(self.small_flowgram_collection.iterFlows(),
                            len(self.small_flowgram_collection),
                            filename=small_seq_path)
         
         actual = "".join((open(small_seq_path)).readlines())
-        self.assertEqual(actual, self.file_content)
         remove(small_seq_path)
+        self.assertEqual(actual, self.file_content)
         
     def test_Pyronoise(self):
         """PyroNoise computes centroids."""
@@ -72,11 +79,8 @@ class PyroNoiseTests(TestCase):
     def test_pyroNoise_otu_picker(self):
         """PyroNoise works as an OTU picker"""
 
-        small_sff_path = get_tmp_filename(
-            prefix='pyroNoiseTest_', suffix='.sff.txt')
-        self.small_flowgram_collection.writeToFile(small_sff_path)
-
-        actual_centroids, actual_otu_map = pyroNoise_otu_picker(open(small_sff_path), num_cpus=2)
+        actual_centroids, actual_otu_map = pyroNoise_otu_picker(open(self.small_sff_path), num_cpus=2)
+      
         self.assertEqualItems(actual_centroids.values(), 
                          ['ATTAGATACCCCGGTAGTCCACGCCGTAAACGA',
                           'TTTTACGAGTACCGGTAAGTACCACCCGTAAACGA'])
@@ -85,7 +89,6 @@ class PyroNoiseTests(TestCase):
                           '0': ['28', '405', '1349', '2519', '2986', '7231', '8446', '9909', '11113',
                                 '13119', '13888', '2378', '3816', '5984', '13627', '15472', '3222', 
                                 '14843', '99451']})
-        remove(small_sff_path)
 
 
 ### Test data ###

@@ -22,7 +22,7 @@ from cogent.app.util import get_tmp_filename
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.util.misc import remove_files, app_path
 from cogent.core.alignment import SequenceCollection
-from cogent.parse.flowgram_parser import LazySFFParser
+from cogent.parse.flowgram_parser import lazy_parse_sff_handle
 from cogent.app.util import ApplicationNotFoundError
 
 
@@ -91,7 +91,7 @@ Example usage:
     return opts,args
 
 
-def writePyronoiseFile(flowgrams, num_flows, filename=None, prefix = "/tmp/"):
+def write_pyronoise_file(flowgrams, num_flows, filename=None, prefix = "/tmp/"):
     """Write flowgrams to a (randomly) named file.
 
     flowgrams: flowgrams to write
@@ -148,7 +148,7 @@ def pyroNoise_app(flows, num_flows, num_cpus=2, outdir = "/tmp/", log_fh=None,
 
     basename = get_tmp_filename(tmp_dir=outdir, prefix = "", suffix="")
     #copy flowgrams from input sff.txt to pyronoise-formatted file
-    filename, id_mapping = writePyronoiseFile(flows, num_flows, filename = basename+".dat")
+    filename, id_mapping = write_pyronoise_file(flows, num_flows, filename = basename+".dat")
     
     if(num_cpus >1):
         mpi = "mpirun -np %d "% num_cpus
@@ -251,12 +251,15 @@ def pyroNoise_otu_picker(sff_fh, outdir="/tmp/", num_cpus=1,
     
     Returns centroids and cluster mapping."""
     
-    (flowgrams, header) = LazySFFParser(sff_fh)
+    (flowgrams, header) = lazy_parse_sff_handle(sff_fh)
     basename, id_mapping = pyroNoise_app(flowgrams, int(header["# of Reads"]), 
                                          num_cpus, outdir, log_fh, precision, cut_off)
     centroids = {}
     cluster_size = {}
+    #get centroids
     seqs = MinimalFastaParser(open(basename+"_cd.fa"))
+    #get information from pyronoise header:
+    #e.g.    > /long_dir_list/name_0_12   stands for centroid 0 with 12 cluster members
     for (i,(label,seq)) in enumerate(seqs):
         (name, id, count)=label.split('/')[-1].split('_')
         name = "%s"%(id)
@@ -264,6 +267,7 @@ def pyroNoise_otu_picker(sff_fh, outdir="/tmp/", num_cpus=1,
         cluster_size[name] = int(count)
 
     otu_map = {}
+    #Read in individual clusters
     for filename in listdir(basename):
         seqs = MinimalFastaParser(open(basename+"/"+filename))
         cluster_ids = [a for (a,b) in seqs] 
