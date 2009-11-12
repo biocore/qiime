@@ -229,9 +229,18 @@ class PyNastAligner(Aligner):
         candidate_sequences = MinimalFastaParser(seq_file)
 
         # load template sequences
-        template_alignment = LoadSeqs(
-            self.Params['template_filepath'], moltype=DNA, 
-            format='fasta', aligned=DenseAlignment)
+        template_alignment = []
+        template_alignment_fp = self.Params['template_filepath']
+        for seq_id, seq in MinimalFastaParser(open(template_alignment_fp)):
+            # replace '.' characters with '-' characters
+            template_alignment.append((seq_id,seq.replace('.','-')))        
+        try:
+            template_alignment = LoadSeqs(data=template_alignment,moltype=DNA,\
+             aligned=DenseAlignment)
+        except KeyError, e:
+            raise KeyError,\
+             'Only ACGT-. characters can be contained in template alignments.'+\
+             ' The offending character was: %s' % e
 
         # initialize_logger
         logger = NastLogger(log_path)
@@ -399,7 +408,9 @@ if __name__ == "__main__":
     log_path = output_dir + '/' + fname + "_log.txt"
     failure_path = output_dir + '/' + fname + "_failures.fasta"
  
-    try:
+    if alignment_method in alignment_method_constructors:
+        # try/except was causing problems here, so replacing with
+        # an explicit check
         # define the aligner params
         aligner_constructor =\
          alignment_method_constructors[alignment_method]
@@ -415,7 +426,7 @@ if __name__ == "__main__":
         aligner(input_seqs_filepath,result_path=result_path,\
          log_path=log_path,failure_path=failure_path)
         
-    except KeyError:
+    else:
         # define the aligner params
         aligner = CogentAligner({
         'Module':alignment_module_names.get(alignment_method, 'Unknown'),
