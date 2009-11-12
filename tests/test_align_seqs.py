@@ -152,6 +152,16 @@ class PyNastAlignerTests(SharedSetupTestCase):
         open(self.pynast_test1_template_fp,'w').\
          write(pynast_test1_template_fasta)
 
+        self.pynast_test_template_w_dots_fp = get_tmp_filename(
+            prefix='PyNastAlignerTests_',suffix='template.fasta')
+        open(self.pynast_test_template_w_dots_fp,'w').\
+         write(pynast_test1_template_fasta.replace('-','.'))
+
+        self.pynast_test_template_w_u_fp = get_tmp_filename(
+            prefix='PyNastAlignerTests_',suffix='template.fasta')
+        open(self.pynast_test_template_w_u_fp,'w').\
+         write(pynast_test1_template_fasta.replace('T','U'))
+
         # create temp file names (and touch them so we can reliably 
         # clean them up)
         self.result_fp = get_tmp_filename(
@@ -170,12 +180,15 @@ class PyNastAlignerTests(SharedSetupTestCase):
             self.failure_fp,
             self.log_fp,
             self.pynast_test1_template_fp,
+            self.pynast_test_template_w_dots_fp,
+            self.pynast_test_template_w_u_fp,
             ]
 
         self.pynast_test1_aligner = PyNastAligner({
                 'template_filepath': self.pynast_test1_template_fp,
                 'min_len': 15,
                 })
+
         self.pynast_test1_expected_aln = \
          LoadSeqs(data=pynast_test1_expected_alignment,aligned=DenseAlignment)
         self.pynast_test1_expected_fail = \
@@ -231,6 +244,29 @@ class PyNastAlignerTests(SharedSetupTestCase):
         expected_names = ['1 description field 1..23', '2 1..23']
         self.assertEqual(actual_aln.Names, expected_names)
         self.assertEqual(actual_aln, expected_aln)
+        
+    def test_call_pynast_template_aln_with_dots(self):
+        """PyNastAligner: functions when template alignment contains dots
+        """
+        pynast_aligner = PyNastAligner({
+                'template_filepath': self.pynast_test_template_w_dots_fp,
+                'min_len': 15,
+                })
+        actual_aln = pynast_aligner(self.pynast_test1_input_fp)
+        expected_aln = self.pynast_test1_expected_aln
+
+        expected_names = ['1 description field 1..23', '2 1..23']
+        self.assertEqual(actual_aln.Names, expected_names)
+        self.assertEqual(actual_aln, expected_aln)
+
+    def test_call_pynast_template_aln_with_U(self):
+        """PyNastAligner: error message when template contains bad char
+        """
+        pynast_aligner = PyNastAligner({
+                'template_filepath': self.pynast_test_template_w_u_fp,
+                'min_len': 15,
+                })
+        self.assertRaises(KeyError,pynast_aligner,self.pynast_test1_input_fp)
         
     def test_call_pynast_alt_pairwise_method(self):
         """PyNastAligner: alternate pairwise alignment method produces correct alignment
@@ -303,7 +339,12 @@ seq_c           ------------TGACTAC-GCAT---------
 #=GC SS_cons    ............((.(....)))..........
 //"""
 
-infernal_test1_expected_alignment = """>seq_1-----ACTGCTA-GCTAGTAGCGTACGTA---->seq_2--------GCTACG-TAGCTAC----------->seq_3-----GCGGCTATTAGATC-GTA----------
+infernal_test1_expected_alignment = """>seq_1
+-----ACTGCTA-GCTAGTAGCGTACGTA----
+>seq_2
+--------GCTACG-TAGCTAC-----------
+>seq_3
+-----GCGGCTATTAGATC-GTA----------
 """
 
 pynast_test1_template_fasta = """>1
