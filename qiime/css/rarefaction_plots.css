@@ -10,6 +10,17 @@ img {
     border: none;
 }
 
+div.debugging {
+    width: 100%;
+    height: 100px;
+    overflow: scroll;
+}
+
+div.debuggingconsole {
+    font-family: courier;
+    font-size: 9pt;
+}
+
 div.spacer {
     width: 100%;
 	min-width: 1000px;

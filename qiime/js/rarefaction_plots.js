@@ -1,4 +1,4 @@
-//rarefaction_curves.js
+//rarefaction_plots.js
 
 window.onload=Main;
 google.load("visualization", "1", {packages:["scatterchart"]});
@@ -11,12 +11,19 @@ var categoryOps = new Array();
 var sampleMat = new Array();
 var sampleIDsarry = new Array();
 var fileNames = new Array;
+var collapsed_series_array = new Array();
+var showonly_array = new Array();
+var rareFilesData = new Array();
 
 function Main() {
 	loadExternalFiles();
 	loadMapping(fileNames[0]);
     loadDiversityMeasures(fileNames.slice(1,fileNames.length));
+    currentGraph = fileNames[1];
     makeDataTable();
+    make_collapsed_series();
+    make_showonly_array();
+    loadGraph(fileNames[1]);
 }
 
 function loadExternalFiles() {
@@ -39,7 +46,7 @@ function average(a){
 // end
 
 function makeDataTable() {
-	$('#raretable').dataTable();
+	//$('#raretable').dataTable();
 }
 
 function plotLines(series, seriestitles, xaxisvals, gtitle, legend){
@@ -76,22 +83,20 @@ function loadDiversityMeasures(filenms) {
 	//var filenms = ['PD_whole_tree_mouth.txt','chao1_mouth.txt'];
 	var headers = ['SampleIDs'];
 	var tempaave = new Array();
-	loadGraph(filenms[0]);
-	
 	for(f = 0; f < filenms.length; f++)
 	{
 		var tempData = new Array();
 		var tempave = new Array();
 		headers.push(filenms[f]);
-		tempData = loadFileData(filenms[f]);
+		rareFilesData[filenms[f]] = loadFileData(filenms[f]);
 		/*
 		data.push(raremat); [0]
 		data.push(rareIDs); [1]
 		data.push(sampleIDs); [2]
 		data.push(seqsPerSamp); [3]
 		*/
-		tempave = makeAverageSeries(tempData[0], tempData[1], tempData[2]);	
-		sampleIDs = tempData[2]
+		tempave = makeAverageSeries(rareFilesData[filenms[f]][0], rareFilesData[filenms[f]][1], rareFilesData[filenms[f]][2]);	
+		sampleIDs = rareFilesData[filenms[f]][2]
 		tempaave[f] = aveAverageSeries(tempave);
 	}
 	makeTable(tempaave, headers, sampleIDs);
@@ -102,20 +107,18 @@ function loadMapping(filenm) {
     sampleIDsarry = new Array();
     
 	var mappingfl = getFile(filenm);
-    //var mappingFileLines = mappingfl.split(/(\r|\n)/);
-	//var mappingFileLines = mappingfl.split("\n");
-	var mappingFileLines = mappingfl.split("\r");
+	var mappingFileLines = mappingfl.split("\n");
     categories = mappingFileLines[0].split("\t");
     var categ = "";
     
 	categoryOps = new Array();
 
-    for(var i = 2; i < mappingFileLines.length; i++)
+    for(var i = 1; i < mappingFileLines.length; i++)
     {
         categ = mappingFileLines[i].split("\t");
-        sampleIDsarry[i-2] = categ[0];
+        sampleIDsarry[i-1] = categ[0].toUpperCase();
         
-        sampleMat[sampleIDsarry[i-2]] = new Array(); //categ[0] = sampleID
+        sampleMat[sampleIDsarry[i-1]] = new Array(); //categ[0] = sampleID
         for(var j = 0; j < categ.length; j++)
         {
 			if(categoryOps[categories[j]] != null)
@@ -127,14 +130,15 @@ function loadMapping(filenm) {
 						seen = true;
 				}
 				if(!seen)
-					categoryOps[categories[j]].push(categ[j]);
+					categoryOps[categories[j]].push(categ[j] );
 			}
 			else
 				categoryOps[categories[j]] = [categ[j]]; //
-            sampleMat[categ[0]][j] = categ[j];
+            sampleMat[categ[0].toUpperCase()][j] = categ[j] ;
         }
     }
-    makeOpsPanel(categories, categoryOps, sampleMat);
+    makeOpsPanel();
+    //makeOpsPanel(categories, categoryOps, sampleMat);
 }
 
 function contains(a, obj){
@@ -172,11 +176,10 @@ function makeErrorBarSeries(series){
 	return errSeries;
 }
 
-function showOnly(option, catOp) {
-	recolor(option); // make sure graph is set to this option
+function get_showOnly(option, catOp) {
 	var catToColor = new Array();
 	colours = new Array();
-	var data = loadFileData(currentGraph);
+	var data = rareFilesData[currentGraph];
 	var ave = makeAverageSeries(data[0], data[1], data[2]);
 	var series = new Array();
 	
@@ -203,24 +206,47 @@ function showOnly(option, catOp) {
 	}
 	
 	var graphName = " Average Colored By " + option + " : " + catOp;
-	plotLines(newSeries, new Array(newSeries.length), newXaxis, currentGraph.split('.')[0]+ graphName, 'none')
+	//plotLines(newSeries, new Array(newSeries.length), newXaxis, currentGraph.split('.')[0]+ graphName, 'none')
+    var result = new Array();
+    result.push(newSeries);
+    result.push(new Array(newSeries.length))
+    result.push(newXaxis);
+    result.push(graphName)
+    result.push(colours)
+    return result;
+}
+
+function make_showonly_array() {
+    for(var i = 0; i < categories.length; i++)
+    {
+        showonly_array[categories[i]] = new Array();
+        for(var j = 0; j < categoryOps[categories[i]].length; j++)
+            showonly_array[categories[i]][categoryOps[categories[i]][j]] = get_showOnly(categories[i], categoryOps[categories[i]][j])
+    }
+}
+
+function showOnly(option, catOp) {
+    var ary = showonly_array[option][catOp];
+    colours = ary[4]
+    plotLines(ary[0], ary[1], ary[2], ary[3], 'none')
 }
 
 function collapseSeries(option) {
-	recolor(option); // make sure graph is set to this option
+	colorBy(option); // make sure graph is set to this option
 	var catToColor = new Array();
 	colours = new Array();
 
 	var categoryArray = new Array();
 	var key = "";
 	
-	var data = loadFileData(currentGraph);
+	var data = rareFilesData[currentGraph];
 	var ave = makeAverageSeries(data[0], data[1], data[2]);
 		
 	for(var j = 0; j < sampleIDsarry.length; j++)
 	{
 		var vals = sampleMat[sampleIDsarry[j]]; //all different options to color by (ie. sex)
 		key = vals[categories.indexOf(option)]
+		//alert(key)
 
 		if(categoryArray[key] == null)
 			categoryArray[key] = new Array();
@@ -235,12 +261,16 @@ function collapseSeries(option) {
 	var newSeries = new Array();
 	var stdDevSeries = new Array();
 	var seriesNames = categoryOps[option].slice();
-	
+	//document.getElementById('debugging').innerHTML += "option: " + option;
+	//document.getElementById('debugging').innerHTML += "catarray def " + categoryArray[categoryOps[option][0]][0];
+	//document.getElementById('debugging').innerHTML += categoryOps[option]
 	for(var i = 0; i < categoryOps[option].length; i++) // ie male or female so this would go two times
 	{
 		// need to do it for each first point of each series, then each second point, etc
 		var currAve = new Array();
 		colours.push(catToColor[categoryOps[option][i]]);
+		if(categoryArray[categoryOps[option][i]][0] == null)
+		    document.getElementById('debugging').innerHTML += categoryOps[option][i]
 		for(var l = 0; l < categoryArray[categoryOps[option][i]][0].length; l++) // for length of sequence line
 		{
 			var values = new Array();
@@ -274,78 +304,24 @@ function collapseSeries(option) {
 	}
 	
 	var graphName = currentGraph.split('.')[0]+ ' Average Colored By ' + option;
-	plotLines(newSeries, seriesNames, newXaxis, graphName, 'none')
+	//plotLines(newSeries, seriesNames, newXaxis, graphName, 'none')
+	var result = new Array();
+	result.push(newSeries);
+	result.push(seriesNames);
+	result.push(newXaxis);
+	result.push(graphName);
+	return result
 }
 
-function collapseSeries2(option) {
-	recolor(option); // make sure graph is set to this option
-	var catToColor = new Array();
-	colours = new Array();
+function make_collapsed_series() {
+    for(var i = 0; i < categories.length; i++)
+        collapsed_series_array[categories[i]] = collapseSeries(categories[i]);
+}
 
-	var categoryArray = new Array();
-	var key = "";
-	
-	var data = loadFileData(currentGraph);
-	var ave = makeAverageSeries(data[0], data[1], data[2]);
-		
-	for(var j = 0; j < sampleIDsarry.length; j++)
-	{
-		var vals = sampleMat[sampleIDsarry[j]]; //all different options to color by (ie. sex)
-		key = "";
-		for(var k = 0; k < vals.length; k++)
-		{
-			if(categories[k] == option)
-				key = vals[k] // need to group samples by this category
-		}
-		if(categoryArray[key] == null)
-			categoryArray[key] = new Array();
-		categoryArray[key].push(ave[j]); // (ie. categoryArray['M'].push(...))
-	}
-	
-	var aveCatArray = new Array();
-	
-	for(var i = 0; i < categoryOps[option].length; i++)
-		catToColor[categoryOps[option][i]] = makeColorGradient(.3,.3,.3,0,2,4,categoryOps[option].length)[i];
-	
-	var newSeries = new Array();
-	var stdDevSeries = new Array();
-	var seriesNames = categoryOps[option].slice();
-	
-	for(var i = 0; i < categoryOps[option].length; i++) // ie male or female so this would go two times
-	{
-		// need to do it for each first point of each series, then each second point, etc
-		var currAve = new Array();
-		colours.push(catToColor[categoryOps[option][i]])
-		for(var l = 0; l < categoryArray[categoryOps[option][i]][0].length; l++) // for length of sequence line
-		{
-			var values = new Array();
-			var stdDev = new Array();
-			for(var m = 0; m < categoryArray[categoryOps[option][i]][0].length*2; m++)
-				stdDev[m] = 0;
-			// want to make average & std deviation series, add each of them to aveCatArray
-			for(var k = 0; k < categoryArray[categoryOps[option][i]].length; k++) // for each sequence in each option (ie M, F)
-			{
-				var value = categoryArray[categoryOps[option][i]][k][l];
-				values.push(value);
-			}
-			currAve.push(average(values).mean);
-			currAve.push(average(values).mean);
-			stdDev[l*2] = average(values).mean + average(values).deviation;
-			stdDev[l*2+1] = average(values).mean - average(values).deviation;
-			colours.push(catToColor[categoryOps[option][i]])
-			newSeries.push(stdDev);
-			seriesNames.push("");
-		}
-		newSeries.push(currAve);
-	}
-	var newXaxis = new Array();
-	for(var p = 0; p < data[3].length; p++)
-	{
-		newXaxis[p*2] = data[3][p]
-		newXaxis[p*2+1] = data[3][p]
-	}
-	
-	plotLines(newSeries, seriesNames, newXaxis, currentGraph.split('.')[0]+ ' Average Colored By ' + option, 'none')
+function show_collapsed_series(option) {
+    colorBy(option); // make sure graph is set to this option
+    var ary = collapsed_series_array[option]
+    plotLines(ary[0], ary[1], ary[2], ary[3], 'none')
 }
 
 function showHide(option) {
@@ -354,7 +330,7 @@ function showHide(option) {
 		document.getElementById(showHideOps[i]).style.display = 'none';
 	}
 	document.getElementById(option).style.display = 'block';
-	recolor(option);
+	show_collapsed_series(option);
 }
 
 function RGB2Color(r,g,b)
@@ -412,19 +388,19 @@ function recolor(option) {
 	loadGraph(currentGraph)
 }
 
-function makeOpsPanel(categories, catops, matrix) {
+function makeOpsPanel() {
 	var htmllines = "<div class=\"ops clearfix\">";
 	
 	for(var i = 0; i < categories.length-1; i++)
 	{
 		showHideOps.push(categories[i]);
 		htmllines += "<a class=\"ops\" href=\"javascript:showHide(\'"+categories[i]+"\');\">"+categories[i]+"</a>";
-		htmllines += "<a class=\"ops\" onMouseOver=\"javascript:collapseSeries(\'"+categories[i]+"\');\"> ave </a>";
-		htmllines += "<a class=\"ops\" onMouseOver=\"javascript:recolor(\'"+categories[i]+"\');\"> all </a>";
+		htmllines += "<a class=\"ops\" onMouseOver=\"javascript:show_collapsed_series(\'"+categories[i]+"\');\"> ave </a>";
+		//htmllines += "<a class=\"ops\" onMouseOver=\"javascript:recolor(\'"+categories[i]+"\');\"> all </a>";
 		htmllines += "<ul class=\"onoff\">";
 		htmllines += "<span style=\"display:none\" id=\""+categories[i]+"\">";
-		for(j = 0; j < catops[categories[i]].length; j++)
-			htmllines += "<li><a onMouseOver=\"javascript:showOnly(\'"+categories[i]+"\',\'"+catops[categories[i]][j]+"\');\">"+catops[categories[i]][j]+"</a></li>"
+		for(j = 0; j < categoryOps[categories[i]].length; j++)
+			htmllines += "<li><a onMouseOver=\"javascript:showOnly(\'"+categories[i]+"\',\'"+categoryOps[categories[i]][j]+"\');\">"+categoryOps[categories[i]][j]+"</a></li>"
 		
 		htmllines += "</span>";
 		htmllines += "</ul>";
@@ -438,32 +414,60 @@ function makeOpsPanel(categories, catops, matrix) {
 
 function loadGraph(filenm) {
 	currentGraph = filenm;
-	var data = loadFileData(filenm);
-	var ave = makeAverageSeries(data[0], data[1], data[2]);	
-	plotLines(ave, data[2], data[3], filenm.split('.')[0], 'right');
+	//var data = loadFileData(filenm);
+	//var ave = makeAverageSeries(data[0], data[1], data[2]);	
+	//plotLines(ave, data[2], data[3], filenm.split('.')[0], 'right');
+	show_collapsed_series('#SampleID');
 }
 
 function loadFileData(filenm) {
-    var mappingfl = getFile(filenm);
-    var mappingFileLines = mappingfl.split("\n");
-    var headerln = mappingFileLines[0];
+    var rarefl = getFile(filenm);
+    var rareFileLines = rarefl.split("\n");
+    var headerln = rareFileLines[0];
     var headers = headerln.split("\t");
     var sampleIDs = headers.slice(); // copy headers array
     sampleIDs.shift(); // get rid of #
     sampleIDs.shift(); // get rid of seqs per sample
     sampleIDs.shift(); // get rid of iteration #
-    mappingFileLines.shift(); // get rid of header line so that for loop can start at 0
+    for(var i = 0; i < sampleIDs.length; i++)
+        sampleIDs[i] = sampleIDs[i].toUpperCase();
+    rareFileLines.shift(); // get rid of header line so that for loop can start at 0
     var rareMat = new Array();
     var rareIDs = new Array();
 	var seqsPerSamp = new Array();
     var vals = new Array();
-    for(var i = 0; i < mappingFileLines.length; i++)
+    /*
+    var cnt = 0;
+    var iterNum = rareFileLines[cnt][2]; // iteration number
+    var seen = new Array();
+    while(!contains(seen, iterNum))
     {
-        vals = mappingFileLines[i].split("\t");
-        rareIDs[i] = vals[0]; // first item on the line should be rarefaction 
-		if(i%10 == 0)
-			seqsPerSamp[i/10] = Number(vals[1]); // second item on line should be seqs per sample
+        seen.push(iterNum);
+        cnt += 1;
+        iterNum = rareFileLines[cnt][2]
+    }
+    
+    var maxIterations = cnt - 1;
+    */
+    
+    var current = rareFileLines[0].split("\t")[1]; // second item on line = seqsPerSample
+    var next;
 
+    for(var i = 0; i < rareFileLines.length; i++)
+    {
+        vals = rareFileLines[i].split("\t");
+        rareIDs[i] = vals[0]; // first item on the line should be rarefaction 
+        next = vals[1];
+        if(next != current)
+        {
+            seqsPerSamp.push(Number(current))
+            current = next;
+        }
+        
+		/*if(i%maxIterations == 0)
+			seqsPerSamp[i/maxIteratons] = Number(vals[1]); // second item on line should be seqs per sample
+            */
+        
         rareMat[rareIDs[i]] = new Array();
         for(var j = 0; j < headers.length; j++)
         {
@@ -481,6 +485,27 @@ function loadFileData(filenm) {
                 rareMat[rareIDs[i]][j] = Number(vals[j]);
             }
         }    
+    }
+    seqsPerSamp.push(Number(next))
+
+    var toRemove = new Array();
+    // need to go through and get rid of rarefaction vals for seqIDs not found in mapping file
+    for(var i = 0; i < sampleIDs.length; i++)
+    {
+        if(!contains(sampleIDsarry, sampleIDs[i]))
+        {
+            toRemove.push(i);
+            document.getElementById('debuggingconsole').innerHTML += 'ID found in '+filenm +' not found in mapping file: ' + sampleIDs[i] +'<br>'
+        }
+    }
+    
+    for(j = 0; j < toRemove.length; j++)
+    {
+        for(var i = 0; i < rareIDs.length; i++)
+        {
+            rareMat[rareIDs[i]].splice(toRemove[j]-j,1);
+            sampleIDs.splice(toRemove[j]-j,1)
+        }
     }
 
    	var data = new Array();
@@ -606,7 +631,7 @@ function makeAverageSeries1(matrix, IDs, samIDs) {
 function makeSeries(matrix, IDs, samIDs) {
     var series = new Array(); 	
 	var sseries = new Array();
-	//console.log( matrix[IDs[0]]);
+	//document.getElementById('debugging').innerHTML += matrix[IDs[1]];
 	for(var j = 3; j < matrix[IDs[0]].length; j++){
 		sseries[j-3] = new Array();
 		for(i = 0; i < IDs.length; i++)
@@ -640,242 +665,3 @@ function getFile(fileName) {
     }
     return oxmlhttp.responseText;
 }
-
-
-/*
-
-function showOnly2(option, catOp) {
-	recolor(option); // make sure graph is set to this option
-	var catToColor = new Array();
-	colours = new Array();
-	var data = loadFileData(currentGraph);
-	var ave = makeAverageSeries(data[0], data[1], data[2]);
-	var series = new Array();
-	
-	//var seriesNames = new Array();//categoryOps[option].slice();
-	var key = categories.indexOf(option)
-	//console.log(key)
-	
-	for(var j = 0; j < sampleIDsarry.length; j++)
-	{
-		if(sampleMat[sampleIDsarry[j]][key] == catOp)
-		{	
-			series.push(ave[j])
-			//seriesNames.push("")
-		}
-	}
-	//console.log(series.length)
-	//console.log(seriesNames.length)
-	//plotLines(series, seriesNames, data[3], currentGraph.split('.')[0]+ "testing", 'none')
-	
-	//console.log(series)
-	
-	var newSeries = new Array();
-	var currAve = new Array();
-	var seriesNames = categoryOps[option].slice();
-	var graphName = "Average Colored By " + option + " category " + catOp;
-	
-	for(var l = 0; l < series[0].length; l++) // for each sequence line value
-	{
-		var values = new Array();
-		var stdDev = new Array();
-		for(var m = 0; m < series[0].length*2; m++) // init std devs all to zero
-			stdDev[m] = 0;
-		for(var n = 0; n < series.length; n++) // for each sequence
-		{
-			var value = series[n][l];
-			values.push(value);
-		}
-		//console.log(value)
-		currAve.push(average(values).mean);
-		currAve.push(average(values).mean);
-		//console.log(average(values).mean)
-		stdDev[l*2] = average(values).mean + average(values).deviation;
-		stdDev[l*2+1] = average(values).mean - average(values).deviation;
-		//stdDev[2] = data[2][l]; // seqsPerSample
-		//console.log(stdDev);
-		//stdDevSeries.push(stdDev);
-		//colours.push(catToColor[categoryOps[option][i]])
-		newSeries.push(stdDev);
-		seriesNames.push("");
-		//console.log("*****");
-	}
-	//console.log(currAve)
-	//seriesNames.push("");
-	newSeries.push(currAve);
-	//console.log(newSeries)
-	
-	var newXaxis = new Array();
-	for(var p = 0; p < data[3].length; p++)
-	{
-		newXaxis[p*2] = data[3][p]
-		newXaxis[p*2+1] = data[3][p]
-	}
-	console.log(newSeries[0])
-	console.log("len series names " + seriesNames.length)
-	console.log("len newSeries " + newSeries.length)
-	//console.log("len newxaxis " + newXaxis.length)
-	plotLines(newSeries, seriesNames, newXaxis, currentGraph.split('.')[0]+ graphName, 'none')
-	
-}
-
-function plotErrorLines(averageSeries, errorBars, seriestitles, xaxisvals, gtitle){
-	//console.log(series)
-    var data = new google.visualization.DataTable();
-	data.addColumn('number', 'Sequences Per Sample');
-	
-	for(var i = 0; i < averageSeries.length; i++)
-	{
-		data.addColumn('number',seriestitles[i]);
-	}
-	data.addRows(averageSeries.length+errorBars.length+1);
-	for(var i = 0; i < xaxisvals.length; i++)
-	{
-		//console.log(xaxisvals[i])
-		data.setValue(i, 0, xaxisvals[i]);
-	}
-	//add average series
-	for(var i = 0; i < averageSeries.length; i++) // for every sample
-	{
-		for(var j = 0; j < averageSeries[i].length; j++) // for every number of seqs/sample
-		{
-			if(averageSeries[i][j] != 0)
-				data.setValue(j, i+1, averageSeries[i][j]); // i+1 because 0 is for the xaxisvals
-		}
-	}
-	//add error bars.. need to compute offset...
-	for(var i = errorBars.length; i < errorBars.length+averageSeries.length; i++) // 
-	{
-		for(var j = 0; j < errorBars[i-averageSeries.length].length; j++) // 
-		{
-			if(errorBars[i-averageSeries.length][j] != 0)
-				data.setValue(j, i+1, errorBars[i-averageSeries.length][j]); // i+1 because 0 is for the xaxisvals
-		}
-	}
-
-	document.getElementById('graph_container').innerHTML = "";
-	var chart = new google.visualization.ScatterChart(document.getElementById('graph_container'));
-    chart.draw(data, {width: 800, height: 400, lineSize: .5, pointSize: 1.5, colors: colours, title: gtitle, titleX: 'Sequences Per Sample', titleY: 'Diversity Measure'});
-}
-
-function makeTable(xaxis, yaxis, samplemat) {
-    var tablelines = "<table id=\"raretable\"><thead><tr>";
-    for(var i = 0; i < xaxis.length; i++)
-    {
-        tablelines += "<th>"+xaxis[i]+"</th>";
-    }
-    tablelines += "</tr></thead><tbody>";
-    for(var i = 0; i < yaxis.length; i++)
-    {
-        tablelines += "<tr>";
-        for(var j = 0; j < samplemat[yaxis[i]].length; j++)
-        {   
-            try{
-                tablelines += "<td>"+samplemat[yaxis[i]][j].toFixed(2)+"</td>";
-            }
-            catch(err){
-                tablelines += "<td>"+samplemat[yaxis[i]][j]+"</td>";
-            }
-        }
-        tablelines += "</tr>";
-    }
-    tablelines += "</tbody></table>";
-    document.getElementById('raretablewrapper').innerHTML = tablelines;
-}
-
-for(var i = 0; i < IDs.length; i++) // how many rarefaction entries there are
-{
-    series[i] = new Array(); // creates 2nd level * []
-    for(j = 3; j < matrix[IDs[i]].length; j++){ // how many samples, starts at 3 to omit rareID, sequences per sample and iteration #
-            //series[i][j-3] = new Array(matrix[IDs[i]][1], matrix[IDs[i]][j]); // series[i][1] = seqs per sample
-			//sseries[j-3] = new Array();
-			//sseries[j-3][i] = new Array(matrix[IDs[i]][1], matrix[IDs[i]][j]);
-		}
-}
-
-function plotLines(s, col) {
-    plot = $.jqplot('graph_container',  s,
-    { 
-        title:'Rarefaction Curves', 
-		axesDefaults: {
-			showLabel: true,
-		},
-        seriesDefaults: {
-		markerOptions: {show: true,shadow: false,style: 'filledCircle',lineWidth: .25,size: 3},
-        showLine: true,
-		shadow: false,
-		color: '',
-		axes: {
-		       xaxis: {label: 'Sequences',
-						showLabel: true,
-						labelRenderer: $.jqplot.CanvasAxisLabelRenderer},
-		       yaxis: {label: 'OTUs',
-						showLabel: true,
-						labelRenderer: $.jqplot.CanvasAxisLabelRenderer}
-		       }
-    	}
-	});
-	
-	console.log(plot.rendererOptions)
-	
-	for (var i=0; i<plot.series.length; i++) {
-		console.log(plot.series[i].color)
-	     plot.series[i].color = "#ffffff";
-		console.log(plot.series[i].color)
-		 //plot.series[i].show = false;
-	}
-	//console.log(plot.series.options)
-	plot.redraw();
-}
-
-function makeSeries2(matrix, IDs) {
-    var series = new Array(); // [ [x,y],[x,y],[x,y],[x,y] ]
-    for(var i = 0; i < IDs.length; i++) // how many rarefaction entries there are
-    {
-        for(j = 3; j < matrix[IDs[i]].length; j++) // how many samples, starts at 3 to omit rareID, sequences per sample and iteration #
-                series.push(new Array(matrix[IDs[i]][1], matrix[IDs[i]][j])) // matrix[i][1] = seqs per sample
-    }
-    //console.log(series)
-    //plotLines(series);
-	plotStuff(series);
-}
-
-function plotStuff(s) { 
-	$('#graph_container').svg(); 
-	
-    var svg = $('#graph_container').svg('get'); 
-	var x = Number(document.getElementById('graph_container').getAttribute('width'))
-	var y = Number(document.getElementById('graph_container').getAttribute('height'))	// s[i][0] = seqs per sample, s[i][1] = rarefaction value
-	for(i = 0; i < s.length; i++) {
-	svg.circle(s[i][0], s[i][1], 1, 
-		{fill: 'red', 
-	    stroke: 'none', strokeWidth: 5});
-	}
-	
-	//console.log($.svg.graphing.chartTypes())
-}
-
-function loadMapping() {
-    var sampleMat = new Array();
-    var sampleIDsarry = new Array();
-    
-    var mappingfl = getFile("test_input_map.txt");
-    var mappingFileLines = mappingfl.split("\n");
-    var categories = mappingFileLines[0].split("\t");
-    var categ = "";
-    
-    for(var i = 2; i < mappingFileLines.length; i++)
-    {
-        categ = mappingFileLines[i].split("\t");
-        sampleIDsarry[i-2] = categ[0];
-        
-        sampleMat[sampleIDsarry[i-2]] = new Array(); //categ[0] = sampleID
-        for(var j = 0; j < categ.length; j++)
-        {
-            sampleMat[categ[0]][j] = categ[j];
-        }
-    }
-    makeTable(categories, sampleIDsarry, sampleMat)
-    //loadData(series)
-}
-*/

@@ -115,7 +115,7 @@ def _process_prefs(options):
     
     open(data_file_dir_path + "/dataFilesforJS.txt",'w').writelines([f.split('/')[len(f.split('/'))-1]+'\n' for f in filenms])
     for f in filenms:
-        open(data_file_dir_path + "/" + f.split('/')[len(f.split('/'))-1],'w').writelines(open(f).readlines())
+        open(data_file_dir_path + "/" + f.split('/')[len(f.split('/'))-1],'w').writelines([l.replace('\r','\n').strip(' ') for l in open(f).readlines()])
     open(data_file_dir_path + "/rarefaction_plots.html",'w').writelines(open(qiime_dir + "/rarefaction_plots.html").readlines())
     open(data_file_dir_path + "/js/rarefaction_plots.js",'w').writelines(open(qiime_dir + "/js/rarefaction_plots.js").readlines())
     open(data_file_dir_path + "/js/jquery.js",'w').writelines(open(qiime_dir + "/js/jquery.js").readlines())
