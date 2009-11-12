@@ -418,7 +418,7 @@ if __name__ == "__main__":
     except KeyError:
         # define the aligner params
         aligner = CogentAligner({
-        'Module':alignment_module_names[alignment_method],
+        'Module':alignment_module_names.get(alignment_method, 'Unknown'),
         'Method':alignment_method
         })
         # build the aligner
