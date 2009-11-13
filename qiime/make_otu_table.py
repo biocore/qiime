@@ -15,6 +15,7 @@ Assumes that in the OTU map, the ids are in the format lib_seq, e.g.
 M3FclSwb_1023. Will not work if this assumption is not met. Splits on last
 underscore only so should be relatively robust to underscore in sample id.
 """
+from sys import argv, exit, stderr, stdout
 from collections import defaultdict
 from string import strip
 from numpy import array
@@ -41,7 +42,14 @@ def make_otu_map(otu_to_seqid, otu_to_taxonomy=None, delim='_'):
     except ValueError:
         all_otus = sorted(otu_to_seqid.keys())
     all_libs = sorted(libs_from_seqids(all_seqs))
-    table = zeros((len(all_otus), len(all_libs)), int)
+    try:
+        table = zeros((len(all_otus), len(all_libs)), int)
+    except MemoryError, e:
+        stderr.write('memory error, check format of input otu file\n')
+        stderr.write('are there really %s otus and %s samples?\n' %
+            (len(all_otus), len(all_libs)))
+        stderr.write('traceback follows:\n')
+        raise(e)
     for o in all_otus:
         row_idx = all_otus.index(o)
         row = table[row_idx]
@@ -70,7 +78,6 @@ def make_cmd_parser():
     return options, args
 
 if __name__ == "__main__":
-    from sys import argv, exit, stderr, stdout
     options, args = make_cmd_parser()
     if options.output_fname:
         outfile = open(options.output_fname, 'w')
