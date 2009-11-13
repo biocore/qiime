@@ -107,6 +107,7 @@ function loadMapping(filenm) {
     sampleIDsarry = new Array();
     
 	var mappingfl = getFile(filenm);
+	//var mappingFileLines = mappingfl.split("\n");
 	var mappingFileLines = mappingfl.split("\n");
     categories = mappingFileLines[0].split("\t");
     var categ = "";
@@ -130,7 +131,7 @@ function loadMapping(filenm) {
 						seen = true;
 				}
 				if(!seen)
-					categoryOps[categories[j]].push(categ[j] );
+					categoryOps[categories[j]].push(categ[j]);
 			}
 			else
 				categoryOps[categories[j]] = [categ[j]]; //
@@ -487,7 +488,8 @@ function loadFileData(filenm) {
         }    
     }
     seqsPerSamp.push(Number(next))
-
+    
+    /*
     var toRemove = new Array();
     // need to go through and get rid of rarefaction vals for seqIDs not found in mapping file
     for(var i = 0; i < sampleIDs.length; i++)
@@ -504,9 +506,10 @@ function loadFileData(filenm) {
         for(var i = 0; i < rareIDs.length; i++)
         {
             rareMat[rareIDs[i]].splice(toRemove[j]-j,1);
-            sampleIDs.splice(toRemove[j]-j,1)
+            delete sampleMat[rareIDs[i]];
+            sampleIDs.splice(toRemove[j]-j,1);
         }
-    }
+    }*/
 
    	var data = new Array();
 	data.push(rareMat);
