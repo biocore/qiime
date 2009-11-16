@@ -14,6 +14,7 @@ var fileNames = new Array;
 var collapsed_series_array = new Array();
 var showonly_array = new Array();
 var rareFilesData = new Array();
+var contCalcs = new Array();
 
 function Main() {
 	loadExternalFiles();
@@ -22,8 +23,9 @@ function Main() {
     currentGraph = fileNames[1];
     makeDataTable();
     make_collapsed_series();
-    make_showonly_array();
-    loadGraph(fileNames[1]);
+    makeOpsPanel();
+    //make_showonly_array();
+    //loadGraph(fileNames[1]);
 }
 
 function loadExternalFiles() {
@@ -50,6 +52,15 @@ function makeDataTable() {
 }
 
 function plotLines(series, seriestitles, xaxisvals, gtitle, legend){
+    //colours = new Array();
+    /*var c = ['#0000FF','#5500AA','#AA0055','#FF0000','#BF3F00','#7F7F00','#3FBF00','#00FF00']
+	//var newcols = new Array();
+	for(var i = 0; i < c.length; i++)
+	{
+	    for(var j = 0; j < 12; j++)
+	        colours.push(c[i]);
+	}*/
+	    
 	//console.log(series)
     var data = new google.visualization.DataTable();
 	data.addColumn('number', 'Sequences Per Sample');
@@ -76,7 +87,7 @@ function plotLines(series, seriestitles, xaxisvals, gtitle, legend){
 
 	document.getElementById('graph_container').innerHTML = "";
 	var chart = new google.visualization.ScatterChart(document.getElementById('graph_container'));
-    chart.draw(data, {width: 750, height: 400, lineSize: .5, pointSize: 1.5, legend: legend, colors: colours, title: gtitle, titleX: 'Sequences Per Sample', titleY: 'Diversity Measure'});
+    chart.draw(data, {width: 750, height: 400, lineSize: 1, pointSize: 1.5, legend: legend, colors: colours, title: gtitle, titleX: 'Sequences Per Sample', titleY: 'Diversity Measure'});
 }
 
 function loadDiversityMeasures(filenms) {
@@ -138,8 +149,6 @@ function loadMapping(filenm) {
             sampleMat[categ[0].toUpperCase()][j] = categ[j] ;
         }
     }
-    makeOpsPanel();
-    //makeOpsPanel(categories, categoryOps, sampleMat);
 }
 
 function contains(a, obj){
@@ -183,10 +192,11 @@ function get_showOnly(option, catOp) {
 	var data = rareFilesData[currentGraph];
 	var ave = makeAverageSeries(data[0], data[1], data[2]);
 	var series = new Array();
-	
+		
 	for(var i = 0; i < categoryOps[option].length; i++)
 		catToColor[categoryOps[option][i]] = makeColorGradient(.3,.3,.3,0,2,4,categoryOps[option].length)[i]
-
+        
+    
 	var key = categories.indexOf(option)
 	
 	colours.push(catToColor[categoryOps[option][categoryOps[option].indexOf(catOp)]])
@@ -205,6 +215,13 @@ function get_showOnly(option, catOp) {
 		newXaxis[p*2] = data[3][p]
 		newXaxis[p*2+1] = data[3][p]
 	}
+	/*
+	var c = ['#0000FF','#5500AA','#AA0055','#FF0000','#BF3F00','#7F7F00','#3FBF00','#00FF00']
+	//var newcols = new Array();
+	for(var i = 0; i < 12*8; i++)
+	    colours.push(c[i/8]);
+	//colours = newcols;
+	*/
 	
 	var graphName = " Average Colored By " + option + " : " + catOp;
 	//plotLines(newSeries, new Array(newSeries.length), newXaxis, currentGraph.split('.')[0]+ graphName, 'none')
@@ -217,10 +234,22 @@ function get_showOnly(option, catOp) {
     return result;
 }
 
+function showonly_runtime(option, catOp) {
+    var ary = get_showOnly(option, catOp);
+    colours = ary[4]
+    plotLines(ary[0], ary[1], ary[2], ary[3], 'none')
+}
+
 function make_showonly_array() {
     for(var i = 0; i < categories.length; i++)
     {
         showonly_array[categories[i]] = new Array();
+        if(categoryOps[categories[i]].length == 1)
+            {continue;}
+        else if(categoryOps[categories[i]].length == sampleIDsarry.length)
+            {continue;}
+        else if(categoryOps[categories[i]].length > 500 && !contCalcs[categories[i]])
+            {continue;}
         for(var j = 0; j < categoryOps[categories[i]].length; j++)
             showonly_array[categories[i]][categoryOps[categories[i]][j]] = get_showOnly(categories[i], categoryOps[categories[i]][j])
     }
@@ -261,7 +290,7 @@ function collapseSeries(option) {
 	
 	var newSeries = new Array();
 	var stdDevSeries = new Array();
-	var seriesNames = categoryOps[option].slice();
+	var seriesNames = new Array();//categoryOps[option].slice();
 	//document.getElementById('debugging').innerHTML += "option: " + option;
 	//document.getElementById('debugging').innerHTML += "catarray def " + categoryArray[categoryOps[option][0]][0];
 	//document.getElementById('debugging').innerHTML += categoryOps[option]
@@ -270,8 +299,9 @@ function collapseSeries(option) {
 		// need to do it for each first point of each series, then each second point, etc
 		var currAve = new Array();
 		colours.push(catToColor[categoryOps[option][i]]);
+		seriesNames.push(categoryOps[option][i]);
 		if(categoryArray[categoryOps[option][i]][0] == null)
-		    document.getElementById('debugging').innerHTML += categoryOps[option][i]
+		    document.getElementById('debuggingconsole').innerHTML += categoryOps[option][i]
 		for(var l = 0; l < categoryArray[categoryOps[option][i]][0].length; l++) // for length of sequence line
 		{
 			var values = new Array();
@@ -303,7 +333,12 @@ function collapseSeries(option) {
 		newXaxis[p*2] = data[3][p];
 		newXaxis[p*2+1] = data[3][p];
 	}
-	
+	/*
+	var c = ['#0000FF','#5500AA','#AA0055','#FF0000','#BF3F00','#7F7F00','#3FBF00','#00FF00']
+	//var newcols = new Array();
+	for(var i = 0; i < 12*8; i++)
+	    colours.push(c[i/8]);
+	//colours = newcols;*/
 	var graphName = currentGraph.split('.')[0]+ ' Average Colored By ' + option;
 	//plotLines(newSeries, seriesNames, newXaxis, graphName, 'none')
 	var result = new Array();
@@ -311,17 +346,37 @@ function collapseSeries(option) {
 	result.push(seriesNames);
 	result.push(newXaxis);
 	result.push(graphName);
+	result.push(catToColor);
 	return result
 }
 
 function make_collapsed_series() {
     for(var i = 0; i < categories.length; i++)
+    {
+        if(categoryOps[categories[i]].length == 1 || categoryOps[categories[i]].length == sampleIDsarry)
+            continue;
+        
+        if(categoryOps[categories[i]].length > 500)
+        {
+            var r = confirm(categories[i] + " has > 500 categories to compare, would you like to continue calculations?");
+            contCalcs[categories[i]] = r;
+            if(r!=true)
+                continue;
+        }
         collapsed_series_array[categories[i]] = collapseSeries(categories[i]);
+    }
 }
 
 function show_collapsed_series(option) {
     colorBy(option); // make sure graph is set to this option
     var ary = collapsed_series_array[option]
+    colours = new Array();
+    for(var i = 0; i < categoryOps[option].length; i++)
+    {
+        for(var j = 0; j < (ary[0][0].length+2)/2; j++)
+            colours.push(ary[4][categoryOps[option][i]])
+    }
+    //colours = ary[4]
     plotLines(ary[0], ary[1], ary[2], ary[3], 'none')
 }
 
@@ -360,7 +415,11 @@ function makeColorGradient(frequency1, frequency2, frequency3,phase1, phase2, ph
 		var blu = Math.sin(frequency3*i + phase3) * width + center;
 		col.push(RGB2Color(red,grn,blu));
 	}
-	return col;
+	var c = ['#0000FF','#5500AA','#AA0055','#FF0000','#BF3F00','#7F7F00','#3FBF00','#00FF00']
+    var cols = new Array();
+	for(var i = 0; i < len; i++)
+	    cols.push(c[i%8])
+	return cols;
 }
 
 function colorBy(option) {
@@ -382,6 +441,11 @@ function colorBy(option) {
 		}
 		colours.push(catToColor[key]) // for each sample, push on the color corresponding to the colorby value
 	}
+	/*
+	var c = ['#0000FF','#5500AA','#AA0055','#FF0000','#BF3F00','#7F7F00','#3FBF00','#00FF00']
+	var newcols = new Array();
+	for(var i = 0; i < 12*8; i++)
+	    colours.push(c[i/8]);*/
 }
 
 function recolor(option) {
@@ -394,6 +458,21 @@ function makeOpsPanel() {
 	
 	for(var i = 0; i < categories.length-1; i++)
 	{
+	    if(categoryOps[categories[i]].length == 1)
+	    {
+	        document.getElementById('debuggingconsole').innerHTML += "Ommited mapping file column "+categories[i]+" only one value to compare<br>";
+            continue;
+        }
+        else if(categoryOps[categories[i]].length == sampleIDsarry.length)
+	    {
+	        document.getElementById('debuggingconsole').innerHTML += "Ommited mapping file column "+categories[i]+" values are equal to number of samples<br>";
+            continue;
+        }
+        else if(categoryOps[categories[i]].length > 500 && !contCalcs[categories[i]])
+        {
+            document.getElementById('debuggingconsole').innerHTML += "Ommited mapping file column "+categories[i]+" > 500 categories<br>";
+            continue;
+	    }
 		showHideOps.push(categories[i]);
 		htmllines += "<a class=\"ops\" href=\"javascript:showHide(\'"+categories[i]+"\');\">"+categories[i]+"</a>";
 		htmllines += "<a class=\"ops\" onMouseOver=\"javascript:show_collapsed_series(\'"+categories[i]+"\');\"> ave </a>";
@@ -401,7 +480,7 @@ function makeOpsPanel() {
 		htmllines += "<ul class=\"onoff\">";
 		htmllines += "<span style=\"display:none\" id=\""+categories[i]+"\">";
 		for(j = 0; j < categoryOps[categories[i]].length; j++)
-			htmllines += "<li><a onMouseOver=\"javascript:showOnly(\'"+categories[i]+"\',\'"+categoryOps[categories[i]][j]+"\');\">"+categoryOps[categories[i]][j]+"</a></li>"
+			htmllines += "<li><a onMouseOver=\"javascript:showonly_runtime(\'"+categories[i]+"\',\'"+categoryOps[categories[i]][j]+"\');\">"+categoryOps[categories[i]][j]+"</a></li>"
 		
 		htmllines += "</span>";
 		htmllines += "</ul>";
@@ -410,15 +489,16 @@ function makeOpsPanel() {
 	htmllines += "</div>"
 	
 	document.getElementById("colorops").innerHTML += htmllines;
-	colorBy(categories[1]); // 0 = sampleID
+	//colorBy(categories[1]); // 0 = sampleID
 }
 
 function loadGraph(filenm) {
 	currentGraph = filenm;
+	make_collapsed_series();
 	//var data = loadFileData(filenm);
 	//var ave = makeAverageSeries(data[0], data[1], data[2]);	
 	//plotLines(ave, data[2], data[3], filenm.split('.')[0], 'right');
-	show_collapsed_series('#SampleID');
+	//show_collapsed_series('#SampleID');
 }
 
 function loadFileData(filenm) {
