@@ -3,6 +3,8 @@
 window.onload=Main;
 google.load("visualization", "1", {packages:["scatterchart"]});
 
+setTimeout("make_collapsed_series()",0);
+
 var colours = new Array();
 var currentGraph = "";
 var showHideOps = new Array();
@@ -244,9 +246,7 @@ function make_showonly_array() {
     for(var i = 0; i < categories.length; i++)
     {
         showonly_array[categories[i]] = new Array();
-        if(categoryOps[categories[i]].length == 1)
-            {continue;}
-        else if(categoryOps[categories[i]].length == sampleIDsarry.length)
+        if(categoryOps[categories[i]].length == sampleIDsarry.length)
             {continue;}
         else if(categoryOps[categories[i]].length > 500 && !contCalcs[categories[i]])
             {continue;}
