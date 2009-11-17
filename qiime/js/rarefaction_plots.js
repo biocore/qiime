@@ -242,19 +242,6 @@ function showonly_runtime(option, catOp) {
     plotLines(ary[0], ary[1], ary[2], ary[3], 'none')
 }
 
-function make_showonly_array() {
-    for(var i = 0; i < categories.length; i++)
-    {
-        showonly_array[categories[i]] = new Array();
-        if(categoryOps[categories[i]].length == sampleIDsarry.length)
-            {continue;}
-        else if(categoryOps[categories[i]].length > 500 && !contCalcs[categories[i]])
-            {continue;}
-        for(var j = 0; j < categoryOps[categories[i]].length; j++)
-            showonly_array[categories[i]][categoryOps[categories[i]][j]] = get_showOnly(categories[i], categoryOps[categories[i]][j])
-    }
-}
-
 function showOnly(option, catOp) {
     var ary = showonly_array[option][catOp];
     colours = ary[4]
