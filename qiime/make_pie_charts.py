@@ -80,8 +80,8 @@ nowrap>Taxonomy</td></tr>
 PAGE_HTML = """
 <html>
 <head>
-<link rel="stylesheet" href="css/qiime_style.css" type="text/css">
-<script type="text/javascript" src="js/overlib.js"></script>
+<link rel="stylesheet" href="./css/qiime_style.css" type="text/css">
+<script type="text/javascript" src="./js/overlib.js"></script>
 
 <script type="text/javascript">
 <!-- Begin
@@ -164,7 +164,7 @@ def make_pie_chart(data, dir_path, file_prefix = None,props={},
     generate_eps=False, generate_pdf=True, others_key = "All Other Categories",
     others_color = "#eeeeee", should_capitalize=True):
     """
-"    Write interactive piechart 
+    Write interactive piechart 
 
     data: [fraction:label,...] 
 
@@ -220,7 +220,7 @@ def make_pie_chart(data, dir_path, file_prefix = None,props={},
         img_name = make_img_name()
     else:
         img_name = file_prefix
-    img_abs =  os.path.join(dir_path, img_name)
+    img_abs =  os.path.join(dir_path,'pie_charts', img_name)
     savefig(img_abs, dpi=dpi)
     eps_link = ""
     eps_abs = ""
@@ -230,24 +230,25 @@ def make_pie_chart(data, dir_path, file_prefix = None,props={},
             eps_img_name = make_img_name(file_ext=".pdf")
         else:
             eps_img_name = file_prefix + ".pdf"
-        savefig(os.path.join(dir_path, eps_img_name))
-        eps_abs = os.path.join(dir_path, eps_img_name)
-        eps_link = DOWNLOAD_LINK % ((os.path.join(dir_path,eps_img_name)),\
-			    IMG_SRC % (os.path.join(dir_path,img_name))) 
+        savefig(os.path.join(dir_path,'pie_charts', eps_img_name))
+        eps_abs = os.path.join('pie_charts', eps_img_name)
+        eps_link = DOWNLOAD_LINK % ((os.path.join('pie_charts',\
+                eps_img_name)),\
+			    IMG_SRC % (os.path.join('pie_charts',img_name))) 
     if generate_eps:
         if file_prefix is None:
             eps_img_name = make_img_name(file_ext=".eps")
         else:
             eps_img_name = file_prefix + ".eps"
-        savefig(os.path.join(dir_path, eps_img_name))
-        strip_eps_font(os.path.join(dir_path, eps_img_name))
-        out = getoutput("gzip " + os.path.join(dir_path, eps_img_name))
-        eps_abs = os.path.join(dir_path, eps_img_name) + ".gz"
-        eps_link=DOWNLOAD_LINK % ((os.path.join(dir_path, eps_img_name)+".gz"),\
-				IMG_SRC % (os.path.join(dir_path,img_name))) 
+        savefig(os.path.join(dir_path,'pie_charts', eps_img_name))
+        strip_eps_font(os.path.join(dir_path,'pie_charts', eps_img_name))
+        out = getoutput("gzip " + os.path.join(dir_path,'pie_charts', eps_img_name))
+        eps_abs = os.path.join(dir_path,'pie_charts',eps_img_name) + ".gz"
+        eps_link=DOWNLOAD_LINK % ((os.path.join('pie_charts', eps_img_name)+".gz"),\
+				IMG_SRC % (os.path.join('pie_charts',img_name))) 
     close(fig)
     clf()
-    return eps_link, IMG_SRC_2 % (os.path.join(dir_path,img_name))
+    return eps_link, IMG_SRC_2 % (os.path.join('pie_charts',img_name))
 
 def make_img_name(file_ext='.png'):
     """ Generate a random file name """
@@ -417,7 +418,17 @@ def _make_cmd_parser():
         
     return opts
 
-def create_dir(dir_path,plot_type):
+def _get_script_dir(script_path):
+    """Returns directory current script is running in.
+    """
+    if '/' in script_path:
+        script_dir = script_path.rsplit('/',1)[0]+'/'
+    else:
+        script_dir = './'
+    return script_dir
+
+
+def create_dir(dir_path,qiime_dir,plot_type):
     """Creates directory where data is stored.  If directory is not supplied in\
        the command line, a random folder is generated"""
        
@@ -437,17 +448,42 @@ def create_dir(dir_path,plot_type):
             os.mkdir(dir_path)
         except OSError:
             pass
+    
+    charts_path = os.path.join(dir_path,'pie_charts')
+    try:
+        os.mkdir(charts_path)
+    except OSError:     #raised if dir exists
+        pass
 
+
+    javascript_path = \
+            os.path.join(dir_path,'js')
+    try:
+        os.mkdir(javascript_path)
+    except OSError:     #raised if dir exists
+        pass
+    js_out = open(javascript_path+'/overlib.js','w')
+    js_out.write(open(qiime_dir+'js/overlib.js').read())
+    js_out.close()
+    css_path = \
+            os.path.join(dir_path,'css')
+    try:
+        os.mkdir(css_path)
+    except OSError:     #raised if dir exists
+        pass
+    css_out = open(css_path+'/qiime_style.css','w')
+    css_out.write(open(qiime_dir+'css/qiime_style.css').read())
+    css_out.close()
 
     return dir_path
 
 
-def _process_prefs(options):
+def _process_prefs(args,options):
     """opens files as necessary based on prefs"""
     data = []
     
-    dir_path = create_dir(options.dir_path, "webfiles")
-
+    qiime_dir = _get_script_dir(args)
+    dir_path = create_dir(options.dir_path,qiime_dir, "webfiles")
     do_sample = options.do_sample
     counts_fname = options.counts_fname
     labels = options.labels
@@ -477,12 +513,12 @@ def _do_pie_charts(data, dir_path, filename,num_categories, do_sample):
         img_data.extend(get_counts(lines,label.strip(),do_sample,
                                    num_categories, dir_path))
         
-    outpath = os.path.join(filename,'taxonomy_summary_pie_chart.html')
+    outpath = os.path.join(dir_path,'taxonomy_summary_pie_chart.html')
     out_table = '\n'.join(img_data)
     write_html_file(out_table,outpath)
 
 if __name__ == "__main__":
     from sys import argv, exit
     options = _make_cmd_parser()
-    _process_prefs(options)
+    _process_prefs(argv[0],options)
 
