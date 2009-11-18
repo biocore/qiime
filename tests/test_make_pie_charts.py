@@ -51,14 +51,22 @@ class TopLevelTests(TestCase):
 
     def test_get_counts(self):
         """get_counts should gets all the counts for one input file"""
-        mkdir("/tmp/qiimewebfiles/")
+        try:
+	        mkdir("/tmp/qiimewebfiles/")
+        except OSError:
+		    pass
+        try:
+            mkdir("/tmp/qiimewebfiles/pie_charts")
+        except OSError:
+            pass
         img_data = get_counts(self.lines,"Phylum",True,5,"/tmp/qiimewebfiles/")
         self.assertEqual(len(img_data), 3)
         img_data = get_counts(self.lines,"Phylum",False,5,"/tmp/qiimewebfiles/")
         self.assertEqual(len(img_data), 1)
-        self._paths_to_clean_up = ["/tmp/qiimewebfiles/"+f \
-                                   for f in listdir("/tmp/qiimewebfiles/")]
-        self._dirs_to_clean_up = ["/tmp/qiimewebfiles/"]
+        self._paths_to_clean_up = ["/tmp/qiimewebfiles/pie_charts/"+f \
+                                   for f in listdir("/tmp/qiimewebfiles/pie_charts")]
+        self._dirs_to_clean_up = ["/tmp/qiimewebfiles/pie_charts"]
+    
 
     def test_get_fracs(self):
         """"get_fracs should Return fractions for matplotlib piechart"""
@@ -95,8 +103,17 @@ class TopLevelTests(TestCase):
 
     def test_make_HTML_table(self):
         """make_HTML_table should Make HTML tables for one set of pie charts """
-        mkdir("/tmp/qiimewebfiles/")
+        try:
+            mkdir("/tmp/qiimewebfiles/")
+       	except OSError:
+            pass
         dir_path = "/tmp/qiimewebfiles/"
+        
+        try:
+            mkdir("/tmp/qiimewebfiles/pie_charts")
+        except OSError:
+            pass
+	
         fracs_labels_other,fracs_labels,all_counts, other_cat, red,other_frac \
                                         = get_fracs(self.counts1,5,10)
 
@@ -105,19 +122,27 @@ class TopLevelTests(TestCase):
                             fracs_labels,dir_path,all_counts)
         self.assertEqual(len(img_data),1)
         
-        self._paths_to_clean_up = ["/tmp/qiimewebfiles/"+f \
-                                   for f in listdir("/tmp/qiimewebfiles/")]
-        self._dirs_to_clean_up = ["/tmp/qiimewebfiles/"]
+        self._paths_to_clean_up = ["/tmp/qiimewebfiles/pie_charts/"+f \
+                                   for f in listdir("/tmp/qiimewebfiles/pie_charts")]
+        self._dirs_to_clean_up = ["/tmp/qiimewebfiles/pie_charts"]
 
     def test_make_pie_chart(self):
         """make_pie_chart should create HTML source and pdfs for pie_charts"""
 
-        filename1='/tmp/qiimewebfiles/pie_chart.png'
-        filename2='/tmp/qiimewebfiles/pie_chart.eps.gz'
-        filename3='/tmp/qiimewebfiles/pie_chart.pdf'
+        filename1='/tmp/qiimewebfiles/pie_charts/pie_chart.png'
+        filename2='/tmp/qiimewebfiles/pie_charts/pie_chart.eps.gz'
+        filename3='/tmp/qiimewebfiles/pie_charts/pie_chart.pdf'
 
-        mkdir("/tmp/qiimewebfiles/")
+        try:
+            mkdir("/tmp/qiimewebfiles/")
+        except OSError:
+            pass
         dir_path = "/tmp/qiimewebfiles/"
+        try:
+            mkdir("/tmp/qiimewebfiles/pie_charts")
+        except OSError:
+            pass
+
 
         obs1,obs2=make_pie_chart(self.fracs,dir_path,"pie_chart",self.props,
                     generate_eps=True, generate_pdf = True)
@@ -128,9 +153,9 @@ the appropriate location')
 the appropriate location')
         self.assertTrue(exists(filename3),'The pdf file was not created in \
 the appropriate location')
-        self._paths_to_clean_up = ["/tmp/qiimewebfiles/"+f \
-                                   for f in listdir("/tmp/qiimewebfiles/")]
-        self._dirs_to_clean_up = ["/tmp/qiimewebfiles/"]
+        self._paths_to_clean_up = ["/tmp/qiimewebfiles/pie_charts/"+f \
+                                   for f in listdir("/tmp/qiimewebfiles/pie_charts")]
+        self._dirs_to_clean_up = ["/tmp/qiimewebfiles/pie_charts"]
 
         
     def test_write_html_file(self):
