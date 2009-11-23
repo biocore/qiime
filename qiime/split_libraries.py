@@ -521,7 +521,7 @@ def preprocess(fasta_files, qual_files, mapping_file,
 
 
 usage_str = \
-"""usage: %prog [options] {-i FASTA_FNAMES -m MAP_FNAME}
+"""usage: %prog [options] {-f FASTA_FNAMES -m MAP_FNAME}
 
 [] indicates optional input (order unimportant) 
 {} indicates required input (order unimportant) 
@@ -539,11 +539,11 @@ Process sequences from two files (a.fna, b.fna) using the sample-to-
 barcode associations in samples.txt.  The quality files for the
 sequences (a.qual, b.qual) can also be provided.
 
-python %prog -i a.fna,b.fna -m samples.txt
+python %prog -f a.fna,b.fna -m samples.txt
 
 or
 
-python %prog -i a.fna,b.fna -q a.qual,b.qual -m samples.txt
+python %prog -f a.fna,b.fna -q a.qual,b.qual -m samples.txt
 """
 
 
@@ -603,7 +603,7 @@ def make_cmd_parser():
         if not getattr(options, attr_name):
             parser.error('Required option %s not found.  Must provide a '
                          'mapping file (-m) and at least one fasta input file '
-                         '(-i).' % flag)
+                         '(-f).' % flag)
     return options
 
 

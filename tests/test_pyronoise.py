@@ -79,7 +79,7 @@ class PyroNoiseTests(TestCase):
     def test_pyroNoise_otu_picker(self):
         """PyroNoise works as an OTU picker"""
 
-        actual_centroids, actual_otu_map = pyroNoise_otu_picker(open(self.small_sff_path), num_cpus=2)
+        actual_centroids, actual_otu_map = pyroNoise_otu_picker(open(self.small_sff_path), num_cpus=2, keep_intermediates=True)
       
         self.assertEqualItems(actual_centroids.values(), 
                          ['ATTAGATACCCCGGTAGTCCACGCCGTAAACGA',
