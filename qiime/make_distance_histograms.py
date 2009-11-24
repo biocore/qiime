@@ -52,6 +52,21 @@ def within_category_distances_grouped(single_field):
                     '_All_Within_Category_Distances'].extend(all.flat)
     return distances
 
+def between_category_distances_grouped(single_field):
+    """Returns all between category distances grouped for every field.
+    
+        - single_field is from calling group_distances and taking single_field
+            result.
+    """
+    distances = defaultdict(list)
+    for field, groups in single_field.items():
+        for data in groups:
+            if data[0] != data[1]:
+                all = array(data[2])
+                distances[field+\
+                    '_All_Between_Category_Distances'].extend(all.flat)
+    return distances
+
 def within_category_distances(single_field):
     """Returns all within category distances, broken down by category.
     
@@ -126,6 +141,15 @@ def draw_all_histograms(single_field, paired_field, dmat, histogram_dir):
     
     label_to_histogram_filename.update(\
         _make_histogram_filenames(all_within_category_grouped,histogram_dir))
+
+    #Get all between category distances grouped together
+    all_between_category_grouped = \
+        between_category_distances_grouped(single_field)
+    distances_dict['All_Between_Category_Grouped']=all_between_category_grouped
+    
+    label_to_histogram_filename.update(\
+        _make_histogram_filenames(all_between_category_grouped,histogram_dir))
+
     
     #Get all within category distances by category
     all_within_category_individual = \
@@ -155,12 +179,13 @@ def draw_all_histograms(single_field, paired_field, dmat, histogram_dir):
     
     xscale, yscale = get_histogram_scale(distances_dict,nbins=10)
     #draw histograms
+    color_names = data_colors.keys()
     for d_dict in distances_dict.values():
         for i, (field, data) in enumerate(d_dict.items()):
             if len(data) < 1:
                 continue
             color_index = i % num_colors
-            color = data_colors.keys()[color_index]
+            color = color_names[color_index]
             outfile_name = label_to_histogram_filename[field]
             histogram = draw_histogram(distances=data, color=color, nbins=10, \
                 outfile_name=outfile_name,xscale=xscale,yscale=yscale)
@@ -348,7 +373,6 @@ def make_main_html(distances_dict, label_to_histogram_filename, root_outdir, \
     main_html_list.append(FULL_HTML_TITLE_FRAME%(title))
     
     #Add javascript in html
-    #main_html_list.append(FULL_HTML_JS_FRAME%(JAVASCRIPT_FRAME))
     main_html_list.append(FULL_HTML_JS_FRAME)
     
     #Add default image HTML
@@ -430,7 +454,8 @@ def group_distances(mapping_file,dmatrix_file,fields,dir_prefix='',\
     mapping = parse_map(open(mapping_file,'U'))
     distance_header, distance_matrix = \
         parse_distmat(open(dmatrix_file,'U'))
-
+    if fields is None:
+        fields = [mapping[0][0]]
     single_field = defaultdict(dict)
     for i in range(len(fields)):
         field = fields[i]
@@ -573,6 +598,8 @@ OPTIONS = [
         make_option('-o', '--dir_path', dest='dir_path',\
             help='directory prefix for all analyses [default: %default]',\
             default='.'),\
+        make_option('--fields', dest='fields',\
+            help='Comma delimited list of fields to compare.  This overwrites fields in prefs file.  Usage: --fields Field1,Field2,Field3'),\
         make_option('--monte_carlo',dest='monte_carlo',default=False,\
             action='store_true',help='''Perform Monte Carlo on distances.  [Default: %default]'''),\
         make_option('--html_output',dest='html_output',default=False,\
@@ -602,11 +629,16 @@ def main(args,args_parsed=None):
     
 
     prefs = eval(open(opts.prefs_file, 'U').read())
+    fields = opts.fields
+    if fields is not None:
+        fields = map(strip,fields.split(','))
+    else:
+        fields = prefs['FIELDS']
     
     within_distances, between_distances, dmat = \
         group_distances(mapping_file=opts.mapping_file,\
         dmatrix_file=opts.distance_matrix_file,\
-        fields=prefs['FIELDS'],\
+        fields=fields,\
         dir_prefix=create_dir(opts.dir_path,'distances'))
     
     if opts.html_output:
