@@ -162,6 +162,11 @@ class PyNastAlignerTests(SharedSetupTestCase):
         open(self.pynast_test_template_w_u_fp,'w').\
          write(pynast_test1_template_fasta.replace('T','U'))
 
+        self.pynast_test_template_w_lower_fp = get_tmp_filename(
+            prefix='PyNastAlignerTests_',suffix='template.fasta')
+        open(self.pynast_test_template_w_lower_fp,'w').\
+         write(pynast_test1_template_fasta.lower())
+
         # create temp file names (and touch them so we can reliably 
         # clean them up)
         self.result_fp = get_tmp_filename(
@@ -182,6 +187,7 @@ class PyNastAlignerTests(SharedSetupTestCase):
             self.pynast_test1_template_fp,
             self.pynast_test_template_w_dots_fp,
             self.pynast_test_template_w_u_fp,
+            self.pynast_test_template_w_lower_fp
             ]
 
         self.pynast_test1_aligner = PyNastAligner({
@@ -250,6 +256,20 @@ class PyNastAlignerTests(SharedSetupTestCase):
         """
         pynast_aligner = PyNastAligner({
                 'template_filepath': self.pynast_test_template_w_dots_fp,
+                'min_len': 15,
+                })
+        actual_aln = pynast_aligner(self.pynast_test1_input_fp)
+        expected_aln = self.pynast_test1_expected_aln
+
+        expected_names = ['1 description field 1..23', '2 1..23']
+        self.assertEqual(actual_aln.Names, expected_names)
+        self.assertEqual(actual_aln, expected_aln)
+        
+    def test_call_pynast_template_aln_with_lower(self):
+        """PyNastAligner: functions when template alignment contains lower case
+        """
+        pynast_aligner = PyNastAligner({
+                'template_filepath': self.pynast_test_template_w_lower_fp,
                 'min_len': 15,
                 })
         actual_aln = pynast_aligner(self.pynast_test1_input_fp)

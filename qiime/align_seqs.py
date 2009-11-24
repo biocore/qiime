@@ -233,7 +233,7 @@ class PyNastAligner(Aligner):
         template_alignment_fp = self.Params['template_filepath']
         for seq_id, seq in MinimalFastaParser(open(template_alignment_fp)):
             # replace '.' characters with '-' characters
-            template_alignment.append((seq_id,seq.replace('.','-')))        
+            template_alignment.append((seq_id,seq.replace('.','-').upper()))        
         try:
             template_alignment = LoadSeqs(data=template_alignment,moltype=DNA,\
              aligned=DenseAlignment)
@@ -425,7 +425,6 @@ if __name__ == "__main__":
         # apply the aligner
         aligner(input_seqs_filepath,result_path=result_path,\
          log_path=log_path,failure_path=failure_path)
-        
     else:
         # define the aligner params
         aligner = CogentAligner({
