@@ -17,6 +17,7 @@ var collapsed_series_array = new Array();
 var showonly_array = new Array();
 var rareFilesData = new Array();
 var contCalcs = new Array();
+var extraSam = new Array();
 
 function Main() {
 	loadExternalFiles();
@@ -26,8 +27,6 @@ function Main() {
     makeDataTable();
     make_collapsed_series();
     makeOpsPanel();
-    //make_showonly_array();
-    //loadGraph(fileNames[1]);
 }
 
 function loadExternalFiles() {
@@ -278,9 +277,6 @@ function collapseSeries(option) {
 	var newSeries = new Array();
 	var stdDevSeries = new Array();
 	var seriesNames = new Array();//categoryOps[option].slice();
-	//document.getElementById('debugging').innerHTML += "option: " + option;
-	//document.getElementById('debugging').innerHTML += "catarray def " + categoryArray[categoryOps[option][0]][0];
-	//document.getElementById('debugging').innerHTML += categoryOps[option]
 	for(var i = 0; i < categoryOps[option].length; i++) // ie male or female so this would go two times
 	{
 		// need to do it for each first point of each series, then each second point, etc
@@ -289,6 +285,7 @@ function collapseSeries(option) {
 		seriesNames.push(categoryOps[option][i]);
 		if(categoryArray[categoryOps[option][i]][0] == null)
 		    document.getElementById('debuggingconsole').innerHTML += categoryOps[option][i]
+	    try {
 		for(var l = 0; l < categoryArray[categoryOps[option][i]][0].length; l++) // for length of sequence line
 		{
 			var values = new Array();
@@ -298,7 +295,13 @@ function collapseSeries(option) {
 				
 			for(var k = 0; k < categoryArray[categoryOps[option][i]].length; k++) // for each sequence in each option (ie M, F)
 			{
+			    try {
 				var value = categoryArray[categoryOps[option][i]][k][l];
+			    }
+			    catch (e)
+    			{
+    			    var value = 0;
+    			}
 				values.push(value);
 			}
 			// Have to add these values twice in order to get vertical
@@ -312,6 +315,11 @@ function collapseSeries(option) {
 			seriesNames.push("");
 		}
 		newSeries.push(currAve);
+		}
+        catch (e)
+        {
+            document.getElementById('debuggingconsole').innerHTML += e;
+        }
 	}
 	
 	var newXaxis = new Array();
@@ -320,12 +328,7 @@ function collapseSeries(option) {
 		newXaxis[p*2] = data[3][p];
 		newXaxis[p*2+1] = data[3][p];
 	}
-	/*
-	var c = ['#0000FF','#5500AA','#AA0055','#FF0000','#BF3F00','#7F7F00','#3FBF00','#00FF00']
-	//var newcols = new Array();
-	for(var i = 0; i < 12*8; i++)
-	    colours.push(c[i/8]);
-	//colours = newcols;*/
+
 	var graphName = currentGraph.split('.')[0]+ ' Average Colored By ' + option;
 	//plotLines(newSeries, seriesNames, newXaxis, graphName, 'none')
 	var result = new Array();
@@ -428,11 +431,6 @@ function colorBy(option) {
 		}
 		colours.push(catToColor[key]) // for each sample, push on the color corresponding to the colorby value
 	}
-	/*
-	var c = ['#0000FF','#5500AA','#AA0055','#FF0000','#BF3F00','#7F7F00','#3FBF00','#00FF00']
-	var newcols = new Array();
-	for(var i = 0; i < 12*8; i++)
-	    colours.push(c[i/8]);*/
 }
 
 function recolor(option) {
@@ -504,19 +502,6 @@ function loadFileData(filenm) {
     var rareIDs = new Array();
 	var seqsPerSamp = new Array();
     var vals = new Array();
-    /*
-    var cnt = 0;
-    var iterNum = rareFileLines[cnt][2]; // iteration number
-    var seen = new Array();
-    while(!contains(seen, iterNum))
-    {
-        seen.push(iterNum);
-        cnt += 1;
-        iterNum = rareFileLines[cnt][2]
-    }
-    
-    var maxIterations = cnt - 1;
-    */
     
     var current = rareFileLines[0].split("\t")[1]; // second item on line = seqsPerSample
     var next;
@@ -556,18 +541,16 @@ function loadFileData(filenm) {
     }
     seqsPerSamp.push(Number(next))
     
-    /*
-    var toRemove = new Array();
     // need to go through and get rid of rarefaction vals for seqIDs not found in mapping file
     for(var i = 0; i < sampleIDs.length; i++)
     {
         if(!contains(sampleIDsarry, sampleIDs[i]))
         {
-            toRemove.push(i);
+            extraSam.push(i);
             document.getElementById('debuggingconsole').innerHTML += 'ID found in '+filenm +' not found in mapping file: ' + sampleIDs[i] +'<br>'
         }
     }
-    
+    /*
     for(j = 0; j < toRemove.length; j++)
     {
         for(var i = 0; i < rareIDs.length; i++)
