@@ -17,7 +17,8 @@ from qiime.otu_category_significance import parse_otu_table, \
     parse_category_mapping, filter_OTUs, make_contingency_matrix, \
     run_single_G_test, run_G_test_OTUs, fdr_correction_G_test, \
     output_results_G_test, run_single_ANOVA, run_ANOVA_OTUs, \
-    output_results_ANOVA, convert_OTU_table_relative_abundance
+    output_results_ANOVA, convert_OTU_table_relative_abundance, \
+    fdr_correction_ANOVA
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -175,17 +176,19 @@ sample3\tC\t1.0""".split('\n')
         OTU_sample_info = {'0': {'sample1': '5', 'sample2': '10', 'sample3': '2', 'sample4': '1'},
         '1': {'sample1': '1', 'sample2': '0', 'sample3': '0', 'sample4': '2'},
         '2': {'sample1': '2', 'sample2': '1', 'sample3': '10', 'sample4': '15'},
-        '3': {'sample1': '1', 'sample2': '1.5', 'sample3': '1.4', 'sample4': '1.3'}}
+        '3': {'sample1': '1', 'sample2': '1.5', 'sample3': '1.4', 'sample4': '1.3'},
+        '4': {'sample1': '20', 'sample2': '16', 'sample3': '1.4', 'sample4': '1.3'}}
         category_values = ['A', 'B']
         taxonomy_info = {'0': 'taxon1',
                         '1': 'taxon2',
                         '2': 'taxon3',
-                        '3': 'taxon4'}
-        ANOVA_results = run_ANOVA_OTUs(['0', '1', '3'], category_info,\
+                        '3': 'taxon4',
+                        '4': 'taxon5'}
+        ANOVA_results = run_ANOVA_OTUs(['0', '2', '1', '3', '4'], category_info,\
             OTU_sample_info, category_values)
         output = output_results_ANOVA(ANOVA_results, category_values,\
                         taxonomy_info)
-        self.assertEqual(output, ['OTU\tprob\tBonferroni_corrected\tFDR_corrected\tA_mean\tB_mean\tConsensus Lineage', '1\t0.698488655422\t2.09546596627\t1.04773298313\t0.5\t1.0\ttaxon2', '0\t0.142857142857\t0.428571428571\t0.428571428571\t7.5\t1.5\ttaxon1', '3\t0.732738758088\t2.19821627426\t0.732738758088\t1.25\t1.35\ttaxon4'])
+        self.assertEqual(output, ['OTU\tprob\tBonferroni_corrected\tFDR_corrected\tA_mean\tB_mean\tConsensus Lineage', '1\t0.698488655422\t3.49244327711\t0.873110819278\t0.5\t1.0\ttaxon2', '0\t0.142857142857\t0.714285714286\t0.238095238095\t7.5\t1.5\ttaxon1', '3\t0.732738758088\t3.66369379044\t0.732738758088\t1.25\t1.35\ttaxon4', '2\t0.0497447318605\t0.248723659303\t0.124361829651\t1.5\t12.5\ttaxon3', '4\t0.0141325222337\t0.0706626111683\t0.0706626111683\t18.0\t1.35\ttaxon5'])
     
     def test_run_G_test_OTUs(self):
         """run_G_test_OTUs works"""
@@ -224,6 +227,22 @@ sample3\tC\t1.0""".split('\n')
         self.assertFloatEqual(G_test_results['1'][-1], 0.938976340277)
         self.assertFloatEqual(G_test_results['3'][-1], 0.828522198394)
 
+    def test_fdr_correction_ANOVA(self):
+        """fdr_correction_ANOVA works"""
+        category_info = {'sample1': 'A',
+                        'sample2': 'A',
+                        'sample3': 'B',
+                        'sample4': 'B'}
+        OTU_sample_info = {'0': {'sample1': '5', 'sample2': '10', 'sample3': '2', 'sample4': '1'},
+        '1': {'sample1': '1', 'sample2': '0', 'sample3': '0', 'sample4': '2'},
+        '2': {'sample1': '2', 'sample2': '1', 'sample3': '10', 'sample4': '15'},
+        '3': {'sample1': '1', 'sample2': '1.5', 'sample3': '1.4', 'sample4': '1.3'}}
+        category_values = ['A', 'B']
+        result = run_ANOVA_OTUs(['0', '1', '2', '3'], category_info,\
+            OTU_sample_info, category_values)
+        result = fdr_correction_ANOVA(result)
+
+    
     def test_output_results_G_test(self):
         """output_results works"""
         category_info = {'sample1': 'A',

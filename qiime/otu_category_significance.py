@@ -277,9 +277,10 @@ def run_single_ANOVA(OTU, category_info, otu_sample_info, category_values):
     sample_info = otu_sample_info[OTU]
     for sample in sample_info:
         count = sample_info[sample]
-        category = category_info[sample]
-        index = category_values.index(category)
-        values[index].append(count)
+        if sample in category_info:
+            category = category_info[sample]
+            index = category_values.index(category)
+            values[index].append(count)
     dfn, dfd, F, between_MS, within_MS, group_means, prob = ANOVA_one_way(values)
     return group_means, prob
 
@@ -369,10 +370,11 @@ def fdr_correction(probs):
     ranks the p-values from low to high. multiplies each p-value by the #
     of comparison divided by the rank.
     """
-    corrected_probs = []
-    for index, rank in enumerate(argsort(probs)):
+    corrected_probs = [None] * len(probs)
+    for rank, index in enumerate(argsort(probs)):
         correction = len(probs) / float(rank + 1)
-        corrected_probs.append(probs[index] * correction)
+        fdr_p = probs[index] * correction
+        corrected_probs[index] = fdr_p
     return corrected_probs
 
 def G_test_wrapper(otu_table, category_mapping, category, threshold, \
