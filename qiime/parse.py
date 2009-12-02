@@ -254,7 +254,10 @@ def otu_file_to_lineages(infile):
     return result
 
 def parse_otus(infile):
-    """Returns matrix of sample x OTU, headers, and lineages from infile."""
+    """parses otu file
+
+    Returns tuple: sample_ids, otu_ids, matrix of OTUs(rows) x samples(cols),
+    and lineages from infile."""
     otu_table = []
     infile.next()   #skip header line
     sample_ids = infile.next().strip().split('\t')[1:]
