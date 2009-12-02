@@ -263,7 +263,7 @@ function create_mouseover(OTU_table,row_id,col_id,row_sum,col_sum,lineage,taxono
 	mouseover_str+=(OTU_table[row_id][col_id]/row_sum*100).toFixed(2);
 	mouseover_str+="%) Displayed";
 	mouseover_str+="<br><br><b>Lineage: ";
-    for (var i=0;i<split_lineage.length-1;i++){
+    for (var i=0;i<split_lineage.length-2;i++){
 		mouseover_str+="<br>"+split_lineage[i];
 	}
 	var query_string=split_lineage[i].split(' ').join('');
