@@ -389,7 +389,13 @@ def _process_prefs(options):
         for i in range(len(file_path)-1):
             qiime_dir+=file_path[i]+'/'
     
-    dir_path = create_dir(options.dir_path,'2d_plots_')
+    
+    dir_path=options.dir_path
+    if not dir_path.endswith("/"):
+        dir_path=dir_path+"/"
+    
+    dir_path=create_dir(dir_path,'2d_plots_')
+    
     js_dir_path = dir_path+'/js/'
     try:
         os.mkdir(js_dir_path)
@@ -451,6 +457,7 @@ def _do_2d_plots(prefs,data,dir_path,filename):
                                    "<br>".join(img_data[("1", "3")]))
     outfile = create_html_filename(filename+new_col_name,'_pca_2D.html')
     outfile=dir_path+outfile
+        
     write_html_file(out_table,outfile)
 
 if __name__ == "__main__":
