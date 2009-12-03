@@ -20,6 +20,7 @@ from itertools import ifilter
 from optparse import OptionParser
 from os.path import splitext, split
 from os import mkdir
+from itertools import imap
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.parse.mothur import parse_otu_list as mothur_parse
 from cogent.app.cd_hit import cdhit_clusters_from_seqs
@@ -100,9 +101,26 @@ class OtuPicker(FunctionWithParams):
         for data in unique_prefixes.values():
             filtered_seqs.append((data[1],data[3]))
             seq_id_map[data[1]] = data[0]
+
         return filtered_seqs, seq_id_map
 
 
+    def _prefilter_with_trie(self, seq_path):
+
+        trunc_id = lambda (a,b): (a.split()[0],b)
+        # get the prefix map
+        mapping=build_prefix_map(imap(trunc_id, MinimalFastaParser(open(seq_path))))
+        for key in mapping.keys():
+                mapping[key].append(key)
+
+        # collect the representative seqs
+        filtered_seqs=[]
+        for (label,seq) in MinimalFastaParser(open(seq_path)):
+            label=label.split()[0]
+            if label in mapping:
+                filtered_seqs.append((label,seq))
+        return filtered_seqs, mapping
+        
     def _map_filtered_clusters_to_full_clusters(self,clusters,filter_map):
         """
         """
@@ -493,7 +511,7 @@ class CdHitOtuPicker(OtuPicker):
         OtuPicker.__init__(self, _params)
     
     def __call__ (self, seq_path, result_path=None, log_path=None, 
-        id_len=0, prefix_prefilter_length=None):
+        id_len=0, prefix_prefilter_length=None, trie_prefilter=False):
         """Returns dict mapping {otu_id:[seq_ids]} for each otu.
         
         Parameters:
@@ -508,7 +526,10 @@ class CdHitOtuPicker(OtuPicker):
          default, 100 is typically a good value if this filtering is 
          desired] -- useful for large sequence collections, when cdhit doesn't
          scale well
-
+        trie_prefilter: prefilter the sequence collection such that all sequences
+         which are a prefix of another sequence are clustered with the other sequence.
+         Togther with cd-hit this is a non-heuristic filter reduces run time a lot.
+         Still a bit slower than the prefix_prefilter toggled with prefix_prefilter_length.
         """
         moltype = DNA
         log_lines = []
@@ -521,16 +542,32 @@ class CdHitOtuPicker(OtuPicker):
         del cd_hit_params['Algorithm']
         cd_hit_params['-d'] = id_len  #turn off id truncation
         
+        if (prefix_prefilter_length!=None and trie_prefilter):
+            log_lines.append("Both prefilters selected. Deactivate \
+            trie_prefilter")
+            trie_prefilter=False
 
         if prefix_prefilter_length != None:
             log_lines.append(\
              'Prefix-based prefiltering, prefix length: %d' \
              % prefix_prefilter_length )
             seqs, filter_map = self._prefilter_exact_prefixes(\
-             MinimalFastaParser(open(seq_path)),prefix_prefilter_length)
+              MinimalFastaParser(open(seq_path)),prefix_prefilter_length)
+            seqs, filter_map = self._prefilter_with_trie(seq_path)
+
             log_lines.append(\
              'Prefix-based prefiltering, post-filter num seqs: %d' \
              % len(seqs))
+            
+        elif trie_prefilter:
+            log_lines.append(\
+                         'Trie-based prefiltering')
+            seqs, filter_map = self._prefilter_with_trie(seq_path)
+
+            log_lines.append(\
+                         'Trie-based prefiltering, post-filter num seqs: %d' \
+                         % len(seqs))
+            
         else:
             log_lines.append('No prefix-based prefiltering.')
             # Load the seq path. Right now, cdhit_clusters_from_seqs
@@ -547,7 +584,7 @@ class CdHitOtuPicker(OtuPicker):
         clusters = cdhit_clusters_from_seqs(\
          seqs=seqs,moltype=moltype,params=cd_hit_params)
         
-        if prefix_prefilter_length != None:
+        if prefix_prefilter_length != None or trie_prefilter:
             clusters = self._map_filtered_clusters_to_full_clusters(\
              clusters,filter_map)
         
@@ -913,6 +950,14 @@ def parse_command_line_parameters():
           'picking doesn\'t scale well '+\
           '[default: %default; 100 is a good value]')
     
+    parser.add_option('-t','--trie_prefilter',\
+          action='store_true',\
+          help='prefilter data so seqs which are identical prefixe '+\
+          'of a longer seq are automatically grouped into a '+\
+          'single OTU; useful for large sequence collections where OTU '+\
+          'picking doesn\'t scale well '+\
+          '[default: %default]')
+    
     parser.add_option('-p','--prefix_length',\
           type=int,help='prefix length when using the prefix_suffix'+\
           ' otu picker; WARNING: CURRENTLY DIFFERENT FROM'+\
@@ -922,8 +967,9 @@ def parse_command_line_parameters():
           type=int,help='suffix length when using the prefix_suffix'+\
           ' otu picker [default: %default]')
 
-    parser.set_defaults(verbose=False, otu_picking_method='cdhit',
-        similarity=0.96, prefix_length=50, suffix_length=50,
+    parser.set_defaults(otu_picking_method='cdhit',
+        similarity=0.96, trie_prefilter=False,
+        prefix_length=50, suffix_length=50,
         clustering_algorithm='furthest',max_e_value=1e-30)
 
     opts,args = parser.parse_args()
@@ -958,6 +1004,7 @@ if __name__ == "__main__":
     otu_picking_method = opts.otu_picking_method
     prefix_length = opts.prefix_length
     suffix_length = opts.suffix_length
+    trie_prefilter = opts.trie_prefilter
  
     otu_picker_constructor =\
      otu_picking_method_constructors[otu_picking_method]
@@ -982,7 +1029,8 @@ if __name__ == "__main__":
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,\
          result_path=result_path,log_path=log_path,\
-         prefix_prefilter_length=prefix_prefilter_length)
+         prefix_prefilter_length=prefix_prefilter_length,\
+         trie_prefilter=trie_prefilter)
     elif otu_picking_method == 'prefix_suffix':
         otu_picker = otu_picker_constructor({})
         otu_picker(input_seqs_filepath,\
