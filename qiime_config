@@ -9,6 +9,8 @@ python_exe_fp	/software/bin/python
 align_seqs_fp	/software/Qiime/qiime/align_seqs.py
 working_dir	/quicksand
 assign_taxonomy_fp	/software/Qiime/qiime/assign_taxonomy.py
+alpha_diversity_fp	/software/Qiime/qiime/alpha_diversity.py
+rarefaction_fp	/software/Qiime/qiime/rarefaction.py
 poller_fp	/software/Qiime/qiime/parallel/poller.py
 blastmat_dir	/software/blast-2.2.16/data
 blastall_fp	/software/bin/blastall
