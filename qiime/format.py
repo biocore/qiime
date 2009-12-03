@@ -9,6 +9,7 @@ __maintainer__ = "Rob Knight"
 __email__ = "rob@spot.colorado.edu"
 __status__ = "Prototype"
 
+import numpy
 from numpy import isnan
 from StringIO import StringIO
 
@@ -45,6 +46,7 @@ def format_otu_table(sample_names, otu_names, data, taxonomy=None,
         raise ValueError, "Data shape of %s doesn't match %s OTUs, %s samples" \
             % (data.shape, len(otu_names), len(sample_names))
     lines = []
+    data = numpy.array(data, dtype='str')
     sample_names = map(str, sample_names)
     otu_names = map(str, otu_names)
     lines.append('#'+comment)
@@ -54,11 +56,11 @@ def format_otu_table(sample_names, otu_names, data, taxonomy=None,
         for otu_name, vals, taxon in zip(otu_names, data, taxonomy):
             if not isinstance(taxon, str):
                 taxon = ';'.join(taxon)
-            lines.append('\t'.join([otu_name] + map(str, vals) + [taxon]))
+            lines.append('\t'.join([otu_name] + vals.tolist() + [taxon]))
     else:
         lines.append('\t'.join(['#OTU ID'] + sample_names))
         for otu_name, vals in zip(otu_names, data):
-            lines.append('\t'.join([otu_name] + map(str, vals)))
+            lines.append('\t'.join([otu_name] + vals.tolist()))
     return '\n'.join(lines)
 
 def format_coords(coord_header, coords, eigvals, pct_var):
