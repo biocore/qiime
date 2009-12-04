@@ -553,8 +553,6 @@ class CdHitOtuPicker(OtuPicker):
              % prefix_prefilter_length )
             seqs, filter_map = self._prefilter_exact_prefixes(\
               MinimalFastaParser(open(seq_path)),prefix_prefilter_length)
-            seqs, filter_map = self._prefilter_with_trie(seq_path)
-
             log_lines.append(\
              'Prefix-based prefiltering, post-filter num seqs: %d' \
              % len(seqs))
