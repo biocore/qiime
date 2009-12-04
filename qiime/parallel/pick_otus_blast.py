@@ -288,7 +288,7 @@ if __name__ == "__main__":
     # output files.
     working_dir = '%s/%s' % (output_dir,job_prefix)
     try:
-        mkdir(working_dir)
+        makedirs(working_dir)
         created_temp_paths.append(working_dir)
     except OSError:
         # working dir already exists
