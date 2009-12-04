@@ -862,9 +862,11 @@ def expand_otu_map_seq_ids(otu_map,seq_id_map):
     return otu_map
                 
 def map_otu_map_files(otu_files):
-    result = fields_to_dict(otu_files[0])
+    # passing delim=None splits on any whitespace, so can handle mixed tabs
+    # and spaces
+    result = fields_to_dict(otu_files[0],delim=None)
     for otu_file in otu_files[1:]:
-        current_otu_map = fields_to_dict(otu_file)
+        current_otu_map = fields_to_dict(otu_file,delim=None)
         result = expand_otu_map_seq_ids(current_otu_map,result)
     return result
 

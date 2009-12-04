@@ -833,6 +833,11 @@ class PickOtusStandaloneFunctions(TestCase):
         actual123 = map_otu_map_files(\
          [self.otu_map1_file,self.otu_map2_file,self.otu_map3_file])
         self.assertEqual(exp123,actual123)
+        
+        # third 'file' contains mixed tabs and spaces
+        actual123 = map_otu_map_files(\
+         [self.otu_map1_file,self.otu_map2_file,['a\t110 221']])
+        self.assertEqual(exp123,actual123)
     
     def test_write_otu_map(self):
         """write_otu_map: functions as expected
