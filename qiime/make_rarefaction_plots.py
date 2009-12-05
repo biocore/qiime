@@ -28,9 +28,9 @@ from sys import argv, exit
 from random import choice, randrange
 from time import strftime
 from qiime import parse
-from numpy import array, transpose, random, mean, std
+from numpy import array, transpose, random, mean, std, arange
 from string import strip
-from matplotlib.pylab import savefig, clf, gca
+from matplotlib.pylab import savefig, clf, gca, gcf
 import matplotlib.pyplot as plt
 import os.path
 from optparse import OptionParser
@@ -146,7 +146,8 @@ def make_error_series(rare_mat, sampleIDs, mapping, mapping_category):
     ops = [o for o in seen]
     cols = dict() #[COLOUR[i%len(COLOUR)] for i in range(0,len(ops))]
     for i in range(0,len(ops)):
-        cols[ops[i]] = COLOUR[i%len(COLOUR)];
+        #cols[ops[i]] = [y/100 for y in [float(x) for x in arange(1,99,100/len(ops))]][i];
+        cols[ops[i]] = COLOUR[i%len(COLOUR)]
         
     for o in ops:
         ao = array(pre_err[o])
@@ -161,6 +162,7 @@ def plot_rarefaction_noave(rare_mat, xaxisvals, sampleIDs, mapping, mapping_cate
     xaxis = [float(x) for x in set(xaxisvals)]
     xaxis.sort()
     plt.figure()
+    plt.gcf().set_size_inches(10,6)
 
     for k in rare_mat.keys():
         rare_mat[k] = [float(v) for v in rare_mat[k] if v != 0]
@@ -177,32 +179,37 @@ def plot_rarefaction(rare_mat, xaxisvals, sampleIDs, mapping, mapping_category):
     xaxis = [float(x) for x in set(xaxisvals)]
     xaxis.sort()
     plt.figure()
+    plt.gcf().set_size_inches(10,6)
     
     yaxis, err, ops, colors = make_error_series(rare_mat, sampleIDs, mapping, mapping_category)
     plt.axes([.1,.1,.6,.8])
     
     for o in ops:
         try:
+            yaxis[o] = [float(v) for v in yaxis[o] if v != 0]
             l = o
             if len(o) > 10:
                 l = l[:10] + '...'
-            plt.errorbar(xaxis, yaxis[o], yerr=err[o], color=colors[o], label=l)
+            plt.errorbar(xaxis[:len(yaxis[o])], yaxis[o], yerr=err[o][:len(yaxis[o])], color=colors[o], label=l)
         except(ValueError):
             print mapping_category
             print o
             #print xaxis
             #print yaxis[o]
     plt.grid(color='gray', linestyle='-')
-    plt.legend(loc=(1.02,.1), markerscale=.5, ncol=int(len(ops)/10)+1)
+    c = 1
+    if len(ops) > 10:
+        c = int(len(ops)/8)
+    plt.legend(loc=(1.02,.1), markerscale=.5, ncol=c)
     ax = plt.gca()
     ax.set_xlabel('Sequences Per Sample')
     return plt
 
-def save_plot(plot, filenm, rtype, title):
+def save_plot(plot, filenm, rtype, title, itype):
     plot.title(title)
     ax = plot.gca()
     ax.set_ylabel(rtype.split('.')[0])
-    plot.savefig(filenm +'.png', format='png', dpi=75)
+    plot.savefig(filenm +'.'+itype, format=itype, dpi=150)
 
 def _make_cmd_parser():
     parser = OptionParser(usage="Usage: make_rarefaction_plots2.py -m <mapping file> \
@@ -267,11 +274,11 @@ def get_prefs(options, data):
 
 def get_img_extension(options, data):
     """Gets type of extension to save images as."""
-    imgtypes = ['.jpg','.gif','.png','.svg','.pdf']
+    imgtypes = ['jpg','gif','png','svg','pdf']
     try:    
         if options.imagetype not in imgtypes:
             print "Supplied extension not supported, using .png instead."
-            data['imagetype'] = '.png'
+            data['imagetype'] = 'png'
         else:
             data['imagetype'] = options.imagetype
         return data['imagetype']
@@ -348,7 +355,7 @@ def make_plots(data):
                     else:
                         pr = plot_rarefaction(rare_mat_ave, seqs_per_samp, sampleIDs, data['map'], p)
                     filenm = file_path + '/'+ p
-                    save_plot(pr, filenm, r, r.split('.')[0] +'_'+ p)
+                    save_plot(pr, filenm, r, r.split('.')[0] +'_'+ p, data['imagetype'])
                     clf()
             else:
                 for p in data['prefs']:
@@ -361,7 +368,7 @@ def make_plots(data):
                     else:
                         pr = plot_rarefaction(rare_mat_ave, seqs_per_samp, sampleIDs, data['map'], p)
                     filenm = file_path + '/'+ p
-                    save_plot(pr, filenm, r, r.split('.')[0] +'_'+ p)
+                    save_plot(pr, filenm, r, r.split('.')[0] +'_'+ p, data['imagetype'])
                     clf()
         except():
             os.removedirs(file_path)
