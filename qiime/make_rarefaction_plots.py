@@ -169,7 +169,6 @@ def plot_rarefaction_noave(rare_mat, xaxisvals, sampleIDs, mapping, mapping_cate
         plt.plot(xaxis[:len(rare_mat[k])], rare_mat[k])
 
     plt.grid(color='gray', linestyle='-')
-    #plt.legend(title=mapping_category)
     ax = plt.gca()
     ax.set_xlabel('Sequences Per Sample')
     return plt
@@ -194,7 +193,7 @@ def plot_rarefaction(rare_mat, xaxisvals, sampleIDs, mapping, mapping_category):
             #print xaxis
             #print yaxis[o]
     plt.grid(color='gray', linestyle='-')
-    plt.legend(title=mapping_category, loc=(1.02,.1), markerscale=.5, ncol=int(len(ops)/10)+1)
+    plt.legend(loc=(1.02,.1), markerscale=.5, ncol=int(len(ops)/10)+1)
     ax = plt.gca()
     ax.set_xlabel('Sequences Per Sample')
     return plt
@@ -221,7 +220,7 @@ def _make_cmd_parser():
         help='name of columns to make rarefaction graphs of, comma delimited no spaces. Use\
                 \'ALL\' command to make graphs of all metadata columns.')
     parser.add_option('-i', '--imagetype', \
-        help='extension for image type choose from (.jpg, .gif, .png, .svg, .pdf). DEFAULT (.png)')
+        help='extension for image type choose from (.jpg, .gif, .png, .svg, .pdf). [default: .png]', default='.png')
     #parser.add_option('-p', '--prefs', \
     #    help='name of preferences file')
     parser.add_option('-o', '--dir_path',\
@@ -270,8 +269,8 @@ def get_img_extension(options, data):
     """Gets type of extension to save images as."""
     imgtypes = ['.jpg','.gif','.png','.svg','.pdf']
     try:    
-        if options.imagetype == None or options.imagetype not in imgtypes:
-            print "Extension not supplied or supplied extension not supported, using .png"
+        if options.imagetype not in imgtypes:
+            print "Supplied extension not supported, using .png instead."
             data['imagetype'] = '.png'
         else:
             data['imagetype'] = options.imagetype
