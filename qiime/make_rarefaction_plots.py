@@ -69,10 +69,20 @@ def parse_rarefaction(lines):
             try:
                 result.append(map(float, entries[1:]))
             except(ValueError):
-                result.append(map(strip, map(str, entries[1:])))
+                # fix so that float works on all vals except n/a and leave n/as in
+                # then transpose matrix, get rid of na's, average
+                result.append(map(str, entries[1:]))
+                '''temp = []
+                for e in entries[1:]:
+                    try:
+                        e = float(e)
+                    except(ValueError):
+                        e = str(e)
+                    temp.append(e)
+                result.append(temp)
+                #print temp'''
                 
             row_headers.append(entries[0])
-
     rare_mat_raw = array(result)
     rare_mat_min = [rare_mat_raw[x][2:] for x in range(0,len(rare_mat_raw))]
     seqs_per_samp = [rare_mat_raw[x][0] for x in range(0,len(rare_mat_raw))]
@@ -148,14 +158,30 @@ def make_error_series(rare_mat, sampleIDs, mapping, mapping_category):
     for i in range(0,len(ops)):
         #cols[ops[i]] = [y/100 for y in [float(x) for x in arange(1,99,100/len(ops))]][i];
         cols[ops[i]] = COLOUR[i%len(COLOUR)]
-        
+    
     for o in ops:
-        ao = array(pre_err[o])
-        m = mean(ao, 0)
-        collapsed_ser[o] = m.tolist()
-        s = std(ao, 0)
-        err_ser[o] = s.tolist()
-    #print ops
+        min_len = 100
+        for s in pre_err[o]:
+            s = [float(v) for v in s if v != 'n/a' and v != 0]
+            if len(s) < min_len:
+                min_len = len(s)
+        
+        pre_err[o] = [x[:min_len] for x in pre_err[o]]
+            
+    for o in ops:
+        try:
+            ao = array(pre_err[o])
+            m = mean(ao, 0)
+            collapsed_ser[o] = m.tolist()
+            s = std(ao, 0)
+            err_ser[o] = s.tolist()
+        except(ValueError):
+            continue
+            print o
+            #for s in pre_err[o]:
+            #    print "length: " , len(s)
+            #    print "type: " , type(s)
+        
     return collapsed_ser, err_ser, ops, cols
 
 def plot_rarefaction_noave(rare_mat, xaxisvals, sampleIDs, mapping, mapping_category):
@@ -164,11 +190,15 @@ def plot_rarefaction_noave(rare_mat, xaxisvals, sampleIDs, mapping, mapping_cate
     plt.figure()
     plt.gcf().set_size_inches(10,6)
 
-    for k in rare_mat.keys():
-        rare_mat[k] = [float(v) for v in rare_mat[k] if v != 0]
+    yseries = []
 
     for k in rare_mat.keys():
-        plt.plot(xaxis[:len(rare_mat[k])], rare_mat[k])
+        yseries.append([float(v) for v in rare_mat[k] if v != 'n/a' and v != 0])
+        
+    for s in yseries:
+        plt.plot(xaxis[:len(s)], s)
+    #for k in rare_mat.keys():
+    #    plt.plot(xaxis[:len(rare_mat[k])], rare_mat[k])
 
     plt.grid(color='gray', linestyle='-')
     ax = plt.gca()
@@ -183,6 +213,9 @@ def plot_rarefaction(rare_mat, xaxisvals, sampleIDs, mapping, mapping_category):
     
     yaxis, err, ops, colors = make_error_series(rare_mat, sampleIDs, mapping, mapping_category)
     plt.axes([.1,.1,.6,.8])
+    
+    dummy = [0 for x in xaxis]
+    plt.plot(xaxis, dummy, color='white')
     
     for o in ops:
         try:
