@@ -20,7 +20,8 @@ Matplotlib
 Numpy
 
 Example 1: Create rarefaction plot from mapping file and rarefaction data
-Usage: python make_rarefaction_plots.py -m mappingfile.txt -r rare1.txt,rare2.txt -p pref1,pref2 -i .png
+Usage: python make_rarefaction_plots.py -m mappingfile.txt -r rare1.txt,rare2.txt 
+-p pref1,pref2 -i .png -d 75
 
 """
 
@@ -37,14 +38,54 @@ from optparse import OptionParser
 from os.path import exists, splitext, split
 import shutil
 
-COLOUR = ['b', #  : blue
+COLOUR_GRAD = ['#9933cc', #purple
+        '#3333cc', #blue
+        '#6699cc', #bluetint
+        '#666666', #gray
+        '#9966cc', #lilac
+        '#009999', #cyan
+        '#66cc99', #lightgreen
+        '#3399cc', #skyblue
+        '#00cc66', #sea green
+        '#33cc33', #green
+        '#99cc00', #yellowgreen
+        '#cccc00', #yellow
+        '#cc6600', #orange
+        '#cc6633', #peach
+        '#cc3300', #dark orange
+        '#cc6666', #coral
+        '#cc0066', #hot pink
+        '#cc0000', #red
+        ]
+
+COLOUR = ['#9933cc', #purple
+            '#99cc00', #yellowgreen
+            '#3399cc', #skyblue
+            '#66cc99', #lightgreen
+            '#ffff00', #yellow
+            '#cc0066', #hot pink
+            '#cc6600', #orange
+            '#00cc66', #sea green
+            '#6699cc', #bluetint
+            '#cc6633', #peach
+            '#33cc33', #green
+            '#9966cc', #lilac
+            '#3333cc', #blue
+            '#cccc00', #gold
+            '#cc0000', #red
+            '#cc6666', #coral
+            '#666666', #gray
+            '#009999', #cyan
+]
+
+'''COLOUR = ['b', #  : blue
             'r', #  : green
             'g', #  : red
             'y', #  : cyan
             'm', #  : magenta
             'c', #  : yellow
             'k' #  : black 
-            ]
+            ]'''
 err = []
 
 Infinity = 1e10000
@@ -212,17 +253,20 @@ def plot_rarefaction(rare_mat, xaxisvals, sampleIDs, mapping, mapping_category):
     plt.gcf().set_size_inches(10,6)
     
     yaxis, err, ops, colors = make_error_series(rare_mat, sampleIDs, mapping, mapping_category)
-    plt.axes([.1,.1,.6,.8])
+    plt.axes([.05,.1,.45,.8])
     
     dummy = [0 for x in xaxis]
     plt.plot(xaxis, dummy, color='white')
     
+    ops.sort()
+    
     for o in ops:
+        #print o
         try:
             yaxis[o] = [float(v) for v in yaxis[o] if v != 0]
             l = o
-            if len(o) > 10:
-                l = l[:10] + '...'
+            if len(o) > 20:
+                l = l[:20] + '...'
             plt.errorbar(xaxis[:len(yaxis[o])], yaxis[o], yerr=err[o][:len(yaxis[o])], color=colors[o], label=l)
         except(ValueError):
             print mapping_category
@@ -232,17 +276,17 @@ def plot_rarefaction(rare_mat, xaxisvals, sampleIDs, mapping, mapping_category):
     plt.grid(color='gray', linestyle='-')
     c = 1
     if len(ops) > 10:
-        c = int(len(ops)/8)
-    plt.legend(loc=(1.02,.1), markerscale=.5, ncol=c)
+        c = int(len(ops)/10)
+    plt.legend(loc=(1.02,.0), markerscale=.5, ncol=c)
     ax = plt.gca()
     ax.set_xlabel('Sequences Per Sample')
     return plt
 
-def save_plot(plot, filenm, rtype, title, itype):
+def save_plot(plot, filenm, rtype, title, itype, res):
     plot.title(title)
     ax = plot.gca()
     ax.set_ylabel(rtype.split('.')[0])
-    plot.savefig(filenm +'.'+itype, format=itype, dpi=150)
+    plot.savefig(filenm +'.'+itype, format=itype, dpi=res)
 
 def _make_cmd_parser():
     parser = OptionParser(usage="Usage: make_rarefaction_plots2.py -m <mapping file> \
@@ -261,7 +305,9 @@ def _make_cmd_parser():
                 \'ALL\' command to make graphs of all metadata columns.')
     parser.add_option('-i', '--imagetype', \
         help='extension for image type choose from (.jpg, .gif, .png, .svg, .pdf). [default: .png]', default='.png')
-    #parser.add_option('-p', '--prefs', \
+    parser.add_option('-d', '--resolution', \
+        help='image resolution in dpi. [default: 75dpi]', default='75')
+   #parser.add_option('-p', '--prefs', \
     #    help='name of preferences file')
     parser.add_option('-o', '--dir_path',\
         help='directory prefix for all analyses [default: %default]',default='')
@@ -317,6 +363,18 @@ def get_img_extension(options, data):
         return data['imagetype']
     except (TypeError, IOError):
         return None
+        
+def get_resolution(options, data):
+    """Gets image resolution."""
+    try:    
+        try:
+            data['resolution'] = int(options.resolution)
+        except(ValueError):
+            print "Inavlid resolution, proceeding with 75dpi."
+            data['resolution'] = 75
+        return data['resolution']
+    except (TypeError, IOError):
+        return None
 
 def _get_script_dir(script_path):
     """Returns directory current script is running in.
@@ -348,6 +406,7 @@ def _process_prefs(options):
     data['prefs'] = get_prefs(options, data)
     data['output_path'] = data_file_dir_path
     data['imagetype'] = get_img_extension(options, data)
+    data['resolution'] = get_resolution(options, data)
     '''
     filenms = []
     filenms.append(data['map'])
@@ -388,7 +447,7 @@ def make_plots(data):
                     else:
                         pr = plot_rarefaction(rare_mat_ave, seqs_per_samp, sampleIDs, data['map'], p)
                     filenm = file_path + '/'+ p
-                    save_plot(pr, filenm, r, r.split('.')[0] +'_'+ p, data['imagetype'])
+                    save_plot(pr, filenm, r, r.split('.')[0] +'_'+ p, data['imagetype'], data['resolution'])
                     clf()
             else:
                 for p in data['prefs']:
@@ -401,7 +460,7 @@ def make_plots(data):
                     else:
                         pr = plot_rarefaction(rare_mat_ave, seqs_per_samp, sampleIDs, data['map'], p)
                     filenm = file_path + '/'+ p
-                    save_plot(pr, filenm, r, r.split('.')[0] +'_'+ p, data['imagetype'])
+                    save_plot(pr, filenm, r, r.split('.')[0] +'_'+ p, data['imagetype'], data['resolution'])
                     clf()
         except():
             os.removedirs(file_path)
