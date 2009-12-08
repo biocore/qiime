@@ -20,8 +20,7 @@ Matplotlib
 Numpy
 
 Example 1: Create rarefaction plot from mapping file and rarefaction data
-Usage: python make_rarefaction_plots.py -m mappingfile.txt -r rare1.txt,rare2.txt 
--p pref1,pref2 -i .png -d 75
+Usage: python make_rarefaction_plots.py -m mappingfile.txt -r rare1.txt,rare2.txt -p pref1,pref2 -i .png
 
 """
 
@@ -77,6 +76,9 @@ COLOUR = ['#9933cc', #purple
             '#666666', #gray
             '#009999', #cyan
 ]
+
+#MARKERS = ['+' , '*' , ',' , '.' , '1' , '2' , '3' , '4' , '<' , '>' , 'D' , 'H' , '^' , '_' , 'd' , 'h' , 'o' , 'p' , 's' , 'v' , 'x' , '|']
+MARKERS = ['*', 'D' , 'H' , 'd' , 'h' , 'o' , 'p' , 's' , 'x']
 
 '''COLOUR = ['b', #  : blue
             'r', #  : green
@@ -196,9 +198,11 @@ def make_error_series(rare_mat, sampleIDs, mapping, mapping_category):
     #print seen
     ops = [o for o in seen]
     cols = dict() #[COLOUR[i%len(COLOUR)] for i in range(0,len(ops))]
+    syms = dict()
     for i in range(0,len(ops)):
         #cols[ops[i]] = [y/100 for y in [float(x) for x in arange(1,99,100/len(ops))]][i];
         cols[ops[i]] = COLOUR[i%len(COLOUR)]
+        syms[ops[i]] = MARKERS[i%len(MARKERS)]
     
     for o in ops:
         min_len = 100
@@ -223,7 +227,7 @@ def make_error_series(rare_mat, sampleIDs, mapping, mapping_category):
             #    print "length: " , len(s)
             #    print "type: " , type(s)
         
-    return collapsed_ser, err_ser, ops, cols
+    return collapsed_ser, err_ser, ops, cols, syms
 
 def plot_rarefaction_noave(rare_mat, xaxisvals, sampleIDs, mapping, mapping_category):
     xaxis = [float(x) for x in set(xaxisvals)]
@@ -249,15 +253,14 @@ def plot_rarefaction_noave(rare_mat, xaxisvals, sampleIDs, mapping, mapping_cate
 def plot_rarefaction(rare_mat, xaxisvals, sampleIDs, mapping, mapping_category):
     xaxis = [float(x) for x in set(xaxisvals)]
     xaxis.sort()
-    plt.figure()
-    plt.gcf().set_size_inches(10,6)
-    
-    yaxis, err, ops, colors = make_error_series(rare_mat, sampleIDs, mapping, mapping_category)
+
+    plt.gcf().set_size_inches(10,6)    
     plt.axes([.05,.1,.45,.8])
-    
     dummy = [0 for x in xaxis]
+    plt.grid(color='gray', linestyle='-')
     plt.plot(xaxis, dummy, color='white')
     
+    yaxis, err, ops, colors, syms = make_error_series(rare_mat, sampleIDs, mapping, mapping_category)
     ops.sort()
     
     for o in ops:
@@ -267,25 +270,25 @@ def plot_rarefaction(rare_mat, xaxisvals, sampleIDs, mapping, mapping_category):
             l = o
             if len(o) > 20:
                 l = l[:20] + '...'
-            plt.errorbar(xaxis[:len(yaxis[o])], yaxis[o], yerr=err[o][:len(yaxis[o])], color=colors[o], label=l)
+            plt.errorbar(xaxis[:len(yaxis[o])], yaxis[o], yerr=err[o][:len(yaxis[o])], color=colors[o], label=l, marker=syms[o], markersize=4)
         except(ValueError):
             print mapping_category
             print o
             #print xaxis
             #print yaxis[o]
-    plt.grid(color='gray', linestyle='-')
     c = 1
     if len(ops) > 10:
         c = int(len(ops)/10)
-    plt.legend(loc=(1.02,.0), markerscale=.5, ncol=c)
+    plt.legend(loc=(1.02,.0), markerscale=.3, ncol=c)
     ax = plt.gca()
+    ax.set_axisbelow(True)
     ax.set_xlabel('Sequences Per Sample')
     return plt
 
 def save_plot(plot, filenm, rtype, title, itype, res):
     plot.title(title)
     ax = plot.gca()
-    ax.set_ylabel(rtype.split('.')[0])
+    ax.set_ylabel("Rarefaction Type: " + rtype.split('.')[0])
     plot.savefig(filenm +'.'+itype, format=itype, dpi=res)
 
 def _make_cmd_parser():
@@ -447,7 +450,7 @@ def make_plots(data):
                     else:
                         pr = plot_rarefaction(rare_mat_ave, seqs_per_samp, sampleIDs, data['map'], p)
                     filenm = file_path + '/'+ p
-                    save_plot(pr, filenm, r, r.split('.')[0] +'_'+ p, data['imagetype'], data['resolution'])
+                    save_plot(pr, filenm, r, r.split('.')[0] +':'+ p, data['imagetype'], data['resolution'])
                     clf()
             else:
                 for p in data['prefs']:
@@ -460,7 +463,7 @@ def make_plots(data):
                     else:
                         pr = plot_rarefaction(rare_mat_ave, seqs_per_samp, sampleIDs, data['map'], p)
                     filenm = file_path + '/'+ p
-                    save_plot(pr, filenm, r, r.split('.')[0] +'_'+ p, data['imagetype'], data['resolution'])
+                    save_plot(pr, filenm, r, r.split('.')[0] +': '+ p, data['imagetype'], data['resolution'])
                     clf()
         except():
             os.removedirs(file_path)
