@@ -7,7 +7,7 @@ renames each read with the appropriate library id.
 """
 __author__ = "Rob Knight and Micah Hamady"
 __copyright__ = "Copyright 2009, the PyCogent Project" #consider project name
-__credits__ = ["Rob Knight", "Micah Hamady", "Greg Caporaso", "Kyle Bittinger","Jesse Stombaugh"] #remember to add yourself
+__credits__ = ["Rob Knight", "Micah Hamady", "Greg Caporaso", "Kyle Bittinger","Jesse Stombaugh","William Walters"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "0.1"
 __maintainer__ = "Rob Knight"
@@ -24,8 +24,8 @@ from gzip import GzipFile
 from optparse import OptionParser
 from os import mkdir, stat
 from collections import defaultdict
-from hamming import decode_barcode_8
-from golay import decode as decode_golay_12
+from qiime.hamming import decode_barcode_8
+from qiime.golay import decode as decode_golay_12
 
 ## Including new=True in the histogram() call is necessary to 
 ## get the correct result in versions prior to NumPy 1.2.0,
@@ -305,20 +305,24 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
                 if curr_samp_id!="Unassigned":
                     fasta_out.write(">%s %s orig_bc=%s new_bc=%s bc_diffs=%s\n%s\n" % 
                     (new_id, curr_rid, cbc, curr_bc, int(bc_diffs), write_seq))
+                else:
+                    bc_counts['#FAILED'].append(curr_rid)
             else:    
                 fasta_out.write(">%s %s orig_bc=%s new_bc=%s bc_diffs=%s\n%s\n" % 
                     (new_id, curr_rid, cbc, curr_bc, int(bc_diffs), write_seq))
             curr_ix += 1
-    log_out = format_log(bc_counts, corr_ct, seq_lengths, valid_map, filters)
+    log_out = format_log(bc_counts, corr_ct, seq_lengths, valid_map, filters,\
+    remove_unassigned)
     all_seq_lengths, good_seq_lengths = get_seq_lengths(seq_lengths, bc_counts)
     return log_out, all_seq_lengths, good_seq_lengths
 
-def format_log(bc_counts, corr_ct, seq_lengths, valid_map, filters):
+def format_log(bc_counts, corr_ct, seq_lengths, valid_map, filters,\
+remove_unassigned):
     """Makes log lines"""
     log_out = []
     all_seq_lengths, good_seq_lengths = get_seq_lengths(seq_lengths, bc_counts)
-    log_out.append("Number raw seqs\t%d" % len(seq_lengths)) 
-    log_out.append("Number seqs written\t%d" % len(good_seq_lengths)) 
+    log_out.append("Number raw input seqs\t%d\n" % len(seq_lengths)) 
+    
     for f in filters:
         log_out.append(str(f))
     log_out.append("Raw len min/max/avg\t%.1f/%.1f/%.1f" % 
@@ -332,27 +336,42 @@ def format_log(bc_counts, corr_ct, seq_lengths, valid_map, filters):
     valid_bc_nomap = set(bc_counts) - set(valid_map) - set([None,'#FAILED'])
     valid_bc_nomap_counts = [(len(bc_counts[b]),b) for b in valid_bc_nomap]
 
-    log_out.append("BC ok, not in mapping\t%d" % len(valid_bc_nomap_counts)) 
-    log_out.append("BC corrected/not\t%d/%d" % 
-            (corr_ct, len(bc_counts[None]))) 
+    
+    log_out.append("\nBarcodes corrected/not\t%d/%d" % 
+            (corr_ct, len(bc_counts[None])))
+    log_out.append("Uncorrected barcodes will not be written to the output "+\
+    "fasta file.\n")
+    log_out.append("Total valid barcodes that are not in mapping file\t%d" %\
+    len(valid_bc_nomap_counts)) 
     if valid_bc_nomap:
-        log_out.append("BC ok (missed)\tCount")
+        log_out.append("Barcodes not in mapping file\tCount")
         for count, bc in reversed(sorted(valid_bc_nomap_counts)):
-            log_out.append("%s\t%d" % (bc, count)) 
+            log_out.append("%s\t%d" % (bc, count))
+    if remove_unassigned:
+        log_out.append("Sequences associated with valid barcodes that are not"+\
+        " in the mapping file will not be written. -r option enabled.")
+    else:
+        log_out.append("Sequences associated with valid barcodes that are "+\
+        "not in the mapping file will be written as 'unassigned'.  -r option "+\
+        "disabled.")
+    log_out.append("\nBarcodes in mapping file")
    
     sample_cts = [(len(bc_counts[bc]), bc, sample_id) for bc, sample_id 
             in valid_map.items()]
     if sample_cts:
-        log_out.append("Sample\tSequence Count\tBarcode")
-        for count, bc, sample_id in reversed(sorted(sample_cts)):
-            log_out.append("%s\t%d\t%s" % (sample_id, count, bc))
-
         filtered_sample_cts = [s[0] for s in sample_cts if s[0]]
         if filtered_sample_cts:
             log_out.append("Num Samples\t%d" % len(filtered_sample_cts))
             log_out.append("Sample ct min/max/mean: %d / %d / %.2f" % (
             min(filtered_sample_cts), max(filtered_sample_cts), 
             mean(filtered_sample_cts)))
+        log_out.append("Sample\tSequence Count\tBarcode")
+        for count, bc, sample_id in reversed(sorted(sample_cts)):
+            log_out.append("%s\t%d\t%s" % (sample_id, count, bc))
+
+        
+        
+    log_out.append("\nTotal number seqs written\t%d" % len(good_seq_lengths)) 
     return log_out
 
 def preprocess(fasta_files, qual_files, mapping_file, 
@@ -397,6 +416,12 @@ def preprocess(fasta_files, qual_files, mapping_file,
     dir_prefix: prefix of directories to write files into.
 
     max_bc_errors: maximum number of barcode errors to allow in output seqs
+    
+    max_homopolymer: NEEDS description
+    
+    remove_unassigned: If True (False default), will not write seqs to the
+    output .fna file that have a valid barcode (by Golay or Hamming standard)
+    but are not included in the input mapping file.
 
     Result:
     in dir_prefix, writes the following files:
