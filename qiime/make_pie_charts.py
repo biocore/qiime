@@ -43,7 +43,7 @@ matplotlib_version_info = tuple([int(i) for i in matplotlib_version if \
                           i.isdigit()])
 
 if matplotlib_version_info != (0,98,5,3):
-    print "This code was only tested with Matplotlib-0.98.5.3"
+     "This code was only tested with Matplotlib-0.98.5.3"
 
 ALPHABET = "ABCDEFGHIJKLMNOPQRSTUZWXYZ"
 ALPHABET += ALPHABET.lower()
@@ -328,17 +328,21 @@ def make_HTML_table(l,other_frac,total,red,other_cat,
                 
 def get_counts(lines, label,do_sample, num_categories, dir_path):
     """gets all the counts for one input file"""
-    labels = lines[1].strip().split("Consensus Lineage")[0].split()[1:-1]
     img_data = []
-
+    labels = []
     level_counts = []
-    for line in lines[2:]:
-        counts = line.strip().split()
+    for line in lines:
+        if line.startswith("#") or line == "\n":
+            continue
+        if line.startswith("Taxon"):
+            labels = line.strip().split("Consensus Lineage")[0].split("\t")[1:-1]
+            continue
+        counts = line.strip().split("\t")
         taxonomy = counts[0]
-        split_label = taxonomy.strip().split(";")
-        level_counts.append((sum(map(int,counts[1:])), taxonomy,
+        split_label = [i.strip('"') for i in taxonomy.strip().split(";")]
+        taxonomy = ';'.join(split_label)
+        level_counts.append((sum(map(int,map(float,counts[1:]))), taxonomy,
                             '<br>'.join(split_label)))
-
     all_sum = sum([c_over[0] for c_over in level_counts])
     fracs_labels_other,fracs_labels,all_counts, other_cat, red, other_frac= \
                                 get_fracs(level_counts, num_categories, all_sum)
@@ -346,16 +350,19 @@ def get_counts(lines, label,do_sample, num_categories, dir_path):
     img_data.extend(make_HTML_table(label,other_frac,all_sum,red,other_cat,
                     fracs_labels_other,fracs_labels,dir_path,all_counts))
 
-    
     if do_sample:
         for i, l in enumerate(labels):
             total = 0
             sample_counts = []
-            for line in lines[2:]:
-                counts = line.strip().split()
+            for line in lines:
+                if line.startswith("#") or line == "\n" or line.startswith("Taxon"):
+                    continue
+                counts = line.strip().split("\t")
                 taxonomy = counts[0]
-                split_label = taxonomy.strip().split(";")
-                c = int(counts[i+1])
+                split_label = [j.strip('"') for j in taxonomy.strip().split(";")]
+                taxonomy = ';'.join(split_label)
+
+                c = int(float(counts[i+1]))
                 if c > 0:
                     total += c
                     sample_counts.append((c,taxonomy,'<br>'.join(split_label)))
@@ -424,7 +431,7 @@ def _get_script_dir(script_path):
     if '/' in script_path:
         script_dir = script_path.rsplit('/',1)[0]+'/'
     else:
-        script_dir = './'
+        script_dir = os.getcwd()
     return script_dir
 
 
@@ -462,8 +469,8 @@ def create_dir(dir_path,qiime_dir,plot_type):
         os.mkdir(javascript_path)
     except OSError:     #raised if dir exists
         pass
-    js_out = open(javascript_path+'/overlib.js','w')
-    js_out.write(open(qiime_dir+'js/overlib.js').read())
+    js_out = open(os.path.join(javascript_path,'/overlib.js'),'w')
+    js_out.write(open(os.path.join(qiime_dir,'js/overlib.js')).read())
     js_out.close()
     css_path = \
             os.path.join(dir_path,'css')
@@ -471,8 +478,8 @@ def create_dir(dir_path,qiime_dir,plot_type):
         os.mkdir(css_path)
     except OSError:     #raised if dir exists
         pass
-    css_out = open(css_path+'/qiime_style.css','w')
-    css_out.write(open(qiime_dir+'css/qiime_style.css').read())
+    css_out = open(os.path.join(css_path,'/qiime_style.css'),'w')
+    css_out.write(open(os.path.join(qiime_dir,'css/qiime_style.css')).read())
     css_out.close()
 
     return dir_path
@@ -483,7 +490,10 @@ def _process_prefs(args,options):
     data = []
     
     qiime_dir = _get_script_dir(args)
-    dir_path = create_dir(options.dir_path,qiime_dir, "webfiles")
+    dir_path = options.dir_path
+    if dir_path == './':
+        dir_path = os.getcwd()
+    dir_path = create_dir(dir_path,qiime_dir, "webfiles")
     do_sample = options.do_sample
     counts_fname = options.counts_fname
     labels = options.labels
