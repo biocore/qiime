@@ -19,7 +19,7 @@ from cogent.maths.stats.test import t_two_sample
 from numpy import array, mean, average, arange
 from collections import defaultdict
 from string import strip
-from matplotlib.pylab import savefig, clf, gca, gcf
+from matplotlib.pylab import savefig, clf, gca, gcf,close
 from cogent.draw.util import hist
 from matplotlib.patches import Ellipse, Polygon
 from random import choice
@@ -273,7 +273,8 @@ def draw_histogram(distances, color, nbins, outfile_name,\
 
 
     savefig(outfile_name,format='png',dpi=75, transparent=True)
-    clf()
+
+    close()
     return histogram
 
 NAV_HTML_TR = '''<span class="smnorm"><input type="checkbox" id="%s" %s onclick="visibilityAndOpacity(this, %s)" />
