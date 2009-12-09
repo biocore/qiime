@@ -16,10 +16,11 @@ from qiime.parse import parse_map, parse_distmat, group_by_field,\
     group_by_fields
 from qiime.make_3d_plots import create_dir, data_colors
 from cogent.maths.stats.test import t_two_sample
-from numpy import array, mean, average
+from numpy import array, mean, average, arange
 from collections import defaultdict
 from string import strip
-from matplotlib.pylab import hist, savefig, clf, gca, gcf
+from matplotlib.pylab import savefig, clf, gca, gcf
+from cogent.draw.util import hist
 from matplotlib.patches import Ellipse, Polygon
 from random import choice
 from numpy.random import permutation
@@ -176,8 +177,8 @@ def draw_all_histograms(single_field, paired_field, dmat, histogram_dir):
 
     
     num_colors = len(data_colors)
-    
-    xscale, yscale = get_histogram_scale(distances_dict,nbins=10)
+    BINS=arange(0,1.01,0.05)
+    xscale, yscale = get_histogram_scale(distances_dict,nbins=BINS)
     #draw histograms
     color_names = data_colors.keys()
     for d_dict in distances_dict.values():
@@ -187,7 +188,7 @@ def draw_all_histograms(single_field, paired_field, dmat, histogram_dir):
             color_index = i % num_colors
             color = color_names[color_index]
             outfile_name = label_to_histogram_filename[field]
-            histogram = draw_histogram(distances=data, color=color, nbins=10, \
+            histogram = draw_histogram(distances=data, color=color, nbins=BINS, \
                 outfile_name=outfile_name,xscale=xscale,yscale=yscale)
     
     return distances_dict, label_to_histogram_filename
@@ -201,7 +202,7 @@ def get_histogram_scale(distances_dict, nbins):
         for i, (field, data) in enumerate(d_dict.items()):
             if len(data) < 1:
                 continue
-            histogram = hist(data,bins=nbins,normed=True)
+            histogram = hist(data,bins=nbins)
             
             fig  = gcf()
             axis = fig.gca()
@@ -271,7 +272,7 @@ def draw_histogram(distances, color, nbins, outfile_name,\
     axis.add_artist(line)
 
 
-    savefig(outfile_name,format='png',dpi=75)
+    savefig(outfile_name,format='png',dpi=75, transparent=True)
     clf()
     return histogram
 
