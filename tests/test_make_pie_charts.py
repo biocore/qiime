@@ -31,8 +31,8 @@ class TopLevelTests(TestCase):
         self.data=[]
 
         self.lines = ["#Full OTU Counts",
-        "Taxon	14FC041	14FC042	14FC043","1    1    3    2","2    0    2    1",
-        "3    4    0    3"]
+        "Taxon	14FC041	14FC042	14FC043","1	1	3	2","2	0	2	1",
+        "3	4	0	3"]
     
         self.generate_eps=True
 
