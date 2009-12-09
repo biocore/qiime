@@ -335,7 +335,7 @@ def get_rarefactions(options, data):
         rarenames = options.rarefaction.split(',')
         rares = dict()
         for r in rarenames:
-            rares[r] = open(options.rarefaction, 'U').readlines()
+            rares[r] = open(r, 'U').readlines()
         return rares
     except (TypeError, IOError):
         print 'Rarefaction file required for this analysis'
