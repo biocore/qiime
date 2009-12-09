@@ -130,8 +130,8 @@ class BlastOtuPickerTests(TestCase):
         actual_failures.sort()
         
         expected_clusters = {'ref1':['s1','s2','s3'],'ref2':['s4'],\
-                    'ref3':['s5'],'ref4':['s6']}
-        expected_failures = ['s0','s7']
+                    'ref3':['s5']}
+        expected_failures = ['s0','s6','s7']
         
         self.assertEqual(actual_clusters,expected_clusters)
         self.assertEqual(actual_failures,expected_failures)
@@ -175,31 +175,32 @@ class BlastOtuPickerTests(TestCase):
     def test_call(self):
         """BLAST OTU Picker functions as expected
         """
+        
         expected = {'ref1':['s3','s2','s1'],\
                     'ref2':['s4'],\
-                    'ref3':['s5'],\
-                    'ref4':['s6']}
+                    'ref3':['s5']}
         actual = self.otu_picker(self.seqs_fp,\
             refseqs_fp=self.reference_seqs_fp)
         self.assertEqual(actual,expected)
         
+        
     def test_call_alt_params(self):
         """BLAST OTU Picker functions as expected with alt params
         """
-        # default max_e_value (1e-30) -- too stringent here, so no results
-        otu_picker = BlastOtuPicker({})
+        otu_picker = BlastOtuPicker({'max_e_value':1e-30})
         expected = {}
         actual = otu_picker(self.seqs_fp,\
             refseqs_fp=self.reference_seqs_fp)
         self.assertEqual(actual,expected)
         
-        otu_picker = BlastOtuPicker({'max_e_value':1e-10})
-        expected = {'ref1':['s3','s2','s1'],\
+        self.otu_picker = BlastOtuPicker({'max_e_value':1e-3,'Similarity':0.90})
+        expected_90 = {'ref1':['s3','s2','s1'],\
                     'ref2':['s4'],\
-                    'ref3':['s5']}
-        actual = otu_picker(self.seqs_fp,\
+                    'ref3':['s5'],\
+                    'ref4':['s6']}
+        actual = self.otu_picker(self.seqs_fp,\
             refseqs_fp=self.reference_seqs_fp)
-        self.assertEqual(actual,expected)
+        self.assertEqual(actual,expected_90)
         
     def test_call_preexisting_blast_db(self):
         """BLAST OTU Picker functions w preexisting blast db
@@ -209,8 +210,7 @@ class BlastOtuPickerTests(TestCase):
         self._files_to_remove += db_files_to_remove
         expected = {'ref1':['s3','s2','s1'],\
                     'ref2':['s4'],\
-                    'ref3':['s5'],\
-                    'ref4':['s6']}
+                    'ref3':['s5']}
         actual = self.otu_picker(self.seqs_fp,blast_db=blast_db)
         self.assertEqual(actual,expected)
         
@@ -219,8 +219,7 @@ class BlastOtuPickerTests(TestCase):
         """
         expected = {'ref1':['s1','s2','s3'],\
                     'ref2':['s4'],\
-                    'ref3':['s5'],\
-                    'ref4':['s6']}
+                    'ref3':['s5']}
         for v in expected.values():
             v.sort()
         for SeqsPerBlastRun in [1,2,4,6,7,8,100]:

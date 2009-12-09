@@ -133,15 +133,23 @@ class OtuPicker(FunctionWithParams):
         return results
         
 class BlastOtuPicker(OtuPicker):
-    """Blast-based OTU picker which clusters sequence by their best blast hit
+    """Blast-based OTU picker: clusters sequence by their 'best' blast hit.
+    
+        The 'best blast hit' for a sequence is defined as the database 
+         sequence which achieves the longest alignment with percent sequence
+         identity greater than or equal to the OTU similarity threshold
+         (default in Params['Similarity'] = 0.96). Database hits must have an
+         e-value threshold less than or equal to the max_e_value threshold 
+         (default in Params['max_e_value'] as 1e-10).
     """
     
     def __init__(self, params):
         """Return new BlastOtuPicker object with specified params.
         
         """
-        _params = {'max_e_value':1e-30,'seqs_per_blast_run':1000,\
-         'min_pct_identity':0.75}
+        _params = {'max_e_value':1e-10,\
+                   'seqs_per_blast_run':1000,\
+                   'Similarity':0.96}
         _params.update(params)
         OtuPicker.__init__(self, _params)
     
@@ -242,21 +250,50 @@ class BlastOtuPicker(OtuPicker):
         failures = []
         if not seqs: 
             return result, failures
+        # Get the blast hits with e-values less than self.Params['max_e_value']
+        # and percent identity greater than self.Params['Similarity']
         blast_hits = get_blast_hits(seqs,self.blast_db,\
          max_e_value=self.Params['max_e_value'],\
-         min_pct_identity=self.Params['min_pct_identity'])
+         min_pct_identity=self.Params['Similarity'])
+        # Choose the longest alignment out of the acceptable blast hits -- 
+        # the result will therefore be the blast hit with at least
+        # self.Params['Similarity'] percent identity to the input sequence
         seq_id_to_best_blast_hit = \
-         get_first_blast_hit_per_seq(blast_hits)
+         self._choose_longest_blast_hit(blast_hits)
         for seq_id, blast_hit in seq_id_to_best_blast_hit.items():
             if blast_hit == None:
                 failures.append(seq_id)
             else:
-                cluster_id = blast_hit[0]
+                cluster_id = blast_hit['SUBJECT ID']
                 try:
                     result[cluster_id].append(seq_id)
                 except KeyError:
                     result[cluster_id] = [seq_id]
         return result, failures
+    
+    def _choose_longest_blast_hit(self,blast_hits):
+        """ choose the longest blast match 
+            
+            This function assumes that the blast_hits below 
+             self.Params['Similarity'] have already been filtered out, 
+             and therefore the longest alignment is the best blast pick.
+        """
+        result = {}
+        # iterate over the queries and their acceptable blast hits
+        for query,blast_hits in blast_hits.items():
+            choice = None
+            len_longest = 0
+            # iterate over the acceptable blast hits
+            for blast_hit in blast_hits:
+                # if the alignment is the longest we've seen so far (or 
+                # the first), hold on to it as a possible best hit
+                len_current = blast_hit['ALIGNMENT LENGTH']
+                if len_current >= len_longest:
+                    choice = blast_hit
+                    len_longest = len_current 
+            query = query.split()[0]    #get rid of spaces
+            result[query] = choice
+        return result
   
 ## START MOVE TO BLAST APP CONTROLLER
 ## The following two functions should be move to the blast application
@@ -264,21 +301,10 @@ class BlastOtuPicker(OtuPicker):
 ## to use these functions rather that the member functions which these 
 ## are replicas of. Note that when moving to the blast app controller,
 ## tests should be extractable from test_assign_taxonomy.py.
-def get_first_blast_hit_per_seq(blast_hits):
-    """ discard all blast hits except the best for each query sequence
-    """
-    result = {}
-    for k,v in blast_hits.items():
-        k = k.split()[0]    #get rid of spaces
-        try:
-            result[k] = v[0]
-        except IndexError:
-            result[k] = None
-    return result
 
 # THIS FUNCTION SHOULD DO THE SeqsPerBlastRun splitting, would be _much_
 # cleaner that way. 
-def get_blast_hits(seqs,blast_db,max_e_value=1e-30,min_pct_identity=0.75):
+def get_blast_hits(seqs,blast_db,max_e_value=1e-10,min_pct_identity=0.75):
     """ blast each seq in seqs against blast_db and retain good hits
     """
     max_evalue = max_e_value
@@ -299,13 +325,12 @@ def get_blast_hits(seqs,blast_db,max_e_value=1e-30,min_pct_identity=0.75):
         
     for seq_id in seq_ids:
         blast_result_id = seq_id.split()[0]
-        try:
-            result[seq_id] = [(e['SUBJECT ID'],float(e['E-VALUE'])) \
-             for e in blast_result[blast_result_id][0]
-             if (float(e['E-VALUE']) <= max_evalue and \
-              float(e['% IDENTITY']) >= min_percent_identity)]
-        except KeyError:
-            result[seq_id] = []
+        result[seq_id] = []
+        if blast_result_id in blast_result:
+            for e in blast_result[blast_result_id][0]:
+                if (float(e['E-VALUE']) <= max_evalue and \
+                    float(e['% IDENTITY']) / 100. >= min_percent_identity):
+                    result[seq_id].append(e)
 
     return result
 ## END MOVE TO BLAST APP CONTROLLER
@@ -970,7 +995,7 @@ def parse_command_line_parameters():
     parser.set_defaults(otu_picking_method='cdhit',
         similarity=0.96, trie_prefilter=False,
         prefix_length=50, suffix_length=50,
-        clustering_algorithm='furthest',max_e_value=1e-30)
+        clustering_algorithm='furthest',max_e_value=1e-10)
 
     opts,args = parser.parse_args()
 
@@ -1049,7 +1074,8 @@ if __name__ == "__main__":
         otu_picker(input_seqs_filepath,
                    result_path=result_path, log_path=log_path)
     elif otu_picking_method == 'blast':
-        params = {'max_e_value':opts.max_e_value}
+        params = {'max_e_value':opts.max_e_value,\
+                  'Similarity': opts.similarity}
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,
                    result_path=result_path, log_path=log_path,\
