@@ -110,11 +110,11 @@ shape = [
 data_colors={'blue':'#0000FF','lime':'#00FF00','red':'#FF0000', \
              'aqua':'#00FFFF','fuchsia':'#FF00FF','yellow':'#FFFF00', \
              'green':'#008000','maroon':'#800000','teal':'#008080', \
-             'purple':'#800080','olive':'#808000','white':'#FFFFFF', \
+             'purple':'#800080','olive':'#808000', \
              'silver':'#C0C0C0','gray':'#808080'}
 
 default_colors=['blue','lime','red','aqua','fuchsia','yellow','green', \
-               'maroon','teal','purple','olive','white','silver','gray']
+               'maroon','teal','purple','olive','silver','gray']
 
 def make_interactive_scatter(plot_label,dir_path,data_file_link,xy_coords, 
                                 props, x_len=8, y_len=4, size=10,
@@ -124,14 +124,14 @@ def make_interactive_scatter(plot_label,dir_path,data_file_link,xy_coords,
     xy_coords: a dict of form {series_label:([x data], [y data], \
     [xy point label],[color])}
     """
-    alpha=0.5
+    alpha=1.0
     my_axis=None    
     rc('font', size='8')
     rc('patch', linewidth=0)
-    rc('axes', linewidth=.5,edgecolor='white')
+    rc('axes', linewidth=.5,edgecolor='black')
     rc('axes', labelsize=8)
-    rc('xtick', labelsize=8,color='white')
-    rc('ytick', labelsize=8,color='white')
+    rc('xtick', labelsize=8,color='black')
+    rc('ytick', labelsize=8,color='black')
 
     sc_plot=draw_scatterplot(props,xy_coords,x_len,y_len,alpha,size)
     
@@ -139,13 +139,13 @@ def make_interactive_scatter(plot_label,dir_path,data_file_link,xy_coords,
     x_label = props.get("xlabel","X")
     y_label = props.get("ylabel","Y")
         
-    title('%s' % mtitle, fontsize='10',color='white')
-    xlabel(x_label, fontsize='8',color='white')
-    ylabel(y_label, fontsize='8',color='white')
+    title('%s' % mtitle, fontsize='10',color='black')
+    xlabel(x_label, fontsize='8',color='black')
+    ylabel(y_label, fontsize='8',color='black')
 
     if draw_axes:
-        axvline(linewidth=.5, x=0, color='white')
-        axhline(linewidth=.5, y=0, color='white')
+        axvline(linewidth=.5, x=0, color='black')
+        axhline(linewidth=.5, y=0, color='black')
     if my_axis is not None:
         axis(my_axis)
     
@@ -155,7 +155,7 @@ def make_interactive_scatter(plot_label,dir_path,data_file_link,xy_coords,
         line.set_color('white')
 
     img_name = x_label[0:2]+'_vs_'+y_label[0:2]+'_plot.png'
-    savefig(dir_path + img_name, dpi=80,facecolor='black')
+    savefig(dir_path + img_name, dpi=80,facecolor='white')
     
     #Create zipped eps files
     eps_link = ""
@@ -207,9 +207,10 @@ def draw_scatterplot(props,xy_coords,x_len,y_len,alpha,size):
         else:
             c = s_data[3]
             m =shape[shape_ct % len(shape)]
-            ax = fig.add_subplot(111,axisbg='black')
+            ax = fig.add_subplot(111,axisbg='white')
             sc_plot = ax.scatter(s_data[0], s_data[1], c=c, marker=m, \
-                                 alpha=alpha,s=size, linewidth=0) 
+                                 alpha=alpha,s=size, linewidth=1,edgecolor=c) 
+            print c
             size_ct += 1 
             shape_ct += 1
             scatters[s_label] = sc_plot
