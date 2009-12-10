@@ -596,12 +596,12 @@ OPTIONS = [
         make_option('-m','--mapping_file',dest='mapping_file',type='string',\
             help='''Path to environment mapping file [REQUIRED]'''),\
         make_option('-p','--prefs_file',dest='prefs_file',type='string',\
-            help='''File containing prefs for analysis.  NOTE: This is a file with a dict containing preferences for the analysis.  This dict must have a "Fields" key mapping to a list of desired fields.[REQUIRED]'''),\
+            help='''File containing prefs for analysis.  NOTE: This is a file with a dict containing preferences for the analysis.  This dict must have a "Fields" key mapping to a list of desired fields.[default: %default]'''),\
         make_option('-o', '--dir_path', dest='dir_path',\
             help='directory prefix for all analyses [default: %default]',\
             default='.'),\
         make_option('--fields', dest='fields',\
-            help='Comma delimited list of fields to compare.  This overwrites fields in prefs file.  Usage: --fields Field1,Field2,Field3'),\
+            help='Comma delimited list of fields to compare.  This overwrites fields in prefs file.  Usage: --fields Field1,Field2,Field3 [REQUIRED]'),\
         make_option('--monte_carlo',dest='monte_carlo',default=False,\
             action='store_true',help='''Perform Monte Carlo on distances.  [Default: %default]'''),\
         make_option('--html_output',dest='html_output',default=False,\
@@ -630,11 +630,12 @@ def main(args,args_parsed=None):
         opts,arg_list = parse_cmdline_params(args)        
     
 
-    prefs = eval(open(opts.prefs_file, 'U').read())
+    
     fields = opts.fields
     if fields is not None:
         fields = map(strip,fields.split(','))
     else:
+        prefs = eval(open(opts.prefs_file, 'U').read())
         fields = prefs['FIELDS']
     
     within_distances, between_distances, dmat = \
