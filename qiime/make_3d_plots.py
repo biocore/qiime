@@ -68,7 +68,7 @@ def natsort(seq):
     return alist
 
 data_color_order = ['blue','lime','red','aqua','fuchsia','yellow','green', \
-              'maroon','teal','purple','olive','white','silver','gray']
+              'maroon','teal','purple','olive','silver','gray']
 
 data_colors = {
         'aqua':     (180, 100, 100),
@@ -83,7 +83,6 @@ data_colors = {
         'red':      (0,100,100),
         'silver':   (0, 0, 75.3),
         'teal':     (180,100,50.2),
-        'white':    (180,0,100),
         'yellow':   (60,100,100),
 }
 
