@@ -210,7 +210,6 @@ def draw_scatterplot(props,xy_coords,x_len,y_len,alpha,size):
             ax = fig.add_subplot(111,axisbg='white')
             sc_plot = ax.scatter(s_data[0], s_data[1], c=c, marker=m, \
                                  alpha=alpha,s=size, linewidth=1,edgecolor=c) 
-            print c
             size_ct += 1 
             shape_ct += 1
             scatters[s_label] = sc_plot
