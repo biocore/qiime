@@ -278,6 +278,12 @@ if __name__ == '__main__':
     if os.path.isdir(options.input_path):
         multiple_file_beta(options, args)
     elif os.path.isfile(options.input_path):
+        try:
+            f = open(options.output_path, 'w')
+            f.close()
+        except IOError:
+            print("ioerror, couldn't create output file")
+            exit(1)
         single_file_beta(options, args)
     else:
         print("io error, input path not valid.  Does it exist?")

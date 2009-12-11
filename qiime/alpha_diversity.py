@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 __author__ = "Justin Kuczynski"
-__copyright__ = "Copyright 2009, the PyCogent Project" #consider project name
-__credits__ = ["Justin Kuczynski", "Rob Knight"] #remember to add yourself
+__copyright__ = "Copyright 2009, the PyCogent Project"
+__credits__ = ["Justin Kuczynski", "Rob Knight"]
 __license__ = "GPL"
 __version__ = "0.1"
 __maintainer__ = "Justin Kuczynski"
@@ -305,7 +305,7 @@ def multiple_file_alpha(options, args):
     file_names = os.listdir(options.input_path)
     file_names = [fname for fname in file_names if not fname.startswith('.')]
     if not os.path.exists(options.output_path):
-        os.mkdir(options.output_path)
+        os.makedirs(options.output_path)
 
     metrics_list = options.metrics.split(',')
     for metric in metrics_list:
@@ -314,10 +314,19 @@ def multiple_file_alpha(options, args):
         except AttributeError:
             try:
                 metric_f = get_phylogenetic_metric(metric)
+                # bail if we got a phylo metric but no tree file
+                if options.tree_path == None:
+                    raise ValueError("phylogenetic metric supplied, but no "+\
+                        "phylogenetic tree supplied")
+                elif not os.path.exists(options.tree_path):
+                    raise ValueError("phylogenetic metric supplied, but no "+\
+                        "phylogenetic tree found in specified location")
             except AttributeError:
                 raise ValueError(
                  "could not find metric.  %s.\n Known metrics are: %s\n" \
                  % (metric, ', '.join(list_known_metrics())))
+
+
     for fname in file_names:
         # future: try to make sure fname is a valid otu file
         #~ f = open(os.path.join(dir,fname))
@@ -409,6 +418,12 @@ if __name__ == '__main__':
     if os.path.isdir(options.input_path):
         multiple_file_alpha(options, args)
     elif os.path.isfile(options.input_path):
+        try:
+            f = open(options.output_path, 'w')
+            f.close()
+        except IOError:
+            print("ioerror, couldn't create output file")
+            exit(1)
         single_file_alpha(options.input_path, options.metrics, 
             options.output_path, options.tree_path)
     else:
