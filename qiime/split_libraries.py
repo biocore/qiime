@@ -260,7 +260,7 @@ def get_seq_lengths(seq_lengths, bc_counts):
     return all_seq_lengths, good_seq_lengths
  
 def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings, 
-    filters, barcode_len, primer_seq_len, keep_primer, barcode_type, 
+    filters, barcode_len, primer_seq_len, keep_primer, keep_barcode, barcode_type, 
     max_bc_errors,remove_unassigned):
     """Checks fasta-format sequences and qual files for validity."""
     seq_lengths = {}
@@ -299,7 +299,9 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
             # check if writing out primer
             write_seq = cres
             if keep_primer:
-                write_seq = cpr + cres
+                write_seq = cpr + write_seq
+            if keep_barcode:
+                write_seq = cbc + write_seq
                 
             if remove_unassigned:
                 if curr_samp_id!="Unassigned":
@@ -379,7 +381,8 @@ def preprocess(fasta_files, qual_files, mapping_file,
     barcode_type="golay_12",
     min_seq_len=200, max_seq_len=1000, min_qual_score=25, starting_ix=1,
     keep_primer=True, max_ambig=0, max_primer_mm=1, trim_seq_len=True,
-    dir_prefix='.', max_bc_errors=2, max_homopolymer=4,remove_unassigned=False):
+    dir_prefix='.', max_bc_errors=2, max_homopolymer=4,remove_unassigned=False,
+    keep_barcode=False):
     """
     Preprocess barcoded libraries, e.g. from 454.
 
@@ -406,6 +409,8 @@ def preprocess(fasta_files, qual_files, mapping_file,
     starting_ix: integer to start sample sequence numbering at.
 
     keep_primer: when True, will keep primer sequence, otherwise will strip it 
+
+    keep_barcode: when True, will keep barcode sequence, otherwise will strip it 
 
     max_ambig: maximum number of ambiguous bases to allow in the read.
 
@@ -530,7 +535,7 @@ def preprocess(fasta_files, qual_files, mapping_file,
     fasta_out = open(dir_prefix + '/' + 'seqs.fna', 'w+')
     log_stats, pre_lens, post_lens = check_seqs(fasta_out, fasta_files, 
         starting_ix, valid_map, qual_mappings, filters, barcode_len,
-        primer_seq_len, keep_primer, barcode_type, max_bc_errors,
+        primer_seq_len, keep_primer, keep_barcode, barcode_type, max_bc_errors,
         remove_unassigned)
 
     # Write log file
@@ -597,7 +602,9 @@ def make_cmd_parser():
     parser.add_option('-Q', '--min-qual-score', type=int, default=25,
         help='min average qual score allowed in read [default: %default]')
     parser.add_option('-k', '--keep-primer', action='store_true',
-        help='do not remove primer from sequences')
+        help='do not remove primer from sequences', default=False)
+    parser.add_option('-i', '--keep-barcode', action='store_true',
+        help='do not remove barcode from sequences', default=False)
     parser.add_option('-a', '--max-ambig', type=int, default=0,
         help='maximum number of ambiguous bases [default: %default]')
     parser.add_option('-H', '--max-homopolymer', type=int, default=6,
@@ -661,6 +668,7 @@ if __name__ == "__main__":
     min_seq_len = options.min_seq_len,
     max_seq_len = options.max_seq_len, 
     min_qual_score=options.min_qual_score,
+    keep_barcode=options.keep_barcode,
     keep_primer=options.keep_primer,
     max_ambig=options.max_ambig,
     max_primer_mm=options.max_primer_mm,
