@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<STUDY_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <STUDY alias="fierer_hand_study">
+    <DESCRIPTOR>
+        <STUDY_TITLE>The influence of sex, handedness, and washing on the diversity of hand surface bacteria</STUDY_TITLE>
+        <STUDY_TYPE existing_study_type="Metagenomics"/>
+        <STUDY_ABSTRACT>This project aims to undertake global surveys of microbial diversity in a range of free-living and host-associated communities. The importance of the project is that it will provide a comparison of microbial diversity in a range of habitats and provide a platform to underpin many studies of community assembly, diversity, etc. Bacteria thrive on and within the human body. One of the largest human-associated microbial habitats is the skin surface, which harbors large numbers of bacteria that can have important effects on health. We examined the palmar surfaces of the dominant and nondominant hands of 51 healthy young adult volunteers to characterize bacterial diversity on hands and to assess its variability within and between individuals. We used a novel pyrosequencing- based method that allowed us to survey hand surface bacterial communities at an unprecedented level of detail. The diversity of skin-associated bacterial communities was surprisingly high; a typical hand surface harbored &gt;150 unique species-level bacterial phylotypes, and we identified a total of 4,742 unique phylotypes across all of the hands examined. Although there was a core set of bacterial taxa commonly found on the palm surface, we observed pronounced intra- and interpersonal variation in bacterial community composition: hands from the same individual shared only 17% of their phylotypes, with different individuals sharing only 13%. Women had significantly higher diversity than men, and community composition was significantly affected by handedness, time since last hand washing, and an individual&apos;s sex. The variation within and between individuals in microbial ecology illustrated by this study emphasizes the challenges inherent in defining what constitutes a &apos;healthy&apos; bacterial community; addressing these challenges will be critical for the International Human Microbiome Project. Bacterial 16S ribosomal RNA sequences have been deposited in the Short Read Archive.</STUDY_ABSTRACT>
+        <STUDY_DESCRIPTION>Targeted Gene Survey from Human Skin</STUDY_DESCRIPTION>
+        <CENTER_NAME>CCME</CENTER_NAME>
+        <CENTER_PROJECT_NAME>NULL</CENTER_PROJECT_NAME>
+        <PROJECT_ID>34527</PROJECT_ID>
+    </DESCRIPTOR>
+    <STUDY_LINKS>
+      <STUDY_LINK>
+        <ENTREZ_LINK>
+         <DB>pubmed</DB>
+         <ID>19004758</ID>
+        </ENTREZ_LINK>
+      </STUDY_LINK>
+    </STUDY_LINKS>
+  </STUDY>
+</STUDY_SET>
