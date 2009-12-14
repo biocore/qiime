@@ -16,7 +16,7 @@ __email__ = "rob@spot.colorado.edu"
 __status__ = "Prototype"
 
 def get_ids(lines, field):
-    """Made dict of lib:ids"""
+    """Make dict of lib:ids"""
     result = defaultdict(list)
     for line in lines:
         if line.startswith('>'):
@@ -26,6 +26,14 @@ def get_ids(lines, field):
                 continue
             lib, id_ = label.rsplit('_', 1)
             result[lib].append(fields[field])
+    return result
+
+def get_first_id(lines):
+    """Gets first fasta id from lines"""
+    result = set()
+    for line in lines:
+        if line.startswith('>'):
+            result.add(line[1:].split()[0])
     return result
 
 def make_option_parser():
@@ -45,6 +53,14 @@ def make_option_parser():
     parser=OptionParser(usage=usage)
     parser.add_option("-i","--input_fasta",dest='in_fasta',default = None,\
         help="The path to a FASTA file containing input sequences [REQUIRED]")
+    parser.add_option("-s", "--screened_rep_seqs",dest="screened_rep_seqs",
+        default=None,
+        help="The path to a FASTA file containing screened representative seqs" +
+        "[DEFAULT: %default]")
+    parser.add_option("-u", "--otus",dest="otus",
+        default=None,
+        help="The path to an OTU file mapping OTUs onto rep seqs" +
+        "[DEFAULT: %default]")
     parser.add_option("-o","--outdir",dest='outdir',\
         default = '.',\
         help=""" The base directory to save results (one file per library).""") 
@@ -57,10 +73,22 @@ if __name__ == '__main__':
     option_parser = make_option_parser()
     options, args = option_parser.parse_args()
     ids = get_ids(open(options.in_fasta, 'U'), options.field)
+        
+    bad_seq_ids = set()
+    #if we got a file to screen against, find the relevant ids and delete them
+    if options.screened_rep_seqs:
+        bad_otu_ids = get_first_id(open(options.screened_rep_seqs, 'U'))
+        if not options.otus:
+            raise RuntimeError, "Must specify an OTU file if performing a screen."
+        for line in open(options.otus, 'U'):
+            fields = line.split()
+            if fields[0] in bad_otu_ids:
+                bad_seq_ids.update(fields[1:])
+        
     if not exists(options.outdir):
         makedirs(options.outdir)
     for k, idlist in ids.items():
         outfile = open(join(options.outdir, k + '.txt'), 'w')
-        outfile.write('\n'.join(sorted(idlist)))
+        outfile.write('\n'.join(sorted(set(idlist).difference(bad_seq_ids))))
         outfile.close()
    
