@@ -292,28 +292,25 @@ def save_plot(plot, filenm, rtype, title, itype, res):
     plot.savefig(filenm +'.'+itype, format=itype, dpi=res)
 
 def _make_cmd_parser():
-    parser = OptionParser(usage="Usage: make_rarefaction_plots2.py -m <mapping file> \
+    parser = OptionParser(usage="Usage: make_rarefaction_plots.py -m <mapping file> \
     -r <rarefaction data file> -p <command line preferences OR preferences file> \
     -i <extension type for image output> -o <output path>")
-    
+
     parser.add_option("-q", "--quiet",
                       action="store_false", dest="verbose", default=True,
                       help="don't print status messages to stdout")
     parser.add_option('-m', '--map', \
-        help='name of mapping file [default: %default]')
+        help='name of mapping file [REQUIRED]')
     parser.add_option('-r', '--rarefaction', \
-        help='name of rarefaction file')
+        help='name of rarefaction file [REQUIRED]')
     parser.add_option('-p', '--prefs', \
-        help='name of columns to make rarefaction graphs of, comma delimited no spaces. Use\
-                \'ALL\' command to make graphs of all metadata columns.')
+        help='name of columns to make rarefaction graphs of, comma delimited no spaces. Use \'ALL\' command to make graphs of all metadata columns. [default: %default]', default='ALL')
     parser.add_option('-i', '--imagetype', \
-        help='extension for image type choose from (.jpg, .gif, .png, .svg, .pdf). [default: .png]', default='.png')
-    parser.add_option('-d', '--resolution', \
-        help='image resolution in dpi. [default: 75dpi]', default='75')
-   #parser.add_option('-p', '--prefs', \
+        help='extension for image type choose from (.jpg, .gif, .png, .svg, .pdf). [default: %default]', default='.png')
+    #parser.add_option('-p', '--prefs', \
     #    help='name of preferences file')
     parser.add_option('-o', '--dir_path',\
-        help='directory prefix for all analyses [default: %default]',default='')
+        help='directory prefix for all analyses [default: %default]',default='.')
     options, args = parser.parse_args()
     return options
 
