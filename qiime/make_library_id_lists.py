@@ -15,7 +15,7 @@ __maintainer__ = "Rob Knight"
 __email__ = "rob@spot.colorado.edu"
 __status__ = "Prototype"
 
-def get_ids(lines, field):
+def get_ids(lines, field, bad_ids=None, debug=False):
     """Make dict of lib:ids"""
     result = defaultdict(list)
     for line in lines:
@@ -25,7 +25,11 @@ def get_ids(lines, field):
             if not '_' in label:   #no lib specified
                 continue
             lib, id_ = label.rsplit('_', 1)
-            result[lib].append(fields[field])
+            if bad_ids and label in bad_ids:
+                if debug:
+                    print "Excluded bad id: %s" % label
+            else:
+                result[lib].append(fields[field])
     return result
 
 def get_first_id(lines):
@@ -67,13 +71,16 @@ def make_option_parser():
     parser.add_option("-f", "--field",dest="field", type=int,\
         default = 1,\
         help="Index of space-delimited field to read id from [DEFAULT: %default]")
+    parser.add_option("--debug", dest="debug", action="store_true",
+    default=False, help="Show debug output.")
     return parser
 
 if __name__ == '__main__':
     option_parser = make_option_parser()
     options, args = option_parser.parse_args()
-    ids = get_ids(open(options.in_fasta, 'U'), options.field)
-        
+    if options.debug:
+        print "PRODUCING DEBUG OUTPUT"
+    
     bad_seq_ids = set()
     #if we got a file to screen against, find the relevant ids and delete them
     if options.screened_rep_seqs:
@@ -84,11 +91,16 @@ if __name__ == '__main__':
             fields = line.split()
             if fields[0] in bad_otu_ids:
                 bad_seq_ids.update(fields[1:])
+    if options.debug:
+        print "Found %s bad otu ids: %s" % (len(bad_otu_ids), bad_otu_ids)
+        print "Found %s bad seq ids: %s" % (len(bad_seq_ids), bad_seq_ids)
+    
+    ids = get_ids(open(options.in_fasta, 'U'), options.field, bad_seq_ids,
+        options.debug)
         
     if not exists(options.outdir):
         makedirs(options.outdir)
     for k, idlist in ids.items():
         outfile = open(join(options.outdir, k + '.txt'), 'w')
-        outfile.write('\n'.join(sorted(set(idlist).difference(bad_seq_ids))))
+        outfile.write('\n'.join(sorted(idlist)))
         outfile.close()
-   
