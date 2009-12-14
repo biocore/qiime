@@ -71,7 +71,10 @@ if __name__ == '__main__':
             if fname.endswith('.sff'):
                 sff_path = join(dirpath, fname)
                 lib_id = fname.rsplit('.',1)[0]
-                readlength = technical_lengths[lib_id]
+                try:
+                    readlength = technical_lengths[lib_id]
+                except KeyError:
+                    continue
                 sffinfo_cmd_to_run = sffinfo_cmd % (options.sffinfo_path,'-s',
                     sff_path)
                 if options.debug:
