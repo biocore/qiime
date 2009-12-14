@@ -59,6 +59,12 @@ x \t y \t z
 
 #more skip
 i\tj\tk"""
+        s2= """#sample\ta\tb
+#comment line to skip
+"x "\t" y "\t z 
+
+"#more skip"
+i\t"j"\tk"""
         exp = [['#sample','a','b'],['x','y','z'],['i','j','k']]
         obs = parse_map(s.splitlines())
         self.assertEqual(obs, exp)
@@ -67,9 +73,7 @@ i\tj\tk"""
         obs = parse_map(s.splitlines(), return_header=True)
         self.assertEqual(obs, exp2)
         #check that we strip double quotes by default
-        exp3 = ([['#sample','a','b'],['"x"','y','z'],['i','j','"k"']], \
-                ['comment line to skip','more skip'])
-        obs = parse_map(s.splitlines(), return_header=True)
+        obs = parse_map(s2.splitlines(), return_header=True)
         self.assertEqual(obs, exp2)
 
     def test_group_by_field(self):

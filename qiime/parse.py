@@ -33,7 +33,7 @@ def parse_map(lines, return_header=False, strip_quotes=True):
     Result: list of lists of fields, incl. headers.
     """
     if strip_quotes:
-        filter_f = lambda x: x.strip().replace('"','')
+        filter_f = lambda x: x.strip().replace('"','').strip()
     else:
         filter_f = strip
     result = []
@@ -42,7 +42,11 @@ def parse_map(lines, return_header=False, strip_quotes=True):
         line = line.strip()
         if not line:
             continue
-        if line.startswith('#') and result:
+        if line.startswith('"'): #quoted line from Excel?
+            fields = line.split('\t')
+            fields[0] = fields[0].strip('"')
+            line = '\t'.join(fields)
+        if line.startswith('#') and (header or result):
             header.append(line[1:].strip())
         else:
             result.append(map(filter_f, line.split('\t')))
