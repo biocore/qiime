@@ -4,7 +4,8 @@ from __future__ import division
 from time import strftime, time
 from optparse import OptionParser
 from sets import Set
-from os import system
+from os import system, getcwd
+from os.path import join
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.app.blast import blast_seqs, Blastall, BlastResult
 
@@ -425,8 +426,13 @@ def main(options):
             print line
         print FORMAT_BAR
     
+    #because the blast app controller uses absolute paths, make sure subject
+    #db path is fully specified
+    subject_db = options.subjectdb
+    if not subject_db.startswith('/'):
+        subject_db = join(getcwd(), subject_db)
    
-    formatdb_cmd = 'formatdb -p F -o T -i %s' % options.subjectdb
+    formatdb_cmd = 'formatdb -p F -o T -i %s' % subject_db
     
     if DEBUG:
         print "Formatting subject db with command: %s" % formatdb_cmd
@@ -439,7 +445,7 @@ def main(options):
         print FORMAT_BAR 
 
     blast_results,hit_ids, removed_hit_ids = find_homologs(options.querydb,\
-        options.subjectdb, options.e_value,options.max_hits,\
+        subject_db, options.e_value,options.max_hits,\
         options.working_dir,options.blastmatroot, options.wordsize,\
                             options.percent_aligned, DEBUG=DEBUG)
     
