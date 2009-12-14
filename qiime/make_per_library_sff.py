@@ -37,10 +37,6 @@ def make_option_parser():
         help=""" The directory containing per-library id files [REQUIRED]""")
     parser.add_option("-p","--sfffile_path",dest='sfffile_path',\
         help=""" Path to sfffile binary""", default='sfffile')
-
-    parser.add_option("-f", "--field",dest="field", type=int,\
-        default = 1,\
-        help="Index of space-delimited field to read id from [DEFAULT: %default]")
     return parser
 
 if __name__ == '__main__':
