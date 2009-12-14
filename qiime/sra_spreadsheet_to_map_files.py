@@ -20,7 +20,7 @@ def collect_study_groups(fields, study_index=0, run_prefix_index=1):
     """Returns dict of {study_group:[fields]}"""
     result = defaultdict(list)
     for f in fields:
-        result[(f[col_index], f[run_prefix_index])].append(f)
+        result[(f[study_index], f[run_prefix_index])].append(f)
     return result
 
 def remap_lines(col_names, lines):
