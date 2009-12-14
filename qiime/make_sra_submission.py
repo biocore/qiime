@@ -440,10 +440,10 @@ def parse_command_line_parameters():
         help='the template file for the submission [default: %default]')
 
     parser.add_option('-e', '--input_experiment_fp', \
-        help('the tab-delimited text file with info about the experiment'))
+        help ='the tab-delimited text file with info about the experiment')
 
     parser.add_option('-s', '--sff_dir', \
-        help('the directory containing the demultiplexed sff files: 1 dir per run'))
+        help = 'the directory containing the demultiplexed sff files: 1 dir per run')
 
     # Set default values here if they should be other than None
     parser.set_defaults(template_sample_fp='sample_template.xml', 
