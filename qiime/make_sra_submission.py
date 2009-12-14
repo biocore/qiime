@@ -59,7 +59,7 @@ run_wrapper = """  <RUN
     run_center = "%(RUN_CENTER)s"    
     instrument_name = "%(INSTRUMENT_NAME)s"
   >
-    <EXPERIMENT_REF refname="%(EXPERIMENT_ALIAS)s" refcenter="%(EXPERIMENT_CENTER)s" />%(DATA_BLOCK_XML)    <RUN_ATTRIBUTES>
+    <EXPERIMENT_REF refname="%(EXPERIMENT_ALIAS)s" refcenter="%(EXPERIMENT_CENTER)s" />%(DATA_BLOCK_XML)s    <RUN_ATTRIBUTES>
       <RUN_ATTRIBUTE>
         <TAG>notes</TAG>
         <VALUE>Submitter demultiplexed reads.  Each read was assigned to a sample pool member for those samples that yielded data. </VALUE>
@@ -71,7 +71,7 @@ data_block_wrapper = """    <DATA_BLOCK
       serial = "%(MEMBER_ORDER)s"
       name = "%(RUN_PREFIX)s"
       region = "0"
-      member_name = "%(POOL_MEMBER_NAME)"
+      member_name = "%(POOL_MEMBER_NAME)s"
     >
       <FILES>
         <FILE filename="%(POOL_MEMBER_NAME)s.sff" filetype="sff" checksum_method="MD5" checksum="%(CHECKSUM)s"  />
@@ -82,7 +82,7 @@ data_block_wrapper = """    <DATA_BLOCK
 experiment_set_wrapper = """<?xml version="1.0" encoding="UTF-8"?>
 <EXPERIMENT_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">%s</EXPERIMENT_SET>"""
 
-pool_member_wrapper = """            <MEMBER refname="%(SAMPLE_ALIAS)" refcenter="%(SAMPLE_CENTER)" member_name="%(POOL_MEMBER_NAME)s" proportion="%(POOL_PROPORTION)s"><READ_LABEL read_group_tag="%(POOL_MEMBER_NAME)s">barcode</READ_LABEL><READ_LABEL read_group_tag="%(PRIMER_READ_GROUP_TAG)s">rRNA_primer</READ_LABEL></MEMBER>"""
+pool_member_wrapper = """            <MEMBER refname="%(SAMPLE_ALIAS)s" refcenter="%(SAMPLE_CENTER)s" member_name="%(POOL_MEMBER_NAME)s" proportion="%(POOL_PROPORTION)s"><READ_LABEL read_group_tag="%(POOL_MEMBER_NAME)s">barcode</READ_LABEL><READ_LABEL read_group_tag="%(PRIMER_READ_GROUP_TAG)s">rRNA_primer</READ_LABEL></MEMBER>"""
 
 basecall_wrapper = """               <BASECALL> read_group_tag="%(READ_GROUP)s" min_match="%(MATCH_LEN)s" max_mismatch="%(NUM_MISMATCHES)s" match_edge="full">%(MATCH_SEQ)s</BASECALL>"""
 
@@ -147,7 +147,7 @@ experiment_wrapper = """  <EXPERIMENT
     center_name="%(EXPERIMENT_CENTER)s"
   >
     <TITLE>%(EXPERIMENT_TITLE)s</TITLE>
-    <STUDY_REF refname="%(STUDY_REF)" refcenter="CCME"/>
+    <STUDY_REF refname="%(STUDY_REF)s" refcenter="%(STUDY_CENTER)s"/>
     <DESIGN>
       <DESIGN_DESCRIPTION>%(EXPERIMENT_DESIGN_DESCRIPTION)s</DESIGN_DESCRIPTION>
       <SAMPLE_DESCRIPTOR refname="%(EXPERIMENT_ALIAS)s_default" refcenter="%(EXPERIMENT_CENTER)s">
@@ -339,12 +339,14 @@ def group_lines_by_field(lines, field):
     """Returns dict of {state:[lines]} by state of field."""
     result = defaultdict(list)
     for line in lines:
-        result[lines[field]].append(line)
+        result[line[field]].append(line)
+    if '' in result:
+        del result['']
     return result
 
-def make_run_and_experiemnt(experiemnt_lines, sff_dir):
+def make_run_and_experiment(experiment_lines, sff_dir):
     """Returns strings for experiment and run xml."""
-    header, body = read_tabular_data(experiment)
+    header, body = read_tabular_data(experiment_lines)
     columns = [i.lstrip('#').strip() for i in header[0]]
     study_ref_index = columns.index('STUDY_REF')
     experiment_ref_index = columns.index('EXPERIMENT_ALIAS')
@@ -362,6 +364,7 @@ def make_run_and_experiemnt(experiemnt_lines, sff_dir):
             barcode_basecalls = []
             data_blocks = []
             field_dict = {} # to keep the last one in scope for outer block
+            MEMBER_ORDER=1
 
             for line in experiment_lines:
                 field_dict = dict(zip(columns, line))
@@ -371,19 +374,26 @@ def make_run_and_experiemnt(experiemnt_lines, sff_dir):
                     barcode_basecalls.append(basecall_wrapper % {
                         'READ_GROUP':field_dict['BARCODE_READ_GROUP_TAG'],
                         'MATCH_LEN':len(barcode),
-                        'NUM_MISMATCHES':0})
+                        'NUM_MISMATCHES':0,
+                        'MATCH_SEQ':barcode})
                 primer = field_dict['PRIMER']
                 if primer not in primers:
                     primers.add(primer)
                     primer_basecalls.append(basecall_wrapper % {
                         'READ_GROUP':field_dict['PRIMER_READ_GROUP_TAG'],
                         'MATCH_LEN':len(primer),
-                        'NUM_MISMATCHES':0})
-                linkers.add(field_dict['LINKER'])
-
+                        'NUM_MISMATCHES':0,
+                        'MATCH_SEQ':primer})
+                linker = field_dict['LINKER']
+                linkers.add(linker)
+                field_dict['MEMBER_ORDER'] = MEMBER_ORDER
+                MEMBER_ORDER += 1
                 pool_members.append(pool_member_wrapper % field_dict)
-                field_dict['CHECKSUM'] = md5_path(join(sff_dir,field_dict['RUN_PREFIX'],field_dict['POOL_MEMBER_NAME']+'.sff'))
-                data_blocks.append(data_block_wrapper % field_dict)
+                try:
+                    field_dict['CHECKSUM'] = md5_path(join(sff_dir,field_dict['RUN_PREFIX'],field_dict['POOL_MEMBER_NAME']+'.sff'))
+                    data_blocks.append(data_block_wrapper % field_dict)
+                except IOError: #file missing, probably because no seqs were recovered
+                    pass
 
             field_dict['BARCODE_TABLE_XML'] = '\n' + '\n'.join(barcode_basecalls) + '\n'
             field_dict['PRIMER_TABLE_XML'] = '\n' + '\n'.join(primer_basecalls) + '\n'
@@ -396,6 +406,7 @@ def make_run_and_experiemnt(experiemnt_lines, sff_dir):
                 spot_descriptor_wrapper = spot_descriptor_with_linker_wrapper
             field_dict['TOTAL_TECHNICAL_READ_LENGTH'] = len(primer) + len(barcode) + len(linker)
             spot_descriptor = spot_descriptor_wrapper % field_dict
+            field_dict['SPOT_DESCRIPTORS_XML'] = spot_descriptor
             field_dict['PLATFORM_XML'] = platform_blocks[field_dict['PLATFORM']]
             experiments.append(experiment_wrapper % field_dict)
     return experiment_set_wrapper % ('\n'+'\n'.join(experiments)+'\n'), run_set_wrapper % ('\n'+'\n'.join(runs)+'\n')
@@ -487,10 +498,10 @@ if __name__ == '__main__':
         if not opts.sff_dir:
             raise IOError, "Must specify an sff dir if making an experiment."
         base_name, ext = splitext(opts.input_experiment_fp)
-        run_file = base_name + '_run.xml', 'w'
-        experiemnt_file = base_name + '_experiment.xml', 'w'
+        run_file = open(base_name + '_run.xml', 'w')
+        experiment_file = open(base_name + '_experiment.xml', 'w')
         run_xml, experiment_xml = make_run_and_experiment(
-            open(opts.input_experiment_fp, 'U').read(), opts.sff_dir)
+            open(opts.input_experiment_fp, 'U'), opts.sff_dir)
         run_file.write(run_xml)
         experiment_file.write(experiment_xml)
         run_file.close()
