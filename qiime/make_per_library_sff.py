@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#file make_library_id_lists.py: make id list for each lib from fasta file
+#file make_per_lib_sff: makes per-library sff file from id lists
 from optparse import OptionParser
 from string import strip
 from os import walk, system
@@ -14,21 +14,7 @@ __maintainer__ = "Rob Knight"
 __email__ = "rob@spot.colorado.edu"
 __status__ = "Prototype"
 
-cmd = "sfffile -i lib_ids/S100.txt -o S100.sff E86FECS01.sff E86FECS02.sff"
 cmd = "%s -i %s -o %s %s"
-
-def get_ids(lines, field):
-    """Made dict of lib:ids"""
-    result = defaultdict(list)
-    for line in lines:
-        if line.startswith('>'):
-            fields = map(strip, line[1:].split())
-            label = fields[0]
-            if not '_' in label:   #no lib specified
-                continue
-            lib, id_ = label.rsplit('_', 1)
-            result[lib].append(fields[field])
-    return result
 
 def make_option_parser():
     """Generate a parser for command-line options"""
@@ -51,8 +37,6 @@ def make_option_parser():
         help=""" The directory containing per-library id files [REQUIRED]""")
     parser.add_option("-p","--sfffile_path",dest='sfffile_path',\
         help=""" Path to sfffile binary""", default='sfffile')
-
-        
 
     parser.add_option("-f", "--field",dest="field", type=int,\
         default = 1,\
