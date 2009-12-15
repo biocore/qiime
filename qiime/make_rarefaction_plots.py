@@ -232,11 +232,13 @@ def make_error_series(rare_mat, sampleIDs, mapping, mapping_category):
 def plot_rarefaction_noave(rare_mat, xaxisvals, sampleIDs, mapping, mapping_category):
     xaxis = [float(x) for x in set(xaxisvals)]
     xaxis.sort()
-    plt.figure()
-    plt.gcf().set_size_inches(10,6)
-
+    plt.gcf().set_size_inches(8,6)    
+    plt.axes([.05,.1,.6,.8])
+    dummy = [0 for x in xaxis]
+    plt.grid(color='gray', linestyle='-')
+    plt.plot(xaxis, dummy, color='white')
+    
     yseries = []
-
     for k in rare_mat.keys():
         yseries.append([float(v) for v in rare_mat[k] if v != 'n/a' and v != 0])
         
@@ -294,7 +296,7 @@ def save_plot(plot, filenm, rtype, title, itype, res):
 def _make_cmd_parser():
     parser = OptionParser(usage="Usage: make_rarefaction_plots.py -m <mapping file> \
     -r <rarefaction data file> -p <command line preferences OR preferences file> \
-    -i <extension type for image output> -o <output path>")
+    -i <extension type for image output> -d <resolution for output image> -o <output path>")
 
     parser.add_option("-q", "--quiet",
                       action="store_false", dest="verbose", default=True,
@@ -309,6 +311,8 @@ def _make_cmd_parser():
         help='extension for image type choose from (.jpg, .gif, .png, .svg, .pdf). [default: %default]', default='.png')
     #parser.add_option('-p', '--prefs', \
     #    help='name of preferences file')
+    parser.add_option('-d', '--resolution', \
+        help='output image resolution, [default: %default]', default="75")
     parser.add_option('-o', '--dir_path',\
         help='directory prefix for all analyses [default: %default]',default='.')
     options, args = parser.parse_args()
@@ -448,7 +452,7 @@ def make_plots(data):
                         pr = plot_rarefaction(rare_mat_ave, seqs_per_samp, sampleIDs, data['map'], p)
                     filenm = file_path + '/'+ p
                     save_plot(pr, filenm, r, r.split('.')[0] +':'+ p, data['imagetype'], data['resolution'])
-                    clf()
+                    plt.clf()
             else:
                 for p in data['prefs']:
                     is_max, l = is_max_category_ops(data['map'], p)
@@ -461,7 +465,7 @@ def make_plots(data):
                         pr = plot_rarefaction(rare_mat_ave, seqs_per_samp, sampleIDs, data['map'], p)
                     filenm = file_path + '/'+ p
                     save_plot(pr, filenm, r, r.split('.')[0] +': '+ p, data['imagetype'], data['resolution'])
-                    clf()
+                    plt.clf()
         except():
             os.removedirs(file_path)
             print "Error:", sys.exc_info()[0]
