@@ -921,6 +921,11 @@ Example usage:
     # neighbor clustering algorithm and a similarity threshold of 90%.
     # Output files will be stored in ./mothur_picked_otus/ (default).
     python pick_otus.py -i at_inseqs.fasta -m mothur -c nearest -s 0.90
+    
+    # Pick OTUs from inseqs.fasta (-i) using the BLAST otu picker (-m)
+    # using ref_seqs.fasta to build a blast database on-the-fly. (Note that
+    # a pre-existing blast database can also be provided via the -b parameter).
+    python pick_otus.py -m blast -i inseqs.fasta -r ref_seqs.fasta
 """
 
 def parse_command_line_parameters():
@@ -935,8 +940,9 @@ def parse_command_line_parameters():
     otu_picking_method_choices = otu_picking_method_constructors.keys()
     parser.add_option('-m', '--otu_picking_method', type='choice',
         choices=otu_picking_method_choices,
-        help=('Method for picking OTUs.  Valid choices are: cdhit, '
-        'prefix_suffix, and mothur.  The mothur method requires an input file '
+        help=('Method for picking OTUs.  Valid choices are: ' +\
+        ', '.join(otu_picking_method_choices) +\
+        '. The mothur method requires an input file ' +\
         'of aligned sequences [default: %default]'))
 
     parser.add_option('-c', '--clustering_algorithm', type='choice',
