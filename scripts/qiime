@@ -117,28 +117,34 @@ def parse_command_line_parameters():
 
     return opts,args
     
-def print_commands(commands,verbose):
+def print_commands(commands,status_update_callback):
     """Print list of commands to run """
     for c in commands:
         for e in c:
-            if verbose: print '#%s' % e[0]
+            status_update_callback('#%s' % e[0])
             print '%s' % e[1]
             
-def call_commands_serially(commands,verbose):
+def call_commands_serially(commands,status_update_callback):
     """Run list of commands, one after another """
     for c in commands:
         for e in c:
-            if verbose: print '%s\n%s' % e
+            status_update_callback('%s\n%s' % e)
             check_call(e[1].split())
 
+def print_to_stdout(s):
+    print s
+    
+def no_status_updates(s):
+    pass
 
 def run_qiime_data_preparation(input_fp, output_dir, template_aln_fp, \
     lanemask_fp, tax_ref_db_fp, id_to_tax_fp, command_handler, \
-    qiime_config=qiime_config, rdp_assign_taxonomy=False, verbose=False,\
-    parallel=False):
+    qiime_config=qiime_config, rdp_assign_taxonomy=False,\
+    parallel=False,status_update_callback=print_to_stdout):
     """ Run the data preparation steps of Qiime 
     
     """
+    
     # Prepare some variables for the later steps
     input_dir, input_filename = split(input_fp)
     input_basename, input_ext = splitext(input_filename)
@@ -239,7 +245,7 @@ def run_qiime_data_preparation(input_fp, output_dir, template_aln_fp, \
                      ('Make OTU table', make_otu_table_cmd)])
     
     # Call the command handler on the list of commands
-    command_handler(commands,verbose)
+    command_handler(commands,status_update_callback)
 
 
 if __name__ == "__main__":
@@ -276,8 +282,14 @@ if __name__ == "__main__":
     else:
         command_handler = call_commands_serially
     
+    if verbose:
+        status_update_callback = print_to_stdout
+    else:
+        status_update_callback = no_status_updates
+    
     run_qiime_data_preparation(input_fp, output_dir, template_aln_fp,\
      lanemask_fp,tax_ref_db_fp, id_to_tax_fp, command_handler, qiime_config, \
-     rdp_assign_taxonomy=rdp_assign_taxonomy, verbose=verbose, \
+     rdp_assign_taxonomy=rdp_assign_taxonomy, \
+     status_update_callback=status_update_callback, \
      parallel=parallel)
     
