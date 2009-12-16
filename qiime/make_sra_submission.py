@@ -142,6 +142,8 @@ spot_descriptor_without_linker_wrapper = """      <SPOT_DESCRIPTOR>
         </SPOT_DECODE_SPEC>
       </SPOT_DESCRIPTOR>"""
 
+#note: the experiment wrapper is attributing default reads at the study level, not
+#at the experiment level. we might want to revisit this design decision later.
 experiment_wrapper = """  <EXPERIMENT
     alias="%(EXPERIMENT_ALIAS)s"
     center_name="%(EXPERIMENT_CENTER)s"
@@ -150,7 +152,7 @@ experiment_wrapper = """  <EXPERIMENT
     <STUDY_REF refname="%(STUDY_REF)s" refcenter="%(STUDY_CENTER)s"/>
     <DESIGN>
       <DESIGN_DESCRIPTION>%(EXPERIMENT_DESIGN_DESCRIPTION)s</DESIGN_DESCRIPTION>
-      <SAMPLE_DESCRIPTOR refname="%(EXPERIMENT_ALIAS)s_default" refcenter="%(EXPERIMENT_CENTER)s">
+      <SAMPLE_DESCRIPTOR refname="%(STUDY_ALIAS)s_default" refcenter="%(EXPERIMENT_CENTER)s">
         <POOL>%(POOL_MEMBERS_XML)s        </POOL>
       </SAMPLE_DESCRIPTOR>
       <LIBRARY_DESCRIPTOR>
@@ -273,8 +275,9 @@ def make_study(study_lines, study_template):
     info['XML_STUDY_LINKS_BLOCK'] = study_links_block
     return study_template % info
 
-def make_submission(submission_lines, submission_template):
+def make_submission(submission_lines, submission_template, docnames=None):
     """Returns string for submission xml."""
+    docnames = docnames or {}
     info = twocol_data_to_dict(read_tabular_data(submission_lines)[1], True)
     #build up contacts strings
     contacts = []
@@ -299,10 +302,8 @@ def make_submission(submission_lines, submission_template):
         info['ACCESSION_STRING'] = '\n accession="%s"' % accession
     else:
         info['ACCESSION_STRING'] = ''
-    action_keys = ['study', 'sample', 'experiment', 'run']
-    action_vals = [info.get(k, ['']) for k in action_keys]
-    actions = []
-    for k, v in zip(action_keys, action_vals):
+    actions=[]
+    for k, v in docnames.items():
         if v:
             actions.append(action_wrapper % (v, k, k))
     actions_str = actions_wrapper % '\n'.join(actions)
@@ -364,9 +365,7 @@ def make_run_and_experiment(experiment_lines, sff_dir):
             barcode_basecalls = []
             data_blocks = []
             field_dict = {} # to keep the last one in scope for outer block
-            MEMBER_ORDER=1
-
-            for line in experiment_lines:
+            for MEMBER_ORDER, line in enumerate(experiment_lines):
                 field_dict = dict(zip(columns, line))
                 barcode = field_dict['BARCODE']
                 if barcode not in barcodes:
@@ -386,9 +385,20 @@ def make_run_and_experiment(experiment_lines, sff_dir):
                         'MATCH_SEQ':primer})
                 linker = field_dict['LINKER']
                 linkers.add(linker)
-                field_dict['MEMBER_ORDER'] = MEMBER_ORDER
+                if not MEMBER_ORDER:    #first time through: assign default case
+                    MEMBER_ORDER += 1
+                    field_dict['MEMBER_ORDER'] = MEMBER_ORDER
+                    default_field_dict = field_dict.copy()
+                    default_pool_member_name = default_field_dict['STUDY_REF'] + '_default'
+                    default_dict['POOL_MEMBER_NAME'] = default_pool_member_name
+                    try:
+                        default_field_dict['CHECKSUM'] = md5_path(join(sff_dir,field_dict['RUN_PREFIX'],default_pool_member_name+'.sff'))
+                        data_blocks.append(data_block_wrapper % field_dict)
+                    except IOError:
+                        pass
+                pool_members.append(pool_member_wrapper % default_field_dict)
                 MEMBER_ORDER += 1
-                pool_members.append(pool_member_wrapper % field_dict)
+                field_dict['MEMBER_ORDER'] = MEMBER_ORDER
                 try:
                     field_dict['CHECKSUM'] = md5_path(join(sff_dir,field_dict['RUN_PREFIX'],field_dict['POOL_MEMBER_NAME']+'.sff'))
                     data_blocks.append(data_block_wrapper % field_dict)
@@ -465,44 +475,57 @@ def parse_command_line_parameters():
 
     return opts,args
 
+def write_xml_generic(infile_path, template_path, xml_f):
+    """Writes generic xml based on contents of infilepath, returns filename."""
+    study_template = open(template_path, 'U').read()
+    base_path, ext = splitext(infile_path)
+    outfile_path = base_path + '.xml'
+    outfile = open(outfile_path, 'w')
+    outfile.write(xml_f(open(infile_path, 'U'), template_path))
+    outfile.close()
+    return outfile_path
+
 
 if __name__ == '__main__':
     #if run from the command-line, produce the appropriate xml files
     opts, args = parse_command_line_parameters()
+    docnames = {}
     if opts.input_study_fp:
-        study_template = open(opts.template_study_fp, 'U').read()
-        base_name, ext = splitext(opts.input_study_fp)
-        outfile = open(base_name + '.xml', 'w')
-        outfile.write(make_study(open(opts.input_study_fp, 'U'), 
-            study_template))
-        outfile.close()
+        docnames['study'] = write_xml_generic(opts.input_study_fp,
+            opts.template_study_fp, make_study)
 
     if opts.input_sample_fp:
-        sample_template = open(opts.template_sample_fp, 'U').read()
-        base_name, ext = splitext(opts.input_sample_fp)
-        outfile = open(base_name + '.xml', 'w')
-        outfile.write(make_sample(open(opts.input_sample_fp, 'U'), 
-            sample_template))
-        outfile.close()
-
-    if opts.input_submission_fp:
-        submission_template = open(opts.template_submission_fp, 'U').read()
-        base_name, ext = splitext(opts.input_submission_fp)
-        outfile = open(base_name + '.xml', 'w')
-        outfile.write(make_submission(open(opts.input_submission_fp, 'U'), 
-            submission_template))
-        outfile.close()
+        docnames['sample'] = write_xml_generic(opts.input_sample_fp,
+            opts.template_sample_fp, make_sample)
 
     if opts.input_experiment_fp:
         #in this case, we need to need to also get the sff dir
         if not opts.sff_dir:
             raise IOError, "Must specify an sff dir if making an experiment."
         base_name, ext = splitext(opts.input_experiment_fp)
-        run_file = open(base_name + '_run.xml', 'w')
-        experiment_file = open(base_name + '_experiment.xml', 'w')
-        run_xml, experiment_xml = make_run_and_experiment(
+        base_name = base_name.split('experiment')[-1]
+        if base_name:
+            base_name += '_'
+        run_path = base_name + 'run.xml'
+        run_file = open(run_path, 'w')
+        experiment_path = base_name + 'experiment.xml'
+        experiment_file = open(experiment_path, 'w')
+        experiment_xml, run_xml = make_run_and_experiment(
             open(opts.input_experiment_fp, 'U'), opts.sff_dir)
         run_file.write(run_xml)
         experiment_file.write(experiment_xml)
         run_file.close()
         experiment_file.close()
+        docnames['run'] = run_path
+        docnames['experiment'] = experiment_path
+
+    if opts.input_submission_fp:
+        submission_template = open(opts.template_submission_fp, 'U').read()
+        base_name, ext = splitext(opts.input_submission_fp)
+        outfilename = base_name + '.xml'
+        outfile = open(outfilename, 'w')
+        outfile.write(make_submission(open(opts.input_submission_fp, 'U'), 
+            submission_template, docnames))
+        outfile.close()
+
+

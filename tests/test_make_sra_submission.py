@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from unittest import TestCase, main
+from cogent.util.unit_test import TestCase, main
 from qiime.make_sra_submission import (md5_path, safe_for_xml, 
     read_tabular_data, 
     rows_data_as_dicts,
@@ -107,7 +107,8 @@ aa\tbb\tcc
         submission_sample_data = open('sra_test_files/submission.txt', 'U')
         submission_template = open('sra_xml_templates/submission_template.xml',
             'U').read()
-        result = make_submission(submission_sample_data, submission_template)
+        result = make_submission(submission_sample_data, submission_template,
+            {'study':'study.xml', 'sample':'sample.xml'})
         expected = open(
             'sra_test_files/example_submission_study_sample_only.xml').read()
         self.assertEqual(result, expected)
@@ -116,7 +117,8 @@ aa\tbb\tcc
             'sra_test_files/submission_with_file.txt', 'U')
         submission_template = open(
             'sra_xml_templates/submission_template.xml', 'U').read()
-        result = make_submission(submission_sample_data, submission_template)
+        result = make_submission(submission_sample_data, submission_template,
+            {'study':'study.xml', 'sample':'sample.xml'})
         expected = open(
             'sra_test_files/example_submission_study_sample_only_with_file.xml').read()
         self.assertEqual(result, expected)

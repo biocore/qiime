@@ -12,8 +12,8 @@
     <CONTACT name="Noah Fierer" inform_on_status="Noah.Fierer@Colorado.edu" inform_on_error="Noah.Fierer@Colorado.edu"/>
  </CONTACTS>
  <ACTIONS>
-   <ACTION><ADD source="study.xml" schema="study" notes="study metadata"/></ACTION>
    <ACTION><ADD source="sample.xml" schema="sample" notes="sample metadata"/></ACTION>
+   <ACTION><ADD source="study.xml" schema="study" notes="study metadata"/></ACTION>
    <ACTION><RELEASE/></ACTION>
  </ACTIONS>
 </SUBMISSION>
