@@ -61,10 +61,10 @@ usage_str = """usage: %prog [options] {-i INPUT_FP -o OUTPUT_DIR}
 
 Example usage:
 
-Split the input file (-i) into five jobs (-j) and submit them
- to the cluster (default) and write the results (-o) to /home/caporaso/out:
+Split the input file (-i) into five jobs (-O), start them,
+ and write the results (-o) to /home/caporaso/out:
 
- parallel_rdp.py -j 5 -i /home/caporaso/10_seq.fasta -o /home/caporaso/out
+ assign_taxonomy_rdp.py -O 5 -i /home/caporaso/10_seq.fasta -o /home/caporaso/out
 """
 
 def parse_command_line_parameters():
