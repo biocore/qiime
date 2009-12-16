@@ -7,6 +7,15 @@ from sys import argv,stdout
 from numpy import array
 from optparse import OptionParser
 
+__author__ = "Rob Knight"
+__copyright__ = "Copyright 2009, the PyCogent Project" #consider project name
+__credits__ = ["Rob Knight"] #remember to add yourself if you make changes
+__license__ = "GPL"
+__version__ = "0.1"
+__maintainer__ = "Rob Knight"
+__email__ = "rob@spot.colorado.edu"
+__status__ = "Prototype"
+
 def parse_states(state_string):
     """From string in format 'col1:good1,good2;col2:good1' return dict."""
     result = {}
