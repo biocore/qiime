@@ -152,7 +152,7 @@ experiment_wrapper = """  <EXPERIMENT
     <STUDY_REF refname="%(STUDY_REF)s" refcenter="%(STUDY_CENTER)s"/>
     <DESIGN>
       <DESIGN_DESCRIPTION>%(EXPERIMENT_DESIGN_DESCRIPTION)s</DESIGN_DESCRIPTION>
-      <SAMPLE_DESCRIPTOR refname="%(STUDY_ALIAS)s_default" refcenter="%(EXPERIMENT_CENTER)s">
+      <SAMPLE_DESCRIPTOR refname="%(STUDY_REF)s_default" refcenter="%(EXPERIMENT_CENTER)s">
         <POOL>%(POOL_MEMBERS_XML)s        </POOL>
       </SAMPLE_DESCRIPTOR>
       <LIBRARY_DESCRIPTOR>
@@ -390,14 +390,14 @@ def make_run_and_experiment(experiment_lines, sff_dir):
                     field_dict['MEMBER_ORDER'] = MEMBER_ORDER
                     default_field_dict = field_dict.copy()
                     default_pool_member_name = default_field_dict['STUDY_REF'] + '_default'
-                    default_dict['POOL_MEMBER_NAME'] = default_pool_member_name
+                    default_field_dict['POOL_MEMBER_NAME'] = default_pool_member_name
                     try:
                         default_field_dict['CHECKSUM'] = md5_path(join(sff_dir,field_dict['RUN_PREFIX'],default_pool_member_name+'.sff'))
-                        data_blocks.append(data_block_wrapper % field_dict)
+                        data_blocks.append(data_block_wrapper % default_field_dict)
                     except IOError:
                         pass
-                pool_members.append(pool_member_wrapper % default_field_dict)
                 MEMBER_ORDER += 1
+                pool_members.append(pool_member_wrapper % field_dict)
                 field_dict['MEMBER_ORDER'] = MEMBER_ORDER
                 try:
                     field_dict['CHECKSUM'] = md5_path(join(sff_dir,field_dict['RUN_PREFIX'],field_dict['POOL_MEMBER_NAME']+'.sff'))
@@ -477,11 +477,12 @@ def parse_command_line_parameters():
 
 def write_xml_generic(infile_path, template_path, xml_f):
     """Writes generic xml based on contents of infilepath, returns filename."""
-    study_template = open(template_path, 'U').read()
+    template = open(template_path, 'U').read()
     base_path, ext = splitext(infile_path)
     outfile_path = base_path + '.xml'
     outfile = open(outfile_path, 'w')
-    outfile.write(xml_f(open(infile_path, 'U'), template_path))
+    result = xml_f(open(infile_path, 'U'), template)
+    outfile.write(result)
     outfile.close()
     return outfile_path
 
