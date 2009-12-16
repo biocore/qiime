@@ -11,6 +11,14 @@ just to pull out the info needed for split_libaries and downstream analysis.
 Does not currently combine this with the data in the per-sample mapping file, 
 but this is planned for the future.
 """
+__author__ = "Rob Knight"
+__copyright__ = "Copyright 2009, the PyCogent Project" #consider project name
+__credits__ = ["Rob Knight"] #remember to add yourself if you make changes
+__license__ = "GPL"
+__version__ = "0.1"
+__maintainer__ = "Rob Knight"
+__email__ = "rob@spot.colorado.edu"
+__status__ = "Prototype"
 
 def strip_quotes(s):
     """strips whitespace and terminal quotes from a string."""
