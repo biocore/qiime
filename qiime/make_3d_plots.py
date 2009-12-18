@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 #file make_3d_plots.py
 
-__author__ = "Jesse Stombaugh and Rob Knight"
+__author__ = "Jesse Stombaugh, Rob Knight, and Dan Knights"
 __copyright__ = "Copyright 2009, the 454 Project" #consider project name
-__credits__ = ["Jesse Stombaugh", "Rob Knight", "Micah Hamady"] #remember to add yourself
+__credits__ = ["Jesse Stombaugh", "Rob Knight", "Micah Hamady", "Dan Knights"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "0.1"
 __maintainer__ = "Jesse Stombaugh"
@@ -31,14 +31,14 @@ Usage: python make_3d_plots.py -i raw_pca_data.txt -m input_map.txt
 """
 from cogent.util.misc import flatten
 from parse import parse_map, group_by_field, parse_coords
-from numpy import array
+from numpy import array, shape, apply_along_axis, dot, delete
+import numpy as np
 import os
 from optparse import OptionParser
 from random import choice, randrange
 import re
 from time import strftime
 import shutil
-
 
 def _natsort_key(item):
     """Provides normalized version of item for sorting with digits.
@@ -90,7 +90,8 @@ data_colors = {
 class MissingFileError(IOError):
     pass
 
-def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, data_colors=
+
+def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, custom_axes=None, data_colors=
     data_colors, data_color_order=data_color_order):
     """Makes 3d plots given coords, mapping file, and prefs.
     
@@ -130,9 +131,9 @@ def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, data_colors=
        
         #Write to kinemage file using the groups, colors and coords 
         result.extend(make_mage_output(groups, colors, coord_header, coords, \
-            pct_var, labelname,scaled=False,data_colors=data_colors))
-        result.extend(make_mage_output(groups, colors, coord_header, coords,  \
-            pct_var, labelname,scaled=True,data_colors=data_colors))
+            pct_var, custom_axes, labelname,scaled=False,data_colors=data_colors))
+        result.extend(make_mage_output(groups, colors, coord_header, coords, \
+            pct_var, custom_axes, labelname,scaled=True,data_colors=data_colors))
 
     return result
 
@@ -224,7 +225,7 @@ def auto_radius(coords,ratio=0.01):
     
     return ratio*range
 
-def make_mage_output(groups, colors, coord_header, coords, pct_var, name='', \
+def make_mage_output(groups, colors, coord_header, coords, pct_var, custom_axes=None,name='', \
     radius=None, alpha=.75, num_coords=10,scaled=False, coord_scale=1.05,
     data_colors=data_colors):
     """Convert groups, colors, coords and percent var into mage format"""
@@ -232,14 +233,19 @@ def make_mage_output(groups, colors, coord_header, coords, pct_var, name='', \
     
     #Scale the coords and generate header labels
     if scaled:
-        coords = scale_pc_data_matrix(coords, pct_var)
+        scalars = pct_var
+        if custom_axes:
+            custom_scalars = scalars[0] * np.ones(len(custom_axes))
+            scalars = np.append(custom_scalars,scalars)
+        coords = scale_pc_data_matrix(coords, scalars)
         header_suffix = '_scaled'
     else:
         header_suffix = '_unscaled'
         
     if radius is None:
         radius = auto_radius(coords)
-        
+
+
     maxes = coords.max(0)[:num_coords]
     mins = coords.min(0)[:num_coords]
     pct_var = pct_var[:num_coords]    #scale from fraction
@@ -249,15 +255,22 @@ def make_mage_output(groups, colors, coord_header, coords, pct_var, name='', \
         num_coords = len(mins)
     min_maxes = flatten(zip(mins,maxes))
     
+    if custom_axes:
+        axis_names = ['PC%s' %(i+1) for i in xrange(num_coords - len(custom_axes))]
+        axis_names = custom_axes + axis_names
+    else:
+        axis_names = ['PC%s' %(i+1) for i in xrange(num_coords)]
+
     #Write the header information
     result.append('@kinemage {%s}' % (name+header_suffix))
-    result.append('@dimension '+' '.join(['{PC_'+str(i+1)+'}' \
-        for i in range(num_coords)]))
+    result.append('@dimension '+' '.join(['{%s}'%(name) for name in axis_names]))
     result.append('@dimminmax '+ ' '.join(map(str, min_maxes)))
     result.append('@master {points}')
     result.append('@master {labels}')
     for color, (h, s, v) in sorted(data_colors.items()):
         result.append('@hsvcolor {%s} %3.1f %3.1f %3.1f' % (color, h,s,v))
+    # add in white, because it's not used in this file any longer
+    result.append('@hsvcolor {white} 180.0 0.0 100.0')
    
     #Write the groups, colors and coords
     coord_dict = dict(zip(coord_header, coords))
@@ -278,26 +291,40 @@ master={points} nobutton' % (color, radius, alpha, num_coords))
 master={labels} nobutton' % (color, radius, alpha, num_coords))
         result.append('\n'.join(coord_lines))
 
-    #Write the axes on the bottom of the graph
+    #Write any custom axes first
     result.append('@group {axes} collapsible')
     state = 'on'
     axis_mins = mins*coord_scale
     axis_maxes = maxes*coord_scale
-    for i, pct in enumerate(pct_var):
+
+    #Write the axes on the bottom of the graph
+    if not custom_axes:
+        custom_axes = []
+    for i in xrange(num_coords):
         if i == 3:
-            state = 'off'
-        result.append('@vectorlist {PC%s line} dimension=%s %s' % \
-            (i+1, num_coords, state))
+            state = 'off'            
+####################### New ###############################
+        result.append('@vectorlist {%s line} dimension=%s %s' % \
+            (axis_names[i], num_coords, state))
+####################### /New ###############################
         result.append(' '.join(map(str, axis_mins)) + ' white')
         end = axis_mins.copy()
         end[i] = axis_maxes[i]
         result.append(' '.join(map(str, end)) + ' white')
-        result.append('@labellist {PC%s (%0.2g%%)} dimension=%s %s' % \
-            (i+1, pct, num_coords, state))
         end[i] *= coord_scale  #add scale factor to offset labels a little
-        result.append( ('{PC%s (%0.2g%%)}' % (i+1, pct))  + \
-            ' '.join(map(str, end)) + ' white')
-            
+####################### New ###############################
+        if i < len(custom_axes):
+            result.append('@labellist {%s} dimension=%s %s' % \
+                              (axis_names[i], num_coords, state)) 
+            result.append( ('{%s}' % (axis_names[i]))  + \
+                               ' '.join(map(str, end)) + ' white')
+        else:
+            pct = pct_var[i-len(custom_axes)]
+            result.append('@labellist {%s (%0.2g%%)} dimension=%s %s' % \
+                              (axis_names[i], pct, num_coords, state))
+            result.append( ('{%s (%0.2g%%)}' % (axis_names[i], pct))  + \
+                               ' '.join(map(str, end)) + ' white')
+####################### /New ###############################
     return result
 
 def combine_map_label_cols(combinecolorby,mapping):
@@ -362,8 +389,50 @@ def process_colorby(colorby,data,old_prefs=None):
             if 'colors' in old_prefs[names[j]]:
                 prefs[key]['colors'] = old_prefs[names[j]]['colors']
 
-
     return prefs,data
+
+def process_custom_axes(axis_names):
+    """Parses the custom_axes option from the command line"""
+    return axis_names.strip().strip("'").split(',')
+
+def get_custom_coords(axis_names,mapping, coords):
+    """Gets custom axis coords from the mapping file."""
+    for i, axis in enumerate(reversed(axis_names)):
+        if not axis in mapping[0]:
+            print 'Warning: could not find custom axis',axis,'in map headers:',mapping[0]
+        else:
+            col_idx = mapping[0].index(axis)
+            col = zip(*mapping[1:])[col_idx]
+            sample_IDs = zip(*mapping[1:])[0]
+            new_coords = array([])
+            for id in coords[0]:
+                if id in sample_IDs:
+                    row_idx = list(sample_IDs).index(id)
+                    try:
+                        as_float = float(col[row_idx])
+                        new_coords = np.append(new_coords,as_float)
+                    except ValueError:
+                        new_coords = np.append(new_coords,np.nan)
+            new_coords = np.transpose(np.column_stack(new_coords))
+            coords[1] = np.hstack((new_coords,coords[1]))
+
+def remove_nans(coords):
+    """Deletes any samples with NANs in their coordinates"""
+    s = np.apply_along_axis(sum,1,np.isnan(coords[1])) == 0
+    coords[0] = (np.asarray(coords[0])[s]).tolist()
+    coords[1] = coords[1][s,:]
+
+def scale_custom_coords(custom_axes,coords):
+    """Scales custom coordinates to match min/max of PC1"""
+
+    to_mn = min(coords[1][:,len(custom_axes)])
+    to_mx = max(coords[1][:,len(custom_axes)])
+
+    for i in xrange(len(custom_axes)):
+        from_mn = min(coords[1][:,i])
+        from_mx = max(coords[1][:,i])
+        coords[1][:,i] = (coords[1][:,i]  - from_mn) / (from_mx - from_mn)
+        coords[1][:,i] = (coords[1][:,i]) * (to_mx-to_mn) + to_mn
 
 def _make_path(paths):
     """Join together the paths (e.g. dir and subdir prefix), empty str default"""
@@ -386,6 +455,10 @@ def get_map(options, data):
     data['map'] = parse_map(map_f)
     return data['map']
 
+def get_sample_ids(maptable):
+    """Extracts list of sample IDs from mapping file."""
+    return [line[0] for line in maptable[1:]]
+
 def get_coord(options, data):
     """Opens and returns coords data"""
     try:
@@ -393,8 +466,16 @@ def get_coord(options, data):
     except (TypeError, IOError):
         raise MissingFileError, 'Coord file required for this analysis'
     coord_header, coords, eigvals, pct_var = parse_coords(coord_f)
-    data['coord'] = coord_header, coords, eigvals, pct_var
+    data['coord'] = [coord_header, coords, eigvals, pct_var]
     return data['coord']
+
+def remove_unmapped_samples(mapping,coords):
+    """Removes any samples not present in mapping file"""
+    sample_IDs = zip(*mapping[1:])[0]
+    for i in xrange(len(coords[0])-1,-1,-1):
+        if not coords[0][i] in sample_IDs:
+            del(coords[0][i])
+            coords[1] = np.delete(coords[1],i,0)
 
 def linear_gradient(start, end, nbins):
     """Makes linear color gradient from start to end, using nbins.
@@ -412,7 +493,7 @@ def linear_gradient(start, end, nbins):
 
     return result
 
-def _do_3d_plots(prefs, data, dir_path='',data_file_path='', filename=None, \
+def _do_3d_plots(prefs, data, custom_axes, dir_path='',data_file_path='', filename=None, \
                 default_filename='out'):
     """Make 3d plots according to coloring options in prefs."""
     kinpath = _make_path([(dir_path+data_file_path), filename])
@@ -428,9 +509,10 @@ def _do_3d_plots(prefs, data, dir_path='',data_file_path='', filename=None, \
         return
     coord_header, coords, eigvals, pct_var = data['coord']
     mapping=data['map']
+
     outf=kinpath+'.kin'
     
-    res = make_3d_plots(coord_header, coords, pct_var,mapping,prefs)
+    res = make_3d_plots(coord_header, coords, pct_var,mapping,prefs,custom_axes)
 
     #Write kinemage file
     f = open(outf, 'w')
@@ -456,6 +538,8 @@ def _make_cmd_parser():
         help='name of mapping file [default: %default]')
     parser.add_option('-b', '--colorby',\
         help='map header to color by [default: %default]')
+    parser.add_option('-a', '--custom_axes',\
+        help='map header(s) to use as custom axes [default: %default]')
     parser.add_option('-p', '--prefs_path',\
         help='prefs for detailed color settings [default: %default]')
     parser.add_option('-o', '--dir_path',\
@@ -469,7 +553,7 @@ def _process_prefs(options):
 
     #Open and get coord data
     data['coord'] = get_coord(options, data)
-    
+
     #Open and get mapping data, if none supplied create a pseudo mapping \
     #file
     if options.map_fname:
@@ -479,16 +563,29 @@ def _process_prefs(options):
         for i in range(len(data['coord'][0])):
             data['map'].append([data['coord'][0][i],'Sample'])
     
-    #Determine which mapping headers to color by, if none given, color by \
-    #Sample ID's
+    # remove any samples not present in mapping file
+    remove_unmapped_samples(data['map'],data['coord'])
+
+    #Determine which mapping headers to color by, if none given, color by all columns in map file
     if options.prefs_path:
         prefs = eval(open(options.prefs_path, 'U').read())
         prefs, data=process_colorby(None, data, prefs)
     elif options.colorby:
         prefs,data=process_colorby(options.colorby,data)
     else:
+        default_colorby = ','.join(data['map'][0])
+        prefs,data=process_colorby(default_colorby,data)
         prefs={'Sample':{'column':'#SampleID'}}
 
+    # process custom axes, if present.
+    custom_axes = None
+    if options.custom_axes:
+        custom_axes = process_custom_axes(options.custom_axes)
+        get_custom_coords(custom_axes, data['map'], data['coord'])
+        remove_nans(data['coord'])
+        scale_custom_coords(custom_axes,data['coord'])
+
+    # Generate random output file name and create directories
     dir_path = options.dir_path
     if dir_path and not dir_path.endswith('/'):
         dir_path = dir_path + '/'
@@ -516,10 +613,9 @@ def _process_prefs(options):
 
     filepath=options.coord_fname
     filename=filepath.strip().split('/')[-1]
-    _do_3d_plots(prefs, data, dir_path, data_file_path,filename)
+    _do_3d_plots(prefs, data, custom_axes, dir_path, data_file_path,filename)
 
 if __name__ == '__main__':
     from sys import argv, exit
     options = _make_cmd_parser()
     _process_prefs(options)
-
