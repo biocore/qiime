@@ -54,6 +54,8 @@ class SingleRarefactionMaker(FunctionWithParams):
         sub_otu_table):
         """ depth and rep can be numbers or strings
         """
+        if min(numpy.shape(sub_otu_table)) == 0: # no data to write
+            return
         f = open(fname, 'w')
         f.write(format_otu_table(sub_sample_ids, sub_otu_ids,\
             sub_otu_table, None, comment=fname))

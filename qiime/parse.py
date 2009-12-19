@@ -265,6 +265,8 @@ def parse_otus(infile):
     otu_table = []
     infile.next()   #skip header line
     sample_ids = infile.next().strip().split('\t')[1:]
+    if len(sample_ids) == 0:
+        raise RuntimeError('no samples found in otu table')
     if sample_ids[-1] == 'Consensus Lineage':
         has_consensus = True
         sample_ids = sample_ids[:-1]
