@@ -138,8 +138,8 @@ def ave_seqs_per_sample(matrix, seqs_per_samp, sampleIDs):
     for i in range(0,len(sampleIDs)):
         curr = seqs_per_samp[0]
         temp_ser = []
-        s = 0
-        n = 0
+        s = 0 #sum
+        n = 0 #iterator
         for j in range(0, len(seqs_per_samp)):
             next = seqs_per_samp[j]
             if curr != next:
@@ -197,10 +197,9 @@ def make_error_series(rare_mat, sampleIDs, mapping, mapping_category):
     
     #print seen
     ops = [o for o in seen]
-    cols = dict() #[COLOUR[i%len(COLOUR)] for i in range(0,len(ops))]
+    cols = dict()
     syms = dict()
     for i in range(0,len(ops)):
-        #cols[ops[i]] = [y/100 for y in [float(x) for x in arange(1,99,100/len(ops))]][i];
         cols[ops[i]] = COLOUR[i%len(COLOUR)]
         syms[ops[i]] = MARKERS[i%len(MARKERS)]
     
@@ -244,8 +243,6 @@ def plot_rarefaction_noave(rare_mat, xaxisvals, sampleIDs, mapping, mapping_cate
         
     for s in yseries:
         plt.plot(xaxis[:len(s)], s)
-    #for k in rare_mat.keys():
-    #    plt.plot(xaxis[:len(rare_mat[k])], rare_mat[k])
 
     plt.grid(color='gray', linestyle='-')
     ax = plt.gca()
@@ -266,7 +263,6 @@ def plot_rarefaction(rare_mat, xaxisvals, sampleIDs, mapping, mapping_category):
     ops.sort()
     
     for o in ops:
-        #print o
         try:
             yaxis[o] = [float(v) for v in yaxis[o] if v != 0]
             l = o
@@ -434,7 +430,7 @@ def _process_prefs(options):
     
 def make_plots(data):
     for r in data['rarefactions'].keys():
-        file_path = data['output_path']+'/'+ r.split('.')[0]
+        file_path = data['output_path']+'/'+ splitext(split(r)[1])[0]
         os.makedirs(file_path)
         try:
             rare_mat_trans, seqs_per_samp, sampleIDs = parse_rarefaction(data['rarefactions'][r])
