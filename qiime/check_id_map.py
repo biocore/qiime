@@ -549,6 +549,9 @@ def check_missing_descriptions((sample_descriptions, sample_ids,
 def check_duplicate_descriptions((sample_descriptions, sample_ids,
     run_description)):
     """Returns warnings for duplicate descriptions"""
+    print sample_descriptions
+    print sample_ids
+    print run_description
     d = DupChecker()
     dup_indices = d.dupIndices(sample_descriptions)
     problems = []

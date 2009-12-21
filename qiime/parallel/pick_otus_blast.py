@@ -178,7 +178,7 @@ def parse_command_line_parameters():
           
     parser.add_option('-s','--similarity',action='store',\
           type='float',dest='similarity',help='Sequence similarity '+\
-          'threshold [default: %default]',default=0.96)
+          'threshold [default: %default]',default=0.97)
            
     parser.add_option('-p','--pick_otus_fp',
             help='path to pick_otus.py [default: %default]',\

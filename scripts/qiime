@@ -36,7 +36,7 @@ The following command will start an analysis on inseq1.fasta (-i), which is a
  post-split_libraries fasta file. The sequence identifiers in this file
  should be of the form <sample_id>_<unique_seq_id>. The following steps,
  corresponding to the preliminary data preparation, are applied:
-  1) Pick OTUs with cdhit at similarity of 0.96;
+  1) Pick OTUs with cdhit at similarity of 0.97;
   2) Pick a representative set with the most_abundant method;
   3) Align the representative set with PyNAST (specify template alignment 
    with -t);
@@ -137,13 +137,26 @@ def print_to_stdout(s):
 def no_status_updates(s):
     pass
 
+WORKFLOW_DEFAULT_PARAMETERS = {
+    input_fp=None,\
+    output_dir=None,\
+    template_aln_fp=None,\
+    lanemask_fp=None,\
+    tax_ref_db_fp=None,\
+    id_to_tax_fp=None,\
+    command_handler=None,\
+    qiime_config=qiime_config,\
+    rdp_assign_taxonomy=False,\
+    parallel=False}
+
 def run_qiime_data_preparation(input_fp, output_dir, template_aln_fp, \
     lanemask_fp, tax_ref_db_fp, id_to_tax_fp, command_handler, \
     qiime_config=qiime_config, rdp_assign_taxonomy=False,\
     parallel=False,status_update_callback=print_to_stdout):
     """ Run the data preparation steps of Qiime 
-    
     """
+    params = WORKFLOW_DEFAULT_PARAMETERS
+    params.update(parameters)
     
     # Prepare some variables for the later steps
     input_dir, input_filename = split(input_fp)

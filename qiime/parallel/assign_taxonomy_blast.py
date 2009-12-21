@@ -67,8 +67,6 @@ usage_str = """usage: %prog [options] {-i INPUT_FP -o OUTPUT_DIR -t ID_TO_TAXONO
 
 Example usage:
  python Qiime/qiime/parallel/assign_taxonomy_blast.py -O 5 -i /home/caporaso/at_inseqs.fasta -t /home/caporaso/at_id_to_taxonomy.txt -r /home/caporaso/at_refseqs.fasta -o /home/caporaso/out/
-
-
 """
 
 def parse_command_line_parameters():

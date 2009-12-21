@@ -141,7 +141,7 @@ def parse_command_line_parameters():
            
     parser.add_option('-X','--job_prefix',action='store',\
            type='string',help='job prefix '+\
-           '[default: BTA_ + 5 random chars]')
+           '[default: ALDIV_ + 3 random chars]')
            
     parser.add_option('-Y','--python_exe_fp',action='store',\
            type='string',help='full path to python '+\

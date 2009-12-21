@@ -138,7 +138,7 @@ class BlastOtuPicker(OtuPicker):
         The 'best blast hit' for a sequence is defined as the database 
          sequence which achieves the longest alignment with percent sequence
          identity greater than or equal to the OTU similarity threshold
-         (default in Params['Similarity'] = 0.96). Database hits must have an
+         (default in Params['Similarity'] = 0.97). Database hits must have an
          e-value threshold less than or equal to the max_e_value threshold 
          (default in Params['max_e_value'] as 1e-10).
     """
@@ -149,7 +149,7 @@ class BlastOtuPicker(OtuPicker):
         """
         _params = {'max_e_value':1e-10,\
                    'seqs_per_blast_run':1000,\
-                   'Similarity':0.96}
+                   'Similarity':0.97}
         _params.update(params)
         OtuPicker.__init__(self, _params)
     
@@ -349,12 +349,12 @@ class PrefixSuffixOtuPicker(OtuPicker):
         Some generic entries in params are:
     
         Algorithm: algorithm used
-        Similarity: similarity threshold, default 0.96, corresponding to
+        Similarity: similarity threshold, default 0.97, corresponding to
          genus-level OTUs ('Similarity' is a synonym for the '-c' parameter
          to the cd-hit application controllers)
         Application: 3rd-party application used
         """
-        _params = {'Similarity':0.96,\
+        _params = {'Similarity':0.97,\
          'Algorithm':'Prefix/suffix exact matching'}
         _params.update(params)
         OtuPicker.__init__(self, _params)
@@ -455,12 +455,12 @@ class TrieOtuPicker(OtuPicker):
         Some generic entries in params are:
     
         Algorithm: algorithm used
-        Similarity: similarity threshold, default 0.96, corresponding to
+        Similarity: similarity threshold, default 0.97, corresponding to
          genus-level OTUs ('Similarity' is a synonym for the '-c' parameter
          to the cd-hit application controllers)
         Application: 3rd-party application used
         """
-        _params = {'Similarity':0.96,\
+        _params = {'Similarity':0.97,\
          'Algorithm':'Trie prefix matching'}
         _params.update(params)
         OtuPicker.__init__(self, _params)
@@ -524,12 +524,12 @@ class CdHitOtuPicker(OtuPicker):
         Some generic entries in params are:
     
         Algorithm: algorithm used
-        Similarity: similarity threshold, default 0.96, corresponding to
+        Similarity: similarity threshold, default 0.97, corresponding to
          genus-level OTUs ('Similarity' is a synonym for the '-c' parameter
          to the cd-hit application controllers)
         Application: 3rd-party application used
         """
-        _params = {'Similarity':0.96,\
+        _params = {'Similarity':0.97,\
          'Application':'cdhit',\
          'Algorithm':'cdhit: "longest-sequence-first list removal algorithm"'}
         _params.update(params)
@@ -652,7 +652,7 @@ class DoturOtuPicker(OtuPicker):
         following parameters:
 
         Similarity: similarity threshold corresponding to genus-level
-        OTUs (default 0.96)
+        OTUs (default 0.97)
 
         Distance Function: a function which takes two sequences and
         returns a distance ranging between 0 and 1 (default
@@ -664,7 +664,7 @@ class DoturOtuPicker(OtuPicker):
         params['Algorithm'] = 'Furthest-neighbor clustering algorithm'
 
         if 'Similarity' not in params:
-            params['Similarity'] = 0.96
+            params['Similarity'] = 0.97
         if 'Distance Function' not in params:
             def default_distance_function(first, second):
                 first = DnaSequence(first)
@@ -999,7 +999,7 @@ def parse_command_line_parameters():
           ' otu picker [default: %default]')
 
     parser.set_defaults(otu_picking_method='cdhit',
-        similarity=0.96, trie_prefilter=False,
+        similarity=0.97, trie_prefilter=False,
         prefix_length=50, suffix_length=50,
         clustering_algorithm='furthest',max_e_value=1e-10)
 
