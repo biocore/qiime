@@ -21,6 +21,12 @@ from os.path import split
 from qiime.parse import parse_otus
 from cogent.parse.tree import DndParser, PhyloNode
 from cogent.core.alignment import Alignment
+from cogent.app.blast import Blastall
+from cogent.parse.blast import BlastResult
+from cogent.parse.fasta import MinimalFastaParser
+from cogent.util.misc import remove_files
+from cogent.app.formatdb import build_blast_db_from_fasta_path,\
+    build_blast_db_from_fasta_file
 from cogent import LoadSeqs
 
 class TreeMissingError(IOError):
@@ -253,3 +259,67 @@ def load_qiime_config():
     
 qiime_config = load_qiime_config()
 # End functions for handling qiime_config file
+
+# The qiime_blast_seqs function should evetually move to PyCogent,
+# but I want to test that it works for all of the QIIME functionality that
+# I need first. -Greg
+def qiime_blast_seqs(seqs,
+     blast_constructor=Blastall,
+     blast_program='blastn',
+     blast_db=None,
+     refseqs=None,
+     refseqs_fp=None,
+     blast_mat_root=None,
+     params={},
+     WorkingDir=None,
+     seqs_per_blast_run=1000,
+     HALT_EXEC=False):
+    """Blast list of sequences.
+
+    seqs: a list (or object with list-like interace) of (seq_id, seq) 
+     tuples (e.g., the output of MinimalFastaParser)
+    
+    """
+    assert blast_db or refseqs_fp or refseqs, \
+     'Must provide either a blast_db or a fasta '+\
+     'filepath containing sequences to build one.'
+     
+    if refseqs_fp:
+        blast_db, db_files_to_remove =\
+         build_blast_db_from_fasta_path(refseqs_fp,output_dir=WorkingDir)
+    elif refseqs:
+        blast_db, db_files_to_remove =\
+         build_blast_db_from_fasta_file(refseqs,output_dir=WorkingDir)  
+    else:
+        db_files_to_remove = []
+    
+    params["-d"] = blast_db
+    params["-p"] = blast_program
+           
+    blast_app = blast_constructor(
+                   params=params,
+                   blast_mat_root=blast_mat_root,
+                   InputHandler='_input_as_seq_id_seq_pairs',
+                   WorkingDir=WorkingDir,
+                   SuppressStderr=True,
+                   HALT_EXEC=HALT_EXEC)
+
+    current_seqs = []
+    blast_results = BlastResult([])
+    for seq in seqs:
+        current_seqs.append(seq)
+        if len(current_seqs) % seqs_per_blast_run == 0:
+            if blast_results:
+                blast_results.update(\
+                 BlastResult(blast_app(current_seqs)['StdOut']))
+            else:
+                blast_results = BlastResult(blast_app(current_seqs)['StdOut'])
+            current_seqs = []
+    
+    # clean-up run: blast the remaining sequences
+    blast_results.update(\
+     BlastResult(blast_app(current_seqs)['StdOut']))
+
+    remove_files(db_files_to_remove)
+    
+    return blast_results
