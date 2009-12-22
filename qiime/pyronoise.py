@@ -76,7 +76,7 @@ Example usage:
                           '[default: %default]')
     parser.add_option('-k','--keep_intermediates', action='store_true',\
                           dest='keep',\
-                          help='Print information during execution -- '+\
+                          help='Do not delete intermediate PyroNoise files -- '+\
                           'useful for debugging [default: %default]')
 
      # Define defaults
