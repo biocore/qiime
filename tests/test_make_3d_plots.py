@@ -281,14 +281,9 @@ exp_kin_full=\
 '@hsvcolor {maroon} 0.0 100.0 50.2', \
 '@hsvcolor {olive} 60.0 100.0 50.2', '@hsvcolor {purple} 300.0 100.0 50.2', \
 '@hsvcolor {red} 0.0 100.0 100.0', '@hsvcolor {silver} 0.0 0.0 75.3', \
-<<<<<<< .mine
 '@hsvcolor {teal} 180.0 100.0 50.2', \
 '@hsvcolor {yellow} 60.0 100.0 100.0', '@hsvcolor {white} 180.0 0.0 100.0', \
 '@group {Day1 (n=3)} collapsible', \
-=======
-'@hsvcolor {teal} 180.0 100.0 50.2', \
-'@hsvcolor {yellow} 60.0 100.0 100.0', '@group {Day1 (n=3)} collapsible', \
->>>>>>> .r333
 '@balllist color=blue radius=0.00299549315 alpha=0.75 dimension=3 master={points} nobutton', \
 '{Sample1} -0.219044992 0.079674486 0.09233683\n{Sample2} -0.042258081 0.000204041 0.024837603\n{Sample3} 0.080504323 -0.212014503 -0.088353435', \
 '@labellist color=blue radius=0.00299549315 alpha=0.75 dimension=3 master={labels} nobutton', \
@@ -317,14 +312,9 @@ exp_kin_full=\
 '@hsvcolor {maroon} 0.0 100.0 50.2', \
 '@hsvcolor {olive} 60.0 100.0 50.2', '@hsvcolor {purple} 300.0 100.0 50.2', \
 '@hsvcolor {red} 0.0 100.0 100.0', '@hsvcolor {silver} 0.0 0.0 75.3', \
-<<<<<<< .mine
 '@hsvcolor {teal} 180.0 100.0 50.2', \
 '@hsvcolor {yellow} 60.0 100.0 100.0', '@hsvcolor {white} 180.0 0.0 100.0', \
 '@group {Day1 (n=3)} collapsible', \
-=======
-'@hsvcolor {teal} 180.0 100.0 50.2', \
-'@hsvcolor {yellow} 60.0 100.0 100.0', '@group {Day1 (n=3)} collapsible', \
->>>>>>> .r333
 '@balllist color=blue radius=0.00213963796429 alpha=0.75 dimension=3 master={points} nobutton', \
 '{Sample1} -0.156460708571 0.0682924165714 0.09233683\n{Sample2} -0.0301843435714 0.000174892285714 0.024837603\n{Sample3} 0.0575030878571 -0.181726716857 -0.088353435', \
 '@labellist color=blue radius=0.00213963796429 alpha=0.75 dimension=3 master={labels} nobutton', \
@@ -423,14 +413,9 @@ exp_kin_partial=\
 '@hsvcolor {maroon} 0.0 100.0 50.2', \
 '@hsvcolor {olive} 60.0 100.0 50.2', '@hsvcolor {purple} 300.0 100.0 50.2', \
 '@hsvcolor {red} 0.0 100.0 100.0', '@hsvcolor {silver} 0.0 0.0 75.3', \
-<<<<<<< .mine
 '@hsvcolor {teal} 180.0 100.0 50.2', \
 '@hsvcolor {yellow} 60.0 100.0 100.0', '@hsvcolor {white} 180.0 0.0 100.0',\
 '@group {Day1 (n=3)} collapsible', \
-=======
-'@hsvcolor {teal} 180.0 100.0 50.2', \
-'@hsvcolor {yellow} 60.0 100.0 100.0', '@group {Day1 (n=3)} collapsible', \
->>>>>>> .r333
 '@balllist color=blue radius=0.00299549315 alpha=0.75 dimension=3 master={points} nobutton', \
 '{Sample1} -0.219044992 0.079674486 0.09233683\n{Sample2} -0.042258081 0.000204041 0.024837603\n{Sample3} 0.080504323 -0.212014503 -0.088353435', \
 '@labellist color=blue radius=0.00299549315 alpha=0.75 dimension=3 master={labels} nobutton', \
