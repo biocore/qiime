@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 __author__ = "Justin Kuczynski"
-__copyright__ = "Copyright 2009, the PyCogent Project" #consider project name
-__credits__ = ["Rob Knight", "Justin Kuczynski"] #remember to add yourself if you make changes
+__copyright__ = "Copyright 2009, the PyCogent Project"
+__credits__ = ["Rob Knight", "Justin Kuczynski"] 
 __license__ = "GPL"
 __version__ = "0.1"
 __maintainer__ = "Justin Kuczynski"
@@ -106,12 +106,24 @@ class CogentTreeBuilder(TreeBuilder):
         return FunctionWithParams.__call__(self, result_path=result_path,
             log_path=log_path, *args, **kwargs)
 
+
+usage_str = """usage: %prog [options] {-i INPUT_ALIGNMENT_FILEPATH}
+
+[] indicates optional input (order unimportant) 
+{} indicates required input (order unimportant) 
+
+Example usage:
+
+python make_phylogeny.py -i align/rep_set_aligned.fa -o align/rep_set_aligned.tre -l align/rep_set_tree.log 
+"""
 def parse_command_line_parameters():
     """ Parses command line arguments """
-    usage =\
-     'usage: %prog [options] -i input_alignment_filepath'
     version = 'Version: %prog ' +  __version__
-    parser = OptionParser(usage=usage, version=version)
+    parser = OptionParser(usage=usage_str, version=version)
+
+    parser.add_option('-i','--input_fp',action='store',\
+          type='string',dest='input_fp',help='Path to read '+\
+          'input alignment [REQUIRED]')
 
     parser.add_option('-t','--tree_method',action='store',\
           type='string',dest='tree_method',help='Method for tree building'+\
@@ -124,14 +136,16 @@ def parse_command_line_parameters():
     parser.add_option('-l','--log_fp',action='store',\
           type='string',dest='log_fp',help='Path to store '+\
           'log file [default: No log file created.]')
-    
-    parser.add_option('-i','--input_fp',action='store',\
-          type='string',dest='input_fp',help='Path to read '+\
-          'input alignment [Required.]')
 
     parser.set_defaults(tree_method='fasttree',result_fp=None)
 
     opts,args = parser.parse_args()
+
+    required_options = ['input_fp']
+    for option in required_options:
+        if eval('opts.%s' % option) == None:
+            parser.error('Required option --%s omitted.' % option) 
+
     if not (opts.tree_method in tree_method_constructors or
             opts.tree_method in tree_module_names):
         parser.error(\
