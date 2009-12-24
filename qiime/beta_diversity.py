@@ -186,7 +186,7 @@ def multiple_file_beta(options, args):
     file_names = os.listdir(options.input_path)
     file_names = [fname for fname in file_names if not fname.startswith('.')]
     if not os.path.exists(options.output_path):
-        os.mkdir(options.output_path)
+        os.makedirs(options.output_path)
     try:
         metric_f = get_nonphylogenetic_metric(metric)
     except AttributeError:

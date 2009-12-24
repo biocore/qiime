@@ -19,7 +19,7 @@ from copy import copy
 from itertools import ifilter
 from optparse import OptionParser
 from os.path import splitext, split
-from os import mkdir
+from os import makedirs
 from itertools import imap
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.parse.mothur import parse_otu_list as mothur_parse
@@ -1046,7 +1046,7 @@ if __name__ == "__main__":
     
     output_dir = opts.output_dir or otu_picking_method + '_picked_otus'
     try:
-        mkdir(output_dir)
+        makedirs(output_dir)
     except OSError:
         # output_dir exists
         pass

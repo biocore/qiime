@@ -25,7 +25,7 @@ import sys
 
 def multiple_file_upgma(options, args):
     if not os.path.exists(options.output_path):
-        os.mkdir(options.output_path)
+        os.makedirs(options.output_path)
     upgma_script = qiime.hierarchical_cluster.__file__
     file_names = os.listdir(options.input_path)
     file_names = [fname for fname in file_names if not fname.startswith('.')]

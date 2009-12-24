@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 __author__ = "Justin Kuczynski"
-__copyright__ = "Copyright 2009, the PyCogent Project" #consider project name
-__credits__ = ["Justin Kuczynski"] #remember to add yourself
+__copyright__ = "Copyright 2009, the PyCogent Project"
+__credits__ = ["Justin Kuczynski"]
 __license__ = "GPL"
 __version__ = "0.1"
 __maintainer__ = "Justin Kuczynski"
@@ -36,7 +36,7 @@ from qiime.util import FunctionWithParams
 
 def main(input_dir, output_dir, example_filepath=None):
     if not os.path.exists(options.output_path):
-        os.mkdir(options.output_path)
+        os.makedirs(options.output_path)
     file_names = os.listdir(input_dir)
     file_names = [fname for fname in file_names if not fname.startswith('.')]
      

@@ -242,7 +242,7 @@ if __name__ == '__main__':
         maker.rarefy_to_file(opts.output_path, opts.small_included)
     else:
         if not os.path.exists(opts.output_path):
-            os.mkdir(opts.output_path)
+            os.makedirs(opts.output_path)
         maker = RarefactionMaker(otu_path, opts.min, opts.max,
             opts.step, opts.num_reps)
         maker.rarefy_to_files(opts.output_path, opts.small_included)

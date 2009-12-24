@@ -29,8 +29,6 @@ def main(options):
     tree_file_names = [fname for fname in tree_file_names if not \
         fname.startswith('.')]
 
-    if not os.path.exists(options.output_dir):
-        os.mkdir(options.output_dir)
     support_trees = []
     for fname in tree_file_names:
         f = open(os.path.join(options.support_dir, fname))
@@ -164,5 +162,5 @@ def parse_command_line_parameters():
 if __name__ == '__main__':
     opts,args = parse_command_line_parameters()
     if not os.path.exists(opts.output_dir):
-    	os.mkdir(opts.output_dir)
+    	os.makedirs(opts.output_dir)
     main(opts)
