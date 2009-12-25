@@ -483,7 +483,8 @@ def group_distances(mapping_file,dmatrix_file,fields,dir_prefix='',\
     return single_field, paired_field, distance_matrix
 
 def monte_carlo_group_distances(mapping_file, dmatrix_file, prefs, \
-    dir_prefix = '', subdir_prefix='monte_carlo_group_distances'):
+    dir_prefix = '', subdir_prefix='monte_carlo_group_distances',\
+    default_iters=10, fields=None):
     """Calculate Monte Carlo stats for specified group distances.
     
     Specifically:
@@ -503,6 +504,13 @@ def monte_carlo_group_distances(mapping_file, dmatrix_file, prefs, \
     except OSError:     #raised if dir exists
         pass
     
+    if prefs is None:
+        if fields is None:
+            field = mapping[0][0]
+            prefs = {'MONTE_CARLO_GROUP_DISTANCES':{field:default_iters}}
+        else:
+            field_to_iters = dict([(f,default_iters) for f in fields])
+            prefs = {'MONTE_CARLO_GROUP_DISTANCES':field_to_iters}
 
 
     for field, num_iters in prefs['MONTE_CARLO_GROUP_DISTANCES'].items():
@@ -629,7 +637,10 @@ def main(args,args_parsed=None):
     else:
         opts,arg_list = parse_cmdline_params(args)        
     
-
+    if opts.prefs_file:
+        prefs = eval(open(opts.prefs_file, 'U').read())
+    else:
+        prefs=None
     
     fields = opts.fields
     if fields is not None:
@@ -694,7 +705,8 @@ def main(args,args_parsed=None):
         monte_carlo_group_distances(mapping_file=opts.mapping_file,\
             dmatrix_file=opts.distance_matrix_file,\
             prefs=prefs, \
-            dir_prefix = opts.dir_path)
+            dir_prefix = opts.dir_path,\
+            fields=fields)
             
 if __name__ == "__main__":
     main(argv)
