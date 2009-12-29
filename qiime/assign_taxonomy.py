@@ -521,9 +521,9 @@ Assign taxonomy of sequences in inseqs.fasta (-i) using the RDP classifier
  python assign_taxonomy.py -i inseqs.fasta -r refseqs.fasta -t id_to_taxonomy.txt -m rdp -o custom_rdp
  
 Assign taxonomy of sequences in inseqs.fasta (-i) using BLAST
- (default) against provided refseqs and taxon assignments (-r, -t) 
+ (-m) against provided refseqs and taxon assignments (-r, -t) 
  respectively. Output files will be written to blast_assigned_taxonomy (default).
- python assign_taxonomy.py -i inseqs.fasta -r at_refseqs.fasta -t at_id_to_taxonomy.txt 
+ python assign_taxonomy.py -i inseqs.fasta -r at_refseqs.fasta -t at_id_to_taxonomy.txt -m blast
 """
 
 def parse_command_line_parameters():
@@ -541,7 +541,6 @@ def parse_command_line_parameters():
          'list. For assignment with rdp, each assigned taxonomy must be '
          'exactly 6 levels deep. [default: %default; REQUIRED when method is '
          'blast]')
-
 
     parser.add_option('-r', '--reference_seqs_fp',
         help='Path to reference sequences.  For assignment with blast, these '
@@ -572,7 +571,7 @@ def parse_command_line_parameters():
 
     parser.set_defaults(
         verbose=False,
-        assignment_method='blast',
+        assignment_method='rdp',
         confidence=0.80,
         e_value=0.001,
         )
