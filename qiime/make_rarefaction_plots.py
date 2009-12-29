@@ -20,7 +20,9 @@ Matplotlib
 Numpy
 
 Example 1: Create rarefaction plot from mapping file and rarefaction data
-Usage: python make_rarefaction_plots.py -m mappingfile.txt -r rare1.txt,rare2.txt -p pref1,pref2 -i .png
+Usage: python make_rarefaction_plots.py -m mappingfile.txt -r rare1.txt,rare2.txt
+or
+python make_rarefaction_plots.py -m mappingfile.txt -r rare1.txt,rare2.txt -p SampleID -i png -d 150
 
 """
 
@@ -115,15 +117,6 @@ def parse_rarefaction(lines):
                 # fix so that float works on all vals except n/a and leave n/as in
                 # then transpose matrix, get rid of na's, average
                 result.append(map(str, entries[1:]))
-                '''temp = []
-                for e in entries[1:]:
-                    try:
-                        e = float(e)
-                    except(ValueError):
-                        e = str(e)
-                    temp.append(e)
-                result.append(temp)
-                #print temp'''
                 
             row_headers.append(entries[0])
     rare_mat_raw = array(result)
@@ -304,7 +297,7 @@ def _make_cmd_parser():
     parser.add_option('-p', '--prefs', \
         help='name of columns to make rarefaction graphs of, comma delimited no spaces. Use \'ALL\' command to make graphs of all metadata columns. [default: %default]', default='ALL')
     parser.add_option('-i', '--imagetype', \
-        help='extension for image type choose from (.jpg, .gif, .png, .svg, .pdf). [default: %default]', default='.png')
+        help='extension for image type choose from (jpg, gif, png, svg, pdf). [default: %default]', default='png')
     #parser.add_option('-p', '--prefs', \
     #    help='name of preferences file')
     parser.add_option('-d', '--resolution', \
@@ -386,7 +379,7 @@ def _get_script_dir(script_path):
     return script_dir
 
 def _process_prefs(options):    
-    dir_path = "."
+    dir_path = options.dir_path
     if dir_path and not dir_path.endswith('/'):
         dir_path = dir_path + '/'
     dir_path = dir_path + 'rarefaction_graphs'
@@ -402,6 +395,7 @@ def _process_prefs(options):
     data = {}
     
     data['map'] = parse.parse_map(get_map(options,data), return_header=True, strip_quotes=True)
+    data['map'][0][0] = [h.strip('#').strip(' ') for h in data['map'][0][0]]
     data['rarefactions'] = get_rarefactions(options,data)
     data['prefs'] = get_prefs(options, data)
     data['output_path'] = data_file_dir_path
