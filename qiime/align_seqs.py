@@ -212,7 +212,7 @@ class PyNastAligner(Aligner):
         """
         _params = {
             'min_pct': 75.0,
-            'min_len': 1000,
+            'min_len': 150,
             'blast_db': None,
             'template_filepath': None,
             'pairwise_alignment_method': 'pair_hmm',
@@ -349,7 +349,7 @@ def parse_command_line_parameters():
           
 
     parser.set_defaults(verbose=False, alignment_method='pynast',\
-     pairwise_alignment_method='blast', min_percent_id=75.0,min_length=1000,\
+     pairwise_alignment_method='blast', min_percent_id=75.0,min_length=150,\
      blast_db=None,blast_executable=qiime_config['blastall_fp'])
 
     opts,args = parser.parse_args()

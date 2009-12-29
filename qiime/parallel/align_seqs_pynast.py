@@ -140,7 +140,7 @@ def parse_command_line_parameters():
     parser.add_option('-e','--min_length',action='store',\
           type='int',help='Minimum sequence '+\
           'length to include in alignment [default: %default]',\
-          default=1000)
+          default=150)
           
     parser.add_option('-p','--min_percent_id',action='store',\
           type='float',help='Minimum percent '+\
