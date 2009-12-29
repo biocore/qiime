@@ -148,7 +148,6 @@ def ave_seqs_per_sample(matrix, seqs_per_samp, sampleIDs):
             n = n + 1
         temp_ser.append(s/n)
         ave_ser[sampleIDs[i]] = temp_ser
-    #print ave_ser
     return ave_ser
 
 def is_max_category_ops(mapping, mapping_category):
@@ -215,15 +214,10 @@ def make_error_series(rare_mat, sampleIDs, mapping, mapping_category):
         except(ValueError):
             continue
             print o
-            #for s in pre_err[o]:
-            #    print "length: " , len(s)
-            #    print "type: " , type(s)
         
     return collapsed_ser, err_ser, ops, cols, syms
 
-def plot_rarefaction_noave(rare_mat, xaxisvals, sampleIDs, mapping, mapping_category):
-    xaxis = [float(x) for x in set(xaxisvals)]
-    xaxis.sort()
+def plot_rarefaction_noave(rare_mat, xaxis, sampleIDs, mapping, mapping_category):
     plt.gcf().set_size_inches(8,6)    
     plt.axes([.05,.1,.6,.8])
     dummy = [0 for x in xaxis]
@@ -232,7 +226,7 @@ def plot_rarefaction_noave(rare_mat, xaxisvals, sampleIDs, mapping, mapping_cate
     
     yseries = []
     for k in rare_mat.keys():
-        yseries.append([float(v) for v in rare_mat[k] if v != 'n/a' and v != 0])
+        yseries.append([float(v) for v in rare_mat[k] if v != 'NA' and v != 0])
         
     for s in yseries:
         plt.plot(xaxis[:len(s)], s)
@@ -242,10 +236,7 @@ def plot_rarefaction_noave(rare_mat, xaxisvals, sampleIDs, mapping, mapping_cate
     ax.set_xlabel('Sequences Per Sample')
     return plt
 
-def plot_rarefaction(rare_mat, xaxisvals, sampleIDs, mapping, mapping_category):
-    xaxis = [float(x) for x in set(xaxisvals)]
-    xaxis.sort()
-
+def plot_rarefaction(rare_mat, xaxis, sampleIDs, mapping, mapping_category):
     plt.gcf().set_size_inches(10,6)    
     plt.axes([.05,.1,.45,.8])
     dummy = [0 for x in xaxis]
@@ -257,7 +248,7 @@ def plot_rarefaction(rare_mat, xaxisvals, sampleIDs, mapping, mapping_category):
     
     for o in ops:
         try:
-            yaxis[o] = [float(v) for v in yaxis[o] if v != 0]
+            yaxis[o] = [float(v) for v in yaxis[o] if v != 'NA' and v != 0]
             l = o
             if len(o) > 20:
                 l = l[:20] + '...'
@@ -276,9 +267,11 @@ def plot_rarefaction(rare_mat, xaxisvals, sampleIDs, mapping, mapping_category):
     ax.set_xlabel('Sequences Per Sample')
     return plt
 
-def save_plot(plot, filenm, rtype, title, itype, res):
+def save_plot(plot, filenm, rtype, title, itype, res, xmax, ymax):
     plot.title(title)
     ax = plot.gca()
+    ax.set_xlim((0,xmax))
+    ax.set_ylim((0,ymax))
     ax.set_ylabel("Rarefaction Type: " + rtype.split('.')[0])
     plot.savefig(filenm +'.'+itype, format=itype, dpi=res)
 
@@ -428,7 +421,13 @@ def make_plots(data):
         os.makedirs(file_path)
         try:
             rare_mat_trans, seqs_per_samp, sampleIDs = parse_rarefaction(data['rarefactions'][r])
+            
+            xaxisvals = [float(x) for x in set(seqs_per_samp)]
+            xaxisvals.sort()
+            
             rare_mat_ave = ave_seqs_per_sample(rare_mat_trans, seqs_per_samp, sampleIDs)
+            xmax = max(xaxisvals) + (xaxisvals[len(xaxisvals)-1] - xaxisvals[len(xaxisvals)-2])
+            ymax = max([max(s) for s in rare_mat_ave.values()]) + 5
     
             if data['prefs'] == 'ALL':
                 for p in data['map'][0][0]: #headerline
@@ -437,11 +436,11 @@ def make_plots(data):
                         #print "Category \'" + p + "\' only has one option, rarefaction graph was not created."
                         continue
                     if is_max:
-                        pr = plot_rarefaction_noave(rare_mat_ave, seqs_per_samp, sampleIDs, data['map'], p)
+                        pr = plot_rarefaction_noave(rare_mat_ave, xaxisvals, sampleIDs, data['map'], p)
                     else:
-                        pr = plot_rarefaction(rare_mat_ave, seqs_per_samp, sampleIDs, data['map'], p)
+                        pr = plot_rarefaction(rare_mat_ave, xaxisvals, sampleIDs, data['map'], p)
                     filenm = file_path + '/'+ p
-                    save_plot(pr, filenm, r, r.split('.')[0] +':'+ p, data['imagetype'], data['resolution'])
+                    save_plot(pr, filenm, r, r.split('.')[0] +':'+ p, data['imagetype'], data['resolution'], xmax, ymax)
                     plt.clf()
             else:
                 for p in data['prefs']:
@@ -450,11 +449,11 @@ def make_plots(data):
                         #print "Category \'" + p + "\' only has one option, rarefaction graph was not created."
                         continue
                     if is_max:
-                        pr = plot_rarefaction_noave(rare_mat_ave, seqs_per_samp, sampleIDs, data['map'], p)
+                        pr = plot_rarefaction_noave(rare_mat_ave, xaxisvals, sampleIDs, data['map'], p)
                     else:
-                        pr = plot_rarefaction(rare_mat_ave, seqs_per_samp, sampleIDs, data['map'], p)
+                        pr = plot_rarefaction(rare_mat_ave, xaxisvals, sampleIDs, data['map'], p)
                     filenm = file_path + '/'+ p
-                    save_plot(pr, filenm, r, r.split('.')[0] +': '+ p, data['imagetype'], data['resolution'])
+                    save_plot(pr, filenm, r, r.split('.')[0] +': '+ p, data['imagetype'], data['resolution'], xmax, ymax)
                     plt.clf()
         except():
             os.removedirs(file_path)
