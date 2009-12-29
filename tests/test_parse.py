@@ -3,7 +3,7 @@
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2009, the PyCogent Project" #consider project name
-__credits__ = ["Rob Knight", "Justin Kuczynski"] #remember to add yourself
+__credits__ = ["Rob Knight", "Justin Kuczynski", "Greg Caporaso"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "0.1"
 __maintainer__ = "Rob Knight"
@@ -17,7 +17,7 @@ from qiime.parse import (parse_map, group_by_field, group_by_fields,
     parse_distmat, parse_rarefaction_rec, parse_rarefaction, parse_coords, 
     otu_file_to_lineages, parse_otus, otu_table_to_envs, parse_sequences_by_otu,
     make_envs_dict, fields_to_dict, parse_rarefaction_fname, envs_to_otu_counts,
-    otu_counts_to_matrix, envs_to_matrix)
+    otu_counts_to_matrix, envs_to_matrix, parse_qiime_parameters)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -379,6 +379,23 @@ s03\tc\t5""".splitlines()
         self.assertEqual(all_sampleids, ['a','b','c'])
         self.assertEqual(all_otus, ['s01','s02','s03'])
         self.assertEqual(matrix, array([[3,4,0],[1,0,0],[0,0,5]]))
+        
+    def test_parse_qiime_parameters(self):
+        """parse_qiime_parameters: functions with valid input """
+        lines = ["#Don't edit this file!",\
+                 "pick_otus:similarity\t0.94",\
+                 "pick_otus:otu_picking_method\tcdhit",\
+                 "align_seqs:verbose",\
+                 "assign_taxonomy:use_rdp\ttRuE",\
+                 "assign_taxonomy:something\tNone",\
+                 "",\
+                 "#some_script:fake_parameter\t99.0"]
+        actual = parse_qiime_parameters(lines)
+        expected = {'pick_otus':\
+                     {'similarity':'0.94', 'otu_picking_method':'cdhit'},\
+                    'assign_taxonomy':\
+                     {'use_rdp':None}}
+        self.assertEqual(actual,expected)
 
 if __name__ =='__main__':
     main()

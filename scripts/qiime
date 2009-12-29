@@ -15,8 +15,8 @@ from optparse import OptionParser
 from subprocess import call, check_call, CalledProcessError
 from os import makedirs
 from os.path import split, splitext
-
 from qiime.util import load_qiime_config
+from qiime.parse import parse_qiime_parameters
 # This is the Qiime workflow script, and will hopefully get to the 
 # point where it is the primary script that users interact with.
 
@@ -25,10 +25,21 @@ usage_str = """usage: %prog [options] {-i INPUT_FP -o OUTPUT_DIR}
 [] indicates optional input (order unimportant)
 {} indicates required input (order unimportant)
 
-This is a first pass at the workflow script, and is currently not very 
-flexible. A limited subset of Qiime's functionality is available, and 
-users have little (if any) control over the parameters to the individual 
-steps. In other words, THIS SCRIPT IS IN EARLY DEVELOPMENT STATUS.
+WARNING: THE INTERFACE FOR THE WORKFLOW SCRIPT WAS CHANGED SIGNIFICANTLY
+ON 29 DEC 2009. REVIEW THE NEW Qiime/qiime_parameters.txt FILE TO SEE HOW
+TO SPECIFY PARAMETERS FOR THE INDIVIDUAL STEPS. COPY THAT FILE AND EDIT THE
+COPY TO DEFINE CUSTOM ANALYSES.
+
+REQUIRED:
+ You must edit the following parameters in a custom parameters file:
+ align_seqs:template_fp
+ filter_alignment:lane_mask_fp 
+ 
+ These are the values that you would typically pass as --template_fp to 
+  align_seqs.py and lane_mask_fp to filter_alignment.py, respectively.
+
+
+This script is STILL in early development status.
 
 Example usage:
 
@@ -38,20 +49,20 @@ The following command will start an analysis on inseq1.fasta (-i), which is a
  corresponding to the preliminary data preparation, are applied:
   1) Pick OTUs with cdhit at similarity of 0.97;
   2) Pick a representative set with the most_abundant method;
-  3) Align the representative set with PyNAST (specify template alignment 
-   with -t);
-  4) Assign taxonomy with blast (default, specify db and id_to_tax with -r 
-   and -x, respectively) or with the RDP classifier (pass -d);
+  3) Align the representative set with PyNAST (REQUIRED: SPECIFY TEMPLATE 
+   ALIGNMENT with align_seqs:template_fp in the parameters file);
+  4) Assign taxonomy with RDP classifier;
   5) Filter the alignment prior to tree building - remove positions which 
-   are all gaps, and specified as 0 in the lanemask (specify lanemask with -m);
+   are all gaps, and specified as 0 in the lanemask (REQUIRED: SPECIFY LANEMASK 
+   with filter_alignment:lane_mask_fp in the parameters file);
   6) Build a phylogenetic tree with FastTree;
   7) Build an OTU table.
  
- All output files will be written to the directory specified by -o, or 
+ All output files will be written to the directory specified by -o, and 
  subdirectories as appropriate. The is currently no support for the data 
  analysis steps using the workflow script.
 
-qiime -i /Users/caporaso/data/qiime_test_data/workflow/inseqs1.fasta -o /Users/caporaso/data/qiime_test_data/workflow/wf1/
+qiime -i /Users/caporaso/data/qiime_test_data/workflow/inseqs1.fasta -o /Users/caporaso/data/qiime_test_data/workflow/wf1/ -p /Users/caporaso/data/qiime_test_data/workflow/custom_parameters.txt
 """
 qiime_config = load_qiime_config()
 
@@ -65,55 +76,43 @@ def parse_command_line_parameters():
             help='the input fasta file [REQUIRED]')
     parser.add_option('-o','--output_dir',\
             help='the output directory [REQUIRED]')
+            
+    parser.add_option('-p','--parameter_fp',\
+     help='path to the parameter file '+\
+          '[default: %default]')
 
     parser.add_option('-v','--verbose',action='store_true',\
         dest='verbose',help='Print information during execution -- '+\
         'useful for debugging [default: %default]')
-    
-    # parallel not supported yet!    
-    # parser.add_option('-p','--parallel',action='store_true',\
-    #     dest='parallel',help='Use parallel scripts where applicable'+\
-    #     ' [default: %default]')
-    
+        
     parser.add_option('-f','--force',action='store_true',\
         dest='force',help='Force overwrite of existing output directory'+\
         ' (note: existing files in output_dir will not be removed)'+\
         ' [default: %default]')
+        
     parser.add_option('-w','--print_only',action='store_true',\
         dest='print_only',help='Print the commands but don\'t call them -- '+\
         'useful for debugging [default: %default]')
-    parser.add_option('-d','--rdp_assign_taxonomy',action='store_true',\
-        help='assign taxonomy with RDP classifier'+\
-        ' [default: %default; assigns with blast]')
-        
-    parser.add_option('-t','--template_aln_fp',\
-        help='template alignment for PyNAST alignment '+\
-        '[default: %default]')
-    parser.add_option('-m','--lanemask_fp',\
-        help='lanemask for filtering alignments prior to '+\
-        'tree building [default: %default]')
-    parser.add_option('-r','--tax_ref_db_fp',\
-        help='sequence databast used for blast'+\
-        'taxonomy assignments [default: %default]')
-    parser.add_option('-x','--id_to_tax_fp',\
-        help='seq_id to taxonomy mapping file used for blast'+\
-        'taxonomy assignments [default: %default]')
+    
+    # parallel not supported yet!    
+    #   SHOULD MAKE THIS -s FOR SERIAL/SINGLE PROC MODE -- PARALLEL WILL
+    #   BE THE DEFAULT ONCE IT'S READY TO GO.
+    # parser.add_option('-p','--parallel',action='store_true',\
+    #     dest='parallel',help='Use parallel scripts where applicable'+\
+    #     ' [default: %default]')
 
     # Set default values here if they should be other than None
     parser.set_defaults(verbose=False,print_only=False,parallel=False,
-     template_aln_fp=qiime_config['template_aln_fp'],\
-     lanemask_fp=qiime_config['lanemask_fp'],\
-     tax_ref_db_fp=qiime_config['tax_ref_db_fp'],\
-     id_to_tax_fp=qiime_config['id_to_tax_fp'],\
-     rdp_assign_taxonomy=False)
+     parameter_fp=qiime_config['qiime_parameter_fp'])
 
     required_options = ['input_fp', 'output_dir']
 
     opts,args = parser.parse_args()
-        
-    for option in required_options:
-        if eval('opts.%s' % option) == None:
-            parser.error('Required option --%s omitted.' % option)
+    if opts.parameter_fp == None:
+        # required options are only required if there is no parameters file
+        for option in required_options:
+            if eval('opts.%s' % option) == None:
+                parser.error('Required option --%s omitted.' % option)
 
     return opts,args
     
@@ -129,7 +128,15 @@ def call_commands_serially(commands,status_update_callback):
     for c in commands:
         for e in c:
             status_update_callback('%s\n%s' % e)
-            check_call(e[1].split())
+            try:
+                check_call(e[1].split())
+            except CalledProcessError, err:
+                msg = "\n\n*** ERROR RAISED DURING STEP: %s\n" % e[0] +\
+                 "Command run was:\n %s\n" % e[1] +\
+                 "Command returned exit status: %d" % err.returncode
+                print msg
+                exit(-1)
+                
 
 def print_to_stdout(s):
     print s
@@ -137,26 +144,19 @@ def print_to_stdout(s):
 def no_status_updates(s):
     pass
 
-WORKFLOW_DEFAULT_PARAMETERS = {
-    input_fp=None,\
-    output_dir=None,\
-    template_aln_fp=None,\
-    lanemask_fp=None,\
-    tax_ref_db_fp=None,\
-    id_to_tax_fp=None,\
-    command_handler=None,\
-    qiime_config=qiime_config,\
-    rdp_assign_taxonomy=False,\
-    parallel=False}
+def get_params_str(params):
+    result = []
+    for param_id, param_value in params.items():
+        result.append('--%s' % (param_id))
+        if param_value != None:
+            result.append(param_value)
+    return ' '.join(result)
 
-def run_qiime_data_preparation(input_fp, output_dir, template_aln_fp, \
-    lanemask_fp, tax_ref_db_fp, id_to_tax_fp, command_handler, \
-    qiime_config=qiime_config, rdp_assign_taxonomy=False,\
-    parallel=False,status_update_callback=print_to_stdout):
+def run_qiime_data_preparation(input_fp, output_dir, command_handler,\
+    params, qiime_config, parallel=False,\
+    status_update_callback=print_to_stdout):
     """ Run the data preparation steps of Qiime 
     """
-    params = WORKFLOW_DEFAULT_PARAMETERS
-    params.update(parameters)
     
     # Prepare some variables for the later steps
     input_dir, input_filename = split(input_fp)
@@ -166,92 +166,131 @@ def run_qiime_data_preparation(input_fp, output_dir, template_aln_fp, \
     qiime_home = qiime_config['qiime_home']
     qiime_dir = qiime_config['qiime_dir']
     
-    # Build the OTU picking command
-    pick_otu_dir = '%s/cdhit_picked_otus/' % output_dir
+    # Prep the OTU picking command
+    pick_otu_dir = '%s/%s_picked_otus' % \
+     (output_dir, params['pick_otus']['otu_picking_method'])
     otu_fp = '%s/%s_otus.txt' % (pick_otu_dir,input_basename)
-    pick_otus_cmd = '%s %s/pick_otus.py -i %s -s 0.97 -n 100 -o %s' %\
-     (python_exe_fp, qiime_dir, input_fp, pick_otu_dir)
+    try:
+        params_str = get_params_str(params['pick_otus'])
+    except KeyError:
+        params_str = ''
+    # Build the OTU picking command
+    pick_otus_cmd = '%s %s/pick_otus.py -i %s -o %s %s' %\
+     (python_exe_fp, qiime_dir, input_fp, pick_otu_dir, params_str)
     commands.append([('Pick OTUs', pick_otus_cmd)])
     
-    # Build the Representative set picking command
-    rep_set_dir = '%s/rep_set/' % output_dir
+    # Prep the representative set picking command
+    rep_set_dir = '%s/rep_set/' % pick_otu_dir
     try:
         makedirs(rep_set_dir)
     except OSError:
         pass
     rep_set_fp = '%s/%s_rep_set.fasta' % (rep_set_dir,input_basename)
     rep_set_log_fp = '%s/%s_pick_rep_set.log' % (rep_set_dir,input_basename)
-    pick_rep_set_cmd = '%s %s/pick_rep_set.py -i %s -f %s -l %s -o %s' %\
-     (python_exe_fp, qiime_dir, otu_fp, input_fp, rep_set_log_fp, rep_set_fp)
+    try:
+        params_str = get_params_str(params['pick_rep_set'])
+    except KeyError:
+        params_str = ''
+    # Build the representative set picking command
+    pick_rep_set_cmd = '%s %s/pick_rep_set.py -i %s -f %s -l %s -o %s %s' %\
+     (python_exe_fp, qiime_dir, otu_fp, input_fp, rep_set_log_fp,\
+      rep_set_fp, params_str)
     commands.append([('Pick representative set', pick_rep_set_cmd)])
     
-    # Set script file paths based on whether the run is in parallel or not
-    if parallel:
-        align_seqs_fp = '%s/parallel/align_seqs_pynast.py' % qiime_dir
-        if rdp:
-            assign_taxonomy_fp = '%s/parallel/assign_taxonomy_rdp.py' \
-             % qiime_dir
-        else:
-            assign_taxonomy_fp = '%s/parallel/assign_taxonomy_blast.py' \
-             % qiime_dir
-    else:
-        align_seqs_fp = '%s/align_seqs.py -m pynast' % qiime_dir
-        if rdp_assign_taxonomy:
-            assign_taxonomy_fp = '%s/assign_taxonomy.py -m rdp' % qiime_dir
-        else:
-            assign_taxonomy_fp = '%s/assign_taxonomy.py -m blast' % qiime_dir
-            
-        
-    # Build the pynast alignment command
-    min_len = 150
-    pynast_out_dir = '%s/pynast_e%d' % (output_dir, min_len)
-    aln_fp = '%s/%s_rep_set_aligned.fasta' % (pynast_out_dir,input_basename)
-    align_seqs_cmd = '%s %s -i %s -o %s -t %s -e %d' %\
-     (python_exe_fp, align_seqs_fp, rep_set_fp, pynast_out_dir, \
-      template_aln_fp, min_len)
+    # # Set script file paths based on whether the run is in parallel or not
+    # if parallel:
+    #     align_seqs_fp = '%s/parallel/align_seqs_pynast.py' % qiime_dir
+    #     if rdp:
+    #         assign_taxonomy_fp = '%s/parallel/assign_taxonomy_rdp.py' \
+    #          % qiime_dir
+    #     else:
+    #         assign_taxonomy_fp = '%s/parallel/assign_taxonomy_blast.py' \
+    #          % qiime_dir
+    # else:
+    align_seqs_fp = '%s/align_seqs.py -m pynast' % qiime_dir
+    assign_taxonomy_fp = '%s/assign_taxonomy.py' % qiime_dir
     
+    
+    # Prep the pynast alignment command
+    pynast_dir = '%s/%s_aligned_seqs' % \
+     (rep_set_dir,params['align_seqs']['alignment_method'])
+    aln_fp = '%s/%s_rep_set_aligned.fasta' % (pynast_dir,input_basename)
+    try:
+        params_str = get_params_str(params['align_seqs'])
+    except KeyError:
+        params_str = ''
+    # Build the pynast alignment command
+    align_seqs_cmd = '%s %s -i %s -o %s %s' %\
+     (python_exe_fp, align_seqs_fp, rep_set_fp, pynast_dir, params_str)
+    
+    
+    # Prep the taxonomy assignment command
+    assign_taxonomy_dir = '%s/%s_assigned_taxonomy' %\
+     (rep_set_dir,params['assign_taxonomy']['assignment_method'])
+    taxonomy_fp = '%s/%s_rep_set_tax_assignments.txt' % \
+     (assign_taxonomy_dir,input_basename)
+    try:
+        params_str = get_params_str(params['assign_taxonomy'])
+    except KeyError:
+        params_str = ''
     # Build the taxonomy assignment command
-    if rdp_assign_taxonomy:
-        assign_taxonomy_dir = '%s/rdp_assigned_taxonomy/' % output_dir
-        taxonomy_fp = '%s/%s_rep_set_tax_assignments.txt' % \
-         (assign_taxonomy_dir,input_basename)
-        assign_taxonomy_cmd = '%s %s -o %s -i %s' %\
-         (python_exe_fp, assign_taxonomy_fp, assign_taxonomy_dir, rep_set_fp)
-    else:
-        assign_taxonomy_dir = '%s/blast_assigned_taxonomy/' % output_dir
-        taxonomy_fp = '%s/%s_rep_set_tax_assignments.txt' % \
-         (assign_taxonomy_dir,input_basename)
-        assign_taxonomy_cmd = '%s %s -o %s -i %s -r %s -t %s' %\
-         (python_exe_fp, assign_taxonomy_fp, assign_taxonomy_dir, rep_set_fp,\
-          tax_ref_db_fp, id_to_tax_fp)
+    assign_taxonomy_cmd = '%s %s -o %s -i %s %s' %\
+     (python_exe_fp, assign_taxonomy_fp, assign_taxonomy_dir,\
+      rep_set_fp, params_str)
+    
     
     # Append commands which can be run simulataneously in parallel
     commands.append([('Align sequences', align_seqs_cmd),\
                      ('Assign taxonomy',assign_taxonomy_cmd)])
     
-    # Build the alignment filtering command
-    phylogeny_dir = '%s/phylogeny/' % output_dir
+    
+    # Prep the alignment filtering command
     filtered_aln_fp = '%s/%s_rep_set_aligned_pfiltered.fasta' %\
-     (phylogeny_dir,input_basename)
-    filter_alignment_cmd = '%s %s/filter_alignment.py -o %s -i %s -m %s' %\
-     (python_exe_fp, qiime_dir, phylogeny_dir, aln_fp, lanemask_fp)
+     (pynast_dir,input_basename)
+    try:
+        params_str = get_params_str(params['filter_alignment'])
+    except KeyError:
+        params_str = ''
+    # Build the alignment filtering command
+    filter_alignment_cmd = '%s %s/filter_alignment.py -o %s -i %s %s' %\
+     (python_exe_fp, qiime_dir, pynast_dir, aln_fp, params_str)
     commands.append([('Filter alignment', filter_alignment_cmd)])
     
-    # Build the tree building command
+    
+    # Prep the tree building command
+    phylogeny_dir = '%s/%s_phylogeny' %\
+     (pynast_dir, params['make_phylogeny']['tree_method'])
+    try:
+        makedirs(phylogeny_dir)
+    except OSError:
+        pass
     tree_fp = '%s/%s_rep_set.tre' % (phylogeny_dir,input_basename)
     log_fp = '%s/%s_rep_set_phylogeny.log' % (phylogeny_dir,input_basename)
-    make_phylogeny_cmd = '%s %s/make_phylogeny.py -i %s -o %s -l %s' %\
-     (python_exe_fp, qiime_dir, filtered_aln_fp, tree_fp, log_fp)
+    try:
+        params_str = get_params_str(params['make_phylogeny'])
+    except KeyError:
+        params_str = ''
+    # Build the tree building command
+    make_phylogeny_cmd = '%s %s/make_phylogeny.py -i %s -o %s -l %s %s' %\
+     (python_exe_fp, qiime_dir, filtered_aln_fp, tree_fp, log_fp,\
+     params_str)
     
-    # Build the OTU table building command
-    otu_table_dir = '%s/otu_table/' % output_dir
+    
+    # Prep the OTU table building command
+    otu_table_dir = '%s/otu_table/' % assign_taxonomy_dir
     try:
         makedirs(otu_table_dir)
     except OSError:
         pass
     otu_table_fp = '%s/%s_otu_table.txt' % (otu_table_dir,input_basename)
-    make_otu_table_cmd = '%s %s/make_otu_table.py -i %s -t %s -o %s' %\
-     (python_exe_fp, qiime_dir, otu_fp, taxonomy_fp, otu_table_fp)
+    try:
+        params_str = get_params_str(params['make_otu_table'])
+    except KeyError:
+        params_str = ''
+    # Build the OTU table building command
+    make_otu_table_cmd = '%s %s/make_otu_table.py -i %s -t %s -o %s %s' %\
+     (python_exe_fp, qiime_dir, otu_fp, taxonomy_fp, otu_table_fp, params_str)
+    
     
     # Append commands which can be run simulataneously in parallel
     commands.append([('Build phylogenetic tree', make_phylogeny_cmd),\
@@ -269,14 +308,21 @@ if __name__ == "__main__":
     output_dir = opts.output_dir
     verbose = opts.verbose
     print_only = opts.print_only
-    template_aln_fp = opts.template_aln_fp
-    lanemask_fp = opts.lanemask_fp
-    tax_ref_db_fp = opts.tax_ref_db_fp
-    id_to_tax_fp = opts.id_to_tax_fp
-    rdp_assign_taxonomy = opts.rdp_assign_taxonomy
+    # template_aln_fp = opts.template_aln_fp
+    # lanemask_fp = opts.lanemask_fp
+    # tax_ref_db_fp = opts.tax_ref_db_fp
+    # id_to_tax_fp = opts.id_to_tax_fp
+    # rdp_assign_taxonomy = opts.rdp_assign_taxonomy
     
     ## REMEMBER TO GRAB opts.parallel WHEN IT BECOMES SUPPORTED.
     parallel = False
+    
+    try:
+        parameter_f = open(opts.parameter_fp)
+    except IOError:
+        raise IOError,\
+         "Can't open parameters file (%s). Does it exist? Do you have read access?"\
+         % opts.parameter_fp
     
     try:
         makedirs(output_dir)
@@ -286,8 +332,8 @@ if __name__ == "__main__":
         else:
             # Since the analysis can take quite a while, I put this check
             # in to help users avoid overwriting previous output.
-            print "Output directory already exists. Please choose '+\
-             'a different directory, or force overwrite with -f."
+            print "Output directory already exists. Please choose "+\
+             "a different directory, or force overwrite with -f."
             exit(1)
         
     if print_only:
@@ -300,9 +346,10 @@ if __name__ == "__main__":
     else:
         status_update_callback = no_status_updates
     
-    run_qiime_data_preparation(input_fp, output_dir, template_aln_fp,\
-     lanemask_fp,tax_ref_db_fp, id_to_tax_fp, command_handler, qiime_config, \
-     rdp_assign_taxonomy=rdp_assign_taxonomy, \
-     status_update_callback=status_update_callback, \
-     parallel=parallel)
+    run_qiime_data_preparation(input_fp, output_dir,\
+     command_handler=command_handler,\
+     params=parse_qiime_parameters(parameter_f),\
+     qiime_config=qiime_config,\
+     parallel=parallel,\
+     status_update_callback=print_to_stdout)
     

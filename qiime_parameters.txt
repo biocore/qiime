@@ -1,19 +1,54 @@
 # qiime_parameters.txt
-# WARNING: DO NOT EDIT OR DELETE Qiime/qiime_parameters.txt
+# WARNING: DO NOT EDIT OR DELETE Qiime/qiime_parameters.txt. Users should copy this file and edit copies of it.
 
-pick_otus:input_seqs_filepath
+# OTU picker parameters
 pick_otus:otu_picking_method	cdhit
 pick_otus:clustering_algorithm	furthest
 pick_otus:max_cdhit_memory	400
-pick_otus:output_dir	cdhit_picked_otus
 pick_otus:refseqs_fp
 pick_otus:blast_db
 pick_otus:similarity	0.97
 pick_otus:max_e_value	1e-10
 pick_otus:prefix_prefilter_length
-pick_otus:trie_prefilter	False
-pick_otus:prefix_length	50
-pick_otus:suffix_length	50
+pick_otus:trie_prefilter
+pick_otus:prefix_length
+pick_otus:suffix_length
+
+# Representative set picker parameters
+pick_rep_set:rep_set_picking_method	most_abundant
+pick_rep_set:sort_by	otu
+
+# Multiple sequence alignment parameters
+align_seqs:template_fp
+align_seqs:alignment_method	pynast
+align_seqs:pairwise_alignment_method	blast
+align_seqs:blast_db
+align_seqs:blast_executable
+align_seqs:min_length	150
+align_seqs:min_percent_id	75.0
+
+# Alignment filtering (prior to tree-building) parameters
+filter_alignment:lane_mask_fp
+filter_alignment:allowed_gap_frac	 0.999999
+
+# Taxonomy assignment parameters
+assign_taxonomy:id_to_taxonomy_fp
+assign_taxonomy:reference_seqs_fp
+assign_taxonomy:assignment_method	rdp
+assign_taxonomy:blast_db
+assign_taxonomy:confidence	0.8
+assign_taxonomy:e_value	0.001
+
+# Phylogenetic tree building parameters
+make_phylogeny:tree_method	fasttree
+
+# OTU table construction parameters
+make_otu_table:taxonomy
+
+# THE FOLLOWING VALUES ARE NOT CURRENTLY USED ANYWHERE
+#make_otu_heatmap_html:otu_count_fname
+#make_otu_heatmap_html:num_otu_hits	5
+#make_otu_heatmap_html:dir_path=
 #summarize_taxa:otu_file
 #summarize_taxa:output_file
 #summarize_taxa:level
@@ -25,43 +60,6 @@ pick_otus:suffix_length	50
 #make_pie_charts:sample_flag	False
 #make_pie_charts:num	20
 #make_pie_charts:dir-prefix
-pick_rep_set:input_file
-pick_rep_set:fasta_file
-pick_rep_set:rep_set_picking_method	most_abundant
-pick_rep_set:result_fp	<input_sequences_filepath>_rep_set.fasta
-pick_rep_set:log_fp
-pick_rep_set:sort_by	otu
-align_seqs:input_fasta_fp
-align_seqs:template_fp	none
-align_seqs:alignment_method	pynast
-align_seqs:pairwise_alignment_method	blast
-align_seqs:blast_db
-align_seqs:blast_executable
-align_seqs:output_dir	pynast_aligned
-align_seqs:min_length	1000
-align_seqs:min_percent_id	75.0
-filter_alignment:input_fasta_file
-filter_alignment:output_dir
-filter_alignment:lane_mask_fp
-filter_alignment:allowed_gap_frac	 0.999999
-assign_taxonomy:input_seqs_fp
-assign_taxonomy:id_to_taxonomy_fp	none
-assign_taxonomy:reference_seqs_fp	none
-assign_taxonomy:assignment_method	blast
-assign_taxonomy:blast_db	none
-assign_taxonomy:confidence	0.8
-assign_taxonomy:e_value	0.001
-assign_taxonomy:output_dir	blast_assigned_taxonomy
-make_phylogeny:input_fp
-make_phylogeny:tree_method	fasttree
-make_phylogeny:result_fp	<input_sequences_filename>.tre
-make_phylogeny:log_fp
-make_otu_table:input_otu_fname
-make_otu_table:taxonomy
-make_otu_table:output_fname	stdout
-#make_otu_heatmap_html:otu_count_fname
-#make_otu_heatmap_html:num_otu_hits	5
-#make_otu_heatmap_html:dir_path=
 #alpha_rarefaction:input_path
 #alpha_rarefaction:output_path
 #alpha_rarefaction:min

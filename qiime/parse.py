@@ -3,7 +3,7 @@
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2009, the PyCogent Project" #consider project name
-__credits__ = ["Rob Knight", "Daniel McDonald"] #remember to add yourself
+__credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "0.1"
 __maintainer__ = "Rob Knight"
@@ -406,6 +406,34 @@ def envs_to_matrix(lines):
     """Reads envs lines into matrix of OTU counts, plus row/col"""
     return otu_counts_to_matrix(envs_to_otu_counts(lines))
 
+# Start functions for handling qiime_parameters file
+def parse_qiime_parameters(lines):
+    """ Return 2D dict of params (and values, if applicable) which should be on
+    """
+    result = {}
+    for line in lines:
+        line = line.strip()
+        if line and not line.startswith('#'):
+            fields = line.split()
+            script_id, parameter_id = fields[0].split(':')
+            try:
+                value = fields[1]
+            except IndexError:
+                continue
+                
+            if value.upper() == 'FALSE' or value.upper() == 'NONE':
+                continue
+            elif value.upper() == 'TRUE':
+                value = None
+            else:
+                pass
+            
+            try:
+                result[script_id][parameter_id] = value
+            except KeyError:
+                result[script_id] = {parameter_id:value}
+    return result
+# End functions for handling qiime_parameters file
 
 if __name__ == '__main__':
     from sys import argv
