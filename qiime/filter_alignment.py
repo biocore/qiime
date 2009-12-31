@@ -89,7 +89,7 @@ def apply_lane_mask_and_gap_filter(fastalines, lane_mask, allowed_gap_frac=1-eps
             return
 
     # random temporary file for first-pass results
-    tmpfilename = "".join(sample(lowercase, 20)) + ".tmp"
+    tmpfilename = "/tmp/"+"".join(sample(lowercase, 20)) + ".tmp"
     try:
         tmpfile = open(tmpfilename,'w')
     except IOError:
