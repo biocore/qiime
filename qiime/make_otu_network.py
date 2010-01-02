@@ -40,10 +40,10 @@ def parse_map(lines):
     cat_by_sample = {}
     sample_by_cat = defaultdict(list)
     meta_dict = {}
-    
+    category_labels = []
     for l in lines:
         if l.startswith("#SampleID"):
-            category_labels = l.strip().split("\t")[1:-1]
+            category_labels = l.strip().split("\t")[1:-1]		
             labels.extend(category_labels)
             node_labels.extend(category_labels)
             label_list = [[] for c in category_labels]
@@ -80,6 +80,7 @@ def parse_otu_sample(lines, num_meta, meta_dict):
     red_nodes = defaultdict(int)
     red_node_file_str = []
     red_edge_file_str = []
+    multi = defaultdict(list)
     edge_from = []
     to = []
     otu_dc = defaultdict(int)
@@ -87,10 +88,15 @@ def parse_otu_sample(lines, num_meta, meta_dict):
     sample_dc = defaultdict(int)
     sample_num_seq = defaultdict(int)
     con_list = []
-    
+    label_list = []
+    is_con = False
+    nodes = []
     for l in lines:
         if l.startswith('#OTU'):
-            label_list = l.strip().split('\t')[1:-1]
+            label_list = l.strip().split('\t')[1:]
+            if label_list[-1] == "Consensus Lineage":
+                label_list = label_list[:-1]
+                is_con = True
             continue
         if l.startswith('#'):
             continue
@@ -98,10 +104,16 @@ def parse_otu_sample(lines, num_meta, meta_dict):
         data = l.strip().split('\t')
         
         to_otu = data[0]
-        con = ':'.join(map(strip,data[-1].split(';')[:6]))
+        con = ''
+        if is_con:
+            con = ':'.join(map(strip,data[-1].split(';')[:6]))
+            con = con.replace(" ","_")
+            con = con.replace("\t","_")
+            counts = map(float,data[1:-1])
+        else:
+            counts = map(float,data[1:])
         if con not in con_list:
             con_list.append(con)
-        counts = map(int,data[1:-1])
         non_zero_counts = nonzero(counts)[0]
         degree = len(non_zero_counts)
         weighted_degree = sum(counts)
@@ -116,27 +128,27 @@ def parse_otu_sample(lines, num_meta, meta_dict):
 
         otu_dc[degree] += 1
         degree_counts[degree] += 1
-            
-        samples = [label_list[i] for i in non_zero_counts]
-
+        samples = [label_list[int(i)] for i in non_zero_counts]
         for i, s in enumerate(samples):
+            if s not in meta_dict.keys():
+                continue
             con_by_sample[s].update(samples[0:i])
             con_by_sample[s].update(samples[i+1:])
             
-            sample_num_seq[s] += int(data[non_zero_counts[i]+1])
+            sample_num_seq[s] += float(data[int(non_zero_counts[i])+1])
             
             edge_from.append(s)
             to.append(to_otu)
             meta = meta_dict[s]
             meta[1] += 1
             edge_file_str.append('\t'.join([s, to_otu, \
-                            data[non_zero_counts[i]+1], con, meta[0]]))
-
+                            data[int(non_zero_counts[i])+1], con, meta[0]]))
+            multi[to_otu].append((s,float(data[int(non_zero_counts[i])+1]), meta[0]))
             if len(non_zero_counts) == 1:
-                red_nodes[(label_list[non_zero_counts[0]],meta[0])] += degree
+                red_nodes[(label_list[int(non_zero_counts[0])],meta[0])] += degree
             else:
                 red_edge_file_str.append('\t'.join([s, to_otu, \
-                                    data[non_zero_counts[i]+1], con, meta[0]]))
+                                    data[int(non_zero_counts[i])+1], con, meta[0]]))
 
     num_otu_nodes = len(node_file_str)
     for s in meta_dict:
@@ -147,6 +159,7 @@ def parse_otu_sample(lines, num_meta, meta_dict):
         weighted_degree = sample_num_seq[s]
         node_file_line = '\t'.join([s,s,'user_node',str(meta[1]),\
                                     str(weighted_degree),'other',meta[0]])
+        nodes.append('\t'.join([s,'user_node']))
         node_file_str.append(node_file_line)
         red_node_file_str.append(node_file_line)
 
@@ -155,7 +168,22 @@ def parse_otu_sample(lines, num_meta, meta_dict):
         red_node_file_line.extend(['otu']*num_meta)
         red_node_file_str.append('\t'.join(red_node_file_line))
         red_edge_file_str.append('\t'.join([n[0],'@'+n[0],"1","missed",n[1]]))
-
+    multi_red = defaultdict(list)
+    
+    for i,(o,s) in enumerate(multi.items()):
+        samples = [samp for samp,w,m in s]
+        samples.sort()
+        samples = tuple(samples)
+        new = [list(bla) for bla in s]
+        new.sort()
+        if samples not in multi_red:
+            multi_red[samples] = new
+        else:
+            for j,li in enumerate(multi_red[samples]):
+                multi_red[samples][j][1]+=new[j][1]
+    for i,(k,v) in enumerate(multi_red.items()):
+        nodes.append('\t'.join([str(i),'otu_node']))
+            
     return con_by_sample, node_file_str, edge_file_str, red_node_file_str,\
            red_edge_file_str,otu_dc, degree_counts,sample_dc
 
@@ -166,6 +194,8 @@ def get_num_con_cat(con_by_sample,cat_by_sample):
     for sample, connects in con_by_sample.items():
         sample_categories = cat_by_sample[sample]
         for s_con in connects:
+            if s_con not in cat_by_sample.keys():
+                continue
             for s_cat, con_cat in zip(sample_categories,cat_by_sample[s_con]):
                 if s_cat == con_cat:
                     num_con_cat[s_cat[0]] += 0.5
@@ -177,7 +207,6 @@ def get_num_cat(sample_by_cat):
     num_cat = defaultdict(int)
     for cat,samples in sample_by_cat.items():
         num_cat[cat[0]] += (len(samples)*(len(samples)-1))/2
-
     return num_cat
 
 def make_table_file(lines, labels, dir_path,filename):
@@ -224,7 +253,6 @@ def make_stats_files(sample_dc,otu_dc,degree_counts,num_con_cat, num_con,\
     num_cat_pairs_line = "NUM SAME CAT PAIRS: %s"
     num_con_pairs_line = "NUM CONNECTED PAIRS: %s" % int(num_con)
     
-    #print (len(cat_by_sample)*(len(cat_by_sample)-1)) - num_con
     for cat, num in num_con_cat.items():
         filename = "stats/real_cat_stats_%s.txt" % cat
         output = open(os.path.join(dir_path,filename) , 'w')
@@ -360,16 +388,16 @@ def _process_prefs(options):
 
 
 
-    map_lines = open(options.map_file).readlines()
-    otu_sample_lines = open(options.counts_file).readlines()
+    map_lines = open(options.map_file,'U').readlines()
+    otu_sample_lines = open(options.counts_file, 'U').readlines()
     
     cat_by_sample, sample_by_cat, num_meta, meta_dict, labels, node_labels,\
                    label_list = parse_map(map_lines)
-
     con_by_sample, node_file_str, edge_file_str,red_node_file_str,\
         red_edge_file_str, otu_dc, degree_counts,sample_dc, \
         = parse_otu_sample(otu_sample_lines, num_meta, meta_dict)
 
+    
     num_con_cat, num_con = get_num_con_cat(con_by_sample,cat_by_sample)
     num_cat = get_num_cat(sample_by_cat)
 
