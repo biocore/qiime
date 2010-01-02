@@ -38,6 +38,7 @@ from time import strftime
 from random import choice, randrange
 from matplotlib.font_manager import FontProperties
 import os
+import shutil
 matplotlib_version = re.split("[^\d]", matplotlib.__version__)
 matplotlib_version_info = tuple([int(i) for i in matplotlib_version if \
                           i.isdigit()])
@@ -335,13 +336,13 @@ def get_counts(lines, label,do_sample, num_categories, dir_path):
         if line.startswith("#") or line == "\n":
             continue
         if line.startswith("Taxon"):
-            labels = line.strip().split("Consensus Lineage")[0].split("\t")[1:-1]
+            labels = line.strip().split("Consensus Lineage")[0].split("\t")[1:]
             continue
         counts = line.strip().split("\t")
         taxonomy = counts[0]
         split_label = [i.strip('"') for i in taxonomy.strip().split(";")]
         taxonomy = ';'.join(split_label)
-        level_counts.append((sum(map(int,map(float,counts[1:]))), taxonomy,
+        level_counts.append((sum(map(float,counts[1:])), taxonomy,
                             '<br>'.join(split_label)))
     all_sum = sum([c_over[0] for c_over in level_counts])
     fracs_labels_other,fracs_labels,all_counts, other_cat, red, other_frac= \
@@ -362,7 +363,7 @@ def get_counts(lines, label,do_sample, num_categories, dir_path):
                 split_label = [j.strip('"') for j in taxonomy.strip().split(";")]
                 taxonomy = ';'.join(split_label)
 
-                c = int(float(counts[i+1]))
+                c = float(counts[i+1])
                 if c > 0:
                     total += c
                     sample_counts.append((c,taxonomy,'<br>'.join(split_label)))
@@ -469,19 +470,16 @@ def create_dir(dir_path,qiime_dir,plot_type):
         os.mkdir(javascript_path)
     except OSError:     #raised if dir exists
         pass
-    js_out = open(os.path.join(javascript_path,'/overlib.js'),'w')
-    js_out.write(open(os.path.join(qiime_dir,'js/overlib.js')).read())
-    js_out.close()
+    shutil.copyfile(os.path.join(qiime_dir,'js/overlib.js'),\
+								os.path.join(javascript_path,'overlib.js'))
     css_path = \
             os.path.join(dir_path,'css')
     try:
         os.mkdir(css_path)
     except OSError:     #raised if dir exists
         pass
-    css_out = open(os.path.join(css_path,'/qiime_style.css'),'w')
-    css_out.write(open(os.path.join(qiime_dir,'css/qiime_style.css')).read())
-    css_out.close()
-
+    shutil.copyfile(os.path.join(qiime_dir,'css/qiime_style.css'),\
+	                                os.path.join(css_path,'qiime_style.css'))
     return dir_path
 
 
