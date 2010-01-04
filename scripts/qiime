@@ -108,11 +108,9 @@ def parse_command_line_parameters():
     required_options = ['input_fp', 'output_dir']
 
     opts,args = parser.parse_args()
-    if opts.parameter_fp == None:
-        # required options are only required if there is no parameters file
-        for option in required_options:
-            if eval('opts.%s' % option) == None:
-                parser.error('Required option --%s omitted.' % option)
+    for option in required_options:
+        if eval('opts.%s' % option) == None:
+            parser.error('Required option --%s omitted.' % option)
 
     return opts,args
 
@@ -163,5 +161,5 @@ if __name__ == "__main__":
      params=parse_qiime_parameters(parameter_f),\
      qiime_config=qiime_config,\
      parallel=parallel,\
-     status_update_callback=print_to_stdout)
+     status_update_callback=status_update_callback)
     
