@@ -295,9 +295,7 @@ def parse_command_line_parameters():
          'list. [default: %default; REQUIRED when method is blast_fragments]')
 
     parser.add_option('-r', '--reference_seqs_fp',
-        help='Path to reference sequences.  For assignment with blast, these '
-        'are used to generate a blast database. For assignment with rdp, they '
-        'are used as training sequences for the classifier '
+        help='Path to reference sequences (used to build a blast db).'
         '[default: %default; REQUIRED when method is blast_fragments]')
         
     parser.add_option('-m','--chimera_detection_method',\
