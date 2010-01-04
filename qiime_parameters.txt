@@ -45,6 +45,12 @@ make_phylogeny:tree_method	fasttree
 # OTU table construction parameters
 make_otu_table:taxonomy
 
+# Beta diversity parameters
+beta_diversity:metric
+
+# Make 3D plot parameters
+make_3d_plots:custom_axes
+
 # THE FOLLOWING VALUES ARE NOT CURRENTLY USED ANYWHERE
 #make_otu_heatmap_html:otu_count_fname
 #make_otu_heatmap_html:num_otu_hits	5
@@ -76,10 +82,6 @@ make_otu_table:taxonomy
 #multi_alpha_diversity:output_path
 #multi_alpha_diversity:metrics
 #multi_alpha_diversity:tree_path
-#single_beta_diversity:input_path
-#single_beta_diversity:output_path
-#single_beta_diversity:metrics
-#single_beta_diversity:tree_path
 #make_distance_histograms:distance_matrix_file
 #make_distance_histograms:mapping_file
 #make_distance_histograms:prefs_file
@@ -91,18 +93,10 @@ make_otu_table:taxonomy
 #multi_beta_diversity:output_path
 #multi_beta_diversity:metrics
 #multi_beta_diversity:tree_path
-#principal_coordinates:input_path
-#principal_coordinates:output_path
 #make_2d_plots:coord_fname
 #make_2d_plots:map_fname
 #make_2d_plots:colorby
 #make_2d_plots:dir_path
-#make_3d_plots:coord_fname
-#make_3d_plots:map_fname
-#make_3d_plots:colorby
-#make_3d_plots:custom_axes
-#make_3d_plots:prefs_path
-#make_3d_plots:dir_path
 #single_hierarchical_cluster:input_path
 #single_hierarchical_cluster:output_path
 #multi_hierarchical_cluster:input_path

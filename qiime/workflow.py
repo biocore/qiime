@@ -4,6 +4,7 @@ from __future__ import division
 from subprocess import call, check_call, CalledProcessError
 from os import makedirs
 from os.path import split, splitext
+from qiime.parse import parse_map
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2009, The QIIME Project"
@@ -212,5 +213,119 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,\
     
     # Call the command handler on the list of commands
     command_handler(commands,status_update_callback)
+    
+def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,\
+    output_dir, command_handler, params, qiime_config, tree_fp=None,\
+    parallel=False, status_update_callback=print_to_stdout):
+    """ Run the data preparation steps of Qiime 
+    
+        The steps performed by this function are:
+          1) Compute beta diversity distance matrices;
+          2) Generate 3D plots.
+    
+    """   
+    # Prepare some variables for the later steps
+    otu_table_dir, otu_table_filename = split(otu_table_fp)
+    otu_table_basename, otu_table_ext = splitext(otu_table_filename)
+    commands = []
+    python_exe_fp = qiime_config['python_exe_fp']
+    qiime_home = qiime_config['qiime_home']
+    qiime_dir = qiime_config['qiime_dir']
+    
+    mapping_file_header = parse_map(open(mapping_fp),return_header=True)[0][0]
+    mapping_fields = ','.join(mapping_file_header)
+    
+    beta_diversity_metric = params['beta_diversity']['metric']
+    
+    # Prep the beta-diversity command
+    beta_div_fp = '%s/%s_dm.txt' % (output_dir, beta_diversity_metric)
+    try:
+        params_str = get_params_str(params['beta_diversity'])
+    except KeyError:
+        params_str = ''
+    if tree_fp:
+        params_str = '%s -t %s' % (params_str,tree_fp)
+    # Build the beta-diversity command
+    beta_div_cmd = '%s %s/beta_diversity.py -i %s -o %s %s' %\
+     (python_exe_fp, qiime_dir, otu_table_fp, beta_div_fp, params_str)
+    commands.append([('Beta Diversity', beta_div_cmd)])
+    
+    # Prep the principle coordinates command
+    pc_fp = '%s/%s_pc.txt' % (output_dir, beta_diversity_metric)
+    try:
+        params_str = get_params_str(params['principal_coordinates'])
+    except KeyError:
+        params_str = ''
+    # Build the principle coordinates command
+    pc_cmd = '%s %s/principal_coordinates.py -i %s -o %s %s' %\
+     (python_exe_fp, qiime_dir, beta_div_fp, pc_fp, params_str)
+    commands.append([('Principle coordinates', pc_cmd)])
+    
+    # Prep the 3d prefs file generator command
+    prefs_fp = '%s/3d_prefs.txt' % output_dir
+    try:
+        params_str = get_params_str(params['make_3d_plot_prefs_file'])
+    except KeyError:
+        params_str = ''
+    # Build the 3d prefs file generator command
+    prefs_cmd = '%s %s/../scripts/make_3d_plot_prefs_file.py -b %s -p %s %s' %\
+     (python_exe_fp, qiime_dir, mapping_fields, prefs_fp, params_str)
+    commands.append([('Build prefs file', prefs_cmd)])
+    
+    # Prep the continuous-coloring 3d plots command
+    continuous_3d_dir = '%s/%s_3d_continuous/' %\
+     (output_dir, beta_diversity_metric)
+    try:
+        makedirs(continuous_3d_dir)
+    except OSError:
+        pass
+    try:
+        params_str = get_params_str(params['make_3d_plots'])
+    except KeyError:
+        params_str = ''
+    # Build the continuous-coloring 3d plots command
+    continuous_3d_command = \
+     '%s %s/make_3d_plots.py -p %s -i %s -o %s -m %s %s' %\
+      (python_exe_fp, qiime_dir, prefs_fp, pc_fp, continuous_3d_dir,\
+       mapping_fp, params_str)
+    
+    # Prep the discrete-coloring 3d plots command
+    discrete_3d_dir = '%s/%s_3d_discrete/' %\
+     (output_dir, beta_diversity_metric)
+    try:
+        makedirs(discrete_3d_dir)
+    except OSError:
+        pass
+    try:
+        params_str = get_params_str(params['make_3d_plots'])
+    except KeyError:
+        params_str = ''
+    # Build the discrete-coloring 3d plots command
+    discrete_3d_command = \
+     '%s %s/make_3d_plots.py -b %s -i %s -o %s -m %s %s' %\
+      (python_exe_fp, qiime_dir, mapping_fields, pc_fp, discrete_3d_dir,\
+       mapping_fp, params_str)
+       
+    commands.append([\
+      ('Make 3D plots (continuous coloring)',continuous_3d_command),\
+      ('Make 3D plots (discrete coloring)',discrete_3d_command,)])
+    
+    # Call the command handler on the list of commands
+    command_handler(commands,status_update_callback)
+    
+def run_qiime_alpha_rarefaction(input_fp, output_dir, \
+    command_handler, params, qiime_config, parallel=False,\
+    status_update_callback=print_to_stdout):
+    """ Run the data preparation steps of Qiime 
+    
+        The steps performed by this function are:
+          1) Generate rarefied OTU tables;
+          2) Compute alpha diversity metrics for each rarefied OTU table;
+          3) Collate alpha diversity results;
+          4) Generate alpha rarefaction plots.
+    
+    """
+    raise NotImplementedError, "Coming soon to a QIIME distribution near you."
+    
 ## End task-specific workflow functions
     
