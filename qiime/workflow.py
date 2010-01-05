@@ -5,6 +5,7 @@ from subprocess import call, check_call, CalledProcessError
 from os import makedirs
 from os.path import split, splitext
 from qiime.parse import parse_map
+from qiime.util import compute_seqs_per_library_stats
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2009, The QIIME Project"
@@ -220,8 +221,15 @@ def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,\
     """ Run the data preparation steps of Qiime 
     
         The steps performed by this function are:
-          1) Compute beta diversity distance matrices;
-          2) Generate 3D plots.
+         1) Compute a beta diversity distance matrix;
+         2) Peform a principle coordinates analysis on the result of
+          Step 1;
+         3) Generate a 3D prefs file for optimized coloring of continuous
+          variables;
+         4) Generate a 3D plot for all mapping fields with colors
+          optimized for continuous data;
+         5) Generate a 3D plot for all mapping fields with colors
+          optimized for discrete data.
     
     """   
     # Prepare some variables for the later steps
@@ -313,9 +321,9 @@ def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,\
     # Call the command handler on the list of commands
     command_handler(commands,status_update_callback)
     
-def run_qiime_alpha_rarefaction(input_fp, output_dir, \
-    command_handler, params, qiime_config, parallel=False,\
-    status_update_callback=print_to_stdout):
+def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,\
+    output_dir, command_handler, params, qiime_config, tree_fp=None,\
+    num_steps=10, parallel=False, status_update_callback=print_to_stdout):
     """ Run the data preparation steps of Qiime 
     
         The steps performed by this function are:
@@ -325,7 +333,98 @@ def run_qiime_alpha_rarefaction(input_fp, output_dir, \
           4) Generate alpha rarefaction plots.
     
     """
-    raise NotImplementedError, "Coming soon to a QIIME distribution near you."
+    # Prepare some variables for the later steps
+    otu_table_dir, otu_table_filename = split(otu_table_fp)
+    otu_table_basename, otu_table_ext = splitext(otu_table_filename)
+    commands = []
+    python_exe_fp = qiime_config['python_exe_fp']
+    qiime_home = qiime_config['qiime_home']
+    qiime_dir = qiime_config['qiime_dir']
+    
+    alpha_diversity_metrics = params['alpha_diversity']['metrics'].split(',')
+    
+    # Prep the rarefaction command
+    min_count, max_count, median_count, mean_count =\
+     compute_seqs_per_library_stats(open(otu_table_fp))
+    step = int((median_count - min_count) / num_steps)
+    median_count = int(median_count)
+    
+    rarefaction_dir = '%s/rarefaction_%d_%d/' %\
+     (output_dir,min_count,median_count)
+    try:
+        makedirs(rarefaction_dir)
+    except OSError:
+        pass
+    try:
+        params_str = get_params_str(params['rarefaction'])
+    except KeyError:
+        params_str = ''
+    # Build the rarefaction command
+    rarefaction_cmd = \
+     '%s %s/rarefaction.py -i %s -m %s -x %s -s %s -o %s %s' %\
+     (python_exe_fp, qiime_dir, otu_table_fp, min_count, median_count, \
+      step, rarefaction_dir, params_str)
+    commands.append([('Alpha rarefaction', rarefaction_cmd)])
+    
+    # Prep the alpha diversity command
+    alpha_diversity_dir = '%s/alpha_div_%d_%d/' %\
+     (output_dir,min_count,median_count)
+    try:
+        makedirs(alpha_diversity_dir)
+    except OSError:
+        pass
+    try:
+        params_str = get_params_str(params['alpha_diversity'])
+    except KeyError:
+        params_str = ''
+    # Build the alpha diversity command
+    alpha_diversity_cmd = "%s %s/alpha_diversity.py -i %s -o %s -t %s %s" %\
+     (python_exe_fp, qiime_dir, rarefaction_dir, alpha_diversity_dir, \
+      tree_fp, params_str)
+    commands.append(\
+     [('Alpha diversity on rarefied OTU tables',alpha_diversity_cmd)])
+     
+    # Prep the alpha diversity collation command
+    # python $qdir/collate_alpha.py -i Fasting_Alpha_Metrics/ -o Fasting_Alpha_Collated/
+    alpha_collated_dir = '%s/alpha_div_collated_%d_%d/' %\
+     (output_dir,min_count,median_count)
+    try:
+        makedirs(alpha_collated_dir)
+    except OSError:
+        pass
+    try:
+        params_str = get_params_str(params['collate_alpha'])
+    except KeyError:
+        params_str = ''
+    # Build the alpha diversity collation command
+    alpha_collated_cmd = '%s %s/collate_alpha.py -i %s -o %s %s' %\
+     (python_exe_fp, qiime_dir, alpha_diversity_dir, \
+      alpha_collated_dir, params_str)
+    commands.append([('Collate alpha',alpha_collated_cmd)])
+      
+    # Prep the make rarefaction plot command(s)
+    rarefaction_plot_dir = '%s/alpha_rarefaction_plots_%d_%d/' %\
+     (output_dir,min_count,median_count)
+    try:
+        makedirs(rarefaction_plot_dir)
+    except OSError:
+        pass
+    try:
+        params_str = get_params_str(params['make_rarefaction_plots'])
+    except KeyError:
+        params_str = ''
+    # Build the make rarefaction plot command(s)
+    for metric in alpha_diversity_metrics:
+        input_fp = '%s/%s.txt' % (alpha_collated_dir, metric)
+        make_rarefaction_plot_cmd =\
+         '%s %s/make_rarefaction_plots.py -m %s -r %s -o %s %s' %\
+         (python_exe_fp, qiime_dir, mapping_fp, input_fp, \
+          rarefaction_plot_dir, params_str)
+        commands.append(\
+         [('Rarefaction plot: %s' % metric,make_rarefaction_plot_cmd)])
+    
+    # Call the command handler on the list of commands
+    command_handler(commands,status_update_callback)
     
 ## End task-specific workflow functions
     

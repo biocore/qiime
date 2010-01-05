@@ -51,6 +51,21 @@ beta_diversity:metric
 # Make 3D plot parameters
 make_3d_plots:custom_axes
 
+# Rarefaction parameters
+rarefaction:num-reps	1
+rarefaction:depth
+rarefaction:small_included	False
+
+# Alpha diversity parameters
+alpha_diversity:metrics
+
+# Make rarefaction plots parameters
+make_rarefaction_plots:imagetype	png
+make_rarefaction_plots:resolution	75
+
+# Collate alpha
+collate_alpha:example_path
+
 # THE FOLLOWING VALUES ARE NOT CURRENTLY USED ANYWHERE
 #make_otu_heatmap_html:otu_count_fname
 #make_otu_heatmap_html:num_otu_hits	5
@@ -66,18 +81,6 @@ make_3d_plots:custom_axes
 #make_pie_charts:sample_flag	False
 #make_pie_charts:num	20
 #make_pie_charts:dir-prefix
-#alpha_rarefaction:input_path
-#alpha_rarefaction:output_path
-#alpha_rarefaction:min
-#alpha_rarefaction:max
-#alpha_rarefaction:step
-#alpha_rarefaction:num-reps	1
-#alpha_rarefaction:depth
-#alpha_rarefaction:small_included	False
-#single_alpha_diversity:input_path
-#single_alpha_diversity:output_path
-#single_alpha_diversity:metrics
-#single_alpha_diversity:tree_path
 #multi_alpha_diversity:input_path
 #multi_alpha_diversity:output_path
 #multi_alpha_diversity:metrics
