@@ -18,6 +18,7 @@ A lot of this might migrate into cogent at some point.
 from StringIO import StringIO
 from os import getenv
 from os.path import split
+from numpy import min, max, median, mean
 from qiime.parse import parse_otus
 from cogent.parse.tree import DndParser, PhyloNode
 from cogent.core.alignment import Alignment
@@ -323,3 +324,12 @@ def qiime_blast_seqs(seqs,
     remove_files(db_files_to_remove)
     
     return blast_results
+
+
+def compute_seqs_per_library_stats(otu_f):
+    counts = []
+    otu_table = parse_otus(otu_f)[2]
+    for i in range(otu_table.shape[1]):
+        counts.append(sum(otu_table[:,i]))
+        
+    return min(counts), max(counts), median(counts), mean(counts)
