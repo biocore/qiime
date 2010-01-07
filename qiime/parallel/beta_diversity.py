@@ -9,14 +9,12 @@ File created on 7 Jan 2010.
 from __future__ import division
 from optparse import OptionParser
 from glob import glob
-from os import popen, system, mkdir, makedirs
+from os import popen, makedirs
 from os.path import split, splitext
 from cogent.app.util import get_tmp_filename
-from cogent.app.formatdb import build_blast_db_from_fasta_path
 from qiime.parallel.util import get_random_job_prefix, write_jobs_file,\
-    submit_jobs, build_filepaths_from_filepaths,\
-    get_poller_command, get_rename_command, write_filepaths_to_file,\
-    write_merge_map_file_assign_taxonomy
+    submit_jobs, get_poller_command, get_rename_command,\
+    write_filepaths_to_file
 from qiime.beta_diversity import list_known_metrics
 from qiime.util import qiime_config
 
