@@ -19,3 +19,4 @@ qiime_home	/software/Qiime/
 qiime_dir	/software/Qiime/qiime/
 pick_otus_fp	/software/Qiime/qiime/pick_otus.py
 qiime_parameter_fp	/software/Qiime/qiime_parameters.txt
+beta_diversity_fp	/software/Qiime/qiime/beta_diversity.py
