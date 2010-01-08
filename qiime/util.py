@@ -325,6 +325,21 @@ def qiime_blast_seqs(seqs,
     
     return blast_results
 
+def extract_seqs_by_sample_id(seqs, sample_ids, negate=False):
+    """ Returns (seq id, seq) pairs if sample_id is in sample_ids """
+    sample_ids = {}.fromkeys(sample_ids)
+
+    if not negate:
+        def f(s):
+            return s in sample_ids
+    else:
+        def f(s):
+            return s not in sample_ids
+
+    for seq_id, seq in seqs:
+        sample_id = seq_id.split('_')[0]
+        if f(sample_id):
+            yield seq_id, seq
 
 def compute_seqs_per_library_stats(otu_f):
     counts = []

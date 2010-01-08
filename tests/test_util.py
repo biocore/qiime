@@ -2,7 +2,8 @@
 #unit tests for util.py
 
 from cogent.util.unit_test import TestCase, main
-from qiime.util import make_safe_f, FunctionWithParams, qiime_blast_seqs
+from qiime.util import make_safe_f, FunctionWithParams, qiime_blast_seqs,\
+    extract_seqs_by_sample_id
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.app.util import get_tmp_filename
 from cogent.app.formatdb import build_blast_db_from_fasta_file
@@ -28,6 +29,39 @@ class TopLevelTests(TestCase):
         g = make_safe_f(f, ['x','y'])
         self.assertEqual(g(3,4), 12)
         self.assertEqual(g(x=3,y=4,z=10,xxx=11), 12)
+        
+    def test_extract_seqs_by_sample_id(self):
+        """extract_seqs_by_sample_id: functions as expected """
+        
+        seqs = [('Samp1_109','ACGG'),\
+                ('Samp1_110','CCGG'),\
+                ('samp1_109','GCGG'),\
+                ('S2','AA'),\
+                ('S3','CC'),\
+                ('S4','GG'),\
+                ('S44','TT'),\
+                ('S4','TAAT')]
+        sample_ids = ['Samp1','S44']
+        expected = [('Samp1_109','ACGG'),\
+                    ('Samp1_110','CCGG'),\
+                    ('S44','TT')]
+        actual = list(extract_seqs_by_sample_id(seqs,sample_ids))
+        self.assertEqual(actual,expected)
+        
+        #negated
+        expected_neg = [('samp1_109','GCGG'),\
+                ('S2','AA'),\
+                ('S3','CC'),\
+                ('S4','GG'),\
+                ('S4','TAAT')]
+        actual = list(extract_seqs_by_sample_id(seqs,sample_ids,negate=True))
+        self.assertEqual(actual,expected_neg)
+        
+        # OK if user passes dict of sample ids
+        sample_ids = {'samp1':25}
+        expected = [('samp1_109','GCGG')]
+        actual = list(extract_seqs_by_sample_id(seqs,sample_ids))
+        self.assertEqual(actual,expected)
 
 class FunctionWithParamsTests(TestCase):
     """Tests of the FunctionWithParams class.
