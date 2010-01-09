@@ -114,5 +114,5 @@ if __name__ == '__main__':
     elif os.path.isfile(options.input_path):
         single_file_upgma(options, args)
     else:
-        print("io error")
+        print("io error, check input file path")
         exit(1)
