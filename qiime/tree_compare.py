@@ -27,10 +27,12 @@ see command line usage example called with -h
 
 def main(options):
     tree_file_names = os.listdir(options.support_dir)
+    # ignore invisible files like .DS_Store
     tree_file_names = [fname for fname in tree_file_names if not \
         fname.startswith('.')]
+       
+    #try to warn user if using multiple types of trees    
     try:
-        #try to warn user if using multiple types of trees
         base_names = [qiime.parse.parse_rarefaction_fname(fname)[0]
             for fname in tree_file_names]
         if len(set(base_names)) > 1:
@@ -42,6 +44,7 @@ that's what you intend to do.  types: """ + str(set(base_names))
     except:
         pass
 
+    master_tree = DndParser(open(options.master_tree), PhyloNode)
     support_trees = []
     for fname in tree_file_names:
         try:
@@ -53,20 +56,22 @@ that's what you intend to do.  types: """ + str(set(base_names))
         except IOError, err:
             sys.stderr.write('error loading support tree ' + fname + '\n')
             exit(1)
-    master_tree = DndParser(open(options.master_tree), PhyloNode)
+
 
     # get support of each node in master
     new_master, bootstraps = bootstrap_support(master_tree, support_trees)
 
-    # write out modified master tree with internal nodes, and bootstrap support
-    # values to 2 files
+    # write out modified master tree with internal nodes, 
+    # bootstrap support, and (master with internal nodes named as 
+    # bootstrap fraction) (3 files)
     fname = os.path.join(options.output_dir, "master_tree.tre")
     f = open(fname, 'w')
     f.write(new_master.getNewick(with_distances=True))
     f.close()
     
     f = open(os.path.join(options.output_dir, 'jackknife_support.txt'), 'w')
-    f.write('total support trees considered: ' + str(len(support_trees)) + '\n')
+    f.write('#total support trees considered: ' + str(len(support_trees)) + '\n')
+    f.write('#node support is fractional - in range [0,1]\n')
     for key, val in bootstraps.items():
         f.write("\t".join([str(key),str(val)]) + "\n")
     f.close()
@@ -118,7 +123,7 @@ def setup_master_tree(master):
             node.Name = "node" + str(i)
             i += 1
     if len(set(master.getNodeNames())) != len(master.getNodeNames()):
-        raise ValueError("can't setup tree, nonunique node names")
+        raise ValueError("can't setup master tree, nonunique node names")
 
 
 def compare(master, subsampled_tree):
@@ -126,23 +131,24 @@ def compare(master, subsampled_tree):
     """
     if set(master.getTipNames()) != set(subsampled_tree.getTipNames()):
         raise ValueError("""
-didn't like subsampled tree """ + subsampled_tree.filepath + """
+problem with subsampled tree """ + subsampled_tree.filepath + """
 different number of tips in subsampled_tree and master.\n
 typically some samples with few sequences were skipped in
 the support trees.  be sure to keep all samples when doing rarefaction of
 otu tables (see --small_included option), or
 remove offending samples from the master tree, and try again)
 """)
-    # list of lists.  each elem is list of tip names for a node
+    # subsampled_tree_nodes_names is a list of lists.
+    # each elem is list of tip names for a node
     subsampled_tree_nodes_names = [node.getTipNames() for node in \
         subsampled_tree.iterNontips(include_self=True)]
     for master_node in master.iterNontips(include_self=True):
         if set(master_node.getTipNames()) in \
-            map(set, subsampled_tree_nodes_names):
+          map(set, subsampled_tree_nodes_names):
             master_node.bootstrap_support += 1
             
             
-usage_str = """usage: %prog [options] {-i INPUT_PATH -o OUTPUT_DIR -m MASTER_TREE -s SUPPORT_DIR}
+usage_str = """usage: %prog [options] {-o OUTPUT_DIR -m MASTER_TREE -s SUPPORT_DIR}
 
 [] indicates optional input (order unimportant)
 {} indicates required input (order unimportant)
@@ -152,7 +158,8 @@ python %prog -m sample_cluster.tre -s rare_unifrac_upgma/ -o unifrac_jackknife/
 this makes the folder unifrac_jackknife.  In that is the master tree,
 with internal nodes named uniquely, a separate bootstrap/jackknife support file,
 and a jackknife_named_nodes.tre tree, for use with e.g.: figtree
-output jackknife support values 
+
+output jackknife support values are in the range [0,1]
 
 master tree must have the same tips as support trees.  if your support trees
 omit some tips (e.g.: samples with few sequences),
@@ -161,6 +168,7 @@ make a new master tree with those tips omitted
 def parse_command_line_parameters():
     """returns command-line options"""
 
+	#show help if called without any args/options
     if len(sys.argv) == 1:
         sys.argv.append('-h')
     usage = usage_str
@@ -174,7 +182,7 @@ def parse_command_line_parameters():
         help='path to dir containing support trees [REQUIRED]')
 
     parser.add_option('-o', '--output_dir',
-        help='output directory, writes two files here'+\
+        help='output directory, writes three files here'+\
         "makes dir if it doesn't exist [REQUIRED]")
 
     opts, args = parser.parse_args()

@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 __author__ = "Justin Kuczynski"
-__copyright__ = "Copyright 2009, the PyCogent Project" #consider project name
-__credits__ = ["Justin Kuczynski"] #remember to add yourself if you make changes
+__copyright__ = "Copyright 2009, the PyCogent Project"
+__credits__ = ["Justin Kuczynski"]
 __license__ = "GPL"
 __version__ = "0.1"
 __maintainer__ = "Justin Kuczynski"
@@ -22,7 +22,7 @@ class TreeCompareTests(TestCase):
         """ bootstrap_support should have correct bootstrap for a tree with 
 
         unlabeled internal nodes 
-        values"""
+        """
         master_tree = DndParser('((a:2,b:3):2,(c:1,d:2):7);')
         """
              /-------.5 /-a
@@ -39,7 +39,7 @@ class TreeCompareTests(TestCase):
         """ bootstrap_support should have correct bootstrap on a tree 
 
         with labeled internal nodes
-        values"""
+        """
         master_tree = DndParser('((a:2,b:3)ab:2,(c:1,d:2)cd:7)rt;')
         """
              /-------.5 /-a

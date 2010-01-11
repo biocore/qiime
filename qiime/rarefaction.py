@@ -157,11 +157,11 @@ or {-i INPUT_PATH -o OUTPUT_PATH -d DEPTH} (single output file)
 Example usage:
 single output file:
 python %prog otu_table.txt -o rarefaction_20_17.txt -d 20
-(subsample otu_table.txt w/ replacement at 20 seqs per sample, write resulting
+(subsample otu_table.txt w/o replacement at 20 seqs per sample, write resulting
 otu table to 'rarefaction_20_17.txt'
 or multiple output files:
 python %prog otu_table.txt -m 100 -x 1200 -s 100 -n 2 -o mo/rare
-(subsample otu_table.txt w/ replacement at 100 seqs per sample (twice),
+(subsample otu_table.txt w/o replacement at 100 seqs per sample (twice),
 200 seqs per sample (twice) ... 1200 seqs per sample (twice).
 write 24 files total to mo/rare directory
 
