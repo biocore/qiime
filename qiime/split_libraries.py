@@ -302,6 +302,11 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
                 write_seq = cpr + write_seq
             if keep_barcode:
                 write_seq = cbc + write_seq
+
+            #fix problem where empty seqs could be written out, i.e. with only header
+            if not write_seq:
+                bc_counts['#FAILED'].append(curr_rid)
+                continue
                 
             if remove_unassigned:
                 if curr_samp_id!="Unassigned":
