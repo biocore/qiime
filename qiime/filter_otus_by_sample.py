@@ -37,48 +37,42 @@ import re
 from cogent import LoadSeqs
 from make_3d_plots import create_dir
 
-def filter_otus(aln,otus,prefs):
+def filter_otus(otus,prefs):
     """filters the otus file based on which samples should be removed and 
        determines which sequences to remove"""
-    seqs_to_remove=[]
     new_otus_list=[]
-
     #create an list containing the seqs to remove
-    for i in range(aln.getNumSeqs()):
-        aln_name=aln.Names[i]
-        is_sample=False
-        otu_key=str(i)
-        for sample_id in prefs:
-           for j in range(len(otus[otu_key])):
-               if re.match(prefs[sample_id],otus[otu_key][j]):
-                   is_sample=True
-                   break
-           if is_sample:
-               break
-               
-        #determine if sampleid is in otu and add to appropriate list
-        if is_sample:
-            seqs_to_remove.append(otu_key)
-        else:
-            new_otus_list.append((otu_key,otus[otu_key]))
-
-    return seqs_to_remove,new_otus_list
     
-def filter_aln_by_otus(new_otus_list,aln,seqs_to_remove):
+    for i in otus:
+        new_otus=[]
+        for j in (otus[i]):
+            is_sample=False
+            for sample_id in prefs:
+                if re.search(prefs[sample_id],j):
+                    is_sample=True
+            if is_sample:
+                pass
+            else:
+                new_otus.append('%s' % (j))
+        if new_otus:
+            new_otus_list.append((i,new_otus))
+    return new_otus_list
+    
+def filter_aln_by_otus(aln,prefs):
     """filters the representative set of seqs based on which samples should
         be removed"""
     filtered_seqs=[]
     removed_seqs=[]
+
     for j in range(aln.getNumSeqs()):
         remove=False
         aln_name=aln.Names[j]
-        for i in range(len(seqs_to_remove)):
-            seq_identifier=seqs_to_remove[i]+' '
-            if re.match(seq_identifier,aln_name):
-                remove=True
-                break
 
-        #Create list of filtered and removed seqs
+        for sample_id in prefs:
+            if re.search(prefs[sample_id],aln_name):
+
+                remove=True
+
         if remove:
             removed_seqs.append((aln_name,aln.getSeq(aln_name)))
         else:
@@ -108,28 +102,22 @@ def _do_sample_filter(prefs, data, dir_path='', filename=None):
     otus=data['otus']
 
     #filter the otus file based on which samples to remove
-    seqs_to_remove, new_otus_list=filter_otus(aln,otus,prefs)
+    new_otus_list=filter_otus(otus,prefs)
 
     filtered_otus_output_filepath = '%s/%s_sfiltered_otus.txt' \
                                     % (dir_path,filename)
     filtered_otus_output_filepath=open(filtered_otus_output_filepath,'w')
     
     # Write out a new otus file
-    for key in range(len(new_otus_list)):
-        filtered_otus_output_filepath.write(str(key)+'\t')
-        for j in range(len(new_otus_list[key][1])):
-            if j<len(new_otus_list[key][1])-1:
-                filtered_otus_output_filepath.write(new_otus_list[key][1][j]+\
-                                                    '\t')
-            else:
-                filtered_otus_output_filepath.write(new_otus_list[key][1][j])
-        if key<len(new_otus_list):
-            filtered_otus_output_filepath.write('\n')
+    for key in (new_otus_list):
+        filtered_otus_output_filepath.write(key[0]+'\t')
+        for j in key[1]:
+            filtered_otus_output_filepath.write(str(j)+'\t')
+        filtered_otus_output_filepath.write('\n')
     filtered_otus_output_filepath.close()
 
-    #filter representative seq set
-    filtered_seqs,removed_seqs=filter_aln_by_otus(new_otus_list,aln,\
-                                                    seqs_to_remove)
+    #filter seq set
+    filtered_seqs,removed_seqs=filter_aln_by_otus(aln,prefs)
 
     #write a fasta containing list of sequences removed from 
     #representative set
@@ -170,14 +158,13 @@ def _process_prefs(options):
 
     # load the input alignment
     data['aln'] = LoadSeqs(fasta_file,aligned=False)
-
+    
     #Load the otu file
     otu_path=options.input_otu_path
     otu_f = open(otu_path, 'U')
     otus = fields_to_dict(otu_f)
     otu_f.close()
     data['otus']=otus
-
     #Determine which which samples to extract from representative seqs
     #and from otus file
     if options.samples_to_extract:

@@ -26,15 +26,15 @@ class TopLevelTests(TestCase):
     def setUp(self):
         """define some top-level data"""
         self.aln=[]
-        self.aln.append(('0 SampleC','AAAAAAAAAAAAAAA'))
-        self.aln.append(('1 SampleC','CCCCCCC'))
-        self.aln.append(('2 SampleB','GGGGGGGGGGGGGG'))
+        self.aln.append(('0 SampleA','AAAAAAAAAAAAAAA'))
+        self.aln.append(('1 SampleB','CCCCCCC'))
+        self.aln.append(('2 SampleC','GGGGGGGGGGGGGG'))
         
         self.otus={'0':['SampleC'],'1':['SampleC','SampleA'],'2':['SampleB',\
                                                                   'SampleA']}
 
         self.prefs={}
-        self.prefs={'0':'SampleA','1':'SampleB'}
+        self.prefs={'0':'SampleC','1':'SampleB'}
 
     def test_process_extract_samples(self):
         """process_extract_samples: parses the cmd line and determines which
@@ -51,15 +51,11 @@ samples should be removed"""
         """filter_otus: determines which sequences should be removed and
 generates a new otus list"""
 
-        self.sample_to_extract='SampleA,SampleB'
-        exp1=['1','2']
-        exp2=[('0',['SampleC'])]
-        aln=LoadSeqs(data=self.aln,aligned=False)
-
-        obs1,obs2=filter_otus(aln,self.otus,self.prefs)
+        exp1=[('1',['SampleA']),('2',['SampleA'])]
+        obs1=filter_otus(self.otus,self.prefs)
             
         self.assertEqual(obs1,exp1)
-        self.assertEqual(obs2,exp2)
+
         
     def test_filter_aln_by_otus(self):
         """filter_aln_by_otus: determines which sequences to keep and which
@@ -67,15 +63,13 @@ sequences to remove"""
 
         self.sample_to_extract='SampleA,SampleB'
         exp1=[]
-        exp1.append(('0 SampleC','AAAAAAAAAAAAAAA'))
+        exp1.append(('0 SampleA','AAAAAAAAAAAAAAA'))
         exp2=[]
-        exp2.append(('1 SampleC','CCCCCCC'))
-        exp2.append(('2 SampleB','GGGGGGGGGGGGGG'))
+        exp2.append(('1 SampleB','CCCCCCC'))
+        exp2.append(('2 SampleC','GGGGGGGGGGGGGG'))
         aln=LoadSeqs(data=self.aln,aligned=False)
 
-        seqs_to_remove,new_otus_list=filter_otus(aln,self.otus,self.prefs)
-
-        obs1,obs2=filter_aln_by_otus(new_otus_list,aln,seqs_to_remove)
+        obs1,obs2=filter_aln_by_otus(aln,self.prefs)
 
         self.assertEqual(obs1,exp1)
         self.assertEqual(obs2,exp2)
