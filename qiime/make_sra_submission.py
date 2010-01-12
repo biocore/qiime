@@ -89,33 +89,39 @@ experiment_set_wrapper = """<?xml version="1.0" encoding="UTF-8"?>
 
 pool_member_wrapper = """            <MEMBER refname="%(SAMPLE_ALIAS)s" refcenter="%(SAMPLE_CENTER)s" member_name="%(POOL_MEMBER_NAME)s" proportion="%(POOL_PROPORTION)s"><READ_LABEL read_group_tag="%(POOL_MEMBER_NAME)s">barcode</READ_LABEL><READ_LABEL read_group_tag="%(PRIMER_READ_GROUP_TAG)s">rRNA_primer</READ_LABEL></MEMBER>"""
 
-basecall_wrapper = """               <BASECALL> read_group_tag="%(READ_GROUP)s" min_match="%(MATCH_LEN)s" max_mismatch="%(NUM_MISMATCHES)s" match_edge="full">%(MATCH_SEQ)s</BASECALL>"""
+basecall_wrapper = """               <BASECALL read_group_tag="%(READ_GROUP)s" min_match="%(MATCH_LEN)s" max_mismatch="%(NUM_MISMATCHES)s" match_edge="full">%(MATCH_SEQ)s</BASECALL>"""
 
 spot_descriptor_with_linker_wrapper = """      <SPOT_DESCRIPTOR>
         <SPOT_DECODE_SPEC>
           <READ_SPEC>
             <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Technical Read</READ_CLASS>
+            <READ_TYPE>Adapter</READ_TYPE>
+          <EXPECTED_BASECALL>%(KEY_SEQ)s</EXPECTED_BASECALL>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>1</READ_INDEX>
             <READ_LABEL>barcode</READ_LABEL>
             <READ_CLASS>Technical Read</READ_CLASS>
             <READ_TYPE>BarCode</READ_TYPE>
             <EXPECTED_BASECALL_TABLE>%(BARCODE_TABLE_XML)s</EXPECTED_BASECALL_TABLE>
           </READ_SPEC>
           <READ_SPEC>
-            <READ_INDEX>1</READ_INDEX>
+            <READ_INDEX>2</READ_INDEX>
             <READ_LABEL>linker</READ_LABEL>
             <READ_CLASS>Technical Read</READ_CLASS>
             <READ_TYPE>Linker</READ_TYPE>
             <EXPECTED_BASECALL>%(LINKER)s</EXPECTED_BASECALL>
           </READ_SPEC>
           <READ_SPEC>
-            <READ_INDEX>2</READ_INDEX>
+            <READ_INDEX>3</READ_INDEX>
             <READ_LABEL>rRNA_primer</READ_LABEL>
             <READ_CLASS>Technical Read</READ_CLASS>
             <READ_TYPE>Primer</READ_TYPE>
             <EXPECTED_BASECALL_TABLE>%(PRIMER_TABLE_XML)s</EXPECTED_BASECALL_TABLE>
           </READ_SPEC>
           <READ_SPEC>
-            <READ_INDEX>3</READ_INDEX>
+            <READ_INDEX>4</READ_INDEX>
             <READ_CLASS>Application Read</READ_CLASS>
             <READ_TYPE>Forward</READ_TYPE>
             <BASE_COORD>%(TOTAL_TECHNICAL_READ_LENGTH)s</BASE_COORD>
@@ -126,20 +132,26 @@ spot_descriptor_with_linker_wrapper = """      <SPOT_DESCRIPTOR>
 spot_descriptor_without_linker_wrapper = """      <SPOT_DESCRIPTOR>
         <SPOT_DECODE_SPEC>
           <READ_SPEC>
-            <READ_INDEX>0</READ_INDEX>            <READ_LABEL>barcode</READ_LABEL>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Technical Read</READ_CLASS>
+            <READ_TYPE>Adapter</READ_TYPE>
+          <EXPECTED_BASECALL>%(KEY_SEQ)s</EXPECTED_BASECALL>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>1</READ_INDEX>            <READ_LABEL>barcode</READ_LABEL>
             <READ_CLASS>Technical Read</READ_CLASS>
             <READ_TYPE>BarCode</READ_TYPE>
             <EXPECTED_BASECALL_TABLE>%(BARCODE_TABLE_XML)s</EXPECTED_BASECALL_TABLE>
           </READ_SPEC>
           <READ_SPEC>
-            <READ_INDEX>1</READ_INDEX>
+            <READ_INDEX>2</READ_INDEX>
             <READ_LABEL>rRNA_primer</READ_LABEL>
             <READ_CLASS>Technical Read</READ_CLASS>
             <READ_TYPE>Primer</READ_TYPE>
             <EXPECTED_BASECALL_TABLE>%(PRIMER_TABLE_XML)s</EXPECTED_BASECALL_TABLE>
           </READ_SPEC>
           <READ_SPEC>
-            <READ_INDEX>2</READ_INDEX>
+            <READ_INDEX>3</READ_INDEX>
             <READ_CLASS>Application Read</READ_CLASS>
             <READ_TYPE>Forward</READ_TYPE>
             <BASE_COORD>%(TOTAL_TECHNICAL_READ_LENGTH)s</BASE_COORD>
@@ -395,9 +407,9 @@ def make_run_and_experiment(experiment_lines, sff_dir):
                     field_dict['MEMBER_ORDER'] = MEMBER_ORDER
                     default_field_dict = field_dict.copy()
                     default_pool_member_name = default_field_dict['STUDY_REF'] + '_default'
-                    default_field_dict['POOL_MEMBER_NAME'] = default_pool_member_name
+                    default_field_dict['POOL_MEMBER_NAME'] = ''
                     try:
-                        default_field_dict['CHECKSUM'] = md5_path(join(sff_dir,field_dict['RUN_PREFIX'],default_pool_member_name+'.sff'))
+                        default_field_dict['CHECKSUM'] = md5_path(join(sff_dir,field_dict['RUN_PREFIX'],default_pool_member_name+'_'+field_dict['RUN_PREFIX']+'.sff'))
                         data_blocks.append(data_block_wrapper % default_field_dict)
                     except IOError:
                         pass
@@ -419,7 +431,7 @@ def make_run_and_experiment(experiment_lines, sff_dir):
                spot_descriptor_wrapper = spot_descriptor_without_linker_wrapper
             else:
                 spot_descriptor_wrapper = spot_descriptor_with_linker_wrapper
-            field_dict['TOTAL_TECHNICAL_READ_LENGTH'] = len(primer) + len(barcode) + len(linker)
+            field_dict['TOTAL_TECHNICAL_READ_LENGTH'] = len(primer) + len(barcode) + len(linker) + 1 #note that SRA uses 1-indexed lengths
             spot_descriptor = spot_descriptor_wrapper % field_dict
             field_dict['SPOT_DESCRIPTORS_XML'] = spot_descriptor
             field_dict['PLATFORM_XML'] = platform_blocks[field_dict['PLATFORM']]

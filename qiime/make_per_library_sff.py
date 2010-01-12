@@ -27,7 +27,7 @@ def make_option_parser():
     \nExample:\n\tpython make_per_library_sff.py -i
     input_sff -l /Users/rob/libs
     
-    (For help run: \n\tpython make_library_id_lists.py --help)
+    (For help run: \n\tpython make_per_lib_sff.py --help)
     """
 
     parser=OptionParser(usage=usage)

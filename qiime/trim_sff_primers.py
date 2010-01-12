@@ -55,12 +55,13 @@ if __name__ == '__main__':
         print "Making debug output"
     map_lines = parse_map(open(options.input_map, 'U'))
     header, body = map_lines[0], map_lines[1:]
+    key_index = header.index('KEY_SEQ')
     bc_index = header.index('BARCODE')
     linker_index = header.index('LINKER')
     primer_index = header.index('PRIMER')
     technical_lengths = {}
     for fields in body:
-        technical_lengths[fields[0]] = len(fields[bc_index]) + \
+        technical_lengths[fields[0]] = len(fields[key_index]) + len(fields[bc_index]) + \
             len(fields[linker_index]) + len(fields[primer_index])
     if options.debug:
         print "Technical lengths:"
@@ -90,8 +91,8 @@ if __name__ == '__main__':
                 outfile_path = sff_path + '.trim'
                 outfile = open(outfile_path, 'w')
                 for id_, length in seqlengths.items():
-                    outfile.write("%s\t%s\t%s\n" %(id_,readlength, 
-                        seqlengths[id_]))
+                    outfile.write("%s\t%s\t%s\n" %(id_,readlength + 1,  #need +1 for 1-based index 
+                        seqlengths[id_] + 1))
                 outfile.close()
 
                 sfffile_cmd_to_run = sfffile_cmd % (options.sfffile_path, 

@@ -97,6 +97,10 @@ if __name__ == '__main__':
     
     ids = get_ids(open(options.in_fasta, 'U'), options.field, bad_seq_ids,
         options.debug)
+    
+    #add empty unassigned ids for file creation (required by sra)
+    if 'Unassigned' not in ids:
+        ids['Unassigned'] = []
         
     if not exists(options.outdir):
         makedirs(options.outdir)
