@@ -44,7 +44,7 @@ def remap_lines(col_names, lines):
     result = [['#SampleID', 'BarcodeSequence', 'LinkerPrimerSequence'] + 
         [i.lstrip('#') for i in col_names] + ['Description']]
     for line in lines:
-        curr = [line[sample_id_index], line[barcode_sequence_index]]]
+        curr = [line[sample_id_index], line[barcode_sequence_index]]
         p = line[primer_sequence_index]
         if linker_sequence_index is not None:
             p = line[linker_sequence_index] + p
