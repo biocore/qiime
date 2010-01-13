@@ -3,19 +3,19 @@
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2009, the PyCogent Project" #consider project name
-__credits__ = ["Rob Knight"] #remember to add yourself
+__credits__ = ["Rob Knight", "William Walters"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "0.1"
-__maintainer__ = "Rob Knight"
-__email__ = "rob@spot.colorado.edu"
+__maintainer__ = "William Walters"
+__email__ = "william.a.walters@colorado.edu"
 __status__ = "Prototype"
 
 from cogent.util.unit_test import TestCase, main
 from StringIO import StringIO
 from numpy import array
 from qiime.split_libraries import (
-    generate_possibilities, get_infile, count_mismatches,
-    ok_mm_primer, check_map, get_primer_seqs, fasta_ids, qual_score,
+    expand_degeneracies, get_infile, count_mismatches,
+    ok_mm_primer, check_map, fasta_ids, qual_score,
     qual_scores, count_ambig, split_seq, primer_exceeds_mismatches,
     check_barcode, make_histograms, format_histograms, SeqQualBad,
     seq_exceeds_homopolymers,
@@ -24,10 +24,10 @@ from qiime.split_libraries import (
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
 
-    def test_generate_possibilities(self):
+    def test_expand_degeneracies(self):
         """generate_possibilities should make possible strings"""
-        self.assertEqual(generate_possibilities('ACG'), ['ACG'])
-        self.assertEqual(generate_possibilities('RGY'), 
+        self.assertEqual(expand_degeneracies('ACG'), ['ACG'])
+        self.assertEqual(expand_degeneracies('RGY'), 
             ['AGT', 'AGC', 'GGT', 'GGC'])
 
     def test_get_infile(self):
@@ -53,27 +53,19 @@ class TopLevelTests(TestCase):
 
     def test_check_map(self):
         """check_map should return valid barcodes as expected"""
-        s = """#SampleID\tBarcodeSequence\tX\tDescription
+        s = """#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tX\tDescription
 #fake data
-x\tAA\t3\tsample x
-y\t"AC"\t4\t"sample y"
-z\tGG\t5\tsample z"""
+x\tAA\tAC\t3\tsample_x
+y\t"AC"\tAC\t4\t"sample_y"
+z\tGG\tGC\t5\tsample_z"""
         f = StringIO(s)
         f.name='test.xls'
-        headers, id_map, barcode_to_sample_id, warnings, errors = \
-            check_map(f)
+        headers, id_map, barcode_to_sample_id, warnings, errors, \
+         primer_seqs_lens, all_primers = check_map(f)
 
         self.assertEqual(barcode_to_sample_id, {'AA':'x','AC':'y','GG':'z'})
         self.assertEqual(errors, [])
         self.assertEqual(warnings, [])
-
-    def test_get_primer_seqs(self):
-        """get_primer_seqs should resolve degen patterns, check length"""
-        primer_pats = ['AGY', 'GAG']
-        res = get_primer_seqs(primer_pats, min_primer_len=2)
-        self.assertEqual(res, (set(['AGT','AGC','GAG']),3))
-        self.assertRaises(ValueError, get_primer_seqs, primer_pats, 5)
-        self.assertRaises(ValueError, get_primer_seqs, primer_pats+['x'], 3)
 
     def test_fasta_ids(self):
         """fasta_ids should return list of ids in fasta files, no dups"""
@@ -135,10 +127,11 @@ z\tGG\t5\tsample z"""
 
     def test_check_barcode(self):
         """check_barcode should return False if barcode ok, True otherwise"""
-        self.assertEqual(check_barcode('AA', None, ['AA']), (False, 'AA'))
+        self.assertEqual(check_barcode('AA', None, ['AA']), (False, 'AA', \
+         False))
         self.assertEqual(check_barcode('GCATCGTCCACA', 'golay_12', 
-            ['GCATCGTCAACA']), (True, 'GCATCGTCAACA'))
-        self.assertEqual(check_barcode('AA', None, ['TT']), (True, None))
+            ['GCATCGTCAACA']), (True, 'GCATCGTCAACA', True))
+        self.assertEqual(check_barcode('AA', None, ['TT']), (True, None, False))
 
     def test_make_histograms(self):
         """make_histograms should make correct histograms"""
