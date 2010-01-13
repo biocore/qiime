@@ -89,21 +89,21 @@ otu_10	0	2	0	4	0	Bacteria; Firmicutes; Mollicutes; Clostridium_aff_innocuum_CM97
                              "2	otu_10	2	Bacteria:Firmicutes:Mollicutes:Clostridium_aff_innocuum_CM970	090809	1800",\
                              "4	otu_10	4	Bacteria:Firmicutes:Mollicutes:Clostridium_aff_innocuum_CM970	090909	1800"]
 
-        self.node_file_str =["1	1	user_node	3	7	other	090809	1200",
-                             "2	2	user_node	4	13	other	090809	1800",
-                             "3	3	user_node	3	9	other	090909	1200",
-                             "4	4	user_node	4	12	other	090909	1800",
-                             "5	5	user_node	3	14	other	091009	1200",
-                             "otu_1		otu_node	2	7	Bacteria:Actinobacteria:Coriobacteridae	otu	otu",
-                             "otu_2		otu_node	1	2	Bacteria:Bacteroidetes:Bacteroidales:Bacteroidaceae	otu	otu",
-                             "otu_3		otu_node	2	4	Bacteria:Firmicutes:Clostridia:Clostridiales	otu	otu",
-                             "otu_4		otu_node	1	5	Bacteria:Spirochaetes:Spirochaetales:Spirochaetaceae	otu	otu",
-                             "otu_5		otu_node	2	6	Bacteria:Bacteroidetes:Bacteroidales:Rikenellaceae	otu	otu",
-                             "otu_6		otu_node	2	9	Bacteria:Bacteroidetes:Bacteroidales:Dysgonomonaceae	otu	otu",
-                             "otu_7		otu_node	2	6	Bacteria:Bacteroidetes:Bacteroidales:Odoribacteriaceae	otu	otu",
-                             "otu_8		otu_node	1	3	Bacteria:Bacteroidetes:Bacteroidales:Dysgonomonaceae:otu_425	otu	otu",
-                             "otu_9		otu_node	2	7	Bacteria:Bacteroidetes:Bacteroidales:Dysgonomonaceae:otu_425	otu	otu",
-                             "otu_10		otu_node	2	6	Bacteria:Firmicutes:Mollicutes:Clostridium_aff_innocuum_CM970	otu	otu"]
+        self.node_file_str =["1	1	user_node	3	7.0	other	090809	1200",
+                             "2	2	user_node	4	13.0	other	090809	1800",
+                             "3	3	user_node	3	9.0	other	090909	1200",
+                             "4	4	user_node	4	12.0	other	090909	1800",
+                             "5	5	user_node	3	14.0	other	091009	1200",
+                             "otu_1		otu_node	2	7.0	Bacteria:Actinobacteria:Coriobacteridae	otu	otu",
+                             "otu_2		otu_node	1	2.0	Bacteria:Bacteroidetes:Bacteroidales:Bacteroidaceae	otu	otu",
+                             "otu_3		otu_node	2	4.0	Bacteria:Firmicutes:Clostridia:Clostridiales	otu	otu",
+                             "otu_4		otu_node	1	5.0	Bacteria:Spirochaetes:Spirochaetales:Spirochaetaceae	otu	otu",
+                             "otu_5		otu_node	2	6.0	Bacteria:Bacteroidetes:Bacteroidales:Rikenellaceae	otu	otu",
+                             "otu_6		otu_node	2	9.0	Bacteria:Bacteroidetes:Bacteroidales:Dysgonomonaceae	otu	otu",
+                             "otu_7		otu_node	2	6.0	Bacteria:Bacteroidetes:Bacteroidales:Odoribacteriaceae	otu	otu",
+                             "otu_8		otu_node	1	3.0	Bacteria:Bacteroidetes:Bacteroidales:Dysgonomonaceae:otu_425	otu	otu",
+                             "otu_9		otu_node	2	7.0	Bacteria:Bacteroidetes:Bacteroidales:Dysgonomonaceae:otu_425	otu	otu",
+                             "otu_10		otu_node	2	6.0	Bacteria:Firmicutes:Mollicutes:Clostridium_aff_innocuum_CM970	otu	otu"]
 
 
         self.red_edge_file_str =["2	otu_1	1	Bacteria:Actinobacteria:Coriobacteridae	090809	1800",\
@@ -123,20 +123,20 @@ otu_10	0	2	0	4	0	Bacteria; Firmicutes; Mollicutes; Clostridium_aff_innocuum_CM97
                              "2	otu_10	2	Bacteria:Firmicutes:Mollicutes:Clostridium_aff_innocuum_CM970	090809	1800",
                              "4	otu_10	4	Bacteria:Firmicutes:Mollicutes:Clostridium_aff_innocuum_CM970	090909	1800"]
 
-        self.red_node_file_str =["1	1	user_node	3	7	other	090809	1200",
-                             "2	2	user_node	4	13	other	090809	1800",
-                             "3	3	user_node	3	9	other	090909	1200",
-                             "4	4	user_node	4	12	other	090909	1800",
-                             "5	5	user_node	3	14	other	091009	1200",
-                             "otu_1		otu_node	2	7	Bacteria:Actinobacteria:Coriobacteridae	otu	otu",
-                             "@1		otu_collapsed	1	1	other	otu	otu",
-                             "otu_3		otu_node	2	4	Bacteria:Firmicutes:Clostridia:Clostridiales	otu	otu",
-                             "@5		otu_collapsed	2	2	other	otu	otu",
-                             "otu_5		otu_node	2	6	Bacteria:Bacteroidetes:Bacteroidales:Rikenellaceae	otu	otu",
-                             "otu_6		otu_node	2	9	Bacteria:Bacteroidetes:Bacteroidales:Dysgonomonaceae	otu	otu",
-                             "otu_7		otu_node	2	6	Bacteria:Bacteroidetes:Bacteroidales:Odoribacteriaceae	otu	otu",
-                             "otu_9		otu_node	2	7	Bacteria:Bacteroidetes:Bacteroidales:Dysgonomonaceae:otu_425	otu	otu",
-                             "otu_10		otu_node	2	6	Bacteria:Firmicutes:Mollicutes:Clostridium_aff_innocuum_CM970	otu	otu"]
+        self.red_node_file_str =["1	1	user_node	3	7.0	other	090809	1200",
+                             "2	2	user_node	4	13.0	other	090809	1800",
+                             "3	3	user_node	3	9.0	other	090909	1200",
+                             "4	4	user_node	4	12.0	other	090909	1800",
+                             "5	5	user_node	3	14.0	other	091009	1200",
+                             "otu_1		otu_node	2	7.0	Bacteria:Actinobacteria:Coriobacteridae	otu	otu",
+                             "@1		otu_collapsed	1	1.0	other	otu	otu",
+                             "otu_3		otu_node	2	4.0	Bacteria:Firmicutes:Clostridia:Clostridiales	otu	otu",
+                             "@5		otu_collapsed	2	2.0	other	otu	otu",
+                             "otu_5		otu_node	2	6.0	Bacteria:Bacteroidetes:Bacteroidales:Rikenellaceae	otu	otu",
+                             "otu_6		otu_node	2	9.0	Bacteria:Bacteroidetes:Bacteroidales:Dysgonomonaceae	otu	otu",
+                             "otu_7		otu_node	2	6.0	Bacteria:Bacteroidetes:Bacteroidales:Odoribacteriaceae	otu	otu",
+                             "otu_9		otu_node	2	7.0	Bacteria:Bacteroidetes:Bacteroidales:Dysgonomonaceae:otu_425	otu	otu",
+                             "otu_10		otu_node	2	6.0	Bacteria:Firmicutes:Mollicutes:Clostridium_aff_innocuum_CM970	otu	otu"]
 
         self.otu_dc = {1:3,2:7}
         self.sample_dc = {3:3,4:2}
