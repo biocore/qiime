@@ -44,7 +44,8 @@ likely to prove somewhat challenging as well...
 """
 from collections import defaultdict
 from string import strip, letters, digits, strip, translate
-from os.path import basename
+from os.path import basename, isdir
+from os import makedirs
 from cogent.util.transform import (keep_chars, exclude_chars, trans_except,
     trans_all)
 from numpy import array
@@ -1036,6 +1037,13 @@ if __name__ == "__main__":
     
     mapping_root_name = infile_name.split("/")[-1].replace(".txt","")
     
+    if not output_dir.endswith("/"):
+        output_dir += "/"
+    try:
+        if not isdir(output_dir):
+            makedirs(output_dir)
+    except IOError:
+        raise IOError,('Unable to create output directory %s ' % output_dir)
     try:
         corrected_output_filepath = output_dir + mapping_root_name + \
          '_corrected.txt'
