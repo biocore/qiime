@@ -4,18 +4,37 @@
 
 Specifically, does the quality-filtering step (using several criteria) and
 renames each read with the appropriate library id.
+
+This module reads the linker+primer sequence from the input mapping file, and
+associates these with the barcodes from the mapping file.  If a barcode is 
+read that does not correspond to any in the mapping file, this module checks
+against all possible primers from the mapping file.  A rare situation could 
+arise if a barcode does not match any from the mapping file (either because
+of sequencing errors or because the mapping file is incomplete) and variations
+of the same primer are used for sequencing (e.g., a truncated form of the same
+primer), where it is impossible to distinguish what primer was actually used
+to amplify a given sequence.  In these cases, portions of the given sequence
+are sliced out in ascending order of primer sizes and compared to all possible
+primers from the mapping file.  The first matching primer is considered a hit
+for the purposes of the determining where a primer ends and the actual
+sequence data begins.  Because of this, one should be careful about using
+truncated forms of the same primer with this module.  The -c option can be
+used to disable attempts at barcode correction, and sequences that do not
+have a barcode that matches the mapping file will not be recorded.
 """
+
 __author__ = "Rob Knight and Micah Hamady"
 __copyright__ = "Copyright 2009, the PyCogent Project" #consider project name
 __credits__ = ["Rob Knight", "Micah Hamady", "Greg Caporaso", "Kyle Bittinger","Jesse Stombaugh","William Walters"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "0.1"
-__maintainer__ = "Rob Knight"
-__email__ = "rob@spot.colorado.edu"
+__maintainer__ = "William Walters"
+__email__ = "rob@spot.colorado.edu, william.a.walters@colorado.edu"
 __status__ = "Prototype"
 
 import re
 from cogent.parse.fasta import FastaFinder, MinimalFastaParser
+from cogent.seqsim.sequence_generators import SequenceGenerator, IUPAC_DNA
 from numpy import array, mean, arange, histogram
 from numpy import __version__ as numpy_version
 from qiime.check_id_map import parse_id_map
@@ -27,6 +46,8 @@ from collections import defaultdict
 from qiime.hamming import decode_barcode_8
 from qiime.golay import decode as decode_golay_12
 
+
+
 ## Including new=True in the histogram() call is necessary to 
 ## get the correct result in versions prior to NumPy 1.2.0,
 ## but the new keyword will be removed in NumPy 1.4. In NumPy 1.2.0 
@@ -36,6 +57,7 @@ from qiime.golay import decode as decode_golay_12
 ## with new=True as the default. This avoids a deprecation warning message 
 ## in versions 1.2.0 through 1.3.*, and a try/except to handle errors from 
 ## versions 1.4.0 or later. 
+
 numpy_version = re.split("[^\d]", numpy_version)
 numpy_version = tuple([int(i) for i in numpy_version if i.isdigit()])
 if numpy_version < (1,3,0):
@@ -44,29 +66,10 @@ if numpy_version < (1,3,0):
         return numpy_histogram(a,bins=bins,range=range,\
          normed=normed,weights=weights,new=True)
 
-IUPAC_DNA = {'U':'T','T':'T','C':'C','A':'A','G':'G', 'R':'AG','Y':'TC',
-             'W':'TA','S':'CG','M':'CA','K':'TG','B':'TCG','D':'TAG','H':'TCA',
-             'V':'CAG', 'N':'TCAG' }
-     
-STANDARD_BACTERIAL_PRIMER = "CATGCTGCCTCCCGTAGGAGT" #R357
-STANDARD_FUNGAL_PRIMER = "ACTCTGGACCTGGTGAGTTTC" #need region info from Noah
-
 # Supported barcode types - need to adapt these functions to ignore list
 # of valid barcodes that the generic decoder requires
 BARCODE_TYPES = { "golay_12":(12, lambda bc, bcodes: decode_golay_12(bc)), 
         "hamming_8":(8, lambda bc, bcodes: decode_barcode_8(bc))}
-
-def generate_possibilities(seq_str):
-    """Generate non-degenerate patterns for given degenerate pattern"""
-    expansions = [IUPAC_DNA[x] for x in seq_str]
-    all = []
-    for expan in expansions:
-        if not expan: return []
-        if all:
-            all = [i + j for i in all for j in expan]
-        else:
-            all = [j for j in expan]
-    return all
 
 def get_infile(filename):
     """Returns filehandle, allowing gzip input."""
@@ -77,10 +80,10 @@ def get_infile(filename):
     return fin
 
 def count_mismatches(seq1, seq2, max_mm):
-    """Counts mismatches, assumes lengths equal.
+    """Counts mismatches, primer should be <= length of the seq.
     """
     mm = 0
-    for i in range(len(seq1)):
+    for i in range(len(seq2)):
         if seq1[i] != seq2[i]:
             mm += 1
             if mm > max_mm:
@@ -98,34 +101,41 @@ def ok_mm_primer(primer_seq, all_primer_seqs, primer_mm):
             return True
     return False
 
+def expand_degeneracies(raw_primer):
+    """ Returns all non-degenerate versions of a given primer sequence """
+    
+    primers=SequenceGenerator(template=raw_primer,alphabet=IUPAC_DNA)
+    expanded_primers=[]
+    for primer in primers:
+        expanded_primers.append(primer)
+        
+    return expanded_primers
+    
+
 def check_map(infile, has_barcodes=True):
-    """Check mapping file and extract list of valid barcodes """
+    """Check mapping file and extract list of valid barcodes, primers """
     hds, id_map, dsp, run_description, errors, warnings = \
         parse_id_map(infile, has_barcodes)
-    barcode_to_sample_id = {} 
+    barcode_to_sample_id = {}
+
+
+    primer_seqs_lens = {}
+    all_primers = {}
+
     for sample_id, sample in id_map.items():
         barcode_to_sample_id[sample['BarcodeSequence']] = sample_id
-    return hds, id_map, barcode_to_sample_id, warnings, errors
-
-def get_primer_seqs(primer_seq_pats, min_primer_len=5):
-    """Load primer sequences from primer patterns.
+        raw_primer = sample['LinkerPrimerSequence']
+        expanded_primers = expand_degeneracies(raw_primer)
+        curr_bc_primers = {}
+        for primer in expanded_primers:
+            curr_bc_primers[primer] = len(primer)
+            all_primers[primer] = len(primer)
+        primer_seqs_lens[sample['BarcodeSequence']] = curr_bc_primers
     
-    Question: should it be possible to add support for unequal length primers?
-    """
-    primer_seq_len = None 
-    all_primer_seqs = set([])
-    for curr_pat in primer_seq_pats:
-        curr_pat_len = len(curr_pat)
-        if curr_pat_len < min_primer_len:
-            raise ValueError, "Primer sequence pattern must be >=%s nt" % \
-                min_primer_len
-        if primer_seq_len is None:
-            primer_seq_len = curr_pat_len 
-        elif curr_pat_len != primer_seq_len:
-            raise ValueError, "Primer seq is wrong length"
-        for curr_seq in generate_possibilities(curr_pat):
-            all_primer_seqs.add(curr_seq)
-    return all_primer_seqs, primer_seq_len
+    
+    return hds, id_map, barcode_to_sample_id, warnings, errors, \
+     primer_seqs_lens, all_primers
+
 
 def fasta_ids(fasta_files, verbose=False):
     """ Returns list of ids in FASTA files """
@@ -175,6 +185,15 @@ def split_seq(curr_seq, barcode_len, primer_seq_len):
     primer_seq = rest_of_seq[0:primer_seq_len]
     rest_of_seq = rest_of_seq[primer_seq_len:] 
     return curr_barcode, primer_seq, rest_of_seq 
+    
+def get_barcode(curr_seq, barcode_len):
+	""" Split sequence into barcode and remaining sequence
+	
+	Linker and primer part of remaining sequence, as one must first
+	read the barcode to find the associated primer from the mapping file"""
+	raw_barcode = curr_seq[0:barcode_len]
+	raw_seq = curr_seq[barcode_len:]
+	return raw_barcode, raw_seq
 
 def primer_exceeds_mismatches(primer_seq, all_primer_seqs, max_primer_mm):
     """Returns True if primer exceeds allowed mismatches"""   
@@ -191,16 +210,23 @@ def seq_exceeds_homopolymers(curr_seq, max_len=6):
             return True
     return False
 
-def check_barcode(curr_barcode, barcode_type, valid_map):
-    """Return whether barcode is valid, and attempt at correction."""
+def check_barcode(curr_barcode, barcode_type, valid_map, \
+ attempt_correction=True):
+    """Return whether barcode is valid, and attempt correction."""
+    
+    corrected_bc = False
     if curr_barcode in valid_map:
-        return False, curr_barcode
+        return False, curr_barcode, corrected_bc
+    elif attempt_correction == False:
+        return True, curr_barcode, corrected_bc
+    
     if barcode_type in BARCODE_TYPES:
         expect_len, curr_bc_fun  = BARCODE_TYPES[barcode_type]
         barcode, num_errors = curr_bc_fun(curr_barcode, valid_map)
-        return num_errors, barcode
+        corrected_bc = True
+        return num_errors, barcode, corrected_bc
     else:
-        return True, None
+        return True, None, corrected_bc
 
 def make_histograms(pre_lengths, post_lengths, binwidth=10):
     """Makes histogram data for pre and post lengths"""
@@ -260,13 +286,21 @@ def get_seq_lengths(seq_lengths, bc_counts):
     return all_seq_lengths, good_seq_lengths
  
 def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings, 
-    filters, barcode_len, primer_seq_len, keep_primer, keep_barcode, barcode_type, 
-    max_bc_errors,remove_unassigned):
+    filters, barcode_len, keep_primer, keep_barcode, barcode_type, 
+    max_bc_errors,remove_unassigned, attempt_bc_correction,
+    primer_seqs_lens, all_primers, max_primer_mm):
     """Checks fasta-format sequences and qual files for validity."""
     seq_lengths = {}
     bc_counts = defaultdict(list)
     curr_ix = starting_ix
     corr_ct = 0 #count of corrected barcodes
+
+
+    primer_mismatch_count = 0
+    all_primers_lens = list(set(all_primers.values()))
+    all_primers_lens.sort()
+
+
     
     for fasta_in in fasta_files:
         for curr_id, curr_seq in MinimalFastaParser(fasta_in):
@@ -275,20 +309,60 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
             curr_qual = qual_mappings.get(curr_rid, None)
             seq_lengths[curr_rid] = curr_len
             failed = False
+            
             for f in filters:
                 failed = failed or f(curr_rid, curr_seq, curr_qual)
             if failed:  #if we failed any of the checks, bail out here
                 bc_counts['#FAILED'].append(curr_rid)
                 continue
+                
+            # Get the current barcode to look up the associated primer(s)
+            raw_barcode, raw_seq = get_barcode(curr_seq, barcode_len)
+            
+            try:
+            	current_primers = primer_seqs_lens[raw_barcode]
+            	# In this case, all values will be the same, i.e. the length
+            	# of the given primer, or degenerate variations thereof.
+            	primer_len = current_primers.values()[0]
+
+            	if primer_exceeds_mismatches(raw_seq[:primer_len],\
+            	 current_primers, max_primer_mm):
+            	 	bc_counts['#FAILED'].append(curr_rid)
+            		primer_mismatch_count += 1
+            		continue
+            except KeyError:
+            	# If the barcode read does not match any of those in the 
+            	# mapping file, the situation becomes more complicated.  We do
+            	# not know the length the sequence to slice out to compare to
+            	# our primer sets, so, in ascending order of all the given
+            	# primer lengths, a sequence will the sliced out and compared
+            	# to the primer set.  
+            	current_primers = all_primers
+            	found_match = False
+            	for seq_slice_len in all_primers_lens:
+            		if not(primer_exceeds_mismatches(raw_seq[:seq_slice_len],\
+            		 current_primers, max_primer_mm)):
+            		 	primer_len = seq_slice_len
+            		 	found_match = True
+            		 	break
+            	if not found_match:
+            		bc_counts['#FAILED'].append(curr_rid)
+            		primer_mismatch_count += 1
+            		continue
+
             # split seqs
-            cbc, cpr, cres = split_seq(curr_seq, barcode_len, primer_seq_len)
+            cbc, cpr, cres = split_seq(curr_seq, barcode_len,\
+             primer_len)
+
+            
             # get current barcode
             try:
-                bc_diffs, curr_bc = \
-                    check_barcode(cbc, barcode_type, valid_map.keys())
+                bc_diffs, curr_bc, corrected_bc = \
+                    check_barcode(cbc, barcode_type, valid_map.keys(), \
+                    attempt_bc_correction)
                 if bc_diffs > max_bc_errors:
                     raise ValueError, "Too many errors in barcode"
-                corr_ct += bool(bc_diffs)
+                corr_ct += bool(corrected_bc)
             except Exception, e:
                 bc_counts[None].append(curr_rid)
                 continue
@@ -302,13 +376,12 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
                 write_seq = cpr + write_seq
             if keep_barcode:
                 write_seq = cbc + write_seq
-
-            #fix problem where empty seqs could be written out, i.e. with only header
+                
             if not write_seq:
                 bc_counts['#FAILED'].append(curr_rid)
                 continue
-                
-            if remove_unassigned:
+                 
+            if remove_unassigned or (not attempt_bc_correction):
                 if curr_samp_id!="Unassigned":
                     fasta_out.write(">%s %s orig_bc=%s new_bc=%s bc_diffs=%s\n%s\n" % 
                     (new_id, curr_rid, cbc, curr_bc, int(bc_diffs), write_seq))
@@ -319,19 +392,24 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
                     (new_id, curr_rid, cbc, curr_bc, int(bc_diffs), write_seq))
             curr_ix += 1
     log_out = format_log(bc_counts, corr_ct, seq_lengths, valid_map, filters,\
-    remove_unassigned)
+    remove_unassigned, attempt_bc_correction, primer_mismatch_count, \
+    max_primer_mm)
     all_seq_lengths, good_seq_lengths = get_seq_lengths(seq_lengths, bc_counts)
     return log_out, all_seq_lengths, good_seq_lengths
 
 def format_log(bc_counts, corr_ct, seq_lengths, valid_map, filters,\
-remove_unassigned):
+remove_unassigned, attempt_bc_correction, primer_mismatch_count, max_primer_mm):
     """Makes log lines"""
+
+    
     log_out = []
     all_seq_lengths, good_seq_lengths = get_seq_lengths(seq_lengths, bc_counts)
     log_out.append("Number raw input seqs\t%d\n" % len(seq_lengths)) 
     
     for f in filters:
         log_out.append(str(f))
+    log_out.append('Num mismatches in primer exceeds limit of %s: %d\n' %\
+     (max_primer_mm, primer_mismatch_count))
     log_out.append("Raw len min/max/avg\t%.1f/%.1f/%.1f" % 
         (min(all_seq_lengths), max(all_seq_lengths), mean(all_seq_lengths)))
     
@@ -346,8 +424,15 @@ remove_unassigned):
     
     log_out.append("\nBarcodes corrected/not\t%d/%d" % 
             (corr_ct, len(bc_counts[None])))
-    log_out.append("Uncorrected barcodes will not be written to the output "+\
-    "fasta file.\n")
+    if attempt_bc_correction:
+        log_out.append("Uncorrected barcodes will not be written to the "+\
+        "output fasta file.\nCorrected barcodes will be written with "+\
+        "the appropriate barcode category.\nCorrected but unassigned "+\
+        "sequences will be written as such unless disabled via the -r "+\
+        "option.\n")
+    else:
+        log_out.append("Barcode correction has been disabled via the -c "+\
+        "option.\n")
     log_out.append("Total valid barcodes that are not in mapping file\t%d" %\
     len(valid_bc_nomap_counts)) 
     if valid_bc_nomap:
@@ -357,6 +442,9 @@ remove_unassigned):
     if remove_unassigned:
         log_out.append("Sequences associated with valid barcodes that are not"+\
         " in the mapping file will not be written. -r option enabled.")
+    elif not attempt_bc_correction:
+        log_out.append("Barcode correction has been disabled (-c option), "+\
+        "no unassigned or invalid barcode sequences will be recorded.")
     else:
         log_out.append("Sequences associated with valid barcodes that are "+\
         "not in the mapping file will be written as 'unassigned'.  -r option "+\
@@ -382,12 +470,14 @@ remove_unassigned):
     return log_out
 
 def preprocess(fasta_files, qual_files, mapping_file, 
-    primer_seq_pats=STANDARD_BACTERIAL_PRIMER, 
     barcode_type="golay_12",
     min_seq_len=200, max_seq_len=1000, min_qual_score=25, starting_ix=1,
     keep_primer=True, max_ambig=0, max_primer_mm=1, trim_seq_len=True,
     dir_prefix='.', max_bc_errors=2, max_homopolymer=4,remove_unassigned=False,
-    keep_barcode=False):
+    keep_barcode=False, attempt_bc_correction=True):
+        
+    
+    
     """
     Preprocess barcoded libraries, e.g. from 454.
 
@@ -399,8 +489,6 @@ def preprocess(fasta_files, qual_files, mapping_file,
     
     mapping_file: mapping file with BarcodeSequence column containing valid 
     barcodes used in the 454 run 
-
-    primer_seq_pats: list of valid primer sequences, can be degenerate.
 
     barcode_type: type of barcode, e.g. golay_12. Should appear in list of
     known barcode types.
@@ -427,11 +515,15 @@ def preprocess(fasta_files, qual_files, mapping_file,
 
     max_bc_errors: maximum number of barcode errors to allow in output seqs
     
-    max_homopolymer: NEEDS description
+    max_homopolymer: maximum number of a nucleotide that can be 
+    repeated in a given sequence.
     
     remove_unassigned: If True (False default), will not write seqs to the
     output .fna file that have a valid barcode (by Golay or Hamming standard)
     but are not included in the input mapping file.
+    
+    attempt_bc_correction: (default True) will attempt to find nearest valid
+    barcode.  Can be disabled to improve performance.
 
     Result:
     in dir_prefix, writes the following files:
@@ -460,17 +552,23 @@ def preprocess(fasta_files, qual_files, mapping_file,
     except OSError:
         mkdir(dir_prefix)
 
-    # Generate primer sequence patterns
+    """# Generate primer sequence patterns - changing to mapping file primers.
     all_primer_seqs, primer_seq_len = \
-        get_primer_seqs(primer_seq_pats.split(','))
+        get_primer_seqs(primer_seq_pats.split(',')) """
+        
+
 
     # Check mapping file and get barcode mapping 
     map_file = open(mapping_file, 'U')
-    headers, id_map, valid_map, warnings, errors = \
-        check_map(map_file)
+    headers, id_map, valid_map, warnings, errors, \
+     primer_seqs_lens, all_primers = check_map(map_file)
+     
+    
+
     map_file.close()
     if errors:
-        raise ValueError, "Invalid mapping file. Validate with MapCheck first: %s" % "\n".join(errors)
+        raise ValueError, "Invalid mapping file. "+\
+        "Validate with check_id_map first: %s" % "\n".join(errors)
 
     # Check barcode type
     if barcode_type not in BARCODE_TYPES:
@@ -526,22 +624,24 @@ def preprocess(fasta_files, qual_files, mapping_file,
     filters.append(SeqQualBad(
         'Num ambiguous bases exceeds limit of %s' % max_ambig,
         lambda id_, seq, qual: count_ambig(seq) > max_ambig))
-    filters.append(SeqQualBad(
-        'Num mismatches in primer exceeds limit of %s' % max_primer_mm,
-        lambda id_, seq, qual: primer_exceeds_mismatches(
-            seq[barcode_len:barcode_len+primer_seq_len], all_primer_seqs,
-            max_primer_mm)))
+    # Changed this to check entire sequence after barcode-could cause issue
+    # if barcode-linker-primer have long homopolymers though.
     filters.append(SeqQualBad(
         'Max homopolymer run exceeds limit of %s' % max_homopolymer,
         lambda id_, seq, qual: seq_exceeds_homopolymers(
-            seq[barcode_len+primer_seq_len:], max_homopolymer)))
+            seq[barcode_len:], max_homopolymer)))
 
     # Check seqs and write out
     fasta_out = open(dir_prefix + '/' + 'seqs.fna', 'w+')
-    log_stats, pre_lens, post_lens = check_seqs(fasta_out, fasta_files, 
+    '''log_stats, pre_lens, post_lens = check_seqs(fasta_out, fasta_files, 
         starting_ix, valid_map, qual_mappings, filters, barcode_len,
         primer_seq_len, keep_primer, keep_barcode, barcode_type, max_bc_errors,
-        remove_unassigned)
+        remove_unassigned) '''
+    log_stats, pre_lens, post_lens = check_seqs(fasta_out, fasta_files, 
+        starting_ix, valid_map, qual_mappings, filters, barcode_len,
+        keep_primer, keep_barcode, barcode_type, max_bc_errors,
+        remove_unassigned, attempt_bc_correction,
+        primer_seqs_lens, all_primers, max_primer_mm)
 
     # Write log file
     log_file = open(dir_prefix + '/' + "split_library_log.txt", 'w+')
@@ -566,7 +666,7 @@ QUAL_FNAMES: Comma-delimited paths of quality files, in FASTA-like
   format.
 MAP_FNAME: Path to tab-delimited mapping file.  Must contain a header
   line indicating SampleID in the first column and BarcodeSequence in
-  the second.
+  the second, LinkerPrimerSequence in the third.
 
 Example usage:
 
@@ -579,6 +679,7 @@ python %prog -f a.fna,b.fna -m samples.txt
 or
 
 python %prog -f a.fna,b.fna -q a.qual,b.qual -m samples.txt
+
 """
 
 
@@ -593,8 +694,9 @@ def make_cmd_parser():
         help='names of fasta files, comma-delimited [REQUIRED]')
     parser.add_option('-q', '--qual', dest='qual_fnames', 
         help='names of qual files, comma-delimited [default: %default]')
-    parser.add_option('-p', '--primers', default=STANDARD_BACTERIAL_PRIMER,
-        help='degen sequences of primers, comma-delimited [default: %default]')
+    #** Removing primer option, mapping file now requires primers
+    """parser.add_option('-p', '--primers', default=STANDARD_BACTERIAL_PRIMER,
+        help='degen sequences of primers, comma-delimited [default: %default]') """
     parser.add_option('-l', '--min-seq-length', dest='min_seq_len',
         type=int, default=200,
         help='minimum sequence length, in nucleotides [default: %default]')
@@ -603,7 +705,8 @@ def make_cmd_parser():
         help='maximum sequence length, in nucleotides [default: %default]')
     parser.add_option('-t', '--trim-seq-length', dest='trim_seq_len',
         action='store_true',
-        help='calculate sequence lengths after trimming primers and barcodes')
+        help='calculate sequence lengths after trimming primers and barcodes'+\
+         ' [default: %default]', default=False)
     parser.add_option('-Q', '--min-qual-score', type=int, default=25,
         help='min average qual score allowed in read [default: %default]')
     parser.add_option('-k', '--keep-primer', action='store_true',
@@ -620,7 +723,7 @@ def make_cmd_parser():
     parser.add_option('-b', '--barcode-type', default='golay_12', 
         help=\
         'barcode type, e.g. 4 or hamming_8 or golay_12 [default: %default]')
-    parser.add_option('-d', '--dir-prefix', default='.',
+    parser.add_option('-o', '--dir-prefix', default='.',
         help='directory prefix for output files [default: %default]')
     parser.add_option('-e', '--max-barcode-errors', dest='max_bc_errors',
         default=1.5, type=float,
@@ -631,6 +734,9 @@ def make_cmd_parser():
     parser.add_option('-r', '--remove_unassigned', default=False,
         action='store_true', help='remove sequences which are Unassigned from \
             output [default: %default]')
+    parser.add_option('-c', '--disable_bc_correction', default=False,
+        action='store_true', help='Disable attempts to find nearest '+\
+        'corrected barcode.  Can improve performance. [default: %default]')
     options, args = parser.parse_args()
 
     required_options = [
@@ -665,9 +771,9 @@ if __name__ == "__main__":
             stderr.write(
             "Fasta file does not end with .fna: is it really a seq file?\n%s\n" 
             % f)
+    
 
     preprocess(fasta_files, qual_files, mapping_file,
-    primer_seq_pats = options.primers,
     barcode_type=options.barcode_type,
     starting_ix = options.start_index,
     min_seq_len = options.min_seq_len,
@@ -682,5 +788,6 @@ if __name__ == "__main__":
     max_bc_errors = options.max_bc_errors,
     max_homopolymer = options.max_homopolymer,
     remove_unassigned=options.remove_unassigned,
+    attempt_bc_correction=not options.disable_bc_correction
     )
  
