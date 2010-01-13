@@ -164,7 +164,7 @@ def parse_otu_sample(lines, num_meta, meta_dict):
         red_node_file_str.append(node_file_line)
 
     for n,d in red_nodes.items():
-        red_node_file_line = ['@'+n[0],'','otu_collapsed',str(d),str(d),'other']
+        red_node_file_line = ['@'+n[0],'','otu_collapsed',str(d),str(float(d)),'other']
         red_node_file_line.extend(['otu']*num_meta)
         red_node_file_str.append('\t'.join(red_node_file_line))
         red_edge_file_str.append('\t'.join([n[0],'@'+n[0],"1","missed",n[1]]))
