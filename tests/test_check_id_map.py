@@ -3,12 +3,13 @@
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2009, the PyCogent Project" #consider project name
-__credits__ = ["Rob Knight"] #remember to add yourself
+__credits__ = ["Rob Knight","William Walters"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "0.1"
-__maintainer__ = "Rob Knight"
-__email__ = "rob@spot.colorado.edu"
+__maintainer__ = "William Walters"
+__email__ = "rob@spot.colorado.edu","william.a.walters@colorado.edu"
 __status__ = "Prototype"
+
 
 from collections import defaultdict
 from numpy import array
@@ -23,7 +24,8 @@ from qiime.check_id_map import (find_diff_length, CharFilter, lwu,
     check_vals_by_type, check_vals_by_contains, check_field_types,
     check_same_length, check_bad_chars, check_mixed_caps,
     check_missing_descriptions, check_duplicate_descriptions,
-    check_description_chars, parse_id_map
+    check_description_chars, parse_id_map, get_primers_barcodes,
+    check_primers_barcodes
     )
 
 class TopLevelTests(TestCase):
@@ -43,17 +45,17 @@ class TopLevelTests(TestCase):
 
     def test_run_checks(self):
         """run_checks should run a series of checks on data"""
-        def bad_if_upper(x):
+        def bad_if_upper(x, raw_data=None):
             if x.upper() == x:
                 return x.lower(), 'X is uppercase'
             else:
                 return x, ''
-        def bad_if_short(x):
+        def bad_if_short(x, raw_data=None):
             if len(x) < 10:
                 return x+'-----', 'X is short'
             else:
                 return x, ''
-        def bad_if_lower(x):
+        def bad_if_lower(x, raw_data=None):
             if x.lower() == x:
                 return x, 'X is lowercase'
             else:
@@ -88,9 +90,7 @@ class TopLevelTests(TestCase):
         raw_dup_checker = adapt_dupchecker(lambda x:x, 'DupCheck')
         self.assertEqual(raw_dup_checker(['x','y']), (['x','y'],''))
         self.assertEqual(raw_dup_checker(['x','x']), (['x','x'], \
-            "DupChecker 'DupCheck' found the following possible duplicates:\n"+\
-            "Group\tOriginal names\n"+ \
-            "x\tx, x\n"))
+            "DupChecker 'DupCheck' found the following possible duplicates. If these metadata should have the same name, please correct.:\nGroup\tOriginal names\nx\tx, x\n"))
 
     def test_sampleid_missing(self):
         """sampleid_missing should complain if sampleid missing"""
@@ -141,19 +141,19 @@ y\t5\t6\tsample y""")
         fields = ['x','y']
         self.assertEqual(barcode_missing(fields), (fields, 
         "Second field should be barcode field: "+
-        "expected BarcodeSequence but got y."))
+        "expected BarcodeSequence but got y.  Correct header errors before attempting to address warnings."))
         fields = ['x']
         self.assertEqual(barcode_missing(fields), (fields,
-        "Second field should be barcode field but got < 2 fields."))
+        "Second field should be barcode field but got < 2 fields.  Correct header errors before attempting to address warnings."))
 
     def test_description_missing(self):
         """description_missing should complain if description missing"""
         fields = ['x','Description']
         self.assertEqual(description_missing(fields), (fields, ''))
         fields = ['x','y']
-        self.assertEqual(description_missing(fields), (fields + ['Description'],
-        "Last field should be description field: "+
-        "expected Description but got y."))
+        self.assertEqual(description_missing(fields),\
+         (['x', 'y', 'Description'], \
+         'Last field should be description field: expected Description but got y.  Correct header errors before attempting to fix warnings.'))
 
     def test_wrap_arrays(self):
         """wrap_arrays should return correct headers and dict"""
@@ -222,9 +222,7 @@ y\t5\t6\tsample y""")
             ])
         self.assertEqual(check_field_types((bad_bc, field_types)),
             ((bad_bc, field_types),
-                "DupChecker 'bc' found the following possible duplicates:\n"+
-                "Group\tOriginal names\n"+
-                "x\tx, x\n"))
+                "DupChecker 'bc' found the following possible duplicates. If these metadata should have the same name, please correct.:\nGroup\tOriginal names\nx\tx, x\n"))
 
     def test_check_lengths(self):
         """check_lengths should return string of errors for invalid fields"""
@@ -244,7 +242,7 @@ y\t5\t6\tsample y""")
         self.assertEqual(check_same_length((bad_bc, field_types),'bc'),
             ((bad_bc, field_types),
             "In field bc, item yx (sample id y) differs in length from "+
-            "first item x (2 and 1)."))
+            "first item x (2 and 1).Location (row, column):\t1,1"))
 
     def test_check_bad_chars(self):
         """check_bad_chars should return string of errors for invalid fields"""
@@ -261,11 +259,8 @@ y\t5\t6\tsample y""")
             ['x','x!','3','Yes','x'],
             ['y','y','>','No','x'],
             ])
-        self.assertEqual(check_bad_chars((bad_vals, field_types)),
-            ((bad_vals, field_types),
-        "Removed bad chars from cell x! (now x#) in sample id x, col bc.\n" +
-        "Removed bad chars from cell > (now #) in sample id y, col ph."
-        ))
+        
+        self.assertEqual(check_bad_chars((bad_vals, field_types)),((array([['sample', 'bc', 'ph', 'ctl', 'x'],['x', 'x_', '3', 'Yes', 'x'], ['y', 'y', '_', 'No', 'x']], dtype='|S6'), {'sample': 'uid', 'ctl': ['Yes', 'No'], 'ph': float, 'bc': 'uid'}), 'Removed bad chars from cell x! (now x_) in sample id x, col bc. Location (row, column):\t0,1\nRemoved bad chars from cell > (now _) in sample id y, col ph. Location (row, column):\t1,2'))
 
     def test_check_mixed_caps(self):
         """check_mixed_caps should return string of errors for invalid fields"""
@@ -284,7 +279,7 @@ y\t5\t6\tsample y""")
             ])
         self.assertEqual(check_mixed_caps((bad_vals, field_types)),
             ((bad_vals, field_types),
-            "DupChecker 'Caps and Whitespace' found the following possible duplicates in field bc:\nGroup\tOriginal names\ny\tY, y\n\nDupChecker 'Caps and Whitespace' found the following possible duplicates in field ctl:\nGroup\tOriginal names\nyes\tYes,   yes_ \n"
+            "DupChecker 'Caps and Whitespace' found the following possible duplicates. If these metadata should have the same name, please correct. Found in field bc:\nGroup\tOriginal names\ny\tY, y\n\nDupChecker 'Caps and Whitespace' found the following possible duplicates. If these metadata should have the same name, please correct. Found in field ctl:\nGroup\tOriginal names\nyes\tYes,   yes_ \n"
         ))
 
     def test_check_missing_descriptions(self):
@@ -296,61 +291,67 @@ y\t5\t6\tsample y""")
         rd = 'test'
         self.assertEqual(cmd((good_sd, sample_ids, rd)), 
             ((good_sd, sample_ids, rd), ''))
-        self.assertEqual(cmd((bad_sd, sample_ids, rd)),
-            ((['x','test','test'], sample_ids, rd), 
-            "These sample ids lack descriptions (used run description): 2,3"))
+        self.assertEqual(cmd((bad_sd, sample_ids, rd)),\
+         ((['x', 'missing_description', 'missing_description'], \
+         ['1', '2', '3'], 'test'), \
+         "These sample ids lack descriptions (replaced with 'missing_description'): 2,3"))
+
 
     def test_check_duplicate_descriptions(self):
         """check_duplicate_descriptions should warn about duplicates"""
         cdd = check_duplicate_descriptions
-        good_sd = ['x','y','z']
-        bad_sd = ['x', 'y', 'x']
-        sample_ids = ['1','2','3']
+        good_sd = ['Description','x','y','z']
+        dup_sd = ['Description','x', 'y', 'x']
+        sample_ids = ['#SampleID','1','2','3']
+        raw_data_good = [['#SampleID','Description'],['1','x'],['2','y'],['3','z']]
+        raw_data_dup = [['#SampleID','Description'],['1','x'],['2','y'],['3','x']]
         rd = 'test'
-        self.assertEqual(cdd((good_sd, sample_ids, rd)), 
+        self.assertEqual(cdd((good_sd, sample_ids, rd),raw_data=raw_data_good), 
             ((good_sd, sample_ids, rd), ''))
-        self.assertEqual(cdd((bad_sd, sample_ids, rd)),
-            ((bad_sd, sample_ids, rd), 
-                "These sample ids have duplicate descriptions:\n1,3: x"))
+        self.assertEqual(cdd((dup_sd, sample_ids, rd),raw_data=raw_data_dup), \
+         ((dup_sd, sample_ids, rd), 'These sample ids have duplicate descriptions:\n1,3: x\nRow, column for all duplicate descriptions:\nLocation (row, column):\t0,1\nLocation (row, column):\t2,1'))
+        # ((bad_sd, sample_ids, rd) removed
 
     def test_check_description_chars(self):
         """check_description_chars should warn about bad chars"""
         cdc = check_description_chars
-        good_sd = ['x','y','z']
-        bad_sd = ['<', 'y', 'x>']
-        sample_ids = ['1','2','3']
+        good_sd = ['Description','x' , 'y' , 'z']
+        bad_sd = ['Description','<' , 'y' , 'x>']
+        sample_ids = ['#SampleID','1','2','3']
+        raw_data_good = [['#SampleID','Description'],['1','x'],['2','y'],\
+         ['3','z']]
+        raw_data_bad = [['#SampleID','Description'],['1','<'],['2','y'],\
+         ['3','x>']]
         rd = 'test'
-        self.assertEqual(cdc((good_sd, sample_ids, rd)), 
+        self.assertEqual(cdc((good_sd, sample_ids, rd), raw_data=raw_data_good), 
             ((good_sd, sample_ids, rd), ''))
-        self.assertEqual(cdc((bad_sd, sample_ids, rd)),
-            ((['#', 'y', 'x#'], sample_ids, rd), 
-                "These sample ids have bad characters in their descriptions:\n"+
-                "1: changed '<' to '#'\n3: changed 'x>' to 'x#'"))
+        self.assertEqual(cdc((bad_sd, sample_ids, rd), raw_data=raw_data_bad),
+            ((['Description', '_', 'y', 'x_'], ['#SampleID', '1', '2', '3'], 'test'), "These sample ids have bad characters in their descriptions:\n1: changed '<' to '_'\n3: changed 'x>' to 'x_'\nRow, column for all descriptions with bad characters:\nLocation (row, column):\t0,1\nLocation (row, column):\t2,1"))
 
     def test_parse_id_map(self):
         """parse_id_map should return correct results on small test map"""
-        s = """#SampleID\tBarcodeSequence\tX\tDescription
+        s = """#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tX\tDescription
 #fake data
-x\tAA\t3\tsample x
-y\t"AC"\t4\t"sample y"
-z\tGG\t5\tsample z"""
+x\tAA\tACGT\t3\tsample_x
+y\t"AC"\tACGT\t4\t"sample_y"
+z\tGG\tACGT\t5\tsample_z"""
         f = StringIO(s)
         f.name='test.xls'
         headers, id_map, description_map, run_description, errors, warnings = \
             parse_id_map(f)
 
-        self.assertEqual(headers, ['BarcodeSequence','X'])
-        self.assertEqual(id_map, {
-        'x':{'BarcodeSequence':'AA','X':'3'},
-        'y':{'BarcodeSequence':'AC','X':'4'},
-        'z':{'BarcodeSequence':'GG','X':'5'}
-        })
+        self.assertEqual(headers, ['BarcodeSequence', 'LinkerPrimerSequence', \
+         'X'])
+        self.assertEqual(id_map, {'y': {'X': '4', 'LinkerPrimerSequence': \
+         'ACGT', 'BarcodeSequence': 'AC'}, 'x': {'X': '3', \
+         'LinkerPrimerSequence': 'ACGT', 'BarcodeSequence': 'AA'}, 'z': \
+        {'X': '5', 'LinkerPrimerSequence': 'ACGT', 'BarcodeSequence': 'GG'}})
         self.assertEqual(description_map, {
-            'x':'sample x',
-            'y':'sample y',
-            'z':'sample z',
+            'x':'sample_x',
+            'y':'sample_y',
+            'z':'sample_z',
         })
-        self.assertEqual(run_description, 'fake data')
+        self.assertEqual(run_description, ['fake data'])
         self.assertEqual(errors, [])
         self.assertEqual(warnings, [])
 
@@ -439,7 +440,7 @@ class DupCheckerTests(TestCase):
         d = DupChecker(lwu, 'Test')
         self.assertEqual(d.errMsg(['a','b','c']), '')
         self.assertEqual(d.errMsg(['a','A','b']), 
-            "DupChecker 'Test' found the following possible duplicates:\nGroup\tOriginal names\na\ta, A\n")
+            "DupChecker 'Test' found the following possible duplicates. If these metadata should have the same name, please correct.:\nGroup\tOriginal names\na\ta, A\n")
 
     def test_dupIndices(self):
         """DupChecker dupIndices should report dup indices"""
@@ -484,7 +485,24 @@ class SameCheckerTests(TestCase):
         self.assertEqual(s.errMsg(['a','A','B']), 
             "SameChecker 'Test' found the following values different from the first:\nIndex\tVal\tf(Val)\tFirst\tf(First)\n2\tB\tb\ta\ta\n")
 
-
+    def test_check_primers_barcodes(self):
+        """ Should give warnings for invalid or missing primers/barcodes """
+        
+        
+        problems = defaultdict(list)
+        barcodes_good = ['CACGC','CCACG','GGTTA']
+        # The linker sequence, usually two base pairs, are considered to be
+        # part of the primer.
+        primers_good = ['GGATTCG','AATRCGG','CANGCRT']
+        # Should append nothing to problems with valid barcodes, primers.
+        self.assertEqual(check_primers_barcodes(primers_good, barcodes_good, \
+         problems), defaultdict(list))
+        barcodes_bad = ['CAC1C','','GGAAT']
+        primers_bad = ['1GGATTCG','ATCCATCG','']
+        # Should create warnings about invalid characters and missing barcode
+        # and primer
+        self.assertEqual(check_primers_barcodes(primers_bad, barcodes_bad, \
+         problems),  defaultdict(list, {'warning': ['The primer 1GGATTCG has invalid characters.  Location (row, column):\t0,2', 'Missing primer.  Location (row, column):\t2,2', 'The barcode CAC1C has invalid characters.  Location (row, column):\t0,1', 'Missing barcode. Location (row, column):\t1,1']}))
             
 
 
