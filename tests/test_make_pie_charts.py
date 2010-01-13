@@ -60,7 +60,7 @@ class TopLevelTests(TestCase):
         except OSError:
             pass
         img_data = get_counts(self.lines,"Phylum",True,5,"/tmp/qiimewebfiles/")
-        self.assertEqual(len(img_data), 3)
+        self.assertEqual(len(img_data), 4)
         img_data = get_counts(self.lines,"Phylum",False,5,"/tmp/qiimewebfiles/")
         self.assertEqual(len(img_data), 1)
         self._paths_to_clean_up = ["/tmp/qiimewebfiles/pie_charts/"+f \
