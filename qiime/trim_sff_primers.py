@@ -92,7 +92,7 @@ if __name__ == '__main__':
                 outfile = open(outfile_path, 'w')
                 for id_, length in seqlengths.items():
                     outfile.write("%s\t%s\t%s\n" %(id_,readlength + 1,  #need +1 for 1-based index 
-                        seqlengths[id_] + 1))
+                        seqlengths[id_]))
                 outfile.close()
 
                 sfffile_cmd_to_run = sfffile_cmd % (options.sfffile_path, 
