@@ -384,6 +384,7 @@ def make_run_and_experiment(experiment_lines, sff_dir):
             field_dict = {} # to keep the last one in scope for outer block
             for MEMBER_ORDER, line in enumerate(experiment_lines):
                 field_dict = dict(zip(columns, line))
+                key_seq = field_dict['KEY_SEQ']
                 barcode = field_dict['BARCODE']
                 if barcode not in barcodes:
                     barcodes.add(barcode)
@@ -431,7 +432,7 @@ def make_run_and_experiment(experiment_lines, sff_dir):
                spot_descriptor_wrapper = spot_descriptor_without_linker_wrapper
             else:
                 spot_descriptor_wrapper = spot_descriptor_with_linker_wrapper
-            field_dict['TOTAL_TECHNICAL_READ_LENGTH'] = len(primer) + len(barcode) + len(linker) + 1 #note that SRA uses 1-indexed lengths
+            field_dict['TOTAL_TECHNICAL_READ_LENGTH'] = len(key_seq) + len(primer) + len(barcode) + len(linker) + 1 #note that SRA uses 1-indexed lengths
             spot_descriptor = spot_descriptor_wrapper % field_dict
             field_dict['SPOT_DESCRIPTORS_XML'] = spot_descriptor
             field_dict['PLATFORM_XML'] = platform_blocks[field_dict['PLATFORM']]
