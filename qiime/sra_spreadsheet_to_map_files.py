@@ -35,11 +35,21 @@ def remap_lines(col_names, lines):
     """Remaps fields in lines, substituting 'None' for blank fields."""
     sample_id_index = col_names.index('POOL_MEMBER_NAME')
     barcode_sequence_index = col_names.index('BARCODE')
-    result = [['#SampleID', 'BarcodeSequence'] + 
+    primer_sequence_index = col_names.index('PRIMER')
+    if 'LINKER' in col_names:
+        linker_sequence_index = col_names.index('LINKER')
+    else:
+        linker_sequence_index = None
+
+    result = [['#SampleID', 'BarcodeSequence', 'LinkerPrimerSequence'] + 
         [i.lstrip('#') for i in col_names] + ['Description']]
     for line in lines:
-        result.append([line[sample_id_index], line[barcode_sequence_index]] +
-            line + ['None'])
+        curr = [line[sample_id_index], line[barcode_sequence_index]]]
+        p = line[primer_sequence_index]
+        if linker_sequence_index is not None:
+            p = line[linker_sequence_index] + p
+        curr.append(p)
+        curr.extend(line + ['None'])
     return result
 
 def write_map_files(infile):
