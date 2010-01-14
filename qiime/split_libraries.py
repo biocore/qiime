@@ -285,6 +285,31 @@ def get_seq_lengths(seq_lengths, bc_counts):
     good_seq_lengths = map(seq_lengths.__getitem__, good_seq_ids)
     return all_seq_lengths, good_seq_lengths
  
+def check_window_qual_scores(qual_scores, window=50, min_average=25):
+    """Check that all windows have ave qual score > threshold."""
+
+    
+    # Code from Jens Reeder, added 1-13-2010
+    l = len(qual_scores)
+
+    window = min(window, l)
+    if (window == 0):
+        return True
+    #initialize with sum of first window
+    window_score = sum(qual_scores[:window])   
+    idx = 0
+    while (window_score/float(window) >= min_average
+           and idx < l-window):
+            #'Move' window
+            window_score += qual_scores[idx+window] - qual_scores[idx]
+            idx += 1
+    if (idx == l-window):
+        # we processed all qual_scores, must be good
+        return True
+    else:
+        return False
+
+
 def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings, 
     filters, barcode_len, keep_primer, keep_barcode, barcode_type, 
     max_bc_errors,remove_unassigned, attempt_bc_correction,
@@ -474,7 +499,7 @@ def preprocess(fasta_files, qual_files, mapping_file,
     min_seq_len=200, max_seq_len=1000, min_qual_score=25, starting_ix=1,
     keep_primer=True, max_ambig=0, max_primer_mm=1, trim_seq_len=True,
     dir_prefix='.', max_bc_errors=2, max_homopolymer=4,remove_unassigned=False,
-    keep_barcode=False, attempt_bc_correction=True):
+    keep_barcode=False, attempt_bc_correction=True, qual_score_window=False):
         
     
     
@@ -605,12 +630,7 @@ def preprocess(fasta_files, qual_files, mapping_file,
 
     #make filters
     filters = []
-    if qual_mappings:
-        filters.append(QualMissing)
-        filters.append(SeqQualBad(
-            'Mean qual score below minimum of %s' % min_qual_score, 
-            lambda id_, seq, qual: mean(qual) < min_qual_score))
-    #seq len filter depends on whether we're including the barcode
+        #seq len filter depends on whether we're including the barcode
     if trim_seq_len:
         trim = barcode_len + primer_seq_len
         filters.append(SeqQualBad(
@@ -624,6 +644,18 @@ def preprocess(fasta_files, qual_files, mapping_file,
     filters.append(SeqQualBad(
         'Num ambiguous bases exceeds limit of %s' % max_ambig,
         lambda id_, seq, qual: count_ambig(seq) > max_ambig))
+    
+    if qual_mappings:
+        filters.append(QualMissing)
+        filters.append(SeqQualBad(
+            'Mean qual score below minimum of %s' % min_qual_score, 
+            lambda id_, seq, qual: mean(qual) < min_qual_score))
+    if qual_score_window:
+            filters.append(SeqQualBad('Mean window qual score below '+\
+             'minimum of %s' % min_qual_score, lambda id_, seq, qual: \
+             not check_window_qual_scores(qual, qual_score_window, \
+             min_qual_score)))
+
     # Changed this to check entire sequence after barcode-could cause issue
     # if barcode-linker-primer have long homopolymers though.
     filters.append(SeqQualBad(
@@ -694,9 +726,6 @@ def make_cmd_parser():
         help='names of fasta files, comma-delimited [REQUIRED]')
     parser.add_option('-q', '--qual', dest='qual_fnames', 
         help='names of qual files, comma-delimited [default: %default]')
-    #** Removing primer option, mapping file now requires primers
-    """parser.add_option('-p', '--primers', default=STANDARD_BACTERIAL_PRIMER,
-        help='degen sequences of primers, comma-delimited [default: %default]') """
     parser.add_option('-l', '--min-seq-length', dest='min_seq_len',
         type=int, default=200,
         help='minimum sequence length, in nucleotides [default: %default]')
@@ -707,7 +736,7 @@ def make_cmd_parser():
         action='store_true',
         help='calculate sequence lengths after trimming primers and barcodes'+\
          ' [default: %default]', default=False)
-    parser.add_option('-Q', '--min-qual-score', type=int, default=25,
+    parser.add_option('-s', '--min-qual-score', type=int, default=25,
         help='min average qual score allowed in read [default: %default]')
     parser.add_option('-k', '--keep-primer', action='store_true',
         help='do not remove primer from sequences', default=False)
@@ -728,7 +757,7 @@ def make_cmd_parser():
     parser.add_option('-e', '--max-barcode-errors', dest='max_bc_errors',
         default=1.5, type=float,
         help='maximum number of errors in barcode [default: %default]')
-    parser.add_option('-s', '--start-numbering-at', dest='start_index',
+    parser.add_option('-n', '--start-numbering-at', dest='start_index',
         default=1, type=int,
         help='seq id to use for the first sequence [default: %default]')
     parser.add_option('-r', '--remove_unassigned', default=False,
@@ -737,6 +766,12 @@ def make_cmd_parser():
     parser.add_option('-c', '--disable_bc_correction', default=False,
         action='store_true', help='Disable attempts to find nearest '+\
         'corrected barcode.  Can improve performance. [default: %default]')
+    parser.add_option('-w', '--qual_score_window', default=False,
+        action='store_true', help='Enable sliding window test of quality '+\
+        'scores.  If the average score of a continuous set of 50 nucleotides '+\
+        'falls below the threshold (see -s for default), the sequence is '+\
+        'discarded.  Must pass a .qual file (see -q parameter) if this '+\
+        'functionality is enabled. [default: %default]')
     options, args = parser.parse_args()
 
     required_options = [
@@ -747,6 +782,9 @@ def make_cmd_parser():
             parser.error('Required option %s not found.  Must provide a '
                          'mapping file (-m) and at least one fasta input file '
                          '(-f).' % flag)
+    if options.qual_score_window and not options.qual_fnames:
+        parser.error('To enable sliding window quality test (-w), .qual '+\
+         'files must be included.')
     return options
 
 
@@ -787,7 +825,8 @@ if __name__ == "__main__":
     dir_prefix=options.dir_prefix,
     max_bc_errors = options.max_bc_errors,
     max_homopolymer = options.max_homopolymer,
-    remove_unassigned=options.remove_unassigned,
-    attempt_bc_correction=not options.disable_bc_correction
+    remove_unassigned = options.remove_unassigned,
+    attempt_bc_correction = not options.disable_bc_correction,
+    qual_score_window = options.qual_score_window
     )
  
