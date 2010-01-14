@@ -545,8 +545,8 @@ def parse_command_line_parameters():
     parser.add_option('-r', '--reference_seqs_fp',
         help='Path to reference sequences.  For assignment with blast, these '
         'are used to generate a blast database. For assignment with rdp, they '
-        'are used as training sequences for the classifier '
-        '[default: %default; REQUIRED when method is blast]')
+        'are used as training sequences for the classifier.'
+        '[default: %default; REQUIRED if -b is not provided when method is blast]')
 
     assignment_method_choices = assignment_method_constructors.keys()
     parser.add_option('-m','--assignment_method',\
