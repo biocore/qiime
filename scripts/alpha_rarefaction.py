@@ -72,13 +72,10 @@ def parse_command_line_parameters():
     parser.add_option('-w','--print_only',action='store_true',\
         dest='print_only',help='Print the commands but don\'t call them -- '+\
         'useful for debugging [default: %default]')
-    
-    # parallel not supported yet!    
-    #   SHOULD MAKE THIS -s FOR SERIAL/SINGLE PROC MODE -- PARALLEL WILL
-    #   BE THE DEFAULT ONCE IT'S READY TO GO.
-    # parser.add_option('-p','--parallel',action='store_true',\
-    #     dest='parallel',help='Use parallel scripts where applicable'+\
-    #     ' [default: %default]')
+        
+    parser.add_option('-s','--serial',action='store_true',\
+        dest='serial',help='Do not use parallel scripts'+\
+        ' [default: %default]')
 
     # Set default values here if they should be other than None
     parser.set_defaults(verbose=False,print_only=False,parallel=False,
@@ -106,8 +103,11 @@ if __name__ == "__main__":
     verbose = opts.verbose
     print_only = opts.print_only
     
-    ## REMEMBER TO GRAB opts.parallel WHEN IT BECOMES SUPPORTED.
-    parallel = False
+    parallel = not opts.serial
+    if parallel:
+        # Keeping this check in until fully tested
+        print "Parallel runs not yet supported. Running in single proc mode."
+        parallel = False
     
     try:
         parameter_f = open(opts.parameter_fp)

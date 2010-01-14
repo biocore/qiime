@@ -178,7 +178,7 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,\
          (python_exe_fp, qiime_dir, rep_set_fp, pynast_dir, params_str)
 
     
-    ############
+    # Prep the taxonomy assignment command
     assignment_method = params['assign_taxonomy']['assignment_method']
     assign_taxonomy_dir = '%s/%s_assigned_taxonomy' %\
      (rep_set_dir,assignment_method)
@@ -216,21 +216,6 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,\
         assign_taxonomy_cmd = '%s %s/assign_taxonomy.py -o %s -i %s %s' %\
          (python_exe_fp, qiime_dir, assign_taxonomy_dir,\
           rep_set_fp, params_str)
-    ############
-    
-    # Prep the taxonomy assignment command
-    # assign_taxonomy_dir = '%s/%s_assigned_taxonomy' %\
-    #  (rep_set_dir,params['assign_taxonomy']['assignment_method'])
-    # taxonomy_fp = '%s/%s_rep_set_tax_assignments.txt' % \
-    #  (assign_taxonomy_dir,input_basename)
-    # try:
-    #     params_str = get_params_str(params['assign_taxonomy'])
-    # except KeyError:
-    #     params_str = ''
-    # # Build the taxonomy assignment command
-    # assign_taxonomy_cmd = '%s %s -o %s -i %s %s' %\
-    #  (python_exe_fp, assign_taxonomy_fp, assign_taxonomy_dir,\
-    #   rep_set_fp, params_str)
     
     # Append commands which can be run simulataneously in parallel
     commands.append([('Align sequences', align_seqs_cmd),\
@@ -432,11 +417,28 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,\
         params_str = get_params_str(params['rarefaction'])
     except KeyError:
         params_str = ''
-    # Build the rarefaction command
-    rarefaction_cmd = \
-     '%s %s/rarefaction.py -i %s -m %s -x %s -s %s -o %s %s' %\
-     (python_exe_fp, qiime_dir, otu_table_fp, min_count, median_count, \
-      step, rarefaction_dir, params_str)
+    if parallel:
+        try:
+            # Want to find a cleaner strategy for this: the rarefaction 
+            # parallel script doesn't support the jobs_to_start option -
+            # one job is started per rarefied otu table to be created -
+            # so need to remove this option. This works for now though.
+            d = params['parallel'].copy()
+            del d['jobs_to_start']
+            params_str += ' %s' % get_params_str(d)
+        except KeyError:
+            pass        
+        # Build the rarefaction command
+        rarefaction_cmd = \
+         '%s %s/parallel/rarefaction.py -T -i %s -m %s -x %s -s %s -o %s %s' %\
+         (python_exe_fp, qiime_dir, otu_table_fp, min_count, median_count, \
+          step, rarefaction_dir, params_str)
+    else:
+        # Build the rarefaction command
+        rarefaction_cmd = \
+         '%s %s/rarefaction.py -i %s -m %s -x %s -s %s -o %s %s' %\
+         (python_exe_fp, qiime_dir, otu_table_fp, min_count, median_count, \
+          step, rarefaction_dir, params_str)
     commands.append([('Alpha rarefaction', rarefaction_cmd)])
     
     # Prep the alpha diversity command
