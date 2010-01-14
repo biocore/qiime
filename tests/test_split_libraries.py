@@ -18,12 +18,26 @@ from qiime.split_libraries import (
     ok_mm_primer, check_map, fasta_ids, qual_score,
     qual_scores, count_ambig, split_seq, primer_exceeds_mismatches,
     check_barcode, make_histograms, format_histograms, SeqQualBad,
-    seq_exceeds_homopolymers,
+    seq_exceeds_homopolymers, check_window_qual_scores
 )
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
 
+    def test_check_window_qual_scores(self):
+        """check_window_qual_scores returns False if window below qual 
+        threshold."""
+        scores1 = [8,8,8,8,8,8,8,2,2,2,2,2]
+        self.assertEqual(check_window_qual_scores(scores1, 5, 5), False)
+        self.assertEqual(check_window_qual_scores(scores1, 10, 5), True)
+        # windowsize larger than qual score list works
+        self.assertEqual(check_window_qual_scores(scores1, 100, 5), True)
+        self.assertEqual(check_window_qual_scores([], 5, 1), True)
+        #check each base  in its own window
+        self.assertEqual(check_window_qual_scores(scores1, 1, 2), True)
+        self.assertEqual(check_window_qual_scores(scores1, 1, 5), False)
+
+    
     def test_expand_degeneracies(self):
         """generate_possibilities should make possible strings"""
         self.assertEqual(expand_degeneracies('ACG'), ['ACG'])
