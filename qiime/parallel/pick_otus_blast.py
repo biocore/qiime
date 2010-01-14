@@ -10,6 +10,7 @@ from __future__ import division
 from optparse import OptionParser
 from os import popen, system, makedirs, mkdir
 from os.path import split, splitext
+from subprocess import check_call, CalledProcessError
 from cogent.app.util import get_tmp_filename
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from qiime.parallel.util import split_fasta, get_random_job_prefix, write_jobs_file,\
@@ -30,17 +31,13 @@ __status__ = "Prototype"
 
 def get_job_commands(python_exe_fp,pick_otus_fp,fasta_fps,\
     output_dir,blast_db,job_prefix,working_dir,max_e_value,\
-    similarity,command_prefix=None,command_suffix=None):
+    similarity,command_prefix='/bin/bash; ',command_suffix='; exit'):
     """Generate pick_otus commands which should be submitted to cluster
     """
     # Create basenames for each of the output files. These will be filled
     # in to create the full list of files created by all of the runs.
     out_filenames = [job_prefix + '.%d_otus.log', 
                      job_prefix + '.%d_otus.txt']
-    
-    # Initialize the command_prefix and command_suffix
-    command_prefix = command_prefix or '/bin/bash; '
-    command_suffix = command_suffix or '; exit'
     
     # Create lists to store the results
     commands = []
@@ -123,12 +120,9 @@ def parallel_blast_process_run_results_f(f):
 
 def get_poller_command(python_exe_fp,poller_fp,expected_files_filepath,\
     merge_map_filepath,deletion_list_filepath,process_run_results_f,\
-    seconds_to_sleep,command_prefix=None,command_suffix=None):
+    seconds_to_sleep,command_prefix='/bin/bash; ',command_suffix='; exit'):
     """Generate command to initiate a poller to monitior/process completed runs
     """
-    
-    command_prefix = command_prefix or '/bin/bash; '
-    command_suffix = command_suffix or '; exit'
     
     result = '%s %s %s -f %s -p %s -m %s -d %s -t %d %s' % \
      (command_prefix,
@@ -214,6 +208,12 @@ def parse_command_line_parameters():
     parser.add_option('-S','--suppress_submit_jobs',action='store_true',\
             help='Only split input and write commands file - don\'t submit '+\
             'jobs [default: %default]',default=False)
+
+    parser.add_option('-T','--poll_directly',action='store_true',\
+            help='Poll directly for job completion rather than running '+\
+            'poller as a separate job. If -T is specified this script will '+\
+            'not return until all jobs have completed. [default: %default]',\
+            default=False)
             
     parser.add_option('-U','--cluster_jobs_fp',
             help='path to cluster_jobs.py script ' +\
@@ -266,6 +266,7 @@ if __name__ == "__main__":
     seconds_to_sleep = opts.seconds_to_sleep
     max_e_value = opts.max_e_value
     similarity = opts.similarity
+    poll_directly = opts.poll_directly
 
     created_temp_paths = []
 
@@ -345,14 +346,20 @@ if __name__ == "__main__":
         
         # Generate the command to run the poller, and the list of temp files
         # created by the poller
-        poller_command, poller_result_filepaths =\
-         get_poller_command(python_exe_fp,poller_fp,expected_files_filepath,\
-         merge_map_filepath,deletion_list_filepath,process_run_results_f,\
-         seconds_to_sleep=seconds_to_sleep)
-        created_temp_paths += poller_result_filepaths
-        
-        # append the poller command to the list of job commands
-        commands.append(poller_command)
+        if not poll_directly:
+            poller_command, poller_result_filepaths =\
+             get_poller_command(python_exe_fp,poller_fp,expected_files_filepath,\
+             merge_map_filepath,deletion_list_filepath,process_run_results_f,\
+             seconds_to_sleep=seconds_to_sleep)
+            created_temp_paths += poller_result_filepaths
+            # append the poller command to the list of job commands
+            commands.append(poller_command)
+        else:
+            poller_command, poller_result_filepaths =\
+             get_poller_command(python_exe_fp,poller_fp,expected_files_filepath,\
+             merge_map_filepath,deletion_list_filepath,process_run_results_f,\
+             seconds_to_sleep=seconds_to_sleep,command_prefix='',command_suffix='')
+            created_temp_paths += poller_result_filepaths
         
         if not retain_temp_files:
             # If the user wants temp files deleted, now write the list of 
@@ -369,5 +376,16 @@ if __name__ == "__main__":
     # user
     if not opts.suppress_submit_jobs:
         submit_jobs(cluster_jobs_fp,jobs_fp,job_prefix)
+        
+    if poll_directly:
+        try:
+            check_call(poller_command.split())
+        except CalledProcessError, e:
+            print '**Error occuring when calling the poller directly. '+\
+            'Jobs may have been submitted, but are not being polled.'
+            print str(e)
+            exit(-1)
+            
+            
 
     

@@ -10,6 +10,7 @@ from __future__ import division
 from optparse import OptionParser
 from os import popen, system, mkdir, makedirs
 from os.path import split, splitext
+from subprocess import check_call, CalledProcessError
 from cogent.app.util import get_tmp_filename
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from qiime.parallel.util import split_fasta, get_random_job_prefix, write_jobs_file,\
@@ -19,7 +20,7 @@ from qiime.parallel.util import split_fasta, get_random_job_prefix, write_jobs_f
 from qiime.util import qiime_config
 
 def get_job_commands(python_exe_fp,assign_taxonomy_fp,id_to_taxonomy_fp,\
-    blast_db,\
+    e_value,blast_db,\
     blastmat_path,fasta_fps,output_dir,working_dir,\
     command_prefix=None,command_suffix=None):
     """Generate BlastTaxonAssiger classifier commands to be submitted to cluster
@@ -45,11 +46,12 @@ def get_job_commands(python_exe_fp,assign_taxonomy_fp,id_to_taxonomy_fp,\
          [fn % i for fn in out_filenames],working_dir,output_dir)
         result_filepaths += current_result_filepaths
         
-        command = '%s %s %s -o %s -m blast -b %s -i %s -t %s %s %s' %\
+        command = '%s %s %s -o %s -m blast -e %s -b %s -i %s -t %s %s %s' %\
          (command_prefix,\
           python_exe_fp,\
           assign_taxonomy_fp,\
           working_dir,
+          e_value,
           blast_db,
           fasta_fp,
           id_to_taxonomy_fp,
@@ -60,7 +62,7 @@ def get_job_commands(python_exe_fp,assign_taxonomy_fp,id_to_taxonomy_fp,\
         
     return commands, result_filepaths
 
-usage_str = """usage: %prog [options] {-i INPUT_FP -o OUTPUT_DIR -t ID_TO_TAXONOMY_FP -r REFERENCE_SEQS_FP}
+usage_str = """usage: %prog [options] {-i INPUT_FP -o OUTPUT_DIR -t ID_TO_TAXONOMY_FP}
 
 [] indicates optional input (order unimportant)
 {} indicates required input (order unimportant)
@@ -85,14 +87,22 @@ def parse_command_line_parameters():
            'id_to_taxonomy mapping file [REQUIRED]')
 
     parser.add_option('-r','--reference_seqs_fp',action='store',\
-           type='string',help='full path to reference sequence filepath '+\
-           '[REQUIRED]')
+        help='Ref seqs to blast against.  Must provide either --blast_db or '
+        '--reference_seqs_db for assignment with blast [default: %default]')
+           
+    parser.add_option('-b', '--blast_db',
+        help='Database to blast against.  Must provide either --blast_db or '
+        '--reference_seqs_db for assignment with blast [default: %default]')
     
     parser.add_option('-o','--output_dir',action='store',\
            type='string',help='path to store output files '+\
            '[REQUIRED]')
+
+    parser.add_option('-e', '--e_value', type='float',
+        help='Maximum e-value to record an assignment, only used for blast '
+        'method [default: %default]',default=0.001)
            
-    parser.add_option('-b','--blastmat_dir',action='store',\
+    parser.add_option('-B','--blastmat_dir',action='store',\
            type='string',help='full path to directory containing '+\
            'blastmat file [default: %default]',\
            default=qiime_config['blastmat_dir'])
@@ -120,6 +130,12 @@ def parse_command_line_parameters():
             help='Only split input and write commands file - don\'t submit '+\
             'jobs [default: %default]',default=False)
 
+    parser.add_option('-T','--poll_directly',action='store_true',\
+            help='Poll directly for job completion rather than running '+\
+            'poller as a separate job. If -T is specified this script will '+\
+            'not return until all jobs have completed. [default: %default]',\
+            default=False)
+
     parser.add_option('-U','--cluster_jobs_fp',action='store',\
             type='string',help='path to cluster_jobs.py script ' +\
             ' [default: %default]',\
@@ -145,12 +161,16 @@ def parse_command_line_parameters():
                              
     opts,args = parser.parse_args()
     
-    required_options = ['input_fasta_fp','id_to_taxonomy_fp',\
-     'reference_seqs_fp','output_dir']
+    required_options = ['input_fasta_fp','id_to_taxonomy_fp','output_dir']
     
     for option in required_options:
         if eval('opts.%s' % option) == None:
             parser.error('Required option --%s omitted.' % option) 
+            
+    if not (opts.reference_seqs_fp or opts.blast_db):
+        parser.error('Either a blast db (via -b) or a collection of '
+                     'reference sequences (via -r) must be passed to '
+                     'assign taxonomy using blast.')
 
     return opts,args
         
@@ -162,6 +182,8 @@ if __name__ == "__main__":
     assign_taxonomy_fp = opts.assign_taxonomy_fp
     path_to_cluster_jobs = opts.cluster_jobs_fp
     input_fasta_fp = opts.input_fasta_fp 
+    e_value = opts.e_value
+    blast_db = opts.blast_db
     jobs_to_start = opts.jobs_to_start
     output_dir = opts.output_dir
     reference_seqs_fp = opts.reference_seqs_fp
@@ -171,6 +193,7 @@ if __name__ == "__main__":
     retain_temp_files = opts.retain_temp_files
     suppress_polling = opts.suppress_polling
     seconds_to_sleep = opts.seconds_to_sleep
+    poll_directly = opts.poll_directly
 
     created_temp_paths = []
     
@@ -202,9 +225,12 @@ if __name__ == "__main__":
      
     # Build the blast database from the reference_seqs_fp -- all procs
     # will then access one db rather than create one per proc
-    blast_db, db_files_to_remove = \
-         build_blast_db_from_fasta_path(reference_seqs_fp)
-    created_temp_paths += db_files_to_remove
+    if not blast_db:
+        blast_db, db_files_to_remove = \
+             build_blast_db_from_fasta_path(reference_seqs_fp)
+        created_temp_paths += db_files_to_remove
+    else:
+        db_files_to_remove = []
      
     # split the fasta files and get the list of resulting files
     tmp_fasta_fps =\
@@ -218,7 +244,7 @@ if __name__ == "__main__":
     # generate the list of commands to be pushed out to nodes
     commands, job_result_filepaths  = \
      get_job_commands(python_exe_fp,assign_taxonomy_fp,id_to_taxonomy_fp,\
-     blast_db,\
+     e_value,blast_db,\
      blastmat_fp,tmp_fasta_fps,output_dir,working_dir)
     created_temp_paths += job_result_filepaths
     
@@ -244,14 +270,21 @@ if __name__ == "__main__":
         
         # Generate the command to run the poller, and the list of temp files
         # created by the poller
-        poller_command, poller_result_filepaths =\
-         get_poller_command(python_exe_fp,poller_fp,expected_files_filepath,\
-         merge_map_filepath,deletion_list_filepath,\
-         seconds_to_sleep=seconds_to_sleep)
-        created_temp_paths += poller_result_filepaths
-        
-        # append the poller command to the list of job commands
-        commands.append(poller_command)
+        if not poll_directly:
+            poller_command, poller_result_filepaths =\
+             get_poller_command(python_exe_fp,poller_fp,expected_files_filepath,\
+              merge_map_filepath,deletion_list_filepath,\
+              seconds_to_sleep=seconds_to_sleep)
+            created_temp_paths += poller_result_filepaths
+            # append the poller command to the list of job commands
+            commands.append(poller_command)
+        else:
+            poller_command, poller_result_filepaths =\
+             get_poller_command(python_exe_fp,poller_fp,\
+              expected_files_filepath,merge_map_filepath,\
+              deletion_list_filepath,seconds_to_sleep=seconds_to_sleep,\
+              command_prefix='',command_suffix='')
+            created_temp_paths += poller_result_filepaths
         
         if not retain_temp_files:
             # If the user wants temp files deleted, now write the list of 
@@ -269,3 +302,11 @@ if __name__ == "__main__":
     if not opts.suppress_submit_jobs:
         submit_jobs(path_to_cluster_jobs,jobs_fp,job_prefix)
     
+    if poll_directly:
+        try:
+            check_call(poller_command.split())
+        except CalledProcessError, e:
+            print '**Error occuring when calling the poller directly. '+\
+            'Jobs may have been submitted, but are not being polled.'
+            print str(e)
+            exit(-1)

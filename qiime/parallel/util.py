@@ -133,12 +133,9 @@ def build_filepaths_from_filepaths(filepaths,prefix='',directory='',\
 
 def get_poller_command(python_exe_fp,poller_fp,expected_files_filepath,\
     merge_map_filepath,deletion_list_filepath,seconds_to_sleep,\
-    command_prefix=None,command_suffix=None):
+    command_prefix='/bin/bash; ',command_suffix='; exit'):
     """Generate command to initiate a poller to monitior/process completed runs
     """
-    
-    command_prefix = command_prefix or '/bin/bash; '
-    command_suffix = command_suffix or '; exit'
     
     result = '%s %s %s -f %s -m %s -d %s -t %d %s' % \
      (command_prefix,
