@@ -4,6 +4,7 @@ from collections import defaultdict
 from md5 import md5
 from optparse import OptionParser
 from os.path import splitext, join
+from sys import stderr
 
 """This script makes the submission xml files for study and experiment.
 
@@ -79,7 +80,7 @@ data_block_wrapper = """    <DATA_BLOCK
       member_name = "%(POOL_MEMBER_NAME)s"
     >
       <FILES>
-        <FILE filename="%(POOL_MEMBER_NAME)s.sff" filetype="sff" checksum_method="MD5" checksum="%(CHECKSUM)s"  />
+        <FILE filename="%(POOL_MEMBER_FILENAME)s.sff" filetype="sff" checksum_method="MD5" checksum="%(CHECKSUM)s"  />
       </FILES>
     </DATA_BLOCK>"""
  
@@ -408,17 +409,20 @@ def make_run_and_experiment(experiment_lines, sff_dir):
                     MEMBER_ORDER += 1   #start index with first member order at 1
                     field_dict['MEMBER_ORDER'] = MEMBER_ORDER
                     default_field_dict = field_dict.copy()
-                    default_pool_member_name = default_field_dict['STUDY_REF'] + '_default_ ' + \
-                        field_dict['RUN_PREFIX']
-                    default_field_dict['POOL_MEMBER_NAME'] = default_pool_member_name
+                    default_pool_member_filename = default_field_dict['STUDY_REF'] + '_default_' + field_dict['RUN_PREFIX'] 
+                    default_field_dict['POOL_MEMBER_NAME'] = ''
+                    default_field_dict['POOL_MEMBER_FILENAME'] = default_pool_member_filename
                     try:
-                        default_field_dict['CHECKSUM'] = md5_path(join(sff_dir,field_dict['RUN_PREFIX'],default_pool_member_name+'_'+field_dict['RUN_PREFIX']+'.sff'))
+                        sff_path = join(sff_dir,field_dict['RUN_PREFIX'],default_pool_member_filename+'.sff')
+                        default_field_dict['CHECKSUM'] = md5_path(sff_path)
                         data_blocks.append(data_block_wrapper % default_field_dict)
                     except IOError:
+                        stderr.write("File failed with IOError:\n%s\n" % sff_path)
                         pass
                 MEMBER_ORDER += 1   #move onto the next member, for the first non-default case (starts at 2)
                 pool_members.append(pool_member_wrapper % field_dict)
                 field_dict['MEMBER_ORDER'] = MEMBER_ORDER
+                field_dict['POOL_MEMBER_FILENAME'] = field_dict['POOL_MEMBER_NAME']
                 try:
                     field_dict['CHECKSUM'] = md5_path(join(sff_dir,field_dict['RUN_PREFIX'],field_dict['POOL_MEMBER_NAME']+'.sff'))
                     data_blocks.append(data_block_wrapper % field_dict)
