@@ -77,7 +77,7 @@ class BlastOtuPickerTests(TestCase):
         """
         self.otu_picker = BlastOtuPicker({'max_e_value':1e-3})
         self.seqs = [\
-         ('s0','CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC'),\
+         ('s0  some description','CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC'),\
          ('s1','TGCAGCTTGAGCCACAGGAGAGAGAGAGCTTC'),\
          ('s2','TGCAGCTTGAGCCACAGGAGAGAGCCTTC'),\
          ('s3','TGCAGCTTGAGCCACAGGAGAGAGAGAGCTTC'),\
@@ -239,7 +239,7 @@ class PrefixSuffixOtuPickerTests(TestCase):
         """
         self.otu_picker = PrefixSuffixOtuPicker({})
         self.seqs = [\
-         ('s1','ACGTAATGGT'),\
+         ('s1  some description','ACGTAATGGT'),\
          ('s2','ATTTAATGGT'),\
          ('s3','ACGTAATTTT'),\
          ('s4','AAATAAAAA'),\
@@ -362,7 +362,7 @@ class TrieOtuPickerTests(TestCase):
         self.otu_picker = TrieOtuPicker({})
         self.otu_picker_rev = TrieOtuPicker({'Reverse':True})
         seqs = [\
-         ('s1','ACGTAATGGT'),\
+         ('s1 some description','ACGTAATGGT'),\
          ('s2','ACGTATTTTAATTTGGCATGGT'),\
          ('s3','ACGTAAT'),\
          ('s4','ACGTA'),\
@@ -371,7 +371,7 @@ class TrieOtuPickerTests(TestCase):
          ('s7','AAATAAAAA')
         ]
         seqs_rev = [\
-         ('s1','TGGTAATGCA'),\
+         ('s1 some description','TGGTAATGCA'),\
          ('s2','TGGTACGGTTTAATTTTATGCA'),\
          ('s3','TAATGCA'),\
          ('s4','ATGCA'),\

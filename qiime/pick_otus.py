@@ -482,12 +482,15 @@ class TrieOtuPicker(OtuPicker):
         if self.Params['Reverse']:
             # Reverse the sequences prior to building the prefix map. 
             # This effectively creates a suffix map.
-            seqs = imap(lambda s: (s[0], s[1][::-1]),\
+            # Also removes descriptions from seq identifier lines
+            seqs = imap(lambda s: (s[0].split()[0], s[1][::-1]),\
                         MinimalFastaParser(open(seq_path)))
             log_lines.append(\
              'Seqs reversed for suffix mapping (rather than prefix mapping).')
         else:
-            seqs = MinimalFastaParser(open(seq_path))
+            # remove descriptions from seq identifier lines
+            seqs = imap(lambda s: (s[0].split()[0], s[1]),\
+                        MinimalFastaParser(open(seq_path)))
         
         # Build the mapping
         mapping=build_prefix_map(seqs)
@@ -498,8 +501,9 @@ class TrieOtuPicker(OtuPicker):
             # results to file with one tab-separated line per 
             # cluster
             of = open(result_path,'w')
-            for i,(id,members) in enumerate(mapping.iteritems()):
-                of.write('%s\t%s\t%s\n' % (i,id,'\t'.join(members)))
+            for i,(otu_id,members) in enumerate(mapping.iteritems()):
+                # remove description field from seq idnetifier line
+                of.write('%s\t%s\t%s\n' % (i,otu_id,'\t'.join(members)))
             of.close()
             result = None
             log_lines.append('Result path: %s' % result_path)
