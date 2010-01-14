@@ -461,7 +461,8 @@ class TrieOtuPicker(OtuPicker):
         Application: 3rd-party application used
         """
         _params = {'Similarity':0.97,\
-         'Algorithm':'Trie prefix matching'}
+         'Algorithm':'Trie prefix or suffix matching',\
+         'Reverse':False}
         _params.update(params)
         OtuPicker.__init__(self, _params)
     
@@ -477,7 +478,19 @@ class TrieOtuPicker(OtuPicker):
         """
         log_lines = []
         
-        mapping=build_prefix_map(MinimalFastaParser(open(seq_path)))
+        # Get the appropriate sequence iterator
+        if self.Params['Reverse']:
+            # Reverse the sequences prior to building the prefix map. 
+            # This effectively creates a suffix map.
+            seqs = imap(lambda s: (s[0], s[1][::-1]),\
+                        MinimalFastaParser(open(seq_path)))
+            log_lines.append(\
+             'Seqs reversed for suffix mapping (rather than prefix mapping).')
+        else:
+            seqs = MinimalFastaParser(open(seq_path))
+        
+        # Build the mapping
+        mapping=build_prefix_map(seqs)
         log_lines.append('Num OTUs: %d' % len(mapping))
         
         if result_path:
@@ -973,6 +986,11 @@ def parse_command_line_parameters():
     parser.add_option('-e','--max_e_value',action='store',\
           type='float',dest='max_e_value',help='Max E-value when '+\
           'clustering with BLAST [default: %default]')
+          
+    parser.add_option('-v','--trie_reverse_seqs',action='store_true',\
+          help='Reverse seqs before picking OTUs with the Trie OTU'+\
+          ' picker for suffix (rather than prefix) collapsing'+\
+          ' [default: %default]')
     
     parser.add_option('-n','--prefix_prefilter_length',\
           type=int,help='prefilter data so seqs with identical first '+\
@@ -1001,7 +1019,8 @@ def parse_command_line_parameters():
     parser.set_defaults(otu_picking_method='cdhit',
         similarity=0.97, trie_prefilter=False,
         prefix_length=50, suffix_length=50,
-        clustering_algorithm='furthest',max_e_value=1e-10)
+        clustering_algorithm='furthest',max_e_value=1e-10,\
+        trie_reverse_seqs=False)
 
     opts,args = parser.parse_args()
 
@@ -1036,6 +1055,7 @@ if __name__ == "__main__":
     prefix_length = opts.prefix_length
     suffix_length = opts.suffix_length
     trie_prefilter = opts.trie_prefilter
+    trie_reverse_seqs = opts.trie_reverse_seqs
  
     otu_picker_constructor =\
      otu_picking_method_constructors[otu_picking_method]
@@ -1074,8 +1094,7 @@ if __name__ == "__main__":
         otu_picker(input_seqs_filepath,
                    result_path=result_path, log_path=log_path)
     elif otu_picking_method == 'trie':
-        params = {'Similarity': opts.similarity,
-                  'Algorithm': opts.clustering_algorithm}
+        params = {'Reverse':trie_reverse_seqs}
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,
                    result_path=result_path, log_path=log_path)

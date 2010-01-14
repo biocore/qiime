@@ -360,7 +360,8 @@ class TrieOtuPickerTests(TestCase):
         """
         """
         self.otu_picker = TrieOtuPicker({})
-        self.seqs = [\
+        self.otu_picker_rev = TrieOtuPicker({'Reverse':True})
+        seqs = [\
          ('s1','ACGTAATGGT'),\
          ('s2','ACGTATTTTAATTTGGCATGGT'),\
          ('s3','ACGTAAT'),\
@@ -369,12 +370,28 @@ class TrieOtuPickerTests(TestCase):
          ('s6','ATTTAAT'),\
          ('s7','AAATAAAAA')
         ]
+        seqs_rev = [\
+         ('s1','TGGTAATGCA'),\
+         ('s2','TGGTACGGTTTAATTTTATGCA'),\
+         ('s3','TAATGCA'),\
+         ('s4','ATGCA'),\
+         ('s5','TGGTAATTTA'),\
+         ('s6','TAATTTA'),\
+         ('s7','AAAAATAAA')
+        ]
         
         self.small_seq_path = get_tmp_filename(
             prefix='TrieOtuPickerTest_', suffix='.fasta')
         self._files_to_remove = [self.small_seq_path]
         f = open(self.small_seq_path, 'w')
-        f.write('\n'.join(['>%s\n%s' % s for s in self.seqs]))
+        f.write('\n'.join(['>%s\n%s' % s for s in seqs]))
+        f.close()
+        
+        self.small_seq_path_rev = get_tmp_filename(
+            prefix='TrieOtuPickerTest_', suffix='.fasta')
+        self._files_to_remove = [self.small_seq_path_rev]
+        f = open(self.small_seq_path_rev, 'w')
+        f.write('\n'.join(['>%s\n%s' % s for s in seqs_rev]))
         f.close()
         
     def tearDown(self):
@@ -390,6 +407,16 @@ class TrieOtuPickerTests(TestCase):
                     2:['s7'],\
                     3:['s6','s5']}
         actual = self.otu_picker(self.small_seq_path)
+        self.assertEqual(actual,expected)
+        
+    def test_call_reverse(self):
+        """Trie OTU Picker functions as expected with the 'Reverse' option
+        """
+        expected = {0:['s2'],\
+                    1:['s3','s4','s1'],\
+                    2:['s7'],\
+                    3:['s6','s5']}
+        actual = self.otu_picker_rev(self.small_seq_path_rev)
         self.assertEqual(actual,expected)
         
         
