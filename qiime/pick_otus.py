@@ -502,8 +502,7 @@ class TrieOtuPicker(OtuPicker):
             # cluster
             of = open(result_path,'w')
             for i,(otu_id,members) in enumerate(mapping.iteritems()):
-                # remove description field from seq idnetifier line
-                of.write('%s\t%s\t%s\n' % (i,otu_id,'\t'.join(members)))
+                of.write('%s\t%s\n' % (i,'\t'.join([otu_id] + members)))
             of.close()
             result = None
             log_lines.append('Result path: %s' % result_path)
