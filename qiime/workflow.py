@@ -89,16 +89,39 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,\
     qiime_dir = qiime_config['qiime_dir']
     
     # Prep the OTU picking command
-    pick_otu_dir = '%s/%s_picked_otus' % \
-     (output_dir, params['pick_otus']['otu_picking_method'])
+    otu_picking_method = params['pick_otus']['otu_picking_method']
+    pick_otu_dir = '%s/%s_picked_otus' % (output_dir, otu_picking_method)
     otu_fp = '%s/%s_otus.txt' % (pick_otu_dir,input_basename)
-    try:
-        params_str = get_params_str(params['pick_otus'])
-    except KeyError:
-        params_str = ''
-    # Build the OTU picking command
-    pick_otus_cmd = '%s %s/pick_otus.py -i %s -o %s %s' %\
-     (python_exe_fp, qiime_dir, input_fp, pick_otu_dir, params_str)
+    if parallel and otu_picking_method == 'blast':
+        # Grab the parallel-specific parameters
+        try:
+            params_str = get_params_str(params['parallel'])
+        except KeyError:
+            params_str = ''
+        
+        # Grab the OTU picker parameters
+        try:
+            # Want to find a cleaner strategy for this: the parallel script
+            # is method-specific, so doesn't take a --otu_picking_method
+            # option. This works for now though.
+            d = params['pick_otus'].copy()
+            del d['otu_picking_method']
+            params_str += ' %s' % get_params_str(d)
+        except KeyError:
+            pass
+            
+        # Build the OTU picking command
+        pick_otus_cmd = '%s %s/parallel/pick_otus_blast.py -i %s -o %s -T %s' %\
+         (python_exe_fp, qiime_dir, input_fp, pick_otu_dir, params_str)
+    else:
+        try:
+            params_str = get_params_str(params['pick_otus'])
+        except KeyError:
+            params_str = ''
+        # Build the OTU picking command
+        pick_otus_cmd = '%s %s/pick_otus.py -i %s -o %s %s' %\
+         (python_exe_fp, qiime_dir, input_fp, pick_otu_dir, params_str)
+
     commands.append([('Pick OTUs', pick_otus_cmd)])
     
     # Prep the representative set picking command
@@ -119,44 +142,95 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,\
       rep_set_fp, params_str)
     commands.append([('Pick representative set', pick_rep_set_cmd)])
     
-    # # Set script file paths based on whether the run is in parallel or not
-    # if parallel:
-    #     align_seqs_fp = '%s/parallel/align_seqs_pynast.py' % qiime_dir
-    #     if rdp:
-    #         assign_taxonomy_fp = '%s/parallel/assign_taxonomy_rdp.py' \
-    #          % qiime_dir
-    #     else:
-    #         assign_taxonomy_fp = '%s/parallel/assign_taxonomy_blast.py' \
-    #          % qiime_dir
-    # else:
-    align_seqs_fp = '%s/align_seqs.py -m pynast' % qiime_dir
-    assign_taxonomy_fp = '%s/assign_taxonomy.py' % qiime_dir
-    
     # Prep the pynast alignment command
     pynast_dir = '%s/%s_aligned_seqs' % \
      (rep_set_dir,params['align_seqs']['alignment_method'])
     aln_fp = '%s/%s_rep_set_aligned.fasta' % (pynast_dir,input_basename)
-    try:
-        params_str = get_params_str(params['align_seqs'])
-    except KeyError:
-        params_str = ''
-    # Build the pynast alignment command
-    align_seqs_cmd = '%s %s -i %s -o %s %s' %\
-     (python_exe_fp, align_seqs_fp, rep_set_fp, pynast_dir, params_str)
+    alignment_method = params['align_seqs']['alignment_method']
+    if parallel and alignment_method == 'pynast':
+        # Grab the parallel-specific parameters
+        try:
+            params_str = get_params_str(params['parallel'])
+        except KeyError:
+            params_str = ''
+        
+        # Grab the OTU picker parameters
+        try:
+            # Want to find a cleaner strategy for this: the parallel script
+            # is method-specific, so doesn't take a --alignment_method
+            # option. This works for now though.
+            d = params['align_seqs'].copy()
+            del d['alignment_method']
+            params_str += ' %s' % get_params_str(d)
+        except KeyError:
+            pass
+            
+        # Build the parallel pynast alignment command
+        align_seqs_cmd = '%s %s/parallel/align_seqs_pynast.py -i %s -o %s -T %s' %\
+         (python_exe_fp, qiime_dir, rep_set_fp, pynast_dir, params_str)
+    else:
+        try:
+            params_str = get_params_str(params['align_seqs'])
+        except KeyError:
+            params_str = ''
+        # Build the pynast alignment command
+        align_seqs_cmd = '%s %s/align_seqs.py -i %s -o %s %s' %\
+         (python_exe_fp, qiime_dir, rep_set_fp, pynast_dir, params_str)
+
     
-    # Prep the taxonomy assignment command
+    ############
+    assignment_method = params['assign_taxonomy']['assignment_method']
     assign_taxonomy_dir = '%s/%s_assigned_taxonomy' %\
-     (rep_set_dir,params['assign_taxonomy']['assignment_method'])
+     (rep_set_dir,assignment_method)
     taxonomy_fp = '%s/%s_rep_set_tax_assignments.txt' % \
      (assign_taxonomy_dir,input_basename)
-    try:
-        params_str = get_params_str(params['assign_taxonomy'])
-    except KeyError:
-        params_str = ''
-    # Build the taxonomy assignment command
-    assign_taxonomy_cmd = '%s %s -o %s -i %s %s' %\
-     (python_exe_fp, assign_taxonomy_fp, assign_taxonomy_dir,\
-      rep_set_fp, params_str)
+    if parallel and (assignment_method == 'rdp' or assignment_method == 'blast'):
+        # Grab the parallel-specific parameters
+        try:
+            params_str = get_params_str(params['parallel'])
+        except KeyError:
+            params_str = ''
+        
+        # Grab the OTU picker parameters
+        try:
+            # Want to find a cleaner strategy for this: the parallel script
+            # is method-specific, so doesn't take a --assignment_method
+            # option. This works for now though.
+            d = params['assign_taxonomy'].copy()
+            del d['assignment_method']
+            params_str += ' %s' % get_params_str(d)
+        except KeyError:
+            pass
+            
+        # Build the parallel taxonomy assignment command
+        assign_taxonomy_cmd = \
+         '%s %s/parallel/assign_taxonomy_%s.py -i %s -o %s -T %s' %\
+         (python_exe_fp, qiime_dir, assignment_method, rep_set_fp,\
+          assign_taxonomy_dir, params_str)
+    else:
+        try:
+            params_str = get_params_str(params['assign_taxonomy'])
+        except KeyError:
+            params_str = ''
+        # Build the taxonomy assignment command
+        assign_taxonomy_cmd = '%s %s/assign_taxonomy.py -o %s -i %s %s' %\
+         (python_exe_fp, qiime_dir, assign_taxonomy_dir,\
+          rep_set_fp, params_str)
+    ############
+    
+    # Prep the taxonomy assignment command
+    # assign_taxonomy_dir = '%s/%s_assigned_taxonomy' %\
+    #  (rep_set_dir,params['assign_taxonomy']['assignment_method'])
+    # taxonomy_fp = '%s/%s_rep_set_tax_assignments.txt' % \
+    #  (assign_taxonomy_dir,input_basename)
+    # try:
+    #     params_str = get_params_str(params['assign_taxonomy'])
+    # except KeyError:
+    #     params_str = ''
+    # # Build the taxonomy assignment command
+    # assign_taxonomy_cmd = '%s %s -o %s -i %s %s' %\
+    #  (python_exe_fp, assign_taxonomy_fp, assign_taxonomy_dir,\
+    #   rep_set_fp, params_str)
     
     # Append commands which can be run simulataneously in parallel
     commands.append([('Align sequences', align_seqs_cmd),\
@@ -206,7 +280,6 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,\
     # Build the OTU table building command
     make_otu_table_cmd = '%s %s/make_otu_table.py -i %s -t %s -o %s %s' %\
      (python_exe_fp, qiime_dir, otu_fp, taxonomy_fp, otu_table_fp, params_str)
-    
     
     # Append commands which can be run simulataneously in parallel
     commands.append([('Build phylogenetic tree', make_phylogeny_cmd),\
