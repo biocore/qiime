@@ -382,7 +382,8 @@ def make_run_and_experiment(experiment_lines, sff_dir):
             barcode_basecalls = []
             data_blocks = []
             field_dict = {} # to keep the last one in scope for outer block
-            for MEMBER_ORDER, line in enumerate(experiment_lines):
+            MEMBER_ORDER = 0
+            for line in experiment_lines:
                 field_dict = dict(zip(columns, line))
                 key_seq = field_dict['KEY_SEQ']
                 barcode = field_dict['BARCODE']
@@ -404,17 +405,18 @@ def make_run_and_experiment(experiment_lines, sff_dir):
                 linker = field_dict['LINKER']
                 linkers.add(linker)
                 if not MEMBER_ORDER:    #first time through: assign default case
-                    MEMBER_ORDER += 1
+                    MEMBER_ORDER += 1   #start index with first member order at 1
                     field_dict['MEMBER_ORDER'] = MEMBER_ORDER
                     default_field_dict = field_dict.copy()
-                    default_pool_member_name = default_field_dict['STUDY_REF'] + '_default'
-                    default_field_dict['POOL_MEMBER_NAME'] = ''
+                    default_pool_member_name = default_field_dict['STUDY_REF'] + '_default_ ' + \
+                        field_dict['RUN_PREFIX']
+                    default_field_dict['POOL_MEMBER_NAME'] = default_pool_member_name
                     try:
                         default_field_dict['CHECKSUM'] = md5_path(join(sff_dir,field_dict['RUN_PREFIX'],default_pool_member_name+'_'+field_dict['RUN_PREFIX']+'.sff'))
                         data_blocks.append(data_block_wrapper % default_field_dict)
                     except IOError:
                         pass
-                MEMBER_ORDER += 1
+                MEMBER_ORDER += 1   #move onto the next member, for the first non-default case (starts at 2)
                 pool_members.append(pool_member_wrapper % field_dict)
                 field_dict['MEMBER_ORDER'] = MEMBER_ORDER
                 try:
