@@ -499,7 +499,7 @@ def preprocess(fasta_files, qual_files, mapping_file,
     min_seq_len=200, max_seq_len=1000, min_qual_score=25, starting_ix=1,
     keep_primer=True, max_ambig=0, max_primer_mm=1, trim_seq_len=True,
     dir_prefix='.', max_bc_errors=2, max_homopolymer=4,remove_unassigned=False,
-    keep_barcode=False, attempt_bc_correction=True, qual_score_window=False):
+    keep_barcode=False, attempt_bc_correction=True, qual_score_window=0):
         
     
     
@@ -652,7 +652,8 @@ def preprocess(fasta_files, qual_files, mapping_file,
             lambda id_, seq, qual: mean(qual) < min_qual_score))
     if qual_score_window:
             filters.append(SeqQualBad('Mean window qual score below '+\
-             'minimum of %s' % min_qual_score, lambda id_, seq, qual: \
+                            'minimum of %s' % min_qual_score,
+                                      lambda id_, seq, qual: \
              not check_window_qual_scores(qual, qual_score_window, \
              min_qual_score)))
 
@@ -766,11 +767,12 @@ def make_cmd_parser():
     parser.add_option('-c', '--disable_bc_correction', default=False,
         action='store_true', help='Disable attempts to find nearest '+\
         'corrected barcode.  Can improve performance. [default: %default]')
-    parser.add_option('-w', '--qual_score_window', default=False,
-        action='store_true', help='Enable sliding window test of quality '+\
-        'scores.  If the average score of a continuous set of 50 nucleotides '+\
+    parser.add_option('-w', '--qual_score_window', dest="qual_score_window",
+                      type=int, default=0,
+        action='store', help='Enable sliding window test of quality '+\
+        'scores.  If the average score of a continuous set of w nucleotides '+\
         'falls below the threshold (see -s for default), the sequence is '+\
-        'discarded.  Must pass a .qual file (see -q parameter) if this '+\
+        'discarded. A good value would be 50. O means no filtering. Must pass a .qual file (see -q parameter) if this '+\
         'functionality is enabled. [default: %default]')
     options, args = parser.parse_args()
 
