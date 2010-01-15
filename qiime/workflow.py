@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # File created on 30 Dec 2009.
 from __future__ import division
-from subprocess import call, check_call, CalledProcessError
+from subprocess import Popen, PIPE, STDOUT
 from os import makedirs
 from os.path import split, splitext
 from qiime.parse import parse_map
@@ -37,12 +37,14 @@ def call_commands_serially(commands,status_update_callback):
     for c in commands:
         for e in c:
             status_update_callback('%s\n%s' % e)
-            try:
-                check_call(e[1].split())
-            except CalledProcessError, err:
+            proc = Popen(e[1],shell=True,universal_newlines=True,\
+                         stdout=PIPE,stderr=STDOUT)
+            return_value = proc.wait()
+            if return_value != 0:
                 msg = "\n\n*** ERROR RAISED DURING STEP: %s\n" % e[0] +\
                  "Command run was:\n %s\n" % e[1] +\
-                 "Command returned exit status: %d" % err.returncode
+                 "Command returned exit status: %d\n" % return_value +\
+                 "Stdout/stderr:\n%s\n" % proc.stdout.read()
                 print msg
                 exit(-1)
 
@@ -334,7 +336,7 @@ def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,\
     except KeyError:
         params_str = ''
     # Build the 3d prefs file generator command
-    prefs_cmd = '%s %s/../scripts/make_3d_plot_prefs_file.py -b %s -p %s %s' %\
+    prefs_cmd = '%s %s/../scripts/make_3d_plot_prefs_file.py -b "%s" -p %s %s' %\
      (python_exe_fp, qiime_dir, mapping_fields, prefs_fp, params_str)
     commands.append([('Build prefs file', prefs_cmd)])
     
@@ -368,7 +370,7 @@ def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,\
         params_str = ''
     # Build the discrete-coloring 3d plots command
     discrete_3d_command = \
-     '%s %s/make_3d_plots.py -b %s -i %s -o %s -m %s %s' %\
+     '%s %s/make_3d_plots.py -b "%s" -i %s -o %s -m %s %s' %\
       (python_exe_fp, qiime_dir, mapping_fields, pc_fp, discrete_3d_dir,\
        mapping_fp, params_str)
        
