@@ -407,8 +407,7 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,\
     step = int((median_count - min_count) / num_steps)
     median_count = int(median_count)
     
-    rarefaction_dir = '%s/rarefaction_%d_%d/' %\
-     (output_dir,min_count,median_count)
+    rarefaction_dir = '%s/rarefaction/' % output_dir
     try:
         makedirs(rarefaction_dir)
     except OSError:
@@ -442,8 +441,7 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,\
     commands.append([('Alpha rarefaction', rarefaction_cmd)])
     
     # Prep the alpha diversity command
-    alpha_diversity_dir = '%s/alpha_div_%d_%d/' %\
-     (output_dir,min_count,median_count)
+    alpha_diversity_dir = '%s/alpha_div/' % output_dir
     try:
         makedirs(alpha_diversity_dir)
     except OSError:
@@ -452,17 +450,35 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,\
         params_str = get_params_str(params['alpha_diversity'])
     except KeyError:
         params_str = ''
-    # Build the alpha diversity command
-    alpha_diversity_cmd = "%s %s/alpha_diversity.py -i %s -o %s -t %s %s" %\
-     (python_exe_fp, qiime_dir, rarefaction_dir, alpha_diversity_dir, \
-      tree_fp, params_str)
+    if parallel:
+        try:
+            # Want to find a cleaner strategy for this: the alpha diversity 
+            # parallel script doesn't support the jobs_to_start option -
+            # one job is started per rarefied otu table to be created -
+            # so need to remove this option. This works for now though.
+            d = params['parallel'].copy()
+            del d['jobs_to_start']
+            params_str += ' %s' % get_params_str(d)
+        except KeyError:
+            pass   
+        # Build the alpha diversity command
+        alpha_diversity_cmd = \
+         "%s %s/parallel/alpha_diversity.py -T -i %s -o %s -t %s %s" %\
+         (python_exe_fp, qiime_dir, rarefaction_dir, alpha_diversity_dir, \
+          tree_fp, params_str)
+    else:  
+        # Build the alpha diversity command
+        alpha_diversity_cmd = \
+         "%s %s/alpha_diversity.py -i %s -o %s -t %s %s" %\
+         (python_exe_fp, qiime_dir, rarefaction_dir, alpha_diversity_dir, \
+          tree_fp, params_str)
+
     commands.append(\
      [('Alpha diversity on rarefied OTU tables',alpha_diversity_cmd)])
      
     # Prep the alpha diversity collation command
     # python $qdir/collate_alpha.py -i Fasting_Alpha_Metrics/ -o Fasting_Alpha_Collated/
-    alpha_collated_dir = '%s/alpha_div_collated_%d_%d/' %\
-     (output_dir,min_count,median_count)
+    alpha_collated_dir = '%s/alpha_div_collated/' % output_dir
     try:
         makedirs(alpha_collated_dir)
     except OSError:
@@ -478,8 +494,7 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,\
     commands.append([('Collate alpha',alpha_collated_cmd)])
       
     # Prep the make rarefaction plot command(s)
-    rarefaction_plot_dir = '%s/alpha_rarefaction_plots_%d_%d/' %\
-     (output_dir,min_count,median_count)
+    rarefaction_plot_dir = '%s/alpha_rarefaction_plots/' % output_dir
     try:
         makedirs(rarefaction_plot_dir)
     except OSError:
