@@ -383,7 +383,8 @@ def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,\
     
 def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,\
     output_dir, command_handler, params, qiime_config, tree_fp=None,\
-    num_steps=10, parallel=False, status_update_callback=print_to_stdout):
+    num_steps=10, parallel=False, min_seqs_per_sample=10,\
+    status_update_callback=print_to_stdout):
     """ Run the data preparation steps of Qiime 
     
         The steps performed by this function are:
@@ -406,7 +407,7 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,\
     # Prep the rarefaction command
     min_count, max_count, median_count, mean_count =\
      compute_seqs_per_library_stats(open(otu_table_fp))
-    step = int((median_count - min_count) / num_steps)
+    step = int((median_count - min_seqs_per_sample) / num_steps)
     median_count = int(median_count)
     
     rarefaction_dir = '%s/rarefaction/' % output_dir
@@ -432,13 +433,13 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,\
         # Build the rarefaction command
         rarefaction_cmd = \
          '%s %s/parallel/rarefaction.py -T -i %s -m %s -x %s -s %s -o %s %s' %\
-         (python_exe_fp, qiime_dir, otu_table_fp, min_count, median_count, \
+         (python_exe_fp, qiime_dir, otu_table_fp, min_seqs_per_sample, median_count, \
           step, rarefaction_dir, params_str)
     else:
         # Build the rarefaction command
         rarefaction_cmd = \
          '%s %s/rarefaction.py -i %s -m %s -x %s -s %s -o %s %s' %\
-         (python_exe_fp, qiime_dir, otu_table_fp, min_count, median_count, \
+         (python_exe_fp, qiime_dir, otu_table_fp, min_seqs_per_sample, median_count, \
           step, rarefaction_dir, params_str)
     commands.append([('Alpha rarefaction', rarefaction_cmd)])
     
