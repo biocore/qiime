@@ -99,6 +99,11 @@ sample3\tC\t1.0""".split('\n')
         self.assertEqual(result, ['2'])
         result = filter_OTUs(OTU_sample_info, 0, 3, False)
         self.assertEqual(result, ['1', '0', '2'])
+        #test that is works if a category mapping file is supplied
+        cat_mapping = {'sample2': '0', 'sample3': '1'}
+        result = filter_OTUs(OTU_sample_info, 0,\
+                        category_mapping_info=cat_mapping)
+        self.assertEqual(result, ['0'])
 
     def test_make_contingency_matrix(self):
         """make_contingency_matrix works"""

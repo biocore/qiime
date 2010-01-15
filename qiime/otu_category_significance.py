@@ -99,27 +99,28 @@ def parse_otu_table(otu_table):
     """
     result = {}
     taxonomy_info = {}
-    lines = [line for line in otu_table]
-    sample_names = lines[1].strip().split('\t')
-    if not sample_names[-1] == 'Consensus Lineage':
-        num_samples = len(sample_names) - 1
-        for line in lines[2:]:
+    for line in otu_table:
+        if line.startswith('#OTU ID'):
+            sample_names = line.strip().split('\t')
+            if not sample_names[-1] == 'Consensus Lineage':
+                num_samples = len(sample_names) - 1
+                taxonomy = True
+            else:
+                num_samples = len(sample_names) - 2
+                taxonomy = False
+        elif line and not line.startswith('#'):
             line = line.strip().split('\t')
             OTU_name = line[0]
             result[OTU_name] = {}
-            for index, sample in enumerate(sample_names):
-                if index != 0:
-                    result[OTU_name][sample] = line[index]
-    else:
-        num_samples = len(sample_names) - 2
-        for line in lines[2:]:
-            line = line.strip().split('\t')
-            OTU_name = line[0]
-            result[OTU_name] = {}
-            for index, sample in enumerate(sample_names):
-                if index != 0 and index != len(sample_names) -1:
-                    result[OTU_name][sample] = line[index]
-            taxonomy_info[OTU_name] = line[-1]
+            if taxonomy:
+                for index, sample in enumerate(sample_names):
+                    if index != 0:
+                        result[OTU_name][sample] = line[index]
+            else:
+                for index, sample in enumerate(sample_names):
+                    if index != 0 and index != len(sample_names) -1:
+                        result[OTU_name][sample] = line[index]
+                taxonomy_info[OTU_name] = line[-1]
     return result, num_samples, taxonomy_info
 
 def convert_OTU_table_relative_abundance(otu_table):
@@ -169,42 +170,59 @@ def parse_category_mapping(category_mapping, category, threshold=None):
     the values in the category mapping must be categorical. If numerical
     threshold is specified, converts to 1 or 0 depending on whether the 
     value is below that threshold"""
-    category_mapping = [line.strip().split('\t') for line in category_mapping]
-    category_index = category_mapping[0].index(category)
     result = {}
     if threshold and threshold != 'None':
         category_values = ['0', '1']
     else:
         category_values = []
-    for line in category_mapping[1:]:
-        sample_name = line[0]
-        if threshold and threshold != 'None':
-            val = float(line[category_index])
-            if val > threshold:
-                result[sample_name] = '1'
+    
+    for line in category_mapping:
+        if line.startswith("#SampleID"):
+            line = line.strip().split('\t')
+            category_index = line.index(category)
+        elif not line.startswith('#'):
+            line = line.strip().split('\t')
+            sample_name = line[0]
+            if threshold and threshold != 'None':
+                val = float(line[category_index])
+                if val > threshold:
+                    result[sample_name] = '1'
+                else:
+                    result[sample_name] = '0'
             else:
-                result[sample_name] = '0'
-        else:
-            category_val = line[category_index]
-            result[sample_name] = category_val
-            if category_val not in category_values:
-                category_values.append(category_val)
+                category_val = line[category_index]
+                result[sample_name] = category_val
+                if category_val not in category_values:
+                    category_values.append(category_val)
     return result, category_values
 
-def filter_OTUs(OTU_sample_info, filter, num_samples, all_samples=True):
+def filter_OTUs(OTU_sample_info, filter, num_samples=None, all_samples=True,\
+                category_mapping_info=None):
     """Get the list of OTUs found in more than <filter> samples
 
     optionally filters out those that are found in all_samples if True:
         G_test: set to True since can't show presence/absence patterns if
             present in all (also causes an error)
         ANOVA: set to False since can still see differences in abundance
+
+    optionally takes a category mapping file as input and only considers
+        inclusion in samples that are included therein. This is a method
+        of making sure that the samples represented in the category
+        mapping file and the OTU table are in sync
     """
     result = []
+    if category_mapping_info:
+        included_samples = category_mapping_info.keys()
+        num_samples = len(included_samples)
     for OTU in OTU_sample_info:
         samples = []
         for sample in OTU_sample_info[OTU]:
             if float(OTU_sample_info[OTU][sample]) > 0:
-                samples.append(sample)
+                if category_mapping_info:
+                    if sample in included_samples:
+                        samples.append(sample)
+                else:
+                    samples.append(sample)
         if len(samples) > int(filter):
             if all_samples:
                 if len(samples) < num_samples:
@@ -382,7 +400,8 @@ def G_test_wrapper(otu_table, category_mapping, category, threshold, \
     """runs the G test to look for category/OTU associations"""
     otu_sample_info, num_samples, taxonomy_info = parse_otu_table(otu_table)
     category_info, category_values = parse_category_mapping(category_mapping, category, threshold)
-    OTU_list = filter_OTUs(otu_sample_info, filter, num_samples, True)
+    OTU_list = filter_OTUs(otu_sample_info, filter, all_samples= True,\
+        category_mapping_info=category_info)
     G_test_results = run_G_test_OTUs(OTU_list, category_info, otu_sample_info, category_values)
     output = output_results_G_test(G_test_results, taxonomy_info)
     of = open(output_fp, 'w')
@@ -395,7 +414,8 @@ def ANOVA_wrapper(otu_table, category_mapping, category, threshold, \
     otu_table = convert_OTU_table_relative_abundance(otu_table)
     otu_sample_info, num_samples, taxonomy_info = parse_otu_table(otu_table)
     category_info, category_values = parse_category_mapping(category_mapping, category, threshold)
-    OTU_list = filter_OTUs(otu_sample_info, filter, num_samples, False)
+    OTU_list = filter_OTUs(otu_sample_info, filter, all_samples= False, \
+        category_mapping_info=category_info)
     ANOVA_results = run_ANOVA_OTUs(OTU_list, category_info, otu_sample_info, category_values)
     output = output_results_ANOVA(ANOVA_results, category_values, taxonomy_info)
     of = open(output_fp, 'w')
