@@ -80,7 +80,7 @@ data_block_wrapper = """    <DATA_BLOCK
       member_name = "%(POOL_MEMBER_NAME)s"
     >
       <FILES>
-        <FILE filename="%(POOL_MEMBER_FILENAME)s.sff" filetype="sff" checksum_method="MD5" checksum="%(CHECKSUM)s"  />
+        <FILE filename="%(POOL_MEMBER_FILENAME)s" filetype="sff" checksum_method="MD5" checksum="%(CHECKSUM)s"  />
       </FILES>
     </DATA_BLOCK>"""
  
@@ -422,9 +422,10 @@ def make_run_and_experiment(experiment_lines, sff_dir):
                 MEMBER_ORDER += 1   #move onto the next member, for the first non-default case (starts at 2)
                 pool_members.append(pool_member_wrapper % field_dict)
                 field_dict['MEMBER_ORDER'] = MEMBER_ORDER
-                field_dict['POOL_MEMBER_FILENAME'] = field_dict['POOL_MEMBER_NAME']
+                if not field_dict['POOL_MEMBER_FILENAME']:
+                    field_dict['POOL_MEMBER_FILENAME'] = field_dict['POOL_MEMBER_NAME'] + '.sff'
                 try:
-                    field_dict['CHECKSUM'] = md5_path(join(sff_dir,field_dict['RUN_PREFIX'],field_dict['POOL_MEMBER_NAME']+'.sff'))
+                    field_dict['CHECKSUM'] = md5_path(join(sff_dir,field_dict['RUN_PREFIX'],field_dict['POOL_MEMBER_FILENAME']))
                     data_blocks.append(data_block_wrapper % field_dict)
                 except IOError: #file missing, probably because no seqs were recovered
                     pass
