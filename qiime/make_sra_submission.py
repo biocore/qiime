@@ -422,7 +422,7 @@ def make_run_and_experiment(experiment_lines, sff_dir):
                 MEMBER_ORDER += 1   #move onto the next member, for the first non-default case (starts at 2)
                 pool_members.append(pool_member_wrapper % field_dict)
                 field_dict['MEMBER_ORDER'] = MEMBER_ORDER
-                if not field_dict['POOL_MEMBER_FILENAME']:
+                if not field_dict.get('POOL_MEMBER_FILENAME',''):
                     field_dict['POOL_MEMBER_FILENAME'] = field_dict['POOL_MEMBER_NAME'] + '.sff'
                 try:
                     field_dict['CHECKSUM'] = md5_path(join(sff_dir,field_dict['RUN_PREFIX'],field_dict['POOL_MEMBER_FILENAME']))
