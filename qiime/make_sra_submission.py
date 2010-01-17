@@ -377,16 +377,15 @@ def make_run_and_experiment(experiment_lines, sff_dir):
         field_dict = {} # to keep the last one in scope for outer block
         for experiment_id, experiment_lines in experiment_groups.items():
             #collect unique pool members
-            pool_members = defaultdict(list)
+            pool_member_dict = defaultdict(list)
             for line in experiment_lines:
                 field_dict = dict(zip(columns, line))
-                pool_members['POOL_MEMBER_NAME'].append(field_dict)
+                pool_member_dict[field_dict['POOL_MEMBER_NAME']].append(field_dict)
             #make default sample
             default_field_dict = dict(zip(columns, experiment_lines[0]))
-            default_pool_member_filename = default_field_dict['STUDY_REF'] + '_default_' + field_dict['RUN_PREFIX'] 
+            default_pool_member_filename = default_field_dict['STUDY_REF'] + '_default_' + field_dict['RUN_PREFIX'] + '.sff'
             default_field_dict['POOL_MEMBER_NAME'] = ''
             default_field_dict['POOL_MEMBER_FILENAME'] = default_pool_member_filename
-
             barcodes = set()
             primers = set()
             linkers = set()
@@ -395,8 +394,8 @@ def make_run_and_experiment(experiment_lines, sff_dir):
             barcode_basecalls = []
             data_blocks = []
             MEMBER_ORDER = 1
-            pool_members = [('',[default_field_dict])] + list(sorted(pool_members.items()))
-            for pool_name, pool_field_dicts in pool_members:
+            pool_member_list = [('',[default_field_dict])] + list(sorted(pool_member_dict.items()))
+            for pool_name, pool_field_dicts in pool_member_list:
                 field_dict = pool_field_dicts[0]    #assume fields not related to data blocks are identical, read from first entry
                 key_seq = field_dict['KEY_SEQ']
                 barcode = field_dict['BARCODE']
@@ -419,7 +418,8 @@ def make_run_and_experiment(experiment_lines, sff_dir):
                 linkers.add(linker)
                 #create and append the pool member
                 field_dict['MEMBER_ORDER'] = MEMBER_ORDER
-                pool_members.append(pool_member_wrapper % field_dict)
+                if pool_name:
+                    pool_members.append(pool_member_wrapper % field_dict)
                 #create and append the data blocks
                 for f in pool_field_dicts:
                     f['MEMBER_ORDER'] = MEMBER_ORDER
@@ -430,7 +430,7 @@ def make_run_and_experiment(experiment_lines, sff_dir):
                         data_blocks.append(data_block_wrapper % f)
                         MEMBER_ORDER += 1   #skip members where we couldn't find the file
                     except IOError: #file missing, probably because no seqs were recovered
-                        stderr.write("File failed with IOError:\n%s\n" % sff_path)
+                        stderr.write("File failed with IOError:\n%s\n" % f['POOL_MEMBER_FILENAME'])
                         pass
                                     
             field_dict['BARCODE_TABLE_XML'] = '\n' + '\n'.join(barcode_basecalls) + '\n'
