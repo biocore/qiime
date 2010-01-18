@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# File created on 04 Jan 2010.
+# File created on 27 Oct 2009.
 from __future__ import division
 
 __author__ = "Greg Caporaso"
@@ -11,41 +11,53 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Prototype"
 
-
 from optparse import OptionParser
 from os import makedirs
 from qiime.util import load_qiime_config
 from qiime.parse import parse_qiime_parameters
-from qiime.workflow import run_beta_diversity_through_3d_plot, print_commands,\
+from qiime.workflow import run_qiime_data_preparation, print_commands,\
     call_commands_serially, print_to_stdout, no_status_updates
     
-usage_str = """usage: %prog [options] {-i OTU_TABLE_FP -m MAPPING_FP -o OUTPUT_DIR -p PARAMETER_FP}
+usage_str = """usage: %prog [options] {-i INPUT_FP -o OUTPUT_DIR -p PARAMETER_FP}
 
 [] indicates optional input (order unimportant)
 {} indicates required input (order unimportant)
 
+WARNING: THE INTERFACE FOR THE WORKFLOW SCRIPT WAS CHANGED SIGNIFICANTLY
+ON 29 DEC 2009. REVIEW THE NEW Qiime/qiime_parameters.txt FILE TO SEE HOW
+TO SPECIFY PARAMETERS FOR THE INDIVIDUAL STEPS. COPY THAT FILE AND EDIT THE
+COPY TO DEFINE CUSTOM ANALYSES.
+
 REQUIRED:
- You must edit the following parameters in a custom parameters file:
-  beta_diversity:metric
-  
- This is the value that would be passed to beta_diversity.py via -m/--metric.
+ You must add values for the following parameters in a custom parameters file:
+ align_seqs:template_fp
+ filter_alignment:lane_mask_fp 
  
- The steps performed by this script are:
-  1) Compute a beta diversity distance matrix;
-  2) Peform a principle coordinates analysis on the result of Step 1;
-  3) Generate a 3D prefs file for optimized coloring of continuous variables;
-  4) Generate a 3D plot for all mapping fields with colors optimized for 
-   continuous data;
-  5) Generate a 3D plot for all mapping fields with colors optimized for 
-   discrete data.
-   
-  This script is in early development status.
+ These are the values that you would typically pass as --template_fp to 
+  align_seqs.py and lane_mask_fp to filter_alignment.py, respectively.
 
 Example usage:
 
- python beta_diversity_through_3d_plots.py -i otu_table.txt -o bdiv1 -t inseqs1_rep_set.tre -m inseqs1_mapping.txt -p custom_parameters.txt
-"""
+The following command will start an analysis on inseq1.fasta (-i), which is a 
+ post-split_libraries fasta file. The sequence identifiers in this file
+ should be of the form <sample_id>_<unique_seq_id>. The following steps,
+ corresponding to the preliminary data preparation, are applied:
+  1) Pick OTUs with cdhit at similarity of 0.97;
+  2) Pick a representative set with the most_abundant method;
+  3) Align the representative set with PyNAST (REQUIRED: SPECIFY TEMPLATE 
+   ALIGNMENT with align_seqs:template_fp in the parameters file);
+  4) Assign taxonomy with RDP classifier;
+  5) Filter the alignment prior to tree building - remove positions which 
+   are all gaps, and specified as 0 in the lanemask (REQUIRED: SPECIFY LANEMASK 
+   with filter_alignment:lane_mask_fp in the parameters file);
+  6) Build a phylogenetic tree with FastTree;
+  7) Build an OTU table.
+ 
+ All output files will be written to the directory specified by -o, and 
+ subdirectories as appropriate.
 
+pick_otus_through_otu_table.py -i /Users/caporaso/data/qiime_test_data/workflow/inseqs1.fasta -o /Users/caporaso/data/qiime_test_data/workflow/wf1/ -p /Users/caporaso/data/qiime_test_data/workflow/custom_parameters.txt
+"""
 qiime_config = load_qiime_config()
 
 def parse_command_line_parameters():
@@ -54,17 +66,12 @@ def parse_command_line_parameters():
     version = 'Version: %prog ' + __version__
     parser = OptionParser(usage=usage, version=version)
 
-    parser.add_option('-i','--otu_table_fp',\
+    parser.add_option('-i','--input_fp',\
             help='the input fasta file [REQUIRED]')
-    parser.add_option('-m','--mapping_fp',\
-            help='path to the mapping file [REQUIRED]')
     parser.add_option('-o','--output_dir',\
             help='the output directory [REQUIRED]')
     parser.add_option('-p','--parameter_fp',\
             help='path to the parameter file [REQUIRED]')
-    parser.add_option('-t','--tree_fp',\
-            help='path to the tree file [default: %default; '+\
-            'REQUIRED for phylogenetic measures]')
 
     parser.add_option('-v','--verbose',action='store_true',\
         dest='verbose',help='Print information during execution -- '+\
@@ -78,11 +85,14 @@ def parse_command_line_parameters():
     parser.add_option('-w','--print_only',action='store_true',\
         dest='print_only',help='Print the commands but don\'t call them -- '+\
         'useful for debugging [default: %default]')
-    
-    parser.set_defaults(verbose=False,print_only=False)
+        
+    parser.add_option('-s','--serial',action='store_true',\
+        dest='serial',help='Do not use parallel scripts'+\
+        ' [default: %default]')
 
-    required_options = ['otu_table_fp','output_dir',\
-                        'mapping_fp','parameter_fp']
+    parser.set_defaults(verbose=False,print_only=False,serial=False)
+
+    required_options = ['input_fp', 'output_dir', 'parameter_fp']
 
     opts,args = parser.parse_args()
     for option in required_options:
@@ -96,15 +106,16 @@ if __name__ == "__main__":
     opts,args = parse_command_line_parameters()
     verbose = opts.verbose
     
-    otu_table_fp = opts.otu_table_fp
+    input_fp = opts.input_fp
     output_dir = opts.output_dir
-    mapping_fp = opts.mapping_fp
-    tree_fp = opts.tree_fp
     verbose = opts.verbose
     print_only = opts.print_only
     
-    ## REMEMBER TO GRAB opts.parallel WHEN IT BECOMES SUPPORTED.
-    parallel = False
+    parallel = not opts.serial
+    if parallel:
+        # Keeping this check in until fully tested
+        print "Parallel runs not yet supported. Running in single proc mode."
+        parallel = False
     
     try:
         parameter_f = open(opts.parameter_fp)
@@ -134,13 +145,11 @@ if __name__ == "__main__":
         status_update_callback = print_to_stdout
     else:
         status_update_callback = no_status_updates
-     
-    run_beta_diversity_through_3d_plot(otu_table_fp=otu_table_fp,\
-     mapping_fp=mapping_fp,\
-     output_dir=output_dir,\
+    
+    run_qiime_data_preparation(input_fp, output_dir,\
      command_handler=command_handler,\
      params=parse_qiime_parameters(parameter_f),\
      qiime_config=qiime_config,\
-     tree_fp=tree_fp,\
      parallel=parallel,\
      status_update_callback=status_update_callback)
+    

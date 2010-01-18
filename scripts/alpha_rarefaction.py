@@ -19,7 +19,7 @@ from qiime.parse import parse_qiime_parameters
 from qiime.workflow import run_qiime_alpha_rarefaction, print_commands,\
     call_commands_serially, print_to_stdout, no_status_updates
 
-usage_str = """usage: %prog [options] {-i OTU_TABLE_FP -m MAPPING_FP -o OUTPUT_DIR}
+usage_str = """usage: %prog [options] {-i OTU_TABLE_FP -m MAPPING_FP -o OUTPUT_DIR -p PARAMETERS_FP}
 
 [] indicates optional input (order unimportant)
 {} indicates required input (order unimportant)
@@ -48,13 +48,11 @@ def parse_command_line_parameters():
             help='path to the mapping file [REQUIRED]')
     parser.add_option('-o','--output_dir',\
             help='the output directory [REQUIRED]')
+    parser.add_option('-p','--parameter_fp',\
+            help='path to the parameter file [REQUIRED]')
     parser.add_option('-t','--tree_fp',\
             help='path to the tree file [default: %default; '+\
             'REQUIRED for phylogenetic measures]')
-            
-    parser.add_option('-p','--parameter_fp',\
-     help='path to the parameter file '+\
-          '[default: %default]')
             
     parser.add_option('-n','--num_steps',type='int',\
      help='number of steps (or rarefied OTU table sizes) to make between '+\
@@ -77,11 +75,11 @@ def parse_command_line_parameters():
         dest='serial',help='Do not use parallel scripts'+\
         ' [default: %default]')
 
-    # Set default values here if they should be other than None
-    parser.set_defaults(verbose=False,print_only=False,parallel=False,
-     parameter_fp=qiime_config['qiime_parameter_fp'],num_steps=10)
+    parser.set_defaults(verbose=False,print_only=False,\
+     serial=False,num_steps=10)
 
-    required_options = ['otu_table_fp', 'output_dir', 'mapping_fp']
+    required_options = ['otu_table_fp', 'output_dir', 'mapping_fp', \
+     'parameter_fp']
 
     opts,args = parser.parse_args()
     for option in required_options:
