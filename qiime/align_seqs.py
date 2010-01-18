@@ -26,7 +26,7 @@ from cogent.core.alignment import DenseAlignment, SequenceCollection, Alignment
 from cogent.core.sequence import DnaSequence as Dna
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.app.util import get_tmp_filename, ApplicationNotFoundError
-from qiime.util import FunctionWithParams, qiime_config
+from qiime.util import FunctionWithParams
 from cogent.app.infernal import cmalign_from_alignment
 from cogent.parse.rfam import MinimalRfamParser, ChangedSequence
 #app controllers that implement align_unaligned_seqs
