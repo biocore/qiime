@@ -28,7 +28,6 @@ align_seqs:template_fp
 align_seqs:alignment_method	pynast
 align_seqs:pairwise_alignment_method	blast
 align_seqs:blast_db
-align_seqs:blast_executable
 align_seqs:min_length	150
 align_seqs:min_percent_id	75.0
 

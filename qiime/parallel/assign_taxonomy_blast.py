@@ -68,6 +68,7 @@ usage_str = """usage: %prog [options] {-i INPUT_FP -o OUTPUT_DIR -t ID_TO_TAXONO
 {} indicates required input (order unimportant)
 
 Example usage:
+ BE SURE TO SPECIFY FULL PATHS!
  python Qiime/qiime/parallel/assign_taxonomy_blast.py -O 5 -i /home/caporaso/at_inseqs.fasta -t /home/caporaso/at_id_to_taxonomy.txt -r /home/caporaso/at_refseqs.fasta -o /home/caporaso/out/
 """
 
@@ -85,6 +86,10 @@ def parse_command_line_parameters():
     parser.add_option('-t','--id_to_taxonomy_fp',action='store',\
            type='string',help='full path to '+\
            'id_to_taxonomy mapping file [REQUIRED]')
+    
+    parser.add_option('-o','--output_dir',action='store',\
+           type='string',help='full path to store output files '+\
+           '[REQUIRED]')
 
     parser.add_option('-r','--reference_seqs_fp',action='store',\
         help='Ref seqs to blast against.  Must provide either --blast_db or '
@@ -93,10 +98,6 @@ def parse_command_line_parameters():
     parser.add_option('-b', '--blast_db',
         help='Database to blast against.  Must provide either --blast_db or '
         '--reference_seqs_db for assignment with blast [default: %default]')
-    
-    parser.add_option('-o','--output_dir',action='store',\
-           type='string',help='path to store output files '+\
-           '[REQUIRED]')
 
     parser.add_option('-e', '--e_value', type='float',
         help='Maximum e-value to record an assignment, only used for blast '

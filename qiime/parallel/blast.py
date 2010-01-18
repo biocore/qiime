@@ -102,10 +102,6 @@ def parse_command_line_parameters():
            'blastmat file [default: %default]',\
            default=qiime_config['blastmat_dir'])   
            
-    parser.add_option('-f','--formatdb_fp',
-        default=qiime_config['formatdb_fp'],
-        help='Path to formatdb executable [default: %default]')
-           
     parser.add_option('-b','--blastall_fp',
         default=qiime_config['blastall_fp'],
         help='Path to blastall [default: %default]')
@@ -185,7 +181,6 @@ if __name__ == '__main__':
     word_size = opts.word_size
     num_hits = opts.num_hits
     output_dir = opts.output_dir
-    formatdb_fp = opts.formatdb_fp
     suppress_format_blastdb = opts.suppress_format_blastdb
     poller_fp = opts.poller_fp
     retain_temp_files = opts.retain_temp_files
