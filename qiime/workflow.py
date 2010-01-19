@@ -3,6 +3,7 @@
 from __future__ import division
 from subprocess import Popen, PIPE, STDOUT
 from os import makedirs
+from glob import glob
 from os.path import split, splitext
 from qiime.parse import parse_map
 from qiime.util import compute_seqs_per_library_stats
@@ -528,6 +529,183 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,\
     # Call the command handler on the list of commands
     command_handler(commands,status_update_callback)
 
+    
+def run_jackknifed_upgma_clustering(otu_table_fp,tree_fp,seqs_per_sample,\
+    output_dir, command_handler, params, qiime_config,\
+    parallel=False,status_update_callback=print_to_stdout):
+    """ Run the data preparation steps of Qiime 
+    
+        The steps performed by this function are:
+          1) Compute beta diversity distance matrix from otu table (and
+           tree, if applicable)
+          2) Build rarefied OTU tables;
+          3) Build UPGMA tree from full distance matrix;
+          4) Compute distance matrics for rarefied OTU tables;
+          5) Build UPGMA trees from rarefied OTU table distance matrices;
+          6) Compare rarefied OTU table distance matrix UPGMA trees 
+           to tree full UPGMA tree and write support file and newick tree
+           with support values as node labels.
+    """
+    # Prepare some variables for the later steps
+    otu_table_dir, otu_table_filename = split(otu_table_fp)
+    otu_table_basename, otu_table_ext = splitext(otu_table_filename)
+    commands = []
+    python_exe_fp = qiime_config['python_exe_fp']
+    qiime_home = qiime_config['qiime_home']
+    qiime_dir = qiime_config['qiime_dir']
+    
+    beta_diversity_metrics = params['beta_diversity']['metrics'].split(',')
+    
+    # Prep the beta-diversity command
+    try:
+        params_str = get_params_str(params['beta_diversity'])
+    except KeyError:
+        params_str = ''
+    if tree_fp:
+        params_str = '%s -t %s' % (params_str,tree_fp)
+    # Build the beta-diversity command
+    beta_div_cmd = '%s %s/beta_diversity.py -i %s -o %s %s' %\
+     (python_exe_fp, qiime_dir, otu_table_fp, output_dir, params_str)
+    commands.append(\
+     [('Beta Diversity (%s)' % ', '.join(beta_diversity_metrics), beta_div_cmd)])
+
+    # Prep rarefaction command
+    rarefaction_dir = '%s/rarefaction/' % output_dir
+    try:
+        makedirs(rarefaction_dir)
+    except OSError:
+        pass
+    try:
+        params_str = get_params_str(params['rarefaction'])
+    except KeyError:
+        params_str = ''
+    if parallel:
+        try:
+            # Want to find a cleaner strategy for this: the rarefaction 
+            # parallel script doesn't support the jobs_to_start option -
+            # one job is started per rarefied otu table to be created -
+            # so need to remove this option. This works for now though.
+            d = params['parallel'].copy()
+            del d['jobs_to_start']
+            params_str += ' %s' % get_params_str(d)
+        except KeyError:
+            pass        
+        # Build the parallel rarefaction command
+        rarefaction_cmd = \
+         '%s %s/parallel/rarefaction.py -T -i %s -m %s -x %s -s 1 -o %s %s' %\
+         (python_exe_fp, qiime_dir, otu_table_fp, seqs_per_sample,\
+          seqs_per_sample, rarefaction_dir, params_str)
+    else:
+        # Build the serial rarefaction command
+        rarefaction_cmd = \
+         '%s %s/rarefaction.py -i %s -m %s -x %s -s 1 -o %s %s' %\
+         (python_exe_fp, qiime_dir, otu_table_fp, seqs_per_sample, \
+          seqs_per_sample, rarefaction_dir, params_str)
+    commands.append([('Rarefaction', rarefaction_cmd)])
+
+    # Begin iterating over beta diversity distance metrics, if more than one
+    # was provided
+    for beta_diversity_metric in beta_diversity_metrics:
+        metric_output_dir = '%s/%s/' % (output_dir, beta_diversity_metric)
+        distance_matrix_fp = '%s/%s_%s.txt' % \
+         (output_dir, beta_diversity_metric, otu_table_basename)
+    
+        # Prep the hierarchical clustering command (for full distance matrix)
+        master_tree_fp = '%s/%s_upgma.tre' % (metric_output_dir,otu_table_basename)
+        try:
+            params_str = get_params_str(params['hierarchical_cluster'])
+        except KeyError:
+            params_str = ''
+        # Build the hierarchical clustering command (for full distance matrix)
+        hierarchical_cluster_cmd = '%s %s/hierarchical_cluster.py -i %s -o %s %s' %\
+         (python_exe_fp, qiime_dir, distance_matrix_fp, master_tree_fp, params_str)
+        commands.append(\
+         [('UPGMA on full distance matrix: %s' % beta_diversity_metric,\
+           hierarchical_cluster_cmd)])
+           
+        # Prep the beta diversity command (for rarefied OTU tables)
+        dm_dir = '%s/rare_dm/' % metric_output_dir
+        try:
+            makedirs(dm_dir)
+        except OSError:
+            pass
+        # the metrics parameter needs to be ignored as we need to run
+        # beta_diversity one metric at a time to keep the per-metric
+        # output files in separate directories
+        try:
+            d = params['beta_diversity'].copy()
+            del d['metrics']
+        except KeyError:
+            params_str = {}
+        params_str = get_params_str(d) + ' -m %s ' % beta_diversity_metric
+        if tree_fp:
+            params_str = '%s -t %s' % (params_str,tree_fp)
+        if parallel:
+            try:
+                # Want to find a cleaner strategy for this: the beta diversity 
+                # parallel script doesn't support the jobs_to_start option -
+                # one job is started per rarefied otu table to be created -
+                # so need to remove this option. This works for now though.
+                d = params['parallel'].copy()
+                del d['jobs_to_start']
+                params_str += ' %s' % get_params_str(d)
+            except KeyError:
+                pass        
+            # Build the parallel beta diversity command (for rarefied OTU tables)
+            beta_div_rarefied_cmd = \
+             '%s %s/parallel/beta_diversity.py -T -i %s -o %s %s' %\
+             (python_exe_fp, qiime_dir, rarefaction_dir, dm_dir, params_str)
+        else:
+            # Build the serial beta diversity command (for rarefied OTU tables)
+            beta_div_rarefied_cmd = \
+             '%s %s/beta_diversity.py -i %s -o %s %s' %\
+             (python_exe_fp, qiime_dir, rarefaction_dir, dm_dir, params_str)
+        commands.append(\
+         [('Beta diversity on rarefied OTU tables (%s)' % beta_diversity_metric,\
+           beta_div_rarefied_cmd)])
+
+        # Prep the hierarchical clustering command (for rarefied 
+        # distance matrices)
+        upgma_dir = '%s/rare_upgma/' % metric_output_dir
+        try:
+            makedirs(upgma_dir)
+        except OSError:
+            pass
+
+        try:
+            params_str = get_params_str(params['hierarchical_cluster'])
+        except KeyError:
+            params_str = ''
+        # Build the hierarchical clustering command (for rarefied 
+        # distance matrices)
+        hierarchical_cluster_cmd =\
+         '%s %s/hierarchical_cluster.py -i %s -o %s %s' %\
+         (python_exe_fp, qiime_dir, dm_dir, upgma_dir, params_str)
+        commands.append(\
+         [('UPGMA on rarefied distance matrix (%s)' % beta_diversity_metric,\
+           hierarchical_cluster_cmd)])
+
+        # Prep the tree compare command
+        tree_compare_dir = '%s/upgma_cmp/' % metric_output_dir
+        try:
+            makedirs(tree_compare_dir)
+        except OSError:
+            pass
+        try:
+            params_str = get_params_str(params['tree_compare'])
+        except KeyError:
+            params_str = ''
+        # Build the tree compare command
+        tree_compare_cmd = '%s %s/tree_compare.py -s %s -m %s -o %s %s' %\
+         (python_exe_fp, qiime_dir, upgma_dir, master_tree_fp, \
+          tree_compare_dir, params_str)
+        commands.append(\
+         [('Tree compare (%s)' % beta_diversity_metric,\
+           tree_compare_cmd)])
+           
+    # Call the command handler on the list of commands
+    command_handler(commands,status_update_callback)
+    
     
 ## End task-specific workflow functions
     
