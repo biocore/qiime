@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 __author__ = "Justin Kuczynski"
-__copyright__ = "Copyright 2009, the PyCogent Project" #consider project name
-__credits__ = ["Justin Kuczynski"] #remember to add yourself
+__copyright__ = "Copyright 2009, the PyCogent Project"
+__credits__ = ["Justin Kuczynski"]
 __license__ = "GPL"
 __version__ = "0.1"
 __maintainer__ = "Justin Kuczynski"
@@ -13,10 +13,7 @@ __status__ = "Prototype"
 with distances to specified output file
 """
 from optparse import OptionParser
-
-
 from qiime.parse import parse_distmat
-
 from cogent.core.tree import PhyloNode
 from cogent.cluster.UPGMA import UPGMA_cluster
 import qiime.hierarchical_cluster
