@@ -35,7 +35,7 @@ usage_str = """usage: %prog [options] {-m MASTER_TREE -s SUPPORT -o OUTPUT_FILE}
 {} indicates required input (order unimportant)
 
 Example usage:
-python %prog -m TEST/master_tree.tre -s TEST/jackknife_support.txt -o OUTPUT_FILE
+python %prog -m master_tree.tre -s jackknife_support.txt -o jackknife_samples.pdf
 
 """
 def parse_command_line_parameters():
