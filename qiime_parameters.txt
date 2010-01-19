@@ -50,7 +50,7 @@ make_phylogeny:tree_method	fasttree
 make_otu_table:taxonomy
 
 # Beta diversity parameters
-beta_diversity:metric
+beta_diversity:metrics
 
 # Make 3D plot parameters
 make_3d_plots:custom_axes

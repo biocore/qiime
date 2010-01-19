@@ -282,7 +282,7 @@ def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,\
     
         The steps performed by this function are:
          1) Compute a beta diversity distance matrix;
-         2) Peform a principle coordinates analysis on the result of
+         2) Peform a principal coordinates analysis on the result of
           Step 1;
          3) Generate a 3D prefs file for optimized coloring of continuous
           variables;
@@ -303,10 +303,9 @@ def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,\
     mapping_file_header = parse_map(open(mapping_fp),return_header=True)[0][0]
     mapping_fields = ','.join(mapping_file_header)
     
-    beta_diversity_metric = params['beta_diversity']['metric']
+    beta_diversity_metrics = params['beta_diversity']['metrics'].split(',')
     
     # Prep the beta-diversity command
-    beta_div_fp = '%s/%s_dm.txt' % (output_dir, beta_diversity_metric)
     try:
         params_str = get_params_str(params['beta_diversity'])
     except KeyError:
@@ -315,19 +314,9 @@ def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,\
         params_str = '%s -t %s' % (params_str,tree_fp)
     # Build the beta-diversity command
     beta_div_cmd = '%s %s/beta_diversity.py -i %s -o %s %s' %\
-     (python_exe_fp, qiime_dir, otu_table_fp, beta_div_fp, params_str)
-    commands.append([('Beta Diversity', beta_div_cmd)])
-    
-    # Prep the principle coordinates command
-    pc_fp = '%s/%s_pc.txt' % (output_dir, beta_diversity_metric)
-    try:
-        params_str = get_params_str(params['principal_coordinates'])
-    except KeyError:
-        params_str = ''
-    # Build the principle coordinates command
-    pc_cmd = '%s %s/principal_coordinates.py -i %s -o %s %s' %\
-     (python_exe_fp, qiime_dir, beta_div_fp, pc_fp, params_str)
-    commands.append([('Principle coordinates', pc_cmd)])
+     (python_exe_fp, qiime_dir, otu_table_fp, output_dir, params_str)
+    commands.append(\
+     [('Beta Diversity (%s)' % ', '.join(beta_diversity_metrics), beta_div_cmd)])
     
     # Prep the 3d prefs file generator command
     prefs_fp = '%s/3d_prefs.txt' % output_dir
@@ -336,47 +325,67 @@ def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,\
     except KeyError:
         params_str = ''
     # Build the 3d prefs file generator command
-    prefs_cmd = '%s %s/../scripts/make_3d_plot_prefs_file.py -b "%s" -p %s %s' %\
+    prefs_cmd = \
+     '%s %s/../scripts/make_3d_plot_prefs_file.py -b "%s" -p %s %s' %\
      (python_exe_fp, qiime_dir, mapping_fields, prefs_fp, params_str)
     commands.append([('Build prefs file', prefs_cmd)])
+        
+    for beta_diversity_metric in beta_diversity_metrics:
+        
+        beta_div_fp = '%s/%s_%s' % \
+         (output_dir, beta_diversity_metric, otu_table_filename)
+        
+        # Prep the principal coordinates command
+        pc_fp = '%s/%s_pc.txt' % (output_dir, beta_diversity_metric)
+        try:
+            params_str = get_params_str(params['principal_coordinates'])
+        except KeyError:
+            params_str = ''
+        # Build the principal coordinates command
+        pc_cmd = '%s %s/principal_coordinates.py -i %s -o %s %s' %\
+         (python_exe_fp, qiime_dir, beta_div_fp, pc_fp, params_str)
+        commands.append(\
+         [('Principal coordinates (%s)' % beta_diversity_metric, pc_cmd)])
     
-    # Prep the continuous-coloring 3d plots command
-    continuous_3d_dir = '%s/%s_3d_continuous/' %\
-     (output_dir, beta_diversity_metric)
-    try:
-        makedirs(continuous_3d_dir)
-    except OSError:
-        pass
-    try:
-        params_str = get_params_str(params['make_3d_plots'])
-    except KeyError:
-        params_str = ''
-    # Build the continuous-coloring 3d plots command
-    continuous_3d_command = \
-     '%s %s/make_3d_plots.py -p %s -i %s -o %s -m %s %s' %\
-      (python_exe_fp, qiime_dir, prefs_fp, pc_fp, continuous_3d_dir,\
-       mapping_fp, params_str)
+        # Prep the continuous-coloring 3d plots command
+        continuous_3d_dir = '%s/%s_3d_continuous/' %\
+         (output_dir, beta_diversity_metric)
+        try:
+            makedirs(continuous_3d_dir)
+        except OSError:
+            pass
+        try:
+            params_str = get_params_str(params['make_3d_plots'])
+        except KeyError:
+            params_str = ''
+        # Build the continuous-coloring 3d plots command
+        continuous_3d_command = \
+         '%s %s/make_3d_plots.py -p %s -i %s -o %s -m %s %s' %\
+          (python_exe_fp, qiime_dir, prefs_fp, pc_fp, continuous_3d_dir,\
+           mapping_fp, params_str)
     
-    # Prep the discrete-coloring 3d plots command
-    discrete_3d_dir = '%s/%s_3d_discrete/' %\
-     (output_dir, beta_diversity_metric)
-    try:
-        makedirs(discrete_3d_dir)
-    except OSError:
-        pass
-    try:
-        params_str = get_params_str(params['make_3d_plots'])
-    except KeyError:
-        params_str = ''
-    # Build the discrete-coloring 3d plots command
-    discrete_3d_command = \
-     '%s %s/make_3d_plots.py -b "%s" -i %s -o %s -m %s %s' %\
-      (python_exe_fp, qiime_dir, mapping_fields, pc_fp, discrete_3d_dir,\
-       mapping_fp, params_str)
+        # Prep the discrete-coloring 3d plots command
+        discrete_3d_dir = '%s/%s_3d_discrete/' %\
+         (output_dir, beta_diversity_metric)
+        try:
+            makedirs(discrete_3d_dir)
+        except OSError:
+            pass
+        try:
+            params_str = get_params_str(params['make_3d_plots'])
+        except KeyError:
+            params_str = ''
+        # Build the discrete-coloring 3d plots command
+        discrete_3d_command = \
+         '%s %s/make_3d_plots.py -b "%s" -i %s -o %s -m %s %s' %\
+          (python_exe_fp, qiime_dir, mapping_fields, pc_fp, discrete_3d_dir,\
+           mapping_fp, params_str)
        
-    commands.append([\
-      ('Make 3D plots (continuous coloring)',continuous_3d_command),\
-      ('Make 3D plots (discrete coloring)',discrete_3d_command,)])
+        commands.append([\
+          ('Make 3D plots (continuous coloring, %s)' %\
+            beta_diversity_metric,continuous_3d_command),\
+          ('Make 3D plots (discrete coloring, %s)' %\
+            beta_diversity_metric,discrete_3d_command,)])
     
     # Call the command handler on the list of commands
     command_handler(commands,status_update_callback)
@@ -518,6 +527,7 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,\
     
     # Call the command handler on the list of commands
     command_handler(commands,status_update_callback)
+
     
 ## End task-specific workflow functions
     
