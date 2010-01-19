@@ -3,12 +3,13 @@ from __future__ import division
 from optparse import OptionParser
 from cogent.draw.dendrogram import SquareDendrogram
 from cogent import LoadTree
+from qiime.parse import parse_bootstrap_support
 import os.path
 import sys
 
 __author__ = "Justin Kuczynski"
-__copyright__ = "Copyright 2009, the PyCogent Project" #consider project name
-__credits__ = ["Justin Kuczynski"] #remember to add yourself
+__copyright__ = "Copyright 2009, the PyCogent Project"
+__credits__ = ["Justin Kuczynski"]
 __license__ = "GPL"
 __version__ = "0.1"
 __maintainer__ = "Justin Kuczynski"
@@ -100,13 +101,6 @@ def write_pdf_bootstrap_tree(tree, output_f, hits_dict):
         output_f = output_f + ".pdf"
     t.drawToPDF(output_f, width, height, edge_color_callback=f) 
 
-def parse_bootstrap_support(lines):
-    bootstraps = {}
-    for line in lines:
-        wordlist = line.strip().split()
-        bootstraps[wordlist[0]] = float(wordlist[1])
-        
-    return bootstraps
 
 if __name__ == '__main__':
     opts,args = parse_command_line_parameters()

@@ -2,8 +2,9 @@
 #file parse.py: parsers for map file, distance matrix file, env file
 
 __author__ = "Rob Knight"
-__copyright__ = "Copyright 2009, the PyCogent Project" #consider project name
-__credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso"] #remember to add yourself
+__copyright__ = "Copyright 2009, the PyCogent Project"
+__credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso",
+    "Justin Kuczynski"]
 __license__ = "GPL"
 __version__ = "0.1"
 __maintainer__ = "Rob Knight"
@@ -116,6 +117,17 @@ def parse_matrix(lines):
             result.append(map(float, entries[1:]))
             row_headers.append(entries[0])
     return col_headers, row_headers, array(result)
+
+def parse_bootstrap_support(lines):
+    """Parser for a bootstrap/jackknife support in tab delimited text
+    """
+    bootstraps = {}
+    for line in lines:
+        if line[0] == '#': continue
+        wordlist = line.strip().split()
+        bootstraps[wordlist[0]] = float(wordlist[1])
+        
+    return bootstraps
 
 def parse_minimal_distmat(lines):
     """Parser for raw fast_unifrac output."""

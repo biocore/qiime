@@ -2,7 +2,7 @@
 #file test_parse.py
 
 __author__ = "Rob Knight"
-__copyright__ = "Copyright 2009, the PyCogent Project" #consider project name
+__copyright__ = "Copyright 2009, the PyCogent Project"
 __credits__ = ["Rob Knight", "Justin Kuczynski", "Greg Caporaso"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "0.1"
@@ -17,7 +17,8 @@ from qiime.parse import (parse_map, group_by_field, group_by_fields,
     parse_distmat, parse_rarefaction_rec, parse_rarefaction, parse_coords, 
     otu_file_to_lineages, parse_otus, otu_table_to_envs, parse_sequences_by_otu,
     make_envs_dict, fields_to_dict, parse_rarefaction_fname, envs_to_otu_counts,
-    otu_counts_to_matrix, envs_to_matrix, parse_qiime_parameters)
+    otu_counts_to_matrix, envs_to_matrix, parse_qiime_parameters, 
+    parse_bootstrap_support)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -115,6 +116,18 @@ c\t1\t3.5\t0
         exp = (['a','b','c'], array([[0,1,2],[1,0,3.5],[1,3.5,0]]))
         obs = parse_distmat(lines)
         self.assertEqual(obs, exp)
+        
+    def test_parse_bootstrap_support(self):
+        """parse_distmat should read distmat correctly"""
+        input_txt = """#\ta\tb\tc.
+#more comments here
+node2\t0
+17node\t0.11922
+"""
+        lines = input_txt.splitlines()
+        exp = {'17node':0.11922, 'node2':0.00}
+        obs = parse_bootstrap_support(lines)
+        self.assertFloatEqual(obs, exp)
 
     def test_parse_rarefaction_rec(self):
         """parse_rarefaction_rec should produce expected results"""
