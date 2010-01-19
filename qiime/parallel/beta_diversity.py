@@ -29,7 +29,7 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Prototype"
 
 def get_job_commands(python_exe_fp,beta_diversity_fp,tree_fp,job_prefix,\
-    metric,input_fps,output_dir,working_dir,\
+    metrics,input_fps,output_dir,working_dir,\
     command_prefix=None,command_suffix=None):
     """Generate beta diversity commands to be submitted to cluster
     """
@@ -42,9 +42,10 @@ def get_job_commands(python_exe_fp,beta_diversity_fp,tree_fp,job_prefix,\
     
     for input_fp in input_fps:
         input_path, input_fn = split(input_fp)
-        output_fn = 'beta_%s' % input_fn
+        output_fns = ['%s_%s' % (metric, input_fn) \
+         for metric in metrics.split(',')]
         rename_command, current_result_filepaths = get_rename_command(\
-         [output_fn],working_dir,output_dir)
+         output_fns,working_dir,output_dir)
         result_filepaths += current_result_filepaths
         
         command = '%s %s %s -i %s -o %s -t %s -m %s %s %s' %\
@@ -52,9 +53,9 @@ def get_job_commands(python_exe_fp,beta_diversity_fp,tree_fp,job_prefix,\
           python_exe_fp,\
           beta_diversity_fp,\
           input_fp,
-          working_dir + '/' + output_fn,
+          working_dir + '/',
           tree_fp,
-          metric,
+          metrics,
           rename_command,
           command_suffix)
           
@@ -72,11 +73,12 @@ Example usage:
 List available metrics:
 python beta_diversity.py -s
 
-Apply the dist_unweighted_unifrac metric (-m) to all otu tables 
- in ./rare/ (-i) and write the resulting output files to ./out/ (-o, will be 
- created if it doesn't exist). Use the tree file rep_set.tre (-t) when necessary. 
+Apply the dist_unweighted_unifrac and the dist_weighted_unifrac metrics 
+ (-m) to all otu tables in ./rare/ (-i) and write the resulting output files
+ to ./out/ (-o, will be created if it doesn't exist). Use the tree file 
+ rep_set.tre (-t) when necessary. 
 
- python beta_diversity.py -i ./rare/ -o ./out -m dist_unweighted_unifrac -t ./rep_set.tre
+ python beta_diversity.py -i ./rare/ -o ./out -m dist_unweighted_unifrac,dist_weighted_unifrac -t ./rep_set.tre
 """
 
 def parse_command_line_parameters():
@@ -92,8 +94,8 @@ def parse_command_line_parameters():
     parser.add_option('-o', '--output_path',
         help='output path, must be directory [REQUIRED]')
 
-    parser.add_option('-m', '--metric',
-        help='metric to use [REQUIRED]')
+    parser.add_option('-m', '--metrics',
+        help='metrics to use [REQUIRED]')
 
     parser.add_option('-s', '--show_metrics', action='store_true', 
         dest="show_metrics",
@@ -164,15 +166,11 @@ def parse_command_line_parameters():
                 % (', '.join(list_known_metrics()),))
         exit(0)
     
-    required_options = ['input_path','output_path','metric']
+    required_options = ['input_path','output_path','metrics']
     
     for option in required_options:
         if eval('opts.%s' % option) == None:
-            parser.error('Required option --%s omitted.' % option) 
-            
-    if ',' in opts.metric:
-        parser.error("Only single metric is supported per "+\
-         "run (i.e., no comma-separated list of metrics)")
+            parser.error('Required option --%s omitted.' % option)
 
     return opts,args
         
@@ -182,7 +180,7 @@ if __name__ == "__main__":
     # create local copies of command-line options
     input_dir = opts.input_path
     output_dir = opts.output_path
-    metric = opts.metric
+    metrics = opts.metrics
     tree_fp = opts.tree_path
     
     beta_diversity_fp = opts.beta_diversity_fp
@@ -225,7 +223,7 @@ if __name__ == "__main__":
     # Get the list of commands to be run and the expected result files
     commands, job_result_filepaths  = \
      get_job_commands(python_exe_fp,beta_diversity_fp,tree_fp,job_prefix,\
-     metric,input_fps,output_dir,working_dir)
+     metrics,input_fps,output_dir,working_dir)
     
     # Set up poller apparatus if the user does not suppress polling
     if not suppress_polling:
