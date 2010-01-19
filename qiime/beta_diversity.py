@@ -43,17 +43,35 @@ def get_nonphylogenetic_metric(name):
     
     Metrics should be f(matrix) -> distances.
     """
+    # looks for name, inserting possible dist_ to find functions
+    # in distance_transform.py named e.g.:
+    # binary_dist_chisq / dist_bray_curtis
     try:
-        return getattr(cogent.maths.distance_transform, name.lower())
+        return getattr(cogent.maths.distance_transform, 'dist_' + name.lower())
     except AttributeError:
-        return getattr(cogent.maths.distance_transform, 'dist_'+name.lower())
+        try:
+            return getattr(cogent.maths.distance_transform, 
+              name.replace('binary', 'binary_dist').lower())
+        except AttributeError:
+            return getattr(cogent.maths.distance_transform, 
+              name.lower())
 
 def get_phylogenetic_metric(name):
     """Gets metric by name from cogent.maths.unifrac.fast_unifrac
     
     Metrics should be f(matrix) -> distances.
     """
-    return getattr(qiime.beta_metrics, name.lower())
+    # looks for name, inserting possible dist_ to find functions
+    # in qiime.beta_metrics
+    try:
+        return getattr(qiime.beta_metrics, 'dist_' + name.lower())
+    except AttributeError:
+        try:
+            return getattr(qiime.beta_metrics, 
+              name.replace('binary', 'binary_dist').lower())
+        except AttributeError:
+            return getattr(qiime.beta_metrics, 
+              name.lower())
 
 def list_known_nonphylogenetic_metrics():
     """Lists known metrics by name from cogent.maths.distance_transform.
@@ -62,8 +80,10 @@ def list_known_nonphylogenetic_metrics():
     """
     result = []
     for name in dir(cogent.maths.distance_transform):
-        if name.startswith('dist_') or name.startswith('binary_dist'):
-            result.append(name)
+        if name.startswith('dist_'):
+            result.append(name[5:])
+        elif name.startswith('binary_dist_'):
+            result.append('binary_' + name[12:])
     result.sort()
     return result
 
@@ -72,7 +92,7 @@ def list_known_phylogenetic_metrics():
     result = []
     for name in dir(qiime.beta_metrics):
         if name.startswith('dist_'):
-            result.append(name)
+            result.append(name[5:])
     result.sort()
     return result
 
@@ -148,80 +168,94 @@ class BetaDiversityCalc(FunctionWithParams):
         return format_distance_matrix(sample_names, data)
 
 def single_file_beta(options, args):
-    metric = options.metric
-    try:
-        metric_f = get_nonphylogenetic_metric(metric)
-        is_phylogenetic = False
-    except AttributeError:
+    """ does beta diversity calc on a single otu table
+
+    uses name in options.metrics to name output beta diversity files"""
+    metrics_list = options.metrics.split(',')
+    for metric in metrics_list:
+        outfilepath = os.path.join(options.output_dir, metric + '_' +
+            os.path.split(options.input_path)[1])        
         try:
-            metric_f = get_phylogenetic_metric(metric)
-            is_phylogenetic = True
+            metric_f = get_nonphylogenetic_metric(metric)
+            is_phylogenetic = False
         except AttributeError:
-            stderr.write("Could not find metric %s.\n\nKnown metrics are: %s\n"\
-                % (metric, ', '.join(list_known_metrics())))
+            try:
+                metric_f = get_phylogenetic_metric(metric)
+                is_phylogenetic = True
+            except AttributeError:
+                stderr.write("Could not find metric %s.\n\nKnown metrics are: %s\n"\
+                    % (metric, ', '.join(list_known_metrics())))
+                exit(1)
+        calc = BetaDiversityCalc(metric_f, metric, is_phylogenetic)
+
+        try:
+            result = calc(data_path=options.input_path, 
+                tree_path=options.tree_path, 
+                result_path=outfilepath, log_path=None)
+            if result: #can send to stdout instead of file
+                print c.formatResult(result)
+        except IOError, e:
+            stderr.write("Failed because of missing files.\n")
+            stderr.write(str(e)+'\n')
             exit(1)
 
-    c = BetaDiversityCalc(metric_f, metric, is_phylogenetic)
-
-    try:
-        result = c(data_path=options.input_path, tree_path=options.tree_path, 
-            result_path=options.output_path, log_path=None)
-        if result: #can send to stdout instead of file
-            print c.formatResult(result)
-    except IOError, e:
-        stderr.write("Failed because of missing files.\n")
-        stderr.write(str(e)+'\n')
-        exit(1)
-
 def multiple_file_beta(options, args):
-    """ performs minimal error checking on input args, then calls os.system
+    """ runs beta diversity for each input file in the input directory 
+    
+    performs minimal error checking on input args, then calls os.system
     to execute single_file_beta for each file in the input directory
 
     this is to facilitate future task farming - replace os.system with 
     write to file, each command is independant
 
     """
-    metric = options.metric
+    metrics_list = options.metrics.split(',')
     beta_script = qiime.beta_diversity.__file__
     file_names = os.listdir(options.input_path)
     file_names = [fname for fname in file_names if not fname.startswith('.')]
-    if not os.path.exists(options.output_path):
-        os.makedirs(options.output_path)
     try:
-        metric_f = get_nonphylogenetic_metric(metric)
-    except AttributeError:
+        os.makedirs(options.output_dir)
+    except OSError:
+        pass # hopefully dir exists
+    for metric in metrics_list:
         try:
-            metric_f = get_phylogenetic_metric(metric)
+            metric_f = get_nonphylogenetic_metric(metric)
         except AttributeError:
-            raise ValueError(
-                "Could not find metric %s.\n\nKnown metrics are: %s\n" \
-                % (metric, ', '.join(list_known_metrics())))
-
+            try:
+                metric_f = get_phylogenetic_metric(metric)
+                if not options.tree_path:
+                    raise ValueError("a tree file is required for " + metric)
+            except AttributeError:
+                raise ValueError(
+                    "Could not find metric %s.\n\nKnown metrics are: %s\n" \
+                    % (metric, ', '.join(list_known_metrics())))
+    
     for fname in file_names:
-        beta_div_cmd = 'python ' + beta_script + ' -i '+\
-            os.path.join(options.input_path, fname) + " -m " + options.metric\
-            + ' -o ' + os.path.join(options.output_path,'beta_'+fname)
-        if options.tree_path:
-            beta_div_cmd += ' -t ' + options.tree_path
-        os.system(beta_div_cmd)
+            outfilepath = options.output_dir
+            beta_div_cmd = 'python ' + beta_script + ' -i '+\
+                os.path.join(options.input_path, fname) + " -m " + options.metrics\
+                + ' -o ' + outfilepath
+            if options.tree_path:
+                beta_div_cmd += ' -t ' + options.tree_path
+            os.system(beta_div_cmd)
 
-usage_str = """ %prog [options] {-i INPUT_PATH -o OUTPUT_PATH -m METRIC}
+usage_str = """ %prog [options] {-i INPUT_PATH -o OUTPUT_DIR -m METRICS} or {-s}
 
 [] indicates optional input (order unimportant)
 {} indicates required input (order unimportant)
 
 Example:
 
-python %prog -i TEST/otu_table.txt -m dist_unweighted_unifrac -o TEST/beta_unweighted_unifrac.txt -t TEST/repr_set.tre
+python %prog -i otu_table.txt -m bray_curtis,unweighted_unifrac -o outdir -t repr_set.tre
+
+this creates two files: outdir/bray_curtis_otu_table.txt etc.
 
 or batch example: 
-python beta_diversity.py -i TEST/beta_rare/ -m dist_unweighted_unifrac -t TEST/repr_set.tre -o TEST/rare_unifrac
-processes every file in beta_rare, and creates a file "beta_" + fname
+python %prog -i beta_rare_dir -m bray_curtis,unweighted_unifrac -o outdir -t repr_set.tre
+processes every file in beta_rare_dir, and creates a file "metric_" + infilename
 in results folder
--o is mandatory here, and created if it doesn't exist
 
-
-use -s to see metric options.
+use -s to see metric options.  (prepending dist_ to most names works as well)
 Output will be a sample by sample distance matrix. 
 """
 def parse_command_line_parameters():
@@ -236,12 +270,11 @@ def parse_command_line_parameters():
     parser.add_option('-i', '--input_path',
         help='input path [REQUIRED]')
         
-    parser.add_option('-o', '--output_path',
-        help='output path, directory for batch processing, '+\
-         'filename for single file operation [REQUIRED]')
+    parser.add_option('-o', '--output_dir',
+        help='output directory [REQUIRED]')
 
-    parser.add_option('-m', '--metric',
-        help='metric to use [REQUIRED]')  
+    parser.add_option('-m', '--metrics',
+        help='metrics to use [REQUIRED]')  
         
     parser.add_option('-s', '--show_metrics', action='store_true', 
         dest="show_metrics",
@@ -252,20 +285,18 @@ def parse_command_line_parameters():
         ' [default: %default]')  
 
     opts, args = parser.parse_args()
-    if opts.show_metrics:
-        print("Known metrics are: %s\n" \
-                % (', '.join(list_known_metrics()),))
-        exit(0)
         
     if len(args) != 0:
         parser.error("positional argument detected.  make sure all"+\
          ' parameters are identified.' +\
          '\ne.g.: include the \"-m\" in \"-m MINIMUM_LENGTH\"')
          
-    required_options = ['input_path','output_path']
-    for option in required_options:
-        if eval('opts.%s' % option) == None:
-            parser.error('Required option --%s omitted.' % option) 
+    required_options = ['input_path','output_dir']
+    if not opts.show_metrics:
+        for option in required_options:
+            if eval('opts.%s' % option) == None:
+                parser.error('Required option --%s omitted.' % option)
+
     return opts, args
     
 if __name__ == '__main__':
@@ -274,16 +305,17 @@ if __name__ == '__main__':
         print("Known metrics are: %s\n" \
                 % (', '.join(list_known_metrics()),))
         exit(0)
-
+    if options.output_dir.endswith('.txt'):
+        stderr.write('output must be a directory, files will be named'+\
+            ' automatically.  And we refuse to make .txt directories\n')
+        exit(1)
+    try: 
+        os.makedirs(options.output_dir)
+    except OSError:
+        pass # hopefully dir already exists 
     if os.path.isdir(options.input_path):
         multiple_file_beta(options, args)
     elif os.path.isfile(options.input_path):
-        try:
-            f = open(options.output_path, 'w')
-            f.close()
-        except IOError:
-            print("ioerror, couldn't create output file")
-            exit(1)
         single_file_beta(options, args)
     else:
         print("io error, input path not valid.  Does it exist?")
