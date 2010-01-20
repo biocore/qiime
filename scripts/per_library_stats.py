@@ -59,6 +59,19 @@ if __name__ == "__main__":
     opts,args = parse_command_line_parameters()
     verbose = opts.verbose
     
-    print compute_seqs_per_library_stats(open(opts.input_otu_table,'U'))
+    min_counts, max_counts, median_counts, mean_counts, counts_per_sample =\
+     compute_seqs_per_library_stats(open(opts.input_otu_table,'U'))
+    
+    print 'Seqs/sample summary:' 
+    print ' Min: %s' % str(min_counts)
+    print ' Max: %s' % str(max_counts)
+    print ' Median: %s' % str(median_counts)
+    print ' Mean: %s' % str(mean_counts)
+    print ''
+    print 'Seqs/sample detail:'
+    for k,v in counts_per_sample.items():
+        print ' %s: %s' % (k,str(v))
+    
+    
     
     

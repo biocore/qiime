@@ -343,8 +343,9 @@ def extract_seqs_by_sample_id(seqs, sample_ids, negate=False):
 
 def compute_seqs_per_library_stats(otu_f):
     counts = []
-    otu_table = parse_otus(otu_f)[2]
+    sample_ids, otu_ids, otu_table, lineages = parse_otus(otu_f)
     for i in range(otu_table.shape[1]):
         counts.append(sum(otu_table[:,i]))
         
-    return min(counts), max(counts), median(counts), mean(counts)
+    return min(counts), max(counts), median(counts), mean(counts),\
+     dict(zip(sample_ids,counts))

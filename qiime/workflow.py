@@ -415,7 +415,7 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,\
     alpha_diversity_metrics = params['alpha_diversity']['metrics'].split(',')
     
     # Prep the rarefaction command
-    min_count, max_count, median_count, mean_count =\
+    min_count, max_count, median_count, mean_count, counts_per_sample =\
      compute_seqs_per_library_stats(open(otu_table_fp,'U'))
     step = int((median_count - min_seqs_per_sample) / num_steps)
     median_count = int(median_count)
