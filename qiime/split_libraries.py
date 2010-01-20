@@ -741,7 +741,7 @@ def make_cmd_parser():
         help='min average qual score allowed in read [default: %default]')
     parser.add_option('-k', '--keep-primer', action='store_true',
         help='do not remove primer from sequences', default=False)
-    parser.add_option('-i', '--keep-barcode', action='store_true',
+    parser.add_option('-B', '--keep-barcode', action='store_true',
         help='do not remove barcode from sequences', default=False)
     parser.add_option('-a', '--max-ambig', type=int, default=0,
         help='maximum number of ambiguous bases [default: %default]')
@@ -772,7 +772,8 @@ def make_cmd_parser():
         action='store', help='Enable sliding window test of quality '+\
         'scores.  If the average score of a continuous set of w nucleotides '+\
         'falls below the threshold (see -s for default), the sequence is '+\
-        'discarded. A good value would be 50. O means no filtering. Must pass a .qual file (see -q parameter) if this '+\
+        'discarded. A good value would be 50. 0 (zero) means no filtering. '+\
+        'Must pass a .qual file (see -q parameter) if this '+\
         'functionality is enabled. [default: %default]')
     options, args = parser.parse_args()
 
