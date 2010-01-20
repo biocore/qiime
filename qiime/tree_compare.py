@@ -7,6 +7,7 @@ import qiime.parse
 import os.path
 import sys
 from warnings import warn
+import copy
 
 __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2009, the PyCogent Project"
@@ -18,37 +19,45 @@ __email__ = "justinak@gmail.com"
 __status__ = "Prototype"
 
 """compares jackknife/bootstrapped trees with a master, and outputs support for
-nodes.  main() is called when run from command line, primary function of this
-module is bootstrap_support()
+nodes.  The primary function in this module is bootstrap_support()
 
 see command line usage example called with -h
 """
 
 
-def main(options):
-    tree_file_names = os.listdir(options.support_dir)
+def load_tree_files(master_tree_file, support_dir):
+    """Load trees from filepaths
+    
+    checks if support filenames indicate that support are from different 
+    distance methods.  If so, warns user.
+    loads trees into phylonode objects
+    returns master_tree, [support_trees]
+    """
+    tree_file_names = os.listdir(support_dir)
     # ignore invisible files like .DS_Store
     tree_file_names = [fname for fname in tree_file_names if not \
         fname.startswith('.')]
-       
+
     #try to warn user if using multiple types of trees    
     try:
-        base_names = [qiime.parse.parse_rarefaction_fname(fname)[0]
-            for fname in tree_file_names]
+        base_names = []
+        for fname in tree_file_names:
+            base_names.append(qiime.parse.parse_rarefaction_fname(fname)[0])
+    except ValueError:
+        pass
+    else:
         if len(set(base_names)) > 1:
             warnstr = """
 warning: support trees are named differently, please be sure you're not 
 comparing trees generated in different manners, unless you're quite sure 
 that's what you intend to do.  types: """ + str(set(base_names))
             warn(warnstr)
-    except:
-        pass
 
-    master_tree = DndParser(open(options.master_tree), PhyloNode)
+    master_tree = DndParser(open(master_tree_file, 'U'), PhyloNode)
     support_trees = []
     for fname in tree_file_names:
         try:
-            f = open(os.path.join(options.support_dir, fname))
+            f = open(os.path.join(support_dir, fname), 'U')
             tree = DndParser(f, PhyloNode)
             tree.filepath = fname
             support_trees.append(tree)
@@ -56,78 +65,109 @@ that's what you intend to do.  types: """ + str(set(base_names))
         except IOError, err:
             sys.stderr.write('error loading support tree ' + fname + '\n')
             exit(1)
+    return master_tree, support_trees
+    
+def write_bootstrap_support_files(master_tree, bootstraps, output_dir,
+    num_support_trees):
+    """write bootsrap support data to 3 files in output_dir
+    
+    assumes input master tree has unique node names
+    writes that tree to file using newick format, along with a tab delimited
+    text file listing the bootstrap support of each internal node in that tree.
+    Also writes a pseudo-newick file with internal nodes named by their
+    bootstrap values"""
+    
+    
 
-
-    # get support of each node in master
-    new_master, bootstraps = bootstrap_support(master_tree, support_trees)
-
-    # write out modified master tree with internal nodes, 
-    # bootstrap support, and (master with internal nodes named as 
-    # bootstrap fraction) (3 files)
-    fname = os.path.join(options.output_dir, "master_tree.tre")
+    # master tree as passed
+    fname = os.path.join(output_dir, "master_tree.tre")
     f = open(fname, 'w')
-    f.write(new_master.getNewick(with_distances=True))
+    f.write(master_tree.getNewick(with_distances=True))
     f.close()
     
-    f = open(os.path.join(options.output_dir, 'jackknife_support.txt'), 'w')
-    f.write('#total support trees considered: ' + str(len(support_trees)) + '\n')
+    # support of nodes in tab delimited text
+    f = open(os.path.join(output_dir, 'jackknife_support.txt'), 'w')
+    f.write('#total support trees considered: ' + str(num_support_trees) +'\n')
     f.write('#node support is fractional - in range [0,1]\n')
     for key, val in bootstraps.items():
         f.write("\t".join([str(key),str(val)]) + "\n")
     f.close()
     
-    # we ruin master_tree here, this better be the end
-    f = open(os.path.join(options.output_dir, 'jackknife_named_nodes.tre'), 'w')
+    # tree with nodes named by support values
+    pseudo_newick_master = copy.deepcopy(master_tree)
+    f = open(os.path.join(output_dir, 'jackknife_named_nodes.tre'), 'w')
     for name, support_val in bootstraps.items():
-        node = new_master.getNodeMatchingName(name)
+        node = pseudo_newick_master.getNodeMatchingName(name)
         node.Name = str(support_val)
-    f.write(new_master.getNewick(with_distances=True))
+    f.write(pseudo_newick_master.getNewick(with_distances=True))
     f.close()
-
-
+    
 def bootstrap_support(master_tree, trees):
-    """ typically this calculates bootstrap support of each node in master_tree
+    """ calculate bootstrap/jackknife support of master, by trees
+
+    this calculates bootstrap support of each nontip node in master_tree
     a tree supports a given master_tree_node if there exists a node in tree
     where node.tips == master_tree_node.tips (by name)
     not specific to bootstrap, does node support for trees generated in any
-    manner
+    manner (e.g.: jackknifing)
 
     bootstrap support of .5 => 50% of trees support that node
 
     input:
     PhyloNode objects, trees is a list of PhyloNode objects
     output: (modified master, bootstrap_supports)
-    * modified master_tree (with internally named nodes)
+    * new master_tree, modified with internally named nodes
     * bootstrap_supports: list of (node name, bootstrap support)
     """
-    setup_master_tree(master_tree)
+    new_master = setup_master_tree(master_tree)
     for sub_tree in trees:
-        compare(master_tree, sub_tree)
+        # modifies new_master in place
+        tree_support(new_master, sub_tree)
     num_trees = len(trees)
     bootstrap_supports = {}
-    for node in master_tree.iterNontips(include_self=True):
+    for node in new_master.iterNontips(include_self=True):
         node.bootstrap_support = node.bootstrap_support/num_trees
         bootstrap_supports[node.Name] = node.bootstrap_support
 
-    return master_tree, bootstrap_supports
+    return new_master, bootstrap_supports
 
 def setup_master_tree(master):
     """ inits bootstrap_support on all nontip nodes, and ensures unique names
-    modifies master in place
+    
+    returns a nearly identical copy, with uniquely named internal nodes,
+    and node.bootstrap_support set to 0
     """
+    new_master = copy.deepcopy(master)
     i = 0
-    for node in master.iterNontips(include_self=True):
+    for node in new_master.iterNontips(include_self=True):
         node.bootstrap_support = 0
         if getattr(node, 'Name', None) == None or \
             getattr(node, 'Name', None) == "":
             node.Name = "node" + str(i)
             i += 1
-    if len(set(master.getNodeNames())) != len(master.getNodeNames()):
-        raise ValueError("can't setup master tree, nonunique node names")
+    if len(set(new_master.getNodeNames())) != len(new_master.getNodeNames()):
+        node_names = master.getNodeNames()
+        
+        nonuniques = []
+        for name in set(node_names):
+            if node_names.count(name) > 1:
+                nonuniques.append(name)
+        raise ValueError("can't setup master tree, nonunique node names" +
+            str(nonuniques))
 
+    return new_master
 
-def compare(master, subsampled_tree):
-    """ compares master tree to subsampled_tree tree, modifies master in place
+def tree_support(master, subsampled_tree):
+    """ compares master tree to subsampled_tree, modifies master in place
+    
+    this calculates bootstrap support of each nontip node in the master tree
+    a given master_tree_node is supported if there exists a node in subsampled
+    tree where sub_tree_node.tips == master_tree_node.tips (by name)
+    
+    not specific to bootstrap, does node support for trees generated in any
+    manner (e.g.: jackknifing)
+    master is modified to have node.bootstrap_support incremented by 1 if
+    subsampled tree has support for that node
     """
     if set(master.getTipNames()) != set(subsampled_tree.getTipNames()):
         raise ValueError("""
@@ -140,11 +180,15 @@ remove offending samples from the master tree, and try again)
 """)
     # subsampled_tree_nodes_names is a list of lists.
     # each elem is list of tip names for a node
-    subsampled_tree_nodes_names = [node.getTipNames() for node in \
-        subsampled_tree.iterNontips(include_self=True)]
+    subsampled_tree_nodes_names = []
+    for node in subsampled_tree.iterNontips(include_self=True):
+        subsampled_tree_nodes_names.append(node.getTipNames())
+    
+    #now a list of sets, each set is tip names for a specific node
+    subsampled_tree_nodes_names = map(set, subsampled_tree_nodes_names)
+        
     for master_node in master.iterNontips(include_self=True):
-        if set(master_node.getTipNames()) in \
-          map(set, subsampled_tree_nodes_names):
+        if set(master_node.getTipNames()) in subsampled_tree_nodes_names:
             master_node.bootstrap_support += 1
             
             
@@ -168,7 +212,7 @@ make a new master tree with those tips omitted
 def parse_command_line_parameters():
     """returns command-line options"""
 
-	#show help if called without any args/options
+    #show help if called without any args/options
     if len(sys.argv) == 1:
         sys.argv.append('-h')
     usage = usage_str
@@ -199,7 +243,14 @@ def parse_command_line_parameters():
 
 
 if __name__ == '__main__':
-    opts,args = parse_command_line_parameters()
-    if not os.path.exists(opts.output_dir):
-    	os.makedirs(opts.output_dir)
-    main(opts)
+    options,args = parse_command_line_parameters()
+    if not os.path.exists(options.output_dir):
+        os.makedirs(options.output_dir)
+    
+    master_tree, support_trees = load_tree_files(options.master_tree,
+        options.support_dir)
+    # get support of each node in master
+    new_master, bootstraps = bootstrap_support(master_tree, support_trees)
+
+    write_bootstrap_support_files(new_master, bootstraps, options.output_dir,
+    len(support_trees))
