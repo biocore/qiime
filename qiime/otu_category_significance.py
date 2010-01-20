@@ -20,6 +20,7 @@ from cogent.maths.stats.test import calc_contingency_expected, G_fit_from_Dict2D
     ANOVA_one_way
 from cogent.maths.stats.util import Numbers
 from numpy import array
+import sys
 
 usage_str = """usage: %prog [-o output_file] {-i OTU table, -m category mapping -f filter -c category, -t None}
 
@@ -253,11 +254,17 @@ def make_contingency_matrix(OTU_name, category_info, otu_sample_info, category_v
         result['OTU_neg'][category + '_pos'] = 0
     for sample in category_info:
         category = category_info[sample]
-        OTU_count = int(otu_sample_info[OTU_name][sample])
-        if OTU_count == 0:
-            result['OTU_neg'][category + '_pos'] += 1
-        elif OTU_count > 0: 
-            result['OTU_pos'][category + '_pos'] += 1
+        try:
+            OTU_count = int(otu_sample_info[OTU_name][sample])
+            worked = True
+        except KeyError as (err):
+            print "Warning: {0} is in the  sample mapping file but not the OTU table".format(err)
+            worked = False
+        if worked:
+            if OTU_count == 0:
+                result['OTU_neg'][category + '_pos'] += 1
+            elif OTU_count > 0: 
+                result['OTU_pos'][category + '_pos'] += 1
     return Dict2D(result, Default=0, Pad=True)
 
 def run_G_test_OTUs(OTU_list, category_info, otu_sample_info, category_values):
