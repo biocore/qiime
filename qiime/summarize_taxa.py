@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 __author__ = "Rob Knight"
-__copyright__ = "Copyright 2009, the PyCogent Project" #consider project name
-__credits__ = ["Rob Knight", "Catherine Lozupone"] #remember to add yourself if you make changes
+__copyright__ = "Copyright 2009, the PyCogent Project"
+__credits__ = ["Rob Knight", "Catherine Lozupone", "Justin Kuczynski"]
 __license__ = "GPL"
 __version__ = "0.1"
 __maintainer__ = "Rob Knight"
@@ -19,8 +19,16 @@ from otu_category_significance import convert_OTU_table_relative_abundance
 
 def parse_command_line_parameters():
     """ Parses command line arguments """
-    usage =\
-     'usage: %prog [options]'
+    usage =""" usage: %prog [options]
+    
+Note:
+
+Makes a summary table representing to what extend each taxon
+(columns) was present in each sample (rows).  Samples present in category
+mapping file but absent from otu table are not included in output
+
+
+    """
     version = 'Version: %prog ' +  __version__
     parser = OptionParser(usage=usage, version=version)
 
@@ -102,10 +110,14 @@ def add_summary_category_mapping(otu_table, category_mapping, \
         else:
             line = line.strip().split('\t')
             sample_name = line[0]
-            index = samples.index(sample_name)
-            for key, val in sorted(result.items()):
-                line.append(str(val[index]))
-            output.append('\t'.join(line) + '\n')
+            try:
+                index = samples.index(sample_name)
+            except ValueError:
+                pass # don't include this sample, as was not found in otu table
+            else:
+                for key, val in sorted(result.items()):
+                    line.append(str(val[index]))
+                output.append('\t'.join(line) + '\n')
     return output
 
 def process_data_line(line, result, delimitor, level):
