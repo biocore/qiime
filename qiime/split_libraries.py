@@ -630,8 +630,12 @@ def preprocess(fasta_files, qual_files, mapping_file,
 
     #make filters
     filters = []
-        #seq len filter depends on whether we're including the barcode
+    #seq len filter depends on whether we're including the barcode
     if trim_seq_len:
+        # This processing occurs before primer testing, will use largest
+        # primer length to calculate lengths.  the dict all_primers has
+        # keys of each primer with the length of said primer as the value
+        primer_seq_len = max(all_primers.values())
         trim = barcode_len + primer_seq_len
         filters.append(SeqQualBad(
             'Length outside bounds of %s and %s' % (min_seq_len,max_seq_len),
