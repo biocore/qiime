@@ -226,7 +226,7 @@ def parse_command_line_parameters():
         help='path to dir containing support trees [REQUIRED]')
 
     parser.add_option('-o', '--output_dir',
-        help='output directory, writes three files here'+\
+        help='output directory, writes three files here '+\
         "makes dir if it doesn't exist [REQUIRED]")
 
     opts, args = parser.parse_args()

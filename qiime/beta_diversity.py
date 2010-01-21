@@ -274,7 +274,8 @@ def parse_command_line_parameters():
         help='output directory [REQUIRED]')
 
     parser.add_option('-m', '--metrics',
-        help='metrics to use [REQUIRED]')  
+        help='metrics to use, comma delimited if >1 metric, '+\
+            'no spaces [REQUIRED]')  
         
     parser.add_option('-s', '--show_metrics', action='store_true', 
         dest="show_metrics",
