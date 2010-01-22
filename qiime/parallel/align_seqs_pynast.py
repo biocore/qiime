@@ -111,9 +111,14 @@ def parse_command_line_parameters():
            type='string',help='full path to '+\
            'input_fasta_fp [REQUIRED]') 
           
-    parser.add_option('-t','--template_fp',action='store',\
-           type='string',help='full path to '+\
-           'template alignment [REQUIRED]')
+    if qiime_config['pynast_template_alignment_fp']:
+        template_fp_default_help = '[default: %default]'
+    else:
+        template_fp_default_help = '[REQUIRED]'
+    parser.add_option('-t','--template_fp',\
+          type='string',dest='template_fp',help='Filepath for '+\
+          'template against %s' % template_fp_default_help,
+          default=qiime_config['pynast_template_alignment_fp'])
     
     parser.add_option('-o','--output_dir',action='store',\
            type='string',help='path to store output files '+\
@@ -125,9 +130,13 @@ def parse_command_line_parameters():
           ' (applicable with -m pynast) [default: %default]',\
           default='blast',choices=pairwise_alignment_method_choices)
     
-    parser.add_option('-d','--blast_db',action='store',\
-           type='string',help='database to blast against '+\
-           '[default: formatted from template alignment]')
+    blast_db_default_help =\
+     qiime_config['pynast_template_alignment_blastdb'] or\
+      'created on-the-fly from template_alignment'
+    parser.add_option('-d','--blast_db',\
+          dest='blast_db',help='Database to blast against'+\
+          ' [default: %s]' % blast_db_default_help,
+          default=qiime_config['pynast_template_alignment_blastdb'])
         
     parser.add_option('-e','--min_length',action='store',\
           type='int',help='Minimum sequence '+\
@@ -191,7 +200,7 @@ def parse_command_line_parameters():
                              
     opts,args = parser.parse_args()
     
-    required_options = ['input_fasta_fp','template_fp','output_dir']
+    required_options = ['input_fasta_fp','output_dir','template_fp']
     
     for option in required_options:
         if eval('opts.%s' % option) == None:

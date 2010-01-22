@@ -26,13 +26,14 @@ from cogent.core.alignment import DenseAlignment, SequenceCollection, Alignment
 from cogent.core.sequence import DnaSequence as Dna
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.app.util import get_tmp_filename, ApplicationNotFoundError
-from qiime.util import FunctionWithParams
 from cogent.app.infernal import cmalign_from_alignment
 from cogent.parse.rfam import MinimalRfamParser, ChangedSequence
 #app controllers that implement align_unaligned_seqs
 import cogent.app.muscle
 import cogent.app.clustalw
 import cogent.app.mafft
+from qiime.util import qiime_config
+from qiime.util import FunctionWithParams
 
 # Load PyNAST if it's available. If it's not, skip it if not but set up
 # to raise errors if the user tries to use it.
@@ -309,11 +310,14 @@ def parse_command_line_parameters():
 
     parser.add_option('-i','--input_fasta_fp',\
         help='Input sequences to align [REQUIRED]')
-          
+    
+    if qiime_config['pynast_template_alignment_fp']:
+        template_fp_default_help = '[default: %default]'
+    else:
+        template_fp_default_help = '[REQUIRED if -m pynast or -m infernal]'
     parser.add_option('-t','--template_fp',\
           type='string',dest='template_fp',help='Filepath for '+\
-          'template against [default: %default; REQUIRED if -m pynast'+\
-          'or -m infernal]')
+          'template against %s' % template_fp_default_help)
 
     alignment_method_choices = \
      alignment_method_constructors.keys() + alignment_module_names.keys()
@@ -327,9 +331,12 @@ def parse_command_line_parameters():
           'alignment in PyNAST [default: %default]',\
           choices=pairwise_alignment_method_choices)
 
+    blast_db_default_help =\
+     qiime_config['pynast_template_alignment_blastdb'] or\
+      'created on-the-fly from template_alignment'
     parser.add_option('-d','--blast_db',\
           dest='blast_db',help='Database to blast against when -m pynast '+\
-          '[default: created on-the-fly from template_alignment]')
+          '[default: %s]' % blast_db_default_help)
           
     parser.add_option('-o','--output_dir',\
           help='Path to store '+\
@@ -347,7 +354,8 @@ def parse_command_line_parameters():
 
     parser.set_defaults(verbose=False, alignment_method='pynast',\
      pairwise_alignment_method='blast', min_percent_id=75.0,min_length=150,\
-     blast_db=None)
+     template_fp=qiime_config['pynast_template_alignment_fp'],\
+     blast_db=qiime_config['pynast_template_alignment_blastdb'])
 
     opts,args = parser.parse_args()
     
