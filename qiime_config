@@ -20,3 +20,4 @@ pick_otus_fp	/software/Qiime/qiime/pick_otus.py
 beta_diversity_fp	/software/Qiime/qiime/beta_diversity.py
 pynast_template_alignment_fp
 pynast_template_alignment_blastdb
+template_alignment_lanemask_fp
