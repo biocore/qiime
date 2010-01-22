@@ -117,6 +117,9 @@ class BlastFragmentsChimeraChecker(ChimeraChecker):
                  "refseqs_fp or blast_db must be provided to  %s" % self.Name
             blast_db, self._db_files_to_remove = \
              build_blast_db_from_fasta_path(reference_seqs_fp)
+        else:
+            blast_db = params['blast_db']
+            self._db_files_to_remove = []
             
         self._taxon_assigner = BlastTaxonAssigner(\
          {'blast_db':blast_db,\
@@ -296,11 +299,17 @@ def parse_command_line_parameters():
 
     parser.add_option('-r', '--reference_seqs_fp',
         help='Path to reference sequences (used to build a blast db).'
-        '[default: %default; REQUIRED when method is blast_fragments]')
+        '[default: %default; REQUIRED when method is blast_fragments'+\
+         ' if no blast_db is provided]')
+        
+    parser.add_option('-b', '--blast_db',
+        help='Database to blast against.  Must provide either --blast_db or '
+        '--reference_seqs_fp when method is blast_fragments [default: %default]')
         
     parser.add_option('-m','--chimera_detection_method',\
           type='choice',help='Chimera detection method [default:%default]',\
           choices=chimera_detection_method_choices)
+          
           
     parser.add_option('-n','--num_fragments',\
           type='int',help='Number of fragments to split sequences into' +\
@@ -331,6 +340,15 @@ def parse_command_line_parameters():
     for option in required_options:
         if eval('opts.%s' % option) == None:
             parser.error('Required option --%s omitted.' % option) 
+            
+    if opts.chimera_detection_method == 'blast_fragments':
+        if not (opts.blast_db or opts.reference_seqs_fp):
+            parser.error('Must provide either --blast_db or'+\
+                ' --reference_seqs_fp and --id_to_taxonomy_fp when'+\
+                ' method is blast_fragments.')
+        if not opts.id_to_taxonomy_fp:
+            parser.error('Must provide --id_to_taxonomy_fp when method'+\
+                ' is blast_fragments.')
 
     if opts.num_fragments < 2:
         parser.error('Invalid number of fragments (-n %d) Must be >= 2.' \
@@ -349,15 +367,19 @@ if __name__ == "__main__":
     output_fp = opts.output_fp
     taxonomy_depth = opts.taxonomy_depth
     max_e_value = opts.max_e_value
+    blast_db = opts.blast_db
     
     if not output_fp:
         input_basename = splitext(split(input_seqs_fp)[1])[0]
         output_fp = '%s_chimeric.txt' % input_basename
     
     if chimera_detection_method == 'blast_fragments':
-        blast_fragments_identify_chimeras(input_seqs_fp,id_to_taxonomy_fp,\
-            reference_seqs_fp,num_fragments=opts.num_fragments,\
+        blast_fragments_identify_chimeras(input_seqs_fp,
+            id_to_taxonomy_fp,\
+            reference_seqs_fp,blast_db=blast_db,
+            num_fragments=opts.num_fragments,\
             max_e_value=max_e_value,\
-            output_fp=output_fp,taxonomy_depth=taxonomy_depth)
+            output_fp=output_fp,
+            taxonomy_depth=taxonomy_depth)
         
     

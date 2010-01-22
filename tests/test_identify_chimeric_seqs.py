@@ -16,6 +16,7 @@ from cogent import LoadSeqs, DNA
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files
 from cogent.app.util import get_tmp_filename
+from cogent.app.formatdb import build_blast_db_from_fasta_file
 from qiime.identify_chimeric_seqs import BlastFragmentsChimeraChecker
 
 class BlastFragmentsChimeraCheckerTests(TestCase):
@@ -64,6 +65,8 @@ class BlastFragmentsChimeraCheckerTests(TestCase):
         # db is cleaned up
         self.assertFalse(exists(db_fp))
         
+        
+        
     def test_init_creates_db(self):
         """BlastFragmentsChimeraChecker: parameters initialized correctly
         """        
@@ -72,6 +75,18 @@ class BlastFragmentsChimeraCheckerTests(TestCase):
                   'num_fragments':2}
         self.bcc = BlastFragmentsChimeraChecker(params)
         self.assertEqual(self.bcc.Params['num_fragments'],2)
+        
+    def test_function_w_preexisting_blastdb(self):
+        blast_db, db_files_to_remove = \
+         build_blast_db_from_fasta_file(test_refseq_coll.toFasta().split('\n'))
+        self._paths_to_clean_up += db_files_to_remove
+        params = {'id_to_taxonomy_fp':self.id_to_taxonomy_fp,\
+                  'reference_seqs_fp':None,\
+                  'blast_db':blast_db,\
+                  'num_fragments':2}
+        self.bcc = BlastFragmentsChimeraChecker(params)
+        actual = list(self.bcc(self.input_seqs_fp))
+        self.assertEqual(actual,self.expected1)
         
     def test_fragmentSeq_even_len_frags(self):
         """BlastFragmentsChimeraChecker:_fragment_seq fns when frags are evenly divisible
