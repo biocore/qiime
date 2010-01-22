@@ -213,7 +213,9 @@ def parse_qiime_config_file(qiime_config_file):
         # ignore blank lines or lines beginning with '#'
         if not line or line.startswith('#'): continue
         fields = line.split('\t')
-        result[fields[0]] = '\t'.join(fields[1:])
+        param_id = fields[0]
+        param_value = '\t'.join(fields[1:]) or None
+        result[param_id] = param_value
     return result
 
 def parse_qiime_config_filepaths(qiime_config_filepaths):
