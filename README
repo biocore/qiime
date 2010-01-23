@@ -1,0 +1,76 @@
+QIIME Readme
+============
+
+:Download: via sourceforge at `http://sourceforge.net/projects/qiime <http://sourceforge.net/projects/qiime>`_.
+:Registration: To be informed of bugs, new releases, and new features go to the QIIME homepage at `http://qiime.sourceforge.net <http://qiime.sourceforge.net>`_.
+
+Dependencies
+------------
+
+QIIME requires Python_ 2.5.1 or greater, Numpy_ 1.3 or greater, Matplotlib_ 0.98.5.2-1, and PyCogent_ 1.3.1. Additionally, users must have version 2.2.22 of NCBI's legacy BLAST_ tools installed, and visible via the system path (``$PATH``) environment variable. Note that these are different from NCBI's BLAST+ tools, which will not work with QIIME.  
+
+Required
+^^^^^^^^
+
+- Python_: the language the toolkit is primarily written in, and in which the user writes control scripts.
+- Numpy_: This is a python module used for speeding up matrix computations. It is available as source code for \*nix.
+- Matplotlib_: used to plot several kinds of graphs related to codon usage. For installation, see these instructions for `compiling matplotlib`_.
+- PyCogent_: the Python Comparative Genomics Toolkit, a library containing core objects commonly used in Bioinformatics applications, wrappers for external applications (e.g., blast), and a lot more.
+- NCBI BLAST_: the Basic Local Alignment Search Tool, built and maintained by NCBI.
+
+Note: On some linux platforms (like Ubuntu), you must specifically install a ``python-dev`` package so that the Python_ header files required for building some external dependencies are available.
+
+Documentation
+^^^^^^^^^^^^^
+
+Installation
+------------
+
+Install documentation is provided at ``Qiime/doc/QIIME_Install.pdf``.
+
+Tutorial
+--------
+
+A Qiime tutorial is provided at ``QIIME/doc/Qiime_Tutorial.pdf``.
+
+Documentation
+-------------
+
+General documentation on the QIIME's tools and capabilities are provided in the QIIME documentation at ``Qiime/doc/Qiime_Documentation.pdf``.
+
+Testing
+-------
+
+``QIIME/tests`` contains all the tests. You can most readily run the tests using the ``QIIME/tests/all_tests.py`` shell script. This is done by typing:
+
+::
+    
+    $ python Qiime/tests/all_tests.py
+
+Note that if certain optional applications are not installed this will be indicated in the output as test fails beginning with ``ApplicationNotFoundError``.
+
+Tips for use
+^^^^^^^^^^^^
+
+All QIIME scripts provide usage information when called with their -h option. This should be the first place to look for information about how to interact with QIIME's scripts. For example, to learn about how QIIME's align_seqs.py script works, call:
+
+::
+    
+    $ python Qiime/qiime/align_seqs.py -h	
+
+.. _Python: http://www.python.org
+.. _BLAST: ftp://ftp.ncbi.nlm.nih.gov/blast/executables/LATEST/
+.. _PyCogent: http://pycogent.sourceforge.net
+.. _Cython: http://www.cython.org/
+.. _Numpy: http://numpy.scipy.org/
+.. _Matplotlib: http://matplotlib.sourceforge.net
+.. _Apple: http://www.apple.com
+.. _Pyrex: http://www.cosc.canterbury.ac.nz/~greg/python/Pyrex/
+.. _`editors go here`: http://www.python.org/cgi-bin/moinmoin/PythonEditors
+.. _mpi4py: http://code.google.com/p/mpi4py
+.. _`restructured text`: http://docutils.sourceforge.net/rst.html
+.. _gcc: http://gcc.gnu.org/
+.. _SQLAlchemy: http://www.sqlalchemy.org
+.. _`MySQL-python`: http://sourceforge.net/projects/mysql-python
+.. _zlib: http://www.zlib.net/
+.. _`compiling matplotlib`: http://bioinformatics.anu.edu.au/groups/huttleylab/wiki/da9fe/Building_matplotlib_for_Snow_Leopard.html
