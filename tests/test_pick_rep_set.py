@@ -158,7 +158,6 @@ class GenericRepSetPickerTests(SharedSetupTestCase):
         
         log_file = open(tmp_log_filepath)
         log_file_str = log_file.read()
-        print log_file_str
         log_file.close()
         # remove the temp files before running the test, so in 
         # case it fails the temp file is still cleaned up
