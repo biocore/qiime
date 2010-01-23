@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 """Run all tests.
 """
-from os import walk, popen3, environ
+from os import walk, environ
+from subprocess import Popen, PIPE, STDOUT
 from os.path import join
 import re
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2009, the PyCogent Project" #consider project name
-__credits__ = ["Rob Knight"] #remember to add yourself if you make changes
+__credits__ = ["Rob Knight","Greg Caporaso"] #remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "0.1"
 __maintainer__ = "Rob Knight"
@@ -29,7 +30,11 @@ filenames.sort()
 
 for filename in filenames:
     print "Testing %s:\n" % filename
-    result = popen3('%s %s -v' % (python_name, filename))[2].read()
+    command = '%s %s -v' % (python_name, filename)
+    #result = popen3()[2].read()
+    #result = popen3('%s %s -v' % (python_name, filename))[2].read()
+    result = Popen(command,shell=True,universal_newlines=True,\
+                   stdout=PIPE,stderr=STDOUT).stdout.read()
     print result
     if not good_pattern.search(result):
         bad_tests.append(filename)
