@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Catherine Lozupone"
 __copyright__ = "Copyright 2009, Qiime"
-__credits__ = ["Catherine Lozupone"]
+__credits__ = ["Catherine Lozupone and Jesse Stombaugh"]
 __license__ = "GPL"
 __version__ = "0.1"
 __maintainer__ = "Catherine Lozupone"
@@ -257,8 +257,8 @@ def make_contingency_matrix(OTU_name, category_info, otu_sample_info, category_v
         try:
             OTU_count = int(otu_sample_info[OTU_name][sample])
             worked = True
-        except KeyError as (err):
-            print "Warning: {0} is in the  sample mapping file but not the OTU table".format(err)
+        except KeyError: 
+            print "Warning: {0} is in the  sample mapping file but not the OTU table" 
             worked = False
         if worked:
             if OTU_count == 0:
