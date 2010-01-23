@@ -14,6 +14,15 @@ from cogent.app.util import get_tmp_filename
 from qiime.parallel.util import split_fasta, get_random_job_prefix,\
  write_jobs_file, compute_seqs_per_file, build_filepaths_from_filepaths
 
+__author__ = "Greg Caporaso"
+__copyright__ = "Copyright 2010, the QIIME Project"
+__credits__ = ["Greg Caporaso"] 
+__license__ = "GPL"
+__version__ = "0.1"
+__maintainer__ = "Greg Caporaso"
+__email__ = "gregcaporaso@gmail.com"
+__status__ = "Prototype"
+
 def remove_files(list_of_filepaths,error_on_missing=True):
     missing = []
     for fp in list_of_filepaths:
