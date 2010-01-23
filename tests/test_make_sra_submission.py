@@ -10,6 +10,15 @@ from qiime.make_sra_submission import (md5_path, safe_for_xml,
 Note: these tests assume you are running from within the directory that also
 has the templates and sample tabular data.
 """
+__author__ = "Rob Knight"
+__copyright__ = "Copyright 2009, the PyCogent Project"
+#remember to add yourself if you make changes
+__credits__ = ["Rob Knight"]
+__license__ = "GPL"
+__version__ = "0.1"
+__maintainer__ = "Rob Knight"
+__email__ = "rob@spot.colorado.edu"
+__status__ = "Prototype"
 
 class TopLevelTests(TestCase):
     """Top-level tests of functions in make_study_and_experiment"""
