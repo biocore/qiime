@@ -69,7 +69,7 @@ if __name__ == '__main__':
     opts, args = parse_command_line_parameters()
 
     infilepath = opts.input_path
-    f = open(infilepath)
+    f = open(infilepath,'U')
     pcoa_res_string = pcoa(f)
     f.close()
 
