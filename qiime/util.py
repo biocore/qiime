@@ -20,14 +20,15 @@ from os import getenv
 from os.path import split
 from numpy import min, max, median, mean
 from qiime.parse import parse_otus
+from cogent import LoadSeqs
 from cogent.parse.tree import DndParser, PhyloNode
 from cogent.core.alignment import Alignment
 from cogent.app.blast import Blastall
+from cogent.app.util import get_tmp_filename
 from cogent.parse.blast import BlastResult
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.util.misc import remove_files
-from cogent.app.formatdb import build_blast_db_from_fasta_path,\
-    build_blast_db_from_fasta_file
+from cogent.app.formatdb import build_blast_db_from_fasta_path
 from cogent import LoadSeqs
 
 class TreeMissingError(IOError):
@@ -263,6 +264,39 @@ def load_qiime_config():
 qiime_config = load_qiime_config()
 # End functions for handling qiime_config file
 
+# This function is copied from the development branch of PyCogent, and should
+# be replaced when we upgrade the requirement to PyCogent1.5.
+def build_blast_db_from_fasta_file(fasta_file,is_protein=False,\
+    output_dir=None,HALT_EXEC=False):
+    """Build blast db from fasta_path; return db name and list of files created
+    
+        **If using to create temporary blast databases, you can call
+        cogent.util.misc.remove_files(db_filepaths) to clean up all the
+        files created by formatdb when you're done with the database.
+    
+        fasta_path: path to fasta file of sequences to build database from
+        is_protein: True if working on protein seqs (default: False)
+        output_dir: directory where output should be written
+         (default: directory containing fasta_path)
+        HALT_EXEC: halt just before running the formatdb command and
+         print the command -- useful for debugging
+    """
+    output_dir = output_dir or '.'
+    fasta_path = get_tmp_filename(\
+     tmp_dir=output_dir, prefix="BLAST_temp_db_", suffix=".fasta")
+    
+    fasta_f = open(fasta_path,'w')
+    for line in fasta_file:
+        fasta_f.write('%s\n' % line.strip())
+    fasta_f.close()
+    
+    blast_db, db_filepaths = build_blast_db_from_fasta_path(\
+     fasta_path,is_protein=False,output_dir=None,HALT_EXEC=False)
+     
+    db_filepaths.append(fasta_path)
+    
+    return blast_db, db_filepaths
+
 # The qiime_blast_seqs function should evetually move to PyCogent,
 # but I want to test that it works for all of the QIIME functionality that
 # I need first. -Greg
@@ -292,7 +326,7 @@ def qiime_blast_seqs(seqs,
          build_blast_db_from_fasta_path(refseqs_fp,output_dir=WorkingDir)
     elif refseqs:
         blast_db, db_files_to_remove =\
-         build_blast_db_from_fasta_file(refseqs,output_dir=WorkingDir)  
+         build_blast_db_from_fasta_file(refseqs,output_dir=WorkingDir)
     else:
         db_files_to_remove = []
     

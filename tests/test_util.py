@@ -3,10 +3,9 @@
 
 from cogent.util.unit_test import TestCase, main
 from qiime.util import make_safe_f, FunctionWithParams, qiime_blast_seqs,\
-    extract_seqs_by_sample_id
+    extract_seqs_by_sample_id, build_blast_db_from_fasta_file
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.app.util import get_tmp_filename
-from cogent.app.formatdb import build_blast_db_from_fasta_file
 from cogent.util.misc import remove_files
 
 __author__ = "Greg Caporaso"
