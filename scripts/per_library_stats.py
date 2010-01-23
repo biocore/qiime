@@ -4,11 +4,11 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2009, the Qiime project"
-__credits__ = ["CONTRIBUTORS"]
+__credits__ = ["Greg Caporaso"]
 __license__ = "GPL"
 __version__ = "0.1"
-__maintainer__ = "<AUTHOR NAME>"
-__email__ = "<AUTHOR EMAIL>"
+__maintainer__ = "Greg Caporaso"
+__email__ = "gregcaporaso@gmail.com"
 __status__ = "Prototype"
 
 from optparse import OptionParser
