@@ -62,7 +62,7 @@ def parse_map(lines, category):
             c = c.strip()
             cat_list.append((l,c))
             sample_by_cat[(l,c)].append(sample)
-            num_samples_by_cat[c] += 1
+            num_samples_by_cat[(l,c)] += 1
 
         cat_by_sample[sample] = cat_list
 
@@ -71,7 +71,7 @@ def parse_map(lines, category):
     return cat_by_sample, sample_by_cat, len(category_labels), meta_dict,label_lists_dict,num_samples_by_cat
 
 
-def parse_otu_sample(lines, num_meta, meta_dict, cat_list,num_samples_by_cat,
+def parse_otu_sample(lines, num_meta, meta_dict, cat_list,category,num_samples_by_cat,
                      normalize):
     con_by_sample = defaultdict(set)
     node_file_str = []
@@ -97,65 +97,52 @@ def parse_otu_sample(lines, num_meta, meta_dict, cat_list,num_samples_by_cat,
     taxonomy = []
     
     for l in lines:
-        new_line = []
-        label_dict = defaultdict(int)
-        if l.startswith('#OTU'):
-            label_list = l.strip().split('\t')[1:]
-            if label_list[-1] == "Consensus Lineage":
-                label_list = label_list[:-1]
-                is_con = True
-            continue
-        if l.startswith('#'):
-            continue
+		new_line = []
+		label_dict = defaultdict(int)
+		if l.startswith('#OTU'):
+			label_list = l.strip().split('\t')[1:]
+			if label_list[-1] == "Consensus Lineage":
+				label_list = label_list[:-1]
+				is_con = True
+			continue
+		if l.startswith('#'):
+			continue
+		data = l.strip().split('\t')
+		to_otu = data[0]
+		otus.append(to_otu)
+		con = ''
+		if is_con:
+			con = data[-1]
+			counts = map(int,data[1:-1])
+		else:
+			counts = map(int,data[1:])
+		taxonomy.append(con)
+		if not normalize:
+			for i,c in zip(label_list,counts):
+				if i in samples_from_mapping:
+					label_dict[meta_dict[i][0][0]] += c        
+			for i in cat_list:
+				new_line.append(label_dict[i])
+			cat_otu_table.append(new_line)
 
-        data = l.strip().split('\t')
-        
-        to_otu = data[0]
-        otus.append(to_otu)
-        
-        con = ''
-        if is_con:
-            con = data[-1]
-            counts = map(int,data[1:-1])
-        else:
-            counts = map(int,data[1:])
-
-        taxonomy.append(con)
-
-        if not normalize:
-
-            for i,c in zip(label_list,counts):
-                if i in samples_from_mapping:
-                    label_dict[meta_dict[i][0][0]] += c
-                    
-            for i in cat_list:
-                new_line.append(label_dict[i])
-            cat_otu_table.append(new_line)
-
-
-        else:
-            new_line.extend(counts)
-            norm_otu_table.append(new_line)
-            
-            for i, c in zip(label_list,counts):
-                sample_counts[i] += c
-
+		else:
+			new_line.extend(counts)
+			norm_otu_table.append(new_line)
+			for i, c in zip(label_list,counts):
+				sample_counts[i] += c
     total = 0
     if normalize:
-        for l in norm_otu_table:
-            counts = l
-
-            new_line = []
-            label_dict = defaultdict(float)
-            getcontext().prec = 28
-            for i,c in zip(label_list,counts):
-                if i in samples_from_mapping:
-                    label_dict[meta_dict[i][0][0]] += float(c)/(sample_counts[i])
-   
-            for i in cat_list:
-                new_line.append(round((label_dict[i]/ num_samples_by_cat[i])*100,5))
-            cat_otu_table.append(new_line)
-        
+		for l in norm_otu_table:
+			counts = l
+			new_line = []
+			label_dict = defaultdict(float)
+			getcontext().prec = 28
+			for i,c in zip(label_list,counts):
+				if i in samples_from_mapping:
+					label_dict[meta_dict[i][0][0]] += float(c)/(sample_counts[i])
+   			for i in cat_list:
+				new_line.append(round((label_dict[i]/ num_samples_by_cat[(category,i)])*100,5))
+			cat_otu_table.append(new_line)
     return  cat_otu_table, otus, taxonomy
 
 
@@ -210,31 +197,31 @@ def _make_cmd_parser():
 
 
 def main(options):
-    dir_path = options.dir_path
-    category = options.category
+	dir_path = options.dir_path
+	category = options.category
 
-    if dir_path == "./" or dir_path is None:
-        dir_path = os.getcwd()
+	if dir_path == "./" or dir_path is None:
+		dir_path = os.getcwd()
 
-    map_lines = open(options.map_file,'U').readlines()
-    otu_sample_lines = open(options.counts_file,'U').readlines()
+	map_lines = open(options.map_file,'U').readlines()
+	otu_sample_lines = open(options.counts_file,'U').readlines()
 
-    cat_by_sample, sample_by_cat, num_meta, meta_dict, label_lists_dict, \
+	cat_by_sample, sample_by_cat, num_meta, meta_dict, label_lists_dict, \
                    num_samples_by_cat = parse_map(map_lines,category)
 
-    lines, otus, taxonomy = parse_otu_sample(otu_sample_lines, num_meta, meta_dict,\
-                           label_lists_dict[category],num_samples_by_cat,options.normalize)
+	lines, otus, taxonomy = parse_otu_sample(otu_sample_lines, num_meta, meta_dict,\
+                           label_lists_dict[category],category,num_samples_by_cat,options.normalize)
 
-    lines = format_otu_table(label_lists_dict[category], otus, array(lines), taxonomy=taxonomy,
+	lines = format_otu_table(label_lists_dict[category], otus, array(lines), taxonomy=taxonomy,
     comment='Category OTU Counts-%s'% category)
 
-    if options.normalize:
-        file_name = os.path.join(dir_path,'%s_otu_table_norm.txt'%category)
-    else:
-        file_name = os.path.join(dir_path,'%s_otu_table.txt'%category)
-    f = open(file_name,'w')
-    f.write(lines)
-    f.close()
+	if options.normalize:
+		file_name = os.path.join(dir_path,'%s_otu_table_norm.txt'%category)
+	else:
+		file_name = os.path.join(dir_path,'%s_otu_table.txt'%category)
+	f = open(file_name,'w')
+	f.write(lines)
+	f.close()
 
 
 if __name__ == "__main__":
