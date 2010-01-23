@@ -7,6 +7,15 @@ from os import popen, system, getenv, mkdir
 from os.path import split
 from cogent.parse.fasta import MinimalFastaParser
 
+__author__ = "Greg Caporaso"
+__copyright__ = "Copyright 2010, the QIIME Project"
+__credits__ = ["Greg Caporaso"] 
+__license__ = "GPL"
+__version__ = "0.1"
+__maintainer__ = "Greg Caporaso"
+__email__ = "gregcaporaso@gmail.com"
+__status__ = "Prototype"
+
 RANDOM_JOB_PREFIX_CHARS = "abcdefghigklmnopqrstuvwxyz"
 RANDOM_JOB_PREFIX_CHARS += RANDOM_JOB_PREFIX_CHARS.upper()
 RANDOM_JOB_PREFIX_CHARS += "0123456790"

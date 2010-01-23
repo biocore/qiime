@@ -1,11 +1,5 @@
 #!/usr/bin/env python
-# Author: Greg Caporaso (gregcaporaso@gmail.com)
-# parallel_assign_taxonomy_blast.py
 
-""" Description
-File created on 13 Sep 2009.
-
-"""
 from __future__ import division
 from optparse import OptionParser
 from os import popen, system, mkdir, makedirs
@@ -18,6 +12,15 @@ from qiime.parallel.util import split_fasta, get_random_job_prefix, write_jobs_f
     get_poller_command, get_rename_command, write_filepaths_to_file,\
     write_merge_map_file_assign_taxonomy
 from qiime.util import qiime_config
+
+__author__ = "Greg Caporaso"
+__copyright__ = "Copyright 2010, the QIIME Project"
+__credits__ = ["Greg Caporaso"] 
+__license__ = "GPL"
+__version__ = "0.1"
+__maintainer__ = "Greg Caporaso"
+__email__ = "gregcaporaso@gmail.com"
+__status__ = "Prototype"
 
 def get_job_commands(python_exe_fp,assign_taxonomy_fp,id_to_taxonomy_fp,\
     e_value,blast_db,\

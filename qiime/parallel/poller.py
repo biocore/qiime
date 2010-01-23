@@ -1,11 +1,5 @@
 #!/usr/bin/env python
-# Author: Greg Caporaso (gregcaporaso@gmail.com)
-# poller.py
 
-""" Description
-File created on 30 Sep 2009.
-
-"""
 from __future__ import division
 from time import sleep
 from optparse import OptionParser
@@ -13,6 +7,15 @@ from os import getenv, remove
 from os.path import exists, isdir
 from shutil import rmtree
 from cogent.util.misc import remove_files
+
+__author__ = "Greg Caporaso"
+__copyright__ = "Copyright 2010, the QIIME Project"
+__credits__ = ["Greg Caporaso"] 
+__license__ = "GPL"
+__version__ = "0.1"
+__maintainer__ = "Greg Caporaso"
+__email__ = "gregcaporaso@gmail.com"
+__status__ = "Prototype"
 
 usage_str = """usage: %prog [options] {-f RUN_OUTPUT_FILES}
 

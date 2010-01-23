@@ -2,10 +2,6 @@
 # Author: Greg Caporaso (gregcaporaso@gmail.com)
 # pick_otus_blast.py
 
-""" Description
-File created on 25 Aug 2009.
-
-"""
 from __future__ import division
 from optparse import OptionParser
 from os import popen, system, makedirs, mkdir
@@ -21,7 +17,7 @@ from qiime.parallel.poller import basic_process_run_results_f
 from qiime.util import qiime_config
 
 __author__ = "Greg Caporaso"
-__copyright__ = "Copyright 2009, the Qiime Project"
+__copyright__ = "Copyright 2010, the QIIME Project"
 __credits__ = ["Greg Caporaso"] 
 __license__ = "GPL"
 __version__ = "0.1"

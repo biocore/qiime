@@ -1,11 +1,5 @@
 #!/usr/bin/env python
-# Author: Greg Caporaso (gregcaporaso@gmail.com)
-# parallel_rdp.py
 
-""" Description
-File created on 25 Aug 2009.
-
-"""
 from __future__ import division
 from optparse import OptionParser
 from os import popen, system, mkdir, makedirs
@@ -17,6 +11,15 @@ from qiime.parallel.util import split_fasta, get_random_job_prefix, write_jobs_f
     get_poller_command, get_rename_command, write_filepaths_to_file,\
     write_merge_map_file_assign_taxonomy
 from qiime.util import qiime_config
+
+__author__ = "Greg Caporaso"
+__copyright__ = "Copyright 2010, the QIIME Project"
+__credits__ = ["Greg Caporaso"] 
+__license__ = "GPL"
+__version__ = "0.1"
+__maintainer__ = "Greg Caporaso"
+__email__ = "gregcaporaso@gmail.com"
+__status__ = "Prototype"
 
 def get_commands(python_exe_fp,assign_taxonomy_fp,confidence,fasta_fps,\
     rdp_jar_fp,output_dir,working_dir,command_prefix=None,command_suffix=None):

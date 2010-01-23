@@ -2,10 +2,6 @@
 # Author: Greg Caporaso (gregcaporaso@gmail.com)
 # parallel_pynast.py
 
-""" Description
-File created on 25 Aug 2009.
-
-"""
 from __future__ import division
 from optparse import OptionParser
 from os import popen, system, makedirs, mkdir
