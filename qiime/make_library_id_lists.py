@@ -33,7 +33,7 @@ def get_ids(lines, field, bad_ids=None, debug=False):
     return result
 
 def get_first_id(lines):
-    """Gets first fasta id from lines"""
+    """Gets first fasta id from each line in lines"""
     result = set()
     for line in lines:
         if line.startswith('>'):
