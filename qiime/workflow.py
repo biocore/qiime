@@ -9,13 +9,13 @@ from qiime.parse import parse_map
 from qiime.util import compute_seqs_per_library_stats
 
 __author__ = "Greg Caporaso"
-__copyright__ = "Copyright 2009, The QIIME Project"
+__copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "0.1"
+__version__ = "0.9"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Prototype"
+__status__ = "Pre-release"
 
 """
 This file contains the QIIME workflow functions which string together 

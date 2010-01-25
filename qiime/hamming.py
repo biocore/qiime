@@ -10,13 +10,13 @@ Author: Micah Hamady (hamady@colorado.edu)
 """
 from numpy import array
 __author__ = "Micah Hamady"
-__copyright__ = "Copyright 2009, the PyCogent Project" #consider project name
+__copyright__ = "Copyright 2010, The QIIME Project" 
 __credits__ = ["Micah Hamady", "Rob Knight"]#remember to add yourself if you make changes
 __license__ = "GPL"
-__version__ = "0.1"
+__version__ = "0.9"
 __maintainer__ = "Rob Knight"
 __email__ = "rob@spot.colorado.edu"
-__status__ = "Prototype"
+__status__ = "Pre-release"
 
 
 # current encoding scheme

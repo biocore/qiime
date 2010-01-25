@@ -17,13 +17,13 @@ from qiime.util import qiime_config
 from pynast.util import pairwise_alignment_methods
 
 __author__ = "Greg Caporaso"
-__copyright__ = "Copyright 2009, the Qiime Project"
+__copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Greg Caporaso"] 
 __license__ = "GPL"
-__version__ = "0.1"
+__version__ = "0.9"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Prototype"
+__status__ = "Pre-release"
 
 def get_job_commands(python_exe_fp,align_seqs_fp,fasta_fps,template_aln_fp,\
     pairwise_alignment_method,output_dir,blast_db,\

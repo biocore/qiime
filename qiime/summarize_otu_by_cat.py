@@ -2,13 +2,13 @@
 #file make_otu_network.py
 
 __author__ = "Julia Goodrich"
-__copyright__ = "Copyright 2009, Qiime" #consider project name
+__copyright__ = "Copyright 2010, The QIIME Project" 
 __credits__ = ["Julia Goodrich"] #remember to add yourself
 __license__ = "GPL"
-__version__ = "0.1"
+__version__ = "0.9"
 __maintainer__ = "Rob Knight"
 __email__ = "julia.goodrich@colorado.edu"
-__status__ = "Prototype"
+__status__ = "Pre-release"
 
 
 """

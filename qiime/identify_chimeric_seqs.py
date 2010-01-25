@@ -12,13 +12,13 @@ from qiime.util import FunctionWithParams
 from qiime.assign_taxonomy import BlastTaxonAssigner
 
 __author__ = "Greg Caporaso"
-__copyright__ = "Copyright 2009, Qiime"
+__copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "0.1"
+__version__ = "0.9"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Prototype"
+__status__ = "Pre-release"
 
 class ChimeraChecker(FunctionWithParams):
     """A ChimeraChecker takes a sequence collection and returns list of chimeric seqs.

@@ -2,13 +2,13 @@
 #parallel_blast.py: make and run parallel blast given file of seqs and db
 
 __author__ = "Rob Knight, Greg Caporaso"
-__copyright__ = "Copyright 2010, the QIIME Project"
+__copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Greg Caporaso"] 
 __license__ = "GPL"
-__version__ = "0.1"
+__version__ = "0.9"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Prototype"
+__status__ = "Pre-release"
 
 from os import makedirs, system
 from os.path import exists, split, splitext

@@ -17,13 +17,13 @@ from qiime.parallel.poller import basic_process_run_results_f
 from qiime.util import qiime_config
 
 __author__ = "Greg Caporaso"
-__copyright__ = "Copyright 2010, the QIIME Project"
+__copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Greg Caporaso"] 
 __license__ = "GPL"
-__version__ = "0.1"
+__version__ = "0.9"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Prototype"
+__status__ = "Pre-release"
 
 def get_job_commands(python_exe_fp,pick_otus_fp,fasta_fps,\
     output_dir,blast_db,job_prefix,working_dir,max_e_value,\

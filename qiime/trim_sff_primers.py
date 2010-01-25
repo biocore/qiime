@@ -7,13 +7,13 @@ from os.path import splitext, join
 from qiime.parse import parse_map
 
 __author__ = "Rob Knight"
-__copyright__ = "Copyright 2009, the PyCogent Project"
+__copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Rob Knight"]
 __license__ = "GPL"
-__version__ = "0.1"
+__version__ = "0.9"
 __maintainer__ = "Rob Knight"
 __email__ = "rob@spot.colorado.edu"
-__status__ = "Prototype"
+__status__ = "Pre-release"
 """Finds the technical read regions for each library, and resets the left trim.
 
 Replaces the sff files with the trimmed versions.

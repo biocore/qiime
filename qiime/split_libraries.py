@@ -24,13 +24,13 @@ have a barcode that matches the mapping file will not be recorded.
 """
 
 __author__ = "Rob Knight and Micah Hamady"
-__copyright__ = "Copyright 2009, the PyCogent Project" #consider project name
+__copyright__ = "Copyright 2010, The QIIME Project" 
 __credits__ = ["Rob Knight", "Micah Hamady", "Greg Caporaso", "Kyle Bittinger","Jesse Stombaugh","William Walters"] #remember to add yourself
 __license__ = "GPL"
-__version__ = "0.1"
+__version__ = "0.9"
 __maintainer__ = "William Walters"
 __email__ = "rob@spot.colorado.edu, william.a.walters@colorado.edu"
-__status__ = "Prototype"
+__status__ = "Pre-release"
 
 import re
 from cogent.parse.fasta import FastaFinder, MinimalFastaParser

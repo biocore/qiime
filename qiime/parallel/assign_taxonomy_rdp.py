@@ -13,13 +13,13 @@ from qiime.parallel.util import split_fasta, get_random_job_prefix, write_jobs_f
 from qiime.util import qiime_config
 
 __author__ = "Greg Caporaso"
-__copyright__ = "Copyright 2010, the QIIME Project"
+__copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Greg Caporaso"] 
 __license__ = "GPL"
-__version__ = "0.1"
+__version__ = "0.9"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Prototype"
+__status__ = "Pre-release"
 
 def get_commands(python_exe_fp,assign_taxonomy_fp,confidence,fasta_fps,\
     rdp_jar_fp,output_dir,working_dir,command_prefix=None,command_suffix=None):

@@ -8,13 +8,13 @@ from os.path import split
 from cogent.parse.fasta import MinimalFastaParser
 
 __author__ = "Greg Caporaso"
-__copyright__ = "Copyright 2010, the QIIME Project"
+__copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Greg Caporaso"] 
 __license__ = "GPL"
-__version__ = "0.1"
+__version__ = "0.9"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Prototype"
+__status__ = "Pre-release"
 
 RANDOM_JOB_PREFIX_CHARS = "abcdefghigklmnopqrstuvwxyz"
 RANDOM_JOB_PREFIX_CHARS += RANDOM_JOB_PREFIX_CHARS.upper()

@@ -3,13 +3,13 @@
 #file otu_count_display.js
 
 __author__ = "Jesse Stombaugh"
-__copyright__ = "Copyright 2009, the Qiime Project"
+__copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Jesse Stombaugh"] #remember to add yourself
 __license__ = "GPL"
-__version__ = "0.1"
+__version__ = "0.9"
 __maintainer__ = "Rob Knight"
 __email__ = "jesse.stombaugh@colorado.edu"
-__status__ = "Prototype"
+__status__ = "Pre-release"
 
 Author: Jesse Stombaugh (jesse.stombaugh@colorado.edu)
 Status: Prototype

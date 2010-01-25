@@ -5,13 +5,13 @@
 If OTU table has taxonomy assigned, can also use taxonomy to filter.
 """
 __author__ = "Rob Knight"
-__copyright__ = "Copyright 2009, the PyCogent Project" #consider project name
+__copyright__ = "Copyright 2010, The QIIME Project" 
 __credits__ = ["Rob Knight and Jesse Stombaugh"] #remember to add yourself
 __license__ = "GPL"
-__version__ = "0.1"
+__version__ = "0.9"
 __maintainer__ = "Rob Knight"
 __email__ = "rob@spot.colorado.edu"
-__status__ = "Prototype"
+__status__ = "Pre-release"
 
 from qiime.parse import parse_otus
 from sys import argv

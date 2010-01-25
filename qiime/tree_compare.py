@@ -10,13 +10,13 @@ from warnings import warn
 import copy
 
 __author__ = "Justin Kuczynski"
-__copyright__ = "Copyright 2009, the PyCogent Project"
+__copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Justin Kuczynski"]
 __license__ = "GPL"
-__version__ = "0.1"
+__version__ = "0.9"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
-__status__ = "Prototype"
+__status__ = "Pre-release"
 
 """compares jackknife/bootstrapped trees with a master, and outputs support for
 nodes.  The primary function in this module is bootstrap_support()

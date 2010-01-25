@@ -2,13 +2,13 @@
 #file make_3d_plots.py
 
 __author__ = "Jesse Stombaugh, Rob Knight, and Dan Knights"
-__copyright__ = "Copyright 2009, the 454 Project" #consider project name
+__copyright__ = "Copyright 2010, The QIIME Project" 
 __credits__ = ["Jesse Stombaugh", "Rob Knight", "Micah Hamady", "Dan Knights"] #remember to add yourself
 __license__ = "GPL"
-__version__ = "0.1"
+__version__ = "0.9"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
-__status__ = "Prototype"
+__status__ = "Pre-release"
 
 """
 Author: Jesse Stombaugh (jesse.stombaugh@colorado.edu) and Micah Hamady

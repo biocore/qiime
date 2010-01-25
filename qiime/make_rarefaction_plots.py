@@ -2,13 +2,13 @@
 #file make_rarefaction_plots.py
 from __future__ import division
 __author__ = "Meg Pirrung and Jesse Stombaugh"
-__copyright__ = "Copyright 2009, QIIME"
+__copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Meg Pirrung","Jesse Stombaugh"] 
 __license__ = "GPL"
-__version__ = "0.1"
+__version__ = "0.9"
 __maintainer__ = "Meg Pirrung"
 __email__ = "meg.pirrung@colorado.edu"
-__status__ = "Prototype"
+__status__ = "Pre-release"
 
 """
 Author: Meg Pirrung (meg.pirrung@colorado.edu) 

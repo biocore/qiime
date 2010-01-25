@@ -3,13 +3,13 @@
 from __future__ import division
 
 __author__ = "Catherine Lozupone"
-__copyright__ = "Copyright 2009, Qiime"
+__copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Catherine Lozupone and Jesse Stombaugh"]
 __license__ = "GPL"
-__version__ = "0.1"
+__version__ = "0.9"
 __maintainer__ = "Catherine Lozupone"
 __email__ = "lozupone@colorado.edu"
-__status__ = "Prototype"
+__status__ = "Pre-release"
 
 
 from optparse import OptionParser
