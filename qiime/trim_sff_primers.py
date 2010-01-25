@@ -22,6 +22,37 @@ sfffile_cmd = "%s -t %s -o %s %s"
 
 sffinfo_cmd = '%s %s %s'
 
+def get_technical_lengths(input_map, debug=False):
+    """Returns per-sample info on technical lengths.
+    
+    Note: KEY_SEQ, BARCODE and PRIMER fields are required. LINKER optional.
+    """
+    if debug:
+        print "Making debug output"
+    map_lines = parse_map(input_map)
+    header, body = map_lines[0], map_lines[1:]
+    if debug:
+        print "HEADER:", header
+    key_index = header.index('KEY_SEQ')
+    bc_index = header.index('BARCODE')
+    if 'LINKER' in header:
+        linker_index = header.index('LINKER')
+    else:
+        linker_index = None
+    primer_index = header.index('PRIMER')
+    technical_lengths = {}
+    for fields in body:
+        curr_tech_len = len(fields[key_index]) + len(fields[bc_index]) + \
+            len(fields[primer_index])
+        if linker_index is not None:
+            curr_tech_len += len(fields[linker_index]) 
+        technical_lengths[fields[0]] = curr_tech_len
+    if debug:
+        print "Technical lengths:"
+        print technical_lengths
+    return technical_lengths
+
+
 def make_option_parser():
     """Generate a parser for command-line options"""
     
@@ -51,21 +82,8 @@ def make_option_parser():
 if __name__ == '__main__':
     option_parser = make_option_parser()
     options, args = option_parser.parse_args()
-    if options.debug:
-        print "Making debug output"
-    map_lines = parse_map(open(options.input_map, 'U'))
-    header, body = map_lines[0], map_lines[1:]
-    key_index = header.index('KEY_SEQ')
-    bc_index = header.index('BARCODE')
-    linker_index = header.index('LINKER')
-    primer_index = header.index('PRIMER')
-    technical_lengths = {}
-    for fields in body:
-        technical_lengths[fields[0]] = len(fields[key_index]) + len(fields[bc_index]) + \
-            len(fields[linker_index]) + len(fields[primer_index])
-    if options.debug:
-        print "Technical lengths:"
-        print technical_lengths
+    technical_lengths = get_technical_lengths(open(options.input_map, 'U'),
+        options.debug)
 
     for dirpath, dirnames, fnames in walk(options.libdir):
         for fname in fnames:
