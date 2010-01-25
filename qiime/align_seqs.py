@@ -25,6 +25,7 @@ from cogent import LoadSeqs, DNA
 from cogent.core.alignment import DenseAlignment, SequenceCollection, Alignment
 from cogent.core.sequence import DnaSequence as Dna
 from cogent.parse.fasta import MinimalFastaParser
+from cogent.parse.record import RecordError
 from cogent.app.util import get_tmp_filename, ApplicationNotFoundError
 from cogent.app.infernal import cmalign_from_alignment
 from cogent.parse.rfam import MinimalRfamParser, ChangedSequence
@@ -137,9 +138,12 @@ class InfernalAligner(Aligner):
         candidate_sequences = dict(MinimalFastaParser(open(seq_path,'U')))
         
         # load template sequences
-        info, template_alignment, struct = list(MinimalRfamParser(open(\
-            self.Params['template_filepath'],'U'),\
-            seq_constructor=ChangedSequence))[0]
+        try:
+            info, template_alignment, struct = list(MinimalRfamParser(open(\
+                self.Params['template_filepath'],'U'),\
+                seq_constructor=ChangedSequence))[0]
+        except RecordError:
+            raise ValueError, "Template alignment must be in Stockholm format with corresponding secondary structure annotation when using InfernalAligner."
         
         moltype = self.Params['moltype']
         
