@@ -125,7 +125,6 @@ spot_descriptor_with_linker_wrapper = """      <SPOT_DESCRIPTOR>
             <READ_INDEX>4</READ_INDEX>
             <READ_CLASS>Application Read</READ_CLASS>
             <READ_TYPE>Forward</READ_TYPE>
-            <BASE_COORD>%(TOTAL_TECHNICAL_READ_LENGTH)s</BASE_COORD>
           </READ_SPEC>
         </SPOT_DECODE_SPEC>
       </SPOT_DESCRIPTOR>"""
@@ -155,7 +154,6 @@ spot_descriptor_without_linker_wrapper = """      <SPOT_DESCRIPTOR>
             <READ_INDEX>3</READ_INDEX>
             <READ_CLASS>Application Read</READ_CLASS>
             <READ_TYPE>Forward</READ_TYPE>
-            <BASE_COORD>%(TOTAL_TECHNICAL_READ_LENGTH)s</BASE_COORD>
           </READ_SPEC>
         </SPOT_DECODE_SPEC>
       </SPOT_DESCRIPTOR>"""
