@@ -50,16 +50,23 @@ def remap_lines(col_names, lines):
             p = line[linker_sequence_index] + p
         curr.append(p)
         curr.extend(line + ['None'])
+        result.append(curr)
     return result
 
-def write_map_files(infile):
-    """Writes map files for each study covered in infile."""
+def get_study_groups(infile):
+    """Return study groups for each study covered in infile."""
     map_lines = parse_map(infile)
     map_header, map_lines = map_lines[0], map_lines[1:]
     col_names = map(strip_quotes, map_header)
     study_groups = collect_study_groups(map_lines, 
         col_names.index('STUDY_REF'), col_names.index('RUN_PREFIX'))
-    basedir, filename = split(argv[1])
+    return col_names, study_groups
+
+def write_map_files(in_path):
+    """Writes map files for each study covered in infile."""
+    infile = open(in_path, 'U')
+    col_names, study_groups = get_study_groups(infile)
+    basedir, filename = split(in_path)
     for name, lines in study_groups.items():
         outfile = open(join(basedir, '_'.join(name))+'.map', 'w')
         for line in remap_lines(col_names, lines):
@@ -67,5 +74,5 @@ def write_map_files(infile):
 
 if __name__ == '__main__':
     from sys import argv
-    write_map_files(open(argv[1], 'U'))
+    write_map_files(argv[1])
 
