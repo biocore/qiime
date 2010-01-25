@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# file distance_histograms.py
+# file make_distance_histograms.py
 
 __author__ = "Jeremy Widmann"
 __copyright__ = "Copyright 2009, the PyCogent Project"
@@ -424,10 +424,11 @@ def distances_by_groups(distance_header, distance_matrix, groups):
         size = len(row_indices)
         indices = []
         for i in range(size):
-            for j in range(size):
+            for j in range(i,size):
                 if i != j:
-                    indices.append(i*size+j)
-        result.append([row_group, row_group, block.flat[indices]])
+                    indices.append(block[i][j])
+
+        result.append([row_group, row_group, array(indices)])
     return result
 
 def write_distance_files(group_distance_dict,dir_prefix = '', \
@@ -581,6 +582,14 @@ def _make_path(paths):
                 curr += '/'
     return curr
 
+def _make_relative_paths(label_to_path_dict, prefix):
+    """Returns relative path from full path where prefix is replaced with ./
+    """
+    label_to_path_dict_relative = {}
+    for k,v in label_to_path_dict.items():
+        label_to_path_dict_relative[k] = v.replace(prefix,'./',1)
+    return label_to_path_dict_relative
+
 def _make_random_filename(prefix='',suffix='',num_chars=20):
     """Returns filename with random characters between prefix and suffix.
     """
@@ -671,9 +680,13 @@ def main(args,args_parsed=None):
                 dmat=dmat,\
                 histogram_dir=histograms_path)
         
+        #Get relative path to histogram files.
+        label_to_histogram_filename_relative = \
+            _make_relative_paths(label_to_histogram_filename, opts.dir_path)
+        
         outfile_name = 'QIIME_Distance_Histograms.html'
         make_main_html(distances_dict=distances_dict,\
-            label_to_histogram_filename=label_to_histogram_filename,\
+            label_to_histogram_filename=label_to_histogram_filename_relative,\
             root_outdir=opts.dir_path, \
             outfile_name = outfile_name, \
             title='Distance Histograms')
