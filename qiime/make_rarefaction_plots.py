@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #file make_rarefaction_plots.py
-#from __future__ import division
+from __future__ import division
 __author__ = "Meg Pirrung and Jesse Stombaugh"
 __copyright__ = "Copyright 2009, QIIME"
 __credits__ = ["Meg Pirrung","Jesse Stombaugh"] 
@@ -25,7 +25,6 @@ or
 python make_rarefaction_plots.py -m mappingfile.txt -r rare1.txt,rare2.txt -p SampleID -i png -d 150
 
 """
-
 from sys import argv, exit
 from random import choice, randrange
 from time import strftime
@@ -129,26 +128,22 @@ def parse_rarefaction(lines):
     
 def ave_seqs_per_sample(matrix, seqs_per_samp, sampleIDs):
     ave_ser = {}
+    temp_dict = {}
     for i in range(0,len(sampleIDs)):
-        curr = seqs_per_samp[0]
-        temp_ser = []
-        s = 0 #sum
-        n = 0 #iterator
+        temp_dict[sampleIDs[i]] = {}
+            
         for j in range(0, len(seqs_per_samp)):
-            next = seqs_per_samp[j]
-            if curr != next:
-                temp_ser.append(s/n)
-                s = 0
-                n = 0
-                curr = next
-            else:
-                try:
-                    s = s + float(matrix[i][j])
-                except:
-                    s = s + 0
-            n = n + 1
-        temp_ser.append(s/n)
-        ave_ser[sampleIDs[i]] = temp_ser
+            try:
+                temp_dict[sampleIDs[i]][seqs_per_samp[j]].append(matrix[i][j])
+            except(KeyError):
+                temp_dict[sampleIDs[i]][seqs_per_samp[j]] = []
+                temp_dict[sampleIDs[i]][seqs_per_samp[j]].append(matrix[i][j])
+    for s in sampleIDs:
+        ave_ser[s] = []
+        keys = temp_dict[s].keys()
+        keys.sort()
+        for k in keys:
+            ave_ser[s].append(mean(array(temp_dict[s][k]),0))
     return ave_ser
 
 def is_max_category_ops(mapping, mapping_category):
@@ -263,6 +258,7 @@ def plot_rarefaction(rare_mat, xaxis, sampleIDs, mapping, mapping_category):
     ax = plt.gca()
     ax.set_axisbelow(True)
     ax.set_xlabel('Sequences Per Sample')
+    #leg = plt.legend(markerscale=.3, ncol=int(len(ops)/12))
     return plt, ops, colors, syms, test
 
 def save_plot(plot, filenm, rtype, title, itype, res, xmax, ymax, ops, cols, syms, line):
@@ -475,11 +471,6 @@ def make_output_files(data, lines, qiime_dir):
     
     os.makedirs(data['output_path']+"/js")
     os.makedirs(data['output_path']+"/css")
-    # open(data['output_path'] + "/rarefaction_plots.html",'w').writelines(open(qiime_dir + "rarefaction_plots.html", "U").readlines())
-    # open(data['output_path'] + "/js/rarefaction_plots.js",'w').writelines(open(qiime_dir + "/js/rarefaction_plots.js", "U").readlines())
-    # open(data['output_path'] + "/js/jquery.js",'w').writelines(open(qiime_dir + "/js/jquery.js", "U").readlines())
-    # open(data['output_path'] + "/js/jquery.dataTables.min.js",'w').writelines(open(qiime_dir + "/js/jquery.dataTables.min.js", "U").readlines())
-    # open(data['output_path'] + "/css/rarefaction_plots.css",'w').writelines(open(qiime_dir + "/css/rarefaction_plots.css", "U").readlines())
     shutil.copyfile(qiime_dir+"/rarefaction_plots.html", data['output_path']+"/rarefaction_plots.html")
     shutil.copyfile(qiime_dir+"/js/rarefaction_plots.js", data['output_path']+"/js/rarefaction_plots.js")
     shutil.copyfile(qiime_dir+"/js/jquery.js", data['output_path']+"/js/jquery.js")
