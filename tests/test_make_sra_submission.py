@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 from cogent.util.unit_test import TestCase, main
+from cogent.app.util import get_tmp_filename
+from cogent.util.misc import remove_files
 from qiime.make_sra_submission import (md5_path, safe_for_xml, 
     read_tabular_data, 
     rows_data_as_dicts,
@@ -13,7 +15,7 @@ has the templates and sample tabular data.
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2009, the PyCogent Project"
 #remember to add yourself if you make changes
-__credits__ = ["Rob Knight"]
+__credits__ = ["Rob Knight","Greg Caporaso"]
 __license__ = "GPL"
 __version__ = "0.1"
 __maintainer__ = "Rob Knight"
@@ -22,10 +24,34 @@ __status__ = "Prototype"
 
 class TopLevelTests(TestCase):
     """Top-level tests of functions in make_study_and_experiment"""
+    
+    def setUp(self):
+        """ """
+        ## The following is ugly, but the only reliable way that I
+        ## know of to find the Qiime/test directory. If we don't have 
+        ## that, tests passes/fails become dependent on the directory 
+        ## which they are run from.
+        current_filepath = __file__.split('/')
+        if len(current_filepath) == 1:
+            qiime_test_dir = './'
+        else:
+            qiime_test_dir = '/'.join(current_filepath[:-1])
+        
+        self.sra_xml_templates_dir = '%s/sra_xml_templates/' % qiime_test_dir
+        self.sra_test_files_dir = '%s/sra_test_files/' % qiime_test_dir
+        
+        self.submission_with_file_fp = \
+         get_tmp_filename(prefix='make_sra_submission_tests')
+        open(self.submission_with_file_fp,'w').write(\
+         submission_with_file_text %  self.sra_test_files_dir)
+        self.files_to_remove = [self.submission_with_file_fp]
+        
+    def tearDown(self):
+        remove_files(self.files_to_remove)
 
     def test_md5_path(self):
         """md5_path should match hand-calculated value"""
-        result = md5_path('sra_xml_templates/study_template.xml')
+        result = md5_path('%s/study_template.xml' % self.sra_xml_templates_dir)
         self.assertEqual(result, 'bcd7ec3afb9fe75ea09f5ac1cfeeb450')
 
     def test_safe_for_xml(self):
@@ -94,52 +120,99 @@ aa\tbb\tcc
 
     def test_make_study(self):
         """make_study should produce expected results given info/template"""
-        study_sample_data = open('sra_test_files/study.txt', 'U')
+        study_sample_data = \
+         open('%s/study.txt' % self.sra_test_files_dir, 'U')
         study_template = open(
-            'sra_xml_templates/study_template.xml', 'U').read()
+            '%s/study_template.xml' % self.sra_xml_templates_dir, 'U').read()
         result = make_study(study_sample_data, study_template)
-        expected = open('sra_test_files/example_study.xml', 'U').read()
+        expected = \
+         open('%s/example_study.xml' % self.sra_test_files_dir, 'U').read()
         self.assertEqual(result, expected)
         #check that it works if pmid field empty
-        study_sample_data = open('sra_test_files/study_empty_pmid.txt', 'U')
+        study_sample_data = \
+         open('%s/study_empty_pmid.txt' % self.sra_test_files_dir, 'U')
         result = make_study(study_sample_data, study_template)
-        self.assertEqual(result, open(
-            'sra_test_files/example_study_no_pmid.xml', 'U').read())
+        self.assertEqual(result, open('%s/example_study_no_pmid.xml' %\
+            self.sra_test_files_dir, 'U').read())
         #check that it works if pmid field not supplied
-        study_sample_data = open('sra_test_files/study_missing_pmid.txt', 'U')
+        study_sample_data = \
+         open('%s/study_missing_pmid.txt' % self.sra_test_files_dir, 'U')
         result = make_study(study_sample_data, study_template)
-        self.assertEqual(result, open(
-            'sra_test_files/example_study_no_pmid.xml', 'U').read())
+        self.assertEqual(result, open('%s/example_study_no_pmid.xml' %\
+         self.sra_test_files_dir, 'U').read())
 
     def test_make_submission(self):
         """make_submission should produce expected results given info/template"""
-        submission_sample_data = open('sra_test_files/submission.txt', 'U')
-        submission_template = open('sra_xml_templates/submission_template.xml',
-            'U').read()
+        submission_sample_data = \
+         open('%s/submission.txt' % self.sra_test_files_dir, 'U')
+        submission_template = \
+         open('%s/submission_template.xml' % self.sra_xml_templates_dir,'U').read()
         result = make_submission(submission_sample_data, submission_template,
             {'study':'study.xml', 'sample':'sample.xml'})
-        expected = open(
-            'sra_test_files/example_submission_study_sample_only.xml').read()
+        expected = open('%s/example_submission_study_sample_only.xml' \
+            % self.sra_test_files_dir).read()
         self.assertEqual(result, expected)
         #test that it works with a file
         submission_sample_data = open(
-            'sra_test_files/submission_with_file.txt', 'U')
-        submission_template = open(
-            'sra_xml_templates/submission_template.xml', 'U').read()
+            self.submission_with_file_fp, 'U')
+        submission_template = open('%s/submission_template.xml' \
+         % self.sra_xml_templates_dir, 'U').read()
         result = make_submission(submission_sample_data, submission_template,
             {'study':'study.xml', 'sample':'sample.xml'})
-        expected = open(
-            'sra_test_files/example_submission_study_sample_only_with_file.xml').read()
+            
+        expected = submission_with_file_expected % self.sra_test_files_dir
         self.assertEqual(result, expected)
 
     def test_make_sample(self):
         """make_sample should produce expected reuslts given info/template"""
-        sample_data = open('sra_test_files/sample_small.txt', 'U')
-        sample_template = open(
-            'sra_xml_templates/sample_template.xml', 'U').read()
+        sample_data = open('%s/sample_small.txt' \
+         % self.sra_test_files_dir, 'U')
+        sample_template = open('%s/sample_template.xml' %\
+         self.sra_xml_templates_dir, 'U').read()
         result = make_sample(sample_data, sample_template)
-        expected = open('sra_test_files/example_sample.xml', 'U').read()
+        expected = open('%s/example_sample.xml' %\
+         self.sra_test_files_dir, 'U').read()
         self.assertEqual(result, expected)
+
+submission_with_file_text = '''#Field	Value	Example	Comments
+accession	SRA003492	SRA003492	"leave blank if not assigned yet, e.g. if new submission"
+submission_id	fierer_hand_study	fierer_hand_study	internally unique id for the submission
+center_name	CCME	CCME	name of the center preparing the submission
+submission_comment	"Barcode submission prepared by osulliva@ncbi.nlm.nih.gov, shumwaym@ncbi.nlm.nih.gov"	"Barcode submission prepared by osulliva@ncbi.nlm.nih.gov, shumwaym@ncbi.nlm.nih.gov"	Free-text comments regarding submission
+lab_name	Knight	Knight	"name of lab preparing submission, can differ from center (usually refers to the PI's info, not the sequencing center's)"
+submission_date	2009-10-22T01:23:00-05:00	2009-10-22T01:23:00-05:00	timestamp of submission
+CONTACT	Rob Knight;Rob.Knight@Colorado.edu	Rob Knight;Rob.Knight@Colorado.edu	"Use semicolon to separate email address from name, can be multiple contacts."
+CONTACT	Noah Fierer;Noah.Fierer@Colorado.edu	Noah Fierer;Noah.Fierer@Colorado.edu	"Use semicolon to separate email address from name, can be multiple contacts."
+study	study.xml	fierer_hand_study.study.xml	"leave blank if not submitting study, put in filename otherwise"
+sample	sample.xml	fierer_hand_study.sample.xml	"leave blank if not submitting sample, put in filename otherwise"
+experiment		fierer_hand_study.experiment.xml	"leave blank if not submitting experiment, put in filename otherwise"
+run		fierer_hand_study.run.xml	"leave blank if not submitting run, put in filename otherwise"
+file	%s/fake_hand_data_for_sra.tgz	fierer_hand_study.seqs.tgz	"leave blank if not submitting sequence data, put in filename otherwise"'''
+
+submission_with_file_expected = '''<?xml version="1.0" encoding="UTF-8"?>
+<SUBMISSION xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ accession="SRA003492"
+ submission_id="fierer_hand_study"
+ center_name="CCME"
+ submission_comment="Barcode submission prepared by osulliva@ncbi.nlm.nih.gov, shumwaym@ncbi.nlm.nih.gov"
+ lab_name="Knight"
+ submission_date="2009-10-22T01:23:00-05:00"
+>
+ <CONTACTS>
+    <CONTACT name="Rob Knight" inform_on_status="Rob.Knight@Colorado.edu" inform_on_error="Rob.Knight@Colorado.edu"/>
+    <CONTACT name="Noah Fierer" inform_on_status="Noah.Fierer@Colorado.edu" inform_on_error="Noah.Fierer@Colorado.edu"/>
+ </CONTACTS>
+ <ACTIONS>
+   <ACTION><ADD source="sample.xml" schema="sample" notes="sample metadata"/></ACTION>
+   <ACTION><ADD source="study.xml" schema="study" notes="study metadata"/></ACTION>
+   <ACTION><RELEASE/></ACTION>
+ </ACTIONS>
+ <FILES>
+ <FILE filename="%s/fake_hand_data_for_sra.tgz" checksum_method="MD5" checksum="d41d8cd98f00b204e9800998ecf8427e"/>
+ </FILES>
+</SUBMISSION>
+'''
 
 if __name__ == '__main__':
     main()
+

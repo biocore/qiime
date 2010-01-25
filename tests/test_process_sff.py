@@ -1,13 +1,15 @@
 #!/usr/bin/env python
 from cogent.util.unit_test import TestCase, main
+from cogent.app.util import ApplicationNotFoundError
+from cogent.util.misc import app_path
 from qiime.process_sff import (make_fna, make_qual, prep_sffs_in_dir) 
-from os import remove
+from os import remove, getcwd
 """Tests of the process_sff.py file.
 """
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2009, the PyCogent Project"
 #remember to add yourself if you make changes
-__credits__ = ["Rob Knight"]
+__credits__ = ["Rob Knight","Greg Caporaso"]
 __license__ = "GPL"
 __version__ = "0.1"
 __maintainer__ = "Rob Knight"
@@ -16,30 +18,56 @@ __status__ = "Prototype"
 
 class TopLevelTests(TestCase):
     """Top-level tests of functions in process_sff"""
+    
+    def setUp(self):
+        """ """
+        ## The following is ugly, but the only reliable way that I
+        ## know of to find the Qiime/test directory. If we don't have 
+        ## that, tests passes/fails become dependent on the directory 
+        ## which they are run from.
+        current_filepath = __file__.split('/')
+        if len(current_filepath) == 1:
+            qiime_test_dir = './'
+        else:
+            qiime_test_dir = '/'.join(current_filepath[:-1])
+        
+        self.sra_test_files_dir = '%s/sra_test_files/' % qiime_test_dir
 
     def test_make_fna(self):
         """test_make_fna should make fasta file as expected"""
-        make_fna('sra_test_files/test.sff')
-        result = open('sra_test_files/test.fna').read()
-        self.assertEqual(result, '>FA6P1OK01CGMHQ length=48 xy=0892_1356 region=1 run=R_2008_05_28_17_11_38_\nATCTGAGCTGGGTCATAGCTGCCTCCGTAGGAGGTGCCTCCCTACGGC\n')
-        remove('sra_test_files/test.fna')
+        if not app_path('sffinfo'):
+            raise ApplicationNotFoundError, \
+             "Can't find sffinfo. Is it installed? Is it in your $PATH?"
+        make_fna('%s/test.sff' % self.sra_test_files_dir)
+        result = open('%s/test.fna' % self.sra_test_files_dir).read()
+        self.assertEqual(result, \
+         '>FA6P1OK01CGMHQ length=48 xy=0892_1356 region=1 run=R_2008_05_28_17_11_38_\nATCTGAGCTGGGTCATAGCTGCCTCCGTAGGAGGTGCCTCCCTACGGC\n')
+        remove('%s/test.fna' % self.sra_test_files_dir)
 
     def test_make_qual(self):
         """test_make_qual should make qual file as expected"""
-        make_qual('sra_test_files/test.sff')
-        result = open('sra_test_files/test.qual').read()
-        self.assertEqual(result, '>FA6P1OK01CGMHQ length=48 xy=0892_1356 region=1 run=R_2008_05_28_17_11_38_\n32 32 32 32 32 32 32 25 25 21 21 21 28 32 32 31 30 30 32 32 32 33 31 25 18 18 20 18 32 30 28 23 22 22 24 28 18 19 18 16 16 16 17 18 13 17 27 21\n')
-        remove('sra_test_files/test.qual')
+        if not app_path('sffinfo'):
+            raise ApplicationNotFoundError, \
+             "Can't find sffinfo. Is it installed? Is it in your $PATH?"
+        make_qual('%s/test.sff' % self.sra_test_files_dir)
+        result = open('%s/test.qual'% self.sra_test_files_dir).read()
+        self.assertEqual(result,\
+        '>FA6P1OK01CGMHQ length=48 xy=0892_1356 region=1 run=R_2008_05_28_17_11_38_\n32 32 32 32 32 32 32 25 25 21 21 21 28 32 32 31 30 30 32 32 32 33 31 25 18 18 20 18 32 30 28 23 22 22 24 28 18 19 18 16 16 16 17 18 13 17 27 21\n')
+        remove('%s/test.qual' % self.sra_test_files_dir)
 
     def test_prep_sffs_in_dir(self):
         """test_prep_sffs_in_dir should make fasta/qual from sffs."""
-        prep_sffs_in_dir('sra_test_files')
-        result = open('sra_test_files/test.qual').read()
-        self.assertEqual(result, '>FA6P1OK01CGMHQ length=48 xy=0892_1356 region=1 run=R_2008_05_28_17_11_38_\n32 32 32 32 32 32 32 25 25 21 21 21 28 32 32 31 30 30 32 32 32 33 31 25 18 18 20 18 32 30 28 23 22 22 24 28 18 19 18 16 16 16 17 18 13 17 27 21\n')
-        remove('sra_test_files/test.qual')
-        result = open('sra_test_files/test.fna').read()
+        if not app_path('sffinfo'):
+            raise ApplicationNotFoundError, \
+             "Can't find sffinfo. Is it installed? Is it in your $PATH?"
+        prep_sffs_in_dir(self.sra_test_files_dir)
+        result = open('%s/test.qual' % self.sra_test_files_dir).read()
+        self.assertEqual(result, \
+        '>FA6P1OK01CGMHQ length=48 xy=0892_1356 region=1 run=R_2008_05_28_17_11_38_\n32 32 32 32 32 32 32 25 25 21 21 21 28 32 32 31 30 30 32 32 32 33 31 25 18 18 20 18 32 30 28 23 22 22 24 28 18 19 18 16 16 16 17 18 13 17 27 21\n')
+        remove('%s/test.qual' % self.sra_test_files_dir)
+        result = open('%s/test.fna' % self.sra_test_files_dir).read()
         self.assertEqual(result, '>FA6P1OK01CGMHQ length=48 xy=0892_1356 region=1 run=R_2008_05_28_17_11_38_\nATCTGAGCTGGGTCATAGCTGCCTCCGTAGGAGGTGCCTCCCTACGGC\n')
-        remove('sra_test_files/test.fna')
+        remove('%s/test.fna' % self.sra_test_files_dir)
 
 if __name__ == '__main__':
     main()
