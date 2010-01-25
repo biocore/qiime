@@ -20,7 +20,7 @@ rows: rarefaction depth/iteration
 cols: samples
 
 example:
-python collate_alpha.py -i TEST/rare_chao1_PD -o TEST/rare_collated
+python collate_alpha.py -i rare_chao1_PD -o rare_collated
 doesn't handle written n/a values well, can't read in
 """
 import operator
@@ -48,7 +48,7 @@ def main(input_dir, output_dir, example_filepath=None):
         # now map back to file name
         example_fname = file_names[file_name_table.index(sorted_fname_table[0])]
         example_filepath = os.path.join(input_dir,example_fname)
-    f = open(example_filepath, 'r')
+    f = open(example_filepath, 'U')
     all_metrics, all_samples, example_data = parse_matrix(f)
     num_cols = len(all_samples)
     f.close()
@@ -56,45 +56,54 @@ def main(input_dir, output_dir, example_filepath=None):
     # make the table 1 row at a time
     # we're building a rarefaction by sample mtx from
     # a sample by metric matrix
+    # each metric is one output file
     for metric in all_metrics:
         metric_file_data = []
         for fname in file_names:
             # f_ here refers to the input file currently being processed
             # to distinguish from the output file we're building
-            f = open(os.path.join(input_dir,fname), 'r')
-            f_metrics, f_samples, f_data = \
-                parse_matrix(f)
+            f = open(os.path.join(input_dir,fname), 'U')
+            f_metrics, f_samples, f_data = parse_matrix(f)
             f.close()
-            f_col = f_metrics.index(metric)
+            metric_file_data.append(\
+                make_output_row(f_metrics, metric, f_samples, f_data, fname,num_cols,all_samples))
+        
+        write_output_file(metric_file_data, output_dir, metric, all_samples)
+        
+        
+def write_output_file(metric_file_data, output_dir, metric, all_samples):
+    # now have matrix where output_row is rarefaction analysis
+    metric_file_data = sorted(metric_file_data,key=operator.itemgetter(1,2))
+    row_names = [row.pop(0) for row in metric_file_data]
+    col_names = ['sequences per sample', 'iteration'] + all_samples
+    out_str = format_matrix(numpy.array(metric_file_data), row_names, \
+        col_names)
+    f = open(os.path.join(output_dir,metric+'.txt'),'w')
+    f.write(out_str)
+    f.close()
+        
+def make_output_row(f_metrics, metric, f_samples, f_data, fname, num_cols, all_samples):
+    f_col = f_metrics.index(metric)
 
-            # first 3 cols are fname, seqs/sample, iteration
-            try:
-                base, seqs, iter, ext = parse_rarefaction_fname(fname)
-            except:
-                seqs, iter = 'n/a', 'n/a'
-            output_row = [fname] + ['n/a']*num_cols
-            for f_row, sample in enumerate(f_samples):
-                try:
-                    output_row[all_samples.index(sample)+1] = \
-                        str(f_data[f_row,f_col])
-                except IndexError:
-                    print("warning, didn't find sample in example file."+\
-                     "exiting", sample, fname, metric)
-                    raise # re-raise error
-                    
+    # first 3 cols are fname, seqs/sample, iteration
+    try:
+        base, seqs, iter, ext = parse_rarefaction_fname(fname)
+    except:
+        seqs, iter = 'n/a', 'n/a'
+    output_row = [fname] + ['n/a']*num_cols
+    for f_row, sample in enumerate(f_samples):
+        try:
+            output_row[all_samples.index(sample)+1] = \
+                str(f_data[f_row,f_col])
+        except IndexError:
+            print("warning, didn't find sample in example file."+\
+             "exiting", sample, fname, metric)
+            raise # re-raise error
+            
 
-            output_row.insert(1, seqs)
-            output_row.insert(2, iter)
-            metric_file_data.append(output_row)
-        # now have matrix where output_row is rarefaction analysis
-        metric_file_data = sorted(metric_file_data,key=operator.itemgetter(1,2))
-        row_names = [row.pop(0) for row in metric_file_data]
-        col_names = ['sequences per sample', 'iteration'] + all_samples
-        out_str = format_matrix(numpy.array(metric_file_data), row_names, \
-            col_names)
-        f = open(os.path.join(output_dir,metric+'.txt'),'w')
-        f.write(out_str)
-        f.close()
+    output_row.insert(1, seqs)
+    output_row.insert(2, iter)
+    return output_row
 
 usage_str = """usage: %prog [options] {-i INPUT_PATH -o OUTPUT_PATH}
 

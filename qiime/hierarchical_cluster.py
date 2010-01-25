@@ -20,23 +20,23 @@ import qiime.hierarchical_cluster
 import os.path
 import sys
 
-def multiple_file_upgma(options, args):
-    if not os.path.exists(options.output_path):
-        os.makedirs(options.output_path)
+def multiple_file_upgma(input_dir, output_dir):
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
     upgma_script = qiime.hierarchical_cluster.__file__
-    file_names = os.listdir(options.input_path)
+    file_names = os.listdir(input_dir)
     file_names = [fname for fname in file_names if not fname.startswith('.')]
 
     for fname in file_names:
         base_fname, ext = os.path.splitext(fname)
         upgma_cmd = 'python ' + upgma_script + ' -i '+\
-            os.path.join(options.input_path, fname) + ' -o ' +\
-            os.path.join(options.output_path,'upgma_'+base_fname+'.tre')
+            os.path.join(input_dir, fname) + ' -o ' +\
+            os.path.join(output_dir,'upgma_'+base_fname+'.tre')
         os.system(upgma_cmd)
 
-def single_file_upgma(options, args):
+def single_file_upgma(input_file, output_file):
     # read in dist matrix
-    f = open(options.input_path, 'r')
+    f = open(input_file, 'U')
     headers, data = parse_distmat(f)
     f.close()
     
@@ -49,7 +49,7 @@ def single_file_upgma(options, args):
     c = UPGMA_cluster(U, nodes, BIG)
 
     # write output
-    f = open(options.output_path,'w')
+    f = open(output_file,'w')
     f.write(c.getNewick(with_distances=True))
     f.close()
 
@@ -107,9 +107,9 @@ def parse_command_line_parameters():
 if __name__ == '__main__':
     options, args = parse_command_line_parameters()
     if os.path.isdir(options.input_path):
-        multiple_file_upgma(options, args)
+        multiple_file_upgma(options.input_path,options.output_path)
     elif os.path.isfile(options.input_path):
-        single_file_upgma(options, args)
+        single_file_upgma(options.input_path, options.output_path)
     else:
         print("io error, check input file path")
         exit(1)
