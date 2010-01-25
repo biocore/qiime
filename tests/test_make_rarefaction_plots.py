@@ -15,7 +15,7 @@ Unit tests for make_rarefaction_plots.py
 """
 
 from cogent.util.unit_test import TestCase, main
-from make_rarefaction_plots2 import *
+from qiime.make_rarefaction_plots import *
 from qiime import parse
 
 class makeRarefactionPlotsTests(TestCase):
