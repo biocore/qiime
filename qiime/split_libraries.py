@@ -83,7 +83,7 @@ def count_mismatches(seq1, seq2, max_mm):
     """Counts mismatches, primer should be <= length of the seq.
     """
     mm = 0
-    for i in range(len(seq2)):
+    for i in range(min(len(seq2), len(seq1))):
         if seq1[i] != seq2[i]:
             mm += 1
             if mm > max_mm:
