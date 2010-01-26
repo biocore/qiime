@@ -230,7 +230,7 @@ class PyNastAligner(Aligner):
     def __call__(self, seq_path, result_path=None, log_path=None, 
                  failure_path=None):
         # load candidate sequences
-        seq_file = open(seq_path, 'r')
+        seq_file = open(seq_path, 'U')
         candidate_sequences = MinimalFastaParser(seq_file)
 
         # load template sequences
