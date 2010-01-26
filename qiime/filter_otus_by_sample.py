@@ -110,9 +110,9 @@ def _do_sample_filter(prefs, data, dir_path='', filename=None):
     
     # Write out a new otus file
     for key in (new_otus_list):
-        filtered_otus_output_filepath.write(key[0]+'\t')
+        filtered_otus_output_filepath.write(key[0])
         for j in key[1]:
-            filtered_otus_output_filepath.write(str(j)+'\t')
+            filtered_otus_output_filepath.write('\t'+str(j))
         filtered_otus_output_filepath.write('\n')
     filtered_otus_output_filepath.close()
 
