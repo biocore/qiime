@@ -1,21 +1,25 @@
 #!/usr/bin/env python
+import os
+import tempfile
 from cogent.util.unit_test import TestCase, main
 from cogent.app.util import get_tmp_filename
 from cogent.util.misc import remove_files
-from qiime.make_sra_submission import (md5_path, safe_for_xml, 
-    read_tabular_data, 
-    rows_data_as_dicts,
+from qiime.make_sra_submission import (
+    md5_path, safe_for_xml, read_tabular_data, rows_data_as_dicts,
     make_study_links, twocol_data_to_dict, make_study, make_submission,
-    make_sample)
+    make_sample, trim_quotes, defaultdict, group_lines_by_field,
+    parse_command_line_parameters, write_xml_generic)
+
 """Tests of the make_study_and_experiment.py file.
 
 Note: these tests assume you are running from within the directory that also
 has the templates and sample tabular data.
 """
+
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2009, the PyCogent Project"
 #remember to add yourself if you make changes
-__credits__ = ["Rob Knight","Greg Caporaso"]
+__credits__ = ["Rob Knight", "Greg Caporaso", "Kyle Bittinger"]
 __license__ = "GPL"
 __version__ = "0.1"
 __maintainer__ = "Rob Knight"
@@ -56,7 +60,7 @@ class TopLevelTests(TestCase):
 
     def test_safe_for_xml(self):
         """safe_for_xml should return string without 'bad' xml entities."""
-        s = '''ab&c'd"e<f>'''
+        s = 'ab&c\'d"e<f>'
         t = safe_for_xml(s)
         self.assertEqual(t, 'ab&amp;c&apos;d&quot;e&lt;f&gt;')
 
@@ -173,6 +177,57 @@ aa\tbb\tcc
         expected = open('%s/example_sample.xml' %\
          self.sra_test_files_dir, 'U').read()
         self.assertEqual(result, expected)
+
+    def test_trim_quotes(self):
+        self.assertEqual(trim_quotes('"abcd"'), 'abcd')
+
+    def test_group_lines_by_field(self):
+        lines = [
+            ['x',   'why', 'b'],
+            ['x x', 'y y', 'a'],
+            ['wx ', 'y y', 'c']
+            ]
+        observed = group_lines_by_field(lines, 1).items()
+        observed.sort()
+        expected = [
+            ('why', [['x',   'why', 'b']]),
+            ('y y', [['x x', 'y y', 'a'], ['wx ', 'y y', 'c']]),
+            ]
+        self.assertEqual(observed, expected)
+
+    def test_parse_command_line_parameters(self):
+        argv = [
+            '-a', 'sample.tsv',
+            '-t', 'study.tsv',
+            '-u', 'submission.tsv',
+            '-e', 'experiment.tsv',
+            '-s', 'sffs/',
+            ]
+        opts, args = parse_command_line_parameters(argv)
+        self.assertEqual(opts.input_sample_fp, 'sample.tsv')
+        self.assertEqual(opts.input_study_fp, 'study.tsv')
+        self.assertEqual(opts.input_submission_fp, 'submission.tsv')
+        self.assertEqual(opts.input_experiment_fp, 'experiment.tsv')
+        self.assertEqual(opts.sff_dir, 'sffs/')
+
+    def test_write_xml_generic(self):
+        input_file = tempfile.NamedTemporaryFile()
+        input_file.write('abc')
+        input_file.seek(0)
+        
+        template_file = tempfile.NamedTemporaryFile()
+        template_file.write('<xml>%s</xml>')
+        template_file.seek(0)
+
+        def simple_xml_f(lines, template):
+            return template % ''.join(lines)
+        
+        observed_fp = write_xml_generic(
+            input_file.name, template_file.name, simple_xml_f)
+        observed = open(observed_fp).read()
+        self.assertEqual(observed, '<xml>abc</xml>')
+
+        self.files_to_remove = [observed_fp]
 
 submission_with_file_text = '''#Field	Value	Example	Comments
 accession	SRA003492	SRA003492	"leave blank if not assigned yet, e.g. if new submission"

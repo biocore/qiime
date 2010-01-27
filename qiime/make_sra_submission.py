@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from string import strip
 from collections import defaultdict
-from md5 import md5
+from hashlib import md5
 from optparse import OptionParser
 from os.path import splitext, join
 from sys import stderr
@@ -218,7 +218,7 @@ platform_blocks = { 'Titanium':
 
 
 def md5_path(filename, block_size=8192):
-    """"Returns md5 hash from fileame without reading whole thing into memory"""
+    """Returns md5 hash from fileame without reading whole thing into memory"""
     m = md5('')
     infile = open(filename)
     curr = True
@@ -462,7 +462,7 @@ Example usage:
  the .txt files).
 """
 
-def parse_command_line_parameters():
+def parse_command_line_parameters(argv=None):
     """ Parses command line arguments """
     usage = usage_str
     version = 'Version: %prog ' + __version__
@@ -497,7 +497,7 @@ def parse_command_line_parameters():
         template_study_fp='study_template.xml', 
         template_submission_fp='submission_template.xml')
 
-    opts,args = parser.parse_args()
+    opts,args = parser.parse_args(argv)
 
     return opts,args
 
