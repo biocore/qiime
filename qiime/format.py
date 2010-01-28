@@ -2,7 +2,8 @@
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2010, The QIIME Project" 
-__credits__ = ["Rob Knight"] #remember to add yourself if you make changes
+__credits__ = ["Rob Knight", "Justin Kuczynski"] 
+#remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.0-dev"
 __maintainer__ = "Rob Knight"
@@ -41,12 +42,18 @@ def format_matrix(data, row_names, col_names):
 
 def format_otu_table(sample_names, otu_names, data, taxonomy=None,
     comment='Full OTU Counts'):
-    """Writes OTU table as tab-delimited text."""
+    """Writes OTU table as tab-delimited text.
+    
+    inputs: sample_names, otu_names are lists of strings
+    data is numpy 2d array, num_otus x num_samples
+    taxonomy is list of length = num_otus
+    
+    """
     if data.shape != (len(otu_names), len(sample_names)):
         raise ValueError, "Data shape of %s doesn't match %s OTUs, %s samples" \
             % (data.shape, len(otu_names), len(sample_names))
     lines = []
-    data = numpy.array(data, dtype='str')
+    #data = numpy.array(data, dtype='str') ##BAD! truncates some ints!
     sample_names = map(str, sample_names)
     otu_names = map(str, otu_names)
     lines.append('#'+comment)
@@ -56,11 +63,11 @@ def format_otu_table(sample_names, otu_names, data, taxonomy=None,
         for otu_name, vals, taxon in zip(otu_names, data, taxonomy):
             if not isinstance(taxon, str):
                 taxon = ';'.join(taxon)
-            lines.append('\t'.join([otu_name] + vals.tolist() + [taxon]))
+            lines.append('\t'.join([otu_name] + map(str, vals.tolist()) + [taxon]))
     else:
         lines.append('\t'.join(['#OTU ID'] + sample_names))
         for otu_name, vals in zip(otu_names, data):
-            lines.append('\t'.join([otu_name] + vals.tolist()))
+            lines.append('\t'.join([otu_name] + map(str,vals.tolist())))
     return '\n'.join(lines)
 
 def format_coords(coord_header, coords, eigvals, pct_var):
