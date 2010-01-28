@@ -2,13 +2,13 @@
 #file test_parse.py
 
 __author__ = "Rob Knight"
-__copyright__ = "Copyright 2009, the PyCogent Project"
+__copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Rob Knight", "Justin Kuczynski", "Greg Caporaso"] #remember to add yourself
 __license__ = "GPL"
-__version__ = "0.1"
+__version__ = "1.0-dev"
 __maintainer__ = "Rob Knight"
 __email__ = "rob@spot.colorado.edu"
-__status__ = "Prototype"
+__status__ = "Pre-release"
 
 from numpy import array
 from StringIO import StringIO

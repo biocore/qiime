@@ -2,13 +2,13 @@
 # file test_make_distance_histograms.py
 
 __author__ = "Jeremy Widmann"
-__copyright__ = "Copyright 2009, the PyCogent Project"
+__copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Jeremy Widmann"]
 __license__ = "GPL"
-__version__ = "0.1"
+__version__ = "1.0-dev"
 __maintainer__ = "Jeremy Widmann"
 __email__ = "jeremy.widmann@colorado.edu"
-__status__ = "Prototype"
+__status__ = "Pre-release"
 
 from cogent.util.unit_test import TestCase, main
 import shutil

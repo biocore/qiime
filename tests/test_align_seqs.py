@@ -3,13 +3,13 @@
 """Tests of code for aligning 16S sequences"""
 
 __author__ = "Greg Caporaso"
-__copyright__ = "Copyright 2009, the PyCogent Project" 
+__copyright__ = "Copyright 2010, The QIIME Project" 
 __credits__ = ["Greg Caporaso","Jeremy Widmann"] 
 __license__ = "GPL"
-__version__ = "0.1"
+__version__ = "1.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Prototype"
+__status__ = "Pre-release"
 
 from os import remove
 from os.path import getsize

@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
 __author__ = "Justin Kuczynski"
-__copyright__ = "Copyright 2009, the PyCogent Project"
+__copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Rob Knight", "Justin Kuczynski"]
 __license__ = "GPL"
-__version__ = "0.1"
+__version__ = "1.0-dev"
 __maintainer__ = "justin kuczynski"
 __email__ = "justinak@gmail.com"
-__status__ = "Prototype"
+__status__ = "Pre-release"
 
 
 """Contains tests for beta_metrics  functions."""

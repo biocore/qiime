@@ -2,13 +2,13 @@
 #file test_filter_otu_table.py
 
 __author__ = "Jesse Stombaugh"
-__copyright__ = "Copyright 2009, the 454 Project" #consider project name
+__copyright__ = "Copyright 2010, The QIIME Project" #consider project name
 __credits__ = ["Jesse Stombaugh"] #remember to add yourself
 __license__ = "GPL"
-__version__ = "0.1"
+__version__ = "1.0-dev"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
-__status__ = "Prototype"
+__status__ = "Pre-release"
 
 from qiime.parse import parse_otus
 from sys import argv

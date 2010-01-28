@@ -3,14 +3,14 @@
 """Tests of code for adding taxa to OTU table"""
 
 __author__ = "Rob Knight"
-__copyright__ = "Copyright 2009, the PyCogent Project" 
+__copyright__ = "Copyright 2010, The QIIME Project" 
 #remember to add yourself if you make changes
 __credits__ = ["Rob Knight"] 
 __license__ = "GPL"
-__version__ = "0.1"
+__version__ = "1.0-dev"
 __maintainer__ = "Rob Knight"
 __email__ = "rob@spot.colorado.edu"
-__status__ = "Prototype"
+__status__ = "Pre-release"
 
 from cogent.util.unit_test import TestCase, main
 from qiime.summarize_taxa import parse_command_line_parameters, \

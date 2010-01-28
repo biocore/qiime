@@ -6,13 +6,13 @@ from optparse import OptionParser
 from qiime.util import load_qiime_config
 
 __author__ = "Jens Reeder"
-__copyright__ = "Copyright 2009, Qiime"
+__copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Jens Reeder"]
 __license__ = "GPL"
-__version__ = "0.1"
+__version__ = "1.0-dev"
 __maintainer__ = "Jens Reeder"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Prototype"
+__status__ = "Pre-release"
 
 def parse_command_line_parameters(commandline_args=None):
     """returns command-line options"""

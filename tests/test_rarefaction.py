@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
 __author__ = "Justin Kuczynski"
-__copyright__ = "Copyright 2009, Qiime"
+__copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["justin kuczynski", "Rob Knight"]
 __license__ = "GPL"
-__version__ = "0.1"
+__version__ = "1.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
-__status__ = "Prototype"
+__status__ = "Pre-release"
 
 """Contains tests for producing rarefied OTU tables."""
 

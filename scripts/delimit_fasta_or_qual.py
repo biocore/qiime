@@ -20,13 +20,13 @@ from optparse import make_option, OptionParser
 import re, os
 
 __author__ = "Daniel McDonald"
-__copyright__ = "Copyright 2009, the PyCogent Project"
+__copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Daniel McDonald"]
 __license__ = "GPL"
-__version__ = "0.1"
+__version__ = "1.0-dev"
 __maintainer__ = "Daniel McDonald"
 __email__ = "daniel.mcdonald@colorado.edu"
-__status__ = "Prototype"
+__status__ = "Pre-release"
 
 #TODO: add useful help messages
 options = [make_option('--input',dest='input',default=None),

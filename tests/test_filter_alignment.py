@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 
 __author__ = "Dan Knights"
-__copyright__ = "Copyright 2009, the PyCogent Project"
+__copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Greg Caporaso","Dan Knights"]
 __license__ = "GPL"
-__version__ = "0.1"
+__version__ = "1.0-dev"
 __maintainer__ = "Dan Knights"
 __email__ = "danknights@gmail.com"
-__status__ = "Prototype"
+__status__ = "Pre-release"
 
 from cogent.util.unit_test import TestCase, main
 from cogent import LoadSeqs

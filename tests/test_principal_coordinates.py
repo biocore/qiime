@@ -2,13 +2,13 @@
 
 
 __author__ = "Justin Kuzynski"
-__copyright__ = "Copyright 2009, Qiime"
+__copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Justin Kuczynski"]
 __license__ = "GPL"
-__version__ = "0.1"
+__version__ = "1.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
-__status__ = "Prototype"
+__status__ = "Pre-release"
 
 from qiime.principal_coordinates import pcoa
 from cogent.util.unit_test import TestCase, main

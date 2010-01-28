@@ -10,13 +10,13 @@ from cogent.parse.tree import DndParser
 from cogent.seqsim.tree import RangeNode
 
 __author__ = "Daniel McDonald"
-__copyright__ = "Copyright 2009, the PyCogent Project" #consider project name
+__copyright__ = "Copyright 2010, The QIIME Project" #consider project name
 __credits__ = ["Daniel McDonald"] #remember to add yourself if you make changes
 __license__ = "GPL"
-__version__ = "0.1"
+__version__ = "1.0-dev"
 __maintainer__ = "Daniel McDonald"
 __email__ = "daniel.mcdonald@colorado.edu"
-__status__ = "Prototype"
+__status__ = "Pre-release"
 
 options = [make_option('--taxonomy-file',dest='taxonomy_file',default=None),
            make_option('--tree-file',dest='tree_file',default=None),
