@@ -122,7 +122,7 @@ def parse_otu_sample(lines, num_meta, meta_dict, cat_list,category,num_samples_b
 				if i in samples_from_mapping:
 					label_dict[meta_dict[i][0][0]] += c        
 			for i in cat_list:
-				new_line.append(label_dict[i])
+				new_line.append(str(label_dict[i]))
 			cat_otu_table.append(new_line)
 
 		else:
@@ -184,8 +184,7 @@ def _make_cmd_parser():
      help='if True will normalize counts',default=False,
                       action = 'store_true')
     opts, args = parser.parse_args()
-    
-
+   
     if not opts.counts_file:
         parser.error("An otu table file must be specified")
 
@@ -209,10 +208,12 @@ def main(options):
 	cat_by_sample, sample_by_cat, num_meta, meta_dict, label_lists_dict, \
                    num_samples_by_cat = parse_map(map_lines,category)
 
-	lines, otus, taxonomy = parse_otu_sample(otu_sample_lines, num_meta, meta_dict,\
-                           label_lists_dict[category],category,num_samples_by_cat,options.normalize)
+	lines, otus, taxonomy = parse_otu_sample(otu_sample_lines, num_meta, \
+			meta_dict,label_lists_dict[category],category,num_samples_by_cat,\
+			options.normalize)
 
-	lines = format_otu_table(label_lists_dict[category], otus, array(lines), taxonomy=taxonomy,
+	lines = format_otu_table(label_lists_dict[category], otus, array(lines), \
+			taxonomy=taxonomy,
     comment='Category OTU Counts-%s'% category)
 
 	if options.normalize:
