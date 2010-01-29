@@ -52,8 +52,10 @@ matplotlib_version = re.split("[^\d]", matplotlib.__version__)
 matplotlib_version_info = tuple([int(i) for i in matplotlib_version if \
                           i.isdigit()])
                           
-if matplotlib_version_info != (0,98,5,3):
-     print "This code was only tested with Matplotlib-0.98.5.3"
+if matplotlib_version_info != (0,98,5,3) and \
+    matplotlib_version_info != (0,98,5,2):
+     print "This code was only tested with Matplotlib-0.98.5.2 and \
+            Matplotlib-0.98.5.3"
 
 TABLE_HTML = """<table cellpadding=0 cellspacing=0 border=0>
 <tr>
