@@ -65,7 +65,7 @@ class TopLevelTests(TestCase):
         exp['min_otu_samples'] = 2
         exp['included_taxa']=set(['Root','Bacteria'])
         exp['excluded_taxa']=set(['Root','Archaea'])
-        exp['filtered_otu_file']='.//otu_table_filtered.txt'
+        exp['dir_path']='./'
         
         obs=process_options(self)
         

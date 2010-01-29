@@ -18,6 +18,7 @@ from sys import argv
 from string import strip
 from numpy import array
 from optparse import OptionParser
+import os
 
 
 def strip_quotes(s):
@@ -62,20 +63,28 @@ def process_options(opts):
     
     filtered_otu_fp = '%s/%s_filtered.txt' % (opts.dir_path,filename)
                                     
-    params['filtered_otu_file']=filtered_otu_fp
+    params['dir_path']=opts.dir_path
                                     
     return params
 
 def _filter_table(params):
 
-    filtered_otu_fp=params['filtered_otu_file']
+    dir_path=params['dir_path']
     otu_file=open(params['otu_file'], 'U')
     min_otu_count=params['min_otu_count']
     min_otu_samples=params['min_otu_samples']
     included_taxa=params['included_taxa']
     excluded_taxa=params['excluded_taxa']
     
-    filtered_table_path=open(filtered_otu_fp,'w')
+    
+    if not os.path.exists(dir_path):
+        os.mkdir(dir_path)
+        
+    if not dir_path.endswith("/"):
+        dir_path=dir_path+"/"
+        
+    filtered_table_path=open(dir_path+'otu_table_filtered.txt','w')
+    
     for line in otu_file:
         if line.startswith('#'):
             filtered_table_path.write(line)
