@@ -170,7 +170,7 @@ if __name__ == '__main__':
 
     otu_out_fname = options.otu_out_fname
     if otu_out_fname is None:
-        otu_out_fname = map_file_name + '.filtered.xls'
+        otu_out_fname = otu_file_name + '.filtered.xls'
 
 
     # write out the filtered mapping file
