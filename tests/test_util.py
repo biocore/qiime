@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 #unit tests for util.py
 
+from os.path import split, abspath
 from cogent.util.unit_test import TestCase, main
-from qiime.util import make_safe_f, FunctionWithParams, qiime_blast_seqs,\
-    extract_seqs_by_sample_id, build_blast_db_from_fasta_file
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.app.util import get_tmp_filename
 from cogent.util.misc import remove_files
+from qiime.util import make_safe_f, FunctionWithParams, qiime_blast_seqs,\
+    extract_seqs_by_sample_id, build_blast_db_from_fasta_file, \
+    get_qiime_project_dir
+
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME Project"
@@ -186,6 +189,19 @@ class BlastSeqsTests(TestCase):
         inseqs = MinimalFastaParser(self.inseqs1)
         # no blastdb or refseqs
         self.assertRaises(AssertionError,qiime_blast_seqs,inseqs)
+        
+    def test_get_qiime_project_dir(self):
+        """getting the qiime project directory functions as expected """
+        actual = get_qiime_project_dir()
+        # note that although expected it being computed in the same way as
+        # actual in get_qiime_project_dir(), the value for __file__ is 
+        # different here.
+        cwd = split(__file__)[0]
+        if not cwd:
+            expected = abspath('..')
+        else:
+            expected = abspath(cwd+'/..')
+        self.assertEqual(actual,expected)
         
 inseqs1 = """>s2_like_seq
 TGCAGCTTGAGCACAGGTTAGAGCCTTC

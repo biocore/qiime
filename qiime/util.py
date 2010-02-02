@@ -17,7 +17,7 @@ A lot of this might migrate into cogent at some point.
 
 from StringIO import StringIO
 from os import getenv
-from os.path import split
+from os.path import split, abspath
 from numpy import min, max, median, mean
 from qiime.parse import parse_otus
 from cogent import LoadSeqs
@@ -385,3 +385,22 @@ def compute_seqs_per_library_stats(otu_f):
         
     return min(counts), max(counts), median(counts), mean(counts),\
      dict(zip(sample_ids,counts))
+     
+     
+def get_qiime_project_dir():
+    """ Returns the top-level QIIME directory 
+    
+        Although this value is stored in qiime_config, we are currently
+         not requiring users to setup a qiime_config. Because developers
+         were doing variants of this functionality throughout the code,
+         it's safer to define this as a single tested function, and if we
+         utimately do require users to set up a qiime_config, we can 
+         modify this function to pull the value from there.
+    
+    """
+    cwd = split(__file__)[0]
+    if not cwd:
+        result = abspath('..')
+    else:
+        result = abspath(cwd+'/..')
+    return result
