@@ -1,15 +1,19 @@
 #!/usr/bin/env python
+import os
+from os import remove, getcwd
 from cogent.util.unit_test import TestCase, main
 from cogent.app.util import ApplicationNotFoundError
 from cogent.util.misc import app_path
-from qiime.process_sff import (make_fna, make_qual, prep_sffs_in_dir) 
-from os import remove, getcwd
+from qiime.process_sff import (make_fna, make_qual, prep_sffs_in_dir)
+from qiime.util import get_qiime_project_dir
+
 """Tests of the process_sff.py file.
 """
+
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2010, The QIIME Project"
 #remember to add yourself if you make changes
-__credits__ = ["Rob Knight","Greg Caporaso"]
+__credits__ = ["Rob Knight", "Greg Caporaso", "Kyle Bittinger"]
 __license__ = "GPL"
 __version__ = "1.0-dev"
 __maintainer__ = "Rob Knight"
@@ -21,17 +25,9 @@ class TopLevelTests(TestCase):
     
     def setUp(self):
         """ """
-        ## The following is ugly, but the only reliable way that I
-        ## know of to find the Qiime/test directory. If we don't have 
-        ## that, tests passes/fails become dependent on the directory 
-        ## which they are run from.
-        current_filepath = __file__.split('/')
-        if len(current_filepath) == 1:
-            qiime_test_dir = './'
-        else:
-            qiime_test_dir = '/'.join(current_filepath[:-1])
-        
-        self.sra_test_files_dir = '%s/sra_test_files/' % qiime_test_dir
+        qiime_dir = get_qiime_project_dir()
+        self.sra_test_files_dir = os.path.join(
+            qiime_dir, 'tests', 'sra_test_files')
 
     def test_make_fna(self):
         """test_make_fna should make fasta file as expected"""

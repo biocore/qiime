@@ -8,7 +8,9 @@ from qiime.make_sra_submission import (
     md5_path, safe_for_xml, read_tabular_data, rows_data_as_dicts,
     make_study_links, twocol_data_to_dict, make_study, make_submission,
     make_sample, trim_quotes, defaultdict, group_lines_by_field,
-    parse_command_line_parameters, write_xml_generic)
+    parse_command_line_parameters, write_xml_generic,
+    make_run_and_experiment)
+from qiime.util import get_qiime_project_dir
 
 """Tests of the make_study_and_experiment.py file.
 
@@ -31,19 +33,12 @@ class TopLevelTests(TestCase):
 
     def setUp(self):
         """ """
-        ## The following is ugly, but the only reliable way that I
-        ## know of to find the Qiime/test directory. If we don't have 
-        ## that, tests passes/fails become dependent on the directory 
-        ## which they are run from.
-        current_filepath = __file__.split('/')
-        if len(current_filepath) == 1:
-            qiime_test_dir = './'
-        else:
-            qiime_test_dir = '/'.join(current_filepath[:-1])
-        
-        self.sra_xml_templates_dir = '%s/sra_xml_templates/' % qiime_test_dir
-        self.sra_test_files_dir = '%s/sra_test_files/' % qiime_test_dir
-        
+        qiime_dir = get_qiime_project_dir()
+        self.sra_xml_templates_dir = os.path.join(
+            qiime_dir, 'tests', 'sra_xml_templates')
+        self.sra_test_files_dir = os.path.join(
+            qiime_dir, 'tests', 'sra_test_files')
+
         self.submission_with_file_fp = \
          get_tmp_filename(prefix='make_sra_submission_tests')
         open(self.submission_with_file_fp,'w').write(\
@@ -228,6 +223,25 @@ aa\tbb\tcc
         self.assertEqual(observed, '<xml>abc</xml>')
 
         self.files_to_remove = [observed_fp]
+
+    def test_make_run_and_experiment(self):
+        expt_lines = ['#STUDY_REF\tEXPERIMENT_ALIAS\n']
+        observed_experiment_xml, observed_run_xml = make_run_and_experiment(
+            expt_lines, '/tmp')
+        expected_experiment_xml = (
+            '<?xml version="1.0" encoding="UTF-8"?>\n'
+            '<EXPERIMENT_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">\n'
+            '\n'
+            '</EXPERIMENT_SET>'
+            )
+        self.assertEqual(observed_experiment_xml, expected_experiment_xml)
+        expected_run_xml = (
+            '<?xml version="1.0" encoding="UTF-8"?>\n'
+            '<RUN_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">\n'
+            '\n'
+            '</RUN_SET>'
+            )
+        self.assertEqual(observed_run_xml, expected_run_xml)
 
 submission_with_file_text = '''#Field	Value	Example	Comments
 accession	SRA003492	SRA003492	"leave blank if not assigned yet, e.g. if new submission"
