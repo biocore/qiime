@@ -204,6 +204,24 @@ class FunctionWithParams(object):
         else:
             return result
 
+def get_qiime_project_dir():
+    """ Returns the top-level QIIME directory 
+    
+        Although this value is stored in qiime_config, we are currently
+         not requiring users to setup a qiime_config. Because developers
+         were doing variants of this functionality throughout the code,
+         it's safer to define this as a single tested function, and if we
+         utimately do require users to set up a qiime_config, we can 
+         modify this function to pull the value from there.
+    
+    """
+    cwd = split(__file__)[0]
+    if not cwd:
+        result = abspath('..')
+    else:
+        result = abspath(cwd+'/..')
+    return result
+
 # Begin functions for handling qiime_config file
 def parse_qiime_config_file(qiime_config_file):
     """ Parse lines in a qiime_config file
@@ -248,8 +266,8 @@ def load_qiime_config():
     """Return default parameters read in from file"""
     result = {}
     qiime_config_filepaths = []
-    qiime_parallel_dir = split(__file__)[0]
-    qiime_config_filepaths.append(qiime_parallel_dir + '/../qiime_config')
+    qiime_project_dir = get_qiime_project_dir()
+    qiime_config_filepaths.append(qiime_project_dir + '/../qiime_config')
     
     qiime_config_env_filepath = getenv('QIIME_CONFIG_FP')
     if qiime_config_env_filepath:
@@ -386,21 +404,4 @@ def compute_seqs_per_library_stats(otu_f):
     return min(counts), max(counts), median(counts), mean(counts),\
      dict(zip(sample_ids,counts))
      
-     
-def get_qiime_project_dir():
-    """ Returns the top-level QIIME directory 
-    
-        Although this value is stored in qiime_config, we are currently
-         not requiring users to setup a qiime_config. Because developers
-         were doing variants of this functionality throughout the code,
-         it's safer to define this as a single tested function, and if we
-         utimately do require users to set up a qiime_config, we can 
-         modify this function to pull the value from there.
-    
-    """
-    cwd = split(__file__)[0]
-    if not cwd:
-        result = abspath('..')
-    else:
-        result = abspath(cwd+'/..')
-    return result
+
