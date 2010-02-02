@@ -39,6 +39,7 @@ from random import choice, randrange
 import re
 from time import strftime
 import shutil
+from qiime.util import get_qiime_project_dir
 
 def _natsort_key(item):
     """Provides normalized version of item for sorting with digits.
@@ -353,12 +354,8 @@ def create_dir(dir_path,plot_type):
         random_dir_name=''.join([choice(alphabet) for i in range(10)])
         dir_path ='./'+plot_type+strftime("%Y_%m_%d_%H_%M_%S")+random_dir_name+'/'
 
-    if dir_path:
-        try:
-            os.mkdir(dir_path)
-        except OSError:
-            pass
-
+    if not os.path.exists(dir_path):
+        os.mkdir(dir_path)
 
     return dir_path
 
@@ -589,27 +586,23 @@ def _process_prefs(options):
     dir_path = options.dir_path
     if dir_path and not dir_path.endswith('/'):
         dir_path = dir_path + '/'
-    dir_path = create_dir(dir_path,'3d_plots_')    
-
+    dir_path = create_dir(dir_path,'3d_plots_') 
+    
     alphabet = "ABCDEFGHIJKLMNOPQRSTUZWXYZ"
     alphabet += alphabet.lower()
     alphabet += "01234567890"
 
-    file_path=__file__.split('/')
-    if len(file_path)==1:
-        qiime_dir='./'
-    else:
-        qiime_dir='';
-        for i in range(len(file_path)-1):
-            qiime_dir+=file_path[i]+'/'
+    qiime_dir=get_qiime_project_dir()
+    
+    jar_path=os.path.join(qiime_dir,'qiime/jar/')
 
     data_file_path=''.join([choice(alphabet) for i in range(10)])
     data_file_path=strftime("%Y_%m_%d_%H_%M_%S")+data_file_path
     data_file_dir_path = dir_path+data_file_path
 
     data_file_dir_path=create_dir(data_file_dir_path,'')
-    js_dir_path = create_dir(dir_path+'jar/','')
-    shutil.copyfile(qiime_dir+'/jar/king.jar', js_dir_path+'king.jar')
+    jar_dir_path = create_dir(os.path.join(dir_path,'jar/'),'')
+    shutil.copyfile(os.path.join(jar_path,'king.jar'), jar_dir_path+'king.jar')
 
     filepath=options.coord_fname
     filename=filepath.strip().split('/')[-1]

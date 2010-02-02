@@ -36,6 +36,8 @@ import os
 import re
 from cogent import LoadSeqs
 from make_3d_plots import create_dir
+from qiime.util import get_qiime_project_dir
+
 
 def filter_otus(otus,prefs):
     """filters the otus file based on which samples should be removed and 
@@ -164,6 +166,7 @@ def _process_prefs(options):
     otu_f = open(otu_path, 'U')
     otus = fields_to_dict(otu_f)
     otu_f.close()
+    
     data['otus']=otus
     #Determine which which samples to extract from representative seqs
     #and from otus file
@@ -173,15 +176,7 @@ def _process_prefs(options):
     filepath=options.fasta_file
     filename=filepath.strip().split('/')[-1]
     filename=filename.split('.')[0]
-
-    file_path=__file__.split('/')
-    if len(file_path)==1:
-        qiime_dir='./'
-    else:
-        qiime_dir='';
-        for i in range(len(file_path)-1):
-            qiime_dir+=file_path[i]+'/'
-
+    
     dir_path = create_dir(options.dir_path,'filtered_by_otus')
 
     action_str = '_do_sample_filter'

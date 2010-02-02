@@ -34,8 +34,10 @@ from numpy import array,concatenate
 from cogent.parse.table import SeparatorFormatParser
 from optparse import OptionParser
 from qiime.parse import parse_otus
+from qiime.util import get_qiime_project_dir
 from make_3d_plots import create_dir
 import shutil
+import os
 
 def make_html_doc(js_filename):
     """Create the basic framework for the OTU table heatmap"""
@@ -228,22 +230,22 @@ def _process_prefs(options):
     filepath=options.otu_count_fname
     filename=filepath.strip().split('/')[-1].split('.')[0]
     
-    dir_path = create_dir(options.dir_path,'otu_table_')
-    js_dir_path = create_dir(dir_path+'js/','')
+    dir_path = create_dir(options.dir_path,'otu_heatmap_')
     
-    file_path=__file__.split('/')
-    if len(file_path)==1:
-       qiime_dir='./'
-    else:
-       qiime_dir='';
-       for i in range(len(file_path)-1):
-           qiime_dir+=file_path[i]+'/'
+    if dir_path and not dir_path.endswith('/'):
+        dir_path=dir_path+'/'
+        
+    js_dir_path = create_dir(os.path.join(dir_path,'js/'),'')
     
-    shutil.copyfile(qiime_dir+'/js/overlib.js', js_dir_path+'overlib.js')
-    shutil.copyfile(qiime_dir+'/js/otu_count_display.js', js_dir_path+\
+    qiime_dir=get_qiime_project_dir()
+    
+    js_path=os.path.join(qiime_dir,'qiime/js')
+    
+    shutil.copyfile(os.path.join(js_path,'overlib.js'), js_dir_path+'overlib.js')
+    shutil.copyfile(os.path.join(js_path,'otu_count_display.js'), js_dir_path+\
                     'otu_count_display.js')
-    shutil.copyfile(qiime_dir+'./js/jquery.js', js_dir_path+'jquery.js')
-    shutil.copyfile(qiime_dir+'./js/jquery.tablednd_0_5.js', js_dir_path+\
+    shutil.copyfile(os.path.join(js_path,'jquery.js'), js_dir_path+'jquery.js')
+    shutil.copyfile(os.path.join(js_path,'jquery.tablednd_0_5.js'), js_dir_path+\
                     'jquery.tablednd_0_5.js')
     
     action_str = '_do_heatmap_plots'

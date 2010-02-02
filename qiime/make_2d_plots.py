@@ -43,6 +43,7 @@ from optparse import OptionParser
 from time import strftime
 import shutil
 import os
+from qiime.util import get_qiime_project_dir
 
 from random import choice, randrange
 from make_3d_plots import combine_map_label_cols,get_map,get_coord,\
@@ -383,27 +384,20 @@ def _process_prefs(options):
     filepath=options.coord_fname
     filename=filepath.strip().split('/')[-1]
 
-    file_path=__file__.split('/')
-    if len(file_path)==1:
-        qiime_dir='./'
-    else:
-        qiime_dir='';
-        for i in range(len(file_path)-1):
-            qiime_dir+=file_path[i]+'/'
+    qiime_dir=get_qiime_project_dir()
     
+    js_path=os.path.join(qiime_dir,'qiime/js/')
     
     dir_path=options.dir_path
-    if not dir_path.endswith("/"):
+    if dir_path and not dir_path.endswith("/"):
         dir_path=dir_path+"/"
     
     dir_path=create_dir(dir_path,'2d_plots_')
     
     js_dir_path = dir_path+'/js/'
-    try:
-        os.mkdir(js_dir_path)
-    except OSError:
-        pass
-    shutil.copyfile(qiime_dir+'/js/overlib.js', js_dir_path+'overlib.js')
+    os.mkdir(js_dir_path)
+
+    shutil.copyfile(os.path.join(js_path,'/overlib.js'), js_dir_path+'overlib.js')
 
     action_str = '_do_2d_plots'
     try:
