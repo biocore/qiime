@@ -23,8 +23,8 @@ from cogent.parse.fasta import MinimalFastaParser
 from cogent.util.misc import remove_files, app_path
 from cogent.core.alignment import SequenceCollection
 from cogent.parse.flowgram_parser import lazy_parse_sff_handle
-from cogent.app.util import ApplicationNotFoundError
-
+from cogent.app.util import ApplicationNotFoundError, ApplicationError
+from cogent.parse.record import RecordError
 
 def parse_command_line_parameters(commandline_args=None):
     """ Parses command line arguments """
@@ -160,6 +160,12 @@ def pyroNoise_app(flows, num_flows, num_cpus=2, outdir = "/tmp/", log_fh=None,
         log_fh.write("Executing: %s\n" % cmd)
     system(cmd)
 
+    #Check if fdist actally produced an output file
+    if (not exists(basename+".fdist")):
+        remove(filename)
+        raise ApplicationError, "Something went wrong with PyroNoise."+\
+            " If using mpi, make sure it's setup properly."
+
     #Qcluster is fast, so no mpi needed
     cmd = "QCluster -in %s.fdist -out %s >/dev/null" % (basename, basename) 
     if log_fh: 
@@ -218,12 +224,18 @@ def pyroNoise(flows, num_flows, num_cpus=1, outdir = "/tmp/", log_fh=None,
     centroids = {}
     cluster_size = {}
     seqs = MinimalFastaParser(open(basename+"_cd.fa"))
-    for (label,seq) in seqs:
-        (name,id,count)=label.split('/')[-1].split('_')
-        name = "%s_%s"%(name,id)
-        centroids[name] = seq
-        cluster_size[name] = int(count)
-    
+    try:
+        for (label,seq) in seqs:
+            (name,id,count)=label.split('/')[-1].split('_')
+            name = "%s_%s"%(name,id)
+            centroids[name] = seq
+            cluster_size[name] = int(count)
+    except RecordError:
+        # If pyronoise doesn't find its Lookup.dat file it still produces output files
+        # Usually, the output file contains just one fasta header and the MinimalFastaParser
+        # will raise a RecordError
+        raise ApplicationError, "Something failed with pyroNoise. Most likely the lookup file wasnt' found"
+
     if log_fh: 
         log_fh.write("Number of Cluster: %d" % len(centroids))
     if(not keep_intermediates):
@@ -260,11 +272,17 @@ def pyroNoise_otu_picker(sff_fh, outdir="/tmp/", num_cpus=1,
     seqs = MinimalFastaParser(open(basename+"_cd.fa"))
     #get information from pyronoise header:
     #e.g.    > /long_dir_list/name_0_12   stands for centroid 0 with 12 cluster members
-    for (i,(label,seq)) in enumerate(seqs):
-        (name, id, count)=label.split('/')[-1].split('_')
-        name = "%s"%(id)
-        centroids[name] = seq
-        cluster_size[name] = int(count)
+    try:
+        for (i, (label,seq)) in enumerate(seqs):
+            (name, id, count)=label.split('/')[-1].split('_')
+            name = "%s"%(id)
+            centroids[name] = seq
+            cluster_size[name] = int(count)
+    except RecordError:
+        # If pyronoise doesn't find its Lookup.dat file it still produces output files
+        # Usually, the output file contains just one fasta header and the MinimalFastaParser
+        # will raise a RecordError
+        raise ApplicationError, "Something failed with pyroNoise. Most likely the lookup file wasn't found."
 
     otu_map = {}
     #Read in individual clusters
