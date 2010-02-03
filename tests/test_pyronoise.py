@@ -82,17 +82,16 @@ class PyroNoiseTests(TestCase):
         actual_centroids, actual_otu_map = pyroNoise_otu_picker(open(self.sff_path), num_cpus=1)
     
         self.assertEqualItems(actual_centroids.values(),  large_example_seqs)
-        self.assertEqual(actual_otu_map,
-              
-                          {'10': ['seq_42', 'seq_45', 'seq_48', 'seq_62'],
-                           '13': ['seq_47'],
-                           '14': ['seq_53'],
-                           '16': ['seq_55'],
-                           '1': ['seq_2', 'seq_4', 'seq_5', 'seq_6', 'seq_8', 'seq_9', 'seq_10', 'seq_11', 'seq_13', 'seq_14', 'seq_16', 'seq_17', 'seq_19', 'seq_22', 'seq_23', 'seq_25', 'seq_26', 'seq_28', 'seq_30', 'seq_32', 'seq_34', 'seq_36', 'seq_37', 'seq_39', 'seq_41', 'seq_43', 'seq_49', 'seq_54', 'seq_56', 'seq_57', 'seq_60', 'seq_61', 'seq_64', 'seq_65', 'seq_66', 'seq_68'],
-                           '0': ['seq_0', 'seq_1', 'seq_3', 'seq_15', 'seq_20', 'seq_21', 'seq_24', 'seq_33', 'seq_35', 'seq_40', 'seq_46', 'seq_50', 'seq_51', 'seq_52', 'seq_58', 'seq_63', 'seq_67'],
-                           '3': ['seq_7', 'seq_12', 'seq_27', 'seq_31', 'seq_38', 'seq_44', 'seq_59'],
-                           '5': ['seq_18'],
-                           '8': ['seq_29']})
+        self.assertEqualItems(actual_otu_map.values(),
+                          (['seq_42', 'seq_45', 'seq_48', 'seq_62'],
+                           ['seq_47'],
+                           ['seq_53'],
+                           ['seq_55'],
+                           ['seq_2', 'seq_4', 'seq_5', 'seq_6', 'seq_8', 'seq_9', 'seq_10', 'seq_11', 'seq_13', 'seq_14', 'seq_16', 'seq_17', 'seq_19', 'seq_22', 'seq_23', 'seq_25', 'seq_26', 'seq_28', 'seq_30', 'seq_32', 'seq_34', 'seq_36', 'seq_37', 'seq_39', 'seq_41', 'seq_43', 'seq_49', 'seq_54', 'seq_56', 'seq_57', 'seq_60', 'seq_61', 'seq_64', 'seq_65', 'seq_66', 'seq_68'],
+                           ['seq_0', 'seq_1', 'seq_3', 'seq_15', 'seq_20', 'seq_21', 'seq_24', 'seq_33', 'seq_35', 'seq_40', 'seq_46', 'seq_50', 'seq_51', 'seq_52', 'seq_58', 'seq_63', 'seq_67'],
+                           ['seq_7', 'seq_12', 'seq_27', 'seq_31', 'seq_38', 'seq_44', 'seq_59'],
+                           ['seq_18'],
+                           ['seq_29']))
 
 ### Test data ###
 
