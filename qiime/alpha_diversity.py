@@ -301,7 +301,7 @@ def multiple_file_alpha(options, args):
     write to file, each command is independant
 
     """
-    alpha_script = qiime.alpha_diversity.__file__
+    #alpha_script = qiime.alpha_diversity.__file__ #removed below
     file_names = os.listdir(options.input_path)
     file_names = [fname for fname in file_names if not fname.startswith('.')]
     if not os.path.exists(options.output_path):
@@ -340,12 +340,17 @@ def multiple_file_alpha(options, args):
             #~ print 'finally', fname
 #~ 
         #~ print 'running w/ ' + fname
-        alpha_div_cmd = 'python ' + alpha_script + ' -i '+\
-            os.path.join(options.input_path, fname) + " -m " + options.metrics\
-            + ' -o ' + os.path.join(options.output_path,'alpha_'+fname)
-        if options.tree_path:
-            alpha_div_cmd += ' -t ' + options.tree_path
-        os.system(alpha_div_cmd)
+        
+        single_file_alpha(os.path.join(options.input_path, fname), 
+            options.metrics, os.path.join(options.output_path,'alpha_'+fname),
+            options.tree_path)
+        ### old version called script for future parallelization
+        # alpha_div_cmd = 'python ' + alpha_script + ' -i '+\
+        #            os.path.join(options.input_path, fname) + " -m " + options.metrics\
+        #            + ' -o ' + os.path.join(options.output_path,'alpha_'+fname)
+        #        if options.tree_path:
+        #            alpha_div_cmd += ' -t ' + options.tree_path
+        #        os.system(alpha_div_cmd)
 
 usage_str = """usage: %prog [options] {-i INPUT_PATH -o OUTPUT_PATH -m METRICS}
 

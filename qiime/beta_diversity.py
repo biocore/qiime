@@ -167,14 +167,14 @@ class BetaDiversityCalc(FunctionWithParams):
         data, sample_names = result
         return format_distance_matrix(sample_names, data)
 
-def single_file_beta(options, args):
+def single_file_beta(input_path, metrics, tree_path, output_dir):
     """ does beta diversity calc on a single otu table
 
     uses name in options.metrics to name output beta diversity files"""
-    metrics_list = options.metrics.split(',')
+    metrics_list = metrics.split(',')
     for metric in metrics_list:
-        outfilepath = os.path.join(options.output_dir, metric + '_' +
-            os.path.split(options.input_path)[1])        
+        outfilepath = os.path.join(output_dir, metric + '_' +
+            os.path.split(input_path)[1])        
         try:
             metric_f = get_nonphylogenetic_metric(metric)
             is_phylogenetic = False
@@ -189,8 +189,8 @@ def single_file_beta(options, args):
         calc = BetaDiversityCalc(metric_f, metric, is_phylogenetic)
 
         try:
-            result = calc(data_path=options.input_path, 
-                tree_path=options.tree_path, 
+            result = calc(data_path=input_path, 
+                tree_path=tree_path, 
                 result_path=outfilepath, log_path=None)
             if result: #can send to stdout instead of file
                 print c.formatResult(result)
@@ -210,7 +210,7 @@ def multiple_file_beta(options, args):
 
     """
     metrics_list = options.metrics.split(',')
-    beta_script = qiime.beta_diversity.__file__
+    #beta_script = qiime.beta_diversity.__file__ # removed below
     file_names = os.listdir(options.input_path)
     file_names = [fname for fname in file_names if not fname.startswith('.')]
     try:
@@ -231,14 +231,18 @@ def multiple_file_beta(options, args):
                     % (metric, ', '.join(list_known_metrics())))
     
     for fname in file_names:
-            outfilepath = options.output_dir
-            beta_div_cmd = 'python ' + beta_script + ' -i '+\
-                os.path.join(options.input_path, fname) + " -m " + options.metrics\
-                + ' -o ' + outfilepath
-            if options.tree_path:
-                beta_div_cmd += ' -t ' + options.tree_path
-            os.system(beta_div_cmd)
-
+        single_file_beta(os.path.join(options.input_path, fname),
+            options.metrics, options.tree_path, options.output_dir)
+        
+        ### from old version, designed for future parallelization
+            # outfilepath = options.output_dir
+            #         beta_div_cmd = 'python ' + beta_script + ' -i '+\
+            #             os.path.join(options.input_path, fname) + " -m " + options.metrics\
+            #             + ' -o ' + outfilepath
+            #         if options.tree_path:
+            #             beta_div_cmd += ' -t ' + options.tree_path
+            #         os.system(beta_div_cmd)
+        
 usage_str = """ %prog [options] {-i INPUT_PATH -o OUTPUT_DIR -m METRICS} or {-s}
 
 [] indicates optional input (order unimportant)
@@ -317,7 +321,7 @@ if __name__ == '__main__':
     if os.path.isdir(options.input_path):
         multiple_file_beta(options, args)
     elif os.path.isfile(options.input_path):
-        single_file_beta(options, args)
+        single_file_beta(options.input_path, options.metrics, options.tree_path, options.output_dir)
     else:
         print("io error, input path not valid.  Does it exist?")
         exit(1)

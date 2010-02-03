@@ -23,16 +23,19 @@ import sys
 def multiple_file_upgma(input_dir, output_dir):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
-    upgma_script = qiime.hierarchical_cluster.__file__
+    #upgma_script = qiime.hierarchical_cluster.__file__ #removed below
     file_names = os.listdir(input_dir)
     file_names = [fname for fname in file_names if not fname.startswith('.')]
 
     for fname in file_names:
         base_fname, ext = os.path.splitext(fname)
-        upgma_cmd = 'python ' + upgma_script + ' -i '+\
-            os.path.join(input_dir, fname) + ' -o ' +\
-            os.path.join(output_dir,'upgma_'+base_fname+'.tre')
-        os.system(upgma_cmd)
+        single_file_upgma(os.path.join(input_dir, fname),
+            os.path.join(output_dir,'upgma_'+base_fname+'.tre'))
+            
+        # upgma_cmd = 'python ' + upgma_script + ' -i '+\
+        #             os.path.join(input_dir, fname) + ' -o ' +\
+        #             os.path.join(output_dir,'upgma_'+base_fname+'.tre')
+        #         os.system(upgma_cmd)
 
 def single_file_upgma(input_file, output_file):
     # read in dist matrix
