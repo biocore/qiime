@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<STUDY_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <STUDY alias="%(STUDY_alias)s">
+    <DESCRIPTOR>
+        <STUDY_TITLE>%(STUDY_TITLE)s</STUDY_TITLE>
+        <STUDY_TYPE existing_study_type="%(STUDY_TYPE)s"/>
+        <STUDY_ABSTRACT>%(STUDY_ABSTRACT)s</STUDY_ABSTRACT>
+        <STUDY_DESCRIPTION>%(STUDY_DESCRIPTION)s</STUDY_DESCRIPTION>
+        <CENTER_NAME>%(CENTER_NAME)s</CENTER_NAME>
+        <CENTER_PROJECT_NAME>%(CENTER_PROJECT_NAME)s</CENTER_PROJECT_NAME>
+        <PROJECT_ID>%(PROJECT_ID)s</PROJECT_ID>
+    </DESCRIPTOR>%(XML_STUDY_LINKS_BLOCK)s
+  </STUDY>
+</STUDY_SET>
