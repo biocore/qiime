@@ -1,13 +1,4 @@
 #!/usr/bin/env python
-#check_id_map.py: checks that sample mapping file is ok
-__author__ = "Rob Knight"
-__copyright__ = "Copyright 2010, The QIIME Project" 
-__credits__ = ["Rob Knight","William Walters"] #remember to add yourself
-__license__ = "GPL"
-__version__ = "1.0-dev"
-__maintainer__ = "William Walters"
-__email__ = "rob@spot.colorado.edu","william.a.walters@colorado.edu"
-__status__ = "Pre-release"
 
 """Parse mapping file, checking for a number of undesirable characteristics.
 
@@ -42,6 +33,16 @@ It is somewhat inefficient to read in the whole table, but on the other hand
 if reading in the mapping file is the bottleneck the downstream analysis is
 likely to prove somewhat challenging as well...
 """
+
+__author__ = "Rob Knight"
+__copyright__ = "Copyright 2010, The QIIME Project" 
+__credits__ = ["Rob Knight","William Walters"] #remember to add yourself
+__license__ = "GPL"
+__version__ = "1.0-dev"
+__maintainer__ = "William Walters"
+__email__ = "rob@spot.colorado.edu","william.a.walters@colorado.edu"
+__status__ = "Pre-release"
+
 from collections import defaultdict
 from string import strip, letters, digits, strip, translate
 from os.path import basename, isdir
@@ -802,11 +803,13 @@ def get_primers_barcodes(data):
     primers=[]
     barcodes=[]
     
+    # Convert DNA characters to uppercase, as IUPAC_DNA dictionary only
+    # contains uppercase characters
     for sample in data:
         if sample[1]=="BarcodeSequence":
             continue
-        barcodes.append(sample[1])
-        primers.append(sample[2])
+        barcodes.append(sample[1].upper())
+        primers.append(sample[2].upper())
         
     return primers, barcodes
     
@@ -853,15 +856,6 @@ def parse_id_map(infile, is_barcoded=True, char_replace="_",
             
     # Save raw data for referencing source 'cells' in log file.
     raw_data = data
-
-    #note: parse_map always returns run_description as list of lines
-    #run_description = ' '.join(map(strip, run_description))
-
-    #check run description
-    #** Planning on removing all run description checks, should replicate exact
-    #** copy to corrected output.  Should there be a default?
-    """ run_description = run_checks(run_description, run_description_checks, \
-        problems)  """
 
     #add barcode checks if needed
     if is_barcoded:

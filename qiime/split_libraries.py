@@ -123,8 +123,8 @@ def check_map(infile, has_barcodes=True):
     all_primers = {}
 
     for sample_id, sample in id_map.items():
-        barcode_to_sample_id[sample['BarcodeSequence']] = sample_id
-        raw_primer = sample['LinkerPrimerSequence']
+        barcode_to_sample_id[sample['BarcodeSequence'].upper()] = sample_id
+        raw_primer = sample['LinkerPrimerSequence'].upper()
         expanded_primers = expand_degeneracies(raw_primer)
         curr_bc_primers = {}
         for primer in expanded_primers:
