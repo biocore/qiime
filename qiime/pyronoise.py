@@ -142,9 +142,12 @@ def pyroNoise_app(flows, num_flows, num_cpus=2, outdir = "/tmp/", log_fh=None,
         raise ApplicationNotFoundError,"PyroNoise binaries (FDist,QCluster,PCluster) not found."
 
     if(num_cpus>1 and not app_path("mpirun")):
-        num_cpus = 1 #set to a save value
-        if log_fh:
-            log_fh.write("Warning: mpirun not found. Falling back to one cpu")
+        raise ApplicationError,"Can't run in parallel - mpirun not installed.\n"+\
+            "Try running on one processor."
+    # if mpi is not found, better raise Error and don;t fall back to one cpu
+#        #num_cpus = 1 #set to a save value
+#        if log_fh:
+#            log_fh.write("Warning: mpirun not found. Falling back to one cpu")
 
     basename = get_tmp_filename(tmp_dir=outdir, prefix = "", suffix="")
     #copy flowgrams from input sff.txt to pyronoise-formatted file
@@ -178,7 +181,7 @@ def pyroNoise_app(flows, num_flows, num_cpus=2, outdir = "/tmp/", log_fh=None,
     if log_fh: 
         log_fh.write("Executing: %s\n" % cmd)
     system(cmd)
-
+  
     remove(filename)
     return basename, id_mapping
 
