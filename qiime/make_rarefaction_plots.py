@@ -2,13 +2,13 @@
 #file make_rarefaction_plots.py
 from __future__ import division
 __author__ = "Meg Pirrung and Jesse Stombaugh"
-__copyright__ = "Copyright 2010, The QIIME Project"
+__copyright__ = "Copyright 2009, QIIME"
 __credits__ = ["Meg Pirrung","Jesse Stombaugh"] 
 __license__ = "GPL"
-__version__ = "1.0-dev"
+__version__ = "0.1"
 __maintainer__ = "Meg Pirrung"
 __email__ = "meg.pirrung@colorado.edu"
-__status__ = "Pre-release"
+__status__ = "Prototype"
 
 """
 Author: Meg Pirrung (meg.pirrung@colorado.edu) 
@@ -28,7 +28,7 @@ python make_rarefaction_plots.py -m mappingfile.txt -r rare1.txt,rare2.txt -p Sa
 from sys import argv, exit
 from random import choice, randrange
 from time import strftime
-from qiime import parse
+from qiime import parse, util
 from numpy import array, transpose, random, mean, std, arange
 from string import strip
 from matplotlib.pylab import savefig, clf, gca, gcf, errorbar
@@ -168,10 +168,10 @@ def make_error_series(rare_mat, sampleIDs, mapping, mapping_category):
         mapping_dict[m[0]] = m[1:]
         
     seen = set()
-    pre_err = dict()
+    pre_err = {}
     op_index = header.index(mapping_category)
     
-    for k in mapping_dict.keys():
+    for k in mapping_dict:
         try:
             test = rare_mat[k]
         except(KeyError):
@@ -184,9 +184,9 @@ def make_error_series(rare_mat, sampleIDs, mapping, mapping_category):
         pre_err[op].append(rare_mat[k])
     
     #print seen
-    ops = [o for o in seen]
-    cols = dict()
-    syms = dict()
+    ops = list(seen)
+    cols = {}
+    syms = {}
     for i in range(0,len(ops)):
         cols[ops[i]] = COLOUR[i%len(COLOUR)]
         syms[ops[i]] = MARKERS[i%len(MARKERS)]
@@ -209,7 +209,6 @@ def make_error_series(rare_mat, sampleIDs, mapping, mapping_category):
             err_ser[o] = s.tolist()
         except(ValueError):
             continue
-            print o
         
     return collapsed_ser, err_ser, ops, cols, syms
 
@@ -378,18 +377,15 @@ def _get_script_dir(script_path):
 
 def _process_prefs(options):    
     dir_path = options.dir_path
-    if dir_path and not dir_path.endswith('/'):
-        dir_path = dir_path + '/'
-    dir_path = dir_path + 'rarefaction_graphs'
+    dir_path = os.path.join(dir_path,'rarefaction_graphs')
 
     alphabet = "ABCDEFGHIJKLMNOPQRSTUZWXYZ"
     alphabet += alphabet.lower()
     alphabet += "01234567890"
-    file_path=__file__.split('/')
+    file_path=util.get_qiime_project_dir().split('/')
     qiime_dir = _get_script_dir(argv[0])
     data_file_path=''.join([choice(alphabet) for i in range(10)])
-    data_file_path=strftime("%Y_%m_%d_%H_%M_%S")+data_file_path
-    data_file_dir_path = dir_path+data_file_path
+    data_file_dir_path = os.path.join(dir_path,data_file_path)
     data = {}
     
     data['map'] = parse.parse_map(get_map(options,data), return_header=True, strip_quotes=True)
@@ -405,7 +401,7 @@ def make_plots(data):
     rarelines = []
     
     for r in data['rarefactions'].keys():
-        file_path = data['output_path']+'/'+ splitext(split(r)[1])[0]
+        file_path = os.path.join(data['output_path'],splitext(split(r)[1])[0])
         os.makedirs(file_path)
         try:
             rare_mat_trans, seqs_per_samp, sampleIDs = parse_rarefaction(data['rarefactions'][r])
@@ -415,8 +411,10 @@ def make_plots(data):
             
             rare_mat_ave = ave_seqs_per_sample(rare_mat_trans, seqs_per_samp, sampleIDs)
             xmax = max(xaxisvals) + (xaxisvals[len(xaxisvals)-1] - xaxisvals[len(xaxisvals)-2])
-            ymax = max([max(s) for s in rare_mat_ave.values()]) + 5
+            yoffset = 5 #parameterize?
+            ymax = max([max(s) for s in rare_mat_ave.values()]) + yoffset
             overall_average = get_overall_averages(rare_mat_ave, sampleIDs)
+            
             rarelines.append("#" + r + '\n')
             for s in sampleIDs:
                 rarelines.append('%f'%overall_average[s] + '\n')
@@ -424,17 +422,9 @@ def make_plots(data):
             if data['prefs'] == 'ALL':
                 for p in data['map'][0][0]: #headerline
                     is_max, l = is_max_category_ops(data['map'], p)
-                    if l == 1:
-                        #print "Category \'" + p + "\' only has one option, rarefaction graph was not created."
+                    if l == 1 or is_max:
                         continue
-                    if is_max:
-                        pr = plot_rarefaction_noave(rare_mat_ave, xaxisvals, sampleIDs, data['map'], p)
-                        ops = None
-                        cols = None
-                        syms = None
-                        line = None
-                    else:
-                        pr,ops,cols,syms,line = plot_rarefaction(rare_mat_ave, xaxisvals, sampleIDs, data['map'], p)
+                    pr,ops,cols,syms,line = plot_rarefaction(rare_mat_ave, xaxisvals, sampleIDs, data['map'], p)
                     filenm = file_path + '/'+ p
                     graphNames.append(splitext(split(r)[1])[0] + '/'+p+"."+data['imagetype'])
                     save_plot(pr, filenm, r, splitext(split(r)[1])[0] +':'+ p, data['imagetype'], data['resolution'], xmax, ymax, ops, cols, syms, line)
@@ -442,16 +432,9 @@ def make_plots(data):
             else:
                 for p in data['prefs']:
                     is_max, l = is_max_category_ops(data['map'], p)
-                    if l == 1:
-                        # print "Category \'" + p + "\' only has one option, rarefaction graph was not created."
+                    if l == 1 or is_max:
                         continue
-                    if is_max:
-                        pr = plot_rarefaction_noave(rare_mat_ave, xaxisvals, sampleIDs, data['map'], p)
-                        ops = None
-                        cols = None
-                        line = None
-                    else:
-                        pr,ops,cols,syms,line = plot_rarefaction(rare_mat_ave, xaxisvals, sampleIDs, data['map'], p)
+                    pr,ops,cols,syms,line = plot_rarefaction(rare_mat_ave, xaxisvals, sampleIDs, data['map'], p)
                     filenm = file_path + '/'+ p
                     graphNames.append(splitext(split(r)[1])[0] + '/'+p+"."+data['imagetype'])
                     save_plot(pr, filenm, r, splitext(split(r)[1])[0] +': '+ p, data['imagetype'], data['resolution'], xmax, ymax, ops, cols, syms, line)
