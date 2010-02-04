@@ -37,8 +37,8 @@ class PyroNoiseTests(TestCase):
         self.large_flowgram_collection.writeToFile(self.sff_path)
         
     def tearDown(self):
-      #  remove(self.sff_path)
-        pass
+        remove(self.sff_path)
+      
     def test_writePyronoisefile(self):
         """writePyroNoise writes flowgrams in pyronoise format."""
   
