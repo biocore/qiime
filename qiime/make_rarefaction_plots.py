@@ -116,7 +116,13 @@ def parse_rarefaction(lines):
             except(ValueError):
                 # fix so that float works on all vals except n/a and leave n/as in
                 # then transpose matrix, get rid of na's, average
-                result.append(map(str, entries[1:]))
+                temp = []
+                for x in entries[1:]:
+                    if x.strip() != 'n/a':
+                        temp.append(float(x.strip()))
+                    else:
+                        temp.append(0.0)
+                result.append(temp)
                 
             row_headers.append(entries[0])
     rare_mat_raw = array(result)
@@ -131,13 +137,13 @@ def ave_seqs_per_sample(matrix, seqs_per_samp, sampleIDs):
     temp_dict = {}
     for i in range(0,len(sampleIDs)):
         temp_dict[sampleIDs[i]] = {}
-            
         for j in range(0, len(seqs_per_samp)):
             try:
                 temp_dict[sampleIDs[i]][seqs_per_samp[j]].append(matrix[i][j])
             except(KeyError):
                 temp_dict[sampleIDs[i]][seqs_per_samp[j]] = []
                 temp_dict[sampleIDs[i]][seqs_per_samp[j]].append(matrix[i][j])
+
     for s in sampleIDs:
         ave_ser[s] = []
         keys = temp_dict[s].keys()
