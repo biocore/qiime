@@ -31,7 +31,7 @@ Usage: python make_3d_plots.py -i raw_pca_data.txt -m input_map.txt
 """
 from cogent.util.misc import flatten
 from parse import parse_map, group_by_field, parse_coords
-from numpy import array, shape, apply_along_axis, dot, delete
+from numpy import array, shape, apply_along_axis, dot, delete, vstack
 import numpy as np
 import os
 from optparse import OptionParser
@@ -87,13 +87,15 @@ data_colors = {
         'yellow':   (60,100,100),
 }
 
+kinemage_colors = ['hotpink','blue', 'lime','gold', \
+                       'red','sea','purple','green']
 
 class MissingFileError(IOError):
     pass
 
 
 def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, custom_axes=None, data_colors=
-    data_colors, data_color_order=data_color_order):
+    data_colors, data_color_order=data_color_order, edges=None):
     """Makes 3d plots given coords, mapping file, and prefs.
     
     Added quick-and-dirty hack for gradient coloring of columns, should
@@ -114,7 +116,10 @@ def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, custom_axes=Non
     
     result = []
     #Iterate through prefs and color by given mapping labels
-    for name, p in prefs.items():
+    #Sort by the column name first
+    item_list = prefs.items()
+    item_list.sort()
+    for name, p in item_list:
         col_name = p['column']
         if 'colors' in p:
             if isinstance(p['colors'], dict):
@@ -132,9 +137,11 @@ def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, custom_axes=Non
        
         #Write to kinemage file using the groups, colors and coords 
         result.extend(make_mage_output(groups, colors, coord_header, coords, \
-            pct_var, custom_axes, labelname,scaled=False,data_colors=data_colors))
+            pct_var, custom_axes, labelname,scaled=False, \
+            data_colors=data_colors, edges=edges))
         result.extend(make_mage_output(groups, colors, coord_header, coords, \
-            pct_var, custom_axes, labelname,scaled=True,data_colors=data_colors))
+            pct_var, custom_axes, labelname,scaled=True, \
+            data_colors=data_colors, edges=edges))
 
     return result
 
@@ -228,7 +235,7 @@ def auto_radius(coords,ratio=0.01):
 
 def make_mage_output(groups, colors, coord_header, coords, pct_var, custom_axes=None,name='', \
     radius=None, alpha=.75, num_coords=10,scaled=False, coord_scale=1.05,
-    data_colors=data_colors):
+    data_colors=data_colors, edges=None):
     """Convert groups, colors, coords and percent var into mage format"""
     result = []
     
@@ -304,16 +311,13 @@ master={labels} nobutton' % (color, radius, alpha, num_coords))
     for i in xrange(num_coords):
         if i == 3:
             state = 'off'            
-####################### New ###############################
         result.append('@vectorlist {%s line} dimension=%s %s' % \
             (axis_names[i], num_coords, state))
-####################### /New ###############################
         result.append(' '.join(map(str, axis_mins)) + ' white')
         end = axis_mins.copy()
         end[i] = axis_maxes[i]
         result.append(' '.join(map(str, end)) + ' white')
         end[i] *= coord_scale  #add scale factor to offset labels a little
-####################### New ###############################
         if i < len(custom_axes):
             result.append('@labellist {%s} dimension=%s %s' % \
                               (axis_names[i], num_coords, state)) 
@@ -325,7 +329,30 @@ master={labels} nobutton' % (color, radius, alpha, num_coords))
                               (axis_names[i], pct, num_coords, state))
             result.append( ('{%s (%0.2g%%)}' % (axis_names[i], pct))  + \
                                ' '.join(map(str, end)) + ' white')
-####################### /New ###############################
+
+    #Write edges if requested
+    if edges:
+        result.append('@vectorlist {edges} dimension=%s on' % \
+            (num_coords))
+        for edge in edges:
+            id_fr, id_to = edge
+            # get 'index' of the destination set from 'to' sampleID
+            which_set = int(id_to[id_to.rindex('_')+1:]) - 1
+            which_color = kinemage_colors[which_set % len(kinemage_colors)]
+            # plot a color 'tip' on the line (10% of line length)
+            pt_fr = coord_dict[id_fr][:num_coords]
+            pt_to = coord_dict[id_to][:num_coords]
+            diffs = (pt_to-pt_fr) * .66
+            middles = pt_fr + diffs
+            result.append('%s white' % \
+                      (' '.join(map(str, pt_fr))))
+            result.append('%s white P' % \
+                      (' '.join(map(str, middles))))
+            
+            result.append('%s %s' % \
+                      (' '.join(map(str, middles)), which_color))
+            result.append('%s %s P' % \
+                      (' '.join(map(str, pt_to)), which_color))            
     return result
 
 def combine_map_label_cols(combinecolorby,mapping):
@@ -370,7 +397,7 @@ def process_colorby(colorby,data,old_prefs=None):
         names = list(old_prefs)
 
     for j, col in enumerate(colorbydata):
-        key = str(j)
+        key = str(col)
         if '&&' in col:
             #Create an array using multiple columns from mapping file
             combinecolorby=col.split('&&')
@@ -390,7 +417,11 @@ def process_colorby(colorby,data,old_prefs=None):
 
 def process_custom_axes(axis_names):
     """Parses the custom_axes option from the command line"""
-    return axis_names.strip().strip("'").split(',')
+    return axis_names.strip().strip("'").strip('"').split(',')
+
+def process_coord_filenames(coord_filenames):
+    """Parses the custom_axes option from the command line"""
+    return coord_filenames.strip().strip("'").strip('"').split(',')
 
 def get_custom_coords(axis_names,mapping, coords):
     """Gets custom axis coords from the mapping file."""
@@ -456,23 +487,58 @@ def get_sample_ids(maptable):
     """Extracts list of sample IDs from mapping file."""
     return [line[0] for line in maptable[1:]]
 
-def get_coord(options, data):
+def get_coord(coord_fname):
     """Opens and returns coords data"""
     try:
-        coord_f = open(options.coord_fname, 'U').readlines()
+        coord_f = open(coord_fname, 'U').readlines()
     except (TypeError, IOError):
         raise MissingFileError, 'Coord file required for this analysis'
     coord_header, coords, eigvals, pct_var = parse_coords(coord_f)
-    data['coord'] = [coord_header, coords, eigvals, pct_var]
-    return data['coord']
+    return [coord_header, coords, eigvals, pct_var]
 
-def remove_unmapped_samples(mapping,coords):
+def get_multiple_coords(coord_fnames):
+    """Opens and returns coords data from multiple coords files"""
+    # start with empty data structures
+    coord_header = []
+    coords = []
+    edges = []
+
+    for i,f in enumerate(coord_fnames):
+        try:
+            coord_f = open(coord_fnames[i], 'U').readlines()
+        except (TypeError, IOError):
+            raise MissingFileError, 'Coord file required for this analysis'
+        coord_header_i, coords_i, eigvals_i, pct_var_i = parse_coords(coord_f)
+        sampleIDs = coord_header_i
+        coord_header_i = ['%s_%d' %(h,i) for h in coord_header_i]
+        if i==0:
+            eigvals = eigvals_i
+            pct_var = pct_var_i
+            coord_header = coord_header_i
+            coords = coords_i
+        else:
+            coord_header.extend(coord_header_i)
+            coords = vstack((coords,coords_i))
+    # add edges from first file to others
+    for id in sampleIDs:
+        for i in xrange(1,len(coord_fnames)):
+            edges += [('%s_%d' %(id,0), '%s_%d' %(id,i))]
+    return edges, [coord_header, coords, eigvals, pct_var]
+
+def remove_unmapped_samples(mapping,coords,edges=None):
     """Removes any samples not present in mapping file"""
     sample_IDs = zip(*mapping[1:])[0]
+    # remove unmapped ids from headers and coords
     for i in xrange(len(coords[0])-1,-1,-1):
         if not coords[0][i] in sample_IDs:
             del(coords[0][i])
             coords[1] = np.delete(coords[1],i,0)
+    # remove unmapped ids from edges
+    if edges:
+        for i in xrange(len(edges)-1,-1,-1):
+            edge = edges[i]
+            if not edge[0] in sample_IDs or not edge[1] in sample_IDs:
+                del(edges[i])
 
 def linear_gradient(start, end, nbins):
     """Makes linear color gradient from start to end, using nbins.
@@ -509,7 +575,12 @@ def _do_3d_plots(prefs, data, custom_axes, dir_path='',data_file_path='', filena
 
     outf=kinpath+'.kin'
     
-    res = make_3d_plots(coord_header, coords, pct_var,mapping,prefs,custom_axes)
+    edges = None
+    if data.has_key('edges'):
+        edges = data['edges']
+
+    res = make_3d_plots(coord_header, coords, pct_var,mapping,prefs, \
+                            custom_axes,edges=edges)
 
     #Write kinemage file
     f = open(outf, 'w')
@@ -549,7 +620,7 @@ def _process_prefs(options):
     data = {}
 
     #Open and get coord data
-    data['coord'] = get_coord(options, data)
+    data['coord'] = get_coord(options.coord_fname)
 
     #Open and get mapping data, if none supplied create a pseudo mapping \
     #file
