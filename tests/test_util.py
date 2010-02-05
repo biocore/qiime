@@ -64,6 +64,19 @@ class TopLevelTests(TestCase):
         expected = [('samp1_109','GCGG')]
         actual = list(extract_seqs_by_sample_id(seqs,sample_ids))
         self.assertEqual(actual,expected)
+        
+    def test_get_qiime_project_dir(self):
+        """getting the qiime project directory functions as expected """
+        actual = get_qiime_project_dir()
+        # note that although expected it being computed in the same way as
+        # actual in get_qiime_project_dir(), the value for __file__ is 
+        # different here.
+        cwd = split(__file__)[0]
+        if not cwd:
+            expected = abspath('..')
+        else:
+            expected = abspath(cwd+'/..')
+        self.assertEqual(actual,expected)
 
 class FunctionWithParamsTests(TestCase):
     """Tests of the FunctionWithParams class.
@@ -189,19 +202,6 @@ class BlastSeqsTests(TestCase):
         inseqs = MinimalFastaParser(self.inseqs1)
         # no blastdb or refseqs
         self.assertRaises(AssertionError,qiime_blast_seqs,inseqs)
-        
-    def test_get_qiime_project_dir(self):
-        """getting the qiime project directory functions as expected """
-        actual = get_qiime_project_dir()
-        # note that although expected it being computed in the same way as
-        # actual in get_qiime_project_dir(), the value for __file__ is 
-        # different here.
-        cwd = split(__file__)[0]
-        if not cwd:
-            expected = abspath('..')
-        else:
-            expected = abspath(cwd+'/..')
-        self.assertEqual(actual,expected)
         
 inseqs1 = """>s2_like_seq
 TGCAGCTTGAGCACAGGTTAGAGCCTTC
