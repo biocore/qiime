@@ -93,6 +93,17 @@ class TopLevelTests(TestCase):
         obs_kin=make_3d_plots(self.coord_header,coords[1],self.pct_var, \
                           self.mapping2,self.prefs, custom_axes)
         self.assertEqual(obs_kin, exp_kin_full_axes)
+
+        # test with multiple 'colorby' columns to ensure sorting
+        newprefs = {}
+        newprefs['Type']={}   
+        newprefs['Type']['column']="Type"
+        newprefs['Day']={}   
+        newprefs['Day']['column']="Day"
+        obs_kin=make_3d_plots(self.coord_header,self.coords,self.pct_var, \
+                          self.mapping,newprefs)
+        text = '\n'.join(obs_kin)
+        self.assertTrue(text.find('Day_unscaled') < text.find('Type_unscaled'))
     
     def test_scale_pc_data_matrix(self):
         """scale_pc_data_matrix: Scales the pc data for use in the 3d plots"""
@@ -166,7 +177,7 @@ the appropriate location')
 from mapping file to color by"""
         self.colorby='Day'
         exp1={}
-        exp1['0']={'column':'Day'}
+        exp1['Day']={'column':'Day'}
         obs1,obs2=process_colorby(self.colorby,self.data)
 
         self.assertEqual(obs1,exp1)
@@ -270,7 +281,7 @@ Removes any samples not present in mapping file"""
                 'redtowhite3_1':[0,50,100],
                 'redtowhite3_2':[0,0,100],
             })
-        
+
 exp_kin_full=\
 ['@kinemage {Day_unscaled}', '@dimension {PC1} {PC2} {PC3}', \
 '@dimminmax -0.219044992 0.080504323 -0.212014503 0.079674486 -0.088353435 0.09233683', \
