@@ -26,7 +26,7 @@ Helpful Links
 .. toctree::
    :maxdepth: 1
 
-   tutorial.rst
+`Tutorial <http://qiime.sourceforge.net/tutorial/Qiime_Tutorial.pdf>`_
 
 Getting QIIME: Stable pre-release version
 =========================================
@@ -67,25 +67,25 @@ Knight. Manuscript under review. 2009.
 
 Contributors
 ============
-J. Gregory Caporaso [#f1]_, Justin Kuczynski [#f2]_, Jesse Stombaugh [#f1]_, 
-Kyle Bittinger [#f3]_, Frederic D. Bushman [#f3]_, Elizabeth K. Costello [#f1]_, Noah Fierer [#f4]_, 
-Antonio Gonzalez Peña [#f5]_, Julia K. Goodrich [#f5]_, Jeff I. Gordon6, Gavin Huttley [#f7]_, 
-Scott T. Kelley [#f8]_, Dan Knights [#f5]_, Jeremy E. Koenig [#f9]_, Ruth E. Ley [#f9]_, 
-Cathy A. Lozupone [#f1]_, Daniel McDonald [#f1]_, Brian D. Muegge [#f6]_, Megan Pirrung [#f1]_, 
-Jens Reeder [#f1]_, Joel R. Sevinsky [#f10]_, Peter J. Turnbaugh [#f6]_, Will Van Treuren [#f1]_, 
-William A. Walters [#f2]_, Jeremy Widmann [#f1]_, Tanya Yatsunenko [#f6]_, Jesse Zaneveld [#f2]_ and 
-Rob Knight [#f1]_, [#f11]_ 
+J. Gregory Caporaso [1], Justin Kuczynski [2], Jesse Stombaugh [1], 
+Kyle Bittinger [3], Frederic D. Bushman [3], Elizabeth K. Costello [1], Noah Fierer [4], 
+Antonio Gonzalez Peña [5], Julia K. Goodrich [5], Jeff I. Gordon6, Gavin Huttley [7], 
+Scott T. Kelley [8], Dan Knights [5], Jeremy E. Koenig [9], Ruth E. Ley [9], 
+Cathy A. Lozupone [1], Daniel McDonald [1], Brian D. Muegge [6], Megan Pirrung [1], 
+Jens Reeder [1], Joel R. Sevinsky [10], Peter J. Turnbaugh [6], Will Van Treuren [1], 
+William A. Walters [2], Jeremy Widmann [1], Tanya Yatsunenko [6], Jesse Zaneveld [2] and 
+Rob Knight [1],[11] 
 
-.. [#f1] Department of Chemistry and Biochemistry, UCB 215, University of Colorado, Boulder, CO 80309 
-.. [#f2] Department of Molecular, Cellular and Developmental Biology, UCB 347, University of Colorado, Boulder, CO 80309 
-.. [#f3] Department of Microbiology, Johnson Pavilion 425, University of Pennsylvania, Philadelphia, PA 19104 
-.. [#f4] Cooperative Institute for Research in Environmental Sciences, University of Colorado, Boulder, CO 80309, USA.; Department of Ecology and Evolutionary Biology, University of Colorado, Boulder, CO 80309, USA. 
-.. [#f5] Department of Computer Science, University of Colorado, Boulder, Colorado, USA. 
-.. [#f6] Center for Genome Sciences, Washington University School of Medicine, St. Louis, MO 63108 
-.. [#f7] Computational Genomics Laboratory, John Curtin School of Medical Research, The Australian National University, Canberra, Australian Capital Territory, Australia.
-.. [#f8] Department of Biology, San Diego State University, San Diego CA 92182
-.. [#f9] Department of Microbiology, Cornell University, Ithaca NY 14853
-.. [#f10] Luca Technologies, 500 Corporate Circle, Suite C, Golden, Colorado 80401 
-.. [#f11] Howard Hughes Medical Institute
+* [1] Department of Chemistry and Biochemistry, UCB 215, University of Colorado, Boulder, CO 80309 
+* [2] Department of Molecular, Cellular and Developmental Biology, UCB 347, University of Colorado, Boulder, CO 80309 
+* [3] Department of Microbiology, Johnson Pavilion 425, University of Pennsylvania, Philadelphia, PA 19104 
+* [4] Cooperative Institute for Research in Environmental Sciences, University of Colorado, Boulder, CO 80309, USA.; Department of Ecology and Evolutionary Biology, University of Colorado, Boulder, CO 80309, USA. 
+* [5] Department of Computer Science, University of Colorado, Boulder, Colorado, USA. 
+* [6] Center for Genome Sciences, Washington University School of Medicine, St. Louis, MO 63108 
+* [7] Computational Genomics Laboratory, John Curtin School of Medical Research, The Australian National University, Canberra, Australian Capital Territory, Australia.
+* [8] Department of Biology, San Diego State University, San Diego CA 92182
+* [9] Department of Microbiology, Cornell University, Ithaca NY 14853
+* [10] Luca Technologies, 500 Corporate Circle, Suite C, Golden, Colorado 80401 
+* [11] Howard Hughes Medical Institute
 
 .. _PyCogent: http://pycogent.sourceforge.net
