@@ -8,7 +8,7 @@ from cogent.app.util import get_tmp_filename
 from cogent.util.misc import remove_files
 from qiime.util import make_safe_f, FunctionWithParams, qiime_blast_seqs,\
     extract_seqs_by_sample_id, build_blast_db_from_fasta_file, \
-    get_qiime_project_dir
+    get_qiime_project_dir, parse_qiime_config_files
 
 
 __author__ = "Greg Caporaso"
@@ -77,6 +77,20 @@ class TopLevelTests(TestCase):
         else:
             expected = abspath(cwd+'/..')
         self.assertEqual(actual,expected)
+        
+    def test_parse_qiime_config_files(self):
+        """ parse_qiime_config_files functions as expected """
+        fake_file1 = ['key1\tval1','key2\tval2']
+        fake_file2 = ['key2\tval3']
+        actual = parse_qiime_config_files([fake_file1,fake_file2])
+        expected = {'key1':'val1','key2':'val3'}
+        self.assertEqual(actual,expected)
+        
+        # looking up a non-existant value returns None
+        self.assertEqual(actual['fake_key'],None)
+        
+        # empty dict on empty input
+        self.assertEqual(parse_qiime_config_files([]),{})
 
 class FunctionWithParamsTests(TestCase):
     """Tests of the FunctionWithParams class.

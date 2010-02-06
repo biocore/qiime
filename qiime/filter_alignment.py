@@ -8,7 +8,7 @@ from sys import stdout
 from string import lowercase
 from os.path import split, exists, splitext
 from os import mkdir, remove
-from qiime.util import qiime_config
+from qiime.util import load_qiime_config
 
 __author__ = "Dan Knights"
 __copyright__ = "Copyright 2010, The QIIME Project"
@@ -168,6 +168,8 @@ def status(message,dest=stdout,overwrite=True, max_len=100):
     if not overwrite:
         dest.write('\n')
     dest.flush()
+
+qiime_config = load_qiime_config()
 
 def parse_command_line_parameters():
     """ Parses command line arguments """

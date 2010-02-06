@@ -10,7 +10,7 @@ from qiime.parallel.util import split_fasta, get_random_job_prefix, write_jobs_f
     submit_jobs, compute_seqs_per_file, build_filepaths_from_filepaths,\
     get_poller_command, get_rename_command, write_filepaths_to_file,\
     write_merge_map_file_assign_taxonomy
-from qiime.util import qiime_config
+from qiime.util import load_qiime_config
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME Project"
@@ -70,6 +70,8 @@ Split the input file (-i) into five jobs (-O), start them,
 
  assign_taxonomy_rdp.py -O 5 -i /home/caporaso/10_seq.fasta -o /home/caporaso/out
 """
+
+qiime_config = load_qiime_config()
 
 def parse_command_line_parameters():
     """ Parses command line arguments """

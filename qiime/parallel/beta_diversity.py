@@ -17,7 +17,7 @@ from qiime.parallel.util import get_random_job_prefix, write_jobs_file,\
     submit_jobs, get_poller_command, get_rename_command,\
     write_filepaths_to_file
 from qiime.beta_diversity import list_known_metrics
-from qiime.util import qiime_config
+from qiime.util import load_qiime_config
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME Project"
@@ -80,6 +80,8 @@ Apply the dist_unweighted_unifrac and the dist_weighted_unifrac metrics
 
  python beta_diversity.py -i ./rare/ -o ./out -m dist_unweighted_unifrac,dist_weighted_unifrac -t ./rep_set.tre
 """
+
+qiime_config = load_qiime_config()
 
 def parse_command_line_parameters():
     """ Parses command line arguments """

@@ -17,8 +17,9 @@ A lot of this might migrate into cogent at some point.
 
 from StringIO import StringIO
 from os import getenv
-from os.path import split, abspath
+from os.path import split, abspath, exists
 from numpy import min, max, median, mean
+from collections import defaultdict
 from qiime.parse import parse_otus
 from cogent import LoadSeqs
 from cogent.parse.tree import DndParser, PhyloNode
@@ -237,34 +238,30 @@ def parse_qiime_config_file(qiime_config_file):
         result[param_id] = param_value
     return result
 
-def parse_qiime_config_filepaths(qiime_config_filepaths):
-    """ Parse files in (ordered!) list of qiime_config_filepaths
+def parse_qiime_config_files(qiime_config_files):
+    """ Parse files in (ordered!) list of qiime_config_files
     
-        The order of file paths must be least important to most important.
-         Values defined in earlier filepaths will be overwritten if the same 
-         values are defined in later filepaths.
+        The order of files must be least important to most important.
+         Values defined in earlier files will be overwritten if the same 
+         values are defined in later files.
     """
-    files_read = []
+    # The qiime_config object is a default dict: if keys are not
+    # present, none is returned
+    def return_none():
+        return None
+    results = defaultdict(return_none)
     
-    results = {}
-    for qiime_config_filepath in qiime_config_filepaths:
+    for qiime_config_file in qiime_config_files:
         try:
-            results.update(parse_qiime_config_file(open(qiime_config_filepath)))
-            files_read.append(qiime_config_filepath)
+            results.update(parse_qiime_config_file(qiime_config_file))
         except IOError:
             pass
-            
-    # If no qiime_config file could be read, raise an error
-    if not files_read:
-        raise IOError,\
-         "No qiime_config were read.\n Tried %s\n Do these exist? Do you have read access?"\
-         % ' '.join(qiime_config_filepaths)
-         
+    
     return results
 
 def load_qiime_config():
     """Return default parameters read in from file"""
-    result = {}
+    
     qiime_config_filepaths = []
     qiime_project_dir = get_qiime_project_dir()
     qiime_config_filepaths.append(qiime_project_dir + '/qiime_config')
@@ -277,9 +274,14 @@ def load_qiime_config():
     if home_dir:
         qiime_config_home_filepath = home_dir + '/.qiime_config'
         qiime_config_filepaths.append(qiime_config_home_filepath)
-    return parse_qiime_config_filepaths(qiime_config_filepaths)
     
-qiime_config = load_qiime_config()
+    qiime_config_files = []
+    for qiime_config_filepath in qiime_config_filepaths:
+        if exists(qiime_config_filepath):
+            qiime_config_files.append(open(qiime_config_filepath))
+        
+    return parse_qiime_config_files(qiime_config_files)
+    
 # End functions for handling qiime_config file
 
 # This function is copied from the development branch of PyCogent, and should

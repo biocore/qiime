@@ -13,7 +13,7 @@ from qiime.parallel.util import split_fasta, get_random_job_prefix, write_jobs_f
     submit_jobs, compute_seqs_per_file, build_filepaths_from_filepaths,\
     get_poller_command, get_rename_command, write_filepaths_to_file,\
     write_merge_map_file_align_seqs
-from qiime.util import qiime_config
+from qiime.util import load_qiime_config
 from pynast.util import pairwise_alignment_methods
 
 __author__ = "Greg Caporaso"
@@ -95,6 +95,8 @@ Split the input file (-i) into five jobs (-O) to align against
 
  python ~/Qiime/qiime/parallel/align_seqs_pynast.py -i 10_seq.fasta -O 5 -t /data/pynast_test_template.fasta -o /home/caporaso/out
 """
+
+qiime_config = load_qiime_config()
 
 def parse_command_line_parameters():
     """ Parses command line arguments """

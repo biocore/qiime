@@ -19,7 +19,7 @@ from qiime.parallel.util import split_fasta, get_random_job_prefix, write_jobs_f
     get_poller_command, get_rename_command, write_filepaths_to_file,\
     write_merge_map_file_assign_taxonomy
 from qiime.alpha_diversity import list_known_metrics
-from qiime.util import qiime_config
+from qiime.util import load_qiime_config
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME Project"
@@ -80,6 +80,8 @@ Apply the observed_species, chao1, PD_whole_tree metrics (-m) to all otu tables
 
  python alpha_diversity.py -i ./rare/ -o ./out -m observed_species,chao1,PD_whole_tree -t ./rep_set.tre
 """
+
+qiime_config = load_qiime_config()
 
 def parse_command_line_parameters():
     """ Parses command line arguments """

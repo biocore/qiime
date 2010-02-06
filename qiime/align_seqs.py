@@ -33,7 +33,7 @@ from cogent.parse.rfam import MinimalRfamParser, ChangedSequence
 import cogent.app.muscle
 import cogent.app.clustalw
 import cogent.app.mafft
-from qiime.util import qiime_config
+from qiime.util import load_qiime_config
 from qiime.util import FunctionWithParams
 
 # Load PyNAST if it's available. If it's not, skip it if not but set up
@@ -305,6 +305,8 @@ Align 10_seq.fasta (-i) with infernal against template_aln.sto (-t).
  Output files will be stored in ./infernal_aligned/
  python align_seqs.py -i 10_seq.fasta -t template_aln.sto -m infernal
 """
+
+qiime_config = load_qiime_config()
 
 def parse_command_line_parameters():
     """ Parses command line arguments """

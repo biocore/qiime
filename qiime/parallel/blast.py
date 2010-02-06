@@ -19,7 +19,7 @@ from qiime.parallel.util import split_fasta, get_random_job_prefix, write_jobs_f
     submit_jobs, compute_seqs_per_file, build_filepaths_from_filepaths,\
     get_poller_command, get_rename_command, write_filepaths_to_file,\
     write_merge_map_file_blast
-from qiime.util import qiime_config
+from qiime.util import load_qiime_config
 
 def get_commands(infile_paths,db_path,blast_executable_path,\
     blastmat_path,e_value,word_size,num_hits,output_dir,working_dir,\
@@ -70,7 +70,9 @@ Example usage:
   blast database created from 1000_seq.fasta (-d):
  python Qiime/qiime/parallel/blast.py -i /home/caporaso/10_seq.fasta -d /home/caporaso/1000_seq.fasta -j 3 -o /home/caporaso/bla_out
 """
-    
+
+qiime_config = load_qiime_config()
+
 def parse_command_line_parameters():
     """ Parses command line arguments """
     usage = usage_str

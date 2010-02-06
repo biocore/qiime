@@ -3,7 +3,7 @@
 from __future__ import division
 from os import system, makedirs
 from qiime.parallel.poller import remove_all
-from qiime.util import qiime_config
+from qiime.util import load_qiime_config
 from os.path import exists
 from optparse import OptionParser
 
@@ -16,6 +16,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Pre-release"
 
+qiime_config = load_qiime_config()
 
 usage_str = """usage: %prog [options] {-d POLLED_DIR}
 

@@ -13,7 +13,7 @@ from qiime.parallel.util import split_fasta, get_random_job_prefix, write_jobs_f
     get_poller_command, get_rename_command, write_filepaths_to_file,\
     write_merge_map_file_assign_taxonomy
 from qiime.alpha_diversity import list_known_metrics
-from qiime.util import qiime_config
+from qiime.util import load_qiime_config
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME Project"
@@ -23,6 +23,7 @@ __version__ = "1.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Pre-release"
+
 
 def get_job_commands(python_exe_fp,rarefaction_fp,job_prefix,\
     input_fp,output_dir,working_dir,min_seqs,max_seqs,step,num_reps,\
@@ -79,6 +80,8 @@ Build rarefied otu tables containing 100 (-m) to 2000 (-x) sequences
 
 python rarefaction.py -o rare -m 100 -x 2000 -s 100 -n 5 -i otu_table.txt 
 """
+
+qiime_config = load_qiime_config()
 
 def parse_command_line_parameters():
     """ Parses command line arguments """
