@@ -17,7 +17,7 @@ A lot of this might migrate into cogent at some point.
 
 from StringIO import StringIO
 from os import getenv
-from os.path import split, abspath, exists
+from os.path import abspath, exists, dirname
 from numpy import min, max, median, mean
 from collections import defaultdict
 from qiime.parse import parse_otus
@@ -216,12 +216,12 @@ def get_qiime_project_dir():
          modify this function to pull the value from there.
     
     """
-    cwd = split(__file__)[0]
-    if not cwd:
-        result = abspath('..')
-    else:
-        result = abspath(cwd+'/..')
-    return result
+    # Get the full path of util.py
+    current_file_path = abspath(__file__)
+    # Get the directory containing util.py
+    current_dir_path = dirname(current_file_path)
+    # Return the directory containing the directory containing util.py
+    return dirname(current_dir_path)
 
 # Begin functions for handling qiime_config file
 def parse_qiime_config_file(qiime_config_file):

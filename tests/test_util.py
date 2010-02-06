@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #unit tests for util.py
 
-from os.path import split, abspath
+from os.path import split, abspath, dirname, exists
 from cogent.util.unit_test import TestCase, main
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.app.util import get_tmp_filename
@@ -67,15 +67,46 @@ class TopLevelTests(TestCase):
         
     def test_get_qiime_project_dir(self):
         """getting the qiime project directory functions as expected """
+        
+        # Do an explicit check on whether the file system containing
+        # the current file is case insensitive. This is in response
+        # to SF bug #2945548, where this test would fail on certain
+        # unusual circumstances on case-insensitive file systems
+        # because the case of abspath(__file__) was inconsistent. 
+        # (If you don't believe this, set case_insensitive_filesystem
+        # to False, and rename your top-level Qiime directory as 
+        # qiime on OS X. That sould cause this test to fail as 
+        # actual will be path/to/qiime and expected will be 
+        # path/to/Qiime.) Note that we don't need to change anything
+        # in the get_qiime_project_dir() function as if the 
+        # file system is case insenstive, the case of the returned
+        # string is irrelevant.
+        case_insensitive_filesystem = \
+         exists(__file__.upper()) and exists(__file__.lower())
+         
         actual = get_qiime_project_dir()
-        # note that although expected it being computed in the same way as
-        # actual in get_qiime_project_dir(), the value for __file__ is 
-        # different here.
-        cwd = split(__file__)[0]
-        if not cwd:
-            expected = abspath('..')
-        else:
-            expected = abspath(cwd+'/..')
+        # I base the expected here off util.py
+        # because if util.py moves this test will fail -- that 
+        # is what we want in this case, as the get_qiime_project_dir()
+        # function would need to be modified.
+        util_py_filepath = abspath(abspath(\
+         split(__file__)[0]) + '/../qiime/util.py')
+        expected = dirname(dirname(util_py_filepath))
+        
+        if case_insensitive_filesystem:
+            # make both lowercase if the file system is case insensitive
+            actual = actual.lower()
+            expected = expected.lower()
+        self.assertEqual(actual,expected)
+        
+        # Also test when building expected off the current filepath
+        # for an independent test.
+        test_util_py_filepath = abspath(__file__)
+        expected = dirname(dirname(test_util_py_filepath))
+        if case_insensitive_filesystem:
+            # make both lowercase if the file system is case insensitive
+            actual = actual.lower()
+            expected = expected.lower()
         self.assertEqual(actual,expected)
         
     def test_parse_qiime_config_files(self):
