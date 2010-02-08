@@ -435,8 +435,10 @@ if __name__ == "__main__":
     otu_table_fp = opts.otu_table_fp
     otu_table = open(otu_table_fp)
     output_fp = opts.output_fp
+    
     category_mapping_fp = opts.category_mapping_fp
-    category_mapping = open(category_mapping_fp)
+    category_mapping = open(category_mapping_fp,'U')
+    
     filter = opts.filter
     category = opts.category
     threshold = opts.threshold

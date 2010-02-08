@@ -144,7 +144,7 @@ if __name__ == "__main__":
     delimitor = opts.delimitor
     category_mapping = opts.category_mapping
     if category_mapping:
-        category_mapping = open(category_mapping)
+        category_mapping = open(category_mapping, 'U')
     level = opts.level 
     relative_abundance=opts.relative_abundance
     if output_fname:
