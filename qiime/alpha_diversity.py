@@ -293,7 +293,7 @@ def single_file_alpha(infilepath, metrics, outfilepath, tree_path):
         exit(1)
 
 
-def multiple_file_alpha(options, args):
+def multiple_file_alpha(input_path, output_path, metrics, tree_path=None):
     """ performs minimal error checking on input args, then calls os.system
     to execute single_file_alpha for each file in the input directory
 
@@ -302,12 +302,12 @@ def multiple_file_alpha(options, args):
 
     """
     #alpha_script = qiime.alpha_diversity.__file__ #removed below
-    file_names = os.listdir(options.input_path)
+    file_names = os.listdir(input_path)
     file_names = [fname for fname in file_names if not fname.startswith('.')]
-    if not os.path.exists(options.output_path):
-        os.makedirs(options.output_path)
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
 
-    metrics_list = options.metrics.split(',')
+    metrics_list = metrics.split(',')
     for metric in metrics_list:
         try:
             metric_f = get_nonphylogenetic_metric(metric)
@@ -315,10 +315,10 @@ def multiple_file_alpha(options, args):
             try:
                 metric_f = get_phylogenetic_metric(metric)
                 # bail if we got a phylo metric but no tree file
-                if options.tree_path == None:
+                if tree_path == None:
                     raise ValueError("phylogenetic metric supplied, but no "+\
                         "phylogenetic tree supplied")
-                elif not os.path.exists(options.tree_path):
+                elif not os.path.exists(tree_path):
                     raise ValueError("phylogenetic metric supplied, but no "+\
                         "phylogenetic tree found in specified location")
             except AttributeError:
@@ -341,9 +341,9 @@ def multiple_file_alpha(options, args):
 #~ 
         #~ print 'running w/ ' + fname
         
-        single_file_alpha(os.path.join(options.input_path, fname), 
-            options.metrics, os.path.join(options.output_path,'alpha_'+fname),
-            options.tree_path)
+        single_file_alpha(os.path.join(input_path, fname), 
+            metrics, os.path.join(output_path,'alpha_'+fname),
+            tree_path)
         ### old version called script for future parallelization
         # alpha_div_cmd = 'python ' + alpha_script + ' -i '+\
         #            os.path.join(options.input_path, fname) + " -m " + options.metrics\
@@ -351,86 +351,3 @@ def multiple_file_alpha(options, args):
         #        if options.tree_path:
         #            alpha_div_cmd += ' -t ' + options.tree_path
         #        os.system(alpha_div_cmd)
-
-usage_str = """usage: %prog [options] {-i INPUT_PATH -o OUTPUT_PATH -m METRICS}
-
-[] indicates optional input (order unimportant)
-{} indicates required input (order unimportant)
-
-Example usage:
-
-single analysis: 
-python %prog -i otu_table.txt -m observed_species,chao1,PD_whole_tree -o alpha_osd_PD.txt -t repr_set.tre
-
-or batch example: 
-python %prog -i TEST/alpha_rare -m observed_species,chao1,PD_whole_tree -t TEST/repr_set.tre -o TEST/rare_chao1_PD
-processes every file in alpha_rare, and creates a file "alpha_" + fname
-in results folder
-
-
-Metrics is comma delimited, use -s to see options.
-Output will be a sample by metric matrix. 
-"""
-def parse_command_line_parameters():
-    """returns command-line options"""
-
-    if len(sys.argv) == 1:
-        sys.argv.append('-h')
-    usage = usage_str
-    version = '%prog ' + str(__version__)
-    parser = OptionParser(usage=usage, version=version)
-    
-    parser.add_option('-i', '--input_path',
-        help='input path.  directory for batch processing, '+\
-         'filename for single file operation [REQUIRED]')
-        
-    parser.add_option('-o', '--output_path',
-        help='output path. directory for batch processing, '+\
-         'filename for single file operation [REQUIRED]')
-
-    parser.add_option('-m', '--metrics',
-        help='metrics to use, comma delimited [REQUIRED]')
-
-    parser.add_option('-s', '--show_metrics', action='store_true', 
-        dest="show_metrics",
-        help='show available alpha diversity metrics and quit')
-    
-    parser.add_option('-t', '--tree_path', default=None,
-        help='path to newick tree file, required for phylogenetic metrics'+\
-        ' [default: %default]')    
-
-    opts, args = parser.parse_args()
-    if opts.show_metrics:
-        print("Known metrics are: %s\n" \
-                % (', '.join(list_known_metrics()),))
-        exit(0)
-        
-    if len(args) != 0:
-        parser.error("positional argument detected.  make sure all"+\
-         ' parameters are identified.' +\
-         '\ne.g.: include the \"-m\" in \"-m MINIMUM_LENGTH\"')
-         
-    required_options = ['input_path','output_path','metrics']
-    for option in required_options:
-        if eval('opts.%s' % option) == None:
-            parser.error('Required option --%s omitted.' % option) 
-    return opts, args
-
-if __name__ == '__main__':
-    options, args = parse_command_line_parameters()
-
-
-    if os.path.isdir(options.input_path):
-        multiple_file_alpha(options, args)
-    elif os.path.isfile(options.input_path):
-        try:
-            f = open(options.output_path, 'w')
-            f.close()
-        except IOError:
-            print("ioerror, couldn't create output file")
-            exit(1)
-        single_file_alpha(options.input_path, options.metrics, 
-            options.output_path, options.tree_path)
-    else:
-        print("io error, input path not valid. does it exist?")
-        exit(1)
