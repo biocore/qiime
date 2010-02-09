@@ -14,14 +14,11 @@ __status__ = "Pre-release"
 this takes an otu table and generates a series of subsampled (without 
 replacement) otu tables.
 """
-from optparse import OptionParser
 from qiime.parse import parse_otus
 from qiime.format import format_otu_table
 from qiime.util import FunctionWithParams
 import os.path
-import os
 import numpy
-import sys
 from cogent.maths.stats.rarefaction import subsample
 
 class SingleRarefactionMaker(FunctionWithParams):
@@ -145,104 +142,4 @@ def get_rare_data(sample_ids, otu_ids, otu_table, \
         res_sample_ids = map(sample_ids.__getitem__, big_enough_samples[0])
     #figure out which samples will be reduced because too big
     return res_sample_ids, otu_ids, res_otu_table
-    
-    
-usage_str = \
-"""usage: %prog [options] {-i INPUT_PATH -o OUTPUT_PATH -m MIN -x MAX -s STEP}
-or {-i INPUT_PATH -o OUTPUT_PATH -d DEPTH} (single output file)
 
-[] indicates optional input (order unimportant)
-{} indicates required input (order unimportant)
-
-Example usage:
-single output file:
-python %prog otu_table.txt -o rarefaction_20_17.txt -d 20
-(subsample otu_table.txt w/o replacement at 20 seqs per sample, write resulting
-otu table to 'rarefaction_20_17.txt'
-or multiple output files:
-python %prog otu_table.txt -m 100 -x 1200 -s 100 -n 2 -o mo/rare
-(subsample otu_table.txt w/o replacement at 100 seqs per sample (twice),
-200 seqs per sample (twice) ... 1200 seqs per sample (twice).
-write 24 files total to mo/rare directory
-
-Description:
-input_filepath is an otu table, output will be a rarefied otu table
-(with single output file syntax), or a series of otu table files, 
-named e.g.: rarefaction_4_2.txt
-(4 seqs per sample, iteration 2 (3rd such file written)
-"""
-def parse_command_line_parameters():
-    """returns command-line options"""
-
-    if len(sys.argv) == 1:
-        sys.argv.append('-h')
-    usage = usage_str
-    version = '%prog ' + str(__version__)
-    parser = OptionParser(usage=usage, version=version)
-    
-    parser.add_option('-i', '--input_path',
-        help='input filepath, and otu table [REQUIRED]')
-        
-    parser.add_option('-o', '--output_path',
-        help='write output rarefied otu tables here ' +\
-            '(directory if generating multiple outputs, else filename) '+\
-            "makes dir if it doesn't exist [REQUIRED]")
-
-    parser.add_option('-m', '--min', type=int,
-        help='min seqs/sample')
-        
-    parser.add_option('-x', '--max', type=int,
-        help='max seqs/sample (inclusive)')
-        
-    parser.add_option('-s', '--step', type=int,
-        help='levels: min, min+step... for level <= max')
-   
-    parser.add_option('-n', '--num-reps', dest='num_reps', default=1, type=int,
-        help='num iterations at each seqs/sample level [default: %default]')
-
-    parser.add_option('-d', '--depth', type=int,
-        help=\
-         'sequences per sample, required when generating a single output file')
-    
-    parser.add_option('--small_included', dest='small_included', default=False,
-        action="store_true",
-        help="""samples containing fewer seqs than the rarefaction
-level are included in the output but not rarefied [default: %default]""")
-
-    opts, args = parser.parse_args()
-        
-    if len(args) != 0:
-        parser.error("positional argument detected.  make sure all"+\
-         ' parameters are identified.' +\
-         '\ne.g.: include the \"-m\" in \"-m MINIMUM_LENGTH\"')
-         
-    required_options1 = ['input_path', 'output_path', 'min', 'max', 'step']
-    required_options2 = ['input_path', 'output_path', 'depth']
-    if opts.depth != None:
-        for option in required_options2:
-            if eval('opts.%s' % option) == None:
-                parser.error('Required option --%s omitted.' % option)
-        if opts.min or opts.max or opts.step:
-            parser.error('specifying option "depth" precludes use of min, '+\
-                'max, or step, as only one output file is generated')
-    else:
-        for option in required_options1:
-            if eval('opts.%s' % option) == None:
-                parser.error('Required option --%s omitted.' % option)
-    return opts, args
-
-
-if __name__ == '__main__':
-    #if called from command-line, should run the analysis.
-    opts, args = parse_command_line_parameters()
-    otu_path = opts.input_path
-    if opts.depth != None:
-        
-        maker = SingleRarefactionMaker(otu_path, opts.depth)
-        maker.rarefy_to_file(opts.output_path, opts.small_included)
-    else:
-        if not os.path.exists(opts.output_path):
-            os.makedirs(opts.output_path)
-        maker = RarefactionMaker(otu_path, opts.min, opts.max,
-            opts.step, opts.num_reps)
-        maker.rarefy_to_files(opts.output_path, opts.small_included)
