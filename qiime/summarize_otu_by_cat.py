@@ -148,84 +148,24 @@ def parse_otu_sample(lines, num_meta, meta_dict, cat_list,category,num_samples_b
 
 
 
-usage_str = """usage: %prog [options] {-i INPUT_MAP_FILE \
--c OTU_SAMPLE_COUNTS_FILE}
 
-[] indicates optional input (order unimportant) 
-{} indicates required input (order unimportant) 
-
-Requirements:
-Python 2.5
-
-Example: Create network cytoscape and statistic files:
-python gen_pie_charts.py -i input_map.txt-c otu_table.txt \
--o /Users/bob/qiime_run/
-
-
-"""
-
-
-def _make_cmd_parser():
-    """Returns the command-line options"""
-    usage =usage_str
-    version = 'Version: %prog ' +  __version__
-    
-    parser = OptionParser(usage=usage_str, version=version)
-    
-    parser.add_option('-i', '--input_map', dest='map_file',
-                help='name of input map file [REQUIRED]')
-    parser.add_option('-c', '--otu_sample_counts', dest='counts_file',
-            help='name of otu table file [REQUIRED]')
-    parser.add_option('-o', '--dir-prefix', dest='dir_path',\
-	           help='directory prefix for all analyses')
-    parser.add_option('-m', '--meta_category', dest='category',\
-	           help='name of category for OTU table [REQUIRED]')
-    parser.add_option('-n', '--normalize_flag', dest='normalize',
-     help='if True will normalize counts',default=False,
-                      action = 'store_true')
-    opts, args = parser.parse_args()
-   
-    if not opts.counts_file:
-        parser.error("An otu table file must be specified")
-
-    if not opts.map_file:
-        parser.error("A Map file must be specified")
-        
-    return opts
-
-
-
-def main(options):
-	dir_path = options.dir_path
-	category = options.category
-
-	if dir_path == "./" or dir_path is None:
-		dir_path = os.getcwd()
-
-	map_lines = open(options.map_file,'U').readlines()
-	otu_sample_lines = open(options.counts_file,'U').readlines()
-
+def summarize_by_cat(map_lines,otu_sample_lines,category,dir_path,norm):
+	"""creates the category otu table"""
 	cat_by_sample, sample_by_cat, num_meta, meta_dict, label_lists_dict, \
                    num_samples_by_cat = parse_map(map_lines,category)
 
 	lines, otus, taxonomy = parse_otu_sample(otu_sample_lines, num_meta, \
 			meta_dict,label_lists_dict[category],category,num_samples_by_cat,\
-			options.normalize)
+			norm)
 
 	lines = format_otu_table(label_lists_dict[category], otus, array(lines), \
 			taxonomy=taxonomy,
     comment='Category OTU Counts-%s'% category)
 
-	if options.normalize:
+	if norm:
 		file_name = os.path.join(dir_path,'%s_otu_table_norm.txt'%category)
 	else:
 		file_name = os.path.join(dir_path,'%s_otu_table.txt'%category)
 	f = open(file_name,'w')
 	f.write(lines)
 	f.close()
-
-
-if __name__ == "__main__":
-    from sys import argv, exit
-    options = _make_cmd_parser()
-    main(options)
