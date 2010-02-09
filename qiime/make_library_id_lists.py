@@ -74,37 +74,3 @@ def make_option_parser():
     parser.add_option("--debug", dest="debug", action="store_true",
     default=False, help="Show debug output.")
     return parser
-
-if __name__ == '__main__':
-    option_parser = make_option_parser()
-    options, args = option_parser.parse_args()
-    if options.debug:
-        print "PRODUCING DEBUG OUTPUT"
-    
-    bad_seq_ids = set()
-    #if we got a file to screen against, find the relevant ids and delete them
-    if options.screened_rep_seqs:
-        bad_otu_ids = get_first_id(open(options.screened_rep_seqs, 'U'))
-        if not options.otus:
-            raise RuntimeError, "Must specify an OTU file if performing a screen."
-        for line in open(options.otus, 'U'):
-            fields = line.split()
-            if fields[0] in bad_otu_ids:
-                bad_seq_ids.update(fields[1:])
-    if options.debug:
-        print "Found %s bad otu ids: %s" % (len(bad_otu_ids), bad_otu_ids)
-        print "Found %s bad seq ids: %s" % (len(bad_seq_ids), bad_seq_ids)
-    
-    ids = get_ids(open(options.in_fasta, 'U'), options.field, bad_seq_ids,
-        options.debug)
-    
-    #add empty unassigned ids for file creation (required by sra)
-    if 'Unassigned' not in ids:
-        ids['Unassigned'] = []
-        
-    if not exists(options.outdir):
-        makedirs(options.outdir)
-    for k, idlist in ids.items():
-        outfile = open(join(options.outdir, k + '.txt'), 'w')
-        outfile.write('\n'.join(sorted(idlist)))
-        outfile.close()
