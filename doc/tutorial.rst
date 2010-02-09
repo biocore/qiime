@@ -14,8 +14,8 @@ Contents
 .. toctree::
    :maxdepth: 1
 
-   essential_files.rst
-   data_analysis_steps.rst
+   tut_essential_files.rst
+   tut_data_analysis_steps.rst
 
 Introduction
 ============
