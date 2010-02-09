@@ -75,7 +75,7 @@ def parse_command_line_parameters():
     
     parser.add_option('-P','--poller_fp',action='store',\
            type='string',help='full path to '+\
-           'qiime/parallel/poller.py [default: %default]')
+           'Qiime/scripts/poller.py [default: %default]')
 
     parser.add_option('-Y','--python_exe_fp',
            help='full path to python executable [default: %default]',\
