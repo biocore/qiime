@@ -658,7 +658,12 @@ class CdHitOtuPicker(OtuPicker):
 
 
 class UclustOtuPicker(OtuPicker):
-    
+    """ Uclust based OTU picker
+
+    Important note - the default behaviour of uclust is to ignore
+    sequences of 32 nucleotides or less.  These will be omitted
+    in the clusters generated. """
+
     Name = 'UclustOtuPicker'
     
     def __init__(self, params):

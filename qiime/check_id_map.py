@@ -964,67 +964,13 @@ def write_logfile(errors, warnings, log_filepath, mapping_filepath):
             
     return log_filepath
 
-def parse_command_line_parameters():
-    """Returns command-line options"""
-    usage = usage_str
-    version = 'Version: %prog 0.1'
-    parser = OptionParser(usage = usage, version = version)
-    parser.add_option('-m', '--map', dest='map_fname',
-        help='Mapping file filepath [Required]')
-    # Will create output file names based on input mapping file name
-    '''parser.add_option('-l', '--log', dest='log_filepath',
-        help='Log file filepath [Required]') '''
-    parser.add_option('-o', '--output_dir',
-        help='Required output directory for mapping file with corrected '+\
-        'characters and log file (by default, invalid characters will be '+\
-        'converted to underscores)  [Required]')
-    parser.add_option('-c', '--char_replace', dest='char_replace',
-        help='Changes the default character used to replace invalid '+\
-        'characters found in the mapping file.  Must be a valid character ('+\
-        'alphanumeric or underscore).  NOT IMPLEMENTED CURRENTLY '+\
-        '[default: %default]', default="_")
-    parser.add_option('-b', '--not_barcoded',
-        action='store_true', default=False,
-        help='Use -b if barcodes are not present. [default: %default]')
-    parser.add_option('-v', '--verbose',
-        action='store_true', default=False,
-        help='Enable verbose output [default: %default]')
-    opts, args = parser.parse_args()
-    
-    required_options = ['map_fname','output_dir']    
-    for option in required_options:
-        if eval('opts.%s' % option) == None:
-            parser.error('Required option --%s omitted.' % option)
-            
-    valid_replacement_chars=digits+letters+"_"
-    if opts.char_replace not in valid_replacement_chars:
-        parser.error('-c option requires alphanumeric or underscore character')
-    if len(opts.char_replace) != 1:
-        parser.error('-c parameter must be a single character.')
-    return opts
 
-usage_str = \
-"Usage: check_id_map.py [options] {-m MAPPING_FP -o OUTPUT_DIR}\n\n"+\
-"[] indicates optional input (order unimportant)\n"+\
-"{} indicates required input (order unimportant)\n\n"+\
-"Example usage:\n"+\
-"Check the test_mapping.txt mapping file for problems, supplying the required"+\
-"\nmapping file and output directory (in this case mapping_info).\n\n"+\
-" check_id_map.py -m test_mapping.txt -o mapping_info/"
-
-
-if __name__ == "__main__":
-    from sys import argv, exit, stderr
-    options = parse_command_line_parameters()
-    infile_name = options.map_fname
-    has_barcodes = not options.not_barcoded
-    output_dir = options.output_dir
-    char_replace = options.char_replace
-    verbose = options.verbose
-    
-    
+def check_mapping_file(infile_name, output_dir, has_barcodes, char_replace, \
+ verbose):
+    """ Central program function for checking mapping file """
+	
     headers, id_map, description_map, run_description, errors, warnings = \
-        parse_id_map(open(infile_name, 'U'), has_barcodes, char_replace)
+     parse_id_map(open(infile_name, 'U'), has_barcodes, char_replace)
 
     chars_replaced = test_for_replacement_chars(warnings)
 
@@ -1062,5 +1008,13 @@ if __name__ == "__main__":
         print('Errors and/or warnings occurred, see log file %s' % log_filepath)
     if verbose and not(errors or warnings):
         print('No errors or warnings for mapfile %s' % infile_name)
+	
+	
+
+
+    
+    
+    
+    
         
 
