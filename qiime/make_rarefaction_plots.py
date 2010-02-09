@@ -37,6 +37,7 @@ import os.path
 from optparse import OptionParser
 from os.path import exists, splitext, split
 import shutil
+from itertools import cycle
 
 COLOUR_GRAD = ['#9933cc', #purple
         '#3333cc', #blue
@@ -92,16 +93,10 @@ MARKERS = ['*', 'D' , 'H' , 'd' , 'h' , 'o' , 'p' , 's' , 'x']
 err = []
 graphNames = []
 sampleIDs = []
-Infinity = 1e10000
-NaN = Infinity / Infinity
-
-def is_nan(x):
-    return type(x) is float and x != x
-
-def is_finite(x):
-    return x != Infinity
 
 def parse_rarefaction(lines):
+    """Function for parsing rarefaction files specifically for use in
+    make_rarefaction_plots.py"""
     col_headers = None
     result = []
     row_headers = []
@@ -114,8 +109,6 @@ def parse_rarefaction(lines):
             try:
                 result.append(map(float, entries[1:]))
             except(ValueError):
-                # fix so that float works on all vals except n/a and leave n/as in
-                # then transpose matrix, get rid of na's, average
                 temp = []
                 for x in entries[1:]:
                     if x.strip() != 'n/a':
@@ -133,26 +126,29 @@ def parse_rarefaction(lines):
     return rare_mat_trans, seqs_per_samp, sampleIDs
     
 def ave_seqs_per_sample(matrix, seqs_per_samp, sampleIDs):
+    """Calculate the average for each sampleID across each number of seqs/sample"""
     ave_ser = {}
     temp_dict = {}
-    for i in range(0,len(sampleIDs)):
-        temp_dict[sampleIDs[i]] = {}
-        for j in range(0, len(seqs_per_samp)):
+    for i,sid in enumerate(sampleIDs):
+        temp_dict[sid] = {}
+        for j,seq in enumerate(seqs_per_samp):
             try:
-                temp_dict[sampleIDs[i]][seqs_per_samp[j]].append(matrix[i][j])
+                temp_dict[sid][seq].append(matrix[i][j])
             except(KeyError):
-                temp_dict[sampleIDs[i]][seqs_per_samp[j]] = []
-                temp_dict[sampleIDs[i]][seqs_per_samp[j]].append(matrix[i][j])
+                temp_dict[sid][seq] = []
+                temp_dict[sid][seq].append(matrix[i][j])
 
-    for s in sampleIDs:
-        ave_ser[s] = []
-        keys = temp_dict[s].keys()
+    for sid in sampleIDs:
+        ave_ser[sid] = []
+        keys = temp_dict[sid].keys()
         keys.sort()
         for k in keys:
-            ave_ser[s].append(mean(array(temp_dict[s][k]),0))
+            ave_ser[sid].append(mean(array(temp_dict[sid][k]),0))
     return ave_ser
 
 def is_max_category_ops(mapping, mapping_category):
+    """Count how many unique values there are for the supplied mapping category
+    and return true if all values are unique"""
     header = mapping[0][0]
     map_min = mapping[0][1:]
     num_samples = len(map_min)
@@ -165,6 +161,7 @@ def is_max_category_ops(mapping, mapping_category):
     return (len(seen) == num_samples), len(seen)
 
 def make_error_series(rare_mat, sampleIDs, mapping, mapping_category):
+    """Create mean and error bar series for the supplied mapping category"""
     err_ser = dict()
     collapsed_ser = dict()
     header = mapping[0][0]
@@ -175,7 +172,7 @@ def make_error_series(rare_mat, sampleIDs, mapping, mapping_category):
         
     seen = set()
     pre_err = {}
-    op_index = header.index(mapping_category)
+    category_index = header.index(mapping_category)
     
     for k in mapping_dict:
         try:
@@ -183,62 +180,60 @@ def make_error_series(rare_mat, sampleIDs, mapping, mapping_category):
         except(KeyError):
             #err.append("SampleID " + k + " found in mapping but not in rarefaction file.\n")
             continue
-        op = mapping_dict[k][op_index-1]
+        op = mapping_dict[k][category_index-1]
         if op not in seen:
             seen.update([op])
             pre_err[op] = []
         pre_err[op].append(rare_mat[k])
     
-    #print seen
     ops = list(seen)
-    cols = {}
-    syms = {}
-    for i in range(0,len(ops)):
-        cols[ops[i]] = COLOUR[i%len(COLOUR)]
-        syms[ops[i]] = MARKERS[i%len(MARKERS)]
     
     for o in ops:
-        min_len = 100
-        for s in pre_err[o]:
-            s = [float(v) for v in s if v != 'n/a' and v != 0]
-            if len(s) < min_len:
-                min_len = len(s)
+        min_len = 1000 #1e10000
+        for series in pre_err[o]:
+            series = [float(v) for v in series if v != 0]
+            if len(series) < min_len:
+                min_len = len(series)
         
         pre_err[o] = [x[:min_len] for x in pre_err[o]]
-            
+    
+    cols = {}
+    syms = {}
+    colcycle = cycle(COLOUR)
+    markcycle = cycle(MARKERS)
     for o in ops:
-        try:
-            ao = array(pre_err[o])
-            m = mean(ao, 0)
-            collapsed_ser[o] = m.tolist()
-            s = std(ao, 0)
-            err_ser[o] = s.tolist()
-        except(ValueError):
-            continue
+        cols[o] = colcycle.next()
+        syms[o] = markcycle.next()
+        opsarray = array(pre_err[o])
+        mn = mean(opsarray, 0)
+        collapsed_ser[o] = mn.tolist()
+        stddev = std(opsarray, 0)
+        err_ser[o] = stddev.tolist()
         
     return collapsed_ser, err_ser, ops, cols, syms
 
 def get_overall_averages(rare_mat, sampleIDs):
+    """Make series of averages of all values of seqs/sample for each sampleID"""
     overall_ave = dict();
     for s in sampleIDs:
         overall_ave[s] = mean(array(rare_mat[s]))
     return overall_ave
 
-def plot_rarefaction_noave(rare_mat, xaxis, sampleIDs, mapping, mapping_category):
-    plt.gcf().set_size_inches(8,6)    
-    plt.grid(color='gray', linestyle='-')
-    
-    yseries = []
-    for k in rare_mat.keys():
-        yseries.append([float(v) for v in rare_mat[k] if v != 'NA' and v != 0])
-        
-    for s in yseries:
-        plt.plot(xaxis[:len(s)], s)
-
-    plt.grid(color='gray', linestyle='-')
-    ax = plt.gca()
-    ax.set_xlabel('Sequences Per Sample')
-    return plt
+# def plot_rarefaction_noave(rare_mat, xaxis, sampleIDs, mapping, mapping_category):
+#     plt.gcf().set_size_inches(8,6)    
+#     plt.grid(color='gray', linestyle='-')
+#     
+#     yseries = []
+#     for k in rare_mat.keys():
+#         yseries.append([float(v) for v in rare_mat[k] if v != 'NA' and v != 0])
+#         
+#     for s in yseries:
+#         plt.plot(xaxis[:len(s)], s)
+# 
+#     plt.grid(color='gray', linestyle='-')
+#     ax = plt.gca()
+#     ax.set_xlabel('Sequences Per Sample')
+#     return plt
 
 def plot_rarefaction(rare_mat, xaxis, sampleIDs, mapping, mapping_category):
     plt.gcf().set_size_inches(10,6)   
@@ -254,19 +249,18 @@ def plot_rarefaction(rare_mat, xaxis, sampleIDs, mapping, mapping_category):
             if len(o) > 20:
                 l = l[:20] + '...'
             plt.errorbar(xaxis[:len(yaxis[o])], yaxis[o], yerr=err[o][:len(yaxis[o])], color=colors[o], label=l, marker=syms[o], markersize=4)
-            test = errorbar(xaxis[:len(yaxis[o])], yaxis[o], yerr=err[o][:len(yaxis[o])], color=colors[o], label=l, marker=syms[o], markersize=4)
+            # test = errorbar(xaxis[:len(yaxis[o])], yaxis[o], yerr=err[o][:len(yaxis[o])], color=colors[o], label=l, marker=syms[o], markersize=4)
         except(ValueError):
             print mapping_category
             print o
-            #print xaxis
-            #print yaxis[o]
+
     ax = plt.gca()
     ax.set_axisbelow(True)
     ax.set_xlabel('Sequences Per Sample')
     #leg = plt.legend(markerscale=.3, ncol=int(len(ops)/12))
-    return plt, ops, colors, syms, test
+    return plt, ops, colors, syms
 
-def save_plot(plot, filenm, rtype, title, itype, res, xmax, ymax, ops, cols, syms, line):
+def save_plot(plot, filenm, rtype, title, itype, res, xmax, ymax, ops, cols, syms):
     plot.title(title)
     ax = plot.gca()
     ax.set_xlim((0,xmax))
@@ -409,45 +403,41 @@ def make_plots(data):
     for r in data['rarefactions'].keys():
         file_path = os.path.join(data['output_path'],splitext(split(r)[1])[0])
         os.makedirs(file_path)
-        try:
-            rare_mat_trans, seqs_per_samp, sampleIDs = parse_rarefaction(data['rarefactions'][r])
-            
-            xaxisvals = [float(x) for x in set(seqs_per_samp)]
-            xaxisvals.sort()
-            
-            rare_mat_ave = ave_seqs_per_sample(rare_mat_trans, seqs_per_samp, sampleIDs)
-            xmax = max(xaxisvals) + (xaxisvals[len(xaxisvals)-1] - xaxisvals[len(xaxisvals)-2])
-            yoffset = 5 #parameterize?
-            ymax = max([max(s) for s in rare_mat_ave.values()]) + yoffset
-            overall_average = get_overall_averages(rare_mat_ave, sampleIDs)
-            
-            rarelines.append("#" + r + '\n')
-            for s in sampleIDs:
-                rarelines.append('%f'%overall_average[s] + '\n')
-    
-            if data['prefs'] == 'ALL':
-                for p in data['map'][0][0]: #headerline
-                    is_max, l = is_max_category_ops(data['map'], p)
-                    if l == 1 or is_max:
-                        continue
-                    pr,ops,cols,syms,line = plot_rarefaction(rare_mat_ave, xaxisvals, sampleIDs, data['map'], p)
-                    filenm = file_path + '/'+ p
-                    graphNames.append(splitext(split(r)[1])[0] + '/'+p+"."+data['imagetype'])
-                    save_plot(pr, filenm, r, splitext(split(r)[1])[0] +':'+ p, data['imagetype'], data['resolution'], xmax, ymax, ops, cols, syms, line)
-                    plt.clf()
-            else:
-                for p in data['prefs']:
-                    is_max, l = is_max_category_ops(data['map'], p)
-                    if l == 1 or is_max:
-                        continue
-                    pr,ops,cols,syms,line = plot_rarefaction(rare_mat_ave, xaxisvals, sampleIDs, data['map'], p)
-                    filenm = file_path + '/'+ p
-                    graphNames.append(splitext(split(r)[1])[0] + '/'+p+"."+data['imagetype'])
-                    save_plot(pr, filenm, r, splitext(split(r)[1])[0] +': '+ p, data['imagetype'], data['resolution'], xmax, ymax, ops, cols, syms, line)
-                    plt.clf()
-        except():
-            os.removedirs(file_path)
-            print "Error:", sys.exc_info()[0]
+        rare_mat_trans, seqs_per_samp, sampleIDs = parse_rarefaction(data['rarefactions'][r])
+        
+        xaxisvals = [float(x) for x in set(seqs_per_samp)]
+        xaxisvals.sort()
+        
+        rare_mat_ave = ave_seqs_per_sample(rare_mat_trans, seqs_per_samp, sampleIDs)
+        xmax = max(xaxisvals) + (xaxisvals[len(xaxisvals)-1] - xaxisvals[len(xaxisvals)-2])
+        yoffset = 5 #parameterize?
+        ymax = max([max(s) for s in rare_mat_ave.values()]) + yoffset
+        overall_average = get_overall_averages(rare_mat_ave, sampleIDs)
+        
+        rarelines.append("#" + r + '\n')
+        for s in sampleIDs:
+            rarelines.append('%f'%overall_average[s] + '\n')
+
+        if data['prefs'] == 'ALL':
+            for p in data['map'][0][0]: #headerline
+                is_max, l = is_max_category_ops(data['map'], p)
+                if l == 1 or is_max:
+                    continue
+                pr,ops,cols,syms = plot_rarefaction(rare_mat_ave, xaxisvals, sampleIDs, data['map'], p)
+                filenm = file_path + '/'+ p
+                graphNames.append(splitext(split(r)[1])[0] + '/'+p+"."+data['imagetype'])
+                save_plot(pr, filenm, r, splitext(split(r)[1])[0] +':'+ p, data['imagetype'], data['resolution'], xmax, ymax, ops, cols, syms)
+                plt.clf()
+        else:
+            for p in data['prefs']:
+                is_max, l = is_max_category_ops(data['map'], p)
+                if l == 1 or is_max:
+                    continue
+                pr,ops,cols,syms = plot_rarefaction(rare_mat_ave, xaxisvals, sampleIDs, data['map'], p)
+                filenm = file_path + '/'+ p
+                graphNames.append(splitext(split(r)[1])[0] + '/'+p+"."+data['imagetype'])
+                save_plot(pr, filenm, r, splitext(split(r)[1])[0] +': '+ p, data['imagetype'], data['resolution'], xmax, ymax, ops, cols, syms)
+                plt.clf()
             
     tablelines = ['#SampleIDs\n']
     tablelines.extend([s + '\n' for s in sampleIDs])
