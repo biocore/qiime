@@ -1,10 +1,10 @@
 #!/usr/bin/env python
-#file prep_sff.py
+#file process_sff.py
 from os import listdir, system
 from os.path import splitext, join
 """Converts directory of sff files into fasta and qual files.
 
-Requires that 454's off-instrument apps are on your path.
+Requires that 454's off-instrument apps (sffinfo, sfffile) are on your path.
 """
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2010, The QIIME Project" 
@@ -29,9 +29,3 @@ def prep_sffs_in_dir(pathname):
         if name.endswith('.sff'):
             make_fna(join(pathname,name))
             make_qual(join(pathname,name))
-
-
-if __name__ == '__main__':
-    from sys import argv
-    pathname = argv[1]
-    prep_sffs_in_dir(pathname)
