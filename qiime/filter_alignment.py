@@ -208,38 +208,3 @@ def parse_command_line_parameters():
             parser.error('Required option --%s omitted.' % option) 
 
     return opts,args
-    
-if __name__ == "__main__":
-    opts,args = parse_command_line_parameters()
-    
-    # build the output filepath and open it any problems can be caught before starting
-    # the work
-    try:
-        mkdir(opts.output_dir)
-    except OSError:
-        pass
-    input_dir, input_filename = split(opts.input_fasta_file)
-    input_basename, ext = splitext(input_filename)
-    output_fp = '%s/%s_pfiltered.fasta' % (opts.output_dir,input_basename)
-    
-    try:
-        outfile = open(output_fp,'w')
-    except IOError:
-        raise IOError, "Can't open output_filepath for writing: %s" % output_filepath
-
-    
-    # read the lane_mask, if one was provided
-    if opts.verbose: print "Reading lane mask..."
-    if opts.lane_mask_fp and not opts.suppress_lane_mask_filter:
-        lane_mask = open(opts.lane_mask_fp).read().strip()
-    else:
-        lane_mask = None
-    # open the input and output files        
-    infile = open(opts.input_fasta_file,'U')
-
-    # apply the lanemask/gap removal
-    for result in apply_lane_mask_and_gap_filter(infile, lane_mask, opts.allowed_gap_frac, verbose=opts.verbose):
-        outfile.write(result)
-    infile.close()
-    outfile.close()
-
