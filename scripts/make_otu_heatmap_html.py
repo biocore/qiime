@@ -12,7 +12,7 @@ __version__ = "1.0-dev"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 __status__ = "Pre-release"
- 
+
 
 from qiime.util import parse_command_line_parameters
 from optparse import make_option
