@@ -18,7 +18,7 @@ from sys import argv, exit, exc_info
 from random import choice, randrange
 from time import strftime
 from qiime import parse, util
-from make_rarefaction_plots import make_plots, make_output_files, is_max_category_ops
+from qiime.make_rarefaction_plots import make_plots, make_output_files, is_max_category_ops
 import os.path
 from os.path import exists, splitext, split
 import shutil
