@@ -15,7 +15,7 @@ Assumes that in the OTU map, the ids are in the format lib_seq, e.g.
 M3FclSwb_1023. Will not work if this assumption is not met. Splits on last
 underscore only so should be relatively robust to underscore in sample id.
 """
-from sys import argv, exit, stderr, stdout
+
 from collections import defaultdict
 from string import strip
 from numpy import array
