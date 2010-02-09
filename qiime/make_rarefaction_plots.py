@@ -207,8 +207,11 @@ def get_overall_averages(rare_mat, sampleIDs):
         overall_ave[s] = mean(array(rare_mat[s]))
     return overall_ave
 
-def plot_rarefaction(rare_mat, xaxis, sampleIDs, mapping, mapping_category):
-    plt.gcf().set_size_inches(10,6)   
+def save_rarefaction_plots(rare_mat, xaxis, xmax, ymax, sampleIDs, mapping,\
+mapping_category, itype, res, rtype, fpath):
+    plt.clf()
+    fig  = plt.gcf()
+    fig.set_size_inches(8,6)
     plt.grid(color='gray', linestyle='-')
     
     yaxis, err, ops, colors, syms = make_error_series(rare_mat, sampleIDs, \
@@ -227,27 +230,25 @@ def plot_rarefaction(rare_mat, xaxis, sampleIDs, mapping, mapping_category):
     ax = plt.gca()
     ax.set_axisbelow(True)
     ax.set_xlabel('Sequences Per Sample')
-    return plt, ops, colors, syms
 
-def save_plot(plot, filenm, rtype, title, itype, res, xmax, ymax, ops, \
-cols, syms):
-    plot.title(title)
-    ax = plot.gca()
+    c = 1
+    if len(ops) > 12:
+        c = int(len(ops)/12)
+
+    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, markerscale=.3, ncol=c)
+    
+    fig.set_size_inches(10,6)
+    
+    plt.title(rtype + ": " + mapping_category)
+    ax = plt.gca()
     ax.set_xlim((0,xmax))
     ax.set_ylim((0,ymax))
-    ax.set_ylabel("Rarefaction Type: " + splitext(split(rtype)[1])[0])
-    plot.savefig(filenm +'.'+itype, format=itype, dpi=res)
-    plt.clf()
-    if ops != None:
-        c = 1
-        if len(ops) > 12:
-            c = int(len(ops)/12)
-        i = 0
-        for o in ops:
-            plt.plot([0,0], [0,0], cols[o], label=o, marker=syms[o])
-            i += 1
-        plt.legend(markerscale=.3, ncol=c)
-    plot.savefig(filenm +'_legend.'+itype, format=itype, dpi=res)
+    ax.set_ylabel("Rarefaction Measure: " + splitext(split(rtype)[1])[0])
+    imgpath = os.path.join(fpath,mapping_category) + '.'+itype
+    plt.savefig(imgpath, format=itype, dpi=res)
+    
+    imgnmforjs = splitext(split(rtype)[1])[0] + "/" + mapping_category +"."+itype
+    graphNames.append(imgnmforjs)
     
 def make_plots(prefs):
     rarelines = []
@@ -275,15 +276,9 @@ def make_plots(prefs):
             rarelines.append('%f'%overall_average[s] + '\n')
             
         for p in prefs['categories']:
-            pr,ops,cols,syms = plot_rarefaction(rare_mat_ave, xaxisvals, \
-            sampleIDs, prefs['map'], p)
-            filenm = file_path + '/'+ p
-            graphNames.append(splitext(split(r)[1])[0] + '/'+p+"."+ \
-            prefs['imagetype'])
-            save_plot(pr, filenm, r, splitext(split(r)[1])[0] +': '+ p, \
-            prefs['imagetype'], prefs['resolution'], xmax, ymax, ops, cols, \
-            syms)
-            plt.clf()
+            save_rarefaction_plots(rare_mat_ave, xaxisvals, xmax, ymax, \
+            sampleIDs, prefs['map'], p, prefs['imagetype'], \
+            prefs['resolution'], r, file_path)
 
     tablelines = ['#SampleIDs\n']
     tablelines.extend([s + '\n' for s in sampleIDs])
@@ -291,21 +286,23 @@ def make_plots(prefs):
     return tablelines
     
 def make_output_files(prefs, lines, qiime_dir):
-    open(prefs['output_path'] + "/graphNames.txt",'w').writelines([f +'\n' \
-    for f in graphNames])
     open(prefs['output_path'] + "/rarefactionTable.txt",'w').writelines(lines)
 
-    os.makedirs(prefs['output_path']+"/js")
-    os.makedirs(prefs['output_path']+"/css")
-    shutil.copyfile(qiime_dir+"/support_files/rarefaction_plots.html", \
-    prefs['output_path']+"/rarefaction_plots.html")
-    shutil.copyfile(qiime_dir+"/support_files/js/rarefaction_plots.js", \
-    prefs['output_path']+"/js/rarefaction_plots.js")
-    shutil.copyfile(qiime_dir+"/support_files/js/jquery.js", \
-    prefs['output_path']+"/js/jquery.js")
-    shutil.copyfile(qiime_dir+"/support_files/js/jquery.dataTables.min.js", \
-    prefs['output_path']+"/js/jquery.dataTables.min.js")
-    shutil.copyfile(qiime_dir+"/support_files/css/rarefaction_plots.css", \
-    prefs['output_path']+"/css/rarefaction_plots.css")
-    shutil.copyfile(qiime_dir+"/support_files/qiime_header.png", \
-    prefs['output_path']+"/qiime_header.png")
+    if prefs['no_html'] == 'False':
+        open(prefs['output_path'] + "/graphNames.txt",'w').writelines([f +'\n' \
+        for f in graphNames])
+
+        os.makedirs(prefs['output_path']+"/js")
+        os.makedirs(prefs['output_path']+"/css")
+        shutil.copyfile(qiime_dir+"/support_files/html_templates/rarefaction_plots.html", \
+        prefs['output_path']+"/rarefaction_plots.html")
+        shutil.copyfile(qiime_dir+"/support_files/js/rarefaction_plots.js", \
+        prefs['output_path']+"/js/rarefaction_plots.js")
+        shutil.copyfile(qiime_dir+"/support_files/js/jquery.js", \
+        prefs['output_path']+"/js/jquery.js")
+        shutil.copyfile(qiime_dir+"/support_files/js/jquery.dataTables.min.js", \
+        prefs['output_path']+"/js/jquery.dataTables.min.js")
+        shutil.copyfile(qiime_dir+"/support_files/css/rarefaction_plots.css", \
+        prefs['output_path']+"/css/rarefaction_plots.css")
+        shutil.copyfile(qiime_dir+"/support_files/images/qiime_header.png", \
+        prefs['output_path']+"/qiime_header.png")
