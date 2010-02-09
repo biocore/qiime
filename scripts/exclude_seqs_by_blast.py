@@ -63,7 +63,7 @@ script_usage = """ \n\t python exclude_seqs_by_blast.py {-i QUERY_FASTA_FP -d SU
     {} indicates required input (order unimportant)
     
     \nExample:\n\tpython exclude_seqs_by_blast.py -i test_query_data.fasta -d h.sapiens.nuc
-    -o ./seq_exclusion_pos_control -e 1e-20 -p 0.97 --debug
+    -o ./seq_exclusion_pos_control -e 1e-20 -p 0.97 --verbose
     """
 
 required_options = [\
@@ -98,11 +98,7 @@ optional_options = [\
         contaminants. [DEFAULT: %default] """),\
     make_option("-W","--word_size",type='int',dest='wordsize',\
         default = 28,\
-        help="Word size to use for BLAST search [DEFAULT: %default]"),\
-    make_option("--debug",action='store_true',dest='debug',\
-        default = False,\
-        help="""If present, display verbose debugging output [DEFAULT:
-        %default]"""),\
+        help="Word size to use for BLAST search [DEFAULT: %default]")
 ]
 
 FORMAT_BAR =   """------------------------------"""*2
@@ -115,7 +111,7 @@ def main():
       version=__version__,\
       required_options=required_options,\
       optional_options=optional_options)
-    DEBUG = options.debug 
+    DEBUG = options.verbose 
     check_options(option_parser, options)
     start_time = time()
     option_lines = format_options_as_lines(options)
