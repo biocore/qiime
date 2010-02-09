@@ -375,56 +375,7 @@ def get_counts(lines, label,do_sample, num_categories, dir_path):
 
     return img_data
 
-usage_str = """usage: %prog [options] {-i LIST_OF_TAXONOMY_FILES> \
--l LIST_OF_LABELS}
-
-[] indicates optional input (order unimportant) 
-{} indicates required input (order unimportant) 
-
-Requirements:
-MatPlotLib 0.98.5.2
-Python 2.5
-
-Example: Create pie charts using taxonomy counts for combined samples:
-python make_pie_charts.py -i phylum.txt,class.txt,genus.txt  \
--l phylum,class,genus -o ./webfiles
-
-Create pie charts using taxonomy counts for combined samples and individual \
-samples:
-python make_pie_charts.py -i phylum.txt,class.txt,genus.txt  \
--l phylum,class,genus -o ./webfiles -s
-
-"""
-
-def _make_cmd_parser():
-    """Returns the command-line options"""
-    usage =usage_str
-    version = 'Version: %prog ' +  __version__
     
-    parser = OptionParser(usage=usage_str, version=version)
-    
-    parser.add_option('-i', '--input_files', dest='counts_fname',
-                help='list of files with sample counts by taxonomy [REQUIRED]')
-    parser.add_option('-l', '--labels', dest='labels',
-            help='list of labels for pie chart(i.e. Phylum,Class)[REQUIRED]')
-    parser.add_option('-s', '--sample_flag', dest='do_sample',
-     help='if True pie charts will be created for each sample',default=False,
-                      action = 'store_true')
-    parser.add_option('-n', '--num', dest='num_categories', \
-                help='name of file containing metadata [default: %default]', \
-                      default='20')
-    parser.add_option('-o', '--dir-prefix', dest='dir_path',\
-	           help='directory prefix for all analyses')
-    opts, args = parser.parse_args()
-
-    if not opts.counts_fname:
-        parser.error("A list of input files must be specified")
-
-    if not opts.labels:
-        parser.error("A list of label names cooresponding to files must be \
-                    specified")
-        
-    return opts
 
 def _get_script_dir(script_path):
     """Returns directory current script is running in.
@@ -483,37 +434,11 @@ def create_dir(dir_path,qiime_dir,plot_type):
     return dir_path
 
 
-def _process_prefs(args,options):
-    """opens files as necessary based on prefs"""
-    data = []
-    
-    qiime_dir = _get_script_dir(args)
-    dir_path = options.dir_path
-    if dir_path == './':
-        dir_path = os.getcwd()
-    dir_path = create_dir(dir_path,qiime_dir, "webfiles")
-    do_sample = options.do_sample
-    counts_fname = options.counts_fname
-    labels = options.labels
-    data = [(label,f.strip()) \
-            for f,label in zip(counts_fname.split(","),labels.split(","))]
-    
-    filepath=data[0][1]
-    filename=filepath.strip().rpartition('/')[0]
-    num_categories = int(options.num_categories)
-    action_str = '_do_pie_charts'
-    try:
-        action = eval(action_str)
-    except NameError:
-        action = None
-    #Place this outside try/except so we don't mask NameError in action
-    if action:
-        action(data,dir_path,filename,num_categories, do_sample)
-
-
-def _do_pie_charts(data, dir_path, filename,num_categories, do_sample):
+def make_all_pie_charts(data, dir_path, filename,num_categories, do_sample,args):
     """Generate interactive pie charts in one HTML file"""
     img_data = []
+    qiime_dir = _get_script_dir(args)
+    dir_path = create_dir(dir_path,qiime_dir, "webfiles")
     for label,f_name in data:
         f = open(f_name)
         lines = f.readlines()
@@ -524,9 +449,4 @@ def _do_pie_charts(data, dir_path, filename,num_categories, do_sample):
     outpath = os.path.join(dir_path,'taxonomy_summary_pie_chart.html')
     out_table = '\n'.join(img_data)
     write_html_file(out_table,outpath)
-
-if __name__ == "__main__":
-    from sys import argv, exit
-    options = _make_cmd_parser()
-    _process_prefs(argv[0],options)
 

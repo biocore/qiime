@@ -19,7 +19,7 @@ from cogent.util.unit_test import TestCase, main
 from os import remove, mkdir, removedirs,listdir
 from qiime.make_pie_charts import (make_pie_chart,make_img_name,
                                 get_counts,write_html_file,
-                                  make_HTML_table,get_fracs, _do_pie_charts)
+                                  make_HTML_table,get_fracs, make_all_pie_charts)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
