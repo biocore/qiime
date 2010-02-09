@@ -1,9 +1,9 @@
 #!/usr/bin/env python
-#file make_rarefaction_plots.py
+#file rarefaction_plots.py
 from __future__ import division
-__author__ = "Meg Pirrung and Jesse Stombaugh"
+__author__ = "Meg Pirrung"
 __copyright__ = "Copyright 2009, QIIME"
-__credits__ = ["Meg Pirrung","Jesse Stombaugh"] 
+__credits__ = ["Meg Pirrung"] 
 __license__ = "GPL"
 __version__ = "0.1"
 __maintainer__ = "Meg Pirrung"
@@ -18,13 +18,8 @@ Requirements:
 Python 2.5
 Matplotlib
 Numpy
-
-Example 1: Create rarefaction plot from mapping file and rarefaction data
-Usage: python make_rarefaction_plots.py -m mappingfile.txt -r rare1.txt,rare2.txt
-or
-python make_rarefaction_plots.py -m mappingfile.txt -r rare1.txt,rare2.txt -p SampleID -i png -d 150
-
 """
+
 from sys import argv, exit
 from random import choice, randrange
 from time import strftime
@@ -79,18 +74,7 @@ COLOUR = ['#9933cc', #purple
             '#009999', #cyan
 ]
 
-#MARKERS = ['+' , '*' , ',' , '.' , '1' , '2' , '3' , '4' , '<' , '>' , 'D' , 'H' , '^' , '_' , 'd' , 'h' , 'o' , 'p' , 's' , 'v' , 'x' , '|']
 MARKERS = ['*', 'D' , 'H' , 'd' , 'h' , 'o' , 'p' , 's' , 'x']
-
-'''COLOUR = ['b', #  : blue
-            'r', #  : green
-            'g', #  : red
-            'y', #  : cyan
-            'm', #  : magenta
-            'c', #  : yellow
-            'k' #  : black 
-            ]'''
-err = []
 graphNames = []
 sampleIDs = []
 
@@ -219,22 +203,6 @@ def get_overall_averages(rare_mat, sampleIDs):
         overall_ave[s] = mean(array(rare_mat[s]))
     return overall_ave
 
-# def plot_rarefaction_noave(rare_mat, xaxis, sampleIDs, mapping, mapping_category):
-#     plt.gcf().set_size_inches(8,6)    
-#     plt.grid(color='gray', linestyle='-')
-#     
-#     yseries = []
-#     for k in rare_mat.keys():
-#         yseries.append([float(v) for v in rare_mat[k] if v != 'NA' and v != 0])
-#         
-#     for s in yseries:
-#         plt.plot(xaxis[:len(s)], s)
-# 
-#     plt.grid(color='gray', linestyle='-')
-#     ax = plt.gca()
-#     ax.set_xlabel('Sequences Per Sample')
-#     return plt
-
 def plot_rarefaction(rare_mat, xaxis, sampleIDs, mapping, mapping_category):
     plt.gcf().set_size_inches(10,6)   
     plt.grid(color='gray', linestyle='-')
@@ -278,188 +246,49 @@ def save_plot(plot, filenm, rtype, title, itype, res, xmax, ymax, ops, cols, sym
             i += 1
         plt.legend(markerscale=.3, ncol=c)
     plot.savefig(filenm +'_legend.'+itype, format=itype, dpi=res)
-
-def _make_cmd_parser():
-    parser = OptionParser(usage="Usage: make_rarefaction_plots.py -m <mapping file> \
-    -r <rarefaction data file> -p <command line preferences OR preferences file> \
-    -i <extension type for image output> -d <resolution for output image> -o <output path>")
-
-    parser.add_option("-q", "--quiet",
-                      action="store_false", dest="verbose", default=True,
-                      help="don't print status messages to stdout")
-    parser.add_option('-m', '--map', \
-        help='name of mapping file [REQUIRED]')
-    parser.add_option('-r', '--rarefaction', \
-        help='name of rarefaction file [REQUIRED]')
-    parser.add_option('-p', '--prefs', \
-        help='name of columns to make rarefaction graphs of, comma delimited no spaces. Use \'ALL\' command to make graphs of all metadata columns. [default: %default]', default='ALL')
-    parser.add_option('-i', '--imagetype', \
-        help='extension for image type choose from (jpg, gif, png, svg, pdf). [default: %default]', default='png')
-    #parser.add_option('-p', '--prefs', \
-    #    help='name of preferences file')
-    parser.add_option('-d', '--resolution', \
-        help='output image resolution, [default: %default]', default="75")
-    parser.add_option('-o', '--dir_path',\
-        help='directory prefix for all analyses [default: %default]',default='.')
-    options, args = parser.parse_args()
-    return options
-
-def get_map(options, data):
-    """Opens and returns mapping file for parsing"""
-    try:
-        #print options.map
-        data['map'] = open(options.map, 'U').readlines()
-        #print data['map']
-        return data['map']
-    except (TypeError, IOError):
-        print 'Mapping file required for this analysis'
-        exit(0)
-
-def get_rarefactions(options, data):
-    """Parses and then tries to open rarefaction files to make sure they exist"""
-    try:
-        #print options.rarefaction
-        rarenames = options.rarefaction.split(',')
-        rares = dict()
-        for r in rarenames:
-            rares[r] = open(r, 'U').readlines()
-        return rares
-    except (TypeError, IOError):
-        print 'Rarefaction file required for this analysis'
-        exit(0)
-
-def get_prefs(options, data):
-    """Opens and returns prefs file for parsing"""
-    try:
-        if options.prefs.split(',')[0] == 'ALL':
-            return options.prefs.split(',')[0]
-        ps = options.prefs.split(',')
-        for p in ps:
-            data['map'][0][0].index(p)
-        return ps
-    except (ValueError, TypeError, IOError):
-        print "Supplied prefs are not found in mapping file, please check spelling and syntax."
-        exit(0)
-
-def get_img_extension(options, data):
-    """Gets type of extension to save images as."""
-    imgtypes = ['jpg','gif','png','svg','pdf']
-    try:    
-        if options.imagetype not in imgtypes:
-            print "Supplied extension not supported, using .png instead."
-            data['imagetype'] = 'png'
-        else:
-            data['imagetype'] = options.imagetype
-        return data['imagetype']
-    except (TypeError, IOError):
-        return None
-        
-def get_resolution(options, data):
-    """Gets image resolution."""
-    try:    
-        try:
-            data['resolution'] = int(options.resolution)
-        except(ValueError):
-            print "Inavlid resolution, proceeding with 75dpi."
-            data['resolution'] = 75
-        return data['resolution']
-    except (TypeError, IOError):
-        return None
-
-def _get_script_dir(script_path):
-    """Returns directory current script is running in.
-    """
-    if '/' in script_path:
-        script_dir = script_path.rsplit('/',1)[0]+'/'
-    else:
-        script_dir = './'
-    return script_dir
-
-def _process_prefs(options):    
-    dir_path = options.dir_path
-    dir_path = os.path.join(dir_path,'rarefaction_graphs')
-
-    alphabet = "ABCDEFGHIJKLMNOPQRSTUZWXYZ"
-    alphabet += alphabet.lower()
-    alphabet += "01234567890"
-    file_path=util.get_qiime_project_dir().split('/')
-    qiime_dir = _get_script_dir(argv[0])
-    data_file_path=''.join([choice(alphabet) for i in range(10)])
-    data_file_dir_path = os.path.join(dir_path,data_file_path)
-    data = {}
     
-    data['map'] = parse.parse_map(get_map(options,data), return_header=True, strip_quotes=True)
-    data['map'][0][0] = [h.strip('#').strip(' ') for h in data['map'][0][0]]
-    data['rarefactions'] = get_rarefactions(options,data)
-    data['prefs'] = get_prefs(options, data)
-    data['output_path'] = data_file_dir_path
-    data['imagetype'] = get_img_extension(options, data)
-    data['resolution'] = get_resolution(options, data)
-    return data, qiime_dir
-    
-def make_plots(data):
+def make_plots(prefs):
     rarelines = []
-    
-    for r in data['rarefactions'].keys():
-        file_path = os.path.join(data['output_path'],splitext(split(r)[1])[0])
+
+    for r in prefs['rarefactions']:
+        file_path = os.path.join(prefs['output_path'],splitext(split(r)[1])[0])
         os.makedirs(file_path)
-        rare_mat_trans, seqs_per_samp, sampleIDs = parse_rarefaction(data['rarefactions'][r])
-        
+        rare_mat_trans, seqs_per_samp, sampleIDs = parse_rarefaction(prefs['rarefactions'][r])
+
         xaxisvals = [float(x) for x in set(seqs_per_samp)]
         xaxisvals.sort()
-        
+
         rare_mat_ave = ave_seqs_per_sample(rare_mat_trans, seqs_per_samp, sampleIDs)
         xmax = max(xaxisvals) + (xaxisvals[len(xaxisvals)-1] - xaxisvals[len(xaxisvals)-2])
         yoffset = 5 #parameterize?
         ymax = max([max(s) for s in rare_mat_ave.values()]) + yoffset
         overall_average = get_overall_averages(rare_mat_ave, sampleIDs)
-        
+
         rarelines.append("#" + r + '\n')
         for s in sampleIDs:
             rarelines.append('%f'%overall_average[s] + '\n')
-
-        if data['prefs'] == 'ALL':
-            for p in data['map'][0][0]: #headerline
-                is_max, l = is_max_category_ops(data['map'], p)
-                if l == 1 or is_max:
-                    continue
-                pr,ops,cols,syms = plot_rarefaction(rare_mat_ave, xaxisvals, sampleIDs, data['map'], p)
-                filenm = file_path + '/'+ p
-                graphNames.append(splitext(split(r)[1])[0] + '/'+p+"."+data['imagetype'])
-                save_plot(pr, filenm, r, splitext(split(r)[1])[0] +':'+ p, data['imagetype'], data['resolution'], xmax, ymax, ops, cols, syms)
-                plt.clf()
-        else:
-            for p in data['prefs']:
-                is_max, l = is_max_category_ops(data['map'], p)
-                if l == 1 or is_max:
-                    continue
-                pr,ops,cols,syms = plot_rarefaction(rare_mat_ave, xaxisvals, sampleIDs, data['map'], p)
-                filenm = file_path + '/'+ p
-                graphNames.append(splitext(split(r)[1])[0] + '/'+p+"."+data['imagetype'])
-                save_plot(pr, filenm, r, splitext(split(r)[1])[0] +': '+ p, data['imagetype'], data['resolution'], xmax, ymax, ops, cols, syms)
-                plt.clf()
             
+        for p in prefs['categories']:
+            pr,ops,cols,syms = plot_rarefaction(rare_mat_ave, xaxisvals, sampleIDs, prefs['map'], p)
+            filenm = file_path + '/'+ p
+            graphNames.append(splitext(split(r)[1])[0] + '/'+p+"."+prefs['imagetype'])
+            save_plot(pr, filenm, r, splitext(split(r)[1])[0] +': '+ p, prefs['imagetype'], prefs['resolution'], xmax, ymax, ops, cols, syms)
+            plt.clf()
+
     tablelines = ['#SampleIDs\n']
     tablelines.extend([s + '\n' for s in sampleIDs])
     tablelines.extend(rarelines)
     return tablelines
     
-def make_output_files(data, lines, qiime_dir):
-    open(data['output_path'] + "/graphNames.txt",'w').writelines([f +'\n' for f in graphNames])
-    open(data['output_path'] + "/rarefactionTable.txt",'w').writelines(lines)
-    
-    os.makedirs(data['output_path']+"/js")
-    os.makedirs(data['output_path']+"/css")
-    shutil.copyfile(qiime_dir+"/rarefaction_plots.html", data['output_path']+"/rarefaction_plots.html")
-    shutil.copyfile(qiime_dir+"/js/rarefaction_plots.js", data['output_path']+"/js/rarefaction_plots.js")
-    shutil.copyfile(qiime_dir+"/js/jquery.js", data['output_path']+"/js/jquery.js")
-    shutil.copyfile(qiime_dir+"/js/jquery.dataTables.min.js", data['output_path']+"/js/jquery.dataTables.min.js")
-    shutil.copyfile(qiime_dir+"/css/rarefaction_plots.css", data['output_path']+"/css/rarefaction_plots.css")
-    shutil.copyfile(qiime_dir+"/qiime_header.png", data['output_path']+"/qiime_header.png")
-    
-if __name__ == '__main__':
-    from sys import argv, exit
-    options = _make_cmd_parser()
-    file_data, parent_directory = _process_prefs(options)
-    outputlines = make_plots(file_data)
-    make_output_files(file_data, outputlines, parent_directory)
+def make_output_files(prefs, lines, qiime_dir):
+    open(prefs['output_path'] + "/graphNames.txt",'w').writelines([f +'\n' for f in graphNames])
+    open(prefs['output_path'] + "/rarefactionTable.txt",'w').writelines(lines)
+
+    os.makedirs(prefs['output_path']+"/js")
+    os.makedirs(prefs['output_path']+"/css")
+    shutil.copyfile(qiime_dir+"/qiime/rarefaction_plots.html", prefs['output_path']+"/rarefaction_plots.html")
+    shutil.copyfile(qiime_dir+"/qiime/js/rarefaction_plots.js", prefs['output_path']+"/js/rarefaction_plots.js")
+    shutil.copyfile(qiime_dir+"/qiime/js/jquery.js", prefs['output_path']+"/js/jquery.js")
+    shutil.copyfile(qiime_dir+"/qiime/js/jquery.dataTables.min.js", prefs['output_path']+"/js/jquery.dataTables.min.js")
+    shutil.copyfile(qiime_dir+"/qiime/css/rarefaction_plots.css", prefs['output_path']+"/css/rarefaction_plots.css")
+    shutil.copyfile(qiime_dir+"/qiime/qiime_header.png", prefs['output_path']+"/qiime_header.png")
