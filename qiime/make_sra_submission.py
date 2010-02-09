@@ -2,11 +2,10 @@
 from string import strip
 from collections import defaultdict
 from hashlib import md5
-from optparse import OptionParser
 from os.path import splitext, join
 from sys import stderr
 
-"""This script makes the submission xml files for study and experiment.
+"""This script makes the submission xml files for SRA (study, experiment, etc.).
 
 Assumes simple tab-delimited text input (allowing examples/comments; produces
 xml output.
@@ -447,60 +446,6 @@ def make_run_and_experiment(experiment_lines, sff_dir):
             experiments.append(experiment_wrapper % field_dict)
     return experiment_set_wrapper % ('\n'+'\n'.join(experiments)+'\n'), run_set_wrapper % ('\n'+'\n'.join(runs)+'\n')
 
-usage_str = """usage: %prog [options]
-
-[] indicates optional input (order unimportant)
-
-Example usage:
- Read the sample data from sample.txt, the study data from study.txt,
- and the submission data from submission.txt. Write out the corresponding
- XML files.
- 
- python make_study_and_sample_xml.py -a sample.txt -A sample_template.xml -t study.txt -T study_template.xml -u submission.txt -U submission_template.xml
-
- Produces files study.xml, submission.xml, sample.xml (based on filenames of
- the .txt files).
-"""
-
-def parse_command_line_parameters(argv=None):
-    """ Parses command line arguments """
-    usage = usage_str
-    version = 'Version: %prog ' + __version__
-    parser = OptionParser(usage=usage, version=version)
-
-    parser.add_option('-a','--input_sample_fp',\
-        help='the tab-delimited text file with info about samples')
-
-    parser.add_option('-A','--template_sample_fp',\
-        help='the template file for samples [default: %default]')
-
-    parser.add_option('-t','--input_study_fp',\
-        help='the tab-delimited text file with info about the study')
-
-    parser.add_option('-T','--template_study_fp',\
-        help='the template file for the study [default: %default]')
-
-    parser.add_option('-u','--input_submission_fp',\
-        help='the tab-delimited text file with info about the submission')
-
-    parser.add_option('-U','--template_submission_fp',\
-        help='the template file for the submission [default: %default]')
-
-    parser.add_option('-e', '--input_experiment_fp', \
-        help ='the tab-delimited text file with info about the experiment')
-
-    parser.add_option('-s', '--sff_dir', \
-        help = 'the directory containing the demultiplexed sff files: 1 dir per run')
-
-    # Set default values here if they should be other than None
-    parser.set_defaults(template_sample_fp='sample_template.xml', 
-        template_study_fp='study_template.xml', 
-        template_submission_fp='submission_template.xml')
-
-    opts,args = parser.parse_args(argv)
-
-    return opts,args
-
 def write_xml_generic(infile_path, template_path, xml_f):
     """Writes generic xml based on contents of infilepath, returns filename."""
     template = open(template_path, 'U').read()
@@ -511,48 +456,4 @@ def write_xml_generic(infile_path, template_path, xml_f):
     outfile.write(result)
     outfile.close()
     return outfile_path
-
-
-if __name__ == '__main__':
-    #if run from the command-line, produce the appropriate xml files
-    opts, args = parse_command_line_parameters()
-    docnames = {}
-    if opts.input_study_fp:
-        docnames['study'] = write_xml_generic(opts.input_study_fp,
-            opts.template_study_fp, make_study)
-
-    if opts.input_sample_fp:
-        docnames['sample'] = write_xml_generic(opts.input_sample_fp,
-            opts.template_sample_fp, make_sample)
-
-    if opts.input_experiment_fp:
-        #in this case, we need to need to also get the sff dir
-        if not opts.sff_dir:
-            raise IOError, "Must specify an sff dir if making an experiment."
-        base_name, ext = splitext(opts.input_experiment_fp)
-        base_name = base_name.split('experiment')[-1]
-        if base_name:
-            base_name += '_'
-        run_path = base_name + 'run.xml'
-        run_file = open(run_path, 'w')
-        experiment_path = base_name + 'experiment.xml'
-        experiment_file = open(experiment_path, 'w')
-        experiment_xml, run_xml = make_run_and_experiment(
-            open(opts.input_experiment_fp, 'U'), opts.sff_dir)
-        run_file.write(run_xml)
-        experiment_file.write(experiment_xml)
-        run_file.close()
-        experiment_file.close()
-        docnames['run'] = run_path
-        docnames['experiment'] = experiment_path
-
-    if opts.input_submission_fp:
-        submission_template = open(opts.template_submission_fp, 'U').read()
-        base_name, ext = splitext(opts.input_submission_fp)
-        outfilename = base_name + '.xml'
-        outfile = open(outfilename, 'w')
-        outfile.write(make_submission(open(opts.input_submission_fp, 'U'), 
-            submission_template, docnames))
-        outfile.close()
-
 

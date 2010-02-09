@@ -10,8 +10,7 @@ from qiime.make_sra_submission import (
     md5_path, safe_for_xml, read_tabular_data, rows_data_as_dicts,
     make_study_links, twocol_data_to_dict, make_study, make_submission,
     make_sample, trim_quotes, defaultdict, group_lines_by_field,
-    parse_command_line_parameters, write_xml_generic,
-    make_run_and_experiment)
+    write_xml_generic, make_run_and_experiment)
 from qiime.util import get_qiime_project_dir
 
 """Tests of the make_study_and_experiment.py file.
@@ -165,21 +164,6 @@ aa\tbb\tcc
             ('y y', [['x x', 'y y', 'a'], ['wx ', 'y y', 'c']]),
             ]
         self.assertEqual(observed, expected)
-
-    def test_parse_command_line_parameters(self):
-        argv = [
-            '-a', 'sample.tsv',
-            '-t', 'study.tsv',
-            '-u', 'submission.tsv',
-            '-e', 'experiment.tsv',
-            '-s', 'sffs/',
-            ]
-        opts, args = parse_command_line_parameters(argv)
-        self.assertEqual(opts.input_sample_fp, 'sample.tsv')
-        self.assertEqual(opts.input_study_fp, 'study.tsv')
-        self.assertEqual(opts.input_submission_fp, 'submission.tsv')
-        self.assertEqual(opts.input_experiment_fp, 'experiment.tsv')
-        self.assertEqual(opts.sff_dir, 'sffs/')
 
     def test_write_xml_generic(self):
         input_file = tempfile.NamedTemporaryFile()
