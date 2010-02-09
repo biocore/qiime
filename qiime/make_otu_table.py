@@ -19,11 +19,10 @@ from sys import argv, exit, stderr, stdout
 from collections import defaultdict
 from string import strip
 from numpy import array
-from optparse import OptionParser
 from cogent.util.misc import flatten, InverseDict
 from numpy import zeros
 from qiime.format import format_otu_table
-from qiime.parse import fields_to_dict
+
 
 def libs_from_seqids(seq_ids, delim='_'):
     """Returns set of libraries."""
@@ -64,41 +63,3 @@ def make_otu_map(otu_to_seqid, otu_to_taxonomy=None, delim='_'):
         taxonomy=None
 
     return format_otu_table(all_libs, all_otus, table, taxonomy)
-
-def make_cmd_parser():
-    """Returns command-line options"""
-    parser = OptionParser()
-    parser.add_option('-i', '--input_otu_fname', dest='otu_fname',
-        help='name of otu file [Required]')
-    parser.add_option('-t', '--taxonomy', dest='taxonomy_fname',
-        help='name of taxonomy file', default=None)
-    parser.add_option('-o', '--output_fname', dest='output_fname',
-        help='name of output file [Default is stdout]')
-    options, args = parser.parse_args()
-    return options, args
-
-if __name__ == "__main__":
-    options, args = make_cmd_parser()
-    if options.output_fname:
-        outfile = open(options.output_fname, 'w')
-    else:
-        outfile = stdout
-    if not options.taxonomy_fname:
-        otu_to_taxonomy = None
-    else:
-        res = {}
-        infile = open(options.taxonomy_fname,'U')
-        for line in infile:
-            fields = line.split('\t')
-            # typically this looks like: 3 SAM1_32 \t Root,Bacteria,Fi... \t 0.9
-            # implying otu 3; sample 1, seq 32 (the representative of otu 3);
-            # followed by the taxonomy and confidence
-            if not len(fields) == 3:
-                continue
-            otu = fields[0].split(' ')[0]
-            res[otu] = fields[1]
-        otu_to_taxonomy = res
-
-    otu_to_seqid = fields_to_dict(open(options.otu_fname, 'U'))
-
-    outfile.write(make_otu_map(otu_to_seqid, otu_to_taxonomy))
