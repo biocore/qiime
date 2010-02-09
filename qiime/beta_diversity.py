@@ -30,7 +30,6 @@ from StringIO import StringIO
 from qiime.util import FunctionWithParams, TreeMissingError, OtuMissingError
 from qiime.parse import parse_otus
 from qiime.format import format_distance_matrix
-from optparse import OptionParser
 import cogent.maths.distance_transform #avoid hard-coding metrics
 import qiime.beta_metrics
 import qiime.beta_diversity
@@ -242,86 +241,4 @@ def multiple_file_beta(options, args):
             #         if options.tree_path:
             #             beta_div_cmd += ' -t ' + options.tree_path
             #         os.system(beta_div_cmd)
-        
-usage_str = """ %prog [options] {-i INPUT_PATH -o OUTPUT_DIR -m METRICS} or {-s}
 
-[] indicates optional input (order unimportant)
-{} indicates required input (order unimportant)
-
-Example:
-
-python %prog -i otu_table.txt -m bray_curtis,unweighted_unifrac -o outdir -t repr_set.tre
-
-this creates two files: outdir/bray_curtis_otu_table.txt etc.
-
-or batch example: 
-python %prog -i beta_rare_dir -m bray_curtis,unweighted_unifrac -o outdir -t repr_set.tre
-processes every file in beta_rare_dir, and creates a file "metric_" + infilename
-in results folder
-
-use -s to see metric options.  (prepending dist_ to most names works as well)
-Output will be a sample by sample distance matrix. 
-"""
-def parse_command_line_parameters():
-    """returns command-line options"""
-
-    if len(sys.argv) == 1:
-        sys.argv.append('-h')
-    usage = usage_str
-    version = '%prog ' + str(__version__)
-    parser = OptionParser(usage=usage, version=version)
-
-    parser.add_option('-i', '--input_path',
-        help='input path [REQUIRED]')
-        
-    parser.add_option('-o', '--output_dir',
-        help='output directory [REQUIRED]')
-
-    parser.add_option('-m', '--metrics',
-        help='metrics to use, comma delimited if >1 metric, '+\
-            'no spaces [REQUIRED]')  
-        
-    parser.add_option('-s', '--show_metrics', action='store_true', 
-        dest="show_metrics",
-        help='show available beta diversity metrics and quit')
-
-    parser.add_option('-t', '--tree_path', default=None,
-        help='path to newick tree file, required for phylogenetic metrics'+\
-        ' [default: %default]')  
-
-    opts, args = parser.parse_args()
-        
-    if len(args) != 0:
-        parser.error("positional argument detected.  make sure all"+\
-         ' parameters are identified.' +\
-         '\ne.g.: include the \"-m\" in \"-m MINIMUM_LENGTH\"')
-         
-    required_options = ['input_path','output_dir']
-    if not opts.show_metrics:
-        for option in required_options:
-            if eval('opts.%s' % option) == None:
-                parser.error('Required option --%s omitted.' % option)
-
-    return opts, args
-    
-if __name__ == '__main__':
-    options, args = parse_command_line_parameters()
-    if options.show_metrics:
-        print("Known metrics are: %s\n" \
-                % (', '.join(list_known_metrics()),))
-        exit(0)
-    if options.output_dir.endswith('.txt'):
-        stderr.write('output must be a directory, files will be named'+\
-            ' automatically.  And we refuse to make .txt directories\n')
-        exit(1)
-    try: 
-        os.makedirs(options.output_dir)
-    except OSError:
-        pass # hopefully dir already exists 
-    if os.path.isdir(options.input_path):
-        multiple_file_beta(options, args)
-    elif os.path.isfile(options.input_path):
-        single_file_beta(options.input_path, options.metrics, options.tree_path, options.output_dir)
-    else:
-        print("io error, input path not valid.  Does it exist?")
-        exit(1)
