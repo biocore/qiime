@@ -27,7 +27,7 @@ script_usage = """Create a representative set fasta file at seqs.fasta_rep_set.f
   sequences will be sorted by OTU identifier (default, overwrite with -s). No 
   log file will be written (defualt, overwrite with -l).
  
- python ~/code/Qiime/trunk/qiime/pick_rep_set.py -i otus.txt -f seqs.fasta
+ pick_rep_set.py -i otus.txt -f seqs.fasta
 """
 
 required_options = [\
