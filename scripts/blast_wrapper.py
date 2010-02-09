@@ -22,7 +22,7 @@ Once that function has been integrated into qiime as the primary blast interface
 it will move to PyCogent. An expanded version of this command line interface may \
 replace the script functionality of cogent.app.blast at that point."""
 
-script_usage = """Usage: %prog [options] -i INPUT_FASTA_FP -r REFSEQS_FP
+script_usage = """Usage: %prog [options] {-i INPUT_FASTA_FP -r REFSEQS_FP}
 
 Example usage:
 Blast all sequences in inseqs.fasta (-i) against a BLAST db constructed \
