@@ -11,53 +11,30 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Pre-release"
 
-from optparse import OptionParser
-from qiime.util import compute_seqs_per_library_stats
+from optparse import make_option
+from qiime.util import (compute_seqs_per_library_stats, 
+    parse_command_line_parameters)
 
-usage_str = """usage: %prog [options] {-i INPUT_OTU_TABLE}
+script_description = """Given an otu table compute and print the (min, max, median, mean) number of seqs per library."""
 
-[] indicates optional input (order unimportant)
-{} indicates required input (order unimportant)
+script_usage = """Example usage: calculate stats on OTU table specified by otu_Table.txt
 
-Given an otu table compute and print the (min, max, median, mean) 
- number of seqs per library.
-
-Example usage:
-
- python Qiime/scripts/per_library_stats.py -i otu_table.txt
-
-
+per_library_stats.py -i otu_table.txt
 """
 
-def parse_command_line_parameters():
-    """ Parses command line arguments """
-    usage = usage_str
-    version = 'Version: %prog ' + __version__
-    parser = OptionParser(usage=usage, version=version)
+required_options = [make_option('-i','--input_otu_table',\
+         help='the input otu table')
+]
 
-    # A binary 'verbose' flag
-    parser.add_option('-v','--verbose',action='store_true',\
-        dest='verbose',help='Print information during execution -- '+\
-        'useful for debugging [default: %default]')
+optional_options = []
 
-    parser.add_option('-i','--input_otu_table',\
-         help='the input otu table [REQUIRED]')
-
-    # Set default values here if they should be other than None
-    parser.set_defaults(verbose=False)
-
-    opts,args = parser.parse_args()
-    required_options = ['input_otu_table']
-    
-    for option in required_options:
-        if eval('opts.%s' % option) == None:
-            parser.error('Required option --%s omitted.' % option) 
-
-    return opts,args
-
-if __name__ == "__main__":
-    opts,args = parse_command_line_parameters()
-    verbose = opts.verbose
+def main():
+    option_parser, opts,args = parse_command_line_parameters(
+        script_description=script_description,
+        script_usage=script_usage,
+        version=__version__,
+        required_options=required_options,
+        optional_options=optional_options)
     
     min_counts, max_counts, median_counts, mean_counts, counts_per_sample =\
      compute_seqs_per_library_stats(open(opts.input_otu_table,'U'))
@@ -72,6 +49,5 @@ if __name__ == "__main__":
     for k,v in counts_per_sample.items():
         print ' %s: %s' % (k,str(v))
     
-    
-    
-    
+if __name__ == "__main__":
+    main()
