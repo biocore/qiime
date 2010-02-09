@@ -26,7 +26,9 @@ Helpful Links
 .. toctree::
    :maxdepth: 1
 
-`Tutorial <http://qiime.sourceforge.net/tutorial/Qiime_Tutorial.pdf>`_
+   install.rst
+   tutorial.rst
+   documentation.rst
 
 Getting QIIME: Stable pre-release version
 =========================================
