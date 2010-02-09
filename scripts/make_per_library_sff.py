@@ -14,6 +14,8 @@ __status__ = "Pre-release"
 
 from qiime.util import parse_command_line_parameters
 from optparse import make_option
+from os import walk, system
+from os.path import splitext, join
 
 script_description = """Makes per-library sff files from id lists."""
 
