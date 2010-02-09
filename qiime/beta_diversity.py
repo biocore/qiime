@@ -34,7 +34,6 @@ import cogent.maths.distance_transform #avoid hard-coding metrics
 import qiime.beta_metrics
 import qiime.beta_diversity
 from sys import exit, stderr
-import sys
 import os.path
 
 def get_nonphylogenetic_metric(name):
@@ -169,7 +168,13 @@ class BetaDiversityCalc(FunctionWithParams):
 def single_file_beta(input_path, metrics, tree_path, output_dir):
     """ does beta diversity calc on a single otu table
 
-    uses name in options.metrics to name output beta diversity files"""
+    uses name in metrics to name output beta diversity files
+    inputs:
+     input_path (str)
+     metrics (str, comma delimited if more than 1 metric)
+     tree_path (str)
+     output_dir (str)
+    """
     metrics_list = metrics.split(',')
     for metric in metrics_list:
         outfilepath = os.path.join(output_dir, metric + '_' +
@@ -198,22 +203,25 @@ def single_file_beta(input_path, metrics, tree_path, output_dir):
             stderr.write(str(e)+'\n')
             exit(1)
 
-def multiple_file_beta(options, args):
+def multiple_file_beta(input_path, output_dir, metrics, tree_path):
     """ runs beta diversity for each input file in the input directory 
     
-    performs minimal error checking on input args, then calls os.system
-    to execute single_file_beta for each file in the input directory
+    performs minimal error checking on input args, then calls single_file_beta
+    for each file in the input directory
 
-    this is to facilitate future task farming - replace os.system with 
-    write to file, each command is independant
+    inputs:
+     input_path (str)
+     metrics (str, comma delimited if more than 1 metric)
+     tree_path (str)
+     output_dir (str)
 
     """
-    metrics_list = options.metrics.split(',')
+    metrics_list = metrics.split(',')
     #beta_script = qiime.beta_diversity.__file__ # removed below
-    file_names = os.listdir(options.input_path)
+    file_names = os.listdir(input_path)
     file_names = [fname for fname in file_names if not fname.startswith('.')]
     try:
-        os.makedirs(options.output_dir)
+        os.makedirs(output_dir)
     except OSError:
         pass # hopefully dir exists
     for metric in metrics_list:
@@ -222,7 +230,7 @@ def multiple_file_beta(options, args):
         except AttributeError:
             try:
                 metric_f = get_phylogenetic_metric(metric)
-                if not options.tree_path:
+                if not tree_path:
                     raise ValueError("a tree file is required for " + metric)
             except AttributeError:
                 raise ValueError(
@@ -230,8 +238,8 @@ def multiple_file_beta(options, args):
                     % (metric, ', '.join(list_known_metrics())))
     
     for fname in file_names:
-        single_file_beta(os.path.join(options.input_path, fname),
-            options.metrics, options.tree_path, options.output_dir)
+        single_file_beta(os.path.join(input_path, fname),
+            metrics, tree_path, output_dir)
         
         ### from old version, designed for future parallelization
             # outfilepath = options.output_dir

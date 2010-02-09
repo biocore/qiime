@@ -91,7 +91,8 @@ def main():
     except OSError:
         pass # hopefully dir already exists 
     if os.path.isdir(opts.input_path):
-        multiple_file_beta(opts, args)
+        multiple_file_beta(opts.input_path, opts.output_dir, opts.metrics, 
+            opts.tree_path)
     elif os.path.isfile(opts.input_path):
         single_file_beta(opts.input_path, opts.metrics, opts.tree_path, 
           opts.output_dir)
