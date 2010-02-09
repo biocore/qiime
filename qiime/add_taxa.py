@@ -11,8 +11,7 @@ __status__ = "Pre-release"
 
 """Contains code for adding taxa to OTU table that lacks them.
 """
-from sys import stdout, stderr
-from optparse import OptionParser
+from sys import stdout
 from string import strip
 from qiime.parse import fields_to_dict
 
@@ -22,59 +21,34 @@ def fix_taxonomy_delimiters(taxonomy):
     for k, vals in taxonomy.iteritems():
         v = vals[0]
         if ';' in v:
-            result[k] = v
+            result[k] = v.replace('"','')
         else:
             result[k] = v.replace(',',';').replace('"','')
     return result
 
-def parse_command_line_parameters():
-    """ Parses command line arguments """
-    usage =\
-     'usage: %prog [options]'
-    version = 'Version: %prog ' +  __version__
-    parser = OptionParser(usage=usage, version=version)
 
-    parser.add_option('-O','--otu_file',action='store',\
-          type='string',dest='otu_fp',help='Path to read '+\
-          'otu file [required]')
-           
-    parser.add_option('-T','--taxonomy_file',action='store',\
-          type='string',dest='taxon_fp',help='Path to read '+\
-          'taxonomy file [required]')
-           
-    parser.add_option('-o','--output_file',action='store',\
-          type='string',dest='out_fp',help='Path to write '+\
-          'output file')
-
-    parser.add_option('-I','--id_map_file',action='store',\
-          type='string',dest='id_map_fp',help='Path to read '+\
-          'seq id to otu map file')
-
-    opts,args = parser.parse_args()
-
-    return opts, args
-if __name__ == "__main__":
-    opts,args = parse_command_line_parameters()
-    output_fname = opts.out_fp
-    #Note: the OTU table is often too large to read into memory, hence
-    #working on file directly.
-    if output_fname:
-        outfile = open(output_fname, 'w')
-    else:
-        outfile = stdout
-    
-    taxonomy = fields_to_dict(open(opts.taxon_fp, 'U'))
+def rewrite_otu_table_with_taxonomy(taxon_lines, otu_lines, id_map_lines=None,
+    outfile=stdout):
+    """Rewrites OTU table including taxonomy."""
+    taxonomy = fields_to_dict(taxon_lines)
+    #sometimes have extra fields after OTU id
+    new_taxonomy = {}
+    for k, v in taxonomy.items():
+        new_taxonomy[k.split()[0]] = v
+    taxonomy = new_taxonomy
     taxonomy = fix_taxonomy_delimiters(taxonomy)
 
-    if opts.id_map_fp:
-        id_map = dict([map(strip, line.split('\t')) for line in 
-            open(opts.id_map_fp, 'U')])
+    if id_map_lines:
+        id_map = dict([map(strip, line.split('\t')) for line in
+            id_map_lines])
         new_taxonomy = dict([(id_map[k], v) for k, v in taxonomy.items()
             if k in id_map])
         assert new_taxonomy != taxonomy
         taxonomy = new_taxonomy
 
-    for line in open(opts.otu_fp, 'U'):
+    for line in otu_lines:
+        if not line.endswith('\n'):
+            line += '\n'
         if line.startswith('#OTU ID'):
             outfile.write(line[:-1]+'\tConsensus Lineage\n')
         elif line.startswith('#'):
@@ -83,3 +57,4 @@ if __name__ == "__main__":
             id_, rest = line.split('\t', 1)
             t = taxonomy.get(id_, 'None')
             outfile.write(line[:-1]+'\t'+t+'\n')
+
