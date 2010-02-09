@@ -204,61 +204,6 @@ class GenericRepSetPicker(RepSetPicker):
         # written to file)
         return result
 
-usage_str = """usage: %prog [options] {-i OTU_FILEPATH -f FASTA_FILEPATH}
-
-[] indicates optional input (order unimportant) 
-{} indicates required input (order unimportant) 
-
-Example usage:
- Create a representative set fasta file at seqs.fasta_rep_set.fasta 
-  (default, overwrite with -o) using the OTU file otus.txt (-i) and the 
-  sequence file seqs.fasta (-f). Representative sequences will be chosen as 
-  those most abundant in seqs.fasta (default, overwrite with -m). Output 
-  sequences will be sorted by OTU identifier (default, overwrite with -s). No 
-  log file will be written (defualt, overwrite with -l).
- 
- python ~/code/Qiime/trunk/qiime/pick_rep_set.py -i otus.txt -f seqs.fasta
- """
-
-def parse_command_line_parameters():
-    """ Parses command line arguments """
-    usage = usage_str
-    version = 'Version: %prog ' +  __version__
-    parser = OptionParser(usage=usage, version=version)
-
-    parser.add_option('-i','--input_file',action='store',\
-          type='string',dest='otu_fp',help='Path to read '+\
-          'input otu file [REQUIRED]')
-          
-    parser.add_option('-f','--fasta_file',action='store',\
-          type='string',dest='fasta_fp',help='Path to read '+\
-          'fasta file [REQUIRED]')
-          
-    rep_set_picking_method_choices = rep_set_picking_methods.keys()
-    parser.add_option('-m','--rep_set_picking_method',\
-          type='choice',dest='rep_set_picking_method',
-          help='Method for picking'+\
-          ' representative sets [default: %default]',\
-          choices=rep_set_picking_method_choices)
-          
-    parser.add_option('-o','--result_fp',action='store',\
-          type='string',dest='result_fp',help='Path to store '+\
-          'result file [default: <input_sequences_filepath>_rep_set.fasta]')
-          
-    parser.add_option('-l','--log_fp',action='store',\
-          type='string',dest='log_fp',help='Path to store '+\
-          'log file [default: No log file created.]')
-
-    parser.add_option('-s', '--sort_by', action='store',\
-            type='string',dest='sort_by', default='otu',
-            help = 'sort by otu or seq_id [default: %default]')
-           
-    parser.set_defaults(rep_set_picking_method='most_abundant')
-
-    opts,args = parser.parse_args()
-
-    return opts, args
-
 rep_set_picking_methods = {
     'most_abundant':GenericRepSetPicker(params={'Algorithm':
             'most_abundant: picks most abundant sequence in OTU',
@@ -273,24 +218,3 @@ rep_set_picking_methods = {
             'longest:picks longest seq from each OTU',
             'ChoiceF':longest_id}),
 }
-
-if __name__ == "__main__":
-    opts,args = parse_command_line_parameters()
-    #verbose = opts.verbose
- 
-    rep_set_picker =\
-     rep_set_picking_methods[opts.rep_set_picking_method]
-     
-    input_seqs_filepath = opts.fasta_fp
-
-    input_otu_filepath = opts.otu_fp
-   
-    result_path = opts.result_fp or\
-     '%s_rep_set.fasta' % input_seqs_filepath
-     
-    log_path = opts.log_fp
-    
-    rep_set_picker(input_seqs_filepath, input_otu_filepath,
-     result_path=result_path,log_path=log_path, sort_by=opts.sort_by)
-    
-    
