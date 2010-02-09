@@ -2,7 +2,7 @@
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2010, The QIIME Project" 
-__credits__ = ["Rob Knight", "Justin Kuczynski"] 
+__credits__ = ["Rob Knight", "Justin Kuczynski","Jeremy Widmann"] 
 #remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.0-dev"
@@ -84,3 +84,20 @@ def format_coords(coord_header, coords, eigvals, pct_var):
         '\t'.join(map(str, pct_var)))
     return '\n'.join(result)
 
+def build_prefs_string(color_by_string):
+    if not color_by_string:
+        return ''
+    fields = color_by_string.split(',')
+    l = ['{']
+    first = True
+    entry_string = \
+     "\t'%s':\n\t{\n\t\t'column':'%s',\n\t\t'colors':(('red',(0,100,100)),('blue',(240,100,100)))\n\t}"
+    for field in fields:
+        if first:
+            first=False
+            l.append('\n')
+        else:
+            l.append(',\n')
+        l.append(entry_string % (field, field))
+    l.append('\n}')
+    return ''.join(l)

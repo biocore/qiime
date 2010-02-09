@@ -1,69 +1,57 @@
 #!/usr/bin/env python
+from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME Project"
-__credits__ = ["Greg Caporaso", "Jesse Stombaugh"]
+__credits__ = ["Greg Caporaso", "Jesse Stombaugh","Jeremy Widmann"]
 __license__ = "GPL"
 __version__ = "1.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Pre-release"
 
-from optparse import OptionParser
+from optparse import make_option
+from qiime.util import parse_command_line_parameters
+from qiime.format import build_prefs_string
 
-def parse_command_line_parameters():
-    """ Parses command line arguments """
-    
-    usage = """usage: %prog [options] {-b COLOR_BY_STRING -p OUTPUT_PREFS_FILE}
-
+script_description = \
+"""
 This is a quick-and-dirty script to write prefs files to be passed via -p to 
 make_3d_plots.py. The prefs file allow for gradient coloring of continuous 
-values in the 3D plots. The -b value passed in is the same as that passed in
-via -b to make_3D_plots.py: the command delimited list of fields that data 
-should be included for. Currently there is only one color gradient: red to
+values in the 3D plots. Currently there is only one color gradient: red to
 blue, because, as mentioned, this is a quick-and-dirty script. If we decide to
 stick with the pref file method for defining color gradients, we'll update
 this script at that time.
-
 """
-    version = 'Version: %prog 0.1'
-    parser = OptionParser(usage=usage, version=version)
+script_usage = \
+"""
+To make a prefs file to be used by make_3d_plots.py The -b value passed in is
+the same as that passed in via -b to make_3D_plots.py: the command delimited
+list of fields that data should be included for.  For example the -b string
+could be "#SampleID,Individual" and output to the file "prefs_out.txt" 
+using the -p parameter.
 
-    # A binary 'verbose' flag
-    parser.add_option('-v','--verbose',action='store_true',\
-        dest='verbose',help='Print information during execution -- '+\
-        'useful for debugging [default: %default]')
+$ python qiime_dir/scripts/make_3d_plot_prefs_file.py -b "#SampleID,Individual" -p prefs_out.txt
+"""
 
-    # An example string option
-    parser.add_option('-b','--color_by',action='store',\
+required_options = [\
+    make_option('-b','--color_by',action='store',\
           type='string',dest='color_by',help='mapping fields to color by '+\
-          '[default: %default]')
-    parser.add_option('-p','--output_prefs_fp',action='store',\
+          '[default: %default]'),\
+    make_option('-p','--output_prefs_fp',action='store',\
           type='string',dest='output_prefs_fp',\
-          help='path to store output file '+\
-          '[default: %default]')
-    opts,args = parser.parse_args()
-    return opts,args
+          help='path to store output file [default: %default]'),\
+    ]
 
-def build_prefs_string(color_by_string):
-    fields = color_by_string.split(',')
-    l = ['{']
-    first = True
-    entry_string = \
-     "\t'%s':\n\t{\n\t\t'column':'%s',\n\t\t'colors':(('red',(0,100,100)),('blue',(240,100,100)))\n\t}"
-    for field in fields:
-        if first:
-            first=False
-            l.append('\n')
-        else:
-            l.append(',\n')
-        l.append(entry_string % (field, field))
-    l.append('\n}')
-    return ''.join(l)
+optional_options = []
 
 if __name__ == "__main__":
-    opts,args = parse_command_line_parameters()
-    verbose = opts.verbose
+    option_parser, opts, args = parse_command_line_parameters(
+        script_description=script_description,
+        script_usage=script_usage,
+        version=__version__,
+        required_options=required_options,
+        optional_options=optional_options)
     
     out = build_prefs_string(opts.color_by)
     f = open(opts.output_prefs_fp,'w')

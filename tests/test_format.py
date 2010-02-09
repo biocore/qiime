@@ -3,7 +3,8 @@
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2010, The QIIME Project" #consider project name
-__credits__ = ["Rob Knight"] #remember to add yourself if you make changes
+__credits__ = ["Rob Knight","Jeremy Widmann"] 
+#remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.0-dev"
 __maintainer__ = "Rob Knight"
@@ -13,7 +14,7 @@ __status__ = "Pre-release"
 from cogent.util.unit_test import TestCase, main
 from numpy import array, nan
 from qiime.format import (format_distance_matrix, format_otu_table,
-    format_coords)
+    format_coords, build_prefs_string)
 
 class TopLevelTests(TestCase):
     """Tests of top-level module functions."""
@@ -49,7 +50,18 @@ class TopLevelTests(TestCase):
         pct_var = [3,2,1]
         res = format_coords(header, a, eigvals, pct_var)
         self.assertEqual(res, "pc vector number\t1\t2\t3\na\t1\t2\t3\nb\t4\t5\t6\nc\t7\t8\t9\n\n\neigvals\t2\t4\t6\n% variation explained\t3\t2\t1")
-
+    
+    def test_build_prefs_string(self):
+        """build_prefs_string should return a properly formatted prefs string.
+        """
+        #try with empty string
+        self.assertEqual(build_prefs_string(''),'')
+        
+        #Try with correctly formatted color_by_string
+        color_by_string = 'First,Second'
+        exp_string = """{\n\t'First':\n\t{\n\t\t'column':'First',\n\t\t'colors':(('red',(0,100,100)),('blue',(240,100,100)))\n\t},\n\t'Second':\n\t{\n\t\t'column':'Second',\n\t\t'colors':(('red',(0,100,100)),('blue',(240,100,100)))\n\t}\n}"""
+        obs_string = build_prefs_string(color_by_string)
+        self.assertEqual(obs_string,exp_string)
 
 #run unit tests if run from command-line
 if __name__ == '__main__':
