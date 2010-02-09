@@ -15,7 +15,7 @@ from sys import argv
 from string import strip
 from cogent.util.unit_test import TestCase, main
 from numpy import array
-from qiime.filter_otu_table import (strip_quotes,split_tax,process_options)
+from qiime.filter_otu_table import (strip_quotes,split_tax)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -56,23 +56,6 @@ class TopLevelTests(TestCase):
         self.assertEqual(obs1,exp1)
         self.assertEqual(obs2,exp2)
         
-    def test_process_options(self):
-        """process_options: converts all options to a dict for passing"""
-        
-        exp={}
-        exp['otu_file'] = 'otu_table.txt'
-        exp['min_otu_count'] = 1
-        exp['min_otu_samples'] = 2
-        exp['included_taxa']=set(['Root','Bacteria'])
-        exp['excluded_taxa']=set(['Root','Archaea'])
-        exp['dir_path']='./'
-        
-        obs=process_options(self)
-        
-        self.assertEqual(obs,exp)
-
-        
-
 
 #run tests if called from command line
 if __name__ == "__main__":
