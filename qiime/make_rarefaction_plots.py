@@ -32,6 +32,7 @@ import os.path
 from optparse import OptionParser
 from os.path import exists, splitext, split
 import shutil
+from warnings import warn
 from itertools import cycle
 
 COLOUR_GRAD = ['#9933cc', #purple
@@ -110,7 +111,8 @@ def parse_rarefaction(lines):
     return rare_mat_trans, seqs_per_samp, sampleIDs
     
 def ave_seqs_per_sample(matrix, seqs_per_samp, sampleIDs):
-    """Calculate the average for each sampleID across each number of seqs/sample"""
+    """Calculate the average for each sampleID across each number of \
+    seqs/sample"""
     ave_ser = {}
     temp_dict = {}
     for i,sid in enumerate(sampleIDs):
@@ -131,8 +133,8 @@ def ave_seqs_per_sample(matrix, seqs_per_samp, sampleIDs):
     return ave_ser
 
 def is_max_category_ops(mapping, mapping_category):
-    """Count how many unique values there are for the supplied mapping category
-    and return true if all values are unique"""
+    """Count how many unique values there are for the supplied mapping \
+    category and return true if all values are unique"""
     header = mapping[0][0]
     map_min = mapping[0][1:]
     num_samples = len(map_min)
@@ -162,7 +164,8 @@ def make_error_series(rare_mat, sampleIDs, mapping, mapping_category):
         try:
             test = rare_mat[k]
         except(KeyError):
-            #err.append("SampleID " + k + " found in mapping but not in rarefaction file.\n")
+            warn("SampleID " + k + " found in mapping but not in rarefaction \
+            file.")
             continue
         op = mapping_dict[k][category_index-1]
         if op not in seen:
@@ -197,7 +200,8 @@ def make_error_series(rare_mat, sampleIDs, mapping, mapping_category):
     return collapsed_ser, err_ser, ops, cols, syms
 
 def get_overall_averages(rare_mat, sampleIDs):
-    """Make series of averages of all values of seqs/sample for each sampleID"""
+    """Make series of averages of all values of seqs/sample for each \
+    sampleID"""
     overall_ave = dict();
     for s in sampleIDs:
         overall_ave[s] = mean(array(rare_mat[s]))
@@ -207,28 +211,26 @@ def plot_rarefaction(rare_mat, xaxis, sampleIDs, mapping, mapping_category):
     plt.gcf().set_size_inches(10,6)   
     plt.grid(color='gray', linestyle='-')
     
-    yaxis, err, ops, colors, syms = make_error_series(rare_mat, sampleIDs, mapping, mapping_category)
+    yaxis, err, ops, colors, syms = make_error_series(rare_mat, sampleIDs, \
+    mapping, mapping_category)
     ops.sort()
     
     for o in ops:
-        try:
-            yaxis[o] = [float(v) for v in yaxis[o] if v != 'NA' and v != 0]
-            l = o
-            if len(o) > 20:
-                l = l[:20] + '...'
-            plt.errorbar(xaxis[:len(yaxis[o])], yaxis[o], yerr=err[o][:len(yaxis[o])], color=colors[o], label=l, marker=syms[o], markersize=4)
-            # test = errorbar(xaxis[:len(yaxis[o])], yaxis[o], yerr=err[o][:len(yaxis[o])], color=colors[o], label=l, marker=syms[o], markersize=4)
-        except(ValueError):
-            print mapping_category
-            print o
+        yaxis[o] = [float(v) for v in yaxis[o] if v != 'NA' and v != 0]
+        l = o
+        if len(o) > 20:
+            l = l[:20] + '...'
+        plt.errorbar(xaxis[:len(yaxis[o])], yaxis[o], \
+        yerr=err[o][:len(yaxis[o])], color=colors[o], label=l, \
+        marker=syms[o], markersize=4)
 
     ax = plt.gca()
     ax.set_axisbelow(True)
     ax.set_xlabel('Sequences Per Sample')
-    #leg = plt.legend(markerscale=.3, ncol=int(len(ops)/12))
     return plt, ops, colors, syms
 
-def save_plot(plot, filenm, rtype, title, itype, res, xmax, ymax, ops, cols, syms):
+def save_plot(plot, filenm, rtype, title, itype, res, xmax, ymax, ops, \
+cols, syms):
     plot.title(title)
     ax = plot.gca()
     ax.set_xlim((0,xmax))
@@ -251,15 +253,19 @@ def make_plots(prefs):
     rarelines = []
 
     for r in prefs['rarefactions']:
-        file_path = os.path.join(prefs['output_path'],splitext(split(r)[1])[0])
+        file_path = os.path.join(prefs['output_path'], \
+        splitext(split(r)[1])[0])
         os.makedirs(file_path)
-        rare_mat_trans, seqs_per_samp, sampleIDs = parse_rarefaction(prefs['rarefactions'][r])
+        rare_mat_trans, seqs_per_samp, sampleIDs = \
+        parse_rarefaction(prefs['rarefactions'][r])
 
         xaxisvals = [float(x) for x in set(seqs_per_samp)]
         xaxisvals.sort()
 
-        rare_mat_ave = ave_seqs_per_sample(rare_mat_trans, seqs_per_samp, sampleIDs)
-        xmax = max(xaxisvals) + (xaxisvals[len(xaxisvals)-1] - xaxisvals[len(xaxisvals)-2])
+        rare_mat_ave = ave_seqs_per_sample(rare_mat_trans, seqs_per_samp, \
+        sampleIDs)
+        xmax = max(xaxisvals) + (xaxisvals[len(xaxisvals)-1] - \
+        xaxisvals[len(xaxisvals)-2])
         yoffset = 5 #parameterize?
         ymax = max([max(s) for s in rare_mat_ave.values()]) + yoffset
         overall_average = get_overall_averages(rare_mat_ave, sampleIDs)
@@ -269,10 +275,14 @@ def make_plots(prefs):
             rarelines.append('%f'%overall_average[s] + '\n')
             
         for p in prefs['categories']:
-            pr,ops,cols,syms = plot_rarefaction(rare_mat_ave, xaxisvals, sampleIDs, prefs['map'], p)
+            pr,ops,cols,syms = plot_rarefaction(rare_mat_ave, xaxisvals, \
+            sampleIDs, prefs['map'], p)
             filenm = file_path + '/'+ p
-            graphNames.append(splitext(split(r)[1])[0] + '/'+p+"."+prefs['imagetype'])
-            save_plot(pr, filenm, r, splitext(split(r)[1])[0] +': '+ p, prefs['imagetype'], prefs['resolution'], xmax, ymax, ops, cols, syms)
+            graphNames.append(splitext(split(r)[1])[0] + '/'+p+"."+ \
+            prefs['imagetype'])
+            save_plot(pr, filenm, r, splitext(split(r)[1])[0] +': '+ p, \
+            prefs['imagetype'], prefs['resolution'], xmax, ymax, ops, cols, \
+            syms)
             plt.clf()
 
     tablelines = ['#SampleIDs\n']
@@ -281,14 +291,21 @@ def make_plots(prefs):
     return tablelines
     
 def make_output_files(prefs, lines, qiime_dir):
-    open(prefs['output_path'] + "/graphNames.txt",'w').writelines([f +'\n' for f in graphNames])
+    open(prefs['output_path'] + "/graphNames.txt",'w').writelines([f +'\n' \
+    for f in graphNames])
     open(prefs['output_path'] + "/rarefactionTable.txt",'w').writelines(lines)
 
     os.makedirs(prefs['output_path']+"/js")
     os.makedirs(prefs['output_path']+"/css")
-    shutil.copyfile(qiime_dir+"/support_files/rarefaction_plots.html", prefs['output_path']+"/rarefaction_plots.html")
-    shutil.copyfile(qiime_dir+"/support_files/js/rarefaction_plots.js", prefs['output_path']+"/js/rarefaction_plots.js")
-    shutil.copyfile(qiime_dir+"/support_files/js/jquery.js", prefs['output_path']+"/js/jquery.js")
-    shutil.copyfile(qiime_dir+"/support_files/js/jquery.dataTables.min.js", prefs['output_path']+"/js/jquery.dataTables.min.js")
-    shutil.copyfile(qiime_dir+"/support_files/css/rarefaction_plots.css", prefs['output_path']+"/css/rarefaction_plots.css")
-    shutil.copyfile(qiime_dir+"/support_files/qiime_header.png", prefs['output_path']+"/qiime_header.png")
+    shutil.copyfile(qiime_dir+"/support_files/rarefaction_plots.html", \
+    prefs['output_path']+"/rarefaction_plots.html")
+    shutil.copyfile(qiime_dir+"/support_files/js/rarefaction_plots.js", \
+    prefs['output_path']+"/js/rarefaction_plots.js")
+    shutil.copyfile(qiime_dir+"/support_files/js/jquery.js", \
+    prefs['output_path']+"/js/jquery.js")
+    shutil.copyfile(qiime_dir+"/support_files/js/jquery.dataTables.min.js", \
+    prefs['output_path']+"/js/jquery.dataTables.min.js")
+    shutil.copyfile(qiime_dir+"/support_files/css/rarefaction_plots.css", \
+    prefs['output_path']+"/css/rarefaction_plots.css")
+    shutil.copyfile(qiime_dir+"/support_files/qiime_header.png", \
+    prefs['output_path']+"/qiime_header.png")
