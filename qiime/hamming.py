@@ -151,11 +151,3 @@ def demo():
             print "!", str(e), "skipping..."
             continue
 
-if __name__ == "__main__":
-    from sys import argv, exit
-  
-    print "Running demo..."
-    demo()
-    print "Demo done."
-   
-
