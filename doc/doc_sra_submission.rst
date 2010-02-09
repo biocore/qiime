@@ -2,6 +2,8 @@
 
 .. toctree:: :maxdepth: 1
 
+.. index:: SRA Submission
+
 ========================= 
 SRA Submission 
 =========================

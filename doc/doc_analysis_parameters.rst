@@ -22,6 +22,7 @@ The user can obtain help about the arguments which can be passed to each script,
 
 Sequence Quality Filtering and Library Splitting
 ------------------------------------------------
+.. index:: check_id_map
 
 Check Mapping File for Errors/Warnings
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -72,6 +73,7 @@ If the mapping file does not contain barcodes, you can type the following comman
 
 Relabel Sequences According to Sample and Eliminating Low Quality Sequences
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. index:: split_libraries
 
 **QIIME script:** :file:`split_libraries.py`
 
@@ -223,8 +225,11 @@ The linker and primer sequence (or all the degenerate possibilities) are associa
 
 Sequence Dereplication (i.e. Picking OTUs and Representative Sets)
 ------------------------------------------------------------------
+
 OTU Picking
 ^^^^^^^^^^^
+
+.. index:: pick_otus
 
 **QIIME script:** :file:`pick_otus.py`
 
@@ -390,6 +395,8 @@ The sequence similarity parameter may also be specified. For example, the follow
 Pick Representative Sequences
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+.. index:: pick_rep_set
+
 **QIIME script:** :file:`pick_rep_set.py`
 
 After picking OTUs, you can then pick a representative set of sequences. For each OTU, you will end up with one sequence that can be used in subsequent analyses. By default, the representative sequence for an OTU is chosen as the most abundant sequence showing up in that OTU. This is computed by collapsing identical sequences, and choosing the one that was read the most times as the representative sequence (note that each of these would have a different sequence identifier in the FASTA provided as input).
@@ -440,6 +447,8 @@ Alternatively, if the user would like to choose the sequence by random "-m rando
 
 Chimera Checking
 ----------------
+
+.. index:: identify_chimeric_seqs
 
 **QIIME script:** :file:`identify_chimeric_seqs.py`
 
@@ -518,6 +527,8 @@ Eliminating Human (or Other) Contamination
 Exclude Sequences by BLAST
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+.. index:: exclude_seqs_by_blast
+
 **QIIME script:** :file:`exclude_seqs_by_blast.py`
 
 This code is designed to allow users of the QIIME workflow to conveniently exclude unwanted sequences from their data. This is mostly useful for excluding human sequences from runs to comply with Internal Review Board (IRB) requirements, but may also have other uses (e.g. perhaps excluding a major bacterial contaminant). Sequences from a run are searched against a user-specified subject database, where BLAST hits are screened by e-value and the percentage of the query that aligns to the sequence.
@@ -591,6 +602,8 @@ Alternatively, if the user would like to change the percent of aligned sequence 
 Filter OTUs by Removing Samples
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+.. index:: filter_otus_by_sample
+
 **QIIME script:** :file:`filter_otus_by_sample.py`
 
 This filter allows for the removal of sequences and OTUs containing user-specified Sample IDs, for instance, the removal of negative control samples. This script identifies OTUs containing the specified Sample IDs and removes its corresponding sequence from the sequence collection.
@@ -632,6 +645,8 @@ Align Sequences and Filter Alignment
 
 Sequence Alignment
 ^^^^^^^^^^^^^^^^^^
+
+.. index:: align_seqs
 
 **QIIME script:** :file:`align_seqs.py`
 
@@ -720,6 +735,8 @@ The following command can be used for aligning sequences using the Infernal meth
 Filtering Sequence Alignment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+.. index:: filter_alignment
+
 **QIIME script:** :file:`filter_alignment.py`
 
 The :file:`filter_alignment.py` script should be applied to generate a useful tree when aligning against a template alignment (e.g., with PyNAST). This script will remove positions which are gaps in every sequence (common for PyNAST, as typical sequences cover only 200-400 bases, and they are being aligned against the full 16S gene). Additionally, the user can supply a lanemask file, that defines which positions should included when building the tree, and which should be ignored. Typically, this will differentiate between non-conserved positions, which are uninformative for tree building, and conserved positions which are informative for tree building. FILTERING ALIGNMENTS WHICH WERE BUILD WITH PYNAST AGAINST THE GREENGENES CORE SET ALIGNMENT SHOULD BE CONSIDERED AN ESSENTIAL STEP.
@@ -769,6 +786,8 @@ Alternatively, if the user would like to use a different gap fraction threshold 
 Phylogeny
 ---------
 
+.. index:: make_phylogeny
+
 **QIIME script:** :file:`make_phylogeny.py`
 
 Many downstream analyses require that the phylogenetic tree relating the OTUs in a study be present. The script :file:`make_phylogeny.py` produces this tree from a multiple sequence alignment. Trees are constructed with a set of sequences representative of the OTUs, using FastTree (Price, Dehal, & Arkin, 2009). For grafted trees, subtrees are built with all sequences in an OTU and then grafted onto the representative set tree.
@@ -813,6 +832,8 @@ Note: For whichever method used, the 3rd party program must be properly installe
 
 Taxonomy Assignment
 -------------------
+
+.. index:: assign_taxonomy
 
 **QIIME script:** :file:`assign_taxonomy.py`
 
@@ -919,6 +940,8 @@ OTU Table
 Make OTU Table
 ^^^^^^^^^^^^^^
 
+.. index:: make_otu_table
+
 **QIIME script:** :file:`make_otu_table.py`
 
 The script :file:`make_otu_table.py` tabulates the number of times an OTU is found in each sample, and adds the taxonomic predictions for each OTU in the last column if a taxonomy file is supplied.
@@ -953,6 +976,8 @@ For this example the input is an OTU file containing sequence ids assigned to ea
 
 Filter OTU Table
 ^^^^^^^^^^^^^^^^
+
+.. index:: filter_otu_table
 
 **QIIME script:** :file:`filter_otu_table.py`
 
@@ -1012,6 +1037,8 @@ To include ("Bacteria") and exclude ("Proteobacteria") certain taxon groups (opt
 	
 Filter OTUs using Metadata
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. index:: filter_by_metadata
 
 **QIIME script:** :file:`filter_by_metadata.py`
 
@@ -1079,6 +1106,8 @@ Note that the filtered mapping file will automatically exclude any columns that 
 
 OTU Significance and Co-occurrence Analysis
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. index:: otu_category_significance
 
 **QIIME script:** :file:`otu_category_significance.py`
 
@@ -1156,6 +1185,8 @@ Alternatively, the user could run an ANOVA test on the same data by using the fo
 Make OTU Heatmap (Web Application)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+.. index:: make_otu_heatmap_html
+
 **QIIME script:** :file:`make_otu_heatmap_html.py`
 
 Once the OTU table has been generated, the user can create an interactive OTU heatmap. This script parses the OTU count table and filters the table by counts per otu (user-specified), then converts the table into a javascript array, which can be loaded into a web application. This web application allows the user to filter the otu table by number of counts per otu. The user also has the ability to view the table based on taxonomy assignment. Additional features include: the ability to drag rows (up and down) by clicking and dragging on the row headers; and the ability to zoom in on parts of the heatmap by clicking on the counts within the heatmap.
@@ -1198,6 +1229,8 @@ If you would like to specify a different output directory (i.e., "otu_heatmap"),
 
 Summarize Taxa
 ^^^^^^^^^^^^^^
+
+.. index:: summarize_taxa
 
 **QIIME script:** :file:`summarize_taxa.py`
 
@@ -1254,6 +1287,8 @@ Alternatively, the user may want to output the raw counts of each lineage within
 Make Pie Charts
 ^^^^^^^^^^^^^^^
 
+.. index:: make_pie_charts
+
 **QIIME script:** :file:`make_pie_charts.py`
 
 This script automates the construction of pie charts showing the breakdown of taxonomy by given levels. The script uses the raw counts file from :file:`summarize_taxa.py` to build pie charts. There is also additional functionality that breaks each taxonomic level up by sample. This will create a pie chart for each sample at each specified level.
@@ -1305,6 +1340,8 @@ Additionally, if you would like to display on a set number of taxa ("-n 10") and
 Network Analysis
 ^^^^^^^^^^^^^^^^
 
+.. index:: make_otu_network
+
 **QIIME script:** :file:`make_otu_network.py`
 
 Network-based analysis is used to display and analyze how OTUs are partitioned between samples. This is a powerful way to display visually large and highly complex datasets in such a way that similarities and differences between samples are emphasized. The visual output of this analysis is a clustering of samples according to their shared OTUs - samples that share more OTUs cluster closer together. The degree to which samples cluster is based on the number of OTUs shared between samples (when OTUs are found in more than one sample) and this is weighted according to the number of sequences within an OTU. In the network diagram, there are two kinds of "nodes" represented, OTU-nodes and sample-nodes. These are shown with symbols such as filled circles and filled squares. If an OTU is found within a sample, the two nodes are connected with a line (an "edge"). (OTUs found only in one sample are given a second, distinct OTU-node shape.) The nodes and edges can then be colored to emphasize certain aspects of the data. For instance, in the initial application of this analysis in a microbial ecology study, the gut bacteria of a variety of mammals was surveyed, and the network diagrams were colored according to the diets of the animals, which highlighted the clustering of hosts by diet category (herbivores, carnivores, omnivores). In a meta-analysis of bacterial surveys across habitat types, the networks were colored in such a way that the phylogenetic classification of the OTUs was highlighted: this revealed the dominance of shared Firmicutes in vertebrate gut samples versus a much higher diversity of phyla represented amongst the OTUs shared by environmental samples.
@@ -1342,6 +1379,8 @@ The result of :file:`make_otu_network.py` consists of a folder containing a prop
 The user can use the following command to create an OTU network, where the results are written to the directory "otu_network/"::
 
 	$ python $qdir/make_otu_network.py -i Mapping_file.txt -c otu_table.txt -o otu_network/
+
+.. index:: Cytoscape
 
 **Loading Results with Cytoscape**
 
@@ -1381,6 +1420,8 @@ Within-Sample Diversity Analyses (Including Rarefaction and Curves)
 -------------------------------------------------------------------
 Rarefaction
 ^^^^^^^^^^^
+
+.. index:: rarefaction.py
 
 **QIIME script:** :file:`rarefaction.py`
 
@@ -1449,6 +1490,8 @@ By default, any sample containing fewer sequences in the input file than the req
 Alpha-Diversity
 ^^^^^^^^^^^^^^^
 
+.. index:: alpha_diversity
+
 **QIIME script:** :file:`alpha_diversity.py`
 
 The rarefaction tables are the basis for calculating diversity metrics, which reflect the diversity within the sample based on taxon counts of phylogeny. The QIIME pipeline allows users to conveniently calculate more than two dozen different diversity metrics. The full list of available metrics is available by passing the option -s to the script :file:`alpha_diversity.py`. Every metric has different strengths and limitations - technical discussion of each metric is readily available online and in ecology textbooks, but is beyond the scope of this document.
@@ -1478,6 +1521,8 @@ The rarefaction tables are the basis for calculating diversity metrics, which re
 	-t TREE_PATH, --tree_path=TREE_PATH [Default: none]
 
 		This is the path to the newick formatted tree file (i.e., the resulting tree from :file:`make_phylogeny.py`). This argument is only required for metrics which are phylogenetically based.
+
+.. index:: alpha_diversity metrics
 
 *Non-phylogeny based metrics:*
 
@@ -1554,6 +1599,8 @@ To perform alpha diversity on multiple OTU tables (resulting files from :file:`r
 Collate Alpha Diversity Results
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+.. index:: collate_alpha
+
 **QIIME script:** :file:`collate_alpha.py`
 
 When performing batch analyses on the OTU table (e.g. rarefaction followed by alpha diversity), the result of :file:`alpha_diversity.py` comprises many files, which need to be concatenated into a single file for generating rarefaction curves. This script takes the resulting files from batch alpha diversity and collates them into a single (one file for each metric used).
@@ -1597,6 +1644,8 @@ The user inputs the results from batch alpha diversity (e.g. alpha_div_chao1_PD/
 
 Rarefaction Curves
 ^^^^^^^^^^^^^^^^^^
+
+.. index:: make_rarefaction_plots
 
 **QIIME script:** :file:`make_rarefaction_plots.py`
 
@@ -1662,11 +1711,15 @@ Between-Sample Diversity Analyses (OTU-based and Phylogenetic)
 Determine Between-Sample (Beta-Diversity) Metrics
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ 
 
+.. index:: beta_diversity
+
 **QIIME script:** :file:`beta_diversity.py`
 
 This segment utilizes the script :file:`beta_diversity.py`, where the input for this script is the OTU table containing the number of sequences observed in each OTU (rows) for each sample (columns). For more information pertaining to the OTU table refer to the section using :ref:`make_otu_table`. If the user would like phylogenetic beta diversity metrics using UniFrac, a phylogenetic tree must also be passed as input (see :ref:`make_phylogeny`). The output of this script is a distance matrix containing a dissimilarity value for each pairwise comparison.
 
 A number of metrics are currently supported, including unweighted and weighted UniFrac (pass the -s option to :file:`beta_diversity.py`). In general, because unifrac uses phylogenetic information, one of the unifrac metrics is recommended, as results can be vastly more useful (Hamady & Knight, 2009). Weighted unifrac is sensitive to factors affecting the relative abundance of different taxa, such as salinity or pH while unweighted unifrac considers only the presence or absence of taxa, and is sensitive to factors such as nutrient availability (Costello, personal communication). Typically both weighted and unweighted unifrac are applied. The complete list is as follows:
+
+.. index:: beta_diversity metrics
 
 *Non-phylogenetic beta diversity metrics.* These are count based metrics which is based on the OTU table:
 
@@ -1754,6 +1807,8 @@ To perform beta diversity on multiple OTU tables (resulting files from :file:`ra
 Distance Histograms (Web Application)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+.. index:: make_distance_histograms
+
 **QIIME script:** :file:`make_distance_histograms.py`
 
 To visualize the distance between samples and/or categories in the mapping file, the user can generate histograms to represent the distances between samples. This script generates an HTML file, where the user can compare the distances between samples based on the different categories associated to each sample in the mapping file.
@@ -1821,6 +1876,8 @@ Note: In the case that a preferences file is passed, the user does not need to s
 Principal Coordinates Analysis (PCoA)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+.. index:: principal_coordinates
+
 **QIIME script:** :file:`principal_coordinates.py`
 
 Principal Coordinate Analysis (PCoA) is commonly used to compare groups of samples based on phylogenetic or count-based distance metrics (see section on :ref:`beta_diversity`).
@@ -1851,6 +1908,8 @@ For this script, the user supplies a distance matrix (i.e., resulting file from 
 
 Two-Dimensional (2D) PCoA Plots
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. index:: make_2d_plots
 
 **QIIME script:** :file:`make_2d_plots.py`
 
@@ -1906,6 +1965,8 @@ or use some of the suggestions from above::
 
 Three-Dimensional (3D) PCoA Plots
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. index:: make_3d_plots
 
 **QIIME script:** :file:`make_3d_plots.py`
 
@@ -1967,6 +2028,8 @@ or use some of the suggestions from above::
 
 As an alternative, the user can supply a preferences (prefs) file, using the -p option. The prefs file allows the user to give specific samples their own columns within a given mapping column. This file also allows the user to perform a color gradient, given a specific mapping column.
 
+.. index:: preferences file
+
 This shows a generic overview of a preferences file (.txt):
 
 .. note::
@@ -2009,6 +2072,8 @@ If the user wants to color by using the prefs file (e.g. :file:`prefs.txt`), the
 Build UPGMA Tree Comparing Samples
 ----------------------------------
 
+.. index:: hierarchical_cluster
+
 **QIIME script:** :file:`hierarchical_cluster.py`
 
 In addition to using PCoA, it can be useful to cluster samples using UPGMA (Unweighted Pair Group Method with Arithmetic mean, also known as average linkage). As with PCoA, the input to this step is a distance matrix (i.e. resulting file from :file:`beta_diversity.py`).
@@ -2042,6 +2107,8 @@ If the user is performing hierarchical clustering on a single file (i.e. resulti
 If the user is performing hierarchical clustering on a directory (i.e. resulting directory from :file:`beta_diversity.py`) and defining the output directory (e.g. beta_div_weighted_clusters/), they can use the following command::
 
 	$ python $qdir/hierarchical_cluster.py -i beta_div_weighted_unifrac/ -o beta_div_weighted_clusters/
+
+.. index:: jackknife samples
 
 Build UPGMA Trees from Jackknifed Samples to Assign Confidence Values to UPGMA Nodes
 -------------------------------------------------------------------------------------
