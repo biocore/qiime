@@ -15,13 +15,7 @@ __status__ = "Pre-release"
 from qiime.filter_alignment import apply_lane_mask_and_gap_filter
 from qiime.util import parse_command_line_parameters
 from optparse import make_option
-from numpy import nonzero, array, fromstring, repeat, bitwise_or, uint8, zeros
-from random import sample
-from cogent.parse.fasta import MinimalFastaParser
 from cogent.core.alignment import eps
-from optparse import OptionParser
-from sys import stdout
-from string import lowercase
 from os.path import split, exists, splitext
 from os import mkdir, remove
 from qiime.util import load_qiime_config
