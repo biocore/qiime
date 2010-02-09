@@ -11,56 +11,8 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Pre-release"
 
-
 from optparse import OptionParser
 from qiime.parse import parse_map
-
-usage_str = """usage: %prog [options] {-o OUTPUT_FP} mapping_fp1 mapping_fp2 [mapping_fp3 [...]]
-
-[] indicates optional input (order unimportant)
-{} indicates required input (order unimportant)
-
-This interface to this script is unusual for Qiime, in that it takes
- positional arguments. The reason for this is the number of mapping files
- provided can be variable, and the user may want the shell to expand 
- wildcards. See example usages.
-
-Example usage:
-
-"""
-
-def parse_command_line_parameters():
-    """ Parses command line arguments """
-    usage = usage_str
-    version = 'Version: %prog ' + __version__
-    parser = OptionParser(usage=usage, version=version)
-
-    # A binary 'verbose' flag
-    parser.add_option('-v','--verbose',action='store_true',\
-        dest='verbose',help='Print information during execution -- '+\
-        'useful for debugging [default: %default]')
-
-    parser.add_option('-o','--output_fp',\
-         help='the output mapping file to write [REQUIRED]')
-    parser.add_option('-n','--no_data_value',\
-         help='value to represent missing data (i.e., when all '+\
-         'fields are not defined in all mapping files) [default: %default]')
-
-    # Set default values here if they should be other than None
-    parser.set_defaults(verbose=False,no_data_value='no_data')
-
-    opts,args = parser.parse_args()
-    required_options = ['output_fp']
-    
-    for option in required_options:
-        if eval('opts.%s' % option) == None:
-            parser.error('Required option --%s omitted.' % option) 
-
-    min_args = 2
-    if len(args) < min_args:
-       parser.error('At least one argument is required')
-
-    return opts,args
     
 def merge_mapping_files(mapping_files,no_data_value='no_data'):
     """ Merge list of mapping files into a single mapping file 
@@ -109,14 +61,3 @@ def write_mapping_file(mapping_data,output_fp):
     f = open(output_fp,'w')
     f.write('\n'.join(mapping_data))
     f.close()
-    
-if __name__ == "__main__":
-    opts,args = parse_command_line_parameters()
-    verbose = opts.verbose
-    output_fp = opts.output_fp
-    mapping_files = args
-    no_data_value = opts.no_data_value
-    
-    mapping_data = merge_mapping_files(map(open,mapping_files),\
-                                       no_data_value=no_data_value)
-    write_mapping_file(mapping_data,output_fp)
