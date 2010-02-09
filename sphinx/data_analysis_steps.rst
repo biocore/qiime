@@ -14,7 +14,7 @@ directory. Execute all tutorial commands from within this directory.
 To access QIIME python scripts, it may be useful to set an environment variable to the location of 
 the innermost QIIME directory (the one containing check_id_map.py, for example) ::
 
-	$ qdir=/path/to/QIIME
+	$ qdir=/path/to/QIIME/scripts/
 
 then further commands of the form :file:`python QIIMEscript.py -o option` can be invoked as 
 :file:`python $qdir/QIIMEscript.py -o option`.
