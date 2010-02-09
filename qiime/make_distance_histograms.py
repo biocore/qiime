@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# file make_distance_histograms.py
+from __future__ import division
 
 __author__ = "Jeremy Widmann"
 __copyright__ = "Copyright 2010, The QIIME Project"
@@ -14,7 +14,7 @@ from matplotlib import use
 use('Agg')
 from qiime.parse import parse_map, parse_distmat, group_by_field,\
     group_by_fields
-from qiime.make_3d_plots import create_dir, data_colors
+from qiime.make_3d_plots import data_colors
 from cogent.maths.stats.test import t_two_sample
 from numpy import array, mean, average, arange
 from collections import defaultdict
@@ -24,9 +24,7 @@ from cogent.draw.util import hist
 from matplotlib.patches import Ellipse, Polygon
 from random import choice
 from numpy.random import permutation
-from sys import argv
 from os import mkdir
-from optparse import make_option, OptionParser
 
 def between_sample_distances(dmat):
     """Returns all upper triangle distances from dmat.
@@ -181,9 +179,12 @@ def draw_all_histograms(single_field, paired_field, dmat, histogram_dir):
     xscale, yscale = get_histogram_scale(distances_dict,nbins=BINS)
     #draw histograms
     color_names = data_colors.keys()
-    for d_dict in distances_dict.values():
+    for d_name, d_dict in distances_dict.items():
         for i, (field, data) in enumerate(d_dict.items()):
+            #If there are no distances, remove from distances_dict and 
+            # label_to_histogram_filename
             if len(data) < 1:
+                label_to_histogram_filename.pop(field)
                 continue
             color_index = i % num_colors
             color = color_names[color_index]
@@ -352,6 +353,8 @@ def make_nav_html(distances_dict, label_to_histogram_filename, \
     for main_block, distances in distances_dict.items():
         html_list.append(NAV_HTML_TR_BREAK%(main_block))
         for sub_label in sorted(distances.keys()):
+            if sub_label not in label_to_histogram_filename:
+                continue
             hist_filename = label_to_histogram_filename[sub_label].strip('./')
             hist_filename = "'"+hist_filename+"'"
             checked = ''
@@ -464,7 +467,9 @@ def group_distances(mapping_file,dmatrix_file,fields,dir_prefix='',\
         field = fields[i]
         groups = group_by_field(mapping, field)
         data = distances_by_groups(distance_header, distance_matrix, groups)
-        single_field[field]=data
+        #Need to remove pound signs from field name.
+        field_name = field.replace('#','')
+        single_field[field_name]=data
 
     write_distance_files(group_distance_dict=single_field,\
         dir_prefix=dir_prefix,subdir_prefix=subdir_prefix+'_single')
@@ -605,122 +610,3 @@ def _get_script_dir(script_path):
     else:
         script_dir = './'
     return script_dir
-    
-
-OPTIONS = [
-        make_option('-d','--distance_matrix_file',dest='distance_matrix_file',\
-            type='string',help='''Path to distance matrix file [REQUIRED]'''),\
-        make_option('-m','--mapping_file',dest='mapping_file',type='string',\
-            help='''Path to environment mapping file [REQUIRED]'''),\
-        make_option('-p','--prefs_file',dest='prefs_file',type='string',\
-            help='''File containing prefs for analysis.  NOTE: This is a file with a dict containing preferences for the analysis.  This dict must have a "Fields" key mapping to a list of desired fields.[default: %default]'''),\
-        make_option('-o', '--dir_path', dest='dir_path',\
-            help='directory prefix for all analyses [default: %default]',\
-            default='.'),\
-        make_option('--fields', dest='fields',\
-            help='Comma delimited list of fields to compare.  This overwrites fields in prefs file.  Usage: --fields Field1,Field2,Field3 [REQUIRED]'),\
-        make_option('--monte_carlo',dest='monte_carlo',default=False,\
-            action='store_true',help='''Perform Monte Carlo on distances.  [Default: %default]'''),\
-        make_option('--html_output',dest='html_output',default=False,\
-            action='store_true',help='''Write output in HTML format. [Default: %default]'''),\
-        ]
-
-
-def parse_cmdline_params(arg_list=argv,options=OPTIONS):
-    """Parses commandline arguments.
-    """
-    usage = 'usage: $ python %prog [options]'
-    version = 'Version: %prog 0.1'
-    
-    options_parser = OptionParser(usage=usage,version=version,\
-        option_list=options)
-    opts,args = options_parser.parse_args(args=arg_list)
-    
-    return opts, args
-
-def main(args,args_parsed=None):
-    qiime_dir = _get_script_dir(argv[0])
-
-    if args_parsed is not None:
-        opts = args_parsed
-    else:
-        opts,arg_list = parse_cmdline_params(args)        
-    
-    if opts.prefs_file:
-        prefs = eval(open(opts.prefs_file, 'U').read())
-    else:
-        prefs=None
-    
-    fields = opts.fields
-    if fields is not None:
-        fields = map(strip,fields.split(','))
-    else:
-        prefs = eval(open(opts.prefs_file, 'U').read())
-        fields = prefs['FIELDS']
-    
-    within_distances, between_distances, dmat = \
-        group_distances(mapping_file=opts.mapping_file,\
-        dmatrix_file=opts.distance_matrix_file,\
-        fields=fields,\
-        dir_prefix=create_dir(opts.dir_path,'distances'))
-    
-    if opts.html_output:
-        #histograms output path
-        histograms_path = \
-            _make_path([opts.dir_path,'histograms'])
-        try:
-            mkdir(histograms_path)
-        except OSError:     #raised if dir exists
-            pass
-        
-        #draw all histograms
-        distances_dict, label_to_histogram_filename = \
-            draw_all_histograms(single_field=within_distances, \
-                paired_field=between_distances, \
-                dmat=dmat,\
-                histogram_dir=histograms_path)
-        
-        #Get relative path to histogram files.
-        label_to_histogram_filename_relative = \
-            _make_relative_paths(label_to_histogram_filename, opts.dir_path)
-        
-        outfile_name = 'QIIME_Distance_Histograms.html'
-        make_main_html(distances_dict=distances_dict,\
-            label_to_histogram_filename=label_to_histogram_filename_relative,\
-            root_outdir=opts.dir_path, \
-            outfile_name = outfile_name, \
-            title='Distance Histograms')
-        
-        #Handle saving web resources locally.
-        #javascript file
-        javascript_path = \
-            _make_path([opts.dir_path,'js'])
-        try:
-            mkdir(javascript_path)
-        except OSError:     #raised if dir exists
-            pass
-        js_out = open(javascript_path+'/histograms.js','w')
-        js_out.write(open(qiime_dir+'js/histograms.js').read())
-        js_out.close()
-        
-        #Qiime logo
-        logo_path = \
-            _make_path([opts.dir_path,'web_resources'])
-        try:
-            mkdir(logo_path)
-        except OSError:     #raised if dir exists
-            pass
-        logo_out = open(logo_path+'/qiime_header.png','w')
-        logo_out.write(open(qiime_dir+'qiime_header.png').read())
-        logo_out.close()
-    
-    if opts.monte_carlo:
-        monte_carlo_group_distances(mapping_file=opts.mapping_file,\
-            dmatrix_file=opts.distance_matrix_file,\
-            prefs=prefs, \
-            dir_prefix = opts.dir_path,\
-            fields=fields)
-            
-if __name__ == "__main__":
-    main(argv)
-            
