@@ -59,10 +59,10 @@ def main():
       required_options=required_options,
       optional_options=optional_options)
 
-    technical_lengths = get_technical_lengths(open(options.input_map, 'U'),
-        options.debug)
+    technical_lengths = get_technical_lengths(open(opts.input_map, 'U'),
+        opts.debug)
 
-    for dirpath, dirnames, fnames in walk(options.libdir):
+    for dirpath, dirnames, fnames in walk(opts.libdir):
         for fname in fnames:
             if fname.endswith('.sff'):
                 sff_path = join(dirpath, fname)
@@ -71,9 +71,9 @@ def main():
                     readlength = technical_lengths[lib_id]
                 except KeyError:
                     continue
-                sffinfo_cmd_to_run = sffinfo_cmd % (options.sffinfo_path,'-s',
+                sffinfo_cmd_to_run = sffinfo_cmd % (opts.sffinfo_path,'-s',
                     sff_path)
-                if options.debug:
+                if opts.debug:
                     print "Running sffinfo command to get ids and lengths:", \
                         sffinfo_cmd_to_run
                 lines = popen(sffinfo_cmd_to_run)
@@ -91,9 +91,9 @@ def main():
                         seqlengths[id_]))
                 outfile.close()
 
-                sfffile_cmd_to_run = sfffile_cmd % (options.sfffile_path,
+                sfffile_cmd_to_run = sfffile_cmd % (opts.sfffile_path,
                     outfile_path, sff_path+'.trimmed', sff_path)
-                if options.debug:
+                if opts.debug:
                     print "Running sfffile command:", sfffile_cmd_to_run
                 system(sfffile_cmd_to_run)
                 system('mv %s.trimmed %s' % (sff_path, sff_path))
