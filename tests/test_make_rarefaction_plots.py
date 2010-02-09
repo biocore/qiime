@@ -64,7 +64,7 @@ class makeRarefactionPlotsTests(TestCase):
             
     def test_make_error_series(self):
         #make_error_series(rare_mat, sampleIDs, mapping, mapping_category)
-        test = make_error_series(self.ave_seqs_per_sample,self.sampleIDs,self.p_mappingfile,'Sex')
+        test = make_error_series('rare.txt',self.ave_seqs_per_sample,self.sampleIDs,self.p_mappingfile,'Sex')
         self.assertEqual(test[0], self.collapsed_ser_sex)
         self.assertEqual(test[1], self.err_ser_sex)
     
