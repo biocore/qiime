@@ -13,8 +13,8 @@ __email__ = "rob@spot.colorado.edu"
 __status__ = "Pre-release"
 
 from cogent.util.unit_test import TestCase, main
-from qiime.summarize_taxa import parse_command_line_parameters, \
-    make_new_summary_file, add_summary_category_mapping
+from qiime.summarize_taxa import make_new_summary_file, \
+	add_summary_category_mapping
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -22,7 +22,6 @@ class TopLevelTests(TestCase):
     def test_import(self):
         """empty test just verifies import of module"""
         pass
-
     def test_make_new_summary_file(self):
         """make_new_summary_file works
         """
