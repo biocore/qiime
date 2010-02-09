@@ -27,10 +27,10 @@ script_usage = """ Read the sample data from sample.txt, the study data from stu
  and the submission data from submission.txt. Write out the corresponding
  XML files.
  
- make_study_and_sample_xml.py -a sample.txt -A sample_template.xml -t study.txt -T study_template.xml -u submission.txt -U submission_template.xml
+ make_study_and_sample_xml.py -a sample.txt -t study.txt -u submission.txt
 
  Produces files study.xml, submission.xml, sample.xml (based on filenames of
- the .txt files).
+ the .txt files) using the default xml templates.
 """
 
 required_options = [\
