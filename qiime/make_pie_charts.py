@@ -42,6 +42,7 @@ import shutil
 matplotlib_version = re.split("[^\d]", matplotlib.__version__)
 matplotlib_version_info = tuple([int(i) for i in matplotlib_version if \
                           i.isdigit()])
+from qiime.util import get_qiime_project_dir
 
 if matplotlib_version_info != (0,98,5,3):
      "This code was only tested with Matplotlib-0.98.5.3"
@@ -375,17 +376,6 @@ def get_counts(lines, label,do_sample, num_categories, dir_path):
 
     return img_data
 
-    
-
-def _get_script_dir(script_path):
-    """Returns directory current script is running in.
-    """
-    if '/' in script_path:
-        script_dir = script_path.rsplit('/',1)[0]+'/'
-    else:
-        script_dir = os.getcwd()
-    return script_dir
-
 
 def create_dir(dir_path,qiime_dir,plot_type):
     """Creates directory where data is stored.  If directory is not supplied in\
@@ -437,8 +427,10 @@ def create_dir(dir_path,qiime_dir,plot_type):
 def make_all_pie_charts(data, dir_path, filename,num_categories, do_sample,args):
     """Generate interactive pie charts in one HTML file"""
     img_data = []
-    qiime_dir = _get_script_dir(args)
-    dir_path = create_dir(dir_path,qiime_dir, "webfiles")
+    
+    qiime_dir = get_qiime_project_dir()
+    support_files=os.path.join(qiime_dir,'support_files')
+    dir_path = create_dir(dir_path,support_files, "webfiles")
     for label,f_name in data:
         f = open(f_name)
         lines = f.readlines()
