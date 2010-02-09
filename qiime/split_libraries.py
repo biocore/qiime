@@ -25,7 +25,7 @@ have a barcode that matches the mapping file will not be recorded.
 
 __author__ = "Rob Knight and Micah Hamady"
 __copyright__ = "Copyright 2010, The QIIME Project" 
-__credits__ = ["Rob Knight", "Micah Hamady", "Greg Caporaso", "Kyle Bittinger","Jesse Stombaugh","William Walters"] #remember to add yourself
+__credits__ = ["Rob Knight", "Micah Hamady", "Greg Caporaso", "Kyle Bittinger","Jesse Stombaugh","William Walters","Jens Reeder"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "1.0-dev"
 __maintainer__ = "William Walters"
@@ -40,7 +40,6 @@ from numpy import __version__ as numpy_version
 from qiime.check_id_map import parse_id_map
 from qiime.barcode import correct_barcode
 from gzip import GzipFile
-from optparse import OptionParser
 from os import mkdir, stat
 from collections import defaultdict
 from qiime.hamming import decode_barcode_8
@@ -581,15 +580,11 @@ def preprocess(fasta_files, qual_files, mapping_file,
     all_primer_seqs, primer_seq_len = \
         get_primer_seqs(primer_seq_pats.split(',')) """
         
-
-
     # Check mapping file and get barcode mapping 
     map_file = open(mapping_file, 'U')
     headers, id_map, valid_map, warnings, errors, \
      primer_seqs_lens, all_primers = check_map(map_file)
-     
     
-
     map_file.close()
     if errors:
         raise ValueError, "Invalid mapping file. "+\
@@ -690,150 +685,3 @@ def preprocess(fasta_files, qual_files, mapping_file,
     histogram_file.write(format_histograms
         (*make_histograms(pre_lens, post_lens)))
     histogram_file.close()
-
-
-usage_str = \
-"""usage: %prog [options] {-f FASTA_FNAMES -m MAP_FNAME}
-
-[] indicates optional input (order unimportant) 
-{} indicates required input (order unimportant) 
-
-FASTA_FNAMES: Comma-delimited paths of sequence files, in FASTA format.
-QUAL_FNAMES: Comma-delimited paths of quality files, in FASTA-like
-  format.
-MAP_FNAME: Path to tab-delimited mapping file.  Must contain a header
-  line indicating SampleID in the first column and BarcodeSequence in
-  the second, LinkerPrimerSequence in the third.
-
-Example usage:
-
-Process sequences from two files (a.fna, b.fna) using the sample-to-
-barcode associations in samples.txt.  The quality files for the
-sequences (a.qual, b.qual) can also be provided.
-
-python %prog -f a.fna,b.fna -m samples.txt
-
-or
-
-python %prog -f a.fna,b.fna -q a.qual,b.qual -m samples.txt
-
-"""
-
-
-def make_cmd_parser():
-    """Returns the command-line options."""
-    parser = OptionParser()
-    parser.usage = usage_str
-    parser.version = 'Version: %prog ' +  __version__
-    parser.add_option('-m', '--map', dest='map_fname', 
-        help='name of mapping file [REQUIRED]')
-    parser.add_option('-f', '--fasta', dest='fasta_fnames', 
-        help='names of fasta files, comma-delimited [REQUIRED]')
-    parser.add_option('-q', '--qual', dest='qual_fnames', 
-        help='names of qual files, comma-delimited [default: %default]')
-    parser.add_option('-l', '--min-seq-length', dest='min_seq_len',
-        type=int, default=200,
-        help='minimum sequence length, in nucleotides [default: %default]')
-    parser.add_option('-L', '--max-seq-length', dest='max_seq_len',
-        type=int, default=1000,
-        help='maximum sequence length, in nucleotides [default: %default]')
-    parser.add_option('-t', '--trim-seq-length', dest='trim_seq_len',
-        action='store_true',
-        help='calculate sequence lengths after trimming primers and barcodes'+\
-         ' [default: %default]', default=False)
-    parser.add_option('-s', '--min-qual-score', type=int, default=25,
-        help='min average qual score allowed in read [default: %default]')
-    parser.add_option('-k', '--keep-primer', action='store_true',
-        help='do not remove primer from sequences', default=False)
-    parser.add_option('-B', '--keep-barcode', action='store_true',
-        help='do not remove barcode from sequences', default=False)
-    parser.add_option('-a', '--max-ambig', type=int, default=0,
-        help='maximum number of ambiguous bases [default: %default]')
-    parser.add_option('-H', '--max-homopolymer', type=int, default=6,
-        help='maximum length of homopolymer run [default: %default]')
-    parser.add_option('-M', '--max-primer-mismatch', dest='max_primer_mm',
-        type=int, default=0,
-        help='maximum number of primer mismatches [default: %default]')
-    parser.add_option('-b', '--barcode-type', default='golay_12', 
-        help=\
-        'barcode type, e.g. 4 or hamming_8 or golay_12 [default: %default]')
-    parser.add_option('-o', '--dir-prefix', default='.',
-        help='directory prefix for output files [default: %default]')
-    parser.add_option('-e', '--max-barcode-errors', dest='max_bc_errors',
-        default=1.5, type=float,
-        help='maximum number of errors in barcode [default: %default]')
-    parser.add_option('-n', '--start-numbering-at', dest='start_index',
-        default=1, type=int,
-        help='seq id to use for the first sequence [default: %default]')
-    parser.add_option('-r', '--remove_unassigned', default=False,
-        action='store_true', help='remove sequences which are Unassigned from \
-            output [default: %default]')
-    parser.add_option('-c', '--disable_bc_correction', default=False,
-        action='store_true', help='Disable attempts to find nearest '+\
-        'corrected barcode.  Can improve performance. [default: %default]')
-    parser.add_option('-w', '--qual_score_window', dest="qual_score_window",
-                      type=int, default=0,
-        action='store', help='Enable sliding window test of quality '+\
-        'scores.  If the average score of a continuous set of w nucleotides '+\
-        'falls below the threshold (see -s for default), the sequence is '+\
-        'discarded. A good value would be 50. 0 (zero) means no filtering. '+\
-        'Must pass a .qual file (see -q parameter) if this '+\
-        'functionality is enabled. [default: %default]')
-    options, args = parser.parse_args()
-
-    required_options = [
-        ('map_fname', '-m'),
-        ('fasta_fnames', '-f')]
-    for attr_name, flag in required_options:
-        if not getattr(options, attr_name):
-            parser.error('Required option %s not found.  Must provide a '
-                         'mapping file (-m) and at least one fasta input file '
-                         '(-f).' % flag)
-    if options.qual_score_window and not options.qual_fnames:
-        parser.error('To enable sliding window quality test (-w), .qual '+\
-         'files must be included.')
-    return options
-
-
-if __name__ == "__main__":
-    from sys import exit, stderr
-    options = make_cmd_parser()
-    mapping_file = options.map_fname
-    fasta_files = set(options.fasta_fnames.split(','))
-    if options.qual_fnames:
-        qual_files = set(options.qual_fnames.split(','))
-    else:
-        qual_files = set()
-
-    for q in qual_files:
-        if not q.endswith('qual'):
-            stderr.write(
-            "Qual file does not end with .qual: is it really a qual file?\n%s\n" 
-            % q)
-
-    for f in fasta_files:
-        if not (f.endswith('fasta') or f.endswith('fna')):
-            stderr.write(
-            "Fasta file does not end with .fna: is it really a seq file?\n%s\n" 
-            % f)
-    
-
-    preprocess(fasta_files, qual_files, mapping_file,
-    barcode_type=options.barcode_type,
-    starting_ix = options.start_index,
-    min_seq_len = options.min_seq_len,
-    max_seq_len = options.max_seq_len, 
-    min_qual_score=options.min_qual_score,
-    keep_barcode=options.keep_barcode,
-    keep_primer=options.keep_primer,
-    max_ambig=options.max_ambig,
-    max_primer_mm=options.max_primer_mm,
-    trim_seq_len=options.trim_seq_len,
-    dir_prefix=options.dir_prefix,
-    max_bc_errors = options.max_bc_errors,
-    max_homopolymer = options.max_homopolymer,
-    remove_unassigned = options.remove_unassigned,
-    attempt_bc_correction = not options.disable_bc_correction,
-    qual_score_window = options.qual_score_window
-    )
- 
