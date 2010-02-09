@@ -85,49 +85,22 @@ def parse_command_line_parameters():
      
     return opts, args
 
-script_block = """
-from optparse import OptionParser
+script_block = """from qiime.util import parse_command_line_parameters
+from optparse import make_option
 
-usage_str = \"\"\"usage: %prog [options] {required options}
+script_description = \"\"\" \"\"\"
 
-[] indicates optional input (order unimportant)
-{} indicates required input (order unimportant)
+script_usage = \"\"\" \"\"\"
 
-Example usage:
-\"\"\"
+required_options = [\\
+ # Example required option
+ #make_option('-i','--input_dir',help='the input directory'),\\
+]
 
-def parse_command_line_parameters():
-    \"\"\" Parses command line arguments \"\"\"
-    usage = usage_str
-    version = 'Version: %prog ' + __version__
-    parser = OptionParser(usage=usage, version=version)
-
-    # A binary 'verbose' flag
-    parser.add_option('-v','--verbose',action='store_true',\\
-        dest='verbose',help='Print information during execution -- '+\\
-        'useful for debugging [default: %default]')
-
-    # An example REQUIRED option
-    #parser.add_option('-i','--input_dir',\\
-    #     help='the input directory [REQUIRED]')
-    
-    # An example option
-    #parser.add_option('-o','--output_dir',\\
-    #     help='the output directory [default: %default]')
-
-    # Set default values here if they should be other than None
-    parser.set_defaults(verbose=False)
-
-    opts,args = parser.parse_args()
-    # list of required options (e.g., required_options = ['input_dir'])
-    required_options = []
-    
-    for option in required_options:
-        if eval('opts.%s' % option) == None:
-            parser.error('Required option --%s omitted.' % option) 
-            
-    return opts, args
-
+optional_options = [\\
+ # Example optional option
+ #make_option('-o','--output_dir',help='the output directory [default: %default]'),\\
+]
 """
 
 header_block =\
@@ -162,37 +135,36 @@ if __name__ == "__main__":
             "Creating no files and exiting..."])
         exit(1) 
 
-
     # Create the header data
     header_block = header_block.replace('AUTHOR_NAME',opts.author_name)
     header_block = header_block.replace('AUTHOR_EMAIL',opts.author_email)
     header_block = header_block.replace('COPYRIGHT',opts.copyright)
     lines = [header_block]
 
-    # If this is a test file, add the requiste import statement
     if test:
         lines.append('from cogent.util.unit_test import TestCase, main')
+        # Run unittest.main() if test file
+        lines += ['','','','if __name__ == "__main__":','    main()']
     elif script:
         lines.append(script_block)
-
-    # Create the footer data
-    # File will be executable
-    lines += ['','','','if __name__ == "__main__":']
-    if test:
-        # Run unittest.main() if test file
-        lines.append('    main()')
-    elif script:
-        lines.append('    opts,args = parse_command_line_parameters()')
-        lines.append('    verbose = opts.verbose')
+        lines += ['','','','if __name__ == "__main__":',\
+         '    option_parser, opts, args = parse_command_line_parameters(',\
+         '      script_description=script_description,',\
+         '      script_usage=script_usage,',\
+         '      version=__version__,',\
+         '      required_options=required_options,',\
+         '      optional_options=optional_options)']
     else:
         # Running the file does nothing by default if not a test file
-        lines.append('    pass')
+        pass
 
     # Open the new file for writing and write it.
     f = open(output_fp,'w')
     f.write('\n'.join(lines))
     f.close()
-
-    # Change the permissions on the new file to make it executable
-    chmod_string = ' '.join(['chmod 755',output_fp])
-    popen(chmod_string)
+    
+    if test or script:
+        # Change the permissions on the new file to make it executable
+        chmod_string = ' '.join(['chmod 755',output_fp])
+        popen(chmod_string)
+        
