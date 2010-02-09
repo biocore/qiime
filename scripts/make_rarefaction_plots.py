@@ -18,7 +18,8 @@ from sys import argv, exit, exc_info
 from random import choice, randrange
 from time import strftime
 from qiime import parse, util
-from qiime.make_rarefaction_plots import make_plots, make_output_files, is_max_category_ops
+from qiime.make_rarefaction_plots import make_plots, make_output_files, \
+is_max_category_ops, parse_rarefaction
 import os.path
 from os.path import exists, splitext, split
 import shutil
@@ -52,7 +53,7 @@ optional_options = [\
 make_option('-p', '--prefs', type='string', help='name of columns to make rarefaction graphs of, \
 comma delimited no spaces. Use \'ALL\' command to make graphs of all metadata columns. \
 [default: %default]', default='ALL'),
-make_option('-h', '--no_html', type='string', help='suppress html output. \
+make_option('-n', '--no_html', type='string', help='suppress html output. \
 [default: %default]', default='False'),
 make_option('-i', '--imagetype', type='string', help='extension for image type choose from \
 (jpg, gif, png, svg, pdf). [default: %default]', default='png'),
@@ -84,7 +85,8 @@ def main():
     rares = dict()
     for r in rarenames:
         try:
-            rares[r] = open(r, 'U').readlines()
+             rarefl = open(r, 'U').readlines()
+             rares[r] = parse_rarefaction(rarefl)
         except(IOError):
             option_parser.error('Problem with rarefaction file. %s'%sys.exc_info()[1])
             exit(0)
@@ -108,7 +110,7 @@ def main():
 please check spelling and syntax.'%list(suppliedcats.difference(availablecats)))
             exit(0)
 
-    if options.no_html != 'True' | options.no_html != 'False':
+    if options.no_html != 'True' and options.no_html != 'False':
          option_parser.error('Invalid option for -h, the only choices are \
          True and False')
          exit(0)
