@@ -15,15 +15,6 @@ __status__ = "Pre-release"
 from qiime.otu_category_significance import G_test_wrapper, ANOVA_wrapper
 from qiime.util import parse_command_line_parameters
 from optparse import make_option
-from optparse import OptionParser
-from os.path import split, splitext
-from numpy import argsort
-from cogent.util.dict2d import Dict2D
-from cogent.maths.stats.test import calc_contingency_expected, G_fit_from_Dict2D,\
-    ANOVA_one_way
-from cogent.maths.stats.util import Numbers
-from numpy import array
-import sys
 
 script_description = """Look for OTUs that are associated with a category."""
 
