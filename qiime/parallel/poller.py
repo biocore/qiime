@@ -17,58 +17,6 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Pre-release"
 
-usage_str = """usage: %prog [options] {-f RUN_OUTPUT_FILES}
-
-[] indicates optional input (order unimportant)
-{} indicates required input (order unimportant)
-
-Example usage:
- See Qiime/scripts/poller_examples.py
- 
-"""
-
-def parse_command_line_parameters():
-    """ Parses command line arguments """
-    usage = usage_str
-    version = 'Version: %prog 0.1'
-    parser = OptionParser(usage=usage, version=version)
-
-    parser.add_option('-r','--check_run_complete_f',\
-           help='function which returns True when run is completed '+\
-           '[default: %default]',\
-           default='qiime.parallel.poller.basic_check_run_complete_f')
-    parser.add_option('-f','--check_run_complete_file',\
-           help='path to file containing a list of files that must exist to' +\
-           ' declare a run complete [REQUIRED]')
-           
-    parser.add_option('-p','--process_run_results_f',\
-           help='function to be called when runs complete [default: %default]',\
-           default='qiime.parallel.poller.basic_process_run_results_f')
-    parser.add_option('-m','--process_run_results_file',\
-           help='path to file containing a map of tmp filepaths which should' +\
-           ' be written to final output filepaths [default: %default]')
-           
-    parser.add_option('-c','--clean_up_f',\
-           help='function called after processing result [default: %default]',\
-           default='qiime.parallel.poller.basic_clean_up_f')
-    parser.add_option('-d','--clean_up_file',
-           help='List of files and directories to remove after run'+\
-           ' [default: %default]')
-    
-    parser.add_option('-t','--time_to_sleep',type='int',\
-           help='time to wait between calls to status_callback_f'+\
-           ' (in seconds) [default: %default]')
-
-    # Set default values here if they should be other than None
-    parser.set_defaults(verbose=False,time_to_sleep=60)
-
-    opts,args = parser.parse_args()
-    
-    if not opts.check_run_complete_f and not opts.run_output_file:
-        parser.error('Must supply -r and/or -f.')
-
-    return opts,args
-
 def get_function_handle(s):
     last_dot = s.rindex('.')
     module_name = s[:last_dot]
@@ -275,14 +223,3 @@ def poller(check_run_complete_f,\
     clean_up_f(clean_up_file)
     est_per_proc_run_time = number_of_loops * seconds_to_sleep
     return est_per_proc_run_time
-
-if __name__ == "__main__":
-    opts,args = parse_command_line_parameters()
-
-    poller(get_function_handle(opts.check_run_complete_f),\
-            get_function_handle(opts.process_run_results_f),\
-            get_function_handle(opts.clean_up_f),\
-            list(open(opts.check_run_complete_file)),\
-            list(open(opts.process_run_results_file)),\
-            list(open(opts.clean_up_file)),\
-            seconds_to_sleep=opts.time_to_sleep)
