@@ -39,15 +39,15 @@ required_options = [\
 optional_options = [\
     make_option('-a','--input_sample_fp',\
         help='the tab-delimited text file with info about samples [default: %default]'),
-    make_option('-A','--template_sample_fp',\
+    make_option('--template_sample_fp', default='sample_template.xml',\
         help='the template file for samples [default: %default]'),
     make_option('-t','--input_study_fp',\
         help='the tab-delimited text file with info about the study [default: %default]'),
-    make_option('--template_study_fp',\
+    make_option('--template_study_fp', default='study_template.xml',\
         help='the template file for the study [default: %default]'),
     make_option('-u','--input_submission_fp',\
         help='the tab-delimited text file with info about the submission [default: %default]'),
-    make_option('--template_submission_fp',\
+    make_option('--template_submission_fp', default='submission_template.xml',\
         help='the template file for the submission [default: %default]'),
     make_option('-e', '--input_experiment_fp', \
         help ='the tab-delimited text file with info about the experiment [default: %default]'),
@@ -62,10 +62,6 @@ def main():
       version=__version__,
       required_options=required_options,
       optional_options=optional_options)
-
-    parser.set_defaults(template_sample_fp='sample_template.xml',
-        template_study_fp='study_template.xml',
-        template_submission_fp='submission_template.xml')
 
     docnames = {}
     if opts.input_study_fp:
