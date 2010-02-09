@@ -10,36 +10,16 @@ __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 __status__ = "Pre-release"
 
-"""
-Author: Jesse Stombaugh (jesse.stombaugh@colorado.edu) and Micah Hamady
-Status: Prototype
 
-Requirements:
-Python 2.5
-
-Example 1: Create 3D plot from only the pca/pcoa data, where each ID is colored:
-Usage: python make_3d_plots.py -i raw_pca_data.txt
-
-Example 2: Create a Kinemage with two coloring schemes (Day and Type):
-Usage: python make_3d_plots.py -i raw_pca_data.txt -m input_map.txt -b 'Day,Type'
-
-Example 3: Create 3D plots for a combination of label headers from a mapping 
-file:
-Usage: python make_3d_plots.py -i raw_pca_data.txt -m input_map.txt 
--b 'Type&&Day' -o ./test/
-
-"""
 from cogent.util.misc import flatten
-from parse import parse_map, group_by_field, parse_coords
+from qiime.parse import parse_coords,parse_map,group_by_field
 from numpy import array, shape, apply_along_axis, dot, delete, vstack
 import numpy as np
 import os
-from optparse import OptionParser
-from random import choice, randrange
+from random import choice
 import re
 from time import strftime
-import shutil
-from qiime.util import get_qiime_project_dir
+
 
 def _natsort_key(item):
     """Provides normalized version of item for sorting with digits.
@@ -390,7 +370,10 @@ def process_colorby(colorby,data,old_prefs=None):
     """Parses the colorby option from the command line"""
     prefs = {}
     mapping=data['map']
-    if colorby:
+    
+    if colorby=='ALL':
+        colorbydata = mapping[0]
+    elif colorby and colorby != 'ALL':
         colorbydata = colorby.strip().strip("'").split(',')
     else:
         colorbydata = [old_prefs[i]['column'] for i in old_prefs]
@@ -556,7 +539,7 @@ def linear_gradient(start, end, nbins):
 
     return result
 
-def _do_3d_plots(prefs, data, custom_axes, dir_path='',data_file_path='', filename=None, \
+def generate_3d_plots(prefs, data, custom_axes, dir_path='',data_file_path='', filename=None, \
                 default_filename='out'):
     """Make 3d plots according to coloring options in prefs."""
     kinpath = _make_path([(dir_path+data_file_path), filename])
@@ -595,91 +578,3 @@ archive='./jar/king.jar' width=800 height=600> \
     f2.write('\n'.join(res))
     f2.close()
     
-def _make_cmd_parser():
-    """Returns the command-line options"""
-    parser = OptionParser(usage="Usage: this_file.py -i <pca/pcoa output files>\
-\nor\nUsage: this_file.py -i <pca/pcoa output files> -m <mapping output file>\
--b 'Mapping column to color by' -o <write to directory>")
-    parser.add_option('-i', '--coord_fname', \
-        help='name of coords file [REQUIRED]')
-    parser.add_option('-m', '--map_fname', \
-        help='name of mapping file [default: %default]')
-    parser.add_option('-b', '--colorby',\
-        help='map header to color by [default: %default]')
-    parser.add_option('-a', '--custom_axes',\
-        help='map header(s) to use as custom axes [default: %default]')
-    parser.add_option('-p', '--prefs_path',\
-        help='prefs for detailed color settings [default: %default]')
-    parser.add_option('-o', '--dir_path',\
-        help='directory prefix for all analyses [default: %default]',default='')
-    options, args = parser.parse_args()
-    return options
-
-def _process_prefs(options):
-    """Opens files as necessary based on prefs"""
-    data = {}
-
-    #Open and get coord data
-    data['coord'] = get_coord(options.coord_fname)
-
-    #Open and get mapping data, if none supplied create a pseudo mapping \
-    #file
-    if options.map_fname:
-        data['map'] = get_map(options, data)
-    else:
-        data['map']=(([['#SampleID','Sample']]))
-        for i in range(len(data['coord'][0])):
-            data['map'].append([data['coord'][0][i],'Sample'])
-    
-    # remove any samples not present in mapping file
-    remove_unmapped_samples(data['map'],data['coord'])
-
-    #Determine which mapping headers to color by, if none given, color by all columns in map file
-    if options.prefs_path:
-        prefs = eval(open(options.prefs_path, 'U').read())
-        prefs, data=process_colorby(None, data, prefs)
-    elif options.colorby:
-        prefs,data=process_colorby(options.colorby,data)
-    else:
-        default_colorby = ','.join(data['map'][0])
-        prefs,data=process_colorby(default_colorby,data)
-        prefs={'Sample':{'column':'#SampleID'}}
-
-    # process custom axes, if present.
-    custom_axes = None
-    if options.custom_axes:
-        custom_axes = process_custom_axes(options.custom_axes)
-        get_custom_coords(custom_axes, data['map'], data['coord'])
-        remove_nans(data['coord'])
-        scale_custom_coords(custom_axes,data['coord'])
-
-    # Generate random output file name and create directories
-    dir_path = options.dir_path
-    if dir_path and not dir_path.endswith('/'):
-        dir_path = dir_path + '/'
-    dir_path = create_dir(dir_path,'3d_plots_') 
-    
-    alphabet = "ABCDEFGHIJKLMNOPQRSTUZWXYZ"
-    alphabet += alphabet.lower()
-    alphabet += "01234567890"
-
-    qiime_dir=get_qiime_project_dir()
-    
-    jar_path=os.path.join(qiime_dir,'qiime/jar/')
-
-    data_file_path=''.join([choice(alphabet) for i in range(10)])
-    data_file_path=strftime("%Y_%m_%d_%H_%M_%S")+data_file_path
-    data_file_dir_path = dir_path+data_file_path
-
-    data_file_dir_path=create_dir(data_file_dir_path,'')
-    jar_dir_path = create_dir(os.path.join(dir_path,'jar/'),'')
-    shutil.copyfile(os.path.join(jar_path,'king.jar'), jar_dir_path+'king.jar')
-
-    filepath=options.coord_fname
-    filename=filepath.strip().split('/')[-1]
-    _do_3d_plots(prefs, data, custom_axes, dir_path, data_file_path,filename)
-
-if __name__ == '__main__':
-    from sys import argv, exit
-    options = _make_cmd_parser()
-    _process_prefs(options)
