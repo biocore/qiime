@@ -10,12 +10,17 @@ from optparse import OptionParser
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2010, The QIIME Project" 
-__credits__ = ["Rob Knight"] #remember to add yourself if you make changes
+__credits__ = ["Rob Knight", "Antonio Gonzalez Pena"] #remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.0-dev"
 __maintainer__ = "Rob Knight"
 __email__ = "rob@spot.colorado.edu"
 __status__ = "Pre-release"
+
+"""This filter allows for the removal of sequences and OTUs that either do or don't match specified 
+metadata, for instance, isolating samples from a specific set of studies or body sites. This script 
+identifies samples matching the specified metadata criteria, and outputs a filtered mapping file 
+and OTU table containing only the specified samples."""
 
 def parse_states(state_string):
     """From string in format 'col1:good1,good2;col2:good1' return dict."""
@@ -42,6 +47,7 @@ def get_sample_ids(map_data, states):
     will return all rows except the ones where the Study is Dog or the BodySite
     is Stool.
     """
+    
     name_to_col = dict([(s,map_data[0].index(s)) for s in states])
     good_ids = []
     for row in map_data[1:]:    #remember to exclude header
@@ -134,49 +140,3 @@ def filter_otus_and_map(map_infile, otu_infile, map_outfile, otu_outfile,
                 outfile=otu_outfile)
     if not isinstance(otu_outfile, StringIO):
         otu_outfile.close()
-
-def make_cmd_parser():
-    """Returns command-line options"""
-    parser = OptionParser()
-    parser.add_option('-i', '--otu', dest='otu_fname',
-        help='name of otu file')
-    parser.add_option('-m', '--map', dest='map_fname',
-        help='name of map file')
-    parser.add_option('-o', '--otu_outfile', dest='otu_out_fname', default=None,
-        help='name of otu output file, default is otu_filename.filtered.xls')
-    parser.add_option('-p', '--map_outfile', dest='map_out_fname', default=None,
-        help='name of map output file, default is map_filename.filtered.xls')
-    parser.add_option('-s', '--states', dest='valid_states',
-        help="string containing valid states, e.g. 'STUDY_NAME:DOG'")
-    parser.add_option('-n', '--num_seqs_per_otu', dest='num_seqs_per_otu',
-        type=int, default=1, help='minimum counts across samples to keep OTU,' +
-        ' default is only to keep OTUs that are present in the samples.')
-    options, args = parser.parse_args()
-    return options, args
-
-if __name__ == '__main__':
-    from sys import exit
-    options, args = make_cmd_parser()
-    map_file_name, otu_file_name, valid_states_str, num_seqs_per_otu = \
-        options.map_fname, options.otu_fname, options.valid_states, \
-        options.num_seqs_per_otu
-
-    map_infile = open(map_file_name, 'U')
-    otu_infile = open(otu_file_name, 'U')
-
-    map_out_fname = options.map_out_fname
-    if map_out_fname is None:
-        map_out_fname = map_file_name + '.filtered.xls'
-
-    otu_out_fname = options.otu_out_fname
-    if otu_out_fname is None:
-        otu_out_fname = otu_file_name + '.filtered.xls'
-
-
-    # write out the filtered mapping file
-    map_outfile = open(map_out_fname, 'w')
-    otu_outfile = open(otu_out_fname, 'w')
-
-    filter_otus_and_map(map_infile, otu_infile, map_outfile, otu_outfile,
-        valid_states_str, num_seqs_per_otu)
-
