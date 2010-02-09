@@ -147,13 +147,16 @@ if __name__ == "__main__":
         lines += ['','','','if __name__ == "__main__":','    main()']
     elif script:
         lines.append(script_block)
-        lines += ['','','','if __name__ == "__main__":',\
+        lines += ['','','','def main():',\
          '    option_parser, opts, args = parse_command_line_parameters(',\
          '      script_description=script_description,',\
          '      script_usage=script_usage,',\
          '      version=__version__,',\
          '      required_options=required_options,',\
-         '      optional_options=optional_options)']
+         '      optional_options=optional_options)',\
+         '','',\
+         'if __name__ == "__main__":',\
+         '    main()']
     else:
         # Running the file does nothing by default if not a test file
         pass
