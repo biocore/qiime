@@ -11,86 +11,63 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Pre-release"
 
-
-from optparse import OptionParser
+from qiime.util import parse_command_line_parameters
+from optparse import make_option
 from os import makedirs
 from qiime.util import load_qiime_config
 from qiime.parse import parse_qiime_parameters
 from qiime.workflow import run_qiime_alpha_rarefaction, print_commands,\
     call_commands_serially, print_to_stdout, no_status_updates
 
-usage_str = """usage: %prog [options] {-i OTU_TABLE_FP -m MAPPING_FP -o OUTPUT_DIR -p PARAMETERS_FP}
+qiime_config = load_qiime_config()
 
-[] indicates optional input (order unimportant)
-{} indicates required input (order unimportant)
+script_description = """A workflow script for performing alpha rarefaction.
 
- The steps performed by this script are:
+The steps performed by this script are:
     1) Generate rarefied OTU tables;
     2) Compute alpha diversity metrics for each rarefied OTU table;
     3) Collate alpha diversity results;
-    4) Generate alpha rarefaction plots.
+    4) Generate alpha rarefaction plots."""
 
-Example usage:
- python ~/code/Qiime/scripts/alpha_rarefaction.py -o rare1 -i otu_table.txt -t inseqs1_rep_set.tre -m inseqs1_mapping.txt -p custom_parameters.txt
-"""
+script_usage = """alpha_rarefaction.py -o rare1 -i otu_table.txt -t inseqs1_rep_set.tre -m inseqs1_mapping.txt -p custom_parameters.txt"""
 
-qiime_config = load_qiime_config()
-
-def parse_command_line_parameters():
-    """ Parses command line arguments """
-    usage = usage_str
-    version = 'Version: %prog ' + __version__
-    parser = OptionParser(usage=usage, version=version)
-
-    parser.add_option('-i','--otu_table_fp',\
-            help='the input fasta file [REQUIRED]')
-    parser.add_option('-m','--mapping_fp',\
-            help='path to the mapping file [REQUIRED]')
-    parser.add_option('-o','--output_dir',\
-            help='the output directory [REQUIRED]')
-    parser.add_option('-p','--parameter_fp',\
+required_options = [\
+ make_option('-i','--otu_table_fp',\
+            help='the input fasta file [REQUIRED]'),\
+ make_option('-m','--mapping_fp',\
+            help='path to the mapping file [REQUIRED]'),\
+ make_option('-o','--output_dir',\
+            help='the output directory [REQUIRED]'),\
+ make_option('-p','--parameter_fp',\
             help='path to the parameter file [REQUIRED]')
-    parser.add_option('-t','--tree_fp',\
-            help='path to the tree file [default: %default; '+\
-            'REQUIRED for phylogenetic measures]')
-            
-    parser.add_option('-n','--num_steps',type='int',\
-     help='number of steps (or rarefied OTU table sizes) to make between '+\
-      'min and max counts [default: %default]')
+]
 
-    parser.add_option('-v','--verbose',action='store_true',\
-        dest='verbose',help='Print information during execution -- '+\
-        'useful for debugging [default: %default]')
-        
-    parser.add_option('-f','--force',action='store_true',\
+optional_options = [\
+ make_option('-n','--num_steps',type='int',\
+     help='number of steps (or rarefied OTU table sizes) to make between '+\
+      'min and max counts [default: %default]',default=10),\
+ make_option('-f','--force',action='store_true',\
         dest='force',help='Force overwrite of existing output directory'+\
         ' (note: existing files in output_dir will not be removed)'+\
-        ' [default: %default]')
-        
-    parser.add_option('-w','--print_only',action='store_true',\
+        ' [default: %default]'),\
+ make_option('-w','--print_only',action='store_true',\
         dest='print_only',help='Print the commands but don\'t call them -- '+\
-        'useful for debugging [default: %default]')
-        
-    parser.add_option('-s','--serial',action='store_true',\
+        'useful for debugging [default: %default]',default=False),\
+ make_option('-s','--serial',action='store_true',\
         dest='serial',help='Do not use parallel scripts'+\
-        ' [default: %default]')
+        ' [default: %default]',default=False),\
+ make_option('-t','--tree_fp',\
+            help='path to the tree file [default: %default; '+\
+            'REQUIRED for phylogenetic measures]')
+]
 
-    parser.set_defaults(verbose=False,print_only=False,\
-     serial=False,num_steps=10)
-
-    required_options = ['otu_table_fp', 'output_dir', 'mapping_fp', \
-     'parameter_fp']
-
-    opts,args = parser.parse_args()
-    for option in required_options:
-        if eval('opts.%s' % option) == None:
-            parser.error('Required option --%s omitted.' % option)
-
-    return opts,args
-
-
-if __name__ == "__main__":
-    opts,args = parse_command_line_parameters()
+def main():
+    option_parser, opts, args = parse_command_line_parameters(
+      script_description=script_description,
+      script_usage=script_usage,
+      version=__version__,
+      required_options=required_options,
+      optional_options=optional_options)
     verbose = opts.verbose
     
     otu_table_fp = opts.otu_table_fp
@@ -146,3 +123,6 @@ if __name__ == "__main__":
      num_steps=num_steps,\
      parallel=parallel,\
      status_update_callback=status_update_callback)
+
+if __name__ == "__main__":
+    main()
