@@ -6,19 +6,19 @@ __copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Julia Goodrich"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "1.0-dev"
-__maintainer__ = "Rob Knight"
+__maintainer__ = "Julia Goodrich"
 __email__ = "julia.goodrich@colorado.edu"
 __status__ = "Pre-release"
 
 
 """
+This script generates the otu networks and statistics
+
 Author: Julia Goodrich (julia.goodrich@colorado.edu)
 Status: Prototype
 
 Requirements:
 Python 2.5
-
-This script generates the otu networks and statistics
 """
 
 
@@ -299,48 +299,6 @@ def make_props_files(labels,label_list,dir_path):
         output.close()
 
 
-
-usage_str = """usage: %prog [options] {-i INPUT_MAP_FILE \
--c OTU_SAMPLE_COUNTS_FILE}
-
-[] indicates optional input (order unimportant) 
-{} indicates required input (order unimportant) 
-
-Requirements:
-Python 2.5
-
-Example: Create network cytoscape and statistic files:
-python gen_pie_charts.py -i input_map.txt-c otu_table.txt \
--o /Users/bob/qiime_run/
-
-
-"""
-
-
-def _make_cmd_parser():
-    """Returns the command-line options"""
-    usage =usage_str
-    version = 'Version: %prog ' +  __version__
-    
-    parser = OptionParser(usage=usage_str, version=version)
-    
-    parser.add_option('-i', '--input_map', dest='map_file',
-                help='name of input map file [REQUIRED]')
-    parser.add_option('-c', '--otu_sample_counts', dest='counts_file',
-            help='name of otu table file [REQUIRED]')
-    parser.add_option('-o', '--dir-prefix', dest='dir_path',\
-	           help='directory prefix for all analyses')
-    opts, args = parser.parse_args()
-
-    if not opts.counts_file:
-        parser.error("An otu table file must be specified")
-
-    if not opts.map_file:
-        parser.error("A Map file must be specified")
-        
-    return opts
-
-
 def create_dir(dir_path):
     """Creates directory where data is stored.  If directory is not supplied in\
        the command line, a random folder is generated"""
@@ -380,39 +338,24 @@ def create_dir(dir_path):
     return dir_path
 
 
-
-def _process_prefs(options):
-    """opens files as necessary based on prefs"""
-
-    dir_path = create_dir(options.dir_path)
-
-
-
-    map_lines = open(options.map_file,'U').readlines()
-    otu_sample_lines = open(options.counts_file, 'U').readlines()
-    
-    cat_by_sample, sample_by_cat, num_meta, meta_dict, labels, node_labels,\
-                   label_list = parse_map(map_lines)
-    con_by_sample, node_file_str, edge_file_str,red_node_file_str,\
-        red_edge_file_str, otu_dc, degree_counts,sample_dc, \
-        = parse_otu_sample(otu_sample_lines, num_meta, meta_dict)
-
-    
-    num_con_cat, num_con = get_num_con_cat(con_by_sample,cat_by_sample)
-    num_cat = get_num_cat(sample_by_cat)
-
-    dir_path = os.path.join(dir_path,"otu_network")
-    
-    make_table_file(edge_file_str, labels, dir_path,"real_edge_table.txt")
-    make_table_file(node_file_str,node_labels,dir_path,"real_node_table.txt")
-    make_table_file(red_edge_file_str, labels, dir_path,\
-                    "real_reduced_edge_table.txt")
-    make_table_file(red_node_file_str,node_labels,dir_path,\
-                    "real_reduced_node_table.txt")
-    make_stats_files(sample_dc,otu_dc,degree_counts,num_con_cat, num_con,num_cat\
-                     ,cat_by_sample,dir_path)
-
-    make_props_files(labels,label_list,dir_path)
+def create_network_and_stats(dir_path,map_lines,otu_sample_lines):
+	cat_by_sample, sample_by_cat, num_meta, meta_dict, labels, node_labels,\
+			label_list = parse_map(map_lines)
+	con_by_sample, node_file_str, edge_file_str,red_node_file_str,\
+			red_edge_file_str, otu_dc, degree_counts,sample_dc, \
+			= parse_otu_sample(otu_sample_lines, num_meta, meta_dict)
+	num_con_cat, num_con = get_num_con_cat(con_by_sample,cat_by_sample)
+	num_cat = get_num_cat(sample_by_cat)
+	dir_path = os.path.join(dir_path,"otu_network")
+	make_table_file(edge_file_str, labels, dir_path,"real_edge_table.txt")
+	make_table_file(node_file_str,node_labels,dir_path,"real_node_table.txt")
+	make_table_file(red_edge_file_str, labels, dir_path,\
+			"real_reduced_edge_table.txt")
+	make_table_file(red_node_file_str,node_labels,dir_path,\
+			"real_reduced_node_table.txt")
+	make_stats_files(sample_dc,otu_dc,degree_counts,num_con_cat, num_con,num_cat\
+			,cat_by_sample,dir_path)
+	make_props_files(labels,label_list,dir_path)
 
 
 
@@ -990,8 +933,3 @@ nodeWidthCalculator.BasicDiscrete.mapping.map.biological_process\ unknown=10.0
 nodeWidthCalculator.BasicDiscrete.mapping.map.cell\ cycle=60.0
 nodeWidthCalculator.BasicDiscrete.mapping.type=DiscreteMapping
 nodeWidthCalculator.BasicDiscrete.visualPropertyType=NODE_WIDTH"""
-
-if __name__ == "__main__":
-    from sys import argv, exit
-    options = _make_cmd_parser()
-    _process_prefs(options)
