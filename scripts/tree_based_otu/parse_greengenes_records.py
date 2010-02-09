@@ -8,7 +8,7 @@ http://greengenes.lbl.gov/Download/Sequence_Data/Greengenes_format/greengenes16S
 
 __author__ = "Daniel McDonald"
 __copyright__ = "Copyright 2010, The QIIME Project" #consider project name
-__credits__ = ["Daniel McDonald"] #remember to add yourself if you make changes
+__credits__ = ["Daniel McDonald", "Rob Knight"] #remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.0-dev"
 __maintainer__ = "Daniel McDonald"
@@ -31,7 +31,7 @@ def split_delim_f(delim):
         return (k,v)
     return inner_f
 
-def DemarkedParser(lines, delim, recordtype=dict, start='BEGIN', end='END'):
+def DemarkedParser(lines, delim='=', recordtype=dict, start='BEGIN', end='END'):
     """Yields successive recordtype objects from lines
 
     Records start with start and end with end.
