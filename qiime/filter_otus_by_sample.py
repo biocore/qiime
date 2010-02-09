@@ -10,34 +10,10 @@ __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 __status__ = "Pre-release"
 
-"""
-Author: Jesse Stombaugh (jesse.stombaugh@colorado.edu)
-Status: Prototype
 
-Requirements:
-Python 2.5
-
-Example 1: Filter otus and representative sequence set
-Usage: filter_otus_by_sample.py [options] {-i input_otu_path -f fasta_file -s samples_to_extract}
-
-[] indicates optional input (order unimportant)
-{} indicates required input (order unimportant)
-
-Example usage:python filter_otus_by_sample.py -i otus.txt -f seqs.fna -s 'ControlA,ControlB' -o './Directory'
-"""
-
-from commands import getoutput
 from string import strip
-from parse import fields_to_dict
-from numpy import array
-from optparse import OptionParser
-from time import strftime
-import os
 import re
 from cogent import LoadSeqs
-from make_3d_plots import create_dir
-from qiime.util import get_qiime_project_dir
-
 
 def filter_otus(otus,prefs):
     """filters the otus file based on which samples should be removed and 
@@ -72,7 +48,6 @@ def filter_aln_by_otus(aln,prefs):
 
         for sample_id in prefs:
             if re.search(prefs[sample_id],aln_name):
-
                 remove=True
 
         if remove:
@@ -90,13 +65,13 @@ def process_extract_samples(samples_to_extract):
         samples = samples_to_extract.strip().strip("'").split(',')
 
     for j, col in enumerate(samples):
-        key = str(j)   
+        key = str(j)
         prefs[key]={}
         prefs[key]=col
 
     return prefs
 
-def _do_sample_filter(prefs, data, dir_path='', filename=None):
+def filter_samples(prefs, data, dir_path='', filename=None):
     """processes the filtering of the otus file and representative seq set, then
         writes filtered otus and filtered representative seq set files""" 
         
@@ -135,64 +110,3 @@ def _do_sample_filter(prefs, data, dir_path='', filename=None):
     output_file=open(output_filepath,'w')
     output_file.write(filtered_seqs.toFasta())
     output_file.close()
-
-def _make_cmd_parser():
-    """Returns the command-line options"""
-    parser = OptionParser(usage="Usage: this_file.py -i <otus file> \
--f <fasta file> -s <SampleIDs> -o <write to directory>")
-
-    parser.add_option('-i', '--input_otu_path',\
-        help='otu file path [REQUIRED]')
-    parser.add_option('-f', '--fasta_file', \
-        help='name of fasta file [REQUIRED]')
-    parser.add_option('-s', '--samples_to_extract',\
-        help='samples to extract [REQUIRED]')
-    parser.add_option('-o', '--dir_path',\
-        help='directory prefix for all analyses [default=%default]',default='')
-    options, args = parser.parse_args()
-    return options
-
-def _process_prefs(options):
-    """opens files as necessary based on prefs"""
-    data = {}
-
-    fasta_file = options.fasta_file
-
-    # load the input alignment
-    data['aln'] = LoadSeqs(fasta_file,aligned=False)
-    
-    #Load the otu file
-    otu_path=options.input_otu_path
-    otu_f = open(otu_path, 'U')
-    otus = fields_to_dict(otu_f)
-    otu_f.close()
-    
-    data['otus']=otus
-    #Determine which which samples to extract from representative seqs
-    #and from otus file
-    if options.samples_to_extract:
-        prefs=process_extract_samples(options.samples_to_extract)
-
-    filepath=options.fasta_file
-    filename=filepath.strip().split('/')[-1]
-    filename=filename.split('.')[0]
-    
-    dir_path = create_dir(options.dir_path,'filtered_by_otus')
-
-    action_str = '_do_sample_filter'
-    try:
-        action = eval(action_str)
-    except NameError:
-        action = None
-    #Place this outside try/except so we don't mask NameError in action
-    if action:
-        action(prefs, data, dir_path,filename)
-    
-if __name__ == "__main__":
-    from sys import argv, exit
-    options = _make_cmd_parser()
-    
-    #Kept, just in case we allow for reading a prefs file
-    #prefs = eval(open(options.pref_fname, 'U').read()) 
-
-    _process_prefs(options)
