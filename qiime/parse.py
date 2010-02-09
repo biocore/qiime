@@ -447,6 +447,3 @@ def parse_qiime_parameters(lines):
     return result
 # End functions for handling qiime_parameters file
 
-if __name__ == '__main__':
-    from sys import argv
-    for rec in parse_rarefaction(open(argv[1])): print rec
