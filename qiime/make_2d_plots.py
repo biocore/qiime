@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# File created on 09 Feb 2010
 #file make_2d_plots.py
 
 __author__ = "Jesse Stombaugh and Micah Hamady"
@@ -10,44 +11,16 @@ __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 __status__ = "Pre-release"
 
-"""
-Author: Jesse Stombaugh (jesse.stombaugh@colorado.edu) and Micah Hamady
-Status: Prototype
-
-Requirements:
-MatPlotLib 0.98.5.2
-Python 2.5
-
-Example 1: Create 2D plots from only the pca/pcoa data:
-Usage: python make_2d_plots.py -i raw_pca_data.txt
-
-Example 2: Create two separate html files, one for Day and one for Type:
-Usage: python make_2d_plots.py -i raw_pca_data.txt -m input_map.txt -b 'Day,Type'
-
-Example 3: Create 2D plots for a combination of label headers from a mapping 
-file:
-Usage: python make_2d_plots.py -i raw_pca_data.txt -m input_map.txt 
--b 'Type&&Day' -o ./test/
-
-"""
-
 import matplotlib,re
-
 matplotlib.use('Agg')
 from matplotlib.pylab import *
 from commands import getoutput
 from string import strip
-from parse import parse_map,parse_coords,group_by_field,group_by_fields
 from numpy import array
-from optparse import OptionParser
 from time import strftime
-import shutil
-import os
-from qiime.util import get_qiime_project_dir
-
-from random import choice, randrange
-from make_3d_plots import combine_map_label_cols,get_map,get_coord,\
-                         process_colorby,create_dir
+from random import choice
+from make_3d_plots import create_dir
+from parse import group_by_field,group_by_fields
 
 matplotlib_version = re.split("[^\d]", matplotlib.__version__)
 matplotlib_version_info = tuple([int(i) for i in matplotlib_version if \
@@ -339,76 +312,7 @@ def write_html_file(out_table,outpath):
     out.write(page_out)
     out.close()
 
-#The following functions are not unit_tested
-def _make_cmd_parser():
-    """Returns the command-line options"""
-    parser = OptionParser(usage="Usage: this_file.py -i <pca/pcoa output files>\
-\nor\nUsage: this_file.py -i <pca/pcoa output files> -m <mapping output file>\
--b 'Mapping column to color by' -o <write to directory>")
-    parser.add_option('-i', '--coord_fname', dest='coord_fname', \
-        help='name of coords file [REQUIRED]')
-    parser.add_option('-m', '--map_fname', dest='map_fname', \
-        help='name of mapping file [default=%default]')
-    parser.add_option('-b', '--colorby', dest='colorby',\
-        help='map header to color by [default=%default]')
-    parser.add_option('-o', '--dir_path', dest='dir_path',\
-        help='directory prefix for all analyses [default=%default]',default='')
-    options, args = parser.parse_args()
-    return options
-
-def _process_prefs(options):
-    """opens files as necessary based on prefs"""
-    data = {}
-        
-    #Open and get coord data
-    data['coord'] = get_coord(options, data)
-
-    #Open and get mapping data, if none supplied create a pseudo mapping
-    #file
-    if options.map_fname:
-        mapping = get_map(options, data)
-    else:
-        data['map']=(([['#SampleID','Sample']]))
-        for i in range(len(data['coord'][0])):
-            data['map'].append([data['coord'][0][i],'Sample'])
-
-    #Determine which mapping headers to color by, if none given, color by
-    #Sample ID's
-    if options.colorby:
-        prefs,data=process_colorby(options.colorby,data)
-    else:
-        prefs={}
-        prefs['Sample']={}
-        prefs['Sample']['column']='#SampleID'
-    
-    filepath=options.coord_fname
-    filename=filepath.strip().split('/')[-1]
-
-    qiime_dir=get_qiime_project_dir()
-    
-    js_path=os.path.join(qiime_dir,'qiime/js/')
-    
-    dir_path=options.dir_path
-    if dir_path and not dir_path.endswith("/"):
-        dir_path=dir_path+"/"
-    
-    dir_path=create_dir(dir_path,'2d_plots_')
-    
-    js_dir_path = dir_path+'/js/'
-    os.mkdir(js_dir_path)
-
-    shutil.copyfile(os.path.join(js_path,'/overlib.js'), js_dir_path+'overlib.js')
-
-    action_str = '_do_2d_plots'
-    try:
-        action = eval(action_str)
-    except NameError:
-        action = None
-    #Place this outside try/except so we don't mask NameError in action
-    if action:
-        action(prefs, data, dir_path,filename)
-
-def _do_2d_plots(prefs,data,dir_path,filename):
+def generate_2d_plots(prefs,data,dir_path,filename):
     """Generate interactive 2D scatterplots"""
     coord_tups = [("1", "2"), ("3", "2"), ("1", "3")]
     mapping=data['map']
@@ -455,14 +359,4 @@ def _do_2d_plots(prefs,data,dir_path,filename):
     outfile=dir_path+outfile
         
     write_html_file(out_table,outfile)
-
-if __name__ == "__main__":
-    from sys import argv, exit
-    options = _make_cmd_parser()
-    
-    #Kept, just in case we allow for reading a prefs file
-    #prefs = eval(open(options.pref_fname, 'U').read()) 
-
-    _process_prefs(options)
-
         
