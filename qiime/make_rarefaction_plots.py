@@ -146,13 +146,14 @@ def is_max_category_ops(mapping, mapping_category):
         
     return (len(seen) == num_samples), len(seen)
 
-def make_error_series(rare_mat, sampleIDs, mapping, mapping_category):
+def make_error_series(rtype, rare_mat, sampleIDs, mapping, mapping_category):
     """Create mean and error bar series for the supplied mapping category"""
     err_ser = dict()
     collapsed_ser = dict()
     header = mapping[0][0]
     map_min = mapping[0][1:]
     mapping_dict = dict()
+    notfound = []
     for m in map_min:
         mapping_dict[m[0]] = m[1:]
         
@@ -160,18 +161,30 @@ def make_error_series(rare_mat, sampleIDs, mapping, mapping_category):
     pre_err = {}
     category_index = header.index(mapping_category)
     
-    for k in mapping_dict:
-        try:
-            test = rare_mat[k]
-        except(KeyError):
-            warn("SampleID " + k + " found in mapping but not in rarefaction \
-            file.")
-            continue
+    mapkeys = set(mapping_dict.keys())
+    rarekeys = set(rare_mat.keys())
+    
+    intsc = mapkeys.intersection(rarekeys)
+    diff = mapkeys.difference(rarekeys)
+    
+    if len(intsc) == 0:
+        print "Error: None of the sampleIDs found in the mapping file are"+\
+        " in the rarefaction file %s, check to make sure these files"%rtype+\
+        " correspond."
+        exit(0)
+    elif len(diff) > 0:
+        warnstr = "SampleIDs %s found in mapping but not in "%list(diff)+\
+        "rarefaction file %s."%rtype
+        warn(warnstr)
+    
+    for k in intsc:
+        test = rare_mat[k]
         op = mapping_dict[k][category_index-1]
         if op not in seen:
             seen.update([op])
             pre_err[op] = []
         pre_err[op].append(rare_mat[k])
+
     
     ops = list(seen)
     
@@ -210,12 +223,13 @@ def get_overall_averages(rare_mat, sampleIDs):
 def save_rarefaction_plots(rare_mat, xaxis, xmax, ymax, sampleIDs, mapping,\
 mapping_category, itype, res, rtype, fpath):
     plt.clf()
+    plt.title(rtype + ": " + mapping_category)
     fig  = plt.gcf()
-    fig.set_size_inches(8,6)
+    
     plt.grid(color='gray', linestyle='-')
     
-    yaxis, err, ops, colors, syms = make_error_series(rare_mat, sampleIDs, \
-    mapping, mapping_category)
+    yaxis, err, ops, colors, syms = make_error_series(rtype, rare_mat, \
+    sampleIDs, mapping, mapping_category)
     ops.sort()
     
     for o in ops:
@@ -227,27 +241,24 @@ mapping_category, itype, res, rtype, fpath):
         yerr=err[o][:len(yaxis[o])], color=colors[o], label=l, \
         marker=syms[o], markersize=4)
 
-    ax = plt.gca()
-    ax.set_axisbelow(True)
-    ax.set_xlabel('Sequences Per Sample')
-
     c = 1
     if len(ops) > 12:
         c = int(len(ops)/12)
 
     plt.legend(bbox_to_anchor=(1.05, 1), loc=2, markerscale=.3, ncol=c)
     
-    fig.set_size_inches(10,6)
-    
-    plt.title(rtype + ": " + mapping_category)
     ax = plt.gca()
+    ax.set_axisbelow(True)
     ax.set_xlim((0,xmax))
     ax.set_ylim((0,ymax))
+    ax.set_xlabel('Sequences Per Sample')
     ax.set_ylabel("Rarefaction Measure: " + splitext(split(rtype)[1])[0])
+    
     imgpath = os.path.join(fpath,mapping_category) + '.'+itype
     plt.savefig(imgpath, format=itype, dpi=res)
     
-    imgnmforjs = splitext(split(rtype)[1])[0] + "/" + mapping_category +"."+itype
+    imgnmforjs = splitext(split(rtype)[1])[0] + "/" + mapping_category +"."+\
+    itype
     graphNames.append(imgnmforjs)
     
 def make_plots(prefs):
@@ -257,8 +268,10 @@ def make_plots(prefs):
         file_path = os.path.join(prefs['output_path'], \
         splitext(split(r)[1])[0])
         os.makedirs(file_path)
-        rare_mat_trans, seqs_per_samp, sampleIDs = \
-        parse_rarefaction(prefs['rarefactions'][r])
+        
+        rare_mat_trans = prefs['rarefactions'][r][0]
+        seqs_per_samp = prefs['rarefactions'][r][1]
+        sampleIDs = prefs['rarefactions'][r][2]
 
         xaxisvals = [float(x) for x in set(seqs_per_samp)]
         xaxisvals.sort()
@@ -268,7 +281,7 @@ def make_plots(prefs):
         xmax = max(xaxisvals) + (xaxisvals[len(xaxisvals)-1] - \
         xaxisvals[len(xaxisvals)-2])
         yoffset = 5 #parameterize?
-        ymax = max([max(s) for s in rare_mat_ave.values()]) + yoffset
+        ymax = max(map(max,rare_mat_ave.values())) + yoffset
         overall_average = get_overall_averages(rare_mat_ave, sampleIDs)
 
         rarelines.append("#" + r + '\n')
@@ -289,20 +302,22 @@ def make_output_files(prefs, lines, qiime_dir):
     open(prefs['output_path'] + "/rarefactionTable.txt",'w').writelines(lines)
 
     if prefs['no_html'] == 'False':
-        open(prefs['output_path'] + "/graphNames.txt",'w').writelines([f +'\n' \
-        for f in graphNames])
+        open(prefs['output_path'] + "/graphNames.txt",'w').writelines([f +\
+        '\n' for f in graphNames])
 
         os.makedirs(prefs['output_path']+"/js")
         os.makedirs(prefs['output_path']+"/css")
-        shutil.copyfile(qiime_dir+"/support_files/html_templates/rarefaction_plots.html", \
-        prefs['output_path']+"/rarefaction_plots.html")
+        shutil.copyfile(qiime_dir+"/support_files/html_templates/" + \
+        "rarefaction_plots.html", prefs['output_path']+\
+        "/rarefaction_plots.html")
         shutil.copyfile(qiime_dir+"/support_files/js/rarefaction_plots.js", \
         prefs['output_path']+"/js/rarefaction_plots.js")
         shutil.copyfile(qiime_dir+"/support_files/js/jquery.js", \
         prefs['output_path']+"/js/jquery.js")
-        shutil.copyfile(qiime_dir+"/support_files/js/jquery.dataTables.min.js", \
-        prefs['output_path']+"/js/jquery.dataTables.min.js")
-        shutil.copyfile(qiime_dir+"/support_files/css/rarefaction_plots.css", \
+        shutil.copyfile(qiime_dir+"/support_files/js/jquery."+\
+        "dataTables.min.js", prefs['output_path']+\
+        "/js/jquery.dataTables.min.js")
+        shutil.copyfile(qiime_dir+"/support_files/css/rarefaction_plots.css",\
         prefs['output_path']+"/css/rarefaction_plots.css")
         shutil.copyfile(qiime_dir+"/support_files/images/qiime_header.png", \
         prefs['output_path']+"/qiime_header.png")
