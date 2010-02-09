@@ -31,9 +31,6 @@ resolution (-d)"""
 
 script_usage = """Usage: %prog [options] {-o OUTPUT_FP}
 
-[] indicates optional input (order unimportant)
-{} indicates required input (order unimportant)
-
 Example Usage:
 Create an html file with all rarefaction plots for all relevant categories:
 python %prog -m mappingfile.txt -r rare1.txt,rare2.txt
@@ -52,15 +49,15 @@ make_option('-r', '--rarefaction', help='name of rarefaction file [REQUIRED]')
 ]
 
 optional_options = [\
-make_option('-p', '--prefs', help='name of columns to make rarefaction graphs of, \
+make_option('-p', '--prefs', type='string', help='name of columns to make rarefaction graphs of, \
 comma delimited no spaces. Use \'ALL\' command to make graphs of all metadata columns. \
 [default: %default]', default='ALL'),
-make_option('-i', '--imagetype', help='extension for image type choose from \
+make_option('-i', '--imagetype', type='string', help='extension for image type choose from \
 (jpg, gif, png, svg, pdf). [default: %default]', default='png'),
 make_option('-d', '--resolution', help='output image resolution, \
-[default: %default]', default="75"),
+[default: %default]', type='int', default='75'),
 make_option('-o', '--dir_path',help='directory prefix for all analyses \
-[default: %default]',default='.')
+[default: %default]', default='.')
 ]
 
 def main():
@@ -111,6 +108,7 @@ please check spelling and syntax.'%list(suppliedcats.difference(availablecats)))
 
     if options.imagetype not in ['jpg','gif','png','svg','pdf']:
         option_parser.error('Supplied extension not supported.')
+        exit(0)
     else:
         prefs['imagetype'] = options.imagetype
         
@@ -118,7 +116,7 @@ please check spelling and syntax.'%list(suppliedcats.difference(availablecats)))
         prefs['resolution'] = int(options.resolution)
     except(ValueError):
         option_parser.error('Inavlid resolution.')
-        prefs['resolution'] = 75
+        exit(0)
 
     if '/' in argv[0]:
         prefs['output_path'] = argv[0].rsplit('/',1)[0]+'/'
