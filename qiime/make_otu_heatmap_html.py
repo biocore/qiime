@@ -10,34 +10,11 @@ __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 __status__ = "Pre-release"
 
-"""
-Author: Jesse Stombaugh (jesse.stombaugh@colorado.edu)
-Status: Prototype
-
-Requirements:
-Python 2.5
-
-Example 1: Create html file and javascript array from otu counts table:
-Usage: python make_otu_heatmap_html.py -i otu_counts.txt
-
-Example 2: Create html file, then javascript array in specified directory:
-Usage: python make_otu_heatmap_html.py -i otu_counts.txt -o ./test/
-
-Example 3: Create html file, then javascript array where the number of hits
-per otu are speified:
-Usage: python make_otu_heatmap_html.py -i otu_counts.txt -n 50
-
-"""
-
 import numpy
 from numpy import array,concatenate
 from cogent.parse.table import SeparatorFormatParser
 from optparse import OptionParser
 from qiime.parse import parse_otus
-from qiime.util import get_qiime_project_dir
-from make_3d_plots import create_dir
-import shutil
-import os
 
 def make_html_doc(js_filename):
     """Create the basic framework for the OTU table heatmap"""
@@ -207,57 +184,7 @@ def get_otu_counts(options, data):
 
     return sample_ids,otu_ids,otu_table,lineages
 
-def _make_cmd_parser():
-    """Returns the command-line options"""
-    parser = OptionParser(usage="Usage: this_file.py -i <otu table file>\
--n <num of otu hits: default=5> -o <write to directory: default=random dir>")
-    parser.add_option('-i', '--otu_count_fname', \
-        help='name of otu count file [REQUIRED]')
-    parser.add_option('-n', '--num_otu_hits', \
-        help='number of hits per OTU [default: %default]',default=5)
-    parser.add_option('-o', '--dir_path',\
-        help='directory prefix for all analyses [default: %default]',default='')
-    options, args = parser.parse_args()
-    return options
-
-def _process_prefs(options):
-    """opens files as necessary based on prefs"""
-    data = {}
-
-    #Open and get coord data
-    data['otu_counts'] = get_otu_counts(options, data)
-
-    filepath=options.otu_count_fname
-    filename=filepath.strip().split('/')[-1].split('.')[0]
-    
-    dir_path = create_dir(options.dir_path,'otu_heatmap_')
-    
-    if dir_path and not dir_path.endswith('/'):
-        dir_path=dir_path+'/'
-        
-    js_dir_path = create_dir(os.path.join(dir_path,'js/'),'')
-    
-    qiime_dir=get_qiime_project_dir()
-    
-    js_path=os.path.join(qiime_dir,'qiime/js')
-    
-    shutil.copyfile(os.path.join(js_path,'overlib.js'), js_dir_path+'overlib.js')
-    shutil.copyfile(os.path.join(js_path,'otu_count_display.js'), js_dir_path+\
-                    'otu_count_display.js')
-    shutil.copyfile(os.path.join(js_path,'jquery.js'), js_dir_path+'jquery.js')
-    shutil.copyfile(os.path.join(js_path,'jquery.tablednd_0_5.js'), js_dir_path+\
-                    'jquery.tablednd_0_5.js')
-    
-    action_str = '_do_heatmap_plots'
-    try:
-        action = eval(action_str)
-    except NameError:
-        action = None
-    #Place this outside try/except so we don't mask NameError in action
-    if action:
-        action(options,data, dir_path,js_dir_path,filename)
-
-def _do_heatmap_plots(options,data, dir_path, js_dir_path,filename):
+def generate_heatmap_plots(options,data, dir_path, js_dir_path,filename):
     """Generate HTML heatmap and javascript array for OTU counts"""
 
     #Convert number of otu hits argument into an integer
@@ -285,9 +212,3 @@ def _do_heatmap_plots(options,data, dir_path, js_dir_path,filename):
     ofile = open(html_filename,'w')
     ofile.write(table_html)
     ofile.close()
-
-if __name__ == "__main__":
-    from sys import argv, exit
-    options = _make_cmd_parser()
-    
-    _process_prefs(options)
