@@ -44,7 +44,7 @@ def main():
       required_options=required_options,
       optional_options=optional_options)
 
-      prep_sffs_in_dir(input_dir)
+    prep_sffs_in_dir(opts.input_dir)
 
 if __name__ == "__main__":
     main()
