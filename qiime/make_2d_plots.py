@@ -19,8 +19,8 @@ from string import strip
 from numpy import array
 from time import strftime
 from random import choice
-from make_3d_plots import create_dir
-from parse import group_by_field,group_by_fields
+from qiime.make_3d_plots import create_dir
+from qiime.parse import group_by_field,group_by_fields
 
 matplotlib_version = re.split("[^\d]", matplotlib.__version__)
 matplotlib_version_info = tuple([int(i) for i in matplotlib_version if \
