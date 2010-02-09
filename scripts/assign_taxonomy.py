@@ -25,17 +25,17 @@ providing a taxon assignment for each sequence."""
 
 script_usage = """ Assign taxonomy of sequences in inseqs.fasta (-i) using the RDP classifier 
  (-m). Output files will be written to rdp_assigned_taxonomy (default).
- python assign_taxonomy.py -i inseqs.fasta -m rdp
+ assign_taxonomy.py -i inseqs.fasta -m rdp
  
  Assign taxonomy of sequences in inseqs.fasta (-i) using the RDP classifier
  (-m) trained on-the-fly from provided refseqs and taxon assignments (-r, -t) 
  respectively. Output files will be written to custom_rdp.
- python assign_taxonomy.py -i inseqs.fasta -r refseqs.fasta -t id_to_taxonomy.txt -m rdp -o custom_rdp
+ assign_taxonomy.py -i inseqs.fasta -r refseqs.fasta -t id_to_taxonomy.txt -m rdp -o custom_rdp
  
  Assign taxonomy of sequences in inseqs.fasta (-i) using BLAST
  (-m) against provided refseqs and taxon assignments (-r, -t) 
  respectively. Output files will be written to blast_assigned_taxonomy (default).
- python assign_taxonomy.py -i inseqs.fasta -r at_refseqs.fasta -t at_id_to_taxonomy.txt -m blast
+ assign_taxonomy.py -i inseqs.fasta -r at_refseqs.fasta -t at_id_to_taxonomy.txt -m blast
 """
 
 assignment_method_constructors = {
