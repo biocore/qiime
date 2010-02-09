@@ -29,7 +29,7 @@ The user may also supply optional arguments that will only create plots for \
 supplied metadata columns from the mapping file (-p), an image type (-i), and a\
 resolution (-d)"""
 
-script_usage = """Usage: %prog [options] {-o OUTPUT_FP}
+script_usage = """Usage: %prog [options] {-m MAP -r RAREFACTION}
 
 Example Usage:
 Create an html file with all rarefaction plots for all relevant categories:
