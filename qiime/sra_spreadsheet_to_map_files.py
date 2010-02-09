@@ -72,7 +72,4 @@ def write_map_files(in_path):
         for line in remap_lines(col_names, lines):
             outfile.write('\t'.join(line) + '\n')
 
-if __name__ == '__main__':
-    from sys import argv
-    write_map_files(argv[1])
 
