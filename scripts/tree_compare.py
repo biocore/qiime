@@ -24,9 +24,6 @@ bootstrap_support() """
 
 script_usage = """usage: %prog [options] {-o OUTPUT_DIR -m MASTER_TREE -s SUPPORT_DIR}
 
-[] indicates optional input (order unimportant)
-{} indicates required input (order unimportant)
-
 Example usage:
 python %prog -m sample_cluster.tre -s rare_unifrac_upgma/ -o unifrac_jackknife/
 this makes the folder unifrac_jackknife.  In that is the master tree,
