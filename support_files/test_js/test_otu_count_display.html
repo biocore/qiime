@@ -18,12 +18,12 @@ from otu_count_display: row_max,col_max,row_sums,col_sums,filter_by_otu_count
                       "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 	<head>
-		<script src="http://code.jquery.com/jquery-latest.js"></script>
-		<link rel="stylesheet" 
-			href="http://jqueryjs.googlecode.com/svn/trunk/qunit/testsuite.css" 
-			type="text/css" media="screen" />
-		<script language="javascript" 
-			src="../../support_files/js/otu_count_display.js"></script>
+		  <script src="http://code.jquery.com/jquery-latest.js"></script>
+		  <link rel="stylesheet" href="http://github.com/jquery/qunit/raw/master/qunit/qunit.css" type="text/css" media="screen" />
+		<script type="text/javascript" src="http://github.com/jquery/qunit/raw/master/qunit/qunit.js"></script>
+
+
+			
 		<script>
 			var OTU_table=new Array();
 			OTU_table[0]=new Array();
@@ -280,16 +280,15 @@ from otu_count_display: row_max,col_max,row_sums,col_sums,filter_by_otu_count
 				 
 			});
 		</script>
+		<script language="javascript" 
+			src="../js/otu_count_display.js"></script>
 	</head>
 	<body>
-		<script type="text/javascript" 
-			src="http://jqueryjs.googlecode.com/svn/trunk/qunit/testrunner.js">
-		</script>
-			<h1>QUnit example</h1>
-			<h2 id="banner"></h2>
-			<h2 id="userAgent"></h2>
-			<ol id="tests"></ol>
-			<div id="main"></div>
+		<h1 id="qunit-header">QUnit example</h1>
+	 	<h2 id="qunit-banner"></h2>
+	 	<h2 id="qunit-userAgent"></h2>
+	 	<ol id="qunit-tests"></ol>
 	</body>
+
 </html>
 
