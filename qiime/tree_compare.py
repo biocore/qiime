@@ -18,13 +18,6 @@ __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 __status__ = "Pre-release"
 
-"""compares jackknife/bootstrapped trees with a master, and outputs support for
-nodes.  The primary function in this module is bootstrap_support()
-
-see command line usage example called with -h
-"""
-
-
 def load_tree_files(master_tree_file, support_dir):
     """Load trees from filepaths
     
@@ -190,67 +183,3 @@ remove offending samples from the master tree, and try again)
     for master_node in master.iterNontips(include_self=True):
         if set(master_node.getTipNames()) in subsampled_tree_nodes_names:
             master_node.bootstrap_support += 1
-            
-            
-usage_str = """usage: %prog [options] {-o OUTPUT_DIR -m MASTER_TREE -s SUPPORT_DIR}
-
-[] indicates optional input (order unimportant)
-{} indicates required input (order unimportant)
-
-Example usage:
-python %prog -m sample_cluster.tre -s rare_unifrac_upgma/ -o unifrac_jackknife/
-this makes the folder unifrac_jackknife.  In that is the master tree,
-with internal nodes named uniquely, a separate bootstrap/jackknife support file,
-and a jackknife_named_nodes.tre tree, for use with e.g.: figtree
-
-output jackknife support values are in the range [0,1]
-
-master tree must have the same tips as support trees.  if your support trees
-omit some tips (e.g.: samples with few sequences),
-make a new master tree with those tips omitted
-"""
-def parse_command_line_parameters():
-    """returns command-line options"""
-
-    #show help if called without any args/options
-    if len(sys.argv) == 1:
-        sys.argv.append('-h')
-    usage = usage_str
-    version = '%prog ' + str(__version__)
-    parser = OptionParser(usage=usage, version=version)
-
-    parser.add_option('-m', '--master_tree',
-        help='master tree filepath [REQUIRED]')
-
-    parser.add_option('-s', '--support_dir',
-        help='path to dir containing support trees [REQUIRED]')
-
-    parser.add_option('-o', '--output_dir',
-        help='output directory, writes three files here '+\
-        "makes dir if it doesn't exist [REQUIRED]")
-
-    opts, args = parser.parse_args()
-    if len(args) != 0:
-        parser.error("positional argument detected.  make sure all"+\
-         ' parameters are identified.' +\
-         '\ne.g.: include the \"-m\" in \"-m MINIMUM_LENGTH\"')
-         
-    required_options = ['master_tree','support_dir','output_dir']
-    for option in required_options:
-        if eval('opts.%s' % option) == None:
-            parser.error('Required option --%s omitted.' % option) 
-    return opts, args
-
-
-if __name__ == '__main__':
-    options,args = parse_command_line_parameters()
-    if not os.path.exists(options.output_dir):
-        os.makedirs(options.output_dir)
-    
-    master_tree, support_trees = load_tree_files(options.master_tree,
-        options.support_dir)
-    # get support of each node in master
-    new_master, bootstraps = bootstrap_support(master_tree, support_trees)
-
-    write_bootstrap_support_files(new_master, bootstraps, options.output_dir,
-    len(support_trees))
