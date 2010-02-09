@@ -14,10 +14,8 @@ __email__ = "rob@spot.colorado.edu"
 __status__ = "Pre-release"
 
 from qiime.parse import parse_otus
-from sys import argv
 from string import strip
 from numpy import array
-from optparse import OptionParser
 import os
 
 
@@ -36,36 +34,6 @@ def split_tax(tax):
     if len(fields) == 1:
         fields = fields[0].split(',')
     return map(strip_quotes, fields)
-
-def process_options(opts):
-    
-    filepath=opts.otu_fname
-    filename=filepath.strip().split('/')[-1]
-    filename=filename.split('.')[0]
-    
-    params={}
-    params['otu_file'] = opts.otu_fname
-    params['min_otu_count'] = opts.min_count
-    params['min_otu_samples'] = opts.min_samples
-    
-    if opts.include_taxonomy:
-        included_taxa = set(map(strip, split_tax(opts.include_taxonomy)))
-    else:
-        included_taxa = set()
-        
-    if opts.exclude_taxonomy:
-        excluded_taxa = set(map(strip, split_tax(opts.exclude_taxonomy)))
-    else:
-        excluded_taxa=set()
-        
-    params['included_taxa']=included_taxa
-    params['excluded_taxa']=excluded_taxa
-    
-    filtered_otu_fp = '%s/%s_filtered.txt' % (opts.dir_path,filename)
-                                    
-    params['dir_path']=opts.dir_path
-                                    
-    return params
 
 def _filter_table(params):
 
@@ -106,31 +74,3 @@ def _filter_table(params):
                         filtered_table_path.write(line)
                     elif not included_taxa and not excluded_taxa:
                         filtered_table_path.write(line)
-
-def make_cmd_parser():
-    """Returns the command-line options."""
-    parser = OptionParser()
-    parser.add_option('-i', '--otu_filename', dest='otu_fname',
-        help='otu file name [REQUIRED]')
-    parser.add_option('-c', '--min_count', dest='min_count', default=1,
-        type=int,
-        help='minimum number of sequences to leave OTU in file [default=%default]')
-    parser.add_option('-s', '--min_samples', dest='min_samples', default=2,
-        type=int,
-        help='minimum number of samples to leave OTU in file [default=%default]')
-    parser.add_option('-t', '--include_taxonomy', dest='include_taxonomy',
-        default='', help='list of taxonomy terms to include [default=%default]')
-    parser.add_option('-e', '--exclude_taxonomy', dest='exclude_taxonomy',
-        default='', help='list of taxonomy terms to exclude [default=%default]')
-    parser.add_option('-o', '--dir_path',\
-        help='directory prefix for all analyses [default=%default]',default='./')
-    return parser.parse_args()
-
-if __name__ == '__main__':
-    from sys import argv, stdout
-    opts, args = make_cmd_parser()
-
-    params=process_options(opts)
-    
-    _filter_table(params)
-    
