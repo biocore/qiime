@@ -4,7 +4,7 @@ from __future__ import division
 from subprocess import Popen, PIPE, STDOUT
 from os import makedirs
 from glob import glob
-from os.path import split, splitext
+from os.path import split, splitext, join
 from qiime.parse import parse_map
 from qiime.util import compute_seqs_per_library_stats
 
@@ -410,7 +410,7 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,\
     commands = []
     python_exe_fp = qiime_config['python_exe_fp']
     qiime_home = qiime_config['qiime_home']
-    qiime_dir = qiime_config['qiime_dir']
+    script_dir = join(qiime_home,'scripts/')
     
     alpha_diversity_metrics = params['alpha_diversity']['metrics'].split(',')
     
@@ -442,14 +442,14 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,\
             pass        
         # Build the rarefaction command
         rarefaction_cmd = \
-         '%s %s/parallel/rarefaction.py -T -i %s -m %s -x %s -s %s -o %s %s' %\
-         (python_exe_fp, qiime_dir, otu_table_fp, min_seqs_per_sample, median_count, \
+         '%s %s/parallel_rarefaction.py -T -i %s -m %s -x %s -s %s -o %s %s' %\
+         (python_exe_fp, script_dir, otu_table_fp, min_seqs_per_sample, median_count, \
           step, rarefaction_dir, params_str)
     else:
         # Build the rarefaction command
         rarefaction_cmd = \
          '%s %s/rarefaction.py -i %s -m %s -x %s -s %s -o %s %s' %\
-         (python_exe_fp, qiime_dir, otu_table_fp, min_seqs_per_sample, median_count, \
+         (python_exe_fp, script_dir, otu_table_fp, min_seqs_per_sample, median_count, \
           step, rarefaction_dir, params_str)
     commands.append([('Alpha rarefaction', rarefaction_cmd)])
     
@@ -476,14 +476,14 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,\
             pass   
         # Build the alpha diversity command
         alpha_diversity_cmd = \
-         "%s %s/parallel/alpha_diversity.py -T -i %s -o %s -t %s %s" %\
-         (python_exe_fp, qiime_dir, rarefaction_dir, alpha_diversity_dir, \
+         "%s %s/parallel_alpha_diversity.py -T -i %s -o %s -t %s %s" %\
+         (python_exe_fp, script_dir, rarefaction_dir, alpha_diversity_dir, \
           tree_fp, params_str)
     else:  
         # Build the alpha diversity command
         alpha_diversity_cmd = \
          "%s %s/alpha_diversity.py -i %s -o %s -t %s %s" %\
-         (python_exe_fp, qiime_dir, rarefaction_dir, alpha_diversity_dir, \
+         (python_exe_fp, script_dir, rarefaction_dir, alpha_diversity_dir, \
           tree_fp, params_str)
 
     commands.append(\
@@ -502,7 +502,7 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,\
         params_str = ''
     # Build the alpha diversity collation command
     alpha_collated_cmd = '%s %s/collate_alpha.py -i %s -o %s %s' %\
-     (python_exe_fp, qiime_dir, alpha_diversity_dir, \
+     (python_exe_fp, script_dir, alpha_diversity_dir, \
       alpha_collated_dir, params_str)
     commands.append([('Collate alpha',alpha_collated_cmd)])
       
@@ -521,7 +521,7 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,\
         input_fp = '%s/%s.txt' % (alpha_collated_dir, metric)
         make_rarefaction_plot_cmd =\
          '%s %s/make_rarefaction_plots.py -m %s -r %s -o %s %s' %\
-         (python_exe_fp, qiime_dir, mapping_fp, input_fp, \
+         (python_exe_fp, script_dir, mapping_fp, input_fp, \
           rarefaction_plot_dir, params_str)
         commands.append(\
          [('Rarefaction plot: %s' % metric,make_rarefaction_plot_cmd)])
