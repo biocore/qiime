@@ -19,7 +19,8 @@ from cogent.util.misc import remove_files
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from qiime.pick_otus import CdHitOtuPicker, DoturOtuPicker, OtuPicker, \
     MothurOtuPicker, PrefixSuffixOtuPicker, TrieOtuPicker, BlastOtuPicker,\
-    expand_otu_map_seq_ids, map_otu_map_files, write_otu_map
+    expand_otu_map_seq_ids, map_otu_map_files, write_otu_map, UclustOtuPicker
+
 
 class OtuPickerTests(TestCase):
     """Tests of the abstract OtuPicker class"""
@@ -419,6 +420,155 @@ class TrieOtuPickerTests(TestCase):
         actual = self.otu_picker_rev(self.small_seq_path_rev)
         self.assertEqual(actual,expected)
         
+        
+
+class UclustOtuPickerTests(TestCase):
+    """ Tests of the uclust-based OTU picker """
+
+    def setUp(self):
+        # create the temporary input files
+        self.tmp_seq_filepath1 = get_tmp_filename(\
+         prefix='UclustOtuPickerTest_',\
+         suffix='.fasta')
+        seq_file = open(self.tmp_seq_filepath1,'w')
+        seq_file.write(dna_seqs_3)
+        seq_file.close()        
+        
+        self.tmp_seq_filepath2 = get_tmp_filename(\
+         prefix='UclustOtuPickerTest_',\
+         suffix='.fasta')
+        seq_file = open(self.tmp_seq_filepath2,'w')
+        seq_file.write(dna_seqs_4)
+        seq_file.close()
+        
+        self._files_to_remove =\
+         [self.tmp_seq_filepath1, self.tmp_seq_filepath2]
+        
+    def tearDown(self):
+        remove_files(self._files_to_remove)
+
+    def test_call_default_params(self):
+        """UclustOtuPicker.__call__ returns expected clusters default params"""
+
+        # adapted from test_app.test_cd_hit.test_cdhit_clusters_from_seqs
+        
+        exp = {0:['uclust_test_seqs_0'],\
+               1:['uclust_test_seqs_1'],\
+               2:['uclust_test_seqs_2'],\
+               3:['uclust_test_seqs_3'],\
+               4:['uclust_test_seqs_4'],\
+               5:['uclust_test_seqs_5'],\
+               6:['uclust_test_seqs_6'],\
+               7:['uclust_test_seqs_7'],\
+               8:['uclust_test_seqs_8'],\
+               9:['uclust_test_seqs_9']}
+        
+        app = UclustOtuPicker(params={})
+        obs = app(self.tmp_seq_filepath1)
+        self.assertEqual(obs, exp)
+        
+    def test_call_alt_threshold(self):
+        """UclustOtuPicker.__call__ returns expected clusters with alt threshold
+        """
+        # adapted from test_app.test_cd_hit.test_cdhit_clusters_from_seqs
+        
+        exp = {0:['uclust_test_seqs_0'],\
+               1:['uclust_test_seqs_1'],\
+               2:['uclust_test_seqs_2'],\
+               3:['uclust_test_seqs_3'],\
+               4:['uclust_test_seqs_4'],\
+               5:['uclust_test_seqs_5'],\
+               6:['uclust_test_seqs_6','uclust_test_seqs_8'],\
+               7:['uclust_test_seqs_7'],\
+               8:['uclust_test_seqs_9']}
+
+        app = UclustOtuPicker(params={'Similarity':0.90})
+        obs = app(self.tmp_seq_filepath1)
+        self.assertEqual(obs, exp)
+        
+    def test_call_output_to_file(self):
+        """UclustHitOtuPicker.__call__ output to file functions as expected
+        """
+        
+        tmp_result_filepath = get_tmp_filename(\
+         prefix='UclustOtuPickerTest.test_call_output_to_file_',\
+         suffix='.txt')
+        
+        app = UclustOtuPicker(params={'Similarity':0.90})
+        obs = app(self.tmp_seq_filepath1,result_path=tmp_result_filepath)
+        
+        result_file = open(tmp_result_filepath)
+        result_file_str = result_file.read()
+        result_file.close()
+        # remove the result file before running the test, so in 
+        # case it fails the temp file is still cleaned up
+        remove(tmp_result_filepath)
+        
+        # compare data in result file to fake expected file
+        self.assertEqual(result_file_str, dna_seqs_3_result_file_90_exp)
+        # confirm that nothing is returned when result_path is specified
+        self.assertEqual(obs,None)
+        
+    def test_call_log_file(self):
+        """UclustOtuPicker.__call__ writes log when expected
+        """
+        
+        tmp_log_filepath = get_tmp_filename(\
+         prefix='UclustOtuPickerTest.test_call_output_to_file_l_',\
+         suffix='.txt')
+        tmp_result_filepath = get_tmp_filename(\
+         prefix='UclustOtuPickerTest.test_call_output_to_file_r_',\
+         suffix='.txt')
+        
+        app = UclustOtuPicker(params={'Similarity':0.99})
+        obs = app(self.tmp_seq_filepath1,\
+         result_path=tmp_result_filepath,log_path=tmp_log_filepath)
+        
+        log_file = open(tmp_log_filepath)
+        log_file_str = log_file.read()
+        log_file.close()
+        # remove the temp files before running the test, so in 
+        # case it fails the temp file is still cleaned up
+        remove(tmp_log_filepath)
+        remove(tmp_result_filepath)
+        
+        log_file_99_exp = ["UclustOtuPicker parameters:",\
+         "Similarity:0.99","Application:uclust",\
+         "Result path: %s" % tmp_result_filepath]
+        # compare data in log file to fake expected log file
+        # NOTE: Since app.params is a dict, the order of lines is not
+        # guaranteed, so testing is performed to make sure that 
+        # the equal unordered lists of lines is present in actual and expected
+        self.assertEqualItems(log_file_str.split('\n'), log_file_99_exp)
+        
+        
+    def test_map_filtered_clusters_to_full_clusters(self):
+        """UclustOtuPicker._map_filtered_clusters_to_full_clusters functions as expected
+        """
+        # original and mapped full clusters are the same
+        app = UclustOtuPicker(params={})
+        filter_map = {'s1':['s1'], 's2':['s2'], \
+                      's3':['s3'], 's4':['s4'], \
+                      's5':['s5'], 's6':['s6']}
+        clusters = [['s1'], ['s2'], ['s3'], ['s4'], ['s5'], ['s6']]
+        actual = app._map_filtered_clusters_to_full_clusters(clusters,filter_map)
+        expected = clusters
+        self.assertEqual(actual,expected)
+        
+        # original and mapped full clusters are not the same
+        filter_map = {'s1':['s1','s2','s3','s4'],'s5':['s5','s6']}
+        clusters = [['s1','s5']]
+        actual = app._map_filtered_clusters_to_full_clusters(clusters,filter_map)
+        for e in actual: e.sort()
+        expected = [['s1','s2','s3','s4','s5','s6']]
+        self.assertEqual(actual,expected)
+        
+        filter_map = {'s1':['s1','s2','s6'],'s3':['s3'],'s5':['s4','s5']}
+        clusters = [['s1','s3'],['s5']]
+        actual = app._map_filtered_clusters_to_full_clusters(clusters,filter_map)
+        for e in actual: e.sort()
+        expected = [['s1','s2','s3','s6'],['s4','s5']]
+        self.assertEqual(actual,expected)
         
 
 class CdHitOtuPickerTests(TestCase):
@@ -933,6 +1083,54 @@ dna_seqs_2_result = {0: ['cdhit_test_seqs_2'],\
 
 dna_seqs_2_result_prefilter =\
  {0: ['cdhit_test_seqs_0','cdhit_test_seqs_1','cdhit_test_seqs_2']}
+
+
+dna_seqs_3 = """>uclust_test_seqs_0
+AACCCCCACGGTGGATGCCACACGCCCCATACAAAGGGTAGGATGCTTAAGACACATCGCGTCAGGTTTGTGTCAGGCCT
+>uclust_test_seqs_1
+ACCCACACGGTGGATGCAACAGATCCCATACACCGAGTTGGATGCTTAAGACGCATCGCGTGAGTTTTGCGTCAAGGCT
+>uclust_test_seqs_2
+CCCCCACGGTGGCAGCAACACGTCACATACAACGGGTTGGATTCTAAAGACAAACCGCGTCAAAGTTGTGTCAGAACT
+>uclust_test_seqs_3
+CCCCACGGTAGCTGCAACACGTCCCATACCACGGGTAGGATGCTAAAGACACATCGGGTCTGTTTTGTGTCAGGGCT
+>uclust_test_seqs_4
+GCCACGGTGGGTACAACACGTCCACTACATCGGCTTGGAAGGTAAAGACACGTCGCGTCAGTATTGCGTCAGGGCT
+>uclust_test_seqs_5
+CCGCGGTAGGTGCAACACGTCCCATACAACGGGTTGGAAGGTTAAGACACAACGCGTTAATTTTGTGTCAGGGCA
+>uclust_test_seqs_6
+CGCGGTGGCTGCAAGACGTCCCATACAACGGGTTGGATGCTTAAGACACATCGCAACAGTTTTGAGTCAGGGCT
+>uclust_test_seqs_7
+ACGGTGGCTACAAGACGTCCCATCCAACGGGTTGGATACTTAAGGCACATCACGTCAGTTTTGTGTCAGAGCT
+>uclust_test_seqs_8
+CGGTGGCTGCAACACGTGGCATACAACGGGTTGGATGCTTAAGACACATCGCCTCAGTTTTGTGTCAGGGCT
+>uclust_test_seqs_9
+GGTGGCTGAAACACATCCCATACAACGGGTTGGATGCTTAAGACACATCGCATCAGTTTTATGTCAGGGGA"""
+
+dna_seqs_3_result_file_90_exp = """0\tuclust_test_seqs_0
+1\tuclust_test_seqs_1
+2\tuclust_test_seqs_2
+3\tuclust_test_seqs_3
+4\tuclust_test_seqs_4
+5\tuclust_test_seqs_5
+6\tuclust_test_seqs_6\tuclust_test_seqs_8
+7\tuclust_test_seqs_7
+8\tuclust_test_seqs_9
+"""
+
+dna_seqs_4 = """>uclust_test_seqs_0 comment fields, not part of sequence identifiers
+ACACCCCGGGGGTTTACATTTTTTTTTTTTTTTTTTTTTTTT
+>uclust_test_seqs_1
+ACACCCCGGGGGTTTACACCAACATACACCGAGTTGGA
+>uclust_test_seqs_2
+ACACCCCGGGGGTTTACGGGGGGGGGGGGGGGGGGGGGGGGGG"""
+
+# results are in length order
+dna_seqs_4_result = {0: ['uclust_test_seqs_2'],\
+                     1: ['uclust_test_seqs_0'],\
+                     2: ['uclust_test_seqs_1']}
+
+dna_seqs_4_result_prefilter =\
+ {0: ['uclust_test_seqs_0','uclust_test_seqs_1','uclust_test_seqs_2']}
 
 #run unit tests if run from command-line
 if __name__ == '__main__':

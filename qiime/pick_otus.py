@@ -2,7 +2,7 @@
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME Project" 
-__credits__ = ["Rob Knight","Greg Caporaso", "Kyle Bittinger","Jens Reeder"] #remember to add yourself if you make changes
+__credits__ = ["Rob Knight","Greg Caporaso", "Kyle Bittinger","Jens Reeder","William Walters"] #remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -17,7 +17,6 @@ grouping those sequences by similarity.
 
 from copy import copy
 from itertools import ifilter
-from optparse import OptionParser
 from os.path import splitext, split
 from os import makedirs
 from itertools import imap
@@ -35,6 +34,9 @@ from cogent.util.trie import build_prefix_map
 from cogent.util.misc import flatten
 from qiime.util import FunctionWithParams
 from qiime.parse import fields_to_dict
+from qiime.uclust import get_clusters_from_fasta_filepath
+from qiime.util import parse_command_line_parameters
+from optparse import make_option
 
 class OtuPicker(FunctionWithParams):
     """An OtuPicker dereplicates a set of sequences at a given similarity.
@@ -627,6 +629,7 @@ class CdHitOtuPicker(OtuPicker):
             clusters = self._map_filtered_clusters_to_full_clusters(\
              clusters,filter_map)
         
+        
         if result_path:
             # if the user provided a result_path, write the 
             # results to file with one tab-separated line per 
@@ -655,6 +658,78 @@ class CdHitOtuPicker(OtuPicker):
         return result
 
 
+class UclustOtuPicker(OtuPicker):
+    
+    Name = 'UclustOtuPicker'
+    
+    def __init__(self, params):
+        """Return new OtuPicker object with specified params.
+        
+        params contains both generic and per-method (e.g. for
+        uclust application controller) params.
+        
+        Some generic entries in params are:
+    
+        Similarity: similarity threshold, default 0.97, corresponding to
+         genus-level OTUs ('Similarity' is a synonym for the '--id' parameter
+         to the uclust application controllers)
+        Application: 3rd-party application used
+        """
+        _params = {'Similarity':0.97,\
+         'Application':'uclust'}
+        _params.update(params)
+        OtuPicker.__init__(self, _params)
+    
+    def __call__ (self, seq_path, result_path=None, log_path=None, 
+        id_len=0, prefix_prefilter_length=None, trie_prefilter=False):
+        """Returns dict mapping {otu_id:[seq_ids]} for each otu.
+        
+        Parameters:
+        seq_path: path to file of sequences
+        result_path: path to file of results. If specified,
+        dumps the result to the desired path instead of returning it.
+        log_path: path to log, which includes dump of params.
+
+        """
+        moltype = DNA
+        log_lines = []
+        
+        uclust_params = copy(self.Params)
+        del uclust_params['Application']
+
+        # Get the clusters by running uclust against the
+        # sequence collection
+        clusters = get_clusters_from_fasta_filepath(seq_path,\
+         percent_ID = uclust_params['Similarity'])
+         
+        
+        
+        if result_path:
+            # if the user provided a result_path, write the 
+            # results to file with one tab-separated line per 
+            # cluster
+            of = open(result_path,'w')
+            for i,cluster in enumerate(clusters):
+                of.write('%s\t%s\n' % (i,'\t'.join(cluster)))
+            of.close()
+            result = None
+            log_lines.append('Result path: %s' % result_path)
+        else:
+            # if the user did not provide a result_path, store
+                # the clusters in a dict of {otu_id:[seq_ids]}, where
+            # otu_id is arbitrary
+            result = dict(enumerate(clusters))
+            log_lines.append('Result path: None, returned as dict.')
+ 
+        if log_path:
+            # if the user provided a log file path, log the run
+            log_file = open(log_path,'w')
+            log_lines = [str(self)] + log_lines
+            log_file.write('\n'.join(log_lines))
+    
+        # return the result (note this is None if the data was
+        # written to file)
+        return result
 
 
 
@@ -919,17 +994,28 @@ def write_otu_map(otu_map,output_fp):
     of.close()
 # End functions to support merging OTU tables
 
-usage_str = """usage: %prog [options] {-i INPUT_SEQS_FILEPATH}
 
-[] indicates optional input (order unimportant) 
-{} indicates required input (order unimportant) 
+otu_picking_method_constructors = {
+    'cdhit': CdHitOtuPicker,
+    'prefix_suffix': PrefixSuffixOtuPicker,
+    'mothur': MothurOtuPicker,
+    'trie':TrieOtuPicker,
+    'blast':BlastOtuPicker,
+    'uclust': UclustOtuPicker
+    }
+    
+otu_picking_method_choices = otu_picking_method_constructors.keys()
 
-Example usage:
+script_description = """ This module creates clusters of OTUs from a given 
+input fasta file, which are written to an output .txt file name based on the
+fasta file name.  By default, the OTU picking method is cdhit, and the
+percent similarity for clusters is 0.97. """
 
+script_usage = """
     # Get detailed usage information
     python pick_otus.py -h
     
-    # Pick OTUs from at_inseqs.fasta (-i) with cd-hit-est (default) and
+    # Pick OTUs from at_inseqs.fasta (-i) with cdhit (default) and
     # store output files in ./cdhit_picked_otus/ (default).
     python pick_otus.py -i at_inseqs.fasta
 
@@ -941,124 +1027,92 @@ Example usage:
     # Pick OTUs from inseqs.fasta (-i) using the BLAST otu picker (-m)
     # using ref_seqs.fasta to build a blast database on-the-fly. (Note that
     # a pre-existing blast database can also be provided via the -b parameter).
-    python pick_otus.py -m blast -i inseqs.fasta -r ref_seqs.fasta
-"""
+    python pick_otus.py -m blast -i inseqs.fasta -r ref_seqs.fasta"""
+    
+required_options = [\
+ make_option('-i','--input_seqs_filepath', help='Path to input sequences file')
+]
 
-def parse_command_line_parameters():
-    """ Parses command line arguments """
-    usage = usage_str
-    version = 'Version: %prog ' +  __version__
-    parser = OptionParser(usage=usage, version=version)
 
-    parser.add_option('-i','--input_seqs_filepath',\
-          help='Path to input sequences file [REQUIRED]')
-
-    otu_picking_method_choices = otu_picking_method_constructors.keys()
-    parser.add_option('-m', '--otu_picking_method', type='choice',
-        choices=otu_picking_method_choices,
+optional_options = [\
+ make_option('-m', '--otu_picking_method', type='choice',
+        choices=otu_picking_method_choices, default = "cdhit",
         help=('Method for picking OTUs.  Valid choices are: ' +\
         ', '.join(otu_picking_method_choices) +\
         '. The mothur method requires an input file ' +\
-        'of aligned sequences [default: %default]'))
-
-    parser.add_option('-c', '--clustering_algorithm', type='choice',
-        choices=MothurOtuPicker.ClusteringAlgorithms,
+        'of aligned sequences [default: %default]')),\
+ make_option('-c', '--clustering_algorithm', type='choice',
+        choices=MothurOtuPicker.ClusteringAlgorithms, default = "furthest",
         help=('Clustering algorithm for mothur otu picking method.  Valid '
-        'choices are: nearest, furthest, and average [default: %default]'))
-
-    parser.add_option('-M','--max_cdhit_memory',type=int,\
+        'choices are: nearest, furthest, and average [default: %default]')),\
+ make_option('-M','--max_cdhit_memory',type=int,\
           help='max available memory to cdhit (cd-hit\'s -M)'+\
-          ' (Mbyte) [default: %default]',default=400)
-          
-    parser.add_option('-o','--output_dir',\
+          ' (Mbyte) [default: %default]',default=400),\
+ make_option('-o','--output_dir',\
           help='Path to store '+\
-          'result file [default: ./<OTU_METHOD>_picked_otus/]')
-          
-    parser.add_option('-r','--refseqs_fp',
+          'result file [default: ./<OTU_METHOD>_picked_otus/]'),\
+ make_option('-r','--refseqs_fp',
           help='Path to reference sequences to blast against when'+\
-          ' using -m blast [default: %default]')
-          
-    parser.add_option('-b','--blast_db',
+          ' using -m blast [default: %default]'),\
+ make_option('-b','--blast_db',
           help='Pre-existing database to blast against when'+\
-          ' using -m blast [default: %default]')
-          
-    parser.add_option('-s','--similarity',action='store',\
+          ' using -m blast [default: %default]'),\
+ make_option('-s','--similarity',action='store', default = 0.97,\
           type='float',dest='similarity',help='Sequence similarity '+\
-          'threshold [default: %default]')
-          
-    parser.add_option('-e','--max_e_value',action='store',\
+          'threshold (for cdhit or uclust) [default: %default]'),\
+ make_option('-e','--max_e_value',action='store', default = 1e-10,\
           type='float',dest='max_e_value',help='Max E-value when '+\
-          'clustering with BLAST [default: %default]')
-          
-    parser.add_option('-v','--trie_reverse_seqs',action='store_true',\
+          'clustering with BLAST [default: %default]'),\
+ make_option('-q','--trie_reverse_seqs',action='store_true', default = False,\
           help='Reverse seqs before picking OTUs with the Trie OTU'+\
           ' picker for suffix (rather than prefix) collapsing'+\
-          ' [default: %default]')
-    
-    parser.add_option('-n','--prefix_prefilter_length',\
+          ' [default: %default]'),\
+ make_option('-n','--prefix_prefilter_length',\
           type=int,help='prefilter data so seqs with identical first '+\
           'prefix_prefilter_length are automatically grouped into a '+\
           'single OTU; useful for large sequence collections where OTU '+\
           'picking doesn\'t scale well '+\
-          '[default: %default; 100 is a good value]')
-    
-    parser.add_option('-t','--trie_prefilter',\
-          action='store_true',\
-          help='prefilter data so seqs which are identical prefixe '+\
+          '[default: %default; 100 is a good value]', default = 50),\
+ make_option('-t','--trie_prefilter',\
+          action='store_true', default = False,\
+          help='prefilter data so seqs which are identical prefixes '+\
           'of a longer seq are automatically grouped into a '+\
           'single OTU; useful for large sequence collections where OTU '+\
           'picking doesn\'t scale well '+\
-          '[default: %default]')
-    
-    parser.add_option('-p','--prefix_length',\
+          '[default: %default]'),\
+ make_option('-p','--prefix_length', default = 50,\
           type=int,help='prefix length when using the prefix_suffix'+\
           ' otu picker; WARNING: CURRENTLY DIFFERENT FROM'+\
-          ' prefix_prefilter_length (-n)! [default: %default]')
-    
-    parser.add_option('-u','--suffix_length',\
+          ' prefix_prefilter_length (-n)! [default: %default]'),\
+ make_option('-u','--suffix_length', default = 50,\
           type=int,help='suffix length when using the prefix_suffix'+\
-          ' otu picker [default: %default]')
-
-    parser.set_defaults(otu_picking_method='cdhit',
-        similarity=0.97, trie_prefilter=False,
-        prefix_length=50, suffix_length=50,
-        clustering_algorithm='furthest',max_e_value=1e-10,\
-        trie_reverse_seqs=False)
-
-    opts,args = parser.parse_args()
-
-    required_options = ['input_seqs_filepath']
-    
-    for option in required_options:
-        if eval('opts.%s' % option) == None:
-            parser.error('Required option --%s omitted.' % option) 
-            
-    if opts.otu_picking_method == 'cdhit' and opts.similarity < 0.80:
-        parser.error('cdhit requires similarity >= 0.80.')
-            
-    if opts.otu_picking_method == 'blast' and \
-       opts.refseqs_fp == None and \
-       opts.blast_db == None:
-        parser.error('blast requires refseqs_fp or blast_db')
-
-    return opts,args
-
-otu_picking_method_constructors = {
-    'cdhit': CdHitOtuPicker,
-    'prefix_suffix': PrefixSuffixOtuPicker,
-    'mothur': MothurOtuPicker,
-    'trie':TrieOtuPicker,
-    'blast':BlastOtuPicker
-    }
-
-if __name__ == "__main__":
-    opts,args = parse_command_line_parameters()
+          ' otu picker [default: %default]') ]
+          
+def main():
+    option_parser, opts, args = parse_command_line_parameters(
+      script_description=script_description,
+      script_usage=script_usage,
+      version=__version__,
+      required_options=required_options,
+      optional_options=optional_options)
+      
     prefix_prefilter_length = opts.prefix_prefilter_length
     otu_picking_method = opts.otu_picking_method
     prefix_length = opts.prefix_length
     suffix_length = opts.suffix_length
     trie_prefilter = opts.trie_prefilter
     trie_reverse_seqs = opts.trie_reverse_seqs
+    refseqs_fp = opts.refseqs_fp
+    blast_db = opts.blast_db
+    similarity = opts.similarity
+    
+    if otu_picking_method == 'cdhit' and similarity < 0.80:
+        option_parser.error('cdhit requires similarity >= 0.80.')
+            
+    if otu_picking_method == 'blast' and \
+       refseqs_fp == None and \
+       blast_db == None:
+           option_parser.error('blast requires refseqs_fp or blast_db')
  
     otu_picker_constructor =\
      otu_picking_method_constructors[otu_picking_method]
@@ -1080,6 +1134,13 @@ if __name__ == "__main__":
     if otu_picking_method == 'cdhit':
         params = {'Similarity':opts.similarity,\
                   '-M':opts.max_cdhit_memory}
+        otu_picker = otu_picker_constructor(params)
+        otu_picker(input_seqs_filepath,\
+         result_path=result_path,log_path=log_path,\
+         prefix_prefilter_length=prefix_prefilter_length,\
+         trie_prefilter=trie_prefilter)
+    elif otu_picking_method == 'uclust':
+        params = {'Similarity':opts.similarity}
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,\
          result_path=result_path,log_path=log_path,\
@@ -1108,5 +1169,10 @@ if __name__ == "__main__":
         otu_picker(input_seqs_filepath,
                    result_path=result_path, log_path=log_path,\
                    blast_db=opts.blast_db,refseqs_fp=opts.refseqs_fp)
+
+
+if __name__ == "__main__":
+    main()
+
         
 
