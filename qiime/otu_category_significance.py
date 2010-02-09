@@ -427,28 +427,3 @@ def ANOVA_wrapper(otu_table, category_mapping, category, threshold, \
     output = output_results_ANOVA(ANOVA_results, category_values, taxonomy_info)
     of = open(output_fp, 'w')
     of.write('\n'.join(output))
-
-if __name__ == "__main__":
-    opts,args = parse_command_line_parameters()
-    verbose = opts.verbose
-    
-    otu_table_fp = opts.otu_table_fp
-    otu_table = open(otu_table_fp)
-    output_fp = opts.output_fp
-    
-    category_mapping_fp = opts.category_mapping_fp
-    category_mapping = open(category_mapping_fp,'U')
-    
-    filter = opts.filter
-    category = opts.category
-    threshold = opts.threshold
-    if threshold and threshold != 'None':
-        threshold = float(threshold)
-    test = opts.test
-
-    if test == 'g_test':
-        G_test_wrapper(otu_table, category_mapping, category, threshold, \
-                filter, output_fp)
-    elif test == 'ANOVA':
-        ANOVA_wrapper(otu_table, category_mapping, category, threshold, \
-                filter, output_fp)
