@@ -25,7 +25,8 @@ from qiime.make_3d_plots import (make_3d_plots,scale_pc_data_matrix,
                                     natsort, make_color_dict,
                                  process_custom_axes, get_custom_coords,
                                  remove_nans,scale_custom_coords,
-                                 remove_unmapped_samples)
+                                 remove_unmapped_samples,
+                                 make_edges_output)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -140,6 +141,20 @@ class TopLevelTests(TestCase):
         obs_kin=make_mage_output(self.groups,self.colors,self.coord_header,\
                                  coords[1],self.pct_var, custom_axes)
         self.assertEqual(obs_kin, exp_kin_partial_axes)
+
+    def test_make_edge_output(self):
+        """make_mage_output: Create kinemage string given the data"""
+        # test without custom axes
+        exp_result = ['@vectorlist {edges} dimension=4 on', '1.0 2.0 3.0 4.0 white', '1.066 2.066 3.066 4.066 white P', '1.066 2.066 3.066 4.066 hotpink', '1.1 2.1 3.1 4.1 hotpink P', '1.0 2.0 3.0 4.0 white', '1.132 2.132 3.132 4.132 white P', '1.132 2.132 3.132 4.132 blue', '1.2 2.2 3.2 4.2 blue P']
+        edges = [['a_0','a_1'],['a_0','a_2']]
+        coord_dict = {}
+        coord_dict['a_0'] = array([ 1.0, 2.0, 3.0, 4.0])
+        coord_dict['a_1'] = array([ 1.1, 2.1, 3.1, 4.1])
+        coord_dict['a_2'] = array([ 1.2, 2.2, 3.2, 4.2])
+        num_coords=4
+        obs_result=make_edges_output(coord_dict, edges, num_coords)
+        
+        self.assertEqual(obs_result, exp_result)
 
     def test_combine_map_label_cols(self):
         """combine_map_label_cols: Combine two or more columns from the \
