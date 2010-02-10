@@ -11,20 +11,16 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Pre-release"
 
-
-from optparse import OptionParser
+from optparse import make_option
 from os import makedirs
-from qiime.util import load_qiime_config
+from qiime.util import load_qiime_config, parse_command_line_parameters
 from qiime.parse import parse_qiime_parameters
 from qiime.workflow import run_jackknifed_upgma_clustering, print_commands,\
     call_commands_serially, print_to_stdout, no_status_updates
 
-usage_str = """usage: %prog [options] {-i OTU_TABLE_FP -o OUTPUT_DIR -p PARAMETERS_FP -e SEQS_PER_SAMPLE}
+script_description = """A workflow script for performing jackknifed UPGMA clustering"""
 
-[] indicates optional input (order unimportant)
-{} indicates required input (order unimportant)
-
- The steps performed by this script are:
+script_usage = """ These steps are performed by the following command:
   1) Compute beta diversity distance matrix from otu table (and
    tree, if applicable)
   2) Build rarefied OTU tables;
@@ -33,66 +29,48 @@ usage_str = """usage: %prog [options] {-i OTU_TABLE_FP -o OUTPUT_DIR -p PARAMETE
   5) Build UPGMA trees from rarefied OTU table distance matrices;
   6) Compare rarefied OTU table distance matrix UPGMA trees 
    to tree full UPGMA tree and write support file and newick tree
-   with support values as node labels.
-
-Example usage:
- python ~/code/Qiime/scripts/jackknifed_upgma.py -i inseqs1_otu_table.txt -t inseqs1_rep_set.tre -p custom_parameters_jack.txt -o wf_jack -e 5 -v
-"""
+   with support values as node labels. 
+   
+python ~/code/Qiime/scripts/jackknifed_upgma.py -i inseqs1_otu_table.txt -t inseqs1_rep_set.tre -p custom_parameters_jack.txt -o wf_jack -e 5 -v"""
 
 qiime_config = load_qiime_config()
 
-def parse_command_line_parameters():
-    """ Parses command line arguments """
-    usage = usage_str
-    version = 'Version: %prog ' + __version__
-    parser = OptionParser(usage=usage, version=version)
-
-    parser.add_option('-i','--otu_table_fp',\
-            help='the input fasta file [REQUIRED]')
-    parser.add_option('-o','--output_dir',\
-            help='the output directory [REQUIRED]')
-    parser.add_option('-p','--parameter_fp',\
-            help='path to the parameter file [REQUIRED]')
-    parser.add_option('-e','--seqs_per_sample',type='int',\
+required_options = [\
+ make_option('-i','--otu_table_fp',\
+            help='the input fasta file [REQUIRED]'),\
+ make_option('-o','--output_dir',\
+            help='the output directory [REQUIRED]'),\
+ make_option('-p','--parameter_fp',\
+            help='path to the parameter file [REQUIRED]'),\
+ make_option('-e','--seqs_per_sample',type='int',\
      help='number of sequences to include in each jackknifed subset'+\
             ' [REQUIRED]')
-    parser.add_option('-t','--tree_fp',\
-            help='path to the tree file [default: %default; '+\
-            'REQUIRED for phylogenetic measures]')
+]
 
-    parser.add_option('-v','--verbose',action='store_true',\
-        dest='verbose',help='Print information during execution -- '+\
-        'useful for debugging [default: %default]')
-        
-    parser.add_option('-f','--force',action='store_true',\
+optional_options = [\
+ make_option('-t','--tree_fp',\
+            help='path to the tree file [default: %default; '+\
+            'REQUIRED for phylogenetic measures]'),\
+ make_option('-f','--force',action='store_true',\
         dest='force',help='Force overwrite of existing output directory'+\
         ' (note: existing files in output_dir will not be removed)'+\
-        ' [default: %default]')
-        
-    parser.add_option('-w','--print_only',action='store_true',\
+        ' [default: %default]'),\
+ make_option('-w','--print_only',action='store_true',\
         dest='print_only',help='Print the commands but don\'t call them -- '+\
-        'useful for debugging [default: %default]')
-        
-    parser.add_option('-s','--serial',action='store_true',\
+        'useful for debugging [default: %default]',default=False),\
+ make_option('-s','--serial',action='store_true',\
         dest='serial',help='Do not use parallel scripts'+\
-        ' [default: %default]')
+        ' [default: %default]',default=False)
+]
 
-    parser.set_defaults(verbose=False,print_only=False,\
-     serial=False)
-
-    required_options = ['otu_table_fp', 'output_dir','parameter_fp',\
-     'seqs_per_sample']
-
-    opts,args = parser.parse_args()
-    for option in required_options:
-        if eval('opts.%s' % option) == None:
-            parser.error('Required option --%s omitted.' % option)
-
-    return opts,args
-
-
-if __name__ == "__main__":
-    opts,args = parse_command_line_parameters()
+def main():
+    option_parser, opts, args = parse_command_line_parameters(
+      script_description=script_description,
+      script_usage=script_usage,
+      version=__version__,
+      required_options=required_options,
+      optional_options=optional_options)
+      
     verbose = opts.verbose
     
     otu_table_fp = opts.otu_table_fp
@@ -146,3 +124,7 @@ if __name__ == "__main__":
      qiime_config=qiime_config,\
      parallel=parallel,\
      status_update_callback=status_update_callback)
+
+
+if __name__ == "__main__":
+    main()

@@ -552,7 +552,7 @@ def run_jackknifed_upgma_clustering(otu_table_fp,tree_fp,seqs_per_sample,\
     commands = []
     python_exe_fp = qiime_config['python_exe_fp']
     qiime_home = qiime_config['qiime_home']
-    qiime_dir = qiime_config['qiime_dir']
+    script_dir = join(qiime_home,'scripts/')
     
     beta_diversity_metrics = params['beta_diversity']['metrics'].split(',')
     
@@ -565,7 +565,7 @@ def run_jackknifed_upgma_clustering(otu_table_fp,tree_fp,seqs_per_sample,\
         params_str = '%s -t %s' % (params_str,tree_fp)
     # Build the beta-diversity command
     beta_div_cmd = '%s %s/beta_diversity.py -i %s -o %s %s' %\
-     (python_exe_fp, qiime_dir, otu_table_fp, output_dir, params_str)
+     (python_exe_fp, script_dir, otu_table_fp, output_dir, params_str)
     commands.append(\
      [('Beta Diversity (%s)' % ', '.join(beta_diversity_metrics), beta_div_cmd)])
 
@@ -592,14 +592,14 @@ def run_jackknifed_upgma_clustering(otu_table_fp,tree_fp,seqs_per_sample,\
             pass        
         # Build the parallel rarefaction command
         rarefaction_cmd = \
-         '%s %s/parallel/rarefaction.py -T -i %s -m %s -x %s -s 1 -o %s %s' %\
-         (python_exe_fp, qiime_dir, otu_table_fp, seqs_per_sample,\
+         '%s %s/parallel_rarefaction.py -T -i %s -m %s -x %s -s 1 -o %s %s' %\
+         (python_exe_fp, script_dir, otu_table_fp, seqs_per_sample,\
           seqs_per_sample, rarefaction_dir, params_str)
     else:
         # Build the serial rarefaction command
         rarefaction_cmd = \
          '%s %s/rarefaction.py -i %s -m %s -x %s -s 1 -o %s %s' %\
-         (python_exe_fp, qiime_dir, otu_table_fp, seqs_per_sample, \
+         (python_exe_fp, script_dir, otu_table_fp, seqs_per_sample, \
           seqs_per_sample, rarefaction_dir, params_str)
     commands.append([('Rarefaction', rarefaction_cmd)])
 
@@ -618,7 +618,7 @@ def run_jackknifed_upgma_clustering(otu_table_fp,tree_fp,seqs_per_sample,\
             params_str = ''
         # Build the hierarchical clustering command (for full distance matrix)
         hierarchical_cluster_cmd = '%s %s/hierarchical_cluster.py -i %s -o %s %s' %\
-         (python_exe_fp, qiime_dir, distance_matrix_fp, master_tree_fp, params_str)
+         (python_exe_fp, script_dir, distance_matrix_fp, master_tree_fp, params_str)
         commands.append(\
          [('UPGMA on full distance matrix: %s' % beta_diversity_metric,\
            hierarchical_cluster_cmd)])
@@ -653,13 +653,13 @@ def run_jackknifed_upgma_clustering(otu_table_fp,tree_fp,seqs_per_sample,\
                 pass        
             # Build the parallel beta diversity command (for rarefied OTU tables)
             beta_div_rarefied_cmd = \
-             '%s %s/parallel/beta_diversity.py -T -i %s -o %s %s' %\
-             (python_exe_fp, qiime_dir, rarefaction_dir, dm_dir, params_str)
+             '%s %s/parallel_beta_diversity.py -T -i %s -o %s %s' %\
+             (python_exe_fp, script_dir, rarefaction_dir, dm_dir, params_str)
         else:
             # Build the serial beta diversity command (for rarefied OTU tables)
             beta_div_rarefied_cmd = \
              '%s %s/beta_diversity.py -i %s -o %s %s' %\
-             (python_exe_fp, qiime_dir, rarefaction_dir, dm_dir, params_str)
+             (python_exe_fp, script_dir, rarefaction_dir, dm_dir, params_str)
         commands.append(\
          [('Beta diversity on rarefied OTU tables (%s)' % beta_diversity_metric,\
            beta_div_rarefied_cmd)])
@@ -680,7 +680,7 @@ def run_jackknifed_upgma_clustering(otu_table_fp,tree_fp,seqs_per_sample,\
         # distance matrices)
         hierarchical_cluster_cmd =\
          '%s %s/hierarchical_cluster.py -i %s -o %s %s' %\
-         (python_exe_fp, qiime_dir, dm_dir, upgma_dir, params_str)
+         (python_exe_fp, script_dir, dm_dir, upgma_dir, params_str)
         commands.append(\
          [('UPGMA on rarefied distance matrix (%s)' % beta_diversity_metric,\
            hierarchical_cluster_cmd)])
@@ -697,7 +697,7 @@ def run_jackknifed_upgma_clustering(otu_table_fp,tree_fp,seqs_per_sample,\
             params_str = ''
         # Build the tree compare command
         tree_compare_cmd = '%s %s/tree_compare.py -s %s -m %s -o %s %s' %\
-         (python_exe_fp, qiime_dir, upgma_dir, master_tree_fp, \
+         (python_exe_fp, script_dir, upgma_dir, master_tree_fp, \
           tree_compare_dir, params_str)
         commands.append(\
          [('Tree compare (%s)' % beta_diversity_metric,\
