@@ -390,7 +390,7 @@ class TrieOtuPickerTests(TestCase):
         
         self.small_seq_path_rev = get_tmp_filename(
             prefix='TrieOtuPickerTest_', suffix='.fasta')
-        self._files_to_remove = [self.small_seq_path_rev]
+        self._files_to_remove.append(self.small_seq_path_rev)
         f = open(self.small_seq_path_rev, 'w')
         f.write('\n'.join(['>%s\n%s' % s for s in seqs_rev]))
         f.close()
