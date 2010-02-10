@@ -29,11 +29,9 @@ from cogent.app.formatdb import build_blast_db_from_fasta_path
 
 script_description = """Run a parallel version of pick_otus.py using Blast"""
 
-script_usage = """Split the input fasta file (-i) into five jobs (-O) to align against 
- pynast_test_template.fasta (-t), submit the jobs to the cluster (default)
- and write the output (-o) to /home/caporaso/out:
+script_usage = """Pick OTUs by blasting inseqs.fasta against refseqs.fasta and write the output to the out directory.
 
- python ~/Qiime/qiime/parallel/align_seqs_pynast.py -i 10_seq.fasta -O 5 -t /data/pynast_test_template.fasta -o /home/caporaso/out
+python ~/code/Qiime/scripts/parallel_pick_otus_blast.py -i inseqs.fasta -r refseqs.fasta -o out/
 """
 
 qiime_config = load_qiime_config()
