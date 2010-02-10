@@ -36,20 +36,20 @@ The check id map step is necessary in order to confirm that the user generated m
 **Input Arguments:**
 
 .. note::
-
-	-m MAP_FNAME, \--map=MAP_FNAME [REQUIRED]
+ 
+	-m MAP_FNAME, `-`-map=MAP_FNAME [REQUIRED]
 
 		This is the user-generated mapping file.
 
-	-o OUTPUT_DIR, --output_dir=OUTPUT_DIR [REQUIRED]
+	-o OUTPUT_DIR, `-`-output_dir=OUTPUT_DIR [REQUIRED]
 
 		Required output directory for mapping file with corrected characters and log file (by default, invalid characters will be converted to underscores)
 
-	-b HAS_BARCODES, --is-barcoded=HAS_BARCODES [Default: 1]
+	-b HAS_BARCODES, `-`-is-barcoded=HAS_BARCODES [Default: 1]
 
 		If the mapping file contains the barcode sequence ("BarcodeSequence"), then the user should set this value as 1 (True), else as 0 (False).
 
-	-v, --verbose [Default: False]
+	-v, `-`-verbose [Default: False]
 
 		Enable verbose output. 
 
@@ -87,79 +87,79 @@ Sequences from samples that are not found in the mapping file (no corresponding 
 
 .. note::
 
-	-m MAP_FNAME, --map=MAP_FNAME [REQUIRED] 
+	-m MAP_FNAME, `-`-map=MAP_FNAME [REQUIRED] 
 
 		This is the user-generated mapping file. 
 
-	-f FASTA_FNAMES, --fasta=FASTA_FNAMES [REQUIRED] 
+	-f FASTA_FNAMES, `-`-fasta=FASTA_FNAMES [REQUIRED] 
 
 		This is the FASTA file(s) generated from the sequencing process. If more than one FASTA file is generated, all files can be parsed by comma (",") separating each file on the command line.
 
-	-q QUAL_FNAMES, --qual=QUAL_FNAMES [Default: None] 
+	-q QUAL_FNAMES, `-`-qual=QUAL_FNAMES [Default: None] 
 
 		This is the QUAL file(s) generated from the sequencing process. If more than one QUAL file is generated, all files can be parsed by comma (",") separating each file on the command line. 
 
-	-l MIN_SEQ_LEN, --min-seq-length=MIN_SEQ_LEN [Default: 200] 
+	-l MIN_SEQ_LEN, `-`-min-seq-length=MIN_SEQ_LEN [Default: 200] 
 
 		This is the minimum sequence length of a sequence to keep in the output FASTA file.
 
-	-L MAX_SEQ_LEN, --max-seq-length=MAX_SEQ_LEN [Default: 1000] 
+	-L MAX_SEQ_LEN, `-`-max-seq-length=MAX_SEQ_LEN [Default: 1000] 
 
 		This is the maximum sequence length of a sequence to keep in the output FASTA file.
 
-	-t, \--trim-seq-length 
+	-t, `-`-trim-seq-length 
 
 		If this option is used, then the script will calculate sequence lengths after trimming primers and barcodes.
 
-	-s MIN_QUAL_SCORE, --min-qual-score=MIN_QUAL_SCORE [Default: 25] 
+	-s MIN_QUAL_SCORE, `-`-min-qual-score=MIN_QUAL_SCORE [Default: 25] 
 
 		This is the minimum average quality score allowed in read to be kept in the output FASTA file.
 
-	-k, \--keep-primer 
+	-k, `-`-keep-primer 
 
 		If this option is used, the primers will be kept in the output FASTA file.
 
-	-a MAX_AMBIG, --max-ambig=MAX_AMBIG [Default: 0] 
+	-a MAX_AMBIG, `-`-max-ambig=MAX_AMBIG [Default: 0] 
 
 		This is the maximum number of ambiguous bases for the sequence to be kept in the output FASTA file.
 
-	-H MAX_HOMOPOLYMER, --max-homopolymer=MAX_HOMOPOLYMER [Default: 6] 
+	-H MAX_HOMOPOLYMER, `-`-max-homopolymer=MAX_HOMOPOLYMER [Default: 6] 
 
 		This is the maximum length of a homopolymer run to be kept in the output FASTA file.
 
-	-M MAX_PRIMER_MM, --max-primer-mismatch=MAX_PRIMER_MM [Default: 0] 
+	-M MAX_PRIMER_MM, `-`-max-primer-mismatch=MAX_PRIMER_MM [Default: 0] 
 
 		This is the maximum number of primer mismatches allowed for the sequence to be kept in the output FASTA file. 
 
-	-b BARCODE_TYPE, --barcode-type=BARCODE_TYPE [Default: golay_12] 
+	-b BARCODE_TYPE, `-`-barcode-type=BARCODE_TYPE [Default: golay_12] 
 
 		This is the type of barcoding used for the experiment, e.g. 4 or hamming_8 or golay_12.
 
-	-o DIR_PREFIX, --dir-prefix=DIR_PREFIX [default: .] 
+	-o DIR_PREFIX, `-`-dir-prefix=DIR_PREFIX [default: .] 
 
 		This is the directory location, where all output files should be written.
 
-	-e MAX_BC_ERRORS, --max-barcode-errors=MAX_BC_ERRORS [Default: 1.5] 
+	-e MAX_BC_ERRORS, `-`-max-barcode-errors=MAX_BC_ERRORS [Default: 1.5] 
 
 		This is the maximum number of errors in barcode allowed for a sequence to be kept in the output FASTA file.
 
-	-n START_INDEX, \--start-numbering-at=START_INDEX 
+	-n START_INDEX, `-`-start-numbering-at=START_INDEX 
 
 		This is the seq id to use for the first sequence to be parsed by this script.
 
-	-r, \--remove_unassigned 
+	-r, `-`-remove_unassigned 
 
 		If this option is used, then all sequences which remain Unassigned are removed from the output FASTA file, otherwise the Unassigned sequences will be kept in the output FASTA file.
 
-	-B, \--keep-barcode 
+	-B, `-`-keep-barcode 
 
 		This keeps the barcode on the sequence. 
 
-	-c, \--disable_bc_correction [Default: False] 
+	-c, `-`-disable_bc_correction [Default: False] 
 
 		This disables the attempt to find nearest corrected barcode, which can improve performance.
 
-	-w QUAL_SCORE_WINDOW, --qual_score_window=QUAL_SCORE_WINDOW [Default: 0] 
+	-w QUAL_SCORE_WINDOW, `-`-qual_score_window=QUAL_SCORE_WINDOW [Default: 0] 
 
 		This enables a sliding window test of quality scores. If the average score of a continuous set of w nucleotides falls below the threshold (see -s for default), the sequence is discarded. A good value would be 50.0 (a value of zero means no filtering). One must pass a qual file (see “-q “parameter) if this functionality is enabled.
 
@@ -249,55 +249,55 @@ Currently, the following clustering methods have been implemented in QIIME:
 
 .. note::
 
-	-i INPUT_SEQS_FILEPATH, --input_seqs_filepath=INPUT_SEQS_FILEPATH [REQUIRED]
+	-i INPUT_SEQS_FILEPATH, `-`-input_seqs_filepath=INPUT_SEQS_FILEPATH [REQUIRED]
 
 		Path to FASTA file containing sequences, where the sequence ids may contain the sample ids (i.e., resulting FASTA file from :file:`split_libraries.py`)
 
-	-m OTU_PICKING_METHOD, --otu_picking_method=OTU_PICKING_METHOD [Default: cdhit]
+	-m OTU_PICKING_METHOD, `-`-otu_picking_method=OTU_PICKING_METHOD [Default: cdhit]
 
 		This is the method that should be used for picking OTUs. Valid choices are: cdhit, blast, prefix_suffix, and mothur. The mothur method requires an input file of aligned sequences. Whichever method is chosen, the appropriate 3rd party application must be installed properly.
 
-	-c CLUSTERING_ALGORITHM, --clustering_algorithm=CLUSTERING_ALGORITHM [ Default: furthest]
+	-c CLUSTERING_ALGORITHM, `-`-clustering_algorithm=CLUSTERING_ALGORITHM [ Default: furthest]
 
 		This is the clustering algorithm for the mothur otu picking method. Valid choices are: nearest, furthest, and average.
 
-	-M MAX_CDHIT_MEMORY, --max_cdhit_memory=MAX_CDHIT_MEMORY [Default: 400]
+	-M MAX_CDHIT_MEMORY, `-`-max_cdhit_memory=MAX_CDHIT_MEMORY [Default: 400]
 
 		This is the maximum available memory allowed to be used by cdhit (cd-hit's -M) (Mbyte). This option only works with the cdhit method.
 
-	-o OUTPUT_DIR, --output_dir=OUTPUT_DIR [Default: ./<OTU_METHOD>_picked_otus/]
+	-o OUTPUT_DIR, `-`-output_dir=OUTPUT_DIR [Default: ./<OTU_METHOD>_picked_otus/]
 
 		This is the location where the resulting output should be written.
 
-	-r REFSEQS_FP, --refseqs_fp=REFSEQS_FP [Default: none]
+	-r REFSEQS_FP, `-`-refseqs_fp=REFSEQS_FP [Default: none]
 
 		This is the path to the reference sequences which blast should compare against, when using the "-m blast" option. This option only works with the blast method.
 
-	-b BLAST_DB, --blast_db=BLAST_DB [Default: none]
+	-b BLAST_DB, `-`-blast_db=BLAST_DB [Default: none]
 
 		This is the path to the pre-existing database which blast should compare against, when using "-m blast" option. This should be the prefix to the database, since multiple files comprise a blast database. This option only works with the blast method.
 
-	-s SIMILARITY, --similarity=SIMILARITY [Default: 0.97]
+	-s SIMILARITY, `-`-similarity=SIMILARITY [Default: 0.97]
 
 		This is the sequence similarity threshold for picking otus. This option only works with cdhit, blast and mothur methods.
 
-	-e MAX_E_VALUE, --max_e_value=MAX_E_VALUE [Default: 1e-10]
+	-e MAX_E_VALUE, `-`-max_e_value=MAX_E_VALUE [Default: 1e-10]
 
 		This is the maximum E-value allowed, when clustering using the "-m blast" option. This option only works with the blast method.
 
-	-n PREFIX_PREFILTER_LENGTH, --prefix_prefilter_length=PREFIX_PREFILTER_LENGTH [Default: none]
+	-n PREFIX_PREFILTER_LENGTH, `-`-prefix_prefilter_length=PREFIX_PREFILTER_LENGTH [Default: none]
 
 		This is the length of the sequence prefix, by which to prefilter data. Sequences with identical prefixes using the defined length will be automatically grouped into a single OTU. This is useful for large sequence collections where OTU picking doesn't scale well. A recommended value to use is: 100. This option only works with the cdhit method.
 
-	-t, --trie_prefilter [Default: False]
+	-t, `-`-trie_prefilter [Default: False]
 
 		When using the "-t" option, the longest sequence within a OTU cluster is chosen, however if you use the "-n" option, this option will be deprecated. This option useful for large sequence collections where OTU picking doesn't scale well. This option only works with the cdhit method.
 
-	-p PREFIX_LENGTH, --prefix_length=PREFIX_LENGTH [Default: 50]
+	-p PREFIX_LENGTH, `-`-prefix_length=PREFIX_LENGTH [Default: 50]
 
 		This is the prefix length when using the prefix_suffix otu picker. WARNING: This is currently different from prefix_prefilter_length (-n)!
 
-	-u SUFFIX_LENGTH, --suffix_length=SUFFIX_LENGTH [Default: 50]
+	-u SUFFIX_LENGTH, `-`-suffix_length=SUFFIX_LENGTH [Default: 50]
 
 		This is the suffix length when using the prefix_suffix otu picker.
 
@@ -407,27 +407,27 @@ After picking OTUs, you can then pick a representative set of sequences. For eac
 
 .. note::
 
-	-i OTU_FP, --input_file=OTU_FP [REQUIRED]
+	-i OTU_FP, `-`-input_file=OTU_FP [REQUIRED]
 
 		Path the OTU file containing OTUs and the sequence identifiers which correspond to a particular OTU (i.e., resulting OTU file from :file:`pick_otus.py`)
 
-	-f FASTA_FP, --fasta_file=FASTA_FP [REQUIRED]
+	-f FASTA_FP, `-`-fasta_file=FASTA_FP [REQUIRED]
 
 		Path to FASTA file containing sequences, where the sequence ids may contain the sample ids (i.e., resulting FASTA file from :file:`split_libraries.py`)
 
-	-m REP_SET_PICKING_METHOD, \--rep_set_picking_method=REP_SET_PICKING_METHOD [default: most_abundant]
+	-m REP_SET_PICKING_METHOD, `-`-rep_set_picking_method=REP_SET_PICKING_METHOD [default: most_abundant]
 
 		This is the method for picking representative sequences for each OTU. Alternative methods for choosing representative sequences are to choose the longest sequence in an OTU ("-m longest"); the first sequence listed in an OTU ("-m first"); or a random sequence from the OTU ("-m random").
 
-	-o RESULT_FP, --result_fp=RESULT_FP [Default: <input_sequences_filepath>_rep_set.fasta]
+	-o RESULT_FP, `-`-result_fp=RESULT_FP [Default: <input_sequences_filepath>_rep_set.fasta]
 
 		This is the location where the resulting output should be written.
 
-	-l LOG_FP, --log_fp=LOG_FP [Default: No log file created.]
+	-l LOG_FP, `-`-log_fp=LOG_FP [Default: No log file created.]
 
 		This is the location where the resulting .log file should be written.
 
-	-s SORT_BY, --sort_by=SORT_BY [Default: otu]
+	-s SORT_BY, `-`-sort_by=SORT_BY [Default: otu]
 
 		This is the method by which the resulting representative sequence set is sorted. The options to sort by are by OTU ("-s otu") or by the sequence identifier ("-s seq_id")
 
@@ -460,43 +460,43 @@ A FASTA file of sequences, can be screened to remove chimeras (sequences generat
 
 .. note::
 
-	-i INPUT_SEQS_FP, --input_seqs_fp=INPUT_SEQS_FP [REQUIRED]
+	-i INPUT_SEQS_FP, `-`-input_seqs_fp=INPUT_SEQS_FP [REQUIRED]
 
 		Path to FASTA file containing sequences to be assigned (i.e., resulting FASTA file from :file:`pick_rep_set.py`)                     
 
-	-t ID_TO_TAXONOMY_FP, --id_to_taxonomy_fp=ID_TO_TAXONOMY_FP [Default: none; REQUIRED when method is blast_fragments]
+	-t ID_TO_TAXONOMY_FP, `-`-id_to_taxonomy_fp=ID_TO_TAXONOMY_FP [Default: none; REQUIRED when method is blast_fragments]
 
 		Path to tab-delimited file which maps sequences to an assigned taxonomy. Each assigned taxonomy is provided as a comma-separated list.
 
-	-r REFERENCE_SEQS_FP, --reference_seqs_fp=REFERENCE_SEQS_FP [Default: none; must provide either –reference_seqs_fp or –blast_db when method is blast_fragments]
+	-r REFERENCE_SEQS_FP, `-`-reference_seqs_fp=REFERENCE_SEQS_FP [Default: none; must provide either –reference_seqs_fp or –blast_db when method is blast_fragments]
 
 		This is the path to the reference sequences (used to build a blast database).
 
-	-b BLAST_DB, --blast_db=BLAST_DB [Default: none; must provide either –reference_seqs_fp or –blast_db when method is blast_fragments]
+	-b BLAST_DB, `-`-blast_db=BLAST_DB [Default: none; must provide either –reference_seqs_fp or –blast_db when method is blast_fragments]
 
 		Database to blast against. 
 
-	-m CHIMERA_DETECTION_METHOD, \--chimera_detection_method=CHIMERA_DETECTION_METHOD [Default:blast_fragments]
+	-m CHIMERA_DETECTION_METHOD, `-`-chimera_detection_method=CHIMERA_DETECTION_METHOD [Default:blast_fragments]
 
 		This is the chimera detection method that should be used.
 
-	-n NUM_FRAGMENTS, --num_fragments=NUM_FRAGMENTS [Default: 3]
+	-n NUM_FRAGMENTS, `-`-num_fragments=NUM_FRAGMENTS [Default: 3]
 
 		This is the number of fragments that sequences should be split into (i.e., number of expected breakpoints + 1).
 
-	-d TAXONOMY_DEPTH, --taxonomy_depth=TAXONOMY_DEPTH [Default: 4]
+	-d TAXONOMY_DEPTH, `-`-taxonomy_depth=TAXONOMY_DEPTH [Default: 4]
 
 		This is the Number of taxonomic divisions to consider when comparing taxonomy assignments.
 
-	-e MAX_E_VALUE, --max_e_value=MAX_E_VALUE [default: 1e-30]
+	-e MAX_E_VALUE, `-`-max_e_value=MAX_E_VALUE [default: 1e-30]
 
 		This is the maximum E-value allowed, when clustering using the "-m blast_fragments" option. This option only works with the blast method.
 
-	-o OUTPUT_FP, --output_fp=OUTPUT_FP [Default: derived from input_seqs_fp]
+	-o OUTPUT_FP, `-`-output_fp=OUTPUT_FP [Default: derived from input_seqs_fp]
 
 		This is the location where the resulting output should be written.
 
-	-v, --verbose [default: False]
+	-v, `-`-verbose [default: False]
 
 		If this parameter is passed, then the script will print information during execution, which is useful for debugging.
 
@@ -539,43 +539,43 @@ This code is designed to allow users of the QIIME workflow to conveniently exclu
 
 .. note::
 
-	-i QUERYDB, --querydb=QUERYDB [REQUIRED]
+	-i QUERYDB, `-`-querydb=QUERYDB [REQUIRED]
 
 		Path to FASTA file containing sequences that are used as the query (i.e., resulting FASTA file from :file:`pick_rep_set.py`).
 
-	-d SUBJECTDB, --subjectdb=SUBJECTDB [REQUIRED]
+	-d SUBJECTDB, `-`-subjectdb=SUBJECTDB [REQUIRED]
 
 		This is the path to the reference sequences which blast should compare against.
 
-	-o OUTPUTFILENAME, --outputfilename=OUTPUTFILENAME [REQUIRED]
+	-o OUTPUTFILENAME, `-`-outputfilename=OUTPUTFILENAME [REQUIRED]
 
 		This is the prefix that should be used on all resulting files, such that sequences passing the screen, failing the screen, raw BLAST results and the log will be saved to your :file:`filename_prefix + .screened`, :file:`.excluded`, :file:`.raw_blast_results`, and :file:`.sequence_exclusion_log`, respectively.
 
-	-e E_VALUE, --e_value=E_VALUE [Default: 1e-10]
+	-e E_VALUE, `-`-e_value=E_VALUE [Default: 1e-10]
 
 		This is the maximum E-value allowed, when clustering using the BLAST method.
 
-	-p PERCENT_ALIGNED, --percent_aligned=PERCENT_ALIGNED [Default: 0.97]
+	-p PERCENT_ALIGNED, `-`-percent_aligned=PERCENT_ALIGNED [Default: 0.97]
 
 		The percent (%) aligned cutoff for the query sequence coverage when aligned to sequences in the BLAST database.
 
-	--blastmatroot=BLASTMATROOT [Default: none]
+	`-`-blastmatroot=BLASTMATROOT [Default: none]
 
 		This is the path to the folder containing the BLAST matrices (blastmat).
 
-	--working_dir=WORKING_DIR [Default: /tmp]
+	`-`-working_dir=WORKING_DIR [Default: /tmp]
 
 		This is the path to the working directory for BLAST.
 
-	-M MAX_HITS, --max_hits=MAX_HITS [Default: 100]
+	-M MAX_HITS, `-`-max_hits=MAX_HITS [Default: 100]
 
 		This is the maximum number of BLAST hits. CAUTION: Filtering on percent aligned ("-p") occurs after BLAST and if the user sets the max value to 1 valid contaminants could be missed.
 
-	-W WORDSIZE, --word_size=WORDSIZE [Default: 28]
+	-W WORDSIZE, `-`-word_size=WORDSIZE [Default: 28]
 
 		This is the word size to use for the BLAST search.
 
-	--debug [Default: False]
+	`-`-debug [Default: False]
 
 		If this parameter is True, then the script will print information during execution, which is useful for debugging.
 
@@ -614,19 +614,19 @@ This filter allows for the removal of sequences and OTUs containing user-specifi
 
 .. note::
 
-	-i INPUT_OTU_PATH, --input_otu_path=INPUT_OTU_PATH [REQUIRED]
+	-i INPUT_OTU_PATH, `-`-input_otu_path=INPUT_OTU_PATH [REQUIRED]
 
 		Path to OTU file containing sequence ids assigned to each OTU (i.e., resulting OTU file from :file:`pick_otus.py`).
 
-	-f FASTA_FILE, --fasta_file=FASTA_FILE [REQUIRED]
+	-f FASTA_FILE, `-`-fasta_file=FASTA_FILE [REQUIRED]
 
 		Path to FASTA file containing all sequences (i.e., resulting FASTA file from :file:`split_libraries.py`).
 
-	-s SAMPLES_TO_EXTRACT, --samples_to_extract=SAMPLES_TO_EXTRACT [REQUIRED]
+	-s SAMPLES_TO_EXTRACT, `-`-samples_to_extract=SAMPLES_TO_EXTRACT [REQUIRED]
 
 		This is a list of sample ids, which should be removed from the OTU file.
 
-	-o DIR_PATH, --dir_path=DIR_PATH [Default=]
+	-o DIR_PATH, `-`-dir_path=DIR_PATH [Default=]
 
 		This is the location where the resulting output should be written.
 
@@ -662,39 +662,39 @@ This script aligns the sequences in a FASTA file to each other or to a template 
 
 .. note::
 
-	-i INPUT_FASTA_FP, --input_fasta_fp=INPUT_FASTA_FP [REQUIRED]
+	-i INPUT_FASTA_FP, `-`-input_fasta_fp=INPUT_FASTA_FP [REQUIRED]
 
 		Path to FASTA file containing sequences to be aligned (i.e., resulting FASTA file from :file:`pick_rep_set.py`).
 
-	-t TEMPLATE_FP, --template_fp=TEMPLATE_FP [Default: none; REQUIRED if -m pynast or -m infernal]
+	-t TEMPLATE_FP, `-`-template_fp=TEMPLATE_FP [Default: none; REQUIRED if -m pynast or -m infernal]
 
 		This is the path to the reference sequences which should be compare against, when using the "-m pynast" or "-m infernal" option. If you’d like to align against the greengenes core set, you can download the template alignment from here: http://greengenes.lbl.gov/Download/Sequence_Data/Fasta_data_files/core_set_aligned.fasta.imputed
 
-	-m ALIGNMENT_METHOD, --alignment_method=ALIGNMENT_METHOD [Default: pynast]
+	-m ALIGNMENT_METHOD, `-`-alignment_method=ALIGNMENT_METHOD [Default: pynast]
 
 		This is the method for aligning the sequences. 
 
-	-a PAIRWISE_ALIGNMENT_METHOD, --pairwise_alignment_method=PAIRWISE_ALIGNMENT_METHOD [Default: blast]
+	-a PAIRWISE_ALIGNMENT_METHOD, `-`-pairwise_alignment_method=PAIRWISE_ALIGNMENT_METHOD [Default: blast]
 
 		This is the method for performing pairwise alignment in PyNAST. Several methods are available to align the candidate sequence to the template sequence. They have minor differences in speed and quality of results (by default, the program bl2seq is used).
 
-	-d BLAST_DB, --blast_db=BLAST_DB [Default: created on-the-fly from template_alignment]
+	-d BLAST_DB, `-`-blast_db=BLAST_DB [Default: created on-the-fly from template_alignment]
 
 		This is the path to the pre-existing database which blast should compare against, when using "-m pynast" option. This should be the prefix to the database, since multiple files comprise a blast database.
 
-	-b BLAST_EXECUTABLE, --blast_executable=BLAST_EXECUTABLE [Default: /software/bin/blastall]
+	-b BLAST_EXECUTABLE, `-`-blast_executable=BLAST_EXECUTABLE [Default: /software/bin/blastall]
 
 		This is the path to blast executable when using the "-m pynast" option. 
 
-	-o OUTPUT_DIR, --output_dir=OUTPUT_DIR [Default: <ALIGNMENT_METHOD>_aligned]
+	-o OUTPUT_DIR, `-`-output_dir=OUTPUT_DIR [Default: <ALIGNMENT_METHOD>_aligned]
 
 		This is the location where the resulting output should be written.
 
-	-e MIN_LENGTH, --min_length=MIN_LENGTH [Default: 150]
+	-e MIN_LENGTH, `-`-min_length=MIN_LENGTH [Default: 150]
 
 		This is the minimum sequence length for a sequence to be included in the alignment.
 
-	-p MIN_PERCENT_ID, --min_percent_id=MIN_PERCENT_ID [Default: 75.0]
+	-p MIN_PERCENT_ID, `-`-min_percent_id=MIN_PERCENT_ID [Default: 75.0]
 
 		This is the minimum percent sequence identity closest to a particular blast hit for a sequence to be included in the alignment.
 
@@ -747,23 +747,23 @@ The :file:`filter_alignment.py` script should be applied to generate a useful tr
 
 .. note::
 
-	-i INPUT_FASTA_FILE, --input_fasta_file=INPUT_FASTA_FILE [REQUIRED]
+	-i INPUT_FASTA_FILE, `-`-input_fasta_file=INPUT_FASTA_FILE [REQUIRED]
 
 		Path to FASTA file containing the aligned sequences (i.e., resulting FASTA file from :file:`align_seqs.py`).
 
-	-o OUTPUT_DIR, --output_dir=OUTPUT_DIR [Default: .]
+	-o OUTPUT_DIR, `-`-output_dir=OUTPUT_DIR [Default: .]
 
 		This is the location where the resulting output should be written. 
 
-	-m LANE_MASK_FP, --lane_mask_fp=LANE_MASK_FP [Default: none]
+	-m LANE_MASK_FP, `-`-lane_mask_fp=LANE_MASK_FP [Default: none]
 
 		This is the path to lanemask file – if a PyNAST alignment was performed against the greengenes core set, this can be obtained from the Greengenes website (available from http://greengenes.lbl.gov/Download/Sequence_Data/lanemask_in_1s_and_0s)
 
-	-g ALLOWED_GAP_FRAC, --allowed_gap_frac=ALLOWED_GAP_FRAC [Default: 0.999999] 
+	-g ALLOWED_GAP_FRAC, `-`-allowed_gap_frac=ALLOWED_GAP_FRAC [Default: 0.999999] 
 
 		This is the gap filter threshold. Filtering is performed when the number of positions in a column are gaps is greater than the allowed gap fraction of the sequences
 
-	--verbose [Default: none] 
+	`-`-verbose [Default: none] 
 
 		If this parameter is used, then the script will print information during execution, which is useful for debugging.
 
@@ -798,19 +798,19 @@ Many downstream analyses require that the phylogenetic tree relating the OTUs in
 
 .. note::
 
-	-t TREE_METHOD, --tree_method=TREE_METHOD [Default: fasttree]
+	-t TREE_METHOD, `-`-tree_method=TREE_METHOD [Default: fasttree]
 
 		This is the method that should be used for building the phylogenetic tree. Valid choices are: clearcut, clustalw, raxml, fasttree_v1, fasttree, muscle and mafft.
 
-	-o RESULT_FP, --result_fp=RESULT_FP [Default: <input_sequences_filename>.tre]
+	-o RESULT_FP, `-`-result_fp=RESULT_FP [Default: <input_sequences_filename>.tre]
 
 		This is the location where the resulting output should be written.
 
-	-l LOG_FP, --log_fp=LOG_FP [Default: No log file created.]
+	-l LOG_FP, `-`-log_fp=LOG_FP [Default: No log file created.]
 
 		This is the location where the resulting .log file should be written. 
 
-	-i INPUT_FP, --input_fp=INPUT_FP [REQUIRED]
+	-i INPUT_FP, `-`-input_fp=INPUT_FP [REQUIRED]
 
 		Path to FASTA file containing the aligned sequences (i.e., resulting FASTA file from :file:`filter_alignment.py`).
 
@@ -845,36 +845,36 @@ Given a set of sequences, assign_taxonomy attempts to assign the taxonomy of eac
 
 .. note::
 
-	-i INPUT_SEQS_FP, --input_seqs_fp=INPUT_SEQS_FP [REQUIRED]
+	-i INPUT_SEQS_FP, `-`-input_seqs_fp=INPUT_SEQS_FP [REQUIRED]
 
 		Path to FASTA file containing sequences to be aligned (i.e., resulting FASTA file from :file:`pick_rep_set.py`).
 
-	-t ID_TO_TAXONOMY_FP, --id_to_taxonomy_fp=ID_TO_TAXONOMY_FP [Default: 
+	-t ID_TO_TAXONOMY_FP, `-`-id_to_taxonomy_fp=ID_TO_TAXONOMY_FP [Default: 
 	none; REQUIRED when method is blast]
 
 		This is the path to tab-delimited file which maps sequences to their corresponding taxonomy, where each assigned taxonomy is provided as a comma-separated list. For taxonomy assignment with rdp, each assigned taxonomy must be exactly 6 levels deep.
 
-	-r REFERENCE_SEQS_FP, --reference_seqs_fp=REFERENCE_SEQS_FP [Default: none; The user must provide either --blast_db or --reference_seqs_db for assignment with blast.]
+	-r REFERENCE_SEQS_FP, `-`-reference_seqs_fp=REFERENCE_SEQS_FP [Default: none; The user must provide either `-`-blast_db or `-`-reference_seqs_db for assignment with blast.]
 
 		This is the path to the reference sequences which blast should compare against. For assignment with blast, these are used to generate a blast database. For assignment with rdp, they are used as training sequences for the classifier.
 
-	-m ASSIGNMENT_METHOD, --assignment_method=ASSIGNMENT_METHOD [Default: blast]
+	-m ASSIGNMENT_METHOD, `-`-assignment_method=ASSIGNMENT_METHOD [Default: blast]
 
 		This is the taxonomy assignment method that should be used. 
 
-	-b BLAST_DB, --blast_db=BLAST_DB [Default: none; The user must provide either --blast_db or --reference_seqs_db for assignment with blast.]
+	-b BLAST_DB, `-`-blast_db=BLAST_DB [Default: none; The user must provide either `-`-blast_db or `-`-reference_seqs_db for assignment with blast.]
 
 		This is the path to the pre-existing database which blast should compare against, when using "-m blast" option. This should be the prefix to the database, since multiple files comprise a blast database.
 
-	-c CONFIDENCE, --confidence=CONFIDENCE [Default: 0.8]
+	-c CONFIDENCE, `-`-confidence=CONFIDENCE [Default: 0.8]
 
 		This is the minimum confidence needed to record an assignment and can only be used for the rdp method. Assignments must exceed this score to be written in the output file.
 
-	-e E_VALUE, --e_value=E_VALUE [Default: 0.001]
+	-e E_VALUE, `-`-e_value=E_VALUE [Default: 0.001]
 
 		This is the maximum E-value allowed, when assigning using the BLAST method.
 
-	-o OUTPUT_DIR, --output_dir=OUTPUT_DIR [Default: <ASSIGNMENT_METHOD>_assigned_taxonomy]
+	-o OUTPUT_DIR, `-`-output_dir=OUTPUT_DIR [Default: <ASSIGNMENT_METHOD>_assigned_taxonomy]
 
 		This is the location where the resulting output should be written.
 
@@ -933,7 +933,7 @@ Alternatively, the user could change the minimum confidence score ("-c"), using 
 Note: If a reference set of sequences and taxonomy to id assignment file are provided, the script will use them to generate a new training dataset for the RDP Classifier on-the-fly. Due to limitations in the generation of a training set, each provided assignment must contain exactly 6 taxa in the following order: domain (level=2), phylum (level=3), class (level=4), order (5), family (level=6), and genus (level=7). Additionally, each genus name must be unique, due to the internal algorithm used by the RDP Classifier.
 
 OTU Table
---------------
+---------
 
 .. _make_otu_table:
 
@@ -952,15 +952,15 @@ The script :file:`make_otu_table.py` tabulates the number of times an OTU is fou
 
 .. note::
 
-	-i OTU_FNAME, --input_otu_fname=OTU_FNAME [REQUIRED]
+	-i OTU_FNAME, `-`-input_otu_fname=OTU_FNAME [REQUIRED]
 
 		Path to OTU file containing sequence ids assigned to each OTU (i.e., resulting OTU file from :file:`pick_otus.py`).
 
-	-t TAXONOMY_FNAME, --taxonomy=TAXONOMY_FNAME [REQUIRED]
+	-t TAXONOMY_FNAME, `-`-taxonomy=TAXONOMY_FNAME [REQUIRED]
 
 		Path to taxonomy assignment, containing the assignments of taxons to sequences (i.e., resulting txt file from :file:`assign_taxonomy.py`).
 
-	-o OUTPUT_FNAME, --output_fname=OUTPUT_FNAME [Default: stdout]
+	-o OUTPUT_FNAME, `-`-output_fname=OUTPUT_FNAME [Default: stdout]
 
 		This is the filename that should be used when writing the output.
 
@@ -989,27 +989,27 @@ After the OTU has been generated, the user may want to filter the table based on
 
 .. note::
 
-	-i OTU_FNAME, --otu_filename=OTU_FNAME [REQUIRED]
+	-i OTU_FNAME, `-`-otu_filename=OTU_FNAME [REQUIRED]
 
 		This is the path to the OTU table (i.e., the resulting OTU table from :file:`make_otu_table.py`).
 
-	-c MIN_COUNT, --min_count=MIN_COUNT [Default: 1]
+	-c MIN_COUNT, `-`-min_count=MIN_COUNT [Default: 1]
 
 		This is the minimum number of sequences that an OTU is present in, for an OTU to be kept in the OTU table.
 
-	-s MIN_SAMPLES, --min_samples=MIN_SAMPLES [Default: 2]
+	-s MIN_SAMPLES, `-`-min_samples=MIN_SAMPLES [Default: 2]
 
 		This is the minimum number of Samples that an OTU is present in, for an OTU to be kept in the OTU table.
 
-	-t INCLUDE_TAXONOMY, --include_taxonomy=INCLUDE_TAXONOMY [Default=]
+	-t INCLUDE_TAXONOMY, `-`-include_taxonomy=INCLUDE_TAXONOMY [Default=]
 
 		This is a list of taxonomy terms to include in the resulting OTU table. 
 
-	-e EXCLUDE_TAXONOMY, --exclude_taxonomy=EXCLUDE_TAXONOMY [Default=]
+	-e EXCLUDE_TAXONOMY, `-`-exclude_taxonomy=EXCLUDE_TAXONOMY [Default=]
 
 		This is list of taxonomy terms to exclude in the resulting OTU table. 
 
-	-o DIR_PATH, --dir_path=DIR_PATH [Default=./]
+	-o DIR_PATH, `-`-dir_path=DIR_PATH [Default=./]
 
 		This is the location where the resulting output should be written.
 
@@ -1050,27 +1050,27 @@ This filter allows for the removal of sequences and OTUs that either do or don�
 
 .. note::
 
-	-i OTU_FNAME, \--otu=OTU_FNAME
+	-i OTU_FNAME, `-`-otu=OTU_FNAME
 
 		This is the path to the OTU table (i.e., the resulting OTU table from :file:`make_otu_table.py`).
 
-	-m MAP_FNAME, \--map=MAP_FNAME
+	-m MAP_FNAME, `-`-map=MAP_FNAME
 
 		This is the user-generated mapping file.
 
-	-o OTU_OUT_FNAME, --otu_outfile=OTU_OUT_FNAME [Default: :file:`otu_filename.filtered.xls`]
+	-o OTU_OUT_FNAME, `-`-otu_outfile=OTU_OUT_FNAME [Default: :file:`otu_filename.filtered.xls`]
 
 		This is the filename, where the resulting otu file should be written. 
 
-	-p MAP_OUT_FNAME, --map_outfile=MAP_OUT_FNAME [Default: :file:`map_filename.filtered.xls`]
+	-p MAP_OUT_FNAME, `-`-map_outfile=MAP_OUT_FNAME [Default: :file:`map_filename.filtered.xls`]
 
 		This is the filename, where the resulting mapping file should be written.
 
-	-s VALID_STATES, \--states=VALID_STATES
+	-s VALID_STATES, `-`-states=VALID_STATES
 
 		This is a string containing valid states, e.g. 'STUDY_NAME:DOG'
 
-	-n NUM_SEQS_PER_OTU, \--num_seqs_per_otu=NUM_SEQS_PER_OTU
+	-n NUM_SEQS_PER_OTU, `-`-num_seqs_per_otu=NUM_SEQS_PER_OTU
 
 		This is the minimum counts across samples in order to keep an OTU, e.g. 5.
 
@@ -1119,31 +1119,31 @@ The script :file:`otu_category_significance.py` tests whether any of the OTUs in
 
 .. note::
 
-	-i OTU_TABLE_FP, --otu_table_fp=OTU_TABLE_FP [REQUIRED]
+	-i OTU_TABLE_FP, `-`-otu_table_fp=OTU_TABLE_FP [REQUIRED]
 
 		This is the path to the OTU table (i.e., the resulting OTU table from :file:`make_otu_table.py` or :file:`filter_otu_table.py`).
 
-	-m CATEGORY_MAPPING_FP, --category_mapping_fp=CATEGORY_MAPPING_FP [REQUIRED]
+	-m CATEGORY_MAPPING_FP, `-`-category_mapping_fp=CATEGORY_MAPPING_FP [REQUIRED]
 
 		This is the user-generated mapping file.
 
-	-c CATEGORY, --category=CATEGORY [REQUIRED]
+	-c CATEGORY, `-`-category=CATEGORY [REQUIRED]
 
 		This is the category to test from the user-generated mapping file. The category must match the name of a column header in the mapping file exactly.
 
-	-s TEST, \--test=TEST
+	-s TEST, `-`-test=TEST
 
 		This is the type of statistical test to run. The options are: g_test and ANOVA. The g_test metric runs the G test of independence. It only considers presence/absence and test the hypothesis that the presence/absence pattern across categories is non-random. The ANOVA metric runs a one-way ANOVA test across the categories. It takes into account differences in OTU relative abundances across categories, testing the null hypothesis that the mean relative abundance is the same across categories.
 
-	-o OUTPUT_FP, --output_fp=OUTPUT_FP [Default: otu_category_G_test_results.txt]
+	-o OUTPUT_FP, `-`-output_fp=OUTPUT_FP [Default: otu_category_G_test_results.txt]
 
 		This is the filename to which the output will be written.
 
-	-f FILTER, --filter=FILTER [Default: 10]
+	-f FILTER, `-`-filter=FILTER [Default: 10]
 
 		This is the minimum number of samples that must contain the OTU for the OTU to be included in the analysis. When this used, the filter is first applied so that only OTUs that were detected in at least a defined number of samples are included in the analysis. This filter is important, since it does not make sense to look for associations when an OTU is only found in 1 or 2 samples.
 
-	-t THRESHOLD, --threshold=THRESHOLD [Default: None]
+	-t THRESHOLD, `-`-threshold=THRESHOLD [Default: None]
 
 		This is the threshold under which to consider something absent. This should only be used if you have numerical data that should be converted to present or absent based on a threshold. This should be "None" when testing categorical data.
 
@@ -1197,15 +1197,15 @@ Once the OTU table has been generated, the user can create an interactive OTU he
 
 .. note::
 
-	-i OTU_COUNT_FNAME, --otu_count_fname=OTU_COUNT_FNAME [REQUIRED]
+	-i OTU_COUNT_FNAME, `-`-otu_count_fname=OTU_COUNT_FNAME [REQUIRED]
 
 		This is the path to the OTU table (i.e., the resulting OTU table from :file:`make_otu_table.py` or :file:`filter_otu_table.py`).
 
-	-n NUM_OTU_HITS, --num_otu_hits=NUM_OTU_HITS [Default: 5]
+	-n NUM_OTU_HITS, `-`-num_otu_hits=NUM_OTU_HITS [Default: 5]
 
 		This is the minimum number of Samples that an OTU is present in, for an OTU to be kept in the OTU table.
 
-	-o DIR_PATH, --dir_path=DIR_PATH [Default: ]
+	-o DIR_PATH, `-`-dir_path=DIR_PATH [Default: ]
 
 		This is the location where the resulting output should be written. 
 
@@ -1242,27 +1242,27 @@ The :file:`summarize_taxa.py` script provides summary information of the represe
 
 .. note::
 
-	-O OTU_FP, --otu_file=OTU_FP [REQUIRED]
+	-O OTU_FP, `-`-otu_file=OTU_FP [REQUIRED]
 
 		This is the path to the OTU table (i.e., the resulting OTU table from :file:`make_otu_table.py` or :file:`filter_otu_table.py`).
 
-	-o OUT_FP, --output_file=OUT_FP [Default: ]
+	-o OUT_FP, `-`-output_file=OUT_FP [Default: ]
 
 		This is the filename where the results should be written.
 
-	-L LEVEL, --level=LEVEL [Default: ]
+	-L LEVEL, `-`-level=LEVEL [Default: ]
 
 		This is the Level of taxonomy to summarize.
 
-	-m CATEGORY_MAPPING, --category_mapping=CATEGORY_MAPPING [Default: ]
+	-m CATEGORY_MAPPING, `-`-category_mapping=CATEGORY_MAPPING [Default: ]
 
 		This is the user-generated mapping file. The taxon information will be added to the category mapping file and this can be used to color PCoA plots by taxon abundance or to perform statistical tests of taxon/category associations.
 
-	-d DELIMITOR, --delimitor=DELIMITOR [default: ;]
+	-d DELIMITOR, `-`-delimitor=DELIMITOR [default: ;]
 
 		This is the delimiter use to separate taxonomy categories.
 
-	-r RELATIVE_ABUNDANCE, --relative_abundance=RELATIVE_ABUNDANCE [Default: True]
+	-r RELATIVE_ABUNDANCE, `-`-relative_abundance=RELATIVE_ABUNDANCE [Default: True]
 
 		If True, the results report the relative abundance of the lineage in each sample. If False, only the raw counts will be reported.
 
@@ -1299,23 +1299,23 @@ This script automates the construction of pie charts showing the breakdown of ta
 
 .. note::
 
-	-i COUNTS_FNAME, --input_files=COUNTS_FNAME [REQUIRED]
+	-i COUNTS_FNAME, `-`-input_files=COUNTS_FNAME [REQUIRED]
 
 		This is the text file(s) generated from :file:`summarize_taxa.py`, where the raw counts for each sample are reported. Multiple files can be passed depending where the different levels are summarized, where each file is separated by commas with no spaces (i.e., "-i Phylum.txt,Class.txt,Genus.txt"
 
-	-l LABELS, --labels=LABELS [REQUIRED]
+	-l LABELS, `-`-labels=LABELS [REQUIRED]
 
 		This is a list of labels for the pie charts corresponding to the input files. They must be in the same order as the input files and separated by commas with no spaces (i.e., "-l Phylum,Class,Genus")
 
-	-s, \--sample_flag
+	-s, `-`-sample_flag
 
 		If this option is passed, then pie charts will be generated for each of the levels, and it will also create a pie chart for each sample at each level.
 
-	-n NUM_CATEGORIES, --num=NUM_CATEGORIES [Default: 20]
+	-n NUM_CATEGORIES, `-`-num=NUM_CATEGORIES [Default: 20]
 
 		This denotes the number of categories displayed on each pie chart. After this number is reached, the rest of the counts will be put in a single category on the pie chart. The Default is 20 and a number over 40 is not recommended due to the size of the legend.
 
-	-o DIR_PATH, --dir-prefix=DIR_PATH [Default: ]
+	-o DIR_PATH, `-`-dir-prefix=DIR_PATH [Default: ]
 
 		This is the location where the resulting output should be written. 
 
@@ -1358,15 +1358,15 @@ In more technical language: OTUs and samples are designated as two types of node
 
 .. note::
 
-	-i MAP_FILE, --input_map=MAP_FILE [REQUIRED]
+	-i MAP_FILE, `-`-input_map=MAP_FILE [REQUIRED]
 
 		This is the user-generated mapping file.  
 
-	-c COUNTS_FILE, --otu_sample_counts=COUNTS_FILE [REQUIRED]
+	-c COUNTS_FILE, `-`-otu_sample_counts=COUNTS_FILE [REQUIRED]
 
 		This is the path to the OTU table (i.e., the resulting OTU table from :file:`make_otu_table.py` or :file:`filter_otu_table.py)`.
 
-	-o DIR_PATH, /--dir-prefix=DIR_PATH
+	-o DIR_PATH, /`-`-dir-prefix=DIR_PATH
 
 		This is the location where the resulting output should be written. 
 
@@ -1433,35 +1433,35 @@ Community ecologists typically describe the diversity of the communities they st
 
 .. note::
 
-	-i INPUT_PATH, --input_path=INPUT_PATH [REQUIRED]
+	-i INPUT_PATH, `-`-input_path=INPUT_PATH [REQUIRED]
 
 		This is the path to the OTU table (i.e., the resulting OTU table from :file:`make_otu_table.py` or :file:`filter_otu_table.py`).
 
-	-o OUTPUT_PATH, --output_path=OUTPUT_PATH [REQUIRED]
+	-o OUTPUT_PATH, `-`-output_path=OUTPUT_PATH [REQUIRED]
 
 		This is the location where the resulting output should be written.
 
-	-m MIN, \--min=MIN 
+	-m MIN, `-`-min=MIN 
 
 		This is the minimum number of sequences per sample.
 
-	-x MAX, \--max=MAX 
+	-x MAX, `-`-max=MAX 
 
 		This is the maximum number of sequences per samples (inclusive).
 
-	-s STEP, \--step=STEP 
+	-s STEP, `-`-step=STEP 
 
 		This is the number of steps that should be used (e.g. range of min, min+step... for level <= max)
 
-	-n NUM_REPS, --num-reps=NUM_REPS [Default: 1]
+	-n NUM_REPS, `-`-num-reps=NUM_REPS [Default: 1]
 
 		This is the number of iterations that should be performed for each number of sequences per sample.
 
-	-d DEPTH, \--depth=DEPTH
+	-d DEPTH, `-`-depth=DEPTH
 
 		This is the number of sequences per sample, required when generating a single output file. This is primarily used when performing rarefaction in parallel, where each job corresponds to one iteration and step.
 
-	--small_included [default: False]
+	`-`-small_included [default: False]
 
 		If this argument is passed, samples containing fewer sequences than the user-defined level are included in the output and not rarefied.
 
@@ -1502,23 +1502,23 @@ The rarefaction tables are the basis for calculating diversity metrics, which re
 
 .. note::
 
-	-i INPUT_PATH, --input_path=INPUT_PATH [REQUIRED]
+	-i INPUT_PATH, `-`-input_path=INPUT_PATH [REQUIRED]
 
 		This is the path to the OTU table (i.e., the resulting OTU table from :file:`make_otu_table.py`, :file:`filter_otu_table.py` or :file:`rarefaction.py`). If you are using the results from :file:`rarefaction.py`, where there are multiple rarefied tables, then you can pass the directory name to allow for batch processing.
 
-	-o OUTPUT_PATH, --output_path=OUTPUT_PATH [REQUIRED]
+	-o OUTPUT_PATH, `-`-output_path=OUTPUT_PATH [REQUIRED]
 
 		This is the filename (for single file input) or the path location to where the results should be written if a directory is input.
 
-	-m METRICS, --metrics=METRICS [REQUIRED]
+	-m METRICS, `-`-metrics=METRICS [REQUIRED]
 
 		These are the metrics to perform. If more than one metric is given, then they should be comma delimited.
 
-	-s, \--show_metrics 
+	-s, `-`-show_metrics 
 
 		If this argument is passed, then a list of available alpha diversity metrics will be displayed without running the actual script. A list of acceptable metrics are shown below.
 
-	-t TREE_PATH, --tree_path=TREE_PATH [Default: none]
+	-t TREE_PATH, `-`-tree_path=TREE_PATH [Default: none]
 
 		This is the path to the newick formatted tree file (i.e., the resulting tree from :file:`make_phylogeny.py`). This argument is only required for metrics which are phylogenetically based.
 
@@ -1622,15 +1622,15 @@ This script transforms a series of files, named (e.g. :file:`alpha_rarefaction_2
 
 .. note::
 
-	-i INPUT_PATH, --input_path=INPUT_PATH [REQUIRED]
+	-i INPUT_PATH, `-`-input_path=INPUT_PATH [REQUIRED]
 
 		This is the location where the batch alpha diversity files are located (a directory).
 
-	-o OUTPUT_PATH, --output_path=OUTPUT_PATH [REQUIRED]
+	-o OUTPUT_PATH, `-`-output_path=OUTPUT_PATH [REQUIRED]
 
 		This is the location where the resulting output should be written.
 
-	-e EXAMPLE_PATH, --example_path=EXAMPLE_PATH [default: chosen automatically (see usage string)]
+	-e EXAMPLE_PATH, `-`-example_path=EXAMPLE_PATH [default: chosen automatically (see usage string)]
 
 		This is an example alpha_diversity analysis file, containing all samples and all metrics to be included in the collated result.
 
@@ -1657,27 +1657,27 @@ Once the batch alpha diversity files have been collated, you may want to compare
 
 .. note::
 
-	-m MAP, --map=MAP [REQUIRED]
+	-m MAP, `-`-map=MAP [REQUIRED]
 
 		This is the user-generated mapping file.
 
-	-r RAREFACTION, --rarefaction=RAREFACTION [REQUIRED]
+	-r RAREFACTION, `-`-rarefaction=RAREFACTION [REQUIRED]
 
 		This is the name of the rarefaction file (i.e., one of the resulting .txt files from :file:`collate_alpha.py`).
 
-	-p PREFS, --prefs=PREFS [Default: ALL]
+	-p PREFS, `-`-prefs=PREFS [Default: ALL]
 
 		These are the categories for which plots should be made, from the user-generated mapping file. The category must match the name of a column header in the mapping file exactly. Multiple categories can be list as long as they are comma separated without spaces. If plots should be made for all categories, use the word "ALL".
 
-	-i IMAGETYPE, --imagetype=IMAGETYPE [Default: png]
+	-i IMAGETYPE, `-`-imagetype=IMAGETYPE [Default: png]
 
 		This is the file format for the plots generated. Valid choices are: jpg, gif, png, svg, and pdf.
 
-	-d RESOLUTION, --resolution=RESOLUTION [Default: 75]
+	-d RESOLUTION, `-`-resolution=RESOLUTION [Default: 75]
 
 		This is the resolution (in d.p.i.) for each generated plot.
 
-	-o DIR_PATH, --dir_path=DIR_PATH [Default: .]
+	-o DIR_PATH, `-`-dir_path=DIR_PATH [Default: .]
 
 		This is the location where the resulting output should be written.
 
@@ -1704,7 +1704,7 @@ Optionally, you can change the resolution ("-d") and the type of image created (
 	$ python $qdir/make_rarefaction_plots.py -m Mapping_file.txt -r chao1.txt -p pH -d 180 -i pdf
 
 Between-Sample Diversity Analyses (OTU-based and Phylogenetic)
---------------------------------------------------------------
+---------------------------------------------------------------
 
 .. _beta_diversity:
 
@@ -1762,23 +1762,23 @@ A number of metrics are currently supported, including unweighted and weighted U
 
 .. note::
 
-	-i INPUT_PATH, --input_path=INPUT_PATH [REQUIRED]
+	-i INPUT_PATH, `-`-input_path=INPUT_PATH [REQUIRED]
 
 		This is the path to the OTU table (i.e., the resulting OTU table from :file:`make_otu_table.py`, :file:`filter_otu_table.py` or :file:`rarefaction.py`). If you are using the results from :file:`rarefaction.py`, where there are multiple rarefied tables, then you can pass the directory name to allow for batch processing.
 
-	-o OUTPUT_DIR, --output_dir=OUTPUT_DIR [REQUIRED]
+	-o OUTPUT_DIR, `-`-output_dir=OUTPUT_DIR [REQUIRED]
 
 		This is the location where the resulting output should be written.
 
-	-m METRICS, \--metrics=METRICS
+	-m METRICS, `-`-metrics=METRICS
 
 		These are the metrics to perform.
 
-	-s, \--show_metrics
+	-s, `-`-show_metrics
 
 		If this argument is passed, then a list of available beta diversity metrics will be displayed without running the actual script. A list of acceptable metrics are shown below.
 
-	-t TREE_PATH, --tree_path=TREE_PATH [Default: none]
+	-t TREE_PATH, `-`-tree_path=TREE_PATH [Default: none]
 
 		This is the path to the newick formatted tree file (i.e., the resulting tree from :file:`make_phylogeny.py`). This argument is only required for metrics which are phylogenetically based.
 
@@ -1819,31 +1819,31 @@ To visualize the distance between samples and/or categories in the mapping file,
 
 .. note::
 
-	-d DISTANCE_MATRIX_FILE, --distance_matrix_file=DISTANCE_MATRIX_FILE [ REQUIRED]
+	-d DISTANCE_MATRIX_FILE, `-`-distance_matrix_file=DISTANCE_MATRIX_FILE [ REQUIRED]
 
 		This is the path to the distance matrix file (i.e., resulting file from :file:`beta_diversity.py`).
 
-	-m MAPPING_FILE, --mapping_file=MAPPING_FILE [REQUIRED]
+	-m MAPPING_FILE, `-`-mapping_file=MAPPING_FILE [REQUIRED]
 
 		This is the user-generated mapping file. 
 
-	-p PREFS_FILE, --prefs_file=PREFS_FILE [Default: none]
+	-p PREFS_FILE, `-`-prefs_file=PREFS_FILE [Default: none]
 
 		This is the user-generated preferences file. NOTE: This is a file with a dictionary containing preferences for the analysis. This dict must have a "Fields" key mapping to a list of desired fields.
 
-	-o DIR_PATH, --dir_path=DIR_PATH [Default: .]
+	-o DIR_PATH, `-`-dir_path=DIR_PATH [Default: .]
 
 		This is the location where the resulting output should be written.
 
-	--fields=FIELDS [REQUIRED]
+	`-`-fields=FIELDS [REQUIRED]
 
 		This is the categories to plot from the user-generated mapping file. The categories must match the name of a column header in the mapping file exactly and multiple categories can be list by comma separating them without spaces. This overwrites "Fields" in preferences file.
 
-	--monte_carlo [Default: False]
+	`-`-monte_carlo [Default: False]
 
 		If this argument is passed, then Monte Carlo will be performed on the distances.
 
-	--html_output [Default: False]
+	`-`-html_output [Default: False]
 
 		If this argument is passed, then the output will be written in HTML format.
 
@@ -1888,11 +1888,11 @@ Principal Coordinate Analysis (PCoA) is commonly used to compare groups of sampl
 
 .. note::
 
-	-i INPUT_PATH, --input_path=INPUT_PATH [REQUIRED]
+	-i INPUT_PATH, `-`-input_path=INPUT_PATH [REQUIRED]
 
 		This is the path to the distance matrix file (i.e., resulting file from :file:`beta_diversity.py`).
 
-	-o OUTPUT_PATH, --output_path=OUTPUT_PATH [REQUIRED]
+	-o OUTPUT_PATH, `-`-output_path=OUTPUT_PATH [REQUIRED]
 
 		This is the filename where the results should be written.
 
@@ -1921,19 +1921,19 @@ This script automates the construction of 2D plots from the first three columns 
 
 .. note::
 
-	-i COORD_FNAME, --coord_fname=COORD_FNAME [REQUIRED]
+	-i COORD_FNAME, `-`-coord_fname=COORD_FNAME [REQUIRED]
 
 		This is the path to the principal coordinates file (i.e., resulting file from :file:`principal_coordinates.py`).
 
-	-m MAP_FNAME, --map_fname=MAP_FNAME [Default: none]
+	-m MAP_FNAME, `-`-map_fname=MAP_FNAME [Default: none]
 
 		This is the user-generated mapping file.  
 
-	-b COLORBY, --colorby=COLORBY [Default: none]
+	-b COLORBY, `-`-colorby=COLORBY [Default: none]
 
 		This is the categories to color by in the plots from the user-generated mapping file. The categories must match the name of a column header in the mapping file exactly and multiple categories can be list by comma separating them without spaces. The user can also combine columns in the mapping file by separating the categories by "&&" without spaces.
 
-	-o DIR_PATH, --dir_path=DIR_PATH [Default: ]
+	-o DIR_PATH, `-`-dir_path=DIR_PATH [Default: ]
 
 		This is the location where the resulting output should be written.
 
@@ -1978,27 +1978,27 @@ This script automates the construction of 3D plots (kinemage format) from the PC
 
 .. note::
 
-	-i COORD_FNAME, --coord_fname=COORD_FNAME [REQUIRED]
+	-i COORD_FNAME, `-`-coord_fname=COORD_FNAME [REQUIRED]
 
 		This is the path to the principal coordinates file (i.e., resulting file from :file:`principal_coordinates.py`).
 
-	-m MAP_FNAME, --map_fname=MAP_FNAME [Default: none]
+	-m MAP_FNAME, `-`-map_fname=MAP_FNAME [Default: none]
 
 		This is the user-generated mapping file.  
 
-	-b COLORBY, --colorby=COLORBY [Default: none]
+	-b COLORBY, `-`-colorby=COLORBY [Default: none]
 
 		This is the categories to color by in the plots from the user-generated mapping file. The categories must match the name of a column header in the mapping file exactly and multiple categories can be list by comma separating them without spaces. The user can also combine columns in the mapping file by separating the categories by "&&" without spaces.
 
-	-a CUSTOM_AXES, --custom_axes=CUSTOM_AXES [Default: none]
+	-a CUSTOM_AXES, `-`-custom_axes=CUSTOM_AXES [Default: none]
 
 		This is the category from the user-generated mapping file to use as a custom axis in the plot. For instance, there is a pH category and would like to seethe samples plotted on that axis instead of PC1, PC2, etc., one can use this option. It is also useful for plotting time-series data.
 
-	-p PREFS_PATH, --prefs_path=PREFS_PATH [Default: none]
+	-p PREFS_PATH, `-`-prefs_path=PREFS_PATH [Default: none]
 
 		This is the user-generated preferences file. NOTE: This is a file with a dictionary containing preferences for the analysis. 
 
-	-o DIR_PATH, --dir_path=DIR_PATH [Default: ]
+	-o DIR_PATH, `-`-dir_path=DIR_PATH [Default: ]
 
 		This is the location where the resulting output should be written.
 
@@ -2084,11 +2084,11 @@ In addition to using PCoA, it can be useful to cluster samples using UPGMA (Unwe
 
 .. note::
 
-	-i INPUT_PATH, --input_path=INPUT_PATH [REQUIRED]
+	-i INPUT_PATH, `-`-input_path=INPUT_PATH [REQUIRED]
 
 		This is the path to the distance matrix file (i.e., resulting file from :file:`beta_diversity.py`). If beta diversity was performed following rarefaction (batch), a directory can be passed instead of a single file.
 
-	-o OUTPUT_PATH, --output_path=OUTPUT_PATH [REQUIRED]
+	-o OUTPUT_PATH, `-`-output_path=OUTPUT_PATH [REQUIRED]
 
 		This is the location where the resulting output should be written or the filename for a single file input.
 
@@ -2111,13 +2111,13 @@ If the user is performing UPGMA clustering on a directory (i.e. resulting direct
 .. index:: jackknife samples
 
 Build UPGMA Trees from Jackknifed Samples to Assign Confidence Values to UPGMA Nodes
--------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 
 Although the analyses in the previous sections allow for clustering and comparison between groups of samples, they do not directly measure the robustness of individual clusters. One technique for doing this is called jackknifing (repeatedly resampling a subset of the available data from each sample). This process will utilize a new script, :file:`tree_compare.py`, along with scripts from previous sections (:file:`rarefaction.py`, :file:`beta_diversity.py` and :file:`upgma_cluster.py`).
 
 To perform jackknifing, you should perform the following steps first:
 
-1. Perform rarefaction to resample a subset of each dataset (i.e. resulting file from :file:`make_otu_table.py`), where the minimum and maximum number of sequences per sample are equal (e.g. 700 for both), with 1 step and multiple iterations (e.g. 100), where the results are written to a directory (e.g. "jackknife_rare/"). You must include all small samples ("--small_included"), because the trees must contain equivalent tips for comparison. You can perform this step using the following command::
+1. Perform rarefaction to resample a subset of each dataset (i.e. resulting file from :file:`make_otu_table.py`), where the minimum and maximum number of sequences per sample are equal (e.g. 700 for both), with 1 step and multiple iterations (e.g. 100), where the results are written to a directory (e.g. "jackknife_rare/"). You must include all small samples ("`-`-small_included"), because the trees must contain equivalent tips for comparison. You can perform this step using the following command::
 
 	$ python $qdir/rarefaction.py -i otu_table.txt -m 700 -x 700 -s 1 -n 100 -o jackknife_rare/ --small_included 
 
@@ -2139,15 +2139,15 @@ To perform jackknifing, you should perform the following steps first:
 
 .. note::
 
-	-m MASTER_TREE, --master_tree=MASTER_TREE [REQUIRED]
+	-m MASTER_TREE, `-`-master_tree=MASTER_TREE [REQUIRED]
 
 		This is the path to the newick formatted tree file (i.e., the resulting tree from :file:`make_phylogeny.py`).
 
-	-s SUPPORT_DIR, --support_dir=SUPPORT_DIR [REQUIRED]
+	-s SUPPORT_DIR, `-`-support_dir=SUPPORT_DIR [REQUIRED]
 
 		This is the path to the directory containing the jackknife supported trees (i.e., resulting directory from batch :file:`upgma_cluster.py`)
 
-	-o OUTPUT_DIR, --output_dir=OUTPUT_DIR [REQUIRED]
+	-o OUTPUT_DIR, `-`-output_dir=OUTPUT_DIR [REQUIRED]
 
 		This is the location where the resulting output should be written.    
 

@@ -1,8 +1,12 @@
-.. _introduction:
+
 .. QIIME documentation master file, created by
    sphinx-quickstart on Mon Jan 25 12:57:02 2010.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
+
+.. toctree::
+   :maxdepth: 2
+
 
 #################
 Welcome to QIIME!
@@ -11,7 +15,7 @@ QIIME (canonically pronounced 'Chime') stands for "Quantitative Insights Into Mi
 It allows a range of community analyses suitable for microbiome data using traditional and 
 high-throughput sequencing methods. 
 
-Overview
+About
 ========
 QIIME takes as input FASTA-format sequence data, optional quality scores, and a metadata file that 
 assigns samples to specific categories or numerical values. It supports a wide range of microbial 
@@ -21,17 +25,13 @@ of unit testing to ensure the accuracy of the results, and is highly modular (i.
 specific stages such as choosing OTUs (Operational Taxonomic Units), sequence alignment, and 
 phylogeny, including 3rd party applications, can be easily integrated) 
 
-Helpful Links
-=============
-.. toctree::
-   :maxdepth: 1
 
-   install.rst
-   tutorial.rst
-   documentation.rst
+Download
+========
 
-Getting QIIME: Stable pre-release version
-=========================================
+Stable Pre-Release
+^^^^^^^^^^^^^^^^^^
+
 Currently the most stable version of QIIME is our 0.9 pre-release, which you can download 
 `here <https://sourceforge.net/projects/qiime/files/releases/Qiime-0.9.tar.gz/download>`_.
 You can also download the `install documents <http://qiime.sourceforge.net/QIIME_Install.pdf>`_,
@@ -39,8 +39,9 @@ the software `documentation <http://qiime.sourceforge.net/documentation/Qiime_Do
 a `data analysis tutorial <http://qiime.sourceforge.net/tutorial/Qiime_Tutorial.pdf>`_ 
 and an `SRA submission tutorial <http://qiime.sourceforge.net/SRA_Submission_Tutorial.pdf>`_.
 
-Getting QIIME: Latest development version
-=========================================
+Development Version
+^^^^^^^^^^^^^^^^^^^
+
 To get the latest development version of QIIME, you should check it out of our Sourceforge 
 repository. While this code is subject to minor changes in interface, it will provide access to 
 the latest and greatest features. The official web documentation is likely to be out-of-date with 
@@ -49,13 +50,39 @@ Qiime/doc. Check out the latest version of QIIME using svn with the command::
 
 	svn co https://qiime.svn.sourceforge.net/svnroot/qiime/trunk Qiime
 
-Support
-=======
+
+
+User Manuals
+============
+
+Installation
+^^^^^^^^^^^^
+.. toctree::
+   :maxdepth: 1
+
+   install.rst
+
+Tutorial
+^^^^^^^^
+.. toctree::
+   :maxdepth: 1
+
+   tutorial.rst
+
+Documentation
+^^^^^^^^^^^^^
+.. toctree::
+   :maxdepth: 1
+
+   documentation.rst
+
+Contact Us
+===========
 Add a `feature request <https://sourceforge.net/tracker/?atid=1157167&group_id=272178&func=browse>`_
 
 Report a `bug <https://sourceforge.net/tracker/?atid=1157164&group_id=272178&func=browse>`_
 
-Citing QIIME
+References
 ============
 If you use QIIME for any published research, please include the following citation:
 

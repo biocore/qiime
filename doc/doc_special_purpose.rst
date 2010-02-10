@@ -91,27 +91,27 @@ The input to the denoising script is a textual representation of 454's .sff file
 
 .. note::
 
-	-i SFF_FP, --input_file=SFF_FP [REQUIRED]
+	-i SFF_FP, `-`-input_file=SFF_FP [REQUIRED]
 
 		This is the path to the flowgram file (.sff.txt). 
 
-	-o OUTPUT_DIR, --output_dir=OUTPUT_DIR [Default: pyronoise_picked_otus/]
+	-o OUTPUT_DIR, `-`-output_dir=OUTPUT_DIR [Default: pyronoise_picked_otus/]
 
 		This is the location where the resulting output should be written.
 
-	-n NUM_CPUS, --num_cpus=NUM_CPUS [Default: 1]
+	-n NUM_CPUS, `-`-num_cpus=NUM_CPUS [Default: 1]
 
 		This is the number of CPUs that should be used. 
 
-	-s PRECISION, --precision=PRECISION [Default: 15.0]
+	-s PRECISION, `-`-precision=PRECISION [Default: 15.0]
 
 		This is the precision that should be used (passed to pyroNoise). 
 
-	-c CUT_OFF, --cut-off=CUT_OFF [Default: 0.05]
+	-c CUT_OFF, `-`-cut-off=CUT_OFF [Default: 0.05]
 
 		This is the cut-off that should be used (passed to pyroNoise).
 
-	-k, --keep_intermediates [Default: False]
+	-k, `-`-keep_intermediates [Default: False]
 
 		If this parameter is passed, then the script will not delete intermediate PyroNoise files - which is useful for debugging.
 

@@ -175,7 +175,13 @@ div.admonition ul {
     list-style-type: none;
 }
 
+div.admonition {
+    font-family: monospace;
+}
+
+
 div.note {
+    font-family: monospace;
     background-color: #eee;
     border: 1px solid #ccc;
 }
