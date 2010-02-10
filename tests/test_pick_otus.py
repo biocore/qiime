@@ -5,7 +5,7 @@
 __author__ = "Kyle Bittinger, Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME Project" 
 #remember to add yourself if you make changes
-__credits__ = ["Kyle Bittinger", "Greg Caporaso", "Rob Knight", "Jens Reeder"] 
+__credits__ = ["Kyle Bittinger", "Greg Caporaso", "Rob Knight", "Jens Reeder","William Walters"] 
 __license__ = "GPL"
 __version__ = "1.0-dev"
 __maintainer__ = "Kyle Bittinger"
@@ -534,6 +534,7 @@ class UclustOtuPickerTests(TestCase):
         
         log_file_99_exp = ["UclustOtuPicker parameters:",\
          "Similarity:0.99","Application:uclust",\
+         "enable_reverse_strand_matching:False",\
          "Result path: %s" % tmp_result_filepath]
         # compare data in log file to fake expected log file
         # NOTE: Since app.params is a dict, the order of lines is not

@@ -22,7 +22,7 @@ __status__ = "Development"
 import shutil
 from os import remove, makedirs
 from os.path import split, splitext, basename, isdir, abspath
-from cogent.app.parameters import ValuedParameter
+from cogent.app.parameters import ValuedParameter, FlagParameter
 from cogent.app.util import CommandLineApplication, ResultPath,\
  get_tmp_filename
 
@@ -107,8 +107,13 @@ class UclustCreateClusterFile(CommandLineApplication):
         '--uc':ValuedParameter('--',Name='uc',Delimiter=' ',IsPath=True),
         
         # ID percent for OTU, by default is 97%
-     	'--id':ValuedParameter('--',Name='id',Delimiter=' ',IsPath=False)
-        
+     	'--id':ValuedParameter('--',Name='id',Delimiter=' ',IsPath=False),
+     	
+     	# Disable reverse comparison option, if norev is disabled
+     	# memory usage is expected to double for uclust
+     	'--norev':FlagParameter('--',Name='norev'),
+     	
+
     }
     
     
@@ -130,10 +135,13 @@ class UclustCreateClusterFile(CommandLineApplication):
         return help_str
 
     def _input_as_parameters(self,data):
-        """ Set the input path (fasta) and output path (.uc)
+        """ Set the input path (fasta) and output path (.uc), other parameters
         """
         for param_id, param_value in data.items():
-            self.Parameters[param_id].on(param_value)
+          	if param_id == "--norev":
+          		self.Parameters[param_id].on()
+          	else:
+          		self.Parameters[param_id].on(param_value)
         return ''
         
     def _get_result_paths(self,data):
@@ -147,15 +155,22 @@ class UclustCreateClusterFile(CommandLineApplication):
         
    
 def uclust_cluster_from_sorted_fasta_filepath(fasta_filepath, \
- output_filepath=None, percent_ID=0.97):
+ output_filepath=None, percent_ID=0.97, enable_rev_strand_matching=False):
     """ Returns clustered uclust file from sorted fasta"""
     output_filepath = output_filepath or \
      get_tmp_filename(prefix='uclust_clusters',suffix='.uc') 
     # prefix for tmp files should indicate what created it
     app = UclustCreateClusterFile()
-    app_result = app(data={'--input':fasta_filepath,\
-                           '--uc':output_filepath,\
-                           '--id':percent_ID})
+    if enable_rev_strand_matching:
+    	data={'--input':fasta_filepath,\
+    	      '--uc':output_filepath,\
+    	      '--id':percent_ID}
+    else:
+    	data={'--input':fasta_filepath,\
+    	      '--uc':output_filepath,\
+    	      '--id':percent_ID,\
+    	      '--norev':True}
+    app_result = app(data)
     return app_result
 
 
@@ -271,7 +286,7 @@ def get_output_filepaths(output_dir, fasta_filepath):
     
 
 def get_clusters_from_fasta_filepath(fasta_filepath, percent_ID=0.97, \
- output_dir=None):
+ output_dir=None, enable_rev_strand_matching=False):
     """ Main convenience wrapper for uclust, returns list of lists of clusters.
     
     A source fasta file is required for the fasta_filepath.  This will be 
@@ -313,7 +328,8 @@ def get_clusters_from_fasta_filepath(fasta_filepath, percent_ID=0.97, \
     # Generate uclust cluster file (.uc format)
     uclust_cluster = \
      uclust_cluster_from_sorted_fasta_filepath(sorted_fasta_filepath, \
-     uc_output_filepath, percent_ID = percent_ID)
+     uc_output_filepath, percent_ID = percent_ID, \
+     enable_rev_strand_matching = False)
     # Get cluster file name from application wrapper
     uc_filepath = uclust_cluster['ClusterFilepath'].name
 

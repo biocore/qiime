@@ -680,7 +680,8 @@ class UclustOtuPicker(OtuPicker):
         Application: 3rd-party application used
         """
         _params = {'Similarity':0.97,\
-         'Application':'uclust'}
+         'Application':'uclust',\
+         'enable_reverse_strand_matching':False}
         _params.update(params)
         OtuPicker.__init__(self, _params)
     

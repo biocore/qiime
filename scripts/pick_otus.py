@@ -97,7 +97,11 @@ optional_options = [\
           ' prefix_prefilter_length (-n)! [default: %default]'),\
  make_option('-u','--suffix_length', default = 50,\
           type=int,help='suffix length when using the prefix_suffix'+\
-          ' otu picker [default: %default]') ]
+          ' otu picker [default: %default]'),\
+make_option('-z','--enable_rev_strand_match', default = False,\
+          action='store_true',help='Enable reverse strand matching for uclust'+\
+          ' clustering, will double the amount of memory used. '+\
+          ' [default: %default]') ]
           
 def main():
     option_parser, opts, args = parse_command_line_parameters(
@@ -116,6 +120,7 @@ def main():
     refseqs_fp = opts.refseqs_fp
     blast_db = opts.blast_db
     similarity = opts.similarity
+    enable_rev_strand_match = opts.enable_rev_strand_match
     
     if otu_picking_method == 'cdhit' and similarity < 0.80:
         option_parser.error('cdhit requires similarity >= 0.80.')
@@ -151,7 +156,8 @@ def main():
          prefix_prefilter_length=prefix_prefilter_length,\
          trie_prefilter=trie_prefilter)
     elif otu_picking_method == 'uclust':
-        params = {'Similarity':opts.similarity}
+        params = {'Similarity':opts.similarity,\
+        'enable_reverse_strand_matching':opts.enable_rev_strand_match}
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,\
          result_path=result_path,log_path=log_path,\
