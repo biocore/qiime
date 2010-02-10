@@ -14,6 +14,7 @@ __status__ = "Pre-release"
 from optparse import make_option
 from os.path import split, splitext
 from os import popen, system, makedirs, mkdir
+from subprocess import check_call, CalledProcessError
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from qiime.util import load_qiime_config, parse_command_line_parameters
 from pynast.util import pairwise_alignment_methods
