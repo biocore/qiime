@@ -100,9 +100,9 @@ A submission consists of a :file:`submission.xml`, metadata file, which referenc
 	Input: 
 		a. :file:`study.txt` - tabular metadata about the study (this is used to accession the study). 
 		b. :file:`sample.txt` - tabular metadata about each sample (this is used to accession samples). 
-		c. :file:`study_template.xml` - xml tempate for study data (located in Qiime/tests/sra_xml_templates/ directory) 
-		d. :file:`sample_template.xml` - xml template for sample data (located in Qiime/tests/sra_xml_templates/ directory) 
-		e. :file:`submission_template.xml` - xml template for submission (located in Qiime/tests/sra_xml_templates/ directory) 
+		c. :file:`study_template.xml` - xml tempate for study data (located in Qiime/support_files/sra_xml_templates/ directory) 
+		d. :file:`sample_template.xml` - xml template for sample data (located in Qiime/support_files/sra_xml_templates/ directory) 
+		e. :file:`submission_template.xml` - xml template for submission (located in Qiime/support_files/sra_xml_templates/ directory) 
 	
 	Output: 
 		a. :file:`study.xml` - xml-format metadata about the study. 
@@ -115,7 +115,7 @@ NOTE: It is VERY IMPORTANT that the centers do not make up new accessions or inc
 
 Example::
 
-	$ python ~/Qiime/scripts/make_sra_submission.py -a sample.txt -t study.txt -u submission.txt --template_study_fp ~/Qiime/tests/sra_xml_templates/study_template.xml --template_sample_fp ~/Qiime/tests/sra_xml_templates/sample_template.xml --template_submission_fp ~/Qiime/tests/sra_xml_templates/submission_template.xml
+	$ python ~/Qiime/scripts/make_sra_submission.py -a sample.txt -t study.txt -u submission.txt --template_study_fp ~/Qiime/support_files/sra_xml_templates/study_template.xml --template_sample_fp ~/Qiime/support_files/sra_xml_templates/sample_template.xml --template_submission_fp ~/Qiime/support_files/sra_xml_templates/submission_template.xml
 
 Produces :file:`sample.xml`, :file:`study.xml`, :file:`submission.xml` from the tab-delimited text files. 
 
@@ -265,7 +265,7 @@ Step 11: Finally, make the second-stage submission
 
 ::
 
-	$ python ~/Qiime/scripts/make_sra_submission.py -u submission_second_stage.txt -e experiment.txt -s per_run_sff --template_study_fp ~/Qiime/tests/sra_xml_templates/study_template.xml --template_sample_fp ~/Qiime/tests/sra_xml_templates/sample_template.xml -template_submission_fp ~/Qiime/tests/sra_xml_templates/submission_template.xml
+	$ python ~/Qiime/scripts/make_sra_submission.py -u submission_second_stage.txt -e experiment.txt -s per_run_sff --template_study_fp ~/Qiime/support_files/sra_xml_templates/study_template.xml --template_sample_fp ~/Qiime/support_files/sra_xml_templates/sample_template.xml -template_submission_fp ~/Qiime/support_files/sra_xml_templates/submission_template.xml
 
 **Output:** Produces files: :file:`experiment.xml`, :file:`run.xml` and  :file:`submission_second_stage.xml`
 
