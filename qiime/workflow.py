@@ -576,7 +576,7 @@ def run_jackknifed_upgma_clustering(otu_table_fp,tree_fp,seqs_per_sample,\
     except OSError:
         pass
     try:
-        params_str = get_params_str(params['rarefaction'])
+        params_str = get_params_str(params['multiple_rarefactions'])
     except KeyError:
         params_str = ''
     if parallel:
@@ -598,7 +598,7 @@ def run_jackknifed_upgma_clustering(otu_table_fp,tree_fp,seqs_per_sample,\
     else:
         # Build the serial rarefaction command
         rarefaction_cmd = \
-         '%s %s/rarefaction.py -i %s -m %s -x %s -s 1 -o %s %s' %\
+         '%s %s/multiple_rarefactions.py -i %s -m %s -x %s -s 1 -o %s %s' %\
          (python_exe_fp, script_dir, otu_table_fp, seqs_per_sample, \
           seqs_per_sample, rarefaction_dir, params_str)
     commands.append([('Rarefaction', rarefaction_cmd)])
@@ -613,11 +613,11 @@ def run_jackknifed_upgma_clustering(otu_table_fp,tree_fp,seqs_per_sample,\
         # Prep the hierarchical clustering command (for full distance matrix)
         master_tree_fp = '%s/%s_upgma.tre' % (metric_output_dir,otu_table_basename)
         try:
-            params_str = get_params_str(params['hierarchical_cluster'])
+            params_str = get_params_str(params['upgma_cluster'])
         except KeyError:
             params_str = ''
         # Build the hierarchical clustering command (for full distance matrix)
-        hierarchical_cluster_cmd = '%s %s/hierarchical_cluster.py -i %s -o %s %s' %\
+        hierarchical_cluster_cmd = '%s %s/upgma_cluster.py -i %s -o %s %s' %\
          (python_exe_fp, script_dir, distance_matrix_fp, master_tree_fp, params_str)
         commands.append(\
          [('UPGMA on full distance matrix: %s' % beta_diversity_metric,\
@@ -673,13 +673,13 @@ def run_jackknifed_upgma_clustering(otu_table_fp,tree_fp,seqs_per_sample,\
             pass
 
         try:
-            params_str = get_params_str(params['hierarchical_cluster'])
+            params_str = get_params_str(params['upgma_cluster'])
         except KeyError:
             params_str = ''
         # Build the hierarchical clustering command (for rarefied 
         # distance matrices)
         hierarchical_cluster_cmd =\
-         '%s %s/hierarchical_cluster.py -i %s -o %s %s' %\
+         '%s %s/upgma_cluster.py -i %s -o %s %s' %\
          (python_exe_fp, script_dir, dm_dir, upgma_dir, params_str)
         commands.append(\
          [('UPGMA on rarefied distance matrix (%s)' % beta_diversity_metric,\

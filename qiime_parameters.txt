@@ -56,9 +56,9 @@ beta_diversity:metrics
 make_3d_plots:custom_axes
 
 # Rarefaction parameters
-rarefaction:num-reps	1
-rarefaction:depth
-rarefaction:small_included	False
+multiple_rarefactions:num-reps	1
+multiple_rarefactions:depth
+multiple_rarefactions:small_included	False
 
 # Alpha diversity parameters
 alpha_diversity:metrics
