@@ -8,13 +8,15 @@ from cogent.app.util import get_tmp_filename
 from cogent.util.misc import remove_files
 from qiime.util import make_safe_f, FunctionWithParams, qiime_blast_seqs,\
     extract_seqs_by_sample_id, build_blast_db_from_fasta_file, \
-    get_qiime_project_dir, parse_qiime_config_files
+    get_qiime_project_dir, parse_qiime_config_files, matrix_stats
+import numpy
 
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME Project"
 #remember to add yourself if you make changes
-__credits__ = ["Rob Knight", "Daniel McDonald","Greg Caporaso"] 
+__credits__ = ["Rob Knight", "Daniel McDonald","Greg Caporaso", 
+"Justin Kuczynski"] 
 __license__ = "GPL"
 __version__ = "1.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -122,7 +124,54 @@ class TopLevelTests(TestCase):
         
         # empty dict on empty input
         self.assertEqual(parse_qiime_config_files([]),{})
+    
+    def test_matrix_stats1(self):
+        """ matrix_stats should match mean, median, stdev calc'd by hand"""
+        headers_list = [['a','c','b'],['a','c','b']]
+        d1 = numpy.array([  [ 0,.2,.9],
+                            [.2,0,.8],
+                            [.9,.8,0]],'float')
+        d2 = numpy.array([  [ 0,.3,1.1],
+                            [.3,0,.8],
+                            [1.1,.8,0]],'float')
+        distmats_list = [d1,d2]
+        
+        exp_mean = numpy.array([    [ 0,.25,1.0],
+                                    [.25,0,.8],
+                                    [1.0,.8,0]],'float')
+        exp_median = numpy.array([  [ 0,.25,1.0],
+                                    [.25,0,.8],
+                                    [1.0,.8,0]],'float')
+        exp_std = numpy.array([     [ 0,.05,.1],
+                                    [.05,0,0],
+                                    [.1,0,0]],'float')
+        results = matrix_stats(headers_list, distmats_list)
+        self.assertFloatEqual(results[1:], [exp_mean,exp_median,exp_std])
+        self.assertEqual(results[0],['a','c','b'])
+        
+    def test_matrix_stats2(self):
+        """ matrix_stats should raise valerr if headers are in different orders
+        """
+        headers_list = [['a','c','b'],['b','c','a']]
+        d1 = numpy.array([  [ 0,.2,.9],
+                            [.2,0,.8],
+                            [.9,.8,0]],'float')
+        d2 = numpy.array([  [ 0,.3,1.1],
+                            [.3,0,.8],
+                            [1.1,.8,0]],'float')
+        distmats_list = [d1,d2]
 
+        exp_mean = numpy.array([    [ 0,.25,1.0],
+                                    [.25,0,.8],
+                                    [1.0,.8,0]],'float')
+        exp_median = numpy.array([  [ 0,.25,1.0],
+                                    [.25,0,.8],
+                                    [1.0,.8,0]],'float')
+        exp_std = numpy.array([     [ 0,.05,.1],
+                                    [.05,0,0],
+                                    [.1,0,0]],'float')
+        self.assertRaises(ValueError, matrix_stats, headers_list, distmats_list)
+                                    
 class FunctionWithParamsTests(TestCase):
     """Tests of the FunctionWithParams class.
 

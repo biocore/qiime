@@ -2,7 +2,8 @@
 
 __author__ = "Daniel McDonald"
 __copyright__ = "Copyright 2010, The QIIME Project" 
-__credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso"] #remember to add yourself if you make changes
+__credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso", 
+"Justin Kuczynski"] #remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.0-dev"
 __maintainer__ = "Rob Knight"
@@ -19,6 +20,7 @@ from StringIO import StringIO
 from os import getenv
 from os.path import abspath, exists, dirname
 from numpy import min, max, median, mean
+import numpy
 from collections import defaultdict
 from optparse import OptionParser, OptionGroup
 import sys
@@ -33,6 +35,7 @@ from cogent.parse.fasta import MinimalFastaParser
 from cogent.util.misc import remove_files
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from cogent import LoadSeqs
+from copy import deepcopy
 
 class TreeMissingError(IOError):
     """Exception for missing tree file"""
@@ -510,3 +513,22 @@ def parse_command_line_parameters(script_description,\
     return parser, opts, args
 
 ## End functions for handling command line interfaces
+
+def matrix_stats(headers_list, distmats):
+    """does, mean, median, stdev on a series of (dis)similarity matrices
+    
+    takes a series of parsed matrices (list of headers, list of numpy 2d arrays)
+    headers must are either row or colunm headers (those must be identical)
+    outputs headers (list), means, medians, stdevs (all numpy 2d arrays)
+    """
+    
+    if len(set(map(tuple,headers_list))) > 1:
+        raise ValueError("error, not all input matrices have"+\
+          " identical column/row headers")
+        
+    all_mats = numpy.array(distmats) # 3d numpy array: mtx, row, col
+    means = numpy.mean(all_mats, axis=0)
+    medians = numpy.median(all_mats, axis=0)
+    stdevs = numpy.std(all_mats, axis=0)
+    
+    return deepcopy(headers_list[0]), means, medians, stdevs
