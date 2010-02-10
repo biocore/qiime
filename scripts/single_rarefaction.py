@@ -17,7 +17,8 @@ from optparse import make_option
 from qiime.rarefaction import SingleRarefactionMaker
 
 script_description = """Description:
-subsample an otu table without replacement, to generate a new rarefied otu table"""
+subsample an otu table without replacement, to generate a new rarefied otu table
+"""
 
 script_usage = """ 
  Subsample otu_table.txt at 20 seqs/sample.  if any samples
@@ -29,27 +30,27 @@ have fewer than 20 sequences, include them as they appear in otu_table.txt
   
 note:
 if the output file would be empty, no file is written"""
-required_options = [\
- # Example required option
- #make_option('-i','--input_dir',help='the input directory'),\
- make_option('-i', '--input_path',
-     help='input otu table filepath'),
- make_option('-o', '--output_path',
-     help='write output rarefied otu tables to this filepath) '),
- make_option('-d', '--depth', type=int,
-         help='sequences per sample to subsample'),
+required_options = [
+    make_option('-i', '--input_path',
+        help='input otu table filepath'),
+    make_option('-o', '--output_path',
+        help='write output rarefied otu tables to this filepath'),
+    make_option('-d', '--depth', type=int,
+        help='sequences per sample to subsample'),
 ]
 
-optional_options = [\
- # Example optional option
- #make_option('-o','--output_dir',help='the output directory [default: %default]'),\
-     make_option('--small_included', dest='small_included', default=False,
-         action="store_true",
-         help="""samples containing fewer seqs than the rarefaction
- level are included in the output but not rarefied [default: %default]""")
+optional_options = [
+make_option('--small_included', dest='small_included', default=False,
+    action="store_true",
+    help="""samples containing fewer seqs than the rarefaction
+level are included in the output but not rarefied [default: %default]"""),
+
+make_option('--lineages_included', dest='lineages_included', default=False,
+    action="store_true",
+    help="""output rarefied otu tables will include taxonomic (lineage)
+information for each otu, if present in input otu table
+[default: %default]"""),
 ]
-
-
 
 
 def main():
@@ -61,7 +62,8 @@ def main():
       optional_options=optional_options)
       
     maker = SingleRarefactionMaker(opts.input_path, opts.depth)
-    maker.rarefy_to_file(opts.output_path, opts.small_included)
+    maker.rarefy_to_file(opts.output_path, opts.small_included,
+        include_lineages=opts.lineages_included)
 
 if __name__ == "__main__":
     main()

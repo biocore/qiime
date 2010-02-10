@@ -94,7 +94,7 @@ class CogentTreeBuilder(TreeBuilder):
         module = self.Params['Module']
         seqs = self.getAlignment(aln_path)
         result = module.build_tree_from_alignment(seqs, moltype=DNA)    
-        
+
         return result
 
     def __call__(self, result_path=None, log_path=None, *args, **kwargs):
@@ -106,7 +106,8 @@ class CogentTreeBuilder(TreeBuilder):
 tree_method_constructors = {}  #currently unused
 tree_module_names = {'muscle':cogent.app.muscle, 
     'clustalw':cogent.app.clustalw,
-    #'mafft':cogent.app.mafft,   # current version of Mafft does not support tree building
+    #'mafft':cogent.app.mafft,   
+    # current version of Mafft does not support tree building
     'fasttree':cogent.app.fasttree,'fasttree_v1':cogent.app.fasttree_v1,
     'raxml':cogent.app.raxml, 'clearcut':cogent.app.clearcut,
     }

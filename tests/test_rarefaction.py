@@ -26,12 +26,10 @@ class FunctionTests(TestCase):
         self.sample_names = list('YXZ')
         self.taxon_names = list('bacd')
         self.otu_tuple = (self.sample_names, self.taxon_names, 
-        self.otu_table_transpose.T,
-        None)
+            self.otu_table_transpose.T, None)
     
     def test_rarefy_to_list(self):
-        """rarefy_to_list should rarefy correctly, same names, 
-        and rm empty samples
+        """rarefy_to_list should rarefy correctly, same names, rm empty samples
         
         """
         maker = RarefactionMaker(self.otu_tuple, 0, 1, 1, 1)
@@ -45,8 +43,8 @@ class FunctionTests(TestCase):
 
     def test_get_empty_rare(self):
         """get_rare_data should be empty when depth > # seqs in any sample"""
-        rare_sample_ids, rare_otu_ids, rare_otu_table = get_rare_data(
-            self.sample_names, self.taxon_names, self.otu_table, \
+        rare_sample_ids, rare_otu_table = get_rare_data(
+            self.sample_names, self.otu_table, \
             50, include_small_samples=False)
         self.assertEqual(len(rare_sample_ids), 0)
         self.assertEqual(rare_otu_table.size, 0)    
@@ -55,14 +53,14 @@ class FunctionTests(TestCase):
         """get_rare_data should be identical to given in this case
 
         here, rare depth > any sample, and include_small... = True"""
-        rare_sample_ids, rare_otu_ids, rare_otu_table = get_rare_data(
-            self.sample_names, self.taxon_names, self.otu_table, \
+        rare_sample_ids, rare_otu_table = get_rare_data(
+            self.sample_names, self.otu_table, \
             50, include_small_samples=True)
         self.assertEqual(len(rare_sample_ids), 3)
         self.assertEqual(rare_otu_table.size, 12)
         for i, sam in enumerate(self.sample_names):
             for j, otu in enumerate(self.taxon_names):
-                rare_val = rare_otu_table[rare_otu_ids.index(otu),
+                rare_val = rare_otu_table[self.taxon_names.index(otu),
                     rare_sample_ids.index(sam)]
                 self.assertEqual(rare_val, self.otu_table[j,i]) 
 
@@ -70,12 +68,12 @@ class FunctionTests(TestCase):
         """get_rare_data should get only sample X
 
         """
-        rare_sample_ids, rare_otu_ids, rare_otu_table = get_rare_data(
-            self.sample_names, self.taxon_names, self.otu_table, \
+        rare_sample_ids, rare_otu_table = get_rare_data(
+            self.sample_names, self.otu_table, \
             11, include_small_samples=False)
         self.assertEqual(rare_sample_ids, ['X'])
         #rare_otu_table[numpy.argsort(rare_otu_ids)]
-        self.assertEqual(rare_otu_table[numpy.argsort(rare_otu_ids)][:,0], 
+        self.assertEqual(rare_otu_table[numpy.argsort(self.taxon_names)][:,0], 
             numpy.array([5,1,3,2]))
 
         

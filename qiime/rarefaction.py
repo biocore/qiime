@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import division
 
 __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2010, The QIIME Project" 
@@ -23,10 +24,11 @@ from cogent.maths.stats.rarefaction import subsample
 
 class SingleRarefactionMaker(FunctionWithParams):
     def __init__(self, otu_path, depth):
-        """ otu_path can be path or otu tuple, defined by util.py's getOtuTable
+        """ init a singlerarefactionmaker
+        
+        otu_path can be path or otu tuple, defined by util.py's getOtuTable
         we just ignore any rarefaction levels beyond any sample in the data
         """
-        #self.rare_depths = range(min,max+1, step)
         
         self.depth = depth
 
@@ -35,33 +37,41 @@ class SingleRarefactionMaker(FunctionWithParams):
         self.max_num_taxa = (self.otu_table.sum(1)).max()
 
 
-    def rarefy_to_file(self, output_fname, small_included=False):
+    def rarefy_to_file(self, output_fname, small_included=False,
+        include_lineages=False):
         """ computes rarefied otu tables and writes them, one at a time
+        
         this prevents large memory usage
         
         for depth in self.rare_depths:
             for rep in range(self.num_reps):"""
-        sub_sample_ids, sub_otu_ids, sub_otu_table = \
-        get_rare_data(self.sample_names, self.taxon_names,
+            
+        if include_lineages:
+            otu_lineages = self.lineages
+        else:
+            otu_lineages = None
+        sub_sample_ids, sub_otu_table = get_rare_data(self.sample_names,
             self.otu_table, self.depth, small_included)
-        self._write_rarefaction(output_fname, sub_sample_ids, sub_otu_ids,\
-            sub_otu_table)
+        self._write_rarefaction(output_fname, sub_sample_ids, self.taxon_names,
+            sub_otu_table, otu_lineages)
     
     def _write_rarefaction(self, fname, sub_sample_ids, sub_otu_ids,\
-        sub_otu_table):
+        sub_otu_table, otu_lineages):
         """ depth and rep can be numbers or strings
         """
         if min(numpy.shape(sub_otu_table)) == 0: # no data to write
             return
         f = open(fname, 'w')
         f.write(format_otu_table(sub_sample_ids, sub_otu_ids,\
-            sub_otu_table, None, comment=fname))
+            sub_otu_table, otu_lineages, comment=fname))
         f.close()
 
 
 class RarefactionMaker(FunctionWithParams):
     def __init__(self, otu_path, min, max, step, num_reps):
-        """ otu_path can be path or otu tuple, defined by util.py's getOtuTable
+        """ init a rarefactionmaker
+        
+        otu_path can be path or otu tuple, defined by util.py's getOtuTable
         we just ignore any rarefaction levels beyond any sample in the data
         """
         self.rare_depths = range(min,max+1, step)
@@ -72,45 +82,55 @@ class RarefactionMaker(FunctionWithParams):
 
 
     def rarefy_to_files(self, output_dir, small_included=False, 
-        include_full=False):
+        include_full=False, include_lineages=False):
         """ computes rarefied otu tables and writes them, one at a time
+        
         this prevents large memory usage"""
+        if include_lineages:
+            otu_lineages = self.lineages
+        else:
+            otu_lineages = None
         self.output_dir = output_dir
         for depth in self.rare_depths:
             for rep in range(self.num_reps):
-                sub_sample_ids, sub_otu_ids, sub_otu_table = \
-                get_rare_data(self.sample_names, self.taxon_names,
-                    self.otu_table, depth, small_included)
+                sub_sample_ids, sub_otu_table = \
+                get_rare_data(self.sample_names, self.otu_table, depth, 
+                  small_included)
                 self._write_rarefaction(depth, rep, sub_sample_ids, 
-                    sub_otu_ids,\
-                    sub_otu_table)
+                    self.taxon_names, sub_otu_table, otu_lineages)
 
         if include_full:
             self._write_rarefaction('full', 0, self.sample_names, \
-                self.taxon_names,\
-                self.otu_table)
+                self.taxon_names,self.otu_table, otu_lineages)
     
-    def rarefy_to_list(self, small_included=False, include_full=False):
-        """ computes rarefied otu tables and returns a list, each element
+    def rarefy_to_list(self, small_included=False, include_full=False,
+        include_lineages=False):
+        """ computes rarefied otu tables and returns a list
+        
+        each element
         is (depth, rep, sample_ids, taxon_ids, otu_table)
         depth is string "full" for one instance
         """
+        if include_lineages:
+            otu_lineages = self.lineages
+        else:
+            otu_lineages = None
         res = []
         for depth in self.rare_depths:
             for rep in range(self.num_reps):
-                sub_sample_ids, sub_otu_ids, sub_otu_table = \
-                get_rare_data(self.sample_names, self.taxon_names,
+                sub_sample_ids, sub_otu_table = \
+                get_rare_data(self.sample_names,
                     self.otu_table, depth, small_included)
-                res.append([depth, rep, sub_sample_ids, sub_otu_ids, \
-                    sub_otu_table])
+                res.append([depth, rep, sub_sample_ids, self.taxon_names, \
+                    sub_otu_table, otu_lineages])
 
         if include_full:
             res.append(['full', 0, self.sample_names, self.taxon_names,\
-                self.otu_table])
+                self.otu_table, otu_lineages])
         return res
     
     def _write_rarefaction(self, depth, rep, sub_sample_ids, sub_otu_ids,\
-        sub_otu_table):
+        sub_otu_table, otu_lineages):
         """ depth and rep can be numbers or strings
         """
         if min(numpy.shape(sub_otu_table)) == 0: # no data to write
@@ -118,16 +138,17 @@ class RarefactionMaker(FunctionWithParams):
         fname = 'rarefaction_'+str(depth)+'_'+str(rep)+'.txt'
         f = open(os.path.join(self.output_dir,fname), 'w')
         f.write(format_otu_table(sub_sample_ids, sub_otu_ids,\
-            sub_otu_table, None, comment=fname))
+            sub_otu_table, otu_lineages, comment=fname))
         f.close()
 
-def get_rare_data(sample_ids, otu_ids, otu_table, \
+def get_rare_data(sample_ids, otu_table, \
     seqs_per_sample, include_small_samples=False):
     """Filter OTU table to keep only desired sample sizes.
     
-    include_small_sampes=False => do not write samples with < seqs_per_sample
+    - include_small_sampes=False => do not write samples with < seqs_per_sample
     total sequecnes
-    otu_table (input and out) is otus(rows) by samples (cols)"""
+    - otu_table (input and out) is otus(rows) by samples (cols)
+    - no otus are removed, even if they are absent in the rarefied table"""
     res_otu_table = otu_table.copy()
     res_sample_ids = sample_ids
     #figure out which samples will be dropped because too small
@@ -141,5 +162,5 @@ def get_rare_data(sample_ids, otu_ids, otu_table, \
         res_otu_table = res_otu_table[:,big_enough_samples[0]]
         res_sample_ids = map(sample_ids.__getitem__, big_enough_samples[0])
     #figure out which samples will be reduced because too big
-    return res_sample_ids, otu_ids, res_otu_table
+    return res_sample_ids, res_otu_table
 

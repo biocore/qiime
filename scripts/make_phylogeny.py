@@ -27,24 +27,24 @@ script_usage = """
     make_phylogeny.py -i align/rep_set_aligned.fa -o align/rep_set_aligned.tre -l align/rep_set_tree.log
 """
 
-required_options = [\
-  make_option('-i','--input_fp',action='store',\
+required_options = [
+    make_option('-i','--input_fp',action='store',
           type='string',dest='input_fp',help='Path to read '+\
           'input alignment')
 ]
 
 optional_options = [\
-    make_option('-t','--tree_method',action='store',\
-          type='string',dest='tree_method',help='Method for tree building. Valid choices are: '+\
+    make_option('-t','--tree_method',action='store',
+          help='Method for tree building. Valid choices are: '+\
           ', '.join(tree_module_names.keys())+\
           ' [default: %default]', default='fasttree'),
           
-    make_option('-o','--result_fp',action='store',\
-          type='string',dest='result_fp',help='Path to store '+\
+    make_option('-o','--result_fp',action='store',
+          help='Path to store '+\
           'result file [default: <input_sequences_filename>.tre]'),
           
-    make_option('-l','--log_fp',action='store',\
-          type='string',dest='log_fp',help='Path to store '+\
+    make_option('-l','--log_fp',action='store',
+          help='Path to store '+\
           'log file [default: No log file created.]')
 ]
 

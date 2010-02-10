@@ -35,35 +35,38 @@ without --small_included, 24 output files are not guaranteed
 100 files will be written to mo/rare2
  """
 
-required_options = [\
- # Example required option
-#make_option('-i','--input_dir',help='the input directory'),\
-make_option('-i', '--input_path',
-    help='input otu table filepath'),
+required_options = [
+    make_option('-i', '--input_path',
+        help='input otu table filepath'),
 
-make_option('-o', '--output_path',
-    help='write output rarefied otu tables files to this dir ' +\
+    make_option('-o', '--output_path',
+        help='write output rarefied otu tables files to this dir ' +\
         "makes dir if it doesn't exist"),
 
-make_option('-m', '--min', type=int,
+    make_option('-m', '--min', type=int,
     help='min seqs/sample'),
     
-make_option('-x', '--max', type=int,
+    make_option('-x', '--max', type=int,
     help='max seqs/sample (inclusive)'),
     
-make_option('-s', '--step', type=int,
+    make_option('-s', '--step', type=int,
     help='levels: min, min+step... for level <= max')
 ]
 
-optional_options = [\
- # Example optional option
-#make_option('-o','--output_dir',help='the output directory [default: %default]'),\
-make_option('-n', '--num-reps', dest='num_reps', default=1, type=int,
-     help='num iterations at each seqs/sample level [default: %default]'),
+optional_options = [
 
-make_option('--small_included', dest='small_included', default=False,
-             action="store_true",
-             help="""samples containing fewer seqs than the rarefaction
+    make_option('-n', '--num-reps', dest='num_reps', default=1, type=int,
+        help='num iterations at each seqs/sample level [default: %default]'),
+     
+    make_option('--lineages_included', dest='lineages_included', default=False,
+        action="store_true",
+          help="""output rarefied otu tables will include taxonomic (lineage)
+          information for each otu, if present in input otu table
+          [default: %default]"""),
+
+    make_option('--small_included', dest='small_included', default=False,
+        action="store_true",
+        help="""samples containing fewer seqs than the rarefaction
      level are included in the output but not rarefied [default: %default]""")
 ]
 
@@ -83,7 +86,8 @@ def main():
         os.makedirs(opts.output_path)
     maker = RarefactionMaker(opts.input_path, opts.min, opts.max,
         opts.step, opts.num_reps)
-    maker.rarefy_to_files(opts.output_path, opts.small_included)
+    maker.rarefy_to_files(opts.output_path, opts.small_included,
+        include_lineages=opts.lineages_included)
 
 
 if __name__ == "__main__":
