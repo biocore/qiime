@@ -4,7 +4,7 @@
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso",
-    "Justin Kuczynski"]
+    "Justin Kuczynski", "Cathy Lozupone"]
 __license__ = "GPL"
 __version__ = "1.0-dev"
 __maintainer__ = "Rob Knight"
@@ -18,6 +18,7 @@ from cogent.maths.stats.rarefaction import subsample
 from numpy import array, concatenate, repeat, zeros
 from numpy.random import permutation
 from cogent.parse.record_finder import LabeledRecordFinder
+from copy import deepcopy
 import os
 
 """Parsers for internally used file formats from SIBS, OTUPicker, etc.
@@ -445,5 +446,51 @@ def parse_qiime_parameters(lines):
             except KeyError:
                 result[script_id] = {parameter_id:value}
     return result
+
+def sample_mapping_to_otu_table(lines):
+    """Converts the UniFrac sample mapping file to an OTU table
+    
+    The sample mapping file is a required input for the UniFrac web interface.
+    """
+    out = ["#Full OTU Counts"]
+    header = ["#OTU ID"]
+
+    OTU_sample_info, all_sample_names = parse_sample_mapping(lines)
+    all_sample_names = list(all_sample_names)
+    all_sample_names.sort()
+    header.extend(all_sample_names)
+    out.append('\t'.join(header))
+    for OTU in OTU_sample_info:
+        new_line = []
+        new_line.append(OTU)
+        for sample in all_sample_names:
+            new_line.append(OTU_sample_info[OTU][sample])
+        out.append('\t'.join(new_line))
+    return out
+
+def parse_sample_mapping(lines):
+    """Parses the UniFrac sample mapping file (environment file)
+
+    The sample mapping file is a required input for the UniFrac web interface.
+    Returns a dict of OTU names mapped to sample:count dictionaries.
+    This code is used to convert this file to an OTU table for QIIME
+    """
+    lines = [line.strip().split('\t') for line in lines]
+
+    all_sample_names = [line[1] for line in lines]
+    all_sample_names = set(all_sample_names)
+    #create a dict of dicts with the OTU name mapped to a dictionary of
+    #sample names with counts
+    OTU_sample_info = {}
+    for line in lines:
+        OTU_name = line[0]
+        if OTU_name not in OTU_sample_info:
+            sample_info = dict([(i,'0') for i in all_sample_names])
+            OTU_sample_info[OTU_name] = deepcopy(sample_info)
+        sample_name = line[1]
+        count = line[2]
+        OTU_sample_info[OTU_name][sample_name] = count
+    return OTU_sample_info, all_sample_names
+
 # End functions for handling qiime_parameters file
 

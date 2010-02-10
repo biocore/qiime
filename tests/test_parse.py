@@ -3,7 +3,8 @@
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2010, The QIIME Project"
-__credits__ = ["Rob Knight", "Justin Kuczynski", "Greg Caporaso"] #remember to add yourself
+__credits__ = ["Rob Knight", "Justin Kuczynski", "Greg Caporaso",\
+                "Cathy Lozupone"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "1.0-dev"
 __maintainer__ = "Rob Knight"
@@ -18,7 +19,7 @@ from qiime.parse import (parse_map, group_by_field, group_by_fields,
     otu_file_to_lineages, parse_otus, otu_table_to_envs, parse_sequences_by_otu,
     make_envs_dict, fields_to_dict, parse_rarefaction_fname, envs_to_otu_counts,
     otu_counts_to_matrix, envs_to_matrix, parse_qiime_parameters, 
-    parse_bootstrap_support)
+    parse_bootstrap_support, parse_sample_mapping)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -51,6 +52,8 @@ class TopLevelTests(TestCase):
         'sam14', 'sam15', 'sam16', 'sam17', 'sam18', 'sam19']
         self.l19_taxon_names =  ['tax1', 'tax2', 'tax3', 'tax4', 'endbigtaxon',\
         'tax6', 'tax7', 'tax8', 'tax9']
+        self.SampleMapping = ["OTU1\tsample1\t3", "OTU1\tsample3\t2", \
+        "OTU2\tsample1\t1", "OTU2\tsample2\t2"]
 
     def test_parse_map(self):
         """parse_map should handle tab-delimited file as expected."""
@@ -410,5 +413,22 @@ s03\tc\t5""".splitlines()
                      {'use_rdp':None}}
         self.assertEqual(actual,expected)
 
+    def test_parse_sample_mapping(self):
+        """parse_sample_mapping works"""
+        lines = self.SampleMapping
+        OTU_sample_info, all_sample_names = parse_sample_mapping(lines)
+        self.assertEqual(OTU_sample_info, {'OTU2': {'sample1': '1', 'sample3': '0', 'sample2': '2'}, 'OTU1': {'sample1': '3', 'sample3': '2', 'sample2': '0'}})
+
+        self.assertEqual(all_sample_names, set(['sample1', 'sample3', 'sample2']))
+
+def test_sample_mapping_to_otu_table(self):
+        """sample_mapping_to_otu_table works"""
+        lines = self.SampleMapping
+        result = sample_mapping_to_otu_table(lines)
+        self.assertEqual(result, ['#Full OTU Counts',\
+         '#OTU ID\tsample1\tsample2\tsample3', 'OTU2\t1\t2\t0', \
+        'OTU1\t3\t0\t2'])
+
+ 
 if __name__ =='__main__':
     main()
