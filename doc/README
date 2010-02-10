@@ -1,0 +1,6 @@
+To Compile the QIIME Documentation, perform the following:
+
+1) In a terminal window, "cd" to the "doc/" folder.
+2) Once in the directory, type "make html".
+3) This will compile the documentation in the "_build/html/" folder.
+4) Now, move to the "_build/html/" folder and in a browser open the file "index.html"
