@@ -49,7 +49,7 @@ def get_job_commands(python_exe_fp,rarefaction_fp,job_prefix,\
          [output_fn],working_dir,output_dir)
         result_filepaths += current_result_filepaths
         
-        command = '%s %s %s -i %s -o %s %s -d %s %s %s' %\
+        command = '%s %s %s -i %s -o %s %s %s -d %s %s %s' %\
          (command_prefix,\
           python_exe_fp,\
           rarefaction_fp,\
