@@ -299,7 +299,7 @@ def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,\
     commands = []
     python_exe_fp = qiime_config['python_exe_fp']
     qiime_home = qiime_config['qiime_home']
-    qiime_dir = qiime_config['qiime_dir']
+    script_dir = join(qiime_home,'scripts/')
     
     mapping_file_header = parse_map(open(mapping_fp,'U'),return_header=True)[0][0]
     mapping_fields = ','.join(mapping_file_header)
@@ -315,7 +315,7 @@ def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,\
         params_str = '%s -t %s' % (params_str,tree_fp)
     # Build the beta-diversity command
     beta_div_cmd = '%s %s/beta_diversity.py -i %s -o %s %s' %\
-     (python_exe_fp, qiime_dir, otu_table_fp, output_dir, params_str)
+     (python_exe_fp, script_dir, otu_table_fp, output_dir, params_str)
     commands.append(\
      [('Beta Diversity (%s)' % ', '.join(beta_diversity_metrics), beta_div_cmd)])
     
@@ -327,8 +327,8 @@ def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,\
         params_str = ''
     # Build the 3d prefs file generator command
     prefs_cmd = \
-     '%s %s/../scripts/make_3d_plot_prefs_file.py -b "%s" -p %s %s' %\
-     (python_exe_fp, qiime_dir, mapping_fields, prefs_fp, params_str)
+     '%s %s/make_3d_plot_prefs_file.py -b "%s" -p %s %s' %\
+     (python_exe_fp, script_dir, mapping_fields, prefs_fp, params_str)
     commands.append([('Build prefs file', prefs_cmd)])
         
     for beta_diversity_metric in beta_diversity_metrics:
@@ -344,7 +344,7 @@ def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,\
             params_str = ''
         # Build the principal coordinates command
         pc_cmd = '%s %s/principal_coordinates.py -i %s -o %s %s' %\
-         (python_exe_fp, qiime_dir, beta_div_fp, pc_fp, params_str)
+         (python_exe_fp, script_dir, beta_div_fp, pc_fp, params_str)
         commands.append(\
          [('Principal coordinates (%s)' % beta_diversity_metric, pc_cmd)])
     
@@ -362,7 +362,7 @@ def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,\
         # Build the continuous-coloring 3d plots command
         continuous_3d_command = \
          '%s %s/make_3d_plots.py -p %s -i %s -o %s -m %s %s' %\
-          (python_exe_fp, qiime_dir, prefs_fp, pc_fp, continuous_3d_dir,\
+          (python_exe_fp, script_dir, prefs_fp, pc_fp, continuous_3d_dir,\
            mapping_fp, params_str)
     
         # Prep the discrete-coloring 3d plots command
@@ -379,7 +379,7 @@ def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,\
         # Build the discrete-coloring 3d plots command
         discrete_3d_command = \
          '%s %s/make_3d_plots.py -b "%s" -i %s -o %s -m %s %s' %\
-          (python_exe_fp, qiime_dir, mapping_fields, pc_fp, discrete_3d_dir,\
+          (python_exe_fp, script_dir, mapping_fields, pc_fp, discrete_3d_dir,\
            mapping_fp, params_str)
        
         commands.append([\
