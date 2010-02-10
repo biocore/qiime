@@ -59,35 +59,25 @@ Citing QIIME
 ============
 If you use QIIME for any published research, please include the following citation:
 
-**QIIME Allows Integration and Analysis of High-Throughput Community Sequencing Data**
-J. Gregory Caporaso, Justin Kuczynski, Jesse Stombaugh, Kyle Bittinger, Frederic D. Bushman, 
-Elizabeth K. Costello, Noah Fierer, Antonio Gonzalez Peña, Julia K. Goodrich, Jeffrey I. Gordon, 
-Gavin A. Huttley, Scott T. Kelley, Dan Knights, Jeremy E. Koenig, Ruth E. Ley, Cathy A. Lozupone, 
-Daniel McDonald, Brian D. Muegge, Meg Pirrung, Jens Reeder, Joel R. Sevinsky, Peter J. Turnbaugh, 
-William van Treuren, William A. Walters, Jeremy Widmann, Tanya Yatsunenko, Jesse Zaneveld and Rob 
-Knight. Manuscript under review. 2009.
+\J. Gregory Caporaso, Justin Kuczynski, Jesse Stombaugh, Kyle Bittinger, Frederic D. Bushman, Elizabeth K. Costello, Noah Fierer, Antonio Gonzalez Peña, Julia K. Goodrich, Jeffrey I. Gordon, Gavin A. Huttley, Scott T. Kelley, Dan Knights, Jeremy E. Koenig, Ruth E. Ley, Cathy A. Lozupone, Daniel McDonald, Brian D. Muegge, Meg Pirrung, Jens Reeder, Joel R. Sevinsky, Peter J. Turnbaugh, William van Treuren, William A. Walters, Jeremy Widmann, Tanya Yatsunenko, Jesse Zaneveld and Rob Knight. (Submitted) **QIIME allows integration and analysis of high-throughput community sequencing data.**
 
 Contributors
 ============
-J. Gregory Caporaso [1], Justin Kuczynski [2], Jesse Stombaugh [1], 
-Kyle Bittinger [3], Frederic D. Bushman [3], Elizabeth K. Costello [1], Noah Fierer [4], 
-Antonio Gonzalez Peña [5], Julia K. Goodrich [5], Jeff I. Gordon6, Gavin Huttley [7], 
-Scott T. Kelley [8], Dan Knights [5], Jeremy E. Koenig [9], Ruth E. Ley [9], 
-Cathy A. Lozupone [1], Daniel McDonald [1], Brian D. Muegge [6], Megan Pirrung [1], 
-Jens Reeder [1], Joel R. Sevinsky [10], Peter J. Turnbaugh [6], Will Van Treuren [1], 
-William A. Walters [2], Jeremy Widmann [1], Tanya Yatsunenko [6], Jesse Zaneveld [2] and 
-Rob Knight [1],[11] 
 
-* [1] Department of Chemistry and Biochemistry, UCB 215, University of Colorado, Boulder, CO 80309 
-* [2] Department of Molecular, Cellular and Developmental Biology, UCB 347, University of Colorado, Boulder, CO 80309 
-* [3] Department of Microbiology, Johnson Pavilion 425, University of Pennsylvania, Philadelphia, PA 19104 
-* [4] Cooperative Institute for Research in Environmental Sciences, University of Colorado, Boulder, CO 80309, USA.; Department of Ecology and Evolutionary Biology, University of Colorado, Boulder, CO 80309, USA. 
-* [5] Department of Computer Science, University of Colorado, Boulder, Colorado, USA. 
-* [6] Center for Genome Sciences, Washington University School of Medicine, St. Louis, MO 63108 
-* [7] Computational Genomics Laboratory, John Curtin School of Medical Research, The Australian National University, Canberra, Australian Capital Territory, Australia.
-* [8] Department of Biology, San Diego State University, San Diego CA 92182
-* [9] Department of Microbiology, Cornell University, Ithaca NY 14853
-* [10] Luca Technologies, 500 Corporate Circle, Suite C, Golden, Colorado 80401 
-* [11] Howard Hughes Medical Institute
+.. note::
+
+ \J. Gregory Caporaso :superscript:`1`, Justin Kuczynski :superscript:`2`, Jesse Stombaugh :superscript:`1`, Kyle Bittinger :superscript:`3`, Frederic D. Bushman :superscript:`3`, Elizabeth K. Costello :superscript:`1`, Noah Fierer :superscript:`4`, Antonio Gonzalez Peña :superscript:`5`, Julia K. Goodrich :superscript:`5`, Jeff I. Gordon :superscript:`6`, Gavin Huttley :superscript:`7`, Scott T. Kelley :superscript:`8`, Dan Knights :superscript:`5`, Jeremy E. Koenig :superscript:`9`, Ruth E. Ley :superscript:`9`, Cathy A. Lozupone :superscript:`1`, Daniel McDonald :superscript:`1`, Brian D. Muegge :superscript:`6`, Megan Pirrung :superscript:`1`, Jens Reeder :superscript:`1`, Joel R. Sevinsky :superscript:`10`, Peter J. Turnbaugh :superscript:`6`, Will Van Treuren :superscript:`1`, William A. Walters :superscript:`2`, Jeremy Widmann :superscript:`1`, Tanya Yatsunenko :superscript:`6`, Jesse Zaneveld :superscript:`2` and Rob Knight :superscript:`1,11`
+
+ * :superscript:`1` Department of Chemistry and Biochemistry, UCB 215, University of Colorado, Boulder, CO 80309 
+ * :superscript:`2` Department of Molecular, Cellular and Developmental Biology, UCB 347, University of Colorado, Boulder, CO 80309 
+ * :superscript:`3` Department of Microbiology, Johnson Pavilion 425, University of Pennsylvania, Philadelphia, PA 19104 
+ * :superscript:`4` Cooperative Institute for Research in Environmental Sciences, University of Colorado, Boulder, CO 80309, USA.; Department of Ecology and Evolutionary Biology, University of Colorado, Boulder, CO 80309, USA. 
+ * :superscript:`5` Department of Computer Science, University of Colorado, Boulder, Colorado, USA. 
+ * :superscript:`6` Center for Genome Sciences, Washington University School of Medicine, St. Louis, MO 63108 
+ * :superscript:`7` Computational Genomics Laboratory, John Curtin School of Medical Research, The Australian National University, Canberra, Australian Capital Territory, Australia.
+ * :superscript:`8` Department of Biology, San Diego State University, San Diego CA 92182
+ * :superscript:`9` Department of Microbiology, Cornell University, Ithaca NY 14853
+ * :superscript:`10` Luca Technologies, 500 Corporate Circle, Suite C, Golden, Colorado 80401 
+ * :superscript:`11` Howard Hughes Medical Institute
 
 .. _PyCogent: http://pycogent.sourceforge.net
