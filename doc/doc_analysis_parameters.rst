@@ -37,7 +37,7 @@ The check id map step is necessary in order to confirm that the user generated m
 
 .. note::
 
-	-m MAP_FNAME, --map=MAP_FNAME [REQUIRED]
+	-m MAP_FNAME, \--map=MAP_FNAME [REQUIRED]
 
 		This is the user-generated mapping file.
 
@@ -2072,13 +2072,13 @@ If the user wants to color by using the prefs file (e.g. :file:`prefs.txt`), the
 Build UPGMA Tree Comparing Samples
 ----------------------------------
 
-.. index:: hierarchical_cluster
+.. index:: upgma_cluster
 
-**QIIME script:** :file:`hierarchical_cluster.py`
+**QIIME script:** :file:`upgma_cluster.py`
 
 In addition to using PCoA, it can be useful to cluster samples using UPGMA (Unweighted Pair Group Method with Arithmetic mean, also known as average linkage). As with PCoA, the input to this step is a distance matrix (i.e. resulting file from :file:`beta_diversity.py`).
 
-*Usage:* :file:`hierarchical_cluster.py [options]`
+*Usage:* :file:`upgma_cluster.py [options]`
 
 **Input Arguments:**
 
@@ -2096,24 +2096,24 @@ In addition to using PCoA, it can be useful to cluster samples using UPGMA (Unwe
 
 The output is a newick formatted tree compatible with most standard tree viewing programs. Batch processing is also available, allowing the analysis of an entire directory of distance matrices.
 
-**Hierarchical Cluster (Single File):**
+**UPGMA Cluster (Single File):**
 
-If the user is performing hierarchical clustering on a single file (i.e. resulting file from :file:`beta_diversity.py`) and defining the output filename (e.g. :file:`beta_div_cluster.tre`), they can use the following command::
+If the user is performing UPGMA clustering on a single file (i.e. resulting file from :file:`beta_diversity.py`) and defining the output filename (e.g. :file:`beta_div_cluster.tre`), they can use the following command::
 
-	$ python $qdir/hierarchical_cluster.py -i beta_div.txt -o beta_div_cluster.tre
+	$ python $qdir/upgma_cluster.py -i beta_div.txt -o beta_div_cluster.tre
 
-**Hierarchical Cluster (Multiple Files):**
+**UPGMA Cluster (Multiple Files):**
 
-If the user is performing hierarchical clustering on a directory (i.e. resulting directory from :file:`beta_diversity.py`) and defining the output directory (e.g. beta_div_weighted_clusters/), they can use the following command::
+If the user is performing UPGMA clustering on a directory (i.e. resulting directory from :file:`beta_diversity.py`) and defining the output directory (e.g. beta_div_weighted_clusters/), they can use the following command::
 
-	$ python $qdir/hierarchical_cluster.py -i beta_div_weighted_unifrac/ -o beta_div_weighted_clusters/
+	$ python $qdir/upgma_cluster.py -i beta_div_weighted_unifrac/ -o beta_div_weighted_clusters/
 
 .. index:: jackknife samples
 
 Build UPGMA Trees from Jackknifed Samples to Assign Confidence Values to UPGMA Nodes
 -------------------------------------------------------------------------------------
 
-Although the analyses in the previous sections allow for clustering and comparison between groups of samples, they do not directly measure the robustness of individual clusters. One technique for doing this is called jackknifing (repeatedly resampling a subset of the available data from each sample). This process will utilize a new script, :file:`tree_compare.py`, along with scripts from previous sections (:file:`rarefaction.py`, :file:`beta_diversity.py` and :file:`hierarchical_cluster.py`).
+Although the analyses in the previous sections allow for clustering and comparison between groups of samples, they do not directly measure the robustness of individual clusters. One technique for doing this is called jackknifing (repeatedly resampling a subset of the available data from each sample). This process will utilize a new script, :file:`tree_compare.py`, along with scripts from previous sections (:file:`rarefaction.py`, :file:`beta_diversity.py` and :file:`upgma_cluster.py`).
 
 To perform jackknifing, you should perform the following steps first:
 
@@ -2127,7 +2127,7 @@ To perform jackknifing, you should perform the following steps first:
 
 3. Create UPGMA trees for each distance matrix created in the previous step. The input for generating the UPGMA trees is the output directory from the previous beta diversity step (e.g. "jackknife_beta_div/") and the resulting trees will be written in to the output directory (e.g. "jackknife_upgma_trees/"), as shown by the following command::
 
-	$ python $qdir/hierarchical_cluster.py -i jackknife_beta_div -o jackknife_upgma_trees/
+	$ python $qdir/upgma_cluster.py -i jackknife_beta_div -o jackknife_upgma_trees/
 
 4. Finally, we will compare the resampled UPGMA trees to our tree constructed from the entire dataset (i.e., resulting file from :file:`make_phylogeny.py`).
 
@@ -2145,7 +2145,7 @@ To perform jackknifing, you should perform the following steps first:
 
 	-s SUPPORT_DIR, --support_dir=SUPPORT_DIR [REQUIRED]
 
-		This is the path to the directory containing the jackknife supported trees (i.e., resulting directory from batch :file:`hierarchical_cluster.py`)
+		This is the path to the directory containing the jackknife supported trees (i.e., resulting directory from batch :file:`upgma_cluster.py`)
 
 	-o OUTPUT_DIR, --output_dir=OUTPUT_DIR [REQUIRED]
 
@@ -2157,7 +2157,7 @@ The result of :file:`tree_compare.py` contains the master tree, now with interna
 
 **Example:**
 
-Given the sample upgma tree generated by the user for the entire dataset, the directory of jackknife supported trees (i.e., the resulting directory from :file:`hierarchical_cluster.py`) and the directory to write the results for the tree comparisons, you can use the following command::
+Given the sample upgma tree generated by the user for the entire dataset, the directory of jackknife supported trees (i.e., the resulting directory from :file:`upgma_cluster.py`) and the directory to write the results for the tree comparisons, you can use the following command::
 
 	$ python $qdir/tree_compare.py -m sample_clustering.tre -s jackknife_upgma_trees/ -o jackknife_comparison/
 

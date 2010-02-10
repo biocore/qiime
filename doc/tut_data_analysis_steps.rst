@@ -486,7 +486,7 @@ these metrics are calculated to study diversity along an environmental gradient 
 or different disease states (lean vs. obese).  The basic output of this comparison is a square 
 matrix where a "distance" is calculated between every pair of samples reflecting the similarity 
 between the samples.  The data in this distance matrix can be visualized with clustering analyses, 
-namely Principal Coordinate Analysis (PCoA) and hierarchical clustering (UPGMA).  Like alpha 
+namely Principal Coordinate Analysis (PCoA) and UPGMA clustering.  Like alpha 
 diversity, there are many possible metrics which can be calculated with the QIIME pipeline - the 
 full list of options can be seen by passing option -s to the script :file:`beta_diversity.py`.  For our 
 example, we will calculate the unweighted unifrac metric, which is a phylogenetic measure used 
@@ -576,19 +576,19 @@ components can be viewed using "Views:Paralled coordinates" option or typing "/"
 
 .. _hiarchclustjack:
 
-Hierarchical Clustering and Jackknifing Support
+UPGMA Clustering and Jackknifing Support
 -----------------------------------------------
 
 .. _hiarchclust:
 
-Hierarchical Clustering
+UPGMA Clustering
 ^^^^^^^^^^^^^^^^^^^^^^^
-Unweighted Pair Group Method with Arithmetic mean (UPGMA) is type of hierarchical clustering 
+Unweighted Pair Group Method with Arithmetic mean (UPGMA) is type of UPGMA clustering 
 method using average linkage and can be used to visualize the distance matrix produced by 
 :file:`beta_diversity.py`. The output is a file that can be opened with tree viewing software, such as 
 FigTree. ::
 
-	$ python $qdir/hierarchical_cluster.py -i unifrac_dist/unweighted_unifrac_Fasting_otu_table.txt -o Fasting_Unw_Unifrac_upgma.tre
+	$ python $qdir/upgma_cluster.py -i unifrac_dist/unweighted_unifrac_Fasting_otu_table.txt -o Fasting_Unw_Unifrac_upgma.tre
 
 .. image:: images/ hiarchclust.png
    :align: center
@@ -632,16 +632,16 @@ before, but now in batch mode::
 	$ python $qdir/beta_diversity.py -i jackknife_otu -m dist_unweighted_unifrac -t Filtered_Aln/rep_set_aligned.tre -o jackknife_dist
 
 which results in 20 distance matrix files written to the "jackknife_dist directory".  Each of those 
-is then used as the basis for hierarchical clustering, using :file:`hierarchical_cluster.py` in batch 
+is then used as the basis for UPGMA clustering, using :file:`upgma_cluster.py` in batch 
 mode::
 
-	$ python $qdir/hierarchical_cluster.py -i jackknife_dist -o jackknife_upgma
+	$ python $qdir/upgma_cluster.py -i jackknife_dist -o jackknife_upgma
 
 .. _compjackclustertree:
 
 Compare Jackknifed Trees to Cluster Tree
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Hierarchical clustering of the 20 distance matrix files results in 20 UPGMA samples clusters, each 
+UPGMA clustering of the 20 distance matrix files results in 20 UPGMA samples clusters, each 
 based on a random sub-sample of the available sequence data.  These are then compared to the 
 UPGMA result using all available data::
 

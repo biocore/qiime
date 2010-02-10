@@ -115,7 +115,7 @@ NOTE: It is VERY IMPORTANT that the centers do not make up new accessions or inc
 
 Example::
 
-	$ python ~/Qiime/qiime/make_sra_submission.py -a sample.txt -t study.txt -u submission.txt -T ~/Qiime/tests/sra_xml_templates/study_template.xml -A ~/Qiime/tests/sra_xml_templates/sample_template.xml -U ~/Qiime/tests/sra_xml_templates/submission_template.xml
+	$ python ~/Qiime/scripts/make_sra_submission.py -a sample.txt -t study.txt -u submission.txt --template_study_fp ~/Qiime/tests/sra_xml_templates/study_template.xml --template_sample_fp ~/Qiime/tests/sra_xml_templates/sample_template.xml --template_submission_fp ~/Qiime/tests/sra_xml_templates/submission_template.xml
 
 Produces :file:`sample.xml`, :file:`study.xml`, :file:`submission.xml` from the tab-delimited text files. 
 
@@ -138,7 +138,7 @@ Step 1: Get fasta and qual from sff files
 
 This step converts the sff files into text formats that are more usable. Note that in this example the .fna and .qual files are already in there to eliminate the requirement for the off-machine apps, so they will simply be overwritten with identical files by this script. If you do not have these apps, please skip to the Step 2. ::
 
-	$ python ~/Qiime/qiime/process_sff.py sff_files/
+	$ python ~/Qiime/scripts/process_sff.py sff_files/
 
 **Output:** Makes .fna and .qual files for each sff file.
 
@@ -149,7 +149,7 @@ This step converts the input experiment file into separate mapping files for eac
 
 Note: the LINKER field is no longer required in the spreadsheet. ::
 
-	$ python ~/Qiime/qiime/sra_spreadsheet_to_map_files.py experiment.txt
+	$ python ~/Qiime/scripts/sra_spreadsheet_to_map_files.py experiment.txt
 
 **Output:** Produces valid mapping files per 454 plate: :file:`fierer_hand_study_E86FECS.map` and :file:`fierer_hand_study_FA6P1OK.map`
 
@@ -160,13 +160,13 @@ This step assigns each sequence to a library, dropping low-quality sequences and
 
 NOTE: The SRA requests that you deposit ALL your sequence data, including bad reads, unless there is an IRB reason not to do so (i.e. human contamination). Therefore the quality and length filtering should be turned off.::
 
-	$ python ~/Qiime/qiime/split_libraries.py -h
+	$ python ~/Qiime/scripts/split_libraries.py -h
 
 **Output:** Shows you the help for :file:`split_libaries.py` ::
 
-	$ python ~/Qiime/qiime/split_libraries.py -s 5 -l 30 -L 1000 -b 12 -H 1000 -M 100 -a 1000 -f sff_files/E86FECS01.fna,sff_files/E86FECS02.fna -q sff_files/E86FECS01.qual,sff_files/E86FECS02.qual -m fierer_hand_study_E86FECS.map -o E86FECS_demultiplex
+	$ python ~/Qiime/scripts/split_libraries.py -s 5 -l 30 -L 1000 -b 12 -H 1000 -M 100 -a 1000 -f sff_files/E86FECS01.fna,sff_files/E86FECS02.fna -q sff_files/E86FECS01.qual,sff_files/E86FECS02.qual -m fierer_hand_study_E86FECS.map -o E86FECS_demultiplex
 
-	$ python ~/Qiime/qiime/split_libraries.py -s 5 -l 50 -L 1000 -b 12 -H 1000 -M 100 -a 1000 -f sff_files/FA6P1OK01.fna,sff_files/FA6P1OK02.fna -q sff_files/FA6P1OK01.qual,sff_files/FA6P1OK02.qual -m fierer_hand_study_FA6P1OK.map -o FA6P1OK_demultiplex -r
+	$ python ~/Qiime/scripts/split_libraries.py -s 5 -l 50 -L 1000 -b 12 -H 1000 -M 100 -a 1000 -f sff_files/FA6P1OK01.fna,sff_files/FA6P1OK02.fna -q sff_files/FA6P1OK01.qual,sff_files/FA6P1OK02.qual -m fierer_hand_study_FA6P1OK.map -o FA6P1OK_demultiplex -r
 
 **Output:** Produces two files: :file:`seqs.fna` with valid sequences assigned to samples via barcodes, and :file:`split_libraries_log.txt` with info about which sequences failed QC. The parameters above are essentially turning off the default quality filters and require an average qual score of at least 5, a minimum sequence length of 30 (basically just the primer_barcode), a maximum sequence length of 1000, max homopolymer run of 1000, up to 100 errors in the primer, etc. to let everything through, and specify that we are using 12-base barcodes (turning off the Golay error-correction, which would be specified with -b golay_12), specify the (comma-delimited) paths to the fasta and mapping files (note: no spaces are allowed around the commas), and finally specify the mapping file as one of the map files we produced in step 2 (taking care to use the right map file for each run). Note: you can turn off the quality filtering steps if you want to make sure that all the sequences appear in the output. The -r True flag removes unassigned sequences from the fasta file and, if added, will make the analysis run substantially faster. In this case we use -r on the second run but not on the first run because all the reads on the first run were from this study, but only some of the reads from the second run were from this study, and we can't tell a valid read from another study apart from a bad read from this one.
 
@@ -177,11 +177,11 @@ This step reduces the number of sequences to do the human screen by picking OTUs
 
 Note: this step requires that you have cd-hit installed. ::
 
-	$ python ~/Qiime/qiime/pick_otus.py -M 4000 -n 100 -s 0.95 -o E86FECS_demultiplex -i E86FECS_demultiplex/seqs.fna
+	$ python ~/Qiime/scripts/pick_otus.py -M 4000 -n 100 -s 0.95 -o E86FECS_demultiplex -i E86FECS_demultiplex/seqs.fna
 
 **Output:** Produces two files: :file:`E86FECS_demultiplex/seqs_otus.txt` and :file:`E86FECS_demultiplex/seqs_otus.log` (which have the OTUs and the log file describing the analysis respectively). ::
 
-	$ python ~/Qiime/qiime/pick_otus.py -M 4000 -n 100 -s 0.95 -o FA6P1OK_demultiplex/ -i FA6P1OK_demultiplex/seqs.fna
+	$ python ~/Qiime/scripts/pick_otus.py -M 4000 -n 100 -s 0.95 -o FA6P1OK_demultiplex/ -i FA6P1OK_demultiplex/seqs.fna
 
 Repeat the same procedure for the other library.
 
@@ -192,11 +192,11 @@ This step gets the actual sequences for each OTU picked in Step 4.
 
 ::
 
-	$ python ~/Qiime/qiime/pick_rep_set.py -i E86FECS_demultiplex/seqs_otus.txt -f E86FECS_demultiplex/seqs.fna
+	$ python ~/Qiime/scripts/pick_rep_set.py -i E86FECS_demultiplex/seqs_otus.txt -f E86FECS_demultiplex/seqs.fna
 
 **Output:** Produces :file:`E86FECS_demultiplex/seqs.fna_rep_set.fasta` ::
 
-	$ python ~/Qiime/qiime/pick_rep_set.py -i FA6P1OK_demultiplex/seqs_otus.txt -f FA6P1OK_demultiplex/seqs.fna
+	$ python ~/Qiime/scripts/pick_rep_set.py -i FA6P1OK_demultiplex/seqs_otus.txt -f FA6P1OK_demultiplex/seqs.fna
 
 **Output:** Produces :file:`FA6P1OK_demultiplex/seqs.fna_rep_set.fasta`
 
@@ -205,7 +205,7 @@ Step 6: Blast the representative set sequences against 95% OTUs in greengenes to
 
 This step performs a human/contaminant screen the "safe" way by identifying and excluding sequences that aren't 16S rRNA. ::
 
-	$ python ~/Qiime/qiime/exclude_seqs_by_blast.py -d greengenes_unaligned.fasta-OTUs_at_0.05.fasta -i E86FECS_demultiplex/seqs.fna_rep_set.fasta -W 10 -p 0.25 -o E86FECS_demultiplex/blast_results -e 1e-20
+	$ python ~/Qiime/scripts/exclude_seqs_by_blast.py -d greengenes_unaligned.fasta-OTUs_at_0.05.fasta -i E86FECS_demultiplex/seqs.fna_rep_set.fasta -W 10 -p 0.25 -o E86FECS_demultiplex/blast_results -e 1e-20
 
 We are using blastn with a word size of 10, requiring 25% coverage of the sequence, and an E-value of 1e-20. Our tests suggest that this is sufficient to screen out human genomic reads (the human 18S sequence hits bacterial 16S with E-value between 1e-18 and 1e-10 depending on lineage).
 
@@ -213,18 +213,18 @@ We are using blastn with a word size of 10, requiring 25% coverage of the sequen
 
 Repeat the same procedure for the other library ::
 
-	$ python ~/Qiime/qiime/exclude_seqs_by_blast.py -d greengenes_unaligned.fasta-OTUs_at_0.05.fasta -i FA6P1OK_demultiplex/seqs.fna_rep_set.fasta -W 10 -p 0.25 -o FA6P1OK_demultiplex/blast_results -e 1e-20
+	$ python ~/Qiime/scripts/exclude_seqs_by_blast.py -d greengenes_unaligned.fasta-OTUs_at_0.05.fasta -i FA6P1OK_demultiplex/seqs.fna_rep_set.fasta -W 10 -p 0.25 -o FA6P1OK_demultiplex/blast_results -e 1e-20
 
 Step 7: Make per-library files of "good" ids to pass to sfffile
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This step maps the ids of the representative set back onto the ids of the OTUs they came from so that we can get all the members of the OTUs that had a representative that matched a known 16S rRNA. ::
 
-	$ python ~/Qiime/qiime/make_library_id_lists.py -i E86FECS_demultiplex/seqs.fna -s E86FECS_demultiplex/blast_results.screened -u E86FECS_demultiplex/seqs_otus.txt -o E86FECS_demultiplex/per_lib_info
+	$ python ~/Qiime/scripts/make_library_id_lists.py -i E86FECS_demultiplex/seqs.fna -s E86FECS_demultiplex/blast_results.screened -u E86FECS_demultiplex/seqs_otus.txt -o E86FECS_demultiplex/per_lib_info
 
 **Output:** This makes a new directory called "E86FECS_demultiplex/per_lib_idlists", which contains a separate file with an id list for each library. ::
 
-	$ python ~/Qiime/qiime/make_library_id_lists.py -i FA6P1OK_demultiplex/seqs.fna -s FA6P1OK_demultiplex/blast_results.screened -u FA6P1OK_demultiplex/seqs_otus.txt -o FA6P1OK_demultiplex/per_lib_info
+	$ python ~/Qiime/scripts/make_library_id_lists.py -i FA6P1OK_demultiplex/seqs.fna -s FA6P1OK_demultiplex/blast_results.screened -u FA6P1OK_demultiplex/seqs_otus.txt -o FA6P1OK_demultiplex/per_lib_info
 
 **Output:** This makes a new directory called "FA6P1OK_demultiplex/per_lib_idlists", which contains a separate file with an id list for each library.
 
@@ -233,18 +233,18 @@ Step 8: Use sfffile to make per-library sff files
 
 This step takes the good lists of ids from step 7 and extracts a separate sff file for each of those lists. ::
 
-	$ python ~/Qiime/qiime/make_per_library_sff.py -i sff_files/E86FECS01.sff,sff_files/E86FECS02.sff -l E86FECS_demultiplex/per_lib_info/
+	$ python ~/Qiime/scripts/make_per_library_sff.py -i sff_files/E86FECS01.sff,sff_files/E86FECS02.sff -l E86FECS_demultiplex/per_lib_info/
 
-	$ python ~/Qiime/qiime/make_per_library_sff.py -i sff_files/FA6P1OK01.sff,sff_files/FA6P1OK02.sff -l FA6P1OK_demultiplex/per_lib_info/
+	$ python ~/Qiime/scripts/make_per_library_sff.py -i sff_files/FA6P1OK01.sff,sff_files/FA6P1OK02.sff -l FA6P1OK_demultiplex/per_lib_info/
 
 Step 9: Use sfffile to quality-trim the barcodes, primers and linkers
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The SRA requires that the user reset the left trim in the sff file to eliminate the technical reads (barcode, primer, linker if present). This means figuring out the length of the technical parts of the read, the length of the current read, writing out a text file with the per-id info, and running sfffile to reset the read lengths. ::
 
-	$ python ~/Qiime/qiime/trim_sff_primers.py -m fierer_hand_study_E86FECS.map -l E86FECS_demultiplex/per_lib_info/
+	$ python ~/Qiime/scripts/trim_sff_primers.py -m fierer_hand_study_E86FECS.map -l E86FECS_demultiplex/per_lib_info/
 
-	$ python ~/Qiime/qiime/trim_sff_primers.py -m fierer_hand_study_FA6P1OK.map -l FA6P1OK_demultiplex/per_lib_info/
+	$ python ~/Qiime/scripts/trim_sff_primers.py -m fierer_hand_study_FA6P1OK.map -l FA6P1OK_demultiplex/per_lib_info/
 
 Step 10: Move files around and make archive, which will be automated in the future releases
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -265,7 +265,7 @@ Step 11: Finally, make the second-stage submission
 
 ::
 
-	$ python ~/Qiime/qiime/make_sra_submission.py -u submission_second_stage.txt -e experiment.txt -s per_run_sff -T ~/Qiime/tests/sra_xml_templates/study_template.xml -A ~/Qiime/tests/sra_xml_templates/sample_template.xml -U ~/Qiime/tests/sra_xml_templates/submission_template.xml
+	$ python ~/Qiime/scripts/make_sra_submission.py -u submission_second_stage.txt -e experiment.txt -s per_run_sff --template_study_fp ~/Qiime/tests/sra_xml_templates/study_template.xml --template_sample_fp ~/Qiime/tests/sra_xml_templates/sample_template.xml -template_submission_fp ~/Qiime/tests/sra_xml_templates/submission_template.xml
 
 **Output:** Produces files: :file:`experiment.xml`, :file:`run.xml` and  :file:`submission_second_stage.xml`
 
