@@ -426,7 +426,7 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,\
     except OSError:
         pass
     try:
-        params_str = get_params_str(params['rarefaction'])
+        params_str = get_params_str(params['multiple_rarefactions'])
     except KeyError:
         params_str = ''
     if parallel:
@@ -442,13 +442,13 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,\
             pass        
         # Build the rarefaction command
         rarefaction_cmd = \
-         '%s %s/parallel_rarefaction.py -T -i %s -m %s -x %s -s %s -o %s %s' %\
+         '%s %s/parallel_multiple_rarefactions.py -T -i %s -m %s -x %s -s %s -o %s %s' %\
          (python_exe_fp, script_dir, otu_table_fp, min_seqs_per_sample, median_count, \
           step, rarefaction_dir, params_str)
     else:
         # Build the rarefaction command
         rarefaction_cmd = \
-         '%s %s/rarefaction.py -i %s -m %s -x %s -s %s -o %s %s' %\
+         '%s %s/multiple_rarefactions.py -i %s -m %s -x %s -s %s -o %s %s' %\
          (python_exe_fp, script_dir, otu_table_fp, min_seqs_per_sample, median_count, \
           step, rarefaction_dir, params_str)
     commands.append([('Alpha rarefaction', rarefaction_cmd)])
@@ -592,7 +592,7 @@ def run_jackknifed_upgma_clustering(otu_table_fp,tree_fp,seqs_per_sample,\
             pass        
         # Build the parallel rarefaction command
         rarefaction_cmd = \
-         '%s %s/parallel_rarefaction.py -T -i %s -m %s -x %s -s 1 -o %s %s' %\
+         '%s %s/parallel_multiple_rarefactions.py -T -i %s -m %s -x %s -s 1 -o %s %s' %\
          (python_exe_fp, script_dir, otu_table_fp, seqs_per_sample,\
           seqs_per_sample, rarefaction_dir, params_str)
     else:
