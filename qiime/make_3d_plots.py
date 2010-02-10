@@ -218,7 +218,7 @@ def make_mage_output(groups, colors, coord_header, coords, pct_var, custom_axes=
     data_colors=data_colors, edges=None):
     """Convert groups, colors, coords and percent var into mage format"""
     result = []
-    
+ 
     #Scale the coords and generate header labels
     if scaled:
         scalars = pct_var
@@ -312,28 +312,35 @@ master={labels} nobutton' % (color, radius, alpha, num_coords))
 
     #Write edges if requested
     if edges:
-        result.append('@vectorlist {edges} dimension=%s on' % \
-            (num_coords))
-        for edge in edges:
-            id_fr, id_to = edge
-            # get 'index' of the destination set from 'to' sampleID
-            which_set = int(id_to[id_to.rindex('_')+1:]) - 1
-            which_color = kinemage_colors[which_set % len(kinemage_colors)]
-            # plot a color 'tip' on the line (10% of line length)
-            pt_fr = coord_dict[id_fr][:num_coords]
-            pt_to = coord_dict[id_to][:num_coords]
-            diffs = (pt_to-pt_fr) * .66
-            middles = pt_fr + diffs
-            result.append('%s white' % \
-                      (' '.join(map(str, pt_fr))))
-            result.append('%s white P' % \
-                      (' '.join(map(str, middles))))
-            
-            result.append('%s %s' % \
-                      (' '.join(map(str, middles)), which_color))
-            result.append('%s %s P' % \
-                      (' '.join(map(str, pt_to)), which_color))            
+        result += make_edges_output(coord_dict, edges, num_coords)
     return result
+
+def make_edges_output(coord_dict, edges, num_coords):
+    """creates make output to display edges (as a kinemage vectorlist)"""
+    result = []
+    result.append('@vectorlist {edges} dimension=%s on' % \
+                      (num_coords))
+    for edge in edges:
+        id_fr, id_to = edge
+        # get 'index' of the destination set from 'to' sampleID
+        which_set = int(id_to[id_to.rindex('_')+1:]) - 1
+        which_color = kinemage_colors[which_set % len(kinemage_colors)]
+        # plot a color 'tip' on the line (10% of line length)
+        pt_fr = coord_dict[id_fr][:num_coords]
+        pt_to = coord_dict[id_to][:num_coords]
+        diffs = (pt_to-pt_fr) * .66
+        middles = pt_fr + diffs
+        result.append('%s white' % \
+                          (' '.join(map(str, pt_fr))))
+        result.append('%s white P' % \
+                          (' '.join(map(str, middles))))
+        
+        result.append('%s %s' % \
+                          (' '.join(map(str, middles)), which_color))
+        result.append('%s %s P' % \
+                          (' '.join(map(str, pt_to)), which_color))            
+    return result
+
 
 def combine_map_label_cols(combinecolorby,mapping):
     """Merge two or more mapping columns into one column"""
@@ -553,6 +560,7 @@ def generate_3d_plots(prefs, data, custom_axes, dir_path='',data_file_path='', f
             kinpath += default_filename
     if not kinpath:
         return
+    
     coord_header, coords, eigvals, pct_var = data['coord']
     mapping=data['map']
 
