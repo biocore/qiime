@@ -89,7 +89,7 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,\
     commands = []
     python_exe_fp = qiime_config['python_exe_fp']
     qiime_home = qiime_config['qiime_home']
-    qiime_dir = qiime_config['qiime_dir']
+    script_dir = join(qiime_home,'scripts/')
     
     # Prep the OTU picking command
     otu_picking_method = params['pick_otus']['otu_picking_method']
@@ -114,8 +114,8 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,\
             pass
             
         # Build the OTU picking command
-        pick_otus_cmd = '%s %s/parallel/pick_otus_blast.py -i %s -o %s -T %s' %\
-         (python_exe_fp, qiime_dir, input_fp, pick_otu_dir, params_str)
+        pick_otus_cmd = '%s %s/parallel_pick_otus_blast.py -i %s -o %s -T %s' %\
+         (python_exe_fp, script_dir, input_fp, pick_otu_dir, params_str)
     else:
         try:
             params_str = get_params_str(params['pick_otus'])
@@ -123,7 +123,7 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,\
             params_str = ''
         # Build the OTU picking command
         pick_otus_cmd = '%s %s/pick_otus.py -i %s -o %s %s' %\
-         (python_exe_fp, qiime_dir, input_fp, pick_otu_dir, params_str)
+         (python_exe_fp, script_dir, input_fp, pick_otu_dir, params_str)
 
     commands.append([('Pick OTUs', pick_otus_cmd)])
     
@@ -141,7 +141,7 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,\
         params_str = ''
     # Build the representative set picking command
     pick_rep_set_cmd = '%s %s/pick_rep_set.py -i %s -f %s -l %s -o %s %s' %\
-     (python_exe_fp, qiime_dir, otu_fp, input_fp, rep_set_log_fp,\
+     (python_exe_fp, script_dir, otu_fp, input_fp, rep_set_log_fp,\
       rep_set_fp, params_str)
     commands.append([('Pick representative set', pick_rep_set_cmd)])
     
@@ -169,8 +169,8 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,\
             pass
             
         # Build the parallel pynast alignment command
-        align_seqs_cmd = '%s %s/parallel/align_seqs_pynast.py -i %s -o %s -T %s' %\
-         (python_exe_fp, qiime_dir, rep_set_fp, pynast_dir, params_str)
+        align_seqs_cmd = '%s %s/parallel_align_seqs_pynast.py -i %s -o %s -T %s' %\
+         (python_exe_fp, script_dir, rep_set_fp, pynast_dir, params_str)
     else:
         try:
             params_str = get_params_str(params['align_seqs'])
@@ -178,7 +178,7 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,\
             params_str = ''
         # Build the pynast alignment command
         align_seqs_cmd = '%s %s/align_seqs.py -i %s -o %s %s' %\
-         (python_exe_fp, qiime_dir, rep_set_fp, pynast_dir, params_str)
+         (python_exe_fp, script_dir, rep_set_fp, pynast_dir, params_str)
 
     
     # Prep the taxonomy assignment command
@@ -207,8 +207,8 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,\
             
         # Build the parallel taxonomy assignment command
         assign_taxonomy_cmd = \
-         '%s %s/parallel/assign_taxonomy_%s.py -i %s -o %s -T %s' %\
-         (python_exe_fp, qiime_dir, assignment_method, rep_set_fp,\
+         '%s %s/parallel_assign_taxonomy_%s.py -i %s -o %s -T %s' %\
+         (python_exe_fp, script_dir, assignment_method, rep_set_fp,\
           assign_taxonomy_dir, params_str)
     else:
         try:
@@ -217,7 +217,7 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,\
             params_str = ''
         # Build the taxonomy assignment command
         assign_taxonomy_cmd = '%s %s/assign_taxonomy.py -o %s -i %s %s' %\
-         (python_exe_fp, qiime_dir, assign_taxonomy_dir,\
+         (python_exe_fp, script_dir, assign_taxonomy_dir,\
           rep_set_fp, params_str)
     
     # Append commands which can be run simulataneously in parallel
@@ -233,7 +233,7 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,\
         params_str = ''
     # Build the alignment filtering command
     filter_alignment_cmd = '%s %s/filter_alignment.py -o %s -i %s %s' %\
-     (python_exe_fp, qiime_dir, pynast_dir, aln_fp, params_str)
+     (python_exe_fp, script_dir, pynast_dir, aln_fp, params_str)
     commands.append([('Filter alignment', filter_alignment_cmd)])
     
     # Prep the tree building command
@@ -251,7 +251,7 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,\
         params_str = ''
     # Build the tree building command
     make_phylogeny_cmd = '%s %s/make_phylogeny.py -i %s -o %s -l %s %s' %\
-     (python_exe_fp, qiime_dir, filtered_aln_fp, tree_fp, log_fp,\
+     (python_exe_fp, script_dir, filtered_aln_fp, tree_fp, log_fp,\
      params_str)
     
     # Prep the OTU table building command
@@ -267,7 +267,7 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,\
         params_str = ''
     # Build the OTU table building command
     make_otu_table_cmd = '%s %s/make_otu_table.py -i %s -t %s -o %s %s' %\
-     (python_exe_fp, qiime_dir, otu_fp, taxonomy_fp, otu_table_fp, params_str)
+     (python_exe_fp, script_dir, otu_fp, taxonomy_fp, otu_table_fp, params_str)
     
     # Append commands which can be run simulataneously in parallel
     commands.append([('Build phylogenetic tree', make_phylogeny_cmd),\

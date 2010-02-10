@@ -11,22 +11,16 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Pre-release"
 
-from optparse import OptionParser
+from optparse import make_option
 from os import makedirs
-from qiime.util import load_qiime_config
+from qiime.util import load_qiime_config, parse_command_line_parameters
 from qiime.parse import parse_qiime_parameters
 from qiime.workflow import run_qiime_data_preparation, print_commands,\
     call_commands_serially, print_to_stdout, no_status_updates
-    
-usage_str = """usage: %prog [options] {-i INPUT_FP -o OUTPUT_DIR -p PARAMETER_FP}
 
-[] indicates optional input (order unimportant)
-{} indicates required input (order unimportant)
+qiime_config = load_qiime_config()
 
-WARNING: THE INTERFACE FOR THE WORKFLOW SCRIPT WAS CHANGED SIGNIFICANTLY
-ON 29 DEC 2009. REVIEW THE NEW Qiime/qiime_parameters.txt FILE TO SEE HOW
-TO SPECIFY PARAMETERS FOR THE INDIVIDUAL STEPS. COPY THAT FILE AND EDIT THE
-COPY TO DEFINE CUSTOM ANALYSES.
+script_description = """A workflow script for picking OTUs through building OTU tables
 
 REQUIRED:
  You must add values for the following parameters in a custom parameters file:
@@ -35,10 +29,9 @@ REQUIRED:
  
  These are the values that you would typically pass as --template_fp to 
   align_seqs.py and lane_mask_fp to filter_alignment.py, respectively.
+"""
 
-Example usage:
-
-The following command will start an analysis on inseq1.fasta (-i), which is a 
+script_usage = """The following command will start an analysis on inseq1.fasta (-i), which is a 
  post-split_libraries fasta file. The sequence identifiers in this file
  should be of the form <sample_id>_<unique_seq_id>. The following steps,
  corresponding to the preliminary data preparation, are applied:
@@ -55,55 +48,39 @@ The following command will start an analysis on inseq1.fasta (-i), which is a
  
  All output files will be written to the directory specified by -o, and 
  subdirectories as appropriate.
+ 
+%prog -i inseqs1.fasta -o wf1/ -p custom_parameters.txt"""
 
-pick_otus_through_otu_table.py -i /Users/caporaso/data/qiime_test_data/workflow/inseqs1.fasta -o /Users/caporaso/data/qiime_test_data/workflow/wf1/ -p /Users/caporaso/data/qiime_test_data/workflow/custom_parameters.txt
-"""
-qiime_config = load_qiime_config()
-
-def parse_command_line_parameters():
-    """ Parses command line arguments """
-    usage = usage_str
-    version = 'Version: %prog ' + __version__
-    parser = OptionParser(usage=usage, version=version)
-
-    parser.add_option('-i','--input_fp',\
-            help='the input fasta file [REQUIRED]')
-    parser.add_option('-o','--output_dir',\
-            help='the output directory [REQUIRED]')
-    parser.add_option('-p','--parameter_fp',\
+required_options = [\
+ make_option('-i','--input_fp',\
+            help='the input fasta file [REQUIRED]'),\
+ make_option('-o','--output_dir',\
+            help='the output directory [REQUIRED]'),\
+ make_option('-p','--parameter_fp',\
             help='path to the parameter file [REQUIRED]')
+]
 
-    parser.add_option('-v','--verbose',action='store_true',\
-        dest='verbose',help='Print information during execution -- '+\
-        'useful for debugging [default: %default]')
-        
-    parser.add_option('-f','--force',action='store_true',\
+optional_options = [\
+ make_option('-f','--force',action='store_true',\
         dest='force',help='Force overwrite of existing output directory'+\
         ' (note: existing files in output_dir will not be removed)'+\
-        ' [default: %default]')
-        
-    parser.add_option('-w','--print_only',action='store_true',\
+        ' [default: %default]'),\
+ make_option('-w','--print_only',action='store_true',\
         dest='print_only',help='Print the commands but don\'t call them -- '+\
-        'useful for debugging [default: %default]')
-        
-    parser.add_option('-s','--serial',action='store_true',\
+        'useful for debugging [default: %default]',default=False),\
+ make_option('-s','--serial',action='store_true',\
         dest='serial',help='Do not use parallel scripts'+\
-        ' [default: %default]')
-
-    parser.set_defaults(verbose=False,print_only=False,serial=False)
-
-    required_options = ['input_fp', 'output_dir', 'parameter_fp']
-
-    opts,args = parser.parse_args()
-    for option in required_options:
-        if eval('opts.%s' % option) == None:
-            parser.error('Required option --%s omitted.' % option)
-
-    return opts,args
+        ' [default: %default]',default=False)
+]
 
 
-if __name__ == "__main__":
-    opts,args = parse_command_line_parameters()
+def main():
+    option_parser, opts, args = parse_command_line_parameters(
+      script_description=script_description,
+      script_usage=script_usage,
+      version=__version__,
+      required_options=required_options,
+      optional_options=optional_options)
     verbose = opts.verbose
     
     input_fp = opts.input_fp
@@ -152,4 +129,6 @@ if __name__ == "__main__":
      qiime_config=qiime_config,\
      parallel=parallel,\
      status_update_callback=status_update_callback)
-    
+
+if __name__ == "__main__":
+    main()    
