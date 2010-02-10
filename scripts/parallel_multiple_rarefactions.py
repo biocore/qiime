@@ -1,184 +1,112 @@
 #!/usr/bin/env python
-# Author: Greg Caporaso (gregcaporaso@gmail.com)
-# rarefaction.py
-
+# File created on 09 Feb 2010
 from __future__ import division
-from optparse import OptionParser
+
+__author__ = "Greg Caporaso"
+__copyright__ = "Copyright 2010, The QIIME project"
+__credits__ = ["Greg Caporaso"]
+__license__ = "GPL"
+__version__ = "1.0-dev"
+__maintainer__ = "Greg Caporaso"
+__email__ = "gregcaporaso@gmail.com"
+__status__ = "Pre-release"
+ 
+
+from qiime.util import parse_command_line_parameters
+from optparse import make_option
 from os import popen, system, mkdir, makedirs
 from os.path import split, splitext
 from subprocess import check_call, CalledProcessError
 from cogent.app.util import get_tmp_filename
 from qiime.parallel.util import split_fasta, get_random_job_prefix, write_jobs_file,\
     submit_jobs, compute_seqs_per_file, build_filepaths_from_filepaths,\
-    get_poller_command, get_rename_command, write_filepaths_to_file,\
+    get_poller_command, write_filepaths_to_file,\
     write_merge_map_file_assign_taxonomy
-from qiime.alpha_diversity import list_known_metrics
 from qiime.util import load_qiime_config
+from qiime.parallel.multiple_rarefactions import get_job_commands
 
-__author__ = "Greg Caporaso"
-__copyright__ = "Copyright 2010, The QIIME Project"
-__credits__ = ["Greg Caporaso","Justin Kuczynski"] 
-__license__ = "GPL"
-__version__ = "1.0-dev"
-__maintainer__ = "Greg Caporaso"
-__email__ = "gregcaporaso@gmail.com"
-__status__ = "Pre-release"
+script_description = """A parallel wrapper for the make_mutliple_rarefactions.py script"""
 
-
-def get_job_commands(python_exe_fp,rarefaction_fp,job_prefix,\
-    input_fp,output_dir,working_dir,min_seqs,max_seqs,step,num_reps,\
-    command_prefix=None,command_suffix=None):
-    """Generate alpha diversity commands to be submitted to cluster
-    """
-    # Create data for each run (depth, output_fn)
-    run_parameters = []
-    for num_seqs in range(min_seqs,max_seqs+1, step):
-        for rep_num in range(num_reps):
-            run_parameters.append((\
-             num_seqs,'rarefaction_%d_%d.txt' % (num_seqs,rep_num)))
-
-    command_prefix = command_prefix or '/bin/bash; '
-    command_suffix = command_suffix or '; exit'
-    
-    commands = []
-    result_filepaths = []
-    
-    for depth,output_fn in run_parameters:
-        # Each run ends with moving the output file from the tmp dir to
-        # the output_dir. Build the command to perform the move here.
-        rename_command, current_result_filepaths = get_rename_command(\
-         [output_fn],working_dir,output_dir)
-        result_filepaths += current_result_filepaths
-        
-        command = '%s %s %s -i %s -o %s -d %s %s %s' %\
-         (command_prefix,\
-          python_exe_fp,\
-          rarefaction_fp,\
-          input_fp,
-          working_dir + '/' + output_fn,
-          depth,
-          rename_command,
-          command_suffix)
-          
-        commands.append(command)
-        
-    return commands, result_filepaths
-
-usage_str = """usage: %prog [options] {-i INPUT_FILE -o OUTPUT_DIR -m MIN_NUM_SEQS -x MAX_NUM_SEQS -n NUM_REPS -s STEP_SIZE} 
-
-[] indicates optional input (order unimportant)
-{} indicates required input (order unimportant)
-
-Example usage:
-
-Build rarefied otu tables containing 100 (-m) to 2000 (-x) sequences 
+script_usage = """Build rarefied otu tables containing 100 (-m) to 2000 (-x) sequences 
  in steps of 100 (-s) with 5 (-n) repetions per number of sequences, 
  from otu_table.txt (-i). Write the output files to the rare directory 
  (-o, will be created if it doesn't exist). The name of the output files 
  will be of the form:
     rare/rarefaction_<num_seqs>_<reptition_number>.txt
 
-python rarefaction.py -o rare -m 100 -x 2000 -s 100 -n 5 -i otu_table.txt 
-"""
+parallel_multiple_rarefactions.py -o rare -m 100 -x 2000 -s 100 -n 5 -i otu_table.txt"""
+
 
 qiime_config = load_qiime_config()
 
-def parse_command_line_parameters():
-    """ Parses command line arguments """
-    usage = usage_str
-    version = 'Version: %prog 0.1'
-    parser = OptionParser(usage=usage, version=version)
-    
-    # define relevant rarefaction.py parameters
-    parser.add_option('-i', '--input_path',
-        help='input filepath, (the otu table) [REQUIRED]')
-        
-    parser.add_option('-o', '--output_path',
+required_options = [\
+ make_option('-i', '--input_path',
+        help='input filepath, (the otu table) [REQUIRED]'),\
+ make_option('-o', '--output_path',
         help='write output rarefied otu tables here ' +\
-            "makes dir if it doesn't exist [REQUIRED]")
+            "makes dir if it doesn't exist [REQUIRED]"),\
+ make_option('-m', '--min', type=int,help='min seqs/sample [REQUIRED]'),\
+ make_option('-x', '--max', type=int,\
+                      help='max seqs/sample (inclusive) [REQUIRED]'),\
+ make_option('-s', '--step', type=int,\
+                      help='levels: min, min+step... for level <= max [REQUIRED]'),\
+]
 
-    parser.add_option('-m', '--min', type=int,help='min seqs/sample [REQUIRED]')
-        
-    parser.add_option('-x', '--max', type=int,\
-                      help='max seqs/sample (inclusive) [REQUIRED]')
-        
-    parser.add_option('-s', '--step', type=int,\
-                      help='levels: min, min+step... for level <= max [REQUIRED]')
-   
-    parser.add_option('-n', '--num-reps', dest='num_reps', default=1, type=int,
-        help='num iterations at each seqs/sample level [default: %default]')
-    
-    parser.add_option('--small_included', dest='small_included', default=False,
+optional_options = [\
+ make_option('-n', '--num-reps', dest='num_reps', default=1, type=int,
+        help='num iterations at each seqs/sample level [default: %default]'),\
+ make_option('--small_included', dest='small_included', default=False,
         action="store_true",
         help="""samples containing fewer seqs than the rarefaction ' +\
-        'level are included in the output but not rarefied [default: %default]""") 
-           
-    # Define parallel-script-specific parameters
-    parser.add_option('-N','--rarefaction_fp',action='store',\
+        'level are included in the output but not rarefied [default: %default]"""),\
+ make_option('-N','--single_rarefaction_fp',action='store',\
            type='string',help='full path to '+\
-           'qiime/rarefaction.py [default: %default]',\
-           default=qiime_config['rarefaction_fp'])
-        
-    # Don't currently have control over the number of jobs to start -- will 
-    # need to do this by catting commands together
-    # parser.add_option('-O','--jobs_to_start',action='store',type='int',\
-    #         help='Number of jobs to start [default: %default]',default=24)
-           
-    parser.add_option('-P','--poller_fp',action='store',\
+           'scripts/single_rarefaction.py [default: %default]',\
+           default=qiime_config['single_rarefaction_fp']),\
+ make_option('-P','--poller_fp',action='store',\
            type='string',help='full path to '+\
-           'qiime/parallel/poller.py [default: %default]',\
-           default=qiime_config['poller_fp'])
-           
-    parser.add_option('-R','--retain_temp_files',action='store_true',\
+           'scripts/poller.py [default: %default]',\
+           default=qiime_config['poller_fp']),\
+ make_option('-R','--retain_temp_files',action='store_true',\
            help='retain temporary files after runs complete '+\
            '(useful for debugging) [default: %default]',\
-           default=False)
-           
-    parser.add_option('-S','--suppress_submit_jobs',action='store_true',\
+           default=False),\
+ make_option('-S','--suppress_submit_jobs',action='store_true',\
             help='Only split input and write commands file - don\'t submit '+\
-            'jobs [default: %default]',default=False)
-
-    parser.add_option('-T','--poll_directly',action='store_true',\
+            'jobs [default: %default]',default=False),\
+ make_option('-T','--poll_directly',action='store_true',\
             help='Poll directly for job completion rather than running '+\
             'poller as a separate job. If -T is specified this script will '+\
             'not return until all jobs have completed. [default: %default]',\
-            default=False)
-
-    parser.add_option('-U','--cluster_jobs_fp',action='store',\
+            default=False),\
+ make_option('-U','--cluster_jobs_fp',action='store',\
             type='string',help='path to cluster_jobs.py script ' +\
             ' [default: %default]',\
-            default=qiime_config['cluster_jobs_fp'])
-
-    parser.add_option('-W','--suppress_polling',action='store_true',
+            default=qiime_config['cluster_jobs_fp']),\
+ make_option('-W','--suppress_polling',action='store_true',
            help='suppress polling of jobs and merging of results '+\
            'upon completion [default: %default]',\
-           default=False)
-           
-    parser.add_option('-X','--job_prefix',action='store',\
+           default=False),\
+ make_option('-X','--job_prefix',action='store',\
            type='string',help='job prefix '+\
-           '[default: RARIF_ + 3 random chars]')
-           
-    parser.add_option('-Y','--python_exe_fp',action='store',\
+           '[default: RARIF_ + 3 random chars]'),\
+ make_option('-Y','--python_exe_fp',action='store',\
            type='string',help='full path to python '+\
            'executable [default: %default]',\
-           default=qiime_config['python_exe_fp'])
-        
-    parser.add_option('-Z','--seconds_to_sleep',type='int',\
+           default=qiime_config['python_exe_fp']),\
+ make_option('-Z','--seconds_to_sleep',type='int',\
             help='Number of seconds to sleep between checks for run '+\
             ' completion when polling runs [default: %default]',default=60)
-                             
-    opts,args = parser.parse_args()
-    
-    required_options = ['input_path', 'output_path', 'min', 'max', 'step']
-    
-    for option in required_options:
-        if eval('opts.%s' % option) == None:
-            parser.error('Required option --%s omitted.' % option) 
+]
 
-    return opts,args
-        
-if __name__ == "__main__":
-    opts,args = parse_command_line_parameters()
+
+def main():
+    option_parser, opts, args = parse_command_line_parameters(
+      script_description=script_description,
+      script_usage=script_usage,
+      version=__version__,
+      required_options=required_options,
+      optional_options=optional_options)
     
     # create local copies of command-line options
     input_path = opts.input_path
@@ -189,7 +117,7 @@ if __name__ == "__main__":
     num_reps = opts.num_reps
     small_included = opts.small_included
     
-    rarefaction_fp = opts.rarefaction_fp
+    single_rarefaction_fp = opts.single_rarefaction_fp
     python_exe_fp = opts.python_exe_fp
     path_to_cluster_jobs = opts.cluster_jobs_fp
     poller_fp = opts.poller_fp
@@ -228,8 +156,9 @@ if __name__ == "__main__":
     
     # generate the list of commands to be pushed out to nodes
     commands, job_result_filepaths  = \
-     get_job_commands(python_exe_fp,rarefaction_fp,job_prefix,\
-     input_path,output_dir,working_dir,min_seqs,max_seqs,step,num_reps)
+     get_job_commands(python_exe_fp,single_rarefaction_fp,job_prefix,\
+     input_path,output_dir,working_dir,min_seqs,max_seqs,step,num_reps,
+     small_included)
     
     # Set up poller apparatus if the user does not suppress polling
     if not suppress_polling:
@@ -292,3 +221,6 @@ if __name__ == "__main__":
             'Jobs may have been submitted, but are not being polled.'
             print str(e)
             exit(-1)    
+
+if __name__ == "__main__":
+    main()
