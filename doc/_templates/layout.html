@@ -6,6 +6,11 @@
 <a href="{{ pathto('index') }}"><img src="{{
 pathto("_static/wordpressheader.png", 1) }}" border="0" alt="sampledoc"/></a>
 </div>
+<div class="news" style="background-color:#ccc;">
+	<p style="font-size:12pt;padding: 0px;"><b>News and Announcements &raquo;</b>
+<script type="text/javascript" src="http://app.feed.informer.com/digest3/U9OLMKHF9N.js"><noscript><a href="http://app.feed.informer.com/digest3/U9OLMKHF9N.html">Click for &quot;QIIME&quot;.</a> Powered by <a href="http://feed.informer.com/">RSS Feed Informer</a></noscript></script></p>
+</div>
+
 {{ super() }}
 {% endblock %}
 
@@ -13,10 +18,5 @@ pathto("_static/wordpressheader.png", 1) }}" border="0" alt="sampledoc"/></a>
 {% block sidebartoc %}
 
     {{ super() }}
-	<div class="news">
-		<h5 style="font-size:12pt;padding: 0px;">News and Announcements</h5>
-		<script type="text/javascript" src="http://app.feed.informer.com/digest3/AELAKZDHVX.js">
-		<noscript><a href="http://app.feed.informer.com/digest3/AELAKZDHVX.html">Click for &quot;QIIME News and Announcements&quot;.</a>
-		Powered by <a href="http://feed.informer.com/">RSS Feed Informer</a></noscript></script>
-	</div>
+
 {% endblock %}
