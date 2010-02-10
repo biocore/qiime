@@ -10,6 +10,10 @@
 QIIME Documentation
 ===================
 
+About Documentation
+-------------------
+This documentation explains how to use the **QIIME** (Quantitative Insights Into Microbial Ecology) Pipeline to process data from high-throughput 16S rRNA sequencing studies. The purpose of this pipeline is to provide a start-to-finish workflow, beginning with multiplexed sequence reads and finishing with taxonomic and phylogenetic profiles and comparisons of the samples in the study. With this information in hand, it is possible to determine biological and environmental factors that alter microbial community ecology in your experiment.
+
 Contents
 --------
 
@@ -22,13 +26,4 @@ Contents
    doc_special_purpose.rst
    doc_sra_submission.rst
 
-About Documentation
--------------------
-This documentation explains how to use the **QIIME** (Quantitative Insights 
-Into Microbial Ecology) Pipeline to process data from high-throughput 16S rRNA 
-sequencing studies. The purpose of this pipeline is to provide a 
-start-to-finish workflow, beginning with multiplexed sequence reads and 
-finishing with taxonomic and phylogenetic profiles and comparisons of the 
-samples in the study. With this information in hand, it is possible to 
-determine biological and environmental factors that alter microbial community 
-ecology in your experiment.
+
