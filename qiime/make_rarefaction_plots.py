@@ -301,7 +301,7 @@ def make_plots(prefs):
 def make_output_files(prefs, lines, qiime_dir):
     open(prefs['output_path'] + "/rarefactionTable.txt",'w').writelines(lines)
 
-    if prefs['no_html'] == 'False':
+    if not prefs['no_html']:
         open(prefs['output_path'] + "/graphNames.txt",'w').writelines([f +\
         '\n' for f in graphNames])
 

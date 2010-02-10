@@ -53,8 +53,8 @@ optional_options = [\
 make_option('-p', '--prefs', type='string', help='name of columns to make rarefaction graphs of, \
 comma delimited no spaces. Use \'ALL\' command to make graphs of all metadata columns. \
 [default: %default]', default='ALL'),
-make_option('-n', '--no_html', type='string', help='suppress html output. \
-[default: %default]', default='False'),
+make_option('-n', '--no_html', action='store_true', help='suppress html output. \
+[default: %default]', default=False),
 make_option('-i', '--imagetype', type='string', help='extension for image type choose from \
 (jpg, gif, png, svg, pdf). [default: %default]', default='png'),
 make_option('-d', '--resolution', help='output image resolution, \
@@ -110,11 +110,8 @@ def main():
 please check spelling and syntax.'%list(suppliedcats.difference(availablecats)))
             exit(0)
 
-    if options.no_html != 'True' and options.no_html != 'False':
-         option_parser.error('Invalid option for -h, the only choices are \
-         True and False')
-         exit(0)
-
+    prefs['no_html'] = options.no_html
+    
     if options.imagetype not in ['jpg','gif','png','svg','pdf']:
         option_parser.error('Supplied extension not supported.')
         exit(0)
