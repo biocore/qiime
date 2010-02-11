@@ -24,7 +24,7 @@ script_usage = """
  Subsample otu_table.txt at 20 seqs/sample.  if any samples
 have fewer than 20 sequences, include them as they appear in otu_table.txt 
 (don't subsample them).
-  python %prog otu_table.txt -o rarefaction_20_17.txt -d 20 --small_included
+  python %prog -i otu_table.txt -o rarefaction_20_17.txt -d 20 --small_included
 (naming convention implies that the depth is 20 seqs/sam, iteration 17 at that
   depth (18th file written, due to iter 0))
   
