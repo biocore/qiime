@@ -241,7 +241,8 @@ Currently, the following clustering methods have been implemented in QIIME:
 2. blast (Altschul, Gish, Miller, Myers, & Lipman, 1990), which compares and clusters each sequence against a reference database of sequences.
 3. Mothur (Schloss et al., 2009), which requires an input file of aligned sequences.  The input file of aligned sequences may be generated from an input file like the one described below by running align_seqs.py.  For the Mothur method, the clustering algorithm may be specified as nearest-neighbor, furthest-neighbor, or average-neighbor.  The default algorithm is furthest-neighbor.
 4. prefix/suffix [Qiime team, unpublished], which will collapse sequences which are identical in their first and/or last bases (i.e., their prefix and/or suffix). The prefix and suffix lengths are provided by the user and default to 50 each.
-5. Trie [Qiime team, unpublished], which collapsing identical sequences and sequences which are subsequences of other sequences.  
+5. Trie [Qiime team, unpublished], which collapsing identical sequences and sequences which are subsequences of other sequences.
+6. uclust (Robert Edgar, unpublished, 2009), creates "seeds" of sequences which generate clusters based on percent identity.  
 
 *Usage:* :file:`pick_otus.py [options]`
 
@@ -255,7 +256,7 @@ Currently, the following clustering methods have been implemented in QIIME:
 
 	-m OTU_PICKING_METHOD, `-`-otu_picking_method=OTU_PICKING_METHOD [Default: cdhit]
 
-		This is the method that should be used for picking OTUs. Valid choices are: cdhit, blast, prefix_suffix, and mothur. The mothur method requires an input file of aligned sequences. Whichever method is chosen, the appropriate 3rd party application must be installed properly.
+		This is the method that should be used for picking OTUs. Valid choices are: cdhit, uclust, blast, prefix_suffix, and mothur. The mothur method requires an input file of aligned sequences. Whichever method is chosen, the appropriate 3rd party application must be installed properly.
 
 	-c CLUSTERING_ALGORITHM, `-`-clustering_algorithm=CLUSTERING_ALGORITHM [ Default: furthest]
 
@@ -279,11 +280,15 @@ Currently, the following clustering methods have been implemented in QIIME:
 
 	-s SIMILARITY, `-`-similarity=SIMILARITY [Default: 0.97]
 
-		This is the sequence similarity threshold for picking otus. This option only works with cdhit, blast and mothur methods.
+		This is the sequence similarity threshold for picking otus. This option only works with cdhit, uclust, blast and mothur methods.
 
 	-e MAX_E_VALUE, `-`-max_e_value=MAX_E_VALUE [Default: 1e-10]
 
 		This is the maximum E-value allowed, when clustering using the "-m blast" option. This option only works with the blast method.
+
+	-q `-`trie_reverse_seqs [Default: False]
+
+		When enabled, will reverse the sequences so that the trie OTU picker will use the suffix sequence for collapsing trees.
 
 	-n PREFIX_PREFILTER_LENGTH, `-`-prefix_prefilter_length=PREFIX_PREFILTER_LENGTH [Default: none]
 
@@ -300,6 +305,10 @@ Currently, the following clustering methods have been implemented in QIIME:
 	-u SUFFIX_LENGTH, `-`-suffix_length=SUFFIX_LENGTH [Default: 50]
 
 		This is the suffix length when using the prefix_suffix otu picker.
+
+	-z `-`-enable_reverse_strand_match [Default: False]
+
+		Enable reverse strand matching for the uclust program-warning, this will use twice as much memory as the default (disabled) setting.
 
 The primary inputs for :file:`pick_otus.py` are:
 
@@ -353,6 +362,17 @@ Alternatively, if the user would like to collapse identical sequences, or those 
 	$ python $qdir/pick_otus.py -i seqs.fna -o picked_otus/ -t
 
 Note: It is highly recommended to use one of the prefiltering methods when analyzing large dataset (>100,000 seqs) to reduce run-time.
+
+**Example (uclust method):**
+
+Using the :file:`seqs.fna` file generated from :file:`split_libraries.py` and outputting the results to the directory "picked_otus/", while using default parameters (0.97 sequence similarity, no reverse strand matching)::
+
+	$ python $qdir/pick_otus.py -i seqs.fna -m uclust -o picked_otus/
+
+To change the percent identity to a lower value, such as 90%, and also enable reverse strand matching, the script would be the following:
+
+	$ python $qdir/pick_otus.py -i seqs.fna -m uclust -o picked_otus/ -s 0.90 -z
+
 
 **BLAST OTU-Picking Example:**
 

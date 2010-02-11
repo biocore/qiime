@@ -97,7 +97,7 @@ area of research. Thus, OTU-picking will identify highly similar sequences acros
 provide a platform for comparisons of community structure. The script :file:`pick_otus.py` takes as 
 input the fasta file output from :ref:`assignsamples` above, and returns a list of OTUs detected 
 and the fasta header for sequences that belong in that OTU. To invoke the script using cd-hit to 
-cluster and the default setting of 96% similarity determining an OTU, use ::
+cluster and the default setting of 97% similarity determining an OTU, use ::
 
 	$ python $qdir/pick_otus.py -i Fasting_Split_Lib_Out/seqs.fna -m cdhit -o Fasting_picked_otus
 
