@@ -1262,7 +1262,7 @@ The :file:`summarize_taxa.py` script provides summary information of the represe
 
 .. note::
 
-	-O OTU_FP, `-`-otu_file=OTU_FP [REQUIRED]
+	-i OTU_FP, `-`-otu_file=OTU_FP [REQUIRED]
 
 		This is the path to the OTU table (i.e., the resulting OTU table from :file:`make_otu_table.py` or :file:`filter_otu_table.py`).
 
@@ -1294,15 +1294,15 @@ There are two possible output formats depending on whether or not a category map
 
 The following command can be used to summarize taxa based on the Class, where the default parameters are used (no mapping file, delimiter for RDP ("-d ;") and output relative abundance ("-r True")) and the results are written to the file :file:`Class.txt`::
 
-	$ python $qdir/summarize_taxa.py -O otu_table.txt -L 4 -o Class.txt
+	$ python $qdir/summarize_taxa.py -i otu_table.txt -L 4 -o Class.txt
 
 Optionally the user can have the relative abundances added to the user-generated mapping file, by using the following command::
 
-	$ python $qdir/summarize_taxa.py -O otu_table.txt -L 4 -m Mapping_file.txt
+	$ python $qdir/summarize_taxa.py -i otu_table.txt -L 4 -m Mapping_file.txt
 
 Alternatively, the user may want to output the raw counts of each lineage within a sample, which can be used in the next step for making pie charts, by using the following command::
 
-	$ python $qdir/summarize_taxa.py -O otu_table.txt -L 4 -r False
+	$ python $qdir/summarize_taxa.py -i otu_table.txt -L 4 -r False
 
 Make Pie Charts
 ^^^^^^^^^^^^^^^
@@ -1378,11 +1378,11 @@ In more technical language: OTUs and samples are designated as two types of node
 
 .. note::
 
-	-i MAP_FILE, `-`-input_map=MAP_FILE [REQUIRED]
+	-m MAP_FILE, `-`-input_map=MAP_FILE [REQUIRED]
 
 		This is the user-generated mapping file.  
 
-	-c COUNTS_FILE, `-`-otu_sample_counts=COUNTS_FILE [REQUIRED]
+	-i COUNTS_FILE, `-`-otu_sample_counts=COUNTS_FILE [REQUIRED]
 
 		This is the path to the OTU table (i.e., the resulting OTU table from :file:`make_otu_table.py` or :file:`filter_otu_table.py)`.
 
@@ -1398,9 +1398,9 @@ The result of :file:`make_otu_network.py` consists of a folder containing a prop
 
 The user can use the following command to create an OTU network, where the results are written to the directory "otu_network/"::
 
-	$ python $qdir/make_otu_network.py -i Mapping_file.txt -c otu_table.txt -o otu_network/
+	$ python $qdir/make_otu_network.py -m Mapping_file.txt -i otu_table.txt -o otu_network/
 
-.. index:: Cytoscape
+.. index:: cytoscape
 
 **Loading Results with Cytoscape**
 
