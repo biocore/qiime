@@ -286,7 +286,7 @@ Currently, the following clustering methods have been implemented in QIIME:
 
 		This is the maximum E-value allowed, when clustering using the "-m blast" option. This option only works with the blast method.
 
-	-q `-`trie_reverse_seqs [Default: False]
+	-q `-`-trie_reverse_seqs [Default: False]
 
 		When enabled, will reverse the sequences so that the trie OTU picker will use the suffix sequence for collapsing trees.
 
@@ -369,7 +369,7 @@ Using the :file:`seqs.fna` file generated from :file:`split_libraries.py` and ou
 
 	$ python $qdir/pick_otus.py -i seqs.fna -m uclust -o picked_otus/
 
-To change the percent identity to a lower value, such as 90%, and also enable reverse strand matching, the script would be the following:
+To change the percent identity to a lower value, such as 90%, and also enable reverse strand matching, the script would be the following::
 
 	$ python $qdir/pick_otus.py -i seqs.fna -m uclust -o picked_otus/ -s 0.90 -z
 
