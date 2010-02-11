@@ -15,7 +15,7 @@ __status__ = "Pre-release"
 from os import remove
 from cogent.util.unit_test import TestCase, main
 from cogent.app.util import get_tmp_filename
-from cogent.util.misc import remove_files
+from cogent.util.misc import remove_files, revComp
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from qiime.pick_otus import CdHitOtuPicker, DoturOtuPicker, OtuPicker, \
     MothurOtuPicker, PrefixSuffixOtuPicker, TrieOtuPicker, BlastOtuPicker,\
@@ -95,9 +95,18 @@ class BlastOtuPickerTests(TestCase):
          ('ref4','ACGTATTTTAATGGGGCATGGT'),\
         ]
         
+        self.ref_seqs_rc = [\
+         ('ref1',revComp('TGCAGCTTGAGCCACAGGAGAGAGAGAGCTTC')),\
+         ('ref2',revComp('ACCGATGAGATATTAGCACAGGGGAATTAGAACCA')),\
+         ('ref3',revComp('TGTCGAGAGTGAGATGAGATGAGAACA')),\
+         ('ref4',revComp('ACGTATTTTAATGGGGCATGGT')),\
+        ]
+        
         self.seqs_fp = get_tmp_filename(
             prefix='BlastOtuPickerTest_', suffix='.fasta')
         self.reference_seqs_fp = get_tmp_filename(
+            prefix='BlastOtuPickerTest_', suffix='.fasta')
+        self.reference_seqs_rc_fp = get_tmp_filename(
             prefix='BlastOtuPickerTest_', suffix='.fasta')
             
         f = open(self.seqs_fp, 'w')
@@ -108,8 +117,12 @@ class BlastOtuPickerTests(TestCase):
         f.write('\n'.join(['>%s\n%s' % s for s in self.ref_seqs]))
         f.close()
         
+        f = open(self.reference_seqs_rc_fp, 'w')
+        f.write('\n'.join(['>%s\n%s' % s for s in self.ref_seqs_rc]))
+        f.close()
+        
         self._files_to_remove = \
-         [self.seqs_fp,self.reference_seqs_fp]
+         [self.seqs_fp,self.reference_seqs_fp,self.reference_seqs_rc_fp]
         
     def tearDown(self):
         """
@@ -182,6 +195,17 @@ class BlastOtuPickerTests(TestCase):
                     'ref3':['s5']}
         actual = self.otu_picker(self.seqs_fp,\
             refseqs_fp=self.reference_seqs_fp)
+        self.assertEqual(actual,expected)
+        
+    def test_call_rc(self):
+        """BLAST OTU picker: RC seqs cluster to same OTU as forward orientation
+        """
+        
+        expected = {'ref1':['s3','s2','s1'],\
+                    'ref2':['s4'],\
+                    'ref3':['s5']}
+        actual = self.otu_picker(self.seqs_fp,\
+            refseqs_fp=self.reference_seqs_rc_fp)
         self.assertEqual(actual,expected)
         
         
