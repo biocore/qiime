@@ -11,19 +11,11 @@
 #################
 Welcome to QIIME!
 #################
-QIIME (canonically pronounced 'Chime') stands for "Quantitative Insights Into Microbial Ecology". 
-It allows a range of community analyses suitable for microbiome data using traditional and 
-high-throughput sequencing methods. 
+QIIME (canonically pronounced 'Chime') stands for "Quantitative Insights Into Microbial Ecology". It allows a range of community analyses suitable for microbiome data using traditional and high-throughput sequencing methods.
 
 About
 ========
-QIIME takes as input FASTA-format sequence data, optional quality scores, and a metadata file that 
-assigns samples to specific categories or numerical values. It supports a wide range of microbial 
-community analyses that have been useful in recent high-profile publications. It is a series of 
-command line scripts, built in Python and the open-source PyCogent_ toolkit It makes extensive use 
-of unit testing to ensure the accuracy of the results, and is highly modular (i.e. components for 
-specific stages such as choosing OTUs (Operational Taxonomic Units), sequence alignment, and 
-phylogeny, including 3rd party applications, can be easily integrated) 
+QIIME takes as input FASTA-format sequence data, optional quality scores, and a metadata file that assigns samples to specific categories or numerical values. It supports a wide range of microbial community analyses that have been useful in recent high-profile publications. It is a series of command line scripts, built in Python and the open-source PyCogent_ toolkit It makes extensive use of unit testing to ensure the accuracy of the results, and is highly modular (i.e. components for specific stages such as choosing OTUs (Operational Taxonomic Units), sequence alignment, and phylogeny, including 3rd party applications, can be easily integrated)
 
 
 Download
@@ -32,21 +24,12 @@ Download
 Stable Pre-Release
 ^^^^^^^^^^^^^^^^^^
 
-Currently the most stable version of QIIME is our 0.9 pre-release, which you can download 
-`here <https://sourceforge.net/projects/qiime/files/releases/Qiime-0.9.tar.gz/download>`_.
-You can also download the `install documents <http://qiime.sourceforge.net/QIIME_Install.pdf>`_,
-the software `documentation <http://qiime.sourceforge.net/documentation/Qiime_Documentation.pdf>`_, 
-a `data analysis tutorial <http://qiime.sourceforge.net/tutorial/Qiime_Tutorial.pdf>`_ 
-and an `SRA submission tutorial <http://qiime.sourceforge.net/SRA_Submission_Tutorial.pdf>`_.
+Currently the most stable version of QIIME is our 0.9 pre-release, which you can download `here <https://sourceforge.net/projects/qiime/files/releases/Qiime-0.9.tar.gz/download>`_. You can also download the `install documents <http://qiime.sourceforge.net/QIIME_Install.pdf>`_, the software `documentation <http://qiime.sourceforge.net/documentation/Qiime_Documentation.pdf>`_, a `data analysis tutorial <http://qiime.sourceforge.net/tutorial/Qiime_Tutorial.pdf>`_ and an `SRA submission tutorial <http://qiime.sourceforge.net/SRA_Submission_Tutorial.pdf>`_.
 
 Development Version
 ^^^^^^^^^^^^^^^^^^^
 
-To get the latest development version of QIIME, you should check it out of our Sourceforge 
-repository. While this code is subject to minor changes in interface, it will provide access to 
-the latest and greatest features. The official web documentation is likely to be out-of-date with 
-respect to the development software. You should instead refer to the svn documentation in 
-Qiime/doc. Check out the latest version of QIIME using svn with the command::
+To get the latest development version of QIIME, you should check it out of our Sourceforge repository. While this code is subject to minor changes in interface, it will provide access to the latest and greatest features. The official web documentation is likely to be out-of-date with respect to the development software. You should instead refer to the svn documentation in Qiime/doc. Check out the latest version of QIIME using svn with the command::
 
 	svn co https://qiime.svn.sourceforge.net/svnroot/qiime/trunk Qiime
 

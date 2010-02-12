@@ -77,7 +77,7 @@ There is a script that prints the current :file:`qiime_config` settings in the s
 Denoising of 454 Data Sets 
 --------------------------
 
-**QIIME script:** :file:`pyronoise.py`
+**QIIME script:** :file:`denoise.py`
 
 The pyrosequencing technology employed by 454 sequencing machines produce characteristic sequencing errors, mostly imprecise signals for longer homopolymers runs. Most of the sequences contain no or only a few errors, but a few sequences contain enough errors to be classified as an additional rare OTU. The goal for the denoising procedure is to reduce the amount of erroneous OTUs and thus increasing the accuracy of the whole QIIME pipeline.
 
@@ -124,7 +124,7 @@ The output of this script produces two files 1) a denoised FASTA set of cluster 
 To denoise the flowgram sequences in :file:`454Reads.sff.txt`, you can use the 
 following command::
 
-	$ python $qdir/pyronoise.py -i 454Reads.sff.txt -o 454Reads_out/
+	$ python $qdir/denoise.py -i 454Reads.sff.txt -o 454Reads_out/
 
 which produces these two output files:
 
@@ -133,7 +133,7 @@ which produces these two output files:
 
 On a multi-processor machine pyroNoise can be run in parallel using mpirun, where the number of processors is passed to the script via -n, as shown by the following command::
 
-	$ python $qdir/pyronoise.py -i 454Reads.sff.txt -o 454Reads_out/ -n 4
+	$ python $qdir/denoise.py -i 454Reads.sff.txt -o 454Reads_out/ -n 4
 
 Since PyroNoise's steep computational requirement, you should limit the application to small data sets. Barcodes and primers are not taken into account here, and barcoded samples should be denoised in separate steps. See Chris's PyroNoise web site for details or use a combination of :file:`split_libraries.py` and :file:`sfffile` (from the 454 software package) to separate the sequences into different sets.
 
