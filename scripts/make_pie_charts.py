@@ -52,7 +52,8 @@ make_option('-s', '--sample_flag', dest='do_sample',
 	help='if True pie charts will be created for each sample',default=False,
                       action = 'store_true'),
 make_option('-n', '--num', dest='num_categories', \
-                help='name of file containing metadata [default: %default]', \
+                help='Maximum number of individual categories in each pie chart. \
+All additional categories are grouped into an "other" category. [default: %default]', \
                       default='20'),
 make_option('-o', '--dir-prefix', dest='dir_path',\
                help='directory prefix for all analyses')
