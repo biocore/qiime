@@ -245,8 +245,8 @@ mapping_category, itype, res, rtype, fpath):
     if len(ops) > 12:
         c = int(len(ops)/12)
 
-    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, markerscale=.3, ncol=c)
-    
+    # plt.legend(bbox_to_anchor=(1.05, 1), loc=2, markerscale=.3, ncol=c)
+    plt.legend(loc=2, markerscale=.3, ncol=c)
     ax = plt.gca()
     ax.set_axisbelow(True)
     ax.set_xlim((0,xmax))
