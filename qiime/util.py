@@ -410,6 +410,18 @@ def compute_seqs_per_library_stats(otu_f):
         
     return min(counts), max(counts), median(counts), mean(counts),\
      dict(zip(sample_ids,counts))
+     
+def raise_error_on_parallel_unavailable(qiime_config=None):
+    """Raise error if no parallel QIIME bc of missing/undefined cluster_jobs_fp
+    """
+    if qiime_config == None:
+        qiime_config = load_qiime_config()
+    if 'cluster_jobs_fp' not in qiime_config or \
+       not exists(qiime_config['cluster_jobs_fp']):
+       raise RuntimeError,\
+        "Parallel QIIME is not available. (Have you defined"+\
+        " a cluster_jobs_fp in your qiime_config? Does it"+\
+        " point to a valid file?)"
 
 ## Begin functions for handling command line interfaces
 def build_usage_lines(required_options,

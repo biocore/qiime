@@ -8,7 +8,8 @@ from cogent.app.util import get_tmp_filename
 from cogent.util.misc import remove_files
 from qiime.util import make_safe_f, FunctionWithParams, qiime_blast_seqs,\
     extract_seqs_by_sample_id, build_blast_db_from_fasta_file, \
-    get_qiime_project_dir, parse_qiime_config_files, matrix_stats
+    get_qiime_project_dir, parse_qiime_config_files, matrix_stats,\
+    raise_error_on_parallel_unavailable
 import numpy
 
 
@@ -171,6 +172,18 @@ class TopLevelTests(TestCase):
                                     [.05,0,0],
                                     [.1,0,0]],'float')
         self.assertRaises(ValueError, matrix_stats, headers_list, distmats_list)
+        
+    def test_raise_error_on_parallel_unavailable(self):
+        """raise_error_on_parallel_unavailable functions as expected """
+        self.assertRaises(RuntimeError,raise_error_on_parallel_unavailable,{})
+        self.assertRaises(RuntimeError,raise_error_on_parallel_unavailable,\
+         {'cluster_jobs_fp':'/some/fake/fp.py'})
+        # no error when passed an existing filepath (note it doens't matter
+        # that we're not passing an actual cluster jobs file -- the 
+        # function just checks existence of the scripts, it's the
+        # scripts job to inform the user if it can't submit jobs)
+        raise_error_on_parallel_unavailable({'cluster_jobs_fp':__file__})
+        
                                     
 class FunctionWithParamsTests(TestCase):
     """Tests of the FunctionWithParams class.
