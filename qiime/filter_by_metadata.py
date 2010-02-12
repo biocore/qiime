@@ -6,7 +6,6 @@ from string import strip
 from sys import argv, stdout, stderr
 from numpy import array
 from StringIO import StringIO
-from optparse import OptionParser
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2010, The QIIME Project" 
@@ -140,3 +139,4 @@ def filter_otus_and_map(map_infile, otu_infile, map_outfile, otu_outfile,
                 outfile=otu_outfile)
     if not isinstance(otu_outfile, StringIO):
         otu_outfile.close()
+
