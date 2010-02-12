@@ -14,7 +14,7 @@ __status__ = "Pre-release"
 
 from qiime.util import parse_command_line_parameters
 from optparse import make_option
-
+from sys import stderr
 from qiime.split_libraries import preprocess
 
 script_description = """Split libraries according to barcodes specified in mapping file."""
