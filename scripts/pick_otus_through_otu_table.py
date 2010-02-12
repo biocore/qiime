@@ -13,7 +13,8 @@ __status__ = "Pre-release"
 
 from optparse import make_option
 from os import makedirs
-from qiime.util import load_qiime_config, parse_command_line_parameters
+from qiime.util import load_qiime_config, parse_command_line_parameters,\
+ raise_error_on_parallel_unavailable
 from qiime.parse import parse_qiime_parameters
 from qiime.workflow import run_qiime_data_preparation, print_commands,\
     call_commands_serially, print_to_stdout, no_status_updates
@@ -68,9 +69,9 @@ optional_options = [\
  make_option('-w','--print_only',action='store_true',\
         dest='print_only',help='Print the commands but don\'t call them -- '+\
         'useful for debugging [default: %default]',default=False),\
- make_option('-s','--serial',action='store_true',\
-        dest='serial',help='Do not use parallel scripts'+\
-        ' [default: %default]',default=False)
+ make_option('-a','--parallel',action='store_true',\
+        dest='parallel',default=False,\
+        help='Run in parallel where available [default: %default]')
 ]
 
 
@@ -88,11 +89,8 @@ def main():
     verbose = opts.verbose
     print_only = opts.print_only
     
-    parallel = not opts.serial
-    if parallel:
-        # Keeping this check in until fully tested
-        print "Parallel runs not yet supported. Running in single proc mode."
-        parallel = False
+    parallel = opts.parallel
+    if parallel: raise_error_on_parallel_unavailable()
     
     try:
         parameter_f = open(opts.parameter_fp)
