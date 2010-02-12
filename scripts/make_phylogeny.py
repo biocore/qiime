@@ -19,7 +19,9 @@ from qiime.util import parse_command_line_parameters
 from qiime.make_phylogeny import tree_module_names, tree_method_constructors,\
     CogentTreeBuilder
 
-script_description = """Build a phylogenetic tree from aligned sequences, using one of several techniques."""
+script_description = """Description:
+Build a phylogenetic tree from aligned sequences, 
+using one of several techniques."""
 
 script_usage = """
  Build phylogenetic tree from sequences in  align/rep_set_aligned.fa
@@ -33,6 +35,8 @@ required_options = [
           'input alignment')
 ]
 
+valid_root_methods = ['midpoint','tree_method_default']
+
 optional_options = [\
     make_option('-t','--tree_method',action='store',
           help='Method for tree building. Valid choices are: '+\
@@ -45,7 +49,13 @@ optional_options = [\
           
     make_option('-l','--log_fp',action='store',
           help='Path to store '+\
-          'log file [default: No log file created.]')
+          'log file [default: No log file created.]'),
+          
+    make_option('-r','--root_method',action='store',
+        help='method for choosing root of phylo tree'+\
+        '  Valid choices are: '+ ', '.join(valid_root_methods) +\
+        ' [default: midpoint]',
+        default='midpoint'),
 ]
 
 def main():
@@ -91,7 +101,7 @@ def main():
         result_path=result_path,log_path=log_path,failure_path=failure_path)
     elif tree_builder_type=='Cogent':
         tree_builder(result_path, aln_path=input_seqs_filepath,
-            log_path=log_path)
+            log_path=log_path, root_method=opts.root_method)
 
 
 if __name__ == "__main__":

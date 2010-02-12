@@ -67,11 +67,24 @@ class CogentTreeBuilderTests(SharedSetupTestCase):
         expected = tree
         #note: lines in diff order w/ diff versions
         self.assertEqual(str(actual),expected)
- 
+        
+    def test_midpoint_rooting(self):
+        """CogentTreeBuilder: midpoint rooting should work"""
+        p = CogentTreeBuilder({'Module': cogent.app.fasttree})
+        log_fp = get_tmp_filename(\
+         prefix='CogentTreeBuilderTests_',suffix='.log')
+        self._paths_to_clean_up.append(log_fp)
+         
+        actual = p(result_path=None, aln_path=self.input_fp,
+            log_path=log_fp,root_method='midpoint')
+        expected = midpoint_tree
+        #note: lines in diff order w/ diff versions
+        self.assertEqual(str(actual),expected)
 
 aln_for_tree = """>jkl\n--TTACAC--\n>abc\nACACACAC--\n>ghi\nACAGACACTT\n>def\nACAGACAC--\n"""
 
 tree = '(def:0.00014,ghi:0.00014,(abc:0.07248,jkl:0.40293)0.742:0.07156);'
+midpoint_tree = '(jkl:0.237705,(abc:0.07248,(def:0.00014,ghi:0.00014)0.742:0.07156):0.165225);'
 
 #run unit tests if run from command-line
 if __name__ == '__main__':

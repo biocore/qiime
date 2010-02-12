@@ -83,7 +83,7 @@ class CogentTreeBuilder(TreeBuilder):
 
     Name = 'CogentTreeBuilder'
 
-    def getResult(self, aln_path):
+    def getResult(self, aln_path, *args, **kwargs):
         """Returns alignment from sequences.
         
         Currently does not allow parameter tuning of program and uses
@@ -93,8 +93,16 @@ class CogentTreeBuilder(TreeBuilder):
         """
         module = self.Params['Module']
         seqs = self.getAlignment(aln_path)
-        result = module.build_tree_from_alignment(seqs, moltype=DNA)    
+        result = module.build_tree_from_alignment(seqs, moltype=DNA)
 
+        try: 
+            root_method = kwargs['root_method']
+            if root_method == 'midpoint':
+                result = result.rootAtMidpoint()
+            elif root_method == 'tree_method_default':
+                pass
+        except KeyError:
+            pass
         return result
 
     def __call__(self, result_path=None, log_path=None, *args, **kwargs):
