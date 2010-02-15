@@ -281,7 +281,9 @@ def make_plots(prefs):
         xmax = max(xaxisvals) + (xaxisvals[len(xaxisvals)-1] - \
         xaxisvals[len(xaxisvals)-2])
         yoffset = 5 #parameterize?
-        ymax = max(map(max,rare_mat_ave.values())) + yoffset
+        ymax = prefs['ymax']
+        if ymax == 0:
+            ymax = max(map(max,rare_mat_ave.values())) + yoffset
         overall_average = get_overall_averages(rare_mat_ave, sampleIDs)
 
         rarelines.append("#" + r + '\n')
