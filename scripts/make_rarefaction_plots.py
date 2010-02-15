@@ -60,7 +60,11 @@ make_option('-i', '--imagetype', type='string', help='extension for image type c
 make_option('-d', '--resolution', help='output image resolution, \
 [default: %default]', type='int', default='75'),
 make_option('-o', '--dir_path',help='directory prefix for all analyses \
-[default: %default]', default='.')
+[default: %default]', default='.'),
+make_option('-y', '--ymax', help='maximum value for y axis, \
+[default: %default] the default value will tell the script \
+to calculate a y axis maximum depending on the data', \
+type='int', default='0')
 ]
 
 def main():
@@ -122,6 +126,12 @@ please check spelling and syntax.'%list(suppliedcats.difference(availablecats)))
         prefs['resolution'] = int(options.resolution)
     except(ValueError):
         option_parser.error('Inavlid resolution.')
+        exit(0)
+
+    try:
+        prefs['ymax'] = int(options.ymax)
+    except(ValueError):
+        option_parser.error('Inavlid maximum y axis value.')
         exit(0)
 
     if '/' in argv[0]:
