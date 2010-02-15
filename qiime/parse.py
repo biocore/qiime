@@ -4,7 +4,7 @@
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso",
-    "Justin Kuczynski", "Cathy Lozupone"]
+    "Justin Kuczynski", "Cathy Lozupone", "Jens Reeder"]
 __license__ = "GPL"
 __version__ = "1.0-dev"
 __maintainer__ = "Rob Knight"
@@ -119,6 +119,21 @@ def parse_matrix(lines):
             row_headers.append(entries[0])
     return col_headers, row_headers, array(result)
 
+def parse_distmat_to_dict(table):
+    """Parse a dist matrix into an 2d dict indexed by sample ids.
+    
+    table: table as lines
+    """
+    
+    col_headers, row_headers, data = parse_matrix(table)
+    
+    assert(col_headers==row_headers)
+    
+    result = defaultdict(dict)
+    for (sample_id_x, row) in zip (col_headers,data):
+        for (sample_id_y, value) in zip(row_headers, row):
+            result[sample_id_x][sample_id_y] = value
+    return result
 def parse_bootstrap_support(lines):
     """Parser for a bootstrap/jackknife support in tab delimited text
     """
