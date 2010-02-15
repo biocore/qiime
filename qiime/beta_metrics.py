@@ -2,7 +2,7 @@
 
 __author__ = "Rob Knight, Justin Kuczynski"
 __copyright__ = "Copyright 2010, The QIIME Project"
-__credits__ = ["Rob Knight", "justin kuczynski"]
+__credits__ = ["Rob Knight", "Justin Kuczynski"]
 __license__ = "GPL"
 __version__ = "1.0-dev"
 __maintainer__ = "Justin Kuczynski"
