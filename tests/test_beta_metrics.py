@@ -16,9 +16,10 @@ import numpy
 from cogent.util.unit_test import TestCase, main
 from cogent.maths.unifrac.fast_unifrac import fast_unifrac
 from qiime.parse import make_envs_dict
-from qiime.beta_metrics import _reorder_unifrac_res, dist_unweighted_unifrac
+from qiime.beta_metrics import (_reorder_unifrac_res, make_unifrac_metric)
 from cogent.parse.tree import DndParser
 from cogent.core.tree import PhyloNode
+from cogent.maths.unifrac.fast_tree import (unifrac)
 
 class FunctionTests(TestCase):
     def setUp(self):
@@ -68,14 +69,15 @@ class FunctionTests(TestCase):
             sample_names)
         self.assertFloatEqual(reordered_mtx, mtx)
     
-    def test_dist_unweighted_unifrac(self):
+    def test_make_unifrac_metric(self):
         """ exercise of the unweighted unifrac metric should not throw errors"""
         tree = DndParser(self.l19_treestr, PhyloNode)
-        res = dist_unweighted_unifrac(self.l19_data, self.l19_taxon_names, tree)
+        unif = make_unifrac_metric(False, unifrac, True)
+        res = unif(self.l19_data, self.l19_taxon_names, tree)
         envs = make_envs_dict(self.l19_data, self.l19_sample_names,
             self.l19_taxon_names)
-        unifrac_mat, unifrac_names = \
-            fast_unifrac(tree, envs, modes=['distance_matrix'])['distance_matrix']
+        unifrac_mat, unifrac_names = fast_unifrac(tree, envs, 
+                modes=['distance_matrix'])['distance_matrix']
         self.assertFloatEqual(res, _reorder_unifrac_res([unifrac_mat,
             unifrac_names], self.l19_sample_names))
 
