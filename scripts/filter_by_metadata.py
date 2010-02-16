@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Antonio Gonzalez Pena"	
 __copyright__ = "Copyright 2010, The QIIME project"
-__credits__ = ["Rob Knight", "Antonio Gonzalez Pena"] #remember to add yourself if you make changes
+__credits__ = ["Rob Knight", "Antonio Gonzalez Pena","Greg Caporaso"] #remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.0-dev"
 __maintainer__ = "Antonio Gonzalez Pena"
@@ -22,24 +22,23 @@ metadata, for instance, isolating samples from a specific set of studies or body
 identifies samples matching the specified metadata criteria, and outputs a filtered mapping file 
 and OTU table containing only the specified samples."""
 
-script_usage = """ The following command can be used, where all options are passed (using the resulting OTU file from 
-  pick_otus.py, the original Fasting_Map file, and keeping only the Control sequences in the 
+script_usage = """ The following command can be used, where all options are passed (using the OTU table, the original Fasting_Map file, and keeping only the Control sequences in the 
   Treatment field) with the resulting data being written to seqs_otus.txt.filtered.xls and 
   Fasting_Map.txt.filtered.xls:
 
-  filter_otus_by_sample.py -i seqs_otus.txt -m Fasting_Map.txt -s 'Treatment:Control' 
+  filter_by_metadata.py -i otu_table.txt -m Fasting_Map.txt -s 'Treatment:Control' 
 
   Some variations (not so useful on this dataset, but more useful on larger datasets) are:
   - Keeping both Control and Fast in the Treatment field (i.e. keeping everything): 
-       filter_by_metadata.py -i seqs_otus.txt -m Fasting_Map.txt -s 'Treatment:Control,Fast'
+       filter_by_metadata.py -i otu_table.txt -m Fasting_Map.txt -s 'Treatment:Control,Fast'
   - Excluding Fast in the Treatment field (same as the first example) - the syntax here is * to keep 
     everything, then !Fast to eliminate the Fast group:
-       filter_by_metadata.py -i seqs_otus.txt -m Fasting_Map.txt -s 'Treatment:*,!Fast'
+       filter_by_metadata.py -i otu_table.txt -m Fasting_Map.txt -s 'Treatment:*,!Fast'
   - Keeping only samples with both Control in the Treatment field and 20061218 in the DOB field:
-       filter_by_metadata.py -i seqs_otus.txt -m Fasting_Map.txt -s 'Treatment:Control,DOB: 20061218'
+       filter_by_metadata.py -i otu_table.txt -m Fasting_Map.txt -s 'Treatment:Control,DOB: 20061218'
   - Keeping only samples with Control in the Treatment field and OTUs with counts of at least 
     5 across samples: 
-       filter_by_metadata.py -i seqs_otus.txt -m Fasting_Map.txt -s 'Treatment:Control' -n 5
+       filter_by_metadata.py -i otu_table.txt -m Fasting_Map.txt -s 'Treatment:Control' -n 5
        
   Note that the filtered mapping file will automatically exclude any columns that are the same for 
   all the samples that are left, and will also exclude (except for SampleID) any columns that are 
@@ -49,10 +48,10 @@ script_usage = """ The following command can be used, where all options are pass
 
 
 required_options = [\
- make_option('-i', '--otu', dest='otu_fname',\
-        help='name of otu file [REQUIRED]'),\
+ make_option('-i', '--otu_table', dest='otu_fname',\
+        help='path to the otu table [REQUIRED]'),\
  make_option('-m', '--map', dest='map_fname',\
-        help='name of map file [REQUIRED]'),\
+        help='path to the map file [REQUIRED]'),\
  make_option('-s', '--states', dest='valid_states',\
         help="string containing valid states, e.g. 'STUDY_NAME:DOG'")
 ]
