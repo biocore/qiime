@@ -30,20 +30,17 @@ filter_otu_table -i otu_table.txt -s MIN_SAMPLES
 To retain only OTUs containing particular taxonomic terms in their lineage:
 filter_otu_table -i otu_table.txt -t "Actinobacteria,Bacteroidetes"
 
-To exclude OTUs containing particular taxonomic terms in their lineage:
-filter_otu_table -i otu_table.txt -e "Actinobacteria,Bacteroidetes"
+To exclude OTUs containing particular taxonomic terms in their lineage, 
+but include all other Bacteria:
+filter_otu_table -i otu_table.txt -e "Actinobacteria,Bacteroidetes" -t "Bacteria"
 """
 
 required_options = [\
- # Example required option
- #make_option('-i','--input_dir',help='the input directory'),\
     make_option('-i', '--otu_filename', dest='otu_fname',
                 help='otu file name')\
 ]
 
 optional_options = [\
- # Example optional option
- #make_option('-o','--output_dir',help='the output directory [default: %default]'),\
     make_option('-c', '--min_count', default=1, type=int,
         help='retain OTUs with at least this many sequences [default=%default]'),\
     make_option('-s', '--min_samples', default=2, type=int,
