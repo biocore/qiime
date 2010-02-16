@@ -27,7 +27,7 @@ associations with a categorical environmental variable.
 2) perform ANOVA to determine whether OTU abundance is significantly
 different across a category
 
-python ~/repo/Qiime/qiime/OTU_category_significance.py -i otu_table.txt, -m category_mapping.txt -s g_test -f 10 -c category name -o output_fp -t None
+python ~/repo/Qiime/qiime/otu_category_significance.py -i otu_table.txt, -m category_mapping.txt -s g_test -f 10 -c category name -o output_fp -t None
 """
 
 required_options = [\
