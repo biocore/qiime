@@ -85,7 +85,7 @@ def main():
 
     qiime_dir=get_qiime_project_dir()
 
-    js_path=os.path.join(qiime_dir,'support_files/js')
+    js_path=os.path.join(qiime_dir,'qiime/support_files/js')
 
     shutil.copyfile(os.path.join(js_path,'overlib.js'), js_dir_path+'overlib.js')
     shutil.copyfile(os.path.join(js_path,'otu_count_display.js'), js_dir_path+\

@@ -309,17 +309,17 @@ def make_output_files(prefs, lines, qiime_dir):
 
         os.makedirs(prefs['output_path']+"/js")
         os.makedirs(prefs['output_path']+"/css")
-        shutil.copyfile(qiime_dir+"/support_files/html_templates/" + \
+        shutil.copyfile(qiime_dir+"/qiime/support_files/html_templates/" + \
         "rarefaction_plots.html", prefs['output_path']+\
         "/rarefaction_plots.html")
-        shutil.copyfile(qiime_dir+"/support_files/js/rarefaction_plots.js", \
+        shutil.copyfile(qiime_dir+"/qiime/support_files/js/rarefaction_plots.js", \
         prefs['output_path']+"/js/rarefaction_plots.js")
-        shutil.copyfile(qiime_dir+"/support_files/js/jquery.js", \
+        shutil.copyfile(qiime_dir+"/qiime/support_files/js/jquery.js", \
         prefs['output_path']+"/js/jquery.js")
-        shutil.copyfile(qiime_dir+"/support_files/js/jquery."+\
+        shutil.copyfile(qiime_dir+"/qiime/support_files/js/jquery."+\
         "dataTables.min.js", prefs['output_path']+\
         "/js/jquery.dataTables.min.js")
-        shutil.copyfile(qiime_dir+"/support_files/css/rarefaction_plots.css",\
+        shutil.copyfile(qiime_dir+"/qiime/support_files/css/rarefaction_plots.css",\
         prefs['output_path']+"/css/rarefaction_plots.css")
-        shutil.copyfile(qiime_dir+"/support_files/images/qiime_header.png", \
+        shutil.copyfile(qiime_dir+"/qiime/support_files/images/qiime_header.png", \
         prefs['output_path']+"/qiime_header.png")

@@ -167,7 +167,7 @@ def main():
 
     qiime_dir=get_qiime_project_dir()
 
-    jar_path=os.path.join(qiime_dir,'support_files/jar/')
+    jar_path=os.path.join(qiime_dir,'qiime/support_files/jar/')
 
     data_file_path=''.join([choice(alphabet) for i in range(10)])
     data_file_path=strftime("%Y_%m_%d_%H_%M_%S")+data_file_path

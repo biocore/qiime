@@ -429,7 +429,7 @@ def make_all_pie_charts(data, dir_path, filename,num_categories, do_sample,args)
     img_data = []
     
     qiime_dir = get_qiime_project_dir()
-    support_files=os.path.join(qiime_dir,'support_files')
+    support_files=os.path.join(qiime_dir,'qiime','support_files')
     dir_path = create_dir(dir_path,support_files, "webfiles")
     for label,f_name in data:
         f = open(f_name)

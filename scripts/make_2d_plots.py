@@ -108,7 +108,7 @@ def main():
 
     qiime_dir=get_qiime_project_dir()
 
-    js_path=os.path.join(qiime_dir,'support_files/js/')
+    js_path=os.path.join(qiime_dir,'qiime/support_files/js/')
 
     dir_path=opts.dir_path
     if dir_path and not dir_path.endswith("/"):

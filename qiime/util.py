@@ -270,7 +270,7 @@ def load_qiime_config():
     qiime_config_filepaths = []
     qiime_project_dir = get_qiime_project_dir()
     qiime_config_filepaths.append(\
-     qiime_project_dir + '/support_files/qiime_config')
+     qiime_project_dir + '/qiime/support_files/qiime_config')
     
     qiime_config_env_filepath = getenv('QIIME_CONFIG_FP')
     if qiime_config_env_filepath:

@@ -79,7 +79,7 @@ def main():
         required_options=required_options,
         optional_options=optional_options)
     
-    qiime_dir = get_qiime_project_dir()+'/support_files/'
+    qiime_dir = get_qiime_project_dir()+'/qiime/support_files/'
     
     if opts.prefs_file:
         prefs = eval(open(opts.prefs_file, 'U').read())
