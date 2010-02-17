@@ -15,7 +15,6 @@ blastmat_dir	/software/blast-2.2.16/data
 blastall_fp	/software/bin/blastall
 rdp_classifier_fp	/software/rdp_classifier/rdp_classifier-2.0.jar
 qiime_home	/software/Qiime/
-qiime_dir	/software/Qiime/qiime/
 pick_otus_fp	/software/Qiime/scripts/pick_otus.py
 beta_diversity_fp	/software/Qiime/scripts/beta_diversity.py
 pynast_template_alignment_fp
