@@ -4,7 +4,8 @@ from __future__ import division
 
 __author__ = "Doug Wendel"
 __copyright__ = "Copyright 2010, The QIIME project"
-__credits__ = ["Greg Caporaso", "Justin Kuczynski", "Dan Knights", "Doug Wendel"]
+__credits__ = ["Greg Caporaso", "Justin Kuczynski", "Dan Knights", \
+    "Doug Wendel"]
 __license__ = "GPL"
 __version__ = "1.0-dev"
 __maintainer__ = "Doug Wendel"
@@ -21,26 +22,27 @@ from os import mkdir, remove
 from qiime.util import load_qiime_config
 
 
-script_description = """%prog is intended to be applied as a pre-filter for building trees from 
-alignments. It removes positions which are highly variable based on a 
-lane mask file (a string of 1s and 0s which is the length of the alignment
-and where 1s indicate positions to keep; e.g., lanemask_in_1s_and_0s.txt from
-greengenes), and positions which are 100% gap characters. Uses a minimal
-fasta parser, safe to use on large sequence collections."""
+script_description = """%prog is intended to be applied as a pre-filter for 
+building trees from alignments. It removes positions which are highly variable 
+based on a lane mask file (a string of 1s and 0s which is the length of the 
+alignment and where 1s indicate positions to keep; e.g., 
+lanemask_in_1s_and_0s.txt from greengenes), and positions which are 100% 
+gap characters. Uses a minimal fasta parser, safe to use on large sequence 
+collections."""
 
-script_usage = """
-# filter 1.fasta using the lanemask in lm.txt, but filtering no gaps (b/c
-# --allowed_gap_frac=1.0, meaning positions can be up to 100% gap); output
-# written to ./1_pfiltered.fasta
+script_usage = \
+"""filter 1.fasta using the lanemask in lm.txt, but filtering no gaps (b/c
+--allowed_gap_frac=1.0, meaning positions can be up to 100% gap); output
+written to ./1_pfiltered.fasta
 filter_alignment.py -i 1.fasta -g 1.0 -m lm.txt
 
-# filter 1.fasta using the lanemask in lm.txt and filter positions which are
-# 100% gap (default -g behavior); output written to ./1_pfiltered.fasta
+filter 1.fasta using the lanemask in lm.txt and filter positions which are
+100% gap (default -g behavior); output written to ./1_pfiltered.fasta
 filter_alignment.py -i 1.fasta -o ./ -m lm.txt
 
-# filter 1.fasta positions which are 100% gap (default -g behavior) but no lane mask
-# filtering (because no lane mask file provided with -l); output written to 
-# ./1_pfiltered.fasta
+filter 1.fasta positions which are 100% gap (default -g behavior) but no 
+lane mask filtering (because no lane mask file provided with -l); output 
+written to ./1_pfiltered.fasta
 filter_alignment.py -i 1.fasta -o ./"""
 
 required_options = [\
@@ -77,8 +79,8 @@ def main():
         required_options=required_options,
         optional_options=optional_options)
       
-    # build the output filepath and open it any problems can be caught before starting
-    # the work
+    # build the output filepath and open it any problems can be caught 
+    # before starting the work
     try:
         mkdir(opts.output_dir)
     except OSError:
@@ -90,7 +92,8 @@ def main():
     try:
         outfile = open(output_fp,'w')
     except IOError:
-        raise IOError, "Can't open output_filepath for writing: %s" % output_filepath
+        raise IOError, "Can't open output_filepath for writing: %s" \
+         % output_filepath
 
 
     # read the lane_mask, if one was provided
@@ -103,7 +106,8 @@ def main():
     infile = open(opts.input_fasta_file,'U')
 
     # apply the lanemask/gap removal
-    for result in apply_lane_mask_and_gap_filter(infile, lane_mask, opts.allowed_gap_frac, verbose=opts.verbose):
+    for result in apply_lane_mask_and_gap_filter(infile, lane_mask, \
+     opts.allowed_gap_frac, verbose=opts.verbose):
         outfile.write(result)
     infile.close()
     outfile.close()
