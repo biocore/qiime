@@ -11,7 +11,7 @@ __maintainer__ = "Julia Goodrich"
 __email__ = "julia.goodrich@colorado.edu"
 __status__ = "Pre-release"
  
-
+from os import getcwd
 from qiime.util import parse_command_line_parameters
 from optparse import make_option
 from qiime.summarize_otu_by_cat import summarize_by_cat
@@ -70,7 +70,7 @@ def main():
     norm = opts.normalize
 
     if dir_path == "./" or dir_path is None:
-        dir_path = os.getcwd()
+        dir_path = getcwd()
 
     map_lines = open(opts.map_file,'U').readlines()
     otu_sample_lines = open(opts.counts_file,'U').readlines()
