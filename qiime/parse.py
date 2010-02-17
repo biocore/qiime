@@ -285,6 +285,25 @@ def otu_file_to_lineages(infile):
             result[curr_otu] = [map(strip, tax.split(';')),float(support[2:-1])]
     return result
 
+def parse_taxonomy(infile):
+    """parse a taxonomy file.
+
+    Returns: dict of otu id to taxonomy name.
+    """
+
+    res = {}
+    for line in infile:
+        fields = line.split('\t')
+        # typically this looks like: 3 SAM1_32 \t Root,Bacteria,Fi... \t 0.9
+        # implying otu 3; sample 1, seq 32 (the representative of otu 3);
+        # followed by the taxonomy and confidence
+        if not len(fields) == 3:
+            continue
+        otu = fields[0].split(' ')[0]
+        res[otu] = fields[1]
+
+    return res
+
 def parse_otus(infile):
     """parses otu file
 

@@ -14,7 +14,7 @@ __status__ = "Pre-release"
 from sys import argv, exit, stderr, stdout
 from qiime.util import parse_command_line_parameters
 from optparse import make_option
-from qiime.parse import fields_to_dict
+from qiime.parse import fields_to_dict, parse_taxonomy
 from qiime.make_otu_table import make_otu_map
 
 script_description = """
@@ -46,7 +46,7 @@ optional_options = [\
  # Example optional option
  #make_option('-o','--output_dir',help='the output directory [default: %default]'),\
  make_option('-t', '--taxonomy', dest='taxonomy_fname', \
-help='Path to taxonomy assignment, containing the assignments of taxons to \
+             help='Path to taxonomy assignment, containing the assignments of taxons to \
 sequences (i.e., resulting txt file from assign_taxonomy.py) \
 [default: %default]', default=None),
  make_option('-o', '--output_fname', dest='output_fname', help='This is the \
@@ -68,18 +68,8 @@ def main():
     if not opts.taxonomy_fname:
         otu_to_taxonomy = None
     else:
-        res = {}
-        infile = open(opts.taxonomy_fname,'U')
-        for line in infile:
-            fields = line.split('\t')
-            # typically this looks like: 3 SAM1_32 \t Root,Bacteria,Fi... \t 0.9
-            # implying otu 3; sample 1, seq 32 (the representative of otu 3);
-            # followed by the taxonomy and confidence
-            if not len(fields) == 3:
-                continue
-            otu = fields[0].split(' ')[0]
-            res[otu] = fields[1]
-        otu_to_taxonomy = res
+       infile = open(opts.taxonomy_fname,'U')
+       otu_to_taxonomy = parse_taxonomy(infile)
 
     otu_to_seqid = fields_to_dict(open(opts.otu_fname, 'U'))
 
