@@ -88,24 +88,17 @@ class TopLevelTests(TestCase):
          exists(__file__.upper()) and exists(__file__.lower())
          
         actual = get_qiime_project_dir()
-        # I base the expected here off util.py
-        # because if util.py moves this test will fail -- that 
+        # I base the expected here off the imported location of
+        # qiime/util.py here, to handle cases where either the user has
+        # Qiime in their PYTHONPATH, or when they've installed it with
+        # setup.py.
+        # If util.py moves this test will fail -- that 
         # is what we want in this case, as the get_qiime_project_dir()
         # function would need to be modified.
-        util_py_filepath = abspath(abspath(\
-         split(__file__)[0]) + '/../qiime/util.py')
+        import qiime.util
+        util_py_filepath = abspath(abspath(qiime.util.__file__))
         expected = dirname(dirname(util_py_filepath))
         
-        if case_insensitive_filesystem:
-            # make both lowercase if the file system is case insensitive
-            actual = actual.lower()
-            expected = expected.lower()
-        self.assertEqual(actual,expected)
-        
-        # Also test when building expected off the current filepath
-        # for an independent test.
-        test_util_py_filepath = abspath(__file__)
-        expected = dirname(dirname(test_util_py_filepath))
         if case_insensitive_filesystem:
             # make both lowercase if the file system is case insensitive
             actual = actual.lower()
