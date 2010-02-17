@@ -17,7 +17,7 @@ from os.path import split, splitext
 from numpy import argsort
 from cogent.util.dict2d import Dict2D
 from cogent.maths.stats.test import calc_contingency_expected, G_fit_from_Dict2D,\
-    ANOVA_one_way
+    ANOVA_one_way, correlation
 from cogent.maths.stats.util import Numbers
 from numpy import array
 import sys
@@ -35,7 +35,10 @@ Example usage:
     associations with a categorical environmental variable.
     2) perform ANOVA to determine whether OTU abundance is significantly
     different across a category
-python ~/repo/Qiime/qiime/OTU_category_significance.py -i otu_table.txt, -m category_mapping.txt -s g_test -f 10 -c category name -o output_fp -t None
+    3) perform a pearson correlation to determine whether OTU abundance is
+    associated with a continuous variable in the category mapping file (e.g. pH)
+
+python ~/repo/Qiime/qiime/otu_category_significance.py -i otu_table.txt, -m category_mapping.txt -s g_test -f 10 -c category name -o output_fp -t None
 """
 
 def parse_command_line_parameters():
@@ -62,13 +65,16 @@ def parse_command_line_parameters():
     parser.add_option('-s','--test', dest='test', default='g_test',\
         help='the type of statistical test to run. options are: ' +\
             'g_test: g test of independence: determines whether OTU ' +\
-                'presence/absence is associated with a category ' +\
+                'presence/absence is associated with a category \n' +\
             'ANOVA: determines whether OTU abundance is associated with a ' +\
-                'category')
+                'category \n'
+            'correlation: determines whether OTU abundance is correlated ' +\
+                'with a continuous variable in the category mapping file ' +\
+                '(e.g. temperature or pH)')
     
     parser.add_option('-o','--output_fp', dest='output_fp', \
-        default= 'otu_category_G_test_results.txt',\
-        help='path to output file. otu_category_G_test_results.txt by default')
+        default= 'otu_category_test_results.txt',\
+        help='path to output file. otu_category_test_results.txt by default')
 
     parser.add_option('-f','--filter', dest='filter',\
         default= 10, \
@@ -167,10 +173,13 @@ def parse_category_mapping(category_mapping, category, threshold=None):
     """parse category mapping file
     
     returns a dict mapping the sample name to the value of category
+    
+    also returns a list of category values
 
-    the values in the category mapping must be categorical. If numerical
-    threshold is specified, converts to 1 or 0 depending on whether the 
-    value is below that threshold"""
+    If a numerical threshold is specified, converts to 1 or 0 depending on 
+    whether the value is below that threshold.
+    
+    categories can have categorical or continuous data"""
     result = {}
     if threshold and threshold != 'None':
         category_values = ['0', '1']
@@ -309,6 +318,36 @@ def run_single_ANOVA(OTU, category_info, otu_sample_info, category_values):
     dfn, dfd, F, between_MS, within_MS, group_means, prob = ANOVA_one_way(values)
     return group_means, prob
 
+def run_correlation_OTUs(OTU_list, category_info, otu_sample_info):
+    """runs pearson correlation on all OTUs in the OTU list
+    """
+    result = {}
+    num_comparisons = len(OTU_list)
+    for OTU in OTU_list:
+        r, prob = run_single_correlation(OTU, category_info, otu_sample_info)
+        Bonf_p_val = prob * num_comparisons
+        result[OTU] = [r, prob, Bonf_p_val]
+    return result
+
+def run_single_correlation(OTU, category_info, otu_sample_info):
+    """runs pearson correlation  on the designated OTU
+    """
+    result = {}
+    #get a list of values for each category
+    OTU_abundance_values = []
+    category_values = []
+    sample_info = otu_sample_info[OTU]
+    for sample in sample_info:
+        OTU_abundance_values.append(float(sample_info[sample]))
+        if sample in category_info:
+            try:
+                cat_val = float(category_info[sample])
+                category_values.append(cat_val)
+            except ValueError:
+                raise ValueError("The category values must be numeric to use the correlation option")
+    r, prob = correlation(Numbers(OTU_abundance_values), Numbers(category_values))
+    return r, prob
+
 def output_results_G_test(G_test_results, taxonomy_info=None):
     """creates the results output using result of run_G_test_OTUs"""
     header = ['OTU', 'g_val', 'g_prob', 'Bonferroni_corrected', 'FDR_corrected']
@@ -320,7 +359,7 @@ def output_results_G_test(G_test_results, taxonomy_info=None):
             header.append('Consensus Lineage')
     output = ['\t'.join(header)]
     #perform fdr correction
-    G_test_results = fdr_correction_G_test(G_test_results)
+    G_test_results = add_fdr_correction_to_results(G_test_results)
     for OTU in G_test_results:
         g_val = str(G_test_results[OTU][0])
         g_prob = str(G_test_results[OTU][1])
@@ -344,7 +383,7 @@ def output_results_ANOVA(ANOVA_results, category_values, taxonomy_info=None):
             header.append('Consensus Lineage')
     output = ['\t'.join(header)]
     #perform fdr correction
-    ANOVA_results = fdr_correction_ANOVA(ANOVA_results)
+    ANOVA_results = add_fdr_correction_to_results(ANOVA_results)
     for OTU in ANOVA_results:
         prob = str(ANOVA_results[OTU][1])
         Bonf_p = str(ANOVA_results[OTU][2])
@@ -357,37 +396,40 @@ def output_results_ANOVA(ANOVA_results, category_values, taxonomy_info=None):
         output.append('\t'.join(line))
     return output
 
-def fdr_correction_G_test(G_test_results):
-    """corrects G test results using the false discovery rate method.
+def output_results_correlation(correlation_results, taxonomy_info=None):
+    """creates the results output using result of run_correlation_OTUs"""
+    header = ['OTU', 'prob', 'Bonferroni_corrected', 'FDR_corrected', 'r']
+    if taxonomy_info:
+            header.append('Consensus Lineage')
+    output = ['\t'.join(header)]
+    correlation_results = add_fdr_correction_to_results(correlation_results)
+    for OTU in correlation_results:
+        prob = str(correlation_results[OTU][1])
+        Bonf_p = str(correlation_results[OTU][2])
+        fdr_p = str(correlation_results[OTU][3])
+        r = str(correlation_results[OTU][0])
+        line = [OTU, prob, Bonf_p, fdr_p, r]
+        if taxonomy_info:
+            line.append(taxonomy_info[OTU])
+        output.append('\t'.join(line))
+    return output
+
+def add_fdr_correction_to_results(results):
+    """corrects results using the false discovery rate method.
 
     ranks the p-values from low to high. multiplies each p-value by the #
-    of comparisons divided by the rank.
-    """
-    names = []
-    g_probs = []
-    for i in G_test_results:
-        names.append(i)
-        g_probs.append(G_test_results[i][1])
-    corrected_probs = fdr_correction(g_probs)
-    for index, prob in enumerate(corrected_probs):
-        G_test_results[names[index]].append(prob)
-    return G_test_results
-
-def fdr_correction_ANOVA(ANOVA_results):
-    """corrects ANOVA probs using the false discovery rate method.
-
-    ranks the p-values from low to high. multiplies each p-value by the #
-    of comparisons divided by the rank.
+    of comparisons divided by the rank. appends the result for each OTU to the
+    supplied results dictionary.
     """
     names = []
     probs = []
-    for i in ANOVA_results:
+    for i in results:
         names.append(i)
-        probs.append(ANOVA_results[i][1])
+        probs.append(results[i][1])
     corrected_probs = fdr_correction(probs)
     for index, prob in enumerate(corrected_probs):
-        ANOVA_results[names[index]].append(prob)
-    return ANOVA_results
+        results[names[index]].append(prob)
+    return results
 
 def fdr_correction(probs):
     """corrects a list of probs using the false discovery rate method
@@ -402,28 +444,34 @@ def fdr_correction(probs):
         corrected_probs[index] = fdr_p
     return corrected_probs
 
-def G_test_wrapper(otu_table, category_mapping, category, threshold, \
+def test_wrapper(test, otu_table, category_mapping, category, threshold, \
                 filter, output_fp):
-    """runs the G test to look for category/OTU associations"""
-    otu_sample_info, num_samples, taxonomy_info = parse_otu_table(otu_table)
-    category_info, category_values = parse_category_mapping(category_mapping, category, threshold)
-    OTU_list = filter_OTUs(otu_sample_info, filter, all_samples= True,\
-        category_mapping_info=category_info)
-    G_test_results = run_G_test_OTUs(OTU_list, category_info, otu_sample_info, category_values)
-    output = output_results_G_test(G_test_results, taxonomy_info)
-    of = open(output_fp, 'w')
-    of.write('\n'.join(output))
+    """runs statistical test to look for category/OTU associations"""
 
-def ANOVA_wrapper(otu_table, category_mapping, category, threshold, \
-                filter, output_fp):
-    """runs ANOVA to look for category/OTU associations"""
-
-    otu_table = convert_OTU_table_relative_abundance(otu_table)
-    otu_sample_info, num_samples, taxonomy_info = parse_otu_table(otu_table)
-    category_info, category_values = parse_category_mapping(category_mapping, category, threshold)
-    OTU_list = filter_OTUs(otu_sample_info, filter, all_samples= False, \
-        category_mapping_info=category_info)
-    ANOVA_results = run_ANOVA_OTUs(OTU_list, category_info, otu_sample_info, category_values)
-    output = output_results_ANOVA(ANOVA_results, category_values, taxonomy_info)
-    of = open(output_fp, 'w')
-    of.write('\n'.join(output))
+    if test == 'ANOVA' or test == 'correlation': 
+        otu_table = convert_OTU_table_relative_abundance(otu_table)
+        otu_sample_info, num_samples, taxonomy_info = parse_otu_table(otu_table)
+        category_info, category_values = parse_category_mapping(category_mapping,\
+                category, threshold)
+        OTU_list = filter_OTUs(otu_sample_info, filter, all_samples= False, \
+            category_mapping_info=category_info)
+    elif test == 'g_test':
+        otu_sample_info, num_samples, taxonomy_info = parse_otu_table(otu_table)
+        category_info, category_values = parse_category_mapping(category_mapping,\
+                category, threshold)
+        OTU_list = filter_OTUs(otu_sample_info, filter, all_samples= True, \
+            category_mapping_info=category_info)
+    if len(OTU_list) == 0:
+        raise ValueError("No OTUs remain after applying the filter. Try lowering the filter value (-f option)")
+    if test == 'ANOVA':
+        results = run_ANOVA_OTUs(OTU_list, category_info, otu_sample_info, \
+                        category_values)
+        output = output_results_ANOVA(results, category_values, taxonomy_info)
+    elif test == 'correlation':
+        results = run_correlation_OTUs(OTU_list, category_info, otu_sample_info)
+        output = output_results_correlation(results, taxonomy_info)
+    elif test == 'g_test':
+        results = run_G_test_OTUs(OTU_list, category_info, otu_sample_info, \
+                        category_values)
+        output = output_results_G_test(results, taxonomy_info)
+    return output

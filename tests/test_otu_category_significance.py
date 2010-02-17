@@ -15,10 +15,10 @@ __status__ = "Pre-release"
 from cogent.util.unit_test import TestCase, main
 from qiime.otu_category_significance import parse_otu_table, \
     parse_category_mapping, filter_OTUs, make_contingency_matrix, \
-    run_single_G_test, run_G_test_OTUs, fdr_correction_G_test, \
+    run_single_G_test, run_G_test_OTUs, add_fdr_correction_to_results, \
     output_results_G_test, run_single_ANOVA, run_ANOVA_OTUs, \
     output_results_ANOVA, convert_OTU_table_relative_abundance, \
-    fdr_correction_ANOVA
+    run_correlation_OTUs, run_single_correlation, output_results_correlation
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -227,27 +227,11 @@ sample3\tC\t1.0""".split('\n')
         category_values = ['A', 'B', 'C']
         G_test_results = run_G_test_OTUs(['0', '1', '3'], category_info, \
             OTU_sample_info, category_values)
-        G_test_results = fdr_correction_G_test(G_test_results)
+        G_test_results = add_fdr_correction_to_results(G_test_results)
         self.assertFloatEqual(G_test_results['0'][-1], 1.52412488126)
         self.assertFloatEqual(G_test_results['1'][-1], 0.938976340277)
         self.assertFloatEqual(G_test_results['3'][-1], 0.828522198394)
 
-    def test_fdr_correction_ANOVA(self):
-        """fdr_correction_ANOVA works"""
-        category_info = {'sample1': 'A',
-                        'sample2': 'A',
-                        'sample3': 'B',
-                        'sample4': 'B'}
-        OTU_sample_info = {'0': {'sample1': '5', 'sample2': '10', 'sample3': '2', 'sample4': '1'},
-        '1': {'sample1': '1', 'sample2': '0', 'sample3': '0', 'sample4': '2'},
-        '2': {'sample1': '2', 'sample2': '1', 'sample3': '10', 'sample4': '15'},
-        '3': {'sample1': '1', 'sample2': '1.5', 'sample3': '1.4', 'sample4': '1.3'}}
-        category_values = ['A', 'B']
-        result = run_ANOVA_OTUs(['0', '1', '2', '3'], category_info,\
-            OTU_sample_info, category_values)
-        result = fdr_correction_ANOVA(result)
-
-    
     def test_output_results_G_test(self):
         """output_results works"""
         category_info = {'sample1': 'A',
@@ -269,6 +253,55 @@ sample3\tC\t1.0""".split('\n')
         self.assertEqual(output, ['OTU\tg_val\tg_prob\tBonferroni_corrected\tFDR_corrected\tOTU_pos##B_pos\tOTU_pos##C_pos\tOTU_pos##A_pos\tOTU_neg##B_pos\tOTU_neg##C_pos\tOTU_neg##A_pos', '1\t3.48284992796\t0.625984226851\t1.87795268055\t0.938976340277\t[1, 0.75]\t[0, 0.75]\t[2, 1.5]\t[0, 0.25]\t[1, 0.25]\t[0, 0.5]', '0\t4.29304060218\t0.508041627088\t1.52412488126\t1.52412488126\t[1, 0.5]\t[1, 0.5]\t[0, 1.0]\t[0, 0.5]\t[0, 0.5]\t[2, 1.0]', '3\t2.14652030109\t0.828522198394\t2.48556659518\t0.828522198394\t[0, 0.5]\t[1, 0.5]\t[1, 1.0]\t[1, 0.5]\t[0, 0.5]\t[1, 1.0]'])
         output = output_results_G_test(G_test_results, taxonomy_info)
         self.assertEqual(output, ['OTU\tg_val\tg_prob\tBonferroni_corrected\tFDR_corrected\tOTU_pos##B_pos\tOTU_pos##C_pos\tOTU_pos##A_pos\tOTU_neg##B_pos\tOTU_neg##C_pos\tOTU_neg##A_pos\tConsensus Lineage', '1\t3.48284992796\t0.625984226851\t1.87795268055\t0.938976340277\t[1, 0.75]\t[0, 0.75]\t[2, 1.5]\t[0, 0.25]\t[1, 0.25]\t[0, 0.5]\ttaxon2', '0\t4.29304060218\t0.508041627088\t1.52412488126\t1.52412488126\t[1, 0.5]\t[1, 0.5]\t[0, 1.0]\t[0, 0.5]\t[0, 0.5]\t[2, 1.0]\ttaxon1', '3\t2.14652030109\t0.828522198394\t2.48556659518\t0.828522198394\t[0, 0.5]\t[1, 0.5]\t[1, 1.0]\t[1, 0.5]\t[0, 0.5]\t[1, 1.0]\ttaxon4'])
+
+    def test_run_correlation_OTUs(self):
+        """run_single_correlation works"""
+        category_info = {'sample1':'0.1',
+                        'sample2':'0.2',
+                        'sample3':'0.3',
+                        'sample4':'0.4'}
+        OTU_sample_info = {'0': {'sample1': '0', 'sample2': '1', 'sample3': '2', 'sample4': '3'},
+        '1': {'sample1': '7', 'sample2': '5', 'sample3': '3', 'sample4': '1'},
+        '2': {'sample1': '4', 'sample2': '4.2', 'sample3': '4', 'sample4': '4'},
+        '3': {'sample1': '0', 'sample2': '1', 'sample3': '0', 'sample4': '1'}}
+        OTU_list = ['1', '0', '2', '3'] 
+        result = run_correlation_OTUs(OTU_list, category_info, OTU_sample_info)
+        #OTU 0 should be positively correlated, 1 negative, and 2&3 neutral
+        self.assertFloatEqual(result['0'], [1.0, 0.0, 0.0])
+        self.assertFloatEqual(result['1'], [-0.99999999999999956, 4.4408920985006281e-16, 1.7763568394002513e-15])
+        self.assertFloatEqual(result['2'], [-0.25819888974715061, 0.74180111025284945, 2.9672044410113978])
+        self.assertFloatEqual(result['3'], [0.44721359549995815, 0.55278640450004191, 2.2111456180001676])
+
+        #test that appropriate error is raised is categorical
+        category_info = {'sample1':'A',
+                        'sample2':'B',
+                        'sample3':'A',
+                        'sample4':'B'}
+        self.assertRaises(ValueError, run_correlation_OTUs, OTU_list, category_info, OTU_sample_info)
+        
+    def test_output_results_correlation(self):
+        """output_results_correlation works"""
+        category_info = {'sample1':'0.1',
+                        'sample2':'0.2',
+                        'sample3':'0.3',
+                        'sample4':'0.4'}
+        OTU_sample_info = {'0': {'sample1': '0', 'sample2': '1', 'sample3': '2', 'sample4': '3'},
+        '1': {'sample1': '7', 'sample2': '5', 'sample3': '3', 'sample4': '1'},
+        '2': {'sample1': '4', 'sample2': '4.2', 'sample3': '4', 'sample4': '4'},
+        '3': {'sample1': '0', 'sample2': '1', 'sample3': '0', 'sample4': '1'}}
+        taxonomy_info = {'0': 'taxon1',
+                        '1': 'taxon2',
+                        '2': 'taxon3',
+                        '3': 'taxon4'}
+        OTU_list = ['1', '0', '2', '3'] 
+        result = run_correlation_OTUs(OTU_list, category_info, OTU_sample_info)
+        output = output_results_correlation(result, taxonomy_info)
+        self.assertEqual(output, ['OTU\tprob\tBonferroni_corrected\tFDR_corrected\tr\tConsensus Lineage', '1\t4.4408920985e-16\t1.7763568394e-15\t8.881784197e-16\t-1.0\ttaxon2', '0\t0.0\t0.0\t0.0\t1.0\ttaxon1', '3\t0.5527864045\t2.211145618\t0.737048539333\t0.4472135955\ttaxon4', '2\t0.741801110253\t2.96720444101\t0.741801110253\t-0.258198889747\ttaxon3'])
+
+    def test_test_wrapper(self):
+        """runs the specified statistical test"""
+        #correlation
+
 
 #run unit tests if run from command-line
 if __name__ == '__main__':

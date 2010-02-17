@@ -12,7 +12,7 @@ __email__ = "wendel@colorado.edu"
 __status__ = "Pre-release"
  
 
-from qiime.otu_category_significance import G_test_wrapper, ANOVA_wrapper
+from qiime.otu_category_significance import test_wrapper
 from qiime.util import parse_command_line_parameters
 from optparse import make_option
 
@@ -25,7 +25,9 @@ absence is associated with a category in the mapping file. Can
 be used to look for co-occurrence using qPCR data or to look for 
 associations with a categorical environmental variable.
 2) perform ANOVA to determine whether OTU abundance is significantly
-different across a category
+different across a category. Again can be used with a category in the 
+mapping file that has categorical data.
+3) perform a Pearson correlation to determine whether OTU abundance is correlated with a category in the category mapping file. Can be used with a category that contains continuous data. 
 
 python ~/repo/Qiime/qiime/otu_category_significance.py -i otu_table.txt, -m category_mapping.txt -s g_test -f 10 -c category name -o output_fp -t None
 """
@@ -33,7 +35,7 @@ python ~/repo/Qiime/qiime/otu_category_significance.py -i otu_table.txt, -m cate
 required_options = [\
     make_option('-i','--otu_table_fp', dest='otu_table_fp',\
         help='path to the otu table'),\
-    make_option(    '-m','--category_mapping_fp',\
+    make_option('-m','--category_mapping_fp',\
         dest='category_mapping_fp',\
         help='path to category mapping file'),\
     make_option('-c','--category', dest='category',\
@@ -43,13 +45,15 @@ required_options = [\
 optional_options = [\
     make_option('-s','--test', dest='test', default='g_test',\
         help='the type of statistical test to run. options are: ' +\
-        'g_test: g test of independence: determines whether OTU ' +\
-        'presence/absence is associated with a category ' +\
+        'g_test: determines whether OTU presence/absence is associated ' +\
+        'with a category using the G test of independence. ' +\
         'ANOVA: determines whether OTU abundance is associated with a ' +\
-        'category'),\
+        'category. ' +\
+        'correlation: determines whether OTU abundance is correlated ' +\
+        'with a continuous variable in the category mapping file.'),\
     make_option('-o','--output_fp', dest='output_fp', \
-        default= 'otu_category_G_test_results.txt',\
-        help='path to output file. otu_category_G_test_results.txt by default'),\
+        default= 'otu_category_significance_results.txt',\
+        help='path to output file. otu_category_significance_results.txt by default'),\
     make_option('-f','--filter', dest='filter',\
         default= 10, \
         help='minimum number of samples that must contain the OTU for the ' +\
@@ -58,9 +62,8 @@ optional_options = [\
         help='threshold under which to consider something absent: ' +\
         'Only used if you have numerical data that should be converted to ' +\
         'present or absent based on a threshold. Should be None for ' +\
-        'categorical data. default value is None')
+        'categorical data or with the correlation test. default value is None')
 ]
-
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(
@@ -86,13 +89,11 @@ def main():
         threshold = float(threshold)
     test = opts.test
 
-    if test == 'g_test':
-        G_test_wrapper(otu_table, category_mapping, category, threshold, \
-            filter, output_fp)
-    elif test == 'ANOVA':
-        ANOVA_wrapper(otu_table, category_mapping, category, threshold, \
-            filter, output_fp)
-      
+    output = test_wrapper(test, otu_table, category_mapping, category, \
+                threshold, filter, output_fp)
+    of = open(output_fp, 'w')
+    of.write('\n'.join(output))
+    of.close()
 
 if __name__ == "__main__":
     main()
