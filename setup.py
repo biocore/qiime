@@ -2,7 +2,7 @@
 # File created on 17 Feb 2010
 from __future__ import division
 from distutils.core import setup
-from os import chdir, getcwd
+from os import chdir, getcwd, listdir
 from os.path import join, abspath
 from subprocess import call
 from glob import glob
@@ -72,6 +72,14 @@ setup(name='QIIME',
       url='http://qiime.sourceforge.net',
       packages=['qiime','qiime/parallel'],
       scripts=glob('scripts/*py'),
+      package_data={'qiime':\
+                   ['support_files/qiime_config',\
+                    'support_files/css/*css',\
+                    'support_files/html_templates/*html',\
+                    'support_files/images/*png',\
+                    'support_files/jar/*jar',\
+                    'support_files/js/*js',\
+                    'support_files/sra_xml_templates/*xml']},
       long_description=long_description,
 )
 
