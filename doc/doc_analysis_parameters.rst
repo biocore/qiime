@@ -1179,6 +1179,15 @@ The G test results are output as tab delimited text, which can be examined in Ex
 	* Contingency table columns: The next columns give the information in the contingency table and will vary in number and name based on the number of categories and their names. The two numbers in brackets represent the number of samples that were observed in those categories and the number that would be expected if the OTU members were randomly distributed across samples in the different categories. These columns can be used to evaluate the nature of a non-random association (e.g. if that OTU is always present in a particular category or if it is never present).
 	* Consensus lineage: The consensus lineage for that OTU will be listed in the last column if it was present in the input OTU table.
 
+The ANOVA results are output as tab delimited text that can be examined in Excel. The output has the following columns:
+
+	* OTU: The name of the OTU.
+	* prob: The raw probability from the ANOVA 
+	* Bonferroni_corrected: The probability after correction for multiple comparisons with the Bonferroni correction. In this correction, the p-value is multiplied by the number of comparisons performed (the number of OTUs remaining after applying the filter). 
+	* FDR_corrected: The probability after correction with the “false discovery rate” method. In this method, the raw p-values are ranked from low to high. Each p-value is multiplied by the number of comparisons divided by the rank. This correction is less conservative than the Bonferroni correction. The list of significant OTUs is expected to have the percent of false positives predicted by the p value.
+	* Category Mean Columns: Contains one column for each category reporting the mean count of the OTU in that category.
+	* Consensus lineage: The consensus lineage for that OTU will be listed in the last column if it was present in the input OTU table.
+
 The correlation test results are output as tab delimited text, which can be examined in Excel. The output has the following columns:
 
 	* OTU: The name of the OTU.  
