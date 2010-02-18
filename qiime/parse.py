@@ -289,6 +289,8 @@ def parse_taxonomy(infile):
     """parse a taxonomy file.
 
     Returns: dict of otu id to taxonomy name.
+    ignores other parts of the otu file, such as confidence and seq id (otu id
+    only)
     """
 
     res = {}

@@ -452,7 +452,7 @@ s03\tc\t5""".splitlines()
         'OTU1\t3\t0\t2'])
     
     def test_parse_taxonomy(self):
-        """ should parse taxonomy example"""
+        """ should parse taxonomy example, keeping otu id only"""
         example_tax = \
 """412 PC.635_647	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales	0.930
 319 PC.355_281	Root;Bacteria;Bacteroidetes	0.970
@@ -460,8 +460,11 @@ s03\tc\t5""".splitlines()
 17 PC.607_302	Root;Bacteria;Bacteroidetes	0.960
 13 PC.481_1214	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales	0.870
 338 PC.593_1314	Root;Bacteria	0.990"""
-        res = parse_taxonomy(example_tax)
-
+        res = parse_taxonomy(example_tax.split('\n'))
+        self.assertEqual(res['412'],
+         "Root;Bacteria;Firmicutes;\"Clostridia\";Clostridiales")
+        self.assertEqual(res['338'],
+         "Root;Bacteria")
  
 if __name__ =='__main__':
     main()
