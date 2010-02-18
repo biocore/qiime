@@ -3,7 +3,6 @@
 from __future__ import division
 from time import strftime, time
 from optparse import OptionParser
-from sets import Set
 from os import system, getcwd
 from os.path import join
 from cogent.parse.fasta import MinimalFastaParser
