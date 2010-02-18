@@ -19,7 +19,8 @@ from qiime.parse import (parse_map, group_by_field, group_by_fields,
     otu_file_to_lineages, parse_otus, otu_table_to_envs, parse_sequences_by_otu,
     make_envs_dict, fields_to_dict, parse_rarefaction_fname, envs_to_otu_counts,
     otu_counts_to_matrix, envs_to_matrix, parse_qiime_parameters, 
-    parse_bootstrap_support, parse_sample_mapping, parse_distmat_to_dict)
+    parse_bootstrap_support, parse_sample_mapping, parse_distmat_to_dict,
+    sample_mapping_to_otu_table)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -442,7 +443,7 @@ s03\tc\t5""".splitlines()
 
         self.assertEqual(all_sample_names, set(['sample1', 'sample3', 'sample2']))
 
-def test_sample_mapping_to_otu_table(self):
+    def test_sample_mapping_to_otu_table(self):
         """sample_mapping_to_otu_table works"""
         lines = self.SampleMapping
         result = sample_mapping_to_otu_table(lines)
