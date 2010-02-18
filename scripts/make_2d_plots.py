@@ -13,7 +13,7 @@ __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 __status__ = "Pre-release"
  
-
+import matplotlib,re
 from qiime.util import parse_command_line_parameters
 from optparse import make_option
 from qiime.make_2d_plots import generate_2d_plots
@@ -80,6 +80,14 @@ def main():
       required_options=required_options,
       optional_options=optional_options)
 
+    matplotlib_version = re.split("[^\d]", matplotlib.__version__)
+    matplotlib_version_info = tuple([int(i) for i in matplotlib_version if \
+                            i.isdigit()])
+
+    if matplotlib_version_info != (0,98,5,3) and \
+        matplotlib_version_info != (0,98,5,2):
+        print "This code was only tested with Matplotlib-0.98.5.2 and \
+              Matplotlib-0.98.5.3"
     data = {}
 
     #Open and get coord data
@@ -108,7 +116,7 @@ def main():
 
     qiime_dir=get_qiime_project_dir()
 
-    js_path=os.path.join(qiime_dir,'qiime/support_files/js/')
+    js_path=os.path.join(qiime_dir,'qiime','support_files','js')
 
     dir_path=opts.dir_path
     if dir_path and not dir_path.endswith("/"):
@@ -116,13 +124,13 @@ def main():
 
     dir_path=create_dir(dir_path,'2d_plots_')
 
-    js_dir_path = dir_path+'/js/'
+    js_dir_path = os.path.join(dir_path,'js')
     try:
         os.mkdir(js_dir_path)
     except OSError:
         pass
 
-    shutil.copyfile(os.path.join(js_path,'/overlib.js'), js_dir_path+'overlib.js')
+    shutil.copyfile(os.path.join(js_path,'overlib.js'), os.path.join(js_dir_path,'overlib.js'))
 
     try:
         action = generate_2d_plots

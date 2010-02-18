@@ -22,14 +22,6 @@ from random import choice
 from qiime.make_3d_plots import create_dir
 from qiime.parse import group_by_field,group_by_fields
 
-matplotlib_version = re.split("[^\d]", matplotlib.__version__)
-matplotlib_version_info = tuple([int(i) for i in matplotlib_version if \
-                          i.isdigit()])
-                          
-if matplotlib_version_info != (0,98,5,3) and \
-    matplotlib_version_info != (0,98,5,2):
-     print "This code was only tested with Matplotlib-0.98.5.2 and \
-            Matplotlib-0.98.5.3"
 
 TABLE_HTML = """<table cellpadding=0 cellspacing=0 border=0>
 <tr>
