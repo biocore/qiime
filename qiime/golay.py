@@ -43,6 +43,7 @@ http://cwww.ee.nctu.edu.tw/~ftchien/class/ecc08f/topic2.pdf
 error correcting coding theory (Rhee)
 the art of error correcting coding (Morelos-Zaragoza)
 
+
 TO DOs:
 * types are messy, numpy arrays, lists, tuples, all doing the same stuff
 * haven't tested on all 2**24 bitvectors, could do that to be thorough

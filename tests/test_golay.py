@@ -90,7 +90,6 @@ class GolayTests(TestCase):
             return res
         # all possible 12 bit messages
         all_12bits = _make_12bits()
-        
 
     
         # test of decode_bits
