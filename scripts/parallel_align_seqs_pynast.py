@@ -144,15 +144,6 @@ def main():
     poll_directly = opts.poll_directly
 
     created_temp_paths = []
-
-    if not opts.blast_db:        
-        # Build the blast database from the reference_seqs_fp -- all procs
-        # will then access one db rather than create one per proc
-        blast_db, db_files_to_remove = \
-             build_blast_db_from_fasta_path(template_aln_fp)
-        created_temp_paths += db_files_to_remove
-    else:
-        blast_db = opts.blast_db
     
     # split the input filepath into directory and filename, base filename and
     # extension
@@ -175,6 +166,15 @@ def main():
     except OSError:
         # working dir already exists
         pass
+
+    if not opts.blast_db:
+        # Build the blast database from the reference_seqs_fp -- all procs
+        # will then access one db rather than create one per proc
+        blast_db, db_files_to_remove = \
+             build_blast_db_from_fasta_path(template_aln_fp,output_dir=working_dir)
+        created_temp_paths += db_files_to_remove
+    else:
+        blast_db = opts.blast_db
     
     # compute the number of sequences that should be included in
     # each file after splitting the input fasta file   
