@@ -21,10 +21,10 @@ __status__ = "Development"
 
 import shutil
 from os import remove, makedirs
-from os.path import split, splitext, basename, isdir, abspath
+from os.path import split, splitext, basename, isdir, abspath, isfile
 from cogent.app.parameters import ValuedParameter, FlagParameter
 from cogent.app.util import CommandLineApplication, ResultPath,\
- get_tmp_filename
+ get_tmp_filename, ApplicationError, ApplicationNotFoundError
 
 class UclustFastaSort(CommandLineApplication):
     """ ApplicationController for sorting a fasta file according to seq lens
@@ -32,25 +32,34 @@ class UclustFastaSort(CommandLineApplication):
     """
     
     _command = 'uclust'
-    _parameters = {\
-     # Fasta input file
-     '--mergesort':ValuedParameter('--',Name='mergesort',Delimiter=' ',\
-      IsPath=True),
-     # Sorted fasta output file by length; fasta input file for uclust
-     # needs to be arranged in order of largest to shortest seq lens.
-     '--output':ValuedParameter('--',Name='output',Delimiter=' ',IsPath=True)
-     }
-     
     _input_handler = '_input_as_parameters'
+    _parameters = {\
+        
+    # Fasta input file
+    '--mergesort':ValuedParameter('--',Name='mergesort',Delimiter=' ',\
+    IsPath=True),
+    # Sorted fasta output file by length; fasta input file for uclust
+    # needs to be arranged in order of largest to shortest seq lens.
+    '--output':ValuedParameter('--',Name='output',Delimiter=' ',IsPath=True)
+    }
+     
     _suppress_stdout = False
     _suppress_stderr = False
+
+    
+    
 
     def _input_as_parameters(self,data):
         """ Set the input path (a fasta filepath)
         """
         for param_id, param_value in data.items():
             self.Parameters[param_id].on(param_value)
+            
         return ''
+        
+    def tearDown(self):
+        if isfile(self.tmp_sorted_fasta_filepath):
+        	remove(self.tmp_sorted_fasta_filepath)
         
     def _get_result_paths(self,data):
         """ Set the result paths """
@@ -82,8 +91,7 @@ def uclust_fasta_sort_from_filepath(fasta_filepath,output_filepath=None):
     app = UclustFastaSort()
     
     output_filepath = output_filepath or \
-     get_tmp_filename(tmp_dir=app.WorkingDir, prefix='uclust_fasta_sort', \
-     suffix='.fasta') 
+     get_tmp_filename(prefix='uclust_fasta_sort', suffix='.fasta') 
     app_result = app(data={'--mergesort':fasta_filepath,\
                            '--output':output_filepath})
                            
@@ -111,7 +119,7 @@ class UclustCreateClusterFile(CommandLineApplication):
      	
      	# Disable reverse comparison option, if norev is disabled
      	# memory usage is expected to double for uclust
-     	'--norev':FlagParameter('--',Name='norev'),
+     	'--rev':FlagParameter('--',Name='rev'),
      	
 
     }
@@ -138,7 +146,7 @@ class UclustCreateClusterFile(CommandLineApplication):
         """ Set the input path (fasta) and output path (.uc), other parameters
         """
         for param_id, param_value in data.items():
-          	if param_id == "--norev":
+          	if param_id == "--rev":
           		self.Parameters[param_id].on()
           	else:
           		self.Parameters[param_id].on(param_value)
@@ -164,12 +172,12 @@ def uclust_cluster_from_sorted_fasta_filepath(fasta_filepath, \
     if enable_rev_strand_matching:
     	data={'--input':fasta_filepath,\
     	      '--uc':output_filepath,\
-    	      '--id':percent_ID}
+    	      '--id':percent_ID,\
+    	      '--rev':True}
     else:
     	data={'--input':fasta_filepath,\
     	      '--uc':output_filepath,\
-    	      '--id':percent_ID,\
-    	      '--norev':True}
+    	      '--id':percent_ID}
     app_result = app(data)
     return app_result
 
@@ -304,6 +312,7 @@ def get_clusters_from_fasta_filepath(fasta_filepath, percent_ID=0.97, \
     would be grouped as a cluster.
     """
     
+    
     # Create readable intermediate filenames if they are to be kept
     if output_dir:
         if not (output_dir.endswith("/")):
@@ -318,27 +327,53 @@ def get_clusters_from_fasta_filepath(fasta_filepath, percent_ID=0.97, \
         uc_output_filepath = None
         cd_hit_filepath = None
         
+    sorted_fasta_filepath = ""
+    uc_filepath = ""
+    clstr_filepath = ""
+    
+        
 
-    # Sort fasta input file from largest to smallest sequence 
-    sort_fasta = uclust_fasta_sort_from_filepath(fasta_filepath, \
-     fasta_output_filepath)
-    # Get sorted fasta name from application wrapper
-    sorted_fasta_filepath = sort_fasta['SortedFasta'].name
+    # Error check in case any app controller fails
+    try:
+        # Sort fasta input file from largest to smallest sequence 
+        sort_fasta = uclust_fasta_sort_from_filepath(fasta_filepath, \
+        fasta_output_filepath)
+        # Get sorted fasta name from application wrapper
+        sorted_fasta_filepath = sort_fasta['SortedFasta'].name
+    
+        # Generate uclust cluster file (.uc format)
+        uclust_cluster = \
+         uclust_cluster_from_sorted_fasta_filepath(sorted_fasta_filepath, \
+         uc_output_filepath, percent_ID = percent_ID, \
+         enable_rev_strand_matching = enable_rev_strand_matching)
+        # Get cluster file name from application wrapper
+        uc_filepath = uclust_cluster['ClusterFilepath'].name
 
-    # Generate uclust cluster file (.uc format)
-    uclust_cluster = \
-     uclust_cluster_from_sorted_fasta_filepath(sorted_fasta_filepath, \
-     uc_output_filepath, percent_ID = percent_ID, \
-     enable_rev_strand_matching = False)
-    # Get cluster file name from application wrapper
-    uc_filepath = uclust_cluster['ClusterFilepath'].name
+        # Convert the .uc file to a cdhit (.clstr) format
+        cdhit_conversion = \
+         uclust_convert_uc_to_cdhit_from_filepath(uc_filepath, cd_hit_filepath)
 
-    # Convert the .uc file to a cdhit (.clstr) format
-    cdhit_conversion = \
-     uclust_convert_uc_to_cdhit_from_filepath(uc_filepath, cd_hit_filepath)
-
-    # Get the open file object from the cdhit conversion wrapper
-    clstr_filepath = cdhit_conversion['CdhitFilepath']
+        # Get the open file object from the cdhit conversion wrapper
+        clstr_filepath = cdhit_conversion['CdhitFilepath']
+    except ApplicationError:
+        if isfile(sorted_fasta_filepath):
+            remove(sorted_fasta_filepath)
+        if isfile(uc_filepath):
+            remove(uc_filepath)
+        if isfile(clstr_filepath):
+            remove(clstr_filepath)
+        raise ApplicationError, ('Error running uclust, make sure the proper '+\
+         'version (1.0.50 or greater) is installed and the input fasta file '+\
+         'is properly formatted.')
+    except ApplicationNotFoundError:
+        if isfile(sorted_fasta_filepath):
+            remove(sorted_fasta_filepath)
+        if isfile(uc_filepath):
+            remove(uc_filepath)
+        if isfile(clstr_filepath):
+            remove(clstr_filepath)
+        raise ApplicationNotFoundError('uclust not found, is it properly '+\
+         'installed?')
     
     # Get list of lists for each cluster
     clusters = parse_uclust_clstr_file(clstr_filepath)
@@ -349,5 +384,12 @@ def get_clusters_from_fasta_filepath(fasta_filepath, percent_ID=0.97, \
         uclust_cluster.cleanUp()
         cdhit_conversion.cleanUp()
     
+    if len(clusters) == 0:
+    	raise ApplicationError, ('Clusters result empty, please check source '+\
+    	 'fasta file for proper formatting.')
+    
+    
+    
     return clusters
 
+    

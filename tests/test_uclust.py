@@ -135,11 +135,11 @@ class UclustCreateClusterFile_Tests(TestCase):
          ''.join(['cd "',getcwd(),'/"; ','uclust --input "seq.txt"']))
         c.Parameters['--uc'].on('sorted_output.fasta')
         c.Parameters['--id'].on(0.9)
-        c.Parameters['--norev'].on()
+        c.Parameters['--rev'].on()
         self.assertEqual(c.BaseCommand,\
-         ''.join(['cd "',getcwd(),'/"; ','uclust --input "seq.txt" '+\
-         '--id 0.9 --uc "sorted_output.fasta" --norev']))
-        c.Parameters['--norev'].off()
+         ''.join(['cd "',getcwd(),'/"; ','uclust --rev --input "seq.txt" '+\
+         '--id 0.9 --uc "sorted_output.fasta"']))
+        c.Parameters['--rev'].off()
         self.assertEqual(c.BaseCommand,\
          ''.join(['cd "',getcwd(),'/"; ','uclust --input "seq.txt" '+\
          '--id 0.9 --uc "sorted_output.fasta"']))
