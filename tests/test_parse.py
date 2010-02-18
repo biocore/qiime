@@ -20,7 +20,7 @@ from qiime.parse import (parse_map, group_by_field, group_by_fields,
     make_envs_dict, fields_to_dict, parse_rarefaction_fname, envs_to_otu_counts,
     otu_counts_to_matrix, envs_to_matrix, parse_qiime_parameters, 
     parse_bootstrap_support, parse_sample_mapping, parse_distmat_to_dict,
-    sample_mapping_to_otu_table)
+    sample_mapping_to_otu_table, parse_taxonomy)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -450,6 +450,17 @@ s03\tc\t5""".splitlines()
         self.assertEqual(result, ['#Full OTU Counts',\
          '#OTU ID\tsample1\tsample2\tsample3', 'OTU2\t1\t2\t0', \
         'OTU1\t3\t0\t2'])
+    
+    def test_parse_taxonomy(self):
+        """ should parse taxonomy example"""
+        example_tax = \
+"""412 PC.635_647	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales	0.930
+319 PC.355_281	Root;Bacteria;Bacteroidetes	0.970
+353 PC.634_154	Root;Bacteria;Bacteroidetes	0.830
+17 PC.607_302	Root;Bacteria;Bacteroidetes	0.960
+13 PC.481_1214	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales	0.870
+338 PC.593_1314	Root;Bacteria	0.990"""
+        res = parse_taxonomy(example_tax)
 
  
 if __name__ =='__main__':
