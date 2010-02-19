@@ -28,7 +28,9 @@ script_description = """Create an html file of rarefaction plots based on the su
 mapping file (-m) and the supplied rarefaction files (-r) from beta_diversity.py. \
 The user may also supply optional arguments that will only create plots for \
 supplied metadata columns from the mapping file (-p), an image type (-i), and a\
-resolution (-d)"""
+resolution (-d). If the user would like to suppress html output they can pass\
+the -n flag, and output raw data with the -w flag. The -y option allows the\
+user to supply a maximum value for the yaxis of the plots."""
 
 script_usage = """Usage: %prog [options] {-m MAP -r RAREFACTION}
 
@@ -42,11 +44,16 @@ python %prog -m mappingfile.txt -r rare1.txt,rare2.txt -p DAY,DONOR
 Create an html file with rarefaction plots for provided categories, images of type PNG,\
 resolution of 150:
 python %prog -m mappingfile.txt -r rare1.txt,rare2.txt -p DAY,DONOR -i png -d 150
+
+Suppress html output and only write raw rarefaction data:
+python %prog -m mappingfile.txt -r rare1.txt,rare2.txt -n -w
 """
 
 required_options = [\
 make_option('-m', '--map', help='name of mapping file [REQUIRED]'),
-make_option('-r', '--rarefaction', help='name of rarefaction file [REQUIRED]')
+make_option('-r', '--rarefaction', help='name of rarefaction file, takes\
+output from collate_alpha OR tab delimited data from a previous run \
+of this script. If using raw data from a previous run, set -x flag. [REQUIRED]')
 ]
 
 optional_options = [\
@@ -64,7 +71,13 @@ make_option('-o', '--dir_path',help='directory prefix for all analyses \
 make_option('-y', '--ymax', help='maximum value for y axis, \
 [default: %default] the default value will tell the script \
 to calculate a y axis maximum depending on the data', \
-type='int', default='0')
+type='int', default='0'),
+make_option('-x', '--raw_data', help='read in tab delimited, \
+rarefaction graphing data to be plotted.', \
+action='store_true', default=False),
+make_option('-w', '--write_raw_data', help='print out tab delimited, \
+rarefaction graphing data that can be read back in and plotted. \
+[default: %default]', action='store_true', default=False)
 ]
 
 def main():
@@ -113,6 +126,10 @@ def main():
             option_parser.error('Categories %s not found in mapping file, \
 please check spelling and syntax.'%list(suppliedcats.difference(availablecats)))
             exit(0)
+
+    prefs['raw_data'] = options.raw_data
+    
+    prefs['write_raw_data'] = options.write_raw_data
 
     prefs['no_html'] = options.no_html
     
