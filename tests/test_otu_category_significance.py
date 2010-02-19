@@ -296,7 +296,9 @@ sample3\tC\t1.0""".split('\n')
         OTU_list = ['1', '0', '2', '3'] 
         result = run_correlation_OTUs(OTU_list, category_info, OTU_sample_info)
         output = output_results_correlation(result, taxonomy_info)
-        self.assertEqual(output, ['OTU\tprob\tBonferroni_corrected\tFDR_corrected\tr\tConsensus Lineage', '1\t4.4408920985e-16\t1.7763568394e-15\t8.881784197e-16\t-1.0\ttaxon2', '0\t0.0\t0.0\t0.0\t1.0\ttaxon1', '3\t0.5527864045\t2.211145618\t0.737048539333\t0.4472135955\ttaxon4', '2\t0.741801110253\t2.96720444101\t0.741801110253\t-0.258198889747\ttaxon3'])
+        self.assertEqual(output[0], 'OTU\tprob\tBonferroni_corrected\tFDR_corrected\tr\tConsensus Lineage')
+        self.assertEqual(output[1], '1\t4.4408920985e-16\t1.7763568394e-15\t8.881784197e-16\t-1.0\ttaxon2')
+        self.assertEqual(len(output), 5)
 
     def test_test_wrapper(self):
         """runs the specified statistical test"""
