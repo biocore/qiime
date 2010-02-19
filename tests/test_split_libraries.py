@@ -144,7 +144,8 @@ z\tGG\tGC\t5\tsample_z"""
         self.assertEqual(check_barcode('AA', None, ['AA']), (False, 'AA', \
          False))
         self.assertEqual(check_barcode('GCATCGTCCACA', 'golay_12', 
-            ['GCATCGTCAACA']), (True, 'GCATCGTCAACA', True))
+            ['GCATCGTCAACA']), (2, 'GCATCGTCAACA', True))
+        # num errors for golay code is currently in bits
         self.assertEqual(check_barcode('AA', None, ['TT']), (True, None, False))
 
     def test_make_histograms(self):
