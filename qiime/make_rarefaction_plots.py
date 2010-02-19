@@ -220,27 +220,70 @@ def get_overall_averages(rare_mat, sampleIDs):
         overall_ave[s] = mean(array(rare_mat[s]))
     return overall_ave
 
-def save_rarefaction_plots(rare_mat, xaxis, xmax, ymax, sampleIDs, mapping,\
-mapping_category, itype, res, rtype, fpath):
+def save_rarefaction_data(rare_mat, xaxis, xmax, ymax, sampleIDs, mapping, \
+mapping_category, rare_type, fpath):
+    yaxis, err, ops, colors, syms = make_error_series(rare_type, rare_mat, \
+    sampleIDs, mapping, mapping_category)
+    lines = []
+    lines.append("# "+mapping_category+'\n')
+    for o in ops:
+        lines.append(">> " + o + '\n')
+        lines.append('series ')
+        line = ''
+        for v in yaxis[o]:
+            line += str(v) + '\t'
+        line += '\n'
+        lines.append(line)
+        lines.append('error ')
+        line = ''
+        for e in err[o]:
+            line += str(e) + '\t'
+        line += '\n'
+        lines.append(line)
+        
+    open(fpath+'/'+mapping_category+'.txt','w').writelines(lines)
+
+def parse_rarefaction_data(lines):
+    mapping_category = ''
+    options = []
+    series = {}
+    error = {}
+    for l in lines:
+        if l.startswith('#'):
+            mapping_category = l.strip('#')
+            continue
+        if l.startswith('>>'):
+            options.append(l.strip('>'))
+            continue
+        if l.startswith('series'):
+            series[option] = [float(v) for v in l[6:].split('\t')]
+            continue
+        if l.startswith('error'):
+            error[option] = [float(v) for v in l[5:].split('\t')]
+            
+    return mapping_category, options, series, error
+
+def save_rarefaction_plots(xaxis, yaxis, err, xmax, ymax, ops, mapping_category, \
+itype, res, rtype, fpath):
     plt.clf()
     plt.title(rtype + ": " + mapping_category)
     fig  = plt.gcf()
     
     plt.grid(color='gray', linestyle='-')
-    
-    yaxis, err, ops, colors, syms = make_error_series(rtype, rare_mat, \
-    sampleIDs, mapping, mapping_category)
+
     ops.sort()
     
     for o in ops:
-        yaxis[o] = [float(v) for v in yaxis[o] if v != 'NA' and v != 0]
+        #yaxis[o] = [float(v) for v in yaxis[o] if v != 'NA' and v != 0]
         l = o
         if len(o) > 20:
             l = l[:20] + '...'
+        # plt.errorbar(xaxis[:len(yaxis[o])], yaxis[o], \
+        #         yerr=err[o][:len(yaxis[o])], color=colors[o], label=l, \
+        #         marker=syms[o], markersize=4)
         plt.errorbar(xaxis[:len(yaxis[o])], yaxis[o], \
-        yerr=err[o][:len(yaxis[o])], color=colors[o], label=l, \
-        marker=syms[o], markersize=4)
-
+        yerr=err[o][:len(yaxis[o])], label=l)
+        
     c = 1
     if len(ops) > 12:
         c = int(len(ops)/12)
@@ -291,9 +334,13 @@ def make_plots(prefs):
             rarelines.append('%f'%overall_average[s] + '\n')
             
         for p in prefs['categories']:
-            save_rarefaction_plots(rare_mat_ave, xaxisvals, xmax, ymax, \
-            sampleIDs, prefs['map'], p, prefs['imagetype'], \
-            prefs['resolution'], r, file_path)
+            if(prefs['write_raw_data']):
+                save_rarefaction_data(rare_mat_ave, xaxisvals, xmax, ymax,  \
+                sampleIDs, prefs['map'], p, r, file_path)
+            
+            yaxis, err, ops, colors, syms = make_error_series(r, rare_mat_ave, \
+            sampleIDs, prefs['map'], p)
+            save_rarefaction_plots(xaxisvals, yaxis, err, xmax, ymax, ops, p, prefs['imagetype'], prefs['resolution'], r, file_path)
 
     tablelines = ['#SampleIDs\n']
     tablelines.extend([s + '\n' for s in sampleIDs])
