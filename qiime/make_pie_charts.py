@@ -162,8 +162,8 @@ def strip_eps_font(filename):
     ouf.close()
     
 def make_pie_chart(data, dir_path, file_prefix = None,props={},
-	y_len=6.5, colors=None, dpi=80,
-    generate_eps=False, generate_pdf=True, others_key = "All Other Categories",
+    y_len=6.5, colors=None, dpi=80, generate_eps=False, generate_pdf=True, 
+    others_key = "All Other Categories",
     others_color = "#eeeeee", should_capitalize=True):
     """
     Write interactive piechart 
@@ -215,7 +215,7 @@ def make_pie_chart(data, dir_path, file_prefix = None,props={},
     ax = axes([0.0, 0.0, .5, 1])
     p1 = pie(all_fracs,  shadow=False, colors=colors)
     figlegend(p1[0],labels = all_labels, loc = loc, borderpad=0.3, \
-				    labelspacing=0.3, prop = fp) 
+                 labelspacing=0.3, prop = fp) 
 
     #write out
     if file_prefix is None:
@@ -236,7 +236,7 @@ def make_pie_chart(data, dir_path, file_prefix = None,props={},
         eps_abs = os.path.join('pie_charts', eps_img_name)
         eps_link = DOWNLOAD_LINK % ((os.path.join('pie_charts',\
                 eps_img_name)),\
-			    IMG_SRC % (os.path.join('pie_charts',img_name))) 
+        IMG_SRC % (os.path.join('pie_charts',img_name))) 
     if generate_eps:
         if file_prefix is None:
             eps_img_name = make_img_name(file_ext=".eps")
@@ -247,7 +247,7 @@ def make_pie_chart(data, dir_path, file_prefix = None,props={},
         out = getoutput("gzip " + os.path.join(dir_path,'pie_charts', eps_img_name))
         eps_abs = os.path.join(dir_path,'pie_charts',eps_img_name) + ".gz"
         eps_link=DOWNLOAD_LINK % ((os.path.join('pie_charts', eps_img_name)+".gz"),\
-				IMG_SRC % (os.path.join('pie_charts',img_name))) 
+        IMG_SRC % (os.path.join('pie_charts',img_name))) 
     close(fig)
     clf()
     return eps_link, IMG_SRC_2 % (os.path.join('pie_charts',img_name))
@@ -412,7 +412,7 @@ def create_dir(dir_path,qiime_dir,plot_type):
     except OSError:     #raised if dir exists
         pass
     shutil.copyfile(os.path.join(qiime_dir,'js/overlib.js'),\
-								os.path.join(javascript_path,'overlib.js'))
+                                     os.path.join(javascript_path,'overlib.js'))
     css_path = \
             os.path.join(dir_path,'css')
     try:
@@ -420,7 +420,7 @@ def create_dir(dir_path,qiime_dir,plot_type):
     except OSError:     #raised if dir exists
         pass
     shutil.copyfile(os.path.join(qiime_dir,'css/qiime_style.css'),\
-	                                os.path.join(css_path,'qiime_style.css'))
+                                os.path.join(css_path,'qiime_style.css'))
     return dir_path
 
 
