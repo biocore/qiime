@@ -16,7 +16,7 @@ from qiime.util import parse_command_line_parameters
 from optparse import make_option
 from os.path import splitext
 from qiime.make_sra_submission import (write_xml_generic, 
-    make_run_and_experiment, make_submission)
+    make_run_and_experiment, make_submission, make_study, make_sample)
 
 script_description = """Makes the submission xml files for SRA (study, experiment, etc.).
 
