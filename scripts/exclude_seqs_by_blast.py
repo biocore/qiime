@@ -3,7 +3,8 @@
 from __future__ import division
 import numpy
 from time import time
-from os import system
+from os import system, getcwd
+from os.path import join
 from qiime.exclude_seqs_by_blast import blast_genome,\
                                         check_options,\
                                         find_homologs,\
@@ -54,6 +55,10 @@ script_description = """
     
     One valid approach is to screen all putative 16S rRNA sequences against
     greengenes to ensure they are bacterial rather than human.
+
+    WARNING: You cannot use this script if there are spaces in the path to the
+    database of fasta files because formatdb cannot handle these paths (this
+    is a limitation of NCBI's tools and we have no control over it).
     """
 
 script_usage = """ \n\t python exclude_seqs_by_blast.py {-i QUERY_FASTA_FP -d SUBJECT_FASTA_FP -o
@@ -127,9 +132,8 @@ def main():
     subject_db = options.subjectdb
     if not subject_db.startswith('/'):
         subject_db = join(getcwd(), subject_db)
-
     formatdb_cmd = 'formatdb -p F -o T -i %s' % subject_db
-
+    print 'CMD is:', formatdb_cmd
     if DEBUG:
         print "Formatting subject db with command: %s" % formatdb_cmd
 
