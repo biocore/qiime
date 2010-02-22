@@ -148,7 +148,7 @@ def main():
         except OSError:     #raised if dir exists
             pass
         logo_out = open(logo_path+'/qiime_header.png','w')
-        logo_out.write(open(qiime_dir+'qiime_header.png').read())
+        logo_out.write(open(qiime_dir+'images/qiime_header.png').read())
         logo_out.close()
     
     if opts.monte_carlo:
