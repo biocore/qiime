@@ -29,8 +29,8 @@ import numpy
 import os
 import sys
 
-from qiime.parse import (parse_otus, filter_otus_by_lineage, parse_matrix,
-    parse_rarefaction_fname)
+from qiime.parse import parse_otus, filter_otus_by_lineage, parse_matrix,\
+    parse_rarefaction_fname
 from qiime.format import format_otu_table, format_matrix
 from qiime.util import FunctionWithParams
        
@@ -39,8 +39,10 @@ def write_output_file(metric_file_data, output_dir, metric, all_samples):
     metric_file_data = sorted(metric_file_data,key=operator.itemgetter(1,2))
     row_names = [row.pop(0) for row in metric_file_data]
     col_names = ['sequences per sample', 'iteration'] + all_samples
-    out_str = format_matrix(numpy.array(metric_file_data), row_names, \
-        col_names)
+    #Numpy shows weird behaviour when converting metric_file_data to array
+    #it truncates some values, so better go with straight list of lists
+    # format_matrix() now takes 2d lists as well as arrays.
+    out_str = format_matrix(metric_file_data, row_names, col_names)
     f = open(os.path.join(output_dir,metric+'.txt'),'w')
     f.write(out_str)
     f.close()

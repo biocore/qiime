@@ -27,10 +27,25 @@ def format_matrix(data, row_names, col_names):
     """Writes matrix as tab-delimited text.
 
     format is rows: samples, 
-    cols: metrics/ confidence levels, etc"""
-    if data.shape != (len(row_names), len(col_names)):
-        raise ValueError, "Data shape of %s doesn't match header sizes %s %s" %\
-            (data.shape, len(row_names), len(col_names))
+    cols: metrics/ confidence levels, etc
+
+    data: array or 2d list.
+    """
+    len_col = len(col_names)
+    try:
+        if data.shape != (len(row_names), len_col):
+            raise ValueError, "Data shape of %s doesn't match header sizes %s %s" %\
+                (data.shape, len(row_names), len(col_names))
+    except AttributeError:
+        # must be list of list
+        try:
+            if not numpy.all([len_col==len(row) for row in data]) or\
+                    len(row_names) != len(data):
+                raise ValueError, "Data shape doesn't match header sizes %s %s" %\
+                    (len(row_names), len(col_names))
+        except:
+            raise ValueError, "Unsupported data type for format_matrix"
+
     lines = []
     row_names = map(str, row_names)   
     col_names = map(str, col_names)   

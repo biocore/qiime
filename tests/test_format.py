@@ -14,7 +14,7 @@ __status__ = "Pre-release"
 from cogent.util.unit_test import TestCase, main
 from numpy import array, nan
 from qiime.format import (format_distance_matrix, format_otu_table,
-    format_coords, build_prefs_string)
+    format_coords, build_prefs_string, format_matrix)
 
 class TopLevelTests(TestCase):
     """Tests of top-level module functions."""
@@ -27,6 +27,26 @@ class TopLevelTests(TestCase):
         self.assertEqual(res, 
             '\t11\t22\t33\n11\t1\t2\t3\n22\t4\t5\t6\n33\t7\t8\t9')
         self.assertRaises(ValueError, format_distance_matrix, labels[:2], a)
+
+    def test_format_matrix(self):
+        """format_matrix should return tab-delimited mat"""
+        a = [[1,2,3], [4,5,6], [7,8,9]]
+        row_labels = ['a','b','c']
+        col_labels = [11,22,33]
+        res = format_matrix(a, row_labels, col_labels)
+        
+        #test as list
+        self.assertEqual(res, 
+            '\t11\t22\t33\na\t1\t2\t3\nb\t4\t5\t6\nc\t7\t8\t9')
+        self.assertRaises(ValueError, format_matrix, a, row_labels[:2], col_labels)
+        self.assertRaises(ValueError, format_matrix, None, row_labels, col_labels)
+
+        #tes as array
+        a = array(a)
+        self.assertEqual(res, 
+                         '\t11\t22\t33\na\t1\t2\t3\nb\t4\t5\t6\nc\t7\t8\t9')
+        self.assertRaises(ValueError, format_matrix, a, row_labels[:2], col_labels)
+        self.assertRaises(ValueError, format_matrix, None, row_labels, col_labels)
 
     def test_format_otu_table(self):
         """format_otu_table should return tab-delimited table"""

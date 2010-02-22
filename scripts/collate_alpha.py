@@ -23,7 +23,7 @@ __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 __status__ = "Pre-release"
  
-script_description = """"""
+script_description = """collate_alpha collates output files from alpha_diversity.py"""
 
 script_usage = """usage: %prog [options] {-i INPUT_PATH -o OUTPUT_PATH}
 
