@@ -133,7 +133,6 @@ def main():
     if not subject_db.startswith('/'):
         subject_db = join(getcwd(), subject_db)
     formatdb_cmd = 'formatdb -p F -o T -i %s' % subject_db
-    print 'CMD is:', formatdb_cmd
     if DEBUG:
         print "Formatting subject db with command: %s" % formatdb_cmd
 
