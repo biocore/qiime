@@ -83,7 +83,7 @@ optional_options = [\
           'prefix_prefilter_length are automatically grouped into a '+\
           'single OTU; useful for large sequence collections where OTU '+\
           'picking doesn\'t scale well '+\
-          '[default: %default; 100 is a good value]', default = 50),\
+          '[default: %default; 100 is a good value]', default = None),\
  make_option('-t','--trie_prefilter',\
           action='store_true', default = False,\
           help='prefilter data so seqs which are identical prefixes '+\
