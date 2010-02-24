@@ -67,24 +67,20 @@ class ProcrustesTests(TestCase):
         expected = [[7,8,9],[4,5,6],[1,2,3]]
         self.assertEqual(reorder_coords(m,in_sids,order),expected)
         
+        # order leaves some samples out 
+        m = [[1,2,3],[4,5,6],[7,8,9]]
+        in_sids = ['A','B','C']
+        order = ['A','B']
+        expected = [[1,2,3],[4,5,6]]
+        self.assertEqual(reorder_coords(m,in_sids,order),expected)
+        
     def test_reorder_coords_errors(self):
         """Reordering of columns handles errors """
-        # different lens 
-        m = [[1,2,3],[4,5,6],[7,8,9]]
-        in_sids = ['A','B']
-        order = ['A','B','C']
-        self.assertRaises(AssertionError,reorder_coords,m,in_sids,order)
         
-        # in_sids contains 
         m = [[1,2,3],[4,5,6],[7,8,9]]
-        in_sids = ['A','B','X']
-        order = ['A','B','C']
-        self.assertRaises(AssertionError,reorder_coords,m,in_sids,order)
-        
-        m = [[1,2,3],[4,5,6],[7,8,9],[10,11,12]]
         in_sids = ['A','B','C']
-        order = ['A','B','C']
-        self.assertRaises(AssertionError,reorder_coords,m,in_sids,order)
+        order = ['A','B','C','D']
+        self.assertRaises(ValueError,reorder_coords,m,in_sids,order)
         
     def test_filter_coords_matrix(self):
         """ Removing coordinate from each sample functions as expected
@@ -145,8 +141,8 @@ class ProcrustesTests(TestCase):
         # just some sanity checks as the individual componenets are 
         # already tested -- these are based on looking at the output of the
         # run, and testing to ensure that it hasn't changed
-        self.assertEqual(actual[0],'pc vector number\t1\t2\t3\t4\nS1\t0.116737988534\t0.414627960015\t0.201315243115\t0.113769076804\t-0.283025353088\t-0.144278863311\nS2\t-0.238263544222\t-0.37724227779\t-0.169458651217\t0.0305157004776\t0.112181007345\t0.0677415967093\nS3\t-0.199225958574\t-0.250846540029\t-0.119813087305\t-0.155652031006\t0.18495315824\t-0.160875399364\nS4\t0.320751514262\t0.213460857804\t0.0879564954067\t0.0113672537238\t-0.0141088124974\t0.237412665966\n\n\neigvals\t\n% variation explained\t23.1764657118\t15.6071186064\t11.2894866423\t8.16225689998\t6.67053450426\t6.21602253997')
-        self.assertEqual(actual[1],'pc vector number\t1\t2\t3\t4\nS1\t0.116737988534\t0.414627960015\t0.201315243115\t0.113769076804\t-0.283025353088\t-0.144278863311\nS2\t-0.238263544222\t-0.37724227779\t-0.169458651217\t0.0305157004776\t0.112181007345\t0.0677415967093\nS3\t-0.199225958574\t-0.250846540029\t-0.119813087305\t-0.155652031006\t0.18495315824\t-0.160875399364\nS4\t0.320751514262\t0.213460857804\t0.0879564954067\t0.0113672537238\t-0.0141088124974\t0.237412665966\n\n\neigvals\t\n% variation explained\t23.1764657118\t15.6071186064\t11.2894866423\t8.16225689998\t6.67053450426\t6.21602253997')
+        self.assertEqual(set(actual[0].split('\n')),set('pc vector number\t1\t2\t3\t4\nS1\t0.116737988534\t0.414627960015\t0.201315243115\t0.113769076804\t-0.283025353088\t-0.144278863311\nS2\t-0.238263544222\t-0.37724227779\t-0.169458651217\t0.0305157004776\t0.112181007345\t0.0677415967093\nS3\t-0.199225958574\t-0.250846540029\t-0.119813087305\t-0.155652031006\t0.18495315824\t-0.160875399364\nS4\t0.320751514262\t0.213460857804\t0.0879564954067\t0.0113672537238\t-0.0141088124974\t0.237412665966\n\n\neigvals\t\n% variation explained\t23.1764657118\t15.6071186064\t11.2894866423\t8.16225689998\t6.67053450426\t6.21602253997'.split('\n')))
+        self.assertEqual(set(actual[1].split('\n')),set('pc vector number\t1\t2\t3\t4\nS1\t0.116737988534\t0.414627960015\t0.201315243115\t0.113769076804\t-0.283025353088\t-0.144278863311\nS2\t-0.238263544222\t-0.37724227779\t-0.169458651217\t0.0305157004776\t0.112181007345\t0.0677415967093\nS3\t-0.199225958574\t-0.250846540029\t-0.119813087305\t-0.155652031006\t0.18495315824\t-0.160875399364\nS4\t0.320751514262\t0.213460857804\t0.0879564954067\t0.0113672537238\t-0.0141088124974\t0.237412665966\n\n\neigvals\t\n% variation explained\t23.1764657118\t15.6071186064\t11.2894866423\t8.16225689998\t6.67053450426\t6.21602253997'.split('\n')))
         self.assertTrue(actual[2] < 6e-30)
         
     def test_procrustes_monte_carlo(self):

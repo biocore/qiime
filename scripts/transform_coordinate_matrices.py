@@ -74,10 +74,8 @@ def main():
     input_fp2_basename, input_fp2_ext = splitext(input_fn2)
     output_summary_fp = '%s/%s_%s_procrustes_results.txt' %\
      (output_dir,input_fp1_basename,input_fp2_basename)
-    output_matrix1_fp = '%s/%s_transformed.txt' %\
-     (output_dir,input_fp1_basename)
-    output_matrix2_fp = '%s/%s_transformed.txt' %\
-     (output_dir,input_fp2_basename)
+    output_matrix1_fp = '%s/pc1_transformed.txt' % output_dir
+    output_matrix2_fp = '%s/pc2_transformed.txt' % output_dir
     
     if sample_id_map_fp:
         sample_id_map = dict(parse_map(open(sample_id_map_fp)))

@@ -56,17 +56,19 @@ def map_sample_ids(sample_ids,sample_id_map):
     return result
 
 def reorder_coords(coords,sample_ids,order):
-    """ Arrange the rows in coords to correspond to order """
-    assert set(order) == set(sample_ids),\
-     "order and sample_ids must contain the same set of values"
-     
-    assert len(coords) == len(sample_ids) == len(order),\
-     "coords, sample_ids, and order must all be of identical length"
+    """ Arrange the rows in coords to correspond to order 
+    
+        Note: order is the master list here -- if a sample id is
+        not included in order, that coord will not be included in
+        the results. All sample ids in order however must be in
+        sample_ids
+    
+    """
     try:
         result =  array([coords[sample_ids.index(sample_id)]\
                     for sample_id in order])
     except ValueError:
-        print 'Unknown sample ID :%s' % sample_id
+        raise ValueError, 'Unknown sample ID: %s' % sample_id
     return result
 
 def filter_coords_matrix(coords,dimensions_to_keep):
@@ -115,10 +117,10 @@ def get_procrustes_results(coords_f1,coords_f2,sample_id_map=None,\
     if sample_id_map:
         sample_ids1 = map_sample_ids(sample_ids1,sample_id_map)
         sample_ids2 = map_sample_ids(sample_ids2,sample_id_map)
-    
     # rearrange the order of coords in coords2 to correspond to 
     # the order of coords in coords1 
-    order = sample_ids1
+    order = list(set(sample_ids1) & set(sample_ids2)) 
+    coords1 = reorder_coords(coords1,sample_ids1,order)
     coords2 = reorder_coords(coords2,sample_ids2,order)
     
     if randomize:
@@ -137,11 +139,11 @@ def get_procrustes_results(coords_f1,coords_f2,sample_id_map=None,\
     
     pct_var = get_percent_variation_explained(pct_var1,pct_var2)
     
-    transformed_coords1 = format_coords(coord_header=sample_ids1,\
+    transformed_coords1 = format_coords(coord_header=order,\
                                         coords=transformed_coords_m1,\
                                         eigvals=[],\
                                         pct_var=pct_var)
-    transformed_coords2 = format_coords(coord_header=sample_ids2,\
+    transformed_coords2 = format_coords(coord_header=order,\
                                         coords=transformed_coords_m2,\
                                         eigvals=[],\
                                         pct_var=pct_var)
