@@ -303,6 +303,28 @@ CTGGCCCGTGTTTCAGTGCCAGTGTGGCCGGTCGCCCTCTCAGGCCGGCTACTGATCGATGCCTTGGTGAGCCGTTACCT
 2	1803	1184	2	Bacteria; Actinobacteria; Actinobacteridae; Gordoniaceae; Corynebacteriaceae
 3	1722	4903	17	Bacteria; Firmicutes; Alicyclobacillaceae; Bacilli; Staphylococcaceae
 4	589	2074	34	Bacteria; Cyanobacteria; Chloroplasts; vectors"""
+        data_f = (data.split('\n'))
+        obs = parse_otus(data_f)
+        exp = (['Fing','Key','NA'],
+               ['0','1','2','3','4'],
+               array([[19111,44536,42],[1216,3500,6],[1803,1184,2],\
+                    [1722,4903,17], [589,2074,34]]),
+               [['Bacteria','Actinobacteria','Actinobacteridae','Propionibacterineae','Propionibacterium'],
+                ['Bacteria','Firmicutes','Alicyclobacillaceae','Bacilli','Lactobacillales','Lactobacillales','Streptococcaceae','Streptococcus'],
+                ['Bacteria','Actinobacteria','Actinobacteridae','Gordoniaceae','Corynebacteriaceae'],
+                ['Bacteria','Firmicutes','Alicyclobacillaceae','Bacilli','Staphylococcaceae'],
+                ['Bacteria','Cyanobacteria','Chloroplasts','vectors']])
+        self.assertEqual(obs, exp)
+        
+    def test_parse_otus_file(self):
+        """parse_otus should return correct result on fileio format object"""
+        data = """#Full OTU Counts
+#OTU ID	Fing	Key	NA	Consensus Lineage
+0	19111	44536	42	Bacteria; Actinobacteria; Actinobacteridae; Propionibacterineae; Propionibacterium
+1	1216	3500	6	Bacteria; Firmicutes; Alicyclobacillaceae; Bacilli; Lactobacillales; Lactobacillales; Streptococcaceae; Streptococcus
+2	1803	1184	2	Bacteria; Actinobacteria; Actinobacteridae; Gordoniaceae; Corynebacteriaceae
+3	1722	4903	17	Bacteria; Firmicutes; Alicyclobacillaceae; Bacilli; Staphylococcaceae
+4	589	2074	34	Bacteria; Cyanobacteria; Chloroplasts; vectors"""
         data_f = StringIO(data)
         obs = parse_otus(data_f)
         exp = (['Fing','Key','NA'],

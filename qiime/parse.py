@@ -215,6 +215,7 @@ def parse_coords(lines):
 
     Strategy: just read the file into memory, find the lines we want
     """
+    lines = list(lines)
     lines = map(strip, lines[1:])   #discard first line, which is a label
     lines = filter(None, lines) #remove any blank lines
     
@@ -306,34 +307,38 @@ def parse_taxonomy(infile):
 
     return res
 
-def parse_otus(infile):
+def parse_otus(lines):
     """parses otu file
 
     Returns tuple: sample_ids, otu_ids, matrix of OTUs(rows) x samples(cols),
     and lineages from infile."""
     otu_table = []
-    infile.next()   #skip header line
-    sample_ids = infile.next().strip().split('\t')[1:]
-    if len(sample_ids) == 0:
-        raise RuntimeError('no samples found in otu table')
-    if sample_ids[-1] == 'Consensus Lineage':
-        has_consensus = True
-        sample_ids = sample_ids[:-1]
-    else:
-        has_consensus = False
     otu_ids = []
     lineages = []
-    for line in infile:
-        fields = line.split('\t')
-        #first and last col are otu id and consensus lineage respectively
-        if has_consensus:
-            otu_table.append(array(map(int, fields[1:-1])))
-        else:
-            otu_table.append(array(map(int, fields[1:])))
-        otu_id = fields[0].strip()
-        otu_ids.append(otu_id)
-        if has_consensus:
-            lineages.append(map(strip, fields[-1].split(';')))
+    for i, line in enumerate(lines):
+        if i == 0: continue # skip header line
+        
+        elif i == 1: # parse sample id line
+            sample_ids = line.strip().split('\t')[1:]
+            if len(sample_ids) == 0:
+                    raise RuntimeError('no samples found in otu table')
+            if sample_ids[-1] == 'Consensus Lineage':
+                has_consensus = True
+                sample_ids = sample_ids[:-1]
+            else:
+                has_consensus = False
+                
+        else: # parse each otu line
+            fields = line.split('\t')
+            #first and last col are otu id and consensus lineage respectively
+            if has_consensus:
+                otu_table.append(array(map(int, fields[1:-1])))
+            else:
+                otu_table.append(array(map(int, fields[1:])))
+            otu_id = fields[0].strip()
+            otu_ids.append(otu_id)
+            if has_consensus:
+                lineages.append(map(strip, fields[-1].split(';')))
     return sample_ids, otu_ids, array(otu_table), lineages
 
 def otu_table_to_envs(sample_ids, otu_ids, otu_table):
