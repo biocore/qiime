@@ -151,11 +151,11 @@ class ProcrustesTests(TestCase):
         # just some sanity checks as the individual componenets are 
         # already tested -- these are based on looking at the output of the
         # run, and testing to ensure that it hasn't changed
-        expected_actual_m2 = 0.021156659181951303
+        expected_actual_m2 = 0.0211
         expected_len_trial_m2 = 10
         expected_count_better = 0
         expected_p_value = 0.0
-        self.assertEqual(actual[0],expected_actual_m2)
+        self.assertAlmostEqual(actual[0],expected_actual_m2,3)
         self.assertEqual(len(actual[1]),expected_len_trial_m2)
         self.assertEqual(actual[2],expected_count_better)
         self.assertEqual(actual[3],expected_p_value)
