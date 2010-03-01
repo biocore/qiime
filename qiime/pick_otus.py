@@ -34,7 +34,7 @@ from cogent.util.trie import build_prefix_map
 from cogent.util.misc import flatten
 from qiime.util import FunctionWithParams
 from qiime.parse import fields_to_dict
-from qiime.uclust import get_clusters_from_fasta_filepath
+from qiime.pycogent_backports.uclust import get_clusters_from_fasta_filepath
 
 
 class OtuPicker(FunctionWithParams):

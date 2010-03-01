@@ -10,7 +10,7 @@ from os.path import isfile
 from cogent.util.misc import remove_files
 from cogent.core.moltype import DNA
 from cogent.util.unit_test import TestCase, main
-from qiime.uclust import UclustFastaSort, uclust_fasta_sort_from_filepath, \
+from qiime.pycogent_backports.uclust import UclustFastaSort, uclust_fasta_sort_from_filepath, \
  UclustCreateClusterFile, uclust_cluster_from_sorted_fasta_filepath, \
  UclustConvertToCdhit, uclust_convert_uc_to_cdhit_from_filepath, \
  parse_uclust_clstr_file, get_output_filepaths, \
@@ -34,7 +34,9 @@ class UclustFastaSort_Tests(TestCase):
     	self.tmp_unsorted_fasta_filepath = \
          get_tmp_filename(prefix="uclust_test", suffix="fasta")
         self.tmp_sorted_fasta_filepath = get_tmp_filename(prefix="uclust_test",\
-         suffix="fasta") 
+         suffix="fasta")
+        self.WorkingDir = '/tmp/uclust_test'
+        self.tmpdir = '/tmp/'
         
     def tearDown(self):
         if isfile(self.tmp_unsorted_fasta_filepath):
@@ -52,14 +54,15 @@ class UclustFastaSort_Tests(TestCase):
         self.assertEqual(c.BaseCommand,\
          ''.join(['cd "',getcwd(),'/"; ','uclust --mergesort "seq.txt"']))
         c.Parameters['--output'].on('sorted_output.fasta')
+        c.Parameters['--tmpdir'].on(self.tmpdir)
         self.assertEqual(c.BaseCommand,\
          ''.join(['cd "',getcwd(),'/"; ','uclust --mergesort "seq.txt" '+\
-         '--output "sorted_output.fasta"']))
+         '--output "sorted_output.fasta" --tmpdir "/tmp/"']))
 
     def test_changing_working_dir(self):
         """ UclustFastaSort BaseCommand should change according to WorkingDir"""
         
-        c = UclustFastaSort(WorkingDir='/tmp/uclust_test')
+        c = UclustFastaSort(WorkingDir=self.WorkingDir)
         self.assertEqual(c.BaseCommand,\
          ''.join(['cd "','/tmp/uclust_test','/"; ','uclust']))
         c = UclustFastaSort()
@@ -94,9 +97,9 @@ class UclustFastaSort_Tests(TestCase):
         
         test_app_res = test_app(data = \
          {'--mergesort':self.tmp_unsorted_fasta_filepath,\
-         '--output':self.tmp_sorted_fasta_filepath})
+         '--output':self.tmp_sorted_fasta_filepath,\
+         '--tmpdir':self.tmpdir})
 
-        
         sorted_fasta = open(test_app_res['SortedFasta'].name,"U")
         sorted_fasta_res = []
         for line in sorted_fasta:

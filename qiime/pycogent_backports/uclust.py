@@ -40,7 +40,9 @@ class UclustFastaSort(CommandLineApplication):
     IsPath=True),
     # Sorted fasta output file by length; fasta input file for uclust
     # needs to be arranged in order of largest to shortest seq lens.
-    '--output':ValuedParameter('--',Name='output',Delimiter=' ',IsPath=True)
+    '--output':ValuedParameter('--',Name='output',Delimiter=' ',IsPath=True),
+    # Sets temp directory for uclust to create temp fasta file
+    '--tmpdir':ValuedParameter('--',Name='tmpdir',Delimiter=' ',IsPath=True)
     }
      
     _suppress_stdout = False
@@ -91,9 +93,12 @@ def uclust_fasta_sort_from_filepath(fasta_filepath,output_filepath=None):
     app = UclustFastaSort()
     
     output_filepath = output_filepath or \
-     get_tmp_filename(prefix='uclust_fasta_sort', suffix='.fasta') 
+     get_tmp_filename(prefix='uclust_fasta_sort', suffix='.fasta')
+    tmp_working_dir, tmp_filename = split(output_filepath)
+    
     app_result = app(data={'--mergesort':fasta_filepath,\
-                           '--output':output_filepath})
+                           '--output':output_filepath,\
+                           '--tmpdir':tmp_working_dir})
                            
     return app_result
 
