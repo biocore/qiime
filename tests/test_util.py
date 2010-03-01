@@ -7,9 +7,10 @@ from cogent.parse.fasta import MinimalFastaParser
 from cogent.app.util import get_tmp_filename
 from cogent.util.misc import remove_files
 from qiime.util import make_safe_f, FunctionWithParams, qiime_blast_seqs,\
-    extract_seqs_by_sample_id, build_blast_db_from_fasta_file, \
+    extract_seqs_by_sample_id, \
     get_qiime_project_dir, parse_qiime_config_files, matrix_stats,\
     raise_error_on_parallel_unavailable, merge_otu_tables
+from qiime.pycogent_backports.formatdb import build_blast_db_from_fasta_file
 import numpy
 from numpy import array
 
