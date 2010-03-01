@@ -9,8 +9,9 @@ from cogent.util.misc import remove_files
 from qiime.util import make_safe_f, FunctionWithParams, qiime_blast_seqs,\
     extract_seqs_by_sample_id, build_blast_db_from_fasta_file, \
     get_qiime_project_dir, parse_qiime_config_files, matrix_stats,\
-    raise_error_on_parallel_unavailable
+    raise_error_on_parallel_unavailable, merge_otu_tables
 import numpy
+from numpy import array
 
 
 __author__ = "Greg Caporaso"
@@ -26,6 +27,10 @@ __status__ = "Pre-release"
 
 class TopLevelTests(TestCase):
     """Tests of top-level module functions."""
+    
+    def setUp(self):
+        self.otu_table_f1 = otu_table_fake1.split('\n')
+        self.otu_table_f2 = otu_table_fake2.split('\n')
 
     def test_make_safe_f(self):
         """make_safe_f should return version of f that ignores extra kwargs."""
@@ -188,7 +193,49 @@ class TopLevelTests(TestCase):
         default_qiime_config_fp = join(support_files_dir,'qiime_config')
         self.assertTrue(exists(default_qiime_config_fp))
         
-        
+    def test_merge_otu_tables_error(self):
+        """merge_otu_tables throws error on overlapping sample IDs"""
+        # error on overlapping sample ids
+        self.assertRaises(AssertionError,\
+         merge_otu_tables,iter(self.otu_table_f1),iter(self.otu_table_f1))
+    
+    def test_merge_otu_tables(self):
+        """merge_otu_tables functions as expected"""
+        otu_table_f1 = iter(self.otu_table_f1)
+        otu_table_f2 = iter(self.otu_table_f2)
+        exp_sample_ids = ['S1','S2','S3','S4','S5']
+        exp_otu_ids = ['0','1','2','3','4','6']
+        exp_otu_table = array([[1,0,1,0,1],\
+                           [1,0,0,0,0],\
+                           [4,0,1,0,1],\
+                           [0,0,2,0,1],\
+                           [0,0,1,0,9],\
+                           [0,0,1,25,42]])
+        exp_lineages = [['Root','Bacteria'],\
+                    ['Root','Bacteria','Verrucomicrobia'],
+                    ['Root','Bacteria'],\
+                    ['Root','Bacteria','Acidobacteria'],\
+                    ['Root','Bacteria','Bacteroidetes'],\
+                    ['Root','Archaea']]
+        actual = merge_otu_tables(otu_table_f1,otu_table_f2)
+        self.assertEqual(actual[0],exp_sample_ids)
+        self.assertEqual(actual[1],exp_otu_ids)
+        self.assertEqual(actual[2],exp_otu_table)
+        self.assertEqual(actual[3],exp_lineages)
+
+otu_table_fake1 = """#Full OTU Counts
+#OTU ID	S1	S2	Consensus Lineage
+0	1	0	Root;Bacteria
+1	1	0	Root;Bacteria;Verrucomicrobia
+2	4	0	Root;Bacteria"""
+    
+otu_table_fake2 = """#Full OTU Counts
+#OTU ID	S3	S4	S5	Consensus Lineage
+0	1	0	1	Root;Bacteria
+3	2	0	1	Root;Bacteria;Acidobacteria
+4	1	0	9	Root;Bacteria;Bacteroidetes
+2	1	0	1	Root;Bacteria;Acidobacteria;Acidobacteria;Gp5
+6	1	25	42	Root;Archaea"""       
         
                                     
 class FunctionWithParamsTests(TestCase):

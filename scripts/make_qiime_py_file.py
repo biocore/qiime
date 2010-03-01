@@ -85,8 +85,10 @@ def parse_command_line_parameters():
      
     return opts, args
 
-script_block = """from qiime.util import parse_command_line_parameters
+script_block = """from qiime.util import parse_command_line_parameters, get_options_lookup
 from optparse import make_option
+
+options_lookup = get_options_lookup()
 
 script_description = \"\"\" \"\"\"
 
@@ -95,6 +97,7 @@ script_usage = \"\"\" \"\"\"
 required_options = [\\
  # Example required option
  #make_option('-i','--input_dir',help='the input directory'),\\
+ #options_lookup['fasta']
 ]
 
 optional_options = [\\

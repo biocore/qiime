@@ -20,3 +20,5 @@ beta_diversity_fp	/software/Qiime/scripts/beta_diversity.py
 pynast_template_alignment_fp
 pynast_template_alignment_blastdb
 template_alignment_lanemask_fp
+jobs_to_start	24
+seconds_to_sleep	60

@@ -16,7 +16,8 @@ from os.path import split, splitext
 from os import popen, system, makedirs, mkdir
 from subprocess import check_call, CalledProcessError
 from cogent.app.formatdb import build_blast_db_from_fasta_path
-from qiime.util import load_qiime_config, parse_command_line_parameters
+from qiime.util import load_qiime_config, parse_command_line_parameters,\
+    get_options_lookup
 from pynast.util import pairwise_alignment_methods
 from qiime.parallel.util import split_fasta, get_random_job_prefix,\
     write_jobs_file, submit_jobs, compute_seqs_per_file,\
@@ -25,6 +26,7 @@ from qiime.parallel.util import split_fasta, get_random_job_prefix,\
 from qiime.parallel.align_seqs_pynast import get_job_commands
 
 qiime_config = load_qiime_config()
+options_lookup = get_options_lookup()
 
 script_description = """ """
 
@@ -35,18 +37,15 @@ script_usage = """Split the input file (-i) into five jobs (-O) to align against
  parallel_align_seqs_pynast.py -i 10_seq.fasta -O 5 -t /data/pynast_test_template.fasta -o /home/caporaso/out"""
 
 required_options = [\
- make_option('-i','--input_fasta_fp',action='store',\
-           type='string',help='full path to '+\
-           'input_fasta_fp [REQUIRED]'),\
- make_option('-o','--output_dir',action='store',\
-           type='string',help='path to store output files')
+ options_lookup['fasta_as_primary_input'],\
+ options_lookup['output_dir']
 ]
 
 pairwise_alignment_method_choices = pairwise_alignment_methods.keys()
 blast_db_default_help =\
  qiime_config['pynast_template_alignment_blastdb'] or \
  'created on-the-fly from template_alignment'
- 
+
 optional_options = [\
  make_option('-a','--pairwise_alignment_method',\
           type='choice',help='Method to use for pairwise alignments'+\
@@ -68,40 +67,16 @@ optional_options = [\
            type='string',help='full path to '+\
            'qiime/align_seqs.py [default: %default]',\
            default=qiime_config['align_seqs_fp']),\
- make_option('-O','--jobs_to_start',type='int',\
-            help='Number of jobs to start [default: %default]',default=24),\
- make_option('-P','--poller_fp',action='store',\
-           type='string',help='full path to '+\
-           'qiime/parallel/poller.py [default: %default]',\
-           default=qiime_config['poller_fp']),\
- make_option('-R','--retain_temp_files',action='store_true',\
-           help='retain temporary files after runs complete '+\
-           '(useful for debugging) [default: %default]',\
-           default=False),\
- make_option('-S','--suppress_submit_jobs',action='store_true',\
-            help='Only split input and write commands file - don\'t submit '+\
-            'jobs [default: %default]',default=False),\
- make_option('-T','--poll_directly',action='store_true',\
-            help='Poll directly for job completion rather than running '+\
-            'poller as a separate job. If -T is specified this script will '+\
-            'not return until all jobs have completed. [default: %default]',\
-            default=False),\
- make_option('-U','--cluster_jobs_fp',
-            help='path to cluster_jobs.py script ' +\
-            ' [default: %default]',\
-            default=qiime_config['cluster_jobs_fp']),\
- make_option('-W','--suppress_polling',action='store_true',
-           help='suppress polling of jobs and merging of results '+\
-           'upon completion [default: %default]',\
-           default=False),\
- make_option('-X','--job_prefix',help='job prefix '+\
-           '[default: ALIGN_ + 4 random chars]'),\
- make_option('-Y','--python_exe_fp',
-           help='full path to python executable [default: %default]',\
-           default=qiime_config['python_exe_fp']),\
- make_option('-Z','--seconds_to_sleep',type='int',\
-            help='Number of seconds to sleep between checks for run '+\
-            ' completion when polling runs [default: %default]',default=60)\
+ options_lookup['jobs_to_start'],\
+ options_lookup['poller_fp'],\
+ options_lookup['retain_temp_files'],\
+ options_lookup['suppress_submit_jobs'],\
+ options_lookup['poll_directly'],\
+ options_lookup['cluster_jobs_fp'],\
+ options_lookup['suppress_polling'],\
+ options_lookup['job_prefix'],\
+ options_lookup['python_exe_fp'],\
+ options_lookup['seconds_to_sleep']\
 ]
 
 # pynast_template_alignment_fp is required only if it is not 

@@ -21,8 +21,9 @@ from os import getenv
 from os.path import abspath, exists, dirname
 from numpy import min, max, median, mean
 import numpy
+from numpy import array, zeros
 from collections import defaultdict
-from optparse import OptionParser, OptionGroup
+from optparse import OptionParser, OptionGroup, make_option
 import sys
 from qiime.parse import parse_otus
 from cogent import LoadSeqs
@@ -33,6 +34,7 @@ from cogent.app.util import get_tmp_filename
 from cogent.parse.blast import BlastResult
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.util.misc import remove_files
+from cogent.util.dict2d import Dict2D
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from cogent import LoadSeqs
 from copy import deepcopy
@@ -425,6 +427,77 @@ def raise_error_on_parallel_unavailable(qiime_config=None):
         " point to a valid file?)"
 
 ## Begin functions for handling command line interfaces
+def get_options_lookup():
+    """ Return dict of commonly used options """
+    qiime_config = load_qiime_config()
+    result = {}
+    result['fasta_as_primary_input'] =\
+     make_option('-i','--input_fasta_fp',help='path to the input fasta file')
+    result['otu_table_as_primary_input'] =\
+     make_option('-i','--otu_table_fp',\
+      help='path to the input OTU table (i.e., the output from make_otu_table.py)')
+    result['otu_map_as_primary_input'] =\
+     make_option('-i','--otu_table_fp',\
+      help='path to the input OTU map (i.e., the output from pick_otus.py)')
+    result['log_fp'] =\
+     make_option('-l','--log_fp',help='path to write the log file')
+    result['fasta'] =\
+     make_option('-f','--input_fasta_fp',help='path to the input fasta file')
+    result['output_dir'] =\
+     make_option('-o','--output_dir',help='path to the output directory')
+    result['output_fp'] =\
+     make_option('-o','--output_fp',help='the output filepath')
+    
+    ## Define options used by the parallel scripts
+    result['jobs_to_start'] =\
+     make_option('-O','--jobs_to_start',type='int',\
+       help='Number of jobs to start [default: %default]',\
+       default=qiime_config['jobs_to_start'] or 24)
+    result['poller_fp'] =\
+     make_option('-P','--poller_fp',action='store',\
+       type='string',help='full path to '+\
+       'qiime/parallel/poller.py [default: %default]',\
+       default=qiime_config['poller_fp'])
+    result['retain_temp_files'] =\
+     make_option('-R','--retain_temp_files',action='store_true',\
+       help='retain temporary files after runs complete '+\
+       '(useful for debugging) [default: %default]',\
+       default=False)
+    result['suppress_submit_jobs'] =\
+     make_option('-S','--suppress_submit_jobs',action='store_true',\
+       help='Only split input and write commands file - don\'t submit '+\
+       'jobs [default: %default]',default=False)
+    result['poll_directly'] =\
+     make_option('-T','--poll_directly',action='store_true',\
+        help='Poll directly for job completion rather than running '+\
+        'poller as a separate job. If -T is specified this script will '+\
+        'not return until all jobs have completed. [default: %default]',\
+        default=False)
+    result['cluster_jobs_fp'] =\
+     make_option('-U','--cluster_jobs_fp',
+        help='path to cluster_jobs.py script ' +\
+        ' [default: %default]',\
+        default=qiime_config['cluster_jobs_fp'])
+    result['suppress_polling'] =\
+     make_option('-W','--suppress_polling',action='store_true',
+        help='suppress polling of jobs and merging of results '+\
+        'upon completion [default: %default]',\
+        default=False)
+    result['job_prefix'] =\
+     make_option('-X','--job_prefix',help='job prefix '+\
+           '[default: descriptive prefix + random chars]')
+    result['python_exe_fp'] =\
+     make_option('-Y','--python_exe_fp',
+        help='full path to python executable [default: %default]',\
+        default=qiime_config['python_exe_fp'])
+    result['seconds_to_sleep'] =\
+     make_option('-Z','--seconds_to_sleep',type='int',\
+        help='Number of seconds to sleep between checks for run '+\
+        ' completion when polling runs [default: %default]',\
+        default=qiime_config['seconds_to_sleep'] or 60)
+     
+    return result
+
 def build_usage_lines(required_options,
     script_description,
     script_usage,
@@ -545,3 +618,52 @@ def matrix_stats(headers_list, distmats):
     stdevs = numpy.std(all_mats, axis=0)
     
     return deepcopy(headers_list[0]), means, medians, stdevs
+
+
+def merge_otu_tables(otu_table_f1,otu_table_f2):
+    """ Merge two otu tables with the same sample IDs
+    
+        WARNING: The OTU ids must refer to the same OTUs, which
+         typically only happens when OTUs were picked against a 
+         reference database, as with the BLAST OTU picker.
+    
+    """
+    sample_ids1, otu_ids1, otu_table1, lineages1 =\
+        parse_otus(otu_table_f1)
+    sample_ids2, otu_ids2, otu_table2, lineages2 =\
+        parse_otus(otu_table_f2)
+    
+    assert set(sample_ids1) & set(sample_ids2) == set(),\
+     'Overlapping sample ids detected.'
+    sample_ids_result = sample_ids1 + sample_ids2
+    
+    # map OTU ids to lineages -- in case of conflicts (i.e, OTU assigned)
+    # different lineage in different otu tables, the lineage from 
+    # OTU table 1 will be taken
+    otu_id_to_lineage = dict(zip(otu_ids1,lineages1))
+    otu_id_to_lineage.update(dict([(otu_id,lineage)\
+     for otu_id,lineage in zip(otu_ids2,lineages2)\
+     if otu_id not in otu_id_to_lineage]))
+    
+    # Get the union of the otu IDs
+    otu_ids_result = list(otu_ids1)
+    otu_ids_lookup = {}.fromkeys(otu_ids1)
+    otu_ids_result.extend([otu_id for otu_id in otu_ids2 \
+                                  if otu_id not in otu_ids_lookup])
+    
+    otu_table = zeros(shape=(len(otu_ids_result),len(sample_ids_result)),dtype=int)
+    for i,sample_id in enumerate(sample_ids1):
+        col_index = sample_ids_result.index(sample_id)
+        for j,otu_id in enumerate(otu_ids1):
+            row_index = otu_ids_result.index(otu_id)
+            otu_table[row_index,col_index] = otu_table1[j,i]
+        
+    for i,sample_id in enumerate(sample_ids2):
+        col_index = sample_ids_result.index(sample_id)
+        for j,otu_id in enumerate(otu_ids2):
+            row_index = otu_ids_result.index(otu_id)
+            otu_table[row_index,col_index] = otu_table2[j,i]
+
+    lineages_result = [otu_id_to_lineage[otu_id] for otu_id in otu_ids_result]
+    
+    return sample_ids_result, otu_ids_result, otu_table, lineages_result
