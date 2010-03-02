@@ -23,12 +23,11 @@ script_info={}
 script_info['brief_description']="""Transform 2 coordinate matrices"""
 script_info['script_description']="""This script transformms 2 coordinate matrices (e.g., the output of principal_coordinates.py) using procrustes analysis to minimize the distances between corresponding points. Monte Carlo simulations can additionally be performed (-r random trials are run) to estimate the probability of seeing an M^2 value as extreme as the actual M^2."""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("Generate monte carlo p-values:","","""
-   %prog -r 1000 -i weighted_unifrac_coords.txt,unweighted_unifrac_coords.txt""",))
+script_info['script_usage'].append(("Generate monte carlo p-values","","""%prog -r 1000 -i weighted_unifrac_coords.txt,unweighted_unifrac_coords.txt""",))
   
-script_info['script_usage'].append(("""Write the transformed procrustes matrices to file:""","","""  %prog -o out/ -i weighted_unifrac_coords.txt,unweighted_unifrac_coords.txt"""))
+script_info['script_usage'].append(("Write the transformed procrustes matrices to file","","""%prog -o out/ -i weighted_unifrac_coords.txt,unweighted_unifrac_coords.txt"""))
 
-script_info['output_description']=""""""
+script_info['output_description']="""Two transformed coordinate matrices corresponding to the two input coordinate matrices, and (if -r was specified) a text file summarizing the results of the Monte Carlo simulations."""
 script_info['required_options']=[\
  make_option('-i','--input_fps',help='comma-separated input files'),\
  make_option('-o','--output_dir',help='the output directory'),\
