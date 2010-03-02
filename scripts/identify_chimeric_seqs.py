@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso, Jens Reeder"
 __copyright__ = "Copyright 2010, The QIIME project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Daniel McDonald"]
 __license__ = "GPL"
 __version__ = "1.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -12,35 +12,36 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Pre-release"
  
 
-from qiime.util import parse_command_line_parameters
+from qiime.util import parse_command_line_parameters, get_options_lookup
 from optparse import make_option
 from os.path import split, splitext
 
 from qiime.identify_chimeric_seqs import blast_fragments_identify_chimeras
 
-script_description = """Identify chimeric sequences in input FASTA file."""
+options_lookup = get_options_lookup()
 
-script_usage = """
- Test whether each seq in inseqs.fasta (-i) is chimeric by splitting into 
- 4 (-n) roughly equal-sized fragments, and assigning taxonomy to each fragment
- using the blast taxon assigner (-t and -r, see qiime.assign_taxonomy.py -h).
- Chimeras are sequences where different fragments are assigned to different
- taxonomies. Seq ids for putative chimeras will be written to 
- inseqs_chimeric.txt (default, derived from -i) along with the taxonomies 
- assigned to each fragment.
+#identify_chimeric_seqs.py
+script_info={}
+script_info['brief_description']="""Identify chimeric sequences in input FASTA file"""
+script_info['script_description']="""A FASTA file of sequences, can be screened to remove chimeras (sequences generated due to the PCR amplification of multiple templates or parent sequences). QIIME currently includes a single taxonomy-assignment-based approach, blast_fragments, for identifying sequences as chimeric."""
+script_info['script_usage']=[]
+script_info['script_usage'].append(("""Example:""","""The blast_fragments chimera detection method is the default method used by identify_chimeric_sequences.py. For each sequence provided as input, the blast_fragments method splits the input sequence into n roughly-equal-sized, non-overlapping fragments, and assigns taxonomy to each fragment against a reference database. The BlastTaxonAssigner (implemented in assign_taxonomy.py) is used for this. The taxonomies of the fragments are compared with one another (at a default depth of 4), and if contradictory assignments are returned the sequence is identified as chimeric. For example, if an input sequence was split into 3 fragments, and the following taxon assignments were returned:
 
-   identify_chimeric_seqs.py -i inseqs.fasta -t id_to_taxonomy.txt -r refseqs.fasta -n 4
-"""
+==========  ==========================================================
+fragment1:  Archaea;Euryarchaeota;Methanobacteriales;Methanobacterium
+fragment2:  Archaea;Euryarchaeota;Halobacteriales;uncultured
+fragment3:  Archaea;Euryarchaeota;Methanobacteriales;Methanobacterium
+==========  ==========================================================
 
-required_options = [\
-    make_option('-i', '--input_seqs_fp',
-        help='Path to fasta file of sequences to be assigned')
+The sequence would be considered chimeric at a depth of 3 (Methanobacteriales vs. Halobacteriales), but non-chimeric at a depth of 2 (all Euryarchaeota).
 
-]
+blast_fragments begins with the assumption that a sequence is non-chimeric, and looks for evidence to the contrary. This is important when, for example, no taxonomy assignment can be made because no blast result is returned. If a sequence is split into three fragments, and only one returns a blast hit, that sequence would be considered non-chimeric. This is because there is no evidence (i.e., contradictory blast assignments) for the sequence being chimeric. This script can be run by the following command, where the resulting data is written to the directory "identify_chimeras/" and using default parameters (e.g. chimera detection method ("-m blast_fragments"), number of fragments ("-n 3"), taxonomy depth ("-d 4") and maximum E-value ("-e 1e-30")):""","""identify_chimeric_sequences.py -i repr_set_seqs.fasta -t taxonomy_assignment.txt -r ref_seq_set.fna -o identify_chimeras/"""))
+script_info['output_description']="""The result of identify_chimeric_seqs.py is a text file that identifies which sequences are chimeric."""
+script_info['required_options']=[options_lookup['fasta_as_primary_input']]
 
 chimera_detection_method_choices = ['blast_fragments']
 
-optional_options = [\
+script_info['optional_options']=[\
     make_option('-t', '--id_to_taxonomy_fp',
         help='Path to tab-delimited file mapping sequences to assigned '
          'taxonomy. Each assigned taxonomy is provided as a comma-separated '
@@ -76,16 +77,12 @@ optional_options = [\
     make_option('-o', '--output_fp',
         help='Path to store output [derived from input_seqs_fp]')
 ]
+script_info['version'] = __version__
 
 def main():
     """Run chimera checker with given options>"""
 
-    option_parser, opts, args = parse_command_line_parameters(
-      script_description=script_description,
-      script_usage=script_usage,
-      version=__version__,
-      required_options=required_options,
-      optional_options=optional_options)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     #additional option checks
     if opts.chimera_detection_method == 'blast_fragments':
@@ -102,7 +99,7 @@ def main():
          % opts.num_fragments)
 
     verbose = opts.verbose #not used yet ...
-    input_seqs_fp = opts.input_seqs_fp
+    input_seqs_fp = opts.input_fasta_fp
     id_to_taxonomy_fp = opts.id_to_taxonomy_fp
     reference_seqs_fp = opts.reference_seqs_fp
     chimera_detection_method = opts.chimera_detection_method
