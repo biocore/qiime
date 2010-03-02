@@ -92,7 +92,7 @@ options_lookup = get_options_lookup()
 
 script_info = {}
 script_info['script_description'] = \"\"\" \"\"\"
-script_info['script_usage'] = \"\"\" \"\"\"
+script_info['script_usage'] = [("","","")]
 script_info['required_options'] = [\\
  # Example required option
  #make_option('-i','--input_dir',help='the input directory'),\\
