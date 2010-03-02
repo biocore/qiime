@@ -33,7 +33,7 @@ script_info['script_description']="""Once the batch alpha diversity files have b
 This script creates an html file of rarefaction plots based on the supplied rarefaction files in the folder given (-i) from make_rarefaction_averages.py. The user may also supply optional arguments like an image type (-i), and a resolution (-d)."""
 script_info['script_usage']=[]
 script_info['script_usage'].append(("""Default Example:""","""For generated rarefaction plots using the default parameters, including the mapping file and one rarefaction file, you can use the following command:""","""make_rarefaction_plots.py -r chao1/"""))
-script_info['script_usage'].append(("""Specify Image Type and Resolution:""","""Optionally, you can change the resolution ("-d") and the type of image created ("-i"), by using the following command:""","""make_rarefaction_plots.py -i chao1/ -d 180 -i pdf"""))
+script_info['script_usage'].append(("""Specify Image Type and Resolution:""","""Optionally, you can change the resolution ("-d") and the type of image created ("-i"), by using the following command:""","""make_rarefaction_plots.py -i chao1/ -d 180 -p pdf"""))
 script_info['output_description']="""The result of this script produces a folder and within that folder there are sub-folders for each data file (metric) supplied as input. Within the sub-folders, there will be images for each of the categories specified by the user."""
 script_info['required_options']=[\
 make_option('-i', '--input_dir', help='name of folder containing rarefaction files, takes output from make_rarefaction_data.py [REQUIRED]')
