@@ -476,6 +476,10 @@ def build_usage_lines(required_options,
     line1 = 'usage: %prog [options] ' + '{%s}' %\
      ' '.join(['%s %s' % (str(ro),ro.dest.upper())\
                for ro in required_options])
+    usage_examples = []
+    for usage_example in script_usage:
+        usage_examples.append('%s: %s\n %s' % usage_example)
+    usage_examples = '\n\n'.join(usage_examples)
     lines = (line1,
              '', # Blank line
              optional_input_line,
@@ -483,10 +487,10 @@ def build_usage_lines(required_options,
              '', # Blank line
              script_description,
              '', # Blank line
-             'Example usage:',
-             ' Print help message and exit:',
-             '  %prog -h',
-             script_usage)
+             'Example usage: ',\
+             'Print help message and exit',
+             ' %prog -h\n',
+             usage_examples)
     return '\n'.join(lines)
 
 def set_parameter(key,kwargs,default=None):
