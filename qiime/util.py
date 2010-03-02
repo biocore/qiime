@@ -409,7 +409,7 @@ def get_options_lookup():
       help='path to the input OTU map (i.e., the output from pick_otus.py)')
     result['log_fp'] =\
      make_option('-l','--log_fp',help='path to write the log file')
-    result['fasta'] =\
+    result['input_fasta'] =\
      make_option('-f','--input_fasta_fp',help='path to the input fasta file')
     result['output_dir'] =\
      make_option('-o','--output_dir',help='path to the output directory')
