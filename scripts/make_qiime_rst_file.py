@@ -12,7 +12,7 @@ __email__ = "jesse.stombaugh@colorado.edu"
 __status__ = "Pre-release"
 
 
-from qiime.util import parse_command_line_parameters
+from qiime.util import parse_command_line_parameters, get_options_lookup
 from optparse import make_option
 from subprocess import Popen, PIPE, STDOUT
 import os
@@ -20,6 +20,8 @@ from string import replace
 import types
 import re
 from sys import exit, stderr
+
+options_lookup = get_options_lookup()
 
 rst_text= \
 '''\
@@ -51,26 +53,22 @@ rst_text= \
 
 '''
 
-
-script_description = """This script will take a script file and convert the \
+script_info={}
+script_info['brief_description']="""Make Sphinx RST file"""
+script_info['script_description'] = """This script will take a script file and convert the \
 usage strings and options to generate a documentation .rst file."""
+script_info['script_usage']=[]
+script_info['script_usage'].append(("""Example:""","""""","""make_qiime_rst_file.py -i make_2d_plots.py -o doc/"""))
+script_info['version'] = __version__
 
-script_usage = """\
-Example:
-$ make_qiime_rst_file.py -i make_2d_plots.py -o doc/
-"""
-
-required_options = [\
+script_info['required_options'] = [\
  # Example required option
  make_option('-i','--input_script',help='This is the input script for which to \
  make a .rst file'),
- make_option('-o','--output_dir',help='the output directory [default: %default]')
+ options_lookup['output_dir']
 ]
 
-optional_options = [\
- # Example optional option
- #make_option('-o','--output_dir',help='the output directory [default: %default]')
-]
+script_info['optional_options'] = []
 
 
 
@@ -81,7 +79,7 @@ def convert_py_file_to_link(input_str):
     if python_script_names:
         for i in python_script_names:
             individual_script_name=os.path.splitext(i)
-            script_w_link=m.sub('`'+individual_script_name[0] + ' <./' + individual_script_name[0] + '.html>`_', input_str)
+            script_w_link=m.sub('`'+ i + ' <./' + individual_script_name[0] + '.html>`_', input_str)
         
         return script_w_link
     else:
@@ -90,12 +88,7 @@ def convert_py_file_to_link(input_str):
 
 
 def main():
-    option_parser, opts, args = parse_command_line_parameters(
-      script_description=script_description,
-      script_usage=script_usage,
-      version=__version__,
-      required_options=required_options,
-      optional_options=optional_options)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
 
 
     #Determine if the input is a directory containing python scripts or a single
@@ -147,8 +140,8 @@ def main():
             
                 
             inputs='\t**[REQUIRED]**\n\t\t\n'
-
-            for i in script.required_options:
+            
+            for i in script.script_info['required_options']:
                 # when no default is provided in the call to make_option,
                 # the value of i.default is a tuple -- this try/except
                 # handles the diff types that i.default can be
@@ -172,7 +165,7 @@ def main():
                 inputs=inputs+ '\t' + str(cmd_arg) + '\n\t\t' + new_help_str + '\n'
     
             inputs=inputs + '\t\n\t**[OPTIONAL]**\n\t\t\n'
-            for i in script.optional_options:
+            for i in script.script_info['optional_options']:
                 # when no default is provided in the call to make_option,
                 # the value of i.default is a tuple -- this try/except
                 # handles the diff types that i.default can be
