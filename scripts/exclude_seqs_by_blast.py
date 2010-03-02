@@ -68,10 +68,7 @@ script_info['required_options']=[\
         help="The path to a FASTA file to BLAST against"),
  make_option("-o","--outputfilename",dest='outputfilename',\
         default = None,\
-        help=""" The base path/filename to save results.  Sequences passing the
-        screen, failing the screen, raw BLAST results and the log will be saved
-        to your filename + '.screened', '.excluded', '.raw_blast_results', and
-        '.sequence_exclusion_log' respectively.""")
+        help=""" The base path/filename to save results. Sequences passing the screen, failing the screen, raw BLAST results and the log will be saved to your filename + '.screened', '.excluded', '.raw_blast_results', and '.sequence_exclusion_log' respectively.""")
 ]
 script_info['optional_options']=[\
     make_option("-e","--e_value",type='float',dest='e_value',\
@@ -86,10 +83,7 @@ script_info['optional_options']=[\
         help="Working dir for BLAST [DEFAULT: %default]"),\
     make_option("-M","--max_hits",type='int',dest='max_hits',\
         default = 100,\
-        help="""Max hits parameter for BLAST.  CAUTION: Because filtering on
-        alignment percentage occurs after BLAST, a max hits value of 1 in
-        combination with an alignment percent filter could miss valid
-        contaminants. [DEFAULT: %default] """),\
+        help="""Max hits parameter for BLAST. CAUTION: Because filtering on alignment percentage occurs after BLAST, a max hits value of 1 in combination with an alignment percent filter could miss valid contaminants. [DEFAULT: %default]"""),\
     make_option("-W","--word_size",type='int',dest='wordsize',\
         default = 28,\
         help="Word size to use for BLAST search [DEFAULT: %default]")
