@@ -23,23 +23,21 @@ from cogent.core.alignment import SequenceCollection
 from qiime.util import parse_command_line_parameters
 from qiime.pyronoise import  pyroNoise_otu_picker
 
-script_description = """Denoise a flowgram file (a .sff.txt, the output of sffinfo)."""
+script_info={}
+script_info['brief_description']="""Denoise a flowgram file"""
+script_info['script_description']="""This script will denoise a flowgram file in  .sff.txt format, which is the output of sffinfo."""
+script_info['script_usage']=[]
+script_info['script_usage'].append(("""Example:""","""Denoise flowgrams in file 454Reads.sff.txt:""","""denoise.py -i 454Reads.sff.txt"""))
+script_info['script_usage'].append(("""Multi-core Example:""","""Denoise flowgrams in file 454Reads.sff.txt using 2 cores on your machine in parallel (requires mpirun):""","""denoise.py -n 2 -i 454Reads.sff.txt"""))
+script_info['output_description']="""This script results in a OTU mapping file along with a sequence file of denoised (FASTA-format). Note that the sequences coming from denoising are no real OTUs, and have to be sent to pick_otus.py if the users wishes to have a defined similarity threshold. """
 
-script_usage = """
- Denoise flowgrams in file 454Reads.sff.txt:
-   pyronoise.py -i 454Reads.sff.txt 
-
- Denoise flowgrams in file 454Reads.sff.txt using 2 cores
- on your machine in parallel (requires mpirun):
-    pyronoise.py -n 2 -i 454Reads.sff.txt"""
-
-required_options = [\
+script_info['required_options'] = [\
     make_option('-i','--input_file', action='store',
                 type='string', dest='sff_fp',
                 help='path to flowgram file (*.sff.txt)')
     ]
 
-optional_options = [\
+script_info['optional_options'] = [\
     make_option('-o','--output_dir', action='store',
                 type='string', dest='output_dir',
                 help='path to output directory '+
@@ -67,14 +65,11 @@ optional_options = [\
                 default=1)
     ]
 
+script_info['version'] = __version__
+
 def main():
     """run PyroNoise on input flowgrams"""
-    option_parser, opts, args = parse_command_line_parameters(
-      script_description=script_description,
-      script_usage=script_usage,
-      version=__version__,
-      required_options=required_options,
-      optional_options=optional_options)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     if (not opts.sff_fp or (opts.sff_fp and not exists(opts.sff_fp))):
         option_parser.error(('Flowgram file path does not exist:\n %s \n'+\
