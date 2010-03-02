@@ -85,26 +85,24 @@ def parse_command_line_parameters():
      
     return opts, args
 
-script_block = """from qiime.util import parse_command_line_parameters, get_options_lookup
-from optparse import make_option
+script_block = """from optparse import make_option
+from qiime.util import parse_command_line_parameters, get_options_lookup
 
 options_lookup = get_options_lookup()
 
-script_description = \"\"\" \"\"\"
-
-script_usage = \"\"\" \"\"\"
-
-required_options = [\\
+script_info = {}
+script_info['script_description'] = \"\"\" \"\"\"
+script_info['script_usage'] = \"\"\" \"\"\"
+script_info['required_options'] = [\\
  # Example required option
  #make_option('-i','--input_dir',help='the input directory'),\\
  #options_lookup['fasta']
 ]
-
-optional_options = [\\
+script_info['optional_options'] = [\\
  # Example optional option
  #make_option('-o','--output_dir',help='the output directory [default: %default]'),\\
 ]
-"""
+script_info['version'] = __version__"""
 
 header_block =\
 """#!/usr/bin/env python
@@ -151,12 +149,8 @@ if __name__ == "__main__":
     elif script:
         lines.append(script_block)
         lines += ['','','','def main():',\
-         '    option_parser, opts, args = parse_command_line_parameters(',\
-         '      script_description=script_description,',\
-         '      script_usage=script_usage,',\
-         '      version=__version__,',\
-         '      required_options=required_options,',\
-         '      optional_options=optional_options)',\
+         '    option_parser, opts, args =\\',\
+         '       parse_command_line_parameters(**script_info)',\
          '','',\
          'if __name__ == "__main__":',\
          '    main()']

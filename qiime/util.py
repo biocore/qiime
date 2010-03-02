@@ -489,21 +489,65 @@ def build_usage_lines(required_options,
              script_usage)
     return '\n'.join(lines)
 
-def parse_command_line_parameters(script_description,\
-    script_usage,\
-    version,\
-    required_options=None,
-    optional_options=None,
-    suppress_verbose=False,
-    disallow_positional_arguments=True,
-    help_on_no_arguments=True,
-    optional_input_line = '[] indicates optional input (order unimportant)',
-    required_input_line = '{} indicates required input (order unimportant)'):
+def set_parameter(key,kwargs,default=None):
+    try:
+        return kwargs[key]
+    except KeyError:
+        return default
+        
+def set_required_parameter(key,kwargs):
+    try:
+        return kwargs[key]
+    except KeyError:
+        raise KeyError,\
+         "parse_command_line_parameters requires value for %s" % key
+        
+def parse_command_line_parameters(**kwargs):
     """ Constructs the OptionParser object and parses command line arguments
+    
+        parse_command_line_parameters takes a dict of objects via kwargs which
+         it uses to build command line interfaces according to QIIME's 
+         standards. The currently supported options are listed below with 
+         their default values. If no default is provided, the option is 
+         required.
+        
+        script_description
+        script_usage
+        version
+        required_options=None
+        optional_options=None
+        suppress_verbose=False
+        disallow_positional_arguments=True
+        help_on_no_arguments=True
+        optional_input_line = '[] indicates optional input (order unimportant)'
+        required_input_line = '{} indicates required input (order unimportant)'
+        
+       These values can either be passed directly, as:
+        parse_command_line_paramters(script_description="My script",\
+                                     script_usage=[('Print help','%prog -h')],\
+                                     version=1.0)
+                                     
+       or they can be passed via a pre-constructed dict, as:
+        d = {'script_description'="My script",\
+             'script_usage'=[('Print help','%prog -h')],\
+             'version'=1.0}
+        parse_command_line_paramters(**d)
+    
     """
-    # Get the options, or empty lists if none were provided.
-    required_options = required_options or []
-    optional_options = optional_options or []
+    # Get the options, or defaults if none were provided.
+    script_description = set_required_parameter('script_description',kwargs)
+    script_usage = set_required_parameter('script_usage',kwargs)
+    version = set_required_parameter('version',kwargs)
+    required_options = set_parameter('required_options',kwargs,[])
+    optional_options = set_parameter('optional_options',kwargs,[])
+    suppress_verbose = set_parameter('suppress_verbose',kwargs,False)
+    disallow_positional_arguments =\
+     set_parameter('disallow_positional_arguments',kwargs,True)
+    help_on_no_arguments = set_parameter('help_on_no_arguments',kwargs,True)
+    optional_input_line = set_parameter('optional_input_line',kwargs,\
+        '[] indicates optional input (order unimportant)')
+    required_input_line = set_parameter('required_input_line',kwargs,\
+        '{} indicates required input (order unimportant)')
     
     # Build the usage and version strings
     usage = build_usage_lines(required_options,script_description,script_usage,\
