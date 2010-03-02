@@ -11,7 +11,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Pre-release"
 
-from qiime.util import parse_command_line_parameters
+from qiime.util import parse_command_line_parameters, get_options_lookup
 from optparse import make_option
 from os import makedirs
 from qiime.util import load_qiime_config, raise_error_on_parallel_unavailable
@@ -21,17 +21,25 @@ from qiime.workflow import run_qiime_alpha_rarefaction, print_commands,\
 
 qiime_config = load_qiime_config()
 
-script_description = """A workflow script for performing alpha rarefaction.
-
+#alpha_rarefaction.py
+options_lookup = get_options_lookup()
+script_info={}
+script_info['brief_description']="""A workflow script for performing alpha rarefaction"""
+script_info['script_description']="""
 The steps performed by this script are:
-    1) Generate rarefied OTU tables;
-    2) Compute alpha diversity metrics for each rarefied OTU table;
-    3) Collate alpha diversity results;
-    4) Generate alpha rarefaction plots."""
 
-script_usage = """alpha_rarefaction.py -o rare1 -i otu_table.txt -t inseqs1_rep_set.tre -m inseqs1_mapping.txt -p custom_parameters.txt"""
+1. Generate rarefied OTU tables;
 
-required_options = [\
+2. Compute alpha diversity metrics for each rarefied OTU table;
+
+3. Collate alpha diversity results;
+
+4. Generate alpha rarefaction plots.
+"""
+script_info['script_usage']=[]
+script_info['script_usage'].append(("""Example""","""""","""alpha_rarefaction.py -o rare1 -i otu_table.txt -t inseqs1_rep_set.tre -m inseqs1_mapping.txt -p custom_parameters.txt"""))
+script_info['output_description']="""The results of this script is a folder ("rare1/") containing rarefied otu tables, alpha-diversity for each otu table, a file containing the results from collating the alpha-diversity results and a folder containing the rarefaction plots."""
+script_info['required_options']=[\
  make_option('-i','--otu_table_fp',\
             help='the input fasta file [REQUIRED]'),\
  make_option('-m','--mapping_fp',\
@@ -39,10 +47,8 @@ required_options = [\
  make_option('-o','--output_dir',\
             help='the output directory [REQUIRED]'),\
  make_option('-p','--parameter_fp',\
-            help='path to the parameter file [REQUIRED]')
-]
-
-optional_options = [\
+            help='path to the parameter file [REQUIRED]')]
+script_info['optional_options']=[\
  make_option('-n','--num_steps',type='int',\
      help='number of steps (or rarefied OTU table sizes) to make between '+\
       'min and max counts [default: %default]',default=10),\
@@ -58,16 +64,11 @@ optional_options = [\
         help='Run in parallel where available [default: %default]'),\
  make_option('-t','--tree_fp',\
             help='path to the tree file [default: %default; '+\
-            'REQUIRED for phylogenetic measures]')
-]
+            'REQUIRED for phylogenetic measures]')]
+script_info['version'] = __version__
 
 def main():
-    option_parser, opts, args = parse_command_line_parameters(
-      script_description=script_description,
-      script_usage=script_usage,
-      version=__version__,
-      required_options=required_options,
-      optional_options=optional_options)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
     verbose = opts.verbose
     
     otu_table_fp = opts.otu_table_fp
@@ -77,6 +78,7 @@ def main():
     num_steps = opts.num_steps
     verbose = opts.verbose
     print_only = opts.print_only
+
     
     parallel = opts.parallel
     if parallel: raise_error_on_parallel_unavailable()
