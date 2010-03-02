@@ -14,7 +14,7 @@ __status__ = "Pre-release"
 
 from optparse import make_option
 from qiime.util import parse_command_line_parameters,\
-    load_qiime_config
+    load_qiime_config, get_options_lookup, get_qiime_project_dir
 from qiime.parallel.pick_otus_blast import get_job_commands,\
     get_poller_command
 from qiime.parallel.util import split_fasta, get_random_job_prefix,\
@@ -22,21 +22,24 @@ from qiime.parallel.util import split_fasta, get_random_job_prefix,\
     build_filepaths_from_filepaths, write_filepaths_to_file,\
     write_merge_map_file_pick_otus
 from os import popen, system, makedirs, mkdir
-from os.path import split, splitext
+from os.path import split, splitext, join
 from subprocess import check_call, CalledProcessError
 from cogent.app.util import get_tmp_filename
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 
-script_description = """Run a parallel version of pick_otus.py using Blast"""
-
-script_usage = """Pick OTUs by blasting inseqs.fasta against refseqs.fasta and write the output to the out directory.
-
-python ~/code/Qiime/scripts/parallel_pick_otus_blast.py -i inseqs.fasta -r refseqs.fasta -o out/
-"""
-
 qiime_config = load_qiime_config()
+options_lookup = get_options_lookup()
 
-required_options = [\
+script_info={}
+script_info['brief_description']="""Parallel pick otus using BLAST"""
+script_info['script_description']="""This script performs like the pick_otus.py script, but is intended to make use of multicore/multiprocessor environments to perform analyses in parallel."""
+script_info['script_usage']=[]
+script_info['script_usage'].append(("""Example""","""Pick OTUs by blasting inseqs.fasta against refseqs.fasta and write the output to the out/ directory.""","""parallel_pick_otus_blast.py -i inseqs.fasta -r refseqs.fasta -o out/"""))
+script_info['output_description']="""The output consists of two files (i.e. seqs_otus.txt and seqs_otus.log). The .txt file is composed of tab-delimited lines, where the first field on each line corresponds to an (arbitrary) cluster identifier, and the remaining fields correspond to sequence identifiers assigned to that cluster. Sequence identifiers correspond to those provided in the input FASTA file.
+
+The resulting .log file contains a list of parameters passed to this script along with the output location of the resulting .txt file."""
+
+script_info['required_options'] = [\
     make_option('-i','--input_fasta_fp',action='store',\
            type='string',help='full path to '+\
            'input_fasta_fp'),\
@@ -44,7 +47,7 @@ required_options = [\
            type='string',help='path to store output files')\
 ]
 
-optional_options = [\
+script_info['optional_options'] = [\
     make_option('-e','--max_e_value',\
           help='Max E-value '+\
           '[default: %default]', default='1e-10'),\
@@ -52,10 +55,6 @@ optional_options = [\
     make_option('-s','--similarity',action='store',\
           type='float',help='Sequence similarity '+\
           'threshold [default: %default]',default=0.97),\
-
-    make_option('-p','--pick_otus_fp',
-            help='path to pick_otus.py [default: %default]',\
-            default=qiime_config['pick_otus_fp']),\
           
     make_option('-r','--refseqs_fp',action='store',\
            type='string',help='full path to '+\
@@ -65,67 +64,28 @@ optional_options = [\
            type='string',help='database to blast against '+\
            '[default: %default]'),\
           
-    # Define parallel-script-specific parameters
-    make_option('-N','--align_seqs_fp',action='store',\
+    #Define parallel-script-specific parameters
+    make_option('-N','--pick_otus_fp',action='store',\
            type='string',help='full path to '+\
-           'qiime/align_seqs.py [default: %default]',\
-           default=qiime_config['align_seqs_fp']),\
+           'scripts/pick_otus.py [default: %default]',\
+           default=join(get_qiime_project_dir(),'scripts','pick_otus.py')),\
         
-    make_option('-O','--jobs_to_start',type='int',\
-            help='Number of jobs to start [default: %default]',default=24),\
-           
-    make_option('-P','--poller_fp',action='store',\
-           type='string',help='full path to '+\
-           'qiime/parallel/poller.py [default: %default]',\
-           default=qiime_config['poller_fp']),\
-           
-    make_option('-R','--retain_temp_files',action='store_true',\
-           help='retain temporary files after runs complete '+\
-           '(useful for debugging) [default: %default]',\
-           default=False),\
-
-    make_option('-S','--suppress_submit_jobs',action='store_true',\
-            help='Only split input and write commands file - don\'t submit '+\
-            'jobs [default: %default]',default=False),\
-
-    make_option('-T','--poll_directly',action='store_true',\
-            help='Poll directly for job completion rather than running '+\
-            'poller as a separate job. If -T is specified this script will '+\
-            'not return until all jobs have completed. [default: %default]',\
-            default=False),\
-            
-    make_option('-U','--cluster_jobs_fp',
-            help='path to cluster_jobs.py script ' +\
-            ' [default: %default]',\
-            default=qiime_config['cluster_jobs_fp']),\
-
-    make_option('-W','--suppress_polling',action='store_true',
-           help='suppress polling of jobs and merging of results '+\
-           'upon completion [default: %default]',\
-           default=False),\
-           
-    make_option('-X','--job_prefix',help='job prefix '+\
-           '[default: ALIGN_ + 4 random chars]'),\
-
-    make_option('-Y','--python_exe_fp',
-           help='full path to python executable [default: %default]',\
-           default=qiime_config['python_exe_fp']),\
-        
-    make_option('-Z','--seconds_to_sleep',type='int',\
-            help='Number of seconds to sleep between checks for run '+\
-            ' completion when polling runs [default: %default]',default=60)\
+ options_lookup['jobs_to_start'],\
+ options_lookup['poller_fp'],\
+ options_lookup['retain_temp_files'],\
+ options_lookup['suppress_submit_jobs'],\
+ options_lookup['poll_directly'],\
+ options_lookup['cluster_jobs_fp'],\
+ options_lookup['suppress_polling'],\
+ options_lookup['job_prefix'],\
+ options_lookup['python_exe_fp'],\
+ options_lookup['seconds_to_sleep']\
 ]
 
-
-
+script_info['version'] = __version__
 
 def main():
-    option_parser, opts, args = parse_command_line_parameters(
-      script_description=script_description,
-      script_usage=script_usage,
-      version=__version__,
-      required_options=required_options,
-      optional_options=optional_options)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     if opts.blast_db == None and opts.refseqs_fp == None:
         option_parser.error('Either blast_db or refseqs_fp must be provided.')
