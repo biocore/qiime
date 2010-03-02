@@ -21,6 +21,7 @@ from qiime.workflow import run_beta_diversity_through_3d_plot, print_commands,\
 
 
 #beta_diversity_through_3d_plots.py
+qiime_config = load_qiime_config()
 options_lookup = get_options_lookup()
 script_info={}
 script_info['brief_description']="""A workflow script for computing beta diversity distance matrices and the corresponding 3D plots"""
@@ -69,55 +70,6 @@ script_info['optional_options']=[\
         dest='parallel',default=False,\
         help='Run in parallel where available [default: %default]')]
 script_info['version'] = __version__
-
-'''
-script_description = """A workflow script for computing beta diversity distance matrices and the corresponding 3D plots
-
-REQUIRED:
- You must edit the following parameters in a custom parameters file:
-  beta_diversity:metric
-  
- This is the value that would be passed to beta_diversity.py via -m/--metric."""
-
-script_usage = """ The following steps are performed by the command below:
-  1) Compute a beta diversity distance matrix;
-  2) Peform a principle coordinates analysis on the result of Step 1;
-  3) Generate a 3D prefs file for optimized coloring of continuous variables;
-  4) Generate a 3D plot for all mapping fields with colors optimized for 
-   continuous data;
-  5) Generate a 3D plot for all mapping fields with colors optimized for 
-   discrete data.
-python beta_diversity_through_3d_plots.py -i otu_table.txt -o bdiv1 -t inseqs1_rep_set.tre -m inseqs1_mapping.txt -p custom_parameters.txt"""
-
-qiime_config = load_qiime_config()
-
-required_options = [\
- make_option('-i','--otu_table_fp',\
-            help='the input fasta file [REQUIRED]'),\
- make_option('-m','--mapping_fp',\
-            help='path to the mapping file [REQUIRED]'),\
- make_option('-o','--output_dir',\
-            help='the output directory [REQUIRED]'),\
- make_option('-p','--parameter_fp',\
-            help='path to the parameter file [REQUIRED]')
-]
-
-optional_options = [\
- make_option('-t','--tree_fp',\
-            help='path to the tree file [default: %default; '+\
-            'REQUIRED for phylogenetic measures]'),\
- make_option('-f','--force',action='store_true',\
-        dest='force',help='Force overwrite of existing output directory'+\
-        ' (note: existing files in output_dir will not be removed)'+\
-        ' [default: %default]'),\
- make_option('-w','--print_only',action='store_true',\
-        dest='print_only',help='Print the commands but don\'t call them -- '+\
-        'useful for debugging [default: %default]',default=False),\
- make_option('-a','--parallel',action='store_true',\
-        dest='parallel',default=False,\
-        help='Run in parallel where available [default: %default]')
-]'''
-
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
