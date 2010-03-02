@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2010, The QIIME project"
-__credits__ = ["Rob Knight"]
+__credits__ = ["Rob Knight","Justin Kuczynski"]
 __license__ = "GPL"
 __version__ = "1.0-dev"
 __maintainer__ = "Rob Knight"
@@ -17,21 +17,20 @@ from optparse import make_option
 from sys import stdout
 from qiime.add_taxa import rewrite_otu_table_with_taxonomy
 
-script_description = """Adds taxa to OTU table that lacks them. """
-
-script_usage = """Add taxa to otu file from otus.txt from file taxa.txt, writing result to stdout:
-
-add_taxa.py -i otus.txt -t taxa.txt
-"""
-
-required_options = [\
+script_info={}
+script_info['brief_description']="""Add taxa to OTU table"""
+script_info['script_description']="""This script adds taxa to an OTU table."""
+script_info['script_usage']=[]
+script_info['script_usage'].append(("""Example:""","""Add taxa to otu file from otus.txt from file taxa.txt:""","""add_taxa.py -i otus.txt -t taxa.txt"""))
+script_info['output_description']="""The result of this script is written to stdout."""
+script_info['required_options']=[\
     make_option('-i','--otu_file',action='store',\
         type='string',dest='otu_fp',help='Path to read otu file'),
     make_option('-t','--taxonomy_file',action='store',\
         type='string',dest='taxon_fp',help='Path to read taxonomy file')
 ]
 
-optional_options = [\
+script_info['optional_options']=[\
     make_option('-o','--output_file',action='store',\
         type='string',dest='out_fp',help='Path to write '+\
         'output file [default: stdout]'),
@@ -39,14 +38,11 @@ optional_options = [\
         type='string',dest='id_map_fp',help='Path to read '+\
         'seq id to otu map file [default: %default]')
 ]
+script_info['version'] = __version__
+
 
 def main():
-    option_parser, opts, args = parse_command_line_parameters(
-      script_description=script_description,
-      script_usage=script_usage,
-      version=__version__,
-      required_options=required_options,
-      optional_options=optional_options)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     if opts.out_fp:
         outfile = open(output_fname, 'w')
