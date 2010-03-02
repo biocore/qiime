@@ -15,17 +15,20 @@ from optparse import make_option
 from qiime.parallel.poller import poller, get_function_handle
 from qiime.util import parse_command_line_parameters
 
-script_description = """ """
+script_info={}
+script_info['brief_description']="""Poller for parallel QIIME scripts."""
+script_info['script_description'] = """Script for polling parallel runs to check completion. See Qiime/scripts/poller_examples.py for example usage."""
+script_info['script_usage'] = []
+script_info['version'] = __version__
+script_info['output_description']= "No output created."
 
-script_usage = """See Qiime/scripts/poller_examples.py"""
-
-required_options = [\
+script_info['required_options'] = [\
  make_option('-f','--check_run_complete_file',\
            help='path to file containing a list of files that must exist to' +\
            ' declare a run complete [REQUIRED]')
 ]
 
-optional_options = [\
+script_info['optional_options'] = [\
  make_option('-r','--check_run_complete_f',\
            help='function which returns True when run is completed '+\
            '[default: %default]',\
@@ -49,12 +52,7 @@ optional_options = [\
 
 
 def main():
-    option_parser, opts, args = parse_command_line_parameters(
-      script_description=script_description,
-      script_usage=script_usage,
-      version=__version__,
-      required_options=required_options,
-      optional_options=optional_options)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
     poller(get_function_handle(opts.check_run_complete_f),\
         get_function_handle(opts.process_run_results_f),\
         get_function_handle(opts.clean_up_f),\

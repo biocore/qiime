@@ -12,12 +12,12 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Pre-release"
 
 from optparse import make_option
-from os.path import split, splitext
+from os.path import split, splitext, join
 from os import popen, system, makedirs, mkdir
 from subprocess import check_call, CalledProcessError
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from qiime.util import load_qiime_config, parse_command_line_parameters,\
-    get_options_lookup
+    get_options_lookup, get_qiime_project_dir
 from pynast.util import pairwise_alignment_methods
 from qiime.parallel.util import split_fasta, get_random_job_prefix,\
     write_jobs_file, submit_jobs, compute_seqs_per_file,\
@@ -28,15 +28,14 @@ from qiime.parallel.align_seqs_pynast import get_job_commands
 qiime_config = load_qiime_config()
 options_lookup = get_options_lookup()
 
-script_description = """ """
+script_info={}
+script_info['brief_description']="""Parallel sequence alignment using PyNAST"""
+script_info['script_description']="""A parallel wrapper for the align_seqs.py PyNAST option."""
+script_info['script_usage']=[]
+script_info['script_usage'].append(("""Example""","""Split the input file (-i) into five jobs (-O) to align against pynast_test_template.fasta (-t), submit the jobs to the cluster (default) and write the output (-o) to /home/caporaso/out:""","""parallel_align_seqs_pynast.py -i 10_seq.fasta -O 5 -t /data/pynast_test_template.fasta -o /home/caporaso/out"""))
+script_info['output_description']="""This results in a multiple sequence alignment (FASTA-formatted)."""
 
-script_usage = """Split the input file (-i) into five jobs (-O) to align against 
- pynast_test_template.fasta (-t), submit the jobs to the cluster (default)
- and write the output (-o) to /home/caporaso/out:
-
- parallel_align_seqs_pynast.py -i 10_seq.fasta -O 5 -t /data/pynast_test_template.fasta -o /home/caporaso/out"""
-
-required_options = [\
+script_info['required_options'] = [\
  options_lookup['fasta_as_primary_input'],\
  options_lookup['output_dir']
 ]
@@ -46,10 +45,10 @@ blast_db_default_help =\
  qiime_config['pynast_template_alignment_blastdb'] or \
  'created on-the-fly from template_alignment'
 
-optional_options = [\
+script_info['optional_options'] = [\
  make_option('-a','--pairwise_alignment_method',\
           type='choice',help='Method to use for pairwise alignments'+\
-          ' (applicable with -m pynast) [default: %default]',\
+          ' [default: %default]',\
           default='blast',choices=pairwise_alignment_method_choices),\
  make_option('-d','--blast_db',\
           dest='blast_db',help='Database to blast against'+\
@@ -65,8 +64,8 @@ optional_options = [\
           ' alignment [default: %default]',default=75.0),\
  make_option('-N','--align_seqs_fp',action='store',\
            type='string',help='full path to '+\
-           'qiime/align_seqs.py [default: %default]',\
-           default=qiime_config['align_seqs_fp']),\
+           'Qiime/scripts/align_seqs.py [default: %default]',\
+           default=join(get_qiime_project_dir(),'scripts','align_seqs.py')),\
  options_lookup['jobs_to_start'],\
  options_lookup['poller_fp'],\
  options_lookup['retain_temp_files'],\
@@ -79,26 +78,23 @@ optional_options = [\
  options_lookup['seconds_to_sleep']\
 ]
 
+script_info['version'] = __version__
+
 # pynast_template_alignment_fp is required only if it is not 
 # provided in qiime_config
 if qiime_config['pynast_template_alignment_fp']:
-    optional_options.append(make_option('-t','--template_fp',\
+    script_info['optional_options'].append(make_option('-t','--template_fp',\
       type='string',dest='template_fp',help='Filepath for '+\
       'template against [default: %default]',
       default=qiime_config['pynast_template_alignment_fp']))
 else:
-    required_options.append(make_option('-t','--template_fp',\
+    script_info['required_options'].append(make_option('-t','--template_fp',\
       type='string',dest='template_fp',\
       help='Filepath for template against',
       default=qiime_config['pynast_template_alignment_fp']))
 
 def main():
-    option_parser, opts, args = parse_command_line_parameters(
-      script_description=script_description,
-      script_usage=script_usage,
-      version=__version__,
-      required_options=required_options,
-      optional_options=optional_options)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     
     # create local copies of command-line options
