@@ -11,43 +11,35 @@ __maintainer__ = "Antonio Gonzalez Pena"
 __email__ = "antgonza@gmail.com"
 __status__ = "Pre-release"
  
-from qiime.util import parse_command_line_parameters
+from qiime.util import parse_command_line_parameters, get_options_lookup
 from optparse import make_option
 from qiime.principal_coordinates import pcoa
 from qiime.parse import parse_distmat
 
-script_description = """ Contains code for the pricipal coordinates analysis (PCoA).
+options_lookup = get_options_lookup()
 
-This module has the responsibility of calculating the PCoA coordinates of a distance matrix."""
-
-script_usage = """
-principal_coordinates.py -i unifrac_dist_mtx.txt -o unifrac_pcoa.txt
-"""
-
-required_options = [\
- make_option('-i', '--input_path',
-        help='input filepath. [REQUIRED]'),\
- make_option('-o', '--output_path',
-        help='output filepath. [REQUIRED]'),\
+script_info={}
+script_info['brief_description']="""Principal Coordinates Analysis (PCoA)"""
+script_info['script_description']="""Principal Coordinate Analysis (PCoA) is commonly used to compare groups of samples based on phylogenetic or count-based distance metrics (see section on beta_diversity.py)."""
+script_info['script_usage']=[]
+script_info['script_usage'].append(("""Example""","""For this script, the user supplies a distance matrix (i.e., resulting file from beta_diversity.py), along with the output filename (e.g. beta_div_coords.txt), as follows:""","""principal_coordinates.py -i beta_div.txt -o beta_div_coords.txt"""))
+script_info['output_description']="""The resulting output file consists of each component (columns) along with the loading for each sample (rows). Pairs of components can then be graphed to view the relationships between samples. The bottom of the output file contains the eigenvalues and % variation explained for each component."""
+script_info['required_options']=[\
+   options_lookup['otu_table_as_primary_input'],\
+   options_lookup['output_fp']\
 ]
-
-optional_options = [\
-]
+script_info['optional_options']=[]
+script_info['version'] = __version__
 
 def main():
-    option_parser, opts, args = parse_command_line_parameters(
-      script_description=script_description,
-      script_usage=script_usage,
-      version=__version__,
-      required_options=required_options,
-      optional_options=optional_options)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
       
-    infilepath = opts.input_path
+    infilepath = opts.otu_table_fp
     f = open(infilepath,'U')
     pcoa_res_string = pcoa(f)
     f.close()
 
-    f = open(opts.output_path, 'w')
+    f = open(opts.output_fp, 'w')
     f.write(pcoa_res_string)
     f.close()
 
