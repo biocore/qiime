@@ -22,8 +22,7 @@ script_info['script_description']="""To perform bootstrap, jackknife, and rarefa
 script_info['script_usage']=[]
 script_info['script_usage'].append(("""Example:""","""subsample otu_table.txt at 400 seqs/sample (-d), write results to a file (i.e. rarefaction_400_17.txt) (samples which have fewer than 400 sequences will be included without subsampleing, exactly as they appear in otu_table.txt""","""single_rarefaction.py -i otu_table.txt -o rarefaction_400_17.txt -d 400 --small_included"""))
 script_info['script_usage'].append(("""(naming convention implies that the depth is 200 seqs/sam, iteration 17 at that depth (18th file written, due to iter 0))""",'',''))
-script_info['output_description']="""The results of single_rarefaction.py consist of a single subsampled OTU table. The file has the same otu table format as the input otu_table.txt.
-note: if the output file would be empty, no file is written"""
+script_info['output_description']="""The results of single_rarefaction.py consist of a single subsampled OTU table. The file has the same otu table format as the input otu_table.txt. note: if the output file would be empty, no file is written"""
 
 
 script_info['required_options']=[
@@ -37,14 +36,11 @@ script_info['required_options']=[
 script_info['optional_options']=[
 make_option('--small_included', dest='small_included', default=False,
     action="store_true",
-    help="""samples containing fewer seqs than the rarefaction
-level are included in the output but not rarefied [default: %default]"""),
+    help="""samples containing fewer seqs than the rarefaction level are included in the output but not rarefied [default: %default]"""),
 
 make_option('--lineages_included', dest='lineages_included', default=False,
     action="store_true",
-    help="""output rarefied otu tables will include taxonomic (lineage)
-information for each otu, if present in input otu table
-[default: %default]"""),
+    help="""output rarefied otu tables will include taxonomic (lineage) information for each otu, if present in input otu table [default: %default]"""),
 ]
 script_info['version'] = __version__
 
