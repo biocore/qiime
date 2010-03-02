@@ -20,10 +20,10 @@ Contents
 .. toctree::
    :maxdepth: 1
 
-   doc_introduction.rst
-   doc_input_files.rst
-   doc_analysis_parameters.rst
-   doc_special_purpose.rst
-   doc_sra_submission.rst
+   doc_introduction
+   doc_input_files
+   doc_script_index
+   doc_special_purpose
+   doc_sra_submission
 
 
