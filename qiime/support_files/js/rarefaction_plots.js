@@ -21,18 +21,21 @@ function loadExternalFiles() {
 	graphNames.pop()
 	
 	var tablefile = getFile("rarefactionTable.txt");
-	var tablelines = tablefile.split("\n");
-	var current_header = "";
-	for(var i = 0; i < tablelines.length; i++)
+	if(tablefile)
 	{
-	    if(tablelines[i].match("^"+"#")=="#")
-	    {
-	        current_header = tablelines[i].split("#")[1];
-	        header.push(current_header)
-	        rarefaction_table[current_header] = new Array;
-        }
-        else
-            rarefaction_table[current_header].push(tablelines[i])
+	    var tablelines = tablefile.split("\n");
+    	var current_header = "";
+    	for(var i = 0; i < tablelines.length; i++)
+    	{
+    	    if(tablelines[i].match("^"+"#")=="#")
+    	    {
+    	        current_header = tablelines[i].split("#")[1];
+    	        header.push(current_header)
+    	        rarefaction_table[current_header] = new Array;
+            }
+            else
+                rarefaction_table[current_header].push(tablelines[i])
+    	}
 	}
 }
 
