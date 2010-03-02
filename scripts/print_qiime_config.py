@@ -18,9 +18,8 @@ script_info = {}
 script_info['brief_description']= """Print out the qiime config settings."""
 script_info['script_description'] = """A simple scripts that prints out the qiime config settings."""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("Example 1","""Print qiime config settings:""","""python print_qiime_config.py"""))
-script_info['required_options'] = []
-script_info['optional_options'] = []
+script_info['script_usage'].append(("Example 1","""Print qiime config settings:""","""print_qiime_config.py"""))
+script_info['output_description'] = """This prints the qiime_config to stdout."""
 script_info['version'] = __version__
 script_info['help_on_no_arguments'] = False
 
