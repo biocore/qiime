@@ -60,7 +60,6 @@ function makeOpsPanel() {
 	{
 	    htmllines +="<li>"
 		htmllines += "<a class=\"ops\" onmouseover=\"javascript:changeGraph(\'"+graphNames[i]+"\')\">"+graphNames[i].split("/")[1].split(".")[0]+"</a>";
-		htmllines += "<a class=\"ops\" onmouseout=\"javascript:changeGraph(\'"+graphNames[i]+"\')\" onmouseover=\"javascript:changeGraph(\'"+graphNames[i].split('.')[0]+"_legend."+graphNames[i].split('.')[1]+"\')\">   Legend</a>";
 		htmllines += "<br /></li>";
 	}
 	htmllines+= "</ul>";
