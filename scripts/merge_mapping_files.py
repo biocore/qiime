@@ -16,36 +16,29 @@ from qiime.util import parse_command_line_parameters
 from optparse import make_option
 from qiime.merge_mapping_files import merge_mapping_files, write_mapping_file
 
-script_description = """This script provides a convenient interface to merge mapping which contain data on different samples."""
-
-script_usage = """ Merge two mapping files into a new mapping file (merged_mapping.txt).
-  In cases where a mapping field is not provided for some samples, add the value 
-  'Data not collected'.
- merge_mapping_files.py -m inseqs1_mapping.txt,inseqs2_mapping.txt  -o merged_mapping.txt -n 'Data not collected'
-"""
-
-required_options = [\
+script_info={}
+script_info['brief_description']="""Merge mapping files"""
+script_info['script_description']="""This script provides a convenient interface for merging mapping files which contains data on different samples."""
+script_info['script_usage']=[]
+script_info['script_usage'].append(("""Example:""","""Merge two mapping files into a new mapping file (merged_mapping.txt). In cases where a mapping field is not provided for some samples, add the value 'Data not collected'.""",""" merge_mapping_files.py -m inseqs1_mapping.txt,inseqs2_mapping.txt  -o merged_mapping.txt -n 'Data not collected'"""))
+script_info['output_description']="""The result of this script is a merged mapping file (tab-delimited)."""
+script_info['required_options']=[\
  make_option('-m','--mapping_fps',\
          help='the input mapping files in a comma-separated list'),\
  make_option('-o','--output_fp',\
          help='the output mapping file to write'),
 ]
 
-optional_options = [\
+script_info['optional_options']=[\
  make_option('-n','--no_data_value',\
          help='value to represent missing data (i.e., when all '+\
          'fields are not defined in all mapping files) [default: %default]',\
          default='no_data'),\
 ]
-
+script_info['version'] = __version__
 
 def main():
-    option_parser, opts, args = parse_command_line_parameters(
-      script_description=script_description,
-      script_usage=script_usage,
-      version=__version__,
-      required_options=required_options,
-      optional_options=optional_options)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
       
     verbose = opts.verbose
     output_fp = opts.output_fp
