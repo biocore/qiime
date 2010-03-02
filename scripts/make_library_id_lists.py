@@ -18,27 +18,18 @@ from optparse import make_option
 from os.path import exists, join
 from os import makedirs
 
-
-script_description = """Makes a list of the ids corresponding to each library represented in the input
-fasta file. Assumes that the libraries are the output of split_libraries.py 
-and that they contain the 454 read id for each sequence as is standard in the
-split_libraries.py output. Produces a separate file for each library. These
-are used to retrieve the corresponding reads from the sff files for
-SRA deposition."""
-
-script_usage = """
-python make_library_id_lists.py {-i input_fasta_fp -o output_dir} [options]
-
-Example:
-\tpython make_library_id_lists.py -i seqs.fna -o /Users/rob/results
-"""
-
-required_options = [\
+script_info={}
+script_info['brief_description']="""Make library id lists"""
+script_info['script_description']="""Makes a list of the ids corresponding to each library represented in the input fasta file. Assumes that the libraries are the output of split_libraries.py and that they contain the 454 read id for each sequence as is standard in the split_libraries.py output. Produces a separate file for each library. These are used to retrieve the corresponding reads from the sff files for SRA deposition."""
+script_info['script_usage']=[]
+script_info['script_usage'].append(("""Example:""","""Create a list containing library ids for a fasta file (seqs.fna):""","""make_library_id_lists.py -i seqs.fna -o results/"""))
+script_info['output_description']="""This script produces a separate file for each library."""
+script_info['required_options']=[\
     make_option("-i","--input_fasta",dest='in_fasta',default = None,\
         help="The path to a FASTA file containing input sequences")
 ]
 
-optional_options = [\
+script_info['optional_options']=[\
     make_option("-s", "--screened_rep_seqs",dest="screened_rep_seqs",
         default=None,
         help="The path to a FASTA file containing screened representative seqs" +
@@ -56,16 +47,11 @@ optional_options = [\
     make_option("--debug", dest="debug", action="store_true",
         default=False, help="Show debug output.")
 ]
-
+script_info['version'] = __version__
 
 def main():
-    option_parser, opts, args = parse_command_line_parameters(
-        script_description=script_description,
-        script_usage=script_usage,
-        version=__version__,
-        required_options=required_options,
-        optional_options=optional_options)
-      
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
+
     options, args = option_parser.parse_args()
     if options.debug:
         print "PRODUCING DEBUG OUTPUT"
