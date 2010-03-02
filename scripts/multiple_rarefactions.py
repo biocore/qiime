@@ -30,8 +30,7 @@ script_info['required_options']=[
         help='input otu table filepath'),
 
     make_option('-o', '--output_path',
-        help='write output rarefied otu tables files to this dir ' +\
-        "makes dir if it doesn't exist"),
+        help="write output rarefied otu tables files to this dir makes dir if it doesn't exist"),
 
     make_option('-m', '--min', type=int,
     help='min seqs/sample'),
@@ -51,14 +50,11 @@ script_info['optional_options']=[
      
     make_option('--lineages_included', dest='lineages_included', default=False,
         action="store_true",
-          help="""output rarefied otu tables will include taxonomic (lineage)
-          information for each otu, if present in input otu table
-          [default: %default]"""),
+          help="""output rarefied otu tables will include taxonomic (lineage) information for each otu, if present in input otu table [default: %default]"""),
 
     make_option('--small_included', dest='small_included', default=False,
         action="store_true",
-        help="""samples containing fewer seqs than the rarefaction
-     level are included in the output but not rarefied [default: %default]""")
+        help="""samples containing fewer seqs than the rarefaction level are included in the output but not rarefied [default: %default]""")
 ]
 script_info['version'] = __version__
 
