@@ -18,25 +18,16 @@ from os.path import splitext
 from qiime.make_sra_submission import (write_xml_generic, 
     make_run_and_experiment, make_submission, make_study, make_sample)
 
-script_description = """Makes the submission xml files for SRA (study, experiment, etc.).
-
-Assumes simple tab-delimited text input (allowing examples/comments; produces
-xml output. """
-
-script_usage = """ Read the sample data from sample.txt, the study data from study.txt,
- and the submission data from submission.txt. Write out the corresponding
- XML files.
- 
- make_study_and_sample_xml.py -a sample.txt -t study.txt -u submission.txt
-
- Produces files study.xml, submission.xml, sample.xml (based on filenames of
- the .txt files) using the default xml templates.
-"""
-
-required_options = [\
-]
-
-optional_options = [\
+#make_sra_submission.py
+script_info={}
+script_info['brief_description']="""Makes SRA submission files (xml-format)"""
+script_info['script_description']="""This script makes the submission xml files for SRA (study, experiment, etc.).  This script assumes that there is a simple tab-delimited text input (allowing for examples and comments)."""
+script_info['script_usage']=[]
+script_info['script_usage'].append(("""Example:""","""Read the sample data from sample.txt, the study data from study.txt, and the submission data from submission.txt, which writes out the corresponding XML files.""","""make_sra_submission.py -a sample.txt -t study.txt -u submission.txt"""))
+script_info['script_usage'].append(("""""","""Produces the files study.xml, submission.xml, sample.xml (based on the filenames of the .txt files) using the default xml templates.""",""""""))
+script_info['output_description']="""This script produces 3 xml-formatted files."""
+script_info['required_options']=[]
+script_info['optional_options']=[\
     make_option('-a','--input_sample_fp',\
         help='the tab-delimited text file with info about samples [default: %default]'),
     make_option('--template_sample_fp', default='sample_template.xml',\
@@ -54,14 +45,10 @@ optional_options = [\
     make_option('-s', '--sff_dir', 
         help = 'the directory containing the demultiplexed sff files: 1 dir per run [default: %default]')
 ]
+script_info['version'] = __version__
 
 def main():
-    option_parser, opts, args = parse_command_line_parameters(
-      script_description=script_description,
-      script_usage=script_usage,
-      version=__version__,
-      required_options=required_options,
-      optional_options=optional_options)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     docnames = {}
     if opts.input_study_fp:
