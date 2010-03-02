@@ -25,7 +25,7 @@ Usage: python make_pie_charts.py -c phylum.txt,class.txt,genus.txt -x ./webfiles
 """
 
 import matplotlib,re
-matplotlib.use('Agg')
+matplotlib.use('Agg',warn=False)
 from pylab import rc, axis, title, axes, pie, figlegend, clf, savefig, figure\
      ,close
 from commands import getoutput
