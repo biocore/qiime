@@ -18,7 +18,7 @@ script_info={}
 script_info['brief_description']="""Generate preferences file for 3D plots using Metadata Fields"""
 script_info['script_description']="""This script generates a preferences (prefs) file, which can be passed via -p to make_3d_plots.py. The prefs file allows for gradient coloring of continuous values in the 3D plots. Currently there is only one color gradient: red to blue."""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Example:""","""To make a prefs file to be used by make_3d_plots.py, the -b value should be passed in as the same as that passed in via -b to make_3D_plots.py. For multiple fields, the command should be a delimited list of fields. For example the -b string could be "#SampleID,Individual" and output to the file "prefs_out.txt" using the -p parameter.""","""make_3d_plot_prefs_file.py -b "#SampleID,Individual" -p prefs_out.txt"""))
+script_info['script_usage'].append(("""Example:""","""To make a prefs file to be used by make_3d_plots.py, the -b value should be passed in as the same as that passed in via -b to make_3d_plots.py. For multiple fields, the command should be a delimited list of fields. For example the -b string could be "#SampleID,Individual" and output to the file "prefs_out.txt" using the -p parameter.""","""make_3d_plot_prefs_file.py -b "#SampleID,Individual" -p prefs_out.txt"""))
 script_info['output_description']="""The result of this script is a text file, containing coloring preferences to be used by make_3d_plots.py."""
 script_info['optional_options']=[]
 
