@@ -28,7 +28,7 @@ FASTA File (.fna)
 
 This file can be generated from a 454 sff file using the command: ::
 
-	$ sffinfo -s NAME_OF_SFF_FILES > OUTPUT_FILE.fna
+	sffinfo -s NAME_OF_SFF_FILES > OUTPUT_FILE.fna
 
 This is an example showing the first few raw sequences in an .fna file:
 
@@ -53,7 +53,7 @@ Quality Score File (.qual) - Optional
 
 This is the 454-machine generated quality score file, which contains a score for each base in each sequence included in the FASTA file. It can be generated from an sff file using the command: ::
 
-	$ sffinfo -q NAME_OF_SFF_FILES > OUTPUT_FILE.qual
+	sffinfo -q NAME_OF_SFF_FILES > OUTPUT_FILE.qual
 
 The quality score file that corresponds to the above .fna example looks like this:
 
