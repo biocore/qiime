@@ -43,7 +43,8 @@ def load_tree_files(master_tree_file, support_dir):
             warnstr = """
 warning: support trees are named differently, please be sure you're not 
 comparing trees generated in different manners, unless you're quite sure 
-that's what you intend to do.  types: """ + str(set(base_names))
+that's what you intend to do.  types: """ + str(set(base_names)) + """
+continuing anyway..."""
             warn(warnstr)
 
     master_tree = DndParser(open(master_tree_file, 'U'), PhyloNode)
