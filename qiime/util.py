@@ -405,7 +405,7 @@ def get_options_lookup():
      make_option('-i','--otu_table_fp',\
       help='path to the input OTU table (i.e., the output from make_otu_table.py)')
     result['otu_map_as_primary_input'] =\
-     make_option('-i','--otu_table_fp',\
+     make_option('-i','--otu_map_fp',\
       help='path to the input OTU map (i.e., the output from pick_otus.py)')
     result['log_fp'] =\
      make_option('-l','--log_fp',help='path to write the log file')
