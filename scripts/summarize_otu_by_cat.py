@@ -16,32 +16,25 @@ from qiime.util import parse_command_line_parameters
 from optparse import make_option
 from qiime.summarize_otu_by_cat import summarize_by_cat
 
-script_description = """This script generates the otu table for a specific \
-category"""
 
-script_usage = """ Create otu table for a user specified category. The script\
-uses the OTU file otus.txt (-c) and the user mapping file meta.txt. The user\
-must also specify a metadata category equivalent to one of the column names \
-in the mapping file. If the user wants the counts to be normalized by sample \
-use th normalize flag (-n) the default is False meaning it is only the raw \
-counts. The output is a file called <meta category>_otu_table.txt, it will be \
-put int the current working directory unless specified by the user (-o).
-
-python ~/code/Qiime/trunk/qiime/make_otu_network.py -c otus.txt -i \
-meta.txt -m time -o /Users/bob/qiime_run/ -n"""
-
-required_options = [\
+script_info={}
+script_info['brief_description']="""Create a summarized OTU table for a specific metadata category"""
+script_info['script_description']="""This script generates an otu table where the SampleIDs are replaced by a specific category from the user-generated mapping file. The script uses the OTU file otus.txt (-c) and the user mapping file meta.txt. The user must also specify a metadata category equivalent to one of the column names in the mapping file. If the user wants the counts to be normalized by sample use th normalize flag (-n) the default is False meaning it is only the raw counts. The output is a file called <meta category>_otu_table.txt, it will be put int the current working directory unless specified by the user (-o)."""
+script_info['script_usage']=[]
+script_info['script_usage'].append(("""Example:""","""Create an otu table for a user specified category. This script uses an OTU table (otu_table.txt) and a user-generated mapping file (mapping_file.txt). The user must also specify a metadata category equivalent to one of the column names in their mapping file (i.e. time). If the user wants the counts to be normalized by sample, they can use the normalize flag (-n), however; the default value for this flag is False, which means it will use the raw counts. The resulting files will be it will be written in the current working directory, unless specified by the user (-o).""","""summarize_otu_by_cat.py -c otu_table.txt -i mapping_file.txt -m time -o qiime_run/ -n"""))
+script_info['output_description']="""The output is an otu table called <meta category>_otu_table.txt, """
+script_info['required_options']=[\
 make_option('-i', '--input_map', dest='map_file',action='store',type='string',\
                 help='name of input map file [REQUIRED]'),
 make_option('-c', '--otu_file', dest='counts_file',\
-			action='store',type='string',
+            action='store',type='string',
             help='name of otu table file [REQUIRED]'),
 make_option('-m', '--meta_category', dest='category',\
-				action='store',type='string',
+                action='store',type='string',
                help='name of category for OTU table [REQUIRED]')
 ]
 
-optional_options = [\
+script_info['optional_options']=[\
 make_option('-o', '--dir-prefix', dest='dir_path',action='store',type='string',\
                help='directory prefix for all analyses [default: cwd]'),
 make_option('-n', '--normalize_flag', dest='normalize',
@@ -49,15 +42,10 @@ make_option('-n', '--normalize_flag', dest='normalize',
                       action = 'store_true')
 ]
 
-
+script_info["version"] = __version__
 
 def main():
-    option_parser, opts, args = parse_command_line_parameters(
-      script_description=script_description,
-      script_usage=script_usage,
-      version=__version__,
-      required_options=required_options,
-      optional_options=optional_options)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     if not opts.counts_file:
         parser.error("An otu table file must be specified")

@@ -21,53 +21,50 @@ from optparse import make_option
 from qiime.make_otu_network import create_dir, create_network_and_stats
 
 
-script_description = """This script generates the otu network files to be \
-passed into cytoscape and statistics for those networks"""
+script_info={}
+script_info['brief_description']="""Make an OTU network and calculate statistics"""
+script_info['script_description']="""This script generates the otu network files to be passed into cytoscape and statistics for those networks. It uses the OTU fileand the user metadata mapping file.
 
-script_usage = """Create network cytoscape and statistic files in folder \
-otu_network within user specified output folder(-o). It uses the OTU file \
-otus.txt (-i) and the user mapping file input_map.txt (-m). Output will be \
-edge and node files to be loaded into cytoscape and props files labeled by \
-category used for coloring. All of the files will be in folder otu_network. \
-By default this folder will be put into the current working dir (overwrite \
-with -o).
+Network-based analysis is used to display and analyze how OTUs are partitioned between samples. This is a powerful way to display visually large and highly complex datasets in such a way that similarities and differences between samples are emphasized. The visual output of this analysis is a clustering of samples according to their shared OTUs - samples that share more OTUs cluster closer together. The degree to which samples cluster is based on the number of OTUs shared between samples (when OTUs are found in more than one sample) and this is weighted according to the number of sequences within an OTU. In the network diagram, there are two kinds of "nodes" represented, OTU-nodes and sample-nodes. These are shown with symbols such as filled circles and filled squares. If an OTU is found within a sample, the two nodes are connected with a line (an "edge"). (OTUs found only in one sample are given a second, distinct OTU-node shape.) The nodes and edges can then be colored to emphasize certain aspects of the data. For instance, in the initial application of this analysis in a microbial ecology study, the gut bacteria of a variety of mammals was surveyed, and the network diagrams were colored according to the diets of the animals, which highlighted the clustering of hosts by diet category (herbivores, carnivores, omnivores). In a meta-analysis of bacterial surveys across habitat types, the networks were colored in such a way that the phylogenetic classification of the OTUs was highlighted: this revealed the dominance of shared Firmicutes in vertebrate gut samples versus a much higher diversity of phyla represented amongst the OTUs shared by environmental samples.
 
-python ~/code/Qiime/trunk/qiime/make_otu_network.py -i otus.txt -m \
-input_map.txt -o /Users/bob/qiime_run/
-"""
+Not just pretty pictures: the connections within the network are analyzed statistically to provide support for the clustering patterns displayed in the network. A G-test for independence is used to test whether sample-nodes within categories (such as diet group for the animal example used above) are more connected within than a group than expected by chance. Each pair of samples is classified according to whether its members shared at least one OTU, and whether they share a category. Pairs are then tested for independence in these categories (this asks whether pairs that share a category also are equally likely to share an OTU). This statistical test can also provide support for an apparent lack of clustering when it appears that a parameter is not contributing to the clustering.
 
-required_options = [\
+This OTU-based approach to comparisons between samples provides a counterpoint to the tree-based PCoA graphs derived from the UniFrac analyses. In most studies, the two approaches reveal the same patterns. They can reveal different aspects of the data, however. The network analysis can provide phylogenetic information in a visual manner, whereas PCoA-UniFrac clustering can reveal subclusters that may be obscured in the network. The PCs can be pulled out individually and regressed against other metadata; the network analysis can provide a visual display of shared versus unique OTUs. Thus, together these tools can be used to draw attention to disparate aspects of a dataset, as desired by the author.
+
+In more technical language: OTUs and samples are designated as two types of nodes in a bipartite network in which OTU-nodes are connected via edges to sample-nodes in which their sequences are found. Edge weights are defined as the number of sequences in an OTU. To cluster the OTUs and samples in the network, a stochastic spring-embedded algorithm is used, where nodes act like physical objects that repel each other, and connections act a springs with a spring constant and a resting length: the nodes are organized in a way that minimized forces in the network. These algorithms are implemented in Cytoscape (Shannon et al., 2003)."""
+
+script_info['script_usage']=[]
+script_info['script_usage'].append(("""Example:""","""Create network cytoscape and statistic files in a user-specified output directory. This example uses an OTU file "otus.txt" (-i) and the user-generated mapping file "input_map.txt" (-m), where the results are written to the "otu_network/" folder. By default this folder will be put into the current working, unless specified by the "-o" option.""","""make_otu_network.py -i otus.txt -m input_map.txt -o otu_network/"""))
+script_info['output_description']="""The result of make_otu_network.py consists of a folder which contains edge and node files to be loaded into cytoscape along with props files labeled by category, which can used for coloring."""
+
+
+script_info['required_options'] = [\
 make_option('-m', '--mapping_file',action='store',type='string',\
-				dest='map_file',\
+                dest='map_file',\
                 help='name of input map file [REQUIRED]'),
 make_option('-i', '--input_file',action='store',type='string',\
-			dest='counts_file',\
+            dest='counts_file',\
             help='name of otu table file [REQUIRED]')
 ]
 
-optional_options = [\
+script_info['optional_options'] = [\
 make_option('-o', '--output_dir', action='store',type='string',\
-			   dest='dir_path',\
+               dest='dir_path',\
                help='output directory for all analyses [default: cwd]')
 ]
 
-
+script_info['version'] = __version__
 def main():
-	option_parser, opts, args = parse_command_line_parameters(
-      script_description=script_description,
-      script_usage=script_usage,
-      version=__version__,
-      required_options=required_options,
-      optional_options=optional_options)
-	if not opts.counts_file:
-		parser.error("An otu table file must be specified")
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
+    if not opts.counts_file:
+        parser.error("An otu table file must be specified")
 
-	if not opts.map_file:
-		parser.error("A Map file must be specified")
-	dir_path = create_dir(opts.dir_path)
-	map_lines = open(opts.map_file,'U').readlines()
-	otu_sample_lines = open(opts.counts_file, 'U').readlines()
-	create_network_and_stats(dir_path,map_lines,otu_sample_lines)
+    if not opts.map_file:
+        parser.error("A Map file must be specified")
+    dir_path = create_dir(opts.dir_path)
+    map_lines = open(opts.map_file,'U').readlines()
+    otu_sample_lines = open(opts.counts_file, 'U').readlines()
+    create_network_and_stats(dir_path,map_lines,otu_sample_lines)
 
 if __name__ == "__main__":
     main()
