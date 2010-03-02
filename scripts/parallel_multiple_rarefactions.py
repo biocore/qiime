@@ -15,31 +15,25 @@ __status__ = "Pre-release"
 from qiime.util import parse_command_line_parameters
 from optparse import make_option
 from os import popen, system, mkdir, makedirs
-from os.path import split, splitext
+from os.path import split, splitext, join
 from subprocess import check_call, CalledProcessError
 from cogent.app.util import get_tmp_filename
 from qiime.parallel.util import split_fasta, get_random_job_prefix, write_jobs_file,\
     submit_jobs, compute_seqs_per_file, build_filepaths_from_filepaths,\
     get_poller_command, write_filepaths_to_file,\
     write_merge_map_file_assign_taxonomy
-from qiime.util import load_qiime_config
+from qiime.util import get_qiime_project_dir, get_options_lookup
 from qiime.parallel.multiple_rarefactions import get_job_commands
 
-script_description = """A parallel wrapper for the make_mutliple_rarefactions.py script"""
+options_lookup = get_options_lookup()
 
-script_usage = """Build rarefied otu tables containing 100 (-m) to 2000 (-x) sequences 
- in steps of 100 (-s) with 5 (-n) repetions per number of sequences, 
- from otu_table.txt (-i). Write the output files to the rare directory 
- (-o, will be created if it doesn't exist). The name of the output files 
- will be of the form:
-    rare/rarefaction_<num_seqs>_<reptition_number>.txt
-
-parallel_multiple_rarefactions.py -o rare -m 100 -x 2000 -s 100 -n 5 -i otu_table.txt"""
-
-
-qiime_config = load_qiime_config()
-
-required_options = [\
+script_info={}
+script_info['brief_description']="""Parallel multiple file rarefaction"""
+script_info['script_description']="""This script performs like the multiple_rarefactions.py script, but is intended to make use of multicore/multiprocessor environments to perform analyses in parallel."""
+script_info['script_usage']=[]
+script_info['script_usage'].append(("""Example""","""Build rarefied otu tables containing 100 (-m) to 2000 (-x) sequences in steps of 100 (-s) with 5 (-n) repetions per number of sequences, from otu_table.txt (-i). Write the output files to the rare directory (-o, will be created if it doesn't exist). The name of the output files will be of the form rare/rarefaction_<num_seqs>_<reptition_number>.txt""","""parallel_multiple_rarefactions.py -o rare -m 100 -x 2000 -s 100 -n 5 -i otu_table.txt"""))
+script_info['output_description']="""The result of parallel_multiple_rarefactions.py consists of a number of files, which depend on the minimum/maximum number of sequences per samples, steps and iterations. The files have the same otu table format as the input otu_table.txt, and are named in the following way: rarefaction_100_0.txt, where "100" corresponds to the sequences per sample and "0" for the iteration."""
+script_info['required_options'] = [\
  make_option('-i', '--input_path',
         help='input filepath, (the otu table) [REQUIRED]'),\
  make_option('-o', '--output_path',
@@ -51,8 +45,7 @@ required_options = [\
  make_option('-s', '--step', type=int,\
                       help='levels: min, min+step... for level <= max [REQUIRED]'),\
 ]
-
-optional_options = [\
+script_info['optional_options'] = [\
  make_option('-n', '--num-reps', dest='num_reps', default=1, type=int,
         help='num iterations at each seqs/sample level [default: %default]'),\
  make_option('--small_included', dest='small_included', default=False,
@@ -67,51 +60,22 @@ optional_options = [\
  make_option('-N','--single_rarefaction_fp',action='store',\
            type='string',help='full path to '+\
            'scripts/single_rarefaction.py [default: %default]',\
-           default=qiime_config['single_rarefaction_fp']),\
- make_option('-P','--poller_fp',action='store',\
-           type='string',help='full path to '+\
-           'scripts/poller.py [default: %default]',\
-           default=qiime_config['poller_fp']),\
- make_option('-R','--retain_temp_files',action='store_true',\
-           help='retain temporary files after runs complete '+\
-           '(useful for debugging) [default: %default]',\
-           default=False),\
- make_option('-S','--suppress_submit_jobs',action='store_true',\
-            help='Only split input and write commands file - don\'t submit '+\
-            'jobs [default: %default]',default=False),\
- make_option('-T','--poll_directly',action='store_true',\
-            help='Poll directly for job completion rather than running '+\
-            'poller as a separate job. If -T is specified this script will '+\
-            'not return until all jobs have completed. [default: %default]',\
-            default=False),\
- make_option('-U','--cluster_jobs_fp',action='store',\
-            type='string',help='path to cluster_jobs.py script ' +\
-            ' [default: %default]',\
-            default=qiime_config['cluster_jobs_fp']),\
- make_option('-W','--suppress_polling',action='store_true',
-           help='suppress polling of jobs and merging of results '+\
-           'upon completion [default: %default]',\
-           default=False),\
- make_option('-X','--job_prefix',action='store',\
-           type='string',help='job prefix '+\
-           '[default: RARIF_ + 3 random chars]'),\
- make_option('-Y','--python_exe_fp',action='store',\
-           type='string',help='full path to python '+\
-           'executable [default: %default]',\
-           default=qiime_config['python_exe_fp']),\
- make_option('-Z','--seconds_to_sleep',type='int',\
-            help='Number of seconds to sleep between checks for run '+\
-            ' completion when polling runs [default: %default]',default=60)
+           default=join(get_qiime_project_dir(),'scripts','single_rarefaction.py')),\
+ options_lookup['poller_fp'],\
+ options_lookup['retain_temp_files'],\
+ options_lookup['suppress_submit_jobs'],\
+ options_lookup['poll_directly'],\
+ options_lookup['cluster_jobs_fp'],\
+ options_lookup['suppress_polling'],\
+ options_lookup['job_prefix'],\
+ options_lookup['python_exe_fp'],\
+ options_lookup['seconds_to_sleep']\
 ]
 
+script_info['version'] = __version__
 
 def main():
-    option_parser, opts, args = parse_command_line_parameters(
-      script_description=script_description,
-      script_usage=script_usage,
-      version=__version__,
-      required_options=required_options,
-      optional_options=optional_options)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
     
     # create local copies of command-line options
     input_path = opts.input_path
