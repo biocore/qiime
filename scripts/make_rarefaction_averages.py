@@ -18,7 +18,7 @@ from sys import argv, exit, exc_info
 from random import choice, randrange
 from time import strftime
 from qiime import parse, util
-from make_rarefaction_averages import make_averages, \
+from qiime.make_rarefaction_averages import make_averages, \
 is_max_category_ops, parse_rarefaction
 import os.path
 from os.path import exists, splitext, split
