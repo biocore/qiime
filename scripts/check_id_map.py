@@ -12,81 +12,72 @@ __email__ = "William.A.Walters@colorado.edu"
 __status__ = "Pre-release"
  
 
-from qiime.util import parse_command_line_parameters
+from qiime.util import parse_command_line_parameters, get_options_lookup
 from optparse import make_option
 from qiime.check_id_map import check_mapping_file
 from string import letters, digits
 
-script_description = """ Parse mapping file, checking for a number of undesirable characteristics.
+#check_id_map.py
+options_lookup = get_options_lookup()
+script_info={}
+script_info['brief_description']="""Checks user's metadata mapping file for required data, valid format"""
+script_info['script_description']="""Specifically, we check that:
 
-Specifically, we check that:
-    - the filename does not contain spaces (warn + rewrite if it does)
-    - there is an overall run description at the start (warn + add if missing)
-    - there is a SampleID field and, if barcoded, a BarcodeSequence field
-      (warn + correct reasonable variants of both)
-    - there is a LinkerPrimerSequence field
-    - The BarcodeSequence and LinkerPrimerSequences have valid IUPAC DNA chars
-    - there are not duplicate header fields (error)
-    - there are not duplicate near-unique but not exactly unique values 
-      within each column (warning)
-
-Overall strategy:
-    - maintain list of errors and warnings (initially empty).
-    - for each check in the following classes:
-      - check_name
-      - check_run_description
-      - check_col_headers
-      - check_cols
-    - run the check f(data) -> msg
-    - collect the messages, assigning to error or warning
-    - return errors and warnings
-
-Returns both errors and warnings as lists of formatted strings: should not
-raise exceptions itself under normal circumstances (e.g. if file is
-mis-formatted).
-
-SampleID column is required - must contain unique values. 
-BarcodeSequence field required (if is barcoded) and must contain unique values
-
-It is somewhat inefficient to read in the whole table, but on the other hand
-if reading in the mapping file is the bottleneck the downstream analysis is
-likely to prove somewhat challenging as well..."""
-
-script_usage = """
-Check the test_mapping.txt mapping file for problems, supplying the required
-mapping file and output directory (in this case mapping_info).\n\n 
-check_id_map.py -m test_mapping.txt -o mapping_info/ """
-
-required_options = [\
- make_option('-m', '--map', dest='map_fname',
-        help='Mapping file filepath'),\
- make_option('-o', '--output_dir',
-        help='Required output directory for mapping file with corrected '+\
-        'characters and log file (by default, invalid characters will be '+\
+    - The filename does not contain spaces (warn + rewrite if it does)
+    - There are headers for SampleID, LinkerPrimerSequence, and BarcodeSequence 
+if barcodes are used (Raises errors if these are absent or misspelled)
+    - The BarcodeSequence and LinkerPrimerSequences fields have valid IUPAC DNA 
+characters
+    - There are not duplicate header fields (error)
+    - There are not duplicate near-unique but not exactly unique values within 
+each column (warning)
+    - The headers do not contain invalid characters (alphanumeric and 
+underscore only)
+    - The data fields do not contain invalid characters (alphanumeric, 
+underscore, and +-%. characters)
+    
+    Errors and warnings are saved to a log file.  Errors are generally caused 
+    by problems with the headers, and should be resolved before attempting to 
+    correct any warnings.  Warnings can arise from invalid characters, 
+    near-duplicate metadata, duplicate sample descriptions/barcodes, or missing
+    data fields. Warnings will contain a reference to the cell (row,column) 
+    that the warning arose from.
+    
+    In addition to the log file, a "corrected_mapping" file will be created.
+    Invalid characters will be replaced by underscores in this corrected mapping
+    file if there were any such characters in the input metadata mapping file.
+    If there were no invalid characters to replace, the corrected mapping file 
+    will contain comments saying as much.
+    
+    check_id_map.py should not raise exceptions itself under normal 
+    circumstances, except for situations such as having a misformatted input 
+    metadata mapping file.
+"""
+script_info['script_usage']=[]
+script_info['script_usage'].append(("""Example:""","""Check the test_mapping.txt mapping file for problems, supplying the required mapping file and output directory (in this case mapping_info)""","""check_id_map.py -m test_mapping.txt -o mapping_info/"""))
+script_info['output_description']="""A log file and corrected_mapping.txt file will be written to the mapping_info directory."""
+script_info['required_options']= [\
+    make_option('-m', '--map', dest='map_fname',
+        help='Metadata mapping file filepath'),
+    make_option('-o', '--output_dir',
+        help='Required output directory for log file and corrected mapping '+\
+        'file (by default, invalid characters will be '+\
         'converted to underscores)')
 ]
-
-optional_options = [\
- make_option('-c', '--char_replace', dest='char_replace',
+script_info['optional_options']= [\
+    make_option('-c', '--char_replace', dest='char_replace',
         help='Changes the default character used to replace invalid '+\
         'characters found in the mapping file.  Must be a valid character ('+\
         'alphanumeric or underscore).  NOT IMPLEMENTED CURRENTLY '+\
-        '[default: %default]', default="_"),\
- make_option('-b', '--not_barcoded',
+        '[default: %default]', default="_"),
+    make_option('-b', '--not_barcoded',
         action='store_true', default=False,
         help='Use -b if barcodes are not present. [default: %default]')
 ]
-
-
-
+script_info['version'] = __version__
 
 def main():
-    option_parser, opts, args = parse_command_line_parameters(
-      script_description=script_description,
-      script_usage=script_usage,
-      version=__version__,
-      required_options=required_options,
-      optional_options=optional_options)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
       
     infile_name = opts.map_fname
     has_barcodes = not opts.not_barcoded
@@ -96,7 +87,8 @@ def main():
     
     valid_replacement_chars=digits+letters+"_"
     if char_replace not in valid_replacement_chars:
-        option_parser.error('-c option requires alphanumeric or underscore character')
+        option_parser.error('-c option requires alphanumeric or '+\
+        'underscore character')
     if len(char_replace) != 1:
         option_parser.error('-c parameter must be a single character.')
     
