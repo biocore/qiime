@@ -62,6 +62,7 @@ Read OTU File (OTU Mapping)
 
    scripts/add_taxa 
    scripts/filter_otus_by_sample 
+   scripts/merge_otu_maps
    scripts/parallel_pick_otus_blast 
    scripts/pick_otus 
    scripts/summarize_taxa 
@@ -205,4 +206,9 @@ Utilities
    scripts/blast_wrapper 
    scripts/convert_unifrac_sample_mapping_to_otu_table 
    scripts/fix_arb_fasta 
+   scripts/make_qiime_py_file
+   scripts/make_qiime_rst_file
    scripts/parallel_blast 
+   scripts/poller
+   scripts/poller_example
+   scripts/print_qiime_config
