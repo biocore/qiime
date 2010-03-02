@@ -11,43 +11,36 @@ __maintainer__ = "Antonio Gonzalez Pena"
 __email__ = "antgonza@gmail.com"
 __status__ = "Pre-release"
 
-from qiime.util import parse_command_line_parameters
+from qiime.util import parse_command_line_parameters, get_options_lookup
 from optparse import make_option
 from os.path import split, splitext
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.util.misc import revComp
-from qiime.adjust_seq_orientation import rc_fasta_file, append_rc
+from qiime.adjust_seq_orientation import rc_fasta_file, append_rc, null_seq_desc_mapper
 
-script_description = """ """
+options_lookup = get_options_lookup()
 
-script_usage = """ Write the reverse complement of all seqs in seqs.fasta (-i) to
-  seqs_rc.fasta (default, change output_fp with -o). Each sequence
-  description line will have ' RC' appended to the end of it (default,
-  leave sequence description lines untouched by passing -r):
- 
- adjust_seq_orientation.py -i seqs.fasta
- """
-
-required_options = [\
- make_option('-i','--input_fasta_fp',\
-        help='the input fasta file [REQUIRED]')
+script_info={}
+script_info['brief_description']="""Get the reverse complement of all sequences"""
+script_info['script_description']="""Write the reverse complement of all seqs in seqs.fasta (-i) to seqs_rc.fasta (default, change output_fp with -o). Each sequence description line will have ' RC' appended to the end of it (default,
+leave sequence description lines untouched by passing -r):"""
+script_info['script_usage']=[]
+script_info['script_usage'].append(("""Example:""",""" """,""" adjust_seq_orientation.py -i seqs.fasta"""))
+script_info['output_description']=""""""
+script_info['required_options']=[\
+   options_lookup['fasta_as_primary_input']\
 ]
-
-optional_options = [\
- make_option('-o','--output_fp',\
-        help='the input fasta file [default: generated from input_fasta_fp]'),\
- make_option('-r','--retain_seq_id',action='store_true',\
+script_info['optional_options']=[\
+   options_lookup['output_fp'],\
+   make_option('-r','--retain_seq_id',action='store_true',\
         help='leave seq description lines untouched'+\
         ' [default: append " RC" to seq description lines]')
-]
+] 
+script_info['version'] = __version__
+
 
 def main():
-    option_parser, opts, args = parse_command_line_parameters(
-      script_description=script_description,
-      script_usage=script_usage,
-      version=__version__,
-      required_options=required_options,
-      optional_options=optional_options)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
       
     verbose = opts.verbose
     
