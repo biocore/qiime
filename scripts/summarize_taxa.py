@@ -17,27 +17,23 @@ from optparse import make_option
 from qiime.summarize_taxa import make_new_summary_file,add_summary_category_mapping
 from sys import stdout, stderr
 
-script_description = """Creates OTU tables that summarize table with taxa in \
-last field."""
-
-script_usage = """Creates an OTU table by taxa by a specified level. It uses \
-the OTU file otus.txt (-i). The user can specify a taxonomic level (-L) the \
-default is 2. They can also specify the delimitor for the taxonomy categories \
-(-d) the default is ';' The output is an OTU table where each taxon \
-(columns) was present in each sample (rows).  Samples present in category \
-mapping file but absent from otu table are not included in output
-
-python ~/code/Qiime/trunk/qiime/summarize_taxa.py -i otus.txt \
--o /Users/bob/qiime_run/
+script_info={}
+script_info['brief_description']="""Summarize Taxa"""
+script_info['script_description']="""The summarize_taxa.py script provides summary information of the representation of taxonomic groups within each sample. It takes an OTU table that contains taxonomic information as input. The taxonomic level for which the summary information is provided is designated with the -L option. The meaning of this level will depend on the format of the taxon strings that are returned from the taxonomy assignment step. The taxonomy strings that are most useful are those that standardize the taxonomic level with the depth in the taxonomic strings. For instance, for the RDP classifier taxonomy, Level 2 = Domain (e.g. Bacteria), 3 = Phylum (e.g. Firmicutes), 4 = Class (e.g. Clostridia), 5 = Order (e.g. Clostridiales), 6 = Family (e.g. Clostridiaceae), and 7 = Genus (e.g. Clostridium). By default, the relative abundance of each taxonomic group will be reported, but the raw counts can be returned if -r is set as False."""
+script_info['script_usage']=[]
+script_info['script_usage'].append(("""Examples:""","""The following command can be used to summarize taxa based on the Class, where the default parameters are used (no mapping file, delimiter for RDP ("-d ;") and output relative abundance ("-r True")) and the results are written to the file "Class.txt":""","""summarize_taxa.py -i otu_table.txt -L 4 -o Class.txt"""))
+script_info['script_usage'].append(("""""","""Optionally the user can have the relative abundances added to the user-generated mapping file, by using the following command:""","""summarize_taxa.py -i otu_table.txt -L 4 -m Mapping_file.txt"""))
+script_info['script_usage'].append(("""""","""Alternatively, the user may want to output the raw counts of each lineage within a sample, which can be used in the next step for making pie charts, by using the following command:""","""summarize_taxa.py -i otu_table.txt -L 4 -r False"""))
+script_info['output_description']="""There are two possible output formats depending on whether or not a category mapping file is provided with the -m option. If a category mapping file is not provided, a table is returned where the taxonomic groups are each in a row and there is a column for each sample. If a category mapping file is provided, the summary information will be appended to this file. Specifically, a new column will be made for each taxonomic group to which the relative abundances or raw counts will be added to the existing rows for each sample. The addition of the taxonomic information to the category mapping file allows for taxonomic coloration of Principal coordinates plots in the 3d viewer. As described in the make_3d_plots.py section, principal coordinates plots can be dynamically colored based on any of the metadata columns in the category mapping file. Dynamic coloration of the plots by the relative abundances of each taxonomic group can help to distinguish which taxonomic groups are driving the clustering patterns.
 """
 
-required_options = [\
+script_info['required_options']= [\
 make_option('-i','--otu_file',action='store',\
           type='string',dest='otu_fp',help='Path to read '+\
           'otu file [REQUIRED]')
 ]
 
-optional_options = [\
+script_info['optional_options'] = [\
 make_option('-o','--output_file',action='store',\
           type='string',dest='out_fp',help='Path to write '+\
           'output file'),
@@ -59,16 +55,11 @@ make_option('-r', '--relative_abundance', action='store',\
             'each sample. If False, reports the raw counts. [default: %default]')
 ]
 
-
+script_info['version'] = __version__
 
 
 def main():
-    option_parser, opts, args = parse_command_line_parameters(
-      script_description=script_description,
-      script_usage=script_usage,
-      version=__version__,
-      required_options=required_options,
-      optional_options=optional_options)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     output_fname = opts.out_fp
     otu_fp = opts.otu_fp
