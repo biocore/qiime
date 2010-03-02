@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2010, The QIIME project"
-__credits__ = ["Rob Knight"]
+__credits__ = ["Rob Knight", "Kyle Bittinger"]
 __license__ = "GPL"
 __version__ = "1.0-dev"
 __maintainer__ = "Rob Knight"
@@ -18,46 +18,33 @@ from os.path import join
 from os import walk, popen, system
 from optparse import make_option
 
-script_description = """Finds the technical read regions for each library, and resets the left trim.
+script_info={}
+script_info['brief_description']="""Trim sff primers"""
+script_info['script_description']="""Finds the technical read regions for each library, and resets the left trim."""
+script_info['script_usage']=[]
+script_info['script_usage'].append(("""Simple example""","""Trim a directory of per-sff files in sff_dir (-l sff_dir/) using an input map (-m input_map.txt). This script uses the sff utility binaries which must be in your path.""","""trim_sff_primers.py -l sff_dir/ -m input_map.txt"""))
+script_info['output_description']="""This script replaces the original sff files with the trimmed versions."""
 
-Replaces the sff files with the trimmed versions.
- """
+script_info['required_options'] = [
+    make_option("-l", "--libdir", dest='libdir',
+        help="The directory containing per-library sff files"),
+    make_option("-m", "--input_map", dest='input_map',
+        help="Path to the input mapping file describing the libraries"),
+    ]
 
-script_usage = """Trim a directory of per-sff files at sff_dir (-l sff_dir)
-using input map input_map.txt (-m input_map.txt) using sff utils binaries that are on your path already:
-
-trim_sff_primers -l sff_dir -m input_map.txt
-"""
-
-required_options = [\
-    make_option("-l","--libdir",dest='libdir',\
-        help=""" The directory containing per-library sff files"""),
-    make_option("-m","--input_map",dest='input_map',\
-        help=""" The input map describing the libraries""")
-]
-
-optional_options = [\
-    make_option("-p","--sfffile_path",dest='sfffile_path',\
-        help=""" Path to sfffile binary [default: %default]""", 
-        default='sfffile'),
-    make_option("-q","--sffinfo_path",dest='sffinfo_path',\
-        help=""" Path to sffinfo binary [default: %default]""", 
-        default='sffinfo'),
-    make_option('--debug', dest='debug', default=False,
-        action='store_true',
-        help="Print command-line for debugging [default: %default]")
-]
-
-
+script_info['optional_options']=[
+    make_option("-p", "--sfffile_path", dest='sfffile_path', default='sfffile', 
+        help="Path to sfffile binary [default: %default]"),
+    make_option("-q", "--sffinfo_path", dest='sffinfo_path', default='sffinfo',
+        help="Path to sffinfo binary [default: %default]"),
+    make_option('--debug', dest='debug', default=False, action='store_true',
+        help="Print command-line output for debugging [default: %default]"),
+    ]
+script_info['version'] = __version__
 
 
 def main():
-    option_parser, opts, args = parse_command_line_parameters(
-      script_description=script_description,
-      script_usage=script_usage,
-      version=__version__,
-      required_options=required_options,
-      optional_options=optional_options)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     technical_lengths = get_technical_lengths(open(opts.input_map, 'U'),
         opts.debug)
