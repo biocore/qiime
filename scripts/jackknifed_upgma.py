@@ -19,24 +19,30 @@ from qiime.parse import parse_qiime_parameters
 from qiime.workflow import run_jackknifed_upgma_clustering, print_commands,\
     call_commands_serially, print_to_stdout, no_status_updates
 
-script_description = """A workflow script for performing jackknifed UPGMA clustering"""
+script_info={}
+script_info['brief_description']="""A workflow script for performing jackknifed UPGMA clustering"""
+script_info['script_description']="""To directly measure the robustness of individual UPGMA clusters, one can perform jackknifing (repeatedly resampling a subset of the available data from each sample). This process will utilize the following script: beta_diversity.py, multiple_rarefactions.py, upgma_cluster.py and tree_compare.py)."""
+script_info['script_usage']=[]
+script_info['script_usage'].append(("""Example:""","""These steps are performed by the following command:
 
-script_usage = """ These steps are performed by the following command:
-  1) Compute beta diversity distance matrix from otu table (and
-   tree, if applicable)
-  2) Build rarefied OTU tables;
-  3) Build UPGMA tree from full distance matrix;
-  4) Compute distance matrics for rarefied OTU tables;
-  5) Build UPGMA trees from rarefied OTU table distance matrices;
-  6) Compare rarefied OTU table distance matrix UPGMA trees 
-   to tree full UPGMA tree and write support file and newick tree
-   with support values as node labels. 
-   
-python ~/code/Qiime/scripts/jackknifed_upgma.py -i inseqs1_otu_table.txt -t inseqs1_rep_set.tre -p custom_parameters_jack.txt -o wf_jack -e 5 -v"""
+1. Compute beta diversity distance matrix from otu table (and tree, if applicable)
+
+2. Build rarefied OTU tables;
+
+3. Build UPGMA tree from full distance matrix;
+
+4. Compute distance matrics for rarefied OTU tables; 
+
+5. Build UPGMA trees from rarefied OTU table distance matrices;
+
+6. Compare rarefied OTU table distance matrix UPGMA trees to tree full UPGMA tree and write support file and newick tree with support values as node labels.
+
+""","""jackknifed_upgma.py -i inseqs1_otu_table.txt -t inseqs1_rep_set.tre -p custom_parameters_jack.txt -o wf_jack -e 5 -v"""))
+script_info['output_description']="""This scripts results in several distance matrices (from beta_diversity.py), several rarified otu tables (from multiple_rarefactions.py) several UPGMA trees (from upgma_cluster.py) and a supporting file and newick tree with support values (from tree_compare.py)."""
 
 qiime_config = load_qiime_config()
 
-required_options = [\
+script_info['required_options']=[\
  make_option('-i','--otu_table_fp',\
             help='the input fasta file [REQUIRED]'),\
  make_option('-o','--output_dir',\
@@ -48,7 +54,7 @@ required_options = [\
             ' [REQUIRED]')
 ]
 
-optional_options = [\
+script_info['optional_options']=[\
  make_option('-t','--tree_fp',\
             help='path to the tree file [default: %default; '+\
             'REQUIRED for phylogenetic measures]'),\
@@ -64,13 +70,12 @@ optional_options = [\
         help='Run in parallel where available [default: %default]')
 ]
 
+script_info['version'] = __version__
+
+
 def main():
-    option_parser, opts, args = parse_command_line_parameters(
-      script_description=script_description,
-      script_usage=script_usage,
-      version=__version__,
-      required_options=required_options,
-      optional_options=optional_options)
+    option_parser, opts, args = \
+        parse_command_line_parameters(**script_info)
       
     verbose = opts.verbose
     
