@@ -13,29 +13,22 @@ from qiime.parse import parse_sample_mapping, sample_mapping_to_otu_table
 from optparse import make_option
 from qiime.util import parse_command_line_parameters
 
-script_description = """Convert a UniFrac sample mapping file to an OTU table. 
 
-Allows for users that have already created sample mapping (environment) files 
-for use with the Unifrac web interface to use QIIME, which records this 
-information in an OTU table.
-"""
-
-script_usage = """
-python ~/repo/Qiime/qiime/convert_unifrac_sample_mapping_to_otu_table.py -i sample_mapping.txt -o otu_table.txt 
-"""
-
-required_options = [\
+script_info={}
+script_info['brief_description']="""Convert a UniFrac sample mapping file to an OTU table"""
+script_info['script_description']="""This script allows users that have already created sample mapping (environment) files for use with the Unifrac web interface to use QIIME. QIIME records this data in an OTU table."""
+script_info['script_usage']=[]
+script_info['script_usage'].append(("""Example:""","""Convert a sample_mapping.txt file into an OTU table (e.g. otu_table.txt): ""","""convert_unifrac_sample_mapping_to_otu_table.py -i sample_mapping.txt -o otu_table.txt"""))
+script_info['output_description']="""The result of this script is an OTU table."""
+script_info['required_options']=[\
     make_option('-i', '--sample_mapping_fp', dest='sample_mapping_fp',\
         help='path to the sample mapping file'),
     make_option('-o', '--output_fp', dest='output_fp', \
         help='path to output file')]
+script_info['version'] = __version__
 
 def main():
-    option_parser, opts, args = parse_command_line_parameters(
-        script_description=script_description,
-        script_usage=script_usage,
-        version=__version__,
-        required_options=required_options)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     sample_mapping_fp = opts.sample_mapping_fp
     output_fp = opts.output_fp
