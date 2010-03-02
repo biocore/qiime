@@ -32,7 +32,7 @@ script_info={}
 script_info['brief_description']="""Parallel BLAST"""
 script_info['script_description']="""This script for performing blast while making use of multicore/multiprocessor environments to perform analyses in parallel."""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Example:""","""Split 10_seq.fasta (-i) into three fasta files (-O) and blast each against blast database created from 1000_seq.fasta (-d):""","""parallel_blast.py -i 10_seq.fasta -d 1000_seq.fasta -O 3 -o bla_out"""))
+script_info['script_usage'].append(("""Example""","""Split 10_seq.fasta (-i) into three fasta files (-O) and blast each against blast database created from 1000_seq.fasta (-d)""","""parallel_blast.py -i 10_seq.fasta -d 1000_seq.fasta -O 3 -o bla_out"""))
 script_info['output_description']=""" """
 script_info['required_options'] = [\
  make_option('-i','--infile_path',action='store',\
