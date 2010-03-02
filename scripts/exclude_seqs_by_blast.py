@@ -22,7 +22,7 @@ from qiime.exclude_seqs_by_blast import blast_genome,\
 
 __author__ = "Jesse Zaneveld"
 __copyright__ = "Copyright 2010, The QIIME project"
-__credits__ = ["Jesse Zaneveld","Rob Knight"]
+__credits__ = ["Jesse Zaneveld","Rob Knight", "Justin Kuczynski"]
 __license__ = "GPL"
 __version__ = "1.0-dev"
 __maintainer__ = "Jesse Zaneveld"
@@ -34,44 +34,34 @@ from qiime.util import parse_command_line_parameters
 from optparse import make_option
 
 
-script_description = """
-    This script is designed to aide in the removal of human sequence 
-    contaminants from sequencing runs. Sequences from the run are searched 
-    against a user-specified subject database. Hits are screened by e-value 
-    and the percentage of the query that aligns to the sequence. Four output 
-    files are generated based on the supplied outputpath + unique suffixes:  
-    a FASTA file of sequences that passed the screen,
-    a FASTA file of sequences that did not pass the screen (i.e. 
-    matched the database and passed all filters), the raw BLAST results from the
-    screen and a log file summarizing the options used and results obtained. 
+script_info={}
+script_info['brief_description']="""Exclude contaminated sequences using BLAST"""
+script_info['script_description']="""
 
-    For human screening THINK CAREFULLY about the data set that you screen
-    against.    Are you excluding human non-coding sequences?   What about
-    mitochondrial sequences?  This point is CRITICAL because submitting human
-    sequences that are not IRB-approved is BAD.
+This code is designed to allow users of the QIIME workflow to conveniently exclude unwanted sequences from their data. This is mostly useful for excluding human sequences from runs to comply with Internal Review Board (IRB) requirements, but may also have other uses (e.g. perhaps excluding a major bacterial contaminant). Sequences from a run are searched against a user-specified subject database, where BLAST hits are screened by e-value and the percentage of the query that aligns to the sequence.
 
-    (e.g. you would NOT want to just screen against just the coding sequences of
-    the human genome as found in the KEGG .nuc files, for example)
-    
-    One valid approach is to screen all putative 16S rRNA sequences against
-    greengenes to ensure they are bacterial rather than human.
+For human screening THINK CAREFULLY about the data set that you screen against. Are you excluding human non-coding sequences? What about mitochondrial sequences? This point is CRITICAL because submitting human sequences that are not IRB-approved is BAD.
 
-    WARNING: You cannot use this script if there are spaces in the path to the
-    database of fasta files because formatdb cannot handle these paths (this
-    is a limitation of NCBI's tools and we have no control over it).
-    """
+(e.g. you would NOT want to just screen against just the coding sequences of the human genome as found in the KEGG .nuc files, for example)
 
-script_usage = """ \n\t python exclude_seqs_by_blast.py {-i QUERY_FASTA_FP -d SUBJECT_FASTA_FP -o
-    OUTPUT_FP} [options]
+One valid approach is to screen all putative 16S rRNA sequences against greengenes to ensure they are bacterial rather than human.
 
-    [] indicates optional input (order unimportant)
-    {} indicates required input (order unimportant)
-    
-    \nExample:\n\tpython exclude_seqs_by_blast.py -i test_query_data.fasta -d h.sapiens.nuc
-    -o ./seq_exclusion_pos_control -e 1e-20 -p 0.97 --verbose
-    """
+WARNING: You cannot use this script if there are spaces in the path to the database of fasta files because formatdb cannot handle these paths (this is a limitation of NCBI's tools and we have no control over it).
+"""
+script_info['script_usage']=[]
+script_info['script_usage'].append(("""Examples:""","""The following is a simple example, where the user can take a given FASTA file (i.e. resulting FASTA file from pick_rep_set.py) and blast those sequences against a reference FASTA file containing the set of sequences which are considered contaminated:""","""exclude_seqs_by_blast.py -i repr_set_seqs.fasta -d ref_seq_set.fna -o exclude_seqs/"""))
+script_info['script_usage'].append(("""""","""Alternatively, if the user would like to change the percent of aligned sequence coverage ("-p") or the maximum E-value ("-e"), they can use the following command:""","""exclude_seqs_by_blast.py -i repr_set_seqs.fasta -d ref_seq_set.fna -o exclude_seqs/ -p 0.95 -e 1e-10"""))
+script_info['output_description']="""Four output files are generated based on the supplied outputpath + unique suffixes:
 
-required_options = [\
+1. "filename_prefix".screened: A FASTA file of sequences that did pass the screen (i.e. matched the database and passed all filters).
+
+2. "filename_prefix".excluded: A FASTA file of sequences that did not pass the screen.
+
+3. "filename_prefix".raw_blast_results: Contains the raw BLAST results from the screening.
+
+4. "filename_prefix".sequence_exclusion_log: A log file summarizing the options used and results obtained.
+"""
+script_info['required_options']=[\
  make_option("-i","--querydb",dest='querydb',default = None,\
         help="The path to a FASTA file containing query sequences"),
  make_option("-d","--subjectdb",dest='subjectdb',default = None,\
@@ -83,8 +73,7 @@ required_options = [\
         to your filename + '.screened', '.excluded', '.raw_blast_results', and
         '.sequence_exclusion_log' respectively.""")
 ]
-
-optional_options = [\
+script_info['optional_options']=[\
     make_option("-e","--e_value",type='float',dest='e_value',\
         default = 1e-10,\
         help="The e-value cutoff for blast queries [DEFAULT: %default]"),\
@@ -105,17 +94,13 @@ optional_options = [\
         default = 28,\
         help="Word size to use for BLAST search [DEFAULT: %default]")
 ]
+script_info['version'] = __version__
 
 FORMAT_BAR =   """------------------------------"""*2
 
 
 def main():
-    option_parser, options, args = parse_command_line_parameters(\
-      script_description=script_description,\
-      script_usage=script_usage,\
-      version=__version__,\
-      required_options=required_options,\
-      optional_options=optional_options)
+    option_parser, options, args = parse_command_line_parameters(**script_info)
     DEBUG = options.verbose 
     check_options(option_parser, options)
     start_time = time()
