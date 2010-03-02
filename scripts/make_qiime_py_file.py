@@ -15,75 +15,50 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Pre-release"
 
+from qiime.util import parse_command_line_parameters, get_options_lookup
+from optparse import make_option
 from sys import exit
 from os import popen
 from os.path import exists
 from time import strftime
 from optparse import OptionParser
 
-usage_str = """usage: %prog [options] {-o OUTPUT_FP}
+options_lookup = get_options_lookup()
 
-[] indicates optional input (order unimportant)
-{} indicates required input (order unimportant)
+script_info={}
+script_info['brief_description']="""Create python file""" 
+script_info['script_description']="""This is a script which will add headers and footers to new python files
+and make them executable.""" 
+script_info['script_usage']=[] 
+script_info['script_usage'].append(("""Example usage:""","""Create a new script:""","""%prog -s -a "Greg Caporaso" -e gregcaporaso@gmail.com -o my_script.py""")) 
+script_info['script_usage'].append(("""""","""Create a new test file:""","""%prog -t -a "Greg Caporaso" -e gregcaporaso@gmail.com -o my_test.py""")) 
+script_info['script_usage'].append(("""""","""Create a basic file (e.g., for library code):""","""%prog -a "Greg Caporaso" -e gregcaporaso@gmail.com -o my_lib.py""")) 
+script_info['output_description']="""The results of this script is either a python script, test, or library file, depending on the input parameters."""
+script_info['required_options']=[\
+options_lookup['output_fp']
+] 
 
-Example usage:
-Create a new script:
- python %prog -s -a "Greg Caporaso" -e gregcaporaso@gmail.com -o my_script.py
- 
-Create a new test file:
- python %prog -t -a "Greg Caporaso" -e gregcaporaso@gmail.com -o my_test.py
- 
-Create a basic file (e.g., for library code):
- python %prog -a "Greg Caporaso" -e gregcaporaso@gmail.com -o my_lib.py
-"""
+script_info['optional_options']=[\
+make_option('-s','--script',action='store_true',\
+help="Pass if creating a script to include option parsing"+\
+" framework [default:%default].", default=False),
+make_option('-t','--test',action='store_true',\
+help="Pass if creating a unit test file to include relevant"+\
+" information [default:%default].",default=False),
+make_option('-a','--author_name',
+help="The script author's (probably you) name to be included"+\
+" the header variables. This will typically need to be enclosed "+\
+" in quotes to handle spaces. [default:%default]",default='AUTHOR_NAME'),
+make_option('-e','--author_email',
+help="The script author's (probably you) e-mail address to be included"+\
+" the header variables. [default:%default]",default='AUTHOR_EMAIL'),
+make_option('-c','--copyright',
+help="The copyright information to be included in"+\
+" the header variables. [default:%default]",default='Copyright 2010, The QIIME project')
+] 
 
-def parse_command_line_parameters():
-    """ Parses command line arguments """
-    usage = usage_str
-    version = 'Version: %prog ' + __version__
-    parser = OptionParser(usage=usage, version=version)
-     
-    parser.add_option('-o','--output_fp',
-     help="The file path to create [REQUIRED]")
+script_info['version'] = __version__
 
-    parser.add_option('-s','--script',action='store_true',\
-     help="Pass if creating a script to include option parsing"+\
-     " framework [default:%default].")
-
-    parser.add_option('-t','--test',action='store_true',\
-     help="Pass if creating a unit test file to include relevant"+\
-     " information [default:%default].")
-     
-    parser.add_option('-a','--author_name',
-     help="The script author's (probably you) name to be included"+\
-     " the header variables. This will typically need to be enclosed "+\
-     " in quotes to handle spaces. [default:%default]")
-     
-    parser.add_option('-e','--author_email',
-     help="The script author's (probably you) e-mail address to be included"+\
-     " the header variables. [default:%default]")
-     
-    parser.add_option('-c','--copyright',
-     help="The copyright information to be included in"+\
-     " the header variables. [default:%default]")
-
-    parser.set_defaults(script=False,test=False,
-     author_name='AUTHOR_NAME',\
-     author_email='AUTHOR_EMAIL',\
-     copyright='Copyright 2010, The QIIME project')
-    
-    opts, args = parser.parse_args()
-    required_options = ['output_fp']
-    
-    if opts.test and opts.script:
-        parser.error('-s and -t cannot both be passed: file must be a test'+\
-                     ' or a script, or neither one.')
-    
-    for option in required_options:
-        if eval('opts.%s' % option) == None:
-            parser.error('Required option --%s omitted.' % option) 
-     
-    return opts, args
 
 script_block = """from optparse import make_option
 from qiime.util import parse_command_line_parameters, get_options_lookup
@@ -122,7 +97,12 @@ __status__ = "Pre-release"
 
 if __name__ == "__main__":
     
-    opts,args = parse_command_line_parameters()
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
+    
+    if opts.test and opts.script:
+        option_parser.error('-s and -t cannot both be passed: file must be a'+\
+        'test or a script, or neither one.')
+    
     script = opts.script
     test = opts.test
     output_fp = opts.output_fp
