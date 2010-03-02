@@ -30,7 +30,7 @@ options_lookup = get_options_lookup()
 
 script_info={}
 script_info['brief_description']="""Parallel sequence alignment using PyNAST"""
-script_info['script_description']="""A parallel wrapper for the align_seqs.py PyNAST option."""
+script_info['script_description']="""A wrapper for the align_seqs.py PyNAST option, intended to make use of multicore/multiprocessor environments to perform analyses in parallel."""
 script_info['script_usage']=[]
 script_info['script_usage'].append(("""Example""","""Split the input file (-i) into five jobs (-O) to align against pynast_test_template.fasta (-t), submit the jobs to the cluster (default) and write the output (-o) to /home/caporaso/out:""","""parallel_align_seqs_pynast.py -i 10_seq.fasta -O 5 -t /data/pynast_test_template.fasta -o /home/caporaso/out"""))
 script_info['output_description']="""This results in a multiple sequence alignment (FASTA-formatted)."""
