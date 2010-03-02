@@ -16,27 +16,27 @@ from qiime.util import parse_command_line_parameters
 from optparse import make_option
 from glob import glob
 from os import popen, system, mkdir, makedirs
-from os.path import split, splitext
+from os.path import split, splitext, join
 from subprocess import check_call, CalledProcessError
 from cogent.app.util import get_tmp_filename
 from qiime.parallel.util import split_fasta, get_random_job_prefix, write_jobs_file,\
     submit_jobs, compute_seqs_per_file, build_filepaths_from_filepaths,\
     get_poller_command, write_filepaths_to_file,\
     write_merge_map_file_assign_taxonomy
-from qiime.util import load_qiime_config
+from qiime.util import get_options_lookup, get_qiime_project_dir
 from qiime.parallel.alpha_diversity import get_job_commands
 
-script_description = """ """
+script_info={}
+script_info['brief_description']="""Parallel alpha diversity"""
+script_info['script_description']="""This script performs like the alpha_diversity.py script, but is intended to be used in multi-core/processor environmentss, so analyses can be performed in parallel."""
+script_info['script_usage'] = []
+script_info['script_usage'].append(("""Example""","""Apply the observed_species, chao1, PD_whole_tree metrics (-m) to all otu tables in ./rare/ (-i) and write the resulting output files to ./out/ (-o, will be created if it doesn't exist). Use the tree file rep_set.tre (-t) when necessary.""","""parallel_alpha_diversity.py -i ./rare/ -o ./out -m observed_species,chao1,PD_whole_tree -t ./rep_set.tre"""))
+script_info['output_description'] ="""The resulting output will be the same number of files as supplied by the user. The resulting files are tab-delimited text files, where the columns correspond to alpha diversity metrics and the rows correspond to samples and their calculated diversity measurements. """
+script_info['version'] = __version__
 
-script_usage = """Apply the observed_species, chao1, PD_whole_tree metrics (-m) to all otu tables 
- in ./rare/ (-i) and write the resulting output files to ./out/ (-o, will be 
- created if it doesn't exist). Use the tree file rep_set.tre (-t) when necessary. 
+options_lookup = get_options_lookup()
 
- alpha_diversity.py -i ./rare/ -o ./out -m observed_species,chao1,PD_whole_tree -t ./rep_set.tre"""
-
-qiime_config = load_qiime_config()
-
-required_options = [\
+script_info['required_options'] = [\
  make_option('-i', '--input_path',
         help='input path, must be directory [REQUIRED]'),\
  make_option('-o', '--output_path',
@@ -45,60 +45,28 @@ required_options = [\
         help='metrics to use, comma delimited [REQUIRED]')
 ]
 
-optional_options = [\
+script_info['optional_options'] = [\
  make_option('-t', '--tree_path',
         help='path to newick tree file, required for phylogenetic metrics'+\
         ' [default: %default]'),\
  make_option('-N','--alpha_diversity_fp',action='store',\
            type='string',help='full path to '+\
-           'qiime/alpha_diversity.py [default: %default]',\
-           default=qiime_config['alpha_diversity_fp']),\
- make_option('-P','--poller_fp',action='store',\
-           type='string',help='full path to '+\
-           'qiime/parallel/poller.py [default: %default]',\
-           default=qiime_config['poller_fp']),\
- make_option('-R','--retain_temp_files',action='store_true',\
-           help='retain temporary files after runs complete '+\
-           '(useful for debugging) [default: %default]',\
-           default=False),\
- make_option('-S','--suppress_submit_jobs',action='store_true',\
-            help='Only split input and write commands file - don\'t submit '+\
-            'jobs [default: %default]',default=False),\
- make_option('-T','--poll_directly',action='store_true',\
-            help='Poll directly for job completion rather than running '+\
-            'poller as a separate job. If -T is specified this script will '+\
-            'not return until all jobs have completed. [default: %default]',\
-            default=False),\
- make_option('-U','--cluster_jobs_fp',action='store',\
-            type='string',help='path to cluster_jobs.py script ' +\
-            ' [default: %default]',\
-            default=qiime_config['cluster_jobs_fp']),\
- make_option('-W','--suppress_polling',action='store_true',
-           help='suppress polling of jobs and merging of results '+\
-           'upon completion [default: %default]',\
-           default=False),\
- make_option('-X','--job_prefix',action='store',\
-           type='string',help='job prefix '+\
-           '[default: ALDIV_ + 3 random chars]'),\
- make_option('-Y','--python_exe_fp',action='store',\
-           type='string',help='full path to python '+\
-           'executable [default: %default]',\
-           default=qiime_config['python_exe_fp']),\
- make_option('-Z','--seconds_to_sleep',type='int',\
-            help='Number of seconds to sleep between checks for run '+\
-            ' completion when polling runs [default: %default]',default=60)
+           'scripts/alpha_diversity.py [default: %default]',\
+           default=join(get_qiime_project_dir(),'scripts','alpha_diversity.py')),\
+ options_lookup['poller_fp'],\
+ options_lookup['retain_temp_files'],\
+ options_lookup['suppress_submit_jobs'],\
+ options_lookup['poll_directly'],\
+ options_lookup['cluster_jobs_fp'],\
+ options_lookup['suppress_polling'],\
+ options_lookup['job_prefix'],\
+ options_lookup['python_exe_fp'],\
+ options_lookup['seconds_to_sleep']\
 ]
 
 
 def main():
-    option_parser, opts, args = parse_command_line_parameters(
-      script_description=script_description,
-      script_usage=script_usage,
-      version=__version__,
-      required_options=required_options,
-      optional_options=optional_options)
-
-    
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
     # create local copies of command-line options
     input_dir = opts.input_path
     output_dir = opts.output_path
