@@ -31,9 +31,8 @@ script_info['script_usage'].append(("""Example:""","""The following command can 
 script_info['output_description']="""As a result a new OTU and sequence file is generated and written to a randomly generated folder where the name of the folder starts with "filter_by_otus" Also included in the folder, is another FASTA file containing the removed sequences, leaving the user with 3 files."""
 
 script_info['required_options']=[\
+ options_lookup['otu_map_as_primary_input'],
  options_lookup['input_fasta'],
- make_option('-i', '--input_otu_path', help='Path to OTU mapping file \
- containing sequence ids assigned to each OTU (i.e., resulting OTU file from \ pick_otus.py)'),
  make_option('-s', '--samples_to_extract', help='This is a list of sample \
 ids, which should be removed from the OTU file')]
 
@@ -55,7 +54,7 @@ def main():
     data['aln'] = LoadSeqs(fasta_file,aligned=False)
 
     #Load the otu file
-    otu_path=opts.input_otu_path
+    otu_path=opts.otu_map_fp
     otu_f = open(otu_path, 'U')
     otus = fields_to_dict(otu_f)
     otu_f.close()
