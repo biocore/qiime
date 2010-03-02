@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2010, The QIIME project"
-__credits__ = ["Rob Knight, Jesse Stombaugh, and Dan Knights"] #remember to add yourself
+__credits__ = ["Rob Knight","Jesse Stombaugh","Dan Knights","Daniel McDonald"]
 __license__ = "GPL"
 __version__ = "1.0-dev"
 __maintainer__ = "Rob Knight"
