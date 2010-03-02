@@ -18,6 +18,8 @@ from qiime.util import parse_command_line_parameters
 
 from qiime.make_phylogeny import tree_module_names, tree_method_constructors,\
     CogentTreeBuilder
+    
+import warnings
 
 script_info={}
 script_info['brief_description']="""Make Phylogeny"""
@@ -51,8 +53,8 @@ script_info['optional_options']=[\
     make_option('-r','--root_method',action='store',
         help='method for choosing root of phylo tree'+\
         '  Valid choices are: '+ ', '.join(valid_root_methods) +\
-        ' [default: midpoint]',
-        default='midpoint'),
+        ' [default: tree_method_default]',
+        default='tree_method_default'),
 ]
 script_info['version'] = __version__
 
@@ -68,7 +70,8 @@ def main():
          % (opts.tree_method,\
             ' '.join(tree_method_constructors.keys() +
                 tree_module_names.keys())))
-    
+    if opts.root_method == 'midpoint':
+        warnings.warn("""midpoint rooting is extremely slow, not recommended at present""")
     #verbose = opts.verbose
     try:
         tree_builder_constructor =\
@@ -82,7 +85,7 @@ def main():
                 'Method':opts.tree_method
                 })
         tree_builder_type = 'Cogent'
-     
+
     input_seqs_filepath = opts.input_fp
     result_path = opts.result_fp
     if not result_path: # empty or None
