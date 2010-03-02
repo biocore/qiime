@@ -35,7 +35,7 @@ If passed to your cluster_jobs script, this should start three separate jobs cor
 
 The call to the cluster_jobs script in QIIME's parallel scripts looks like the following::
 
-	$ CLUSTER_JOBS_FP -ms job_list.txt JOB_ID
+	CLUSTER_JOBS_FP -ms job_list.txt JOB_ID
 
 where CLUSTER_JOBS_FP is the path to your cluster_jobs script and is passed to the parallel scripts via the -U parameter. JOB_ID is intended to be used as a prefix by the cluster_jobs script when creating a unique identifier for each job (and will be passed to the parallel scripts via -X). The same JOB_ID is also used by the QIIME parallel scripts when creating names for temporary files and directories. The -ms indicates that the job files should be made (-m) and submitted (-s).
 
@@ -46,9 +46,9 @@ Example Run of PyNAST in Parallel
 
 The following command will start a parallel run of PyNAST, which uses the same interface as the :file:`align_seqs.py` script, where the results are written the an output directory "parallel_aligned_seqs/"::
 
-	$ python $qdir/parallel/align_seqs_pynast.py -i repr_set_seqs.fasta -t /ref_set_seqs.fasta -o /home/caporaso/out 
+	parallel_align_seqs_pynast.py -i repr_set_seqs.fasta -t /ref_set_seqs.fasta -o /home/caporaso/out 
 
-The important thing to note is that this command is that same that would be used to call serial (single processor) PyNAST, except that instead of calling :file:`$qdir/parallel/align_seqs_pynast.py`, you would call :file:`align_seqs.py` to start the run on a single processor. The output from this parallel run is the same as the output would be from the serial run. 
+The important thing to note is that this command is that same that would be used to call serial (single processor) PyNAST, except that instead of calling :file:`parallel_align_seqs_pynast.py`, you would call :file:`align_seqs.py` to start the run on a single processor. The output from this parallel run is the same as the output would be from the serial run. 
 
 Details of the Parallelization 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -72,7 +72,7 @@ Note that users can have up to three separate :file:`qiime_config` files, and on
 
 There is a script that prints the current :file:`qiime_config` settings in the scripts folder::
 
-	$ python Qiime/scripts/print_qiime_config.py
+	print_qiime_config.py
 
 Denoising of 454 Data Sets 
 --------------------------
@@ -85,7 +85,7 @@ Currently, QIIME supports denoising using Chris Quince's PyroNoise (Quince et al
 
 The input to the denoising script is a textual representation of 454's .sff files, produced by 454's own tool sffinfo from the initial .sff file::
 
-	$ sffinfo 454Reads.sff > 454Reads.sff.txt
+	sffinfo 454Reads.sff > 454Reads.sff.txt
 
 **Input Arguments:**
 
@@ -124,7 +124,7 @@ The output of this script produces two files 1) a denoised FASTA set of cluster 
 To denoise the flowgram sequences in :file:`454Reads.sff.txt`, you can use the 
 following command::
 
-	$ python $qdir/denoise.py -i 454Reads.sff.txt -o 454Reads_out/
+	$ denoise.py -i 454Reads.sff.txt -o 454Reads_out/
 
 which produces these two output files:
 
@@ -133,7 +133,7 @@ which produces these two output files:
 
 On a multi-processor machine pyroNoise can be run in parallel using mpirun, where the number of processors is passed to the script via -n, as shown by the following command::
 
-	$ python $qdir/denoise.py -i 454Reads.sff.txt -o 454Reads_out/ -n 4
+	denoise.py -i 454Reads.sff.txt -o 454Reads_out/ -n 4
 
 Since PyroNoise's steep computational requirement, you should limit the application to small data sets. Barcodes and primers are not taken into account here, and barcoded samples should be denoised in separate steps. See Chris's PyroNoise web site for details or use a combination of :file:`split_libraries.py` and :file:`sfffile` (from the 454 software package) to separate the sequences into different sets.
 
