@@ -12,31 +12,11 @@ __email__ = "antgonza@gmail.com"
 __status__ = "Pre-release"
  
 
-from qiime.util import parse_command_line_parameters
+from qiime.util import parse_command_line_parameters, get_options_lookup
 from optparse import make_option
 from os import system, remove, path, mkdir
 from os.path import split, splitext
 from qiime.assign_taxonomy import BlastTaxonAssigner, RdpTaxonAssigner
-
-script_description = """Contains code for assigning taxonomy, using several techniques.
-
-This module has the responsibility for taking a set of sequences and
-providing a taxon assignment for each sequence."""
-
-script_usage = """ Assign taxonomy of sequences in inseqs.fasta (-i) using the RDP classifier 
- (-m). Output files will be written to rdp_assigned_taxonomy (default).
- assign_taxonomy.py -i inseqs.fasta -m rdp
- 
- Assign taxonomy of sequences in inseqs.fasta (-i) using the RDP classifier
- (-m) trained on-the-fly from provided refseqs and taxon assignments (-r, -t) 
- respectively. Output files will be written to custom_rdp.
- assign_taxonomy.py -i inseqs.fasta -r refseqs.fasta -t id_to_taxonomy.txt -m rdp -o custom_rdp
- 
- Assign taxonomy of sequences in inseqs.fasta (-i) using BLAST
- (-m) against provided refseqs and taxon assignments (-r, -t) 
- respectively. Output files will be written to blast_assigned_taxonomy (default).
- assign_taxonomy.py -i inseqs.fasta -r at_refseqs.fasta -t at_id_to_taxonomy.txt -m blast
-"""
 
 assignment_method_constructors = {
     'blast': BlastTaxonAssigner,
@@ -44,13 +24,55 @@ assignment_method_constructors = {
     }
  
 assignment_method_choices = assignment_method_constructors.keys()
-    
-required_options = [\
- make_option('-i', '--input_seqs_fp',
-        help='Path to fasta file of sequences to be assigned [REQUIRED]')
-]
 
-optional_options = [\
+options_lookup = get_options_lookup()
+
+script_info={}
+script_info['brief_description']="""Assign taxonomy to each sequence"""
+script_info['script_description']="""Contains code for assigning taxonomy, using several techniques.
+
+Given a set of sequences, assign_taxonomy attempts to assign the taxonomy of each sequence. Currently there are two methods implemented: assignment with BLAST and assignment with the RDP classifier. The output of this step is a mapping of sequence identifiers to taxonomy with a quality score."""
+script_info['script_usage']=[]
+script_info['script_usage'].append(("""""","""
+Example of consensus lineage: 
+
+The OTU containing 5 sequences annotated as shown below would be assigned to the "Desulfovibrionaceae" level because only 80% of sequences agree with the "LE30" annotation.
+
+* Bacteria; Proteobacteria; Desulfovibrionales; Desulfovibrionaceae; LE30
+* Bacteria; Proteobacteria; Desulfovibrionales; Desulfovibrionaceae; LE30
+* Bacteria; Proteobacteria; Desulfovibrionales; Desulfovibrionaceae; LE30
+* Bacteria; Proteobacteria; Desulfovibrionales; Desulfovibrionaceae; 
+* Bacteria; Proteobacteria; Desulfovibrionales; Desulfovibrionaceae; LE30
+
+Assignments are provided in a two column tab-delimited format, which maps input sequence identifiers to assignments. Each assignment is specified as a list of taxa separated by a ';' character.
+
+Example of an assignment output file:
+
+======== =================================================================
+AY800210 Archaea;Euryarchaeota;Halobacteriales;uncultured 
+EU883771 Archaea;Euryarchaeota;Methanomicrobiales;Methanomicrobium et rel.
+EF503699 Archaea;Crenarchaeota;uncultured;uncultured 
+DQ260310 Archaea;Euryarchaeota;Methanobacteriales;Methanobacterium 
+EF503697 Archaea;Crenarchaeota;uncultured;uncultured
+======== =================================================================
+""",""""""))
+script_info['script_usage'].append(("""Sample Assignment with BLAST:""","""
+Taxonomy assignments are made by searching input sequences against a blast database of pre-assigned reference sequences. If a satisfactory match is found, the reference assignment is given to the input sequence. This method does not take the hierarchical structure of the taxonomy into account, but it is very fast and flexible. If a file of reference sequences is provided, a temporary blast database is built on-the-fly. The quality scores assigned by the BLAST taxonomy assigner are e-values.
+
+To assign the sequences to the representative sequence set, using a reference set of sequences and a taxonomy to id assignment text file, where the results are output to default directory "blast_assigned_taxonomy", you can run the following command:""","""assign_taxonomy.py -i repr_set_seqs.fasta -r ref_seq_set.fna -t id_to_taxonomy.txt"""))
+script_info['script_usage'].append(("""""","""Optionally, the user could changed the E-value ("-e"), using the following command:""","""assign_taxonomy.py -i repr_set_seqs.fasta -r ref_seq_set.fna -t id_to_taxonomy.txt -e 0.01"""))
+script_info['script_usage'].append(("""Assignment with the RDP Classifier:""","""The RDP Classifier program (Wang, Garrity, Tiedje, & Cole, 2007) assigns taxonomies by matching sequence segments of length 8 to a database of previously assigned sequences. It uses a naive bayesian algorithm, which means that for each potential assignment, it attempts to calculate the probability of the observed matches, assuming that the assignment is correct and that the sequence segments are completely independent. The RDP Classifier is distributed with a pre-built database of assigned sequence, which is used by default. The quality scores provided by the RDP classifier are confidence values.
+
+To assign the representative sequence set, where the output directory is "rdp_assigned_taxonomy", the you can run the following command:
+""","""assign_taxonomy.py -i repr_set_seqs.fasta -m rdp"""))
+script_info['script_usage'].append(("""""","""Alternatively, the user could change the minimum confidence score ("-c"), using the following command:""","""assign_taxonomy.py -i repr_set_seqs.fasta -m rdp -c 0.85"""))
+script_info['script_usage'].append(("""""","""Note: If a reference set of sequences and taxonomy to id assignment file are provided, the script will use them to generate a new training dataset for the RDP Classifier on-the-fly. Due to limitations in the generation of a training set, each provided assignment must contain exactly 6 taxa in the following order: domain (level=2), phylum (level=3), class (level=4), order (5), family (level=6), and genus (level=7). Additionally, each genus name must be unique, due to the internal algorithm used by the RDP Classifier.
+""",""""""))
+script_info['output_description']="""The consensus taxonomy assignment implemented here is the most detailed lineage description shared by 90% or more of the sequences within the OTU (this level of agreement can be adjusted by the user). The full lineage information for each sequence is one of the output files of the analysis. In addition, a conflict file records cases in which a phylum-level taxonomy assignment disagreement exists within an OTU (such instances are rare and can reflect sequence misclassification within the greengenes database)."""
+script_info['required_options']=[\
+   options_lookup['fasta_as_primary_input']\
+]
+script_info['optional_options']=[\
  make_option('-t', '--id_to_taxonomy_fp',
         help='Path to tab-delimited file mapping sequences to assigned '
          'taxonomy. Each assigned taxonomy is provided as a comma-separated '
@@ -78,14 +100,10 @@ optional_options = [\
           help='Path to store result file '+\
           '[default: <ASSIGNMENT_METHOD>_assigned_taxonomy]')
 ]
+script_info['version'] = __version__
 
 def main():
-    option_parser, opts, args = parse_command_line_parameters(
-      script_description=script_description,
-      script_usage=script_usage,
-      version=__version__,
-      required_options=required_options,
-      optional_options=optional_options)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
     
     if opts.assignment_method == 'blast':
         if not opts.id_to_taxonomy_fp:
@@ -113,7 +131,7 @@ def main():
     assignment_method = opts.assignment_method
     taxon_assigner_constructor =\
      assignment_method_constructors[assignment_method]
-    input_sequences_filepath = opts.input_seqs_fp
+    input_sequences_filepath = opts.input_fasta_fp
     
     try:
         id_to_taxonomy_fp = opts.id_to_taxonomy_fp
