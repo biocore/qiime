@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME Project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Kyle Bittinger"]
 __license__ = "GPL"
 __version__ = "1.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -21,47 +21,53 @@ from qiime.workflow import run_qiime_data_preparation, print_commands,\
 
 qiime_config = load_qiime_config()
 
-script_description = """A workflow script for picking OTUs through building OTU tables
+script_info={}
+script_info['brief_description'] = """A workflow script for picking OTUs through building OTU tables"""
+script_info['script_description'] = """This script takes a sequence file and performs all processing steps through building the OTU table.
 
-REQUIRED:
- You must add values for the following parameters in a custom parameters file:
+REQUIRED: You must add values for the following parameters in a custom parameters file:
  align_seqs:template_fp
  filter_alignment:lane_mask_fp 
  
- These are the values that you would typically pass as --template_fp to 
-  align_seqs.py and lane_mask_fp to filter_alignment.py, respectively.
+These are the values that you would typically pass as --template_fp to align_seqs.py and lane_mask_fp to filter_alignment.py, respectively.
+
+
 """
 
-script_usage = """The following command will start an analysis on inseq1.fasta (-i), which is a 
- post-split_libraries fasta file. The sequence identifiers in this file
- should be of the form <sample_id>_<unique_seq_id>. The following steps,
- corresponding to the preliminary data preparation, are applied:
-  1) Pick OTUs with cdhit at similarity of 0.97;
-  2) Pick a representative set with the most_abundant method;
-  3) Align the representative set with PyNAST (REQUIRED: SPECIFY TEMPLATE 
-   ALIGNMENT with align_seqs:template_fp in the parameters file);
-  4) Assign taxonomy with RDP classifier;
-  5) Filter the alignment prior to tree building - remove positions which 
-   are all gaps, and specified as 0 in the lanemask (REQUIRED: SPECIFY LANEMASK 
-   with filter_alignment:lane_mask_fp in the parameters file);
-  6) Build a phylogenetic tree with FastTree;
-  7) Build an OTU table.
- 
- All output files will be written to the directory specified by -o, and 
- subdirectories as appropriate.
- 
-%prog -i inseqs1.fasta -o wf1/ -p custom_parameters.txt"""
+script_info['script_usage'] = []
 
-required_options = [\
- make_option('-i','--input_fp',\
-            help='the input fasta file [REQUIRED]'),\
- make_option('-o','--output_dir',\
-            help='the output directory [REQUIRED]'),\
- make_option('-p','--parameter_fp',\
-            help='path to the parameter file [REQUIRED]')
-]
+script_info['script_usage'].append(("""Simple example""","""The following command will start an analysis on inseq1.fasta (-i), which is a post-split_libraries fasta file. The sequence identifiers in this file should be of the form <sample_id>_<unique_seq_id>. The following steps, corresponding to the preliminary data preparation, are applied.
 
-optional_options = [\
+1. Pick OTUs with cdhit at similarity of 0.97;
+
+2. Pick a representative set with the most_abundant method;
+
+3. Align the representative set with PyNAST (REQUIRED: SPECIFY TEMPLATE ALIGNMENT with align_seqs:template_fp in the parameters file);
+
+4. Assign taxonomy with RDP classifier;
+
+5. Filter the alignment prior to tree building - remove positions which are all gaps, and specified as 0 in the lanemask (REQUIRED: SPECIFY LANEMASK with filter_alignment:lane_mask_fp in the parameters file);
+
+6. Build a phylogenetic tree with FastTree;
+
+7. Build an OTU table.
+
+All output files will be written to the directory specified by -o, and 
+subdirectories as appropriate.
+""","""pick_otus_through_otu_table.py -i inseqs1.fasta -o wf1/ -p custom_parameters.txt"""))
+
+script_info['output_description'] ="""This script will produce an OTU mapping file (pick_otus.py), a representative set of sequences (FASTA file from pick_rep_set.py), a sequence alignment file (FASTA file from align_seqs.py), taxonomy assignment file (from assign_taxonomy.py), a filtered sequence alignment (from filter_alignment.py), a phylogenetic tree (Newick file from make_phylogeny.py) and an OTU table (from make_otu_table.py)."""
+
+script_info['required_options'] = [
+    make_option('-i','--input_fp',
+        help='the input fasta file [REQUIRED]'),
+    make_option('-o','--output_dir',
+        help='the output directory [REQUIRED]'),
+    make_option('-p','--parameter_fp',
+        help='path to the parameter file [REQUIRED]'),
+    ]
+
+script_info['optional_options'] = [\
  make_option('-f','--force',action='store_true',\
         dest='force',help='Force overwrite of existing output directory'+\
         ' (note: existing files in output_dir will not be removed)'+\
@@ -73,15 +79,11 @@ optional_options = [\
         dest='parallel',default=False,\
         help='Run in parallel where available [default: %default]')
 ]
-
+script_info['version'] = __version__
 
 def main():
-    option_parser, opts, args = parse_command_line_parameters(
-      script_description=script_description,
-      script_usage=script_usage,
-      version=__version__,
-      required_options=required_options,
-      optional_options=optional_options)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
+
     verbose = opts.verbose
     
     input_fp = opts.input_fp
