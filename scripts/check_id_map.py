@@ -24,17 +24,12 @@ script_info['brief_description']="""Checks user's metadata mapping file for requ
 script_info['script_description']="""Specifically, we check that:
 
     - The filename does not contain spaces (warn + rewrite if it does)
-    - There are headers for SampleID, LinkerPrimerSequence, and BarcodeSequence 
-if barcodes are used (Raises errors if these are absent or misspelled)
-    - The BarcodeSequence and LinkerPrimerSequences fields have valid IUPAC DNA 
-characters
+    - There are headers for SampleID, LinkerPrimerSequence, and BarcodeSequence if barcodes are used (returns errors if these are absent or misspelled)
+    - The BarcodeSequence and LinkerPrimerSequences fields have valid IUPAC DNA characters
     - There are not duplicate header fields (error)
-    - There are not duplicate near-unique but not exactly unique values within 
-each column (warning)
-    - The headers do not contain invalid characters (alphanumeric and 
-underscore only)
-    - The data fields do not contain invalid characters (alphanumeric, 
-underscore, and +-%. characters)
+    - There are not duplicate near-unique but not exactly unique values within each column (warning)
+    - The headers do not contain invalid characters (alphanumeric and underscore only)
+    - The data fields do not contain invalid characters (alphanumeric, underscore, and +-%. characters)
     
     Errors and warnings are saved to a log file.  Errors are generally caused 
     by problems with the headers, and should be resolved before attempting to 
