@@ -48,9 +48,6 @@ def main():
     sample_ids = opts.sample_ids.split(',')
     negate = opts.negate
     
-    print opts
-    
-   
     try:
         seqs = MinimalFastaParser(open(opts.input_fasta_fp))
     except IOError:
