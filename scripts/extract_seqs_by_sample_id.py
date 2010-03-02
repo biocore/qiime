@@ -35,7 +35,7 @@ help="comma-separated sample_ids to include in output fasta file"+\
 make_option('-o','--output_fasta_fp',\
 help='the output fasta file')]
 script_info['optional_options']=[\
-make_option('-n','--negate',action='store_true',default='false',\
+make_option('-n','--negate',action='store_true',default=False,\
 help='negate the sample ID list (i.e., output sample '+\
 'ids not passed via -s) [default: %default]')]
 script_info['version'] = __version__
@@ -47,6 +47,7 @@ def main():
     
     sample_ids = opts.sample_ids.split(',')
     negate = opts.negate
+    print negate
     
     try:
         seqs = MinimalFastaParser(open(opts.input_fasta_fp))
