@@ -34,7 +34,7 @@ script_info['output_description']="""This script results in a OTU mapping file a
 script_info['required_options'] = [\
     make_option('-i','--input_file', action='store',
                 type='string', dest='sff_fp',
-                help='path to flowgram file (*.sff.txt)')
+                help='path to flowgram file (.sff.txt)')
     ]
 
 script_info['optional_options'] = [\
@@ -46,7 +46,7 @@ script_info['optional_options'] = [\
     make_option('-k','--keep_intermediates', action='store_true',
                  dest='keep', default=False,
                  help='Do not delete intermediate files -- '+
-                 'useful for debuggingn '+\
+                 'useful for debugging '+\
                     '[default: %default]'),
     make_option('-c','--cut-off', action='store',
                 type='float', dest='cut_off',
