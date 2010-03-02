@@ -18,33 +18,19 @@ from qiime.beta_diversity import (single_file_beta, multiple_file_beta,
 list_known_metrics)
 import os
 
-script_description = """Description:
-calculate beta diversity (pairwise sample dissimilarity) on one or many
-otu tables"""
+script_info={}
+script_info['brief_description']="""Calculate beta diversity (pairwise sample dissimilarity) on one or many otu tables"""
+script_info['script_description']="""The input for this script is the OTU table containing the number of sequences observed in each OTU (rows) for each sample (columns). For more information pertaining to the OTU table refer to the documentation for make_otu_table. If the user would like phylogenetic beta diversity metrics using UniFrac, a phylogenetic tree must also be passed as input (see make_phylogeny.py). The output of this script is a distance matrix containing a dissimilarity value for each pairwise comparison.
 
-script_usage = """
- Show available beta diversity metrics:
- python %prog -s
- 
- 
- Calculate two beta diversity measures on otu_table.txt:
- python %prog -i otu_table.txt -m bray_curtis,unweighted_unifrac -o outdir -t repr_set.tre
-
-this creates two files: outdir/bray_curtis_otu_table.txt etc.
-
- Batch example: 
-python %prog -i beta_rare_dir (a directory) -m bray_curtis,unweighted_unifrac -o outdir -t repr_set.tre
-processes every file in beta_rare_dir, and creates a file "metric_" + infilename
-in results folder"""
-
-required_options = [\
- # Example required option
- #make_option('-i','--input_dir',help='the input directory'),\
-]
-
-optional_options = [\
- # Example optional option
- #make_option('-o','--output_dir',help='the output directory [default: %default]'),\
+A number of metrics are currently supported, including unweighted and weighted UniFrac (pass the -s option to see available metrics). In general, because unifrac uses phylogenetic information, one of the unifrac metrics is recommended, as results can be vastly more useful (Hamady & Knight, 2009). Weighted unifrac is sensitive to factors affecting the relative abundance of different taxa, such as salinity or pH while unweighted unifrac considers only the presence or absence of taxa, and is sensitive to factors such as nutrient availability (Costello, personal communication). Typically both weighted and unweighted unifrac are applied."""
+script_info['script_usage']=[]
+script_info['script_usage'].append(("""Single File Beta Diversity:""","""To perform beta diversity (using e.g. euclidean distance) on a single OTU table, where the results are output to beta_div.txt, use the following command:""","""beta_diversity.py -i otu_table.txt -m euclidean -o beta_div/"""))
+script_info['script_usage'].append(("""""","""Note: Since this is a non-phylogenetic metric, the tree does not need to be supplied.""",""""""))
+script_info['script_usage'].append(("""""","""In the case that you would like to perform beta diversity using a phylogenetic metric (e.g. weighted_unifrac), you can use the following command:""","""beta_diversity.py -i otu_table.txt -m weighted_unifrac -o beta_div/ -t repr_set.tre"""))
+script_info['script_usage'].append(("""Multiple File (batch) Beta Diversity:""","""To perform beta diversity on multiple OTU tables (resulting files from rarefaction.py), specify an input directory (e.g. rarefaction_tables/) as shown by the following command:""","""beta_diversity.py -i rarefaction_tables/ -m weighted_unifrac -o beta_div/ -t repr_set.tre"""))
+script_info['output_description']="""Each file in the input directory should be an otu table, and the output of beta_diversity.py is a folder containing text files, each a distance matrix between samples corresponding to an input otu table."""
+script_info['required_options']=[]
+script_info['optional_options']=[
  make_option('-i', '--input_path',
      help='input path: otu table, or dir of otu tables for batch mode'),
      
@@ -63,13 +49,11 @@ optional_options = [\
      ' [default: %default]')
 ]
 
+script_info['version'] = __version__
+
+
 def main():
-    option_parser, opts, args = parse_command_line_parameters(
-      script_description=script_description,
-      script_usage=script_usage,
-      version=__version__,
-      required_options=required_options,
-      optional_options=optional_options)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
     
     if opts.show_metrics:
         print("Known metrics are: %s\n" \

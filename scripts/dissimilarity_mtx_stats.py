@@ -19,39 +19,29 @@ from qiime.parse import parse_distmat
 from qiime.format import format_distance_matrix
 
 
-script_description = """Description:
-read in all (dis)similarity matrices in input_dir, write mean, median, stdev
-to output folder.  outputs are in distance matrix format, each value is the 
-(mean, median, or stdev) of that element in all the input distmats
 
-input_dir must contain only (dis)similarity matrices, and only those you wish
-to obtain stats on"""
+script_info={}
+script_info['brief_description']="""Calculate mean, median and standard deviation from a set of distance matrices"""
+script_info['script_description']="""This script reads in all (dis)similarity matrices from an input directory (input_dir), then calculates and writes the mean, median, standdard deviation (stdev) to an output folder.
 
-script_usage = """python %prog -i dists/ -o dist_stats/"""
-
-required_options = [\
- # Example required option
- #make_option('-i','--input_dir',help='the input directory'),\
+The input_dir must contain only (dis)similarity matrices, and only those you wish to perform statistical analyses on."""
+script_info['script_usage']=[]
+script_info['script_usage'].append(("""Example:""","""This examples takes the "dists/" directory as input and returns the results in the "dist_stats/" directory:""","""dissimilarity_mtx_stats.py -i dists/ -o dist_stats/"""))
+script_info['output_description']="""The outputs are in distance matrix format, where each value is the mean, median, or stdev of that element in all the input distance matrices"""
+script_info['required_options']=[\
  make_option('-i','--input_dir',
        help='Path to input directory'),
 
  make_option('-o','--output_dir',
        help='Path to store result files')
 ]
+script_info['optional_options']=[]
+script_info['version'] = __version__
 
-optional_options = [\
- # Example optional option
- #make_option('-o','--output_dir',help='the output directory [default: %default]'),\
-]
 
 
 def main():
-    option_parser, opts, args = parse_command_line_parameters(
-      script_description=script_description,
-      script_usage=script_usage,
-      version=__version__,
-      required_options=required_options,
-      optional_options=optional_options)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
     
     indir = opts.input_dir
     outdir = opts.output_dir

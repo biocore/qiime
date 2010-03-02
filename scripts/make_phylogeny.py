@@ -19,25 +19,22 @@ from qiime.util import parse_command_line_parameters
 from qiime.make_phylogeny import tree_module_names, tree_method_constructors,\
     CogentTreeBuilder
 
-script_description = """Description:
-Build a phylogenetic tree from aligned sequences, 
-using one of several techniques."""
-
-script_usage = """
- Build phylogenetic tree from sequences in  align/rep_set_aligned.fa
- writing tree to align/rep_set_aligned.tre using FastTree (default):
-    make_phylogeny.py -i align/rep_set_aligned.fa -o align/rep_set_aligned.tre -l align/rep_set_tree.log
-"""
-
-required_options = [
+script_info={}
+script_info['brief_description']="""Make Phylogeny"""
+script_info['script_description']="""Many downstream analyses require that the phylogenetic tree relating the OTUs in a study be present. The script make_phylogeny.py produces this tree from a multiple sequence alignment. Trees are constructed with a set of sequences representative of the OTUs, by default using FastTree (Price, Dehal, & Arkin, 2009)."""
+script_info['script_usage']=[]
+script_info['script_usage'].append(("""Examples:""","""A simple example of make_phylogeny.py is shown by the following command, where we use the default tree building method (fasttree) and write the file to the current working directory without a log file:""","""make_phylogeny.py -i repr_set_seqs_aligned_pfiltered.fasta -o rep_phylo.tre"""))
+script_info['script_usage'].append(("""""","""Alternatively, if the user would prefer using another tree building method (i.e. clearcut (Sheneman, Evans, & Foster, 2006)), then they could use the following command:""","""make_phylogeny.py -i repr_set_seqs_aligned_pfiltered.fasta -t clearcut"""))
+script_info['script_usage'].append(("""""","""Note: For whichever method used, the 3rd party program must be properly installed on the user's computer.""",""""""))
+script_info['output_description']="""The result of make_phylogeny.py consists of a newick formatted tree file (.tre) and optionally a log file. The tree file is formatted using the Newick format and this file can be viewed using most tree visualization tools, such as TopiaryTool, FigTree, etc."""
+script_info['required_options']=[
     make_option('-i','--input_fp',action='store',
           type='string',dest='input_fp',help='Path to read '+\
           'input alignment')
 ]
-
 valid_root_methods = ['midpoint','tree_method_default']
 
-optional_options = [\
+script_info['optional_options']=[\
     make_option('-t','--tree_method',action='store',
           help='Method for tree building. Valid choices are: '+\
           ', '.join(tree_module_names.keys())+\
@@ -57,14 +54,12 @@ optional_options = [\
         ' [default: midpoint]',
         default='midpoint'),
 ]
+script_info['version'] = __version__
+
+
 
 def main():
-    option_parser, opts, args = parse_command_line_parameters(
-      script_description=script_description,
-      script_usage=script_usage,
-      version=__version__,
-      required_options=required_options,
-      optional_options=optional_options)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     if not (opts.tree_method in tree_method_constructors or
             opts.tree_method in tree_module_names):

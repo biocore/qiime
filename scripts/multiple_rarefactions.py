@@ -17,25 +17,15 @@ from optparse import make_option
 import os.path
 from qiime.rarefaction import RarefactionMaker
 
-script_description = """Description:
-subsample an otu table without replacement, to generate a collection of new
-rarefied otu tables"""
-
-script_usage = """
- Subsample otu_table.txt:
- python %prog otu_table.txt -m 100 -x 1200 -s 100 -n 2 -o mo/rare --small_included
-(subsample otu_table.txt w/o replacement at 100 seqs per sample (twice),
-200 seqs per sample (twice) ... 1200 seqs per sample (twice).
-write 24 files total to mo/rare directory, named e.g.:rarefaction_100_0.txt
-(100 seqs/sample; iteration 0, or first file written at 100 seqs/sam)
-without --small_included, 24 output files are not guaranteed
-
- Subsample otu_table.txt repeatedly, at only one depth of seqs/sample:
- python %prog otu_table.txt -m 2500 -x 2500 -s 100 -n 100 -o mo/rare2 --small_included
-100 files will be written to mo/rare2
- """
-
-required_options = [
+script_info={}
+script_info['brief_description']="""Perform rarefaction on multiple otu tables"""
+script_info['script_description']="""To perform bootstrap, jackknife, and rarefaction analyses, the otu table must be subsampled (rarefied).  This script rarefies, or subsamples, OTU tables.  This does not provide curves of diversity by number of sequences in a sample. Rather it creates a series of subsampled OTU tables by random sampling (without replacement) of the input OTU table."""
+script_info['script_usage']=[]
+script_info['script_usage'].append(("""Examples:""","""An example of this script, where the user sets the minimum ("-m") and maximum ("-x") number of sequences per sample to 100 and 1200, respectively, while using steps ("-s") of 100, performing 2 iterations at each sampling depth ("-n"), and outputting the results to the directory "rarefaction_tables/" is shown by the following command:""","""multiple_rarefactions.py otu_table.txt -m 100 -x 1200 -s 100 -n 2 -o rarefaction_tables/"""))
+script_info['script_usage'].append(("""""","""As a result, this command produces subsamples of the input otu_table.txt at 100 seqs per sample (twice), 200 seqs per sample (twice) ... 1200 seqs per sample (twice), which produces 24 rarefied otu talbes in the "rarefaction_tables" directory.""",""""""))
+script_info['script_usage'].append(("""""","""By default, any sample containing fewer sequences in the input file than the requested number of sequences per sample is removed from the output rarefied otu table. To include samples with fewer than the requested number, you can use the following command:""","""multiple_rarefactions.py otu_table.txt -m 100 -x 1200 -s 100 -n 2 -o rarefaction_tables/ --small_included"""))
+script_info['output_description']="""The result of multiple_rarefactions.py consists of a number of files, which depend on the minimum/maximum number of sequences per samples, steps and iterations. The files have the same otu table format as the input otu_table.txt, and are named in the following way: rarefaction_100_0.txt, where "100" corresponds to the sequences per sample and "0" the iteration."""
+script_info['required_options']=[
     make_option('-i', '--input_path',
         help='input otu table filepath'),
 
@@ -53,7 +43,8 @@ required_options = [
     help='levels: min, min+step... for level <= max')
 ]
 
-optional_options = [
+
+script_info['optional_options']=[
 
     make_option('-n', '--num-reps', dest='num_reps', default=1, type=int,
         help='num iterations at each seqs/sample level [default: %default]'),
@@ -69,15 +60,11 @@ optional_options = [
         help="""samples containing fewer seqs than the rarefaction
      level are included in the output but not rarefied [default: %default]""")
 ]
+script_info['version'] = __version__
 
 
 def main():
-    option_parser, opts, args = parse_command_line_parameters(
-      script_description=script_description,
-      script_usage=script_usage,
-      version=__version__,
-      required_options=required_options,
-      optional_options=optional_options)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     if opts.step <= 0:
         option_parser.error("nonpositive step not allowed (%s was supplied)" % \

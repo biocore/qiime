@@ -23,53 +23,58 @@ __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 __status__ = "Pre-release"
  
-script_description = """collate_alpha collates output files from alpha_diversity.py"""
+#collate_alpha.py
+script_info={}
+script_info['brief_description']="""Collate alpha diversity results"""
+script_info['script_description']="""When performing batch analyses on the OTU table (e.g. rarefaction followed by alpha diversity), the result of alpha_diversity.py comprises many files, which need to be concatenated into a single file for generating rarefaction curves.  This script joins those files.
+Input files are:
+each file represents one (rarefied) otu table
+each row in a file represents one sample
+each column in a file represents one diversity metric
 
-script_usage = """usage: %prog [options] {-i INPUT_PATH -o OUTPUT_PATH}
+Output files are:
+each file represents one diversity metric
+each row in a file represents one (rarefied) otu table 
+each column in a file represents one sample
 
-[] indicates optional input (order unimportant)
-{} indicates required input (order unimportant)
+The input directory should contain only otu tables. The output directory should be empty or nonexistant and the example file is optional.  
 
-Example usage:
-python %prog -i TEST/rare_chao1_PD -o TEST/rare_collated -e
-TEST/rare_chao1_PD/alpha_rarefaction_200_0.txt 
-this creates the files TEST/rare_collated/chao1.txt (and PD_whole_tree.txt)
-each is a matrix of rarefaction by sample.
-
-input directory should have only otu tables
-output dir should be empty or nonexistant
-example file is optional.  
-
-If you have a set of rarefied OTU tables,
-make sure the example file contains every sample present in the otu talbes.
-typically choose the file with the fewest sequences per sample, to avoid
-files with sparse samples omitted.  This is the default behavior.
+If you have a set of rarefied OTU tables, make sure the example file contains every sample present in the otu talbes. You should typically choose the file with the fewest sequences per sample, to avoid files with sparse samples omitted.
 """
+script_info['script_usage']=[]
+script_info['script_usage'].append(("""Example:""","""The user inputs the results from batch alpha diversity (e.g. alpha_div_chao1_PD/) and the location where the results should be written (e.g. alpha_collated/), as shown by the following command:""","""collate_alpha.py -i alpha_div_chao1_PD/ -o alpha_collated/"""))
+script_info['output_description']="""This script takes the resulting files from batch alpha diversity and collates them into (one file for each metric used).
 
-required_options = [\
+This script transforms a series of files, named (e.g. alpha_rarefaction_20_0.txt, alpha_rarefaction_20_1.txt, etc.) into a (usually much smaller) set of files named (e.g. chao1.txt, PD_whole_tree.txt, etc.), where the columns correspond to samples and rows to the rarefaction files inputted, as shown by the following:
+
+==========================  ====================    =========   ======  ======
+\                           sequences per sample    iteration   PC.354  PC.355
+==========================  ====================    =========   ======  ======
+alpha_rarefaction_20_0.txt  20                      0           0.925   0.915 
+alpha_rarefaction_20_1.txt  20                      1           0.9     0.89 
+alpha_rarefaction_20_2.txt  20                      2           0.88    0.915 
+alpha_rarefaction_20_3.txt  20                      3           0.91    0.93 
+...                         ...                     ...         ...     ...
+==========================  ====================    =========   ======  ====== 
+
+"""
+script_info['required_options']=[\
  make_option('-i', '--input_path',
  help='input path (a directory)'),
  make_option('-o', '--output_path',
  help='output path (a directory).  will be created if needed')
 ]
 
-optional_options = [\
+script_info['optional_options']=[\
  make_option('-e', '--example_path',
  help='example alpha_diversity analysis file, containing all samples'+\
  ' and all metrics to be included in the collated result'+\
  '[Default: chosen automatically (see usage string)]')
 ]
-
-
-
+script_info['version'] = __version__
 
 def main():
-    option_parser, opts, args = parse_command_line_parameters(\
-      script_description=script_description,\
-      script_usage=script_usage,\
-      version=__version__,\
-      required_options=required_options,\
-      optional_options=optional_options)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
     
     if len(args) != 0:
         parser.error("Positional argument detected.  make sure all"+\

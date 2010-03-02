@@ -19,20 +19,13 @@ from qiime.make_bootstrapped_tree import write_pdf_bootstrap_tree
 from qiime.parse import parse_bootstrap_support
 
 
-script_description = """
-Takes a tree and bootstrap support file, then writes a pdf, colored by bootstrap \
-support.
-"""
-
-script_usage = """
-Example usage:
-
-make_bootstrapped_tree.py -m master_tree.tre -s jackknife_support.txt -o jackknife_samples.pdf
-"""
-
-required_options = [\
- # Example required option
- #make_option('-i','--input_dir',help='the input directory'),\
+script_info={}
+script_info['brief_description']="""Make bootstrapped tree"""
+script_info['script_description']="""This script takes a tree and bootstrap support file and creates a pdf, colored by bootstrap support."""
+script_info['script_usage']=[]
+script_info['script_usage'].append(("""Example:""","""In this example, the user supplies a tree file and a text file containing the jackknife support information, which results in a pdf file:""","""make_bootstrapped_tree.py -m master_tree.tre -s jackknife_support.txt -o jackknife_samples.pdf"""))
+script_info['output_description']="""The result of this script is a pdf file."""
+script_info['required_options']=[\
  make_option('-m', '--master_tree', help='This is the path to the master tree'),
  make_option('-s', '--support', help='This is the path to the bootstrap \
 support file'),
@@ -40,19 +33,12 @@ support file'),
 should be written.  If the suffix does not contain .pdf, then it will be \
 attached")
 ]
+script_info['optional_options']=[]
+script_info['version'] = __version__
 
-optional_options = [\
- # Example optional option
- #make_option('-o','--output_dir',help='the output directory [default: %default]'),\
-]
 
 def main():
-    option_parser, opts, args = parse_command_line_parameters(
-      script_description=script_description,
-      script_usage=script_usage,
-      version=__version__,
-      required_options=required_options,
-      optional_options=optional_options)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     tree = LoadTree(opts.master_tree)
     support_file = open(opts.support)
