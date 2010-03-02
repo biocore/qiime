@@ -37,8 +37,7 @@ script_info['required_options'] = [\
  make_option('-i', '--input_path',
         help='input filepath, (the otu table) [REQUIRED]'),\
  make_option('-o', '--output_path',
-        help='write output rarefied otu tables here ' +\
-            "makes dir if it doesn't exist [REQUIRED]"),\
+        help="write output rarefied otu tables here makes dir if it doesn't exist [REQUIRED]"),\
  make_option('-m', '--min', type=int,help='min seqs/sample [REQUIRED]'),\
  make_option('-x', '--max', type=int,\
                       help='max seqs/sample (inclusive) [REQUIRED]'),\
@@ -50,16 +49,12 @@ script_info['optional_options'] = [\
         help='num iterations at each seqs/sample level [default: %default]'),\
  make_option('--small_included', dest='small_included', default=False,
         action="store_true",
-        help="""samples containing fewer seqs than the rarefaction ' +\
-        'level are included in the output but not rarefied [default: %default]"""),\
+        help="""samples containing fewer seqs than the rarefaction level are included in the output but not rarefied [default: %default]"""),\
  make_option('--lineages_included', dest='lineages_included', default=False,
         action="store_true",
-        help="""output rarefied otu tables will include taxonomic (lineage)
-      information for each otu, if present in input otu table
-      [default: %default]"""),
+        help="""output rarefied otu tables will include taxonomic (lineage) information for each otu, if present in input otu table [default: %default]"""),
  make_option('-N','--single_rarefaction_fp',action='store',\
-           type='string',help='full path to '+\
-           'scripts/single_rarefaction.py [default: %default]',\
+           type='string',help='full path to scripts/single_rarefaction.py [default: %default]',\
            default=join(get_qiime_project_dir(),'scripts','single_rarefaction.py')),\
  options_lookup['poller_fp'],\
  options_lookup['retain_temp_files'],\
