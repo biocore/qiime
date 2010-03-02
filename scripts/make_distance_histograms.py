@@ -12,7 +12,8 @@ __email__ = "Jeremy.Widmann@colorado.edu"
 __status__ = "Pre-release"
  
 
-from qiime.util import parse_command_line_parameters, get_qiime_project_dir
+from qiime.util import parse_command_line_parameters, get_qiime_project_dir,\
+    get_options_lookup
 from optparse import make_option
 from qiime.make_distance_histograms import group_distances, _make_path, \
     draw_all_histograms, _make_relative_paths, make_main_html, \
@@ -21,63 +22,45 @@ from qiime.make_3d_plots import create_dir
 from os import mkdir
 from string import strip
 
-script_description = \
-"""To visualize the distance between samples and/or categories in the mapping
-file, the user can generate histograms to represent the distances between
-samples.  This script generates an HTML file, where the user can compare the
-distances between samples based on the different categories associated to each
-sample in the mapping file."""
+options_lookup = get_options_lookup()
 
-script_usage = \
-"""
-Distance Histograms are a way to compare different categories and see which
-tend to have larger/smaller distances than others.  For example, in the hand
-study, you may want to compare the distances between hands to the distances
-between individuals (with the file "hand_distances.txt" using the parameter -d
-hand_distances.txt). The categories are defined in the mapping file  (specified
-using the parameter -m hand_map.txt).  If you want to look at the distances
-between hands and individuals, choose the "Hand" field and "Individual" field
-(using the parameter --fields Hand,Individual (notice the fields are comma
-delimited)).  For each of these groups of distances a histogram is made.  The
-output is a HTML file ("QIIME_Distance_Histograms.html" when the parameter
---html_output is specified) which is created in the "Distance_Histograms"
-directory (using the parameter -o Distance_Histograms to specify output
-directory) where you can look at all the distance histograms individually, and
-compare them between each other.
+script_info={}
+script_info['brief_description']="""Make distance histograms"""
+script_info['script_description']="""To visualize the distance between samples and/or categories in the metadata mapping file, the user can generate histograms to represent the distances between samples. This script generates an HTML file, where the user can compare the distances between samples based on the different categories associated to each sample in the metadata mapping file. """
+script_info['script_usage']=[]
+script_info['script_usage'].append(("""Examples:""","""Distance Histograms are a way to compare different categories and see which tend to have larger/smaller distances than others. For example, in the hand study, you may want to compare the distances between hands to the distances between individuals (with the file "hand_distances.txt" using the parameter -d hand_distances.txt). The categories are defined in the metadata mapping file (specified using the parameter -m hand_map.txt). If you want to look at the distances between hands and individuals, choose the "Hand" field and "Individual" field (using the parameter --fields Hand,Individual (notice the fields are comma delimited)). For each of these groups of distances a histogram is made. The output is a HTML file ("QIIME_Distance_Histograms.html" when the parameter --html_output is specified) which is created in the "Distance_Histograms" directory (using the parameter -o Distance_Histograms to specify output directory) where you can look at all the distance histograms individually, and compare them between each other.
 
-$ python qiime_dir/make_distance_histograms.py -d hand_distances.txt -m 
-hand_map.txt --fields Treatment,Individual -o Distance_Histograms --html_output
-"""
-
-required_options = [\
+In the following command, the user only supplies a distance matrix (i.e. resulting file from beta_diversity.py), the user-generated metadata mapping file and one category (e.g. pH):""","""make_distance_histograms.py -d beta_div.txt -m Mapping_file.txt --fields pH"""))
+script_info['script_usage'].append(("""""","""For comparison of multiple categories (e.g. pH, salinity), you can use the following command:""","""make_distance_histograms.py -d beta_div.txt -m Mapping_file.txt --fields pH,salinity"""))
+script_info['script_usage'].append(("""""","""If the user would like to write the result to a dynamic HTML, you can use the following command:""","""make_distance_histograms.py -d beta_div.txt -m Mapping_file.txt --fields pH --html_output"""))
+script_info['script_usage'].append(("""""","""In the case that the user generates their own preferences file (prefs.txt), they can use the following command:""","""make_distance_histograms.py -d beta_div.txt -m Mapping_file.txt -p prefs.txt"""))
+script_info['script_usage'].append(("""""","""Note: In the case that a preferences file is passed, the user does not need to supply fields in the command-line.""",""""""))
+script_info['output_description']="""The result of this script will be a folder containing images and/or an html file (with appropriate javascript files), depending on the user-defined parameters."""
+script_info['required_options']=[\
     make_option('-d','--distance_matrix_file',dest='distance_matrix_file',\
         type='string',help='''Path to distance matrix file.'''),\
     make_option('-m','--mapping_file',dest='mapping_file',type='string',\
-        help='''Path to environment mapping file.'''),\
+        help='''Path to metadata mapping file.'''),\
 ]
 
-optional_options = [\
+script_info['optional_options']=[\
     make_option('-p','--prefs_file',dest='prefs_file',type='string',\
         help='''File containing prefs for analysis.  NOTE: This is a file with a dict containing preferences for the analysis.  This dict must have a "Fields" key mapping to a list of desired fields.[default: %default]'''),\
     make_option('-o', '--dir_path', dest='dir_path',\
         help='Directory to output data for all analyses. [default: %default]',\
         default='.'),\
     make_option('--monte_carlo',dest='monte_carlo',default=False,\
-        action='store_true',help='''Perform Monte Carlo on distances.  [Default: %default]'''),\
+        action='store_true',help='''Perform Monte Carlo analysis on distances.  [Default: %default]'''),\
     make_option('--html_output',dest='html_output',default=False,\
         action='store_true',help='''Write output in HTML format. [Default: %default]'''),\
     make_option('--fields', dest='fields',\
-        help='Comma delimited list of fields to compare.  This overwrites fields in prefs file.  If this is not provided, the first field in mapping file will be used.  Usage: --fields Field1,Field2,Field3'),\
+        help='Comma delimited list of fields to compare.  This overwrites fields in prefs file.  If this is not provided, the first field in metadata mapping file will be used.  Usage: --fields Field1,Field2,Field3'),\
 ]
 
+script_info['version'] = __version__
 
 def main():
-    option_parser, opts, args = parse_command_line_parameters(
-        script_description=script_description,
-        script_usage=script_usage,
-        version=__version__,
-        required_options=required_options,
-        optional_options=optional_options)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
     
     qiime_dir = get_qiime_project_dir()+'/qiime/support_files/'
     

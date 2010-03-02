@@ -12,7 +12,7 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Pre-release"
  
 
-from qiime.util import parse_command_line_parameters
+from qiime.util import parse_command_line_parameters, get_options_lookup
 from optparse import make_option
 from os import makedirs
 from os.path import exists, splitext, split, isdir
@@ -21,29 +21,9 @@ from qiime.align_seqs import alignment_module_names,alignment_method_constructor
     pairwise_alignment_methods, CogentAligner
 from qiime.util import load_qiime_config
 
-script_description = """Align sequences using a variety of alignment methods. """
-
-script_usage = """
-Align 10_seq.fasta (-i) using muscle (-m). Output files will be stored in 
-./muscle_aligned/ 
-  align_seqs.py -i 10_seq.fasta -m muscle
- 
-Align 10_seq.fasta (-i) with pynast (default) against template_aln.fasta (-t).
-Output files will be stored in ./pynast_aligned/
-  align_seqs.py -i 10_seq.fasta -t template_aln.fasta
-
-Align 10_seq.fasta (-i) with infernal against template_aln.sto (-t).
-Output files will be stored in ./infernal_aligned/
-  align_seqs.py -i 10_seq.fasta -t template_aln.sto -m infernal
-"""
+options_lookup = get_options_lookup()
 
 qiime_config = load_qiime_config()
-
-required_options = [\
-   make_option('-i','--input_fasta_fp',\
-        help='Input sequences to align')
-]
-
 
 if qiime_config['pynast_template_alignment_fp']:
     template_fp_default_help = '[default: %default]'
@@ -58,7 +38,39 @@ alignment_method_choices = \
     alignment_method_constructors.keys() + alignment_module_names.keys()
 pairwise_alignment_method_choices = pairwise_alignment_methods.keys()
 
-optional_options = [\
+script_info={}
+script_info['brief_description']="""Align sequences using a variety of alignment methods"""
+script_info['script_description']="""
+This script aligns the sequences in a FASTA file to each other or to a template sequence alignment, depending on the method chosen. Currently, there are three methods which can be used by the user:
+
+1. PyNAST (Caporaso et al., 2009) - The default alignment method is PyNAST, a python implementation of the NAST alignment algorithm.  The NAST algorithm aligns each provided sequence (the "candidate" sequence) to the best-matching sequence in a pre-aligned database of sequences (the "template" sequence).  Candidate sequences are not permitted to introduce new gap characters into the template database, so the algorithm introduces local mis-alignments to preserve the existing template sequence.
+
+2. MUSCLE (Edgar, 2004) - MUSCLE is an alignment method which stands for MUltiple Sequence Comparison by Log-Expectation.
+
+3. INFERNAL (Nawrocki, Kolbe, & Eddy, 2009) - Infernal ("INFERence of RNA ALignment") is for an alignment method for using RNA structure and sequence similarities.
+"""
+script_info['script_usage']=[]
+script_info['script_usage'].append(("""Alignment with MUSCLE""","""One could also use the MUSCLE algorithm. The following command can be used to align sequences (i.e. the resulting FASTA file from pick_rep_set.py), where the output is written to the directory "muscle_alignment/":""","""align_seqs.py -i repr_set_seqs.fasta -m muscle -o muscle_alignment/"""))
+script_info['script_usage'].append(("""Alignment with PyNAST""","""The default alignment method is PyNAST, a python implementation of the NAST alignment algorithm. The NAST algorithm aligns each provided sequence (the "candidate" sequence) to the best-matching sequence in a pre-aligned database of sequences (the "template" sequence). Candidate sequences are not permitted to introduce new gap characters into the template database, so the algorithm introduces local mis-alignments to preserve the existing template sequence. The quality thresholds are the minimum requirements for matching between a candidate sequence and a template sequence. The set of matching template sequences will be searched for a match that meets these requirements, with preference given to the sequence length. By default, the minimum sequence length is 150 and the minimum percent id is 75%. The minimum sequence length is much too long for typical pyrosequencing reads, but was chosen for compatibility with the original NAST tool.
+
+The following command can be used for aligning sequences using the PyNAST method, where we supply the program with a FASTA file of unaligned sequences (i.e. resulting FASTA file from pick_rep_set.py, a FASTA file of pre-aligned sequences (this is the template file, which is typically the Greengenes core set - available from http://greengenes.lbl.gov/), and the results will be written to the directory "pynast_aligned/":""","""align_seqs.py -i repr_set_seqs.fasta -t core_set_template.fasta -o pynast_aligned/"""))
+script_info['script_usage'].append(("""""","""Alternatively, one could change the minimum sequence length ("-e") requirement and minimum sequence identity ("-p"), using the following command:""","""align_seqs.py -i repr_set_seqs.fasta -t core_set_template.fasta -o pynast_aligned/ -e 500 -p 95.0"""))
+script_info['script_usage'].append(("""Alignment with Infernal""","""An alternative alignment method is to use Infernal. Infernal is similar to the PyNAST method, in that you supply a template alignment, although Infernal has several distinct differences. Infernal takes a multiple sequence alignment with a corresponding secondary structure annotation. This input file must be in Stockholm alignment format. There is a fairly good description of the Stockholm format rules at: http://en.wikipedia.org/wiki/Stockholm_format. Infernal will use the sequence and secondary structural information to align the candidate sequences to the full reference alignment. Similar to PyNAST, Infernal will not allow for gaps to be inserted into the reference alignment. Using Infernal is slower than other methods, and therefore is best used with sequences that do not align well using PyNAST.
+
+The following command can be used for aligning sequences using the Infernal method, where we supply the program with a FASTA file of unaligned sequences, a STOCKHOLM file of pre-aligned sequences and secondary structure (this is the template file - an example file can be obtained from: http://tajmahal.colorado.edu/tmp/tmprEJYWsLiGSseed.16s.reference_model.sto.zip), and the results will be written to the directory "infernal_aligned/":""","""align_seqs.py -m infernal -i repr_set_seqs.fasta -t seed.16s.reference_model.sto -o infernal_aligned/"""))
+script_info['output_description']="""All aligners will output a fasta file containing the alignment and log file in the directory specified by --output_dir (default <alignment_method>_aligned). PyNAST additionally outputs a failures file, containing the sequences which failed to align. So the result of align_seqs.py will be up to three files, where the prefix of each file depends on the user supplied FASTA file:
+
+1. "..._aligned.fasta" - This is a FASTA file containing all aligned sequences.
+
+2. "..._failures.fasta - This is a FASTA file containing all sequences which did not meet all the criteria specified. (PyNAST only)
+
+3. "..._log.txt" - This is a log file containing information pertaining to the results obtained from a particular method (e.g. BLAST percent identity, etc.)."""
+
+script_info['required_options']=[\
+   options_lookup['fasta_as_primary_input']
+]
+
+script_info['optional_options']=[\
     make_option('-t','--template_fp',\
           type='string',dest='template_fp',help='Filepath for '+\
           'template against %s' % template_fp_default_help,\
@@ -99,13 +111,10 @@ optional_options = [\
           ' alignment [default: %default]', default=0.75)
 ]
 
+script_info['version'] = __version__
+
 def main():
-    option_parser, opts, args = parse_command_line_parameters(
-      script_description=script_description,
-      script_usage=script_usage,
-      version=__version__,
-      required_options=required_options,
-      optional_options=optional_options)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
     
     if opts.min_percent_id <= 1.0:
         opts.min_percent_id *= 100
@@ -113,7 +122,7 @@ def main():
     if not (1.0 <= opts.min_percent_id <= 100.0):
         option_parser.error('Minimum percent sequence identity must be' +\
         ' between 1.0 and 100.0: %2.2f' % opts.min_percent_id)
-        
+    
     if not opts.template_fp and opts.alignment_method == 'pynast':
         option_parser.error('PyNAST requires a template alignment to be passed via -t')
 
