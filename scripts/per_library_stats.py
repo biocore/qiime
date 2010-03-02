@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME Project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Daniel McDonald"]
 __license__ = "GPL"
 __version__ = "1.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -13,31 +13,26 @@ __status__ = "Pre-release"
 
 from optparse import make_option
 from qiime.util import (compute_seqs_per_library_stats, 
-    parse_command_line_parameters)
+    parse_command_line_parameters, get_options_lookup)
 
-script_description = """Given an otu table compute and print the (min, max, median, mean) number of seqs per library."""
+options_lookup = get_options_lookup()
 
-script_usage = """Example usage: calculate stats on OTU table specified by otu_Table.txt
-
-per_library_stats.py -i otu_table.txt
-"""
-
-required_options = [make_option('-i','--input_otu_table',\
-         help='the input otu table')
-]
-
-optional_options = []
+#per_library_stats.py
+script_info={}
+script_info['brief_description']="""Calculate per library statistics"""
+script_info['script_description']="""Given an otu table, compute and print the (min, max, median, mean) number of seqs per library."""
+script_info['script_usage']=[]
+script_info['script_usage'].append(("""Example:""","""Calculate statistics on an OTU table (otu_table.txt)""","""per_library_stats.py -i otu_table.txt"""))
+script_info['output_description']="""The resulting statistics are written to stdout."""
+script_info['required_options']=[options_lookup['otu_table_as_primary_input']]
+script_info['optional_options']=[]
+script_info['version'] = __version__
 
 def main():
-    option_parser, opts,args = parse_command_line_parameters(
-        script_description=script_description,
-        script_usage=script_usage,
-        version=__version__,
-        required_options=required_options,
-        optional_options=optional_options)
+    option_parser, opts,args = parse_command_line_parameters(**script_info)
     
     min_counts, max_counts, median_counts, mean_counts, counts_per_sample =\
-     compute_seqs_per_library_stats(open(opts.input_otu_table,'U'))
+     compute_seqs_per_library_stats(open(opts.otu_table_fp,'U'))
     
     print 'Seqs/sample summary:' 
     print ' Min: %s' % str(min_counts)
