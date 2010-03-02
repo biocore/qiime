@@ -23,18 +23,18 @@ from qiime.parallel.util import split_fasta, get_random_job_prefix, write_jobs_f
     get_poller_command, write_filepaths_to_file,\
     write_merge_map_file_blast
 from qiime.parallel.blast import get_commands
-from qiime.util import load_qiime_config
-
-script_description = """Script for performing blast runs in parallel."""
-
-script_usage = """Split 10_seq.fasta (-i) into three fasta files (-O) and blast each against 
-  blast database created from 1000_seq.fasta (-d):
- blast.py -i 10_seq.fasta -d 1000_seq.fasta -O 3 -o bla_out"""
-
+from qiime.util import load_qiime_config, get_options_lookup
 
 qiime_config = load_qiime_config()
+options_lookup = get_options_lookup()
 
-required_options = [\
+script_info={}
+script_info['brief_description']="""Parallel BLAST"""
+script_info['script_description']="""This script for performing blast while making use of multicore/multiprocessor environments to perform analyses in parallel."""
+script_info['script_usage']=[]
+script_info['script_usage'].append(("""Example:""","""Split 10_seq.fasta (-i) into three fasta files (-O) and blast each against blast database created from 1000_seq.fasta (-d):""","""parallel_blast.py -i 10_seq.fasta -d 1000_seq.fasta -O 3 -o bla_out"""))
+script_info['output_description']=""" """
+script_info['required_options'] = [\
  make_option('-i','--infile_path',action='store',\
           type='string',dest='infile_path',
           help='Path of sequences to use as queries [REQUIRED]'),\
@@ -45,8 +45,7 @@ required_options = [\
  make_option('-o', '--output_dir', \
         help='name of output directory for blast jobs [REQUIRED]')
 ]
-
-optional_options = [\
+script_info['optional_options'] = [\
  make_option('-e','--e_value',action='store',\
         type='float', default=1e-30, dest='e_value',
         help='E-value threshold for blasts [default: %default]'),\
@@ -65,52 +64,23 @@ optional_options = [\
  make_option('-b','--blastall_fp',
         default=qiime_config['blastall_fp'],
         help='Path to blastall [default: %default]'),\
- make_option('-O','--jobs_to_start',action='store',type='int',\
-            help='Number of jobs to start [default: %default]',default=24),\
- make_option('-P','--poller_fp',action='store',\
-           type='string',help='full path to '+\
-           'qiime/parallel/poller.py [default: %default]',\
-           default=qiime_config['poller_fp']),\
- make_option('-R','--retain_temp_files',action='store_true',\
-           help='retain temporary files after runs complete '+\
-           '(useful for debugging) [default: %default]',\
-           default=False),\
- make_option('-S','--suppress_submit_jobs',action='store_true',\
-            help='Only split input and write commands file - don\'t submit '+\
-            'jobs [default: %default]',default=False),\
- make_option('-T','--poll_directly',action='store_true',\
-            help='Poll directly for job completion rather than running '+\
-            'poller as a separate job. If -T is specified this script will '+\
-            'not return until all jobs have completed. [default: %default]',\
-            default=False),\
- make_option('-U','--cluster_jobs_fp',action='store',\
-            type='string',help='path to cluster_jobs.py script ' +\
-            ' [default: %default]',\
-            default=qiime_config['cluster_jobs_fp']),\
- make_option('-W','--suppress_polling',action='store_true',
-           help='suppress polling of jobs and merging of results '+\
-           'upon completion [default: %default]',\
-           default=False),\
- make_option('-X', '--job_prefix', action='store', \
-        type='string', dest='job_prefix', default=None,
-        help='job prefix, max 10 chars [default: %default]'),\
- make_option('-Y','--python_exe_fp',action='store',\
-           type='string',help='full path to python '+\
-           'executable [default: %default]',\
-           default=qiime_config['python_exe_fp']),\
- make_option('-Z','--seconds_to_sleep',type='int',\
-            help='Number of seconds to sleep between checks for run '+\
-            ' completion when polling runs [default: %default]',default=60)
+ options_lookup['jobs_to_start'],\
+ options_lookup['poller_fp'],\
+ options_lookup['retain_temp_files'],\
+ options_lookup['suppress_submit_jobs'],\
+ options_lookup['poll_directly'],\
+ options_lookup['cluster_jobs_fp'],\
+ options_lookup['suppress_polling'],\
+ options_lookup['job_prefix'],\
+ options_lookup['python_exe_fp'],\
+ options_lookup['seconds_to_sleep']\
 ]
+
+script_info['version'] = __version__
 
 
 def main():
-    option_parser, opts, args = parse_command_line_parameters(
-      script_description=script_description,
-      script_usage=script_usage,
-      version=__version__,
-      required_options=required_options,
-      optional_options=optional_options)    
+    option_parser, opts, args = parse_command_line_parameters(**script_info)    
     # create local copies of command-line options
     input_fasta_fp = opts.infile_path 
     refseqs_path = opts.refseqs_path
