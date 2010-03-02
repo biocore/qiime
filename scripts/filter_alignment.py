@@ -21,37 +21,21 @@ from os.path import split, exists, splitext
 from os import mkdir, remove
 from qiime.util import load_qiime_config
 
-
-script_description = """%prog is intended to be applied as a pre-filter for 
-building trees from alignments. It removes positions which are highly variable 
-based on a lane mask file (a string of 1s and 0s which is the length of the 
-alignment and where 1s indicate positions to keep; e.g., 
-lanemask_in_1s_and_0s.txt from greengenes), and positions which are 100% 
-gap characters. Uses a minimal fasta parser, safe to use on large sequence 
-collections."""
-
-script_usage = \
-"""filter 1.fasta using the lanemask in lm.txt, but filtering no gaps (b/c
---allowed_gap_frac=1.0, meaning positions can be up to 100% gap); output
-written to ./1_pfiltered.fasta
-filter_alignment.py -i 1.fasta -g 1.0 -m lm.txt
-
-filter 1.fasta using the lanemask in lm.txt and filter positions which are
-100% gap (default -g behavior); output written to ./1_pfiltered.fasta
-filter_alignment.py -i 1.fasta -o ./ -m lm.txt
-
-filter 1.fasta positions which are 100% gap (default -g behavior) but no 
-lane mask filtering (because no lane mask file provided with -l); output 
-written to ./1_pfiltered.fasta
-filter_alignment.py -i 1.fasta -o ./"""
-
-required_options = [\
+script_info={}
+script_info['brief_description']="""Filter sequence alignment by removing highly variable regions"""
+script_info['script_description']="""This script should be applied to generate a useful tree when aligning against a template alignment (e.g., with PyNAST). This script will remove positions which are gaps in every sequence (common for PyNAST, as typical sequences cover only 200-400 bases, and they are being aligned against the full 16S gene). Additionally, the user can supply a lanemask file, that defines which positions should included when building the tree, and which should be ignored. Typically, this will differentiate between non-conserved positions, which are uninformative for tree building, and conserved positions which are informative for tree building. FILTERING ALIGNMENTS WHICH WERE BUILD WITH PYNAST AGAINST THE GREENGENES CORE SET ALIGNMENT SHOULD BE CONSIDERED AN ESSENTIAL STEP."""
+script_info['script_usage']=[]
+script_info['script_usage'].append(("""Examples:""","""As a simple example of this script, the user can use the following command, which consists of an input FASTA file (i.e. resulting file from align_seqs.py), lanemask template file and the output directory "filtered_alignment/":""","""filter_otus_by_sample.py -i repr_set_seqs_aligned.fna -m lanemask_template -o filtered_alignment/"""))
+script_info['script_usage'].append(("","""Alternatively, if the user would like to use a different gap fraction threshold ("-g"), they can use the following command:""","""filter_alignment.py -i repr_set_seqs_aligned.fna -m lanemask_template -o filtered_alignment/ -g 0.95"""))
+script_info['output_description']="""The output of filter_alignment.py consists of a single FASTA file, which ends with "pfiltered.fasta", where the "p" stands for positional filtering of the columns."""
+script_info['required_options']= [\
     make_option('-i','--input_fasta_file',action='store',\
          type='string',help='the input directory ')
 ]
 
 qiime_config = load_qiime_config()
-optional_options = [\
+
+script_info['optional_options']= [\
     make_option('-o','--output_dir',action='store',\
         type='string',help='the output directory '+\
         '[default: %default]',default='.'),\
@@ -69,15 +53,10 @@ optional_options = [\
         'of the sequences [default: %default]',
         default=1.-eps)
 ]
-
+script_info['version'] = __version__
 
 def main():
-    option_parser, opts, args = parse_command_line_parameters(
-        script_description=script_description,
-        script_usage=script_usage,
-        version=__version__,
-        required_options=required_options,
-        optional_options=optional_options)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
       
     # build the output filepath and open it any problems can be caught 
     # before starting the work
