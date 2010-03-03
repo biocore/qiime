@@ -1,6 +1,6 @@
 
-Report a bug
-^^^^^^^^^^^^
+Report and fixing bugs
+^^^^^^^^^^^^^^^^^^^^^^
 
 I found a bug in QIIME. What should I do?
 =========================================
