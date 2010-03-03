@@ -204,6 +204,7 @@ Utilities
    :maxdepth: 1
 
    scripts/blast_wrapper 
+   scripts/cluster_jobs
    scripts/convert_unifrac_sample_mapping_to_otu_table 
    scripts/fix_arb_fasta 
    scripts/make_qiime_py_file

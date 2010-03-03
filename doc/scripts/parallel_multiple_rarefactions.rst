@@ -41,7 +41,7 @@ This script performs like the `multiple_rarefactions.py <./multiple_rarefactions
 	-N, `-`-single_rarefaction_fp
 		Full path to scripts/`single_rarefaction.py <./single_rarefaction.html>`_ [default: /Users/Jesse/Qiime/scripts/`single_rarefaction.py <./single_rarefaction.html>`_]
 	-P, `-`-poller_fp
-		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /Users/Jesse/Qiime/qiime/parallel/`poller.py <./poller.html>`_]
+		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /software/Qiime/scripts/`poller.py <./poller.html>`_]
 	-R, `-`-retain_temp_files
 		Retain temporary files after runs complete (useful for debugging) [default: False]
 	-S, `-`-suppress_submit_jobs
@@ -55,7 +55,7 @@ This script performs like the `multiple_rarefactions.py <./multiple_rarefactions
 	-X, `-`-job_prefix
 		Job prefix [default: descriptive prefix + random chars]
 	-Y, `-`-python_exe_fp
-		Full path to python executable [default: /usr/local/bin/python]
+		Full path to python executable [default: /software/bin/python]
 	-Z, `-`-seconds_to_sleep
 		Number of seconds to sleep between checks for run  completion when polling runs [default: 60]
 

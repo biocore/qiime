@@ -37,13 +37,13 @@ This script for performing blast while making use of multicore/multiprocessor en
 	-D, `-`-suppress_format_blastdb
 		Supress format of blastdb [default: False]
 	-a, `-`-blastmat_dir
-		Full path to directory containing blastmat file [default: /Users/Jesse/blast-2.2.21/data]
+		Full path to directory containing blastmat file [default: /software/blast-2.2.16/data]
 	-b, `-`-blastall_fp
-		Path to blastall [default: /Users/Jesse/blast-2.2.21/bin/blastall]
+		Path to blastall [default: /software/bin/blastall]
 	-O, `-`-jobs_to_start
 		Number of jobs to start [default: 24]
 	-P, `-`-poller_fp
-		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /Users/Jesse/Qiime/qiime/parallel/`poller.py <./poller.html>`_]
+		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /software/Qiime/scripts/`poller.py <./poller.html>`_]
 	-R, `-`-retain_temp_files
 		Retain temporary files after runs complete (useful for debugging) [default: False]
 	-S, `-`-suppress_submit_jobs
@@ -57,7 +57,7 @@ This script for performing blast while making use of multicore/multiprocessor en
 	-X, `-`-job_prefix
 		Job prefix [default: descriptive prefix + random chars]
 	-Y, `-`-python_exe_fp
-		Full path to python executable [default: /usr/local/bin/python]
+		Full path to python executable [default: /software/bin/python]
 	-Z, `-`-seconds_to_sleep
 		Number of seconds to sleep between checks for run  completion when polling runs [default: 60]
 

@@ -33,7 +33,7 @@ This script performs like the `alpha_diversity.py <./alpha_diversity.html>`_ scr
 	-N, `-`-alpha_diversity_fp
 		Full path to scripts/`alpha_diversity.py <./alpha_diversity.html>`_ [default: /Users/Jesse/Qiime/scripts/`alpha_diversity.py <./alpha_diversity.html>`_]
 	-P, `-`-poller_fp
-		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /Users/Jesse/Qiime/qiime/parallel/`poller.py <./poller.html>`_]
+		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /software/Qiime/scripts/`poller.py <./poller.html>`_]
 	-R, `-`-retain_temp_files
 		Retain temporary files after runs complete (useful for debugging) [default: False]
 	-S, `-`-suppress_submit_jobs
@@ -47,7 +47,7 @@ This script performs like the `alpha_diversity.py <./alpha_diversity.html>`_ scr
 	-X, `-`-job_prefix
 		Job prefix [default: descriptive prefix + random chars]
 	-Y, `-`-python_exe_fp
-		Full path to python executable [default: /usr/local/bin/python]
+		Full path to python executable [default: /software/bin/python]
 	-Z, `-`-seconds_to_sleep
 		Number of seconds to sleep between checks for run  completion when polling runs [default: 60]
 
