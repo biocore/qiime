@@ -7,7 +7,9 @@
 
 **Description:**
 
-A FASTA file of sequences, can be screened to remove chimeras (sequences generated due to the PCR amplification of multiple templates or parent sequences). QIIME currently includes a single taxonomy-assignment-based approach, blast_fragments, for identifying sequences as chimeric.
+A FASTA file of sequences, can be screened to remove chimeras (sequences generated due to the PCR amplification of multiple templates or parent sequences). QIIME currently includes a single taxonomy-assignment-based approach, blast_fragments, for identifying sequences as chimeric. 
+
+The reference sequences (-r) and id-to-taxonomy map (-t) provided are the same format as those provided to `assign_taxonomy.py <./assign_taxonomy.html>`_. The reference sequences are in fasta format, and the id-to-taxonomy map contains tab-separated lines where the first field is a sequence identifier, and the second field is the taxonomy separated by semi-colons (e.g., Archaea;Euryarchaeota;Methanobacteriales;Methanobacterium). The reference collection should be derived from a chimera-checked datbase (such as the full greengenes database), and filtered to contain only sequences at, for example, a maximum of 97% sequence identity.
 
 
 **Usage:** :file:`identify_chimeric_seqs.py [options]`
