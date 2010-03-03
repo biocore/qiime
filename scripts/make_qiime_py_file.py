@@ -66,12 +66,14 @@ from qiime.util import parse_command_line_parameters, get_options_lookup
 options_lookup = get_options_lookup()
 
 script_info = {}
-script_info['script_description'] = \"\"\" \"\"\"
+script_info['brief_description'] = ""
+script_info['script_description'] = ""
 script_info['script_usage'] = [("","","")]
+script_info['output_description']= ""
 script_info['required_options'] = [\\
  # Example required option
  #make_option('-i','--input_dir',help='the input directory'),\\
- #options_lookup['fasta']
+ #options_lookup['input_fasta']
 ]
 script_info['optional_options'] = [\\
  # Example optional option
