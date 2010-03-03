@@ -33,9 +33,9 @@ script_info={}
 script_info['brief_description']="""Parallel beta diversity"""
 script_info['script_description']="""This script performs like the beta_diversity.py script, but is intended to make use of multicore/multiprocessor environments to perform analyses in parallel."""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Example""","""Apply the dist_unweighted_unifrac and the dist_weighted_unifrac metrics (-m) to all otu tables in ./rare/ (-i) and write the resulting output files to ./out/ (-o, will be created if it doesn't exist). Use the tree file rep_set.tre (-t) when necessary.""","""parallel_beta_diversity.py -i ./rare/ -o ./out -m dist_unweighted_unifrac,dist_weighted_unifrac -t ./rep_set.tre"""))
+script_info['script_usage'].append(("""Example""","""Apply the dist_unweighted_unifrac and the dist_weighted_unifrac metrics (-m) to all otu tables in /home/qiime_user/rare/ (-i) and write the resulting output files to /home/qiime_user/out/ (-o, will be created if it doesn't exist). Use the tree file /home/qiime_user/rep_set.tre (-t) when necessary.""","""%prog -i /home/qiime_user/rare/ -o /home/qiime_user/out -m dist_unweighted_unifrac,dist_weighted_unifrac -t /home/qiime_user/rep_set.tre"""))
 
-script_info['output_description']="""The output of parallel_beta_diversity.py is a folder containing text files, each a distance matrix between samples."""
+script_info['output_description']="""The output of %prog is a folder containing text files, each a distance matrix between samples."""
 
 script_info['required_options'] = [\
  make_option('-i', '--input_path',

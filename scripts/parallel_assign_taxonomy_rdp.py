@@ -32,7 +32,7 @@ script_info={}
 script_info['brief_description']="""Parallel taxonomy assignment using RDP"""
 script_info['script_description']="""This script performs like the assign_taxonomy.py script, but is intended to make use of multicore/multiprocessor environments to perform analyses in parallel."""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Example""","""Split the input file (-i) into five jobs (-O) start them,and write the results (-o) to out/. BE SURE TO SPECIFY FULL PATHS!""","""parallel_assign_taxonomy_rdp -O 5 -i inseqs.fasta -o out/"""))
+script_info['script_usage'].append(("""Example""","""Assign taxonomy to all sequences in the input file (-i) via five (-O) independent jobs using the RDP classifier and write the results (-o) to /home/qiime_user/out/.""","""%prog -O 5 -i /home/qiime_user/inseqs.fasta -o /home/qiime_user/out/"""))
 script_info['output_description']="""Mapping of sequence identifiers to taxonomy and quality scores."""
 script_info['required_options'] = [\
  make_option('-i','--input_fasta_fp',action='store',\

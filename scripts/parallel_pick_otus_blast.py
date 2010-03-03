@@ -34,10 +34,8 @@ script_info={}
 script_info['brief_description']="""Parallel pick otus using BLAST"""
 script_info['script_description']="""This script performs like the pick_otus.py script, but is intended to make use of multicore/multiprocessor environments to perform analyses in parallel."""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Example""","""Pick OTUs by blasting inseqs.fasta against refseqs.fasta and write the output to the out/ directory.""","""parallel_pick_otus_blast.py -i inseqs.fasta -r refseqs.fasta -o out/"""))
-script_info['output_description']="""The output consists of two files (i.e. seqs_otus.txt and seqs_otus.log). The .txt file is composed of tab-delimited lines, where the first field on each line corresponds to an (arbitrary) cluster identifier, and the remaining fields correspond to sequence identifiers assigned to that cluster. Sequence identifiers correspond to those provided in the input FASTA file.
-
-The resulting .log file contains a list of parameters passed to this script along with the output location of the resulting .txt file."""
+script_info['script_usage'].append(("""Example""","""Pick OTUs by blasting /home/qiime_user/inseqs.fasta against /home/qiime_user/refseqs.fasta and write the output to the /home/qiime_user/out/ directory.""","""%prog -i /home/qiime_user/inseqs.fasta -r /home/qiime_user/refseqs.fasta -o /home/qiime_user/out/"""))
+script_info['output_description']="""The output consists of two files (i.e. seqs_otus.txt and seqs_otus.log). The .txt file is composed of tab-delimited lines, where the first field on each line corresponds to an (arbitrary) cluster identifier, and the remaining fields correspond to sequence identifiers assigned to that cluster. Sequence identifiers correspond to those provided in the input FASTA file. The resulting .log file contains a list of parameters passed to this script along with the output location of the resulting .txt file."""
 
 script_info['required_options'] = [\
     make_option('-i','--input_fasta_fp',action='store',\
