@@ -1,7 +1,24 @@
-QIIME 1.0 - ()
+Add changes since 0.91 here
+===========================
+
+
+QIIME 0.91 - (3 Mar 2010)
 =======================
 
-* 
+* Addition of a uclust-based OTU picker.
+* Transfer of all command line interfaces from Qiime/qiime to Qiime/scripts -- this was an important change as it allowed us to get away from the previously one-to-one relationship between files in our library code (in Qiime/qiime) and the command line interfaces.
+* Standardized command line interfaces for all code in Qiime/scripts by using a new function, Qiime.qiime.util.parse_command_line_parameters to handle the command line interfaces.
+* Moved to Sphinx for documentation, and developed a framework for extracting script documentation directly from the scripts to populate the web documentation. 
+* Bug fixes through-out the code base, including but not limited to fixes for Sourceforge tickets: 2957503, 2953765, 2945548, 2942443, 2941925, 2941926, 2941717, 2941396, 2939588, 2939575, 2935939.
+* Updated the all_tests.py script to perform a minimal test of the scripts (getting help text works as expected), and to alert users if unit tests may be failing due to missing external applications, in which case they may not be critical.
+* Created a directory for pycogent_backports, where we can temporarily store new code that has been added to PyCogent, but which has not been added to a PyCogent release yet. This will allow us to keep QIIME's dependencies on the latest PyCogent version despite rapid and frequently related changes in both packages.
+* Added code for performing Procrustes analyses of coordinate matrices, and graphing the results of those analyses in 3d plots (see transform_coordinate_matrices.py and compare_3d_plots.py).
+* Performance enhancements related to golay barcode decoding.
+* Added setup.py to help with installation of QIIME - this will put the library code in site-packages, and the scripts in /usr/local/bin (both locations can be changed via command line options to setup.py).
+* Created a support_files directory to hold jar, js, png, and other required files.
+* Added Pearson correlation to list of options in otu_category_significance.py.
+* Workflow scripts added for running large repetitive processes with a single command rather than multiple commands -- in scripts, see beta_diversity_through_3d_plots.py, pick_otus_through_otu_table.py, alpha_rarefaction.py, jackknifed_upgma.py.
+
 
 
 QIIME 0.9 - (25 Jan 2010)
