@@ -247,7 +247,7 @@ div.body p.centered {
 /* -- tables ---------------------------------------------------------------- */
 
 table.docutils {
-    border: 0;
+    border: 1;
     border-collapse: collapse;
 }
 
