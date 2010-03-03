@@ -477,8 +477,15 @@ def build_usage_lines(required_options,
      ' '.join(['%s %s' % (str(ro),ro.dest.upper())\
                for ro in required_options])
     usage_examples = []
-    for usage_example in script_usage:
-        usage_examples.append('%s: %s\n %s' % usage_example)
+    for title, description, command in script_usage:
+        title = title.strip(':').strip()
+        description = description.strip(':').strip()
+        command = command.strip()
+        if title:
+            usage_examples.append('%s: %s\n %s' %\
+             (title,description,command))
+        else:
+            usage_examples.append('%s\n %s' % (description,command))
     usage_examples = '\n\n'.join(usage_examples)
     lines = (line1,
              '', # Blank line
