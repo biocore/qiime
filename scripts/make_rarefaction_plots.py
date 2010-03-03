@@ -24,39 +24,24 @@ import os.path
 from os.path import exists, splitext, split
 import shutil
 
-script_description = """Create an html file of rarefaction plots based on the supplied\
-mapping file (-m) and the supplied rarefaction files (-r) from beta_diversity.py. \
-The user may also supply optional arguments that will only create plots for \
-supplied metadata columns from the mapping file (-p), an image type (-i), and a\
-resolution (-d). If the user would like to suppress html output they can pass\
-the -n flag, and output raw data with the -w flag. The -y option allows the\
-user to supply a maximum value for the yaxis of the plots."""
+script_info={}
+script_info['brief_description']="""Generate Rarefaction Plots"""
+script_info['script_description']="""Once the batch alpha diversity files have been collated, you may want to compare the diversity using plots. Using the results from collate_alpha.py, you can plot the samples and or by category in the mapping file using this script.
 
-script_usage = """Usage: %prog [options] {-m MAP -r RAREFACTION}
-
-Example Usage:
-Create an html file with all rarefaction plots for all relevant categories:
-python %prog -m mappingfile.txt -r rare1.txt,rare2.txt
-
-Create an html file with rarefaction plots for only the provided categories:
-python %prog -m mappingfile.txt -r rare1.txt,rare2.txt -p DAY,DONOR
-
-Create an html file with rarefaction plots for provided categories, images of type PNG,\
-resolution of 150:
-python %prog -m mappingfile.txt -r rare1.txt,rare2.txt -p DAY,DONOR -i png -d 150
-
-Suppress html output and only write raw rarefaction data:
-python %prog -m mappingfile.txt -r rare1.txt,rare2.txt -n -w
-"""
-
-required_options = [\
+This script creates an html file of rarefaction plots based on the supplied mapping file (-m) and the supplied rarefaction files (-r) from collate_alpha.py. The user may also supply optional arguments that will only create plots for supplied metadata columns from the mapping file (-p), an image type (-i), and a resolution (-d). If the user would like to suppress html output they can pass the -n flag, and output raw data with the -w flag. The -y option allows the user to supply a maximum value for the yaxis of the plots."""
+script_info['script_usage']=[]
+script_info['script_usage'].append(("""Default Example:""","""For generated rarefaction plots using the default parameters, including the mapping file and one rarefaction file, you can use the following command:""","""make_rarefaction_plots.py -m Mapping_file.txt -r chao1.txt"""))
+script_info['script_usage'].append(("""Multiple File Example:""","""If you would like to generate plots for multiple files, you can use the following command:""","""make_rarefaction_plots.py -m Mapping_file.txt -r chao1.txt,PD_whole_tree.txt"""))
+script_info['script_usage'].append(("""Category Specific Example:""","""In the case that you want to make plots for a specific category (i.e., pH), you can use the following command:""","""make_rarefaction_plots.py -m Mapping_file.txt -r chao1.txt -p"""))
+script_info['script_usage'].append(("""Specify Image Type and Resolution:""","""Optionally, you can change the resolution ("-d") and the type of image created ("-i"), by using the following command:""","""make_rarefaction_plots.py -m Mapping_file.txt -r chao1.txt -p pH -d 180 -i pdf"""))
+script_info['output_description']="""The result of this script produces a folder and within that folder there are sub-folders for each data file (metric) supplied as input. Within the sub-folders, there will be images for each of the categories specified by the user."""
+script_info['required_options'] = [\
 make_option('-m', '--map', help='name of mapping file [REQUIRED]'),
 make_option('-r', '--rarefaction', help='name of rarefaction file, takes\
 output from collate_alpha OR tab delimited data from a previous run \
 of this script. If using raw data from a previous run, set -x flag. [REQUIRED]')
 ]
-
-optional_options = [\
+script_info['optional_options'] = [\
 make_option('-p', '--prefs', type='string', help='name of columns to make rarefaction graphs of, \
 comma delimited no spaces. Use \'ALL\' command to make graphs of all metadata columns. \
 [default: %default]', default='ALL'),
@@ -80,13 +65,10 @@ rarefaction graphing data that can be read back in and plotted. \
 [default: %default]', action='store_true', default=False)
 ]
 
+script_info['version'] = __version__
+
 def main():
-    option_parser, options, args = parse_command_line_parameters(
-      script_description=script_description,
-      script_usage=script_usage,
-      version=__version__,
-      required_options=required_options,
-      optional_options=optional_options)
+    option_parser, options, args = parse_command_line_parameters(**script_info)
       
     prefs = {}
     
