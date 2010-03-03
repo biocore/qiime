@@ -9,10 +9,10 @@ __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2010, The QIIME project"
 __credits__ = ["Jens Reeder"]
 __license__ = "GPL"
-__version__ = "1.0-dev"
+__version__ = "0.91"
 __maintainer__ = "Jens Reeder"
 __email__ = "jens.reeder@gmail.com"
-__status__ = "Pre-release"
+__status__ = "Release"
  
 from os import makedirs
 from os.path import exists, splitext, split

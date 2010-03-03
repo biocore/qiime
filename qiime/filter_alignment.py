@@ -12,10 +12,10 @@ __author__ = "Dan Knights"
 __copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Greg Caporaso", "Justin Kuczynski", "Dan Knights"]
 __license__ = "GPL"
-__version__ = "1.0-dev"
+__version__ = "0.91"
 __maintainer__ = "Dan Knights"
 __email__ = "danknights@gmail.com"
-__status__ = "Pre-release"
+__status__ = "Release"
 
 """Contains code for filtering alignments before building trees from them
 """

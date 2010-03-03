@@ -13,10 +13,10 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Greg Caporaso","Jesse Stombaugh"]
 __license__ = "GPL"
-__version__ = "1.0-dev"
+__version__ = "0.91"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Pre-release"
+__status__ = "Release"
 
 qiime_config = load_qiime_config()
 options_lookup = get_options_lookup()

@@ -5,10 +5,10 @@ __author__ = "Rob Knight, Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Greg Caporaso"] 
 __license__ = "GPL"
-__version__ = "1.0-dev"
+__version__ = "0.91"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Pre-release"
+__status__ = "Release"
 
 from os.path import split, splitext
 from qiime.parallel.util import get_rename_command
