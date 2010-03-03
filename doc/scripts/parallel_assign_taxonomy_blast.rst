@@ -1,0 +1,78 @@
+.. _parallel_assign_taxonomy_blast:
+
+.. index:: parallel_assign_taxonomy_blast
+
+*parallel_assign_taxonomy_blast.py* -- Parallel taxonomy assignment using BLAST
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**Description:**
+
+This script performs like the `assign_taxonomy.py <./assign_taxonomy.html>`_ script, but is intended to make use of multicore/multiprocessor environments to perform analyses in parallel.
+
+
+**Usage:** :file:`parallel_assign_taxonomy_blast.py [options]`
+
+**Input Arguments:**
+
+.. note::
+
+	
+	**[REQUIRED]**
+		
+	-i, `-`-input_fasta_fp
+		full path to input_fasta_fp [REQUIRED]
+	-t, `-`-id_to_taxonomy_fp
+		full path to id_to_taxonomy mapping file [REQUIRED]
+	-o, `-`-output_dir
+		full path to store output files [REQUIRED]
+	
+	**[OPTIONAL]**
+		
+	-r, `-`-reference_seqs_fp
+		Ref seqs to blast against.  Must provide either --blast_db or --reference_seqs_db for assignment with blast [default: None]
+	-b, `-`-blast_db
+		Database to blast against.  Must provide either --blast_db or --reference_seqs_db for assignment with blast [default: None]
+	-e, `-`-e_value
+		Maximum e-value to record an assignment, only used for blast method [default: 0.001]
+	-B, `-`-blastmat_dir
+		full path to directory containing blastmat file [default: /Users/Jesse/blast-2.2.21/data]
+	-N, `-`-assign_taxonomy_fp
+		full path to scripts/`assign_taxonomy.py <./assign_taxonomy.html>`_ [default: /Users/Jesse/Qiime/scripts/`assign_taxonomy.py <./assign_taxonomy.html>`_]
+	-O, `-`-jobs_to_start
+		Number of jobs to start [default: 24]
+	-P, `-`-poller_fp
+		full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /Users/Jesse/Qiime/qiime/parallel/`poller.py <./poller.html>`_]
+	-R, `-`-retain_temp_files
+		retain temporary files after runs complete (useful for debugging) [default: False]
+	-S, `-`-suppress_submit_jobs
+		Only split input and write commands file - don't submit jobs [default: False]
+	-T, `-`-poll_directly
+		Poll directly for job completion rather than running poller as a separate job. If -T is specified this script will not return until all jobs have completed. [default: False]
+	-U, `-`-cluster_jobs_fp
+		path to `cluster_jobs.py <./cluster_jobs.html>`_ script  [default: /software/scripts/`cluster_jobs.py <./cluster_jobs.html>`_]
+	-W, `-`-suppress_polling
+		suppress polling of jobs and merging of results upon completion [default: False]
+	-X, `-`-job_prefix
+		job prefix [default: descriptive prefix + random chars]
+	-Y, `-`-python_exe_fp
+		full path to python executable [default: /usr/local/bin/python]
+	-Z, `-`-seconds_to_sleep
+		Number of seconds to sleep between checks for run  completion when polling runs [default: 60]
+
+
+**Output:**
+
+Mapping of sequence identifiers to taxonomy and quality scores.
+
+
+**Example:**
+
+Split the input file (-i) into five jobs (-O), using the id to taxonomy mapping file (-t) and reference sequence template file (-r), start them,and write the results (-o) to out/. 
+
+BE SURE TO SPECIFY FULL PATHS!
+
+::
+
+	parallel_assign_taxonomy_blast -O 5 -i inseqs.fasta -t at_id_to_taxonomy.txt -r at_refseqs.fasta -o out/
+
+

@@ -1,0 +1,68 @@
+.. _parallel_alpha_diversity:
+
+.. index:: parallel_alpha_diversity
+
+*parallel_alpha_diversity.py* -- Parallel alpha diversity
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**Description:**
+
+This script performs like the `alpha_diversity.py <./alpha_diversity.html>`_ script, but is intended to be used in multi-core/processor environmentss, so analyses can be performed in parallel.
+
+
+**Usage:** :file:`parallel_alpha_diversity.py [options]`
+
+**Input Arguments:**
+
+.. note::
+
+	
+	**[REQUIRED]**
+		
+	-i, `-`-input_path
+		input path, must be directory [REQUIRED]
+	-o, `-`-output_path
+		output path, must be directory [REQUIRED]
+	-m, `-`-metrics
+		metrics to use, comma delimited [REQUIRED]
+	
+	**[OPTIONAL]**
+		
+	-t, `-`-tree_path
+		path to newick tree file, required for phylogenetic metrics [default: None]
+	-N, `-`-alpha_diversity_fp
+		full path to scripts/`alpha_diversity.py <./alpha_diversity.html>`_ [default: /Users/Jesse/Qiime/scripts/`alpha_diversity.py <./alpha_diversity.html>`_]
+	-P, `-`-poller_fp
+		full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /Users/Jesse/Qiime/qiime/parallel/`poller.py <./poller.html>`_]
+	-R, `-`-retain_temp_files
+		retain temporary files after runs complete (useful for debugging) [default: False]
+	-S, `-`-suppress_submit_jobs
+		Only split input and write commands file - don't submit jobs [default: False]
+	-T, `-`-poll_directly
+		Poll directly for job completion rather than running poller as a separate job. If -T is specified this script will not return until all jobs have completed. [default: False]
+	-U, `-`-cluster_jobs_fp
+		path to `cluster_jobs.py <./cluster_jobs.html>`_ script  [default: /software/scripts/`cluster_jobs.py <./cluster_jobs.html>`_]
+	-W, `-`-suppress_polling
+		suppress polling of jobs and merging of results upon completion [default: False]
+	-X, `-`-job_prefix
+		job prefix [default: descriptive prefix + random chars]
+	-Y, `-`-python_exe_fp
+		full path to python executable [default: /usr/local/bin/python]
+	-Z, `-`-seconds_to_sleep
+		Number of seconds to sleep between checks for run  completion when polling runs [default: 60]
+
+
+**Output:**
+
+The resulting output will be the same number of files as supplied by the user. The resulting files are tab-delimited text files, where the columns correspond to alpha diversity metrics and the rows correspond to samples and their calculated diversity measurements. 
+
+
+**Example**
+
+Apply the observed_species, chao1, PD_whole_tree metrics (-m) to all otu tables in ./rare/ (-i) and write the resulting output files to ./out/ (-o, will be created if it doesn't exist). Use the tree file rep_set.tre (-t) when necessary.
+
+::
+
+	parallel_alpha_diversity.py -i ./rare/ -o ./out -m observed_species,chao1,PD_whole_tree -t ./rep_set.tre
+
+
