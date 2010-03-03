@@ -29,11 +29,11 @@ This filter allows for the removal of sequences and OTUs that either do or don't
 	**[OPTIONAL]**
 		
 	-o, `-`-otu_outfile
-		name of otu output file, default is otu_filename.filtered.xls
+		Name of otu output file, default is otu_filename.filtered.xls
 	-p, `-`-map_outfile
-		name of map output file, default is map_filename.filtered.xls
+		Name of map output file, default is map_filename.filtered.xls
 	-n, `-`-num_seqs_per_otu
-		minimum counts across samples to keep OTU, default is only to keep OTUs that are present in the samples.
+		Minimum counts across samples to keep OTU, default is only to keep OTUs that are present in the samples.
 
 
 **Output:**

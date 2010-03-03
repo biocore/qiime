@@ -25,13 +25,13 @@ This script should be applied to generate a useful tree when aligning against a 
 	**[OPTIONAL]**
 		
 	-o, `-`-output_dir
-		the output directory [default: .]
+		The output directory [default: .]
 	-m, `-`-lane_mask_fp
-		path to lanemask file [default: None]
+		Path to lanemask file [default: None]
 	-s, `-`-suppress_lane_mask_filter
-		suppress lane mask filtering (necessary to turn off lane-mask-based filtering when a qiime_config default is  provided for --lane_mask_fp) [default: False]
+		Suppress lane mask filtering (necessary to turn off lane-mask-based filtering when a qiime_config default is  provided for --lane_mask_fp) [default: False]
 	-g, `-`-allowed_gap_frac
-		gap filter threshold, filters positions which are gaps in > allowed_gap_frac of the sequences [default: 0.999999]
+		Gap filter threshold, filters positions which are gaps in > allowed_gap_frac of the sequences [default: 0.999999]
 
 
 **Output:**

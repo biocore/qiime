@@ -37,7 +37,7 @@ This script aligns the sequences in a FASTA file to each other or to a template 
 	-m, `-`-alignment_method
 		Method for aligning sequences. Valid choices are: pynast, infernal, clustalw, muscle, infernal, mafft [default: pynast]
 	-a, `-`-pairwise_alignment_method
-		method for performing pairwise alignment in PyNAST. Valid choices are blast, muscle, pair_hmm, clustal, mafft [default: blast]
+		Method for performing pairwise alignment in PyNAST. Valid choices are blast, muscle, pair_hmm, clustal, mafft [default: blast]
 	-d, `-`-blast_db
 		Database to blast against when -m pynast [default: created on-the-fly from template_alignment]
 	-o, `-`-output_dir

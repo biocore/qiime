@@ -30,35 +30,35 @@ Sequences from samples that are not found in the mapping file (no corresponding 
 	**[OPTIONAL]**
 		
 	-q, `-`-qual
-		names of qual files, comma-delimited [default: None]
+		Names of qual files, comma-delimited [default: None]
 	-l, `-`-min-seq-length
-		minimum sequence length, in nucleotides [default: 200]
+		Minimum sequence length, in nucleotides [default: 200]
 	-L, `-`-max-seq-length
-		maximum sequence length, in nucleotides [default: 1000]
+		Maximum sequence length, in nucleotides [default: 1000]
 	-t, `-`-trim-seq-length
-		calculate sequence lengths after trimming primers and barcodes [default: False]
+		Calculate sequence lengths after trimming primers and barcodes [default: False]
 	-s, `-`-min-qual-score
-		min average qual score allowed in read [default: 25]
+		Min average qual score allowed in read [default: 25]
 	-k, `-`-keep-primer
-		do not remove primer from sequences
+		Do not remove primer from sequences
 	-B, `-`-keep-barcode
-		do not remove barcode from sequences
+		Do not remove barcode from sequences
 	-a, `-`-max-ambig
-		maximum number of ambiguous bases [default: 0]
+		Maximum number of ambiguous bases [default: 0]
 	-H, `-`-max-homopolymer
-		maximum length of homopolymer run [default: 6]
+		Maximum length of homopolymer run [default: 6]
 	-M, `-`-max-primer-mismatch
-		maximum number of primer mismatches [default: 0]
+		Maximum number of primer mismatches [default: 0]
 	-b, `-`-barcode-type
-		barcode type, e.g. 4 or hamming_8 or golay_12 [default: golay_12]
+		Barcode type, e.g. 4 or hamming_8 or golay_12 [default: golay_12]
 	-o, `-`-dir-prefix
-		directory prefix for output files [default: .]
+		Directory prefix for output files [default: .]
 	-e, `-`-max-barcode-errors
-		maximum number of errors in barcode [default: 1.5]
+		Maximum number of errors in barcode [default: 1.5]
 	-n, `-`-start-numbering-at
-		seq id to use for the first sequence [default: 1]
+		Seq id to use for the first sequence [default: 1]
 	-r, `-`-remove_unassigned
-		remove sequences which are Unassigned from             output [default: False]
+		Remove sequences which are Unassigned from             output [default: False]
 	-c, `-`-disable_bc_correction
 		Disable attempts to find nearest corrected barcode.  Can improve performance. [default: False]
 	-w, `-`-qual_score_window

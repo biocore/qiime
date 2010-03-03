@@ -29,7 +29,7 @@ The `summarize_taxa.py <./summarize_taxa.html>`_ script provides summary informa
 	-L, `-`-level
 		Level of taxonomy to use [default: 2]
 	-m, `-`-category_mapping
-		if supplied - the taxon information will be added to the category mapping file. This mapping file can be used to color PCoA plots by taxon abundance or to perform statistical tests of taxon/category associations.
+		If supplied - the taxon information will be added to the category mapping file. This mapping file can be used to color PCoA plots by taxon abundance or to perform statistical tests of taxon/category associations.
 	-d, `-`-delimitor
 		Delimitor that separates taxonomy categories.[default: ;]
 	-r, `-`-relative_abundance

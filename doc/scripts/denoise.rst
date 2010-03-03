@@ -25,15 +25,15 @@ This script will denoise a flowgram file in  .sff.txt format, which is the outpu
 	**[OPTIONAL]**
 		
 	-o, `-`-output_dir
-		path to output directory [default: denoised_seqs/]
+		Path to output directory [default: denoised_seqs/]
 	-k, `-`-keep_intermediates
 		Do not delete intermediate files -- useful for debugging [default: False]
 	-c, `-`-cut-off
-		cut-off value (passed to pyroNoise) [default: 0.05]
+		Cut-off value (passed to pyroNoise) [default: 0.05]
 	-s, `-`-precision
-		precision (passed to pyroNoise)[default: 15.0]
+		Precision (passed to pyroNoise)[default: 15.0]
 	-n, `-`-num_cpus
-		number of CPUs [default: 1]
+		Number of CPUs [default: 1]
 
 
 **Output:**

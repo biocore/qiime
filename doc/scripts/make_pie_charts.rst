@@ -28,11 +28,11 @@ This script automates the construction of pie charts showing the breakdown of ta
 	**[OPTIONAL]**
 		
 	-s, `-`-sample_flag
-		if True pie charts will be created for each sample
+		If True pie charts will be created for each sample
 	-n, `-`-num
 		Maximum number of individual categories in each pie chart. All additional categories are grouped into an "other" category. [default: 20]
 	-o, `-`-dir-prefix
-		directory prefix for all analyses
+		Directory prefix for all analyses
 
 
 **Output:**

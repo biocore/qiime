@@ -80,7 +80,7 @@ Note that sequence identifier lines correspond to the FASTA format, where each l
 	-n, `-`-prefix_prefilter_length
 		Prefilter data so seqs with identical first prefix_prefilter_length are automatically grouped into a single OTU.  This is useful for large sequence collections where OTU picking doesn't scale well [default: None; 100 is a good value]
 	-t, `-`-trie_prefilter
-		prefilter data so seqs which are identical prefixes of a longer seq are automatically grouped into a single OTU; useful for large sequence collections where OTU picking doesn't scale well [default: False]
+		Prefilter data so seqs which are identical prefixes of a longer seq are automatically grouped into a single OTU; useful for large sequence collections where OTU picking doesn't scale well [default: False]
 	-p, `-`-prefix_length
 		Prefix length when using the prefix_suffix otu picker; WARNING: CURRENTLY DIFFERENT FROM prefix_prefilter_length (-n)! [default: 50]
 	-u, `-`-suffix_length

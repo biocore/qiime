@@ -27,7 +27,7 @@ This script provides a convenient interface for merging mapping files which cont
 	**[OPTIONAL]**
 		
 	-n, `-`-no_data_value
-		value to represent missing data (i.e., when all fields are not defined in all mapping files) [default: no_data]
+		Value to represent missing data (i.e., when all fields are not defined in all mapping files) [default: no_data]
 
 
 **Output:**

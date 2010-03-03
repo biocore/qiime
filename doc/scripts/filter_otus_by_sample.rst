@@ -29,7 +29,7 @@ This filter allows for the removal of sequences and OTUs containing user-specifi
 	**[OPTIONAL]**
 		
 	-o, `-`-output_dir
-		path to the output directory
+		Path to the output directory
 
 
 **Output:**

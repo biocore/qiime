@@ -33,7 +33,7 @@ After picking OTUs, you can then pick a representative set of sequences. For eac
 	-l, `-`-log_fp
 		Path to store log file [default: No log file created.]
 	-s, `-`-sort_by
-		sort by otu or seq_id [default: otu]
+		Sort by otu or seq_id [default: otu]
 
 
 **Output:**

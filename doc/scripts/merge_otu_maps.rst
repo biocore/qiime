@@ -48,7 +48,7 @@ The resulting OTU table will be:
 	**[OPTIONAL]**
 		
 	-o, `-`-output_fp
-		path to write output OTU map [REQUIRED]
+		Path to write output OTU map [REQUIRED]
 
 
 **Output:**

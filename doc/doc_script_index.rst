@@ -7,7 +7,7 @@ Scripts - Analyses and Parameters
 General Notes
 -------------
 
-All QIIME analyses are performed using python (.py) scripts, which are located in the Qiime/scripts directory. To access QIIME python scripts, it may be useful to set an environment variable to the location of the innermost QIIME directory (the one containing :file:`check_id_map.py`, for example)::
+All QIIME analyses are performed using python (.py) scripts, which are located in the Qiime/scripts directory. To access QIIME python scripts, it may be useful to set an environment variable to the location of the innermost QIIME directory (the one containing `check_id_map.py <./scripts/check_id_map.html>`_, for example)::
 
 	qdir=/path/to/QIIME/
 

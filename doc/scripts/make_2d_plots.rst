@@ -29,7 +29,7 @@ This script generates 2D PCoA plots using the principal coordinates file generat
 	-b, `-`-colorby
 		This is the categories to color by in the plots from the user-generated mapping file. The categories must match the name of a column header in the mapping file exactly and multiple categories can be list by comma separating them without spaces. The user can also combine columns in the mapping file by separating the categories by "&&" without spaces [default=None]
 	-o, `-`-output_dir
-		path to the output directory
+		Path to the output directory
 
 
 **Output:**

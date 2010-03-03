@@ -25,7 +25,7 @@ Once the OTU table has been generated, the user can create an interactive OTU he
 	**[OPTIONAL]**
 		
 	-o, `-`-output_dir
-		path to the output directory
+		Path to the output directory
 	-n, `-`-num_otu_hits
 		This is the minimum number of Samples that an OTU is present in, for an OTU to be kept in the OTU table [default: 5]
 

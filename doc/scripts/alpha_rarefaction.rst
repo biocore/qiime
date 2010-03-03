@@ -41,7 +41,7 @@ The steps performed by this script are:
 	**[OPTIONAL]**
 		
 	-n, `-`-num_steps
-		number of steps (or rarefied OTU table sizes) to make between min and max counts [default: 10]
+		Number of steps (or rarefied OTU table sizes) to make between min and max counts [default: 10]
 	-f, `-`-force
 		Force overwrite of existing output directory (note: existing files in output_dir will not be removed) [default: None]
 	-w, `-`-print_only
@@ -49,7 +49,7 @@ The steps performed by this script are:
 	-a, `-`-parallel
 		Run in parallel where available [default: False]
 	-t, `-`-tree_fp
-		path to the tree file [default: None; REQUIRED for phylogenetic measures]
+		Path to the tree file [default: None; REQUIRED for phylogenetic measures]
 
 
 **Output:**

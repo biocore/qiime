@@ -41,7 +41,7 @@ If you have a set of rarefied OTU tables, make sure the example file contains ev
 	**[OPTIONAL]**
 		
 	-e, `-`-example_path
-		example alpha_diversity analysis file, containing all samples and all metrics to be included in the collated result[Default: chosen automatically (see usage string)]
+		Example alpha_diversity analysis file, containing all samples and all metrics to be included in the collated result[Default: chosen automatically (see usage string)]
 
 
 **Output:**

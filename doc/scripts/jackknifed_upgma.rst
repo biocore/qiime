@@ -31,7 +31,7 @@ To directly measure the robustness of individual UPGMA clusters, one can perform
 	**[OPTIONAL]**
 		
 	-t, `-`-tree_fp
-		path to the tree file [default: None; REQUIRED for phylogenetic measures]
+		Path to the tree file [default: None; REQUIRED for phylogenetic measures]
 	-f, `-`-force
 		Force overwrite of existing output directory (note: existing files in output_dir will not be removed) [default: None]
 	-w, `-`-print_only

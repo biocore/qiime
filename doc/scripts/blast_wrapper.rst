@@ -27,7 +27,7 @@ This script is a functionally-limited interface to the qiime.util.qiime_blast_se
 	**[OPTIONAL]**
 		
 	-n, `-`-num_seqs_per_blast_run
-		number of sequences passed to each blast call - useful for very large sequence collections [default: 1000]
+		Number of sequences passed to each blast call - useful for very large sequence collections [default: 1000]
 
 
 **Output:**

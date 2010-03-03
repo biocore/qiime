@@ -29,21 +29,21 @@ This script creates an html file of rarefaction plots based on the supplied mapp
 	**[OPTIONAL]**
 		
 	-p, `-`-prefs
-		name of columns to make rarefaction graphs of, comma delimited no spaces. Use 'ALL' command to make graphs of all metadata columns. [default: ALL]
+		Name of columns to make rarefaction graphs of, comma delimited no spaces. Use 'ALL' command to make graphs of all metadata columns. [default: ALL]
 	-n, `-`-no_html
-		suppress html output. [default: False]
+		Suppress html output. [default: False]
 	-i, `-`-imagetype
-		extension for image type choose from (jpg, gif, png, svg, pdf). [default: png]
+		Extension for image type choose from (jpg, gif, png, svg, pdf). [default: png]
 	-d, `-`-resolution
-		output image resolution, [default: 75]
+		Output image resolution, [default: 75]
 	-o, `-`-dir_path
-		directory prefix for all analyses [default: .]
+		Directory prefix for all analyses [default: .]
 	-y, `-`-ymax
-		maximum value for y axis, [default: 0] the default value will tell the script to calculate a y axis maximum depending on the data
+		Maximum value for y axis, [default: 0] the default value will tell the script to calculate a y axis maximum depending on the data
 	-x, `-`-raw_data
-		read in tab delimited, rarefaction graphing data to be plotted.
+		Read in tab delimited, rarefaction graphing data to be plotted.
 	-w, `-`-write_raw_data
-		print out tab delimited, rarefaction graphing data that can be read back in and plotted. [default: False]
+		Print out tab delimited, rarefaction graphing data that can be read back in and plotted. [default: False]
 
 
 **Output:**

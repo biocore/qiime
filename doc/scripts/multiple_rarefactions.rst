@@ -33,11 +33,11 @@ To perform bootstrap, jackknife, and rarefaction analyses, the otu table must be
 	**[OPTIONAL]**
 		
 	-n, `-`-num-reps
-		num iterations at each seqs/sample level [default: 1]
+		Num iterations at each seqs/sample level [default: 1]
 	`-`-lineages_included
-		output rarefied otu tables will include taxonomic (lineage) information for each otu, if present in input otu table [default: False]
+		Output rarefied otu tables will include taxonomic (lineage) information for each otu, if present in input otu table [default: False]
 	`-`-small_included
-		samples containing fewer seqs than the rarefaction level are included in the output but not rarefied [default: False]
+		Samples containing fewer seqs than the rarefaction level are included in the output but not rarefied [default: False]
 
 
 **Output:**

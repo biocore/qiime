@@ -29,25 +29,25 @@ This script performs like the `beta_diversity.py <./beta_diversity.html>`_ scrip
 	**[OPTIONAL]**
 		
 	-t, `-`-tree_path
-		path to newick tree file, required for phylogenetic metrics [default: None]
+		Path to newick tree file, required for phylogenetic metrics [default: None]
 	-N, `-`-beta_diversity_fp
-		full path to scripts/`beta_diversity.py <./beta_diversity.html>`_ [default: /Users/Jesse/Qiime/scripts/`beta_diversity.py <./beta_diversity.html>`_]
+		Full path to scripts/`beta_diversity.py <./beta_diversity.html>`_ [default: /Users/Jesse/Qiime/scripts/`beta_diversity.py <./beta_diversity.html>`_]
 	-P, `-`-poller_fp
-		full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /Users/Jesse/Qiime/qiime/parallel/`poller.py <./poller.html>`_]
+		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /Users/Jesse/Qiime/qiime/parallel/`poller.py <./poller.html>`_]
 	-R, `-`-retain_temp_files
-		retain temporary files after runs complete (useful for debugging) [default: False]
+		Retain temporary files after runs complete (useful for debugging) [default: False]
 	-S, `-`-suppress_submit_jobs
 		Only split input and write commands file - don't submit jobs [default: False]
 	-T, `-`-poll_directly
 		Poll directly for job completion rather than running poller as a separate job. If -T is specified this script will not return until all jobs have completed. [default: False]
 	-U, `-`-cluster_jobs_fp
-		path to `cluster_jobs.py <./cluster_jobs.html>`_ script  [default: /software/scripts/`cluster_jobs.py <./cluster_jobs.html>`_]
+		Path to `cluster_jobs.py <./cluster_jobs.html>`_ script  [default: /software/scripts/`cluster_jobs.py <./cluster_jobs.html>`_]
 	-W, `-`-suppress_polling
-		suppress polling of jobs and merging of results upon completion [default: False]
+		Suppress polling of jobs and merging of results upon completion [default: False]
 	-X, `-`-job_prefix
-		job prefix [default: descriptive prefix + random chars]
+		Job prefix [default: descriptive prefix + random chars]
 	-Y, `-`-python_exe_fp
-		full path to python executable [default: /usr/local/bin/python]
+		Full path to python executable [default: /usr/local/bin/python]
 	-Z, `-`-seconds_to_sleep
 		Number of seconds to sleep between checks for run  completion when polling runs [default: 60]
 

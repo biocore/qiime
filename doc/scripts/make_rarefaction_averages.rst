@@ -29,9 +29,9 @@ This script creates a directory of average rarefaction series based on the suppl
 	**[OPTIONAL]**
 		
 	-p, `-`-prefs
-		name of columns to make rarefaction graphs of, comma delimited no spaces. Use 'ALL' command to make graphs of all metadata columns. [default: ALL]
+		Name of columns to make rarefaction graphs of, comma delimited no spaces. Use 'ALL' command to make graphs of all metadata columns. [default: ALL]
 	-o, `-`-dir_path
-		directory prefix for all analyses [default: .]
+		Directory prefix for all analyses [default: .]
 
 
 **Output:**

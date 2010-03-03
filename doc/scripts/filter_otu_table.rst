@@ -25,15 +25,15 @@ After the OTU has been generated, the user may want to filter the table based on
 	**[OPTIONAL]**
 		
 	-c, `-`-min_count
-		retain OTUs with at least this many sequences [default=1]
+		Retain OTUs with at least this many sequences [default=1]
 	-s, `-`-min_samples
-		retain OTUs found in at least this many samples [default=2]
+		Retain OTUs found in at least this many samples [default=2]
 	-t, `-`-include_taxonomy
-		list of taxonomy terms to include [default=]
+		List of taxonomy terms to include [default=]
 	-e, `-`-exclude_taxonomy
-		list of taxonomy terms to exclude [default=]
+		List of taxonomy terms to exclude [default=]
 	-o, `-`-dir_path
-		directory prefix for all analyses [default=./]
+		Directory prefix for all analyses [default=./]
 
 
 **Output:**

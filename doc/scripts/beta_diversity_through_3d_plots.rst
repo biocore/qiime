@@ -37,7 +37,7 @@ This is the value that would be passed to `beta_diversity.py <./beta_diversity.h
 	**[OPTIONAL]**
 		
 	-t, `-`-tree_fp
-		path to the tree file [default: None; REQUIRED for phylogenetic measures]
+		Path to the tree file [default: None; REQUIRED for phylogenetic measures]
 	-f, `-`-force
 		Force overwrite of existing output directory (note: existing files in output_dir will not be removed) [default: None]
 	-w, `-`-print_only

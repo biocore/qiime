@@ -29,7 +29,7 @@ This script creates a fasta file which will contain only sequences that ARE asso
 	**[OPTIONAL]**
 		
 	-n, `-`-negate
-		negate the sample ID list (i.e., output sample ids not passed via -s) [default: False]
+		Negate the sample ID list (i.e., output sample ids not passed via -s) [default: False]
 
 
 **Output:**

@@ -27,7 +27,7 @@ The script `make_otu_table.py <./make_otu_table.html>`_ tabulates the number of 
 	-t, `-`-taxonomy
 		Path to taxonomy assignment, containing the assignments of \ taxons to sequences (i.e., resulting txt file from `assign_taxonomy.py <./assign_taxonomy.html>`_)  [default: None]
 	-o, `-`-output_fp
-		the output filepath
+		The output filepath
 
 
 **Output:**

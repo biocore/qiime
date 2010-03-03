@@ -26,9 +26,9 @@ leave sequence description lines untouched by passing -r):
 	**[OPTIONAL]**
 		
 	-o, `-`-output_fp
-		the output filepath
+		The output filepath
 	-r, `-`-retain_seq_id
-		leave seq description lines untouched [default: append " RC" to seq description lines]
+		Leave seq description lines untouched [default: append " RC" to seq description lines]
 
 
 **Output:**

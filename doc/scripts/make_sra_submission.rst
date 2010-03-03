@@ -20,21 +20,21 @@ This script makes the submission xml files for SRA (study, experiment, etc.).  T
 	**[OPTIONAL]**
 		
 	-a, `-`-input_sample_fp
-		the tab-delimited text file with info about samples [default: None]
+		The tab-delimited text file with info about samples [default: None]
 	`-`-template_sample_fp
-		the template file for samples [default: sample_template.xml]
+		The template file for samples [default: sample_template.xml]
 	-t, `-`-input_study_fp
-		the tab-delimited text file with info about the study [default: None]
+		The tab-delimited text file with info about the study [default: None]
 	`-`-template_study_fp
-		the template file for the study [default: study_template.xml]
+		The template file for the study [default: study_template.xml]
 	-u, `-`-input_submission_fp
-		the tab-delimited text file with info about the submission [default: None]
+		The tab-delimited text file with info about the submission [default: None]
 	`-`-template_submission_fp
-		the template file for the submission [default: submission_template.xml]
+		The template file for the submission [default: submission_template.xml]
 	-e, `-`-input_experiment_fp
-		the tab-delimited text file with info about the experiment [default: None]
+		The tab-delimited text file with info about the experiment [default: None]
 	-s, `-`-sff_dir
-		the directory containing the demultiplexed sff files: 1 dir per run [default: None]
+		The directory containing the demultiplexed sff files: 1 dir per run [default: None]
 
 
 **Output:**

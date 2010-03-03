@@ -29,13 +29,13 @@ The script `otu_category_significance.py <./otu_category_significance.html>`_ te
 	**[OPTIONAL]**
 		
 	-s, `-`-test
-		the type of statistical test to run. options are: g_test: determines whether OTU presence/absence is associated with a category using the G test of independence. ANOVA: determines whether OTU abundance is associated with a category. correlation: determines whether OTU abundance is correlated with a continuous variable in the category mapping file.
+		The type of statistical test to run. options are: g_test: determines whether OTU presence/absence is associated with a category using the G test of independence. ANOVA: determines whether OTU abundance is associated with a category. correlation: determines whether OTU abundance is correlated with a continuous variable in the category mapping file.
 	-o, `-`-output_fp
-		path to output file. otu_category_significance_results.txt by default
+		Path to output file. otu_category_significance_results.txt by default
 	-f, `-`-filter
-		minimum number of samples that must contain the OTU for the OTU to be included in the analysis. default value=10.
+		Minimum number of samples that must contain the OTU for the OTU to be included in the analysis. default value=10.
 	-t, `-`-threshold
-		threshold under which to consider something absent: Only used if you have numerical data that should be converted to present or absent based on a threshold. Should be None for categorical data or with the correlation test. default value is None
+		Threshold under which to consider something absent: Only used if you have numerical data that should be converted to present or absent based on a threshold. Should be None for categorical data or with the correlation test. default value is None
 
 
 **Output:**

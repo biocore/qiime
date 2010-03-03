@@ -22,15 +22,15 @@ A number of metrics are currently supported, including unweighted and weighted U
 	**[OPTIONAL]**
 		
 	-i, `-`-input_path
-		input path: otu table, or dir of otu tables for batch mode
+		Input path: otu table, or dir of otu tables for batch mode
 	-o, `-`-output_dir
-		output directory, will be created if doesn't exist
+		Output directory, will be created if doesn't exist
 	-m, `-`-metrics
-		metrics to use, comma delimited if >1 metric, no spaces
+		Metrics to use, comma delimited if >1 metric, no spaces
 	-s, `-`-show_metrics
-		show available beta diversity metrics and quit
+		Show available beta diversity metrics and quit
 	-t, `-`-tree_path
-		path to newick tree file, required for phylogenetic metrics [default: None]
+		Path to newick tree file, required for phylogenetic metrics [default: None]
 
 
 **Output:**

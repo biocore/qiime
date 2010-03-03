@@ -31,7 +31,7 @@ Many downstream analyses require that the phylogenetic tree relating the OTUs in
 	-l, `-`-log_fp
 		Path to store log file [default: No log file created.]
 	-r, `-`-root_method
-		method for choosing root of phylo tree  Valid choices are: midpoint, tree_method_default [default: tree_method_default]
+		Method for choosing root of phylo tree  Valid choices are: midpoint, tree_method_default [default: tree_method_default]
 
 
 **Output:**

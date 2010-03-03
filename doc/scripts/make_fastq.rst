@@ -36,7 +36,7 @@ The fastq format for each record is as follows:
 	-o, `-`-result_fp
 		Path to store results [default: <input_sequences_filename>.fastq]
 	-s, `-`-split
-		make separate file for each library [default:False]
+		Make separate file for each library [default:False]
 
 
 **Output:**

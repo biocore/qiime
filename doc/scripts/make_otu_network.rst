@@ -35,7 +35,7 @@ In more technical language: OTUs and samples are designated as two types of node
 	**[OPTIONAL]**
 		
 	-o, `-`-output_dir
-		output directory for all analyses [default: cwd]
+		Output directory for all analyses [default: cwd]
 
 
 **Output:**

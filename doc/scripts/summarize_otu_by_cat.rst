@@ -29,9 +29,9 @@ This script generates an otu table where the SampleIDs are replaced by a specifi
 	**[OPTIONAL]**
 		
 	-o, `-`-dir-prefix
-		directory prefix for all analyses [default: cwd]
+		Directory prefix for all analyses [default: cwd]
 	-n, `-`-normalize_flag
-		if True will normalize counts [default: False]
+		If True will normalize counts [default: False]
 
 
 **Output:**

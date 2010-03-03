@@ -33,7 +33,7 @@ This script automates the construction of 3D plots (kinemage format) from the PC
 	-p, `-`-prefs_path
 		This is the user-generated preferences file. NOTE: This is a file with a dictionary containing preferences for the analysis [default: None]
 	-o, `-`-output_dir
-		path to the output directory
+		Path to the output directory
 
 
 **Output:**
