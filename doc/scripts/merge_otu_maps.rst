@@ -43,7 +43,7 @@ The resulting OTU table will be:
 	**[REQUIRED]**
 		
 	-i, `-`-otu_map_fps
-		the otu map filepaths, comma-separated and ordered as the OTU pickers were run [REQUIRED]
+		The otu map filepaths, comma-separated and ordered as the OTU pickers were run [REQUIRED]
 	
 	**[OPTIONAL]**
 		

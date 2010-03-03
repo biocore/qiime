@@ -20,9 +20,9 @@ This script is a functionally-limited interface to the qiime.util.qiime_blast_se
 	**[REQUIRED]**
 		
 	-i, `-`-input_fasta_fp
-		path to the input fasta file
+		Path to the input fasta file
 	-r, `-`-refseqs_fp
-		path to blast database as a fasta file
+		Path to blast database as a fasta file
 	
 	**[OPTIONAL]**
 		

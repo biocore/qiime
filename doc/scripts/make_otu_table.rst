@@ -20,7 +20,7 @@ The script `make_otu_table.py <./make_otu_table.html>`_ tabulates the number of 
 	**[REQUIRED]**
 		
 	-i, `-`-otu_map_fp
-		path to the input OTU map (i.e., the output from `pick_otus.py <./pick_otus.html>`_)
+		Path to the input OTU map (i.e., the output from `pick_otus.py <./pick_otus.html>`_)
 	
 	**[OPTIONAL]**
 		

@@ -30,7 +30,7 @@ This script requires that 454's off-instrument apps (sffinfo, sfffile) are in yo
 This script results in FASTA and QUAL formatted files.
 
 
-**Simple example**
+**Simple example:**
 
 Convert all the sffs in directory "sffs/" to fasta and qual.
 

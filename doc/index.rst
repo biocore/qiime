@@ -17,17 +17,22 @@ QIIME takes as input FASTA-format sequence data, optional quality scores, and a 
 Download
 ========
 
+Virtual Box 
+^^^^^^^^^^^^^^^^^^
+
+The Virtual Box is pre-loaded with QIIME and its dependencies on a Ubuntu operating system.  To get the Virtual Box, please go `here <./virtual_box.html>`_.
+
 Stable Pre-Release
 ^^^^^^^^^^^^^^^^^^
 
-Currently the most stable version of QIIME is our 0.91 pre-release, which you can download `here <https://sourceforge.net/projects/qiime/files/releases/Qiime-0.91.tar.gz/download>`_. You can also view the `install documents <./install.html>`_, the software `documentation <./documentation.html>`_, a `data analysis tutorial <./tutorial.html>`_ and an `SRA submission tutorial <./doc_sra_submission.html>`_.
+Currently the most stable version of QIIME is our 0.91 pre-release, which you can download `here <http://sourceforge.net/projects/qiime/files/releases/Qiime-0.91.tar.gz/download>`_. You can also view the `install documents <./install.html>`_, the software `documentation <./documentation.html>`_, a `data analysis tutorial <./tutorial.html>`_ and an `SRA submission tutorial <./doc_sra_submission.html>`_.
 
 Development Version
 ^^^^^^^^^^^^^^^^^^^
 
 To get the latest development version of QIIME, you should check it out of our Sourceforge repository. While this code is subject to minor changes in interface, it will provide access to the latest and greatest features. The official web documentation is likely to be out-of-date with respect to the development software. You should instead refer to the svn documentation in Qiime/doc. Check out the latest version of QIIME using svn with the command::
 
-	svn co https://qiime.svn.sourceforge.net/svnroot/qiime/trunk Qiime
+	svn co http://qiime.svn.sourceforge.net/svnroot/qiime/trunk Qiime
 
 
 
@@ -57,11 +62,19 @@ Documentation
 
 Contact Us
 ===========
-Contact `QIIME Support <qiime.help@colorado.edu>`_
 
-Add a `feature request <https://sourceforge.net/tracker/?atid=1157167&group_id=272178&func=browse>`_
+.. toctree::
+   :maxdepth: 1
 
-Report a `bug <https://sourceforge.net/tracker/?atid=1157164&group_id=272178&func=browse>`_
+   developer/reporting_and_fixing_bugs.rst
+
+
+- Add a `feature request <http://sourceforge.net/tracker/?atid=1157167&group_id=272178&func=browse>`_
+* Contact `QIIME Support <qiime.help@colorado.edu>`_
+
+
+
+
 
 References
 ============

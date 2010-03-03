@@ -21,7 +21,7 @@ leave sequence description lines untouched by passing -r):
 	**[REQUIRED]**
 		
 	-i, `-`-input_fasta_fp
-		path to the input fasta file
+		Path to the input fasta file
 	
 	**[OPTIONAL]**
 		

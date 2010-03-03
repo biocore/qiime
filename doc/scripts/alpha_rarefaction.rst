@@ -30,13 +30,13 @@ The steps performed by this script are:
 	**[REQUIRED]**
 		
 	-i, `-`-otu_table_fp
-		the input fasta file [REQUIRED]
+		The input fasta file [REQUIRED]
 	-m, `-`-mapping_fp
-		path to the mapping file [REQUIRED]
+		Path to the mapping file [REQUIRED]
 	-o, `-`-output_dir
-		the output directory [REQUIRED]
+		The output directory [REQUIRED]
 	-p, `-`-parameter_fp
-		path to the parameter file [REQUIRED]
+		Path to the parameter file [REQUIRED]
 	
 	**[OPTIONAL]**
 		
@@ -57,7 +57,7 @@ The steps performed by this script are:
 The results of this script is a folder ("rare1/") containing rarefied otu tables, alpha-diversity for each otu table, a file containing the results from collating the alpha-diversity results and a folder containing the rarefaction plots.
 
 
-**Example**
+**Example:**
 
 ::
 

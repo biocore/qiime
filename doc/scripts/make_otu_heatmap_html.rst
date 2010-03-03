@@ -20,7 +20,7 @@ Once the OTU table has been generated, the user can create an interactive OTU he
 	**[REQUIRED]**
 		
 	-i, `-`-otu_table_fp
-		path to the input OTU table (i.e., the output from `make_otu_table.py <./make_otu_table.html>`_)
+		Path to the input OTU table (i.e., the output from `make_otu_table.py <./make_otu_table.html>`_)
 	
 	**[OPTIONAL]**
 		

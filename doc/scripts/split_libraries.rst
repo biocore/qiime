@@ -23,9 +23,9 @@ Sequences from samples that are not found in the mapping file (no corresponding 
 	**[REQUIRED]**
 		
 	-m, `-`-map
-		name of mapping file. NOTE: Must contain a header line indicating SampleID in the first column and BarcodeSequence in the second, LinkerPrimerSequence in the third.
+		Name of mapping file. NOTE: Must contain a header line indicating SampleID in the first column and BarcodeSequence in the second, LinkerPrimerSequence in the third.
 	-f, `-`-fasta
-		names of fasta files, comma-delimited
+		Names of fasta files, comma-delimited
 	
 	**[OPTIONAL]**
 		

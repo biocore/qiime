@@ -24,7 +24,7 @@ A simple scripts that prints out the qiime config settings.
 This prints the qiime_config to stdout.
 
 
-**Example 1**
+**Example 1:**
 
 Print qiime config settings:
 

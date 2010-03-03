@@ -24,11 +24,11 @@ make a new master tree with those tips omitted
 	**[REQUIRED]**
 		
 	-m, `-`-master_tree
-		master tree filepath
+		Master tree filepath
 	-s, `-`-support_dir
-		path to dir containing support trees
+		Path to dir containing support trees
 	-o, `-`-output_dir
-		output directory, writes three files here makes dir if it doesn't exist
+		Output directory, writes three files here makes dir if it doesn't exist
 
 
 **Output:**

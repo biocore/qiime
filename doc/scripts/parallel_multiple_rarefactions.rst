@@ -20,15 +20,15 @@ This script performs like the `multiple_rarefactions.py <./multiple_rarefactions
 	**[REQUIRED]**
 		
 	-i, `-`-input_path
-		input filepath, (the otu table) [REQUIRED]
+		Input filepath, (the otu table) [REQUIRED]
 	-o, `-`-output_path
-		write output rarefied otu tables here makes dir if it doesn't exist [REQUIRED]
+		Write output rarefied otu tables here makes dir if it doesn't exist [REQUIRED]
 	-m, `-`-min
-		min seqs/sample [REQUIRED]
+		Min seqs/sample [REQUIRED]
 	-x, `-`-max
-		max seqs/sample (inclusive) [REQUIRED]
+		Max seqs/sample (inclusive) [REQUIRED]
 	-s, `-`-step
-		levels: min, min+step... for level <= max [REQUIRED]
+		Levels: min, min+step... for level <= max [REQUIRED]
 	
 	**[OPTIONAL]**
 		
@@ -65,12 +65,12 @@ This script performs like the `multiple_rarefactions.py <./multiple_rarefactions
 The result of `parallel_multiple_rarefactions.py <./parallel_multiple_rarefactions.html>`_ consists of a number of files, which depend on the minimum/maximum number of sequences per samples, steps and iterations. The files have the same otu table format as the input otu_table.txt, and are named in the following way: rarefaction_100_0.txt, where "100" corresponds to the sequences per sample and "0" for the iteration.
 
 
-**Example**
+**Example:**
 
-Build rarefied otu tables containing 100 (-m) to 2000 (-x) sequences in steps of 100 (-s) with 5 (-n) repetions per number of sequences, from otu_table.txt (-i). Write the output files to the rare directory (-o, will be created if it doesn't exist). The name of the output files will be of the form rare/rarefaction_<num_seqs>_<reptition_number>.txt
+Build rarefied otu tables containing 100 (-m) to 2000 (-x) sequences in steps of 100 (-s) with 5 (-n) repetions per number of sequences, from /home/qiime_user/otu_table.txt (-i). Write the output files to the /home/qiime_user/rare directory (-o, will be created if it doesn't exist). The name of the output files will be of the form /home/qiime_user/rare/rarefaction_<num_seqs>_<reptition_number>.txt
 
 ::
 
-	parallel_multiple_rarefactions.py -o rare -m 100 -x 2000 -s 100 -n 5 -i otu_table.txt
+	parallel_multiple_rarefactions.py -o /home/qiime_user/rare -m 100 -x 2000 -s 100 -n 5 -i /home/qiime_user/otu_table.txt
 
 

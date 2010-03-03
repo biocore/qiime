@@ -1,14 +1,11 @@
-************************************************************
-QIIME developer notes: reporting and fixing bugs in QIIME
-************************************************************
 
+Report a bug
+^^^^^^^^^^^^
 
 I found a bug in QIIME. What should I do?
 =========================================
 
-If you find a bug in QIIME, you should report it as a bug in the bug tracker on sourceforge. It's useful to report even small bugs with the bug tracker, and it allows us to keep records of how frequently bugs are found and fixed. The QIIME bug tracker is located at:
-
-https://sourceforge.net/tracker/?atid=1157164&group_id=272178&func=browse
+If you find a bug in QIIME, you should report it as a bug in the bug tracker on sourceforge. It's useful to report even small bugs with the bug tracker, and it allows us to keep records of how frequently bugs are found and fixed. The QIIME bug tracker is located `here <http://sourceforge.net/tracker/?atid=1157164&group_id=272178&func=browse>`_.
 
 This will alert the project managers about the bug, and the bug tracker is actively monitored by the QIIME team.
 
@@ -17,7 +14,7 @@ Please include some way for us to get it touch with you regarding the bug as we 
 We aim to be very responsive regarding QIIME bugs, and we greatly appreciate your help in making QIIME a better software package.
 
 Writing useful bug reports
----------------------------
+=========================================
 
 Regardless of whether you plan to fix the bug yourself, or wait for the developer to fix it, you should write a good bug report. If you do plan to fix it, this is important for the records. If you are not comfortable with fixing the bug because you don't know what's causing it, or because you are not familiar with the code that is failing, a good bug report is likely to speed up the bug fix. Since you are the person who found it, you know the most about it, so you're in a position to help out a lot. 
 
@@ -28,7 +25,7 @@ The developers will need to reproduce the bug into order to fix it, so part of t
 
 
 Fixing bugs yourself
----------------------
+=========================================
 
 After adding a bug report, there are two paths you can follow. If you are comfortable with fixing the bug, you should do that. The steps you should take are as follows:
 

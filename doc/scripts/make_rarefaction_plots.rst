@@ -7,9 +7,9 @@
 
 **Description:**
 
-Once the batch alpha diversity files have been collated, you may want to compare the diversity using plots. Using the results from `make_rarefaction_averages.py <./make_rarefaction_averages.html>`_, you can plot the samples and or by category in the mapping file using this script.
+Once the batch alpha diversity files have been collated, you may want to compare the diversity using plots. Using the results from `collate_alpha.py <./collate_alpha.html>`_, you can plot the samples and or by category in the mapping file using this script.
 
-This script creates an html file of rarefaction plots based on the supplied rarefaction files in the folder given (-i) from `make_rarefaction_averages.py <./make_rarefaction_averages.html>`_. The user may also supply optional arguments like an image type (-i), and a resolution (-d).
+This script creates an html file of rarefaction plots based on the supplied mapping file (-m) and the supplied rarefaction files (-r) from `collate_alpha.py <./collate_alpha.html>`_. The user may also supply optional arguments that will only create plots for supplied metadata columns from the mapping file (-p), an image type (-i), and a resolution (-d). If the user would like to suppress html output they can pass the -n flag, and output raw data with the -w flag. The -y option allows the user to supply a maximum value for the yaxis of the plots.
 
 
 **Usage:** :file:`make_rarefaction_plots.py [options]`
@@ -21,14 +21,18 @@ This script creates an html file of rarefaction plots based on the supplied rare
 	
 	**[REQUIRED]**
 		
-	-i, `-`-input_dir
-		name of folder containing rarefaction files, takes output from `make_rarefaction_data.py <./make_rarefaction_data.html>`_ [REQUIRED]
+	-m, `-`-map
+		Name of mapping file [REQUIRED]
+	-r, `-`-rarefaction
+		Name of rarefaction file, takesoutput from collate_alpha OR tab delimited data from a previous run of this script. If using raw data from a previous run, set -x flag. [REQUIRED]
 	
 	**[OPTIONAL]**
 		
-	-t, `-`-rarefactionAve
-		name of overall average rarefaction file, takes output from `make_rarefaction_data.py <./make_rarefaction_data.html>`_
-	-p, `-`-imagetype
+	-p, `-`-prefs
+		name of columns to make rarefaction graphs of, comma delimited no spaces. Use 'ALL' command to make graphs of all metadata columns. [default: ALL]
+	-n, `-`-no_html
+		suppress html output. [default: False]
+	-i, `-`-imagetype
 		extension for image type choose from (jpg, gif, png, svg, pdf). [default: png]
 	-d, `-`-resolution
 		output image resolution, [default: 75]
@@ -36,6 +40,10 @@ This script creates an html file of rarefaction plots based on the supplied rare
 		directory prefix for all analyses [default: .]
 	-y, `-`-ymax
 		maximum value for y axis, [default: 0] the default value will tell the script to calculate a y axis maximum depending on the data
+	-x, `-`-raw_data
+		read in tab delimited, rarefaction graphing data to be plotted.
+	-w, `-`-write_raw_data
+		print out tab delimited, rarefaction graphing data that can be read back in and plotted. [default: False]
 
 
 **Output:**
@@ -49,7 +57,23 @@ For generated rarefaction plots using the default parameters, including the mapp
 
 ::
 
-	make_rarefaction_plots.py -r chao1/
+	make_rarefaction_plots.py -m Mapping_file.txt -r chao1.txt
+
+**Multiple File Example:**
+
+If you would like to generate plots for multiple files, you can use the following command:
+
+::
+
+	make_rarefaction_plots.py -m Mapping_file.txt -r chao1.txt,PD_whole_tree.txt
+
+**Category Specific Example:**
+
+In the case that you want to make plots for a specific category (i.e., pH), you can use the following command:
+
+::
+
+	make_rarefaction_plots.py -m Mapping_file.txt -r chao1.txt -p
 
 **Specify Image Type and Resolution:**
 
@@ -57,6 +81,6 @@ Optionally, you can change the resolution ("-d") and the type of image created (
 
 ::
 
-	make_rarefaction_plots.py -i chao1/ -d 180 -p pdf
+	make_rarefaction_plots.py -m Mapping_file.txt -r chao1.txt -p pH -d 180 -i pdf
 
 

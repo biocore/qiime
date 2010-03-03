@@ -20,7 +20,7 @@ This script fixes ARB FASTA formatting by repairing incorrect line break chararc
 	**[REQUIRED]**
 		
 	-f, `-`-input_fasta_fp
-		path to the input fasta file
+		Path to the input fasta file
 
 
 **Output:**

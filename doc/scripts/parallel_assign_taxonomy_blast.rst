@@ -20,11 +20,11 @@ This script performs like the `assign_taxonomy.py <./assign_taxonomy.html>`_ scr
 	**[REQUIRED]**
 		
 	-i, `-`-input_fasta_fp
-		full path to input_fasta_fp [REQUIRED]
+		Full path to input_fasta_fp [REQUIRED]
 	-t, `-`-id_to_taxonomy_fp
-		full path to id_to_taxonomy mapping file [REQUIRED]
+		Full path to id_to_taxonomy mapping file [REQUIRED]
 	-o, `-`-output_dir
-		full path to store output files [REQUIRED]
+		Full path to store output files [REQUIRED]
 	
 	**[OPTIONAL]**
 		
@@ -67,12 +67,10 @@ Mapping of sequence identifiers to taxonomy and quality scores.
 
 **Example:**
 
-Split the input file (-i) into five jobs (-O), using the id to taxonomy mapping file (-t) and reference sequence template file (-r), start them,and write the results (-o) to out/. 
-
-BE SURE TO SPECIFY FULL PATHS!
+Assign taxonomy to all sequences in the input file (-i) via five (-O) independent jobs using BLAST with the id to taxonomy mapping file (-t) and reference sequence template file (-r), and write the results (-o) to /home/qiime_user/out/. BE SURE TO SPECIFY FULL PATHS!
 
 ::
 
-	parallel_assign_taxonomy_blast -O 5 -i inseqs.fasta -t at_id_to_taxonomy.txt -r at_refseqs.fasta -o out/
+	parallel_assign_taxonomy_blast.py -O 5 -i /home/qiime_user/inseqs.fasta -t /home/qiime_user/at_id_to_taxonomy.txt -r /home/qiime_user/at_refseqs.fasta -o /home/qiime_user/out/
 
 

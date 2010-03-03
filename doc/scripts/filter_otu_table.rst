@@ -20,7 +20,7 @@ After the OTU has been generated, the user may want to filter the table based on
 	**[REQUIRED]**
 		
 	-i, `-`-otu_table_fp
-		path to the input OTU table (i.e., the output from `make_otu_table.py <./make_otu_table.html>`_)
+		Path to the input OTU table (i.e., the output from `make_otu_table.py <./make_otu_table.html>`_)
 	
 	**[OPTIONAL]**
 		

@@ -42,7 +42,7 @@ The output from `pick_rep_set.py <./pick_rep_set.html>`_ is a single FASTA file 
 
 
 
-**Simple example**
+**Simple example:**
 
 The script `pick_rep_set.py <./pick_rep_set.html>`_ takes as input an 'OTU file' (via the "-i" parameter) which maps OTU identifiers to sequence identifiers. Typically, this will be the output file provided by `pick_otus.py <./pick_otus.html>`_. Additionally, a FASTA file is required, via "-f", which contains all of the sequences whose identifiers are listed in the OTU file. The following command shows an example of this where the resulting file is output to the directory "repr_set/" and default parameters were used (choose most abundant, sort by OTU id and do not write a log file):
 
@@ -50,7 +50,7 @@ The script `pick_rep_set.py <./pick_rep_set.html>`_ takes as input an 'OTU file'
 
 	pick_rep_set.py -i seqs_otus.txt -f seqs.fna -o repr_set/
 
-**Random selection example**
+**Random selection example:**
 
 Alternatively, if the user would like to choose the sequence by random "-m random" and then sort by the sequence identifier ("-s seq_id"), they could use the following command:
 

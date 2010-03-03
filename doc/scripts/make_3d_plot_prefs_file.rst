@@ -20,9 +20,9 @@ This script generates a preferences (prefs) file, which can be passed via -p to 
 	**[REQUIRED]**
 		
 	-b, `-`-color_by
-		mapping fields to color by [default: None]
+		Mapping fields to color by [default: None]
 	-p, `-`-output_prefs_fp
-		path to store output file [default: None]
+		Path to store output file [default: None]
 
 
 **Output:**

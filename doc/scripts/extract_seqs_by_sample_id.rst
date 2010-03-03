@@ -20,11 +20,11 @@ This script creates a fasta file which will contain only sequences that ARE asso
 	**[REQUIRED]**
 		
 	-i, `-`-input_fasta_fp
-		path to the input fasta file
+		Path to the input fasta file
 	-s, `-`-sample_ids
-		comma-separated sample_ids to include in output fasta file(or exclude if -n=True)
+		Comma-separated sample_ids to include in output fasta file(or exclude if -n=True)
 	-o, `-`-output_fasta_fp
-		the output fasta file
+		The output fasta file
 	
 	**[OPTIONAL]**
 		

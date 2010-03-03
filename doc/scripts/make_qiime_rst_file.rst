@@ -22,7 +22,7 @@ This script will take a script file and convert the usage strings and options to
 	-i, `-`-input_script
 		This is the input script for which to  make a .rst file
 	-o, `-`-output_dir
-		path to the output directory
+		Path to the output directory
 
 
 **Output:**

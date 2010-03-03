@@ -7,7 +7,7 @@
 
 **Description:**
 
-This script performs like the `alpha_diversity.py <./alpha_diversity.html>`_ script, but is intended to be used in multi-core/processor environmentss, so analyses can be performed in parallel.
+This script performs like the `alpha_diversity.py <./alpha_diversity.html>`_ script, but is intended to make use of multicore/multiprocessor environments to perform analyses in parallel.
 
 
 **Usage:** :file:`parallel_alpha_diversity.py [options]`
@@ -20,11 +20,11 @@ This script performs like the `alpha_diversity.py <./alpha_diversity.html>`_ scr
 	**[REQUIRED]**
 		
 	-i, `-`-input_path
-		input path, must be directory [REQUIRED]
+		Input path, must be directory [REQUIRED]
 	-o, `-`-output_path
-		output path, must be directory [REQUIRED]
+		Output path, must be directory [REQUIRED]
 	-m, `-`-metrics
-		metrics to use, comma delimited [REQUIRED]
+		Metrics to use, comma delimited [REQUIRED]
 	
 	**[OPTIONAL]**
 		
@@ -57,12 +57,12 @@ This script performs like the `alpha_diversity.py <./alpha_diversity.html>`_ scr
 The resulting output will be the same number of files as supplied by the user. The resulting files are tab-delimited text files, where the columns correspond to alpha diversity metrics and the rows correspond to samples and their calculated diversity measurements. 
 
 
-**Example**
+**Example:**
 
-Apply the observed_species, chao1, PD_whole_tree metrics (-m) to all otu tables in ./rare/ (-i) and write the resulting output files to ./out/ (-o, will be created if it doesn't exist). Use the tree file rep_set.tre (-t) when necessary.
+Apply the observed_species, chao1, PD_whole_tree metrics (-m) to all otu tables in /home/qiime_user/rare/ (-i) and write the resulting output files to /home/qiime_user/out/ (-o, will be created if it doesn't exist). Use the tree file rep_set.tre (-t) when necessary.
 
 ::
 
-	parallel_alpha_diversity.py -i ./rare/ -o ./out -m observed_species,chao1,PD_whole_tree -t ./rep_set.tre
+	parallel_alpha_diversity.py -i /home/qiime_user/rare/ -o /home/qiime_user/out -m observed_species,chao1,PD_whole_tree -t /home/qiime_user/rep_set.tre
 
 

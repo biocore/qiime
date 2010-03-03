@@ -20,11 +20,11 @@ This filter allows for the removal of sequences and OTUs that either do or don't
 	**[REQUIRED]**
 		
 	-i, `-`-otu_table_fp
-		path to the input OTU table (i.e., the output from `make_otu_table.py <./make_otu_table.html>`_)
+		Path to the input OTU table (i.e., the output from `make_otu_table.py <./make_otu_table.html>`_)
 	-m, `-`-map
-		path to the map file [REQUIRED]
+		Path to the map file [REQUIRED]
 	-s, `-`-states
-		string containing valid states, e.g. 'STUDY_NAME:DOG'
+		String containing valid states, e.g. 'STUDY_NAME:DOG'
 	
 	**[OPTIONAL]**
 		

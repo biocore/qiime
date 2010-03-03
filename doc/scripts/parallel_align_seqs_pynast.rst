@@ -7,7 +7,7 @@
 
 **Description:**
 
-A parallel wrapper for the `align_seqs.py <./align_seqs.html>`_ PyNAST option.
+A wrapper for the `align_seqs.py <./align_seqs.html>`_ PyNAST option, intended to make use of multicore/multiprocessor environments to perform analyses in parallel.
 
 
 **Usage:** :file:`parallel_align_seqs_pynast.py [options]`
@@ -20,9 +20,9 @@ A parallel wrapper for the `align_seqs.py <./align_seqs.html>`_ PyNAST option.
 	**[REQUIRED]**
 		
 	-i, `-`-input_fasta_fp
-		path to the input fasta file
+		Path to the input fasta file
 	-o, `-`-output_dir
-		path to the output directory
+		Path to the output directory
 	-t, `-`-template_fp
 		Filepath for template against
 	
@@ -65,12 +65,12 @@ A parallel wrapper for the `align_seqs.py <./align_seqs.html>`_ PyNAST option.
 This results in a multiple sequence alignment (FASTA-formatted).
 
 
-**Example**
+**Example:**
 
-Split the input file (-i) into five jobs (-O) to align against pynast_test_template.fasta (-t), submit the jobs to the cluster (default) and write the output (-o) to /home/caporaso/out:
+Align the input file (-i) against /home/qiime_user/pynast_test_template.fasta (-t) via 5 (-O) independent jobs and write the output (-o) to /home/qiime_user/out/:
 
 ::
 
-	parallel_align_seqs_pynast.py -i 10_seq.fasta -O 5 -t /data/pynast_test_template.fasta -o /home/caporaso/out
+	parallel_align_seqs_pynast.py -i /home/qiime_user/10_seq.fasta -O 5 -t /home/qiime_user/pynast_test_template.fasta -o /home/qiime_user/out/
 
 

@@ -27,9 +27,9 @@ The fastq format for each record is as follows:
 	**[REQUIRED]**
 		
 	-f, `-`-input_fasta_fp
-		path to the input fasta file
+		Path to the input fasta file
 	-q, `-`-qual
-		names of qual files, comma-delimited
+		Names of qual files, comma-delimited
 	
 	**[OPTIONAL]**
 		

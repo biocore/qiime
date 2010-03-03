@@ -20,7 +20,7 @@ Script for polling parallel runs to check completion. See Qiime/scripts/`poller_
 	**[REQUIRED]**
 		
 	-f, `-`-check_run_complete_file
-		path to file containing a list of files that must exist to declare a run complete [REQUIRED]
+		Path to file containing a list of files that must exist to declare a run complete [REQUIRED]
 	
 	**[OPTIONAL]**
 		

@@ -21,7 +21,7 @@ and make them executable.
 	**[REQUIRED]**
 		
 	-o, `-`-output_fp
-		the output filepath
+		The output filepath
 	
 	**[OPTIONAL]**
 		

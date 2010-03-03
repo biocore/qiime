@@ -20,7 +20,7 @@ This script will denoise a flowgram file in  .sff.txt format, which is the outpu
 	**[REQUIRED]**
 		
 	-i, `-`-input_file
-		path to flowgram file (.sff.txt)
+		Path to flowgram file (.sff.txt)
 	
 	**[OPTIONAL]**
 		

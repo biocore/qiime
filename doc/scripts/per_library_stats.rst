@@ -20,7 +20,7 @@ Given an otu table, compute and print the (min, max, median, mean) number of seq
 	**[REQUIRED]**
 		
 	-i, `-`-otu_table_fp
-		path to the input OTU table (i.e., the output from `make_otu_table.py <./make_otu_table.html>`_)
+		Path to the input OTU table (i.e., the output from `make_otu_table.py <./make_otu_table.html>`_)
 
 
 **Output:**

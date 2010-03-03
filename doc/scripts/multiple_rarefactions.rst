@@ -7,7 +7,7 @@
 
 **Description:**
 
-To perform bootstrap, jackknife, and rarefaction analyses, the otu table must be subsampled (rarefied).  This script rarefies, or subsamples, OTU tables.  This does not provide curves of diversity by number of sequences in a sample. Rather it creates a series of subsampled OTU tables by random sampling (without replacement) of the input OTU table.
+To perform bootstrap, jackknife, and rarefaction analyses, the otu table must be subsampled (rarefied).  This script rarefies, or subsamples, OTU tables.  This does not provide curves of diversity by number of sequences in a sample. Rather it creates a series of subsampled OTU tables by random sampling (without replacement) of the input OTU table.  The pseudo-random number generator used for rarefaction by subsampling is NumPy's default - an implementation of the Mersenne twister PRNG.
 
 
 **Usage:** :file:`multiple_rarefactions.py [options]`
@@ -20,15 +20,15 @@ To perform bootstrap, jackknife, and rarefaction analyses, the otu table must be
 	**[REQUIRED]**
 		
 	-i, `-`-input_path
-		input otu table filepath
+		Input otu table filepath
 	-o, `-`-output_path
-		write output rarefied otu tables files to this dir makes dir if it doesn't exist
+		Write output rarefied otu tables files to this dir makes dir if it doesn't exist
 	-m, `-`-min
-		min seqs/sample
+		Min seqs/sample
 	-x, `-`-max
-		max seqs/sample (inclusive)
+		Max seqs/sample (inclusive)
 	-s, `-`-step
-		levels: min, min+step... for level <= max
+		Levels: min, min+step... for level <= max
 	
 	**[OPTIONAL]**
 		

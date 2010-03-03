@@ -20,9 +20,9 @@ This script allows users that have already created sample mapping (environment) 
 	**[REQUIRED]**
 		
 	-i, `-`-sample_mapping_fp
-		path to the sample mapping file
+		Path to the sample mapping file
 	-o, `-`-output_fp
-		path to output file
+		Path to output file
 
 
 **Output:**

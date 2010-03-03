@@ -20,9 +20,9 @@ This script performs like the `pick_otus.py <./pick_otus.html>`_ script, but is 
 	**[REQUIRED]**
 		
 	-i, `-`-input_fasta_fp
-		full path to input_fasta_fp
+		Full path to input_fasta_fp
 	-o, `-`-output_dir
-		path to store output files
+		Path to store output files
 	
 	**[OPTIONAL]**
 		
@@ -60,17 +60,15 @@ This script performs like the `pick_otus.py <./pick_otus.html>`_ script, but is 
 
 **Output:**
 
-The output consists of two files (i.e. seqs_otus.txt and seqs_otus.log). The .txt file is composed of tab-delimited lines, where the first field on each line corresponds to an (arbitrary) cluster identifier, and the remaining fields correspond to sequence identifiers assigned to that cluster. Sequence identifiers correspond to those provided in the input FASTA file.
-
-The resulting .log file contains a list of parameters passed to this script along with the output location of the resulting .txt file.
+The output consists of two files (i.e. seqs_otus.txt and seqs_otus.log). The .txt file is composed of tab-delimited lines, where the first field on each line corresponds to an (arbitrary) cluster identifier, and the remaining fields correspond to sequence identifiers assigned to that cluster. Sequence identifiers correspond to those provided in the input FASTA file. The resulting .log file contains a list of parameters passed to this script along with the output location of the resulting .txt file.
 
 
-**Example**
+**Example:**
 
-Pick OTUs by blasting inseqs.fasta against refseqs.fasta and write the output to the out/ directory.
+Pick OTUs by blasting /home/qiime_user/inseqs.fasta against /home/qiime_user/refseqs.fasta and write the output to the /home/qiime_user/out/ directory.
 
 ::
 
-	parallel_pick_otus_blast.py -i inseqs.fasta -r refseqs.fasta -o out/
+	parallel_pick_otus_blast.py -i /home/qiime_user/inseqs.fasta -r /home/qiime_user/refseqs.fasta -o /home/qiime_user/out/
 
 

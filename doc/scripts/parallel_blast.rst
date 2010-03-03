@@ -24,7 +24,7 @@ This script for performing blast while making use of multicore/multiprocessor en
 	-r, `-`-refseqs_path
 		Path to fasta sequences to search against [REQUIRED]
 	-o, `-`-output_dir
-		name of output directory for blast jobs [REQUIRED]
+		Name of output directory for blast jobs [REQUIRED]
 	
 	**[OPTIONAL]**
 		
@@ -67,12 +67,12 @@ This script for performing blast while making use of multicore/multiprocessor en
  
 
 
-**Example**
+**Example:**
 
-Split 10_seq.fasta (-i) into three fasta files (-O) and blast each against blast database created from 1000_seq.fasta (-d)
+BLAST /home/qiime_user/10_seq.fasta (-i) via three (-O) independent jobs against a blast database created from /home/qiime_user/1000_seq.fasta (-r). Store the results in /home/qiime_user/bla_out/ (-o).
 
 ::
 
-	parallel_blast.py -i 10_seq.fasta -d 1000_seq.fasta -O 3 -o bla_out
+	parallel_blast.py -i /home/qiime_user/10_seq.fasta -r /home/qiime_user/1000_seq.fasta -O 3 -o /home/qiime_user/bla_out/
 
 

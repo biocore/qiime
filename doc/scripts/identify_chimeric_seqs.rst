@@ -20,7 +20,7 @@ A FASTA file of sequences, can be screened to remove chimeras (sequences generat
 	**[REQUIRED]**
 		
 	-i, `-`-input_fasta_fp
-		path to the input fasta file
+		Path to the input fasta file
 	
 	**[OPTIONAL]**
 		

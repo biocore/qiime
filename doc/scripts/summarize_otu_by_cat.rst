@@ -20,11 +20,11 @@ This script generates an otu table where the SampleIDs are replaced by a specifi
 	**[REQUIRED]**
 		
 	-i, `-`-input_map
-		name of input map file [REQUIRED]
+		Name of input map file [REQUIRED]
 	-c, `-`-otu_file
-		name of otu table file [REQUIRED]
+		Name of otu table file [REQUIRED]
 	-m, `-`-meta_category
-		name of category for OTU table [REQUIRED]
+		Name of category for OTU table [REQUIRED]
 	
 	**[OPTIONAL]**
 		

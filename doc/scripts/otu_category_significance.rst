@@ -20,11 +20,11 @@ The script `otu_category_significance.py <./otu_category_significance.html>`_ te
 	**[REQUIRED]**
 		
 	-i, `-`-otu_table_fp
-		path to the otu table
+		Path to the otu table
 	-m, `-`-category_mapping_fp
-		path to category mapping file
+		Path to category mapping file
 	-c, `-`-category
-		name of category over which to run the analysis
+		Name of category over which to run the analysis
 	
 	**[OPTIONAL]**
 		
@@ -70,7 +70,7 @@ The correlation test results are output as tab delimited text, which can be exam
 
 
 
-**Example 1**
+**Example 1:**
 
 If the user would like to perform a G test on their OTU table using default parameters, while testing the category "Sex", they can run the following command:
 
@@ -78,7 +78,7 @@ If the user would like to perform a G test on their OTU table using default para
 
 	otu_category_significance.py -i otu_table.txt -m Mapping_file.txt -s g_test -c Sex
 
-**Example 2**
+**Example 2:**
 
 If the user would like to perform the same test using numerical qPCR data, where everything below a threshold value should be considered "absent" and everything above that value "present", the user will need to set the threshold by running the following command:
 
@@ -86,7 +86,7 @@ If the user would like to perform the same test using numerical qPCR data, where
 
 	otu_category_significance.py -i otu_table.txt -m Mapping_file.txt -s g_test -c qPCR -t 0.16
 
-**Example 3**
+**Example 3:**
 
 Alternatively, the user could run an ANOVA test on the same data by using the following command:
 

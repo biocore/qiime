@@ -20,9 +20,9 @@ This script transformms 2 coordinate matrices (e.g., the output of `principal_co
 	**[REQUIRED]**
 		
 	-i, `-`-input_fps
-		comma-separated input files
+		Comma-separated input files
 	-o, `-`-output_dir
-		the output directory
+		The output directory
 	
 	**[OPTIONAL]**
 		
@@ -36,20 +36,19 @@ This script transformms 2 coordinate matrices (e.g., the output of `principal_co
 
 **Output:**
 
-
+Two transformed coordinate matrices corresponding to the two input coordinate matrices, and (if -r was specified) a text file summarizing the results of the Monte Carlo simulations.
 
 
 **Generate monte carlo p-values:**
 
 ::
 
-	
-   transform_coordinate_matrices.py -r 1000 -i weighted_unifrac_coords.txt,unweighted_unifrac_coords.txt
+	transform_coordinate_matrices.py -r 1000 -i weighted_unifrac_coords.txt,unweighted_unifrac_coords.txt
 
 **Write the transformed procrustes matrices to file:**
 
 ::
 
-	  transform_coordinate_matrices.py -o out/ -i weighted_unifrac_coords.txt,unweighted_unifrac_coords.txt
+	transform_coordinate_matrices.py -o out/ -i weighted_unifrac_coords.txt,unweighted_unifrac_coords.txt
 
 

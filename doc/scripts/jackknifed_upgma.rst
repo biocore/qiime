@@ -20,13 +20,13 @@ To directly measure the robustness of individual UPGMA clusters, one can perform
 	**[REQUIRED]**
 		
 	-i, `-`-otu_table_fp
-		the input fasta file [REQUIRED]
+		The input fasta file [REQUIRED]
 	-o, `-`-output_dir
-		the output directory [REQUIRED]
+		The output directory [REQUIRED]
 	-p, `-`-parameter_fp
-		path to the parameter file [REQUIRED]
+		Path to the parameter file [REQUIRED]
 	-e, `-`-seqs_per_sample
-		number of sequences to include in each jackknifed subset [REQUIRED]
+		Number of sequences to include in each jackknifed subset [REQUIRED]
 	
 	**[OPTIONAL]**
 		

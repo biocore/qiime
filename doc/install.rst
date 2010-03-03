@@ -20,18 +20,18 @@ Software Dependencies
 ---------------------
 The following programs and datasets were used to generate this tutorial and it is recommended to use the same versions as shown below.
 
-* Python 2.6
-* PyCogent 1.4.0 or later with ReportLab
-* PyNAST 1.0
-* Numpy 1.3
-* MatPlotLib 0.98.5.2
-* jre1.6.0_16
-* rdp_classifier-2.0
-* greengenes core set data file (http://greengenes.lbl.gov/Download/Sequence_Data/Fasta_data_files/core_set_aligned.fasta.imputed)
-* greengenes alignment lanemask file (http://greengenes.lbl.gov/Download/Sequence_Data/lanemask_in_1s_and_0s)
-* blast-2.2.22 (please note that this refers to legacy BLAST from NCBI, not BLAST+)
-* fasttree 2.0
-* cd-hit 3.1
+* Python 2.6 - Download `Python-2.6.4.tgz <http://www.python.org/ftp/python/2.6.4/Python-2.6.4.tgz>`_
+* PyCogent 1.4.0 - Download `PyCogent-1.4.tgz  <http://sourceforge.net/projects/pycogent/files/PyCogent/1.4/PyCogent-1.4.tgz/download>`_
+* PyNAST 1.0 - Download `PyNAST-1.0-tar.gz  <http://sourceforge.net/projects/pynast/files/PyNAST%20releases/PyNAST-1.0.tar.gz/download>`_
+* Numpy 1.3.0 - Download `numpy-1.3.0-tar.gz  <http://sourceforge.net/projects/numpy/files/NumPy/1.3.0/numpy-1.3.0.tar.gz/download>`_
+* MatPlotLib 0.98.5.2 - Download `matplotlib-0.98.5.2.tar.gz  <http://iweb.dl.sourceforge.net/project/matplotlib/OldFiles/matplotlib-0.98.5.2.tar.gz>`_
+* jre1.6.0_05 - Download `JavaForMacOSX10.5Update1.dmg <http://wsidecar.apple.com/cgi-bin/nph-reg3rdpty2.pl/product=18844&cat=59&platform=osx&method=sa/JavaForMacOSX10.5Update1.dmg>`_
+* rdp_classifier-2.0.1 - Download `rdp_classifier_2.0.1.tar.gz <http://downloads.sourceforge.net/project/rdp-classifier/rdp-classifier/rdp_classifier_2.0.1/rdp_classifier_2.0.1.tar.gz>`_
+* greengenes core set data file - Download `core_set_aligned.fasta.imputed <http://greengenes.lbl.gov/Download/Sequence_Data/Fasta_data_files/core_set_aligned.fasta.imputed>`_
+* greengenes alignment lanemask file - Download `lanemask_in_1s_and_0s <http://greengenes.lbl.gov/Download/Sequence_Data/lanemask_in_1s_and_0s>`_
+* blast-2.2.22 (please note that this refers to legacy BLAST from NCBI, not BLAST+) - Download `blast-2.2.22-universal-macosx.tar.gz <ftp://ftp.ncbi.nlm.nih.gov/blast/executables/LATEST/blast-2.2.22-universal-macosx.tar.gz>`_
+* fasttree 2.1.0 - Download `FastTree-2.1.c <http://www.microbesonline.org/fasttree/FastTree-2.1.0.c>`_
+* cd-hit 3.1 - Download `cd-hit-2007-0131.tar.gz <http://www.bioinformatics.org/download.php/cd-hit/cd-hit-2007-0131.tar.gz>`_
 
 Installing QIIME
 ----------------

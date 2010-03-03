@@ -41,7 +41,7 @@ This script generates a 3D plot comparing two sets of principle coordinates usin
 This script results in a folder containing an html file which displays the 3D Plots generated.
 
 
-**Example 1**
+**Example 1:**
 
 Compare two pca/pcoa files in the same 3d plot where each sample ID is assigned its own color:
 
@@ -49,7 +49,7 @@ Compare two pca/pcoa files in the same 3d plot where each sample ID is assigned 
 
 	compare_3d_plots.py -i 'raw_pca_data1.txt,raw_pca_data2.txt'
 
-**Example 2**
+**Example 2:**
 
 Compare two pca/pcoa files in the same 3d plot with two coloring schemes (Day and Type):
 
@@ -57,7 +57,7 @@ Compare two pca/pcoa files in the same 3d plot with two coloring schemes (Day an
 
 	compare_3d_plots.py -i 'raw_pca_data1.txt,raw_pca_data2.txt' -m input_map.txt -b 'Day,Type'
 
-**Example 3**
+**Example 3:**
 
 Compare two pca/pcoa files in the same 3d plot for a combination of label headers from a mapping file: 
 

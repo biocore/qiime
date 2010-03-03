@@ -34,9 +34,9 @@ If you have a set of rarefied OTU tables, make sure the example file contains ev
 	**[REQUIRED]**
 		
 	-i, `-`-input_path
-		input path (a directory)
+		Input path (a directory)
 	-o, `-`-output_path
-		output path (a directory).  will be created if needed
+		Output path (a directory).  will be created if needed
 	
 	**[OPTIONAL]**
 		

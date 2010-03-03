@@ -20,9 +20,9 @@ This filter allows for the removal of sequences and OTUs containing user-specifi
 	**[REQUIRED]**
 		
 	-i, `-`-otu_map_fp
-		path to the input OTU map (i.e., the output from `pick_otus.py <./pick_otus.html>`_)
+		Path to the input OTU map (i.e., the output from `pick_otus.py <./pick_otus.html>`_)
 	-f, `-`-input_fasta_fp
-		path to the input fasta file
+		Path to the input fasta file
 	-s, `-`-samples_to_extract
 		This is a list of sample ids, which should be removed from the OTU file
 	

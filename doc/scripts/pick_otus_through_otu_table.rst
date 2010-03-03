@@ -29,11 +29,11 @@ These are the values that you would typically pass as --template_fp to `align_se
 	**[REQUIRED]**
 		
 	-i, `-`-input_fp
-		the input fasta file [REQUIRED]
+		The input fasta file [REQUIRED]
 	-o, `-`-output_dir
-		the output directory [REQUIRED]
+		The output directory [REQUIRED]
 	-p, `-`-parameter_fp
-		path to the parameter file [REQUIRED]
+		Path to the parameter file [REQUIRED]
 	
 	**[OPTIONAL]**
 		
@@ -50,7 +50,7 @@ These are the values that you would typically pass as --template_fp to `align_se
 This script will produce an OTU mapping file (`pick_otus.py <./pick_otus.html>`_), a representative set of sequences (FASTA file from `pick_rep_set.py <./pick_rep_set.html>`_), a sequence alignment file (FASTA file from `align_seqs.py <./align_seqs.html>`_), taxonomy assignment file (from `assign_taxonomy.py <./assign_taxonomy.html>`_), a filtered sequence alignment (from `filter_alignment.py <./filter_alignment.html>`_), a phylogenetic tree (Newick file from `make_phylogeny.py <./make_phylogeny.html>`_) and an OTU table (from `make_otu_table.py <./make_otu_table.html>`_).
 
 
-**Simple example**
+**Simple example:**
 
 The following command will start an analysis on inseq1.fasta (-i), which is a post-split_libraries fasta file. The sequence identifiers in this file should be of the form <sample_id>_<unique_seq_id>. The following steps, corresponding to the preliminary data preparation, are applied.
 

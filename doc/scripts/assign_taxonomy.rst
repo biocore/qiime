@@ -22,7 +22,7 @@ Given a set of sequences, assign_taxonomy attempts to assign the taxonomy of eac
 	**[REQUIRED]**
 		
 	-i, `-`-input_fasta_fp
-		path to the input fasta file
+		Path to the input fasta file
 	
 	**[OPTIONAL]**
 		

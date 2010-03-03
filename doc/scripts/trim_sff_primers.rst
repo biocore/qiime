@@ -39,7 +39,7 @@ Finds the technical read regions for each library, and resets the left trim.
 This script replaces the original sff files with the trimmed versions.
 
 
-**Simple example**
+**Simple example:**
 
 Trim a directory of per-sff files in sff_dir (-l sff_dir/) using an input map (-m input_map.txt). This script uses the sff utility binaries which must be in your path.
 

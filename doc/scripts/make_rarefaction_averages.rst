@@ -22,9 +22,9 @@ This script creates a directory of average rarefaction series based on the suppl
 	**[REQUIRED]**
 		
 	-m, `-`-map
-		name of mapping file [REQUIRED]
+		Name of mapping file [REQUIRED]
 	-r, `-`-rarefaction
-		name of rarefaction file, takes output from collate_alpha OR tab delimited data from a previous run of this script. If using raw data from a previous run, set -x flag. [REQUIRED]
+		Name of rarefaction file, takes output from collate_alpha OR tab delimited data from a previous run of this script. If using raw data from a previous run, set -x flag. [REQUIRED]
 	
 	**[OPTIONAL]**
 		

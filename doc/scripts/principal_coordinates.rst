@@ -20,9 +20,9 @@ Principal Coordinate Analysis (PCoA) is commonly used to compare groups of sampl
 	**[REQUIRED]**
 		
 	-i, `-`-otu_table_fp
-		path to the input OTU table (i.e., the output from `make_otu_table.py <./make_otu_table.html>`_)
+		Path to the input OTU table (i.e., the output from `make_otu_table.py <./make_otu_table.html>`_)
 	-o, `-`-output_fp
-		the output filepath
+		The output filepath
 
 
 **Output:**
@@ -30,7 +30,7 @@ Principal Coordinate Analysis (PCoA) is commonly used to compare groups of sampl
 The resulting output file consists of each component (columns) along with the loading for each sample (rows). Pairs of components can then be graphed to view the relationships between samples. The bottom of the output file contains the eigenvalues and % variation explained for each component.
 
 
-**Example**
+**Example:**
 
 For this script, the user supplies a distance matrix (i.e., resulting file from `beta_diversity.py <./beta_diversity.html>`_), along with the output filename (e.g. beta_div_coords.txt), as follows:
 

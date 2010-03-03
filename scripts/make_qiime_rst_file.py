@@ -168,6 +168,7 @@ def main():
                     p=re.compile('\%default')
                     help_str=p.sub(str(defaults),i.help)
                     new_help_str=convert_py_file_to_link(help_str)
+                    new_help_str=new_help_str[0].upper() + new_help_str[1:]
         
                     cmd_arg=str(i).replace('--','`-`-').replace('/',', ')
                     inputs=inputs+'\t'+str(cmd_arg)+'\n\t\t'+ new_help_str+'\n'
@@ -200,7 +201,8 @@ def main():
                     p=re.compile('\%default')
                     help_str=p.sub(str(defaults),i.help)
                     new_help_str=convert_py_file_to_link(help_str)
-        
+                    new_help_str=new_help_str[0].upper() + new_help_str[1:]
+                    
                     cmd_arg=str(i).replace('--','`-`-').replace('/',', ')
                     inputs=inputs+'\t'+str(cmd_arg)+'\n\t\t'+ new_help_str+'\n'
 
@@ -210,9 +212,12 @@ def main():
                 
             script_examples=''
             for ex in script.script_info['script_usage']:
-                if ex[0] <> '':
-                    script_examples += '\n**' + ex[0] + '**\n'
-                    
+                example_title=ex[0].strip()
+                if example_title <> '':
+                    if example_title.endswith(':'):
+                        script_examples += '\n**' + ex[0] + '**\n'
+                    else:
+                        script_examples += '\n**' + ex[0] + ':**\n'
                 if ex[1] <> '':
                     script_ex=convert_py_file_to_link(ex[1])
                     script_examples += '\n' + script_ex + '\n'

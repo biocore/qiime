@@ -26,13 +26,13 @@ This is the value that would be passed to `beta_diversity.py <./beta_diversity.h
 	**[REQUIRED]**
 		
 	-i, `-`-otu_table_fp
-		the input fasta file [REQUIRED]
+		The input fasta file [REQUIRED]
 	-m, `-`-mapping_fp
-		path to the mapping file [REQUIRED]
+		Path to the mapping file [REQUIRED]
 	-o, `-`-output_dir
-		the output directory [REQUIRED]
+		The output directory [REQUIRED]
 	-p, `-`-parameter_fp
-		path to the parameter file [REQUIRED]
+		Path to the parameter file [REQUIRED]
 	
 	**[OPTIONAL]**
 		

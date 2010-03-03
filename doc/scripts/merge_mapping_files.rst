@@ -20,9 +20,9 @@ This script provides a convenient interface for merging mapping files which cont
 	**[REQUIRED]**
 		
 	-m, `-`-mapping_fps
-		the input mapping files in a comma-separated list
+		The input mapping files in a comma-separated list
 	-o, `-`-output_fp
-		the output mapping file to write
+		The output mapping file to write
 	
 	**[OPTIONAL]**
 		

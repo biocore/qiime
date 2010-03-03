@@ -20,9 +20,9 @@ This script performs like the `assign_taxonomy.py <./assign_taxonomy.html>`_ scr
 	**[REQUIRED]**
 		
 	-i, `-`-input_fasta_fp
-		full path to input_fasta_fp [REQUIRED]
+		Full path to input_fasta_fp [REQUIRED]
 	-o, `-`-output_dir
-		path to store output files [REQUIRED]
+		Path to store output files [REQUIRED]
 	
 	**[OPTIONAL]**
 		
@@ -59,12 +59,12 @@ This script performs like the `assign_taxonomy.py <./assign_taxonomy.html>`_ scr
 Mapping of sequence identifiers to taxonomy and quality scores.
 
 
-**Example**
+**Example:**
 
-Split the input file (-i) into five jobs (-O) start them,and write the results (-o) to out/. BE SURE TO SPECIFY FULL PATHS!
+Assign taxonomy to all sequences in the input file (-i) via five (-O) independent jobs using the RDP classifier and write the results (-o) to /home/qiime_user/out/.
 
 ::
 
-	parallel_assign_taxonomy_rdp -O 5 -i inseqs.fasta -o out/
+	parallel_assign_taxonomy_rdp.py -O 5 -i /home/qiime_user/inseqs.fasta -o /home/qiime_user/out/
 
 

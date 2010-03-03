@@ -21,9 +21,9 @@ This script automates the construction of pie charts showing the breakdown of ta
 	**[REQUIRED]**
 		
 	-i, `-`-input_files
-		list of files with sample counts by taxonomy [REQUIRED]
+		List of files with sample counts by taxonomy [REQUIRED]
 	-l, `-`-labels
-		list of labels for pie chart(i.e. Phylum,Class)[REQUIRED]
+		List of labels for pie chart(i.e. Phylum,Class)[REQUIRED]
 	
 	**[OPTIONAL]**
 		

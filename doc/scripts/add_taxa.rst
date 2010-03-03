@@ -34,7 +34,7 @@ This script adds taxa to an OTU table.
 
 **Output:**
 
-The result of this script is written to stdout.
+The result of this script is written to stdout, or optionally to the specified file.
 
 
 **Example:**

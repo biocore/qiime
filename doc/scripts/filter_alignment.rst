@@ -20,7 +20,7 @@ This script should be applied to generate a useful tree when aligning against a 
 	**[REQUIRED]**
 		
 	-i, `-`-input_fasta_file
-		the input directory 
+		The input directory 
 	
 	**[OPTIONAL]**
 		

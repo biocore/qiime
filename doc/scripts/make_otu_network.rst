@@ -28,9 +28,9 @@ In more technical language: OTUs and samples are designated as two types of node
 	**[REQUIRED]**
 		
 	-m, `-`-mapping_file
-		name of input map file [REQUIRED]
+		Name of input map file [REQUIRED]
 	-i, `-`-input_file
-		name of otu table file [REQUIRED]
+		Name of otu table file [REQUIRED]
 	
 	**[OPTIONAL]**
 		

@@ -20,9 +20,9 @@ In addition to using PCoA, it can be useful to cluster samples using UPGMA (Unwe
 	**[REQUIRED]**
 		
 	-i, `-`-input_path
-		input path.  directory for batch processing, filename for single file operation
+		Input path.  directory for batch processing, filename for single file operation
 	-o, `-`-output_path
-		output path. directory for batch processing, filename for single file operation
+		Output path. directory for batch processing, filename for single file operation
 
 
 **Output:**

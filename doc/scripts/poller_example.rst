@@ -22,7 +22,7 @@ To test, call the example command below. The poller will begin running, at which
 	**[REQUIRED]**
 		
 	-d, `-`-polled_dir
-		path to directory to poll
+		Path to directory to poll
 	
 	**[OPTIONAL]**
 		

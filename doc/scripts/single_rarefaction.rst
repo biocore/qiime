@@ -7,7 +7,7 @@
 
 **Description:**
 
-To perform bootstrap, jackknife, and rarefaction analyses, the otu table must be subsampled (rarefied).  This script rarefies, or subsamples, an OTU table.  This does not provide curves of diversity by number of sequences in a sample. Rather it creates a subsampled OTU table by random sampling (without replacement) of the input OTU table.
+To perform bootstrap, jackknife, and rarefaction analyses, the otu table must be subsampled (rarefied).  This script rarefies, or subsamples, an OTU table.  This does not provide curves of diversity by number of sequences in a sample. Rather it creates a subsampled OTU table by random sampling (without replacement) of the input OTU table.  The pseudo-random number generator used for rarefaction by subsampling is NumPy's default - an implementation of the Mersenne twister PRNG.
 
 
 **Usage:** :file:`single_rarefaction.py [options]`
@@ -20,11 +20,11 @@ To perform bootstrap, jackknife, and rarefaction analyses, the otu table must be
 	**[REQUIRED]**
 		
 	-i, `-`-input_path
-		input otu table filepath
+		Input otu table filepath
 	-o, `-`-output_path
-		write output rarefied otu tables to this filepath
+		Write output rarefied otu tables to this filepath
 	-d, `-`-depth
-		sequences per sample to subsample
+		Sequences per sample to subsample
 	
 	**[OPTIONAL]**
 		
@@ -47,6 +47,6 @@ subsample otu_table.txt at 400 seqs/sample (-d), write results to a file (i.e. r
 
 	single_rarefaction.py -i otu_table.txt -o rarefaction_400_17.txt -d 400 --small_included
 
-**(naming convention implies that the depth is 200 seqs/sam, iteration 17 at that depth (18th file written, due to iter 0))**
+(naming convention implies that the depth is 200 seqs/sam, iteration 17 at that depth (18th file written, due to iter 0))
 
 

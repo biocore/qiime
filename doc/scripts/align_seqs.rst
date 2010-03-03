@@ -28,7 +28,7 @@ This script aligns the sequences in a FASTA file to each other or to a template 
 	**[REQUIRED]**
 		
 	-i, `-`-input_fasta_fp
-		path to the input fasta file
+		Path to the input fasta file
 	
 	**[OPTIONAL]**
 		
@@ -59,7 +59,7 @@ All aligners will output a fasta file containing the alignment and log file in t
 3. "..._log.txt" - This is a log file containing information pertaining to the results obtained from a particular method (e.g. BLAST percent identity, etc.).
 
 
-**Alignment with MUSCLE**
+**Alignment with MUSCLE:**
 
 One could also use the MUSCLE algorithm. The following command can be used to align sequences (i.e. the resulting FASTA file from `pick_rep_set.py <./pick_rep_set.html>`_), where the output is written to the directory "muscle_alignment/":
 
@@ -67,7 +67,7 @@ One could also use the MUSCLE algorithm. The following command can be used to al
 
 	align_seqs.py -i repr_set_seqs.fasta -m muscle -o muscle_alignment/
 
-**Alignment with PyNAST**
+**Alignment with PyNAST:**
 
 The default alignment method is PyNAST, a python implementation of the NAST alignment algorithm. The NAST algorithm aligns each provided sequence (the "candidate" sequence) to the best-matching sequence in a pre-aligned database of sequences (the "template" sequence). Candidate sequences are not permitted to introduce new gap characters into the template database, so the algorithm introduces local mis-alignments to preserve the existing template sequence. The quality thresholds are the minimum requirements for matching between a candidate sequence and a template sequence. The set of matching template sequences will be searched for a match that meets these requirements, with preference given to the sequence length. By default, the minimum sequence length is 150 and the minimum percent id is 75%. The minimum sequence length is much too long for typical pyrosequencing reads, but was chosen for compatibility with the original NAST tool.
 
@@ -83,7 +83,7 @@ Alternatively, one could change the minimum sequence length ("-e") requirement a
 
 	align_seqs.py -i repr_set_seqs.fasta -t core_set_template.fasta -o pynast_aligned/ -e 500 -p 95.0
 
-**Alignment with Infernal**
+**Alignment with Infernal:**
 
 An alternative alignment method is to use Infernal. Infernal is similar to the PyNAST method, in that you supply a template alignment, although Infernal has several distinct differences. Infernal takes a multiple sequence alignment with a corresponding secondary structure annotation. This input file must be in Stockholm alignment format. There is a fairly good description of the Stockholm format rules at: http://en.wikipedia.org/wiki/Stockholm_format. Infernal will use the sequence and secondary structural information to align the candidate sequences to the full reference alignment. Similar to PyNAST, Infernal will not allow for gaps to be inserted into the reference alignment. Using Infernal is slower than other methods, and therefore is best used with sequences that do not align well using PyNAST.
 
