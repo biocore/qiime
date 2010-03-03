@@ -22,7 +22,7 @@ The following programs and datasets were used to generate this tutorial and it i
 
 * Python 2.6
 * PyCogent 1.4.0 or later with ReportLab
-* PyNAST (from svn)
+* PyNAST 1.0
 * Numpy 1.3
 * MatPlotLib 0.98.5.2
 * jre1.6.0_16
@@ -38,7 +38,7 @@ Installing QIIME
 
 Stable Pre-Release
 ^^^^^^^^^^^^^^^^^^
-Currently the most stable version of QIIME is our 0.9 pre-release, which you can download from `here <http://sourceforge.net/projects/qiime/files/releases/Qiime-0.9.tar.gz/download>`_.
+Currently the most stable version of QIIME is our 0.91 pre-release, which you can download from `here <http://sourceforge.net/projects/qiime/files/releases/Qiime-0.91.tar.gz/download>`_.
 
 Latest Development Version
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
