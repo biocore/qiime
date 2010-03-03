@@ -162,7 +162,7 @@ NOTE: The SRA requests that you deposit ALL your sequence data, including bad re
 
 	split_libraries.py -h
 
-**Output:** Shows you the help for :file:`split_libaries.py` ::
+**Output:** Shows you the help for `split_libaries.py <./scripts/split_libraries.html>`_ ::
 
 	split_libraries.py -s 5 -l 30 -L 1000 -b 12 -H 1000 -M 100 -a 1000 -f sff_files/E86FECS01.fna,sff_files/E86FECS02.fna -q sff_files/E86FECS01.qual,sff_files/E86FECS02.qual -m fierer_hand_study_E86FECS.map -o E86FECS_demultiplex
 
