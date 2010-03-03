@@ -63,6 +63,20 @@ If the user wants to color by specific mapping labels, they can use the followin
 
 	make_2d_plots.py -i beta_div_coords.txt -m Mapping_file.txt -b 'mapping_column'
 
+If the user would like to color all categories in their metadata mapping file, they can pass 'ALL' to the '-b' option, as follows:
+
+::
+
+	make_2d_plots.py -i beta_div_coords.txt -m Mapping_file.txt -b ALL
+
+**Output Directory Usage:**
+
+If you want to give an specific output directory (e.g. "2d_plots"), use the following code.
+
+::
+
+	make_2d_plots.py -i beta_div_coords.txt -o 2d_plots/
+
 **Combination of Features:**
 
 or use some of the suggestions from above:

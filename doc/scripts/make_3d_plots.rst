@@ -73,6 +73,12 @@ or use some of the suggestions from above:
 
 	make_3d_plots.py -i beta_div_coords.txt -m Mapping_file.txt -b 'mapping_column1,mapping_column1&&mapping_column2'
 
+If the user would like to color all categories in their metadata mapping file, they can pass 'ALL' to the '-b' option, as follows:
+
+::
+
+	make_3d_plots.py -i beta_div_coords.txt -m Mapping_file.txt -b ALL
+
 As an alternative, the user can supply a preferences (prefs) file, using the -p option. The prefs file allows the user to give specific samples their own columns within a given mapping column. This file also allows the user to perform a color gradient, given a specific mapping column.
 
 If the user wants to color by using the prefs file (e.g. prefs.txt), they can use the following code:
