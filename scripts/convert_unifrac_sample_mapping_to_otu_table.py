@@ -25,6 +25,7 @@ script_info['required_options']=[\
         help='path to the sample mapping file'),
     make_option('-o', '--output_fp', dest='output_fp', \
         help='path to output file')]
+
 script_info['version'] = __version__
 
 def main():

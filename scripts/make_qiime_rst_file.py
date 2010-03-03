@@ -27,9 +27,9 @@ rst_text= \
 '''\
 .. _%s:
 
-.. index:: %s
+.. index:: %s.py
 
-:mod:`%s` -- %s
+*%s.py* -- %s
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Description:**
@@ -37,7 +37,7 @@ rst_text= \
 %s
 
 
-**Usage:** :file:`%s [options]`
+**Usage:** :file:`%s.py [options]`
 
 **Input Arguments:**
 
@@ -59,7 +59,7 @@ script_info['script_description'] = """This script will take a script file and c
 usage strings and options to generate a documentation .rst file."""
 script_info['script_usage']=[]
 script_info['script_usage'].append(("""Example:""","""""","""make_qiime_rst_file.py -i make_2d_plots.py -o doc/"""))
-script_info['version'] = __version__
+script_info['output_description']="""This will output a Sphinx rst-formatted file."""
 
 script_info['required_options'] = [\
  # Example required option
@@ -68,35 +68,36 @@ script_info['required_options'] = [\
  options_lookup['output_dir']
 ]
 
-script_info['optional_options'] = []
-
+script_info['version'] = __version__
 
 
 def convert_py_file_to_link(input_str):
     m=re.compile('[\w]+\.py')
-    python_script_names=m.findall(input_str)
+    python_script_names=set(m.findall(input_str))
     
     if python_script_names:
+        script_w_link=input_str
         for i in python_script_names:
             individual_script_name=os.path.splitext(i)
-            script_w_link=m.sub('`'+ i + ' <./' + individual_script_name[0] + '.html>`_', input_str)
+            script_w_link=script_w_link.replace(i, '`'+ i + ' <./' + \
+                           individual_script_name[0] + '.html>`_')
         
         return script_w_link
     else:
         return input_str
-
+        
 
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
-
 
     #Determine if the input is a directory containing python scripts or a single
     #file and then create a list of those scripts
     if os.path.isdir(opts.input_script):
         file_names = os.listdir(opts.input_script)
         #Only take files which do not start with "." and end with a ".py"
-        file_names = [fname for fname in file_names if not fname.startswith('.') and fname.endswith('.py')]
+        file_names = [fname for fname in file_names if not \
+                        fname.startswith('.') and fname.endswith('.py')]
         
     elif os.path.isfile(opts.input_script):
         file_names=[str(opts.input_script)]
@@ -136,60 +137,77 @@ def main():
             imported_brief_description=script.script_info['brief_description']
             imported_script_description=script.script_info['script_description']
 
-            new_script_description = convert_py_file_to_link(imported_script_description)
-            
-                
-            inputs='\t**[REQUIRED]**\n\t\t\n'
-            
-            for i in script.script_info['required_options']:
-                # when no default is provided in the call to make_option,
-                # the value of i.default is a tuple -- this try/except
-                # handles the diff types that i.default can be
-                try:
-                    if i.default[0] == 'NO':
-                        # i.default is a tuple, so defualt hasn't been
-                        # set by the user, and it should therefore be None
-                        defaults = None
-                    else:
-                        # i.default is a string
+            new_script_description = \
+                    convert_py_file_to_link(imported_script_description)
+            #print new_script_description
+            inputs=''
+            if script.script_info.has_key('required_options') and \
+             script.script_info['required_options']<>[]:
+                inputs= '\t\n\t**[REQUIRED]**\n\t\t\n'
+                for i in script.script_info['required_options']:
+                    # when no default is provided in the call to make_option,
+                    # the value of i.default is a tuple -- this try/except
+                    # handles the diff types that i.default can be
+                    try:
+                        if i.default<>'':
+                            if i.default[0] == 'NO':
+                                # i.default is a tuple, so defualt hasn't been
+                                # set by the user, and it should therefore be 
+                                # None
+                                defaults = None
+                            else:
+                                # i.default is a string
+                                defaults = i.default
+                        else:
+                            defaults=None
+                    except TypeError:
+                        # i.default is not a string or a tuple (e.g., it's an 
+                        # int or None)
                         defaults = i.default
-                except TypeError:
-                    # i.default is not a string or a tuple (e.g., it's an int or None)
-                    defaults = i.default
-                
-                p=re.compile('\%default')
-                help_str=p.sub(str(defaults),i.help)
-                new_help_str=convert_py_file_to_link(help_str)
-
-                cmd_arg=str(i).replace('--','`-`-').replace('/',' ')
-                inputs=inputs+ '\t' + str(cmd_arg) + '\n\t\t' + new_help_str + '\n'
-    
-            inputs=inputs + '\t\n\t**[OPTIONAL]**\n\t\t\n'
-            for i in script.script_info['optional_options']:
-                # when no default is provided in the call to make_option,
-                # the value of i.default is a tuple -- this try/except
-                # handles the diff types that i.default can be
-                try:
-                    if i.default[0] == 'NO':
-                        
-                        # i.default is a tuple, so defualt hasn't been
-                        # set by the user, and it should therefore be None
-                        defaults = None
-                    else:
-                        # i.default is a string
-                        defaults = i.default
-                except TypeError:
-                    # i.default is not a string or a tuple (e.g., it's an int or None)
-                    defaults = i.default
             
-                p=re.compile('\%default')
-                help_str=p.sub(str(defaults),i.help)
-                new_help_str=convert_py_file_to_link(help_str)
+                    p=re.compile('\%default')
+                    help_str=p.sub(str(defaults),i.help)
+                    new_help_str=convert_py_file_to_link(help_str)
         
-                cmd_arg=str(i).replace('--','`-`-').replace('/',', ')
-                inputs=inputs+ '\t' + str(cmd_arg) + '\n\t\t' + new_help_str + '\n'
+                    cmd_arg=str(i).replace('--','`-`-').replace('/',', ')
+                    inputs=inputs+'\t'+str(cmd_arg)+'\n\t\t'+ new_help_str+'\n'
+                    
+                    
+            if script.script_info.has_key('optional_options') and  \
+             script.script_info['optional_options']<>[]:
+                inputs=inputs + '\t\n\t**[OPTIONAL]**\n\t\t\n'
+                for i in script.script_info['optional_options']:
+                    # when no default is provided in the call to make_option,
+                    # the value of i.default is a tuple -- this try/except
+                    # handles the diff types that i.default can be
+                    try:
+                        if i.default<>'':
+                            if i.default[0] == 'NO':
+                                # i.default is a tuple, so defualt hasn't been
+                                # set by the user, and it should therefore be 
+                                # None
+                                defaults = None
+                            else:
+                                # i.default is a string
+                                defaults = i.default
+                        else:
+                            defaults=i.default
+                    except TypeError:
+                        # i.default is not a string or a tuple (e.g., it's an 
+                        # int or None)
+                        defaults = i.default
+            
+                    p=re.compile('\%default')
+                    help_str=p.sub(str(defaults),i.help)
+                    new_help_str=convert_py_file_to_link(help_str)
+        
+                    cmd_arg=str(i).replace('--','`-`-').replace('/',', ')
+                    inputs=inputs+'\t'+str(cmd_arg)+'\n\t\t'+ new_help_str+'\n'
 
-    
+
+            if not script.script_info.has_key('required_options') and not script.script_info.has_key('optional_options'):
+                inputs='\t\n\tNone'
+                
             script_examples=''
             for ex in script.script_info['script_usage']:
                 if ex[0] <> '':
@@ -199,17 +217,18 @@ def main():
                     script_ex=convert_py_file_to_link(ex[1])
                     script_examples += '\n' + script_ex + '\n'
                 if ex[2] <>'':
-                    script_examples += '\n::\n\n\t' + ex[2] + '\n'
+                    new_cmd=ex[2].replace('%prog',file+'.py')
+                    script_examples += '\n::\n\n\t' + new_cmd + '\n'
     
-            script_out=script.script_info['output_description'].replace('--','`-`-')
+            script_out = \
+                  script.script_info['output_description'].replace('--','`-`-')
             new_script_out=convert_py_file_to_link(script_out)
-            
 
             output_text = rst_text % (file, file, file,         
                                         imported_brief_description,  
                                         new_script_description, file, 
-                                        inputs, new_script_out, script_examples)
-
+                                        inputs, new_script_out, 
+                                        script_examples)
 
             ###Write rst file
             f = open(outf, 'w')
@@ -217,7 +236,7 @@ def main():
             f.close()
             
             #script.close()
-        except AttributeError:
+        except ValueError:
             print "%s: This file does not contain the appropriate dictionary" \
             % (file)
 

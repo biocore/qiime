@@ -24,7 +24,7 @@ Download
 Stable Pre-Release
 ^^^^^^^^^^^^^^^^^^
 
-Currently the most stable version of QIIME is our 0.9 pre-release, which you can download `here <https://sourceforge.net/projects/qiime/files/releases/Qiime-0.9.tar.gz/download>`_. You can also download the `install documents <http://qiime.sourceforge.net/QIIME_Install.pdf>`_, the software `documentation <http://qiime.sourceforge.net/documentation/Qiime_Documentation.pdf>`_, a `data analysis tutorial <http://qiime.sourceforge.net/tutorial/Qiime_Tutorial.pdf>`_ and an `SRA submission tutorial <http://qiime.sourceforge.net/SRA_Submission_Tutorial.pdf>`_.
+Currently the most stable version of QIIME is our 0.91 pre-release, which you can download `here <https://sourceforge.net/projects/qiime/files/releases/Qiime-0.91.tar.gz/download>`_. You can also view the `install documents <./install.html>`_, the software `documentation <./documentation.html>`_, a `data analysis tutorial <./tutorial.html>`_ and an `SRA submission tutorial <./doc_sra_submission.html>`_.
 
 Development Version
 ^^^^^^^^^^^^^^^^^^^

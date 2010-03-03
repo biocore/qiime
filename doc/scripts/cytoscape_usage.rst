@@ -1,6 +1,6 @@
 .. index:: cytoscape
 
-:mod:`cytoscape_usage` -- Loading Results with Cytoscape
+*cytoscape_usage* -- Loading Results with Cytoscape
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 

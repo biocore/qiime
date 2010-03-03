@@ -50,19 +50,15 @@ script_info['required_options']=[]
 script_info['optional_options']=[\
  make_option('-i', '--input_path',
      help='input path.  directory for batch processing, '+\
-      'filename for single file operation'),
-     
+      'filename for single file operation'), 
  make_option('-o', '--output_path',
      help='output path. directory for batch processing, '+\
       'filename for single file operation'),
-
  make_option('-m', '--metrics',
-     help='metrics to use, comma delimited'),
-     
+     help='metrics to use, comma delimited'), 
  make_option('-s', '--show_metrics', action='store_true', 
      dest="show_metrics",
      help='show available alpha diversity metrics and quit'),
-
  make_option('-t', '--tree_path', default=None,
      help='path to newick tree file, required for phylogenetic metrics'+\
      ' [default: %default]')
