@@ -87,7 +87,7 @@ Alternatively, one could change the minimum sequence length ("-e") requirement a
 
 An alternative alignment method is to use Infernal. Infernal is similar to the PyNAST method, in that you supply a template alignment, although Infernal has several distinct differences. Infernal takes a multiple sequence alignment with a corresponding secondary structure annotation. This input file must be in Stockholm alignment format. There is a fairly good description of the Stockholm format rules at: http://en.wikipedia.org/wiki/Stockholm_format. Infernal will use the sequence and secondary structural information to align the candidate sequences to the full reference alignment. Similar to PyNAST, Infernal will not allow for gaps to be inserted into the reference alignment. Using Infernal is slower than other methods, and therefore is best used with sequences that do not align well using PyNAST.
 
-The following command can be used for aligning sequences using the Infernal method, where we supply the program with a FASTA file of unaligned sequences, a STOCKHOLM file of pre-aligned sequences and secondary structure (this is the template file - an example file can be obtained from: http://tajmahal.colorado.edu/tmp/tmprEJYWsLiGSseed.16s.reference_model.sto.zip), and the results will be written to the directory "infernal_aligned/":
+The following command can be used for aligning sequences using the Infernal method, where we supply the program with a FASTA file of unaligned sequences, a STOCKHOLM file of pre-aligned sequences and secondary structure (this is the template file - an example file can be obtained from: http://tajmahal.colorado.edu/qiime/seed.16s.reference_model.sto.zip), and the results will be written to the directory "infernal_aligned/":
 
 ::
 

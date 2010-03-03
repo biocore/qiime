@@ -45,7 +45,7 @@ As a simple example of this script, the user can use the following command, whic
 
 ::
 
-	filter_otus_by_sample.py -i repr_set_seqs_aligned.fna -m lanemask_template -o filtered_alignment/
+	filter_alignment.py -i repr_set_seqs_aligned.fna -m lanemask_template -o filtered_alignment/
 
 Alternatively, if the user would like to use a different gap fraction threshold ("-g"), they can use the following command:
 

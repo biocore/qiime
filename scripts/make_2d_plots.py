@@ -36,6 +36,8 @@ script_info['script_usage'].append(("""Output Directory Usage:""","""If you want
 script_info['script_usage'].append(("""Mapping File Usage:""","""Additionally, the user can supply their mapping file ("-m") and a specific category to color by ("-b") or any combination of categories. When using the -b option, the user can specify the coloring for multiple mapping labels, where each mapping label is separated by a comma, for example: -b \'mapping_column1,mapping_column2\'. The user can also combine mapping labels and color by the combined label that is created by inserting an \'&&\' between the input columns, for example: -b \'mapping_column1&&mapping_column2\'.
 
 If the user wants to color by specific mapping labels, they can use the following code:""","""%prog -i beta_div_coords.txt -m Mapping_file.txt -b 'mapping_column'"""))
+script_info['script_usage'].append(("""""","""If the user would like to color all categories in their metadata mapping file, they can pass 'ALL' to the '-b' option, as follows:""","""%prog -i beta_div_coords.txt -m Mapping_file.txt -b ALL"""))
+script_info['script_usage'].append(("""Output Directory Usage:""","""If you want to give an specific output directory (e.g. \"2d_plots\"), use the following code.""", """%prog -i beta_div_coords.txt -o 2d_plots/"""))
 script_info['script_usage'].append(("""Combination of Features:""","""or use some of the suggestions from above:""", """%prog -i beta_div_coords.txt -m Mapping_file.txt -b \'mapping_column1,mapping_column1&&mapping_column2\'"""))
 script_info['output_description']="""This script generates an output folder, which contains several files. To best view the 2D plots, it is recommended that the user views the _pca_2D.html file."""
 
