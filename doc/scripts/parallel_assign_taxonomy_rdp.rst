@@ -1,6 +1,6 @@
 .. _parallel_assign_taxonomy_rdp:
 
-.. index:: parallel_assign_taxonomy_rdp
+.. index:: parallel_assign_taxonomy_rdp.py
 
 *parallel_assign_taxonomy_rdp.py* -- Parallel taxonomy assignment using RDP
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

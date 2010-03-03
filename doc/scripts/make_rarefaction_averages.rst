@@ -1,6 +1,6 @@
 .. _make_rarefaction_averages:
 
-.. index:: make_rarefaction_averages
+.. index:: make_rarefaction_averages.py
 
 *make_rarefaction_averages.py* -- Generate Rarefaction Averages
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -45,7 +45,7 @@ For generated rarefaction plots using the default parameters, including the mapp
 
 ::
 
-	make_rarefaction_plots.py -m Mapping_file.txt -r chao1.txt
+	make_rarefaction_averages.py -m Mapping_file.txt -r chao1.txt
 
 **Multiple File Example:**
 
@@ -53,7 +53,7 @@ If you would like to generate plots for multiple files, you can use the followin
 
 ::
 
-	make_rarefaction_plots.py -m Mapping_file.txt -r chao1.txt,PD_whole_tree.txt
+	make_rarefaction_averages.py -m Mapping_file.txt -r chao1.txt,PD_whole_tree.txt
 
 **Category Specific Example:**
 
@@ -61,6 +61,6 @@ In the case that you want to make plots for a specific category (i.e., pH), you 
 
 ::
 
-	make_rarefaction_plots.py -m Mapping_file.txt -r chao1.txt -p pH
+	make_rarefaction_averages.py -m Mapping_file.txt -r chao1.txt -p pH
 
 

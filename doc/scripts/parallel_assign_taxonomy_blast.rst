@@ -1,6 +1,6 @@
 .. _parallel_assign_taxonomy_blast:
 
-.. index:: parallel_assign_taxonomy_blast
+.. index:: parallel_assign_taxonomy_blast.py
 
 *parallel_assign_taxonomy_blast.py* -- Parallel taxonomy assignment using BLAST
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

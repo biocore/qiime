@@ -1,6 +1,6 @@
 .. _beta_diversity_through_3d_plots:
 
-.. index:: beta_diversity_through_3d_plots
+.. index:: beta_diversity_through_3d_plots.py
 
 *beta_diversity_through_3d_plots.py* -- A workflow script for computing beta diversity distance matrices and the corresponding 3D plots
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

@@ -121,7 +121,6 @@ OTU Table Processing
    scripts/single_rarefaction 
    scripts/summarize_otu_by_cat 
 
-
 Alpha-Diversity
 ---------------
 
@@ -132,6 +131,7 @@ Alpha-Diversity
    scripts/alpha_diversity 
    scripts/alpha_diversity_metrics
    scripts/collate_alpha 
+   scripts/make_rarefaction_averages
    scripts/parallel_alpha_diversity 
 
 Beta-Diversity
