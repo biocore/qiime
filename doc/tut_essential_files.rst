@@ -43,8 +43,8 @@ This is the 454-machine generated file which stores the sequencing trace data. T
 
 To generate a fasta file ::
 
-	$ sffinfo -s NAME_OF_SFF_FILES > OUTPUT_NAME.fna
+	sffinfo -s NAME_OF_SFF_FILES > OUTPUT_NAME.fna
 
 To generate a quality score file ::
 
-	$ sffinfo -q NAME_OF_SFF_FILES >OUTPUT_NAME.qual
+	sffinfo -q NAME_OF_SFF_FILES >OUTPUT_NAME.qual

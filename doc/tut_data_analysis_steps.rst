@@ -6,9 +6,9 @@
 ===================
 Data Analysis Steps
 ===================
-In this walkthrough, invocation of scripts will be noted with indentation and the $ sign denoting the start of a command line. You can find full usage information for each script by passing the -h option (help) and/or by reading the full description in the **Documentation**. First, assemble the sequences (.fna), quality scores (.qual), and metadata mapping file into a directory. Execute all tutorial commands from within this directory. To access QIIME python scripts, it may be useful to set an environment variable to the location of the innermost QIIME directory (the one containing check_id_map.py, for example) ::
+In this walkthrough, invocation of scripts will be noted with indentation and the sign denoting the start of a command line. You can find full usage information for each script by passing the -h option (help) and/or by reading the full description in the `Documentation <./documentation.html>`_. First, assemble the sequences (.fna), quality scores (.qual), and metadata mapping file into a directory. Execute all tutorial commands from within this directory. To access QIIME python scripts, it may be useful to set an environment variable to the location of the innermost QIIME directory (the one containing `check_id_map.py <./scripts/check_id_map.html>`_, for example) ::
 
-	$ qdir=/path/to/QIIME/scripts/
+	qdir=/path/to/QIIME/scripts/
 
 then further commands of the form :file:`python QIIMEscript.py -o option` can be invoked as :file:`python $qdir/QIIMEscript.py -o option`.
 
@@ -22,27 +22,27 @@ Filter the reads based on quality, and assign multiplexed reads to starting samp
 
 Check Mapping File
 ^^^^^^^^^^^^^^^^^^
-Before beginning the pipeline, you should ensure that your mapping file is formatted correctly with the :file:`check_map_id.py` script. ::
+Before beginning the pipeline, you should ensure that your mapping file is formatted correctly with the `check_id_map.py <./scripts/check_id_map.html>`_ script. ::
 
-	$ python $qdir/check_id_map.py -m Fasting_Map.txt -o mapping_output/
+	python $qdir/check_id_map.py -m Fasting_Map.txt -o mapping_output/
 
-If verbose (-v) is enabled, this utility will print to STDOUT a message indicating whether or not problems were found in the mapping file. Errors and warnings will the output to a log file, which will be present in the specified (-o) output directory. Errors will cause fatal problems with subsequent scripts and must be corrected before moving forward. Warnings will not cause fatal problems, but it is encouraged that you fix these problems as they are often indicative of typos in your mapping file, invalid characters, or other unintended errors that will impact downstream analysis. A corrected_mapping.txt file will also be created in the output directory, which will have a copy of the mapping file with invalid characters replaced by underscores, or a message indicating that no invalid characters were found.
+If verbose (-v) is enabled, this utility will print to STDOUT a message indicating whether or not problems were found in the mapping file. Errors and warnings will the output to a log file, which will be present in the specified (-o) output directory. Errors will cause fatal problems with subsequent scripts and must be corrected before moving forward. Warnings will not cause fatal problems, but it is encouraged that you fix these problems as they are often indicative of typos in your mapping file, invalid characters, or other unintended errors that will impact downstream analysis. A :file:`corrected_mapping.txt` file will also be created in the output directory, which will have a copy of the mapping file with invalid characters replaced by underscores, or a message indicating that no invalid characters were found.
 
 .. _assignsamples:
 
 Assign Samples to Mulitplex Reads
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The next task is to assign the mulitplex reads to samples based on their nucleotide barcode. Also, this step performs quality filtering based on the characteristics of each sequence, removing any low quality or ambiguous reads. The script for this step is :file:`split_libraries.py`. A full description of parameters for this script are described in the **Documentation**. For this tutorial, we will use default parameters (minimum quality score = 25, minimum/maximum length = 200/1000, no ambiguous bases allowed and no mismatches allowed in the primer sequence).::
+The next task is to assign the mulitplex reads to samples based on their nucleotide barcode. Also, this step performs quality filtering based on the characteristics of each sequence, removing any low quality or ambiguous reads. The script for this step is `split_libraries.py <./scripts/split_libraries.html>`_. A full description of parameters for this script are described in the `Documentation <./documentation.html>`_. For this tutorial, we will use default parameters (minimum quality score = 25, minimum/maximum length = 200/1000, no ambiguous bases allowed and no mismatches allowed in the primer sequence).::
 
-	$ python $qdir/split_libraries.py -m Fasting_Map.txt -f Fasting_Example.fna -q Fasting_Example.qual -o Fasting_Split_Lib_Out
+	python $qdir/split_libraries.py -m Fasting_Map.txt -f Fasting_Example.fna -q Fasting_Example.qual -o Fasting_Split_Lib_Out
 
-This invocation will create three files in the new directory "Fasting_Split_Lib_Out":
+This invocation will create three files in the new directory "Fasting_Split_Lib_Out/":
 
 * :file:`split_library_log.txt` : This file contains the summary of splitting, including the number of reads detected for each sample and a brief summary of any reads that were removed due to quality considerations.
 * :file:`histograms.txt` : This tab delimited file shows the number of reads at regular size intervals before and after splitting the library.
 * :file:`seqs.fna` : This is a fasta formatted file where each sequence is renamed according to the sample it came from. The header line also contains the name of the read in the input fasta file and information on any barcode errors that were corrected.
 
-A few lines from the "seqs.fna" file are shown below:
+A few lines from the :file:`seqs.fna` file are shown below:
 
 .. note::
 
@@ -65,21 +65,21 @@ Pick Operational Taxonomic Units (OTUs) and Representative Sequences
 Pick OTUs based on Sequence Similarity within the Reads
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-At this step, all of the sequences from all of the samples will be clustered into Operational Taxonomic Units (OTUs) based on their sequence similarity. OTUs in QIIME are clusters of sequences, frequently intended to represent some degree of taxonomic relatedness. For example, when sequences are clustered at 97% sequence similarity with cd-hit, each resulting cluster is typically thought of as representing a genus. This model and the current techniques for picking OTUs are known to be flawed, and determining exactly how OTUs should be defined, and what they represent, is an active area of research. Thus, OTU-picking will identify highly similar sequences across the samples and provide a platform for comparisons of community structure. The script :file:`pick_otus.py` takes as input the fasta file output from :ref:`assignsamples` above, and returns a list of OTUs detected and the fasta header for sequences that belong in that OTU. To invoke the script using cd-hit to cluster and the default setting of 97% similarity determining an OTU, use ::
+At this step, all of the sequences from all of the samples will be clustered into Operational Taxonomic Units (OTUs) based on their sequence similarity. OTUs in QIIME are clusters of sequences, frequently intended to represent some degree of taxonomic relatedness. For example, when sequences are clustered at 97% sequence similarity with cd-hit, each resulting cluster is typically thought of as representing a genus. This model and the current techniques for picking OTUs are known to be flawed, and determining exactly how OTUs should be defined, and what they represent, is an active area of research. Thus, OTU-picking will identify highly similar sequences across the samples and provide a platform for comparisons of community structure. The script `pick_otus.py <./scripts/pick_otus.html>`_ takes as input the fasta file output from :ref:`assignsamples` above, and returns a list of OTUs detected and the fasta header for sequences that belong in that OTU. To invoke the script using cd-hit to cluster and the default setting of 97% similarity determining an OTU, use ::
 
-	$ python $qdir/pick_otus.py -i Fasting_Split_Lib_Out/seqs.fna -m cdhit -o Fasting_picked_otus
+	python $qdir/pick_otus.py -i Fasting_Split_Lib_Out/seqs.fna -m cdhit -o Fasting_picked_otus
 
-In the newly created directory :file:`Fasting_picked_otus`, there will be two files. One is :file:`seqs.log`, which contains information about the invocation of the script. The OTUs will be recorded in the tab-delimited file :file:`seqs_otus.txt`. The OTUs are arbitrarily named by a number, which is recorded in the first column. The subsequent columns in each line identify the sequence or sequences that belong in that OTU.
+In the newly created directory "Fasting_picked_otus/", there will be two files. One is :file:`seqs.log`, which contains information about the invocation of the script. The OTUs will be recorded in the tab-delimited file :file:`seqs_otus.txt`. The OTUs are arbitrarily named by a number, which is recorded in the first column. The subsequent columns in each line identify the sequence or sequences that belong in that OTU.
 
 .. _pickrepseqsforotu:
 
 Pick Representative Sequences for each OTU
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Since each OTU may be made up of many sequences, we will pick a representative sequence for that OTU for downstream analysis. This representative sequence will be used for taxonomic identification of the OTU and phylogenetic alignment. The script :file:`pick_rep_set.py` uses the otu file created above and extracts a representative sequence from the fasta file by one of several methods. To use the default method, where the most abundant sequence in the OTU is used as the representative sequence, invoke the script as follows ::
+Since each OTU may be made up of many sequences, we will pick a representative sequence for that OTU for downstream analysis. This representative sequence will be used for taxonomic identification of the OTU and phylogenetic alignment. The script `pick_rep_set.py <./scripts/pick_rep_set.html>`_ uses the otu file created above and extracts a representative sequence from the fasta file by one of several methods. To use the default method, where the most abundant sequence in the OTU is used as the representative sequence, invoke the script as follows ::
 
-	$ python $qdir/pick_rep_set.py -i Fasting_picked_otus/seqs_otus.txt -f Fasting_Split_Lib_Out/seqs.fna -l Fasting_picked_otus/rep_set.log -o Fasting_picked_otus/rep_set.fa
+	python $qdir/pick_rep_set.py -i Fasting_picked_otus/seqs_otus.txt -f Fasting_Split_Lib_Out/seqs.fna -l Fasting_picked_otus/rep_set.log -o rep_set.fa
 
-In the directory "Fasting_picked_otus", the script has created two new files - the log file :file:`rep_set.log` and the fasta file :file:`rep_set.fa` containing one representative sequence for each OTU. In this fasta file, the sequence has been renamed by the OTU, and the additional information on the header line reflects the sequence used as the representative:
+In the current working directory, the script has created two new files - the log file :file:`rep_set.log` and the fasta file :file:`rep_set.fa` containing one representative sequence for each OTU. In this fasta file, the sequence has been renamed by the OTU, and the additional information on the header line reflects the sequence used as the representative:
 
 .. note::
 
@@ -98,11 +98,11 @@ In this section, we will assign the representative sequences for each OTU to a t
 
 Assign Taxonomy
 ^^^^^^^^^^^^^^^
-A primary goal of the QIIME pipeline is to assign high-throughput sequencing reads to taxonomic identities using established databases. This will give you information on the microbial lineages found in your samples. Using :file:`assign_taxonomy.py`, you can compare your OTUs against a reference database of your choosing. For our example, we will use the RDP classification system.::
+A primary goal of the QIIME pipeline is to assign high-throughput sequencing reads to taxonomic identities using established databases. This will give you information on the microbial lineages found in your samples. Using `assign_taxonomy.py <./scripts/assign_taxonomy.html>`_, you can compare your OTUs against a reference database of your choosing. For our example, we will use the RDP classification system.::
 
-	$ python $qdir/assign_taxonomy.py -i Fasting_picked_otus/rep_set.fa -m rdp -o Fasting_rdp_taxonomy
+	python $qdir/assign_taxonomy.py -i rep_set.fa -m rdp -o Fasting_rdp_taxonomy
 
-In the directory "Fasting_rdp_taxonomy", there will be a log file and a text file. The text file contains a line for each OTU considered, with the RDP taxonomy assignment and a numerical confidence of that assignment (1 is the highest possible confidence). For some OTUs, the assignment will be as specific as a bacterial species, while others may be assignable to nothing more specific than the bacterial domain. Below are the first few lines of the text file and the user should note that the taxonomic assignment and confidence numbers from their run may not coincide with the output shown below, due to the RDP classification algorithm:
+In the directory "Fasting_rdp_taxonomy/", there will be a log file and a text file. The text file contains a line for each OTU considered, with the RDP taxonomy assignment and a numerical confidence of that assignment (1 is the highest possible confidence). For some OTUs, the assignment will be as specific as a bacterial species, while others may be assignable to nothing more specific than the bacterial domain. Below are the first few lines of the text file and the user should note that the taxonomic assignment and confidence numbers from their run may not coincide with the output shown below, due to the RDP classification algorithm:
 
 .. note::
 
@@ -115,9 +115,9 @@ In the directory "Fasting_rdp_taxonomy", there will be a log file and a text fil
 
 Make OTU Table
 ^^^^^^^^^^^^^^
-Using these assignments and the OTU file created in :ref:`pickotusseqsim`, we can make a readable matrix of OTU by Sample with meaningful taxonomic identifiers for each OTU. The script is :file:`make_otu_table.py`.::
+Using these assignments and the OTU file created in :ref:`pickotusseqsim`, we can make a readable matrix of OTU by Sample with meaningful taxonomic identifiers for each OTU. The script is `make_otu_table.py <./scripts/make_otu_table.html>`_.::
 
-	$ python $qdir/make_otu_table.py -i Fasting_picked_otus/seqs_otus.txt -t Fasting_rdp_taxonomy/rep_set_tax_assignments.txt -o Fasting_otu_table.txt
+	python $qdir/make_otu_table.py -i Fasting_picked_otus/seqs_otus.txt -t Fasting_rdp_taxonomy/rep_set_tax_assignments.txt -o Fasting_otu_table.txt
 
 The first few lines of :file:`Fasting_otu_table.txt` are shown below (OTUs 2-9), where the first column contains the OTU number, the last column contains the taxonomic assignment for the OTU, and 9 columns between are for each of our 9 samples. The value of each *ij* entry in the matrix is the number of times OTU *i* was found in the sequences for sample *j*.
 
@@ -146,22 +146,21 @@ To perform rarefaction, you need to set the boundaries for sampling and the step
 
    * Sample ct min/max/mean: 146 / 150 / 148.11
 
-Since we are only removing sample heterogeneity from the OTU table, we will set the upper and lower boundaries to be equal, with a single step size and only one iteration. Rarefaction is most useful when most samples have the specified number of sequences, so your upper bound of rarefaction should be close to the minimum number of sequences found in a sample. For this case, we will set the min/max to 146. ::
+Since we are only removing sample heterogeneity from the OTU table, we will use `single_rarefaction.py <./scripts/single_rarefaction.html>`_, which only requires the depth of sampling. Rarefaction is most useful when most samples have the specified number of sequences, so your upper bound of rarefaction should be close to the minimum number of sequences found in a sample. For this case, we will set the depth to 146. ::
 
-	$ python $qdir/rarefaction.py -i Fasting_otu_table.txt -m 146 -x 146 -s 1 -n 1 -o Fasting_Rarified_Otu_Table/
+	python $qdir/single_rarefaction.py -i Fasting_otu_table.txt -d 146 -o Fasting_rarified_otu_table.txt
 
-The newly created directory "Fasting_Rarified_Otu_Table" will contain a single text file named :file:`rarefaction_146_0.txt`. For all subsequent analyses, one can use this text file in place of :file:`Fasting_otu_table.txt`, since this file is also an OTU table, except that it has been rarified.
+As a result, a newly created file :file:`Fasting_rarified_otu_table.txt` has been written. For all subsequent analyses, one can use this text file in place of :file:`Fasting_otu_table.txt`, since this file is also an OTU table, except that it has been rarified.
 
 .. _makeheatmap:
 
 Make OTU Heatmap
 ^^^^^^^^^^^^^^^^
-The QIIME pipeline includes a very useful utility to generate images of the OTU table. The script 
-is :file:`make_otu_heatmap_html.py` ::
+The QIIME pipeline includes a very useful utility to generate images of the OTU table. The script is `make_otu_heatmap_html.py <./scripts/make_otu_heatmap_html.html>`_ ::
 
-	$ python $qdir/make_otu_heatmap_html.py -i Fasting_otu_table.txt -o Fasting_OTU_Heatmap/
+	python $qdir/make_otu_heatmap_html.py -i Fasting_otu_table.txt -o Fasting_OTU_Heatmap/
 
-An html file is created in the directory "Fasting_OTU_Heatmap". You can open this file with any web browser, and will be prompted to enter a value for "Filter by Counts per OTU". Only OTUs with total counts at or above this threshold will be displayed. Click the "Sample ID" button, and a graphic will be generated like the figure below. For each sample, you will see in a heatmap the number of times each OTU was found in that sample. You can mouse over any individual count to get more information on the OTU (including taxonomic assignment). Within the mouseover, there is a link for the terminal lineage assignment, so you can easily search Google for more information about that assignment.
+An html file is created in the directory "Fasting_OTU_Heatmap/". You can open this file with any web browser, and will be prompted to enter a value for "Filter by Counts per OTU". Only OTUs with total counts at or above this threshold will be displayed. The OTU heatmap displays raw OTU counts per sample, where the counts are colored based on the contribution of each OTU to the total OTU count present in that sample (blue: contributes low percentage of OTUs to sample; red: contributes high percentage of OTUs). Click the "Sample ID" button, and a graphic will be generated like the figure below. For each sample, you will see in a heatmap the number of times each OTU was found in that sample. You can mouse over any individual count to get more information on the OTU (including taxonomic assignment). Within the mouseover, there is a link for the terminal lineage assignment, so you can easily search Google for more information about that assignment.
 
 .. image:: images/ heatmap.png
    :align: center
@@ -182,16 +181,16 @@ Make OTU Network
 ^^^^^^^^^^^^^^^^
 An alternative to viewing the OTU table as a heatmap, is to create an OTU network, using the following command.::
 
-	$ python $qdir/make_otu_network.py -m Fasting_Map.txt -i Fasting_otu_table.txt -o OTU_Network
+	python $qdir/make_otu_network.py -m Fasting_Map.txt -i Fasting_otu_table.txt -o OTU_Network
 
-To visualize the network, we use the Cytoscape_ program, where each red circle represents a sample and each white square represents an otu. The lines represent the OTUs present in a particular sample (blue for controls and green for fasting). For more information about opening the files in Cytoscape_ please refer to **Documentation**.
+To visualize the network, we use the Cytoscape_ program, where each red circle represents a sample and each white square represents an otu. The lines represent the OTUs present in a particular sample (blue for controls and green for fasting). For more information about opening the files in Cytoscape_ please refer `here <./scripts/cytoscape_usage.html>`_.
 
 .. image:: images/ network.png
    :align: center
 
-You can group OTUs by different taxonomic levels (division, class, family) with the script summarize_taxa.py. The input is the OTU table created above and the taxonomic level you need to group the OTUs. For the RDP taxonomy, the following taxonomic levels correspond to: 2 = Domain (Bacteria), 3 = Phylum (Actinobacteria), 4 = Class, and so on. ::
+You can group OTUs by different taxonomic levels (division, class, family) with the script `summarize_taxa.py <./scripts/summarize_taxa.html>`_. The input is the OTU table created above and the taxonomic level you need to group the OTUs. For the RDP taxonomy, the following taxonomic levels correspond to: 2 = Domain (Bacteria), 3 = Phylum (Actinobacteria), 4 = Class, and so on. ::
 
-	$ python $qdir/summarize_taxa.py -i Fasting_otu_table.txt -o Fasting_otu_table_Level3.txt -L 3 -r 0 
+	python $qdir/summarize_taxa.py -i Fasting_otu_table.txt -o Fasting_otu_table_Level3.txt -L 3 -r 0 
 
 The script will generate a new OTU table :file:`Fasting_otu_table_Level3.txt`, where the value of each *ij* entry in the matrix is the count of the number of times all OTUs belonging to the taxon *i* (for example, Phylum Actinobacteria) were found in the sequences for sample *j*.
 
@@ -213,11 +212,11 @@ The script will generate a new OTU table :file:`Fasting_otu_table_Level3.txt`, w
 
 Make Pie Charts
 ^^^^^^^^^^^^^^^
-To visualize the summarized taxa, you can use the :file:`make_pie_charts.py` script, which shows which taxons are present in all samples or within each sample (-s). ::
+To visualize the summarized taxa, you can use the `make_pie_charts.py <./scripts/make_pie_charts.html>`_ script, which shows which taxons are present in all samples or within each sample (-s). ::
 
-	$ python $qdir/make_pie_charts.py -i Fasting_otu_table_Level3.txt -l Phylum -o Fasting_Pie_Charts -s
+	python $qdir/make_pie_charts.py -i Fasting_otu_table_Level3.txt -l Phylum -o Fasting_Pie_Charts -s
 
-To view the resulting pie charts, open the html file located in the "Fasting_Pie_Charts" folder. The following pie chart shows the taxa assignments for all samples.
+To view the resulting pie charts, open the html file located in the "Fasting_Pie_Charts/" folder. The following pie chart shows the taxa assignments for all samples.
 
 .. image:: images/ piechart1.png
    :align: center
@@ -236,11 +235,11 @@ Align OTU Sequences, Filter the Alignment and Generate a Phylogenetic Tree
 
 Align OTU Sequences
 ^^^^^^^^^^^^^^^^^^^
-Alignment of the sequences and phylogeny inference is necessary only if phylogenetic tools such as UniFrac_ will be subsequently invoked. Alignments can either be generated de novo using programs such as MUSCLE, or through assignment to an existing alignment with tools like PyNAST_. For small studies such as this tutorial, either method is possible. However, for studies involving many sequences (roughly, more than 1000), the de novo aligners are very slow and assignment with PyNAST_ is preferred. Either alignment approach is accomplished with the script :file:`align_seqs.py`. Since this is one of the most computationally intensive bottlenecks in the pipeline, large studies would benefit greatly from parallelization of this task (described in detail in the **Documentation**) ::
+Alignment of the sequences and phylogeny inference is necessary only if phylogenetic tools such as UniFrac_ will be subsequently invoked. Alignments can either be generated de novo using programs such as MUSCLE, or through assignment to an existing alignment with tools like PyNAST_. For small studies such as this tutorial, either method is possible. However, for studies involving many sequences (roughly, more than 1000), the de novo aligners are very slow and assignment with PyNAST_ is preferred. Either alignment approach is accomplished with the script `align_seqs.py <./scripts/align_seqs.html>`_. Since this is one of the most computationally intensive bottlenecks in the pipeline, large studies would benefit greatly from parallelization of this task (described in detail in the `Documentation <./documentation.html>`_) ::
 
-	$ python $qdir/align_seqs.py -i Fasting_picked_otus/rep_set.fa -o Default_Aln -t /path/to/Green_genes_core_set/core_set_aligned.fasta.imputed -e 150 
+	python $qdir/align_seqs.py -i rep_set.fa -o Default_Aln -t /path/to/Green_genes_core_set/core_set_aligned.fasta.imputed -e 150 
 
-A log file and an alignment file are created in the directory "Default_Aln".
+A log file and an alignment file are created in the directory "Default_Aln/".
 
 .. _filteraln:
 
@@ -249,17 +248,17 @@ Filter Alignment
 Before building the tree, one must filter the alignment to removed columns comprised of only 
 gaps. ::
 
-	$ python $qdir/filter_alignment.py -m /path/to/Green_genes_core_set/lanemask_in_1s_and_0s.txt -i Default_Aln/rep_set_aligned.fa -o Filtered_Aln
+	python $qdir/filter_alignment.py -m /path/to/Green_genes_core_set/lanemask_in_1s_and_0s.txt -i Default_Aln/rep_set_aligned.fa -o Filtered_Aln
 
 .. _maketree:
 
 Make Phylogenetic Tree
 ^^^^^^^^^^^^^^^^^^^^^^
-The filtered alignment file produced in the directory "Filtered_Aln" can be used to build a phylogenetic tree using a tree-building program. Here is an example of how to create a tree with the program FastTree and the script :file:`make_phylogeny.py`::
+The filtered alignment file produced in the directory "Filtered_Aln/" can be used to build a phylogenetic tree using a tree-building program. Here is an example of how to create a tree with the program FastTree and the script `make_phylogeny.py <./scripts/make_phylogeny.html>`_::
 
-	$ python $qdir/make_phylogeny.py -t fasttree -o Filtered_Aln/rep_set_aligned.tre -l Filtered_Aln/rep_set_tree.log -i Filtered_Aln/rep_set_aligned_pfiltered.fasta
+	python $qdir/make_phylogeny.py -t fasttree -o rep_set_aligned.tre -l Filtered_Aln/rep_set_tree.log -i Filtered_Aln/rep_set_aligned_pfiltered.fasta
 
-The Newick format tree file is written to "Filtered_Aln/rep_set_aligned.tre". This file can be used in tree visualization software, and is necessary for UniFrac_ diversity measurements (described below). For the following example the FigTree program was used to visualize the phylogenetic tree obtained from :file:`rep_set_aligned.tre`.
+The Newick format tree file is written to :file:`rep_set_aligned.tre`. This file can be used in tree visualization software, and is necessary for UniFrac_ diversity measurements (described below). For the following example the FigTree program was used to visualize the phylogenetic tree obtained from :file:`rep_set_aligned.tre`.
 
 .. image:: images/ tree.png
    :align: center
@@ -276,15 +275,15 @@ Rarify OTU Table
 ^^^^^^^^^^^^^^^^
 For this highly artificial example, all of the samples had sequence counts between 146 and 150, as discussed in :ref:`rareotutableremovehetero`. In real datasets, the range will generally be much larger. In practice, rarefaction is most useful when most samples have the specified number of sequences, so your upper bound of rarefaction should be close to the minimum number of sequences found in a sample. This is a judgment call, and the rarefaction can be repeated until satisfactory information is attained. We will use an upper bound (rarefaction maximum, option -x) of 141 sequences, a lower bound (minimum, option -m) of 1, and a step size of 10 (option -s). We want enough steps to create smooth curves, but not so many as to create a computational bottleneck. Finally, we will choose to do 5 iterations (option -n); higher numbers of iterations will give you greater confidence that the average result of the random sampling is representative, but will also increase the compute time. ::
 
-	$ python $qdir/rarefaction.py -i Fasting_otu_table.txt -m 1 -x 141 -s 10 -n 5 -o Fasting_Rarefaction/ 
+	python $qdir/multiple_rarefactions.py -i Fasting_otu_table.txt -m 1 -x 141 -s 10 -n 5 -o Fasting_Rarefaction/ 
 
-The newly created directory "Fasting_Rarefaction" will contain many text files named :file:`rarefaction_##_#.txt`; the first set of numbers represents the number of sequences sampled, and the last number represents the iteration number. If you opened one of these files, you would find an otu table where for each sample the sum of the counts equals the number of samples taken.
+The newly created directory "Fasting_Rarefaction/" will contain many text files named :file:`rarefaction_##_#.txt`; the first set of numbers represents the number of sequences sampled, and the last number represents the iteration number. If you opened one of these files, you would find an otu table where for each sample the sum of the counts equals the number of samples taken.
 
 .. _computealphadiv:
 
 Compute Alpha Diversity
 ^^^^^^^^^^^^^^^^^^^^^^^
-The rarefaction tables are the basis for calculating diversity metrics, which reflect the diversity within the sample based on taxon counts of phylogeny. The QIIME pipeline allows users to conveniently calculate more than two dozen different diversity metrics. The full list of available metrics is available by passing the option -s to the script :file:`alpha_diversity.py`. Every metric has different strengths and limitations - technical discussion of each metric is readily available online and in ecology textbooks, but it is beyond the scope of this document. Here, we will calculate three metrics:
+The rarefaction tables are the basis for calculating diversity metrics, which reflect the diversity within the sample based on taxon counts of phylogeny. The QIIME pipeline allows users to conveniently calculate more than two dozen different diversity metrics. The full list of available metrics is available by passing the option -s to the script `alpha_diversity.py <./scripts/alpha_diversity.html>`_. Every metric has different strengths and limitations - technical discussion of each metric is readily available online and in ecology textbooks, but it is beyond the scope of this document. Here, we will calculate three metrics:
 
 #. `The Simpson Index <http://en.wikipedia.org/wiki/Simpson_index>`_ is a very common measure of species abundance based on OTU counts
 #. The Observed Species metric is simply the count of unique OTUs found in the sample
@@ -292,17 +291,17 @@ The rarefaction tables are the basis for calculating diversity metrics, which re
 
 Command:: 
 
-	$ python $qdir/alpha_diversity.py -i Fasting_Rarefaction/ -o Fasting_Alpha_Metrics/ -m simpson,PD_whole_tree,observed_species -t Filtered_Aln/rep_set_aligned.tre 
+	python $qdir/alpha_diversity.py -i Fasting_Rarefaction/ -o Fasting_Alpha_Metrics/ -m simpson,PD_whole_tree,observed_species -t rep_set_aligned.tre 
 
 .. _collateotutable:
 
 Collate Rarified OTU Tables
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The output directory "Fasting_Alpha_Metric/" will contain one text file :file:`alpha_rarefaction_##_#` for every file input from ″Fasting_Rarefaction/″, where the numbers represent the number of samples and iterations as before. The content of this tab delimited file is the calculated metrics for each sample. To collapse the individual files into a single combined table, use the script :file:`collate_alpha.py`::
+The output directory "Fasting_Alpha_Metric/" will contain one text file :file:`alpha_rarefaction_##_#` for every file input from ″Fasting_Rarefaction/″, where the numbers represent the number of samples and iterations as before. The content of this tab delimited file is the calculated metrics for each sample. To collapse the individual files into a single combined table, use the script `collate_alpha.py <./scripts/collate_alpha.html>`_::
 
-	$ python $qdir/collate_alpha.py -i Fasting_Alpha_Metrics/ -o Fasting_Alpha_Collated/ 
+	python $qdir/collate_alpha.py -i Fasting_Alpha_Metrics/ -o Fasting_Alpha_Collated/ 
 
-In the newly created directory "Fasting_Alpha_Collated", there will be one matrix for every diversity metric used in the :file:`alpha_diversity.py` script. This matrix will contain the metric for every sample, arranged in ascending order from lowest number of sequences per sample to highest. A portion of the :file:`observed_species.txt` file are shown below:
+In the newly created directory "Fasting_Alpha_Collated/", there will be one matrix for every diversity metric used in the `alpha_diversity.py <./scripts/alpha_diversity.html>`_ script. This matrix will contain the metric for every sample, arranged in ascending order from lowest number of sequences per sample to highest. A portion of the :file:`observed_species.txt` file are shown below:
 
 .. note::
 
@@ -318,11 +317,11 @@ In the newly created directory "Fasting_Alpha_Collated", there will be one matri
 
 Generate Rarefaction Curves
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The script :file:`make_rarefaction_plots.py` takes a mapping file and any number of rarefaction files generated by :file:`collate_alpha.py` and uses matplotlib to create rarefaction curves. Each curve represents a sample and can be colored by the sample metadata supplied in the mapping file. For this study, we will use the PD_whole_tree results and color by the Treatment Category. ::
+The script `make_rarefaction_plots.py <./scripts/make_rarefaction_plots.html>`_ takes a mapping file and any number of rarefaction files generated by `collate_alpha.py <./scripts/collate_alpha.html>`_ and uses matplotlib to create rarefaction curves. Each curve represents a sample and can be colored by the sample metadata supplied in the mapping file. For this study, we will use the PD_whole_tree results and color by the Treatment Category. ::
 
-	$ python $qdir/make_rarefaction_plots.py -m Fasting_Map.txt -r Fasting_Alpha_Collated/PD_whole_tree.txt -o Rarefaction_Plots -p Treatment -i png
+	python $qdir/make_rarefaction_plots.py -m Fasting_Map.txt -r Fasting_Alpha_Collated/PD_whole_tree.txt -o Rarefaction_Plots -p Treatment -i png
 
-To view the rarefaction plot navigate to the bottom-level file within the "rarefaction_graph##" folder, where you will find a png file titled "Treatment.png". This plot shows the averages of each value for in the Treatment category with their corresponding error bars.
+To view the rarefaction plot navigate to the bottom-level file within the "rarefaction_graph##" folder, where you will find an html file titled :file:`rarefaction_plots.html`. This plot shows the averages of each value for in the Treatment category with their corresponding error bars.
 
 .. image:: images/ rarecurve.png
    :align: center
@@ -336,9 +335,9 @@ Compute Beta Diversity and Generate 2D/3D Principal Coordinate Analysis (PCoA) P
 
 Compute Beta Diversity
 ^^^^^^^^^^^^^^^^^^^^^^
-Beta-diversity metrics assess the differences between microbial communities. In general, these metrics are calculated to study diversity along an environmental gradient (pH or temperature) or different disease states (lean vs. obese). The basic output of this comparison is a square matrix where a "distance" is calculated between every pair of samples reflecting the similarity between the samples. The data in this distance matrix can be visualized with clustering analyses, namely Principal Coordinate Analysis (PCoA) and UPGMA clustering. Like alpha diversity, there are many possible metrics which can be calculated with the QIIME pipeline - the full list of options can be seen by passing option -s to the script :file:`beta_diversity.py`. For our example, we will calculate the unweighted unifrac metric, which is a phylogenetic measure used extensively in recent microbial community sequencing projects. ::
+Beta-diversity metrics assess the differences between microbial communities. In general, these metrics are calculated to study diversity along an environmental gradient (pH or temperature) or different disease states (lean vs. obese). The basic output of this comparison is a square matrix where a "distance" is calculated between every pair of samples reflecting the similarity between the samples. The data in this distance matrix can be visualized with clustering analyses, namely Principal Coordinate Analysis (PCoA) and UPGMA clustering. Like alpha diversity, there are many possible metrics which can be calculated with the QIIME pipeline - the full list of options can be seen by passing option -s to the script `beta_diversity.py <./scripts/beta_diversity.html>`_. For our example, we will calculate the unweighted unifrac metric, which is a phylogenetic measure used extensively in recent microbial community sequencing projects. ::
 
-	$ python $qdir/beta_diversity.py -i Fasting_otu_table.txt -m unweighted_unifrac -o unifrac_dist -t Filtered_Aln/rep_set_aligned.tre 
+	python $qdir/beta_diversity.py -i Fasting_otu_table.txt -m unweighted_unifrac -o unifrac_dist -t rep_set_aligned.tre 
 
 The resulting distance matrix (unifrac_dist/unweighted_unifrac_Fasting_otu_table.txt) is the basis for two methods of visualization and sample comparison: PCoA and UPGMA.
 
@@ -348,9 +347,9 @@ Generate Distance Histograms
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Distance Histograms are a way to compare different categories and see which tend to have larger/smaller distances than others. For example, in the hand study, you may want to compare the distances between hands to the distances between individuals. ::
 
-	$ python $qdir/make_distance_histograms.py -d unifrac_dist/unweighted_unifrac_Fasting_otu_table.txt -m Fasting_Map.txt --fields Treatment -o Distance_Histograms --html_output
+	python $qdir/make_distance_histograms.py -d unifrac_dist/unweighted_unifrac_Fasting_otu_table.txt -m Fasting_Map.txt --fields Treatment -o Distance_Histograms --html_output
 
-For each of these groups of distances a histogram is made. The output is a HTML file ("QIIME_Distance_Histograms.html") where you can look at all the distance histograms individually, and compare them between each other. Within the webpage, the user can mouseover and/or select the checkboxes in the right panel to turn on/off the different distances within/between categories. For this example, we are comparing the distances between the samples in the Control versus themselves, along with samples from Fasting versus the Control.
+For each of these groups of distances a histogram is made. The output is a HTML file (:file:`QIIME_Distance_Histograms.html`) where you can look at all the distance histograms individually, and compare them between each other. Within the webpage, the user can mouseover and/or select the checkboxes in the right panel to turn on/off the different distances within/between categories. For this example, we are comparing the distances between the samples in the Control versus themselves, along with samples from Fasting versus the Control.
 
 .. image:: images/ hist.png
    :align: center
@@ -359,9 +358,9 @@ For each of these groups of distances a histogram is made. The output is a HTML 
 
 Generate Principal Coordinates
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Principal Coordinate Analysis (PCoA) is a technique that helps to extract and visualize a few highly informative gradients of variation from complex, multidimensional data. This is a complex transformation that maps the distance matrix to a new set of orthogonal axes such that a maximum amount of variation is explained by the first principal coordinate, the second largest amount of variation is explained by the second principal coordinate, etc. The principal coordinates can be plotted in two or three dimensions to provide an intuitive visualization of the data structure and look at differences between the samples, and look for similarities by sample category. The transformation is accomplished with the script :file:`principal_coordinates.py`::
+Principal Coordinate Analysis (PCoA) is a technique that helps to extract and visualize a few highly informative gradients of variation from complex, multidimensional data. This is a complex transformation that maps the distance matrix to a new set of orthogonal axes such that a maximum amount of variation is explained by the first principal coordinate, the second largest amount of variation is explained by the second principal coordinate, etc. The principal coordinates can be plotted in two or three dimensions to provide an intuitive visualization of the data structure and look at differences between the samples, and look for similarities by sample category. The transformation is accomplished with the script `principal_coordinates.py <./scripts/principal_coordinates.html>`_::
 
-	$ python $qdir/principal_coordinates.py -i unifrac_dist/unweighted_unifrac_Fasting_otu_table.txt -o Fasting_Unw_Unifrac_coords.txt 
+	python $qdir/principal_coordinates.py -i unifrac_dist/unweighted_unifrac_Fasting_otu_table.txt -o Fasting_Unw_Unifrac_coords.txt 
 
 The file "Fasting_Unw_Unifrac_coords.txt" lists every sample in the first column, and the subsequent columns contain the value for the sample against the noted principal coordinate. At the bottom of each Principal Coordinate column, you will find the eigenvalue and percent of variation explained by the coordinate. To determine which axes are useful for your project, you can generate a "scree plot" by plotting the eigenvalues of each principal component in descending order.
 
@@ -369,18 +368,18 @@ The file "Fasting_Unw_Unifrac_coords.txt" lists every sample in the first column
 
 Generate 2D and 3D PCoA Plots
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-To plot the coordinates, you can use the QIIME scripts :file:`make_2d_plots.py` and :file:`make_3d_plots.py`. The two dimensional plot will be rendered as a html file which can be opened with a standard web browser, while the three dimensional plot will be a kinemage file which requires additional software to render and manipulate. The usage for both scripts use the same convention, detailed in the **Documentation**. ::
+To plot the coordinates, you can use the QIIME scripts `make_2d_plots.py <./scripts/make_2d_plots.html>`_ and `make_3d_plots.py <./scripts/make_3d_plots.html>`_. The two dimensional plot will be rendered as a html file which can be opened with a standard web browser, while the three dimensional plot will be a kinemage file which requires additional software to render and manipulate. The usage for both scripts use the same convention, detailed in the **Documentation**. ::
 
-	$ python $qdir/make_2d_plots.py -i Fasting_Unw_Unifrac_coords.txt -m Fasting_Map.txt -o Fasting_2d/ -b Treatment
+	python $qdir/make_2d_plots.py -i Fasting_Unw_Unifrac_coords.txt -m Fasting_Map.txt -o Fasting_2d/ -b Treatment
 	
-	$ python $qdir/make_3d_plots.py -i Fasting_Unw_unifrac_coords.txt -m Fasting_Map.txt -o Fasting_3d/ -b "DOB,Treatment"
+	python $qdir/make_3d_plots.py -i Fasting_Unw_unifrac_coords.txt -m Fasting_Map.txt -o Fasting_3d/ -b "DOB,Treatment"
 
 The html file created in directory "Fasting_2d/" shows a plot for each combination of the first three principal coordinates. Since we specified Treatment to use for coloring the samples, each sample colored according to the category it corresponds. You can get the name for each sample by holding your mouse over the data point.
 
 .. image:: images/ pcoa1.png
    :align: center
 
-In the invocation of :file:`make_3d_plot.py`, we specified that the samples should be colored by the value of the "Treatment" and "DOB" columns in the mapping file. For the "Treatment" column, all samples with the same "Treatment" will get the same color. For our tutorial, the five control samples are all blue and the four control samples are all green. This lets you easily visualize "clustering" by metadata category. The 3d visualization software allows you to rotate the axes to see the data from different perspectives. By default, the script will plot the first three dimensions in your file. Other combinations can be viewed using the "Views:Choose viewing axes" option in the KiNG viewer (may require the installation of kinemage software). The first 10 components can be viewed using "Views:Paralleled coordinates" option or typing "/".
+In the invocation of `make_3d_plots.py <./scripts/make_3d_plots.html>`_, we specified that the samples should be colored by the value of the "Treatment" and "DOB" columns in the mapping file. For the "Treatment" column, all samples with the same "Treatment" will get the same color. For our tutorial, the five control samples are all blue and the four control samples are all green. This lets you easily visualize "clustering" by metadata category. The 3d visualization software allows you to rotate the axes to see the data from different perspectives. By default, the script will plot the first three dimensions in your file. Other combinations can be viewed using the "Views:Choose viewing axes" option in the KiNG viewer (may require the installation of kinemage software). The first 10 components can be viewed using "Views:Paralleled coordinates" option or typing "/".
 
 .. image:: images/ pcoa2.png
    :align: center
@@ -394,9 +393,9 @@ UPGMA Clustering and Jackknifing Support
 
 UPGMA Clustering
 ^^^^^^^^^^^^^^^^^^^^^^^
-Unweighted Pair Group Method with Arithmetic mean (UPGMA) is type of UPGMA clustering method using average linkage and can be used to visualize the distance matrix produced by :file:`beta_diversity.py`. The output is a file that can be opened with tree viewing software, such as FigTree. ::
+Unweighted Pair Group Method with Arithmetic mean (UPGMA) is type of UPGMA clustering method using average linkage and can be used to visualize the distance matrix produced by `beta_diversity.py <./scripts/beta_diversity.html>`_. The output is a file that can be opened with tree viewing software, such as FigTree. ::
 
-	$ python $qdir/upgma_cluster.py -i unifrac_dist/unweighted_unifrac_Fasting_otu_table.txt -o Fasting_Unw_Unifrac_upgma.tre
+	python $qdir/upgma_cluster.py -i unifrac_dist/unweighted_unifrac_Fasting_otu_table.txt -o Fasting_Unw_Unifrac_upgma.tre
 
 .. image:: images/ hiarchclust.png
    :align: center
@@ -415,19 +414,19 @@ First the jackknifed otu tables must be generated, by subsampling the full avail
 
    * Sample ct min/max/mean: 146 / 150 / 148.11
 
-To ensure that a random subset of sequences is selected from each sample, we chose to select 110 sequences from each sample (75% of the smallest sample, though this value is only a guideline). We use :file:`rarefaction.py`, which has already been described::
+To ensure that a random subset of sequences is selected from each sample, we chose to select 110 sequences from each sample (75% of the smallest sample, though this value is only a guideline). We use `multiple_rarefactions.py <./scripts/multiple_rarefactions.html`, which has already been described::
 
-	$ python $qdir/rarefaction.py -i Fasting_otu_table.txt -m 110 -x 110 -s 1 -n 20 -o jackknife_otu/ --small_included
+	python $qdir/multiple_rarefactions.py -i Fasting_otu_table.txt -m 110 -x 110 -s 1 -n 20 -o jackknife_otu/ --small_included
 
 This generates 20 subsets of the available data by random sampling, simulating a smaller sampling effort (110 sequences in each sample). Because our goal is to compare these jackknifed trees to the tree already generated, we use --small_included to ensure that every sample present in the original tree is present in the jackknifed ones. (here --small_included isn't actually necessary, as all samples have > 110 sequences).
 
-We then calculate the distance matrix for each jackknifed dataset, using :file:`beta_diversity.py` as before, but now in batch mode::
+We then calculate the distance matrix for each jackknifed dataset, using `beta_diversity.py <./scripts/beta_diversity.html>`_ as before, but now in batch mode::
 
-	$ python $qdir/beta_diversity.py -i jackknife_otu -m dist_unweighted_unifrac -t Filtered_Aln/rep_set_aligned.tre -o jackknife_dist
+	python $qdir/beta_diversity.py -i jackknife_otu -m dist_unweighted_unifrac -t rep_set_aligned.tre -o jackknife_dist
 
-which results in 20 distance matrix files written to the "jackknife_dist directory". Each of those is then used as the basis for UPGMA clustering, using :file:`upgma_cluster.py` in batch mode::
+which results in 20 distance matrix files written to the "jackknife_dist/" directory. Each of those is then used as the basis for UPGMA clustering, using `upgma_cluster.py <./scripts/upgma_cluster.html>`_ in batch mode::
 
-	$ python $qdir/upgma_cluster.py -i jackknife_dist -o jackknife_upgma
+	python $qdir/upgma_cluster.py -i jackknife_dist -o jackknife_upgma
 
 .. _compjackclustertree:
 
@@ -435,21 +434,20 @@ Compare Jackknifed Trees to Cluster Tree
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 UPGMA clustering of the 20 distance matrix files results in 20 UPGMA samples clusters, each based on a random sub-sample of the available sequence data. These are then compared to the UPGMA result using all available data::
 
-	$ python $qdir/tree_compare.py -m Fasting_Unw_Unifrac_upgma.tre -s jackknife_upgma -o Fasting_jackknife_support
+	python $qdir/tree_compare.py -m Fasting_Unw_Unifrac_upgma.tre -s jackknife_upgma -o Fasting_jackknife_support
 
-This compares the UPGMA clustering based on all available data (-m) with the jackknifed UPGMA 
-results (-s).  Two files are written to "Fasting_jackknife_support":
+This compares the UPGMA clustering based on all available data (-m) with the jackknifed UPGMA results (-s).  Two files are written to "Fasting_jackknife_support/":
 
-* master_tree.tre is virtually identical to "Fasting_Unw_Unifrac_upgma.tre", but each internal node of the UPGMA clustering is assigned a unique name
-* jackknife_support.txt explains how frequently a given internal node had the same set of descendant samples in the jackknifed UPGMA clusters as it does in the UPGMA cluster using the full available data.  A value of 0.5 indicates that half of the jackknifed data sets support that node, while 1.0 indicates perfect support.
+* :file:`master_tree.tre` is virtually identical to :file:`Fasting_Unw_Unifrac_upgma.tre`, but each internal node of the UPGMA clustering is assigned a unique name
+* :file:`jackknife_support.txt` explains how frequently a given internal node had the same set of descendant samples in the jackknifed UPGMA clusters as it does in the UPGMA cluster using the full available data.  A value of 0.5 indicates that half of the jackknifed data sets support that node, while 1.0 indicates perfect support.
 
 .. _genboottree:
 
 Generate Bootstrapped Tree
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
-This data can be visualized using :file:`make_bootstrapped_tree.py`::
+This data can be visualized using `make_bootstrapped_tree.py <./scripts/make_bootstrapped_tree.html>`_::
 
-	$ python $qdir/make_bootstrapped_tree.py -m Fasting_jackknife_support/master_tree.tre -s Fasting_jackknife_support/jackknife_support.txt -o Fasting_jackknife_support/Unw_unifrac_support.pdf
+	python $qdir/make_bootstrapped_tree.py -m Fasting_jackknife_support/master_tree.tre -s Fasting_jackknife_support/jackknife_support.txt -o Fasting_jackknife_support/Unw_unifrac_support.pdf
 
 The resulting pdf shows the tree with internal nodes colored, red for 75-100% support, yellow for 50-75%, green for 25-50%, and blue for < 25% support. Although UPGMA shows that PC.354 and PC.593 cluster together and PC.481 with PC.6xx cluster together, we can not have high confidence in that result. However, there is excellent jackknife support for all fasted samples (PC.6xx) which are clustering together, separate from the non-fasted (PC.35x) samples.
 
