@@ -44,11 +44,11 @@ Latest Development Version
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 To get the latest development version of QIIME, you should check it out of our Sourceforge repository. While this code is subject to minor changes in interface, it will provide access to the latest and greatest features. The official web documentation is likely to be out-of-date with respect to the development software. You should instead refer to the svn documentation in "Qiime/doc". Check out the latest version of QIIME using svn with the command::
 
-	$ svn co https://qiime.svn.sourceforge.net/svnroot/qiime/trunk Qiime
+	svn co https://qiime.svn.sourceforge.net/svnroot/qiime/trunk Qiime
 
 The user can update QIIME, by using the following command::
 
-	$ svn update /path/to/QIIME/
+	svn update /path/to/QIIME/
 
 Environment Variables
 ---------------------
@@ -70,7 +70,7 @@ For all path description throughout this tutorial, the "/path/to/" refers to the
 
 In the bash shell, you can use the following command (example only shows the path to python, so other softwares can be added to the PATH, using a similar approach): ::
 
-	$ export PATH=/path/to/python/bin/:$PATH
+	export PATH=/path/to/python/bin/:$PATH
 
 PYTHONPATH Environment Variable
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -83,7 +83,7 @@ Your PYTHONPATH should contain the following:
 
 In the bash shell, you can use the following command (example only shows the path to QIIME, so other softwares can be added to the PYTHONPATH, using a similar approach): ::
 
-	$ export PYTHONPATH=/path/to/QIIME/:$PYTHONPATH
+	export PYTHONPATH=/path/to/QIIME/:$PYTHONPATH
 
 RDP_JAR_PATH Environment Variable
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -94,7 +94,7 @@ The user should also define an RDP_JAR_PATH variable, since this tutorial uses t
 
 In the bash shell, you can use the following command: ::
 
-	$ export RDP_JAR_PATH=/path/to/rdp_classifier-2.0.jar
+	export RDP_JAR_PATH=/path/to/rdp_classifier-2.0.jar
 
 Testing QIIME Install
 ---------------------
@@ -102,15 +102,18 @@ Once the source code is downloaded, the user should test QIIME to be sure all es
 
 In a terminal window the user, should cd to their qiime/test directory using the following command: ::
 
-	$ cd /path/to/QIIME/tests/
+	cd /path/to/QIIME/tests/
 
 Then run the following test command: ::
 
-	$ python all_tests.py -v
+	python all_tests.py -v
 
 If all tests run properly, then QIIME was properly installed. Some test scripts may fail, due to optional third party applications not being installed. Test failures which contain the text ApplicationNotFoundError can be safely ignored. The following scripts may generate errors:
 
-1. test_align_seqs.py - will fail if PyNAST, BLAST, muscle or infernal are not installed. PyNAST requires BLAST, and is the default sequence aligner. If you are not using PyNAST, you can safely ignore fails regarding BLAST and/or PyNAST. If you are not using muscle or infernal, you can safely disregard those error messages.
+1. test_align_seqs.py - will fail if PyNAST, blast, muscle or infernal are not installed. PyNAST requires BLAST, and is the default sequence aligner. If you are not using PyNAST, you can safely ignore fails regarding blast and/or PyNAST. If you are not using muscle or infernal, you can safely disregard those error messages.
 2. test_pick_otus.py – will fail if cd-hit and/or blast are not installed. If you are not planning to use these methods for OTU picking, you do not need to worry about these failures.
-3. test_pyronoise.py - Will fail in PyroNoise is not installed.
+3. test_process_sff.py - will fail if you do not have sffinfo installed.
+4. test_pycogent_backports/test_mothur.py - will fail is mothur is not installed.
+5. test_pycogent_backports/test_uclust.py - will fail is uclust is not installed.
+6. test_pyronoise.py - will fail in PyroNoise is not installed.
 

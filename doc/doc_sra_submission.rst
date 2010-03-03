@@ -33,7 +33,7 @@ You will need several other packages to complete this analysis:
 	* `matplotlib <http://matplotlib.sourceforge.net/>`_ (required for pycogent but not used here) 
 	* `python <http://www.python.org/download/>`_
 
-The pycogent install guide is fairly helpful in showing you the dependencies and how to get them; the QIIME install guide has some information about installing the 3rd-party applications it wraps. Note that some of the unit tests will fail if you don't install all the applications but the subset of the analysis shown here should work (e.g. you won't be able to do sequence alignment or taxonomy assignment without additional work).
+The PyCogent install guide is fairly helpful in showing you the dependencies and how to get them; the QIIME install guide has some information about installing the 3rd-party applications it wraps. Note that some of the unit tests will fail if you don't install all the applications but the subset of the analysis shown here should work (e.g. you won't be able to do sequence alignment or taxonomy assignment without additional work).
 
 Overview of the Submission Process 
 ----------------------------------

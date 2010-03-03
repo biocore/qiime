@@ -4,10 +4,6 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-.. toctree::
-   :maxdepth: 2
-
-
 #################
 Welcome to QIIME!
 #################
@@ -61,6 +57,8 @@ Documentation
 
 Contact Us
 ===========
+Contact `QIIME Support <qiime.help@colorado.edu>`_
+
 Add a `feature request <https://sourceforge.net/tracker/?atid=1157167&group_id=272178&func=browse>`_
 
 Report a `bug <https://sourceforge.net/tracker/?atid=1157164&group_id=272178&func=browse>`_

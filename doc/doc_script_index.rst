@@ -9,13 +9,13 @@ General Notes
 
 All QIIME analyses are performed using python (.py) scripts, which are located in the qiime directory. To access QIIME python scripts, it may be useful to set an environment variable to the location of the innermost QIIME directory (the one containing :file:`check_id_map.py`, for example)::
 
-	$ qdir=/path/to/QIIME/
+	qdir=/path/to/QIIME/
 
 Further commands of the form :file:`python QIIME_script.py -o option` can be invoked as :file:`python $qdir/QIIME_script.py -o option`. For all path description throughout the Documentation, the "/path/to/" refers to the physical location of each program on your local computer. For instance, the "/path/to/QIIME/" on my computer refers to "/Users/Jesse/Qiime/" on Mac OS X version 10.5.
 
 The user can obtain help about the arguments which can be passed to each script, as well as examples and usage notes, by typing the following in the bash shell::
 
-	$ python $qdir/script_of_interest.py –h
+	python $qdir/script_of_interest.py –h
 
 Workflow Scripts
 ----------------

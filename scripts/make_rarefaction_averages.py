@@ -32,9 +32,9 @@ script_info['script_description']="""Once the batch alpha diversity files have b
 
 This script creates a directory of average rarefaction series based on the supplied mapping file (-m) and the supplied rarefaction files (-r) from collate_alpha.py."""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Default Example:""","""For generated rarefaction plots using the default parameters, including the mapping file and one rarefaction file, you can use the following command:""","""make_rarefaction_plots.py -m Mapping_file.txt -r chao1.txt"""))
-script_info['script_usage'].append(("""Multiple File Example:""","""If you would like to generate plots for multiple files, you can use the following command:""","""make_rarefaction_plots.py -m Mapping_file.txt -r chao1.txt,PD_whole_tree.txt"""))
-script_info['script_usage'].append(("""Category Specific Example:""","""In the case that you want to make plots for a specific category (i.e., pH), you can use the following command:""","""make_rarefaction_plots.py -m Mapping_file.txt -r chao1.txt -p pH"""))
+script_info['script_usage'].append(("""Default Example:""","""For generated rarefaction plots using the default parameters, including the mapping file and one rarefaction file, you can use the following command:""","""%prog -m Mapping_file.txt -r chao1.txt"""))
+script_info['script_usage'].append(("""Multiple File Example:""","""If you would like to generate plots for multiple files, you can use the following command:""","""%prog -m Mapping_file.txt -r chao1.txt,PD_whole_tree.txt"""))
+script_info['script_usage'].append(("""Category Specific Example:""","""In the case that you want to make plots for a specific category (i.e., pH), you can use the following command:""","""%prog -m Mapping_file.txt -r chao1.txt -p pH"""))
 script_info['output_description']="""The result of this script produces a folder and within that folder there are sub-folders for each data file (metric) supplied as input. Within the sub-folders, there will be text files of averages for each of the categories specified by the user."""
 
 script_info['required_options']=[\
