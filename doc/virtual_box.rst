@@ -1,3 +1,4 @@
+.. _virtual_box:
 
 QIIME Virtual Box
 ^^^^^^^^^^^^^^^^^

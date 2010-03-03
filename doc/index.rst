@@ -20,7 +20,13 @@ Download
 Virtual Box 
 ^^^^^^^^^^^^^^^^^^
 
-The Virtual Box is pre-loaded with QIIME and its dependencies on a Ubuntu operating system.  To get the Virtual Box, please go `here <./virtual_box.html>`_.
+The Virtual Box is pre-loaded with QIIME and its dependencies on a Ubuntu operating system.  To get the Virtual Box, please go here:
+
+.. toctree::
+   :maxdepth: 1
+
+   virtual_box.rst
+
 
 Stable Pre-Release
 ^^^^^^^^^^^^^^^^^^
