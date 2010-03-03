@@ -162,6 +162,7 @@ spot_descriptor_without_linker_wrapper = """      <SPOT_DESCRIPTOR>
 experiment_wrapper = """  <EXPERIMENT
     alias="%(EXPERIMENT_ALIAS)s"
     center_name="%(EXPERIMENT_CENTER)s"
+    broker_name="%(BROKER_CENTER)s"
   >
     <TITLE>%(EXPERIMENT_TITLE)s</TITLE>
     <STUDY_REF refname="%(STUDY_REF)s" refcenter="%(STUDY_CENTER)s"/>
@@ -443,6 +444,9 @@ def make_run_and_experiment(experiment_lines, sff_dir):
             spot_descriptor = spot_descriptor_wrapper % field_dict
             field_dict['SPOT_DESCRIPTORS_XML'] = spot_descriptor
             field_dict['PLATFORM_XML'] = platform_blocks[field_dict['PLATFORM']]
+            if 'BROKER_CENTER' not in field_dict or not \
+                field_dict['BROKER_CENTER']:
+                field_dict['BROKER_CENTER'] = field_dict['EXPERIMENT_CENTER'] 
             experiments.append(experiment_wrapper % field_dict)
     return experiment_set_wrapper % ('\n'+'\n'.join(experiments)+'\n'), run_set_wrapper % ('\n'+'\n'.join(runs)+'\n')
 
