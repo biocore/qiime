@@ -22,7 +22,7 @@ script_info['brief_description']="""Add taxa to OTU table"""
 script_info['script_description']="""This script adds taxa to an OTU table."""
 script_info['script_usage']=[]
 script_info['script_usage'].append(("""Example:""","""Add taxa to otu file from otus.txt from file taxa.txt:""","""add_taxa.py -i otus.txt -t taxa.txt"""))
-script_info['output_description']="""The result of this script is written to stdout."""
+script_info['output_description']="""The result of this script is written to stdout, or optionally to the specified file."""
 script_info['required_options']=[\
     make_option('-i','--otu_file',action='store',\
         type='string',dest='otu_fp',help='Path to read otu file'),
