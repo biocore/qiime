@@ -7,24 +7,24 @@ What is the QIIME Virtual Box?
 ==============================
 Because of the 'pipeline' nature of QIIME, there are many external dependencies and installation can therefore be challenging for new users. The QIIME Virtual Box should get around that problem, and is a fully functional environment for analyzing microbial community surveys and visualizing results.
 
-The QIIME Virtual Box is virtual machine based on Ubuntu Linux which comes pre-packaged with all of QIIME's dependencies. This is the fastest way to get up-and-running with QIIME, and is useful for small analyses (approximately up to a full 454 run); and testing QIIME to determine if it meets your needs before investing time in installing it, for example, in your cluster environment.
+The QIIME Virtual Box is a virtual machine based on Ubuntu Linux which comes pre-packaged with QIIME's dependencies. This is the fastest way to get up-and-running with QIIME, and is useful for small analyses (approximately up to a full 454 run); and testing QIIME to determine if it meets your needs before investing time in installing it, for example, in your cluster environment.
 
 Installing the QIIME Virtual Box
 ================================
-1. Download and install the `VirtualBox`_ (VB) version that fits your machine.
-2. Download the `QIIME Virtual Box`_. This file is quite large so it is going to take from a few minutes to a few hours based on your Internet connection speed, we recommend to do this overnight.
+1. Download and install the `VirtualBox`_ (VB) version for your machine.
+2. Download the `QIIME Virtual Box`_. This file is large so it may take between a few minutes and a few hours depending on your Internet connection speed. You will need to unzip this file, which you can typically do by double-clicking on it.
 3. Create a new virtual machine:
 
-  * In VB, create a new machine (New button);
-  * A new window will show up, click on Next;
-  * In this screen write a name for the virtual machine: QIIME, select an Operating System: Linux, version: Ubuntu, click Next;
-  * Select the amount of RAM memory. We recommend at least 1024MB but the best option is based on your machine, so just drag the scale to the border between the green/red line. Click Next;
-  * Select "Use a existing hard drive", click on the icon with a green up arrow (beside selector), in the new window click look for the virtual hard drive that was downloaded in step 2, click Select, click Next,;
+  * Launch VirtualBox, and create a new machine (press the New button).
+  * A new window will show up. Click 'Next'.
+  * In this screen type QIIME as the name for the virtual machine. Then select Linux as the Operating System, and Ubuntu as the version. Click Next.
+  * Select the amount of RAM (memory). We recommend at least 1024MB, but the best option is based on your machine. After selecting the amount of RAM, click Next.
+  * Select "Use existing hard drive", and click the folder icon next to the selector (it has a green up arrow). In the new window click 'Add', and locate the the virtual hard drive that was downloaded in step 2. Click Select and then click Next.
   * In the new window click Finish.
 
-4. Double click on the new virtual machine created.
-5. Read any messages that are shown and select whatever is best for you.
-6. Follow the instructions in the folder on the Desktop named Before_you_start.
+4. Double click on the new virtual machine created -- it will be called QIIME -- to boot it for the first time.
+5. Review any messages that are shown, and select whatever options are best for you.
+6. When your new virtual machine boots, you will see a folder on the Desktop called 'Before_you_start'. Double click on that folder to open it, and then double click on the 'Welcome' file in that folder. This will get you started with using your QIIME virtual box.
 
 Limitations of the QIIME Virtual Box
 ====================================

@@ -183,7 +183,7 @@ An alternative to viewing the OTU table as a heatmap, is to create an OTU networ
 
 	python $qdir/make_otu_network.py -m Fasting_Map.txt -i Fasting_otu_table.txt -o OTU_Network
 
-To visualize the network, we use the Cytoscape_ program, where each red circle represents a sample and each white square represents an otu. The lines represent the OTUs present in a particular sample (blue for controls and green for fasting). For more information about opening the files in Cytoscape_ please refer `here <./scripts/cytoscape_usage.html>`_.
+To visualize the network, we use the Cytoscape_ program (which you can run by calling Cytoscape from the command line, beginning with a capital C, if you have Cytoscape installed), where each red circle represents a sample and each white square represents an otu. The lines represent the OTUs present in a particular sample (blue for controls and green for fasting). For more information about opening the files in Cytoscape_ please refer `here <./scripts/cytoscape_usage.html>`_.
 
 .. image:: images/ network.png
    :align: center
@@ -246,7 +246,7 @@ A log file and an alignment file are created in the directory "Default_Aln/".
 Filter Alignment
 ^^^^^^^^^^^^^^^^
 Before building the tree, one must filter the alignment to removed columns comprised of only 
-gaps. ::
+gaps. Note that depending on where you obtained the lanemask file from, it will either be named lanemask_in_1s_and_0s.txt or lanemask_in_1s_and_0s ::
 
 	python $qdir/filter_alignment.py -m /path/to/Green_genes_core_set/lanemask_in_1s_and_0s.txt -i Default_Aln/rep_set_aligned.fa -o Filtered_Aln
 
@@ -372,7 +372,7 @@ To plot the coordinates, you can use the QIIME scripts `make_2d_plots.py <./scri
 
 	python $qdir/make_2d_plots.py -i Fasting_Unw_Unifrac_coords.txt -m Fasting_Map.txt -o Fasting_2d/ -b Treatment
 	
-	python $qdir/make_3d_plots.py -i Fasting_Unw_unifrac_coords.txt -m Fasting_Map.txt -o Fasting_3d/ -b "DOB,Treatment"
+	python $qdir/make_3d_plots.py -i Fasting_Unw_Unifrac_coords.txt -m Fasting_Map.txt -o Fasting_3d/ -b "DOB,Treatment"
 
 The html file created in directory "Fasting_2d/" shows a plot for each combination of the first three principal coordinates. Since we specified Treatment to use for coloring the samples, each sample colored according to the category it corresponds. You can get the name for each sample by holding your mouse over the data point.
 
