@@ -8,10 +8,10 @@ __author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2010, The QIIME project"
 __credits__ = ["Jesse Stombaugh"]
 __license__ = "GPL"
-__version__ = "0.92"
+__version__ = "0.92-dev"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
-__status__ = "Release"
+__status__ = "Pre-release"
  
 from optparse import make_option
 from qiime.util import parse_command_line_parameters, get_options_lookup

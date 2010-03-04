@@ -6,10 +6,10 @@ __copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso",
     "Justin Kuczynski", "Cathy Lozupone", "Jens Reeder"]
 __license__ = "GPL"
-__version__ = "0.92"
+__version__ = "0.92-dev"
 __maintainer__ = "Rob Knight"
 __email__ = "rob@spot.colorado.edu"
-__status__ = "Release"
+__status__ = "Pre-release"
 
 from string import strip
 from collections import defaultdict

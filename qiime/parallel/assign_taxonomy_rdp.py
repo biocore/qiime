@@ -7,10 +7,10 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Greg Caporaso"] 
 __license__ = "GPL"
-__version__ = "0.92"
+__version__ = "0.92-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Release"
+__status__ = "Pre-release"
 
 def get_commands(python_exe_fp,assign_taxonomy_fp,confidence,job_prefix,\
     fasta_fps,rdp_jar_fp,output_dir,working_dir,\

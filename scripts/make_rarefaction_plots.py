@@ -6,10 +6,10 @@ __author__ = "Meg Pirrung"
 __copyright__ = "Copyright 2010, The QIIME project"
 __credits__ = ["Meg Pirrung"]
 __license__ = "GPL"
-__version__ = "0.92"
+__version__ = "0.92-dev"
 __maintainer__ = "Meg Pirrung"
 __email__ = "meg.pirrung@colorado.edu"
-__status__ = "Release"
+__status__ = "Pre-release"
  
 from optparse import make_option
 from qiime.util import parse_command_line_parameters

@@ -11,10 +11,10 @@ __author__ = "Rob Knight"
 __copyright__ = "Copyright 2010, The QIIME Project" #consider project name
 __credits__ = ["Rob Knight","Greg Caporaso"] #remember to add yourself if you make changes
 __license__ = "GPL"
-__version__ = "0.92"
+__version__ = "0.92-dev"
 __maintainer__ = "Rob Knight"
 __email__ = "rob@spot.colorado.edu"
-__status__ = "Release"
+__status__ = "Pre-release"
 
 # Note on getting qiime_dir: that this is not the standard way of
 # getting the qiime directory in Qiime. Users should always call

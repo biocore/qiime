@@ -5,10 +5,10 @@ __author__ = "Meg Pirrung"
 __copyright__ = "Copyright 2009, QIIME"
 __credits__ = ["Meg Pirrung"] 
 __license__ = "GPL"
-__version__ = "0.92"
+__version__ = "0.92-dev"
 __maintainer__ = "Meg Pirrung"
 __email__ = "meg.pirrung@colorado.edu"
-__status__ = "Release"
+__status__ = "Pre-release"
 
 """
 Author: Meg Pirrung (meg.pirrung@colorado.edu) 

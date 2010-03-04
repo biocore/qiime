@@ -16,10 +16,10 @@ __copyright__ = "Copyright 2010, The QIIME Project"
 #remember to add yourself if you make changes
 __credits__ = ["Rob Knight", "Greg Caporaso", "Kyle Bittinger"]
 __license__ = "GPL"
-__version__ = "0.92"
+__version__ = "0.92-dev"
 __maintainer__ = "Rob Knight"
 __email__ = "rob@spot.colorado.edu"
-__status__ = "Release"
+__status__ = "Pre-release"
 
 class TopLevelTests(TestCase):
     """Top-level tests of functions in process_sff"""

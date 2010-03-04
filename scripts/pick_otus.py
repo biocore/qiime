@@ -5,10 +5,10 @@ __author__ = "William Walters"
 __copyright__ = "Copyright 2010, The QIIME Project" 
 __credits__ = ["Rob Knight","Greg Caporaso", "Kyle Bittinger","Jens Reeder","William Walters"] #remember to add yourself if you make changes
 __license__ = "GPL"
-__version__ = "0.92"
+__version__ = "0.92-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Release"
+__status__ = "Pre-release"
 
 from qiime.util import parse_command_line_parameters
 from optparse import make_option

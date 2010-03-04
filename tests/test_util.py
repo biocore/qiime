@@ -21,10 +21,10 @@ __copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Rob Knight", "Daniel McDonald","Greg Caporaso", 
 "Justin Kuczynski"] 
 __license__ = "GPL"
-__version__ = "0.92"
+__version__ = "0.92-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Release"
+__status__ = "Pre-release"
 
 class TopLevelTests(TestCase):
     """Tests of top-level module functions."""

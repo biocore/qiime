@@ -6,10 +6,10 @@ __copyright__ = "Copyright 2010, The QIIME Project" #consider project name
 __credits__ = ["Rob Knight","Jeremy Widmann"] 
 #remember to add yourself if you make changes
 __license__ = "GPL"
-__version__ = "0.92"
+__version__ = "0.92-dev"
 __maintainer__ = "Rob Knight"
 __email__ = "rob@spot.colorado.edu"
-__status__ = "Release"
+__status__ = "Pre-release"
 
 from cogent.util.unit_test import TestCase, main
 from numpy import array, nan

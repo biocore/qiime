@@ -5,10 +5,10 @@ __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2010, The QIIME Project" 
 __credits__ = ["Justin Kuczynski"] #remember to add yourself
 __license__ = "GPL"
-__version__ = "0.92"
+__version__ = "0.92-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
-__status__ = "Release"
+__status__ = "Pre-release"
 
 """
 provides functions, used to assign a possibly error-fraught DNA

@@ -7,10 +7,10 @@ __copyright__ = "Copyright 2010, The QIIME Project"
 #remember to add yourself if you make changes
 __credits__ = ["Rob Knight", "Kyle Bittinger", "Greg Caporaso"] 
 __license__ = "GPL"
-__version__ = "0.92"
+__version__ = "0.92-dev"
 __maintainer__ = "Rob Knight"
 __email__ = "rob@spot.colorado.edu"
-__status__ = "Release"
+__status__ = "Pre-release"
 
 from os import remove
 from cogent.util.unit_test import TestCase, main

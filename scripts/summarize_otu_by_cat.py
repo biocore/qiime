@@ -6,10 +6,10 @@ __author__ = "Julia Goodrich"
 __copyright__ = "Copyright 2010, The QIIME project"
 __credits__ = ["Julia Goodrich"]
 __license__ = "GPL"
-__version__ = "0.92"
+__version__ = "0.92-dev"
 __maintainer__ = "Julia Goodrich"
 __email__ = "julia.goodrich@colorado.edu"
-__status__ = "Release"
+__status__ = "Pre-release"
  
 from os import getcwd
 from qiime.util import parse_command_line_parameters
