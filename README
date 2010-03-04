@@ -7,7 +7,7 @@ QIIME Readme
 Dependencies
 ------------
 
-QIIME requires Python_ 2.5.1 or greater, Numpy_ 1.3 or greater, Matplotlib_ 0.98.5.2-1, and PyCogent_ 1.4.0. Additionally, users must have version 2.2.22 of NCBI's legacy BLAST_ tools installed, and visible via the system path (``$PATH``) environment variable. Note that these are different from NCBI's BLAST+ tools, which will not work with QIIME.  
+QIIME requires Python_ 2.6 or greater, Numpy_ 1.3 or greater, Matplotlib_ 0.98.5.2-1, and PyCogent_ 1.4.0. Additionally, users must have version 2.2.22 of NCBI's legacy BLAST_ tools installed, and visible via the system path (``$PATH``) environment variable. Note that these are different from NCBI's BLAST+ tools, which will not work with QIIME.  
 
 Required
 ^^^^^^^^
@@ -23,20 +23,10 @@ Note: On some linux platforms (like Ubuntu), you must specifically install a ``p
 Documentation
 ^^^^^^^^^^^^^
 
-Installation
-------------
+Installation instructions, a tutorial, and documentation
+--------------------------------------------------------
 
-Install documentation is provided at ``Qiime/doc/QIIME_Install.pdf``.
-
-Tutorial
---------
-
-A Qiime tutorial is provided at ``QIIME/doc/Qiime_Tutorial.pdf``.
-
-Documentation
--------------
-
-General documentation on the QIIME's tools and capabilities are provided in the QIIME documentation at ``Qiime/doc/Qiime_Documentation.pdf``.
+Installation notes, a tutorial, and documentation is provided at `http://qiime.sourceforge.net <http://qiime.sourceforge.net>`_.
 
 Testing
 -------

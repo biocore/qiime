@@ -31,7 +31,7 @@ The Virtual Box is pre-loaded with QIIME and its dependencies on a Ubuntu operat
 Stable Pre-Release
 ^^^^^^^^^^^^^^^^^^
 
-Currently the most stable version of QIIME is our 0.91 pre-release, which you can download `here <http://sourceforge.net/projects/qiime/files/releases/Qiime-0.91.tar.gz/download>`_. You can also view the `install documents <./install.html>`_, the software `documentation <./documentation.html>`_, a `data analysis tutorial <./tutorial.html>`_ and an `SRA submission tutorial <./doc_sra_submission.html>`_.
+Currently the most stable version of QIIME is our 0.92 pre-release, which you can download `here <http://sourceforge.net/projects/qiime/files/releases/Qiime-0.92.tar.gz/download>`_. You can also view the `install documents <./install.html>`_, the software `documentation <./documentation.html>`_, a `data analysis tutorial <./tutorial.html>`_ and an `SRA submission tutorial <./doc_sra_submission.html>`_.
 
 Development Version
 ^^^^^^^^^^^^^^^^^^^

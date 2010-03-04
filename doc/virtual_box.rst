@@ -43,5 +43,5 @@ The QIIME parallel scripts are not currently supported in the Virtual Box enviro
 
 
 
-.. _QIIME Virtual Box: http://bmf.colorado.edu/QIIME/QIIME-0.91.vdi.gz
+.. _QIIME Virtual Box: http://bmf.colorado.edu/QIIME/QIIME-0.92.vdi.gz
 .. _VirtualBox: http://www.virtualbox.org/wiki/Downloads

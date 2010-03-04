@@ -1,6 +1,9 @@
 Add changes since 0.91 here
 ===========================
 
+QIIME 0.92 - (3 Mar 2010)
+=======================
+* Removed outdated documentation PDFs, along with references to those PDFs in the README and INSTALL documents.
 
 QIIME 0.91 - (3 Mar 2010)
 =======================

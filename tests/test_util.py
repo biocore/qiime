@@ -21,7 +21,7 @@ __copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Rob Knight", "Daniel McDonald","Greg Caporaso", 
 "Justin Kuczynski"] 
 __license__ = "GPL"
-__version__ = "0.91"
+__version__ = "0.92"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Release"
