@@ -19,7 +19,7 @@ Installing the QIIME Virtual Box
   * A new window will show up. Click 'Next'.
   * In this screen type QIIME as the name for the virtual machine. Then select Linux as the Operating System, and Ubuntu as the version. Click Next.
   * Select the amount of RAM (memory). We recommend at least 1024MB, but the best option is based on your machine. After selecting the amount of RAM, click Next.
-  * Select "Use existing hard drive", and click the folder icon next to the selector (it has a green up arrow). In the new window click 'Add', and locate the the virtual hard drive that was downloaded in step 2. Click Select and then click Next.
+  * Select "Use existing hard drive", and click the folder icon next to the selector (it has a green up arrow). In the new window click 'Add', and locate the virtual hard drive that was downloaded in step 2. Click Select and then click Next.
   * In the new window click Finish.
 
 4. Double click on the new virtual machine created -- it will be called QIIME -- to boot it for the first time.
@@ -34,7 +34,7 @@ Due to licensing restrictions, we cannot package the ``sff tools`` software with
 	
 	Failed the following unit tests, in part or whole due to missing external applications.
 	Depending on the QIIME features you plan to use, this may not be critical.
-	/Users/caporaso/code/Qiime/tests/test_process_sff.py
+	/home/qiime/Qiime/tests/test_process_sff.py
 
 
 You can safely ignore these, unless you are planning to process ``sff`` files directly (rather than beginning with ``fasta`` and ``qual`` files). If you do plan to process the ``sff`` files directly, you will need to install your copy of ``sff tools`` in the virtual box.
