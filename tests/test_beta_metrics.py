@@ -20,6 +20,7 @@ from qiime.beta_metrics import (_reorder_unifrac_res, make_unifrac_metric)
 from cogent.parse.tree import DndParser
 from cogent.core.tree import PhyloNode
 from cogent.maths.unifrac.fast_tree import (unifrac)
+import warnings
 
 class FunctionTests(TestCase):
     def setUp(self):
@@ -73,14 +74,97 @@ class FunctionTests(TestCase):
         """ exercise of the unweighted unifrac metric should not throw errors"""
         tree = DndParser(self.l19_treestr, PhyloNode)
         unif = make_unifrac_metric(False, unifrac, True)
-        res = unif(self.l19_data, self.l19_taxon_names, tree)
+        res = unif(self.l19_data, self.l19_taxon_names, tree,
+            self.l19_sample_names)
         envs = make_envs_dict(self.l19_data, self.l19_sample_names,
             self.l19_taxon_names)
         unifrac_mat, unifrac_names = fast_unifrac(tree, envs, 
                 modes=['distance_matrix'])['distance_matrix']
         self.assertFloatEqual(res, _reorder_unifrac_res([unifrac_mat,
             unifrac_names], self.l19_sample_names))
+        self.assertEqual(res[0,0], 0)
+        self.assertEqual(res[0,3], 0.0)
+        self.assertNotEqual(res[0,1], 1.0)
+            
+    def test_make_unifrac_metric2(self):
+        """ samples with no seqs, and identical samples, should behave correctly
+        """
+        tree = DndParser(self.l19_treestr, PhyloNode)
+        unif = make_unifrac_metric(False, unifrac, True)
+        otu_data = numpy.array([
+            [0,0,0,0,0,0,0,0,0],#sam1 zeros
+            [4,2,0,0,0,1,0,0,0],
+            [2,4,0,0,0,1,0,0,0],
+            [1,7,0,0,0,0,0,0,0],
+            [0,8,0,0,0,0,0,0,0],
+            [0,7,1,0,0,0,0,0,0],
+            [0,4,2,0,0,0,2,0,0],
+            [0,2,4,0,0,0,1,0,0],
+            [0,1,7,0,0,0,0,0,0],
+            [0,0,8,0,0,0,0,0,0],
+            [0,0,7,1,0,0,0,0,0],
+            [0,0,4,2,0,0,0,3,0],
+            [0,0,2,4,0,0,0,1,0],
+            [0,0,0,0,0,0,0,0,0],#sam14 zeros
+            [0,0,0,8,0,0,0,0,0],
+            [0,0,2,4,0,0,0,1,0], #sam 16 now like sam 13
+            [0,0,0,4,2,0,0,0,4],
+            [0,0,0,2,4,0,0,0,1],
+            [0,0,0,1,7,0,0,0,0]
+            ])
+        warnings.filterwarnings('ignore')
+        res = unif(otu_data, self.l19_taxon_names, tree,
+            self.l19_sample_names)
+        envs = make_envs_dict(self.l19_data, self.l19_sample_names,
+            self.l19_taxon_names)
+        self.assertEqual(res[0,0], 0)
+        self.assertEqual(res[0,13], 0.0)
+        self.assertEqual(res[12,15], 0.0)
+        self.assertEqual(res[0,1], 1.0)
+        warnings.resetwarnings()
 
+        
+            
+    def test_make_unifrac_metric3(self):
+        treestr = '((((tax7:0.1):.98,tax8:.3, tax4:.3):.4, '+\
+            '((tax6:.09):0.43):0.5):.2,'+\
+            '(tax9:0.3, endbigtaxon:.08));' # taxa 1,2,3 removed
+        tree = DndParser(treestr, PhyloNode)
+
+        otu_data = numpy.array([
+            [7,1,0,0,0,0,0,0,0], # 1 now zeros
+            [4,2,0,0,0,1,0,0,0], 
+            [2,4,0,0,0,1,0,0,0],
+            [1,7,0,0,0,0,0,0,0], # 4 now zeros
+            [0,8,0,0,0,0,0,0,0],
+            [0,7,1,0,0,0,0,0,0],
+            [0,4,2,0,0,0,2,0,0],
+            [0,2,4,0,0,0,1,0,0],
+            [0,1,7,0,0,0,0,0,0],
+            [0,0,8,0,0,0,0,0,0],
+            [0,0,7,1,0,0,0,0,0],
+            [0,0,4,2,0,0,0,3,0],
+            [0,0,2,4,0,0,0,1,0],
+            [0,0,1,7,0,0,0,0,0],
+            [0,0,0,8,0,0,0,0,0],
+            [0,0,0,7,1,0,0,0,0],
+            [0,0,0,4,2,0,0,0,4],
+            [0,0,0,2,4,0,0,0,1],
+            [0,0,0,1,7,0,0,0,0]
+            ])
+            
+        unif = make_unifrac_metric(False, unifrac, True)
+        warnings.filterwarnings('ignore')
+        res = unif(otu_data, self.l19_taxon_names, tree,
+            self.l19_sample_names)
+        warnings.resetwarnings()
+        envs = make_envs_dict(self.l19_data, self.l19_sample_names,
+            self.l19_taxon_names)
+        self.assertEqual(res[0,0], 0)
+        self.assertEqual(res[0,3], 0.0)
+        self.assertEqual(res[0,1], 1.0)
+        
+        
 #run tests if called from command line
 if __name__ == '__main__':
     main()

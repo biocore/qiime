@@ -156,7 +156,8 @@ class BetaDiversityCalc(FunctionWithParams):
 
         # get the 2d dist matrix from beta diversity analysis
         if self.IsPhylogenetic:
-            return self.Metric(data.T, taxon_names, tree), sample_names
+            return (self.Metric(data.T, taxon_names, tree, sample_names),
+             sample_names)
         else:
             return self.Metric(data.T), sample_names
 
