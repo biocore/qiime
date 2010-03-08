@@ -53,7 +53,7 @@ PC.636 0.925   3.78882       16.0
 
 
 
-**Single File Alpha Diversity:**
+**Single File Alpha Diversity Example:**
 
 To perform alpha diversity (e.g. chao1) on a single OTU table, where the results are output to "alpha_div.txt", you can use the following command:
 
