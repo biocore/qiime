@@ -13,7 +13,8 @@ __email__ = "wendel@colorado.edu"
 __status__ = "Pre-release"
  
 
-from qiime.filter_alignment import apply_lane_mask_and_gap_filter
+from qiime.filter_alignment import apply_lane_mask_and_gap_filter, \
+  remove_outliers
 from qiime.util import parse_command_line_parameters
 from optparse import make_option
 from cogent.core.alignment import eps
@@ -51,7 +52,16 @@ script_info['optional_options']= [\
         type='float',help='gap filter threshold, ' +\
         'filters positions which are gaps in > allowed_gap_frac '+\
         'of the sequences [default: %default]',
-        default=1.-eps)
+        default=1.-eps),
+   make_option('-r','--remove_outliers',action='store_true',\
+        help='remove seqs very dissimilar to the alignment consensus' +\
+        'see --threshold.  [default: %default]',
+        default=False),
+   make_option('-t', '--threshold',action='store',\
+        type='float',help='with -r, remove seqs whose dissimilarity to the ' +\
+        'consensus sequence is approximately > x standard devaitions above '+\
+        'the mean of the sequences [default: %default]',
+        default=2.0),
 ]
 script_info['version'] = __version__
 
@@ -84,10 +94,22 @@ def main():
     # open the input and output files        
     infile = open(opts.input_fasta_file,'U')
 
-    # apply the lanemask/gap removal
-    for result in apply_lane_mask_and_gap_filter(infile, lane_mask, \
+    
+    if opts.remove_outliers:
+        # apply the lanemask/gap removal, then remove outliers
+
+        seq_gen = apply_lane_mask_and_gap_filter(infile, lane_mask,
+          opts.allowed_gap_frac, verbose=opts.verbose)
+        filtered_aln = remove_outliers(seq_gen, opts.threshold)
+        for seq in filtered_aln.Seqs:
+            outfile.write(seq.toFasta())
+            outfile.write('\n')
+   
+    else:
+        # just apply the lanemask/gap removal
+        for result in apply_lane_mask_and_gap_filter(infile, lane_mask, \
      opts.allowed_gap_frac, verbose=opts.verbose):
-        outfile.write(result)
+            outfile.write(result)
     infile.close()
     outfile.close()
 

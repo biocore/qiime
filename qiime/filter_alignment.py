@@ -8,6 +8,12 @@ from string import lowercase
 from os.path import split, exists, splitext
 from os import mkdir, remove
 
+from cogent.util.unit_test import TestCase, main
+import numpy
+from cogent import LoadSeqs, DNA
+from cogent.core.alignment import DenseAlignment
+from cogent.parse.fasta import MinimalFastaParser
+
 __author__ = "Dan Knights"
 __copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Greg Caporaso", "Justin Kuczynski", "Dan Knights"]
@@ -101,7 +107,7 @@ def apply_lane_mask_and_gap_filter(fastalines, lane_mask,\
         tmpfile.write('>%s\n%s\n' % (k, masked))
     if verbose: print; print
     tmpfile.close()
-    tmpfile = open(tmpfilename,'r')
+    tmpfile = open(tmpfilename,'U')
 
 
     # if we're not removing gaps, we're done; yield the temp file contents
@@ -132,6 +138,36 @@ def apply_lane_mask_and_gap_filter(fastalines, lane_mask,\
     tmpfile.close()
     remove(tmpfilename)
 
+def remove_outliers(seqs, num_sigmas, fraction_seqs_for_stats=.95):
+    """ remove sequences very different from the majority consensus
+    
+    given aligned seqs, will calculate a majority consensus (most common
+    symbol at each position of the alignment), and average edit distance
+    of each seq to that consensus.  any seq whose edit dist is > cutoff 
+    (roughly seq_dist > num_sigmas * (average edit dist) ) is removed
+    when calculating mean and stddev edit distance, only the best
+    fraction_seqs_for_stats are used
+    
+    seqs must be compatible with DenseAlignment: 
+    aln = DenseAlignment(data=seqs, MolType=DNA) is called
+    """
+    aln = DenseAlignment(data=seqs, MolType=DNA)
+    cons = DenseAlignment(data=aln.majorityConsensus(), MolType=DNA)
+    diff_mtx = cons.SeqData[:,0] != aln.SeqData
+    
+    # consider only a fraction of seqs for mean, std
+    seq_diffs = diff_mtx.sum(1)
+    num_to_consider = round(len(seq_diffs)*fraction_seqs_for_stats)
+    seq_diffs_considered_sorted = \
+        seq_diffs[seq_diffs.argsort()[:num_to_consider]]
+    diff_cutoff = seq_diffs_considered_sorted.mean() + \
+      num_sigmas*seq_diffs_considered_sorted.std()
+    # mean + e.g.: 4 sigma
+    seq_idxs_to_keep = numpy.arange(len(seq_diffs))[seq_diffs <= diff_cutoff]
+    
+    filtered_aln = aln.getSubAlignment(seq_idxs_to_keep)
+    return filtered_aln
+        
 
 def status(message,dest=stdout,overwrite=True, max_len=100):
     """Writes a status message over the current line of stdout
