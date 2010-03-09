@@ -98,7 +98,7 @@ class CogentTreeBuilder(TreeBuilder):
         try: 
             root_method = kwargs['root_method']
             if root_method == 'midpoint':
-                result = result.rootAtMidpoint()
+                result = root_midpt(result)
             elif root_method == 'tree_method_default':
                 pass
         except KeyError:
@@ -119,3 +119,58 @@ tree_module_names = {'muscle':cogent.app.muscle,
     'fasttree':cogent.app.fasttree,'fasttree_v1':cogent.app.fasttree_v1,
     'raxml':cogent.app.raxml, 'clearcut':cogent.app.clearcut,
     }
+    
+    
+def maxTipTipDistance(tree):
+        """returns the max distance between any pair of tips
+        
+        Also returns the tip names  that it is between as a tuple"""
+        distmtx, tip_order = tree.tipToTipDistances()
+        idx_max = divmod(distmtx.argmax(),distmtx.shape[1])
+        max_pair = (tip_order[idx_max[0]].Name, tip_order[idx_max[1]].Name)
+        return distmtx[idx_max], max_pair
+        
+def root_midpt(tree):
+    """ this is instead of PhyloNode.rootAtMidpoint(), which is slow and broke
+    
+    this fn doesn't preserve the internal node naming or structure,
+    but does keep tip to tip distances correct.  uses unrootedDeepcopy()
+    """
+    # max_dist, tip_names = tree.maxTipTipDistance()
+    # this is slow
+    
+    max_dist, tip_names = maxTipTipDistance(tree)
+    half_max_dist = max_dist/2.0
+    # print tip_names
+    tip1 = tree.getNodeMatchingName(tip_names[0])
+    tip2 = tree.getNodeMatchingName(tip_names[1])
+    lca = tree.getConnectingNode(tip_names[0],tip_names[1]) # last comm ancestor
+    if tip1.distance(lca) > half_max_dist:
+        climb_node = tip1
+    else:
+        climb_node = tip2
+        
+    dist_climbed = climb_node.Length
+    while dist_climbed <= half_max_dist:
+        climb_node = climb_node.Parent
+        dist_climbed += climb_node.Length
+    
+    dist_climbed -= climb_node.Length # dist is now dist from tip to climb_node
+        
+    # now midpt is either at climb_node or on the branch to its parent
+    # print dist_climbed, half_max_dist, 'dists cl hamax'
+    if dist_climbed == half_max_dist:
+        if climb_node.isTip():
+            raise RuntimeError('error trying to root tree at tip')
+        else:
+            # print climb_node.Name, 'clmb node'
+            return climb_node.unrootedDeepcopy()
+        
+    else:
+        old_br_len = climb_node.Length
+        new_root = type(tree)()
+        new_root.Parent = climb_node.Parent
+        climb_node.Parent = new_root
+        climb_node.Length = half_max_dist - dist_climbed
+        new_root.Length = old_br_len - climb_node.Length
+        return new_root.unrootedDeepcopy()

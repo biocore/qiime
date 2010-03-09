@@ -70,9 +70,6 @@ def main():
          % (opts.tree_method,\
             ' '.join(tree_method_constructors.keys() +
                 tree_module_names.keys())))
-    if opts.root_method == 'midpoint':
-        warnings.warn("""midpoint rooting is extremely slow, not recommended at present""")
-    #verbose = opts.verbose
     try:
         tree_builder_constructor =\
             tree_method_constructors[opts.tree_method]
