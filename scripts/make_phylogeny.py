@@ -88,8 +88,11 @@ def main():
     if not result_path: # empty or None
         fpath, ext = splitext(input_seqs_filepath) # fpath omits extension
         result_path = fpath + ".tre"
-     
+    
+    open(result_path,'w').close() # touch
     log_path = opts.log_fp
+    if log_path != None:
+        open(log_path,'w').close()
 
     if tree_builder_type=='Constructor':
         tree_builder(input_seqs_filepath,\
