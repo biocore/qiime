@@ -25,7 +25,7 @@ from qiime.check_id_map import (find_diff_length, CharFilter, lwu,
     check_same_length, check_bad_chars, check_mixed_caps,
     check_missing_descriptions, check_duplicate_descriptions,
     check_description_chars, parse_id_map, get_primers_barcodes,
-    check_primers_barcodes
+    check_primers_barcodes, check_missing_sampleIDs
     )
 
 class TopLevelTests(TestCase):
@@ -503,6 +503,23 @@ class SameCheckerTests(TestCase):
         # and primer
         self.assertEqual(check_primers_barcodes(primers_bad, barcodes_bad, \
          problems),  defaultdict(list, {'warning': ['The primer 1GGATTCG has invalid characters.  Location (row, column):\t0,2', 'Missing primer.  Location (row, column):\t2,2', 'The barcode CAC1C has invalid characters.  Location (row, column):\t0,1', 'Missing barcode. Location (row, column):\t1,1']}))
+         
+    def test_check_missing_sampleIDs(self):
+        """ Should give warnings if missing sample IDs from given list """
+        
+        problems = defaultdict(list)
+        sample_IDs_good = ['#SampleID','Sample_1','Sample_2']
+        # Should not create any warnings
+        self.assertEqual(check_missing_sampleIDs(sample_IDs_good, problems), \
+         defaultdict(list))
+        # Should raise errors for empty/whitespace sample ID list items
+        sample_IDs_bad = ['#SampleID','','Sample_2']
+        self.assertEqual(check_missing_sampleIDs(sample_IDs_bad, problems), \
+         defaultdict(list, {'warning': ['Missing Sample ID.  Location (row, column):\t0,0']}))
+        sample_IDs_bad = ['#SampleID','Sample_1','\t']
+        problems = defaultdict(list)
+        self.assertEqual(check_missing_sampleIDs(sample_IDs_bad, problems), \
+         defaultdict(list, {'warning': ['Missing Sample ID.  Location (row, column):\t1,0']}))
             
 
 

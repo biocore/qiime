@@ -617,6 +617,26 @@ def check_missing_descriptions((sample_descriptions, sample_ids,
         err = ''
     return (sample_descriptions, sample_ids, run_description), err
 
+def check_missing_sampleIDs(sample_ids, problems):
+    """Returns warnings for missing sample IDs"""
+
+    # sample IDs will always be in the first column (0)
+    column = 0
+    
+    row = 0
+    
+    for sample_ID in sample_ids:
+        # skip header
+        if sample_ID == "#SampleID":
+            continue
+        if not sample_ID.strip():
+            problems['warning'].append('Missing Sample ID.  ' +\
+             'Location (row, column):\t%d,%d' % (row, column))
+        row += 1
+            
+
+    return problems
+
 def check_duplicate_descriptions((sample_descriptions, sample_ids,
     run_description), raw_data=None):
     """Returns warnings for duplicate descriptions"""
@@ -844,7 +864,8 @@ def parse_id_map(infile, is_barcoded=True, char_replace="_",
     
     #read data
     try:
-        data, run_description = parse_map(infile, return_header=True)
+        data, run_description = parse_map(infile, return_header=True,\
+         suppress_stripping=True)
         col_headers = data[0]
     except (TypeError, ValueError), e:
         problems['error'].append(
@@ -869,7 +890,7 @@ def parse_id_map(infile, is_barcoded=True, char_replace="_",
 
     #check col values
     data = array(pad_rows(data))
-
+    
 
     sample_description_column = get_sample_description_column(data)
     
@@ -885,6 +906,8 @@ def parse_id_map(infile, is_barcoded=True, char_replace="_",
     data, field_types = run_checks((data, field_types), col_checks, problems, \
      raw_data)
     sample_ids = data[:,0]
+    
+
 
 
 
@@ -896,6 +919,9 @@ def parse_id_map(infile, is_barcoded=True, char_replace="_",
     #check primers,barcodes for valid IUPAC DNA characters
     primers, barcodes = get_primers_barcodes(data)
     problems = check_primers_barcodes(primers, barcodes, problems)
+    
+    #check for missing sample_IDs
+    problems = check_missing_sampleIDs(sample_ids, problems)
 
     #return formatted output
     headers, description_map, id_map = wrap_arrays(sample_descriptions, data)
@@ -929,7 +955,8 @@ def test_for_replacement_chars(warnings):
     
     for warning in warnings:
         if warning.startswith("Removed ") or \
-         warning.startswith("These sample ids have bad characters"):
+         warning.startswith("These sample ids have bad characters") or \
+         warning.startswith("These sample ids lack descriptions (replaced "):
             return True
     
     return False

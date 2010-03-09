@@ -25,7 +25,8 @@ import os
 
 Note: this code initially copied over from MicrobePlots."""
 
-def parse_map(lines, return_header=False, strip_quotes=True):
+def parse_map(lines, return_header=False, strip_quotes=True, \
+ suppress_stripping=False):
     """Parser for map file that relates samples to metadata.
     
     Format: header line with fields
@@ -41,9 +42,16 @@ def parse_map(lines, return_header=False, strip_quotes=True):
     result = []
     header = []
     for line in lines:
-        line = line.strip()
-        if not line:
-            continue
+        # Added for unadultered parsing, need to know if white space present
+        if suppress_stripping:
+            test_for_empty_line = line.strip()
+            if not test_for_empty_line:
+                continue
+        else:
+            line = line.strip()
+            if not line:
+                continue
+        
         if line.startswith('"'): #quoted line from Excel?
             fields = line.split('\t')
             fields[0] = fields[0].strip('"')
