@@ -383,16 +383,15 @@ def compute_seqs_per_library_stats(otu_f):
      dict(zip(sample_ids,counts))
      
 def raise_error_on_parallel_unavailable(qiime_config=None):
-    """Raise error if no parallel QIIME bc of missing/undefined cluster_jobs_fp
+    """Raise error if no parallel QIIME bc user hasn't set jobs_to_start
     """
     if qiime_config == None:
         qiime_config = load_qiime_config()
-    if 'cluster_jobs_fp' not in qiime_config or \
-       not exists(qiime_config['cluster_jobs_fp']):
+    if 'jobs_to_start' not in qiime_config or \
+       int(qiime_config['jobs_to_start']) < 2:
        raise RuntimeError,\
-        "Parallel QIIME is not available. (Have you defined"+\
-        " a cluster_jobs_fp in your qiime_config? Does it"+\
-        " point to a valid file?)"
+        "Parallel QIIME is not available. (Have you set"+\
+        " jobs_to_start to greater than 1 in your qiime_config?"
 
 ## Begin functions for handling command line interfaces
 def get_options_lookup():
@@ -420,7 +419,7 @@ def get_options_lookup():
     result['jobs_to_start'] =\
      make_option('-O','--jobs_to_start',type='int',\
        help='Number of jobs to start [default: %default]',\
-       default=qiime_config['jobs_to_start'] or 24)
+       default=qiime_config['jobs_to_start'])
     result['poller_fp'] =\
      make_option('-P','--poller_fp',action='store',\
        type='string',help='full path to '+\
@@ -445,7 +444,8 @@ def get_options_lookup():
      make_option('-U','--cluster_jobs_fp',
         help='path to cluster_jobs.py script ' +\
         ' [default: %default]',\
-        default=qiime_config['cluster_jobs_fp'])
+        default=qiime_config['cluster_jobs_fp'] or\
+         join(get_qiime_project_dir(),'scripts','start_parallel_jobs.py'))
     result['suppress_polling'] =\
      make_option('-W','--suppress_polling',action='store_true',
         help='suppress polling of jobs and merging of results '+\

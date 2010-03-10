@@ -176,12 +176,9 @@ class TopLevelTests(TestCase):
         """raise_error_on_parallel_unavailable functions as expected """
         self.assertRaises(RuntimeError,raise_error_on_parallel_unavailable,{})
         self.assertRaises(RuntimeError,raise_error_on_parallel_unavailable,\
-         {'cluster_jobs_fp':'/some/fake/fp.py'})
-        # no error when passed an existing filepath (note it doens't matter
-        # that we're not passing an actual cluster jobs file -- the 
-        # function just checks existence of the scripts, it's the
-        # scripts job to inform the user if it can't submit jobs)
-        raise_error_on_parallel_unavailable({'cluster_jobs_fp':__file__})
+         {'jobs_to_start':'1'})
+        raise_error_on_parallel_unavailable({'jobs_to_start':'2'})
+        raise_error_on_parallel_unavailable({'jobs_to_start':'24'})
         
     def test_support_files_available(self):
         """support_files are available """

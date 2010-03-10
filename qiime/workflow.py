@@ -6,7 +6,7 @@ from os import makedirs
 from glob import glob
 from os.path import split, splitext, join
 from qiime.parse import parse_map
-from qiime.util import compute_seqs_per_library_stats
+from qiime.util import compute_seqs_per_library_stats, get_qiime_project_dir
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME Project"
@@ -88,7 +88,7 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,\
     input_basename, input_ext = splitext(input_filename)
     commands = []
     python_exe_fp = qiime_config['python_exe_fp']
-    qiime_home = qiime_config['qiime_home']
+    qiime_home = get_qiime_project_dir()
     script_dir = join(qiime_home,'scripts/')
     
     # Prep the OTU picking command
@@ -298,7 +298,7 @@ def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,\
     otu_table_basename, otu_table_ext = splitext(otu_table_filename)
     commands = []
     python_exe_fp = qiime_config['python_exe_fp']
-    qiime_home = qiime_config['qiime_home']
+    qiime_home = get_qiime_project_dir()
     script_dir = join(qiime_home,'scripts/')
     
     mapping_file_header = parse_map(open(mapping_fp,'U'),return_header=True)[0][0]
@@ -409,7 +409,7 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,\
     otu_table_basename, otu_table_ext = splitext(otu_table_filename)
     commands = []
     python_exe_fp = qiime_config['python_exe_fp']
-    qiime_home = qiime_config['qiime_home']
+    qiime_home = get_qiime_project_dir()
     script_dir = join(qiime_home,'scripts/')
     
     alpha_diversity_metrics = params['alpha_diversity']['metrics'].split(',')
@@ -551,7 +551,7 @@ def run_jackknifed_upgma_clustering(otu_table_fp,tree_fp,seqs_per_sample,\
     otu_table_basename, otu_table_ext = splitext(otu_table_filename)
     commands = []
     python_exe_fp = qiime_config['python_exe_fp']
-    qiime_home = qiime_config['qiime_home']
+    qiime_home = get_qiime_project_dir()
     script_dir = join(qiime_home,'scripts/')
     
     beta_diversity_metrics = params['beta_diversity']['metrics'].split(',')

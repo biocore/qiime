@@ -7,18 +7,44 @@
 Special-Purpose Tutorials
 =========================
 
+The qiime_config File 
+---------------------
+
+First things first: you should not edit or remove :file:`Qiime/qiime_config`. 
+
+Some QIIME scripts read default values from a :file:`qiime_config` file. The default location of this file is in your top-level QIIME directory (:file:`Qiime/qiime/support_files/qiime_config`). QIIME scripts pull default values from this file which are system-specific, such as paths to executable files, and these can be overwritten for convenience. The recommended procedure for overwriting these defaults is to copy the :file:`qiime_config` file to either :file:`~/.qiime_config` or a location specified by the environment variable $QIIME_CONFIG_FP.
+
+The Qiime configuration values should only be modified in these copies of the :file:`qiime_config` file, as changes to the :file:`Qiime/qiime/support_files/qiime_config` version may be overwritten in future QIIME updates.
+
+When defaults are loaded, all three locations are checked in order of precedence. Lowest precedence is given to the :file:`Qiime/qiime/support_files/qiime_config` file, as these are defaults defined by the QIIME development team and are likely not relevant to other users' environments. Higher precedence is given to the file specified by $QIIME_CONFIG_FP, and this is envisioned to be used for defining system-wide defaults. Finally, highest precedence is given to :file:`~/.qiime_config`, so users have the ability to overwrite defaults defined elsewhere to have maximum control over their environment (e.g., if testing an experimental version of their :file:`cluster_jobs` script). Note that these values are defaults: the scripts typically allow overwriting of these values via their command line interfaces.
+
+Note that users can have up to three separate :file:`qiime_config` files, and one is provided by default with QIIME. At least one :file:`qiime_config` file must be present in one of the three locations, or scripts that rely on :file:`qiime_config` file will raise an error. Not all values need to be defined in all :file:`qiime_config` files, but all values must be defined at least once. This is one more reason why you should not edit or remove :file:`Qiime/qiime_config`: when new values are added in the future they will be defined in Qiime's default copy, but not in your local copies.
+
+To see the qiime_config values as read by QIIME, you can call::
+
+	Qiime/scripts/print_qiime_config.py
+
+
 Parallel Runs 
 -------------
 
 QIIME supports running several of its slower steps in parallel in a cluster (or other multiple processor/core) environment. Currently, these include:
 
-	* Assignment of taxonomy with BLAST, via :file:`Qiime/qiime/parallel/assign_taxonomy_blast.py`
-	* Assignment of taxonomy with RDP, via :file:`Qiime/qiime/parallel/assign_taxonomy_rdp.py`
-	* Sequence alignment with PyNAST, via :file:`Qiime/qiime/parallel/align_seqs_pynast.py`
+	* Assignment of taxonomy with BLAST, via :file:`Qiime/scripts/parallel_assign_taxonomy_blast.py`
+	* Assignment of taxonomy with RDP, via :file:`Qiime/scripts/parallel_assign_taxonomy_rdp.py`
+	* Sequence alignment with PyNAST, via :file:`Qiime/scripts/parallel_align_seqs_pynast.py`
+
+QIIME achieves support of parallelization in different environments by requiring users to define a script which is responsible for making and starting the jobs when provided with a list of commands. This script is referred to in QIIME as the cluster_jobs script. An example cluster_jobs script which can be used for parallel runs in multicore/multiprocessor environments is packaged with QIIME as :file:`Qiime/scripts/start_parallel_jobs.py`.
+
+Enabling parallel runs in QIIME
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+To enable parallel runs in QIIME you will first need to determine if the :file:`Qiime/scripts/start_parallel_jobs.py` script will work for your purposes. If you're running in a multi-processor or multi-core environment with no queueing system, then it should work for you. If you are running in a more complex environment (e.g, a cluster) you'll need to write a custom cluster jobs script. This is discussed below.
+
+You must next define the default number of jobs that you would like QIIME to start by default. This is done by editing the ``jobs_to_start`` value in your :file:`qiime_config` file. The default value is 1, corresponding to no parallelization. Follow the instructions on creating a custom :file:`qiime_config` (i.e., don't modify :file:`Qiime/qiime/support_files/qiime_config`, but instead copy that file to :file:`$HOME/.qiime_config` and edit that version). Then modify the jobs_to_start value to one that makes sense for your environment. For example, if you are running on a dual-core laptop, you probably want 2. (Note that this will likely prevent you from doing anything else with your laptop while QIIME is running in parallel.) If you're running on an 8 processor desktop machine, you'd want to set jobs_to_start to a maximum of 8 -- lower might be better if you'd like to reserve one or more processors for other work while running parallel QIIME. Note that setting jobs_to_start (e.g., 5 on a dual core system) to a value that is too high will reduce the performance of parallel QIIME. You can overwrite the jobs_to_start value via the command line interface of the parallel scripts -- you are just setting the default value here.
 
 Writing a cluster_jobs Script Specific to your Cluster Environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-To make QIIME parallelization useful in different computing environments users are required to provide a script which can start jobs on their system, referred to here as a 'cluster_jobs' script. The cluster_jobs script takes as its two parameterts:
+To make QIIME parallelization useful in different computing environments users can provide a script which can start jobs on their system, referred to here as a 'cluster_jobs' script. The cluster_jobs script takes as its two parameters:
 
 	1. A single file which lists the commands to be run (referred to as a 'jobs_list' file), with one command per line
 	2. A string to use as a prefix when constructing unique job identifiers.
@@ -39,7 +65,9 @@ The call to the cluster_jobs script in QIIME's parallel scripts looks like the f
 
 where CLUSTER_JOBS_FP is the path to your cluster_jobs script and is passed to the parallel scripts via the -U parameter. JOB_ID is intended to be used as a prefix by the cluster_jobs script when creating a unique identifier for each job (and will be passed to the parallel scripts via -X). The same JOB_ID is also used by the QIIME parallel scripts when creating names for temporary files and directories. The -ms indicates that the job files should be made (-m) and submitted (-s).
 
-Once you have written a cluster_jobs script for your specific environment that can be called via the above interface, running QIIME jobs in parallel should be straight-forward. The parallel variants of the scripts use the same parameters as the serial versions of the scripts, with some additional options in the parallel scripts. Options -N through -Z (capital N through capital Z) are reserved in QIIME for parallel scripts, and in most cases the defaults can be defined in your :file:`qiime_config` file.
+Once you have written a cluster_jobs script for your specific environment that can be called via the above interface, running QIIME jobs in parallel should be straight-forward. The parallel variants of the scripts use the same parameters as the serial versions of the scripts, with some additional options in the parallel scripts. Options -N through -Z (capital N through capital Z) are reserved in QIIME for parallel scripts, and in most cases the defaults can be defined in your :file:`qiime_config` file. 
+
+To avoid passing -U CLUSTER_JOBS_FP to each call to a parallel script, you should define the cluster_jobs_fp value in your :file:`qiime_config`.
 
 Example Run of PyNAST in Parallel 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -56,23 +84,6 @@ Details of the Parallelization
 This section provides some information on details of the parallelization which are hidden from the user, but provided for users who are interested in what is happening behind-the-scenes.
 
 The parallelization works as follows. First, the input file (-i) is split into JOBS_TO_START (-O) different roughly equal-sized files. The serial version of the script -- `align_seqs.py <./scripts/align_seqs.html>`_ -- is then called on each of these split files as a separate job. Each of these jobs therefore writes its own output files (alignment, log, and failure files). One additional job, the poller, is started to monitor each of the jobs via their output files. When all expected output files exist, the poller will merge the individual output files and clean up any temporary files including the output files created by each of the individual runs. Cleaning up temporary files can be suppressed by passing -R, which is useful for debugging. Bypassing the polling system all-together can be achieved by passing -W.
-
-The qiime_config File 
----------------------
-
-First things first: you should not edit or remove :file:`Qiime/qiime_config`. 
-
-Some QIIME scripts, at this stage primarily the parallel scripts, read default values from a :file:`qiime_config` file. The default location of this file is in your top-level QIIME directory (:file:`Qiime/qiime_config`). QIIME scripts pull default values from this file which are system-specific, such as paths to executable files, and these can be overwritten for convenience. The recommended procedure for overwriting these defaults is to copy the :file:`qiime_config` file to either :file:`~/.qiime_config` or a location specified by the environment variable $QIIME_CONFIG_FP.
-
-The Qiime configuration values should only be modified in these copies of the :file:`qiime_config` file, as changes to the :file:`Qiime/qiime_config` version may be overwritten in future QIIME updates.
-
-When defaults are loaded, all three locations are checked in order of precedence. Lowest precedence is given to the :file:`Qiime/qiime_config` file, as these are defaults defined by the QIIME development team and are likely not relevant to other users' environments. Higher precedence is given to the file specified by $QIIME_CONFIG_FP, and this is envisioned to be used for defining system-wide defaults. Finally, highest precedence is given to :file:`~/.qiime_config`, so users have the ability to overwrite defaults defined elsewhere to have maximum control over their environment (e.g., if testing an experimental version of their :file:`cluster_jobs` script). Note that these values are defaults: the scripts typically allow overwriting of these values via their command line interfaces.
-
-Note that users can have up to three separate :file:`qiime_config` files, and one is provided by default with QIIME. At least one :file:`qiime_config` file must be present in one of the three locations, or scripts that rely on :file:`qiime_config` file will raise an error. Not all values need to be defined in all :file:`qiime_config` files, but all values must be defined at least once. This is one more reason why you should not edit or remove :file:`Qiime/qiime_config`: when new values are added in the future they will be defined in Qiime's default copy, but not in your local copies.
-
-There is a script that prints the current :file:`qiime_config` settings in the scripts folder::
-
-	print_qiime_config.py
 
 Denoising of 454 Data Sets 
 --------------------------

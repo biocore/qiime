@@ -3,15 +3,14 @@
 # To overwrite defaults, copy this file to $HOME/.qiime_config or a full path
 # specified by $QIIME_CONFIG_FP and edit that copy of the file.
 
-cluster_jobs_fp	/software/scripts/cluster_jobs.py
+cluster_jobs_fp
 python_exe_fp	/software/bin/python
-working_dir	/quicksand
+working_dir
 blastmat_dir	/software/blast-2.2.16/data
-blastall_fp	/software/bin/blastall
+blastall_fp	blastall
 rdp_classifier_fp	/software/rdp_classifier/rdp_classifier-2.0.jar
-qiime_home	/software/Qiime/
 pynast_template_alignment_fp
 pynast_template_alignment_blastdb
 template_alignment_lanemask_fp
-jobs_to_start	24
+jobs_to_start	1
 seconds_to_sleep	60
