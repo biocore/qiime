@@ -5,18 +5,11 @@
 
 cluster_jobs_fp	/software/scripts/cluster_jobs.py
 python_exe_fp	/software/bin/python
-align_seqs_fp	/software/Qiime/scripts/align_seqs.py
 working_dir	/quicksand
-assign_taxonomy_fp	/software/Qiime/scripts/assign_taxonomy.py
-alpha_diversity_fp	/software/Qiime/scripts/alpha_diversity.py
-single_rarefaction_fp	/software/Qiime/scripts/single_rarefaction.py
-poller_fp	/software/Qiime/scripts/poller.py
 blastmat_dir	/software/blast-2.2.16/data
 blastall_fp	/software/bin/blastall
 rdp_classifier_fp	/software/rdp_classifier/rdp_classifier-2.0.jar
 qiime_home	/software/Qiime/
-pick_otus_fp	/software/Qiime/scripts/pick_otus.py
-beta_diversity_fp	/software/Qiime/scripts/beta_diversity.py
 pynast_template_alignment_fp
 pynast_template_alignment_blastdb
 template_alignment_lanemask_fp

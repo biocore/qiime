@@ -18,7 +18,7 @@ A lot of this might migrate into cogent at some point.
 
 from StringIO import StringIO
 from os import getenv
-from os.path import abspath, exists, dirname
+from os.path import abspath, exists, dirname, join
 from numpy import min, max, median, mean
 import numpy
 from numpy import array, zeros
@@ -425,7 +425,7 @@ def get_options_lookup():
      make_option('-P','--poller_fp',action='store',\
        type='string',help='full path to '+\
        'qiime/parallel/poller.py [default: %default]',\
-       default=qiime_config['poller_fp'])
+       default=join(get_qiime_project_dir(),'scripts','poller.py'))
     result['retain_temp_files'] =\
      make_option('-R','--retain_temp_files',action='store_true',\
        help='retain temporary files after runs complete '+\
