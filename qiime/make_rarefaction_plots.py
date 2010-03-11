@@ -24,6 +24,7 @@ from sys import argv, exit
 from random import choice, randrange
 from time import strftime
 from qiime import parse, util
+from qiime.colors import *
 from numpy import array, transpose, random, mean, std, arange
 from string import strip
 from matplotlib.pylab import savefig, clf, gca, gcf, errorbar
@@ -35,49 +36,35 @@ import shutil
 from warnings import warn
 from itertools import cycle
 
-COLOUR_GRAD = ['#9933cc', #purple
-        '#3333cc', #blue
-        '#6699cc', #bluetint
-        '#666666', #gray
-        '#9966cc', #lilac
-        '#009999', #cyan
-        '#66cc99', #lightgreen
-        '#3399cc', #skyblue
-        '#00cc66', #sea green
-        '#33cc33', #green
-        '#99cc00', #yellowgreen
-        '#cccc00', #yellow
-        '#cc6600', #orange
-        '#cc6633', #peach
-        '#cc3300', #dark orange
-        '#cc6666', #coral
-        '#cc0066', #hot pink
-        '#cc0000', #red
-        ]
-
-COLOUR = ['#9933cc', #purple
-            '#99cc00', #yellowgreen
-            '#3399cc', #skyblue
-            '#66cc99', #lightgreen
-            '#ffff00', #yellow
-            '#cc0066', #hot pink
-            '#cc6600', #orange
-            '#00cc66', #sea green
-            '#6699cc', #bluetint
-            '#cc6633', #peach
-            '#33cc33', #green
-            '#9966cc', #lilac
-            '#3333cc', #blue
-            '#cccc00', #gold
-            '#cc0000', #red
-            '#cc6666', #coral
-            '#666666', #gray
-            '#009999', #cyan
+COLOUR = [ ['#9933cc', 'purple'],
+           ['#99cc00', 'yellowgreen'],
+            ['#3399cc', 'skyblue'],
+            ['#66cc99', 'lightgreen'],
+            ['#ffff00', 'yellow'],
+            ['#cc0066', 'hot pink'],
+            ['#cc6600', 'orange'],
+            ['#00cc66', 'sea green'],
+            ['#6699cc', 'bluetint'],
+            ['#cc6633', 'peach'],
+            ['#33cc33', 'green'],
+            ['#9966cc', 'lilac'],
+            ['#3333cc', 'blue'],
+            ['#cccc00', 'gold'],
+            ['#cc0000', 'red'],
+            ['#cc6666', 'coral'],
+            ['#666666', 'gray'],
+            ['#009999', 'cyan']
 ]
 
 MARKERS = ['*', 'D' , 'H' , 'd' , 'h' , 'o' , 'p' , 's' , 'x']
 graphNames = []
 sampleIDs = []
+COLOUR_OBS = []
+
+def translate_colors():
+    for c in COLOUR:
+        color_obj = Color(c[1],c[0])
+        COLOUR_OBS.append(color_obj)
 
 def parse_rarefaction(lines):
     """Function for parsing rarefaction files specifically for use in
@@ -271,18 +258,15 @@ itype, res, rtype, fpath):
     
     plt.grid(color='gray', linestyle='-')
 
-    ops.sort()
+    ops = natsort(ops)
+    colcycle = cycle([c.toHex() for c in COLOUR_OBS])
     
     for o in ops:
-        #yaxis[o] = [float(v) for v in yaxis[o] if v != 'NA' and v != 0]
         l = o
         if len(o) > 20:
             l = l[:20] + '...'
-        # plt.errorbar(xaxis[:len(yaxis[o])], yaxis[o], \
-        #         yerr=err[o][:len(yaxis[o])], color=colors[o], label=l, \
-        #         marker=syms[o], markersize=4)
         plt.errorbar(xaxis[:len(yaxis[o])], yaxis[o], \
-        yerr=err[o][:len(yaxis[o])], label=l)
+        yerr=err[o][:len(yaxis[o])], label=l, color=colcycle.next())
         
     c = 1
     if len(ops) > 12:
@@ -306,6 +290,7 @@ itype, res, rtype, fpath):
     
 def make_plots(prefs):
     rarelines = []
+    translate_colors()
 
     for r in prefs['rarefactions']:
         file_path = os.path.join(prefs['output_path'], \
