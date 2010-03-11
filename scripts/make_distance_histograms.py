@@ -74,9 +74,8 @@ def main():
         fields = map(strip,fields.split(','))
     elif opts.prefs_file is not None:
         prefs = eval(open(opts.prefs_file, 'U').read())
-        fields = prefs['FIELDS']
-    else:
-        fields = None
+        fields = prefs.get('FIELDS',None)
+
     
     within_distances, between_distances, dmat = \
         group_distances(mapping_file=opts.mapping_file,\
