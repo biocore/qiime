@@ -34,9 +34,12 @@ script_info['required_options']=[\
 
 script_info['version']=__version__
 
-if __name__ == "__main__":
+def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
     out = build_prefs_string(opts.color_by)
     f = open(opts.output_prefs_fp,'w')
     f.write(out)
     f.close()
+
+if __name__ == "__main__":
+    main()
