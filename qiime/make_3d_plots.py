@@ -13,6 +13,10 @@ __status__ = "Pre-release"
 
 from cogent.util.misc import flatten
 from qiime.parse import parse_coords,parse_map,group_by_field
+from qiime.colors import (natsort, data_color_order, data_colors,
+        get_group_colors, color_groups, make_color_dict, combine_map_label_cols,
+        process_colorby, linear_gradient
+        )
 from numpy import array, shape, apply_along_axis, dot, delete, vstack
 import numpy as np
 import os
@@ -21,37 +25,7 @@ import re
 from time import strftime
 
 
-def _natsort_key(item):
-    """Provides normalized version of item for sorting with digits.
-
-    From: 
-    http://lists.canonical.org/pipermail/kragen-hacks/2005-October/000419.html
-    """
-    chunks = re.split('(\d+(?:\.\d+)?)', item)
-    for ii in range(len(chunks)):
-        if chunks[ii] and chunks[ii][0] in '0123456789':
-            if '.' in chunks[ii]: numtype = float
-            else: numtype = int
-            # wrap in tuple with '0' to explicitly specify numbers come first
-            chunks[ii] = (0, numtype(chunks[ii]))
-        else:
-            chunks[ii] = (1, chunks[ii])
-    return (chunks, item)
-
-def natsort(seq):
-    """Sort a sequence of text strings in a reasonable order.
-
-    From: 
-    http://lists.canonical.org/pipermail/kragen-hacks/2005-October/000419.html
-    """
-    alist = list(seq)
-    alist.sort(key=_natsort_key)
-    return alist
-
-data_color_order = ['blue','lime','red','aqua','fuchsia','yellow','green', \
-              'maroon','teal','purple','olive','silver','gray']
-
-data_colors = {
+xdata_colors = {
         'aqua':     (180, 100, 100),
         'blue':     (240,100,100),
         'fuchsia':  (300,100,100),
@@ -125,82 +99,6 @@ def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, custom_axes=Non
 
     return result
 
-def get_group_colors(groups, colors, data_colors, data_color_order):
-    """Figures out group colors. See make_3d_plots for documentation.
-    """
-    added_data_colors = {}
-    leftover_groups = set(groups)
-    if isinstance(colors, dict):
-        #assume we're getting some of the colors out of a dict
-        for k, v in sorted(colors.items()):
-            if k not in groups: #assume is prefix
-                k_matches = [g for g in groups if g.startswith(k)]
-                if isinstance(v, str):  #just set everything to this color
-                    for m in k_matches:
-                        colors[m] = v
-                else:   #assume is new color or range
-                    first, second = v
-                    if isinstance(first, str): #new named color?
-                        if first not in data_colors:
-                            added_data_colors[first] = second
-                        for m in k_matches:
-                            colors[m] = first
-                    else:   #new color range?
-                        ((start_color, start_hsv),(end_color, end_hsv)) \
-                            = first, second
-                        num_colors = len(k_matches)
-                        curr_data_colors = make_color_dict(start_color,
-                            start_hsv,end_color,end_hsv,num_colors)
-                        curr_colors = {}
-                        color_groups(k_matches, curr_colors,
-                            natsort(curr_data_colors))
-                        colors.update(curr_colors)
-                        added_data_colors.update(curr_data_colors)
-                del colors[k]
-            elif not isinstance(v, str):    #assume is new color
-                color_name, hsv = v
-                if color_name not in data_colors:
-                    added_data_colors[color_name] = hsv
-                colors[k] = color_name
-        #handle any leftover groups
-        color_groups(groups, colors, data_color_order)
-        #add new colors
-        data_colors.update(added_data_colors)
-        data_color_order.append(natsort(added_data_colors))
-
-    else:
-        #handle the case where colors is a tuple for gradients
-        ((start_color, start_hsv), (end_color, end_hsv)) = colors
-        num_colors = len(groups)
-        data_colors = make_color_dict(start_color, start_hsv, end_color, 
-            end_hsv, num_colors)
-        data_color_order = list(natsort(data_colors.keys()))
-        colors = {}
-        color_groups(groups, colors, data_color_order)
-
-    return colors, data_colors, data_color_order
-
-        
-def color_groups(groups, colors, data_color_order):
-    """Colors a set of groups in data_color_order, handling special colors.
-    
-    Modifies colors in-place.
-    """
-    group_num=-1
-    for g in natsort(groups):
-        if g not in colors:
-            group_num+=1
-            if group_num==len(data_color_order):
-                group_num=0
-            colors[g] = data_color_order[group_num]
- 
-
-def make_color_dict(start_name, start_hsv, end_name, end_hsv,n):
-    """Makes dict of color gradient"""
-    colors = linear_gradient(start_hsv,end_hsv,n)
-    names = ['%sto%s%s_%s' % (start_name,end_name,n,i) for i in range(n)]
-    return dict(zip(names,colors))
-
 def scale_pc_data_matrix(coords, pct_var):
     """Scales pc data matrix by percent variation"""
 
@@ -255,8 +153,8 @@ def make_mage_output(groups, colors, coord_header, coords, pct_var, custom_axes=
     result.append('@dimminmax '+ ' '.join(map(str, min_maxes)))
     result.append('@master {points}')
     result.append('@master {labels}')
-    for color, (h, s, v) in sorted(data_colors.items()):
-        result.append('@hsvcolor {%s} %3.1f %3.1f %3.1f' % (color, h,s,v))
+    for name, color in sorted(data_colors.items()):
+        result.append(color.toMage())
     # add in white, because it's not used in this file any longer
     result.append('@hsvcolor {white} 180.0 0.0 100.0')
    
@@ -341,19 +239,6 @@ def make_edges_output(coord_dict, edges, num_coords):
                           (' '.join(map(str, pt_to)), which_color))            
     return result
 
-
-def combine_map_label_cols(combinecolorby,mapping):
-    """Merge two or more mapping columns into one column"""
-    combinedmapdata=array(['']*len(mapping),dtype='a100')
-    for p in range(len(combinecolorby)):                    
-        for i in range(len(mapping[0])):
-            if str(combinecolorby[p])==str(mapping[0][i]):
-                for q in range(len(mapping)):
-                    combinedmapdata[q]=combinedmapdata[q]+mapping[q][i]
-    for i in range(len(combinedmapdata)):
-        mapping[i].append(combinedmapdata[i])
-    return mapping
-
 def create_dir(dir_path,plot_type):
     """Creates directory where data is stored.  If directory is not supplied in\
        the command line, a random folder is generated"""
@@ -372,38 +257,6 @@ def create_dir(dir_path,plot_type):
         os.mkdir(dir_path)
 
     return dir_path
-
-def process_colorby(colorby,data,old_prefs=None):
-    """Parses the colorby option from the command line"""
-    prefs = {}
-    mapping=data['map']
-    
-    if colorby=='ALL':
-        colorbydata = mapping[0]
-    elif colorby and colorby != 'ALL':
-        colorbydata = colorby.strip().strip("'").split(',')
-    else:
-        colorbydata = [old_prefs[i]['column'] for i in old_prefs]
-        names = list(old_prefs)
-
-    for j, col in enumerate(colorbydata):
-        key = str(col)
-        if '&&' in col:
-            #Create an array using multiple columns from mapping file
-            combinecolorby=col.split('&&')
-            data['map']=combine_map_label_cols(combinecolorby,mapping)
-            prefs[key]={}
-            prefs[key]['column']=''.join(combinecolorby)
-        else:   
-            #Color by only one column in mapping file      
-            prefs[key]={}
-            prefs[key]['column']=col
-        #transfer over old color data if it was present
-        if old_prefs:
-            if 'colors' in old_prefs[names[j]]:
-                prefs[key]['colors'] = old_prefs[names[j]]['colors']
-
-    return prefs,data
 
 def process_custom_axes(axis_names):
     """Parses the custom_axes option from the command line"""
@@ -529,22 +382,6 @@ def remove_unmapped_samples(mapping,coords,edges=None):
             edge = edges[i]
             if not edge[0] in sample_IDs or not edge[1] in sample_IDs:
                 del(edges[i])
-
-def linear_gradient(start, end, nbins):
-    """Makes linear color gradient from start to end, using nbins.
-    
-    Returns list of (x, y, z) tuples in current colorspace.
-    """
-    start = array(start)
-    end = array(end)
-    result = []
-    n_minus_1 = float(nbins-1)
-    if n_minus_1==0:
-        n_minus_1=0.000000000000000000000001
-    for i in range(nbins):
-        result.append(list((start*(n_minus_1-i)/n_minus_1)+(end*(i/n_minus_1))))
-
-    return result
 
 def generate_3d_plots(prefs, data, custom_axes, dir_path='',data_file_path='', filename=None, \
                 default_filename='out'):
