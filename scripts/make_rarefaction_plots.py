@@ -133,20 +133,26 @@ please check spelling and syntax.'%list(suppliedcats.difference(availablecats)))
         option_parser.error('Inavlid maximum y axis value.')
         exit(0)
 
-    if '/' in argv[0]:
-        prefs['output_path'] = argv[0].rsplit('/',1)[0]+'/'
+    if options.dir_path != '.':
+        if os.path.exists(options.dir_path):
+            prefs['output_path'] = options.dir_path
+        else:
+            try:
+                os.mkdir(options.dir_path)
+                prefs['output_path'] = options.dir_path
+            except(ValueError):
+                option_parser.error('Could not create output directory.')
+                exit(0)
     else:
-        prefs['output_path'] = './'
-    
-    dir_path = options.dir_path
-    dir_path = os.path.join(dir_path,'rarefaction_graphs')
+        dir_path = options.dir_path
+        dir_path = os.path.join(dir_path,'rarefaction_graphs')
 
-    alphabet = "ABCDEFGHIJKLMNOPQRSTUZWXYZ"
-    alphabet += alphabet.lower()
-    alphabet += "01234567890"
-    data_file_path=''.join([choice(alphabet) for i in range(10)])
-    prefs['output_path'] = os.path.join(dir_path,data_file_path)
-    
+        alphabet = "ABCDEFGHIJKLMNOPQRSTUZWXYZ"
+        alphabet += alphabet.lower()
+        alphabet += "01234567890"
+        data_file_path=''.join([choice(alphabet) for i in range(10)])
+        prefs['output_path'] = os.path.join(dir_path,data_file_path)
+        
     outputlines = make_plots(prefs)
     make_output_files(prefs, outputlines, util.get_qiime_project_dir())
 
