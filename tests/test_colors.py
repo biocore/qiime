@@ -13,6 +13,7 @@ __status__ = "Prototype"
 from numpy import array
 from StringIO import StringIO
 from os.path import exists
+from collections import defaultdict
 from cogent.util.unit_test import TestCase, main
 from os import remove
 from random import choice, randrange
@@ -21,7 +22,8 @@ from qiime.colors import (Color, rgb_tuple_to_hsv, mage_hsv_tuple_to_rgb,
     combine_map_label_cols, process_colorby, 
     linear_gradient, natsort, make_color_dict, color_dict_to_objects,
     iter_color_groups, get_group_colors,
-    get_color, )
+    get_color, color_groups,string_to_rgb,
+    get_map,map_from_coords,color_prefs_and_map_data_from_options)
 
 class ColorTests(TestCase):
     """Tests of the Color class"""
@@ -78,8 +80,6 @@ class TopLevelTests(TestCase):
                        -0.088353435]])
         self.groups={}
         self.groups['Day1']=['Sample1','Sample2','Sample3']
-        self.colors={}
-        self.colors['Day1']='blue'
         self.pct_var=array([25.00,30.00,35.00])
         self.coord_tups = [("1", "2"), ("3", "2"), ("1", "3")]
         self.colors={"Day1":"blue"}
@@ -88,8 +88,32 @@ class TopLevelTests(TestCase):
         self.prefs={}
         self.prefs['Sample']={}   
         self.prefs['Sample']['column']="Day"
+       
+        self.dict=defaultdict(list)
+        self.dict['Day1'].append('Sample1')
+        self.dict['Day1'].append('Sample2')
+        self.dict['Day1'].append('Sample3')
+        
+        self.labelname=self.prefs['Sample']['column']
         self.mapping=[["Sample-ID","Day","Type"],["Sample1","Day1","Soil"],\
                       ["Sample2","Day1","Soil"],["Sample3","Day1","Soil"]]
+        self.data_color_hsv = {
+              'aqua':     (180, 100, 100),
+              'blue':     (240,100,100),
+              'fuchsia':  (300,100,100),
+              'gray':     (300,0,50.2),
+              'green':    (120,100,50.2),
+              'lime':     (120,100,100),
+              'maroon':   (0,100,50.2),
+              'olive':    (60,100,50.2),
+              'purple':   (300,100,50.2),
+              'red':      (0,100,100),
+              'silver':   (0, 0, 75.3),
+              'teal':     (180,100,50.2),
+              'yellow':   (60,100,100),
+        }
+        self.data_color_order = ['blue','lime','red','aqua','fuchsia','yellow',\
+                        'green','maroon','teal','purple','olive','silver','gray']
         self._paths_to_clean_up = []
         self._dir_to_clean_up = ''
 
@@ -97,6 +121,15 @@ class TopLevelTests(TestCase):
         map(remove,self._paths_to_clean_up)
         if self._dir_to_clean_up != '':
             shutil.rmtree(self._dir_to_clean_up)
+
+    def test_string_to_rgb(self):
+        """str_to_rgb should accept a hex string and emit tuples on right scale"""
+        strgb = string_to_rgb #for convenience
+        self.assertEqual(strgb('#000000'), (0,0,0))
+        self.assertEqual(strgb('#FFFFFF'), (255,255,255))
+        self.assertEqual(strgb('#F0F0F0'), (240,240,240))
+        self.assertEqual(strgb('#AFF0AA'), (175, 240, 170))
+
 
     def test_rgb_tuple_to_hsv(self):
         """rgb_tuple_to_hsv should accept and emit tuples on right scale"""
@@ -179,11 +212,23 @@ from mapping file to color by"""
 
     def test_iter_color_groups(self):
         """iter_color_groups should iterate over color groups correctly."""
-        self.fail('Not tested yet')
+        
+        data_colors = color_dict_to_objects(self.data_color_hsv)
+        exp=[(self.labelname,self.dict,self.colors,data_colors,self.data_color_order)]
+        
+        obs=iter_color_groups(self.mapping,self.prefs,data_colors,self.data_color_order)
+        obs1=list(obs)
+        
+        self.assertEqual(obs1,exp)
 
     def test_get_group_colors(self):
         """get_group_colors should iterate over color groups correctly."""
-        self.fail('Not tested yet')
+
+        data_colors = color_dict_to_objects(self.data_color_hsv)
+        exp=(self.colors,data_colors,self.data_color_order)
+        obs=get_group_colors(self.groups,self.colors,data_colors,self.data_color_order)
+        
+        self.assertEqual(obs,exp)
 
     def test_get_color(self):
         """get_color should get colors by several means"""
@@ -196,7 +241,12 @@ from mapping file to color by"""
  
     def test_color_groups(self):
         """color_groups should iterate over color groups correctly."""
-        self.fail('Not tested yet')
+        data_colors = color_dict_to_objects(self.data_color_hsv)
+       
+        exp=None
+        obs=color_groups(self.groups,data_colors,self.data_color_order)
+
+        self.assertEqual(obs,exp)
 
     def test_make_color_dict(self):
         """make_color_dict: returns dict of named colors"""
