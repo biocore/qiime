@@ -20,6 +20,7 @@ from qiime.make_3d_plots import generate_3d_plots
 from qiime.parse import parse_map,parse_coords,group_by_field,group_by_fields
 import shutil
 import os
+from qiime.colors import color_prefs_and_map_data_from_options
 from random import choice
 from time import strftime
 from qiime.util import get_qiime_project_dir
@@ -77,34 +78,13 @@ script_info['version'] = __version__
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
-    data = {}
-
+    prefs,data=color_prefs_and_map_data_from_options(opts)
+    
     #Open and get coord data
     data['coord'] = get_coord(opts.coord_fname)
 
-    #Open and get mapping data, if none supplied create a pseudo mapping \
-    #file
-    if opts.map_fname:
-        data['map'] = get_map(opts, data)
-    else:
-        data['map']=(([['#SampleID','Sample']]))
-        for i in range(len(data['coord'][0])):
-            data['map'].append([data['coord'][0][i],'Sample'])
-
     # remove any samples not present in mapping file
     remove_unmapped_samples(data['map'],data['coord'])
-
-    #Determine which mapping headers to color by, if none given, color by all 
-    # columns in map file
-    if opts.prefs_path:
-        prefs = eval(open(opts.prefs_path, 'U').read())
-        prefs, data=process_colorby(None, data, prefs)
-    elif opts.colorby:
-        prefs,data=process_colorby(opts.colorby,data)
-    else:
-        default_colorby = ','.join(data['map'][0])
-        prefs,data=process_colorby(default_colorby,data)
-        prefs={'Sample':{'column':'#SampleID'}}
 
     # process custom axes, if present.
     custom_axes = None
