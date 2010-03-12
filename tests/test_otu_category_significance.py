@@ -13,12 +13,13 @@ __email__ = "lozupone@colorado.edu"
 __status__ = "Pre-release"
 
 from cogent.util.unit_test import TestCase, main
-from qiime.otu_category_significance import parse_otu_table, \
-    parse_category_mapping, filter_OTUs, make_contingency_matrix, \
-    run_single_G_test, run_G_test_OTUs, add_fdr_correction_to_results, \
-    output_results_G_test, run_single_ANOVA, run_ANOVA_OTUs, \
+from qiime.otu_category_significance import filter_OTUs, \
+    make_contingency_matrix, run_single_G_test, run_G_test_OTUs, \
+    add_fdr_correction_to_results, output_results_G_test, \
+    run_single_ANOVA, run_ANOVA_OTUs, \
     output_results_ANOVA, convert_OTU_table_relative_abundance, \
     run_correlation_OTUs, run_single_correlation, output_results_correlation
+from qiime.parse import parse_otu_table
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -41,46 +42,6 @@ class TopLevelTests(TestCase):
 2\t1\t1\t1\tBacteria; Firmicutes; Clostridia; Clostridiales; Faecalibacterium; Unclassified; otu_1121""".split('\n')
         result = convert_OTU_table_relative_abundance(otu_table)
         self.assertEqual(result, ['#Full OTU Counts', '#OTU ID\tsample1\tsample2\tsample3\tConsensus Lineage', '0\t0.0\t0.666666666667\t0.0\tBacteria; Bacteroidetes; Bacteroidales; Parabacteroidaceae; Unclassified; otu_475', '1\t0.5\t0.0\t0.0\tBacteria; Bacteroidetes; Bacteroidales; adhufec77-25; Barnesiella; Barnesiella_viscericola; otu_369', '2\t0.5\t0.333333333333\t1.0\tBacteria; Firmicutes; Clostridia; Clostridiales; Faecalibacterium; Unclassified; otu_1121'])
-
-    def test_parse_otu_table(self):
-        """parse otu_table works"""
-        otu_table = """#Full OTU Counts
-#OTU ID\tsample1\tsample2\tsample3
-0\t0\t2\t0
-1\t1\t0\t0
-2\t1\t1\t1""".split('\n')
-        result, num_samples, taxonomy_info = parse_otu_table(otu_table)
-        self.assertEqual(result['1'], {'sample1': '1', 'sample3': '0', 'sample2': '0'})
-        self.assertEqual(result['0'], {'sample1': '0', 'sample3': '0', 'sample2': '2'})
-        self.assertEqual(result['2'], {'sample1': '1', 'sample3': '1', 'sample2': '1'})
-        self.assertEqual(num_samples, 3)
-        self.assertEqual(taxonomy_info, {})
-
-        #test that it parses otu tables with taxonomy fields appropriately
-        otu_table = """#Full OTU Counts
-#OTU ID\tsample1\tsample2\tsample3\tConsensus Lineage
-0\t0\t2\t0\tBacteria; Bacteroidetes; Bacteroidales; Parabacteroidaceae; Unclassified; otu_475
-1\t1\t0\t0\tBacteria; Bacteroidetes; Bacteroidales; adhufec77-25; Barnesiella; Barnesiella_viscericola; otu_369
-2\t1\t1\t1\tBacteria; Firmicutes; Clostridia; Clostridiales; Faecalibacterium; Unclassified; otu_1121""".split('\n')
-        result, num_samples, taxonomy_info = parse_otu_table(otu_table)
-        self.assertEqual(result['1'], {'sample1': '1', 'sample3': '0', 'sample2': '0'})
-        self.assertEqual(result['0'], {'sample1': '0', 'sample3': '0', 'sample2': '2'})
-        self.assertEqual(result['2'], {'sample1': '1', 'sample3': '1', 'sample2': '1'})
-        self.assertEqual(num_samples, 3)
-        self.assertEqual(taxonomy_info, {'1': 'Bacteria; Bacteroidetes; Bacteroidales; adhufec77-25; Barnesiella; Barnesiella_viscericola; otu_369', '0': 'Bacteria; Bacteroidetes; Bacteroidales; Parabacteroidaceae; Unclassified; otu_475', '2': 'Bacteria; Firmicutes; Clostridia; Clostridiales; Faecalibacterium; Unclassified; otu_1121'})
-
-    def test_parse_category_mapping(self):
-        """parse_category_mapping works"""
-        category_mapping = """#SampleID\tcat1\tcat2
-sample1\tA\t0
-sample2\tB\t8.0
-sample3\tC\t1.0""".split('\n')
-        result, cat_vals = parse_category_mapping(category_mapping, 'cat1')
-        self.assertEqual(result, {'sample1': 'A', 'sample3': 'C', 'sample2': 'B'})
-        self.assertEqual(cat_vals, (['A', 'B', 'C']))
-        result, cat_vals = parse_category_mapping(category_mapping, 'cat2', threshold=5.0)
-        self.assertEqual(result, {'sample1': '0', 'sample3': '0', 'sample2': '1'})
-        self.assertEqual(cat_vals, (['0', '1']))
 
     def test_filter_OTUs(self):
         """filter_OTUs works"""

@@ -541,5 +541,76 @@ def parse_sample_mapping(lines):
         OTU_sample_info[OTU_name][sample_name] = count
     return OTU_sample_info, all_sample_names
 
+def parse_otu_table(otu_table):
+    """parse otu_file to get dict of OTU names mapped to sample:count dicts
+    
+    if taxonomic information is in there also returns a dict mapping OTU_names
+        to taxonomy info.
+    also returns the number of samples
+    """
+    result = {}
+    taxonomy_info = {}
+    for line in otu_table:
+        if line.startswith('#OTU ID'):
+            sample_names = line.strip().split('\t')
+            if not sample_names[-1] == 'Consensus Lineage':
+                num_samples = len(sample_names) - 1
+                taxonomy = True
+            else:
+                num_samples = len(sample_names) - 2
+                taxonomy = False
+        elif line and not line.startswith('#'):
+            line = line.strip().split('\t')
+            OTU_name = line[0]
+            result[OTU_name] = {}
+            if taxonomy:
+                for index, sample in enumerate(sample_names):
+                    if index != 0:
+                        result[OTU_name][sample] = line[index]
+            else:
+                for index, sample in enumerate(sample_names):
+                    if index != 0 and index != len(sample_names) -1:
+                        result[OTU_name][sample] = line[index]
+                taxonomy_info[OTU_name] = line[-1]
+    return result, num_samples, taxonomy_info
+
+def parse_category_mapping(category_mapping, category, threshold=None):
+    """parse category mapping file
+    
+    returns a dict mapping the sample name to the value of category
+    
+    also returns a list of category values
+
+    If a numerical threshold is specified, converts to 1 or 0 depending on 
+    whether the value is below that threshold.
+    
+    categories can have categorical or continuous data"""
+    result = {}
+    if threshold and threshold != 'None':
+        category_values = ['0', '1']
+    else:
+        category_values = []
+    
+    for line in category_mapping:
+        if line.startswith("#SampleID"):
+            line = line.strip().split('\t')
+            category_index = line.index(category)
+        elif not line.startswith('#'):
+            line = line.strip().split('\t')
+            sample_name = line[0]
+            if threshold and threshold != 'None':
+                val = float(line[category_index])
+                if val > threshold:
+                    result[sample_name] = '1'
+                else:
+                    result[sample_name] = '0'
+            else:
+                category_val = line[category_index]
+                result[sample_name] = category_val
+                if category_val not in category_values:
+                    category_values.append(category_val)
+    return result, category_values
+
+
 # End functions for handling qiime_parameters file
 

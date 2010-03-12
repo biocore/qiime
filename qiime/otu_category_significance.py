@@ -21,14 +21,9 @@ from cogent.maths.stats.test import calc_contingency_expected, G_fit_from_Dict2D
 from cogent.maths.stats.util import Numbers
 from numpy import array
 import sys
+from qiime.parse import parse_otu_table, parse_category_mapping
 
-usage_str = """usage: %prog [-o output_file] {-i OTU table, -m category mapping -f filter -c category, -t None}
-
-[] indicates optional input (order unimportant)
-{} indicates required input (order unimportant)
-
-Example usage:
-    Look for OTUs that are associated with a category. Currently can do:
+"""Look for OTUs that are associated with a category. Currently can do:
     1) perform g-test of independence to determine whether OTU presence
     absence is associated with a category in the mapping file. Can
     be used to look for co-occurrence using qPCR data or to look for 
@@ -37,98 +32,7 @@ Example usage:
     different across a category
     3) perform a pearson correlation to determine whether OTU abundance is
     associated with a continuous variable in the category mapping file (e.g. pH)
-
-python ~/repo/Qiime/qiime/otu_category_significance.py -i otu_table.txt, -m category_mapping.txt -s g_test -f 10 -c category name -o output_fp -t None
 """
-
-def parse_command_line_parameters():
-    """ Parses command line arguments """
-    usage = usage_str
-    version = 'Version: %prog ' + __version__
-    parser = OptionParser(usage=usage, version=version)
-
-    # A binary 'verbose' flag
-    parser.add_option('-v','--verbose',action='store_true',\
-        dest='verbose',help='Print information during execution -- '+\
-        'useful for debugging [default: %default]')
-
-    parser.add_option('-i','--otu_table_fp', dest='otu_table_fp',\
-        help='path to the otu table [REQUIRED]')
-
-    parser.add_option('-m','--category_mapping_fp',\
-        dest='category_mapping_fp',\
-        help='path to category mapping file [REQUIRED]')
-
-    parser.add_option('-c','--category', dest='category',\
-        help='name of category over which to run the analysis [REQUIRED]')
-    
-    parser.add_option('-s','--test', dest='test', default='g_test',\
-        help='the type of statistical test to run. options are: ' +\
-            'g_test: g test of independence: determines whether OTU ' +\
-                'presence/absence is associated with a category \n' +\
-            'ANOVA: determines whether OTU abundance is associated with a ' +\
-                'category \n'
-            'correlation: determines whether OTU abundance is correlated ' +\
-                'with a continuous variable in the category mapping file ' +\
-                '(e.g. temperature or pH)')
-    
-    parser.add_option('-o','--output_fp', dest='output_fp', \
-        default= 'otu_category_test_results.txt',\
-        help='path to output file. otu_category_test_results.txt by default')
-
-    parser.add_option('-f','--filter', dest='filter',\
-        default= 10, \
-        help='minimum number of samples that must contain the OTU for the ' +\
-        'OTU to be included in the analysis. default value=10.')
-    
-    parser.add_option('-t','--threshold', dest='threshold', default=None, \
-        help='threshold under which to consider something absent: ' +\
-        'Only used if you have numerical data that should be converted to ' +\
-        'present or absent based on a threshold. Should be None for ' +\
-        'categorical data. default value is None')
-    # Set default values here if they should be other than None
-    parser.set_defaults(verbose=False)
-
-    required_options = ['otu_table_fp', 'category_mapping_fp', 'category']
-
-    opts,args = parser.parse_args()
-    
-    for option in required_options:
-        if eval('opts.%s' % option) == None:
-            parser.error('Required option --%s omitted.' % option) 
-
-    return opts,args
-
-def parse_otu_table(otu_table):
-    """parse otu_file to get dict of OTU names mapped to sample:count dicts
-    
-    if taxonomic information is in there parses that too
-    """
-    result = {}
-    taxonomy_info = {}
-    for line in otu_table:
-        if line.startswith('#OTU ID'):
-            sample_names = line.strip().split('\t')
-            if not sample_names[-1] == 'Consensus Lineage':
-                num_samples = len(sample_names) - 1
-                taxonomy = True
-            else:
-                num_samples = len(sample_names) - 2
-                taxonomy = False
-        elif line and not line.startswith('#'):
-            line = line.strip().split('\t')
-            OTU_name = line[0]
-            result[OTU_name] = {}
-            if taxonomy:
-                for index, sample in enumerate(sample_names):
-                    if index != 0:
-                        result[OTU_name][sample] = line[index]
-            else:
-                for index, sample in enumerate(sample_names):
-                    if index != 0 and index != len(sample_names) -1:
-                        result[OTU_name][sample] = line[index]
-                taxonomy_info[OTU_name] = line[-1]
-    return result, num_samples, taxonomy_info
 
 def convert_OTU_table_relative_abundance(otu_table):
     """converts the OTU table to have relative abundances rather than raw counts
@@ -168,43 +72,6 @@ def convert_OTU_table_relative_abundance(otu_table):
             line.append(tax_strings[index])
         output.append('\t'.join(line))
     return output
-
-def parse_category_mapping(category_mapping, category, threshold=None):
-    """parse category mapping file
-    
-    returns a dict mapping the sample name to the value of category
-    
-    also returns a list of category values
-
-    If a numerical threshold is specified, converts to 1 or 0 depending on 
-    whether the value is below that threshold.
-    
-    categories can have categorical or continuous data"""
-    result = {}
-    if threshold and threshold != 'None':
-        category_values = ['0', '1']
-    else:
-        category_values = []
-    
-    for line in category_mapping:
-        if line.startswith("#SampleID"):
-            line = line.strip().split('\t')
-            category_index = line.index(category)
-        elif not line.startswith('#'):
-            line = line.strip().split('\t')
-            sample_name = line[0]
-            if threshold and threshold != 'None':
-                val = float(line[category_index])
-                if val > threshold:
-                    result[sample_name] = '1'
-                else:
-                    result[sample_name] = '0'
-            else:
-                category_val = line[category_index]
-                result[sample_name] = category_val
-                if category_val not in category_values:
-                    category_values.append(category_val)
-    return result, category_values
 
 def filter_OTUs(OTU_sample_info, filter, num_samples=None, all_samples=True,\
                 category_mapping_info=None):
