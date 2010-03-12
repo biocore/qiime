@@ -126,11 +126,12 @@ class TopLevelTests(TestCase):
         """combine_map_label_cols: Combine two or more columns from the \
 mapping file"""
         self.combinecolorby=['Day','Type']
-
-        exp=[["Sample-ID","Day","Type","DayType"],\
+        
+        exp=[["Sample-ID","Day","Type","Day&&Type"],\
              ["Sample1","Day1","Soil","Day1Soil"],\
              ["Sample2","Day1","Soil","Day1Soil"],\
              ["Sample3","Day1","Soil","Day1Soil"]]
+        
         obs=combine_map_label_cols(self.combinecolorby,self.mapping)
 
         self.assertEqual(obs,exp)
@@ -204,18 +205,6 @@ from mapping file to color by"""
                 'redtowhite3_1':[0,50,100],
                 'redtowhite3_2':[0,0,100],
             })
-
-    def test_combine_map_label_cols(self):
-        """combine_map_label_cols: should combine columns from mapping file"""
-        self.combinecolorby=['Day','Type']
-
-        exp=[["Sample-ID","Day","Type","DayType"],\
-             ["Sample1","Day1","Soil","Day1Soil"],\
-             ["Sample2","Day1","Soil","Day1Soil"],\
-             ["Sample3","Day1","Soil","Day1Soil"]]
-        obs=combine_map_label_cols(self.combinecolorby,self.mapping)
-
-        self.assertEqual(obs,exp)
 
     def test_process_colorby(self):
         """process_colorby: parses the cmd line and determines which columns \
