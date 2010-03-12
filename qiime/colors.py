@@ -187,7 +187,7 @@ def get_group_colors(groups, colors, data_colors, data_color_order):
     The current method for gradient coloring of columns (should perhaps
     replace with more general method) is to pass in any of the following:
 
-    'colors':(('white', (0,100,100)),('red',(100,100,100)))
+    'colors':(('white', (0,0,100)),('red',(0,100,100)))
 
     makes gradient between white and red, applies to all samples
 
@@ -245,6 +245,8 @@ def get_group_colors(groups, colors, data_colors, data_color_order):
     else:
         #handle the case where colors is a tuple for gradients
         start_color, end_color = map(get_color, colors)
+        start_hsv=start_color.Coords
+        end_hsv=end_color.Coords
         num_colors = len(groups)
         data_colors = color_dict_to_objects(
             make_color_dict(start_color, start_hsv, end_color, 
@@ -259,6 +261,7 @@ def get_color(color, data_colors=data_colors):
     """Gets a color by looking up its name or initializing with name+data"""
     if isinstance(color, str):
         if color in data_colors:
+            
             return data_colors[color]
         else:
             raise ValueError, "Color name %s in prefs not recognized" % color
@@ -294,48 +297,89 @@ def make_color_dict(start_name, start_hsv, end_name, end_hsv,n):
 def combine_map_label_cols(combinecolorby,mapping):
     """Merge two or more mapping columns into one column"""
     combinedmapdata=array(['']*len(mapping),dtype='a100')
+    title=[]
+    match=False
     for p in range(len(combinecolorby)):                    
         for i in range(len(mapping[0])):
             if str(combinecolorby[p])==str(mapping[0][i]):
+                match=True
                 for q in range(len(mapping)):
                     combinedmapdata[q]=combinedmapdata[q]+mapping[q][i]
+                break
+            else:
+                match=False
+        if not match:
+            raise ValueError, 'One of the columns you tried to combine does not exist!'
+        title.append(combinecolorby[p])
+    combinedmapdata[0]='&&'.join(title)
     for i in range(len(combinedmapdata)):
         mapping[i].append(combinedmapdata[i])
+    
     return mapping
 
-def process_colorby(colorby,data,old_prefs=None):
+def process_colorby(colorby,data,color_prefs=None):
     """Parses the colorby option from the command line.
 
-    old_prefs is required if colorby is not passed.
+    color_prefs is required if colorby is not passed.
     """
+    match=False
     prefs = {}
     mapping=data['map']
-
+    colorbydata=[]
     if colorby=='ALL':
         colorbydata = mapping[0]
+    elif colorby and color_prefs:
+        prefs_colorby = [color_prefs[i]['column'] for i in color_prefs]
+        cmd_colorby=colorby.strip().strip("'").split(',')
+        
+        for i in range(len(cmd_colorby)):
+            for j in range(len(prefs_colorby)):
+                if cmd_colorby[i]==prefs_colorby[j]:
+                    colorbydata.append(prefs_colorby[j])
+                    match=True
+                    break
+                else:
+                    match=False
+            if not match:
+                colorbydata.append(cmd_colorby[i])
+        names = list(colorbydata)
     elif colorby and colorby != 'ALL':
         colorbydata = colorby.strip().strip("'").split(',')
     else:
-        colorbydata = [old_prefs[i]['column'] for i in old_prefs]
-        names = list(old_prefs)
-
+        colorbydata = [color_prefs[i]['column'] for i in color_prefs]
+        names = list(color_prefs)
+    
+    match=False
     for j, col in enumerate(colorbydata):
         key = str(col)
+        #transfer over old color data if it was present
         if '&&' in col:
             #Create an array using multiple columns from mapping file
             combinecolorby=col.split('&&')
             data['map']=combine_map_label_cols(combinecolorby,mapping)
             prefs[key]={}
-            prefs[key]['column']=''.join(combinecolorby)
+            prefs[key]['column']='&&'.join(combinecolorby)
         else:
             #Color by only one column in mapping file      
             prefs[key]={}
             prefs[key]['column']=col
-        #transfer over old color data if it was present
-        if old_prefs:
-            if 'colors' in old_prefs[names[j]]:
-                prefs[key]['colors'] = old_prefs[names[j]]['colors']
-
+            
+        if color_prefs:
+            for p in color_prefs:
+                if 'column' in color_prefs[p] and color_prefs[p]['column']==col:
+                    if 'colors' in color_prefs[p]:
+                        prefs[key]['colors'] = color_prefs[p]['colors']
+                    else:
+                        prefs[key]['colors'] = (('white', (0,0,100)),('red',(0,100,100)))
+                    match=True
+                    break
+                else:
+                    match=False
+            if not match:
+                prefs[key]={}
+                prefs[key]['column']=col
+                prefs[key]['colors'] = (('white', (0,0,100)),('red',(0,100,100)))
+                
     return prefs,data
 
 
@@ -391,15 +435,18 @@ def color_prefs_and_map_data_from_options(options):
 
     #Open and get mapping data, if none supplied create a pseudo mapping \
     #file
-    if options.map_fname:
-        data['map'] = get_map(options, data)
-    else:
-        data['map'] = [[]]  #need to set some other way from sample ids
+
+    data['map'] = get_map(options, data)
+    #need to set some other way from sample ids
     #Determine which mapping headers to color by, if none given, color by \
     #Sample ID's
-    if options.prefs_path:
+        
+    if options.prefs_path and options.colorby:
         prefs = eval(open(options.prefs_path, 'U').read())
-        prefs, data=process_colorby(None, data, prefs)
+        prefs, data=process_colorby(options.colorby, data, prefs['sample_coloring'])
+    elif options.prefs_path:
+        prefs = eval(open(options.prefs_path, 'U').read())
+        prefs, data=process_colorby(None, data, prefs['sample_coloring'])
     elif options.colorby:
         prefs,data=process_colorby(options.colorby,data)
     else:
