@@ -161,7 +161,7 @@ class TopLevelTests(TestCase):
 mapping file"""
         self.combinecolorby=['Day','Type']
 
-        exp=[["Sample-ID","Day","Type","DayType"],\
+        exp=[["Sample-ID","Day","Type","Day&&Type"],\
              ["Sample1","Day1","Soil","Day1Soil"],\
              ["Sample2","Day1","Soil","Day1Soil"],\
              ["Sample3","Day1","Soil","Day1Soil"]]
