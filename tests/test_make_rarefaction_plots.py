@@ -62,20 +62,20 @@ class makeRarefactionPlotsTests(TestCase):
                                     '234':0.42876999999999993,
                                     '345':7.8230333333333322}
     
-    def test_parse_rarefaction_record1(self):
-        test = parse_rarefaction_record(self.rarefactionline1)
-        self.assertEqual(test, self.rarefactiondata1)
-    
-    def test_parse_rarefaction_record2(self):
-        test = parse_rarefaction_record(self.rarefactionline2)
-        self.assertEqual(test, self.rarefactiondata2)
-    
-    def test_parse_rarefaction(self):
-        test_col_headers, test_comments, test_rarefaction_fns, test_rarefaction_data = parse_rarefaction(self.rarefactionfile)
-        self.assertEqual(test_col_headers, self.col_headers)
-        self.assertEqual(test_comments, self.comments)
-        self.assertEqual(test_rarefaction_fns, self.rarefaction_fns)
-        self.assertEqual(test_rarefaction_data, self.rarefaction_data)
+    # def test_parse_rarefaction_record1(self):
+    #     test = parse_rarefaction_record(self.rarefactionline1)
+    #     self.assertEqual(test, self.rarefactiondata1)
+    # 
+    # def test_parse_rarefaction_record2(self):
+    #     test = parse_rarefaction_record(self.rarefactionline2)
+    #     self.assertEqual(test, self.rarefactiondata2)
+    # 
+    # def test_parse_rarefaction(self):
+    #     test_col_headers, test_comments, test_rarefaction_fns, test_rarefaction_data = parse_rarefaction(self.rarefactionfile)
+    #     self.assertEqual(test_col_headers, self.col_headers)
+    #     self.assertEqual(test_comments, self.comments)
+    #     self.assertEqual(test_rarefaction_fns, self.rarefaction_fns)
+    #     self.assertEqual(test_rarefaction_data, self.rarefaction_data)
         
     def test_get_rarefaction_data(self):
         #rarefaction_data, col_headers
