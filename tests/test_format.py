@@ -81,7 +81,7 @@ class TopLevelTests(TestCase):
         
         #Try with correctly formatted color_by_string
         color_by_string = 'First,Second'
-        exp_string = """{\n\t'First':\n\t{\n\t\t'column':'First',\n\t\t'colors':(('red',(0,100,100)),('blue',(240,100,100)))\n\t},\n\t'Second':\n\t{\n\t\t'column':'Second',\n\t\t'colors':(('red',(0,100,100)),('blue',(240,100,100)))\n\t}\n}"""
+        exp_string = """{\n'sample_coloring':\n\t{\n\t\t'First':\n\t\t{\n\t\t\t'column':'First',\n\t\t\t'colors':(('red',(0,100,100)),('blue',(240,100,100)))\n\t\t},\n\t\t'Second':\n\t\t{\n\t\t\t'column':'Second',\n\t\t\t'colors':(('red',(0,100,100)),('blue',(240,100,100)))\n\t\t}\n\t}\n}"""
         obs_string = build_prefs_string(color_by_string)
         self.assertEqual(obs_string,exp_string)
         
