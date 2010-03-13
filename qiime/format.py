@@ -103,10 +103,10 @@ def build_prefs_string(color_by_string):
     if not color_by_string:
         return ''
     fields = color_by_string.split(',')
-    l = ['{']
+    l = ["{\n'sample_coloring':\n\t{"]
     first = True
     entry_string = \
-     "\t'%s':\n\t{\n\t\t'column':'%s',\n\t\t'colors':(('red',(0,100,100)),('blue',(240,100,100)))\n\t}"
+     "\t\t'%s':\n\t\t{\n\t\t\t'column':'%s',\n\t\t\t'colors':(('red',(0,100,100)),('blue',(240,100,100)))\n\t\t}"
     for field in fields:
         if first:
             first=False
@@ -114,7 +114,7 @@ def build_prefs_string(color_by_string):
         else:
             l.append(',\n')
         l.append(entry_string % (field, field))
-    l.append('\n}')
+    l.append('\n\t}\n}')
     return ''.join(l)
 
 def format_map_file(headers, id_map, desc_key, sample_id_key, \
