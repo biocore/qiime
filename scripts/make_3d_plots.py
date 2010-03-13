@@ -20,7 +20,7 @@ from qiime.make_3d_plots import generate_3d_plots
 from qiime.parse import parse_map,parse_coords,group_by_field,group_by_fields
 import shutil
 import os
-from qiime.colors import color_prefs_and_map_data_from_options
+from qiime.colors import sample_color_prefs_and_map_data_from_options
 from random import choice
 from time import strftime
 from qiime.util import get_qiime_project_dir
@@ -46,6 +46,8 @@ script_info['script_usage'].append(("""""","""As an alternative, the user can su
 
 If the user wants to color by using the prefs file (e.g. prefs.txt), they can use the following code:""","""%prog -i beta_div_coords.txt -m Mapping_file.txt -p prefs.txt
 """))
+script_info['script_usage'].append(("""Background Color Example:""","""If the user would like to color the background white they can use the '-k' option as follows:""","""%prog -i beta_div_coords.txt -m Mapping_file.txt -b ALL -k white"""))
+
 script_info['output_description']="""By default, the script will plot the first three dimensions in your file. Other combinations can be viewed using the "Views:Choose viewing axes" option in the KiNG viewer (Chen, Davis, & Richardson, 2009), which may require the installation of kinemage software. The first 10 components can be viewed using "Views:Paralled coordinates" option or typing "/". The mouse can be used to modify display parameters, to click and rotate the viewing axes, to select specific points (clicking on a point shows the sample identity in the low left corner), or to select different analyses (upper right window). Although samples are most easily viewed in 2D, the third dimension is indicated by coloring each sample (dot/label) along a gradient corresponding to the depth along the third component (bright colors indicate points close to the viewer)."""
 script_info['required_options']=[\
 make_option('-i', '--coord_fname', dest='coord_fname', \
@@ -70,6 +72,8 @@ plotting time-series data [default: %default]'),
  make_option('-p', '--prefs_path',help='This is the user-generated preferences \
 file. NOTE: This is a file with a dictionary containing preferences for the \
 analysis [default: %default]'),
+ make_option('-k', '--background_color',help='This is the background color to \
+use in the plots (Options are \'black\' or \'white\'. [default: %default]'),
  options_lookup['output_dir']
 ]
 
@@ -78,7 +82,8 @@ script_info['version'] = __version__
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
-    prefs,data=color_prefs_and_map_data_from_options(opts)
+    prefs, data, background_color, label_color= \
+                            sample_color_prefs_and_map_data_from_options(opts)
     
     #Open and get coord data
     data['coord'] = get_coord(opts.coord_fname)
@@ -125,7 +130,8 @@ def main():
         action = None
     #Place this outside try/except so we don't mask NameError in action
     if action:
-        action(prefs, data, custom_axes, dir_path, data_file_path,filename)
+        action(prefs,data,custom_axes,background_color,label_color,dir_path, \
+                data_file_path,filename)
 
 
 if __name__ == "__main__":

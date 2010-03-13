@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 #file colors.py
 
-__author__ = "Rob Knight"
+__author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2009, the PyCogent Project" #consider project name
 __credits__ = ["Rob Knight","Jesse Stombaugh"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "0.1"
-__maintainer__ = "Rob Knight"
-__email__ = "rob@spotcolorado.edu"
+__maintainer__ = "Jesse Stombaugh"
+__email__ = "jesse.stombaugh@colorado.edu"
 __status__ = "Prototype"
 
 """Code for coloring series based on prefs file.
@@ -190,7 +190,7 @@ def get_group_colors(groups, colors, data_colors, data_color_order):
     'colors':(('white', (0,0,100)),('red',(0,100,100)))
 
     makes gradient between white and red, applies to all samples
-
+    
     'colors':{'RK':(('white',(0,0,100)),('red',(0,100,100))),
               'NF':(('white',(120,0,100)),('green',(120,100,100)))
              }
@@ -203,6 +203,7 @@ def get_group_colors(groups, colors, data_colors, data_color_order):
     - data_colors: dict of {color_name:color_object}
     - data_color_order: order in which the data colors are used/written.
     """
+    
     added_data_colors = {}
     if isinstance(colors, dict):
         #assume we're getting some of the colors out of a dict
@@ -421,7 +422,7 @@ def map_from_coords(coords):
     for i in range(len(data['coord'][0])):
             data['map'].append([data['coord'][0][i],'Sample'])
 
-def color_prefs_and_map_data_from_options(options):
+def sample_color_prefs_and_map_data_from_options(options):
     """Returns color prefs and mapping data based on options.
     
     Note: opens files as needed. Only returns the info related to metadata
@@ -440,17 +441,34 @@ def color_prefs_and_map_data_from_options(options):
     #need to set some other way from sample ids
     #Determine which mapping headers to color by, if none given, color by \
     #Sample ID's
-        
-    if options.prefs_path and options.colorby:
+    
+    if options.prefs_path:
         prefs = eval(open(options.prefs_path, 'U').read())
-        prefs, data=process_colorby(options.colorby, data, prefs['sample_coloring'])
-    elif options.prefs_path:
-        prefs = eval(open(options.prefs_path, 'U').read())
-        prefs, data=process_colorby(None, data, prefs['sample_coloring'])
-    elif options.colorby:
-        prefs,data=process_colorby(options.colorby,data)
+        if prefs.has_key('background_color'):
+            background_color= prefs['background_color']
+        else:
+            background_color='black'
     else:
-        prefs={'Sample':{'column':'#SampleID'}}
+        background_color='black'
+    
+    if options.prefs_path and options.background_color:
+        background_color=options.background_color
+    elif options.background_color:
+        background_color=options.background_color
 
-    return prefs, data
+    if background_color=='black':
+        label_color=' white'
+    else:
+        label_color=' black'
+    
+    if options.prefs_path and options.colorby:
+        color_prefs, data=process_colorby(options.colorby, data, prefs['sample_coloring'])
+    elif options.prefs_path:
+        color_prefs, data=process_colorby(None, data, prefs['sample_coloring'])
+    elif options.colorby:
+        color_prefs,data=process_colorby(options.colorby,data)
+    else:
+        color_prefs={'Sample':{'column':'#SampleID'}}
+
+    return color_prefs,data,background_color,label_color
 

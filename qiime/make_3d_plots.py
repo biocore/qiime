@@ -15,8 +15,7 @@ from cogent.util.misc import flatten
 from qiime.parse import parse_coords,parse_map,group_by_field
 from qiime.colors import (natsort, data_color_order, data_colors,
         get_group_colors, color_groups, make_color_dict, combine_map_label_cols,
-        process_colorby, linear_gradient
-        )
+        process_colorby, linear_gradient,iter_color_groups,get_map)
 from numpy import array, shape, apply_along_axis, dot, delete, vstack
 import numpy as np
 import os
@@ -24,7 +23,7 @@ from random import choice
 import re
 from time import strftime
 
-
+'''
 xdata_colors = {
         'aqua':     (180, 100, 100),
         'blue':     (240,100,100),
@@ -40,7 +39,7 @@ xdata_colors = {
         'teal':     (180,100,50.2),
         'yellow':   (60,100,100),
 }
-
+'''
 kinemage_colors = ['hotpink','blue', 'lime','gold', \
                        'red','sea','purple','green']
 
@@ -48,8 +47,10 @@ class MissingFileError(IOError):
     pass
 
 
-def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, custom_axes=None, data_colors=
-    data_colors, data_color_order=data_color_order, edges=None):
+def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, \
+                    background_color,label_color,custom_axes=None, \
+                    data_colors=data_colors,data_color_order=data_color_order, \
+                    edges=None):
     """Makes 3d plots given coords, mapping file, and prefs.
     
     Added quick-and-dirty hack for gradient coloring of columns, should
@@ -71,31 +72,24 @@ def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, custom_axes=Non
     result = []
     #Iterate through prefs and color by given mapping labels
     #Sort by the column name first
-    item_list = prefs.items()
-    item_list.sort()
-    for name, p in item_list:
-        col_name = p['column']
-        if 'colors' in p:
-            if isinstance(p['colors'], dict):
-                colors = p['colors'].copy()    #copy so we can mutate
-            else:
-                colors = p['colors'][:]
-        else:
-            colors={}
-        labelname=prefs[name]['column']
-        
-        #Define groups and associate appropriate colors to each group
-        groups = group_by_field(mapping, col_name)
-        colors, data_colors, data_color_order = \
-            get_group_colors(groups, colors, data_colors, data_color_order)
-       
+    groups_and_colors=iter_color_groups(mapping,prefs,data_colors, \
+                                        data_color_order)
+    groups_and_colors=list(groups_and_colors)
+
+    for i in range(len(groups_and_colors)):  
         #Write to kinemage file using the groups, colors and coords 
+        labelname=groups_and_colors[i][0]
+        groups=groups_and_colors[i][1]
+        colors=groups_and_colors[i][2]
+        data_colors=groups_and_colors[i][3]
+        data_color_order=groups_and_colors[i][4]
+        
         result.extend(make_mage_output(groups, colors, coord_header, coords, \
-            pct_var, custom_axes, labelname,scaled=False, \
-            data_colors=data_colors, edges=edges))
+            pct_var,background_color,label_color,custom_axes,name=labelname, \
+            scaled=False, data_colors=data_colors, edges=edges))
         result.extend(make_mage_output(groups, colors, coord_header, coords, \
-            pct_var, custom_axes, labelname,scaled=True, \
-            data_colors=data_colors, edges=edges))
+            pct_var,background_color,label_color,custom_axes,name=labelname, \
+            scaled=True, data_colors=data_colors, edges=edges))
 
     return result
 
@@ -111,12 +105,13 @@ def auto_radius(coords,ratio=0.01):
     
     return ratio*range
 
-def make_mage_output(groups, colors, coord_header, coords, pct_var, custom_axes=None,name='', \
-    radius=None, alpha=.75, num_coords=10,scaled=False, coord_scale=1.05,
-    data_colors=data_colors, edges=None):
+def make_mage_output(groups, colors, coord_header, coords, pct_var, \
+                     background_color,label_color,custom_axes=None,name='', \
+                     radius=None, alpha=.75, num_coords=10,scaled=False, \
+                     coord_scale=1.05, data_colors=data_colors, edges=None):
     """Convert groups, colors, coords and percent var into mage format"""
     result = []
- 
+    
     #Scale the coords and generate header labels
     if scaled:
         scalars = pct_var
@@ -130,7 +125,6 @@ def make_mage_output(groups, colors, coord_header, coords, pct_var, custom_axes=
         
     if radius is None:
         radius = auto_radius(coords)
-
 
     maxes = coords.max(0)[:num_coords]
     mins = coords.min(0)[:num_coords]
@@ -153,23 +147,29 @@ def make_mage_output(groups, colors, coord_header, coords, pct_var, custom_axes=
     result.append('@dimminmax '+ ' '.join(map(str, min_maxes)))
     result.append('@master {points}')
     result.append('@master {labels}')
+            
     for name, color in sorted(data_colors.items()):
         result.append(color.toMage())
-    # add in white, because it's not used in this file any longer
-    result.append('@hsvcolor {white} 180.0 0.0 100.0')
+
+    if background_color=='white':
+        result.append('@whitebackground')
+        result.append('@hsvcolor {black} 0.0 0.0 0.0')
+    else:
+        result.append('@hsvcolor {white} 180.0 0.0 100.0')
    
     #Write the groups, colors and coords
     coord_dict = dict(zip(coord_header, coords))
     for group_name in natsort(groups):
         ids = groups[group_name]
         result.append('@group {%s (n=%s)} collapsible' % (group_name, len(ids)))
+
         color = colors[group_name]
         coord_lines = []
         for id_ in sorted(ids):
             if id_ in coord_dict:
                 coord_lines.append('{%s} %s' % \
                     (id_, ' '.join(map(str, coord_dict[id_][:num_coords]))))
-
+        
         result.append('@balllist color=%s radius=%s alpha=%s dimension=%s \
 master={points} nobutton' % (color, radius, alpha, num_coords))
         result.append('\n'.join(coord_lines))
@@ -191,29 +191,31 @@ master={labels} nobutton' % (color, radius, alpha, num_coords))
             state = 'off'            
         result.append('@vectorlist {%s line} dimension=%s %s' % \
             (axis_names[i], num_coords, state))
-        result.append(' '.join(map(str, axis_mins)) + ' white')
+            
+        result.append(' '.join(map(str, axis_mins)) + label_color)
         end = axis_mins.copy()
         end[i] = axis_maxes[i]
-        result.append(' '.join(map(str, end)) + ' white')
+        result.append(' '.join(map(str, end)) + label_color)
         end[i] *= coord_scale  #add scale factor to offset labels a little
+            
         if i < len(custom_axes):
             result.append('@labellist {%s} dimension=%s %s' % \
                               (axis_names[i], num_coords, state)) 
             result.append( ('{%s}' % (axis_names[i]))  + \
-                               ' '.join(map(str, end)) + ' white')
+                               ' '.join(map(str, end)) + label_color)
         else:
             pct = pct_var[i-len(custom_axes)]
             result.append('@labellist {%s (%0.2g%%)} dimension=%s %s' % \
                               (axis_names[i], pct, num_coords, state))
             result.append( ('{%s (%0.2g%%)}' % (axis_names[i], pct))  + \
-                               ' '.join(map(str, end)) + ' white')
+                               ' '.join(map(str, end)) + label_color)
 
     #Write edges if requested
     if edges:
-        result += make_edges_output(coord_dict, edges, num_coords)
+        result += make_edges_output(coord_dict, edges, num_coords,label_color)
     return result
 
-def make_edges_output(coord_dict, edges, num_coords):
+def make_edges_output(coord_dict, edges, num_coords,label_color):
     """creates make output to display edges (as a kinemage vectorlist)"""
     result = []
     result.append('@vectorlist {edges} dimension=%s on' % \
@@ -228,10 +230,10 @@ def make_edges_output(coord_dict, edges, num_coords):
         pt_to = coord_dict[id_to][:num_coords]
         diffs = (pt_to-pt_fr) * .66
         middles = pt_fr + diffs
-        result.append('%s white' % \
-                          (' '.join(map(str, pt_fr))))
-        result.append('%s white P' % \
-                          (' '.join(map(str, middles))))
+        result.append('%s%s' % \
+                          (' '.join(map(str, pt_fr)),label_color))
+        result.append('%s%s P' % \
+                          (' '.join(map(str, middles)),label_color))
         
         result.append('%s %s' % \
                           (' '.join(map(str, middles)), which_color))
@@ -317,15 +319,6 @@ def _make_path(paths):
 
 #The following functions were not unit_tested, however the parts within
 #the functions are unit_tested
-def get_map(options, data):
-    """Opens and returns mapping data"""
-    try:
-        map_f = open(options.map_fname, 'U').readlines()
-    except (TypeError, IOError):
-        raise MissingFileError, 'Mapping file required for this analysis'
-    data['map'] = parse_map(map_f)
-    return data['map']
-
 def get_sample_ids(maptable):
     """Extracts list of sample IDs from mapping file."""
     return [line[0] for line in maptable[1:]]
@@ -383,8 +376,9 @@ def remove_unmapped_samples(mapping,coords,edges=None):
             if not edge[0] in sample_IDs or not edge[1] in sample_IDs:
                 del(edges[i])
 
-def generate_3d_plots(prefs, data, custom_axes, dir_path='',data_file_path='', filename=None, \
-                default_filename='out'):
+def generate_3d_plots(prefs, data, custom_axes, background_color,label_color, \
+                        dir_path='',data_file_path='',filename=None, \
+                        default_filename='out'):
     """Make 3d plots according to coloring options in prefs."""
     kinpath = _make_path([(dir_path+data_file_path), filename])
     kinlink = './'+data_file_path+'/' + filename +'.kin'
@@ -408,7 +402,7 @@ def generate_3d_plots(prefs, data, custom_axes, dir_path='',data_file_path='', f
         edges = data['edges']
 
     res = make_3d_plots(coord_header, coords, pct_var,mapping,prefs, \
-                            custom_axes,edges=edges)
+                        background_color,label_color,custom_axes,edges=edges)
 
     #Write kinemage file
     f = open(outf, 'w')

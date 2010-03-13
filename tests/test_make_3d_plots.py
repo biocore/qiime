@@ -19,14 +19,11 @@ from random import choice, randrange
 import shutil
 from qiime.make_3d_plots import (make_3d_plots,scale_pc_data_matrix,
                                     auto_radius,make_mage_output,
-                                    get_map,get_coord,create_dir,
-                                    _make_path,combine_map_label_cols,
-                                    process_colorby, linear_gradient,
-                                    natsort, make_color_dict,
-                                 process_custom_axes, get_custom_coords,
-                                 remove_nans,scale_custom_coords,
-                                 remove_unmapped_samples,
-                                 make_edges_output)
+                                    get_coord,create_dir,
+                                    _make_path,natsort,process_custom_axes, 
+                                    get_custom_coords,remove_nans,
+                                    scale_custom_coords,remove_unmapped_samples,
+                                    make_edges_output)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -56,6 +53,8 @@ class TopLevelTests(TestCase):
         self.prefs={}
         self.prefs['Sample']={}   
         self.prefs['Sample']['column']="Day"
+        self.background_color='black'
+        self.label_color=' white'
         self.mapping=[["Sample-ID","Day","Type"],["Sample1","Day1","Soil"],\
                       ["Sample2","Day1","Soil"],["Sample3","Day1","Soil"]]
         self.mapping2=[["Sample-ID","Day","Type","Height","Weight"],\
@@ -80,7 +79,8 @@ class TopLevelTests(TestCase):
     def test_make_3d_plots(self):
         """make_3d_plots: main script to create kinemage and html file"""
         obs_kin=make_3d_plots(self.coord_header,self.coords,self.pct_var, \
-                          self.mapping,self.prefs)
+                          self.mapping,self.prefs,self.background_color, \
+                          self.label_color)
 
         self.assertEqual(obs_kin,exp_kin_full)
 
@@ -92,7 +92,8 @@ class TopLevelTests(TestCase):
         coords = [self.coord_header, coord_data]
         scale_custom_coords(custom_axes,coords) 
         obs_kin=make_3d_plots(self.coord_header,coords[1],self.pct_var, \
-                          self.mapping2,self.prefs, custom_axes)
+                          self.mapping2,self.prefs,self.background_color,\
+                          self.label_color,custom_axes)
         self.assertEqual(obs_kin, exp_kin_full_axes)
 
         # test with multiple 'colorby' columns to ensure sorting
@@ -102,9 +103,11 @@ class TopLevelTests(TestCase):
         newprefs['Day']={}   
         newprefs['Day']['column']="Day"
         obs_kin=make_3d_plots(self.coord_header,self.coords,self.pct_var, \
-                          self.mapping,newprefs)
+                          self.mapping,newprefs,self.background_color, \
+                          self.label_color)
         text = '\n'.join(obs_kin)
-        self.assertTrue(text.find('Day_unscaled') < text.find('Type_unscaled'))
+        
+        self.assertTrue(text.find('Day_unscaled') > text.find('Type_unscaled'))
     
     def test_scale_pc_data_matrix(self):
         """scale_pc_data_matrix: Scales the pc data for use in the 3d plots"""
@@ -128,7 +131,8 @@ class TopLevelTests(TestCase):
         """make_mage_output: Create kinemage string given the data"""
         # test without custom axes
         obs_kin=make_mage_output(self.groups,self.colors,self.coord_header,\
-                                 self.coords,self.pct_var)
+                                 self.coords,self.pct_var,self.background_color,\
+                                 self.label_color)
         self.assertEqual(obs_kin,exp_kin_partial)
 
         # test with custom axes
@@ -139,11 +143,12 @@ class TopLevelTests(TestCase):
         coords = [self.coord_header, coord_data]
         scale_custom_coords(custom_axes,coords)
         obs_kin=make_mage_output(self.groups,self.colors,self.coord_header,\
-                                 coords[1],self.pct_var, custom_axes)
+                                 coords[1],self.pct_var,self.background_color, \
+                                 self.label_color,custom_axes)
         self.assertEqual(obs_kin, exp_kin_partial_axes)
 
     def test_make_edge_output(self):
-        """make_mage_output: Create kinemage string given the data"""
+        """make_edge_output: Create kinemage string given the data"""
         # test without custom axes
         exp_result = ['@vectorlist {edges} dimension=4 on', '1.0 2.0 3.0 4.0 white', '1.066 2.066 3.066 4.066 white P', '1.066 2.066 3.066 4.066 hotpink', '1.1 2.1 3.1 4.1 hotpink P', '1.0 2.0 3.0 4.0 white', '1.132 2.132 3.132 4.132 white P', '1.132 2.132 3.132 4.132 blue', '1.2 2.2 3.2 4.2 blue P']
         edges = [['a_0','a_1'],['a_0','a_2']]
@@ -152,22 +157,10 @@ class TopLevelTests(TestCase):
         coord_dict['a_1'] = array([ 1.1, 2.1, 3.1, 4.1])
         coord_dict['a_2'] = array([ 1.2, 2.2, 3.2, 4.2])
         num_coords=4
-        obs_result=make_edges_output(coord_dict, edges, num_coords)
+        obs_result=make_edges_output(coord_dict, edges, num_coords, \
+                                        self.label_color)
         
         self.assertEqual(obs_result, exp_result)
-
-    def test_combine_map_label_cols(self):
-        """combine_map_label_cols: Combine two or more columns from the \
-mapping file"""
-        self.combinecolorby=['Day','Type']
-
-        exp=[["Sample-ID","Day","Type","Day&&Type"],\
-             ["Sample1","Day1","Soil","Day1Soil"],\
-             ["Sample2","Day1","Soil","Day1Soil"],\
-             ["Sample3","Day1","Soil","Day1Soil"]]
-        obs=combine_map_label_cols(self.combinecolorby,self.mapping)
-
-        self.assertEqual(obs,exp)
     
     def test_create_dir(self):
         """create_dir: creates a directory where the kinemage is stored"""
@@ -186,17 +179,6 @@ mapping file"""
         self.assertEqual(obs,foldername)
         self.assertTrue(exists(foldername),'The file was not created in \
 the appropriate location')
-        
-    def test_process_colorby(self):
-        """process_colorby: parses the cmd line and determines which columns \
-from mapping file to color by"""
-        self.colorby='Day'
-        exp1={}
-        exp1['Day']={'column':'Day'}
-        obs1,obs2=process_colorby(self.colorby,self.data)
-
-        self.assertEqual(obs1,exp1)
-        self.assertEqual(obs2,self.data)
     
     def test_process_custom_axes(self):
         """process_custom_axes: Parses the custom_axes \
@@ -279,23 +261,6 @@ Removes any samples not present in mapping file"""
         exp='/tmp/test_pca.txt/'
 
         self.assertEqual(obs,exp)
-
-    def test_make_linear_gradient(self):
-        """make_linear_gradient: returns linear gradient of colors"""
-        self.assertEqual(linear_gradient([0,1,2],[1,0,0],5),
-            [[0,1,2],
-             [0.25,0.75,1.5],
-             [0.5,0.5,1],
-             [0.75,0.25,0.5],
-             [1,0,0]])
-
-    def test_make_color_dict(self):
-        """make_color_dict: returns dict of named colors"""
-        self.assertEqual(make_color_dict('red',(0,100,100),'white',(0,0,100),3),
-            {   'redtowhite3_0':[0,100,100],
-                'redtowhite3_1':[0,50,100],
-                'redtowhite3_2':[0,0,100],
-            })
 
 exp_kin_full=\
 ['@kinemage {Day_unscaled}', '@dimension {PC1} {PC2} {PC3}', \
