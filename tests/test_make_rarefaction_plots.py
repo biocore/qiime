@@ -17,6 +17,7 @@ Unit tests for make_rarefaction_plots.py
 from cogent.util.unit_test import TestCase, main
 from qiime.make_rarefaction_plots import *
 from qiime import parse
+from numpy import nan
 
 class makeRarefactionPlotsTests(TestCase):
     
@@ -28,18 +29,29 @@ class makeRarefactionPlotsTests(TestCase):
         self.p_mappingfile = parse.parse_map(self.mappingfile,return_header=True, strip_quotes=True)
         self.p_mappingfile[0][0] = [h.strip('#').strip(' ') for h in  self.p_mappingfile[0][0]]
                             
-        self.rarefactionfile = ['\tsequences per sample\titeration\t123\t234\t345',
-                                'rare10.txt\t10\t0\t1.99181\t0.42877\t2.13996',
-                                'rare10.txt\t10\t1\t2.07163\t0.42877\t2.37055',
-                                'rare310.txt\t310\t0\t8.83115\t0.42877\t11.00725',
-                                'rare310.txt\t310\t1\t10.05242\t0.42877\t8.24474',
-                                'rare610.txt\t610\t0\t12.03067\t0.42877\t11.58928',
-                                'rare610.txt\t610\t1\t12.9862\t0.42877\t11.58642']
-                                
-        self.matrix, self.seqs_per_samp, self.sampleIDs = parse_rarefaction(self.rarefactionfile)
+        # self.rarefactionline1 = 'rare10.txt\t10\t0\t1.99181\t0.42877\t2.13996'
+        #         self.rarefactiondata1 = ('rare10.txt', [10.0, 0.0, 1.9918100000000001, 0.42876999999999998, 2.1399599999999999])
+        #         self.rarefactionline2 = 'rare10.txt\t10\t0\t1.99181\t0.42877\tNA'
+        #         self.rarefactiondata2 = ('rare10.txt', [10.0, 0.0, 1.9918100000000001, 0.42876999999999998, nan])
+        #         
+        #         self.rarefactionfile = ['\tsequences per sample\titeration\t123\t234\t345',
+        #                                 'rare10.txt\t10\t0\t1.99181\t0.42877\t2.13996',
+        #                                 'rare10.txt\t10\t1\t2.07163\t0.42877\t2.37055',
+        #                                 'rare310.txt\t310\t0\t8.83115\t0.42877\t11.00725',
+        #                                 'rare310.txt\t310\t1\t10.05242\t0.42877\t8.24474',
+        #                                 'rare610.txt\t610\t0\t12.03067\t0.42877\t11.58928',
+        #                                 'rare610.txt\t610\t1\t12.9862\t0.42877\t11.58642']
         
-        self.ave_seqs_per_sample = {'123':[2.03172,9.4417849999999994,12.508435],
-                                    '234':[0.42876999999999998,0.42876999999999998,0.42876999999999998],
+        self.col_headers = ['', 'sequences per sample', 'iteration', '123', '234', '345']
+        self.comments = []
+        self.rarefaction_fns = ['rare10.txt', 'rare10.txt', 'rare310.txt', 'rare310.txt', 'rare610.txt', 'rare610.txt']
+        self.rarefaction_data = [[10.0, 0.0, 1.9918100000000001, 0.42876999999999998, 2.1399599999999999], [10.0, 1.0, 2.0716299999999999, 0.42876999999999998, 2.3705500000000002], [310.0, 0.0, 8.8311499999999992, 0.42876999999999998, 11.007250000000001], [310.0, 1.0, 10.05242, 0.42876999999999998, 8.2447400000000002], [610.0, 0.0, 12.030670000000001, 0.42876999999999998, 11.58928], [610.0, 1.0, 12.9862, 0.42876999999999998, 11.58642]]
+        
+        self.matrix = [[1.9918100000000001, 2.0716299999999999, 8.8311499999999992, 10.05242, 12.030670000000001, 12.9862], [0.42876999999999998, 0.42876999999999998, 0.42876999999999998, 0.42876999999999998, 0.42876999999999998, 0.42876999999999998], [2.1399599999999999, 2.3705500000000002, 11.007250000000001, 8.2447400000000002, 11.58928, 11.58642]]
+        self.seqs_per_samp = [10.0, 10.0, 310.0, 310.0, 610.0, 610.0]
+        self.sampleIDs = ['123', '234', '345']
+        
+        self.ave_seqs_per_sample = {'123':[2.03172,9.4417849999999994,12.508435], '234':[0.42876999999999998,0.42876999999999998,0.42876999999999998],
                                     '345':[2.255255,9.625995,11.58785]}
         
         self.collapsed_ser_sex = {'M':[1.3420125000000001,5.0273824999999999,6.0083099999999998], 
@@ -49,6 +61,28 @@ class makeRarefactionPlotsTests(TestCase):
         self.overall_averages = {'123':7.9939800000000005,
                                     '234':0.42876999999999993,
                                     '345':7.8230333333333322}
+    
+    def test_parse_rarefaction_record1(self):
+        test = parse_rarefaction_record(self.rarefactionline1)
+        self.assertEqual(test, self.rarefactiondata1)
+    
+    def test_parse_rarefaction_record2(self):
+        test = parse_rarefaction_record(self.rarefactionline2)
+        self.assertEqual(test, self.rarefactiondata2)
+    
+    def test_parse_rarefaction(self):
+        test_col_headers, test_comments, test_rarefaction_fns, test_rarefaction_data = parse_rarefaction(self.rarefactionfile)
+        self.assertEqual(test_col_headers, self.col_headers)
+        self.assertEqual(test_comments, self.comments)
+        self.assertEqual(test_rarefaction_fns, self.rarefaction_fns)
+        self.assertEqual(test_rarefaction_data, self.rarefaction_data)
+        
+    def test_get_rarefaction_data(self):
+        #rarefaction_data, col_headers
+        test_matrix, test_seqs_per_samp, test_sampleIDs = get_rarefaction_data(self.rarefaction_data, self.col_headers)
+        self.assertEqual(test_matrix, self.matrix)
+        self.assertEqual(test_seqs_per_samp, self.seqs_per_samp)
+        self.assertEqual(test_sampleIDs, self.sampleIDs)
     
     def test_ave_seqs_per_sample(self):
         test = ave_seqs_per_sample(self.matrix,self.seqs_per_samp,self.sampleIDs)

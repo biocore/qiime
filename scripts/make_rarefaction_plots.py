@@ -13,13 +13,14 @@ __status__ = "Pre-release"
  
 from optparse import make_option
 from qiime.util import parse_command_line_parameters
+from qiime.parse import parse_rarefaction
 import sys
 from sys import argv, exit, exc_info
 from random import choice, randrange
 from time import strftime
 from qiime import parse, util
 from qiime.make_rarefaction_plots import make_plots, make_output_files, \
-is_max_category_ops, parse_rarefaction
+is_max_category_ops
 import os.path
 from os.path import exists, splitext, split
 import shutil

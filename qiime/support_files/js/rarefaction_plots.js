@@ -14,7 +14,7 @@ function Main() {
 }
 
 function loadExternalFiles() {
-	var datafiles = getFile("graphNames.txt");
+	var datafiles = getFile("support_files/graphNames.txt");
 	var filelines = datafiles.split("\n");
 	for(var i = 0; i < filelines.length; i++)
 		graphNames.push(filelines[i]);

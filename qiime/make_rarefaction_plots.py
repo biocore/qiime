@@ -23,9 +23,9 @@ Numpy
 from sys import argv, exit
 from random import choice, randrange
 from time import strftime
-from qiime import parse, util
-from qiime.colors import *
-from numpy import array, transpose, random, mean, std, arange
+from qiime.parse import parse_rarefaction
+from qiime.colors import Color, natsort
+from numpy import array, transpose, random, mean, std, arange, nan, isnan
 from string import strip
 from matplotlib.pylab import savefig, clf, gca, gcf, errorbar
 import matplotlib.pyplot as plt
@@ -36,7 +36,7 @@ import shutil
 from warnings import warn
 from itertools import cycle
 
-COLOUR = [ ['#9933cc', 'purple'],
+COLOR = [ ['#9933cc', 'purple'],
            ['#99cc00', 'yellowgreen'],
             ['#3399cc', 'skyblue'],
             ['#66cc99', 'lightgreen'],
@@ -59,41 +59,18 @@ COLOUR = [ ['#9933cc', 'purple'],
 MARKERS = ['*', 'D' , 'H' , 'd' , 'h' , 'o' , 'p' , 's' , 'x']
 graphNames = []
 sampleIDs = []
-COLOUR_OBS = []
+COLOR_OBS = []
 
 def translate_colors():
-    for c in COLOUR:
+    for c in COLOR:
         color_obj = Color(c[1],c[0])
-        COLOUR_OBS.append(color_obj)
-
-def parse_rarefaction(lines):
-    """Function for parsing rarefaction files specifically for use in
-    make_rarefaction_plots.py"""
-    col_headers = None
-    result = []
-    row_headers = []
-    for line in lines:
-        if line[0] == '#': continue
-        if line[0] == '\t': #is header
-            col_headers = map(strip, line.split('\t')[1:])
-        else:
-            entries = line.split('\t')
-            try:
-                result.append(map(float, entries[1:]))
-            except(ValueError):
-                temp = []
-                for x in entries[1:]:
-                    if x.strip() != 'n/a':
-                        temp.append(float(x.strip()))
-                    else:
-                        temp.append(0.0)
-                result.append(temp)
-                
-            row_headers.append(entries[0])
-    rare_mat_raw = array(result)
+        COLOR_OBS.append(color_obj)
+    
+def get_rarefaction_data(rarefaction_data, col_headers):
+    rare_mat_raw = array(rarefaction_data)
     rare_mat_min = [rare_mat_raw[x][2:] for x in range(0,len(rare_mat_raw))]
     seqs_per_samp = [rare_mat_raw[x][0] for x in range(0,len(rare_mat_raw))]
-    sampleIDs = col_headers[2:]
+    sampleIDs = col_headers[3:]
     rare_mat_trans = transpose(array(rare_mat_min)).tolist()
     return rare_mat_trans, seqs_per_samp, sampleIDs
     
@@ -102,9 +79,9 @@ def ave_seqs_per_sample(matrix, seqs_per_samp, sampleIDs):
     seqs/sample"""
     ave_ser = {}
     temp_dict = {}
-    for i,sid in enumerate(sampleIDs):
+    for i, sid in enumerate(sampleIDs):
         temp_dict[sid] = {}
-        for j,seq in enumerate(seqs_per_samp):
+        for j, seq in enumerate(seqs_per_samp):
             try:
                 temp_dict[sid][seq].append(matrix[i][j])
             except(KeyError):
@@ -178,7 +155,7 @@ def make_error_series(rtype, rare_mat, sampleIDs, mapping, mapping_category):
     for o in ops:
         min_len = 1000 #1e10000
         for series in pre_err[o]:
-            series = [float(v) for v in series if v != 0]
+            series = [v for v in series if not isnan(v)]
             if len(series) < min_len:
                 min_len = len(series)
         
@@ -186,7 +163,7 @@ def make_error_series(rtype, rare_mat, sampleIDs, mapping, mapping_category):
     
     cols = {}
     syms = {}
-    colcycle = cycle(COLOUR)
+    colcycle = cycle(COLOR)
     markcycle = cycle(MARKERS)
     for o in ops:
         cols[o] = colcycle.next()
@@ -204,7 +181,7 @@ def get_overall_averages(rare_mat, sampleIDs):
     sampleID"""
     overall_ave = dict();
     for s in sampleIDs:
-        overall_ave[s] = mean(array(rare_mat[s]))
+        overall_ave[s] = mean(array([v for v in rare_mat[s] if not isnan(v)]))
     return overall_ave
 
 def save_rarefaction_data(rare_mat, xaxis, xmax, ymax, sampleIDs, mapping, \
@@ -253,13 +230,13 @@ def parse_rarefaction_data(lines):
 def save_rarefaction_plots(xaxis, yaxis, err, xmax, ymax, ops, mapping_category, \
 itype, res, rtype, fpath):
     plt.clf()
-    plt.title(rtype + ": " + mapping_category)
+    plt.title((split(rtype)[1])[0] + ": " + mapping_category)
     fig  = plt.gcf()
     
     plt.grid(color='gray', linestyle='-')
 
     ops = natsort(ops)
-    colcycle = cycle([c.toHex() for c in COLOUR_OBS])
+    colcycle = cycle([c.toHex() for c in COLOR_OBS])
     
     for o in ops:
         l = o
@@ -297,9 +274,8 @@ def make_plots(prefs):
         splitext(split(r)[1])[0])
         os.makedirs(file_path)
         
-        rare_mat_trans = prefs['rarefactions'][r][0]
-        seqs_per_samp = prefs['rarefactions'][r][1]
-        sampleIDs = prefs['rarefactions'][r][2]
+        col_headers, comments, rarefaction_fn, rarefaction_data = prefs['rarefactions'][r]
+        rare_mat_trans, seqs_per_samp, sampleIDs = get_rarefaction_data(rarefaction_data, col_headers)
 
         xaxisvals = [float(x) for x in set(seqs_per_samp)]
         xaxisvals.sort()
@@ -336,22 +312,24 @@ def make_output_files(prefs, lines, qiime_dir):
     open(prefs['output_path'] + "/rarefactionTable.txt",'w').writelines(lines)
 
     if not prefs['no_html']:
-        open(prefs['output_path'] + "/graphNames.txt",'w').writelines([f +\
+        os.makedirs(prefs['output_path']+"/support_files")
+        open(prefs['output_path'] + "/support_files/graphNames.txt",'w').writelines([f +\
         '\n' for f in graphNames])
 
-        os.makedirs(prefs['output_path']+"/js")
-        os.makedirs(prefs['output_path']+"/css")
+        os.makedirs(prefs['output_path']+"/support_files/js")
+        os.makedirs(prefs['output_path']+"/support_files/css")
+        
         shutil.copyfile(qiime_dir+"/qiime/support_files/html_templates/" + \
         "rarefaction_plots.html", prefs['output_path']+\
         "/rarefaction_plots.html")
         shutil.copyfile(qiime_dir+"/qiime/support_files/js/rarefaction_plots.js", \
-        prefs['output_path']+"/js/rarefaction_plots.js")
+        prefs['output_path']+"/support_files/js/rarefaction_plots.js")
         shutil.copyfile(qiime_dir+"/qiime/support_files/js/jquery.js", \
-        prefs['output_path']+"/js/jquery.js")
+        prefs['output_path']+"/support_files/js/jquery.js")
         shutil.copyfile(qiime_dir+"/qiime/support_files/js/jquery."+\
         "dataTables.min.js", prefs['output_path']+\
-        "/js/jquery.dataTables.min.js")
+        "/support_files/js/jquery.dataTables.min.js")
         shutil.copyfile(qiime_dir+"/qiime/support_files/css/rarefaction_plots.css",\
-        prefs['output_path']+"/css/rarefaction_plots.css")
+        prefs['output_path']+"/support_files/css/rarefaction_plots.css")
         shutil.copyfile(qiime_dir+"/qiime/support_files/images/qiime_header.png", \
-        prefs['output_path']+"/qiime_header.png")
+        prefs['output_path']+"/support_files/qiime_header.png")

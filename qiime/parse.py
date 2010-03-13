@@ -15,7 +15,7 @@ from string import strip
 from collections import defaultdict
 from cogent.util.misc import unzip
 from cogent.maths.stats.rarefaction import subsample
-from numpy import array, concatenate, repeat, zeros
+from numpy import array, concatenate, repeat, zeros, nan
 from numpy.random import permutation
 from cogent.parse.record_finder import LabeledRecordFinder
 from copy import deepcopy
@@ -183,27 +183,38 @@ def extract_index_fields(line):
     index_name = fields[0][1:]
     return index_name, map(float, fields[1:])
 
-def extract_rarefaction_table(lines):
-    """Extracts rarefaction table from the rest of the lines"""
-    return array([map(float, l.split('\t')) for l in lines])
+def float_or_nan(v):
+    try:
+        return float(v)
+    except ValueError:
+        return nan
 
-def parse_rarefaction_rec(rec):
-    """Parses single rarefaction record"""
-    result = {}
-    for i, line in enumerate(rec):
-        line = line.strip()
-        if not line:
-            continue
-        if is_rarefaction_label_line(line):
-            result['pct_sim'], result['sample_id'], result['num_iters'] = \
-                extract_otu_header_fields(line)
-        elif line.startswith('#n'): #rest of rec is table
-            result['rarefaction_data'] = extract_rarefaction_table(rec[i+1:])
-            break
+def parse_rarefaction_record(line):
+    """ Return (rarefaction_fn, [data])"""       
+    entries = line.split('\t')
+    return entries[0], map(float_or_nan, entries[1:])
+
+def parse_rarefaction(lines):
+    """Function for parsing rarefaction files specifically for use in
+    make_rarefaction_plots.py"""
+    col_headers = []
+    comments = []
+    rarefaction_data = []
+    rarefaction_fns = []
+    for line in lines:
+        if line[0] == '#':
+            # is comment
+            comments.append(line)
+        elif line[0] == '\t': 
+            # is header
+            col_headers = map(strip, line.split('\t'))
         else:
-            name, fields = extract_index_fields(line)
-            result[name] = fields
-    return result
+            # is rarefaction record
+            rarefaction_fn, data = parse_rarefaction_record(line)
+            rarefaction_fns.append(rarefaction_fn)
+            rarefaction_data.append(data)
+
+    return col_headers, comments, rarefaction_fns, rarefaction_data
 
 def parse_coords(lines):
     """Parse unifrac coord file into coords, labels, eigvals, pct_explained.
@@ -240,33 +251,33 @@ def parse_coords(lines):
 
     return header, array(result), eigvals, pct_var
 
-def parse_rarefaction(lines):
-    """Parser for rarefaction data file.
-
-    The examples I have of this file share the following format:
-    - header line starting with #HEADER, with %id, sample_id, num_reps(?)
-    - lines for chao1, ace and shannon with mean, LC, UC
-    - line for simpson with actual value of index
-    - table header with n, rare, rare_lci, rare_uci
-    - multiline 4-col output of this table.
-
-    WARNING: vals in 1st col of table not same for all samples either because
-    of limited # seqs or because sampling performed at equal # intervals not
-    equal # seqs.
-
-    For PD rarefaction, is the same but without the other stats calculated,
-    i.e. just has per-sample data for the rarefaction, and the header.
-
-    Desired result:
-    dict keyed by sample id, vals are dicts containing all the info (e.g.
-    rarefaction_data as 4-col array, other indices as either 1-col or 3-col
-    lists of numbers, metadata about pct_sim and num_iters
-    """
-    result = {}
-    for rec in rrf(lines):
-        curr = parse_rarefaction_rec(rec)
-        result[curr['sample_id']] = curr
-    return result
+# def parse_rarefaction(lines):
+#     """Parser for rarefaction data file.
+# 
+#     The examples I have of this file share the following format:
+#     - header line starting with #HEADER, with %id, sample_id, num_reps(?)
+#     - lines for chao1, ace and shannon with mean, LC, UC
+#     - line for simpson with actual value of index
+#     - table header with n, rare, rare_lci, rare_uci
+#     - multiline 4-col output of this table.
+# 
+#     WARNING: vals in 1st col of table not same for all samples either because
+#     of limited # seqs or because sampling performed at equal # intervals not
+#     equal # seqs.
+# 
+#     For PD rarefaction, is the same but without the other stats calculated,
+#     i.e. just has per-sample data for the rarefaction, and the header.
+# 
+#     Desired result:
+#     dict keyed by sample id, vals are dicts containing all the info (e.g.
+#     rarefaction_data as 4-col array, other indices as either 1-col or 3-col
+#     lists of numbers, metadata about pct_sim and num_iters
+#     """
+#     result = {}
+#     for rec in rrf(lines):
+#         curr = parse_rarefaction_rec(rec)
+#         result[curr['sample_id']] = curr
+#     return result
 
 def parse_rarefaction_fname(name_string):
     """returns base, seqs/sam, iteration, extension.  seqs, iters as ints

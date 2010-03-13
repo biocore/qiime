@@ -11,11 +11,11 @@ __maintainer__ = "Rob Knight"
 __email__ = "rob@spot.colorado.edu"
 __status__ = "Pre-release"
 
-from numpy import array
+from numpy import array, nan
 from StringIO import StringIO
 from cogent.util.unit_test import TestCase, main
 from qiime.parse import (parse_map, group_by_field, group_by_fields, 
-    parse_distmat, parse_rarefaction_rec, parse_rarefaction, parse_coords, 
+    parse_distmat, parse_rarefaction_record, parse_rarefaction, parse_coords, 
     otu_file_to_lineages, parse_otus, otu_table_to_envs, parse_sequences_by_otu,
     make_envs_dict, fields_to_dict, parse_rarefaction_fname, envs_to_otu_counts,
     otu_counts_to_matrix, envs_to_matrix, parse_qiime_parameters, 
@@ -155,28 +155,39 @@ node2\t0
         obs = parse_bootstrap_support(lines)
         self.assertFloatEqual(obs, exp)
 
-    def test_parse_rarefaction_rec(self):
-        """parse_rarefaction_rec should produce expected results"""
-        rec = """#HEADER	97.0	NFkeyRightShift	1000
-#CHAO1	288.12903	241.27093	371.41733
-#ACE	294.74813	252.75930	361.30606	0.68654
-#SHANNON	3.71822	3.61146	3.82499
-#SIMPSON	0.08021
-#n	rare	rare_lci	rare_hci
-    1	1.000000	1.000000	1.000000
-    51	26.878000	26.032290	27.723710
-    101	44.007000	43.212590	44.801410""".splitlines()
-        exp = {'pct_sim':97.0,'sample_id':'NFkeyRightShift','num_iters':1000,
-            'ACE':[294.74813,252.75930,361.30606,0.68654],
-            'CHAO1':[288.12903,241.27093,371.41733],
-            'SHANNON':[3.71822,3.61146,3.82499],
-            'SIMPSON':[0.08021],
-            'rarefaction_data':array([[1,1,1,1],[51,26.878000,26.032290,27.723710],
-                [101,44.007000,43.212590,44.801410]])}
-        obs = parse_rarefaction_rec(rec)
-        self.assertEqual(set(obs.keys()), set(exp.keys()))
-        for k, v in obs.items():
-            self.assertFloatEqual(v, exp[k])
+    def test_parse_rarefaction_record(self):
+        self.rarefactionline1 = 'rare10.txt\t10\t0\t1.99181\t0.42877\t2.13996'
+        test1 = parse_rarefaction_record(self.rarefactionline1)
+        self.rarefactiondata1 = ('rare10.txt', [10.0, 0.0, 1.9918100000000001, 0.42876999999999998, 2.1399599999999999])
+        self.assertEqual(self.rarefactiondata1, test1)
+        
+        self.rarefactionline2 = 'rare10.txt\t10\t0\t1.99181\t0.42877\tNA'
+        test2 = parse_rarefaction_record(self.rarefactionline2)
+        self.rarefactiondata2 = ('rare10.txt', [10.0, 0.0, 1.9918100000000001, 0.42876999999999998, nan])
+        self.assertEqual(self.rarefactiondata2, test2)
+        
+#     def test_parse_rarefaction_rec(self):
+#         """parse_rarefaction_rec should produce expected results"""
+#         rec = """#HEADER  97.0    NFkeyRightShift 1000
+# #CHAO1    288.12903   241.27093   371.41733
+# #ACE  294.74813   252.75930   361.30606   0.68654
+# #SHANNON  3.71822 3.61146 3.82499
+# #SIMPSON  0.08021
+# #n    rare    rare_lci    rare_hci
+#     1 1.000000    1.000000    1.000000
+#     51    26.878000   26.032290   27.723710
+#     101   44.007000   43.212590   44.801410""".splitlines()
+#         exp = {'pct_sim':97.0,'sample_id':'NFkeyRightShift','num_iters':1000,
+#             'ACE':[294.74813,252.75930,361.30606,0.68654],
+#             'CHAO1':[288.12903,241.27093,371.41733],
+#             'SHANNON':[3.71822,3.61146,3.82499],
+#             'SIMPSON':[0.08021],
+#             'rarefaction_data':array([[1,1,1,1],[51,26.878000,26.032290,27.723710],
+#                 [101,44.007000,43.212590,44.801410]])}
+#         obs = parse_rarefaction_rec(rec)
+#         self.assertEqual(set(obs.keys()), set(exp.keys()))
+#         for k, v in obs.items():
+#             self.assertFloatEqual(v, exp[k])
 
     def test_parse_rarefaction_fname(self):
         """ parse_rarefaction_fname should return base, seqs/sam, iters, etc."""
@@ -186,39 +197,59 @@ node2\t0
             ("alpha_rarefaction", 900, 3, ".txt"))
 
     def test_parse_rarefaction(self):
-        """parse_rarefaction should handle multiple recs"""
-        recs ="""#HEADER	97.0	NFkeyRightShift	1000
-#CHAO1	288.12903	241.27093	371.41733
-#ACE	294.74813	252.75930	361.30606	0.68654
-#SHANNON	3.71822	3.61146	3.82499
-#SIMPSON	0.08021
-#n	rare	rare_lci	rare_hci
-1	1.000000	1.000000	1.000000
-51	26.878000	26.032290	27.723710
-#HEADER	97.0	DMkeySpace	1000
-#CHAO1	90.20000	53.81120	196.98011
-#ACE	122.66234	68.48901	264.46888	1.53571
-#SHANNON	1.35156	1.12549	1.57762
-#SIMPSON	0.56002
-#n	rare	rare_lci	rare_hci
-1	1.000000	1.000000	1.000000
-51	10.707000	10.085986	11.328014
-101	17.547000	17.046632	18.047368
-151	23.410000	23.009805	23.810195
-#HEADER	97.0	RKkeyW	1000
-#CHAO1	251.57143	176.86438	401.83780
-#ACE	264.44294	192.23364	395.08515	0.89714
-#SHANNON	1.56521	1.44411	1.68630
-#SIMPSON	0.54772
-#n	rare	rare_lci	rare_hci
-1	1.000000	1.000000	1.000000
-51	11.739000	11.060658	12.417342
-101	19.054000	18.458137	19.649863
-151	24.994000	24.447174	25.540826
-""".splitlines()
-        obs = parse_rarefaction(recs)
-        self.assertEqual(set(obs.keys()), \
-            set(['NFkeyRightShift','DMkeySpace','RKkeyW']))
+        self.rarefactionfile = ['\tsequences per sample\titeration\t123\t234\t345',
+                                'rare10.txt\t10\t0\t1.99181\t0.42877\t2.13996',
+                                'rare10.txt\t10\t1\t2.07163\t0.42877\t2.37055',
+                                'rare310.txt\t310\t0\t8.83115\t0.42877\t11.00725',
+                                'rare310.txt\t310\t1\t10.05242\t0.42877\t8.24474',
+                                'rare610.txt\t610\t0\t12.03067\t0.42877\t11.58928',
+                                'rare610.txt\t610\t1\t12.9862\t0.42877\t11.58642']
+        
+        self.col_headers = ['', 'sequences per sample', 'iteration', '123', '234', '345']
+        self.comments = []
+        self.rarefaction_fns = ['rare10.txt', 'rare10.txt', 'rare310.txt', 'rare310.txt', 'rare610.txt', 'rare610.txt']
+        self.rarefaction_data = [[10.0, 0.0, 1.9918100000000001, 0.42876999999999998, 2.1399599999999999], [10.0, 1.0, 2.0716299999999999, 0.42876999999999998, 2.3705500000000002], [310.0, 0.0, 8.8311499999999992, 0.42876999999999998, 11.007250000000001], [310.0, 1.0, 10.05242, 0.42876999999999998, 8.2447400000000002], [610.0, 0.0, 12.030670000000001, 0.42876999999999998, 11.58928], [610.0, 1.0, 12.9862, 0.42876999999999998, 11.58642]]
+        
+        test_col_headers, test_comments, test_rarefaction_fns, test_rarefaction_data = parse_rarefaction(self.rarefactionfile)
+        self.assertEqual(test_col_headers, self.col_headers)
+        self.assertEqual(test_comments, self.comments)
+        self.assertEqual(test_rarefaction_fns, self.rarefaction_fns)
+        self.assertEqual(test_rarefaction_data, self.rarefaction_data)
+
+#     def test_parse_rarefaction(self):
+#         """parse_rarefaction should handle multiple recs"""
+#         recs ="""#HEADER  97.0    NFkeyRightShift 1000
+# #CHAO1    288.12903   241.27093   371.41733
+# #ACE  294.74813   252.75930   361.30606   0.68654
+# #SHANNON  3.71822 3.61146 3.82499
+# #SIMPSON  0.08021
+# #n    rare    rare_lci    rare_hci
+# 1 1.000000    1.000000    1.000000
+# 51    26.878000   26.032290   27.723710
+# #HEADER   97.0    DMkeySpace  1000
+# #CHAO1    90.20000    53.81120    196.98011
+# #ACE  122.66234   68.48901    264.46888   1.53571
+# #SHANNON  1.35156 1.12549 1.57762
+# #SIMPSON  0.56002
+# #n    rare    rare_lci    rare_hci
+# 1 1.000000    1.000000    1.000000
+# 51    10.707000   10.085986   11.328014
+# 101   17.547000   17.046632   18.047368
+# 151   23.410000   23.009805   23.810195
+# #HEADER   97.0    RKkeyW  1000
+# #CHAO1    251.57143   176.86438   401.83780
+# #ACE  264.44294   192.23364   395.08515   0.89714
+# #SHANNON  1.56521 1.44411 1.68630
+# #SIMPSON  0.54772
+# #n    rare    rare_lci    rare_hci
+# 1 1.000000    1.000000    1.000000
+# 51    11.739000   11.060658   12.417342
+# 101   19.054000   18.458137   19.649863
+# 151   24.994000   24.447174   25.540826
+# """.splitlines()
+#         obs = parse_rarefaction(recs)
+#         self.assertEqual(set(obs.keys()), \
+#             set(['NFkeyRightShift','DMkeySpace','RKkeyW']))
 
     def test_parse_coords(self):
         """parse_coords should handle coords file"""
