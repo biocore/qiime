@@ -14,7 +14,9 @@ __status__ = "Pre-release"
 from cogent.util.unit_test import TestCase, main
 from numpy import array, nan
 from qiime.format import (format_distance_matrix, format_otu_table,
-    format_coords, build_prefs_string, format_matrix)
+    format_coords, build_prefs_string, format_matrix, format_map_file,
+    format_histograms)
+
 
 class TopLevelTests(TestCase):
     """Tests of top-level module functions."""
@@ -82,6 +84,34 @@ class TopLevelTests(TestCase):
         exp_string = """{\n\t'First':\n\t{\n\t\t'column':'First',\n\t\t'colors':(('red',(0,100,100)),('blue',(240,100,100)))\n\t},\n\t'Second':\n\t{\n\t\t'column':'Second',\n\t\t'colors':(('red',(0,100,100)),('blue',(240,100,100)))\n\t}\n}"""
         obs_string = build_prefs_string(color_by_string)
         self.assertEqual(obs_string,exp_string)
+        
+    def test_format_map_file(self):
+        """format_map_file should produce correct result"""
+        
+        desc_key = "Description"
+        sample_id = "SampleID"
+        headers = ['SampleID', 'a', 'Description', 'b']
+        id_map = {'x':{'a':3,'b':4}, 'y':{'a':5,'b':6}}
+        desc_map = {'x':'sample x','y':'sample y'}
+        run_desc = 'run desc'
+        self.assertEqual(format_map_file(headers, id_map, desc_key, sample_id,\
+         desc_map, run_desc),
+"""#SampleID\ta\tb\tDescription
+#run desc
+x\t3\t4\tsample x
+y\t5\t6\tsample y""")
+
+    def test_format_histograms(self):
+        """format_histograms should print histograms correctly"""
+        self.assertEqual(format_histograms(array([2,1,0,2,0,0]),
+            array([0,0,0,2,0,1]), array([100,110,120,130,140,150,160])),
+            """Length\tBefore\tAfter
+100\t2\t0
+110\t1\t0
+120\t0\t0
+130\t2\t2
+140\t0\t0
+150\t0\t1""")
 
 #run unit tests if run from command-line
 if __name__ == '__main__':

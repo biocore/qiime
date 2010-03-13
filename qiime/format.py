@@ -116,3 +116,43 @@ def build_prefs_string(color_by_string):
         l.append(entry_string % (field, field))
     l.append('\n}')
     return ''.join(l)
+
+def format_map_file(headers, id_map, desc_key, sample_id_key, \
+    description_map=None, run_description=None):
+    """Generates string for formatted map file.
+    
+    Input:
+        headers: list of strings corresponding to col headers
+        id_map: dict of {id:{header:val}}
+        description_map: dict of {id:description}
+        run_description: either string, or list of strings
+    """
+    result = []
+    if desc_key in headers:
+        headers.remove(desc_key)
+    if sample_id_key in headers:
+        headers.remove(sample_id_key)
+    header_line = '\t'.join([sample_id_key] + headers + [desc_key])
+    if not header_line.startswith('#'):
+        header_line = '#' + header_line
+    result.append(header_line)
+    if run_description:
+        if not isinstance(run_description, str):
+            run_description = '\n#'.join(run_description)
+        if not run_description.startswith('#'):
+            run_description = '#'+run_description
+        result.append(run_description)
+    for id_, fields in sorted(id_map.items()):
+        curr_line = [id_]
+        curr_line.extend([fields.get(h,'') for h in headers])
+        curr_line.append(description_map.get(id_,''))
+        result.append('\t'.join(map(str, curr_line)))
+    return '\n'.join(result)
+    
+def format_histograms(pre_hist, post_hist, bin_edges):
+    """Returns text-formatted histogram."""
+    lines = []
+    lines.append('Length\tBefore\tAfter')
+    for edge, pre, post in zip(bin_edges, pre_hist, post_hist):
+        lines.append('\t'.join(map(str, [edge, pre, post])))
+    return '\n'.join(lines)

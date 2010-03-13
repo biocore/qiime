@@ -37,13 +37,14 @@ from cogent.parse.fasta import FastaFinder, MinimalFastaParser
 from cogent.seqsim.sequence_generators import SequenceGenerator, IUPAC_DNA
 from numpy import array, mean, arange, histogram
 from numpy import __version__ as numpy_version
-from qiime.check_id_map import parse_id_map
+from qiime.check_id_map import process_id_map
 from qiime.barcode import correct_barcode
 from gzip import GzipFile
 from os import mkdir, stat
 from collections import defaultdict
 from qiime.hamming import decode_barcode_8
 from qiime.golay import decode as decode_golay_12
+from qiime.format import format_histograms
 
 
 
@@ -114,7 +115,7 @@ def expand_degeneracies(raw_primer):
 def check_map(infile, has_barcodes=True):
     """Check mapping file and extract list of valid barcodes, primers """
     hds, id_map, dsp, run_description, errors, warnings = \
-        parse_id_map(infile, has_barcodes)
+        process_id_map(infile, has_barcodes)
     barcode_to_sample_id = {}
 
 
@@ -238,13 +239,13 @@ def make_histograms(pre_lengths, post_lengths, binwidth=10):
     post_hist, bin_edges = histogram(post_lengths,bins)
     return pre_hist, post_hist, bin_edges
 
-def format_histograms(pre_hist, post_hist, bin_edges):
+'''def format_histograms(pre_hist, post_hist, bin_edges):
     """Returns text-formatted histogram."""
     lines = []
     lines.append('Length\tBefore\tAfter')
     for edge, pre, post in zip(bin_edges, pre_hist, post_hist):
         lines.append('\t'.join(map(str, [edge, pre, post])))
-    return '\n'.join(lines)
+    return '\n'.join(lines) '''
 
 class SeqQualBad(object):
     """Checks if a seq and qual score are bad, saving ids that are bad."""

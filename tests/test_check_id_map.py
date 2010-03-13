@@ -20,13 +20,15 @@ from qiime.check_id_map import (find_diff_length, CharFilter, lwu,
     DupChecker, SameChecker, 
     run_checks, filename_has_space, run_description_missing, adapt_dupchecker,
     sampleid_missing, blank_header, bad_char_in_header, pad_rows, 
-    format_map_file, barcode_missing, description_missing, wrap_arrays,
+    barcode_missing, description_missing, wrap_arrays,
     check_vals_by_type, check_vals_by_contains, check_field_types,
     check_same_length, check_bad_chars, check_mixed_caps,
     check_missing_descriptions, check_duplicate_descriptions,
-    check_description_chars, parse_id_map, get_primers_barcodes,
+    check_description_chars, process_id_map, get_primers_barcodes,
     check_primers_barcodes, check_missing_sampleIDs
     )
+
+
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -122,17 +124,6 @@ class TopLevelTests(TestCase):
         self.assertEqual(pad_rows(bad_too_long),good_table)
         self.assertEqual(pad_rows(bad_too_short), [['a','b'],['c','']])
 
-    def test_format_map_file(self):
-        """format_map_file should produce correct result"""
-        headers = ['SampleID', 'a', 'Description', 'b']
-        id_map = {'x':{'a':3,'b':4}, 'y':{'a':5,'b':6}}
-        desc_map = {'x':'sample x','y':'sample y'}
-        run_desc = 'run desc'
-        self.assertEqual(format_map_file(headers, id_map, desc_map, run_desc),
-"""#SampleID\ta\tb\tDescription
-#run desc
-x\t3\t4\tsample x
-y\t5\t6\tsample y""")
 
     def test_barcode_missing(self):
         """barcode_missing should complain if barcode missing"""
@@ -328,8 +319,8 @@ y\t5\t6\tsample y""")
         self.assertEqual(cdc((bad_sd, sample_ids, rd), raw_data=raw_data_bad),
             ((['Description', '_', 'y', 'x_'], ['#SampleID', '1', '2', '3'], 'test'), "These sample ids have bad characters in their descriptions:\n1: changed '<' to '_'\n3: changed 'x>' to 'x_'\nRow, column for all descriptions with bad characters:\nLocation (row, column):\t0,1\nLocation (row, column):\t2,1"))
 
-    def test_parse_id_map(self):
-        """parse_id_map should return correct results on small test map"""
+    def test_process_id_map(self):
+        """process_id_map should return correct results on small test map"""
         s = """#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tX\tDescription
 #fake data
 x\tAA\tACGT\t3\tsample_x
@@ -338,7 +329,7 @@ z\tGG\tACGT\t5\tsample_z"""
         f = StringIO(s)
         f.name='test.xls'
         headers, id_map, description_map, run_description, errors, warnings = \
-            parse_id_map(f)
+            process_id_map(f)
 
         self.assertEqual(headers, ['BarcodeSequence', 'LinkerPrimerSequence', \
          'X'])

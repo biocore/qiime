@@ -51,14 +51,18 @@ from cogent.util.transform import (keep_chars, exclude_chars, trans_except,
     trans_all)
 from numpy import array
 from qiime.parse import parse_map
+from qiime.format import format_map_file
 from optparse import OptionParser
 from cogent.seqsim.sequence_generators import IUPAC_DNA
+
 
 DESC_KEY = "Description"
 SAMPLE_ID_KEY = "SampleID"
 BARCODE_KEY = "BarcodeSequence"
 LINKER_PRIMER_KEY = "LinkerPrimerSequence"
 NEGATIVE_CONTROL_KEY = "NegativeControl"
+
+
 
 STANDARD_FIELD_TYPES = {SAMPLE_ID_KEY:'uid', BARCODE_KEY:'uid', \
       LINKER_PRIMER_KEY:'uid',NEGATIVE_CONTROL_KEY:['Yes','No']}
@@ -437,37 +441,6 @@ def pad_rows(table):
             result.append(row + ['']*(num_cols-len(row)))
     return result
     
-def format_map_file(headers, id_map, description_map=None, \
-    run_description=None):
-    """Generates string for formatted map file.
-    
-    Input:
-        headers: list of strings corresponding to col headers
-        id_map: dict of {id:{header:val}}
-        description_map: dict of {id:description}
-        run_description: either string, or list of strings
-    """
-    result = []
-    if DESC_KEY in headers:
-        headers.remove(DESC_KEY)
-    if SAMPLE_ID_KEY in headers:
-        headers.remove(SAMPLE_ID_KEY)
-    header_line = '\t'.join([SAMPLE_ID_KEY] + headers + [DESC_KEY])
-    if not header_line.startswith('#'):
-        header_line = '#' + header_line
-    result.append(header_line)
-    if run_description:
-        if not isinstance(run_description, str):
-            run_description = '\n#'.join(run_description)
-        if not run_description.startswith('#'):
-            run_description = '#'+run_description
-        result.append(run_description)
-    for id_, fields in sorted(id_map.items()):
-        curr_line = [id_]
-        curr_line.extend([fields.get(h,'') for h in headers])
-        curr_line.append(description_map.get(id_,''))
-        result.append('\t'.join(map(str, curr_line)))
-    return '\n'.join(result)
 
 def wrap_arrays(sample_descriptions, data):
     """Wraps sample descriptions and data into appropriate dicts.
@@ -834,7 +807,7 @@ def get_primers_barcodes(data):
     return primers, barcodes
     
 
-def parse_id_map(infile, is_barcoded=True, char_replace="_",
+def process_id_map(infile, is_barcoded=True, char_replace="_",
     filename_checks=STANDARD_FILENAME_CHECKS, 
     #run_description_checks=STANDARD_RUN_DESCRIPTION_CHECKS,
     sample_description_checks=STANDARD_SAMPLE_DESCRIPTION_CHECKS,
@@ -937,8 +910,8 @@ output_filepath, chars_replaced=False):
     outf = open(output_filepath, 'w')
     
     if chars_replaced:
-        outfile_data=format_map_file(headers, id_map, description_map, \
-         run_description)
+        outfile_data=format_map_file(headers, id_map, DESC_KEY, SAMPLE_ID_KEY,\
+         description_map, run_description)
     else:
         outfile_data="# No invalid characters were found and replaced.\n"+\
         "# Note that non-IUPAC DNA characters found in primer or barcode\n"+\
@@ -997,7 +970,7 @@ def check_mapping_file(infile_name, output_dir, has_barcodes, char_replace, \
     """ Central program function for checking mapping file """
 	
     headers, id_map, description_map, run_description, errors, warnings = \
-     parse_id_map(open(infile_name, 'U'), has_barcodes, char_replace)
+     process_id_map(open(infile_name, 'U'), has_barcodes, char_replace)
 
     chars_replaced = test_for_replacement_chars(warnings)
 

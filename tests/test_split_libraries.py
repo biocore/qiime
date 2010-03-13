@@ -17,7 +17,7 @@ from qiime.split_libraries import (
     expand_degeneracies, get_infile, count_mismatches,
     ok_mm_primer, check_map, fasta_ids, qual_score,
     qual_scores, count_ambig, split_seq, primer_exceeds_mismatches,
-    check_barcode, make_histograms, format_histograms, SeqQualBad,
+    check_barcode, make_histograms, SeqQualBad,
     seq_exceeds_homopolymers, check_window_qual_scores
 )
 
@@ -158,17 +158,6 @@ z\tGG\tGC\t5\tsample_z"""
         self.assertEqual(post_hist, array([0,0,0,2]))
         self.assertEqual(bin_edges, array([100,110,120,130,140]))
 
-    def test_format_histograms(self):
-        """format_histograms should print histograms correctly"""
-        self.assertEqual(format_histograms(array([2,1,0,2,0,0]),
-            array([0,0,0,2,0,1]), array([100,110,120,130,140,150,160])),
-            """Length\tBefore\tAfter
-100\t2\t0
-110\t1\t0
-120\t0\t0
-130\t2\t2
-140\t0\t0
-150\t0\t1""")
 
 class SeqQualBadTests(TestCase):
     """Tests of the SeqQualBad class"""
