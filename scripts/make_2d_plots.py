@@ -20,9 +20,9 @@ from qiime.make_2d_plots import generate_2d_plots
 from qiime.parse import parse_map,parse_coords,group_by_field,group_by_fields
 import shutil
 import os
+from qiime.colors import sample_color_prefs_and_map_data_from_options,data_colors
 from qiime.util import get_qiime_project_dir
-from qiime.make_3d_plots import combine_map_label_cols,get_map,get_coord,\
-                         process_colorby,create_dir
+from qiime.make_3d_plots import create_dir,get_coord
 
 options_lookup = get_options_lookup()
 
@@ -56,6 +56,11 @@ header in the mapping file exactly and multiple categories can be list by comma 
 separating them without spaces. The user can also combine columns in the \
 mapping file by separating the categories by "&&" without spaces \
 [default=%default]'),
+ make_option('-p', '--prefs_path',help='This is the user-generated preferences \
+file. NOTE: This is a file with a dictionary containing preferences for the \
+analysis [default: %default]'),
+ make_option('-k', '--background_color',help='This is the background color to \
+use in the plots (Options are \'black\' or \'white\'. [default: %default]'),
 options_lookup['output_dir']
 ]
 
@@ -76,26 +81,11 @@ def main():
               Matplotlib-0.98.5.3"
     data = {}
 
+    prefs,data,background_color,label_color= \
+                            sample_color_prefs_and_map_data_from_options(opts)
+
     #Open and get coord data
     data['coord'] = get_coord(opts.coord_fname)
-
-    #Open and get mapping data, if none supplied create a pseudo mapping
-    #file
-    if opts.map_fname:
-        mapping = get_map(opts, data)
-    else:
-        data['map']=(([['#SampleID','Sample']]))
-        for i in range(len(data['coord'][0])):
-            data['map'].append([data['coord'][0][i],'Sample'])
-
-    #Determine which mapping headers to color by, if none given, color by
-    #Sample ID's
-    if opts.colorby:
-        prefs,data=process_colorby(opts.colorby,data)
-    else:
-        prefs={}
-        prefs['Sample']={}
-        prefs['Sample']['column']='#SampleID'
 
     filepath=opts.coord_fname
     filename=filepath.strip().split('/')[-1]
