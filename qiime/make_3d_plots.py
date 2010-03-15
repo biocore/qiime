@@ -241,25 +241,6 @@ def make_edges_output(coord_dict, edges, num_coords,label_color):
                           (' '.join(map(str, pt_to)), which_color))            
     return result
 
-def create_dir(dir_path,plot_type):
-    """Creates directory where data is stored.  If directory is not supplied in\
-       the command line, a random folder is generated"""
-       
-    alphabet = "ABCDEFGHIJKLMNOPQRSTUZWXYZ"
-    alphabet += alphabet.lower()
-    alphabet += "01234567890"
-
-    
-    if dir_path==None or dir_path=='':
-        dir_path=''
-        random_dir_name=''.join([choice(alphabet) for i in range(10)])
-        dir_path ='./'+plot_type+strftime("%Y_%m_%d_%H_%M_%S")+random_dir_name+'/'
-
-    if not os.path.exists(dir_path):
-        os.mkdir(dir_path)
-
-    return dir_path
-
 def process_custom_axes(axis_names):
     """Parses the custom_axes option from the command line"""
     return axis_names.strip().strip("'").strip('"').split(',')
@@ -306,16 +287,6 @@ def scale_custom_coords(custom_axes,coords):
         from_mx = max(coords[1][:,i])
         coords[1][:,i] = (coords[1][:,i]  - from_mn) / (from_mx - from_mn)
         coords[1][:,i] = (coords[1][:,i]) * (to_mx-to_mn) + to_mn
-
-def _make_path(paths):
-    """Join together the paths (e.g. dir and subdir prefix), empty str default"""
-    curr = ''
-    for p in paths:
-        if p:
-            curr += p
-            if curr and (not curr.endswith('/')):
-                curr += '/'
-    return curr
 
 #The following functions were not unit_tested, however the parts within
 #the functions are unit_tested
@@ -380,8 +351,7 @@ def generate_3d_plots(prefs, data, custom_axes, background_color,label_color, \
                         dir_path='',data_file_path='',filename=None, \
                         default_filename='out'):
     """Make 3d plots according to coloring options in prefs."""
-    kinpath = _make_path([(dir_path+data_file_path), filename])
-    kinlink = './'+data_file_path+'/' + filename +'.kin'
+    kinpath = os.path.join(dir_path,data_file_path,filename)
 
     htmlpath = dir_path
     if kinpath:
@@ -391,6 +361,8 @@ def generate_3d_plots(prefs, data, custom_axes, background_color,label_color, \
             kinpath += default_filename
     if not kinpath:
         return
+        
+    kinlink=kinpath+'.kin'
     
     coord_header, coords, eigvals, pct_var = data['coord']
     mapping=data['map']
@@ -410,7 +382,7 @@ def generate_3d_plots(prefs, data, custom_axes, background_color,label_color, \
     f.close()
     
     #Write html page with the kinemage embedded
-    f2 = open(htmlpath+filename+'_3D.html', 'w')
+    f2 = open(os.path.join(htmlpath,filename)+'_3D.html', 'w')
     f2.write("<html><head></head><body><applet code='king/Kinglet.class' \
 archive='./jar/king.jar' width=800 height=600> \
 <param name='kinSource' value='%s'></body></html>" % (kinlink)) 

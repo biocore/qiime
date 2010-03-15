@@ -25,10 +25,10 @@ from random import choice
 from time import strftime
 from qiime.util import get_qiime_project_dir
 from qiime.make_3d_plots import get_coord,get_map,remove_unmapped_samples, \
-                                process_colorby,create_dir, get_custom_coords, \
+                                get_custom_coords, \
                                 process_custom_axes, process_coord_filenames, \
                                 remove_nans, scale_custom_coords
-
+from qiime.pycogent_backports.misc import get_random_directory_name
 options_lookup = get_options_lookup()
 
 #make_3d_plots.py
@@ -97,27 +97,40 @@ def main():
         remove_nans(data['coord'])
         scale_custom_coords(custom_axes,data['coord'])
 
-    # Generate random output file name and create directories
-    dir_path = opts.output_dir
-    if dir_path and not dir_path.endswith('/'):
-        dir_path = dir_path + '/'
-    dir_path = create_dir(dir_path,'3d_plots_') 
-
-    alphabet = "ABCDEFGHIJKLMNOPQRSTUZWXYZ"
-    alphabet += alphabet.lower()
-    alphabet += "01234567890"
-
+    if opts.output_dir:
+        if os.path.exists(opts.output_dir):
+            dir_path=opts.output_dir
+        else:
+            try:
+                os.mkdir(opts.output_dir)
+                dir_path=opts.output_dir
+            except OSError:
+                pass
+    else:
+        dir_path='./'
+    
     qiime_dir=get_qiime_project_dir()
 
     jar_path=os.path.join(qiime_dir,'qiime/support_files/jar/')
 
-    data_file_path=''.join([choice(alphabet) for i in range(10)])
-    data_file_path=strftime("%Y_%m_%d_%H_%M_%S")+data_file_path
-    data_file_dir_path = dir_path+data_file_path
+    data_dir_path = get_random_directory_name(output_dir=dir_path)
+    
+    try:
+        os.mkdir(data_dir_path)
+    except OSError:
+        pass
 
-    data_file_dir_path=create_dir(data_file_dir_path,'')
-    jar_dir_path = create_dir(os.path.join(dir_path,'jar/'),'')
-    shutil.copyfile(os.path.join(jar_path,'king.jar'), jar_dir_path+'king.jar')
+    data_file_dir_path = data_dir_path
+    data_file_path=data_dir_path
+
+    jar_dir_path = os.path.join(dir_path,'jar')
+    
+    try:
+        os.mkdir(jar_dir_path)
+    except OSError:
+        pass
+    
+    shutil.copyfile(os.path.join(jar_path,'king.jar'), os.path.join(jar_dir_path,'king.jar'))
 
     filepath=opts.coord_fname
     filename=filepath.strip().split('/')[-1]

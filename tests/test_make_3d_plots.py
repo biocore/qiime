@@ -19,8 +19,7 @@ from random import choice, randrange
 import shutil
 from qiime.make_3d_plots import (make_3d_plots,scale_pc_data_matrix,
                                     auto_radius,make_mage_output,
-                                    get_coord,create_dir,
-                                    _make_path,natsort,process_custom_axes, 
+                                    get_coord,natsort,process_custom_axes, 
                                     get_custom_coords,remove_nans,
                                     scale_custom_coords,remove_unmapped_samples,
                                     make_edges_output)
@@ -162,24 +161,6 @@ class TopLevelTests(TestCase):
         
         self.assertEqual(obs_result, exp_result)
     
-    def test_create_dir(self):
-        """create_dir: creates a directory where the kinemage is stored"""
-
-        alphabet = "ABCDEFGHIJKLMNOPQRSTUZWXYZ"
-        alphabet += alphabet.lower()
-        alphabet += "01234567890"
-
-        random_dir_name=''.join([choice(alphabet) for i in range(10)])
-        foldername = '/tmp/'+random_dir_name+'/'
-            
-        self._dir_to_clean_up = foldername
-        
-        obs=create_dir(foldername,'')
-        
-        self.assertEqual(obs,foldername)
-        self.assertTrue(exists(foldername),'The file was not created in \
-the appropriate location')
-    
     def test_process_custom_axes(self):
         """process_custom_axes: Parses the custom_axes \
 option from the command line"""
@@ -253,14 +234,6 @@ Removes any samples not present in mapping file"""
                            [30,50,0.080504323,-0.212014503,-0.088353435]])
         self.assertEqual(coords[0],exp_header)
         self.assertEqual(coords[1],exp_coords)
-
-
-    def test__make_path(self):
-        """_make_path: Combine directory and filename into string"""
-        obs=_make_path([self.dir_path,self.filename])
-        exp='/tmp/test_pca.txt/'
-
-        self.assertEqual(obs,exp)
 
 exp_kin_full=\
 ['@kinemage {Day_unscaled}', '@dimension {PC1} {PC2} {PC3}', \
