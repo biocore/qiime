@@ -230,9 +230,9 @@ def make_edges_output(coord_dict, edges, num_coords,label_color):
         pt_to = coord_dict[id_to][:num_coords]
         diffs = (pt_to-pt_fr) * .66
         middles = pt_fr + diffs
-        result.append('%s%s' % \
+        result.append('%s %s' % \
                           (' '.join(map(str, pt_fr)),label_color))
-        result.append('%s%s P' % \
+        result.append('%s %s P' % \
                           (' '.join(map(str, middles)),label_color))
         
         result.append('%s %s' % \

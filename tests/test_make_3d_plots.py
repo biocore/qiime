@@ -54,7 +54,7 @@ class TopLevelTests(TestCase):
         self.prefs['Sample']={}   
         self.prefs['Sample']['column']="Day"
         self.background_color='black'
-        self.label_color=' white'
+        self.label_color='white'
         self.mapping=[["Sample-ID","Day","Type"],["Sample1","Day1","Soil"],\
                       ["Sample2","Day1","Soil"],["Sample3","Day1","Soil"]]
         self.mapping2=[["Sample-ID","Day","Type","Height","Weight"],\
