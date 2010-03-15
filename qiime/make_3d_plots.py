@@ -192,23 +192,23 @@ master={labels} nobutton' % (color, radius, alpha, num_coords))
         result.append('@vectorlist {%s line} dimension=%s %s' % \
             (axis_names[i], num_coords, state))
             
-        result.append(' '.join(map(str, axis_mins)) + label_color)
+        result.append(' '.join(map(str, axis_mins)) + ' ' + label_color)
         end = axis_mins.copy()
         end[i] = axis_maxes[i]
-        result.append(' '.join(map(str, end)) + label_color)
+        result.append(' '.join(map(str, end)) + ' ' + label_color)
         end[i] *= coord_scale  #add scale factor to offset labels a little
             
         if i < len(custom_axes):
             result.append('@labellist {%s} dimension=%s %s' % \
                               (axis_names[i], num_coords, state)) 
             result.append( ('{%s}' % (axis_names[i]))  + \
-                               ' '.join(map(str, end)) + label_color)
+                               ' '.join(map(str, end)) + ' ' + label_color)
         else:
             pct = pct_var[i-len(custom_axes)]
             result.append('@labellist {%s (%0.2g%%)} dimension=%s %s' % \
                               (axis_names[i], pct, num_coords, state))
             result.append( ('{%s (%0.2g%%)}' % (axis_names[i], pct))  + \
-                               ' '.join(map(str, end)) + label_color)
+                               ' '.join(map(str, end)) + ' ' + label_color)
 
     #Write edges if requested
     if edges:
