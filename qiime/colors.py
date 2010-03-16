@@ -13,7 +13,7 @@ __status__ = "Prototype"
 """Code for coloring series based on prefs file.
 """
 from colorsys import rgb_to_hsv, hsv_to_rgb
-from parse import parse_map, group_by_field
+from parse import new_parse_map, group_by_field
 from numpy import array
 import os
 import re
@@ -406,7 +406,7 @@ def get_map(options, data):
         map_f = open(options.map_fname, 'U').readlines()
     except (TypeError, IOError):
         raise MissingFileError, 'Mapping file required for this analysis'
-    data['map'] = parse_map(map_f)
+    data['map'] = new_parse_map(map_f)
     return data['map']
 
 def map_from_coords(coords):
@@ -418,7 +418,7 @@ def map_from_coords(coords):
     basic principle is that you need data structure that you can extract list
     of sample ids from.
     """
-    result=(([['#SampleID','Sample']]))
+    result=(([['SampleID','Sample']]))
     for i in range(len(data['coord'][0])):
             data['map'].append([data['coord'][0][i],'Sample'])
 
@@ -437,7 +437,12 @@ def sample_color_prefs_and_map_data_from_options(options):
     #Open and get mapping data, if none supplied create a pseudo mapping \
     #file
 
-    data['map'] = get_map(options, data)
+    mapping,headers,comments = get_map(options, data)
+    new_mapping=[]
+    new_mapping.append(headers)
+    for i in range(len(mapping)):
+        new_mapping.append(mapping[i])
+    data['map']=new_mapping
     #need to set some other way from sample ids
     #Determine which mapping headers to color by, if none given, color by \
     #Sample ID's
@@ -468,7 +473,7 @@ def sample_color_prefs_and_map_data_from_options(options):
     elif options.colorby:
         color_prefs,data=process_colorby(options.colorby,data)
     else:
-        color_prefs={'Sample':{'column':'#SampleID'}}
+        color_prefs={'Sample':{'column':'SampleID'}}
 
     return color_prefs,data,background_color,label_color
 
