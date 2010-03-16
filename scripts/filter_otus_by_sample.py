@@ -16,7 +16,7 @@ __status__ = "Pre-release"
 from optparse import make_option
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.filter_otus_by_sample import filter_samples,process_extract_samples
-from qiime.make_3d_plots import create_dir
+import os
 from cogent import LoadSeqs
 from qiime.parse import fields_to_dict
 
@@ -69,8 +69,18 @@ def main():
     filename=filepath.strip().split('/')[-1]
     filename=filename.split('.')[0]
 
-    dir_path = create_dir(opts.output_dir,'filtered_by_otus')
-
+    if opts.output_dir:
+        if os.path.exists(opts.output_dir):
+            dir_path=opts.output_dir
+        else:
+            try:
+                os.mkdir(opts.output_dir)
+                dir_path=opts.output_dir
+            except OSError:
+                pass
+    else:
+        dir_path='./'
+        
     try:
       action = filter_samples
     except NameError:
