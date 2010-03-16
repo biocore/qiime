@@ -113,7 +113,7 @@ class TopLevelTests(TestCase):
               'yellow':   (60,100,100),
         }
         self.data_color_order = ['blue','lime','red','aqua','fuchsia','yellow',\
-                        'green','maroon','teal','purple','olive','silver','gray']
+                        'green','maroon','teal','purple','olive','silver','gray',[]]
         self._paths_to_clean_up = []
         self._dir_to_clean_up = ''
 
@@ -212,15 +212,30 @@ from mapping file to color by"""
 
     def test_iter_color_groups(self):
         """iter_color_groups should iterate over color groups correctly."""
+
+        obs=iter_color_groups(self.mapping,self.prefs)
+        obs1=list(obs)
+        obs_label=obs1[0][0]
+        obs_groups=obs1[0][1]
+        obs_colors=obs1[0][2]
+        obs_data_colors=obs1[0][3]
+        obs_data_color_order=obs1[0][4]
+        
         
         data_colors = color_dict_to_objects(self.data_color_hsv)
-        exp=[(self.labelname,self.dict,self.colors,data_colors,self.data_color_order)]
         
-        obs=iter_color_groups(self.mapping,self.prefs,data_colors,self.data_color_order)
-        obs1=list(obs)
+        self.assertEqual(obs_label,self.labelname)
+        self.assertEqual(obs_groups,self.dict)
+        self.assertEqual(obs_colors,self.colors)
+        self.assertEqual(obs_data_colors.keys(),data_colors.keys())
         
-        self.assertEqual(obs1,exp)
-
+        #Need to iterate through color object, since they has different ids 
+        #assigned each time using color_dict_to_objects
+        for key in data_colors:
+            self.assertEqual(obs_data_colors[key].toHex(),data_colors[key].toHex())
+        
+        self.assertEqual(obs_data_color_order,self.data_color_order)
+        
     def test_get_group_colors(self):
         """get_group_colors should iterate over color groups correctly."""
 

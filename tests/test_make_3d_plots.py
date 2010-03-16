@@ -17,6 +17,7 @@ from cogent.util.unit_test import TestCase, main
 from os import remove
 from random import choice, randrange
 import shutil
+from qiime.colors import data_colors
 from qiime.make_3d_plots import (make_3d_plots,scale_pc_data_matrix,
                                     auto_radius,make_mage_output,
                                     get_coord,natsort,process_custom_axes, 
@@ -131,7 +132,7 @@ class TopLevelTests(TestCase):
         # test without custom axes
         obs_kin=make_mage_output(self.groups,self.colors,self.coord_header,\
                                  self.coords,self.pct_var,self.background_color,\
-                                 self.label_color)
+                                 self.label_color,data_colors)
         self.assertEqual(obs_kin,exp_kin_partial)
 
         # test with custom axes
@@ -143,7 +144,7 @@ class TopLevelTests(TestCase):
         scale_custom_coords(custom_axes,coords)
         obs_kin=make_mage_output(self.groups,self.colors,self.coord_header,\
                                  coords[1],self.pct_var,self.background_color, \
-                                 self.label_color,custom_axes)
+                                 self.label_color,data_colors,custom_axes)
         self.assertEqual(obs_kin, exp_kin_partial_axes)
 
     def test_make_edge_output(self):

@@ -144,8 +144,7 @@ data_color_hsv = {
 
 data_colors = color_dict_to_objects(data_color_hsv)
 
-def iter_color_groups(mapping, prefs, data_colors=
-    data_colors, data_color_order=data_color_order):
+def iter_color_groups(mapping, prefs):
     """Iterates over color groups for each category given mapping file/prefs.
 
     See get_group_colors for details of algorithm.
@@ -165,10 +164,11 @@ def iter_color_groups(mapping, prefs, data_colors=
         #Define groups and associate appropriate colors to each group
         groups = group_by_field(mapping, col_name)
         colors, data_colors, data_color_order = \
-            get_group_colors(groups, colors, data_colors, data_color_order)
+            get_group_colors(groups, colors)
+
         yield labelname, groups, colors, data_colors, data_color_order
 
-def get_group_colors(groups, colors, data_colors, data_color_order):
+def get_group_colors(groups, colors, data_colors=data_colors, data_color_order=data_color_order):
     """Figures out group colors for a specific series based on prefs.
 
     Algorithm is as follows:
@@ -457,9 +457,9 @@ def sample_color_prefs_and_map_data_from_options(options):
         background_color=options.background_color
 
     if background_color=='black':
-        label_color=' white'
+        label_color='white'
     else:
-        label_color=' black'
+        label_color='black'
     
     if options.prefs_path and options.colorby:
         color_prefs, data=process_colorby(options.colorby, data, prefs['sample_coloring'])

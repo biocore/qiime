@@ -21,6 +21,7 @@ from qiime.make_2d_plots import (make_interactive_scatter,transform_xy_coords,
                                   extract_and_color_xy_coords,write_html_file,
                                   create_html_filename,
                                   convert_coord_data_to_dict,generate_xmap)
+from qiime.colors import data_colors
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -41,18 +42,36 @@ class TopLevelTests(TestCase):
         self.groups={}
         self.groups['Day1']=['Sample1','Sample2']
         self.colors={}
-        self.colors['Day1']='#0000FF'
+        self.colors['Day1']='blue'
         self.prefs={}
         self.prefs['Sample']={}
         self.prefs['Sample']['column']='Day'
-        
+        self.data_color_hsv = {
+              'aqua':     (180, 100, 100),
+              'blue':     (240,100,100),
+              'fuchsia':  (300,100,100),
+              'gray':     (300,0,50.2),
+              'green':    (120,100,50.2),
+              'lime':     (120,100,100),
+              'maroon':   (0,100,50.2),
+              'olive':    (60,100,50.2),
+              'purple':   (300,100,50.2),
+              'red':      (0,100,100),
+              'silver':   (0, 0, 75.3),
+              'teal':     (180,100,50.2),
+              'yellow':   (60,100,100),
+        }
+        self.data_color_order = ['blue','lime','red','aqua','fuchsia','yellow',\
+                        'green','maroon','teal','purple','olive','silver','gray',[]]
+        self.background_color='black'
+        self.label_color='white'
         self.dir_path='/tmp/'
         self.data_file_link='/tmp/'
         self.xy_coords={}
         self.xy_coords['Sample1']=([-0.2], [0.07], ['Sample1: Day1'],\
-                                   ['#0000FF'])
+                                   ['#0000ff'],['s'])
         self.xy_coords['Sample2']=([-0.04], [0.2], ['Sample2: Day1'],\
-                                   ['#0000FF'])
+                                   ['#0000ff'],['s'])
         self.coord_1='1'
         self.coord_2='2'
         
@@ -87,9 +106,11 @@ images"""
 
         self._paths_to_clean_up = [filename1,filename2]
 
-        obs1,obs2,obs3=make_interactive_scatter(self.plot_label,self.dir_path,self.data_file_link,self.xy_coords, 
-                        self.props, self.x_len, self.y_len, self.size,
-                        draw_axes=False, generate_eps=True)
+        obs1,obs2,obs3=make_interactive_scatter(self.plot_label,self.dir_path,
+                                self.data_file_link,self.background_color,
+                                self.label_color,self.xy_coords,self.props, 
+                                self.x_len, self.y_len, self.size,
+                                draw_axes=False, generate_eps=True)
 
         self.assertEqual(obs1,expsrcmap1)
         self.assertEqual(obs2,expimgmap1)
@@ -114,7 +135,8 @@ the appropriate location')
         exp=array([[-0.04, 0.2 ]])
 
         sc_plot = draw_scatterplot(self.props,self.xy_coords,self.x_len,\
-                                   self.y_len,self.alpha,self.size)
+                                   self.y_len,self.alpha,self.size,
+                                      self.background_color,self.label_color)
         obs=sc_plot.get_offsets()
 
         self.assertEqual(obs,exp)
@@ -123,7 +145,8 @@ the appropriate location')
         """transform_xy_coords: transforms the xy coords from the matplotlib \
 plot into html spatial coords which allows for mouseovers"""
         sc_plot = draw_scatterplot(self.props,self.xy_coords,self.x_len,\
-                                   self.y_len,self.alpha, self.size)
+                                   self.y_len,self.alpha, self.size,
+                                   self.background_color,self.label_color)
                                
         obs1,obs2,obs3=transform_xy_coords(self.xy_coords,sc_plot)
         
@@ -138,9 +161,12 @@ plot into html spatial coords which allows for mouseovers"""
         filename2='/tmp/P1vsP2plot.eps.gz'
 
         self._paths_to_clean_up = [filename1,filename2]
-
-        obs1,obs2=draw_pca_graph(self.plot_label,self.dir_path,self.data_file_link,self.coord_1,self.coord_2,
+        
+        obs1,obs2=draw_pca_graph(self.plot_label,self.dir_path,
+                                 self.data_file_link,self.coord_1,self.coord_2,
                                  self.data,self.prefs,self.groups,self.colors,
+                                 self.background_color,self.label_color,
+                                 data_colors,self.data_color_order,
                                  generate_eps=True)
 
         self.assertEqual(obs1,expsrcmap2+expimgmap2)
@@ -155,7 +181,7 @@ the appropriate location')
 associates colors to those coords based on its group"""
         
         obs=extract_and_color_xy_coords(self.p1d,self.p2d,self.colors,
-                                        self.groups,self.coords)
+                                        data_colors,self.groups,self.coords)
                                         
         self.assertFloatEqual(obs,self.xy_coords)
         

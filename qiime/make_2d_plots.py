@@ -19,9 +19,11 @@ from string import strip
 from numpy import array
 from time import strftime
 from random import choice
-from qiime.make_3d_plots import create_dir
 from qiime.parse import group_by_field,group_by_fields
-
+from qiime.colors import natsort, data_color_order, data_colors, \
+                            get_group_colors,data_colors,iter_color_groups
+from qiime.pycogent_backports.misc import get_random_directory_name
+import os
 
 TABLE_HTML = """<table cellpadding=0 cellspacing=0 border=0>
 <tr>
@@ -74,17 +76,18 @@ shape = [
     'p', # : pentagon
     'h', # : hexagon
 ]
-
+'''
 data_colors={'blue':'#0000FF','lime':'#00FF00','red':'#FF0000', \
              'aqua':'#00FFFF','fuchsia':'#FF00FF','yellow':'#FFFF00', \
              'green':'#008000','maroon':'#800000','teal':'#008080', \
              'purple':'#800080','olive':'#808000', \
              'silver':'#C0C0C0','gray':'#808080'}
-
+'''
 default_colors=['blue','lime','red','aqua','fuchsia','yellow','green', \
                'maroon','teal','purple','olive','silver','gray']
 
-def make_interactive_scatter(plot_label,dir_path,data_file_link,xy_coords, 
+def make_interactive_scatter(plot_label,dir_path,data_file_link, 
+                                background_color,label_color,xy_coords, 
                                 props, x_len=8, y_len=4, size=10,
                                 draw_axes=False, generate_eps=True):
     """Write interactive plot  
@@ -96,43 +99,47 @@ def make_interactive_scatter(plot_label,dir_path,data_file_link,xy_coords,
     my_axis=None    
     rc('font', size='8')
     rc('patch', linewidth=0)
-    rc('axes', linewidth=.5,edgecolor='black')
+    rc('axes', linewidth=.5,edgecolor=label_color)
     rc('axes', labelsize=8)
-    rc('xtick', labelsize=8,color='black')
-    rc('ytick', labelsize=8,color='black')
-
-    sc_plot=draw_scatterplot(props,xy_coords,x_len,y_len,alpha,size)
+    rc('xtick', labelsize=8,color=label_color)
+    rc('ytick', labelsize=8,color=label_color)
+    
+    sc_plot=draw_scatterplot(props,xy_coords,x_len,y_len,alpha,size,
+                                background_color,label_color)
     
     mtitle = props.get("title","Groups")
     x_label = props.get("xlabel","X")
     y_label = props.get("ylabel","Y")
         
-    title('%s' % mtitle, fontsize='10',color='black')
-    xlabel(x_label, fontsize='8',color='black')
-    ylabel(y_label, fontsize='8',color='black')
+    title('%s' % mtitle, fontsize='10',color=label_color)
+    xlabel(x_label, fontsize='8',color=label_color)
+    ylabel(y_label, fontsize='8',color=label_color)
 
     if draw_axes:
-        axvline(linewidth=.5, x=0, color='black')
-        axhline(linewidth=.5, y=0, color='black')
+        axvline(linewidth=.5, x=0, color=label_color)
+        axhline(linewidth=.5, y=0, color=label_color)
     if my_axis is not None:
         axis(my_axis)
     
     ax=sc_plot.get_axes()
     for line in ax.yaxis.get_ticklines():
         # Color the tick lines in the 2D
-        line.set_color('white')
+        line.set_color(label_color)
+    for line in ax.xaxis.get_ticklines():
+        # Color the tick lines in the 2D
+        line.set_color(label_color)
 
     img_name = x_label[0:2]+'_vs_'+y_label[0:2]+'_plot.png'
-    savefig(dir_path + img_name, dpi=80,facecolor='white')
+    savefig(os.path.join(dir_path,img_name), dpi=80,facecolor=background_color)
     
     #Create zipped eps files
     eps_link = ""
     if generate_eps:
         eps_img_name = str(x_label[0:2]+'vs'+y_label[0:2]+'plot.eps')
-        savefig(dir_path + eps_img_name,format='eps')
-        out = getoutput("gzip -f " + dir_path + eps_img_name)
-        eps_link =  DOWNLOAD_LINK % ((data_file_link + eps_img_name + ".gz"), \
-                                     "Download Figure")
+        savefig(os.path.join(dir_path,eps_img_name),format='eps')
+        out = getoutput("gzip -f " + os.path.join(dir_path, eps_img_name))
+        eps_link =  DOWNLOAD_LINK % ((os.path.join(data_file_link,eps_img_name) \
+                                        + ".gz"), "Download Figure")
 
     all_cids,all_xcoords,all_ycoords=transform_xy_coords(xy_coords,sc_plot)
 
@@ -142,9 +149,9 @@ def make_interactive_scatter(plot_label,dir_path,data_file_link,xy_coords,
 
     points_id = plot_label+x_label[1:2]+y_label[1:2]
 
-    return IMG_MAP_SRC % (data_file_link + img_name, points_id, img_width, \
-                          img_height), MAP_SRC % (points_id, ''.join(xmap)), \
-                          eps_link 
+    return IMG_MAP_SRC % (os.path.join(data_file_link,img_name), points_id, 
+                            img_width, img_height), MAP_SRC % \
+                            (points_id, ''.join(xmap)), eps_link 
 
 def generate_xmap(x_len,y_len,all_cids,all_xcoords,all_ycoords):
     """Generates the html interactive image map"""
@@ -159,7 +166,8 @@ def generate_xmap(x_len,y_len,all_cids,all_xcoords,all_ycoords):
     
     return xmap,img_height,img_width
 
-def draw_scatterplot(props,xy_coords,x_len,y_len,alpha,size):
+def draw_scatterplot(props,xy_coords,x_len,y_len,alpha,size,background_color,
+                        label_color):
     """Create scatterplot figure"""
     
     fig = figure(figsize=(x_len,y_len))
@@ -170,12 +178,14 @@ def draw_scatterplot(props,xy_coords,x_len,y_len,alpha,size):
     #Iterate through coords and add points to the scatterplot
     for s_label in sorted_keys:
         s_data = xy_coords[s_label]
+        
         if s_data[0]==[]:
             pass
         else:
             c = s_data[3]
-            m =shape[shape_ct % len(shape)]
-            ax = fig.add_subplot(111,axisbg='white')
+            m = s_data[4][0]
+
+            ax = fig.add_subplot(111,axisbg=background_color)
             sc_plot = ax.scatter(s_data[0], s_data[1], c=c, marker=m, \
                                  alpha=alpha,s=size, linewidth=1,edgecolor=c) 
             size_ct += 1 
@@ -207,8 +217,10 @@ def transform_xy_coords(xy_coords,sc_plot):
     
     return all_cids,all_xcoords,all_ycoords
     
-def draw_pca_graph(plot_label,dir_path,data_file_link,coord_1,coord_2,data,prefs,groups,colors,\
-                   generate_eps=True):
+def draw_pca_graph(plot_label,dir_path,data_file_link,coord_1,coord_2,data,
+                    prefs,groups,colors,background_color,label_color,data_colors,data_color_order,\
+                    generate_eps=True):
+                    
     """Draw PCA graphs"""
     coords,pct_var=convert_coord_data_to_dict(data)
     mapping = data['map']
@@ -236,46 +248,51 @@ def draw_pca_graph(plot_label,dir_path,data_file_link,coord_1,coord_2,data,prefs
                         % (coord_1, float(pct_var[coord_1])) 
 
     labels = coords['pc vector number']
-
     p1 = map(float, coords[coord_2])
     p2 = map(float, coords[coord_1])
-
     if len(p1) != len(p2):
         raise ValueError, "Principal coordinate vectors unequal length."
-
     p1d = dict(zip(labels, p1))
     p2d = dict(zip(labels, p2))
-
-    xy_coords=extract_and_color_xy_coords(p1d,p2d,colors,groups,coords)
+    
+    xy_coords=extract_and_color_xy_coords(p1d,p2d,colors,data_colors,groups,coords)
  
-    img_src, img_map, eps_link =  make_interactive_scatter(plot_label,dir_path,data_file_link,
-                                     xy_coords=xy_coords,props=props,x_len=4.5, 
-                                     y_len=4.5,size=20,draw_axes=True,
-                                     generate_eps=generate_eps)
+    img_src, img_map, eps_link =  make_interactive_scatter(plot_label,dir_path,
+                                    data_file_link,background_color,label_color,
+                                    xy_coords=xy_coords,props=props,x_len=4.5, 
+                                    y_len=4.5,size=20,draw_axes=True,
+                                    generate_eps=generate_eps)
 
     return img_src + img_map, eps_link
     
-def extract_and_color_xy_coords(p1d,p2d,colors,groups,coords):
+def extract_and_color_xy_coords(p1d,p2d,colors,data_colors,groups,coords):
     """Extract coords from appropriate columns and attach their \
        corresponding colors based on the group"""
 
     xy_coords = {}
+    shape_ct = 0 
     for group_name, ids in sorted(groups.items()):
         x=0
-        color = colors[group_name]
+        #print colors
+        #print data_colors
+        color = data_colors[colors[group_name]].toHex()
+        m =shape[shape_ct % len(shape)]
+        shape_ct += 1
         for id_ in sorted(ids):
             cur_labs = []
             cur_x = []
             cur_y = []
             cur_color = []
+            cur_shape=[]
             if id_ in coords['pc vector number']:
                 cur_labs.append(id_+': '+group_name)
                 cur_x.append(p2d[id_])
                 cur_y.append(p1d[id_])
-                cur_color.append(colors[group_name])
+                cur_color.append(color)
+                cur_shape.append(m)
  
-            xy_coords["%s" % id_] = (cur_x, cur_y, cur_labs,cur_color)
-    
+            xy_coords["%s" % id_] = (cur_x, cur_y, cur_labs,cur_color,cur_shape)
+        
     return xy_coords
 
 def create_html_filename(coord_filename,name_ending):
@@ -304,51 +321,45 @@ def write_html_file(out_table,outpath):
     out.write(page_out)
     out.close()
 
-def generate_2d_plots(prefs,data,dir_path,filename):
+def generate_2d_plots(prefs,data,html_dir_path,data_dir_path,filename,
+                        background_color,label_color):
     """Generate interactive 2D scatterplots"""
     coord_tups = [("1", "2"), ("3", "2"), ("1", "3")]
     mapping=data['map']
     out_table=''
     #Iterate through prefs and generate html files for each colorby option
-    for name, p in prefs.items():
-        group_num=-1
-        col_name = p['column']
-        new_col_name=col_name.strip('#')
-        
-        alphabet = "ABCDEFGHIJKLMNOPQRSTUZWXYZ"
-        alphabet += alphabet.lower()
-        alphabet += "01234567890"
+    #Sort by the column name first
 
-        data_file_path=''.join([choice(alphabet) for i in range(10)])
-        data_file_path='2d_plots_'+strftime("%Y_%m_%d_%H_%M_%S")+data_file_path+new_col_name+'/'
-        data_file_dir_path = dir_path+data_file_path
-        data_file_link='./'+data_file_path
+    groups_and_colors=iter_color_groups(mapping,prefs)
+    groups_and_colors=list(groups_and_colors)
 
-        data_file_dir_path=create_dir(data_file_dir_path,'')
-        colors={}
-        groups = group_by_field(mapping, col_name)
-        
-        #Iterate through groups and associate colors to each group
-        for g in groups:
-            if g not in colors:
-                group_num+=1
-                if group_num==len(data_colors):
-                    group_num=0
-                colors[g] = data_colors[default_colors[group_num]]
-        
+    for i in range(len(groups_and_colors)):
+        labelname=groups_and_colors[i][0]
+        groups=groups_and_colors[i][1]
+        colors=groups_and_colors[i][2]
+        data_colors=groups_and_colors[i][3]
+        data_color_order=groups_and_colors[i][4]
+        data_file_dir_path = get_random_directory_name(output_dir=data_dir_path)
+        data_file_link=data_file_dir_path
+        new_col_name=labelname
+
         img_data = {}
-        plot_label=p['column']
+        plot_label=labelname#p['column']
         for coord_tup in coord_tups: 
             coord_1, coord_2 = coord_tup
-            img_data[coord_tup] = draw_pca_graph(plot_label,data_file_dir_path,data_file_link,coord_1,coord_2,data,\
-                                                 prefs,groups,colors,\
+            img_data[coord_tup] = draw_pca_graph(plot_label,data_file_dir_path,
+                                                 data_file_link,coord_1,coord_2,
+                                                 data,prefs,groups,colors,
+                                                 background_color,label_color,
+                                                 data_colors,data_color_order,
                                                  generate_eps=True)    
 
         out_table += TABLE_HTML % ("<br>".join(img_data[("1", "2")]),
                                   "<br>".join(img_data[("3", "2")]),
                                    "<br>".join(img_data[("1", "3")]))
-    outfile = create_html_filename(filename+new_col_name,'_pca_2D.html')
-    outfile=dir_path+outfile
+                                   
+    outfile = create_html_filename(filename,'_pca_2D.html')
+    outfile=os.path.join(html_dir_path,outfile)
         
     write_html_file(out_table,outfile)
         

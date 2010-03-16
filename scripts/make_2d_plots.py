@@ -20,9 +20,10 @@ from qiime.make_2d_plots import generate_2d_plots
 from qiime.parse import parse_map,parse_coords,group_by_field,group_by_fields
 import shutil
 import os
-from qiime.colors import sample_color_prefs_and_map_data_from_options,data_colors
+from qiime.colors import sample_color_prefs_and_map_data_from_options
 from qiime.util import get_qiime_project_dir
-from qiime.make_3d_plots import create_dir,get_coord
+from qiime.make_3d_plots import get_coord
+from qiime.pycogent_backports.misc import get_random_directory_name
 
 options_lookup = get_options_lookup()
 
@@ -60,13 +61,11 @@ mapping file by separating the categories by "&&" without spaces \
 file. NOTE: This is a file with a dictionary containing preferences for the \
 analysis [default: %default]'),
  make_option('-k', '--background_color',help='This is the background color to \
-use in the plots (Options are \'black\' or \'white\'. [default: %default]'),
+use in the plots. [default: %default]'),
 options_lookup['output_dir']
 ]
 
 script_info['version'] = __version__
-
-
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
@@ -94,19 +93,34 @@ def main():
 
     js_path=os.path.join(qiime_dir,'qiime','support_files','js')
 
-    dir_path=opts.output_dir
-    if dir_path and not dir_path.endswith("/"):
-        dir_path=dir_path+"/"
+    if opts.output_dir:
+        if os.path.exists(opts.output_dir):
+            dir_path=opts.output_dir
+        else:
+            try:
+                os.mkdir(opts.output_dir)
+                dir_path=opts.output_dir
+            except OSError:
+                pass
+    else:
+        dir_path='./'
+        
+    html_dir_path=dir_path
+    data_dir_path = get_random_directory_name(output_dir=dir_path)
+    
+    try:
+        os.mkdir(data_dir_path)
+    except OSError:
+        pass
 
-    dir_path=create_dir(dir_path,'2d_plots_')
-
-    js_dir_path = os.path.join(dir_path,'js')
+    js_dir_path = os.path.join(html_dir_path,'js')
     try:
         os.mkdir(js_dir_path)
     except OSError:
         pass
 
-    shutil.copyfile(os.path.join(js_path,'overlib.js'), os.path.join(js_dir_path,'overlib.js'))
+    shutil.copyfile(os.path.join(js_path,'overlib.js'), \
+                                    os.path.join(js_dir_path,'overlib.js'))
 
     try:
         action = generate_2d_plots
@@ -114,7 +128,8 @@ def main():
         action = None
     #Place this outside try/except so we don't mask NameError in action
     if action:
-        action(prefs, data, dir_path,filename)
+        action(prefs,data,html_dir_path,data_dir_path,filename,background_color,
+                label_color)
 
 
 if __name__ == "__main__":

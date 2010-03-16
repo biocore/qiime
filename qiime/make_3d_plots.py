@@ -13,7 +13,7 @@ __status__ = "Pre-release"
 
 from cogent.util.misc import flatten
 from qiime.parse import parse_coords,parse_map,group_by_field
-from qiime.colors import (natsort, data_color_order, data_colors,
+from qiime.colors import (natsort,
         get_group_colors, color_groups, make_color_dict, combine_map_label_cols,
         process_colorby, linear_gradient,iter_color_groups,get_map)
 from numpy import array, shape, apply_along_axis, dot, delete, vstack
@@ -40,16 +40,41 @@ xdata_colors = {
         'yellow':   (60,100,100),
 }
 '''
+
+data_colors={'blue':'#0000FF','lime':'#00FF00','red':'#FF0000', \
+             'aqua':'#00FFFF','fuchsia':'#FF00FF','yellow':'#FFFF00', \
+             'green':'#008000','maroon':'#800000','teal':'#008080', \
+             'purple':'#800080','olive':'#808000', \
+             'silver':'#C0C0C0','gray':'#808080'}
+             
 kinemage_colors = ['hotpink','blue', 'lime','gold', \
                        'red','sea','purple','green']
 
 class MissingFileError(IOError):
     pass
 
+def create_dir(dir_path,plot_type):
+    """Creates directory where data is stored.  If directory is not supplied in\
+       the command line, a random folder is generated"""
+
+    alphabet = "ABCDEFGHIJKLMNOPQRSTUZWXYZ"
+    alphabet += alphabet.lower()
+    alphabet += "01234567890"
+
+
+    if dir_path==None or dir_path=='':
+        dir_path=''
+        random_dir_name=''.join([choice(alphabet) for i in range(10)])
+        dir_path ='./'+plot_type+strftime("%Y_%m_%d_%H_%M_%S")+random_dir_name+'/'
+
+    if not os.path.exists(dir_path):
+        os.mkdir(dir_path)
+
+    return dir_path
+
 
 def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, \
                     background_color,label_color,custom_axes=None, \
-                    data_colors=data_colors,data_color_order=data_color_order, \
                     edges=None):
     """Makes 3d plots given coords, mapping file, and prefs.
     
@@ -72,8 +97,7 @@ def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, \
     result = []
     #Iterate through prefs and color by given mapping labels
     #Sort by the column name first
-    groups_and_colors=iter_color_groups(mapping,prefs,data_colors, \
-                                        data_color_order)
+    groups_and_colors=iter_color_groups(mapping,prefs)
     groups_and_colors=list(groups_and_colors)
 
     for i in range(len(groups_and_colors)):  
@@ -85,11 +109,11 @@ def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, \
         data_color_order=groups_and_colors[i][4]
         
         result.extend(make_mage_output(groups, colors, coord_header, coords, \
-            pct_var,background_color,label_color,custom_axes,name=labelname, \
-            scaled=False, data_colors=data_colors, edges=edges))
+            pct_var,background_color,label_color,data_colors,custom_axes,name=labelname, \
+            scaled=False, edges=edges))
         result.extend(make_mage_output(groups, colors, coord_header, coords, \
-            pct_var,background_color,label_color,custom_axes,name=labelname, \
-            scaled=True, data_colors=data_colors, edges=edges))
+            pct_var,background_color,label_color,data_colors,custom_axes,name=labelname, \
+            scaled=True, edges=edges))
 
     return result
 
@@ -106,9 +130,9 @@ def auto_radius(coords,ratio=0.01):
     return ratio*range
 
 def make_mage_output(groups, colors, coord_header, coords, pct_var, \
-                     background_color,label_color,custom_axes=None,name='', \
+                     background_color,label_color,data_colors,custom_axes=None,name='', \
                      radius=None, alpha=.75, num_coords=10,scaled=False, \
-                     coord_scale=1.05, data_colors=data_colors, edges=None):
+                     coord_scale=1.05, edges=None):
     """Convert groups, colors, coords and percent var into mage format"""
     result = []
     
