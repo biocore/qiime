@@ -23,7 +23,7 @@ from qiime.parallel.util import get_random_job_prefix, write_jobs_file,\
     submit_jobs, get_poller_command, get_rename_command,\
     write_filepaths_to_file
 from qiime.beta_diversity import list_known_metrics
-from qiime.util import load_qiime_config, get_qiime_project_dir, get_options_lookup
+from qiime.util import load_qiime_config, get_qiime_scripts_dir, get_options_lookup
 from qiime.parallel.beta_diversity import get_job_commands
 
 qiime_config = load_qiime_config()
@@ -53,7 +53,7 @@ script_info['optional_options'] = [\
  make_option('-N','--beta_diversity_fp',action='store',\
            type='string',help='full path to '+\
            'scripts/beta_diversity.py [default: %default]',\
-           default=join(get_qiime_project_dir(),'scripts','beta_diversity.py')),\
+           default=join(get_qiime_scripts_dir(),'beta_diversity.py')),\
  options_lookup['poller_fp'],\
  options_lookup['retain_temp_files'],\
  options_lookup['suppress_submit_jobs'],\

@@ -214,15 +214,7 @@ class FunctionWithParams(object):
             return result
 
 def get_qiime_project_dir():
-    """ Returns the top-level QIIME directory 
-    
-        Although this value is stored in qiime_config, we are currently
-         not requiring users to setup a qiime_config. Because developers
-         were doing variants of this functionality throughout the code,
-         it's safer to define this as a single tested function, and if we
-         utimately do require users to set up a qiime_config, we can 
-         modify this function to pull the value from there.
-    
+    """ Returns the top-level QIIME directory
     """
     # Get the full path of util.py
     current_file_path = abspath(__file__)
@@ -230,6 +222,27 @@ def get_qiime_project_dir():
     current_dir_path = dirname(current_file_path)
     # Return the directory containing the directory containing util.py
     return dirname(current_dir_path)
+    
+def get_qiime_scripts_dir():
+    """ Returns the QIIME scripts directory 
+    
+        This value must be stored in qiime_config if the user
+        has installed qiime using setup.py. If it is not in
+        qiime_config, it is inferred from the qiime_project_dir.
+    
+    """
+    qiime_config = load_qiime_config()
+    qiime_config_value = qiime_config['qiime_scripts_dir']
+    if qiime_config_value != None:
+        result = qiime_config_value
+    else:
+        result = join(get_qiime_project_dir(),'scripts')
+    
+    assert exists(result),\
+     "qiime_scripts_dir does not exist: %s." % result +\
+     " Have you defined it correctly in your qiime_config?"
+    
+    return result
 
 # Begin functions for handling qiime_config file
 def parse_qiime_config_file(qiime_config_file):
@@ -424,7 +437,7 @@ def get_options_lookup():
      make_option('-P','--poller_fp',action='store',\
        type='string',help='full path to '+\
        'qiime/parallel/poller.py [default: %default]',\
-       default=join(get_qiime_project_dir(),'scripts','poller.py'))
+       default=join(get_qiime_scripts_dir(),'poller.py'))
     result['retain_temp_files'] =\
      make_option('-R','--retain_temp_files',action='store_true',\
        help='retain temporary files after runs complete '+\
@@ -445,7 +458,7 @@ def get_options_lookup():
         help='path to cluster_jobs.py script ' +\
         ' [default: %default]',\
         default=qiime_config['cluster_jobs_fp'] or\
-         join(get_qiime_project_dir(),'scripts','start_parallel_jobs.py'))
+         join(get_qiime_scripts_dir(),'start_parallel_jobs.py'))
     result['suppress_polling'] =\
      make_option('-W','--suppress_polling',action='store_true',
         help='suppress polling of jobs and merging of results '+\

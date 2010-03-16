@@ -22,7 +22,7 @@ from qiime.parallel.util import split_fasta, get_random_job_prefix, write_jobs_f
     submit_jobs, compute_seqs_per_file, build_filepaths_from_filepaths,\
     get_poller_command, write_filepaths_to_file,\
     write_merge_map_file_assign_taxonomy
-from qiime.util import get_qiime_project_dir, get_options_lookup
+from qiime.util import get_qiime_scripts_dir, get_options_lookup
 from qiime.parallel.multiple_rarefactions import get_job_commands
 
 options_lookup = get_options_lookup()
@@ -56,7 +56,7 @@ script_info['optional_options'] = [\
         help="""output rarefied otu tables will include taxonomic (lineage) information for each otu, if present in input otu table [default: %default]"""),
  make_option('-N','--single_rarefaction_fp',action='store',\
            type='string',help='full path to scripts/single_rarefaction.py [default: %default]',\
-           default=join(get_qiime_project_dir(),'scripts','single_rarefaction.py')),\
+           default=join(get_qiime_scripts_dir(),'single_rarefaction.py')),\
  options_lookup['poller_fp'],\
  options_lookup['retain_temp_files'],\
  options_lookup['suppress_submit_jobs'],\

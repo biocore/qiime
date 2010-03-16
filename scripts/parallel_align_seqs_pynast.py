@@ -17,7 +17,7 @@ from os import popen, system, makedirs, mkdir
 from subprocess import check_call, CalledProcessError
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from qiime.util import load_qiime_config, parse_command_line_parameters,\
-    get_options_lookup, get_qiime_project_dir
+    get_options_lookup, get_qiime_scripts_dir
 from pynast.util import pairwise_alignment_methods
 from qiime.parallel.util import split_fasta, get_random_job_prefix,\
     write_jobs_file, submit_jobs, compute_seqs_per_file,\
@@ -65,7 +65,7 @@ script_info['optional_options'] = [\
  make_option('-N','--align_seqs_fp',action='store',\
            type='string',help='full path to '+\
            'Qiime/scripts/align_seqs.py [default: %default]',\
-           default=join(get_qiime_project_dir(),'scripts','align_seqs.py')),\
+           default=join(get_qiime_scripts_dir(),'align_seqs.py')),\
  options_lookup['jobs_to_start'],\
  options_lookup['poller_fp'],\
  options_lookup['retain_temp_files'],\

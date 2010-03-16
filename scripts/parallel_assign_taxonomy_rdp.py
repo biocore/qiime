@@ -23,7 +23,7 @@ from qiime.parallel.util import split_fasta, get_random_job_prefix, write_jobs_f
     submit_jobs, compute_seqs_per_file, build_filepaths_from_filepaths,\
     get_poller_command, write_filepaths_to_file,\
     write_merge_map_file_assign_taxonomy
-from qiime.util import get_options_lookup, get_qiime_project_dir, load_qiime_config
+from qiime.util import get_options_lookup, get_qiime_scripts_dir, load_qiime_config
 
 qiime_config = load_qiime_config()
 options_lookup = get_options_lookup()
@@ -53,7 +53,7 @@ script_info['optional_options'] = [\
  make_option('-N','--assign_taxonomy_fp',action='store',\
            type='string',help='full path to '+\
            'scripts/assign_taxonomy.py [default: %default]',\
-           default=join(get_qiime_project_dir(),'scripts','assign_taxonomy.py')),\
+           default=join(get_qiime_scripts_dir(),'assign_taxonomy.py')),\
  options_lookup['jobs_to_start'],\
  options_lookup['poller_fp'],\
  options_lookup['retain_temp_files'],\

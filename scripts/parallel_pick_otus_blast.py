@@ -14,7 +14,7 @@ __status__ = "Pre-release"
 
 from optparse import make_option
 from qiime.util import parse_command_line_parameters,\
-    load_qiime_config, get_options_lookup, get_qiime_project_dir
+    load_qiime_config, get_options_lookup, get_qiime_scripts_dir
 from qiime.parallel.pick_otus_blast import get_job_commands,\
     get_poller_command
 from qiime.parallel.util import split_fasta, get_random_job_prefix,\
@@ -66,7 +66,7 @@ script_info['optional_options'] = [\
     make_option('-N','--pick_otus_fp',action='store',\
            type='string',help='full path to '+\
            'scripts/pick_otus.py [default: %default]',\
-           default=join(get_qiime_project_dir(),'scripts','pick_otus.py')),\
+           default=join(get_qiime_scripts_dir(),'pick_otus.py')),\
         
  options_lookup['jobs_to_start'],\
  options_lookup['poller_fp'],\

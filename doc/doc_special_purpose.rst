@@ -10,9 +10,9 @@ Special-Purpose Tutorials
 The qiime_config File 
 ---------------------
 
-First things first: you should not edit or remove :file:`Qiime/qiime_config`. 
+First things first: you should not edit or remove :file:`Qiime/qiime/support_files/qiime_config`. 
 
-Some QIIME scripts read default values from a :file:`qiime_config` file. The default location of this file is in your top-level QIIME directory (:file:`Qiime/qiime/support_files/qiime_config`). QIIME scripts pull default values from this file which are system-specific, such as paths to executable files, and these can be overwritten for convenience. The recommended procedure for overwriting these defaults is to copy the :file:`qiime_config` file to either :file:`~/.qiime_config` or a location specified by the environment variable $QIIME_CONFIG_FP.
+Some QIIME scripts read default values from a :file:`qiime_config` file. The default location of this file is (:file:`Qiime/qiime/support_files/qiime_config`). QIIME scripts pull default values from this file which are system-specific, such as paths to executable files, and these can be overwritten for convenience. The recommended procedure for overwriting these defaults is to copy the :file:`qiime_config` file to either :file:`~/.qiime_config` or a location specified by the environment variable $QIIME_CONFIG_FP.
 
 The Qiime configuration values should only be modified in these copies of the :file:`qiime_config` file, as changes to the :file:`Qiime/qiime/support_files/qiime_config` version may be overwritten in future QIIME updates.
 
@@ -24,6 +24,7 @@ To see the qiime_config values as read by QIIME, you can call::
 
 	Qiime/scripts/print_qiime_config.py
 
+**IMPORTANT NOTE**: If you have installed QIIME using its setup.py script, you will need to set the qiime_scripts_dir value in your qiime_config file to the directory containing the QIIME scripts. By default, this will likely be /usr/local/bin. If you specified a different location by passing --install-scripts= to setup.py, you should set qiime_scripts_dir to this value.
 
 Parallel Runs 
 -------------
@@ -40,7 +41,7 @@ Enabling parallel runs in QIIME
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 To enable parallel runs in QIIME you will first need to determine if the :file:`Qiime/scripts/start_parallel_jobs.py` script will work for your purposes. If you're running in a multi-processor or multi-core environment with no queueing system, then it should work for you. If you are running in a more complex environment (e.g, a cluster) you'll need to write a custom cluster jobs script. This is discussed below.
 
-You must next define the default number of jobs that you would like QIIME to start by default. This is done by editing the ``jobs_to_start`` value in your :file:`qiime_config` file. The default value is 1, corresponding to no parallelization. Follow the instructions on creating a custom :file:`qiime_config` (i.e., don't modify :file:`Qiime/qiime/support_files/qiime_config`, but instead copy that file to :file:`$HOME/.qiime_config` and edit that version). Then modify the jobs_to_start value to one that makes sense for your environment. For example, if you are running on a dual-core laptop, you probably want 2. (Note that this will likely prevent you from doing anything else with your laptop while QIIME is running in parallel.) If you're running on an 8 processor desktop machine, you'd want to set jobs_to_start to a maximum of 8 -- lower might be better if you'd like to reserve one or more processors for other work while running parallel QIIME. Note that setting jobs_to_start (e.g., 5 on a dual core system) to a value that is too high will reduce the performance of parallel QIIME. You can overwrite the jobs_to_start value via the command line interface of the parallel scripts -- you are just setting the default value here.
+You must next define the default number of jobs that you would like QIIME to start by default. This is done by editing the ``jobs_to_start`` value in your :file:`qiime_config` file. The default value is 1, corresponding to no parallelization. Follow the instructions on creating a custom :file:`qiime_config` (i.e., don't modify :file:`Qiime/qiime/support_files/qiime_config`, but instead copy that file to :file:`$HOME/.qiime_config` and edit that version). Then modify the jobs_to_start value to one that makes sense for your environment. For example, if you are running on a dual-core laptop, you probably want 2. (Note that this will likely prevent you from doing anything else with your laptop while QIIME is running in parallel.) If you're running on an 8 processor desktop machine, you'd want to set jobs_to_start to a maximum of 8 -- lower might be better if you'd like to reserve one or more processors for other work while running parallel QIIME. Note that setting jobs_to_start (e.g., 5 on a dual core system) to a value that is too high will reduce the performance of parallel QIIME. You can overwrite the jobs_to_start value via the command line interface of the parallel scripts -- you are just setting the default value here. If you installed QIIME using Qiime/setup.py, you will also need to set the qiime_scripts_dir value in your qiime_config file to the directory containing the QIIME scripts. By default, this will likely be /usr/local/bin. If you specified a different location by passing --install-scripts= to setup.py, you should set qiime_scripts_dir to this value.
 
 Writing a cluster_jobs Script Specific to your Cluster Environment
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
