@@ -50,7 +50,7 @@ from os import makedirs
 from cogent.util.transform import (keep_chars, exclude_chars, trans_except,
     trans_all)
 from numpy import array
-from qiime.parse import parse_map
+from qiime.parse import new_parse_map
 from qiime.format import format_map_file
 from optparse import OptionParser
 from cogent.seqsim.sequence_generators import IUPAC_DNA
@@ -837,9 +837,23 @@ def process_id_map(infile, is_barcoded=True, char_replace="_",
     
     #read data
     try:
-        data, run_description = parse_map(infile, return_header=True,\
-         suppress_stripping=True)
-        col_headers = data[0]
+        data, headers, run_description = new_parse_map(infile, \
+        suppress_stripping=True)
+        headers[0] = "#" + headers[0]
+        col_headers = headers
+        data.insert(0, headers)
+        if run_description:
+        	for n in range(len(run_description)):
+        		run_description[n] = run_description[n].replace('\n','')
+        # Need to replace newline characters in data
+        for row in range(len(data)):
+            for column in range(len(data[0])):
+                data[row][column] = data[row][column].replace("\n","")
+
+                
+                
+
+
     except (TypeError, ValueError), e:
         problems['error'].append(
             "Couldn't read map file '%s': failed with error message %s" 
@@ -850,6 +864,7 @@ def process_id_map(infile, is_barcoded=True, char_replace="_",
             
     # Save raw data for referencing source 'cells' in log file.
     raw_data = data
+
 
     #add barcode checks if needed
     if is_barcoded:
@@ -888,7 +903,7 @@ def process_id_map(infile, is_barcoded=True, char_replace="_",
     sample_descriptions, sample_ids, run_description = \
     run_checks((sample_descriptions, sample_ids,run_description, \
      ), sample_description_checks, problems, raw_data)
-
+     
     #check primers,barcodes for valid IUPAC DNA characters
     primers, barcodes = get_primers_barcodes(data)
     problems = check_primers_barcodes(primers, barcodes, problems)
