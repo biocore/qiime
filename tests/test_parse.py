@@ -21,7 +21,7 @@ from qiime.parse import (parse_map, group_by_field, group_by_fields,
     otu_counts_to_matrix, envs_to_matrix, parse_qiime_parameters, 
     parse_bootstrap_support, parse_sample_mapping, parse_distmat_to_dict,
     sample_mapping_to_otu_table, parse_taxonomy, parse_otu_table,
-    parse_category_mapping)
+    parse_category_mapping,new_parse_map)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -56,6 +56,22 @@ class TopLevelTests(TestCase):
         'tax6', 'tax7', 'tax8', 'tax9']
         self.SampleMapping = ["OTU1\tsample1\t3", "OTU1\tsample3\t2", \
         "OTU2\tsample1\t1", "OTU2\tsample2\t2"]
+
+    def test_new_parse_map(self):
+        """new_parse_map functions as expected"""
+        s1 = ['#sample\ta\tb', '#comment line to skip',\
+              'x \t y \t z ', ' ', '#more skip', 'i\tj\tk']
+        exp = ([['x','y','z'],['i','j','k']],\
+               ['sample','a','b'],\
+               ['comment line to skip','more skip'])
+        obs = new_parse_map(s1)
+        self.assertEqual(obs, exp)
+        
+        #check that we strip double quotes by default
+        s2 = ['#sample\ta\tb', '#comment line to skip',\
+              '"x "\t" y "\t z ', ' ', '"#more skip"', 'i\t"j"\tk']
+        obs = new_parse_map(s2)
+        self.assertEqual(obs, exp)
 
     def test_parse_map(self):
         """parse_map should handle tab-delimited file as expected."""

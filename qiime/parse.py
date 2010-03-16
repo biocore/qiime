@@ -25,6 +25,53 @@ import os
 
 Note: this code initially copied over from MicrobePlots."""
 
+def new_parse_map(lines, strip_quotes=True, suppress_stripping=False):
+    """Parser for map file that relates samples to metadata.
+    
+    Format: header line with fields
+            optionally other comment lines starting with #
+            tab-delimited fields
+
+    Result: list of lists of fields, incl. headers.
+    """
+    if strip_quotes:
+        if suppress_stripping:
+            # remove quotes but not spaces
+            strip_f = lambda x: x.replace('"','')
+        else:
+            # remove quotes and spaces
+            strip_f = lambda x: x.replace('"','').strip()
+    else:
+        if suppress_stripping:
+            # don't remove quotes or spaces
+            strip_f = lambda x: x
+        else:
+            # remove spaces but not quotes
+            strip_f = lambda x: x.strip()
+    
+    # Create lists to store the results
+    mapping_data = []
+    header = []
+    comments = []
+    
+    # Begin iterating over lines
+    for line in lines:
+        line = strip_f(line)
+        if not line or (suppress_stripping and not line.strip()):
+            # skip blank lines when not stripping lines
+            continue
+        
+        if line.startswith('#'):
+            line = line[1:]
+            if not header:
+                header = line.strip().split('\t')
+            else:
+                comments.append(line)
+        else:
+            mapping_data.append(map(strip_f, line.split('\t')))
+
+    return mapping_data, header, comments
+    
 def parse_map(lines, return_header=False, strip_quotes=True, \
  suppress_stripping=False):
     """Parser for map file that relates samples to metadata.
