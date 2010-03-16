@@ -10,7 +10,7 @@ import re
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Kyle Bittinger"]
 __license__ = "GPL"
 __version__ = "0.92-dev"
 __maintainer__ = "Greg Caporaso"
@@ -70,7 +70,7 @@ setup(name='QIIME',
       maintainer=__maintainer__,
       maintainer_email=__email__,
       url='http://qiime.sourceforge.net',
-      packages=['qiime','qiime/parallel'],
+      packages=['qiime','qiime/parallel','qiime/pycogent_backports'],
       scripts=glob('scripts/*py'),
       package_data={'qiime':\
                    ['support_files/qiime_config',\
