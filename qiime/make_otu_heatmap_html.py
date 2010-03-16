@@ -15,6 +15,7 @@ from numpy import array,concatenate
 from cogent.parse.table import SeparatorFormatParser
 from optparse import OptionParser
 from qiime.parse import parse_otus
+import os
 
 def make_html_doc(js_filename):
     """Create the basic framework for the OTU table heatmap"""
@@ -199,14 +200,14 @@ def generate_heatmap_plots(options,data, dir_path, js_dir_path,filename):
     js_otu_cutoff='var otu_num_cutoff=%i;' % num_otu_hits
     
     #Write js array to file
-    js_filename=js_dir_path+filename+'.js'
+    js_filename=os.path.join(js_dir_path,filename)+'.js'
     jsfile = open(js_filename,'w')
     jsfile.write(js_otu_cutoff)
     jsfile.write(js_array)
     jsfile.close()
 
     #Write html file
-    html_filename=dir_path+filename+'.html'
+    html_filename=os.path.join(dir_path,filename)+'.html'
     js_file_location='js/'+filename+'.js'
     table_html=make_html_doc(js_file_location)
     ofile = open(html_filename,'w')

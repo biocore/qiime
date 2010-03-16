@@ -17,7 +17,7 @@ __status__ = "Pre-release"
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from optparse import make_option
 from qiime.make_otu_heatmap_html import generate_heatmap_plots,get_otu_counts
-from qiime.make_3d_plots import create_dir
+import os
 import shutil
 import os
 from qiime.util import get_qiime_project_dir
@@ -60,23 +60,33 @@ def main():
     filepath=opts.otu_table_fp
     filename=filepath.strip().split('/')[-1].split('.')[0]
 
-    dir_path = create_dir(opts.output_dir,'otu_heatmap_')
+    if opts.output_dir:
+        if os.path.exists(opts.output_dir):
+            dir_path=opts.output_dir
+        else:
+            try:
+                os.mkdir(opts.output_dir)
+                dir_path=opts.output_dir
+            except OSError:
+                pass
+    else:
+        dir_path='./'
 
-    if dir_path and not dir_path.endswith('/'):
-        dir_path=dir_path+'/'
-
-    js_dir_path = create_dir(os.path.join(dir_path,'js/'),'')
+    js_dir_path = os.path.join(dir_path,'js')
+    
+    try:
+        os.mkdir(js_dir_path)
+    except OSError:
+        pass
 
     qiime_dir=get_qiime_project_dir()
 
     js_path=os.path.join(qiime_dir,'qiime/support_files/js')
 
-    shutil.copyfile(os.path.join(js_path,'overlib.js'), js_dir_path+'overlib.js')
-    shutil.copyfile(os.path.join(js_path,'otu_count_display.js'), js_dir_path+\
-              'otu_count_display.js')
-    shutil.copyfile(os.path.join(js_path,'jquery.js'), js_dir_path+'jquery.js')
-    shutil.copyfile(os.path.join(js_path,'jquery.tablednd_0_5.js'), js_dir_path+\
-              'jquery.tablednd_0_5.js')
+    shutil.copyfile(os.path.join(js_path,'overlib.js'), os.path.join(js_dir_path,'overlib.js'))
+    shutil.copyfile(os.path.join(js_path,'otu_count_display.js'), os.path.join(js_dir_path,'otu_count_display.js'))
+    shutil.copyfile(os.path.join(js_path,'jquery.js'), os.path.join(js_dir_path,'jquery.js'))
+    shutil.copyfile(os.path.join(js_path,'jquery.tablednd_0_5.js'), os.path.join(js_dir_path,'jquery.tablednd_0_5.js'))
 
     try:
         action = generate_heatmap_plots
