@@ -87,7 +87,7 @@ data_block_wrapper = """    <DATA_BLOCK
 experiment_set_wrapper = """<?xml version="1.0" encoding="UTF-8"?>
 <EXPERIMENT_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">%s</EXPERIMENT_SET>"""
 
-pool_member_wrapper = """            <MEMBER refname="%(SAMPLE_ALIAS)s" refcenter="%(SAMPLE_CENTER)s" member_name="%(POOL_MEMBER_NAME)s" proportion="%(POOL_PROPORTION)s"><READ_LABEL read_group_tag="%(POOL_MEMBER_NAME)s">barcode</READ_LABEL><READ_LABEL read_group_tag="%(PRIMER_READ_GROUP_TAG)s">rRNA_primer</READ_LABEL></MEMBER>"""
+pool_member_wrapper = """            <MEMBER refname="%(SAMPLE_ALIAS)s" refcenter="%(SAMPLE_CENTER)s" member_name="%(POOL_MEMBER_NAME)s" proportion="%(POOL_PROPORTION)s"><READ_LABEL read_group_tag="%(BARCODE_READ_GROUP_TAG)s">barcode</READ_LABEL><READ_LABEL read_group_tag="%(PRIMER_READ_GROUP_TAG)s">rRNA_primer</READ_LABEL></MEMBER>"""
 
 basecall_wrapper = """               <BASECALL read_group_tag="%(READ_GROUP)s" min_match="%(MATCH_LEN)s" max_mismatch="%(NUM_MISMATCHES)s" match_edge="full">%(MATCH_SEQ)s</BASECALL>"""
 
@@ -124,6 +124,7 @@ spot_descriptor_with_linker_wrapper = """      <SPOT_DESCRIPTOR>
             <READ_INDEX>4</READ_INDEX>
             <READ_CLASS>Application Read</READ_CLASS>
             <READ_TYPE>Forward</READ_TYPE>
+            <RELATIVE_ORDER follows_read_index=\"3\"/>
           </READ_SPEC>
         </SPOT_DECODE_SPEC>
       </SPOT_DESCRIPTOR>"""
@@ -137,7 +138,8 @@ spot_descriptor_without_linker_wrapper = """      <SPOT_DESCRIPTOR>
           <EXPECTED_BASECALL>%(KEY_SEQ)s</EXPECTED_BASECALL>
           </READ_SPEC>
           <READ_SPEC>
-            <READ_INDEX>1</READ_INDEX>            <READ_LABEL>barcode</READ_LABEL>
+            <READ_INDEX>1</READ_INDEX>
+            <READ_LABEL>barcode</READ_LABEL>
             <READ_CLASS>Technical Read</READ_CLASS>
             <READ_TYPE>BarCode</READ_TYPE>
             <EXPECTED_BASECALL_TABLE>%(BARCODE_TABLE_XML)s</EXPECTED_BASECALL_TABLE>
@@ -153,6 +155,7 @@ spot_descriptor_without_linker_wrapper = """      <SPOT_DESCRIPTOR>
             <READ_INDEX>3</READ_INDEX>
             <READ_CLASS>Application Read</READ_CLASS>
             <READ_TYPE>Forward</READ_TYPE>
+            <RELATIVE_ORDER follows_read_index=\"2\"/>
           </READ_SPEC>
         </SPOT_DECODE_SPEC>
       </SPOT_DESCRIPTOR>"""
@@ -162,7 +165,6 @@ spot_descriptor_without_linker_wrapper = """      <SPOT_DESCRIPTOR>
 experiment_wrapper = """  <EXPERIMENT
     alias="%(EXPERIMENT_ALIAS)s"
     center_name="%(EXPERIMENT_CENTER)s"
-    broker_name="%(BROKER_CENTER)s"
   >
     <TITLE>%(EXPERIMENT_TITLE)s</TITLE>
     <STUDY_REF refname="%(STUDY_REF)s" refcenter="%(STUDY_CENTER)s"/>
@@ -309,7 +311,10 @@ def make_submission(submission_lines, submission_template, docnames=None):
     new_info = {}
     for k, v in info.items():
         if isinstance(v, list):
-            new_info[k] = v[0]
+            try:
+                new_info[k] = v[0]
+            except IndexError:
+                pass  # Empty list: do not make entry in new_info
         else:
             new_info[k] = v
     info = new_info
@@ -413,7 +418,8 @@ def make_run_and_experiment(experiment_lines, sff_dir):
                         'NUM_MISMATCHES':0,
                         'MATCH_SEQ':primer})
                 linker = field_dict['LINKER']
-                linkers.add(linker)
+                if linker:
+                    linkers.add(linker)
                 #create and append the pool member
                 field_dict['MEMBER_ORDER'] = MEMBER_ORDER
                 if pool_name:
@@ -436,17 +442,14 @@ def make_run_and_experiment(experiment_lines, sff_dir):
             field_dict['POOL_MEMBERS_XML'] = '\n' + '\n'.join(pool_members) + '\n'
             field_dict['DATA_BLOCK_XML'] = '\n' + '\n'.join(data_blocks) + '\n'
             runs.append(run_wrapper % field_dict)
-            if linkers == (''): #not using linkers
-               spot_descriptor_wrapper = spot_descriptor_without_linker_wrapper
-            else:
+            if linkers:
                 spot_descriptor_wrapper = spot_descriptor_with_linker_wrapper
+            else:
+                spot_descriptor_wrapper = spot_descriptor_without_linker_wrapper
             field_dict['TOTAL_TECHNICAL_READ_LENGTH'] = len(key_seq) + len(primer) + len(barcode) + len(linker) + 1 #note that SRA uses 1-indexed lengths
             spot_descriptor = spot_descriptor_wrapper % field_dict
             field_dict['SPOT_DESCRIPTORS_XML'] = spot_descriptor
             field_dict['PLATFORM_XML'] = platform_blocks[field_dict['PLATFORM']]
-            if 'BROKER_CENTER' not in field_dict or not \
-                field_dict['BROKER_CENTER']:
-                field_dict['BROKER_CENTER'] = field_dict['EXPERIMENT_CENTER'] 
             experiments.append(experiment_wrapper % field_dict)
     return experiment_set_wrapper % ('\n'+'\n'.join(experiments)+'\n'), run_set_wrapper % ('\n'+'\n'.join(runs)+'\n')
 
