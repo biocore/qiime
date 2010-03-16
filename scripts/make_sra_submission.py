@@ -11,14 +11,17 @@ __maintainer__ = "Rob Knight"
 __email__ = "rob@spot.colorado.edu"
 __status__ = "Pre-release"
  
-
+import os
 from qiime.util import parse_command_line_parameters
 from optparse import make_option
 from os.path import splitext
+from qiime.util import get_qiime_project_dir
 from qiime.make_sra_submission import (write_xml_generic, 
     make_run_and_experiment, make_submission, make_study, make_sample)
 
-#make_sra_submission.py
+sra_template_dir = os.path.join(
+    get_qiime_project_dir(), 'qiime', 'support_files', 'sra_xml_templates')
+
 script_info={}
 script_info['brief_description']="""Makes SRA submission files (xml-format)"""
 script_info['script_description']="""This script makes the submission xml files for SRA (study, experiment, etc.).  This script assumes that there is a simple tab-delimited text input (allowing for examples and comments)."""
@@ -30,22 +33,26 @@ script_info['required_options']=[]
 script_info['optional_options']=[\
     make_option('-a','--input_sample_fp',\
         help='the tab-delimited text file with info about samples [default: %default]'),
-    make_option('--template_sample_fp', default='sample_template.xml',\
+    make_option('--template_sample_fp',
+        default=os.path.join(sra_template_dir, 'sample_template.xml'),
         help='the template file for samples [default: %default]'),
     make_option('-t','--input_study_fp',\
         help='the tab-delimited text file with info about the study [default: %default]'),
-    make_option('--template_study_fp', default='study_template.xml',\
+    make_option('--template_study_fp',
+        default=os.path.join(sra_template_dir, 'study_template.xml'),
         help='the template file for the study [default: %default]'),
     make_option('-u','--input_submission_fp',\
         help='the tab-delimited text file with info about the submission [default: %default]'),
-    make_option('--template_submission_fp', default='submission_template.xml',\
+    make_option('--template_submission_fp',
+        default=os.path.join(sra_template_dir, 'submission_template.xml'),
         help='the template file for the submission [default: %default]'),
     make_option('-e', '--input_experiment_fp', \
-        help ='the tab-delimited text file with info about the experiment [default: %default]'),
+        help='the tab-delimited text file with info about the experiment [default: %default]'),
     make_option('-s', '--sff_dir', 
-        help = 'the directory containing the demultiplexed sff files: 1 dir per run [default: %default]')
+        help='the directory containing the demultiplexed sff files: 1 dir per run [default: %default]')
 ]
 script_info['version'] = __version__
+
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
