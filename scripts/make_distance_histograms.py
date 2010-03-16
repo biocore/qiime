@@ -18,7 +18,7 @@ from optparse import make_option
 from qiime.make_distance_histograms import group_distances, _make_path, \
     draw_all_histograms, _make_relative_paths, make_main_html, \
     monte_carlo_group_distances
-from qiime.make_3d_plots import create_dir
+from qiime.pycogent_backports.misc import get_random_directory_name
 from os import mkdir
 from string import strip
 
@@ -81,7 +81,7 @@ def main():
         group_distances(mapping_file=opts.mapping_file,\
         dmatrix_file=opts.distance_matrix_file,\
         fields=fields,\
-        dir_prefix=create_dir(opts.dir_path,'distances'))
+        dir_prefix=get_random_directory_name(opts.dir_path,'distances'))
     
     if opts.html_output:
         #histograms output path

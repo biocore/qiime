@@ -12,7 +12,7 @@ __status__ = "Pre-release"
 
 from matplotlib import use
 use('Agg',warn=False)
-from qiime.parse import parse_map, parse_distmat, group_by_field,\
+from qiime.parse import new_parse_map, parse_distmat, group_by_field,\
     group_by_fields
 from qiime.make_3d_plots import data_colors
 from cogent.maths.stats.test import t_two_sample
@@ -457,7 +457,12 @@ def group_distances(mapping_file,dmatrix_file,fields,dir_prefix='',\
     subdir_prefix='group_distances'):
     """Calculate all lists of distance groups."""
     distance_groups = {}
-    mapping = parse_map(open(mapping_file,'U'))
+    mapping, header, comments = new_parse_map(open(mapping_file,'U'))
+    header[0] = '#'+header[0]
+    header = [header]
+    header.extend(mapping)
+    mapping=header
+    
     distance_header, distance_matrix = \
         parse_distmat(open(dmatrix_file,'U'))
     if fields is None:
@@ -488,6 +493,13 @@ def group_distances(mapping_file,dmatrix_file,fields,dir_prefix='',\
     
     return single_field, paired_field, distance_matrix
 
+def build_monte_carlo_prefs(fields,default_iters):
+    """Builds prefs dict for monte_carlo_group_distances when not provided.
+    """
+    field_to_iters = dict([(f,default_iters) for f in fields])
+    prefs = {'MONTE_CARLO_GROUP_DISTANCES':field_to_iters}
+    return prefs
+
 def monte_carlo_group_distances(mapping_file, dmatrix_file, prefs, \
     dir_prefix = '', subdir_prefix='monte_carlo_group_distances',\
     default_iters=10, fields=None):
@@ -499,7 +511,12 @@ def monte_carlo_group_distances(mapping_file, dmatrix_file, prefs, \
     - randomize matrix n times and find empirical value of t for each pair
     - compare the actual value of t to the randomized values
     """
-    mapping = parse_map(open(mapping_file,'U'))
+    mapping, header, comments = new_parse_map(open(mapping_file,'U'))
+    header[0] = '#'+header[0]
+    header = [header]
+    header.extend(mapping)
+    mapping=header
+
     distance_header, distance_matrix = \
         parse_distmat(open(dmatrix_file,'U'))
     orig_distance_matrix = distance_matrix.copy()
@@ -510,14 +527,15 @@ def monte_carlo_group_distances(mapping_file, dmatrix_file, prefs, \
     except OSError:     #raised if dir exists
         pass
     
+    if fields is None:
+        fields = [mapping[0][0]]
+        
     if prefs is None:
-        if fields is None:
-            field = mapping[0][0]
-            prefs = {'MONTE_CARLO_GROUP_DISTANCES':{field:default_iters}}
-        else:
-            field_to_iters = dict([(f,default_iters) for f in fields])
-            prefs = {'MONTE_CARLO_GROUP_DISTANCES':field_to_iters}
-
+        prefs = {}
+ 
+    if 'MONTE_CARLO_GROUP_DISTANCES' not in prefs:
+        prefs = build_monte_carlo_prefs(fields,default_iters)
+            
 
     for field, num_iters in prefs['MONTE_CARLO_GROUP_DISTANCES'].items():
         if '&&' in field:
