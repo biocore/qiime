@@ -303,7 +303,7 @@ def parse_taxonomy(infile):
 
     return res
 
-def parse_otus(lines):
+def parse_otus(lines,count_map_f=int):
     """parses otu file
 
     Returns tuple: sample_ids, otu_ids, matrix of OTUs(rows) x samples(cols),
@@ -328,9 +328,9 @@ def parse_otus(lines):
             fields = line.split('\t')
             #first and last col are otu id and consensus lineage respectively
             if has_consensus:
-                otu_table.append(array(map(int, fields[1:-1])))
+                otu_table.append(array(map(count_map_f, fields[1:-1])))
             else:
-                otu_table.append(array(map(int, fields[1:])))
+                otu_table.append(array(map(count_map_f, fields[1:])))
             otu_id = fields[0].strip()
             otu_ids.append(otu_id)
             if has_consensus:
