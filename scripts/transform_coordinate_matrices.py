@@ -15,7 +15,7 @@ from optparse import make_option
 from os.path import split, splitext, exists
 from os import makedirs
 from qiime.util import parse_command_line_parameters
-from qiime.parse import parse_map
+from qiime.parse import fields_to_dict
 from qiime.transform_coordinate_matrices import procrustes_monte_carlo,\
     get_procrustes_results
 
@@ -72,7 +72,8 @@ def main():
     output_matrix2_fp = '%s/pc2_transformed.txt' % output_dir
     
     if sample_id_map_fp:
-        sample_id_map = dict(parse_map(open(sample_id_map_fp)))
+        sample_id_map = dict([(k,v[0]) \
+         for k,v in fields_to_dict(open(sample_id_map_fp)).items()])
     else:
         sample_id_map = None
     
