@@ -201,36 +201,15 @@ def parse_bootstrap_support(lines):
         
     return bootstraps
 
-def parse_minimal_distmat(lines):
-    """Parser for raw fast_unifrac output."""
-    lines = list(lines)
-    header = eval(lines[0])
-    matrix = eval(''.join(lines[1:]))
-    return header, matrix
-
-def is_rarefaction_label_line(line):
-    """Returns True if line is rarefaction label"""
-    return line.startswith('#HEADER')
-
-rrf = rarefaction_record_finder = LabeledRecordFinder(is_rarefaction_label_line)
-
-def extract_index_fields(line):
-    """Extracts index fields from a given line.
-
-    Assumes first field is name (with #), then mean, lower, upper.
-    """
-    fields = map(strip, line.split('\t'))
-    index_name = fields[0][1:]
-    return index_name, map(float, fields[1:])
-
-def float_or_nan(v):
-    try:
-        return float(v)
-    except ValueError:
-        return nan
-
 def parse_rarefaction_record(line):
     """ Return (rarefaction_fn, [data])"""       
+    
+    def float_or_nan(v):
+        try:
+            return float(v)
+        except ValueError:
+            return nan
+            
     entries = line.split('\t')
     return entries[0], map(float_or_nan, entries[1:])
 
@@ -302,20 +281,6 @@ def parse_rarefaction_fname(name_string):
     seqs_per_sam = int(root_list.pop())
     base_name = "_".join(root_list)
     return base_name, seqs_per_sam, iters, ext
-
-def otu_file_to_lineages(infile):
-    """Returns lineage assignments for each otu in infile.
-    
-    Result is in format {otu_id:[taxonomy, support]}
-    """
-    result = {}
-    for line in infile:
-        if line.startswith('# OTU'): #is OTU line
-            curr_otu = line.split()[2]
-            next_line = infile.readline()
-            support, tax = next_line.split(' from ', 1)
-            result[curr_otu] = [map(strip, tax.split(';')),float(support[2:-1])]
-    return result
 
 def parse_taxonomy(infile):
     """parse a taxonomy file.

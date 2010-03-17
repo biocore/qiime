@@ -16,8 +16,7 @@ from StringIO import StringIO
 from cogent.util.unit_test import TestCase, main
 from qiime.parse import (parse_map, group_by_field, group_by_fields, 
     parse_distmat, parse_rarefaction_record, parse_rarefaction, parse_coords, 
-    otu_file_to_lineages, parse_otus,
-    make_envs_dict, fields_to_dict, parse_rarefaction_fname,
+    parse_otus, make_envs_dict, fields_to_dict, parse_rarefaction_fname,
     parse_qiime_parameters, 
     parse_bootstrap_support, parse_sample_mapping, parse_distmat_to_dict,
     sample_mapping_to_otu_table, parse_taxonomy, parse_otu_table,
@@ -181,29 +180,6 @@ node2\t0
         test2 = parse_rarefaction_record(self.rarefactionline2)
         self.rarefactiondata2 = ('rare10.txt', [10.0, 0.0, 1.9918100000000001, 0.42876999999999998, nan])
         self.assertEqual(self.rarefactiondata2, test2)
-        
-#     def test_parse_rarefaction_rec(self):
-#         """parse_rarefaction_rec should produce expected results"""
-#         rec = """#HEADER  97.0    NFkeyRightShift 1000
-# #CHAO1    288.12903   241.27093   371.41733
-# #ACE  294.74813   252.75930   361.30606   0.68654
-# #SHANNON  3.71822 3.61146 3.82499
-# #SIMPSON  0.08021
-# #n    rare    rare_lci    rare_hci
-#     1 1.000000    1.000000    1.000000
-#     51    26.878000   26.032290   27.723710
-#     101   44.007000   43.212590   44.801410""".splitlines()
-#         exp = {'pct_sim':97.0,'sample_id':'NFkeyRightShift','num_iters':1000,
-#             'ACE':[294.74813,252.75930,361.30606,0.68654],
-#             'CHAO1':[288.12903,241.27093,371.41733],
-#             'SHANNON':[3.71822,3.61146,3.82499],
-#             'SIMPSON':[0.08021],
-#             'rarefaction_data':array([[1,1,1,1],[51,26.878000,26.032290,27.723710],
-#                 [101,44.007000,43.212590,44.801410]])}
-#         obs = parse_rarefaction_rec(rec)
-#         self.assertEqual(set(obs.keys()), set(exp.keys()))
-#         for k, v in obs.items():
-#             self.assertFloatEqual(v, exp[k])
 
     def test_parse_rarefaction_fname(self):
         """ parse_rarefaction_fname should return base, seqs/sam, iters, etc."""
@@ -287,60 +263,6 @@ eigvals\t4.94\t1.79\t1.50
             array([14.3,5.2,4.3]))
         self.assertEqual(obs, exp)
 
-    def test_otu_file_to_lineages(self):
-        """otu_file_to_lineages should extract correct info"""
-        data = """##################
-# OTU 0 section start
-# 100.00% from Bacteria; Proteobacteria; Gammaproteobacteria 
-# 1 total lineages 
-# 1 unique seqs in OTU
-# -- Lineage Detail ---
-# 1 orig seqs in OTU
-# -- IDs for Arb ---
-# (6140)
-# 1 (100.00%) Bacteria; Proteobacteria; Gammaproteobacteria
-##################
->AK197_6140 GI:-1|EVAL:-1|BITS:-1.0|ID:-1.0%|COV:-1.0%|LINS:Bacteria; Proteobacteria; Gammaproteobacteria
-CTGGGCCGTGTCTCAGTCCCAGTGTGGCTGATCGTCCTCTCAGACCAGCTACGGATCGTCGCCTTGGTAGGCCGTTACCCCACCAACAAGCTAATCCGCCGCGGGCTCATCCTCGGTCGGAGGCCGAAGCTACCTTTCCCTTCGAGACCCGAAGGTCCAAAGGGCCATTCCGTATTAATCCGGGTTTCCCCGGGCTATCCGGATACCAAGGGCAGATTACCCACGTGTTACTCACCCGTTCGCCGCTTTCCCCGGTCCCGAAGGG
-##################
-# OTU -1 section start
-# 100.00% from Bacteria; Actinobacteria; Actinobacteria; Actinobacteridae; Actinomycetales 
-# 2 total lineages 
-# 3 unique seqs in OTU
-# -- Lineage Detail ---
-# 7 orig seqs in OTU
-# -- IDs for Arb ---
-# (574, 9547, 11347, 6452, 16811, 12887, 7067)
-# 6 (85.71%) Bacteria; Actinobacteria; Actinobacteria; Actinobacteridae; Actinomycetales
-# 1 (14.29%) Bacteria; Actinobacteria; Actinobacteria; Actinobacteridae; Actinomycetales; Actinomycineae; Actinomycetaceae
-##################
->AK595_574 GI:-1|EVAL:-1|BITS:-1.0|ID:-1.0%|COV:-1.0%|LINS:Bacteria; Actinobacteria; Actinobacteria; Actinobacteridae; Actinomycetales
-CTGGGCCGTATCTCAGTCCCAGTGTGACCGAACACCCTCTCAGGCCGGTTACCCGTCCACGCCTTGGTAGGCCATCACCCCACCAACAAACTGATAGGCCGCAAGCCCATCCCCCACCAACCCCCAAAAGGAAGCCTTTCCAAACCCCACCATGCAGCAGGAAAAGAATATTCGGTATTAGCCCACGTTTCCGCGAGTTATCCCAAAGATGAAGGGCAGGTTACTACGTGTTACTCACCGTTCGCACTAGAA
->AK894_9547 GI:-1|EVAL:-1|BITS:-1.0|ID:-1.0%|COV:-1.0%|LINS:Bacteria; Actinobacteria; Actinobacteria; Actinobacteridae; Actinomycetales; Actinomycineae; Actinomycetaceae
-CTGGGCCGTATCTCAGTCCCAGTGTGACCGAACACCCTCTCAGGCCGGTTACCCGTCCACGCCTTGGTAGGCCATCACCCCACCAACAAACTGATAGGCCGCAAGCCCATCCCCCACCAACCCCCAAAAAGGAGGCCTTTCCAAACCCCACCATGCAGCAGGAAAAGAATATCCCGTATTAGCCCACGTTTCCGCGAGTTATCCAGAAGATGAAGGGCAGGTTACTTACGTGTTACTCACCCGTTCGCCAA
->AK7929_11347@@AK1194_6452@@AK33210_16811@@AK1194_12887@@AK3410_7067 GI:-1|EVAL:-1|BITS:-1.0|ID:-1.0%|COV:-1.0%|LINS:Bacteria; Actinobacteria; Actinobacteria; Actinobacteridae; Actinomycetales
-CTGGGCCGTATCTCAGTCCCAGTGTGACCGAACACCCTCTCAGGCCGGTTACCCGTCCACGCCTTGGTAGGCCATCACCCCACCAACAAACTGATAGGCCGCAAGCCCATCCCCCACCAACCCCCAAAAGGAAGCCTTTCCAAACCCCACCATGCAGCAGGAAAAGAATATTCGGTATTAGCCCACGTTTCCGCGAGTTATCCCAAAGATGAAGGGCAGGTTACTTACGTGTTACTCACCCGTTCGCCACTAGAAACGCCCCCGG
-##################
-# OTU -6150 section start
-# 100.00% from Unclassified-Screened 
-# 1 total lineages 
-# 1 unique seqs in OTU
-# -- Lineage Detail ---
-# 1 orig seqs in OTU
-# -- IDs for Arb ---
-# (7266)
-# 1 (100.00%) Unclassified-Screened
-##################
->AK1194_7266 GI:-1|EVAL:-1|BITS:-1.0|ID:-1.0%|COV:-1.0%|LINS:Unclassified-Screened
-CTGGCCCGTGTTTCAGTGCCAGTGTGGCCGGTCGCCCTCTCAGGCCGGCTACTGATCGATGCCTTGGTGAGCCGTTACCTCACCAACTAGCTAATCAGCC"""
-        data_f = StringIO(data)
-        obs = otu_file_to_lineages(data_f)
-        exp = {'0':[['Bacteria','Proteobacteria','Gammaproteobacteria'],100.0],
-               '-1': [['Bacteria', 'Actinobacteria', 'Actinobacteria', \
-                       'Actinobacteridae','Actinomycetales'], 100.0],
-               '-6150': [['Unclassified-Screened'], 100.0]}
-        self.assertEqual(obs.keys(), exp.keys())
-        self.assertEqual(obs, exp)
     
     def test_parse_otus(self):
         """parse_otus should return correct result from small table"""
