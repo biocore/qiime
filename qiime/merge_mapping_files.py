@@ -12,7 +12,7 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Pre-release"
 
 from optparse import OptionParser
-from qiime.parse import new_parse_map, parse_map
+from qiime.parse import new_parse_map
     
 def merge_mapping_files(mapping_files,no_data_value='no_data'):
     """ Merge list of mapping files into a single mapping file 

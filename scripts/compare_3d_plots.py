@@ -22,7 +22,7 @@ from qiime.make_3d_plots import generate_3d_plots,\
 get_coord,get_map,remove_unmapped_samples,\
 process_coord_filenames,get_multiple_coords,\
 process_colorby,create_dir
-from qiime.parse import parse_map,parse_coords,group_by_field,group_by_fields
+from qiime.parse import parse_coords,group_by_field,group_by_fields
 import shutil
 import os
 from random import choice

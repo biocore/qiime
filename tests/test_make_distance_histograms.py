@@ -13,7 +13,7 @@ __status__ = "Pre-release"
 from cogent.util.unit_test import TestCase, main
 import shutil
 from os import mkdir
-from qiime.parse import parse_map,new_parse_map, parse_distmat, group_by_field,\
+from qiime.parse import new_parse_map, parse_distmat, group_by_field,\
     group_by_fields
 from collections import defaultdict
 from numpy import array, arange

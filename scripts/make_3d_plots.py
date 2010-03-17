@@ -17,7 +17,7 @@ __status__ = "Pre-release"
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from optparse import make_option
 from qiime.make_3d_plots import generate_3d_plots
-from qiime.parse import parse_map,parse_coords,group_by_field,group_by_fields
+from qiime.parse import parse_coords,group_by_field,group_by_fields
 import shutil
 import os
 from qiime.colors import sample_color_prefs_and_map_data_from_options
