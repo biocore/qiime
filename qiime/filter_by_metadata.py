@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #filter_by_metadata: reads otu table and map, returns only allowed states
 
-from qiime.parse import parse_otus, parse_map
+from qiime.parse import parse_otus, new_parse_map
 from string import strip
 from sys import argv, stdout, stderr
 from numpy import array
@@ -33,7 +33,7 @@ def parse_states(state_string):
             result[colname] = set(vals)
     return result
 
-def get_sample_ids(map_data, states):
+def get_sample_ids(map_data, map_header, states):
     """Takes col states in {col:[vals]} format.
 
     If val starts with !, exclude rather than include.
@@ -47,9 +47,9 @@ def get_sample_ids(map_data, states):
     is Stool.
     """
     
-    name_to_col = dict([(s,map_data[0].index(s)) for s in states])
+    name_to_col = dict([(s,map_header.index(s)) for s in states])
     good_ids = []
-    for row in map_data[1:]:    #remember to exclude header
+    for row in map_data:    #remember to exclude header
         include = True
         for s, vals in states.items():
             curr_state = row[name_to_col[s]]
@@ -94,35 +94,48 @@ def filter_line(line, good_fields, min_count=None, outfile=stdout):
             return
     outfile.write('\t'.join([fields[i] for i in good_fields])+'\n')
 
-def filter_map(map_data, good_sample_ids):
+def filter_map(map_data, map_header, good_sample_ids):
     """Filters map according to several criteria.
 
     - keep only sample ids in good_sample_ids
     - drop cols that are different in every sample (except id)
     - drop cols that are the same in every sample
     """
-    d = array(map_data) #note, will contain row/col headers
+    d = array(map_data) #note, will contain row headers
     first_col = list(d[:,0])    #assume contains sample ids
-    good_row_indices = [0] + [first_col.index(i) for i in good_sample_ids 
+    good_row_indices = [first_col.index(i) for i in good_sample_ids 
         if i in first_col]
     d = d[good_row_indices]
     cols = d.T
-    good_col_indices = [0] + [i+1 for (i, col) in enumerate(cols[1:-1]) 
-        if 2 <= len(set(col[1:])) < (len(col) - 1)] + [len(cols)-1]
+    
+    # Determine the good column indices
+    # always include the sample id col
+    good_col_indices = [0]
+    # for all cols between the first and last, 
+    # include the col if there are more than
+    # 2 states, and less than 1 state per sample ID 
+    good_col_indices +=\
+     [i+1 for (i, col) in enumerate(cols[1:-1]) 
+      if 2 <= len(set(col)) < (len(col))]
+    # always include the description col
+    good_col_indices += [len(cols)-1]
+    h = [map_header[i] for i in good_col_indices]
     d = d[:,good_col_indices]
-    return map(list, d)
+    
+    return h, map(list, d)
 
 def filter_otus_and_map(map_infile, otu_infile, map_outfile, otu_outfile, 
     valid_states_str, num_seqs_per_otu):
     """Filters OTU and map files according to specified criteria."""
-    map_data, header = parse_map(map_infile, return_header=True)
+    map_data, map_header, map_comments = new_parse_map(map_infile)
     map_infile.close()
     valid_states = parse_states(valid_states_str)
-    sample_ids = get_sample_ids(map_data, valid_states)
+    sample_ids = get_sample_ids(map_data, map_header, valid_states)
 
     # write out the filtered mapping file
-    map_outfile.write('\n'.join(
-        map('\t'.join, filter_map(map_data, sample_ids))))
+    out_headers, out_data = filter_map(map_data, map_header, sample_ids)
+    header_line = '#' + '\t'.join(out_headers)
+    map_outfile.write('\n'.join([header_line] + map('\t'.join, out_data)))
     if not isinstance(map_outfile, StringIO):
         map_outfile.close()
 

@@ -10,13 +10,13 @@ __maintainer__ = "Rob Knight"
 __email__ = "rob@spot.colorado.edu"
 __status__ = "Pre-release"
 
-from qiime.parse import parse_otus, parse_map
+from qiime.parse import parse_otus, new_parse_map
 from sys import argv
 from string import strip
 from cogent.util.unit_test import TestCase, main
 from numpy import array
 from StringIO import StringIO
-from qiime.filter_by_metadata import (parse_states, get_sample_ids, 
+from qiime.filter_by_metadata import (parse_states, get_sample_ids,
     find_good_cols, filter_line, filter_map, filter_otus_and_map)
 
 class TopLevelTests(TestCase):
@@ -40,7 +40,8 @@ b\tDog\tStool\ty
 c\tHand\tPalm\tz
 d\tWholeBody\tPalm\ta
 e\tWholeBody\tStool\tb"""
-        self.map_data = parse_map(StringIO(self.map_str))
+        self.map_data, self.map_headers, self.map_comments =\
+         new_parse_map(StringIO(self.map_str))
 
     def test_parse_states(self):
         """parse_states should return correct states from string."""
@@ -52,15 +53,15 @@ e\tWholeBody\tStool\tb"""
 
     def test_get_sample_ids(self):
         """get_sample_ids should return sample ids matching criteria."""
-        self.assertEqual(get_sample_ids(self.map_data, \
+        self.assertEqual(get_sample_ids(self.map_data, self.map_headers,\
             parse_states('Study:Twin')), [])
-        self.assertEqual(get_sample_ids(self.map_data, 
+        self.assertEqual(get_sample_ids(self.map_data, self.map_headers,\
             parse_states('Study:Dog')), ['a','b'])
-        self.assertEqual(get_sample_ids(self.map_data, 
+        self.assertEqual(get_sample_ids(self.map_data, self.map_headers,\
             parse_states('Study:*,!Dog')), ['c','d','e'])
-        self.assertEqual(get_sample_ids(self.map_data, 
+        self.assertEqual(get_sample_ids(self.map_data, self.map_headers,\
             parse_states('Study:*,!Dog;BodySite:Stool')), ['e'])
-        self.assertEqual(get_sample_ids(self.map_data, 
+        self.assertEqual(get_sample_ids(self.map_data, self.map_headers,\
             parse_states('BodySite:Stool')), ['a','b','e'])
 
     def test_find_good_cols(self):
@@ -97,11 +98,10 @@ e\tWholeBody\tStool\tb"""
 
     def test_filter_map(self):
         """filter_map should filter map file according to sample ids"""
-        self.assertEqual(filter_map(self.map_data, ['a','b','c','d','e']),
-            self.map_data)
-        self.assertEqual(filter_map(self.map_data, ['a']),
-            ['#SampleID\tDescription'.split('\t'), 
-            'a\tx'.split('\t')])
+        self.assertEqual(filter_map(self.map_data, self.map_headers,\
+         ['a','b','c','d','e']), (self.map_headers, self.map_data))
+        self.assertEqual(filter_map(self.map_data, self.map_headers, ['a']),
+            (['SampleID','Description'],['a\tx'.split('\t')]))
 
     def test_filter_otus_and_map(self):
         """filter_otus_and_map should filter both OTU and map files."""
