@@ -214,14 +214,6 @@ def is_rarefaction_label_line(line):
 
 rrf = rarefaction_record_finder = LabeledRecordFinder(is_rarefaction_label_line)
 
-def extract_otu_header_fields(line):
-    """Extracts fields from header line."""
-    fields = map(strip, line.split('\t'))
-    pct_sim = float(fields[1])
-    sample_id = fields[2]
-    num_iters = int(fields[3])
-    return pct_sim, sample_id, num_iters
-
 def extract_index_fields(line):
     """Extracts index fields from a given line.
 
@@ -380,16 +372,6 @@ def parse_otus(lines):
                 lineages.append(map(strip, fields[-1].split(';')))
     return sample_ids, otu_ids, array(otu_table), lineages
 
-def otu_table_to_envs(sample_ids, otu_ids, otu_table):
-    """Convert otu matrix to envs table.
-
-    result is dict of {otu_name:{env_count}}
-    """
-    result = {}
-    for otu, counts in zip(otu_ids, otu_table):
-        result[otu] = dict([i for i in zip(sample_ids, counts) if i[1].any()])
-    return result
-
 def filter_otus_by_lineage(sample_ids, otu_ids, otu_table, lineages, \
     wanted_lineage, max_seqs_per_sample, min_seqs_per_sample):
     """Filter OTU table to keep only desired lineages and sample sizes."""
@@ -418,23 +400,6 @@ def filter_otus_by_lineage(sample_ids, otu_ids, otu_table, lineages, \
             otu_table[:,i] = subsample(otu_table[:,i].ravel(), \
                 max_seqs_per_sample)
     return sample_ids, otu_ids, otu_table, lineages
-
-def parse_sequences_by_otu(infile):
-    """Parse sequences_by_otu file into two dicts: {seq:OTU} and {OTU:seqs}."""
-    seq_to_otu = {}
-    otu_to_seqs = defaultdict(list)
-    curr_otu = None
-    for line in infile:
-        if line.startswith('# OTU '):
-            start, rest = line.split('# OTU ')
-            curr_otu = int(rest.split()[0])
-        elif line.startswith('>'):
-            label = line.split()[0][1:]
-            orig_seqs = label.split('@@')
-            otu_to_seqs[curr_otu].extend(orig_seqs)
-            for s in orig_seqs:
-                seq_to_otu[s]=curr_otu
-    return otu_to_seqs, seq_to_otu
 
 def make_envs_dict(abund_mtx, sample_names, taxon_names):
     """ makes an envs dict suitable for unifrac from an abundance matrix
@@ -470,36 +435,7 @@ def fields_to_dict(lines, delim='\t', strip_f=strip):
             continue
         result[fields[0]] = fields[1:]
     return result
-    
-def envs_to_otu_counts(lines):
-    """Reads envs lines into OTU counts {(sampleid,otu_id):count}."""
-    result = defaultdict(int)
-    for line in lines:
-        fields = map(strip, line.split('\t'))
-        if len(fields) != 3:
-            continue
-        result[(fields[1], fields[0])] += int(fields[2])
-    return result
-    
-def otu_counts_to_matrix(otu_counts):
-    """Build otu matrix from dict of {(sampleid, otu_id):count}.
 
-    Adapted from Daniel McDonald's script.
-    """
-    all_sampleids, all_otus = unzip(otu_counts.keys())
-    all_sampleids = sorted(set(all_sampleids))
-    all_otus = sorted(set(all_otus))
-    matrix = zeros((len(all_otus), len(all_sampleids)), int)
-    for row, otu in enumerate(all_otus):
-        for col, sampleid in enumerate(all_sampleids):
-            matrix[row, col] += otu_counts.get((sampleid, otu), 0)
-    return matrix, all_otus, all_sampleids
-
-def envs_to_matrix(lines):
-    """Reads envs lines into matrix of OTU counts, plus row/col"""
-    return otu_counts_to_matrix(envs_to_otu_counts(lines))
-
-# Start functions for handling qiime_parameters file
 def parse_qiime_parameters(lines):
     """ Return 2D dict of params (and values, if applicable) which should be on
     """

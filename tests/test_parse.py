@@ -16,9 +16,9 @@ from StringIO import StringIO
 from cogent.util.unit_test import TestCase, main
 from qiime.parse import (parse_map, group_by_field, group_by_fields, 
     parse_distmat, parse_rarefaction_record, parse_rarefaction, parse_coords, 
-    otu_file_to_lineages, parse_otus, otu_table_to_envs, parse_sequences_by_otu,
-    make_envs_dict, fields_to_dict, parse_rarefaction_fname, envs_to_otu_counts,
-    otu_counts_to_matrix, envs_to_matrix, parse_qiime_parameters, 
+    otu_file_to_lineages, parse_otus,
+    make_envs_dict, fields_to_dict, parse_rarefaction_fname,
+    parse_qiime_parameters, 
     parse_bootstrap_support, parse_sample_mapping, parse_distmat_to_dict,
     sample_mapping_to_otu_table, parse_taxonomy, parse_otu_table,
     parse_category_mapping,new_parse_map)
@@ -386,54 +386,6 @@ CTGGCCCGTGTTTCAGTGCCAGTGTGGCCGGTCGCCCTCTCAGGCCGGCTACTGATCGATGCCTTGGTGAGCCGTTACCT
                 ['Bacteria','Cyanobacteria','Chloroplasts','vectors']])
         self.assertEqual(obs, exp)
 
-    def test_otu_table_to_envs(self):
-        """otu_table_to_envs should produce correct dict for fast_unifrac"""
-        obs = otu_table_to_envs(['a','b','c'],['1','2'], \
-            array([[0,2,3],[4,0,0]]))
-        exp = {'1':{'b':2,'c':3},'2':{'a':4}}
-        self.assertEqual(obs, exp)
-
-    def test_parse_sequences_by_otu(self):
-        """parse_sequences_by_otu should return expected results"""
-        data = """##################
-# OTU -29479 section start
-# 100.00% from Bacteria; Firmicutes; Clostridia; Clostridiales; Ruminococcaceae; Anaerofilum 
-# 1 total lineages 
-# 1 unique seqs in OTU
-# -- Lineage Detail ---
-# 2 orig seqs in OTU
-# -- IDs for Arb ---
-# (489870, 510240)
-# 2 (100.00%) Bacteria; Firmicutes; Clostridia; Clostridiales; Ruminococcaceae; Anaerofilum
-##################
->M21Fotl_489870@@M21Fotl_510240 GI:-1|EVAL:-1|BITS:-1.0|ID:-1.0%|COV:-1.0%|LINS:Bacteria; Firmicutes; Clostridia; Clostridiales; Ruminococcaceae; Anaerofilum
-CTGGGCCGTATCTCAGTCCCAATGTGGCCGATCAACCTCTCAGTCCGGCTACTGATCGTCGCCATGGTGGGCCGTTACCCCGCCATCTAGCTAATCAGACGCGAGCCCATCTCAGAGCACATAAAGCTTTGATCTTCAGAAGATGCCTTCCGAAGATGTTATGCGGTATTAGCAGTCGTTTCCAACTGTTGTCCCCCACT
-##################
-# OTU -29469 section start
-# 100.00% from Bacteria; Fusobacteria; Fusobacteria; Fusobacteriales; Fusobacteriaceae; Fusobacterium 
-# 1 total lineages 
-# 3 unique seqs in OTU
-# -- Lineage Detail ---
-# 4 orig seqs in OTU
-# -- IDs for Arb ---
-# (403492, 60020, 237665, 270713)
-# 4 (100.00%) Bacteria; Fusobacteria; Fusobacteria; Fusobacteriales; Fusobacteriaceae; Fusobacterium
-##################
->F32Indr_403492 GI:-1|EVAL:-1|BITS:-1.0|ID:-1.0%|COV:-1.0%|LINS:Bacteria; Fusobacteria; Fusobacteria; Fusobacteriales; Fusobacteriaceae; Fusobacterium
-CTGGGCCGTGTCTCAGTCCCAGTGTGGCTGATCACCCTCTCAGGCCGGCTACCCATCATCGCCTTGGTGAGCCGTTACCTCTCCAACTAGCTAATGGGACGCAAAGCTCTCTCACAGTGCATATAGCTTTCATAATCTTAGGATGCCCTAAAATCATAATATCAGGTATTAGCATTCGTTTCCAAATGTTGTCCCTGTCT
->M54Plmr_60020@@M54Plmr_237665 GI:-1|EVAL:-1|BITS:-1.0|ID:-1.0%|COV:-1.0%|LINS:Bacteria; Fusobacteria; Fusobacteria; Fusobacteriales; Fusobacteriaceae; Fusobacterium
-CTGGACCGTGTCTCAGTTCCAGTGTGGCCGATCACCCTCTCAGGCCGGCTACCCATCATCGCCTTGGTGAGCCGTTACCTCTCCAACTAGCTAATGGGACGCAAAGCTCTCTCACAGCGCATATAGCTTTCATAATCCTAGGATGCCCTAAAATCATAATATCAGGTATTAGCATTCGTTTCCAAATGTTGTCCCTATCT
->F32Mout_270713 GI:-1|EVAL:-1|BITS:-1.0|ID:-1.0%|COV:-1.0%|LINS:Bacteria; Fusobacteria; Fusobacteria; Fusobacteriales; Fusobacteriaceae; Fusobacterium
-CTGGGCCGTGTCTCAGTCCCAATGTGGCCGTTCACCCTCTCAGGCCGGCTACCCATCATCGCCTTGGTGAGCCGTTACCTCTCCAACTAGCTAATGGGACGCAAAGCTCTCTCACAGCGCATATAGCTTTCATAATCTTAGGATGCCCTAAAATCATAATATCAGGTATTAGCATTCGTTTCCAAATGTTGTCCCTATCT
-"""
-        result = parse_sequences_by_otu(data.splitlines())
-        self.assertEqual(result[0], {-29479:['M21Fotl_489870','M21Fotl_510240'],
-           -29469:['F32Indr_403492','M54Plmr_60020','M54Plmr_237665','F32Mout_270713']})
-        self.assertEqual(result[1], {'M21Fotl_489870':-29479,'M21Fotl_510240':-29479,\
-            'F32Indr_403492':-29469,'M54Plmr_60020':-29469,'M54Plmr_237665':-29469,\
-            'F32Mout_270713':-29469})
-
-
     def test_make_envs_dict(self):
         """ make_envs_dict should have the same abundance for each taxon
         as the matrix that made the dict"""
@@ -457,36 +409,6 @@ CTGGGCCGTGTCTCAGTCCCAATGTGGCCGTTCACCCTCTCAGGCCGGCTACCCATCATCGCCTTGGTGAGCCGTTACCT
                 '2':['W3Cecum_4858'],
                 '3':['R27DLI_3243','R27DLI_4562','R27DLI_6828','R27DLI_9097','U1PLI_2780','U1PLI_67','U9PSI_10475','U9PSI_4341','W3Cecum_5191']}
         self.assertEqual(obs, exp)
-
-
-    def test_envs_to_otu_counts(self):
-        """envs_to_otu_counts should produce right dict"""
-        s="""s01\ta\t3
-s02\ta\t1
-s01\tb\t4
-s03\tc\t5""".splitlines()
-        res = envs_to_otu_counts(s)
-        self.assertEqual(res, {('a','s01'):3,('a','s02'):1,('b','s01'):4,
-            ('c','s03'):5})
-
-    def test_otu_counts_to_matrix(self):
-        """otu_counts_to_matrix should produce right matrix/order"""
-        data = {('a','s01'):3,('a','s02'):1,('b','s01'):4, ('c','s03'):5}
-        matrix, all_otus, all_sampleids = otu_counts_to_matrix(data)
-        self.assertEqual(all_sampleids, ['a','b','c'])
-        self.assertEqual(all_otus, ['s01','s02','s03'])
-        self.assertEqual(matrix, array([[3,4,0],[1,0,0],[0,0,5]]))
-
-    def test_envs_to_matrix(self):
-        """envs_to_matrix should take envs file, convert to OTU matrix"""
-        s="""s01\ta\t3
-s02\ta\t1
-s01\tb\t4
-s03\tc\t5""".splitlines()
-        matrix, all_otus, all_sampleids = envs_to_matrix(s)
-        self.assertEqual(all_sampleids, ['a','b','c'])
-        self.assertEqual(all_otus, ['s01','s02','s03'])
-        self.assertEqual(matrix, array([[3,4,0],[1,0,0],[0,0,5]]))
         
     def test_parse_qiime_parameters(self):
         """parse_qiime_parameters: functions with valid input """
