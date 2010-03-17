@@ -10,14 +10,14 @@ __maintainer__ = "Rob Knight"
 __email__ = "rob@spot.colorado.edu"
 __status__ = "Pre-release"
 
-from qiime.parse import parse_otus, new_parse_map
+from qiime.parse import parse_otus, new_parse_map, parse_metadata_state_descriptions
 from sys import argv
 from string import strip
 from cogent.util.unit_test import TestCase, main
 from numpy import array
 from StringIO import StringIO
-from qiime.filter_by_metadata import (parse_states, get_sample_ids,
-    find_good_cols, filter_line, filter_map, filter_otus_and_map)
+from qiime.filter_by_metadata import (get_sample_ids, find_good_cols,
+    filter_line, filter_map, filter_otus_and_map)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -43,26 +43,18 @@ e\tWholeBody\tStool\tb"""
         self.map_data, self.map_headers, self.map_comments =\
          new_parse_map(StringIO(self.map_str))
 
-    def test_parse_states(self):
-        """parse_states should return correct states from string."""
-        s = ''
-        self.assertEqual(parse_states(s), {})
-        s = 'Study:Twin,Hand,Dog;BodySite:Palm,Stool'
-        self.assertEqual(parse_states(s), {'Study':set(['Twin','Hand','Dog']),
-            'BodySite':set(['Palm','Stool'])})
-
     def test_get_sample_ids(self):
         """get_sample_ids should return sample ids matching criteria."""
         self.assertEqual(get_sample_ids(self.map_data, self.map_headers,\
-            parse_states('Study:Twin')), [])
+            parse_metadata_state_descriptions('Study:Twin')), [])
         self.assertEqual(get_sample_ids(self.map_data, self.map_headers,\
-            parse_states('Study:Dog')), ['a','b'])
+            parse_metadata_state_descriptions('Study:Dog')), ['a','b'])
         self.assertEqual(get_sample_ids(self.map_data, self.map_headers,\
-            parse_states('Study:*,!Dog')), ['c','d','e'])
+            parse_metadata_state_descriptions('Study:*,!Dog')), ['c','d','e'])
         self.assertEqual(get_sample_ids(self.map_data, self.map_headers,\
-            parse_states('Study:*,!Dog;BodySite:Stool')), ['e'])
+            parse_metadata_state_descriptions('Study:*,!Dog;BodySite:Stool')), ['e'])
         self.assertEqual(get_sample_ids(self.map_data, self.map_headers,\
-            parse_states('BodySite:Stool')), ['a','b','e'])
+            parse_metadata_state_descriptions('BodySite:Stool')), ['a','b','e'])
 
     def test_find_good_cols(self):
         """find_good_cols should return col indices of specified samples."""

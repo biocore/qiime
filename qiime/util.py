@@ -37,7 +37,7 @@ from cogent.util.misc import remove_files
 from cogent.util.dict2d import Dict2D
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from cogent import LoadSeqs
-from qiime.parse import parse_otus
+from qiime.parse import parse_otus, parse_qiime_config_files
 from qiime.pycogent_backports.formatdb import build_blast_db_from_fasta_file
 
 class TreeMissingError(IOError):
@@ -243,43 +243,7 @@ def get_qiime_scripts_dir():
      " Have you defined it correctly in your qiime_config?"
     
     return result
-
-# Begin functions for handling qiime_config file
-def parse_qiime_config_file(qiime_config_file):
-    """ Parse lines in a qiime_config file
-    """
-    result = {}
-    for line in qiime_config_file:
-        line = line.strip()
-        # ignore blank lines or lines beginning with '#'
-        if not line or line.startswith('#'): continue
-        fields = line.split('\t')
-        param_id = fields[0]
-        param_value = '\t'.join(fields[1:]) or None
-        result[param_id] = param_value
-    return result
-
-def parse_qiime_config_files(qiime_config_files):
-    """ Parse files in (ordered!) list of qiime_config_files
     
-        The order of files must be least important to most important.
-         Values defined in earlier files will be overwritten if the same 
-         values are defined in later files.
-    """
-    # The qiime_config object is a default dict: if keys are not
-    # present, none is returned
-    def return_none():
-        return None
-    results = defaultdict(return_none)
-    
-    for qiime_config_file in qiime_config_files:
-        try:
-            results.update(parse_qiime_config_file(qiime_config_file))
-        except IOError:
-            pass
-    
-    return results
-
 def load_qiime_config():
     """Return default parameters read in from file"""
     
@@ -303,8 +267,6 @@ def load_qiime_config():
             qiime_config_files.append(open(qiime_config_filepath))
         
     return parse_qiime_config_files(qiime_config_files)
-    
-# End functions for handling qiime_config file
 
 # The qiime_blast_seqs function should evetually move to PyCogent,
 # but I want to test that it works for all of the QIIME functionality that

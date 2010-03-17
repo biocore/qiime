@@ -7,6 +7,7 @@ from os import getenv, remove
 from os.path import exists, isdir
 from shutil import rmtree
 from cogent.util.misc import remove_files
+from qiime.parse import parse_tmp_to_final_filepath_map_file
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME Project"
@@ -24,18 +25,6 @@ def get_function_handle(s):
     module = __import__(module_name,globals(),locals(),[function_name])
     function = eval('module.%s' % function_name)
     return function
-
-def parse_filepath_list_file(lines):
-    return [l.strip() for l in lines]
-
-def parse_tmp_to_final_filepath_map_file(lines):
-    infiles_lists = []
-    out_filepaths = []
-    for line in lines:
-        fields = line.split()
-        infiles_lists.append(fields[:-1])
-        out_filepaths.append(fields[-1])
-    return infiles_lists, out_filepaths
 
 def remove_all(paths_to_remove):
     for path in paths_to_remove:
@@ -63,7 +52,7 @@ def basic_check_run_complete_f(f):
          False if any of these three files did not exist, and True otherwise.
         
     """
-    filepaths = parse_filepath_list_file(f)
+    filepaths = [l.strip() for l in f]
     for fp in filepaths:
         if not exists(fp):
             return False
@@ -115,7 +104,7 @@ def basic_clean_up_f(f):
          those three files/directories.
         
     """
-    deletion_list = parse_filepath_list_file(f)
+    deletion_list = [l.strip() for l in f]
     remove_all(deletion_list)
     return True
  

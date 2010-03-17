@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 #filter_by_metadata: reads otu table and map, returns only allowed states
 
-from qiime.parse import parse_otus, new_parse_map
 from string import strip
 from sys import argv, stdout, stderr
 from numpy import array
 from StringIO import StringIO
+from qiime.parse import (parse_otus, new_parse_map,
+    parse_metadata_state_descriptions)
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2010, The QIIME Project" 
@@ -20,18 +21,6 @@ __status__ = "Pre-release"
 metadata, for instance, isolating samples from a specific set of studies or body sites. This script 
 identifies samples matching the specified metadata criteria, and outputs a filtered mapping file 
 and OTU table containing only the specified samples."""
-
-def parse_states(state_string):
-    """From string in format 'col1:good1,good2;col2:good1' return dict."""
-    result = {}
-    state_string = state_string.strip()
-    if state_string:
-        cols = map(strip, state_string.split(';'))
-        for c in cols:
-            colname, vals = map(strip, c.split(':'))
-            vals = map(strip, vals.split(','))
-            result[colname] = set(vals)
-    return result
 
 def get_sample_ids(map_data, map_header, states):
     """Takes col states in {col:[vals]} format.
@@ -129,7 +118,7 @@ def filter_otus_and_map(map_infile, otu_infile, map_outfile, otu_outfile,
     """Filters OTU and map files according to specified criteria."""
     map_data, map_header, map_comments = new_parse_map(map_infile)
     map_infile.close()
-    valid_states = parse_states(valid_states_str)
+    valid_states = parse_metadata_state_descriptions(valid_states_str)
     sample_ids = get_sample_ids(map_data, map_header, valid_states)
 
     # write out the filtered mapping file

@@ -7,8 +7,7 @@ from cogent.parse.fasta import MinimalFastaParser
 from cogent.app.util import get_tmp_filename
 from cogent.util.misc import remove_files
 from qiime.util import make_safe_f, FunctionWithParams, qiime_blast_seqs,\
-    extract_seqs_by_sample_id, \
-    get_qiime_project_dir, parse_qiime_config_files, matrix_stats,\
+    extract_seqs_by_sample_id, get_qiime_project_dir, matrix_stats,\
     raise_error_on_parallel_unavailable, merge_otu_tables
 from qiime.pycogent_backports.formatdb import build_blast_db_from_fasta_file
 import numpy
@@ -110,20 +109,6 @@ class TopLevelTests(TestCase):
             actual = actual.lower()
             expected = expected.lower()
         self.assertEqual(actual,expected)
-        
-    def test_parse_qiime_config_files(self):
-        """ parse_qiime_config_files functions as expected """
-        fake_file1 = ['key1\tval1','key2\tval2']
-        fake_file2 = ['key2\tval3']
-        actual = parse_qiime_config_files([fake_file1,fake_file2])
-        expected = {'key1':'val1','key2':'val3'}
-        self.assertEqual(actual,expected)
-        
-        # looking up a non-existant value returns None
-        self.assertEqual(actual['fake_key'],None)
-        
-        # empty dict on empty input
-        self.assertEqual(parse_qiime_config_files([]),{})
     
     def test_matrix_stats1(self):
         """ matrix_stats should match mean, median, stdev calc'd by hand"""

@@ -543,4 +543,69 @@ def parse_category_mapping(category_mapping, category, threshold=None):
                     category_values.append(category_val)
     return result, category_values
 
+def parse_qiime_config_file(qiime_config_file):
+    """ Parse lines in a qiime_config file
+    """
+    result = {}
+    for line in qiime_config_file:
+        line = line.strip()
+        # ignore blank lines or lines beginning with '#'
+        if not line or line.startswith('#'): continue
+        fields = line.split('\t')
+        param_id = fields[0]
+        param_value = '\t'.join(fields[1:]) or None
+        result[param_id] = param_value
+    return result
+    
+def parse_qiime_config_files(qiime_config_files):
+    """ Parse files in (ordered!) list of qiime_config_files
+    
+        The order of files must be least important to most important.
+         Values defined in earlier files will be overwritten if the same 
+         values are defined in later files.
+    """
+    # The qiime_config object is a default dict: if keys are not
+    # present, none is returned
+    def return_none():
+        return None
+    results = defaultdict(return_none)
+    
+    for qiime_config_file in qiime_config_files:
+        try:
+            results.update(parse_qiime_config_file(qiime_config_file))
+        except IOError:
+            pass
+    
+    return results
 
+def parse_tmp_to_final_filepath_map_file(lines):
+    """Parses poller maps of tmp -> final file names 
+     
+       For example, lines:
+        tmpA1.txt tmpA2.txt tmpA3.txt A.txt
+        B1.txt B2.txt B3.txt B.txt
+        
+       Would result in:
+        ([[tmpA1.txt,tmpA2.txt,tmpA3.txt], [B1.txt,B2.txt,B3.txt]],
+         [A.txt,B.txt])
+    
+    """
+    infiles_lists = []
+    out_filepaths = []
+    for line in lines:
+        fields = line.split()
+        infiles_lists.append(fields[:-1])
+        out_filepaths.append(fields[-1])
+    return infiles_lists, out_filepaths
+    
+def parse_metadata_state_descriptions(state_string):
+    """From string in format 'col1:good1,good2;col2:good1' return dict."""
+    result = {}
+    state_string = state_string.strip()
+    if state_string:
+        cols = map(strip, state_string.split(';'))
+        for c in cols:
+            colname, vals = map(strip, c.split(':'))
+            vals = map(strip, vals.split(','))
+            result[colname] = set(vals)
+    return result

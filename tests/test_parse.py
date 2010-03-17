@@ -17,10 +17,11 @@ from cogent.util.unit_test import TestCase, main
 from qiime.parse import (parse_map, group_by_field, group_by_fields, 
     parse_distmat, parse_rarefaction_record, parse_rarefaction, parse_coords, 
     parse_otus, make_envs_dict, fields_to_dict, parse_rarefaction_fname,
-    parse_qiime_parameters, 
+    parse_qiime_parameters, parse_qiime_config_files,
     parse_bootstrap_support, parse_sample_mapping, parse_distmat_to_dict,
     sample_mapping_to_otu_table, parse_taxonomy, parse_otu_table,
-    parse_category_mapping,new_parse_map)
+    parse_category_mapping, new_parse_map, 
+    parse_metadata_state_descriptions)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -419,6 +420,29 @@ sample3\tC\t1.0""".split('\n')
         result, cat_vals = parse_category_mapping(category_mapping, 'cat2', threshold=5.0)
         self.assertEqual(result, {'sample1': '0', 'sample3': '0', 'sample2': '1'})
         self.assertEqual(cat_vals, (['0', '1']))
+        
+    def test_parse_qiime_config_files(self):
+        """ parse_qiime_config_files functions as expected """
+        fake_file1 = ['key1\tval1','key2\tval2']
+        fake_file2 = ['key2\tval3']
+        actual = parse_qiime_config_files([fake_file1,fake_file2])
+        expected = {'key1':'val1','key2':'val3'}
+        self.assertEqual(actual,expected)
+        
+        # looking up a non-existant value returns None
+        self.assertEqual(actual['fake_key'],None)
+        
+        # empty dict on empty input
+        self.assertEqual(parse_qiime_config_files([]),{})
+
+
+    def test_parse_metadata_state_descriptions(self):
+        """parse_metadata_state_descriptions should return correct states from string."""
+        s = ''
+        self.assertEqual(parse_metadata_state_descriptions(s), {})
+        s = 'Study:Twin,Hand,Dog;BodySite:Palm,Stool'
+        self.assertEqual(parse_metadata_state_descriptions(s), {'Study':set(['Twin','Hand','Dog']),
+            'BodySite':set(['Palm','Stool'])})
 
 if __name__ =='__main__':
     main()
