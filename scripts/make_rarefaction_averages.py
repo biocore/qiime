@@ -59,7 +59,7 @@ def main():
     except(IOError):
         option_parser.error('Problem with mapping file. %s'%sys.exc_info()[1])
         exit(0)
-    prefs['map'] = parse.new_parse_map(prefs['mapfl'],strip_quotes=True)
+    prefs['map'] = new_parse_map(prefs['mapfl'],strip_quotes=True)
 
     #rarefaction data check
     rarenames = options.rarefaction.split(',')
