@@ -502,7 +502,28 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,\
      (python_exe_fp, script_dir, alpha_diversity_dir, \
       alpha_collated_dir, params_str)
     commands.append([('Collate alpha',alpha_collated_cmd)])
-      
+
+    # Prep the make rarefaction averages command(s)
+    rarefaction_averages_dir = '%s/alpha_rarefaction_averages/' % output_dir
+    try:
+        makedirs(rarefaction_averages_dir)
+    except OSError:
+        pass
+    try:
+        params_str = get_params_str(params['make_rarefaction_averages'])
+    except KeyError:
+        params_str = ''
+    # Build the make rarefaction averages command(s)
+    for metric in alpha_diversity_metrics:
+        metric_averages_dir = '%s/%s' % (rarefaction_averages_dir, metric)
+        input_fp = '%s/%s.txt' % (alpha_collated_dir, metric)
+        make_rarefaction_plot_cmd =\
+         '%s %s/make_rarefaction_averages.py -m %s -r %s -o %s %s' %\
+         (python_exe_fp, script_dir, mapping_fp, input_fp, \
+          metric_averages_dir, params_str)
+        commands.append(\
+         [('Rarefaction averages: %s' % metric,make_rarefaction_plot_cmd)])
+
     # Prep the make rarefaction plot command(s)
     rarefaction_plot_dir = '%s/alpha_rarefaction_plots/' % output_dir
     try:
@@ -516,10 +537,10 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,\
     # Build the make rarefaction plot command(s)
     for metric in alpha_diversity_metrics:
         metric_plot_dir = '%s/%s' % (rarefaction_plot_dir, metric)
-        input_fp = '%s/%s.txt' % (alpha_collated_dir, metric)
+        input_dir = '%s/%s/%s' % (rarefaction_averages_dir, metric, metric)
         make_rarefaction_plot_cmd =\
-         '%s %s/make_rarefaction_plots.py -m %s -r %s -o %s %s' %\
-         (python_exe_fp, script_dir, mapping_fp, input_fp, \
+         '%s %s/make_rarefaction_plots.py -i %s -o %s %s' %\
+         (python_exe_fp, script_dir, input_dir, \
           metric_plot_dir, params_str)
         commands.append(\
          [('Rarefaction plot: %s' % metric,make_rarefaction_plot_cmd)])

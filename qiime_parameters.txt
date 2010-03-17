@@ -64,6 +64,9 @@ multiple_rarefactions:lineages_included	False
 # Alpha diversity parameters
 alpha_diversity:metrics
 
+# Make rarefaction averages parameters
+make_rarefaction_averages:prefs
+
 # Make rarefaction plots parameters
 make_rarefaction_plots:imagetype	png
 make_rarefaction_plots:resolution	75

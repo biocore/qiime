@@ -5,10 +5,10 @@ __author__ = "Meg Pirrung"
 __copyright__ = "Copyright 2009, QIIME"
 __credits__ = ["Meg Pirrung"] 
 __license__ = "GPL"
-__version__ = "0.92-dev"
+__version__ = "0.1"
 __maintainer__ = "Meg Pirrung"
 __email__ = "meg.pirrung@colorado.edu"
-__status__ = "Pre-release"
+__status__ = "Prototype"
 
 """
 Author: Meg Pirrung (meg.pirrung@colorado.edu) 
@@ -20,49 +20,24 @@ Matplotlib
 Numpy
 """
 
-from sys import argv, exit
+from sys import exit
 from random import choice, randrange
-from time import strftime
-from qiime import parse, util
+from qiime.parse import parse_rarefaction
 from numpy import array, transpose, random, mean, std, arange
 from string import strip
 import os.path
 from os.path import exists, splitext, split
-import shutil
 from warnings import warn
 from itertools import cycle
 
-def parse_rarefaction(lines):
-    """Function for parsing rarefaction files specifically for use in
-    make_rarefaction_averages.py"""
-    col_headers = None
-    result = []
-    row_headers = []
-    for line in lines:
-        if line[0] == '#': continue
-        if line[0] == '\t': #is header
-            col_headers = map(strip, line.split('\t')[1:])
-        else:
-            entries = line.split('\t')
-            try:
-                result.append(map(float, entries[1:]))
-            except(ValueError):
-                temp = []
-                for x in entries[1:]:
-                    if x.strip() != 'n/a':
-                        temp.append(float(x.strip()))
-                    else:
-                        temp.append(0.0)
-                result.append(temp)
-                
-            row_headers.append(entries[0])
-    rare_mat_raw = array(result)
+def get_rarefaction_data(rarefaction_data, col_headers):
+    rare_mat_raw = array(rarefaction_data)
     rare_mat_min = [rare_mat_raw[x][2:] for x in range(0,len(rare_mat_raw))]
     seqs_per_samp = [rare_mat_raw[x][0] for x in range(0,len(rare_mat_raw))]
-    sampleIDs = col_headers[2:]
+    sampleIDs = col_headers[3:]
     rare_mat_trans = transpose(array(rare_mat_min)).tolist()
     return rare_mat_trans, seqs_per_samp, sampleIDs
-    
+
 def ave_seqs_per_sample(matrix, seqs_per_samp, sampleIDs):
     """Calculate the average for each sampleID across each number of \
     seqs/sample"""
@@ -205,9 +180,10 @@ def make_averages(prefs):
         splitext(split(r)[1])[0])
         os.makedirs(file_path)
         
-        rare_mat_trans = prefs['rarefactions'][r][0]
-        seqs_per_samp = prefs['rarefactions'][r][1]
-        sampleIDs = prefs['rarefactions'][r][2]
+        col_headers, comments, rarefaction_fn, rarefaction_data = \
+        prefs['rarefactions'][r]
+        rare_mat_trans, seqs_per_samp, sampleIDs = \
+        get_rarefaction_data(rarefaction_data, col_headers)
 
         xaxisvals = [float(x) for x in set(seqs_per_samp)]
         xaxisvals.sort()
@@ -229,4 +205,5 @@ def make_averages(prefs):
     tablelines = ['#SampleIDs\n']
     tablelines.extend([s + '\n' for s in sampleIDs])
     tablelines.extend(rarelines)
-    open(prefs['output_path'] + "/rarefactionTable.txt",'w').writelines(tablelines)
+    open(prefs['output_path'] + "/rarefactionTable.txt",'w').\
+    writelines(tablelines)

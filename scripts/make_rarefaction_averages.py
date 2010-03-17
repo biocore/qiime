@@ -6,13 +6,15 @@ __author__ = "Meg Pirrung"
 __copyright__ = "Copyright 2010, The QIIME project"
 __credits__ = ["Meg Pirrung"]
 __license__ = "GPL"
-__version__ = "0.92-dev"
+__version__ = "1.0-dev"
 __maintainer__ = "Meg Pirrung"
 __email__ = "meg.pirrung@colorado.edu"
 __status__ = "Pre-release"
  
 from optparse import make_option
 from qiime.util import parse_command_line_parameters
+from qiime.parse import parse_rarefaction
+from qiime.pycogent_backports.misc import get_random_directory_name
 import sys
 from sys import argv, exit, exc_info
 from random import choice, randrange
@@ -32,9 +34,9 @@ script_info['script_description']="""Once the batch alpha diversity files have b
 
 This script creates a directory of average rarefaction series based on the supplied mapping file (-m) and the supplied rarefaction files (-r) from collate_alpha.py."""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Default Example:""","""For generated rarefaction plots using the default parameters, including the mapping file and one rarefaction file, you can use the following command:""","""%prog -m Mapping_file.txt -r chao1.txt"""))
-script_info['script_usage'].append(("""Multiple File Example:""","""If you would like to generate plots for multiple files, you can use the following command:""","""%prog -m Mapping_file.txt -r chao1.txt,PD_whole_tree.txt"""))
-script_info['script_usage'].append(("""Category Specific Example:""","""In the case that you want to make plots for a specific category (i.e., pH), you can use the following command:""","""%prog -m Mapping_file.txt -r chao1.txt -p pH"""))
+script_info['script_usage'].append(("""Default Example:""","""For generated rarefaction plots using the default parameters, including the mapping file and one rarefaction file, you can use the following command:""","""make_rarefaction_plots.py -m Mapping_file.txt -r chao1.txt"""))
+script_info['script_usage'].append(("""Multiple File Example:""","""If you would like to generate plots for multiple files, you can use the following command:""","""make_rarefaction_plots.py -m Mapping_file.txt -r chao1.txt,PD_whole_tree.txt"""))
+script_info['script_usage'].append(("""Category Specific Example:""","""In the case that you want to make plots for a specific category (i.e., pH), you can use the following command:""","""make_rarefaction_plots.py -m Mapping_file.txt -r chao1.txt -p pH"""))
 script_info['output_description']="""The result of this script produces a folder and within that folder there are sub-folders for each data file (metric) supplied as input. Within the sub-folders, there will be text files of averages for each of the categories specified by the user."""
 
 script_info['required_options']=[\
@@ -57,7 +59,8 @@ def main():
     except(IOError):
         option_parser.error('Problem with mapping file. %s'%sys.exc_info()[1])
         exit(0)
-    prefs['map'] = parse.parse_map(prefs['mapfl'], return_header=True, strip_quotes=True)
+    prefs['map'] = parse.parse_map(prefs['mapfl'], return_header=True, \
+    strip_quotes=True)
     prefs['map'][0][0] = [h.strip('#').strip(' ') for h in prefs['map'][0][0]]
 
     #rarefaction data check
@@ -68,7 +71,8 @@ def main():
              rarefl = open(r, 'U').readlines()
              rares[r] = parse_rarefaction(rarefl)
         except(IOError):
-            option_parser.error('Problem with rarefaction file. %s'%sys.exc_info()[1])
+            option_parser.error('Problem with rarefaction file. %s'%\
+            sys.exc_info()[1])
             exit(0)
     prefs['rarefactions'] = rares
 
@@ -92,19 +96,18 @@ please check spelling and syntax.'%list(suppliedcats.difference(availablecats)))
             exit(0)
     
     #output directory check
-    if '/' in argv[0]:
-        prefs['output_path'] = argv[0].rsplit('/',1)[0]+'/'
+    if options.dir_path != '.':
+        if os.path.exists(options.dir_path):
+            prefs['output_path'] = options.dir_path
+        else:
+            try:
+                os.mkdir(options.dir_path)
+                prefs['output_path'] = options.dir_path
+            except(ValueError):
+                option_parser.error('Could not create output directory.')
+                exit(0)
     else:
-        prefs['output_path'] = './'
-    
-    dir_path = options.dir_path
-    dir_path = os.path.join(dir_path,'rarefaction_data')
-
-    alphabet = "ABCDEFGHIJKLMNOPQRSTUZWXYZ"
-    alphabet += alphabet.lower()
-    alphabet += "01234567890"
-    data_file_path=''.join([choice(alphabet) for i in range(10)])
-    prefs['output_path'] = os.path.join(dir_path,data_file_path)
+        prefs['output_path'] = get_random_directory_name()
     
     make_averages(prefs)
 
