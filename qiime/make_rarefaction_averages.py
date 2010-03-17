@@ -63,8 +63,8 @@ def ave_seqs_per_sample(matrix, seqs_per_samp, sampleIDs):
 def is_max_category_ops(mapping, mapping_category):
     """Count how many unique values there are for the supplied mapping \
     category and return true if all values are unique"""
-    header = mapping[0][0]
-    map_min = mapping[0][1:]
+    header = mapping[1]
+    map_min = mapping[0]
     num_samples = len(map_min)
     index = header.index(mapping_category)
     seen = set()
@@ -78,8 +78,8 @@ def make_error_series(rtype, rare_mat, sampleIDs, mapping, mapping_category):
     """Create mean and error bar series for the supplied mapping category"""
     err_ser = dict()
     collapsed_ser = dict()
-    header = mapping[0][0]
-    map_min = mapping[0][1:]
+    header = mapping[1]
+    map_min = mapping[0]
     mapping_dict = dict()
     notfound = []
     for m in map_min:
