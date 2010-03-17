@@ -16,7 +16,7 @@ Unit tests for make_rarefaction_plots.py
 
 from cogent.util.unit_test import TestCase, main
 from qiime.make_rarefaction_averages import *
-from qiime.parse import parse_rarefaction, parse_map
+from qiime.parse import parse_rarefaction, new_parse_map
 
 class makeRarefactionAveragesTests(TestCase):
     
@@ -25,10 +25,7 @@ class makeRarefactionAveragesTests(TestCase):
                             '123\tF\t32',
                             '234\tM\t30',
                             '345\tM\t32']
-        self.p_mappingfile = parse_map(self.mappingfile,return_header=True, \
-        strip_quotes=True)
-        self.p_mappingfile[0][0] = [h.strip('#').strip(' ') for h in  \
-        self.p_mappingfile[0][0]]
+        self.p_mappingfile = new_parse_map(self.mappingfile,strip_quotes=True)
                             
         self.rarefactionfile = ['\tsequences per sample\titeration\t123\t234\t345',
                                 'rare10.txt\t10\t0\t1.99181\t0.42877\t2.13996',
