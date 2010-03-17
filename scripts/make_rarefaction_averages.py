@@ -19,7 +19,7 @@ import sys
 from sys import argv, exit, exc_info
 from random import choice, randrange
 from time import strftime
-from qiime import parse, util
+from qiime.parse import new_parse_map, parse_rarefaction
 from qiime.make_rarefaction_averages import make_averages, \
 is_max_category_ops, parse_rarefaction
 import os.path
@@ -59,9 +59,7 @@ def main():
     except(IOError):
         option_parser.error('Problem with mapping file. %s'%sys.exc_info()[1])
         exit(0)
-    prefs['map'] = parse.parse_map(prefs['mapfl'], return_header=True, \
-    strip_quotes=True)
-    prefs['map'][0][0] = [h.strip('#').strip(' ') for h in prefs['map'][0][0]]
+    prefs['map'] = parse.new_parse_map(prefs['mapfl'],strip_quotes=True)
 
     #rarefaction data check
     rarenames = options.rarefaction.split(',')
@@ -79,14 +77,14 @@ def main():
     #preferences check
     if options.prefs.split(',')[0] == 'ALL':
         prefs['categories'] = []
-        temp = prefs['map'][0][0]
+        temp = prefs['map'][1]
         for p in temp:
             is_max, l = is_max_category_ops(prefs['map'], p)
             if l != 1 and not is_max:
                 prefs['categories'].append(p)
     else:
         suppliedcats =  set(options.prefs.split(','))
-        availablecats = set(prefs['map'][0][0])
+        availablecats = set(prefs['map'][1])
         
         if suppliedcats.issubset(availablecats):
             prefs['categories'] = options.prefs.split(',')
