@@ -189,6 +189,7 @@ def parse_distmat_to_dict(table):
         for (sample_id_y, value) in zip(row_headers, row):
             result[sample_id_x][sample_id_y] = value
     return result
+    
 def parse_bootstrap_support(lines):
     """Parser for a bootstrap/jackknife support in tab delimited text
     """
@@ -297,34 +298,6 @@ def parse_coords(lines):
         result.append(map(float, fields[1:]))
 
     return header, array(result), eigvals, pct_var
-
-# def parse_rarefaction(lines):
-#     """Parser for rarefaction data file.
-# 
-#     The examples I have of this file share the following format:
-#     - header line starting with #HEADER, with %id, sample_id, num_reps(?)
-#     - lines for chao1, ace and shannon with mean, LC, UC
-#     - line for simpson with actual value of index
-#     - table header with n, rare, rare_lci, rare_uci
-#     - multiline 4-col output of this table.
-# 
-#     WARNING: vals in 1st col of table not same for all samples either because
-#     of limited # seqs or because sampling performed at equal # intervals not
-#     equal # seqs.
-# 
-#     For PD rarefaction, is the same but without the other stats calculated,
-#     i.e. just has per-sample data for the rarefaction, and the header.
-# 
-#     Desired result:
-#     dict keyed by sample id, vals are dicts containing all the info (e.g.
-#     rarefaction_data as 4-col array, other indices as either 1-col or 3-col
-#     lists of numbers, metadata about pct_sim and num_iters
-#     """
-#     result = {}
-#     for rec in rrf(lines):
-#         curr = parse_rarefaction_rec(rec)
-#         result[curr['sample_id']] = curr
-#     return result
 
 def parse_rarefaction_fname(name_string):
     """returns base, seqs/sam, iteration, extension.  seqs, iters as ints
@@ -669,6 +642,4 @@ def parse_category_mapping(category_mapping, category, threshold=None):
                     category_values.append(category_val)
     return result, category_values
 
-
-# End functions for handling qiime_parameters file
 
