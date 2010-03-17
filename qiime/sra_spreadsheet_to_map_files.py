@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #file sra_spreadsheet_to_map_files.py
-from qiime.parse import parse_map
+from qiime.parse import new_parse_map
 from os.path import split, join
 from collections import defaultdict
 """This script reads the SRA submission spreadsheet, makes QIIME map files.
@@ -13,7 +13,7 @@ but this is planned for the future.
 """
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2010, The QIIME Project" 
-__credits__ = ["Rob Knight"] #remember to add yourself if you make changes
+__credits__ = ["Rob Knight","Greg Caporaso"] #remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "0.92-dev"
 __maintainer__ = "Rob Knight"
@@ -55,8 +55,7 @@ def remap_lines(col_names, lines):
 
 def get_study_groups(infile):
     """Return study groups for each study covered in infile."""
-    map_lines = parse_map(infile)
-    map_header, map_lines = map_lines[0], map_lines[1:]
+    map_lines, map_header, map_comments = new_parse_map(infile)
     col_names = map(strip_quotes, map_header)
     study_groups = collect_study_groups(map_lines, 
         col_names.index('STUDY_REF'), col_names.index('RUN_PREFIX'))
