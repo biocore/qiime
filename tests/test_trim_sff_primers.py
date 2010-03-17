@@ -21,8 +21,8 @@ class TopLevelTests(TestCase):
 
     def setUp(self):
         """Define a few standard variables"""
-        self.with_linker  = """SampleID\tKEY_SEQ\tBARCODE\tLINKER\tPRIMER\n"""
-        self.without_linker  = """SampleID\tKEY_SEQ\tBARCODE\tLx\tPRIMER\n"""
+        self.with_linker  = """#SampleID\tKEY_SEQ\tBARCODE\tLINKER\tPRIMER\n"""
+        self.without_linker  = """#SampleID\tKEY_SEQ\tBARCODE\tLx\tPRIMER\n"""
         self.samples = """a\tATGC\tCCC\tC\tCCCC\nb\tATGC\tGG\tAAA\tCC\n"""
         
 
