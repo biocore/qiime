@@ -82,7 +82,12 @@ script_info['optional_options']=[\
         help='threshold under which to consider something absent: ' +\
         'Only used if you have numerical data that should be converted to ' +\
         'present or absent based on a threshold. Should be None for ' +\
-        'categorical data or with the correlation test. default value is None')
+        'categorical data or with the correlation test. default value is None'),\
+    make_option('-l', '--otu_include_fp', dest='otu_include_fp', default=None,\
+        help='path to a file with a list of OTUs to evaluate. By default ' +\
+        'evaluates all OTUs that pass the minimum sample filter. If a ' +\
+        'filepath is given here in which each OTU name one wishes to ' +\
+        'evaluate is on a separate line, will apply this additional filter')
 ]
 script_info['version'] = __version__
 
@@ -105,8 +110,14 @@ def main():
         threshold = float(threshold)
     test = opts.test
 
+    otu_include_fp = opts.otu_include_fp
+    if otu_include_fp and otu_include_fp != 'None':
+        otu_include = open(otu_include_fp)
+    else:
+        otu_include = None
+
     output = test_wrapper(test, otu_table, category_mapping, category, \
-                threshold, filter, output_fp)
+                threshold, filter, output_fp, otu_include)
     of = open(output_fp, 'w')
     of.write('\n'.join(output))
     of.close()
