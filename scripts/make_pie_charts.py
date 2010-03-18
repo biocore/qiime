@@ -10,11 +10,19 @@ __version__ = "0.92-dev"
 __maintainer__ = "Julia Goodrich"
 __email__ = "julia.goodrich@colorado.edu"
 __status__ = "Pre-release"
- 
+"""
+This script generates taxonomy pie charts
+"""
 
-from qiime.util import parse_command_line_parameters
+from qiime.util import parse_command_line_parameters, get_qiime_project_dir
 from optparse import make_option
-from qiime.make_pie_charts import make_all_pie_charts, create_dir
+from qiime.make_pie_charts import make_all_pie_charts
+from qiime.pycogent_backports.misc import get_random_directory_name
+from qiime.colors import sample_color_prefs_and_map_data_from_options
+import re
+import matplotlib
+import os
+import shutil
 
 script_info={}
 script_info['brief_description']="""Make pie charts based on taxonomy assignment"""
@@ -52,15 +60,20 @@ script_info['version']=__version__
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
+    matplotlib_version = re.split("[^\d]", matplotlib.__version__)
+    matplotlib_version_info = tuple([int(i) for i in matplotlib_version if \
+                            i.isdigit()])
+    if matplotlib_version_info != (0,98,5,3) and \
+        matplotlib_version_info != (0,98,5,2):
+        print "This code was only tested with Matplotlib-0.98.5.2 and \
+              Matplotlib-0.98.5.3"
+
     if not opts.counts_fname:
         option_parser.error("A list of input files must be specified")
     if not opts.labels:
         option_parser.error("A list of label names cooresponding to files must\
  be specified")
 
-    dir_path = opts.dir_path
-    if dir_path == './':
-        dir_path = os.getcwd()
     do_sample = opts.do_sample
     counts_fname = opts.counts_fname
     labels = opts.labels
@@ -69,7 +82,52 @@ def main():
     filepath=data[0][1]
     filename=filepath.strip().rpartition('/')[0]
     num_categories = int(opts.num_categories)
-    make_all_pie_charts(data,dir_path,filename,num_categories, do_sample,args)
+
+    qiime_dir=get_qiime_project_dir()
+
+    if opts.dir_path:
+        if os.path.exists(opts.dir_path):
+            dir_path=opts.dir_path
+        else:
+            try:
+                os.mkdir(opts.dir_path)
+                dir_path=opts.dir_path
+            except OSError:
+                pass
+    else:
+        dir_path='./'
+    if dir_path == './':
+        dir_path = os.getcwd()
+
+
+    data_dir_path = get_random_directory_name(output_dir=dir_path)
+
+    charts_path = os.path.join(data_dir_path,'pie_charts')
+    try:
+        os.mkdir(charts_path)
+    except OSError:     #raised if dir exists
+        pass
+
+
+    javascript_path = \
+            os.path.join(data_dir_path,'js')
+    try:
+        os.mkdir(javascript_path)
+    except OSError:     #raised if dir exists
+        pass
+    shutil.copyfile(os.path.join(qiime_dir,'qiime','support_files','js/overlib.js'),\
+                                     os.path.join(javascript_path,'overlib.js'))
+    css_path = \
+            os.path.join(data_dir_path,'css')
+    try:
+        os.mkdir(css_path)
+    except OSError:     #raised if dir exists
+        pass
+    shutil.copyfile(os.path.join(qiime_dir,'qiime','support_files','css/qiime_style.css'),\
+                                os.path.join(css_path,'qiime_style.css'))
+
+
+    make_all_pie_charts(data,data_dir_path,filename,num_categories, do_sample,args)
 
 if __name__ == "__main__":
     main()

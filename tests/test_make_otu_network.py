@@ -1,19 +1,20 @@
 #!/usr/bin/env python
-#file test_make_otu_table
+#file test_make_otu_network.py
 
-__author__ = "Rob Knight"
+__author__ = "Julia Goodrich"
 __copyright__ = "Copyright 2010, The QIIME Project" #consider project name
-__credits__ = ["Rob Knight", "Justin Kuczynski"] #remember to add yourself
+__credits__ = ["Julia Goodrich"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "0.92-dev"
-__maintainer__ = "Rob Knight"
-__email__ = "rob@spot.colorado.edu"
+__maintainer__ = "Julia Goodrich"
+__email__ = "julia.goodrich@colorado.edu"
 __status__ = "Pre-release"
 
 from cogent.util.unit_test import TestCase, main
-from qiime.make_otu_network import parse_map, parse_otu_sample, get_num_con_cat\
-     ,get_num_cat,make_table_file,make_stats_files,make_props_files,create_dir
-     
+from qiime.make_otu_network import get_sample_info, get_connection_info, \
+     get_num_con_cat,get_num_cat,make_table_file,make_stats_files,\
+     make_props_files
+from qiime.pycogent_backports.misc import get_random_directory_name     
 from cogent.maths.stats.test import G_2_by_2
 from random import choice, randrange
 from os import remove
@@ -155,9 +156,9 @@ otu_10	0	2	0	4	0	Bacteria; Firmicutes; Mollicutes; Clostridium_aff_innocuum_CM97
         if self._dir_to_clean_up != '':
             shutil.rmtree(self._dir_to_clean_up)
         
-    def test_parse_map(self):
+    def test_get_sample_info(self):
         cat_by_sample, sample_by_cat, num_cats, meta_dict,labels,node_labels, \
-                       label_list = parse_map(self.map_file.split('\n'))
+                       label_list = get_sample_info(self.map_file.split('\n'))
         self.assertEqual(cat_by_sample,self.cat_by_sample)
         self.assertEqual(sample_by_cat,self.sample_by_cat)
         self.assertEqual(num_cats,self.num_cats)
@@ -166,10 +167,10 @@ otu_10	0	2	0	4	0	Bacteria; Firmicutes; Mollicutes; Clostridium_aff_innocuum_CM97
         self.assertEqual(node_labels,self.node_labels)
         self.assertEqual(label_list,self.label_list)
         
-    def test_parse_otu_sample(self):
+    def test_get_connection_info(self):
         con_by_sample, node_file_str, edge_file_str, red_node_file_str,\
            red_edge_file_str,otu_dc, degree_counts,sample_dc = \
-           parse_otu_sample(self.otu_sample_file.split('\n'), self.num_cats,\
+           get_connection_info(self.otu_sample_file.split('\n'), self.num_cats,\
                             self.meta_dict)
 
         self.assertEqual(con_by_sample,self.con_by_sample)
@@ -192,16 +193,23 @@ otu_10	0	2	0	4	0	Bacteria; Firmicutes; Mollicutes; Clostridium_aff_innocuum_CM97
         
         
     def test_make_table_file(self):
-        alphabet = "ABCDEFGHIJKLMNOPQRSTUZWXYZ"
-        alphabet += alphabet.lower()
-        alphabet += "01234567890"
+        random_dir_name=get_random_directory_name(output_dir='/tmp')
+        foldername = random_dir_name
 
-        random_dir_name=''.join([choice(alphabet) for i in range(10)])
-        foldername = '/tmp/'+random_dir_name+'/'
-            
         self._dir_to_clean_up = foldername
-        
-        obs=create_dir(foldername)
+
+        try:
+            os.mkdir(foldername)
+        except OSError:
+            pass
+
+        obs=foldername
+
+        try:
+            os.mkdir(os.path.join(obs,"otu_network"))
+        except OSError:
+            pass
+
         obs = os.path.join(obs,"otu_network")
         make_table_file(self.edge_file_str, self.labels, obs,"real_edge_table.txt")
                         
@@ -209,18 +217,28 @@ otu_10	0	2	0	4	0	Bacteria; Firmicutes; Mollicutes; Clostridium_aff_innocuum_CM97
 the appropriate location')
 
     def test_make_stats_files(self):
-        alphabet = "ABCDEFGHIJKLMNOPQRSTUZWXYZ"
-        alphabet += alphabet.lower()
-        alphabet += "01234567890"
-
-        random_dir_name=''.join([choice(alphabet) for i in range(10)])
-        foldername = '/tmp/'+random_dir_name+'/'
-            
+        random_dir_name=get_random_directory_name(output_dir='/tmp')
+        foldername = random_dir_name
         self._dir_to_clean_up = foldername
         
-        obs=create_dir(foldername)
-        obs = os.path.join(obs,"otu_network")
+        try:
+            os.mkdir(foldername)
+        except OSError:
+            pass
 
+        obs=foldername
+    
+        try:
+            os.mkdir(os.path.join(obs,"otu_network"))
+        except OSError:
+            pass
+
+        try:
+            os.mkdir(os.path.join(obs,"otu_network/stats"))
+        except OSError:
+            pass
+
+        obs = os.path.join(obs,"otu_network")
         make_stats_files(self.sample_dc,self.otu_dc,self.degree_counts,self.num_con_cat, self.num_con,self.num_cat\
                      ,self.cat_by_sample,obs)
         
@@ -237,43 +255,35 @@ the appropriate location')
 the appropriate location')
         
     def test_make_props_files(self):
-        alphabet = "ABCDEFGHIJKLMNOPQRSTUZWXYZ"
-        alphabet += alphabet.lower()
-        alphabet += "01234567890"
+        random_dir_name=get_random_directory_name(output_dir='/tmp')
+        foldername = random_dir_name
 
-        random_dir_name=''.join([choice(alphabet) for i in range(10)])
-        foldername = '/tmp/'+random_dir_name+'/'
-            
         self._dir_to_clean_up = foldername
-        
-        obs=create_dir(foldername)
+
+        try:
+            os.mkdir(foldername)
+        except OSError:
+            pass
+
+        obs=foldername
+
+        try:
+            os.mkdir(os.path.join(obs,"otu_network"))
+        except OSError:
+            pass
+
+        try:
+            os.mkdir(os.path.join(obs,"otu_network/props"))
+        except OSError:
+            pass
+
+        obs = os.path.join(obs,"otu_network")
+ 
         self.assertTrue(exists(foldername+"/otu_network/props/"),'The file was not created in \
 the appropriate location')
         self.assertTrue(exists(foldername+"/otu_network/props"),'The file was not created in \
 the appropriate location')
 
-    def test_create_dir(self):
-        """create_dir: creates a directory where the kinemage is stored"""
-        alphabet = "ABCDEFGHIJKLMNOPQRSTUZWXYZ"
-        alphabet += alphabet.lower()
-        alphabet += "01234567890"
-
-        random_dir_name=''.join([choice(alphabet) for i in range(10)])
-        foldername = '/tmp/'+random_dir_name+'/'
-            
-        self._dir_to_clean_up = foldername
-        
-        obs=create_dir(foldername)
-        
-        self.assertEqual(obs,foldername)
-        self.assertTrue(exists(foldername),'The file was not created in \
-the appropriate location')
-        self.assertTrue(exists(foldername+"/otu_network"),'The file was not created in \
-the appropriate location')
-        self.assertTrue(exists(foldername+"/otu_network/props"),'The file was not created in \
-the appropriate location')
-        self.assertTrue(exists(foldername+"/otu_network/stats"),'The file was not created in \
-the appropriate location')
 
 
     

@@ -52,9 +52,9 @@ class TopLevelTests(TestCase):
     def test_get_counts(self):
         """get_counts should gets all the counts for one input file"""
         try:
-	        mkdir("/tmp/qiimewebfiles/")
+            mkdir("/tmp/qiimewebfiles/")
         except OSError:
-		    pass
+            pass
         try:
             mkdir("/tmp/qiimewebfiles/pie_charts")
         except OSError:
@@ -105,7 +105,7 @@ class TopLevelTests(TestCase):
         """make_HTML_table should Make HTML tables for one set of pie charts """
         try:
             mkdir("/tmp/qiimewebfiles/")
-       	except OSError:
+        except OSError:
             pass
         dir_path = "/tmp/qiimewebfiles/"
         
@@ -113,7 +113,7 @@ class TopLevelTests(TestCase):
             mkdir("/tmp/qiimewebfiles/pie_charts")
         except OSError:
             pass
-	
+
         fracs_labels_other,fracs_labels,all_counts, other_cat, red,other_frac \
                                         = get_fracs(self.counts1,5,10)
 

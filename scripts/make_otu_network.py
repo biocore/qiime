@@ -18,8 +18,10 @@ This script generates the otu networks and statistics
 
 from qiime.util import parse_command_line_parameters
 from optparse import make_option
-from qiime.make_otu_network import create_dir, create_network_and_stats
-
+from qiime.make_otu_network import create_network_and_stats
+from qiime.pycogent_backports.misc import get_random_directory_name
+import os
+import shutil
 
 script_info={}
 script_info['brief_description']="""Make an OTU network and calculate statistics"""
@@ -61,7 +63,26 @@ def main():
 
     if not opts.map_file:
         parser.error("A Map file must be specified")
-    dir_path = create_dir(opts.dir_path)
+    dir_path = opts.dir_path
+
+    if dir_path==None or dir_path=='':
+        dir_path = get_random_directory_name()
+    
+    try:
+        os.mkdir(os.path.join(dir_path,"otu_network"))
+    except OSError:
+        pass
+
+    try:
+        os.mkdir(os.path.join(dir_path,"otu_network/props"))
+    except OSError:
+        pass
+
+    try:
+        os.mkdir(os.path.join(dir_path,"otu_network/stats"))
+    except OSError:
+        pass
+
     map_lines = open(opts.map_file,'U').readlines()
     otu_sample_lines = open(opts.counts_file, 'U').readlines()
     create_network_and_stats(dir_path,map_lines,otu_sample_lines)

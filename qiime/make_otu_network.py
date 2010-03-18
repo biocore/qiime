@@ -31,28 +31,23 @@ from time import strftime
 from random import choice, randrange
 from cogent.maths.stats.test import G_2_by_2
 from qiime.make_3d_plots import make_color_dict
+from qiime.parse import new_parse_map, parse_otus
 
-
-def parse_map(lines):
+def get_sample_info(lines):
+    mapping_data, header, comments = new_parse_map(lines)
     labels =["from","to","eweight","consensus_lin"]
     node_labels = ["node_name", "node_disp_name", "ntype","degree", \
                    "weighted_degree","consensus_lin"]
     cat_by_sample = {}
     sample_by_cat = defaultdict(list)
     meta_dict = {}
-    category_labels = []
-    for l in lines:
-        if l.startswith("#SampleID"):
-            category_labels = l.strip().split("\t")[1:-1]		
-            labels.extend(category_labels)
-            node_labels.extend(category_labels)
-            label_list = [[] for c in category_labels]
-            continue
-        if l.startswith("#"):
-            continue
-
-        categories = l.strip().split()[0:len(category_labels)+1]
-        sample = categories[0].strip()
+    category_labels = header[1:-1]
+    labels.extend(category_labels)
+    node_labels.extend(category_labels)
+    label_list = [[] for c in category_labels]
+    for r in mapping_data:
+        categories = r[0:len(category_labels)+1]
+        sample = categories[0]
         meta_dict[sample] = ['\t'.join(categories[1:]),0]
 
         cat_by_sample[sample] = [(l.strip(),c.strip()) \
@@ -73,7 +68,7 @@ def parse_map(lines):
                         labels,node_labels, label_list
 
 
-def parse_otu_sample(lines, num_meta, meta_dict):
+def get_connection_info(lines, num_meta, meta_dict):
     con_by_sample = defaultdict(set)
     node_file_str = []
     edge_file_str = []
@@ -88,30 +83,24 @@ def parse_otu_sample(lines, num_meta, meta_dict):
     sample_dc = defaultdict(int)
     sample_num_seq = defaultdict(int)
     con_list = []
-    label_list = []
-    is_con = False
     nodes = []
-    for l in lines:
-        if l.startswith('#OTU'):
-            label_list = l.strip().split('\t')[1:]
-            if label_list[-1] == "Consensus Lineage":
-                label_list = label_list[:-1]
-                is_con = True
-            continue
-        if l.startswith('#'):
-            continue
 
-        data = l.strip().split('\t')
+    sample_ids, otu_ids, otu_table, lineages = parse_otus(lines)
+    if lineages == []:
+        is_con = False
+    else:
+        is_con = True
+
+    for idx,l in enumerate(otu_table):
+        data = l
         
-        to_otu = data[0]
+        to_otu = otu_ids[idx]
         con = ''
         if is_con:
-            con = ':'.join(map(strip,data[-1].split(';')[:6]))
+            con = ':'.join(lineages[idx][:6])
             con = con.replace(" ","_")
             con = con.replace("\t","_")
-            counts = map(float,data[1:-1])
-        else:
-            counts = map(float,data[1:])
+        counts = map(float,data)
         if con not in con_list:
             con_list.append(con)
         non_zero_counts = nonzero(counts)[0]
@@ -128,27 +117,27 @@ def parse_otu_sample(lines, num_meta, meta_dict):
 
         otu_dc[degree] += 1
         degree_counts[degree] += 1
-        samples = [label_list[int(i)] for i in non_zero_counts]
+        samples = [sample_ids[int(i)] for i in non_zero_counts]
         for i, s in enumerate(samples):
             if s not in meta_dict.keys():
                 continue
             con_by_sample[s].update(samples[0:i])
             con_by_sample[s].update(samples[i+1:])
-            
-            sample_num_seq[s] += float(data[int(non_zero_counts[i])+1])
+            sample_num_seq[s] += float(data[int(non_zero_counts[i])])
             
             edge_from.append(s)
             to.append(to_otu)
             meta = meta_dict[s]
             meta[1] += 1
+            data_num = str(data[int(non_zero_counts[i])])
             edge_file_str.append('\t'.join([s, to_otu, \
-                            data[int(non_zero_counts[i])+1], con, meta[0]]))
-            multi[to_otu].append((s,float(data[int(non_zero_counts[i])+1]), meta[0]))
+                            data_num, con, meta[0]]))
+            multi[to_otu].append((s,float(data[int(non_zero_counts[i])]), meta[0]))
             if len(non_zero_counts) == 1:
-                red_nodes[(label_list[int(non_zero_counts[0])],meta[0])] += degree
+                red_nodes[(sample_ids[int(non_zero_counts[0])],meta[0])] += degree
             else:
                 red_edge_file_str.append('\t'.join([s, to_otu, \
-                                    data[int(non_zero_counts[i])+1], con, meta[0]]))
+                                    data_num, con, meta[0]]))
 
     num_otu_nodes = len(node_file_str)
     for s in meta_dict:
@@ -298,64 +287,24 @@ def make_props_files(labels,label_list,dir_path):
         output.write(props_file_str % tuple(props_str_list))
         output.close()
 
-
-def create_dir(dir_path):
-    """Creates directory where data is stored.  If directory is not supplied in\
-       the command line, a random folder is generated"""
-       
-    alphabet = "ABCDEFGHIJKLMNOPQRSTUZWXYZ"
-    alphabet += alphabet.lower()
-    alphabet += "01234567890"
-
-    
-    if dir_path==None or dir_path=='':
-        dir_path=''
-        random_dir_name=''.join([choice(alphabet) for i in range(10)])
-        dir_path = os.path.join(os.getcwd(),
-                    strftime("%Y_%m_%d_%H_%M_%S")+random_dir_name)
-
-    if dir_path:
-        try:
-            os.mkdir(dir_path)
-        except OSError:
-            pass
-
-    try:
-        os.mkdir(os.path.join(dir_path,"otu_network"))
-    except OSError:
-        pass
-
-    try:
-        os.mkdir(os.path.join(dir_path,"otu_network/props"))
-    except OSError:
-        pass
-
-    try:
-        os.mkdir(os.path.join(dir_path,"otu_network/stats"))
-    except OSError:
-        pass
-
-    return dir_path
-
-
 def create_network_and_stats(dir_path,map_lines,otu_sample_lines):
-	cat_by_sample, sample_by_cat, num_meta, meta_dict, labels, node_labels,\
-			label_list = parse_map(map_lines)
-	con_by_sample, node_file_str, edge_file_str,red_node_file_str,\
-			red_edge_file_str, otu_dc, degree_counts,sample_dc, \
-			= parse_otu_sample(otu_sample_lines, num_meta, meta_dict)
-	num_con_cat, num_con = get_num_con_cat(con_by_sample,cat_by_sample)
-	num_cat = get_num_cat(sample_by_cat)
-	dir_path = os.path.join(dir_path,"otu_network")
-	make_table_file(edge_file_str, labels, dir_path,"real_edge_table.txt")
-	make_table_file(node_file_str,node_labels,dir_path,"real_node_table.txt")
-	make_table_file(red_edge_file_str, labels, dir_path,\
-			"real_reduced_edge_table.txt")
-	make_table_file(red_node_file_str,node_labels,dir_path,\
-			"real_reduced_node_table.txt")
-	make_stats_files(sample_dc,otu_dc,degree_counts,num_con_cat, num_con,num_cat\
-			,cat_by_sample,dir_path)
-	make_props_files(labels,label_list,dir_path)
+    cat_by_sample, sample_by_cat, num_meta, meta_dict, labels, node_labels,\
+            label_list = get_sample_info(map_lines)
+    con_by_sample, node_file_str, edge_file_str,red_node_file_str,\
+            red_edge_file_str, otu_dc, degree_counts,sample_dc, \
+            = get_connection_info(otu_sample_lines, num_meta, meta_dict)
+    num_con_cat, num_con = get_num_con_cat(con_by_sample,cat_by_sample)
+    num_cat = get_num_cat(sample_by_cat)
+    dir_path = os.path.join(dir_path,"otu_network")
+    make_table_file(edge_file_str, labels, dir_path,"real_edge_table.txt")
+    make_table_file(node_file_str,node_labels,dir_path,"real_node_table.txt")
+    make_table_file(red_edge_file_str, labels, dir_path,\
+           "real_reduced_edge_table.txt")
+    make_table_file(red_node_file_str,node_labels,dir_path,\
+           "real_reduced_node_table.txt")
+    make_stats_files(sample_dc,otu_dc,degree_counts,num_con_cat, num_con,num_cat\
+          ,cat_by_sample,dir_path)
+    make_props_files(labels,label_list,dir_path)
 
 
 

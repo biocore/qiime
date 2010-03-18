@@ -30,7 +30,6 @@ from pylab import rc, axis, title, axes, pie, figlegend, clf, savefig, figure\
      ,close
 from commands import getoutput
 from string import strip
-#from parse import parse_map,parse_coords,group_by_field,group_by_fields
 from numpy import array
 from optparse import OptionParser
 from collections import defaultdict
@@ -39,14 +38,10 @@ from random import choice, randrange
 from matplotlib.font_manager import FontProperties
 import os
 import shutil
-matplotlib_version = re.split("[^\d]", matplotlib.__version__)
-matplotlib_version_info = tuple([int(i) for i in matplotlib_version if \
-                          i.isdigit()])
 from qiime.util import get_qiime_project_dir
-
-if matplotlib_version_info != (0,98,5,3):
-     "This code was only tested with Matplotlib-0.98.5.3"
-
+from qiime.colors import natsort, data_color_order, data_colors, \
+                            get_group_colors,iter_color_groups
+from qiime.parse import parse_otus
 ALPHABET = "ABCDEFGHIJKLMNOPQRSTUZWXYZ"
 ALPHABET += ALPHABET.lower()
 ALPHABET += "01234567890"
@@ -333,17 +328,15 @@ def get_counts(lines, label,do_sample, num_categories, dir_path):
     img_data = []
     labels = []
     level_counts = []
-    for line in lines:
-        if line.startswith("#") or line == "\n":
-            continue
-        if line.startswith("Taxon"):
-            labels = line.strip().split("Consensus Lineage")[0].split("\t")[1:]
-            continue
-        counts = line.strip().split("\t")
-        taxonomy = counts[0]
+    
+    sample_ids, otu_ids, otu_table, lineages = parse_otus(lines,count_map_f=float)
+    labels = sample_ids
+
+    for idx, counts in enumerate(otu_table):
+        taxonomy = otu_ids[idx]
         split_label = [i.strip('"') for i in taxonomy.strip().split(";")]
         taxonomy = ';'.join(split_label)
-        level_counts.append((sum(map(float,counts[1:])), taxonomy,
+        level_counts.append((sum(map(float,counts)), taxonomy,
                             '<br>'.join(split_label)))
     all_sum = sum([c_over[0] for c_over in level_counts])
     fracs_labels_other,fracs_labels,all_counts, other_cat, red, other_frac= \
@@ -377,60 +370,10 @@ def get_counts(lines, label,do_sample, num_categories, dir_path):
     return img_data
 
 
-def create_dir(dir_path,qiime_dir,plot_type):
-    """Creates directory where data is stored.  If directory is not supplied in\
-       the command line, a random folder is generated"""
-       
-    alphabet = "ABCDEFGHIJKLMNOPQRSTUZWXYZ"
-    alphabet += alphabet.lower()
-    alphabet += "01234567890"
-
-    
-    if dir_path==None or dir_path=='':
-        dir_path=''
-        random_dir_name=''.join([choice(alphabet) for i in range(10)])
-        dir_path = os.path.join(os.getcwd(),
-                    plot_type+strftime("%Y_%m_%d_%H_%M_%S")+random_dir_name)
-
-    if dir_path:
-        try:
-            os.mkdir(dir_path)
-        except OSError:
-            pass
-    
-    charts_path = os.path.join(dir_path,'pie_charts')
-    try:
-        os.mkdir(charts_path)
-    except OSError:     #raised if dir exists
-        pass
-
-
-    javascript_path = \
-            os.path.join(dir_path,'js')
-    try:
-        os.mkdir(javascript_path)
-    except OSError:     #raised if dir exists
-        pass
-    shutil.copyfile(os.path.join(qiime_dir,'js/overlib.js'),\
-                                     os.path.join(javascript_path,'overlib.js'))
-    css_path = \
-            os.path.join(dir_path,'css')
-    try:
-        os.mkdir(css_path)
-    except OSError:     #raised if dir exists
-        pass
-    shutil.copyfile(os.path.join(qiime_dir,'css/qiime_style.css'),\
-                                os.path.join(css_path,'qiime_style.css'))
-    return dir_path
-
-
 def make_all_pie_charts(data, dir_path, filename,num_categories, do_sample,args):
     """Generate interactive pie charts in one HTML file"""
     img_data = []
     
-    qiime_dir = get_qiime_project_dir()
-    support_files=os.path.join(qiime_dir,'qiime','support_files')
-    dir_path = create_dir(dir_path,support_files, "webfiles")
     for label,f_name in data:
         f = open(f_name)
         lines = f.readlines()
