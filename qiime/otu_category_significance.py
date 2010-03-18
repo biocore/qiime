@@ -205,11 +205,11 @@ def run_single_correlation(OTU, category_info, otu_sample_info):
     category_values = []
     sample_info = otu_sample_info[OTU]
     for sample in sample_info:
-        OTU_abundance_values.append(float(sample_info[sample]))
         if sample in category_info:
             try:
                 cat_val = float(category_info[sample])
                 category_values.append(cat_val)
+                OTU_abundance_values.append(float(sample_info[sample]))
             except ValueError:
                 raise ValueError("The category values must be numeric to use the correlation option")
     r, prob = correlation(Numbers(OTU_abundance_values), Numbers(category_values))
@@ -370,10 +370,7 @@ def parse_category_mapping(category_mapping, category, threshold=None):
             sample_name = line[0]
             if threshold and threshold != 'None':
                 val = line[category_index]
-                if isinstance(val, str):
-                    raise ValueError("Numerical data must be used with the -t option") 
-                else:
-                    val = float(val)
+                val = float(val)
                 if val > threshold:
                     result[sample_name] = '1'
                 else:
