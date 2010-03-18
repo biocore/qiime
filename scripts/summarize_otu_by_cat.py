@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # File created on 09 Feb 2010
+#summarize_otu_by_cat.py
 from __future__ import division
 
 __author__ = "Julia Goodrich"
