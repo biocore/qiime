@@ -16,31 +16,22 @@ __maintainer__ = "Dan Knights"
 __email__ = "daniel.knights@colorado.edu"
 __status__ = "Pre-release"
 
-from qiime.util import parse_command_line_parameters
+from qiime.util import parse_command_line_parameters, get_options_lookup
 from optparse import make_option
 from qiime.make_3d_plots import generate_3d_plots,\
-get_coord,get_map,remove_unmapped_samples,\
+get_coord,remove_unmapped_samples,\
 process_coord_filenames,get_multiple_coords,\
 process_colorby,create_dir
 from qiime.parse import parse_coords,group_by_field,group_by_fields
+from qiime.colors import get_map
+from qiime.colors import sample_color_prefs_and_map_data_from_options
 import shutil
 import os
 from random import choice
 from time import strftime
 from qiime.util import get_qiime_project_dir
-                                
-
-#from qiime.make_3d_plots import get_coord, get_map, remove_unmapped_samples,\
-#process_colorby, process_custom_axes, process_coord_filenames, \
-#get_multiple_coords, get_custom_coords, remove_nans,\
-#scale_custom_coords, create_dir, _do_3d_plots
-#import shutil
-#from optparse import OptionParser
-#from random import choice
-#from time import strftime
-#import sys
-#import os.path
-#import numpy as np
+from qiime.pycogent_backports.misc import get_random_directory_name
+options_lookup = get_options_lookup()                                
 
 script_info={}
 script_info['brief_description']="""Plot two PCoA files on the same 3D plot"""
@@ -76,32 +67,26 @@ this option.  It is also useful for plotting time-series data \
  make_option('-p', '--prefs_path',help='This is the user-generated preferences \
 file. NOTE: This is a file with a dictionary containing preferences for the \
 analysis. See make_3d_plot_prefs_file.py. [default: %default]'),
- make_option('-o', '--dir_path', dest='dir_path',help='This is the location \
-where the resulting output should be written [default=%default]',default='')
+ make_option('-k', '--background_color',help='This is the background color to \
+use in the plots (Options are \'black\' or \'white\'. [default: %default]'),
+ options_lookup['output_dir']
 ]
 script_info['version'] = __version__
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
+    prefs, data, background_color, label_color= \
+                            sample_color_prefs_and_map_data_from_options(opts)
+    
     if len(opts.coord_fnames.split(',')) < 2:
         parser.error('Please provide at least two coordinate files')
-
-    data = {}
 
     #Open and get coord data (for multiple coords files)
     coord_files = process_coord_filenames(opts.coord_fnames)
     num_coord_files = len(coord_files)
     data['edges'], data['coord'] = get_multiple_coords(coord_files)
 
-    #Open and get mapping data, if none supplied create a pseudo mapping \
-    #file
-    if opts.map_fname:
-        data['map'] = get_map(opts, data)
-    else:
-        data['map']=(([['#SampleID','Sample']]))
-        for i in range(len(data['coord'][0])):
-            data['map'].append([data['coord'][0][i],'Sample'])
 
     # duplicate samples in mapping file for all coord files being compared
     newmap = [data['map'][0]]
@@ -111,7 +96,6 @@ def main():
             newsample.extend(sample[1:])
             newmap.append(newsample)
     data['map'] = newmap
-
 
     # remove any samples not present in mapping file
     remove_unmapped_samples(data['map'],data['coord'])
@@ -127,7 +111,7 @@ def main():
     else:
         default_colorby = ','.join(data['map'][0])
         prefs,data=process_colorby(default_colorby,data)
-        prefs={'Sample':{'column':'#SampleID'}}
+        prefs={'Sample':{'column':'SampleID'}}
 
     # process custom axes, if present.
     custom_axes = None
@@ -138,28 +122,40 @@ def main():
         scale_custom_coords(custom_axes,data['coord'])
 
     # Generate random output file name and create directories
-    dir_path = opts.dir_path
-    if dir_path and not dir_path.endswith('/'):
-        dir_path = dir_path + '/'
-    dir_path = create_dir(dir_path,'3d_plots_') 
-
-    alphabet = "ABCDEFGHIJKLMNOPQRSTUZWXYZ"
-    alphabet += alphabet.lower()
-    alphabet += "01234567890"
-
+    if opts.output_dir:
+        if os.path.exists(opts.output_dir):
+            dir_path=opts.output_dir
+        else:
+            try:
+                os.mkdir(opts.output_dir)
+                dir_path=opts.output_dir
+            except OSError:
+                pass
+    else:
+        dir_path='./'
+    
     qiime_dir=get_qiime_project_dir()
 
     jar_path=os.path.join(qiime_dir,'qiime/support_files/jar/')
 
-    data_file_path=''.join([choice(alphabet) for i in range(10)])
-    data_file_path=strftime("%Y_%m_%d_%H_%M_%S")+data_file_path
-    data_file_dir_path = dir_path+data_file_path
+    data_dir_path = get_random_directory_name(output_dir=dir_path,
+                                              return_absolute_path=False)    
 
-    data_file_dir_path=create_dir(data_file_dir_path,'')
-    jar_dir_path = create_dir(os.path.join(dir_path,'jar/'),'')
-    shutil.copyfile(os.path.join(jar_path,'king.jar'), jar_dir_path+'king.jar')
+    try:
+        os.mkdir(data_dir_path)
+    except OSError:
+        pass
 
-    filepath=opts.coord_fnames[0]
+    jar_dir_path = os.path.join(dir_path,'jar')
+    
+    try:
+        os.mkdir(jar_dir_path)
+    except OSError:
+        pass
+    
+    shutil.copyfile(os.path.join(jar_path,'king.jar'), os.path.join(jar_dir_path,'king.jar'))
+
+    filepath=coord_files[0]
     filename=filepath.strip().split('/')[-1]
     
     try:
@@ -168,7 +164,9 @@ def main():
         action = None
     #Place this outside try/except so we don't mask NameError in action
     if action:
-        action(prefs, data, custom_axes, dir_path, data_file_path,filename)
+        action(prefs, data, custom_axes,
+               background_color, label_color,
+               dir_path, data_dir_path,filename)
 
 if __name__ == "__main__":
     main()
