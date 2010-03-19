@@ -14,11 +14,13 @@ __status__ = "Pre-release"
 from optparse import make_option
 from qiime.util import parse_command_line_parameters
 from qiime.pycogent_backports.misc import get_random_directory_name
+from qiime.pycogent_backports.misc import get_random_directory_name
 import sys
 from sys import argv, exit, exc_info
 from random import choice, randrange
 from time import strftime
 from qiime import parse, util
+#from qiime.parse import parse_rarefaction_data
 from qiime.make_rarefaction_plots import make_plots, make_output_files, \
 parse_rarefaction_data
 import os.path
@@ -60,7 +62,7 @@ def main():
     for r in rarenames:
         try:
              rarefl = open(input_dir + '/' + r, 'U').readlines()
-             rares[r] = rarefl
+             rares[r] = parse_rarefaction_data(rarefl)
         except(IOError):
             option_parser.error('Problem with rarefaction file. %s'%\
             sys.exc_info()[1])

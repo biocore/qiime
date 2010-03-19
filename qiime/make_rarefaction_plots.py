@@ -51,33 +51,6 @@ COLOR = [ ['#9933cc', 'purple'],
 COLOR_OBS = [Color(c[1],c[0]) for c in COLOR]
 MARKERS = ['*', 'D' , 'H' , 'd' , 'h' , 'o' , 'p' , 's' , 'x']
 
-def parse_rarefaction_data(lines):
-    data = {}
-    data['headers'] = []
-    data['options'] = []
-    data['xaxis'] = []
-    data['series'] = {}
-    data['error'] = {}
-    for l in lines:
-        if l.startswith('#'):
-            data['headers'].append(l.strip('#').strip())
-            continue
-        if l.startswith('xaxis'):
-            data['xaxis'] = [float(v) for v in l[6:].strip().split('\t')]
-            continue
-        if l.startswith('>>'):
-            data['options'].append(l.strip().strip('>'))
-            continue
-        if l.startswith('series'):
-            data['series'][data['options'][len(data['options'])-1]] = \
-            [float(v) for v in l[7:].strip().split('\t')]
-            continue
-        if l.startswith('error'):
-            data['error'][data['options'][len(data['options'])-1]] = \
-            [float(v) for v in l[6:].strip().split('\t')]
-    # print data
-    return data
-
 def save_rarefaction_plots(xaxis, yvals, err, xmax, ymax, ops, \
 mapping_category, itype, res, rtype, fpath, graphNames):
     plt.clf()
@@ -122,7 +95,7 @@ def make_plots(prefs):
     graphNames = []
     for r in prefs['rarefactions']:
         ymax = prefs['ymax']
-        data = parse_rarefaction_data(prefs['rarefactions'][r])
+        data = prefs['rarefactions'][r]
         
         file_path = os.path.join(prefs['output_path'], \
         splitext(split(data['headers'][0])[1])[0])

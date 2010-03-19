@@ -20,7 +20,7 @@ from qiime.parse import (group_by_field, group_by_fields,
     parse_qiime_parameters, parse_qiime_config_files,
     parse_bootstrap_support, parse_sample_mapping, parse_distmat_to_dict,
     sample_mapping_to_otu_table, parse_taxonomy, parse_mapping_file, 
-    parse_metadata_state_descriptions)
+    parse_metadata_state_descriptions, parse_rarefaction_data)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -145,15 +145,48 @@ node2\t0
         obs = parse_bootstrap_support(lines)
         self.assertFloatEqual(obs, exp)
 
+    def test_parse_rarefaction_data(self):
+        self.data = {}
+        self.data['headers'] = ['PD_whole_tree.txt', 'Antibiotics']
+        self.data['error'] = {' NA': [0.099969643842700004], \
+        ' Y': [0.105669693476, 1.08546135424, 1.5626248357999999], \
+        ' N': [0.101173002974]}
+        self.data['options'] = [' Y', ' NA', ' N']
+        self.data['xaxis'] = [10.0, 310.0, 610.0, 910.0, 1210.0, 1510.0, \
+        1810.0, 2110.0, 2410.0, 2710.0, 3010.0]
+        self.data['series'] = {' NA': [0.88581050485400004], \
+        ' Y': [0.918845147059, 7.1758656176500004, 9.9186072941199992], \
+        ' N': [0.92636763785999998]}
+        
+        self.rarefaction_series_data = ['# PD_whole_tree.txt',
+        '# Antibiotics',
+        'xaxis: 10.0\t310.0\t610.0\t910.0\t1210.0\t1510.0\t1810.0\t2110.0\
+        \t2410.0\t2710.0\t3010.0\t',
+        'xmax: 3310.0',
+        '>> Y',
+        'series 0.918845147059\t7.17586561765\t9.91860729412\t',
+        'error 0.105669693476\t1.08546135424\t1.5626248358\t',
+        '>> NA',
+        'series 0.885810504854\t',
+        'error 0.0999696438427\t',
+        '>> N',
+        'series 0.92636763786\t',
+        'error 0.101173002974'
+        ]
+        test = parse_rarefaction_data(self.rarefaction_series_data)
+        self.assertEqual(test, self.data)
+
     def test_parse_rarefaction_record(self):
         self.rarefactionline1 = 'rare10.txt\t10\t0\t1.99181\t0.42877\t2.13996'
         test1 = parse_rarefaction_record(self.rarefactionline1)
-        self.rarefactiondata1 = ('rare10.txt', [10.0, 0.0, 1.9918100000000001, 0.42876999999999998, 2.1399599999999999])
+        self.rarefactiondata1 = ('rare10.txt', [10.0, 0.0, \
+        1.9918100000000001, 0.42876999999999998, 2.1399599999999999])
         self.assertEqual(self.rarefactiondata1, test1)
         
         self.rarefactionline2 = 'rare10.txt\t10\t0\t1.99181\t0.42877\tNA'
         test2 = parse_rarefaction_record(self.rarefactionline2)
-        self.rarefactiondata2 = ('rare10.txt', [10.0, 0.0, 1.9918100000000001, 0.42876999999999998, nan])
+        self.rarefactiondata2 = ('rare10.txt', [10.0, 0.0, 1.9918100000000001,\
+         0.42876999999999998, nan])
         self.assertEqual(self.rarefactiondata2, test2)
 
     def test_parse_rarefaction_fname(self):

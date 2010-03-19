@@ -162,6 +162,33 @@ def parse_bootstrap_support(lines):
         
     return bootstraps
 
+def parse_rarefaction_data(lines):
+    data = {}
+    data['headers'] = []
+    data['options'] = []
+    data['xaxis'] = []
+    data['series'] = {}
+    data['error'] = {}
+    for l in lines:
+        if l.startswith('#'):
+            data['headers'].append(l.strip('#').strip())
+            continue
+        if l.startswith('xaxis'):
+            data['xaxis'] = [float(v) for v in l[6:].strip().split('\t')]
+            continue
+        if l.startswith('>>'):
+            data['options'].append(l.strip().strip('>'))
+            continue
+        if l.startswith('series'):
+            data['series'][data['options'][len(data['options'])-1]] = \
+            [float(v) for v in l[7:].strip().split('\t')]
+            continue
+        if l.startswith('error'):
+            data['error'][data['options'][len(data['options'])-1]] = \
+            [float(v) for v in l[6:].strip().split('\t')]
+    # print data
+    return data
+
 def parse_rarefaction_record(line):
     """ Return (rarefaction_fn, [data])"""       
     

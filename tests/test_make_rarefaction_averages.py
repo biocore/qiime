@@ -19,14 +19,13 @@ from qiime.make_rarefaction_averages import *
 from qiime.parse import parse_rarefaction, parse_mapping_file
 
 class makeRarefactionAveragesTests(TestCase):
-    
     def setUp(self):
         self.mappingfile = ['#SampleID\tSex\tAge',
                             '123\tF\t32',
                             '234\tM\t30',
                             '345\tM\t32']
         self.p_mappingfile = parse_mapping_file(self.mappingfile,strip_quotes=True)
-                            
+        
         self.rarefactionfile = ['\tsequences per sample\titeration\t123\t234\t345',
                                 'rare10.txt\t10\t0\t1.99181\t0.42877\t2.13996',
                                 'rare10.txt\t10\t1\t2.07163\t0.42877\t2.37055',
