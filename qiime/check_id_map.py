@@ -411,7 +411,7 @@ def linker_primer_missing(fields, raw_data=None):
         return fields, \
             'Third field should be linker_primer field but got < 3 fields.  '+\
             'Correct header errors before attempting to address warnings.'
-    elif fields[2] == LINKER_PRIMER_KEY:
+    elif fields[2] == LINKER_PRIMER_KEY or fields[1]== LINKER_PRIMER_KEY:
         return fields, ''
     else:
         return fields, "Third field should be linker_primer field:" + \
@@ -677,7 +677,7 @@ def check_duplicate_sample_ids((sample_descriptions, sample_ids,
     return (sample_descriptions, sample_ids, run_description), \
         '\n'.join(problems)
         
-def check_primers_barcodes(primers, barcodes, problems):
+def check_primers_barcodes(primers, barcodes, problems, is_barcoded=True):
     """Returns warnings for primers/barcodes that have invalid characters 
     
     The check_primers_barcodes function only tests for valid IUPAC DNA
@@ -699,18 +699,19 @@ def check_primers_barcodes(primers, barcodes, problems):
             problems['warning'].append('Missing primer.  ' +\
              'Location (row, column):\t%d,2' % row)
     
-    for row in range(len(barcodes)):
-        for base in barcodes[row]:
-            try:
-                IUPAC_DNA[base]
-            except KeyError:
-                # The barcodes are always located in the second column
-                problems['warning'].append('The barcode %s ' % barcodes[row] +\
-                 'has invalid characters.  Location (row, column):\t' +\
-                 '%d,1' % row)
-        if len(barcodes[row])==0:
-            problems['warning'].append('Missing barcode. '+\
-             'Location (row, column):\t%d,1' % row)
+    if is_barcoded:
+        for row in range(len(barcodes)):
+            for base in barcodes[row]:
+                try:
+                    IUPAC_DNA[base]
+                except KeyError:
+                    # The barcodes are always located in the second column
+                    problems['warning'].append('The barcode %s ' % barcodes[row] +\
+                     'has invalid characters.  Location (row, column):\t' +\
+                     '%d,1' % row)
+            if len(barcodes[row])==0:
+                problems['warning'].append('Missing barcode. '+\
+                'Location (row, column):\t%d,1' % row)
 
     return problems
 
@@ -790,7 +791,7 @@ STANDARD_COL_CHECKS = [
 
 BARCODE_COL_CHECKS = [(check_same_length, 'warning')]
 
-def get_primers_barcodes(data):
+def get_primers_barcodes(data, is_barcoded=True):
     """ Returns list of primers, barcodes from mapping file """
     
     primers=[]
@@ -801,8 +802,14 @@ def get_primers_barcodes(data):
     for sample in data:
         if sample[1]=="BarcodeSequence":
             continue
-        barcodes.append(sample[1].upper())
-        primers.append(sample[2].upper())
+        if not is_barcoded:
+            if sample[1]== "LinkerPrimerSequence":
+                continue
+        if is_barcoded:
+            barcodes.append(sample[1].upper())
+            primers.append(sample[2].upper())
+        else:
+            primers.append(sample[1].upper())
         
     return primers, barcodes
     
@@ -905,8 +912,9 @@ def process_id_map(infile, is_barcoded=True, char_replace="_",
      ), sample_description_checks, problems, raw_data)
      
     #check primers,barcodes for valid IUPAC DNA characters
-    primers, barcodes = get_primers_barcodes(data)
-    problems = check_primers_barcodes(primers, barcodes, problems)
+    primers, barcodes = get_primers_barcodes(data, is_barcoded)
+    problems = check_primers_barcodes(primers, barcodes, problems, \
+     is_barcoded=True)
     
     #check for missing sample_IDs
     problems = check_missing_sampleIDs(sample_ids, problems)
