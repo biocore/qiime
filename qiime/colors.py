@@ -327,9 +327,11 @@ def process_colorby(colorby,data,color_prefs=None):
     prefs = {}
     mapping=data['map']
     colorbydata=[]
-    if colorby=='ALL':
+    if colorby==None and color_prefs==None:
+        #if neither a prefs file or colorby are defined
         colorbydata = mapping[0]
     elif colorby and color_prefs:
+        #if both colorby and prefs file are defined
         prefs_colorby = [color_prefs[i]['column'] for i in color_prefs]
         cmd_colorby=colorby.strip().strip("'").split(',')
         
@@ -344,9 +346,11 @@ def process_colorby(colorby,data,color_prefs=None):
             if not match:
                 colorbydata.append(cmd_colorby[i])
         names = list(colorbydata)
-    elif colorby and colorby != 'ALL':
+    elif colorby:
+        #if only the coloby option is defined
         colorbydata = colorby.strip().strip("'").split(',')
     else:
+        #if only a prefs file is defined
         colorbydata = [color_prefs[i]['column'] for i in color_prefs]
         names = list(color_prefs)
     
