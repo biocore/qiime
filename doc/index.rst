@@ -88,6 +88,8 @@ If you use QIIME for any published research, please include the following citati
 
 \J. Gregory Caporaso, Justin Kuczynski, Jesse Stombaugh, Kyle Bittinger, Frederic D. Bushman, Elizabeth K. Costello, Noah Fierer, Antonio Gonzalez Peña, Julia K. Goodrich, Jeffrey I. Gordon, Gavin A. Huttley, Scott T. Kelley, Dan Knights, Jeremy E. Koenig, Ruth E. Ley, Cathy A. Lozupone, Daniel McDonald, Brian D. Muegge, Meg Pirrung, Jens Reeder, Joel R. Sevinsky, Peter J. Turnbaugh, William van Treuren, William A. Walters, Jeremy Widmann, Tanya Yatsunenko, Jesse Zaneveld and Rob Knight. (Submitted) **QIIME allows integration and analysis of high-throughput community sequencing data.**
 
+The data presented in this paper can be found `here <http://tajmahal.colorado.edu/qiime/qiime_paper_data.zip>`_.
+
 Contributors
 ============
 
