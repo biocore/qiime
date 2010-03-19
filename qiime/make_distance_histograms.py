@@ -14,7 +14,7 @@ from matplotlib import use
 use('Agg',warn=False)
 from qiime.parse import parse_mapping_file, parse_distmat, group_by_field,\
     group_by_fields
-from qiime.make_3d_plots import data_colors
+from qiime.colors import data_colors
 from cogent.maths.stats.test import t_two_sample
 from numpy import array, mean, average, arange
 from collections import defaultdict
