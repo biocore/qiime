@@ -327,12 +327,15 @@ def process_colorby(colorby,data,color_prefs=None):
     prefs = {}
     mapping=data['map']
     colorbydata=[]
-    if colorby=='ALL':
+    if colorby==None and color_prefs==None:
+        #if coloby option are prefs file not given, color by all categories
+        #in mapping file
         colorbydata = mapping[0]
     elif colorby and color_prefs:
+        #if both the colorby option and prefs file are given, use the categories
+        #from the colorby option with their appropriate colors in the prefs file
         prefs_colorby = [color_prefs[i]['column'] for i in color_prefs]
         cmd_colorby=colorby.strip().strip("'").split(',')
-        
         for i in range(len(cmd_colorby)):
             for j in range(len(prefs_colorby)):
                 if cmd_colorby[i]==prefs_colorby[j]:
@@ -344,12 +347,14 @@ def process_colorby(colorby,data,color_prefs=None):
             if not match:
                 colorbydata.append(cmd_colorby[i])
         names = list(colorbydata)
-    elif colorby and colorby != 'ALL':
+    elif colorby:
+        #if only the colorby option is passed
         colorbydata = colorby.strip().strip("'").split(',')
     else:
+        #if only the prefs file is passed
         colorbydata = [color_prefs[i]['column'] for i in color_prefs]
         names = list(color_prefs)
-    
+        
     match=False
     for j, col in enumerate(colorbydata):
         key = str(col)
@@ -449,12 +454,16 @@ def sample_color_prefs_and_map_data_from_options(options):
     
     if options.prefs_path:
         prefs = eval(open(options.prefs_path, 'U').read())
+        color_prefs, data=process_colorby(options.colorby, data, \
+                                                prefs['sample_coloring'])
+        
         if prefs.has_key('background_color'):
             background_color= prefs['background_color']
         else:
             background_color='black'
     else:
         background_color='black'
+        color_prefs, data=process_colorby(options.colorby, data, None)
     
     if options.prefs_path and options.background_color:
         background_color=options.background_color
@@ -465,15 +474,6 @@ def sample_color_prefs_and_map_data_from_options(options):
         label_color='white'
     else:
         label_color='black'
-    
-    if options.prefs_path and options.colorby:
-        color_prefs, data=process_colorby(options.colorby, data, prefs['sample_coloring'])
-    elif options.prefs_path:
-        color_prefs, data=process_colorby(None, data, prefs['sample_coloring'])
-    elif options.colorby:
-        color_prefs,data=process_colorby(options.colorby,data)
-    else:
-        color_prefs={'Sample':{'column':'SampleID'}}
 
     return color_prefs,data,background_color,label_color
 

@@ -50,11 +50,11 @@ script_info['output_description']="""By default, the script will plot the first 
 script_info['required_options']=[\
 make_option('-i', '--coord_fname', dest='coord_fname', \
 help='This is the path to the principal coordinates file (i.e., resulting \
-file from principal_coordinates.py)')
+file from principal_coordinates.py)'),
+make_option('-m', '--map_fname', dest='map_fname', \
+     help='This is the metadata mapping file  [default=%default]')
 ]
 script_info['optional_options']=[\
-make_option('-m', '--map_fname', dest='map_fname', \
-     help='This is the metadata mapping file  [default=%default]'),
  make_option('-b', '--colorby', dest='colorby',\
      help='This is the categories to color by in the plots from the \
 user-generated mapping file. The categories must match the name of a column \
@@ -85,7 +85,6 @@ def main():
   
     #Open and get coord data
     data['coord'] = get_coord(opts.coord_fname)
-
     # remove any samples not present in mapping file
     remove_unmapped_samples(data['map'],data['coord'])
 
