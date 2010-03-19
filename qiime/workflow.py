@@ -5,7 +5,7 @@ from subprocess import Popen, PIPE, STDOUT
 from os import makedirs
 from glob import glob
 from os.path import split, splitext, join
-from qiime.parse import new_parse_map
+from qiime.parse import parse_mapping_file
 from qiime.util import compute_seqs_per_library_stats, get_qiime_scripts_dir
 
 __author__ = "Greg Caporaso"
@@ -299,7 +299,7 @@ def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,\
     python_exe_fp = qiime_config['python_exe_fp']
     script_dir = get_qiime_scripts_dir()
     
-    mapping_file_header = new_parse_map(open(mapping_fp,'U'))[1]
+    mapping_file_header = parse_mapping_file(open(mapping_fp,'U'))[1]
     mapping_fields = ','.join(mapping_file_header)
     
     beta_diversity_metrics = params['beta_diversity']['metrics'].split(',')

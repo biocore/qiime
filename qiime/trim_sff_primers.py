@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #file trim_sff_primers.py: resets trim values in sff file based on primers.
-from qiime.parse import new_parse_map
+from qiime.parse import parse_mapping_file
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2010, The QIIME Project"
@@ -25,7 +25,7 @@ def get_technical_lengths(input_map, debug=False):
     """
     if debug:
         print "Making debug output"
-    body, header, comments = new_parse_map(input_map)
+    body, header, comments = parse_mapping_file(input_map)
     if debug:
         print "HEADER:", header
     key_index = header.index('KEY_SEQ')

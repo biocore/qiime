@@ -25,7 +25,7 @@ import os
 
 Note: this code initially copied over from MicrobePlots."""
 
-def new_parse_map(lines, strip_quotes=True, suppress_stripping=False):
+def parse_mapping_file(lines, strip_quotes=True, suppress_stripping=False):
     """Parser for map file that relates samples to metadata.
     
     Format: header line with fields
@@ -71,46 +71,7 @@ def new_parse_map(lines, strip_quotes=True, suppress_stripping=False):
             mapping_data.append(map(strip_f, line.split('\t')))
 
     return mapping_data, header, comments
-    
-def parse_map(lines, return_header=False, strip_quotes=True, \
- suppress_stripping=False):
-    """Parser for map file that relates samples to metadata.
-    
-    Format: header line with fields
-            optionally other comment lines starting with #
-            tab-delimited fields
 
-    Result: list of lists of fields, incl. headers.
-    """
-    if strip_quotes:
-        filter_f = lambda x: x.strip().replace('"','').strip()
-    else:
-        filter_f = strip
-    result = []
-    header = []
-    for line in lines:
-        # Added for unadultered parsing, need to know if white space present
-        if suppress_stripping:
-            test_for_empty_line = line.strip()
-            if not test_for_empty_line:
-                continue
-        else:
-            line = line.strip()
-            if not line:
-                continue
-        
-        if line.startswith('"'): #quoted line from Excel?
-            fields = line.split('\t')
-            fields[0] = fields[0].strip('"')
-            line = '\t'.join(fields)
-        if line.startswith('#') and (header or result):
-            header.append(line[1:].strip())
-        else:
-            result.append(map(filter_f, line.split('\t')))
-
-    if return_header:
-        return result, header
-    return result
 
 def group_by_field(table, name):
     """Returns dict of field_state:[row_headers] from table.

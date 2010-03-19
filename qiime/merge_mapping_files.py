@@ -12,7 +12,7 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Pre-release"
 
 from optparse import OptionParser
-from qiime.parse import new_parse_map
+from qiime.parse import parse_mapping_file
     
 def merge_mapping_files(mapping_files,no_data_value='no_data'):
     """ Merge list of mapping files into a single mapping file 
@@ -28,7 +28,7 @@ def merge_mapping_files(mapping_files,no_data_value='no_data'):
     # iterate over mapping files, parsing each
     for mapping_file in mapping_files:
         data, current_headers, current_comments = \
-           new_parse_map(mapping_file,strip_quotes=False)
+           parse_mapping_file(mapping_file,strip_quotes=False)
         all_headers.update(dict.fromkeys(current_headers))
         for d in data:
             current_values = {}

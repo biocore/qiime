@@ -13,7 +13,7 @@ __status__ = "Prototype"
 """Code for coloring series based on prefs file.
 """
 from colorsys import rgb_to_hsv, hsv_to_rgb
-from parse import new_parse_map, group_by_field
+from parse import parse_mapping_file, group_by_field
 from numpy import array
 import os
 import re
@@ -327,11 +327,9 @@ def process_colorby(colorby,data,color_prefs=None):
     prefs = {}
     mapping=data['map']
     colorbydata=[]
-    if colorby==None and color_prefs==None:
-        #if neither a prefs file or colorby are defined
+    if colorby=='ALL':
         colorbydata = mapping[0]
     elif colorby and color_prefs:
-        #if both colorby and prefs file are defined
         prefs_colorby = [color_prefs[i]['column'] for i in color_prefs]
         cmd_colorby=colorby.strip().strip("'").split(',')
         
@@ -346,11 +344,9 @@ def process_colorby(colorby,data,color_prefs=None):
             if not match:
                 colorbydata.append(cmd_colorby[i])
         names = list(colorbydata)
-    elif colorby:
-        #if only the coloby option is defined
+    elif colorby and colorby != 'ALL':
         colorbydata = colorby.strip().strip("'").split(',')
     else:
-        #if only a prefs file is defined
         colorbydata = [color_prefs[i]['column'] for i in color_prefs]
         names = list(color_prefs)
     
@@ -410,7 +406,7 @@ def get_map(options, data):
         map_f = open(options.map_fname, 'U').readlines()
     except (TypeError, IOError):
         raise MissingFileError, 'Mapping file required for this analysis'
-    data['map'] = new_parse_map(map_f)
+    data['map'] = parse_mapping_file(map_f)
     return data['map']
 
 def map_from_coords(coords):

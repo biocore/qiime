@@ -5,7 +5,7 @@ from string import strip
 from sys import argv, stdout, stderr
 from numpy import array
 from StringIO import StringIO
-from qiime.parse import (parse_otus, new_parse_map,
+from qiime.parse import (parse_otus, parse_mapping_file,
     parse_metadata_state_descriptions)
 
 __author__ = "Rob Knight"
@@ -116,7 +116,7 @@ def filter_map(map_data, map_header, good_sample_ids):
 def filter_otus_and_map(map_infile, otu_infile, map_outfile, otu_outfile, 
     valid_states_str, num_seqs_per_otu):
     """Filters OTU and map files according to specified criteria."""
-    map_data, map_header, map_comments = new_parse_map(map_infile)
+    map_data, map_header, map_comments = parse_mapping_file(map_infile)
     map_infile.close()
     valid_states = parse_metadata_state_descriptions(valid_states_str)
     sample_ids = get_sample_ids(map_data, map_header, valid_states)

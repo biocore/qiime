@@ -31,10 +31,10 @@ from time import strftime
 from random import choice, randrange
 from cogent.maths.stats.test import G_2_by_2
 from qiime.make_3d_plots import make_color_dict
-from qiime.parse import new_parse_map, parse_otus
+from qiime.parse import parse_mapping_file, parse_otus
 
 def get_sample_info(lines):
-    mapping_data, header, comments = new_parse_map(lines)
+    mapping_data, header, comments = parse_mapping_file(lines)
     labels =["from","to","eweight","consensus_lin"]
     node_labels = ["node_name", "node_disp_name", "ntype","degree", \
                    "weighted_degree","consensus_lin"]

@@ -14,12 +14,12 @@ __status__ = "Pre-release"
 from numpy import array, nan
 from StringIO import StringIO
 from cogent.util.unit_test import TestCase, main
-from qiime.parse import (parse_map, group_by_field, group_by_fields, 
+from qiime.parse import (group_by_field, group_by_fields, 
     parse_distmat, parse_rarefaction_record, parse_rarefaction, parse_coords, 
     parse_otus, make_envs_dict, fields_to_dict, parse_rarefaction_fname,
     parse_qiime_parameters, parse_qiime_config_files,
     parse_bootstrap_support, parse_sample_mapping, parse_distmat_to_dict,
-    sample_mapping_to_otu_table, parse_taxonomy, new_parse_map, 
+    sample_mapping_to_otu_table, parse_taxonomy, parse_mapping_file, 
     parse_metadata_state_descriptions)
 
 class TopLevelTests(TestCase):
@@ -56,46 +56,21 @@ class TopLevelTests(TestCase):
         self.SampleMapping = ["OTU1\tsample1\t3", "OTU1\tsample3\t2", \
         "OTU2\tsample1\t1", "OTU2\tsample2\t2"]
 
-    def test_new_parse_map(self):
-        """new_parse_map functions as expected"""
+    def test_parse_mapping_file(self):
+        """parse_mapping_file functions as expected"""
         s1 = ['#sample\ta\tb', '#comment line to skip',\
               'x \t y \t z ', ' ', '#more skip', 'i\tj\tk']
         exp = ([['x','y','z'],['i','j','k']],\
                ['sample','a','b'],\
                ['comment line to skip','more skip'])
-        obs = new_parse_map(s1)
+        obs = parse_mapping_file(s1)
         self.assertEqual(obs, exp)
         
         #check that we strip double quotes by default
         s2 = ['#sample\ta\tb', '#comment line to skip',\
               '"x "\t" y "\t z ', ' ', '"#more skip"', 'i\t"j"\tk']
-        obs = new_parse_map(s2)
+        obs = parse_mapping_file(s2)
         self.assertEqual(obs, exp)
-
-    def test_parse_map(self):
-        """parse_map should handle tab-delimited file as expected."""
-        s = """#sample\ta\tb
-#comment line to skip
-x \t y \t z 
-
-#more skip
-i\tj\tk"""
-        s2= """#sample\ta\tb
-#comment line to skip
-"x "\t" y "\t z 
-
-"#more skip"
-i\t"j"\tk"""
-        exp = [['#sample','a','b'],['x','y','z'],['i','j','k']]
-        obs = parse_map(s.splitlines())
-        self.assertEqual(obs, exp)
-        exp2 = ([['#sample','a','b'],['x','y','z'],['i','j','k']], \
-                ['comment line to skip','more skip'])
-        obs = parse_map(s.splitlines(), return_header=True)
-        self.assertEqual(obs, exp2)
-        #check that we strip double quotes by default
-        obs = parse_map(s2.splitlines(), return_header=True)
-        self.assertEqual(obs, exp2)
 
     def test_group_by_field(self):
         """group_by_field should group table by fields"""

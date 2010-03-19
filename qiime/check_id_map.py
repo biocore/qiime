@@ -50,7 +50,7 @@ from os import makedirs
 from cogent.util.transform import (keep_chars, exclude_chars, trans_except,
     trans_all)
 from numpy import array
-from qiime.parse import new_parse_map
+from qiime.parse import parse_mapping_file
 from qiime.format import format_map_file
 from optparse import OptionParser
 from cogent.seqsim.sequence_generators import IUPAC_DNA
@@ -837,7 +837,7 @@ def process_id_map(infile, is_barcoded=True, char_replace="_",
     
     #read data
     try:
-        data, headers, run_description = new_parse_map(infile, \
+        data, headers, run_description = parse_mapping_file(infile, \
         suppress_stripping=True)
         headers[0] = "#" + headers[0]
         col_headers = headers

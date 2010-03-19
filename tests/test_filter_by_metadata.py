@@ -10,7 +10,7 @@ __maintainer__ = "Rob Knight"
 __email__ = "rob@spot.colorado.edu"
 __status__ = "Pre-release"
 
-from qiime.parse import parse_otus, new_parse_map, parse_metadata_state_descriptions
+from qiime.parse import parse_otus, parse_mapping_file, parse_metadata_state_descriptions
 from sys import argv
 from string import strip
 from cogent.util.unit_test import TestCase, main
@@ -41,7 +41,7 @@ c\tHand\tPalm\tz
 d\tWholeBody\tPalm\ta
 e\tWholeBody\tStool\tb"""
         self.map_data, self.map_headers, self.map_comments =\
-         new_parse_map(StringIO(self.map_str))
+         parse_mapping_file(StringIO(self.map_str))
 
     def test_get_sample_ids(self):
         """get_sample_ids should return sample ids matching criteria."""

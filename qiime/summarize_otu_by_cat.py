@@ -31,7 +31,7 @@ from time import strftime
 from random import choice, randrange
 from qiime.format import format_otu_table
 from decimal import getcontext
-from qiime.parse import new_parse_map, parse_otus
+from qiime.parse import parse_mapping_file, parse_otus
 
 def get_sample_cat_info(lines, category):
     cat_by_sample = {}
@@ -39,7 +39,7 @@ def get_sample_cat_info(lines, category):
     meta_dict = {}
     num_samples_by_cat = defaultdict(int)
     label_lists_dict = defaultdict(list)
-    mapping_data, header, comments = new_parse_map(lines)
+    mapping_data, header, comments = parse_mapping_file(lines)
     
     category_labels = header[1:]
     index = category_labels.index(category)+1

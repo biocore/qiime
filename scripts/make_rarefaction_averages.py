@@ -19,7 +19,7 @@ import sys
 from sys import argv, exit, exc_info
 from random import choice, randrange
 from time import strftime
-from qiime.parse import new_parse_map, parse_rarefaction
+from qiime.parse import parse_mapping_file, parse_rarefaction
 from qiime.make_rarefaction_averages import make_averages, \
 is_max_category_ops, parse_rarefaction
 import os.path
@@ -59,7 +59,7 @@ def main():
     except(IOError):
         option_parser.error('Problem with mapping file. %s'%sys.exc_info()[1])
         exit(0)
-    prefs['map'] = new_parse_map(prefs['mapfl'],strip_quotes=True)
+    prefs['map'] = parse_mapping_file(prefs['mapfl'],strip_quotes=True)
 
     #rarefaction data check
     rarenames = options.rarefaction.split(',')

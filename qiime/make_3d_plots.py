@@ -12,7 +12,7 @@ __status__ = "Pre-release"
 
 
 from cogent.util.misc import flatten
-from qiime.parse import parse_coords,parse_map,group_by_field
+from qiime.parse import parse_coords,group_by_field
 from qiime.colors import (natsort,
         get_group_colors, color_groups, make_color_dict, combine_map_label_cols,
         process_colorby, linear_gradient,iter_color_groups,get_map)

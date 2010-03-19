@@ -13,7 +13,7 @@ __status__ = "Pre-release"
 from cogent.util.unit_test import TestCase, main
 import shutil
 from os import mkdir
-from qiime.parse import new_parse_map, parse_distmat, group_by_field,\
+from qiime.parse import parse_mapping_file, parse_distmat, group_by_field,\
     group_by_fields
 from collections import defaultdict
 from numpy import array, arange
@@ -60,7 +60,7 @@ class DistanceHistogramsTests(TestCase):
         map_out.write(MAPPING_STRING)
         map_out.close()
         
-        mapping, header, comments = new_parse_map(open(self.map_file,'U'))
+        mapping, header, comments = parse_mapping_file(open(self.map_file,'U'))
         header[0] = '#'+header[0]
         header = [header]
         header.extend(mapping)
