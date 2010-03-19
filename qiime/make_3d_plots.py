@@ -304,7 +304,7 @@ def scale_custom_coords(custom_axes,coords):
     """Scales custom coordinates to match min/max of PC1"""
 
     to_mn = min(coords[1][:,len(custom_axes)])
-    to_mx = max(coords[1][:,len(custom_axes)])
+    to_mx = 2*max(coords[1][:,len(custom_axes)])
 
     for i in xrange(len(custom_axes)):
         from_mn = min(coords[1][:,i])
@@ -375,24 +375,17 @@ def generate_3d_plots(prefs, data, custom_axes, background_color,label_color, \
                         dir_path='',data_file_path='',filename=None, \
                         default_filename='out'):
     """Make 3d plots according to coloring options in prefs."""
-    kinpath = os.path.join(dir_path,data_file_path,filename)
 
+    if filename is None:
+        filename = default_filename
+    kinpath = os.path.join(data_file_path,filename) + ".kin"
+    data_folder = os.path.split(data_file_path)[-1]
+    kinlink = os.path.join('./',data_folder,filename) + ".kin"
     htmlpath = dir_path
-    if kinpath:
-        if filename:
-            kinpath = kinpath[:-1]
-        else:
-            kinpath += default_filename
-    if not kinpath:
-        return
-        
-    kinlink=kinpath+'.kin'
-    
+
     coord_header, coords, eigvals, pct_var = data['coord']
     mapping=data['map']
 
-    outf=kinpath+'.kin'
-    
     edges = None
     if data.has_key('edges'):
         edges = data['edges']
@@ -401,7 +394,7 @@ def generate_3d_plots(prefs, data, custom_axes, background_color,label_color, \
                         background_color,label_color,custom_axes,edges=edges)
 
     #Write kinemage file
-    f = open(outf, 'w')
+    f = open(kinpath, 'w')
     f.write('\n'.join(res))
     f.close()
     
