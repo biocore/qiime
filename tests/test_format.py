@@ -76,13 +76,16 @@ class TopLevelTests(TestCase):
     def test_build_prefs_string(self):
         """build_prefs_string should return a properly formatted prefs string.
         """
-        #try with empty string
-        self.assertEqual(build_prefs_string(''),'')
-        
         #Try with correctly formatted color_by_string
-        color_by_string = 'First,Second'
-        exp_string = """{\n'sample_coloring':\n\t{\n\t\t'First':\n\t\t{\n\t\t\t'column':'First',\n\t\t\t'colors':(('red',(0,100,100)),('blue',(240,100,100)))\n\t\t},\n\t\t'Second':\n\t\t{\n\t\t\t'column':'Second',\n\t\t\t'colors':(('red',(0,100,100)),('blue',(240,100,100)))\n\t\t}\n\t}\n}"""
-        obs_string = build_prefs_string(color_by_string)
+        mapping_headers_to_use='First,Second'
+        background_color='black'
+        monte_carlo_dist=10
+        headers=['First','Second']
+        exp_string = \
+        """{\n'background_color':'black',\n\n'sample_coloring':\n\t{\n\t\t'First':\n\t\t{\n\t\t\t'column':'First',\n\t\t\t'colors':(('red',(0,100,100)),('blue',(240,100,100)))\n\t\t},\n\t\t'Second':\n\t\t{\n\t\t\t'column':'Second',\n\t\t\t'colors':(('red',(0,100,100)),('blue',(240,100,100)))\n\t\t}\n\t},\n'MONTE_CARLO_GROUP_DISTANCES':\n\t{\n\t\t'First': 10,\n\t\t'Second': 10\n\t},\n'FIELDS':\n\t[\n\t\t'Second',\n\t\t'First'\n\t],\n}"""
+        obs_string = build_prefs_string(mapping_headers_to_use, \
+                                    background_color, monte_carlo_dist, headers)
+                                    
         self.assertEqual(obs_string,exp_string)
         
     def test_format_map_file(self):

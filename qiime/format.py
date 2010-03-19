@@ -99,23 +99,101 @@ def format_coords(coord_header, coords, eigvals, pct_var):
         '\t'.join(map(str, pct_var)))
     return '\n'.join(result)
 
-def build_prefs_string(color_by_string):
-    if not color_by_string:
-        return ''
-    fields = color_by_string.split(',')
-    l = ["{\n'sample_coloring':\n\t{"]
+def build_prefs_string(mapping_headers_to_use, background_color, monte_carlo_dist, headers):
+    """Create a preferences file, which can be used for some of the \
+    visualization scripts."""
+    
+    #Open up the prefs dictionary
+    pref_lines=["{\n"]
+    
+    #Define and add the background_color dictionary to prefs dictionary
+    bk_color="'background_color':'%s',\n" % (background_color)
+    pref_lines.append(bk_color)
+    
+    #create a unique field dictionary for use with the FIELDS dictionary
+    unique_dist_fields={}  
+    
+    #Iterate through the user-supplied fields or all the fields in the mapping
+    #file, then validate that the fields exist
+    if mapping_headers_to_use=='ALL':
+        fields=headers
+        for key in fields:
+            unique_dist_fields[key]=monte_carlo_dist
+    else:
+        #If '&&' is used, split into multiple fields and valid them against
+        #the mapping file
+        fields=mapping_headers_to_use.split(',')
+        for field_id in fields:
+            f_str=field_id.split('&&')
+            for id_ in f_str:
+                validity=False
+                for head_id in headers:
+                    if id_==head_id:
+                        unique_dist_fields[id_]=monte_carlo_dist
+                        validity=True
+                if not validity:
+                    raise ValueError, \
+                            "%s is not a header in your mapping file" % field_id
+            
+    #Syntax for sample_coloring dictionary
+    sample_coloring = ["\n'sample_coloring':\n\t{"]
+    sample_colors = \
+    "\t\t'%s':" + \
+    "\n\t\t{"+ \
+    "\n\t\t\t'column':'%s',"+ \
+    "\n\t\t\t'colors':(('red',(0,100,100)),('blue',(240,100,100)))"+ \
+    "\n\t\t}"
+    
+    #Syntax for monte_carlo dictionary
+    monte_carlo_main = ["\n'MONTE_CARLO_GROUP_DISTANCES':\n\t{\n"]
+    monte_carlo=[]
+    monte_carlo_distances = "\t\t'%s': %s"
+    
+    #Syntax for fields dictionary
+    field_dict_main = ["\n'FIELDS':\n\t[\n"]
+    field_dict=[]
+    dist_fields = "\t\t'%s'"
+    
+    #This iterates through the fields and creates a sample_color dictionary     
+    #values for each field
     first = True
-    entry_string = \
-     "\t\t'%s':\n\t\t{\n\t\t\t'column':'%s',\n\t\t\t'colors':(('red',(0,100,100)),('blue',(240,100,100)))\n\t\t}"
     for field in fields:
         if first:
             first=False
-            l.append('\n')
+            sample_coloring.append('\n')
         else:
-            l.append(',\n')
-        l.append(entry_string % (field, field))
-    l.append('\n\t}\n}')
-    return ''.join(l)
+            sample_coloring.append(',\n')
+        sample_coloring.append(sample_colors % (field, field))
+        monte_carlo.append(monte_carlo_distances % (field,monte_carlo_dist))
+    
+    #Close and convert the sample_coloring dictionary to a string
+    sample_coloring.append('\n\t},')
+    sample_coloring_str=''.join(sample_coloring)
+    
+    #Close and convert the monte_carlo dictionary to a string
+    monte_carlo1=',\n'.join(monte_carlo)
+    monte_carlo_main.append(monte_carlo1)
+    monte_carlo_main.append('\n\t},')
+    monte_carlo_str=''.join(monte_carlo_main)
+    
+    #This iterates through the fields and creates the monte_carlo and fields
+    #dictionary values
+    for field in unique_dist_fields:
+        field_dict.append(dist_fields % (field))
+    
+    #Close and convert the fields dictionary to a string
+    field_dict1=',\n'.join(field_dict)
+    field_dict_main.append(field_dict1)
+    field_dict_main.append('\n\t],')
+    field_dict_str=''.join(field_dict_main)
+    
+    #Add all the dictionary values to the prefs dictionary
+    pref_lines.append(sample_coloring_str)
+    pref_lines.append(monte_carlo_str)
+    pref_lines.append(field_dict_str)
+    pref_lines.append('\n}')
+
+    return ''.join(pref_lines)
 
 def format_map_file(headers, id_map, desc_key, sample_id_key, \
     description_map=None, run_description=None):
