@@ -320,13 +320,13 @@ def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,\
     # Prep the 3d prefs file generator command
     prefs_fp = '%s/3d_prefs.txt' % output_dir
     try:
-        params_str = get_params_str(params['make_3d_plot_prefs_file'])
+        params_str = get_params_str(params['make_prefs_file'])
     except KeyError:
         params_str = ''
     # Build the 3d prefs file generator command
     prefs_cmd = \
-     '%s %s/make_3d_plot_prefs_file.py -b "%s" -p %s %s' %\
-     (python_exe_fp, script_dir, mapping_fields, prefs_fp, params_str)
+     '%s %s/make_prefs_file.py -m %s -o %s %s' %\
+     (python_exe_fp, script_dir, mapping_fp, prefs_fp, params_str)
     commands.append([('Build prefs file', prefs_cmd)])
         
     for beta_diversity_metric in beta_diversity_metrics:
