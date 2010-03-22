@@ -439,7 +439,8 @@ eigvals\t4.94\t1.79\t1.50
         """parse_illumina_line: functions with several lines """
         illumina_line0 = illumina_read1[0]
         illumina_line1 = illumina_read1[1]
-        actual = parse_illumina_line(illumina_line0,barcode_length=6)
+        actual = parse_illumina_line(
+         illumina_line0,barcode_length=6,rev_comp_barcode=True)
         expected = {\
          'Machine Name':'HWI-6X_9267',\
          'Channel Number':1,\
@@ -456,7 +457,12 @@ eigvals\t4.94\t1.79\t1.50
           'aaaaaaaaaaaaaDaabbBBBBBBBBBBBBBBBBBBB'}
         self.assertEqual(actual,expected)
         
-        actual = parse_illumina_line(illumina_line1,barcode_length=6)
+        actual = parse_illumina_line(
+         illumina_line0,barcode_length=6,rev_comp_barcode=False)
+        expected['Barcode'] = 'ACCACC'
+        
+        actual = parse_illumina_line(
+         illumina_line1,barcode_length=6,rev_comp_barcode=True)
         expected = {\
          'Machine Name':'HWI-6X_9267',\
          'Channel Number':1,\
@@ -472,6 +478,10 @@ eigvals\t4.94\t1.79\t1.50
           'aaaaaaaaaa```aa\^_aa``aVaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'+\
           'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaBaaaaa'}
         self.assertEqual(actual,expected)
+        
+        actual = parse_illumina_line(
+         illumina_line1,barcode_length=6,rev_comp_barcode=False)
+        expected['Barcode'] = 'ACCTCC'
 
 illumina_read1 = """HWI-6X_9267:1:1:4:1699#ACCACCC/1:TACGGAGGGTGCGAGCGTTAATCGCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCGAAAAAAAAAAAAAAAAAAAAAAA:abbbbbbbbbb`_`bbbbbb`bb^aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaDaabbBBBBBBBBBBBBBBBBBBB
 HWI-6X_9267:1:1:4:390#ACCTCCC/1:GACAGGAGGAGCAAGTGTTATTCAAATTATGCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCGGGGGGGGGGGGGGGAAAAAAAAAAAAAAAAAAAAAAA:aaaaaaaaaa```aa\^_aa``aVaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaBaaaaa""".split('\n')

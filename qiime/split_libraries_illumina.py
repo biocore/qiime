@@ -64,14 +64,14 @@ def illumina_read_description_from_read_data(parsed_read):
      parsed_read['Full Y Position Field'][:-2]]))
 
 def parse_illumina_paired_end_read_files(read1_file,read2_file,barcode_length,\
-    max_bad_run_length,quality_threshold,min_per_read_length,\
+    max_bad_run_length,quality_threshold,min_per_read_length,rev_comp_barcode,\
     barcode_max_N=0,seq_max_N=0):
     """Parses Illumina paired-end read file pair
     """
     
     for read1_line, read2_line in izip(read1_file,read2_file):
-        read1 = parse_illumina_line(read1_line,barcode_length)
-        read2 = parse_illumina_line(read2_line,barcode_length)
+        read1 = parse_illumina_line(read1_line,barcode_length,rev_comp_barcode)
+        read2 = parse_illumina_line(read2_line,barcode_length,rev_comp_barcode)
         
         read1_desc = illumina_read_description_from_read_data(read1)
         read2_desc = illumina_read_description_from_read_data(read2)
@@ -109,14 +109,53 @@ def parse_illumina_paired_end_read_files(read1_file,read2_file,barcode_length,\
         
         yield read1_desc, read1_barcode, seq, qual
     
+
+
+def process_illumina_paired_end_read_files(
+    read1_fp,read2_fp,output_seqs_fp,output_qual_fp,
+    barcode_to_sample_id,barcode_length,
+    store_unassigned,max_bad_run_length,
+    quality_threshold,min_per_read_length,
+    rev_comp_barcode,start_seq_id=0):
+    """parses Ilimuna paired-end read file
+    """
+    read1_file = open(read1_fp)
+    read2_file = open(read2_fp)
+    output_seqs_file = open(output_seqs_fp,'w')
+    output_qual_file = open(output_qual_fp,'w')
+    
+    seq_id = start_seq_id
+    
+    for seq_desc,barcode,seq,qual in\
+      parse_illumina_paired_end_read_files(read1_file,read2_file,barcode_length,\
+      max_bad_run_length,quality_threshold,min_per_read_length,rev_comp_barcode):
+      
+      try:
+          sample_id = barcode_to_sample_id[barcode]
+      except KeyError:
+          if not store_unassigned:
+              continue
+          else:
+              sample_id = 'Unassigned'
+              
+      fasta_header = '%s_%s %s' % (sample_id,seq_id,seq_desc)
+      output_seqs_file.write('>%s\n%s\n' % (fasta_header,seq))
+      output_qual_file.write('>%s\n%s\n' % (fasta_header,qual))
+      seq_id += 1
+      
+    output_seqs_file.close()
+    output_qual_file.close()
+    
+    return seq_id
+    
 def parse_illumina_single_end_read_file(read_file,barcode_length,\
     max_bad_run_length,quality_threshold,min_per_read_length,
-    rev_comp,barcode_max_N=0,seq_max_N=0):
-    """Parses Illumina single-end read file pair
+    rev_comp,rev_comp_barcode,barcode_max_N=0,seq_max_N=0):
+    """Parses Illumina single-end read file
     """
     
     for read_line in read_file:
-        read = parse_illumina_line(read_line,barcode_length)
+        read = parse_illumina_line(read_line,barcode_length,rev_comp_barcode)
         
         read_desc = illumina_read_description_from_read_data(read)
         
@@ -137,47 +176,12 @@ def parse_illumina_single_end_read_file(read_file,barcode_length,\
             qual = qual[::-1]
         
         yield read_desc, read_barcode, seq, qual
-
-def process_illumina_paired_end_read_files(\
-    read1_fp,read2_fp,output_seqs_fp,output_qual_fp,\
-    barcode_to_sample_id,barcode_length,\
-    store_unassigned,max_bad_run_length,\
-    quality_threshold,min_per_read_length, start_seq_id=0):
-    """parses Ilimuna paired-end read file
-    """
-    read1_file = open(read1_fp)
-    read2_file = open(read2_fp)
-    output_seqs_file = open(output_seqs_fp,'w')
-    output_qual_file = open(output_qual_fp,'w')
     
-    seq_id = start_seq_id
-    
-    for seq_desc,barcode,seq,qual in\
-      parse_illumina_paired_end_read_files(read1_file,read2_file,barcode_length,\
-      max_bad_run_length,quality_threshold,min_per_read_length):
-      
-      try:
-          sample_id = barcode_to_sample_id[barcode]
-      except KeyError:
-          if not store_unassigned:
-              continue
-          else:
-              sample_id = 'Unassigned'
-              
-      fasta_header = '%s_%s %s' % (sample_id,seq_id,seq_desc)
-      output_seqs_file.write('>%s\n%s\n' % (fasta_header,seq))
-      output_qual_file.write('>%s\n%s\n' % (fasta_header,qual))
-      seq_id += 1
-      
-    output_seqs_file.close()
-    output_qual_file.close()
-    
-    return seq_id
-    
-def process_illumina_single_end_read_file(read_fp,output_seqs_fp,output_qual_fp,\
-    barcode_to_sample_id,barcode_length,\
-    store_unassigned,max_bad_run_length,\
-    quality_threshold,min_per_read_length, rev_comp, start_seq_id=0):
+def process_illumina_single_end_read_file(read_fp,output_seqs_fp,output_qual_fp,
+    barcode_to_sample_id,barcode_length,
+    store_unassigned,max_bad_run_length,
+    quality_threshold,min_per_read_length, rev_comp, rev_comp_barcode,
+    start_seq_id=0):
     """parses Ilimuna single-end read file
     """
     read_file = open(read_fp)
@@ -189,7 +193,7 @@ def process_illumina_single_end_read_file(read_fp,output_seqs_fp,output_qual_fp,
     for seq_desc,barcode,seq,qual in\
       parse_illumina_single_end_read_file(read_file,barcode_length,\
       max_bad_run_length,quality_threshold,min_per_read_length,
-      rev_comp):
+      rev_comp,rev_comp_barcode):
         try:
           sample_id = barcode_to_sample_id[barcode]
         except KeyError:

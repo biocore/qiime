@@ -74,7 +74,7 @@ class IlluminaParserTests(TestCase):
         """
         actual = list(parse_illumina_single_end_read_file(illumina_read1,barcode_length=6,\
             max_bad_run_length=0,quality_threshold=1e-5,min_per_read_length=70,
-            rev_comp=False))
+            rev_comp=False,rev_comp_barcode=True))
         expected =[
          ('HWI-6X_9267:1:1:4:1699#ACCACCC','GGTGGT',\
           'TACGGAGGGTGCGAGCGTTAATCGCCCCCCCCCCCCCCCCCCCCCCCCCCC'+\
@@ -93,7 +93,7 @@ class IlluminaParserTests(TestCase):
         """
         actual = list(parse_illumina_single_end_read_file(illumina_read2,barcode_length=6,\
             max_bad_run_length=0,quality_threshold=1e-5,min_per_read_length=70,
-            rev_comp=True))
+            rev_comp=True,rev_comp_barcode=True))
         expected =[
          ('HWI-6X_9267:1:1:4:1699#ACCACCC','GGTGGT',\
           'GGTTTTTTTTTAAAAAAAAAAAAAGGGGGGGGGGGGGGGGGGGG'+\
@@ -112,7 +112,7 @@ class IlluminaParserTests(TestCase):
         """
         actual = list(parse_illumina_single_end_read_file(illumina_read2_N,barcode_length=6,\
             max_bad_run_length=0,quality_threshold=1e-5,min_per_read_length=70,
-            rev_comp=True))
+            rev_comp=True,rev_comp_barcode=True))
         expected =[]
         self.assertEqual(actual,expected)
         
@@ -121,14 +121,14 @@ class IlluminaParserTests(TestCase):
         """
         actual = list(parse_illumina_single_end_read_file(illumina_read2_N,barcode_length=6,\
             max_bad_run_length=0,quality_threshold=1e-5,min_per_read_length=70,
-            rev_comp=True))
+            rev_comp=True,rev_comp_barcode=True))
         expected =[]
         self.assertEqual(actual,expected)
         
         # allow one N in barcode
         actual = list(parse_illumina_single_end_read_file(illumina_read2_N,barcode_length=6,\
             max_bad_run_length=0,quality_threshold=1e-5,min_per_read_length=70,
-            rev_comp=True,barcode_max_N=1,seq_max_N=0))
+            rev_comp=True,rev_comp_barcode=True,barcode_max_N=1,seq_max_N=0))
         expected =[
          ('HWI-6X_9267:1:1:4:390#ACNTCCC','GGANGT',\
           'CGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTA'+\
@@ -140,7 +140,7 @@ class IlluminaParserTests(TestCase):
         # allow one N in barcode
         actual = list(parse_illumina_single_end_read_file(illumina_read2_N,barcode_length=6,\
             max_bad_run_length=0,quality_threshold=1e-5,min_per_read_length=70,
-            rev_comp=True,barcode_max_N=0,seq_max_N=1))
+            rev_comp=True,rev_comp_barcode=True,barcode_max_N=0,seq_max_N=1))
         expected =[
          ('HWI-6X_9267:1:1:4:1699#ACCACCC','GGTGGT',\
           'GGTTTTTTTTTAAAAAAAAAAAAAGGGGGGGGGGGGGGGGGGGGGGGGCC'+\
@@ -152,7 +152,7 @@ class IlluminaParserTests(TestCase):
         # allow one N in barcode and one N in seq
         actual = list(parse_illumina_single_end_read_file(illumina_read2_N,barcode_length=6,\
             max_bad_run_length=0,quality_threshold=1e-5,min_per_read_length=70,
-            rev_comp=True,barcode_max_N=1,seq_max_N=1))
+            rev_comp=True,rev_comp_barcode=True,barcode_max_N=1,seq_max_N=1))
         expected =[
          ('HWI-6X_9267:1:1:4:1699#ACCACCC','GGTGGT',\
           'GGTTTTTTTTTAAAAAAAAAAAAAGGGGGGGGGGGGGGGGGGGGGGGGCC'+\
@@ -170,7 +170,7 @@ class IlluminaParserTests(TestCase):
         """parse_illumina_paired_end_read_files: functions as expected """
         actual = list(parse_illumina_paired_end_read_files(\
          illumina_read1,illumina_read2,barcode_length=6,\
-         max_bad_run_length=0,quality_threshold=1e-5,
+         max_bad_run_length=0,rev_comp_barcode=True,quality_threshold=1e-5,
          min_per_read_length=70))
         expected = [
          ('HWI-6X_9267:1:1:4:1699#ACCACCC','GGTGGT',\
@@ -194,7 +194,7 @@ class IlluminaParserTests(TestCase):
         # alt min_per_read_length
         actual = list(parse_illumina_paired_end_read_files(\
          illumina_read1,illumina_read2,barcode_length=6,\
-         max_bad_run_length=0,quality_threshold=1e-5,
+         max_bad_run_length=0,rev_comp_barcode=True,quality_threshold=1e-5,
          min_per_read_length=75))
         expected = [
          ('HWI-6X_9267:1:1:4:390#ACCTCCC','GGAGGT',\
@@ -212,7 +212,7 @@ class IlluminaParserTests(TestCase):
         # to be sure that alt value is passed through)
         actual = list(parse_illumina_paired_end_read_files(\
          illumina_read1,illumina_read2,barcode_length=6,\
-         max_bad_run_length=0,quality_threshold=1e-55,
+         max_bad_run_length=0,rev_comp_barcode=True,quality_threshold=1e-55,
          min_per_read_length=75))
         self.assertEqual(len(actual),0)
         
@@ -220,12 +220,12 @@ class IlluminaParserTests(TestCase):
         # to be sure that alt value is passed through)
         actual = list(parse_illumina_paired_end_read_files(\
          illumina_read1,illumina_read2,barcode_length=6,\
-         max_bad_run_length=0,quality_threshold=1e-55,
+         max_bad_run_length=0,rev_comp_barcode=True,quality_threshold=1e-55,
          min_per_read_length=75))
         self.assertEqual(len(actual),0)
         actual = list(parse_illumina_paired_end_read_files(\
          illumina_read1,illumina_read2,barcode_length=6,\
-         max_bad_run_length=150,quality_threshold=1e-55,
+         max_bad_run_length=150,rev_comp_barcode=True,quality_threshold=1e-55,
          min_per_read_length=75))
         self.assertEqual(len(actual),2)
         
@@ -233,40 +233,40 @@ class IlluminaParserTests(TestCase):
         """parse_illumina_paired_end_read_files: functions as expected with N chars"""
         actual = list(parse_illumina_paired_end_read_files(\
          illumina_read1_N,illumina_read2,barcode_length=6,\
-         max_bad_run_length=0,quality_threshold=1e-5,
+         max_bad_run_length=0,rev_comp_barcode=True,quality_threshold=1e-5,
          min_per_read_length=70))
         expected = []
         self.assertEqual(actual,expected)
         
         actual = list(parse_illumina_paired_end_read_files(\
          illumina_read1,illumina_read2_N,barcode_length=6,\
-         max_bad_run_length=0,quality_threshold=1e-5,
+         max_bad_run_length=0,rev_comp_barcode=True,quality_threshold=1e-5,
          min_per_read_length=70))
         expected = []
         self.assertEqual(actual,expected)
         
         actual = list(parse_illumina_paired_end_read_files(\
          illumina_read1_N,illumina_read2_N,barcode_length=6,\
-         max_bad_run_length=0,quality_threshold=1e-5,
+         max_bad_run_length=0,rev_comp_barcode=True,quality_threshold=1e-5,
          min_per_read_length=70))
         expected = []
         self.assertEqual(actual,expected)
         
         actual = list(parse_illumina_paired_end_read_files(\
          illumina_read1_N,illumina_read2_N,barcode_length=6,\
-         max_bad_run_length=0,quality_threshold=1e-5,
+         max_bad_run_length=0,rev_comp_barcode=True,quality_threshold=1e-5,
          min_per_read_length=70,barcode_max_N=1))
         self.assertEqual(len(actual),1)
         
         actual = list(parse_illumina_paired_end_read_files(\
          illumina_read1_N,illumina_read2_N,barcode_length=6,\
-         max_bad_run_length=0,quality_threshold=1e-5,
+         max_bad_run_length=0,rev_comp_barcode=True,quality_threshold=1e-5,
          min_per_read_length=70,seq_max_N=1))
         self.assertEqual(len(actual),1)
         
         actual = list(parse_illumina_paired_end_read_files(\
          illumina_read1_N,illumina_read2_N,barcode_length=6,\
-         max_bad_run_length=0,quality_threshold=1e-5,
+         max_bad_run_length=0,rev_comp_barcode=True,quality_threshold=1e-5,
          min_per_read_length=70,barcode_max_N=1,seq_max_N=1))
         self.assertEqual(len(actual),2)
         
@@ -276,7 +276,7 @@ class IlluminaParserTests(TestCase):
          [self.illumina_read1[1],self.illumina_read1[0]]
         record_iter = parse_illumina_paired_end_read_files(\
          reversed_illumina_read_lines1,illumina_read2,barcode_length=6,\
-         max_bad_run_length=0,quality_threshold=1e-5,
+         max_bad_run_length=0,rev_comp_barcode=True,quality_threshold=1e-5,
          min_per_read_length=75)
         self.assertRaises(IlluminaParseError,list,record_iter)
         
@@ -284,7 +284,7 @@ class IlluminaParserTests(TestCase):
          [self.illumina_read2[1],self.illumina_read2[0]]
         record_iter = parse_illumina_paired_end_read_files(\
          illumina_read1,reversed_illumina_read_lines2,barcode_length=6,\
-         max_bad_run_length=0,quality_threshold=1e-5,
+         max_bad_run_length=0,rev_comp_barcode=True,quality_threshold=1e-5,
          min_per_read_length=75)
         self.assertRaises(IlluminaParseError,list,record_iter)
         
@@ -292,7 +292,7 @@ class IlluminaParserTests(TestCase):
         list(parse_illumina_paired_end_read_files(\
          reversed_illumina_read_lines1,reversed_illumina_read_lines2,\
          barcode_length=6,\
-         max_bad_run_length=0,quality_threshold=1e-5,
+         max_bad_run_length=0,rev_comp_barcode=True,quality_threshold=1e-5,
          min_per_read_length=75))
     
     def test_read_qual_score_filter(self):
@@ -466,7 +466,7 @@ class IlluminaParserTests(TestCase):
         actual = process_illumina_paired_end_read_files(\
          read1_fp,read2_fp,output_seqs_fp,output_qual_fp,\
          barcode_to_sample_id=self.barcode_to_sample_id1,\
-         barcode_length=6,\
+         barcode_length=6,rev_comp_barcode=True,\
          store_unassigned=True,max_bad_run_length=0,\
          quality_threshold=1e-5,min_per_read_length=70,\
          start_seq_id=0)
@@ -506,7 +506,7 @@ class IlluminaParserTests(TestCase):
         actual = process_illumina_paired_end_read_files(\
          read1_fp,read2_fp,output_seqs_fp,output_qual_fp,\
          barcode_to_sample_id=self.barcode_to_sample_id2,\
-         barcode_length=6,\
+         barcode_length=6,rev_comp_barcode=True,\
          store_unassigned=True,max_bad_run_length=0,\
          quality_threshold=1e-5,min_per_read_length=70,\
          start_seq_id=42)

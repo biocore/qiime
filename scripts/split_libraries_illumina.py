@@ -126,6 +126,7 @@ def main():
              max_bad_run_length=max_bad_run_length,\
              quality_threshold=quality_threshold,\
              min_per_read_length=min_per_read_length,\
+             rev_comp_barcode=True,
              start_seq_id=next_seq_id)
     else:
         if five_prime_read_fps:
@@ -158,6 +159,7 @@ def main():
              quality_threshold=quality_threshold,\
              min_per_read_length=min_per_read_length,\
              rev_comp=rev_comp,
+             rev_comp_barcode=True,
              start_seq_id=next_seq_id)
 
 

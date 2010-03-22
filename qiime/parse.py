@@ -20,6 +20,7 @@ from numpy.random import permutation
 from cogent.parse.record_finder import LabeledRecordFinder
 from copy import deepcopy
 import os
+from cogent.util.misc import revComp
 
 """Parsers for internally used file formats from SIBS, OTUPicker, etc.
 
@@ -526,4 +527,32 @@ def parse_metadata_state_descriptions(state_string):
             colname, vals = map(strip, c.split(':'))
             vals = map(strip, vals.split(','))
             result[colname] = set(vals)
+    return result
+
+
+class IlluminaParseError(Exception):
+    pass
+
+def parse_illumina_line(l,barcode_length,rev_comp_barcode):
+    """Parses a single line of Illumina data
+    """
+    fields = l.strip().split(':')
+    
+    y_position_subfields = fields[4].split('#')
+    y_position = int(y_position_subfields[0])
+    barcode = y_position_subfields[1][:barcode_length]
+    if rev_comp_barcode:
+        barcode = revComp(barcode)
+    
+    result = {\
+     'Machine Name':fields[0],\
+     'Channel Number':int(fields[1]),\
+     'Tile Number':int(fields[2]),\
+     'X Position':int(fields[3]),\
+     'Y Position':y_position,\
+     'Barcode':barcode,\
+     'Full Y Position Field':fields[4],\
+     'Sequence':fields[5],\
+     'Quality Score':fields[6]}
+     
     return result
