@@ -414,7 +414,7 @@ First the jackknifed otu tables must be generated, by subsampling the full avail
 
    * Sample ct min/max/mean: 146 / 150 / 148.11
 
-To ensure that a random subset of sequences is selected from each sample, we chose to select 110 sequences from each sample (75% of the smallest sample, though this value is only a guideline). We use `multiple_rarefactions.py <./scripts/multiple_rarefactions.html`, which has already been described::
+To ensure that a random subset of sequences is selected from each sample, we chose to select 110 sequences from each sample (75% of the smallest sample, though this value is only a guideline). We use `multiple_rarefactions.py <./scripts/multiple_rarefactions.html>`_, which has already been described::
 
 	python $qdir/multiple_rarefactions.py -i Fasting_otu_table.txt -m 110 -x 110 -s 1 -n 20 -o jackknife_otu/ --small_included
 
