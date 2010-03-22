@@ -4,14 +4,18 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-#################
-Welcome to QIIME!
-#################
+######################################################
+QIIME: Quantitative Insights Into Microbial Ecology
+######################################################
 QIIME (canonically pronounced 'Chime') stands for "Quantitative Insights Into Microbial Ecology". It allows a range of community analyses suitable for microbiome data using traditional and high-throughput sequencing methods.
 
 About
 ========
-QIIME takes as input FASTA-format sequence data, optional quality scores, and a metadata file that assigns samples to specific categories or numerical values. It supports a wide range of microbial community analyses that have been useful in recent high-profile publications. It is a series of command line scripts, built in Python and the open-source PyCogent_ toolkit It makes extensive use of unit testing to ensure the accuracy of the results, and is highly modular (i.e. components for specific stages such as choosing OTUs (Operational Taxonomic Units), sequence alignment, and phylogeny, including 3rd party applications, can be easily integrated)
+QIIME takes as input FASTA-format sequence data, optional quality scores, and a metadata file that assigns samples to specific categories or numerical values. It supports a wide range of microbial community analyses that have been useful in recent high-profile publications. It is a series of command line scripts, built in Python and the open-source PyCogent_ toolkit It makes extensive use of unit testing to ensure the accuracy of the results, and is highly modular (i.e. components for specific stages such as choosing OTUs (Operational Taxonomic Units), sequence alignment, and phylogeny, including 3rd party applications, can be easily integrated).
+
+Blog and Mailing List
+======================
+We recommend that all QIIME users keep an eye on the QIIME blog for important announcements. You can `subscribe to the RSS feed <http://qiime.wordpress.com/feed/>`_ or `sign up for e-mail notifications on the front page of the blog <http://qiime.wordpress.com>`_. This is a very low traffic list (typically around one message per month), and we will not share subscriber information with anyone.
 
 
 Download

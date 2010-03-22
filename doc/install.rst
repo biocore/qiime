@@ -14,26 +14,40 @@ Installing QIIME
    :maxdepth: 2
 
 
-To use QIIME, the user should install the following programs and set the appropriate environment variables.
+QIIME consists of native code and additionally wraps several external applications. This gives the user flexibility to easily build their own analysis pipelines, making use of popular microbial community analysis tools. QIIME handles the processing of input and output of these applications, so the user can spend time analyzing their data rather than parsing, writing, and converting file formats. 
 
-Software Dependencies
----------------------
-The following programs and datasets were used to generate this tutorial and it is recommended to use the same versions as shown below.
+As a consequence of this 'pipeline' architecture, depending on the features of QIIME that you plan to use, you may or may not need all of QIIME dependencies. Getting all of these applications working correctly can be difficult, which is why we distribute the QIIME virtual box. If you are a beginner user, or just testing QIIME to see if it will meet your needs, you may want to begin with the `virtual box <./virtual_box.html>`_ which will greatly ease installation.
 
-* Python 2.6 - Download `Python-2.6.4.tgz <http://www.python.org/ftp/python/2.6.4/Python-2.6.4.tgz>`_
-* PyCogent 1.4.0 - Download `PyCogent-1.4.tgz  <http://sourceforge.net/projects/pycogent/files/PyCogent/1.4/PyCogent-1.4.tgz/download>`_
-* PyNAST 1.0 - Download `PyNAST-1.0-tar.gz  <http://sourceforge.net/projects/pynast/files/PyNAST%20releases/PyNAST-1.0.tar.gz/download>`_
-* Numpy 1.3.0 - Download `numpy-1.3.0-tar.gz  <http://sourceforge.net/projects/numpy/files/NumPy/1.3.0/numpy-1.3.0.tar.gz/download>`_
-* MatPlotLib 0.98.5.2 - Download `matplotlib-0.98.5.2.tar.gz  <http://iweb.dl.sourceforge.net/project/matplotlib/OldFiles/matplotlib-0.98.5.2.tar.gz>`_
-* jre1.6.0_05 - Download `JavaForMacOSX10.5Update1.dmg <http://wsidecar.apple.com/cgi-bin/nph-reg3rdpty2.pl/product=18844&cat=59&platform=osx&method=sa/JavaForMacOSX10.5Update1.dmg>`_
-* rdp_classifier-2.0.1 - Download `rdp_classifier_2.0.1.tar.gz <http://downloads.sourceforge.net/project/rdp-classifier/rdp-classifier/rdp_classifier_2.0.1/rdp_classifier_2.0.1.tar.gz>`_
-* greengenes core set data file - Download `core_set_aligned.fasta.imputed <http://greengenes.lbl.gov/Download/Sequence_Data/Fasta_data_files/core_set_aligned.fasta.imputed>`_
-* greengenes alignment lanemask file - Download `lanemask_in_1s_and_0s <http://greengenes.lbl.gov/Download/Sequence_Data/lanemask_in_1s_and_0s>`_
-* blast-2.2.22 (please note that this refers to legacy BLAST from NCBI, not BLAST+) - Download `blast-2.2.22-universal-macosx.tar.gz <ftp://ftp.ncbi.nlm.nih.gov/blast/executables/LATEST/blast-2.2.22-universal-macosx.tar.gz>`_
-* fasttree 2.1.0 - Download `FastTree-2.1.c <http://www.microbesonline.org/fasttree/FastTree-2.1.0.c>`_
-* cd-hit 3.1 - Download `cd-hit-2007-0131.tar.gz <http://www.bioinformatics.org/download.php/cd-hit/cd-hit-2007-0131.tar.gz>`_
+The following programs and datasets were used to generate the QIIME tutorial. QIIME has been tested with the same versions listed below. Other versions are not guaranteed to work. Download links are provided for convenience, but these are subject to change. We'll do our best to keep these up-to-date.
 
-Installing QIIME
+You should follow instructions provided by the package developers to install the dependencies.
+
+Dependencies required for all features of QIIME
+-----------------------------------------------
+
+* Python 2.6 (`src <http://www.python.org/ftp/python/2.6.4/Python-2.6.4.tgz>`_)
+* PyCogent 1.4.0 (`src <http://sourceforge.net/projects/pycogent/files/PyCogent/1.4/PyCogent-1.4.tgz/download>`_)
+* Numpy 1.3.0 (`src <http://sourceforge.net/projects/numpy/files/NumPy/1.3.0/numpy-1.3.0.tar.gz/download>`_)
+
+Dependencies required for a subset of QIIME's features
+------------------------------------------------------
+
+PyNAST alignment, tree-building, taxonomy assignment, OTU picking, and other data generation steps
+
+* PyNAST 1.0 (`src  <http://sourceforge.net/projects/pynast/files/PyNAST%20releases/PyNAST-1.0.tar.gz/download>`_)
+* greengenes core set data file (`fasta <http://greengenes.lbl.gov/Download/Sequence_Data/Fasta_data_files/core_set_aligned.fasta.imputed>`_)
+* greengenes alignment lanemask file (`txt <http://greengenes.lbl.gov/Download/Sequence_Data/lanemask_in_1s_and_0s>`_)
+* blast-2.2.22 (legacy BLAST from NCBI, *NOT* BLAST+) (`OS X <ftp://ftp.ncbi.nlm.nih.gov/blast/executables/LATEST/blast-2.2.22-universal-macosx.tar.gz>`_ or `linux 32-bit <ftp://ftp.ncbi.nlm.nih.gov/blast/executables/LATEST/blast-2.2.22-ia32-linux.tar.gz>`_)
+* fasttree 2.1.0 (`src <http://www.microbesonline.org/fasttree/FastTree-2.1.0.c>`_)
+* cd-hit 3.1 (`src <http://www.bioinformatics.org/download.php/cd-hit/cd-hit-2007-0131.tar.gz>`_)
+* jre1.6.0_05 - (`OS X 10.5 <http://wsidecar.apple.com/cgi-bin/nph-reg3rdpty2.pl/product=18844&cat=59&platform=osx&method=sa/JavaForMacOSX10.5Update1.dmg>`_)
+* rdp_classifier-2.0.1 (`src <http://downloads.sourceforge.net/project/rdp-classifier/rdp-classifier/rdp_classifier_2.0.1/rdp_classifier_2.0.1.tar.gz>`_)
+
+Graphics and other data analysis steps
+
+* MatPlotLib 0.98.5.2 (`src  <http://iweb.dl.sourceforge.net/project/matplotlib/OldFiles/matplotlib-0.98.5.2.tar.gz>`_)
+
+Getting QIIME
 ----------------
 
 Stable Pre-Release
@@ -42,78 +56,128 @@ Currently the most stable version of QIIME is our 0.92 pre-release, which you ca
 
 Latest Development Version
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
-To get the latest development version of QIIME, you should check it out of our Sourceforge repository. While this code is subject to minor changes in interface, it will provide access to the latest and greatest features. The official web documentation is likely to be out-of-date with respect to the development software. You should instead refer to the svn documentation in "Qiime/doc". Check out the latest version of QIIME using svn with the command::
+To get the latest development version of QIIME, you should check it out of our Sourceforge repository. While this code is subject to changes in interface and hasn't been as extensively tested as the release version, it will provide access to the latest and greatest QIIME features. The official web documentation is likely to be out-of-date with respect to the development software. You should instead refer to the svn documentation in ``Qiime/doc``. Check out the latest version of QIIME using svn with the commands::
 
-	svn co https://qiime.svn.sourceforge.net/svnroot/qiime/trunk Qiime
+	svn co http://qiime.svn.sourceforge.net/svnroot/qiime/trunk Qiime
 
-The user can update QIIME, by using the following command::
+svn users should periodically update QIIME by using the following command::
 
-	svn update /path/to/QIIME/
+	svn update /home/qiime_user/Qiime/
+	
+Unpacking QIIME
+---------------
+After downloading the QIIME tar file (either the release or svn version), you'll need to unpack the code. For simplicity in this document, we will assume that you have downloaded QIIME to the directory ``/home/qiime_user/``. You should consider all occurrences of ``/home/qiime_user/`` in the remainder of this document as references to the directory which contains the QIIME tar file you just downloaded.
 
-Environment Variables
----------------------
-Make sure the following environment variable are set:
+Unpack the release Qiime tar file with the commands::
+
+	cd /home/qiime_user
+	tar -xvzf Qiime-0.92.tar.gz
+	ln -s /home/qiime_user/Qiime-0.92 /home/qiime_user/Qiime
+
+Or, unpack the svn tar file with the commands::
+
+	cd /home/qiime_user
+	tar -xvzf Qiime.tar.gz
+	
+Installing QIIME
+----------------
+QIIME consists of library code (in Qiime/qiime), test code (in Qiime/tests), documentation (in Qiime/doc), and scripts (in Qiime/scripts). Installing QIIME consists of running the tests (optional, but highly recommend), installing the library code in a place where python knows where to find it, and installing the scripts in a place where the shell looks for executable files.
+
+Running the test suite
+^^^^^^^^^^^^^^^^^^^^^^
+We recommend that the first thing you do after downloading QIIME is run the test suite. If you have just downloaded and unpacked Qiime in ``/home/qiime_user/`` you will now have a directory ``/home/qiime_user/Qiime``. To run the test suite, execute the following commands:
+
+::
+	
+	cd /home/qiime_user/Qiime
+	python tests/all_tests.py
+
+You will see test output on the terminal indicating test successes and failures. Some failures are OK. The ``all_tests.py`` command will complete with a summary of test failures. Some tests may fail due to missing external applications -- these will be noted separately from other test failures. If these are related to features of QIIME that you are not using, this is acceptable. Otherwise, you'll need to ensure that you have the external applications installed correctly (and the correct versions), and re-run the tests. 
+
+Installing the library code and scripts with setup.py
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Using ``Qiime/setup.py`` (and thereby python's ``distutils`` package) is the recommended way of installing the Qiime library code and scripts. You can optionally specify where the library code and scripts should be installed -- depending on your setup, you may want to do this. By default, the QIIME library code will be placed under python's ``site-packages``, and the QIIME scripts will be place in ``/usr/local/bin/``. You may need to run ``setup.py`` using ``sudo`` if you do not have permission to place files in the default locations. 
+
+First, ensure that you are in the top-level QIIME directory:
+
+::
+	
+	cd /home/qiime_user/Qiime
+
+By default the QIIME scripts will be installed in ``/usr/local/bin``. This can be customized with the ``-install_scripts`` option like:
+
+::
+	
+	python setup.py install --install-scripts=/home/qiime_user/bin/
+	
+You can similarly install the library code in an alternate location using the ``--install-purelib`` option:
+
+::
+	
+	python setup.py install --install-purelib=/home/qiime_user/lib/
+
+
+Combine these options as follows:	
+::
+	
+	python setup.py install --install-scripts=/home/qiime_user/bin/ --install-purelib=/home/qiime_user/lib/
+
+For a complete discussion of customizations related to the setup.py script, `see this page <http://docs.python.org/install/index.html#alternate-installation-the-home-scheme>`_.
+
+If you used default values for ``--install-scripts`` and ``--install-purelib`` (by not specifying them), your installation should be complete. If you specified an alternate value for ``--install-scripts``, you'll need to ensure that the shell knows where to look for the scripts. If you are using the bash shell and the locations specified in the examples above, you can do this with the following command:
+
+::
+	
+	echo "export PATH=/home/qiime_user/bin/:$PATH" >> /home/qiime_user/.bashrc
+
+If you specified an alternate value for ``--install-purelib``, you'll need to be sure that python knows where to look for Qiime. If you are using the bash shell and the locations specified in the examples above, you can do this with the following command:
+
+::
+	
+	echo "export PYTHONPATH=/home/qiime_user/lib/:$PYTHONPATH" >> /home/qiime_user/.bashrc
+
+Testing your QIIME installation
+-------------------------------
+If QIIME is installed correctly, you should be able to run the QIIME scripts. Try the following:
+
+::
+	
+	cd /home/qiime_user
+	source /home/qiime_user/.bashrc
+	python align_seqs.py -h
+	
+This should give you help text describing the interface to the align_seqs.py script. (Note that if you do not have a /home/qiime_user/.bashrc you may get an error at the ``source`` step. If you did not specify alternate values for ``--install-purelib`` or ``--install-scripts`` this shouldn't be a problem.)
+
+Additional Environment Variables
+-----------------------------------
 
 PATH Environment Variable
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Your $PATH environment variable should contain the following:
+External applications used by QIIME need to be visible to the shell by existing in executable search path (i.e., listed in the ``$PATH`` environment variable). For example, if you plan to use cd-hit, and have the cd-hit executables installed in ``/home/qiime_user/bin`` you can add this directory to your system path with the commands:
 
-* /path/to/python/bin
-* /path/to/cd-hit-est
-* /path/to/FastTree
-* /path/to/blast-2.2.21/bin/
-* /path/to/PyNAST/scripts/
-* /path/to/jre1.6_0_16/
-
-For all path description throughout this tutorial, the "/path/to/" refers to the physical location of each program on your local computer. For instance, the "/path/to/python/bin/" refers to "/Library/Frameworks/Python.framework/Versions/2.5/bin" on Mac OS X version 10.5.
-
-In the bash shell, you can use the following command (example only shows the path to python, so other softwares can be added to the PATH, using a similar approach): ::
-
-	export PATH=/path/to/python/bin/:$PATH
+::
+	
+	echo "export PATH=/home/qiime_user/bin/:$PATH" >> /home/qiime_user/.bashrc
+	source /home/qiime_user/.bashrc
 
 PYTHONPATH Environment Variable
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Your PYTHONPATH should contain the following:
+Qiime, PyCogent, and NumPy must be visible to python for all features of QIIME. matplotlib must be visible to python if you plan to use graphics features of QIIME, and PyNAST must be visible to python if you plan to use PyNAST for multiple sequence alignment. All of these packages come with setup.py scripts. If you have used these, you should not need to modify your PYTHONPATH to make the library code visible. If you haven't used the respective setup.py scripts, or if you specified an alternate value for ``--install-purelib``, you may need to add the locations of these libraries to your PYTHONPATH environment variable. 
 
-* /path/to/PyCogent
-* /path/to/QIIME
-* /path/to/PyNAST
+For example, if you've installed PyNAST in ``/home/qiime_user/PyNAST`` you can add this to your PYTHONPATH with the commands:
 
-In the bash shell, you can use the following command (example only shows the path to QIIME, so other softwares can be added to the PYTHONPATH, using a similar approach): ::
-
-	export PYTHONPATH=/path/to/QIIME/:$PYTHONPATH
+::
+	
+	echo "export PYTHONPATH=/home/qiime_user/PyNAST/:$PYTHONPATH" >> /home/qiime_user/.bashrc
+	source /home/qiime_user/.bashrc
 
 RDP_JAR_PATH Environment Variable
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The user should also define an RDP_JAR_PATH variable, since this tutorial uses the RDP Classifier:
+If you plan to use the RDP classifier for taxonomy assignment you must also define an RDP_JAR_PATH variable. If you have the RDP classifier jar file (``rdp_classifier-2.0.jar``) in ``/home/qiime_user/app`` you can do this with the following command""
 
-* /path/to/rdp_classifier-2.0.jar
+::
 
-In the bash shell, you can use the following command: ::
-
-	export RDP_JAR_PATH=/path/to/rdp_classifier-2.0.jar
-
-Testing QIIME Install
----------------------
-Once the source code is downloaded, the user should test QIIME to be sure all essential software is properly installed and the correct environment variables are set.
-
-In a terminal window the user, should cd to their qiime/test directory using the following command: ::
-
-	cd /path/to/QIIME/tests/
-
-Then run the following test command: ::
-
-	python all_tests.py -v
-
-If all tests run properly, then QIIME was properly installed. Some test scripts may fail, due to optional third party applications not being installed. Test failures which contain the text ApplicationNotFoundError can be safely ignored. The following scripts may generate errors:
-
-1. test_align_seqs.py - will fail if PyNAST, blast, muscle or infernal are not installed. PyNAST requires BLAST, and is the default sequence aligner. If you are not using PyNAST, you can safely ignore fails regarding blast and/or PyNAST. If you are not using muscle or infernal, you can safely disregard those error messages.
-2. test_pick_otus.py – will fail if cd-hit and/or blast are not installed. If you are not planning to use these methods for OTU picking, you do not need to worry about these failures.
-3. test_process_sff.py - will fail if you do not have sffinfo installed.
-4. test_pycogent_backports/test_mothur.py - will fail is mothur is not installed.
-5. test_pycogent_backports/test_uclust.py - will fail is uclust is not installed.
-6. test_pyronoise.py - will fail in PyroNoise is not installed.
-
+	echo "export RDP_JAR_PATH=/home/qiime_user/app/rdp_classifier-2.0.jar" >> /home/qiime_user/.bashrc
