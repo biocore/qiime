@@ -70,6 +70,7 @@ def parse_mapping_file(lines, strip_quotes=True, suppress_stripping=False):
             else:
                 comments.append(line)
         else:
+            line = line.replace("\n","")
             mapping_data.append(map(strip_f, line.split('\t')))
 
     return mapping_data, header, comments

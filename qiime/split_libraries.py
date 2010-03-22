@@ -187,13 +187,13 @@ def split_seq(curr_seq, barcode_len, primer_seq_len):
     return curr_barcode, primer_seq, rest_of_seq 
     
 def get_barcode(curr_seq, barcode_len):
-	""" Split sequence into barcode and remaining sequence
-	
-	Linker and primer part of remaining sequence, as one must first
-	read the barcode to find the associated primer from the mapping file"""
-	raw_barcode = curr_seq[0:barcode_len]
-	raw_seq = curr_seq[barcode_len:]
-	return raw_barcode, raw_seq
+    """ Split sequence into barcode and remaining sequence
+
+    Linker and primer part of remaining sequence, as one must first
+    read the barcode to find the associated primer from the mapping file"""
+    raw_barcode = curr_seq[0:barcode_len]
+    raw_seq = curr_seq[barcode_len:]
+    return raw_barcode, raw_seq
 
 def primer_exceeds_mismatches(primer_seq, all_primer_seqs, max_primer_mm):
     """Returns True if primer exceeds allowed mismatches"""   
@@ -345,35 +345,35 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
             raw_barcode, raw_seq = get_barcode(curr_seq, barcode_len)
             
             try:
-            	current_primers = primer_seqs_lens[raw_barcode]
-            	# In this case, all values will be the same, i.e. the length
-            	# of the given primer, or degenerate variations thereof.
-            	primer_len = current_primers.values()[0]
+                current_primers = primer_seqs_lens[raw_barcode]
+                # In this case, all values will be the same, i.e. the length
+                # of the given primer, or degenerate variations thereof.
+                primer_len = current_primers.values()[0]
 
-            	if primer_exceeds_mismatches(raw_seq[:primer_len],\
-            	 current_primers, max_primer_mm):
-            	 	bc_counts['#FAILED'].append(curr_rid)
-            		primer_mismatch_count += 1
-            		continue
+                if primer_exceeds_mismatches(raw_seq[:primer_len],\
+                 current_primers, max_primer_mm):
+                     bc_counts['#FAILED'].append(curr_rid)
+                     primer_mismatch_count += 1
+                     continue
             except KeyError:
-            	# If the barcode read does not match any of those in the 
-            	# mapping file, the situation becomes more complicated.  We do
-            	# not know the length the sequence to slice out to compare to
-            	# our primer sets, so, in ascending order of all the given
-            	# primer lengths, a sequence will the sliced out and compared
-            	# to the primer set.  
-            	current_primers = all_primers
-            	found_match = False
-            	for seq_slice_len in all_primers_lens:
-            		if not(primer_exceeds_mismatches(raw_seq[:seq_slice_len],\
-            		 current_primers, max_primer_mm)):
-            		 	primer_len = seq_slice_len
-            		 	found_match = True
-            		 	break
-            	if not found_match:
-            		bc_counts['#FAILED'].append(curr_rid)
-            		primer_mismatch_count += 1
-            		continue
+                # If the barcode read does not match any of those in the 
+                # mapping file, the situation becomes more complicated.  We do
+                # not know the length the sequence to slice out to compare to
+                # our primer sets, so, in ascending order of all the given
+                # primer lengths, a sequence will the sliced out and compared
+                # to the primer set.  
+                current_primers = all_primers
+                found_match = False
+                for seq_slice_len in all_primers_lens:
+                    if not(primer_exceeds_mismatches(raw_seq[:seq_slice_len],\
+                        current_primers, max_primer_mm)):
+                            primer_len = seq_slice_len
+                            found_match = True
+                            break
+                if not found_match:
+                    bc_counts['#FAILED'].append(curr_rid)
+                    primer_mismatch_count += 1
+                    continue
 
             # split seqs
             cbc, cpr, cres = split_seq(curr_seq, barcode_len,\
