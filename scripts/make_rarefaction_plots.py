@@ -12,23 +12,16 @@ __email__ = "meg.pirrung@colorado.edu"
 __status__ = "Pre-release"
  
 from optparse import make_option
-from qiime.util import parse_command_line_parameters
+from qiime.util import parse_command_line_parameters, get_qiime_project_dir
 from qiime.pycogent_backports.misc import get_random_directory_name
-from qiime.pycogent_backports.misc import get_random_directory_name
-import sys
 from sys import argv, exit, exc_info
 from random import choice, randrange
 from time import strftime
-from qiime import parse, util
-#from qiime.parse import parse_rarefaction_data
-from qiime.make_rarefaction_plots import make_plots, make_output_files, \
-parse_rarefaction_data
-import os.path
+from qiime.parse import parse_rarefaction_data
+from qiime.make_rarefaction_plots import make_plots, make_output_files
 from os.path import exists, splitext, split
-import shutil
+from os import listdir, mkdir
 
-
-#make_rarefaction_plots.py
 script_info={}
 script_info['brief_description']="""Generate Rarefaction Plots"""
 script_info['script_description']="""Once the batch alpha diversity files have been collated, you may want to compare the diversity using plots. Using the results from make_rarefaction_averages.py, you can plot the samples and or by category in the mapping file using this script.
@@ -56,7 +49,7 @@ def main():
     prefs = {}
 
     input_dir = options.input_dir
-    rarenames = os.listdir(input_dir)
+    rarenames = listdir(input_dir)
     rarenames = [r for r in rarenames if not r.startswith('.')]
     rares = dict()
     for r in rarenames:
@@ -65,7 +58,7 @@ def main():
              rares[r] = parse_rarefaction_data(rarefl)
         except(IOError):
             option_parser.error('Problem with rarefaction file. %s'%\
-            sys.exc_info()[1])
+            exc_info()[1])
             exit(0)
     prefs['rarefactions'] = rares
     
@@ -89,11 +82,11 @@ def main():
 
     #output directory check
     if options.dir_path != '.':
-        if os.path.exists(options.dir_path):
+        if exists(options.dir_path):
             prefs['output_path'] = options.dir_path
         else:
             try:
-                os.mkdir(options.dir_path)
+                mkdir(options.dir_path)
                 prefs['output_path'] = options.dir_path
             except(ValueError):
                 option_parser.error('Could not create output directory.')
@@ -102,7 +95,7 @@ def main():
         prefs['output_path'] = get_random_directory_name()
     
     graphNames = make_plots(prefs)
-    make_output_files(prefs, util.get_qiime_project_dir(), graphNames)
+    make_output_files(prefs, get_qiime_project_dir(), graphNames)
 
 if __name__ == "__main__":
     main()
