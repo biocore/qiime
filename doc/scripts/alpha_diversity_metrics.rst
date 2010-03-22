@@ -10,7 +10,7 @@
 	* chao1
 	* chao1_confidence
 	* dominance
-	* doubles
+	* doubles (# otus with exactly two individuals in sample)
 	* equitability
 	* fisher_alpha
 	* heip_e
@@ -21,13 +21,13 @@
 	* menhinick
 	* michaelis_menten_fit
 	* observed_species
-	* osd
+	* osd (observed # otus, singleton OTUs, doubleton OTUs)
 	* reciprocal_simpson
 	* robbins
 	* shannon
-	* simpson
+	* simpson (1 - Dominance)
 	* simpson_e
-	* singles
+	* singles (# OTUs with exactly one individual present in sample)
 	* strong
 	
 *Phylogeny based metrics:*
