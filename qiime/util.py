@@ -389,6 +389,8 @@ def get_options_lookup():
      make_option('-o','--output_dir',help='path to the output directory')
     result['output_fp'] =\
      make_option('-o','--output_fp',help='the output filepath')
+    result['mapping_fp'] =\
+     make_option('-m','--mapping_fp',help='the mapping filepath')
     
     ## Define options used by the parallel scripts
     result['jobs_to_start'] =\
