@@ -16,6 +16,7 @@ from numpy import log10
 from cogent.util.misc import revComp
 from os.path import split, splitext
 from os import makedirs
+from qiime.parse import (parse_illumina_line, IlluminaParseError)
 
 # UNTESTED FUNCTIONS FOR WORKING WITH ILLUMINA QUAL LINES 
 # def qual_char_to_prob(c):
@@ -24,30 +25,37 @@ from os import makedirs
 # def qual_line_to_probs(l):
 #     return [qual_char_to_prob(c) for c in l]
 
-class IlluminaParseError(Exception):
-    pass
+def get_illumina_qual_chars():
+    return '@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~'
 
-def parse_read_line(l,barcode_length):
-    fields = l.strip().split(':')
-    
-    y_position_subfields = fields[4].split('#')
-    y_position = int(y_position_subfields[0])
-    barcode = revComp(y_position_subfields[1][:barcode_length])
-    
-    result = {\
-     'Machine Name':fields[0],\
-     'Channel Number':int(fields[1]),\
-     'Tile Number':int(fields[2]),\
-     'X Position':int(fields[3]),\
-     'Y Position':y_position,\
-     'Barcode':barcode,\
-     'Full Y Position Field':fields[4],\
-     'Sequence':fields[5],\
-     'Quality Score':fields[6]}
-     
-    return result
+def bad_chars_from_threshold(threshold):
+    i = -1 * int(log10(threshold))
+    return {}.fromkeys(list(get_illumina_qual_chars()[:i]))
 
-def read_description_from_read_data(parsed_read):
+def read_qual_score_filter(seq,qual,max_run_length,threshold):
+    """slices illumina sequence and quality line based on quality filter
+    """
+    bad_chars = bad_chars_from_threshold(threshold)
+    last_good_slice_end_pos = 0
+    bad_run_length = 0
+    for i in range(len(seq)):
+        if qual[i] in bad_chars:
+            bad_run_length += 1
+        else:
+            bad_run_length = 0
+            last_good_slice_end_pos = i + 1
+            
+        if bad_run_length > max_run_length:
+            return seq[:last_good_slice_end_pos],\
+                   qual[:last_good_slice_end_pos]
+    
+    # There were no runs that were too bad for too long 
+    return seq, qual
+
+
+def illumina_read_description_from_read_data(parsed_read):
+    """Create a read description from a parsed illumina read object
+    """
     return ':'.join(map(str,[\
      parsed_read['Machine Name'],\
      parsed_read['Channel Number'],\
@@ -55,16 +63,18 @@ def read_description_from_read_data(parsed_read):
      parsed_read['X Position'],\
      parsed_read['Full Y Position Field'][:-2]]))
 
-def parse_read_pair_files(read1_file,read2_file,barcode_length,\
+def parse_illumina_paired_end_read_files(read1_file,read2_file,barcode_length,\
     max_bad_run_length,quality_threshold,min_per_read_length,\
     barcode_max_N=0,seq_max_N=0):
+    """Parses Illumina paired-end read file pair
+    """
     
     for read1_line, read2_line in izip(read1_file,read2_file):
-        read1 = parse_read_line(read1_line,barcode_length)
-        read2 = parse_read_line(read2_line,barcode_length)
+        read1 = parse_illumina_line(read1_line,barcode_length)
+        read2 = parse_illumina_line(read2_line,barcode_length)
         
-        read1_desc = read_description_from_read_data(read1)
-        read2_desc = read_description_from_read_data(read2)
+        read1_desc = illumina_read_description_from_read_data(read1)
+        read2_desc = illumina_read_description_from_read_data(read2)
         
         read1_barcode = read1['Barcode']
         read2_barcode = read2['Barcode']
@@ -99,14 +109,16 @@ def parse_read_pair_files(read1_file,read2_file,barcode_length,\
         
         yield read1_desc, read1_barcode, seq, qual
     
-def parse_read_file(read_file,barcode_length,\
+def parse_illumina_single_end_read_file(read_file,barcode_length,\
     max_bad_run_length,quality_threshold,min_per_read_length,
     rev_comp,barcode_max_N=0,seq_max_N=0):
+    """Parses Illumina single-end read file pair
+    """
     
     for read_line in read_file:
-        read = parse_read_line(read_line,barcode_length)
+        read = parse_illumina_line(read_line,barcode_length)
         
-        read_desc = read_description_from_read_data(read)
+        read_desc = illumina_read_description_from_read_data(read)
         
         read_barcode = read['Barcode']
         
@@ -125,39 +137,13 @@ def parse_read_file(read_file,barcode_length,\
             qual = qual[::-1]
         
         yield read_desc, read_barcode, seq, qual
-    
-qual_chars = '@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~'
 
-def bad_chars_from_threshold(threshold):
-    i = -1 * int(log10(threshold))
-    return {}.fromkeys(list(qual_chars[:i]))
-
-def read_qual_score_filter(seq,qual,max_run_length,threshold):
-    """
-    """
-    bad_chars = bad_chars_from_threshold(threshold)
-    last_good_slice_end_pos = 0
-    bad_run_length = 0
-    for i in range(len(seq)):
-        if qual[i] in bad_chars:
-            bad_run_length += 1
-        else:
-            bad_run_length = 0
-            last_good_slice_end_pos = i + 1
-            
-        if bad_run_length > max_run_length:
-            return seq[:last_good_slice_end_pos],\
-                   qual[:last_good_slice_end_pos]
-    
-    # There were no runs that were too bad for too long 
-    return seq, qual
-    
-
-def parse_read_pair(read1_fp,read2_fp,output_seqs_fp,output_qual_fp,\
+def process_illumina_paired_end_read_files(\
+    read1_fp,read2_fp,output_seqs_fp,output_qual_fp,\
     barcode_to_sample_id,barcode_length,\
     store_unassigned,max_bad_run_length,\
     quality_threshold,min_per_read_length, start_seq_id=0):
-    """
+    """parses Ilimuna paired-end read file
     """
     read1_file = open(read1_fp)
     read2_file = open(read2_fp)
@@ -167,7 +153,7 @@ def parse_read_pair(read1_fp,read2_fp,output_seqs_fp,output_qual_fp,\
     seq_id = start_seq_id
     
     for seq_desc,barcode,seq,qual in\
-      parse_read_pair_files(read1_file,read2_file,barcode_length,\
+      parse_illumina_paired_end_read_files(read1_file,read2_file,barcode_length,\
       max_bad_run_length,quality_threshold,min_per_read_length):
       
       try:
@@ -188,11 +174,11 @@ def parse_read_pair(read1_fp,read2_fp,output_seqs_fp,output_qual_fp,\
     
     return seq_id
     
-def parse_single_read(read_fp,output_seqs_fp,output_qual_fp,\
+def process_illumina_single_end_read_file(read_fp,output_seqs_fp,output_qual_fp,\
     barcode_to_sample_id,barcode_length,\
     store_unassigned,max_bad_run_length,\
     quality_threshold,min_per_read_length, rev_comp, start_seq_id=0):
-    """
+    """parses Ilimuna single-end read file
     """
     read_file = open(read_fp)
     output_seqs_file = open(output_seqs_fp,'w')
@@ -201,7 +187,7 @@ def parse_single_read(read_fp,output_seqs_fp,output_qual_fp,\
     seq_id = start_seq_id
     
     for seq_desc,barcode,seq,qual in\
-      parse_read_file(read_file,barcode_length,\
+      parse_illumina_single_end_read_file(read_file,barcode_length,\
       max_bad_run_length,quality_threshold,min_per_read_length,
       rev_comp):
         try:

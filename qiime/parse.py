@@ -12,8 +12,10 @@ __email__ = "rob@spot.colorado.edu"
 __status__ = "Pre-release"
 
 from string import strip
+from itertools import izip
 from collections import defaultdict
 from cogent.util.misc import unzip
+from cogent.util.misc import revComp
 from cogent.maths.stats.rarefaction import subsample
 from numpy import array, concatenate, repeat, zeros, nan
 from numpy.random import permutation
@@ -526,4 +528,30 @@ def parse_metadata_state_descriptions(state_string):
             colname, vals = map(strip, c.split(':'))
             vals = map(strip, vals.split(','))
             result[colname] = set(vals)
+    return result
+
+
+class IlluminaParseError(Exception):
+    pass
+
+def parse_illumina_line(l,barcode_length):
+    """Parses a single line of Illumina data
+    """
+    fields = l.strip().split(':')
+    
+    y_position_subfields = fields[4].split('#')
+    y_position = int(y_position_subfields[0])
+    barcode = revComp(y_position_subfields[1][:barcode_length])
+    
+    result = {\
+     'Machine Name':fields[0],\
+     'Channel Number':int(fields[1]),\
+     'Tile Number':int(fields[2]),\
+     'X Position':int(fields[3]),\
+     'Y Position':y_position,\
+     'Barcode':barcode,\
+     'Full Y Position Field':fields[4],\
+     'Sequence':fields[5],\
+     'Quality Score':fields[6]}
+     
     return result

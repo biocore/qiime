@@ -15,10 +15,9 @@ from os.path import split, splitext
 from os import makedirs
 from optparse import make_option
 from qiime.split_libraries_illumina import (
-    parse_read_line, parse_read_pair_files,
-    read_description_from_read_data, mapping_data_to_barcode_map,
+    mapping_data_to_barcode_map,
     read_qual_score_filter, bad_chars_from_threshold, IlluminaParseError,
-    parse_read_pair, parse_read_file, parse_single_read, 
+    process_illumina_paired_end_read_files, process_illumina_single_end_read_file, 
     mapping_data_to_barcode_map)
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.parse import parse_mapping_file
@@ -27,7 +26,7 @@ options_lookup = get_options_lookup()
 
 script_info = {}
 script_info['brief_description'] = "Script for processing raw Illumina Genome Analyzer II data."
-script_info['script_description'] = "Script for parsing, library splitting, and quality filtering raw Illumina Genome Analyzer II data."
+script_info['script_description'] = "Script for parsing, library splitting, and quality filtering of raw Illumina Genome Analyzer II data."
 script_info['script_usage'] = [\
  ("Parse paired-end read data (-5 and -3 provided), write output to s_1_seqs.fasta","","%prog -5 s_1_1_sequences.fasta -3 s_1_2_sequences.fasta -b barcode_map_6bp.txt"),\
  ("Parse 5' read only (-5 only provided), write output to s_1_5prime_seqs.fasta","","%prog -5 s_1_1_sequences.fasta -b barcode_map_6bp.txt"),\
@@ -35,9 +34,7 @@ script_info['script_usage'] = [\
  ("Parse multiple 5' read only files (multiple -5 values provided), write output to s_1_5prime_seqs.fasta, s_2_5primer_seqs.fasta","","%prog -5 s_1_1_sequences.fasta,s_2_1_sequences.fasta -b barcode_map_6bp.txt")
 ]
 script_info['output_description']= ""
-script_info['required_options'] = [\
- options_lookup['mapping_fp']
-]
+script_info['required_options'] = [options_lookup['mapping_fp']]
 script_info['optional_options'] = [\
  make_option('-5','--five_prime_read_fp',\
   help='the 5\' read filepath [default: %default]'),\
@@ -118,7 +115,7 @@ def main():
             log_fp = '%s/%s_seqs.log' % (output_dir,output_basename)
             output_qual_fp = '%s/%s_qual.txt' % (output_dir,output_basename)
         
-            next_seq_id = parse_read_pair(\
+            next_seq_id = process_illumina_paired_end_read_files(\
              five_prime_read_fp,\
              three_prime_read_fp,\
              output_seqs_fp,\
@@ -150,7 +147,7 @@ def main():
             log_fp = '%s/%s_seqs.log' % (output_dir,output_basename)
             output_qual_fp = '%s/%s_qual.txt' % (output_dir,output_basename)
         
-            next_seq_id = parse_single_read(\
+            next_seq_id = process_illumina_single_end_read_file(\
              read_fp,\
              output_seqs_fp,\
              output_qual_fp,\

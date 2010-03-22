@@ -20,7 +20,8 @@ from qiime.parse import (group_by_field, group_by_fields,
     parse_qiime_parameters, parse_qiime_config_files,
     parse_bootstrap_support, parse_sample_mapping, parse_distmat_to_dict,
     sample_mapping_to_otu_table, parse_taxonomy, parse_mapping_file, 
-    parse_metadata_state_descriptions, parse_rarefaction_data)
+    parse_metadata_state_descriptions, parse_rarefaction_data,
+    parse_illumina_line)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -432,6 +433,51 @@ eigvals\t4.94\t1.79\t1.50
         s = 'Study:Twin,Hand,Dog;BodySite:Palm,Stool'
         self.assertEqual(parse_metadata_state_descriptions(s), {'Study':set(['Twin','Hand','Dog']),
             'BodySite':set(['Palm','Stool'])})
+            
+        
+    def test_parse_illumina_line(self):
+        """parse_illumina_line: functions with several lines """
+        illumina_line0 = illumina_read1[0]
+        illumina_line1 = illumina_read1[1]
+        actual = parse_illumina_line(illumina_line0,barcode_length=6)
+        expected = {\
+         'Machine Name':'HWI-6X_9267',\
+         'Channel Number':1,\
+         'Tile Number':1,\
+         'X Position':4,\
+         'Y Position':1699,\
+         'Barcode':'GGTGGT',\
+         'Full Y Position Field':'1699#ACCACCC/1',\
+         'Sequence':\
+          'TACGGAGGGTGCGAGCGTTAATCGCCCCCCCCCCCCCCCCCCCCCCCCCCCC'+\
+          'CCCCCCCCCCCCCCCCCCCCCCCGAAAAAAAAAAAAAAAAAAAAAAA',\
+         'Quality Score':\
+          'abbbbbbbbbb`_`bbbbbb`bb^aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'+\
+          'aaaaaaaaaaaaaDaabbBBBBBBBBBBBBBBBBBBB'}
+        self.assertEqual(actual,expected)
+        
+        actual = parse_illumina_line(illumina_line1,barcode_length=6)
+        expected = {\
+         'Machine Name':'HWI-6X_9267',\
+         'Channel Number':1,\
+         'Tile Number':1,\
+         'X Position':4,\
+         'Y Position':390,\
+         'Barcode':'GGAGGT',\
+         'Full Y Position Field':'390#ACCTCCC/1',\
+         'Sequence':\
+          'GACAGGAGGAGCAAGTGTTATTCAAATTATGCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCGG'+\
+          'GGGGGGGGGGGGGAAAAAAAAAAAAAAAAAAAAAAA',\
+         'Quality Score':\
+          'aaaaaaaaaa```aa\^_aa``aVaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'+\
+          'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaBaaaaa'}
+        self.assertEqual(actual,expected)
+
+illumina_read1 = """HWI-6X_9267:1:1:4:1699#ACCACCC/1:TACGGAGGGTGCGAGCGTTAATCGCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCGAAAAAAAAAAAAAAAAAAAAAAA:abbbbbbbbbb`_`bbbbbb`bb^aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaDaabbBBBBBBBBBBBBBBBBBBB
+HWI-6X_9267:1:1:4:390#ACCTCCC/1:GACAGGAGGAGCAAGTGTTATTCAAATTATGCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCGGGGGGGGGGGGGGGAAAAAAAAAAAAAAAAAAAAAAA:aaaaaaaaaa```aa\^_aa``aVaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaBaaaaa""".split('\n')
+
+illumina_read2 = """HWI-6X_9267:1:1:4:1699#ACCACCC/2:TTTTAAAAAAAAGGGGGGGGGGGCCCCCCCCCCCCCCCCCCCCCCCCTTTTTTTTTTTTTAAAAAAAAACCCCCCCGGGGGGGGTTTTTTTAATTATTC:aaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbcccccccccccccccccBcccccccccccccccc```````BBBB
+HWI-6X_9267:1:1:4:390#ACCTCCC/2:ACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACG:aaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbb""".split('\n')
 
 if __name__ =='__main__':
     main()
