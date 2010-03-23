@@ -198,6 +198,12 @@ experiment_wrapper = """  <EXPERIMENT
                     <MULTIPLIER>1.0</MULTIPLIER>
         </QUALITY_SCORES>
       </PROCESSING>
+      <EXPERIMENT_LINKS>
+%(LINK_XML)s
+      </EXPERIMENT_LINKS>
+      <EXPERIMENT_ATTRIBUTES>
+%(ATTRIBUTE_XML)s
+      </EXPERIMENT_ATTRIBUTES>
   </EXPERIMENT>"""
 
 platform_blocks = { 'Titanium':
@@ -366,13 +372,61 @@ def group_lines_by_field(lines, field):
         del result['']
     return result
 
-def make_run_and_experiment(experiment_lines, sff_dir):
+experiment_attribute_wrapper = '''\
+        <EXPERIMENT_ATTRIBUTE>
+          <TAG>%s</TAG>
+          <VALUE>%s</VALUE>
+        </EXPERIMENT_ATTRIBUTE>'''
+
+experiment_link_wrapper = '''\
+        <EXPERIMENT_LINK>
+          <URL_LINK>
+            <LABEL>%s</LABEL>
+            <URL>%s</URL>
+          </URL_LINK>
+        </EXPERIMENT_LINK>'''
+
+def make_run_and_experiment(experiment_lines, sff_dir, attribute_file=None,
+                            link_file=None):
     """Returns strings for experiment and run xml."""
     header, body = read_tabular_data(experiment_lines)
     columns = [i.lstrip('#').strip() for i in header[0]]
     study_ref_index = columns.index('STUDY_REF')
     experiment_ref_index = columns.index('EXPERIMENT_ALIAS')
     studies = group_lines_by_field(body, study_ref_index)
+
+    # Process attribute file -- to be refactored.
+    experiment_attributes = defaultdict(list)
+    if attribute_file is not None:
+        _, attr_body = read_tabular_data(attribute_file)
+        for elems in attr_body:
+            try:
+                expt_name = elems[0]
+                attribute_name = elems[1]
+                attribute_val = elems[2]
+                experiment_attributes[expt_name].append(
+                    (attribute_name, attribute_val))
+            except IndexError:
+                print ("Not enough items in attribute line (%s), must define "
+                       "experiment name, attribute name, and attribute value. "
+                       "Skipping..." % elems)
+
+    # Process links file -- to be refactored.
+    experiment_links = defaultdict(list)
+    if link_file is not None:
+        _, attr_body = read_tabular_data(link_file)
+        for elems in attr_body:
+            try:
+                expt_name = elems[0]
+                link_name = elems[1]
+                link_url = elems[2]
+                experiment_links[expt_name].append(
+                    (link_name, link_url))
+            except IndexError:
+                print ("Not enough items in link line (%s), must define "
+                       "experiment name, link name, and link url. "
+                       "Skipping..." % elems)
+
     experiments = []
     runs = []
     for study_id, study_lines in studies.items():
@@ -450,6 +504,21 @@ def make_run_and_experiment(experiment_lines, sff_dir):
             spot_descriptor = spot_descriptor_wrapper % field_dict
             field_dict['SPOT_DESCRIPTORS_XML'] = spot_descriptor
             field_dict['PLATFORM_XML'] = platform_blocks[field_dict['PLATFORM']]
+
+            attrs = experiment_attributes[experiment_id]
+            if attrs:
+                attr_xmls = [experiment_attribute_wrapper % (k, v) for k, v in attrs]
+                field_dict['ATTRIBUTE_XML'] = '\n'.join(attr_xmls)
+            else:
+                field_dict['ATTRIBUTE_XML'] = ''
+
+            links = experiment_links[experiment_id]
+            if links:
+                link_xmls = [experiment_link_wrapper % (k, v) for k, v in links]
+                field_dict['LINK_XML'] = '\n'.join(link_xmls)
+            else:
+                field_dict['LINK_XML'] = ''
+
             experiments.append(experiment_wrapper % field_dict)
     return experiment_set_wrapper % ('\n'+'\n'.join(experiments)+'\n'), run_set_wrapper % ('\n'+'\n'.join(runs)+'\n')
 

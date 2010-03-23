@@ -48,6 +48,10 @@ script_info['optional_options']=[\
         help='the template file for the submission [default: %default]'),
     make_option('-e', '--input_experiment_fp', \
         help='the tab-delimited text file with info about the experiment [default: %default]'),
+    make_option('--experiment_attribute_fp',
+        help='three-column, tab-delimited file of experiment attributes [default: %default]'),
+    make_option('--experiment_link_fp',
+        help='three-column, tab-delimited file of experiment links [default: %default]'),
     make_option('-s', '--sff_dir', 
         help='the directory containing the demultiplexed sff files: 1 dir per run [default: %default]')
 ]
@@ -78,8 +82,17 @@ def main():
         run_file = open(run_path, 'w')
         experiment_path = base_name + 'experiment.xml'
         experiment_file = open(experiment_path, 'w')
+        if opts.experiment_attribute_fp:
+            attribute_file = open(opts.experiment_attribute_fp, 'U')
+        else:
+            attribute_file = None
+        if opts.experiment_link_fp:
+            link_file = open(opts.experiment_link_fp, 'U')
+        else:
+            link_file = None
         experiment_xml, run_xml = make_run_and_experiment(
-            open(opts.input_experiment_fp, 'U'), opts.sff_dir)
+            open(opts.input_experiment_fp, 'U'), opts.sff_dir,
+            attribute_file=attribute_file, link_file=link_file)
         run_file.write(run_xml)
         experiment_file.write(experiment_xml)
         run_file.close()
