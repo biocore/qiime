@@ -667,3 +667,43 @@ def merge_otu_tables(otu_table_f1,otu_table_f2):
     lineages_result = [otu_id_to_lineage[otu_id] for otu_id in otu_ids_result]
     
     return sample_ids_result, otu_ids_result, otu_table, lineages_result
+
+def convert_OTU_table_relative_abundance(otu_table):
+    """convert the OTU table to have relative abundances rather than raw counts
+    """
+    output = []
+    data_lines = []
+    otu_ids = []
+    tax_strings = []
+    taxonomy=False
+    for line in otu_table:
+        line = line.strip().split('\t')
+        if line[0].startswith('#OTU ID'):
+            output.append('\t'.join(line))
+            if line[-1] == 'Consensus Lineage':
+                taxonomy=True
+        elif line[0].startswith('#'):
+            output.append('\t'.join(line))
+        else:
+            if taxonomy:
+                vals = [float(i) for i in line[1:-1]]
+                tax_strings.append(line[-1])
+            else:
+                vals = [float(i) for i in line[1:]]
+                tax_string = None
+            data = array(vals, dtype=float)
+            data_lines.append(data)
+            otu_ids.append(line[0])
+    data_lines = array(data_lines)
+    totals = sum(data_lines)
+    new_values = []
+    for i in data_lines:
+        new_values.append(i/totals)
+    for index, i in enumerate(new_values):
+        line = [otu_ids[index]]
+        line.extend([str(j) for j in i])
+        if taxonomy:
+            line.append(tax_strings[index])
+        output.append('\t'.join(line))
+    return output
+

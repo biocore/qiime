@@ -21,6 +21,7 @@ from cogent.maths.stats.test import calc_contingency_expected, G_fit_from_Dict2D
 from cogent.maths.stats.util import Numbers
 from numpy import array
 import sys
+from qiime.util import convert_OTU_table_relative_abundance
 
 """Look for OTUs that are associated with a category. Currently can do:
     1) perform g-test of independence to determine whether OTU presence
@@ -32,45 +33,6 @@ import sys
     3) perform a pearson correlation to determine whether OTU abundance is
     associated with a continuous variable in the category mapping file (e.g. pH)
 """
-
-def convert_OTU_table_relative_abundance(otu_table):
-    """converts the OTU table to have relative abundances rather than raw counts
-    """
-    output = []
-    data_lines = []
-    otu_ids = []
-    tax_strings = []
-    taxonomy=False
-    for line in otu_table:
-        line = line.strip().split('\t')
-        if line[0].startswith('#OTU ID'):
-            output.append('\t'.join(line))
-            if line[-1] == 'Consensus Lineage':
-                taxonomy=True
-        elif line[0].startswith('#'):
-            output.append('\t'.join(line))
-        else:
-            if taxonomy:
-                vals = [float(i) for i in line[1:-1]]
-                tax_strings.append(line[-1])
-            else:
-                vals = [float(i) for i in line[1:]]
-                tax_string = None
-            data = array(vals, dtype=float)
-            data_lines.append(data)
-            otu_ids.append(line[0])
-    data_lines = array(data_lines)
-    totals = sum(data_lines)
-    new_values = []
-    for i in data_lines:
-        new_values.append(i/totals)
-    for index, i in enumerate(new_values):
-        line = [otu_ids[index]]
-        line.extend([str(j) for j in i])
-        if taxonomy:
-            line.append(tax_strings[index])
-        output.append('\t'.join(line))
-    return output
 
 def filter_OTUs(OTU_sample_info, filter, num_samples=None, all_samples=True,\
                 category_mapping_info=None):

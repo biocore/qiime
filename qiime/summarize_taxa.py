@@ -15,8 +15,7 @@ from sys import stdout, stderr
 from optparse import OptionParser
 from string import strip
 from numpy import array
-from otu_category_significance import convert_OTU_table_relative_abundance
-
+from qiime.util import convert_OTU_table_relative_abundance
 
 def make_new_summary_file(otu_table, level, delimitor, relative_abundance): 
     """makes a summary file with taxa on rows and samples in columns

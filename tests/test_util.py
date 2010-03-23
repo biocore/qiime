@@ -8,7 +8,8 @@ from cogent.app.util import get_tmp_filename
 from cogent.util.misc import remove_files
 from qiime.util import make_safe_f, FunctionWithParams, qiime_blast_seqs,\
     extract_seqs_by_sample_id, get_qiime_project_dir, matrix_stats,\
-    raise_error_on_parallel_unavailable, merge_otu_tables
+    raise_error_on_parallel_unavailable, merge_otu_tables,\
+    convert_OTU_table_relative_abundance
 from qiime.pycogent_backports.formatdb import build_blast_db_from_fasta_file
 import numpy
 from numpy import array
@@ -346,6 +347,25 @@ class BlastSeqsTests(TestCase):
         # no blastdb or refseqs
         self.assertRaises(AssertionError,qiime_blast_seqs,inseqs)
         
+    def test_convert_OTU_table_relative_abundance(self):
+        """convert_OTU_table_relative_abundance works
+        """
+        otu_table = """#Full OTU Counts
+#OTU ID\tsample1\tsample2\tsample3
+0\t0\t2\t0
+1\t1\t0\t0
+2\t1\t1\t1""".split('\n')
+        result = convert_OTU_table_relative_abundance(otu_table)
+        self.assertEqual(result, ['#Full OTU Counts', '#OTU ID\tsample1\tsample2\tsample3', '0\t0.0\t0.666666666667\t0.0', '1\t0.5\t0.0\t0.0', '2\t0.5\t0.333333333333\t1.0'])
+
+        otu_table = """#Full OTU Counts
+#OTU ID\tsample1\tsample2\tsample3\tConsensus Lineage
+0\t0\t2\t0\tBacteria; Bacteroidetes; Bacteroidales; Parabacteroidaceae; Unclassified; otu_475
+1\t1\t0\t0\tBacteria; Bacteroidetes; Bacteroidales; adhufec77-25; Barnesiella; Barnesiella_viscericola; otu_369
+2\t1\t1\t1\tBacteria; Firmicutes; Clostridia; Clostridiales; Faecalibacterium; Unclassified; otu_1121""".split('\n')
+        result = convert_OTU_table_relative_abundance(otu_table)
+        self.assertEqual(result, ['#Full OTU Counts', '#OTU ID\tsample1\tsample2\tsample3\tConsensus Lineage', '0\t0.0\t0.666666666667\t0.0\tBacteria; Bacteroidetes; Bacteroidales; Parabacteroidaceae; Unclassified; otu_475', '1\t0.5\t0.0\t0.0\tBacteria; Bacteroidetes; Bacteroidales; adhufec77-25; Barnesiella; Barnesiella_viscericola; otu_369', '2\t0.5\t0.333333333333\t1.0\tBacteria; Firmicutes; Clostridia; Clostridiales; Faecalibacterium; Unclassified; otu_1121'])
+
 inseqs1 = """>s2_like_seq
 TGCAGCTTGAGCACAGGTTAGAGCCTTC
 >s100
@@ -376,7 +396,6 @@ TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
 >s8
 CCAGAGCGAGTGAGATAGACACCCAC
 """
-
 
 
 #run unit tests if run from command-line

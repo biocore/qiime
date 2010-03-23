@@ -16,33 +16,13 @@ from cogent.util.unit_test import TestCase, main
 from qiime.otu_category_significance import filter_OTUs, \
     make_contingency_matrix, run_single_G_test, run_G_test_OTUs, \
     add_fdr_correction_to_results, output_results_G_test, \
-    run_single_ANOVA, run_ANOVA_OTUs, \
-    output_results_ANOVA, convert_OTU_table_relative_abundance, \
+    run_single_ANOVA, run_ANOVA_OTUs, output_results_ANOVA,\
     run_correlation_OTUs, run_single_correlation, output_results_correlation,\
     parse_otu_table, parse_category_mapping
 from qiime.otu_category_significance import parse_otu_table
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
-
-    def test_convert_OTU_table_relative_abundance(self):
-        """convert_OTU_table_relative_abundance works
-        """
-        otu_table = """#Full OTU Counts
-#OTU ID\tsample1\tsample2\tsample3
-0\t0\t2\t0
-1\t1\t0\t0
-2\t1\t1\t1""".split('\n')
-        result = convert_OTU_table_relative_abundance(otu_table)
-        self.assertEqual(result, ['#Full OTU Counts', '#OTU ID\tsample1\tsample2\tsample3', '0\t0.0\t0.666666666667\t0.0', '1\t0.5\t0.0\t0.0', '2\t0.5\t0.333333333333\t1.0'])
-
-        otu_table = """#Full OTU Counts
-#OTU ID\tsample1\tsample2\tsample3\tConsensus Lineage
-0\t0\t2\t0\tBacteria; Bacteroidetes; Bacteroidales; Parabacteroidaceae; Unclassified; otu_475
-1\t1\t0\t0\tBacteria; Bacteroidetes; Bacteroidales; adhufec77-25; Barnesiella; Barnesiella_viscericola; otu_369
-2\t1\t1\t1\tBacteria; Firmicutes; Clostridia; Clostridiales; Faecalibacterium; Unclassified; otu_1121""".split('\n')
-        result = convert_OTU_table_relative_abundance(otu_table)
-        self.assertEqual(result, ['#Full OTU Counts', '#OTU ID\tsample1\tsample2\tsample3\tConsensus Lineage', '0\t0.0\t0.666666666667\t0.0\tBacteria; Bacteroidetes; Bacteroidales; Parabacteroidaceae; Unclassified; otu_475', '1\t0.5\t0.0\t0.0\tBacteria; Bacteroidetes; Bacteroidales; adhufec77-25; Barnesiella; Barnesiella_viscericola; otu_369', '2\t0.5\t0.333333333333\t1.0\tBacteria; Firmicutes; Clostridia; Clostridiales; Faecalibacterium; Unclassified; otu_1121'])
 
     def test_filter_OTUs(self):
         """filter_OTUs works"""
