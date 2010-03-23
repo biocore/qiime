@@ -64,7 +64,7 @@ run_wrapper = """  <RUN
     run_center = "%(RUN_CENTER)s"    
     instrument_name = "%(INSTRUMENT_NAME)s"
   >
-    <EXPERIMENT_REF refname="%(EXPERIMENT_ALIAS)s" refcenter="%(EXPERIMENT_CENTER)s" />%(DATA_BLOCK_XML)s    <RUN_ATTRIBUTES>
+    <EXPERIMENT_REF refname="%(EXPERIMENT_ALIAS)s" refcenter="%(STUDY_CENTER)s" />%(DATA_BLOCK_XML)s    <RUN_ATTRIBUTES>
       <RUN_ATTRIBUTE>
         <TAG>notes</TAG>
         <VALUE>Submitter demultiplexed reads.  Each read was assigned to a sample pool member for those samples that yielded data. </VALUE>
@@ -167,10 +167,10 @@ experiment_wrapper = """  <EXPERIMENT
     center_name="%(EXPERIMENT_CENTER)s"
   >
     <TITLE>%(EXPERIMENT_TITLE)s</TITLE>
-    <STUDY_REF refname="%(STUDY_REF)s" refcenter="%(STUDY_CENTER)s"/>
+    <STUDY_REF refname="%(STUDY_REF)s" refcenter="%(SAMPLE_CENTER)s"/>
     <DESIGN>
       <DESIGN_DESCRIPTION>%(EXPERIMENT_DESIGN_DESCRIPTION)s</DESIGN_DESCRIPTION>
-      <SAMPLE_DESCRIPTOR refname="%(STUDY_REF)s_default" refcenter="%(EXPERIMENT_CENTER)s">
+      <SAMPLE_DESCRIPTOR refname="%(STUDY_REF)s_default" refcenter="%(SAMPLE_CENTER)s">
         <POOL>%(POOL_MEMBERS_XML)s        </POOL>
       </SAMPLE_DESCRIPTOR>
       <LIBRARY_DESCRIPTOR>
