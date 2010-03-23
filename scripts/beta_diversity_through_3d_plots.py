@@ -28,9 +28,10 @@ script_info['brief_description']="""A workflow script for computing beta diversi
 script_info['script_description']="""This script will perform beta diversity, principal coordinate anlalysis, and generate a preferences file along with 3D PCoA Plots.
 
 REQUIRED: You must edit the following parameters in a custom parameters file:
-  beta_diversity:metric
+  beta_diversity:metrics
+e.g.: beta_diversity:metrics[TAB]euclidean,unweighted_unifrac
   
-This is the value that would be passed to beta_diversity.py via -m/--metric.
+This is the value that would be passed to beta_diversity.py via -m/--metrics.
 """
 script_info['script_usage']=[]
 script_info['script_usage'].append(("""Example:""","""The following steps are performed by the command below:
