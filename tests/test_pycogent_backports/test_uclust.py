@@ -15,7 +15,7 @@ from qiime.pycogent_backports.uclust import UclustFastaSort, uclust_fasta_sort_f
  UclustConvertToCdhit, uclust_convert_uc_to_cdhit_from_filepath, \
  parse_uclust_clstr_file, get_output_filepaths, \
  get_clusters_from_fasta_filepath
-from cogent.app.util import get_tmp_filename
+from cogent.app.util import get_tmp_filename, ApplicationError
 
 __author__ = "William Walters"
 __copyright__ = "Copyright 2007-2009, The Cogent Project"
@@ -124,9 +124,9 @@ class UclustCreateClusterFile_Tests(TestCase):
     	
     def tearDown(self):
         if isfile(self.tmp_sorted_fasta_filepath):
-        	remove(self.tmp_sorted_fasta_filepath)
+            remove(self.tmp_sorted_fasta_filepath)
         if isfile(self.tmp_uc_filepath):
-        	remove(self.tmp_uc_filepath)
+            remove(self.tmp_uc_filepath)
     
     def test_base_command(self):
         """ UclustCreateClusterFile should return the correct BaseCommand """
@@ -197,7 +197,10 @@ class UclustCreateClusterFile_Tests(TestCase):
         # interested in.
         for line in uc_file:
             if not(line.startswith("#")):
-            	uc_file_res.append(line)
+            	parsed_line = "\t".join(line.split("\t")[:9])
+            	if not parsed_line.endswith('\n'):
+            		parsed_line += '\n'
+            	uc_file_res.append(parsed_line)
             
         self.assertEqual(uc_file_res, uc_dna_clusters)
     
@@ -209,9 +212,9 @@ class UclustConvertToCdhit_Tests(TestCase):
     def setUp(self):
     	
     	self.tmp_uc_filepath = \
-    	 get_tmp_filename(prefix = "uclust_test", suffix = "uc")
+    	 get_tmp_filename(prefix = "uclust_test", suffix = ".uc")
     	self.tmp_clstr_filepath = \
-    	 get_tmp_filename(prefix = "uclust_test", suffix = "clstr")
+    	 get_tmp_filename(prefix = "uclust_test", suffix = ".clstr")
     	
     def tearDown(self):
         if isfile(self.tmp_uc_filepath):
@@ -262,20 +265,23 @@ class UclustConvertToCdhit_Tests(TestCase):
 
         tmp_uc = open(self.tmp_uc_filepath,"w")
         for line in uc_dna_clusters:
-            tmp_uc.write(line)
+            # Need extra fields to be compatable with uclust 1.1
+            tmp_uc.write(line.replace('\n','\t\n'))
 
         tmp_uc.close()
 
         test_app = UclustConvertToCdhit()
-        test_app_res = test_app(data = \
-         {'--uc2clstr':self.tmp_uc_filepath,\
-         '--output':self.tmp_clstr_filepath})
+        
+        
+        
+      	test_app_res = test_app(data = \
+      	 {'--uc2clstr':self.tmp_uc_filepath,'--output':self.tmp_clstr_filepath})
 
         
         clstr_file = open(test_app_res['CdhitFilepath'].name,"U")
         clstr_res = []
         for line in clstr_file:
-            clstr_res.append(line)
+            clstr_res.append(line.replace('\t',''))
             
         self.assertEqual(clstr_res, clstr_clusters)
    
@@ -347,7 +353,10 @@ class UclustSupporingModules(TestCase):
         # interested in.
         for line in uc_file:
             if not(line.startswith("#")):
-            	uc_file_res.append(line)
+            	parsed_line = "\t".join(line.split("\t")[:9])
+            	if not parsed_line.endswith('\n'):
+            		parsed_line += '\n'
+            	uc_file_res.append(parsed_line)
             
         self.assertEqual(uc_file_res, uc_dna_clusters)
         app_res.cleanUp()
@@ -357,7 +366,8 @@ class UclustSupporingModules(TestCase):
         
         tmp_uc = open(self.tmp_uc_filepath,"w")
         for line in uc_dna_clusters:
-            tmp_uc.write(line)
+            # Need extra field to be compatable with uclust 1.1
+            tmp_uc.write(line.replace('\n','\t\n'))
 
         tmp_uc.close()
 
@@ -367,7 +377,7 @@ class UclustSupporingModules(TestCase):
         clstr_file = open(app_res['CdhitFilepath'].name,"U")
         clstr_res = []
         for line in clstr_file:
-            clstr_res.append(line)
+            clstr_res.append(line.replace('\t',''))
             
         self.assertEqual(clstr_res, clstr_clusters)
         app_res.cleanUp()
@@ -479,6 +489,30 @@ uc_dna_clusters=[
 'C	6	2	91.7	*	*	*	*	uclust_test_seqs_6\n',
 'C	7	1	*	*	*	*	*	uclust_test_seqs_0\n',
 'C	8	1	*	*	*	*	*	uclust_test_seqs_9\n']
+
+"""
+# Old version, incompatible with uclust 1.1 format
+# Clusters are created at a 0.90% identity
+uc_dna_clusters=[
+'S	0	80	*	*	*	*	*	uclust_test_seqs_7	*\n',
+'S	1	79	*	*	*	*	*	uclust_test_seqs_4	*\n',
+'S	2	78	*	*	*	*	*	uclust_test_seqs_2	*\n',
+'S	3	77	*	*	*	*	*	uclust_test_seqs_3	*\n',
+'S	4	76	*	*	*	*	*	uclust_test_seqs_1	*\n',
+'S	5	75	*	*	*	*	*	uclust_test_seqs_5	*\n',
+'S	6	74	*	*	*	*	*	uclust_test_seqs_6	*\n',
+'S	7	73	*	*	*	*	*	uclust_test_seqs_0	*\n',
+'H	6	72	91.7	+	0	0	2I72M	uclust_test_seqs_8	*\n',
+'S	8	71	*	*	*	*	*	uclust_test_seqs_9	*\n',
+'C	0	1	*	*	*	*	*	uclust_test_seqs_7	*\n',
+'C	1	1	*	*	*	*	*	uclust_test_seqs_4	*\n',
+'C	2	1	*	*	*	*	*	uclust_test_seqs_2	*\n',
+'C	3	1	*	*	*	*	*	uclust_test_seqs_3	*\n',
+'C	4	1	*	*	*	*	*	uclust_test_seqs_1	*\n',
+'C	5	1	*	*	*	*	*	uclust_test_seqs_5	*\n',
+'C	6	2	91.7	*	*	*	*	uclust_test_seqs_6	*\n',
+'C	7	1	*	*	*	*	*	uclust_test_seqs_0	*\n',
+'C	8	1	*	*	*	*	*	uclust_test_seqs_9	*\n'] """
 
 clstr_clusters=['>Cluster 0\n',
 '0       80nt, >uclust_test_seqs_7... *\n',
