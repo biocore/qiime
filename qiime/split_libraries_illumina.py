@@ -108,7 +108,6 @@ def parse_illumina_paired_end_read_files(read1_file,read2_file,barcode_length,\
         qual = qual1 + qual2[::-1]
         
         yield read1_desc, read1_barcode, seq, qual
-    
 
 
 def process_illumina_paired_end_read_files(

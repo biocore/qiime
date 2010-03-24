@@ -10,16 +10,18 @@ from os.path import isfile
 from cogent.util.misc import remove_files
 from cogent.core.moltype import DNA
 from cogent.util.unit_test import TestCase, main
-from qiime.pycogent_backports.uclust import UclustFastaSort, uclust_fasta_sort_from_filepath, \
- UclustCreateClusterFile, uclust_cluster_from_sorted_fasta_filepath, \
- UclustConvertToCdhit, uclust_convert_uc_to_cdhit_from_filepath, \
- parse_uclust_clstr_file, get_output_filepaths, \
- get_clusters_from_fasta_filepath
+from qiime.pycogent_backports.uclust import (UclustFastaSort, 
+ uclust_fasta_sort_from_filepath,
+ UclustCreateClusterFile, uclust_cluster_from_sorted_fasta_filepath,
+ UclustConvertToCdhit, uclust_convert_uc_to_cdhit_from_filepath,
+ parse_uclust_clstr_file, get_output_filepaths,
+ get_clusters_from_fasta_filepath, parse_uclust_blast_result,
+ uclust_search_and_align_from_fasta_filepath)
 from cogent.app.util import get_tmp_filename, ApplicationError
 
 __author__ = "William Walters"
 __copyright__ = "Copyright 2007-2009, The Cogent Project"
-__credits__ = ["Daniel McDonald, William Walters"]
+__credits__ = ["Daniel McDonald","William Walters","Greg Caporaso"]
 __license__ = "GPL"
 __version__ = "1.5.0.dev"
 __maintainer__ = "William Walters"
@@ -108,10 +110,7 @@ class UclustFastaSort_Tests(TestCase):
         self.assertEqual(sorted_fasta_res, sorted_dna_seqs)
         
         test_app_res.cleanUp()
-        
 
-
-        
 class UclustCreateClusterFile_Tests(TestCase):
     """ Tests for UclustCreateClusterFile app controller """
     
@@ -137,15 +136,16 @@ class UclustCreateClusterFile_Tests(TestCase):
         self.assertEqual(c.BaseCommand,\
          ''.join(['cd "',getcwd(),'/"; ','uclust --input "seq.txt"']))
         c.Parameters['--uc'].on('sorted_output.fasta')
+        # can't test against specific parameter order here, since 
+        # params are written based on dict -- therefore just check
+        # that changes to the parameter settings affect the base command
+        # in the expected way
         c.Parameters['--id'].on(0.9)
+        self.assertTrue('--id 0.9' in c.BaseCommand)
         c.Parameters['--rev'].on()
-        self.assertEqual(c.BaseCommand,\
-         ''.join(['cd "',getcwd(),'/"; ','uclust --rev --input "seq.txt" '+\
-         '--id 0.9 --uc "sorted_output.fasta"']))
+        self.assertTrue('--rev' in c.BaseCommand)
         c.Parameters['--rev'].off()
-        self.assertEqual(c.BaseCommand,\
-         ''.join(['cd "',getcwd(),'/"; ','uclust --input "seq.txt" '+\
-         '--id 0.9 --uc "sorted_output.fasta"']))
+        self.assertFalse('--rev' in c.BaseCommand)
 
         
 
@@ -301,6 +301,15 @@ class UclustSupporingModules(TestCase):
     	self.tmp_clstr_filepath = \
     	 get_tmp_filename(prefix = "uclust_test", suffix = "clstr")
     	
+        self.search_align_out1 = search_align_out1
+        self.search_align_out1_expected = search_align_out1_expected
+        self.search_align_query1_fp = \
+    	 get_tmp_filename(prefix = "uclust_test", suffix = "clstr")
+    	open(self.search_align_query1_fp,'w').write(search_align_query1)
+        self.search_align_template1_fp = \
+    	 get_tmp_filename(prefix = "uclust_test", suffix = "clstr")
+    	open(self.search_align_template1_fp,'w').write(search_align_template1)
+        
     def tearDown(self):
         if isfile(self.tmp_unsorted_fasta_filepath):
         	remove(self.tmp_unsorted_fasta_filepath)
@@ -308,8 +317,9 @@ class UclustSupporingModules(TestCase):
         	remove(self.tmp_sorted_fasta_filepath)
         if isfile(self.tmp_uc_filepath):
         	remove(self.tmp_uc_filepath)
-        if isfile(self.tmp_clstr_filepath):
-        	remove(self.tmp_clstr_filepath)    
+    	remove(self.search_align_template1_fp)
+    	remove(self.search_align_query1_fp)
+    	    
 
     def test_uclust_fasta_sort_from_filepath(self):
         """ Given an unsorted fasta filepath, will return sorted file """
@@ -421,10 +431,25 @@ class UclustSupporingModules(TestCase):
           percent_ID = 0.90)
 
         self.assertEqual(clusters_res, expected_cluster_list)
-
-
-
-
+        
+    def test_parse_uclust_blast_result(self):
+        """parsing of pairwise alignments functions as expected """
+        actual = list(parse_uclust_blast_result(self.search_align_out1))
+        expected = self.search_align_out1_expected
+        self.assertEqual(actual,expected)
+        
+    def test_uclust_search_and_align_from_fasta_filepath(self):
+        """ uclust_search_and_align_from_fasta_filepath functions as expected """
+        # rev comp matches allowed (default)
+        actual = list(uclust_search_and_align_from_fasta_filepath(
+         self.search_align_query1_fp,self.search_align_template1_fp))
+        self.assertEqual(actual,self.search_align_out1_expected)
+        
+        # rev comp matches not allowed
+        actual = list(uclust_search_and_align_from_fasta_filepath(
+         self.search_align_query1_fp,self.search_align_template1_fp,
+         enable_rev_strand_matching=False))
+        self.assertEqual(actual,self.search_align_out1_expected[:2])
 
 raw_dna_seqs = ['>uclust_test_seqs_0\n',
 'ACGGTGGCTACAAGACGTCCCATCCAACGGGTTGGATACTTAAGGCACATCACGTCAGTTTTGTGTCAGAGCT\n',
@@ -536,7 +561,71 @@ clstr_clusters=['>Cluster 0\n',
 
 expected_cluster_list=[['uclust_test_seqs_7'], ['uclust_test_seqs_4'], ['uclust_test_seqs_2'], ['uclust_test_seqs_3'], ['uclust_test_seqs_1'], ['uclust_test_seqs_5'], ['uclust_test_seqs_6', 'uclust_test_seqs_8'], ['uclust_test_seqs_0'], ['uclust_test_seqs_9']]
 
+search_align_query1 = """>1_like
+TACGGCTACCTTGTTACGACTTCATCCCAATCATTTGTTCCACCTTCGACGGCTA
+>2_like
+ATGATGATTTGACGTCATCCCCACCTTCCTCCGGTTTGTCACCGGGATGGCAACTAAG
+>2_like_rc
+CTTAGTTGCCATCCCGGTGACAAACCGGAGGAAGGTGGGGATGACGTCAAATCATCAT
+>rand
+TTGCGACGAGCGGACGGCCGGGTGTATGTCGTCATATATATGTGTCTGCCTATCGTTACGTACACTCGTCGTCT
+"""
 
+search_align_template1 = """>1
+AGAAAGGAGGTGATCCAGCCGCACCTTCCGATACGGCTACCTTGTTACGACTTCACCCCAATCATTTGTTCCACCTTCGACGGCTAGCTCCAAATGGTTACTCCACCGGCTTCGGGTGTTACAAACTC
+>2
+AGCCCAAATCATAAGGGGCATGATGATTTGACGTCATCCCCACCTTCCTCCGGTTTGTCACCGGGATGGCAACTAAGCTTAAGGGTTGCGCT
+"""
 
+search_align_out1 = """# uclust --input sm_query.fasta --lib sm_template.fasta --id 0.75 --libonly --rev --maxaccepts 0 --blastout s_bl_out.txt --blast_termgaps
+# version=1.1.572
+
+Query  >1_like
+Target >1
+
+  1 + -------------------------------TACGGCTACCTTGTTACGACTTCATCCCAATCA 33
+                                     |||||||||||||||||||||||| ||||||||
+  1 + AGAAAGGAGGTGATCCAGCCGCACCTTCCGATACGGCTACCTTGTTACGACTTCACCCCAATCA 64
+
+ 34 + TTTGTTCCACCTTCGACGGCTA------------------------------------------ 55
+      ||||||||||||||||||||||                                          
+ 65 + TTTGTTCCACCTTCGACGGCTAGCTCCAAATGGTTACTCCACCGGCTTCGGGTGTTACAAACTC 128
+
+Identities 54/55 (98.2%), gaps 73/128 (57.0%), Id 54/55 (98.2%)
+
+Query  >2_like
+Target >2
+
+ 1 + -------------------ATGATGATTTGACGTCATCCCCACCTTCCTCCGGTTTGTCACCGG 45
+                        |||||||||||||||||||||||||||||||||||||||||||||
+ 1 + AGCCCAAATCATAAGGGGCATGATGATTTGACGTCATCCCCACCTTCCTCCGGTTTGTCACCGG 64
+
+46 + GATGGCAACTAAG--------------- 58
+     |||||||||||||               
+65 + GATGGCAACTAAGCTTAAGGGTTGCGCT 92
+
+Identities 58/58 (100.0%), gaps 34/92 (37.0%), Id 58/58 (100.0%)
+
+Query  >2_like_rc
+Target >2
+
+ 1 + ---------------CTTAGTTGCCATCCCGGTGACAAACCGGAGGAAGGTGGGGATGACGTCA 49
+                    |||||||||||||||||||||||||||||||||||||||||||||||||
+92 - AGCGCAACCCTTAAGCTTAGTTGCCATCCCGGTGACAAACCGGAGGAAGGTGGGGATGACGTCA 29
+
+50 + AATCATCAT------------------- 58
+     |||||||||                   
+28 - AATCATCATGCCCCTTATGATTTGGGCT 1
+
+Identities 58/58 (100.0%), gaps 34/92 (37.0%), Id 58/58 (100.0%)
+""".split('\n')
+
+search_align_out1_expected = [
+         ('1_like','1','-------------------------------TACGGCTACCTTGTTACGACTTCATCCCAATCATTTGTTCCACCTTCGACGGCTA------------------------------------------','AGAAAGGAGGTGATCCAGCCGCACCTTCCGATACGGCTACCTTGTTACGACTTCACCCCAATCATTTGTTCCACCTTCGACGGCTAGCTCCAAATGGTTACTCCACCGGCTTCGGGTGTTACAAACTC',98.2),
+         
+         ('2_like','2','-------------------ATGATGATTTGACGTCATCCCCACCTTCCTCCGGTTTGTCACCGGGATGGCAACTAAG---------------','AGCCCAAATCATAAGGGGCATGATGATTTGACGTCATCCCCACCTTCCTCCGGTTTGTCACCGGGATGGCAACTAAGCTTAAGGGTTGCGCT',100.0),\
+         
+         ('2_like_rc RC','2','-------------------ATGATGATTTGACGTCATCCCCACCTTCCTCCGGTTTGTCACCGGGATGGCAACTAAG---------------','AGCCCAAATCATAAGGGGCATGATGATTTGACGTCATCCCCACCTTCCTCCGGTTTGTCACCGGGATGGCAACTAAGCTTAAGGGTTGCGCT',100.0)]
+         
 if __name__ == '__main__':
     main()

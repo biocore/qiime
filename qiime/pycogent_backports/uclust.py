@@ -12,7 +12,7 @@ parameters. """
 
 __author__ = "William Walters"
 __copyright__ = "Copyright 2007-2009, The Cogent Project"
-__credits__ = ["William Walters"]
+__credits__ = ["William Walters","Greg Caporaso"]
 __license__ = "GPL"
 __version__ = "1.5.0.dev"
 __maintainer__ = "William Walters"
@@ -25,6 +25,7 @@ from os.path import split, splitext, basename, isdir, abspath, isfile
 from cogent.app.parameters import ValuedParameter, FlagParameter
 from cogent.app.util import CommandLineApplication, ResultPath,\
  get_tmp_filename, ApplicationError, ApplicationNotFoundError
+from cogent.util.misc import revComp
 
 class UclustFastaSort(CommandLineApplication):
     """ ApplicationController for sorting a fasta file according to seq lens
@@ -48,8 +49,7 @@ class UclustFastaSort(CommandLineApplication):
     _suppress_stdout = False
     _suppress_stderr = False
 
-    
-    
+
 
     def _input_as_parameters(self,data):
         """ Set the input path (a fasta filepath)
@@ -120,12 +120,17 @@ class UclustCreateClusterFile(CommandLineApplication):
         '--uc':ValuedParameter('--',Name='uc',Delimiter=' ',IsPath=True),
         
         # ID percent for OTU, by default is 97%
-     	'--id':ValuedParameter('--',Name='id',Delimiter=' ',IsPath=False),
-     	
-     	# Disable reverse comparison option, if norev is disabled
-     	# memory usage is expected to double for uclust
-     	'--rev':FlagParameter('--',Name='rev'),
-     	
+        '--id':ValuedParameter('--',Name='id',Delimiter=' ',IsPath=False),
+
+        # Disable reverse comparison option, if norev is disabled
+        # memory usage is expected to double for uclust
+        '--rev':FlagParameter('--',Name='rev'),
+
+        '--lib':ValuedParameter('--',Name='lib',Delimiter=' ',IsPath=True),
+        '--libonly':FlagParameter('--',Name='libonly'),
+        '--blast_termgaps':FlagParameter('--',Name='blast_termgaps'),
+        '--maxaccepts':ValuedParameter('--',Name='maxaccepts',Delimiter=' '),
+        '--blastout':ValuedParameter('--',Name='blastout',Delimiter=' ',IsPath=True),
 
     }
     
@@ -151,22 +156,179 @@ class UclustCreateClusterFile(CommandLineApplication):
         """ Set the input path (fasta) and output path (.uc), other parameters
         """
         for param_id, param_value in data.items():
-          	if param_id == "--rev":
-          		self.Parameters[param_id].on()
-          	else:
-          		self.Parameters[param_id].on(param_value)
+            try:
+                self.Parameters[param_id].on(param_value)
+            except TypeError:
+                if param_value:
+                    self.Parameters[param_id].on()
+                else:
+                    self.Parameters[param_id].off()
         return ''
         
     def _get_result_paths(self,data):
         """ Set the result paths """
         
         result = {}
-        result['ClusterFilepath'] = ResultPath(\
-         Path = self.Parameters['--uc'].Value,\
+        result['ClusterFilepath'] = ResultPath(
+         Path = self.Parameters['--uc'].Value,
          IsWritten=True)
+        result['PairwiseAlignments'] = ResultPath(
+         Path = self.Parameters['--blastout'].Value,
+         IsWritten=self.Parameters['--blastout'].Value is not None)
         return result
         
-   
+class UclustCreateClusterFile2(CommandLineApplication):
+    """uclust Application Controller for creating a uclust cluster file
+
+        This is a slightly modified version of UclustCreateClusterFile, which I
+        think should replace the original version. The original sets all 
+        parameters in the input handler, which I think can be a confusing
+        way for users to interact with this script. This version passes only
+        the input files to be set via the input handler. It's still not great,
+        but I'm not sure what the best solution is. Will think about this more
+        as I work with the code over the next few days.
+         -Greg
+    """
+
+    _command = 'uclust'
+    _input_handler = '_input_as_parameters'
+    _parameters = {
+        # input filename, fasta format, required parameter
+        '--input':ValuedParameter('--',Name='input',Delimiter=' ',IsPath=True),
+        
+        # Output filename will be in uclust (.uc) format
+        # Output cluster file, required parameter
+        '--uc':ValuedParameter('--',Name='uc',Delimiter=' ',IsPath=True),
+        
+        # ID percent for OTU, by default is 97%
+        '--id':ValuedParameter('--',Name='id',Delimiter=' ',IsPath=False),
+
+        # Disable reverse comparison option, if norev is disabled
+        # memory usage is expected to double for uclust
+        '--rev':FlagParameter('--',Name='rev'),
+
+        '--lib':ValuedParameter('--',Name='lib',Delimiter=' ',IsPath=True),
+        '--libonly':FlagParameter('--',Name='libonly'),
+        '--blast_termgaps':FlagParameter('--',Name='blast_termgaps'),
+        '--maxaccepts':ValuedParameter('--',Name='maxaccepts',Delimiter=' '),
+        '--blastout':ValuedParameter('--',Name='blastout',Delimiter=' ',IsPath=True),
+
+    }
+    
+    
+    _suppress_stdout = False
+    _suppress_stderr = False
+    
+    def getHelp(self):
+        """Method that points to documentation"""
+        help_str =\
+        """
+        UCLUST is hosted as an open source project at:
+        http://www.drive5.com/uclust/
+
+        The following papers should be cited if this resource is used:
+
+        Paper pending-check with Robert Edgar who is writing the paper
+        for uclust as of 1-21-2010.  Cite the above URL for the time being.
+        """
+        return help_str
+
+    def _input_as_parameters(self,data):
+        """ Set the input path (fasta) and output path (.uc), other parameters
+        """
+        self.Parameters['--input'].on(data['input_fp'])
+        
+        if 'cluster_out_fp' in data:
+            self.Parameters['--uc'].on(data['cluster_out_fp'])
+        
+        if 'aln_out_fp' in data:
+            self.Parameters['--blastout'].on(data['aln_out_fp'])
+        
+        if 'subject_fasta_filepath' in data:
+            self.Parameters['--lib'].on(data['subject_fasta_filepath'])
+        
+        return ''
+        
+    def _get_result_paths(self,data):
+        """ Set the result paths """
+        
+        result = {}
+        result['ClusterFile'] = ResultPath(
+         Path = self.Parameters['--uc'].Value,
+         IsWritten=self.Parameters['--uc'].Value is not None)
+         
+        result['PairwiseAlignments'] = ResultPath(
+         Path = self.Parameters['--blastout'].Value,
+         IsWritten=self.Parameters['--blastout'].Value is not None)
+        return result
+
+def parse_id_line(line):
+    return line[line.index('>')+1:].strip()
+
+def parse_uclust_blast_result(lines):
+    
+    for line in lines:
+        line = line.strip()
+        if not line or line.startswith('#') or line.startswith('|'):
+            continue
+        elif line.startswith('Query'):
+            query_id = parse_id_line(line)
+            query_aln = []
+            subject_aln = []
+        elif line.startswith('Target'):
+            subject_id = parse_id_line(line)
+        elif line.startswith('Identities'):
+            percent_id = float(line.split()[-1][1:-2])
+            query_aln = ''.join(query_aln)
+            subject_aln = ''.join(subject_aln)
+            if rev_comp:
+                query_aln = revComp(query_aln)
+                subject_aln = revComp(subject_aln)
+                query_id += ' RC'
+            yield (query_id, subject_id, query_aln, subject_aln, percent_id)
+        else:
+            fields = line.split()
+            orientation = fields[1]
+            subalignment = fields[2]
+            if len(query_aln) == len(subject_aln):
+                query_aln.append(subalignment)
+            else:
+                subject_aln.append(subalignment)
+                rev_comp = orientation == '-'
+    return
+
+
+def uclust_search_and_align_from_fasta_filepath(
+    query_fasta_filepath,
+    subject_fasta_filepath,
+    #cluster_filepath=None,
+    alignment_filepath=None,
+    percent_ID=0.75,
+    enable_rev_strand_matching=True):
+    """ query seqs against subject fasta using uclust
+    
+       return global pw alignment of best match
+    """
+    cluster_filepath = None
+    #cluster_filepath = cluster_filepath or \
+    #     get_tmp_filename(prefix='uclust_clusters',suffix='.uc') 
+    alignment_filepath = alignment_filepath or \
+     get_tmp_filename(prefix='uclust_alignments',suffix='.txt') 
+    # prefix for tmp files should indicate what created it
+    params = {'--id':percent_ID,\
+              '--maxaccepts':0,\
+              '--libonly':True,\
+              '--blast_termgaps':True}
+    if enable_rev_strand_matching:
+        params['--rev'] = True
+    app = UclustCreateClusterFile2(params)
+    input_data = {'input_fp':query_fasta_filepath,\
+                  #'cluster_out_fp':cluster_filepath,\
+                  'aln_out_fp':alignment_filepath,
+                  'subject_fasta_filepath':subject_fasta_filepath}
+    app_result = app(input_data)
+    return parse_uclust_blast_result(app_result['PairwiseAlignments'])
+
 def uclust_cluster_from_sorted_fasta_filepath(fasta_filepath, \
  output_filepath=None, percent_ID=0.97, enable_rev_strand_matching=False):
     """ Returns clustered uclust file from sorted fasta"""
