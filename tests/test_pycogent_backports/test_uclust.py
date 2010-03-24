@@ -15,7 +15,7 @@ from qiime.pycogent_backports.uclust import (UclustFastaSort,
  UclustCreateClusterFile, uclust_cluster_from_sorted_fasta_filepath,
  UclustConvertToCdhit, uclust_convert_uc_to_cdhit_from_filepath,
  parse_uclust_clstr_file, get_output_filepaths,
- get_clusters_from_fasta_filepath, parse_uclust_blast_result,
+ get_clusters_from_fasta_filepath, process_uclust_blast_result,
  uclust_search_and_align_from_fasta_filepath)
 from cogent.app.util import get_tmp_filename, ApplicationError
 
@@ -32,8 +32,8 @@ class UclustFastaSort_Tests(TestCase):
     """ Tests for UclustFastaSort application controller"""
     
     def setUp(self):
-    	
-    	self.tmp_unsorted_fasta_filepath = \
+        
+        self.tmp_unsorted_fasta_filepath = \
          get_tmp_filename(prefix="uclust_test", suffix="fasta")
         self.tmp_sorted_fasta_filepath = get_tmp_filename(prefix="uclust_test",\
          suffix="fasta")
@@ -42,9 +42,9 @@ class UclustFastaSort_Tests(TestCase):
         
     def tearDown(self):
         if isfile(self.tmp_unsorted_fasta_filepath):
-        	remove(self.tmp_unsorted_fasta_filepath)
+            remove(self.tmp_unsorted_fasta_filepath)
         if isfile(self.tmp_sorted_fasta_filepath):
-        	remove(self.tmp_sorted_fasta_filepath)
+            remove(self.tmp_sorted_fasta_filepath)
 
     
     def test_base_command(self):
@@ -115,12 +115,12 @@ class UclustCreateClusterFile_Tests(TestCase):
     """ Tests for UclustCreateClusterFile app controller """
     
     def setUp(self):
-    	
-    	self.tmp_sorted_fasta_filepath = \
-    	 get_tmp_filename(prefix = "uclust_test", suffix = "fasta")
-    	self.tmp_uc_filepath = \
-    	 get_tmp_filename(prefix = "uclust_test", suffix = "uc")
-    	
+        
+        self.tmp_sorted_fasta_filepath = \
+         get_tmp_filename(prefix = "uclust_test", suffix = "fasta")
+        self.tmp_uc_filepath = \
+         get_tmp_filename(prefix = "uclust_test", suffix = "uc")
+        
     def tearDown(self):
         if isfile(self.tmp_sorted_fasta_filepath):
             remove(self.tmp_sorted_fasta_filepath)
@@ -197,10 +197,10 @@ class UclustCreateClusterFile_Tests(TestCase):
         # interested in.
         for line in uc_file:
             if not(line.startswith("#")):
-            	parsed_line = "\t".join(line.split("\t")[:9])
-            	if not parsed_line.endswith('\n'):
-            		parsed_line += '\n'
-            	uc_file_res.append(parsed_line)
+                parsed_line = "\t".join(line.split("\t")[:9])
+                if not parsed_line.endswith('\n'):
+                    parsed_line += '\n'
+                uc_file_res.append(parsed_line)
             
         self.assertEqual(uc_file_res, uc_dna_clusters)
     
@@ -210,17 +210,17 @@ class UclustConvertToCdhit_Tests(TestCase):
     """ Tests for UclustConvertToCdhit app controller """
     
     def setUp(self):
-    	
-    	self.tmp_uc_filepath = \
-    	 get_tmp_filename(prefix = "uclust_test", suffix = ".uc")
-    	self.tmp_clstr_filepath = \
-    	 get_tmp_filename(prefix = "uclust_test", suffix = ".clstr")
-    	
+        
+        self.tmp_uc_filepath = \
+         get_tmp_filename(prefix = "uclust_test", suffix = ".uc")
+        self.tmp_clstr_filepath = \
+         get_tmp_filename(prefix = "uclust_test", suffix = ".clstr")
+        
     def tearDown(self):
         if isfile(self.tmp_uc_filepath):
-        	remove(self.tmp_uc_filepath)
+            remove(self.tmp_uc_filepath)
         if isfile(self.tmp_clstr_filepath):
-        	remove(self.tmp_clstr_filepath)
+            remove(self.tmp_clstr_filepath)
     
     
     def test_base_command(self):
@@ -274,8 +274,8 @@ class UclustConvertToCdhit_Tests(TestCase):
         
         
         
-      	test_app_res = test_app(data = \
-      	 {'--uc2clstr':self.tmp_uc_filepath,'--output':self.tmp_clstr_filepath})
+        test_app_res = test_app(data = \
+           {'--uc2clstr':self.tmp_uc_filepath,'--output':self.tmp_clstr_filepath})
 
         
         clstr_file = open(test_app_res['CdhitFilepath'].name,"U")
@@ -291,35 +291,35 @@ class UclustSupporingModules(TestCase):
     """ Unit tests for supporting modules of uclust app controllers """
 
     def setUp(self):
-    	
-    	self.tmp_unsorted_fasta_filepath = \
-    	 get_tmp_filename(prefix = "uclust_test", suffix = "fasta")
-    	self.tmp_sorted_fasta_filepath = \
-    	 get_tmp_filename(prefix = "uclust_test", suffix = "fasta")
-    	self.tmp_uc_filepath = \
-    	 get_tmp_filename(prefix = "uclust_test", suffix = "uc")
-    	self.tmp_clstr_filepath = \
-    	 get_tmp_filename(prefix = "uclust_test", suffix = "clstr")
-    	
+        
+        self.tmp_unsorted_fasta_filepath = \
+         get_tmp_filename(prefix = "uclust_test", suffix = "fasta")
+        self.tmp_sorted_fasta_filepath = \
+         get_tmp_filename(prefix = "uclust_test", suffix = "fasta")
+        self.tmp_uc_filepath = \
+         get_tmp_filename(prefix = "uclust_test", suffix = "uc")
+        self.tmp_clstr_filepath = \
+         get_tmp_filename(prefix = "uclust_test", suffix = "clstr")
+        
         self.search_align_out1 = search_align_out1
         self.search_align_out1_expected = search_align_out1_expected
         self.search_align_query1_fp = \
-    	 get_tmp_filename(prefix = "uclust_test", suffix = "clstr")
-    	open(self.search_align_query1_fp,'w').write(search_align_query1)
+         get_tmp_filename(prefix = "uclust_test", suffix = "clstr")
+        open(self.search_align_query1_fp,'w').write(search_align_query1)
         self.search_align_template1_fp = \
-    	 get_tmp_filename(prefix = "uclust_test", suffix = "clstr")
-    	open(self.search_align_template1_fp,'w').write(search_align_template1)
+         get_tmp_filename(prefix = "uclust_test", suffix = "clstr")
+        open(self.search_align_template1_fp,'w').write(search_align_template1)
         
     def tearDown(self):
         if isfile(self.tmp_unsorted_fasta_filepath):
-        	remove(self.tmp_unsorted_fasta_filepath)
+            remove(self.tmp_unsorted_fasta_filepath)
         if isfile(self.tmp_sorted_fasta_filepath):
-        	remove(self.tmp_sorted_fasta_filepath)
+            remove(self.tmp_sorted_fasta_filepath)
         if isfile(self.tmp_uc_filepath):
-        	remove(self.tmp_uc_filepath)
-    	remove(self.search_align_template1_fp)
-    	remove(self.search_align_query1_fp)
-    	    
+            remove(self.tmp_uc_filepath)
+        remove(self.search_align_template1_fp)
+        remove(self.search_align_query1_fp)
+            
 
     def test_uclust_fasta_sort_from_filepath(self):
         """ Given an unsorted fasta filepath, will return sorted file """
@@ -363,10 +363,10 @@ class UclustSupporingModules(TestCase):
         # interested in.
         for line in uc_file:
             if not(line.startswith("#")):
-            	parsed_line = "\t".join(line.split("\t")[:9])
-            	if not parsed_line.endswith('\n'):
-            		parsed_line += '\n'
-            	uc_file_res.append(parsed_line)
+                parsed_line = "\t".join(line.split("\t")[:9])
+                if not parsed_line.endswith('\n'):
+                    parsed_line += '\n'
+                uc_file_res.append(parsed_line)
             
         self.assertEqual(uc_file_res, uc_dna_clusters)
         app_res.cleanUp()
@@ -432,9 +432,9 @@ class UclustSupporingModules(TestCase):
 
         self.assertEqual(clusters_res, expected_cluster_list)
         
-    def test_parse_uclust_blast_result(self):
+    def test_process_uclust_blast_result(self):
         """parsing of pairwise alignments functions as expected """
-        actual = list(parse_uclust_blast_result(self.search_align_out1))
+        actual = list(process_uclust_blast_result(self.search_align_out1))
         expected = self.search_align_out1_expected
         self.assertEqual(actual,expected)
         
