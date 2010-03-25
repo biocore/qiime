@@ -334,7 +334,8 @@ def uclust_search_and_align_from_fasta_filepath(
     query_fasta_filepath,
     subject_fasta_filepath,
     percent_ID=0.75,
-    enable_rev_strand_matching=True):
+    enable_rev_strand_matching=True,
+    HALT_EXEC=False):
     """ query seqs against subject fasta using uclust
     
        return global pw alignment of best match
@@ -359,7 +360,7 @@ def uclust_search_and_align_from_fasta_filepath(
         params['--rev'] = True
     
     # instantiate the application controller
-    app = UclustCreateClusterFile2(params)
+    app = UclustCreateClusterFile2(params,HALT_EXEC=HALT_EXEC)
     
     # apply uclust
     alignment_filepath = \
