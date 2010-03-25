@@ -38,9 +38,7 @@ from qiime.util import FunctionWithParams
 # Load PyNAST if it's available. If it's not, skip it if not but set up
 # to raise errors if the user tries to use it.
 try:
-    from pynast.util import pynast_seqs, pair_hmm_align_unaligned_seqs,\
-        muscle_align_unaligned_seqs, mafft_align_unaligned_seqs,\
-        clustal_align_unaligned_seqs, blast_align_unaligned_seqs
+    from pynast.util import pynast_seqs, pairwise_alignment_methods
     from pynast.logger import NastLogger
 
 except ImportError:
@@ -49,9 +47,7 @@ except ImportError:
          "PyNAST cannot be found.\nIs PyNAST installed? Is it in your $PYTHONPATH?"+\
          "\nYou can obtain PyNAST from http://pynast.sourceforge.net/." 
     # set functions which cannot be imported to raise_pynast_not_found_error
-    pynast_seqs = NastLogger = pair_hmm_align_unaligned_seqs = \
-    muscle_align_unaligned_seqs = mafft_align_unaligned_seqs =\
-    clustal_align_unaligned_seqs = blast_align_unaligned_seqs = \
+    pynast_seqs = NastLogger = pairwise_alignment_methods = \
     raise_pynast_not_found_error
 
 
@@ -219,7 +215,7 @@ class PyNastAligner(Aligner):
             'min_len': 150,
             'blast_db': None,
             'template_filepath': None,
-            'pairwise_alignment_method': 'pair_hmm',
+            'pairwise_alignment_method': 'blast',
             'Application': 'PyNAST',
             'Algorithm': 'NAST',
             }
@@ -250,7 +246,7 @@ class PyNastAligner(Aligner):
         logger = NastLogger(log_path)
 
         # get function for pairwise alignment method
-        pairwise_alignment_fcn = pairwise_alignment_methods[
+        pairwise_alignment_f = pairwise_alignment_methods[
             self.Params['pairwise_alignment_method']]
 
         pynast_aligned, pynast_failed = pynast_seqs(
@@ -258,10 +254,8 @@ class PyNastAligner(Aligner):
             template_alignment,
             min_pct=self.Params['min_pct'],
             min_len=self.Params['min_len'],
-            blast_db=self.Params['blast_db'],
-            align_unaligned_seqs_f=pairwise_alignment_fcn,
-            logger=logger,
-            )
+            align_unaligned_seqs_f=pairwise_alignment_f,
+            logger=logger)
 
         logger.record(str(self))
 
@@ -285,18 +279,8 @@ class PyNastAligner(Aligner):
             except ValueError:
                 return {}
 
-
-
 alignment_method_constructors ={'pynast':PyNastAligner,\
     'infernal':InfernalAligner}
-
-pairwise_alignment_methods = {
-    'muscle':muscle_align_unaligned_seqs,
-    'mafft':mafft_align_unaligned_seqs,
-    'clustal':clustal_align_unaligned_seqs,
-    'blast':blast_align_unaligned_seqs,
-    'pair_hmm':pair_hmm_align_unaligned_seqs,
-}
 
 alignment_module_names = {'muscle':cogent.app.muscle, 
     'clustalw':cogent.app.clustalw, 'mafft':cogent.app.mafft, \
