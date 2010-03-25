@@ -32,6 +32,13 @@ Dependencies required for all features of QIIME
 Dependencies required for a subset of QIIME's features
 ------------------------------------------------------
 
+To install most of following dependencies you need to have a building enviroment in your machine
+
+* OS X: (`Xcode <http://developer.apple.com/technologies/xcode.html>`_)
+* Linux/Debian-based (i.e Ubuntu) run this command in the terminal::
+
+	sudo apt-get install build-essential
+
 PyNAST alignment, tree-building, taxonomy assignment, OTU picking, and other data generation steps
 
 * PyNAST 1.0 (`src  <http://sourceforge.net/projects/pynast/files/PyNAST%20releases/PyNAST-1.0.tar.gz/download>`_)
