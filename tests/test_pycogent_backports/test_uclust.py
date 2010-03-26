@@ -10,14 +10,14 @@ from os.path import isfile
 from cogent.util.misc import remove_files
 from cogent.core.moltype import DNA
 from cogent.util.unit_test import TestCase, main
-from qiime.pycogent_backports.uclust import (UclustFastaSort, 
+from cogent.app.util import get_tmp_filename, ApplicationError
+from pynast.pycogent_backports.uclust import (UclustFastaSort, 
  uclust_fasta_sort_from_filepath,
  UclustCreateClusterFile, uclust_cluster_from_sorted_fasta_filepath,
  UclustConvertToCdhit, uclust_convert_uc_to_cdhit_from_filepath,
  parse_uclust_clstr_file, get_output_filepaths,
  get_clusters_from_fasta_filepath, process_uclust_blast_result,
  uclust_search_and_align_from_fasta_filepath)
-from cogent.app.util import get_tmp_filename, ApplicationError
 
 __author__ = "William Walters"
 __copyright__ = "Copyright 2007-2009, The Cogent Project"

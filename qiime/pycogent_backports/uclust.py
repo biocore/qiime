@@ -211,8 +211,8 @@ class UclustCreateClusterFile2(CommandLineApplication):
         '--libonly':FlagParameter('--',Name='libonly'),
         '--blast_termgaps':FlagParameter('--',Name='blast_termgaps'),
         '--maxaccepts':ValuedParameter('--',Name='maxaccepts',Delimiter=' '),
+        '--maxrejects':ValuedParameter('--',Name='maxrejects',Delimiter=' '),
         '--blastout':ValuedParameter('--',Name='blastout',Delimiter=' ',IsPath=True),
-
     }
     
     
@@ -335,6 +335,8 @@ def uclust_search_and_align_from_fasta_filepath(
     subject_fasta_filepath,
     percent_ID=0.75,
     enable_rev_strand_matching=True,
+    max_accepts=8,
+    max_rejects=32,
     HALT_EXEC=False):
     """ query seqs against subject fasta using uclust
     
@@ -351,8 +353,10 @@ def uclust_search_and_align_from_fasta_filepath(
     #                   uclust a search tool rather than a clustering tool
     #  blast_termgaps = True , include terminal gaps in the pairwise alignment
     #                          output
+    
     params = {'--id':percent_ID,\
-              '--maxaccepts':0,\
+              '--maxaccepts':max_accepts,\
+              '--maxrejects':max_rejects,\
               '--libonly':True,\
               '--blast_termgaps':True}
               
