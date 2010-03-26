@@ -150,16 +150,16 @@ def iter_color_groups(mapping, prefs):
     See get_group_colors for details of algorithm.
     """
     #Iterate through prefs and color by given mapping labels
-    for name, p in prefs.items():
-        col_name = p['column']
-        if 'colors' in p:
-            if isinstance(p['colors'], dict):
-                colors = p['colors'].copy()    #copy so we can mutate
+    for key in natsort(prefs.keys()):
+        col_name = prefs[key]['column']
+        if 'colors' in prefs[key]:
+            if isinstance(prefs[key]['colors'], dict):
+                colors = prefs[key]['colors'].copy()    #copy so we can mutate
             else:
-                colors = p['colors'][:]
+                colors = prefs[key]['colors'][:]
         else:
             colors={}
-        labelname=prefs[name]['column']
+        labelname=prefs[key]['column']
         
         #Define groups and associate appropriate colors to each group
         groups = group_by_field(mapping, col_name)

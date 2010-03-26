@@ -107,7 +107,7 @@ class TopLevelTests(TestCase):
                           self.label_color)
         text = '\n'.join(obs_kin)
         
-        self.assertTrue(text.find('Day_unscaled') > text.find('Type_unscaled'))
+        self.assertTrue(text.find('Day_unscaled') < text.find('Type_unscaled'))
     
     def test_scale_pc_data_matrix(self):
         """scale_pc_data_matrix: Scales the pc data for use in the 3d plots"""
