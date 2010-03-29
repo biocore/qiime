@@ -11,7 +11,7 @@ from cogent.util.misc import remove_files
 from cogent.core.moltype import DNA
 from cogent.util.unit_test import TestCase, main
 from cogent.app.util import get_tmp_filename, ApplicationError
-from pynast.pycogent_backports.uclust import (UclustFastaSort, 
+from qiime.pycogent_backports.uclust import (UclustFastaSort, 
  uclust_fasta_sort_from_filepath,
  UclustCreateClusterFile, uclust_cluster_from_sorted_fasta_filepath,
  UclustConvertToCdhit, uclust_convert_uc_to_cdhit_from_filepath,
