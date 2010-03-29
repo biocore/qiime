@@ -56,6 +56,8 @@ class TopLevelTests(TestCase):
         'tax6', 'tax7', 'tax8', 'tax9']
         self.SampleMapping = ["OTU1\tsample1\t3", "OTU1\tsample3\t2", \
         "OTU2\tsample1\t1", "OTU2\tsample2\t2"]
+        self.SampleMapping2 = ["OTU1\tsample1", "OTU1\tsample3", \
+        "OTU2\tsample1", "OTU2\tsample2"]
 
     def test_parse_mapping_file(self):
         """parse_mapping_file functions as expected"""
@@ -385,9 +387,12 @@ eigvals\t4.94\t1.79\t1.50
         lines = self.SampleMapping
         OTU_sample_info, all_sample_names = parse_sample_mapping(lines)
         self.assertEqual(OTU_sample_info, {'OTU2': {'sample1': '1', 'sample3': '0', 'sample2': '2'}, 'OTU1': {'sample1': '3', 'sample3': '2', 'sample2': '0'}})
-
         self.assertEqual(all_sample_names, set(['sample1', 'sample3', 'sample2']))
-
+        #test that it works if no sample counts in there
+        lines = self.SampleMapping2
+        OTU_sample_info, all_sample_names = parse_sample_mapping(lines)
+        self.assertEqual(OTU_sample_info, {'OTU2': {'sample1': '1', 'sample3': '0', 'sample2': '1'}, 'OTU1': {'sample1': '1', 'sample3': '1', 'sample2': '0'}})
+        self.assertEqual(all_sample_names, set(['sample1', 'sample3', 'sample2']))
     def test_sample_mapping_to_otu_table(self):
         """sample_mapping_to_otu_table works"""
         lines = self.SampleMapping

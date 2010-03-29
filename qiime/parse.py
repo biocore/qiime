@@ -445,14 +445,20 @@ def parse_sample_mapping(lines):
     Returns a dict of OTU names mapped to sample:count dictionaries.
     This code is used to convert this file to an OTU table for QIIME
     """
-    lines = [line.strip().split('\t') for line in lines]
+    #add the count of 1 if count info is not supplied
+    new_lines = []
+    for line in lines:
+        line = line.strip().split('\t')
+        if len(line) == 2:
+            line.append('1')
+        new_lines.append(line)
 
-    all_sample_names = [line[1] for line in lines]
+    all_sample_names = [line[1] for line in new_lines]
     all_sample_names = set(all_sample_names)
     #create a dict of dicts with the OTU name mapped to a dictionary of
     #sample names with counts
     OTU_sample_info = {}
-    for line in lines:
+    for line in new_lines:
         OTU_name = line[0]
         if OTU_name not in OTU_sample_info:
             sample_info = dict([(i,'0') for i in all_sample_names])
