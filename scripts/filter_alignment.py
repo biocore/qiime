@@ -55,13 +55,13 @@ script_info['optional_options']= [\
         default=1.-eps),
    make_option('-r','--remove_outliers',action='store_true',\
         help='remove seqs very dissimilar to the alignment consensus' +\
-        'see --threshold.  [default: %default]',
+        ' (see --threshold).  [default: %default]',
         default=False),
    make_option('-t', '--threshold',action='store',\
         type='float',help='with -r, remove seqs whose dissimilarity to the ' +\
         'consensus sequence is approximately > x standard devaitions above '+\
         'the mean of the sequences [default: %default]',
-        default=2.0),
+        default=3.0),
 ]
 script_info['version'] = __version__
 
