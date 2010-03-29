@@ -140,6 +140,7 @@ def make_mage_output(groups, colors, coord_header, coords, pct_var, \
     if scaled:
         scalars = pct_var
         if custom_axes:
+            # create a dummy vector of ones to avoid scaling custom axes
             custom_scalars = scalars[0] * np.ones(len(custom_axes))
             scalars = np.append(custom_scalars,scalars)
         coords = scale_pc_data_matrix(coords, scalars)
@@ -201,15 +202,16 @@ master={points} nobutton' % (color, radius, alpha, num_coords))
 master={labels} nobutton' % (color, radius, alpha, num_coords))
         result.append('\n'.join(coord_lines))
 
-    #Write any custom axes first
+
+    #Write the axes on the bottom of the graph
     result.append('@group {axes} collapsible')
     state = 'on'
     axis_mins = mins*coord_scale
     axis_maxes = maxes*coord_scale
 
-    #Write the axes on the bottom of the graph
     if not custom_axes:
         custom_axes = []
+    # draw each axis
     for i in xrange(num_coords):
         if i == 3:
             state = 'off'            
@@ -222,11 +224,13 @@ master={labels} nobutton' % (color, radius, alpha, num_coords))
         result.append(' '.join(map(str, end)) + ' ' + label_color)
         end[i] *= coord_scale  #add scale factor to offset labels a little
             
+        # custom axes come first, no "percent variance" shown
         if i < len(custom_axes):
             result.append('@labellist {%s} dimension=%s %s' % \
                               (axis_names[i], num_coords, state)) 
             result.append( ('{%s}' % (axis_names[i]))  + \
                                ' '.join(map(str, end)) + ' ' + label_color)
+        # if all custom axes have been drawn, draw normal PC axes
         else:
             pct = pct_var[i-len(custom_axes)]
             result.append('@labellist {%s (%0.2g%%)} dimension=%s %s' % \
@@ -239,30 +243,45 @@ master={labels} nobutton' % (color, radius, alpha, num_coords))
         result += make_edges_output(coord_dict, edges, num_coords,label_color)
     return result
 
-def make_edges_output(coord_dict, edges, num_coords,label_color):
-    """creates make output to display edges (as a kinemage vectorlist)"""
+def make_edges_output(coord_dict, edges, num_coords,label_color,tip_fraction=0.4):
+    """Creates make output to display edges (as a kinemage vectorlist).
+
+       Params:
+        coord_dict, a dict of (sampleID, coords), where coords is a numpy array
+        edges, a list of pairs of sampleIDs (from, to)
+        num_coords, the number of included dimensions in the PCoA plot
+        label_color, the plain edge color.
+        tip_fraction, the portion of each edge to be colored as the 'tip'
+
+       Returns:
+        result, a list of strings containing a kinemage vectorlist
+    """
     result = []
     result.append('@vectorlist {edges} dimension=%s on' % \
                       (num_coords))
     for edge in edges:
         id_fr, id_to = edge
-        # get 'index' of the destination set from 'to' sampleID
-        which_set = int(id_to[id_to.rindex('_')+1:]) - 1
-        which_color = kinemage_colors[which_set % len(kinemage_colors)]
-        # plot a color 'tip' on the line (10% of line length)
+        # extract the coords of each vertex
         pt_fr = coord_dict[id_fr][:num_coords]
         pt_to = coord_dict[id_to][:num_coords]
-        diffs = (pt_to-pt_fr) * .66
+        # get 'index' of the destination coords file from 'to' sampleID
+        which_set = int(id_to[id_to.rindex('_')+1:]) - 1
+        # different tip color for each destination coords file
+        tip_color = kinemage_colors[which_set % len(kinemage_colors)]
+        # plot a color 'tip' on the line (certain % of line length)
+        # this gets the coords of the beginning of the 'tip'
+        diffs = (pt_to-pt_fr) * (1-tip_fraction)
         middles = pt_fr + diffs
+        # add a default-color line segment 
         result.append('%s %s' % \
                           (' '.join(map(str, pt_fr)),label_color))
         result.append('%s %s P' % \
                           (' '.join(map(str, middles)),label_color))
-        
+        # add the tip-colored line segment
         result.append('%s %s' % \
-                          (' '.join(map(str, middles)), which_color))
+                          (' '.join(map(str, middles)), tip_color))
         result.append('%s %s P' % \
-                          (' '.join(map(str, pt_to)), which_color))            
+                          (' '.join(map(str, pt_to)), tip_color))            
     return result
 
 def process_custom_axes(axis_names):
@@ -274,15 +293,25 @@ def process_coord_filenames(coord_filenames):
     return coord_filenames.strip().strip("'").strip('"').split(',')
 
 def get_custom_coords(axis_names,mapping, coords):
-    """Gets custom axis coords from the mapping file."""
+    """Gets custom axis coords from the mapping file.
+       Appends custom as first column(s) of PCoA coords matrix.
+
+       Params:
+        axis_names, the names of headers of mapping file columns
+        mapping, the mapping file object (with list of headers in element 0)
+        coords, the PCoA coords object, with coords matrix in element 1
+    """
     for i, axis in enumerate(reversed(axis_names)):
         if not axis in mapping[0]:
             print 'Warning: could not find custom axis',axis,'in map headers:',mapping[0]
         else:
+            # get index of column in mapping file
             col_idx = mapping[0].index(axis)
+            # extract column data
             col = zip(*mapping[1:])[col_idx]
             sample_IDs = zip(*mapping[1:])[0]
             new_coords = array([])
+            # load custom coord for this axis for each sample ID 
             for id in coords[0]:
                 if id in sample_IDs:
                     row_idx = list(sample_IDs).index(id)
@@ -292,6 +321,7 @@ def get_custom_coords(axis_names,mapping, coords):
                     except ValueError:
                         new_coords = np.append(new_coords,np.nan)
             new_coords = np.transpose(np.column_stack(new_coords))
+            # append new coords to beginning column of coords matrix
             coords[1] = np.hstack((new_coords,coords[1]))
 
 def remove_nans(coords):
@@ -303,9 +333,11 @@ def remove_nans(coords):
 def scale_custom_coords(custom_axes,coords):
     """Scales custom coordinates to match min/max of PC1"""
 
+    # the target min and max
     to_mn = min(coords[1][:,len(custom_axes)])
     to_mx = 2*max(coords[1][:,len(custom_axes)])
 
+    # affine transformation for each custom axis
     for i in xrange(len(custom_axes)):
         from_mn = min(coords[1][:,i])
         from_mx = max(coords[1][:,i])
@@ -328,12 +360,25 @@ def get_coord(coord_fname):
     return [coord_header, coords, eigvals, pct_var]
 
 def get_multiple_coords(coord_fnames):
-    """Opens and returns coords data from multiple coords files"""
+    """Opens and returns coords data and edges from multiple coords files.
+
+       Params:
+        coord_fnames, the names of the coordinate files
+
+       Returns:
+        edges, a list of pairs of sample IDs, (from, to)
+        coords
+            a list of [coord_header, coords, eigvals, pct_var]
+            all coords are put in a single data matrix.
+            Sample IDs from ith file have _i appended to them.
+            eigvals, pct_var are taken from first coords file
+    """
     # start with empty data structures
     coord_header = []
     coords = []
     edges = []
 
+    # load all coords files into same data matrix
     for i,f in enumerate(coord_fnames):
         try:
             coord_f = open(coord_fnames[i], 'U').readlines()
@@ -341,19 +386,23 @@ def get_multiple_coords(coord_fnames):
             raise MissingFileError, 'Coord file required for this analysis'
         coord_header_i, coords_i, eigvals_i, pct_var_i = parse_coords(coord_f)
         sampleIDs = coord_header_i
+        # append _i to this file's sampleIDs
         coord_header_i = ['%s_%d' %(h,i) for h in coord_header_i]
+        # get eigvals, pct_var from first coords file
         if i==0:
             eigvals = eigvals_i
             pct_var = pct_var_i
             coord_header = coord_header_i
             coords = coords_i
+        # for second, third, etc coords files, just append to first file
         else:
             coord_header.extend(coord_header_i)
             coords = vstack((coords,coords_i))
-    # add edges from first file to others
-    for id in sampleIDs:
+    # add all edges
+    for _id in sampleIDs:
         for i in xrange(1,len(coord_fnames)):
-            edges += [('%s_%d' %(id,0), '%s_%d' %(id,i))]
+            # edges go from first file's points to other files' points
+            edges += [('%s_%d' %(_id,0), '%s_%d' %(_id,i))]
     return edges, [coord_header, coords, eigvals, pct_var]
 
 def remove_unmapped_samples(mapping,coords,edges=None):
