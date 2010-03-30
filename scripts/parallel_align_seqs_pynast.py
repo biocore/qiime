@@ -49,7 +49,7 @@ script_info['optional_options'] = [\
  make_option('-a','--pairwise_alignment_method',\
           type='choice',help='Method to use for pairwise alignments'+\
           ' [default: %default]',\
-          default='blast',choices=pairwise_alignment_method_choices),\
+          default='uclust',choices=pairwise_alignment_method_choices),\
  make_option('-d','--blast_db',\
           dest='blast_db',help='Database to blast against'+\
           ' [default: %s]' % blast_db_default_help,

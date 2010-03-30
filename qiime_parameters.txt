@@ -2,7 +2,7 @@
 # WARNING: DO NOT EDIT OR DELETE Qiime/qiime_parameters.txt. Users should copy this file and edit copies of it.
 
 # OTU picker parameters
-pick_otus:otu_picking_method	cdhit
+pick_otus:otu_picking_method	uclust
 pick_otus:clustering_algorithm	furthest
 pick_otus:max_cdhit_memory	400
 pick_otus:refseqs_fp
@@ -26,7 +26,7 @@ pick_rep_set:sort_by	otu
 # Multiple sequence alignment parameters
 align_seqs:template_fp
 align_seqs:alignment_method	pynast
-align_seqs:pairwise_alignment_method	blast
+align_seqs:pairwise_alignment_method	uclust
 align_seqs:blast_db
 align_seqs:min_length	150
 align_seqs:min_percent_id	75.0

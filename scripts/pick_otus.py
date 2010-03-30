@@ -95,7 +95,7 @@ script_info['required_options'] = [
 
 script_info['optional_options'] = [
     make_option('-m', '--otu_picking_method', type='choice',
-        choices=otu_picking_method_choices, default = "cdhit",
+        choices=otu_picking_method_choices, default = "uclust",
         help=('Method for picking OTUs.  Valid choices are: ' +\
               ', '.join(otu_picking_method_choices) +\
               '. The mothur method requires an input file ' +\

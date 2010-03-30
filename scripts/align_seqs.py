@@ -89,7 +89,7 @@ script_info['optional_options']=[\
           ', '.join(pairwise_alignment_method_choices) +\
           ' [default: %default]',\
           choices=pairwise_alignment_method_choices,\
-          default='blast'),
+          default='uclust'),
 
     make_option('-d','--blast_db',\
           dest='blast_db',help='Database to blast against when -m pynast '+\
