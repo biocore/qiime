@@ -1,5 +1,9 @@
 Add changes since 0.91 here
 ===========================
+* uclust made default OTU picker (instead of cdhit)
+* uclust made default pairwise aligner for PyNAST (instead of BLAST)
+* minimum PyNAST version requirement upgraded to PyNAST 1.0
+* minimum PyCogent version requirement upgraded to PyCogent 1.4.1
 
 QIIME 0.92 - (3 Mar 2010)
 =======================
