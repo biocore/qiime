@@ -99,9 +99,12 @@ def write_bootstrap_support_files(master_tree, bootstraps, output_dir,
 def bootstrap_support(master_tree, trees):
     """ calculate bootstrap/jackknife support of master, by trees
 
-    this calculates bootstrap support of each nontip node in master_tree
+    this calculates bootstrap support of each nontip node in master_tree.
+    
     a tree supports a given master_tree_node if there exists a node in tree
-    where node.tips == master_tree_node.tips (by name)
+    where node.tips == master_tree_node.tips (by name), ignoring any tips which
+    arent present both in the master tree and all support trees.
+    
     not specific to bootstrap, does node support for trees generated in any
     manner (e.g.: jackknifing)
 
@@ -109,11 +112,13 @@ def bootstrap_support(master_tree, trees):
 
     input:
     PhyloNode objects, trees is a list of PhyloNode objects
+    
     output: (modified master, bootstrap_supports)
     * new master_tree, modified with internally named nodes
-    * bootstrap_supports: list of (node name, bootstrap support)
+    * bootstrap_supports: dict of (node name: bootstrap support)
+    
     """
-    new_master = setup_master_tree(master_tree)
+    new_master = setup_master_tree(master_tree, trees)
     for sub_tree in trees:
         # modifies new_master in place
         tree_support(new_master, sub_tree)
@@ -125,13 +130,42 @@ def bootstrap_support(master_tree, trees):
 
     return new_master, bootstrap_supports
 
-def setup_master_tree(master):
+def setup_master_tree(master, support_trees):
     """ inits bootstrap_support on all nontip nodes, and ensures unique names
     
     returns a nearly identical copy, with uniquely named internal nodes,
     and node.bootstrap_support set to 0
+    
+    also removes all tips (and branches leading to them) from the master tree
+    if they're not present in all support trees
     """
     new_master = copy.deepcopy(master)
+    old_tipnames = new_master.getTipNames()
+    old_tipnames_set = set(old_tipnames)
+    if len(old_tipnames_set) != len(old_tipnames):
+        raise RuntimeError('existing master tree appears '+\
+            'to have nonunique tip names')
+
+    #find tips present in all support trees, keep those in master
+    support_tipnames_sets = [set(tree.getTipNames()) for tree in support_trees]
+    support_intersection = set.intersection(*support_tipnames_sets)
+    all_intersection = set.intersection(support_intersection,old_tipnames_set)
+    def delete_test(node):
+        if not node.isTip():
+            return False
+        else:
+            return (node.Name not in all_intersection)
+    new_master.removeDeleted(delete_test)
+    new_master.prune()
+
+    new_tipnames_set = set(new_master.getTipNames()) 
+    if new_tipnames_set != all_intersection:
+        raise RuntimeError('master tree not made correctly, sorry' +\
+            str(new_master.getTipNames()))
+
+    if len(new_tipnames_set) == 0:
+        raise RuntimeError('no tips are present in every support tree')
+    # give internal nodes unique names
     i = 0
     for node in new_master.iterNontips(include_self=True):
         node.bootstrap_support = 0
@@ -141,7 +175,7 @@ def setup_master_tree(master):
             i += 1
     if len(set(new_master.getNodeNames())) != len(new_master.getNodeNames()):
         node_names = master.getNodeNames()
-        
+
         nonuniques = []
         for name in set(node_names):
             if node_names.count(name) > 1:
@@ -158,24 +192,27 @@ def tree_support(master, subsampled_tree):
     a given master_tree_node is supported if there exists a node in subsampled
     tree where sub_tree_node.tips == master_tree_node.tips (by name)
     
+    each subsampled tree is first modified to remove tips and branches leading
+    to them if the tip isn't in the master tree
+    
     not specific to bootstrap, does node support for trees generated in any
     manner (e.g.: jackknifing)
     master is modified to have node.bootstrap_support incremented by 1 if
     subsampled tree has support for that node
     """
-    if set(master.getTipNames()) != set(subsampled_tree.getTipNames()):
-        raise ValueError("""
-problem with subsampled tree """ + subsampled_tree.filepath + """
-different number of tips in subsampled_tree and master.\n
-typically some samples with few sequences were skipped in
-the support trees.  be sure to keep all samples when doing rarefaction of
-otu tables (see --small_included option), or
-remove offending samples from the master tree, and try again)
-""")
+    master_tipnames = set(master.getTipNames())
+    subsampled_tree_trimmed = copy.deepcopy(subsampled_tree)
+    def delete_test(node):
+        if not node.isTip():
+            return False
+        else:
+            return (node.Name not in master_tipnames)
+    subsampled_tree_trimmed.removeDeleted(delete_test)
+
     # subsampled_tree_nodes_names is a list of lists.
     # each elem is list of tip names for a node
     subsampled_tree_nodes_names = []
-    for node in subsampled_tree.iterNontips(include_self=True):
+    for node in subsampled_tree_trimmed.iterNontips(include_self=True):
         subsampled_tree_nodes_names.append(node.getTipNames())
     
     #now a list of sets, each set is tip names for a specific node
@@ -183,4 +220,7 @@ remove offending samples from the master tree, and try again)
         
     for master_node in master.iterNontips(include_self=True):
         if set(master_node.getTipNames()) in subsampled_tree_nodes_names:
-            master_node.bootstrap_support += 1
+           try:
+               master_node.bootstrap_support += 1
+           except AttributeError:
+               master_node.bootstrap_support = 1
