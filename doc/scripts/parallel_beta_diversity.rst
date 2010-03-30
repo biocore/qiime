@@ -31,9 +31,9 @@ This script performs like the `beta_diversity.py <./beta_diversity.html>`_ scrip
 	-t, `-`-tree_path
 		Path to newick tree file, required for phylogenetic metrics [default: None]
 	-N, `-`-beta_diversity_fp
-		Full path to scripts/`beta_diversity.py <./beta_diversity.html>`_ [default: /Users/Jesse/Qiime/scripts/`beta_diversity.py <./beta_diversity.html>`_]
+		Full path to scripts/`beta_diversity.py <./beta_diversity.html>`_ [default: /python_software/Qiime/scripts/`beta_diversity.py <./beta_diversity.html>`_]
 	-P, `-`-poller_fp
-		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /software/Qiime/scripts/`poller.py <./poller.html>`_]
+		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /python_software/Qiime/scripts/`poller.py <./poller.html>`_]
 	-R, `-`-retain_temp_files
 		Retain temporary files after runs complete (useful for debugging) [default: False]
 	-S, `-`-suppress_submit_jobs
@@ -47,7 +47,7 @@ This script performs like the `beta_diversity.py <./beta_diversity.html>`_ scrip
 	-X, `-`-job_prefix
 		Job prefix [default: descriptive prefix + random chars]
 	-Y, `-`-python_exe_fp
-		Full path to python executable [default: /software/bin/python]
+		Full path to python executable [default: /usr/local/bin/python]
 	-Z, `-`-seconds_to_sleep
 		Number of seconds to sleep between checks for run  completion when polling runs [default: 60]
 

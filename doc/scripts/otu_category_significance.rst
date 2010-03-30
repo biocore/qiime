@@ -36,6 +36,8 @@ The script `otu_category_significance.py <./otu_category_significance.html>`_ te
 		Minimum number of samples that must contain the OTU for the OTU to be included in the analysis. default value=10.
 	-t, `-`-threshold
 		Threshold under which to consider something absent: Only used if you have numerical data that should be converted to present or absent based on a threshold. Should be None for categorical data or with the correlation test. default value is None
+	-l, `-`-otu_include_fp
+		Path to a file with a list of OTUs to evaluate. By default evaluates all OTUs that pass the minimum sample filter. If a filepath is given here in which each OTU name one wishes to evaluate is on a separate line, will apply this additional filter
 
 
 **Output:**

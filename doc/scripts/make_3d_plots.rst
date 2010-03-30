@@ -21,17 +21,19 @@ This script automates the construction of 3D plots (kinemage format) from the PC
 		
 	-i, `-`-coord_fname
 		This is the path to the principal coordinates file (i.e., resulting file from `principal_coordinates.py <./principal_coordinates.html>`_)
+	-m, `-`-map_fname
+		This is the metadata mapping file  [default=None]
 	
 	**[OPTIONAL]**
 		
-	-m, `-`-map_fname
-		This is the metadata mapping file  [default=None]
 	-b, `-`-colorby
 		This is the categories to color by in the plots from the user-generated mapping file. The categories must match the name of a column header in the mapping file exactly and multiple categories can be list by comma separating them without spaces. The user can also combine columns in the mapping file by separating the categories by "&&" without spaces [default=None]
 	-a, `-`-custom_axes
 		This is the category from the user-generated mapping file to use as a custom axis in the plot.  For instance,there is a pH category and would like to seethe samples plotted on that axis instead of PC1, PC2, etc., one can use this option.  It is also useful for plotting time-series data [default: None]
 	-p, `-`-prefs_path
 		This is the user-generated preferences file. NOTE: This is a file with a dictionary containing preferences for the analysis [default: None]
+	-k, `-`-background_color
+		This is the background color to use in the plots (Options are 'black' or 'white'. [default: None]
 	-o, `-`-output_dir
 		Path to the output directory
 
@@ -41,37 +43,15 @@ This script automates the construction of 3D plots (kinemage format) from the PC
 By default, the script will plot the first three dimensions in your file. Other combinations can be viewed using the "Views:Choose viewing axes" option in the KiNG viewer (Chen, Davis, & Richardson, 2009), which may require the installation of kinemage software. The first 10 components can be viewed using "Views:Paralled coordinates" option or typing "/". The mouse can be used to modify display parameters, to click and rotate the viewing axes, to select specific points (clicking on a point shows the sample identity in the low left corner), or to select different analyses (upper right window). Although samples are most easily viewed in 2D, the third dimension is indicated by coloring each sample (dot/label) along a gradient corresponding to the depth along the third component (bright colors indicate points close to the viewer).
 
 
-**Default Example:**
+**Default Usage:**
 
-If you just want to use the default output, you can supply the principal coordinates file (i.e., resulting file from `principal_coordinates.py <./principal_coordinates.html>`_), where the default coloring will be based on the SampleID as follows:
-
-::
-
-	make_3d_plots.py -i beta_div_coords.txt
-
-**Output Directory:**
-
-If you want to give an specific output directory (e.g. "3d_plots"), use the following code:
+If you just want to use the default output, you can supply the principal coordinates file (i.e., resulting file from `principal_coordinates.py <./principal_coordinates.html>`_) and a user-generated mapping file, where the default coloring will be based on the SampleID as follows:
 
 ::
 
-	make_3d_plots.py -i principal_coordinates-output_file -o 3d_plots/
+	make_3d_plots.py -i beta_div_coords.txt -m Mapping_file.txt
 
 Additionally, the user can supply their mapping file ("-m") and a specific category to color by ("-b") or any combination of categories. When using the -b option, the user can specify the coloring for multiple mapping labels, where each mapping label is separated by a comma, for example: -b 'mapping_column1,mapping_column2'. The user can also combine mapping labels and color by the combined label that is created by inserting an '&&' between the input columns, for example: -b 'mapping_column1&&mapping_column2'.
-
-**Mapping File Usage:**
-
-If the user wants to color by specific mapping labels, they can use the following code:
-
-::
-
-	make_3d_plots.py -i beta_div_coords.txt -m Mapping_file.txt -b 'mapping_column'
-
-or use some of the suggestions from above:
-
-::
-
-	make_3d_plots.py -i beta_div_coords.txt -m Mapping_file.txt -b 'mapping_column1,mapping_column1&&mapping_column2'
 
 If the user would like to color all categories in their metadata mapping file, they can pass 'ALL' to the '-b' option, as follows:
 
@@ -87,5 +67,21 @@ If the user wants to color by using the prefs file (e.g. prefs.txt), they can us
 
 	make_3d_plots.py -i beta_div_coords.txt -m Mapping_file.txt -p prefs.txt
 
+
+**Output Directory:**
+
+If you want to give an specific output directory (e.g. "3d_plots"), use the following code:
+
+::
+
+	make_3d_plots.py -i principal_coordinates-output_file --o 3d_plots/
+
+**Background Color Example:**
+
+If the user would like to color the background white they can use the '-k' option as follows:
+
+::
+
+	make_3d_plots.py -i beta_div_coords.txt -m Mapping_file.txt -b ALL -k white
 
 

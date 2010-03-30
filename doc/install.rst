@@ -44,10 +44,10 @@ PyNAST alignment, tree-building, taxonomy assignment, OTU picking, and other dat
 * PyNAST 1.0 (`src  <http://sourceforge.net/projects/pynast/files/PyNAST%20releases/PyNAST-1.0.tar.gz/download>`_)
 * greengenes core set data file (`fasta <http://greengenes.lbl.gov/Download/Sequence_Data/Fasta_data_files/core_set_aligned.fasta.imputed>`_)
 * greengenes alignment lanemask file (`txt <http://greengenes.lbl.gov/Download/Sequence_Data/lanemask_in_1s_and_0s>`_)
-* blast-2.2.22 (legacy BLAST from NCBI, *NOT* BLAST+) (`OS X <ftp://ftp.ncbi.nlm.nih.gov/blast/executables/LATEST/blast-2.2.22-universal-macosx.tar.gz>`_ or `linux 32-bit <ftp://ftp.ncbi.nlm.nih.gov/blast/executables/LATEST/blast-2.2.22-ia32-linux.tar.gz>`_)
+* blast-2.2.22 (legacy BLAST from NCBI, *NOT* BLAST+) (`OS X <ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/2.2.22/blast-2.2.22-universal-macosx.tar.gz>`_ or `linux 32-bit <ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/2.2.22/blast-2.2.22-ia32-linux.tar.gz>`_)
 * fasttree 2.1.0 (`src <http://www.microbesonline.org/fasttree/FastTree-2.1.0.c>`_)
 * cd-hit 3.1 (`src <http://www.bioinformatics.org/download.php/cd-hit/cd-hit-2007-0131.tar.gz>`_)
-* jre1.6.0_05 - (`OS X 10.5 <http://wsidecar.apple.com/cgi-bin/nph-reg3rdpty2.pl/product=18844&cat=59&platform=osx&method=sa/JavaForMacOSX10.5Update1.dmg>`_)
+* jre1.6.0_05 (`link <http://java.sun.com/javase/downloads/index.jsp>`_)
 * rdp_classifier-2.0.1 (`src <http://downloads.sourceforge.net/project/rdp-classifier/rdp-classifier/rdp_classifier_2.0.1/rdp_classifier_2.0.1.tar.gz>`_)
 
 Graphics and other data analysis steps
@@ -111,7 +111,7 @@ First, ensure that you are in the top-level QIIME directory:
 	
 	cd /home/qiime_user/Qiime
 
-By default the QIIME scripts will be installed in ``/usr/local/bin``. This can be customized with the ``-install_scripts`` option like:
+By default the QIIME scripts will be installed in ``/usr/local/bin``. This can be customized with the ``--install_scripts`` option like:
 
 ::
 	
@@ -183,7 +183,7 @@ For example, if you've installed PyNAST in ``/home/qiime_user/PyNAST`` you can a
 RDP_JAR_PATH Environment Variable
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-If you plan to use the RDP classifier for taxonomy assignment you must also define an RDP_JAR_PATH variable. If you have the RDP classifier jar file (``rdp_classifier-2.0.jar``) in ``/home/qiime_user/app`` you can do this with the following command""
+If you plan to use the RDP classifier for taxonomy assignment you must also define an RDP_JAR_PATH variable. If you have the RDP classifier jar file (``rdp_classifier-2.0.jar``) in ``/home/qiime_user/app`` you can do this with the following command:
 
 ::
 

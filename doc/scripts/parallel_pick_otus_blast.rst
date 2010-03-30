@@ -35,11 +35,11 @@ This script performs like the `pick_otus.py <./pick_otus.html>`_ script, but is 
 	-b, `-`-blast_db
 		Database to blast against [default: None]
 	-N, `-`-pick_otus_fp
-		Full path to scripts/`pick_otus.py <./pick_otus.html>`_ [default: /Users/Jesse/Qiime/scripts/`pick_otus.py <./pick_otus.html>`_]
+		Full path to scripts/`pick_otus.py <./pick_otus.html>`_ [default: /python_software/Qiime/scripts/`pick_otus.py <./pick_otus.html>`_]
 	-O, `-`-jobs_to_start
-		Number of jobs to start [default: 24]
+		Number of jobs to start [default: 1]
 	-P, `-`-poller_fp
-		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /software/Qiime/scripts/`poller.py <./poller.html>`_]
+		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /python_software/Qiime/scripts/`poller.py <./poller.html>`_]
 	-R, `-`-retain_temp_files
 		Retain temporary files after runs complete (useful for debugging) [default: False]
 	-S, `-`-suppress_submit_jobs
@@ -53,7 +53,7 @@ This script performs like the `pick_otus.py <./pick_otus.html>`_ script, but is 
 	-X, `-`-job_prefix
 		Job prefix [default: descriptive prefix + random chars]
 	-Y, `-`-python_exe_fp
-		Full path to python executable [default: /software/bin/python]
+		Full path to python executable [default: /usr/local/bin/python]
 	-Z, `-`-seconds_to_sleep
 		Number of seconds to sleep between checks for run  completion when polling runs [default: 60]
 

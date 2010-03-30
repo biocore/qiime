@@ -32,6 +32,10 @@ This script should be applied to generate a useful tree when aligning against a 
 		Suppress lane mask filtering (necessary to turn off lane-mask-based filtering when a qiime_config default is  provided for --lane_mask_fp) [default: False]
 	-g, `-`-allowed_gap_frac
 		Gap filter threshold, filters positions which are gaps in > allowed_gap_frac of the sequences [default: 0.999999]
+	-r, `-`-remove_outliers
+		Remove seqs very dissimilar to the alignment consensus (see --threshold).  [default: False]
+	-t, `-`-threshold
+		With -r, remove seqs whose dissimilarity to the consensus sequence is approximately > x standard devaitions above the mean of the sequences [default: 3.0]
 
 
 **Output:**

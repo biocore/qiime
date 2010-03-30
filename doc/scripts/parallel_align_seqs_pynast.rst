@@ -37,11 +37,11 @@ A wrapper for the `align_seqs.py <./align_seqs.html>`_ PyNAST option, intended t
 	-p, `-`-min_percent_id
 		Minimum percent sequence identity to closest blast hit to include sequence in alignment [default: 75.0]
 	-N, `-`-align_seqs_fp
-		Full path to Qiime/scripts/`align_seqs.py <./align_seqs.html>`_ [default: /Users/Jesse/Qiime/scripts/`align_seqs.py <./align_seqs.html>`_]
+		Full path to Qiime/scripts/`align_seqs.py <./align_seqs.html>`_ [default: /python_software/Qiime/scripts/`align_seqs.py <./align_seqs.html>`_]
 	-O, `-`-jobs_to_start
-		Number of jobs to start [default: 24]
+		Number of jobs to start [default: 1]
 	-P, `-`-poller_fp
-		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /software/Qiime/scripts/`poller.py <./poller.html>`_]
+		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /python_software/Qiime/scripts/`poller.py <./poller.html>`_]
 	-R, `-`-retain_temp_files
 		Retain temporary files after runs complete (useful for debugging) [default: False]
 	-S, `-`-suppress_submit_jobs
@@ -55,7 +55,7 @@ A wrapper for the `align_seqs.py <./align_seqs.html>`_ PyNAST option, intended t
 	-X, `-`-job_prefix
 		Job prefix [default: descriptive prefix + random chars]
 	-Y, `-`-python_exe_fp
-		Full path to python executable [default: /software/bin/python]
+		Full path to python executable [default: /usr/local/bin/python]
 	-Z, `-`-seconds_to_sleep
 		Number of seconds to sleep between checks for run  completion when polling runs [default: 60]
 
