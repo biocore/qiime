@@ -72,7 +72,7 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,\
     """ Run the data preparation steps of Qiime 
     
         The steps performed by this function are:
-          1) Pick OTUs with cdhit;
+          1) Pick OTUs;
           2) Pick a representative set;
           3) Align the representative set; 
           4) Assign taxonomy;
@@ -223,17 +223,21 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,\
     commands.append([('Align sequences', align_seqs_cmd),\
                      ('Assign taxonomy',assign_taxonomy_cmd)])
     
-    # Prep the alignment filtering command
-    filtered_aln_fp = '%s/%s_rep_set_aligned_pfiltered.fasta' %\
-     (pynast_dir,input_basename)
-    try:
-        params_str = get_params_str(params['filter_alignment'])
-    except KeyError:
-        params_str = ''
-    # Build the alignment filtering command
-    filter_alignment_cmd = '%s %s/filter_alignment.py -o %s -i %s %s' %\
-     (python_exe_fp, script_dir, pynast_dir, aln_fp, params_str)
-    commands.append([('Filter alignment', filter_alignment_cmd)])
+    if alignment_method == 'pynast':
+        # Prep the alignment filtering command (only applicable when aligned
+        # with pynast)
+        filtered_aln_fp = '%s/%s_rep_set_aligned_pfiltered.fasta' %\
+         (pynast_dir,input_basename)
+        try:
+            params_str = get_params_str(params['filter_alignment'])
+        except KeyError:
+            params_str = ''
+        # Build the alignment filtering command
+        filter_alignment_cmd = '%s %s/filter_alignment.py -o %s -i %s %s' %\
+         (python_exe_fp, script_dir, pynast_dir, aln_fp, params_str)
+        commands.append([('Filter alignment', filter_alignment_cmd)])
+    else: 
+        filtered_aln_fp = aln_fp
     
     # Prep the tree building command
     phylogeny_dir = '%s/%s_phylogeny' %\
