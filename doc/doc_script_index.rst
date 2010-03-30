@@ -114,11 +114,12 @@ OTU Table Processing
 
    scripts/filter_otu_table 
    scripts/filter_by_metadata
-   scripts/make_otu_table 
+   scripts/make_otu_table
+   scripts/single_rarefaction
+   scripts/multiple_rarefactions_even_depth
    scripts/multiple_rarefactions
    scripts/otu_category_significance
-   scripts/parallel_multiple_rarefactions 
-   scripts/single_rarefaction 
+   scripts/parallel_multiple_rarefactions
    scripts/summarize_otu_by_cat 
 
 Alpha-Diversity

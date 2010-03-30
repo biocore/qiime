@@ -61,7 +61,6 @@ make_3d_plots:custom_axes
 # Rarefaction parameters
 multiple_rarefactions:num-reps	1
 multiple_rarefactions:depth
-multiple_rarefactions:small_included	False
 multiple_rarefactions:lineages_included	False
 
 # Alpha diversity parameters

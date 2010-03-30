@@ -2,7 +2,7 @@
 
 .. index:: multiple_rarefactions.py
 
-*multiple_rarefactions.py* -- Perform rarefaction on multiple otu tables
+*multiple_rarefactions.py* -- Perform multiple subsamplings/rarefactions on an otu table
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Description:**
@@ -36,8 +36,6 @@ To perform bootstrap, jackknife, and rarefaction analyses, the otu table must be
 		Num iterations at each seqs/sample level [default: 1]
 	`-`-lineages_included
 		Output rarefied otu tables will include taxonomic (lineage) information for each otu, if present in input otu table [default: False]
-	`-`-small_included
-		Samples containing fewer seqs than the rarefaction level are included in the output but not rarefied [default: False]
 
 
 **Output:**
@@ -55,10 +53,6 @@ An example of this script, where the user sets the minimum ("-m") and maximum ("
 
 As a result, this command produces subsamples of the input otu_table.txt at 100 seqs per sample (twice), 200 seqs per sample (twice) ... 1200 seqs per sample (twice), which produces 24 rarefied otu talbes in the "rarefaction_tables" directory.
 
-By default, any sample containing fewer sequences in the input file than the requested number of sequences per sample is removed from the output rarefied otu table. To include samples with fewer than the requested number, you can use the following command:
-
-::
-
-	multiple_rarefactions.py otu_table.txt -m 100 -x 1200 -s 100 -n 2 -o rarefaction_tables/ --small_included
+Any sample containing fewer sequences in the input file than the requested number of sequences per sample is removed from the output rarefied otu table. To include samples with fewer than the requested number, you must manually add those samples to the resulting otu tables
 
 

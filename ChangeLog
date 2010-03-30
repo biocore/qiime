@@ -4,6 +4,8 @@ Add changes since 0.91 here
 * uclust made default pairwise aligner for PyNAST (instead of BLAST)
 * minimum PyNAST version requirement upgraded to PyNAST 1.0
 * minimum PyCogent version requirement upgraded to PyCogent 1.4.1
+* tree_compare now can compare trees where some tips aren't present in all trees
+* --small_included option removed from rarefaction scripts
 
 QIIME 0.92 - (3 Mar 2010)
 =======================

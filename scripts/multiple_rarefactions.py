@@ -23,7 +23,7 @@ script_info['script_description']="""To perform bootstrap, jackknife, and rarefa
 script_info['script_usage']=[]
 script_info['script_usage'].append(("""Examples:""","""An example of this script, where the user sets the minimum ("-m") and maximum ("-x") number of sequences per sample to 100 and 1200, respectively, while using steps ("-s") of 100, performing 2 iterations at each sampling depth ("-n"), and outputting the results to the directory "rarefaction_tables/" is shown by the following command:""","""multiple_rarefactions.py otu_table.txt -m 100 -x 1200 -s 100 -n 2 -o rarefaction_tables/"""))
 script_info['script_usage'].append(("""""","""As a result, this command produces subsamples of the input otu_table.txt at 100 seqs per sample (twice), 200 seqs per sample (twice) ... 1200 seqs per sample (twice), which produces 24 rarefied otu talbes in the "rarefaction_tables" directory.""",""""""))
-script_info['script_usage'].append(("""""","""By default, Any sample containing fewer sequences in the input file than the requested number of sequences per sample is removed from the output rarefied otu table. To include samples with fewer than the requested number, you can use the following command:""","""multiple_rarefactions.py otu_table.txt -m 100 -x 1200 -s 100 -n 2 -o rarefaction_tables/ --small_included"""))
+script_info['script_usage'].append(("""""","""Any sample containing fewer sequences in the input file than the requested number of sequences per sample is removed from the output rarefied otu table. To include samples with fewer than the requested number, you must manually add those samples to the resulting otu tables""",""""""))
 script_info['output_description']="""The result of multiple_rarefactions.py consists of a number of files, which depend on the minimum/maximum number of sequences per samples, steps and iterations. The files have the same otu table format as the input otu_table.txt, and are named in the following way: rarefaction_100_0.txt, where "100" corresponds to the sequences per sample and "0" the iteration."""
 script_info['required_options']=[
     make_option('-i', '--input_path',
@@ -52,9 +52,6 @@ script_info['optional_options']=[
         action="store_true",
           help="""output rarefied otu tables will include taxonomic (lineage) information for each otu, if present in input otu table [default: %default]"""),
 
-    make_option('--small_included', dest='small_included', default=False,
-        action="store_true",
-        help="""samples containing fewer seqs than the rarefaction level are included in the output but not rarefied [default: %default]""")
 ]
 script_info['version'] = __version__
 
@@ -69,7 +66,7 @@ def main():
         os.makedirs(opts.output_path)
     maker = RarefactionMaker(opts.input_path, opts.min, opts.max,
         opts.step, opts.num_reps)
-    maker.rarefy_to_files(opts.output_path, opts.small_included,
+    maker.rarefy_to_files(opts.output_path, False,
         include_lineages=opts.lineages_included)
 
 

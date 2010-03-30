@@ -46,9 +46,6 @@ script_info['optional_options']=[
         action="store_true",
           help="""output rarefied otu tables will include taxonomic (lineage) information for each otu, if present in input otu table [default: %default]"""),
 
-    make_option('--small_included', dest='small_included', default=False,
-        action="store_true",
-        help="""samples containing fewer seqs than the rarefaction level are included in the output but not rarefied [default: %default]""")
 ]
 script_info['version'] = __version__
 
@@ -60,7 +57,7 @@ def main():
         os.makedirs(opts.output_path)
     maker = RarefactionMaker(opts.input_path, opts.depth, opts.depth,
         1, opts.num_reps)
-    maker.rarefy_to_files(opts.output_path, opts.small_included,
+    maker.rarefy_to_files(opts.output_path, False,
         include_lineages=opts.lineages_included)
 
 

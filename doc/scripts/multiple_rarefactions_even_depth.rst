@@ -1,8 +1,8 @@
-.. _single_rarefaction:
+.. _multiple_rarefactions_even_depth:
 
-.. index:: single_rarefaction.py
+.. index:: multiple_rarefactions_even_depth.py
 
-*single_rarefaction.py* -- Perform rarefaction on an otu table
+*multiple_rarefactions_even_depth.py* -- Perform multiple rarefactions on a single otu table, at one depth of sequences/sample
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Description:**
@@ -10,7 +10,7 @@
 To perform bootstrap, jackknife, and rarefaction analyses, the otu table must be subsampled (rarefied).  This script rarefies, or subsamples, an OTU table.  This does not provide curves of diversity by number of sequences in a sample. Rather it creates a subsampled OTU table by random sampling (without replacement) of the input OTU table.  The pseudo-random number generator used for rarefaction by subsampling is NumPy's default - an implementation of the Mersenne twister PRNG.
 
 
-**Usage:** :file:`single_rarefaction.py [options]`
+**Usage:** :file:`multiple_rarefactions_even_depth.py [options]`
 
 **Input Arguments:**
 
@@ -22,29 +22,29 @@ To perform bootstrap, jackknife, and rarefaction analyses, the otu table must be
 	-i, `-`-input_path
 		Input otu table filepath
 	-o, `-`-output_path
-		Write output rarefied otu tables to this filepath
+		Write output rarefied otu tables files to this dir (makes dir if it doesn't exist)
 	-d, `-`-depth
 		Sequences per sample to subsample
 	
 	**[OPTIONAL]**
 		
+	-n, `-`-num-reps
+		Num iterations at each seqs/sample level [default: 1]
 	`-`-lineages_included
 		Output rarefied otu tables will include taxonomic (lineage) information for each otu, if present in input otu table [default: False]
 
 
 **Output:**
 
-The results of `single_rarefaction.py <./single_rarefaction.html>`_ consist of a single subsampled OTU table. The file has the same otu table format as the input otu_table.txt. note: if the output file would be empty, no file is written
+The results of this script consist of n subsampled OTU tables, written to the directory specified by -o. The file has the same otu table format as the input otu_table.txt. note: if the output files would be empty, no files are written
 
 
 **Example:**
 
-subsample otu_table.txt at 400 seqs/sample (-d), write results to a file (i.e. rarefaction_400_17.txt) 
+subsample otu_table.txt at 400 seqs/sample (-d), 100 times (-n), write results to files (i.e. rarefaction_400_17.txt)
 
 ::
 
-	single_rarefaction.py -i otu_table.txt -o rarefaction_400_17.txt -d 400
-
-(naming convention rarefaction_400_17.txt implies that the depth is 400 seqs/sam, iteration 17 at that depth (18th file written, due to iter 0))
+	single_rarefaction.py -i otu_table.txt -o rarefaction_tables -d 400 -n 100
 
 
