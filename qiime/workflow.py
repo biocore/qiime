@@ -598,31 +598,31 @@ def run_jackknifed_upgma_clustering(otu_table_fp,tree_fp,seqs_per_sample,\
     except OSError:
         pass
     try:
-        params_str = get_params_str(params['multiple_rarefactions'])
+        params_str = get_params_str(params['multiple_rarefactions_even_depth'])
     except KeyError:
         params_str = ''
-    if parallel:
-        try:
-            # Want to find a cleaner strategy for this: the rarefaction 
-            # parallel script doesn't support the jobs_to_start option -
-            # one job is started per rarefied otu table to be created -
-            # so need to remove this option. This works for now though.
-            d = params['parallel'].copy()
-            del d['jobs_to_start']
-            params_str += ' %s' % get_params_str(d)
-        except KeyError:
-            pass        
-        # Build the parallel rarefaction command
-        rarefaction_cmd = \
-         '%s %s/parallel_multiple_rarefactions.py -T -i %s -m %s -x %s -s 1 -o %s %s' %\
-         (python_exe_fp, script_dir, otu_table_fp, seqs_per_sample,\
-          seqs_per_sample, rarefaction_dir, params_str)
-    else:
-        # Build the serial rarefaction command
-        rarefaction_cmd = \
-         '%s %s/multiple_rarefactions.py -i %s -m %s -x %s -s 1 -o %s %s' %\
-         (python_exe_fp, script_dir, otu_table_fp, seqs_per_sample, \
-          seqs_per_sample, rarefaction_dir, params_str)
+    # if parallel:
+    #     try:
+    #         # Want to find a cleaner strategy for this: the rarefaction 
+    #         # parallel script doesn't support the jobs_to_start option -
+    #         # one job is started per rarefied otu table to be created -
+    #         # so need to remove this option. This works for now though.
+    #         d = params['parallel'].copy()
+    #         del d['jobs_to_start']
+    #         params_str += ' %s' % get_params_str(d)
+    #     except KeyError:
+    #         pass        
+    #     # Build the parallel rarefaction command
+    #     rarefaction_cmd = \
+    #      '%s %s/parallel_multiple_rarefactions.py -T -i %s -m %s -x %s -s 1 -o %s %s' %\
+    #      (python_exe_fp, script_dir, otu_table_fp, seqs_per_sample,\
+    #       seqs_per_sample, rarefaction_dir, params_str)
+    # else:
+    # Build the serial rarefaction command
+    rarefaction_cmd = \
+     '%s %s/multiple_rarefactions_even_depth.py -i %s -d %d -o %s %s' %\
+     (python_exe_fp, script_dir, otu_table_fp, seqs_per_sample, \
+      rarefaction_dir, params_str)
     commands.append([('Rarefaction', rarefaction_cmd)])
 
     # Begin iterating over beta diversity distance metrics, if more than one
