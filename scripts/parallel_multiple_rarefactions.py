@@ -48,9 +48,6 @@ script_info['required_options'] = [\
 script_info['optional_options'] = [\
  make_option('-n', '--num-reps', dest='num_reps', default=1, type=int,
         help='num iterations at each seqs/sample level [default: %default]'),\
- make_option('--small_included', dest='small_included', default=False,
-        action="store_true",
-        help="""samples containing fewer seqs than the rarefaction level are included in the output but not rarefied [default: %default]"""),\
  make_option('--lineages_included', dest='lineages_included', default=False,
         action="store_true",
         help="""output rarefied otu tables will include taxonomic (lineage) information for each otu, if present in input otu table [default: %default]"""),
@@ -80,7 +77,6 @@ def main():
     max_seqs = opts.max
     step = opts.step
     num_reps = opts.num_reps
-    small_included = opts.small_included
     lineages_included = opts.lineages_included
     
     single_rarefaction_fp = opts.single_rarefaction_fp
@@ -124,7 +120,7 @@ def main():
     commands, job_result_filepaths  = \
      get_job_commands(python_exe_fp,single_rarefaction_fp,job_prefix,\
      input_path,output_dir,working_dir,min_seqs,max_seqs,step,num_reps,
-     small_included, lineages_included)
+     lineages_included)
     
     # Set up poller apparatus if the user does not suppress polling
     if not suppress_polling:

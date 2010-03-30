@@ -17,7 +17,7 @@ __status__ = "Pre-release"
 
 def get_job_commands(python_exe_fp,rarefaction_fp,job_prefix,\
     input_fp,output_dir,working_dir,min_seqs,max_seqs,step,num_reps,\
-    small_included, lineages_included, command_prefix=None,command_suffix=None):
+    lineages_included, command_prefix=None,command_suffix=None):
     """Generate alpha diversity commands to be submitted to cluster
     """
     # Create data for each run (depth, output_fn)
@@ -33,10 +33,6 @@ def get_job_commands(python_exe_fp,rarefaction_fp,job_prefix,\
     commands = []
     result_filepaths = []
     
-    if small_included:
-        small_included_param = '--small_included'
-    else:
-        small_included_param = ''
     if lineages_included:
         lineages_included_param = '--lineages_included'
     else:
@@ -49,13 +45,12 @@ def get_job_commands(python_exe_fp,rarefaction_fp,job_prefix,\
          [output_fn],working_dir,output_dir)
         result_filepaths += current_result_filepaths
         
-        command = '%s %s %s -i %s -o %s %s %s -d %s %s %s' %\
+        command = '%s %s %s -i %s -o %s %s -d %s %s %s' %\
          (command_prefix,\
           python_exe_fp,\
           rarefaction_fp,\
           input_fp,
           working_dir + '/' + output_fn,
-          small_included_param,
           lineages_included_param,
           depth,
           rename_command,
