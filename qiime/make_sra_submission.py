@@ -12,11 +12,11 @@ xml output.
 """
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2010, The QIIME Project"
-__credits__ = ["Rob Knight"] #remember to add yourself if you make changes
+__credits__ = ["Rob Knight", "Kyle Bittinger"] #remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "0.92-dev"
-__maintainer__ = "Rob Knight"
-__email__ = "rob@spot.colorado.edu"
+__maintainer__ = "Kyle Bittinger"
+__email__ = "kylebittinger@gmail.com"
 __status__ = "Pre-release"
 
 study_links_wrapper = """    <STUDY_LINKS>%s
@@ -55,24 +55,21 @@ file_wrapper = """ <FILES>
  </FILES>"""
 
 run_set_wrapper = """<?xml version="1.0" encoding="UTF-8"?>
-<RUN_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">%s</RUN_SET>"""
+<RUN_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">%s</RUN_SET>
+"""
 
-run_wrapper = """  <RUN
+run_wrapper = '''\
+  <RUN
     alias = "%(EXPERIMENT_ALIAS)s"
-    center_name = "%(EXPERIMENT_CENTER)s" 
-    run_date = "%(RUN_DATE)s"    
-    run_center = "%(RUN_CENTER)s"    
-    instrument_name = "%(INSTRUMENT_NAME)s"
+    center_name = "%(RUN_CENTER)s"
+    run_center = "%(RUN_CENTER)s"
+    accession=""
   >
-    <EXPERIMENT_REF refname="%(EXPERIMENT_ALIAS)s" refcenter="%(STUDY_CENTER)s" />%(DATA_BLOCK_XML)s    <RUN_ATTRIBUTES>
-      <RUN_ATTRIBUTE>
-        <TAG>notes</TAG>
-        <VALUE>Submitter demultiplexed reads.  Each read was assigned to a sample pool member for those samples that yielded data. </VALUE>
-      </RUN_ATTRIBUTE>
-    </RUN_ATTRIBUTES>
-  </RUN>"""
+    <EXPERIMENT_REF accession="" refname="%(EXPERIMENT_ALIAS)s" refcenter="%(STUDY_CENTER)s" />%(DATA_BLOCK_XML)s
+  </RUN>'''
 
-data_block_wrapper = """    <DATA_BLOCK
+data_block_wrapper = """
+    <DATA_BLOCK
       serial = "%(MEMBER_ORDER)s"
       name = "%(RUN_PREFIX)s"
       region = "%(REGION)s"
@@ -485,17 +482,16 @@ def make_run_and_experiment(experiment_lines, sff_dir, attribute_file=None,
                         f['POOL_MEMBER_FILENAME'] = f['POOL_MEMBER_NAME'] + '.sff'
                     try:
                         f['CHECKSUM'] = md5_path(join(sff_dir,f['RUN_PREFIX'],f['POOL_MEMBER_FILENAME']))
-                        data_blocks.append(data_block_wrapper % f)
+                        field_dict['DATA_BLOCK_XML'] = data_block_wrapper % f
+                        runs.append(run_wrapper % field_dict)
+
                         MEMBER_ORDER += 1   #skip members where we couldn't find the file
                     except IOError: #file missing, probably because no seqs were recovered
                         stderr.write("File failed with IOError:\n%s\n" % f['POOL_MEMBER_FILENAME'])
                         pass
-                                    
             field_dict['BARCODE_TABLE_XML'] = '\n' + '\n'.join(barcode_basecalls) + '\n'
             field_dict['PRIMER_TABLE_XML'] = '\n' + '\n'.join(primer_basecalls) + '\n'
             field_dict['POOL_MEMBERS_XML'] = '\n' + '\n'.join(pool_members) + '\n'
-            field_dict['DATA_BLOCK_XML'] = '\n' + '\n'.join(data_blocks) + '\n'
-            runs.append(run_wrapper % field_dict)
             if linkers:
                 spot_descriptor_wrapper = spot_descriptor_with_linker_wrapper
             else:
