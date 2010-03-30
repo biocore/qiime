@@ -133,7 +133,7 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,\
     except OSError:
         pass
     rep_set_fp = '%s/%s_rep_set.fasta' % (rep_set_dir,input_basename)
-    rep_set_log_fp = '%s/%s_pick_rep_set.log' % (rep_set_dir,input_basename)
+    rep_set_log_fp = '%s/%s_rep_set.log' % (rep_set_dir,input_basename)
     try:
         params_str = get_params_str(params['pick_rep_set'])
     except KeyError:
