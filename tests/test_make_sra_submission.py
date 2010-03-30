@@ -199,7 +199,7 @@ aa\tbb\tcc
             '<?xml version="1.0" encoding="UTF-8"?>\n'
             '<RUN_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">\n'
             '\n'
-            '</RUN_SET>'
+            '</RUN_SET>\n'
             )
         self.assertEqual(observed_run_xml, expected_run_xml)
 
