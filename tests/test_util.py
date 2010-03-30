@@ -10,7 +10,7 @@ from qiime.util import make_safe_f, FunctionWithParams, qiime_blast_seqs,\
     extract_seqs_by_sample_id, get_qiime_project_dir, matrix_stats,\
     raise_error_on_parallel_unavailable, merge_otu_tables,\
     convert_OTU_table_relative_abundance
-from qiime.pycogent_backports.formatdb import build_blast_db_from_fasta_file
+from cogent.app.formatdb import build_blast_db_from_fasta_file
 import numpy
 from numpy import array
 

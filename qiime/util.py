@@ -38,7 +38,7 @@ from cogent.util.dict2d import Dict2D
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from cogent import LoadSeqs
 from qiime.parse import parse_otus, parse_qiime_config_files
-from qiime.pycogent_backports.formatdb import build_blast_db_from_fasta_file
+from cogent.app.formatdb import build_blast_db_from_fasta_file
 
 class TreeMissingError(IOError):
     """Exception for missing tree file"""
