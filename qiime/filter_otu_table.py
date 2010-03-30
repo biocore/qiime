@@ -14,6 +14,7 @@ __email__ = "rob@spot.colorado.edu"
 __status__ = "Pre-release"
 
 from qiime.parse import parse_otus
+from qiime.format import format_otu_table
 from string import strip
 from numpy import array
 import os
@@ -74,3 +75,17 @@ def _filter_table(params):
                         filtered_table_path.write(line)
                     elif not included_taxa and not excluded_taxa:
                         filtered_table_path.write(line)
+
+def _filter_table_samples(otu_table_lines, min_seqs_per_sample):
+    """removes samples from OTU_table that have less than min_seqs_per_sample
+    """
+    sample_ids, otu_ids, otu_table, lineages = parse_otus(otu_table_lines)
+    counts = sum(otu_table)
+    big_enough_samples = (counts>=min_seqs_per_sample).nonzero()
+    res_otu_table = otu_table.copy()
+    res_otu_table = res_otu_table[:,big_enough_samples[0]]
+    res_sample_ids = map(sample_ids.__getitem__, big_enough_samples[0])
+    return format_otu_table(res_sample_ids, otu_ids, res_otu_table, lineages)
+
+
+

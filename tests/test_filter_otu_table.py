@@ -15,7 +15,8 @@ from sys import argv
 from string import strip
 from cogent.util.unit_test import TestCase, main
 from numpy import array
-from qiime.filter_otu_table import (strip_quotes,split_tax)
+from qiime.filter_otu_table import (strip_quotes,split_tax,
+                _filter_table_samples)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -55,7 +56,22 @@ class TopLevelTests(TestCase):
         
         self.assertEqual(obs1,exp1)
         self.assertEqual(obs2,exp2)
-        
+       
+    def test_filter_table_samples(self):
+        """_filter_table_samples removes small samples from OTU table
+        """
+
+        otu_table = """#Full OTU Counts
+#OTU ID\tsample1\tsample2\tsample3
+0\t0\t2\t0
+1\t1\t0\t0
+2\t1\t1\t1""".split('\n')
+        result = _filter_table_samples(otu_table, 2)
+        self.assertEqual(result, "#Full OTU Counts\n#OTU ID\tsample1\tsample2\n0\t0\t2\n1\t1\t0\n2\t1\t1")
+        result = _filter_table_samples(otu_table, 1)
+        self.assertEqual(result, '\n'.join(otu_table))
+        result = _filter_table_samples(otu_table, 3)
+        self.assertEqual(result, "#Full OTU Counts\n#OTU ID\tsample2\n0\t2\n1\t0\n2\t1")
 
 #run tests if called from command line
 if __name__ == "__main__":
