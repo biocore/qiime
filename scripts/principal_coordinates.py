@@ -35,7 +35,7 @@ script_info['version'] = __version__
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
       
-    infilepath = opts.input_fistance_matrix_fp
+    infilepath = opts.input_distance_matrix_fp
     f = open(infilepath,'U')
     pcoa_res_string = pcoa(f)
     f.close()
