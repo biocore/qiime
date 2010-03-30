@@ -19,7 +19,7 @@ This script generates the otu networks and statistics
 from qiime.util import parse_command_line_parameters
 from optparse import make_option
 from qiime.make_otu_network import create_network_and_stats
-from qiime.pycogent_backports.misc import get_random_directory_name
+from cogent.util.misc import get_random_directory_name
 import os
 import shutil
 

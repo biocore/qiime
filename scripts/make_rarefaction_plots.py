@@ -13,7 +13,7 @@ __status__ = "Pre-release"
  
 from optparse import make_option
 from qiime.util import parse_command_line_parameters, get_qiime_project_dir
-from qiime.pycogent_backports.misc import get_random_directory_name
+from cogent.util.misc import get_random_directory_name
 from sys import argv, exit, exc_info
 from random import choice, randrange
 from time import strftime

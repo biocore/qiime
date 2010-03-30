@@ -28,7 +28,7 @@ from qiime.make_3d_plots import get_coord,get_map,remove_unmapped_samples, \
                                 get_custom_coords, \
                                 process_custom_axes, process_coord_filenames, \
                                 remove_nans, scale_custom_coords
-from qiime.pycogent_backports.misc import get_random_directory_name
+from cogent.util.misc import get_random_directory_name
 options_lookup = get_options_lookup()
 
 #make_3d_plots.py

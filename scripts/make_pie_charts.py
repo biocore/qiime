@@ -17,7 +17,7 @@ This script generates taxonomy pie charts
 from qiime.util import parse_command_line_parameters, get_qiime_project_dir
 from optparse import make_option
 from qiime.make_pie_charts import make_all_pie_charts
-from qiime.pycogent_backports.misc import get_random_directory_name
+from cogent.util.misc import get_random_directory_name
 from qiime.colors import sample_color_prefs_and_map_data_from_options
 import re
 import matplotlib

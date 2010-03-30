@@ -30,7 +30,7 @@ import os
 from random import choice
 from time import strftime
 from qiime.util import get_qiime_project_dir
-from qiime.pycogent_backports.misc import get_random_directory_name
+from cogent.util.misc import get_random_directory_name
 options_lookup = get_options_lookup()                                
 
 script_info={}

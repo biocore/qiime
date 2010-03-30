@@ -22,7 +22,7 @@ from random import choice
 from qiime.parse import group_by_field,group_by_fields
 from qiime.colors import natsort, data_color_order, data_colors, \
                             get_group_colors,data_colors,iter_color_groups
-from qiime.pycogent_backports.misc import get_random_directory_name
+from cogent.util.misc import get_random_directory_name
 import os
 
 TABLE_HTML = """<table cellpadding=0 cellspacing=0 border=0>

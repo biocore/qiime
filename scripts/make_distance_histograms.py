@@ -18,7 +18,7 @@ from optparse import make_option
 from qiime.make_distance_histograms import group_distances, _make_path, \
     draw_all_histograms, _make_relative_paths, make_main_html, \
     monte_carlo_group_distances
-from qiime.pycogent_backports.misc import get_random_directory_name
+from cogent.util.misc import get_random_directory_name
 from os import mkdir
 from string import strip
 

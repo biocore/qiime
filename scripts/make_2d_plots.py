@@ -23,7 +23,7 @@ import os
 from qiime.colors import sample_color_prefs_and_map_data_from_options
 from qiime.util import get_qiime_project_dir
 from qiime.make_3d_plots import get_coord
-from qiime.pycogent_backports.misc import get_random_directory_name
+from cogent.util.misc import get_random_directory_name
 
 options_lookup = get_options_lookup()
 
