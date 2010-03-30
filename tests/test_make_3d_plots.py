@@ -150,7 +150,7 @@ class TopLevelTests(TestCase):
     def test_make_edge_output(self):
         """make_edge_output: Create kinemage string given the data"""
         # test without custom axes
-        exp_result = ['@vectorlist {edges} dimension=4 on', '1.0 2.0 3.0 4.0 white', '1.066 2.066 3.066 4.066 white P', '1.066 2.066 3.066 4.066 hotpink', '1.1 2.1 3.1 4.1 hotpink P', '1.0 2.0 3.0 4.0 white', '1.132 2.132 3.132 4.132 white P', '1.132 2.132 3.132 4.132 blue', '1.2 2.2 3.2 4.2 blue P']
+        exp_result = ['@vectorlist {edges} dimension=4 on', '1.0 2.0 3.0 4.0 white', '1.06 2.06 3.06 4.06 white P', '1.06 2.06 3.06 4.06 hotpink', '1.1 2.1 3.1 4.1 hotpink P', '1.0 2.0 3.0 4.0 white', '1.12 2.12 3.12 4.12 white P', '1.12 2.12 3.12 4.12 blue', '1.2 2.2 3.2 4.2 blue P']
         edges = [['a_0','a_1'],['a_0','a_2']]
         coord_dict = {}
         coord_dict['a_0'] = array([ 1.0, 2.0, 3.0, 4.0])
