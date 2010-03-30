@@ -47,6 +47,7 @@ assign_taxonomy:e_value	0.001
 
 # Phylogenetic tree building parameters
 make_phylogeny:tree_method	fasttree
+make_phylogeny:root_method	tree_method_default
 
 # OTU table construction parameters
 make_otu_table:taxonomy
