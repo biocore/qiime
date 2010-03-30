@@ -97,7 +97,7 @@ def main():
     verbose = opts.verbose
 
     otu_table_fp = opts.otu_table_fp
-    otu_table = open(otu_table_fp)
+    otu_table = open(otu_table_fp,'U')
     output_fp = opts.output_fp
 
     category_mapping_fp = opts.category_mapping_fp
