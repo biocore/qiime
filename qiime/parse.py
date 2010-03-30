@@ -18,13 +18,17 @@ from cogent.maths.stats.rarefaction import subsample
 from numpy import array, concatenate, repeat, zeros, nan
 from numpy.random import permutation
 from cogent.parse.record_finder import LabeledRecordFinder
+from cogent.parse.fasta import FastaFinder
 from copy import deepcopy
 import os
 from cogent.util.misc import revComp
 
-"""Parsers for internally used file formats from SIBS, OTUPicker, etc.
 
-Note: this code initially copied over from MicrobePlots."""
+class QiimeParseError(Exception):
+    pass
+
+class IlluminaParseError(QiimeParseError):
+    pass
 
 def parse_mapping_file(lines, strip_quotes=True, suppress_stripping=False):
     """Parser for map file that relates samples to metadata.
@@ -535,10 +539,6 @@ def parse_metadata_state_descriptions(state_string):
             result[colname] = set(vals)
     return result
 
-
-class IlluminaParseError(Exception):
-    pass
-
 def parse_illumina_line(l,barcode_length,rev_comp_barcode):
     """Parses a single line of Illumina data
     """
@@ -562,3 +562,27 @@ def parse_illumina_line(l,barcode_length,rev_comp_barcode):
      'Quality Score':fields[6]}
      
     return result
+
+def parse_qual_score(infile):
+    """Load quality scores into dict."""
+    id_to_qual = {}
+    for rec in FastaFinder(infile):
+        curr_id = rec[0][1:]
+        curr_qual = ' '.join(rec[1:])
+        try:
+            parts = array(map(int, curr_qual.split()))
+        except ValueError:
+            raise QiimeParseError,"Invalid qual file. Check the format of the qual files." 
+        curr_pid = curr_id.split()[0]
+        id_to_qual[curr_pid] = parts
+    return id_to_qual
+
+def parse_qual_scores(qual_files):
+    """Load qual scores into dict of {id:qual_scores}.
+    
+    No filtering is performed at this step.
+    """
+    qual_mappings = {}
+    for qual_file in qual_files:
+        qual_mappings.update(parse_qual_score(qual_file))
+    return qual_mappings

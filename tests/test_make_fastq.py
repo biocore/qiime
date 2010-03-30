@@ -3,7 +3,8 @@
 
 from cogent.util.unit_test import TestCase, main
 from qiime.make_fastq import make_fastq_rec, split_lib_transform, iter_fastq
-from qiime.split_libraries import qual_score
+from qiime.parse import parse_qual_score
+
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2010, The QIIME Project" #consider project name
 __credits__ = ["Rob Knight"] #remember to add yourself if you make changes
@@ -63,7 +64,7 @@ CATGCTGCCTCCCGTAGGAGTTTGGACCGTGTCTCAGTTCCAATGTGGGGGACCTTCCTCTCAGAACCCCTACTGATCGT
 35 35 30 30 30 35 35 35 35 35 35 35 35 35 35 35 35 35 35 35 35 35 35 35 35 35 35 27 27 25 15 15 15 18 18 25 15 15 15 15 15 15 14 15 15 15 15 15 15 15 14 15 15 15 15 15 15 23 23 28 
 28 24 30 31 32 22 22 16 16 16 16 22 22 23 25 21 21 21 21 21 19 21 16 16 16 16 16 22 21 23 25 25 25 21 22 22 22 22 22 22 22 
 """.splitlines()
-        qual = qual_score(qual_raw)
+        qual = parse_qual_score(qual_raw)
         result = list(iter_fastq(fasta, qual))
         self.assertEqual(len(result), 3)
         self.assertEqual(result[0][1], 'M32Nstr_1')

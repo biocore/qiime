@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2010, The QIIME project"
-__credits__ = ["Rob Knight"]
+__credits__ = ["Rob Knight", "Jens Reeder"]
 __license__ = "GPL"
 __version__ = "0.92-dev"
 __maintainer__ = "Rob Knight"
@@ -14,7 +14,7 @@ __status__ = "Pre-release"
 
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from optparse import make_option
-from qiime.split_libraries import qual_scores
+from qiime.parse import parse_qual_scores
 from qiime.make_fastq import make_fastq_single, make_fastq_multi
 
 options_lookup = get_options_lookup()
@@ -51,7 +51,7 @@ def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     in_fasta = open(opts.input_fasta_fp, 'U')
-    quals = qual_scores([open(f, 'U') for f in opts.qual_fps.split(',')])
+    quals = parse_qual_scores([open(f, 'U') for f in opts.qual_fps.split(',')])
     if not opts.result_fp:
         opts.result_fp = opts.input_fasta_fp + '.fastq'
 

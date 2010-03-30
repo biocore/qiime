@@ -21,7 +21,7 @@ from qiime.parse import (group_by_field, group_by_fields,
     parse_bootstrap_support, parse_sample_mapping, parse_distmat_to_dict,
     sample_mapping_to_otu_table, parse_taxonomy, parse_mapping_file, 
     parse_metadata_state_descriptions, parse_rarefaction_data,
-    parse_illumina_line)
+    parse_illumina_line, parse_qual_score, parse_qual_scores, QiimeParseError)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -488,11 +488,30 @@ eigvals\t4.94\t1.79\t1.50
          illumina_line1,barcode_length=6,rev_comp_barcode=False)
         expected['Barcode'] = 'ACCTCC'
 
+    def test_parse_qual_score(self):
+        """qual_score should return dict of {id: qual_scores}"""
+        scores = StringIO('>x\n5 10 5\n12\n>y\n30 40')
+        self.assertEqual(parse_qual_score(scores),
+                         {'x':[5,10,5,12],'y':[30,40]})
+
+        #Check that a bad file, e.g. a fast raises Error
+        bad_scores = StringIO('>x\nabcbd\n12\n>y\GATC')
+        self.assertRaises(QiimeParseError, parse_qual_score, bad_scores)
+
+    def test_parse_qual_scores(self):
+        """qual_scores should return dict of {id:qual_scores}"""
+        scores = StringIO('>x\n5 10 5\n12\n>y\n30 40')
+        scores2= StringIO('>a\n5 10 5\n12\n>b\n30 40')
+        self.assertEqual(parse_qual_scores([scores, scores2]),
+            {'x':[5,10,5,12],'y':[30,40],'a':[5,10,5,12],'b':[30,40]})
+
+
 illumina_read1 = """HWI-6X_9267:1:1:4:1699#ACCACCC/1:TACGGAGGGTGCGAGCGTTAATCGCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCGAAAAAAAAAAAAAAAAAAAAAAA:abbbbbbbbbb`_`bbbbbb`bb^aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaDaabbBBBBBBBBBBBBBBBBBBB
 HWI-6X_9267:1:1:4:390#ACCTCCC/1:GACAGGAGGAGCAAGTGTTATTCAAATTATGCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCGGGGGGGGGGGGGGGAAAAAAAAAAAAAAAAAAAAAAA:aaaaaaaaaa```aa\^_aa``aVaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaBaaaaa""".split('\n')
 
 illumina_read2 = """HWI-6X_9267:1:1:4:1699#ACCACCC/2:TTTTAAAAAAAAGGGGGGGGGGGCCCCCCCCCCCCCCCCCCCCCCCCTTTTTTTTTTTTTAAAAAAAAACCCCCCCGGGGGGGGTTTTTTTAATTATTC:aaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbcccccccccccccccccBcccccccccccccccc```````BBBB
 HWI-6X_9267:1:1:4:390#ACCTCCC/2:ACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACG:aaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbb""".split('\n')
+
 
 if __name__ =='__main__':
     main()

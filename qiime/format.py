@@ -56,7 +56,7 @@ def format_matrix(data, row_names, col_names):
     return '\n'.join(lines)
 
 def format_otu_table(sample_names, otu_names, data, taxonomy=None,
-    comment='Full OTU Counts'):
+    comment='Full OTU Counts', skip_empty=False):
     """Writes OTU table as tab-delimited text.
     
     inputs: sample_names, otu_names are lists of strings
@@ -76,6 +76,9 @@ def format_otu_table(sample_names, otu_names, data, taxonomy=None,
         lines.append('\t'.join(['#OTU ID'] + sample_names + 
             ['Consensus Lineage']))
         for otu_name, vals, taxon in zip(otu_names, data, taxonomy):
+            if (skip_empty and filter(lambda a: a!=0, vals)==[]):
+                #skip otu with zero counts
+                continue
             if not isinstance(taxon, str):
                 taxon = ';'.join(taxon)
             lines.append('\t'.join([otu_name] + map(str, vals.tolist()) + [taxon]))

@@ -15,8 +15,8 @@ from StringIO import StringIO
 from numpy import array
 from qiime.split_libraries import (
     expand_degeneracies, get_infile, count_mismatches,
-    ok_mm_primer, check_map, fasta_ids, qual_score,
-    qual_scores, count_ambig, split_seq, primer_exceeds_mismatches,
+    ok_mm_primer, check_map, fasta_ids,
+    count_ambig, split_seq, primer_exceeds_mismatches,
     check_barcode, make_histograms, SeqQualBad,
     seq_exceeds_homopolymers, check_window_qual_scores
 )
@@ -89,18 +89,6 @@ z\tGG\tGC\t5\tsample_z"""
         self.assertEqual(fasta_ids([first, second]), set(['x','y','a','b']))
         first.seek(0) #need to reset so we can read it again
         self.assertRaises(ValueError, fasta_ids, [first,first_copy])
-
-    def test_qual_score(self):
-        """qual_score should return dict of {id: qual_scores}"""
-        scores = StringIO('>x\n5 10 5\n12\n>y\n30 40')
-        self.assertEqual(qual_score(scores), {'x':[5,10,5,12],'y':[30,40]})
-
-    def test_qual_scores(self):
-        """qual_scores should return dict of {id:qual_scores}"""
-        scores = StringIO('>x\n5 10 5\n12\n>y\n30 40')
-        scores2= StringIO('>a\n5 10 5\n12\n>b\n30 40')
-        self.assertEqual(qual_scores([scores, scores2]),
-            {'x':[5,10,5,12],'y':[30,40],'a':[5,10,5,12],'b':[30,40]})
 
     def test_count_ambig(self):
         """count_ambig should count ambiguous bases in seq"""

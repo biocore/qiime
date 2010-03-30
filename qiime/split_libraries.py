@@ -33,7 +33,7 @@ __email__ = "rob@spot.colorado.edu, william.a.walters@colorado.edu"
 __status__ = "Pre-release"
 
 import re
-from cogent.parse.fasta import FastaFinder, MinimalFastaParser
+from cogent.parse.fasta import MinimalFastaParser
 from cogent.seqsim.sequence_generators import SequenceGenerator, IUPAC_DNA
 from numpy import array, mean, arange, histogram
 from numpy import __version__ as numpy_version
@@ -45,8 +45,7 @@ from collections import defaultdict
 from qiime.hamming import decode_barcode_8
 from qiime.golay import decode as decode_golay_12
 from qiime.format import format_histograms
-
-
+from qiime.parse import QiimeParseError, parse_qual_scores
 
 ## Including new=True in the histogram() call is necessary to 
 ## get the correct result in versions prior to NumPy 1.2.0,
@@ -136,7 +135,6 @@ def check_map(infile, has_barcodes=True):
     return hds, id_map, barcode_to_sample_id, warnings, errors, \
      primer_seqs_lens, all_primers
 
-
 def fasta_ids(fasta_files, verbose=False):
     """ Returns list of ids in FASTA files """
     all_ids = set([])
@@ -148,27 +146,6 @@ def fasta_ids(fasta_files, verbose=False):
                     "Duplicate ID found in FASTA/qual file: %s" % label      
             all_ids.add(rid)
     return all_ids
-
-def qual_score(infile):
-    """Load quality scores."""
-    id_to_qual = {}
-    for rec in FastaFinder(infile):
-        curr_id = rec[0][1:]
-        curr_qual = ' '.join(rec[1:])
-        parts = array(map(int, curr_qual.split()))
-        curr_pid = curr_id.split()[0]
-        id_to_qual[curr_pid] = parts
-    return id_to_qual
-
-def qual_scores(qual_files):
-    """ Load qual scores into dict of {id:qual_scores}.
-    
-    No filtering is performed at this step.
-    """
-    qual_mappings = {}
-    for qual_file in qual_files:
-        qual_mappings.update(qual_score(qual_file))
-    return qual_mappings
 
 def count_ambig(curr_seq, valid_chars='ATCG'):
     """Counts non-standard characters in seq"""
@@ -618,7 +595,7 @@ def preprocess(fasta_files, qual_files, mapping_file,
         for q in qual_files:
             q.seek(0)
         # Load quality scores 
-        qual_mappings = qual_scores(qual_files)
+        qual_mappings = parse_qual_scores(qual_files)
         for q in qual_files:
             q.close()
     else:

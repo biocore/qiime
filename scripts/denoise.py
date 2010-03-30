@@ -15,7 +15,7 @@ __email__ = "jens.reeder@gmail.com"
 __status__ = "Pre-release"
  
 from os import makedirs
-from os.path import exists, splitext, split
+from os.path import exists, splitext, split, isdir
 from optparse import make_option
 
 from cogent.core.alignment import SequenceCollection
@@ -83,18 +83,27 @@ def main():
 
     outdir = opts.output_dir
 
-    if (not exists(outdir)):
+    if (exists(outdir)):
+        if isdir(outdir):
+            #Looks good, dir is there
+            pass
+        else:
+            #File with same name
+            raise OSError,"File with same name as outdir exists: %s" % outdir
+    else:
+        #no dir there, make it
         try:
             makedirs(outdir)
         except OSError:
             #re-raise error, but slightly more informative 
             raise OSError,"Could not create output directory "+outdir
+
     log_fh=None
     if (opts.verbose):
         try:
             log_fh = open(outdir+"/pyronoise.log", "w")
         except IOError:
-            raise IOError,"Could not open log file: %s" % (outdir+"pyronoise.log")
+            raise IOError,"Could not open log file: %s" % (outdir+"/pyronoise.log")
 
         #write params to log file
         # should have a general framework for this in util...
