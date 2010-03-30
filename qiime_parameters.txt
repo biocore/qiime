@@ -50,7 +50,7 @@ make_phylogeny:tree_method	fasttree
 make_phylogeny:root_method	tree_method_default
 
 # Beta diversity parameters
-beta_diversity:metrics
+beta_diversity:metrics	weighted_unifrac,unweighted_unifrac
 
 # Make 3D plot parameters
 make_3d_plots:custom_axes
@@ -61,7 +61,7 @@ multiple_rarefactions:depth
 multiple_rarefactions:lineages_included	False
 
 # Alpha diversity parameters
-alpha_diversity:metrics
+alpha_diversity:metrics	PD_whole_tree,chao1,observed_species
 
 # Make rarefaction averages parameters
 make_rarefaction_averages:prefs
