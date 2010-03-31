@@ -81,6 +81,8 @@ class WorkflowTests(TestCase):
         qiime_parameters_fp = \
          join(get_qiime_project_dir(),'qiime_parameters.txt') 
         self.params = parse_qiime_parameters(open(qiime_parameters_fp))
+        self.params['align_seqs']['template_fp'] = self.template_aln_fp
+        self.params['filter_alignment']['lane_mask_fp'] = self.lanemask_fp
     
     def tearDown(self):
         """ """
