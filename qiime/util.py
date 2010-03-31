@@ -3,7 +3,7 @@
 __author__ = "Daniel McDonald"
 __copyright__ = "Copyright 2010, The QIIME Project" 
 __credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso", 
-"Justin Kuczynski"] #remember to add yourself if you make changes
+"Justin Kuczynski","Jens Reeder"] #remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "0.92-dev"
 __maintainer__ = "Rob Knight"
@@ -17,8 +17,8 @@ A lot of this might migrate into cogent at some point.
 """
 
 from StringIO import StringIO
-from os import getenv
-from os.path import abspath, exists, dirname, join
+from os import getenv, makedirs
+from os.path import abspath, exists, dirname, join, isdir
 from numpy import min, max, median, mean
 import numpy
 from numpy import array, zeros
@@ -35,10 +35,10 @@ from cogent.parse.blast import BlastResult
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.util.misc import remove_files
 from cogent.util.dict2d import Dict2D
-from cogent.app.formatdb import build_blast_db_from_fasta_path
+from cogent.app.formatdb import build_blast_db_from_fasta_path,\
+    build_blast_db_from_fasta_file
 from cogent import LoadSeqs
 from qiime.parse import parse_otus, parse_qiime_config_files
-from cogent.app.formatdb import build_blast_db_from_fasta_file
 
 class TreeMissingError(IOError):
     """Exception for missing tree file"""
@@ -707,3 +707,34 @@ def convert_OTU_table_relative_abundance(otu_table):
         output.append('\t'.join(line))
     return output
 
+def create_dir(dir_name, fail_on_exist=True):
+    """Open a dir safely and fail meaningful.
+
+    dir_name: name of directory to create
+
+    fail_on_exist: if true raise an error if dir already exists
+    
+    returns 1 if directory already existed, 0 otherwise
+
+    Note: Depending  of how thorough we want to be we could add tests,
+          e.g. for testing actual write permission in an existing dir
+    """
+
+    if exists(dir_name):
+        if isdir(dir_name):
+            #dir is there
+            if fail_on_exist:
+                raise OSError,"Directory already exists: %s" % dir_name
+            else:
+                return 1
+        else:
+            #must be file with same name
+            raise OSError,"File with same name as dir_name exists: %s" % dir_name
+    else:
+        #no dir there, make it
+        try:
+            makedirs(dir_name)
+        except OSError:
+            #re-raise error, but slightly more informative 
+            raise OSError,"Could not create output directory: %s" % dir_name
+        return 0

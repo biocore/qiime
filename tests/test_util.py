@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 #unit tests for util.py
 
+from os import rmdir
 from os.path import split, abspath, dirname, exists, join
 from cogent.util.unit_test import TestCase, main
 from cogent.parse.fasta import MinimalFastaParser
@@ -9,8 +10,9 @@ from cogent.util.misc import remove_files
 from qiime.util import make_safe_f, FunctionWithParams, qiime_blast_seqs,\
     extract_seqs_by_sample_id, get_qiime_project_dir, matrix_stats,\
     raise_error_on_parallel_unavailable, merge_otu_tables,\
-    convert_OTU_table_relative_abundance
+    convert_OTU_table_relative_abundance, create_dir
 from cogent.app.formatdb import build_blast_db_from_fasta_file
+from cogent.util.misc import get_random_directory_name
 import numpy
 from numpy import array
 
@@ -19,7 +21,7 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME Project"
 #remember to add yourself if you make changes
 __credits__ = ["Rob Knight", "Daniel McDonald","Greg Caporaso", 
-"Justin Kuczynski"] 
+               "Justin Kuczynski", "Jens Reeder"] 
 __license__ = "GPL"
 __version__ = "0.92-dev"
 __maintainer__ = "Greg Caporaso"
@@ -32,6 +34,12 @@ class TopLevelTests(TestCase):
     def setUp(self):
         self.otu_table_f1 = otu_table_fake1.split('\n')
         self.otu_table_f2 = otu_table_fake2.split('\n')
+        self.dirs_to_remove = []
+    
+    def tearDown(self):
+        for dir in  self.dirs_to_remove:
+            if exists(dir):
+                rmdir(dir)
 
     def test_make_safe_f(self):
         """make_safe_f should return version of f that ignores extra kwargs."""
@@ -207,6 +215,28 @@ class TopLevelTests(TestCase):
         self.assertEqual(actual[2],exp_otu_table)
         self.assertEqual(actual[3],exp_lineages)
 
+    def test_create_dir(self):
+        """create_dir creates dir and fails meaningful."""
+
+        tmp_dir_path = get_random_directory_name()
+        tmp_dir_path2 = get_random_directory_name(suppress_mkdir=True)
+        tmp_dir_path3 = get_random_directory_name(suppress_mkdir=True)
+
+        self.dirs_to_remove.append(tmp_dir_path)
+        self.dirs_to_remove.append(tmp_dir_path2)
+        self.dirs_to_remove.append(tmp_dir_path3)
+
+        # create on existing dir raises OSError if fail_on_exist=True
+        self.assertRaises(OSError, create_dir, tmp_dir_path,
+                          fail_on_exist=True)
+        
+        # return should be 1 if dir exist and fail_on_exist=False 
+        self.assertEqual(create_dir(tmp_dir_path, fail_on_exist=False), 1)
+
+        # if dir not there make it and return always 0
+        self.assertEqual(create_dir(tmp_dir_path2), 0)
+        self.assertEqual(create_dir(tmp_dir_path3, fail_on_exist=True), 0)
+
 otu_table_fake1 = """#Full OTU Counts
 #OTU ID	S1	S2	Consensus Lineage
 0	1	0	Root;Bacteria
@@ -365,6 +395,9 @@ class BlastSeqsTests(TestCase):
 2\t1\t1\t1\tBacteria; Firmicutes; Clostridia; Clostridiales; Faecalibacterium; Unclassified; otu_1121""".split('\n')
         result = convert_OTU_table_relative_abundance(otu_table)
         self.assertEqual(result, ['#Full OTU Counts', '#OTU ID\tsample1\tsample2\tsample3\tConsensus Lineage', '0\t0.0\t0.666666666667\t0.0\tBacteria; Bacteroidetes; Bacteroidales; Parabacteroidaceae; Unclassified; otu_475', '1\t0.5\t0.0\t0.0\tBacteria; Bacteroidetes; Bacteroidales; adhufec77-25; Barnesiella; Barnesiella_viscericola; otu_369', '2\t0.5\t0.333333333333\t1.0\tBacteria; Firmicutes; Clostridia; Clostridiales; Faecalibacterium; Unclassified; otu_1121'])
+
+        
+        
 
 inseqs1 = """>s2_like_seq
 TGCAGCTTGAGCACAGGTTAGAGCCTTC

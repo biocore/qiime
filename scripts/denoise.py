@@ -14,13 +14,12 @@ __maintainer__ = "Jens Reeder"
 __email__ = "jens.reeder@gmail.com"
 __status__ = "Pre-release"
  
-from os import makedirs
-from os.path import exists, splitext, split, isdir
+from os.path import exists, splitext, split
 from optparse import make_option
 
 from cogent.core.alignment import SequenceCollection
 
-from qiime.util import parse_command_line_parameters
+from qiime.util import parse_command_line_parameters, create_dir
 from qiime.pyronoise import  pyroNoise_otu_picker
 
 script_info={}
@@ -82,21 +81,7 @@ def main():
     input_seqs_basename, ext = splitext(input_seqs_basename)
 
     outdir = opts.output_dir
-
-    if (exists(outdir)):
-        if isdir(outdir):
-            #Looks good, dir is there
-            pass
-        else:
-            #File with same name
-            raise OSError,"File with same name as outdir exists: %s" % outdir
-    else:
-        #no dir there, make it
-        try:
-            makedirs(outdir)
-        except OSError:
-            #re-raise error, but slightly more informative 
-            raise OSError,"Could not create output directory "+outdir
+    create_dir(outdir)
 
     log_fh=None
     if (opts.verbose):

@@ -46,6 +46,7 @@ from qiime.hamming import decode_barcode_8
 from qiime.golay import decode as decode_golay_12
 from qiime.format import format_histograms
 from qiime.parse import QiimeParseError, parse_qual_scores
+from qiime.util import create_dir
 
 ## Including new=True in the histogram() call is necessary to 
 ## get the correct result in versions prior to NumPy 1.2.0,
@@ -549,10 +550,12 @@ def preprocess(fasta_files, qual_files, mapping_file,
     if min_qual_score < 5:
         raise ValueError, "Min qual score must be >= 5."
 
-    try:
-        stat(dir_prefix)
-    except OSError:
-        mkdir(dir_prefix)
+    create_dir(dir_prefix, fail_on_exist=False)
+
+#    try:
+#        stat(dir_prefix)
+#    except OSError:
+#        mkdir(dir_prefix)
 
     """# Generate primer sequence patterns - changing to mapping file primers.
     all_primer_seqs, primer_seq_len = \
