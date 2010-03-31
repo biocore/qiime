@@ -729,7 +729,7 @@ def create_dir(dir_name, fail_on_exist=True):
                 return 1
         else:
             #must be file with same name
-            raise OSError,"File with same name as dir_name exists: %s" % dir_name
+            raise OSError,"File with same name exists: %s" % dir_name
     else:
         #no dir there, make it
         try:
