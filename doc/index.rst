@@ -7,11 +7,15 @@
 ######################################################
 QIIME: Quantitative Insights Into Microbial Ecology
 ######################################################
-QIIME (canonically pronounced 'Chime') stands for "Quantitative Insights Into Microbial Ecology". It allows a range of community analyses suitable for microbiome data using traditional and high-throughput sequencing methods.
+QIIME (canonically pronounced 'Chime') stands for "Quantitative Insights Into Microbial Ecology". QIIME is a pipeline for performing microbial community analysis that integrates many third party tools which have become standard in the field. To stay up-to-date on what's new with QIIME, you should subscribe to the `blog <http://qiime.wordpress.com>`_.
 
-About
-========
-QIIME takes as input FASTA-format sequence data, optional quality scores, and a metadata file that assigns samples to specific categories or numerical values. It supports a wide range of microbial community analyses that have been useful in recent high-profile publications. It is a series of command line scripts, built in Python and the open-source PyCogent_ toolkit It makes extensive use of unit testing to ensure the accuracy of the results, and is highly modular (i.e. components for specific stages such as choosing OTUs (Operational Taxonomic Units), sequence alignment, and phylogeny, including 3rd party applications, can be easily integrated).
+QIIME can run on a laptop, a supercomputer, and everything in between. For ease of installation beginner users or users interested in testing QIIME should start with `QIIME virtual box <./virtual_box.html>`_. Linux and Mac OS X are supported natively, and Windows, Linux, and Mac OS X are supported via the virtual box.
+
+Rather than reimplementing commonly used algorithms, QIIME wraps popular implementations of those algorithms. This allows us to make use of the many excellent tools available in this area, and allows faster integration of new tools. If you use tools that you think would be useful additions to QIIME, consider submitting a `feature request <http://sourceforge.net/tracker/?atid=1157167&group_id=272178&func=browse>`_.
+
+A standard QIIME analysis begins with sequence data from one or more sequencing platforms, including Sanger, Roche/454, and Illumina GAIIx. QIIME can perform library de-multiplexing and quality filtering; denoising with PyroNoise; OTU and representative set picking with uclust, cdhit, mothur, BLAST, or other tools; taxonomy assignment with BLAST or the RDP classifier; sequence alignment with PyNAST, muscle, infernal, or other tools; phylogeny reconstruction with FastTree, raxml, clearcut, or other tools; alpha diversity and rarefaction, including visualization of results, using over 20 metrics including Phylogenetic Diversity, chao1, and observed species; beta diversity and rarefaction, including visualization of results, using over 25 metrics including weighted and unweighted UniFrac, Euclidean distance, and Bray-Curtis; summarization and visualization of taxonomic composition of samples using pie charts and histograms; and many other features.
+
+QIIME includes parallelization capabilities for many of the computationally intensive steps. By default, these are configured to utilize a mutli-core environment, and are easily configured to run in a cluster environment. QIIME is built in Python using the open-source PyCogent_ toolkit. It makes extensive use of unit tests, and is highly modular to facilitate custom analyses.
 
 Blog and Mailing List
 ======================
@@ -32,15 +36,15 @@ The Virtual Box is pre-loaded with QIIME and its dependencies on a Ubuntu operat
    virtual_box.rst
 
 
-Stable Pre-Release
-^^^^^^^^^^^^^^^^^^
+Stable Release
+^^^^^^^^^^^^^^
 
 Currently the most stable version of QIIME is our 0.92 pre-release, which you can download `here <http://sourceforge.net/projects/qiime/files/releases/Qiime-0.92.tar.gz/download>`_. You can also view the `install documents <./install.html>`_, the software `documentation <./documentation.html>`_, a `data analysis tutorial <./tutorial.html>`_ and an `SRA submission tutorial <./doc_sra_submission.html>`_.
 
 Development Version
 ^^^^^^^^^^^^^^^^^^^
 
-To get the latest development version of QIIME, you should check it out of our Sourceforge repository. While this code is subject to minor changes in interface, it will provide access to the latest and greatest features. The official web documentation is likely to be out-of-date with respect to the development software. You should instead refer to the svn documentation in Qiime/doc. Check out the latest version of QIIME using svn with the command::
+QIIME is under very active development. To get the latest development version of QIIME, you access our Sourceforge repository. While this code is subject to minor changes in interface, it will provide access to the latest and greatest features. The official web documentation is likely to be out-of-date with respect to the development software. You should instead refer to the svn documentation in Qiime/doc. Check out the latest version of QIIME using svn with the command::
 
 	svn co http://qiime.svn.sourceforge.net/svnroot/qiime/trunk Qiime
 
@@ -99,7 +103,7 @@ Contributors
 
 .. note::
 
- \J. Gregory Caporaso :superscript:`1`, Justin Kuczynski :superscript:`2`, Jesse Stombaugh :superscript:`1`, Kyle Bittinger :superscript:`3`, Frederic D. Bushman :superscript:`3`, Elizabeth K. Costello :superscript:`1`, Noah Fierer :superscript:`4`, Antonio Gonzalez Peña :superscript:`5`, Julia K. Goodrich :superscript:`5`, Jeff I. Gordon :superscript:`6`, Gavin Huttley :superscript:`7`, Scott T. Kelley :superscript:`8`, Dan Knights :superscript:`5`, Jeremy E. Koenig :superscript:`9`, Ruth E. Ley :superscript:`9`, Cathy A. Lozupone :superscript:`1`, Daniel McDonald :superscript:`1`, Brian D. Muegge :superscript:`6`, Megan Pirrung :superscript:`1`, Jens Reeder :superscript:`1`, Joel R. Sevinsky :superscript:`10`, Peter J. Turnbaugh :superscript:`6`, Will Van Treuren :superscript:`1`, William A. Walters :superscript:`2`, Jeremy Widmann :superscript:`1`, Tanya Yatsunenko :superscript:`6`, Jesse Zaneveld :superscript:`2` and Rob Knight :superscript:`1,11`
+ \J. Gregory Caporaso :superscript:`1`, Justin Kuczynski :superscript:`2`, Jesse Stombaugh :superscript:`1`, Kyle Bittinger :superscript:`3`, Frederic D. Bushman :superscript:`3`, Elizabeth K. Costello :superscript:`1`, Noah Fierer :superscript:`4`, Antonio Gonzalez Peña :superscript:`5`, Julia K. Goodrich :superscript:`5`, Jeff I. Gordon :superscript:`6`, Gavin Huttley :superscript:`7`, Scott T. Kelley :superscript:`8`, Dan Knights :superscript:`5`, Jeremy E. Koenig :superscript:`9`, Ruth E. Ley :superscript:`9`, Cathy A. Lozupone :superscript:`1`, Daniel McDonald :superscript:`1`, Brian D. Muegge :superscript:`6`, Megan Pirrung :superscript:`1`, Jens Reeder :superscript:`1`, Joel R. Sevinsky :superscript:`10`, Peter J. Turnbaugh :superscript:`6`, William A. Walters :superscript:`2`, Jeremy Widmann :superscript:`1`, Tanya Yatsunenko :superscript:`6`, Jesse Zaneveld :superscript:`2` and Rob Knight :superscript:`1,11`
 
  * :superscript:`1` Department of Chemistry and Biochemistry, UCB 215, University of Colorado, Boulder, CO 80309 
  * :superscript:`2` Department of Molecular, Cellular and Developmental Biology, UCB 347, University of Colorado, Boulder, CO 80309 
