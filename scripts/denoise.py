@@ -19,7 +19,8 @@ from optparse import make_option
 
 from cogent.core.alignment import SequenceCollection
 
-from qiime.util import parse_command_line_parameters, create_dir
+from qiime.util import parse_command_line_parameters, create_dir,\
+    handle_error_codes
 from qiime.pyronoise import  pyroNoise_otu_picker
 
 script_info={}
@@ -61,7 +62,11 @@ script_info['optional_options'] = [\
                 type='int', dest='num_cpus',
                 help='number of CPUs '+\
                     '[default: %default]',
-                default=1)
+                default=1),
+    make_option('-f','--force_overwrite', action='store_true',
+                 dest='force', default=False,
+                 help='Overwrite files in output directory '+\
+                    '[default: %default]')
     ]
 
 script_info['version'] = __version__
@@ -79,9 +84,18 @@ def main():
     input_seqs_basename, ext = splitext(input_seqs_filename)
     #split off .sff
     input_seqs_basename, ext = splitext(input_seqs_basename)
-
     outdir = opts.output_dir
-    create_dir(outdir)
+
+    ret_val = create_dir(outdir, handle_errors_externally=True)  
+    if ret_val==1:  #dir exists
+        if opts.force:
+            #do nothing, just overwrite content
+            pass
+        else:
+            print "Directory exists. Use --force to overwrite."
+            exit()
+    else:
+        handle_error_codes(outdir, error_code=ret_val)
 
     log_fh=None
     if (opts.verbose):

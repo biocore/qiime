@@ -19,7 +19,7 @@ from os.path import exists, splitext, split, isdir
 
 from qiime.align_seqs import alignment_module_names,alignment_method_constructors,\
     pairwise_alignment_methods, CogentAligner
-from qiime.util import load_qiime_config
+from qiime.util import load_qiime_config, create_dir
 
 options_lookup = get_options_lookup()
 
@@ -129,24 +129,7 @@ def main():
     input_seqs_filepath = opts.input_fasta_fp
     alignment_method = opts.alignment_method
     output_dir = opts.output_dir or alignment_method + '_aligned'
-    #TODO: should check if output dir is writable before doing actual computation
-
-    if (exists(output_dir)):
-        if isdir(output_dir):
-            #Looks good, dir is there
-            # maybe issue a warning to log file?
-            # should check if dir is writable
-            pass
-        else:
-            #File with same name
-            raise OSError,"File with same name as outdir exists: %s" % output_dir
-    else:
-        #no dir there, make it
-        try:
-            makedirs(output_dir)
-        except OSError:
-            #re-raise error, but slightly more informative 
-            raise OSError,"Could not create output directory %s" % output_dir
+    create_dir(output_dir, fail_on_exist=False)
     
     fpath, ext = splitext(input_seqs_filepath)
     input_dir, fname = split(fpath)

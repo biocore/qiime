@@ -38,6 +38,8 @@ from cogent.util.dict2d import Dict2D
 from cogent.app.formatdb import build_blast_db_from_fasta_path,\
     build_blast_db_from_fasta_file
 from cogent import LoadSeqs
+
+from cogent.util.misc import curry
 from qiime.parse import parse_otus, parse_qiime_config_files
 
 class TreeMissingError(IOError):
@@ -707,34 +709,78 @@ def convert_OTU_table_relative_abundance(otu_table):
         output.append('\t'.join(line))
     return output
 
-def create_dir(dir_name, fail_on_exist=True):
-    """Open a dir safely and fail meaningful.
+
+#some error codes for creating a dir
+NO_ERROR       = 0
+DIR_EXISTS     = 1
+FILE_EXISTS    = 2
+OTHER_OS_ERROR = 3
+
+def create_dir(dir_name, fail_on_exist=True, handle_errors_externally=False):
+    """Create a dir safely and fail meaningful.
 
     dir_name: name of directory to create
 
     fail_on_exist: if true raise an error if dir already exists
     
-    returns 1 if directory already existed, 0 otherwise
+    handle_errors_externally: if True do not raise Errors, but return
+                   failure codes. This allows to handle errors locally and
+                   e.g. hint the user at a --force_overwrite options.
+                   
+    returns values (if no Error raised):
+    
+         0:  dir could be safely made
+         1:  directory already existed
+         2:  a file with the same name exists          
+         3:  any other unspecified OSError
+
+
+    See qiime/denoiser.py for an example of how to use this mechanism.
 
     Note: Depending  of how thorough we want to be we could add tests,
-          e.g. for testing actual write permission in an existing dir
+          e.g. for testing actual write permission in an existing dir.
     """
+
+    #pre-instanciate function with
+    ror = curry(handle_error_codes, dir_name, handle_errors_externally)
 
     if exists(dir_name):
         if isdir(dir_name):
             #dir is there
             if fail_on_exist:
-                raise OSError,"Directory already exists: %s" % dir_name
+                return ror(DIR_EXISTS)
             else:
-                return 1
+                return DIR_EXISTS
         else:
             #must be file with same name
-            raise OSError,"File with same name exists: %s" % dir_name
+            return ror(FILE_EXISTS)
     else:
-        #no dir there, make it
+        #no dir there, try making it
         try:
             makedirs(dir_name)
         except OSError:
-            #re-raise error, but slightly more informative 
-            raise OSError,"Could not create output directory: %s" % dir_name
-        return 0
+            return ror(OTHER_OS_ERROR)
+    
+    return NO_ERROR
+
+def handle_error_codes(dir_name, supress_errors=False,
+                       error_code=NO_ERROR):
+    """Wrapper function for error_handling.
+
+    dir_name: name of directory that raised the error
+    suppress_errors: if True raise Errors, otherwise return error_code
+    error_code: the code for the error
+    """
+    error_strings = \
+        {DIR_EXISTS :"Directory already exists: %s" % dir_name,
+         FILE_EXISTS : "File with same name exists: %s" % dir_name,
+         OTHER_OS_ERROR: "Could not create output directory: %s. " % dir_name
+         +"Check the permissions."}
+
+    if error_code==NO_ERROR:
+        return NO_ERROR
+    if supress_errors:
+        return error_code
+    else:
+        raise OSError, error_strings[error_code]
+

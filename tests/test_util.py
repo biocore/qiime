@@ -10,7 +10,7 @@ from cogent.util.misc import remove_files
 from qiime.util import make_safe_f, FunctionWithParams, qiime_blast_seqs,\
     extract_seqs_by_sample_id, get_qiime_project_dir, matrix_stats,\
     raise_error_on_parallel_unavailable, merge_otu_tables,\
-    convert_OTU_table_relative_abundance, create_dir
+    convert_OTU_table_relative_abundance, create_dir, handle_error_codes
 from cogent.app.formatdb import build_blast_db_from_fasta_file
 from cogent.util.misc import get_random_directory_name
 import numpy
@@ -229,13 +229,26 @@ class TopLevelTests(TestCase):
         # create on existing dir raises OSError if fail_on_exist=True
         self.assertRaises(OSError, create_dir, tmp_dir_path,
                           fail_on_exist=True)
-        
+        self.assertEquals(create_dir(tmp_dir_path,
+                                     fail_on_exist=True,
+                                     handle_errors_externally=True), 1)
+
         # return should be 1 if dir exist and fail_on_exist=False 
         self.assertEqual(create_dir(tmp_dir_path, fail_on_exist=False), 1)
 
         # if dir not there make it and return always 0
         self.assertEqual(create_dir(tmp_dir_path2), 0)
         self.assertEqual(create_dir(tmp_dir_path3, fail_on_exist=True), 0)
+
+    def test_handle_error_codes(self):
+        """handle_error_codes raises the right error."""
+
+        self.assertRaises(OSError, handle_error_codes, "test", False,1)
+        self.assertEqual(handle_error_codes("test", True, 1), 1)
+        self.assertEqual(handle_error_codes("test", False, 0), 0)
+        self.assertEqual(handle_error_codes("test"), 0)
+
+
 
 otu_table_fake1 = """#Full OTU Counts
 #OTU ID	S1	S2	Consensus Lineage
