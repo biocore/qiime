@@ -16,7 +16,7 @@ from os.path import join, exists, getsize, split, splitext
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files
 from cogent.app.util import get_tmp_filename
-from qiime.util import load_qiime_config, get_qiime_project_dir
+from qiime.util import load_qiime_config
 from qiime.parse import parse_qiime_parameters
 from qiime.workflow import (run_qiime_data_preparation,
     run_beta_diversity_through_3d_plot,
@@ -78,9 +78,7 @@ class WorkflowTests(TestCase):
         self.files_to_remove.append(self.lanemask_fp)
         
         self.qiime_config = load_qiime_config()
-        qiime_parameters_fp = \
-         join(get_qiime_project_dir(),'qiime_parameters.txt') 
-        self.params = parse_qiime_parameters(open(qiime_parameters_fp))
+        self.params = parse_qiime_parameters(qiime_parameters_f)
         self.params['align_seqs']['template_fp'] = self.template_aln_fp
         self.params['filter_alignment']['lane_mask_fp'] = self.lanemask_fp
     
@@ -193,6 +191,83 @@ class WorkflowTests(TestCase):
         self.assertTrue(getsize(weighted_unifrac_upgma_tree_fp) > 0)
         self.assertTrue(getsize(unweighted_unifrac_upgma_tree_fp) > 0)
 
+
+qiime_parameters_f = """# qiime_parameters.txt
+# WARNING: DO NOT EDIT OR DELETE Qiime/qiime_parameters.txt. Users should copy this file and edit copies of it.
+
+# OTU picker parameters
+pick_otus:otu_picking_method	uclust
+pick_otus:clustering_algorithm	furthest
+pick_otus:max_cdhit_memory	400
+pick_otus:refseqs_fp
+pick_otus:blast_db
+pick_otus:similarity	0.97
+pick_otus:max_e_value	1e-10
+pick_otus:prefix_prefilter_length
+pick_otus:trie_prefilter
+pick_otus:prefix_length
+pick_otus:suffix_length
+
+# Parallel options
+parallel:jobs_to_start	1
+parallel:retain_temp_files	False
+parallel:seconds_to_sleep	60
+
+# Representative set picker parameters
+pick_rep_set:rep_set_picking_method	most_abundant
+pick_rep_set:sort_by	otu
+
+# Multiple sequence alignment parameters
+align_seqs:template_fp
+align_seqs:alignment_method	pynast
+align_seqs:pairwise_alignment_method	uclust
+align_seqs:blast_db
+align_seqs:min_length	150
+align_seqs:min_percent_id	75.0
+
+# Alignment filtering (prior to tree-building) parameters
+filter_alignment:lane_mask_fp
+filter_alignment:allowed_gap_frac	 0.999999
+filter_alignment:remove_outliers	False
+filter_alignment:allowed_gap_frac	3.0
+
+# Taxonomy assignment parameters
+assign_taxonomy:id_to_taxonomy_fp
+assign_taxonomy:reference_seqs_fp
+assign_taxonomy:assignment_method	rdp
+assign_taxonomy:blast_db
+assign_taxonomy:confidence	0.8
+assign_taxonomy:e_value	0.001
+
+# Phylogenetic tree building parameters
+make_phylogeny:tree_method	fasttree
+make_phylogeny:root_method	tree_method_default
+
+# Beta diversity parameters
+beta_diversity:metrics	weighted_unifrac,unweighted_unifrac
+
+# Make 3D plot parameters
+make_3d_plots:custom_axes
+
+# Rarefaction parameters
+multiple_rarefactions:num-reps	1
+multiple_rarefactions:depth
+multiple_rarefactions:lineages_included	False
+
+# Alpha diversity parameters
+alpha_diversity:metrics	PD_whole_tree,chao1,observed_species
+
+# Make rarefaction averages parameters
+make_rarefaction_averages:prefs
+
+# Make rarefaction plots parameters
+make_rarefaction_plots:imagetype	png
+make_rarefaction_plots:resolution	75
+
+# Collate alpha
+collate_alpha:example_path
+
+""".split('\n')
 
 fasting_map = """#SampleID	BarcodeSequence	LinkerPrimerSequence	Treatment	DOB	Description
 #Example mapping file for the QIIME analysis package.  These 9 samples are from a study of the effects of exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).

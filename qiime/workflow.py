@@ -322,7 +322,7 @@ def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,\
      [('Beta Diversity (%s)' % ', '.join(beta_diversity_metrics), beta_div_cmd)])
     
     # Prep the 3d prefs file generator command
-    prefs_fp = '%s/3d_prefs.txt' % output_dir
+    prefs_fp = '%s/prefs.txt' % output_dir
     try:
         params_str = get_params_str(params['make_prefs_file'])
     except KeyError:
