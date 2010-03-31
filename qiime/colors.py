@@ -139,10 +139,12 @@ data_color_hsv = {
         'red':      (0,100,100),
         'silver':   (0, 0, 75.3),
         'teal':     (180,100,50.2),
-        'yellow':   (60,100,100),
+        'yellow':   (60,100,100)
 }
 
 data_colors = color_dict_to_objects(data_color_hsv)
+
+kinemage_colors = ['hotpink','blue', 'lime','gold','red','sea','purple','green']
 
 def iter_color_groups(mapping, prefs):
     """Iterates over color groups for each category given mapping file/prefs.
@@ -207,42 +209,46 @@ def get_group_colors(groups, colors, data_colors=data_colors, data_color_order=d
     added_data_colors = {}
     if isinstance(colors, dict):
         #assume we're getting some of the colors out of a dict
-        for k, v in sorted(colors.items()):
-            if k not in groups: #assume is prefix
-                k_matches = [g for g in groups if g.startswith(k)]
-                if isinstance(v, str):  #just set everything to this color
-                    for m in k_matches:
-                        colors[m] = v
-                else:   #assume is new color or range
-                    first, second = v
-                    if isinstance(first, str): #new named color?
-                        if first not in data_colors:
-                            added_data_colors[first] = Color(first, second)
+        if colors.items() <> []:
+            for k, v in sorted(colors.items()):
+                if k not in groups: #assume is prefix
+                    k_matches = [g for g in groups if g.startswith(k)]
+                    if isinstance(v, str):  #just set everything to this color
                         for m in k_matches:
-                            colors[m] = first
-                    else:   #new color range?
-                        start_color, end_color = map(get_color, [first,second])
-                        num_colors = len(k_matches)
-                        curr_data_colors = color_dict_to_objects(
-                            make_color_dict(start_color,
-                            start_hsv,end_color,end_hsv,num_colors))
-                        curr_colors = {}
-                        color_groups(k_matches, curr_colors,
-                            natsort(curr_data_colors))
-                        colors.update(curr_colors)
-                        added_data_colors.update(curr_data_colors)
-                del colors[k]
-            elif not isinstance(v, str):    #assume val is new color
-                color = get_color(v)
-                if color.Name not in data_colors:
-                    added_data_colors[color.Name] = color
-                colors[k] = color.Name
-        #handle any leftover groups
-        color_groups(groups, colors, data_color_order)
-        #add new colors
-        data_colors.update(added_data_colors)
-        data_color_order.append(natsort(added_data_colors))
-
+                            colors[m] = v
+                    else:   #assume is new color or range
+                        first, second = v
+                        if isinstance(first, str): #new named color?
+                            if first not in data_colors:
+                                added_data_colors[first] = Color(first, second)
+                            for m in k_matches:
+                                colors[m] = first
+                        else:   #new color range?
+                            start_color, end_color = map(get_color,
+                                                            [first,second])
+                            num_colors = len(k_matches)
+                            curr_data_colors = color_dict_to_objects(
+                                make_color_dict(start_color,
+                                start_hsv,end_color,end_hsv,num_colors))
+                            curr_colors = {}
+                            color_groups(k_matches, curr_colors,
+                                natsort(curr_data_colors))
+                            colors.update(curr_colors)
+                            added_data_colors.update(curr_data_colors)
+                    del colors[k]
+                elif not isinstance(v, str):    #assume val is new color
+                    color = get_color(v)
+                    if color.Name not in data_colors:
+                        added_data_colors[color.Name] = color
+                    colors[k] = color.Name
+            #handle any leftover groups
+            color_groups(groups, colors, data_color_order)
+            #add new colors
+            data_colors.update(added_data_colors)
+            data_color_order.append(natsort(added_data_colors))
+        else:
+            #handle case where no prefs is used
+            color_groups(groups, colors, data_color_order)
     else:
         #handle the case where colors is a tuple for gradients
         start_color, end_color = map(get_color, colors)

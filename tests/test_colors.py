@@ -110,10 +110,10 @@ class TopLevelTests(TestCase):
               'red':      (0,100,100),
               'silver':   (0, 0, 75.3),
               'teal':     (180,100,50.2),
-              'yellow':   (60,100,100),
+              'yellow':   (60,100,100)
         }
         self.data_color_order = ['blue','lime','red','aqua','fuchsia','yellow',\
-                        'green','maroon','teal','purple','olive','silver','gray',[]]
+                      'green','maroon','teal','purple','olive','silver','gray']
         self._paths_to_clean_up = []
         self._dir_to_clean_up = ''
 
