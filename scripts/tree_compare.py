@@ -12,7 +12,7 @@ __email__ = "justinak@gmail.com"
 __status__ = "Pre-release"
  
 
-from qiime.util import parse_command_line_parameters
+from qiime.util import parse_command_line_parameters, create_dir
 from qiime.tree_compare import load_tree_files, bootstrap_support, write_bootstrap_support_files
 from optparse import make_option
 import os.path
@@ -42,8 +42,7 @@ script_info['version'] = __version__
 def main():
     option_parser, options, args = parse_command_line_parameters(**script_info)
 
-    if not os.path.exists(options.output_dir):
-        os.makedirs(options.output_dir)
+    create_dir(options.output_dir, fail_on_exist=False)
 
     master_tree, support_trees = load_tree_files(options.master_tree,
         options.support_dir)

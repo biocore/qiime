@@ -10,7 +10,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Pre-release"
 
-from qiime.util import parse_command_line_parameters
+from qiime.util import parse_command_line_parameters, create_dir
 from optparse import make_option
 from qiime.pick_otus  import otu_picking_method_constructors,\
  otu_picking_method_choices, MothurOtuPicker
@@ -193,11 +193,7 @@ def main():
     input_seqs_basename, ext = splitext(input_seqs_filename)
     
     output_dir = opts.output_dir or otu_picking_method + '_picked_otus'
-    try:
-        makedirs(output_dir)
-    except OSError:
-        # output_dir exists
-        pass
+    create_dir(output_dir, fail_on_exist=False)
         
     result_path = '%s/%s_otus.txt' % (output_dir,input_seqs_basename)
     log_path = '%s/%s_otus.log' % (output_dir,input_seqs_basename)

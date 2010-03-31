@@ -12,7 +12,7 @@ __email__ = "justinak@gmail.com"
 __status__ = "Pre-release"
  
 
-from qiime.util import parse_command_line_parameters
+from qiime.util import parse_command_line_parameters, create_dir
 from optparse import make_option
 import os.path
 from qiime.rarefaction import RarefactionMaker
@@ -62,8 +62,7 @@ def main():
     if opts.step <= 0:
         option_parser.error("nonpositive step not allowed (%s was supplied)" % \
           (opts.step,))
-    if not os.path.exists(opts.output_path):
-        os.makedirs(opts.output_path)
+    create_dir(opts.output_path, fail_on_exist=False)
     maker = RarefactionMaker(opts.input_path, opts.min, opts.max,
         opts.step, opts.num_reps)
     maker.rarefy_to_files(opts.output_path, False,
