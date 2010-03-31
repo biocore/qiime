@@ -97,7 +97,7 @@ def main():
         scale_custom_coords(custom_axes,data['coord'])
 
     if opts.output_dir:
-        create_dir(opts.output_dir)
+        create_dir(opts.output_dir,False)
         dir_path=opts.output_dir
     else:
         dir_path='./'
