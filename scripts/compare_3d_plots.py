@@ -16,7 +16,7 @@ __maintainer__ = "Dan Knights"
 __email__ = "daniel.knights@colorado.edu"
 __status__ = "Pre-release"
 
-from qiime.util import parse_command_line_parameters, get_options_lookup
+from qiime.util import parse_command_line_parameters, get_options_lookup, create_dir
 from optparse import make_option
 from qiime.make_3d_plots import generate_3d_plots,\
 get_coord,remove_unmapped_samples,\
@@ -123,14 +123,8 @@ def main():
 
     # Generate random output file name and create directories
     if opts.output_dir:
-        if os.path.exists(opts.output_dir):
-            dir_path=opts.output_dir
-        else:
-            try:
-                os.mkdir(opts.output_dir)
-                dir_path=opts.output_dir
-            except OSError:
-                pass
+        create_dir(opts.output_dir)
+        dir_path = opts.output_dir
     else:
         dir_path='./'
     
