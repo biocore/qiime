@@ -23,7 +23,7 @@ from qiime.workflow import (run_qiime_data_preparation,
     run_qiime_alpha_rarefaction,
     run_jackknifed_upgma_clustering,\
     call_commands_serially,
-    no_status_updates)
+    no_status_updates,WorkflowError)
     
 class WorkflowTests(TestCase):
     
@@ -89,6 +89,20 @@ class WorkflowTests(TestCase):
                 rmtree(d)
         remove_files(self.files_to_remove)
         
+    def test_unsupported_options_handled_nicely(self):
+        """WorkflowError raised on unsupported option """
+        self.params['beta_diversity']['blah'] = self.fasting_otu_table_fp
+        self.assertRaises(WorkflowError,run_beta_diversity_through_3d_plot,
+         self.fasting_otu_table_fp, 
+         self.fasting_mapping_fp,
+         self.wf_out, 
+         call_commands_serially,
+         self.params,
+         self.qiime_config,
+         tree_fp=self.fasting_tree_fp,
+         parallel=False, 
+         status_update_callback=no_status_updates)
+        
     def test_run_qiime_data_preparation(self):
         """run_qiime_data_preparation runs without error"""
         run_qiime_data_preparation(
@@ -98,6 +112,29 @@ class WorkflowTests(TestCase):
          self.params, 
          self.qiime_config, 
          parallel=False,
+         status_update_callback=no_status_updates)
+         
+        input_file_basename = splitext(split(self.fasting_seqs_fp)[1])[0]
+        otu_table_fp = join(self.wf_out,'uclust_picked_otus','rep_set',
+         'rdp_assigned_taxonomy','otu_table','%s_otu_table.txt' % 
+         input_file_basename)
+        tree_fp = join(self.wf_out,'uclust_picked_otus','rep_set',
+         'pynast_aligned_seqs','fasttree_phylogeny','%s_rep_set.tre' % 
+         input_file_basename)
+         
+        # check that the two final output files have non-zero size
+        self.assertTrue(getsize(tree_fp) > 0)
+        self.assertTrue(getsize(otu_table_fp) > 0)
+    
+    def test_run_qiime_data_preparation_parallel(self):
+        """run_qiime_data_preparation runs in parallel without error"""
+        run_qiime_data_preparation(
+         self.fasting_seqs_fp, 
+         self.wf_out, 
+         call_commands_serially,
+         self.params, 
+         self.qiime_config, 
+         parallel=True,
          status_update_callback=no_status_updates)
          
         input_file_basename = splitext(split(self.fasting_seqs_fp)[1])[0]
@@ -134,9 +171,31 @@ class WorkflowTests(TestCase):
         # check that final output files have non-zero size
         self.assertTrue(getsize(unweighted_unifrac_pc_fp) > 0)
         self.assertTrue(getsize(weighted_unifrac_pc_fp) > 0)
+        self.assertTrue(getsize(weighted_unifrac_html_fp) > 0)       
+        
+      
+    def test_run_beta_diversity_through_3d_plot_parallel(self):
+        """ run_beta_diversity_through_3d_plot runs in parallel without error """
+        run_beta_diversity_through_3d_plot(
+         self.fasting_otu_table_fp, 
+         self.fasting_mapping_fp,
+         self.wf_out, 
+         call_commands_serially,
+         self.params,
+         self.qiime_config,
+         tree_fp=self.fasting_tree_fp,
+         parallel=True, 
+         status_update_callback=no_status_updates)
+         
+        unweighted_unifrac_pc_fp = join(self.wf_out,'unweighted_unifrac_pc.txt')
+        weighted_unifrac_pc_fp = join(self.wf_out,'weighted_unifrac_pc.txt')
+        weighted_unifrac_html_fp = join(self.wf_out,
+        'weighted_unifrac_3d_continuous','weighted_unifrac_pc.txt_3D.html')
+        
+        # check that final output files have non-zero size
+        self.assertTrue(getsize(unweighted_unifrac_pc_fp) > 0)
+        self.assertTrue(getsize(weighted_unifrac_pc_fp) > 0)
         self.assertTrue(getsize(weighted_unifrac_html_fp) > 0)
-        
-        
         
     def test_run_qiime_alpha_rarefaction(self):
         """ run_qiime_alpha_rarefaction runs without error """
@@ -151,6 +210,34 @@ class WorkflowTests(TestCase):
          tree_fp=self.fasting_tree_fp,
          num_steps=10, 
          parallel=False, 
+         min_seqs_per_sample=10,\
+         status_update_callback=no_status_updates)
+         
+        pd_plot_fp = join(self.wf_out,'alpha_rarefaction_plots',
+         'PD_whole_tree','PD_whole_tree','Treatment.png')
+        chao1_plot_fp = join(self.wf_out,'alpha_rarefaction_plots',
+         'chao1','chao1','Treatment.png')
+        os_averages_fp = join(self.wf_out,'alpha_rarefaction_averages',
+         'observed_species','observed_species','Treatment.txt')
+        
+        # check that final output files have non-zero size
+        self.assertTrue(getsize(chao1_plot_fp) > 0)
+        self.assertTrue(getsize(pd_plot_fp) > 0)
+        self.assertTrue(getsize(os_averages_fp) > 0)
+        
+    def test_run_qiime_alpha_rarefaction_parallel(self):
+        """ run_qiime_alpha_rarefaction runs in parallel without error """
+    
+        run_qiime_alpha_rarefaction(
+         self.fasting_otu_table_fp, 
+         self.fasting_mapping_fp,
+         self.wf_out, 
+         call_commands_serially,
+         self.params,
+         self.qiime_config,
+         tree_fp=self.fasting_tree_fp,
+         num_steps=10, 
+         parallel=True, 
          min_seqs_per_sample=10,\
          status_update_callback=no_status_updates)
          
@@ -190,6 +277,31 @@ class WorkflowTests(TestCase):
         # check that final output files have non-zero size
         self.assertTrue(getsize(weighted_unifrac_upgma_tree_fp) > 0)
         self.assertTrue(getsize(unweighted_unifrac_upgma_tree_fp) > 0)
+        
+    def test_run_jackknifed_upgma_clustering_parallel(self):
+        """ run_jackknifed_upgma_clustering runs in parallel without error """
+    
+        run_jackknifed_upgma_clustering(
+         self.fasting_otu_table_fp,
+         self.fasting_tree_fp,
+         100,
+         self.wf_out, 
+         call_commands_serially,
+         self.params,
+         self.qiime_config,
+         parallel=True,
+         status_update_callback=no_status_updates)
+         
+        weighted_unifrac_upgma_tree_fp = join(self.wf_out,
+         'weighted_unifrac',
+         'upgma_cmp','jackknife_named_nodes.tre')
+        unweighted_unifrac_upgma_tree_fp = join(
+         self.wf_out,'unweighted_unifrac','upgma_cmp',
+         'jackknife_named_nodes.tre')
+         
+        # check that final output files have non-zero size
+        self.assertTrue(getsize(weighted_unifrac_upgma_tree_fp) > 0)
+        self.assertTrue(getsize(unweighted_unifrac_upgma_tree_fp) > 0)
 
 
 qiime_parameters_f = """# qiime_parameters.txt
@@ -209,9 +321,9 @@ pick_otus:prefix_length
 pick_otus:suffix_length
 
 # Parallel options
-parallel:jobs_to_start	1
+parallel:jobs_to_start	2
 parallel:retain_temp_files	False
-parallel:seconds_to_sleep	60
+parallel:seconds_to_sleep	1
 
 # Representative set picker parameters
 pick_rep_set:rep_set_picking_method	most_abundant
@@ -235,9 +347,7 @@ filter_alignment:allowed_gap_frac	3.0
 assign_taxonomy:id_to_taxonomy_fp
 assign_taxonomy:reference_seqs_fp
 assign_taxonomy:assignment_method	rdp
-assign_taxonomy:blast_db
 assign_taxonomy:confidence	0.8
-assign_taxonomy:e_value	0.001
 
 # Phylogenetic tree building parameters
 make_phylogeny:tree_method	fasttree

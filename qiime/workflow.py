@@ -23,6 +23,8 @@ independent scripts. For usage examples see the related files in the
 scripts directory:
  - 
 """
+class WorkflowError(Exception):
+    pass
 
 ## Begin functions used generally by the workflow functions
     
@@ -46,8 +48,7 @@ def call_commands_serially(commands,status_update_callback):
                  "Command run was:\n %s\n" % e[1] +\
                  "Command returned exit status: %d\n" % return_value +\
                  "Stdout/stderr:\n%s\n" % proc.stdout.read()
-                print msg
-                exit(-1)
+                raise WorkflowError, msg
 
 def print_to_stdout(s):
     print s
