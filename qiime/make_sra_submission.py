@@ -480,14 +480,15 @@ def make_run_and_experiment(experiment_lines, sff_dir, attribute_file=None,
                     f['MEMBER_ORDER'] = MEMBER_ORDER
                     if not f.get('POOL_MEMBER_FILENAME',''):
                         f['POOL_MEMBER_FILENAME'] = f['POOL_MEMBER_NAME'] + '.sff'
+                    relative_sff_path = join(sff_dir,f['RUN_PREFIX'],f['POOL_MEMBER_FILENAME'])
                     try:
-                        f['CHECKSUM'] = md5_path(join(sff_dir,f['RUN_PREFIX'],f['POOL_MEMBER_FILENAME']))
+                        f['CHECKSUM'] = md5_path(relative_sff_path)
                         field_dict['DATA_BLOCK_XML'] = data_block_wrapper % f
                         runs.append(run_wrapper % field_dict)
 
                         MEMBER_ORDER += 1   #skip members where we couldn't find the file
                     except IOError: #file missing, probably because no seqs were recovered
-                        stderr.write("File failed with IOError:\n%s\n" % f['POOL_MEMBER_FILENAME'])
+                        stderr.write("File failed with IOError:\n%s\n" % relative_sff_path)
                         pass
             field_dict['BARCODE_TABLE_XML'] = '\n' + '\n'.join(barcode_basecalls) + '\n'
             field_dict['PRIMER_TABLE_XML'] = '\n' + '\n'.join(primer_basecalls) + '\n'

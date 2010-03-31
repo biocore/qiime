@@ -12,6 +12,8 @@ from qiime.make_sra_submission import (
     make_sample, trim_quotes, defaultdict, group_lines_by_field,
     write_xml_generic, make_run_and_experiment)
 from qiime.util import get_qiime_project_dir
+import xml.etree.ElementTree as ET
+from cStringIO import StringIO
 
 """Tests of the make_study_and_experiment.py file.
 
@@ -22,13 +24,17 @@ has the templates and sample tabular data.
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2010, The QIIME Project"
 #remember to add yourself if you make changes
-__credits__ = ["Rob Knight", "Greg Caporaso", "Kyle Bittinger"]
+__credits__ = ["Rob Knight", "Greg Caporaso", "Kyle Bittinger", "Rohini Sinha"]
 __license__ = "GPL"
 __version__ = "0.92-dev"
 __maintainer__ = "Rob Knight"
 __email__ = "rob@spot.colorado.edu"
 __status__ = "Pre-release"
 
+def standardize_xml(xml_str):
+    """Standardize an XML string with the ElementTree package."""
+    return ET.tostring(ET.XML(xml_str))
+    
 class TopLevelTests(TestCase):
     """Top-level tests of functions in make_study_and_experiment"""
     def setUp(self):
@@ -37,7 +43,7 @@ class TopLevelTests(TestCase):
 
     def tearDown(self):
         remove_files(self.files_to_remove)
-
+        
     def test_md5_path(self):
         """md5_path should match hand-calculated value"""
         template_fp = tempfile.mktemp(suffix='.xml')
@@ -115,24 +121,24 @@ aa\tbb\tcc
         """make_study should produce expected results given info/template"""
         study_sample_data = StringIO(study_txt)
         result = make_study(study_sample_data, study_template)
-        self.assertEqual(result, study_xml)
+        self.assertEqual(standardize_xml(result), standardize_xml(study_xml))
 
         # Test when pmid field is empty
         study_sample_data = StringIO(study_pmid_empty_txt)
         result = make_study(study_sample_data, study_template)
-        self.assertEqual(result, study_pmid_missing_xml)
+        self.assertEqual(standardize_xml(result), standardize_xml(study_pmid_missing_xml))
 
         # Test when pmid field is missing
         study_sample_data = StringIO(study_pmid_missing_txt)
         result = make_study(study_sample_data, study_template)
-        self.assertEqual(result, study_pmid_missing_xml)
+        self.assertEqual(standardize_xml(result), standardize_xml(study_pmid_missing_xml))
 
     def test_make_submission(self):
         """make_submission should produce expected results given info/template"""
         submission_sample_data = StringIO(submission_txt)
         result = make_submission(submission_sample_data, submission_template,
             {'study':'study.xml', 'sample':'sample.xml'})
-        self.assertEqual(result, submission_xml)
+        self.assertEqual(standardize_xml(result), standardize_xml(submission_xml))
 
         # TODO Rewrite using only temp files.
         fake_tgz_file = tempfile.NamedTemporaryFile(suffix='.tgz')
@@ -140,13 +146,14 @@ aa\tbb\tcc
             submission_with_file_txt % fake_tgz_file.name)
         result = make_submission(submission_sample_data, submission_template,
             {'study':'study.xml', 'sample':'sample.xml'})
-        self.assertEqual(result, submission_with_file_xml % fake_tgz_file.name)
+        self.assertEqual(standardize_xml(result), standardize_xml(
+            submission_with_file_xml  % fake_tgz_file.name))
 
     def test_make_sample(self):
         """make_sample should produce expected reuslts given info/template"""
         sample_data = StringIO(sample_txt)
         result = make_sample(sample_data, sample_template)
-        self.assertEqual(result, sample_xml)
+        self.assertEqual(standardize_xml(result), standardize_xml(sample_xml))
 
     def test_trim_quotes(self):
         self.assertEqual(trim_quotes('"abcd"'), 'abcd')
@@ -180,11 +187,11 @@ aa\tbb\tcc
         observed_fp = write_xml_generic(
             input_file.name, template_file.name, simple_xml_f)
         observed = open(observed_fp).read()
-        self.assertEqual(observed, '<xml>abc</xml>')
-
+        self.assertEqual(standardize_xml(observed), standardize_xml('<xml>abc</xml>'))
         self.files_to_remove = [observed_fp]
 
     def test_make_run_and_experiment(self):
+        """make_run_and_experiment should return correct XML for minimal experiment."""
         expt_lines = ['#STUDY_REF\tEXPERIMENT_ALIAS\n']
         observed_experiment_xml, observed_run_xml = make_run_and_experiment(
             expt_lines, '/tmp')
@@ -194,15 +201,265 @@ aa\tbb\tcc
             '\n'
             '</EXPERIMENT_SET>'
             )
-        self.assertEqual(observed_experiment_xml, expected_experiment_xml)
+        self.assertEqual(standardize_xml(observed_experiment_xml), 
+            standardize_xml(expected_experiment_xml))
         expected_run_xml = (
             '<?xml version="1.0" encoding="UTF-8"?>\n'
             '<RUN_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">\n'
             '\n'
-            '</RUN_SET>\n'
+            '</RUN_SET>'
             )
-        self.assertEqual(observed_run_xml, expected_run_xml)
+        self.assertEqual(standardize_xml(observed_run_xml), standardize_xml(expected_run_xml))
+        
+    def test_experiment_xml(self):
+        """make_run_and_experiment should return correct XML for full experiment."""
+        experiment_lines = StringIO(experiment)
+        sff_dir = 'sra_test_files/F6AVWTA'
+        att_file = StringIO(attrs)
+        l_file = StringIO(links)
+        observed_exp_xml, observed_run_xml = make_run_and_experiment(experiment_lines, sff_dir, 
+            attribute_file=att_file, link_file=l_file)
+        self.assertEqual(standardize_xml(observed_exp_xml), standardize_xml(experiment_xml_str))
 
+experiment = '''
+#EXPERIMENT_ALIAS	EXPERIMENT_CENTER	EXPERIMENT_TITLE	STUDY_REF	STUDY_CENTER	EXPERIMENT_DESIGN_DESCRIPTION	LIBRARY_CONSTRUCTION_PROTOCOL	SAMPLE_ALIAS	SAMPLE_CENTER	POOL_MEMBER_NAME	POOL_MEMBER_FILENAME	POOL_PROPORTION	BARCODE_READ_GROUP_TAG	BARCODE	LINKER	PRIMER_READ_GROUP_TAG	KEY_SEQ	PRIMER	RUN_PREFIX	REGION	PLATFORM	RUN_CENTER	RUN_DATE	INSTRUMENT_NAME
+bodysites_F6AVWTA01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015438	NCBI	F6AVWTA01_2878_700015438_V1-V3	B-2004-03-S1.sff	0.014492754	F6AVWTA01_ATGTTCGATG	ATGTTCGATG		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA01	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA02	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015438	NCBI	F6AVWTA02_2878_700015438_V1-V3	B-2008-05-S1.sff	0.014492754	F6AVWTA02_ATGTTCTAGT	ATGTTCTAGT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015470	NCBI	F6AVWTA01_2866_700015470_V1-V3	B-2004-04-S1.sff	0.014492754	F6AVWTA01_GCTCTACGTC	GCTCTACGTC		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA01	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA02	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015470	NCBI	F6AVWTA02_2866_700015470_V1-V3	B-2008-08-S1.sff	0.014492754	F6AVWTA02_GCTCTGTACT	GCTCTGTACT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015766	NCBI	F6AVWTA01_2898_700015766_V1-V3	B-2004-08-S1.sff	0.014492754	F6AVWTA01_CATGAGCGTC	CATGAGCGTC		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA01	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA02	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015766	NCBI	F6AVWTA02_2898_700015766_V1-V3	B-2009-06-S1.sff	0.014492754	F6AVWTA02_CATGAGCGTG	CATGAGCGTG		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015468	NCBI	F6AVWTA01_2865_700015468_V1-V3	B-2005-06-S1.sff	0.014492754	F6AVWTA01_AGTACGTACT	AGTACGTACT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA01	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA02	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015468	NCBI	F6AVWTA02_2865_700015468_V1-V3	B-2011-01-S1.sff	0.014492754	F6AVWTA02_AGTACACGTC	AGTACACGTC		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700016371	NCBI	F6AVWTA01_2907_700016371_V1-V3	B-2006-03-S1.sff	0.014492754	F6AVWTA01_TCTCTCTAGT	TCTCTCTAGT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA01	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA02	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700016371	NCBI	F6AVWTA02_2907_700016371_V1-V3	B-2011-02-S1.sff	0.014492754	F6AVWTA02_TCTCTGTACT	TCTCTGTACT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	0	FLX	JCVI 	NULL	NULL
+'''
+
+attrs = '''
+#Experiment	Attribute	Value
+bodysites_F6AVWTA01	library_strategy	targeted-locus
+bodysites_F6AVWTA01	gene	16S rRNA V1-V3 region
+bodysites_F6AVWTA02	library_strategy	targeted-locus
+bodysites_F6AVWTA02	gene	16S rRNA V1-V3 region'''
+
+links = '''
+#Experiment	Link Name	Link URL
+bodysites_F6AVWTA01	bodysites Library Construction Protocol	http://hmpdacc.org/doc/HMP_MDG_454_16S_Protocol_V4_2_102109.pdf
+bodysites_F6AVWTA02	bodysites Library Construction Protocol	http://hmpdacc.org/doc/HMP_MDG_454_16S_Protocol_V4_2_102109.pdf
+'''
+
+experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
+<EXPERIMENT_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <EXPERIMENT
+    alias="bodysites_F6AVWTA02"
+    center_name="JCVI"
+  >
+    <TITLE>Survey of multiple body sites</TITLE>
+    <STUDY_REF refname="bodysites_study" refcenter="NCBI"/>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>Pool of samples from different individual subjects</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR refname="bodysites_study_default" refcenter="NCBI">
+        <POOL>
+            <MEMBER refname="700015468" refcenter="NCBI" member_name="F6AVWTA02_2865_700015468_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_AGTACACGTC">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+            <MEMBER refname="700015470" refcenter="NCBI" member_name="F6AVWTA02_2866_700015470_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_GCTCTGTACT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+            <MEMBER refname="700015438" refcenter="NCBI" member_name="F6AVWTA02_2878_700015438_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_ATGTTCTAGT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+            <MEMBER refname="700015766" refcenter="NCBI" member_name="F6AVWTA02_2898_700015766_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_CATGAGCGTG">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+            <MEMBER refname="700016371" refcenter="NCBI" member_name="F6AVWTA02_2907_700016371_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_TCTCTGTACT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+        </POOL>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>bodysites_F6AVWTA02</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>AMPLICON</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>PCR</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <SINGLE></SINGLE>
+        </LIBRARY_LAYOUT>
+        <LIBRARY_CONSTRUCTION_PROTOCOL>
+          Dummy Protocol
+        </LIBRARY_CONSTRUCTION_PROTOCOL>
+      </LIBRARY_DESCRIPTOR>      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Technical Read</READ_CLASS>
+            <READ_TYPE>Adapter</READ_TYPE>
+          <EXPECTED_BASECALL>TCAG</EXPECTED_BASECALL>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>1</READ_INDEX>
+            <READ_LABEL>barcode</READ_LABEL>
+            <READ_CLASS>Technical Read</READ_CLASS>
+            <READ_TYPE>BarCode</READ_TYPE>
+            <EXPECTED_BASECALL_TABLE>
+               <BASECALL read_group_tag="F6AVWTA02_ATGTTCTAGT" min_match="10" max_mismatch="0" match_edge="full">ATGTTCTAGT</BASECALL>
+               <BASECALL read_group_tag="F6AVWTA02_AGTACACGTC" min_match="10" max_mismatch="0" match_edge="full">AGTACACGTC</BASECALL>
+               <BASECALL read_group_tag="F6AVWTA02_GCTCTGTACT" min_match="10" max_mismatch="0" match_edge="full">GCTCTGTACT</BASECALL>
+               <BASECALL read_group_tag="F6AVWTA02_CATGAGCGTG" min_match="10" max_mismatch="0" match_edge="full">CATGAGCGTG</BASECALL>
+               <BASECALL read_group_tag="F6AVWTA02_TCTCTGTACT" min_match="10" max_mismatch="0" match_edge="full">TCTCTGTACT</BASECALL>
+</EXPECTED_BASECALL_TABLE>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>2</READ_INDEX>
+            <READ_LABEL>rRNA_primer</READ_LABEL>
+            <READ_CLASS>Technical Read</READ_CLASS>
+            <READ_TYPE>Primer</READ_TYPE>
+            <EXPECTED_BASECALL_TABLE>
+               <BASECALL read_group_tag="V1-V3" min_match="17" max_mismatch="0" match_edge="full">TAATCCGCGGCTGCTGG</BASECALL>
+</EXPECTED_BASECALL_TABLE>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>3</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <RELATIVE_ORDER follows_read_index="2"/>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+      </DESIGN>
+          <PLATFORM>
+        <LS454>
+            <INSTRUMENT_MODEL>454 GS FLX</INSTRUMENT_MODEL>
+            <FLOW_SEQUENCE>TACG</FLOW_SEQUENCE>
+            <FLOW_COUNT>400</FLOW_COUNT>
+        </LS454>
+    </PLATFORM>
+      <PROCESSING>
+        <BASE_CALLS>
+                    <SEQUENCE_SPACE>Base Space</SEQUENCE_SPACE>
+                    <BASE_CALLER>454 BaseCaller</BASE_CALLER>
+        </BASE_CALLS>
+        <QUALITY_SCORES qtype="phred">
+                    <QUALITY_SCORER>454 BaseCaller</QUALITY_SCORER>
+                    <NUMBER_OF_LEVELS>40</NUMBER_OF_LEVELS>
+                    <MULTIPLIER>1.0</MULTIPLIER>
+        </QUALITY_SCORES>
+      </PROCESSING>
+      <EXPERIMENT_LINKS>
+        <EXPERIMENT_LINK>
+          <URL_LINK>
+            <LABEL>bodysites Library Construction Protocol</LABEL>
+            <URL>http://hmpdacc.org/doc/HMP_MDG_454_16S_Protocol_V4_2_102109.pdf</URL>
+          </URL_LINK>
+        </EXPERIMENT_LINK>
+      </EXPERIMENT_LINKS>
+      <EXPERIMENT_ATTRIBUTES>
+        <EXPERIMENT_ATTRIBUTE>
+          <TAG>library_strategy</TAG>
+          <VALUE>targeted-locus</VALUE>
+        </EXPERIMENT_ATTRIBUTE>
+        <EXPERIMENT_ATTRIBUTE>
+          <TAG>gene</TAG>
+          <VALUE>16S rRNA V1-V3 region</VALUE>
+        </EXPERIMENT_ATTRIBUTE>
+      </EXPERIMENT_ATTRIBUTES>
+  </EXPERIMENT>
+  <EXPERIMENT
+    alias="bodysites_F6AVWTA01"
+    center_name="JCVI"
+  >
+    <TITLE>Survey of multiple body sites</TITLE>
+    <STUDY_REF refname="bodysites_study" refcenter="NCBI"/>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>Pool of samples from different individual subjects</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR refname="bodysites_study_default" refcenter="NCBI">
+        <POOL>
+            <MEMBER refname="700015468" refcenter="NCBI" member_name="F6AVWTA01_2865_700015468_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_AGTACGTACT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+            <MEMBER refname="700015470" refcenter="NCBI" member_name="F6AVWTA01_2866_700015470_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_GCTCTACGTC">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+            <MEMBER refname="700015438" refcenter="NCBI" member_name="F6AVWTA01_2878_700015438_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_ATGTTCGATG">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+            <MEMBER refname="700015766" refcenter="NCBI" member_name="F6AVWTA01_2898_700015766_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_CATGAGCGTC">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+            <MEMBER refname="700016371" refcenter="NCBI" member_name="F6AVWTA01_2907_700016371_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_TCTCTCTAGT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+        </POOL>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>bodysites_F6AVWTA01</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>AMPLICON</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>PCR</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <SINGLE></SINGLE>
+        </LIBRARY_LAYOUT>
+        <LIBRARY_CONSTRUCTION_PROTOCOL>
+          Dummy Protocol
+        </LIBRARY_CONSTRUCTION_PROTOCOL>
+      </LIBRARY_DESCRIPTOR>      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Technical Read</READ_CLASS>
+            <READ_TYPE>Adapter</READ_TYPE>
+          <EXPECTED_BASECALL>TCAG</EXPECTED_BASECALL>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>1</READ_INDEX>
+            <READ_LABEL>barcode</READ_LABEL>
+            <READ_CLASS>Technical Read</READ_CLASS>
+            <READ_TYPE>BarCode</READ_TYPE>
+            <EXPECTED_BASECALL_TABLE>
+               <BASECALL read_group_tag="F6AVWTA01_ATGTTCGATG" min_match="10" max_mismatch="0" match_edge="full">ATGTTCGATG</BASECALL>
+               <BASECALL read_group_tag="F6AVWTA01_AGTACGTACT" min_match="10" max_mismatch="0" match_edge="full">AGTACGTACT</BASECALL>
+               <BASECALL read_group_tag="F6AVWTA01_GCTCTACGTC" min_match="10" max_mismatch="0" match_edge="full">GCTCTACGTC</BASECALL>
+               <BASECALL read_group_tag="F6AVWTA01_CATGAGCGTC" min_match="10" max_mismatch="0" match_edge="full">CATGAGCGTC</BASECALL>
+               <BASECALL read_group_tag="F6AVWTA01_TCTCTCTAGT" min_match="10" max_mismatch="0" match_edge="full">TCTCTCTAGT</BASECALL>
+</EXPECTED_BASECALL_TABLE>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>2</READ_INDEX>
+            <READ_LABEL>rRNA_primer</READ_LABEL>
+            <READ_CLASS>Technical Read</READ_CLASS>
+            <READ_TYPE>Primer</READ_TYPE>
+            <EXPECTED_BASECALL_TABLE>
+               <BASECALL read_group_tag="V1-V3" min_match="17" max_mismatch="0" match_edge="full">TAATCCGCGGCTGCTGG</BASECALL>
+</EXPECTED_BASECALL_TABLE>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>3</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <RELATIVE_ORDER follows_read_index="2"/>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+      </DESIGN>
+          <PLATFORM>
+        <LS454>
+            <INSTRUMENT_MODEL>454 GS FLX</INSTRUMENT_MODEL>
+            <FLOW_SEQUENCE>TACG</FLOW_SEQUENCE>
+            <FLOW_COUNT>400</FLOW_COUNT>
+        </LS454>
+    </PLATFORM>
+      <PROCESSING>
+        <BASE_CALLS>
+                    <SEQUENCE_SPACE>Base Space</SEQUENCE_SPACE>
+                    <BASE_CALLER>454 BaseCaller</BASE_CALLER>
+        </BASE_CALLS>
+        <QUALITY_SCORES qtype="phred">
+                    <QUALITY_SCORER>454 BaseCaller</QUALITY_SCORER>
+                    <NUMBER_OF_LEVELS>40</NUMBER_OF_LEVELS>
+                    <MULTIPLIER>1.0</MULTIPLIER>
+        </QUALITY_SCORES>
+      </PROCESSING>
+      <EXPERIMENT_LINKS>
+        <EXPERIMENT_LINK>
+          <URL_LINK>
+            <LABEL>bodysites Library Construction Protocol</LABEL>
+            <URL>http://hmpdacc.org/doc/HMP_MDG_454_16S_Protocol_V4_2_102109.pdf</URL>
+          </URL_LINK>
+        </EXPERIMENT_LINK>
+      </EXPERIMENT_LINKS>
+      <EXPERIMENT_ATTRIBUTES>
+        <EXPERIMENT_ATTRIBUTE>
+          <TAG>library_strategy</TAG>
+          <VALUE>targeted-locus</VALUE>
+        </EXPERIMENT_ATTRIBUTE>
+        <EXPERIMENT_ATTRIBUTE>
+          <TAG>gene</TAG>
+          <VALUE>16S rRNA V1-V3 region</VALUE>
+        </EXPERIMENT_ATTRIBUTE>
+      </EXPERIMENT_ATTRIBUTES>
+  </EXPERIMENT>
+</EXPERIMENT_SET>
+'''
 submission_with_file_txt = '''#Field	Value	Example	Comments
 accession	SRA003492	SRA003492	"leave blank if not assigned yet, e.g. if new submission"
 submission_id	fierer_hand_study	fierer_hand_study	internally unique id for the submission
@@ -440,7 +697,6 @@ sample_xml = '''<?xml version="1.0" encoding="UTF-8"?>
   </SAMPLE>
 </SAMPLE_SET>
 '''
-
 
 if __name__ == '__main__':
     main()
