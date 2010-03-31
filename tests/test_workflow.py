@@ -12,7 +12,7 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Pre-release"
 
 from shutil import rmtree
-from os.path import join, exists
+from os.path import join, exists, getsize, split, splitext
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files
 from cogent.app.util import get_tmp_filename
@@ -102,6 +102,18 @@ class WorkflowTests(TestCase):
          parallel=False,
          status_update_callback=no_status_updates)
          
+        input_file_basename = splitext(split(self.fasting_seqs_fp)[1])[0]
+        otu_table_fp = join(self.wf_out,'uclust_picked_otus','rep_set',
+         'rdp_assigned_taxonomy','otu_table','%s_otu_table.txt' % 
+         input_file_basename)
+        tree_fp = join(self.wf_out,'uclust_picked_otus','rep_set',
+         'pynast_aligned_seqs','fasttree_phylogeny','%s_rep_set.tre' % 
+         input_file_basename)
+         
+        # check that the two final output files have non-zero size
+        self.assertTrue(getsize(tree_fp) > 0)
+        self.assertTrue(getsize(otu_table_fp) > 0)
+         
          
     def test_run_beta_diversity_through_3d_plot(self):
         """ run_beta_diversity_through_3d_plot runs without error """
@@ -115,6 +127,18 @@ class WorkflowTests(TestCase):
          tree_fp=self.fasting_tree_fp,
          parallel=False, 
          status_update_callback=no_status_updates)
+         
+        unweighted_unifrac_pc_fp = join(self.wf_out,'unweighted_unifrac_pc.txt')
+        weighted_unifrac_pc_fp = join(self.wf_out,'weighted_unifrac_pc.txt')
+        weighted_unifrac_html_fp = join(self.wf_out,
+        'weighted_unifrac_3d_continuous','weighted_unifrac_pc.txt_3D.html')
+        
+        # check that final output files have non-zero size
+        self.assertTrue(getsize(unweighted_unifrac_pc_fp) > 0)
+        self.assertTrue(getsize(weighted_unifrac_pc_fp) > 0)
+        self.assertTrue(getsize(weighted_unifrac_html_fp) > 0)
+        
+        
         
     def test_run_qiime_alpha_rarefaction(self):
         """ run_qiime_alpha_rarefaction runs without error """
@@ -132,6 +156,17 @@ class WorkflowTests(TestCase):
          min_seqs_per_sample=10,\
          status_update_callback=no_status_updates)
          
+        pd_plot_fp = join(self.wf_out,'alpha_rarefaction_plots',
+         'PD_whole_tree','PD_whole_tree','Treatment.png')
+        chao1_plot_fp = join(self.wf_out,'alpha_rarefaction_plots',
+         'chao1','chao1','Treatment.png')
+        os_averages_fp = join(self.wf_out,'alpha_rarefaction_averages',
+         'observed_species','observed_species','Treatment.txt')
+        
+        # check that final output files have non-zero size
+        self.assertTrue(getsize(chao1_plot_fp) > 0)
+        self.assertTrue(getsize(pd_plot_fp) > 0)
+        self.assertTrue(getsize(os_averages_fp) > 0)
          
     def test_run_jackknifed_upgma_clustering(self):
         """ run_jackknifed_upgma_clustering runs without error """
@@ -146,6 +181,17 @@ class WorkflowTests(TestCase):
          self.qiime_config,
          parallel=False,
          status_update_callback=no_status_updates)
+         
+        weighted_unifrac_upgma_tree_fp = join(self.wf_out,
+         'weighted_unifrac',
+         'upgma_cmp','jackknife_named_nodes.tre')
+        unweighted_unifrac_upgma_tree_fp = join(
+         self.wf_out,'unweighted_unifrac','upgma_cmp',
+         'jackknife_named_nodes.tre')
+         
+        # check that final output files have non-zero size
+        self.assertTrue(getsize(weighted_unifrac_upgma_tree_fp) > 0)
+        self.assertTrue(getsize(unweighted_unifrac_upgma_tree_fp) > 0)
 
 
 fasting_map = """#SampleID	BarcodeSequence	LinkerPrimerSequence	Treatment	DOB	Description
