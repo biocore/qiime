@@ -716,7 +716,10 @@ DIR_EXISTS     = 1
 FILE_EXISTS    = 2
 OTHER_OS_ERROR = 3
 
-def create_dir(dir_name, fail_on_exist=True, handle_errors_externally=False):
+#Note: We temporarily set the default behaviour of create_dir to overwrite
+#      without Error (fail_on_exist=False).
+#      After the 1.0 release we will set his back
+def create_dir(dir_name, fail_on_exist=False, handle_errors_externally=False):
     """Create a dir safely and fail meaningful.
 
     dir_name: name of directory to create
