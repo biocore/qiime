@@ -30,9 +30,9 @@ def make_new_summary_file(otu_table, level, delimitor, relative_abundance):
         if line.startswith('#OTU ID'):
             line = line.replace('#OTU ID', 'Taxon')
             line = line.replace('\tConsensus Lineage', '')
-            output.append(line + '\n')
+            output.append(line.strip('\n') + '\n')
         elif line.startswith('#'):
-            output.append(line + '\n')
+            output.append(line.strip('\n') + '\n')
         else:
             result = process_data_line(line, result, delimitor, level)
     for key, val in sorted(result.items()):
