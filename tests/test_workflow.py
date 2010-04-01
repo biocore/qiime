@@ -388,6 +388,9 @@ multiple_rarefactions:num-reps	1
 multiple_rarefactions:depth
 multiple_rarefactions:lineages_included	False
 
+# Even-depth rarefaction parameters
+multiple_rarefactions_even_depth:num-reps	5
+
 # Alpha diversity parameters
 alpha_diversity:metrics	PD_whole_tree,chao1,observed_species
 
