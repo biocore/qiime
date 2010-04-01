@@ -9,10 +9,12 @@ File created on 25 Aug 2009.
 from __future__ import division
 from os import remove
 from cogent import LoadSeqs
+from cogent.util.misc import remove_files
 from cogent.util.unit_test import TestCase, main
 from cogent.app.util import get_tmp_filename
 from qiime.parallel.util import split_fasta, get_random_job_prefix,\
- write_jobs_file, compute_seqs_per_file, build_filepaths_from_filepaths
+ write_jobs_file, compute_seqs_per_file, build_filepaths_from_filepaths,\
+ submit_jobs
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME Project"
@@ -22,17 +24,6 @@ __version__ = "0.92-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Pre-release"
-
-def remove_files(list_of_filepaths,error_on_missing=True):
-    missing = []
-    for fp in list_of_filepaths:
-        try:
-            remove(fp)
-        except OSError:
-            missing.append(fp)
-
-    if error_on_missing and missing:
-        raise OSError, "Some filepaths were not accessible: %s" % '\t'.join(missing)
 
 class UtilTests(TestCase):
     """Tests of parallel code utility functions """
@@ -75,6 +66,12 @@ class UtilTests(TestCase):
         self.assertEqual(len(s1),12)
         self.assertTrue(s1.startswith('HELLO'))
         self.assertFalse(s1.endswith('_'))
+        
+    def test_submit_jobs_fail(self):
+        """submit jobs fails by raising an error
+        """
+        self.assertRaises(RuntimeError,submit_jobs,
+         'some_fake_exe','some_fake_fp.txt','JOB')
         
     def test_compute_seqs_per_file(self):
         """compute_seqs_per_file functions as expected

@@ -4,6 +4,7 @@
 from __future__ import division
 from random import choice
 from os import popen, system, getenv, mkdir
+from subprocess import Popen, PIPE, STDOUT
 from os.path import split
 from cogent.parse.fasta import MinimalFastaParser
 
@@ -91,8 +92,16 @@ def write_jobs_file(commands,job_prefix=None,jobs_fp=None):
 def submit_jobs(path_to_cluster_jobs, jobs_fp, job_prefix):
     """ Submit the jobs to the queue using cluster_jobs.py
     """
-    system('%s -ms %s %s' %\
-     (path_to_cluster_jobs, jobs_fp, job_prefix))
+    cmd = '%s -ms %s %s' % (path_to_cluster_jobs, jobs_fp, job_prefix)
+    proc = Popen(cmd,shell=True,universal_newlines=True,\
+                 stdout=PIPE,stderr=STDOUT)
+    return_value = proc.wait()
+    if return_value != 0:
+        msg = "\n\n*** Could not start parallel jobs. \n" +\
+         "Command run was:\n %s\n" % cmd +\
+         "Command returned exit status: %d\n" % return_value +\
+         "Stdout/stderr:\n%s\n" % proc.stdout.read()
+        raise RuntimeError, msg
 
 def compute_seqs_per_file(input_fasta_fp,num_jobs_to_start):
     """ Compute the number of sequences to include in each split file
