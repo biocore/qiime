@@ -31,7 +31,7 @@ from time import strftime
 from random import choice, randrange
 from qiime.format import format_otu_table
 from decimal import getcontext
-from qiime.parse import parse_mapping_file, parse_otus
+from qiime.parse import parse_mapping_file, parse_otu_table
 
 def get_sample_cat_info(lines, category):
     cat_by_sample = {}
@@ -89,7 +89,7 @@ def get_counts_by_cat(lines, num_meta, meta_dict, cat_list,category,num_samples_
     cat_otu_table = []
     otus = []
     taxonomy = []
-    sample_ids, otu_ids, otu_table, lineages = parse_otus(lines)
+    sample_ids, otu_ids, otu_table, lineages = parse_otu_table(lines)
 
     label_list = sample_ids
     if lineages == []:

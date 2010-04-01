@@ -40,7 +40,7 @@ from cogent.app.formatdb import build_blast_db_from_fasta_path,\
 from cogent import LoadSeqs
 
 from cogent.util.misc import curry
-from qiime.parse import parse_otus, parse_qiime_config_files
+from qiime.parse import parse_otu_table, parse_qiime_config_files
 
 class TreeMissingError(IOError):
     """Exception for missing tree file"""
@@ -133,7 +133,7 @@ class FunctionWithParams(object):
             return otu_source
         if hasattr(otu_source, 'startswith') and otu_source.startswith('#'):
             try:
-                return parse_otus(StringIO(otu_source))
+                return parse_otu_table(StringIO(otu_source))
             except (TypeError, ValueError), e:
                 raise OtuMissingError, \
                     "Tried to read OTUs from string starting with # but got "+e
@@ -143,7 +143,7 @@ class FunctionWithParams(object):
             except (TypeError, IOError):
                 raise OtuMissingError, \
                     "Couldn't read OTU file at path: %s" % otu_source
-            result = parse_otus(otu_file)
+            result = parse_otu_table(otu_file)
             otu_file.close()
             return result
 
@@ -352,7 +352,7 @@ def extract_seqs_by_sample_id(seqs, sample_ids, negate=False):
 
 def compute_seqs_per_library_stats(otu_f):
     counts = []
-    sample_ids, otu_ids, otu_table, lineages = parse_otus(otu_f)
+    sample_ids, otu_ids, otu_table, lineages = parse_otu_table(otu_f)
     for i in range(otu_table.shape[1]):
         counts.append(sum(otu_table[:,i]))
         
@@ -631,9 +631,9 @@ def merge_otu_tables(otu_table_f1,otu_table_f2):
     
     """
     sample_ids1, otu_ids1, otu_table1, lineages1 =\
-        parse_otus(otu_table_f1)
+        parse_otu_table(otu_table_f1)
     sample_ids2, otu_ids2, otu_table2, lineages2 =\
-        parse_otus(otu_table_f2)
+        parse_otu_table(otu_table_f2)
     
     assert set(sample_ids1) & set(sample_ids2) == set(),\
      'Overlapping sample ids detected.'

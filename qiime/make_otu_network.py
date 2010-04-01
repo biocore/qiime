@@ -31,7 +31,7 @@ from time import strftime
 from random import choice, randrange
 from cogent.maths.stats.test import G_2_by_2
 from qiime.colors import iter_color_groups, Color, data_colors
-from qiime.parse import parse_mapping_file, parse_otus
+from qiime.parse import parse_mapping_file, parse_otu_table
 
 def get_sample_info(lines):
     mapping_data, header, comments = parse_mapping_file(lines)
@@ -85,7 +85,7 @@ def get_connection_info(lines, num_meta, meta_dict):
     con_list = []
     nodes = []
 
-    sample_ids, otu_ids, otu_table, lineages = parse_otus(lines)
+    sample_ids, otu_ids, otu_table, lineages = parse_otu_table(lines)
     if lineages == []:
         is_con = False
     else:

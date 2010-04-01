@@ -14,7 +14,7 @@ import numpy
 from numpy import array,concatenate
 from cogent.parse.table import SeparatorFormatParser
 from optparse import OptionParser
-from qiime.parse import parse_otus
+from qiime.parse import parse_otu_table
 import os
 
 def make_html_doc(js_filename):
@@ -178,7 +178,7 @@ def line_converter():
 def get_otu_counts(fpath, data):
     """Reads the OTU table file into memory"""
     try:
-        sample_ids,otu_ids,otu_table,lineages=parse_otus(open(fpath))
+        sample_ids,otu_ids,otu_table,lineages=parse_otu_table(open(fpath))
         
     except (TypeError, IOError):
         raise MissingFileError, 'OTU Count file required for this analysis'

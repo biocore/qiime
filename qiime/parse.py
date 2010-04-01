@@ -296,7 +296,7 @@ def parse_taxonomy(infile):
 
     return res
 
-def parse_otus(lines,count_map_f=int):
+def parse_otu_table(lines,count_map_f=int):
     """parses otu file
 
     Returns tuple: sample_ids, otu_ids, matrix of OTUs(rows) x samples(cols),

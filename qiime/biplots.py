@@ -10,7 +10,7 @@ __maintainer__ = "Dan Knights"
 __email__ = "daniel.knights@colorado.edu"
 __status__ = "Pre-release"
 
-from qiime.parse import parse_otus
+from qiime.parse import parse_otu_table
 from numpy import array,apply_along_axis,dot,delete,argsort
 import numpy as np
 
@@ -25,7 +25,7 @@ def get_taxa(taxa_fname,sample_ids_kept=None):
     taxa_f = open(taxa_fname, 'U')
 
     sample_ids, otu_ids, otu_table, lineages =\
-        parse_otus(taxa_f,count_map_f=float)
+        parse_otu_table(taxa_f,count_map_f=float)
     if sample_ids_kept:
         sam_idxs = [sample_ids.index(sam) for sam in sample_ids_kept]
         otu_table = otu_table[:,sam_idxs]

@@ -16,7 +16,7 @@ from StringIO import StringIO
 from cogent.util.unit_test import TestCase, main
 from qiime.parse import (group_by_field, group_by_fields, 
     parse_distmat, parse_rarefaction_record, parse_rarefaction, parse_coords, 
-    parse_otus, make_envs_dict, fields_to_dict, parse_rarefaction_fname,
+    parse_otu_table, make_envs_dict, fields_to_dict, parse_rarefaction_fname,
     parse_qiime_parameters, parse_qiime_config_files,
     parse_bootstrap_support, parse_sample_mapping, parse_distmat_to_dict,
     sample_mapping_to_otu_table, parse_taxonomy, parse_mapping_file, 
@@ -275,8 +275,8 @@ eigvals\t4.94\t1.79\t1.50
         self.assertEqual(obs, exp)
 
     
-    def test_parse_otus(self):
-        """parse_otus should return correct result from small table"""
+    def test_parse_otu_table(self):
+        """parse_otu_table should return correct result from small table"""
         data = """#Full OTU Counts
 #OTU ID	Fing	Key	NA	Consensus Lineage
 0	19111	44536	42	Bacteria; Actinobacteria; Actinobacteridae; Propionibacterineae; Propionibacterium
@@ -285,7 +285,7 @@ eigvals\t4.94\t1.79\t1.50
 3	1722	4903	17	Bacteria; Firmicutes; Alicyclobacillaceae; Bacilli; Staphylococcaceae
 4	589	2074	34	Bacteria; Cyanobacteria; Chloroplasts; vectors"""
         data_f = (data.split('\n'))
-        obs = parse_otus(data_f)
+        obs = parse_otu_table(data_f)
         exp = (['Fing','Key','NA'],
                ['0','1','2','3','4'],
                array([[19111,44536,42],[1216,3500,6],[1803,1184,2],\
@@ -297,8 +297,8 @@ eigvals\t4.94\t1.79\t1.50
                 ['Bacteria','Cyanobacteria','Chloroplasts','vectors']])
         self.assertEqual(obs, exp)
         
-    def test_parse_otus_float_counts(self):
-        """parse_otus should return correct result from small table"""
+    def test_parse_otu_table_float_counts(self):
+        """parse_otu_table should return correct result from small table"""
         data = """#Full OTU Counts
 #OTU ID	Fing	Key	NA	Consensus Lineage
 0	19111	44536	42	Bacteria; Actinobacteria; Actinobacteridae; Propionibacterineae; Propionibacterium
@@ -307,7 +307,7 @@ eigvals\t4.94\t1.79\t1.50
 3	1722	4903	17	Bacteria; Firmicutes; Alicyclobacillaceae; Bacilli; Staphylococcaceae
 4	589	2074	34	Bacteria; Cyanobacteria; Chloroplasts; vectors"""
         data_f = (data.split('\n'))
-        obs = parse_otus(data_f,count_map_f=float)
+        obs = parse_otu_table(data_f,count_map_f=float)
         exp = (['Fing','Key','NA'],
                ['0','1','2','3','4'],
                array([[19111.,44536.,42.],[1216.,3500.,6.],[1803.,1184.,2.],\
@@ -319,8 +319,8 @@ eigvals\t4.94\t1.79\t1.50
                 ['Bacteria','Cyanobacteria','Chloroplasts','vectors']])
         self.assertEqual(obs, exp)
         
-    def test_parse_otus_file(self):
-        """parse_otus should return correct result on fileio format object"""
+    def test_parse_otu_table_file(self):
+        """parse_otu_table should return correct result on fileio format object"""
         data = """#Full OTU Counts
 #OTU ID	Fing	Key	NA	Consensus Lineage
 0	19111	44536	42	Bacteria; Actinobacteria; Actinobacteridae; Propionibacterineae; Propionibacterium
@@ -329,7 +329,7 @@ eigvals\t4.94\t1.79\t1.50
 3	1722	4903	17	Bacteria; Firmicutes; Alicyclobacillaceae; Bacilli; Staphylococcaceae
 4	589	2074	34	Bacteria; Cyanobacteria; Chloroplasts; vectors"""
         data_f = StringIO(data)
-        obs = parse_otus(data_f)
+        obs = parse_otu_table(data_f)
         exp = (['Fing','Key','NA'],
                ['0','1','2','3','4'],
                array([[19111,44536,42],[1216,3500,6],[1803,1184,2],\

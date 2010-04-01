@@ -10,7 +10,7 @@ __maintainer__ = "Rob Knight"
 __email__ = "rob@spot.colorado.edu"
 __status__ = "Pre-release"
 
-from qiime.parse import parse_otus, parse_mapping_file, parse_metadata_state_descriptions
+from qiime.parse import parse_otu_table, parse_mapping_file, parse_metadata_state_descriptions
 from sys import argv
 from string import strip
 from cogent.util.unit_test import TestCase, main
@@ -28,12 +28,12 @@ class TopLevelTests(TestCase):
 #OTU ID\ta\tb\tc\td\te
 1\t1\t2\t3\t4\t5
 2\t5\t4\t3\t2\t1"""
-        self.otu_table = parse_otus(StringIO(self.otu_str))
+        self.otu_table = parse_otu_table(StringIO(self.otu_str))
         self.otu_tax_str = """#Full OTU Counts
 #OTU ID\ta\tb\tc\td\te\tConsensus Lineage
 1\t1\t2\t3\t4\t5\tBacteria:Firmicutes
 2\t5\t4\t3\t2\t1\tBacteria:Proteobacteria"""
-        self.otu_tax_table = parse_otus(StringIO(self.otu_tax_str))
+        self.otu_tax_table = parse_otu_table(StringIO(self.otu_tax_str))
         self.map_str = """#SampleID\tStudy\tBodySite\tDescription
 a\tDog\tStool\tx
 b\tDog\tStool\ty

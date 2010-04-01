@@ -13,7 +13,7 @@ __status__ = "Prototype"
 """Code for coloring series based on prefs file.
 """
 from colorsys import rgb_to_hsv, hsv_to_rgb
-from parse import parse_mapping_file, group_by_field, parse_otus
+from parse import parse_mapping_file, group_by_field, parse_otu_table
 from numpy import array
 import os
 import re
@@ -485,7 +485,7 @@ def sample_color_prefs_and_map_data_from_options(options):
 
 def taxonomy_color_prefs_and_map_data_from_options(options):
     """Returns color prefs and counts data based on options.
-       counts data is any file in a format that can be parsed by parse_otus  
+       counts data is any file in a format that can be parsed by parse_otu_table  
     """
     data = {}
     data['counts'] = {}
@@ -501,7 +501,7 @@ def taxonomy_color_prefs_and_map_data_from_options(options):
         except (TypeError, IOError):
             raise MissingFileError, 'Counts file required for this analysis'
         sample_ids, otu_ids, otu_table, lineages = \
-                       parse_otus(counts_f,count_map_f=float)
+                       parse_otu_table(counts_f,count_map_f=float)
 
         data['counts'][f] = (sample_ids, otu_ids, otu_table, lineages)
         level = max([len(t.split(';')) - 1 for t in otu_ids])
