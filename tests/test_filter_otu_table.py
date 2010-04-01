@@ -10,7 +10,6 @@ __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 __status__ = "Pre-release"
 
-from qiime.parse import parse_otus
 from sys import argv
 from string import strip
 from cogent.util.unit_test import TestCase, main
