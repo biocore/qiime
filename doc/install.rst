@@ -41,7 +41,7 @@ Dependencies required for a subset of QIIME's features
 
 PyNAST alignment, tree-building, taxonomy assignment, OTU picking, and other data generation steps:
 
-* uclust 1.1.577 (`uclust home <http://www.drive5.com/uclust/>`_) See :ref:`uclust install notes <uclust-install>`.
+* uclust 1.1.579 (`src and binaries <http://www.drive5.com/uclust/downloads1_1_579.html>`_) See :ref:`uclust install notes <uclust-install>`.
 * PyNAST 1.1 (`src  <http://sourceforge.net/projects/pynast/files/PyNAST%20releases/PyNAST-1.1.tar.gz/download>`_)
 * greengenes core set data file (`fasta <http://greengenes.lbl.gov/Download/Sequence_Data/Fasta_data_files/core_set_aligned.fasta.imputed>`_)
 * greengenes alignment lanemask file (`txt <http://greengenes.lbl.gov/Download/Sequence_Data/lanemask_in_1s_and_0s>`_)
@@ -181,9 +181,9 @@ uclust Install Notes
 
 .. _uclust-install:
 
-The uclust binary must be called ``uclust``, which differs from the names of the posted binaries, but is the name of the binary if you build from source. If you've installed the binary ``uclust1.1.577_i86linux32`` as ``/home/qiime_user/bin/uclust1.1.577_i86linux32``, we recommend creating a symbolic link to this file::
+The uclust binary must be called ``uclust``, which differs from the names of the posted binaries, but is the name of the binary if you build from source. If you've installed the binary ``uclust1.1.579_i86linux32`` as ``/home/qiime_user/bin/uclust1.1.579_i86linux32``, we recommend creating a symbolic link to this file::
 	
-	ln -s /home/qiime_user/bin/uclust1.1.577_i86linux32 /home/qiime_user/bin/uclust
+	ln -s /home/qiime_user/bin/uclust1.1.579_i86linux32 /home/qiime_user/bin/uclust
 	
 Building The QIIME Documentation
 ---------------------------------
