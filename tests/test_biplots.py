@@ -61,6 +61,20 @@ class BiplotTests(TestCase):
         self.assertFloatEqual(res, [0,.5,1])
         
     def test_remove_rare_taxa(self):
+        otu_table = np.array([  [2,0,0,1],
+                                [1,1,1,1],
+                                [0,2,2,1]],float)
+        taxdata = {}
+        taxdata['prevalence'] = np.array([0,.5,1])
+        taxdata['counts'] = otu_table
+        taxdata['lineages'] = np.array(['A','B','C'])
+        bp.remove_rare_taxa(taxdata,nkeep=2)
+        self.assertFloatEqual(taxdata['counts'], otu_table[1:3,:])
+        self.assertFloatEqual(taxdata['prevalence'], np.array([.5,1]))
+        self.assertFloatEqual(taxdata['lineages'], np.array(['B','C']))
+
+    def test_scale_taxa_data_matrix(self):
         pass
+
 if __name__ == "__main__":
     main()
