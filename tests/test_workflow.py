@@ -125,6 +125,30 @@ class WorkflowTests(TestCase):
         # check that the two final output files have non-zero size
         self.assertTrue(getsize(tree_fp) > 0)
         self.assertTrue(getsize(otu_table_fp) > 0)
+        
+    def test_run_qiime_data_preparation_muscle(self):
+        """run_qiime_data_preparation runs without error with muscle aligner"""
+        self.params['align_seqs']['alignment_method'] = 'muscle'
+        run_qiime_data_preparation(
+         self.fasting_seqs_fp, 
+         self.wf_out, 
+         call_commands_serially,
+         self.params, 
+         self.qiime_config, 
+         parallel=False,
+         status_update_callback=no_status_updates)
+         
+        input_file_basename = splitext(split(self.fasting_seqs_fp)[1])[0]
+        otu_table_fp = join(self.wf_out,'uclust_picked_otus','rep_set',
+         'rdp_assigned_taxonomy','otu_table','%s_otu_table.txt' % 
+         input_file_basename)
+        tree_fp = join(self.wf_out,'uclust_picked_otus','rep_set',
+         'muscle_aligned_seqs','fasttree_phylogeny','%s_rep_set.tre' % 
+         input_file_basename)
+         
+        # check that the two final output files have non-zero size
+        self.assertTrue(getsize(tree_fp) > 0)
+        self.assertTrue(getsize(otu_table_fp) > 0)
     
     def test_run_qiime_data_preparation_parallel(self):
         """run_qiime_data_preparation runs in parallel without error"""
