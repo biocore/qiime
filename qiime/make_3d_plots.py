@@ -12,7 +12,7 @@ __status__ = "Pre-release"
 
 
 from cogent.util.misc import flatten
-from qiime.parse import parse_coords,group_by_field
+from qiime.parse import parse_coords,group_by_field,parse_mapping_file
 from qiime.colors import natsort, get_group_colors, color_groups, make_color_dict, combine_map_label_cols, process_colorby, linear_gradient, iter_color_groups, get_map, kinemage_colors
 from numpy import array, shape, apply_along_axis, dot, delete, vstack
 import numpy as np
@@ -20,6 +20,7 @@ import os
 from random import choice
 import re
 from time import strftime
+from biplots import make_mage_taxa
 
 '''
 xdata_colors = {
@@ -71,7 +72,8 @@ def create_dir(dir_path,plot_type):
 
 
 def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, \
-                    background_color,label_color,custom_axes=None, \
+                    background_color,label_color, \
+                    taxa=None, custom_axes=None, \
                     edges=None):
     """Makes 3d plots given coords, mapping file, and prefs.
     
@@ -106,17 +108,18 @@ def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, \
         data_color_order=groups_and_colors[i][4]
         
         result.extend(make_mage_output(groups, colors, coord_header, coords, \
-            pct_var,background_color,label_color,data_colors,custom_axes,name=labelname, \
+            pct_var,background_color,label_color,data_colors, \
+            taxa, custom_axes,name=labelname, \
             scaled=False, edges=edges))
         result.extend(make_mage_output(groups, colors, coord_header, coords, \
-            pct_var,background_color,label_color,data_colors,custom_axes,name=labelname, \
+            pct_var,background_color,label_color,data_colors, \
+            taxa, custom_axes,name=labelname, \
             scaled=True, edges=edges))
 
     return result
 
 def scale_pc_data_matrix(coords, pct_var):
     """Scales pc data matrix by percent variation"""
-
     return coords * (pct_var / pct_var.max())
 
 def auto_radius(coords,ratio=0.01):
@@ -127,7 +130,8 @@ def auto_radius(coords,ratio=0.01):
     return ratio*range
 
 def make_mage_output(groups, colors, coord_header, coords, pct_var, \
-                     background_color,label_color,data_colors,custom_axes=None,name='', \
+                     background_color,label_color,data_colors, \
+                     taxa=None, custom_axes=None,name='', \
                      radius=None, alpha=.75, num_coords=10,scaled=False, \
                      coord_scale=1.05, edges=None):
     """Convert groups, colors, coords and percent var into mage format"""
@@ -169,7 +173,11 @@ def make_mage_output(groups, colors, coord_header, coords, pct_var, \
     result.append('@dimminmax '+ ' '.join(map(str, min_maxes)))
     result.append('@master {points}')
     result.append('@master {labels}')
-            
+
+    if not taxa is None:
+        result.append('@master {taxa_points}')
+        result.append('@master {taxa_labels}')
+
     for name, color in sorted(data_colors.items()):
         result.append(color.toMage())
 
@@ -199,6 +207,9 @@ master={points} nobutton' % (color, radius, alpha, num_coords))
 master={labels} nobutton' % (color, radius, alpha, num_coords))
         result.append('\n'.join(coord_lines))
 
+    if not taxa is None:
+        result += make_mage_taxa(taxa, num_coords, pct_var,
+                                 scaled=scaled, scalars=None, radius=radius)
 
     #Write the axes on the bottom of the graph
     result.append('@group {axes} collapsible')
@@ -402,6 +413,15 @@ def get_multiple_coords(coord_fnames):
             edges += [('%s_%d' %(_id,0), '%s_%d' %(_id,i))]
     return edges, [coord_header, coords, eigvals, pct_var]
 
+def get_taxa(taxa_fname, sample_ids):
+    """Opens and returns coords data"""
+    try:
+        lines = open(taxa_fname, 'U').readlines()
+    except (TypeError, IOError):
+        raise MissingFileError, 'Taxa summary file required for this analysis'
+    map = parse_mapping_file(lines)
+    return map
+
 def remove_unmapped_samples(mapping,coords,edges=None):
     """Removes any samples not present in mapping file"""
     sample_IDs = zip(*mapping[1:])[0]
@@ -436,8 +456,13 @@ def generate_3d_plots(prefs, data, custom_axes, background_color,label_color, \
     if data.has_key('edges'):
         edges = data['edges']
 
+    taxa = None
+    if data.has_key('taxa'):
+        taxa = data['taxa']
+
     res = make_3d_plots(coord_header, coords, pct_var,mapping,prefs, \
-                        background_color,label_color,custom_axes,edges=edges)
+                        background_color,label_color, \
+                        taxa, custom_axes,edges=edges)
 
     #Write kinemage file
     f = open(kinpath, 'w')
