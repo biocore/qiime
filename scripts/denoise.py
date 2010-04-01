@@ -2,8 +2,7 @@
 # File created on 09 Feb 2010
 from __future__ import division
 
-"""Denoising of 454 *.sff.txt files with PyroNoise"""
-
+"""Denoising of 454 *.sff.txt files"""
 
 __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2010, The QIIME project"
@@ -21,7 +20,8 @@ from cogent.core.alignment import SequenceCollection
 
 from qiime.util import parse_command_line_parameters, create_dir,\
     handle_error_codes
-from qiime.pyronoise import  pyroNoise_otu_picker
+from qiime.pyronoise import  pyroNoise_otu_picker, fast_denoiser
+from qiime.split_libraries import check_map
 
 script_info={}
 script_info['brief_description']="""Denoise a flowgram file"""
@@ -34,7 +34,11 @@ script_info['output_description']="""This script results in a OTU mapping file a
 script_info['required_options'] = [\
     make_option('-i','--input_file', action='store',
                 type='string', dest='sff_fp',
-                help='path to flowgram file (.sff.txt)')
+                help='path to flowgram file (.sff.txt)'),
+
+    make_option('-f','--fasta_file', action='store',
+                type='string', dest='fasta_fp',
+                help='path to fasta file from split_libraries.py')
     ]
 
 script_info['optional_options'] = [\
@@ -43,6 +47,14 @@ script_info['optional_options'] = [\
                 help='path to output directory '+
                 '[default: %default]',
                 default="denoised_seqs/"),
+
+    make_option('--method', action='store',
+                type='string', dest='method',
+                help='Method to use for denoising. '+
+                'Choice of pyronoise or fast'+
+                ' [default: %default]',
+                default="fast"),
+
     make_option('-k','--keep_intermediates', action='store_true',
                  dest='keep', default=False,
                  help='Do not delete intermediate files -- '+
@@ -63,10 +75,22 @@ script_info['optional_options'] = [\
                 help='number of CPUs '+\
                     '[default: %default]',
                 default=1),
-    make_option('-f','--force_overwrite', action='store_true',
+    make_option('--force_overwrite', action='store_true',
                  dest='force', default=False,
                  help='Overwrite files in output directory '+\
-                    '[default: %default]')
+                    '[default: %default]'),
+
+    make_option('-m','--map_fname', action='store',
+                type='string', dest='map_fname',
+                help='name of mapping file, Has to contain '+\
+                    'field LinkerPrimerSequence.'+\
+                    ' [REQUIRED] when method is fast'),
+    
+    make_option('-p', '--primer',action='store',\
+                    type='string',dest='primer',\
+                    help='primer sequence '+\
+                    '[default: %default]',
+                default=None)
     ]
 
 script_info['version'] = __version__
@@ -109,20 +133,42 @@ def main():
         log_fh.write("Input file: %s\n"% opts.sff_fp)
         log_fh.write("output path: %s\n"% outdir)
 
-    centroids, cluster_mapping = pyroNoise_otu_picker(open(opts.sff_fp, "U"),
-                                                      outdir, opts.num_cpus, log_fh, opts.keep,
-                                                      opts.precision, opts.cut_off)
+
+
+    if opts.method=="pyronoise":
+        centroids, cluster_mapping = pyroNoise_otu_picker(open(opts.sff_fp, "U"),
+                                                          outdir, opts.num_cpus, log_fh, opts.keep,
+                                                          opts.precision, opts.cut_off)
+    else:
+        #Read primer from Meta data file if not set on command line
+        if not opts.primer:
+            hds, id_map, barcode_to_sample_id, warnings, errors, \
+                primer_seqs_lens, all_primers = check_map(open(opts.map_fname))
+            if errors!=[]:
+                raise ValueError,"Incorrect Mapping file. Run check_id_map.py first."
+            if len(all_primers)!= 1:
+                raise ValueError,"Currently only data sets with one primer are allowed.\n"+\
+                    "make separate mapping files with only one primer, re-run split_libraries and\n"\
+                    +"denoise with each split_library output separately."
+            
+
+            primer = all_primers.keys()[0]
+        else:
+            primer=opts.primer
+
+        centroids, cluster_mapping = fast_denoiser(opts.sff_fp,opts.fasta_fp,
+                                                   outdir, opts.num_cpus, primer)
 
     # store mapping file and centroids
-    result_otu_path = '%s/%s_otus.txt' % (outdir, input_seqs_basename)
+    result_otu_path = '%s/%s_denoised_clusters.txt' % (outdir, input_seqs_basename)
     of = open(result_otu_path,'w')
     for i,cluster in cluster_mapping.iteritems():
-        of.write('%s\t%s\n' % (i,'\t'.join(cluster)))
+        of.write('%s\t%s\n' % (str(i),'\t'.join(cluster)))
     of.close()
     
-    result_fasta_path = '%s/%s.fasta' % (outdir, input_seqs_basename)
+    result_fasta_path = '%s/denoised_seqs.fasta' % outdir
     of = open(result_fasta_path,'w')
-    of.write(SequenceCollection(centroids).toFasta()+"\n")
+    of.write(SequenceCollection(dict(centroids)).toFasta()+"\n")
 
 if __name__ == "__main__":
     main()

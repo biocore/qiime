@@ -15,6 +15,7 @@ __status__ = "Pre-release"
 from os import system, listdir, remove, rmdir
 from os.path import exists, split
 from re import search
+from itertools import chain, combinations, count
 
 from cogent.app.util import get_tmp_filename
 from cogent.parse.fasta import MinimalFastaParser
@@ -22,6 +23,20 @@ from cogent.util.misc import remove_files, app_path
 from cogent.parse.flowgram_parser import lazy_parse_sff_handle
 from cogent.app.util import ApplicationNotFoundError, ApplicationError
 from cogent.parse.record import RecordError
+
+# Adapted from align_seqs.py
+# Load Denoiser if it's available. If it's not, skip it if not but set up
+# to raise errors if the user tries to use it.
+try:
+    from Denoiser.flowgram_clustering import denoise_seqs
+
+except ImportError:
+    def raise_denoiser_not_found_error(*args, **kwargs):
+        raise ApplicationNotFoundError,\
+         "Denoiser cannot be found.\nIs it installed? Is it in your $PYTHONPATH?"+\
+         "\nYou can obtain the Denoiser from http://www.microbio.me/denoiser .\n"
+    # set functions which cannot be imported to raise_denoiser_not_found_error
+    denoise_seqs = raise_denoiser_not_found_error
 
 def write_pyronoise_file(flowgrams, num_flows, filename=None, prefix = "/tmp/"):
     """Write flowgrams to a (randomly) named file.
@@ -237,3 +252,34 @@ def pyroNoise_otu_picker(sff_fh, outdir="/tmp/", num_cpus=1,
         remove_pyronoise_intermediates(basename)
         
     return centroids, otu_map
+
+def fast_denoiser(sff_fp, fasta_fp, tmp_outdir, num_cpus, primer, verbose=True):
+    """wrapper function calling methods from the Denoiser pakcage."""
+    if num_cpus>1:
+        denoise_seqs(sff_fp, fasta_fp, tmp_outdir,
+                     primer=primer,  cluster=True, num_cpus=num_cpus,
+                     verbose=verbose)
+    else:
+        denoise_seqs(sff_fp, fasta_fp, tmp_outdir, primer=primer,
+                     verbose=verbose)
+
+    #read centroids and singletons
+    centroids = MinimalFastaParser(open(tmp_outdir+"/centroids.fasta"))
+    singletons = MinimalFastaParser(open(tmp_outdir+"/singletons.fasta"))
+    
+    seqs = chain(centroids,singletons)
+
+    #read mapping 
+    mapping = {}
+
+    #don't use enumerate for efficiency
+#    for i,cluster in combinations(count(), open(tmp_outdir+"/denoiser_mapping.txt")):
+    cluster_mapping = open(tmp_outdir+"/denoiser_mapping.txt")
+    for i,cluster in enumerate(cluster_mapping):
+        cluster, members = cluster.split(':')
+        members = members.split()
+        clust = [cluster]
+        clust.extend(members)
+        mapping[i] = clust
+
+    return seqs, mapping
