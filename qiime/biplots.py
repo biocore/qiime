@@ -60,8 +60,10 @@ def remove_rare_taxa(taxdata,nkeep=-1):
     if nkeep > 0 and nkeep < len(taxdata['prevalence']):
         ixs = argsort(taxdata['prevalence'])
         ixs = ixs[::-1][:nkeep]
+        ixs.sort()
         taxdata['counts'] = taxdata['counts'][ixs,:]
         taxdata['lineages'] = taxdata['lineages'][ixs]
+        taxdata['prevalence'] = taxdata['prevalence'][ixs]
 
     # remove empty taxa
     tax_sums = taxdata['counts'].sum(1)
@@ -69,6 +71,7 @@ def remove_rare_taxa(taxdata,nkeep=-1):
         if tax_sums[i] == 0:
             taxdata['counts'] = delete(taxdata['counts'], i, 0)
             taxdata['lineages'] = delete(taxdata['lineages'], i, 0)
+            taxdata['prevalence'] = delete(taxdata['prevalence'], i, 0)
 
 
     #Write taxa points and labels if requested
