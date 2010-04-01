@@ -5,7 +5,7 @@ from string import strip
 from sys import argv, stdout, stderr
 from numpy import array
 from StringIO import StringIO
-from qiime.parse import (parse_otus, parse_mapping_file,
+from qiime.parse import (parse_mapping_file,
     parse_metadata_state_descriptions)
 
 __author__ = "Rob Knight"

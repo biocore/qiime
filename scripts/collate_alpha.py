@@ -7,7 +7,7 @@ import os
 import sys
 from optparse import OptionParser,make_option
 from qiime.collate_alpha import write_output_file, make_output_row
-from qiime.parse import (parse_otus, filter_otus_by_lineage, parse_matrix,
+from qiime.parse import (filter_otus_by_lineage, parse_matrix,
     parse_rarefaction_fname)
 from qiime.format import format_otu_table, format_matrix
 from qiime.util import FunctionWithParams

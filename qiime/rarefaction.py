@@ -15,7 +15,6 @@ __status__ = "Pre-release"
 this takes an otu table and generates a series of subsampled (without 
 replacement) otu tables.
 """
-from qiime.parse import parse_otus
 from qiime.format import format_otu_table
 from qiime.util import FunctionWithParams
 import os.path

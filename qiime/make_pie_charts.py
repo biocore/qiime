@@ -41,7 +41,7 @@ import shutil
 from qiime.util import get_qiime_project_dir
 from qiime.colors import natsort, data_color_order, data_colors, \
                             get_group_colors,iter_color_groups
-from qiime.parse import parse_otus,group_by_field
+from qiime.parse import group_by_field
 ALPHABET = "ABCDEFGHIJKLMNOPQRSTUZWXYZ"
 ALPHABET += ALPHABET.lower()
 ALPHABET += "01234567890"

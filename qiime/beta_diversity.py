@@ -28,7 +28,6 @@ The output is a sample x sample matrix of distances, incl. row/col headers.
 """
 from StringIO import StringIO
 from qiime.util import FunctionWithParams, TreeMissingError, OtuMissingError
-from qiime.parse import parse_otus
 from qiime.format import format_distance_matrix
 import cogent.maths.distance_transform #avoid hard-coding metrics
 import qiime.beta_metrics

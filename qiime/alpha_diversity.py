@@ -39,7 +39,7 @@ from optparse import OptionParser
 
 import cogent.maths.stats.alpha_diversity as alph
 
-from qiime.parse import parse_otus, make_envs_dict
+from qiime.parse import make_envs_dict
 from qiime.util import FunctionWithParams, make_safe_f
 from qiime.format import format_matrix
 from sys import exit, stderr
