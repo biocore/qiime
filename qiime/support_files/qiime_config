@@ -4,11 +4,11 @@
 # specified by $QIIME_CONFIG_FP and edit that copy of the file.
 
 cluster_jobs_fp
-python_exe_fp	/software/bin/python
+python_exe_fp
 working_dir
-blastmat_dir	/software/blast-2.2.16/data
+blastmat_dir
 blastall_fp	blastall
-rdp_classifier_fp	/software/rdp_classifier/rdp_classifier-2.0.jar
+rdp_classifier_fp
 pynast_template_alignment_fp
 pynast_template_alignment_blastdb
 template_alignment_lanemask_fp

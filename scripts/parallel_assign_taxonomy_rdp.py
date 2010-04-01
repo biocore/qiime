@@ -13,7 +13,7 @@ __status__ = "Pre-release"
  
 
 from optparse import make_option
-from os import popen, system, mkdir, makedirs
+from os import popen, system, mkdir, makedirs, getenv
 from os.path import split, splitext, join
 from subprocess import check_call, CalledProcessError
 from cogent.app.util import get_tmp_filename
@@ -42,11 +42,12 @@ script_info['required_options'] = [\
            type='string',help='path to store output files '+\
            '[REQUIRED]'),\
 ]
+rdp_classifier_fp = qiime_config['rdp_classifier_fp'] or getenv('RDP_JAR_PATH')
 script_info['optional_options'] = [\
  make_option('-r','--rdp_classifier_fp',action='store',\
            type='string',help='full path to rdp classifier jar file '+\
            '[default: %default]',\
-           default=qiime_config['rdp_classifier_fp']),\
+           default=rdp_classifier_fp),\
  make_option('-c','--confidence',action='store',\
           type='float',help='Minimum confidence to'+\
           ' record an assignment [default: %default]',default=0.80),\
