@@ -462,7 +462,7 @@ def generate_3d_plots(prefs, data, custom_axes, background_color,label_color, \
 
     res = make_3d_plots(coord_header, coords, pct_var,mapping,prefs, \
                         background_color,label_color, \
-                        taxa, custom_axes,edges=edges)
+                        taxa, custom_axes=custom_axes,edges=edges)
 
     #Write kinemage file
     f = open(kinpath, 'w')
