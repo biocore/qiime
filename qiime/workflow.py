@@ -67,12 +67,13 @@ def get_params_str(params):
 ## End functions used generally by the workflow functions
 
 ## Begin task-specific workflow functions
-def run_qiime_data_preparation(input_fp, output_dir, command_handler,\
-    params, qiime_config, parallel=False,\
-    status_update_callback=print_to_stdout):
+def run_qiime_data_preparation(input_fp, output_dir, command_handler,
+    params, qiime_config, sff_input_fp=None, mapping_fp=None,
+    parallel=False, status_update_callback=print_to_stdout):
     """ Run the data preparation steps of Qiime 
     
         The steps performed by this function are:
+          0) Optionally denoise the sequences (if sff_input_fp=True);
           1) Pick OTUs;
           2) Pick a representative set;
           3) Align the representative set; 
@@ -90,6 +91,40 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,\
     commands = []
     python_exe_fp = qiime_config['python_exe_fp']
     script_dir = get_qiime_scripts_dir()
+    
+    # Prep the denoising command
+    if sff_input_fp != None:
+        denoise = True
+        assert mapping_fp != None,\
+         "Mapping file must be provided for denoising."+\
+         " (Need to extract the primer sequence.)"
+        denoise_output_dir = '%s/denoised_seqs/' % output_dir
+        denoised_seqs_fp = '%s/denoised_seqs.fasta' % denoise_output_dir
+        denoised_mapping_fp = '%s/denoiser_mapping.txt' % denoise_output_dir
+        
+        if parallel:
+            parallel_str = '-n %s' % qiime_config['jobs_to_start']
+        else:
+            parallel_str = ''
+            
+        try:
+            params_str = get_params_str(params['denoise'])
+        except KeyError:
+            params_str = ''
+        
+        # build the denoiser command
+        denoise_cmd = '%s %s/denoise.py -i %s -f %s --method fast -m %s -o %s %s %s' %\
+         (python_exe_fp, script_dir, sff_input_fp, input_fp, mapping_fp,
+          denoise_output_dir, parallel_str, params_str)
+        commands.append([('Denoise', denoise_cmd)])
+        
+        # some values that get passed to subsequent steps change when 
+        # denoising -- set those here
+        original_input_fp = input_fp
+        input_fp = denoised_seqs_fp
+        input_basename, input_ext = splitext(split(denoised_seqs_fp)[1])
+    else:
+        denoise = False
     
     # Prep the OTU picking command
     otu_picking_method = params['pick_otus']['otu_picking_method']
@@ -127,6 +162,23 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,\
 
     commands.append([('Pick OTUs', pick_otus_cmd)])
     
+    # Prep the merge_denoiser_output.py command, if denoising
+    if denoise:
+        pick_otu_dir = '%s/denoised_otus/' % pick_otu_dir
+        
+        try:
+            params_str = get_params_str(params['merge_denoiser_output'])
+        except KeyError:
+            params_str = ''
+        merge_denoiser_output_cmd = \
+         '%s %s/merge_denoiser_output.py -m %s -p %s -f %s -d %s -o %s %s' %\
+         (python_exe_fp, script_dir, denoised_mapping_fp, otu_fp, 
+          original_input_fp, denoised_seqs_fp, pick_otu_dir, params_str)
+          
+        input_fp = '%s/denoised_all.fasta' % pick_otu_dir
+        otu_fp = '%s/denoised_otu_map.txt' % pick_otu_dir
+        commands.append([('Merge denoiser output', merge_denoiser_output_cmd)])
+    
     # Prep the representative set picking command
     rep_set_dir = '%s/rep_set/' % pick_otu_dir
     try:
@@ -135,6 +187,10 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,\
         pass
     rep_set_fp = '%s/%s_rep_set.fasta' % (rep_set_dir,input_basename)
     rep_set_log_fp = '%s/%s_rep_set.log' % (rep_set_dir,input_basename)
+    
+    if denoise:
+        params['pick_rep_set']['rep_set_picking_method'] = 'first'
+        
     try:
         params_str = get_params_str(params['pick_rep_set'])
     except KeyError:

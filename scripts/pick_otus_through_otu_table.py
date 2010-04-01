@@ -77,7 +77,11 @@ script_info['optional_options'] = [\
         'useful for debugging [default: %default]',default=False),\
  make_option('-a','--parallel',action='store_true',\
         dest='parallel',default=False,\
-        help='Run in parallel where available [default: %default]')
+        help='Run in parallel where available [default: %default]'),\
+ make_option('-m','--mapping_fp',
+        help='the mapping filepath [REQUIRED for denoising]'),
+ make_option('-s','--sff_fp',
+        help='the sff file [REQUIRED for denoising]'),
 ]
 script_info['version'] = __version__
 
@@ -100,6 +104,11 @@ def main():
         raise IOError,\
          "Can't open parameters file (%s). Does it exist? Do you have read access?"\
          % opts.parameter_fp
+         
+    if opts.sff_fp or opts.mapping_fp:
+        assert opts.sff_fp and opts.mapping_fp,\
+         "The sff and mapping fp are only required when denoising, "+\
+         "and both must be provided in that case."
     
     try:
         makedirs(output_dir)
@@ -123,10 +132,14 @@ def main():
     else:
         status_update_callback = no_status_updates
     
-    run_qiime_data_preparation(input_fp, output_dir,\
-     command_handler=command_handler,\
-     params=parse_qiime_parameters(parameter_f),\
-     qiime_config=qiime_config,\
+    run_qiime_data_preparation(
+     input_fp, 
+     output_dir,
+     command_handler=command_handler,
+     params=parse_qiime_parameters(parameter_f),
+     qiime_config=qiime_config,
+     sff_input_fp=opts.sff_fp, 
+     mapping_fp=opts.mapping_fp,
      parallel=parallel,\
      status_update_callback=status_update_callback)
 
