@@ -329,25 +329,7 @@ def multiple_file_alpha(input_path, output_path, metrics, tree_path=None):
 
     for fname in file_names:
         # future: try to make sure fname is a valid otu file
-        #~ f = open(os.path.join(dir,fname))
-        #~ try:
-            #~ parse_otus(f)
-        #~ except:
-            #~ print fname + " not a valid otu table" # write this to log file?
-            #~ continue
-        #~ finally:
-            #~ f.close()
-            #~ print 'finally', fname
-#~ 
-        #~ print 'running w/ ' + fname
-        
+
         single_file_alpha(os.path.join(input_path, fname), 
             metrics, os.path.join(output_path,'alpha_'+fname),
             tree_path)
-        ### old version called script for future parallelization
-        # alpha_div_cmd = 'python ' + alpha_script + ' -i '+\
-        #            os.path.join(options.input_path, fname) + " -m " + options.metrics\
-        #            + ' -o ' + os.path.join(options.output_path,'alpha_'+fname)
-        #        if options.tree_path:
-        #            alpha_div_cmd += ' -t ' + options.tree_path
-        #        os.system(alpha_div_cmd)
