@@ -15,13 +15,14 @@ __status__ = "Pre-release"
  
 from os.path import exists, splitext, split
 from optparse import make_option
+from numpy import array
 
 from cogent.core.alignment import SequenceCollection
 
 from qiime.util import parse_command_line_parameters, create_dir,\
     handle_error_codes
 from qiime.pyronoise import  pyroNoise_otu_picker, fast_denoiser
-from qiime.split_libraries import check_map
+from qiime.parse import parse_mapping_file
 
 script_info={}
 script_info['brief_description']="""Denoise a flowgram file"""
@@ -133,8 +134,6 @@ def main():
         log_fh.write("Input file: %s\n"% opts.sff_fp)
         log_fh.write("output path: %s\n"% outdir)
 
-
-
     if opts.method=="pyronoise":
         centroids, cluster_mapping = pyroNoise_otu_picker(open(opts.sff_fp, "U"),
                                                           outdir, opts.num_cpus, log_fh, opts.keep,
@@ -142,17 +141,22 @@ def main():
     else:
         #Read primer from Meta data file if not set on command line
         if not opts.primer:
-            hds, id_map, barcode_to_sample_id, warnings, errors, \
-                primer_seqs_lens, all_primers = check_map(open(opts.map_fname))
-            if errors!=[]:
-                raise ValueError,"Incorrect Mapping file. Run check_id_map.py first."
-            if len(all_primers)!= 1:
-                raise ValueError,"Currently only data sets with one primer are allowed.\n"+\
-                    "make separate mapping files with only one primer, re-run split_libraries and\n"\
-                    +"denoise with each split_library output separately."
+          mapping_data, header, comments = \
+              parse_mapping_file(open(opts.map_fname,"U"))
             
+          index = header.index("LinkerPrimerSequence")
+          all_primers = set(array(mapping_data)[:,index])
+          
+          if len(all_primers)!= 1:
+                raise ValueError,"Currently only data sets with one primer are allowed.\n"+\
+                    "Make separate mapping files with only one primer, re-run split_libraries and\n"\
+                    +"denoise with each split_library output separately."
+          primer = list(all_primers)[0]
+          last_char = primer[-1]
+          if(last_char not in "ACGT"):
+              raise ValueError,"We currently do not support primers with "+\
+                  "degenerate bases at it's 3' end."
 
-            primer = all_primers.keys()[0]
         else:
             primer=opts.primer
 
