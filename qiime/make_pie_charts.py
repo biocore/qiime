@@ -41,7 +41,7 @@ import shutil
 from qiime.util import get_qiime_project_dir
 from qiime.colors import natsort, data_color_order, data_colors, \
                             get_group_colors,iter_color_groups
-from qiime.parse import parse_otus
+from qiime.parse import parse_otus,group_by_field
 ALPHABET = "ABCDEFGHIJKLMNOPQRSTUZWXYZ"
 ALPHABET += ALPHABET.lower()
 ALPHABET += "01234567890"
@@ -117,23 +117,6 @@ IMG_SRC_2 = """<img src='%s' height=200 width=400 border=1 />"""
 DOWNLOAD_LINK = """<a href=\\'%s\\' >%s</a>"""
 
 
-
-
-COLORS =  ["#FF0000", "#FF6600", "#FF9900", "#FFCC00", "#FFFF99", "#FFFF00",
-    "#CCFF00", "#99FF00","#00FF00", "#66CC00", "#009900", "#006666", "#66CC99",
-    "#6699CC","#6666FF", "#0033FF", "#330099", "#663399", "#660066", "#9999CC",
-    "#000066","#0000FF","#00CCFF","#660066","#6600CC","#9966CC","#CC0066",
-    "#CC6666","#eeeeee"]
-
-
-ALT_COLORS = ["#8B0000","#B22222","#FF0000", "#FF4500", "#FF8C00", "#FFA500",
-              "#FFD700","#FFFF00","#F0E68C","#FFFFE0", "#006400","#008000",
-              "#32CD32","#00FF00", "#7FFF00","#98FB98","#00008B", "#0000CD",
-              "#0000FF","#1E90FF", "#00BFFF", "#87CEFA","#008080","#20B2AA",
-              "#48D1CC","#7FFFD4", "#4B0082", "#800080","#9932CC","#9966CC",
-              "#BA55D3","#FF00FF", "#C71585","#FF1493","#FF69B4","#DB7093",
-              "#DDA0DD","#8B4513","#D2691E","#eeeeee"]
-
 def strip_eps_font(filename):
     """ Rewrite file """
     inf = open(filename)
@@ -156,8 +139,8 @@ def strip_eps_font(filename):
     ouf.write(''.join(filecache))
     ouf.close()
     
-def make_pie_chart(data, dir_path, file_prefix = None,props={},
-    y_len=6.5, colors=None, dpi=80, generate_eps=False, generate_pdf=True, 
+def make_pie_chart(data, dir_path,level,color_data,prefs,background_color,label_color, file_prefix = None,props={},
+    y_len=6.5, dpi=80, generate_eps=False, generate_pdf=True, 
     others_key = "All Other Categories",
     others_color = "#eeeeee", should_capitalize=True):
     """
@@ -168,31 +151,50 @@ def make_pie_chart(data, dir_path, file_prefix = None,props={},
     trunc_len: truncates labels after this many chars
 
     """
-    if not colors:
-        colors = ALT_COLORS
-
     if not data:
         raise ValueError, "No data available for pie chart."
 
     all_fracs = []
     all_labels = []
+    colors = []
+    for key in prefs.keys():
+        if prefs[key]['column'] != str(level):
+            continue
+        col_name = 'Taxon'
+        mapping = [['Taxon']]
+        mapping.extend([[m] for m in color_data[1]])
+        if 'colors' in prefs[key]:
+            if isinstance(prefs[key]['colors'], dict):
+                pref_colors = prefs[key]['colors'].copy()    #copy so we can mutate
+            else:
+                pref_colors = prefs[key]['colors'][:]
+        else:
+            pref_colors={}
+        labelname=prefs[key]['column']
+
+        #Define groups and associate appropriate colors to each group
+        groups = group_by_field(mapping, col_name)
+        pref_colors, data_colors, data_color_order = \
+            get_group_colors(groups, pref_colors)
 
     # set up labels and colors for pie chart 
-    for color_ix, (c_frac, c_label) in enumerate(data):
+    for color_ix, (c_label, c_frac) in enumerate(data):
         c_label = c_label.replace("_", " ")
         # we also want to color others category same every time
         if c_label == others_key:
-            colors[color_ix] = others_color
-
+            colors.append(others_color)
+        else: 
+            colors.append(data_colors[pref_colors[c_label]].toHex())
         all_fracs.append(c_frac)
         if should_capitalize:
             capital = "%s (%.2f%%)"%(c_label.capitalize(),(c_frac*100.0))
             all_labels.append(capital)
         else:
             all_labels.append("%s (%.2f%%)" % (c_label, (c_frac * 100.0)))
-    rc('font', size='12')
+    rc('font', size='10')
+    rc('text', color=label_color)
     rc('patch', linewidth=.1)
-    rc('axes', linewidth=.5)
+    rc('axes', linewidth=.5,edgecolor=label_color)
     rc('text', usetex=False)
     fig = figure(randrange(10000), figsize=(2*y_len,y_len))
 
@@ -206,19 +208,19 @@ def make_pie_chart(data, dir_path, file_prefix = None,props={},
     if "title" in props:
         mtitle = props["title"]
     axis('off')
-    title(mtitle, fontsize='14')
+    title(mtitle, fontsize='10',color=label_color)
     ax = axes([0.0, 0.0, .5, 1])
     p1 = pie(all_fracs,  shadow=False, colors=colors)
-    figlegend(p1[0],labels = all_labels, loc = loc, borderpad=0.3, \
+    flg = figlegend(p1[0],labels = all_labels, loc = loc, borderpad=0.3, \
                  labelspacing=0.3, prop = fp) 
-
+    flg.legendPatch.set_alpha(0.0)
     #write out
     if file_prefix is None:
         img_name = make_img_name()
     else:
         img_name = file_prefix
     img_abs =  os.path.join(dir_path,'pie_charts', img_name)
-    savefig(img_abs, dpi=dpi)
+    savefig(img_abs, dpi=dpi,facecolor=background_color)
     eps_link = ""
     eps_abs = ""
 
@@ -227,7 +229,7 @@ def make_pie_chart(data, dir_path, file_prefix = None,props={},
             eps_img_name = make_img_name(file_ext=".pdf")
         else:
             eps_img_name = file_prefix + ".pdf"
-        savefig(os.path.join(dir_path,'pie_charts', eps_img_name))
+        savefig(os.path.join(dir_path,'pie_charts', eps_img_name),facecolor=background_color)
         eps_abs = os.path.join('pie_charts', eps_img_name)
         eps_link = DOWNLOAD_LINK % ((os.path.join('pie_charts',\
                 eps_img_name)),\
@@ -237,7 +239,7 @@ def make_pie_chart(data, dir_path, file_prefix = None,props={},
             eps_img_name = make_img_name(file_ext=".eps")
         else:
             eps_img_name = file_prefix + ".eps"
-        savefig(os.path.join(dir_path,'pie_charts', eps_img_name))
+        savefig(os.path.join(dir_path,'pie_charts', eps_img_name),facecolor=background_color)
         strip_eps_font(os.path.join(dir_path,'pie_charts', eps_img_name))
         out = getoutput("gzip " + os.path.join(dir_path,'pie_charts', eps_img_name))
         eps_abs = os.path.join(dir_path,'pie_charts',eps_img_name) + ".gz"
@@ -277,35 +279,40 @@ def get_fracs(counts, num_categories, total):
         frac = float(n)/total
         if j < num_categories-1:
             red += n
-            fracs_labels_other.append((frac,t))
+            fracs_labels_other.append((t,frac))
         tax = s.strip().split("<br>")[-1]
+        tax = tax.replace('"','')
         for_overlib = s.strip().rpartition("<br>")[0]
+        for_overlib = for_overlib.replace('"','')
         all_counts.append(DATA_HTML % (n,frac*100,for_overlib,tax, tax,t))
     if len(counts) > num_categories:
         other_cat = len(counts) - (num_categories-1)
         new_counts = counts[0:num_categories-1]
         other = sum([c_over[0] for c_over in counts[num_categories-1:]])
         other_frac = float(other)/total
-        fracs_labels = [(float(n)/red,t) for n,t,s in new_counts]
+        fracs_labels = [(t,float(n)/red) for n,t,s in new_counts]
+
+    fracs_labels_other.sort()
+    fracs_labels.sort()
 
     return fracs_labels_other,fracs_labels,all_counts, other_cat, red,other_frac
 
 def make_HTML_table(l,other_frac,total,red,other_cat,
-                    fracs_labels_other,fracs_labels,dir_path,all_counts):
+                    fracs_labels_other,fracs_labels,dir_path,all_counts,level,color_data, color_prefs,background_color, label_color):
     """Makes the HTML table for one set of pie charts """
     img_data = []
     if other_cat > 0:
-        fracs_labels_other.append((other_frac,"All Other Categories"))
+        fracs_labels_other.append(("All Other Categories",other_frac))
         title = TITLE_include % (l,total,total,\
                         len(fracs_labels_other), total-red, other_cat)
         all_taxons = [l]
-        pie = make_pie_chart(fracs_labels_other,dir_path,\
+        pie = make_pie_chart(fracs_labels_other,dir_path,level,color_data, color_prefs,background_color,label_color,\
                             props = {'title':title})
         all_taxons.extend(pie)
         title = TITLE_exclude % (l,red,total,len(fracs_labels), \
                 total-red, other_cat)
         pie  = make_pie_chart(fracs_labels,
-                              dir_path,props = {'title':title})
+                              dir_path,level,color_data, color_prefs,background_color,label_color,props = {'title':title})
         all_taxons.extend(pie)
         all_taxons.append('\n'.join(all_counts))
         img_data.append(TABLE_graph % tuple(all_taxons))
@@ -313,7 +320,7 @@ def make_HTML_table(l,other_frac,total,red,other_cat,
         title = TITLE % (l,total,total,len(fracs_labels_other))
         all_taxons = [l]
         
-        pie = make_pie_chart(fracs_labels_other,dir_path,\
+        pie = make_pie_chart(fracs_labels_other,dir_path,level,color_data, color_prefs,background_color,label_color,\
                                 props = {'title':title})
         all_taxons.extend(pie)
         all_taxons.extend(("",""))
@@ -323,18 +330,18 @@ def make_HTML_table(l,other_frac,total,red,other_cat,
 
     return img_data
                 
-def get_counts(lines, label,do_sample, num_categories, dir_path):
+def get_counts(label,colorby, num_categories, dir_path,level,color_data, color_prefs,background_color,label_color):
     """gets all the counts for one input file"""
     img_data = []
     labels = []
     level_counts = []
     
-    sample_ids, otu_ids, otu_table, lineages = parse_otus(lines,count_map_f=float)
+    sample_ids, otu_ids, otu_table, lineages = color_data
     labels = sample_ids
 
     for idx, counts in enumerate(otu_table):
         taxonomy = otu_ids[idx]
-        split_label = [i.strip('"') for i in taxonomy.strip().split(";")]
+        split_label = [i for i in taxonomy.strip().split(";")]
         taxonomy = ';'.join(split_label)
         level_counts.append((sum(map(float,counts)), taxonomy,
                             '<br>'.join(split_label)))
@@ -343,21 +350,18 @@ def get_counts(lines, label,do_sample, num_categories, dir_path):
                                 get_fracs(level_counts, num_categories, all_sum)
 
     img_data.extend(make_HTML_table(label,other_frac,all_sum,red,other_cat,
-                    fracs_labels_other,fracs_labels,dir_path,all_counts))
+                    fracs_labels_other,fracs_labels,dir_path,all_counts,level,color_data, color_prefs,background_color,label_color))
 
-    if do_sample:
-        for i, l in enumerate(labels):
+    if colorby is not None:
+        for i, l in enumerate(colorby):
             total = 0
             sample_counts = []
-            for line in lines:
-                if line.startswith("#") or line == "\n" or line.startswith("Taxon"):
-                    continue
-                counts = line.strip().split("\t")
-                taxonomy = counts[0]
-                split_label = [j.strip('"') for j in taxonomy.strip().split(";")]
+            for idx, counts in enumerate(otu_table):
+                taxonomy =otu_ids[idx]
+                split_label = [j for j in taxonomy.strip().split(";")]
                 taxonomy = ';'.join(split_label)
 
-                c = float(counts[i+1])
+                c = float(counts[i])
                 if c > 0:
                     total += c
                     sample_counts.append((c,taxonomy,'<br>'.join(split_label)))
@@ -365,21 +369,20 @@ def get_counts(lines, label,do_sample, num_categories, dir_path):
                                 get_fracs(sample_counts, num_categories, total)
             img_data.extend(make_HTML_table('_'.join([label,l.strip()]),
                             other_frac,total,red,other_cat,fracs_labels_other,
-                            fracs_labels,dir_path,all_counts))
+                            fracs_labels,dir_path,all_counts,level,color_data, color_prefs,background_color,label_color))
 
     return img_data
 
 
-def make_all_pie_charts(data, dir_path, filename,num_categories, do_sample,args):
+def make_all_pie_charts(data, dir_path, filename,num_categories, colorby,args,color_data, color_prefs,background_color,label_color):
     """Generate interactive pie charts in one HTML file"""
     img_data = []
     
     for label,f_name in data:
-        f = open(f_name)
-        lines = f.readlines()
-        f.close()
-        img_data.extend(get_counts(lines,label.strip(),do_sample,
-                                   num_categories, dir_path))
+        f = color_data['counts'][f_name]
+        level = max([len(t.split(';')) - 1 for t in f[1]])
+        img_data.extend(get_counts(label.strip(),colorby,num_categories, 
+                 dir_path,level,f, color_prefs,background_color,label_color))
         
     outpath = os.path.join(dir_path,'taxonomy_summary_pie_chart.html')
     out_table = '\n'.join(img_data)

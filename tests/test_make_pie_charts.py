@@ -33,16 +33,22 @@ class TopLevelTests(TestCase):
         self.lines = ["#Full OTU Counts",
         "Taxon	14FC041	14FC042	14FC043","1	1	3	2","2	0	2	1",
         "3	4	0	3"]
-    
+        self.lines_parsed = (['14FC041','14FC042','14FC043'],['1','2','3'],\
+               [['1','3','2'],['0','2','1'],['4','0','3']],[])
+        self.color_prefs = {'1':{'column':'1'}}
         self.generate_eps=True
 
         self._paths_to_clean_up = []
         self._dirs_to_clean_up = []
         self.counts1 = [(1,"a;b;c","a<br>b<br>c"),(3,"d;e;f","d<br>e<br>f"),
                         (4,"a;g;h","a<br>g<br>h"),(2,"d;e;i","d<br>e<br>i")]
+        self.lines_parsed_2 = (['14FC041','14FC042','14FC043'],\
+                   ['a;b;c','d;e;f','a;g;h',"d;e;i"],\
+                  [['1','3','2'],['0','2','1'],['4','0','3']],[])
 
-        self.fracs = [(1.0/10,"a"),(3.0/10,"b"),
-                        (4.0/10,"c"),(2.0/10,"d")]
+
+        self.fracs = [("a;b;c",1.0/10),("d;e;f",3.0/10),
+                        ("a;g;h",4.0/10),("d;e;i",2.0/10)]
 
     
     def tearDown(self):
@@ -59,12 +65,15 @@ class TopLevelTests(TestCase):
             mkdir("/tmp/qiimewebfiles/pie_charts")
         except OSError:
             pass
-        img_data = get_counts(self.lines,"Phylum",True,5,"/tmp/qiimewebfiles/")
+        img_data = get_counts("Phylum",['14FC041','14FC042','14FC043'],5,\
+                 "/tmp/qiimewebfiles/",1,self.lines_parsed,self.color_prefs,\
+                 'black','white')
         self.assertEqual(len(img_data), 4)
-        img_data = get_counts(self.lines,"Phylum",False,5,"/tmp/qiimewebfiles/")
+        img_data = get_counts("Phylum",None,5,"/tmp/qiimewebfiles/",\
+                 1,self.lines_parsed,self.color_prefs,'black','white')
         self.assertEqual(len(img_data), 1)
         self._paths_to_clean_up = ["/tmp/qiimewebfiles/pie_charts/"+f \
-                                   for f in listdir("/tmp/qiimewebfiles/pie_charts")]
+                            for f in listdir("/tmp/qiimewebfiles/pie_charts")]
         self._dirs_to_clean_up = ["/tmp/qiimewebfiles/pie_charts"]
     
 
@@ -74,8 +83,8 @@ class TopLevelTests(TestCase):
         fracs_labels_other,fracs_labels,all_counts, other_cat, red,other_frac \
                                         = get_fracs(self.counts1,5,10)
         
-        self.assertEqual(fracs_labels_other,[(4.0/10,"a;g;h"),(3.0/10,"d;e;f"),
-                                             (2.0/10,"d;e;i"),(1.0/10,"a;b;c")])
+        self.assertEqual(fracs_labels_other,[("a;b;c",1.0/10),("a;g;h",4.0/10),
+                                            ("d;e;f",3.0/10),("d;e;i",2.0/10)])
         self.assertEqual(fracs_labels,[])
         self.assertEqual(all_counts,
                 [DATA_HTML % ("4",(4.0/10)*100,'a<br>g','h', 'h',"a;g;h"),
@@ -88,8 +97,8 @@ class TopLevelTests(TestCase):
 
         fracs_labels_other,fracs_labels,all_counts, other_cat, red,other_frac \
                                         = get_fracs(self.counts1,3,10)
-        self.assertEqual(fracs_labels_other,[(4.0/10,"a;g;h"),(3.0/10,"d;e;f")])
-        self.assertEqual(fracs_labels,[(4.0/7,"a;g;h"),(3.0/7,"d;e;f")])
+        self.assertEqual(fracs_labels_other,[("a;g;h",4.0/10),("d;e;f",3.0/10)])
+        self.assertEqual(fracs_labels,[("a;g;h",4.0/7),("d;e;f",3.0/7)])
 
         self.assertEqual(all_counts,
                 [DATA_HTML % ("4",(4.0/10)*100,'a<br>g','h', 'h',"a;g;h"),
@@ -119,7 +128,8 @@ class TopLevelTests(TestCase):
 
         img_data = make_HTML_table("Phylum",
                             other_frac,10,red,other_cat,fracs_labels_other,
-                            fracs_labels,dir_path,all_counts)
+                            fracs_labels,dir_path,all_counts,1,\
+                            self.lines_parsed_2,self.color_prefs,'black','white')
         self.assertEqual(len(img_data),1)
         
         self._paths_to_clean_up = ["/tmp/qiimewebfiles/pie_charts/"+f \
@@ -144,7 +154,8 @@ class TopLevelTests(TestCase):
             pass
 
 
-        obs1,obs2=make_pie_chart(self.fracs,dir_path,"pie_chart",self.props,
+        obs1,obs2=make_pie_chart(self.fracs,dir_path,1,self.lines_parsed_2,\
+                    self.color_prefs, "black","white","pie_chart",self.props,
                     generate_eps=True, generate_pdf = True)
 
         self.assertTrue(exists(filename1),'The png file was not created in \

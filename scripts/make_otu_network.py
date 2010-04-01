@@ -16,10 +16,11 @@ This script generates the otu networks and statistics
 
 """
 
-from qiime.util import parse_command_line_parameters
+from qiime.util import parse_command_line_parameters,create_dir
 from optparse import make_option
 from qiime.make_otu_network import create_network_and_stats
 from cogent.util.misc import get_random_directory_name
+from qiime.colors import sample_color_prefs_and_map_data_from_options
 import os
 import shutil
 
@@ -42,14 +43,26 @@ script_info['output_description']="""The result of make_otu_network.py consists 
 
 script_info['required_options'] = [\
 make_option('-m', '--mapping_file',action='store',type='string',\
-                dest='map_file',\
+                dest='map_fname',\
                 help='name of input map file [REQUIRED]'),
 make_option('-i', '--input_file',action='store',type='string',\
-            dest='counts_file',\
+            dest='counts_fname',\
             help='name of otu table file [REQUIRED]')
 ]
 
 script_info['optional_options'] = [\
+make_option('-b', '--colorby', dest='colorby',\
+     help='This is the categories to color by in the plots from the \
+user-generated mapping file. The categories must match the name of a column \
+header in the mapping file exactly and multiple categories can be list by comma \
+separating them without spaces. The user can also combine columns in the \
+mapping file by separating the categories by "&&" without spaces \
+[default=%default]'),
+ make_option('-p', '--prefs_path',help='This is the user-generated preferences \
+file. NOTE: This is a file with a dictionary containing preferences for the \
+analysis [default: %default]'),
+ make_option('-k', '--background_color',help='This is the background color to \
+use in the plots. [default: %default]'),
 make_option('-o', '--output_dir', action='store',type='string',\
                dest='dir_path',\
                help='output directory for all analyses [default: cwd]')
@@ -58,34 +71,29 @@ make_option('-o', '--output_dir', action='store',type='string',\
 script_info['version'] = __version__
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
-    if not opts.counts_file:
+    if not opts.counts_fname:
         parser.error("An otu table file must be specified")
 
-    if not opts.map_file:
+    if not opts.map_fname:
         parser.error("A Map file must be specified")
+
+    prefs,data,background_color,label_color= \
+             sample_color_prefs_and_map_data_from_options(opts)
+
+
     dir_path = opts.dir_path
 
     if dir_path==None or dir_path=='':
         dir_path = get_random_directory_name()
-    
-    try:
-        os.mkdir(os.path.join(dir_path,"otu_network"))
-    except OSError:
-        pass
 
-    try:
-        os.mkdir(os.path.join(dir_path,"otu_network/props"))
-    except OSError:
-        pass
+    create_dir(dir_path)
+    create_dir(os.path.join(dir_path,"otu_network"))
+    create_dir(os.path.join(dir_path,"otu_network/props"))
+    create_dir(os.path.join(dir_path,"otu_network/stats"))
 
-    try:
-        os.mkdir(os.path.join(dir_path,"otu_network/stats"))
-    except OSError:
-        pass
-
-    map_lines = open(opts.map_file,'U').readlines()
-    otu_sample_lines = open(opts.counts_file, 'U').readlines()
-    create_network_and_stats(dir_path,map_lines,otu_sample_lines)
+    map_lines = open(opts.map_fname,'U').readlines()
+    otu_sample_lines = open(opts.counts_fname, 'U').readlines()
+    create_network_and_stats(dir_path,map_lines,otu_sample_lines,prefs,data,background_color,label_color)
 
 if __name__ == "__main__":
     main()

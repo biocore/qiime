@@ -23,7 +23,8 @@ from qiime.colors import (Color, rgb_tuple_to_hsv, mage_hsv_tuple_to_rgb,
     linear_gradient, natsort, make_color_dict, color_dict_to_objects,
     iter_color_groups, get_group_colors,
     get_color, color_groups,string_to_rgb,
-    get_map,map_from_coords,sample_color_prefs_and_map_data_from_options)
+    get_map,map_from_coords,sample_color_prefs_and_map_data_from_options,
+    taxonomy_color_prefs_and_map_data_from_options,taxonomy_process_prefs)
 
 class ColorTests(TestCase):
     """Tests of the Color class"""
@@ -114,6 +115,7 @@ class TopLevelTests(TestCase):
         }
         self.data_color_order = ['blue','lime','red','aqua','fuchsia','yellow',\
                       'green','maroon','teal','purple','olive','silver','gray']
+        
         self._paths_to_clean_up = []
         self._dir_to_clean_up = ''
 
@@ -282,8 +284,21 @@ from mapping file to color by"""
         self.assertEqual(obs1,exp1)
         self.assertEqual(obs2,self.data)
 
-    
+    def test_taxonomy_process_prefs(self):
+        """taxonomy_process_prefs should return a taxonomy prefs file"""
+        taxonomy_levels = [2,3,4]
+        exp1={}
+        exp1['level_2']={'column':'2'}
+        exp1['level_3']={'column':3, 'colors':{'a':('red',(0, 100, 100))}}
+        obs1=taxonomy_process_prefs(taxonomy_levels,exp1)
+        
+        exp2={}
+        exp2['2']={'column':'2', 'colors':{}}
+        exp2['3']={'column':'3', 'colors':{'a':('red',(0, 100, 100))}}
+        exp2['4'] = {'column':'4','colors':{}}
+        self.assertEqual(obs1,exp2)
 
+        
 #run tests if called from command line
 if __name__ == "__main__":
     main()

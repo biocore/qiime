@@ -13,7 +13,7 @@ __status__ = "Prototype"
 """Code for coloring series based on prefs file.
 """
 from colorsys import rgb_to_hsv, hsv_to_rgb
-from parse import parse_mapping_file, group_by_field
+from parse import parse_mapping_file, group_by_field, parse_otus
 from numpy import array
 import os
 import re
@@ -483,3 +483,87 @@ def sample_color_prefs_and_map_data_from_options(options):
 
     return color_prefs,data,background_color,label_color
 
+def taxonomy_color_prefs_and_map_data_from_options(options):
+    """Returns color prefs and counts data based on options.
+       counts data is any file in a format that can be parsed by parse_otus  
+    """
+    data = {}
+    data['counts'] = {}
+    taxonomy_levels = []
+
+    #need to set some other way from sample ids
+    #Determine which mapping headers to color by, if none given, color by \
+    #Sample ID's
+    taxonomy_count_files = options.counts_fname.strip().strip("'").split(',')
+    for f in taxonomy_count_files:
+        try:
+            counts_f = open(f, 'U').readlines()
+        except (TypeError, IOError):
+            raise MissingFileError, 'Counts file required for this analysis'
+        sample_ids, otu_ids, otu_table, lineages = \
+                       parse_otus(counts_f,count_map_f=float)
+
+        data['counts'][f] = (sample_ids, otu_ids, otu_table, lineages)
+        level = max([len(t.split(';')) - 1 for t in otu_ids])
+
+        taxonomy_levels.append(str(level))
+
+    if options.prefs_path:
+        prefs = eval(open(options.prefs_path, 'U').read())
+        color_prefs=taxonomy_process_prefs(taxonomy_levels, \
+                                                prefs['taxonomy_coloring'])
+
+        if prefs.has_key('background_color'):
+            background_color= prefs['background_color']
+        else:
+            background_color='black'
+    else:
+        background_color='black'
+        color_prefs=taxonomy_process_prefs(taxonomy_levels, None)
+
+    if options.prefs_path and options.background_color:
+        background_color=options.background_color
+    elif options.background_color:
+        background_color=options.background_color
+
+    if background_color=='black':
+        label_color='white'
+    else:
+        label_color='black'
+    return color_prefs,data,background_color,label_color
+
+
+def taxonomy_process_prefs(taxonomy_levels, color_prefs = None):
+    """Creates taxonomy prefs dict given specific taxonomy levels.
+
+            color_prefs is not required
+            taxonomy_levels is a list of the level number i.e. Phylum is 2
+            prefs will include a 'colors' dictionary for each given level
+               if there is a cooresponding level in color_prefs that is the
+               dictionary for the level otherwise it adds and empty dict
+    """
+    prefs = {}
+    for j, col in enumerate(taxonomy_levels):
+        key = str(col)
+        col = str(col)
+        #Color by only one level    
+        prefs[key]={}
+        prefs[key]['column']=col
+
+        if color_prefs:
+            for p in color_prefs:
+                if 'column' in color_prefs[p] and str(color_prefs[p]['column'])==col:
+                    if 'colors' in color_prefs[p]:
+                        prefs[key]['colors'] = color_prefs[p]['colors'].copy()
+                    else:
+                        prefs[key]['colors'] = {}
+                    match=True
+                    break
+                else:
+                    match=False
+            if not match:
+                prefs[key]={}
+                prefs[key]['column']=col
+                prefs[key]['colors'] = {}
+
+    return prefs

@@ -18,7 +18,7 @@ from qiime.util import parse_command_line_parameters, get_qiime_project_dir
 from optparse import make_option
 from qiime.make_pie_charts import make_all_pie_charts
 from cogent.util.misc import get_random_directory_name
-from qiime.colors import sample_color_prefs_and_map_data_from_options
+from qiime.colors import taxonomy_color_prefs_and_map_data_from_options
 import re
 import matplotlib
 import os
@@ -33,6 +33,7 @@ script_info['script_usage'].append(("""Examples:""","""If you wish to run the co
 script_info['script_usage'].append(("""""","""If you want to make pie charts for multiple levels at a time (phylum.txt,class.txt,genus.txt) use the following command:""","""make_pie_charts.py -i phylum.txt,class.txt,genus.txt -l phylum,class,genus"""))
 script_info['script_usage'].append(("""""","""If you want specify an output directory (e.g. "pie_charts/", regardless of whether the directory exists, use the following command:""","""make_pie_charts.py -i Class.txt -l Class -o pie_charts/"""))
 script_info['script_usage'].append(("""""","""Additionally, if you would like to display on a set number of taxa ("-n 10") and generate pie charts for all samples ("-s"), you can use the following command:""","""make_pie_charts.py -i Class.txt -l Class -o pie_charts/ -n 10 -s"""))
+script_info['script_usage'].append(("""""","""If you would like to display generate pie charts for samples samples: 'sample1' and 'sample2' that are in the counts file header, you can use the following command:""","""make_pie_charts.py -i Class.txt -l Class -o pie_charts/ -b sample1,sample2"""))
 script_info['output_description']="""The script generates an output folder, which contains several files. For each pie chart there is a png and a pdf file. The best way to view all of the pie charts is by opening up the file taxonomy_summary_pie_chart.html."""
 script_info['required_options']=[\
 make_option('-i', '--input_files', dest='counts_fname',\
@@ -51,7 +52,22 @@ make_option('-n', '--num', dest='num_categories', \
 All additional categories are grouped into an "other" category. \
 [default: %default]', default='20'),
 make_option('-o', '--dir-prefix', dest='dir_path',\
-             help='directory prefix for all analyses')
+             help='directory prefix for all analyses'),
+make_option('-b', '--colorby', dest='colorby',\
+     help='This is the samples to make pie charts for in the counts files from  \
+summarize_taxa.py. The sample name must match the name of a sample id \
+in the header of the counts file exactly and multiple categories can be \
+list by comma separating them without spaces. If you want to see the pie charts\
+ broken up by all samples -s is still funtional. If -s is set and -b is used \
+ it will just be broken up by all samples. If neither -s or -b are set the \
+ pie charts will be based on all samples put together, one for each level. \
+ [default: %default]'),
+ make_option('-p', '--prefs_path',help='This is the user-generated preferences \
+file. NOTE: This is a file with a dictionary containing preferences for the \
+analysis. The label taxonomy_coloring is used for the coloring, see example \
+prefs file preferences_file. [default: %default]'),
+ make_option('-k', '--background_color',help='This is the background color to \
+use in the plots. [default: %default]')
 ]
 
 script_info['version']=__version__
@@ -74,7 +90,21 @@ def main():
         option_parser.error("A list of label names cooresponding to files must\
  be specified")
 
+    color_prefs, color_data, background_color, label_color= \
+                   taxonomy_color_prefs_and_map_data_from_options(opts)
+    
     do_sample = opts.do_sample
+    colorby = opts.colorby
+    
+    if colorby is None and not do_sample:
+        colorby = None
+    elif colorby is not None and not do_sample:
+        colorby = colorby.strip().strip("'").split(',')
+    else:
+        colorby = []
+        for c in color_data['counts'].values():
+            colorby.extend(c[0])
+        colorby = set(colorby)
     counts_fname = opts.counts_fname
     labels = opts.labels
     data = [(label,f.strip()) \
@@ -127,7 +157,7 @@ def main():
                                 os.path.join(css_path,'qiime_style.css'))
 
 
-    make_all_pie_charts(data,data_dir_path,filename,num_categories, do_sample,args)
+    make_all_pie_charts(data,data_dir_path,filename,num_categories, colorby,args,color_data, color_prefs,background_color,label_color)
 
 if __name__ == "__main__":
     main()

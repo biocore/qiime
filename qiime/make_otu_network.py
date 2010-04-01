@@ -30,7 +30,7 @@ import os
 from time import strftime
 from random import choice, randrange
 from cogent.maths.stats.test import G_2_by_2
-from qiime.make_3d_plots import make_color_dict
+from qiime.colors import iter_color_groups, Color, data_colors
 from qiime.parse import parse_mapping_file, parse_otus
 
 def get_sample_info(lines):
@@ -256,38 +256,43 @@ def make_stats_files(sample_dc,otu_dc,degree_counts,num_con_cat, num_con,\
         output.close()
 
 
-def make_props_files(labels,label_list,dir_path):
-    colors = ["0,0,255","255,0,255","255,0,0","0,255,0","0,255,255","102,0,102",
-        "255,102,102","51,102,255","102,0,0","255,153,255","0,102,51",
-        "102,102,0","240,248,255","250,235,215","127,255,212","240,255,255",
-        "0,0,255","138,43,226","165,42,42","95,158,160","127,255,0","255,127,80",
-        "100,149,237","0,255,255","184,134,11","0,100,0","85,107,47","255,140,0",
-        "153,50,204","233,150,122","143,188,143","72,61,139","148,0,211",
-        "255,20,147","178,34,34","34,139,34","255,215,0","173,255,47",
-        "255,105,180","173,216,230","32,178,170","132,112,255","255,0,255",
-        "176,48,96","102,205,170","0,0,205","186,85,211","25,25,112","255,69,0",
-        "152,251,152"]
-
+def make_props_files(labels,label_list,dir_path,data,background_color,label_color,prefs):
 
     cat_connected_num = 0
-    for l, m in zip(labels[4:], label_list):
+    mapping=data['map']
+    groups_and_colors=iter_color_groups(mapping,prefs)
+    
+    for params in groups_and_colors:
+        l = params[0]
+        if l == "SampleID" or l == "Description":
+            continue
+        m = params[2]
+        c = params[3]
         output = open(os.path.join(dir_path,"props/custom.%s.props"%l) , 'w')
-        props_str_list = [l]*43
+        props_str_list = [l]*5
+        props_str_list.append(','.join(map(str,label_color.toRGB())))
+        props_str_list.extend([l]*22)
+        props_str_list.append(','.join(map(str,label_color.toRGB())))
+        props_str_list.extend([l]*16)
         props_str_list.append(props_edge % (l,l))
         props_str_list.append(l)
-        props_str_list.append('\n'.join([props_edge_meta%(l,s,c) \
-                                         for s,c in zip(m,colors)]))
-        props_str_list.extend([l]*106)
+        props_str_list.append(\
+              '\n'.join([props_edge_meta%(l,s,','.join(map(str,c[n].toRGB()))) \
+               for s,n in m.items()]))
+        props_str_list.extend([l]*109)
         props_str_list.append(props_node % (l,l))
         props_str_list.append(l)
-        props_str_list.append('\n'.join([props_node_meta%(l,s,c) \
-                                         for s,c in zip(m,colors)]))
+        props_str_list.append(\
+               '\n'.join([props_node_meta%(l,s,','.join(map(str,c[n].toRGB()))) \
+               for s,n in m.items()]))
         props_str_list.extend([l]*48)
-
+        props_str_list[98] = ','.join(map(str,background_color.toRGB()))
+        props_str_list[109] = ','.join(map(str,label_color.toRGB()))
+        props_str_list[132] = ','.join(map(str,label_color.toRGB()))
         output.write(props_file_str % tuple(props_str_list))
         output.close()
 
-def create_network_and_stats(dir_path,map_lines,otu_sample_lines):
+def create_network_and_stats(dir_path,map_lines,otu_sample_lines,prefs,data,background_color,label_color):
     cat_by_sample, sample_by_cat, num_meta, meta_dict, labels, node_labels,\
             label_list = get_sample_info(map_lines)
     con_by_sample, node_file_str, edge_file_str,red_node_file_str,\
@@ -304,8 +309,27 @@ def create_network_and_stats(dir_path,map_lines,otu_sample_lines):
            "real_reduced_node_table.txt")
     make_stats_files(sample_dc,otu_dc,degree_counts,num_con_cat, num_con,num_cat\
           ,cat_by_sample,dir_path)
-    make_props_files(labels,label_list,dir_path)
+    if background_color == 'white':
+        background_color = Color('white',(255,255,255))
+    elif background_color == 'black':
+        background_color = Color('black',(0,0,0))
+    else:
+        try:
+            background_color = data_colors[background_color]
+        except KeyError:
+            raise KeyError, "background_color unknown"
 
+    if label_color == 'white':
+        label_color = Color('white',(255,255,255))
+    elif label_color == 'black':
+        label_color = Color('black',(0,0,0))
+    else:
+        try: 
+           label_color = data_colors[label_color]
+        except KeyError:
+            raise KeyError, "label_color unknown"
+
+    make_props_files(labels,label_list,dir_path,data,background_color,label_color,prefs)
 
 
 props_node_meta = "nodeFillColorCalculator.%s-Node Color-Discrete\ Mapper.mapping.map.%s=%s"
@@ -319,7 +343,7 @@ edgeAppearanceCalculator.%s.defaultEdgeColor=255,255,0
 edgeAppearanceCalculator.%s.defaultEdgeFont=SanSerif,plain,10
 edgeAppearanceCalculator.%s.defaultEdgeFontSize=10.0
 edgeAppearanceCalculator.%s.defaultEdgeLabel=
-edgeAppearanceCalculator.%s.defaultEdgeLabelColor=0,0,0
+edgeAppearanceCalculator.%s.defaultEdgeLabelColor=%s
 edgeAppearanceCalculator.%s.defaultEdgeLabelOpacity=255
 edgeAppearanceCalculator.%s.defaultEdgeLabelPosition=C,C,c,0,0
 edgeAppearanceCalculator.%s.defaultEdgeLineStyle=SOLID
@@ -341,7 +365,7 @@ edgeAppearanceCalculator.%s.defaultNodeFont=Default,plain,12
 edgeAppearanceCalculator.%s.defaultNodeFontSize=12.0
 edgeAppearanceCalculator.%s.defaultNodeHight=30.0
 edgeAppearanceCalculator.%s.defaultNodeLabel=
-edgeAppearanceCalculator.%s.defaultNodeLabelColor=0,0,0
+edgeAppearanceCalculator.%s.defaultNodeLabelColor=%s
 edgeAppearanceCalculator.%s.defaultNodeLabelOpacity=255
 edgeAppearanceCalculator.%s.defaultNodeLabelPosition=C,C,c,0,0
 edgeAppearanceCalculator.%s.defaultNodeLineStyle=SOLID
@@ -362,7 +386,7 @@ edgeColorCalculator.BasicDiscrete.mapping.map.pp=0,204,0
 edgeColorCalculator.BasicDiscrete.mapping.type=DiscreteMapping
 edgeColorCalculator.BasicDiscrete.visualPropertyType=EDGE_COLOR
 %s
-edgeColorCalculator.%s-Edge\ Color-Discrete\ Mapper.mapping.controllerType=4
+edgeColorCalculator.%s-Edge\ Color-Discrete\ Mapper.mapping.controllerType=3
 %s
 edgeColorCalculator.%s-Edge\ Color-Discrete\ Mapper.mapping.type=DiscreteMapping
 edgeColorCalculator.%s-Edge\ Color-Discrete\ Mapper.visualPropertyType=EDGE_COLOR
@@ -542,7 +566,7 @@ edgeTooltipCalculator.BasicDiscrete.mapping.map.pd=pd Tip
 edgeTooltipCalculator.BasicDiscrete.mapping.map.pp=pp Tip
 edgeTooltipCalculator.BasicDiscrete.mapping.type=DiscreteMapping
 edgeTooltipCalculator.BasicDiscrete.visualPropertyType=EDGE_TOOLTIP
-globalAppearanceCalculator.%s.defaultBackgroundColor=0,0,0
+globalAppearanceCalculator.%s.defaultBackgroundColor=%s
 globalAppearanceCalculator.%s.defaultEdgeReverseSelectionColor=255,0,0
 globalAppearanceCalculator.%s.defaultEdgeSelectionColor=255,0,0
 globalAppearanceCalculator.%s.defaultNodeReverseSelectionColor=0,255,0
@@ -552,7 +576,7 @@ nodeAppearanceCalculator.%s.defaultEdgeColor=0,0,0
 nodeAppearanceCalculator.%s.defaultEdgeFont=SanSerif,plain,10
 nodeAppearanceCalculator.%s.defaultEdgeFontSize=10.0
 nodeAppearanceCalculator.%s.defaultEdgeLabel=
-nodeAppearanceCalculator.%s.defaultEdgeLabelColor=0,0,0
+nodeAppearanceCalculator.%s.defaultEdgeLabelColor=%s
 nodeAppearanceCalculator.%s.defaultEdgeLabelOpacity=255
 nodeAppearanceCalculator.%s.defaultEdgeLabelPosition=C,C,c,0,0
 nodeAppearanceCalculator.%s.defaultEdgeLineStyle=SOLID
@@ -574,7 +598,7 @@ nodeAppearanceCalculator.%s.defaultNodeFont=Arial Narrow Bold,plain,12
 nodeAppearanceCalculator.%s.defaultNodeFontSize=50.0
 nodeAppearanceCalculator.%s.defaultNodeHight=30.0
 nodeAppearanceCalculator.%s.defaultNodeLabel=label
-nodeAppearanceCalculator.%s.defaultNodeLabelColor=255,255,255
+nodeAppearanceCalculator.%s.defaultNodeLabelColor=%s
 nodeAppearanceCalculator.%s.defaultNodeLabelOpacity=255
 nodeAppearanceCalculator.%s.defaultNodeLabelPosition=C,C,c,0,0
 nodeAppearanceCalculator.%s.defaultNodeLineStyle=SOLID
@@ -631,7 +655,7 @@ nodeFillColorCalculator.RedGreen.mapping.interpolator=LinearNumberToColorInterpo
 nodeFillColorCalculator.RedGreen.mapping.type=ContinuousMapping
 nodeFillColorCalculator.RedGreen.visualPropertyType=NODE_FILL_COLOR
 %s
-nodeFillColorCalculator.%s-Node\ Color-Discrete\ Mapper.mapping.controllerType=4
+nodeFillColorCalculator.%s-Node\ Color-Discrete\ Mapper.mapping.controllerType=3
 %s
 nodeFillColorCalculator.%s-Node\ Color-Discrete\ Mapper.mapping.type=DiscreteMapping
 nodeFillColorCalculator.%s-Node\ Color-Discrete\ Mapper.visualPropertyType=NODE_FILL_COLOR
