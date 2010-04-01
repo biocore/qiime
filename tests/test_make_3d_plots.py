@@ -93,7 +93,7 @@ class TopLevelTests(TestCase):
         scale_custom_coords(custom_axes,coords) 
         obs_kin=make_3d_plots(self.coord_header,coords[1],self.pct_var, \
                           self.mapping2,self.prefs,self.background_color,\
-                          self.label_color,custom_axes)
+                          self.label_color,custom_axes=custom_axes)
         self.assertEqual(obs_kin, exp_kin_full_axes)
 
         # test with multiple 'colorby' columns to ensure sorting
@@ -144,7 +144,8 @@ class TopLevelTests(TestCase):
         scale_custom_coords(custom_axes,coords)
         obs_kin=make_mage_output(self.groups,self.colors,self.coord_header,\
                                  coords[1],self.pct_var,self.background_color, \
-                                 self.label_color,data_colors,custom_axes)
+                                 self.label_color,data_colors,
+                                 custom_axes=custom_axes)
         self.assertEqual(obs_kin, exp_kin_partial_axes)
 
     def test_make_edge_output(self):
