@@ -7,7 +7,7 @@
 ######################################################
 QIIME: Quantitative Insights Into Microbial Ecology
 ######################################################
-QIIME (canonically pronounced 'Chime') stands for "Quantitative Insights Into Microbial Ecology". QIIME is a pipeline for performing microbial community analysis that integrates many third party tools which have become standard in the field. To stay up-to-date on what's new with QIIME, you should subscribe to the `blog <http://qiime.wordpress.com>`_.
+QIIME (canonically pronounced 'Chime') is a pipeline for performing microbial community analysis that integrates many third party tools which have become standard in the field. To stay up-to-date on what's new with QIIME, you should subscribe to the `blog <http://qiime.wordpress.com>`_.
 
 QIIME can run on a laptop, a supercomputer, and everything in between. For ease of installation beginner users or users interested in testing QIIME should start with `QIIME virtual box <./virtual_box.html>`_. Linux and Mac OS X are supported natively, and Windows, Linux, and Mac OS X are supported via the virtual box.
 
