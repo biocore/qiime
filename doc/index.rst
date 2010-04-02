@@ -22,7 +22,7 @@ Blog and Mailing List
 We recommend that all QIIME users keep an eye on the QIIME blog for important announcements. You can `subscribe to the RSS feed <http://qiime.wordpress.com/feed/>`_ or `sign up for e-mail notifications on the front page of the blog <http://qiime.wordpress.com>`_. This is a very low traffic list (typically around one message per month), and we will not share subscriber information with anyone.
 
 
-Getting QIIME
+Download QIIME
 ===============
 
  * Virtual Box: The QIIME Virtual Box is an Ubuntu Linux virtual machine, pre-loaded with QIIME and its dependencies. This is the quickest way to start using QIIME. To get the Virtual Box, please `go here <./virtual_box.html>`_.
@@ -33,23 +33,21 @@ Getting QIIME
 
 	svn co https://qiime.svn.sourceforge.net/svnroot/qiime/trunk Qiime
 
-
-
 Installing and using QIIME
 ==========================
-New users should begin with the `QIIME installation guide <./install/install.html>`_ or the `QIIME virtual box <./install/virtual_box.html>`_. After installing QIIME, you should move on to the `QIIME tutorial <./tutorials/tutorial.html>`_ to analyze an example data set. As you begin using QIIME on your own data, you'll want to refer to the `QIIME documentation <./documentation/>`_.
+New users should begin with the `QIIME installation guide <./install/install.html>`_ or the `QIIME virtual box <./install/virtual_box.html>`_. After installing QIIME, you should move on to the `QIIME overview tutorial <./tutorials/tutorial.html>`_ to analyze an example data set. As you begin using QIIME on your own data, you'll want to refer to the `QIIME documentation <./documentation/index.html>`_ and the general `QIIME tutorials <./tutorials/index.html>`_.
 
 Contact Us
 ===========
 For technical support, contact `QIIME Support <qiime.help@colorado.edu>`_. This is likely to be the fastest way to get help from the QIIME developers. As multiple developers monitor this address, response is likely to be a lot faster than contacting developers individually.
 
-Users can also submit `bug reports <http://sourceforge.net/tracker/?group_id=272178&atid=1157164>`_ and `feature requests <http://sourceforge.net/tracker/?atid=1157167&group_id=27217>`_ using via Sourceforge.
+Users can also submit `bug reports <http://sourceforge.net/tracker/?group_id=272178&atid=1157164>`_ and `feature requests <http://sourceforge.net/tracker/?group_id=272178&atid=1157167>`_ using via Sourceforge.
 
 
-Developing QIIME
-================
+QIIME Development
+====================
 
-QIIME is an open-source project, primarily developed in the Knight Lab at the University of Colorado at Boulder. If you are interested in getting involved, check out the `developer notes <./developer/>`_.
+QIIME is an open-source project, primarily developed in the Knight Lab at the University of Colorado at Boulder. If you are interested in getting involved, check out the `developer notes <./developer/index.html>`_.
 
 Citing QIIME
 ============
@@ -59,25 +57,5 @@ If you use QIIME for any published research, please include the following citati
 \J. Gregory Caporaso, Justin Kuczynski, Jesse Stombaugh, Kyle Bittinger, Frederic D. Bushman, Elizabeth K. Costello, Noah Fierer, Antonio Gonzalez Peña, Julia K. Goodrich, Jeffrey I. Gordon, Gavin A. Huttley, Scott T. Kelley, Dan Knights, Jeremy E. Koenig, Ruth E. Ley, Catherine A. Lozupone, Daniel McDonald, Brian D. Muegge, Meg Pirrung, Jens Reeder, Joel R. Sevinsky, Peter J. Turnbaugh, William A. Walters, Jeremy Widmann, Tanya Yatsunenko, Jesse Zaneveld and Rob Knight. (Accepted, Nature Methods, 2010) 
 
 The data presented in this paper can be found `here <http://tajmahal.colorado.edu/qiime/qiime_paper_data.zip>`_.
-
-.. I think we should delete the following, as it's not an exhaustive list.
-	Contributors
-	============
-
-	.. note::
-
-	 \J. Gregory Caporaso :superscript:`1`, Justin Kuczynski :superscript:`2`, Jesse Stombaugh :superscript:`1`, Kyle Bittinger :superscript:`3`, Frederic D. Bushman :superscript:`3`, Elizabeth K. Costello :superscript:`1`, Noah Fierer :superscript:`4`, Antonio Gonzalez Peña :superscript:`5`, Julia K. Goodrich :superscript:`5`, Jeff I. Gordon :superscript:`6`, Gavin Huttley :superscript:`7`, Scott T. Kelley :superscript:`8`, Dan Knights :superscript:`5`, Jeremy E. Koenig :superscript:`9`, Ruth E. Ley :superscript:`9`, Cathy A. Lozupone :superscript:`1`, Daniel McDonald :superscript:`1`, Brian D. Muegge :superscript:`6`, Megan Pirrung :superscript:`1`, Jens Reeder :superscript:`1`, Joel R. Sevinsky :superscript:`10`, Peter J. Turnbaugh :superscript:`6`, William A. Walters :superscript:`2`, Jeremy Widmann :superscript:`1`, Tanya Yatsunenko :superscript:`6`, Jesse Zaneveld :superscript:`2` and Rob Knight :superscript:`1,11`
-
-	 * :superscript:`1` Department of Chemistry and Biochemistry, UCB 215, University of Colorado, Boulder, CO 80309 
-	 * :superscript:`2` Department of Molecular, Cellular and Developmental Biology, UCB 347, University of Colorado, Boulder, CO 80309 
-	 * :superscript:`3` Department of Microbiology, Johnson Pavilion 425, University of Pennsylvania, Philadelphia, PA 19104 
-	 * :superscript:`4` Cooperative Institute for Research in Environmental Sciences, University of Colorado, Boulder, CO 80309, USA.; Department of Ecology and Evolutionary Biology, University of Colorado, Boulder, CO 80309, USA. 
-	 * :superscript:`5` Department of Computer Science, University of Colorado, Boulder, Colorado, USA. 
-	 * :superscript:`6` Center for Genome Sciences, Washington University School of Medicine, St. Louis, MO 63108 
-	 * :superscript:`7` Computational Genomics Laboratory, John Curtin School of Medical Research, The Australian National University, Canberra, Australian Capital Territory, Australia.
-	 * :superscript:`8` Department of Biology, San Diego State University, San Diego CA 92182
-	 * :superscript:`9` Department of Microbiology, Cornell University, Ithaca NY 14853
-	 * :superscript:`10` Luca Technologies, 500 Corporate Circle, Suite C, Golden, Colorado 80401 
-	 * :superscript:`11` Howard Hughes Medical Institute
 
 .. _PyCogent: http://pycogent.sourceforge.net

@@ -6,9 +6,9 @@
 
 .. index:: Installing QIIME
 
-=================
-Installing QIIME
-=================
+===========================
+Installing QIIME natively
+===========================
 
 .. toctree::
    :maxdepth: 2

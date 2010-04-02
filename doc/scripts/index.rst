@@ -1,16 +1,13 @@
 .. _index:
 
 =====================
-Installing QIIME
+QIIME scripts
 =====================
 
 .. toctree::
    :maxdepth: 1
    :glob:
 
-   virtual_box
-   install
-   qiime_config
    ./*
 
 
