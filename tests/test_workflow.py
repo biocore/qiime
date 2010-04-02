@@ -11,6 +11,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Pre-release"
 
+import signal
 from shutil import rmtree
 from os.path import join, exists, getsize, split, splitext
 from cogent.util.unit_test import TestCase, main
@@ -24,6 +25,21 @@ from qiime.workflow import (run_qiime_data_preparation,
     run_jackknifed_upgma_clustering,\
     call_commands_serially,
     no_status_updates,WorkflowError,print_commands)
+
+## The test case timing code included in this file is adapted from
+## recipes provided at:
+##  http://code.activestate.com/recipes/534115-function-timeout/
+##  http://stackoverflow.com/questions/492519/timeout-on-a-python-function-call
+class TimeExceededError(Exception):
+    pass
+
+
+allowed_seconds_per_test = 240
+
+def timeout(signum, frame):
+    raise TimeExceededError,\
+     "Test failed to run in allowed time (%d seconds)."\
+      % allowed_seconds_per_test
     
 class WorkflowTests(TestCase):
     
@@ -95,9 +111,16 @@ class WorkflowTests(TestCase):
         self.params = parse_qiime_parameters(qiime_parameters_f)
         self.params['align_seqs']['template_fp'] = self.template_aln_fp
         self.params['filter_alignment']['lane_mask_fp'] = self.lanemask_fp
+        
+        signal.signal(signal.SIGALRM, timeout)
+        # set the 'alarm' to go off in allowed_seconds seconds
+        signal.alarm(allowed_seconds_per_test)
+        
     
     def tearDown(self):
         """ """
+        # turn off the alarm
+        signal.alarm(0)
         for d in self.dirs_to_remove:
             if exists(d):
                 rmtree(d)
