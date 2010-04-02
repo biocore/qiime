@@ -14,7 +14,6 @@ from matplotlib import use
 use('Agg',warn=False)
 from qiime.parse import parse_mapping_file, parse_distmat, group_by_field,\
     group_by_fields
-from qiime.colors import data_colors
 from cogent.maths.stats.test import t_two_sample
 from numpy import array, mean, average, arange
 from collections import defaultdict
@@ -24,7 +23,77 @@ from cogent.draw.util import hist
 from matplotlib.patches import Ellipse, Polygon
 from random import choice
 from numpy.random import permutation
+from qiime.colors import data_colors, Color, rgb_tuple_to_hsv, \
+    mage_hsv_tuple_to_rgb
 from os import mkdir
+
+def matplotlib_rgb_color(rgb_color):
+    """Returns RGB color in matplotlib format.
+    
+        ex: (255,0,255) will return (1.0,0.0,1.0)
+    """
+    return tuple([i/255. for i in rgb_color])
+
+def average_colors(color1, color2):
+    """Returns average of two RGB colors.
+        
+        -color1 and color2 are RGB tuples.
+    """
+    avg_list = []
+    for i,j in zip(color1,color2):
+        avg_list.append((i+j)/2.)
+    return tuple(avg_list)
+
+def average_all_colors(paired_field_names, field_to_color_prefs):
+    """Returns dict of paired_field_names matched to color.
+    
+        - paired_field_names: list of names of fields as follows:
+            FieldName_FieldData1_to_FieldData2.
+            ex:
+            Hand_Right_to_Left
+        - field_to_color_prefs:
+            dict mapping field name to groups, colors, data_colors, 
+            data_color_order from qiime.colors.iter_color_groups
+    """
+    paired_field_to_color = {}
+    for name in paired_field_names:
+        field, data = name.split('_',1)
+        first,second = data.split('_to_')
+        field_prefs = field_to_color_prefs[field]
+        color1 = field_prefs[1][first]
+        color2 = field_prefs[1][second]
+        color1_rgb = field_prefs[2][color1].toRGB()
+        color2_rgb = field_prefs[2][color2].toRGB()
+        avg_color = average_colors(color1_rgb,color2_rgb)
+        paired_field_to_color[name]=matplotlib_rgb_color(avg_color)
+    return paired_field_to_color
+
+def assign_unassigned_colors(unassigned_colors, color_dict=data_colors):
+    """Assigns unassigned_colors in order.
+    """
+    label_to_color = {}
+    num_colors = len(data_colors)
+    color_list = data_colors.values()
+    for i, label in enumerate(unassigned_colors):
+        color_index = i % num_colors
+        color = matplotlib_rgb_color(color_list[color_index].toRGB())
+        label_to_color[label]=color
+    return label_to_color
+
+def assign_mapped_colors(mapped_labels, field_to_color_prefs):
+    """Returns map of label to color using color prefs.
+    """
+    label_to_color = {}
+    for name in mapped_labels:
+        field, data = name.split('_Within_')
+        label = data.split('_')[0]
+        field_prefs = field_to_color_prefs[field]
+        color = field_prefs[1][label]
+
+        color_rgb = field_prefs[2][color].toRGB()
+
+        label_to_color[name]=matplotlib_rgb_color(color_rgb)
+    return label_to_color
 
 def between_sample_distances(dmat):
     """Returns all upper triangle distances from dmat.
@@ -117,7 +186,8 @@ def all_category_distances(single_field):
             distances[field+'_'+data[0]+'_to_'+data[1]].extend(all.flat)
     return distances
 
-def draw_all_histograms(single_field, paired_field, dmat, histogram_dir):
+def draw_all_histograms(single_field, paired_field, dmat, histogram_dir,\
+    field_to_color_prefs,background_color):
     """Draws all combinations of histograms.
     """
     #make dict of label to histogram filename
@@ -126,9 +196,21 @@ def draw_all_histograms(single_field, paired_field, dmat, histogram_dir):
     #list of different distances
     distances_dict = {}
     
+    #Unassigned color list.  These must be manually assigned.
+    unassigned_colors = []
+    
+    #all category colors list.  These must be averaged for display.
+    colors_to_average = []
+    
+    #list of colors to map from prefs.
+    colors_to_map = []
+    
     #Get all between sample distances
     all_between = between_sample_distances(dmat)
     distances_dict['All_Between_Sample_Distances']=all_between
+    
+    #add to unassigned colors list.
+    unassigned_colors.extend(all_between.keys())
     
     label_to_histogram_filename.update(\
         _make_histogram_filenames(all_between,histogram_dir))
@@ -138,6 +220,9 @@ def draw_all_histograms(single_field, paired_field, dmat, histogram_dir):
         within_category_distances_grouped(single_field)
     distances_dict['All_Within_Category_Grouped']=all_within_category_grouped
     
+    #add to unassigned colors list.
+    unassigned_colors.extend(all_within_category_grouped.keys())
+
     label_to_histogram_filename.update(\
         _make_histogram_filenames(all_within_category_grouped,histogram_dir))
 
@@ -145,6 +230,9 @@ def draw_all_histograms(single_field, paired_field, dmat, histogram_dir):
     all_between_category_grouped = \
         between_category_distances_grouped(single_field)
     distances_dict['All_Between_Category_Grouped']=all_between_category_grouped
+    
+    #add to unassigned colors list.
+    unassigned_colors.extend(all_between_category_grouped.keys())
     
     label_to_histogram_filename.update(\
         _make_histogram_filenames(all_between_category_grouped,histogram_dir))
@@ -155,6 +243,8 @@ def draw_all_histograms(single_field, paired_field, dmat, histogram_dir):
         within_category_distances(single_field)
     distances_dict['All_Within_Categories']=all_within_category_individual
     
+    colors_to_map.extend(all_within_category_individual)
+    
     label_to_histogram_filename.update(\
         _make_histogram_filenames(all_within_category_individual,histogram_dir))
     
@@ -162,6 +252,9 @@ def draw_all_histograms(single_field, paired_field, dmat, histogram_dir):
     all_within_and_between_fields = within_and_between_fields(paired_field)
     distances_dict['All_Within_And_Between_Fields']=\
         all_within_and_between_fields
+    
+    #add to unassigned colors list.
+    unassigned_colors.extend(all_within_and_between_fields.keys())
 
     label_to_histogram_filename.update(\
         _make_histogram_filenames(all_within_and_between_fields,histogram_dir))
@@ -169,28 +262,39 @@ def draw_all_histograms(single_field, paired_field, dmat, histogram_dir):
     #Get all category distances
     all_categories = all_category_distances(single_field)
     distances_dict['All_Category_Pairs']=all_categories
+    
+    #add colors to be averaged
+    colors_to_average.extend(all_categories.keys())
 
     label_to_histogram_filename.update(\
         _make_histogram_filenames(all_categories,histogram_dir))
-
     
-    num_colors = len(data_colors)
+    #assign all colors
+    label_to_color = {}
+    label_to_color.update(average_all_colors(colors_to_average,\
+        field_to_color_prefs))
+    label_to_color.update(assign_unassigned_colors(unassigned_colors))
+    label_to_color.update(assign_mapped_colors(colors_to_map,\
+        field_to_color_prefs))
+        
+    
     BINS=arange(0,1.01,0.05)
     xscale, yscale = get_histogram_scale(distances_dict,nbins=BINS)
     #draw histograms
-    color_names = data_colors.keys()
+
     for d_name, d_dict in distances_dict.items():
-        for i, (field, data) in enumerate(d_dict.items()):
+        for field, data in d_dict.items():
             #If there are no distances, remove from distances_dict and 
             # label_to_histogram_filename
             if len(data) < 1:
                 label_to_histogram_filename.pop(field)
                 continue
-            color_index = i % num_colors
-            color = color_names[color_index]
+            
+            color = label_to_color[field]
             outfile_name = label_to_histogram_filename[field]
-            histogram = draw_histogram(distances=data, color=color, nbins=BINS, \
-                outfile_name=outfile_name,xscale=xscale,yscale=yscale)
+            histogram = draw_histogram(distances=data,color=color,nbins=BINS, \
+                outfile_name=outfile_name,xscale=xscale,yscale=yscale,\
+                background_color=background_color)
     
     return distances_dict, label_to_histogram_filename
 
@@ -225,7 +329,8 @@ def get_histogram_scale(distances_dict, nbins):
     return xscale,yscale
 
 def draw_histogram(distances, color, nbins, outfile_name,\
-    xscale=None, yscale=None, title='', **kwargs):
+    xscale=None, yscale=None, background_color='white',\
+    title='', **kwargs):
     """Draws histogram to outfile_name.
     """
     average = mean(distances)
@@ -236,6 +341,7 @@ def draw_histogram(distances, color, nbins, outfile_name,\
     
     fig  = gcf()
     axis = fig.gca()
+
     
     #set labels
     axis.set_xlabel('Distance')
@@ -271,9 +377,13 @@ def draw_histogram(distances, color, nbins, outfile_name,\
 
     line = Polygon([[average, y1] ,[average, y2]], edgecolor=color)
     axis.add_artist(line)
+    
+    transparent=True
+    if background_color != "white":
+        axis.set_axis_bgcolor(background_color)
+        transparent=False
 
-
-    savefig(outfile_name,format='png',dpi=75, transparent=True)
+    savefig(outfile_name,format='png',dpi=75, transparent=transparent)
 
     close()
     return histogram
@@ -458,7 +568,7 @@ def group_distances(mapping_file,dmatrix_file,fields,dir_prefix='',\
     """Calculate all lists of distance groups."""
     distance_groups = {}
     mapping, header, comments = parse_mapping_file(open(mapping_file,'U'))
-    header[0] = '#'+header[0]
+    #header[0] = '#'+header[0]
     header = [header]
     header.extend(mapping)
     mapping=header
@@ -474,6 +584,7 @@ def group_distances(mapping_file,dmatrix_file,fields,dir_prefix='',\
         data = distances_by_groups(distance_header, distance_matrix, groups)
         #Need to remove pound signs from field name.
         field_name = field.replace('#','')
+
         single_field[field_name]=data
 
     write_distance_files(group_distance_dict=single_field,\

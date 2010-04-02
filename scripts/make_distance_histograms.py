@@ -19,6 +19,8 @@ from qiime.make_distance_histograms import group_distances, _make_path, \
     draw_all_histograms, _make_relative_paths, make_main_html, \
     monte_carlo_group_distances
 from cogent.util.misc import get_random_directory_name
+from qiime.colors import sample_color_prefs_and_map_data_from_options,\
+    iter_color_groups
 from os import mkdir
 from string import strip
 
@@ -39,16 +41,27 @@ script_info['output_description']="""The result of this script will be a folder 
 script_info['required_options']=[\
     make_option('-d','--distance_matrix_file',dest='distance_matrix_file',\
         type='string',help='''Path to distance matrix file.'''),\
-    make_option('-m','--mapping_file',dest='mapping_file',type='string',\
-        help='''Path to metadata mapping file.'''),\
+    make_option('-m', '--map_fname', dest='map_fname', \
+         help='This is the metadata mapping file  [default=%default]'), \
 ]
 
 script_info['optional_options']=[\
-    make_option('-p','--prefs_file',dest='prefs_file',type='string',\
-        help='''File containing prefs for analysis.  NOTE: This is a file with a dict containing preferences for the analysis.  This dict must have a "Fields" key mapping to a list of desired fields.[default: %default]'''),\
-    make_option('-o', '--dir_path', dest='dir_path',\
-        help='Directory to output data for all analyses. [default: %default]',\
-        default='.'),\
+    make_option('-b', '--colorby', dest='colorby',\
+    help='This is the categories to color by in the plots from the \
+user-generated mapping file. The categories must match the name of a column \
+header in the mapping file exactly and multiple categories can be list by \
+comma separating them without spaces. The user can also combine columns in the \
+mapping file by separating the categories by "&&" without spaces \
+[default=%default]'),\
+    make_option('-p', '--prefs_path',help='This is the user-generated preferences \
+file. NOTE: This is a file with a dictionary containing preferences for the \
+analysis.  This dict must have a "Fields" key mapping to a list of desired fields. [default: %default]'),
+    make_option('-o', '--dir_path', dest='dir_path', default='.',\
+        help='Directory to output data for all analyses. [default: %default]'
+),\
+    make_option('-k', '--background_color', default='white', help='This is the \
+    background color to use in the plots (Options are \'black\' or \'white\'. \
+    [default: %default]'),\
     make_option('--monte_carlo',dest='monte_carlo',default=False,\
         action='store_true',help='''Perform Monte Carlo analysis on distances.  [Default: %default]'''),\
     make_option('--html_output',dest='html_output',default=False,\
@@ -62,26 +75,41 @@ script_info['version'] = __version__
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
     
+    color_prefs, color_data, background_color, label_color= \
+                            sample_color_prefs_and_map_data_from_options(opts)
+    
+    #list of labelname, groups, colors, data_colors, data_color_order    
+    groups_and_colors=list(iter_color_groups(mapping=color_data['map'],\
+        prefs=color_prefs))
+    
+    #dict mapping labelname to list of: [groups, colors, data_colors,
+    # data_color_order]
+    field_to_colors = {}
+    for color_info in groups_and_colors:
+        field_to_colors[color_info[0]]=color_info[1:]
+    
+        
     qiime_dir = get_qiime_project_dir()+'/qiime/support_files/'
     
-    if opts.prefs_file:
-        prefs = eval(open(opts.prefs_file, 'U').read())
+    if opts.prefs_path:
+        prefs = eval(open(opts.prefs_path, 'U').read())
     else:
         prefs=None
     
     fields = opts.fields
     if fields is not None:
         fields = map(strip,fields.split(','))
-    elif opts.prefs_file is not None:
-        prefs = eval(open(opts.prefs_file, 'U').read())
+    elif opts.prefs_path is not None:
+        prefs = eval(open(opts.prefs_path, 'U').read())
         fields = prefs.get('FIELDS',None)
 
     
     within_distances, between_distances, dmat = \
-        group_distances(mapping_file=opts.mapping_file,\
+        group_distances(mapping_file=opts.map_fname,\
         dmatrix_file=opts.distance_matrix_file,\
         fields=fields,\
-        dir_prefix=get_random_directory_name(opts.dir_path,'distances'))
+        dir_prefix=get_random_directory_name(output_dir=opts.dir_path,\
+            prefix='distances'))
     
     if opts.html_output:
         #histograms output path
@@ -97,7 +125,9 @@ def main():
             draw_all_histograms(single_field=within_distances, \
                 paired_field=between_distances, \
                 dmat=dmat,\
-                histogram_dir=histograms_path)
+                histogram_dir=histograms_path,\
+                field_to_color_prefs=field_to_colors,\
+                background_color=background_color)
         
         #Get relative path to histogram files.
         label_to_histogram_filename_relative = \
@@ -134,7 +164,7 @@ def main():
         logo_out.close()
     
     if opts.monte_carlo:
-        monte_carlo_group_distances(mapping_file=opts.mapping_file,\
+        monte_carlo_group_distances(mapping_file=opts.map_fname,\
             dmatrix_file=opts.distance_matrix_file,\
             prefs=prefs, \
             dir_prefix = opts.dir_path,\

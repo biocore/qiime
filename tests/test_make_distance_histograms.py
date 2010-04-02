@@ -15,7 +15,6 @@ import shutil
 from os import mkdir
 from qiime.parse import parse_mapping_file, parse_distmat, group_by_field,\
     group_by_fields
-from collections import defaultdict
 from numpy import array, arange
 from qiime.make_distance_histograms import between_sample_distances, \
     within_category_distances_grouped, between_category_distances_grouped, \
@@ -25,7 +24,12 @@ from qiime.make_distance_histograms import between_sample_distances, \
     distances_by_groups, write_distance_files, group_distances, \
     monte_carlo_group_distances, permute_for_monte_carlo, \
     _make_histogram_filenames, _make_path, _make_relative_paths, \
-    _make_random_filename, _get_script_dir
+    _make_random_filename, _get_script_dir, matplotlib_rgb_color, \
+    average_colors, average_all_colors, assign_unassigned_colors,\
+    assign_mapped_colors
+    
+from qiime.colors import data_colors
+from collections import defaultdict
 
 class DistanceHistogramsTests(TestCase):
     """Tests for make_distance_histograms.py
@@ -102,7 +106,52 @@ class DistanceHistogramsTests(TestCase):
         """clean up after running all tests.
         """
         shutil.rmtree(self.working_dir)
-
+    
+    def test_matplotlib_rgb_color(self):
+        """matplotlib_rgb_color should correctly convert RGB to decimal.
+        """
+        test_data = [(255,255,255),(0,0,0),(255,0,100),(100,253,18)]
+        exp = [(1.0,1.0,1.0),(0.,0.,0.),(1.,0.,0.39215686274509803),\
+            (0.39215686274509803,0.99215686274509807,0.070588235294117646)]
+        for t, e in zip(test_data,exp):
+            self.assertEqual(matplotlib_rgb_color(t),e)
+        
+    def test_average_colors(self):
+        """average_colors should properly average two RGB colors.
+        """
+        to_average = [((255,255,255),(0,0,0)),((255,0,100),(100,253,18))]
+        exp = [(127.5,127.5,127.5),(177.5,126.5,59.)]
+        for t,e in zip(to_average,exp):
+            self.assertEqual(average_colors(t[0],t[1]),e)
+    
+    def test_average_all_colors(self):
+        """average_all_colors should properly average all colors.
+        """
+        to_average = ['Treatment_Control_to_Fast', 'DOB_20070314_to_20061126']
+        exp = {'Treatment_Control_to_Fast':(0.,.5,.5),\
+            'DOB_20070314_to_20061126':(.5,0.,.5)}
+        self.assertEqual(average_all_colors(to_average,FIELD_TO_COLOR_PREFS),\
+            exp)
+    
+    def test_assign_unassigned_colors(self):
+        """assign_unassigned_colors should correctly assign unassigned.
+        """
+        unassigned = ['first','second','third']
+        exp = {'first':(0., 0., 1.),\
+            'second':(0.50196078431372548, 0.50196078431372548,\
+                0.50196078431372548),\
+            'third':(0.50196078431372548, 0., 0.50196078431372548)}
+        self.assertEqual(assign_unassigned_colors(unassigned),exp)
+    
+    def test_assign_mapped_colors(self):
+        """assign_mapped_colors should correctly assign mapped colors.
+        """
+        assigned = ['Treatment_Within_Control_Distances','DOB_Within_20070314']
+        exp = {'Treatment_Within_Control_Distances':(0.,0.,1.),\
+            'DOB_Within_20070314':(1.,0.,0.)}
+        self.assertEqual(assign_mapped_colors(assigned,FIELD_TO_COLOR_PREFS),\
+            exp)
+        
     def test_between_sample_distances(self):
         """between_sample_distances should return correct result.
         """
@@ -180,7 +229,9 @@ class DistanceHistogramsTests(TestCase):
             draw_all_histograms(single_field = self.single_field_treatment, \
                                 paired_field = self.paired_field_treatment, \
                                 dmat=self.dmat,\
-                                histogram_dir = self.histogram_dir)
+                                histogram_dir = self.histogram_dir,\
+                                field_to_color_prefs = FIELD_TO_COLOR_PREFS,\
+                                background_color='white')
         
         #Iterate through each histogram file and assure it exisits.
         for k,v in label_to_histogram_filename.items():
@@ -227,7 +278,9 @@ class DistanceHistogramsTests(TestCase):
             draw_all_histograms(single_field = self.single_field_treatment, \
                                 paired_field = self.paired_field_treatment, \
                                 dmat=self.dmat,\
-                                histogram_dir = self.histogram_dir)
+                                histogram_dir = self.histogram_dir,\
+                                field_to_color_prefs = FIELD_TO_COLOR_PREFS,\
+                                background_color = 'white')
         nav_html_obs = \
             make_nav_html(distances_dict, label_to_histogram_filename)
         self.assertEqual(nav_html_obs, NAV_HTML)
@@ -239,7 +292,10 @@ class DistanceHistogramsTests(TestCase):
             draw_all_histograms(single_field = self.single_field_treatment, \
                                 paired_field = self.paired_field_treatment, \
                                 dmat=self.dmat,\
-                                histogram_dir = self.histogram_dir)
+                                histogram_dir = self.histogram_dir,\
+                                field_to_color_prefs = FIELD_TO_COLOR_PREFS,\
+                                background_color = 'white')
+                                
         make_main_html(distances_dict=distances_dict, \
                        label_to_histogram_filename=label_to_histogram_filename,\
                        root_outdir=self.working_dir, \
@@ -581,6 +637,11 @@ Distance Histograms
     </tr>
 </table>
 """
+
+DATA_COLOR_ORDER = ['blue', 'lime', 'red', 'aqua', 'fuchsia', 'yellow', \
+    'green', 'maroon', 'teal', 'purple', 'olive', 'silver', 'gray']
+
+FIELD_TO_COLOR_PREFS = {'DOB': ({'20070314': ['PC.481'], '20071112': ['PC.607'], '20080116': ['PC.634', 'PC.635', 'PC.636'], '20061126': ['PC.356'], '20061218': ['PC.354', 'PC.355'], '20071210': ['PC.593']}, {'20070314': 'red', '20071112': 'aqua', '20080116': 'yellow', '20061126': 'blue', '20061218': 'lime', '20071210': 'fuchsia'}, data_colors, DATA_COLOR_ORDER),'Treatment': ({'Control': ['PC.354', 'PC.355', 'PC.356', 'PC.481', 'PC.593'], 'Fast': ['PC.607', 'PC.634', 'PC.635', 'PC.636']}, {'Control': 'blue', 'Fast': 'lime'}, data_colors, DATA_COLOR_ORDER), 'BarcodeSequence': ({'ACCAGCGACTAG': ['PC.481'], 'ACCGCAGAGTCA': ['PC.635'], 'AACTGTGCGTAC': ['PC.607'], 'AGCAGCACTTGT': ['PC.593'], 'ACAGAGTCGGCT': ['PC.634'], 'AACTCGTCGATG': ['PC.355'], 'ACGGTGAGTGTC': ['PC.636'], 'AGCACGAGCCTA': ['PC.354'], 'ACAGACCACTCA': ['PC.356']}, {'ACCAGCGACTAG': 'fuchsia', 'ACCGCAGAGTCA': 'yellow', 'AACTGTGCGTAC': 'lime', 'ACAGACCACTCA': 'red', 'ACAGAGTCGGCT': 'aqua', 'AACTCGTCGATG': 'blue', 'ACGGTGAGTGTC': 'green', 'AGCAGCACTTGT': 'teal', 'AGCACGAGCCTA': 'maroon'}, data_colors, DATA_COLOR_ORDER),'Description': ({'Fasting mouse, I.D. 607': ['PC.607'], 'Control mouse, I.D. 481': ['PC.481'], 'Control mouse, I.D. 593': ['PC.593'], 'Control mouse, I.D. 356': ['PC.356'], 'Control mouse, I.D. 354': ['PC.354'], 'Control mouse, I.D. 355': ['PC.355'], 'Fasting mouse, I.D. 634': ['PC.634'], 'Fasting mouse, I.D. 635': ['PC.635'], 'Fasting mouse, I.D. 636': ['PC.636']}, {'Fasting mouse, I.D. 607': 'yellow', 'Control mouse, I.D. 481': 'aqua', 'Control mouse, I.D. 593': 'fuchsia', 'Control mouse, I.D. 356': 'red', 'Control mouse, I.D. 354': 'blue', 'Control mouse, I.D. 355': 'lime', 'Fasting mouse, I.D. 634': 'green', 'Fasting mouse, I.D. 635': 'maroon', 'Fasting mouse, I.D. 636': 'teal'}, data_colors, DATA_COLOR_ORDER), 'SampleID': ({'PC.636': ['PC.636'], 'PC.355': ['PC.355'], 'PC.607': ['PC.607'], 'PC.634': ['PC.634'], 'PC.635': ['PC.635'], 'PC.593': ['PC.593'], 'PC.356': ['PC.356'], 'PC.481': ['PC.481'], 'PC.354': ['PC.354']}, {'PC.636': 'teal', 'PC.355': 'lime', 'PC.607': 'yellow', 'PC.634': 'green', 'PC.635': 'maroon', 'PC.593': 'fuchsia', 'PC.356': 'red', 'PC.481': 'aqua', 'PC.354': 'blue'}, data_colors, DATA_COLOR_ORDER)}
 
 #run tests if called from command line
 if __name__ == "__main__":
