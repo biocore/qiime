@@ -4,7 +4,7 @@
 # specified by $QIIME_CONFIG_FP and edit that copy of the file.
 
 cluster_jobs_fp
-python_exe_fp
+python_exe_fp	python
 working_dir
 blastmat_dir
 blastall_fp	blastall
