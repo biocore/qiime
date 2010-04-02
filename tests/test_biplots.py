@@ -74,7 +74,59 @@ class BiplotTests(TestCase):
         self.assertFloatEqual(taxdata['lineages'], np.array(['B','C']))
 
     def test_scale_taxa_data_matrix(self):
+        coord = np.array([  [1,4,7,0],
+                            [2,5,8,1],
+                            [3,6,9,2]],float)
+        taxdata = {}
+        taxdata['prevalence'] = np.array([0,.5,1])
+        taxdata['coord'] = coord
+        taxdata['lineages'] = np.array(['Root;A','Root;B','Root;C'])
+        pct_var = np.array([100,10,1],dtype="float")
+
+        # with scaling
+        res = bp.make_mage_taxa(taxdata,3,pct_var,scaled=True,scalars=None,\
+                                    radius=1,
+                                    min_taxon_radius=10, max_taxon_radius=20,
+                                    taxon_alpha=.7)
+        self.assertEqual(res, taxa_mage_scale)
+
+        # without scaling
+        res = bp.make_mage_taxa(taxdata,3,pct_var,scaled=False,scalars=None,\
+                                    radius=1,
+                                    min_taxon_radius=10, max_taxon_radius=20,
+                                    taxon_alpha=.7)
+        self.assertEqual(res, taxa_mage_no_scale)
         pass
+
+taxa_mage_no_scale = [\
+'@group {Taxa (n=3)} collapsible', \
+'@balllist color=white radius=10.0 alpha=0.7 dimension=3 master={taxa_points} nobutton', \
+'{A} 1.0 4.0 7.0', \
+'@labellist color=white radius=10.0 alpha=0.7 dimension=3 master={taxa_labels} nobutton', \
+'{A} 1.0 4.0 7.0', \
+'@balllist color=white radius=15.0 alpha=0.7 dimension=3 master={taxa_points} nobutton', \
+'{B} 2.0 5.0 8.0', \
+'@labellist color=white radius=15.0 alpha=0.7 dimension=3 master={taxa_labels} nobutton', \
+'{B} 2.0 5.0 8.0', \
+'@balllist color=white radius=20.0 alpha=0.7 dimension=3 master={taxa_points} nobutton', \
+'{C} 3.0 6.0 9.0', \
+'@labellist color=white radius=20.0 alpha=0.7 dimension=3 master={taxa_labels} nobutton', \
+'{C} 3.0 6.0 9.0']
+
+taxa_mage_scale = [\
+'@group {Taxa (n=3)} collapsible', \
+'@balllist color=white radius=10.0 alpha=0.7 dimension=3 master={taxa_points} nobutton', \
+'{A} 1.0 0.4 0.07', \
+'@labellist color=white radius=10.0 alpha=0.7 dimension=3 master={taxa_labels} nobutton', \
+'{A} 1.0 0.4 0.07', \
+'@balllist color=white radius=15.0 alpha=0.7 dimension=3 master={taxa_points} nobutton', \
+'{B} 2.0 0.5 0.08', \
+'@labellist color=white radius=15.0 alpha=0.7 dimension=3 master={taxa_labels} nobutton', \
+'{B} 2.0 0.5 0.08', \
+'@balllist color=white radius=20.0 alpha=0.7 dimension=3 master={taxa_points} nobutton', \
+'{C} 3.0 0.6 0.09', \
+'@labellist color=white radius=20.0 alpha=0.7 dimension=3 master={taxa_labels} nobutton', \
+'{C} 3.0 0.6 0.09']
 
 if __name__ == "__main__":
     main()
