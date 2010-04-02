@@ -31,7 +31,7 @@ Getting QIIME
 
  * Development Version: QIIME is under very active development. To get the latest development version of QIIME, you access our Sourceforge repository. While this code is subject to minor changes in interface, it will provide access to the latest and greatest features. The official web documentation is likely to be out-of-date with respect to the development software. You should instead refer to the svn documentation in Qiime/doc. Check out the latest version of QIIME using svn with the command::
 
-	svn co http://qiime.svn.sourceforge.net/svnroot/qiime/trunk Qiime
+	svn co https://qiime.svn.sourceforge.net/svnroot/qiime/trunk Qiime
 
 
 
