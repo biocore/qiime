@@ -108,6 +108,11 @@ class WorkflowTests(TestCase):
         self.files_to_remove.append(self.sff_fp)
         
         self.qiime_config = load_qiime_config()
+        working_dir = self.qiime_config['working_dir'] or './'
+        jobs_dir = join(working_dir,'jobs')
+        if not exists(jobs_dir):
+            # only clean up the jobs dir if it doesn't already exist
+            self.dirs_to_remove.append(jobs_dir)
         self.params = parse_qiime_parameters(qiime_parameters_f)
         self.params['align_seqs']['template_fp'] = self.template_aln_fp
         self.params['filter_alignment']['lane_mask_fp'] = self.lanemask_fp
