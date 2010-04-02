@@ -1,0 +1,71 @@
+# qiime_parameters.txt
+# WARNING: DO NOT EDIT OR DELETE Qiime/qiime_parameters.txt. Users should copy this file and edit copies of it.
+
+###pick_otus_through_otu_table.py parameters###
+
+# OTU picker parameters
+pick_otus:otu_picking_method	uclust
+pick_otus:similarity	0.97
+
+# Representative set picker parameters
+pick_rep_set:rep_set_picking_method	most_abundant
+pick_rep_set:sort_by	otu
+
+# Multiple sequence alignment parameters
+align_seqs:template_fp	/home/qiime/core_set_aligned.fasta.imputed
+align_seqs:alignment_method	pynast
+align_seqs:pairwise_alignment_method	uclust
+align_seqs:blast_db
+align_seqs:min_length	150
+align_seqs:min_percent_id	75.0
+
+# Alignment filtering (prior to tree-building) parameters
+filter_alignment:lane_mask_fp	/home/qiime/lanemask_in_1s_and_0s.txt
+filter_alignment:allowed_gap_frac	 0.999999
+
+# Taxonomy assignment parameters
+assign_taxonomy:assignment_method	rdp
+assign_taxonomy:confidence	0.8
+
+# Phylogenetic tree building parameters
+make_phylogeny:tree_method	fasttree
+
+###alpha_rarefaction.py parameters###
+
+# Rarefaction parameters
+multiple_rarefactions:num-reps	5
+multiple_rarefactions:lineages_included	False
+
+# Alpha diversity parameters
+alpha_diversity:metrics	PD_whole_tree,observed_species,chao1
+
+# Collate alpha
+collate_alpha:example_path
+
+# Make rarefaction plots parameters
+make_rarefaction_plots:imagetype	png
+make_rarefaction_plots:resolution	75
+
+###beta_diversity_through_3d_plots.py parameters###
+
+# Beta diversity parameters
+beta_diversity:metrics	weighted_unifrac,unweighted_unifrac
+
+# Make prefs file parameters
+make_prefs_file:background_color	black
+make_prefs_file:mapping_headers_to_use	Treatment,DOB
+make_prefs_file:monte_carlo_dists	10
+
+# Make 3D plot parameters
+make_3d_plots:custom_axes
+
+###jackknife_upgma.py parameters###
+
+# Multiple Rarefactions
+multiple_rarefactions_even_depth:num-reps 20
+
+###parallel workflow###
+# Parallel options
+parallel:jobs_to_start	2
+parallel:retain_temp_files	False
+parallel:seconds_to_sleep	1
