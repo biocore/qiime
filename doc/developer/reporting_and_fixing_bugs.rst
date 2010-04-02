@@ -5,7 +5,7 @@ Report and fixing bugs
 I found a bug in QIIME. What should I do?
 =========================================
 
-If you find a bug in QIIME, you should report it as a bug in the bug tracker on sourceforge. It's useful to report even small bugs with the bug tracker, and it allows us to keep records of how frequently bugs are found and fixed. The QIIME bug tracker is located `here <http://sourceforge.net/tracker/?atid=1157164&group_id=272178&func=browse>`_.
+If you find a bug in QIIME, you should `report it as a bug in the bug tracker on sourceforge <http://sourceforge.net/tracker/?group_id=272178&atid=1157164>`_. It's useful to report even small bugs with the bug tracker, and it allows us to keep records of how frequently bugs are found and fixed.
 
 This will alert the project managers about the bug, and the bug tracker is actively monitored by the QIIME team.
 
