@@ -37,7 +37,7 @@ Getting QIIME
 
 Installing and using QIIME
 ==========================
-New users should begin with the `QIIME installation guide <./install.html>`_ or the `QIIME virtual box <./virtual_box.html>`_. After installing QIIME, you should move on to the `QIIME tutorial <./tutorial.html>`_ to analyze an example data set. As you begin using QIIME on your own data, you'll want to refer to the `QIIME documentation <./documentation.html>`_.
+New users should begin with the `QIIME installation guide <./install/install.html>`_ or the `QIIME virtual box <./install/virtual_box.html>`_. After installing QIIME, you should move on to the `QIIME tutorial <./tutorials/tutorial.html>`_ to analyze an example data set. As you begin using QIIME on your own data, you'll want to refer to the `QIIME documentation <./documentation/>`_.
 
 Contact Us
 ===========
@@ -49,9 +49,7 @@ Users can also submit `bug reports <http://sourceforge.net/tracker/?group_id=272
 Developing QIIME
 ================
 
-QIIME is an open-source project, and we are interested in recruiting new developers. If you are interested in getting involved, you should have some experience programming in Python. Please get in touch using the `QIIME Support <qiime.help@colorado.edu>`_. Please provide details on your background, and attach some python code that you're proud of as a code sample. New developer's code goes through a peer-review process before being committed to QIIME.
-
-Developers should also review the `coding guidelines <developer/coding_guidelines.html>`_ and `bug fix guidelines <developer/reporting_and_fixing_bugs.html>`_.
+QIIME is an open-source project, primarily developed in the Knight Lab at the University of Colorado at Boulder. If you are interested in getting involved, check out the `developer notes <./developer/>`_.
 
 Citing QIIME
 ============
