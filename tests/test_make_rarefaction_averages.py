@@ -17,9 +17,44 @@ Unit tests for make_rarefaction_plots.py
 from cogent.util.unit_test import TestCase, main
 from qiime.make_rarefaction_averages import *
 from qiime.parse import parse_rarefaction, parse_mapping_file
+from qiime.colors import process_colorby
 
 class makeRarefactionAveragesTests(TestCase):
     def setUp(self):
+        self.prefs = {
+        'background_color':'black',
+
+        'sample_coloring':
+        	{
+        		'SampleID':
+        		{
+        			'column':'SampleID',
+        			'colors':(('red',(0,100,100)),('blue',(240,100,100)))
+        		},
+        		'Sex':
+        		{
+        			'column':'Sex',
+        			'colors':(('red',(0,100,100)),('blue',(240,100,100)))
+        		},
+        		'Age':
+        		{
+        			'column':'Age',
+        			'colors':(('red',(0,100,100)),('blue',(240,100,100)))
+        		}
+        	},
+        'MONTE_CARLO_GROUP_DISTANCES':
+        	{
+        		'SampleID': 10,
+        		'Sex': 10,
+        		'Age': 10
+        	},
+        'FIELDS':
+        	[
+        		'Age',
+        		'SampleID',
+        		'Sex'
+        	],
+        }
         self.mappingfile = ['#SampleID\tSex\tAge',
                             '123\tF\t32',
                             '234\tM\t30',
@@ -67,8 +102,32 @@ class makeRarefactionAveragesTests(TestCase):
             
     def test_make_error_series(self):
         #make_error_series(rare_mat, sampleIDs, mapping, mapping_category)
-        test = make_error_series('rare.txt',self.ave_seqs_per_sample,\
-        self.sampleIDs,self.p_mappingfile,'Sex')
+        # test = make_error_series('rare.txt',self.ave_seqs_per_sample,\
+        # self.sampleIDs,self.p_mappingfile,'Sex')
+        data = {}
+        
+        mapping,headers,comments = self.p_mappingfile
+        new_mapping=[]
+        new_mapping.append(headers)
+        for i in range(len(mapping)):
+            new_mapping.append(mapping[i])
+        data['map']=new_mapping
+        
+        color_prefs, data=process_colorby(None, data, self.prefs['sample_coloring'])
+
+        groups_and_colors=iter_color_groups(data['map'],color_prefs)
+        groups_and_colors=list(groups_and_colors)
+
+        for i in range(len(groups_and_colors)):
+            try:
+                groups_and_colors[i].index('Sex')
+                break
+            except(ValueError):
+                continue
+        
+        groups=groups_and_colors[i][1]
+        
+        test = make_error_series('rare.txt', self.ave_seqs_per_sample, groups, 'Sex')
         self.assertEqual(test[0], self.collapsed_ser_sex)
         self.assertEqual(test[1], self.err_ser_sex)
     
