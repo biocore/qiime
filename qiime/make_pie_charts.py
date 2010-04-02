@@ -179,7 +179,9 @@ def make_pie_chart(data, dir_path,level,color_data,prefs,background_color,label_
 
     # set up labels and colors for pie chart 
     for color_ix, (c_label, c_frac) in enumerate(data):
-        c_label = c_label.replace("_", " ")
+        #commented out the following line, since the key becomes invalid when
+        #replacing part of the string.
+        #c_label = c_label.replace("_", " ")
         # we also want to color others category same every time
         if c_label == others_key:
             colors.append(others_color)
