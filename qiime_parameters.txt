@@ -67,12 +67,13 @@ multiple_rarefactions_even_depth:num-reps	100
 alpha_diversity:metrics	PD_whole_tree,chao1,observed_species
 
 # Make rarefaction averages parameters
-make_rarefaction_averages:prefs
+make_rarefaction_averages:prefs_path
 
 # Make rarefaction plots parameters
 make_rarefaction_plots:imagetype	png
 make_rarefaction_plots:resolution	75
 make_rarefaction_plots:background_color	white
+make_rarefaction_plots:prefs_path
 
 # Collate alpha
 collate_alpha:example_path

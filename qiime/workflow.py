@@ -600,8 +600,8 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,\
         metric_plot_dir = '%s/%s' % (rarefaction_plot_dir, metric)
         input_dir = '%s/%s/%s' % (rarefaction_averages_dir, metric, metric)
         make_rarefaction_plot_cmd =\
-         '%s %s/make_rarefaction_plots.py -i %s -o %s %s' %\
-         (python_exe_fp, script_dir, input_dir, \
+         '%s %s/make_rarefaction_plots.py -i %s -m %s -o %s %s' %\
+         (python_exe_fp, script_dir, input_dir, mapping_fp,
           metric_plot_dir, params_str)
         commands.append(\
          [('Rarefaction plot: %s' % metric,make_rarefaction_plot_cmd)])
