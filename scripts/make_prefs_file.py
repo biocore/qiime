@@ -14,6 +14,7 @@ from optparse import make_option
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.format import build_prefs_string
 from qiime.colors import get_map
+from qiime.parse import parse_otu_table
 
 options_lookup = get_options_lookup()
 
@@ -44,6 +45,9 @@ script_info['optional_options']=[\
     make_option('-d','--monte_carlo_dists',action='store',\
           type='string',dest='monte_carlo_dist',help='monte carlo distance'+\
           'to use for each sample header [default: %default]',default=10),\
+    make_option('-i', '--input_taxa_file', dest='input_taxa_file',\
+      action='store',type='string',
+      help='summarized taxa file with sample counts by taxonomy (resulting file from summarize_taxa.py)'),
 ]
 
 script_info['version']=__version__
@@ -58,8 +62,20 @@ def main():
     background_color=opts.background_color
     monte_carlo_dist=opts.monte_carlo_dist
     
+    taxonomy_count_file = opts.input_taxa_file
+    
+    if taxonomy_count_file:
+        try:
+            counts_f = open(taxonomy_count_file, 'U').readlines()
+            sample_ids, otu_ids, otu_table, lineages = \
+                       parse_otu_table(counts_f,count_map_f=float)
+        except (TypeError, IOError):
+            raise ValueError, 'Summarized taxa file could not be parsed.'
+    else:
+        otu_ids=None
+        
     out = build_prefs_string(mapping_headers_to_use, background_color, \
-                                monte_carlo_dist, headers)
+                                monte_carlo_dist, headers, otu_ids)
                                 
     f = open(opts.output_fp,'w')
     f.write(out)

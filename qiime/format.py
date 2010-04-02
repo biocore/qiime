@@ -102,7 +102,7 @@ def format_coords(coord_header, coords, eigvals, pct_var):
         '\t'.join(map(str, pct_var)))
     return '\n'.join(result)
 
-def build_prefs_string(mapping_headers_to_use, background_color, monte_carlo_dist, headers):
+def build_prefs_string(mapping_headers_to_use, background_color, monte_carlo_dist, headers, otu_ids):
     """Create a preferences file, which can be used for some of the \
     visualization scripts."""
     
@@ -169,6 +169,33 @@ def build_prefs_string(mapping_headers_to_use, background_color, monte_carlo_dis
         sample_coloring.append(sample_colors % (field, field))
         monte_carlo.append(monte_carlo_distances % (field,monte_carlo_dist))
     
+    #Syntax for taxonomy_coloring dictionary
+    taxon_start = \
+    "\n'taxonomy_coloring':\n\t{\n" + \
+    "\t\t'Level_%s':" + \
+    "\n\t\t{"+ \
+    "\n\t\t\t'column':'%s',"+ \
+    "\n\t\t\t'colors':\n\t\t\t{"
+    taxon_colors = "\n\t\t\t\t'%s':('red%s',(%d,100,100))"
+    taxon_coloring=[]
+    
+    if otu_ids:
+        level = max([len(t.split(';')) - 1 for t in otu_ids])
+        taxon_coloring.append(taxon_start % (str(level),str(level)))
+        taxons=[]
+        otu_id_iter=(240/(len(otu_ids)+1))
+        counter=0    
+        for i in otu_ids:
+            taxons.append(taxon_colors % (i,str(counter),counter))
+            counter=counter+otu_id_iter
+        taxon_coloring.append(','.join(taxons))
+    else:
+        taxon_coloring.append(taxon_start % (str(1),str(1)))
+        taxon_coloring.append(taxon_colors % ('Root;Bacteria',str(0),0))
+    
+    taxon_coloring.append("\n\t\t\t}\n\t\t}\n\t}")
+    taxonomy_coloring_str=''.join(taxon_coloring)
+    
     #Close and convert the sample_coloring dictionary to a string
     sample_coloring.append('\n\t},')
     sample_coloring_str=''.join(sample_coloring)
@@ -194,6 +221,7 @@ def build_prefs_string(mapping_headers_to_use, background_color, monte_carlo_dis
     pref_lines.append(sample_coloring_str)
     pref_lines.append(monte_carlo_str)
     pref_lines.append(field_dict_str)
+    pref_lines.append(taxonomy_coloring_str)
     pref_lines.append('\n}')
 
     return ''.join(pref_lines)
