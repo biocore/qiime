@@ -174,7 +174,7 @@ The filtered alignment file produced in the directory :file:`wf_da/uclust_picked
 
 The Newick format tree file is written to :file:`rep_set_aligned.tre`, which is located in the :file:`wf_da/uclust_picked_otus/rep_set/pynast_aligned_seqs/fasttree_phylogeny` directory . This file can be viewed in a tree visualization software, and is necessary for UniFrac_ diversity measurements (described below). For the following example, the FigTree program was used to visualize the phylogenetic tree obtained from :file:`rep_set_aligned.tre`.
 
-.. image:: images/ tree.png
+.. image:: ../images/ tree.png
    :align: center
 
 
@@ -235,17 +235,17 @@ The QIIME pipeline includes a very useful utility to generate images of the OTU 
 
 An html file is created in the directory "wf_da/uclust_picked_otus/rep_set/rdp_assigned_taxonomy/otu_table/Fasting_OTU_Heatmap/". You can open this file with any web browser, and will be prompted to enter a value for "Filter by Counts per OTU". Only OTUs with total counts at or above this threshold will be displayed. The OTU heatmap displays raw OTU counts per sample, where the counts are colored based on the contribution of each OTU to the total OTU count present in that sample (blue: contributes low percentage of OTUs to sample; red: contributes high percentage of OTUs). Click the "Sample ID" button, and a graphic will be generated like the figure below. For each sample, you will see in a heatmap the number of times each OTU was found in that sample. You can mouse over any individual count to get more information on the OTU (including taxonomic assignment). Within the mouseover, there is a link for the terminal lineage assignment, so you can easily search Google for more information about that assignment.
 
-.. image:: images/ heatmap.png
+.. image:: ../images/ heatmap.png
    :align: center
 
 Alternatively, you can click on one of the counts in the heatmap and a new pop-up window will appear. The pop-up window uses a Google Visualization API called Magic-Table. Depending on which table count you clicked on, the pop-up window will put the clicked-on count in the middle of the pop-up heatmap as shown below. For the following example, the table count with the red arrow mouseover is the same one being focused on using the Magic-Table.
 
-.. image:: images/ fisheyeheatmap.png
+.. image:: ../images/ fisheyeheatmap.png
    :align: center
 
 On the original heatmap webpage, if you select the "Taxonomy" button instead, you will generate a heatmap keyed by taxon assignment, which allows you to conveniently look for organisms and lineages of interest in your study. Again, mousing over an individual count will show additional information for that OTU and sample.
 
-.. image:: images/ taxheatmap.png
+.. image:: ../images/ taxheatmap.png
    :align: center
 
 .. _makeotunetwork:
@@ -258,7 +258,7 @@ An alternative to viewing the OTU table as a heatmap, is to create an OTU networ
 
 To visualize the network, we use the Cytoscape_ program (which you can run by calling Cytoscape from the command line, beginning with a capital C, if you have Cytoscape installed), where each red circle represents a sample and each white square represents an OTU. The lines represent the OTUs present in a particular sample (blue for controls and green for fasting). For more information about opening the files in Cytoscape_ please refer `here <./scripts/cytoscape_usage.html>`_.
 
-.. image:: images/ network.png
+.. image:: ../images/ network.png
    :align: center
 
 You can group OTUs by different taxonomic levels (division, class, family) with the script `summarize_taxa.py <./scripts/summarize_taxa.html>`_. The input is the OTU table created above and the taxonomic level you need to group the OTUs. For the RDP taxonomy, the following taxonomic levels correspond to: 2 = Domain (Bacteria), 3 = Phylum (Actinobacteria), 4 = Class, and so on. ::
@@ -291,12 +291,12 @@ To visualize the summarized taxa, you can use the `make_pie_charts.py <./scripts
 
 To view the resulting pie charts, open the html file located in the :file:`wf_da/uclust_picked_otus/rep_set/rdp_assigned_taxonomy/otu_table/Pie_Charts/` folder. The following pie chart shows the taxa assignments for all samples.
 
-.. image:: images/ piechart1.png
+.. image:: ../images/ piechart1.png
    :align: center
 
 The following pie chart shows the taxa assignments for one of the samples (PC.354).
 
-.. image:: images/ piechart2.png
+.. image:: ../images/ piechart2.png
    :align: center
 
 .. _compalphadivrarecurves:
@@ -382,7 +382,7 @@ The script `make_rarefaction_plots.py <./scripts/make_rarefaction_plots.html>`_ 
 
 This step generates a :file:`wf_arare/alpha_rarefaction_averages/` folder, which contains the rarefaction averages for each diversity metric, so the user can plot the rarefaction curves in another application, like MS Excel, along with a :file:`wf_arare/alpha_rarefaction_plots/` folder. To view the rarefaction plots navigate to the bottom-level file within the :file:`wf_arare/alpha_rarefaction_plots/` folder, where you will find an html file titled :file:`rarefaction_plots.html`. This plot shows the averages of each value for each category containing at least 2 non-unique samples in the mapping file with their corresponding error bars.
 
-.. image:: images/ rarecurve.png
+.. image:: ../images/ rarecurve.png
    :align: center
 
 
@@ -448,7 +448,7 @@ To plot the coordinates, you can use the QIIME scripts `make_2d_plots.py <./scri
 	
 The html files are created in :file:`wf_bdiv/unweighted_unifrac_3d...` and :file:`wf_bdiv/weighted_unifrac_3d...` directories.  In the :file:`custom_parameters.txt`, we specified that the samples should be colored by the value of the "Treatment" and "DOB" columns under the make_prefs_file parameters. For the "Treatment" column, all samples with the same "Treatment" will get the same color. For our tutorial, the five control samples are all blue and the four control samples are all green. This lets you easily visualize "clustering" by metadata category. The 3d visualization software allows you to rotate the axes to see the data from different perspectives. By default, the script will plot the first three dimensions in your file. Other combinations can be viewed using the "Views:Choose viewing axes" option in the KiNG viewer (may require the installation of kinemage software). The first 10 components can be viewed using "Views:Paralleled coordinates" option or typing "/".
 
-.. image:: images/ pcoa2.png
+.. image:: ../images/ pcoa2.png
    :align: center
 
 Running beta_diversity_through_3d_plots.py
@@ -465,7 +465,7 @@ To plot the coordinates for the unweighted unifrac principal coordinates in 2D, 
 
 The html file created in directory :file:`wf_bdiv/unweighted_unifrac_2d` shows a plot for each combination of the first three principal coordinates. Since we specified Treatment and DOB to use for coloring the samples, each sample colored according to the category it corresponds. You can get the name for each sample by holding your mouse over the data point.
 
-.. image:: images/ pcoa1.png
+.. image:: ../images/ pcoa1.png
    :align: center
 
 
@@ -479,7 +479,7 @@ Distance Histograms are a way to compare different categories and see which tend
 
 For each of these groups of distances a histogram is made. The output is a HTML file (:file:`wf_bdiv/Distance_Histograms/QIIME_Distance_Histograms.html`) where you can look at all the distance histograms individually, and compare them between each other. Within the webpage, the user can mouseover and/or select the checkboxes in the right panel to turn on/off the different distances within/between categories. For this example, we are comparing the distances between the samples in the Control versus themselves, along with samples from Fasting versus the Control.
 
-.. image:: images/ hist.png
+.. image:: ../images/ hist.png
    :align: center
 
 .. _genpcoa:
@@ -506,7 +506,7 @@ Unweighted Pair Group Method with Arithmetic mean (UPGMA) is type of UPGMA clust
 
 The output is a file that can be opened with tree viewing software, such as FigTree.
 
-.. image:: images/ hiarchclust.png
+.. image:: ../images/ hiarchclust.png
    :align: center
 
 This tree shows the relationship among the 9 samples, and reveals that the 4 samples from the guts of fasting mice cluster together (PC.6xx, fasting data is in :file:`Fasting_Map.txt`). 
@@ -564,7 +564,7 @@ As an example, we can visualize the bootstrapped tree using unweighted unifrac u
 
 The resulting pdf shows the tree with internal nodes colored, red for 75-100% support, yellow for 50-75%, green for 25-50%, and blue for < 25% support. Although UPGMA shows that PC.354 and PC.593 cluster together and PC.481 with PC.6xx cluster together, we can not have high confidence in that result. However, there is excellent jackknife support for all fasted samples (PC.6xx) which are clustering together, separate from the non-fasted (PC.35x) samples.
 
-.. image:: images/ boottree.png
+.. image:: ../images/ boottree.png
    :align: center
 
 Running Workflow Scripts in Parallel

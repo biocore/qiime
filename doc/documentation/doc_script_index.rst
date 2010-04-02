@@ -7,7 +7,7 @@ Scripts - Analyses and Parameters
 General Notes
 -------------
 
-All QIIME analyses are performed using python (.py) scripts, which are located in the Qiime/scripts directory. To access QIIME python scripts, it may be useful to set an environment variable to the location of the innermost QIIME directory (the one containing `check_id_map.py <./scripts/check_id_map.html>`_, for example)::
+All QIIME analyses are performed using python (.py) scripts, which are located in the Qiime/scripts directory. To access QIIME python scripts, it may be useful to set an environment variable to the location of the innermost QIIME directory (the one containing `check_id_map.py <../scripts/check_id_map.html>`_, for example)::
 
 	qdir=/path/to/QIIME/
 
@@ -23,10 +23,10 @@ Workflow Scripts
 .. toctree::
    :maxdepth: 1
 
-   scripts/alpha_rarefaction 
-   scripts/beta_diversity_through_3d_plots 
-   scripts/jackknifed_upgma 
-   scripts/pick_otus_through_otu_table 
+   ../scripts//alpha_rarefaction 
+   ../scripts/beta_diversity_through_3d_plots 
+   ../scripts/jackknifed_upgma 
+   ../scripts/pick_otus_through_otu_table 
 
 User-Generated Mapping File
 ---------------------------
@@ -34,8 +34,8 @@ User-Generated Mapping File
 .. toctree::
    :maxdepth: 1
 
-   scripts/check_id_map 
-   scripts/merge_mapping_files 
+   ../scripts/check_id_map 
+   ../scripts/merge_mapping_files 
 
 Quality Checking
 ----------------
@@ -43,8 +43,8 @@ Quality Checking
 .. toctree::
    :maxdepth: 1
 
-   scripts/denoise
-   scripts/identify_chimeric_seqs 
+   ../scripts/denoise
+   ../scripts/identify_chimeric_seqs 
 
 Demultiplexing
 --------------
@@ -52,7 +52,7 @@ Demultiplexing
 .. toctree::
    :maxdepth: 1
 
-   scripts/split_libraries 
+   ../scripts/split_libraries 
 
 Read OTU File (OTU Mapping)
 ---------------------------
@@ -60,12 +60,12 @@ Read OTU File (OTU Mapping)
 .. toctree::
    :maxdepth: 1
 
-   scripts/add_taxa 
-   scripts/filter_otus_by_sample 
-   scripts/merge_otu_maps
-   scripts/parallel_pick_otus_blast 
-   scripts/pick_otus 
-   scripts/summarize_taxa 
+   ../scripts/add_taxa 
+   ../scripts/filter_otus_by_sample 
+   ../scripts/merge_otu_maps
+   ../scripts/parallel_pick_otus_blast 
+   ../scripts/pick_otus 
+   ../scripts/summarize_taxa 
 
 Process Sequences
 --------------------
@@ -73,10 +73,10 @@ Process Sequences
 .. toctree::
    :maxdepth: 1
 
-   scripts/adjust_seq_orientation 
-   scripts/exclude_seqs_by_blast 
-   scripts/extract_seqs_by_sample_id
-   scripts/pick_rep_set 
+   ../scripts/adjust_seq_orientation 
+   ../scripts/exclude_seqs_by_blast 
+   ../scripts/extract_seqs_by_sample_id
+   ../scripts/pick_rep_set 
 
 Sequence Alignment
 ------------------
@@ -84,9 +84,9 @@ Sequence Alignment
 .. toctree::
    :maxdepth: 1
 
-   scripts/align_seqs 
-   scripts/filter_alignment 
-   scripts/parallel_align_seqs_pynast 
+   ../scripts/align_seqs 
+   ../scripts/filter_alignment 
+   ../scripts/parallel_align_seqs_pynast 
 
 Tree-Building
 -------------
@@ -94,7 +94,7 @@ Tree-Building
 .. toctree::
    :maxdepth: 1
 
-   scripts/make_phylogeny 
+   ../scripts/make_phylogeny 
 
 Taxonomy Assignment
 -------------------
@@ -102,9 +102,9 @@ Taxonomy Assignment
 .. toctree::
    :maxdepth: 1
 
-   scripts/assign_taxonomy 
-   scripts/parallel_assign_taxonomy_blast 
-   scripts/parallel_assign_taxonomy_rdp
+   ../scripts/assign_taxonomy 
+   ../scripts/parallel_assign_taxonomy_blast 
+   ../scripts/parallel_assign_taxonomy_rdp
 
 OTU Table Processing
 --------------------
@@ -112,15 +112,15 @@ OTU Table Processing
 .. toctree::
    :maxdepth: 1
 
-   scripts/filter_otu_table 
-   scripts/filter_by_metadata
-   scripts/make_otu_table
-   scripts/single_rarefaction
-   scripts/multiple_rarefactions_even_depth
-   scripts/multiple_rarefactions
-   scripts/otu_category_significance
-   scripts/parallel_multiple_rarefactions
-   scripts/summarize_otu_by_cat 
+   ../scripts/filter_otu_table 
+   ../scripts/filter_by_metadata
+   ../scripts/make_otu_table
+   ../scripts/single_rarefaction
+   ../scripts/multiple_rarefactions_even_depth
+   ../scripts/multiple_rarefactions
+   ../scripts/otu_category_significance
+   ../scripts/parallel_multiple_rarefactions
+   ../scripts/summarize_otu_by_cat 
 
 Alpha-Diversity
 ---------------
@@ -129,11 +129,11 @@ Alpha-Diversity
    :maxdepth: 1
 
 
-   scripts/alpha_diversity 
-   scripts/alpha_diversity_metrics
-   scripts/collate_alpha 
-   scripts/make_rarefaction_averages
-   scripts/parallel_alpha_diversity 
+   ../scripts/alpha_diversity 
+   ../scripts/alpha_diversity_metrics
+   ../scripts/collate_alpha 
+   ../scripts/make_rarefaction_averages
+   ../scripts/parallel_alpha_diversity 
 
 Beta-Diversity
 ---------------
@@ -141,10 +141,10 @@ Beta-Diversity
 .. toctree::
    :maxdepth: 1
 
-   scripts/beta_diversity_metrics
-   scripts/beta_diversity 
-   scripts/dissimilarity_mtx_stats 
-   scripts/parallel_beta_diversity
+   ../scripts/beta_diversity_metrics
+   ../scripts/beta_diversity 
+   ../scripts/dissimilarity_mtx_stats 
+   ../scripts/parallel_beta_diversity
 
 Principal Coordinates Analysis (PCoA)
 -------------------------------------
@@ -152,8 +152,8 @@ Principal Coordinates Analysis (PCoA)
 .. toctree::
    :maxdepth: 1
 
-   scripts/principal_coordinates 
-   scripts/transform_coordinate_matrices
+   ../scripts/principal_coordinates 
+   ../scripts/transform_coordinate_matrices
 
 Visualization
 -------------
@@ -161,17 +161,17 @@ Visualization
 .. toctree::
    :maxdepth: 1
 
-   scripts/cytoscape_usage
-   scripts/compare_3d_plots
-   scripts/make_2d_plots 
-   scripts/make_3d_plots 
-   scripts/make_3d_plot_prefs_file
-   scripts/make_distance_histograms 
-   scripts/make_pie_charts 
-   scripts/make_otu_heatmap_html 
-   scripts/make_otu_network
-   scripts/make_rarefaction_plots 
-   scripts/preferences_file
+   ../scripts/cytoscape_usage
+   ../scripts/compare_3d_plots
+   ../scripts/make_2d_plots 
+   ../scripts/make_3d_plots 
+   ../scripts/make_3d_plot_prefs_file
+   ../scripts/make_distance_histograms 
+   ../scripts/make_pie_charts 
+   ../scripts/make_otu_heatmap_html 
+   ../scripts/make_otu_network
+   ../scripts/make_rarefaction_plots 
+   ../scripts/preferences_file
 
 Jackknifing
 -----------
@@ -179,9 +179,9 @@ Jackknifing
 .. toctree::
    :maxdepth: 1
 
-   scripts/make_bootstrapped_tree 
-   scripts/tree_compare 
-   scripts/upgma_cluster 
+   ../scripts/make_bootstrapped_tree 
+   ../scripts/tree_compare 
+   ../scripts/upgma_cluster 
 
 SRA Submission
 --------------
@@ -189,14 +189,14 @@ SRA Submission
 .. toctree::
    :maxdepth: 1
 
-   scripts/make_fastq 
-   scripts/make_library_id_lists 
-   scripts/make_per_library_sff 
-   scripts/make_sra_submission 
-   scripts/per_library_stats 
-   scripts/process_sff 
-   scripts/sra_spreadsheet_to_map_files
-   scripts/trim_sff_primers 
+   ../scripts/make_fastq 
+   ../scripts/make_library_id_lists 
+   ../scripts/make_per_library_sff 
+   ../scripts/make_sra_submission 
+   ../scripts/per_library_stats 
+   ../scripts/process_sff 
+   ../scripts/sra_spreadsheet_to_map_files
+   ../scripts/trim_sff_primers 
 
 Utilities
 ---------
@@ -204,13 +204,13 @@ Utilities
 .. toctree::
    :maxdepth: 1
 
-   scripts/blast_wrapper 
-   scripts/cluster_jobs
-   scripts/convert_unifrac_sample_mapping_to_otu_table 
-   scripts/fix_arb_fasta 
-   scripts/make_qiime_py_file
-   scripts/make_qiime_rst_file
-   scripts/parallel_blast 
-   scripts/poller
-   scripts/poller_example
-   scripts/print_qiime_config
+   ../scripts/blast_wrapper 
+   ../scripts/cluster_jobs
+   ../scripts/convert_unifrac_sample_mapping_to_otu_table 
+   ../scripts/fix_arb_fasta 
+   ../scripts/make_qiime_py_file
+   ../scripts/make_qiime_rst_file
+   ../scripts/parallel_blast 
+   ../scripts/poller
+   ../scripts/poller_example
+   ../scripts/print_qiime_config
