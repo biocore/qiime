@@ -26,6 +26,7 @@ script_info['script_usage'].append(("""Examples:""","""To make a prefs file, the
 script_info['script_usage'].append(("""""","""If the user would like to use specified categories ('SampleID,Individual') or combinations of categories ('SampleID&&Individual'), they will need to use the -b option, where each category is comma delimited, as follows:""","""make_prefs_file.py -b "SampleID,Individual,SampleID&&Individual" -o prefs_out.txt"""))
 script_info['script_usage'].append(("""""","""If the user would like to change the background color for their plots, they can pass the '-k' option, where the colors: black and white can be used for 3D plots and many additional colors can be used for the 2D plots, such as cyan, pink, yellow, etc.: ""","""make_prefs_file.py -k white -o prefs_out.txt"""))
 script_info['script_usage'].append(("""""","""If the user would like to change the monte_carlo distances, they can pass the '-d' option as follows: ""","""make_prefs_file.py -d 15 -o prefs_out.txt"""))
+script_info['script_usage'].append(("""""","""If the user would like to add a list of taxons they can pass the '-i' option, which is the resulting taxa file from summarize_taxa.py, as follows: ""","""make_prefs_file.py -i taxa_level_3.txt -o prefs_out.txt"""))
 script_info['output_description']="""The result of this script is a text file, containing coloring preferences to be used by make_distance_histograms.py, make_2d_plots.py and make_3d_plots.py."""
 script_info['optional_options']=[]
 
@@ -46,8 +47,8 @@ script_info['optional_options']=[\
           type='string',dest='monte_carlo_dist',help='monte carlo distance'+\
           'to use for each sample header [default: %default]',default=10),\
     make_option('-i', '--input_taxa_file', dest='input_taxa_file',\
-      action='store',type='string',
-      help='summarized taxa file with sample counts by taxonomy (resulting file from summarize_taxa.py)'),
+      action='store',type='string', help='summarized taxa file with sample' + \
+            'counts by taxonomy (resulting file from summarize_taxa.py)'),
 ]
 
 script_info['version']=__version__
