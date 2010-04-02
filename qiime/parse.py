@@ -183,7 +183,7 @@ def parse_rarefaction_data(lines):
             data['xaxis'] = [float(v) for v in l[6:].strip().split('\t')]
             continue
         if l.startswith('>>'):
-            data['options'].append(l.strip().strip('>'))
+            data['options'].append(l.strip('>').strip())
             continue
         if l.startswith('series'):
             data['series'][data['options'][len(data['options'])-1]] = \
@@ -197,7 +197,6 @@ def parse_rarefaction_data(lines):
             str(l[6:].strip())
             if(len(str(l[6:].strip())) < 1):
                 print data['options'][len(data['options'])-1]
-    # print data
     return data
 
 def parse_rarefaction_record(line):
