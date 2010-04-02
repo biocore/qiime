@@ -17,6 +17,7 @@ from optparse import make_option
 from qiime.beta_diversity import (single_file_beta, multiple_file_beta,
 list_known_metrics)
 import os
+from sys import stderr
 
 script_info={}
 script_info['brief_description']="""Calculate beta diversity (pairwise sample dissimilarity) on one or many otu tables"""
