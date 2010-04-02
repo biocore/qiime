@@ -14,8 +14,9 @@ __status__ = "Pre-release"
 import qiime.biplots as bp
 import numpy as np
 
+from os import system
 from cogent.util.unit_test import TestCase, main
-
+from cogent.util.misc import get_random_directory_name
 
 class BiplotTests(TestCase):
     
@@ -26,6 +27,25 @@ class BiplotTests(TestCase):
         pass
         
     def test_get_taxa(self):
+        rand_fname = get_random_directory_name(suppress_mkdir=True)
+        rand_fname += '_tmp.txt'
+        fout = open(rand_fname,'w')
+        lines = ['#Full OTU Counts', \
+                     'Taxon\tA\tB\tC', \
+                     'Root;Bacteria;Acidobacteria\t0.1\t0.2\t0.3', \
+                     'Root;Bacteria;TM7\t0.05\t0.0\t0.3' \
+                ]
+        fout.write('\n'.join(lines))
+        fout.close()
+
+        otu_ids = ['Root;Bacteria;Acidobacteria','Root;Bacteria;TM7']
+        otu_table = np.array([[0.1,0.3],[0.05,0.3]])
+        res = bp.get_taxa(rand_fname,sample_ids_kept=['A','C'])
+        self.assertEqual(res[0],otu_ids)
+        self.assertEqual(res[1],otu_table)
+
+        # remove temporary file
+        system('rm %s' %(rand_fname))
         pass
         
     def test_get_taxa_coords(self):
