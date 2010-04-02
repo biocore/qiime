@@ -72,6 +72,7 @@ make_rarefaction_averages:prefs
 # Make rarefaction plots parameters
 make_rarefaction_plots:imagetype	png
 make_rarefaction_plots:resolution	75
+make_rarefaction_plots:background_color	white
 
 # Collate alpha
 collate_alpha:example_path
