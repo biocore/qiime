@@ -174,6 +174,7 @@ def parse_rarefaction_data(lines):
     data['xaxis'] = []
     data['series'] = {}
     data['error'] = {}
+    data['color'] = {}
     for l in lines:
         if l.startswith('#'):
             data['headers'].append(l.strip('#').strip())
@@ -191,6 +192,11 @@ def parse_rarefaction_data(lines):
         if l.startswith('error'):
             data['error'][data['options'][len(data['options'])-1]] = \
             [float(v) for v in l[6:].strip().split('\t')]
+        if l.startswith('color'):
+            data['color'][data['options'][len(data['options'])-1]] = \
+            str(l[6:].strip())
+            if(len(str(l[6:].strip())) < 1):
+                print data['options'][len(data['options'])-1]
     # print data
     return data
 
