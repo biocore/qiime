@@ -516,7 +516,7 @@ def taxonomy_color_prefs_and_map_data_from_options(options):
         if prefs.has_key('background_color'):
             background_color= prefs['background_color']
         else:
-            background_color='black'
+            background_color='white'
     else:
         background_color='black'
         color_prefs=taxonomy_process_prefs(taxonomy_levels, None)
