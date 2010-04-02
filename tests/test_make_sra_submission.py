@@ -214,7 +214,7 @@ aa\tbb\tcc
     def test_experiment_xml(self):
         """make_run_and_experiment should return correct XML for full experiment."""
         experiment_lines = StringIO(experiment)
-        sff_dir = 'sra_test_files/F6AVWTA'
+        sff_dir = os.path.join(get_qiime_project_dir(), 'tests', 'sra_test_files', 'F6AVWTA')
         att_file = StringIO(attrs)
         l_file = StringIO(links)
         observed_exp_xml, observed_run_xml = make_run_and_experiment(experiment_lines, sff_dir, 
