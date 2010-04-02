@@ -30,7 +30,7 @@ This shows a generic overview of a preferences file (.txt):
 	* 'taxonomy_coloring':
 		* {
 			* 'Taxonomy_Level':
-			*{
+			* {
 				* 'column':'summarized_otu_table_column_number2',
 				* 'colors':
 					* {
@@ -42,6 +42,8 @@ This shows a generic overview of a preferences file (.txt):
 	* }
 
 This shows an example of a Prefs file (.txt):
+
+.. note::
 
 	* {
 	* 'background_color':'black',
@@ -70,7 +72,7 @@ This shows an example of a Prefs file (.txt):
 		* ],
 	* 'taxonomy_coloring':
 		* {
-			*'Level_3':
+			* 'Level_3':
 			* {
 				* 'column':'3',
 				* 'colors':
