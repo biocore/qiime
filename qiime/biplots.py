@@ -100,10 +100,10 @@ def make_mage_taxa(taxa, num_coords, pct_var, scaled=False, scalars=None,
             coord_line = '{%s} %s' %(id_[5:], ' '.join(map(str,coord_dict[id_][:num_coords])))
             # each taxon has a different radius, so we have to create a new list
             result.append('@balllist color=%s radius=%s alpha=%s dimension=%s \
-                    master={taxa_points} nobutton' % (color, radius_dict[id_], taxon_alpha, num_coords))
+master={taxa_points} nobutton' % (color, radius_dict[id_], taxon_alpha, num_coords))
             result.append(coord_line)
             result.append('@labellist color=%s radius=%s alpha=%s dimension=%s \
-                    master={taxa_labels} nobutton' % (color, radius_dict[id_], taxon_alpha, num_coords))
+master={taxa_labels} nobutton' % (color, radius_dict[id_], taxon_alpha, num_coords))
             result.append(coord_line)
 
     return result
