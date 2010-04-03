@@ -64,8 +64,13 @@ class Qiime_config(TestCase):
         if not out_string:
             self.fail("Something is wrong with your python\n." \
                           +" Check you python_exe_fp:%s" %python)
-        
-    #Maybe check for right version of python here
+
+        #get the version number out of "python 2.6.2\n"
+        version = out_string.rstrip().split(" ")[1].split(".")
+        version = tuple(map(int, version))
+        self.assertTrue(version >= (2, 6, 0),
+                        "Qiime requires at least python version 2.6.0. "+\
+                        "You are running " + out_string)
     
     def test_cluster_jobs_fp(self):
         """cluster_jobs_fp is set to a valid path and is executable"""       
@@ -125,7 +130,7 @@ class Qiime_config(TestCase):
         
         if scripts_dir:
             self.assertTrue(exists(scripts_dir),
-                        "qiime_scripts_dir does not exist: %s" % scripts_dir)
+                            "qiime_scripts_dir does not exist: %s" % scripts_dir)
             self.assertTrue(isdir(scripts_dir),
                             "qiime_script_dir is not a directory: %s" % scripts_dir)
         else:
@@ -212,9 +217,10 @@ if __name__ == "__main__":
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     qiime_config = load_qiime_config()
-
+    
+    max_len =  max([len(key) for key in qiime_config])
     for key,value in  qiime_config.items():
-        print "%20s:\t%s"%(key,value)
+        print "%*s:\t%s"%(max_len,key,value)
 
     #run the Testcase.main function to do the tests
     # need to mess with the arg string, otherwise TestCase complains
