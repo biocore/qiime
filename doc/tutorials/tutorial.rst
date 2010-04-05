@@ -118,7 +118,7 @@ A few lines from the :file:`seqs.fna` file are shown below:
 
 Workflow scripts and the parameters file
 --------------------------------------------------------------------
-Within the QIIME directory there is a file :file:`qiime_parameters.txt`, where the user can set parameters for specific steps within a workflow script.  The user should make a copy of :file:`qiime_parameters.txt` and place it into their working directory and give it a new filename (e.g. :file:`custom_parameters.txt`), but DO NOT EDIT the original file.  If you are using the tutorial dataset, the parameters file :file:`custom_parameters.txt` is included. For more information on the :file:`qiime_parameters.txt` file, please refer to `here <./doc_qiime_parameters.html>`_. In this tutorial, we will utilize the workflow scripts when necessary and within each section where the workflow is used, we will discuss which options in the :file:`custom_parameters.txt` file associate to each step.
+QIIME includes workflow scripts, which allow multiple tasks to be performed with one command.  Within the QIIME directory there is a file :file:`qiime_parameters.txt`, where the user can set parameters for specific steps within a workflow script.  The user should make a copy of :file:`qiime_parameters.txt` and place it into their working directory and give it a new filename (e.g. :file:`custom_parameters.txt`), but DO NOT EDIT the original file.  If you are using the tutorial dataset, the parameters file :file:`custom_parameters.txt` is included, which has many parameters already set with appropriate values for the tutorial data. For more information on the :file:`qiime_parameters.txt` file, please refer to `here <./doc_qiime_parameters.html>`_. In this tutorial, we will utilize the workflow scripts when appropriate and within each section where the workflow is used, we will discuss which options in the :file:`custom_parameters.txt` file associate to each step within the workflow.
 
 .. _pickotusandrepseqs:
 
@@ -142,7 +142,7 @@ We will first go through each step and define the parameters in :file:`custom_pa
 Step 1. Pick OTUs based on Sequence Similarity within the Reads
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-At this step, all of the sequences from all of the samples will be clustered into Operational Taxonomic Units (OTUs) based on their sequence similarity. OTUs in QIIME are clusters of sequences, frequently intended to represent some degree of taxonomic relatedness. For example, when sequences are clustered at 97% sequence similarity with uclust, each resulting cluster is typically thought of as representing a genus. This model and the current techniques for picking OTUs are known to be flawed, and determining exactly how OTUs should be defined, and what they represent, is an active area of research. Thus, OTU-picking will identify highly similar sequences across the samples and provide a platform for comparisons of community structure. The script `pick_otus.py <./scripts/pick_otus.html>`_ takes as input the fasta file output from :ref:`assignsamples` above, and returns a list of OTUs detected and the fasta header for sequences that belong in that OTU. To invoke the script using uclust to cluster and the default setting of 97% similarity determining an OTU, use the following settings in the :file:`custom_parameters.txt` file:
+At this step, all of the sequences from all of the samples will be clustered into Operational Taxonomic Units (OTUs) based on their sequence similarity. OTUs in QIIME are clusters of sequences, frequently intended to represent some degree of taxonomic relatedness. For example, when sequences are clustered at 97% sequence similarity with uclust, each resulting cluster is typically thought of as representing a genus. This model and the current techniques for picking OTUs are known to be flawed, and determining exactly how OTUs should be defined, and what they represent, is an active area of research. Thus, OTU-picking will identify highly similar sequences across the samples and provide a platform for comparisons of community structure. The script `pick_otus.py <./scripts/pick_otus.html>`_ takes as input the fasta file output from :ref:`assignsamples` above, and returns a list of OTUs detected and the fasta header for sequences that belong in that OTU. To make the workflow invoke pick_otus.py using uclust to cluster and the default setting of 97% similarity determining an OTU, include the following settings in the :file:`custom_parameters.txt` file:
 
 .. note::
 
@@ -150,7 +150,7 @@ At this step, all of the sequences from all of the samples will be clustered int
 	* pick_otus:otu_picking_method	uclust
 	* pick_otus:similarity	0.97
 
-In the newly created directory :file:`wf_da/uclust_picked_otus/`, there will be two files. One is :file:`seqs.log`, which contains information about the invocation of the script. The OTUs will be recorded in the tab-delimited file :file:`seqs_otus.txt`. The OTUs are arbitrarily named by a number, which is recorded in the first column. The subsequent columns in each line identify the sequence or sequences that belong in that OTU.
+Note that tabs separate fields, e.g.: pick_otus:similarity[TAB]0.97.  Once this step in the workflow is run, in the newly created directory :file:`wf_da/uclust_picked_otus/`, there will be two files. One is :file:`seqs.log`, which contains information about the invocation of the script. The OTUs will be recorded in the tab-delimited file :file:`seqs_otus.txt`. The OTUs are arbitrarily named by a number, which is recorded in the first column. The subsequent columns in each line identify the sequence or sequences that belong in that OTU.
 
 .. _pickrepseqsforotu:
 
@@ -267,7 +267,7 @@ The result of this step is :file:`seqs_otu_table.txt`, which is located in the :
 Running pick_otus_through_otu_table.py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Now that we have set the parameters, necessary for this workflow script, the user can run the following command, where we define the input sequence file "-i" (from `split_libraries.py <./scripts/split_libraries.html>`_), the parameter file to use "-p" and the output directory "-o"::
+Now that we have set the parameters necessary for this workflow script, the user can run the following command, where we define the input sequence file "-i" (from `split_libraries.py <./scripts/split_libraries.html>`_), the parameter file to use "-p" and the output directory "-o"::
 
 	pick_otus_through_otu_table.py -i split_libary_output/seqs.fna -p custom_parameters.txt -o wf_da
 
@@ -317,7 +317,7 @@ On the original heatmap webpage, if you select the "Taxonomy" button instead, yo
 
 Make OTU Network
 ^^^^^^^^^^^^^^^^
-An alternative to viewing the OTU table as a heatmap, is to create an OTU network, using the following command.::
+An alternative to viewing the OTU table as a heatmap is to create an OTU network, using the following command.::
 
 	make_otu_network.py -m Fasting_Map.txt -i wf_da/uclust_picked_otus/rep_set/rdp_assigned_taxonomy/otu_table/seqs_otu_table.txt -o wf_da/uclust_picked_otus/rep_set/rdp_assigned_taxonomy/otu_table/OTU_Network
 
@@ -588,14 +588,14 @@ First the jackknifed OTU tables must be generated, by subsampling the full avail
 
    * Sample ct min/max/mean: 146 / 150 / 148.11
 
-To ensure that a random subset of sequences is selected from each sample, we chose to select 110 sequences from each sample (75% of the smallest sample, though this value is only a guideline), which is designated by the "-e" option when running the workflow script. In the :file:`custom_parameters.txt` file, we can set the number of iterations at the depth we set when running this workflow script (i.e. 110), as follows:
+To ensure that a random subset of sequences is selected from each sample, we chose to select 110 sequences from each sample (75% of the smallest sample, though this value is only a guideline), which is designated by the "-e" option when running the workflow script (see below). In the :file:`custom_parameters.txt` file, we set the number of jackknife replicates as follows:
 
 .. note::
 
 	* # Multiple Rarefactions
 	* multiple_rarefactions_even_depth:num-reps 20
 
-This generates 20 subsets of the available data by random sampling, simulating a smaller sampling effort (110 sequences in each sample).
+This generates 20 subsets of the available data, each subset a simulation of a smaller sequencing effort (110 sequences in each sample, as defined below).
 
 We then calculate the distance matrix for each jackknifed dataset, using `beta_diversity.py <./scripts/beta_diversity.html>`_ as before, but now in batch mode, which results in 20 distance matrix files written to the :file:`wf_jack/unweighted_unifrac/rare_dm/` and :file:`wf_jack/weighted_unifrac/rare_dm/` directories. Each of those is then used as the basis for UPGMA clustering, using `upgma_cluster.py <./scripts/upgma_cluster.html>`_ in batch mode and written to the :file:`wf_jack/unweighted_unifrac/rare_upgma/` and :file:`wf_jack/weighted_unifrac/rare_upgma/` directories.
 
@@ -634,7 +634,7 @@ The resulting pdf shows the tree with internal nodes colored, red for 75-100% su
 
 Running Workflow Scripts in Parallel
 -----------------------------------------------
-Users can run the workflow scripts in parallel by passing "-a" option to each of the scripts.  In the :file:`custom_parameters.txt` file, the users can customize the number of jobs to start (i.e. jobs_to_start), whether to keep the temporary files generated (retain_temp_files), and the number of seconds to sleep (seconds_to_sleep).  If running on a duo-core computer, you can set the number of jobs to start as 2, as follows:
+Users can run the workflow scripts in parallel by passing "-a" option to each of the scripts.  In the :file:`custom_parameters.txt` file, the users can customize the number of jobs to start (i.e. jobs_to_start), whether to keep the temporary files generated (retain_temp_files), and the number of seconds to sleep (seconds_to_sleep).  If running on a dual-core computer, you can set the number of jobs to start as 2, as follows:
 
 .. note:: 
 
