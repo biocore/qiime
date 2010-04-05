@@ -226,4 +226,4 @@ if __name__ == "__main__":
     # need to mess with the arg string, otherwise TestCase complains
     if (opts.test):
         print "\n\nrunning checks:\n"
-        test_main(argv=[""])
+        test_main(argv=["","-v"])
