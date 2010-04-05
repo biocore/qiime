@@ -3,67 +3,105 @@
 Denoising of 454 Data Sets 
 --------------------------
 
-**QIIME script:** :file:`denoise.py`
+The pyrosequencing technology employed by 454 sequencing machines produces characteristic sequencing errors, mostly imprecise signals for longer homopolymers runs. Most of the sequences contain no or only a few errors, but a few sequences contain enough errors to be classified as an additional rare OTU. The goal for the denoising procedure is to reduce the amount of erroneous OTUs and thus increasing the accuracy of the whole QIIME pipeline.
 
-The pyrosequencing technology employed by 454 sequencing machines produce characteristic sequencing errors, mostly imprecise signals for longer homopolymers runs. Most of the sequences contain no or only a few errors, but a few sequences contain enough errors to be classified as an additional rare OTU. The goal for the denoising procedure is to reduce the amount of erroneous OTUs and thus increasing the accuracy of the whole QIIME pipeline.
+Note: Data sets with at most one full 454 run (~500.000) can be denoised without manual intervention using the workflow script `pick_otus_through_otu_table.py <../scripts/pick_otus_through_otu_table.html>`_. 
 
-Currently, QIIME supports denoising using Chris Quince's PyroNoise (Quince et al., 2009), which needs to be installed separately.
+If there are multiple, large 454 runs, follow this tutorial to denoise the data set and analyze it with QIIME. In short, each 454 run needs to be preprocessed with split_libraries and denoised separately. Afterwards the output files are combined for OTU picking. We will show an example with two 454 runs (:file:`run1.sff` and :file:`run2.sff`)
 
-The input to the denoising script is a textual representation of 454's .sff files, produced by 454's own tool sffinfo from the initial .sff file::
+**Data preparation:**
 
-	sffinfo 454Reads.sff > 454Reads.sff.txt
+From the raw, binary sff file, three files need to be generated for each run with the sffinfo tool from 454. You should have this tool if you have a 454 sequencer. Otherwise ask the sequencing facility for the files::
 
-**Input Arguments:**
+     sffinfo    run_1.sff > run_1.sff.txt
+     sffinfo -s run_1.sff > run_1.fasta
+     sffinfo -q run_1.sff > run_1.qual
 
-.. note::
+     sffinfo    run_2.sff > run_2.sff.txt
+     sffinfo -s run_2.sff > run_2.fasta
+     sffinfo -q run_2.sff > run_2.qual
 
-	-i SFF_FP, `-`-input_file=SFF_FP [REQUIRED]
 
-		This is the path to the flowgram file (.sff.txt). 
+**Quality filtering and barcode assignment:**
 
-	-o OUTPUT_DIR, `-`-output_dir=OUTPUT_DIR [Default: pyronoise_picked_otus/]
+Prior to denoising, each read has to be assigned to one barcode/sample
+and low quality reads need to be filtered out. This can be done using
+split_libraries.py. An example command would be::
 
-		This is the location where the resulting output should be written.
+	split_libraries.py -o run1 -f run1.fasta -q run1.qual -m run1_mapping.txt -w 50 -r -l 150 -L 350
+	split_libraries.py -o run2 -f run2.fasta -q run2.qual -m run2_mapping.txt -w 50 -r -l 150 -L 350 -n 1000000
 
-	-n NUM_CPUS, `-`-num_cpus=NUM_CPUS [Default: 1]
+This step has to be done separately for each 454 pool, following the usual guidelines for running several data sets through `split_libraries.py <../scripts/split_libraries.html>`_.
 
-		This is the number of CPUs that should be used. 
 
-	-s PRECISION, `-`-precision=PRECISION [Default: 15.0]
+**Flowgram clustering (aka denoising)**
 
-		This is the precision that should be used (passed to pyroNoise). 
+Each run will be denoised using its quality filtered output of split_libraries.py and the initial .sff.txt file. All flowgrams without a match in the provided split_libraries.py FASTA file are removed. The sequencing primer will be extracted from the metadata mapping file::
 
-	-c CUT_OFF, `-`-cut-off=CUT_OFF [Default: 0.05]
+	denoise.py -v -i run1.sff.txt -f run1/seqs.fna -o run1/denoised/ -m run1_mapping.txt 
+	denoise.py -v -i run2.sff.txt -f run2/seqs.fna -o run2/denoised/ -m run2_mapping.txt
 
-		This is the cut-off that should be used (passed to pyroNoise).
 
-	-k, `-`-keep_intermediates [Default: False]
+Denoising large data sets is computationally demanding. While smaller data sets (< 50.000 sequences) can be run on one single machine within an hour, a typical 454 run with 400.000 sequences after quality filtering requires up to a day on a 24 core cluster. If the denoiser is set up properly on your cluster or multi-core machine, it can be started in parallel mode using the option -n::
 
-		If this parameter is passed, then the script will not delete intermediate PyroNoise files - which is useful for debugging.
+	denoise.py -v -i run1.sff.txt -f run1/seqs.fna -o run1/denoised/ -m run1_mapping.txt -n 24
 
-**Output:**
 
-The output of this script produces two files 1) a denoised FASTA set of cluster centroids and 2) an OTU mapping of flowgram identifiers to centroids.
 
-**Examples:**
+The output files of this step is stored in directory run1 and run2, respectively:
 
-To denoise the flowgram sequences in :file:`454Reads.sff.txt`, you can use the 
-following command::
+:file:`denoiser.log`: Information about the clustering procedure if run in verbose mode (-v). Can be used to monitor the program's progress.
 
-	denoise.py -i 454Reads.sff.txt -o 454Reads_out/
+:file:`centroids.fasta`: The centroids of clusters with 2 and more members.
 
-which produces these two output files:
+:file:`singletons.fasta`: Reads that could not be clustered. 
 
-	* :file:`454Reads.fasta`: A denoised set of cluster centroids.
-	* :file:`454Reads_otu.txt`: A mapping of flowgram identifiers to centroids
+:file:`denoiser_mapping.txt`: The cluster to read mapping.
 
-On a multi-processor machine pyroNoise can be run in parallel using mpirun, where the number of processors is passed to the script via -n, as shown by the following command::
+Usually the centroid and singleton files are combined for downstream analysis,
+but occasionally it might make sense to remove the low confidence singletons.
 
-	denoise.py -i 454Reads.sff.txt -o 454Reads_out/ -n 4
 
-Since PyroNoise's steep computational requirement, you should limit the application to small data sets. Barcodes and primers are not taken into account here, and barcoded samples should be denoised in separate steps. See Chris's PyroNoise web site for details or use a combination of `split_libraries.py <./scripts/split_libraries.html>`_ and :file:`sfffile` (from the 454 software package) to separate the sequences into different sets.
 
-References
-^^^^^^^^^^
+**Re-integrating the denoised data into QIIME**
 
-Quince, C., Lanzen, A., Curtis, T. P., Davenport, R. J., Hall, N., Head, I. M., et al. (2009). Accurate determination of microbial diversity from 454 pyrosequencing data. Nat Methods, 6(9), 639-641.
+The final step in a denoising run usually is the re-integration of the data into the QIIME pipeline. Since the denoiser uses flowgram similarity for clustering there is no guaranteed sequence (dis)-similarity between cluster centroids. In order to create the usual species-level OTUs at 97% sequence similarity, run one of QIIME's OTU pickers on the combined deoiser output.
+
+Combine centroids and singletons from both runs::
+
+	cat run1/centroids.fasta run1/singletons.fasta run2/centroids.fasta run2/sigletons.fasta > denoised.fasta
+
+Concat the output of split_libraries.py::
+
+       cat run1/seqs.fna run2/seqs.fna > seqs.fna
+
+Run the QIIME OTU picker::
+
+    pick_otus.py -s 0.97 -i denoised.fasta 
+
+Combine denoiser and QIIME OTU picker output::
+
+	merge_denoiser_output.py -f seqs.fna  -d denoised.fasta  -p uclust_picked_otus/denoised_otus.txt
+
+This command creates two new files in a directory (default: Denoiser_out_otu_picked/):
+
+:file:`denoised_otu_map.txt`: In this mapping, the read/flowgram IDs are replaced by their sample_id from the split_libraries.py FASTA file. Also, the lists for each OTU are sorted such that the largest cluster from denoising appears first. This will be important for the next step, picking representative sequences.
+
+:file:`denoised_all.fasta`: A FASTA file where the header lines are updated with the new sample_ids
+
+Since the sample_ids in the otu map are already sorted, we can simply pick the most abundant sequence for an OTU by using the "first" method with pick_representative.py::
+
+	cd  Denoiser_out_otu_picked
+	pick_rep_set.py -f denoised_all.fasta -i denoised_otu_map.txt  -m first
+
+The resulting set of representative sequences can then be fed into the
+QIIME pipeline as any other representative set.
+
+
+Notes:
+
+* Denoising very small data sets might be ineffective, since there might not be a good read in the data set that can be used to correct a bad read. If there is a small data set (probably from re-sequencing an under-sampled sample) consider combining it with another, larger data set in your study prior to denoising.
+
+* Currently only one sequencing primer per run is supported. If there is more than one primer the run needs to be splitted. Simply make per per-primer mapping files and run split_libraries.py with each mapping file, then denoise with each output FASTA file separately.
+
+
