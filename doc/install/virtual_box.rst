@@ -39,9 +39,5 @@ Due to licensing restrictions, we cannot package the ``sff tools`` software with
 
 You can safely ignore these, unless you are planning to process ``sff`` files directly (rather than beginning with ``fasta`` and ``qual`` files). If you do plan to process the ``sff`` files directly, you will need to install your copy of ``sff tools`` in the virtual box.
 
-The QIIME parallel scripts are not currently supported in the Virtual Box environment. We're not certain that we'll add this capability as the parallel scripts are intended for processing large data sets, and the virtual box is intended for processing smaller data sets, but let us know if you would use parallel scripts in the virtual box environment. If we get enough requests we'll consider adding parallel support.
-
-
-
 .. _QIIME Virtual Box: http://bmf.colorado.edu/QIIME/QIIME-0.92.vdi.gz
 .. _VirtualBox: http://www.virtualbox.org/wiki/Downloads
