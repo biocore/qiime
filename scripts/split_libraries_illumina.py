@@ -99,7 +99,7 @@ def main():
         pass
     
     mapping_data, mapping_headers, mapping_comments =\
-     parse_mapping_file(open(mapping_fp))
+     parse_mapping_file(open(mapping_fp,'U'))
     barcode_to_sample_id = mapping_data_to_barcode_map(mapping_data)
     barcode_length = len(barcode_to_sample_id.keys()[0])
     
