@@ -52,7 +52,7 @@ def build_html():
 try:
     import cogent
 except ImportError:
-    print "PyCogent not installed but required. (Is it installed? Is it in the current users $PYTHONPATH or site-packages?) See http://pycogent.sourceforge.net."
+    print "PyCogent not installed but required. (Is it installed? Is it in the current user's $PYTHONPATH or site-packages?) See http://pycogent.sourceforge.net."
     exit(1)
 
 pycogent_version = tuple([int(v) \
