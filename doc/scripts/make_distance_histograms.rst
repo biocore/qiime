@@ -21,15 +21,19 @@ To visualize the distance between samples and/or categories in the metadata mapp
 		
 	-d, `-`-distance_matrix_file
 		Path to distance matrix file.
-	-m, `-`-mapping_file
-		Path to metadata mapping file.
+	-m, `-`-map_fname
+		This is the metadata mapping file  [default=None]
 	
 	**[OPTIONAL]**
 		
-	-p, `-`-prefs_file
-		File containing prefs for analysis.  NOTE: This is a file with a dict containing preferences for the analysis.  This dict must have a "Fields" key mapping to a list of desired fields.[default: None]
+	-b, `-`-colorby
+		This is the categories to color by in the plots from the user-generated mapping file. The categories must match the name of a column header in the mapping file exactly and multiple categories can be list by comma separating them without spaces. The user can also combine columns in the mapping file by separating the categories by "&&" without spaces [default=None]
+	-p, `-`-prefs_path
+		This is the user-generated preferences file. NOTE: This is a file with a dictionary containing preferences for the analysis.  This dict must have a "Fields" key mapping to a list of desired fields. [default: None]
 	-o, `-`-dir_path
 		Directory to output data for all analyses. [default: .]
+	-k, `-`-background_color
+		This is the     background color to use in the plots (Options are 'black' or 'white'.     [default: white]
 	`-`-monte_carlo
 		Perform Monte Carlo analysis on distances.  [Default: False]
 	`-`-html_output

@@ -34,8 +34,6 @@ This script performs like the `multiple_rarefactions.py <./multiple_rarefactions
 		
 	-n, `-`-num-reps
 		Num iterations at each seqs/sample level [default: 1]
-	`-`-small_included
-		Samples containing fewer seqs than the rarefaction level are included in the output but not rarefied [default: False]
 	`-`-lineages_included
 		Output rarefied otu tables will include taxonomic (lineage) information for each otu, if present in input otu table [default: False]
 	-N, `-`-single_rarefaction_fp
@@ -49,13 +47,13 @@ This script performs like the `multiple_rarefactions.py <./multiple_rarefactions
 	-T, `-`-poll_directly
 		Poll directly for job completion rather than running poller as a separate job. If -T is specified this script will not return until all jobs have completed. [default: False]
 	-U, `-`-cluster_jobs_fp
-		Path to `cluster_jobs.py <./cluster_jobs.html>`_ script  [default: /software/scripts/`cluster_jobs.py <./cluster_jobs.html>`_]
+		Path to `cluster_jobs.py <./cluster_jobs.html>`_ script  [default: /python_software/Qiime/scripts/`start_parallel_jobs.py <./start_parallel_jobs.html>`_]
 	-W, `-`-suppress_polling
 		Suppress polling of jobs and merging of results upon completion [default: False]
 	-X, `-`-job_prefix
 		Job prefix [default: descriptive prefix + random chars]
 	-Y, `-`-python_exe_fp
-		Full path to python executable [default: /usr/local/bin/python]
+		Full path to python executable [default: /opt/local/bin/python]
 	-Z, `-`-seconds_to_sleep
 		Number of seconds to sleep between checks for run  completion when polling runs [default: 60]
 

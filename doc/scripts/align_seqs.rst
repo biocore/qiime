@@ -33,11 +33,11 @@ This script aligns the sequences in a FASTA file to each other or to a template 
 	**[OPTIONAL]**
 		
 	-t, `-`-template_fp
-		Filepath for template against [REQUIRED if -m pynast or -m infernal]
+		Filepath for template against [default: /data/greengenes_core_sets/core_set_aligned.fasta.imputed]
 	-m, `-`-alignment_method
 		Method for aligning sequences. Valid choices are: pynast, infernal, clustalw, muscle, infernal, mafft [default: pynast]
 	-a, `-`-pairwise_alignment_method
-		Method for performing pairwise alignment in PyNAST. Valid choices are blast, muscle, pair_hmm, clustal, mafft [default: blast]
+		Method for performing pairwise alignment in PyNAST. Valid choices are muscle, pair_hmm, clustal, blast, uclust, mafft [default: uclust]
 	-d, `-`-blast_db
 		Database to blast against when -m pynast [default: created on-the-fly from template_alignment]
 	-o, `-`-output_dir

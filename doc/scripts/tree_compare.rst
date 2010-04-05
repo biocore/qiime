@@ -7,11 +7,11 @@
 
 **Description:**
 
-Compares jackknifed/bootstrapped trees with a master tree constructed from the entire dataset (e.g: a resulting file from `upgma_cluster.py <./upgma_cluster.html>`_) and outputs support for nodes.
+Compares jackknifed/bootstrapped trees (support trees) with a master tree constructed typically from the entire dataset (e.g: a resulting file from `upgma_cluster.py <./upgma_cluster.html>`_) and outputs support for nodes.
 
-master tree must have the same tips as support trees.  if your support trees
-omit some tips (e.g.: samples with few sequences),
-make a new master tree with those tips omitted
+if support trees do not have all tips that master has (e.g. because samples with few sequences were dropped during a jackknifing analysis), the output master tree will have only those tips included in all support trees
+
+if support trees have tips that the master tree does not, those tips will be ignored (removed from the support tree during analysis)
 
 
 **Usage:** :file:`tree_compare.py [options]`

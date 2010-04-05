@@ -21,11 +21,15 @@ This script will denoise a flowgram file in  .sff.txt format, which is the outpu
 		
 	-i, `-`-input_file
 		Path to flowgram file (.sff.txt)
+	-f, `-`-fasta_file
+		Path to fasta file from `split_libraries.py <./split_libraries.html>`_
 	
 	**[OPTIONAL]**
 		
 	-o, `-`-output_dir
 		Path to output directory [default: denoised_seqs/]
+	`-`-method
+		Method to use for denoising. Choice of pyronoise or fast [default: fast]
 	-k, `-`-keep_intermediates
 		Do not delete intermediate files -- useful for debugging [default: False]
 	-c, `-`-cut-off
@@ -34,6 +38,12 @@ This script will denoise a flowgram file in  .sff.txt format, which is the outpu
 		Precision (passed to pyroNoise)[default: 15.0]
 	-n, `-`-num_cpus
 		Number of CPUs [default: 1]
+	`-`-force_overwrite
+		Overwrite files in output directory [default: False]
+	-m, `-`-map_fname
+		Name of mapping file, Has to contain field LinkerPrimerSequence. [REQUIRED] when method is fast
+	-p, `-`-primer
+		Primer sequence [default: None]
 
 
 **Output:**

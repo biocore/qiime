@@ -21,15 +21,19 @@ This script creates a directory of average rarefaction series based on the suppl
 	
 	**[REQUIRED]**
 		
-	-m, `-`-map
+	-m, `-`-map_fname
 		Name of mapping file [REQUIRED]
 	-r, `-`-rarefaction
 		Name of rarefaction file, takes output from collate_alpha OR tab delimited data from a previous run of this script. If using raw data from a previous run, set -x flag. [REQUIRED]
 	
 	**[OPTIONAL]**
 		
-	-p, `-`-prefs
-		Name of columns to make rarefaction graphs of, comma delimited no spaces. Use 'ALL' command to make graphs of all metadata columns. [default: ALL]
+	-k, `-`-background_color
+		Background color for graphs.
+	-b, `-`-colorby
+		Name of columns to make rarefaction graphs of, comma delimited no spaces.
+	-p, `-`-prefs_path
+		Preferences file for coloring of columns.
 	-o, `-`-dir_path
 		Directory prefix for all analyses [default: .]
 

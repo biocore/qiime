@@ -31,17 +31,8 @@ The primary inputs for `pick_otus.py <./pick_otus.html>`_ are:
 
 3. The method to be applied for clustering sequences into OTUs.
 
-A standard input file for `pick_otus.py <./pick_otus.html>`_ should look something like 
-the following:
+`pick_otus.py <./pick_otus.html>`_ takes a standard fasta file as input.
 
->seq1 some sequence description
-ACCGGATATGAGAGAGAGAG
->seq2 another sequence description
-ACCGTTATATGAGAGGAG
->seq3
-ACCGTTATATTTAATTGGAGAAG
-
-Note that sequence identifier lines correspond to the FASTA format, where each line begins with a '>', followed by an optional space character, followed by the sequence identifiers, and then optionally followed by a space character and a comment describing the sequence. Only the first required sequence identifier field (i.e., seq1, seq2, seq3 in the above example) is used by the OTU picker to identify each sequence.
 
 
 
@@ -60,7 +51,7 @@ Note that sequence identifier lines correspond to the FASTA format, where each l
 	**[OPTIONAL]**
 		
 	-m, `-`-otu_picking_method
-		Method for picking OTUs.  Valid choices are: mothur, trie, prefix_suffix, blast, cdhit, uclust. The mothur method requires an input file of aligned sequences [default: cdhit]
+		Method for picking OTUs.  Valid choices are: mothur, trie, prefix_suffix, blast, cdhit, uclust. The mothur method requires an input file of aligned sequences [default: uclust]
 	-c, `-`-clustering_algorithm
 		Clustering algorithm for mothur otu picking method.  Valid choices are: furthest, nearest, average. [default: furthest]
 	-M, `-`-max_cdhit_memory
@@ -107,41 +98,41 @@ This result implies that four clusters were created based on 7 input sequences. 
 The resulting .log file contains a list of parameters passed to the `pick_otus.py <./pick_otus.html>`_ script along with the output location of the resulting .txt file.
 
 
-**Example (cd-hit method):**
-
-Using the seqs.fna file generated from `split_libraries.py <./split_libraries.html>`_ and outputting the results to the directory "picked_otus/", while using default parameters (cd-hit, 0.97 sequence similarity, no prefix filtering):
-
-::
-
-	pick_otus.py -i seqs.fna -o picked_otus/
-
-Currently the cd-hit OTU picker allows for users to perform a pre-filtering step, so that highly similar sequences are clustered prior to OTU picking. This works by collapsing sequences which begin with an identical n-base prefix, where n is specified by the -n parameter. A commonly used value here is 100 (e.g., -n 100). So, if using this filter with -n 100, all sequences which are identical in their first 100 bases will be clustered together, and only one representative sequence from each cluster will be passed to cd-hit. This is used to greatly increase the run-time of cd-hit-based OTU picking when working with very large sequence collections, as shown by the following command:
-
-::
-
-	pick_otus.py -i seqs.fna -o picked_otus/ -n 100
-
-Alternatively, if the user would like to collapse identical sequences, or those which are subsequences of other sequences prior to OTU picking, they can use the trie prefiltering ("-t") option as shown by the following command:
-
-::
-
-	pick_otus.py -i seqs.fna -o picked_otus/ -t
-
-Note: It is highly recommended to use one of the prefiltering methods when analyzing large dataset (>100,000 seqs) to reduce run-time.
-
-**Example (uclust method):**
+**Example (uclust method, default):**
 
 Using the seqs.fna file generated from `split_libraries.py <./split_libraries.html>`_ and outputting the results to the directory "picked_otus/", while using default parameters (0.97 sequence similarity, no reverse strand matching):
 
 ::
 
-	pick_otus.py -i seqs.fna -m uclust -o picked_otus/
+	pick_otus.py -i seqs.fna -o picked_otus/
 
 To change the percent identity to a lower value, such as 90%, and also enable reverse strand matching, the script would be the following:
 
 ::
 
-	pick_otus.py -i seqs.fna -m uclust -o picked_otus/ -s 0.90 -z
+	pick_otus.py -i seqs.fna -o picked_otus/ -s 0.90 -z
+
+**Example (cdhit method):**
+
+Using the seqs.fna file generated from `split_libraries.py <./split_libraries.html>`_ and outputting the results to the directory "picked_otus/", while using default parameters (0.97 sequence similarity, no prefix filtering):
+
+::
+
+	pick_otus.py -i seqs.fna -m cdhit -o picked_otus/
+
+Currently the cd-hit OTU picker allows for users to perform a pre-filtering step, so that highly similar sequences are clustered prior to OTU picking. This works by collapsing sequences which begin with an identical n-base prefix, where n is specified by the -n parameter. A commonly used value here is 100 (e.g., -n 100). So, if using this filter with -n 100, all sequences which are identical in their first 100 bases will be clustered together, and only one representative sequence from each cluster will be passed to cd-hit. This is used to greatly increase the run-time of cd-hit-based OTU picking when working with very large sequence collections, as shown by the following command:
+
+::
+
+	pick_otus.py -i seqs.fna -m cdhit -o picked_otus/ -n 100
+
+Alternatively, if the user would like to collapse identical sequences, or those which are subsequences of other sequences prior to OTU picking, they can use the trie prefiltering ("-t") option as shown by the following command:
+
+::
+
+	pick_otus.py -i seqs.fna -m cdhit -o picked_otus/ -t
+
+Note: It is highly recommended to use one of the prefiltering methods when analyzing large dataset (>100,000 seqs) to reduce run-time.
 
 **BLAST OTU-Picking Example:**
 

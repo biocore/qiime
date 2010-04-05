@@ -37,7 +37,7 @@ This script performs like the `pick_otus.py <./pick_otus.html>`_ script, but is 
 	-N, `-`-pick_otus_fp
 		Full path to scripts/`pick_otus.py <./pick_otus.html>`_ [default: /python_software/Qiime/scripts/`pick_otus.py <./pick_otus.html>`_]
 	-O, `-`-jobs_to_start
-		Number of jobs to start [default: 1]
+		Number of jobs to start [default: 2]
 	-P, `-`-poller_fp
 		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /python_software/Qiime/scripts/`poller.py <./poller.html>`_]
 	-R, `-`-retain_temp_files
@@ -47,13 +47,13 @@ This script performs like the `pick_otus.py <./pick_otus.html>`_ script, but is 
 	-T, `-`-poll_directly
 		Poll directly for job completion rather than running poller as a separate job. If -T is specified this script will not return until all jobs have completed. [default: False]
 	-U, `-`-cluster_jobs_fp
-		Path to `cluster_jobs.py <./cluster_jobs.html>`_ script  [default: /software/scripts/`cluster_jobs.py <./cluster_jobs.html>`_]
+		Path to `cluster_jobs.py <./cluster_jobs.html>`_ script  [default: /python_software/Qiime/scripts/`start_parallel_jobs.py <./start_parallel_jobs.html>`_]
 	-W, `-`-suppress_polling
 		Suppress polling of jobs and merging of results upon completion [default: False]
 	-X, `-`-job_prefix
 		Job prefix [default: descriptive prefix + random chars]
 	-Y, `-`-python_exe_fp
-		Full path to python executable [default: /usr/local/bin/python]
+		Full path to python executable [default: /opt/local/bin/python]
 	-Z, `-`-seconds_to_sleep
 		Number of seconds to sleep between checks for run  completion when polling runs [default: 60]
 

@@ -43,6 +43,10 @@ These are the values that you would typically pass as --template_fp to `align_se
 		Print the commands but don't call them -- useful for debugging [default: False]
 	-a, `-`-parallel
 		Run in parallel where available [default: False]
+	-m, `-`-mapping_fp
+		The mapping filepath [REQUIRED for denoising]
+	-s, `-`-sff_fp
+		The sff file [REQUIRED for denoising]
 
 
 **Output:**

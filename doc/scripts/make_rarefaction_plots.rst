@@ -23,12 +23,20 @@ This script creates an html file of rarefaction plots based on the supplied rare
 		
 	-i, `-`-input_dir
 		Name of folder containing rarefaction files, takes output from `make_rarefaction_data.py <./make_rarefaction_data.html>`_ [REQUIRED]
+	-m, `-`-map_fname
+		Name of mapping file [REQUIRED]
 	
 	**[OPTIONAL]**
 		
 	-t, `-`-rarefactionAve
-		Name of overall average rarefaction file, takes output from `make_rarefaction_data.py <./make_rarefaction_data.html>`_
-	-p, `-`-imagetype
+		Name of overall average rarefaction file, takes output from `make_rarefaction_averages.py <./make_rarefaction_averages.html>`_
+	-b, `-`-colorby
+		Name of columns to make rarefaction graphs of, comma delimited no spaces.
+	-p, `-`-prefs_path
+		Preferences file for coloring of columns.
+	-k, `-`-background_color
+		Background color for graphs.
+	-g, `-`-imagetype
 		Extension for image type choose from (jpg, gif, png, svg, pdf). [default: png]
 	-d, `-`-resolution
 		Output image resolution, [default: 75]

@@ -33,6 +33,12 @@ This script automates the construction of pie charts showing the breakdown of ta
 		Maximum number of individual categories in each pie chart. All additional categories are grouped into an "other" category. [default: 20]
 	-o, `-`-dir-prefix
 		Directory prefix for all analyses
+	-b, `-`-colorby
+		This is the samples to make pie charts for in the counts files from  `summarize_taxa.py <./summarize_taxa.html>`_. The sample name must match the name of a sample id in the header of the counts file exactly and multiple categories can be list by comma separating them without spaces. If you want to see the pie charts broken up by all samples -s is still funtional. If -s is set and -b is used  it will just be broken up by all samples. If neither -s or -b are set the  pie charts will be based on all samples put together, one for each level.  [default: None]
+	-p, `-`-prefs_path
+		This is the user-generated preferences file. NOTE: This is a file with a dictionary containing preferences for the analysis. The label taxonomy_coloring is used for the coloring, see example prefs file preferences_file. [default: None]
+	-k, `-`-background_color
+		This is the background color to use in the plots. [default: None]
 
 
 **Output:**
@@ -65,5 +71,11 @@ Additionally, if you would like to display on a set number of taxa ("-n 10") and
 ::
 
 	make_pie_charts.py -i Class.txt -l Class -o pie_charts/ -n 10 -s
+
+If you would like to display generate pie charts for samples samples: 'sample1' and 'sample2' that are in the counts file header, you can use the following command:
+
+::
+
+	make_pie_charts.py -i Class.txt -l Class -o pie_charts/ -b sample1,sample2
 
 

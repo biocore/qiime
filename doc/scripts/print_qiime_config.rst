@@ -7,7 +7,7 @@
 
 **Description:**
 
-A simple scripts that prints out the qiime config settings.
+A simple scripts that prints out the qiime config settings and does some sanity checks.
 
 
 **Usage:** :file:`print_qiime_config.py [options]`
@@ -17,7 +17,11 @@ A simple scripts that prints out the qiime config settings.
 .. note::
 
 	
-	None
+	**[OPTIONAL]**
+		
+	-t, `-`-test
+		Test the qiime config for sanity [default: False]
+
 
 **Output:**
 
@@ -31,5 +35,13 @@ Print qiime config settings:
 ::
 
 	print_qiime_config.py
+
+**Example 2:**
+
+Print and check qiime config settings for sanity:
+
+::
+
+	print_qiime_config.py -t
 
 

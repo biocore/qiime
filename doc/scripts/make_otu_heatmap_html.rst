@@ -28,6 +28,10 @@ Once the OTU table has been generated, the user can create an interactive OTU he
 		Path to the output directory
 	-n, `-`-num_otu_hits
 		This is the minimum number of Samples that an OTU is present in, for an OTU to be kept in the OTU table [default: 5]
+	-t, `-`-tree
+		Tree file to be used for sorting OTUs in the heatmap
+	-m, `-`-map_fname
+		Metadata mapping file to be used for sorting Samples in the heatmap
 
 
 **Output:**
