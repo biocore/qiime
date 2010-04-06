@@ -48,15 +48,17 @@ The input to the script is:
 
 See the tutorial on 454 Denoising in the QIIME tutorials on how to use this script properly.
 """
-script_info['script_usage'] = [("",
+script_info['script_usage'] = [("Example usage",
                                 "Merge the output of denoising (denoised_seqs.fasta and denoiser_mapping.txt) the OTU picker results on denoised_seqs.fasta (uclust_picked_otus/denoised_seqs_otus.txt) and replace the read IDs with the sampleIDs from the output of split_libraries.py (seqs.fna)\n\n",
                                 "merge_denoiser_output.py -f seqs.fna -d denoised_seqs.fasta -m denoiser_mapping.txt -p uclust_picked_otus/denoised_seqs_otus.txt")]
 script_info['output_description']= """
 Two files are generated:
-1. A new otu mapping file with the combined cliusters from denoising and OTU picking,
+
+1. A new otu mapping file with the combined clusters from denoising and OTU picking,
+
 2. a FASTA file with one sequence per OTU.
 
-These two files need to be provided to pick_rep_set using  -m first"""
+These two files need to be provided to pick_rep_set using -m first"""
 
 script_info['required_options'] = [\
     
