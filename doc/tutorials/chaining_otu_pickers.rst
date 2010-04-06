@@ -1,7 +1,5 @@
 .. _chaining_otu_pickers:
 
-.. toctree::
-   :maxdepth: 1
 =======================
 Multi-step OTU picking
 =======================
