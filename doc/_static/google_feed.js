@@ -5,7 +5,7 @@ function initialize() {
   feed.load(function(result) {
     if (!result.error) {
       var container = document.getElementById("feed");
-      for (var i = 0; i < result.feed.entries.length; i++) {
+      for (var i = 0; i < 3; i++) {
         var entry = result.feed.entries[i];
         var td =document.createElement('td')
         var link = document.createElement('a');
