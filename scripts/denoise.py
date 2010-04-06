@@ -154,7 +154,7 @@ def main():
           primer = list(all_primers)[0]
           last_char = primer[-1]
           if(last_char not in "ACGT"):
-              raise ValueError,"We currently do not support primers with "+\
+              raise ValueError,"We currently do not support primer with "+\
                   "degenerate bases at it's 3' end."
 
         else:

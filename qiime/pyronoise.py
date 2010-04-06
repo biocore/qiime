@@ -15,7 +15,7 @@ __status__ = "Pre-release"
 from os import system, listdir, remove, rmdir
 from os.path import exists, split
 from re import search
-from itertools import chain, combinations, count
+from itertools import chain
 
 from cogent.app.util import get_tmp_filename
 from cogent.parse.fasta import MinimalFastaParser
@@ -271,9 +271,6 @@ def fast_denoiser(sff_fp, fasta_fp, tmp_outdir, num_cpus, primer, verbose=True):
 
     #read mapping 
     mapping = {}
-
-    #don't use enumerate for efficiency
-#    for i,cluster in combinations(count(), open(tmp_outdir+"/denoiser_mapping.txt")):
     cluster_mapping = open(tmp_outdir+"/denoiser_mapping.txt")
     for i,cluster in enumerate(cluster_mapping):
         cluster, members = cluster.split(':')

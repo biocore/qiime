@@ -9,6 +9,20 @@
 
 
 This script combines the output of the denoising step with the OTU picker results.
+This script has to be run after denoising and OTU picking to combine the denoiser clusters and OTU clusters.
+The input to the script is:
+
+   DENOISER_MAP_FILE: the cluster mapping from the denoiser, usually denoiser_mapping.txt in the denoiser output directory
+   
+   DENOISED_FASTA_FP: path to the output FASTA file of the denoiser (centroids.fasta and singletons.fasta in the denoiser output dir. Concatenate if you want to include both)
+
+   OTU_PICKER_MAP_FILE: path to OTU mapping file from OTU picking on the
+
+   FASTA_FP:  path to FASTA input file, thus has to be the output of `split_libraries.py <./split_libraries.html>`_
+             
+
+See the tutorial on 454 Denoising in the QIIME tutorials on how to use this script properly.
+
 
 
 **Usage:** :file:`merge_denoiser_output.py [options]`
@@ -21,11 +35,11 @@ This script combines the output of the denoising step with the OTU picker result
 	**[REQUIRED]**
 		
 	-m, `-`-map_file
-		Path to denoiser mapping file [default: None]
+		Path to denoiser cluster mapping file [default: None]
 	-p, `-`-otu_picker_map_file
-		Path to OTU picker mapping file [REQUIRED]
+		Path to OTU mapping file from OTU picker[REQUIRED]
 	-f, `-`-fasta_fp
-		Path to fasta input file, output of `split_libraries.py <./split_libraries.html>`_ [REQUIRED]
+		Path to FASTA file, output of `split_libraries.py <./split_libraries.html>`_ [REQUIRED]
 	-d, `-`-denoised_fasta_fp
 		Path to denoised fasta file [REQUIRED]
 	
@@ -38,9 +52,16 @@ This script combines the output of the denoising step with the OTU picker result
 **Output:**
 
 
+Two files are generated:
+1. A new otu mapping file with the combined cliusters from denoising and OTU picking,
+2. a FASTA file with one sequence per OTU.
+
+These two files need to be provided to pick_rep_set using  -m first
 
 
 Merge the output of denoising (denoised_seqs.fasta and denoiser_mapping.txt) the OTU picker results on denoised_seqs.fasta (uclust_picked_otus/denoised_seqs_otus.txt) and replace the read IDs with the sampleIDs from the output of `split_libraries.py <./split_libraries.html>`_ (seqs.fna)
+
+
 
 ::
 
