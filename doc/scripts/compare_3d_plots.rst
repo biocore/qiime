@@ -31,7 +31,7 @@ This script generates a 3D plot comparing two sets of principal_coordinates coor
 	-a, `-`-custom_axes
 		This is a category or list of categories from the user-generated mapping file to use as a custom axis in the plot.  For instance, if there is a pH category and one would like to see the samples plotted on that axis instead of PC1, PC2, etc., one can use this option.  It is also useful for plotting time-series data [default: None]
 	-p, `-`-prefs_path
-		This is the user-generated preferences file. NOTE: This is a file with a dictionary containing preferences for the analysis. See `make_3d_plot_prefs_file.py <./make_3d_plot_prefs_file.html>`_. [default: None]
+		This is the user-generated preferences file. NOTE: This is a file with a dictionary containing preferences for the analysis. See `make_prefs_file.py <./make_prefs_file.html>`_. [default: None]
 	-k, `-`-background_color
 		This is the background color to use in the plots (Options are 'black' or 'white'. [default: None]
 	-o, `-`-output_dir

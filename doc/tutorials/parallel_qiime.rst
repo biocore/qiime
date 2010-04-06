@@ -47,15 +47,15 @@ To avoid passing -U CLUSTER_JOBS_FP to each call to a parallel script, you shoul
 Example Run of PyNAST in Parallel 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The following command will start a parallel run of PyNAST, which uses the same interface as the `align_seqs.py <./scripts/align_seqs.html>`_ script, where the results are written the an output directory "parallel_aligned_seqs/"::
+The following command will start a parallel run of PyNAST, which uses the same interface as the `align_seqs.py <../scripts/align_seqs.html>`_ script, where the results are written the an output directory "parallel_aligned_seqs/"::
 
 	parallel_align_seqs_pynast.py -i repr_set_seqs.fasta -t /ref_set_seqs.fasta -o /home/caporaso/out 
 
-The important thing to note is that this command is that same that would be used to call serial (single processor) PyNAST, except that instead of calling `parallel_align_seqs_pynast.py <./scripts/parallel_align_seqs_pynast.html>`_, you would call `align_seqs.py <./scripts/align_seqs.html>`_ to start the run on a single processor. The output from this parallel run is the same as the output would be from the serial run. 
+The important thing to note is that this command is that same that would be used to call serial (single processor) PyNAST, except that instead of calling `parallel_align_seqs_pynast.py <../scripts/parallel_align_seqs_pynast.html>`_, you would call `align_seqs.py <../scripts/align_seqs.html>`_ to start the run on a single processor. The output from this parallel run is the same as the output would be from the serial run. 
 
 Details of the Parallelization 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This section provides some information on details of the parallelization which are hidden from the user, but provided for users who are interested in what is happening behind-the-scenes.
 
-The parallelization works as follows. First, the input file (-i) is split into JOBS_TO_START (-O) different roughly equal-sized files. The serial version of the script -- `align_seqs.py <./scripts/align_seqs.html>`_ -- is then called on each of these split files as a separate job. Each of these jobs therefore writes its own output files (alignment, log, and failure files). One additional job, the poller, is started to monitor each of the jobs via their output files. When all expected output files exist, the poller will merge the individual output files and clean up any temporary files including the output files created by each of the individual runs. Cleaning up temporary files can be suppressed by passing -R, which is useful for debugging. Bypassing the polling system all-together can be achieved by passing -W.
+The parallelization works as follows. First, the input file (-i) is split into JOBS_TO_START (-O) different roughly equal-sized files. The serial version of the script -- `align_seqs.py <../scripts/align_seqs.html>`_ -- is then called on each of these split files as a separate job. Each of these jobs therefore writes its own output files (alignment, log, and failure files). One additional job, the poller, is started to monitor each of the jobs via their output files. When all expected output files exist, the poller will merge the individual output files and clean up any temporary files including the output files created by each of the individual runs. Cleaning up temporary files can be suppressed by passing -R, which is useful for debugging. Bypassing the polling system all-together can be achieved by passing -W.

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # File created on 09 Feb 2010
-#file make_3d_plots.py
+#file compare_3d_plots.py
 
 from __future__ import division
 
@@ -66,7 +66,7 @@ this option.  It is also useful for plotting time-series data \
 [default: %default]'),
  make_option('-p', '--prefs_path',help='This is the user-generated preferences \
 file. NOTE: This is a file with a dictionary containing preferences for the \
-analysis. See make_3d_plot_prefs_file.py. [default: %default]'),
+analysis. See make_prefs_file.py. [default: %default]'),
  make_option('-k', '--background_color',help='This is the background color to \
 use in the plots (Options are \'black\' or \'white\'. [default: %default]'),
  options_lookup['output_dir']

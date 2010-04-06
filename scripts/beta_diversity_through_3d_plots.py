@@ -28,7 +28,9 @@ script_info['brief_description']="""A workflow script for computing beta diversi
 script_info['script_description']="""This script will perform beta diversity, principal coordinate anlalysis, and generate a preferences file along with 3D PCoA Plots.
 
 REQUIRED: You must edit the following parameters in a custom parameters file:
-  beta_diversity:metrics
+
+beta_diversity:metrics
+
 e.g.: beta_diversity:metrics[TAB]euclidean,unweighted_unifrac
   
 This is the value that would be passed to beta_diversity.py via -m/--metrics.
@@ -46,7 +48,7 @@ script_info['script_usage'].append(("""Example:""","""The following steps are pe
 
 5. Generate a 3D plot for all mapping fields with colors optimized for discrete data.
 ""","""beta_diversity_through_3d_plots.py -i otu_table.txt -o bdiv1 -t inseqs1_rep_set.tre -m inseqs1_mapping.txt -p custom_parameters.txt"""))
-script_info['output_description']="""This script results in a distance matrix (from beta_diversity.py), a principal coordinates file (from principal_coordinates.py), a preferences file (from make_3d_plot_prefs_file.py) and  folder containing the resulting 3d PCoA plots (as an html from make_3d_plots.py)."""
+script_info['output_description']="""This script results in a distance matrix (from beta_diversity.py), a principal coordinates file (from principal_coordinates.py), a preferences file (from make_prefs_file.py) and  folder containing the resulting 3d PCoA plots (as an html from make_3d_plots.py)."""
 script_info['required_options']=[\
  make_option('-i','--otu_table_fp',\
             help='the input fasta file [REQUIRED]'),\

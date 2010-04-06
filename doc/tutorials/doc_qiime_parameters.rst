@@ -30,7 +30,7 @@ This results in no ``--blast_db`` parameter being passed to ``align_seqs.py``. A
 
 You can find information on the QIIME workflow scripts at:
 
-	* `pick_otus_through_otu_table.py <./scripts/pick_otus_through_otu_table.html>`_
-	* `alpha_rarefaction.py <./scripts/alpha_rarefaction.html>`_
-	* `beta_diversity_through_3d_plots.py <./scripts/beta_diversity_through_3d_plots.html>`_
-	* `jackknifed_upgma.py <./scripts/jackknifed_upgma.html>`_
+	* `pick_otus_through_otu_table.py <../scripts/pick_otus_through_otu_table.html>`_
+	* `alpha_rarefaction.py <../scripts/alpha_rarefaction.html>`_
+	* `beta_diversity_through_3d_plots.py <../scripts/beta_diversity_through_3d_plots.html>`_
+	* `jackknifed_upgma.py <../scripts/jackknifed_upgma.html>`_

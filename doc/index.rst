@@ -7,9 +7,9 @@
 ######################################################
 QIIME: Quantitative Insights Into Microbial Ecology
 ######################################################
-QIIME (canonically pronounced 'Chime') is a pipeline for performing microbial community analysis that integrates many third party tools which have become standard in the field. QIIME can run on a laptop, a supercomputer, and systems in between such as multicore desktops.  Linux and Mac OS X are supported natively, and Windows, Linux, and Mac OS X are supported via the `QIIME virtual box <./virtual_box.html>`_.
+QIIME (canonically pronounced 'Chime') is a pipeline for performing microbial community analysis that integrates many third party tools which have become standard in the field. QIIME can run on a laptop, a supercomputer, and systems in between such as multicore desktops.  Linux and Mac OS X are supported natively, and Windows, Linux, and Mac OS X are supported via the `QIIME virtual box <./install/virtual_box.html>`_.
 
-**The quickest way to start using QIIME is with the** `QIIME virtual box <./virtual_box.html>`_. To stay up-to-date on what's new with QIIME, you should subscribe to the `blog <http://qiime.wordpress.com>`_.
+**The quickest way to start using QIIME is with the** `QIIME virtual box <./install/virtual_box.html>`_. To stay up-to-date on what's new with QIIME, you should subscribe to the `blog <http://qiime.wordpress.com>`_.
 
 Rather than reimplementing commonly used algorithms, QIIME wraps popular implementations of those algorithms. This allows us to make use of the many excellent tools available in this area, and allows faster integration of new tools. If you use tools that you think would be useful additions to QIIME, consider submitting a `feature request <http://sourceforge.net/tracker/?atid=1157167&group_id=272178&func=browse>`_.
 
@@ -25,7 +25,7 @@ We recommend that all QIIME users keep an eye on the QIIME blog for important an
 Download QIIME
 ===============
 
- * Virtual Box: The QIIME Virtual Box is an Ubuntu Linux virtual machine, pre-loaded with QIIME and its dependencies. This is the quickest way to start using QIIME. To get the Virtual Box, please `go here <./virtual_box.html>`_.
+ * Virtual Box: The QIIME Virtual Box is an Ubuntu Linux virtual machine, pre-loaded with QIIME and its dependencies. This is the quickest way to start using QIIME. To get the Virtual Box, please `go here <./install/virtual_box.html>`_.
 
  * Stable Release: Currently the most stable version of QIIME is our 0.92 pre-release, which you can `download here <http://sourceforge.net/projects/qiime/files/releases/Qiime-0.92.tar.gz/download>`_.
 

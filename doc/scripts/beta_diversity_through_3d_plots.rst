@@ -10,7 +10,9 @@
 This script will perform beta diversity, principal coordinate anlalysis, and generate a preferences file along with 3D PCoA Plots.
 
 REQUIRED: You must edit the following parameters in a custom parameters file:
-  beta_diversity:metrics
+
+beta_diversity:metrics
+
 e.g.: beta_diversity:metrics[TAB]euclidean,unweighted_unifrac
   
 This is the value that would be passed to `beta_diversity.py <./beta_diversity.html>`_ via -m/--metrics.
@@ -49,7 +51,7 @@ This is the value that would be passed to `beta_diversity.py <./beta_diversity.h
 
 **Output:**
 
-This script results in a distance matrix (from `beta_diversity.py <./beta_diversity.html>`_), a principal coordinates file (from `principal_coordinates.py <./principal_coordinates.html>`_), a preferences file (from `make_3d_plot_prefs_file.py <./make_3d_plot_prefs_file.html>`_) and  folder containing the resulting 3d PCoA plots (as an html from `make_3d_plots.py <./make_3d_plots.html>`_).
+This script results in a distance matrix (from `beta_diversity.py <./beta_diversity.html>`_), a principal coordinates file (from `principal_coordinates.py <./principal_coordinates.html>`_), a preferences file (from `make_prefs_file.py <./make_prefs_file.html>`_) and  folder containing the resulting 3d PCoA plots (as an html from `make_3d_plots.py <./make_3d_plots.html>`_).
 
 
 **Example:**
