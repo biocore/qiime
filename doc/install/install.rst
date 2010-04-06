@@ -54,8 +54,16 @@ If you plan to build the QIIME documentation locally:
 
 * Sphinx 0.6.3 (`src <http://pypi.python.org/pypi/Sphinx>`_) See :ref:`Building the QIIME documentation <build-qiime-docs>`
 
+
+Shortcuts in this document
+--------------------------
+For simplicity throughout this document, we assume that you have downloaded QIIME in ``/home/qiime_user/``. You should consider all occurrences of ``/home/qiime_user/`` in the remainder of this document as references to the directory which contains the QIIME directory which you'll have after downloading and unpacking QIIME.
+
 Getting QIIME
 ----------------
+First, change to the directory where you would like to download QIIME::
+
+	cd /home/qiime_user
 
 Stable Pre-Release
 ^^^^^^^^^^^^^^^^^^
@@ -70,34 +78,25 @@ To get the latest development version of QIIME, you should check it out of our S
 svn users should periodically update QIIME by using the following command::
 
 	svn update /home/qiime_user/Qiime/
-	
-Unpacking QIIME
----------------
-After downloading the QIIME tar file (either the release or svn version), you'll need to unpack the code. For simplicity in this document, we will assume that you have downloaded QIIME to the directory ``/home/qiime_user/``. You should consider all occurrences of ``/home/qiime_user/`` in the remainder of this document as references to the directory which contains the QIIME tar file you just downloaded.
+
+
+Unpacking QIIME (release only)
+---------------------------------------
+After downloading the QIIME release tar file you'll need to unpack the code. For simplicity in this document, we will assume that you have downloaded QIIME to the directory ``/home/qiime_user/``. 
 
 Unpack the release Qiime tar file with the commands::
 
 	cd /home/qiime_user
 	tar -xvzf Qiime-0.92.tar.gz
 	ln -s /home/qiime_user/Qiime-0.92 /home/qiime_user/Qiime
-
-Or, unpack the svn tar file with the commands::
-
-	cd /home/qiime_user
-	tar -xvzf Qiime.tar.gz
+	
+If you have downloaded from svn, QIIME is already unpacked.
 	
 Installing QIIME
 ----------------
 QIIME consists of library code (in ``Qiime/qiime``), test code (in ``Qiime/tests``), documentation (in ``Qiime/doc``), and scripts (in ``Qiime/scripts``). Installing QIIME consists of running the tests (optional, but highly recommend), installing the library code in a place where python knows where to find it, and installing the scripts in a place where the shell looks for executable files.
 
-Running the test suite
-^^^^^^^^^^^^^^^^^^^^^^
-We recommend that the first thing you do after downloading QIIME is run the test suite. If you have just downloaded and unpacked Qiime in ``/home/qiime_user/`` you will now have a directory ``/home/qiime_user/Qiime``. To run the test suite, execute the following commands::
-	
-	cd /home/qiime_user/Qiime
-	python tests/all_tests.py
 
-You will see test output on the terminal indicating test successes and failures. Some failures are OK. The ``all_tests.py`` command will complete with a summary of test failures. Some tests may fail due to missing external applications -- these will be noted separately from other test failures. If these are related to features of QIIME that you are not using, this is acceptable. Otherwise, you'll need to ensure that you have the external applications installed correctly (and the correct versions), and re-run the tests. 
 
 Installing the library code and scripts with setup.py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -107,7 +106,7 @@ First, ensure that you are in the top-level QIIME directory::
 	
 	cd /home/qiime_user/Qiime
 
-By default the QIIME scripts will be installed in ``/usr/local/bin``. As there are a lot of QIIME scripts, we recommend customizing the script directory to keep your systemThis can be customized with the ``--install_scripts`` option::
+By default the QIIME scripts will be installed in ``/usr/local/bin``. As there are a lot of QIIME scripts, we recommend customizing the script directory to keep your system organized. This can be customized with the ``--install_scripts`` option::
 	
 	python setup.py install --install-scripts=/home/qiime_user/bin/
 	
@@ -129,6 +128,10 @@ If you used default values for ``--install-scripts`` and ``--install-purelib`` (
 If you specified an alternate value for ``--install-purelib``, you'll need to be sure that python knows where to look for Qiime. If you are using the bash shell and the locations specified in the examples above, you can do this with the following command::
 	
 	echo "export PYTHONPATH=/home/qiime_user/lib/:$PYTHONPATH" >> /home/qiime_user/.bashrc
+	
+The source your ``.bashrc``::
+
+	source /home/qiime_user/.bashrc
 
 .. _set-script-dir:
 
@@ -142,12 +145,20 @@ Open the new file, ``/home/qiime_user/.qiime_config``, in a text editor such as 
 	
 Note that the delimiter between the key and the value here is a tab, not a space! For additional information on the qiime_config file, `see this document <./qiime_config.html>`_.
 
+Running the test suite
+----------------------
+Next you should run the test suite. Execute the following commands::
+	
+	cd /home/qiime_user/Qiime/tests/
+	python all_tests.py
+
+You will see test output on the terminal indicating test successes and failures. Some failures are OK. The ``all_tests.py`` command will complete with a summary of test failures. Some tests may fail due to missing external applications -- these will be noted separately from other test failures. If these are related to features of QIIME that you are not using, this is acceptable. Otherwise, you'll need to ensure that you have the external applications installed correctly (and the correct versions), and re-run the tests. 
+
 Testing your QIIME installation
 -------------------------------
 If QIIME is installed correctly, you should be able to run the QIIME scripts. Try the following::
 	
-	cd /home/qiime_user
-	source /home/qiime_user/.bashrc
+	cd
 	align_seqs.py -h
 	
 This should give you help text describing the interface to the align_seqs.py script. (Note that if you do not have a /home/qiime_user/.bashrc you may get an error at the ``source`` step. If you did not specify alternate values for ``--install-purelib`` or ``--install-scripts`` this shouldn't be a problem.)
