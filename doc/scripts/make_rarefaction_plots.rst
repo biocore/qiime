@@ -22,7 +22,7 @@ This script creates an html file of rarefaction plots based on the supplied rare
 	**[REQUIRED]**
 		
 	-i, `-`-input_dir
-		Name of folder containing rarefaction files, takes output from `make_rarefaction_data.py <./make_rarefaction_data.html>`_ [REQUIRED]
+		Name of folder containing rarefaction files, takes output from `collate_alpha.py <./collate_alpha.html>`_ [REQUIRED]
 	-m, `-`-map_fname
 		Name of mapping file [REQUIRED]
 	

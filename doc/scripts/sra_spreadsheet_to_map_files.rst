@@ -25,7 +25,7 @@ This script reads an SRA submission spreadsheet and generates QIIME mapping file
 
 **Output:**
 
-Produces one map file per (STUDY, RUN_PREFIX) combination. Note that the output will include extra stuff not actually needed by QIIME. The intention is just to pull out the info needed for `split_libaries.py <./split_libaries.html>`_ and downstream analyses. Currently, this does not combine this with the data in the per-sample mapping file.
+Produces one map file per (STUDY, RUN_PREFIX) combination. Note that the output will include extra stuff not actually needed by QIIME. The intention is just to pull out the info needed for `split_libraries.py <./split_libraries.html>`_ and downstream analyses. Currently, this does not combine this with the data in the per-sample mapping file.
 
 
 **Simple example:**

@@ -17,7 +17,7 @@ from qiime.util import parse_command_line_parameters
 
 script_info={}
 script_info['brief_description']="""Poller for parallel QIIME scripts."""
-script_info['script_description'] = """Script for polling parallel runs to check completion. See Qiime/scripts/poller_examples.py for example usage."""
+script_info['script_description'] = """Script for polling parallel runs to check completion. See Qiime/scripts/poller_example.py for example usage."""
 script_info['script_usage'] = []
 script_info['version'] = __version__
 script_info['output_description']= "No output created."

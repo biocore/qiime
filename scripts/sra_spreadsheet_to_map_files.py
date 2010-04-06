@@ -21,7 +21,7 @@ script_info['brief_description']="""Create mapping file from SRA submission spre
 script_info['script_description']="""This script reads an SRA submission spreadsheet and generates QIIME mapping files."""
 script_info['script_usage']=[]
 script_info['script_usage'].append(("""Simple example""","""Take an SRA submission spreadsheet input_spreadsheet.txt and write out map files as a series of files input_spreadsheet_[STUDY].txt.map.""","""sra_spreadsheet_to_map_files.py -i input_spreadsheet.txt"""))
-script_info['output_description']="""Produces one map file per (STUDY, RUN_PREFIX) combination. Note that the output will include extra stuff not actually needed by QIIME. The intention is just to pull out the info needed for split_libaries.py and downstream analyses. Currently, this does not combine this with the data in the per-sample mapping file."""
+script_info['output_description']="""Produces one map file per (STUDY, RUN_PREFIX) combination. Note that the output will include extra stuff not actually needed by QIIME. The intention is just to pull out the info needed for split_libraries.py and downstream analyses. Currently, this does not combine this with the data in the per-sample mapping file."""
 
 script_info['required_options'] = [
     make_option('-i', '--input_file',

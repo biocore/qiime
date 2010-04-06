@@ -7,7 +7,7 @@
 
 **Description:**
 
-This script generates a 3D plot comparing two sets of principle coordinates using as input two principle coordinates files. The principle coordinates files are obtained by applying "`principle_coordinates.py <./principle_coordinates.html>`_" to a file containing beta diversity measures. The beta diversity files are optained by applying "`beta_diversity.py <./beta_diversity.html>`_" to an OTU table. One may apply "`transform_coordinate_matrices.py <./transform_coordinate_matrices.html>`_" to the principle coordinates files before using this script to compare them.
+This script generates a 3D plot comparing two sets of principal_coordinates coordinates using as input two principal_coordinates coordinates files. The principal_coordinates coordinates files are obtained by applying "`principal_coordinates.py <./principal_coordinates.html>`_" to a file containing beta diversity measures. The beta diversity files are optained by applying "`beta_diversity.py <./beta_diversity.html>`_" to an OTU table. One may apply "`transform_coordinate_matrices.py <./transform_coordinate_matrices.html>`_" to the principal_coordinates coordinates files before using this script to compare them.
 
 
 **Usage:** :file:`compare_3d_plots.py [options]`

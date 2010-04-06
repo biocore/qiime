@@ -7,7 +7,7 @@
 
 **Description:**
 
-Script for polling parallel runs to check completion. See Qiime/scripts/`poller_examples.py <./poller_examples.html>`_ for example usage.
+Script for polling parallel runs to check completion. See Qiime/scripts/`poller_example.py <./poller_example.html>`_ for example usage.
 
 
 **Usage:** :file:`poller.py [options]`

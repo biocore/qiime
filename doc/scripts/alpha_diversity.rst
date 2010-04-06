@@ -77,7 +77,7 @@ You can use the following idiom to run multiple metrics at once (comma-separated
 
 **Multiple File (batch) Alpha Diversity:**
 
-To perform alpha diversity on multiple OTU tables (e.g.: rarefied otu tables resulting from `rarefaction.py <./rarefaction.html>`_), specify an input directory instead of a single otu talbe, and an output directory (e.g. "alpha_div_chao1_PD/") as shown by the following command:
+To perform alpha diversity on multiple OTU tables (e.g.: rarefied otu tables resulting from `multiple_rarefactions.py <./multiple_rarefactions.html>`_), specify an input directory instead of a single otu talbe, and an output directory (e.g. "alpha_div_chao1_PD/") as shown by the following command:
 
 ::
 

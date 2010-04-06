@@ -56,7 +56,7 @@ In the case that you would like to perform beta diversity using a phylogenetic m
 
 **Multiple File (batch) Beta Diversity:**
 
-To perform beta diversity on multiple OTU tables (resulting files from `rarefaction.py <./rarefaction.html>`_), specify an input directory (e.g. rarefaction_tables/) as shown by the following command:
+To perform beta diversity on multiple OTU tables (resulting files from `multiple_rarefactions.py <./multiple_rarefactions.html>`_), specify an input directory (e.g. rarefaction_tables/) as shown by the following command:
 
 ::
 

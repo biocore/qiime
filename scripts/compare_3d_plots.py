@@ -35,7 +35,7 @@ options_lookup = get_options_lookup()
 
 script_info={}
 script_info['brief_description']="""Plot two PCoA files on the same 3D plot"""
-script_info['script_description']="""This script generates a 3D plot comparing two sets of principle coordinates using as input two principle coordinates files. The principle coordinates files are obtained by applying "principle_coordinates.py" to a file containing beta diversity measures. The beta diversity files are optained by applying "beta_diversity.py" to an OTU table. One may apply "transform_coordinate_matrices.py" to the principle coordinates files before using this script to compare them."""
+script_info['script_description']="""This script generates a 3D plot comparing two sets of principal_coordinates coordinates using as input two principal_coordinates coordinates files. The principal_coordinates coordinates files are obtained by applying "principal_coordinates.py" to a file containing beta diversity measures. The beta diversity files are optained by applying "beta_diversity.py" to an OTU table. One may apply "transform_coordinate_matrices.py" to the principal_coordinates coordinates files before using this script to compare them."""
 script_info['script_usage']=[]
 script_info['script_usage'].append(("Example 1","""Compare two pca/pcoa files in the same 3d plot where each sample ID is assigned its own color:""","""compare_3d_plots.py -i 'raw_pca_data1.txt,raw_pca_data2.txt'"""))
 script_info['script_usage'].append(("Example 2","""Compare two pca/pcoa files in the same 3d plot with two coloring schemes (Day and Type):""","""compare_3d_plots.py -i 'raw_pca_data1.txt,raw_pca_data2.txt' -m input_map.txt -b 'Day,Type'"""))
