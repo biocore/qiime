@@ -1,4 +1,4 @@
-.. _index:
+.. _install_index:
 
 =====================
 Installing QIIME

@@ -1,4 +1,4 @@
-.. _index:
+.. _developer_index:
 
 =====================
 QIIME Developer Notes
