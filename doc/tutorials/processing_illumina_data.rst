@@ -31,7 +31,7 @@ You'll notice that each line contains seven ``:`` delimited fields. These are:
 	#. nucleotide sequence
 	#. quality score
 
-In this case, the ``Y position`` field additionally contains the reverse compliment of the barcode sequence as the first six bases following the ``#`` sign. If your data looks different from this, get in touch with qiime.help@colorado.edu, and we can try to work on custom solutions until standards are developed in this area.
+In this case, the ``Y position`` field additionally contains the reverse compliment of the barcode sequence as the first ``B`` bases following the ``#`` sign, where ``B`` refers to the barcode length as determined from the mapping file. If your data looks different from this, get in touch with qiime.help@colorado.edu, and we can try to work on custom solutions until standards are developed in this area.
 
 One important thing to note is that our sequencing primers were developed to avoid sequencing the PCR primers. So unlike standard 454 data, there are no barcode, linker, or primer sequences that need to be extracted from these sequences. As a consequence, the ``LinkerPrimerSequence`` in the mapping file is not important. In the following example, we've simply included an identifier for the LinkerPrimerSequence. An example mapping file to match this data might look like::
 
