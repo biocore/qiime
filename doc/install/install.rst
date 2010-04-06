@@ -130,6 +130,8 @@ If you specified an alternate value for ``--install-purelib``, you'll need to be
 	
 	echo "export PYTHONPATH=/home/qiime_user/lib/:$PYTHONPATH" >> /home/qiime_user/.bashrc
 
+.. _set-script-dir:
+
 Finally, you'll need to create and edit a custom ``qiime_config`` file to tell QIIME where to look for the QIIME scripts. Create a custom ``qiime_config`` file by copying the default ``qiime_config`` packaged with QIIME::
 
 	cp /home/qiime_user/Qiime/qiime/support_files/qiime_config /home/qiime_user/.qiime_config
