@@ -7,8 +7,7 @@ The QIIME tutorials are documents that illustrate how to use various features of
 
 The QIIME development team is very interested in incorporating community-contributed tutorials. Please contact qiime.help@colorado.edu if you're interested in contributing.
 
-Contents
---------
+**Contents**
 
 .. toctree::
    :maxdepth: 1
