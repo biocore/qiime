@@ -4,7 +4,7 @@
 Processing Illumina Data
 ==========================
 
-This document describes how to process Illumina sequencing data with QIIME. As the Illumina platform is just beginning to be used for community sequencing, the Illumina support in QIIME is still in development status. If you run into issues because your Illumina output is different from what we assume here, we recommend getting in touch via qiime.help@colorado.edu. Full support for analyzing community sequencing data with Illumina is one of our goals, so we're willing to help out.
+This document describes how to process Illumina sequencing data with QIIME. As the Illumina platform is just beginning to be used for community sequencing, the Illumina support in QIIME is still in development status. If you run into issues because your Illumina output is different from what we assume here, we recommend getting in touch via qiime.help@colorado.edu. Full support for analyzing community sequencing data generated on the Illumina platform is one of our goals, so we're willing to help out.
 
 QIIME can be used to parse single-end or paired-end read data from the Illumina platform. The downstream support for analysis of paired-end read data is currently more limited. The parsed output is in standard fasta format, so all scripts (such as align_seqs.py and assign_taxonomy.py) can read it. However because there may be a 'big gap' between the 5' and 3' reads if the primers are distant in the sequence, or conversely because the reads may overlap if the primers are close, your mileage with the downstream tools may vary. 
 
