@@ -2,6 +2,8 @@
 
 {% block extrahead %}     
 <meta http-equiv="Content-Style-Type" content="text/css" />
+<script type="text/javascript" src="http://www.google.com/jsapi?key=ABQIAAAAbW_pA971hrPgosv-Msv7hRRE2viNBUPuU405tK6p2cguOFmlFBQSwZMG6_q_v6Z42nkdo9ejT1aHmA"></script>
+<script type="text/javascript" src='./_static/google_feed.js'></script>
 {% endblock %}
 
 {% block relbar1 %}
@@ -10,11 +12,8 @@
 <a href="{{ pathto('index') }}"><img src="{{
 pathto("_static/wordpressheader.png", 1) }}" border="0" alt="sampledoc"/></a>
 </div>
-<div class="news" style="background-color:#ccc;">
-	<p style="font-size:12pt;padding: 5px;"><b>News and Announcements &raquo;</b>
-<script type="text/javascript" src="http://app.feed.informer.com/digest3/U9OLMKHF9N.js"></script></p>
-</div>
-<noscript><a href="http://app.feed.informer.com/digest3/U9OLMKHF9N.html">Click for &quot;QIIME&quot;.</a> Powered by <a href="http://feed.informer.com/">RSS Feed Informer</a></noscript>
+<div class="news" style="background-color:#ccc;"><table style="font-size:12pt;padding: 5px;"><tr id="feed"><td><b>News and Announcements &raquo;</b></td>
+</tr></table></div>
 {{ super() }}
 {% endblock %}
 
