@@ -30,8 +30,9 @@ class TopLevelTests(TestCase):
             raise ApplicationNotFoundError(
                 "Can't find sffinfo. Is it installed? Is it in your $PATH?")
 
-        sff_original_fp = os.path.join(
-            get_qiime_project_dir(), 'tests', 'sra_test_files', 'test.sff')
+        # Cannot use get_qiime_project_dir() due to test errors in virtual box
+        test_dir = os.path.dirname(os.path.abspath(__file__))
+        sff_original_fp =  os.path.join(test_dir, 'sra_test_files', 'test.sff')
 
         # copy sff file to working directory
         self.sff_dir = tempfile.mkdtemp()
