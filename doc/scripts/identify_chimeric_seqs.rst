@@ -51,7 +51,7 @@ The result of `identify_chimeric_seqs.py <./identify_chimeric_seqs.html>`_ is a 
 
 **Example:**
 
-The blast_fragments chimera detection method is the default method used by `identify_chimeric_sequences.py <./identify_chimeric_sequences.html>`_. For each sequence provided as input, the blast_fragments method splits the input sequence into n roughly-equal-sized, non-overlapping fragments, and assigns taxonomy to each fragment against a reference database. The BlastTaxonAssigner (implemented in `assign_taxonomy.py <./assign_taxonomy.html>`_) is used for this. The taxonomies of the fragments are compared with one another (at a default depth of 4), and if contradictory assignments are returned the sequence is identified as chimeric. For example, if an input sequence was split into 3 fragments, and the following taxon assignments were returned:
+The blast_fragments chimera detection method is the default method used by `identify_chimeric_seqs.py <./identify_chimeric_seqs.html>`_. For each sequence provided as input, the blast_fragments method splits the input sequence into n roughly-equal-sized, non-overlapping fragments, and assigns taxonomy to each fragment against a reference database. The BlastTaxonAssigner (implemented in `assign_taxonomy.py <./assign_taxonomy.html>`_) is used for this. The taxonomies of the fragments are compared with one another (at a default depth of 4), and if contradictory assignments are returned the sequence is identified as chimeric. For example, if an input sequence was split into 3 fragments, and the following taxon assignments were returned:
 
 ==========  ==========================================================
 fragment1:  Archaea;Euryarchaeota;Methanobacteriales;Methanobacterium
@@ -65,6 +65,6 @@ blast_fragments begins with the assumption that a sequence is non-chimeric, and 
 
 ::
 
-	identify_chimeric_sequences.py -i repr_set_seqs.fasta -t taxonomy_assignment.txt -r ref_seq_set.fna -o identify_chimeras/
+	identify_chimeric_seqs.py -i repr_set_seqs.fasta -t taxonomy_assignment.txt -r ref_seq_set.fna -o identify_chimeras/
 
 
