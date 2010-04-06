@@ -9,11 +9,6 @@
 ===========================
 Installing QIIME natively
 ===========================
-
-.. toctree::
-   :maxdepth: 2
-
-
 QIIME consists of native code and additionally wraps many external applications. This gives the user flexibility to easily build their own analysis pipelines, making use of popular microbial community analysis tools. QIIME handles the processing of input and output of these applications, so the user can spend time analyzing their data rather than parsing, writing, and converting file formats. 
 
 As a consequence of this 'pipeline' architecture, depending on the features of QIIME that you plan to use, you may or may not need all of QIIME dependencies. Getting all of these applications working correctly can be difficult, which is why we distribute the QIIME virtual box. If you are a beginner user, or just testing QIIME to see if it will meet your needs, you may want to begin with the `virtual box <./virtual_box.html>`_ which will greatly ease installation.
@@ -112,7 +107,7 @@ First, ensure that you are in the top-level QIIME directory::
 	
 	cd /home/qiime_user/Qiime
 
-By default the QIIME scripts will be installed in ``/usr/local/bin``. This can be customized with the ``--install_scripts`` option like::
+By default the QIIME scripts will be installed in ``/usr/local/bin``. As there are a lot of QIIME scripts, we recommend customizing the script directory to keep your systemThis can be customized with the ``--install_scripts`` option::
 	
 	python setup.py install --install-scripts=/home/qiime_user/bin/
 	
@@ -134,6 +129,16 @@ If you used default values for ``--install-scripts`` and ``--install-purelib`` (
 If you specified an alternate value for ``--install-purelib``, you'll need to be sure that python knows where to look for Qiime. If you are using the bash shell and the locations specified in the examples above, you can do this with the following command::
 	
 	echo "export PYTHONPATH=/home/qiime_user/lib/:$PYTHONPATH" >> /home/qiime_user/.bashrc
+
+Finally, you'll need to create and edit a custom ``qiime_config`` file to tell QIIME where to look for the QIIME scripts. Create a custom ``qiime_config`` file by copying the default ``qiime_config`` packaged with QIIME::
+
+	cp /home/qiime_user/Qiime/qiime/support_files/qiime_config /home/qiime_user/.qiime_config
+	
+Open the new file, ``/home/qiime_user/.qiime_config``, in a text editor such as TextEdit (on Mac), gedit (on Linux), vim, or emacs (but not Microsoft Word, which is a `word processor <http://en.wikipedia.org/wiki/Word_processor>`_, not a `text editor <http://en.wikipedia.org/wiki/Text_editor>`_!). Find the line beginning ``qiime_scripts_dir`` and add a tab, followed by the QIIME scripts directory. If you've used the default value (i.e., you didn't specify ``--install-scripts``) the value you add will be ``/usr/local/bin/``. Otherwise, specify the value that you provided for ``--install-scripts``. In the example above, this would look like::
+
+	qiime_scripts_dir	/home/qiime_user/bin/
+	
+Note that the delimiter between the key and the value here is a tab, not a space! For additional information on the qiime_config file, `see this document <./qiime_config.html>`_.
 
 Testing your QIIME installation
 -------------------------------

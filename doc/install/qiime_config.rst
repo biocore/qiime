@@ -13,10 +13,10 @@ When defaults are loaded, all three locations are checked in order of precedence
 
 Note that users can have up to three separate :file:`qiime_config` files, and one is provided by default with QIIME. At least one :file:`qiime_config` file must be present in one of the three locations, or scripts that rely on :file:`qiime_config` file will raise an error. Not all values need to be defined in all :file:`qiime_config` files, but all values must be defined at least once. This is one more reason why you should not edit or remove :file:`Qiime/qiime_config`: when new values are added in the future they will be defined in Qiime's default copy, but not in your local copies.
 
-To see the qiime_config values as read by QIIME, you can call::
+To see the qiime_config values as read by QIIME, and to test your settings, you can call::
 
-	Qiime/scripts/print_qiime_config.py
+	Qiime/scripts/print_qiime_config.py -t
 
 Setting qiime_scripts_dir
 --------------------------
-If you have installed QIIME using its setup.py script, you will need to set the qiime_scripts_dir value in your qiime_config file to the directory containing the QIIME scripts. By default, this will likely be /usr/local/bin. If you specified a different location by passing --install-scripts= to setup.py, you should set qiime_scripts_dir to this value.
+If you have installed QIIME using its ``setup.py`` script, you will need to set the ``qiime_scripts_dir`` value in your ``qiime_config`` file to the directory containing the QIIME scripts. By default, this will likely be ``/usr/local/bin/``. If you specified a different location by passing ``--install-scripts=`` to ``setup.py``, you should set ``qiime_scripts_dir`` to this value.
