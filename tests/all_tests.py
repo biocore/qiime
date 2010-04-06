@@ -5,6 +5,7 @@ from os import walk, environ
 from subprocess import Popen, PIPE, STDOUT
 from os.path import join, abspath, dirname, split
 from glob import glob
+from qiime.util import get_qiime_scripts_dir
 import re
 
 __author__ = "Rob Knight"
@@ -16,14 +17,7 @@ __maintainer__ = "Rob Knight"
 __email__ = "rob@spot.colorado.edu"
 __status__ = "Pre-release"
 
-# Note on getting qiime_dir: that this is not the standard way of
-# getting the qiime directory in Qiime. Users should always call
-# qiime.util.get_qiime_project_dir(), but since this script is 
-# designed to test QIIME, including the qiime.util.get_qiime_project_dir
-# function, it is not appropriate to call that function here.
-qiime_dir = abspath(join(dirname(__file__),'..'))
-test_dir = join(qiime_dir,'tests')
-scripts_dir = join(qiime_dir,'scripts')
+test_dir = abspath(dirname(__file__))
 
 unittest_good_pattern = re.compile('OK\s*$')
 application_not_found_pattern = re.compile('ApplicationNotFoundError')
@@ -62,19 +56,27 @@ for unittest_name in unittest_names:
 # cause that are bad import statements in the script, SyntaxErrors, or 
 # other failures prior to running qiime.util.parse_command_line_parameters.
 
-script_names = []
-script_names = glob('%s/*py' % scripts_dir)
-script_names.sort()
-bad_scripts = []
+try:
+    scripts_dir = get_qiime_scripts_dir()
+    script_directory_found = True
+except AssertionError:
+    script_directory_found = False
 
-for script_name in script_names:
-    script_good_pattern = re.compile('^Usage: %s' % split(script_name)[1])
-    print "Testing %s." % script_name
-    command = '%s %s -h' % (python_name, script_name)
-    result = Popen(command,shell=True,universal_newlines=True,\
-                   stdout=PIPE,stderr=STDOUT).stdout.read()
-    if not script_good_pattern.search(result):
-        bad_scripts.append(script_name)
+
+if script_directory_found:
+    script_names = []
+    script_names = glob('%s/*py' % scripts_dir)
+    script_names.sort()
+    bad_scripts = []
+
+    for script_name in script_names:
+        script_good_pattern = re.compile('^Usage: %s' % split(script_name)[1])
+        print "Testing %s." % script_name
+        command = '%s %s -h' % (python_name, script_name)
+        result = Popen(command,shell=True,universal_newlines=True,\
+                       stdout=PIPE,stderr=STDOUT).stdout.read()
+        if not script_good_pattern.search(result):
+            bad_scripts.append(script_name)
 
 if bad_tests:
     print "\nFailed the following unit tests.\n%s" % '\n'.join(bad_tests)
@@ -85,8 +87,11 @@ if missing_application_tests:
     "you plan to use, this may not be critical.\n%s"\
      % '\n'.join(missing_application_tests)
      
-if bad_scripts:
-    print "\nFailed the following script tests.\n%s" % '\n'.join(bad_scripts)
+if not script_directory_found:
+        print "\nCritical error: Failed to test scripts because the script directory could not be found.\n The most likely explanation for this failure is that you've installed QIIME using setup.py, and forgot to specify the qiime_script_dir in your qiime_config file. This value shoud be set either to the directory you provided for --install-scripts, or /usr/local/bin if no value was provided to --install-scripts."
+else:
+    if bad_scripts:
+        print "\nFailed the following script tests.\n%s" % '\n'.join(bad_scripts)
      
-if not (bad_tests or missing_application_tests or bad_scripts):
-    print "\nAll tests passed successfully."
+    if not (bad_tests or missing_application_tests or bad_scripts):
+        print "\nAll tests passed successfully."
