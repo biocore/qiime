@@ -1,7 +1,5 @@
 .. _doc_sra_submission:
 
-.. toctree:: :maxdepth: 1
-
 .. index:: SRA Submission
 
 ========================= 

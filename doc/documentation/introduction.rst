@@ -1,8 +1,5 @@
 .. _doc_introduction:
 
-.. toctree::
-   :maxdepth: 1
-
 ============
 Introduction
 ============

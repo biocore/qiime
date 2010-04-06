@@ -1,8 +1,5 @@
 .. _doc_qiime_parameters:
 
-.. toctree::
-   :maxdepth: 1
-
 Defining custom parameter files for interacting with the workflow scripts
 ==========================================================================
 

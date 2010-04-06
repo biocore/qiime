@@ -1,8 +1,5 @@
 .. _essential_files:
 
-.. toctree::
-   :maxdepth: 1
-
 ===========
 Input Files
 ===========

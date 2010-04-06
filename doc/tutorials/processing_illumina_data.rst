@@ -1,7 +1,5 @@
 .. _processing_illumina_data:
 
-.. toctree::
-   :maxdepth: 1
 ==========================
 Processing Illumina Data
 ==========================
