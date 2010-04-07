@@ -359,14 +359,17 @@ space_dup_checker_header = adapt_dupchecker(lwu,
 #checks for valid headers
 def sampleid_missing(fields, field_name=SAMPLE_ID_KEY, raw_data=None):
     """Returns error message if sample id field doesn't start with #"""
+
+
     try:
-        if fields[0] == '#' + field_name:
+        if fields[0].strip() == "#" + field_name:
             return fields, ''
     except (TypeError, IndexError):
         pass
-    return fields, 'SampleID field must start with #: '+\
+    return fields, 'SampleID field must start with #SampleID: '+\
     'please ensure that this is not a binary (e.g. Excel) file.' +\
-    ' and that the %s field is first.' % SAMPLE_ID_KEY
+    ' and that the %s field is first.  Found %s' %\
+     (SAMPLE_ID_KEY,fields[0].strip())
 
 def blank_header(fields, raw_data=None):
     """Returns error message if any header is empty"""
@@ -854,13 +857,8 @@ def process_id_map(infile, is_barcoded=True, char_replace="_",
         		run_description[n] = run_description[n].replace('\n','')
         # Need to replace newline characters in data
         for row in range(len(data)):
-            for column in range(len(data[0])):
+            for column in range(len(data[row])):
                 data[row][column] = data[row][column].replace("\n","")
-
-                
-                
-
-
     except (TypeError, ValueError), e:
         problems['error'].append(
             "Couldn't read map file '%s': failed with error message %s" 
@@ -871,6 +869,10 @@ def process_id_map(infile, is_barcoded=True, char_replace="_",
             
     # Save raw data for referencing source 'cells' in log file.
     raw_data = data
+    
+    #check col values
+    data = array(pad_rows(data))
+    
 
 
     #add barcode checks if needed
