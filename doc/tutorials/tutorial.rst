@@ -71,7 +71,7 @@ To generate a quality score file ::
 
 Data Analysis Steps
 ---------------------
-In this walkthrough, white text on a black background denote the command-line invocation of scripts. You can find full usage information for each script by passing the -h option (help) and/or by reading the full description in the `Documentation <../documentation/index.html>`_. First, assemble the sequences (.fna), quality scores (.qual), and metadata mapping file into a directory. Execute all tutorial commands from within the :file:`qiime_tutorial` directory, which can be downloaded from `here <http://qiime.sourceforge.net/qiime_tutorial.zip>`_. To access QIIME python scripts, invoke commands in the following way: :file:`QIIMEscript.py -o option`.
+In this walkthrough, white text on a black background denote the command-line invocation of scripts. You can find full usage information for each script by passing the -h option (help) and/or by reading the full description in the `Documentation <../documentation/index.html>`_. First, assemble the sequences (.fna), quality scores (.qual), and metadata mapping file into a directory. Execute all tutorial commands from within the :file:`qiime_tutorial` directory, which can be downloaded from `here <http://qiime.sourceforge.net/qiime_tutorial.zip>`_.
 
 .. _preprocessing454:
 
@@ -91,9 +91,9 @@ If verbose (-v) is enabled, this utility will print to STDOUT a message indicati
 
 .. _assignsamples:
 
-Assign Samples to Mulitplex Reads
+Assign Samples to Multiplex Reads
 -------------------------------------
-The next task is to assign the mulitiplex reads to samples based on their nucleotide barcode. Also, this step performs quality filtering based on the characteristics of each sequence, removing any low quality or ambiguous reads. The script for this step is `split_libraries.py <../scripts/split_libraries.html>`_. A full description of parameters for this script are described in the `Documentation <../documentation/index.html>`_. For this tutorial, we will use default parameters (minimum quality score = 25, minimum/maximum length = 200/1000, no ambiguous bases allowed and no mismatches allowed in the primer sequence).::
+The next task is to assign the multiplex reads to samples based on their nucleotide barcode. Also, this step performs quality filtering based on the characteristics of each sequence, removing any low quality or ambiguous reads. The script for this step is `split_libraries.py <../scripts/split_libraries.html>`_. A full description of parameters for this script are described in the `Documentation <../documentation/index.html>`_. For this tutorial, we will use default parameters (minimum quality score = 25, minimum/maximum length = 200/1000, no ambiguous bases allowed and no mismatches allowed in the primer sequence).::
 
 	split_libraries.py -m Fasting_Map.txt -f Fasting_Example.fna -q Fasting_Example.qual -o split_libary_output
 
@@ -136,6 +136,8 @@ Here we will be running the `pick_otus_through_otu_table.py <../scripts/pick_otu
 7. Build an OTU table (for more information, refer to `make_otu_table.py <../scripts/make_otu_table.html>`_)
 
 We will first go through each step and define the parameters in :file:`custom_parameters.txt` and then at the end, we will run this workflow script.
+
+Optionally, we can denoise the sequences based on clustering the flowgram sequences. For a single library/sff file we can simply use the workflow script `pick_otus_through_otu_tables.py <../scripts/pick_otus_through_otu_table.html>`_, by providing the script with the sff file and the metadata mapping file. For multiple sff files refer to the special purpose tutorial `Denoising of 454 Data Sets <denoising_454_data.html>`_.
 
 .. _pickotusseqsim:
 
