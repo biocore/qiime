@@ -175,11 +175,11 @@ This step reduces the number of sequences to do the human screen by picking OTUs
 
 Note: this step requires that you have cd-hit installed. ::
 
-	pick_otus.py -M 4000 -n 100 -s 0.95 -o E86FECS_demultiplex -i E86FECS_demultiplex/seqs.fna
+	pick_otus.py -m cdhit -M 4000 -n 100 -s 0.95 -o E86FECS_demultiplex -i E86FECS_demultiplex/seqs.fna
 
 **Output:** Produces two files: :file:`E86FECS_demultiplex/seqs_otus.txt` and :file:`E86FECS_demultiplex/seqs_otus.log` (which have the OTUs and the log file describing the analysis respectively). ::
 
-	pick_otus.py -M 4000 -n 100 -s 0.95 -o FA6P1OK_demultiplex/ -i FA6P1OK_demultiplex/seqs.fna
+	pick_otus.py -m cdhit -M 4000 -n 100 -s 0.95 -o FA6P1OK_demultiplex/ -i FA6P1OK_demultiplex/seqs.fna
 
 Repeat the same procedure for the other library.
 
@@ -263,9 +263,25 @@ Step 11: Finally, make the second-stage submission
 
 ::
 
-	make_sra_submission.py -u submission_second_stage.txt -e experiment.txt -s per_run_sff --template_study_fp ~/Qiime/support_files/sra_xml_templates/study_template.xml --template_sample_fp ~/Qiime/support_files/sra_xml_templates/sample_template.xml -template_submission_fp ~/Qiime/support_files/sra_xml_templates/submission_template.xml
+	make_sra_submission.py -u submission_second_stage.txt -e experiment.txt -s per_run_sff
 
 **Output:** Produces files: :file:`experiment.xml`, :file:`run.xml` and  :file:`submission_second_stage.xml`
+
+The make_sra_submission script has the ability to include per-experiment attributes or links.  The attributes and links should be specified in separate, tab-delimited files. For example, a file named :file:`attributes.txt` can be created with the following contents:
+
+::
+
+  #EXPERIMENT_ALIAS	Attribute	Value
+  fierer_hand_study_FA6P1OK	library strategy	targeted-locus
+  fierer_hand_study_FA6P1OK	gene	16S rRNA V1-V2 region
+  fierer_hand_study_E86FECS	library strategy	targeted-locus
+  fierer_hand_study_E86FECS	gene	16S rRNA V1-V2 region
+
+The following command will then add "gene" and "library strategy" attributes to both experiments in the resulting XML. (The experiment alias is specified in experiment.txt, under the field 'EXPERIMENT_ALIAS'.) ::
+
+  make_sra_submission.py -u submission_second_stage.txt -e experiment.txt -s per_run_sff --experiment_attribute_fp=attributes.txt
+
+Links may be added to the experiments in a similar manner. After the make_sra_submission script has been run, the resulting XML files are ready to submit to the SRA.
 
 \...and the process is complete.
 
