@@ -63,9 +63,9 @@ run_wrapper = '''\
     alias = "%(EXPERIMENT_ALIAS)s"
     center_name = "%(RUN_CENTER)s"
     run_center = "%(RUN_CENTER)s"
-    accession=""
+    accession="%(RUN_ACCESSION)s"
   >
-    <EXPERIMENT_REF accession="" refname="%(EXPERIMENT_ALIAS)s" refcenter="%(STUDY_CENTER)s" />%(DATA_BLOCK_XML)s
+    <EXPERIMENT_REF accession="%(EXPERIMENT_ACCESSION)s" refname="%(EXPERIMENT_ALIAS)s" refcenter="%(STUDY_CENTER)s" />%(DATA_BLOCK_XML)s
   </RUN>'''
 
 data_block_wrapper = """
@@ -84,7 +84,7 @@ data_block_wrapper = """
 experiment_set_wrapper = """<?xml version="1.0" encoding="UTF-8"?>
 <EXPERIMENT_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">%s</EXPERIMENT_SET>"""
 
-pool_member_wrapper = """            <MEMBER refname="%(SAMPLE_ALIAS)s" refcenter="%(SAMPLE_CENTER)s" member_name="%(POOL_MEMBER_NAME)s" proportion="%(POOL_PROPORTION)s"><READ_LABEL read_group_tag="%(BARCODE_READ_GROUP_TAG)s">barcode</READ_LABEL><READ_LABEL read_group_tag="%(PRIMER_READ_GROUP_TAG)s">rRNA_primer</READ_LABEL></MEMBER>"""
+pool_member_wrapper = """            <MEMBER refname="%(SAMPLE_ALIAS)s" refcenter="NCBI" member_name="%(POOL_MEMBER_NAME)s" proportion="%(POOL_PROPORTION)s" accession="%(POOL_MEMBER_ACCESSION)s"><READ_LABEL read_group_tag="%(BARCODE_READ_GROUP_TAG)s">barcode</READ_LABEL><READ_LABEL read_group_tag="%(PRIMER_READ_GROUP_TAG)s">rRNA_primer</READ_LABEL></MEMBER>"""
 
 basecall_wrapper = """               <BASECALL read_group_tag="%(READ_GROUP)s" min_match="%(MATCH_LEN)s" max_mismatch="%(NUM_MISMATCHES)s" match_edge="full">%(MATCH_SEQ)s</BASECALL>"""
 
@@ -162,12 +162,13 @@ spot_descriptor_without_linker_wrapper = """      <SPOT_DESCRIPTOR>
 experiment_wrapper = """  <EXPERIMENT
     alias="%(EXPERIMENT_ALIAS)s"
     center_name="%(EXPERIMENT_CENTER)s"
+    accession="%(EXPERIMENT_ACCESSION)s"
   >
     <TITLE>%(EXPERIMENT_TITLE)s</TITLE>
-    <STUDY_REF refname="%(STUDY_REF)s" refcenter="%(SAMPLE_CENTER)s"/>
+    <STUDY_REF accession="%(STUDY_ACCESSION)s" refcenter="NCBI"/>
     <DESIGN>
       <DESIGN_DESCRIPTION>%(EXPERIMENT_DESIGN_DESCRIPTION)s</DESIGN_DESCRIPTION>
-      <SAMPLE_DESCRIPTOR refname="%(STUDY_REF)s_default" refcenter="%(SAMPLE_CENTER)s">
+      <SAMPLE_DESCRIPTOR accession="%(SAMPLE_ACCESSION)s" refcenter="NCBI">
         <POOL>%(POOL_MEMBERS_XML)s        </POOL>
       </SAMPLE_DESCRIPTOR>
       <LIBRARY_DESCRIPTOR>
