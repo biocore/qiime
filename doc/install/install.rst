@@ -46,6 +46,10 @@ PyNAST alignment, tree-building, taxonomy assignment, OTU picking, and other dat
 * jre1.6.0_05 (`link <http://java.sun.com/javase/downloads/index.jsp>`_)
 * rdp_classifier-2.0.1 (`src <http://downloads.sourceforge.net/project/rdp-classifier/rdp-classifier/rdp_classifier_2.0.1/rdp_classifier_2.0.1.tar.gz>`_) See :ref:`RDP install notes <rdp-install>`.
 
+Denoising 454 data:
+
+* Denoiser 0.83 (`src <http://www.microbio.me/denoiser/>`_ -- remember to add the top-level ``Denoiser_0.83`` directory to your ``$PYTHONPATH``)
+
 Graphics and other data analysis steps:
 
 * MatPlotLib 0.98.5.2 (`src  <http://iweb.dl.sourceforge.net/project/matplotlib/OldFiles/matplotlib-0.98.5.2.tar.gz>`_)
@@ -177,7 +181,7 @@ External applications used by QIIME need to be visible to the shell by existing 
 PYTHONPATH Environment Variable
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Qiime, PyCogent, and NumPy must be visible to python for all features of QIIME. matplotlib must be visible to python if you plan to use graphics features of QIIME, and PyNAST must be visible to python if you plan to use PyNAST for multiple sequence alignment. All of these packages come with setup.py scripts. If you have used these, you should not need to modify your PYTHONPATH to make the library code visible. If you haven't used the respective setup.py scripts, or if you specified an alternate value for ``--install-purelib``, you may need to add the locations of these libraries to your PYTHONPATH environment variable. 
+Qiime, PyCogent, and NumPy must be visible to python for all features of QIIME. matplotlib must be visible to python if you plan to use graphics features of QIIME; PyNAST must be visible to python if you plan to use PyNAST for multiple sequence alignment; and Denoiser must be visible to python if you plan to denoise 454 data. With the exception of Denoiser, all of these packages come with setup.py scripts. If you have used these, you should not need to modify your PYTHONPATH to make the library code visible. If you haven't used the respective setup.py scripts, or if you specified an alternate value for ``--install-purelib``, you may need to add the locations of these libraries to your PYTHONPATH environment variable. 
 
 For example, if you've installed PyNAST in ``/home/qiime_user/PyNAST`` you can add this to your PYTHONPATH with the commands::
 	
