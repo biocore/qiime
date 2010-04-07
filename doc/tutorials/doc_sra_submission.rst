@@ -220,11 +220,11 @@ This step maps the ids of the representative set back onto the ids of the OTUs t
 
 	make_library_id_lists.py -i E86FECS_demultiplex/seqs.fna -s E86FECS_demultiplex/blast_results.screened -u E86FECS_demultiplex/seqs_otus.txt -o E86FECS_demultiplex/per_lib_info
 
-**Output:** This makes a new directory called "E86FECS_demultiplex/per_lib_idlists", which contains a separate file with an id list for each library. ::
+**Output:** This makes a new directory called :file:`E86FECS_demultiplex/per_lib_idlists`, which contains a separate file with an id list for each library. ::
 
 	make_library_id_lists.py -i FA6P1OK_demultiplex/seqs.fna -s FA6P1OK_demultiplex/blast_results.screened -u FA6P1OK_demultiplex/seqs_otus.txt -o FA6P1OK_demultiplex/per_lib_info
 
-**Output:** This makes a new directory called "FA6P1OK_demultiplex/per_lib_idlists", which contains a separate file with an id list for each library.
+**Output:** This makes a new directory called :file:`FA6P1OK_demultiplex/per_lib_idlists`, which contains a separate file with an id list for each library.
 
 Step 8: Use sfffile to make per-library sff files
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -267,7 +267,7 @@ Step 11: Finally, make the second-stage submission
 
 **Output:** Produces files: :file:`experiment.xml`, :file:`run.xml` and  :file:`submission_second_stage.xml`
 
-The make_sra_submission script has the ability to include per-experiment attributes or links.  The attributes and links should be specified in separate, tab-delimited files. For example, a file named :file:`attributes.txt` can be created with the following contents:
+The `make_sra_submission.py <../scripts/make_sra_submission.html>`_ script has the ability to include per-experiment attributes or links.  The attributes and links should be specified in separate, tab-delimited files. For example, a file named :file:`attributes.txt` can be created with the following contents:
 
 ::
 
@@ -277,11 +277,11 @@ The make_sra_submission script has the ability to include per-experiment attribu
   fierer_hand_study_E86FECS	library strategy	targeted-locus
   fierer_hand_study_E86FECS	gene	16S rRNA V1-V2 region
 
-The following command will then add "gene" and "library strategy" attributes to both experiments in the resulting XML. (The experiment alias is specified in experiment.txt, under the field 'EXPERIMENT_ALIAS'.) ::
+The following command will then add "gene" and "library strategy" attributes to both experiments in the resulting XML. (The experiment alias is specified in :file:`experiment.txt`, under the field 'EXPERIMENT_ALIAS'.) ::
 
   make_sra_submission.py -u submission_second_stage.txt -e experiment.txt -s per_run_sff --experiment_attribute_fp=attributes.txt
 
-Links may be added to the experiments in a similar manner. After the make_sra_submission script has been run, the resulting XML files are ready to submit to the SRA.
+Links may be added to the experiments in a similar manner. After the `make_sra_submission.py <../scripts/make_sra_submission.html>`_ script has been run, the resulting XML files are ready to submit to the SRA.
 
 \...and the process is complete.
 
