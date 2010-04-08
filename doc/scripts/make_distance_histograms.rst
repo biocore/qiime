@@ -26,8 +26,6 @@ To visualize the distance between samples and/or categories in the metadata mapp
 	
 	**[OPTIONAL]**
 		
-	-b, `-`-colorby
-		This is the categories to color by in the plots from the user-generated mapping file. The categories must match the name of a column header in the mapping file exactly and multiple categories can be list by comma separating them without spaces. The user can also combine columns in the mapping file by separating the categories by "&&" without spaces [default=None]
 	-p, `-`-prefs_path
 		This is the user-generated preferences file. NOTE: This is a file with a dictionary containing preferences for the analysis.  This dict must have a "Fields" key mapping to a list of desired fields. [default: None]
 	-o, `-`-dir_path
@@ -38,8 +36,10 @@ To visualize the distance between samples and/or categories in the metadata mapp
 		Perform Monte Carlo analysis on distances.  [Default: False]
 	`-`-html_output
 		Write output in HTML format. [Default: False]
-	`-`-fields
+	-f, `-`-fields
 		Comma delimited list of fields to compare.  This overwrites fields in prefs file.  If this is not provided, the first field in metadata mapping file will be used.  Usage: --fields Field1,Field2,Field3
+	`-`-monte_carlo_iters
+		Number of iterations to perform for Monte Carlo analysis. [default: 10]
 
 
 **Output:**
