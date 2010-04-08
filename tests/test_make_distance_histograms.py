@@ -12,7 +12,7 @@ __status__ = "Pre-release"
 
 from cogent.util.unit_test import TestCase, main
 import shutil
-from os import mkdir
+from os import mkdir, listdir
 from qiime.parse import parse_mapping_file, parse_distmat, group_by_field,\
     group_by_fields
 from numpy import array, arange
@@ -401,8 +401,8 @@ class DistanceHistogramsTests(TestCase):
             obs_fields = obs.split('\t')
             exp_fields = exp.split('\t')
             #Check first 10 fields should be identical from run to run.
-            for i in range(10):
-                self.assertEqual(obs_fields[i],exp_fields[1])
+            for i in [0,1,2,3,5,6,7,8,9,11,13]:
+                self.assertEqual(obs_fields[i],exp_fields[i])
 
     def test_permute_for_monte_carlo(self):
         """permute_for_monte_carlo should return correct result.
