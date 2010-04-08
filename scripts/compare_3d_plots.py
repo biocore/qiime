@@ -21,7 +21,7 @@ from optparse import make_option
 from qiime.make_3d_plots import generate_3d_plots,\
 get_coord,remove_unmapped_samples,\
 process_coord_filenames,get_multiple_coords,\
-process_colorby
+process_colorby, process_custom_axes, get_custom_coords, remove_nans, scale_custom_coords
 from qiime.parse import parse_coords,group_by_field,group_by_fields
 from qiime.colors import get_map
 from qiime.colors import sample_color_prefs_and_map_data_from_options
@@ -98,8 +98,7 @@ def main():
     data['map'] = newmap
 
     # remove any samples not present in mapping file
-    remove_unmapped_samples(data['map'],data['coord'])
-
+    remove_unmapped_samples(data['map'],data['coord'],data['edges'])
 
     #Determine which mapping headers to color by, if none given, color by all 
     # columns in map file
@@ -113,13 +112,20 @@ def main():
         prefs,data=process_colorby(default_colorby,data)
         prefs={'Sample':{'column':'SampleID'}}
 
+#    print len(data['coord'][0])
+#    print
+#    print data['map']
+#    print len(data['map'])
+
     # process custom axes, if present.
     custom_axes = None
     if opts.custom_axes:
-        custom_axes = process_custom_axes(options.custom_axes)
+        custom_axes = process_custom_axes(opts.custom_axes)
         get_custom_coords(custom_axes, data['map'], data['coord'])
         remove_nans(data['coord'])
         scale_custom_coords(custom_axes,data['coord'])
+
+    
 
     # Generate random output file name and create directories
     if opts.output_dir:
