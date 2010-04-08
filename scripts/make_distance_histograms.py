@@ -68,6 +68,9 @@ analysis.  This dict must have a "Fields" key mapping to a list of desired field
         action='store_true',help='''Write output in HTML format. [Default: %default]'''),\
     make_option('--fields', dest='fields',\
         help='Comma delimited list of fields to compare.  This overwrites fields in prefs file.  If this is not provided, the first field in metadata mapping file will be used.  Usage: --fields Field1,Field2,Field3'),\
+    make_option('--monte_carlo_iters', dest='monte_carlo_iters',type="int",\
+        default=10,help='Number of iterations to perform for Monte Carlo analysis. [default: %default]'),\
+
 ]
 
 script_info['version'] = __version__
@@ -88,7 +91,6 @@ def main():
     for color_info in groups_and_colors:
         field_to_colors[color_info[0]]=color_info[1:]
     
-        
     qiime_dir = get_qiime_project_dir()+'/qiime/support_files/'
     
     if opts.prefs_path:
@@ -102,6 +104,9 @@ def main():
     elif opts.prefs_path is not None:
         prefs = eval(open(opts.prefs_path, 'U').read())
         fields = prefs.get('FIELDS',None)
+    #Colorby overwrites fields for the time being.
+    if opts.colorby is not None:
+        fields = map(strip,opts.colorby.split(','))
 
     
     within_distances, between_distances, dmat = \
@@ -168,7 +173,8 @@ def main():
             dmatrix_file=opts.distance_matrix_file,\
             prefs=prefs, \
             dir_prefix = opts.dir_path,\
-            fields=fields)
+            fields=fields,\
+            default_iters=opts.monte_carlo_iters)
 
 
 if __name__ == "__main__":

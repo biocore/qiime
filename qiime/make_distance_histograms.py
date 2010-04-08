@@ -568,7 +568,6 @@ def group_distances(mapping_file,dmatrix_file,fields,dir_prefix='',\
     """Calculate all lists of distance groups."""
     distance_groups = {}
     mapping, header, comments = parse_mapping_file(open(mapping_file,'U'))
-    #header[0] = '#'+header[0]
     header = [header]
     header.extend(mapping)
     mapping=header
@@ -623,7 +622,6 @@ def monte_carlo_group_distances(mapping_file, dmatrix_file, prefs, \
     - compare the actual value of t to the randomized values
     """
     mapping, header, comments = parse_mapping_file(open(mapping_file,'U'))
-    header[0] = '#'+header[0]
     header = [header]
     header.extend(mapping)
     mapping=header
