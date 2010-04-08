@@ -458,9 +458,14 @@ def sample_color_prefs_and_map_data_from_options(options):
     #Determine which mapping headers to color by, if none given, color by \
     #Sample ID's
     
+    try:
+        colorby = options.colorby
+    except AttributeError:
+        colorby = None
+    
     if options.prefs_path:
         prefs = eval(open(options.prefs_path, 'U').read())
-        color_prefs, data=process_colorby(options.colorby, data, \
+        color_prefs, data=process_colorby(colorby, data, \
                                                 prefs['sample_coloring'])
         
         if prefs.has_key('background_color'):
@@ -469,7 +474,7 @@ def sample_color_prefs_and_map_data_from_options(options):
             background_color='black'
     else:
         background_color='black'
-        color_prefs, data=process_colorby(options.colorby, data, None)
+        color_prefs, data=process_colorby(colorby, data, None)
     
     if options.prefs_path and options.background_color:
         background_color=options.background_color
@@ -516,7 +521,7 @@ def taxonomy_color_prefs_and_map_data_from_options(options):
         if prefs.has_key('background_color'):
             background_color= prefs['background_color']
         else:
-            background_color='white'
+            background_color='black'
     else:
         background_color='black'
         color_prefs=taxonomy_process_prefs(taxonomy_levels, None)
