@@ -447,7 +447,7 @@ align_seqs:min_percent_id	75.0
 filter_alignment:lane_mask_fp
 filter_alignment:allowed_gap_frac	 0.999999
 filter_alignment:remove_outliers	False
-filter_alignment:allowed_gap_frac	3.0
+filter_alignment:threshold	3.0
 
 # Taxonomy assignment parameters
 assign_taxonomy:id_to_taxonomy_fp
