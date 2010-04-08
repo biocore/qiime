@@ -14,6 +14,7 @@ __status__ = "Pre-release"
 import signal
 from shutil import rmtree
 from os.path import join, exists, getsize, split, splitext
+from os import makedirs
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files
 from cogent.app.util import get_tmp_filename, ApplicationNotFoundError
@@ -46,10 +47,15 @@ class WorkflowTests(TestCase):
     def setUp(self):
         """ """
         self.qiime_config = load_qiime_config()
-        tmp_dir = self.qiime_config['temp_dir'] or '/tmp/'
-        
         self.dirs_to_remove = []
         self.files_to_remove = []
+        
+        tmp_dir = self.qiime_config['temp_dir'] or '/tmp/'
+        if not exists(tmp_dir):
+            makedirs(tmp_dir)
+            # if test creates the temp dir, also remove it
+            self.dirs_to_remove.append(tmp_dir)
+        
         self.wf_out = get_tmp_filename(tmp_dir=tmp_dir,
          prefix='qiime_wf_out',suffix='',result_constructor=str)
         self.dirs_to_remove.append(self.wf_out)
@@ -128,10 +134,12 @@ class WorkflowTests(TestCase):
         """ """
         # turn off the alarm
         signal.alarm(0)
+        remove_files(self.files_to_remove)
+        # remove directories last, so we don't get errors
+        # trying to remove files which may be in the directories
         for d in self.dirs_to_remove:
             if exists(d):
                 rmtree(d)
-        remove_files(self.files_to_remove)
         
     def test_unsupported_options_handled_nicely(self):
         """WorkflowError raised on unsupported option """
