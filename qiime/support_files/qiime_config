@@ -15,3 +15,4 @@ template_alignment_lanemask_fp
 jobs_to_start	1
 seconds_to_sleep	60
 qiime_scripts_dir
+temp_dir

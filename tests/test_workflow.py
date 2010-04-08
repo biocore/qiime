@@ -45,69 +45,71 @@ class WorkflowTests(TestCase):
     
     def setUp(self):
         """ """
+        self.qiime_config = load_qiime_config()
+        tmp_dir = self.qiime_config['temp_dir'] or '/tmp/'
+        
         self.dirs_to_remove = []
         self.files_to_remove = []
-        self.wf_out = get_tmp_filename(prefix='qiime_wf_out',suffix='',\
-         result_constructor=str)
+        self.wf_out = get_tmp_filename(tmp_dir=tmp_dir,
+         prefix='qiime_wf_out',suffix='',result_constructor=str)
         self.dirs_to_remove.append(self.wf_out)
         
-        self.fasting_mapping_fp = get_tmp_filename(
+        self.fasting_mapping_fp = get_tmp_filename(tmp_dir=tmp_dir,
          prefix='qiime_wf_mapping',suffix='.txt')
         fasting_mapping_f = open(self.fasting_mapping_fp,'w')
         fasting_mapping_f.write(fasting_map)
         fasting_mapping_f.close()
         self.files_to_remove.append(self.fasting_mapping_fp)
         
-        self.fasting_seqs_fp = get_tmp_filename(
+        self.fasting_seqs_fp = get_tmp_filename(tmp_dir=tmp_dir,
             prefix='qiime_wf_seqs',suffix='.fasta')
         fasting_seqs_f = open(self.fasting_seqs_fp,'w')
         fasting_seqs_f.write(fasting_seqs_subset)
         fasting_seqs_f.close()
         self.files_to_remove.append(self.fasting_seqs_fp)
         
-        self.fasting_seqs_denoiser_fp = get_tmp_filename(
+        self.fasting_seqs_denoiser_fp = get_tmp_filename(tmp_dir=tmp_dir,
             prefix='qiime_wf_seqs',suffix='.fasta')
         fasting_seqs_f = open(self.fasting_seqs_denoiser_fp,'w')
         fasting_seqs_f.write('\n'.join(fasting_seqs_subset.split('\n')[:44]))
         fasting_seqs_f.close()
         self.files_to_remove.append(self.fasting_seqs_denoiser_fp)
         
-        self.fasting_otu_table_fp = get_tmp_filename(
+        self.fasting_otu_table_fp = get_tmp_filename(tmp_dir=tmp_dir,
             prefix='qiime_wf_otu_table',suffix='.txt')
         fasting_otu_table_f = open(self.fasting_otu_table_fp,'w')
         fasting_otu_table_f.write(fasting_subset_otu_table)
         fasting_otu_table_f.close()
         self.files_to_remove.append(self.fasting_otu_table_fp)
         
-        self.fasting_tree_fp = get_tmp_filename(
+        self.fasting_tree_fp = get_tmp_filename(tmp_dir=tmp_dir,
             prefix='qiime_wf_tree',suffix='.tre')
         fasting_tree_f = open(self.fasting_tree_fp,'w')
         fasting_tree_f.write(fasting_subset_tree)
         fasting_tree_f.close()
         self.files_to_remove.append(self.fasting_tree_fp)
         
-        self.template_aln_fp = get_tmp_filename(
+        self.template_aln_fp = get_tmp_filename(tmp_dir=tmp_dir,
          prefix='wf_template',suffix='.fasta')
         template_aln_f = open(self.template_aln_fp,'w')
         template_aln_f.write(template_alignment_subset)
         template_aln_f.close()
         self.files_to_remove.append(self.template_aln_fp)
         
-        self.lanemask_fp = get_tmp_filename(
+        self.lanemask_fp = get_tmp_filename(tmp_dir=tmp_dir,
          prefix='wf_lanemask',suffix='.txt')
         lanemask_f = open(self.lanemask_fp,'w')
         lanemask_f.write(lanemask)
         lanemask_f.close()
         self.files_to_remove.append(self.lanemask_fp)
         
-        self.sff_fp = get_tmp_filename(
+        self.sff_fp = get_tmp_filename(tmp_dir=tmp_dir,
          prefix='wf_sff',suffix='.txt')
         sff_f = open(self.sff_fp,'w')
         sff_f.write(fasting_subset_sff)
         sff_f.close()
         self.files_to_remove.append(self.sff_fp)
         
-        self.qiime_config = load_qiime_config()
         working_dir = self.qiime_config['working_dir'] or './'
         jobs_dir = join(working_dir,'jobs')
         if not exists(jobs_dir):
