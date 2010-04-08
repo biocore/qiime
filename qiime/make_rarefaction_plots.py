@@ -85,6 +85,10 @@ def make_plots(options):
     groups_and_colors=iter_color_groups(data['map'],color_prefs)
     groups_and_colors=list(groups_and_colors)
     
+    if options['colorby']:
+        categs = options['colorby'].split(',')
+        options['categories'] = list(set(categs).intersection(set(data['map'][0])))
+    
     for r in options['rarefactions']:
         ymax = options['ymax']
         data = options['rarefactions'][r]
@@ -118,12 +122,16 @@ def make_plots(options):
             data_colors=groups_and_colors[i][3]
 
             categories = [k for k in groups]
-
+            
             save_rarefaction_plots(data['xaxis'], data['series'], data['error'], \
             xmax, ymax, categories, data['headers'][1], options['imagetype'], \
             options['resolution'], data['headers'][0], data_colors, colors, file_path, graphNames, background_color)
-
+        
         else:
+            if options['colorby']:
+                if data['headers'][1] not in options['categories']:
+                    continue
+                    
             save_rarefaction_plots(data['xaxis'], data['series'], data['error'], \
             xmax, ymax, data['options'], data['headers'][1], options['imagetype'], \
             options['resolution'], data['headers'][0], None, data['color'], file_path, graphNames, background_color)

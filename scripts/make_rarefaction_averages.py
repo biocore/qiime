@@ -84,6 +84,7 @@ def main():
     ops['prefs'] = sample_color_prefs_and_map_data_from_options(options)
 
     ops['colorby'] = options.colorby
+    
     # #colorby check
     # if options.colorby:
     #     if options.colorby.split(',')[0] == 'ALL':
