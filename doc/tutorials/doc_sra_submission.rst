@@ -11,7 +11,7 @@ Introduction
 
 This Tutorial provides an overview of the SRA submission preparation procedure, using as an example the data from the Fierer et al. 2008 hand dataset. The SRA submission example shown here, is from the first barcoded SRA submission, accession #: `SRS001216 <http://www.ncbi.nlm.nih.gov/sites/entrez?db=sra&term=SRS001216>`_. It outlines the same two-stage procedure we will use for submitting the Human Microbiome Project (HMP) data to SRA. This draft is intended to be passed on to the Data Analysis and Coordination Center (DACC) for further editing and revision with guidance from the centers.
 
-The data shown in this tutorial can be downloaded from: `SRA Tutorial Data <http://bmf.colorado.edu/QIIME/knight_handstudy_demo_v1.0.0.zip>`_
+The data shown in this tutorial can be downloaded from: `SRA Tutorial Data <http://bmf.colorado.edu/QIIME/knight_handstudy_demo-v1.0.0.zip>`_
 
 Philosophy of this Document and the Accompanying Code
 ----------------------------------------------------- 
