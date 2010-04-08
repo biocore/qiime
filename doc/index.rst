@@ -27,7 +27,7 @@ Download QIIME
 
  * Virtual Box: The QIIME Virtual Box is an Ubuntu Linux virtual machine, pre-loaded with QIIME and its dependencies. This is the quickest way to start using QIIME. To get the Virtual Box, please `go here <./install/virtual_box.html>`_.
 
- * Stable Release: Currently the most stable version of QIIME is our 0.92 pre-release, which you can `download here <http://sourceforge.net/projects/qiime/files/releases/Qiime-0.92.tar.gz/download>`_.
+ * Stable Release: Currently the most stable version of QIIME is our 1.0.0 release, which you can `download here <http://sourceforge.net/projects/qiime/files/releases/Qiime-1.0.0.tar.gz/download>`_.
 
  * Development Version: QIIME is under very active development. To get the latest development version of QIIME, you access our Sourceforge repository. While this code is subject to minor changes in interface, it will provide access to the latest and greatest features. The official web documentation is likely to be out-of-date with respect to the development software. You should instead refer to the svn documentation in Qiime/doc. Check out the latest version of QIIME using svn with the command::
 
@@ -56,6 +56,6 @@ If you use QIIME for any published research, please include the following citati
 **QIIME allows analysis of high-throughput community sequencing data.**
 \J. Gregory Caporaso, Justin Kuczynski, Jesse Stombaugh, Kyle Bittinger, Frederic D. Bushman, Elizabeth K. Costello, Noah Fierer, Antonio Gonzalez Peña, Julia K. Goodrich, Jeffrey I. Gordon, Gavin A. Huttley, Scott T. Kelley, Dan Knights, Jeremy E. Koenig, Ruth E. Ley, Catherine A. Lozupone, Daniel McDonald, Brian D. Muegge, Meg Pirrung, Jens Reeder, Joel R. Sevinsky, Peter J. Turnbaugh, William A. Walters, Jeremy Widmann, Tanya Yatsunenko, Jesse Zaneveld and Rob Knight. (Accepted, Nature Methods, 2010) 
 
-The data presented in this paper can be found `here <http://tajmahal.colorado.edu/qiime/qiime_paper_data.zip>`_.
+The data presented in this paper can be found `here <http://bmf.colorado.edu/QIIME/qiime_paper_data_v1.0.0.zip>`_.
 
 .. _PyCogent: http://pycogent.sourceforge.net

@@ -27,7 +27,7 @@ To install most of following dependencies you need to have a build environment o
 The following are required by QIIME:
 
 * Python 2.6 (`src <http://www.python.org/ftp/python/2.6.4/Python-2.6.4.tgz>`_)
-* PyCogent 1.4.1 (`src <http://sourceforge.net/projects/pycogent/files/PyCogent/1.4/PyCogent-1.4.tgz/download>`_)
+* PyCogent 1.4.1 (`src <http://sourceforge.net/projects/pycogent/files/PyCogent/1.4.1/PyCogent-1.4.1.tgz/download>`_)
 * Numpy 1.3.0 (`src <http://sourceforge.net/projects/numpy/files/NumPy/1.3.0/numpy-1.3.0.tar.gz/download>`_)
 
 Dependencies required for a subset of QIIME's features
@@ -37,7 +37,7 @@ Dependencies required for a subset of QIIME's features
 PyNAST alignment, tree-building, taxonomy assignment, OTU picking, and other data generation steps:
 
 * uclust 1.1.579 (`src and binaries <http://www.drive5.com/uclust/downloads1_1_579.html>`_) See :ref:`uclust install notes <uclust-install>`.
-* PyNAST 1.1 (`src  <http://sourceforge.net/projects/pynast/files/PyNAST%20releases/PyNAST-1.1.tar.gz/download>`_)
+* PyNAST 1.1 (`src  <http://sourceforge.net/projects/pynast/files/PyNAST%20releases/PyNAST-1.1.tgz/download>`_)
 * greengenes core set data file (`fasta <http://greengenes.lbl.gov/Download/Sequence_Data/Fasta_data_files/core_set_aligned.fasta.imputed>`_)
 * greengenes alignment lanemask file (`txt <http://greengenes.lbl.gov/Download/Sequence_Data/lanemask_in_1s_and_0s>`_)
 * blast-2.2.22 (legacy BLAST from NCBI, *NOT* BLAST+) (`OS X <ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/2.2.22/blast-2.2.22-universal-macosx.tar.gz>`_ or `linux 32-bit <ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/2.2.22/blast-2.2.22-ia32-linux.tar.gz>`_)
@@ -71,7 +71,7 @@ First, change to the directory where you would like to download QIIME::
 
 Stable Pre-Release
 ^^^^^^^^^^^^^^^^^^
-Currently the most stable version of QIIME is our 0.92 pre-release, which you can download from `here <http://sourceforge.net/projects/qiime/files/releases/Qiime-0.92.tar.gz/download>`_.
+Currently the most stable version of QIIME is our 1.0.0 release, which you can download from `here <http://sourceforge.net/projects/qiime/files/releases/Qiime-1.0.0.tar.gz/download>`_.
 
 Latest Development Version
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -91,8 +91,8 @@ After downloading the QIIME release tar file you'll need to unpack the code. For
 Unpack the release Qiime tar file with the commands::
 
 	cd /home/qiime_user
-	tar -xvzf Qiime-0.92.tar.gz
-	ln -s /home/qiime_user/Qiime-0.92 /home/qiime_user/Qiime
+	tar -xvzf Qiime-1.0.0.tar.gz
+	ln -s /home/qiime_user/Qiime-1.0.0 /home/qiime_user/Qiime
 	
 If you have downloaded from svn, QIIME is already unpacked.
 	

@@ -39,5 +39,5 @@ Due to licensing restrictions, we cannot package the ``sff tools`` software with
 
 You can safely ignore these, unless you are planning to process ``sff`` files directly (rather than beginning with ``fasta`` and ``qual`` files). If you do plan to process the ``sff`` files directly, you will need to install your copy of ``sff tools`` in the virtual box.
 
-.. _QIIME Virtual Box: http://bmf.colorado.edu/QIIME/QIIME-0.92.vdi.gz
+.. _QIIME Virtual Box: http://bmf.colorado.edu/QIIME/QIIME-1.0.0.vdi.gz
 .. _VirtualBox: http://www.virtualbox.org/wiki/Downloads
