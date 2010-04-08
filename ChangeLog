@@ -1,11 +1,35 @@
 Add changes since 0.91 here
 ===========================
-* uclust made default OTU picker (instead of cdhit)
-* uclust made default pairwise aligner for PyNAST (instead of BLAST)
-* minimum PyNAST version requirement upgraded to PyNAST 1.0
-* minimum PyCogent version requirement upgraded to PyCogent 1.4.1
-* tree_compare now can compare trees where some tips aren't present in all trees
-* --small_included option removed from rarefaction scripts
+* uclust made default OTU picker (instead of cdhit).
+* uclust made default pairwise aligner for PyNAST (instead of BLAST).
+* Minimum PyNAST version requirement upgraded to PyNAST 1.1.
+* Minimum PyCogent version requirement upgraded to PyCogent 1.4.1.
+* tree_compare now can compare trees where some tips aren't present in all trees.
+* --small_included option removed from rarefaction scripts.
+* Added "remove outliers" functionality to filter_alignment.py.  After removing lanemasked columns and gap columns, -r will remove outlying sequences, preventing odd spikes in phylo trees when some seqs are poorly aligned.
+* Absent samples are now included in the output of unifrac like metrics - 0 dist between two samples that aren't there, 1 dist between an absent and a present sample.
+* make phylogeny now does good midpoint rooting (still off by default).
+* Consolidated parsing functionality to qiime.parse.
+* Removed dependence on several qiime_config values - users should run Qiime/scripts/print_qiime_config.py -t to get information on parameter settings which are outdated.
+* Added an example 'cluster_jobs' -- start_parallel_jobs.py -- script which will give users in multi-core or multi-proc environments very easy access to parallel QIIME. This also adds parallel support to the QIIME virtual box.
+* Modified the default value of jobs_to_start to be 1 -- because of the addition of the example cluster_jobs script, the default value of 24 no longer makes sense (if it ever really did...). Because the new script is built for multi-core/multi-proc environments, 24 is too high for most cases. Users will need to modify this value from 1 (corresponding to no parallelization) to a value that makes sense for their environment (e.g., 2 for dual core, or 24 to get the previous default).
+* Added colors module and tests to consolidate and standardize coloring code in QIIME - also updated the graphics scripts to use the colors module.
+* Added ability for user to specify the background colors of plots in prefs files or on the command line.
+* Tweaked SRA submission routines in accordance with accepted format from JCVI's 
+survey of multiple body sites.
+* Fixed SF bug #2971581, which was an issue with the path to qiime's scripts directory not being determined correctly when qiime was installed using setup.py. qiime_config now contains a key (empty by defualt) for the qiime_scripts_dir. If this is not specified by the user, it is determined from the qiime project dir.
+* Renamed scripts/make_3d_prefs_file.py as scripts/make_prefs_file.py to reflect that the prefs files are now used by other scripts.
+* Changed behavior of color-by option to make_3d_plots, make_2d_plots, and make_rarefaction_plots, so if no -b option or prefs files is provided, scripts default to coloring by all values. Consequently, mapping files are also now required for these scripts.
+* Added a split_libraries_illumina.py script to handle processing of Illumina GAIIx data.
+* Added an additional rarefaction script for clarity. There are now 3 scripts to handle rarefaction: single_rarefaction takes one input otu table into one output table, allows manual naming,  multiple_rarefactions makes auto-named rarefied otu tables at a range of depths, and multiple_rarefactios_even_depth.py makes auto-named tables all at the same depth.
+* Added workflow unit tests (with timeout functionality). 
+* Added default alpha and beta diversity metrics to qiime_parameters.txt.
+* Integrated Denoiser (Jens Reeder's 454 denoiser) wrappers, and tied this into the workflow scripts.
+* Added biplot functionality.  make_3d_plots now takes the -t option (off by default) to include taxa on the pcoa plot.
+* Updated the QIIME tutorial to use the workflow scripts where possible. Additionally added the tutorial data set in the svn repository.
+* Reorganization and expansion of the documentation through-out.
+* Added sanity checks to print_qiime_config.py. This will now allow users to evaluate their environment, and should help with debugging.
+* Added new field to qiime_config (temp_dir) which will be used to specify where temp files should be written. Currently this is only used by the workflow tests, and is intended to allow users to specify something other than /tmp for cases when /tmp is not shared between all nodes that might be working on a job. This will eventually be used for all temp dir creation.
 
 QIIME 0.92 - (3 Mar 2010)
 =======================
