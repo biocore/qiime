@@ -6,10 +6,10 @@ __author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2010, The QIIME project"
 __credits__ = ["Rob Knight", "Justin Kuczynski","Jesse Stombaugh"]
 __license__ = "GPL"
-__version__ = "0.92-dev"
+__version__ = "1.0"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
-__status__ = "Pre-release"
+__status__ = "Release"
  
 from sys import argv, exit, stderr, stdout
 from qiime.util import parse_command_line_parameters, get_options_lookup

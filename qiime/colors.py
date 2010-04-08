@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 #file colors.py
 
-__author__ = "Jesse Stombaugh"
-__copyright__ = "Copyright 2009, the PyCogent Project" #consider project name
-__credits__ = ["Rob Knight","Jesse Stombaugh"] #remember to add yourself
+__author__ = "Rob Knight"
+__copyright__ = "Copyright 2010, The QIIME Project"
+__credits__ = ["Rob Knight","Jesse Stombaugh"]
 __license__ = "GPL"
-__version__ = "0.1"
+__version__ = "1.0"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
-__status__ = "Prototype"
+__status__ = "Release"
 
 """Code for coloring series based on prefs file.
 """

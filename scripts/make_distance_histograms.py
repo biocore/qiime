@@ -6,10 +6,10 @@ __author__ = "Jeremy Widmann"
 __copyright__ = "Copyright 2010, The QIIME project"
 __credits__ = ["Jeremy Widmann","Rob Knight"]
 __license__ = "GPL"
-__version__ = "0.92-dev"
+__version__ = "1.0"
 __maintainer__ = "Jeremy Widmann"
 __email__ = "Jeremy.Widmann@colorado.edu"
-__status__ = "Pre-release"
+__status__ = "Release"
  
 
 from qiime.util import parse_command_line_parameters, get_qiime_project_dir,\
@@ -46,6 +46,13 @@ script_info['required_options']=[\
 ]
 
 script_info['optional_options']=[\
+    make_option('-b', '--colorby', dest='colorby',\
+    help='This is the categories to color by in the plots from the \
+user-generated mapping file. The categories must match the name of a column \
+header in the mapping file exactly and multiple categories can be list by \
+comma separating them without spaces. The user can also combine columns in the \
+mapping file by separating the categories by "&&" without spaces \
+[default=%default]'),\
     make_option('-p', '--prefs_path',help='This is the user-generated preferences \
 file. NOTE: This is a file with a dictionary containing preferences for the \
 analysis.  This dict must have a "Fields" key mapping to a list of desired fields. [default: %default]'),
@@ -59,7 +66,7 @@ analysis.  This dict must have a "Fields" key mapping to a list of desired field
         action='store_true',help='''Perform Monte Carlo analysis on distances.  [Default: %default]'''),\
     make_option('--html_output',dest='html_output',default=False,\
         action='store_true',help='''Write output in HTML format. [Default: %default]'''),\
-    make_option('-f','--fields', dest='fields',\
+    make_option('--fields', dest='fields',\
         help='Comma delimited list of fields to compare.  This overwrites fields in prefs file.  If this is not provided, the first field in metadata mapping file will be used.  Usage: --fields Field1,Field2,Field3'),\
     make_option('--monte_carlo_iters', dest='monte_carlo_iters',type="int",\
         default=10,help='Number of iterations to perform for Monte Carlo analysis. [default: %default]'),\
@@ -97,6 +104,10 @@ def main():
     elif opts.prefs_path is not None:
         prefs = eval(open(opts.prefs_path, 'U').read())
         fields = prefs.get('FIELDS',None)
+    #Colorby overwrites fields for the time being.
+    if opts.colorby is not None:
+        fields = map(strip,opts.colorby.split(','))
+
     
     within_distances, between_distances, dmat = \
         group_distances(mapping_file=opts.map_fname,\

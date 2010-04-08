@@ -18,10 +18,10 @@ __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2010, The QIIME project"
 __credits__ = ["Justin Kuczynski"]
 __license__ = "GPL"
-__version__ = "0.92-dev"
+__version__ = "1.0"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
-__status__ = "Pre-release"
+__status__ = "Release"
  
 #collate_alpha.py
 script_info={}

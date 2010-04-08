@@ -9,7 +9,7 @@ __license__ = "GPL"
 __version__ = "1.0-dev"
 __maintainer__ = "Meg Pirrung"
 __email__ = "meg.pirrung@colorado.edu"
-__status__ = "Pre-release"
+__status__ = "Release"
  
 from optparse import make_option
 from qiime.util import parse_command_line_parameters
@@ -84,7 +84,6 @@ def main():
     ops['prefs'] = sample_color_prefs_and_map_data_from_options(options)
 
     ops['colorby'] = options.colorby
-    
     # #colorby check
     # if options.colorby:
     #     if options.colorby.split(',')[0] == 'ALL':

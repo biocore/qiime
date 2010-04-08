@@ -5,14 +5,14 @@ __author__ = "Jeremy Widmann"
 __copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Jeremy Widmann"]
 __license__ = "GPL"
-__version__ = "0.92-dev"
+__version__ = "1.0"
 __maintainer__ = "Jeremy Widmann"
 __email__ = "jeremy.widmann@colorado.edu"
-__status__ = "Pre-release"
+__status__ = "Release"
 
 from cogent.util.unit_test import TestCase, main
 import shutil
-from os import mkdir, listdir
+from os import mkdir
 from qiime.parse import parse_mapping_file, parse_distmat, group_by_field,\
     group_by_fields
 from numpy import array, arange
@@ -401,8 +401,8 @@ class DistanceHistogramsTests(TestCase):
             obs_fields = obs.split('\t')
             exp_fields = exp.split('\t')
             #Check first 10 fields should be identical from run to run.
-            for i in [0,1,2,3,5,6,7,8,9,11,13]:
-                self.assertEqual(obs_fields[i],exp_fields[i])
+            for i in range(10):
+                self.assertEqual(obs_fields[i],exp_fields[1])
 
     def test_permute_for_monte_carlo(self):
         """permute_for_monte_carlo should return correct result.

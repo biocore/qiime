@@ -4,10 +4,10 @@ __author__ = "Rob Knight, Justin Kuczynski"
 __copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Rob Knight", "Justin Kuczynski"]
 __license__ = "GPL"
-__version__ = "0.92-dev"
+__version__ = "1.0"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
-__status__ = "Pre-release"
+__status__ = "Release"
 
 
 """contains metrics for use with beta_diversity.py
