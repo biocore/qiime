@@ -7,7 +7,7 @@ __copyright__ = "Copyright 2010, The QIIME Project"
 #remember to add yourself if you make changes
 __credits__ = ["Jens Reeder"]
 __license__ = "GPL"
-__version__ = "1.0"
+__version__ = "1.0.0"
 __maintainer__ = "Jens Reeder"
 __email__ = "jensreeder@gmail.com"
 __status__ = "Release"
