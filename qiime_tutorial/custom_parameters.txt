@@ -20,7 +20,7 @@ align_seqs:min_length	150
 align_seqs:min_percent_id	75.0
 
 # Alignment filtering (prior to tree-building) parameters
-filter_alignment:lane_mask_fp	/home/qiime/lanemask_in_1s_and_0s.txt
+filter_alignment:lane_mask_fp	/home/qiime/lanemask_in_1s_and_0s
 filter_alignment:allowed_gap_frac	 0.999999
 
 # Taxonomy assignment parameters

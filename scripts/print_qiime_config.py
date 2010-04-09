@@ -132,7 +132,7 @@ class Qiime_config(TestCase):
             self.assertTrue(exists(scripts_dir),
                             "qiime_scripts_dir does not exist: %s" % scripts_dir)
             self.assertTrue(isdir(scripts_dir),
-                            "qiime_script_dir is not a directory: %s" % scripts_dir)
+                            "qiime_scripts_dir is not a directory: %s" % scripts_dir)
         else:
             pass
             #self.fail("scripts_dir is not set.")

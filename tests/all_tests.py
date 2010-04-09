@@ -88,7 +88,7 @@ if missing_application_tests:
      % '\n'.join(missing_application_tests)
      
 if not script_directory_found:
-        print "\nCritical error: Failed to test scripts because the script directory could not be found.\n The most likely explanation for this failure is that you've installed QIIME using setup.py, and forgot to specify the qiime_script_dir in your qiime_config file. This value shoud be set either to the directory you provided for --install-scripts, or /usr/local/bin if no value was provided to --install-scripts."
+        print "\nCritical error: Failed to test scripts because the script directory could not be found.\n The most likely explanation for this failure is that you've installed QIIME using setup.py, and forgot to specify the qiime_scripts_dir in your qiime_config file. This value shoud be set either to the directory you provided for --install-scripts, or /usr/local/bin if no value was provided to --install-scripts."
 else:
     if bad_scripts:
         print "\nFailed the following script tests.\n%s" % '\n'.join(bad_scripts)
