@@ -18,7 +18,7 @@ A lot of this might migrate into cogent at some point.
 
 from StringIO import StringIO
 from os import getenv, makedirs
-from scipy.stats.mstats import idealfourths
+#from scipy.stats.mstats import idealfourths
 from os.path import abspath, exists, dirname, join, isdir
 from numpy import min, max, median, mean
 import numpy
@@ -878,4 +878,26 @@ def _flip_vectors(jn_matrix, jn_eigvals, m_matrix, m_eigvals):
         else:
             new_matrix[pc_i] = jn_vector
     return new_matrix
+
+def IQR(x):
+    """calculates the interquartile range of x
+
+    x can be a list or an array
+    
+    returns min_val and  max_val of the IQR"""
+
+    x.sort()
+    #split values into lower and upper portions at the median
+    odd = len(x) % 2
+    midpoint = int(len(x)/2)
+    if odd:
+        low_vals = x[:midpoint]
+        high_vals = x[midpoint+1:]
+    else: #if even
+        low_vals = x[:midpoint]
+        high_vals = x[midpoint:]
+    #find the median of the low and high values
+    min_val = median(low_vals)
+    max_val = median(high_vals)
+    return min_val, max_val
 
