@@ -4,10 +4,10 @@ __author__ = "Rob Knight"
 __copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Rob Knight","Greg Caporaso", "Kyle Bittinger"]
 __license__ = "GPL"
-__version__ = "1.0.0"
+__version__ = "1.0.0-dev"
 __maintainer__ = "Rob Knight"
 __email__ = "rob@spot.colorado.edu"
-__status__ = "Release"
+__status__ = "Development"
 
 """Contains code for picking representative set of seqs, several techniques.
 

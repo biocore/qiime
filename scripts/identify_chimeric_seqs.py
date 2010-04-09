@@ -6,10 +6,10 @@ __author__ = "Greg Caporaso, Jens Reeder"
 __copyright__ = "Copyright 2010, The QIIME project"
 __credits__ = ["Greg Caporaso", "Daniel McDonald"]
 __license__ = "GPL"
-__version__ = "1.0.0"
+__version__ = "1.0.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Release"
+__status__ = "Development"
  
 
 from qiime.util import parse_command_line_parameters, get_options_lookup

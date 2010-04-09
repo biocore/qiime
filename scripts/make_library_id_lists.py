@@ -6,10 +6,10 @@ __author__ = "Doug Wendel"
 __copyright__ = "Copyright 2010, The QIIME project"
 __credits__ = ["Rob Knight", "Doug Wendel"]
 __license__ = "GPL"
-__version__ = "1.0.0"
+__version__ = "1.0.0-dev"
 __maintainer__ = "Doug Wendel"
 __email__ = "wendel@colorado.edu"
-__status__ = "Release"
+__status__ = "Development"
  
 
 from qiime.make_library_id_lists import get_first_id, get_ids

@@ -6,10 +6,10 @@ __author__ = "Catherine Lozupone"
 __copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Catherine Lozupone and Jesse Stombaugh"]
 __license__ = "GPL"
-__version__ = "1.0.0"
+__version__ = "1.0.0-dev"
 __maintainer__ = "Catherine Lozupone"
 __email__ = "lozupone@colorado.edu"
-__status__ = "Release"
+__status__ = "Development"
 
 
 from optparse import OptionParser

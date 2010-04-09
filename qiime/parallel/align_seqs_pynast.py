@@ -9,10 +9,10 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Greg Caporaso"] 
 __license__ = "GPL"
-__version__ = "1.0.0"
+__version__ = "1.0.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Release"
+__status__ = "Development"
 
 def get_job_commands(python_exe_fp,align_seqs_fp,fasta_fps,template_aln_fp,\
     pairwise_alignment_method,output_dir,blast_db,\
