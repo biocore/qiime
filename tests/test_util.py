@@ -10,18 +10,18 @@ from cogent.util.misc import remove_files
 from qiime.util import make_safe_f, FunctionWithParams, qiime_blast_seqs,\
     extract_seqs_by_sample_id, get_qiime_project_dir, matrix_stats,\
     raise_error_on_parallel_unavailable, merge_otu_tables,\
-    convert_OTU_table_relative_abundance, create_dir, handle_error_codes
+    convert_OTU_table_relative_abundance, create_dir, handle_error_codes,\
+    summarize_pcoas, _compute_jn_pcoa_avg_ranges, _flip_vectors
 from cogent.app.formatdb import build_blast_db_from_fasta_file
 from cogent.util.misc import get_random_directory_name
 import numpy
 from numpy import array
 
-
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME Project"
 #remember to add yourself if you make changes
 __credits__ = ["Rob Knight", "Daniel McDonald","Greg Caporaso", 
-               "Justin Kuczynski", "Jens Reeder"] 
+               "Justin Kuczynski", "Jens Reeder", "Catherine Lozupone"] 
 __license__ = "GPL"
 __version__ = "1.0.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -409,8 +409,62 @@ class BlastSeqsTests(TestCase):
         result = convert_OTU_table_relative_abundance(otu_table)
         self.assertEqual(result, ['#Full OTU Counts', '#OTU ID\tsample1\tsample2\tsample3\tConsensus Lineage', '0\t0.0\t0.666666666667\t0.0\tBacteria; Bacteroidetes; Bacteroidales; Parabacteroidaceae; Unclassified; otu_475', '1\t0.5\t0.0\t0.0\tBacteria; Bacteroidetes; Bacteroidales; adhufec77-25; Barnesiella; Barnesiella_viscericola; otu_369', '2\t0.5\t0.333333333333\t1.0\tBacteria; Firmicutes; Clostridia; Clostridiales; Faecalibacterium; Unclassified; otu_1121'])
 
+    def test_flip_vectors(self):
+        """_flip_vectors makes a new PCA matrix with correct signs"""
+        m_matrix = array([[-1.0, 0.0, 1.0], [2.0, 4.0, -4.0]])
+        m_eigvals = array([.76, .24])
+        jn_matrix = array([[2.5, 4.0, -4.5], [1.2, 0.1, -1.2]])
+        jn_eigvals = array([.24, .76])
+        new_matrix = _flip_vectors(jn_matrix, jn_eigvals, m_matrix, m_eigvals)
+        self.assertEqual(new_matrix, array([[2.5,4.0, -4.5],[-1.2,-0.1,1.2]]))
+
+    def test_compute_jn_pcoa_avg_ranges(self):
+        """_compute_jn_pcoa_avg_ranges works
+        """
+        jn_flipped_matrices = [array([[2.0,4.0, -4.5],[-1.2,-0.1,1.2]]),\
+                array([[3.0,4.0, -4.5],[-1.2,-0.1,1.2]]),\
+                array([[4.0,4.0, -4.5],[-1.2,-0.1,1.2]]),\
+                array([[5.0,4.0, -4.5],[-1.2,-0.1,1.2]]),\
+                array([[6.0,4.0, -4.5],[-1.2,-0.1,1.2]]),\
+                array([[7.0,4.0, -4.5],[-1.2,-0.1,1.2]]),\
+                array([[1.0,4.0, -4.5],[-1.2,-0.1,1.2]])]
+        avg_matrix, low_matrix, high_matrix = _compute_jn_pcoa_avg_ranges(\
+                jn_flipped_matrices, 'IQR')
+        self.assertFloatEqual(avg_matrix[(0,0)], 4.0)
+        self.assertFloatEqual(avg_matrix[(0,2)], -4.5)
+        self.assertFloatEqual(low_matrix[(0,0)], 2.16666667)
+        self.assertFloatEqual(high_matrix[(0,0)], 5.83333333)
         
-        
+    def test_summarize_pcoas(self):
+        """summarize_pcoas works
+        """
+        master_pcoa = [['1', '2', '3'], \
+            array([[-1.0, 0.0, 1.0], [2.0, 4.0, -4.0]]), \
+            array([.76, .24])]
+        jn1 = [['1', '2', '3'], \
+            array([[1.2, 0.1, -1.2],[2.5, 4.0, -4.5]]), \
+            array([0.80, .20])]
+        jn2 = [['1', '2', '3'], \
+            array([[-1.4, 0.05, 1.3],[2.6, 4.1, -4.7]]), \
+            array([0.76, .24])]
+        jn3 = [['1', '2', '3'], \
+            array([[-1.5, 0.05, 1.6],[2.4, 4.0, -4.8]]), \
+            array([0.84, .16])]
+        jn4 = [['1', '2', '3'], \
+            array([[-1.5, 0.05, 1.6],[2.4, 4.0, -4.8]]), \
+            array([0.84, .16])]
+        support_pcoas = [jn1, jn2, jn3, jn4]
+        matrix_average, matrix_low, matrix_high, eigval_average, m_names = \
+            summarize_pcoas(master_pcoa, support_pcoas, 'IQR')
+        self.assertEqual(m_names, ['1', '2', '3'])
+        self.assertFloatEqual(matrix_average[(0,0)], -1.4)
+        self.assertFloatEqual(matrix_average[(0,1)], 0.0125)
+        self.assertFloatEqual(matrix_low[(0,0)], -1.5)
+        self.assertFloatEqual(matrix_high[(0,0)], -1.28333333)
+        self.assertFloatEqual(matrix_low[(0,1)], -0.0375)
+        self.assertFloatEqual(matrix_high[(0,1)], 0.05)
+        self.assertFloatEqual(eigval_average[0], 0.81)
+        self.assertFloatEqual(eigval_average[1], 0.19)
 
 inseqs1 = """>s2_like_seq
 TGCAGCTTGAGCACAGGTTAGAGCCTTC
