@@ -6,10 +6,10 @@ __copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Rob Knight", "Justin Kuczynski", "Greg Caporaso",\
                 "Cathy Lozupone", "Jens Reeder"] #remember to add yourself
 __license__ = "GPL"
-__version__ = "0.92-dev"
+__version__ = "1.0.0"
 __maintainer__ = "Rob Knight"
 __email__ = "rob@spot.colorado.edu"
-__status__ = "Pre-release"
+__status__ = "Release"
 
 from numpy import array, nan
 from StringIO import StringIO

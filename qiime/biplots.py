@@ -5,10 +5,10 @@ __author__ = "Dan Knights"
 __copyright__ = "Copyright 2010, The QIIME Project" 
 __credits__ = ["Dan Knights", "Justin Kuczynski"] #remember to add yourself
 __license__ = "GPL"
-__version__ = "0.92-dev"
+__version__ = "1.0.0"
 __maintainer__ = "Dan Knights"
 __email__ = "daniel.knights@colorado.edu"
-__status__ = "Pre-release"
+__status__ = "Release"
 
 from qiime.parse import parse_otu_table
 from numpy import array,apply_along_axis,dot,delete,argsort

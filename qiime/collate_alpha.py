@@ -4,10 +4,10 @@ __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Justin Kuczynski"]
 __license__ = "GPL"
-__version__ = "0.92-dev"
+__version__ = "1.0.0"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
-__status__ = "Pre-release"
+__status__ = "Release"
 
 """takes as input alpha diveristy files, format:
 file: one rarefaction depth/iteration
