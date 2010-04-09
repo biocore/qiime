@@ -3,7 +3,7 @@
 __author__ = "Daniel McDonald"
 __copyright__ = "Copyright 2010, The QIIME Project" 
 __credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso", 
-"Justin Kuczynski","Jens Reeder"] #remember to add yourself if you make changes
+"Justin Kuczynski","Jens Reeder","Catherine Lozupone"] #remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.0.0-dev"
 __maintainer__ = "Rob Knight"
@@ -18,13 +18,15 @@ A lot of this might migrate into cogent at some point.
 
 from StringIO import StringIO
 from os import getenv, makedirs
+from scipy.stats.mstats import idealfourths
 from os.path import abspath, exists, dirname, join, isdir
 from numpy import min, max, median, mean
 import numpy
-from numpy import array, zeros
+from numpy import array, zeros, argsort, shape, vstack
 from collections import defaultdict
 from optparse import OptionParser, OptionGroup, make_option
 import sys
+import os
 from copy import deepcopy
 from cogent import LoadSeqs
 from cogent.parse.tree import DndParser, PhyloNode
@@ -40,7 +42,7 @@ from cogent.app.formatdb import build_blast_db_from_fasta_path,\
 from cogent import LoadSeqs
 
 from cogent.util.misc import curry
-from qiime.parse import parse_otu_table, parse_qiime_config_files
+from qiime.parse import parse_otu_table, parse_qiime_config_files, parse_coords
 
 class TreeMissingError(IOError):
     """Exception for missing tree file"""
@@ -786,4 +788,94 @@ def handle_error_codes(dir_name, supress_errors=False,
         return error_code
     else:
         raise OSError, error_strings[error_code]
+
+def load_pcoa_files(master_pcoa_file, support_dir):
+    """loads PCoA files from filepaths
+    """
+    support_pcoas = []
+    pcoa_filenames = os.listdir(support_dir)
+    #ignore invisible files like .DS_Store
+    pcoa_filenames = [fname for fname in pcoa_filenames if not \
+        fname.startswith('.')]
+    master_pcoa = open(master_pcoa_file, 'U')
+    master_pcoa = parse_coords(master_pcoa)
+    for fname in pcoa_filenames:
+        try:
+            f = open(os.path.join(support_dir, fname), 'U')
+            pcoa_res = parse_coords(f)
+            support_pcoas.append(pcoa_res)
+            f.close()
+        except IOError, err:
+            sys.sterr.write('error loading support pcoa ' + fname + '\n')
+            exit(1)
+    return master_pcoa, support_pcoas
+
+def summarize_pcoas(master_pcoa, support_pcoas, method='IQR'):
+    """returns the average PCoA vector values for the support pcoas
+
+    Also returns the ranges as calculated with the specified method. 
+    The choices are:
+        IQR: the Interquartile Range
+
+    """
+    m_matrix = master_pcoa[1]
+    m_eigvals = master_pcoa[2]
+    m_names = master_pcoa[0]
+    jn_flipped_matrices = []
+    all_eigvals = []
+    for rep in support_pcoas:
+        matrix = rep[1]
+        eigvals = rep[2]
+        all_eigvals.append(eigvals)
+        jn_flipped_matrices.append(_flip_vectors(matrix, eigvals, m_matrix, \
+            m_eigvals))
+    matrix_average, matrix_low, matrix_high = _compute_jn_pcoa_avg_ranges(\
+            jn_flipped_matrices, method)
+    #compute average eigvals
+    all_eigvals_stack = vstack(all_eigvals)
+    eigval_sum = numpy.sum(all_eigvals_stack, axis=0)
+    eigval_average = eigval_sum / float(len(all_eigvals))
+    return matrix_average, matrix_low, matrix_high, eigval_average, m_names
+
+def _compute_jn_pcoa_avg_ranges(jn_flipped_matrices, method):
+    """Computes PCoA average and ranges for jackknife plotting
+
+    returns 1) an array of jn_averages
+             2) an array of upper values of the ranges
+            3) an array of lower values for the ranges
+    """
+    x,y = shape(jn_flipped_matrices[0])
+    all_flat_matrices = [matrix.ravel() for matrix in jn_flipped_matrices]
+    summary_matrix = vstack(all_flat_matrices)
+    matrix_sum = numpy.sum(summary_matrix, axis=0)
+    matrix_average = matrix_sum / float(len(jn_flipped_matrices))
+    matrix_average = matrix_average.reshape(x,y)
+    if method == 'IQR':
+        result = idealfourths(summary_matrix, axis=0)
+        matrix_low = result[0].reshape(x,y)
+        matrix_high = result[1].reshape(x,y)
+    return matrix_average, matrix_low, matrix_high
+
+def _flip_vectors(jn_matrix, jn_eigvals, m_matrix, m_eigvals):
+    """transforms PCA vectors so that signs are correct"""
+    new_matrix= zeros([len(jn_matrix), len(jn_matrix[0])], float)
+    #get info for the True PCA matrix
+    master_vector_order = list(argsort(m_eigvals))
+    master_vector_order.reverse()
+    #get info for the jn PCA matrix
+    jn_vector_order = list(argsort(jn_eigvals))
+    jn_vector_order.reverse()
+    for pc_n, pc_i in enumerate(jn_vector_order):
+        m_vector = m_matrix[master_vector_order[pc_n]]
+        jn_vector = jn_matrix[pc_i]
+        disT = list(m_vector - jn_vector)
+        disT = sum(map(abs, disT))
+        jn_flip = jn_vector*[-1]
+        disF = list(m_vector - jn_flip)
+        disF = sum(map(abs, disF))
+        if disT > disF:
+            new_matrix[pc_i] = jn_flip
+        else:
+            new_matrix[pc_i] = jn_vector
+    return new_matrix
 
