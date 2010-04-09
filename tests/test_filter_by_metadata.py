@@ -5,10 +5,10 @@ __author__ = "Rob Knight"
 __copyright__ = "Copyright 2010, The QIIME Project" #consider project name
 __credits__ = ["Rob Knight"] #remember to add yourself
 __license__ = "GPL"
-__version__ = "1.0.0"
+__version__ = "0.92-dev"
 __maintainer__ = "Rob Knight"
 __email__ = "rob@spot.colorado.edu"
-__status__ = "Release"
+__status__ = "Pre-release"
 
 from qiime.parse import parse_otu_table, parse_mapping_file, parse_metadata_state_descriptions
 from sys import argv

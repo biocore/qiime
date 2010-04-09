@@ -38,10 +38,10 @@ __author__ = "Rob Knight"
 __copyright__ = "Copyright 2010, The QIIME Project" 
 __credits__ = ["Rob Knight","William Walters"] #remember to add yourself
 __license__ = "GPL"
-__version__ = "1.0.0"
+__version__ = "0.92-dev"
 __maintainer__ = "William Walters"
 __email__ = "rob@spot.colorado.edu","william.a.walters@colorado.edu"
-__status__ = "Release"
+__status__ = "Pre-release"
 
 from collections import defaultdict
 from string import strip, letters, digits, strip, translate

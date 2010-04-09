@@ -2,13 +2,13 @@
 #file make_rarefaction_averages.py
 from __future__ import division
 __author__ = "Meg Pirrung"
-__copyright__ = "Copyright 2010, The QIIME Project"
+__copyright__ = "Copyright 2009, QIIME"
 __credits__ = ["Meg Pirrung"] 
 __license__ = "GPL"
-__version__ = "1.0.0"
+__version__ = "0.1"
 __maintainer__ = "Meg Pirrung"
 __email__ = "meg.pirrung@colorado.edu"
-__status__ = "Release"
+__status__ = "Prototype"
 
 """
 Author: Meg Pirrung (meg.pirrung@colorado.edu) 
