@@ -26,13 +26,15 @@ from qiime.colors import natsort, data_color_order, data_colors, \
 from cogent.util.misc import get_random_directory_name
 import os
 
-TABLE_HTML = """<table cellpadding=0 cellspacing=0 border=0>
+TABLE_HTML = """<table cellpadding=0 cellspacing=0 border=1>
+<tr><th align=center colspan=3 border=0>%s</th></tr>
 <tr>
-<td class=normal align=center>%s</td>
-<td class=normal align=center>%s</td>
-<td class=normal align=center>%s</td>
+<td class=normal align=center border=0>%s</td>
+<td class=normal align=center border=0>%s</td>
+<td class=normal align=center border=0>%s</td>
 </tr>
-</table>""" 
+</table>
+<br><br>""" 
 
 PAGE_HTML = """
 <html>
@@ -355,9 +357,10 @@ def generate_2d_plots(prefs,data,html_dir_path,data_dir_path,filename,
                                                  data_colors,data_color_order,
                                                  generate_eps=True)    
 
-        out_table += TABLE_HTML % ("<br>".join(img_data[("1", "2")]),
-                                  "<br>".join(img_data[("3", "2")]),
-                                   "<br>".join(img_data[("1", "3")]))
+        out_table += TABLE_HTML % (labelname, 
+                                    "<br>".join(img_data[("1", "2")]),
+                                    "<br>".join(img_data[("3", "2")]),
+                                    "<br>".join(img_data[("1", "3")]))
                                    
     outfile = create_html_filename(filename,'_pca_2D.html')
     outfile=os.path.join(html_dir_path,outfile)
