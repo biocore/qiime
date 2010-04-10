@@ -11,7 +11,8 @@ from qiime.util import make_safe_f, FunctionWithParams, qiime_blast_seqs,\
     extract_seqs_by_sample_id, get_qiime_project_dir, matrix_stats,\
     raise_error_on_parallel_unavailable, merge_otu_tables,\
     convert_OTU_table_relative_abundance, create_dir, handle_error_codes,\
-    summarize_pcoas, _compute_jn_pcoa_avg_ranges, _flip_vectors, IQR
+    summarize_pcoas, _compute_jn_pcoa_avg_ranges, _flip_vectors, IQR, \
+    idealfourths 
 from cogent.app.formatdb import build_blast_db_from_fasta_file
 from cogent.util.misc import get_random_directory_name
 import numpy
@@ -483,6 +484,23 @@ class BlastSeqsTests(TestCase):
         minv, maxv = IQR(x)
         self.assertEqual(minv, 2.5)
         self.assertEqual(maxv, 6.5)
+        
+    def test_idealfourths(self):
+        "Tests the ideal-fourths function which was imported from scipy"
+        test = numpy.arange(100)
+        self.assertEqual(idealfourths(test),
+                            [24.416666666666668, 74.583333333333343])
+        test_2D = test.repeat(3).reshape(-1,3)
+        
+        self.assertFloatEqualRel(numpy.asarray(idealfourths(test_2D, axis=0)),\
+                    numpy.array([[24.41666667, 24.41666667, 24.41666667], \
+                                 [74.58333333, 74.58333333, 74.58333333]]))
+        
+        self.assertEqual(idealfourths(test_2D, axis=1),
+                            test.repeat(2).reshape(-1,2))
+        test = [0,0]
+        _result = idealfourths(test)
+        self.assertEqual(numpy.isnan(_result).all(),True)
         
 inseqs1 = """>s2_like_seq
 TGCAGCTTGAGCACAGGTTAGAGCCTTC

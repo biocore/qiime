@@ -22,6 +22,8 @@ from os import getenv, makedirs
 from os.path import abspath, exists, dirname, join, isdir
 from numpy import min, max, median, mean
 import numpy
+from numpy.ma import MaskedArray
+from numpy.ma.extras import apply_along_axis
 from numpy import array, zeros, argsort, shape, vstack
 from collections import defaultdict
 from optparse import OptionParser, OptionGroup, make_option
@@ -901,3 +903,22 @@ def IQR(x):
     max_val = median(high_vals)
     return min_val, max_val
 
+def idealfourths(data, axis=None):
+    """Returns an estimate of the lower and upper quartiles of the data along
+    the given axis, as computed with the ideal fourths.
+    """
+    def _idf(data):
+        x = data.compressed()
+        n = len(x)
+        if n < 3:
+            return [numpy.nan,numpy.nan]
+        (j,h) = divmod(n/4. + 5/12.,1)
+        qlo = (1-h)*x[j-1] + h*x[j]
+        k = n - j
+        qup = (1-h)*x[k] + h*x[k-1]
+        return [qlo, qup]
+    data = numpy.sort(data, axis=axis).view(MaskedArray)
+    if (axis is None):
+        return _idf(data)
+    else:
+        return apply_along_axis(_idf, axis, data)
