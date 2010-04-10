@@ -12,6 +12,8 @@ __status__ = "Development"
 
 
 import matplotlib
+from matplotlib import use
+use('Agg',warn=False)
 from numpy import array
 from os.path import exists
 from StringIO import StringIO

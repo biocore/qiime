@@ -11,8 +11,9 @@ __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 __status__ = "Development"
 
-import matplotlib,re
-matplotlib.use('Agg')
+import re
+from matplotlib import use
+use('Agg',warn=False)
 from matplotlib.pylab import *
 from commands import getoutput
 from string import strip

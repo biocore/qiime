@@ -19,7 +19,8 @@ Python 2.5
 Matplotlib
 Numpy
 """
-
+from matplotlib import use
+use('Agg',warn=False)
 from string import strip
 from matplotlib.pylab import savefig, clf, gca, gcf, errorbar
 import matplotlib.pyplot as plt
