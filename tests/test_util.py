@@ -12,11 +12,11 @@ from qiime.util import make_safe_f, FunctionWithParams, qiime_blast_seqs,\
     raise_error_on_parallel_unavailable, merge_otu_tables,\
     convert_OTU_table_relative_abundance, create_dir, handle_error_codes,\
     summarize_pcoas, _compute_jn_pcoa_avg_ranges, _flip_vectors, IQR, \
-    idealfourths 
+    idealfourths, isarray
 from cogent.app.formatdb import build_blast_db_from_fasta_file
 from cogent.util.misc import get_random_directory_name
 import numpy
-from numpy import array
+from numpy import array, asarray
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME Project"
@@ -486,7 +486,7 @@ class BlastSeqsTests(TestCase):
         self.assertEqual(maxv, 6.5)
         
     def test_idealfourths(self):
-        "Tests the ideal-fourths function which was imported from scipy"
+        "idealfourths: tests the ideal-fourths function which was imported from scipy"
         test = numpy.arange(100)
         self.assertEqual(idealfourths(test),
                             [24.416666666666668, 74.583333333333343])
@@ -501,6 +501,17 @@ class BlastSeqsTests(TestCase):
         test = [0,0]
         _result = idealfourths(test)
         self.assertEqual(numpy.isnan(_result).all(),True)
+        
+    def test_isarray(self):
+        "isarray: tests the isarray function"
+        test1=asarray('Test')
+        test2 = 'Test'
+        
+        exp1 = True
+        exp2 = False
+        
+        self.assertEqual(isarray(test1),exp1)
+        self.assertEqual(isarray(test2),exp2)
         
 inseqs1 = """>s2_like_seq
 TGCAGCTTGAGCACAGGTTAGAGCCTTC

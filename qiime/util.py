@@ -24,7 +24,7 @@ from numpy import min, max, median, mean
 import numpy
 from numpy.ma import MaskedArray
 from numpy.ma.extras import apply_along_axis
-from numpy import array, zeros, argsort, shape, vstack
+from numpy import array, zeros, argsort, shape, vstack,ndarray
 from collections import defaultdict
 from optparse import OptionParser, OptionGroup, make_option
 import sys
@@ -922,3 +922,14 @@ def idealfourths(data, axis=None):
         return _idf(data)
     else:
         return apply_along_axis(_idf, axis, data)
+
+def isarray(a):
+    """
+    Test for arrayobjects.
+    """
+    try:
+        result=isinstance(a,ndarray)
+    except:
+        result=False
+
+    return result
