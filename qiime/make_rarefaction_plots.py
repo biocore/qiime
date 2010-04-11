@@ -38,7 +38,7 @@ def save_rarefaction_plots(xaxis, yvals, err, xmax, ymax, ops, \
     plt.clf()
     plt.title((splitext(split(rtype)[1])[0]) + ": " + mapping_category)
     fig  = plt.gcf()
-    
+     
     #Add the lines to the plot
     for o in ops:
         l = o
@@ -107,7 +107,7 @@ def make_plots(color_prefs, data, background_color, label_color, rares, ymax, \
             
             #Get the alpha rare data
             raredata = rares[r]
-            legend_td=['<td><b>%s Coloring:</b></td>' % (group_name)]
+            legend_td=['<td class="headers"><b>%s Coloring:</b></td>' % (group_name)]
             
             #generate the filepath for the image file
             file_path = os.path.join(output_dir, \
@@ -128,14 +128,14 @@ def make_plots(color_prefs, data, background_color, label_color, rares, ymax, \
             #Sort and iterate through the groups
             for i in natsort(groups):
                 #Create the legend rows
-                legend_td.append('<td bgcolor="%s">%s</td>' % (data_colors[colors[i]].toHex(), i))
+                legend_td.append('<td class="data" bgcolor="%s">%s</td>' % (data_colors[colors[i]].toHex(), i))
 
                 
                 for k in groups[i]:
                     for j in range(len(raredata['xaxis'])):
                         group_field=i
                         sample_field=k
-                        seq_per_sample_field=j
+                        seq_per_sample_field=int(raredata['xaxis'][j])
                         color_field=data_colors[colors[i]].toHex()
                         
                         #If a field is missing, then it means that one of the 
@@ -198,6 +198,7 @@ HTML='''
   <title>Rarefaction Curves</title>
 <style type="text/css">
 td.data{font-size:10px}
+td.headers{font-size:12px}
 </style>
 <script language="javascript" type="text/javascript">
 
@@ -246,11 +247,11 @@ old_selected.value=SelObject.value;
 <br>
 <table id="rare_data">
 <tr id="rare_header" style="display: none;">
-<td><b>Category</b></td>
-<td><b>SampleID</b></td>
-<td><b>Sequence Depth</b></td>
-<td><b>Rarefaction Ave.</b></td>
-<td><b>Error</b></td>
+<td class="headers"><b>Category</b></td>
+<td class="headers"><b>SampleID</b></td>
+<td class="headers"><b>Sequence Depth</b></td>
+<td class="headers"><b>Rarefaction Ave.</b></td>
+<td class="headers"><b>Error</b></td>
 </tr>
 %s
 </table>
