@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Meg Pirrung"
 __copyright__ = "Copyright 2010, The QIIME project"
-__credits__ = ["Meg Pirrung"]
+__credits__ = ["Meg Pirrung", "Jesse Stombaugh"]
 __license__ = "GPL"
 __version__ = "1.0.0-dev"
 __maintainer__ = "Meg Pirrung"
@@ -12,16 +12,15 @@ __email__ = "meg.pirrung@colorado.edu"
 __status__ = "Development"
  
 from optparse import make_option
-from qiime.util import parse_command_line_parameters, get_qiime_project_dir
+from qiime.util import parse_command_line_parameters, get_qiime_project_dir, \
+                        create_dir
 from cogent.util.misc import get_random_directory_name
 from sys import argv, exit, exc_info
-from random import choice, randrange
-from time import strftime
 from qiime.colors import sample_color_prefs_and_map_data_from_options
 from qiime.parse import parse_rarefaction_data
-from qiime.make_rarefaction_plots import make_plots, make_output_files
+from qiime.make_rarefaction_plots import make_plots
 from os.path import exists, splitext, split
-from os import listdir, mkdir
+from os import listdir,path
 
 script_info={}
 script_info['brief_description']="""Generate Rarefaction Plots"""
@@ -29,9 +28,11 @@ script_info['script_description']="""Once the batch alpha diversity files have b
 
 This script creates an html file of rarefaction plots based on the supplied rarefaction files in the folder given (-i) from make_rarefaction_averages.py. The user may also supply optional arguments like an image type (-i), and a resolution (-d)."""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Default Example:""","""For generated rarefaction plots using the default parameters, including the mapping file and one rarefaction file, you can use the following command:""","""make_rarefaction_plots.py -r chao1/"""))
-script_info['script_usage'].append(("""Specify Image Type and Resolution:""","""Optionally, you can change the resolution ("-d") and the type of image created ("-i"), by using the following command:""","""make_rarefaction_plots.py -i chao1/ -d 180 -p pdf"""))
-script_info['output_description']="""The result of this script produces a folder and within that folder there are sub-folders for each data file (metric) supplied as input. Within the sub-folders, there will be images for each of the categories specified by the user."""
+script_info['script_usage'].append(("""Default Example:""","""For generated rarefaction plots using the default parameters, including the mapping file and one rarefaction file, you can use the following command:""","""make_rarefaction_plots.py -r chao1/ -m mapping_file.txt"""))
+script_info['script_usage'].append(("""Specify Image Type and Resolution:""","""Optionally, you can change the resolution ("-d") and the type of image created ("-i"), by using the following command:""","""make_rarefaction_plots.py -i chao1/ -m mapping_file.txt -d 180 -g pdf"""))
+script_info['script_usage'].append(("""Use Prefs File:""","""You can also supply a preferences file "-p", as follows""","""make_rarefaction_plots.py -i chao1/ -m mapping_file.txt -d 180 -p prefs.txt"""))
+script_info['script_usage'].append(("""Set Background Color:""","""Alternatively, you can set the plot background "-k", as follows: a preferences file "-p", as follows""","""make_rarefaction_plots.py -i chao1/ -m mapping_file.txt -k black"""))
+script_info['output_description']="""The result of this script produces a folder and within that folder there is a sub-folder containing image files. Within the main folder, there is an html file."""
 script_info['required_options']=[\
 make_option('-i', '--input_dir', help='name of folder containing rarefaction files, takes output from make_rarefaction_averages.py [REQUIRED]'),
 make_option('-m', '--map_fname', help='name of mapping file [REQUIRED]')
@@ -40,8 +41,8 @@ script_info['optional_options']=[\
 make_option('-t', '--rarefactionAve', help='name of overall average rarefaction file, takes output from make_rarefaction_averages.py'),
 make_option('-b', '--colorby', type='string', help='name of columns to make rarefaction graphs of, comma delimited no spaces.'),
 make_option('-p', '--prefs_path', type='string', help='preferences file for coloring of columns.'),
-make_option('-k', '--background_color', type='string', help='Background color for graphs.'),
-make_option('-g', '--imagetype', type='string', help='extension for image type choose from (jpg, gif, png, svg, pdf). [default: %default]', default='png'),
+make_option('-k', '--background_color', type='string', help='Background color for graphs.',default='white'),
+make_option('-g', '--imagetype', type='string', help='extension for image type choose from (png, svg, pdf).  WARNING: Some formats may not properly open in your browser! [default: %default]', default='png'),
 make_option('-d', '--resolution', help='output image resolution, [default: %default]', type='int', default='75'),
 make_option('-o', '--dir_path',help='directory prefix for all analyses [default: %default]', default='.'),
 make_option('-y', '--ymax', help='maximum value for y axis, [default: %default] the default value will tell the script to calculate a y axis maximum depending on the data', type='int', default='0')
@@ -65,55 +66,52 @@ def main():
             option_parser.error('Problem with rarefaction file. %s'%\
             exc_info()[1])
             exit(0)
-    ops['rarefactions'] = rares
     
-    if options.imagetype not in ['jpg','gif','png','svg','pdf']:
+    if options.imagetype not in ['png','svg','pdf']:
         option_parser.error('Supplied extension not supported.')
         exit(0)
     else:
-        ops['imagetype'] = options.imagetype
+        imagetype = options.imagetype
         
     try:
-        ops['resolution'] = int(options.resolution)
+        resolution = int(options.resolution)
     except(ValueError):
         option_parser.error('Inavlid resolution.')
         exit(0)
 
     try:
-        ops['ymax'] = int(options.ymax)
+        ymax = int(options.ymax)
     except(ValueError):
         option_parser.error('Inavlid maximum y axis value.')
         exit(0)
-
-    #prefs check
-    if(options.prefs_path):
-        try:
-            open(options.prefs_path, 'U').readlines()
-        except(IOError):
-            option_parser.error('Problem with prefs file. %s'%\
-            sys.exc_info()[1])
-            exit(0)
-    ops['prefs_path'] = options.prefs_path
-    ops['prefs'] = sample_color_prefs_and_map_data_from_options(options)
-
-    ops['colorby'] = options.colorby
-
+    
+    #Get the command-line options.
+    prefs, data, background_color, label_color = \
+                    sample_color_prefs_and_map_data_from_options(options)
+    
     #output directory check
     if options.dir_path != '.':
         if exists(options.dir_path):
-            ops['output_path'] = options.dir_path
+            output_dir = options.dir_path
         else:
             try:
-                mkdir(options.dir_path)
-                ops['output_path'] = options.dir_path
+                create_dir(options.dir_path,False)
+                output_dir = options.dir_path
             except(ValueError):
                 option_parser.error('Could not create output directory.')
                 exit(0)
     else:
-        ops['output_path'] = get_random_directory_name()
+        output_dir = get_random_directory_name()
     
-    graphNames = make_plots(ops)
-    make_output_files(ops, get_qiime_project_dir(), graphNames)
+    #Generate the plots and html text
+    html_text = make_plots(prefs, data, background_color, label_color, rares, \
+                    ymax, output_dir,resolution,imagetype)
+                    
+    #Write the html file.
+    outfile = open(path.join(output_dir,'rarefaction_plots.html'),'w')
+    outfile.write(html_text)
+    outfile.close()
+
 
 if __name__ == "__main__":
     main()

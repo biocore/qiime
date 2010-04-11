@@ -3,7 +3,7 @@
 from __future__ import division
 __author__ = "Meg Pirrung"
 __copyright__ = "Copyright 2010, The QIIME Project"
-__credits__ = ["Meg Pirrung"] 
+__credits__ = ["Meg Pirrung", "Jesse Stombaugh"] 
 __license__ = "GPL"
 __version__ = "1.0.0-dev"
 __maintainer__ = "Meg Pirrung"
@@ -19,147 +19,242 @@ Python 2.5
 Matplotlib
 Numpy
 """
-from matplotlib import use
+from matplotlib import use,rc
 use('Agg',warn=False)
 from string import strip
 from matplotlib.pylab import savefig, clf, gca, gcf, errorbar
 import matplotlib.pyplot as plt
 import os.path
 from os.path import exists, splitext, split
-import shutil
-from itertools import cycle
 from qiime.colors import Color, natsort, iter_color_groups
-
+from qiime.util import create_dir
 
 def save_rarefaction_plots(xaxis, yvals, err, xmax, ymax, ops, \
-mapping_category, itype, res, rtype, data_colors, colors, fpath,\
- graphNames, background_color):
+            mapping_category, itype, res, rtype, data_colors, colors, fpath,\
+            background_color,label_color):
+    '''This function creates the images, using matplotlib.'''
+    
+    #Creathe plot image
     plt.clf()
     plt.title((splitext(split(rtype)[1])[0]) + ": " + mapping_category)
     fig  = plt.gcf()
-    plt.grid(color='gray', linestyle='-')
-
-    ops = natsort(ops)
-
+    
+    #Add the lines to the plot
     for o in ops:
         l = o
-        if len(o) > 20:
-            l = l[:20] + '...'
-        
-        if data_colors != None:
-            try:
-                plt.errorbar(xaxis[:len(yvals[o])], yvals[o], \
-                yerr=err[o][:len(yvals[o])], label=l, color=data_colors[colors[o]].toHex())
-            except(KeyError):
-                continue
-        else:
-            plt.errorbar(xaxis[:len(yvals[o])], yvals[o], \
-            yerr=err[o][:len(yvals[o])], label=l, color=colors[o])
-
-    c = 1
-    if len(ops) > 12:
-        c = int(len(ops)/12)
-
-    # plt.legend(bbox_to_anchor=(1.05, 1), loc=2, markerscale=.3, ncol=c)
-    plt.legend(loc=2, markerscale=.3, ncol=c)
+        plt.errorbar(xaxis[:len(yvals[o])], yvals[o], \
+                     yerr=err[o][:len(yvals[o])], label = l, color = \
+                     data_colors[colors[o]].toHex(),elinewidth=1,lw=2,capsize=4)
+    
+    #get the plot axis
     ax = plt.gca()
     ax.set_axis_bgcolor(background_color)
+    
+    #set tick colors and width
+    for line in ax.yaxis.get_ticklines():
+        # line is a matplotlib.lines.Line2D instance
+        line.set_color(label_color)
+        line.set_markeredgewidth(1)
+        
+    for line in ax.xaxis.get_ticklines():
+        # line is a matplotlib.lines.Line2D instance
+        line.set_color(label_color)
+        line.set_markeredgewidth(1)
+    
+    #set x/y limits and labels for plot
     ax.set_axisbelow(True)
     ax.set_xlim((0,xmax))
     ax.set_ylim((0,ymax))
     ax.set_xlabel('Sequences Per Sample')
     ax.set_ylabel("Rarefaction Measure: " + splitext(split(rtype)[1])[0])
-
+    
+    #Create file for image
     imgpath = os.path.join(fpath,mapping_category) + '.'+itype
+    
+    #Save the image
     plt.savefig(imgpath, format=itype, dpi=res)
 
-    imgnmforjs = splitext(split(rtype)[1])[0] + "/" + mapping_category +"."+\
-    itype
-    graphNames.append(imgnmforjs)
-    return graphNames
+    #Get the image name for the saved image relative to the main directory
+    image_loc = splitext(split(rtype)[1])[0] + "/" + mapping_category +"." + \
+                          itype
+
+    return image_loc
     
-def make_plots(options):
-    data = {}
-    graphNames = []
+def make_plots(color_prefs, data, background_color, label_color, rares, ymax, \
+                output_dir, resolution, imagetype):   
+    '''This is the main function for generating the rarefaction plots and html
+        file.'''
     
-    color_prefs,data,background_color,label_color = options['prefs']
+    #set the arrays for html text.
+    plot_table_html=[]
+    data_table_html=[]
+    category_select_html=[]
+    legend_html=[]
+    
+    #Assign colors based on the supplied groups
     groups_and_colors=iter_color_groups(data['map'],color_prefs)
     groups_and_colors=list(groups_and_colors)
-    
-    if options['colorby']:
-        categs = options['colorby'].split(',')
-        options['categories'] = list(set(categs).intersection(set(data['map'][0])))
-    
-    for r in options['rarefactions']:
-        ymax = options['ymax']
-        data = options['rarefactions'][r]
 
-        file_path = os.path.join(options['output_path'], \
-        splitext(split(data['headers'][0])[1])[0])
-        if not os.path.exists(file_path):
-            os.makedirs(file_path)
-
-        if ymax == 0:
-            ymax = max([max(v) for v in data['series'].values()]) + \
-            max([max(v) for v in data['error'].values()])
-        xmax = data['xaxis'][len(data['xaxis'])-1]
-
-        if(options['prefs_path'] != None):
-            for i in range(len(groups_and_colors)):
-                try:
-                    groups_and_colors[i].index(r.split('.')[0])
-                    break
-                except(ValueError):
-                    continue
+    #Iterate through the collated alpha files.
+    iterator=0
+    for r in natsort(rares):
+        
+        #Get the Category Name
+        group_name=r.split('.')[0]
+        
+        #Check that the group is present in the prefs file.
+        if color_prefs.has_key(group_name):
             
-            if i == len(groups_and_colors)-1:
-                try:
-                    groups_and_colors[i].index(r.split('.')[0])
-                except(ValueError):
-                    continue
-                
-            groups=groups_and_colors[i][1]
-            colors=groups_and_colors[i][2]
-            data_colors=groups_and_colors[i][3]
+            #Get the alpha rare data
+            raredata = rares[r]
+            legend_td=['<td><b>%s Coloring:</b></td>' % (group_name)]
+            
+            #generate the filepath for the image file
+            file_path = os.path.join(output_dir, \
+            splitext(split(raredata['headers'][0])[1])[0])
+        
+            #If the folder is not present, create it.
+            if not os.path.exists(file_path):
+                create_dir(file_path,False)
+            if ymax == 0:
+                ymax = max([max(v) for v in raredata['series'].values()]) + \
+                max([max(v) for v in raredata['error'].values()])
+            xmax = raredata['xaxis'][len(raredata['xaxis'])-1]
+            
+            groups=groups_and_colors[iterator][1]
+            colors=groups_and_colors[iterator][2]
+            data_colors=groups_and_colors[iterator][3]
 
+            #Sort and iterate through the groups
+            for i in natsort(groups):
+                #Create the legend rows
+                legend_td.append('<td bgcolor="%s">%s</td>' % (data_colors[colors[i]].toHex(), i))
+
+                
+                for k in groups[i]:
+                    for j in range(len(raredata['xaxis'])):
+                        group_field=i
+                        sample_field=k
+                        seq_per_sample_field=j
+                        color_field=data_colors[colors[i]].toHex()
+                        
+                        #If a field is missing, then it means that one of the 
+                        #samples did not contain enough sequences.
+                        #For this case, we will assign the value as n.a.
+                        try:
+                            average_field=raredata['series'][i][j]
+                            error_field=raredata['error'][i][j]
+                        except:
+                            average_field='n.a.'
+                            error_field='n.a.'
+                            
+                        #Create the data table rows
+                        data_table_html.append('<tr name="%s" style="display: none;"><td class="data" bgcolor="%s">%s</td><td class="data">%s</td><td class="data">%s</td><td class="data">%s</td><td class="data">%s</td></tr>' \
+                            % (group_name, color_field, group_field, \
+                               sample_field, seq_per_sample_field, \
+                               average_field, error_field))
+                    
+            #Add to the legend rows.
+            legend_html.append('<tr name="%s" style="display: none;">%s</tr>' \
+                                % (group_name,'\n'.join(legend_td)))
+            
             categories = [k for k in groups]
             
-            save_rarefaction_plots(data['xaxis'], data['series'], data['error'], \
-            xmax, ymax, categories, data['headers'][1], options['imagetype'], \
-            options['resolution'], data['headers'][0], data_colors, colors, file_path, graphNames, background_color)
-        
-        else:
-            if options['colorby']:
-                if data['headers'][1] not in options['categories']:
-                    continue
-                    
-            save_rarefaction_plots(data['xaxis'], data['series'], data['error'], \
-            xmax, ymax, data['options'], data['headers'][1], options['imagetype'], \
-            options['resolution'], data['headers'][0], None, data['color'], file_path, graphNames, background_color)
-    return graphNames
+            #Create the image and return the file location
+            image_loc=\
+            save_rarefaction_plots(raredata['xaxis'], raredata['series'], \
+                                   raredata['error'], xmax, ymax, categories, \
+                                   raredata['headers'][1],  imagetype, \
+                                   resolution, raredata['headers'][0], \
+                                   data_colors, colors, file_path, \
+                                   background_color, label_color)
+            
+            #Write the image plot rows
+            plot_table_html.append('<tr name="%s" style="display: none;"><td colspan="20"><img src="./%s" \></td></tr>' % \
+                                    (group_name, image_loc))
+            
+            #Create the select box options
+            category_select_html.append('<option value="%s">%s</option>' % \
+                                        (group_name,group_name))
+                                    
+                                    
+            iterator=iterator+1
+    
+    
+        #Generate the html output
+        html_output=HTML % ('\n'.join(category_select_html), \
+                              '\n'.join(plot_table_html), \
+                              '\n'.join(legend_html), \
+                              '\n'.join(data_table_html))
 
-def make_output_files(options, qiime_dir, graphNames):
-    # print 'hurf'
-    os.makedirs(options['output_path']+"/support_files")
-    open(options['output_path'] + "/support_files/graphNames.txt",'w').\
-    writelines([f +\
-    '\n' for f in graphNames])
+    return html_output
 
-    os.makedirs(options['output_path']+"/support_files/js")
-    os.makedirs(options['output_path']+"/support_files/css")
+    
+HTML='''
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta http-equiv="content-type" content="text/html;">
+  <title>Rarefaction Curves</title>
+<style type="text/css">
+td.data{font-size:10px}
+</style>
+<script language="javascript" type="text/javascript">
 
-    shutil.copyfile(qiime_dir+"/qiime/support_files/html_templates/" + \
-    "rarefaction_plots.html", options['output_path']+\
-    "/rarefaction_plots.html")
-    shutil.copyfile(qiime_dir+"/qiime/support_files/js/rarefaction_plots.js", \
-    options['output_path']+"/support_files/js/rarefaction_plots.js")
-    shutil.copyfile(qiime_dir+"/qiime/support_files/js/jquery.js", \
-    options['output_path']+"/support_files/js/jquery.js")
-    shutil.copyfile(qiime_dir+"/qiime/support_files/js/jquery."+\
-    "dataTables.min.js", options['output_path']+\
-    "/support_files/js/jquery.dataTables.min.js")
-    shutil.copyfile(qiime_dir+\
-    "/qiime/support_files/css/rarefaction_plots.css",\
-    options['output_path']+"/support_files/css/rarefaction_plots.css")
-    shutil.copyfile(qiime_dir+"/qiime/support_files/images/qiime_header.png", \
-    options['output_path']+"/support_files/qiime_header.png")
+function changeCategory(SelObject){
+
+var header_display=document.getElementById('rare_header');
+header_display.style.display='';
+
+var old_selected=document.getElementById('old_selected');
+
+data_display=document.getElementsByName(SelObject.value)
+for (var i=0;i<data_display.length;i++){
+    data_display[i].style.display="";
+}
+
+data_hide=document.getElementsByName(old_selected.value)
+for (var i=0;i<data_hide.length;i++){
+    data_hide[i].style.display="none";
+}
+
+old_selected.value=SelObject.value;
+}
+</script>
+</head>
+<body>
+<form>
+<input id="old_selected" type="hidden" value="" \>
+</form>
+<table><tr>
+<td><b>Select a Category:</b></td>
+<td>
+<select onchange="javascript:changeCategory(this)">
+<option></option>
+%s
+</select>
+</td>
+</table>
+<br>
+<table id="rare_plots">
+%s
+</table>
+<br>
+<table id="legend">
+%s
+</table>
+<br>
+<table id="rare_data">
+<tr id="rare_header" style="display: none;">
+<td><b>Category</b></td>
+<td><b>SampleID</b></td>
+<td><b>Sequence Depth</b></td>
+<td><b>Rarefaction Ave.</b></td>
+<td><b>Error</b></td>
+</tr>
+%s
+</table>
+</body>
+</html>
+'''
+    
