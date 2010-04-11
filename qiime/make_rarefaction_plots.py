@@ -28,7 +28,7 @@ import os.path
 from os.path import exists, splitext, split
 from qiime.colors import Color, natsort, iter_color_groups
 from qiime.util import create_dir
-from numpy import isnan
+from numpy import isnan,nan
 def save_rarefaction_plots(xaxis, yvals, err, xmax, ymax, ops, \
             mapping_category, itype, res, rtype, data_colors, colors, fpath,\
             background_color,label_color):
@@ -145,10 +145,10 @@ def make_plots(color_prefs, data, background_color, label_color, rares, ymax, \
                             average_field=raredata['series'][i][j]
                             error_field=raredata['error'][i][j]
                             if isnan(average_field):
-                                error_field='nan'
+                                error_field=nan
                         except:
-                            average_field='nan'
-                            error_field='nan'
+                            average_field=nan
+                            error_field=nan
                             
                         #Create the data table rows
                         data_table_html.append('<tr name="%s" style="display: none;"><td class="data" bgcolor="%s">%s</td><td class="data">%s</td><td class="data">%s</td><td class="data">%s</td><td class="data">%s</td></tr>' \
