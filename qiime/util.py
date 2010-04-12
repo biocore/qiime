@@ -845,6 +845,10 @@ def _compute_jn_pcoa_avg_ranges(jn_flipped_matrices, method):
     returns 1) an array of jn_averages
              2) an array of upper values of the ranges
             3) an array of lower values for the ranges
+
+    method: the method by which to calculate the range
+        IQR: Interquartile Range
+        ideal fourths: Ideal fourths method as implemented in scipy
     """
     x,y = shape(jn_flipped_matrices[0])
     all_flat_matrices = [matrix.ravel() for matrix in jn_flipped_matrices]
@@ -853,6 +857,10 @@ def _compute_jn_pcoa_avg_ranges(jn_flipped_matrices, method):
     matrix_average = matrix_sum / float(len(jn_flipped_matrices))
     matrix_average = matrix_average.reshape(x,y)
     if method == 'IQR':
+        result = matrix_IQR(summary_matrix)
+        matrix_low = result[0].reshape(x,y)
+        matrix_high = result[1].reshape(x,y)
+    elif method == 'ideal_fourths':
         result = idealfourths(summary_matrix, axis=0)
         matrix_low = result[0].reshape(x,y)
         matrix_high = result[1].reshape(x,y)
@@ -902,6 +910,17 @@ def IQR(x):
     min_val = median(low_vals)
     max_val = median(high_vals)
     return min_val, max_val
+
+def matrix_IQR(x):
+    """calculates the IQR for each column in an array
+    """
+    num_cols = x.shape[1]
+    min_vals = zeros(num_cols)
+    max_vals = zeros(num_cols)
+    for i in range(x.shape[1]):
+        col = x[:, i]
+        min_vals[i], max_vals[i] = IQR(col)
+    return min_vals, max_vals
 
 def idealfourths(data, axis=None):
     """Returns an estimate of the lower and upper quartiles of the data along

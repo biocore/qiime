@@ -12,7 +12,7 @@ from qiime.util import make_safe_f, FunctionWithParams, qiime_blast_seqs,\
     raise_error_on_parallel_unavailable, merge_otu_tables,\
     convert_OTU_table_relative_abundance, create_dir, handle_error_codes,\
     summarize_pcoas, _compute_jn_pcoa_avg_ranges, _flip_vectors, IQR, \
-    idealfourths, isarray
+    idealfourths, isarray, matrix_IQR
 from cogent.app.formatdb import build_blast_db_from_fasta_file
 from cogent.util.misc import get_random_directory_name
 import numpy
@@ -454,18 +454,24 @@ class BlastSeqsTests(TestCase):
         jn4 = [['1', '2', '3'], \
             array([[-1.5, 0.05, 1.6],[2.4, 4.0, -4.8]]), \
             array([0.84, .16])]
-#        support_pcoas = [jn1, jn2, jn3, jn4]
-#        matrix_average, matrix_low, matrix_high, eigval_average, m_names = \
-#            summarize_pcoas(master_pcoa, support_pcoas, 'IQR')
-#        self.assertEqual(m_names, ['1', '2', '3'])
-#        self.assertFloatEqual(matrix_average[(0,0)], -1.4)
-#        self.assertFloatEqual(matrix_average[(0,1)], 0.0125)
-#        self.assertFloatEqual(matrix_low[(0,0)], -1.5)
-#        self.assertFloatEqual(matrix_high[(0,0)], -1.28333333)
-#        self.assertFloatEqual(matrix_low[(0,1)], -0.0375)
-#        self.assertFloatEqual(matrix_high[(0,1)], 0.05)
-#        self.assertFloatEqual(eigval_average[0], 0.81)
-#        self.assertFloatEqual(eigval_average[1], 0.19)
+        support_pcoas = [jn1, jn2, jn3, jn4]
+        #test with the ideal_fourths option
+        matrix_average, matrix_low, matrix_high, eigval_average, m_names = \
+            summarize_pcoas(master_pcoa, support_pcoas, 'ideal_fourths')
+        self.assertEqual(m_names, ['1', '2', '3'])
+        self.assertFloatEqual(matrix_average[(0,0)], -1.4)
+        self.assertFloatEqual(matrix_average[(0,1)], 0.0125)
+        self.assertFloatEqual(matrix_low[(0,0)], -1.5)
+        self.assertFloatEqual(matrix_high[(0,0)], -1.28333333)
+        self.assertFloatEqual(matrix_low[(0,1)], -0.0375)
+        self.assertFloatEqual(matrix_high[(0,1)], 0.05)
+        self.assertFloatEqual(eigval_average[0], 0.81)
+        self.assertFloatEqual(eigval_average[1], 0.19)
+        #test with the IQR option
+        matrix_average, matrix_low, matrix_high, eigval_average, m_names = \
+            summarize_pcoas(master_pcoa, support_pcoas, 'IQR')
+        self.assertFloatEqual(matrix_low[(0,0)], -1.5)
+        self.assertFloatEqual(matrix_high[(0,0)], -1.3)
 
     def test_IQR(self):
         "IQR returns the interquartile range for list x"
@@ -484,7 +490,31 @@ class BlastSeqsTests(TestCase):
         minv, maxv = IQR(x)
         self.assertEqual(minv, 2.5)
         self.assertEqual(maxv, 6.5)
+        #works with array
+        #works for odd with odd split
+        x = array([2,3,4,5,6,7,1])
+        minv, maxv = IQR(x)
+        self.assertEqual(minv, 2)
+        self.assertEqual(maxv, 6)
+        #works for even with odd split
+        x = array([1,2,3,4,5,6])
+        minv, maxv = IQR(x)
+        self.assertEqual(minv, 2)
+        self.assertEqual(maxv, 5)
+        #works for even with even split
+        x = array([1,2,3,4,5,6,7,8])
+        minv, maxv = IQR(x)
+        self.assertEqual(minv, 2.5)
+        self.assertEqual(maxv, 6.5)
         
+    def test_matrix_IQR(self):
+        """matrix_IQR calcs the IQR for each column in an array correctly
+        """
+        x = array([[1,2,3],[4,5,6],[7,8,9], [10,11,12]])
+        min_vals, max_vals = matrix_IQR(x)
+        self.assertEqual(min_vals, array([2.5,3.5,4.5]))
+        self.assertEqual(max_vals, array([8.5,9.5,10.5]))
+
     def test_idealfourths(self):
         "idealfourths: tests the ideal-fourths function which was imported from scipy"
         test = numpy.arange(100)
