@@ -43,11 +43,12 @@ def _filter_table(params,filtered_table_path,otu_file):
     min_otu_samples=params['min_otu_samples']
     included_taxa=params['included_taxa']
     excluded_taxa=params['excluded_taxa']
-
-    for line in otu_file:
-        print otu_file2[line]
+    
+    otu_file_data=otu_file[0].split('\n')
+    #print otu_file_data
+    for line in otu_file_data:
         if line.startswith('#'):
-            filtered_table_path.write(line)
+            filtered_table_path.write(line+'\n')
         else:
             fields = line.split('\t')
             try:
@@ -59,13 +60,13 @@ def _filter_table(params,filtered_table_path,otu_file):
             if vals.sum() >= min_otu_count and \
                 (vals > 0).sum() >= min_otu_samples:
                 if not taxa:
-                    filtered_table_path.write(line)
+                    filtered_table_path.write(line+'\n')
                 else:
                     if taxa.intersection(included_taxa) and not \
                         taxa.intersection(excluded_taxa):
-                        filtered_table_path.write(line)
+                        filtered_table_path.write(line+'\n')
                     elif not included_taxa and not excluded_taxa:
-                        filtered_table_path.write(line)
+                        filtered_table_path.write(line+'\n')
     
 
 def _filter_table_samples(otu_table_lines, min_seqs_per_sample):
