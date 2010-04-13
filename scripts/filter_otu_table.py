@@ -32,14 +32,14 @@ script_info['script_usage'].append(("""Examples:""","""To filter the OTU table u
 script_info['script_usage'].append(("""""","""To filter by the number of samples (i.e., 5) within each OTU (keep only OTU's found in at least X number of samples), you can use the code as follows:""","""filter_otu_table.py -i otu_table.txt -s 5"""))
 script_info['script_usage'].append(("""""","""To filter by the number of sequences (i.e., 5) within each OTU (keep only OTU's with at least X sequences in the OTU), you can use the code as follows:""","""filter_otu_table.py -i otu_table.txt -c 5"""))
 script_info['script_usage'].append(("""""","""To include ("Bacteria") and exclude ("Proteobacteria") certain taxon groups (options -t / -e respectively), you can use the code as follows.  The include and exclude parameters must be used together:""","""filter_otu_table.py -i otu_table.txt -t Bacteria -e Proteobacteria"""))
-script_info['script_usage'].append(("""Filter samples by number of sequences""","""A user may want to remove samples that have low sequence coverage.""","""filter_otu_table.py -i otu_table.txt -p 10"""))
+script_info['script_usage'].append(("""Filter samples by number of sequences""","""A user may want to remove samples that have low sequence coverage. NOTE: this feature is mutually exclusive from the other filtering options, so if you pass this, you will need to perform a subsequent filter to remove by the other options.""","""filter_otu_table.py -i otu_table.txt -p 10"""))
 script_info['output_description']="""The result of filter_otu_table.py creates a new OTU table, where the filename uses the input OTU filename and appends "filtered.txt" to the end of the name."""
 script_info['required_options'] = [options_lookup['otu_table_as_primary_input']]
 
 script_info['optional_options']=[\
-    make_option('-c', '--min_count', default=0, type=int,
+    make_option('-c', '--min_count', default=1, type=int,
         help='retain OTUs with at least this many sequences [default=%default]'),\
-    make_option('-s', '--min_samples', default=0, type=int,
+    make_option('-s', '--min_samples', default=2, type=int,
         help='retain OTUs found in at least this many samples [default=%default]'),\
     make_option('-t', '--include_taxonomy', default='',
         help='list of taxonomy terms to include [default=%default]'),\
@@ -47,7 +47,7 @@ script_info['optional_options']=[\
         help='list of taxonomy terms to exclude [default=%default]'),\
     make_option('-o', '--dir_path', default='./',
         help='directory prefix for all analyses [default=%default]'),
-    make_option('-p', '--seqs_per_sample', default=0,type=int,
+    make_option('-p', '--seqs_per_sample',type=int,
         help='minimum sequences per sample to retain the sample. [default=%default]')
 ]
 script_info['version'] = __version__
@@ -56,7 +56,7 @@ script_info['version'] = __version__
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
-
+    
     # process options (was originally process_options())
     filepath=opts.otu_table_fp
     filename=filepath.strip().split('/')[-1]
@@ -69,11 +69,8 @@ def main():
     params['seqs_per_sample']=opts.seqs_per_sample
     dir_path=opts.dir_path
     seqs_per_sample=params['seqs_per_sample']
-    
-    otu_file=open(params['otu_file'], 'U').readlines()
-    
-    #print otu_file
-    
+    otu_file=open(params['otu_file'], 'U')
+
     if not os.path.exists(dir_path):
         create_dir(dir_path,False)
         
@@ -84,7 +81,6 @@ def main():
     filtered_table_path=open(os.path.join(dir_path, \
                                 'otu_table_filtered.txt'), 'w')
                                 
-    
     if opts.include_taxonomy:
         included_taxa = set(map(strip, split_tax(opts.include_taxonomy)))
     else:
@@ -99,11 +95,19 @@ def main():
     params['excluded_taxa']=excluded_taxa
 
     seq_sample_output=[]
-
-    filtered_table=_filter_table_samples(otu_file,seqs_per_sample)
-    seq_sample_output.append(filtered_table)
-    #print seq_sample_output[0]
-    _filter_table(params,filtered_table_path,seq_sample_output)
+    if seqs_per_sample and params['min_otu_count']==1 and \
+            params['min_otu_samples']==2 and opts.include_taxonomy=='' and \
+            opts.exclude_taxonomy=='':
+        otu_file2=otu_file.readlines()
+        filtered_table = _filter_table_samples(otu_file2,seqs_per_sample)
+        filtered_table_path.write(filtered_table)
+        filtered_table_path.close()
+    elif seqs_per_sample and (params['min_otu_count']<>1 or \
+            params['min_otu_samples']<>2 or opts.include_taxonomy<>'' or \
+            opts.exclude_taxonomy<>''):
+        raise ValueError, 'You cannot supply seqs per sample with other filtering options. These features are mutually exclusive.'
+    else:
+        _filter_table(params,filtered_table_path,otu_file)
         
 
 if __name__ == "__main__":

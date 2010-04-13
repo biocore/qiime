@@ -44,9 +44,7 @@ def _filter_table(params,filtered_table_path,otu_file):
     included_taxa=params['included_taxa']
     excluded_taxa=params['excluded_taxa']
     
-    otu_file_data=otu_file[0].split('\n')
-    #print otu_file_data
-    for line in otu_file_data:
+    for line in otu_file:
         if line.startswith('#'):
             filtered_table_path.write(line+'\n')
         else:
