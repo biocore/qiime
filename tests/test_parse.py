@@ -451,6 +451,7 @@ eigvals\t4.94\t1.79\t1.50
         actual = parse_illumina_line(
          illumina_line0,barcode_length=6,rev_comp_barcode=True)
         expected = {\
+         'Full description':'HWI-6X_9267:1:1:4:1699#ACCACCC/1',\
          'Machine Name':'HWI-6X_9267',\
          'Channel Number':1,\
          'Tile Number':1,\
@@ -473,6 +474,7 @@ eigvals\t4.94\t1.79\t1.50
         actual = parse_illumina_line(
          illumina_line1,barcode_length=6,rev_comp_barcode=True)
         expected = {\
+         'Full description':'HWI-6X_9267:1:1:4:390#ACCTCCC/1',\
          'Machine Name':'HWI-6X_9267',\
          'Channel Number':1,\
          'Tile Number':1,\

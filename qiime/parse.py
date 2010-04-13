@@ -556,6 +556,7 @@ def parse_illumina_line(l,barcode_length,rev_comp_barcode):
         barcode = revComp(barcode)
     
     result = {\
+     'Full description':':'.join(fields[:5]),\
      'Machine Name':fields[0],\
      'Channel Number':int(fields[1]),\
      'Tile Number':int(fields[2]),\
