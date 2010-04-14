@@ -429,12 +429,12 @@ class BlastSeqsTests(TestCase):
                 array([[6.0,4.0, -4.5],[-1.2,-0.1,1.2]]),\
                 array([[7.0,4.0, -4.5],[-1.2,-0.1,1.2]]),\
                 array([[1.0,4.0, -4.5],[-1.2,-0.1,1.2]])]
-#        avg_matrix, low_matrix, high_matrix = _compute_jn_pcoa_avg_ranges(\
-#                jn_flipped_matrices, 'IQR')
-#        self.assertFloatEqual(avg_matrix[(0,0)], 4.0)
-#        self.assertFloatEqual(avg_matrix[(0,2)], -4.5)
-#        self.assertFloatEqual(low_matrix[(0,0)], 2.16666667)
-#        self.assertFloatEqual(high_matrix[(0,0)], 5.83333333)
+        avg_matrix, low_matrix, high_matrix = _compute_jn_pcoa_avg_ranges(\
+                jn_flipped_matrices, 'ideal_fourths')
+        self.assertFloatEqual(avg_matrix[(0,0)], 4.0)
+        self.assertFloatEqual(avg_matrix[(0,2)], -4.5)
+        self.assertFloatEqual(low_matrix[(0,0)], 2.16666667)
+        self.assertFloatEqual(high_matrix[(0,0)], 5.83333333)
         
     def test_summarize_pcoas(self):
         """summarize_pcoas works

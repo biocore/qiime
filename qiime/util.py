@@ -818,7 +818,7 @@ def summarize_pcoas(master_pcoa, support_pcoas, method='IQR'):
     Also returns the ranges as calculated with the specified method. 
     The choices are:
         IQR: the Interquartile Range
-
+        ideal fourths: Ideal fourths method as implemented in scipy
     """
     m_matrix = master_pcoa[1]
     m_eigvals = master_pcoa[2]
