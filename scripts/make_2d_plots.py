@@ -24,7 +24,7 @@ from qiime.parse import parse_coords,group_by_field,group_by_fields
 import shutil
 import os
 from qiime.colors import sample_color_prefs_and_map_data_from_options
-from qiime.util import get_qiime_project_dir
+from qiime.util import get_qiime_project_dir,load_pcoa_files
 from qiime.make_3d_plots import get_coord
 from cogent.util.misc import get_random_directory_name
 
@@ -43,12 +43,13 @@ If the user wants to color by specific mapping labels, they can use the followin
 script_info['script_usage'].append(("""""","""If the user would like to color all categories in their metadata mapping file, they can pass 'ALL' to the '-b' option, as follows:""","""%prog -i beta_div_coords.txt -m Mapping_file.txt -b ALL"""))
 script_info['script_usage'].append(("""Output Directory Usage:""","""If you want to give an specific output directory (e.g. \"2d_plots\"), use the following code.""", """%prog -i beta_div_coords.txt -o 2d_plots/"""))
 script_info['script_usage'].append(("""Combination of Features:""","""or use some of the suggestions from above:""", """%prog -i beta_div_coords.txt -m Mapping_file.txt -b \'mapping_column1,mapping_column1&&mapping_column2\'"""))
+script_info['script_usage'].append(("""Jackknifed Principal Coordinates:""","""If you have created jackknifed PCoA files, you can pass the folder containing those files, instead of a single file, as follows:""", """%prog -i jackknifed_pcoas/ -m Mapping_file.txt -b \'mapping_column1,mapping_column1&&mapping_column2\'"""))
 script_info['output_description']="""This script generates an output folder, which contains several files. To best view the 2D plots, it is recommended that the user views the _pca_2D.html file."""
 
 script_info['required_options']=[\
 make_option('-i', '--coord_fname', dest='coord_fname', \
 help='This is the path to the principal coordinates file (i.e., resulting \
-file from principal_coordinates.py)'),
+file from principal_coordinates.py).  If a directory of rarified PCoA matrices (i.e. "-r" option) is supplied, then this option acts as the master PCoA file.'),
 make_option('-m', '--map_fname', dest='map_fname', \
      help='This is the metadata mapping file [default=%default]')
 ]
@@ -60,10 +61,10 @@ header in the mapping file exactly and multiple categories can be list by comma 
 separating them without spaces. The user can also combine columns in the \
 mapping file by separating the categories by "&&" without spaces \
 [default=%default]'),
- make_option('-p', '--prefs_path',help='This is the user-generated preferences \
+make_option('-p', '--prefs_path',help='This is the user-generated preferences \
 file. NOTE: This is a file with a dictionary containing preferences for the \
 analysis [default: %default]'),
- make_option('-k', '--background_color',help='This is the background color to \
+make_option('-k', '--background_color',help='This is the background color to \
 use in the plots. [default: %default]'),
 options_lookup['output_dir']
 ]
@@ -87,7 +88,11 @@ def main():
                             sample_color_prefs_and_map_data_from_options(opts)
 
     #Open and get coord data
-    data['coord'] = get_coord(opts.coord_fname)
+    
+    if os.path.isdir(opts.coord_fname):
+        data['coord'],data['support_pcoas'] = load_pcoa_files(opts.coord_fname)
+    else:
+        data['coord'] = get_coord(opts.coord_fname)
 
     filepath=opts.coord_fname
     filename=filepath.strip().split('/')[-1]
@@ -110,7 +115,6 @@ def main():
         
     html_dir_path=dir_path
     data_dir_path = get_random_directory_name(output_dir=dir_path)
-    
     try:
         os.mkdir(data_dir_path)
     except OSError:

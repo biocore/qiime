@@ -15,16 +15,20 @@ import re
 from matplotlib import use
 use('Agg',warn=False)
 from matplotlib.pylab import *
+from matplotlib.cbook import iterable, is_string_like
+from matplotlib.patches import Ellipse
 from commands import getoutput
 from string import strip
-from numpy import array
+from numpy import array,asarray,ndarray
 from time import strftime
 from random import choice
+from qiime.util import summarize_pcoas,isarray
 from qiime.parse import group_by_field,group_by_fields
 from qiime.colors import natsort, data_color_order, data_colors, \
                             get_group_colors,data_colors,iter_color_groups
 from cogent.util.misc import get_random_directory_name
 import os
+import numpy
 
 TABLE_HTML = """<table cellpadding=0 cellspacing=0 border=1>
 <tr><th align=center colspan=3 border=0>%s</th></tr>
@@ -90,7 +94,8 @@ default_colors=['blue','lime','red','aqua','fuchsia','yellow','green', \
                'maroon','teal','purple','olive','silver','gray']
 
 def make_interactive_scatter(plot_label,dir_path,data_file_link, 
-                                background_color,label_color,xy_coords, 
+                                background_color,label_color,sample_location,
+                                xy_coords, 
                                 props, x_len=8, y_len=4, size=10,
                                 draw_axes=False, generate_eps=True):
     """Write interactive plot  
@@ -98,7 +103,6 @@ def make_interactive_scatter(plot_label,dir_path,data_file_link,
     xy_coords: a dict of form {series_label:([x data], [y data], \
     [xy point label],[color])}
     """
-    alpha=1.0
     my_axis=None    
     rc('font', size='8')
     rc('patch', linewidth=0)
@@ -107,8 +111,8 @@ def make_interactive_scatter(plot_label,dir_path,data_file_link,
     rc('xtick', labelsize=8,color=label_color)
     rc('ytick', labelsize=8,color=label_color)
     
-    sc_plot=draw_scatterplot(props,xy_coords,x_len,y_len,alpha,size,
-                                background_color,label_color)
+    sc_plot=draw_scatterplot(props,xy_coords,x_len,y_len,size,
+                                background_color,label_color,sample_location)
     
     mtitle = props.get("title","Groups")
     x_label = props.get("xlabel","X")
@@ -118,20 +122,14 @@ def make_interactive_scatter(plot_label,dir_path,data_file_link,
     xlabel(x_label, fontsize='8',color=label_color)
     ylabel(y_label, fontsize='8',color=label_color)
 
+    show()
+
     if draw_axes:
-        axvline(linewidth=.5, x=0, color=label_color)
-        axhline(linewidth=.5, y=0, color=label_color)
+        axvline(linewidth=.5, x=0, color='black')
+        axhline(linewidth=.5, y=0, color='black')
+
     if my_axis is not None:
         axis(my_axis)
-    
-    ax=sc_plot.get_axes()
-    for line in ax.yaxis.get_ticklines():
-        # Color the tick lines in the 2D
-        line.set_color(label_color)
-    for line in ax.xaxis.get_ticklines():
-        # Color the tick lines in the 2D
-        line.set_color(label_color)
-
     img_name = x_label[0:2]+'_vs_'+y_label[0:2]+'_plot.png'
     savefig(os.path.join(dir_path,img_name), dpi=80,facecolor=background_color)
     
@@ -141,7 +139,7 @@ def make_interactive_scatter(plot_label,dir_path,data_file_link,
         eps_img_name = str(x_label[0:2]+'vs'+y_label[0:2]+'plot.eps')
         savefig(os.path.join(dir_path,eps_img_name),format='eps')
         out = getoutput("gzip -f " + os.path.join(dir_path, eps_img_name))
-        eps_link =  DOWNLOAD_LINK % ((os.path.join(data_file_link,eps_img_name) \
+        eps_link = DOWNLOAD_LINK % ((os.path.join(data_file_link,eps_img_name) \
                                         + ".gz"), "Download Figure")
 
     all_cids,all_xcoords,all_ycoords=transform_xy_coords(xy_coords,sc_plot)
@@ -169,28 +167,50 @@ def generate_xmap(x_len,y_len,all_cids,all_xcoords,all_ycoords):
     
     return xmap,img_height,img_width
 
-def draw_scatterplot(props,xy_coords,x_len,y_len,alpha,size,background_color,
-                        label_color):
+def draw_scatterplot(props,xy_coords,x_len,y_len,size,background_color,
+                        label_color,sample_location):
     """Create scatterplot figure"""
     
     fig = figure(figsize=(x_len,y_len))
-    
+    xPC=int(props['xlabel'][1:2])
+    yPC=int(props['ylabel'][1:2])
     sorted_keys = xy_coords.keys()
     scatters = {} 
     size_ct =  shape_ct = 0 
+    
+    xPC=xPC-1
+    yPC=yPC-1
     #Iterate through coords and add points to the scatterplot
     for s_label in sorted_keys:
         s_data = xy_coords[s_label]
-        
         if s_data[0]==[]:
             pass
         else:
             c = s_data[3]
             m = s_data[4][0]
-
+            
             ax = fig.add_subplot(111,axisbg=background_color)
-            sc_plot = ax.scatter(s_data[0], s_data[1], c=c, marker=m, \
-                                 alpha=alpha,s=size, linewidth=1,edgecolor=c) 
+            if isarray(s_data[5][0]) and isarray(s_data[6][0]) and isarray(s_data[7][0]):
+                matrix_low=s_data[5][0]
+                matrix_high=s_data[6][0]
+                ellipse_ave=s_data[7][0]
+                
+                ellipse_x=[ellipse_ave[sample_location[s_label], xPC]]
+                ellipse_y=[ellipse_ave[sample_location[s_label], yPC]]
+                
+                width=[fabs(matrix_high[sample_location[s_label], xPC] - \
+                        matrix_low[sample_location[s_label], xPC])]
+                height=[fabs(matrix_high[sample_location[s_label], yPC] - \
+                        matrix_low[sample_location[s_label], yPC])]
+                
+                sc_plot = scatter_ellipse(ax,ellipse_x, \
+                           ellipse_y, width, height, c=c, a=0.0, \
+                            alpha=0.3)
+                sc_plot.scatter(ellipse_x, ellipse_y, c=c, marker=m, \
+                              alpha=1.0)
+            else:
+                sc_plot = ax.scatter(s_data[0], s_data[1], c=c, marker=m, \
+                             alpha=1.0,s=size, linewidth=1,edgecolor=c)
             size_ct += 1 
             shape_ct += 1
             scatters[s_label] = sc_plot
@@ -220,11 +240,14 @@ def transform_xy_coords(xy_coords,sc_plot):
     
     return all_cids,all_xcoords,all_ycoords
     
-def draw_pca_graph(plot_label,dir_path,data_file_link,coord_1,coord_2,data,
-                    prefs,groups,colors,background_color,label_color,data_colors,data_color_order,\
+def draw_pca_graph(plot_label, dir_path, data_file_link, coord_1, coord_2, \
+                    coord_1r,coord_2r, mat_ave, sample_location, \
+                    data, prefs,groups, colors, background_color, label_color,\
+                    data_colors,data_color_order,\
                     generate_eps=True):
                     
     """Draw PCA graphs"""
+
     coords,pct_var=convert_coord_data_to_dict(data)
     mapping = data['map']
 
@@ -253,48 +276,72 @@ def draw_pca_graph(plot_label,dir_path,data_file_link,coord_1,coord_2,data,
     labels = coords['pc vector number']
     p1 = map(float, coords[coord_2])
     p2 = map(float, coords[coord_1])
+    if isarray(coord_1r) and isarray(coord_2r) and isarray(mat_ave):
+        p1r = coord_2r
+        p2r = coord_1r
+    else:
+        p1r = None
+        p2r = None
+        mat_ave=None
+        
     if len(p1) != len(p2):
         raise ValueError, "Principal coordinate vectors unequal length."
     p1d = dict(zip(labels, p1))
     p2d = dict(zip(labels, p2))
+
     
-    xy_coords=extract_and_color_xy_coords(p1d,p2d,colors,data_colors,groups,coords)
+
+    xy_coords = extract_and_color_xy_coords(p1d, p2d, p1r, p2r,mat_ave,colors, \
+                                            data_colors, groups, coords)
  
     img_src, img_map, eps_link =  make_interactive_scatter(plot_label,dir_path,
                                     data_file_link,background_color,label_color,
+                                    sample_location,
                                     xy_coords=xy_coords,props=props,x_len=4.5, 
                                     y_len=4.5,size=20,draw_axes=True,
                                     generate_eps=generate_eps)
 
     return img_src + img_map, eps_link
     
-def extract_and_color_xy_coords(p1d,p2d,colors,data_colors,groups,coords):
+def extract_and_color_xy_coords(p1d,p2d,p1dr,p2dr,mat_ave,colors, data_colors, \
+                                groups, coords):
     """Extract coords from appropriate columns and attach their \
        corresponding colors based on the group"""
-
+    
     xy_coords = {}
     shape_ct = 0 
-    for group_name, ids in sorted(groups.items()):
+    for group_name, ids in (groups.items()):
         x=0
-        #print colors
-        #print data_colors
         color = data_colors[colors[group_name]].toHex()
         m =shape[shape_ct % len(shape)]
         shape_ct += 1
-        for id_ in sorted(ids):
+        for id_ in (ids):
             cur_labs = []
             cur_x = []
             cur_y = []
             cur_color = []
             cur_shape=[]
+            cur_1r=[]
+            cur_2r=[]
+            new_mat_ave=[]
             if id_ in coords['pc vector number']:
                 cur_labs.append(id_+': '+group_name)
                 cur_x.append(p2d[id_])
                 cur_y.append(p1d[id_])
                 cur_color.append(color)
                 cur_shape.append(m)
- 
-            xy_coords["%s" % id_] = (cur_x, cur_y, cur_labs,cur_color,cur_shape)
+
+                if isarray(p2dr) and isarray(p1dr) and isarray(mat_ave):
+                    cur_1r.append(p1dr)
+                    cur_2r.append(p2dr)
+                    new_mat_ave.append(mat_ave)
+                else:
+                    cur_1r=[None]
+                    cur_2r=[None]
+                    new_mat_ave=[None]
+                    
+            xy_coords["%s" % id_] = (cur_x, cur_y, cur_labs, cur_color, \
+                                     cur_shape, cur_1r, cur_2r,new_mat_ave)
         
     return xy_coords
 
@@ -332,6 +379,7 @@ def generate_2d_plots(prefs,data,html_dir_path,data_dir_path,filename,
     out_table=''
     #Iterate through prefs and generate html files for each colorby option
     #Sort by the column name first
+    sample_location={}
 
     groups_and_colors=iter_color_groups(mapping,prefs)
     groups_and_colors=list(groups_and_colors)
@@ -342,16 +390,48 @@ def generate_2d_plots(prefs,data,html_dir_path,data_dir_path,filename,
         colors=groups_and_colors[i][2]
         data_colors=groups_and_colors[i][3]
         data_color_order=groups_and_colors[i][4]
+        
         data_file_dir_path = get_random_directory_name(output_dir=data_dir_path)
-        data_file_link=data_file_dir_path
-        new_col_name=labelname
+        
+        new_link=os.path.split(data_file_dir_path)
+        data_file_link=os.path.join('.', os.path.split(new_link[-2])[-1], \
+                                    new_link[-1])
 
+        new_col_name=labelname
         img_data = {}
-        plot_label=labelname#p['column']
-        for coord_tup in coord_tups: 
+        plot_label=labelname
+        
+        if data.has_key('support_pcoas'):
+            matrix_average, matrix_low, matrix_high, eigval_average, m_names = \
+                summarize_pcoas(data['coord'], data['support_pcoas'], method='IQR')
+            data['coord'] = \
+                (m_names,matrix_average,data['coord'][2],eigval_average)
+            for i in range(len(m_names)):
+                sample_location[m_names[i]]=i
+        else: 
+            matrix_average = None
+            matrix_low =  None
+            matrix_high =  None
+            eigval_average =  None
+            m_names =  None
+        iterator=0
+
+        for coord_tup in coord_tups:
+            if isarray(matrix_low) and isarray(matrix_high) and isarray(matrix_average):
+                coord_1r=asarray(matrix_low)
+                coord_2r=asarray(matrix_high)
+                mat_ave=asarray(matrix_average)
+            else:
+                coord_1r=None
+                coord_2r=None
+                mat_ave=None
+                sample_location=None
+            
             coord_1, coord_2 = coord_tup
             img_data[coord_tup] = draw_pca_graph(plot_label,data_file_dir_path,
                                                  data_file_link,coord_1,coord_2,
+                                                 coord_1r, coord_2r, mat_ave,\
+                                                 sample_location,
                                                  data,prefs,groups,colors,
                                                  background_color,label_color,
                                                  data_colors,data_color_order,
@@ -367,3 +447,52 @@ def generate_2d_plots(prefs,data,html_dir_path,data_dir_path,filename,
         
     write_html_file(out_table,outfile)
         
+
+
+def scatter_ellipse(axis_ob, x, y, w, h, c='b', a=0.0, alpha=0.5):
+        """
+        SCATTER_ELLIPSE(x, y, w=None, h=None, c='b', a=0.0)
+
+        Make a scatter plot of x versus y with ellipses surrounding the 
+        center point.  w and h represent the width
+        and height of the ellipse that surround each x,y coordinate.
+        They are arrays of the same length as x or y.  c is
+        a color and can be a single color format string or an length(x) array
+        of intensities which will be mapped by the colormap jet. a is the
+        angle or rotation in degrees of each ellipse (anti-clockwise). It is
+        also an array of the same length as x or y or a single value to be
+        iterated over all points.
+
+       
+        """
+        if not axis_ob._hold: axis_ob.cla()
+        
+        if not iterable(a):
+            a = [a]*len(x)
+            
+        if not iterable(alpha):
+            alpha = [alpha]*len(x)
+        if len(c)!=len(x):
+            raise ValueError, 'c and x are not equal lengths'
+        if len(w)!=len(x):
+            raise ValueError, 'w and x are not equal lengths'
+            
+        if len(h)!=len(x):
+            raise ValueError, 'h and x are not equal lengths'
+        if len(a)!=len(x):
+            raise ValueError, 'a and x are not equal lengths'
+        if len(alpha)!=len(x):
+            raise ValueError, 'alpha and x are not equal lengths'
+        patches = []
+        for thisX, thisY, thisW, thisH, thisC, thisA, thisAl in \
+                        zip(x,y,w,h,c,a,alpha):
+            ellip = Ellipse( (thisX, thisY), width=thisW, height=thisH,
+                angle=thisA)
+
+            ellip.set_facecolor(thisC)
+            ellip.set_alpha(thisAl)
+            axis_ob.add_patch(ellip)
+            patches.append(ellip)
+        axis_ob.autoscale_view()
+        return axis_ob
+

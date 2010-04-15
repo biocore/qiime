@@ -71,9 +71,10 @@ class TopLevelTests(TestCase):
         self.data_file_link='/tmp/'
         self.xy_coords={}
         self.xy_coords['Sample1']=([-0.2], [0.07], ['Sample1: Day1'],\
-                                   ['#0000ff'],['s'])
+                                   ['#0000ff'],['s'],[None],[None],[None])
         self.xy_coords['Sample2']=([-0.04], [0.2], ['Sample2: Day1'],\
-                                   ['#0000ff'],['s'])
+                                   ['#0000ff'],['s'],[None],[None],[None])
+                        
         self.coord_1='1'
         self.coord_2='2'
         
@@ -110,7 +111,7 @@ images"""
 
         obs1,obs2,obs3=make_interactive_scatter(self.plot_label,self.dir_path,
                                 self.data_file_link,self.background_color,
-                                self.label_color,self.xy_coords,self.props, 
+                                self.label_color,None,self.xy_coords,self.props, 
                                 self.x_len, self.y_len, self.size,
                                 draw_axes=False, generate_eps=True)
 
@@ -137,8 +138,8 @@ the appropriate location')
         exp=array([[-0.04, 0.2 ]])
 
         sc_plot = draw_scatterplot(self.props,self.xy_coords,self.x_len,\
-                                   self.y_len,self.alpha,self.size,
-                                      self.background_color,self.label_color)
+                                   self.y_len,self.size,
+                                   self.background_color,self.label_color, None)
         obs=sc_plot.get_offsets()
 
         self.assertEqual(obs,exp)
@@ -147,8 +148,8 @@ the appropriate location')
         """transform_xy_coords: transforms the xy coords from the matplotlib \
 plot into html spatial coords which allows for mouseovers"""
         sc_plot = draw_scatterplot(self.props,self.xy_coords,self.x_len,\
-                                   self.y_len,self.alpha, self.size,
-                                   self.background_color,self.label_color)
+                                   self.y_len, self.size,
+                                   self.background_color,self.label_color, None)
                                
         obs1,obs2,obs3=transform_xy_coords(self.xy_coords,sc_plot)
         
@@ -166,10 +167,12 @@ plot into html spatial coords which allows for mouseovers"""
         
         obs1,obs2=draw_pca_graph(self.plot_label,self.dir_path,
                                  self.data_file_link,self.coord_1,self.coord_2,
+                                 None,None,None,None,
                                  self.data,self.prefs,self.groups,self.colors,
                                  self.background_color,self.label_color,
                                  data_colors,self.data_color_order,
                                  generate_eps=True)
+                                 
 
         self.assertEqual(obs1,expsrcmap2+expimgmap2)
         self.assertEqual(obs2,expeps2)
@@ -182,9 +185,9 @@ the appropriate location')
         """extract_and_color_xy_coords: gets coords from coords file and \
 associates colors to those coords based on its group"""
         
-        obs=extract_and_color_xy_coords(self.p1d,self.p2d,self.colors,
+        obs=extract_and_color_xy_coords(self.p1d,self.p2d,None,None,None,self.colors,
                                         data_colors,self.groups,self.coords)
-                                        
+        
         self.assertFloatEqual(obs,self.xy_coords)
         
     def test_create_html_filename(self):
