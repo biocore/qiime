@@ -791,19 +791,19 @@ def handle_error_codes(dir_name, supress_errors=False,
     else:
         raise OSError, error_strings[error_code]
 
-def load_pcoa_files(master_pcoa_file, support_dir):
+def load_pcoa_files(pcoa_dir):
     """loads PCoA files from filepaths
     """
     support_pcoas = []
-    pcoa_filenames = os.listdir(support_dir)
+    pcoa_filenames = os.listdir(pcoa_dir)
     #ignore invisible files like .DS_Store
     pcoa_filenames = [fname for fname in pcoa_filenames if not \
         fname.startswith('.')]
-    master_pcoa = open(master_pcoa_file, 'U')
+    master_pcoa = open(os.path.join(pcoa_dir, pcoa_filenames[0]), 'U')
     master_pcoa = parse_coords(master_pcoa)
     for fname in pcoa_filenames:
         try:
-            f = open(os.path.join(support_dir, fname), 'U')
+            f = open(os.path.join(pcoa_dir, fname), 'U')
             pcoa_res = parse_coords(f)
             support_pcoas.append(pcoa_res)
             f.close()
