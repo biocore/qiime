@@ -412,12 +412,10 @@ class BlastSeqsTests(TestCase):
 
     def test_flip_vectors(self):
         """_flip_vectors makes a new PCA matrix with correct signs"""
-        m_matrix = array([[-1.0, 0.0, 1.0], [2.0, 4.0, -4.0]])
-        m_eigvals = array([.76, .24])
-        jn_matrix = array([[2.5, 4.0, -4.5], [1.2, 0.1, -1.2]])
-        jn_eigvals = array([.24, .76])
-        new_matrix = _flip_vectors(jn_matrix, jn_eigvals, m_matrix, m_eigvals)
-        self.assertEqual(new_matrix, array([[2.5,4.0, -4.5],[-1.2,-0.1,1.2]]))
+        m_matrix = array([[1.0, 0.0, 1.0], [2.0, 4.0, 4.0]])
+        jn_matrix = array([[1.2, 0.1, -1.2], [2.5, 4.0, -4.5]])
+        new_matrix = _flip_vectors(jn_matrix, m_matrix)
+        self.assertEqual(new_matrix, array([[1.2, 0.1, 1.2], [2.5, 4.0, 4.5]]))
 
     def test_compute_jn_pcoa_avg_ranges(self):
         """_compute_jn_pcoa_avg_ranges works
@@ -443,7 +441,7 @@ class BlastSeqsTests(TestCase):
             array([[-1.0, 0.0, 1.0], [2.0, 4.0, -4.0]]), \
             array([.76, .24])]
         jn1 = [['1', '2', '3'], \
-            array([[1.2, 0.1, -1.2],[2.5, 4.0, -4.5]]), \
+            array([[1.2, 0.1, -1.2],[-2.5, -4.0, 4.5]]), \
             array([0.80, .20])]
         jn2 = [['1', '2', '3'], \
             array([[-1.4, 0.05, 1.3],[2.6, 4.1, -4.7]]), \

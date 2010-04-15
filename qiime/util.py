@@ -829,8 +829,7 @@ def summarize_pcoas(master_pcoa, support_pcoas, method='IQR'):
         matrix = rep[1]
         eigvals = rep[2]
         all_eigvals.append(eigvals)
-        jn_flipped_matrices.append(_flip_vectors(matrix, eigvals, m_matrix, \
-            m_eigvals))
+        jn_flipped_matrices.append(_flip_vectors(matrix, m_matrix))
     matrix_average, matrix_low, matrix_high = _compute_jn_pcoa_avg_ranges(\
             jn_flipped_matrices, method)
     #compute average eigvals
@@ -866,28 +865,23 @@ def _compute_jn_pcoa_avg_ranges(jn_flipped_matrices, method):
         matrix_high = result[1].reshape(x,y)
     return matrix_average, matrix_low, matrix_high
 
-def _flip_vectors(jn_matrix, jn_eigvals, m_matrix, m_eigvals):
+def _flip_vectors(jn_matrix, m_matrix):
     """transforms PCA vectors so that signs are correct"""
-    new_matrix= zeros([len(jn_matrix), len(jn_matrix[0])], float)
-    #get info for the True PCA matrix
-    master_vector_order = list(argsort(m_eigvals))
-    master_vector_order.reverse()
-    #get info for the jn PCA matrix
-    jn_vector_order = list(argsort(jn_eigvals))
-    jn_vector_order.reverse()
-    for pc_n, pc_i in enumerate(jn_vector_order):
-        m_vector = m_matrix[master_vector_order[pc_n]]
-        jn_vector = jn_matrix[pc_i]
+    m_matrix_trans = m_matrix.transpose()
+    jn_matrix_trans = jn_matrix.transpose()
+    new_matrix= zeros(jn_matrix_trans.shape, float)
+    for i, m_vector in enumerate(m_matrix_trans):
+        jn_vector = jn_matrix_trans[i]
         disT = list(m_vector - jn_vector)
         disT = sum(map(abs, disT))
         jn_flip = jn_vector*[-1]
         disF = list(m_vector - jn_flip)
         disF = sum(map(abs, disF))
         if disT > disF:
-            new_matrix[pc_i] = jn_flip
+            new_matrix[i] = jn_flip
         else:
-            new_matrix[pc_i] = jn_vector
-    return new_matrix
+            new_matrix[i] = jn_vector
+    return new_matrix.transpose()
 
 def IQR(x):
     """calculates the interquartile range of x
