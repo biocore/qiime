@@ -49,7 +49,7 @@ script_info['output_description']="""This script generates an output folder, whi
 script_info['required_options']=[\
 make_option('-i', '--coord_fname', dest='coord_fname', \
 help='This is the path to the principal coordinates file (i.e., resulting \
-file from principal_coordinates.py).  If a directory of rarified PCoA matrices (i.e. "-r" option) is supplied, then this option acts as the master PCoA file.'),
+file from principal_coordinates.py).  Alternatively, the user can supply a directory containing multiple principal coordinates files.'),
 make_option('-m', '--map_fname', dest='map_fname', \
      help='This is the metadata mapping file [default=%default]')
 ]
