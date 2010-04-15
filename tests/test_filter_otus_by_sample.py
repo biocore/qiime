@@ -26,9 +26,9 @@ class TopLevelTests(TestCase):
     def setUp(self):
         """define some top-level data"""
         self.aln=[]
-        self.aln.append(('0 SampleA','AAAAAAAAAAAAAAA'))
-        self.aln.append(('1 SampleB','CCCCCCC'))
-        self.aln.append(('2 SampleC','GGGGGGGGGGGGGG'))
+        self.aln.append(('SampleA','AAAAAAAAAAAAAAA'))
+        self.aln.append(('SampleB','CCCCCCC'))
+        self.aln.append(('SampleC','GGGGGGGGGGGGGG'))
         
         self.otus={'0':['SampleC'],'1':['SampleC','SampleA'],'2':['SampleB',\
                                                                   'SampleA']}
@@ -63,10 +63,10 @@ sequences to remove"""
 
         self.sample_to_extract='SampleA,SampleB'
         exp1=[]
-        exp1.append(('0 SampleA','AAAAAAAAAAAAAAA'))
+        exp1.append(('SampleA','AAAAAAAAAAAAAAA'))
         exp2=[]
-        exp2.append(('1 SampleB','CCCCCCC'))
-        exp2.append(('2 SampleC','GGGGGGGGGGGGGG'))
+        exp2.append(('SampleB','CCCCCCC'))
+        exp2.append(('SampleC','GGGGGGGGGGGGGG'))
         aln=LoadSeqs(data=self.aln,aligned=False)
 
         obs1,obs2=filter_aln_by_otus(aln,self.prefs)

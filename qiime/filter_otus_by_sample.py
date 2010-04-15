@@ -24,9 +24,14 @@ def filter_otus(otus,prefs):
     for i in otus:
         new_otus=[]
         for j in (otus[i]):
+            sample_seq=j.split('_')
+            if len(sample_seq)>1:
+                new_name=''.join(sample_seq[:-1])
+            else:
+                new_name=sample_seq[0]
             is_sample=False
             for sample_id in prefs:
-                if re.search(prefs[sample_id],j):
+                if prefs[sample_id]==new_name:
                     is_sample=True
             if is_sample:
                 pass
@@ -41,13 +46,17 @@ def filter_aln_by_otus(aln,prefs):
         be removed"""
     filtered_seqs=[]
     removed_seqs=[]
-
     for j in range(aln.getNumSeqs()):
         remove=False
         aln_name=aln.Names[j]
-
+        stripped_aln_name=aln_name.split(' ')[0].split('_')
+        if len(stripped_aln_name)>1:
+            new_aln_name=''.join(stripped_aln_name[:-1])
+        else:
+            new_aln_name=stripped_aln_name[0]
+        
         for sample_id in prefs:
-            if re.search(prefs[sample_id],aln_name):
+            if prefs[sample_id]==new_aln_name:
                 remove=True
 
         if remove:
@@ -98,14 +107,21 @@ def filter_samples(prefs, data, dir_path='', filename=None):
 
     #write a fasta containing list of sequences removed from 
     #representative set
-    removed_seqs=LoadSeqs(data=removed_seqs,aligned=False)
+    try:
+        removed_seqs=LoadSeqs(data=removed_seqs,aligned=False)
+    except:
+        raise ValueError, 'No sequences were removed.  Did you specify the correct Sample ID?'
     output_filepath2 = '%s/%s_sremoved.fasta' % (dir_path,filename)
     output_file2=open(output_filepath2,'w')
     output_file2.write(removed_seqs.toFasta())
     output_file2.close()
 
     #write a fasta containing the filtered representative seqs
-    filtered_seqs=LoadSeqs(data=filtered_seqs,aligned=False)
+    try:
+        filtered_seqs=LoadSeqs(data=filtered_seqs,aligned=False)
+    except:
+        raise ValueError, 'No sequences were remaining in the fasta file.  Did you remove all Sample ID\'s?'
+
     output_filepath = '%s/%s_sfiltered.fasta' % (dir_path,filename)
     output_file=open(output_filepath,'w')
     output_file.write(filtered_seqs.toFasta())
