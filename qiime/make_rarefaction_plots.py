@@ -107,7 +107,7 @@ def make_plots(color_prefs, data, background_color, label_color, rares, ymax, \
             
             #Get the alpha rare data
             raredata = rares[r]
-            legend_td=['<td class="headers"><b>%s Coloring:</b></td>' % (group_name)]
+            legend_td=[]
             
             #generate the filepath for the image file
             file_path = os.path.join(output_dir, \
@@ -128,7 +128,7 @@ def make_plots(color_prefs, data, background_color, label_color, rares, ymax, \
             #Sort and iterate through the groups
             for i in natsort(groups):
                 #Create the legend rows
-                legend_td.append('<td class="data" bgcolor="%s">%s</td>' % (data_colors[colors[i]].toHex(), i))
+                legend_td.append('<tr name="%s" style="display: none;"><td class="data" bgcolor="%s"><b>%s</b></td></tr>' % (group_name,data_colors[colors[i]].toHex(), i))
 
                 
                 for k in groups[i]:
@@ -172,8 +172,9 @@ def make_plots(color_prefs, data, background_color, label_color, rares, ymax, \
                                    background_color, label_color)
             
             #Write the image plot rows
-            plot_table_html.append('<tr name="%s" style="display: none;"><td colspan="20"><img src="./%s" \></td></tr>' % \
-                                    (group_name, image_loc))
+            test= '\n'.join(legend_html)
+            plot_table_html.append('<tr name="%s" style="display: none;"><td><img style="vertical-align: text-top;" height="400px "src="./%s" \></td><td><b>Legend</b><div STYLE="border: thin black solid; height: 300px; width: 150px; font-size: 12px; overflow: auto;"><table>%s</table></div></td></tr>' % \
+                                    (group_name, image_loc,test))
             
             #Create the select box options
             category_select_html.append('<option value="%s">%s</option>' % \
@@ -186,7 +187,6 @@ def make_plots(color_prefs, data, background_color, label_color, rares, ymax, \
         #Generate the html output
         html_output=HTML % ('\n'.join(category_select_html), \
                               '\n'.join(plot_table_html), \
-                              '\n'.join(legend_html), \
                               '\n'.join(data_table_html))
 
     return html_output
@@ -240,10 +240,6 @@ old_selected.value=SelObject.value;
 </table>
 <br>
 <table id="rare_plots">
-%s
-</table>
-<br>
-<table id="legend">
 %s
 </table>
 <br>
