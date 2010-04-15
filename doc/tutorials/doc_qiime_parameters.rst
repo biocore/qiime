@@ -3,7 +3,7 @@
 Defining custom parameter files for interacting with the workflow scripts
 ==========================================================================
 
-The QIIME 'workflow' scripts are designed to help automate some of the steps of QIIME. These rely on the user defined their analysis in a parameters file. An example is provided as ``Qiime/qiime_parameters.txt``. Working with this file is described in this document.
+The QIIME 'workflow' scripts are designed to help automate some of the steps of QIIME. These rely on users defining their analysis in a parameters file. An example is provided as ``Qiime/qiime_parameters.txt``. Working with this file is described in this document.
 
 qiime_parameters.txt
 --------------------
@@ -13,7 +13,7 @@ This file is used to give workflow script users control over the parameters to t
 
 This indicates that the ``--alignment_method`` will be set to ``pynast`` when calling ``align_seqs.py``. To get information on what a parameter in the ``qiime_parameters.txt`` file is, you should call the script name followed by ``-h`` to access the usage information for that script. In the above example, you could call::
 	
-	python Qiime/qiime/align_seqs.py -h
+	python align_seqs.py -h
 
 Boolean options are specified by passing ``True`` or ``False`` after the tab. For example::
 	
