@@ -104,8 +104,12 @@ def pad_coords_matrices(coords1,coords2):
 def get_mean_percent_variation(v1,v2):
     return [mean([p1,p2]) for p1,p2 in zip(v1,v2)]
 
+def get_mean_eigenvalues(v1,v2):
+    return [mean([p1,p2]) for p1,p2 in zip(v1,v2)]
+
 def get_procrustes_results(coords_f1,coords_f2,sample_id_map=None,\
     randomize=None,max_dimensions=None,\
+    get_eigenvalues=get_mean_eigenvalues,\
     get_percent_variation_explained=get_mean_percent_variation):
     """ """
     # If this is a random trial, apply the shuffling function passed as 
@@ -137,15 +141,16 @@ def get_procrustes_results(coords_f1,coords_f2,sample_id_map=None,\
     transformed_coords_m1, transformed_coords_m2, m_squared =\
      procrustes(coords1,coords2)
     
+    eigvals = get_eigenvalues(eigvals1, eigvals2)
     pct_var = get_percent_variation_explained(pct_var1,pct_var2)
     
     transformed_coords1 = format_coords(coord_header=order,\
                                         coords=transformed_coords_m1,\
-                                        eigvals=[],\
+                                        eigvals=eigvals,\
                                         pct_var=pct_var)
     transformed_coords2 = format_coords(coord_header=order,\
                                         coords=transformed_coords_m2,\
-                                        eigvals=[],\
+                                        eigvals=eigvals,\
                                         pct_var=pct_var)
     
     # Return the results
