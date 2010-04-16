@@ -229,8 +229,8 @@ class BlastFragmentsChimeraChecker(ChimeraChecker):
         
         # Pass the temporary file to the taxon assigner, and get the 
         # taxonomy and quality score back 
-        taxonomy, quality_score = \
-         self._taxon_assigner(seqs=[('fragment',fragment)])['fragment']
+        r = self._taxon_assigner(seqs=[('fragment',fragment)])['fragment']
+        taxonomy, quality_score = r[0], r[1]
         
         # Return the taxonomy
         return taxonomy

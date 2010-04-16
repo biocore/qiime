@@ -63,12 +63,12 @@ class BlastTaxonAssignerTests(TestCase):
         open(self.reference_seqs_fp,'w').write(test_refseq_coll.toFasta())
         
         self.expected1 = {
-            's1': ('Archaea;Euryarchaeota;Halobacteriales;uncultured', 0.0),
-            's2': ('Archaea;Euryarchaeota;Methanomicrobiales;Methanomicrobium et rel.', 0.0),
-            's3': ('Archaea;Crenarchaeota;uncultured;uncultured', 0.0),
-            's4': ('Archaea;Euryarchaeota;Methanobacteriales;Methanobacterium', 0.0),
-            's5': ('Archaea;Crenarchaeota;uncultured;uncultured', 0.0),
-            's6': ('No blast hit', None),
+            's1': ('Archaea;Euryarchaeota;Halobacteriales;uncultured', 0.0, "AY800210"),
+            's2': ('Archaea;Euryarchaeota;Methanomicrobiales;Methanomicrobium et rel.', 0.0, "EU883771"),
+            's3': ('Archaea;Crenarchaeota;uncultured;uncultured', 0.0, "EF503699"),
+            's4': ('Archaea;Euryarchaeota;Methanobacteriales;Methanobacterium', 0.0, "DQ260310"),
+            's5': ('Archaea;Crenarchaeota;uncultured;uncultured', 0.0, "EF503697"),
+            's6': ('No blast hit', None, None),
             }
         
     def tearDown(self):
@@ -115,11 +115,11 @@ class BlastTaxonAssignerTests(TestCase):
             's4': None,
             }
         expected = {
-            's1': ("Archaea;Euryarchaeota;Halobacteriales;uncultured", 1e-99),
+            's1': ("Archaea;Euryarchaeota;Halobacteriales;uncultured", 1e-99, "AY800210"),
             's5': ('Archaea;Euryarchaeota;Methanomicrobiales;Methanomicrobium et rel.',
-                   'weird confidence value'),
-            's3': ("Archaea;Euryarchaeota;Methanobacteriales;Methanobacterium", 42.),
-            's4': ('No blast hit', None),
+                   'weird confidence value',"EU883771"),
+            's3': ("Archaea;Euryarchaeota;Methanobacteriales;Methanobacterium", 42.,"DQ260310"),
+            's4': ('No blast hit', None, None),
             }
         actual = p._map_ids_to_taxonomy(hits,id_to_taxonomy_map)
         self.assertEqual(actual,expected)
@@ -270,12 +270,12 @@ class BlastTaxonAssignerTests(TestCase):
         actual = p(self.input_seqs_fp, result_path=result_path)
 
         expected_lines = set([
-            's1\tArchaea;Euryarchaeota;Halobacteriales;uncultured\t0.0\n',
-            's2\tArchaea;Euryarchaeota;Methanomicrobiales;Methanomicrobium et rel.\t0.0\n',
-            's3\tArchaea;Crenarchaeota;uncultured;uncultured\t0.0\n',
-            's4\tArchaea;Euryarchaeota;Methanobacteriales;Methanobacterium\t0.0\n',
-            's5\tArchaea;Crenarchaeota;uncultured;uncultured\t0.0\n',
-            's6\tNo blast hit\tNone\n',
+            's1\tArchaea;Euryarchaeota;Halobacteriales;uncultured\t0.0\tAY800210\n',
+            's2\tArchaea;Euryarchaeota;Methanomicrobiales;Methanomicrobium et rel.\t0.0\tEU883771\n',
+            's3\tArchaea;Crenarchaeota;uncultured;uncultured\t0.0\tEF503699\n',
+            's4\tArchaea;Euryarchaeota;Methanobacteriales;Methanobacterium\t0.0\tDQ260310\n',
+            's5\tArchaea;Crenarchaeota;uncultured;uncultured\t0.0\tEF503697\n',
+            's6\tNo blast hit\tNone\tNone\n',
             ])
         f = open(result_path)
         observed_lines = set(f.readlines())

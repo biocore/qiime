@@ -174,8 +174,9 @@ class BlastTaxonAssigner(TaxonAssigner):
             # if the user provided a result_path, write the 
             # results to file
             of = open(result_path,'w')
-            for seq_id, (lineage, confidence) in result.items():
-                of.write('%s\t%s\t%s\n' % (seq_id, lineage, confidence))
+            for seq_id, (lineage, confidence, blast_hit_id) in result.items():
+                of.write('%s\t%s\t%s\t%s\n' % 
+                 (seq_id, lineage, confidence, blast_hit_id))
             of.close()
             result = None
             logger.info('Result path: %s' % result_path)
@@ -230,9 +231,9 @@ class BlastTaxonAssigner(TaxonAssigner):
             try:
                 hit_id, e_value = hit 
                 hits[query_id] = \
-                  (id_to_taxonomy_map.get(hit_id, None),e_value)
+                  (id_to_taxonomy_map.get(hit_id, None),e_value,hit_id)
             except TypeError:
-                hits[query_id] = ('No blast hit', None)
+                hits[query_id] = ('No blast hit', None, None)
 
         return hits
         

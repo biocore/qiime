@@ -413,7 +413,7 @@ eigvals\t4.94\t1.79\t1.50
 353 PC.634_154	Root;Bacteria;Bacteroidetes	0.830
 17 PC.607_302	Root;Bacteria;Bacteroidetes	0.960
 13 PC.481_1214	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales	0.870
-338 PC.593_1314	Root;Bacteria	0.990"""
+338 PC.593_1314	Root;Bacteria	0.990	42556	Additional fields ignored"""
         res = parse_taxonomy(example_tax.split('\n'))
         self.assertEqual(res['412'],
          "Root;Bacteria;Firmicutes;\"Clostridia\";Clostridiales")

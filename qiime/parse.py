@@ -283,6 +283,19 @@ def parse_rarefaction_fname(name_string):
 def parse_taxonomy(infile):
     """parse a taxonomy file.
 
+
+    Typically the lines in these files look like: 
+      3 SAM1_32 \t Root;Bacteria;Fi... \t 0.9
+      
+     where the first field is the sequence identifier, the second field is the 
+      taxonomy assignment separated by ; characters, and the third field is a
+      quality score (e.g., confidence from the RDP classifier)
+     
+     when using the BLAST taxonomy assigner, an additional field is included, 
+      containing the sequence identifier of the best blast hit or each input 
+      sequence. these lines might look like:
+      3 SAM1_32 \t Root;Bacteria;Fi... \t 1e-42 \t A1237756
+
     Returns: dict of otu id to taxonomy name.
     ignores other parts of the otu file, such as confidence and seq id (otu id
     only)
@@ -290,12 +303,9 @@ def parse_taxonomy(infile):
 
     res = {}
     for line in infile:
-        fields = line.split('\t')
-        # typically this looks like: 3 SAM1_32 \t Root,Bacteria,Fi... \t 0.9
-        # implying otu 3; sample 1, seq 32 (the representative of otu 3);
-        # followed by the taxonomy and confidence
-        if not len(fields) == 3:
+        if not line or line.startswith('#'):
             continue
+        fields = line.split('\t')
         otu = fields[0].split(' ')[0]
         res[otu] = fields[1]
 
