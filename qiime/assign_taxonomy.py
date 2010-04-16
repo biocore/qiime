@@ -224,7 +224,7 @@ class BlastTaxonAssigner(TaxonAssigner):
         return logger
 
     def _map_ids_to_taxonomy(self, hits, id_to_taxonomy_map):
-        """ map {query_id:(best_blast_seq_id,e-val)} to {query_id:(tax,None)}
+        """ map {query_id:(best_blast_seq_id,e-val)} to {query_id:(tax,e-val,best_blast_seq_id)}
         """
         for query_id, hit in hits.items():
             query_id=query_id.split()[0]

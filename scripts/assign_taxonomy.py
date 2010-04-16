@@ -31,7 +31,7 @@ script_info={}
 script_info['brief_description']="""Assign taxonomy to each sequence"""
 script_info['script_description']="""Contains code for assigning taxonomy, using several techniques.
 
-Given a set of sequences, assign_taxonomy attempts to assign the taxonomy of each sequence. Currently there are two methods implemented: assignment with BLAST and assignment with the RDP classifier. The output of this step is a mapping of sequence identifiers to taxonomy with a quality score."""
+Given a set of sequences, assign_taxonomy attempts to assign the taxonomy of each sequence. Currently there are two methods implemented: assignment with BLAST and assignment with the RDP classifier. The output of this step is a mapping of input sequence identifiers (1st column of output file) to taxonomy (2nd column) and quality score (3rd column). The sequence identifier of the best BLAST hit is also included if the blast method is used (4th column). """
 script_info['script_usage']=[]
 script_info['script_usage'].append(("""""","""
 Example of consensus lineage: 
