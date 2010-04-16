@@ -14,13 +14,14 @@ __status__ = "Development"
 from cogent.util.misc import flatten
 from qiime.parse import parse_coords,group_by_field,parse_mapping_file
 from qiime.colors import natsort, get_group_colors, color_groups, make_color_dict, combine_map_label_cols, process_colorby, linear_gradient, iter_color_groups, get_map, kinemage_colors
-from numpy import array, shape, apply_along_axis, dot, delete, vstack
+from numpy import array, shape, apply_along_axis, dot, delete, vstack, sqrt
 import numpy as np
 import os
 from random import choice
 import re
 from time import strftime
 from biplots import make_mage_taxa
+from qiime.util import load_pcoa_files, summarize_pcoas
 
 '''
 xdata_colors = {
@@ -74,7 +75,8 @@ def create_dir(dir_path,plot_type):
 def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, \
                     background_color,label_color, \
                     taxa=None, custom_axes=None, \
-                    edges=None):
+                    edges=None, coords_low=None, coords_high=None, \
+                    ellipsoid_prefs=None):
     """Makes 3d plots given coords, mapping file, and prefs.
     
     Added quick-and-dirty hack for gradient coloring of columns, should
@@ -110,11 +112,15 @@ def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, \
         result.extend(make_mage_output(groups, colors, coord_header, coords, \
             pct_var,background_color,label_color,data_colors, \
             taxa, custom_axes,name=labelname, \
-            scaled=False, edges=edges))
+            scaled=False, edges=edges,
+            coords_low=coords_low, coords_high=coords_high, \
+            ellipsoid_prefs=ellipsoid_prefs))
         result.extend(make_mage_output(groups, colors, coord_header, coords, \
             pct_var,background_color,label_color,data_colors, \
             taxa, custom_axes,name=labelname, \
-            scaled=True, edges=edges))
+            scaled=True, edges=edges, \
+            coords_low=coords_low, coords_high=coords_high, \
+            ellipsoid_prefs=ellipsoid_prefs))
 
     return result
 
@@ -133,7 +139,8 @@ def make_mage_output(groups, colors, coord_header, coords, pct_var, \
                      background_color,label_color,data_colors, \
                      taxa=None, custom_axes=None,name='', \
                      radius=None, alpha=.75, num_coords=10,scaled=False, \
-                     coord_scale=1.05, edges=None):
+                     coord_scale=1.05, edges=None, coords_low=None, \
+                     coords_high=None, ellipsoid_prefs=None):
     """Convert groups, colors, coords and percent var into mage format"""
     result = []
     
@@ -145,6 +152,10 @@ def make_mage_output(groups, colors, coord_header, coords, pct_var, \
             custom_scalars = scalars[0] * np.ones(len(custom_axes))
             scalars = np.append(custom_scalars,scalars)
         coords = scale_pc_data_matrix(coords, scalars)
+        if not coords_low is None:
+            coords_low = scale_pc_data_matrix(coords_low, scalars)
+        if not coords_high is None:
+            coords_high = scale_pc_data_matrix(coords_high, scalars)
         header_suffix = '_scaled'
     else:
         header_suffix = '_unscaled'
@@ -189,6 +200,10 @@ def make_mage_output(groups, colors, coord_header, coords, pct_var, \
    
     #Write the groups, colors and coords
     coord_dict = dict(zip(coord_header, coords))
+    if not coords_low is None:
+        coord_low_dict = dict(zip(coord_header, coords_low))
+    if not coords_high is None:
+        coord_high_dict = dict(zip(coord_header, coords_high))
     for group_name in natsort(groups):
         ids = groups[group_name]
         result.append('@group {%s (n=%s)} collapsible' % (group_name, len(ids)))
@@ -199,10 +214,18 @@ def make_mage_output(groups, colors, coord_header, coords, pct_var, \
             if id_ in coord_dict:
                 coord_lines.append('{%s} %s' % \
                     (id_, ' '.join(map(str, coord_dict[id_][:num_coords]))))
-        
+
+        # create list of balls, one for each sample
         result.append('@balllist color=%s radius=%s alpha=%s dimension=%s \
 master={points} nobutton' % (color, radius, alpha, num_coords))
         result.append('\n'.join(coord_lines))
+        # make ellipsoids if low and high coord bounds were received
+        if (not coords_low is None) and (not coords_high is None):
+            # create one trianglelist for each sample to define ellipsoids
+            result += make_mage_ellipsoids(ids, coord_dict, coord_low_dict,
+                                           coord_high_dict, color, ellipsoid_prefs)
+
+        # create list of labels 
         result.append('@labellist color=%s radius=%s alpha=%s dimension=%s \
 master={labels} nobutton' % (color, radius, alpha, num_coords))
         result.append('\n'.join(coord_lines))
@@ -292,6 +315,103 @@ def make_edges_output(coord_dict, edges, num_coords,label_color,tip_fraction=0.4
                           (' '.join(map(str, pt_to)), tip_color))            
     return result
 
+def make_mage_ellipsoids(ids, coord_dict, coord_low_dict,
+                         coord_high_dict, color, ellipsoid_prefs=\
+                             {"smoothness":2,"alpha":.25}):
+    """Makes ellipsoids with centers in coord_dict. 
+       coord_low_dict and coord_high_dict are used to scale
+       each axis of the ellipsoid.
+    """
+    alpha = ellipsoid_prefs['alpha']
+    nsubdivs = ellipsoid_prefs['smoothness']
+    result = []
+    coord_lines = []
+    for id_ in sorted(ids):
+        if id_ in coord_dict:
+            center = coord_dict[id_][:3]
+            dims = coord_high_dict[id_][:3] - coord_low_dict[id_][:3]
+
+            faces = make_ellipsoid_faces(center, dims, nsubdivs=nsubdivs)
+            for face in faces:
+                result.append("@trianglelist color=%s alpha=%f master={points} nobutton" %(color, alpha))
+                for point in face:
+                    result.append(' '.join(map(str,point)))
+    return result
+
+def make_ellipsoid_faces(center, dims, nsubdivs=2):
+    """Returns a list of 3-tuples (triangles) of 3-tuples (points)
+       defining an ellipsoid centered at center with axis 
+       dimensions given in dims.
+
+       nsubdivs determines the number of recursive divisions of
+       the faces that will be made.
+       nsubdivs value     No. faces
+       0                  20
+       1                 
+    
+    """
+    t = (1+sqrt(5))/2.0
+    s = sqrt(1+t**2)
+    
+    vertices = [(t/s,1/s,0), (-t/s,1/s,0), (t/s,-1/s,0),\
+                (-t/s,-1/s,0), (1/s,0,t/s), (1/s,0,-t/s), (-1/s,0,t/s),(-1/s,0,-t/s),\
+                    (0,t/s,1/s), (0,-t/s,1/s), (0,t/s,-1/s), (0,-t/s,-1/s)]
+
+    v = vertices
+    faces = [(v[0],v[8],v[4]),(v[1],v[10],v[7]),(v[2],v[9],v[11]),(v[7],v[3],v[1]),(v[0],v[5],v[10]),(v[3],v[9],v[6]),\
+                 (v[3],v[11],v[9]),(v[8],v[6],v[4]),(v[2],v[4],v[9]),(v[3],v[7],v[11]),(v[4],v[2],v[0]),\
+                 (v[9],v[4],v[6]),(v[2],v[11],v[5]),(v[0],v[10],v[8]),(v[5],v[0],v[2]),(v[10],v[5],v[7]),(v[1],v[6],v[8]),\
+                 (v[1],v[8],v[10]),(v[6],v[1],v[3]),(v[11],v[7],v[5])]
+    
+    #subdivide each of the faces into 9 faces
+    for i in xrange(nsubdivs):
+        new_faces = []
+        for face in faces:
+            new_faces.extend(subdivide(face[0], face[1], face[2]))
+        faces = new_faces
+    faces = scale_faces(dims[0], dims[1], dims[2], faces)
+    faces = translate_faces(center, faces)
+    return faces
+
+def subdivide(x,y,z):
+    #look at x-y edge
+    xy = [(x[0]*2/3.0+y[0]/3.0, x[1]*2/3.0+y[1]/3.0, x[2]*2/3.0+y[2]/3.0), (x[0]/3.0+y[0]*2/3.0, x[1]/3.0+y[1]*2/3.0, x[2]/3.0+y[2]*2/3.0)]
+    #pull them to the surface of the sphere
+    xy = [(i[0]/sqrt(i[0]**2+i[1]**2+i[2]**2), i[1]/sqrt(i[0]**2+i[1]**2+i[2]**2), i[2]/sqrt(i[0]**2+i[1]**2+i[2]**2)) for i in xy]
+    
+    #do the same for the other edges
+    xz = [(x[0]*2/3.0+z[0]/3.0, x[1]*2/3.0+z[1]/3.0, x[2]*2/3.0+z[2]/3.0), (x[0]/3.0+z[0]*2/3.0, x[1]/3.0+z[1]*2/3.0, x[2]/3.0+z[2]*2/3.0)]
+    xz = [(i[0]/sqrt(i[0]**2+i[1]**2+i[2]**2), i[1]/sqrt(i[0]**2+i[1]**2+i[2]**2), i[2]/sqrt(i[0]**2+i[1]**2+i[2]**2)) for i in xz]
+    
+    zy = [(z[0]*2/3.0+y[0]/3.0, z[1]*2/3.0+y[1]/3.0, z[2]*2/3.0+y[2]/3.0), (z[0]/3.0+y[0]*2/3.0, z[1]/3.0+y[1]*2/3.0, z[2]/3.0+y[2]*2/3.0)]
+    zy = [(i[0]/sqrt(i[0]**2+i[1]**2+i[2]**2), i[1]/sqrt(i[0]**2+i[1]**2+i[2]**2), i[2]/sqrt(i[0]**2+i[1]**2+i[2]**2)) for i in zy]
+    
+    center = ((x[0]+y[0]+z[0])/3.0, (x[1]+y[1]+z[1])/3.0, (x[2]+y[2]+z[2])/3.0)
+    center_len = sqrt(center[0]**2+center[1]**2+center[2]**2)
+    center = (center[0]/center_len, center[1]/center_len, center[2]/center_len)
+
+    #generate the new list of faces
+    faces = [(x,xz[0],xy[0]), (xz[0],xy[0],center), (xz[0],xz[1],center), (xz[1],zy[0],center), (xz[1],z,zy[0]), (xy[0],center,xy[1]), 
+             (xy[1],y,zy[1]), (xy[1],zy[1],center), (zy[1],zy[0],center)]
+    
+    return faces
+
+def scale_faces(a,b,c,faces):
+    for i,face in enumerate(faces):
+        faces[i] = list(faces[i])
+        for j,point in enumerate(face):
+            faces[i][j] = (point[0]*a, point[1]*b, point[2]*c)
+    return faces
+
+def translate_faces(center, faces):
+    for i,face in enumerate(faces):
+        faces[i] = list(faces[i])
+        for j,point in enumerate(face):
+            faces[i][j] = (point[0]+center[0], point[1]+center[1], point[2]+center[2])
+    return faces
+
+
+
 def process_custom_axes(axis_names):
     """Parses the custom_axes option from the command line"""
     return axis_names.strip().strip("'").strip('"').split(',')
@@ -358,14 +478,29 @@ def get_sample_ids(maptable):
     """Extracts list of sample IDs from mapping file."""
     return [line[0] for line in maptable[1:]]
 
-def get_coord(coord_fname):
-    """Opens and returns coords data"""
-    try:
-        coord_f = open(coord_fname, 'U').readlines()
-    except (TypeError, IOError):
-        raise MissingFileError, 'Coord file required for this analysis'
-    coord_header, coords, eigvals, pct_var = parse_coords(coord_f)
-    return [coord_header, coords, eigvals, pct_var]
+def get_coord(coord_fname, method="IQR"):
+    """Opens and returns coords location matrix and metadata.
+       Also two spread matrices (+/-) if passed a dir of coord files.
+       If only a single coord file, spread matrices are returned as None.
+    """
+    if not os.path.isdir(coord_fname):
+        try:
+            coord_f = open(coord_fname, 'U').readlines()
+        except (TypeError, IOError):
+            raise MissingFileError, 'Coord file required for this analysis'
+        coord_header, coords, eigvals, pct_var = parse_coords(coord_f)
+        return [coord_header, coords, eigvals, pct_var, None, None]
+    else:
+        master_pcoa, support_pcoas = load_pcoa_files(coord_fname)
+
+        # get Summary statistics
+        coords, coords_low, coords_high, eigval_average, coord_header = \
+            summarize_pcoas(master_pcoa,support_pcoas, method=method)
+        pct_var = master_pcoa[3] # should be getting this from an average
+
+        # make_3d_plots expects coord_header to be a python list
+        coord_header = list(master_pcoa[0])
+        return [coord_header, coords, eigval_average, pct_var, coords_low, coords_high]
 
 def get_multiple_coords(coord_fnames):
     """Opens and returns coords data and edges from multiple coords files.
@@ -425,11 +560,13 @@ def get_taxa(taxa_fname, sample_ids):
 def remove_unmapped_samples(mapping,coords,edges=None):
     """Removes any samples not present in mapping file"""
     sample_IDs = zip(*mapping[1:])[0]
+
     # remove unmapped ids from headers and coords
     for i in xrange(len(coords[0])-1,-1,-1):
         if not coords[0][i] in sample_IDs:
             del(coords[0][i])
             coords[1] = np.delete(coords[1],i,0)
+
     # remove unmapped ids from edges
     if edges:
         for i in xrange(len(edges)-1,-1,-1):
@@ -439,7 +576,7 @@ def remove_unmapped_samples(mapping,coords,edges=None):
 
 def generate_3d_plots(prefs, data, custom_axes, background_color,label_color, \
                         dir_path='',data_file_path='',filename=None, \
-                        default_filename='out'):
+                        default_filename='out', ellipsoid_prefs=None):
     """Make 3d plots according to coloring options in prefs."""
 
     if filename is None:
@@ -449,7 +586,8 @@ def generate_3d_plots(prefs, data, custom_axes, background_color,label_color, \
     kinlink = os.path.join('./',data_folder,filename) + ".kin"
     htmlpath = dir_path
 
-    coord_header, coords, eigvals, pct_var = data['coord']
+    coord_header, coords, eigvals, pct_var, coords_low, coords_high = \
+        data['coord']
     mapping=data['map']
 
     edges = None
@@ -462,7 +600,9 @@ def generate_3d_plots(prefs, data, custom_axes, background_color,label_color, \
 
     res = make_3d_plots(coord_header, coords, pct_var,mapping,prefs, \
                         background_color,label_color, \
-                        taxa, custom_axes=custom_axes,edges=edges)
+                        taxa, custom_axes=custom_axes,edges=edges, \
+                        coords_low=coords_low, coords_high=coords_high, \
+                        ellipsoid_prefs=ellipsoid_prefs)
 
     #Write kinemage file
     f = open(kinpath, 'w')
