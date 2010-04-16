@@ -17,6 +17,7 @@ from cogent.app.formatdb import build_blast_db_from_fasta_file
 from cogent.util.misc import get_random_directory_name
 import numpy
 from numpy import array, asarray
+from cogent.cluster.procrustes import procrustes
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME Project"
@@ -433,6 +434,13 @@ class BlastSeqsTests(TestCase):
         self.assertFloatEqual(avg_matrix[(0,2)], -4.5)
         self.assertFloatEqual(low_matrix[(0,0)], 2.16666667)
         self.assertFloatEqual(high_matrix[(0,0)], 5.83333333)
+
+        avg_matrix, low_matrix, high_matrix = _compute_jn_pcoa_avg_ranges(\
+                jn_flipped_matrices, 'sdev')
+        x = array([m[0,0] for m in jn_flipped_matrices])
+        self.assertEqual(x.mean(),avg_matrix[0,0])
+        self.assertEqual(-x.std(ddof=1)/2,low_matrix[0,0])
+        self.assertEqual(x.std(ddof=1)/2,high_matrix[0,0])
         
     def test_summarize_pcoas(self):
         """summarize_pcoas works
@@ -455,7 +463,8 @@ class BlastSeqsTests(TestCase):
         support_pcoas = [jn1, jn2, jn3, jn4]
         #test with the ideal_fourths option
         matrix_average, matrix_low, matrix_high, eigval_average, m_names = \
-            summarize_pcoas(master_pcoa, support_pcoas, 'ideal_fourths')
+            summarize_pcoas(master_pcoa, support_pcoas, 'ideal_fourths',
+                            apply_procrustes=False)
         self.assertEqual(m_names, ['1', '2', '3'])
         self.assertFloatEqual(matrix_average[(0,0)], -1.4)
         self.assertFloatEqual(matrix_average[(0,1)], 0.0125)
@@ -467,9 +476,24 @@ class BlastSeqsTests(TestCase):
         self.assertFloatEqual(eigval_average[1], 0.19)
         #test with the IQR option
         matrix_average, matrix_low, matrix_high, eigval_average, m_names = \
-            summarize_pcoas(master_pcoa, support_pcoas, 'IQR')
+            summarize_pcoas(master_pcoa, support_pcoas, method='IQR',
+                            apply_procrustes=False)
         self.assertFloatEqual(matrix_low[(0,0)], -1.5)
         self.assertFloatEqual(matrix_high[(0,0)], -1.3)
+
+        #test with procrustes option followed by sdev
+        m, m1, msq = procrustes(master_pcoa[1],jn1[1])
+        m, m2, msq = procrustes(master_pcoa[1],jn2[1])
+        m, m3, msq = procrustes(master_pcoa[1],jn3[1])
+        m, m4, msq = procrustes(master_pcoa[1],jn4[1])
+        matrix_average, matrix_low, matrix_high, eigval_average, m_names = \
+            summarize_pcoas(master_pcoa, support_pcoas, method='sdev',
+                            apply_procrustes=True)
+
+        x = array([m1[0,0],m2[0,0],m3[0,0],m4[0,0]])
+        self.assertEqual(x.mean(),matrix_average[0,0])
+        self.assertEqual(-x.std(ddof=1)/2,matrix_low[0,0])
+        self.assertEqual(x.std(ddof=1)/2,matrix_high[0,0])
 
     def test_IQR(self):
         "IQR returns the interquartile range for list x"
