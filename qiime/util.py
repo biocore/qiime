@@ -31,6 +31,7 @@ import sys
 import os
 from copy import deepcopy
 from cogent import LoadSeqs
+from cogent.cluster.procrustes import procrustes
 from cogent.parse.tree import DndParser, PhyloNode
 from cogent.core.alignment import Alignment
 from cogent.app.blast import Blastall
@@ -812,7 +813,7 @@ def load_pcoa_files(pcoa_dir):
             exit(1)
     return master_pcoa, support_pcoas
 
-def summarize_pcoas(master_pcoa, support_pcoas, method='IQR'):
+def summarize_pcoas(master_pcoa, support_pcoas, method='IQR', apply_procrustes=True):
     """returns the average PCoA vector values for the support pcoas
 
     Also returns the ranges as calculated with the specified method. 
@@ -820,6 +821,15 @@ def summarize_pcoas(master_pcoa, support_pcoas, method='IQR'):
         IQR: the Interquartile Range
         ideal fourths: Ideal fourths method as implemented in scipy
     """
+    if apply_procrustes:
+        # perform procrustes before averaging
+        support_pcoas = [list(sp) for sp in support_pcoas]
+        master_pcoa = list(master_pcoa)
+        for i, pcoa in enumerate(support_pcoas):
+            master_std, pcoa_std, m_squared = procrustes(master_pcoa[1],pcoa[1])
+            support_pcoas[i][1] = pcoa_std
+        master_pcoa[1] = master_std
+
     m_matrix = master_pcoa[1]
     m_eigvals = master_pcoa[2]
     m_names = master_pcoa[0]
@@ -863,6 +873,17 @@ def _compute_jn_pcoa_avg_ranges(jn_flipped_matrices, method):
         result = idealfourths(summary_matrix, axis=0)
         matrix_low = result[0].reshape(x,y)
         matrix_high = result[1].reshape(x,y)
+    elif method == "sdev":
+        # calculate std error for each sample in each dimension
+        sdevs = zeros(shape=[x,y])
+        for j in xrange(y):
+            for i in xrange(x):
+                vals = array([pcoa[i][j] for pcoa in jn_flipped_matrices])
+                sdevs[i,j] = vals.std(ddof=1)
+        matrix_low = -sdevs/2
+        matrix_high = sdevs/2
+
+
     return matrix_average, matrix_low, matrix_high
 
 def _flip_vectors(jn_matrix, m_matrix):
