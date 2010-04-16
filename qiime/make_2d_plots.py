@@ -95,7 +95,7 @@ default_colors=['blue','lime','red','aqua','fuchsia','yellow','green', \
 
 def make_interactive_scatter(plot_label,dir_path,data_file_link, 
                                 background_color,label_color,sample_location,
-                                xy_coords, 
+                                alpha,xy_coords, 
                                 props, x_len=8, y_len=4, size=10,
                                 draw_axes=False, generate_eps=True):
     """Write interactive plot  
@@ -112,7 +112,8 @@ def make_interactive_scatter(plot_label,dir_path,data_file_link,
     rc('ytick', labelsize=8,color=label_color)
     
     sc_plot=draw_scatterplot(props,xy_coords,x_len,y_len,size,
-                                background_color,label_color,sample_location)
+                                background_color,label_color,sample_location,
+                                alpha)
     
     mtitle = props.get("title","Groups")
     x_label = props.get("xlabel","X")
@@ -125,8 +126,8 @@ def make_interactive_scatter(plot_label,dir_path,data_file_link,
     show()
 
     if draw_axes:
-        axvline(linewidth=.5, x=0, color='black')
-        axhline(linewidth=.5, y=0, color='black')
+        axvline(linewidth=.5, x=0, color=label_color)
+        axhline(linewidth=.5, y=0, color=label_color)
 
     if my_axis is not None:
         axis(my_axis)
@@ -168,7 +169,7 @@ def generate_xmap(x_len,y_len,all_cids,all_xcoords,all_ycoords):
     return xmap,img_height,img_width
 
 def draw_scatterplot(props,xy_coords,x_len,y_len,size,background_color,
-                        label_color,sample_location):
+                        label_color,sample_location,alpha):
     """Create scatterplot figure"""
     
     fig = figure(figsize=(x_len,y_len))
@@ -190,6 +191,17 @@ def draw_scatterplot(props,xy_coords,x_len,y_len,size,background_color,
             m = s_data[4][0]
             
             ax = fig.add_subplot(111,axisbg=background_color)
+            #set tick colors and width
+            for line in ax.yaxis.get_ticklines():
+                # line is a matplotlib.lines.Line2D instance
+                line.set_color(label_color)
+                line.set_markeredgewidth(1)
+
+            for line in ax.xaxis.get_ticklines():
+                # line is a matplotlib.lines.Line2D instance
+                line.set_color(label_color)
+                line.set_markeredgewidth(1)
+            
             if isarray(s_data[5][0]) and isarray(s_data[6][0]) and isarray(s_data[7][0]):
                 matrix_low=s_data[5][0]
                 matrix_high=s_data[6][0]
@@ -205,7 +217,7 @@ def draw_scatterplot(props,xy_coords,x_len,y_len,size,background_color,
                 
                 sc_plot = scatter_ellipse(ax,ellipse_x, \
                            ellipse_y, width, height, c=c, a=0.0, \
-                            alpha=0.3)
+                            alpha=alpha)
                 sc_plot.scatter(ellipse_x, ellipse_y, c=c, marker=m, \
                               alpha=1.0)
             else:
@@ -289,14 +301,14 @@ def draw_pca_graph(plot_label, dir_path, data_file_link, coord_1, coord_2, \
     p1d = dict(zip(labels, p1))
     p2d = dict(zip(labels, p2))
 
-    
+    alpha=data['alpha']
 
     xy_coords = extract_and_color_xy_coords(p1d, p2d, p1r, p2r,mat_ave,colors, \
                                             data_colors, groups, coords)
  
     img_src, img_map, eps_link =  make_interactive_scatter(plot_label,dir_path,
                                     data_file_link,background_color,label_color,
-                                    sample_location,
+                                    sample_location,alpha,
                                     xy_coords=xy_coords,props=props,x_len=4.5, 
                                     y_len=4.5,size=20,draw_axes=True,
                                     generate_eps=generate_eps)
@@ -403,7 +415,7 @@ def generate_2d_plots(prefs,data,html_dir_path,data_dir_path,filename,
         
         if data.has_key('support_pcoas'):
             matrix_average, matrix_low, matrix_high, eigval_average, m_names = \
-                summarize_pcoas(data['coord'], data['support_pcoas'], method='IQR')
+                summarize_pcoas(data['coord'], data['support_pcoas'], method=data['ellipsoid_method'])
             data['coord'] = \
                 (m_names,matrix_average,data['coord'][2],eigval_average)
             for i in range(len(m_names)):
@@ -442,7 +454,7 @@ def generate_2d_plots(prefs,data,html_dir_path,data_dir_path,filename,
                                     "<br>".join(img_data[("3", "2")]),
                                     "<br>".join(img_data[("1", "3")]))
                                    
-    outfile = create_html_filename(filename,'_pca_2D.html')
+    outfile = create_html_filename(filename,'.html')
     outfile=os.path.join(html_dir_path,outfile)
         
     write_html_file(out_table,outfile)
@@ -481,8 +493,8 @@ def scatter_ellipse(axis_ob, x, y, w, h, c='b', a=0.0, alpha=0.5):
             raise ValueError, 'h and x are not equal lengths'
         if len(a)!=len(x):
             raise ValueError, 'a and x are not equal lengths'
-        if len(alpha)!=len(x):
-            raise ValueError, 'alpha and x are not equal lengths'
+        #if len(alpha)!=len(x):
+        #    raise ValueError, 'alpha and x are not equal lengths'
         patches = []
         for thisX, thisY, thisW, thisH, thisC, thisA, thisAl in \
                         zip(x,y,w,h,c,a,alpha):

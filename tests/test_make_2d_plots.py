@@ -40,7 +40,7 @@ class TopLevelTests(TestCase):
                           'Day1']]
         self.coord_tups = [("1", "2"), ("3", "2"), ("1", "3")]
         self.generate_eps=True
-
+        self.data['alpha']=0.33
         self.groups={}
         self.groups['Day1']=['Sample1','Sample2']
         self.colors={}
@@ -94,7 +94,7 @@ class TopLevelTests(TestCase):
         self.x_len=4.5
         self.y_len=4.5
         self.size=20
-        self.alpha=0.5
+        self.alpha=0.33
         self._paths_to_clean_up = []
     
     def tearDown(self):
@@ -111,7 +111,8 @@ images"""
 
         obs1,obs2,obs3=make_interactive_scatter(self.plot_label,self.dir_path,
                                 self.data_file_link,self.background_color,
-                                self.label_color,None,self.xy_coords,self.props, 
+                                self.label_color,None,self.alpha, 
+                                self.xy_coords,self.props, 
                                 self.x_len, self.y_len, self.size,
                                 draw_axes=False, generate_eps=True)
 
@@ -139,7 +140,8 @@ the appropriate location')
 
         sc_plot = draw_scatterplot(self.props,self.xy_coords,self.x_len,\
                                    self.y_len,self.size,
-                                   self.background_color,self.label_color, None)
+                                   self.background_color,self.label_color, None,
+                                   self.alpha)
         obs=sc_plot.get_offsets()
 
         self.assertEqual(obs,exp)
@@ -149,7 +151,8 @@ the appropriate location')
 plot into html spatial coords which allows for mouseovers"""
         sc_plot = draw_scatterplot(self.props,self.xy_coords,self.x_len,\
                                    self.y_len, self.size,
-                                   self.background_color,self.label_color, None)
+                                   self.background_color,self.label_color, None,
+                                   self.alpha)
                                
         obs1,obs2,obs3=transform_xy_coords(self.xy_coords,sc_plot)
         

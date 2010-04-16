@@ -66,6 +66,17 @@ file. NOTE: This is a file with a dictionary containing preferences for the \
 analysis [default: %default]'),
 make_option('-k', '--background_color',help='This is the background color to \
 use in the plots. [default: %default]'),
+
+# summary plot stuff
+ make_option('--ellipsoid_opacity',help='Used when plotting ellipsoids for \
+a summary plot (i.e. using a directory of coord files instead of a single coord\
+file). Valid range is 0-1. A value of 0 produces completely transparent \
+(invisible) ellipsoids. A value of 1 produces completely opaque ellipsoids.', \
+default=0.33,type=float),
+ make_option('--ellipsoid_method',help='Used when plotting ellipsoids for \
+a summary plot (i.e. using a directory of coord files instead of a single coord \
+file). Valid values are "IQR" and "sdev".',default="IQR"),
+
 options_lookup['output_dir']
 ]
 
@@ -87,15 +98,22 @@ def main():
     prefs,data,background_color,label_color= \
                             sample_color_prefs_and_map_data_from_options(opts)
 
-    #Open and get coord data
     
+    data['ellipsoid_method']=opts.ellipsoid_method
+   
+    if 0.00 <= opts.ellipsoid_opacity <= 1.00:
+        data['alpha']=opts.ellipsoid_opacity
+    else:
+        raise ValueError, 'The opacity must be a value between 0 and 1!'
+    
+    #Open and get coord data
     if os.path.isdir(opts.coord_fname):
         data['coord'],data['support_pcoas'] = load_pcoa_files(opts.coord_fname)
     else:
         data['coord'] = get_coord(opts.coord_fname)
 
     filepath=opts.coord_fname
-    filename=filepath.strip().split('/')[-1]
+    filename='2d_pcoa_plots'
 
     qiime_dir=get_qiime_project_dir()
 
