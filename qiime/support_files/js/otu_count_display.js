@@ -110,7 +110,7 @@ function write_taxon_heatmap(){
 	
 	//Third, we need to transpose the original table and then sort by taxons.
 	OTU_table=transpose_otu_table(OTU_table,otu_cutoff);
-	OTU_table=sort_by_taxonomy(OTU_table);
+	//OTU_table=sort_by_taxonomy(OTU_table);
 	
 	num_cols=OTU_table[0].length-1;
 	num_rows=OTU_table.length;

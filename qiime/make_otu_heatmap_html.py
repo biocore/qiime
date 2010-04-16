@@ -10,8 +10,8 @@ __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 __status__ = "Development"
 
-import numpy
-from numpy import array,concatenate
+
+from numpy import array,concatenate,asarray,transpose
 from cogent.parse.table import SeparatorFormatParser
 from optparse import OptionParser
 from qiime.parse import parse_otu_table
@@ -192,7 +192,22 @@ def generate_heatmap_plots(options,data, dir_path, js_dir_path,filename):
     num_otu_hits=int(options.num_otu_hits)
     #Filter by number of OTU hits
     rows=filter_by_otu_hits(num_otu_hits, data)
-
+    #print rows
+    #print rows[0]
+    
+    # This sorts the otus by the tree supplied
+    if data['otu_order']:
+        #print data['otu_order']
+        new_otu_table=[]
+        tran_rows=rows.transpose()
+    
+        new_otu_table.append(tran_rows[0])
+        for i in data['otu_order']:
+            for j in tran_rows:
+                if i==j[0]:
+                    new_otu_table.append(j)
+        rows= asarray(new_otu_table).transpose()
+        
     #Convert OTU counts into a javascript array
     js_array=create_javascript_array(rows)
 
