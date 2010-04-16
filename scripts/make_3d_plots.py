@@ -32,6 +32,8 @@ from qiime.make_3d_plots import get_coord,get_map,remove_unmapped_samples, \
 from qiime.biplots import get_taxa,get_taxa_coords,get_taxa_prevalence,\
     remove_rare_taxa, make_mage_taxa
 from cogent.util.misc import get_random_directory_name
+import numpy as np
+
 options_lookup = get_options_lookup()
 
 #make_3d_plots.py
@@ -54,7 +56,9 @@ script_info['output_description']="""By default, the script will plot the first 
 script_info['required_options']=[\
 make_option('-i', '--coord_fname', dest='coord_fname', \
 help='This is the path to the principal coordinates file (i.e., resulting \
-file from principal_coordinates.py)'), \
+file from principal_coordinates.py), or to a directory containing multiple coord files \
+for averaging (e.g. resulting files from multiple_rarefactions_even_depth.py, \
+followed by multiple beta_diversity.py, followed by multiple principal_coordinates.py).'), \
 make_option('-m', '--map_fname', dest='map_fname', \
      help='This is the metadata mapping file  [default=%default]'), \
 ]
@@ -78,6 +82,21 @@ analysis [default: %default]'),
 use in the plots (Options are \'black\' or \'white\'. [default: %default]'),
  options_lookup['output_dir'],
 
+# summary plot stuff
+ make_option('--ellipsoid_smoothness',help='The level of smoothness used in \
+plotting ellipsoids for a summary plot (i.e. using a directory of coord files \
+instead of a single coord file). Valid range is 0-3. A value of 0 produces \
+very coarse "ellipsoids" but is fast to render. A value of 3 produces very \
+smooth ellipsoids but will be very slow to render if you have more than a \
+few data points.', default=2),
+ make_option('--ellipsoid_opacity',help='Used when plotting ellipsoids for \
+a summary plot (i.e. using a directory of coord files instead of a single coord \
+file). Valid range is 0-3. A value of 0 produces completely transparent \
+(invisible) ellipsoids. A value of 1 produces completely opaque ellipsoids.', \
+default=0.33),
+ make_option('--ellipsoid_method',help='Used when plotting ellipsoids for \
+a summary plot (i.e. using a directory of coord files instead of a single coord \
+file). Valid values are "IQR" and "sdev".',default="IQR"),
      
 #biplot stuff
  make_option('-t', '--taxa_fname',help='If you wish to perform a biplot, ' +\
@@ -86,6 +105,11 @@ use in the plots (Options are \'black\' or \'white\'. [default: %default]'),
  make_option('--n_taxa_keep',help='If performing a biplot, the number of taxa \
 to display; use -1 to \
 display all. [default: %default]',default=10),
+ make_option('--master_pcoa',help='If performing averaging on multiple coord \
+files, the other coord files will be aligned to this one through procrustes \
+analysis. This master file will not be included in the averaging. \
+If this master coord file is not provided, one of the other coord files will \
+be chosen arbitrarily as the target alignment. [default: %default]',default=None),
 ]
 
 script_info['version'] = __version__
@@ -95,9 +119,43 @@ def main():
 
     prefs, data, background_color, label_color= \
                             sample_color_prefs_and_map_data_from_options(opts)
+
+    # Potential conflicts
+    if not opts.custom_axes is None and os.path.isdir(opts.coord_fname):
+        # can't do averaged pcoa plots _and_ custom axes in the same plot
+        option_parser.error("Please supply either custom axes or multiple coordinate \
+files, but not both.")
+    # check that smoothness is an integer between 0 and 3
+    try:
+        ellipsoid_smoothness = int(opts.ellipsoid_smoothness)
+    except:
+        option_parser.error("Please supply an integer ellipsoid smoothness \
+value.")
+    if ellipsoid_smoothness < 0 or ellipsoid_smoothness > 3:
+        option_parser.error("Please supply an ellipsoid smoothness value \
+between 0 and 3.")
+    # check that opacity is a float between 0 and 1
+    try:
+        ellipsoid_alpha = float(opts.ellipsoid_opacity)
+    except:
+        option_parser.error("Please supply a number for ellipsoid opacity.")
+    if ellipsoid_alpha < 0 or ellipsoid_alpha > 1:
+        option_parser.error("Please supply an ellipsoid opacity value \
+between 0 and 1.")
+    # check that ellipsoid method is valid
+    ellipsoid_methods = ['IQR','sdev']
+    if not opts.ellipsoid_method in ellipsoid_methods:
+        option_parser.error("Please supply a valid ellipsoid method. \
+Valid methods are: " + ', '.join(ellipsoid_methods) + ".")
   
+    # gather ellipsoid drawing preferences
+    ellipsoid_prefs = {}
+    ellipsoid_prefs["smoothness"] = ellipsoid_smoothness
+    ellipsoid_prefs["alpha"] = ellipsoid_alpha
+        
     #Open and get coord data
-    data['coord'] = get_coord(opts.coord_fname)
+    data['coord'] = get_coord(opts.coord_fname, opts.ellipsoid_method)
+    
     # remove any samples not present in mapping file
     remove_unmapped_samples(data['map'],data['coord'])
 
@@ -157,7 +215,10 @@ def main():
     shutil.copyfile(os.path.join(jar_path,'king.jar'), os.path.join(jar_dir_path,'king.jar'))
 
     filepath=opts.coord_fname
-    filename=filepath.strip().split('/')[-1]
+    if os.path.isdir(filepath):
+        filename = os.listdir(filepath)[0].split('/')[-1]
+    else:
+        filename=filepath.strip().split('/')[-1]
 
     try:
         action = generate_3d_plots
@@ -167,7 +228,7 @@ def main():
     #Place this outside try/except so we don't mask NameError in action
     if action:
         action(prefs,data,custom_axes,background_color,label_color,dir_path, \
-                data_file_path,filename)
+                data_file_path,filename,ellipsoid_prefs=ellipsoid_prefs)
 
 
 if __name__ == "__main__":
