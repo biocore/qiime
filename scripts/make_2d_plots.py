@@ -76,6 +76,11 @@ default=0.33,type=float),
  make_option('--ellipsoid_method',help='Used when plotting ellipsoids for \
 a summary plot (i.e. using a directory of coord files instead of a single coord \
 file). Valid values are "IQR" and "sdev".',default="IQR"),
+ make_option('--master_pcoa',help='If performing averaging on multiple coord \
+files, the other coord files will be aligned to this one through procrustes \
+analysis. This master file will not be included in the averaging. \
+If this master coord file is not provided, one of the other coord files will \
+be chosen arbitrarily as the target alignment. [default: %default]',default=None),
 
 options_lookup['output_dir']
 ]
@@ -107,7 +112,10 @@ def main():
         raise ValueError, 'The opacity must be a value between 0 and 1!'
     
     #Open and get coord data
-    if os.path.isdir(opts.coord_fname):
+    if os.path.isdir(opts.coord_fname) and opts.master_pcoa:
+        data['coord'],data['support_pcoas'] = load_pcoa_files(opts.coord_fname)
+        data['coord']=get_coord(opts.master_pcoa)
+    elif os.path.isdir(opts.coord_fname):
         data['coord'],data['support_pcoas'] = load_pcoa_files(opts.coord_fname)
     else:
         data['coord'] = get_coord(opts.coord_fname)
