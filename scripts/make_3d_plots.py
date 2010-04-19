@@ -216,9 +216,11 @@ Valid methods are: " + ', '.join(ellipsoid_methods) + ".")
 
     filepath=opts.coord_fname
     if os.path.isdir(filepath):
-        filename = os.listdir(filepath)[0].split('/')[-1]
+        coord_files = [fname for fname in os.listdir(filepath)] if not \
+                           fname.startswith('.')]
+        filename = os.path.split(coord_files[0])[-1]
     else:
-        filename=filepath.strip().split('/')[-1]
+        filename = os.path.split(filepath)[-1]
 
     try:
         action = generate_3d_plots
