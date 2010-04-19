@@ -76,7 +76,7 @@ script_info['script_usage'].append(("""Simple example with denoising""","""This 
 
 All output files will be written to the directory specified by -o, and 
 subdirectories as appropriate.
-""","""pick_otus_through_otu_table.py -f inseqs1.sff.txt -m metadata_mapping.txt -i inseqs1.fasta -o wf2/ -p custom_parameters.txt"""))
+""","""pick_otus_through_otu_table.py -s inseqs1.sff.txt -m metadata_mapping.txt -i inseqs1.fasta -o wf2/ -p custom_parameters.txt"""))
 
 script_info['output_description'] ="""This script will produce a set of cluster centroids (as a FASTA file) and a cluster mapping file (from denoise.py if sff.txt and mapping file were provided), an OTU mapping file (pick_otus.py), a representative set of sequences (FASTA file from pick_rep_set.py), a sequence alignment file (FASTA file from align_seqs.py), taxonomy assignment file (from assign_taxonomy.py), a filtered sequence alignment (from filter_alignment.py), a phylogenetic tree (Newick file from make_phylogeny.py) and an OTU table (from make_otu_table.py)."""
 
