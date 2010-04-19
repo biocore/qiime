@@ -34,6 +34,8 @@ script_info['script_usage']=[]
 script_info['script_usage'].append(("""Examples:""","""By using the default values ("-n 5), you can then use the code as follows:""","""%prog -i otu_table.txt"""))
 script_info['script_usage'].append(("","""If you would like to filter the OTU table by a different number of counts per OTU (i.e., 10), you can use the following code:""","""%prog -i otu_table.txt -n 10"""))
 script_info['script_usage'].append(("","""If you would like to specify a different output directory (i.e., "otu_heatmap"), you can use the following code:""","""%prog -i otu_table.txt -o otu_heatmap"""))
+script_info['script_usage'].append(("","""If you would like to sort the heatmap by Sample ID's then you should supply the mapping file, as follows:""","""%prog -i otu_table.txt -o otu_heatmap -m mapping_file.txt"""))
+script_info['script_usage'].append(("","""If you would like to sort the heatmap by Sample ID's and the tips in the tree, you can supply a tree as follows:""","""%prog -i otu_table.txt -o otu_heatmap -m mapping_file.txt -t tree_file.txt"""))
 script_info['output_description']="""The interactive heatmap is located in a randomly generated folder where the name of the folder starts with "otu_table". The resulting folder contains the interactive heatmap (html file) along with a javascript library folder. This web application has been tested in Mozilla Firefox and Safari. Safari is recommended for viewing the OTU Heatmap, since the HTML table generation is much faster."""
 script_info['required_options']=[\
  options_lookup['otu_table_as_primary_input']

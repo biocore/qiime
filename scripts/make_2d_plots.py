@@ -41,8 +41,7 @@ script_info['script_usage'].append(("""Mapping File Usage:""","""Additionally, t
 
 If the user wants to color by specific mapping labels, they can use the following code:""","""%prog -i beta_div_coords.txt -m Mapping_file.txt -b 'mapping_column'"""))
 script_info['script_usage'].append(("""""","""If the user would like to color all categories in their metadata mapping file, they can pass 'ALL' to the '-b' option, as follows:""","""%prog -i beta_div_coords.txt -m Mapping_file.txt -b ALL"""))
-script_info['script_usage'].append(("""Output Directory Usage:""","""If you want to give an specific output directory (e.g. \"2d_plots\"), use the following code.""", """%prog -i beta_div_coords.txt -o 2d_plots/"""))
-script_info['script_usage'].append(("""Combination of Features:""","""or use some of the suggestions from above:""", """%prog -i beta_div_coords.txt -m Mapping_file.txt -b \'mapping_column1,mapping_column1&&mapping_column2\'"""))
+script_info['script_usage'].append(("""Prefs File:""","""The user can supply a prefs file to color by, as follows:""", """%prog -i beta_div_coords.txt -m Mapping_file.txt -p prefs.txt"""))
 script_info['script_usage'].append(("""Jackknifed Principal Coordinates:""","""If you have created jackknifed PCoA files, you can pass the folder containing those files, instead of a single file, as follows:""", """%prog -i jackknifed_pcoas/ -m Mapping_file.txt -b \'mapping_column1,mapping_column1&&mapping_column2\'"""))
 script_info['output_description']="""This script generates an output folder, which contains several files. To best view the 2D plots, it is recommended that the user views the _pca_2D.html file."""
 
