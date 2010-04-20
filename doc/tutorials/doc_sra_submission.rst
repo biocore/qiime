@@ -121,15 +121,26 @@ Produces :file:`sample.xml`, :file:`study.xml`, :file:`submission.xml` from the 
 
 	**Input:** 
 		a. :file:`experiment.txt` - tabular metadata about the contents of each combination of library and sff file. 
-		b. :file:`data` - directory of multiple sff files containing the actual sequence data 
-	
+		b. :file:`data` - a directory of multiple sff files containing the actual sequence data. 
+		a. :file:`submission.txt` - a two-column file of tabular metadata about the submission.
+
 	**Output:** 
 		a. :file:`experiment.xml` - xml-format metadata about the set of experiments described in :file:`library.txt` 
 		b. :file:`run.xml` - xml-format metadata about each run, i.e. the association betweena specific member of a pool and a specific xml file. 
 		c. :file:`data.tgz` - a gzipped tar archive containing individual sff files for each SRA RUN (see the Questions above if you are unclear on the distinction between the SRA RUN concept and the concept of an instrument run). 
-	
-Example
--------
+
+The workflow script `process_sra_submission.py <../scripts/process_sra_submission.html>`_ may be used to create a submission of experiment and run metadata in one step.  This script requires a FASTA file of known 16S sequences to screen for non-16S contaminants (here, we use :file:`greengenes_unaligned.fasta`).
+
+Example::
+
+	process_sra_submission.py -s data -e experiment.txt -r greengenes_unaligned.fasta -u submission.txt
+
+Produces a tar archive of per-sample SFF files, :file:`experiment.xml`, :file:`run.xml`, and :file:`submission_second_stage.xml` from the input files.
+
+Step-by-step Example
+--------------------
+
+The `process_sra_submission.py <../scripts/process_sra_submission.html>`_ workflow script is a work in progress. For tasks that require special attention at one or more steps, the following set of actions may be used to create the submission manually.
 
 Step 1: Get fasta and qual from sff files
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -282,7 +293,5 @@ The following command will then add "gene" and "library strategy" attributes to 
   make_sra_submission.py -u submission_second_stage.txt -e experiment.txt -s per_run_sff --experiment_attribute_fp=attributes.txt
 
 Links may be added to the experiments in a similar manner. After the `make_sra_submission.py <../scripts/make_sra_submission.html>`_ script has been run, the resulting XML files are ready to submit to the SRA.
-
-\...and the process is complete.
 
 Note: SRA prefers you give the individual files more meaningful names than the defaults, so suggest not just using generic names like experiment etc.
