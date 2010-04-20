@@ -216,9 +216,10 @@ Valid methods are: " + ', '.join(ellipsoid_methods) + ".")
 
     filepath=opts.coord_fname
     if os.path.isdir(filepath):
-        coord_files = [fname for fname in os.listdir(filepath)] if not \
+        coord_files = [fname for fname in os.listdir(filepath) if not \
                            fname.startswith('.')]
         filename = os.path.split(coord_files[0])[-1]
+        print os.listdir(filepath)
     else:
         filename = os.path.split(filepath)[-1]
 
@@ -227,6 +228,7 @@ Valid methods are: " + ', '.join(ellipsoid_methods) + ".")
     except NameError:
         action = None
 
+    print filename
     #Place this outside try/except so we don't mask NameError in action
     if action:
         action(prefs,data,custom_axes,background_color,label_color,dir_path, \
