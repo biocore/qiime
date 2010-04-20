@@ -88,15 +88,15 @@ plotting ellipsoids for a summary plot (i.e. using a directory of coord files \
 instead of a single coord file). Valid range is 0-3. A value of 0 produces \
 very coarse "ellipsoids" but is fast to render. A value of 3 produces very \
 smooth ellipsoids but will be very slow to render if you have more than a \
-few data points.', default=2),
+few data points. The default value is 2.', default=2),
  make_option('--ellipsoid_opacity',help='Used when plotting ellipsoids for \
 a summary plot (i.e. using a directory of coord files instead of a single coord \
 file). Valid range is 0-3. A value of 0 produces completely transparent \
-(invisible) ellipsoids. A value of 1 produces completely opaque ellipsoids.', \
+(invisible) ellipsoids. A value of 1 produces completely opaque ellipsoids. The default value is 0.33.', \
 default=0.33),
  make_option('--ellipsoid_method',help='Used when plotting ellipsoids for \
 a summary plot (i.e. using a directory of coord files instead of a single coord \
-file). Valid values are "IQR" and "sdev".',default="IQR"),
+file). Valid values are "IQR" (The Interquartile Range) and "sdev" (The standard deviation). The default is IQR.',default="IQR"),
      
 #biplot stuff
  make_option('-t', '--taxa_fname',help='If you wish to perform a biplot, ' +\
