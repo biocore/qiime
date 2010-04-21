@@ -74,7 +74,7 @@ def main():
                 outfile_path = sff_path + '.trim'
                 outfile = open(outfile_path, 'w')
                 for id_, length in seqlengths.items():
-                    curr_length = seqlengths[id_]
+                    curr_length = int(seqlengths[id_])
                     left_trim = readlength + 1
                     if curr_length > left_trim:
                         outfile.write("%s\t%s\t%s\n" %(id_,left_trim,  
