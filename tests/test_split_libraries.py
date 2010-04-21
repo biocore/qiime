@@ -239,6 +239,10 @@ z\tGG\tGC\t5\tsample_z"""
          
         self.assertEqual(out_f.data,expected)
         
+
+    def test_check_seqs_fixed_len_bc(self):
+        """check_seqs handles fixed length barcodes """
+        
         # Third test, fixed length barcodes, fixed length primers + one
         # degenerate test.  Should correct one of the passed barcodes
         in_seqs = self.in_seqs_fixed_len_bc1
