@@ -72,10 +72,13 @@ def main():
 
                 outfile_path = sff_path + '.trim'
                 outfile = open(outfile_path, 'w')
-                for id_, length in seqlengths.items():                    
-                    outfile.write("%s\t%s\t%s\n" %(id_,readlength + 1,  
-                        #need +1 for 1-based index 
-                        seqlengths[id_]))
+                for id_, length in seqlengths.items():
+                    curr_length = seqlengths[id_]
+                    left_trim = readlength + 1
+                    if curr_length > left_trim:
+                        outfile.write("%s\t%s\t%s\n" %(id_,readlength + 1,  
+                            #need +1 for 1-based index 
+                            seqlengths[id_]))
                 outfile.close()
 
                 sfffile_cmd_to_run = sfffile_cmd % (opts.sfffile_path,
