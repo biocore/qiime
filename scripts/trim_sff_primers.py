@@ -14,6 +14,7 @@ __status__ = "Development"
 from qiime.util import parse_command_line_parameters
 from qiime.trim_sff_primers import (sfffile_cmd, sffinfo_cmd, 
     get_technical_lengths)
+from sys import stderr
 from os.path import join
 from os import walk, popen, system
 from optparse import make_option
@@ -76,9 +77,11 @@ def main():
                     curr_length = seqlengths[id_]
                     left_trim = readlength + 1
                     if curr_length > left_trim:
-                        outfile.write("%s\t%s\t%s\n" %(id_,readlength + 1,  
+                        outfile.write("%s\t%s\t%s\n" %(id_,left_trim,  
                             #need +1 for 1-based index 
-                            seqlengths[id_]))
+                            curr_length))
+                    else:
+                        stderr.write('Rejected read %s with trim points %s and %s (orig length %s)' % (id_, left_trim, curr_length, length))
                 outfile.close()
 
                 sfffile_cmd_to_run = sfffile_cmd % (opts.sfffile_path,
