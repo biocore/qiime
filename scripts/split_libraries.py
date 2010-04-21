@@ -96,7 +96,9 @@ script_info['optional_options']=[\
 
     make_option('-b', '--barcode-type', default='golay_12', 
         help=\
-        'barcode type, e.g. 4 or hamming_8 or golay_12 [default: %default]'),
+        'barcode type, e.g. hamming_8 or golay_12 or variable_length (will '+\
+        'disable any barcode correction if variable_length set) +'\
+        ' [default: %default]'),
 
     make_option('-o', '--dir-prefix', default='.',
         help='directory prefix for output files [default: %default]'),

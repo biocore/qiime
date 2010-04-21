@@ -18,11 +18,42 @@ from qiime.split_libraries import (
     ok_mm_primer, check_map, fasta_ids,
     count_ambig, split_seq, primer_exceeds_mismatches,
     check_barcode, make_histograms, SeqQualBad,
-    seq_exceeds_homopolymers, check_window_qual_scores
+    seq_exceeds_homopolymers, check_window_qual_scores, check_seqs
 )
+
+class FakeOutFile(object):
+    
+    def __init__(self):
+        self.data = ""
+    
+    def write(self,s):
+        self.data += s
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
+    
+    def setUp(self):
+        """ """
+        self.in_seqs_variable_len_bc1 = in_seqs_variable_len_bc1
+        self.bc_map_variable_len_bc1 = bc_map_variable_len_bc1
+        self.primer_seq_lens_variable_len_bc1 = primer_seq_lens_variable_len_bc1
+        self.all_primers_variable_len_bc1 = all_primers_variable_len_bc1
+        self.expected_fasta_variable_len_bc1 = expected_fasta_variable_len_bc1
+        self.in_seqs_variable_len_bc2 = in_seqs_variable_len_bc1
+        self.bc_map_variable_len_bc2 = bc_map_variable_len_bc2
+        self.primer_seq_lens_variable_len_bc2 = primer_seq_lens_variable_len_bc2
+        self.all_primers_variable_len_bc2 = all_primers_variable_len_bc2
+        self.expected_fasta_variable_len_bc2 = expected_fasta_variable_len_bc1
+        self.in_seqs_fixed_len_bc1 = in_seqs_fixed_len_bc1
+        self.bc_map_fixed_len_bc1 = bc_map_fixed_len_bc1
+        self.primer_seq_lens_fixed_len_bc1 = primer_seq_lens_fixed_len_bc1
+        self.all_primers_fixed_len_bc1 = all_primers_fixed_len_bc1
+        self.expected_fasta_fixed_len_bc1 = expected_fasta_fixed_len_bc1
+        self.in_seqs_fixed_len_bc2 = in_seqs_fixed_len_bc1
+        self.bc_map_fixed_len_bc2 = bc_map_fixed_len_bc1
+        self.primer_seq_lens_fixed_len_bc2 = primer_seq_lens_fixed_len_bc1
+        self.all_primers_fixed_len_bc2 = all_primers_fixed_len_bc1
+        self.expected_fasta_fixed_len_bc2 = expected_fasta_fixed_len_bc2
 
     def test_check_window_qual_scores(self):
         """check_window_qual_scores returns False if window below qual 
@@ -145,7 +176,216 @@ z\tGG\tGC\t5\tsample_z"""
         self.assertEqual(pre_hist, array([2,1,0,2]))
         self.assertEqual(post_hist, array([0,0,0,2]))
         self.assertEqual(bin_edges, array([100,110,120,130,140]))
+        
+    def test_check_seqs_variable_len_bc(self):
+        """check_seqs handles variable length barcodes """
+        
+        # Simple test with variable length primers
+        in_seqs = self.in_seqs_variable_len_bc1
+        bc_map = self.bc_map_variable_len_bc1
+        primer_seq_lens = self.primer_seq_lens_variable_len_bc1
+        all_primers = self.all_primers_variable_len_bc1
+        expected = self.expected_fasta_variable_len_bc1
+        
+        out_f = FakeOutFile()
+        
+        actual = check_seqs(
+         fasta_out=out_f, 
+         fasta_files = [in_seqs], 
+         starting_ix=0, 
+         valid_map = bc_map, 
+         qual_mappings={}, 
+         filters=[], 
+         barcode_len=None, 
+         keep_primer=False, 
+         keep_barcode=False, 
+         barcode_type="variable_length", 
+         max_bc_errors=0,
+         remove_unassigned=True, 
+         attempt_bc_correction=False,
+         primer_seqs_lens=primer_seq_lens,
+         all_primers=all_primers, 
+         max_primer_mm=0)
+         
+        self.assertEqual(out_f.data,expected)
+        
+        # Second test, includes truncated form of one of the barcodes-the
+        # longest barcode should be found first
+        in_seqs = self.in_seqs_variable_len_bc2
+        bc_map = self.bc_map_variable_len_bc2
+        primer_seq_lens = self.primer_seq_lens_variable_len_bc2
+        all_primers = self.all_primers_variable_len_bc2
+        expected = self.expected_fasta_variable_len_bc2
+        
+        out_f = FakeOutFile()
+        
+        actual = check_seqs(
+         fasta_out=out_f, 
+         fasta_files = [in_seqs], 
+         starting_ix=0, 
+         valid_map = bc_map, 
+         qual_mappings={}, 
+         filters=[], 
+         barcode_len=None, 
+         keep_primer=False, 
+         keep_barcode=False, 
+         barcode_type="variable_length", 
+         max_bc_errors=0,
+         remove_unassigned=True, 
+         attempt_bc_correction=False,
+         primer_seqs_lens=primer_seq_lens,
+         all_primers=all_primers, 
+         max_primer_mm=0)
+         
+        self.assertEqual(out_f.data,expected)
+        
+        # Third test, fixed length barcodes, fixed length primers + one
+        # degenerate test.  Should correct one of the passed barcodes
+        in_seqs = self.in_seqs_fixed_len_bc1
+        bc_map = self.bc_map_fixed_len_bc1
+        primer_seq_lens = self.primer_seq_lens_fixed_len_bc1
+        all_primers = self.all_primers_fixed_len_bc1
+        expected = self.expected_fasta_fixed_len_bc1
 
+        
+        out_f = FakeOutFile()
+        
+        actual = check_seqs(
+         fasta_out=out_f, 
+         fasta_files = [in_seqs], 
+         starting_ix=0, 
+         valid_map = bc_map, 
+         qual_mappings={}, 
+         filters=[], 
+         barcode_len=12, 
+         keep_primer=False, 
+         keep_barcode=False, 
+         barcode_type="golay_12", 
+         max_bc_errors=1.5,
+         remove_unassigned=True, 
+         attempt_bc_correction=True,
+         primer_seqs_lens=primer_seq_lens,
+         all_primers=all_primers, 
+         max_primer_mm=0)
+         
+        self.assertEqual(out_f.data,expected)
+        
+        # Fourth test-set max_bc_errors to 0, and allow some primer mismatches
+        in_seqs = self.in_seqs_fixed_len_bc2
+        bc_map = self.bc_map_fixed_len_bc2
+        primer_seq_lens = self.primer_seq_lens_fixed_len_bc2
+        all_primers = self.all_primers_fixed_len_bc2
+        expected = self.expected_fasta_fixed_len_bc2
+
+        
+        out_f = FakeOutFile()
+        
+        actual = check_seqs(
+         fasta_out=out_f, 
+         fasta_files = [in_seqs], 
+         starting_ix=0, 
+         valid_map = bc_map, 
+         qual_mappings={}, 
+         filters=[], 
+         barcode_len=12, 
+         keep_primer=False, 
+         keep_barcode=False, 
+         barcode_type="golay_12", 
+         max_bc_errors=0.5,
+         remove_unassigned=True, 
+         attempt_bc_correction=True,
+         primer_seqs_lens=primer_seq_lens,
+         all_primers=all_primers, 
+         max_primer_mm=1)
+         
+        self.assertEqual(out_f.data,expected)
+        
+
+
+
+in_seqs_variable_len_bc1 = """>a
+ACCGGTCCGGACCCTTATATATATAT
+>b
+AGGAGTCCGGACCCTTTCCA
+>c
+ATTAACCCGGAAACCGGCCGGTT
+>d
+ACCGGTCCGGACCCTTACTATATAT
+>e
+TTTTGTCCGGACCCTTACTATATAT
+>d_primer_error
+ACCTGGTCCGGACCCTTACTATATAT
+""".split()
+
+bc_map_variable_len_bc1 = {'ACC':'s1','AGGA':'s2','ATTA':'s3'}
+primer_seq_lens_variable_len_bc1 = {'ACC':{'GGTCCGGA':8},
+                                    'AGGA':{'GTCCGGA':7},
+                                    'ATTA':{'ACCCGGA':7}}
+all_primers_variable_len_bc1 = {'GGTCCGGA':8,'GTCCGGA':7,'ACCCGGA':7}
+
+expected_fasta_variable_len_bc1 = """>s1_0 a orig_bc=ACC new_bc=ACC bc_diffs=0
+CCCTTATATATATAT
+>s2_1 b orig_bc=AGGA new_bc=AGGA bc_diffs=0
+CCCTTTCCA
+>s3_2 c orig_bc=ATTA new_bc=ATTA bc_diffs=0
+AACCGGCCGGTT
+>s1_3 d orig_bc=ACC new_bc=ACC bc_diffs=0
+CCCTTACTATATAT
+"""
+bc_map_variable_len_bc2 = {'ACC':'s1','AGGA':'s2','ATTA':'s3','AGG':'s4'}
+primer_seq_lens_variable_len_bc2 = {'ACC':{'GGTCCGGA':8},
+                                    'AGGA':{'GTCCGGA':7},
+                                    'ATTA':{'ACCCGGA':7},
+                                    'AGG':{'AGTCCGGA':8}}
+all_primers_variable_len_bc2 = {'GGTCCGGA':8,'GTCCGGA':7,'ACCCGGA':7,
+ 'AGTCCGGA':8}
+ 
+# Fixed barcode test data
+in_seqs_fixed_len_bc1 = """>a
+ACACATGTCTACGGTCCGGACCCTTATATATATAT
+>b
+AGAGTCCTGAGCGGTCCGGACCCTTTCCA
+>c
+AATCGTGACTCGGGTCTGGAAACCGGCCGGTT
+>d
+ACTCATGTCTACGGTCCGGACCCTTACTATATAT
+>e_no_barcode_match
+TTTTGTCCGGACCCTTACTATATAT
+>d_primer_error
+AGAGTCCTGAGCGGTCCGGTACGTTTACTGGA
+""".split()
+
+# These test data have equal length barcodes, one degenerate primer
+bc_map_fixed_len_bc1 = {'ACACATGTCTAC':'s1','AGAGTCCTGAGC':'s2',
+ 'AATCGTGACTCG':'s3'}
+primer_seq_lens_fixed_len_bc1 = {'ACACATGTCTAC':{'GGTCCGGA':8},
+                                    'AGAGTCCTGAGC':{'GGTCCGGA':8},
+                                    'AATCGTGACTCG':{'GGTCCGGA':8,'GGTCTGGA':8}}
+all_primers_fixed_len_bc1 = {'GGTCCGGA':8,'GGTCTGGA':8}
+
+
+expected_fasta_fixed_len_bc1 = """>s1_0 a orig_bc=ACACATGTCTAC new_bc=ACACATGTCTAC bc_diffs=0
+CCCTTATATATATAT
+>s2_1 b orig_bc=AGAGTCCTGAGC new_bc=AGAGTCCTGAGC bc_diffs=0
+CCCTTTCCA
+>s3_2 c orig_bc=AATCGTGACTCG new_bc=AATCGTGACTCG bc_diffs=0
+AACCGGCCGGTT
+>s1_3 d orig_bc=ACTCATGTCTAC new_bc=ACACATGTCTAC bc_diffs=1
+CCCTTACTATATAT
+"""
+
+# Equal length barcodes, primers, should give different results
+# Due to parameter changes regarding barcode changes, primer mismatches
+
+expected_fasta_fixed_len_bc2 = """>s1_0 a orig_bc=ACACATGTCTAC new_bc=ACACATGTCTAC bc_diffs=0
+CCCTTATATATATAT
+>s2_1 b orig_bc=AGAGTCCTGAGC new_bc=AGAGTCCTGAGC bc_diffs=0
+CCCTTTCCA
+>s3_2 c orig_bc=AATCGTGACTCG new_bc=AATCGTGACTCG bc_diffs=0
+AACCGGCCGGTT
+>s2_3 d_primer_error orig_bc=AGAGTCCTGAGC new_bc=AGAGTCCTGAGC bc_diffs=0
+ACGTTTACTGGA
+"""
 
 class SeqQualBadTests(TestCase):
     """Tests of the SeqQualBad class"""
@@ -176,6 +416,8 @@ class SeqQualBadTests(TestCase):
         self.assertEqual(str(sq), 'Q\t0')
         self.assertEqual(sq('y',s2, [1,2,3]), True)
         self.assertEqual(str(sq), 'Q\t1')
+        
+
 
 
 if __name__ =='__main__':

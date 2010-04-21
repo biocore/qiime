@@ -68,8 +68,15 @@ if numpy_version < (1,3,0):
 
 # Supported barcode types - need to adapt these functions to ignore list
 # of valid barcodes that the generic decoder requires
-BARCODE_TYPES = { "golay_12":(12, lambda bc, bcodes: decode_golay_12(bc)), 
-        "hamming_8":(8, lambda bc, bcodes: decode_barcode_8(bc))}
+BARCODE_TYPES = { 
+        "golay_12":(12, lambda bc, bcodes: decode_golay_12(bc)), 
+        "hamming_8":(8, lambda bc, bcodes: decode_barcode_8(bc)),
+        # The decode function for variable length barcode does nothing -
+        # it's just provided to comply with the interface of the other
+        # barcode types. The returned barcode is always the same as the 
+        # one passed in, and the number of mismatches is always 0. The
+        # length is None, corresponding to variable length.
+        "variable_length":(None, lambda bc, bcodes: (bc, 0))}
 
 def get_infile(filename):
     """Returns filehandle, allowing gzip input."""
@@ -188,7 +195,7 @@ def seq_exceeds_homopolymers(curr_seq, max_len=6):
             return True
     return False
 
-def check_barcode(curr_barcode, barcode_type, valid_map, \
+def check_barcode(curr_barcode, barcode_type, valid_map,
  attempt_correction=True):
     """Return whether barcode is valid, and attempt correction."""
     
@@ -298,12 +305,14 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
     curr_ix = starting_ix
     corr_ct = 0 #count of corrected barcodes
 
+    # get the list of barcode lengths in reverse order
+    barcode_length_order = list(set([len(bc) for bc in valid_map]))
+    barcode_length_order.sort()
+    barcode_length_order = barcode_length_order[::-1]
 
     primer_mismatch_count = 0
     all_primers_lens = list(set(all_primers.values()))
     all_primers_lens.sort()
-
-
     
     for fasta_in in fasta_files:
         for curr_id, curr_seq in MinimalFastaParser(fasta_in):
@@ -319,8 +328,31 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
                 bc_counts['#FAILED'].append(curr_rid)
                 continue
                 
-            # Get the current barcode to look up the associated primer(s)
-            raw_barcode, raw_seq = get_barcode(curr_seq, barcode_len)
+            if barcode_type == 'variable_length':
+                # Reset the raw_barcode, raw_seq, and barcode_len -- if 
+                # we don't match a barcode from the mapping file, we want
+                # these values to be None
+                raw_barcode, raw_seq, barcode_len = (None, None, None)
+                # Iterate through the barcode length from longest to shortest
+                for l in barcode_length_order:
+                    # extract the current length barcode from the sequence
+                    bc, seq = get_barcode(curr_seq, l)
+                    # check if the sliced sequence corresponds to a valid
+                    # barcode, and if so set raw_barcode, raw_seq, and 
+                    # barcode_len for use in the next steps
+                    if bc in valid_map:
+                        raw_barcode, raw_seq = bc, seq
+                        barcode_len = len(raw_barcode)
+                        break
+                # if we haven't found a valid barcode, log this sequence as
+                # failing to match a barcode, and move on to the next sequence
+                if not raw_barcode:
+                    bc_counts['#FAILED'].append(curr_rid)
+                    continue
+                
+            else:
+                # Get the current barcode to look up the associated primer(s)
+                raw_barcode, raw_seq = get_barcode(curr_seq, barcode_len)
             
             try:
                 current_primers = primer_seqs_lens[raw_barcode]
@@ -357,7 +389,6 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
             cbc, cpr, cres = split_seq(curr_seq, barcode_len,\
              primer_len)
 
-            
             # get current barcode
             try:
                 bc_diffs, curr_bc, corrected_bc = \
