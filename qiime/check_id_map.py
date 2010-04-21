@@ -816,8 +816,30 @@ def get_primers_barcodes(data, is_barcoded=True):
         
     return primers, barcodes
     
+def check_dup_var_barcodes_primers(primers, barcodes, problems):
+    """ Checks that no duplicate seqs occur when barcodes/primers appended """
+    
+    # Get list of concatenated barcodes + primers
+    concat_barcodes_primers = []
+    
+    for primer, barcode in map(None, primers, barcodes):
+        concat_barcodes_primers.append(barcode+primer)
+    
+    
+    
+    for seq_index in range(len(concat_barcodes_primers)):
+        # Check for any duplicates, append warning to problems
+        if concat_barcodes_primers.count(concat_barcodes_primers[seq_index])>1:
+            problems['warning'].append('The barcode + primer sequence '+\
+            '"%s"' % concat_barcodes_primers[seq_index] + ' has '+\
+             'duplicate results.  Location (row, column):\t' +\
+             '%d,1' % seq_index)
+    
+    return problems
+    
 
-def process_id_map(infile, is_barcoded=True, char_replace="_",
+def process_id_map(infile, is_barcoded=True, char_replace="_", 
+    var_len_barcodes = False,
     filename_checks=STANDARD_FILENAME_CHECKS, 
     #run_description_checks=STANDARD_RUN_DESCRIPTION_CHECKS,
     sample_description_checks=STANDARD_SAMPLE_DESCRIPTION_CHECKS,
@@ -878,7 +900,8 @@ def process_id_map(infile, is_barcoded=True, char_replace="_",
     #add barcode checks if needed
     if is_barcoded:
         col_header_checks.extend(BARCODE_COL_HEADER_CHECKS)
-        col_checks.extend(BARCODE_COL_CHECKS)
+        if not var_len_barcodes:
+            col_checks.extend(BARCODE_COL_CHECKS)
 
     
     
@@ -917,6 +940,10 @@ def process_id_map(infile, is_barcoded=True, char_replace="_",
     primers, barcodes = get_primers_barcodes(data, is_barcoded)
     problems = check_primers_barcodes(primers, barcodes, problems, \
      is_barcoded=True)
+     
+    if var_len_barcodes:
+        problems = check_dup_var_barcodes_primers(primers, barcodes, problems)
+        
     
     #check for missing sample_IDs
     problems = check_missing_sampleIDs(sample_ids, problems)
@@ -991,11 +1018,12 @@ def write_logfile(errors, warnings, log_filepath, mapping_filepath):
 
 
 def check_mapping_file(infile_name, output_dir, has_barcodes, char_replace, \
- verbose):
+ verbose, var_len_barcodes):
     """ Central program function for checking mapping file """
 	
     headers, id_map, description_map, run_description, errors, warnings = \
-     process_id_map(open(infile_name, 'U'), has_barcodes, char_replace)
+     process_id_map(open(infile_name, 'U'), has_barcodes, char_replace,\
+     var_len_barcodes)
 
     chars_replaced = test_for_replacement_chars(warnings)
 

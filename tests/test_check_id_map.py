@@ -25,7 +25,8 @@ from qiime.check_id_map import (find_diff_length, CharFilter, lwu,
     check_same_length, check_bad_chars, check_mixed_caps,
     check_missing_descriptions, check_duplicate_descriptions,
     check_description_chars, process_id_map, get_primers_barcodes,
-    check_primers_barcodes, check_missing_sampleIDs
+    check_primers_barcodes, check_missing_sampleIDs,
+    check_dup_var_barcodes_primers
     )
 
 
@@ -511,6 +512,30 @@ class SameCheckerTests(TestCase):
         problems = defaultdict(list)
         self.assertEqual(check_missing_sampleIDs(sample_IDs_bad, problems), \
          defaultdict(list, {'warning': ['Missing Sample ID.  Location (row, column):\t1,0']}))
+         
+    def test_check_dup_var_barcodes_primers(self):
+        """ Should give warnings/location of duplicate barcode+primer seqs """
+       
+        test_barcodes = ['AATCGA' , 'TACCGT' , 'ATCCGTAT']
+        test_primers = ['CCGGAT' , 'CCGGAT' , 'CCGGAT']
+        problems = defaultdict(list)
+        
+        # Since there are no duplicates when the barcodes and primers are
+        # concatenated, there should be nothing added to problems
+              
+        self.assertEqual(check_dup_var_barcodes_primers(test_primers,\
+         test_barcodes, problems), defaultdict(list))
+         
+        test_barcodes = ['AATCGA' , 'AATCGAC' , 'ATCCGTAT']
+        test_primers = ['CCGGAT' , 'CGGAT' , 'CCGGAT']
+        
+        # The first and second barcode+primers should be equal, should
+        # append a warning, give duplicate sequences, and location of problem
+        
+        self.assertEqual(check_dup_var_barcodes_primers(test_primers,\
+         test_barcodes, problems), defaultdict(list,  {'warning': ['The barcode + primer sequence "AATCGACCGGAT" has duplicate results.  Location (row, column):\t0,1', 'The barcode + primer sequence "AATCGACCGGAT" has duplicate results.  Location (row, column):\t1,1']}))
+         
+         
             
 
 

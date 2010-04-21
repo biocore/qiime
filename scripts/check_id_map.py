@@ -30,6 +30,7 @@ script_info['script_description']="""Specifically, we check that:
     - There are not duplicate near-unique but not exactly unique values within each column (warning)
     - The headers do not contain invalid characters (alphanumeric and underscore only)
     - The data fields do not contain invalid characters (alphanumeric, underscore, and +-%. characters)
+    - There are no duplicates when the primer and barcodes are appended
     
     Errors and warnings are saved to a log file.  Errors are generally caused 
     by problems with the headers, and should be resolved before attempting to 
@@ -67,7 +68,11 @@ script_info['optional_options']= [\
         '[default: %default]', default="_"),
     make_option('-b', '--not_barcoded',
         action='store_true', default=False,
-        help='Use -b if barcodes are not present. [default: %default]')
+        help='Use -b if barcodes are not present. [default: %default]'),
+    make_option('-B', '--variable_len_barcodes',
+        action='store_true', default=False,
+        help='Use -B if variable length barcodes are present to suppress '+\
+        'warnings about barcodes of unequal length. [default: %default]')
 ]
 script_info['version'] = __version__
 
@@ -78,6 +83,7 @@ def main():
     has_barcodes = not opts.not_barcoded
     output_dir = opts.output_dir
     char_replace = opts.char_replace
+    var_len_barcodes = opts.variable_len_barcodes
     verbose = opts.verbose
     
     valid_replacement_chars=digits+letters+"_"
@@ -88,7 +94,7 @@ def main():
         option_parser.error('-c parameter must be a single character.')
     
     check_mapping_file(infile_name, output_dir, has_barcodes, char_replace,\
-     verbose)
+     verbose, var_len_barcodes)
 
 
 if __name__ == "__main__":
