@@ -211,9 +211,7 @@ def main():
         'enable_reverse_strand_matching':opts.enable_rev_strand_match}
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,\
-         result_path=result_path,log_path=log_path,\
-         prefix_prefilter_length=prefix_prefilter_length,\
-         trie_prefilter=trie_prefilter)
+         result_path=result_path,log_path=log_path)
     elif otu_picking_method == 'prefix_suffix':
         otu_picker = otu_picker_constructor({})
         otu_picker(input_seqs_filepath,\

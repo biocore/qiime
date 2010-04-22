@@ -465,8 +465,15 @@ class UclustOtuPickerTests(TestCase):
         seq_file.write(dna_seqs_4)
         seq_file.close()
         
+        self.tmp_seq_filepath3 = get_tmp_filename(\
+         prefix='UclustOtuPickerTest_',\
+         suffix='.fasta')
+        seq_file = open(self.tmp_seq_filepath3,'w')
+        seq_file.write(dna_seqs_5)
+        seq_file.close()
+        
         self._files_to_remove =\
-         [self.tmp_seq_filepath1, self.tmp_seq_filepath2]
+         [self.tmp_seq_filepath1, self.tmp_seq_filepath2, self.tmp_seq_filepath3]
         
     def tearDown(self):
         remove_files(self._files_to_remove)
@@ -508,6 +515,37 @@ class UclustOtuPickerTests(TestCase):
 
         app = UclustOtuPicker(params={'Similarity':0.90})
         obs = app(self.tmp_seq_filepath1)
+        self.assertEqual(obs, exp)
+        
+    def test_call_suppress_sort(self):
+        """UclustOtuPicker.__call__ handles suppress sort
+        """
+        
+        exp = {0: ['uclust_test_seqs_0'],\
+                     1: ['uclust_test_seqs_1'],\
+                     2: ['uclust_test_seqs_2']}
+
+        app = UclustOtuPicker(params={'Similarity':0.90,
+                                      'suppress_sort':True,
+                                      'optimal':True,
+                                      'enable_reverse_strand_matching':True})
+        obs = app(self.tmp_seq_filepath2)
+        self.assertEqual(obs, exp)
+        
+    def test_call_rev_matching(self):
+        """UclustOtuPicker.__call__ handles reverse strand matching
+        """
+        
+        exp = {0: ['uclust_test_seqs_0'], 1: ['uclust_test_seqs_0_rc']}
+        app = UclustOtuPicker(params={'Similarity':0.90,
+                                      'enable_reverse_strand_matching':False})
+        obs = app(self.tmp_seq_filepath3)
+        self.assertEqual(obs, exp)
+        
+        exp = {0: ['uclust_test_seqs_0','uclust_test_seqs_0_rc']}
+        app = UclustOtuPicker(params={'Similarity':0.90,
+                                      'enable_reverse_strand_matching':True})
+        obs = app(self.tmp_seq_filepath3)
         self.assertEqual(obs, exp)
         
     def test_call_output_to_file(self):
@@ -559,6 +597,8 @@ class UclustOtuPickerTests(TestCase):
         log_file_99_exp = ["UclustOtuPicker parameters:",\
          "Similarity:0.99","Application:uclust",\
          "enable_reverse_strand_matching:False",\
+         "suppress_sort:False",\
+         "optimal:False",\
          "Result path: %s" % tmp_result_filepath]
         # compare data in log file to fake expected log file
         # NOTE: Since app.params is a dict, the order of lines is not
@@ -1153,6 +1193,12 @@ ACACCCCGGGGGTTTACGGGGGGGGGGGGGGGGGGGGGGGGGG"""
 dna_seqs_4_result = {0: ['uclust_test_seqs_2'],\
                      1: ['uclust_test_seqs_0'],\
                      2: ['uclust_test_seqs_1']}
+
+dna_seqs_5 = """>uclust_test_seqs_0
+ACGGTGGCTACAAGACGTCCCATCCAACGGGTTGGATACTTAAGGCACATCACGTCAGTTTTGTGTCAGAGCT
+>uclust_test_seqs_0_rc
+AGCTCTGACACAAAACTGACGTGATGTGCCTTAAGTATCCAACCCGTTGGATGGGACGTCTTGTAGCCACCGT
+"""
 
 dna_seqs_4_result_prefilter =\
  {0: ['uclust_test_seqs_0','uclust_test_seqs_1','uclust_test_seqs_2']}

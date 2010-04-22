@@ -27,7 +27,7 @@ from cogent.app.dotur import dotur_from_alignment
 from cogent.app.mothur import Mothur
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from cogent.app.blast import blast_seqs, Blastall, BlastResult
-from cogent.app.uclust import get_clusters_from_fasta_filepath
+from qiime.pycogent_backports.uclust import get_clusters_from_fasta_filepath
 from cogent.core.sequence import DnaSequence
 from cogent.util.misc import remove_files
 from cogent import LoadSeqs, DNA, Alignment
@@ -678,14 +678,16 @@ class UclustOtuPicker(OtuPicker):
          to the uclust application controllers)
         Application: 3rd-party application used
         """
-        _params = {'Similarity':0.97,\
-         'Application':'uclust',\
-         'enable_reverse_strand_matching':False}
+        _params = {'Similarity':0.97,
+         'Application':'uclust',
+         'enable_reverse_strand_matching':False,
+         'optimal':False,
+         'suppress_sort':False}
         _params.update(params)
         OtuPicker.__init__(self, _params)
     
     def __call__ (self, seq_path, result_path=None, log_path=None, 
-        id_len=0, prefix_prefilter_length=None, trie_prefilter=False):
+        id_len=0):
         """Returns dict mapping {otu_id:[seq_ids]} for each otu.
         
         Parameters:
@@ -699,13 +701,16 @@ class UclustOtuPicker(OtuPicker):
         log_lines = []
         
         uclust_params = copy(self.Params)
-        del uclust_params['Application']
 
         # Get the clusters by running uclust against the
         # sequence collection
-        clusters = get_clusters_from_fasta_filepath(seq_path,\
-         percent_ID = uclust_params['Similarity'])
-         
+        clusters = get_clusters_from_fasta_filepath(
+         seq_path,
+         percent_ID = self.Params['Similarity'],
+         optimal = self.Params['optimal'],
+         suppress_sort = self.Params['suppress_sort'],
+         enable_rev_strand_matching =
+          self.Params['enable_reverse_strand_matching'])
         
         
         if result_path:
