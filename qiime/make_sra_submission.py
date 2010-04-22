@@ -87,7 +87,8 @@ pool_member_wrapper = """            <MEMBER refname="%(SAMPLE_ALIAS)s" refcente
 
 basecall_wrapper = """               <BASECALL read_group_tag="%(READ_GROUP)s" min_match="%(MATCH_LEN)s" max_mismatch="%(NUM_MISMATCHES)s" match_edge="full">%(MATCH_SEQ)s</BASECALL>"""
 
-spot_descriptor_with_linker_wrapper = """      <SPOT_DESCRIPTOR>
+spot_descriptor_with_linker_wrapper = """
+      <SPOT_DESCRIPTOR>
         <SPOT_DECODE_SPEC>
           <READ_SPEC>
             <READ_INDEX>0</READ_INDEX>
@@ -100,7 +101,7 @@ spot_descriptor_with_linker_wrapper = """      <SPOT_DESCRIPTOR>
             <READ_LABEL>barcode</READ_LABEL>
             <READ_CLASS>Technical Read</READ_CLASS>
             <READ_TYPE>BarCode</READ_TYPE>
-            <EXPECTED_BASECALL_TABLE>%(BARCODE_TABLE_XML)s</EXPECTED_BASECALL_TABLE>
+            <EXPECTED_BASECALL_TABLE>%(BARCODE_TABLE_XML)s            </EXPECTED_BASECALL_TABLE>
           </READ_SPEC>
           <READ_SPEC>
             <READ_INDEX>2</READ_INDEX>
@@ -114,7 +115,7 @@ spot_descriptor_with_linker_wrapper = """      <SPOT_DESCRIPTOR>
             <READ_LABEL>rRNA_primer</READ_LABEL>
             <READ_CLASS>Technical Read</READ_CLASS>
             <READ_TYPE>Primer</READ_TYPE>
-            <EXPECTED_BASECALL_TABLE>%(PRIMER_TABLE_XML)s</EXPECTED_BASECALL_TABLE>
+            <EXPECTED_BASECALL_TABLE>%(PRIMER_TABLE_XML)s            </EXPECTED_BASECALL_TABLE>
           </READ_SPEC>
           <READ_SPEC>
             <READ_INDEX>4</READ_INDEX>
@@ -125,7 +126,8 @@ spot_descriptor_with_linker_wrapper = """      <SPOT_DESCRIPTOR>
         </SPOT_DECODE_SPEC>
       </SPOT_DESCRIPTOR>"""
 
-spot_descriptor_without_linker_wrapper = """      <SPOT_DESCRIPTOR>
+spot_descriptor_without_linker_wrapper = """
+      <SPOT_DESCRIPTOR>
         <SPOT_DECODE_SPEC>
           <READ_SPEC>
             <READ_INDEX>0</READ_INDEX>
@@ -138,20 +140,45 @@ spot_descriptor_without_linker_wrapper = """      <SPOT_DESCRIPTOR>
             <READ_LABEL>barcode</READ_LABEL>
             <READ_CLASS>Technical Read</READ_CLASS>
             <READ_TYPE>BarCode</READ_TYPE>
-            <EXPECTED_BASECALL_TABLE>%(BARCODE_TABLE_XML)s</EXPECTED_BASECALL_TABLE>
+            <EXPECTED_BASECALL_TABLE>%(BARCODE_TABLE_XML)s            </EXPECTED_BASECALL_TABLE>
           </READ_SPEC>
           <READ_SPEC>
             <READ_INDEX>2</READ_INDEX>
             <READ_LABEL>rRNA_primer</READ_LABEL>
             <READ_CLASS>Technical Read</READ_CLASS>
             <READ_TYPE>Primer</READ_TYPE>
-            <EXPECTED_BASECALL_TABLE>%(PRIMER_TABLE_XML)s</EXPECTED_BASECALL_TABLE>
+            <EXPECTED_BASECALL_TABLE>%(PRIMER_TABLE_XML)s            </EXPECTED_BASECALL_TABLE>
           </READ_SPEC>
           <READ_SPEC>
             <READ_INDEX>3</READ_INDEX>
             <READ_CLASS>Application Read</READ_CLASS>
             <READ_TYPE>Forward</READ_TYPE>
             <RELATIVE_ORDER follows_read_index=\"2\"/>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>"""
+
+spot_descriptor_barcode_only_wrapper = """
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Technical Read</READ_CLASS>
+            <READ_TYPE>Adapter</READ_TYPE>
+          <EXPECTED_BASECALL>%(KEY_SEQ)s</EXPECTED_BASECALL>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>1</READ_INDEX>
+            <READ_LABEL>barcode</READ_LABEL>
+            <READ_CLASS>Technical Read</READ_CLASS>
+            <READ_TYPE>BarCode</READ_TYPE>
+            <EXPECTED_BASECALL_TABLE>%(BARCODE_TABLE_XML)s            </EXPECTED_BASECALL_TABLE>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>2</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <RELATIVE_ORDER follows_read_index=\"1\"/>
           </READ_SPEC>
         </SPOT_DECODE_SPEC>
       </SPOT_DESCRIPTOR>"""
@@ -171,9 +198,9 @@ experiment_wrapper = """  <EXPERIMENT
       </SAMPLE_DESCRIPTOR>
       <LIBRARY_DESCRIPTOR>
         <LIBRARY_NAME>%(EXPERIMENT_ALIAS)s</LIBRARY_NAME>
-        <LIBRARY_STRATEGY>AMPLICON</LIBRARY_STRATEGY>
-        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
-        <LIBRARY_SELECTION>PCR</LIBRARY_SELECTION>
+        <LIBRARY_STRATEGY>%(LIBRARY_STRATEGY)s</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>%(LIBRARY_SOURCE)s</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>%(LIBRARY_SELECTION)s</LIBRARY_SELECTION>
         <LIBRARY_LAYOUT>
           <SINGLE></SINGLE>
         </LIBRARY_LAYOUT>
@@ -460,7 +487,7 @@ def make_run_and_experiment(experiment_lines, sff_dir, attribute_file=None,
                         'NUM_MISMATCHES':0,
                         'MATCH_SEQ':barcode})
                 primer = field_dict['PRIMER']
-                if primer not in primers:
+                if primer and primer not in primers:
                     primers.add(primer)
                     primer_basecalls.append(basecall_wrapper % {
                         'READ_GROUP':field_dict['PRIMER_READ_GROUP_TAG'],
@@ -494,8 +521,10 @@ def make_run_and_experiment(experiment_lines, sff_dir, attribute_file=None,
             field_dict['POOL_MEMBERS_XML'] = '\n' + '\n'.join(pool_members) + '\n'
             if linkers:
                 spot_descriptor_wrapper = spot_descriptor_with_linker_wrapper
-            else:
+            elif primers:
                 spot_descriptor_wrapper = spot_descriptor_without_linker_wrapper
+            else:
+                spot_descriptor_wrapper = spot_descriptor_barcode_only_wrapper
             field_dict['TOTAL_TECHNICAL_READ_LENGTH'] = len(key_seq) + len(primer) + len(barcode) + len(linker) + 1 #note that SRA uses 1-indexed lengths
             spot_descriptor = spot_descriptor_wrapper % field_dict
             field_dict['SPOT_DESCRIPTORS_XML'] = spot_descriptor
@@ -514,6 +543,14 @@ def make_run_and_experiment(experiment_lines, sff_dir, attribute_file=None,
                 field_dict['LINK_XML'] = '\n'.join(link_xmls)
             else:
                 field_dict['LINK_XML'] = ''
+
+            # Utilize optional fields for library descriptor block
+            if 'LIBRARY_SELECTION' not in field_dict:
+                field_dict['LIBRARY_SELECTION'] = 'PCR'
+            if 'LIBRARY_STRATEGY' not in field_dict:
+                field_dict['LIBRARY_STRATEGY'] = 'AMPLICON'
+            if 'LIBRARY_SOURCE' not in field_dict:
+                field_dict['LIBRARY_SOURCE'] = 'GENOMIC'
 
             experiments.append(experiment_wrapper % field_dict)
     return experiment_set_wrapper % ('\n'+'\n'.join(experiments)+'\n'), run_set_wrapper % ('\n'+'\n'.join(runs)+'\n')

@@ -224,6 +224,19 @@ aa\tbb\tcc
             attribute_file=att_file, link_file=l_file)
         self.assertEqual(standardize_xml(observed_exp_xml), standardize_xml(experiment_xml_str))
 
+    def test_metagenomic_experiment_xml(self):
+        """make_run_and_experiment should return correct XML for full experiment."""
+        # Cannot use get_qiime_project_dir() due to test errors in virtual box
+        test_dir = os.path.dirname(os.path.abspath(__file__))
+        sff_dir = os.path.join(test_dir, 'sra_test_files', 'F6AVWTA')
+        observed_exp_xml, observed_run_xml = make_run_and_experiment(
+             StringIO(metagenomic_experiment), sff_dir)
+        print observed_exp_xml
+        self.assertEqual(
+            standardize_xml(observed_exp_xml),
+            standardize_xml(metagenomic_experiment_xml_str)
+            )
+
     def test_validate_xml(self):
         """make_run_and_experiment should produce valid XML according to official schema"""
         try:
@@ -247,17 +260,31 @@ aa\tbb\tcc
 
 
 experiment = '''
-#EXPERIMENT_ALIAS	EXPERIMENT_ACCESSION	EXPERIMENT_CENTER	EXPERIMENT_TITLE	STUDY_ACCESSION	STUDY_REF	STUDY_CENTER	EXPERIMENT_DESIGN_DESCRIPTION	LIBRARY_CONSTRUCTION_PROTOCOL	SAMPLE_ACCESSION	SAMPLE_ALIAS	SAMPLE_CENTER	POOL_MEMBER_ACCESSION	POOL_MEMBER_NAME	POOL_MEMBER_FILENAME	POOL_PROPORTION	BARCODE_READ_GROUP_TAG	BARCODE	LINKER	PRIMER_READ_GROUP_TAG	KEY_SEQ	PRIMER	RUN_ACCESSION	RUN_PREFIX	REGION	PLATFORM	RUN_CENTER	RUN_DATE	INSTRUMENT_NAME
-bodysites_F6AVWTA01	SRX01	JCVI	Survey of multiple body sites	SRP01	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	SRS00	700015438	NCBI	SRS01	F6AVWTA01_2878_700015438_V1-V3	B-2004-03-S1.sff	0.014492754	F6AVWTA01_ATGTTCGATG	ATGTTCGATG		V1-V3	TCAG	TAATCCGCGGCTGCTGG	SRR01	F6AVWTA01	0	FLX	JCVI 	NULL	NULL
-bodysites_F6AVWTA02	SRX01	JCVI	Survey of multiple body sites	SRP01	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	SRS00	700015438	NCBI	SRS02	F6AVWTA02_2878_700015438_V1-V3	B-2008-05-S1.sff	0.014492754	F6AVWTA02_ATGTTCTAGT	ATGTTCTAGT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	SRR02	F6AVWTA02	0	FLX	JCVI 	NULL	NULL
-bodysites_F6AVWTA01	SRX01	JCVI	Survey of multiple body sites	SRP01	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	SRS00	700015470	NCBI	SRS03	F6AVWTA01_2866_700015470_V1-V3	B-2004-04-S1.sff	0.014492754	F6AVWTA01_GCTCTACGTC	GCTCTACGTC		V1-V3	TCAG	TAATCCGCGGCTGCTGG	SRR03	F6AVWTA01	0	FLX	JCVI 	NULL	NULL
-bodysites_F6AVWTA02	SRX01	JCVI	Survey of multiple body sites	SRP01	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	SRS00	700015470	NCBI	SRS04	F6AVWTA02_2866_700015470_V1-V3	B-2008-08-S1.sff	0.014492754	F6AVWTA02_GCTCTGTACT	GCTCTGTACT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	SRR04	F6AVWTA02	0	FLX	JCVI 	NULL	NULL
-bodysites_F6AVWTA01	SRX01	JCVI	Survey of multiple body sites	SRP01	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	SRS00	700015766	NCBI	SRS05	F6AVWTA01_2898_700015766_V1-V3	B-2004-08-S1.sff	0.014492754	F6AVWTA01_CATGAGCGTC	CATGAGCGTC		V1-V3	TCAG	TAATCCGCGGCTGCTGG	SRR05	F6AVWTA01	0	FLX	JCVI 	NULL	NULL
-bodysites_F6AVWTA02	SRX01	JCVI	Survey of multiple body sites	SRP01	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	SRS00	700015766	NCBI	SRS06	F6AVWTA02_2898_700015766_V1-V3	B-2009-06-S1.sff	0.014492754	F6AVWTA02_CATGAGCGTG	CATGAGCGTG		V1-V3	TCAG	TAATCCGCGGCTGCTGG	SRR06	F6AVWTA02	0	FLX	JCVI 	NULL	NULL
-bodysites_F6AVWTA01	SRX01	JCVI	Survey of multiple body sites	SRP01	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	SRS00	700015468	NCBI	SRS07	F6AVWTA01_2865_700015468_V1-V3	B-2005-06-S1.sff	0.014492754	F6AVWTA01_AGTACGTACT	AGTACGTACT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	SRR07	F6AVWTA01	0	FLX	JCVI 	NULL	NULL
-bodysites_F6AVWTA02	SRX01	JCVI	Survey of multiple body sites	SRP01	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	SRS00	700015468	NCBI	SRS08	F6AVWTA02_2865_700015468_V1-V3	B-2011-01-S1.sff	0.014492754	F6AVWTA02_AGTACACGTC	AGTACACGTC		V1-V3	TCAG	TAATCCGCGGCTGCTGG	SRR08	F6AVWTA02	0	FLX	JCVI 	NULL	NULL
-bodysites_F6AVWTA01	SRX01	JCVI	Survey of multiple body sites	SRP01	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	SRS00	700016371	NCBI	SRS09	F6AVWTA01_2907_700016371_V1-V3	B-2006-03-S1.sff	0.014492754	F6AVWTA01_TCTCTCTAGT	TCTCTCTAGT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	SRR09	F6AVWTA01	0	FLX	JCVI 	NULL	NULL
-bodysites_F6AVWTA02	SRX01	JCVI	Survey of multiple body sites	SRP01	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	SRS00	700016371	NCBI	SRS10	F6AVWTA02_2907_700016371_V1-V3	B-2011-02-S1.sff	0.014492754	F6AVWTA02_TCTCTGTACT	TCTCTGTACT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	SRR10	F6AVWTA02	0	FLX	JCVI 	NULL	NULL
+#EXPERIMENT_ALIAS	EXPERIMENT_CENTER	EXPERIMENT_TITLE	STUDY_REF	STUDY_CENTER	EXPERIMENT_DESIGN_DESCRIPTION	LIBRARY_CONSTRUCTION_PROTOCOL	SAMPLE_ALIAS	SAMPLE_CENTER	POOL_MEMBER_NAME	POOL_MEMBER_FILENAME	POOL_PROPORTION	BARCODE_READ_GROUP_TAG	BARCODE	LINKER	PRIMER_READ_GROUP_TAG	KEY_SEQ	PRIMER	RUN_PREFIX	REGION	PLATFORM	RUN_CENTER	RUN_DATE	INSTRUMENT_NAME
+bodysites_F6AVWTA01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015438	NCBI	F6AVWTA01_2878_700015438_V1-V3	B-2004-03-S1.sff	0.014492754	F6AVWTA01_ATGTTCGATG	ATGTTCGATG		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA01	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA02	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015438	NCBI	F6AVWTA02_2878_700015438_V1-V3	B-2008-05-S1.sff	0.014492754	F6AVWTA02_ATGTTCTAGT	ATGTTCTAGT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015470	NCBI	F6AVWTA01_2866_700015470_V1-V3	B-2004-04-S1.sff	0.014492754	F6AVWTA01_GCTCTACGTC	GCTCTACGTC		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA01	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA02	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015470	NCBI	F6AVWTA02_2866_700015470_V1-V3	B-2008-08-S1.sff	0.014492754	F6AVWTA02_GCTCTGTACT	GCTCTGTACT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015766	NCBI	F6AVWTA01_2898_700015766_V1-V3	B-2004-08-S1.sff	0.014492754	F6AVWTA01_CATGAGCGTC	CATGAGCGTC		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA01	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA02	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015766	NCBI	F6AVWTA02_2898_700015766_V1-V3	B-2009-06-S1.sff	0.014492754	F6AVWTA02_CATGAGCGTG	CATGAGCGTG		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015468	NCBI	F6AVWTA01_2865_700015468_V1-V3	B-2005-06-S1.sff	0.014492754	F6AVWTA01_AGTACGTACT	AGTACGTACT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA01	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA02	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015468	NCBI	F6AVWTA02_2865_700015468_V1-V3	B-2011-01-S1.sff	0.014492754	F6AVWTA02_AGTACACGTC	AGTACACGTC		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700016371	NCBI	F6AVWTA01_2907_700016371_V1-V3	B-2006-03-S1.sff	0.014492754	F6AVWTA01_TCTCTCTAGT	TCTCTCTAGT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA01	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA02	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700016371	NCBI	F6AVWTA02_2907_700016371_V1-V3	B-2011-02-S1.sff	0.014492754	F6AVWTA02_TCTCTGTACT	TCTCTGTACT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	0	FLX	JCVI 	NULL	NULL
+'''
+
+metagenomic_experiment = '''\
+#EXPERIMENT_ALIAS	EXPERIMENT_ACCESSION	EXPERIMENT_CENTER	EXPERIMENT_TITLE	STUDY_REF	STUDY_CENTER	EXPERIMENT_DESIGN_DESCRIPTION	LIBRARY_CONSTRUCTION_PROTOCOL	LIBRARY_STRATEGY	LIBRARY_SELECTION	SAMPLE_ALIAS	SAMPLE_CENTER	POOL_MEMBER_NAME	POOL_MEMBER_FILENAME	POOL_PROPORTION	BARCODE_READ_GROUP_TAG	BARCODE	LINKER	PRIMER_READ_GROUP_TAG	KEY_SEQ	PRIMER	RUN_PREFIX	REGION	PLATFORM	RUN_CENTER	RUN_DATE	INSTRUMENT_NAME
+bodysites_F6AVWTA01	SRX01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	WGS	RANDOM	700015438	NCBI	F6AVWTA01_2878_700015438_V1-V3	B-2004-03-S1.sff	0.014492754	F6AVWTA01_ATGTTCGATG	ATGTTCGATG		V1-V3	TCAG		F6AVWTA01	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA02	SRX01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	WGS	RANDOM	700015438	NCBI	F6AVWTA02_2878_700015438_V1-V3	B-2008-05-S1.sff	0.014492754	F6AVWTA02_ATGTTCTAGT	ATGTTCTAGT		V1-V3	TCAG		F6AVWTA02	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA01	SRX01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	WGS	RANDOM	700015470	NCBI	F6AVWTA01_2866_700015470_V1-V3	B-2004-04-S1.sff	0.014492754	F6AVWTA01_GCTCTACGTC	GCTCTACGTC		V1-V3	TCAG		F6AVWTA01	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA02	SRX01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	WGS	RANDOM	700015470	NCBI	F6AVWTA02_2866_700015470_V1-V3	B-2008-08-S1.sff	0.014492754	F6AVWTA02_GCTCTGTACT	GCTCTGTACT		V1-V3	TCAG		F6AVWTA02	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA01	SRX01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	WGS	RANDOM	700015766	NCBI	F6AVWTA01_2898_700015766_V1-V3	B-2004-08-S1.sff	0.014492754	F6AVWTA01_CATGAGCGTC	CATGAGCGTC		V1-V3	TCAG		F6AVWTA01	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA02	SRX01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	WGS	RANDOM	700015766	NCBI	F6AVWTA02_2898_700015766_V1-V3	B-2009-06-S1.sff	0.014492754	F6AVWTA02_CATGAGCGTG	CATGAGCGTG		V1-V3	TCAG		F6AVWTA02	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA01	SRX01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	WGS	RANDOM	700015468	NCBI	F6AVWTA01_2865_700015468_V1-V3	B-2005-06-S1.sff	0.014492754	F6AVWTA01_AGTACGTACT	AGTACGTACT		V1-V3	TCAG		F6AVWTA01	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA02	SRX01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	WGS	RANDOM	700015468	NCBI	F6AVWTA02_2865_700015468_V1-V3	B-2011-01-S1.sff	0.014492754	F6AVWTA02_AGTACACGTC	AGTACACGTC		V1-V3	TCAG		F6AVWTA02	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA01	SRX01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	WGS	RANDOM	700016371	NCBI	F6AVWTA01_2907_700016371_V1-V3	B-2006-03-S1.sff	0.014492754	F6AVWTA01_TCTCTCTAGT	TCTCTCTAGT		V1-V3	TCAG		F6AVWTA01	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA02	SRX01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	WGS	RANDOM	700016371	NCBI	F6AVWTA02_2907_700016371_V1-V3	B-2011-02-S1.sff	0.014492754	F6AVWTA02_TCTCTGTACT	TCTCTGTACT		V1-V3	TCAG		F6AVWTA02	0	FLX	JCVI 	NULL	NULL
 '''
 
 attrs = '''
@@ -271,6 +298,179 @@ links = '''
 #Experiment	Link Name	Link URL
 bodysites_F6AVWTA01	bodysites Library Construction Protocol	http://hmpdacc.org/doc/HMP_MDG_454_16S_Protocol_V4_2_102109.pdf
 bodysites_F6AVWTA02	bodysites Library Construction Protocol	http://hmpdacc.org/doc/HMP_MDG_454_16S_Protocol_V4_2_102109.pdf
+'''
+
+metagenomic_experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
+<EXPERIMENT_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <EXPERIMENT
+    alias="bodysites_F6AVWTA02"
+    center_name="JCVI"
+  >
+    <TITLE>Survey of multiple body sites</TITLE>
+    <STUDY_REF refname="bodysites_study" refcenter="NCBI"/>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>Pool of samples from different individual subjects</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR refname="bodysites_study_default" refcenter="NCBI">
+        <POOL>
+            <MEMBER refname="700015468" refcenter="NCBI" member_name="F6AVWTA02_2865_700015468_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_AGTACACGTC">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+            <MEMBER refname="700015470" refcenter="NCBI" member_name="F6AVWTA02_2866_700015470_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_GCTCTGTACT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+            <MEMBER refname="700015438" refcenter="NCBI" member_name="F6AVWTA02_2878_700015438_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_ATGTTCTAGT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+            <MEMBER refname="700015766" refcenter="NCBI" member_name="F6AVWTA02_2898_700015766_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_CATGAGCGTG">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+            <MEMBER refname="700016371" refcenter="NCBI" member_name="F6AVWTA02_2907_700016371_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_TCTCTGTACT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+        </POOL>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>bodysites_F6AVWTA02</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>WGS</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>RANDOM</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <SINGLE></SINGLE>
+        </LIBRARY_LAYOUT>
+        <LIBRARY_CONSTRUCTION_PROTOCOL>
+          Dummy Protocol
+        </LIBRARY_CONSTRUCTION_PROTOCOL>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Technical Read</READ_CLASS>
+            <READ_TYPE>Adapter</READ_TYPE>
+          <EXPECTED_BASECALL>TCAG</EXPECTED_BASECALL>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>1</READ_INDEX>
+            <READ_LABEL>barcode</READ_LABEL>
+            <READ_CLASS>Technical Read</READ_CLASS>
+            <READ_TYPE>BarCode</READ_TYPE>
+            <EXPECTED_BASECALL_TABLE>
+               <BASECALL read_group_tag="F6AVWTA02_ATGTTCTAGT" min_match="10" max_mismatch="0" match_edge="full">ATGTTCTAGT</BASECALL>
+               <BASECALL read_group_tag="F6AVWTA02_AGTACACGTC" min_match="10" max_mismatch="0" match_edge="full">AGTACACGTC</BASECALL>
+               <BASECALL read_group_tag="F6AVWTA02_GCTCTGTACT" min_match="10" max_mismatch="0" match_edge="full">GCTCTGTACT</BASECALL>
+               <BASECALL read_group_tag="F6AVWTA02_CATGAGCGTG" min_match="10" max_mismatch="0" match_edge="full">CATGAGCGTG</BASECALL>
+               <BASECALL read_group_tag="F6AVWTA02_TCTCTGTACT" min_match="10" max_mismatch="0" match_edge="full">TCTCTGTACT</BASECALL>
+            </EXPECTED_BASECALL_TABLE>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>2</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <RELATIVE_ORDER follows_read_index="1"/>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+      </DESIGN>
+          <PLATFORM>
+        <LS454>
+            <INSTRUMENT_MODEL>454 GS FLX</INSTRUMENT_MODEL>
+            <FLOW_SEQUENCE>TACG</FLOW_SEQUENCE>
+            <FLOW_COUNT>400</FLOW_COUNT>
+        </LS454>
+    </PLATFORM>
+      <PROCESSING>
+        <BASE_CALLS>
+                    <SEQUENCE_SPACE>Base Space</SEQUENCE_SPACE>
+                    <BASE_CALLER>454 BaseCaller</BASE_CALLER>
+        </BASE_CALLS>
+        <QUALITY_SCORES qtype="phred">
+                    <QUALITY_SCORER>454 BaseCaller</QUALITY_SCORER>
+                    <NUMBER_OF_LEVELS>40</NUMBER_OF_LEVELS>
+                    <MULTIPLIER>1.0</MULTIPLIER>
+        </QUALITY_SCORES>
+      </PROCESSING>
+      <EXPERIMENT_LINKS>
+
+      </EXPERIMENT_LINKS>
+      <EXPERIMENT_ATTRIBUTES>
+
+      </EXPERIMENT_ATTRIBUTES>
+  </EXPERIMENT>
+  <EXPERIMENT
+    alias="bodysites_F6AVWTA01"
+    center_name="JCVI"
+  >
+    <TITLE>Survey of multiple body sites</TITLE>
+    <STUDY_REF refname="bodysites_study" refcenter="NCBI"/>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>Pool of samples from different individual subjects</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR refname="bodysites_study_default" refcenter="NCBI">
+        <POOL>
+            <MEMBER refname="700015468" refcenter="NCBI" member_name="F6AVWTA01_2865_700015468_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_AGTACGTACT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+            <MEMBER refname="700015470" refcenter="NCBI" member_name="F6AVWTA01_2866_700015470_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_GCTCTACGTC">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+            <MEMBER refname="700015438" refcenter="NCBI" member_name="F6AVWTA01_2878_700015438_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_ATGTTCGATG">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+            <MEMBER refname="700015766" refcenter="NCBI" member_name="F6AVWTA01_2898_700015766_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_CATGAGCGTC">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+            <MEMBER refname="700016371" refcenter="NCBI" member_name="F6AVWTA01_2907_700016371_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_TCTCTCTAGT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+        </POOL>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>bodysites_F6AVWTA01</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>WGS</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>RANDOM</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <SINGLE></SINGLE>
+        </LIBRARY_LAYOUT>
+        <LIBRARY_CONSTRUCTION_PROTOCOL>
+          Dummy Protocol
+        </LIBRARY_CONSTRUCTION_PROTOCOL>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Technical Read</READ_CLASS>
+            <READ_TYPE>Adapter</READ_TYPE>
+          <EXPECTED_BASECALL>TCAG</EXPECTED_BASECALL>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>1</READ_INDEX>
+            <READ_LABEL>barcode</READ_LABEL>
+            <READ_CLASS>Technical Read</READ_CLASS>
+            <READ_TYPE>BarCode</READ_TYPE>
+            <EXPECTED_BASECALL_TABLE>
+               <BASECALL read_group_tag="F6AVWTA01_ATGTTCGATG" min_match="10" max_mismatch="0" match_edge="full">ATGTTCGATG</BASECALL>
+               <BASECALL read_group_tag="F6AVWTA01_AGTACGTACT" min_match="10" max_mismatch="0" match_edge="full">AGTACGTACT</BASECALL>
+               <BASECALL read_group_tag="F6AVWTA01_GCTCTACGTC" min_match="10" max_mismatch="0" match_edge="full">GCTCTACGTC</BASECALL>
+               <BASECALL read_group_tag="F6AVWTA01_CATGAGCGTC" min_match="10" max_mismatch="0" match_edge="full">CATGAGCGTC</BASECALL>
+               <BASECALL read_group_tag="F6AVWTA01_TCTCTCTAGT" min_match="10" max_mismatch="0" match_edge="full">TCTCTCTAGT</BASECALL>
+            </EXPECTED_BASECALL_TABLE>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>2</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <RELATIVE_ORDER follows_read_index="1"/>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+      </DESIGN>
+          <PLATFORM>
+        <LS454>
+            <INSTRUMENT_MODEL>454 GS FLX</INSTRUMENT_MODEL>
+            <FLOW_SEQUENCE>TACG</FLOW_SEQUENCE>
+            <FLOW_COUNT>400</FLOW_COUNT>
+        </LS454>
+    </PLATFORM>
+      <PROCESSING>
+        <BASE_CALLS>
+                    <SEQUENCE_SPACE>Base Space</SEQUENCE_SPACE>
+                    <BASE_CALLER>454 BaseCaller</BASE_CALLER>
+        </BASE_CALLS>
+        <QUALITY_SCORES qtype="phred">
+                    <QUALITY_SCORER>454 BaseCaller</QUALITY_SCORER>
+                    <NUMBER_OF_LEVELS>40</NUMBER_OF_LEVELS>
+                    <MULTIPLIER>1.0</MULTIPLIER>
+        </QUALITY_SCORES>
+      </PROCESSING>
+      <EXPERIMENT_LINKS>
+
+      </EXPERIMENT_LINKS>
+      <EXPERIMENT_ATTRIBUTES>
+
+      </EXPERIMENT_ATTRIBUTES>
+  </EXPERIMENT>
+</EXPERIMENT_SET>
 '''
 
 experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
@@ -303,7 +503,8 @@ experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
         <LIBRARY_CONSTRUCTION_PROTOCOL>
           Dummy Protocol
         </LIBRARY_CONSTRUCTION_PROTOCOL>
-      </LIBRARY_DESCRIPTOR>      <SPOT_DESCRIPTOR>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
         <SPOT_DECODE_SPEC>
           <READ_SPEC>
             <READ_INDEX>0</READ_INDEX>
@@ -322,7 +523,7 @@ experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
                <BASECALL read_group_tag="F6AVWTA02_GCTCTGTACT" min_match="10" max_mismatch="0" match_edge="full">GCTCTGTACT</BASECALL>
                <BASECALL read_group_tag="F6AVWTA02_CATGAGCGTG" min_match="10" max_mismatch="0" match_edge="full">CATGAGCGTG</BASECALL>
                <BASECALL read_group_tag="F6AVWTA02_TCTCTGTACT" min_match="10" max_mismatch="0" match_edge="full">TCTCTGTACT</BASECALL>
-</EXPECTED_BASECALL_TABLE>
+            </EXPECTED_BASECALL_TABLE>
           </READ_SPEC>
           <READ_SPEC>
             <READ_INDEX>2</READ_INDEX>
@@ -331,7 +532,7 @@ experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
             <READ_TYPE>Primer</READ_TYPE>
             <EXPECTED_BASECALL_TABLE>
                <BASECALL read_group_tag="V1-V3" min_match="17" max_mismatch="0" match_edge="full">TAATCCGCGGCTGCTGG</BASECALL>
-</EXPECTED_BASECALL_TABLE>
+            </EXPECTED_BASECALL_TABLE>
           </READ_SPEC>
           <READ_SPEC>
             <READ_INDEX>3</READ_INDEX>
@@ -407,7 +608,8 @@ experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
         <LIBRARY_CONSTRUCTION_PROTOCOL>
           Dummy Protocol
         </LIBRARY_CONSTRUCTION_PROTOCOL>
-      </LIBRARY_DESCRIPTOR>      <SPOT_DESCRIPTOR>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
         <SPOT_DECODE_SPEC>
           <READ_SPEC>
             <READ_INDEX>0</READ_INDEX>
@@ -426,7 +628,7 @@ experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
                <BASECALL read_group_tag="F6AVWTA01_GCTCTACGTC" min_match="10" max_mismatch="0" match_edge="full">GCTCTACGTC</BASECALL>
                <BASECALL read_group_tag="F6AVWTA01_CATGAGCGTC" min_match="10" max_mismatch="0" match_edge="full">CATGAGCGTC</BASECALL>
                <BASECALL read_group_tag="F6AVWTA01_TCTCTCTAGT" min_match="10" max_mismatch="0" match_edge="full">TCTCTCTAGT</BASECALL>
-</EXPECTED_BASECALL_TABLE>
+            </EXPECTED_BASECALL_TABLE>
           </READ_SPEC>
           <READ_SPEC>
             <READ_INDEX>2</READ_INDEX>
@@ -435,7 +637,7 @@ experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
             <READ_TYPE>Primer</READ_TYPE>
             <EXPECTED_BASECALL_TABLE>
                <BASECALL read_group_tag="V1-V3" min_match="17" max_mismatch="0" match_edge="full">TAATCCGCGGCTGCTGG</BASECALL>
-</EXPECTED_BASECALL_TABLE>
+            </EXPECTED_BASECALL_TABLE>
           </READ_SPEC>
           <READ_SPEC>
             <READ_INDEX>3</READ_INDEX>
