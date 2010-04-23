@@ -22,6 +22,14 @@ from cogent.app.util import ApplicationNotFoundError
 
 from qiime.parse import parse_qiime_config_file
 from qiime.util import load_qiime_config, get_qiime_project_dir, parse_command_line_parameters
+from qiime import __version__ as qiime_lib_version
+from cogent import __version__ as pycogent_lib_version
+from numpy import __version__ as numpy_lib_version
+from matplotlib import __version__ as matplotlib_lib_version
+try:
+    from pynast import __version__ as pynast_lib_version
+except ImportError:
+    pynast_lib_version = "Not installed."
 
 script_info = {}
 script_info['brief_description']= """Print out the qiime config settings."""
@@ -217,7 +225,22 @@ if __name__ == "__main__":
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     qiime_config = load_qiime_config()
+
+    version_info = [
+     ("PyCogent version", pycogent_lib_version),
+     ("NumPy version", numpy_lib_version),
+     ("matplotlib version", matplotlib_lib_version),
+     ("QIIME library version", qiime_lib_version),
+     ("QIIME script version", __version__),
+     ("PyNAST version (if installed)", pynast_lib_version)]
+    max_len =  max([len(e[0]) for e in version_info])
+    print "\nDependency versions"
+    print  "===================" 
+    for v in version_info:
+        print "%*s:\t%s" % (max_len,v[0],v[1])
     
+    print "\nQIIME config values"
+    print  "==================="    
     max_len =  max([len(key) for key in qiime_config])
     for key,value in  qiime_config.items():
         print "%*s:\t%s"%(max_len,key,value)
