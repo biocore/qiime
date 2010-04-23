@@ -374,6 +374,40 @@ def raise_error_on_parallel_unavailable(qiime_config=None):
        raise RuntimeError,\
         "Parallel QIIME is not available. (Have you set"+\
         " jobs_to_start to greater than 1 in your qiime_config?"
+        
+def sort_fasta_by_abundance(fasta_lines,fasta_out_f):
+    """ Sort seqs in fasta_line by abundance, write all seqs to fasta_out_f
+    
+     Note that all sequences are written out, not just unique ones.
+     
+     fasta_lines: input file handle (or similar object)
+     fasta_out_f: output file handle (or similar object)
+     
+    ** I am currently doing some work to figure out what the
+     best way to do this is. The current implementation is going
+     to have problems on very large (e.g., Illumina) files. --Greg
+    
+    """
+    seq_index = {}
+    count = 0
+    for seq_id,seq in MinimalFastaParser(fasta_lines):
+        count += 1
+        try:
+            seq_index[seq].append(seq_id)
+        except KeyError:
+            seq_index[seq] = [seq_id]
+    
+    seqs = []
+    for k,v in seq_index.items():
+        seqs.append((len(v),k,v))
+        del seq_index[k]
+    seqs.sort()
+    for count, seq, seq_ids in seqs[::-1]:
+        for seq_id in seq_ids:
+            fasta_out_f.write('>%s\n%s\n' % (seq_id,seq))
+    
+    
+    
 
 ## Begin functions for handling command line interfaces
 def get_options_lookup():

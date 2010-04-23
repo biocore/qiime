@@ -12,7 +12,7 @@ from qiime.util import make_safe_f, FunctionWithParams, qiime_blast_seqs,\
     raise_error_on_parallel_unavailable, merge_otu_tables,\
     convert_OTU_table_relative_abundance, create_dir, handle_error_codes,\
     summarize_pcoas, _compute_jn_pcoa_avg_ranges, _flip_vectors, IQR, \
-    idealfourths, isarray, matrix_IQR
+    idealfourths, isarray, matrix_IQR, sort_fasta_by_abundance
 from cogent.app.formatdb import build_blast_db_from_fasta_file
 from cogent.util.misc import get_random_directory_name
 import numpy
@@ -249,6 +249,50 @@ class TopLevelTests(TestCase):
         self.assertEqual(handle_error_codes("test", True, 1), 1)
         self.assertEqual(handle_error_codes("test", False, 0), 0)
         self.assertEqual(handle_error_codes("test"), 0)
+        
+    def test_sort_fasta_by_abundance(self):
+        """sort_fasta_by_abundance functions as expected"""
+        class FakeOutF(object):
+            def __init__(self):
+                self.s = ""
+            def write(self,s):
+                self.s += s
+        
+        actual = FakeOutF()
+        expected = ""
+        sort_fasta_by_abundance([],actual)
+        self.assertEqual(actual.s,expected)
+        
+        # no sorting necessary
+        actual = FakeOutF()
+        expected1 = "\n".join(['>s1','ACCGT','>s2 comment','ATTGC',''])
+        expected2 = "\n".join(['>s2 comment','ATTGC','>s1','ACCGT',''])
+        sort_fasta_by_abundance(['>s1','ACCGT','>s2 comment','ATTGC'],actual)
+        # order is unimportant here
+        self.assertTrue(actual.s == expected1 or actual.s == expected2)
+        
+        # sorting necessary
+        actual = FakeOutF()
+        inseqs = ['>s1','ACCGT',
+                   '>s2 comment','ATTGC',
+                   '>s3 blah','ATTGC']
+        expected = "\n".join(['>s2 comment','ATTGC',
+                              '>s3 blah','ATTGC',
+                              '>s1','ACCGT',''])
+        sort_fasta_by_abundance(inseqs,actual)
+        self.assertEqual(actual.s,expected)
+        
+        # sorting necessary, but skipped due to low sampling
+        # actual = FakeOutF()
+        # inseqs = ['>s1','ACCGT',
+        #            '>s2 comment','ATTGC'
+        #            '>s3 blah','ATTGC']
+        # expected = "\n".join(['>s1','ACCGT',
+        #                       '>s2 comment','ATTGC'
+        #                       '>s3 blah','ATTGC',''])
+        # sort_fasta_by_abundance(inseqs,actual,sample=2)
+        # self.assertEqual(actual.s,expected)
+        
 
 
 
