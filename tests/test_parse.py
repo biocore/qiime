@@ -422,7 +422,7 @@ eigvals\t4.94\t1.79\t1.50
  
     def test_parse_qiime_config_files(self):
         """ parse_qiime_config_files functions as expected """
-        fake_file1 = ['key1\tval1','key2\tval2']
+        fake_file1 = ['key1\tval1','key2 val2']
         fake_file2 = ['key2\tval3']
         actual = parse_qiime_config_files([fake_file1,fake_file2])
         expected = {'key1':'val1','key2':'val3'}

@@ -495,9 +495,9 @@ def parse_qiime_config_file(qiime_config_file):
         line = line.strip()
         # ignore blank lines or lines beginning with '#'
         if not line or line.startswith('#'): continue
-        fields = line.split('\t')
+        fields = line.split()
         param_id = fields[0]
-        param_value = '\t'.join(fields[1:]) or None
+        param_value = ' '.join(fields[1:]) or None
         result[param_id] = param_value
     return result
     
