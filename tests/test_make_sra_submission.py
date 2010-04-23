@@ -231,7 +231,6 @@ aa\tbb\tcc
         sff_dir = os.path.join(test_dir, 'sra_test_files', 'F6AVWTA')
         observed_exp_xml, observed_run_xml = make_run_and_experiment(
              StringIO(metagenomic_experiment), sff_dir)
-        print observed_exp_xml
         self.assertEqual(
             standardize_xml(observed_exp_xml),
             standardize_xml(metagenomic_experiment_xml_str)
