@@ -10,12 +10,15 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
-from qiime.util import parse_command_line_parameters, create_dir
-from optparse import make_option
-from qiime.pick_otus  import otu_picking_method_constructors,\
- otu_picking_method_choices, MothurOtuPicker
 from os.path import splitext, split
 from os import makedirs
+from optparse import make_option
+from cogent.app.util import get_tmp_filename
+from cogent.util.misc import remove_files
+from qiime.util import (parse_command_line_parameters, create_dir,
+ sort_fasta_by_abundance)
+from qiime.pick_otus  import otu_picking_method_constructors,\
+ otu_picking_method_choices, MothurOtuPicker
 
 script_info={}
 script_info['brief_description'] = """OTU picking"""
@@ -156,8 +159,16 @@ script_info['optional_options'] = [
               '[default: %default]')),
     make_option('-z', '--enable_rev_strand_match', action='store_true',
         default=False,
-        help=('Enable reverse strand matching for uclust clustering, '
+        help=('Enable reverse strand matching for uclust otu picking, '
               'will double the amount of memory used. [default: %default]')),
+    make_option('-a','--presort_by_abundance_uclust', action='store_true', 
+              default=False,
+              help=('Presort sequences by abundance for uclust otu'
+              ' picking. [default: %default]')),
+    make_option('-A','--optimal_uclust', action='store_true', 
+              default=False,
+              help=('Pass the --optimal flag to uclust for uclust otu'
+              ' picking. [default: %default]'))
     ]
 
 script_info['version'] = __version__
@@ -176,14 +187,17 @@ def main():
     blast_db = opts.blast_db
     similarity = opts.similarity
     enable_rev_strand_match = opts.enable_rev_strand_match
+    presort_by_abundance_uclust = opts.presort_by_abundance_uclust
+    optimal_uclust = opts.optimal_uclust
     
-    if otu_picking_method == 'cdhit' and similarity < 0.80:
-        option_parser.error('cdhit requires similarity >= 0.80.')
+    if not otu_picking_method == 'uclust':
+        if otu_picking_method == 'cdhit' and similarity < 0.80:
+            option_parser.error('cdhit requires similarity >= 0.80.')
             
-    if otu_picking_method == 'blast' and \
-       refseqs_fp == None and \
-       blast_db == None:
-           option_parser.error('blast requires refseqs_fp or blast_db')
+        if otu_picking_method == 'blast' and \
+           refseqs_fp == None and \
+           blast_db == None:
+               option_parser.error('blast requires refseqs_fp or blast_db')
  
     otu_picker_constructor =\
      otu_picking_method_constructors[otu_picking_method]
@@ -208,10 +222,27 @@ def main():
          trie_prefilter=trie_prefilter)
     elif otu_picking_method == 'uclust':
         params = {'Similarity':opts.similarity,\
-        'enable_reverse_strand_matching':opts.enable_rev_strand_match}
+        'enable_reverse_strand_matching':opts.enable_rev_strand_match,
+        'optimal':opts.optimal_uclust,
+        # passing suppress sort to the uclust app controller
+        # tells uclust that the data is presorted
+        'suppress_sort':opts.presort_by_abundance_uclust}
         otu_picker = otu_picker_constructor(params)
-        otu_picker(input_seqs_filepath,\
-         result_path=result_path,log_path=log_path)
+        
+        if opts.presort_by_abundance_uclust:
+            sorted_input_seqs_filepath = \
+             get_tmp_filename(suffix='.fasta')
+            
+            sort_fasta_by_abundance(open(input_seqs_filepath,'U'),
+             open(sorted_input_seqs_filepath,'w'))
+            
+            otu_picker(sorted_input_seqs_filepath,\
+             result_path=result_path,log_path=log_path)
+             
+            remove_files([sorted_input_seqs_filepath])
+        else:
+            otu_picker(input_seqs_filepath,\
+             result_path=result_path,log_path=log_path)
     elif otu_picking_method == 'prefix_suffix':
         otu_picker = otu_picker_constructor({})
         otu_picker(input_seqs_filepath,\

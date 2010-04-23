@@ -425,6 +425,8 @@ pick_otus:prefix_prefilter_length
 pick_otus:trie_prefilter
 pick_otus:prefix_length
 pick_otus:suffix_length
+pick_otus:optimal_uclust    True
+pick_otus:presort_by_abundance_uclust  True
 
 # Parallel options
 parallel:jobs_to_start	2

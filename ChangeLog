@@ -1,6 +1,7 @@
 Add changes since QIIME 1.0.0 here
 ==================================
 * Additional field added to BLAST assign taxonomy output to indicate the best BLAST hit of the query sequence -- this is in response to Sourceforge feature request 2988407.
+* Added presorting by abundance to uclust OTU picker. The idea here is that sequences which are more abundant are better representatives when clustering, so they should come first in the file. Also added ability to pass the optimal flag to uclust, which should also improve uclust-picked OTUs, by comes with a performance hit.
 
 
 
