@@ -25,7 +25,7 @@ from cogent.parse.fasta import MinimalFastaParser
 from cogent.app.parameters import ValuedParameter, FlagParameter
 from cogent.app.util import CommandLineApplication, ResultPath,\
  get_tmp_filename, ApplicationError, ApplicationNotFoundError
-from cogent.util.misc import reverse_complement, remove_files
+from cogent.util.misc import revComp as reverse_complement, remove_files
 
 class UclustParseError(Exception):
     pass
