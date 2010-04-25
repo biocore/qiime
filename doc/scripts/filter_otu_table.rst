@@ -34,6 +34,8 @@ After the OTU has been generated, the user may want to filter the table based on
 		List of taxonomy terms to exclude [default=]
 	-o, `-`-dir_path
 		Directory prefix for all analyses [default=./]
+	-p, `-`-seqs_per_sample
+		Minimum sequences per sample to retain the sample. [default=None]
 
 
 **Output:**
@@ -66,5 +68,13 @@ To include ("Bacteria") and exclude ("Proteobacteria") certain taxon groups (opt
 ::
 
 	filter_otu_table.py -i otu_table.txt -t Bacteria -e Proteobacteria
+
+**Filter samples by number of sequences:**
+
+A user may want to remove samples that have low sequence coverage. NOTE: this feature is mutually exclusive from the other filtering options, so if you pass this, you will need to perform a subsequent filter to remove by the other options.
+
+::
+
+	filter_otu_table.py -i otu_table.txt -p 10
 
 

@@ -106,6 +106,6 @@ subdirectories as appropriate.
 
 ::
 
-	pick_otus_through_otu_table.py -f inseqs1.sff.txt -m metadata_mapping.txt -i inseqs1.fasta -o wf2/ -p custom_parameters.txt
+	pick_otus_through_otu_table.py -s inseqs1.sff.txt -m metadata_mapping.txt -i inseqs1.fasta -o wf2/ -p custom_parameters.txt
 
 

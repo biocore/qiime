@@ -19,23 +19,31 @@ Principal Coordinate Analysis (PCoA) is commonly used to compare groups of sampl
 	
 	**[REQUIRED]**
 		
-	-i, `-`-input_distance_matrix_fp
-		Path to the input distance matrix file (i.e., the output from `beta_diversity.py <./beta_diversity.html>`_)
-	-o, `-`-output_fp
-		The output filepath
+	-i, `-`-input_path
+		Path to the input distance matrix file(s) (i.e., the output from `beta_diversity.py <./beta_diversity.html>`_). Is a directory for batch processing and a filename for a single file operation.
+	-o, `-`-output_path
+		Output path. directory for batch processing, filename for single file operation
 
 
 **Output:**
 
-The resulting output file consists of each component (columns) along with the loading for each sample (rows). Pairs of components can then be graphed to view the relationships between samples. The bottom of the output file contains the eigenvalues and % variation explained for each component.
+The resulting output file consists of the principal coordinate (PC) axes (columns) for each sample (rows). Pairs of PCs can then be graphed to view the relationships between samples. The bottom of the output file contains the eigenvalues and % variation explained for each PC.
 
 
-**Example:**
+**PCoA (Single File):**
 
-For this script, the user supplies a distance matrix (i.e., resulting file from `beta_diversity.py <./beta_diversity.html>`_), along with the output filename (e.g. beta_div_coords.txt), as follows:
+For this script, the user supplies a distance matrix (i.e. resulting file from `beta_diversity.py <./beta_diversity.html>`_), along with the output filename (e.g. beta_div_coords.txt), as follows:
 
 ::
 
 	principal_coordinates.py -i beta_div.txt -o beta_div_coords.txt
+
+**PCoA (Multiple Files):**
+
+The script also functions in batch mode if a folder is supplied as input (e.g. from `beta_diversity.py <./beta_diversity.html>`_ run in batch). This script operates on every distance matrix file in the input directory and creates a corresponding principal coordinates results file in the output directory, e.g.:
+
+::
+
+	principal_coordinates.py -i beta_div_weighted_unifrac/ -o beta_div_weighted_pcoa_results/
 
 

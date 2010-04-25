@@ -77,7 +77,11 @@ The primary inputs for `pick_otus.py <./pick_otus.html>`_ are:
 	-u, `-`-suffix_length
 		Suffix length when using the prefix_suffix otu picker [default: 50]
 	-z, `-`-enable_rev_strand_match
-		Enable reverse strand matching for uclust clustering, will double the amount of memory used. [default: False]
+		Enable reverse strand matching for uclust otu picking, will double the amount of memory used. [default: False]
+	-a, `-`-presort_by_abundance_uclust
+		Presort sequences by abundance for uclust otu picking. [default: False]
+	-A, `-`-optimal_uclust
+		Pass the --optimal flag to uclust for uclust otu picking. [default: False]
 
 
 **Output:**

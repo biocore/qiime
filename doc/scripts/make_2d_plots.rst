@@ -20,7 +20,7 @@ This script generates 2D PCoA plots using the principal coordinates file generat
 	**[REQUIRED]**
 		
 	-i, `-`-coord_fname
-		This is the path to the principal coordinates file (i.e., resulting file from `principal_coordinates.py <./principal_coordinates.html>`_)
+		This is the path to the principal coordinates file (i.e., resulting file from `principal_coordinates.py <./principal_coordinates.html>`_).  Alternatively, the user can supply a directory containing multiple principal coordinates files.
 	-m, `-`-map_fname
 		This is the metadata mapping file [default=None]
 	
@@ -32,6 +32,12 @@ This script generates 2D PCoA plots using the principal coordinates file generat
 		This is the user-generated preferences file. NOTE: This is a file with a dictionary containing preferences for the analysis [default: None]
 	-k, `-`-background_color
 		This is the background color to use in the plots. [default: None]
+	`-`-ellipsoid_opacity
+		Used when plotting ellipsoids for a summary plot (i.e. using a directory of coord files instead of a single coordfile). Valid range is 0-1. A value of 0 produces completely transparent (invisible) ellipsoids. A value of 1 produces completely opaque ellipsoids.
+	`-`-ellipsoid_method
+		Used when plotting ellipsoids for a summary plot (i.e. using a directory of coord files instead of a single coord file). Valid values are "IQR" and "sdev".
+	`-`-master_pcoa
+		If performing averaging on multiple coord files, the other coord files will be aligned to this one through procrustes analysis. This master file will not be included in the averaging. If this master coord file is not provided, one of the other coord files will be chosen arbitrarily as the target alignment. [default: None]
 	-o, `-`-output_dir
 		Path to the output directory
 
@@ -47,7 +53,7 @@ If you just want to use the default output, you can supply the principal coordin
 
 ::
 
-	make_2d_plots.py -i beta_div_coords.txt
+	make_2d_plots.py -i beta_div_coords.txt -m Mapping_file.txt
 
 **Output Directory Usage:**
 
@@ -73,20 +79,20 @@ If the user would like to color all categories in their metadata mapping file, t
 
 	make_2d_plots.py -i beta_div_coords.txt -m Mapping_file.txt -b ALL
 
-**Output Directory Usage:**
+**Prefs File:**
 
-If you want to give an specific output directory (e.g. "2d_plots"), use the following code.
-
-::
-
-	make_2d_plots.py -i beta_div_coords.txt -o 2d_plots/
-
-**Combination of Features:**
-
-or use some of the suggestions from above:
+The user can supply a prefs file to color by, as follows:
 
 ::
 
-	make_2d_plots.py -i beta_div_coords.txt -m Mapping_file.txt -b 'mapping_column1,mapping_column1&&mapping_column2'
+	make_2d_plots.py -i beta_div_coords.txt -m Mapping_file.txt -p prefs.txt
+
+**Jackknifed Principal Coordinates:**
+
+If you have created jackknifed PCoA files, you can pass the folder containing those files, instead of a single file, as follows:
+
+::
+
+	make_2d_plots.py -i jackknifed_pcoas/ -m Mapping_file.txt -b 'mapping_column1,mapping_column1&&mapping_column2'
 
 

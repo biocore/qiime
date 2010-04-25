@@ -59,4 +59,16 @@ If you would like to specify a different output directory (i.e., "otu_heatmap"),
 
 	make_otu_heatmap_html.py -i otu_table.txt -o otu_heatmap
 
+If you would like to sort the heatmap by Sample ID's then you should supply the mapping file, as follows:
+
+::
+
+	make_otu_heatmap_html.py -i otu_table.txt -o otu_heatmap -m mapping_file.txt
+
+If you would like to sort the heatmap by Sample ID's and the tips in the tree, you can supply a tree as follows:
+
+::
+
+	make_otu_heatmap_html.py -i otu_table.txt -o otu_heatmap -m mapping_file.txt -t tree_file.txt
+
 

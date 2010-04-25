@@ -50,7 +50,7 @@ Sequences from samples that are not found in the mapping file (no corresponding 
 	-M, `-`-max-primer-mismatch
 		Maximum number of primer mismatches [default: 0]
 	-b, `-`-barcode-type
-		Barcode type, e.g. 4 or hamming_8 or golay_12 [default: golay_12]
+		Barcode type, e.g. hamming_8 or golay_12 or variable_length (will disable any barcode correction if variable_length set) + [default: golay_12]
 	-o, `-`-dir-prefix
 		Directory prefix for output files [default: .]
 	-e, `-`-max-barcode-errors

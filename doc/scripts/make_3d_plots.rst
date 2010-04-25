@@ -20,7 +20,7 @@ This script automates the construction of 3D plots (kinemage format) from the PC
 	**[REQUIRED]**
 		
 	-i, `-`-coord_fname
-		This is the path to the principal coordinates file (i.e., resulting file from `principal_coordinates.py <./principal_coordinates.html>`_)
+		This is the path to the principal coordinates file (i.e., resulting file from `principal_coordinates.py <./principal_coordinates.html>`_), or to a directory containing multiple coord files for averaging (e.g. resulting files from `multiple_rarefactions_even_depth.py <./multiple_rarefactions_even_depth.html>`_, followed by multiple `beta_diversity.py <./beta_diversity.html>`_, followed by multiple `principal_coordinates.py <./principal_coordinates.html>`_).
 	-m, `-`-map_fname
 		This is the metadata mapping file  [default=None]
 	
@@ -36,10 +36,18 @@ This script automates the construction of 3D plots (kinemage format) from the PC
 		This is the background color to use in the plots (Options are 'black' or 'white'. [default: None]
 	-o, `-`-output_dir
 		Path to the output directory
+	`-`-ellipsoid_smoothness
+		The level of smoothness used in plotting ellipsoids for a summary plot (i.e. using a directory of coord files instead of a single coord file). Valid range is 0-3. A value of 0 produces very coarse "ellipsoids" but is fast to render. The default value is 2. If you encounter a memory error when generating or displaying the plots, try including just one metadata column in your plot. If you still have trouble, reduce the smoothness level to 0 or 1.
+	`-`-ellipsoid_opacity
+		Used when plotting ellipsoids for a summary plot (i.e. using a directory of coord files instead of a single coord file). Valid range is 0-3. A value of 0 produces completely transparent (invisible) ellipsoids. A value of 1 produces completely opaque ellipsoids. The default value is 0.33.
+	`-`-ellipsoid_method
+		Used when plotting ellipsoids for a summary plot (i.e. using a directory of coord files instead of a single coord file). Valid values are "IQR" (The Interquartile Range) and "sdev" (The standard deviation). The default is IQR.
 	-t, `-`-taxa_fname
 		If you wish to perform a biplot, where taxa are plotted along with samples, supply an otu table format file.  Typically this is the output from `summarize_taxa.py <./summarize_taxa.html>`_.
 	`-`-n_taxa_keep
 		If performing a biplot, the number of taxa to display; use -1 to display all. [default: 10]
+	`-`-master_pcoa
+		If performing averaging on multiple coord files, the other coord files will be aligned to this one through procrustes analysis. This master file will not be included in the averaging. If this master coord file is not provided, one of the other coord files will be chosen arbitrarily as the target alignment. [default: None]
 
 
 **Output:**

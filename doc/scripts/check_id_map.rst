@@ -16,6 +16,7 @@ Specifically, we check that:
     - There are not duplicate near-unique but not exactly unique values within each column (warning)
     - The headers do not contain invalid characters (alphanumeric and underscore only)
     - The data fields do not contain invalid characters (alphanumeric, underscore, and +-%. characters)
+    - There are no duplicates when the primer and barcodes are appended
     
     Errors and warnings are saved to a log file.  Errors are generally caused 
     by problems with the headers, and should be resolved before attempting to 
@@ -56,6 +57,8 @@ Specifically, we check that:
 		Changes the default character used to replace invalid characters found in the mapping file.  Must be a valid character (alphanumeric or underscore).  NOT IMPLEMENTED CURRENTLY [default: _]
 	-b, `-`-not_barcoded
 		Use -b if barcodes are not present. [default: False]
+	-B, `-`-variable_len_barcodes
+		Use -B if variable length barcodes are present to suppress warnings about barcodes of unequal length. [default: False]
 
 
 **Output:**
