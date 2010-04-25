@@ -7,8 +7,8 @@ __copyright__ = "Copyright 2010, The QIIME project"
 __credits__ = ["Meg Pirrung", "Jesse Stombaugh"]
 __license__ = "GPL"
 __version__ = "1.0.0-dev"
-__maintainer__ = "Meg Pirrung"
-__email__ = "meg.pirrung@colorado.edu"
+__maintainer__ = "Jesse Stombaugh"
+__email__ = "jesse.stombaugh@colorado.edu"
 __status__ = "Development"
  
 from optparse import make_option
@@ -26,9 +26,9 @@ options_lookup = get_options_lookup()
 
 script_info={}
 script_info['brief_description']="""Generate Rarefaction Plots"""
-script_info['script_description']="""Once the batch alpha diversity files have been collated, you may want to compare the diversity using plots. Using the results from make_rarefaction_averages.py, you can plot the samples and or by category in the mapping file using this script.
+script_info['script_description']="""Once the batch alpha diversity files have been collated, you may want to compare the diversity using plots. Using the results from collate_alpha.py, you can plot the samples and or by category in the mapping file using this script.
 
-This script creates an html file of rarefaction plots based on the supplied rarefaction files in the folder given (-i) from make_rarefaction_averages.py. The user may also supply optional arguments like an image type (-i), and a resolution (-d)."""
+This script creates an html file of rarefaction plots based on the supplied collated alpha-diversity files in the folder given (-i) from collate_alpha.py. The user may also supply optional arguments like an image type (-i), and a resolution (-d)."""
 script_info['script_usage']=[]
 script_info['script_usage'].append(("""Default Example:""","""For generated rarefaction plots using the default parameters, including the mapping file and one rarefaction file, you can use the following command:""","""make_rarefaction_plots.py -r chao1/ -m mapping_file.txt"""))
 script_info['script_usage'].append(("""Specify Image Type and Resolution:""","""Optionally, you can change the resolution ("-d") and the type of image created ("-i"), by using the following command:""","""make_rarefaction_plots.py -i chao1/ -m mapping_file.txt -d 180 -g pdf"""))

@@ -7,9 +7,9 @@
 
 **Description:**
 
-Once the batch alpha diversity files have been collated, you may want to compare the diversity using plots. Using the results from `make_rarefaction_averages.py <./make_rarefaction_averages.html>`_, you can plot the samples and or by category in the mapping file using this script.
+Once the batch alpha diversity files have been collated, you may want to compare the diversity using plots. Using the results from `collate_alpha.py <./collate_alpha.html>`_, you can plot the samples and or by category in the mapping file using this script.
 
-This script creates an html file of rarefaction plots based on the supplied rarefaction files in the folder given (-i) from `make_rarefaction_averages.py <./make_rarefaction_averages.html>`_. The user may also supply optional arguments like an image type (-i), and a resolution (-d).
+This script creates an html file of rarefaction plots based on the supplied collated alpha-diversity files in the folder given (-i) from `collate_alpha.py <./collate_alpha.html>`_. The user may also supply optional arguments like an image type (-i), and a resolution (-d).
 
 
 **Usage:** :file:`make_rarefaction_plots.py [options]`
