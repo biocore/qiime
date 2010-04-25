@@ -319,17 +319,17 @@ class WorkflowTests(TestCase):
          min_seqs_per_sample=10,\
          status_update_callback=no_status_updates)
          
-        pd_plot_fp = join(self.wf_out,'alpha_rarefaction_plots',
-         'PD_whole_tree','PD_whole_tree','Treatment.png')
-        chao1_plot_fp = join(self.wf_out,'alpha_rarefaction_plots',
-         'chao1','chao1','Treatment.png')
-        os_averages_fp = join(self.wf_out,'alpha_rarefaction_averages',
-         'observed_species','observed_species','Treatment.txt')
+        pd_control_plot_fp = join(self.wf_out,'alpha_rarefaction_plots',
+         'all_other_plots','PD_whole_treeTreatmentControl.png')
+        pd_treatment_plot_fp = join(self.wf_out,'alpha_rarefaction_plots',
+         'average_plots','PD_whole_treeTreatment.png')
+        pd_averages_fp = join(self.wf_out,'alpha_rarefaction_plots',
+         'average_tables','PD_whole_treeTreatment.txt')
         
         # check that final output files have non-zero size
-        self.assertTrue(getsize(chao1_plot_fp) > 0)
-        self.assertTrue(getsize(pd_plot_fp) > 0)
-        self.assertTrue(getsize(os_averages_fp) > 0)
+        self.assertTrue(getsize(pd_control_plot_fp) > 0)
+        self.assertTrue(getsize(pd_treatment_plot_fp) > 0)
+        self.assertTrue(getsize(pd_averages_fp) > 0)
         
     def test_run_qiime_alpha_rarefaction_parallel(self):
         """ run_qiime_alpha_rarefaction runs in parallel without error """
@@ -347,17 +347,17 @@ class WorkflowTests(TestCase):
          min_seqs_per_sample=10,\
          status_update_callback=no_status_updates)
          
-        pd_plot_fp = join(self.wf_out,'alpha_rarefaction_plots',
-         'PD_whole_tree','PD_whole_tree','Treatment.png')
-        chao1_plot_fp = join(self.wf_out,'alpha_rarefaction_plots',
-         'chao1','chao1','Treatment.png')
-        os_averages_fp = join(self.wf_out,'alpha_rarefaction_averages',
-         'observed_species','observed_species','Treatment.txt')
+        pd_control_plot_fp = join(self.wf_out,'alpha_rarefaction_plots',
+         'all_other_plots','PD_whole_treeTreatmentControl.png')
+        pd_treatment_plot_fp = join(self.wf_out,'alpha_rarefaction_plots',
+         'average_plots','PD_whole_treeTreatment.png')
+        pd_averages_fp = join(self.wf_out,'alpha_rarefaction_plots',
+         'average_tables','PD_whole_treeTreatment.txt')
         
         # check that final output files have non-zero size
-        self.assertTrue(getsize(chao1_plot_fp) > 0)
-        self.assertTrue(getsize(pd_plot_fp) > 0)
-        self.assertTrue(getsize(os_averages_fp) > 0)
+        self.assertTrue(getsize(pd_control_plot_fp) > 0)
+        self.assertTrue(getsize(pd_treatment_plot_fp) > 0)
+        self.assertTrue(getsize(pd_averages_fp) > 0)
          
     def test_run_jackknifed_upgma_clustering(self):
         """ run_jackknifed_upgma_clustering runs without error """
@@ -476,10 +476,7 @@ multiple_rarefactions:lineages_included	False
 multiple_rarefactions_even_depth:num-reps	5
 
 # Alpha diversity parameters
-alpha_diversity:metrics	PD_whole_tree,chao1,observed_species
-
-# Make rarefaction averages parameters
-make_rarefaction_averages:prefs
+alpha_diversity:metrics	PD_whole_tree
 
 # Make rarefaction plots parameters
 make_rarefaction_plots:imagetype	png
