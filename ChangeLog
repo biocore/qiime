@@ -38,7 +38,8 @@ survey of multiple body sites.
 * Reorganization and expansion of the documentation through-out.
 * Added sanity checks to print_qiime_config.py. This will now allow users to evaluate their environment, and should help with debugging.
 * Added new field to qiime_config (temp_dir) which will be used to specify where temp files should be written. Currently this is only used by the workflow tests, and is intended to allow users to specify something other than /tmp for cases when /tmp is not shared between all nodes that might be working on a job. This will eventually be used for all temp dir creation.
-
+* Added ability to make summary plots for a directory of coordinate files in make_3d_plots and make_2d_plots. The summary plot adds ellipsoidal confidence intervals around each point in the plot.
+	
 QIIME 0.92 - (3 Mar 2010)
 =======================
 * Removed outdated documentation PDFs, along with references to those PDFs in the README and INSTALL documents.
