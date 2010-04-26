@@ -173,7 +173,7 @@ class TopLevelTests(TestCase):
         
         obs=make_averages(self.color_prefs,self.data,self.background_color, \
                           self.label_color,self.rares,self.output_dir, \
-                          self.resolution,self.imagetype)
+                          self.resolution,self.imagetype,None)
                           
         self.assertEqual(obs,exp_make_avg)
         self.assertTrue(exists(filename1))

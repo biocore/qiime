@@ -313,7 +313,7 @@ mapping_category, colors, rare_type, data_colors, groups):
     return lines   
 
 def make_averages(color_prefs, data, background_color, label_color, rares, \
-                    output_dir,resolution,imagetype):
+                    output_dir,resolution,imagetype,ymax):
     '''This is the main function, which takes the rarefaction files, calls the
         functions to make plots and formatting the output html.''' 
     rarelines = []
@@ -456,8 +456,10 @@ def make_averages(color_prefs, data, background_color, label_color, rares, \
             
             #determine the ymax based on the average data
             #multiple the ymax, since the dots can end up on the border
-            ymax = (max([max(v) for v in rares_data['series'].values()]) + \
-                    max([max(v) for v in rares_data['error'].values()]))*1.15
+            if not ymax:
+                ymax = (max([max(v) for v in rares_data['series'].values()]) + \
+                        max([max(v) for v in rares_data['error'].values()])) * \
+                        1.15
             
             #Iterate through the groups and create the legend dictionary
             for g in groups:
@@ -476,8 +478,8 @@ def make_averages(color_prefs, data, background_color, label_color, rares, \
                                             imagetype,metric_name,labelname, \
                                             sample_data_colors,sample_colors, \
                                             file_path,background_color, \
-                                            label_color,resolution,ymax,xmax,g, \
-                                            rarefaction_legend_mat)
+                                            label_color,resolution,ymax,xmax, \
+                                            g,rarefaction_legend_mat)
             
             #Create the average rarefaction plots
             rarefaction_data_mat,rarefaction_legend_mat=make_plots(\
@@ -521,10 +523,11 @@ def make_html(rarefaction_legend_mat,rarefaction_data_mat,xaxisvals,imagetype):
             #the html formatted rows for each category and group
             for group in natsort(rarefaction_legend_mat[m][category]):
                 if group <> 'link':
-                   
+                    
                     category_colors[group]=\
                        rarefaction_legend_mat[m][category][group]['groupcolor']
                     legend_td.append('<tr name="%s" style="display: none;" onmouseover="javascript:change_plot(\'./%s\')" onmouseout="javascript:change_plot(\'./%s\')"><td class="data" bgcolor="%s"><b>%s</b></td></tr>' % (m+category,rarefaction_legend_mat[m][category][group]['link'],rarefaction_legend_mat[m][category]['link'],rarefaction_legend_mat[m][category][group]['groupcolor'], group)) 
+
 
         cat_iter=1
         

@@ -45,6 +45,7 @@ make_option('-p', '--prefs_path', type='string', help='preferences file for colo
 make_option('-k', '--background_color', type='string', help='Background color for graphs.',default='white'),
 make_option('-g', '--imagetype', type='string', help='extension for image type choose from (png, svg, pdf).  WARNING: Some formats may not properly open in your browser! [default: %default]', default='png'),
 make_option('-d', '--resolution', help='output image resolution, [default: %default]', type='int', default='75'),
+make_option('-y', '--ymax', type='int', help='this is the ymax value to be used for the plots, so you can compare rarefaction plots between two different analyses [default: %default]'),
 options_lookup['output_dir']
 ]
 script_info['version'] = __version__
@@ -115,8 +116,10 @@ def main():
     
     #Generate the plots and html text
     
+    ymax=options.ymax
+    
     html_output = make_averages(prefs, data, background_color, label_color, \
-                                rares, output_dir,resolution,imagetype)
+                                rares, output_dir,resolution,imagetype,ymax)
 
               
     #Write the html file.
