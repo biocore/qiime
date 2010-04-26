@@ -319,6 +319,11 @@ def make_averages(color_prefs, data, background_color, label_color, rares, \
     rarelines = []
     rarefaction_legend_mat={}
     
+    if ymax:
+        user_ymax=True
+    else:
+        user_ymax=False
+        
     #Create the directories, where plots and data will be written
     all_output_dir = os.path.join(output_dir, 'all_other_plots')
     create_dir(all_output_dir)
@@ -456,7 +461,7 @@ def make_averages(color_prefs, data, background_color, label_color, rares, \
             
             #determine the ymax based on the average data
             #multiple the ymax, since the dots can end up on the border
-            if not ymax:
+            if not user_ymax:
                 ymax = (max([max(v) for v in rares_data['series'].values()]) + \
                         max([max(v) for v in rares_data['error'].values()])) * \
                         1.15
@@ -523,11 +528,17 @@ def make_html(rarefaction_legend_mat,rarefaction_data_mat,xaxisvals,imagetype):
             #the html formatted rows for each category and group
             for group in natsort(rarefaction_legend_mat[m][category]):
                 if group <> 'link':
+                    sample_list=[]
+                    for sample in natsort(rarefaction_legend_mat[m][category][group]['groupsamples']):
+                        sample_list.append('\''+m+category+sample+'\'')
                     
                     category_colors[group]=\
                        rarefaction_legend_mat[m][category][group]['groupcolor']
-                    legend_td.append('<tr name="%s" style="display: none;" onmouseover="javascript:change_plot(\'./%s\')" onmouseout="javascript:change_plot(\'./%s\')"><td class="data" bgcolor="%s"><b>%s</b></td></tr>' % (m+category,rarefaction_legend_mat[m][category][group]['link'],rarefaction_legend_mat[m][category]['link'],rarefaction_legend_mat[m][category][group]['groupcolor'], group)) 
+                    legend_td.append('<tr id="%s" class="expands" onclick="toggle(%s)" name="%s" style="display: none;" onmouseover="javascript:change_plot(\'./%s\')" onmouseout="javascript:change_plot(\'./%s\')"><td id="%s"  class="data">&#x25B6;</td><td class="data" bgcolor="%s"><b>%s</b></td></tr>' % (m+category,m+category+group+','+','.join(sample_list),m+category,rarefaction_legend_mat[m][category][group]['link'],rarefaction_legend_mat[m][category]['link'],m+category+group,rarefaction_legend_mat[m][category][group]['groupcolor'], group)) 
 
+                    for sample in natsort(rarefaction_legend_mat[m][category][group]['groupsamples']):
+                        #print m+category+group
+                        legend_td.append('<tr id="%s" name="%s" class="removed child1"><td class="data" align="right">&#x221F;</td><td bgcolor="%s" class="data" style="border:thin white solid;"><b>%s</b></td></tr>' % (m+category+sample,m+category,rarefaction_legend_mat[m][category][group]['groupsamples'][sample], sample)) 
 
         cat_iter=1
         
@@ -646,6 +657,9 @@ HTML='''
 td.data{font-size:10px}
 td.headers{font-size:12px}
 table{border-spacing:0px}
+.removed{display:none;}
+.expands{cursor:pointer; cursor:hand;}
+.child1 td:first-child{padding-left: 3px;}
 </style>
 <script language="javascript" type="text/javascript">
 
@@ -653,7 +667,6 @@ function change_plot(object){
 plot_img=document.getElementById('plots');
 plot_img.src=object
 }
-
 
 function changeMetric(SelObject){
     var old_category=document.getElementById('category');
@@ -721,7 +734,26 @@ function changeCategory(SelObject){
 old_category.value=SelObject.value;
 }
 
+function toggle(){
+    if (arguments[0].innerHTML=='\u25B6'){
+        arguments[0].innerHTML='\u25BC'
+    }else{
+        arguments[0].innerHTML='\u25B6'
+    }
+    for(var i=1; i<arguments.length; i++){
+        with(document.getElementById(arguments[i])){
+            if(className.indexOf('removed') > -1){
+                className = className.replace('removed');
+            }else{
+                className += ' removed';
+            }
+        }
+    }
+}
 </script>
+
+
+
 </head>
 <body>
 <form>
