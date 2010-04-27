@@ -13,6 +13,7 @@ __status__ = "Development"
 import numpy
 from numpy import isnan
 from StringIO import StringIO
+from cogent import Sequence
 
 """Contains formatters for the files we expect to encounter in 454 workflow.
 
@@ -265,3 +266,17 @@ def format_histograms(pre_hist, post_hist, bin_edges):
     for edge, pre, post in zip(bin_edges, pre_hist, post_hist):
         lines.append('\t'.join(map(str, [edge, pre, post])))
     return '\n'.join(lines)
+
+def write_Fasta_from_name_seq_pairs(name_seqs, fh):
+    """writes a list of (name,seqs) to filehandle.
+
+    name_seqs: (name,seqs) pair such as from MinimalFASTAParser
+    fh: an open filehandle
+    """
+    if fh==None:
+        raise ValueError,"Need open file handle to write to." 
+
+    for (name,seq) in name_seqs:
+        fh.write("%s\n"% Sequence(name=name, seq = seq).toFasta())
+    
+

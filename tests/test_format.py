@@ -3,7 +3,7 @@
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2010, The QIIME Project" #consider project name
-__credits__ = ["Rob Knight","Jeremy Widmann"] 
+__credits__ = ["Rob Knight","Jeremy Widmann","Jens Reeder"] 
 #remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.0.0-dev"
@@ -11,12 +11,14 @@ __maintainer__ = "Rob Knight"
 __email__ = "rob@spot.colorado.edu"
 __status__ = "Development"
 
+from os import remove
 from cogent.util.unit_test import TestCase, main
+from cogent.parse.fasta import MinimalFastaParser
+from cogent.app.util import get_tmp_filename
 from numpy import array, nan
 from qiime.format import (format_distance_matrix, format_otu_table,
     format_coords, build_prefs_string, format_matrix, format_map_file,
-    format_histograms)
-
+    format_histograms, write_Fasta_from_name_seq_pairs)
 
 class TopLevelTests(TestCase):
     """Tests of top-level module functions."""
@@ -118,6 +120,28 @@ y\t5\t6\tsample y""")
 140\t0\t0
 150\t0\t1""")
 
+    def test_write_Fasta_from_name_seqs_pairs(self):
+        """write_Fasta_from_name_seqs_pairs write proper FASTA string."""
+        
+        seqs = [('1',"AAA"),('2',"CCCCC"),('3',"GGGG")]
+
+        #None fh raises Error
+        self.assertRaises(ValueError, write_Fasta_from_name_seq_pairs,seqs,None)
+
+        tmp_filename = get_tmp_filename(prefix="test_write_Fasta", suffix=".fna")
+        fh = open(tmp_filename,"w")
+        write_Fasta_from_name_seq_pairs(seqs,fh)
+        fh.close()
+        actual_seqs = list(MinimalFastaParser(open(tmp_filename,"U")))
+        remove(tmp_filename)
+        
+        self.assertEqual(actual_seqs, seqs)
+        
+
 #run unit tests if run from command-line
 if __name__ == '__main__':
     main()
+
+
+
+
