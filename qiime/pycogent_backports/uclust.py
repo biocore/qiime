@@ -92,10 +92,13 @@ class Uclust(CommandLineApplication):
         # Don't assume input is sorted by length (default assume sorted).
         '--usersort':FlagParameter('--',Name='usersort'),
         
+        # Same as --maxrejects 0 --nowordcountreject.
+        # comes with a performance hit.
+        '--exact':FlagParameter('--',Name='exact'),
+
         # Same as --maxrejects 0 --maxaccepts 0 --nowordcountreject -- 
         # comes with a performance hit.
         '--optimal':FlagParameter('--',Name='optimal'),
-        
     }
      
     _suppress_stdout = False
@@ -308,6 +311,7 @@ def uclust_cluster_from_sorted_fasta_filepath(
     output_filepath=None, 
     percent_ID=0.97, 
     optimal = False,
+    exact = False,
     suppress_sort = False,
     enable_rev_strand_matching=False,
     HALT_EXEC=False):
@@ -321,6 +325,7 @@ def uclust_cluster_from_sorted_fasta_filepath(
     # Set any additional parameters specified by the user
     if enable_rev_strand_matching: app.Parameters['--rev'].on()
     if optimal: app.Parameters['--optimal'].on()
+    if exact: app.Parameters['--exact'].on()
     if suppress_sort: app.Parameters['--usersort'].on()
     
     app_result = app({'--input':fasta_filepath,'--uc':output_filepath})
@@ -388,6 +393,7 @@ def get_clusters_from_fasta_filepath(
     fasta_filepath,
     percent_ID=0.97,
     optimal=False,
+    exact=False,
     suppress_sort=False,
     output_dir=None,
     enable_rev_strand_matching=False):
@@ -443,7 +449,7 @@ def get_clusters_from_fasta_filepath(
         uclust_cluster = \
          uclust_cluster_from_sorted_fasta_filepath(sorted_fasta_filepath,
          uc_output_filepath, percent_ID = percent_ID,
-         optimal = optimal, suppress_sort = suppress_sort,
+         optimal = optimal, exact = exact, suppress_sort = suppress_sort,
          enable_rev_strand_matching = enable_rev_strand_matching)
         # Get cluster file name from application wrapper
         uc_filepath = uclust_cluster['ClusterFile'].name
