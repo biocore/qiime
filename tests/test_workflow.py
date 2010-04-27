@@ -13,6 +13,7 @@ __status__ = "Development"
 
 import signal
 from shutil import rmtree
+from glob import glob
 from os.path import join, exists, getsize, split, splitext
 from os import makedirs
 from cogent.util.unit_test import TestCase, main
@@ -155,6 +156,10 @@ class WorkflowTests(TestCase):
          parallel=False, 
          status_update_callback=no_status_updates)
         
+        # Check that the log file is created and has size > 0
+        log_fp = glob(join(self.wf_out,'log*.txt'))[0]
+        self.assertTrue(getsize(log_fp) > 0)
+        
     def test_run_qiime_data_preparation(self):
         """run_qiime_data_preparation runs without error"""
         run_qiime_data_preparation(
@@ -177,6 +182,10 @@ class WorkflowTests(TestCase):
         # check that the two final output files have non-zero size
         self.assertTrue(getsize(tree_fp) > 0)
         self.assertTrue(getsize(otu_table_fp) > 0)
+        
+        # Check that the log file is created and has size > 0
+        log_fp = glob(join(self.wf_out,'log*.txt'))[0]
+        self.assertTrue(getsize(log_fp) > 0)
         
     def test_run_qiime_data_preparation_denoise(self):
         """run_qiime_data_preparation denoises"""
@@ -208,6 +217,10 @@ class WorkflowTests(TestCase):
         self.assertTrue(getsize(tree_fp) > 0)
         self.assertTrue(getsize(otu_table_fp) > 0)
         
+        # Check that the log file is created and has size > 0
+        log_fp = glob(join(self.wf_out,'log*.txt'))[0]
+        self.assertTrue(getsize(log_fp) > 0)
+        
     def test_run_qiime_data_preparation_muscle(self):
         """run_qiime_data_preparation runs without error with muscle aligner"""
         self.params['align_seqs']['alignment_method'] = 'muscle'
@@ -231,6 +244,10 @@ class WorkflowTests(TestCase):
         # check that the two final output files have non-zero size
         self.assertTrue(getsize(tree_fp) > 0)
         self.assertTrue(getsize(otu_table_fp) > 0)
+        
+        # Check that the log file is created and has size > 0
+        log_fp = glob(join(self.wf_out,'log*.txt'))[0]
+        self.assertTrue(getsize(log_fp) > 0)
     
     def test_run_qiime_data_preparation_parallel(self):
         """run_qiime_data_preparation runs in parallel without error"""
@@ -254,6 +271,10 @@ class WorkflowTests(TestCase):
         # check that the two final output files have non-zero size
         self.assertTrue(getsize(tree_fp) > 0)
         self.assertTrue(getsize(otu_table_fp) > 0)
+        
+        # Check that the log file is created and has size > 0
+        log_fp = glob(join(self.wf_out,'log*.txt'))[0]
+        self.assertTrue(getsize(log_fp) > 0)
          
          
     def test_run_beta_diversity_through_3d_plot(self):
@@ -277,7 +298,11 @@ class WorkflowTests(TestCase):
         # check that final output files have non-zero size
         self.assertTrue(getsize(unweighted_unifrac_pc_fp) > 0)
         self.assertTrue(getsize(weighted_unifrac_pc_fp) > 0)
-        self.assertTrue(getsize(weighted_unifrac_html_fp) > 0)       
+        self.assertTrue(getsize(weighted_unifrac_html_fp) > 0)
+        
+        # Check that the log file is created and has size > 0
+        log_fp = glob(join(self.wf_out,'log*.txt'))[0]
+        self.assertTrue(getsize(log_fp) > 0)
         
       
     def test_run_beta_diversity_through_3d_plot_parallel(self):
@@ -302,6 +327,10 @@ class WorkflowTests(TestCase):
         self.assertTrue(getsize(unweighted_unifrac_pc_fp) > 0)
         self.assertTrue(getsize(weighted_unifrac_pc_fp) > 0)
         self.assertTrue(getsize(weighted_unifrac_html_fp) > 0)
+        
+        # Check that the log file is created and has size > 0
+        log_fp = glob(join(self.wf_out,'log*.txt'))[0]
+        self.assertTrue(getsize(log_fp) > 0)
         
     def test_run_qiime_alpha_rarefaction(self):
         """ run_qiime_alpha_rarefaction runs without error """
@@ -331,6 +360,10 @@ class WorkflowTests(TestCase):
         self.assertTrue(getsize(pd_treatment_plot_fp) > 0)
         self.assertTrue(getsize(pd_averages_fp) > 0)
         
+        # Check that the log file is created and has size > 0
+        log_fp = glob(join(self.wf_out,'log*.txt'))[0]
+        self.assertTrue(getsize(log_fp) > 0)
+        
     def test_run_qiime_alpha_rarefaction_parallel(self):
         """ run_qiime_alpha_rarefaction runs in parallel without error """
     
@@ -358,6 +391,10 @@ class WorkflowTests(TestCase):
         self.assertTrue(getsize(pd_control_plot_fp) > 0)
         self.assertTrue(getsize(pd_treatment_plot_fp) > 0)
         self.assertTrue(getsize(pd_averages_fp) > 0)
+        
+        # Check that the log file is created and has size > 0
+        log_fp = glob(join(self.wf_out,'log*.txt'))[0]
+        self.assertTrue(getsize(log_fp) > 0)
          
     def test_run_jackknifed_upgma_clustering(self):
         """ run_jackknifed_upgma_clustering runs without error """
@@ -384,6 +421,10 @@ class WorkflowTests(TestCase):
         self.assertTrue(getsize(weighted_unifrac_upgma_tree_fp) > 0)
         self.assertTrue(getsize(unweighted_unifrac_upgma_tree_fp) > 0)
         
+        # Check that the log file is created and has size > 0
+        log_fp = glob(join(self.wf_out,'log*.txt'))[0]
+        self.assertTrue(getsize(log_fp) > 0)
+        
     def test_run_jackknifed_upgma_clustering_parallel(self):
         """ run_jackknifed_upgma_clustering runs in parallel without error """
     
@@ -408,6 +449,10 @@ class WorkflowTests(TestCase):
         # check that final output files have non-zero size
         self.assertTrue(getsize(weighted_unifrac_upgma_tree_fp) > 0)
         self.assertTrue(getsize(unweighted_unifrac_upgma_tree_fp) > 0)
+        
+        # Check that the log file is created and has size > 0
+        log_fp = glob(join(self.wf_out,'log*.txt'))[0]
+        self.assertTrue(getsize(log_fp) > 0)
 
 
 qiime_parameters_f = """# qiime_parameters.txt
