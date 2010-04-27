@@ -6,8 +6,11 @@ from os import makedirs
 from glob import glob
 import os
 from os.path import split, splitext, join
+from datetime import datetime
 from qiime.parse import parse_mapping_file
-from qiime.util import compute_seqs_per_library_stats, get_qiime_scripts_dir
+from qiime.util import (compute_seqs_per_library_stats, 
+                        get_qiime_scripts_dir,
+                        create_dir)
 import qiime.sra_spreadsheet_to_map_files
 import qiime.make_sra_submission
 
@@ -26,23 +29,91 @@ independent scripts. For usage examples see the related files in the
 scripts directory:
  - 
 """
+
+## Start utilities used by the workflow functions
+def generate_log_fp(output_dir,
+                    basefile_name='log',
+                    suffix='txt',
+                    timestamp_pattern='%Y%m%d%H%M%S'):
+    timestamp = datetime.now().strftime(timestamp_pattern)
+    filename = '%s_%s.%s' % (basefile_name,timestamp,suffix)
+    return join(output_dir,filename)
+
 class WorkflowError(Exception):
     pass
 
-## Begin functions used generally by the workflow functions
+class WorkflowLogger(object):
     
-def print_commands(commands,status_update_callback):
+    def __init__(self,log_fp=None,params=None,qiime_config=None,open_mode='w'):
+        if log_fp:
+            self._f = open(log_fp,open_mode)
+        else:
+            self._f = None
+        start_time = datetime.now().strftime('%H:%M:%S on %d %b %Y')
+        self.write('Logging started at %s\n\n' % start_time)
+        self.writeQiimeConfig(qiime_config)
+        self.writeParams(params)
+    
+    def write(self,s):
+        if self._f:
+            self._f.write(s)
+            # Flush here so users can see what step they're
+            # on after each write, since some steps can take
+            # a long time, and a relatively small amount of 
+            # data is being written to the log files.
+            self._f.flush()
+        else:
+            pass
+    
+    def writeQiimeConfig(self,qiime_config):
+        if qiime_config == None:
+            self.write('No qiime config provided.\n')
+        else:
+            self.write('qiime_config values:\n')
+            for k,v in qiime_config.items():
+                if v:
+                    self.write('%s\t%s\n' % (k,v))
+            self.write('\n')
+            
+    def writeParams(self,params):
+        if params == None:
+            self.write('No params provided.\n')
+        else:
+            self.write('parameter file values:\n')
+            for k,v in params.items():
+                for inner_k,inner_v in v.items():
+                    val = inner_v or 'True'
+                    self.write('%s:%s\t%s\n' % (k,inner_k,val))
+            self.write('\n')
+    
+    def close(self):
+        end_time = datetime.now().strftime('%H:%M:%S on %d %b %Y')
+        self.write('\nLogging stopped at %s\n' % end_time)
+        if self._f:
+            self._f.close()
+        else:
+            pass
+
+def print_commands(commands,
+                   status_update_callback,
+                   logger):
     """Print list of commands to run """
+    logger.write("Printing commands only.\n\n")
     for c in commands:
         for e in c:
             status_update_callback('#%s' % e[0])
             print '%s' % e[1]
+            logger.write('# %s command\n%s\n\n' % e)
             
-def call_commands_serially(commands,status_update_callback):
+def call_commands_serially(commands,
+                           status_update_callback,
+                           logger):
     """Run list of commands, one after another """
+    logger.write("Executing commands.\n\n")
     for c in commands:
         for e in c:
             status_update_callback('%s\n%s' % e)
+            logger.write('# %s command \n%s\n\n' % e)
             proc = Popen(e[1],shell=True,universal_newlines=True,\
                          stdout=PIPE,stderr=STDOUT)
             return_value = proc.wait()
@@ -51,7 +122,10 @@ def call_commands_serially(commands,status_update_callback):
                  "Command run was:\n %s\n" % e[1] +\
                  "Command returned exit status: %d\n" % return_value +\
                  "Stdout/stderr:\n%s\n" % proc.stdout.read()
+                logger.write(msg)
+                logger.close()
                 raise WorkflowError, msg
+    logger.close()
 
 def print_to_stdout(s):
     print s
@@ -67,7 +141,7 @@ def get_params_str(params):
             result.append(param_value)
     return ' '.join(result)
 
-## End functions used generally by the workflow functions
+## End utilities used by the workflow functions
 
 ## Begin task-specific workflow functions
 def run_qiime_data_preparation(input_fp, output_dir, command_handler,
@@ -91,9 +165,13 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,
     # Prepare some variables for the later steps
     input_dir, input_filename = split(input_fp)
     input_basename, input_ext = splitext(input_filename)
+    create_dir(output_dir)
     commands = []
     python_exe_fp = qiime_config['python_exe_fp']
     script_dir = get_qiime_scripts_dir()
+    logger = WorkflowLogger(generate_log_fp(output_dir),
+                            params=params,
+                            qiime_config=qiime_config)
     
     # Prep the denoising command
     if sff_input_fp != None:
@@ -337,7 +415,7 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,
                      ('Make OTU table', make_otu_table_cmd)])
     
     # Call the command handler on the list of commands
-    command_handler(commands,status_update_callback)
+    command_handler(commands,status_update_callback,logger=logger)
     
 def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,\
     output_dir, command_handler, params, qiime_config, tree_fp=None,\
@@ -359,9 +437,13 @@ def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,\
     # Prepare some variables for the later steps
     otu_table_dir, otu_table_filename = split(otu_table_fp)
     otu_table_basename, otu_table_ext = splitext(otu_table_filename)
+    create_dir(output_dir)
     commands = []
     python_exe_fp = qiime_config['python_exe_fp']
     script_dir = get_qiime_scripts_dir()
+    logger = WorkflowLogger(generate_log_fp(output_dir),
+                            params=params,
+                            qiime_config=qiime_config)
     
     mapping_file_header = parse_mapping_file(open(mapping_fp,'U'))[1]
     mapping_fields = ','.join(mapping_file_header)
@@ -451,7 +533,7 @@ def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,\
             beta_diversity_metric,discrete_3d_command,)])
     
     # Call the command handler on the list of commands
-    command_handler(commands, status_update_callback)
+    command_handler(commands, status_update_callback, logger)
 
 
 def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,\
@@ -470,15 +552,28 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,\
     # Prepare some variables for the later steps
     otu_table_dir, otu_table_filename = split(otu_table_fp)
     otu_table_basename, otu_table_ext = splitext(otu_table_filename)
+    create_dir(output_dir)
     commands = []
     python_exe_fp = qiime_config['python_exe_fp']
     script_dir = get_qiime_scripts_dir()
+    logger = WorkflowLogger(generate_log_fp(output_dir),
+                            params=params,
+                            qiime_config=qiime_config)
     
     alpha_diversity_metrics = params['alpha_diversity']['metrics'].split(',')
     
     # Prep the rarefaction command
+    try:
+        otu_table_f = open(otu_table_fp,'U')
+    except IOError,e:
+        logger.write('OTU table filepath cannot be opened. Does it exist?\n' +
+                     ' %s\n' % otu_table_fp +
+                     'Original Error:\n%s\n' % str(e))
+        logger.close()
+        raise IOError,e
+    
     min_count, max_count, median_count, mean_count, counts_per_sample =\
-     compute_seqs_per_library_stats(open(otu_table_fp,'U'))
+     compute_seqs_per_library_stats(otu_table_f)
     step = int((median_count - min_seqs_per_sample) / num_steps)
     median_count = int(median_count)
     
@@ -588,7 +683,7 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,\
          [('Rarefaction plot: %s' % metric,make_rarefaction_plot_cmd)])
     
     # Call the command handler on the list of commands
-    command_handler(commands,status_update_callback)
+    command_handler(commands,status_update_callback,logger)
 
     
 def run_jackknifed_upgma_clustering(otu_table_fp,tree_fp,seqs_per_sample,\
@@ -610,9 +705,13 @@ def run_jackknifed_upgma_clustering(otu_table_fp,tree_fp,seqs_per_sample,\
     # Prepare some variables for the later steps
     otu_table_dir, otu_table_filename = split(otu_table_fp)
     otu_table_basename, otu_table_ext = splitext(otu_table_filename)
+    create_dir(output_dir)
     commands = []
     python_exe_fp = qiime_config['python_exe_fp']
     script_dir = get_qiime_scripts_dir()
+    logger = WorkflowLogger(generate_log_fp(output_dir),
+                            params=params,
+                            qiime_config=qiime_config)
     
     beta_diversity_metrics = params['beta_diversity']['metrics'].split(',')
     
@@ -764,7 +863,7 @@ def run_jackknifed_upgma_clustering(otu_table_fp,tree_fp,seqs_per_sample,\
            tree_compare_cmd)])
            
     # Call the command handler on the list of commands
-    command_handler(commands,status_update_callback)
+    command_handler(commands,status_update_callback,logger)
 
 
 def run_process_sra_submission(input_experiment_fp, input_submission_fp, sff_dir,
@@ -801,6 +900,12 @@ def run_process_sra_submission(input_experiment_fp, input_submission_fp, sff_dir
     python_exe_fp = qiime_config['python_exe_fp']
     script_dir = get_qiime_scripts_dir()
     submission_dir = os.path.dirname(input_experiment_fp)
+    # KYLE: Please update log_fp to go into the directory that
+    # makes the most sense -- usually this is output_dir, as
+    # specified in the call to this function. Do that by uncommenting
+    # the following line with output_dir replaced by the relevant value.
+    # logger = WorkflowLogger(generate_log_fp(output_dir))
+    logger = WorkflowLogger(log_fp=None)
 
     # Slightly hacky, should write a parsing function in qiime.parse
     def get_submission_info(submission_fp):
@@ -962,7 +1067,7 @@ def run_process_sra_submission(input_experiment_fp, input_submission_fp, sff_dir
     # shell=True.
     commands = [[(a, ' '.join(b)) for a, b in c] for c in commands]
     # Call the command handler on the list of commands
-    command_handler(commands, status_update_callback)
+    command_handler(commands, status_update_callback, logger)
 
     
 ## End task-specific workflow functions
