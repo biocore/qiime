@@ -233,6 +233,25 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,
         pick_otus_cmd = '%s %s/parallel_pick_otus_blast.py -i %s -o %s -T %s' %\
          (python_exe_fp, script_dir, input_fp, pick_otu_dir, params_str)
     else:
+        if denoise:
+            # we want to make sure the user is using the right set of commands
+            # For now we force to use uclust --user_sort --optimal
+            # in the future we might want to do this more clever
+            # and force the user to have a good parameter set in the config file
+            if 'optimal_uclust' not in params['pick_otus']:
+                logger.write("Warning: Setting option pick_otus:optimal_uclust to True "
+                             + "for compatibility with denoising\n")
+            params['pick_otus']['optimal_uclust']=None
+
+            if 'user_sort' not in params['pick_otus']:
+                logger.write("Warning: Setting option pick_otus:user_sort to True "
+                                 + "for compatibility with denoising\n")
+            params['pick_otus']['user_sort']=None
+
+            if 'presort_by_abundance_uclust' in params['pick_otus']:
+                logger.write("Warning: Disabling option pick_otus:presort_by_abundance_uclust "
+                              +"with uclust OTU picker for compatibility with denoising")
+                del params['pick_otus']['presort_by_abundance_uclust']
         try:
             params_str = get_params_str(params['pick_otus'])
         except KeyError:
@@ -270,7 +289,13 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,
     rep_set_log_fp = '%s/%s_rep_set.log' % (rep_set_dir,input_basename)
     
     if denoise:
-        params['pick_rep_set']['rep_set_picking_method'] = 'first'
+        #force rep_set picking methd to be 'first' if not already set
+        #Required for picking output from merge_denoiser_output
+        if ('rep_set_picking_method' in params['pick_rep_set']
+            and not params['pick_rep_set']['rep_set_picking_method'] == 'first'):
+            logger.write("Warning: Setting pick_rep_set:rep_set_picking_method to 'first' "+
+                     "for compatibility with denoising.\n")
+            params['pick_rep_set']['rep_set_picking_method'] = 'first'
         
     try:
         params_str = get_params_str(params['pick_rep_set'])

@@ -168,6 +168,14 @@ script_info['optional_options'] = [
     make_option('-A','--optimal_uclust', action='store_true', 
               default=False,
               help=('Pass the --optimal flag to uclust for uclust otu'
+              ' picking. [default: %default]')),
+    make_option('-E','--exact_uclust', action='store_true', 
+              default=False,
+              help=('Pass the --exact flag to uclust for uclust otu'
+              ' picking. [default: %default]')),
+    make_option('-B','--user_sort', action='store_true', 
+              default=False,
+              help=('Pass the --user_sort flag to uclust for uclust otu'
               ' picking. [default: %default]'))
     ]
 
@@ -220,13 +228,17 @@ def main():
          result_path=result_path,log_path=log_path,\
          prefix_prefilter_length=prefix_prefilter_length,\
          trie_prefilter=trie_prefilter)
+    
     elif otu_picking_method == 'uclust':
+        #don't sort if either sorted by user or by abundance below
+        user_sort = opts.user_sort or opts.presort_by_abundance_uclust    
         params = {'Similarity':opts.similarity,\
         'enable_reverse_strand_matching':opts.enable_rev_strand_match,
         'optimal':opts.optimal_uclust,
+        'exact':opts.exact_uclust,
         # passing suppress sort to the uclust app controller
         # tells uclust that the data is presorted
-        'suppress_sort':opts.presort_by_abundance_uclust}
+        'suppress_sort':user_sort}
         otu_picker = otu_picker_constructor(params)
         
         if opts.presort_by_abundance_uclust:
@@ -236,7 +248,7 @@ def main():
             sort_fasta_by_abundance(open(input_seqs_filepath,'U'),
              open(sorted_input_seqs_filepath,'w'))
             
-            otu_picker(sorted_input_seqs_filepath,\
+            otu_picker(input_seqs_filepath,\
              result_path=result_path,log_path=log_path)
              
             remove_files([sorted_input_seqs_filepath])

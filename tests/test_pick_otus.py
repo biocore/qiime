@@ -599,6 +599,7 @@ class UclustOtuPickerTests(TestCase):
          "enable_reverse_strand_matching:False",\
          "suppress_sort:False",\
          "optimal:False",\
+         "exact:False",\
          "Result path: %s" % tmp_result_filepath]
         # compare data in log file to fake expected log file
         # NOTE: Since app.params is a dict, the order of lines is not

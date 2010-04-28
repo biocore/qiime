@@ -582,7 +582,7 @@ class CdHitOtuPicker(OtuPicker):
         del cd_hit_params['Application']
         del cd_hit_params['Algorithm']
         cd_hit_params['-d'] = id_len  #turn off id truncation
-        
+        cd_hit_params['-g'] = "1"
         if (prefix_prefilter_length!=None and trie_prefilter):
             log_lines.append("Both prefilters selected. Deactivate \
             trie_prefilter")
@@ -682,6 +682,7 @@ class UclustOtuPicker(OtuPicker):
          'Application':'uclust',
          'enable_reverse_strand_matching':False,
          'optimal':False,
+         'exact':False,
          'suppress_sort':False}
         _params.update(params)
         OtuPicker.__init__(self, _params)
@@ -704,10 +705,12 @@ class UclustOtuPicker(OtuPicker):
 
         # Get the clusters by running uclust against the
         # sequence collection
+        #print seq_path
         clusters = get_clusters_from_fasta_filepath(
          seq_path,
          percent_ID = self.Params['Similarity'],
          optimal = self.Params['optimal'],
+         exact = self.Params['exact'],
          suppress_sort = self.Params['suppress_sort'],
          enable_rev_strand_matching =
           self.Params['enable_reverse_strand_matching'])

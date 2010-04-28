@@ -18,11 +18,13 @@ from optparse import make_option
 from numpy import array
 
 from cogent.core.alignment import SequenceCollection
+from cogent.app.util import ApplicationError
 
 from qiime.util import parse_command_line_parameters, create_dir,\
     handle_error_codes
 from qiime.pyronoise import  pyroNoise_otu_picker, fast_denoiser
 from qiime.parse import parse_mapping_file
+from qiime.format import  write_Fasta_from_name_seq_pairs
 
 script_info={}
 script_info['brief_description']="""Denoise a flowgram file"""
@@ -117,8 +119,8 @@ def main():
             #do nothing, just overwrite content
             pass
         else:
-            print "Directory exists. Use --force to overwrite."
-            exit()
+            raise ApplicationError, "Directory exists. Use --force to overwrite."
+#            exit()
     else:
         handle_error_codes(outdir, error_code=ret_val)
 
@@ -171,8 +173,8 @@ def main():
     of.close()
     
     result_fasta_path = '%s/denoised_seqs.fasta' % outdir
-    of = open(result_fasta_path,'w')
-    of.write(SequenceCollection(dict(centroids)).toFasta()+"\n")
+    oh = open(result_fasta_path,'w')
+    write_Fasta_from_name_seq_pairs(centroids, oh)
 
 if __name__ == "__main__":
     main()

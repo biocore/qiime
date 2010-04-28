@@ -62,11 +62,15 @@ but occasionally it might make sense to remove the low confidence singletons.
 
 **Re-integrating the denoised data into QIIME**
 
-The final step in a denoising run usually is the re-integration of the data into the QIIME pipeline. Since the denoiser uses flowgram similarity for clustering there is no guaranteed sequence (dis)-similarity between cluster centroids. In order to create the usual species-level OTUs at 97% sequence similarity, run one of QIIME's OTU pickers on the combined denoiser output.
+The final step in a denoising run usually is the re-integration of the data into the QIIME pipeline. Since the denoiser uses flowgram similarity for clustering there is no guaranteed sequence (dis)-similarity between cluster centroids. In order to create the usual species-level OTUs at 97% sequence similarity, run one of QIIME's OTU pickers on the combined denoiser output. We recommend to use uclust with the option --user_sort and --optimal (short options -A and -B for pick_otus.py) to assure the best possible choice of OTUs. 
 
 Combine centroids and singletons from both runs::
 
-	cat run1/centroids.fasta run1/singletons.fasta run2/centroids.fasta run2/sigletons.fasta > denoised.fasta
+	cat run1/centroids.fasta run1/singletons.fasta run2/centroids.fasta run2/singletons.fasta > denoised.fasta
+
+Sort the combined FASTA file by cluster size::
+     
+     sort_denoiser_output.py -i denoised.fasta -o denoised_sorted.fasta
 
 Concatenate the output of `split_libraries.py <../scripts/split_libraries.html>`_::
 
@@ -74,11 +78,11 @@ Concatenate the output of `split_libraries.py <../scripts/split_libraries.html>`
 
 Run the QIIME OTU picker::
 
-    pick_otus.py -s 0.97 -i denoised.fasta 
+    pick_otus.py -s 0.97 -i denoised_sorted.fasta -m uclust -A -B
 
 Combine denoiser and QIIME OTU picker output::
 
-	merge_denoiser_output.py -f seqs.fna  -d denoised.fasta  -p uclust_picked_otus/denoised_otus.txt
+	merge_denoiser_output.py -f seqs.fna  -d denoised_sorted.fasta  -p uclust_picked_otus/denoised_sorted_otus.txt
 
 This command creates two new files in a directory (default: :file:`Denoiser_out_otu_picked/`):
 
@@ -100,4 +104,5 @@ Notes:
 
 * Currently only one sequencing primer per run is supported. If there is more than one primer the run needs to be split. Simply make per per-primer mapping files and run `split_libraries.py <../scripts/split_libraries.html>`_ with each mapping file, then denoise with each output FASTA file separately.
 
-
+* Using any other OTU picker than uclust with the exact options as specified above might result in systematic differences between your separately denoised runs. Even small sequence differences in the denoiser output can lead to clustering into different OTUs and an artificial separation of samples. We warned you! 
+  
