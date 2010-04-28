@@ -267,6 +267,17 @@ def format_histograms(pre_hist, post_hist, bin_edges):
         lines.append('\t'.join(map(str, [edge, pre, post])))
     return '\n'.join(lines)
 
+def format_unifrac_sample_mapping(sample_ids, otu_ids, otu_table_array):
+    """Returns a unifrac sample mapping file from output of parse_otu_table
+    """
+    out = []
+    for i, row in enumerate(otu_table_array):
+        for j, val in enumerate(row):
+            if val > 0:
+                line = [otu_ids[i], sample_ids[j], str(val)]
+                out.append('\t'.join(line))
+    return out
+
 def write_Fasta_from_name_seq_pairs(name_seqs, fh):
     """writes a list of (name,seqs) to filehandle.
 
