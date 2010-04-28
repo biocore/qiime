@@ -327,7 +327,7 @@ def parse_category_mapping(category_mapping, category, threshold=None):
         if line.startswith("#SampleID"):
             line = line.strip().split('\t')
             category_index = line.index(category)
-        elif not line.startswith('#'):
+        elif not line.startswith('#') and line.strip():
             line = line.strip().split('\t')
             sample_name = line[0]
             if threshold and threshold != 'None':
