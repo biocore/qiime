@@ -18,7 +18,8 @@ from cogent.app.util import get_tmp_filename
 from numpy import array, nan
 from qiime.format import (format_distance_matrix, format_otu_table,
     format_coords, build_prefs_string, format_matrix, format_map_file,
-    format_histograms, write_Fasta_from_name_seq_pairs)
+    format_histograms, write_Fasta_from_name_seq_pairs, 
+    format_unifrac_sample_mapping)
 
 class TopLevelTests(TestCase):
     """Tests of top-level module functions."""
@@ -137,6 +138,14 @@ y\t5\t6\tsample y""")
         
         self.assertEqual(actual_seqs, seqs)
         
+    def test_format_unifrac_sample_mapping(self):
+        """format sample mapping works
+        """
+        a = [[1,0,0], [0,2,4], [7,0,9.0]]
+        otu_ids = ['OTUa','OTUb','OTUc']
+        sample_ids = ['Sa','Sb','Sc']
+        result = format_unifrac_sample_mapping(sample_ids, otu_ids, a)
+        self.assertEqual(result, ['OTUa\tSa\t1', 'OTUb\tSb\t2', 'OTUb\tSc\t4', 'OTUc\tSa\t7', 'OTUc\tSc\t9.0'])
 
 #run unit tests if run from command-line
 if __name__ == '__main__':
