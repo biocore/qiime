@@ -17,9 +17,10 @@ from cogent.util.unit_test import TestCase, main
 from cogent.app.util import get_tmp_filename
 from cogent.util.misc import remove_files, revComp
 from cogent.app.formatdb import build_blast_db_from_fasta_path
-from qiime.pick_otus import CdHitOtuPicker, DoturOtuPicker, OtuPicker, \
-    MothurOtuPicker, PrefixSuffixOtuPicker, TrieOtuPicker, BlastOtuPicker,\
-    expand_otu_map_seq_ids, map_otu_map_files, write_otu_map, UclustOtuPicker
+from qiime.pick_otus import (CdHitOtuPicker, DoturOtuPicker, OtuPicker,
+    MothurOtuPicker, PrefixSuffixOtuPicker, TrieOtuPicker, BlastOtuPicker,
+    expand_otu_map_seq_ids, map_otu_map_files, write_otu_map, UclustOtuPicker,
+    UclustReferenceOtuPicker)
 
 
 class OtuPickerTests(TestCase):
@@ -695,6 +696,240 @@ class UclustOtuPickerTests(TestCase):
         expected = [['s1','s2','s3','s6'],['s4','s5']]
         self.assertEqual(actual,expected)
         
+class UclustReferenceOtuPickerTests(TestCase):
+    """ Tests of the uclust reference-based OTU picker """
+    
+    def setUp(self):
+        """ """
+        self.tmp_seq_filepath1 = get_tmp_filename(
+         prefix='UclustReferenceOtuPickerTest_',
+         suffix='.fasta')
+        seq_file = open(self.tmp_seq_filepath1,'w')
+        seq_file.write(uclustref_query_seqs1)
+        seq_file.close()        
+        
+        self.temp_ref_filepath1 = get_tmp_filename(
+         prefix='UclustReferenceOtuPickerTest_',
+         suffix='.fasta')
+        ref_file = open(self.temp_ref_filepath1,'w')
+        ref_file.write(uclustref_ref_seqs1)
+        ref_file.close()
+        
+        self._files_to_remove =\
+         [self.tmp_seq_filepath1,
+          self.temp_ref_filepath1]
+        
+    def tearDown(self):
+        pass #remove_files(self._files_to_remove)
+        
+    def seqs_to_temp_fasta(self,seqs):
+        """ """
+        fp = get_tmp_filename(
+         prefix='UclustReferenceOtuPickerTest_',
+         suffix='.fasta')
+        seq_file = open(fp,'w')
+        self._files_to_remove.append(fp)
+        for s in seqs:
+            seq_file.write('>%s\n%s\n' % s)
+        seq_file.close()
+        return fp
+        
+    def test_toggle_suppress_new_clusters(self):
+        """UclustReferenceOtuPicker: toggle suppress new clusters 
+        """
+        seqs = [('s1','ACCTTGTTACTTT'),
+                ('s2','ACCTAGTTACTTT'),
+                ('s3','TTGCGTAACGTTTGAC')]
+        ref_seqs = [
+                ('r1','ACCTCGTTACTTT')]
+        # these seqs should match at 0.90, but don't -- I can confirm this
+        # running uclust directly, and have contacted Robert Edgar for
+        # clarification
+        uc = UclustReferenceOtuPicker({'Similarity':0.80,
+                                       'new_cluster_identifier':'new_',
+                                       'next_new_cluster_number':42,
+                                       'suppress_new_clusters':True})
+        obs = uc(self.seqs_to_temp_fasta(seqs),
+                 self.seqs_to_temp_fasta(ref_seqs),HALT_EXEC=False)
+        exp = {'r1':['s1','s2']}
+        self.assertEqual(obs,exp)
+        
+        # add seq that clusters independently
+        uc = UclustReferenceOtuPicker({'Similarity':0.80,
+                                       'new_cluster_identifier':'new_',
+                                       'next_new_cluster_number':42,
+                                       'suppress_new_clusters':False})
+        obs = uc(self.seqs_to_temp_fasta(seqs),
+                 self.seqs_to_temp_fasta(ref_seqs),HALT_EXEC=False)
+        exp = {'r1':['s1','s2'],'new_42':['s3']}
+        self.assertEqual(obs,exp)
+        
+    def test_varied_similarity(self):
+        """UclustReferenceOtuPicker: varying similarity affects clustering
+        """
+        seqs = [('s1','ACCTTGTTACTTT'),
+                ('s2','ACCTAGTTACTTT')]
+        ref_seqs = [
+                ('r1','ACCTCGTTACTTT')]
+        # these seqs should match at 0.90, but don't -- I can confirm this
+        # running uclust directly, and have contacted Robert Edgar for
+        # clarification
+        uc = UclustReferenceOtuPicker({'Similarity':0.80,
+                                       'new_cluster_identifier':'new_',
+                                       'next_new_cluster_number':42,
+                                       'suppress_new_clusters':False})
+        obs = uc(self.seqs_to_temp_fasta(seqs),
+                 self.seqs_to_temp_fasta(ref_seqs),HALT_EXEC=False)
+        exp = {'r1':['s1','s2']}
+        self.assertEqual(obs,exp)
+        
+        # set similarity to 100%
+        uc = UclustReferenceOtuPicker({'Similarity':1.0,
+                                       'suppress_new_clusters':False})
+        obs = uc(self.seqs_to_temp_fasta(seqs),
+                 self.seqs_to_temp_fasta(ref_seqs),HALT_EXEC=False)
+        # testing is harder for new clusters, since the otu identifiers are
+        # arbitrary, and otu identifier assignment is based on order of 
+        # iteration over a dict
+        exp1 = {'qiime_otu_1':['s1'],'qiime_otu_2':['s2']}
+        exp2 = {'qiime_otu_2':['s1'],'qiime_otu_1':['s2']}
+        self.assertTrue(obs == exp1 or obs == exp2)
+ 
+    def test_toggle_rev_strand_matching(self):
+        """UclustReferenceOtuPicker: toggle rev strand matching
+        """
+        # s3 and s4 are rc of one another
+        seqs = [('s1','ACCTTGTTACTTT'),
+                ('s2','ACCTAGTTACTTT'),
+                ('s3','TTGCGTAACGTTTGAC'),
+                ('s4','GTCAAACGTTACGCAA')]
+        ref_seqs = [
+                ('r1','ACCTCGTTACTTT')]
+        
+        # rev strand matching disabled
+        uc = UclustReferenceOtuPicker({'Similarity':0.80,
+                                       'new_cluster_identifier':'new_',
+                                       'next_new_cluster_number':42,
+                                       'enable_rev_strand_matching':False})
+        obs = uc(self.seqs_to_temp_fasta(seqs),
+                 self.seqs_to_temp_fasta(ref_seqs),HALT_EXEC=False)
+        exp = {'r1':['s1','s2'],'new_42':['s3'],'new_43':['s4']}
+        self.assertEqual(obs,exp)
+        
+        # enable rev strand matching
+        uc = UclustReferenceOtuPicker({'Similarity':0.80,
+                                       'new_cluster_identifier':'new_',
+                                       'next_new_cluster_number':42,
+                                       'enable_rev_strand_matching':True})
+        obs = uc(self.seqs_to_temp_fasta(seqs),
+                 self.seqs_to_temp_fasta(ref_seqs),HALT_EXEC=False)
+        exp = {'r1':['s1','s2'],'new_42':['s3','s4']}
+        self.assertEqual(obs,exp)
+        
+        
+    def test_default_parameters_new_clusters_allowed(self):
+        """UclustReferenceOtuPicker: default parameters, new clusters allowed
+        """
+        uc = UclustReferenceOtuPicker({})
+        obs = uc(self.tmp_seq_filepath1,self.temp_ref_filepath1)
+        exp = {'ref1':['uclust_test_seqs_0'],
+               'ref2':['uclust_test_seqs_1'],
+               'ref3':['uclust_test_seqs_2'],
+               'ref4':['uclust_test_seqs_3'],
+               'qiime_otu_1':['uclust_test_seqs_4'],
+               'qiime_otu_2':['uclust_test_seqs_5'],
+               'qiime_otu_3':['uclust_test_seqs_6'],
+               'qiime_otu_4':['uclust_test_seqs_7'],
+               'qiime_otu_5':['uclust_test_seqs_8'],
+               'qiime_otu_6':['uclust_test_seqs_9']}
+        
+        # expected number of clusters observed
+        self.assertEqual(len(obs),len(exp))
+        
+        expected_ref_hits = ['ref1','ref2','ref3','ref4']
+        for k in expected_ref_hits:
+            # seqs that hit refs should have same otu_id and cluster
+            self.assertEqual(obs[k],exp[k])
+        
+        # testing is harder for new clusters, since the otu identifiers are
+        # arbitrary, and otu identifier assignment is based on order of 
+        # iteration over a dict
+        exp_cluster_ids = exp.keys()
+        exp_cluster_ids.sort()
+        exp_clusters = exp.values()
+        exp_clusters.sort()
+        
+        obs_cluster_ids = obs.keys()
+        obs_cluster_ids.sort()
+        obs_clusters = obs.values()
+        obs_clusters.sort()
+        
+        self.assertEqual(obs_cluster_ids,exp_cluster_ids)
+        self.assertEqual(obs_clusters,exp_clusters)
+
+    def test_alt_similarity_new_clusters_allowed(self):
+        """UclustReferenceOtuPicker: alt parameters, new clusters allowed
+        """
+        uc = UclustReferenceOtuPicker({'Similarity':0.90})
+        obs = uc(self.tmp_seq_filepath1,self.temp_ref_filepath1)
+        exp = {'ref1':['uclust_test_seqs_0'],
+               'ref2':['uclust_test_seqs_1'],
+               'ref3':['uclust_test_seqs_2'],
+               'ref4':['uclust_test_seqs_3'],
+               'qiime_otu_1':['uclust_test_seqs_4'],
+               'qiime_otu_2':['uclust_test_seqs_5'],
+               'qiime_otu_3':['uclust_test_seqs_6','uclust_test_seqs_8'],
+               'qiime_otu_4':['uclust_test_seqs_7'],
+               'qiime_otu_5':['uclust_test_seqs_9']}
+        
+        # expected number of clusters observed
+        self.assertEqual(len(obs),len(exp))
+        
+        expected_ref_hits = ['ref1','ref2','ref3','ref4']
+        for k in expected_ref_hits:
+            # seqs that hit refs should have same otu_id and cluster
+            self.assertEqual(obs[k],exp[k])
+        
+        # testing is harder for new clusters, since the otu identifiers are
+        # arbitrary, and otu identifier assignment is based on order of 
+        # iteration over a dict
+        exp_cluster_ids = exp.keys()
+        exp_cluster_ids.sort()
+        exp_clusters = exp.values()
+        exp_clusters.sort()
+        
+        obs_cluster_ids = obs.keys()
+        obs_cluster_ids.sort()
+        obs_clusters = obs.values()
+        obs_clusters.sort()
+        
+        self.assertEqual(obs_cluster_ids,exp_cluster_ids)
+        self.assertEqual(obs_clusters,exp_clusters)
+        
+    def test_default_parameters_new_clusters_disallowed(self):
+        """UclustReferenceOtuPicker: default params, new clusters not allowed
+        """
+        uc = UclustReferenceOtuPicker({'suppress_new_clusters':True})
+        obs = uc(self.tmp_seq_filepath1,self.temp_ref_filepath1)
+        exp = {'ref1':['uclust_test_seqs_0'],
+               'ref2':['uclust_test_seqs_1'],
+               'ref3':['uclust_test_seqs_2'],
+               'ref4':['uclust_test_seqs_3']}
+        
+        # expected number of clusters observed
+        self.assertEqual(obs,exp)
+        
+        
+    def test_alt_parameters_new_clusters_disallowed(self):
+        """UclustReferenceOtuPicker: alt params, new clusters not allowed
+        """
+        uc = UclustReferenceOtuPicker({'suppress_new_clusters':True,'Similarity':1.0})
+        obs = uc(self.tmp_seq_filepath1,self.temp_ref_filepath1)
+        exp = {'ref3':['uclust_test_seqs_2'],'ref4':['uclust_test_seqs_3']}
+        
+        # expected number of clusters observed
+        self.assertEqual(obs,exp)
+        
 
 class CdHitOtuPickerTests(TestCase):
     """ Tests of the cd-hit-based OTU picker """
@@ -1230,6 +1465,38 @@ ACGGTGGCTACAAGACGTCCCATCCAACGGGTTGGATACTTAAGGCACATCACGTCAGTTTTGTGTCAGAGCT
 CGGTGGCTGCAACACGTGGCATACAACGGGTTGGATGCTTAAGACACATCGCCTCAGTTTTGTGTCAGGGCT
 >uclust_test_seqs_9
 GGTGGCTGAAACACATCCCATACAACGGGTTGGATGCTTAAGACACATCGCATCAGTTTTATGTCAGGGGA"""
+
+uclustref_query_seqs1 = """>uclust_test_seqs_0
+ACGGTGGCTACAAGACGTCCCATCCAACGGGTTGGATACTTAAGGCACATCACGTCAGTTTTGTGTCAGAGCT
+>uclust_test_seqs_1
+GCCACGGTGGGTACAACACGTCCACTACATCGGCTTGGAAGGTAAAGACACGTCGCGTCAGTATTGCGTCAGGGCT
+>uclust_test_seqs_2
+CCCCCACGGTGGCAGCAACACGTCACATACAACGGGTTGGATTCTAAAGACAAACCGCGTCAAAGTTGTGTCAGAACT
+>uclust_test_seqs_3
+CCCCACGGTAGCTGCAACACGTCCCATACCACGGGTAGGATGCTAAAGACACATCGGGTCTGTTTTGTGTCAGGGCT
+>uclust_test_seqs_4
+ACCCACACGGTGGATGCAACAGATCCCATACACCGAGTTGGATGCTTAAGACGCATCGCGTGAGTTTTGCGTCAAGGCT
+>uclust_test_seqs_5
+CCGCGGTAGGTGCAACACGTCCCATACAACGGGTTGGAAGGTTAAGACACAACGCGTTAATTTTGTGTCAGGGCA
+>uclust_test_seqs_6
+CGCGGTGGCTGCAAGACGTCCCATACAACGGGTTGGATGCTTAAGACACATCGCAACAGTTTTGAGTCAGGGCT
+>uclust_test_seqs_7
+AACCCCCACGGTGGATGCCACACGCCCCATACAAAGGGTAGGATGCTTAAGACACATCGCGTCAGGTTTGTGTCAGGCCT
+>uclust_test_seqs_8
+CGGTGGCTGCAACACGTGGCATACAACGGGTTGGATGCTTAAGACACATCGCCTCAGTTTTGTGTCAGGGCT
+>uclust_test_seqs_9
+GGTGGCTGAAACACATCCCATACAACGGGTTGGATGCTTAAGACACATCGCATCAGTTTTATGTCAGGGGA
+"""
+
+uclustref_ref_seqs1 = """>ref1 25 random bases appended to uclust_test_seqs_0 and one mismatch
+ACGGTGGCTACAAGACGTCCCATCCAACGGGTTGGATATTTAAGGCACATCACGTCAGTTTTGTGTCAGAGCTATAGCAGCCCCAGCGTTTACTTCTA
+>ref2 15 random bases prepended to uclust_test_seqs_1 and one mismatch
+GCTGCGGCGTCCTGCGCCACGGTGGGTACAACACGTCCACTACATCTGCTTGGAAGGTAAAGACACGTCGCGTCAGTATTGCGTCAGGGCT
+>ref3 5 random bases prepended and 10 random bases appended to uclust_test_seqs_2
+ATAGGCCCCCACGGTGGCAGCAACACGTCACATACAACGGGTTGGATTCTAAAGACAAACCGCGTCAAAGTTGTGTCAGAACTGCCTGATTCA
+>ref4 exact match to uclust_test_seqs_3
+CCCCACGGTAGCTGCAACACGTCCCATACCACGGGTAGGATGCTAAAGACACATCGGGTCTGTTTTGTGTCAGGGCT
+"""
 
 dna_seqs_3_result_file_90_exp = """0\tuclust_test_seqs_0
 1\tuclust_test_seqs_1

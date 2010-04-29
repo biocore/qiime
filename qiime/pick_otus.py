@@ -700,8 +700,6 @@ class UclustOtuPicker(OtuPicker):
         """
         moltype = DNA
         log_lines = []
-        
-        uclust_params = copy(self.Params)
 
         # Get the clusters by running uclust against the
         # sequence collection
@@ -745,7 +743,120 @@ class UclustOtuPicker(OtuPicker):
         # written to file)
         return result
 
-
+class UclustReferenceOtuPicker(OtuPicker):
+    """Uclust reference OTU picker: clusters seqs by match to ref collection
+    
+    """
+    
+    def __init__(self, params):
+        """Return new UclustReferenceOtuPicker object with specified params.
+        
+        """
+        _params = {'Similarity':0.97,
+                   'enable_rev_strand_matching':True,
+                   'max_accepts':8,
+                   'max_rejects':32,
+                   'suppress_new_clusters':False,
+                   'optimal':False,
+                   'exact':False,
+                   'suppress_sort':False,
+                   'new_cluster_identifier':'qiime_otu_',
+                   'next_new_cluster_number':1}
+        _params.update(params)
+        OtuPicker.__init__(self, _params)
+    
+    def __call__(self,
+                 seq_fp,
+                 refseqs_fp,
+                 next_new_cluster_number=None,
+                 new_cluster_identifier=None,
+                 result_path=None,
+                 log_path=None,
+                 HALT_EXEC=False):
+        
+        if new_cluster_identifier:
+            self.Params['new_cluster_identifier'] = new_cluster_identifier
+        if next_new_cluster_number != None:
+            self.Params['next_new_cluster_number'] = next_new_cluster_number
+        self.log_lines = []
+        
+        self.log_lines.append('Reference seqs: %s' % refseqs_fp)
+        
+        clusters, failures, new_seeds = self._cluster_seqs(seq_fp,
+                                                refseqs_fp,
+                                                HALT_EXEC=HALT_EXEC)
+        self.log_lines.append('Num OTUs: %d' % len(clusters))
+        self.log_lines.append('Num new OTUs: %d' % len(new_seeds))
+        
+        if result_path:
+            # if the user provided a result_path, write the 
+            # results to file with one tab-separated line per 
+            # cluster
+            of = open(result_path,'w')
+            for cluster_id,cluster in clusters.items():
+                of.write('%s\t%s\n' % (cluster_id,'\t'.join(cluster)))
+            of.close()
+            result = None
+            self.log_lines.append('Result path: %s\n' % result_path)
+        else:
+            # if the user did not provide a result_path, store
+                # the clusters in a dict of {otu_id:[seq_ids]}, where
+            # otu_id is arbitrary
+            result = clusters
+            self.log_lines.append('Result path: None, returned as dict.')
+ 
+        if log_path:
+            # if the user provided a log file path, log the run
+            log_file = open(log_path,'w')
+            self.log_lines = [str(self)] + self.log_lines
+            log_file.write('\n'.join(self.log_lines))
+            failures.sort()
+            log_file.write('Num failures: %d\n' % len(failures))
+            log_file.write('Failures: %s\n' % '\t'.join(failures))
+    
+        # return the result (note this is None if the data was
+        # written to file)
+        return result
+        
+    def _cluster_seqs(self,seq_fp,refseqs_fp,HALT_EXEC=False):
+        """
+        """
+        cluster_map, failures, new_seeds = get_clusters_from_fasta_filepath(
+            seq_fp,
+            subject_fasta_filepath=refseqs_fp,
+            percent_ID=self.Params['Similarity'],
+            enable_rev_strand_matching=self.Params['enable_rev_strand_matching'],
+            max_accepts=self.Params['max_accepts'],
+            max_rejects=self.Params['max_rejects'],
+            suppress_new_clusters=self.Params['suppress_new_clusters'],
+            optimal=self.Params['optimal'],
+            exact=self.Params['exact'],
+            suppress_sort=self.Params['suppress_sort'],
+            return_cluster_maps=True,
+            HALT_EXEC=HALT_EXEC)
+        
+        self._rename_clusters(cluster_map,new_seeds)
+        
+        return cluster_map, failures, new_seeds 
+    
+    def _rename_clusters(self,cluster_map,new_seeds):
+        """ """
+        next_new_cluster_number = self.Params['next_new_cluster_number']
+        new_cluster_identifier = self.Params['new_cluster_identifier']
+        new_seed_lookup = {}.fromkeys(new_seeds)
+        for seed,cluster in cluster_map.items():
+            del cluster_map[seed]
+            
+            if seed in new_seed_lookup:
+                new_cluster_id = '%s%d' % (new_cluster_identifier, 
+                                           next_new_cluster_number)
+                next_new_cluster_number += 1
+            else:
+                new_cluster_id = seed.split()[0]
+                
+            cluster_map[new_cluster_id] = cluster
+        
+        self.Params['next_new_cluster_number'] = next_new_cluster_number
 
 class DoturOtuPicker(OtuPicker):
     Name = 'DoturOtuPicker'
@@ -1015,7 +1126,8 @@ otu_picking_method_constructors = {
     'mothur': MothurOtuPicker,
     'trie':TrieOtuPicker,
     'blast':BlastOtuPicker,
-    'uclust': UclustOtuPicker
+    'uclust': UclustOtuPicker,
+    'uclust_ref':UclustReferenceOtuPicker
     }
     
 otu_picking_method_choices = otu_picking_method_constructors.keys()

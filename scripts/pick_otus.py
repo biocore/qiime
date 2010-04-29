@@ -56,6 +56,8 @@ script_info['script_usage'].append(("""Example (uclust method, default):""","""U
 
 script_info['script_usage'].append(("""""","""To change the percent identity to a lower value, such as 90%, and also enable reverse strand matching, the script would be the following:""","""pick_otus.py -i seqs.fna -o picked_otus/ -s 0.90 -z"""))
 
+script_info['script_usage'].append(("""Uclust Reference-based OTU picking example""","""uclust_ref can be passed via -m to pick OTUs against a reference set where sequences within the similarity threshold to a reference sequence will cluster to an OTU defined by that reference sequence, and sequences outside of the similarity threshold to a reference sequence will form new clusters. OTU identifiers will be set to reference sequence identifiers when sequences cluster to reference sequences, and 'qiime_otu_<integer>' for new OTUs. Creation of new clusters can be suppressed by passing -C, in which case sequences outside of the similarity threshold to any reference sequence will be listed as failures in the log file, and not included in any OTU.""","""pick_otus.py -i seqs.fna -r core_set_unaligned.fasta_11_8_07 -m uclust_ref"""))
+
 script_info['script_usage'].append(("""Example (cdhit method):""","""Using the seqs.fna file generated from split_libraries.py and outputting the results to the directory \"picked_otus/\", while using default parameters (0.97 sequence similarity, no prefix filtering):""","""pick_otus.py -i seqs.fna -m cdhit -o picked_otus/"""))
 
 script_info['script_usage'].append(("""""","""Currently the cd-hit OTU picker allows for users to perform a pre-filtering step, so that highly similar sequences are clustered prior to OTU picking. This works by collapsing sequences which begin with an identical n-base prefix, where n is specified by the -n parameter. A commonly used value here is 100 (e.g., -n 100). So, if using this filter with -n 100, all sequences which are identical in their first 100 bases will be clustered together, and only one representative sequence from each cluster will be passed to cd-hit. This is used to greatly increase the run-time of cd-hit-based OTU picking when working with very large sequence collections, as shown by the following command:""","""pick_otus.py -i seqs.fna -m cdhit -o picked_otus/ -n 100"""))
@@ -124,13 +126,13 @@ script_info['optional_options'] = [
         help=('Path to store result file '
               '[default: ./<OTU_METHOD>_picked_otus/]')),
     make_option('-r', '--refseqs_fp',
-        help=('Path to reference sequences to blast against when using -m '
-              'blast [default: %default]')),
+        help=('Path to reference sequences to search against when using -m '
+              'blast or -m uclust_ref [default: %default]')),
     make_option('-b', '--blast_db',
         help=('Pre-existing database to blast against when using -m blast '
               '[default: %default]')),
     make_option('-s', '--similarity', type='float', default=0.97,
-        help=('Sequence similarity threshold (for cdhit or uclust) '
+        help=('Sequence similarity threshold (for cdhit, uclust, or uclust_ref) '
               '[default: %default]')),
     make_option('-e', '--max_e_value', type='float', default=1e-10,
         help=('Max E-value when clustering with BLAST [default: %default]')),
@@ -176,7 +178,10 @@ script_info['optional_options'] = [
     make_option('-B','--user_sort', action='store_true', 
               default=False,
               help=('Pass the --user_sort flag to uclust for uclust otu'
-              ' picking. [default: %default]'))
+              ' picking. [default: %default]')),
+    make_option('-C','--suppress_new_clusters',action='store_true',default=False,
+              help="Suppress creation of new clusters using seqs that don't" +
+              " match reference when using -m uclust_ref [default: %default]")
     ]
 
 script_info['version'] = __version__
@@ -254,6 +259,33 @@ def main():
             remove_files([sorted_input_seqs_filepath])
         else:
             otu_picker(input_seqs_filepath,\
+             result_path=result_path,log_path=log_path)
+    elif otu_picking_method == 'uclust_ref':
+        #don't sort if either sorted by user or by abundance below
+        user_sort = opts.user_sort or opts.presort_by_abundance_uclust    
+        params = {'Similarity':opts.similarity,\
+        'enable_reverse_strand_matching':opts.enable_rev_strand_match,
+        'optimal':opts.optimal_uclust,
+        'exact':opts.exact_uclust,
+        # passing suppress sort to the uclust app controller
+        # tells uclust that the data is presorted
+        'suppress_sort':user_sort,
+        'suppress_new_clusters':opts.suppress_new_clusters}
+        otu_picker = otu_picker_constructor(params)
+        
+        if opts.presort_by_abundance_uclust:
+            sorted_input_seqs_filepath = \
+             get_tmp_filename(suffix='.fasta')
+            
+            sort_fasta_by_abundance(open(input_seqs_filepath,'U'),
+             open(sorted_input_seqs_filepath,'w'))
+            print 'here'
+            otu_picker(input_seqs_filepath,refseqs_fp,\
+             result_path=result_path,log_path=log_path)
+            
+            remove_files([sorted_input_seqs_filepath])
+        else:
+            otu_picker(input_seqs_filepath,refseqs_fp,\
              result_path=result_path,log_path=log_path)
     elif otu_picking_method == 'prefix_suffix':
         otu_picker = otu_picker_constructor({})

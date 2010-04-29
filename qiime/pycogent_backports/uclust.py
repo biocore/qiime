@@ -270,11 +270,11 @@ def clusters_from_uc_file(uc_lines):
         elif hit_type == 'S':
             # a new seed was identified -- create a cluster with this 
             # sequence as the first instance
-            clusters[query_id] = [query_id_stripped]
-            seeds.append(query_id)
+            clusters[query_id_stripped] = [query_id_stripped]
+            seeds.append(query_id_stripped)
         elif hit_type == 'N':
             # a failure was identified -- add it to the failures list
-            failures.append(query_id)
+            failures.append(query_id_stripped)
         else:
             # shouldn't be possible to get here, but provided for 
             # clarity
@@ -283,7 +283,8 @@ def clusters_from_uc_file(uc_lines):
     
     # will need to return the full clusters dict, I think, to support
     # useful identifiers in reference database clustering
-    return  clusters.values(), failures, seeds
+    #return  clusters.values(), failures, seeds
+    return  clusters, failures, seeds
 
 ## End functions for processing uclust output files
 
@@ -426,6 +427,7 @@ def get_clusters_from_fasta_filepath(
     enable_rev_strand_matching=False,
     subject_fasta_filepath=None,
     suppress_new_clusters=False,
+    return_cluster_maps=False,
     HALT_EXEC=False):
     """ Main convenience wrapper for using uclust to generate cluster files
     
@@ -514,7 +516,10 @@ def get_clusters_from_fasta_filepath(
     if len(clusters) == 0:
         raise ApplicationError, ('Clusters result empty, please check source '+\
          'fasta file for proper formatting.')
-    
-    return clusters, failures, seeds
-    
+         
+    if return_cluster_maps:
+        return clusters, failures, seeds
+    else:
+        return clusters.values(), failures, seeds
+
 ## End uclust convenience functions

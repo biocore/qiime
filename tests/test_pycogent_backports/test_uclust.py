@@ -190,6 +190,7 @@ class UclustConvenienceWrappers(TestCase):
         self.ref_test_failures2 = ref_test_failures2
         self.ref_test_new_seeds2 = ref_test_new_seeds2
         self.uc_dna_clusters = uc_dna_clusters
+        self.uc_lines1 = uc_lines1
         
     def tearDown(self):
         remove_files(self.files_to_remove,error_on_missing=False)
@@ -212,24 +213,12 @@ class UclustConvenienceWrappers(TestCase):
         
     def test_clusters_from_uc_file(self):
         """ clusters_from_uc_file functions as expected """
-        self.uc_lines1 = """# uclust --input q.fasta --lib r.fasta --uc results.uc --id 0.90 --libonly --rev
-# version=1.1.579
-# Tab-separated fields:
-# 1=Type, 2=ClusterNr, 3=SeqLength or ClusterSize, 4=PctId, 5=Strand, 6=QueryStart, 7=SeedStart, 8=Alignment, 9=QueryLabel, 10=TargetLabel
-# Record types (field 1): L=LibSeed, S=NewSeed, H=Hit, R=Reject, D=LibCluster, C=NewCluster, N=NoHit
-# For C and D types, PctId is average id with seed.
-# QueryStart and SeedStart are zero-based relative to start of sequence.
-# If minus strand, SeedStart is relative to reverse-complemented seed.
-N	*	80	*	*	*	*	*	s1	*
-S	4	80	*	*	*	*	*	s2	*
-H	2	78	100.0	+	0	0	5I78M10I	s3	s2""".split('\n')
 
-        expected_clusters = [['s2','s3']]
+        expected_clusters = {'s2':['s2','s3']}
         expected_failures = ['s1']
         expected_new_seeds = ['s2']
         self.assertEqual(clusters_from_uc_file(self.uc_lines1),
          (expected_clusters,expected_failures,expected_new_seeds))
-
         
         
     def test_uclust_cluster_from_sorted_fasta_filepath(self):
@@ -480,10 +469,10 @@ CGGTGGCTGCAACACGTGGCATACAACGGGTTGGATGCTTAAGACACATCGCCTCAGTTTTGTGTCAGGGCT
 GGTGGCTGAAACACATCCCATACAACGGGTTGGATGCTTAAGACACATCGCATCAGTTTTATGTCAGGGGA
 """.split('\n')
 
-ref_dna_seqs = """>ref1 25 random bases appended to uclust_test_seqs_0
-ACGGTGGCTACAAGACGTCCCATCCAACGGGTTGGATACTTAAGGCACATCACGTCAGTTTTGTGTCAGAGCTATAGCAGCCCCAGCGTTTACTTCTA
->ref2 15 random bases prepended to uclust_test_seqs_1
-GCTGCGGCGTCCTGCGCCACGGTGGGTACAACACGTCCACTACATCGGCTTGGAAGGTAAAGACACGTCGCGTCAGTATTGCGTCAGGGCT
+ref_dna_seqs = """>ref1 25 random bases appended to uclust_test_seqs_0 and one mismatch
+ACGGTGGCTACAAGACGTCCCATCCAACGGGTTGGATATTTAAGGCACATCACGTCAGTTTTGTGTCAGAGCTATAGCAGCCCCAGCGTTTACTTCTA
+>ref2 15 random bases prepended to uclust_test_seqs_1 and one mismatch
+GCTGCGGCGTCCTGCGCCACGGTGGGTACAACACGTCCACTACATCTGCTTGGAAGGTAAAGACACGTCGCGTCAGTATTGCGTCAGGGCT
 >ref3 5 random bases prepended and 10 random bases appended to uclust_test_seqs_2
 ATAGGCCCCCACGGTGGCAGCAACACGTCACATACAACGGGTTGGATTCTAAAGACAAACCGCGTCAAAGTTGTGTCAGAACTGCCTGATTCA
 >ref4 exact match to uclust_test_seqs_3
@@ -644,6 +633,18 @@ search_align_out1_expected = [
          ('2_like','2','-------------------ATGATGATTTGACGTCATCCCCACCTTCCTCCGGTTTGTCACCGGGATGGCAACTAAG---------------','AGCCCAAATCATAAGGGGCATGATGATTTGACGTCATCCCCACCTTCCTCCGGTTTGTCACCGGGATGGCAACTAAGCTTAAGGGTTGCGCT',100.0),\
          
          ('2_like_rc RC','2','-------------------ATGATGATTTGACGTCATCCCCACCTTCCTCCGGTTTGTCACCGGGATGGCAACTAAG---------------','AGCCCAAATCATAAGGGGCATGATGATTTGACGTCATCCCCACCTTCCTCCGGTTTGTCACCGGGATGGCAACTAAGCTTAAGGGTTGCGCT',100.0)]
+
+uc_lines1 = """# uclust --input q.fasta --lib r.fasta --uc results.uc --id 0.90 --libonly --rev
+# version=1.1.579
+# Tab-separated fields:
+# 1=Type, 2=ClusterNr, 3=SeqLength or ClusterSize, 4=PctId, 5=Strand, 6=QueryStart, 7=SeedStart, 8=Alignment, 9=QueryLabel, 10=TargetLabel
+# Record types (field 1): L=LibSeed, S=NewSeed, H=Hit, R=Reject, D=LibCluster, C=NewCluster, N=NoHit
+# For C and D types, PctId is average id with seed.
+# QueryStart and SeedStart are zero-based relative to start of sequence.
+# If minus strand, SeedStart is relative to reverse-complemented seed.
+N	*	80	*	*	*	*	*	s1	*
+S	4	80	*	*	*	*	*	s2	*
+H	2	78	100.0	+	0	0	5I78M10I	s3	s2""".split('\n')
 
          
 if __name__ == '__main__':
