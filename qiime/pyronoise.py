@@ -280,3 +280,18 @@ def fast_denoiser(sff_fp, fasta_fp, tmp_outdir, num_cpus, primer, verbose=True):
         mapping[i] = clust
 
     return seqs, mapping
+
+def extract_cluster_size(line):
+    """ extract the size of a cluster from the header line.
+
+    line is expected to be of this format:
+>GCC6FHY01EQVIC | cluster size: 5
+    """
+    cluster_size = line.split(":")[-1]
+
+    try:
+        cluster_size = int(cluster_size)
+    except ValueError:
+        return 0
+    return cluster_size
+        

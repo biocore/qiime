@@ -17,6 +17,7 @@ from optparse import make_option
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from cogent.parse.fasta import MinimalFastaParser
 from qiime.format import write_Fasta_from_name_seq_pairs
+from qiime.pyronoise import extract_cluster_size
 
 options_lookup = get_options_lookup()
 
@@ -37,22 +38,6 @@ script_info['optional_options'] = [\
 
 script_info['version'] = __version__
 
-def extract_cluster_size(line):
-    """ extract the size of a cluster fro the header line.
-
-    line is expected to be of this format:
->GCC6FHY01EQVIC | cluster size: 5
-
-    Note: will move soon
-    """
-    cluster_size = line.split(":")[-1]
-
-    try:
-        cluster_size = int(cluster_size)
-    except ValueError:
-        return 0
-    return cluster_size
-        
 
 def main():
     option_parser, opts, args =\
@@ -60,6 +45,7 @@ def main():
 
     seqs_w_cluster_size = [(extract_cluster_size(name), name, seq) for name,seq
                            in MinimalFastaParser(open(opts.input_fasta_fp))]
+
     seqs_w_cluster_size.sort(reverse=True)
     name_seqs = [(name,seq) for (cs,name,seq) in seqs_w_cluster_size]
     try:
