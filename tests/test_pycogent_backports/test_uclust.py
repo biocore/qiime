@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 """
-test_uclust.py : provides unit tests for the uclust.py module
+ : provides unit tests for the uclust.py module
 
 Modified from Daniel McDonald's test_cd_hit.py code on Feb-4-2010 """
 
@@ -15,8 +15,7 @@ from cogent.app.util import get_tmp_filename, ApplicationError
 from qiime.pycogent_backports.uclust import (Uclust, 
  uclust_fasta_sort_from_filepath,
  uclust_cluster_from_sorted_fasta_filepath,
- uclust_convert_uc_to_cdhit_from_filepath,
- parse_uclust_clstr_file, get_output_filepaths,
+ get_output_filepaths,clusters_from_uc_file,
  get_clusters_from_fasta_filepath,
  uclust_search_and_align_from_fasta_filepath,
  process_uclust_pw_alignment_results)
@@ -118,29 +117,6 @@ class UclustTests(TestCase):
         self.assertEqual(uc_file_actual, uc_file_expected)
     
         test_app_res.cleanUp()
-
-    def test_convert_to_cdhit_from_uc_filepath(self):
-        """ Should convert given uclust (.uc) file to cdhit (.clstr) format 
-        
-        Since a .uc file has to be passed to the app controller for uclust,
-        a temporary .uc file is created, and the clusters supplied
-        in this module are written to it.  This file is sent to the app 
-        controller, and the resulting .clstr file is compared to the expected
-        results to ensure proper function of uclust as called by this app
-        controller."""
-        test_app = Uclust()
-        
-        test_app_res = test_app(data = \
-           {'--uc2clstr':self.tmp_uc_filepath,'--output':self.tmp_clstr_filepath})
-
-        clstr_file = open(test_app_res['Output'].name,"U")
-        clstr_res = []
-        for line in clstr_file:
-            clstr_res.append(line.replace('\t',''))
-            
-        self.assertEqual(clstr_res, clstr_clusters)
-   
-        test_app_res.cleanUp()
     
 class UclustConvenienceWrappers(TestCase):
     """ Unit tests for uclust convenience wrappers """
@@ -193,6 +169,9 @@ class UclustConvenienceWrappers(TestCase):
          get_tmp_filename(prefix = "uclust_test", suffix = ".clstr")
         open(self.search_align_template2_fp,'w').write(search_align_template2)
         
+        self.ref_dna_seqs_fp = get_tmp_filename(prefix = "uclust_test", suffix = ".fasta")
+        open(self.ref_dna_seqs_fp,'w').write(ref_dna_seqs)
+        
         self.files_to_remove = [self.tmp_unsorted_fasta_filepath,
                                 self.tmp_raw_dna_seqs_rc_filepath,
                                 self.tmp_sorted_fasta_filepath,
@@ -201,7 +180,16 @@ class UclustConvenienceWrappers(TestCase):
                                 self.search_align_query1_fp,
                                 self.search_align_template1_fp,
                                 self.search_align_query2_fp,
-                                self.search_align_template2_fp]
+                                self.search_align_template2_fp,
+                                self.ref_dna_seqs_fp]
+        
+        self.ref_test_clusters1 = ref_test_clusters1
+        self.ref_test_failures1 = ref_test_failures1
+        self.ref_test_new_seeds1 = ref_test_new_seeds1
+        self.ref_test_clusters2 = ref_test_clusters2
+        self.ref_test_failures2 = ref_test_failures2
+        self.ref_test_new_seeds2 = ref_test_new_seeds2
+        self.uc_dna_clusters = uc_dna_clusters
         
     def tearDown(self):
         remove_files(self.files_to_remove,error_on_missing=False)
@@ -222,6 +210,28 @@ class UclustConvenienceWrappers(TestCase):
         app_res.cleanUp()
         
         
+    def test_clusters_from_uc_file(self):
+        """ clusters_from_uc_file functions as expected """
+        self.uc_lines1 = """# uclust --input q.fasta --lib r.fasta --uc results.uc --id 0.90 --libonly --rev
+# version=1.1.579
+# Tab-separated fields:
+# 1=Type, 2=ClusterNr, 3=SeqLength or ClusterSize, 4=PctId, 5=Strand, 6=QueryStart, 7=SeedStart, 8=Alignment, 9=QueryLabel, 10=TargetLabel
+# Record types (field 1): L=LibSeed, S=NewSeed, H=Hit, R=Reject, D=LibCluster, C=NewCluster, N=NoHit
+# For C and D types, PctId is average id with seed.
+# QueryStart and SeedStart are zero-based relative to start of sequence.
+# If minus strand, SeedStart is relative to reverse-complemented seed.
+N	*	80	*	*	*	*	*	s1	*
+S	4	80	*	*	*	*	*	s2	*
+H	2	78	100.0	+	0	0	5I78M10I	s3	s2""".split('\n')
+
+        expected_clusters = [['s2','s3']]
+        expected_failures = ['s1']
+        expected_new_seeds = ['s2']
+        self.assertEqual(clusters_from_uc_file(self.uc_lines1),
+         (expected_clusters,expected_failures,expected_new_seeds))
+
+        
+        
     def test_uclust_cluster_from_sorted_fasta_filepath(self):
         """ Given a sorted fasta filepath, will return uclust (.uc) file """
         
@@ -240,27 +250,6 @@ class UclustConvenienceWrappers(TestCase):
         
         self.assertEqual(uc_file_actual, uc_file_expected)
         app_res.cleanUp()
-        
-    def test_uclust_convert_uc_to_cdhit_from_filepath(self):
-        """ Given a uclust (.uc) file will return converted clstr file """
-
-        app_res = uclust_convert_uc_to_cdhit_from_filepath(self.tmp_uc_filepath)
-
-        
-        clstr_file = open(app_res['Output'].name,"U")
-        clstr_res = []
-        for line in clstr_file:
-            clstr_res.append(line.replace('\t',''))
-            
-        self.assertEqual(clstr_res, clstr_clusters)
-        app_res.cleanUp()
-        
-    def test_parse_uclust_clstr_file(self):
-        """ Ensures that list of lists of OTUs will be returned """
-        
-        clusters_res = parse_uclust_clstr_file(clstr_clusters)
-        
-        self.assertEqual(clusters_res, expected_cluster_list)
     
     def test_get_output_filepaths(self):
         """ Properly generates output filepath names """
@@ -286,8 +275,60 @@ class UclustConvenienceWrappers(TestCase):
         clusters_res = \
          get_clusters_from_fasta_filepath(self.tmp_unsorted_fasta_filepath, \
           percent_ID = 0.90)
-
-        self.assertEqual(clusters_res, expected_cluster_list)
+        expected_cluster_list.sort()
+        expected_failure_list.sort()
+        expected_new_seed_list.sort()
+        clusters_res[0].sort()
+        clusters_res[1].sort()
+        clusters_res[2].sort()
+        self.assertEqual(clusters_res,(expected_cluster_list,
+                                       expected_failure_list,
+                                       expected_new_seed_list))
+                                       
+    def test_get_clusters_from_fasta_filepath_reference_db_only(self):
+        """ Correct clusters returned when clustering against a database only 
+        """
+        clusters_res = get_clusters_from_fasta_filepath(
+          self.tmp_unsorted_fasta_filepath,
+          max_accepts=7,max_rejects=12,
+          percent_ID = 0.90,
+          subject_fasta_filepath=self.ref_dna_seqs_fp,
+          suppress_new_clusters=True,
+          HALT_EXEC=False)
+        
+        self.ref_test_clusters1.sort()
+        self.ref_test_failures1.sort()
+        self.ref_test_new_seeds1.sort()
+        
+        clusters_res[0].sort()
+        clusters_res[1].sort()
+        clusters_res[2].sort()
+        self.assertEqual(clusters_res,(self.ref_test_clusters1,
+                                       self.ref_test_failures1,
+                                       self.ref_test_new_seeds1))
+                                       
+    def test_get_clusters_from_fasta_filepath_extending_reference_db(self):
+        """ Correct clusters when clustering against db and adding new clusters
+        """
+        clusters_res = get_clusters_from_fasta_filepath(
+          self.tmp_unsorted_fasta_filepath,
+          max_accepts=7,max_rejects=12,
+          percent_ID = 0.90,
+          subject_fasta_filepath=self.ref_dna_seqs_fp,
+          suppress_new_clusters=False,enable_rev_strand_matching=True,
+          HALT_EXEC=False)
+        
+        self.ref_test_clusters2.sort()
+        self.ref_test_failures2.sort()
+        self.ref_test_new_seeds2.sort()
+        
+        clusters_res[0].sort()
+        clusters_res[1].sort()
+        clusters_res[2].sort()
+        self.assertEqual(clusters_res,(self.ref_test_clusters2,
+                                       self.ref_test_failures2,
+                                       self.ref_test_new_seeds2))
+        
 
     def test_get_clusters_from_fasta_filepath_optimal(self):
         """ Test OTUs from filepath functions with optimal
@@ -298,8 +339,16 @@ class UclustConvenienceWrappers(TestCase):
         clusters_res = \
          get_clusters_from_fasta_filepath(self.tmp_unsorted_fasta_filepath,
           percent_ID = 0.90, optimal = True)
+        expected_cluster_list.sort()
+        expected_failure_list.sort()
+        expected_new_seed_list.sort()
+        clusters_res[0].sort()
+        clusters_res[1].sort()
+        clusters_res[2].sort()
         
-        self.assertEqual(clusters_res, expected_cluster_list)
+        self.assertEqual(clusters_res,(expected_cluster_list,
+                                       expected_failure_list,
+                                       expected_new_seed_list))
 
         
     def test_get_clusters_from_fasta_filepath_suppress_sort(self):
@@ -313,25 +362,55 @@ class UclustConvenienceWrappers(TestCase):
         clusters_res = \
          get_clusters_from_fasta_filepath(self.tmp_unsorted_fasta_filepath,
           percent_ID = 0.90, suppress_sort = True)
+        expected_cluster_list.sort()
+        expected_failure_list.sort()
+        expected_new_seed_list.sort()
+        clusters_res[0].sort()
+        clusters_res[1].sort()
+        clusters_res[2].sort()
         
-        self.assertEqual(clusters_res, expected)
+        self.assertEqual(clusters_res,(expected_cluster_list,
+                                       expected_failure_list,
+                                       expected_new_seed_list))
         
     def test_get_clusters_from_fasta_filepath_rev_strand_match(self):
         """ Test OTUs from filepath functions with rev strand match
         """
         # seq and its rc don't cluster when enable_rev_strand_matching = False
-        expected = [['uclust_test_seqs_0'], ['uclust_test_seqs_0_rc']]
+        expected_cluster_list = [['uclust_test_seqs_0'], ['uclust_test_seqs_0_rc']]
+        expected_failure_list = []
+        expected_new_seed_list = ['uclust_test_seqs_0', 'uclust_test_seqs_0_rc']
         clusters_res = \
          get_clusters_from_fasta_filepath(self.tmp_raw_dna_seqs_rc_filepath,
           percent_ID = 0.90, enable_rev_strand_matching = False)
-        self.assertEqual(clusters_res, expected)
+        
+        expected_cluster_list.sort()
+        expected_failure_list.sort()
+        expected_new_seed_list.sort()
+        clusters_res[0].sort()
+        clusters_res[1].sort()
+        clusters_res[2].sort()
+        self.assertEqual(clusters_res,(expected_cluster_list,
+                                       expected_failure_list,
+                                       expected_new_seed_list))
         
         # seq and its rc cluster when enable_rev_strand_matching = False
-        expected = [['uclust_test_seqs_0', 'uclust_test_seqs_0_rc']]
+        expected_cluster_list = [['uclust_test_seqs_0', 'uclust_test_seqs_0_rc']]
+        expected_failure_list = []
+        expected_new_seed_list = ['uclust_test_seqs_0']
         clusters_res = \
          get_clusters_from_fasta_filepath(self.tmp_raw_dna_seqs_rc_filepath,
           percent_ID = 0.90, enable_rev_strand_matching = True)
-        self.assertEqual(clusters_res, expected)
+        
+        expected_cluster_list.sort()
+        expected_failure_list.sort()
+        expected_new_seed_list.sort()
+        clusters_res[0].sort()
+        clusters_res[1].sort()
+        clusters_res[2].sort()
+        self.assertEqual(clusters_res,(expected_cluster_list,
+                                       expected_failure_list,
+                                       expected_new_seed_list))
         
     def test_process_uclust_pw_alignment_results(self):
         """parsing of pairwise alignment fasta pairs file functions as expected
@@ -401,6 +480,33 @@ CGGTGGCTGCAACACGTGGCATACAACGGGTTGGATGCTTAAGACACATCGCCTCAGTTTTGTGTCAGGGCT
 GGTGGCTGAAACACATCCCATACAACGGGTTGGATGCTTAAGACACATCGCATCAGTTTTATGTCAGGGGA
 """.split('\n')
 
+ref_dna_seqs = """>ref1 25 random bases appended to uclust_test_seqs_0
+ACGGTGGCTACAAGACGTCCCATCCAACGGGTTGGATACTTAAGGCACATCACGTCAGTTTTGTGTCAGAGCTATAGCAGCCCCAGCGTTTACTTCTA
+>ref2 15 random bases prepended to uclust_test_seqs_1
+GCTGCGGCGTCCTGCGCCACGGTGGGTACAACACGTCCACTACATCGGCTTGGAAGGTAAAGACACGTCGCGTCAGTATTGCGTCAGGGCT
+>ref3 5 random bases prepended and 10 random bases appended to uclust_test_seqs_2
+ATAGGCCCCCACGGTGGCAGCAACACGTCACATACAACGGGTTGGATTCTAAAGACAAACCGCGTCAAAGTTGTGTCAGAACTGCCTGATTCA
+>ref4 exact match to uclust_test_seqs_3
+CCCCACGGTAGCTGCAACACGTCCCATACCACGGGTAGGATGCTAAAGACACATCGGGTCTGTTTTGTGTCAGGGCT
+"""
+
+ref_test_clusters1 = [['uclust_test_seqs_0'],['uclust_test_seqs_1'],
+                      ['uclust_test_seqs_2'],['uclust_test_seqs_3']]
+ref_test_failures1 = ['uclust_test_seqs_4','uclust_test_seqs_5',
+                      'uclust_test_seqs_6','uclust_test_seqs_7',
+                      'uclust_test_seqs_8','uclust_test_seqs_9']
+ref_test_new_seeds1 = []
+
+ref_test_clusters2 = [['uclust_test_seqs_0'],['uclust_test_seqs_1'],
+                      ['uclust_test_seqs_2'],['uclust_test_seqs_3'],
+                      ['uclust_test_seqs_4'],['uclust_test_seqs_5'],
+                      ['uclust_test_seqs_6','uclust_test_seqs_8'],
+                      ['uclust_test_seqs_7'],['uclust_test_seqs_9']]
+ref_test_failures2 = []
+ref_test_new_seeds2 = ['uclust_test_seqs_4','uclust_test_seqs_5','uclust_test_seqs_6',
+ 'uclust_test_seqs_7','uclust_test_seqs_9']
+
+
 raw_dna_seqs_rc = """>uclust_test_seqs_0
 ACGGTGGCTACAAGACGTCCCATCCAACGGGTTGGATACTTAAGGCACATCACGTCAGTTTTGTGTCAGAGCT
 >uclust_test_seqs_0_rc
@@ -458,28 +564,11 @@ C	6	2	91.7	*	*	*	*	uclust_test_seqs_6	*
 C	7	1	*	*	*	*	*	uclust_test_seqs_0	*
 C	8	1	*	*	*	*	*	uclust_test_seqs_9	*""".split('\n')
 
-
-clstr_clusters=['>Cluster 0\n',
-'0       80nt, >uclust_test_seqs_7... *\n',
-'>Cluster 1\n',
-'0       79nt, >uclust_test_seqs_4... *\n',
-'>Cluster 2\n',
-'0       78nt, >uclust_test_seqs_2... *\n',
-'>Cluster 3\n',
-'0       77nt, >uclust_test_seqs_3... *\n',
-'>Cluster 4\n',
-'0       76nt, >uclust_test_seqs_1... *\n',
-'>Cluster 5\n',
-'0       75nt, >uclust_test_seqs_5... *\n',
-'>Cluster 6\n',
-'0       74nt, >uclust_test_seqs_6... *\n',
-'1       72nt, >uclust_test_seqs_8... at +/92%\n',
-'>Cluster 7\n',
-'0       73nt, >uclust_test_seqs_0... *\n',
-'>Cluster 8\n',
-'0       71nt, >uclust_test_seqs_9... *\n']
-
 expected_cluster_list=[['uclust_test_seqs_7'], ['uclust_test_seqs_4'], ['uclust_test_seqs_2'], ['uclust_test_seqs_3'], ['uclust_test_seqs_1'], ['uclust_test_seqs_5'], ['uclust_test_seqs_6', 'uclust_test_seqs_8'], ['uclust_test_seqs_0'], ['uclust_test_seqs_9']]
+expected_failure_list = []
+expected_new_seed_list = ['uclust_test_seqs_7', 'uclust_test_seqs_4', 'uclust_test_seqs_2',
+ 'uclust_test_seqs_3', 'uclust_test_seqs_1', 'uclust_test_seqs_5', 'uclust_test_seqs_6',
+ 'uclust_test_seqs_0', 'uclust_test_seqs_9']
 
 search_align_query1 = """>1_like
 TACGGCTACCTTGTTACGACTTCATCCCAATCATTTGTTCCACCTTCGACGGCTA

@@ -706,7 +706,7 @@ class UclustOtuPicker(OtuPicker):
         # Get the clusters by running uclust against the
         # sequence collection
         #print seq_path
-        clusters = get_clusters_from_fasta_filepath(
+        clusters, failures, seeds = get_clusters_from_fasta_filepath(
          seq_path,
          percent_ID = self.Params['Similarity'],
          optimal = self.Params['optimal'],
@@ -736,7 +736,9 @@ class UclustOtuPicker(OtuPicker):
         if log_path:
             # if the user provided a log file path, log the run
             log_file = open(log_path,'w')
-            log_lines = [str(self)] + log_lines
+            log_lines = [str(self)] + log_lines + \
+             ['Num failures:%d' % len(failures), 
+              'Num new seeds:%d' % len(seeds)]
             log_file.write('\n'.join(log_lines))
     
         # return the result (note this is None if the data was

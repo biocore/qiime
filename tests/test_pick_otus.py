@@ -483,64 +483,99 @@ class UclustOtuPickerTests(TestCase):
 
         # adapted from test_app.test_cd_hit.test_cdhit_clusters_from_seqs
         
-        exp = {0:['uclust_test_seqs_0'],\
-               1:['uclust_test_seqs_1'],\
-               2:['uclust_test_seqs_2'],\
-               3:['uclust_test_seqs_3'],\
-               4:['uclust_test_seqs_4'],\
-               5:['uclust_test_seqs_5'],\
-               6:['uclust_test_seqs_6'],\
-               7:['uclust_test_seqs_7'],\
-               8:['uclust_test_seqs_8'],\
-               9:['uclust_test_seqs_9']}
+        exp_otu_ids = range(10)
+        exp_clusters = [['uclust_test_seqs_0'],
+                        ['uclust_test_seqs_1'],
+                        ['uclust_test_seqs_2'],
+                        ['uclust_test_seqs_3'],
+                        ['uclust_test_seqs_4'],
+                        ['uclust_test_seqs_5'],
+                        ['uclust_test_seqs_6'],
+                        ['uclust_test_seqs_7'],
+                        ['uclust_test_seqs_8'],
+                        ['uclust_test_seqs_9']]
         
         app = UclustOtuPicker(params={})
         obs = app(self.tmp_seq_filepath1)
-        self.assertEqual(obs, exp)
+        obs_otu_ids = obs.keys()
+        obs_otu_ids.sort()
+        obs_clusters = obs.values()
+        obs_clusters.sort()
+        # The relation between otu ids and clusters is abitrary, and 
+        # is not stable due to use of dicts when parsing clusters -- therefore
+        # just checks that we have the expected group of each
+        self.assertEqual(obs_otu_ids, exp_otu_ids)
+        self.assertEqual(obs_clusters, exp_clusters)
         
     def test_call_alt_threshold(self):
         """UclustOtuPicker.__call__ returns expected clusters with alt threshold
         """
         # adapted from test_app.test_cd_hit.test_cdhit_clusters_from_seqs
         
-        exp = {0:['uclust_test_seqs_0'],\
-               1:['uclust_test_seqs_1'],\
-               2:['uclust_test_seqs_2'],\
-               3:['uclust_test_seqs_3'],\
-               4:['uclust_test_seqs_4'],\
-               5:['uclust_test_seqs_5'],\
-               6:['uclust_test_seqs_6','uclust_test_seqs_8'],\
-               7:['uclust_test_seqs_7'],\
-               8:['uclust_test_seqs_9']}
+        exp_otu_ids = range(9)
+        exp_clusters = [['uclust_test_seqs_0'],
+                        ['uclust_test_seqs_1'],
+                        ['uclust_test_seqs_2'],
+                        ['uclust_test_seqs_3'],
+                        ['uclust_test_seqs_4'],
+                        ['uclust_test_seqs_5'],
+                        ['uclust_test_seqs_6','uclust_test_seqs_8'],
+                        ['uclust_test_seqs_7'],
+                        ['uclust_test_seqs_9']]
 
         app = UclustOtuPicker(params={'Similarity':0.90})
         obs = app(self.tmp_seq_filepath1)
-        self.assertEqual(obs, exp)
+        obs_otu_ids = obs.keys()
+        obs_otu_ids.sort()
+        obs_clusters = obs.values()
+        obs_clusters.sort()
+        # The relation between otu ids and clusters is abitrary, and 
+        # is not stable due to use of dicts when parsing clusters -- therefore
+        # just checks that we have the expected group of each
+        self.assertEqual(obs_otu_ids, exp_otu_ids)
+        self.assertEqual(obs_clusters, exp_clusters)
         
     def test_call_suppress_sort(self):
         """UclustOtuPicker.__call__ handles suppress sort
         """
         
-        exp = {0: ['uclust_test_seqs_0'],\
-                     1: ['uclust_test_seqs_1'],\
-                     2: ['uclust_test_seqs_2']}
+        exp_otu_ids = range(3)
+        exp_clusters = [['uclust_test_seqs_0'],
+                        ['uclust_test_seqs_1'],
+                        ['uclust_test_seqs_2']]
 
         app = UclustOtuPicker(params={'Similarity':0.90,
                                       'suppress_sort':True,
                                       'optimal':True,
                                       'enable_reverse_strand_matching':True})
         obs = app(self.tmp_seq_filepath2)
-        self.assertEqual(obs, exp)
+        obs_otu_ids = obs.keys()
+        obs_otu_ids.sort()
+        obs_clusters = obs.values()
+        obs_clusters.sort()
+        # The relation between otu ids and clusters is abitrary, and 
+        # is not stable due to use of dicts when parsing clusters -- therefore
+        # just checks that we have the expected group of each
+        self.assertEqual(obs_otu_ids, exp_otu_ids)
+        self.assertEqual(obs_clusters, exp_clusters)
         
     def test_call_rev_matching(self):
         """UclustOtuPicker.__call__ handles reverse strand matching
         """
-        
-        exp = {0: ['uclust_test_seqs_0'], 1: ['uclust_test_seqs_0_rc']}
+        exp_otu_ids = range(2)
+        exp_clusters = [['uclust_test_seqs_0'],['uclust_test_seqs_0_rc']]
         app = UclustOtuPicker(params={'Similarity':0.90,
                                       'enable_reverse_strand_matching':False})
         obs = app(self.tmp_seq_filepath3)
-        self.assertEqual(obs, exp)
+        obs_otu_ids = obs.keys()
+        obs_otu_ids.sort()
+        obs_clusters = obs.values()
+        obs_clusters.sort()
+        # The relation between otu ids and clusters is abitrary, and 
+        # is not stable due to use of dicts when parsing clusters -- therefore
+        # just checks that we have the expected group of each
+        self.assertEqual(obs_otu_ids, exp_otu_ids)
+        self.assertEqual(obs_clusters, exp_clusters)
         
         exp = {0: ['uclust_test_seqs_0','uclust_test_seqs_0_rc']}
         app = UclustOtuPicker(params={'Similarity':0.90,
@@ -565,9 +600,31 @@ class UclustOtuPickerTests(TestCase):
         # remove the result file before running the test, so in 
         # case it fails the temp file is still cleaned up
         remove(tmp_result_filepath)
-        
-        # compare data in result file to fake expected file
-        self.assertEqual(result_file_str, dna_seqs_3_result_file_90_exp)
+
+        exp_otu_ids = map(str,range(9))
+        exp_clusters = [['uclust_test_seqs_0'],
+                        ['uclust_test_seqs_1'],
+                        ['uclust_test_seqs_2'],
+                        ['uclust_test_seqs_3'],
+                        ['uclust_test_seqs_4'],
+                        ['uclust_test_seqs_5'],
+                        ['uclust_test_seqs_6','uclust_test_seqs_8'],
+                        ['uclust_test_seqs_7'],
+                        ['uclust_test_seqs_9']]
+        obs_otu_ids = []
+        obs_clusters = []
+        for line in result_file_str.split('\n'):
+            if line:
+                fields = line.split('\t')
+                obs_otu_ids.append(fields[0])
+                obs_clusters.append(fields[1:])
+        obs_otu_ids.sort()
+        obs_clusters.sort()
+        # The relation between otu ids and clusters is abitrary, and 
+        # is not stable due to use of dicts when parsing clusters -- therefore
+        # just checks that we have the expected group of each
+        self.assertEqual(obs_otu_ids, exp_otu_ids)
+        self.assertEqual(obs_clusters, exp_clusters)
         # confirm that nothing is returned when result_path is specified
         self.assertEqual(obs,None)
         
@@ -600,6 +657,8 @@ class UclustOtuPickerTests(TestCase):
          "suppress_sort:False",\
          "optimal:False",\
          "exact:False",\
+         "Num failures:0",\
+         "Num new seeds:10",\
          "Result path: %s" % tmp_result_filepath]
         # compare data in log file to fake expected log file
         # NOTE: Since app.params is a dict, the order of lines is not
