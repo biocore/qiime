@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 # File created on 09 Feb 2010
 
-__author__ = "William Walters"
+__author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME Project" 
-__credits__ = ["Rob Knight","Greg Caporaso", "Kyle Bittinger","Jens Reeder","William Walters"] #remember to add yourself if you make changes
+__credits__ = ["Rob Knight","Greg Caporaso", "Kyle Bittinger",
+               "Jens Reeder","William Walters"] 
 __license__ = "GPL"
 __version__ = "1.0.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -163,10 +164,10 @@ script_info['optional_options'] = [
         default=False,
         help=('Enable reverse strand matching for uclust otu picking, '
               'will double the amount of memory used. [default: %default]')),
-    make_option('-a','--presort_by_abundance_uclust', action='store_true', 
+    make_option('-D','--suppress_presort_by_abundance_uclust', action='store_true', 
               default=False,
-              help=('Presort sequences by abundance for uclust otu'
-              ' picking. [default: %default]')),
+              help=('Suppress presorting of sequences by abundance when picking'
+              ' OTUs with uclust or uclust_ref [default: %default]')),
     make_option('-A','--optimal_uclust', action='store_true', 
               default=False,
               help=('Pass the --optimal flag to uclust for uclust otu'
@@ -187,9 +188,11 @@ script_info['optional_options'] = [
 script_info['version'] = __version__
 
 def main():
+    # Parse the command line parameters
     option_parser, opts, args =\
         parse_command_line_parameters(**script_info)
-      
+    
+    # Create local copies of the options to avoid repetitive lookups
     prefix_prefilter_length = opts.prefix_prefilter_length
     otu_picking_method = opts.otu_picking_method
     prefix_length = opts.prefix_length
@@ -200,116 +203,123 @@ def main():
     blast_db = opts.blast_db
     similarity = opts.similarity
     enable_rev_strand_match = opts.enable_rev_strand_match
-    presort_by_abundance_uclust = opts.presort_by_abundance_uclust
+    suppress_presort_by_abundance_uclust = \
+     opts.suppress_presort_by_abundance_uclust
     optimal_uclust = opts.optimal_uclust
+    user_sort = opts.user_sort
     
-    if not otu_picking_method == 'uclust':
-        if otu_picking_method == 'cdhit' and similarity < 0.80:
-            option_parser.error('cdhit requires similarity >= 0.80.')
-            
-        if otu_picking_method == 'blast' and \
-           refseqs_fp == None and \
-           blast_db == None:
-               option_parser.error('blast requires refseqs_fp or blast_db')
- 
+    # Input validation to throw a useful error message on common mistakes
+    if (otu_picking_method == 'cdhit' and
+        similarity < 0.80):
+        option_parser.error('cdhit requires similarity >= 0.80.')
+    
+    if (otu_picking_method == 'blast' and
+        refseqs_fp == None and
+        blast_db == None):
+           option_parser.error('blast requires refseqs_fp or blast_db')
+    
+    if (otu_picking_method == 'uclust_ref' and
+        refseqs_fp == None):
+           option_parser.error('uclust_ref requires refseqs_fp')
+    # End input validation
+    
+    
+    # use the otu_picking_method value to get the otu picker constructor
     otu_picker_constructor =\
      otu_picking_method_constructors[otu_picking_method]
-     
+    
+    # split the input filepath into components used for generating
+    # the output file name
     input_seqs_filepath = opts.input_seqs_filepath
     input_seqs_dir, input_seqs_filename = split(input_seqs_filepath)
     input_seqs_basename, ext = splitext(input_seqs_filename)
     
+    # create the output directory name (if not provided) and 
+    # create it if it doesn't already exist
     output_dir = opts.output_dir or otu_picking_method + '_picked_otus'
     create_dir(output_dir, fail_on_exist=False)
-        
+    
+    # Create the output and log file names
     result_path = '%s/%s_otus.txt' % (output_dir,input_seqs_basename)
     log_path = '%s/%s_otus.log' % (output_dir,input_seqs_basename)
     
+    
+    
+    ## Perform OTU picking -- parameters and calls are made 
+    ## on a per-method basis
+    
+    ## cd-hit
     if otu_picking_method == 'cdhit':
-        params = {'Similarity':opts.similarity,\
+        params = {'Similarity':opts.similarity,
                   '-M':opts.max_cdhit_memory}
         otu_picker = otu_picker_constructor(params)
-        otu_picker(input_seqs_filepath,\
-         result_path=result_path,log_path=log_path,\
-         prefix_prefilter_length=prefix_prefilter_length,\
-         trie_prefilter=trie_prefilter)
+        otu_picker(input_seqs_filepath,
+                   result_path=result_path,log_path=log_path,
+                   prefix_prefilter_length=prefix_prefilter_length,
+                   trie_prefilter=trie_prefilter)
     
+    ## uclust (de novo)
     elif otu_picking_method == 'uclust':
-        #don't sort if either sorted by user or by abundance below
-        user_sort = opts.user_sort or opts.presort_by_abundance_uclust    
-        params = {'Similarity':opts.similarity,\
+        params = {'Similarity':opts.similarity,
         'enable_reverse_strand_matching':opts.enable_rev_strand_match,
         'optimal':opts.optimal_uclust,
         'exact':opts.exact_uclust,
-        # passing suppress sort to the uclust app controller
-        # tells uclust that the data is presorted
-        'suppress_sort':user_sort}
-        otu_picker = otu_picker_constructor(params)
-        
-        if opts.presort_by_abundance_uclust:
-            sorted_input_seqs_filepath = \
-             get_tmp_filename(suffix='.fasta')
-            
-            sort_fasta_by_abundance(open(input_seqs_filepath,'U'),
-             open(sorted_input_seqs_filepath,'w'))
-            
-            otu_picker(input_seqs_filepath,\
-             result_path=result_path,log_path=log_path)
-             
-            remove_files([sorted_input_seqs_filepath])
-        else:
-            otu_picker(input_seqs_filepath,\
-             result_path=result_path,log_path=log_path)
-    elif otu_picking_method == 'uclust_ref':
-        #don't sort if either sorted by user or by abundance below
-        user_sort = opts.user_sort or opts.presort_by_abundance_uclust    
-        params = {'Similarity':opts.similarity,\
-        'enable_reverse_strand_matching':opts.enable_rev_strand_match,
-        'optimal':opts.optimal_uclust,
-        'exact':opts.exact_uclust,
-        # passing suppress sort to the uclust app controller
-        # tells uclust that the data is presorted
+        # suppress_sort=True when seqs are or will be pre-sorted
         'suppress_sort':user_sort,
+        'presort_by_abundance': not suppress_presort_by_abundance_uclust}
+        otu_picker = otu_picker_constructor(params)
+        otu_picker(input_seqs_filepath,
+                   result_path=result_path,log_path=log_path)
+             
+    ## uclust (reference-based)
+    elif otu_picking_method == 'uclust_ref':
+        params = {'Similarity':opts.similarity,
+        'enable_reverse_strand_matching':opts.enable_rev_strand_match,
+        'optimal':opts.optimal_uclust,
+        'exact':opts.exact_uclust,
+        # suppress_sort=True when seqs are or will be pre-sorted
+        'suppress_sort':user_sort,
+        'presort_by_abundance': not suppress_presort_by_abundance_uclust,
         'suppress_new_clusters':opts.suppress_new_clusters}
         otu_picker = otu_picker_constructor(params)
-        
-        if opts.presort_by_abundance_uclust:
-            sorted_input_seqs_filepath = \
-             get_tmp_filename(suffix='.fasta')
-            
-            sort_fasta_by_abundance(open(input_seqs_filepath,'U'),
-             open(sorted_input_seqs_filepath,'w'))
-            print 'here'
-            otu_picker(input_seqs_filepath,refseqs_fp,\
-             result_path=result_path,log_path=log_path)
-            
-            remove_files([sorted_input_seqs_filepath])
-        else:
-            otu_picker(input_seqs_filepath,refseqs_fp,\
-             result_path=result_path,log_path=log_path)
+        otu_picker(input_seqs_filepath,refseqs_fp,
+                   result_path=result_path,log_path=log_path)
+         
+    ## prefix/suffix
     elif otu_picking_method == 'prefix_suffix':
         otu_picker = otu_picker_constructor({})
-        otu_picker(input_seqs_filepath,\
-         result_path=result_path,log_path=log_path,\
-         prefix_length=prefix_length,suffix_length=suffix_length)
+        otu_picker(input_seqs_filepath,
+                   result_path=result_path,log_path=log_path,
+                   prefix_length=prefix_length,suffix_length=suffix_length)
+         
+    ## mothur
     elif otu_picking_method == 'mothur':
         params = {'Similarity': opts.similarity,
                   'Algorithm': opts.clustering_algorithm}
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,
                    result_path=result_path, log_path=log_path)
+                   
+    ## trie
     elif otu_picking_method == 'trie':
         params = {'Reverse':trie_reverse_seqs}
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,
                    result_path=result_path, log_path=log_path)
+                   
+    ## blast
     elif otu_picking_method == 'blast':
-        params = {'max_e_value':opts.max_e_value,\
+        params = {'max_e_value':opts.max_e_value,
                   'Similarity': opts.similarity}
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,
-                   result_path=result_path, log_path=log_path,\
+                   result_path=result_path, log_path=log_path,
                    blast_db=opts.blast_db,refseqs_fp=opts.refseqs_fp)
+    
+    ## other -- shouldn't be able to get here as a KeyError would have
+    ## been raised earlier
+    else:
+        raise ValueError, "Unknown OTU picking method: %s" % otu_picking_method
 
 if __name__ == "__main__":
     main()

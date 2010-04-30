@@ -478,6 +478,82 @@ class UclustOtuPickerTests(TestCase):
         
     def tearDown(self):
         remove_files(self._files_to_remove)
+        
+    def seqs_to_temp_fasta(self,seqs):
+        """ """
+        fp = get_tmp_filename(
+         prefix='UclustReferenceOtuPickerTest_',
+         suffix='.fasta')
+        seq_file = open(fp,'w')
+        self._files_to_remove.append(fp)
+        for s in seqs:
+            seq_file.write('>%s\n%s\n' % s)
+        seq_file.close()
+        return fp
+        
+    def test_toggle_suppress_sort(self):
+        """UclustOtuPicker: togging suppress sort functions as expected
+        """
+        seqs = [('s1','ACCTTGTTACTTT'),  # three copies
+                ('s2','ACCTTGTTACTTTC'), # one copy
+                ('s3','ACCTTGTTACTTTCC'),# two copies
+                ('s4','ACCTTGTTACTTT'),
+                ('s5','ACCTTGTTACTTTCC'),
+                ('s6','ACCTTGTTACTTT')]
+        seqs_fp = self.seqs_to_temp_fasta(seqs)
+        
+        # no abundance sorting and uclust's sorting enabled 
+        # so length-based sorting
+        app = UclustOtuPicker(params={'Similarity':0.80,
+                                      'enable_rev_strand_matching':False,
+                                      'suppress_sort':False,
+                                      'presort_by_abundance':False})
+        obs = app(seqs_fp)
+        exp = {0:['s3','s5','s2','s1','s4','s6']}
+        self.assertEqual(obs,exp)
+        
+        # no abundance sorting and uclust's sorting enabled 
+        # so no sorting at all
+        app = UclustOtuPicker(params={'Similarity':0.80,
+                                      'enable_rev_strand_matching':False,
+                                      'suppress_sort':True,
+                                      'presort_by_abundance':False})
+        obs = app(seqs_fp)
+        exp = {0:['s1','s2','s3','s4','s5','s6']}
+        self.assertEqual(obs,exp)
+        
+    def test_abundance_sort(self):
+        """UclustOtuPicker: abundance sort functions as expected
+        """
+        #enable abundance sorting with suppress sort = False (it gets
+        # set to True internally, otherwise uclust's length sort would
+        # override the abundance sorting)
+        seqs = [('s1','ACCTTGTTACTTT'),  # three copies
+                ('s2','ACCTTGTTACTTTC'), # one copy
+                ('s3','ACCTTGTTACTTTCC'),# two copies
+                ('s4','ACCTTGTTACTTT'),
+                ('s5','ACCTTGTTACTTTCC'),
+                ('s6','ACCTTGTTACTTT')]
+        seqs_fp = self.seqs_to_temp_fasta(seqs)
+        
+        # abundance sorting changes order 
+        app = UclustOtuPicker(params={'Similarity':0.80,
+                                      'enable_rev_strand_matching':False,
+                                      'suppress_sort':False,
+                                      'presort_by_abundance':True})
+        obs = app(seqs_fp)
+        exp = {0:['s1','s4','s6','s3','s5','s2']}
+        self.assertEqual(obs,exp)
+        
+        # abundance sorting changes order -- same results with suppress_sort =
+        # True b/c (it gets set to True to when presorting by abundance)
+        app = UclustOtuPicker(params={'Similarity':0.80,
+                                      'enable_rev_strand_matching':False,
+                                      'suppress_sort':True,
+                                      'presort_by_abundance':True})
+        obs = app(seqs_fp)
+        exp = {0:['s1','s4','s6','s3','s5','s2']}
+        self.assertEqual(obs,exp)
 
     def test_call_default_params(self):
         """UclustOtuPicker.__call__ returns expected clusters default params"""
@@ -524,7 +600,9 @@ class UclustOtuPickerTests(TestCase):
                         ['uclust_test_seqs_7'],
                         ['uclust_test_seqs_9']]
 
-        app = UclustOtuPicker(params={'Similarity':0.90})
+        app = UclustOtuPicker(params={'Similarity':0.90,
+                                      'suppress_sort':False,
+                                      'presort_by_abundance':False})
         obs = app(self.tmp_seq_filepath1)
         obs_otu_ids = obs.keys()
         obs_otu_ids.sort()
@@ -548,7 +626,7 @@ class UclustOtuPickerTests(TestCase):
         app = UclustOtuPicker(params={'Similarity':0.90,
                                       'suppress_sort':True,
                                       'optimal':True,
-                                      'enable_reverse_strand_matching':True})
+                                      'enable_rev_strand_matching':True})
         obs = app(self.tmp_seq_filepath2)
         obs_otu_ids = obs.keys()
         obs_otu_ids.sort()
@@ -566,7 +644,9 @@ class UclustOtuPickerTests(TestCase):
         exp_otu_ids = range(2)
         exp_clusters = [['uclust_test_seqs_0'],['uclust_test_seqs_0_rc']]
         app = UclustOtuPicker(params={'Similarity':0.90,
-                                      'enable_reverse_strand_matching':False})
+                                      'enable_rev_strand_matching':False,
+                                      'suppress_sort':False,
+                                      'presort_by_abundance':False})
         obs = app(self.tmp_seq_filepath3)
         obs_otu_ids = obs.keys()
         obs_otu_ids.sort()
@@ -580,7 +660,9 @@ class UclustOtuPickerTests(TestCase):
         
         exp = {0: ['uclust_test_seqs_0','uclust_test_seqs_0_rc']}
         app = UclustOtuPicker(params={'Similarity':0.90,
-                                      'enable_reverse_strand_matching':True})
+                                      'enable_rev_strand_matching':True,
+                                      'suppress_sort':False,
+                                      'presort_by_abundance':False})
         obs = app(self.tmp_seq_filepath3)
         self.assertEqual(obs, exp)
         
@@ -592,7 +674,9 @@ class UclustOtuPickerTests(TestCase):
          prefix='UclustOtuPickerTest.test_call_output_to_file_',\
          suffix='.txt')
         
-        app = UclustOtuPicker(params={'Similarity':0.90})
+        app = UclustOtuPicker(params={'Similarity':0.90,
+                                      'suppress_sort':False,
+                                      'presort_by_abundance':False})
         obs = app(self.tmp_seq_filepath1,result_path=tmp_result_filepath)
         
         result_file = open(tmp_result_filepath)
@@ -652,14 +736,16 @@ class UclustOtuPickerTests(TestCase):
         remove(tmp_log_filepath)
         remove(tmp_result_filepath)
         
-        log_file_99_exp = ["UclustOtuPicker parameters:",\
-         "Similarity:0.99","Application:uclust",\
-         "enable_reverse_strand_matching:False",\
-         "suppress_sort:False",\
-         "optimal:False",\
-         "exact:False",\
-         "Num failures:0",\
-         "Num new seeds:10",\
+        log_file_99_exp = ["UclustOtuPicker parameters:",
+         "Similarity:0.99","Application:uclust",
+         "enable_rev_strand_matching:False",
+         "suppress_sort:True",
+         "optimal:False",
+         'max_accepts:8',
+         'max_rejects:32',
+         "exact:False",
+         "Num OTUs:10",
+         "presort_by_abundance:True",
          "Result path: %s" % tmp_result_filepath]
         # compare data in log file to fake expected log file
         # NOTE: Since app.params is a dict, the order of lines is not
@@ -720,7 +806,7 @@ class UclustReferenceOtuPickerTests(TestCase):
           self.temp_ref_filepath1]
         
     def tearDown(self):
-        pass #remove_files(self._files_to_remove)
+        remove_files(self._files_to_remove)
         
     def seqs_to_temp_fasta(self,seqs):
         """ """
@@ -733,6 +819,75 @@ class UclustReferenceOtuPickerTests(TestCase):
             seq_file.write('>%s\n%s\n' % s)
         seq_file.close()
         return fp
+        
+    def test_toggle_suppress_sort(self):
+        """UclustReferenceOtuPicker: togging suppress sort functions as expected
+        """
+        seqs = [('s1','ACCTTGTTACTTT'),  # three copies
+                ('s2','ACCTTGTTACTTTC'), # one copy
+                ('s3','ACCTTGTTACTTTCC'),# two copies
+                ('s4','ACCTTGTTACTTT'),
+                ('s5','ACCTTGTTACTTTCC'),
+                ('s6','ACCTTGTTACTTT')]
+        seqs_fp = self.seqs_to_temp_fasta(seqs)
+        ref_seqs = [('r1','ACCTTGTTACTTT')]
+        ref_seqs_fp = self.seqs_to_temp_fasta(ref_seqs)
+        
+        # no abundance sorting and uclust's sorting enabled 
+        # so length-based sorting
+        app = UclustReferenceOtuPicker(params={'Similarity':0.80,
+                                      'enable_rev_strand_matching':False,
+                                      'suppress_sort':False,
+                                      'presort_by_abundance':False})
+        obs = app(seqs_fp,ref_seqs_fp)
+        exp = {'r1':['s3','s5','s2','s1','s4','s6']}
+        self.assertEqual(obs,exp)
+        
+        # no abundance sorting and uclust's sorting enabled 
+        # so no sorting at all
+        app = UclustReferenceOtuPicker(params={'Similarity':0.80,
+                                      'enable_rev_strand_matching':False,
+                                      'suppress_sort':True,
+                                      'presort_by_abundance':False})
+        obs = app(seqs_fp,ref_seqs_fp)
+        exp = {'r1':['s1','s2','s3','s4','s5','s6']}
+        self.assertEqual(obs,exp)
+        
+    def test_abundance_sort(self):
+        """UclustReferenceOtuPicker: abundance sort functions as expected
+        """
+        #enable abundance sorting with suppress sort = False (it gets
+        # set to True internally, otherwise uclust's length sort would
+        # override the abundance sorting)
+        seqs = [('s1','ACCTTGTTACTTT'),  # three copies
+                ('s2','ACCTTGTTACTTTC'), # one copy
+                ('s3','ACCTTGTTACTTTCC'),# two copies
+                ('s4','ACCTTGTTACTTT'),
+                ('s5','ACCTTGTTACTTTCC'),
+                ('s6','ACCTTGTTACTTT')]
+        seqs_fp = self.seqs_to_temp_fasta(seqs)
+        ref_seqs = [('r1','ACCTTGTTACTTT')]
+        ref_seqs_fp = self.seqs_to_temp_fasta(ref_seqs)
+        
+        # abundance sorting changes order 
+        app = UclustReferenceOtuPicker(params={'Similarity':0.80,
+                                      'enable_rev_strand_matching':False,
+                                      'suppress_sort':False,
+                                      'presort_by_abundance':True})
+        obs = app(seqs_fp,ref_seqs_fp)
+        exp = {'r1':['s1','s4','s6','s3','s5','s2']}
+        self.assertEqual(obs,exp)
+        
+        # abundance sorting changes order -- same results with suppress_sort =
+        # True b/c (it gets set to True to when presorting by abundance)
+        app = UclustReferenceOtuPicker(params={'Similarity':0.80,
+                                      'enable_rev_strand_matching':False,
+                                      'suppress_sort':True,
+                                      'presort_by_abundance':True})
+        obs = app(seqs_fp,ref_seqs_fp)
+        exp = {'r1':['s1','s4','s6','s3','s5','s2']}
+        self.assertEqual(obs,exp)
+
         
     def test_toggle_suppress_new_clusters(self):
         """UclustReferenceOtuPicker: toggle suppress new clusters 
@@ -826,6 +981,61 @@ class UclustReferenceOtuPickerTests(TestCase):
         exp = {'r1':['s1','s2'],'new_42':['s3','s4']}
         self.assertEqual(obs,exp)
         
+    def test_call_log_file(self):
+        """UclustReferenceOtuPicker.__call__ writes log when expected
+        """
+        tmp_log_filepath = get_tmp_filename(prefix='UclustReferenceOtuPicker',
+                                            suffix='log')
+        tmp_result_filepath = get_tmp_filename(prefix='UclustReferenceOtuPicker',
+                                            suffix='txt')
+        seqs = [('s1','ACCTTGTTACTTT'),
+                ('s2','ACCTAGTTACTTT'),
+                ('s3','TTGCGTAACGTTTGAC'),
+                ('s4','GTCAAACGTTACGCAA')]
+        ref_seqs = [
+                ('r1','ACCTCGTTACTTT')]
+        
+        # rev strand matching disabled
+        uc = UclustReferenceOtuPicker({'Similarity':0.8,
+                                       'suppress_new_clusters':True})
+        ref_seqs_fp = self.seqs_to_temp_fasta(ref_seqs)
+        obs = uc(self.seqs_to_temp_fasta(seqs),
+                 ref_seqs_fp,
+                 result_path=tmp_result_filepath,
+                 log_path=tmp_log_filepath)
+        
+        log_file = open(tmp_log_filepath)
+        log_file_str = log_file.read()
+        log_file.close()
+        # remove the temp files before running the test, so in 
+        # case it fails the temp file is still cleaned up
+        remove(tmp_log_filepath)
+        remove(tmp_result_filepath)
+        
+        log_file_99_exp = ["OtuPicker parameters:",
+         "Reference seqs:%s" % ref_seqs_fp,
+         "Similarity:0.8","Application:uclust",
+         "enable_rev_strand_matching:True",
+         "suppress_sort:True",
+         "suppress_new_clusters:True",
+         "optimal:False",
+         "exact:False",
+         "Num OTUs:1",
+         "Num new OTUs:0",
+         "Num failures:2",
+         'max_accepts:8',
+         'max_rejects:32',
+         "new_cluster_identifier:qiime_otu_",
+         "next_new_cluster_number:1",
+         "Failures:s3\ts4",
+         "presort_by_abundance:True",
+         "Result path: %s" % tmp_result_filepath]
+        # compare data in log file to fake expected log file
+        # NOTE: Since app.params is a dict, the order of lines is not
+        # guaranteed, so testing is performed to make sure that 
+        # the equal unordered lists of lines is present in actual and expected
+        self.assertEqualItems(log_file_str.split('\n'), log_file_99_exp)
+        
         
     def test_default_parameters_new_clusters_allowed(self):
         """UclustReferenceOtuPicker: default parameters, new clusters allowed
@@ -870,7 +1080,9 @@ class UclustReferenceOtuPickerTests(TestCase):
     def test_alt_similarity_new_clusters_allowed(self):
         """UclustReferenceOtuPicker: alt parameters, new clusters allowed
         """
-        uc = UclustReferenceOtuPicker({'Similarity':0.90})
+        uc = UclustReferenceOtuPicker({'Similarity':0.90,
+                                      'suppress_sort':False,
+                                      'presort_by_abundance':False})
         obs = uc(self.tmp_seq_filepath1,self.temp_ref_filepath1)
         exp = {'ref1':['uclust_test_seqs_0'],
                'ref2':['uclust_test_seqs_1'],

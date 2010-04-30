@@ -22,6 +22,7 @@ from os import makedirs
 from itertools import imap
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.parse.mothur import parse_otu_list as mothur_parse
+from cogent.app.util import get_tmp_filename
 from cogent.app.cd_hit import cdhit_clusters_from_seqs
 from cogent.app.dotur import dotur_from_alignment
 from cogent.app.mothur import Mothur
@@ -33,7 +34,7 @@ from cogent.util.misc import remove_files
 from cogent import LoadSeqs, DNA, Alignment
 from cogent.util.trie import build_prefix_map
 from cogent.util.misc import flatten
-from qiime.util import FunctionWithParams
+from qiime.util import FunctionWithParams, sort_fasta_by_abundance
 from qiime.parse import fields_to_dict
 
 class OtuPicker(FunctionWithParams):
@@ -656,7 +657,55 @@ class CdHitOtuPicker(OtuPicker):
         return result
 
 
-class UclustOtuPicker(OtuPicker):
+class UclustOtuPickerBase(OtuPicker):
+    
+    def _presort_by_abundance(self,seq_path):
+        """ Preform pre-sorting of input by abundance """
+        
+        # Turn off uclust's sorting
+        self.Params['suppress_sort'] = True
+        
+        # Get a temp file name for the sorted fasta file
+        sorted_input_seqs_filepath = \
+         get_tmp_filename(prefix=self.Name,suffix='.fasta')
+        
+        # Sort input seqs by abundance, and write to the temp
+        # file
+        sort_fasta_by_abundance(open(seq_path,'U'),
+         open(sorted_input_seqs_filepath,'w'))
+        
+        # Return the sorted sequences filepath
+        return sorted_input_seqs_filepath
+    
+    def _write_log(self,log_path,log_lines):
+        # if the user provided a log file path, log the run
+        log_file = open(log_path,'w')
+        log_file.write('\n'.join([str(self)] + log_lines))
+        log_file.close()
+    
+    def _prepare_results(self,result_path,clusters,log_lines):
+        """
+        """
+        if result_path:
+            # if the user provided a result_path, write the 
+            # results to file with one tab-separated line per 
+            # cluster
+            of = open(result_path,'w')
+            for cluster_id,cluster in clusters:
+                of.write('%s\t%s\n' % (cluster_id,'\t'.join(cluster)))
+            of.close()
+            result = None
+            log_lines.append('Result path: %s' % result_path)
+        else:
+            # if the user did not provide a result_path, store
+                # the clusters in a dict of {otu_id:[seq_ids]}, where
+            # otu_id is arbitrary
+            result = dict(clusters)
+            log_lines.append('Result path: None, returned as dict.')
+            
+        return result
+
+class UclustOtuPicker(UclustOtuPickerBase):
     """ Uclust based OTU picker
 
     Important note - the default behaviour of uclust is to ignore
@@ -680,15 +729,20 @@ class UclustOtuPicker(OtuPicker):
         """
         _params = {'Similarity':0.97,
          'Application':'uclust',
-         'enable_reverse_strand_matching':False,
+         'max_accepts':8,
+         'max_rejects':32,
+         'enable_rev_strand_matching':False,
          'optimal':False,
          'exact':False,
-         'suppress_sort':False}
+         'suppress_sort':True,
+         'presort_by_abundance':True}
         _params.update(params)
         OtuPicker.__init__(self, _params)
     
-    def __call__ (self, seq_path, result_path=None, log_path=None, 
-        id_len=0):
+    def __call__(self,
+                 seq_path,
+                 result_path=None,
+                 log_path=None):
         """Returns dict mapping {otu_id:[seq_ids]} for each otu.
         
         Parameters:
@@ -698,12 +752,16 @@ class UclustOtuPicker(OtuPicker):
         log_path: path to log, which includes dump of params.
 
         """
-        moltype = DNA
-        log_lines = []
-
-        # Get the clusters by running uclust against the
-        # sequence collection
-        #print seq_path
+        if self.Params['presort_by_abundance']:
+            # seq path will become the temporary sorted sequences
+            # filepath, to be cleaned up after the run
+            seq_path = self._presort_by_abundance(seq_path)
+            files_to_remove = [seq_path]
+        else:
+            # create a dummy list of files to clean up
+            files_to_remove = []
+        
+        # perform the clustering
         clusters, failures, seeds = get_clusters_from_fasta_filepath(
          seq_path,
          percent_ID = self.Params['Similarity'],
@@ -711,39 +769,26 @@ class UclustOtuPicker(OtuPicker):
          exact = self.Params['exact'],
          suppress_sort = self.Params['suppress_sort'],
          enable_rev_strand_matching =
-          self.Params['enable_reverse_strand_matching'])
+          self.Params['enable_rev_strand_matching'])
         
+        # clean up any temp files that were created
+        remove_files(files_to_remove)
         
-        if result_path:
-            # if the user provided a result_path, write the 
-            # results to file with one tab-separated line per 
-            # cluster
-            of = open(result_path,'w')
-            for i,cluster in enumerate(clusters):
-                of.write('%s\t%s\n' % (i,'\t'.join(cluster)))
-            of.close()
-            result = None
-            log_lines.append('Result path: %s' % result_path)
-        else:
-            # if the user did not provide a result_path, store
-                # the clusters in a dict of {otu_id:[seq_ids]}, where
-            # otu_id is arbitrary
-            result = dict(enumerate(clusters))
-            log_lines.append('Result path: None, returned as dict.')
- 
+        log_lines = []
+        log_lines.append('Num OTUs:%d' % len(clusters))
+        
+        clusters = enumerate(clusters)
+        result = self._prepare_results(result_path,clusters,log_lines)
+        
         if log_path:
-            # if the user provided a log file path, log the run
-            log_file = open(log_path,'w')
-            log_lines = [str(self)] + log_lines + \
-             ['Num failures:%d' % len(failures), 
-              'Num new seeds:%d' % len(seeds)]
-            log_file.write('\n'.join(log_lines))
+            self._write_log(log_path,log_lines)
     
         # return the result (note this is None if the data was
         # written to file)
         return result
 
-class UclustReferenceOtuPicker(OtuPicker):
+
+class UclustReferenceOtuPicker(UclustOtuPickerBase):
     """Uclust reference OTU picker: clusters seqs by match to ref collection
     
     """
@@ -753,6 +798,7 @@ class UclustReferenceOtuPicker(OtuPicker):
         
         """
         _params = {'Similarity':0.97,
+                   'Application':'uclust',
                    'enable_rev_strand_matching':True,
                    'max_accepts':8,
                    'max_rejects':32,
@@ -761,7 +807,8 @@ class UclustReferenceOtuPicker(OtuPicker):
                    'exact':False,
                    'suppress_sort':False,
                    'new_cluster_identifier':'qiime_otu_',
-                   'next_new_cluster_number':1}
+                   'next_new_cluster_number':1,
+                   'presort_by_abundance':True}
         _params.update(params)
         OtuPicker.__init__(self, _params)
     
@@ -778,49 +825,17 @@ class UclustReferenceOtuPicker(OtuPicker):
             self.Params['new_cluster_identifier'] = new_cluster_identifier
         if next_new_cluster_number != None:
             self.Params['next_new_cluster_number'] = next_new_cluster_number
-        self.log_lines = []
-        
-        self.log_lines.append('Reference seqs: %s' % refseqs_fp)
-        
-        clusters, failures, new_seeds = self._cluster_seqs(seq_fp,
-                                                refseqs_fp,
-                                                HALT_EXEC=HALT_EXEC)
-        self.log_lines.append('Num OTUs: %d' % len(clusters))
-        self.log_lines.append('Num new OTUs: %d' % len(new_seeds))
-        
-        if result_path:
-            # if the user provided a result_path, write the 
-            # results to file with one tab-separated line per 
-            # cluster
-            of = open(result_path,'w')
-            for cluster_id,cluster in clusters.items():
-                of.write('%s\t%s\n' % (cluster_id,'\t'.join(cluster)))
-            of.close()
-            result = None
-            self.log_lines.append('Result path: %s\n' % result_path)
+            
+        if self.Params['presort_by_abundance']:
+            # seq path will become the temporary sorted sequences
+            # filepath, to be cleaned up after the run
+            seq_fp = self._presort_by_abundance(seq_fp)
+            files_to_remove = [seq_fp]
         else:
-            # if the user did not provide a result_path, store
-                # the clusters in a dict of {otu_id:[seq_ids]}, where
-            # otu_id is arbitrary
-            result = clusters
-            self.log_lines.append('Result path: None, returned as dict.')
- 
-        if log_path:
-            # if the user provided a log file path, log the run
-            log_file = open(log_path,'w')
-            self.log_lines = [str(self)] + self.log_lines
-            log_file.write('\n'.join(self.log_lines))
-            failures.sort()
-            log_file.write('Num failures: %d\n' % len(failures))
-            log_file.write('Failures: %s\n' % '\t'.join(failures))
-    
-        # return the result (note this is None if the data was
-        # written to file)
-        return result
+            # create a dummy list of files to clean up
+            files_to_remove = []
         
-    def _cluster_seqs(self,seq_fp,refseqs_fp,HALT_EXEC=False):
-        """
-        """
+        # perform the clustering
         cluster_map, failures, new_seeds = get_clusters_from_fasta_filepath(
             seq_fp,
             subject_fasta_filepath=refseqs_fp,
@@ -837,7 +852,25 @@ class UclustReferenceOtuPicker(OtuPicker):
         
         self._rename_clusters(cluster_map,new_seeds)
         
-        return cluster_map, failures, new_seeds 
+        # clean up any temp files that were created
+        remove_files(files_to_remove)
+        
+        log_lines = []
+        log_lines.append('Reference seqs:%s' % refseqs_fp)
+        log_lines.append('Num OTUs:%d' % len(cluster_map))
+        log_lines.append('Num new OTUs:%d' % len(new_seeds))
+        log_lines.append('Num failures:%d' % len(failures))
+        log_lines.append('Failures:%s' % '\t'.join(failures))
+        
+        cluster_map = cluster_map.items()
+        result = self._prepare_results(result_path,cluster_map,log_lines)
+ 
+        if log_path:
+            self._write_log(log_path,log_lines)
+    
+        # return the result (note this is None if the data was
+        # written to file)
+        return result
     
     def _rename_clusters(self,cluster_map,new_seeds):
         """ """

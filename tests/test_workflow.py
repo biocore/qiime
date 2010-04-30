@@ -470,8 +470,11 @@ pick_otus:prefix_prefilter_length
 pick_otus:trie_prefilter
 pick_otus:prefix_length
 pick_otus:suffix_length
-pick_otus:optimal_uclust    True
-pick_otus:presort_by_abundance_uclust  True
+pick_otus:optimal_uclust
+pick_otus:exact_uclust
+pick_otus:user_sort
+pick_otus:suppress_presort_by_abundance_uclust
+pick_otus:suppress_new_clusters
 
 # Parallel options
 parallel:jobs_to_start	2
