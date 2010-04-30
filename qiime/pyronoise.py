@@ -24,6 +24,8 @@ from cogent.parse.flowgram_parser import lazy_parse_sff_handle
 from cogent.app.util import ApplicationNotFoundError, ApplicationError
 from cogent.parse.record import RecordError
 
+from qiime.util import load_qiime_config
+
 # Adapted from align_seqs.py
 # Load Denoiser if it's available. If it's not, skip it if not but set up
 # to raise errors if the user tries to use it.
@@ -102,12 +104,21 @@ def pyroNoise_app(flows, num_flows, num_cpus=2, outdir = "/tmp/", log_fh=None,
     basename = get_tmp_filename(tmp_dir=outdir, prefix = "", suffix="")
     #copy flowgrams from input sff.txt to pyronoise-formatted file
     filename, id_mapping = write_pyronoise_file(flows, num_flows, filename = basename+".dat")
-    
+
+    # if value is set use it, otherwise fall back to use default
+    # hard coded in Pyronoise header files.
+    data_fp = load_qiime_config()["pyronoise_data_fp"]
+    data_opt = ""
+    if data_fp:
+        if not exists(data_fp):
+            raise ApplicationError("File %s not exists. Check your setting of pyronoise_data_fp in the .qiime_config." %data_fp)
+        data_opt = "-l %s" % data_fp
+
     if(num_cpus >1):
         mpi = "mpirun -np %d "% num_cpus
     else:
         mpi = ""
-    cmd = mpi+ "FDist -in %s -out %s > /dev/null" % (filename, basename)
+    cmd = mpi+ "FDist %s -in %s -out %s > /dev/null" % (data_opt, filename, basename)
     
     if log_fh: 
         log_fh.write("Executing: %s\n" % cmd)
@@ -126,8 +137,8 @@ def pyroNoise_app(flows, num_flows, num_cpus=2, outdir = "/tmp/", log_fh=None,
     system(cmd)
 
     cmd = mpi\
-        + "PCluster -din %s -out %s -lin %s.list -s %f -c %f > %s.pout"\
-        % (filename, basename, basename, precision, cut_off, basename)
+        + "PCluster %s -din %s -out %s -lin %s.list -s %f -c %f > %s.pout"\
+        % (data_opt, filename, basename, basename, precision, cut_off, basename)
     if log_fh: 
         log_fh.write("Executing: %s\n" % cmd)
     system(cmd)
