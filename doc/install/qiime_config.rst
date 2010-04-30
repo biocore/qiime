@@ -20,3 +20,9 @@ To see the qiime_config values as read by QIIME, and to test your settings, you 
 Setting qiime_scripts_dir
 --------------------------
 If you have installed QIIME using its ``setup.py`` script, you will need to set the ``qiime_scripts_dir`` value in your ``qiime_config`` file to the directory containing the QIIME scripts. By default, this will likely be ``/usr/local/bin/``. If you specified a different location by passing ``--install-scripts=`` to ``setup.py``, you should set ``qiime_scripts_dir`` to this value.
+
+
+Setting the PyroNoise data file (pyronoise_data_fp)
+---------------------------------------------------
+
+PyroNoise requires a data file to run. This file can either be specified in the header files of the PyroNoise programs or in the qiime_config file. For using the latter, add the file path of the :file:`LookUp.dat` file (in the Data folder of PyroNoise) to your qiime_config option "pyronoise_data_fp".
