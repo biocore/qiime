@@ -14,6 +14,7 @@ __status__ = "Development"
 from optparse import make_option
 from os import access, X_OK, R_OK, W_OK, getenv
 from os.path import isdir, exists
+from sys import platform, version as python_version, executable
 from subprocess import Popen, PIPE, STDOUT
 
 from cogent.util.unit_test import TestCase, main as test_main
@@ -30,6 +31,11 @@ try:
     from pynast import __version__ as pynast_lib_version
 except ImportError:
     pynast_lib_version = "Not installed."
+
+try:
+    from Denoiser import __version__ as denoiser_version
+except ImportError:
+    denoiser_version = "Not installed."
 
 script_info = {}
 script_info['brief_description']= """Print out the qiime config settings."""
@@ -226,13 +232,24 @@ if __name__ == "__main__":
 
     qiime_config = load_qiime_config()
 
+    system_info = [
+     ("Platform", platform),
+     ("Python version",python_version.replace('\n', ' ')),
+     ("Python executable",executable)]
+    max_len =  max([len(e[0]) for e in system_info])
+    print "\nSystem information"
+    print  "==================" 
+    for v in system_info:
+        print "%*s:\t%s" % (max_len,v[0],v[1])
+
     version_info = [
      ("PyCogent version", pycogent_lib_version),
      ("NumPy version", numpy_lib_version),
      ("matplotlib version", matplotlib_lib_version),
      ("QIIME library version", qiime_lib_version),
      ("QIIME script version", __version__),
-     ("PyNAST version (if installed)", pynast_lib_version)]
+     ("PyNAST version (if installed)", pynast_lib_version),
+     ("Denoiser version (if installed)", denoiser_version)]
     max_len =  max([len(e[0]) for e in version_info])
     print "\nDependency versions"
     print  "===================" 
