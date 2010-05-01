@@ -4,6 +4,7 @@ from collections import defaultdict
 from hashlib import md5
 from os.path import splitext, join
 from sys import stderr
+import xml.etree.ElementTree as ET
 
 """This script makes the submission xml files for SRA (study, experiment, etc.).
 
@@ -221,12 +222,7 @@ experiment_wrapper = """  <EXPERIMENT
                     <MULTIPLIER>1.0</MULTIPLIER>
         </QUALITY_SCORES>
       </PROCESSING>
-      <EXPERIMENT_LINKS>
-%(LINK_XML)s
-      </EXPERIMENT_LINKS>
-      <EXPERIMENT_ATTRIBUTES>
-%(ATTRIBUTE_XML)s
-      </EXPERIMENT_ATTRIBUTES>
+      %(LINK_XML)s%(ATTRIBUTE_XML)s
   </EXPERIMENT>"""
 
 platform_blocks = { 'Titanium':
@@ -530,19 +526,10 @@ def make_run_and_experiment(experiment_lines, sff_dir, attribute_file=None,
             field_dict['SPOT_DESCRIPTORS_XML'] = spot_descriptor
             field_dict['PLATFORM_XML'] = platform_blocks[field_dict['PLATFORM']]
 
-            attrs = experiment_attributes[experiment_id]
-            if attrs:
-                attr_xmls = [experiment_attribute_wrapper % (k, v) for k, v in attrs]
-                field_dict['ATTRIBUTE_XML'] = '\n'.join(attr_xmls)
-            else:
-                field_dict['ATTRIBUTE_XML'] = ''
-
-            links = experiment_links[experiment_id]
-            if links:
-                link_xmls = [experiment_link_wrapper % (k, v) for k, v in links]
-                field_dict['LINK_XML'] = '\n'.join(link_xmls)
-            else:
-                field_dict['LINK_XML'] = ''
+            field_dict['ATTRIBUTE_XML'] = _experiment_attribute_xml(
+                experiment_attributes[experiment_id])
+            field_dict['LINK_XML'] = _experiment_link_xml(
+                experiment_links[experiment_id])
 
             # Utilize optional fields for library descriptor block
             if 'LIBRARY_SELECTION' not in field_dict:
@@ -554,6 +541,57 @@ def make_run_and_experiment(experiment_lines, sff_dir, attribute_file=None,
 
             experiments.append(experiment_wrapper % field_dict)
     return experiment_set_wrapper % ('\n'+'\n'.join(experiments)+'\n'), run_set_wrapper % ('\n'+'\n'.join(runs)+'\n')
+
+def _experiment_link_xml(links):
+    if not links:
+        return ''
+    root = ET.Element('EXPERIMENT_LINKS')
+    for label, url in links:
+        link_elem = ET.SubElement(root, 'EXPERIMENT_LINK')
+        url_link_elem = ET.SubElement(link_elem, 'URL_LINK')
+        label_elem = ET.SubElement(url_link_elem, 'LABEL')
+        label_elem.text = label
+        url_elem = ET.SubElement(url_link_elem, 'URL')
+        url_elem.text = url
+    return ET.tostring(indent_element(root, 3))
+
+def _experiment_attribute_xml(attrs):
+    if not attrs:
+        return ''
+    root = ET.Element('EXPERIMENT_ATTRIBUTES')
+    for tag, val in attrs:
+        attr_elem = ET.SubElement(root, 'EXPERIMENT_ATTRIBUTE')
+        tag_elem = ET.SubElement(attr_elem, 'TAG')
+        tag_elem.text = tag
+        val_elem = ET.SubElement(attr_elem, 'VALUE')
+        val_elem.text = val
+    return ET.tostring(indent_element(root, 3))
+
+
+def indent_element(element, level=0):
+    """Indent xml element and sub-elements
+
+    Taken from lxml documentation at
+    http://effbot.org/zone/element-lib.htm
+    """
+    # This function uses a dirty trick to grab the final subelement
+    # from an iteration.  To return the top-level element at the end
+    # of the function, we must store it now under a different name.
+    original_element = element
+    i = "\n" + (level * "  ")
+    if len(element):
+        if not element.text or not element.text.strip():
+            element.text = i + "  "
+        if not element.tail or not element.tail.strip():
+            element.tail = i
+        for element in element:
+            indent_element(element, level + 1)
+        if not element.tail or not element.tail.strip():
+            element.tail = i
+    else:
+        if level and (not element.tail or not element.tail.strip()):
+            element.tail = i
+    return original_element
 
 def write_xml_generic(infile_path, template_path, xml_f):
     """Writes generic xml based on contents of infilepath, returns filename."""

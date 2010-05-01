@@ -10,7 +10,8 @@ from qiime.make_sra_submission import (
     md5_path, safe_for_xml, read_tabular_data, rows_data_as_dicts,
     make_study_links, twocol_data_to_dict, make_study, make_submission,
     make_sample, trim_quotes, defaultdict, group_lines_by_field,
-    write_xml_generic, make_run_and_experiment)
+    write_xml_generic, make_run_and_experiment, _experiment_link_xml,
+    _experiment_attribute_xml, indent_element,)
 from qiime.util import get_qiime_project_dir
 import xml.etree.ElementTree as ET
 from cStringIO import StringIO
@@ -225,7 +226,7 @@ aa\tbb\tcc
         self.assertEqual(standardize_xml(observed_exp_xml), standardize_xml(experiment_xml_str))
 
     def test_metagenomic_experiment_xml(self):
-        """make_run_and_experiment should return correct XML for full experiment."""
+        """make_run_and_experiment should return correct XML for metagenomic experiment."""
         # Cannot use get_qiime_project_dir() due to test errors in virtual box
         test_dir = os.path.dirname(os.path.abspath(__file__))
         sff_dir = os.path.join(test_dir, 'sra_test_files', 'F6AVWTA')
@@ -257,6 +258,51 @@ aa\tbb\tcc
         run_schema = lxml.etree.XMLSchema(lxml.etree.fromstring(run_xsd))
         self.assertTrue(run_schema.validate(lxml.etree.fromstring(observed_run_xml)))
 
+    def test_experiment_link_xml(self):
+        links = [('link1', 'http://google.com'),
+                 ('links2', 'http://www.ncbi.nlm.nih.gov')]
+        expected = '''<EXPERIMENT_LINKS>
+        <EXPERIMENT_LINK>
+          <URL_LINK>
+            <LABEL>link1</LABEL>
+            <URL>http://google.com</URL>
+          </URL_LINK>
+        </EXPERIMENT_LINK>
+        <EXPERIMENT_LINK>
+          <URL_LINK>
+            <LABEL>links2</LABEL>
+            <URL>http://www.ncbi.nlm.nih.gov</URL>
+          </URL_LINK>
+        </EXPERIMENT_LINK>
+      </EXPERIMENT_LINKS>
+      '''
+        observed = _experiment_link_xml(links)
+        self.assertEqual(observed, expected)
+
+    def test_experiment_attribute_xml(self):
+        attrs = [('a1', 'val1'),
+                 ('attr2', 'something else')]
+        expected = '''<EXPERIMENT_ATTRIBUTES>
+        <EXPERIMENT_ATTRIBUTE>
+          <TAG>a1</TAG>
+          <VALUE>val1</VALUE>
+        </EXPERIMENT_ATTRIBUTE>
+        <EXPERIMENT_ATTRIBUTE>
+          <TAG>attr2</TAG>
+          <VALUE>something else</VALUE>
+        </EXPERIMENT_ATTRIBUTE>
+      </EXPERIMENT_ATTRIBUTES>
+      '''
+        observed = _experiment_attribute_xml(attrs)
+        self.assertEqual(observed, expected)
+
+    def test_indent_element(self):
+        a = ET.Element('a')
+        b = ET.SubElement(a, 'b')
+        b.text = 'hello'
+        observed = ET.tostring(indent_element(a))
+        expected = '<a>\n  <b>hello</b>\n</a>\n'
+        self.assertEqual(observed, expected)
 
 experiment = '''
 #EXPERIMENT_ALIAS	EXPERIMENT_CENTER	EXPERIMENT_TITLE	STUDY_REF	STUDY_CENTER	EXPERIMENT_DESIGN_DESCRIPTION	LIBRARY_CONSTRUCTION_PROTOCOL	SAMPLE_ALIAS	SAMPLE_CENTER	POOL_MEMBER_NAME	POOL_MEMBER_FILENAME	POOL_PROPORTION	BARCODE_READ_GROUP_TAG	BARCODE	LINKER	PRIMER_READ_GROUP_TAG	KEY_SEQ	PRIMER	RUN_PREFIX	REGION	PLATFORM	RUN_CENTER	RUN_DATE	INSTRUMENT_NAME
@@ -378,12 +424,7 @@ metagenomic_experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
                     <MULTIPLIER>1.0</MULTIPLIER>
         </QUALITY_SCORES>
       </PROCESSING>
-      <EXPERIMENT_LINKS>
-
-      </EXPERIMENT_LINKS>
-      <EXPERIMENT_ATTRIBUTES>
-
-      </EXPERIMENT_ATTRIBUTES>
+      
   </EXPERIMENT>
   <EXPERIMENT
     alias="bodysites_F6AVWTA01"
@@ -462,15 +503,9 @@ metagenomic_experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
                     <MULTIPLIER>1.0</MULTIPLIER>
         </QUALITY_SCORES>
       </PROCESSING>
-      <EXPERIMENT_LINKS>
-
-      </EXPERIMENT_LINKS>
-      <EXPERIMENT_ATTRIBUTES>
-
-      </EXPERIMENT_ATTRIBUTES>
+      
   </EXPERIMENT>
-</EXPERIMENT_SET>
-'''
+</EXPERIMENT_SET>'''
 
 experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
 <EXPERIMENT_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -578,6 +613,7 @@ experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
           <VALUE>16S rRNA V1-V3 region</VALUE>
         </EXPERIMENT_ATTRIBUTE>
       </EXPERIMENT_ATTRIBUTES>
+      
   </EXPERIMENT>
   <EXPERIMENT
     alias="bodysites_F6AVWTA01"
@@ -683,6 +719,7 @@ experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
           <VALUE>16S rRNA V1-V3 region</VALUE>
         </EXPERIMENT_ATTRIBUTE>
       </EXPERIMENT_ATTRIBUTES>
+      
   </EXPERIMENT>
 </EXPERIMENT_SET>
 '''
