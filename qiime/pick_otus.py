@@ -877,9 +877,9 @@ class UclustReferenceOtuPicker(UclustOtuPickerBase):
         next_new_cluster_number = self.Params['next_new_cluster_number']
         new_cluster_identifier = self.Params['new_cluster_identifier']
         new_seed_lookup = {}.fromkeys(new_seeds)
+        
         for seed,cluster in cluster_map.items():
             del cluster_map[seed]
-            
             if seed in new_seed_lookup:
                 new_cluster_id = '%s%d' % (new_cluster_identifier, 
                                            next_new_cluster_number)

@@ -642,9 +642,9 @@ uc_lines1 = """# uclust --input q.fasta --lib r.fasta --uc results.uc --id 0.90 
 # For C and D types, PctId is average id with seed.
 # QueryStart and SeedStart are zero-based relative to start of sequence.
 # If minus strand, SeedStart is relative to reverse-complemented seed.
-N	*	80	*	*	*	*	*	s1	*
-S	4	80	*	*	*	*	*	s2	*
-H	2	78	100.0	+	0	0	5I78M10I	s3	s2""".split('\n')
+N	*	80	*	*	*	*	*	s1 some comment	*
+S	4	80	*	*	*	*	*	s2 some other comment	*
+H	2	78	100.0	+	0	0	5I78M10I	s3 yet another comment	s2""".split('\n')
 
          
 if __name__ == '__main__':

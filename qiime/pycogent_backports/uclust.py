@@ -252,29 +252,28 @@ def clusters_from_uc_file(uc_lines):
     hit_types={}.fromkeys(list('HSN'))
     for record in get_next_record_type(uc_lines,hit_types):
         hit_type = record[0]
-        query_id = record[8]
-        target_cluster = record[9]
         # sequence identifiers from the fasta header lines only 
         # (no comment data) are stored to identify a sequence in 
         # a cluster -- strip off any comments here as this value
         # is used in several places
-        query_id_stripped = query_id.split()[0]
+        query_id = record[8].split()[0]
+        target_cluster = record[9].split()[0]
         if hit_type == 'H':
             try:
                 # add the hit to an existing cluster
-                clusters[target_cluster].append(query_id_stripped)
+                clusters[target_cluster].append(query_id)
             except KeyError:
                 # will get here the first time a reference 
                 # sequence (i.e., from --lib) is used as a seed
-                clusters[target_cluster] = [query_id_stripped]
+                clusters[target_cluster] = [query_id]
         elif hit_type == 'S':
             # a new seed was identified -- create a cluster with this 
             # sequence as the first instance
-            clusters[query_id_stripped] = [query_id_stripped]
-            seeds.append(query_id_stripped)
+            clusters[query_id] = [query_id]
+            seeds.append(query_id)
         elif hit_type == 'N':
             # a failure was identified -- add it to the failures list
-            failures.append(query_id_stripped)
+            failures.append(query_id)
         else:
             # shouldn't be possible to get here, but provided for 
             # clarity
@@ -516,7 +515,7 @@ def get_clusters_from_fasta_filepath(
     if len(clusters) == 0:
         raise ApplicationError, ('Clusters result empty, please check source '+\
          'fasta file for proper formatting.')
-         
+    
     if return_cluster_maps:
         return clusters, failures, seeds
     else:
