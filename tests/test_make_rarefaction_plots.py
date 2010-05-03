@@ -14,10 +14,10 @@ __status__ = "Development"
 
 from cogent.util.unit_test import TestCase, main
 from qiime.make_rarefaction_plots import make_plots, \
-                    save_ave_rarefaction_plots,save_single_rarefaction_plots, \
+                    save_single_ave_rarefaction_plots,save_single_rarefaction_plots, \
                     get_rarefaction_data,make_html,make_averages, \
                     save_rarefaction_data,ave_seqs_per_sample, \
-                    make_error_series
+                    make_error_series,save_ave_rarefaction_plots
 from os.path import exists
 from os import remove
 from qiime.parse import parse_rarefaction, parse_mapping_file
@@ -32,37 +32,34 @@ class TopLevelTests(TestCase):
         """define some top-level data"""
 
         self.data={}
-        self.data['xaxis']=[10.0, 23.0]
-        self.sample_dict={'Sample1':{0.00: [1.3276140000000001], \
-                                     10.0:[2.1466460000000001]}}
-        self.data['yvals']={'Sample1': [1.3276140000000001, 2.1466460000000001],
-                            'Sample2': [1.3276140000000001, 2.1466460000000001]}
-        self.data['err']={'Sample1': [.1, .2], 'Sample2': [.2, .1]}
+        self.data['xaxis']=[10.0]
+        self.sample_dict={'Sample1':{10.00: [1.3276140000000001]}}
+        self.data['yvals']={'Sample1': [1.3276140000000001]}
+        self.data['err']={'Sample1': [.1]}
         self.xmax=140
         self.ymax=20
-        self.ops=['Sample1','Sample2']
+        self.ops=['Sample1']
         self.mapping_category='SampleID'
         self.imagetype='png'
         self.resolution=70
-        self.data['map']=[['SampleID','Day'],['Sample1','Day1'],['Sample2',\
-                          'Day1']]
+        self.data['map']=[['SampleID','Day'],['Sample1','Day1']]
         self.color_prefs={'SampleID': {'column': 'SampleID', 'color': \
-                          {'Sample1': '#0000ff','Sample2': '#0000ff'}}}
+                          {'Sample1': '#7fff00'}}}
         self.groups={'Sample1':['Sample1']}
         self.background_color='black'
         self.label_color='white'
         self.labelname='SampleID'
-        self.rare_data={'color': {'Sample1': '#00ff7f'}, \
-            'series': {'Sample1': [2.0515300000000001, 2.8053979999999998],}, \
-             'headers': ['test.txt','SampleID'], 'xaxis': [10.0, 23.0], \
-             'error': {'Sample1': [0.0, 0.0]}, 'options': ['Sample1']}
+        self.rare_data={'color': {'Sample1': '#7fff00'}, \
+            'series': {'Sample1': [2.0515300000000001],}, \
+             'headers': ['test.txt','SampleID'], 'xaxis': [10.0], \
+             'error': {'Sample1': [0.0]}, 'options': ['Sample1']}
         self.fpath='/tmp/'
         self.output_dir='/tmp/'
         self.metric_name='test'
         self._paths_to_clean_up = []
         self._folders_to_cleanup = []
         self.rarefaction_file_data=[[10.0, 0.0, 1.0], [10.0, 1.0, 3.0]]
-        d = {'redtowhite3_0':[0,100,100],'redtowhite3_1':[0,50,100]}
+        d = {'redtowhite3_0':'#7fff00','redtowhite3_1':'#7fff00'}
         self.data_colors = color_dict_to_objects(d)
         self.colors={'Sample1':'redtowhite3_0','Sample2':'redtowhite3_1'}
         self.colors2={'Sample1':'redtowhite3_0'}
@@ -82,7 +79,7 @@ class TopLevelTests(TestCase):
                     'rare610.txt\t610\t1\t12.9862\t0.42877\t11.58642']
                     
         self.rares = {'test.txt': (['', 'sequences per sample', 'iteration', \
-                      'Sample1', 'Sample2'], [], ['rare1.txt', 'rare2.txt'], \
+                      'Sample1'], [], ['rare1.txt', 'rare2.txt'], \
                       [[10.0, 2.0, 7.0, 7.0, 9.0], [10.0, 2.0, 7.0, 7.0, 9.0]])}
         self.col_headers, self.comments, self.rarefaction_fns, \
         self.rarefaction_data = parse_rarefaction(self.rarefactionfile)
@@ -98,37 +95,53 @@ class TopLevelTests(TestCase):
         self.rarefaction_legend_mat_init={'test': {'SampleID': {}}}
         self.col_headers2=['', 'sequences per sample', 'iteration', 'Sample1', \
                            'Sample2']
-        self.rarefaction_legend_mat_init_single_rare={'test': {'SampleID': \
-            {'Sample1': {'link': 'all_other_plots/testSampleIDSample1.png',\
-            'groupcolor': '#0000ff', 'groupsamples': {'Sample1': '#0000ff'}}}}}
-        self.rarefaction_legend_mat_returned={'test': {'SampleID': {'Sample1':\
-            {'link': 'tmp/testSampleID.png',  'groupcolor': '#00ff7f', \
-            'groupsamples': {'Sample1': '#007fff'}},'link': \
-            'tmp/testSampleID.png'}}}
-        self.rarefaction_data_mat={'SampleID': {'Sample1': {'test': \
-                                   {'ave': ['     1.361', '     2.175'],'err':\
-                                   ['     0.000', '     0.000']}}}}
+                           
+        self.rarefaction_data_mat={'SampleID': {'Sample1': {'test': {'ave': ['     7.000'], 'err': ['     0.000']}}}}
+       
+        self.rarefaction_legend_mat={'test': {'samples': {'Sample1': {'color': '#0000ff', 'link': 'html_plots/testSample1.png'}}, 'groups': {'SampleID': {'Sample1': {'groupcolor': '#0000ff', 'groupsamples': ['Sample1']}}}}}
+        
     
     def tearDown(self):
         '''This function removes the generated files'''
         map(remove,self._paths_to_clean_up)
         map(rmtree,self._folders_to_cleanup)
-    
+        
     def test_save_ave_rarefaction_plots(self):
         '''save_ave_rarefaction_plots: this tests the functionality of 
            creating a rarefaction plot based on the average rarefaction 
            values'''
-           
+       
         filename1='/tmp/test1SampleID.png'
         self._paths_to_clean_up = [filename1]
 
-        exp={'test': {'SampleID': {'link': 'average_plots/testSampleID.png'}}}
+        exp=None
+        
         obs=save_ave_rarefaction_plots(self.data['xaxis'], \
                     self.data['yvals'],self.data['err'], \
                     self.xmax, self.ymax, self.ops, self.mapping_category, \
                     self.imagetype, self.resolution, self.data_colors, \
                     self.colors, '/tmp/test1',self.background_color, \
-                    self.label_color,self.rarefaction_legend_mat_init, \
+                    self.label_color,self.metric_name)
+                
+        self.assertEqual(obs,exp)
+        self.assertTrue(exists(filename1))
+                    
+    def test_save_single_ave_rarefaction_plots(self):
+        '''save_single_ave_rarefaction_plots: this tests the functionality of 
+           creating a rarefaction plot based on the average rarefaction 
+           values'''
+           
+        filename1='/tmp/test1SampleIDSample1.png'
+        self._paths_to_clean_up = [filename1]
+
+        exp={'test': {'groups': {'SampleID': {'Sample1': {'link': 'html_plots/testSampleIDSample1.png', 'groupcolor': '#0000ff', 'groupsamples': ['Sample1']}}}, 'samples': {'Sample1': {'color': '#0000ff', 'link': 'html_plots/testSample1.png'}}}}
+        
+        obs=save_single_ave_rarefaction_plots(self.data['xaxis'], \
+                    self.data['yvals'],self.data['err'], \
+                    self.xmax, self.ymax, self.ops, self.mapping_category, \
+                    self.imagetype, self.resolution, self.data_colors, \
+                    self.colors, '/tmp/test1',self.background_color, \
+                    self.label_color,self.rarefaction_legend_mat, \
                     self.metric_name)
                     
         self.assertEqual(obs,exp)
@@ -151,7 +164,7 @@ class TopLevelTests(TestCase):
         
     def test_make_html(self):
         '''make_html: this tests the output html format'''
-        obs=make_html(self.rarefaction_legend_mat_returned, \
+        obs=make_html(self.rarefaction_legend_mat, \
                          self.rarefaction_data_mat,self.data['xaxis'], \
                          self.imagetype)
                          
@@ -161,23 +174,21 @@ class TopLevelTests(TestCase):
         '''make_averages: this tests the main function in make_rarefaction_plots
            and returns an html output'''
            
-        filename1='/tmp/all_other_plots/testSampleIDSample1.png'
-        filename2='/tmp/all_other_plots/testSampleIDSample2.png'
-        folder1='/tmp/all_other_plots'
+        filename1='/tmp/html_plots/testSampleIDSample1.png'
+        folder1='/tmp/html_plots'
         filename3='/tmp/average_tables/testSampleID.txt'
         folder2='/tmp/average_tables'
         filename4='/tmp/average_plots/testSampleID.png'
         folder3='/tmp/average_plots'
-        self._paths_to_clean_up = [filename1,filename2,filename3,filename4]
+        self._paths_to_clean_up = [filename1,filename3,filename4]
         self._folders_to_cleanup = [folder1,folder2,folder3]
         
         obs=make_averages(self.color_prefs,self.data,self.background_color, \
                           self.label_color,self.rares,self.output_dir, \
-                          self.resolution,self.imagetype,None)
+                          self.resolution,self.imagetype,None,True)
                           
-        self.assertEqual(obs,exp_make_avg)
+        self.assertEqual(obs,exp_html)
         self.assertTrue(exists(filename1))
-        self.assertTrue(exists(filename2))
         self.assertTrue(exists(filename3))
         self.assertTrue(exists(filename4))
         self.assertTrue(exists(folder1)) 
@@ -187,9 +198,7 @@ class TopLevelTests(TestCase):
     def test_save_rarefaction_data(self):
         '''save_rarefaction_data: This tests the rarefaction average output'''
         
-        exp=['# test.txt\n', '# SampleID\n', 'xaxis: 10.0\t23.0\t\n', \
-        'xmax: 140\n', '>> Sample1\n', 'color #ff0000\n', 'series ', \
-        'nan\n', 'error ', '0.0\n']
+        exp=['# test.txt\n', '# SampleID\n', 'xaxis: 10.0\t\n', 'xmax: 140\n', '>> Sample1\n', 'color #7fff00\n', 'series ', 'nan\n', 'error ', '0.0\n']
                      
         obs=save_rarefaction_data(self.ave_seqs_per_sample,self.data['xaxis'],\
                                   self.xmax,self.mapping_category,self.colors2,\
@@ -201,20 +210,18 @@ class TopLevelTests(TestCase):
         '''save_single_rarefaction_plots: this generates a plot with raw
            rarefaction data on a plot and tests whether a file is generated'''
            
-        filename1='/tmp/testSampleID.png'
+        filename1='/tmp/testSampleIDSample1.png'
         self._paths_to_clean_up = [filename1]
 
-        exp={'test': {'SampleID': {'Sample1': {'groupcolor': '#0000ff', 'link':\
-                     'all_other_plots/testSampleIDSample1.png', 'groupsamples':\
-                     {'Sample1': '#ff0000'}}}}}
+        exp={'test': {'groups': {'SampleID': {'Sample1': {'groupcolor': '#0000ff', 'groupsamples': ['Sample1']}}}, 'samples': {'Sample1': {'color': '#7fff00', 'link': 'html_plots/testSample1.png'}}}}
                      
-        obs=save_single_rarefaction_plots(['Sample1'],self.sample_dict, \
-                    self.imagetype,self.metric_name,'SampleID', \
+        obs=save_single_rarefaction_plots(self.sample_dict, \
+                    self.imagetype,self.metric_name, \
                     self.data_colors, self.colors, '/tmp/testSampleID', \
                     self.background_color, self.label_color, self.resolution, \
-                    self.ymax,self.xmax,'Sample1', \
-                    self.rarefaction_legend_mat_init_single_rare)
-                    
+                    self.ymax,self.xmax, \
+                    self.rarefaction_legend_mat)
+ 
         self.assertEqual(obs,exp)
         self.assertTrue(exists(filename1))
     
@@ -242,19 +249,14 @@ class TopLevelTests(TestCase):
         """make_plots: tests whether the average plots are generated and if
            dictionary for the html generation is properly formatted"""
 
-        filename1='/tmp/test/testSampleID.png'
+        filename1='/tmp/test/testSampleIDSample1.png'
         folder1='/tmp/test/'
         
         self._paths_to_clean_up = [filename1]
         self._folders_to_cleanup=[folder1]
         
-        exp1={'SampleID': {'Sample1': {'test': {'ave': ['     1.361', \
-        '     2.175', '     2.052', '     2.805'], 'err': ['     0.000', \
-        '     0.000', '     0.000', '     0.000']}}}}
-        
-        exp2={'test': {'SampleID': {'link': 'average_plots/testSampleID.png', \
-        'Sample1': {'groupcolor': '#00ff7f', 'link': 'tmp/testSampleID.png', 
-        'groupsamples': {'Sample1': '#007fff'}}}}}
+        exp1={'SampleID': {'Sample1': {'test': {'ave': ['     7.000', '     2.052'], 'err': ['     0.000', '     0.000']}}}}
+        exp2={'test': {'groups': {'SampleID': {'Sample1': {'link': 'html_plots/testSampleIDSample1.png', 'groupcolor': '#0000ff', 'groupsamples': ['Sample1']}}}, 'samples': {'Sample1': {'color': '#0000ff', 'link': 'html_plots/testSample1.png'}}}}
         
         create_dir('/tmp/test/',False)
         
@@ -263,7 +265,7 @@ class TopLevelTests(TestCase):
                           self.resolution, self.imagetype,self.groups,\
                           self.colors,self.data_colors,self.metric_name,\
                           self.labelname,self.rarefaction_data_mat, \
-                          self.rarefaction_legend_mat_returned)
+                          self.rarefaction_legend_mat)
         
         self.assertEqual(obs1,exp1)
         self.assertEqual(obs2,exp2)
@@ -288,10 +290,8 @@ class TopLevelTests(TestCase):
 
     
 exp_html=\
-'''\n<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">\n<html>\n<head>\n  <meta http-equiv="content-type" content="text/html;">\n  <title>Rarefaction Curves</title>\n<style type="text/css">\ntd.data{font-size:10px}\ntd.headers{font-size:12px}\ntable{border-spacing:0px}\n.removed{display:none;}\n.expands{cursor:pointer; cursor:hand;}\n.child1 td:first-child{padding-left: 3px;}\n</style>\n<script language="javascript" type="text/javascript">\n\nfunction change_plot(object){\nplot_img=document.getElementById(\'plots\');\nplot_img.src=object\n}\n\nfunction changeMetric(SelObject){\n    var old_category=document.getElementById(\'category\');\n    var old_metric=document.getElementById(\'metric\');\n    var imagetype=document.getElementById(\'imagetype\').value;\n    var legend=document.getElementById(\'legend\');\n\n    if (old_category.value != \'\'){\n        plot_img=document.getElementById(\'plots\');\n        plot_loc=\'./average_plots/\'+SelObject.value+old_category.value+imagetype\n        plot_img.src=plot_loc\n        plot_img.style.display="";\n        legend.style.display="";\n         data_display=document.getElementsByName(SelObject.value+old_category.value)\n        for (var i=0;i<data_display.length;i++){\n            data_display[i].style.display="";\n        }\n        data_hide=document.getElementsByName(old_metric.value+old_category.value)\n        for (var i=0;i<data_hide.length;i++){\n            data_hide[i].style.display="none";\n        }\n        \n        data_display=document.getElementsByName(old_category.value)\n        for (var i=0;i<data_display.length;i++){\n            data_display[i].style.display="";\n        }\n    }\n    \nold_metric.value=SelObject.value;\n}\n\nfunction changeCategory(SelObject){\n    var old_category=document.getElementById(\'category\');\n    var old_metric=document.getElementById(\'metric\');\n    var imagetype=document.getElementById(\'imagetype\').value;\n    var legend=document.getElementById(\'legend\');\n\n    if (old_metric.value != \'\'){\n        plot_img=document.getElementById(\'plots\');\n        plot_loc=\'./average_plots/\'+old_metric.value+SelObject.value+imagetype;\n        plot_img.src=plot_loc;\n        plot_img.style.display="";\n        legend.style.display="";\n        \n        data_display=document.getElementsByName(SelObject.value)\n        for (var i=0;i<data_display.length;i++){\n            data_display[i].style.display="";\n        }\n\n        data_hide=document.getElementsByName(old_category.value)\n        for (var i=0;i<data_hide.length;i++){\n            data_hide[i].style.display="none";\n        }\n\n        data_display=document.getElementsByName(old_metric.value+SelObject.value)\n        for (var i=0;i<data_display.length;i++){\n            data_display[i].style.display="";\n        }\n\n        data_hide=document.getElementsByName(old_metric.value+old_category.value)\n        for (var i=0;i<data_hide.length;i++){\n            data_hide[i].style.display="none";\n        }\n    }\nold_category.value=SelObject.value;\n}\n\nfunction toggle(){\n    if (arguments[0].innerHTML==\'\\u25B6\'){\n        arguments[0].innerHTML=\'\\u25BC\'\n    }else{\n        arguments[0].innerHTML=\'\\u25B6\'\n    }\n    for(var i=1; i<arguments.length; i++){\n        with(document.getElementById(arguments[i])){\n            if(className.indexOf(\'removed\') > -1){\n                className = className.replace(\'removed\');\n            }else{\n                className += \' removed\';\n            }\n        }\n    }\n}\n</script>\n\n\n\n</head>\n<body>\n<form>\n<input id="metric" type="hidden"></input>\n<input id="category" type="hidden"></input>\n<input id="imagetype" type="hidden" value=".png"></input>\n</form>\n<table><tr>\n<td><b>Select a Metric:</b></td>\n<td>\n<select onchange="javascript:changeMetric(this)">\n<option></option>\n<option value="test">test</option>\n</select>\n</td>\n<td><b>Select a Category:</b></td>\n<td>\n<select onchange="javascript:changeCategory(this)">\n<option></option>\n<option value="SampleID">SampleID</option>\n</select>\n</td>\n</table>\n<br>\n<table><tr><td><img id="plots" style="display: none; height: 400px;" \\></td><td id="legend" style="display: none;"><b>Legend</b><div STYLE="border: thin black solid; height: 300px; width: 150px; font-size: 12px; overflow: auto;"><table><tr id="testSampleID" class="expands" onclick="toggle(testSampleIDSample1,\'testSampleIDSample1\')" name="testSampleID" style="display: none;" onmouseover="javascript:change_plot(\'./tmp/testSampleID.png\')" onmouseout="javascript:change_plot(\'./tmp/testSampleID.png\')"><td id="testSampleIDSample1"  class="data">&#x25B6;</td><td class="data" bgcolor="#00ff7f"><b>Sample1</b></td></tr>\n<tr id="testSampleIDSample1" name="testSampleID" class="removed child1"><td class="data" align="right">&#x221F;</td><td bgcolor="#007fff" class="data" style="border:thin white solid;"><b>Sample1</b></td></tr></table></div></td></tr></table>\n<br>\n<table id="rare_data">\n<tr name="SampleID" style="display: none;"><td class="headers">SampleID</td><td class="headers">Seqs/Sample</td>\n<td class="headers">test Ave.</td><td class="headers">test Err.</td>\n</tr>\n<tr name="SampleID" style="display: none;"></tr>\n<tr name="SampleID" style="display: none;">\n<td class="data" bgcolor="#00ff7f">Sample1</td><td class="data">10.0</td>\n<td class="data">     1.361</td><td class="data">     0.000</td>\n<tr name="SampleID" style="display: none;">\n<td class="data" bgcolor="#00ff7f">Sample1</td><td class="data">23.0</td>\n<td class="data">     2.175</td><td class="data">     0.000</td>\n</tr>\n</table>\n</body>\n</html>\n'''
-
-exp_make_avg=\
-'''\n<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">\n<html>\n<head>\n  <meta http-equiv="content-type" content="text/html;">\n  <title>Rarefaction Curves</title>\n<style type="text/css">\ntd.data{font-size:10px}\ntd.headers{font-size:12px}\ntable{border-spacing:0px}\n.removed{display:none;}\n.expands{cursor:pointer; cursor:hand;}\n.child1 td:first-child{padding-left: 3px;}\n</style>\n<script language="javascript" type="text/javascript">\n\nfunction change_plot(object){\nplot_img=document.getElementById(\'plots\');\nplot_img.src=object\n}\n\nfunction changeMetric(SelObject){\n    var old_category=document.getElementById(\'category\');\n    var old_metric=document.getElementById(\'metric\');\n    var imagetype=document.getElementById(\'imagetype\').value;\n    var legend=document.getElementById(\'legend\');\n\n    if (old_category.value != \'\'){\n        plot_img=document.getElementById(\'plots\');\n        plot_loc=\'./average_plots/\'+SelObject.value+old_category.value+imagetype\n        plot_img.src=plot_loc\n        plot_img.style.display="";\n        legend.style.display="";\n         data_display=document.getElementsByName(SelObject.value+old_category.value)\n        for (var i=0;i<data_display.length;i++){\n            data_display[i].style.display="";\n        }\n        data_hide=document.getElementsByName(old_metric.value+old_category.value)\n        for (var i=0;i<data_hide.length;i++){\n            data_hide[i].style.display="none";\n        }\n        \n        data_display=document.getElementsByName(old_category.value)\n        for (var i=0;i<data_display.length;i++){\n            data_display[i].style.display="";\n        }\n    }\n    \nold_metric.value=SelObject.value;\n}\n\nfunction changeCategory(SelObject){\n    var old_category=document.getElementById(\'category\');\n    var old_metric=document.getElementById(\'metric\');\n    var imagetype=document.getElementById(\'imagetype\').value;\n    var legend=document.getElementById(\'legend\');\n\n    if (old_metric.value != \'\'){\n        plot_img=document.getElementById(\'plots\');\n        plot_loc=\'./average_plots/\'+old_metric.value+SelObject.value+imagetype;\n        plot_img.src=plot_loc;\n        plot_img.style.display="";\n        legend.style.display="";\n        \n        data_display=document.getElementsByName(SelObject.value)\n        for (var i=0;i<data_display.length;i++){\n            data_display[i].style.display="";\n        }\n\n        data_hide=document.getElementsByName(old_category.value)\n        for (var i=0;i<data_hide.length;i++){\n            data_hide[i].style.display="none";\n        }\n\n        data_display=document.getElementsByName(old_metric.value+SelObject.value)\n        for (var i=0;i<data_display.length;i++){\n            data_display[i].style.display="";\n        }\n\n        data_hide=document.getElementsByName(old_metric.value+old_category.value)\n        for (var i=0;i<data_hide.length;i++){\n            data_hide[i].style.display="none";\n        }\n    }\nold_category.value=SelObject.value;\n}\n\nfunction toggle(){\n    if (arguments[0].innerHTML==\'\\u25B6\'){\n        arguments[0].innerHTML=\'\\u25BC\'\n    }else{\n        arguments[0].innerHTML=\'\\u25B6\'\n    }\n    for(var i=1; i<arguments.length; i++){\n        with(document.getElementById(arguments[i])){\n            if(className.indexOf(\'removed\') > -1){\n                className = className.replace(\'removed\');\n            }else{\n                className += \' removed\';\n            }\n        }\n    }\n}\n</script>\n\n\n\n</head>\n<body>\n<form>\n<input id="metric" type="hidden"></input>\n<input id="category" type="hidden"></input>\n<input id="imagetype" type="hidden" value=".png"></input>\n</form>\n<table><tr>\n<td><b>Select a Metric:</b></td>\n<td>\n<select onchange="javascript:changeMetric(this)">\n<option></option>\n<option value="test">test</option>\n</select>\n</td>\n<td><b>Select a Category:</b></td>\n<td>\n<select onchange="javascript:changeCategory(this)">\n<option></option>\n<option value="SampleID">SampleID</option>\n</select>\n</td>\n</table>\n<br>\n<table><tr><td><img id="plots" style="display: none; height: 400px;" \\></td><td id="legend" style="display: none;"><b>Legend</b><div STYLE="border: thin black solid; height: 300px; width: 150px; font-size: 12px; overflow: auto;"><table><tr id="testSampleID" class="expands" onclick="toggle(testSampleIDSample1,\'testSampleIDSample1\')" name="testSampleID" style="display: none;" onmouseover="javascript:change_plot(\'./all_other_plots/testSampleIDSample1.png\')" onmouseout="javascript:change_plot(\'./average_plots/testSampleID.png\')"><td id="testSampleIDSample1"  class="data">&#x25B6;</td><td class="data" bgcolor="#0000ff"><b>Sample1</b></td></tr>\n<tr id="testSampleIDSample1" name="testSampleID" class="removed child1"><td class="data" align="right">&#x221F;</td><td bgcolor="#0000ff" class="data" style="border:thin white solid;"><b>Sample1</b></td></tr>\n<tr id="testSampleID" class="expands" onclick="toggle(testSampleIDSample2,\'testSampleIDSample2\')" name="testSampleID" style="display: none;" onmouseover="javascript:change_plot(\'./all_other_plots/testSampleIDSample2.png\')" onmouseout="javascript:change_plot(\'./average_plots/testSampleID.png\')"><td id="testSampleIDSample2"  class="data">&#x25B6;</td><td class="data" bgcolor="#00ff00"><b>Sample2</b></td></tr>\n<tr id="testSampleIDSample2" name="testSampleID" class="removed child1"><td class="data" align="right">&#x221F;</td><td bgcolor="#00ff00" class="data" style="border:thin white solid;"><b>Sample2</b></td></tr></table></div></td></tr></table>\n<br>\n<table id="rare_data">\n<tr name="SampleID" style="display: none;"><td class="headers">SampleID</td><td class="headers">Seqs/Sample</td>\n<td class="headers">test Ave.</td><td class="headers">test Err.</td>\n</tr>\n<tr name="SampleID" style="display: none;"></tr>\n<tr name="SampleID" style="display: none;">\n<td class="data" bgcolor="#0000ff">Sample1</td><td class="data">10.0</td>\n<td class="data">     7.000</td><td class="data">     0.000</td>\n<tr name="SampleID" style="display: none;">\n<td class="data" bgcolor="#00ff00">Sample2</td><td class="data">10.0</td>\n<td class="data">     7.000</td><td class="data">     0.000</td>\n</tr>\n</table>\n</body>\n</html>\n'''
+'''\n<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">\n<html>\n<head>\n  <meta http-equiv="content-type" content="text/html;">\n  <title>Rarefaction Curves</title>\n<style type="text/css">\ntd.data{font-size:10px;border-spacing:0px 10px;text-align:center;}\ntd.headers{font-size:12px;font-weight:bold;text-align:center;}\ntable{border-spacing:0px;}\n.removed{display:none;}\n.expands{cursor:pointer; cursor:hand;}\n.child1 td:first-child{padding-left: 3px;}\n</style>\n<script language="javascript" type="text/javascript">\n\nfunction show_hide_category(checkobject){\n\timg=document.getElementById(checkobject.name)\n\tif (checkobject.checked==false){\n\t\timg.style.display=\'none\';\n\t}else{\n\t\timg.style.display=\'\';\n\t}\n\t\n}\n\nfunction show_hide_sample(checkobject){\n\tvar category=document.getElementById(\'category\').value;\n\timg=document.getElementById(checkobject.name.replace(category,\'\'))\n\tif (checkobject.checked==false){\n\t\timg.style.display=\'none\';\n\t}else{\n\t\timg.style.display=\'\';\n\t}\n\t\n}\n\n\nfunction reset_tree(){\n\tvar category=document.getElementById(\'category\').value;\n    var metric=document.getElementById(\'metric\').value;\n\tvar old_all_categories=document.getElementById(\'all_categories\')\n\tcat_list=old_all_categories.value.split(\'$#!\')\n\tif (metric!=\'\' && category != \'\'){\n\tfor (var i=1, il=cat_list.length; i<il; i++){\n\t\tgroup=metric+category+cat_list[i]\n\t\tvar exp_item=document.getElementById(group);\n\t\tif (exp_item!=null){\n\t\t\tif (exp_item.innerHTML==\'\\u25BC\'){\n\t\t\t\texp_item.innerHTML=\'\\u25B6\'\n\t\t\t\tvar rows=document.getElementsByName(group);\n\t\t\t\tfor (var j=0, jl=rows.length; j<jl; j++){\n\t\t\t\t\trows[j].style.display="none";\n\t\t\t\t\t\n\t\t\t\t\tif (rows[j].children[1].children[0].checked==false){\n\t\t\t\t\t\trows[j].children[1].children[0].checked=true;\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\t\t\tif (exp_item.nextSibling.children[0].checked==false){\n\t\t\t\texp_item.nextSibling.children[0].checked=true\n\t\t\t}\n\t\t}\n\t}\n}\n}\n\nfunction changeMetric(SelObject){\n    var category=document.getElementById(\'category\');\n    var old_metric=document.getElementById(\'metric\');\n    var imagetype=document.getElementById(\'imagetype\').value;\n    var legend=document.getElementById(\'legend\');\n\tvar array=document.getElementById(\'all_categories\').value.split(\'$#!\')\n\tvar plots=document.getElementById(\'plots\');\n\tplots.style.display=\'none\'\n\treset_tree();\n\t\n    if (category.value != \'\'){\n        legend.style.display="";\n\t\tcat=SelObject.value+category.value\n        data_display=document.getElementsByName(cat)\n        for (var i=0, il=data_display.length; i<il; i++){\n            data_display[i].style.display="";\n        }\n\t\tcat=old_metric.value+category.value\n        data_hide=document.getElementsByName(cat)\n        for (var i=0, il=data_hide.length; i<il; i++){\n            data_hide[i].style.display="none";\n        }\n        \n        data_display=document.getElementsByName(category.value)\n        for (var i=0, il=data_display.length; i<il; i++){\n            data_display[i].style.display="";\n        }\n\t\tplot_str=\'\'\n        for (var i=1, il=array.length; i<il; i++){\n\t\t\tplot_str+=\'<img height="450px" id="\'\n\t\t\tplot_str+=SelObject.value\n\t\t\tplot_str+=category.value\n\t\t\tplot_str+=array[i]\n\t\t\tplot_str+=imagetype\n\t\t\tplot_str+=\'" style="position:absolute;z-index:0" src="./html_plots/\'\n\t\t\tplot_str+=SelObject.value\n\t\t\tplot_str+=category.value\n\t\t\tplot_str+=array[i]\n\t\t\tplot_str+=imagetype\n\t\t\tplot_str+=\'" \\>\'\n\t\t}\n\t\tplots.innerHTML=plot_str\n\t\tplots.style.display=\'\'\n    }\n    \nold_metric.value=SelObject.value;\n}\n\nfunction changeCategory(SelObject){\n    var old_category=document.getElementById(\'category\');\n    var metric=document.getElementById(\'metric\').value;\n    var imagetype=document.getElementById(\'imagetype\').value;\n    var legend=document.getElementById(\'legend\');\n\tvar plots=document.getElementById(\'plots\');\n\tvar array=SelObject.value.split(\'$#!\')\n\tvar old_all_categories=document.getElementById(\'all_categories\')\n\tcategory=array[0]\n\tplots.style.display=\'none\'\n\treset_tree();\n\n    if (metric != \'\'){\n\t\tlegend.style.display="";\n\n        data_display=document.getElementsByName(category)\n        for (var i=0, il=data_display.length; i<il; i++){\n            data_display[i].style.display="";\n        }\n        data_hide=document.getElementsByName(old_category.value)\n        for (var i=0, il=data_hide.length; i<il; i++){\n            data_hide[i].style.display="none";\n        }\n\t\tcat=metric+category\n        data_display=document.getElementsByName(cat)\n        for (var i=0, il=data_display.length; i<il; i++){\n            data_display[i].style.display="";\n        }\n\t\tcat=metric+old_category.value\n        data_hide=document.getElementsByName(cat)\n        for (var i=0, il=data_hide.length; i<il; i++){\n            data_hide[i].style.display="none";\n        }\n\t\tplot_str=\'\'\n        for (var i=1, il=array.length; i<il; i++){\n\t\t\tplot_str+=\'<img height="450px" id="\'\n\t\t\tplot_str+=metric\n\t\t\tplot_str+=category\n\t\t\tplot_str+=array[i]\n\t\t\tplot_str+=imagetype\n\t\t\tplot_str+=\'" style="position:absolute;z-index:0" src="./html_plots/\'\n\t\t\tplot_str+=metric\n\t\t\tplot_str+=category\n\t\t\tplot_str+=array[i]\n\t\t\tplot_str+=imagetype\n\t\t\tplot_str+=\'" \\>\'\n\t\t}\n\t\tplots.innerHTML=plot_str\n\t\tplots.style.display=\'\'\n    }\nold_all_categories.value=SelObject.value;\nold_category.value=category;\n}\nfunction toggle(){\n\tvar plots=document.getElementById(\'plots\');\n\tvar imagetype=document.getElementById(\'imagetype\').value;\n\tvar plot_str=\'\';\n\tvar category=document.getElementById(\'category\');\n    var metric=document.getElementById(\'metric\');\n\texpansion_element=document.getElementById(arguments[0]);\n\trows=document.getElementsByName(arguments[0]);\n    if (expansion_element.innerHTML==\'\\u25B6\'){\n        expansion_element.innerHTML=\'\\u25BC\'\n \t\tfor (var j=1, il=arguments.length; j<il; j++){\n\t\t\tshow_row=metric.value+arguments[j]+imagetype\n\t\t\tdocument.getElementsByName(category.value+show_row)[0].checked=true\n\t\t\t\n\t\t\tif (document.getElementById(show_row)==null){\n\t\t\t\tplot_str+=\'<img height="450px" id="\'\n\t\t\t\tplot_str+=metric.value\n\t\t\t\tplot_str+=arguments[j]\n\t\t\t\tplot_str+=imagetype\n\t\t\t\tplot_str+=\'" style="position:absolute;z-index:0" src="./html_plots/\'\n\t\t\t\tplot_str+=metric.value\n\t\t\t\tplot_str+=arguments[j]\n\t\t\t\tplot_str+=imagetype\n\t\t\t\tplot_str+=\'" \\>\'\n\t\t\t}else{\n\t\t\t\tdocument.getElementById(show_row).style.display=\'\'\n\t\t\t}\n\t\t\trow_id=j-1\n\t\t\trows[row_id].style.display=\'\';\n\t\t}\n\t\tplots.innerHTML+=plot_str\n    }else{\n        expansion_element.innerHTML=\'\\u25B6\'\n \t\tfor (var k=1, il=arguments.length; k<il; k++){\n\t\t\tdocument.getElementById(metric.value+arguments[k]+imagetype).style.display=\'none\'\n\t\t\tdocument.getElementsByName(category.value+metric.value+arguments[k]+imagetype)[0].checked=true\n\t\t\trow_id=k-1\n\t\t\trows[row_id].style.display=\'none\';\n\t\t}\n\t\t\n    }\n}\n\nfunction show_hide_categories(SelObject){\n\tvar all_categories=document.getElementById(\'all_categories\').value.split(\'$#!\')\n\tvar category=document.getElementById(\'category\').value;\n\tvar imagetype=document.getElementById(\'imagetype\').value;\n    var metric=document.getElementById(\'metric\').value;\n\tfor (var i=1, il=all_categories.length; i<il; i++){\n\t\timage=metric+category+all_categories[i]+imagetype\n\t\tcheckbox=document.getElementsByName(image)\n\t\tif (SelObject.value==\'All\'){\n\t\t\tif (checkbox[0].checked==false){\n\t\t\t\tcheckbox[0].checked=true\n\t\t\t\tdocument.getElementById(image).style.display=\'\'\n\t\t\t}\n\t\t}else if (SelObject.value==\'None\'){\n\t\t\tif (checkbox[0].checked==true){\n\t\t\t\tcheckbox[0].checked=false\n\t\t\t\tdocument.getElementById(image).style.display=\'none\'\n\t\t\t}\n\t\t}else if (SelObject.value==\'Invert\'){\n\t\t\tif (checkbox[0].checked==true){\n\t\t\t\tcheckbox[0].checked=false\n\t\t\t\tdocument.getElementById(image).style.display=\'none\'\n\t\t\t}else if (checkbox[0].checked==false){\n\t\t\t\tcheckbox[0].checked=true\n\t\t\t\tdocument.getElementById(image).style.display=\'\'\n\t\t\t}\n\t\t}\n\t}\n\tdocument.getElementById(\'show_category\').selectedIndex=0;\n}\nfunction show_hide_samples(SelObject){\n\tvar all_categories=document.getElementById(\'all_categories\').value.split(\'$#!\')\n\tvar category=document.getElementById(\'category\').value;\n\tvar imagetype=document.getElementById(\'imagetype\').value;\n    var metric=document.getElementById(\'metric\').value;\n\tfor (var i=1, il=all_categories.length; i<il; i++){\n\t\tvar cat_triangle=document.getElementById(metric+category+all_categories[i])\n\t\tif (cat_triangle.innerHTML==\'\\u25BC\'){\n\t\t\tvar samples=cat_triangle.getAttribute("name").split(\',\')\n\t\t\tfor (var j=0, jl=samples.length; j<jl; j++){\n\t\t\t\tsample=samples[j].replace(/\'/g,\'\')\n\t\t\t\tvar sampleimage=metric+sample+imagetype\n\t\t\t\tvar checkbox=document.getElementsByName(category+sampleimage)\n\t\t\t\tif (SelObject.value==\'All\'){\n\t\t\t\t\tif (checkbox[0].checked==false){\n\t\t\t\t\t\tcheckbox[0].checked=true\n\t\t\t\t\t\tdocument.getElementById(sampleimage).style.display=\'\'\n\t\t\t\t\t}\n\t\t\t\t}else if (SelObject.value==\'None\'){\n\t\t\t\t\tif (checkbox[0].checked==true){\n\t\t\t\t\t\tcheckbox[0].checked=false\n\t\t\t\t\t\tdocument.getElementById(sampleimage).style.display=\'none\'\n\t\t\t\t\t}\n\t\t\t\t}else if (SelObject.value==\'Invert\'){\n\t\t\t\t\tif (checkbox[0].checked==true){\n\t\t\t\t\t\tcheckbox[0].checked=false\n\t\t\t\t\t\tdocument.getElementById(sampleimage).style.display=\'none\'\n\t\t\t\t\t}else if (checkbox[0].checked==false){\n\t\t\t\t\t\tcheckbox[0].checked=true\n\t\t\t\t\t\tdocument.getElementById(sampleimage).style.display=\'\'\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n\tdocument.getElementById(\'show_sample\').selectedIndex=0;\n}\n</script>\n\n</head>\n<body>\n<form>\n<input id="metric" type="hidden"></input>\n<input id="category" type="hidden"></input>\n<input id="imagetype" type="hidden" value=".png"></input>\n<input id="all_categories" type="hidden"></input>\n</form>\n<table><tr>\n<td><b>Select a Metric:</b></td>\n<td>\n<select onchange="javascript:changeMetric(this)">\n<option></option>\n<option value="test">test</option>\n</select>\n</td>\n<td><b>Select a Category:</b></td>\n<td>\n<select onchange="javascript:changeCategory(this)">\n<option></option>\n<option value="SampleID$#!Sample1">SampleID</option>\n</select>\n</td>\n</table>\n<br>\n<div style="width:790px">\n<div id="plots" style="height:450px;float:left;"></div>\n\n<div id="legend" style="height:450px;float:right;display:none;">\n\t<p><b>Show Categories: \n\t<select id="show_category" onchange="show_hide_categories(this);">\n\t\t<option value=""></option>\n\t\t<option value="All">All</option>\n\t\t<option value="None">None</option>\n\t\t<option value="Invert">Invert</option>\n\t</select>\n\t</b></p>\n\t<p><b>Show Samples: \n\t<select id="show_sample" onchange="show_hide_samples(this);">\n\t\t<option value=""></option>\n\t\t<option value="All">All</option>\n\t\t<option value="None">None</option>\n\t\t<option value="Invert">Invert</option>\n\t</select>\n\t</b></p>\n<b>Legend</b><div STYLE="border: thin black solid; height: 300px; width: 150px; font-size: 12px; overflow: auto;"><table>\n<tr id="testSampleID" name="testSampleID" style="display: none;"><td class="data" onclick="toggle(\'testSampleIDSample1\',\'Sample1\')" id="testSampleIDSample1" name="\'Sample1\'">&#x25B6;</td><td><input name="testSampleIDSample1.png" type="checkbox" checked="True" onclick="show_hide_category(this)" \\></td><td style="color:#0000ff">&#x25A0;&nbsp;</td><td class="data"><b>Sample1</b></td></tr>\n<tr id="testSampleIDSample1" name="testSampleIDSample1" style="display: none;"><td class="data" align="right">&#x221F;</td><td><input name="SampleIDtestSample1.png" type="checkbox" checked="True" onclick="show_hide_sample(this)" \\><td style="color:#0000ff">&#x25C6;</td><td class="data"><b>Sample1</b></td></tr>\n</table></div></div>\n<div style="position:relative;clear:both;">\n<table id="rare_data" border="1px">\n<tr name="SampleID" style="display: none;"><td class="headers">SampleID</td><td class="headers">Seqs/Sample</td>\n<td class="headers">test Ave.</td><td class="headers">test Err.</td>\n</tr>\n<tr name="SampleID" style="display: none;">\n<td class="data" bgcolor="#0000ff">Sample1</td><td class="data">10.0</td>\n<td class="data">     7.000</td><td class="data">     0.000</td>\n</tr>\n</table>\n</div>\n</div>\n</body>\n</html>\n'''
+exp_make_avg=None
 
 if __name__ == "__main__":
     main()

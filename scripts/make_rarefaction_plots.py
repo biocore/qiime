@@ -46,6 +46,7 @@ make_option('-k', '--background_color', type='string', help='Background color fo
 make_option('-g', '--imagetype', type='string', help='extension for image type choose from (png, svg, pdf).  WARNING: Some formats may not properly open in your browser! [default: %default]', default='png'),
 make_option('-d', '--resolution', help='output image resolution, [default: %default]', type='int', default='75'),
 make_option('-y', '--ymax', type='int', help='this is the ymax value to be used for the plots, so you can compare rarefaction plots between two different analyses [default: %default]'),
+make_option('-w', '--webpage', action='store_false', help='this is allows to user to not create the webpage, which may be slow with large datasets [default: %default]', default=True),
 options_lookup['output_dir']
 ]
 script_info['version'] = __version__
@@ -117,15 +118,16 @@ def main():
     #Generate the plots and html text
     
     ymax=options.ymax
-    
+    make_webpage=options.webpage
     html_output = make_averages(prefs, data, background_color, label_color, \
-                                rares, output_dir,resolution,imagetype,ymax)
+                                rares, output_dir,resolution,imagetype,ymax,
+                                make_webpage)
 
-              
-    #Write the html file.
-    outfile = open(path.join(output_dir,'rarefaction_plots.html'),'w')
-    outfile.write(html_output)
-    outfile.close()
+    if html_output:
+        #Write the html file.
+        outfile = open(path.join(output_dir,'rarefaction_plots.html'),'w')
+        outfile.write(html_output)
+        outfile.close()
 
 
 if __name__ == "__main__":
