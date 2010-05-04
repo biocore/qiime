@@ -528,12 +528,12 @@ class UclustOtuPickerTests(TestCase):
         #enable abundance sorting with suppress sort = False (it gets
         # set to True internally, otherwise uclust's length sort would
         # override the abundance sorting)
-        seqs = [('s1','ACCTTGTTACTTT'),  # three copies
-                ('s2','ACCTTGTTACTTTC'), # one copy
-                ('s3','ACCTTGTTACTTTCC'),# two copies
-                ('s4','ACCTTGTTACTTT'),
-                ('s5','ACCTTGTTACTTTCC'),
-                ('s6','ACCTTGTTACTTT')]
+        seqs = [('s1 comment1','ACCTTGTTACTTT'),  # three copies
+                ('s2 comment2','ACCTTGTTACTTTC'), # one copy
+                ('s3 comment3','ACCTTGTTACTTTCC'),# two copies
+                ('s4 comment4','ACCTTGTTACTTT'),
+                ('s5 comment5','ACCTTGTTACTTTCC'),
+                ('s6 comment6','ACCTTGTTACTTT')]
         seqs_fp = self.seqs_to_temp_fasta(seqs)
         
         # abundance sorting changes order 
@@ -823,14 +823,14 @@ class UclustReferenceOtuPickerTests(TestCase):
     def test_toggle_suppress_sort(self):
         """UclustReferenceOtuPicker: togging suppress sort functions as expected
         """
-        seqs = [('s1','ACCTTGTTACTTT'),  # three copies
-                ('s2','ACCTTGTTACTTTC'), # one copy
-                ('s3','ACCTTGTTACTTTCC'),# two copies
-                ('s4','ACCTTGTTACTTT'),
-                ('s5','ACCTTGTTACTTTCC'),
-                ('s6','ACCTTGTTACTTT')]
+        seqs = [('s1 comment1','ACCTTGTTACTTT'),  # three copies
+                ('s2 comment2','ACCTTGTTACTTTC'), # one copy
+                ('s3 comment3','ACCTTGTTACTTTCC'),# two copies
+                ('s4 comment4','ACCTTGTTACTTT'),
+                ('s5 comment5','ACCTTGTTACTTTCC'),
+                ('s6 comment6','ACCTTGTTACTTT')]
         seqs_fp = self.seqs_to_temp_fasta(seqs)
-        ref_seqs = [('r1','ACCTTGTTACTTT')]
+        ref_seqs = [('r1 blah','ACCTTGTTACTTT')]
         ref_seqs_fp = self.seqs_to_temp_fasta(ref_seqs)
         
         # no abundance sorting and uclust's sorting enabled 
@@ -859,14 +859,14 @@ class UclustReferenceOtuPickerTests(TestCase):
         #enable abundance sorting with suppress sort = False (it gets
         # set to True internally, otherwise uclust's length sort would
         # override the abundance sorting)
-        seqs = [('s1','ACCTTGTTACTTT'),  # three copies
-                ('s2','ACCTTGTTACTTTC'), # one copy
-                ('s3','ACCTTGTTACTTTCC'),# two copies
-                ('s4','ACCTTGTTACTTT'),
-                ('s5','ACCTTGTTACTTTCC'),
-                ('s6','ACCTTGTTACTTT')]
+        seqs = [('s1 comment1','ACCTTGTTACTTT'),  # three copies
+                ('s2 comment2','ACCTTGTTACTTTC'), # one copy
+                ('s3 comment3','ACCTTGTTACTTTCC'),# two copies
+                ('s4 comment4','ACCTTGTTACTTT'),
+                ('s5 comment5','ACCTTGTTACTTTCC'),
+                ('s6 comment6','ACCTTGTTACTTT')]
         seqs_fp = self.seqs_to_temp_fasta(seqs)
-        ref_seqs = [('r1','ACCTTGTTACTTT')]
+        ref_seqs = [('r1 blah','ACCTTGTTACTTT')]
         ref_seqs_fp = self.seqs_to_temp_fasta(ref_seqs)
         
         # abundance sorting changes order 
@@ -892,11 +892,11 @@ class UclustReferenceOtuPickerTests(TestCase):
     def test_toggle_suppress_new_clusters(self):
         """UclustReferenceOtuPicker: toggle suppress new clusters 
         """
-        seqs = [('s1','ACCTTGTTACTTT'),
-                ('s2','ACCTAGTTACTTT'),
-                ('s3','TTGCGTAACGTTTGAC')]
+        seqs = [('s1 a','ACCTTGTTACTTT'),
+                ('s2 bb','ACCTAGTTACTTT'),
+                ('s3 c  c','TTGCGTAACGTTTGAC')]
         ref_seqs = [
-                ('r1','ACCTCGTTACTTT')]
+                ('r1 d','ACCTCGTTACTTT')]
         # these seqs should match at 0.90, but don't -- I can confirm this
         # running uclust directly, and have contacted Robert Edgar for
         # clarification
@@ -1657,46 +1657,46 @@ dna_seqs_2_result_prefilter =\
  {0: ['cdhit_test_seqs_0','cdhit_test_seqs_1','cdhit_test_seqs_2']}
 
 
-dna_seqs_3 = """>uclust_test_seqs_0
+dna_seqs_3 = """>uclust_test_seqs_0 some comment0
 AACCCCCACGGTGGATGCCACACGCCCCATACAAAGGGTAGGATGCTTAAGACACATCGCGTCAGGTTTGTGTCAGGCCT
->uclust_test_seqs_1
+>uclust_test_seqs_1 some comment1
 ACCCACACGGTGGATGCAACAGATCCCATACACCGAGTTGGATGCTTAAGACGCATCGCGTGAGTTTTGCGTCAAGGCT
->uclust_test_seqs_2
+>uclust_test_seqs_2 some comment2
 CCCCCACGGTGGCAGCAACACGTCACATACAACGGGTTGGATTCTAAAGACAAACCGCGTCAAAGTTGTGTCAGAACT
->uclust_test_seqs_3
+>uclust_test_seqs_3 some comment3
 CCCCACGGTAGCTGCAACACGTCCCATACCACGGGTAGGATGCTAAAGACACATCGGGTCTGTTTTGTGTCAGGGCT
->uclust_test_seqs_4
+>uclust_test_seqs_4 some comment4
 GCCACGGTGGGTACAACACGTCCACTACATCGGCTTGGAAGGTAAAGACACGTCGCGTCAGTATTGCGTCAGGGCT
->uclust_test_seqs_5
+>uclust_test_seqs_5 some comment4_again
 CCGCGGTAGGTGCAACACGTCCCATACAACGGGTTGGAAGGTTAAGACACAACGCGTTAATTTTGTGTCAGGGCA
->uclust_test_seqs_6
+>uclust_test_seqs_6 some comment6
 CGCGGTGGCTGCAAGACGTCCCATACAACGGGTTGGATGCTTAAGACACATCGCAACAGTTTTGAGTCAGGGCT
->uclust_test_seqs_7
+>uclust_test_seqs_7 some comment7
 ACGGTGGCTACAAGACGTCCCATCCAACGGGTTGGATACTTAAGGCACATCACGTCAGTTTTGTGTCAGAGCT
->uclust_test_seqs_8
+>uclust_test_seqs_8 some comment8
 CGGTGGCTGCAACACGTGGCATACAACGGGTTGGATGCTTAAGACACATCGCCTCAGTTTTGTGTCAGGGCT
->uclust_test_seqs_9
+>uclust_test_seqs_9 some comment9
 GGTGGCTGAAACACATCCCATACAACGGGTTGGATGCTTAAGACACATCGCATCAGTTTTATGTCAGGGGA"""
 
-uclustref_query_seqs1 = """>uclust_test_seqs_0
+uclustref_query_seqs1 = """>uclust_test_seqs_0 some comment aaa
 ACGGTGGCTACAAGACGTCCCATCCAACGGGTTGGATACTTAAGGCACATCACGTCAGTTTTGTGTCAGAGCT
->uclust_test_seqs_1
+>uclust_test_seqs_1 some comment bbb
 GCCACGGTGGGTACAACACGTCCACTACATCGGCTTGGAAGGTAAAGACACGTCGCGTCAGTATTGCGTCAGGGCT
->uclust_test_seqs_2
+>uclust_test_seqs_2 some comment vv
 CCCCCACGGTGGCAGCAACACGTCACATACAACGGGTTGGATTCTAAAGACAAACCGCGTCAAAGTTGTGTCAGAACT
->uclust_test_seqs_3
+>uclust_test_seqs_3 some comment
 CCCCACGGTAGCTGCAACACGTCCCATACCACGGGTAGGATGCTAAAGACACATCGGGTCTGTTTTGTGTCAGGGCT
->uclust_test_seqs_4
+>uclust_test_seqs_4 some comment
 ACCCACACGGTGGATGCAACAGATCCCATACACCGAGTTGGATGCTTAAGACGCATCGCGTGAGTTTTGCGTCAAGGCT
->uclust_test_seqs_5
+>uclust_test_seqs_5 some comment
 CCGCGGTAGGTGCAACACGTCCCATACAACGGGTTGGAAGGTTAAGACACAACGCGTTAATTTTGTGTCAGGGCA
->uclust_test_seqs_6 some comment
+>uclust_test_seqs_6 some comment6
 CGCGGTGGCTGCAAGACGTCCCATACAACGGGTTGGATGCTTAAGACACATCGCAACAGTTTTGAGTCAGGGCT
->uclust_test_seqs_7
+>uclust_test_seqs_7 some comment
 AACCCCCACGGTGGATGCCACACGCCCCATACAAAGGGTAGGATGCTTAAGACACATCGCGTCAGGTTTGTGTCAGGCCT
->uclust_test_seqs_8
+>uclust_test_seqs_8 some comment8
 CGGTGGCTGCAACACGTGGCATACAACGGGTTGGATGCTTAAGACACATCGCCTCAGTTTTGTGTCAGGGCT
->uclust_test_seqs_9
+>uclust_test_seqs_9 some comment
 GGTGGCTGAAACACATCCCATACAACGGGTTGGATGCTTAAGACACATCGCATCAGTTTTATGTCAGGGGA
 """
 
@@ -1723,9 +1723,9 @@ dna_seqs_3_result_file_90_exp = """0\tuclust_test_seqs_0
 
 dna_seqs_4 = """>uclust_test_seqs_0 comment fields, not part of sequence identifiers
 ACACCCCGGGGGTTTACATTTTTTTTTTTTTTTTTTTTTTTT
->uclust_test_seqs_1
+>uclust_test_seqs_1 blah blah blah
 ACACCCCGGGGGTTTACACCAACATACACCGAGTTGGA
->uclust_test_seqs_2
+>uclust_test_seqs_2 blah blah
 ACACCCCGGGGGTTTACGGGGGGGGGGGGGGGGGGGGGGGGGG"""
 
 # results are in length order
@@ -1733,9 +1733,9 @@ dna_seqs_4_result = {0: ['uclust_test_seqs_2'],\
                      1: ['uclust_test_seqs_0'],\
                      2: ['uclust_test_seqs_1']}
 
-dna_seqs_5 = """>uclust_test_seqs_0
+dna_seqs_5 = """>uclust_test_seqs_0 some comment
 ACGGTGGCTACAAGACGTCCCATCCAACGGGTTGGATACTTAAGGCACATCACGTCAGTTTTGTGTCAGAGCT
->uclust_test_seqs_0_rc
+>uclust_test_seqs_0_rc some other comment
 AGCTCTGACACAAAACTGACGTGATGTGCCTTAAGTATCCAACCCGTTGGATGGGACGTCTTGTAGCCACCGT
 """
 
