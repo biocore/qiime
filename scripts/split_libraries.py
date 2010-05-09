@@ -96,8 +96,8 @@ script_info['optional_options']=[\
 
     make_option('-b', '--barcode-type', default='golay_12', 
         help=\
-        'barcode type, e.g. hamming_8 or golay_12 or variable_length (will '+\
-        'disable any barcode correction if variable_length set) +'\
+        'barcode type, hamming_8, golay_12, or variable_length (will '+\
+        'disable any barcode correction if variable_length set) '+\
         ' [default: %default]'),
 
     make_option('-o', '--dir-prefix', default='.',
@@ -126,7 +126,13 @@ script_info['optional_options']=[\
         'falls below the threshold (see -s for default), the sequence is '+\
         'discarded. A good value would be 50. 0 (zero) means no filtering. '+\
         'Must pass a .qual file (see -q parameter) if this '+\
-        'functionality is enabled. [default: %default]')]
+        'functionality is enabled. [default: %default]'),
+        
+    make_option('-p', '--disable_primers', default=False,
+        action='store_true', help='Disable primer usage when demultiplexing.'+\
+        '  Should be enabled for unusual circumstances, such as analyzing '+\
+        'Sanger sequence data generated with different primers. '+\
+        ' [default: %default]')]
 
 script_info['version'] = __version__
 
@@ -173,7 +179,8 @@ def main():
                max_homopolymer = opts.max_homopolymer,
                remove_unassigned = opts.remove_unassigned,
                attempt_bc_correction = not opts.disable_bc_correction,
-               qual_score_window = opts.qual_score_window)
+               qual_score_window = opts.qual_score_window,
+               disable_primers = opts.disable_primers)
  
 if __name__ == "__main__":
     main()

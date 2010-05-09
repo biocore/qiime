@@ -54,6 +54,8 @@ class TopLevelTests(TestCase):
         self.primer_seq_lens_fixed_len_bc2 = primer_seq_lens_fixed_len_bc1
         self.all_primers_fixed_len_bc2 = all_primers_fixed_len_bc1
         self.expected_fasta_fixed_len_bc2 = expected_fasta_fixed_len_bc2
+        self.expected_fasta_fixed_len_bc1_no_primers = \
+         expected_fasta_fixed_len_bc1_no_primers
 
     def test_check_window_qual_scores(self):
         """check_window_qual_scores returns False if window below qual 
@@ -205,7 +207,8 @@ z\tGG\tGC\t5\tsample_z"""
          attempt_bc_correction=False,
          primer_seqs_lens=primer_seq_lens,
          all_primers=all_primers, 
-         max_primer_mm=0)
+         max_primer_mm=0,
+         disable_primer_check=False)
          
         self.assertEqual(out_f.data,expected)
         
@@ -235,7 +238,8 @@ z\tGG\tGC\t5\tsample_z"""
          attempt_bc_correction=False,
          primer_seqs_lens=primer_seq_lens,
          all_primers=all_primers, 
-         max_primer_mm=0)
+         max_primer_mm=0,
+         disable_primer_check=False)
          
         self.assertEqual(out_f.data,expected)
         
@@ -270,7 +274,8 @@ z\tGG\tGC\t5\tsample_z"""
          attempt_bc_correction=True,
          primer_seqs_lens=primer_seq_lens,
          all_primers=all_primers, 
-         max_primer_mm=0)
+         max_primer_mm=0,
+         disable_primer_check=False)
          
         self.assertEqual(out_f.data,expected)
         
@@ -300,7 +305,43 @@ z\tGG\tGC\t5\tsample_z"""
          attempt_bc_correction=True,
          primer_seqs_lens=primer_seq_lens,
          all_primers=all_primers, 
-         max_primer_mm=1)
+         max_primer_mm=1,
+         disable_primer_check=False)
+         
+        self.assertEqual(out_f.data,expected)
+        
+    def test_check_seqs_no_primers(self):
+        """check_seqs handles disabled primers """
+        
+        # Fifth test, no primers, fixed length barcodes
+        # Should correct one of the passed barcodes
+        in_seqs = self.in_seqs_fixed_len_bc1
+        bc_map = self.bc_map_fixed_len_bc1
+        primer_seq_lens = {}
+        all_primers = {}
+        expected = self.expected_fasta_fixed_len_bc1_no_primers
+
+        
+        out_f = FakeOutFile()
+        
+        actual = check_seqs(
+         fasta_out=out_f, 
+         fasta_files = [in_seqs], 
+         starting_ix=0, 
+         valid_map = bc_map, 
+         qual_mappings={}, 
+         filters=[], 
+         barcode_len=12, 
+         keep_primer=False, 
+         keep_barcode=False, 
+         barcode_type="golay_12", 
+         max_bc_errors=1.5,
+         remove_unassigned=True, 
+         attempt_bc_correction=True,
+         primer_seqs_lens=primer_seq_lens,
+         all_primers=all_primers, 
+         max_primer_mm=0,
+         disable_primer_check=True)
          
         self.assertEqual(out_f.data,expected)
         
@@ -378,6 +419,19 @@ AACCGGCCGGTT
 CCCTTACTATATAT
 """
 
+# Will be longer because primers are no longer sliced off or checked for
+# mismatches
+expected_fasta_fixed_len_bc1_no_primers = """>s1_0 a orig_bc=ACACATGTCTAC new_bc=ACACATGTCTAC bc_diffs=0
+GGTCCGGACCCTTATATATATAT
+>s2_1 b orig_bc=AGAGTCCTGAGC new_bc=AGAGTCCTGAGC bc_diffs=0
+GGTCCGGACCCTTTCCA
+>s3_2 c orig_bc=AATCGTGACTCG new_bc=AATCGTGACTCG bc_diffs=0
+GGTCTGGAAACCGGCCGGTT
+>s1_3 d orig_bc=ACTCATGTCTAC new_bc=ACACATGTCTAC bc_diffs=1
+GGTCCGGACCCTTACTATATAT
+>s2_4 d_primer_error orig_bc=AGAGTCCTGAGC new_bc=AGAGTCCTGAGC bc_diffs=0
+GGTCCGGTACGTTTACTGGA
+"""
 # Equal length barcodes, primers, should give different results
 # Due to parameter changes regarding barcode changes, primer mismatches
 

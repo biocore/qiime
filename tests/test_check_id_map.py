@@ -346,6 +346,55 @@ z\tGG\tACGT\t5\tsample_z"""
         self.assertEqual(run_description, ['fake data'])
         self.assertEqual(errors, [])
         self.assertEqual(warnings, [])
+        
+    def test_get_primers_barcodes(self):
+        """ get_primers_barcodes should properly return primers, barcodes """
+        
+        expected_barcodes = ['ATCG','ATTA']
+        expected_primers = ['CCTT','CCTAT']
+        
+        mapping_data = \
+         [['#SampleID','BarcodeSequence','LinkerPrimerSequence','DOB'],
+         ['PC.354','ATCG','CCTT','20061218'],
+         ['PC.356','ATTA','CCTAT','20061216']]
+         
+        primers, barcodes = get_primers_barcodes(mapping_data, \
+         is_barcoded=True, disable_primer_check=False)
+         
+        self.assertEqual(barcodes, expected_barcodes)
+        self.assertEqual(primers, expected_primers)
+        
+        # Should return empty list if barcodes disabled
+        expected_barcodes = []
+        
+        primers, barcodes = get_primers_barcodes(mapping_data, \
+         is_barcoded=False, disable_primer_check=False)
+         
+        self.assertEqual(barcodes, expected_barcodes)
+        self.assertEqual(primers, expected_primers)
+        
+        # Should return empty list if primers disabled
+        expected_barcodes = ['ATCG','ATTA']
+        expected_primers = []
+        
+        primers, barcodes = get_primers_barcodes(mapping_data, \
+         is_barcoded=True, disable_primer_check=True)
+         
+        self.assertEqual(barcodes, expected_barcodes)
+        self.assertEqual(primers, expected_primers)
+        
+        # Both primers and barcodes should be empty lists if both disabled
+        expected_barcodes = []
+        expected_primers = []
+        
+        primers, barcodes = get_primers_barcodes(mapping_data, \
+         is_barcoded=False, disable_primer_check=True)
+         
+        self.assertEqual(barcodes, expected_barcodes)
+        self.assertEqual(primers, expected_primers)
+        
+        
+        
 
 
 class CharFilterTests(TestCase):
@@ -483,7 +532,7 @@ class SameCheckerTests(TestCase):
         
         problems = defaultdict(list)
         barcodes_good = ['CACGC','CCACG','GGTTA']
-        # The linker sequence, usually two base pairs, are considered to be
+        # The linker sequence, usually two base pairs is considered to be
         # part of the primer.
         primers_good = ['GGATTCG','AATRCGG','CANGCRT']
         # Should append nothing to problems with valid barcodes, primers.
@@ -495,6 +544,21 @@ class SameCheckerTests(TestCase):
         # and primer
         self.assertEqual(check_primers_barcodes(primers_bad, barcodes_bad, \
          problems),  defaultdict(list, {'warning': ['The primer 1GGATTCG has invalid characters.  Location (row, column):\t0,2', 'Missing primer.  Location (row, column):\t2,2', 'The barcode CAC1C has invalid characters.  Location (row, column):\t0,1', 'Missing barcode. Location (row, column):\t1,1']}))
+         
+        # Should not raise errors if barcodes missing and disabled
+        problems = defaultdict(list)
+        barcodes_absent = ['','','']
+        primers_good = ['GGATTCG','AATRCGG','CANGCRT']
+        self.assertEqual(check_primers_barcodes(primers_good, barcodes_absent, \
+         problems, is_barcoded=False), defaultdict(list))
+         
+        # Should not raise errors if primers missing and disabled
+        problems = defaultdict(list)
+        barcodes_absent = ['CACGC','CCACG','GGTTA']
+        primers_good = ['','','']
+        self.assertEqual(check_primers_barcodes(primers_good, barcodes_absent, \
+         problems, is_barcoded=True, disable_primer_check=True),\
+         defaultdict(list))
          
     def test_check_missing_sampleIDs(self):
         """ Should give warnings if missing sample IDs from given list """

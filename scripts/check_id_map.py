@@ -72,7 +72,10 @@ script_info['optional_options']= [\
     make_option('-B', '--variable_len_barcodes',
         action='store_true', default=False,
         help='Use -B if variable length barcodes are present to suppress '+\
-        'warnings about barcodes of unequal length. [default: %default]')
+        'warnings about barcodes of unequal length. [default: %default]'),
+    make_option('-p', '--disable_primer_check',
+        action='store_true', default=False,
+        help='Use -p to disable checks for primers. [default: %default]')
 ]
 script_info['version'] = __version__
 
@@ -85,6 +88,7 @@ def main():
     char_replace = opts.char_replace
     var_len_barcodes = opts.variable_len_barcodes
     verbose = opts.verbose
+    disable_primer_check = opts.disable_primer_check
     
     valid_replacement_chars=digits+letters+"_"
     if char_replace not in valid_replacement_chars:
@@ -94,7 +98,7 @@ def main():
         option_parser.error('-c parameter must be a single character.')
     
     check_mapping_file(infile_name, output_dir, has_barcodes, char_replace,\
-     verbose, var_len_barcodes)
+     verbose, var_len_barcodes, disable_primer_check)
 
 
 if __name__ == "__main__":

@@ -680,7 +680,8 @@ def check_duplicate_sample_ids((sample_descriptions, sample_ids,
     return (sample_descriptions, sample_ids, run_description), \
         '\n'.join(problems)
         
-def check_primers_barcodes(primers, barcodes, problems, is_barcoded=True):
+def check_primers_barcodes(primers, barcodes, problems, is_barcoded=True,
+ disable_primer_check=False):
     """Returns warnings for primers/barcodes that have invalid characters 
     
     The check_primers_barcodes function only tests for valid IUPAC DNA
@@ -688,6 +689,7 @@ def check_primers_barcodes(primers, barcodes, problems, is_barcoded=True):
     for valid Golay/Hamming barcodes or duplicates are performed in this
     function."""
 
+    
     for row in range(len(primers)):
 
         for base in primers[row]:
@@ -698,7 +700,7 @@ def check_primers_barcodes(primers, barcodes, problems, is_barcoded=True):
                 problems['warning'].append('The primer %s ' % primers[row] +\
                 'has invalid characters.  Location (row, column):\t' +\
                 '%d,2' % row)
-        if len(primers[row])==0:
+        if len(primers[row])==0 and not disable_primer_check:
             problems['warning'].append('Missing primer.  ' +\
              'Location (row, column):\t%d,2' % row)
     
@@ -778,7 +780,6 @@ STANDARD_SAMPLE_DESCRIPTION_CHECKS = [
     (check_description_chars, 'warning'),
     ]
 STANDARD_COL_HEADER_CHECKS = [(sampleid_missing, 'error'),
-    (linker_primer_missing,'error'),
     (bad_char_in_header, 'error'),
     (space_dup_checker_header, 'error'), 
     (blank_header, 'error'),
@@ -793,13 +794,16 @@ STANDARD_COL_CHECKS = [
         
 
 BARCODE_COL_CHECKS = [(check_same_length, 'warning')]
+PRIMER_COL_CHECKS = [(linker_primer_missing, 'error')]
 
-def get_primers_barcodes(data, is_barcoded=True):
+def get_primers_barcodes(data, is_barcoded, disable_primer_check):
     """ Returns list of primers, barcodes from mapping file """
     
     primers=[]
     barcodes=[]
     
+    if not is_barcoded and disable_primer_check:
+        return primers, barcodes
     # Convert DNA characters to uppercase, as IUPAC_DNA dictionary only
     # contains uppercase characters
     for sample in data:
@@ -808,12 +812,15 @@ def get_primers_barcodes(data, is_barcoded=True):
         if not is_barcoded:
             if sample[1]== "LinkerPrimerSequence":
                 continue
-        if is_barcoded:
+        if is_barcoded and not disable_primer_check:
             barcodes.append(sample[1].upper())
             primers.append(sample[2].upper())
-        else:
-            primers.append(sample[1].upper())
-        
+        elif not is_barcoded and not disable_primer_check:
+            primers.append(sample[2].upper())
+        elif is_barcoded and disable_primer_check:
+            barcodes.append(sample[1].upper())
+
+    
     return primers, barcodes
     
 def check_dup_var_barcodes_primers(primers, barcodes, problems):
@@ -838,8 +845,8 @@ def check_dup_var_barcodes_primers(primers, barcodes, problems):
     return problems
     
 
-def process_id_map(infile, is_barcoded=True, char_replace="_", 
-    var_len_barcodes = False,
+def process_id_map(infile, disable_primer_check=False, is_barcoded=True, \
+    char_replace="_", var_len_barcodes = False, 
     filename_checks=STANDARD_FILENAME_CHECKS, 
     #run_description_checks=STANDARD_RUN_DESCRIPTION_CHECKS,
     sample_description_checks=STANDARD_SAMPLE_DESCRIPTION_CHECKS,
@@ -857,7 +864,7 @@ def process_id_map(infile, is_barcoded=True, char_replace="_",
     errors: list of error messages generated
     warnings: list of warning messages generated
     """
-    
+
     problems = defaultdict(list)
     errors, warnings = [], []
     col_headers, id_map, description_map, run_description = \
@@ -903,7 +910,7 @@ def process_id_map(infile, is_barcoded=True, char_replace="_",
         if not var_len_barcodes:
             col_checks.extend(BARCODE_COL_CHECKS)
 
-    
+        
     
     #check col headers
     col_headers = run_checks(col_headers, col_header_checks, problems, raw_data)
@@ -937,9 +944,10 @@ def process_id_map(infile, is_barcoded=True, char_replace="_",
      ), sample_description_checks, problems, raw_data)
      
     #check primers,barcodes for valid IUPAC DNA characters
-    primers, barcodes = get_primers_barcodes(data, is_barcoded)
+    primers, barcodes = get_primers_barcodes(data, is_barcoded, \
+     disable_primer_check)
     problems = check_primers_barcodes(primers, barcodes, problems, \
-     is_barcoded=True)
+     is_barcoded, disable_primer_check)
      
     if var_len_barcodes:
         problems = check_dup_var_barcodes_primers(primers, barcodes, problems)
@@ -1018,12 +1026,12 @@ def write_logfile(errors, warnings, log_filepath, mapping_filepath):
 
 
 def check_mapping_file(infile_name, output_dir, has_barcodes, char_replace, \
- verbose, var_len_barcodes):
+ verbose, var_len_barcodes, disable_primer_check):
     """ Central program function for checking mapping file """
 	
     headers, id_map, description_map, run_description, errors, warnings = \
      process_id_map(open(infile_name, 'U'), has_barcodes, char_replace,\
-     var_len_barcodes)
+     var_len_barcodes, disable_primer_check)
 
     chars_replaced = test_for_replacement_chars(warnings)
 
