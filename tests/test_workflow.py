@@ -349,7 +349,7 @@ class WorkflowTests(TestCase):
          status_update_callback=no_status_updates)
          
         pd_control_plot_fp = join(self.wf_out,'alpha_rarefaction_plots',
-         'html_plots','PD_whole_treeTreatmentControl.png')
+         'html_plots','PD_whole_treeTreatmentControl_ave.png')
         pd_treatment_plot_fp = join(self.wf_out,'alpha_rarefaction_plots',
          'average_plots','PD_whole_treeTreatment.png')
         pd_averages_fp = join(self.wf_out,'alpha_rarefaction_plots',
@@ -381,7 +381,7 @@ class WorkflowTests(TestCase):
          status_update_callback=no_status_updates)
          
         pd_control_plot_fp = join(self.wf_out,'alpha_rarefaction_plots',
-         'html_plots','PD_whole_treeTreatmentControl.png')
+         'html_plots','PD_whole_treeTreatmentControl_ave.png')
         pd_treatment_plot_fp = join(self.wf_out,'alpha_rarefaction_plots',
          'average_plots','PD_whole_treeTreatment.png')
         pd_averages_fp = join(self.wf_out,'alpha_rarefaction_plots',
