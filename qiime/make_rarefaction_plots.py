@@ -43,7 +43,7 @@ def save_ave_rarefaction_plots(xaxis, yvals, err, xmax, ymax, ops, \
     #get the plot axis
     ax = plt.gca()
     ax.set_axis_bgcolor(background_color)
-
+    #ax.set_yscale('log',basey=2,basex=2)
     #set tick colors and width
     for line in ax.yaxis.get_ticklines():
         # line is a matplotlib.lines.Line2D instance
@@ -57,8 +57,8 @@ def save_ave_rarefaction_plots(xaxis, yvals, err, xmax, ymax, ops, \
 
     #set x/y limits and labels for plot
     ax.set_axisbelow(True)
-    ax.set_xlim((0,xmax))
-    ax.set_ylim((0,ymax))
+    ax.set_xlim(0,xmax)
+    ax.set_ylim(0,ymax)
     ax.set_xlabel('Sequences Per Sample')
     ax.set_ylabel("Rarefaction Measure: " + metric_name)
 
@@ -112,6 +112,7 @@ def save_single_ave_rarefaction_plots(xaxis, yvals, err, xmax, ymax, ops, \
             line.set_markeredgewidth(1)
         
         #set x/y limits and labels for plot
+        
         ax.set_axisbelow(True)
         ax.set_xlim((0,xmax))
         ax.set_ylim((0,ymax))
@@ -152,11 +153,7 @@ def save_single_rarefaction_plots(sample_dict,imagetype, metric_name,
     fig = plt.gcf()
     ax = fig.add_subplot(111)
     
-
-    
     for o in groups:
-        
-        
         for i in sample_dict[o]:
 
             xaxis=[]
@@ -293,20 +290,21 @@ def make_error_series(rare_mat, groups):
         
         #For each sample in group, create a row in a list
         for samID in groups[o]:
+            pre_err[o].append(rare_mat[samID])
+            '''
             try:
                 pre_err[o].append(rare_mat[samID])
             except(KeyError):
                 notfound.append(samID)
+            '''
                 
         min_len = 1000 #1e10000
         #Iterate through the series data and convert it to float
         for series in pre_err[o]:
-            series = [float(v) for v in series if v != 0]
-            
+            series = [float(v) for v in series if v != nan]
             #determine the minimum length of a series
             if len(series) < min_len:
                 min_len = len(series)
-        
         pre_err[o] = [x[:min_len] for x in pre_err[o]]
     
     #iterate through the groups and calculate std deviations and error
@@ -378,12 +376,16 @@ mapping_category, colors, rare_type, data_colors, groups):
         line = ''
         try:
             for e in err[o]:
-                line += str(e) + '\t'
+                if e == 0:
+                    line += str(nan) + '\t'
+                else:
+                    line += str(e) + '\t'
+                        
         except(TypeError):
             line += str(err[o])
         line += '\n'
         lines.append(line)
-    
+
     return lines   
 
 def make_averages(color_prefs, data, background_color, label_color, rares, \
@@ -416,12 +418,13 @@ def make_averages(color_prefs, data, background_color, label_color, rares, \
     
     #Iterate through the rarefaction files
     for r in natsort(rares):
+
         raredata = rares[r]
         metric_name=r.split('.')[0]
         
         #convert the rarefaction data into variables
         col_headers,comments,rarefaction_fn,rarefaction_data=rares[r]
-        
+
         #Here we only need to perform these steps once, since the data is
         #the same for all rarefaction files
         if rare_num==0:
@@ -448,7 +451,7 @@ def make_averages(color_prefs, data, background_color, label_color, rares, \
         
         rare_mat_trans, seqs_per_samp, sampleIDs = \
         get_rarefaction_data(rarefaction_data, col_headers)
-        
+
         rarefaction_legend_mat[metric_name]={}
         
         #Create dictionary variables and get the colors for each Sample
@@ -478,6 +481,7 @@ def make_averages(color_prefs, data, background_color, label_color, rares, \
             samples_and_colors=list(samples_and_colors)
             sample_colors=samples_and_colors[0][2]
             sample_data_colors=samples_and_colors[0][3]
+
         
         sample_dict = {}
         #Create a dictionary containing the samples
@@ -521,6 +525,7 @@ def make_averages(color_prefs, data, background_color, label_color, rares, \
                 data_colors=groups_and_colors[i][3]
                 ave_file_path=os.path.join(ave_data_file_path,metric_name)
                 #save the rarefaction averages
+
                 rare_lines=save_rarefaction_data(rare_mat_ave, xaxisvals, xmax,\
                                     labelname, colors, r, data_colors, groups)
             
@@ -535,12 +540,10 @@ def make_averages(color_prefs, data, background_color, label_color, rares, \
                 #multiple the ymax, since the dots can end up on the border
                 new_ymax=(max([max(v) for v in rares_data['series'].values()])+\
                     max([max(v) for v in rares_data['error'].values()])) * 1.15
-                   
+                    
                 if new_ymax>ymax:
                     ymax=new_ymax
                     
-
-                        
         iterator_num=0
         
         #iterate through the groups
@@ -558,7 +561,7 @@ def make_averages(color_prefs, data, background_color, label_color, rares, \
             #take the formatted rarefaction averages and format the results
             rares_data = parse_rarefaction_data( \
                                         ''.join(rare_lines[:]).split('\n'))
-            
+                                        
             if make_webpage:
                 
                 if iterator_num==0:
@@ -690,7 +693,6 @@ def make_html(rarefaction_legend_mat, rarefaction_data_mat, xaxisvals, \
         #data_table_html.append('<tr name="%s" style="display: none;"></tr>' % (category))
         for g in natsort(rarefaction_data_mat[category]):
             for i in range(len(xaxisvals)):
-                
                 data_table_html.append('<tr name="%s" style="display: none;">' % (category))
                 data_table_html.append('<td class="data" bgcolor="%s">%s</td><td class="data">%s</td>' % (category_colors[g],g,xaxisvals[i]))
                 for m in rarefaction_data_mat[category][g]:
@@ -709,8 +711,6 @@ def make_html(rarefaction_legend_mat, rarefaction_data_mat, xaxisvals, \
                         '\n'.join(data_table_html))
 
     return html_output
-    
-    
     
 def make_plots(background_color, label_color, rares, ymax, xmax,\
                 output_dir, resolution, imagetype,groups,colors,data_colors, \
@@ -747,26 +747,27 @@ def make_plots(background_color, label_color, rares, ymax, xmax,\
             except:
                 average_field=nan
                 error_field=nan
-            
+
             #Add context to the data dictionary, which will be used in the html
             if rarefaction_data_mat[labelname].has_key(i):
                 if rarefaction_data_mat[labelname][i].has_key(metric_name):
-                    rarefaction_data_mat[labelname][i][metric_name]['ave'].append(''.join('%10.3f' % (raredata['series'][i][j])))
-                    rarefaction_data_mat[labelname][i][metric_name]['err'].append(''.join('%10.3f' % (raredata['error'][i][j])))
+                    rarefaction_data_mat[labelname][i][metric_name]['ave'].append(''.join('%10.3f' % ((raredata['series'][i][j]))))
+                    rarefaction_data_mat[labelname][i][metric_name]['err'].append(''.join('%10.3f' % ((raredata['error'][i][j]))))
                 else:
                     rarefaction_data_mat[labelname][i][metric_name]={}
                     rarefaction_data_mat[labelname][i][metric_name]['ave']=[]
                     rarefaction_data_mat[labelname][i][metric_name]['err']=[]
-                    rarefaction_data_mat[labelname][i][metric_name]['ave'].append(''.join('%10.3f' % (raredata['series'][i][j])))
-                    rarefaction_data_mat[labelname][i][metric_name]['err'].append(''.join('%10.3f' % (raredata['error'][i][j])))
+                    rarefaction_data_mat[labelname][i][metric_name]['ave'].append(''.join('%10.3f' % ((raredata['series'][i][j]))))
+                    rarefaction_data_mat[labelname][i][metric_name]['err'].append(''.join('%10.3f' % ((raredata['error'][i][j]))))
+
             else:
                 rarefaction_data_mat[labelname][i]={}
                 rarefaction_data_mat[labelname][i][metric_name]={}
                 rarefaction_data_mat[labelname][i][metric_name]['ave']=[]
                 rarefaction_data_mat[labelname][i][metric_name]['err']=[]
-                rarefaction_data_mat[labelname][i][metric_name]['ave'].append(''.join('%10.3f' % (raredata['series'][i][j])))
-                rarefaction_data_mat[labelname][i][metric_name]['err'].append(''.join('%10.3f' % (raredata['error'][i][j])))
-
+                rarefaction_data_mat[labelname][i][metric_name]['ave'].append(''.join('%10.3f' % ((raredata['series'][i][j]))))
+                rarefaction_data_mat[labelname][i][metric_name]['err'].append(''.join('%10.3f' % ((raredata['error'][i][j]))))
+ 
         #Create raw plots for each group in a category
         fpath = os.path.join(output_dir, metric_name+labelname+i)
         rarefaction_legend_mat=save_single_rarefaction_plots( \

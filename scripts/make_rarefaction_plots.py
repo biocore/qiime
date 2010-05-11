@@ -116,13 +116,12 @@ def main():
         output_dir = get_random_directory_name()
     
     #Generate the plots and html text
-    
     ymax=options.ymax
     make_webpage=options.webpage
     html_output = make_averages(prefs, data, background_color, label_color, \
                                 rares, output_dir,resolution,imagetype,ymax,
                                 make_webpage)
-
+                                
     if html_output:
         #Write the html file.
         outfile = open(path.join(output_dir,'rarefaction_plots.html'),'w')
