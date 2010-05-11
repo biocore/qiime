@@ -13,7 +13,7 @@ xml output.
 """
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2010, The QIIME Project"
-__credits__ = ["Rob Knight", "Kyle Bittinger"] #remember to add yourself if you make changes
+__credits__ = ["Rob Knight", "Kyle Bittinger", "Rohini Sinha"] #remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.0.0-dev"
 __maintainer__ = "Kyle Bittinger"
@@ -61,7 +61,7 @@ run_set_wrapper = """<?xml version="1.0" encoding="UTF-8"?>
 
 run_wrapper = '''\
   <RUN
-    alias = "%(EXPERIMENT_ALIAS)s"
+    alias = "%(RUN_ALIAS)s"
     center_name = "%(RUN_CENTER)s"
     run_center = "%(RUN_CENTER)s"
   >
