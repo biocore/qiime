@@ -6,9 +6,18 @@ Add changes since QIIME 1.0.0 here
 * Updated the display for rarefaction plots, so the legend does not overlap with the plots and fixed the display of the rarefaction average table in the webpage.
 * Merged the make_rarefaction_averages into the make_rarefaction_plots script.  Also removed the inputs (--rarefaction_ave and --ymax) options, since they are determined by the script.  Also added the ability to mouseover categories, to view the samples that contribute to the average line.  Also, restructured the output directory format and combined all metric data into one html.
 * Added the uclust_ref OTU picker, which uses uclust to pick OTUs against a reference collection. Sequences which are within the similarity threshold to a reference sequnece will cluster to an OTU defined by that reference sequence, and sequences which are outside of the similarity threshold to any reference sequence will form new OTUs.
+* The interface for exclude_seqs_by_blast.py has changed.  -M and -W options are
+* now lowercase to avoid conflicts with parallel scripts.  Users can avoid
+* formatting the database by passing --no_format_db.  Users can clean up files
+* created by formatdb using the --clean option.  Output file extensions have
+* changed from ".excluded" to ".matching" and from ".screened" to
+* ".non-matching" to be clear regardless of whether the sequences matching the
+* database, or not matching the database are to be excluded. 
+
 
 QIIME 1.0.0 - (8 Apr 2010)
 ===========================
+=======
 * uclust made default OTU picker (instead of cdhit).
 * uclust made default pairwise aligner for PyNAST (instead of BLAST).
 * Minimum PyNAST version requirement upgraded to PyNAST 1.1.
@@ -41,6 +50,8 @@ survey of multiple body sites.
 * Added new field to qiime_config (temp_dir) which will be used to specify where temp files should be written. Currently this is only used by the workflow tests, and is intended to allow users to specify something other than /tmp for cases when /tmp is not shared between all nodes that might be working on a job. This will eventually be used for all temp dir creation.
 * Added ability to make summary plots for a directory of coordinate files in make_3d_plots and make_2d_plots. The summary plot adds ellipsoidal confidence intervals around each point in the plot.
 	
+>>>>>>> .r1277
+
 QIIME 0.92 - (3 Mar 2010)
 =======================
 * Removed outdated documentation PDFs, along with references to those PDFs in the README and INSTALL documents.
