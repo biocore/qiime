@@ -617,6 +617,9 @@ def preprocess(fasta_files, qual_files, mapping_file,
         raise ValueError, "Invalid mapping file. "+\
         "Validate with check_id_map first: %s" % "\n".join(errors)
 
+    # Find actual length of barcodes in the mapping file, also check for
+    # variable lengths
+    barcode_length_check = list(set([len(bc) for bc in valid_map]))
     # Check barcode type
     if barcode_type not in BARCODE_TYPES:
         try:
@@ -625,19 +628,29 @@ def preprocess(fasta_files, qual_files, mapping_file,
             raise ValueError, "Unsupported barcode type: %s" % barcode_type
     else:
         barcode_len, barcode_fun = BARCODE_TYPES[barcode_type]
-        # As people often do not specify a barcode that matches the lengths
-        # of the barcodes used, a check on the actual barcode lengths needs to
-        # be done, and an exception raised if they are variable length and not
-        # specified as so.
-        if barcode_type != "variable_length":
-            barcode_length_check = list(set([len(bc) for bc in valid_map]))
-            if len(barcode_length_check) != 1:
-                raise ValueError, ('Mapping file has variable length '+\
-                'barcodes.  If this is intended, specifiy variable lengths '+\
-                'with the -b variable_length option.')
-            # Correct barcode length in case user failed to specify barcoding
-            # correctly.
-            barcode_len = barcode_length_check[0]
+
+
+    # As people often do not specify a barcode that matches the lengths
+    # of the barcodes used, a check on the actual barcode lengths needs to
+    # be done, and an exception raised if they are variable length and not
+    # specified as so.
+    if barcode_type != "variable_length":
+        # Raise error if variable length barcodes are present but not
+        # specified
+        if len(barcode_length_check) != 1:
+            raise ValueError, ('Mapping file has variable length '+\
+            'barcodes.  If this is intended, specifiy variable lengths '+\
+            'with the -b variable_length option.')
+        # Raise error if the specified barcode length doesn't match what
+        # is present in the mapping file.
+        if barcode_len != barcode_length_check[0]:
+            raise ValueError, ('Barcode length detected in the mapping file, '+\
+            ' %d does not match specified barcode length, %d.  ' % \
+            (barcode_length_check[0], barcode_len) + 'To specify a barcode '+\
+            'length use -b golay_12 or -b hamming_8 for 12 and 8 base pair '+\
+            'golay or hamming codes respectively, or -b # where # is the '+\
+            'length of the barcode used.  E.g. -b 4 for 4 base pair barcodes.')
+
 
 
     fasta_files = map(get_infile, fasta_files)
