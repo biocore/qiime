@@ -17,7 +17,8 @@ from optparse import make_option
 from os.path import splitext
 from qiime.util import get_qiime_project_dir
 from qiime.make_sra_submission import (write_xml_generic, 
-    make_run_and_experiment, make_submission, make_study, make_sample)
+    make_run_and_experiment, make_submission, make_study, make_sample,
+    generate_output_fp)
 
 sra_template_dir = os.path.join(
     get_qiime_project_dir(), 'qiime', 'support_files', 'sra_xml_templates')
@@ -53,7 +54,9 @@ script_info['optional_options']=[\
     make_option('--experiment_link_fp',
         help='three-column, tab-delimited file of experiment links [default: %default]'),
     make_option('-s', '--sff_dir', 
-        help='the directory containing the demultiplexed sff files: 1 dir per run [default: %default]')
+        help='the directory containing the demultiplexed sff files: 1 dir per run [default: %default]'),
+    make_option('-o', '--output_dir',
+        help='Submission output directory')
 ]
 script_info['version'] = __version__
 
@@ -71,17 +74,9 @@ def main():
             opts.template_sample_fp, make_sample)
 
     if opts.input_experiment_fp:
-        #in this case, we need to need to also get the sff dir
         if not opts.sff_dir:
-            raise IOError, "Must specify an sff dir if making an experiment."
-        base_name, ext = splitext(opts.input_experiment_fp)
-        base_name = base_name.split('experiment')[-1]
-        if base_name:
-            base_name += '_'
-        run_path = base_name + 'run.xml'
-        run_file = open(run_path, 'w')
-        experiment_path = base_name + 'experiment.xml'
-        experiment_file = open(experiment_path, 'w')
+            option_parser.error("Must specify an sff dir if making an experiment.")
+
         if opts.experiment_attribute_fp:
             attribute_file = open(opts.experiment_attribute_fp, 'U')
         else:
@@ -90,24 +85,34 @@ def main():
             link_file = open(opts.experiment_link_fp, 'U')
         else:
             link_file = None
+
         experiment_xml, run_xml = make_run_and_experiment(
             open(opts.input_experiment_fp, 'U'), opts.sff_dir,
             attribute_file=attribute_file, link_file=link_file)
-        run_file.write(run_xml)
-        experiment_file.write(experiment_xml)
-        run_file.close()
-        experiment_file.close()
-        docnames['run'] = run_path
-        docnames['experiment'] = experiment_path
+
+        output_experiment_fp = generate_output_fp(
+            opts.input_experiment_fp, '.xml', opts.output_dir)
+        with open(output_experiment_fp, 'w') as f:
+            f.write(experiment_xml)
+        docnames['experiment'] = os.path.basename(output_experiment_fp)
+
+        output_run_fp = generate_output_fp(
+            opts.input_experiment_fp, '_run.xml', opts.output_dir)
+        with open(output_run_fp, 'w') as f:
+            f.write(run_xml)
+        docnames['run'] = os.path.basename(output_run_fp)
 
     if opts.input_submission_fp:
+        input_submission_file = open(opts.input_submission_fp, 'U')
         submission_template = open(opts.template_submission_fp, 'U').read()
-        base_name, ext = splitext(opts.input_submission_fp)
-        outfilename = base_name + '.xml'
-        outfile = open(outfilename, 'w')
-        outfile.write(make_submission(open(opts.input_submission_fp, 'U'),
-            submission_template, docnames))
-        outfile.close()
+        submission_xml = make_submission(
+            input_submission_file, submission_template, docnames,
+            submission_dir=opts.output_dir,)
+
+        output_submission_fp = generate_output_fp(
+            opts.input_submission_fp, '.xml', opts.output_dir)
+        with open(output_submission_fp, 'w') as f:
+            f.write(submission_xml)
 
 
 if __name__ == "__main__":

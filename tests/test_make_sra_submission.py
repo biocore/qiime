@@ -11,7 +11,7 @@ from qiime.make_sra_submission import (
     make_study_links, twocol_data_to_dict, make_study, make_submission,
     make_sample, trim_quotes, defaultdict, group_lines_by_field,
     write_xml_generic, make_run_and_experiment, _experiment_link_xml,
-    _experiment_attribute_xml, indent_element,)
+    _experiment_attribute_xml, indent_element, generate_output_fp)
 from qiime.util import get_qiime_project_dir
 import xml.etree.ElementTree as ET
 from cStringIO import StringIO
@@ -45,7 +45,18 @@ class TopLevelTests(TestCase):
 
     def tearDown(self):
         remove_files(self.files_to_remove)
-        
+
+    def test_generate_output_fp(self):
+        input_fp = os.path.join('tmp', 'hello.txt')
+        self.assertEqual(
+            generate_output_fp(input_fp, '.xml'),
+            os.path.join('tmp', 'hello.xml'))
+
+        output_dir = os.path.join('home', 'user1')
+        self.assertEqual(
+            generate_output_fp(input_fp, '.xml', output_dir),
+            os.path.join('home', 'user1', 'hello.xml'))
+
     def test_md5_path(self):
         """md5_path should match hand-calculated value"""
         template_fp = tempfile.mktemp(suffix='.xml')

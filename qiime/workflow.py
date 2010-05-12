@@ -4,9 +4,9 @@ from __future__ import division
 from subprocess import Popen, PIPE, STDOUT
 from os import makedirs
 from glob import glob
-import os
 from os.path import split, splitext, join
 from datetime import datetime
+import os
 from qiime.parse import parse_mapping_file
 from qiime.util import (compute_seqs_per_library_stats, 
                         get_qiime_scripts_dir,
@@ -16,7 +16,7 @@ import qiime.make_sra_submission
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME Project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Kyle Bittinger"]
 __license__ = "GPL"
 __version__ = "1.0.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -891,10 +891,10 @@ def run_jackknifed_upgma_clustering(otu_table_fp,tree_fp,seqs_per_sample,\
     command_handler(commands,status_update_callback,logger)
 
 
-def run_process_sra_submission(input_experiment_fp, input_submission_fp, sff_dir,
-    ref_set_fp, qiime_config, command_handler, status_update_callback,
-    remove_unassigned=[], experiment_link_fp=None,
-    experiment_attribute_fp=None):
+def run_process_sra_submission(input_experiment_fp, input_submission_fp,
+    sff_dir, ref_set_fp, output_dir, qiime_config, command_handler, 
+    status_update_callback=print_to_stdout, remove_unassigned=[],
+    experiment_link_fp=None, experiment_attribute_fp=None):
     """Run the SRA second-stage submission process.
 
     The steps performed by this function are:
@@ -924,13 +924,8 @@ def run_process_sra_submission(input_experiment_fp, input_submission_fp, sff_dir
     commands = []
     python_exe_fp = qiime_config['python_exe_fp']
     script_dir = get_qiime_scripts_dir()
-    submission_dir = os.path.dirname(input_experiment_fp)
-    # KYLE: Please update log_fp to go into the directory that
-    # makes the most sense -- usually this is output_dir, as
-    # specified in the call to this function. Do that by uncommenting
-    # the following line with output_dir replaced by the relevant value.
-    # logger = WorkflowLogger(generate_log_fp(output_dir))
-    logger = WorkflowLogger(log_fp=None)
+    create_dir(output_dir)
+    logger = WorkflowLogger(generate_log_fp(output_dir))
 
     # Slightly hacky, should write a parsing function in qiime.parse
     def get_submission_info(submission_fp):
@@ -939,7 +934,7 @@ def run_process_sra_submission(input_experiment_fp, input_submission_fp, sff_dir
             qiime.make_sra_submission.read_tabular_data(f)[1])
     submission_info = get_submission_info(input_submission_fp)
 
-    submission_tar_fp = submission_info['file']
+    submission_tar_fp = os.path.join(output_dir, submission_info['file'])
 
     def script_args(qiime_script_name):
         return [python_exe_fp, os.path.join(script_dir, qiime_script_name)]
@@ -950,27 +945,52 @@ def run_process_sra_submission(input_experiment_fp, input_submission_fp, sff_dir
             qiime.sra_spreadsheet_to_map_files.get_study_groups(infile)
         return study_groups.keys()            
 
-    def get_sff_filepaths(sff_dir, run_prefix):
-        sff_filenames = filter(
+    def get_sff_filenames(sff_dir, run_prefix):
+        return filter(
             lambda x: x.startswith(run_prefix) and x.endswith('.sff'),
             os.listdir(sff_dir))
-        return [os.path.join(sff_dir, x) for x in sff_filenames]
 
-    # Prelude: Create sff directory for submission data
-    submission_sff_dir = os.path.join(submission_dir, 'per_run_sff')
+    # Prelude: Create necessary files and directories in output folder
+    submission_sff_dir = os.path.join(output_dir, 'per_run_sff')
     commands.append([(
         'Create directory to hold SFF files for submission.',
         ['mkdir', '-p', submission_sff_dir])])
+    sff_working_dir = os.path.join(output_dir, 'sff_files')
+    commands.append([(
+        'Create working directory to hold SFF files in output directory.',
+        ['mkdir', '-p', sff_working_dir])])
+    input_experiment_copy_fp = qiime.make_sra_submission.generate_output_fp(
+        input_experiment_fp, '.txt', output_dir)
+    commands.append([(
+        'Create a copy of experiment text file in output directory.',
+        ['cp', input_experiment_fp, input_experiment_copy_fp])])
+    input_submission_copy_fp = qiime.make_sra_submission.generate_output_fp(
+        input_submission_fp, '.txt', output_dir)
+    commands.append([(
+        'Create a copy of submission text file in output directory.',
+        ['cp', input_submission_fp, input_submission_copy_fp])])
+    ref_set_copy_fp = qiime.make_sra_submission.generate_output_fp(
+        ref_set_fp, '.fasta', output_dir)
+    commands.append([(
+        'Create a copy of reference set FASTA file in output directory.',
+        ['cp', ref_set_fp, ref_set_copy_fp])])
+    if not sff_dir.endswith('/'):
+        sff_dir = sff_dir + '/'
+    bash_command = '"cp %s*.sff %s"' % (sff_dir, sff_working_dir)
+    commands.append([(
+        'Create a copy of sff files in working directory.',
+        ['bash', '-c', bash_command])])
 
     # Step 1
-    create_fasta_qual_args = script_args('process_sff.py') + ['-i', sff_dir]
+    create_fasta_qual_args = script_args('process_sff.py') + [
+        '-i', sff_working_dir]
     commands.append([(
         'Process SFF files to create FASTA and QUAL files.',
         create_fasta_qual_args)])
 
     # Step 2
     create_map_files_args = script_args('sra_spreadsheet_to_map_files.py') + [
-        '-i', input_experiment_fp
+        '-i', input_experiment_copy_fp
         ]
     commands.append([(
         'Create mapping files from the SRA experiment input file.',
@@ -981,12 +1001,13 @@ def run_process_sra_submission(input_experiment_fp, input_submission_fp, sff_dir
         # Step 3
 
         map_fp = os.path.join(
-            submission_dir, '%s_%s.map' % (study_ref, run_prefix))
-        sff_filepaths = get_sff_filepaths(sff_dir, run_prefix)
-        sff_basenames = [os.path.splitext(x)[0] for x in sff_filepaths]
-        fna_string = ','.join([b + '.fna' for b in sff_basenames])
-        qual_string = ','.join([b + '.qual' for b in sff_basenames])
-        library_dir = '%s_demultiplex' % run_prefix
+            output_dir, '%s_%s.map' % (study_ref, run_prefix))
+        sff_filenames = get_sff_filenames(sff_dir, run_prefix)
+        sff_basenames = [os.path.splitext(x)[0] for x in sff_filenames]
+        sff_basepaths = [os.path.join(sff_working_dir, x) for x in sff_basenames]
+        fna_string = ','.join([b + '.fna' for b in sff_basepaths])
+        qual_string = ','.join([b + '.qual' for b in sff_basepaths])
+        library_dir = os.path.join(output_dir, '%s_demultiplex' % run_prefix)
         split_libraries_args = script_args('split_libraries.py') + [
             '-s', '5', '-l', '30', '-L', '1000', '-b', '12', '-H', '1000',
             '-M', '100', '-a', '1000', '-m', map_fp, '-f', fna_string,
@@ -1020,13 +1041,16 @@ def run_process_sra_submission(input_experiment_fp, input_submission_fp, sff_dir
 
         screened_basename = os.path.join(library_dir, 'blast_results')
         exclude_seqs_args = script_args('exclude_seqs_by_blast.py') + [
-            '-d', ref_set_fp, '-i', rep_set_fp, '-W', '10', '-p', '0.25',
+            '-d', ref_set_copy_fp, '-i', rep_set_fp, '-W', '10', '-p', '0.25',
             '-o', screened_basename, '-e', '1e-20',
             ]
         commands.append([(
             'Exclude sequences that fail to match the reference set.',
             exclude_seqs_args)])
         screened_fp = screened_basename + '.screened'
+        commands.append([(
+            'Move formatdb log file to output directory.',
+            ['mv', 'formatdb.log', output_dir])])
 
         # Step 7
 
@@ -1041,7 +1065,8 @@ def run_process_sra_submission(input_experiment_fp, input_submission_fp, sff_dir
 
         # Step 8
 
-        sff_string = ','.join(sff_filepaths)
+        sff_string = ','.join(
+            [os.path.join(sff_working_dir, x) for x in sff_filenames])
         make_per_library_args = script_args('make_per_library_sff.py') + [
             '-i', sff_string, '-l', per_lib_sff_dir,
             ]
@@ -1059,19 +1084,24 @@ def run_process_sra_submission(input_experiment_fp, input_submission_fp, sff_dir
 
         # Step 10
 
-        run_sff_submission_dir = os.path.join(submission_sff_dir, 'run_prefix')
+        run_sff_output_dir = os.path.join(submission_sff_dir, run_prefix)
         commands.append([(
             'Create a submission directory to hold per-library sff files.',
-            ['mkdir', '-p', run_sff_submission_dir])])
+            ['mkdir', '-p', run_sff_output_dir])])
 
-        sff_glob = os.path.join(per_lib_sff_dir, '*.sff')
+        if not per_lib_sff_dir.endswith('/'):
+            per_lib_sff_dir = per_lib_sff_dir + '/'
+        if not run_sff_output_dir.endswith('/'):
+            run_sff_output_dir = run_sff_output_dir + '/'
+        bash_command = (
+            '"cp %s*.sff %s"' % (per_lib_sff_dir, run_sff_output_dir))
         commands.append([(
             'Copy per-library SFF files to submission directory.',
-            ['cp', sff_glob, run_sff_submission_dir])])
+            ['bash', '-c', bash_command])])
 
-        orig_unassigned_fp = os.path.join(run_sff_submission_dir, 'Unassigned.sff')
+        orig_unassigned_fp = os.path.join(run_sff_output_dir, 'Unassigned.sff')
         desired_unassigned_fp = os.path.join(
-            run_sff_submission_dir, '%s_default_%s.sff' % (study_ref, run_prefix))
+            run_sff_output_dir, '%s_default_%s.sff' % (study_ref, run_prefix))
         commands.append([(
             'Change the name of the SFF file for unassigned sequences.',
             ['mv', orig_unassigned_fp, desired_unassigned_fp])])
@@ -1081,8 +1111,8 @@ def run_process_sra_submission(input_experiment_fp, input_submission_fp, sff_dir
 
     # Finally, Step 11
     make_xml_args = script_args('make_sra_submission.py') + [
-        '-u', input_submission_fp, '-e', input_experiment_fp,
-        '-s', submission_sff_dir,
+        '-u', input_submission_copy_fp, '-e', input_experiment_copy_fp,
+        '-s', submission_sff_dir, '-o', output_dir,
         ]
     commands.append([('Make SRA submission XML files.', make_xml_args)])
 

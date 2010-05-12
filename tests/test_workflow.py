@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Kyle Bittinger"]
 __license__ = "GPL"
 __version__ = "1.0.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -12,6 +12,7 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
 import signal
+import os
 from shutil import rmtree
 from glob import glob
 from os.path import join, exists, getsize, split, splitext
@@ -24,7 +25,8 @@ from qiime.parse import parse_qiime_parameters
 from qiime.workflow import (run_qiime_data_preparation,
     run_beta_diversity_through_3d_plot,
     run_qiime_alpha_rarefaction,
-    run_jackknifed_upgma_clustering,\
+    run_jackknifed_upgma_clustering,
+    run_process_sra_submission,
     call_commands_serially,
     no_status_updates,WorkflowError,print_commands)
 
@@ -125,6 +127,18 @@ class WorkflowTests(TestCase):
         self.params = parse_qiime_parameters(qiime_parameters_f)
         self.params['align_seqs']['template_fp'] = self.template_aln_fp
         self.params['filter_alignment']['lane_mask_fp'] = self.lanemask_fp
+
+        self.experiment_fp = get_tmp_filename(
+            tmp_dir=tmp_dir, prefix='experiment', suffix='.txt')
+        with open(self.experiment_fp, 'w') as f:
+            f.write(sra_experiment_txt)
+        self.files_to_remove.append(self.experiment_fp)
+
+        self.submission_fp = get_tmp_filename(tmp_dir=tmp_dir,
+            prefix='submission',suffix='.txt')
+        with open(self.submission_fp, 'w') as f:
+            f.write(sra_submission_txt)
+        self.files_to_remove.append(self.submission_fp)
         
         signal.signal(signal.SIGALRM, timeout)
         # set the 'alarm' to go off in allowed_seconds seconds
@@ -186,7 +200,39 @@ class WorkflowTests(TestCase):
         # Check that the log file is created and has size > 0
         log_fp = glob(join(self.wf_out,'log*.txt'))[0]
         self.assertTrue(getsize(log_fp) > 0)
+
+    def test_run_process_sra_submission(self):
+        """run_process_sra_submission produces a valid SRA submission package"""
+        # Cannot use get_qiime_project_dir() due to test errors in virtual box
+        test_dir = os.path.dirname(os.path.abspath(__file__))
+        sff_dir = os.path.join(test_dir, 'sra_test_files', 'F6AVWTA')
+
+        run_process_sra_submission(
+                self.experiment_fp,
+                self.submission_fp,
+                sff_dir,
+                self.template_aln_fp,
+                self.wf_out,
+                self.qiime_config,
+                call_commands_serially,
+                status_update_callback=no_status_updates,
+                )
+
+        tar_fp = os.path.join(self.wf_out, 'my_sffs.tgz')
+        self.assertTrue(getsize(tar_fp) > 0)
+
+        formatdb_log_fp = os.path.join(self.wf_out, 'formatdb.log')
+        self.assertTrue(getsize(formatdb_log_fp) > 0)
         
+        experiment_basename = os.path.splitext(
+            os.path.basename(self.experiment_fp))[0]
+        experiment_xml_fp = os.path.join(
+            self.wf_out, experiment_basename + '.xml')
+        self.assertTrue(getsize(experiment_xml_fp) > 0)
+        run_xml_fp = os.path.join(
+            self.wf_out, experiment_basename + '.xml')
+        self.assertTrue(getsize(run_xml_fp) > 0)
+
     def test_run_qiime_data_preparation_denoise(self):
         """run_qiime_data_preparation denoises"""
         try:
@@ -453,6 +499,35 @@ class WorkflowTests(TestCase):
         # Check that the log file is created and has size > 0
         log_fp = glob(join(self.wf_out,'log*.txt'))[0]
         self.assertTrue(getsize(log_fp) > 0)
+
+sra_experiment_txt = '''#EXPERIMENT_ALIAS	EXPERIMENT_CENTER	EXPERIMENT_TITLE	STUDY_REF	STUDY_CENTER	EXPERIMENT_DESIGN_DESCRIPTION	LIBRARY_CONSTRUCTION_PROTOCOL	SAMPLE_ALIAS	SAMPLE_CENTER	POOL_MEMBER_NAME	POOL_MEMBER_FILENAME	POOL_PROPORTION	BARCODE_READ_GROUP_TAG	BARCODE	LINKER	PRIMER_READ_GROUP_TAG	KEY_SEQ	PRIMER	RUN_PREFIX	RUN_ALIAS	REGION	PLATFORM	RUN_CENTER	RUN_DATE	INSTRUMENT_NAME
+bodysites_F6AVWTA01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015438	NCBI	F6AVWTA01_2878_700015438_V1-V3	B-2004-03-S1.sff	0.014492754	F6AVWTA01_ATGTTCGATG	AGACTCTGCT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA01	F6AVWTA01_2878	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA02	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015438	NCBI	F6AVWTA02_2878_700015438_V1-V3	B-2008-05-S1.sff	0.014492754	F6AVWTA02_ATGTTCTAGT	ATGTTCTAGT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	F6AVWTA02_2878	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015470	NCBI	F6AVWTA01_2866_700015470_V1-V3	B-2004-04-S1.sff	0.014492754	F6AVWTA01_GCTCTACGTC	GCTCTACGTC		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA01	F6AVWTA01_2866	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA02	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015470	NCBI	F6AVWTA02_2866_700015470_V1-V3	B-2008-08-S1.sff	0.014492754	F6AVWTA02_GCTCTGTACT	GCTCTGTACT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	F6AVWTA02_2866	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015766	NCBI	F6AVWTA01_2898_700015766_V1-V3	B-2004-08-S1.sff	0.014492754	F6AVWTA01_CATGAGCGTC	CATGAGCGTC		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA01	F6AVWTA01_2898	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA02	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015766	NCBI	F6AVWTA02_2898_700015766_V1-V3	B-2009-06-S1.sff	0.014492754	F6AVWTA02_CATGAGCGTG	CATGAGCGTG		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	F6AVWTA02_2898	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015468	NCBI	F6AVWTA01_2865_700015468_V1-V3	B-2005-06-S1.sff	0.014492754	F6AVWTA01_AGTACGTACT	AGTACGTACT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA01	F6AVWTA01_2865	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA02	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015468	NCBI	F6AVWTA02_2865_700015468_V1-V3	B-2011-01-S1.sff	0.014492754	F6AVWTA02_AGTACACGTC	AGTACACGTC		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	F6AVWTA02_2865	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700016371	NCBI	F6AVWTA01_2907_700016371_V1-V3	B-2006-03-S1.sff	0.014492754	F6AVWTA01_TCTCTCTAGT	TCTCTCTAGT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA01	F6AVWTA01_2907	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA02	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700016371	NCBI	F6AVWTA02_2907_700016371_V1-V3	B-2011-02-S1.sff	0.014492754	F6AVWTA02_TCTCTGTACT	TCTCTGTACT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	F6AVWTA02_2907	0	FLX	JCVI 	NULL	NULL
+'''
+
+sra_submission_txt = '''#Field	Value	Example	Comments
+accession	SRA003492	SRA003492	"leave blank if not assigned yet, e.g. if new submission"
+submission_id	fierer_hand_study	fierer_hand_study	internally unique id for the submission
+center_name	CCME	CCME	name of the center preparing the submission
+submission_comment	"Barcode submission prepared by osulliva@ncbi.nlm.nih.gov, shumwaym@ncbi.nlm.nih.gov"	"Barcode submission prepared by osulliva@ncbi.nlm.nih.gov, shumwaym@ncbi.nlm.nih.gov"	Free-text comments regarding submission
+lab_name	Knight	Knight	"name of lab preparing submission, can differ from center (usually refers to the PI\'s info, not the sequencing center\'s)"
+submission_date	2009-10-22T01:23:00-05:00	2009-10-22T01:23:00-05:00	timestamp of submission
+CONTACT	Rob Knight;Rob.Knight@Colorado.edu	Rob Knight;Rob.Knight@Colorado.edu	"Use semicolon to separate email address from name, can be multiple contacts."
+CONTACT	Noah Fierer;Noah.Fierer@Colorado.edu	Noah Fierer;Noah.Fierer@Colorado.edu	"Use semicolon to separate email address from name, can be multiple contacts."
+study	study.xml	fierer_hand_study.study.xml	"leave blank if not submitting study, put in filename otherwise"
+sample	sample.xml	fierer_hand_study.sample.xml	"leave blank if not submitting sample, put in filename otherwise"
+experiment	experiment.xml	fierer_hand_study.experiment.xml	"leave blank if not submitting experiment, put in filename otherwise"
+run	run.xml	fierer_hand_study.run.xml	"leave blank if not submitting run, put in filename otherwise"
+file	my_sffs.tgz	fierer_hand_study.seqs.tgz	"leave blank if not submitting sequence data, put in filename otherwise"'''
+
 
 
 qiime_parameters_f = """# qiime_parameters.txt

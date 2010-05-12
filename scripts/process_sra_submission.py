@@ -50,6 +50,8 @@ script_info['required_options'] = [
         help='the tab-delimited text file with info about the experiment [REQUIRED]'),
     make_option('-r', '--reference_set_fp',
         help='path to reference set of 16S sequences [REQUIRED]'),
+    make_option('-o','--output_dir',
+        help='the output directory [REQUIRED]'),
     ]
 script_info['optional_options'] = [
     make_option('--experiment_attribute_fp',
@@ -87,9 +89,10 @@ def main():
         opts.input_submission_fp,
         opts.sff_dir,
         opts.reference_set_fp,
+        opts.output_dir,
         qiime_config,
         command_handler,
-        status_update_callback,
+        status_update_callback=status_update_callback,
         remove_unassigned=opts.remove_unassigned,
         experiment_link_fp=opts.experiment_link_fp,
         experiment_attribute_fp=opts.experiment_attribute_fp,

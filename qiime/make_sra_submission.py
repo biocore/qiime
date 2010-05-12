@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import os
 from string import strip
 from collections import defaultdict
 from hashlib import md5
@@ -243,6 +244,13 @@ platform_blocks = { 'Titanium':
     </PLATFORM>"""}
 
 
+def generate_output_fp(input_fp, ext, output_dir=None):
+    input_dir, input_filename = os.path.split(input_fp)
+    basename, _ = os.path.splitext(input_filename)
+    output_filename = basename + ext
+    if output_dir is None:
+        output_dir = input_dir
+    return os.path.join(output_dir, output_filename)
 
 def md5_path(filename, block_size=8192):
     """Returns md5 hash from fileame without reading whole thing into memory"""
@@ -318,7 +326,8 @@ def make_study(study_lines, study_template):
     info['XML_STUDY_LINKS_BLOCK'] = study_links_block
     return study_template % info
 
-def make_submission(submission_lines, submission_template, docnames=None):
+def make_submission(submission_lines, submission_template, docnames=None,
+    submission_dir=None):
     """Returns string for submission xml."""
     docnames = docnames or {}
     info = twocol_data_to_dict(read_tabular_data(submission_lines)[1], True)
@@ -332,6 +341,7 @@ def make_submission(submission_lines, submission_template, docnames=None):
     else:
         contacts_str = '\n'
     info['XML_CONTACT_BLOCK'] = contacts_str
+    
     #convert info vals to scalar at this point since none multiple
     new_info = {}
     for k, v in info.items():
@@ -348,16 +358,21 @@ def make_submission(submission_lines, submission_template, docnames=None):
         info['ACCESSION_STRING'] = '\n accession="%s"' % accession
     else:
         info['ACCESSION_STRING'] = ''
+
     actions=[]
     for k, v in docnames.items():
         if v:
             actions.append(action_wrapper % (v, k, k))
     actions_str = actions_wrapper % '\n'.join(actions)
     info['XML_ACTION_BLOCK'] = actions_str
+
     filename = info.get('file', '')
     if filename:
-        checksum = md5_path(filename)
-        info['XML_FILE_BLOCK'] = '\n'+file_wrapper % (filename, checksum)
+        if submission_dir:
+            checksum = md5_path(os.path.join(submission_dir, filename))
+        else:
+            checksum = md5_path(filename)
+        info['XML_FILE_BLOCK'] = '\n' + file_wrapper % (filename, checksum)
     else:
         info['XML_FILE_BLOCK'] = ''
     return submission_template % info
