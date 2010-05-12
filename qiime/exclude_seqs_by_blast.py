@@ -5,6 +5,8 @@ from time import strftime, time
 from optparse import OptionParser
 from os import system, getcwd
 from os.path import join
+from cogent.app.parameters import FilePath
+from cogent.util.misc import remove_files
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.app.blast import blast_seqs, Blastall, BlastResult
 
@@ -315,6 +317,7 @@ def check_options(parser,options):
     try:
         f=open(options.outputfilename,'w')
         f.close()
+        remove_files([FilePath(options.outputfilename)])
     except IOError:
         parser.error(\
               "Please check -f option: cannot write to output file")  
