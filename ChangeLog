@@ -6,13 +6,7 @@ Add changes since QIIME 1.0.0 here
 * Updated the display for rarefaction plots, so the legend does not overlap with the plots and fixed the display of the rarefaction average table in the webpage.
 * Merged the make_rarefaction_averages into the make_rarefaction_plots script.  Also removed the inputs (--rarefaction_ave and --ymax) options, since they are determined by the script.  Also added the ability to mouseover categories, to view the samples that contribute to the average line.  Also, restructured the output directory format and combined all metric data into one html.
 * Added the uclust_ref OTU picker, which uses uclust to pick OTUs against a reference collection. Sequences which are within the similarity threshold to a reference sequnece will cluster to an OTU defined by that reference sequence, and sequences which are outside of the similarity threshold to any reference sequence will form new OTUs.
-* The interface for exclude_seqs_by_blast.py has changed.  -M and -W options are
-* now lowercase to avoid conflicts with parallel scripts.  Users can avoid
-* formatting the database by passing --no_format_db.  Users can clean up files
-* created by formatdb using the --clean option.  Output file extensions have
-* changed from ".excluded" to ".matching" and from ".screened" to
-* ".non-matching" to be clear regardless of whether the sequences matching the
-* database, or not matching the database are to be excluded. 
+* The interface for exclude_seqs_by_blast.py has changed.  -M and -W options are now lowercase to avoid conflicts with parallel scripts.  Users can avoid formatting the database by passing --no_format_db.  Users can clean up files created by formatdb using the --clean option.  Output file extensions have changed from ".excluded" to ".matching" and from ".screened" to ".non-matching" to be clear regardless of whether the sequences matching the database, or not matching the database are to be excluded. 
 
 
 QIIME 1.0.0 - (8 Apr 2010)
