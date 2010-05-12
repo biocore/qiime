@@ -412,7 +412,12 @@ def fields_to_dict(lines, delim='\t', strip_f=strip):
 def parse_qiime_parameters(lines):
     """ Return 2D dict of params (and values, if applicable) which should be on
     """
-    result = {}
+    # The qiime_config object is a default dict: if keys are not
+    # present, {} is returned
+    def return_empty_dict():
+        return dict()
+    result = defaultdict(return_empty_dict)
+    
     for line in lines:
         line = line.strip()
         if line and not line.startswith('#'):

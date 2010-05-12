@@ -385,6 +385,10 @@ eigvals\t4.94\t1.79\t1.50
                     'assign_taxonomy':\
                      {'use_rdp':None}}
         self.assertEqual(actual,expected)
+        
+        # default dict functions as expected -- looking up non-existant key
+        # returns empty dict
+        self.assertEqual(actual['some_other_script'],{})
 
     def test_parse_sample_mapping(self):
         """parse_sample_mapping works"""
