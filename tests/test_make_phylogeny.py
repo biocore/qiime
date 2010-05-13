@@ -107,10 +107,7 @@ class CogentTreeBuilderTests(SharedSetupTestCase):
         self.assertTrue(tmid.isRoot())
         self.assertEqual(tmid.distance(\
             tmid.getNodeMatchingName('d')), 3)
-                    
-                    
-                
-                    
+
     def test_root_midpt2(self):
         """ midpoint between nodes should behave correctly"""
         from qiime.make_phylogeny import root_midpt
@@ -125,51 +122,6 @@ class CogentTreeBuilderTests(SharedSetupTestCase):
         self.assertEqual(tmid.distance(tmid.getNodeMatchingName('d')), 2.75)
 
 
-from copy import copy, deepcopy
-from cogent import LoadTree
-from cogent.core.tree import TreeNode, PhyloNode, TreeError
-from cogent.parse.tree import DndParser
-from cogent.maths.stats.test import correlation
-from cogent.util.unit_test import TestCase, main
-from numpy import array, arange        
-class PhyloNodeTests(TestCase):
-    """this tests only maxtiptipdistance"""
-
-    def setUp(self):
-        """Creates a standard tree"""
-        nodes = dict([(x, PhyloNode(x)) for x in 'abcdefgh'])
-        nodes['a'].append(nodes['b'])
-        nodes['b'].append(nodes['c'])
-        nodes['c'].append(nodes['d'])
-        nodes['c'].append(nodes['e'])
-        nodes['c'].append(nodes['f'])
-        nodes['f'].append(nodes['g'])
-        nodes['a'].append(nodes['h'])
-        self.TreeNode = nodes
-        self.TreeRoot = nodes['a']
-        nodes['a'].Length = None
-        nodes['b'].Length = 0
-        nodes['c'].Length = 3
-        nodes['d'].Length = 1
-        nodes['e'].Length = 4
-        nodes['f'].Length = 2
-        nodes['g'].Length = 3
-        nodes['h'].Length = 2
-
-        self.s = '((H:1,G:1):2,(R:0.5,M:0.7):3);'
-        self.t = DndParser(self.s,PhyloNode)
-        self.s3 = '(((H:1,G:1,O:1):2,R:3):1,X:4);'
-        self.t3 = DndParser(self.s3, PhyloNode)
-        
-    def test_maxTipTipDistance(self):
-        """maxTipTipDistance returns the max dist between any pair of tips"""
-        nodes, tree = self.TreeNode, self.TreeRoot
-        max_dist, tip_pair = tree.maxTipTipDistance()
-        self.assertEqual(max_dist, 10)
-        try:
-            self.assertEqual(tip_pair, ('h', 'g'))
-        except AssertionError:
-            self.assertEqual(tip_pair, ('g', 'h'))
 aln_for_tree = """>jkl\n--TTACAC--\n>abc\nACACACAC--\n>ghi\nACAGACACTT\n>def\nACAGACAC--\n"""
 
 tree = '(def:0.00014,ghi:0.00014,(abc:0.07248,jkl:0.40293)0.742:0.07156);'

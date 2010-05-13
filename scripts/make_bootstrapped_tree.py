@@ -10,14 +10,12 @@ __version__ = "1.0.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 __status__ = "Development"
- 
 
-from qiime.util import parse_command_line_parameters
 from optparse import make_option
-from cogent import LoadTree
+from cogent.parse.tree import DndParser
+from qiime.util import parse_command_line_parameters
 from qiime.make_bootstrapped_tree import write_pdf_bootstrap_tree
 from qiime.parse import parse_bootstrap_support
-
 
 script_info={}
 script_info['brief_description']="""Make bootstrapped tree"""
@@ -40,7 +38,7 @@ script_info['version'] = __version__
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
-    tree = LoadTree(opts.master_tree)
+    tree = DndParser(open(opts.master_tree,'U'))
     support_file = open(opts.support)
     bootstraps = parse_bootstrap_support(support_file)
     support_file.close()
