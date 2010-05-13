@@ -130,9 +130,9 @@ def create_javascript_array(rows):
     for i in range(len(rows)):
         for j in range(len(rows[i])):
             if i==0 or j==0 or i==len(rows)-1:
-                js_array+="OTU_table[%i][%i]='%s';\n" % (i,j,rows[i][j])
+                js_array+="OTU_table[%i][%i]='%s';\n" % (i,j,(rows[i][j]))
             else:
-                js_array+="OTU_table[%i][%i]=%s;\n" % (i,j,rows[i][j])
+                js_array+="OTU_table[%i][%i]=%s;\n" % (i,j,int(rows[i][j]))
             
     return js_array
 
@@ -212,7 +212,7 @@ def generate_heatmap_plots(options,data, dir_path, js_dir_path,filename):
     js_array=create_javascript_array(rows)
 
     #Write otu filter number
-    js_otu_cutoff='var otu_num_cutoff=%s;' % num_otu_hits
+    js_otu_cutoff='var otu_num_cutoff=%i;' % num_otu_hits
     
     #Write js array to file
     js_filename=os.path.join(js_dir_path,filename)+'.js'
