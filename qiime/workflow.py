@@ -2,17 +2,16 @@
 # File created on 30 Dec 2009.
 from __future__ import division
 from subprocess import Popen, PIPE, STDOUT
-from os import makedirs
+from os import makedirs, listdir
 from glob import glob
-from os.path import split, splitext, join
+from os.path import split, splitext, join, dirname
 from datetime import datetime
-import os
 from qiime.parse import parse_mapping_file
 from qiime.util import (compute_seqs_per_library_stats, 
                         get_qiime_scripts_dir,
                         create_dir)
-import qiime.sra_spreadsheet_to_map_files
-import qiime.make_sra_submission
+from qiime.make_sra_submission import twocol_data_to_dict, read_tabular_data, generate_output_fp
+from qiime.sra_spreadsheet_to_map_files import get_study_groups
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME Project"
@@ -891,10 +890,35 @@ def run_jackknifed_upgma_clustering(otu_table_fp,tree_fp,seqs_per_sample,\
     command_handler(commands,status_update_callback,logger)
 
 
-def run_process_sra_submission(input_experiment_fp, input_submission_fp,
-    sff_dir, ref_set_fp, output_dir, qiime_config, command_handler, 
-    status_update_callback=print_to_stdout, remove_unassigned=[],
-    experiment_link_fp=None, experiment_attribute_fp=None):
+## Begin SRA submission workflow and related functions
+
+def get_submission_info(submission_fp):
+    f = open(submission_fp, 'U')
+    return twocol_data_to_dict(read_tabular_data(f)[1])
+
+def get_run_info(experiment_fp):
+    infile = open(experiment_fp, 'U')
+    _, study_groups = get_study_groups(infile)
+    return study_groups.keys()            
+
+def get_sff_filenames(sff_dir, run_prefix):
+    return filter(
+     lambda x: x.startswith(run_prefix) and x.endswith('.sff'),
+     listdir(sff_dir))
+
+def run_process_sra_submission(
+    input_experiment_fp,
+    input_submission_fp,
+    sff_dir,
+    refseqs_fp,
+    output_dir,
+    params,
+    qiime_config,
+    command_handler,
+    status_update_callback=print_to_stdout,
+    remove_unassigned=[],
+    experiment_link_fp=None,
+    experiment_attribute_fp=None):
     """Run the SRA second-stage submission process.
 
     The steps performed by this function are:
@@ -905,7 +929,7 @@ def run_process_sra_submission(input_experiment_fp, input_submission_fp,
         5: Pick a representative sequence for each OTU
         6: Blast the representative set sequences against 95% OTUs in greengenes
            to eliminate sequences that aren't really 16S rRNA
-        7: Make per-library files of \"good\" ids to pass to sfffile
+        7: Make per-library files of good ids to pass to sfffile
         8: Use sfffile to make per-library sff files
         9: Use sfffile to quality-trim the barcodes, primers and linkers
         10: Move files around and make archive
@@ -915,7 +939,7 @@ def run_process_sra_submission(input_experiment_fp, input_submission_fp,
     experiment_link_fp, and experiment_attribute_fp have corresponding
     arguments in make_sra_submission.py.
 
-    The ref_set_fp argument corresponds to the querydb argument of
+    The refseqs_fp argument corresponds to the querydb argument of
     exclude_seqs_by_blast.py.  It is to be the path to a FASTA file of reference sequences
 
     The remove_unassigned keyword argument is a list of run prefixes
@@ -924,171 +948,162 @@ def run_process_sra_submission(input_experiment_fp, input_submission_fp,
     commands = []
     python_exe_fp = qiime_config['python_exe_fp']
     script_dir = get_qiime_scripts_dir()
+    submission_dir = dirname(input_experiment_fp)
     create_dir(output_dir)
-    logger = WorkflowLogger(generate_log_fp(output_dir))
+    # update log_fp to go into the directory that
+    # makes the most sense 
+    logger = WorkflowLogger(generate_log_fp(output_dir),
+                            params=params,
+                            qiime_config=qiime_config)
 
-    # Slightly hacky, should write a parsing function in qiime.parse
-    def get_submission_info(submission_fp):
-        f = open(submission_fp, 'U')
-        return qiime.make_sra_submission.twocol_data_to_dict(
-            qiime.make_sra_submission.read_tabular_data(f)[1])
     submission_info = get_submission_info(input_submission_fp)
+    submission_tar_fp = join(output_dir, submission_info['file'])
 
-    submission_tar_fp = os.path.join(output_dir, submission_info['file'])
-
-    def script_args(qiime_script_name):
-        return [python_exe_fp, os.path.join(script_dir, qiime_script_name)]
-
-    def get_run_info(experiment_fp):
-        infile = open(experiment_fp, 'U')
-        _, study_groups = \
-            qiime.sra_spreadsheet_to_map_files.get_study_groups(infile)
-        return study_groups.keys()            
-
-    def get_sff_filenames(sff_dir, run_prefix):
-        return filter(
-            lambda x: x.startswith(run_prefix) and x.endswith('.sff'),
-            os.listdir(sff_dir))
-
-    # Prelude: Create necessary files and directories in output folder
-    submission_sff_dir = os.path.join(output_dir, 'per_run_sff')
-    commands.append([(
-        'Create directory to hold SFF files for submission.',
-        ['mkdir', '-p', submission_sff_dir])])
-    sff_working_dir = os.path.join(output_dir, 'sff_files')
-    commands.append([(
-        'Create working directory to hold SFF files in output directory.',
-        ['mkdir', '-p', sff_working_dir])])
-    input_experiment_copy_fp = qiime.make_sra_submission.generate_output_fp(
+    # Prelude: Create sff directory for submission data
+    submission_sff_dir = join(output_dir, 'per_run_sff')
+    create_dir(submission_sff_dir)
+    sff_working_dir = join(output_dir, 'sff_files')
+    create_dir(sff_working_dir)
+    
+    # why are we creating copies of the input file?
+    input_experiment_copy_fp = generate_output_fp(
         input_experiment_fp, '.txt', output_dir)
     commands.append([(
         'Create a copy of experiment text file in output directory.',
-        ['cp', input_experiment_fp, input_experiment_copy_fp])])
-    input_submission_copy_fp = qiime.make_sra_submission.generate_output_fp(
+        'cp %s %s' % (input_experiment_fp, input_experiment_copy_fp))])
+    input_submission_copy_fp = generate_output_fp(
         input_submission_fp, '.txt', output_dir)
     commands.append([(
         'Create a copy of submission text file in output directory.',
-        ['cp', input_submission_fp, input_submission_copy_fp])])
-    ref_set_copy_fp = qiime.make_sra_submission.generate_output_fp(
-        ref_set_fp, '.fasta', output_dir)
+        'cp %s %s' % (input_submission_fp, input_submission_copy_fp))])
+    refseqs_copy_fp = generate_output_fp(refseqs_fp, '.fasta', output_dir)
     commands.append([(
         'Create a copy of reference set FASTA file in output directory.',
-        ['cp', ref_set_fp, ref_set_copy_fp])])
+        'cp %s %s' % (refseqs_fp, refseqs_copy_fp))])
     if not sff_dir.endswith('/'):
         sff_dir = sff_dir + '/'
     bash_command = '"cp %s*.sff %s"' % (sff_dir, sff_working_dir)
+    # why do we need to call bash here?
     commands.append([(
         'Create a copy of sff files in working directory.',
-        ['bash', '-c', bash_command])])
+        ('bash -c %s' % bash_command))])
 
     # Step 1
-    create_fasta_qual_args = script_args('process_sff.py') + [
-        '-i', sff_working_dir]
+    process_sff_cmd = '%s %s/process_sff.py -i %s' %\
+     (python_exe_fp,script_dir, sff_working_dir)
+
     commands.append([(
         'Process SFF files to create FASTA and QUAL files.',
-        create_fasta_qual_args)])
+        process_sff_cmd)])
 
     # Step 2
-    create_map_files_args = script_args('sra_spreadsheet_to_map_files.py') + [
-        '-i', input_experiment_copy_fp
-        ]
+    sra_spreadsheet_to_map_files_cmd = \
+     '%s %s/sra_spreadsheet_to_map_files.py -i %s' %\
+     (python_exe_fp,script_dir, input_experiment_copy_fp)
     commands.append([(
         'Create mapping files from the SRA experiment input file.',
-        create_map_files_args)])
+        sra_spreadsheet_to_map_files_cmd)])
 
     for study_ref, run_prefix in get_run_info(input_experiment_fp):
 
-        # Step 3
-
-        map_fp = os.path.join(
+        # Step 3: split libraries
+        map_fp = join(
             output_dir, '%s_%s.map' % (study_ref, run_prefix))
         sff_filenames = get_sff_filenames(sff_dir, run_prefix)
-        sff_basenames = [os.path.splitext(x)[0] for x in sff_filenames]
-        sff_basepaths = [os.path.join(sff_working_dir, x) for x in sff_basenames]
+        sff_basenames = [splitext(x)[0] for x in sff_filenames]
+        sff_basepaths = [join(sff_working_dir, x) for x in sff_basenames]
         fna_string = ','.join([b + '.fna' for b in sff_basepaths])
         qual_string = ','.join([b + '.qual' for b in sff_basepaths])
-        library_dir = os.path.join(output_dir, '%s_demultiplex' % run_prefix)
-        split_libraries_args = script_args('split_libraries.py') + [
-            '-s', '5', '-l', '30', '-L', '1000', '-b', '12', '-H', '1000',
-            '-M', '100', '-a', '1000', '-m', map_fp, '-f', fna_string,
-            '-q', qual_string, '-o', library_dir,
-            ]
+        library_dir = join(output_dir, '%s_demultiplex' % run_prefix)
+        
+        params_str = get_params_str(params['split_libraries'])
+        
+        split_libraries_cmd = \
+         '%s %s/split_libraries.py -m %s -f %s -q %s -o %s %s' %\
+         (python_exe_fp,script_dir,map_fp,fna_string, qual_string,
+         library_dir, params_str)
+        
+        ## WHY IS THIS BEING DONE? SHOULD THIS JUST BE ADDED TO THE 
+        ## PARAMETERS FILE? PROBABLY...
         if run_prefix in remove_unassigned:
             split_libraries_args.append('-r')
+        
         commands.append([(
-            'Demultiplex run %s.' % run_prefix, split_libraries_args)])
-        seqs_fp = os.path.join(library_dir, 'seqs.fna')
+            'Demultiplex run %s.' % run_prefix, split_libraries_cmd)])
+        seqs_fp = join(library_dir, 'seqs.fna')
 
-        # Step 4
+        # Step 4 -- pick otus
+        params_str = get_params_str(params['pick_otus'])
+        
+        pick_otus_cmd = \
+         '%s %s/pick_otus.py -i %s -o %s %s' %\
+         (python_exe_fp, script_dir, seqs_fp, library_dir, params_str)
 
-        pick_otus_args = script_args('pick_otus.py') + [
-            '-m', 'cdhit', '-M', '4000', '-n', '100', '-s', '0.95',
-            '-i', seqs_fp, '-o', library_dir,
-            ]
-        commands.append([('Pick OTUs.', pick_otus_args)])
-        otus_fp = os.path.join(library_dir, 'seqs_otus.txt')
+        commands.append([('Pick OTUs.', pick_otus_cmd)])
+        otus_fp = join(library_dir, 'seqs_otus.txt')
 
-        # Step 5
+        # Step 5 -- pick rep set
+        params_str = get_params_str(params['pick_rep_set'])
+        
+        pick_rep_set_cmd = \
+         '%s %s/pick_rep_set.py -i %s -f %s %s' %\
+         (python_exe_fp, script_dir, otus_fp, seqs_fp, params_str)
 
-        pick_rep_set_args = script_args('pick_rep_set.py') + [
-            '-i', otus_fp, '-f', seqs_fp
-            ]
+        commands.append([('Pick representative set', pick_rep_set_cmd)])
+        rep_set_fp = join(library_dir, 'seqs.fna_rep_set.fasta')
+
+        # Step 6 -- screen representative sequences using BLAST
+        params_str = get_params_str(params['exclude_seqs_by_blast'])
+        screened_basename = join(library_dir, 'blast_results')
+        exclude_seqs_by_blast_cmd = \
+         '%s %s/exclude_seqs_by_blast.py -d %s -i %s -o %s %s --verbose' %\
+         (python_exe_fp,script_dir,refseqs_copy_fp,rep_set_fp,
+          screened_basename,params_str)
         commands.append([(
-            'Pick a representative set of sequences.', pick_rep_set_args)])
-        rep_set_fp = os.path.join(library_dir, 'seqs.fna_rep_set.fasta')
+            'Human screen: exclude seqs that fail to match reference set.',
+            exclude_seqs_by_blast_cmd)])
+        screened_fp = screened_basename + '.non-matching'
 
-        # Step 6
+        # Step 7 - make per library id lists
+        per_lib_sff_dir = join(library_dir, 'per_lib_info')
+        params_str = get_params_str(params['make_library_id_lists'])
+        make_library_id_lists_cmd = \
+         '%s %s/make_library_id_lists.py -i %s -s %s -u %s -o %s %s' % \
+         (python_exe_fp, script_dir, seqs_fp, screened_fp, otus_fp,
+          per_lib_sff_dir, params_str)
 
-        screened_basename = os.path.join(library_dir, 'blast_results')
-        exclude_seqs_args = script_args('exclude_seqs_by_blast.py') + [
-            '-d', ref_set_copy_fp, '-i', rep_set_fp, '-W', '10', '-p', '0.25',
-            '-o', screened_basename, '-e', '1e-20',
-            ]
-        commands.append([(
-            'Exclude sequences that fail to match the reference set.',
-            exclude_seqs_args)])
-        screened_fp = screened_basename + '.screened'
-        commands.append([(
-            'Move formatdb log file to output directory.',
-            ['mv', 'formatdb.log', output_dir])])
-
-        # Step 7
-
-        per_lib_sff_dir = os.path.join(library_dir, 'per_lib_info')
-        create_id_lists_args = script_args('make_library_id_lists.py') + [
-            '-i', seqs_fp, '-s', screened_fp, '-u', otus_fp,
-            '-o', per_lib_sff_dir,
-            ]
         commands.append([(
             'Create per-library id lists to use when splitting SFF files.',
-            create_id_lists_args)])
+            make_library_id_lists_cmd)])
 
-        # Step 8
-
+        # Step 8 -- make per library sff files
         sff_string = ','.join(
-            [os.path.join(sff_working_dir, x) for x in sff_filenames])
-        make_per_library_args = script_args('make_per_library_sff.py') + [
-            '-i', sff_string, '-l', per_lib_sff_dir,
-            ]
+                    [join(sff_working_dir, x) for x in sff_filenames])
+        params_str = get_params_str(params['make_per_library_sff'])
+        make_per_library_sff_cmd = \
+         '%s %s/make_per_library_sff.py -i %s -l %s %s' %\
+         (python_exe_fp, script_dir, sff_string, per_lib_sff_dir, params_str)
         commands.append([(
-            'Create per-library SFF files.', make_per_library_args)])
+            'Create per-library SFF files.', make_per_library_sff_cmd)])
 
-        # Step 9
+        # Step 9 -- trim sff primers
+        params_str = get_params_str(params['trim_sff_primers'])
+        trim_sff_primers_cmd = \
+         '%s %s/trim_sff_primers.py -m %s -l %s %s' %\
+         (python_exe_fp, script_dir, map_fp, per_lib_sff_dir, params_str)
 
-        trim_primer_args = script_args('trim_sff_primers.py') + [
-            '-m', map_fp, '-l', per_lib_sff_dir,
-            ]
         commands.append([(
             'Trim primer sequences from per-library SFF files.',
-            trim_primer_args)])
+            trim_sff_primers_cmd)])
 
-        # Step 10
+        # Step 10 -- organize submission files
 
-        run_sff_output_dir = os.path.join(submission_sff_dir, run_prefix)
-        commands.append([(
-            'Create a submission directory to hold per-library sff files.',
-            ['mkdir', '-p', run_sff_output_dir])])
+        run_sff_output_dir = join(submission_sff_dir, run_prefix)
+        create_dir(run_sff_output_dir)
 
+        # for sff_fp in glob(join(per_lib_sff_dir, '*.sff')):
+        #     filename = split(fp)[1]
+        #     rename(fp,'%s/%s' % (run_sff_submission_dir,filename))
         if not per_lib_sff_dir.endswith('/'):
             per_lib_sff_dir = per_lib_sff_dir + '/'
         if not run_sff_output_dir.endswith('/'):
@@ -1096,31 +1111,29 @@ def run_process_sra_submission(input_experiment_fp, input_submission_fp,
         bash_command = (
             '"cp %s*.sff %s"' % (per_lib_sff_dir, run_sff_output_dir))
         commands.append([(
-            'Copy per-library SFF files to submission directory.',
-            ['bash', '-c', bash_command])])
+             'Copy per-library SFF files to submission directory.',
+            'bash -c %s' % bash_command)])
 
-        orig_unassigned_fp = os.path.join(run_sff_output_dir, 'Unassigned.sff')
-        desired_unassigned_fp = os.path.join(
+        orig_unassigned_fp = join(run_sff_output_dir, 'Unassigned.sff')
+        desired_unassigned_fp = join(
             run_sff_output_dir, '%s_default_%s.sff' % (study_ref, run_prefix))
-        commands.append([(
-            'Change the name of the SFF file for unassigned sequences.',
-            ['mv', orig_unassigned_fp, desired_unassigned_fp])])
-
+        commands.append([('Rename Unassigned.sff',
+         'mv %s %s' % (orig_unassigned_fp, desired_unassigned_fp))])
+        
+    # Replace the following command with a buil-in python version, if available
+    # on a plane without internet right now, so can't look it up...
     commands.append([('Create archive of per-library SFF files.',
-                     ['tar', 'cvzf', submission_tar_fp, submission_sff_dir])])
+                     'tar cvzf %s %s' % (submission_tar_fp, submission_sff_dir))])
 
-    # Finally, Step 11
-    make_xml_args = script_args('make_sra_submission.py') + [
-        '-u', input_submission_copy_fp, '-e', input_experiment_copy_fp,
-        '-s', submission_sff_dir, '-o', output_dir,
-        ]
-    commands.append([('Make SRA submission XML files.', make_xml_args)])
+    # Step 11
+    params_str = get_params_str(params['make_sra_submission'])
+    make_sra_submission_cmd = \
+     '%s %s/make_sra_submission.py -u %s -e %s -s %s -o %s %s' %\
+     (python_exe_fp, script_dir, input_submission_copy_fp, input_experiment_copy_fp,
+      submission_sff_dir, output_dir, params_str)
+    commands.append([('Make SRA submission XML files.', 
+                      make_sra_submission_cmd)])
 
-    # Reformat command argument lists into flat strings.  This
-    # practice is not usually necessary with the subprocess module,
-    # but the default command handler requires it, because it sets
-    # shell=True.
-    commands = [[(a, ' '.join(b)) for a, b in c] for c in commands]
     # Call the command handler on the list of commands
     command_handler(commands, status_update_callback, logger)
 

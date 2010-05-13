@@ -3,15 +3,15 @@
 
 __author__ = "Kyle Bittinger"
 __copyright__ = "Copyright 2010, The QIIME Project"
-__credits__ = ["Kyle Bittinger"]
+__credits__ = ["Kyle Bittinger","Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "0.92-dev"
+__version__ = "1.0.0-dev"
 __maintainer__ = "Kyle Bittinger"
 __email__ = "kylebittinger@gmail.com"
-__status__ = "Prototype"
+__status__ = "Development"
 
 from optparse import make_option
-import os
+from os.path import join
 from qiime.util import (
     load_qiime_config, get_qiime_project_dir, parse_command_line_parameters,
     )
@@ -19,8 +19,9 @@ from qiime.workflow import (
     run_process_sra_submission, print_commands, call_commands_serially,
     print_to_stdout, no_status_updates
     )
+from qiime.parse import parse_qiime_parameters
 
-sra_template_dir = os.path.join(
+sra_template_dir = join(
     get_qiime_project_dir(), 'qiime', 'support_files', 'sra_xml_templates')
 
 script_info={}
@@ -52,6 +53,8 @@ script_info['required_options'] = [
         help='path to reference set of 16S sequences [REQUIRED]'),
     make_option('-o','--output_dir',
         help='the output directory [REQUIRED]'),
+    make_option('-p','--parameter_fp',\
+        help='path to the parameter file [REQUIRED]')
     ]
 script_info['optional_options'] = [
     make_option('--experiment_attribute_fp',
@@ -81,22 +84,32 @@ def main():
     else:
         status_update_callback = no_status_updates
 
-    opts.remove_unassigned = opts.remove_unassigned or ''
-    remove_unassigned = opts.remove_unassigned.split(',')
-
+    if opts.remove_unassigned:
+        remove_unassigned = remove_unassigned.split(',')
+    else:
+        remove_unassigned = []
+    
+    try:
+        parameter_f = open(opts.parameter_fp)
+    except IOError:
+        raise IOError,\
+         "Can't open parameters file (%s). Does it exist? Do you have read access?"\
+         % opts.parameter_fp
+        
     run_process_sra_submission(
-        opts.input_experiment_fp,
-        opts.input_submission_fp,
-        opts.sff_dir,
-        opts.reference_set_fp,
-        opts.output_dir,
-        qiime_config,
-        command_handler,
-        status_update_callback=status_update_callback,
-        remove_unassigned=opts.remove_unassigned,
-        experiment_link_fp=opts.experiment_link_fp,
-        experiment_attribute_fp=opts.experiment_attribute_fp,
-        )
+            input_experiment_fp=opts.input_experiment_fp,
+            input_submission_fp=opts.input_submission_fp,
+            sff_dir=opts.sff_dir,
+            refseqs_fp=opts.reference_set_fp,
+            output_dir=opts.output_dir,
+            params=parse_qiime_parameters(parameter_f),
+            qiime_config=qiime_config,
+            command_handler=command_handler,
+            status_update_callback=status_update_callback,
+            remove_unassigned=remove_unassigned,
+            experiment_link_fp=opts.experiment_link_fp,
+            experiment_attribute_fp=opts.experiment_attribute_fp
+            )
 
 if __name__ == "__main__":
     main()

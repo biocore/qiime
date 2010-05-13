@@ -129,16 +129,20 @@ class WorkflowTests(TestCase):
         self.params['filter_alignment']['lane_mask_fp'] = self.lanemask_fp
 
         self.experiment_fp = get_tmp_filename(
-            tmp_dir=tmp_dir, prefix='experiment', suffix='.txt')
-        with open(self.experiment_fp, 'w') as f:
-            f.write(sra_experiment_txt)
+            tmp_dir=tmp_dir, prefix='SRA_wf_exp', suffix='.txt')
+        f = open(self.experiment_fp, 'w')
+        f.write(sra_experiment_txt)
+        f.close()
         self.files_to_remove.append(self.experiment_fp)
 
         self.submission_fp = get_tmp_filename(tmp_dir=tmp_dir,
-            prefix='submission',suffix='.txt')
-        with open(self.submission_fp, 'w') as f:
-            f.write(sra_submission_txt)
+            prefix='SRA_wf_sub',suffix='.txt')
+        f = open(self.submission_fp, 'w')
+        f.write(sra_submission_txt)
+        f.close()
         self.files_to_remove.append(self.submission_fp)
+        
+        self.sra_params = parse_qiime_parameters(sra_submission_params_f)
         
         signal.signal(signal.SIGALRM, timeout)
         # set the 'alarm' to go off in allowed_seconds seconds
@@ -201,37 +205,7 @@ class WorkflowTests(TestCase):
         log_fp = glob(join(self.wf_out,'log*.txt'))[0]
         self.assertTrue(getsize(log_fp) > 0)
 
-    def test_run_process_sra_submission(self):
-        """run_process_sra_submission produces a valid SRA submission package"""
-        # Cannot use get_qiime_project_dir() due to test errors in virtual box
-        test_dir = os.path.dirname(os.path.abspath(__file__))
-        sff_dir = os.path.join(test_dir, 'sra_test_files', 'F6AVWTA')
 
-        run_process_sra_submission(
-                self.experiment_fp,
-                self.submission_fp,
-                sff_dir,
-                self.template_aln_fp,
-                self.wf_out,
-                self.qiime_config,
-                call_commands_serially,
-                status_update_callback=no_status_updates,
-                )
-
-        tar_fp = os.path.join(self.wf_out, 'my_sffs.tgz')
-        self.assertTrue(getsize(tar_fp) > 0)
-
-        formatdb_log_fp = os.path.join(self.wf_out, 'formatdb.log')
-        self.assertTrue(getsize(formatdb_log_fp) > 0)
-        
-        experiment_basename = os.path.splitext(
-            os.path.basename(self.experiment_fp))[0]
-        experiment_xml_fp = os.path.join(
-            self.wf_out, experiment_basename + '.xml')
-        self.assertTrue(getsize(experiment_xml_fp) > 0)
-        run_xml_fp = os.path.join(
-            self.wf_out, experiment_basename + '.xml')
-        self.assertTrue(getsize(run_xml_fp) > 0)
 
     def test_run_qiime_data_preparation_denoise(self):
         """run_qiime_data_preparation denoises"""
@@ -499,6 +473,57 @@ class WorkflowTests(TestCase):
         # Check that the log file is created and has size > 0
         log_fp = glob(join(self.wf_out,'log*.txt'))[0]
         self.assertTrue(getsize(log_fp) > 0)
+        
+    def test_run_process_sra_submission(self):
+        """run_process_sra_submission produces a valid SRA submission package"""
+        # TODO: remove dependence on external files, if possible
+        test_dir = os.path.dirname(os.path.abspath(__file__))
+        sff_dir = os.path.join(test_dir, 'sra_test_files', 'F6AVWTA')
+
+        run_process_sra_submission(
+                input_experiment_fp=self.experiment_fp,
+                input_submission_fp=self.submission_fp,
+                sff_dir=sff_dir,
+                refseqs_fp=self.template_aln_fp,
+                output_dir=self.wf_out,
+                params=self.sra_params,
+                qiime_config=self.qiime_config,
+                command_handler=call_commands_serially,
+                status_update_callback=no_status_updates,
+                )
+
+        tar_fp = os.path.join(self.wf_out, 'my_sffs.tgz')
+        self.assertTrue(getsize(tar_fp) > 0)
+        
+        experiment_basename = os.path.splitext(
+            os.path.basename(self.experiment_fp))[0]
+        experiment_xml_fp = os.path.join(
+            self.wf_out, experiment_basename + '.xml')
+        self.assertTrue(getsize(experiment_xml_fp) > 0)
+        run_xml_fp = os.path.join(
+            self.wf_out, experiment_basename + '.xml')
+        self.assertTrue(getsize(run_xml_fp) > 0)
+        
+sra_submission_params_f = """# split_libraries parameters
+split_libraries:min-qual-score	5
+split_libraries:min-seq-length	30
+split_libraries:max-seq-length	1000
+split_libraries:barcode-type	10
+# by default, barcode-type should be 12 -- in this example it is 10
+#split_libraries:barcode-type	12
+split_libraries:max-homopolymer	1000
+split_libraries:max-primer-mismatch	100
+split_libraries:max-ambig	1000
+
+# pick_otus parameters
+pick_otus:otu_picking_method	cdhit
+pick_otus:max_cdhit_memory	4000
+pick_otus:prefix_prefilter_length	100
+pick_otus:similarity	0.95
+
+exclude_seqs_by_blast:word_size	10
+exclude_seqs_by_blast:percent_aligned	0.25
+exclude_seqs_by_blast:e_value	1e-20""".split('\n')
 
 sra_experiment_txt = '''#EXPERIMENT_ALIAS	EXPERIMENT_CENTER	EXPERIMENT_TITLE	STUDY_REF	STUDY_CENTER	EXPERIMENT_DESIGN_DESCRIPTION	LIBRARY_CONSTRUCTION_PROTOCOL	SAMPLE_ALIAS	SAMPLE_CENTER	POOL_MEMBER_NAME	POOL_MEMBER_FILENAME	POOL_PROPORTION	BARCODE_READ_GROUP_TAG	BARCODE	LINKER	PRIMER_READ_GROUP_TAG	KEY_SEQ	PRIMER	RUN_PREFIX	RUN_ALIAS	REGION	PLATFORM	RUN_CENTER	RUN_DATE	INSTRUMENT_NAME
 bodysites_F6AVWTA01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015438	NCBI	F6AVWTA01_2878_700015438_V1-V3	B-2004-03-S1.sff	0.014492754	F6AVWTA01_ATGTTCGATG	AGACTCTGCT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA01	F6AVWTA01_2878	0	FLX	JCVI 	NULL	NULL

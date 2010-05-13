@@ -26,9 +26,6 @@ class TopLevelTests(TestCase):
     
     def setUp(self):
         """Create temporary directory of SFF files"""
-        if not app_path('sffinfo'):
-            raise ApplicationNotFoundError(
-                "Can't find sffinfo. Is it installed? Is it in your $PATH?")
 
         # Cannot use get_qiime_project_dir() due to test errors in virtual box
         test_dir = os.path.dirname(os.path.abspath(__file__))
