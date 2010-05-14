@@ -1056,7 +1056,7 @@ def run_process_sra_submission(
         params_str = get_params_str(params['exclude_seqs_by_blast'])
         screened_basename = join(library_dir, 'blast_results')
         exclude_seqs_by_blast_cmd = \
-         '%s %s/exclude_seqs_by_blast.py -d %s -i %s -o %s %s --verbose' %\
+         '%s %s/exclude_seqs_by_blast.py -d %s -i %s -o %s %s' %\
          (python_exe_fp,script_dir,refseqs_copy_fp,rep_set_fp,
           screened_basename,params_str)
         commands.append([(
