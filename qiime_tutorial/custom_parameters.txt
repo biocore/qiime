@@ -1,11 +1,22 @@
-# qiime_parameters.txt
-# WARNING: DO NOT EDIT OR DELETE Qiime/qiime_parameters.txt. Users should copy this file and edit copies of it.
-
 ###pick_otus_through_otu_table.py parameters###
 
 # OTU picker parameters
 pick_otus:otu_picking_method	uclust
+pick_otus:clustering_algorithm	furthest
+pick_otus:max_cdhit_memory	400
+pick_otus:refseqs_fp
+pick_otus:blast_db
 pick_otus:similarity	0.97
+pick_otus:max_e_value	1e-10
+pick_otus:prefix_prefilter_length
+pick_otus:trie_prefilter
+pick_otus:prefix_length
+pick_otus:suffix_length
+pick_otus:optimal_uclust
+pick_otus:exact_uclust
+pick_otus:user_sort
+pick_otus:suppress_presort_by_abundance_uclust
+pick_otus:suppress_new_clusters
 
 # Representative set picker parameters
 pick_rep_set:rep_set_picking_method	most_abundant
@@ -22,22 +33,30 @@ align_seqs:min_percent_id	75.0
 # Alignment filtering (prior to tree-building) parameters
 filter_alignment:lane_mask_fp	/home/qiime/lanemask_in_1s_and_0s
 filter_alignment:allowed_gap_frac	 0.999999
+filter_alignment:remove_outliers	False
+filter_alignment:threshold	3.0
 
 # Taxonomy assignment parameters
+assign_taxonomy:id_to_taxonomy_fp
+assign_taxonomy:reference_seqs_fp
 assign_taxonomy:assignment_method	rdp
+assign_taxonomy:blast_db
 assign_taxonomy:confidence	0.8
+#assign_taxonomy:e_value	0.001
 
 # Phylogenetic tree building parameters
 make_phylogeny:tree_method	fasttree
+make_phylogeny:root_method	tree_method_default
 
 ###alpha_rarefaction.py parameters###
 
 # Rarefaction parameters
 multiple_rarefactions:num-reps	5
+multiple_rarefactions:depth
 multiple_rarefactions:lineages_included	False
 
 # Alpha diversity parameters
-alpha_diversity:metrics	PD_whole_tree,observed_species,chao1
+alpha_diversity:metrics	chao1,observed_species,PD_whole_tree
 
 # Collate alpha
 collate_alpha:example_path
@@ -45,6 +64,8 @@ collate_alpha:example_path
 # Make rarefaction plots parameters
 make_rarefaction_plots:imagetype	png
 make_rarefaction_plots:resolution	75
+make_rarefaction_plots:background_color	white
+make_rarefaction_plots:prefs_path
 
 ###beta_diversity_through_3d_plots.py parameters###
 
@@ -61,11 +82,12 @@ make_3d_plots:custom_axes
 
 ###jackknife_upgma.py parameters###
 
-# Multiple Rarefactions
-multiple_rarefactions_even_depth:num-reps 20
+# Even-depth rarefaction parameters
+multiple_rarefactions_even_depth:num-reps	20
 
 ###parallel workflow###
+
 # Parallel options
-parallel:jobs_to_start	2
+parallel:jobs_to_start	1
 parallel:retain_temp_files	False
-parallel:seconds_to_sleep	1
+parallel:seconds_to_sleep	60
