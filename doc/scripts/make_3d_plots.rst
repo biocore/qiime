@@ -98,4 +98,20 @@ If the user would like to color the background white they can use the '-k' optio
 
 	make_3d_plots.py -i beta_div_coords.txt -m Mapping_file.txt -b ALL -k white
 
+**Jackknifed Principal Coordinates (w/ confidence intervals):**
+
+If you have created jackknifed PCoA files, you can pass the folder containing those files, instead of a single file.  The user can also specify the opacity of the ellipses around each point "--ellipsoid_opacity", which is a value from 0-1. Currently there are two metrics "--ellipsoid_method" that can be used for generating the ellipsoids, which are 'IQR' and 'sdev'. The user can specify all of these options as follows:
+
+::
+
+	make_3d_plots.py -i jackknifed_pcoas/ -m Mapping_file.txt -b 'mapping_column1,mapping_column1&&mapping_column2' --ellipsoid_opacity=0.5 --ellipsoid_method=IQR
+
+**Bi-Plots:**
+
+If the user would like to see which taxa are more prevalent in different areas of the PCoA plot, they can generate Bi-Plots, by passing a principal coordinates file or folder "-i", a mapping file "-m", a summarized taxa file "-t" from `summarize_taxa.py <./summarize_taxa.html>`_, and the master principal coordinates file "--master_pcoa", as follows:
+
+::
+
+	make_3d_plots.py -i jackknifed_pcoas/ -m Mapping_file.txt -t otu_table_level3.txt --master_pcoa=unweighted_unifrac_pc.txt
+
 

@@ -9,7 +9,7 @@
 
 Once the batch alpha diversity files have been collated, you may want to compare the diversity using plots. Using the results from `collate_alpha.py <./collate_alpha.html>`_, you can plot the samples and or by category in the mapping file using this script.
 
-This script creates an html file of rarefaction plots based on the supplied collated alpha-diversity files in the folder given (-i) from `collate_alpha.py <./collate_alpha.html>`_. The user may also supply optional arguments like an image type (-i), and a resolution (-d).
+This script creates an html file of rarefaction plots based on the supplied collated alpha-diversity files in a folder or a comma-separated list of files, by passing the "-i" option.  Be aware that this script produces many images for the interactive html pages, so you may choose to not create these pages. The user may also supply optional arguments like an image type (-g), and a resolution (-d).
 
 
 **Usage:** :file:`make_rarefaction_plots.py [options]`
@@ -38,6 +38,10 @@ This script creates an html file of rarefaction plots based on the supplied coll
 		Extension for image type choose from (png, svg, pdf).  WARNING: Some formats may not properly open in your browser! [default: png]
 	-d, `-`-resolution
 		Output image resolution, [default: 75]
+	-y, `-`-ymax
+		This is the ymax value to be used for the plots, so you can compare rarefaction plots between two different analyses [default: None]
+	-w, `-`-webpage
+		This is allows to user to not create the webpage, which may be slow with large datasets [default: True]
 	-o, `-`-output_dir
 		Path to the output directory
 
@@ -53,7 +57,7 @@ For generated rarefaction plots using the default parameters, including the mapp
 
 ::
 
-	make_rarefaction_plots.py -r chao1/ -m mapping_file.txt
+	make_rarefaction_plots.py -i collated_alpha/ -m mapping_file.txt
 
 **Specify Image Type and Resolution:**
 
@@ -61,7 +65,7 @@ Optionally, you can change the resolution ("-d") and the type of image created (
 
 ::
 
-	make_rarefaction_plots.py -i chao1/ -m mapping_file.txt -d 180 -g pdf
+	make_rarefaction_plots.py -i collated_alpha/ -m mapping_file.txt -d 180 -g pdf
 
 **Use Prefs File:**
 
@@ -69,7 +73,7 @@ You can also supply a preferences file "-p", as follows
 
 ::
 
-	make_rarefaction_plots.py -i chao1/ -m mapping_file.txt -d 180 -p prefs.txt
+	make_rarefaction_plots.py -i collated_alpha/ -m mapping_file.txt -d 180 -p prefs.txt
 
 **Set Background Color:**
 
@@ -77,6 +81,14 @@ Alternatively, you can set the plot background "-k", as follows: a preferences f
 
 ::
 
-	make_rarefaction_plots.py -i chao1/ -m mapping_file.txt -k black
+	make_rarefaction_plots.py -i collated_alpha/ -m mapping_file.txt -k black
+
+**Generate raw data without interactive webpages:**
+
+The user can choose to not create an interactive webpage ("-w" option).  This is for the case, where the user just wants the average plots and the raw average data.
+
+::
+
+	make_rarefaction_plots.py -i collated_alpha/ -m mapping_file.txt -w
 
 

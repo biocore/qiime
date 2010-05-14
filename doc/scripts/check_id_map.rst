@@ -59,6 +59,8 @@ Specifically, we check that:
 		Use -b if barcodes are not present. [default: False]
 	-B, `-`-variable_len_barcodes
 		Use -B if variable length barcodes are present to suppress warnings about barcodes of unequal length. [default: False]
+	-p, `-`-disable_primer_check
+		Use -p to disable checks for primers. [default: False]
 
 
 **Output:**

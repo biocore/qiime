@@ -50,7 +50,7 @@ Sequences from samples that are not found in the mapping file (no corresponding 
 	-M, `-`-max-primer-mismatch
 		Maximum number of primer mismatches [default: 0]
 	-b, `-`-barcode-type
-		Barcode type, e.g. hamming_8 or golay_12 or variable_length (will disable any barcode correction if variable_length set) + [default: golay_12]
+		Barcode type, hamming_8, golay_12, variable_length (will disable any barcode correction if variable_length set), or a number representing the length of the barcode, such as -b 4.  [default: golay_12]
 	-o, `-`-dir-prefix
 		Directory prefix for output files [default: .]
 	-e, `-`-max-barcode-errors
@@ -63,6 +63,8 @@ Sequences from samples that are not found in the mapping file (no corresponding 
 		Disable attempts to find nearest corrected barcode.  Can improve performance. [default: False]
 	-w, `-`-qual_score_window
 		Enable sliding window test of quality scores.  If the average score of a continuous set of w nucleotides falls below the threshold (see -s for default), the sequence is discarded. A good value would be 50. 0 (zero) means no filtering. Must pass a .qual file (see -q parameter) if this functionality is enabled. [default: 0]
+	-p, `-`-disable_primers
+		Disable primer usage when demultiplexing.  Should be enabled for unusual circumstances, such as analyzing Sanger sequence data generated with different primers.  [default: False]
 
 
 **Output:**
@@ -89,7 +91,7 @@ For the case where there are multiple FASTA and QUAL files, the user can run the
 
 ::
 
-	split_libraries.py -m Mapping_File.txt -f 1.TCA.454Reads.fna,2.TCA.454Reads.fna -q 1.TCA.454Reads.qual,2.TCA.454Reads.fna -o Split_Library_Output/
+	split_libraries.py -m Mapping_File.txt -f 1.TCA.454Reads.fna,2.TCA.454Reads.fna -q 1.TCA.454Reads.qual,2.TCA.454Reads.qual -o Split_Library_Output/
 
 **Duplicate Barcode Example:**
 

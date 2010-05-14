@@ -39,6 +39,8 @@ This script makes the submission xml files for SRA (study, experiment, etc.).  T
 		Three-column, tab-delimited file of experiment links [default: None]
 	-s, `-`-sff_dir
 		The directory containing the demultiplexed sff files: 1 dir per run [default: None]
+	-o, `-`-output_dir
+		Submission output directory
 
 
 **Output:**

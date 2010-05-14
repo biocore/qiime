@@ -28,12 +28,13 @@ script_info={}
 script_info['brief_description']="""Generate Rarefaction Plots"""
 script_info['script_description']="""Once the batch alpha diversity files have been collated, you may want to compare the diversity using plots. Using the results from collate_alpha.py, you can plot the samples and or by category in the mapping file using this script.
 
-This script creates an html file of rarefaction plots based on the supplied collated alpha-diversity files in the folder given (-i) from collate_alpha.py. The user may also supply optional arguments like an image type (-i), and a resolution (-d)."""
+This script creates an html file of rarefaction plots based on the supplied collated alpha-diversity files in a folder or a comma-separated list of files, by passing the "-i" option.  Be aware that this script produces many images for the interactive html pages, so you may choose to not create these pages. The user may also supply optional arguments like an image type (-g), and a resolution (-d)."""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Default Example:""","""For generated rarefaction plots using the default parameters, including the mapping file and one rarefaction file, you can use the following command:""","""make_rarefaction_plots.py -r chao1/ -m mapping_file.txt"""))
-script_info['script_usage'].append(("""Specify Image Type and Resolution:""","""Optionally, you can change the resolution ("-d") and the type of image created ("-i"), by using the following command:""","""make_rarefaction_plots.py -i chao1/ -m mapping_file.txt -d 180 -g pdf"""))
-script_info['script_usage'].append(("""Use Prefs File:""","""You can also supply a preferences file "-p", as follows""","""make_rarefaction_plots.py -i chao1/ -m mapping_file.txt -d 180 -p prefs.txt"""))
-script_info['script_usage'].append(("""Set Background Color:""","""Alternatively, you can set the plot background "-k", as follows: a preferences file "-p", as follows""","""make_rarefaction_plots.py -i chao1/ -m mapping_file.txt -k black"""))
+script_info['script_usage'].append(("""Default Example:""","""For generated rarefaction plots using the default parameters, including the mapping file and one rarefaction file, you can use the following command:""","""make_rarefaction_plots.py -i collated_alpha/ -m mapping_file.txt"""))
+script_info['script_usage'].append(("""Specify Image Type and Resolution:""","""Optionally, you can change the resolution ("-d") and the type of image created ("-i"), by using the following command:""","""make_rarefaction_plots.py -i collated_alpha/ -m mapping_file.txt -d 180 -g pdf"""))
+script_info['script_usage'].append(("""Use Prefs File:""","""You can also supply a preferences file "-p", as follows""","""make_rarefaction_plots.py -i collated_alpha/ -m mapping_file.txt -d 180 -p prefs.txt"""))
+script_info['script_usage'].append(("""Set Background Color:""","""Alternatively, you can set the plot background "-k", as follows: a preferences file "-p", as follows""","""make_rarefaction_plots.py -i collated_alpha/ -m mapping_file.txt -k black"""))
+script_info['script_usage'].append(("""Generate raw data without interactive webpages:""","""The user can choose to not create an interactive webpage ("-w" option).  This is for the case, where the user just wants the average plots and the raw average data.""","""make_rarefaction_plots.py -i collated_alpha/ -m mapping_file.txt -w"""))
 script_info['output_description']="""The result of this script produces a folder and within that folder there is a sub-folder containing image files. Within the main folder, there is an html file."""
 script_info['required_options']=[\
 make_option('-i', '--input_dir', help='name of folder containing rarefaction files, takes output from collate_alpha.py.  The user can also supply a list of files, which are comma-separated. [REQUIRED]'),
@@ -50,11 +51,6 @@ make_option('-w', '--webpage', action='store_false', help='this is allows to use
 options_lookup['output_dir']
 ]
 script_info['version'] = __version__
-
-#removed --rarefaction_average option and --ymax option, since it is calculated
-# in the script
-
-
 
 def main():
     option_parser, options, args = parse_command_line_parameters(**script_info)

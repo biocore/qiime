@@ -95,9 +95,9 @@ Assign Samples to Multiplex Reads
 -------------------------------------
 The next task is to assign the multiplex reads to samples based on their nucleotide barcode. Also, this step performs quality filtering based on the characteristics of each sequence, removing any low quality or ambiguous reads. The script for this step is `split_libraries.py <../scripts/split_libraries.html>`_. A full description of parameters for this script are described in the `Documentation <../documentation/index.html>`_. For this tutorial, we will use default parameters (minimum quality score = 25, minimum/maximum length = 200/1000, no ambiguous bases allowed and no mismatches allowed in the primer sequence).::
 
-	split_libraries.py -m Fasting_Map.txt -f Fasting_Example.fna -q Fasting_Example.qual -o split_libary_output
+	split_libraries.py -m Fasting_Map.txt -f Fasting_Example.fna -q Fasting_Example.qual -o split_library_output
 
-This invocation will create three files in the new directory :file:`split_libary_output/`:
+This invocation will create three files in the new directory :file:`split_library_output/`:
 
 * :file:`split_library_log.txt` : This file contains the summary of splitting, including the number of reads detected for each sample and a brief summary of any reads that were removed due to quality considerations.
 * :file:`histograms.txt` : This tab delimited file shows the number of reads at regular size intervals before and after splitting the library.
@@ -118,7 +118,7 @@ A few lines from the :file:`seqs.fna` file are shown below:
 
 Workflow scripts and the parameters file
 --------------------------------------------------------------------
-QIIME includes workflow scripts, which allow multiple tasks to be performed with one command.  Within the QIIME directory there is a file :file:`qiime_parameters.txt`, where the user can set parameters for specific steps within a workflow script.  The user should make a copy of :file:`qiime_parameters.txt` and place it into their working directory and give it a new filename (e.g. :file:`custom_parameters.txt`), but DO NOT EDIT the original file.  If you are using the tutorial dataset, the parameters file :file:`custom_parameters.txt` is included, which has many parameters already set with appropriate values for the tutorial data. For more information on the :file:`qiime_parameters.txt` file, please refer to `here <./doc_qiime_parameters.html>`_. In this tutorial, we will utilize the workflow scripts when appropriate and within each section where the workflow is used, we will discuss which options in the :file:`custom_parameters.txt` file associate to each step within the workflow.
+QIIME includes workflow scripts, which allow multiple tasks to be performed with one command.  Within the QIIME directory there is a file :file:`qiime_parameters.txt`, where the user can set parameters for specific steps within a workflow script.  The user should make a copy of :file:`qiime_parameters.txt` and place it into their working directory and give it a new filename (e.g. :file:`custom_parameters.txt`), but DO NOT EDIT the original file.  If you are using the tutorial dataset, the parameters file :file:`custom_parameters.txt` is included, which has many parameters already set with appropriate values for the tutorial data. For more information on the :file:`qiime_parameters.txt` file, please refer to `here <./doc_qiime_parameters.html>`_. In this tutorial, we will utilize the workflow scripts when appropriate and within each section where the workflow is used, we will discuss which options in the :file:`custom_parameters.txt` file associate to each step within the workflow. Users can run the workflow scripts in parallel by passing "-a" option to each of the scripts, however, this means that if you are running these scripts on a laptop, there must be more than one core in the machine (e.g. Intel duo or quad core).
 
 .. _pickotusandrepseqs:
 
@@ -271,7 +271,7 @@ Running pick_otus_through_otu_table.py
 
 Now that we have set the parameters necessary for this workflow script, the user can run the following command, where we define the input sequence file "-i" (from `split_libraries.py <../scripts/split_libraries.html>`_), the parameter file to use "-p" and the output directory "-o"::
 
-	pick_otus_through_otu_table.py -i split_libary_output/seqs.fna -p custom_parameters.txt -o wf_da
+	pick_otus_through_otu_table.py -i split_library_output/seqs.fna -p custom_parameters.txt -o wf_da
 
 
 .. _rareotutableremovehetero:
@@ -280,7 +280,7 @@ Rarify OTU Table to Remove Sample Heterogeneity (Optional)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 To remove sample heterogeneity, we can perform rarefaction on our OTU table. Rarefaction is an ecological approach that allows users to standardize the data obtained from samples with different sequencing efforts, and to compare the OTU richness of the samples using this standardized platform. For instance, if one of your samples yielded 10,000 sequence counts, and another yielded only 1,000 counts, the species diversity within those samples may be much more influenced by sequencing effort than underlying biology. The approach of rarefaction is to randomly sample the same number of OTUs from each sample, and use this data to compare the communities at a given level of sampling effort.
 
-To perform rarefaction, you need to set the boundaries for sampling and the step size between sampling intervals. You can find the number of sequences associated with each sample by looking at the last line of the :file:`split_library_log.txt` file generated in :ref:`assignsamples` above. The line from our tutorial is pasted here:
+To perform rarefaction, you need to set the boundaries for sampling and the step size between sampling intervals. You can find the number of sequences associated with each sample by looking in the :file:`split_library_log.txt` file generated in :ref:`assignsamples` above. The line from our tutorial is pasted here:
 
 .. note::
 

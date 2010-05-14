@@ -87,12 +87,12 @@ The user can supply a prefs file to color by, as follows:
 
 	make_2d_plots.py -i beta_div_coords.txt -m Mapping_file.txt -p prefs.txt
 
-**Jackknifed Principal Coordinates:**
+**Jackknifed Principal Coordinates (w/ confidence intervals):**
 
-If you have created jackknifed PCoA files, you can pass the folder containing those files, instead of a single file, as follows:
+If you have created jackknifed PCoA files, you can pass the folder containing those files, instead of a single file.  The user can also specify the opacity of the ellipses around each point "--ellipsoid_opacity", which is a value from 0-1. Currently there are two metrics "--ellipsoid_method" that can be used for generating the ellipsoids, which are 'IQR' and 'sdev'. The user can specify all of these options as follows:
 
 ::
 
-	make_2d_plots.py -i jackknifed_pcoas/ -m Mapping_file.txt -b 'mapping_column1,mapping_column1&&mapping_column2'
+	make_2d_plots.py -i jackknifed_pcoas/ -m Mapping_file.txt -b 'mapping_column1,mapping_column1&&mapping_column2' --ellipsoid_opacity=0.5 --ellipsoid_method=IQR
 
 

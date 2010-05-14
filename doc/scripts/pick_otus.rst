@@ -51,7 +51,7 @@ The primary inputs for `pick_otus.py <./pick_otus.html>`_ are:
 	**[OPTIONAL]**
 		
 	-m, `-`-otu_picking_method
-		Method for picking OTUs.  Valid choices are: mothur, trie, prefix_suffix, blast, cdhit, uclust. The mothur method requires an input file of aligned sequences [default: uclust]
+		Method for picking OTUs.  Valid choices are: mothur, trie, uclust_ref, prefix_suffix, blast, cdhit, uclust. The mothur method requires an input file of aligned sequences [default: uclust]
 	-c, `-`-clustering_algorithm
 		Clustering algorithm for mothur otu picking method.  Valid choices are: furthest, nearest, average. [default: furthest]
 	-M, `-`-max_cdhit_memory
@@ -59,11 +59,11 @@ The primary inputs for `pick_otus.py <./pick_otus.html>`_ are:
 	-o, `-`-output_dir
 		Path to store result file [default: ./<OTU_METHOD>_picked_otus/]
 	-r, `-`-refseqs_fp
-		Path to reference sequences to blast against when using -m blast [default: None]
+		Path to reference sequences to search against when using -m blast or -m uclust_ref [default: None]
 	-b, `-`-blast_db
 		Pre-existing database to blast against when using -m blast [default: None]
 	-s, `-`-similarity
-		Sequence similarity threshold (for cdhit or uclust) [default: 0.97]
+		Sequence similarity threshold (for cdhit, uclust, or uclust_ref) [default: 0.97]
 	-e, `-`-max_e_value
 		Max E-value when clustering with BLAST [default: 1e-10]
 	-q, `-`-trie_reverse_seqs
@@ -78,10 +78,16 @@ The primary inputs for `pick_otus.py <./pick_otus.html>`_ are:
 		Suffix length when using the prefix_suffix otu picker [default: 50]
 	-z, `-`-enable_rev_strand_match
 		Enable reverse strand matching for uclust otu picking, will double the amount of memory used. [default: False]
-	-a, `-`-presort_by_abundance_uclust
-		Presort sequences by abundance for uclust otu picking. [default: False]
+	-D, `-`-suppress_presort_by_abundance_uclust
+		Suppress presorting of sequences by abundance when picking OTUs with uclust or uclust_ref [default: False]
 	-A, `-`-optimal_uclust
 		Pass the --optimal flag to uclust for uclust otu picking. [default: False]
+	-E, `-`-exact_uclust
+		Pass the --exact flag to uclust for uclust otu picking. [default: False]
+	-B, `-`-user_sort
+		Pass the --user_sort flag to uclust for uclust otu picking. [default: False]
+	-C, `-`-suppress_new_clusters
+		Suppress creation of new clusters using seqs that don't match reference when using -m uclust_ref [default: False]
 
 
 **Output:**
@@ -115,6 +121,14 @@ To change the percent identity to a lower value, such as 90%, and also enable re
 ::
 
 	pick_otus.py -i seqs.fna -o picked_otus/ -s 0.90 -z
+
+**Uclust Reference-based OTU picking example:**
+
+uclust_ref can be passed via -m to pick OTUs against a reference set where sequences within the similarity threshold to a reference sequence will cluster to an OTU defined by that reference sequence, and sequences outside of the similarity threshold to a reference sequence will form new clusters. OTU identifiers will be set to reference sequence identifiers when sequences cluster to reference sequences, and 'qiime_otu_<integer>' for new OTUs. Creation of new clusters can be suppressed by passing -C, in which case sequences outside of the similarity threshold to any reference sequence will be listed as failures in the log file, and not included in any OTU.
+
+::
+
+	pick_otus.py -i seqs.fna -r core_set_unaligned.fasta_11_8_07 -m uclust_ref
 
 **Example (cdhit method):**
 
