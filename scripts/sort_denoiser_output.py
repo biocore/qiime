@@ -24,7 +24,9 @@ options_lookup = get_options_lookup()
 script_info = {}
 script_info['brief_description'] = "Sort denoiser output by cluster size."
 script_info['script_description'] = "This scripts is used prior to OTU picking when combining several separately denoised data sets. It sorts the FASTA file by cluster size, such that the OTU pciker now which are the most likely the best OTU centroids."
-script_info['script_usage'] = [("Example usage","sort_denoiser_output -f denoised_seqs.fasta -o denoised_seqs_sorted.fasta","")]
+script_info['script_usage']=[]
+script_info['script_usage'].append(("""Example Usage:""","""""","""sort_denoiser_output.py -f denoised_seqs.fasta -o denoised_seqs_sorted.fasta"""))
+
 script_info['output_description']= "A standard FASTA file"
 script_info['required_options'] = [\
     # Example required option
