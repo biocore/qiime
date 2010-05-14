@@ -83,7 +83,7 @@ Identify chimeric sequences using the ChimeraSlayer algorithm against a user pro
 
 ::
 
-	identify_chimeric_seqs.py -i repr_set_seqs_aligned.fasta -a ref_seq_set_aligned.fasta -r ref_seq_set.fna -o chimeric_seqs.txt
+	identify_chimeric_seqs.py -m ChimeraSlayer -i repr_set_seqs_aligned.fasta -a ref_seq_set_aligned.fasta -r ref_seq_set.fna -o chimeric_seqs.txt
 
 **ChimeraSlayer Example with default reference DB:**
 
@@ -91,6 +91,6 @@ Identify chimeric sequences using the ChimeraSlayer algorithm against the refere
 
 ::
 
-	identify_chimeric_seqs.py -i repr_set_seqs_aligned.fasta -o chimeric_seqs.txt
+	identify_chimeric_seqs.py -m ChimeraSlayer -i repr_set_seqs_aligned.fasta -o chimeric_seqs.txt
 
 

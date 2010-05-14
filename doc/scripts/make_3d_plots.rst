@@ -63,8 +63,6 @@ If you just want to use the default output, you can supply the principal coordin
 
 	make_3d_plots.py -i beta_div_coords.txt -m Mapping_file.txt
 
-To include taxa in the plot (i.e.: a biplot), use the -t option along with an otu table / output from `summarize_taxa.py <./summarize_taxa.html>`_
-
 Additionally, the user can supply their mapping file ("-m") and a specific category to color by ("-b") or any combination of categories. When using the -b option, the user can specify the coloring for multiple mapping labels, where each mapping label is separated by a comma, for example: -b 'mapping_column1,mapping_column2'. The user can also combine mapping labels and color by the combined label that is created by inserting an '&&' between the input columns, for example: -b 'mapping_column1&&mapping_column2'.
 
 If the user would like to color all categories in their metadata mapping file, they can pass 'ALL' to the '-b' option, as follows:

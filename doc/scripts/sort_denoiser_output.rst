@@ -30,8 +30,10 @@ This scripts is used prior to OTU picking when combining several separately deno
 A standard FASTA file
 
 
-**Example usage:**
+**Example Usage:**
 
-sort_denoiser_output -f denoised_seqs.fasta -o denoised_seqs_sorted.fasta
+::
+
+	sort_denoiser_output.py -f denoised_seqs.fasta -o denoised_seqs_sorted.fasta
 
 
