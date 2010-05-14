@@ -26,7 +26,10 @@ from qiime.util import load_qiime_config, get_qiime_project_dir, parse_command_l
 from qiime import __version__ as qiime_lib_version
 from cogent import __version__ as pycogent_lib_version
 from numpy import __version__ as numpy_lib_version
-from matplotlib import __version__ as matplotlib_lib_version
+try:
+    from matplotlib import __version__ as matplotlib_lib_version
+except ImportError:
+    matplotlib_lib_version = "Not installed."
 try:
     from pynast import __version__ as pynast_lib_version
 except ImportError:
