@@ -178,11 +178,13 @@ def line_converter():
 def get_otu_counts(fpath, data):
     """Reads the OTU table file into memory"""
     try:
-        sample_ids,otu_ids,otu_table,lineages=parse_otu_table(open(fpath))
-        
+        sample_ids,otu_ids,otu_table,lineages=parse_otu_table(open(fpath))    
     except (TypeError, IOError):
         raise MissingFileError, 'OTU Count file required for this analysis'
-
+    
+    if lineages==[]:
+        raise ValueError, '\n\nThe lineages are missing from the OTU table.  If you used single_rarefaction.py to create your otu_table, make sure you pass the "--lineages_included" option.\n'
+        
     return sample_ids,otu_ids,otu_table,lineages
 
 def generate_heatmap_plots(options,data, dir_path, js_dir_path,filename):
