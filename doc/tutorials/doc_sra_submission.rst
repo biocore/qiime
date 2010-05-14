@@ -9,41 +9,218 @@ SRA Submission
 Introduction 
 ------------
 
-This Tutorial provides an overview of the SRA submission preparation procedure, using as an example the data from the Fierer et al. 2008 hand dataset. The SRA submission example shown here, is from the first barcoded SRA submission, accession #: `SRS001216 <http://www.ncbi.nlm.nih.gov/sites/entrez?db=sra&term=SRS001216>`_. It outlines the same two-stage procedure we will use for submitting the Human Microbiome Project (HMP) data to SRA. This draft is intended to be passed on to the Data Analysis and Coordination Center (DACC) for further editing and revision with guidance from the centers.
+This tutorial illustrates how to use QIIME for SRA submission of barcoded 16S community sequencing data generated on the Roche 454. To run this tutorial, you'll need to have QIIME installed, as well as the 454 off-instrument tools (``sffinfo``, ``sfffile``).
 
-The data shown in this tutorial can be downloaded from: `SRA Tutorial Data <http://bmf.colorado.edu/QIIME/knight_handstudy_demo-v1.0.0.zip>`_
+Future versions of QIIME will support similar workflows and tutorials for SRA submission of meta-genomics data, and data generated on the Illumina platforms. 
 
-Philosophy of this Document and the Accompanying Code
------------------------------------------------------ 
+This tutorial uses as an example the `Fierer et al. 2008 hand dataset <http://www.pnas.org/content/105/46/17994.long>`_. This represents the first barcoded SRA submission, and the finished product can be found via SRA accession #: `SRS001216 <http://www.ncbi.nlm.nih.gov/sites/entrez?db=sra&term=SRS001216>`_. 
+
+To get started, download the data from: `SRA Tutorial Data <http://bmf.colorado.edu/QIIME/knight_handstudy_demo-v1.0.0.zip>`_
+
+Philosophy of QIIME's SRA submission code
+-----------------------------------------
 
 This document and code does not seek to capture the full complexity of what is possible in the SRA. Instead, the goal is to provide a simple pathway for submission to the SRA of the most common types of data. For example, more normalization could be provided through requiring additional tables, but this additional complexity is not justified when the appropriate rows can be copied/pasted/updated in Excel in a few seconds. More flexibility and better normalization is certainly possible and may be supported in future: the focus here is on getting something that works now.
 
-Originally, the plan was to do this as a series of standalone scripts, but this ended up with an unacceptable level of reimplementation of things that are already in QIIME ("Quantitative Insights Into Microbial Ecology", our 454 analysis package). We have therefore contributed the code into QIIME. You can get this package from sourceforge here:
+Originally, the plan was to do this as a series of standalone scripts, but this ended up with an unacceptable level of reimplementation of things that are already in QIIME. We have therefore contributed the code into QIIME.
 
-http://sourceforge.net/projects/qiime/
-
-You will need several other packages to complete this analysis:
+In addition to QIIME's standard dependencies, you will need several of QIIME's optional dependencies to complete this tutorial:
 
 	* `BLAST <http://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download>`_ 
 	* `cdhit <http://www.bioinformatics.org/cd-hit/>`_ 
-	* `pycogent <http://sourceforge.net/projects/pycogent/>`_ 
-	* `numpy <http://numpy.scipy.org/>`_ 
-	* `matplotlib <http://matplotlib.sourceforge.net/>`_ (required for pycogent but not used here) 
-	* `python <http://www.python.org/download/>`_
+	* 454 off-instrument tools (``sffinfo``, ``sfffile``). These must be obtained from Roche 454.
 
-The PyCogent install guide is fairly helpful in showing you the dependencies and how to get them; the QIIME install guide has some information about installing the 3rd-party applications it wraps. Note that some of the unit tests will fail if you don't install all the applications but the subset of the analysis shown here should work (e.g. you won't be able to do sequence alignment or taxonomy assignment without additional work).
+You should refer to the `QIIME install pages <../install/index.html>`_ for all information related to getting up and running with QIIME. 
 
 Overview of the Submission Process 
 ----------------------------------
 
 An SRA submission can consist of metadata only, or of metadata together with sequence data. The SRA has recently added support for submission of barcoded pyrosequencing runs. This document describes how to prepare such submissions in a two-stage process:
 
-	1. Submission of the study and sample metadata, including clinical metadata (this will be performed by the DACC). 
-	2. Submission of the experiment and run data, and associated technical metadata (this is expected to be performed by the DACC for the pilot, although there is no technical barrier to having it performed by the Centers). It is, at this point, expected that the Centers will submit their own data after the pilot phase, although there are also arguments for submission through the DACC for consistency of QA processes.
+	1. Submission of the study and sample metadata, including clinical metadata. 
+	2. Submission of the experiment and run data, and associated technical metadata.
 
-Updates are handled by regenerating the submission xml files (and optionally the .sff files), at which point they will be reloaded into the SRA. The current pipeline does not provide a mechanism for doing partial updates (e.g. adding an experiment or a run to an existing submission) -- all the metadata and/or data for the submission must be replaced with clean files. It may be possible in the future to allow incremental submissions but this is not presently supported. Questions about the Submission Process
+Updates are handled by regenerating the submission xml files (and optionally the .sff files), at which point they will be reloaded into the SRA. The current pipeline does not provide a mechanism for doing partial updates (e.g. adding an experiment or a run to an existing submission) -- all the metadata and/or data for the submission must be replaced with clean files. It may be possible in the future to allow incremental submissions but this is not presently supported. 
 
-.. note::
+
+Preparing a submission using the QIIME workflow scripts
+-------------------------------------------------------
+
+A submission consists of a ``submission.xml``, metadata file, which references other xml metadata files and optionally tar files of sequence data files.
+
+Set up your data for the tutorial run
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Download and unpack the tutorial data, and change to the resulting directory::
+
+	wget http://bmf.colorado.edu/QIIME/knight_handstudy_demo-v1.0.0.zip
+	unzip knight_handstudy_demo-v1.0.0.zip
+	cd knight_handstudy_demo-v1.0.0
+
+Generate the study and sample metadata submissions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	Input: 
+		a. ``study.txt`` - tabular metadata about the study (this is used to accession the study). 
+		b. ``sample.txt`` - tabular metadata about each sample (this is used to accession samples). 
+		c. ``submission.txt`` - a two-column file of tabular metadata about the submission.
+	
+	Output: 
+		a. ``study.xml`` - xml-format metadata about the study. 
+		b. ``sample.xml`` - xml-format metadata about each sample 
+		c. ``submission.xml`` - xml-format metadata about the study and sample submission
+
+Run the following command::
+
+	make_sra_submission.py -a sample.txt -t study.txt -u submission.txt
+
+This produces ``sample.xml``, ``study.xml``, and ``submission.xml`` from the corresponding tab-delimited text files. 
+
+Generate the experiment and run metadata submissions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+	**Input:** 
+		a. ``experiment.txt`` - tabular metadata about the contents of each combination of library and sff file. 
+		b. ``sff_files`` - a directory of multiple sff files containing the actual sequence data. 
+		c. ``submission.txt`` - a two-column file of tabular metadata about the submission.
+		d. ``sra_parameters.txt`` - a qiime parameters file, defining what parameters should be passed to the individual component scripts
+		e. ``greengenes_unaligned.fasta-OTUs_at_0.05.fasta`` - a FASTA file of known 16S sequences to screen for non-16S contaminants (here, we use a subset of the unaligned greengenes database, filtered at 95% sequence identity)  
+
+	**Output:** 
+		a. ``experiment.xml`` - xml-format metadata about the set of experiments described in ``library.txt`` 
+		b. ``run.xml`` - xml-format metadata about each run, i.e. the association between a specific member of a pool and a specific xml file. 
+		c. ``data.tgz`` - a gzipped tar archive containing individual sff files for each SRA RUN (see the Questions above if you are unclear on the distinction between the SRA RUN concept and the concept of an instrument run). 
+
+The workflow script `process_sra_submission.py <../scripts/process_sra_submission.html>`_ may be used to create a submission of experiment and run metadata in one step.  
+
+Run the following command::
+
+	process_sra_submission.py -s sff_files -e experiment.txt -r greengenes_unaligned.fasta-OTUs_at_0.05.fasta -u submission_second_stage.txt -p sra_parameters.txt -o sra_out
+
+This produces a tar archive of per-sample SFF files, :file:`experiment.xml`, :file:`run.xml`, and :file:`submission_second_stage.xml` from the input files. The list of commands that were actually run is available in the log file that in the top-level ``sra_out/`` directory.
+
+
+Notes regarding individual steps of the SRA submission process
+--------------------
+
+The `process_sra_submission.py <../scripts/process_sra_submission.html>`_ workflow script combines many separate QIIME commands. This section provides a discussion of the key components of the SRA submission workflow.
+
+Print the commands to be run by the workflow without actually running them
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+It is sometimes useful to get the individual commands that will be run, but not actually run them. This is useful, for example, if you want to tweak one or more of the commands and then run them all via a bash script. To get the commands, but not run them, you can append ``-w`` to the ``process_sra_submission.py`` call::
+
+	process_sra_submission.py -s sff_files -e experiment.txt -r greengenes_unaligned.fasta-OTUs_at_0.05.fasta -u submission.txt -p sra_parameters.txt -o sra_out -w
+
+Get fasta and qual from sff files
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This step converts the sff files into text formats that are more usable. 
+
+**Output:** Makes .fna and .qual files for each sff file.
+
+Produce valid mapping file for library demultiplexing
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This step converts the input experiment file into separate mapping files for each combination of STUDY and RUN_PREFIX (separating by run prefix is necessary when the same barcodes are used in different runs). This allows demultiplexing of the separate studies, which will then be sent in as separate submissions, and of the different barcoded plates, which will be demultiplexed separately.
+
+Note: the LINKER field is no longer required in the spreadsheet.
+
+**Output:** Produces valid mapping files per 454 plate: :file:`fierer_hand_study_E86FECS.map` and :file:`fierer_hand_study_FA6P1OK.map`
+
+Demultiplex libraries
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This step assigns each sequence to a library, dropping low-quality sequences and producing a log explaining why specific sequences were dropped.
+
+NOTE: The SRA requests that you deposit ALL your sequence data, including bad reads, unless there is an IRB reason not to do so (i.e. human contamination). Therefore the quality and length filtering should be turned off. We do this by setting high values for the quality and length filtering, that in practice are not exceeded. For details on the quality and length filtering options run::
+
+	split_libraries.py -h
+
+**Output:** Produces two files: :file:`seqs.fna` with valid sequences assigned to samples via barcodes, and :file:`split_libraries_log.txt` with info about which sequences failed QC. The parameters used are essentially turning off the default quality filters. You can turn off the quality filtering steps if you want to make sure that all the sequences appear in the output. You should do this by editing the appropriate values in your ``sra_parameters.txt`` file.
+
+Briefly, the relevant settings in ``sra_parameters.txt`` require an average qual score of at least 5; a minimum sequence length of 30 (basically just the primer_barcode); a maximum sequence length of 1000; max homopolymer run of 1000; up to 100 errors in the primer; etc. In this run, we specify that we are using 12-base barcodes, (turning off the Golay error-correction which would be specified with ``split_libraries:barcode-type golay_12``). These parameters are specified in ``sra_parameters.txt`` as::
+
+	split_libraries:min-qual-score	5
+	split_libraries:min-seq-length	30
+	split_libraries:max-seq-length	1000
+	split_libraries:barcode-type	12
+	split_libraries:max-homopolymer	1000
+	split_libraries:max-primer-mismatch	100
+	split_libraries:max-ambig	1000
+
+Reduce sequence complexity by picking OTUs
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This step reduces the number of sequences to do the human screen by picking OTUs with cdhit at 95%. We make the simplifying assumption that sequences that are identical over the first 100 bases will fall into the same OTU. These parameters are specified in ``sra_parameters.txt`` as::
+
+	# pick_otus parameters
+	pick_otus:otu_picking_method	cdhit
+	pick_otus:max_cdhit_memory	4000
+	pick_otus:prefix_prefilter_length	100
+	pick_otus:similarity	0.95
+
+**Output:** Produces two files: :file:`E86FECS_demultiplex/seqs_otus.txt` and :file:`E86FECS_demultiplex/seqs_otus.log` (which have the OTUs and the log file describing the analysis respectively).
+
+The same procedure is applied to each library.
+
+We then pick a representative sequence for each OTU by choosing the most abundant sequence from each OTU.
+
+Blast the representative set sequences against 95% OTUs in greengenes to eliminate sequences that aren't really 16S rRNA
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This step performs a human/contaminant screen the "safe" way by identifying and excluding sequences that aren't 16S rRNA. We are using blastn with a word size of 10, requiring 25% coverage of the sequence, and an E-value of 1e-20. Our tests suggest that this is sufficient to screen out human genomic reads (the human 18S sequence hits bacterial 16S with E-value between 1e-18 and 1e-10 depending on lineage). These parameters are specified in ``sra_parameters.txt`` as::
+
+	# exclude_seqs_by_blast parameters
+	exclude_seqs_by_blast:word_size	10
+	exclude_seqs_by_blast:percent_aligned	0.25
+	exclude_seqs_by_blast:e_value	1e-20
+
+**Output:** This produces a bunch of log files and output; the file of screened seqs (i.e. that failed to hit a known 16S rRNA with even relaxed criteria).
+
+The same procedure is applied to each library.
+
+Make per-library files of "good" ids to pass to sfffile
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This step maps the ids of the representative set back onto the ids of the OTUs they came from so that we can get all the members of the OTUs that had a representative that matched a known 16S rRNA.
+
+**Output:** This makes a new directory called :file:`E86FECS_demultiplex/per_lib_idlists`, which contains a separate file with an id list for each library.
+
+The same procedure is applied to each library.
+
+Use sfffile to make per-library sff files
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+This step takes the good lists of ids from step 7 and extracts a separate sff file for each of those lists.
+
+Use sfffile to quality-trim the barcodes, primers and linkers
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The SRA requires that the user reset the left trim in the sff file to eliminate the technical reads (barcode, primer, linker if present). This means figuring out the length of the technical parts of the read, the length of the current read, writing out a text file with the per-id info, and running sfffile to reset the read lengths.
+
+Optional post-processing: modifying the second-stage submission
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The `make_sra_submission.py <../scripts/make_sra_submission.html>`_ script has the ability to include per-experiment attributes or links.  The attributes and links should be specified in separate, tab-delimited files. For example, a file named :file:`attributes.txt` can be created with the following contents:
+
+::
+
+  #EXPERIMENT_ALIAS	Attribute	Value
+  fierer_hand_study_FA6P1OK	library strategy	targeted-locus
+  fierer_hand_study_FA6P1OK	gene	16S rRNA V1-V2 region
+  fierer_hand_study_E86FECS	library strategy	targeted-locus
+  fierer_hand_study_E86FECS	gene	16S rRNA V1-V2 region
+
+The following command will then add "gene" and "library strategy" attributes to both experiments in the resulting XML. (The experiment alias is specified in :file:`experiment.txt`, under the field 'EXPERIMENT_ALIAS'.) ::
+
+  make_sra_submission.py -u submission_second_stage.txt -e experiment.txt -s per_run_sff --experiment_attribute_fp=attributes.txt
+
+Links may be added to the experiments in a similar manner. After the `make_sra_submission.py <../scripts/make_sra_submission.html>`_ script has been run, the resulting XML files are ready to submit to the SRA.
+
+Note: SRA prefers you give the individual files more meaningful names than the defaults, so suggest not just using generic names like experiment etc.
+
+Questions about the Submission Process
+--------------------------------------
 
 	Q1. Can I submit multiplexed pyrosequnecing runs now?
 
@@ -89,209 +266,29 @@ Updates are handled by regenerating the submission xml files (and optionally the
 
 	A11. All possible sequences that match the degenerate primer should be allowed using the EXPECTED_BASECALL_TABLE mechanism in :file:`experiment.xml` (see example).
 
-What files and information are needed to prepare a submission?
+Standard sra_parameters.txt file for barcoded 16S community sequencing on 454
+-----------------------------------------------------------------------------
 
-A submission consists of a :file:`submission.xml`, metadata file, which references other xml metadata files and optionally tarballs of sequence data files, as follows:
+Currently our standard parameters files looks like the following. You can copy and paste this to a text file, and pass it with ``-p`` to ``process_sra_submission.py``.
 
-1. Submission of Study and Sample Metadata. 
-
-	Input: 
-		a. :file:`study.txt` - tabular metadata about the study (this is used to accession the study). 
-		b. :file:`sample.txt` - tabular metadata about each sample (this is used to accession samples). 
-		c. :file:`study_template.xml` - xml tempate for study data (located in Qiime/support_files/sra_xml_templates/ directory) 
-		d. :file:`sample_template.xml` - xml template for sample data (located in Qiime/support_files/sra_xml_templates/ directory) 
-		e. :file:`submission_template.xml` - xml template for submission (located in Qiime/support_files/sra_xml_templates/ directory) 
+::
 	
-	Output: 
-		a. :file:`study.xml` - xml-format metadata about the study. 
-		b. :file:`sample.xml` - xml-format metadata about each sample 
-		c. :file:`submission.xml` - xml-format metadata about the study and sample submission
-
-NOTE: There will be two STUDY entries associated with the pilot: HMP_PILOT_CLINICAL for the clinical data, and HMP_PILOT_MOCK for the mock community data. There will be additional STUDY entries associated with the demonstration projects, in the namespace HMP_DEMO_X where X is the name of the demonstration project (the DACC will help demonstration projects submit their data using the process described in this document, and/or provide the relevant scripts to the demonstration projects). The SRA STUDY concept is intended to map more or less onto a paper, but the SRA EXPERIMENT concept maps onto a library: there will in the future be a way of associating SRA STUDY entries with each other in a hierarchical way but it does not yet exist. The initial mechanism is that SRA will provide a web page indexing all the HMP STUDY entries as a portal.
-
-NOTE: It is VERY IMPORTANT that the centers do not make up new accessions or include samples that have not been accessioned by the DACC in their HMP submissions. This will cause load problems, failed submissions, etc. The recommendation is to separate out the HMP from the non-HMP data when a run contains both, and to do independent submissions (they will be matched up to the same run via the run name attribute in SRA). 
-
-Example::
-
-	make_sra_submission.py -a sample.txt -t study.txt -u submission.txt --template_study_fp ~/Qiime/support_files/sra_xml_templates/study_template.xml --template_sample_fp ~/Qiime/support_files/sra_xml_templates/sample_template.xml --template_submission_fp ~/Qiime/support_files/sra_xml_templates/submission_template.xml
-
-Produces :file:`sample.xml`, :file:`study.xml`, :file:`submission.xml` from the tab-delimited text files. 
-
-2. Submission of Experiment and Run Metadata. 
-
-	**Input:** 
-		a. :file:`experiment.txt` - tabular metadata about the contents of each combination of library and sff file. 
-		b. :file:`data` - a directory of multiple sff files containing the actual sequence data. 
-		a. :file:`submission.txt` - a two-column file of tabular metadata about the submission.
-
-	**Output:** 
-		a. :file:`experiment.xml` - xml-format metadata about the set of experiments described in :file:`library.txt` 
-		b. :file:`run.xml` - xml-format metadata about each run, i.e. the association betweena specific member of a pool and a specific xml file. 
-		c. :file:`data.tgz` - a gzipped tar archive containing individual sff files for each SRA RUN (see the Questions above if you are unclear on the distinction between the SRA RUN concept and the concept of an instrument run). 
-
-The workflow script `process_sra_submission.py <../scripts/process_sra_submission.html>`_ may be used to create a submission of experiment and run metadata in one step.  This script requires a FASTA file of known 16S sequences to screen for non-16S contaminants (here, we use :file:`greengenes_unaligned.fasta`).
-
-Example::
-
-	process_sra_submission.py -s data -e experiment.txt -r greengenes_unaligned.fasta -u submission.txt
-
-Produces a tar archive of per-sample SFF files, :file:`experiment.xml`, :file:`run.xml`, and :file:`submission_second_stage.xml` from the input files.
-
-Step-by-step Example
---------------------
-
-The `process_sra_submission.py <../scripts/process_sra_submission.html>`_ workflow script is a work in progress. For tasks that require special attention at one or more steps, the following set of actions may be used to create the submission manually.
-
-Step 1: Get fasta and qual from sff files
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-This step converts the sff files into text formats that are more usable. Note that in this example the .fna and .qual files are already in there to eliminate the requirement for the off-machine apps, so they will simply be overwritten with identical files by this script. If you do not have these apps, please skip to the Step 2. ::
-
- 	process_sff.py -i .
-
-**Output:** Makes .fna and .qual files for each sff file.
-
-Step 2: Produce valid mapping file for library demultiplexing
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-This step converts the input experiment file into separate mapping files for each combination of STUDY and RUN_PREFIX (separating by run prefix is necessary when the same barcodes are used in different runs). This allows demultiplexing of the separate studies, which will then be sent in as separate submissions, and of the different barcoded plates, which will be demultiplexed separately.
-
-Note: the LINKER field is no longer required in the spreadsheet. ::
-
-	sra_spreadsheet_to_map_files.py -i experiment.txt
-
-**Output:** Produces valid mapping files per 454 plate: :file:`fierer_hand_study_E86FECS.map` and :file:`fierer_hand_study_FA6P1OK.map`
-
-Step 3: Demultiplex libraries
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-This step assigns each sequence to a library, dropping low-quality sequences and producing a log explaining why specific sequences were dropped.
-
-NOTE: The SRA requests that you deposit ALL your sequence data, including bad reads, unless there is an IRB reason not to do so (i.e. human contamination). Therefore the quality and length filtering should be turned off.::
-
-	split_libraries.py -h
-
-**Output:** Shows you the help for `split_libraries.py <../scripts/split_libraries.html>`_ ::
-
-	split_libraries.py -s 5 -l 30 -L 1000 -b 12 -H 1000 -M 100 -a 1000 -f sff_files/E86FECS01.fna,sff_files/E86FECS02.fna -q sff_files/E86FECS01.qual,sff_files/E86FECS02.qual -m fierer_hand_study_E86FECS.map -o E86FECS_demultiplex
-
-	split_libraries.py -s 5 -l 50 -L 1000 -b 12 -H 1000 -M 100 -a 1000 -f sff_files/FA6P1OK01.fna,sff_files/FA6P1OK02.fna -q sff_files/FA6P1OK01.qual,sff_files/FA6P1OK02.qual -m fierer_hand_study_FA6P1OK.map -o FA6P1OK_demultiplex -r
-
-**Output:** Produces two files: :file:`seqs.fna` with valid sequences assigned to samples via barcodes, and :file:`split_libraries_log.txt` with info about which sequences failed QC. The parameters above are essentially turning off the default quality filters and require an average qual score of at least 5, a minimum sequence length of 30 (basically just the primer_barcode), a maximum sequence length of 1000, max homopolymer run of 1000, up to 100 errors in the primer, etc. to let everything through, and specify that we are using 12-base barcodes (turning off the Golay error-correction, which would be specified with -b golay_12), specify the (comma-delimited) paths to the fasta and mapping files (note: no spaces are allowed around the commas), and finally specify the mapping file as one of the map files we produced in step 2 (taking care to use the right map file for each run). Note: you can turn off the quality filtering steps if you want to make sure that all the sequences appear in the output. The -r True flag removes unassigned sequences from the fasta file and, if added, will make the analysis run substantially faster. In this case we use -r on the second run but not on the first run because all the reads on the first run were from this study, but only some of the reads from the second run were from this study, and we can't tell a valid read from another study apart from a bad read from this one.
-
-Step 4: Reduce sequence complexity by picking OTUs with cd-hit
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-This step reduces the number of sequences to do the human screen by picking OTUs at 95%. We make the simplifying assumption that sequences that are identical over the first 100 bases will fall into the same OTU.
-
-Note: this step requires that you have cd-hit installed. ::
-
-	pick_otus.py -m cdhit -M 4000 -n 100 -s 0.95 -o E86FECS_demultiplex -i E86FECS_demultiplex/seqs.fna
-
-**Output:** Produces two files: :file:`E86FECS_demultiplex/seqs_otus.txt` and :file:`E86FECS_demultiplex/seqs_otus.log` (which have the OTUs and the log file describing the analysis respectively). ::
-
-	pick_otus.py -m cdhit -M 4000 -n 100 -s 0.95 -o FA6P1OK_demultiplex/ -i FA6P1OK_demultiplex/seqs.fna
-
-Repeat the same procedure for the other library.
-
-Step 5: Pick a representative sequence for each OTU
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-This step gets the actual sequences for each OTU picked in Step 4.
-
-::
-
-	pick_rep_set.py -i E86FECS_demultiplex/seqs_otus.txt -f E86FECS_demultiplex/seqs.fna
-
-**Output:** Produces :file:`E86FECS_demultiplex/seqs.fna_rep_set.fasta` ::
-
-	pick_rep_set.py -i FA6P1OK_demultiplex/seqs_otus.txt -f FA6P1OK_demultiplex/seqs.fna
-
-**Output:** Produces :file:`FA6P1OK_demultiplex/seqs.fna_rep_set.fasta`
-
-Step 6: Blast the representative set sequences against 95% OTUs in greengenes to eliminate sequences that aren't really 16S rRNA
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-This step performs a human/contaminant screen the "safe" way by identifying and excluding sequences that aren't 16S rRNA. ::
-
-	exclude_seqs_by_blast.py -d greengenes_unaligned.fasta-OTUs_at_0.05.fasta -i E86FECS_demultiplex/seqs.fna_rep_set.fasta -W 10 -p 0.25 -o E86FECS_demultiplex/blast_results -e 1e-20
-
-We are using blastn with a word size of 10, requiring 25% coverage of the sequence, and an E-value of 1e-20. Our tests suggest that this is sufficient to screen out human genomic reads (the human 18S sequence hits bacterial 16S with E-value between 1e-18 and 1e-10 depending on lineage).
-
-**Output:** This produces a bunch of log files and output; the file of screened seqs (i.e. that failed to hit a known 16S rRNA with even relaxed criteria)
-
-Repeat the same procedure for the other library ::
-
-	exclude_seqs_by_blast.py -d greengenes_unaligned.fasta-OTUs_at_0.05.fasta -i FA6P1OK_demultiplex/seqs.fna_rep_set.fasta -W 10 -p 0.25 -o FA6P1OK_demultiplex/blast_results -e 1e-20
-
-Step 7: Make per-library files of "good" ids to pass to sfffile
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-This step maps the ids of the representative set back onto the ids of the OTUs they came from so that we can get all the members of the OTUs that had a representative that matched a known 16S rRNA. ::
-
-	make_library_id_lists.py -i E86FECS_demultiplex/seqs.fna -s E86FECS_demultiplex/blast_results.screened -u E86FECS_demultiplex/seqs_otus.txt -o E86FECS_demultiplex/per_lib_info
-
-**Output:** This makes a new directory called :file:`E86FECS_demultiplex/per_lib_idlists`, which contains a separate file with an id list for each library. ::
-
-	make_library_id_lists.py -i FA6P1OK_demultiplex/seqs.fna -s FA6P1OK_demultiplex/blast_results.screened -u FA6P1OK_demultiplex/seqs_otus.txt -o FA6P1OK_demultiplex/per_lib_info
-
-**Output:** This makes a new directory called :file:`FA6P1OK_demultiplex/per_lib_idlists`, which contains a separate file with an id list for each library.
-
-Step 8: Use sfffile to make per-library sff files
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-This step takes the good lists of ids from step 7 and extracts a separate sff file for each of those lists. ::
-
-	make_per_library_sff.py -i sff_files/E86FECS01.sff,sff_files/E86FECS02.sff -l E86FECS_demultiplex/per_lib_info/
-
-	make_per_library_sff.py -i sff_files/FA6P1OK01.sff,sff_files/FA6P1OK02.sff -l FA6P1OK_demultiplex/per_lib_info/
-
-Step 9: Use sfffile to quality-trim the barcodes, primers and linkers
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-The SRA requires that the user reset the left trim in the sff file to eliminate the technical reads (barcode, primer, linker if present). This means figuring out the length of the technical parts of the read, the length of the current read, writing out a text file with the per-id info, and running sfffile to reset the read lengths. ::
-
-	trim_sff_primers.py -m fierer_hand_study_E86FECS.map -l E86FECS_demultiplex/per_lib_info/
-
-	trim_sff_primers.py -m fierer_hand_study_FA6P1OK.map -l FA6P1OK_demultiplex/per_lib_info/
-
-Step 10: Move files around and make archive, which will be automated in the future releases
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-::
-
-	mkdir per_run_sff 
-	mkdir per_run_sff/FA6P1OK 
-	mkdir per_run_sff/E86FECS 
-	cp FA6P1OK_demultiplex/per_lib_info/*.sff per_run_sff/FA6P1OK/ 
-	cp E86FECS_demultiplex/per_lib_info/*.sff per_run_sff/E86FECS/ 
-	mv per_run_sff/E86FECS/Unassigned.sff per_run_sff/E86FECS/fierer_hand_study_default_E86FECS.sff 
-	mv per_run_sff/FA6P1OK/Unassigned.sff per_run_sff/FA6P1OK/fierer_hand_study_default_FA6P1OK.sff 
-	tar cvfz all_hand_sff_data.tgz per_run_sff/
-
-Step 11: Finally, make the second-stage submission
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-::
-
-	make_sra_submission.py -u submission_second_stage.txt -e experiment.txt -s per_run_sff
-
-**Output:** Produces files: :file:`experiment.xml`, :file:`run.xml` and  :file:`submission_second_stage.xml`
-
-The `make_sra_submission.py <../scripts/make_sra_submission.html>`_ script has the ability to include per-experiment attributes or links.  The attributes and links should be specified in separate, tab-delimited files. For example, a file named :file:`attributes.txt` can be created with the following contents:
-
-::
-
-  #EXPERIMENT_ALIAS	Attribute	Value
-  fierer_hand_study_FA6P1OK	library strategy	targeted-locus
-  fierer_hand_study_FA6P1OK	gene	16S rRNA V1-V2 region
-  fierer_hand_study_E86FECS	library strategy	targeted-locus
-  fierer_hand_study_E86FECS	gene	16S rRNA V1-V2 region
-
-The following command will then add "gene" and "library strategy" attributes to both experiments in the resulting XML. (The experiment alias is specified in :file:`experiment.txt`, under the field 'EXPERIMENT_ALIAS'.) ::
-
-  make_sra_submission.py -u submission_second_stage.txt -e experiment.txt -s per_run_sff --experiment_attribute_fp=attributes.txt
-
-Links may be added to the experiments in a similar manner. After the `make_sra_submission.py <../scripts/make_sra_submission.html>`_ script has been run, the resulting XML files are ready to submit to the SRA.
-
-Note: SRA prefers you give the individual files more meaningful names than the defaults, so suggest not just using generic names like experiment etc.
+	# split_libraries parameters
+	split_libraries:min-qual-score	5
+	split_libraries:min-seq-length	30
+	split_libraries:max-seq-length	1000
+	split_libraries:barcode-type	12
+	split_libraries:max-homopolymer	1000
+	split_libraries:max-primer-mismatch	100
+	split_libraries:max-ambig	1000
+
+	# pick_otus parameters
+	pick_otus:otu_picking_method	cdhit
+	pick_otus:max_cdhit_memory	4000
+	pick_otus:prefix_prefilter_length	100
+	pick_otus:similarity	0.95
+
+	# exclude_seqs_by_blast parameters
+	exclude_seqs_by_blast:word_size	10
+	exclude_seqs_by_blast:percent_aligned	0.25
+	exclude_seqs_by_blast:e_value	1e-20
