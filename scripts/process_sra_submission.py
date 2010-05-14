@@ -28,19 +28,30 @@ script_info={}
 script_info['brief_description']="""A workflow script for creating a second-stage SRA submission."""
 script_info['script_description']="""\
 The steps performed by this script are:
+
 1. Get fasta and qual from sff files.
+
 2. Produce valid mapping file for library demultiplexing.
+
 3. Demultiplex libraries.
+
 4. Reduce sequence complexity by picking OTUs with cd-hit.
+
 5. Pick a representative sequence for each OTU.
-6. Blast the representative set sequences against 95% OTUs in greengenes to eliminate non-16S sequences.
+
+6. Blast the representative set sequences against 95% OTUs in greengenes to eliminate non-16S  sequences.
+
 7. Make per-library files of \"good\" ids to pass to sfffile.
+
 8. Use sfffile to make per-library sff files.
+
 9. Use sfffile to quality-trim the barcodes, primers and linkers.
+
 10. Move files around and make archive.
+
 11. Finally, make the XML files for a second-stage submission."""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Example:""","""""","""process_sra_submission.py -s sff_dir -e experiment.txt -r greengenes_unaligned.fasta -u submission.txt"""))
+script_info['script_usage'].append(("""Example:""","""""","""process_sra_submission.py -s sff_dir -e experiment.txt -r greengenes_unaligned.fasta -u submission.txt -p sra_parameters.txt -o out_dir/"""))
 script_info['output_description']="""Produces all the files necessary to make an SRA submission, including an archive of per-library SFF files, and XML files for the experiment, runs, and submission."""
 script_info['required_options'] = [
     make_option('-u', '--input_submission_fp',
