@@ -22,7 +22,7 @@ import shutil
 import os
 from qiime.util import get_qiime_project_dir
 from qiime.parse import parse_mapping_file
-from cogent.parse.tree import DndParser, PhyloNode
+from qiime.parse import parse_newick, PhyloNode
 
 options_lookup = get_options_lookup()
 
@@ -106,7 +106,7 @@ def main():
         except (TypeError, IOError):
             raise TreeMissingError, \
                 "Couldn't read tree file at path: %s" % tree_source
-        tree = DndParser(f, PhyloNode) 
+        tree = parse_newick(f, PhyloNode) 
         f.close()
         ordered_otu_names = [tip.Name for tip in tree.iterTips()]
     ordered_sample_names = None

@@ -21,7 +21,8 @@ from qiime.parse import (group_by_field, group_by_fields,
     parse_bootstrap_support, parse_sample_mapping, parse_distmat_to_dict,
     sample_mapping_to_otu_table, parse_taxonomy, parse_mapping_file, 
     parse_metadata_state_descriptions, parse_rarefaction_data,
-    parse_illumina_line, parse_qual_score, parse_qual_scores, QiimeParseError)
+    parse_illumina_line, parse_qual_score, parse_qual_scores, QiimeParseError,
+    parse_newick)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -58,6 +59,30 @@ class TopLevelTests(TestCase):
         "OTU2\tsample1\t1", "OTU2\tsample2\t2"]
         self.SampleMapping2 = ["OTU1\tsample1", "OTU1\tsample3", \
         "OTU2\tsample1", "OTU2\tsample2"]
+        
+    def test_parse_newick(self):
+        """parse_newick correctly matches escaped tip names to otu ids
+        """
+        # confirm that it works without escaped names
+        t1 = ('((((tax7:0.1,tax3:0.2):.98,tax8:.3, tax4:.3):.4,'
+              '((tax1:0.3, tax6:.09):0.43,tax2:0.4):0.5):.2,'
+              '(tax9:0.3, endbigtaxon:.08));')
+        expected1 = ['tax7','tax3','tax8','tax4','tax1',
+                     'tax6','tax2','tax9','endbigtaxon']
+        self.assertEqual(set(parse_newick(t1).getTipNames()),set(expected1))
+        self.assertEqual(set([tip.Name for tip in parse_newick(t1).tips()]),
+                         set(expected1))
+                         
+        # throw some screwed up names in 
+        t2 = ('((((tax7:0.1,tax3:0.2):.98,tax8:.3, \'tax4\':.3):.4,'
+              "(('ta_______ x1':0.3, tax6:.09):0.43,tax2:0.4):0.5):.2,"
+              '(tax9:0.3, endbigtaxon:.08));')
+        expected2 = ['tax7','tax3','tax8','tax4','ta_______ x1',
+                     'tax6','tax2','tax9','endbigtaxon']
+        self.assertEqual(set(parse_newick(t2).getTipNames()),set(expected2))
+        self.assertEqual(set([tip.Name for tip in parse_newick(t2).tips()]),
+                         set(expected2))
+        
 
     def test_parse_mapping_file(self):
         """parse_mapping_file functions as expected"""

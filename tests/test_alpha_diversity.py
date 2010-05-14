@@ -11,13 +11,16 @@ __status__ = "Development"
 
 """Contains tests for performing alpha diversity analyses within each sample."""
 
-from cogent.util.unit_test import TestCase, main
-from cogent.maths.unifrac.fast_unifrac import DndParser, PD_whole_tree
-from cogent.maths.stats.alpha_diversity import (observed_species, osd)
 from numpy import array
 import numpy
+from cogent.util.unit_test import TestCase, main
+from cogent.maths.unifrac.fast_unifrac import PD_whole_tree
+from cogent.maths.stats.alpha_diversity import (observed_species, osd)
+from cogent.util.misc import remove_files
+from cogent.app.util import get_tmp_filename
 from qiime.alpha_diversity import AlphaDiversityCalc, AlphaDiversityCalcs
 import qiime.alpha_diversity as alph454
+from qiime.parse import parse_newick
 
 class AlphaDiversityCalcTests(TestCase):
     """Tests of the AlphaDiversityCalc class"""
@@ -31,7 +34,12 @@ class AlphaDiversityCalcTests(TestCase):
         self.otu_names = list('abcd')
         self.otu_tuple = (self.sample_names, self.otu_names, self.otu_table.T,
         None)
-        self.tree = DndParser('((a:2,b:3):2,(c:1,d:2):7);')
+        self.tree = parse_newick('((a:2,b:3):2,(c:1,d:2):7);')
+        
+        self.files_to_remove = []
+        
+    def tearDown(self):
+        remove_files(self.files_to_remove)
 
     def test_init(self):
         """AlphaDiversity __init__ should store metric, name, params"""
@@ -69,6 +77,30 @@ class AlphaDiversityCalcTests(TestCase):
         self.assertEqual(c(data_path=self.otu_table, tree_path=self.tree, \
             taxon_names = self.otu_names, sample_names=self.sample_names), 
             [13, 17, 0])
+            
+    def test_call_phylogenetic_escaped_names(self):
+        """AlphaDiversityCalc __call__ should call metric on phylo data
+        and return correct values"""
+        c = AlphaDiversityCalc(metric=PD_whole_tree,
+            is_phylogenetic=True)
+        expected = [13, 17, 0]
+        non_escaped_result = c(data_path=self.otu_table, tree_path=self.tree, \
+            taxon_names = self.otu_names, sample_names=self.sample_names)
+        
+        
+        otu_table = array([[2,0,0,1],
+                           [1,1,1,1],
+                           [0,0,0,0]])
+        sample_names = list('XYZ')
+        otu_names = ['a','b','c','d_']
+        tree_str = "((a:2,'b':3):2,(c:1,'d_':2):7);"
+        tree_fp = get_tmp_filename(prefix='Alpha_div_tests',suffix='.tre')
+        open(tree_fp,'w').write(tree_str)
+        self.files_to_remove.append(tree_fp)
+        escaped_result  = c(data_path=otu_table, tree_path=tree_fp, \
+            taxon_names = otu_names, sample_names=sample_names)
+            
+        self.assertEqual(non_escaped_result,escaped_result)
 
 class AlphaDiversityCalcsTests(TestCase):
     """Tests of the AlphaDiversityCalcs class"""
@@ -82,7 +114,7 @@ class AlphaDiversityCalcsTests(TestCase):
         self.otu_names = list('abcd')
         self.otu_tuple = (self.sample_names, self.otu_names, self.otu_table.T,
         None)
-        self.tree = DndParser('((a:2,b:3):2,(c:1,d:2):7);')
+        self.tree = parse_newick('((a:2,b:3):2,(c:1,d:2):7);')
 
     def test1(self):
         """ checks that output from AlphaDiversityCalcs is the right shape 

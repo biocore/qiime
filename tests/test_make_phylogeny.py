@@ -88,8 +88,8 @@ class CogentTreeBuilderTests(SharedSetupTestCase):
         """
         from qiime.make_phylogeny import root_midpt
         from cogent.core.tree import PhyloNode
-        from cogent.parse.tree import DndParser
-        tree = DndParser('(a:1,((c:1,d:3)n3:1,b:1)n2:1)rt;')
+        from qiime.parse import parse_newick
+        tree = parse_newick('(a:1,((c:1,d:3)n3:1,b:1)n2:1)rt;')
         tmid = root_midpt(tree)
         self.assertEqual(tmid.getDistances(),tree.getDistances())
         tipnames = tree.getTipNames()
@@ -112,8 +112,8 @@ class CogentTreeBuilderTests(SharedSetupTestCase):
         """ midpoint between nodes should behave correctly"""
         from qiime.make_phylogeny import root_midpt
         from cogent.core.tree import PhyloNode
-        from cogent.parse.tree import DndParser
-        tree = DndParser('(a:1,((c:1,d:2.5)n3:1,b:1)n2:1)rt;')
+        from qiime.parse import parse_newick
+        tree = parse_newick('(a:1,((c:1,d:2.5)n3:1,b:1)n2:1)rt;')
         tmid = root_midpt(tree)
         self.assertEqual(tmid.getDistances(),tree.getDistances())
         tipnames = tree.getTipNames()

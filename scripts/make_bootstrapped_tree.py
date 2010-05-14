@@ -12,7 +12,7 @@ __email__ = "justinak@gmail.com"
 __status__ = "Development"
 
 from optparse import make_option
-from cogent.parse.tree import DndParser
+from qiime.parse import parse_newick
 from qiime.util import parse_command_line_parameters
 from qiime.make_bootstrapped_tree import write_pdf_bootstrap_tree
 from qiime.parse import parse_bootstrap_support
@@ -38,7 +38,7 @@ script_info['version'] = __version__
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
-    tree = DndParser(open(opts.master_tree,'U'))
+    tree = parse_newick(open(opts.master_tree,'U'))
     support_file = open(opts.support)
     bootstraps = parse_bootstrap_support(support_file)
     support_file.close()

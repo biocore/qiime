@@ -19,6 +19,8 @@ from numpy import array, concatenate, repeat, zeros, nan
 from numpy.random import permutation
 from cogent.parse.record_finder import LabeledRecordFinder
 from cogent.parse.fasta import FastaFinder
+from cogent.parse.tree import DndParser
+from cogent.core.tree import PhyloNode
 from copy import deepcopy
 import os
 from cogent.util.misc import revComp
@@ -29,6 +31,22 @@ class QiimeParseError(Exception):
 
 class IlluminaParseError(QiimeParseError):
     pass
+    
+def parse_newick(lines, constructor=PhyloNode):
+    """Return PhyloNode from newick file handle stripping quotes from tip names
+    
+        This function wraps cogent.parse.tree.DndParser stripping 
+         matched leading/trailing single quotes from tip names, and returning
+         a PhyloNode object by default (alternate constructor can be passed 
+         with constructor=).
+         
+        Sripping of quotes is essential for many applications in Qiime, as 
+         the tip names are frequently matched to OTU ids, and if the tip name
+         is read in with leading/trailing quotes, node.Name won't match to the
+         corresponding OTU identifier. Disaster follows.
+        
+    """
+    return DndParser(lines, constructor=constructor, unescape_name=True) 
 
 def parse_mapping_file(lines, strip_quotes=True, suppress_stripping=False):
     """Parser for map file that relates samples to metadata.

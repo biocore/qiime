@@ -17,7 +17,7 @@ from cogent.util.unit_test import TestCase, main
 from cogent.maths.unifrac.fast_unifrac import fast_unifrac
 from qiime.parse import make_envs_dict
 from qiime.beta_metrics import (_reorder_unifrac_res, make_unifrac_metric)
-from cogent.parse.tree import DndParser
+from qiime.parse import parse_newick
 from cogent.core.tree import PhyloNode
 from cogent.maths.unifrac.fast_tree import (unifrac)
 import warnings
@@ -72,7 +72,7 @@ class FunctionTests(TestCase):
     
     def test_make_unifrac_metric(self):
         """ exercise of the unweighted unifrac metric should not throw errors"""
-        tree = DndParser(self.l19_treestr, PhyloNode)
+        tree = parse_newick(self.l19_treestr, PhyloNode)
         unif = make_unifrac_metric(False, unifrac, True)
         res = unif(self.l19_data, self.l19_taxon_names, tree,
             self.l19_sample_names)
@@ -89,7 +89,7 @@ class FunctionTests(TestCase):
     def test_make_unifrac_metric2(self):
         """ samples with no seqs, and identical samples, should behave correctly
         """
-        tree = DndParser(self.l19_treestr, PhyloNode)
+        tree = parse_newick(self.l19_treestr, PhyloNode)
         unif = make_unifrac_metric(False, unifrac, True)
         otu_data = numpy.array([
             [0,0,0,0,0,0,0,0,0],#sam1 zeros
@@ -129,7 +129,7 @@ class FunctionTests(TestCase):
         treestr = '((((tax7:0.1):.98,tax8:.3, tax4:.3):.4, '+\
             '((tax6:.09):0.43):0.5):.2,'+\
             '(tax9:0.3, endbigtaxon:.08));' # taxa 1,2,3 removed
-        tree = DndParser(treestr, PhyloNode)
+        tree = parse_newick(treestr, PhyloNode)
 
         otu_data = numpy.array([
             [7,1,0,0,0,0,0,0,0], # 1 now zeros

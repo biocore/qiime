@@ -32,7 +32,7 @@ import os
 from copy import deepcopy
 from cogent import LoadSeqs
 from cogent.cluster.procrustes import procrustes
-from cogent.parse.tree import DndParser, PhyloNode
+from qiime.parse import parse_newick, PhyloNode
 from cogent.core.alignment import Alignment
 from cogent.app.blast import Blastall
 from cogent.app.util import get_tmp_filename
@@ -162,7 +162,7 @@ class FunctionWithParams(object):
             except (TypeError, IOError):
                 raise TreeMissingError, \
                     "Couldn't read tree file at path: %s" % tree_source
-            tree = DndParser(f, PhyloNode)
+            tree = parse_newick(f, PhyloNode)
             f.close()
         else:
             raise TreeMissingError, str(self.Name) + \

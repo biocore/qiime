@@ -2,7 +2,7 @@
 from __future__ import division
 from optparse import OptionParser
 from cogent.core.tree import PhyloNode
-from cogent.parse.tree import DndParser
+from qiime.parse import parse_newick
 import qiime.parse
 import os.path
 import sys
@@ -47,12 +47,12 @@ that's what you intend to do.  types: """ + str(set(base_names)) + """
 continuing anyway..."""
             warn(warnstr)
 
-    master_tree = DndParser(open(master_tree_file, 'U'), PhyloNode)
+    master_tree = parse_newick(open(master_tree_file, 'U'), PhyloNode)
     support_trees = []
     for fname in tree_file_names:
         try:
             f = open(os.path.join(support_dir, fname), 'U')
-            tree = DndParser(f, PhyloNode)
+            tree = parse_newick(f, PhyloNode)
             tree.filepath = fname
             support_trees.append(tree)
             f.close()
