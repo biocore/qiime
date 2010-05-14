@@ -49,11 +49,8 @@ The sequence would be considered chimeric at a depth of 3 (Methanobacteriales vs
 
 blast_fragments begins with the assumption that a sequence is non-chimeric, and looks for evidence to the contrary. This is important when, for example, no taxonomy assignment can be made because no blast result is returned. If a sequence is split into three fragments, and only one returns a blast hit, that sequence would be considered non-chimeric. This is because there is no evidence (i.e., contradictory blast assignments) for the sequence being chimeric. This script can be run by the following command, where the resulting data is written to the directory "identify_chimeras/" and using default parameters (e.g. chimera detection method ("-m blast_fragments"), number of fragments ("-n 3"), taxonomy depth ("-d 4") and maximum E-value ("-e 1e-30")):""","""identify_chimeric_seqs.py -i repr_set_seqs.fasta -t taxonomy_assignment.txt -r ref_seq_set.fna -o chimeric_seqs.txt"""))
 
-script_info['script_usage'].append(("""ChimeraSlayer Example:""","""Identify chimeric sequences using the ChimeraSlayer algorithm against a user provided reference data base. The input sequences need to be provided in aligned (Py)Nast format. The reference data base needs to be provided both as unaligned FASTA (-r) and aligned FASTA (-a):""",
+script_info['script_usage'].append(("""ChimeraSlayer Example:""","""Identify chimeric sequences using the ChimeraSlayer algorithm against a user provided reference data base. The input sequences need to be provided in aligned (Py)Nast format. The reference data base needs to be provided both as unaligned FASTA (-r) and aligned FASTA (-a). Note that the reference database needs to be the same that was used to build the alignment of the input sequences!""",
                                     """identify_chimeric_seqs.py -m ChimeraSlayer -i repr_set_seqs_aligned.fasta -a ref_seq_set_aligned.fasta -r ref_seq_set.fna -o chimeric_seqs.txt"""))
-
-script_info['script_usage'].append(("""ChimeraSlayer Example with default reference DB:""","""Identify chimeric sequences using the ChimeraSlayer algorithm against the reference data base provided with the ChimerSlayer software. The input sequences need to be provided in aligned (Py)Nast format:""",
-                                    """identify_chimeric_seqs.py -m ChimeraSlayer -i repr_set_seqs_aligned.fasta -o chimeric_seqs.txt"""))
 
 script_info['output_description']="""The result of identify_chimeric_seqs.py is a text file that identifies which sequences are chimeric."""
 script_info['required_options']=[options_lookup['fasta_as_primary_input']]
@@ -69,11 +66,11 @@ script_info['optional_options']=[\
     make_option('-r', '--reference_seqs_fp',
         help='Path to reference sequences (used to build a blast db when method blast_fragments). '
         '[default: %default; REQUIRED when method blast_fragments'+\
-         ' if no blast_db is provided. REQUIRED when method ChimeraSlayer]'),
+         ' if no blast_db is provided; REQUIRED when method ChimeraSlayer]'),
 
     make_option('-a', '--aligned_reference_seqs_fp',
         help='Path to (Py)Nast aligned reference sequences. '
-        '[default: %default]'),       
+        'REQUIRED when method ChimeraSlayer [default: %default]'),       
 
     make_option('-b', '--blast_db',
         help='Database to blast against. Must provide either --blast_db or '
@@ -122,6 +119,13 @@ def main():
             option_parser.error('Invalid number of fragments (-n %d) Must be >= 2.' \
                                     % opts.num_fragments)
 
+    elif opts.chimera_detection_method == 'ChimeraSlayer':
+        if not(opts.aligned_reference_seqs_fp and opts.reference_seqs_fp):
+            option_parser.error("Must provide --aligned_reference_seqs_fp and "+\
+                                    "--reference_seqs_fp when using method "+\
+                                    "ChimeraSlayer")
+    
+            
     verbose = opts.verbose #not used yet ...
     input_seqs_fp = opts.input_fasta_fp
     id_to_taxonomy_fp = opts.id_to_taxonomy_fp

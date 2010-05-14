@@ -366,12 +366,22 @@ class ChimeraSlayer(CommandLineApplication):
         
         result = {}
         
-        # strip off filename of input param 
-        # There might be a better way to do this ...
-        inp_file_name =  str(self.Parameters['--query_NAST']).split(" ")[1]
+        inp_file_name = str(self.Parameters['--query_NAST'].Value)
         inp_file_name = inp_file_name.rstrip('"')
         inp_file_name = inp_file_name.lstrip('"')
-        
+
+        exec_dir = self.Parameters['--exec_dir']
+        if exec_dir.isOn():
+            exec_dir = str(exec_dir.Value)
+            exec_dir = exec_dir.lstrip('"')
+            exec_dir = exec_dir.rstrip('"')
+
+            if inp_file_name[0] == '/':
+                # path is already absolute
+                pass
+            else:
+                inp_file_name = exec_dir +"/" +inp_file_name
+                
         result['CPS'] = ResultPath(Path=inp_file_name + ".CPS.CPC",\
                                        IsWritten=True)
         return result
@@ -401,7 +411,7 @@ class ChimeraSlayer(CommandLineApplication):
         if fasta_param.isOn():
             fasta_name = str(fasta_param.Value)
             fasta_name = fasta_name.rstrip('"')
-            fasta_name = fasta_name.lstrip('"')
+            fasta_name = fasta_name.lstrip('"')            
 
             blast_db_files = [fasta_name + x for x in [".nsq",".nin",".nhr",".cidx"]]
             remove_files(blast_db_files, error_on_missing=False)
@@ -506,7 +516,7 @@ def get_chimeras_from_Nast_aligned(seqs_fp, ref_db_aligned_fp=None, ref_db_fasta
     seqs_fp = seqs_fp.rstrip('"')
     seqs_fp = seqs_fp.lstrip('"')
 
-    seqs_dir, fp = split(seqs_fp)
+    seqs_dir, new_seqs_fp = split(seqs_fp)
 
     #if fp is in current dir, we fake a dir change
     if seqs_dir == "":
@@ -517,12 +527,12 @@ def get_chimeras_from_Nast_aligned(seqs_fp, ref_db_aligned_fp=None, ref_db_fasta
     if ref_db_aligned_fp==None or ref_db_fasta_fp==None:
         #use default db, whose relative position to the
         #ChimeraSlayer binary is hardcoded
-        app = ChimeraSlayer(params={'--query_NAST': seqs_fp,
+        app = ChimeraSlayer(params={'--query_NAST': new_seqs_fp,
                                     '--exec_dir': seqs_dir},
                             HALT_EXEC=HALT_EXEC)  
     else:
         #use user db
-        app = ChimeraSlayer(params={'--query_NAST': seqs_fp,
+        app = ChimeraSlayer(params={'--query_NAST': new_seqs_fp,
                                     '--db_NAST': ref_db_aligned_fp,
                                     '--db_FASTA': ref_db_fasta_fp,
                                     '--exec_dir': seqs_dir},
