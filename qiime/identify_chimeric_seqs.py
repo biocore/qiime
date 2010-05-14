@@ -508,6 +508,10 @@ def get_chimeras_from_Nast_aligned(seqs_fp, ref_db_aligned_fp=None, ref_db_fasta
 
     seqs_dir, fp = split(seqs_fp)
 
+    #if fp is in current dir, we fake a dir change
+    if seqs_dir == "":
+        seqs_dir = "./"
+
     #Chimera Slayer puts some temp files in current dir and some in dir of input file
     #use exe_dir to change to dir of input file
     if ref_db_aligned_fp==None or ref_db_fasta_fp==None:
