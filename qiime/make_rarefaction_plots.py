@@ -5,10 +5,10 @@ __author__ = "Meg Pirrung"
 __copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Meg Pirrung", "Jesse Stombaugh"] 
 __license__ = "GPL"
-__version__ = "1.0.0-dev"
+__version__ = "1.1.0"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
-__status__ = "Development"
+__status__ = "Release"
 
 from matplotlib import use
 use('Agg',warn=False)

@@ -5,10 +5,10 @@ __author__ = "Jesse Stombaugh, Rob Knight, and Dan Knights"
 __copyright__ = "Copyright 2010, The QIIME Project" 
 __credits__ = ["Jesse Stombaugh", "Rob Knight", "Micah Hamady", "Dan Knights"] #remember to add yourself
 __license__ = "GPL"
-__version__ = "1.0.0-dev"
+__version__ = "1.1.0"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
-__status__ = "Development"
+__status__ = "Release"
 
 
 from cogent.util.misc import flatten

@@ -7,10 +7,10 @@ __copyright__ = "Copyright 2010, The QIIME Project"
 #remember to add yourself if you make changes
 __credits__ = ["Greg Caporaso", "Kyle Bittinger"] 
 __license__ = "GPL"
-__version__ = "1.0.0-dev"
+__version__ = "1.1.0"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 
 from cStringIO import StringIO

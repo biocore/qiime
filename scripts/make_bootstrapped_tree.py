@@ -6,10 +6,10 @@ __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2010, The QIIME project"
 __credits__ = ["Justin Kuczynski","Jesse Stombaugh"]
 __license__ = "GPL"
-__version__ = "1.0.0-dev"
+__version__ = "1.1.0"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 from optparse import make_option
 from qiime.parse import parse_newick

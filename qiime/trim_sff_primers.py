@@ -6,10 +6,10 @@ __author__ = "Rob Knight"
 __copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Rob Knight"]
 __license__ = "GPL"
-__version__ = "1.0.0-dev"
+__version__ = "1.1.0"
 __maintainer__ = "Rob Knight"
 __email__ = "rob@spot.colorado.edu"
-__status__ = "Development"
+__status__ = "Release"
 """Finds the technical read regions for each library, and resets the left trim.
 
 Replaces the sff files with the trimmed versions.

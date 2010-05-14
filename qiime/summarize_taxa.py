@@ -4,10 +4,10 @@ __author__ = "Rob Knight"
 __copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Rob Knight", "Catherine Lozupone", "Justin Kuczynski","Julia Goodrich"]
 __license__ = "GPL"
-__version__ = "1.0.0-dev"
+__version__ = "1.1.0"
 __maintainer__ = "Julia Goodrich"
 __email__ = "julia.goodrich@colorado.edu"
-__status__ = "Development"
+__status__ = "Release"
 
 """Contains code for summarizing OTU table with taxa in last field.
 """

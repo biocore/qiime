@@ -6,10 +6,10 @@ __author__ = "Julia Goodrich"
 __copyright__ = "Copyright 2010, The QIIME project"
 __credits__ = ["Julia Goodrich"]
 __license__ = "GPL"
-__version__ = "1.0.0-dev"
+__version__ = "1.1.0"
 __maintainer__ = "Julia Goodrich"
 __email__ = "julia.goodrich@colorado.edu"
-__status__ = "Development"
+__status__ = "Release"
 """
 This script generates taxonomy pie charts
 """
