@@ -17,7 +17,7 @@ Installing the QIIME Virtual Box
 
   * Launch VirtualBox, and create a new machine (press the New button).
   * A new window will show up. Click 'Next'.
-  * In this screen type QIIME as the name for the virtual machine. Then select Linux as the Operating System, and Ubuntu as the version. Click Next.
+  * In this screen type QIIME as the name for the virtual machine. Then select Linux as the Operating System, and Ubuntu (64 bit) as the version. Click Next.
   * Select the amount of RAM (memory). We recommend at least 1024MB, but the best option is based on your machine. After selecting the amount of RAM, click Next.
   * Select "Use existing hard drive", and click the folder icon next to the selector (it has a green up arrow). In the new window click 'Add', and locate the virtual hard drive that was downloaded in step 2. Click Select and then click Next.
   * In the new window click Finish.

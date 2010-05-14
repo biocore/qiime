@@ -15,7 +15,7 @@ Future versions of QIIME will support similar workflows and tutorials for SRA su
 
 This tutorial uses as an example the `Fierer et al. 2008 hand dataset <http://www.pnas.org/content/105/46/17994.long>`_. This represents the first barcoded SRA submission, and the finished product can be found via SRA accession #: `SRS001216 <http://www.ncbi.nlm.nih.gov/sites/entrez?db=sra&term=SRS001216>`_. 
 
-To get started, download the data from: `SRA Tutorial Data <http://bmf.colorado.edu/QIIME/knight_handstudy_demo-v1.0.0.zip>`_
+To get started, download the data from: `SRA Tutorial Data <http://bmf.colorado.edu/QIIME/knight_handstudy_demo-v1.1.0.zip>`_
 
 Philosophy of QIIME's SRA submission code
 -----------------------------------------
@@ -53,9 +53,9 @@ Set up your data for the tutorial run
 
 Download and unpack the tutorial data, and change to the resulting directory::
 
-	wget http://bmf.colorado.edu/QIIME/knight_handstudy_demo-v1.0.0.zip
-	unzip knight_handstudy_demo-v1.0.0.zip
-	cd knight_handstudy_demo-v1.0.0
+	wget http://bmf.colorado.edu/QIIME/knight_handstudy_demo-v1.1.0.zip
+	unzip knight_handstudy_demo-v1.1.0.zip
+	cd knight_handstudy_demo-v1.1.0
 
 Generate the study and sample metadata submissions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
