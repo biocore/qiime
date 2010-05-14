@@ -1,22 +1,23 @@
 QIIME Readme
 ============
 
+The definitive source for information on QIIME is the QIIME website at `http://qiime.sourceforge.net <http://qiime.sourceforge.net>`_. The information contained in this document is very minimal in comparison.
+
 :Download: via sourceforge at `http://sourceforge.net/projects/qiime <http://sourceforge.net/projects/qiime>`_.
-:Registration: To be informed of bugs, new releases, and new features go to the QIIME homepage at `http://qiime.sourceforge.net <http://qiime.sourceforge.net>`_.
+
+:Registration: To be informed of bugs, new releases, and new features subscribe to the QIIME blog at `http://qiime.wordpress.com <http://qiime.wordpress.com>`_.
 
 Dependencies
 ------------
 
-QIIME requires Python_ 2.6 or greater, Numpy_ 1.3 or greater, Matplotlib_ 0.98.5.2-1, and PyCogent_ 1.4.1. Additionally, users must have version 2.2.22 of NCBI's legacy BLAST_ tools installed, and visible via the system path (``$PATH``) environment variable. Note that these are different from NCBI's BLAST+ tools, which will not work with QIIME.  
+QIIME requires Python_ 2.6 or greater, Numpy_ 1.3.0 or greater, and PyCogent_ 1.4.1. 
 
 Required
 ^^^^^^^^
 
 - Python_: the language the toolkit is primarily written in, and in which the user writes control scripts.
 - Numpy_: This is a python module used for speeding up matrix computations. It is available as source code for \*nix.
-- Matplotlib_: used to plot several kinds of graphs related to codon usage. For installation, see these instructions for `compiling matplotlib`_.
 - PyCogent_: the Python Comparative Genomics Toolkit, a library containing core objects commonly used in Bioinformatics applications, wrappers for external applications (e.g., blast), and a lot more.
-- NCBI BLAST_: the Basic Local Alignment Search Tool, built and maintained by NCBI.
 
 Note: On some linux platforms (like Ubuntu), you must specifically install a ``python-dev`` package so that the Python_ header files required for building some external dependencies are available.
 
@@ -46,7 +47,7 @@ All QIIME scripts provide usage information when called with their -h option. Th
 
 ::
     
-    $ python Qiime/qiime/align_seqs.py -h	
+    $ python Qiime/scripts/align_seqs.py -h	
 
 .. _Python: http://www.python.org
 .. _BLAST: ftp://ftp.ncbi.nlm.nih.gov/blast/executables/LATEST/
