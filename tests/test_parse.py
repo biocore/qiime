@@ -397,7 +397,7 @@ eigvals\t4.94\t1.79\t1.50
     def test_parse_qiime_parameters(self):
         """parse_qiime_parameters: functions with valid input """
         lines = ["#Don't edit this file!",\
-                 "pick_otus:similarity\t0.94",\
+                 "pick_otus:similarity 0.94",\
                  "pick_otus:otu_picking_method\tcdhit",\
                  "align_seqs:verbose",\
                  "assign_taxonomy:use_rdp\ttRuE",\
