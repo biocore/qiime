@@ -37,9 +37,9 @@ We suggest to use the pynast aligned representative sequences as input.
 	-t, `-`-id_to_taxonomy_fp
 		Path to tab-delimited file mapping sequences to assigned taxonomy. Each assigned taxonomy is provided as a comma-separated list. [default: None; REQUIRED when method is blast_fragments]
 	-r, `-`-reference_seqs_fp
-		Path to reference sequences (used to build a blast db when method blast_fragments). [default: None; REQUIRED when method blast_fragments if no blast_db is provided. REQUIRED when method ChimeraSlayer]
+		Path to reference sequences (used to build a blast db when method blast_fragments). [default: None; REQUIRED when method blast_fragments if no blast_db is provided; REQUIRED when method ChimeraSlayer]
 	-a, `-`-aligned_reference_seqs_fp
-		Path to (Py)Nast aligned reference sequences. [default: None]
+		Path to (Py)Nast aligned reference sequences. REQUIRED when method ChimeraSlayer [default: None]
 	-b, `-`-blast_db
 		Database to blast against. Must provide either --blast_db or --reference_seqs_fp when method is blast_fragments [default: None]
 	-m, `-`-chimera_detection_method
@@ -79,18 +79,10 @@ blast_fragments begins with the assumption that a sequence is non-chimeric, and 
 
 **ChimeraSlayer Example:**
 
-Identify chimeric sequences using the ChimeraSlayer algorithm against a user provided reference data base. The input sequences need to be provided in aligned (Py)Nast format. The reference data base needs to be provided both as unaligned FASTA (-r) and aligned FASTA (-a):
+Identify chimeric sequences using the ChimeraSlayer algorithm against a user provided reference data base. The input sequences need to be provided in aligned (Py)Nast format. The reference data base needs to be provided both as unaligned FASTA (-r) and aligned FASTA (-a). Note that the reference database needs to be the same that was used to build the alignment of the input sequences!
 
 ::
 
 	identify_chimeric_seqs.py -m ChimeraSlayer -i repr_set_seqs_aligned.fasta -a ref_seq_set_aligned.fasta -r ref_seq_set.fna -o chimeric_seqs.txt
-
-**ChimeraSlayer Example with default reference DB:**
-
-Identify chimeric sequences using the ChimeraSlayer algorithm against the reference data base provided with the ChimerSlayer software. The input sequences need to be provided in aligned (Py)Nast format:
-
-::
-
-	identify_chimeric_seqs.py -m ChimeraSlayer -i repr_set_seqs_aligned.fasta -o chimeric_seqs.txt
 
 
