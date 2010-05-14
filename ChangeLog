@@ -4,15 +4,14 @@ Add changes since QIIME 1.1.0 here
 QIIME 1.1.0 (14 May 2010)
 =========================
 * Additional field added to BLAST assign taxonomy output to indicate the best BLAST hit of the query sequence -- this is in response to Sourceforge feature request 2988407.
-* Added presorting by abundance to uclust OTU picker. The idea here is that sequences which are more abundant are better representatives when clustering, so they should come first in the file. Also added ability to pass the optimal flag to uclust, which should also improve uclust-picked OTUs, by comes with a performance hit.
+* Added presorting by abundance to uclust OTU picker. The idea here is that sequences which are more abundant are better representatives when clustering, so they should come first in the file. Also added ability to pass the optimal flag to uclust, which should also improve uclust-picked OTUs, which comes with a performance hit.
 * Added Confidence interval display (jackknifed pcoa) in make_2d_plots and make_3d_plots. After performing multiple_rarefactions, beta_diversity and principal_coordinates on an OTU table, the user can supply the resulting directory to both of these scripts.  Currently the user has the option of performing InterQuartile Range (IQR) or standard-deviation (sdev) on the principal coordinate files and ellipses are drawn around each point to represent the confidence interval in each P.C.  Along with this option, the user can manipulate the opacity of the ellipses as well.
-* Updated the display for rarefaction plots, so the legend does not overlap with the plots and fixed the display of the rarefaction average table in the webpage.
-* Merged the make_rarefaction_averages into the make_rarefaction_plots script.  Also removed the inputs (--rarefaction_ave and --ymax) options, since they are determined by the script.  Also added the ability to mouseover categories, to view the samples that contribute to the average line.  Also, restructured the output directory format and combined all metric data into one html.
+* Updated the display for rarefaction plots, so the legend does not overlap with the plots and fixed the display of the rarefaction average table in the webpage.  Now the user can switch between plots with different metrics and categories by using the drop down menus.  The user can also display the samples that contribute to the average for that group.  Below the plots, a table is displayed to show the rarefaction average data with all the distance metric values.
+* Merged the make_rarefaction_averages into the make_rarefaction_plots script.  Also removed the inputs (--rarefaction_ave and --ymax) options, since they are determined by the script.  Also, restructured the output directory format and combined all metric data into one html.
 * Added the uclust_ref OTU picker, which uses uclust to pick OTUs against a reference collection. Sequences which are within the similarity threshold to a reference sequnece will cluster to an OTU defined by that reference sequence, and sequences which are outside of the similarity threshold to any reference sequence will form new OTUs.
 * The interface for exclude_seqs_by_blast.py has changed.  -M and -W options are now lowercase to avoid conflicts with parallel scripts.  Users can avoid formatting the database by passing --no_format_db.  By default the files created by formatdb are now cleaned up. Users can choose not to  clean up these files  using the --no_clean option.  Output file extensions have changed from ".excluded" to ".matching" and from ".screened" to ".non-matching" to be clear regardless of whether the sequences matching the database, or not matching the database, are to be excluded. A check was added for user-supplied BLAST databases in exclude_seqs_by_blast.py when run with --no_format_db: if the required files do not exist a parser error is thrown
 * Added ability to chimera check sequences with ChimeraSlayer. See identify_chimeric_seqs.py for details. 
 * Added workflow script for second-stage SRA submission, process_sra_submission.py. The SRA submission tutorial has been extensively updated to reflect the use of this new script.
-* Extensive updates to alpha rarefaction plotting to address an issue with long label names causing the legend to be placed over data. 
 * Added the ability to supply a tree and sort the heatmap based on the supplied tree.
 * Added the ability to handle variable length barcodes, variable length primers, and no primers with split_libraries.py. Error-correction is not supported for barcode types other than golay_12 and hamming_8. split_libraries.py also now throws an error if the barcode length passed on the commands line does not match the barcode length in the mapping file.
 * Updated the print_qiime_config.py script to print useful debugging information about the QIIME environment. 
@@ -55,7 +54,7 @@ survey of multiple body sites.
 * Added new field to qiime_config (temp_dir) which will be used to specify where temp files should be written. Currently this is only used by the workflow tests, and is intended to allow users to specify something other than /tmp for cases when /tmp is not shared between all nodes that might be working on a job. This will eventually be used for all temp dir creation.
 * Added ability to make summary plots for a directory of coordinate files in make_3d_plots and make_2d_plots. The summary plot adds ellipsoidal confidence intervals around each point in the plot.
 	
->>>>>>> .r1277
+
 
 QIIME 0.92 - (3 Mar 2010)
 =======================
