@@ -100,7 +100,7 @@ This produces a tar archive of per-sample SFF files, :file:`experiment.xml`, :fi
 
 
 Notes regarding individual steps of the SRA submission process
---------------------
+--------------------------------------------------------------
 
 The `process_sra_submission.py <../scripts/process_sra_submission.html>`_ workflow script combines many separate QIIME commands. This section provides a discussion of the key components of the SRA submission workflow.
 
