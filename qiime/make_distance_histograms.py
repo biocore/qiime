@@ -84,9 +84,10 @@ def assign_mapped_colors(mapped_labels, field_to_color_prefs):
     """Returns map of label to color using color prefs.
     """
     label_to_color = {}
+    
     for name in mapped_labels:
         field, data = name.split('_Within_')
-        label = data.split('_')[0]
+        label = data.split('_Distances')[0]
         field_prefs = field_to_color_prefs[field]
         color = field_prefs[1][label]
 
