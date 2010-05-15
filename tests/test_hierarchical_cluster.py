@@ -4,10 +4,10 @@ __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["justin kuczynski"]
 __license__ = "GPL"
-__version__ = "1.1.0"
+__version__ = "1.1.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
-__status__ = "Release"
+__status__ = "Development"
 
 from qiime.hierarchical_cluster import single_file_upgma
 from qiime.format import format_distance_matrix

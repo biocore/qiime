@@ -13,10 +13,10 @@ __author__ = "Micah Hamady"
 __copyright__ = "Copyright 2010, The QIIME Project" 
 __credits__ = ["Micah Hamady", "Rob Knight"]#remember to add yourself if you make changes
 __license__ = "GPL"
-__version__ = "1.1.0"
+__version__ = "1.1.0-dev"
 __maintainer__ = "Rob Knight"
 __email__ = "rob@spot.colorado.edu"
-__status__ = "Release"
+__status__ = "Development"
 
 
 # current encoding scheme

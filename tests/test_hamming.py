@@ -10,10 +10,10 @@ __author__ = "Micah Hamady"
 __copyright__ = "Copyright 2010, The QIIME Project" #consider project name
 __credits__ = ["Micah Hamady", "Rob Knight"] #remember to add yourself
 __license__ = "GPL"
-__version__ = "1.1.0"
+__version__ = "1.1.0-dev"
 __maintainer__ = "Rob Knight"
 __email__ = "rob@spot.colorado.edu"
-__status__ = "Release"
+__status__ = "Development"
 
 from cogent.util.unit_test import TestCase, main
 from qiime.hamming import decode_barcode_8

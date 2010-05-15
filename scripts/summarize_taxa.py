@@ -6,10 +6,10 @@ __author__ = "Rob Knight"
 __copyright__ = "Copyright 2010, The QIIME project"
 __credits__ = ["Rob Knight", "Catherine Lozupone", "Justin Kuczynski","Julia Goodrich"]
 __license__ = "GPL"
-__version__ = "1.1.0"
+__version__ = "1.1.0-dev"
 __maintainer__ = "Julia Goodrich"
 __email__ = "julia.goodrich@colorado.edu"
-__status__ = "Release"
+__status__ = "Development"
  
 
 from qiime.util import parse_command_line_parameters
