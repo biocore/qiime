@@ -636,7 +636,7 @@ def make_averages(color_prefs, data, background_color, label_color, rares, \
 def make_html(rarefaction_legend_mat, rarefaction_data_mat, xaxisvals, \
                 imagetype):
     rarefaction_legend_mat
-    legend_td=['<b>Legend</b><div STYLE="border: thin black solid; height: 300px; width: 150px; font-size: 12px; overflow: auto;"><table>']
+    legend_td=['<b>Legend</b><div STYLE="border: thin black solid; height: 300px; width: 200px; font-size: 12px; overflow: auto;"><table>']
     summarized_table=[]
     metric_select_html=[]
     category_select_html=[]
@@ -878,7 +878,7 @@ function changeMetric(SelObject){
 		plots.innerHTML=''
         for (var i=1, il=array.length; i<il; i++){
 			img=document.createElement('img')
-			img.setAttribute('height',"450px") 
+			img.setAttribute('width',"600px") 
 			img.setAttribute('id',new_cat+array[i]+'_ave'+imagetype)
 			img.setAttribute('style','position:absolute;z-index:0')
 			img.setAttribute('src',"./html_plots/"+new_cat+array[i]+'_ave'+imagetype)
@@ -927,7 +927,7 @@ function changeCategory(SelObject){
 		plots.innerHTML=''
         for (var i=1, il=array.length; i<il; i++){
 			img=document.createElement('img')
-			img.setAttribute('height',"450px") 
+			img.setAttribute('width',"600px") 
 			img.setAttribute('id',cat+array[i]+'_ave'+imagetype)
 			img.setAttribute('style','position:absolute;z-index:0')
 			img.setAttribute('src',"./html_plots/"+cat+array[i]+'_ave'+imagetype)
@@ -952,7 +952,7 @@ function toggle(){
 		
 		if (document.getElementById(show_row)==null){
 			img=document.createElement('img')
-			img.setAttribute('height',"450px") 
+			img.setAttribute('width',"600px") 
 			img.setAttribute('id',arguments[0]+'_raw'+imagetype)
 			img.setAttribute('style','position:absolute;z-index:0')
 			img.setAttribute('src',"./html_plots/"+arguments[0]+'_raw'+imagetype)
@@ -1031,10 +1031,10 @@ function show_hide_categories(SelObject){
 </td>
 </table>
 <br>
-<div style="width:790px">
-<div id="plots" style="height:450px;float:left;"></div>
+<div style="width:950px">
+<div id="plots" style="width:650px;height:550px;float:left;"></div>
 
-<div id="legend" style="height:450px;float:right;display:none;">
+<div id="legend" style="width:300px;height:550px;float:right;display:none;">
 	<p><b>Show Categories: 
 	<select id="show_category" onchange="show_hide_categories(this);">
 		<option value="">&nbsp;</option>
