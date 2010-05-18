@@ -742,7 +742,8 @@ class UclustOtuPicker(UclustOtuPickerBase):
     def __call__(self,
                  seq_path,
                  result_path=None,
-                 log_path=None):
+                 log_path=None,
+                 HALT_EXEC=False):
         """Returns dict mapping {otu_id:[seq_ids]} for each otu.
         
         Parameters:
@@ -769,7 +770,10 @@ class UclustOtuPicker(UclustOtuPickerBase):
          exact = self.Params['exact'],
          suppress_sort = self.Params['suppress_sort'],
          enable_rev_strand_matching =
-          self.Params['enable_rev_strand_matching'])
+          self.Params['enable_rev_strand_matching'],
+         max_accepts=self.Params['max_accepts'],
+         max_rejects=self.Params['max_rejects'],
+         HALT_EXEC=HALT_EXEC)
         
         # clean up any temp files that were created
         remove_files(files_to_remove)

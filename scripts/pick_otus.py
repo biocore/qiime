@@ -182,7 +182,11 @@ script_info['optional_options'] = [
               ' picking. [default: %default]')),
     make_option('-C','--suppress_new_clusters',action='store_true',default=False,
               help="Suppress creation of new clusters using seqs that don't" +
-              " match reference when using -m uclust_ref [default: %default]")
+              " match reference when using -m uclust_ref [default: %default]"),
+    make_option('--max_accepts',type='int',default=8,
+              help="max_accepts value to uclust and uclust_ref [default: %default]"),
+    make_option('--max_rejects',type='int',default=32,
+              help="max_rejects value to uclust and uclust_ref [default: %default]")
     ]
 
 script_info['version'] = __version__
@@ -207,6 +211,8 @@ def main():
      opts.suppress_presort_by_abundance_uclust
     optimal_uclust = opts.optimal_uclust
     user_sort = opts.user_sort
+    max_accepts = opts.max_accepts
+    max_rejects = opts.max_rejects
     
     # Input validation to throw a useful error message on common mistakes
     if (otu_picking_method == 'cdhit' and
@@ -266,7 +272,9 @@ def main():
         'exact':opts.exact_uclust,
         # suppress_sort=True when seqs are or will be pre-sorted
         'suppress_sort':user_sort,
-        'presort_by_abundance': not suppress_presort_by_abundance_uclust}
+        'presort_by_abundance': not suppress_presort_by_abundance_uclust,
+        'max_accepts':max_accepts,
+        'max_rejects':max_rejects}
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,
                    result_path=result_path,log_path=log_path)
@@ -280,7 +288,9 @@ def main():
         # suppress_sort=True when seqs are or will be pre-sorted
         'suppress_sort':user_sort,
         'presort_by_abundance': not suppress_presort_by_abundance_uclust,
-        'suppress_new_clusters':opts.suppress_new_clusters}
+        'suppress_new_clusters':opts.suppress_new_clusters,
+        'max_accepts':max_accepts,
+        'max_rejects':max_rejects}
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,refseqs_fp,
                    result_path=result_path,log_path=log_path)
