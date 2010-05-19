@@ -906,6 +906,8 @@ def get_sff_filenames(sff_dir, run_prefix):
      lambda x: x.startswith(run_prefix) and x.endswith('.sff'),
      listdir(sff_dir))
 
+
+
 def run_process_sra_submission(
     input_experiment_fp,
     input_submission_fp,
@@ -925,10 +927,18 @@ def run_process_sra_submission(
         1: Get fasta and qual from sff files
         2: Produce valid mapping file for library demultiplexing
         3: Demultiplex libraries
+        
+        
         4: Reduce sequence complexity by picking OTUs with cd-hit
         5: Pick a representative sequence for each OTU
         6: Blast the representative set sequences against 95% OTUs in greengenes
            to eliminate sequences that aren't really 16S rRNA
+        
+        4: Pick otus with uclust_ref against reference database, discarding
+           sequences that don't hit the reference database. The resulting
+           otu map is then the sequence identifiers which pass the human
+           screen.
+        
         7: Make per-library files of good ids to pass to sfffile
         8: Use sfffile to make per-library sff files
         9: Use sfffile to quality-trim the barcodes, primers and linkers
@@ -1032,45 +1042,38 @@ def run_process_sra_submission(
             'Demultiplex run %s.' % run_prefix, split_libraries_cmd)])
         seqs_fp = join(library_dir, 'seqs.fna')
 
-        # Step 4 -- pick otus
-        params_str = get_params_str(params['pick_otus'])
+        
+        # pick_otus against reference set for human screen
+        pick_otu_params = params['pick_otus']
+        params_str = get_params_str(pick_otu_params)
+        if pick_otu_params and pick_otu_params.keys() != ['similarity']:
+            raise WorkflowError,\
+             ("pick_otus only supports passing of similarity"
+              " during SRA submission workflow.")
         
         pick_otus_cmd = \
-         '%s %s/pick_otus.py -i %s -o %s %s' %\
-         (python_exe_fp, script_dir, seqs_fp, library_dir, params_str)
+         '%s %s/pick_otus.py -i %s -o %s -m uclust_ref --suppress_new_clusters -r %s --max_accepts 1 --suppress_presort_by_abundance_uclust -z --user_sort %s' %\
+         (python_exe_fp, script_dir, seqs_fp, library_dir, refseqs_copy_fp, params_str)
+        commands.append([('Human screen with uclust_ref OTU picker.', pick_otus_cmd)])
 
-        commands.append([('Pick OTUs.', pick_otus_cmd)])
-        otus_fp = join(library_dir, 'seqs_otus.txt')
+        # Step xx - Screen input seqs to filter human sequences
+        otus_fp = join(library_dir, 'seqs_otus.txt')        
+        screened_seqs_fp = join(library_dir, 'screened_seqs.fasta')
+        params_str = get_params_str(params['filter_fasta'])
+        filter_fasta_cmd = \
+         '%s %s/filter_fasta.py -f %s -o %s -m %s %s' % \
+         (python_exe_fp, script_dir, seqs_fp, screened_seqs_fp, otus_fp, params_str)
 
-        # Step 5 -- pick rep set
-        params_str = get_params_str(params['pick_rep_set'])
-        
-        pick_rep_set_cmd = \
-         '%s %s/pick_rep_set.py -i %s -f %s %s' %\
-         (python_exe_fp, script_dir, otus_fp, seqs_fp, params_str)
-
-        commands.append([('Pick representative set', pick_rep_set_cmd)])
-        rep_set_fp = join(library_dir, 'seqs.fna_rep_set.fasta')
-
-        # Step 6 -- screen representative sequences using BLAST
-        params_str = get_params_str(params['exclude_seqs_by_blast'])
-        screened_basename = join(library_dir, 'blast_results')
-        exclude_seqs_by_blast_cmd = \
-         '%s %s/exclude_seqs_by_blast.py -d %s -i %s -o %s %s' %\
-         (python_exe_fp,script_dir,refseqs_copy_fp,rep_set_fp,
-          screened_basename,params_str)
         commands.append([(
-            'Human screen: exclude seqs that fail to match reference set.',
-            exclude_seqs_by_blast_cmd)])
-        screened_fp = screened_basename + '.non-matching'
-
+            'Filter input sequences to remove those which didn\'t pass human screen',
+            filter_fasta_cmd)])
+        
         # Step 7 - make per library id lists
         per_lib_sff_dir = join(library_dir, 'per_lib_info')
         params_str = get_params_str(params['make_library_id_lists'])
         make_library_id_lists_cmd = \
-         '%s %s/make_library_id_lists.py -i %s -s %s -u %s -o %s %s' % \
-         (python_exe_fp, script_dir, seqs_fp, screened_fp, otus_fp,
-          per_lib_sff_dir, params_str)
+         '%s %s/make_library_id_lists.py -i %s -o %s %s' % \
+         (python_exe_fp, script_dir, screened_seqs_fp, per_lib_sff_dir, params_str)
 
         commands.append([(
             'Create per-library id lists to use when splitting SFF files.',
@@ -1119,11 +1122,10 @@ def run_process_sra_submission(
             run_sff_output_dir, '%s_default_%s.sff' % (study_ref, run_prefix))
         commands.append([('Rename Unassigned.sff',
          'mv %s %s' % (orig_unassigned_fp, desired_unassigned_fp))])
-        
-    # Replace the following command with a buil-in python version, if available
-    # on a plane without internet right now, so can't look it up...
+    
     commands.append([('Create archive of per-library SFF files.',
-                     'tar cvzf %s %s' % (submission_tar_fp, submission_sff_dir))])
+                     'cd %s ; tar -czf %s %s' % 
+                     (output_dir, submission_tar_fp, split(submission_sff_dir)[1]))])
 
     # Step 11
     params_str = get_params_str(params['make_sra_submission'])
