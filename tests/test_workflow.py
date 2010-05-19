@@ -484,8 +484,7 @@ class WorkflowTests(TestCase):
         self.assertTrue(getsize(log_fp) > 0)
         
     def test_run_process_sra_submission(self):
-        """run_process_sra_submission functions w human screen
-        """
+        """run_process_sra_submission produces a valid SRA submission package"""
         # TODO: remove dependence on external files, if possible
         test_dir = os.path.dirname(os.path.abspath(__file__))
         sff_dir = os.path.join(test_dir, 'sra_test_files', 'F6AVWTA')
@@ -557,8 +556,7 @@ class WorkflowTests(TestCase):
         
         
     def test_run_process_sra_submission_no_human_screen(self):
-        """run_process_sra_submission functions w/o human screen
-        """
+        """run_process_sra_submission produces a valid SRA submission package"""
         # TODO: remove dependence on external files, if possible
         test_dir = os.path.dirname(os.path.abspath(__file__))
         sff_dir = os.path.join(test_dir, 'sra_test_files', 'F6AVWTA')
@@ -638,11 +636,7 @@ split_libraries:max-ambig	1000
 # normally want a higher percent similarity, but designed to hit and miss
 # certain sequences here for the human screen tests.
 pick_otus:similarity	0.62
-pick_otus:enable_rev_strand_match   True
-
-exclude_seqs_by_blast:word_size	10
-exclude_seqs_by_blast:percent_aligned	0.25
-exclude_seqs_by_blast:e_value	1e-20""".split('\n')
+pick_otus:enable_rev_strand_match   True""".split('\n')
 
 sra_experiment_txt = '''#EXPERIMENT_ALIAS	EXPERIMENT_CENTER	EXPERIMENT_TITLE	STUDY_REF	STUDY_CENTER	EXPERIMENT_DESIGN_DESCRIPTION	LIBRARY_CONSTRUCTION_PROTOCOL	SAMPLE_ALIAS	SAMPLE_CENTER	POOL_MEMBER_NAME	POOL_MEMBER_FILENAME	POOL_PROPORTION	BARCODE_READ_GROUP_TAG	BARCODE	LINKER	PRIMER_READ_GROUP_TAG	KEY_SEQ	PRIMER	RUN_PREFIX	RUN_ALIAS	REGION	PLATFORM	RUN_CENTER	RUN_DATE	INSTRUMENT_NAME
 bodysites_F6AVWTA01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015438	NCBI	F6AVWTA01_2878_700015438_V1-V3	B-2004-03-S1.sff	0.014492754	F6AVWTA01_ATGTTCGATG	AGACTCTGCT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA01	F6AVWTA01_2878	0	FLX	JCVI 	NULL	NULL
