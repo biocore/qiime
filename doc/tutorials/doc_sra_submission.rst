@@ -11,7 +11,7 @@ Introduction
 
 This tutorial illustrates how to use QIIME for SRA submission of barcoded 16S community sequencing data generated on the Roche 454. To run this tutorial, you'll need to have QIIME installed, as well as the 454 off-instrument tools (``sffinfo``, ``sfffile``).
 
-Future versions of QIIME will support similar workflows and tutorials for SRA submission of meta-genomics data, and data generated on the Illumina platforms. 
+Future versions of QIIME will likely support similar workflows and tutorials for SRA submission of meta-genomics data, and data generated on the Illumina platforms. Get in touch with qiime.help@colorado.edu if these are important applications for you.
 
 This tutorial uses as an example the `Fierer et al. 2008 hand dataset <http://www.pnas.org/content/105/46/17994.long>`_. This represents the first barcoded SRA submission, and the finished product can be found via SRA accession #: `SRS001216 <http://www.ncbi.nlm.nih.gov/sites/entrez?db=sra&term=SRS001216>`_. 
 
@@ -149,8 +149,8 @@ Briefly, the relevant settings in ``sra_parameters.txt`` require an average qual
 	split_libraries:max-primer-mismatch	100
 	split_libraries:max-ambig	1000
 
-Optionally apply the ``uclust_ref`` OTU picker to pick OTUs against 95% OTUs in greengenes to eliminate sequences that aren't really 16S rRNA
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Optionally apply ``uclust_ref`` against greengenes to eliminate sequences that aren't really 16S rRNA
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This step performs a human/contaminant screen the "safe" way by identifying and excluding sequences that aren't 16S rRNA. We are using ``uclust`` against a reference data set with a similarity threshold of 0.70. Our tests suggest that this is sufficient to screen out human genomic reads (the human 18S sequence hits bacterial 16S with a similarity of around 60%). These parameters are specified in ``sra_parameters.txt`` as::
 
