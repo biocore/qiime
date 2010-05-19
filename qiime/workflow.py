@@ -4,7 +4,7 @@ from __future__ import division
 from subprocess import Popen, PIPE, STDOUT
 from os import makedirs, listdir
 from glob import glob
-from os.path import split, splitext, join, dirname
+from os.path import split, splitext, join, dirname, abspath
 from datetime import datetime
 from qiime.parse import parse_mapping_file
 from qiime.util import (compute_seqs_per_library_stats, 
@@ -1134,7 +1134,8 @@ def run_process_sra_submission(
     
     commands.append([('Create archive of per-library SFF files',
                      'cd %s ; tar -czf %s %s' % 
-                     (output_dir, submission_tar_fp, split(submission_sff_dir)[1]))])
+                     (abspath(output_dir), split(submission_tar_fp)[1], 
+                      split(submission_sff_dir)[1]))])
 
     # Step 11
     params_str = get_params_str(params['make_sra_submission'])
