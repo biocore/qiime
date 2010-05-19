@@ -15,7 +15,7 @@ Future versions of QIIME will support similar workflows and tutorials for SRA su
 
 This tutorial uses as an example the `Fierer et al. 2008 hand dataset <http://www.pnas.org/content/105/46/17994.long>`_. This represents the first barcoded SRA submission, and the finished product can be found via SRA accession #: `SRS001216 <http://www.ncbi.nlm.nih.gov/sites/entrez?db=sra&term=SRS001216>`_. 
 
-To get started, download the data from: `SRA Tutorial Data <http://bmf.colorado.edu/QIIME/knight_handstudy_demo-v1.1.0.zip>`_
+To get started, download the data from: `SRA Tutorial Data <http://bmf.colorado.edu/QIIME/knight_handstudy_demo-v1.1.0-dev.zip>`_
 
 Philosophy of QIIME's SRA submission code
 -----------------------------------------
@@ -26,8 +26,7 @@ Originally, the plan was to do this as a series of standalone scripts, but this 
 
 In addition to QIIME's standard dependencies, you will need several of QIIME's optional dependencies to complete this tutorial:
 
-	* `BLAST <http://blast.ncbi.nlm.nih.gov/Blast.cgi?CMD=Web&PAGE_TYPE=BlastDocs&DOC_TYPE=Download>`_ 
-	* `cdhit <http://www.bioinformatics.org/cd-hit/>`_ 
+	* ``uclust``
 	* 454 off-instrument tools (``sffinfo``, ``sfffile``). These must be obtained from Roche 454.
 
 You should refer to the `QIIME install pages <../install/index.html>`_ for all information related to getting up and running with QIIME. 
@@ -53,9 +52,9 @@ Set up your data for the tutorial run
 
 Download and unpack the tutorial data, and change to the resulting directory::
 
-	wget http://bmf.colorado.edu/QIIME/knight_handstudy_demo-v1.1.0.zip
-	unzip knight_handstudy_demo-v1.1.0.zip
-	cd knight_handstudy_demo-v1.1.0
+	wget http://bmf.colorado.edu/QIIME/knight_handstudy_demo-v1.1.0-dev.zip
+	unzip knight_handstudy_demo-v1.1.0-dev.zip
+	cd knight_handstudy_demo-v1.1.0-dev
 
 Generate the study and sample metadata submissions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -81,9 +80,9 @@ Generate the experiment and run metadata submissions
 	**Input:** 
 		a. ``experiment.txt`` - tabular metadata about the contents of each combination of library and sff file. 
 		b. ``sff_files`` - a directory of multiple sff files containing the actual sequence data. 
-		c. ``submission_second_stage.txt`` - a two-column file of tabular metadata about the submission.
+		c. ``submission.txt`` - a two-column file of tabular metadata about the submission.
 		d. ``sra_parameters.txt`` - a qiime parameters file, defining what parameters should be passed to the individual component scripts
-		e. ``greengenes_unaligned.fasta-OTUs_at_0.05.fasta`` - a FASTA file of known 16S sequences to screen for non-16S contaminants (here, we use a subset of the unaligned greengenes database, filtered at 95% sequence identity)  
+		e. ``greengenes_unaligned.fasta-OTUs_at_0.05.fasta`` - a FASTA file of known 16S sequences to screen for non-16S contaminants (here, we use a subset of the unaligned greengenes database, filtered at 95% sequence identity)  [**only required to perform human screen**]
 
 	**Output:** 
 		a. ``experiment.xml`` - xml-format metadata about the set of experiments described in ``library.txt`` 
@@ -94,9 +93,11 @@ The workflow script `process_sra_submission.py <../scripts/process_sra_submissio
 
 Run the following command::
 
-	process_sra_submission.py -s sff_files -e experiment.txt -r greengenes_unaligned.fasta-OTUs_at_0.05.fasta -u submission_second_stage.txt -p sra_parameters.txt -o sra_out
+	process_sra_submission.py -s sff_files -e experiment.txt -r greengenes_unaligned.fasta-OTUs_at_0.05.fasta -u submission.txt -p sra_parameters.txt -o sra_out
 
-This produces a tar archive of per-sample SFF files, :file:`experiment.xml`, :file:`run.xml`, and :file:`submission_second_stage.xml` from the input files. The list of commands that were actually run is available in the log file that in the top-level ``sra_out/`` directory.
+This produces a tar archive of per-sample SFF files, :file:`experiment.xml`, :file:`run.xml`, and :file:`submission.xml` from the input files. The list of commands that were actually run is available in the log file that in the top-level ``sra_out/`` directory.
+
+Users who wish to bypass the human screening step (which occupies at least 2/3 of the total runtime of ``process_sra_submission.py``) can achieve this by not passing ``-r greengenes_unaligned.fasta-OTUs_at_0.05.fasta``. This is useful, for example, when analyzing soil data which is unlikely to have human contaminants in high abundance.
 
 
 Notes regarding individual steps of the SRA submission process
@@ -109,7 +110,7 @@ Print the commands to be run by the workflow without actually running them
 
 It is sometimes useful to get the individual commands that will be run, but not actually run them. This is useful, for example, if you want to tweak one or more of the commands and then run them all via a bash script. To get the commands, but not run them, you can append ``-w`` to the ``process_sra_submission.py`` call::
 
-	process_sra_submission.py -s sff_files -e experiment.txt -r greengenes_unaligned.fasta-OTUs_at_0.05.fasta -u submission_second_stage.txt -p sra_parameters.txt -o sra_out -w
+	process_sra_submission.py -s sff_files -e experiment.txt -r greengenes_unaligned.fasta-OTUs_at_0.05.fasta -u submission.txt -p sra_parameters.txt -o sra_out -w
 
 Get fasta and qual from sff files
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -148,36 +149,18 @@ Briefly, the relevant settings in ``sra_parameters.txt`` require an average qual
 	split_libraries:max-primer-mismatch	100
 	split_libraries:max-ambig	1000
 
-Reduce sequence complexity by picking OTUs
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Optionally apply the ``uclust_ref`` OTU picker to pick OTUs against 95% OTUs in greengenes to eliminate sequences that aren't really 16S rRNA
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This step reduces the number of sequences to do the human screen by picking OTUs with cdhit at 95%. We make the simplifying assumption that sequences that are identical over the first 100 bases will fall into the same OTU. These parameters are specified in ``sra_parameters.txt`` as::
+This step performs a human/contaminant screen the "safe" way by identifying and excluding sequences that aren't 16S rRNA. We are using ``uclust`` against a reference data set with a similarity threshold of 0.70. Our tests suggest that this is sufficient to screen out human genomic reads (the human 18S sequence hits bacterial 16S with a similarity of around 60%). These parameters are specified in ``sra_parameters.txt`` as::
 
 	# pick_otus parameters
-	pick_otus:otu_picking_method	cdhit
-	pick_otus:max_cdhit_memory	4000
-	pick_otus:prefix_prefilter_length	100
-	pick_otus:similarity	0.95
-
-**Output:** Produces two files: :file:`E86FECS_demultiplex/seqs_otus.txt` and :file:`E86FECS_demultiplex/seqs_otus.log` (which have the OTUs and the log file describing the analysis respectively).
+	pick_otus:similarity	0.70
+	pick_otus:enable_rev_strand_match	True
 
 The same procedure is applied to each library.
 
-We then pick a representative sequence for each OTU by choosing the most abundant sequence from each OTU.
-
-Blast the representative set sequences against 95% OTUs in greengenes to eliminate sequences that aren't really 16S rRNA
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-This step performs a human/contaminant screen the "safe" way by identifying and excluding sequences that aren't 16S rRNA. We are using blastn with a word size of 10, requiring 25% coverage of the sequence, and an E-value of 1e-20. Our tests suggest that this is sufficient to screen out human genomic reads (the human 18S sequence hits bacterial 16S with E-value between 1e-18 and 1e-10 depending on lineage). These parameters are specified in ``sra_parameters.txt`` as::
-
-	# exclude_seqs_by_blast parameters
-	exclude_seqs_by_blast:word_size	10
-	exclude_seqs_by_blast:percent_aligned	0.25
-	exclude_seqs_by_blast:e_value	1e-20
-
-**Output:** This produces a bunch of log files and output; the file of screened seqs (i.e. that failed to hit a known 16S rRNA with even relaxed criteria).
-
-The same procedure is applied to each library.
+This step can be bypassed by not providing a reference data set to ``process_sra_submission.py``.
 
 Make per-library files of "good" ids to pass to sfffile
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -213,7 +196,7 @@ The `make_sra_submission.py <../scripts/make_sra_submission.html>`_ script has t
 
 The following command will then add "gene" and "library strategy" attributes to both experiments in the resulting XML. (The experiment alias is specified in :file:`experiment.txt`, under the field 'EXPERIMENT_ALIAS'.) ::
 
-  make_sra_submission.py -u submission_second_stage.txt -e experiment.txt -s per_run_sff --experiment_attribute_fp=attributes.txt
+  make_sra_submission.py -u submission.txt -e experiment.txt -s per_run_sff --experiment_attribute_fp=attributes.txt
 
 Links may be added to the experiments in a similar manner. After the `make_sra_submission.py <../scripts/make_sra_submission.html>`_ script has been run, the resulting XML files are ready to submit to the SRA.
 
@@ -283,12 +266,5 @@ Currently our standard parameters files looks like the following. You can copy a
 	split_libraries:max-ambig	1000
 
 	# pick_otus parameters
-	pick_otus:otu_picking_method	cdhit
-	pick_otus:max_cdhit_memory	4000
-	pick_otus:prefix_prefilter_length	100
-	pick_otus:similarity	0.95
-
-	# exclude_seqs_by_blast parameters
-	exclude_seqs_by_blast:word_size	10
-	exclude_seqs_by_blast:percent_aligned	0.25
-	exclude_seqs_by_blast:e_value	1e-20
+	pick_otus:similarity	0.70
+	pick_otus:enable_rev_strand_match	True
