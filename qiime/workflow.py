@@ -923,37 +923,33 @@ def run_process_sra_submission(
     experiment_attribute_fp=None):
     """Run the SRA second-stage submission process.
 
+    If human screening should be bypassed, pass refseqs_fp=None.
+
     The steps performed by this function are:
-        1: Get fasta and qual from sff files
-        2: Produce valid mapping file for library demultiplexing
-        3: Demultiplex libraries
-        
-        
-        4: Reduce sequence complexity by picking OTUs with cd-hit
-        5: Pick a representative sequence for each OTU
-        6: Blast the representative set sequences against 95% OTUs in greengenes
-           to eliminate sequences that aren't really 16S rRNA
-        
-        4: Pick otus with uclust_ref against reference database, discarding
-           sequences that don't hit the reference database. The resulting
-           otu map is then the sequence identifiers which pass the human
-           screen.
-        
-        7: Make per-library files of good ids to pass to sfffile
-        8: Use sfffile to make per-library sff files
-        9: Use sfffile to quality-trim the barcodes, primers and linkers
-        10: Move files around and make archive
-        11: Finally, make the XML files for a second-stage submission
+        Get fasta and qual from sff files
+        Produce valid mapping file for library demultiplexing
+        Demultiplex libraries
+        Optional human screen: Pick otus with uclust_ref against 
+           reference database, discarding sequences that don't 
+           hit the reference database. The resulting otu map is then 
+           the sequence identifiers which pass the human screen.
+        Make per-library files of good ids to pass to sfffile
+        Use sfffile to make per-library sff files
+        Use sfffile to quality-trim the barcodes, primers and linkers
+        Move files around and make archive
+        Finally, make the XML files for a second-stage submission
 
     The arguments input_experiment_fp, input_submission_fp, sff_dir,
-    experiment_link_fp, and experiment_attribute_fp have corresponding
-    arguments in make_sra_submission.py.
+     experiment_link_fp, and experiment_attribute_fp have corresponding
+     arguments in make_sra_submission.py.
 
     The refseqs_fp argument corresponds to the querydb argument of
-    exclude_seqs_by_blast.py.  It is to be the path to a FASTA file of reference sequences
+     exclude_seqs_by_blast.py.  It is to be the path to a FASTA file of 
+     reference sequences. If human screening should be bypassed, 
+     pass refseqs_fp=None.
 
     The remove_unassigned keyword argument is a list of run prefixes
-    for which to remove unassigned sequences.
+     for which to remove unassigned sequences.
     """
     commands = []
     python_exe_fp = qiime_config['python_exe_fp']
@@ -979,23 +975,33 @@ def run_process_sra_submission(
     input_experiment_copy_fp = generate_output_fp(
         input_experiment_fp, '.txt', output_dir)
     commands.append([(
-        'Create a copy of experiment text file in output directory.',
+        'Create a copy of experiment text file in output directory',
         'cp %s %s' % (input_experiment_fp, input_experiment_copy_fp))])
     input_submission_copy_fp = generate_output_fp(
         input_submission_fp, '.txt', output_dir)
     commands.append([(
-        'Create a copy of submission text file in output directory.',
+        'Create a copy of submission text file in output directory',
         'cp %s %s' % (input_submission_fp, input_submission_copy_fp))])
-    refseqs_copy_fp = generate_output_fp(refseqs_fp, '.fasta', output_dir)
-    commands.append([(
-        'Create a copy of reference set FASTA file in output directory.',
-        'cp %s %s' % (refseqs_fp, refseqs_copy_fp))])
+        
+    if refseqs_fp:
+        refseqs_copy_fp = generate_output_fp(refseqs_fp, '.fasta', output_dir)
+        commands.append([(
+            'Create a copy of reference set FASTA file in output directory',
+            'cp %s %s' % (refseqs_fp, refseqs_copy_fp))])
+        perform_human_screen = True
+        logger.write('Human screening will be performed against %s.\n' % refseqs_fp)
+    else:
+        perform_human_screen = False
+        logger.write('No reference sequences provided.'
+                     ' HUMAN SCREENING WILL NOT BE PERFORMED!\n')
+        
+        
     if not sff_dir.endswith('/'):
         sff_dir = sff_dir + '/'
     bash_command = '"cp %s*.sff %s"' % (sff_dir, sff_working_dir)
     # why do we need to call bash here?
     commands.append([(
-        'Create a copy of sff files in working directory.',
+        'Create a copy of sff files in working directory',
         ('bash -c %s' % bash_command))])
 
     # Step 1
@@ -1003,7 +1009,7 @@ def run_process_sra_submission(
      (python_exe_fp,script_dir, sff_working_dir)
 
     commands.append([(
-        'Process SFF files to create FASTA and QUAL files.',
+        'Process SFF files to create FASTA and QUAL files',
         process_sff_cmd)])
 
     # Step 2
@@ -1011,7 +1017,7 @@ def run_process_sra_submission(
      '%s %s/sra_spreadsheet_to_map_files.py -i %s' %\
      (python_exe_fp,script_dir, input_experiment_copy_fp)
     commands.append([(
-        'Create mapping files from the SRA experiment input file.',
+        'Create mapping files from the SRA experiment input file',
         sra_spreadsheet_to_map_files_cmd)])
 
     for study_ref, run_prefix in get_run_info(input_experiment_fp):
@@ -1039,34 +1045,37 @@ def run_process_sra_submission(
             split_libraries_args.append('-r')
         
         commands.append([(
-            'Demultiplex run %s.' % run_prefix, split_libraries_cmd)])
+            'Demultiplex run %s' % run_prefix, split_libraries_cmd)])
         seqs_fp = join(library_dir, 'seqs.fna')
 
+        if perform_human_screen:
+            # pick_otus against reference set for human screen
+            params_str = get_params_str(params['pick_otus'])
+            pick_otu_params = set(params['pick_otus'].keys())
+            if pick_otu_params and\
+               pick_otu_params != set(['enable_rev_strand_match','similarity']):
+                raise WorkflowError,\
+                 ("pick_otus only supports passing of similarity and"
+                  " enable_rev_strand_match during SRA submission workflow.")
         
-        # pick_otus against reference set for human screen
-        pick_otu_params = params['pick_otus']
-        params_str = get_params_str(pick_otu_params)
-        if pick_otu_params and pick_otu_params.keys() != ['similarity']:
-            raise WorkflowError,\
-             ("pick_otus only supports passing of similarity"
-              " during SRA submission workflow.")
-        
-        pick_otus_cmd = \
-         '%s %s/pick_otus.py -i %s -o %s -m uclust_ref --suppress_new_clusters -r %s --max_accepts 1 --suppress_presort_by_abundance_uclust -z --user_sort %s' %\
-         (python_exe_fp, script_dir, seqs_fp, library_dir, refseqs_copy_fp, params_str)
-        commands.append([('Human screen with uclust_ref OTU picker.', pick_otus_cmd)])
+            pick_otus_cmd = \
+             '%s %s/pick_otus.py -i %s -o %s -m uclust_ref --suppress_new_clusters -r %s --max_accepts 1 --suppress_presort_by_abundance_uclust --user_sort %s' %\
+             (python_exe_fp, script_dir, seqs_fp, library_dir, refseqs_copy_fp, params_str)
+            commands.append([('Human screen with uclust_ref OTU picker', pick_otus_cmd)])
 
-        # Step xx - Screen input seqs to filter human sequences
-        otus_fp = join(library_dir, 'seqs_otus.txt')        
-        screened_seqs_fp = join(library_dir, 'screened_seqs.fasta')
-        params_str = get_params_str(params['filter_fasta'])
-        filter_fasta_cmd = \
-         '%s %s/filter_fasta.py -f %s -o %s -m %s %s' % \
-         (python_exe_fp, script_dir, seqs_fp, screened_seqs_fp, otus_fp, params_str)
+            # Step xx - Screen input seqs to filter human sequences
+            otus_fp = join(library_dir, 'seqs_otus.txt')        
+            screened_seqs_fp = join(library_dir, 'screened_seqs.fasta')
+            params_str = get_params_str(params['filter_fasta'])
+            filter_fasta_cmd = \
+             '%s %s/filter_fasta.py -f %s -o %s -m %s %s' % \
+             (python_exe_fp, script_dir, seqs_fp, screened_seqs_fp, otus_fp, params_str)
 
-        commands.append([(
-            'Filter input sequences to remove those which didn\'t pass human screen',
-            filter_fasta_cmd)])
+            commands.append([(
+                'Filter input sequences to remove those which didn\'t pass human screen',
+                filter_fasta_cmd)])
+        else:
+            screened_seqs_fp = seqs_fp
         
         # Step 7 - make per library id lists
         per_lib_sff_dir = join(library_dir, 'per_lib_info')
@@ -1076,7 +1085,7 @@ def run_process_sra_submission(
          (python_exe_fp, script_dir, screened_seqs_fp, per_lib_sff_dir, params_str)
 
         commands.append([(
-            'Create per-library id lists to use when splitting SFF files.',
+            'Create per-library id lists to use when splitting SFF files',
             make_library_id_lists_cmd)])
 
         # Step 8 -- make per library sff files
@@ -1087,7 +1096,7 @@ def run_process_sra_submission(
          '%s %s/make_per_library_sff.py -i %s -l %s %s' %\
          (python_exe_fp, script_dir, sff_string, per_lib_sff_dir, params_str)
         commands.append([(
-            'Create per-library SFF files.', make_per_library_sff_cmd)])
+            'Create per-library SFF files', make_per_library_sff_cmd)])
 
         # Step 9 -- trim sff primers
         params_str = get_params_str(params['trim_sff_primers'])
@@ -1096,7 +1105,7 @@ def run_process_sra_submission(
          (python_exe_fp, script_dir, map_fp, per_lib_sff_dir, params_str)
 
         commands.append([(
-            'Trim primer sequences from per-library SFF files.',
+            'Trim primer sequences from per-library SFF files',
             trim_sff_primers_cmd)])
 
         # Step 10 -- organize submission files
@@ -1114,7 +1123,7 @@ def run_process_sra_submission(
         bash_command = (
             '"cp %s*.sff %s"' % (per_lib_sff_dir, run_sff_output_dir))
         commands.append([(
-             'Copy per-library SFF files to submission directory.',
+             'Copy per-library SFF files to submission directory',
             'bash -c %s' % bash_command)])
 
         orig_unassigned_fp = join(run_sff_output_dir, 'Unassigned.sff')
@@ -1123,7 +1132,7 @@ def run_process_sra_submission(
         commands.append([('Rename Unassigned.sff',
          'mv %s %s' % (orig_unassigned_fp, desired_unassigned_fp))])
     
-    commands.append([('Create archive of per-library SFF files.',
+    commands.append([('Create archive of per-library SFF files',
                      'cd %s ; tar -czf %s %s' % 
                      (output_dir, submission_tar_fp, split(submission_sff_dir)[1]))])
 
@@ -1133,7 +1142,7 @@ def run_process_sra_submission(
      '%s %s/make_sra_submission.py -u %s -e %s -s %s -o %s %s' %\
      (python_exe_fp, script_dir, input_submission_copy_fp, input_experiment_copy_fp,
       submission_sff_dir, output_dir, params_str)
-    commands.append([('Make SRA submission XML files.', 
+    commands.append([('Make SRA submission XML files', 
                       make_sra_submission_cmd)])
 
     # Call the command handler on the list of commands

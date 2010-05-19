@@ -60,8 +60,6 @@ script_info['required_options'] = [
         help='directory containing sff files [REQUIRED]'),
     make_option('-e', '--input_experiment_fp',
         help='the tab-delimited text file with info about the experiment [REQUIRED]'),
-    make_option('-r', '--reference_set_fp',
-        help='path to reference set of 16S sequences [REQUIRED]'),
     make_option('-o','--output_dir',
         help='the output directory [REQUIRED]'),
     make_option('-p','--parameter_fp',\
@@ -76,6 +74,8 @@ script_info['optional_options'] = [
         help='Print the commands but don\'t call them [default: %default]'),
     make_option('--remove_unassigned',
         help='comma-separated list of run prefixes for which to remove unassigned sequences [default: %default]'),
+    make_option('-r', '--reference_set_fp',
+        help='path to reference set of 16S sequences [default: %default; NO HUMAN SCREENING]'),
     ]
 script_info['version'] = __version__
 
