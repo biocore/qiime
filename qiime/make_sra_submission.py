@@ -85,7 +85,8 @@ data_block_wrapper = """
 experiment_set_wrapper = """<?xml version="1.0" encoding="UTF-8"?>
 <EXPERIMENT_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">%s</EXPERIMENT_SET>"""
 
-pool_member_wrapper = """            <MEMBER refname="%(SAMPLE_ALIAS)s" refcenter="%(SAMPLE_CENTER)s" member_name="%(POOL_MEMBER_NAME)s" proportion="%(POOL_PROPORTION)s"><READ_LABEL read_group_tag="%(BARCODE_READ_GROUP_TAG)s">barcode</READ_LABEL><READ_LABEL read_group_tag="%(PRIMER_READ_GROUP_TAG)s">rRNA_primer</READ_LABEL></MEMBER>"""
+pool_member_wrapper = '''\
+            <MEMBER refname="%(SAMPLE_ALIAS)s" refcenter="%(SAMPLE_CENTER)s" member_name="%(POOL_MEMBER_NAME)s" proportion="%(POOL_PROPORTION)s"%(POOL_MEMBER_ACCESSION_ATTRIBUTE)s><READ_LABEL read_group_tag="%(BARCODE_READ_GROUP_TAG)s">barcode</READ_LABEL><READ_LABEL read_group_tag="%(PRIMER_READ_GROUP_TAG)s">rRNA_primer</READ_LABEL></MEMBER>'''
 
 basecall_wrapper = """               <BASECALL read_group_tag="%(READ_GROUP)s" min_match="%(MATCH_LEN)s" max_mismatch="%(NUM_MISMATCHES)s" match_edge="full">%(MATCH_SEQ)s</BASECALL>"""
 
@@ -187,10 +188,8 @@ spot_descriptor_barcode_only_wrapper = """
 
 #note: the experiment wrapper is attributing default reads at the study level, not
 #at the experiment level. we might want to revisit this design decision later.
-experiment_wrapper = """  <EXPERIMENT
-    alias="%(EXPERIMENT_ALIAS)s"
-    center_name="%(EXPERIMENT_CENTER)s"
-  >
+experiment_wrapper = """\
+  <EXPERIMENT alias="%(EXPERIMENT_ALIAS)s" center_name="%(EXPERIMENT_CENTER)s">
     <TITLE>%(EXPERIMENT_TITLE)s</TITLE>
     <STUDY_REF refname="%(STUDY_REF)s" refcenter="%(SAMPLE_CENTER)s"/>
     <DESIGN>
@@ -206,9 +205,7 @@ experiment_wrapper = """  <EXPERIMENT
         <LIBRARY_LAYOUT>
           <SINGLE></SINGLE>
         </LIBRARY_LAYOUT>
-        <LIBRARY_CONSTRUCTION_PROTOCOL>
-          %(LIBRARY_CONSTRUCTION_PROTOCOL)s
-        </LIBRARY_CONSTRUCTION_PROTOCOL>
+        <LIBRARY_CONSTRUCTION_PROTOCOL>%(LIBRARY_CONSTRUCTION_PROTOCOL)s</LIBRARY_CONSTRUCTION_PROTOCOL>
       </LIBRARY_DESCRIPTOR>%(SPOT_DESCRIPTORS_XML)s
       </DESIGN>
       %(PLATFORM_XML)s
@@ -245,6 +242,7 @@ platform_blocks = { 'Titanium':
 
 
 def generate_output_fp(input_fp, ext, output_dir=None):
+    """Generate new filepath by replacing the file's extension."""
     input_dir, input_filename = os.path.split(input_fp)
     basename, _ = os.path.splitext(input_filename)
     output_filename = basename + ext
@@ -510,6 +508,15 @@ def make_run_and_experiment(experiment_lines, sff_dir, attribute_file=None,
                     linkers.add(linker)
                 #create and append the pool member
                 field_dict['MEMBER_ORDER'] = MEMBER_ORDER
+
+                # If the pool member has an accession number, add this
+                # as an attribute to the MEMBER element.
+                if field_dict.get('POOL_MEMBER_ACCESSION'):
+                    field_dict['POOL_MEMBER_ACCESSION_ATTRIBUTE'] = (
+                        ' accession="%s"' % field_dict['POOL_MEMBER_ACCESSION'])
+                else:
+                    field_dict['POOL_MEMBER_ACCESSION_ATTRIBUTE'] = ''
+                
                 if pool_name:
                     pool_members.append(pool_member_wrapper % field_dict)
                 #create and append the data blocks

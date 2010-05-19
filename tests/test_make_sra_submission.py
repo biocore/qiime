@@ -358,10 +358,7 @@ bodysites_F6AVWTA02	bodysites Library Construction Protocol	http://hmpdacc.org/d
 
 metagenomic_experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
 <EXPERIMENT_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <EXPERIMENT
-    alias="bodysites_F6AVWTA02"
-    center_name="JCVI"
-  >
+  <EXPERIMENT alias="bodysites_F6AVWTA02" center_name="JCVI">
     <TITLE>Survey of multiple body sites</TITLE>
     <STUDY_REF refname="bodysites_study" refcenter="NCBI"/>
     <DESIGN>
@@ -383,9 +380,7 @@ metagenomic_experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
         <LIBRARY_LAYOUT>
           <SINGLE></SINGLE>
         </LIBRARY_LAYOUT>
-        <LIBRARY_CONSTRUCTION_PROTOCOL>
-          Dummy Protocol
-        </LIBRARY_CONSTRUCTION_PROTOCOL>
+        <LIBRARY_CONSTRUCTION_PROTOCOL>Dummy Protocol</LIBRARY_CONSTRUCTION_PROTOCOL>
       </LIBRARY_DESCRIPTOR>
       <SPOT_DESCRIPTOR>
         <SPOT_DECODE_SPEC>
@@ -437,10 +432,7 @@ metagenomic_experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
       </PROCESSING>
       
   </EXPERIMENT>
-  <EXPERIMENT
-    alias="bodysites_F6AVWTA01"
-    center_name="JCVI"
-  >
+  <EXPERIMENT alias="bodysites_F6AVWTA01" center_name="JCVI">
     <TITLE>Survey of multiple body sites</TITLE>
     <STUDY_REF refname="bodysites_study" refcenter="NCBI"/>
     <DESIGN>
@@ -462,9 +454,7 @@ metagenomic_experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
         <LIBRARY_LAYOUT>
           <SINGLE></SINGLE>
         </LIBRARY_LAYOUT>
-        <LIBRARY_CONSTRUCTION_PROTOCOL>
-          Dummy Protocol
-        </LIBRARY_CONSTRUCTION_PROTOCOL>
+        <LIBRARY_CONSTRUCTION_PROTOCOL>Dummy Protocol</LIBRARY_CONSTRUCTION_PROTOCOL>
       </LIBRARY_DESCRIPTOR>
       <SPOT_DESCRIPTOR>
         <SPOT_DECODE_SPEC>
@@ -520,10 +510,7 @@ metagenomic_experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
 
 experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
 <EXPERIMENT_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <EXPERIMENT
-    alias="bodysites_F6AVWTA02"
-    center_name="JCVI"
-  >
+  <EXPERIMENT alias="bodysites_F6AVWTA02" center_name="JCVI">
     <TITLE>Survey of multiple body sites</TITLE>
     <STUDY_REF refname="bodysites_study" refcenter="NCBI"/>
     <DESIGN>
@@ -545,9 +532,7 @@ experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
         <LIBRARY_LAYOUT>
           <SINGLE></SINGLE>
         </LIBRARY_LAYOUT>
-        <LIBRARY_CONSTRUCTION_PROTOCOL>
-          Dummy Protocol
-        </LIBRARY_CONSTRUCTION_PROTOCOL>
+        <LIBRARY_CONSTRUCTION_PROTOCOL>Dummy Protocol</LIBRARY_CONSTRUCTION_PROTOCOL>
       </LIBRARY_DESCRIPTOR>
       <SPOT_DESCRIPTOR>
         <SPOT_DECODE_SPEC>
@@ -626,10 +611,7 @@ experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
       </EXPERIMENT_ATTRIBUTES>
       
   </EXPERIMENT>
-  <EXPERIMENT
-    alias="bodysites_F6AVWTA01"
-    center_name="JCVI"
-  >
+  <EXPERIMENT alias="bodysites_F6AVWTA01" center_name="JCVI">
     <TITLE>Survey of multiple body sites</TITLE>
     <STUDY_REF refname="bodysites_study" refcenter="NCBI"/>
     <DESIGN>
@@ -651,9 +633,7 @@ experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
         <LIBRARY_LAYOUT>
           <SINGLE></SINGLE>
         </LIBRARY_LAYOUT>
-        <LIBRARY_CONSTRUCTION_PROTOCOL>
-          Dummy Protocol
-        </LIBRARY_CONSTRUCTION_PROTOCOL>
+        <LIBRARY_CONSTRUCTION_PROTOCOL>Dummy Protocol</LIBRARY_CONSTRUCTION_PROTOCOL>
       </LIBRARY_DESCRIPTOR>
       <SPOT_DESCRIPTOR>
         <SPOT_DECODE_SPEC>
