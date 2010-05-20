@@ -491,7 +491,8 @@ class WorkflowTests(TestCase):
         self.assertTrue(getsize(log_fp) > 0)
         
     def test_run_process_sra_submission(self):
-        """run_process_sra_submission produces a valid SRA submission package"""
+        """run_process_sra_submission functions with human screen
+        """
         # TODO: remove dependence on external files, if possible
         test_dir = os.path.dirname(os.path.abspath(__file__))
         sff_dir = os.path.join(test_dir, 'sra_test_files', 'F6AVWTA')
@@ -572,7 +573,8 @@ class WorkflowTests(TestCase):
         
         
     def test_run_process_sra_submission_no_human_screen(self):
-        """run_process_sra_submission produces a valid SRA submission package"""
+        """run_process_sra_submission functions without human screen
+        """
         # TODO: remove dependence on external files, if possible
         test_dir = os.path.dirname(os.path.abspath(__file__))
         sff_dir = os.path.join(test_dir, 'sra_test_files', 'F6AVWTA')
