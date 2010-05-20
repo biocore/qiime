@@ -144,12 +144,19 @@ class WorkflowTests(TestCase):
         f.close()
         self.files_to_remove.append(self.experiment_fp)
 
-        self.submission_fp = get_tmp_filename(tmp_dir=tmp_dir,
+        self.submission_w_file_fp = get_tmp_filename(tmp_dir=tmp_dir,
             prefix='SRA_wf_sub',suffix='.txt')
-        f = open(self.submission_fp, 'w')
-        f.write(sra_submission_txt)
+        f = open(self.submission_w_file_fp, 'w')
+        f.write(sra_submission_txt_w_file)
         f.close()
-        self.files_to_remove.append(self.submission_fp)
+        self.files_to_remove.append(self.submission_w_file_fp)
+        
+        self.submission_wo_file_fp = get_tmp_filename(tmp_dir=tmp_dir,
+            prefix='SRA_wf_sub',suffix='.txt')
+        f = open(self.submission_wo_file_fp, 'w')
+        f.write(sra_submission_txt_wo_file)
+        f.close()
+        self.files_to_remove.append(self.submission_wo_file_fp)
         
         self.sra_params = parse_qiime_parameters(sra_submission_params_f)
         
@@ -491,7 +498,7 @@ class WorkflowTests(TestCase):
 
         run_process_sra_submission(
                 input_experiment_fp=self.experiment_fp,
-                input_submission_fp=self.submission_fp,
+                input_submission_fp=self.submission_w_file_fp,
                 sff_dir=sff_dir,
                 refseqs_fp=self.sra_refseqs_fp,
                 output_dir=self.wf_out,
@@ -500,7 +507,8 @@ class WorkflowTests(TestCase):
                 command_handler=call_commands_serially,
                 status_update_callback=no_status_updates,
                 )
-                
+        
+        # tar_filename is passed to the workflow function
         tar_fp = os.path.join(self.wf_out, 'my_sffs.tgz')
         self.assertTrue(getsize(tar_fp) > 0)
         
@@ -512,6 +520,14 @@ class WorkflowTests(TestCase):
         run_xml_fp = os.path.join(
             self.wf_out, experiment_basename + '.xml')
         self.assertTrue(getsize(run_xml_fp) > 0)
+        # Test that submission file is written, and that it is 
+        # the second stage submission (ie., contains the tgz filename,
+        # and is not just a copy of the first stage submission)
+        submission_xml_fp = os.path.join(
+            self.wf_out, split(self.submission_w_file_fp)[1])
+        self.assertTrue(getsize(submission_xml_fp) > 0)
+        self.assertTrue('my_sffs.tgz' in 
+                        open(submission_xml_fp).read())
         
         # Test that screening is performed by comparing the size of the
         # screened and unscreened files -- note we're grabbing the original seq 
@@ -563,7 +579,7 @@ class WorkflowTests(TestCase):
 
         run_process_sra_submission(
                 input_experiment_fp=self.experiment_fp,
-                input_submission_fp=self.submission_fp,
+                input_submission_fp=self.submission_wo_file_fp,
                 sff_dir=sff_dir,
                 refseqs_fp=None,
                 output_dir=self.wf_out,
@@ -573,7 +589,9 @@ class WorkflowTests(TestCase):
                 status_update_callback=no_status_updates,
                 )
                 
-        tar_fp = os.path.join(self.wf_out, 'my_sffs.tgz')
+        # tar_filename is not passed to the workflow function so generated 
+        # from submission_id
+        tar_fp = os.path.join(self.wf_out, 'fierer_hand_study.tgz')
         self.assertTrue(getsize(tar_fp) > 0)
         
         experiment_basename = os.path.splitext(
@@ -584,6 +602,14 @@ class WorkflowTests(TestCase):
         run_xml_fp = os.path.join(
             self.wf_out, experiment_basename + '.xml')
         self.assertTrue(getsize(run_xml_fp) > 0)
+        # Test that submission file is written, and that it is 
+        # the second stage submission (ie., contains the tgz filename,
+        # and is not just a copy of the first stage submission)
+        submission_xml_fp = os.path.join(
+            self.wf_out, 'submission_second_stage.xml')
+        self.assertTrue(getsize(submission_xml_fp) > 0)
+        self.assertTrue('fierer_hand_study.tgz' in 
+                        open(submission_xml_fp).read())
         
         # Test that screening is not performed by checking the size of the
         # seqs file -- note we're grabbing the original seq identifier here,
@@ -651,7 +677,7 @@ bodysites_F6AVWTA01	JCVI	Survey of multiple body sites	bodysites_study	bodysites
 bodysites_F6AVWTA02	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700016371	NCBI	F6AVWTA02_2907_700016371_V1-V3	B-2011-02-S1.sff	0.014492754	F6AVWTA02_TCTCTGTACT	TCTCTGTACT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	F6AVWTA02_2907	0	FLX	JCVI 	NULL	NULL
 '''
 
-sra_submission_txt = '''#Field	Value	Example	Comments
+sra_submission_txt_wo_file = '''#Field	Value	Example	Comments
 accession	SRA003492	SRA003492	"leave blank if not assigned yet, e.g. if new submission"
 submission_id	fierer_hand_study	fierer_hand_study	internally unique id for the submission
 center_name	CCME	CCME	name of the center preparing the submission
@@ -663,8 +689,22 @@ CONTACT	Noah Fierer;Noah.Fierer@Colorado.edu	Noah Fierer;Noah.Fierer@Colorado.ed
 study	study.xml	fierer_hand_study.study.xml	"leave blank if not submitting study, put in filename otherwise"
 sample	sample.xml	fierer_hand_study.sample.xml	"leave blank if not submitting sample, put in filename otherwise"
 experiment	experiment.xml	fierer_hand_study.experiment.xml	"leave blank if not submitting experiment, put in filename otherwise"
-run	run.xml	fierer_hand_study.run.xml	"leave blank if not submitting run, put in filename otherwise"
-file	my_sffs.tgz	fierer_hand_study.seqs.tgz	"leave blank if not submitting sequence data, put in filename otherwise"'''
+run	run.xml	fierer_hand_study.run.xml	"leave blank if not submitting run, put in filename otherwise"'''
+
+sra_submission_txt_w_file = '''#Field	Value	Example	Comments
+accession	SRA003492	SRA003492	"leave blank if not assigned yet, e.g. if new submission"
+submission_id	fierer_hand_study	fierer_hand_study	internally unique id for the submission
+center_name	CCME	CCME	name of the center preparing the submission
+submission_comment	"Barcode submission prepared by osulliva@ncbi.nlm.nih.gov, shumwaym@ncbi.nlm.nih.gov"	"Barcode submission prepared by osulliva@ncbi.nlm.nih.gov, shumwaym@ncbi.nlm.nih.gov"	Free-text comments regarding submission
+lab_name	Knight	Knight	"name of lab preparing submission, can differ from center (usually refers to the PI\'s info, not the sequencing center\'s)"
+submission_date	2009-10-22T01:23:00-05:00	2009-10-22T01:23:00-05:00	timestamp of submission
+CONTACT	Rob Knight;Rob.Knight@Colorado.edu	Rob Knight;Rob.Knight@Colorado.edu	"Use semicolon to separate email address from name, can be multiple contacts."
+CONTACT	Noah Fierer;Noah.Fierer@Colorado.edu	Noah Fierer;Noah.Fierer@Colorado.edu	"Use semicolon to separate email address from name, can be multiple contacts."
+study	study.xml	fierer_hand_study.study.xml	"leave blank if not submitting study, put in filename otherwise"
+sample	sample.xml	fierer_hand_study.sample.xml	"leave blank if not submitting sample, put in filename otherwise"
+experiment	experiment.xml	fierer_hand_study.experiment.xml	"leave blank if not submitting experiment, put in filename otherwise"
+run	run.xml	fierer_hand_study.run.xml	"leave blank if not submitting run, put in filename otherwise
+file	my_sffs.tgz	my_sffs.tgz	"leave blank if not submitting sequence data, put in filename otherwise"'''
 
 
 

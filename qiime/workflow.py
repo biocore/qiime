@@ -963,7 +963,29 @@ def run_process_sra_submission(
                             qiime_config=qiime_config)
 
     submission_info = get_submission_info(input_submission_fp)
-    submission_tar_fp = join(output_dir, submission_info['file'])
+    if 'file' in submission_info:
+        # if a sff tar filename was provided in the submission,
+        # grab it and copy the submission file
+        submission_tar_fn = submission_info['file']
+        second_stage_submission_fp = join(output_dir,split(input_submission_fp)[1])
+        commands.append([(
+            'Create a copy of submission text file in output directory',
+            'cp %s %s' % (input_submission_fp, second_stage_submission_fp))])
+    else:
+        # if a sff tar filename was not provided in the submission, create
+        # a name from the submission_id, and append it to the copy of the
+        # submission file
+        submission_tar_fn = \
+         '%s.tgz' % submission_info['submission_id'].replace(' ','_')
+        second_stage_submission_fp = join(output_dir,'submission_second_stage.txt')
+        second_stage_submission_f = open(second_stage_submission_fp,'w')
+        second_stage_submission_f.write(open(input_submission_fp,'U').read())
+        second_stage_submission_f.write('\n%s' %
+         '\t'.join(['file',submission_tar_fn,submission_tar_fn,
+                    "tgz filename, if submitting sffs"]))
+        second_stage_submission_f.close()
+    
+    submission_tar_fp = join(output_dir, submission_tar_fn)
 
     # Prelude: Create sff directory for submission data
     submission_sff_dir = join(output_dir, 'per_run_sff')
@@ -977,11 +999,6 @@ def run_process_sra_submission(
     commands.append([(
         'Create a copy of experiment text file in output directory',
         'cp %s %s' % (input_experiment_fp, input_experiment_copy_fp))])
-    input_submission_copy_fp = generate_output_fp(
-        input_submission_fp, '.txt', output_dir)
-    commands.append([(
-        'Create a copy of submission text file in output directory',
-        'cp %s %s' % (input_submission_fp, input_submission_copy_fp))])
         
     if refseqs_fp:
         refseqs_copy_fp = generate_output_fp(refseqs_fp, '.fasta', output_dir)
@@ -1141,7 +1158,7 @@ def run_process_sra_submission(
     params_str = get_params_str(params['make_sra_submission'])
     make_sra_submission_cmd = \
      '%s %s/make_sra_submission.py -u %s -e %s -s %s -o %s %s' %\
-     (python_exe_fp, script_dir, input_submission_copy_fp, input_experiment_copy_fp,
+     (python_exe_fp, script_dir, second_stage_submission_fp, input_experiment_copy_fp,
       submission_sff_dir, output_dir, params_str)
     commands.append([('Make SRA submission XML files', 
                       make_sra_submission_cmd)])
