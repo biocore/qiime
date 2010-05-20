@@ -38,6 +38,10 @@ script_info['optional_options']=[
 make_option('--lineages_included', dest='lineages_included', default=False,
     action="store_true",
     help="""output rarefied otu tables will include taxonomic (lineage) information for each otu, if present in input otu table [default: %default]"""),
+
+    make_option('-k', '--keep_empty_otus', default=False, action='store_true',
+        help='otus (rows) of all zeros are usually omitted from the output otu table, with -k they will not be removed from the output file [default: %default]'),
+
 ]
 script_info['version'] = __version__
 
@@ -47,7 +51,8 @@ def main():
       
     maker = SingleRarefactionMaker(opts.input_path, opts.depth)
     maker.rarefy_to_file(opts.output_path, False,
-        include_lineages=opts.lineages_included)
+        include_lineages=opts.lineages_included,
+        empty_otus_removed=(not opts.keep_empty_otus))
 
 if __name__ == "__main__":
     main()

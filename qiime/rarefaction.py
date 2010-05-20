@@ -37,7 +37,7 @@ class SingleRarefactionMaker(FunctionWithParams):
 
 
     def rarefy_to_file(self, output_fname, small_included=False,
-        include_lineages=False):
+        include_lineages=False,empty_otus_removed=False):
         """ computes rarefied otu tables and writes them, one at a time
         
         this prevents large memory usage
@@ -51,7 +51,11 @@ class SingleRarefactionMaker(FunctionWithParams):
             otu_lineages = None
         sub_sample_ids, sub_otu_table = get_rare_data(self.sample_names,
             self.otu_table, self.depth, small_included)
-        self._write_rarefaction(output_fname, sub_sample_ids, self.taxon_names,
+        sub_otu_ids = self.taxon_names
+        if empty_otus_removed:
+            sub_otu_table, sub_otu_ids = remove_empty_otus(sub_otu_table, 
+                sub_otu_ids)
+        self._write_rarefaction(output_fname, sub_sample_ids, sub_otu_ids,
             sub_otu_table, otu_lineages)
     
     def _write_rarefaction(self, fname, sub_sample_ids, sub_otu_ids,\
@@ -76,12 +80,13 @@ class RarefactionMaker(FunctionWithParams):
         self.rare_depths = range(min,max+1, step)
         self.num_reps = num_reps
         self.sample_names, self.taxon_names, self.otu_table, self.lineages = \
-            self.getOtuTable(otu_path)
+            self.getOtuTable(otu_path) # otus are rows in otu_table
         self.max_num_taxa = (self.otu_table.sum(1)).max()
 
 
     def rarefy_to_files(self, output_dir, small_included=False, 
-        include_full=False, include_lineages=False):
+        include_full=False, include_lineages=False,
+        empty_otus_removed=False):
         """ computes rarefied otu tables and writes them, one at a time
         
         this prevents large memory usage"""
@@ -95,8 +100,12 @@ class RarefactionMaker(FunctionWithParams):
                 sub_sample_ids, sub_otu_table = \
                 get_rare_data(self.sample_names, self.otu_table, depth, 
                   small_included)
+                sub_otu_ids = self.taxon_names
+                if empty_otus_removed:
+                    sub_otu_table, sub_otu_ids =\
+                        remove_empty_otus(sub_otu_table,sub_otu_ids)
                 self._write_rarefaction(depth, rep, sub_sample_ids, 
-                    self.taxon_names, sub_otu_table, otu_lineages)
+                    sub_otu_ids, sub_otu_table, otu_lineages)
 
         if include_full:
             self._write_rarefaction('full', 0, self.sample_names, \
@@ -140,7 +149,7 @@ class RarefactionMaker(FunctionWithParams):
             sub_otu_table, otu_lineages, comment=fname))
         f.close()
 
-def get_rare_data(sample_ids, otu_table, \
+def get_rare_data(sample_ids, otu_table,
     seqs_per_sample, include_small_samples=False):
     """Filter OTU table to keep only desired sample sizes.
     
@@ -162,4 +171,19 @@ def get_rare_data(sample_ids, otu_table, \
         res_sample_ids = map(sample_ids.__getitem__, big_enough_samples[0])
     #figure out which samples will be reduced because too big
     return res_sample_ids, res_otu_table
+
+
+def remove_empty_otus(otu_mtx, otu_ids):
+    """ return matrix and otu_ids with otus of all 0's removed
+    
+    otu_mtx (in and out) is otus (rows) by samples (cols)"""
+    nonempty_otu_idxs = []
+    res_otu_ids = []
+    for i in range(len(otu_ids)):
+        if otu_mtx[i].sum() != 0:
+            nonempty_otu_idxs.append(i)
+            res_otu_ids.append(otu_ids[i])
+    res_otu_mtx = otu_mtx[nonempty_otu_idxs,:]
+
+    return res_otu_mtx, res_otu_ids
 

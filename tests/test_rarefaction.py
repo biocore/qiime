@@ -11,7 +11,7 @@ __status__ = "Development"
 
 """Contains tests for producing rarefied OTU tables."""
 
-from qiime.rarefaction import RarefactionMaker, get_rare_data
+from qiime.rarefaction import RarefactionMaker, get_rare_data, remove_empty_otus
 from cogent.util.unit_test import TestCase, main
 import numpy
 
@@ -76,7 +76,16 @@ class FunctionTests(TestCase):
         self.assertEqual(rare_otu_table[numpy.argsort(self.taxon_names)][:,0], 
             numpy.array([5,1,3,2]))
 
-        
+    def test_remove_empty_otus(self):
+        """ remove otus should match expected"""
+        otu_mtx = numpy.array([ [0,3,0,0],
+                                [0,0,0,0],
+                                [.1,0,0,0]])
+        otu_names = list('abc')
+        res_mtx, res_otu_names = remove_empty_otus(otu_mtx, otu_names)
+        self.assertFloatEqual(res_mtx, numpy.array([[0,3,0,0],
+                                [.1,0,0,0]]))
+        self.assertEqual(res_otu_names, list('ac'))
 #run tests if called from command line
 if __name__ == '__main__':
     main()
