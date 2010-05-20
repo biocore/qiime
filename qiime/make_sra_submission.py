@@ -191,10 +191,10 @@ spot_descriptor_barcode_only_wrapper = """
 experiment_wrapper = """\
   <EXPERIMENT alias="%(EXPERIMENT_ALIAS)s" center_name="%(EXPERIMENT_CENTER)s">
     <TITLE>%(EXPERIMENT_TITLE)s</TITLE>
-    <STUDY_REF refname="%(STUDY_REF)s" refcenter="%(SAMPLE_CENTER)s"/>
+    <STUDY_REF refname="%(STUDY_REF)s" refcenter="%(SAMPLE_CENTER)s"%(STUDY_ACCESSION_ATTRIBUTE)s/>
     <DESIGN>
       <DESIGN_DESCRIPTION>%(EXPERIMENT_DESIGN_DESCRIPTION)s</DESIGN_DESCRIPTION>
-      <SAMPLE_DESCRIPTOR refname="%(STUDY_REF)s_default" refcenter="%(SAMPLE_CENTER)s">
+      <SAMPLE_DESCRIPTOR refname="%(STUDY_REF)s_default" refcenter="%(SAMPLE_CENTER)s"%(SAMPLE_ACCESSION_ATTRIBUTE)s>
         <POOL>%(POOL_MEMBERS_XML)s        </POOL>
       </SAMPLE_DESCRIPTOR>
       <LIBRARY_DESCRIPTOR>
@@ -509,14 +509,11 @@ def make_run_and_experiment(experiment_lines, sff_dir, attribute_file=None,
                 #create and append the pool member
                 field_dict['MEMBER_ORDER'] = MEMBER_ORDER
 
-                # If the pool member has an accession number, add this
-                # as an attribute to the MEMBER element.
-                if field_dict.get('POOL_MEMBER_ACCESSION'):
-                    field_dict['POOL_MEMBER_ACCESSION_ATTRIBUTE'] = (
-                        ' accession="%s"' % field_dict['POOL_MEMBER_ACCESSION'])
-                else:
-                    field_dict['POOL_MEMBER_ACCESSION_ATTRIBUTE'] = ''
-                
+                # Insert pool member accession attribute, if present.
+                member_acc = field_dict.get('POOL_MEMBER_ACCESSION')
+                field_dict['POOL_MEMBER_ACCESSION_ATTRIBUTE'] = (
+                    ' accession="%s"' % member_acc if member_acc else '')
+
                 if pool_name:
                     pool_members.append(pool_member_wrapper % field_dict)
                 #create and append the data blocks
@@ -543,7 +540,11 @@ def make_run_and_experiment(experiment_lines, sff_dir, attribute_file=None,
                 spot_descriptor_wrapper = spot_descriptor_without_linker_wrapper
             else:
                 spot_descriptor_wrapper = spot_descriptor_barcode_only_wrapper
-            field_dict['TOTAL_TECHNICAL_READ_LENGTH'] = len(key_seq) + len(primer) + len(barcode) + len(linker) + 1 #note that SRA uses 1-indexed lengths
+
+            # Note that SRA uses 1-indexed lengths
+            field_dict['TOTAL_TECHNICAL_READ_LENGTH'] = \
+                len(key_seq) + len(primer) + len(barcode) + len(linker) + 1
+
             spot_descriptor = spot_descriptor_wrapper % field_dict
             field_dict['SPOT_DESCRIPTORS_XML'] = spot_descriptor
             field_dict['PLATFORM_XML'] = platform_blocks[field_dict['PLATFORM']]
@@ -552,6 +553,16 @@ def make_run_and_experiment(experiment_lines, sff_dir, attribute_file=None,
                 experiment_attributes[experiment_id])
             field_dict['LINK_XML'] = _experiment_link_xml(
                 experiment_links[experiment_id])
+
+            # Insert study accession attribute, if present.
+            study_acc = field_dict.get('STUDY_ACCESSION')
+            field_dict['STUDY_ACCESSION_ATTRIBUTE'] = (
+                ' accession="%s"' % study_acc if study_acc else '')
+
+            # Insert sample accession attribute, if present.
+            sample_acc = field_dict.get('SAMPLE_ACCESSION')
+            field_dict['SAMPLE_ACCESSION_ATTRIBUTE'] = (
+                ' accession="%s"' % sample_acc if sample_acc else '')
 
             # Utilize optional fields for library descriptor block
             if 'LIBRARY_SELECTION' not in field_dict:
