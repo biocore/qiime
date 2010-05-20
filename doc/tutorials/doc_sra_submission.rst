@@ -80,7 +80,7 @@ Generate the experiment and run metadata submissions
 	**Input:** 
 		a. ``experiment.txt`` - tabular metadata about the contents of each combination of library and sff file. 
 		b. ``sff_files`` - a directory of multiple sff files containing the actual sequence data. 
-		c. ``submission_second_stage.txt`` - a two-column file of tabular metadata about the submission.
+		c. ``submission.txt`` - a two-column file of tabular metadata about the submission.
 		d. ``sra_parameters.txt`` - a qiime parameters file, defining what parameters should be passed to the individual component scripts
 		e. ``greengenes_unaligned.fasta-OTUs_at_0.05.fasta`` - a FASTA file of known 16S sequences to screen for non-16S contaminants (here, we use a subset of the unaligned greengenes database, filtered at 95% sequence identity)  [**only required to perform human screen**]
 
@@ -93,9 +93,9 @@ The workflow script `process_sra_submission.py <../scripts/process_sra_submissio
 
 Run the following command::
 
-	process_sra_submission.py -s sff_files -e experiment.txt -r greengenes_unaligned.fasta-OTUs_at_0.05.fasta -u submission_second_stage.txt -p sra_parameters.txt -o sra_out
+	process_sra_submission.py -s sff_files -e experiment.txt -r greengenes_unaligned.fasta-OTUs_at_0.05.fasta -u submission.txt -p sra_parameters.txt -o sra_out
 
-This produces a tar archive of per-sample SFF files, :file:`experiment.xml`, :file:`run.xml`, and :file:`submission.xml` from the input files. The list of commands that were actually run is available in the log file that in the top-level ``sra_out/`` directory.
+This produces a tar archive of per-sample SFF files, :file:`experiment.xml`, :file:`run.xml`, and :file:`submission.xml` from the input files. The list of commands that were actually run is available in the log file in the top-level ``sra_out/`` directory.
 
 Users who wish to bypass the human screening step (which occupies at least 2/3 of the total runtime of ``process_sra_submission.py``) can achieve this by not passing ``-r greengenes_unaligned.fasta-OTUs_at_0.05.fasta``. This is useful, for example, when analyzing soil data which is unlikely to have human contaminants in high abundance.
 
@@ -110,7 +110,7 @@ Print the commands to be run by the workflow without actually running them
 
 It is sometimes useful to get the individual commands that will be run, but not actually run them. This is useful, for example, if you want to tweak one or more of the commands and then run them all via a bash script. To get the commands, but not run them, you can append ``-w`` to the ``process_sra_submission.py`` call::
 
-	process_sra_submission.py -s sff_files -e experiment.txt -r greengenes_unaligned.fasta-OTUs_at_0.05.fasta -u submission_second_stage.txt -p sra_parameters.txt -o sra_out -w
+	process_sra_submission.py -s sff_files -e experiment.txt -r greengenes_unaligned.fasta-OTUs_at_0.05.fasta -u submission.txt -p sra_parameters.txt -o sra_out -w
 
 Get fasta and qual from sff files
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -149,8 +149,8 @@ Briefly, the relevant settings in ``sra_parameters.txt`` require an average qual
 	split_libraries:max-primer-mismatch	100
 	split_libraries:max-ambig	1000
 
-Optionally apply ``uclust_ref`` against greengenes to eliminate sequences that aren't really 16S rRNA
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Optional human screening: apply ``uclust_ref`` against greengenes to eliminate sequences that aren't really 16S rRNA
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 This step performs a human/contaminant screen the "safe" way by identifying and excluding sequences that aren't 16S rRNA. We are using ``uclust`` against a reference data set with a similarity threshold of 0.70. Our tests suggest that this is sufficient to screen out human genomic reads (the human 18S sequence hits bacterial 16S with a similarity of around 60%). These parameters are specified in ``sra_parameters.txt`` as::
 
@@ -196,7 +196,7 @@ The `make_sra_submission.py <../scripts/make_sra_submission.html>`_ script has t
 
 The following command will then add "gene" and "library strategy" attributes to both experiments in the resulting XML. (The experiment alias is specified in :file:`experiment.txt`, under the field 'EXPERIMENT_ALIAS'.) ::
 
-  make_sra_submission.py -u submission_second_stage.txt -e experiment.txt -s per_run_sff --experiment_attribute_fp=attributes.txt
+  make_sra_submission.py -u submission.txt -e experiment.txt -s per_run_sff --experiment_attribute_fp=attributes.txt
 
 Links may be added to the experiments in a similar manner. After the `make_sra_submission.py <../scripts/make_sra_submission.html>`_ script has been run, the resulting XML files are ready to submit to the SRA.
 
@@ -252,7 +252,7 @@ Questions about the Submission Process
 Standard sra_parameters.txt file for barcoded 16S community sequencing on 454
 -----------------------------------------------------------------------------
 
-Currently our standard parameters files looks like the following. You can copy and paste this to a text file, and pass it with ``-p`` to ``process_sra_submission.py``.
+Currently our standard parameters files looks like the following. You can copy and paste this to a text file, and pass it with ``-p`` to ``process_sra_submission.py``. The ``pick_otus:similarity`` value has been carefully chosen to exclude human sequences but include bacterial/archaeal 16S sequences, so it's not a good idea to change that without exploring the affect it will have.
 
 ::
 	
