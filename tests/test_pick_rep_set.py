@@ -13,11 +13,13 @@ __email__ = "rob@spot.colorado.edu"
 __status__ = "Development"
 
 from os import remove
+from cogent import LoadSeqs
+from cogent.util.misc import remove_files
 from cogent.util.unit_test import TestCase, main
 from cogent.app.util import get_tmp_filename
 from qiime.pick_rep_set import (RepSetPicker, GenericRepSetPicker, first_id,
     first, random_id, longest_id, unique_id_map, label_to_name, 
-    make_most_abundant, MinimalFastaParser)
+    make_most_abundant, MinimalFastaParser, ReferenceRepSetPicker)
 
 class RepSetPickerTests(TestCase):
     """Tests of the abstract RepSetPicker class"""
@@ -53,12 +55,13 @@ class SharedSetupTestCase(TestCase):
         otu_file = open(self.tmp_otu_filepath,'w')
         otu_file.write(otus)
         otu_file.close()
+        
+        self.files_to_remove = [self.tmp_seq_filepath, self.tmp_otu_filepath]
 
         self.params = {'Algorithm':'first', 'ChoiceF':first_id}
          
     def tearDown(self):
-        remove(self.tmp_seq_filepath)
-        remove(self.tmp_otu_filepath)
+        remove_files(self.files_to_remove)
 
 
 class GenericRepSetPickerTests(SharedSetupTestCase):
@@ -175,6 +178,176 @@ class GenericRepSetPickerTests(SharedSetupTestCase):
             if not i.startswith('ChoiceF:'):    #can't test, different each time
                 self.assertEqual(i,j)
 
+
+class ReferenceRepSetPickerTests(SharedSetupTestCase):
+    """Tests of the ReferenceRepSetPickerclass """
+
+    def setUp(self):
+        # create the temporary input files
+        self.tmp_seq_filepath = get_tmp_filename(\
+         prefix='ReferenceRepSetPickerTest_',\
+         suffix='.fasta')
+        seq_file = open(self.tmp_seq_filepath,'w')
+        seq_file.write(dna_seqs)
+        seq_file.close()
+        
+        self.ref_seq_filepath = get_tmp_filename(\
+         prefix='ReferenceRepSetPickerTest_',\
+         suffix='.fasta')
+        seq_file = open(self.ref_seq_filepath,'w')
+        seq_file.write(reference_seqs)
+        seq_file.close()
+        
+        self.tmp_otu_filepath = get_tmp_filename(\
+         prefix='ReferenceRepSetPickerTest_',\
+         suffix='.otu')
+        otu_file = open(self.tmp_otu_filepath,'w')
+        otu_file.write(otus_w_ref)
+        otu_file.close()
+        
+        self.result_filepath = get_tmp_filename(\
+         prefix='ReferenceRepSetPickerTest_',\
+         suffix='.fasta')
+        otu_file = open(self.result_filepath,'w')
+        otu_file.write(otus_w_ref)
+        otu_file.close()
+        
+        self.files_to_remove = [self.tmp_seq_filepath,
+                                self.tmp_otu_filepath,
+                                self.ref_seq_filepath,
+                                self.result_filepath]
+
+        self.params = {'Algorithm':'first', 'ChoiceF':first_id}
+        
+    def test_call_default_params(self):
+        """ReferenceRepSetPicker.__call__ expected clusters default params"""
+        
+        exp = {'0':('R27DLI_4812','CTGGGCCGTATCTC'),\
+               'ref1':('ref1','GGGGGGGAAAAAAAAAAAAA'),\
+               '2':('W3Cecum_4858','TTGGGCCGTGTCTCAGT'),\
+               'ref0':('ref0','CCCAAAAAAATTTTTT'),\
+              } 
+        app = ReferenceRepSetPicker(params={'Algorithm':'first', 
+            'ChoiceF':first_id})
+        obs = app(self.tmp_seq_filepath,
+                  self.tmp_otu_filepath,
+                  self.ref_seq_filepath)
+        self.assertEqual(obs, exp)
+        
+    def test_call_write_to_file(self):
+        """ReferenceRepSetPicker.__call__ otu map correctly written to file"""
+        app = ReferenceRepSetPicker(params={'Algorithm':'first', 
+            'ChoiceF':first_id})
+        app(self.tmp_seq_filepath,
+                  self.tmp_otu_filepath,
+                  self.ref_seq_filepath,
+                  result_path=self.result_filepath)
+        exp = rep_seqs_reference_result_file_exp
+        self.assertEqual(LoadSeqs(self.result_filepath,aligned=False), 
+                         LoadSeqs(data=exp,aligned=False))
+        
+    def test_non_ref_otus(self):
+        """ReferenceRepSetPicker.__call__ same result as Generic when no ref otus
+        """
+        exp = {'0':('R27DLI_4812','CTGGGCCGTATCTC'),\
+               '1':('U1PLI_7889','TTGGACCGTG'),\
+               '2':('W3Cecum_4858','TTGGGCCGTGTCTCAGT'),\
+               '3':('R27DLI_3243','CTGGACCGTGTCT')} 
+        tmp_otu_filepath = get_tmp_filename(\
+         prefix='ReferenceRepSetPickerTest_',\
+         suffix='.otu')
+        otu_file = open(tmp_otu_filepath,'w')
+        otu_file.write(otus)
+        otu_file.close()
+        
+        self.files_to_remove.append(tmp_otu_filepath)
+        
+        app = ReferenceRepSetPicker(params={'Algorithm':'first', 
+            'ChoiceF':first_id})
+        obs = app(self.tmp_seq_filepath,
+            tmp_otu_filepath,
+            self.ref_seq_filepath)
+        self.assertEqual(obs,exp)
+        
+    def test_call_invalid_id(self):
+        """ReferenceRepSetPicker.__call__ expected clusters default params"""
+        app = ReferenceRepSetPicker(params={'Algorithm':'first', 
+            'ChoiceF':first_id})
+        
+        tmp_otu_filepath = get_tmp_filename(\
+         prefix='ReferenceRepSetPickerTest_',\
+         suffix='.otu')
+        otu_file = open(tmp_otu_filepath,'w')
+        # replace a valid sequence identifier with an invalid 
+        # sequence identifier (i.e., one that we don't have a sequence for)
+        otu_file.write(otus_w_ref.replace('R27DLI_4812','bad_seq_identifier'))
+        otu_file.close()
+        self.files_to_remove.append(tmp_otu_filepath)
+        
+        # returning in dict
+        self.assertRaises(KeyError,
+                          app,
+                          self.tmp_seq_filepath,
+                          tmp_otu_filepath,
+                          self.ref_seq_filepath)
+        # writing to file
+        self.assertRaises(KeyError,
+                          app,
+                          self.tmp_seq_filepath,
+                          tmp_otu_filepath,
+                          self.ref_seq_filepath,
+                          result_path=self.result_filepath)
+                          
+    def test_call_ref_only(self):
+        """ReferenceRepSetPicker.__call__ functions with no non-refseqs"""
+        
+        tmp_otu_filepath = get_tmp_filename(\
+         prefix='ReferenceRepSetPickerTest_',\
+         suffix='.otu')
+        otu_file = open(tmp_otu_filepath,'w')
+        otu_file.write(otus_all_ref)
+        otu_file.close()
+        self.files_to_remove.append(tmp_otu_filepath)
+        
+        exp = {'ref1':('ref1','GGGGGGGAAAAAAAAAAAAA'),\
+               'ref0':('ref0','CCCAAAAAAATTTTTT')} 
+        
+        # passing only reference (not input seqs)
+        app = ReferenceRepSetPicker(params={'Algorithm':'first', 
+            'ChoiceF':first_id})
+        obs = app(None,
+                  tmp_otu_filepath,
+                  self.ref_seq_filepath)
+        self.assertEqual(obs, exp)
+               
+        # passing reference and input seqs
+        app = ReferenceRepSetPicker(params={'Algorithm':'first', 
+            'ChoiceF':first_id})
+        obs = app(self.tmp_seq_filepath,
+                  tmp_otu_filepath,
+                  self.ref_seq_filepath)
+        self.assertEqual(obs, exp)
+        
+    def test_call_alt_non_ref_picker(self):
+        """ReferenceRepSetPicker.__call__ handles alt non-ref picking method"""
+        
+        exp = {'0':('U1PLI_9526','CTGGGCCGTATCTCAGTCCCAATGTGGCCGGTCG'
+                    'GTCTCTCAACCCGGCTACCCATCGCGGGCTAGGTGGGCCGTT'
+                    'ACCCCGCCTACTACCTAATGGGCCGCGACCCCATCCCTTGCCGTCTGGGC'
+                    'TTTCCCGGGCCCCCCAGGAGGGGGGCGAGGAGTATCCGGTATTAGCCTCGGTT'
+                    'TCCCAAGGTTGTCCCGGAGCAAGGGGCAGGTTGGTCACGTGTTACTCACCCGT'
+                    'TCGCCACTTCATGTCCGCCCGAGGGCGGTTTCATCG'),\
+               'ref1':('ref1','GGGGGGGAAAAAAAAAAAAA'),\
+               '2':('W3Cecum_4858','TTGGGCCGTGTCTCAGT'),\
+               'ref0':('ref0','CCCAAAAAAATTTTTT'),\
+              } 
+        app = ReferenceRepSetPicker(params={'Algorithm':'longest', 
+            'ChoiceF':longest_id})
+        obs = app(self.tmp_seq_filepath,
+                  self.tmp_otu_filepath,
+                  self.ref_seq_filepath)
+        self.assertEqual(obs, exp)
+
 class TopLevelTests(SharedSetupTestCase):
     """Tests of top-level functions"""
 
@@ -224,6 +397,7 @@ class TopLevelTests(SharedSetupTestCase):
         f = make_most_abundant(seqs)
         result = f(ids, seqs)
         assert result in ['R27DLI_4812','R27DLI_727','U1PLI_8969']
+        
 
 
 
@@ -295,6 +469,33 @@ TTGGGCCGTGTCTCAGT
 TTGGACCGTG
 """
 
+otus_w_ref="""0	R27DLI_4812	R27DLI_600	R27DLI_727	U1PLI_403	U1PLI_8969	U1PLI_9080	U1PLI_9526	W3Cecum_6642	W3Cecum_8992
+ref1	U1PLI_7889
+2	W3Cecum_4858
+ref0	R27DLI_3243	R27DLI_4562	R27DLI_6828	R27DLI_9097	U1PLI_2780	U1PLI_67	U9PSI_10475	U9PSI_4341	W3Cecum_5191
+"""
+
+otus_all_ref="""ref1	U1PLI_7889
+ref0	R27DLI_3243	R27DLI_4562	R27DLI_6828	R27DLI_9097	U1PLI_2780	U1PLI_67	U9PSI_10475	U9PSI_4341	W3Cecum_5191
+"""
+
+reference_seqs = """>ref0
+CCCAAAAAAATTTTTT
+>ref1 some comment
+GGGGGGGAAAAAAAAAAAAA
+>ref2
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCAAAA
+"""
+
+rep_seqs_reference_result_file_exp = """>0 R27DLI_4812
+CTGGGCCGTATCTC
+>ref1 ref1
+GGGGGGGAAAAAAAAAAAAA
+>2 W3Cecum_4858
+TTGGGCCGTGTCTCAGT
+>ref0 ref0
+CCCAAAAAAATTTTTT
+"""
 
 
 #run unit tests if run from command-line
