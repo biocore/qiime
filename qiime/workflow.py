@@ -698,13 +698,13 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,\
     except KeyError:
         params_str = ''
     # Build the make rarefaction plot command(s)
-    for metric in alpha_diversity_metrics:
-        make_rarefaction_plot_cmd =\
+    #for metric in alpha_diversity_metrics:
+    make_rarefaction_plot_cmd =\
          '%s %s/make_rarefaction_plots.py -i %s -m %s -o %s %s' %\
          (python_exe_fp, script_dir, alpha_collated_dir, mapping_fp,
           rarefaction_plot_dir, params_str)
-        commands.append(\
-         [('Rarefaction plot: %s' % metric,make_rarefaction_plot_cmd)])
+    commands.append(\
+         [('Rarefaction plot: %s' % 'All metrics',make_rarefaction_plot_cmd)])
     
     # Call the command handler on the list of commands
     command_handler(commands,status_update_callback,logger)
