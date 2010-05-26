@@ -351,16 +351,18 @@ def parse_otu_table(lines,count_map_f=int):
                 has_consensus = False
                 
         else: # parse each otu line
-            fields = line.split('\t')
-            #first and last col are otu id and consensus lineage respectively
-            if has_consensus:
-                otu_table.append(array(map(count_map_f, fields[1:-1])))
-            else:
-                otu_table.append(array(map(count_map_f, fields[1:])))
-            otu_id = fields[0].strip()
-            otu_ids.append(otu_id)
-            if has_consensus:
-                lineages.append(map(strip, fields[-1].split(';')))
+            line = line.strip()
+            if line:
+                fields = line.split('\t')
+                #first and last col are otu id and consensus lineage respectively
+                if has_consensus:
+                    otu_table.append(array(map(count_map_f, fields[1:-1])))
+                else:
+                    otu_table.append(array(map(count_map_f, fields[1:])))
+                otu_id = fields[0].strip()
+                otu_ids.append(otu_id)
+                if has_consensus:
+                    lineages.append(map(strip, fields[-1].split(';')))
     return sample_ids, otu_ids, array(otu_table), lineages
 
 def filter_otus_by_lineage(sample_ids, otu_ids, otu_table, lineages, \

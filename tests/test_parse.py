@@ -309,10 +309,12 @@ eigvals\t4.94\t1.79\t1.50
         data = """#Full OTU Counts
 #OTU ID	Fing	Key	NA	Consensus Lineage
 0	19111	44536	42	Bacteria; Actinobacteria; Actinobacteridae; Propionibacterineae; Propionibacterium
+
 1	1216	3500	6	Bacteria; Firmicutes; Alicyclobacillaceae; Bacilli; Lactobacillales; Lactobacillales; Streptococcaceae; Streptococcus
 2	1803	1184	2	Bacteria; Actinobacteria; Actinobacteridae; Gordoniaceae; Corynebacteriaceae
 3	1722	4903	17	Bacteria; Firmicutes; Alicyclobacillaceae; Bacilli; Staphylococcaceae
-4	589	2074	34	Bacteria; Cyanobacteria; Chloroplasts; vectors"""
+4	589	2074	34	Bacteria; Cyanobacteria; Chloroplasts; vectors
+"""
         data_f = (data.split('\n'))
         obs = parse_otu_table(data_f)
         exp = (['Fing','Key','NA'],
