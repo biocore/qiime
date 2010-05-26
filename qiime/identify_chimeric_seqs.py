@@ -115,16 +115,17 @@ class ChimeraSlayerChimeraChecker(ChimeraChecker):
         pass  
 
     def __call__ (self, seq_path, db_FASTA_fp=None, db_NAST_fp=None,
-                  result_path=None, log_path=None):
+                  result_path=None, log_path=None, min_div_ratio=None):
         """Run chimeraSlayer on input seqs."""
 
         chimeras = get_chimeras_from_Nast_aligned(seq_path, ref_db_aligned_fp=db_NAST_fp,
-                                                  ref_db_fasta_fp=db_FASTA_fp)
-                                                 
+                                                  ref_db_fasta_fp=db_FASTA_fp,
+                                                  min_div_ratio=min_div_ratio)
         return chimeras
 
-def chimeraSlayer_identify_chimeras(seqs_fp, db_FASTA_fp=None, \
-                                        db_NAST_fp=None, output_fp=None):
+def chimeraSlayer_identify_chimeras(seqs_fp, db_FASTA_fp=None,
+                                    db_NAST_fp=None, output_fp=None,
+                                    min_div_ratio=None):
     """ """
     params = {}
     cc = ChimeraSlayerChimeraChecker(params)
@@ -132,13 +133,16 @@ def chimeraSlayer_identify_chimeras(seqs_fp, db_FASTA_fp=None, \
     if output_fp:
         of = open(output_fp,'w')
         for seq_id, parents in cc(seqs_fp, db_FASTA_fp=db_FASTA_fp,
-                                  db_NAST_fp=db_NAST_fp):
+                                  db_NAST_fp=db_NAST_fp,
+                                  min_div_ratio=min_div_ratio):
             of.write('\t'.join([seq_id] + parents))
             of.write('\n')
         of.close()
         result = None
     else:
-        result = list(cc(seqs_fp))
+        result = list(cc(seqs_fp, db_FASTA_fp=db_FASTA_fp,
+                         db_NAST_fp=db_NAST_fp,
+                         min_div_ratio=min_div_ratio))
     
     cc.cleanUp()
     return result
@@ -319,7 +323,7 @@ def blast_fragments_identify_chimeras(seqs_fp,id_to_taxonomy_fp,\
 
 
 
-######App comtroller for ChieraSlayer and convenience functions
+######App controller for ChimeraSlayer and convenience functions
 
 class ChimeraSlayer(CommandLineApplication):
     """ ChimeraSlayer ApplicationController
@@ -337,11 +341,13 @@ class ChimeraSlayer(CommandLineApplication):
         '--db_NAST':ValuedParameter('--',Name='db_NAST', Delimiter=' ',
                                        IsPath=True),
 
-         '--db_FASTA':ValuedParameter('--',Name='db_FASTA', Delimiter=' ',
+        '--db_FASTA':ValuedParameter('--',Name='db_FASTA', Delimiter=' ',
                                        IsPath=True),
 
         '--exec_dir':ValuedParameter('--', Name='exec_dir', Delimiter=' ',
-                                    IsPath=True)
+                                    IsPath=True),
+
+        '-R':ValuedParameter('-', Name='R', Delimiter=' ')
         }
      
     _suppress_stdout = False
@@ -351,7 +357,7 @@ class ChimeraSlayer(CommandLineApplication):
         """ Set the input paths (a NAST aligned fasta filepath)
         """
         # The list of values which can be passed on a per-run basis
-        allowed_values = ['--query_NAST', '--db_NAST', '--db_FASTA']
+        allowed_values = ['--query_NAST', '--db_NAST', '--db_FASTA', '-R']
         
         unsupported_parameters = set(data.keys()) - set(allowed_values)
         if unsupported_parameters:
@@ -509,7 +515,7 @@ ChimeraSlayer   chimera_AJ007403        7000004131495956        S000469847      
 ## Start convenience functions
 
 def get_chimeras_from_Nast_aligned(seqs_fp, ref_db_aligned_fp=None, ref_db_fasta_fp=None,
-                                   HALT_EXEC=False):
+                                   HALT_EXEC=False, min_div_ratio=None):
     
     #might come in as FilePath object with quotes
     seqs_fp = str(seqs_fp)
@@ -524,20 +530,23 @@ def get_chimeras_from_Nast_aligned(seqs_fp, ref_db_aligned_fp=None, ref_db_fasta
 
     #Chimera Slayer puts some temp files in current dir and some in dir of input file
     #use exe_dir to change to dir of input file
+    params={'--query_NAST': new_seqs_fp,
+            '--exec_dir': seqs_dir}
+
     if ref_db_aligned_fp==None or ref_db_fasta_fp==None:
         #use default db, whose relative position to the
         #ChimeraSlayer binary is hardcoded
-        app = ChimeraSlayer(params={'--query_NAST': new_seqs_fp,
-                                    '--exec_dir': seqs_dir},
-                            HALT_EXEC=HALT_EXEC)  
+        pass
+
     else:
         #use user db
-        app = ChimeraSlayer(params={'--query_NAST': new_seqs_fp,
-                                    '--db_NAST': ref_db_aligned_fp,
-                                    '--db_FASTA': ref_db_fasta_fp,
-                                    '--exec_dir': seqs_dir},
-                            HALT_EXEC=HALT_EXEC)  
+        params.update({'--db_NAST': ref_db_aligned_fp,
+                       '--db_FASTA': ref_db_fasta_fp})
 
+    if min_div_ratio !=None:
+        params.update({'-R':min_div_ratio})
+                            
+    app = ChimeraSlayer(params=params, HALT_EXEC=HALT_EXEC)
     app_results = app()
 
 #    this is a FilePath object in case of success.

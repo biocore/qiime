@@ -94,7 +94,13 @@ script_info['optional_options']=[\
     make_option('-e','--max_e_value',\
           type='float',help='Max e-value to assign taxonomy' +\
           ' [default: %default]', default=1e-30),
-          
+
+    make_option('-R','--min_div_ratio',\
+                    type='float',help='min divergence ratio '+\
+                    '(passed to ChimeraSlayer). If set to None uses ' +\
+                    'ChimeraSlayer default value. '+\
+                    ' [default: %default]', default=None),       
+
     make_option('-o', '--output_fp',
         help='Path to store output [default: derived from input_seqs_fp]')
 ]
@@ -153,7 +159,8 @@ def main():
          chimeraSlayer_identify_chimeras(input_seqs_fp, 
                                          output_fp=output_fp,
                                          db_FASTA_fp=opts.reference_seqs_fp,
-                                         db_NAST_fp=opts.aligned_reference_seqs_fp)
+                                         db_NAST_fp=opts.aligned_reference_seqs_fp,
+                                         min_div_ratio=opts.min_div_ratio)
 
 if __name__ == "__main__":
     main()
