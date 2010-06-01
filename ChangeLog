@@ -4,6 +4,7 @@ Add changes since QIIME 1.1.0 here
 * Updated SRA protocol to allow users to skip the human screening step as this takes about 2/3 or more of the total analysis time, and is not relevant for non-human-derived samples (e.g., soil samples).
 * Added ability to pass --max_accepts and --max_rejects through the uclust otu pickers. 
 * Added a -r parameters to pick_rep_set.py to allow users to pass "preferred" representative sequences in a fasta file. This is useful, for example, if users have picked OTUs with uclust_ref, and would like to use the reference sequences as their representatives, rather than sequences from their sequencing run. 
+* Renamed Qiime/scripts/jackknifed_upgma.py to Qiime/scripts/jackknifed_beta_diversity.py to reflect the addition of generating jackknifed 2d and 3d plots to this workflow script. 
 
 QIIME 1.1.0 (14 May 2010)
 =========================

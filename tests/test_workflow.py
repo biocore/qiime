@@ -27,7 +27,7 @@ from qiime.parse import parse_qiime_parameters
 from qiime.workflow import (run_qiime_data_preparation,
     run_beta_diversity_through_3d_plot,
     run_qiime_alpha_rarefaction,
-    run_jackknifed_upgma_clustering,
+    run_jackknifed_beta_diversity,
     run_process_sra_submission,
     call_commands_serially,
     no_status_updates,WorkflowError,print_commands)
@@ -432,10 +432,10 @@ class WorkflowTests(TestCase):
         log_fp = glob(join(self.wf_out,'log*.txt'))[0]
         self.assertTrue(getsize(log_fp) > 0)
          
-    def test_run_jackknifed_upgma_clustering(self):
-        """ run_jackknifed_upgma_clustering runs without error """
+    def test_run_jackknifed_beta_diversity(self):
+        """ run_jackknifed_beta_diversity runs without error """
     
-        run_jackknifed_upgma_clustering(
+        run_jackknifed_beta_diversity(
          self.fasting_otu_table_fp,
          self.fasting_tree_fp,
          100,
@@ -443,6 +443,7 @@ class WorkflowTests(TestCase):
          call_commands_serially,
          self.params,
          self.qiime_config,
+         mapping_fp=self.fasting_mapping_fp,
          parallel=False,
          status_update_callback=no_status_updates)
          
@@ -461,10 +462,10 @@ class WorkflowTests(TestCase):
         log_fp = glob(join(self.wf_out,'log*.txt'))[0]
         self.assertTrue(getsize(log_fp) > 0)
         
-    def test_run_jackknifed_upgma_clustering_parallel(self):
-        """ run_jackknifed_upgma_clustering runs in parallel without error """
+    def test_run_jackknifed_beta_diversity_parallel(self):
+        """ run_jackknifed_beta_diversity runs in parallel without error """
     
-        run_jackknifed_upgma_clustering(
+        run_jackknifed_beta_diversity(
          self.fasting_otu_table_fp,
          self.fasting_tree_fp,
          100,
@@ -472,6 +473,7 @@ class WorkflowTests(TestCase):
          call_commands_serially,
          self.params,
          self.qiime_config,
+         mapping_fp=self.fasting_mapping_fp,
          parallel=True,
          status_update_callback=no_status_updates)
          

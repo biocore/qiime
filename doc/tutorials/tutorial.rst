@@ -644,7 +644,7 @@ Running jackknifed_upgma.py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Now that we have set the parameter, necessary for this workflow script, the user can run the following command, where we define the input OTU table "-i" and tree file "-t" (from `pick_otus_through_otu_table.py <../scripts/pick_otus_through_otu_table.html>`_), the parameter file to use "-p", the output directory "-o" and the number of sequences per sample "-e" (i.e. 100)::
 
-    jackknifed_upgma.py -i wf_da/uclust_picked_otus/rep_set/rdp_assigned_taxonomy/otu_table/seqs_otu_table.txt -o wf_jack -p custom_parameters.txt -e 110 -t wf_da/uclust_picked_otus/rep_set/pynast_aligned_seqs/fasttree_phylogeny/seqs_rep_set.tre
+    jackknifed_beta_diversity.py -i wf_da/uclust_picked_otus/rep_set/rdp_assigned_taxonomy/otu_table/seqs_otu_table.txt -o wf_jack -p custom_parameters.txt -e 110 -t wf_da/uclust_picked_otus/rep_set/pynast_aligned_seqs/fasttree_phylogeny/seqs_rep_set.tre -m Fasting_Map.txt
 
 
 .. _genboottree:

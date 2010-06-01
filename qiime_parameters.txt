@@ -59,6 +59,7 @@ beta_diversity:metrics	weighted_unifrac,unweighted_unifrac
 
 # Make 3D plot parameters
 make_3d_plots:custom_axes
+make_3d_plots:ellipsoid_smoothness   1
 
 # Rarefaction parameters
 multiple_rarefactions:num-reps	5

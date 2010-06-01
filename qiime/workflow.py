@@ -709,9 +709,8 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,\
     # Call the command handler on the list of commands
     command_handler(commands,status_update_callback,logger)
 
-    
-def run_jackknifed_upgma_clustering(otu_table_fp,tree_fp,seqs_per_sample,\
-    output_dir, command_handler, params, qiime_config,\
+def run_jackknifed_beta_diversity(otu_table_fp,tree_fp,seqs_per_sample,
+    output_dir, command_handler, params, qiime_config, mapping_fp,
     parallel=False,status_update_callback=print_to_stdout):
     """ Run the data preparation steps of Qiime 
     
@@ -886,9 +885,59 @@ def run_jackknifed_upgma_clustering(otu_table_fp,tree_fp,seqs_per_sample,\
          [('Tree compare (%s)' % beta_diversity_metric,\
            tree_compare_cmd)])
            
+        # Prep the PCoA command
+        pcoa_dir = '%s/pcoa/' % metric_output_dir
+        try:
+            makedirs(pcoa_dir)
+        except OSError:
+            pass
+        try:
+            params_str = get_params_str(params['principal_coordinates'])
+        except KeyError:
+            params_str = ''
+        # Build the PCoA command
+        pcoa_cmd = '%s %s/principal_coordinates.py -i %s -o %s %s' %\
+         (python_exe_fp, script_dir, dm_dir, pcoa_dir, params_str)
+        commands.append(\
+         [('Principal coordinates (%s)' % beta_diversity_metric, pcoa_cmd)])
+           
+        # Prep the 2D plots command
+        plots_2d_dir = '%s/2d_plots/' % metric_output_dir
+        try:
+            makedirs(plots_2d_dir)
+        except OSError:
+            pass
+        try:
+            params_str = get_params_str(params['make_2d_plots'])
+        except KeyError:
+            params_str = ''
+        # Build the 2d plots command
+        plots_2d_cmd = '%s %s/make_2d_plots.py -i %s -o %s -m %s %s' %\
+         (python_exe_fp, script_dir, pcoa_dir, plots_2d_dir, 
+          mapping_fp, params_str)
+        commands.append(\
+         [('2d plots (%s)' % beta_diversity_metric, plots_2d_cmd)])
+         
+        # Prep the 3D plots command
+        plots_3d_dir = '%s/3d_plots/' % metric_output_dir
+        try:
+            makedirs(plots_3d_dir)
+        except OSError:
+            pass
+        try:
+            params_str = get_params_str(params['make_3d_plots'])
+        except KeyError:
+            params_str = ''
+        # Build the 2d plots command
+        plots_3d_cmd = '%s %s/make_3d_plots.py -i %s -o %s -m %s %s' %\
+         (python_exe_fp, script_dir, pcoa_dir, plots_3d_dir, 
+          mapping_fp, params_str)
+        commands.append(\
+         [('3d plots (%s)' % beta_diversity_metric, plots_3d_cmd)])
+           
+           
     # Call the command handler on the list of commands
     command_handler(commands,status_update_callback,logger)
-
 
 ## Begin SRA submission workflow and related functions
 

@@ -23,7 +23,7 @@ pick_rep_set:rep_set_picking_method	most_abundant
 pick_rep_set:sort_by	otu
 
 # Multiple sequence alignment parameters
-align_seqs:template_fp	/home/qiime/core_set_aligned.fasta.imputed
+align_seqs:template_fp
 align_seqs:alignment_method	pynast
 align_seqs:pairwise_alignment_method	uclust
 align_seqs:blast_db
@@ -31,7 +31,7 @@ align_seqs:min_length	150
 align_seqs:min_percent_id	75.0
 
 # Alignment filtering (prior to tree-building) parameters
-filter_alignment:lane_mask_fp	/home/qiime/lanemask_in_1s_and_0s
+filter_alignment:lane_mask_fp
 filter_alignment:allowed_gap_frac	 0.999999
 filter_alignment:remove_outliers	False
 filter_alignment:threshold	3.0
@@ -79,6 +79,7 @@ make_prefs_file:monte_carlo_dists	10
 
 # Make 3D plot parameters
 make_3d_plots:custom_axes
+make_3d_plots:ellipsoid_smoothness   1
 
 ###jackknife_upgma.py parameters###
 
