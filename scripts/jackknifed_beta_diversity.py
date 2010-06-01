@@ -20,8 +20,8 @@ from qiime.workflow import run_jackknifed_beta_diversity, print_commands,\
     call_commands_serially, print_to_stdout, no_status_updates
 
 script_info={}
-script_info['brief_description']="""A workflow script for performing jackknifed UPGMA clustering"""
-script_info['script_description']="""To directly measure the robustness of individual UPGMA clusters, one can perform jackknifing (repeatedly resampling a subset of the available data from each sample). This process will utilize the following script: beta_diversity.py, multiple_rarefactions.py, upgma_cluster.py and tree_compare.py)."""
+script_info['brief_description']="""A workflow script for performing jackknifed UPGMA clustering and build jackknifed 2d and 3D PCoA plots."""
+script_info['script_description']="""To directly measure the robustness of individual UPGMA clusters and clusters in PCoA plots, one can perform jackknifing (repeatedly resampling a subset of the available data from each sample)."""
 script_info['script_usage']=[]
 script_info['script_usage'].append(("""Example:""","""These steps are performed by the following command:
 
@@ -37,8 +37,12 @@ script_info['script_usage'].append(("""Example:""","""These steps are performed 
 
 6. Compare rarefied OTU table distance matrix UPGMA trees to tree full UPGMA tree and write support file and newick tree with support values as node labels.
 
-""","""jackknifed_upgma.py -i inseqs1_otu_table.txt -t inseqs1_rep_set.tre -p custom_parameters_jack.txt -o wf_jack -e 5 -v"""))
-script_info['output_description']="""This scripts results in several distance matrices (from beta_diversity.py), several rarified otu tables (from multiple_rarefactions.py) several UPGMA trees (from upgma_cluster.py) and a supporting file and newick tree with support values (from tree_compare.py)."""
+7. Perform principal coordinates analysis on distance matrices generated from rarefied OTU tables.
+
+8. Generate 2D and 3D PCoA plots with jackknifed support.
+
+""","""jackknifed_beta_diversity.py -i inseqs1_otu_table.txt -t inseqs1_rep_set.tre -p custom_parameters_jack.txt -o wf_jack -e 5 -v -m mapping_file.txt"""))
+script_info['output_description']="""This scripts results in several distance matrices (from beta_diversity.py), several rarified otu tables (from multiple_rarefactions.py) several UPGMA trees (from upgma_cluster.py), a supporting file and newick tree with support values (from tree_compare.py), and 2D and 3D PCoA plots."""
 
 qiime_config = load_qiime_config()
 
