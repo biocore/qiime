@@ -56,30 +56,21 @@ file_wrapper = """ <FILES>
  <FILE filename="%s" checksum_method="MD5" checksum="%s"/>
  </FILES>"""
 
-run_set_wrapper = """<?xml version="1.0" encoding="UTF-8"?>
-<RUN_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">%s</RUN_SET>
-"""
+run_set_wrapper = '''\
+<?xml version="1.0" encoding="UTF-8"?>
+<RUN_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">%s</RUN_SET>'''
 
 run_wrapper = '''\
-  <RUN
-    alias = "%(RUN_ALIAS)s"
-    center_name = "%(RUN_CENTER)s"
-    run_center = "%(RUN_CENTER)s"
-  >
-    <EXPERIMENT_REF refname="%(EXPERIMENT_ALIAS)s" refcenter="%(STUDY_CENTER)s" />%(DATA_BLOCK_XML)s
+  <RUN alias="%(RUN_ALIAS)s" center_name="%(RUN_CENTER)s" run_center="%(RUN_CENTER)s">
+    <EXPERIMENT_REF refname="%(EXPERIMENT_ALIAS)s" refcenter="%(STUDY_CENTER)s"/>%(DATA_BLOCK_XML)s
   </RUN>'''
 
-data_block_wrapper = """
-    <DATA_BLOCK
-      serial = "%(MEMBER_ORDER)s"
-      name = "%(RUN_PREFIX)s"
-      region = "%(REGION)s"
-      member_name = "%(POOL_MEMBER_NAME)s"
-    >
+data_block_wrapper = '''
+    <DATA_BLOCK serial="%(MEMBER_ORDER)s" name="%(RUN_PREFIX)s" region="%(REGION)s" member_name="%(POOL_MEMBER_NAME)s">
       <FILES>
-        <FILE filename="%(POOL_MEMBER_FILENAME)s" filetype="sff" checksum_method="MD5" checksum="%(CHECKSUM)s"  />
+        <FILE filename="%(POOL_MEMBER_FILENAME)s" filetype="sff" checksum_method="MD5" checksum="%(CHECKSUM)s"/>
       </FILES>
-    </DATA_BLOCK>"""
+    </DATA_BLOCK>'''
  
 
 experiment_set_wrapper = """<?xml version="1.0" encoding="UTF-8"?>
@@ -472,9 +463,10 @@ def make_run_and_experiment(experiment_lines, sff_dir, attribute_file=None,
                 pool_member_dict[field_dict['POOL_MEMBER_NAME']].append(field_dict)
             #make default sample
             default_field_dict = dict(zip(columns, experiment_lines[0]))
-            default_pool_member_filename = default_field_dict['STUDY_REF'] + '_default_' + field_dict['RUN_PREFIX'] + '.sff'
+            default_pool_member_id = default_field_dict['STUDY_REF'] + '_default_' + field_dict['RUN_PREFIX']
+            default_field_dict['POOL_MEMBER_FILENAME'] = default_pool_member_id + '.sff'
             default_field_dict['POOL_MEMBER_NAME'] = ''
-            default_field_dict['POOL_MEMBER_FILENAME'] = default_pool_member_filename
+            default_field_dict['RUN_ALIAS'] = default_pool_member_id
             barcodes = set()
             primers = set()
             linkers = set()
