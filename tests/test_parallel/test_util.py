@@ -69,29 +69,29 @@ class UtilTests(TestCase):
         
     def test_merge_to_n_commands_even(self):
         """ merge_to_n_commands functions as expected (even number of cmds)"""
-        commands = ['/bin/bash ; pick_otus.py -h ; exit',
-                    '/bin/bash ; pick_otus.py -g ; exit',
-                    '/bin/bash ; pick_otus.py -f ; exit',
-                    '/bin/bash ; pick_otus.py -w ; exit']
+        commands = ['pick_otus.py -h ; mv somthing.txt something_else.txt',
+                    'pick_otus.py -g',
+                    'pick_otus.py -f',
+                    'pick_otus.py -w']
                     
-        expected = ['/bin/bash ; pick_otus.py -h ; exit ; /bin/bash ; pick_otus.py -g ; exit ; /bin/bash ; pick_otus.py -f ; exit ; /bin/bash ; pick_otus.py -w ; exit']
+        expected = ['/bin/bash ; pick_otus.py -h ; mv somthing.txt something_else.txt ; pick_otus.py -g ; pick_otus.py -f ; pick_otus.py -w ; exit']
         actual = merge_to_n_commands(commands,1)
         self.assertEqual(actual,expected)
         
         expected = [
-         '/bin/bash ; pick_otus.py -h ; exit ; /bin/bash ; pick_otus.py -g ; exit',
-         '/bin/bash ; pick_otus.py -f ; exit ; /bin/bash ; pick_otus.py -w ; exit']
+         '/bin/bash ; pick_otus.py -h ; mv somthing.txt something_else.txt ; pick_otus.py -g ; exit',
+         '/bin/bash ; pick_otus.py -f ; pick_otus.py -w ; exit']
         actual = merge_to_n_commands(commands,2)
         self.assertEqual(actual,expected)
         
         # rounds to 2 jobs to start
         expected = [
-         '/bin/bash ; pick_otus.py -h ; exit ; /bin/bash ; pick_otus.py -g ; exit',
-         '/bin/bash ; pick_otus.py -f ; exit ; /bin/bash ; pick_otus.py -w ; exit']
+         '/bin/bash ; pick_otus.py -h ; mv somthing.txt something_else.txt ; pick_otus.py -g ; exit',
+         '/bin/bash ; pick_otus.py -f ; pick_otus.py -w ; exit']
         actual = merge_to_n_commands(commands,3)
         self.assertEqual(actual,expected)
         
-        expected = ['/bin/bash ; pick_otus.py -h ; exit',
+        expected = ['/bin/bash ; pick_otus.py -h ; mv somthing.txt something_else.txt ; exit',
                     '/bin/bash ; pick_otus.py -g ; exit',
                     '/bin/bash ; pick_otus.py -f ; exit',
                     '/bin/bash ; pick_otus.py -w ; exit']
@@ -102,7 +102,7 @@ class UtilTests(TestCase):
         self.assertRaises(ValueError,merge_to_n_commands,commands,-42)
         
         # jobs to start is much higer than actual jobs
-        expected = ['/bin/bash ; pick_otus.py -h ; exit',
+        expected = ['/bin/bash ; pick_otus.py -h ; mv somthing.txt something_else.txt ; exit',
                     '/bin/bash ; pick_otus.py -g ; exit',
                     '/bin/bash ; pick_otus.py -f ; exit',
                     '/bin/bash ; pick_otus.py -w ; exit']
@@ -119,30 +119,30 @@ class UtilTests(TestCase):
                     'pick_otus.py -g',
                     'pick_otus.py -w']
                     
-        expected = ['pick_otus.py -h ; pick_otus.py -g ; pick_otus.py -w']
+        expected = ['/bin/bash ; pick_otus.py -h ; pick_otus.py -g ; pick_otus.py -w ; exit']
         actual = merge_to_n_commands(commands,1)
         self.assertEqual(actual,expected)
                     
         # rounds to 1 job to start
-        expected = ['pick_otus.py -h ; pick_otus.py -g ; pick_otus.py -w']
+        expected = ['/bin/bash ; pick_otus.py -h ; pick_otus.py -g ; pick_otus.py -w ; exit']
         actual = merge_to_n_commands(commands,2)
         self.assertEqual(actual,expected)
                     
-        expected = ['pick_otus.py -h',
-                    'pick_otus.py -g',
-                    'pick_otus.py -w']
+        expected = ['/bin/bash ; pick_otus.py -h ; exit',
+                    '/bin/bash ; pick_otus.py -g ; exit',
+                    '/bin/bash ; pick_otus.py -w ; exit']
         actual = merge_to_n_commands(commands,3)
         self.assertEqual(actual,expected)
         
-        expected = ['pick_otus.py -h',
-                    'pick_otus.py -g',
-                    'pick_otus.py -w']
+        expected = ['/bin/bash ; pick_otus.py -h ; exit',
+                    '/bin/bash ; pick_otus.py -g ; exit',
+                    '/bin/bash ; pick_otus.py -w ; exit']
         actual = merge_to_n_commands(commands,4)
         self.assertEqual(actual,expected)
         
-        expected = ['pick_otus.py -h',
-                    'pick_otus.py -g',
-                    'pick_otus.py -w']
+        expected = ['/bin/bash ; pick_otus.py -h ; exit',
+                    '/bin/bash ; pick_otus.py -g ; exit',
+                    '/bin/bash ; pick_otus.py -w ; exit']
         actual = merge_to_n_commands(commands,100)
         self.assertEqual(actual,expected)
         

@@ -114,8 +114,9 @@ def main():
     
     # Get the list of commands to be run and the expected result files
     commands, job_result_filepaths  = \
-     get_job_commands(python_exe_fp,alpha_diversity_fp,tree_fp,job_prefix,\
-     metrics,input_fps,output_dir,working_dir)
+     get_job_commands(python_exe_fp,alpha_diversity_fp,tree_fp,job_prefix,
+     metrics,input_fps,output_dir,working_dir,command_prefix=' ',
+     command_suffix=' ')
      
     # Merge commands into jobs_to_start number of jobs
     commands = merge_to_n_commands(commands,jobs_to_start)

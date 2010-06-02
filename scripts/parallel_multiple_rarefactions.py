@@ -122,7 +122,7 @@ def main():
     commands, job_result_filepaths  = \
      get_job_commands(python_exe_fp,single_rarefaction_fp,job_prefix,\
      input_path,output_dir,working_dir,min_seqs,max_seqs,step,num_reps,
-     lineages_included)
+     lineages_included,command_prefix=' ',command_suffix=' ')
      
     # Merge commands into jobs_to_start number of jobs
     commands = merge_to_n_commands(commands,jobs_to_start)

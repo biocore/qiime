@@ -59,8 +59,11 @@ def split_fasta(infile, seqs_per_file, outfile_prefix, working_dir=''):
             
     return out_files
 
-def merge_to_n_commands(commands,n,delimiter=' ; '):
+def merge_to_n_commands(commands,n,delimiter=' ; ',
+    command_prefix=None,command_suffix=None):
     """ """
+    command_prefix = command_prefix or '/bin/bash ;'
+    command_suffix = command_suffix or '; exit'
     if n < 1:
         raise ValueError, "n must be an integer >= 1"
     result = []
@@ -79,7 +82,10 @@ def merge_to_n_commands(commands,n,delimiter=' ; '):
             
     if current_cmds:
         result[-1] = delimiter.join([result[-1]] + current_cmds)
-        
+    
+    result = ['%s %s %s' % (command_prefix, r, command_suffix)
+              for r in result]
+    
     return result
 
 def get_random_job_prefix(fixed_prefix='',max_job_prefix_len=10,\
