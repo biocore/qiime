@@ -344,7 +344,7 @@ def parse_otu_table(lines,count_map_f=int):
             sample_ids = line.strip().split('\t')[1:]
             if len(sample_ids) == 0:
                     raise RuntimeError('no samples found in otu table')
-            if sample_ids[-1] == 'Consensus Lineage':
+            if sample_ids[-1].strip().replace(' ','').lower() == 'consensuslineage':
                 has_consensus = True
                 sample_ids = sample_ids[:-1]
             else:
