@@ -147,7 +147,22 @@ class UtilTests(TestCase):
         self.assertEqual(actual,expected)
         
         self.assertRaises(ValueError,merge_to_n_commands,commands,0)
-        self.assertRaises(ValueError,merge_to_n_commands,commands,-42)
+        self.assertRaises(ValueError,merge_to_n_commands,commands,-42)    
+        
+    def test_merge_to_n_commands_alt_params(self):
+        """ merge_to_n_commands functions with alt params"""
+        commands = ['pick_otus.py -h',
+                    'pick_otus.py -g',
+                    'pick_otus.py -w']
+                    
+        expected = ['pick_otus.py -h ; pick_otus.py -g ; pick_otus.py -w']
+        actual = merge_to_n_commands(commands,2,command_prefix='',command_suffix='')
+        self.assertEqual(actual,expected)
+                    
+        expected = ['pick_otus.py -h ! pick_otus.py -g ! pick_otus.py -w']
+        actual = merge_to_n_commands(commands,2,command_prefix='',
+         command_suffix='',delimiter=' ! ')
+        self.assertEqual(actual,expected)
         
         
     def test_submit_jobs_fail(self):

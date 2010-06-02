@@ -61,11 +61,20 @@ def split_fasta(infile, seqs_per_file, outfile_prefix, working_dir=''):
 
 def merge_to_n_commands(commands,n,delimiter=' ; ',
     command_prefix=None,command_suffix=None):
-    """ """
-    command_prefix = command_prefix or '/bin/bash ;'
-    command_suffix = command_suffix or '; exit'
+    """ merge a list of commands into n commands """
     if n < 1:
         raise ValueError, "n must be an integer >= 1"
+        
+    if command_prefix == None:
+        command_prefix = '/bin/bash ;'
+    else:
+        command_prefix = command_prefix
+        
+    if command_suffix == None:
+        command_suffix = '; exit'
+    else:
+        command_suffix = command_suffix
+        
     result = []
     commands_per_merged_command = int(ceil((len(commands)/n)))
     # begin iterating through the commands
@@ -83,8 +92,11 @@ def merge_to_n_commands(commands,n,delimiter=' ; ',
     if current_cmds:
         result[-1] = delimiter.join([result[-1]] + current_cmds)
     
-    result = ['%s %s %s' % (command_prefix, r, command_suffix)
-              for r in result]
+    for i,r in enumerate(result):
+        r = '%s %s %s' % (command_prefix, r, command_suffix)
+        result[i] = r.strip()
+    # result = ['%s %s %s' % (command_prefix, r, command_suffix)
+    #           for r in result]
     
     return result
 
