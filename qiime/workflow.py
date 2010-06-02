@@ -611,16 +611,7 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,\
     except KeyError:
         params_str = ''
     if parallel:
-        try:
-            # Want to find a cleaner strategy for this: the rarefaction 
-            # parallel script doesn't support the jobs_to_start option -
-            # one job is started per rarefied otu table to be created -
-            # so need to remove this option. This works for now though.
-            d = params['parallel'].copy()
-            del d['jobs_to_start']
-            params_str += ' %s' % get_params_str(d)
-        except KeyError:
-            pass        
+        params_str += ' %s' % get_params_str(params['parallel'])        
         # Build the rarefaction command
         rarefaction_cmd = \
          '%s %s/parallel_multiple_rarefactions.py -T -i %s -m %s -x %s -s %s -o %s %s' %\
@@ -645,16 +636,7 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,\
     except KeyError:
         params_str = ''
     if parallel:
-        try:
-            # Want to find a cleaner strategy for this: the alpha diversity 
-            # parallel script doesn't support the jobs_to_start option -
-            # one job is started per rarefied otu table to be created -
-            # so need to remove this option. This works for now though.
-            d = params['parallel'].copy()
-            del d['jobs_to_start']
-            params_str += ' %s' % get_params_str(d)
-        except KeyError:
-            pass   
+        params_str += ' %s' % get_params_str(params['parallel'])   
         # Build the alpha diversity command
         alpha_diversity_cmd = \
          "%s %s/parallel_alpha_diversity.py -T -i %s -o %s -t %s %s" %\
@@ -762,16 +744,7 @@ def run_jackknifed_beta_diversity(otu_table_fp,tree_fp,seqs_per_sample,
     except KeyError:
         params_str = ''
     # if parallel:
-    #     try:
-    #         # Want to find a cleaner strategy for this: the rarefaction 
-    #         # parallel script doesn't support the jobs_to_start option -
-    #         # one job is started per rarefied otu table to be created -
-    #         # so need to remove this option. This works for now though.
-    #         d = params['parallel'].copy()
-    #         del d['jobs_to_start']
-    #         params_str += ' %s' % get_params_str(d)
-    #     except KeyError:
-    #         pass        
+    #     params_str += ' %s' % get_params_str(params['parallel'])  
     #     # Build the parallel rarefaction command
     #     rarefaction_cmd = \
     #      '%s %s/parallel_multiple_rarefactions.py -T -i %s -m %s -x %s -s 1 -o %s %s' %\
@@ -823,16 +796,7 @@ def run_jackknifed_beta_diversity(otu_table_fp,tree_fp,seqs_per_sample,
         if tree_fp:
             params_str = '%s -t %s' % (params_str,tree_fp)
         if parallel:
-            try:
-                # Want to find a cleaner strategy for this: the beta diversity 
-                # parallel script doesn't support the jobs_to_start option -
-                # one job is started per rarefied otu table to be created -
-                # so need to remove this option. This works for now though.
-                d = params['parallel'].copy()
-                del d['jobs_to_start']
-                params_str += ' %s' % get_params_str(d)
-            except KeyError:
-                pass        
+            params_str += ' %s' % get_params_str(params['parallel'])        
             # Build the parallel beta diversity command (for rarefied OTU tables)
             beta_div_rarefied_cmd = \
              '%s %s/parallel_beta_diversity.py -T -i %s -o %s %s' %\

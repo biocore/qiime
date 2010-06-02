@@ -18,10 +18,10 @@ from os import popen, system, mkdir, makedirs
 from os.path import split, splitext, join
 from subprocess import check_call, CalledProcessError
 from cogent.app.util import get_tmp_filename
-from qiime.parallel.util import split_fasta, get_random_job_prefix, write_jobs_file,\
-    submit_jobs, compute_seqs_per_file, build_filepaths_from_filepaths,\
-    get_poller_command, write_filepaths_to_file,\
-    write_merge_map_file_assign_taxonomy
+from qiime.parallel.util import (split_fasta, get_random_job_prefix, write_jobs_file,
+    submit_jobs, compute_seqs_per_file, build_filepaths_from_filepaths,
+    get_poller_command, write_filepaths_to_file,
+    write_merge_map_file_assign_taxonomy, merge_to_n_commands)
 from qiime.util import get_qiime_scripts_dir, get_options_lookup
 from qiime.parallel.multiple_rarefactions import get_job_commands
 
@@ -62,7 +62,8 @@ script_info['optional_options'] = [\
  options_lookup['suppress_polling'],\
  options_lookup['job_prefix'],\
  options_lookup['python_exe_fp'],\
- options_lookup['seconds_to_sleep']\
+ options_lookup['seconds_to_sleep'],\
+ options_lookup['jobs_to_start']
 ]
 
 script_info['version'] = __version__
@@ -87,6 +88,7 @@ def main():
     suppress_polling = opts.suppress_polling
     seconds_to_sleep = opts.seconds_to_sleep
     poll_directly = opts.poll_directly
+    jobs_to_start = opts.jobs_to_start
 
     created_temp_paths = []
     
@@ -121,6 +123,9 @@ def main():
      get_job_commands(python_exe_fp,single_rarefaction_fp,job_prefix,\
      input_path,output_dir,working_dir,min_seqs,max_seqs,step,num_reps,
      lineages_included)
+     
+    # Merge commands into jobs_to_start number of jobs
+    commands = merge_to_n_commands(commands,jobs_to_start)
     
     # Set up poller apparatus if the user does not suppress polling
     if not suppress_polling:

@@ -21,7 +21,7 @@ from subprocess import check_call, CalledProcessError
 from cogent.app.util import get_tmp_filename
 from qiime.parallel.util import get_random_job_prefix, write_jobs_file,\
     submit_jobs, get_poller_command, get_rename_command,\
-    write_filepaths_to_file
+    write_filepaths_to_file, merge_to_n_commands
 from qiime.beta_diversity import list_known_metrics
 from qiime.util import load_qiime_config, get_qiime_scripts_dir, get_options_lookup
 from qiime.parallel.beta_diversity import get_job_commands
@@ -62,7 +62,8 @@ script_info['optional_options'] = [\
  options_lookup['suppress_polling'],\
  options_lookup['job_prefix'],\
  options_lookup['python_exe_fp'],\
- options_lookup['seconds_to_sleep']\
+ options_lookup['seconds_to_sleep'],\
+ options_lookup['jobs_to_start']
 ]
 script_info['version'] = __version__
 
@@ -83,6 +84,7 @@ def main():
     suppress_polling = opts.suppress_polling
     seconds_to_sleep = opts.seconds_to_sleep
     poll_directly = opts.poll_directly
+    jobs_to_start = opts.jobs_to_start
 
     created_temp_paths = []
     input_fps = glob('%s/*' % input_dir)
@@ -116,6 +118,9 @@ def main():
     commands, job_result_filepaths  = \
      get_job_commands(python_exe_fp,beta_diversity_fp,tree_fp,job_prefix,\
      metrics,input_fps,output_dir,working_dir)
+     
+    # Merge commands into jobs_to_start number of jobs
+    commands = merge_to_n_commands(commands,jobs_to_start)
     
     # Set up poller apparatus if the user does not suppress polling
     if not suppress_polling:
