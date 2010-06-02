@@ -31,6 +31,7 @@ script_info['script_description']="""Specifically, we check that:
     - The headers do not contain invalid characters (alphanumeric and underscore only)
     - The data fields do not contain invalid characters (alphanumeric, underscore, and +-%. characters)
     - There are no duplicates when the primer and barcodes are appended
+    - If there is a field ReversePrimer for reverse primers (for removal with split_libraries), the characters are DNA IUPAC compliant and no fields are empty
     
     Errors and warnings are saved to a log file.  Errors are generally caused 
     by problems with the headers, and should be resolved before attempting to 

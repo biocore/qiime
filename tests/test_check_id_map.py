@@ -26,7 +26,7 @@ from qiime.check_id_map import (find_diff_length, CharFilter, lwu,
     check_missing_descriptions, check_duplicate_descriptions,
     check_description_chars, process_id_map, get_primers_barcodes,
     check_primers_barcodes, check_missing_sampleIDs,
-    check_dup_var_barcodes_primers
+    check_dup_var_barcodes_primers, get_reverse_primers, check_reverse_primers
     )
 
 
@@ -393,7 +393,39 @@ z\tGG\tACGT\t5\tsample_z"""
         self.assertEqual(barcodes, expected_barcodes)
         self.assertEqual(primers, expected_primers)
         
+    def test_get_reverse_primers(self):
+        """ get_reverse_primers should properly return primers or False """
         
+        expected_primers = ['AATCG','AKTYR']
+        
+        mapping_data = \
+         [['#SampleID','BarcodeSequence','LinkerPrimerSequence','DOB',
+          'ReversePrimer'],
+          ['PC.354','ATCG','CCTT','20061218','AATCG'],
+          ['PC.356','ATTA','CCTAT','20061216','AKTYR']]
+          
+        col_headers = ['#SampleID','BarcodeSequence','LinkerPrimerSequence',
+         'DOB','ReversePrimer']
+         
+        reverse_primers = get_reverse_primers(mapping_data, col_headers)
+        
+        self.assertEqual(reverse_primers, expected_primers)
+        
+        # If there is not a 'ReversePrimer' header, should return False
+        
+        expected_primers = False
+        
+        mapping_data = \
+         [['#SampleID','BarcodeSequence','LinkerPrimerSequence','DOB'],
+          ['PC.354','ATCG','CCTT','20061218'],
+          ['PC.356','ATTA','CCTAT','20061216']]
+          
+        col_headers = ['#SampleID','BarcodeSequence','LinkerPrimerSequence',
+         'DOB']
+        
+        reverse_primers = get_reverse_primers(mapping_data, col_headers)
+        
+        self.assertEqual(reverse_primers, expected_primers)
         
 
 
@@ -559,6 +591,26 @@ class SameCheckerTests(TestCase):
         self.assertEqual(check_primers_barcodes(primers_good, barcodes_absent, \
          problems, is_barcoded=True, disable_primer_check=True),\
          defaultdict(list))
+         
+    def test_check_reveres_primers(self):
+        """ Should give warnings for invalid or missing primers """
+        
+        
+        problems = defaultdict(list)
+        primers_good = ['GGATTCG','AATRCGG','CANGCRT']
+        col_headers = ['#SampleID','BarcodeSequence','LinkerPrimerSequence',
+         'DOB','ReversePrimer']
+        # Should append nothing to problems with valid primers.
+        self.assertEqual(check_reverse_primers(primers_good, problems, \
+         col_headers), defaultdict(list))
+
+        primers_bad = ['1GGATTCG','ATCCATCG','']
+        problems = defaultdict(list)
+        # Should create warnings about invalid characters and missing primer
+        
+        self.assertEqual(check_reverse_primers(primers_bad, problems, \
+         col_headers),  defaultdict(list, {'warning': ['reverse primer 1GGATTCG has invalid characters.  Location (row, column):\t0,4', 'Missing reverse primer.  Location (row, column):\t2,4']}))
+         
          
     def test_check_missing_sampleIDs(self):
         """ Should give warnings if missing sample IDs from given list """

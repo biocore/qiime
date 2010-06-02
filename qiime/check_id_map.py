@@ -10,6 +10,8 @@ Specifically, we check that:
     - there are not duplicate header fields (error)
     - there are not duplicate near-unique but not exactly unique values 
       within each column (warning)
+    - If there is a ReversePrimer field, all of the cells in the column contain
+      valid IUPAC DNA characters and all cells have data.
 
 Overall strategy:
     - maintain list of errors and warnings (initially empty).
@@ -680,6 +682,28 @@ def check_duplicate_sample_ids((sample_descriptions, sample_ids,
     return (sample_descriptions, sample_ids, run_description), \
         '\n'.join(problems)
         
+def check_reverse_primers(reverse_primers, problems, col_headers):
+    """ Checks for valid IUPAC DNA characters in ReversePrimers field """
+    
+    reverse_primer_index = col_headers.index("ReversePrimer")
+    
+    for row in range(len(reverse_primers)):
+        for base in reverse_primers[row]:
+           try:
+               IUPAC_DNA[base]
+           except KeyError:
+               # The primers are always located in the third column
+               problems['warning'].append('reverse primer %s ' % reverse_primers[row] +\
+                'has invalid characters.  Location (row, column):\t' +\
+                '%d,%d' % (row, reverse_primer_index))
+        if len(reverse_primers[row])==0:
+            problems['warning'].append('Missing reverse primer.  ' +\
+             'Location (row, column):\t%d,%d' % (row, reverse_primer_index))
+
+    return problems
+    
+    
+        
 def check_primers_barcodes(primers, barcodes, problems, is_barcoded=True,
  disable_primer_check=False):
     """Returns warnings for primers/barcodes that have invalid characters 
@@ -823,6 +847,22 @@ def get_primers_barcodes(data, is_barcoded, disable_primer_check):
     
     return primers, barcodes
     
+def get_reverse_primers(data, col_headers):
+    """ Returns list of reverse primers if column is present """
+    
+    if "ReversePrimer" in col_headers:
+        rev_primer_index = col_headers.index("ReversePrimer")
+        reverse_primers = []
+        for row in data:
+            # skip inclusion of the header
+            if row[rev_primer_index]=="ReversePrimer":
+                continue
+            reverse_primers.append(row[rev_primer_index])
+    else:
+        reverse_primers = False
+  
+    return reverse_primers
+    
 def check_dup_var_barcodes_primers(primers, barcodes, problems):
     """ Checks that no duplicate seqs occur when barcodes/primers appended """
     
@@ -853,6 +893,7 @@ def process_id_map(infile, disable_primer_check=False, is_barcoded=True, \
     col_header_checks=STANDARD_COL_HEADER_CHECKS,
     col_checks=STANDARD_COL_CHECKS,
     field_types=STANDARD_FIELD_TYPES):
+        
     """ Parse ID mapping file.
    
     Returns the following:
@@ -948,6 +989,12 @@ def process_id_map(infile, disable_primer_check=False, is_barcoded=True, \
      disable_primer_check)
     problems = check_primers_barcodes(primers, barcodes, problems, \
      is_barcoded, disable_primer_check)
+    
+    if not disable_primer_check:
+        reverse_primers = get_reverse_primers(data, col_headers)
+        if reverse_primers:
+            problems = check_reverse_primers(reverse_primers, \
+             problems, col_headers)
      
     if var_len_barcodes:
         problems = check_dup_var_barcodes_primers(primers, barcodes, problems)
@@ -1029,9 +1076,11 @@ def check_mapping_file(infile_name, output_dir, has_barcodes, char_replace, \
  verbose, var_len_barcodes, disable_primer_check):
     """ Central program function for checking mapping file """
 	
+    
     headers, id_map, description_map, run_description, errors, warnings = \
-     process_id_map(open(infile_name, 'U'), has_barcodes, char_replace,\
-     var_len_barcodes, disable_primer_check)
+     process_id_map(open(infile_name, 'U'), disable_primer_check,
+     has_barcodes, char_replace,\
+     var_len_barcodes)
 
     chars_replaced = test_for_replacement_chars(warnings)
 

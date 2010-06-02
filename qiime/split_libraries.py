@@ -35,6 +35,9 @@ __status__ = "Development"
 import re
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.seqsim.sequence_generators import SequenceGenerator, IUPAC_DNA
+from cogent.core.moltype import IUPAC_DNA_ambiguities
+from cogent import DNA, LoadSeqs
+from cogent.align.align import make_dna_scoring_dict, local_pairwise
 from numpy import array, mean, arange, histogram
 from numpy import __version__ as numpy_version
 from qiime.check_id_map import process_id_map
@@ -107,6 +110,129 @@ def ok_mm_primer(primer_seq, all_primer_seqs, primer_mm):
         if count_mismatches(primer_seq, curr_pat, primer_mm) <= primer_mm:
             return True
     return False
+    
+def MatchScorerAmbigs(match, mismatch, matches=None):
+    """ Alternative scorer factory for sw_align which allows match to ambiguous chars
+
+    It allows for matching to ambiguous characters which is useful for 
+     primer/sequence matching. Not sure what should happen with gaps, but they
+     shouldn't be passed to this function anyway. Currently a gap will only match
+     a gap.
+
+    match and mismatch should both be numbers. Typically, match should be 
+    positive and mismatch should be negative.
+
+    Resulting function has signature f(x,y) -> number.
+    """
+    
+    matches = matches or \
+     {'A':{'A':None},'G':{'G':None},'C':{'C':None},\
+      'T':{'T':None},'-':{'-':None}}
+    for ambig, chars in IUPAC_DNA_ambiguities.items():
+        try:
+            matches[ambig].update({}.fromkeys(chars))
+        except KeyError:
+            matches[ambig] = {}.fromkeys(chars)
+        
+        for char in chars:
+            try:
+                matches[char].update({ambig:None})
+            except KeyError:
+                matches[char] = {ambig:None}
+            
+    def scorer(x, y):
+        # need a better way to disallow unknown characters (could
+        # try/except for a KeyError on the next step, but that would only 
+        # test one of the characters)
+        if x not in matches or y not in matches:
+            raise ValueError, "Unknown character: %s or %s" % (x,y)
+        if y in matches[x]:
+            return match
+        else:
+            return mismatch
+    return scorer
+    
+# The scoring function which can be passed to cogent.alignment.algorithms.sw_align
+equality_scorer_ambigs = MatchScorerAmbigs(1, -1)
+expanded_equality_scorer_ambigs = MatchScorerAmbigs(1, -1,\
+     matches=\
+      {'A':{'A':None,'G':None},\
+       'G':{'G':None,'A':None,'T':None,'C':None,},\
+       'C':{'C':None,'G':None},\
+       'T':{'T':None,'G':None},\
+       '-':{'-':None}})
+    
+def pair_hmm_align_unaligned_seqs(seqs,moltype=DNA,params={}):
+    """
+        This needs to be moved to cogent.align.align
+    """
+    
+    seqs = LoadSeqs(data=seqs,moltype=moltype,aligned=False)
+    try:
+        s1, s2 = seqs.values()
+    except ValueError:
+        raise ValueError,\
+         "Pairwise aligning of seqs requires exactly two seqs."
+    
+    try:
+        gap_open = params['gap_open']
+    except KeyError:
+        gap_open = 5
+    try:
+        gap_extend = params['gap_extend']
+    except KeyError:
+        gap_extend = 2
+    try:
+        score_matrix = params['score_matrix']
+    except KeyError:
+        score_matrix = make_dna_scoring_dict(\
+         match=1,transition=-1,transversion=-1)
+    
+    return local_pairwise(s1,s2,score_matrix,gap_open,gap_extend)
+    
+def local_align_primer_seq(primer,sequence,sw_scorer=equality_scorer_ambigs):
+    """Perform local alignment of primer and sequence
+    
+        primer: 
+        sequence: 
+        
+        Returns the primer sequence, the target sequence, number of mismatches,
+         and the start position in sequence of the hit.
+    """
+    
+    query_primer = primer
+
+    query_sequence = str(sequence)
+     
+    # Get alignment object from primer, target sequence
+    alignment = pair_hmm_align_unaligned_seqs([query_primer,query_sequence])
+    
+    # Extract sequence of primer, target site, may have gaps in insertions
+    # or deletions have occurred.
+    primer_hit = str(alignment.Seqs[0])
+    target_hit = str(alignment.Seqs[1])
+    
+    # Count insertions and deletions
+    insertions = primer_hit.count('-')
+    deletions = target_hit.count('-')
+    
+    mismatches = 0
+    for i in range(len(target_hit)):
+        # using the scoring function to check for
+        # matches, but might want to just access the dict
+        if sw_scorer(target_hit[i],primer_hit[i]) == -1 and \
+         target_hit[i] != '-' and primer_hit[i] != '-': 
+           mismatches += 1
+    try:
+        hit_start = query_sequence.index(target_hit.replace('-',''))
+    except ValueError:
+        raise ValueError,('substring not found, query string %s, target_hit %s' % (query_sequence, target_hit))
+    
+    # sum total mismatches
+    mismatch_count = insertions + deletions + mismatches
+    
+   
+    return mismatch_count, hit_start
 
 def expand_degeneracies(raw_primer):
     """ Returns all non-degenerate versions of a given primer sequence """
@@ -299,7 +425,8 @@ def check_window_qual_scores(qual_scores, window=50, min_average=25):
 def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings, 
     filters, barcode_len, keep_primer, keep_barcode, barcode_type, 
     max_bc_errors,remove_unassigned, attempt_bc_correction,
-    primer_seqs_lens, all_primers, max_primer_mm, disable_primer_check):
+    primer_seqs_lens, all_primers, max_primer_mm, disable_primer_check,
+    reverse_primers, rev_primers):
     """Checks fasta-format sequences and qual files for validity."""
     seq_lengths = {}
     bc_counts = defaultdict(list)
@@ -314,6 +441,8 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
     primer_mismatch_count = 0
     all_primers_lens = list(set(all_primers.values()))
     all_primers_lens.sort()
+    
+    reverse_primer_not_found = 0
     
     for fasta_in in fasta_files:
         for curr_id, curr_seq in MinimalFastaParser(fasta_in):
@@ -410,20 +539,53 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
             except Exception, e:
                 bc_counts[None].append(curr_rid)
                 continue
-            bc_counts[curr_bc].append(curr_rid)
+            
             curr_samp_id = valid_map.get(curr_bc, 'Unassigned')
             
             new_id = "%s_%d" % (curr_samp_id, curr_ix)
             # check if writing out primer
             write_seq = cres
+            
+            if reverse_primers == "truncate_only":
+                try:
+                    rev_primer = rev_primers[curr_bc]
+                    rev_primer_mm, rev_primer_index  = \
+                     local_align_primer_seq(rev_primer,cres)
+                    if rev_primer_mm <= max_primer_mm:
+                        write_seq = write_seq[0:rev_primer_index]
+                    else:
+                        reverse_primer_not_found += 1
+                except KeyError:
+                    pass
+            elif reverse_primers == "truncate_remove":
+                try:
+                    rev_primer = rev_primers[curr_bc]
+                    rev_primer_mm, rev_primer_index  = \
+                     local_align_primer_seq(rev_primer,cres)
+                    if rev_primer_mm <= max_primer_mm:
+                        write_seq = write_seq[0:rev_primer_index]
+                    else:
+                        reverse_primer_not_found += 1
+                        write_seq = False
+                except KeyError:
+                    bc_counts['#FAILED'].append(curr_rid)
+                    continue
+                
+            
+            if not write_seq:
+                bc_counts['#FAILED'].append(curr_rid)
+                continue
+            
             if keep_primer:
                 write_seq = cpr + write_seq
             if keep_barcode:
                 write_seq = cbc + write_seq
                 
-            if not write_seq:
-                bc_counts['#FAILED'].append(curr_rid)
-                continue
+                
+            
+                
+            # Record number of seqs associated with particular barcode.
+            bc_counts[curr_bc].append(curr_rid)
                  
             if remove_unassigned or (not attempt_bc_correction):
                 if curr_samp_id!="Unassigned":
@@ -437,12 +599,13 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
             curr_ix += 1
     log_out = format_log(bc_counts, corr_ct, seq_lengths, valid_map, filters,\
     remove_unassigned, attempt_bc_correction, primer_mismatch_count, \
-    max_primer_mm)
+    max_primer_mm, reverse_primers, reverse_primer_not_found)
     all_seq_lengths, good_seq_lengths = get_seq_lengths(seq_lengths, bc_counts)
     return log_out, all_seq_lengths, good_seq_lengths
 
 def format_log(bc_counts, corr_ct, seq_lengths, valid_map, filters,\
-remove_unassigned, attempt_bc_correction, primer_mismatch_count, max_primer_mm):
+remove_unassigned, attempt_bc_correction, primer_mismatch_count, max_primer_mm,\
+reverse_primers, reverse_primer_not_found):
     """Makes log lines"""
 
     
@@ -454,6 +617,20 @@ remove_unassigned, attempt_bc_correction, primer_mismatch_count, max_primer_mm):
         log_out.append(str(f))
     log_out.append('Num mismatches in primer exceeds limit of %s: %d\n' %\
      (max_primer_mm, primer_mismatch_count))
+    if reverse_primers == "truncate_only":
+        log_out.append('Number of sequences with identifiable barcode '+\
+         'but without identifiable reverse primer: '+\
+         '%d\n' % reverse_primer_not_found)
+        log_out.append('-z truncate_only option enabled; sequences '+\
+         'without a discernable reverse primer as well as sequences with a '+\
+         'valid barcode not found in the mapping file may still be written.\n')
+    if reverse_primers == "truncate_remove":
+        log_out.append('Number of sequences with identifiable barcode '+\
+         'but without identifiable reverse primer: '+\
+         '%d\n' % reverse_primer_not_found)
+        log_out.append('-z truncate_remove option enabled; sequences '+\
+         'without a discernable reverse primer as well as sequences with a '+\
+         'valid barcode not found in the mapping file will not be written.\n')
     log_out.append("Raw len min/max/avg\t%.1f/%.1f/%.1f" % 
         (min(all_seq_lengths), max(all_seq_lengths), mean(all_seq_lengths)))
     
@@ -512,6 +689,18 @@ remove_unassigned, attempt_bc_correction, primer_mismatch_count, max_primer_mm):
         
     log_out.append("\nTotal number seqs written\t%d" % len(good_seq_lengths)) 
     return log_out
+    
+def get_reverse_primers(id_map):
+    """ Return a dictionary with barcodes and rev-complement of rev primers """
+    
+    rev_primers = {}
+    for n in id_map.items():
+        # Generate a dictionary with Barcode:reverse primer
+        # Convert to reverse complement of the primer so its in the 
+        # proper orientation with the input fasta sequences
+        rev_primers[n[1]['BarcodeSequence']]=DNA.rc(n[1]['ReversePrimer'])
+        
+    return rev_primers
 
 def preprocess(fasta_files, qual_files, mapping_file, 
     barcode_type="golay_12",
@@ -519,10 +708,10 @@ def preprocess(fasta_files, qual_files, mapping_file,
     keep_primer=True, max_ambig=0, max_primer_mm=1, trim_seq_len=True,
     dir_prefix='.', max_bc_errors=2, max_homopolymer=4,remove_unassigned=False,
     keep_barcode=False, attempt_bc_correction=True, qual_score_window=0,
-    disable_primers=False):
+    disable_primers=False, reverse_primers='disable'):
         
-    
-    
+
+        
     """
     Preprocess barcoded libraries, e.g. from 454.
 
@@ -572,6 +761,20 @@ def preprocess(fasta_files, qual_files, mapping_file,
     
     disable_primers: (default False) Disables testing for primers in the
     input mapping file and primer testing in the input sequence files.
+    
+    reverse_primers: (default 'disable') Enables removal of reverse primers and
+    any subsequence sequence data from output reads.  Reverse primers have to
+    be in 5'->3' format and in correct IUPAC codes in a column "ReversePrimer"
+    in the input mapping file.  Run check_id_map to make test primers in this
+    column for valid formatting.  The primers read from this column will be
+    reverse complemented and associated with the given barcode in the
+    mapping file.  If set to 'truncate_only', sequences where primers are found
+    will be truncated, sequences where the primer is not found will be written
+    unchanged.  If set to 'truncate_remove', sequences where primers are found
+    will be truncated, sequences where the primer is not found will not be 
+    written and counted in the log file as failing for this reason.  The 
+    mismatches allowed for a reverse primer match are the same as specified 
+    for the forward primer mismatches with the -M parameter (default 0).
 
     Result:
     in dir_prefix, writes the following files:
@@ -594,6 +797,9 @@ def preprocess(fasta_files, qual_files, mapping_file,
         raise ValueError, "Max primer mismatches must be >= 0."
     if min_qual_score < 5:
         raise ValueError, "Min qual score must be >= 5."
+    if reverse_primers not in ['disable','truncate_only','truncate_remove']:
+        raise ValueError, ("reverse_primers parameter must be 'disable', "+\
+         "truncate_only, or truncate_remove.")
 
     create_dir(dir_prefix, fail_on_exist=False)
 
@@ -611,6 +817,22 @@ def preprocess(fasta_files, qual_files, mapping_file,
     headers, id_map, valid_map, warnings, errors, \
      primer_seqs_lens, all_primers = check_map(map_file, \
      disable_primer_check = disable_primers )
+     
+    if reverse_primers != 'disable':
+        if 'ReversePrimer' not in headers:
+            raise ValueError, ('To enable reverse primer check, there must '+\
+             'be a "ReversePrimer" column in the mapping file with a reverse '+\
+             'primer in each cell.')
+        rev_primers = get_reverse_primers(id_map)
+    else:
+        rev_primers = False
+        
+    # *** Generate dictionary of {barcode: DNA.rc(ReversePrimer)}
+    # First check for ReversePrimer in headers, raise error if not found
+    # Implement local alignment for primer after barcode is determined.
+    # Add option to flag seq with error for rev_primer not found
+    # Check primer hit index, truncate sequence
+    # unit tests.
     
     map_file.close()
     if errors:
@@ -731,7 +953,8 @@ def preprocess(fasta_files, qual_files, mapping_file,
         starting_ix, valid_map, qual_mappings, filters, barcode_len,
         keep_primer, keep_barcode, barcode_type, max_bc_errors,
         remove_unassigned, attempt_bc_correction,
-        primer_seqs_lens, all_primers, max_primer_mm, disable_primers)
+        primer_seqs_lens, all_primers, max_primer_mm, disable_primers,
+        reverse_primers, rev_primers)
 
     # Write log file
     log_file = open(dir_prefix + '/' + "split_library_log.txt", 'w+')

@@ -133,7 +133,20 @@ script_info['optional_options']=[\
         action='store_true', help='Disable primer usage when demultiplexing.'+\
         '  Should be enabled for unusual circumstances, such as analyzing '+\
         'Sanger sequence data generated with different primers. '+\
-        ' [default: %default]')]
+        ' [default: %default]'),
+        
+    make_option('-z', '--reverse_primers', default="disable", type=str, 
+        action='store', help='Enable removal of the reverse primer and '+\
+        'any subsequence sequence from the end of each read.  To enable '+\
+        'this, there has to be a "ReversePrimer" column in the mapping file. '+\
+        "Primers a required to be in IUPAC format and written in the 5' to "+\
+        " 3' direction.  Valid options are 'disable', 'truncate_only', "+\
+        "and 'truncate_remove'.  'truncate_only' will remove the primer "+\
+        "and subsequence sequence data from the output read and will not "+\
+        "alter output of sequences where the primer cannot be found. "+\
+        "'truncate_remove' will flag sequences where the primer cannot "+\
+        "be found to not be written and will record the quantity of such "+\
+        "failed sequences in the log file. [default: %default]")]
 
 script_info['version'] = __version__
 
@@ -181,7 +194,8 @@ def main():
                remove_unassigned = opts.remove_unassigned,
                attempt_bc_correction = not opts.disable_bc_correction,
                qual_score_window = opts.qual_score_window,
-               disable_primers = opts.disable_primers)
+               disable_primers = opts.disable_primers,
+               reverse_primers = opts.reverse_primers)
  
 if __name__ == "__main__":
     main()
