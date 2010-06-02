@@ -12,9 +12,9 @@ from cogent import LoadSeqs
 from cogent.util.misc import remove_files
 from cogent.util.unit_test import TestCase, main
 from cogent.app.util import get_tmp_filename
-from qiime.parallel.util import split_fasta, get_random_job_prefix,\
- write_jobs_file, compute_seqs_per_file, build_filepaths_from_filepaths,\
- submit_jobs
+from qiime.parallel.util import (split_fasta, get_random_job_prefix,
+ write_jobs_file, compute_seqs_per_file, build_filepaths_from_filepaths,
+ submit_jobs, merge_to_n_commands)
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME Project"
@@ -66,6 +66,89 @@ class UtilTests(TestCase):
         self.assertEqual(len(s1),12)
         self.assertTrue(s1.startswith('HELLO'))
         self.assertFalse(s1.endswith('_'))
+        
+    def test_merge_to_n_commands_even(self):
+        """ merge_to_n_commands functions as expected (even number of cmds)"""
+        commands = ['/bin/bash ; pick_otus.py -h ; exit',
+                    '/bin/bash ; pick_otus.py -g ; exit',
+                    '/bin/bash ; pick_otus.py -f ; exit',
+                    '/bin/bash ; pick_otus.py -w ; exit']
+                    
+        expected = ['/bin/bash ; pick_otus.py -h ; exit ; /bin/bash ; pick_otus.py -g ; exit ; /bin/bash ; pick_otus.py -f ; exit ; /bin/bash ; pick_otus.py -w ; exit']
+        actual = merge_to_n_commands(commands,1)
+        self.assertEqual(actual,expected)
+        
+        expected = [
+         '/bin/bash ; pick_otus.py -h ; exit ; /bin/bash ; pick_otus.py -g ; exit',
+         '/bin/bash ; pick_otus.py -f ; exit ; /bin/bash ; pick_otus.py -w ; exit']
+        actual = merge_to_n_commands(commands,2)
+        self.assertEqual(actual,expected)
+        
+        # rounds to 2 jobs to start
+        expected = [
+         '/bin/bash ; pick_otus.py -h ; exit ; /bin/bash ; pick_otus.py -g ; exit',
+         '/bin/bash ; pick_otus.py -f ; exit ; /bin/bash ; pick_otus.py -w ; exit']
+        actual = merge_to_n_commands(commands,3)
+        self.assertEqual(actual,expected)
+        
+        expected = ['/bin/bash ; pick_otus.py -h ; exit',
+                    '/bin/bash ; pick_otus.py -g ; exit',
+                    '/bin/bash ; pick_otus.py -f ; exit',
+                    '/bin/bash ; pick_otus.py -w ; exit']
+        actual = merge_to_n_commands(commands,4)
+        self.assertEqual(actual,expected)
+        
+        self.assertRaises(ValueError,merge_to_n_commands,commands,0)
+        self.assertRaises(ValueError,merge_to_n_commands,commands,-42)
+        
+        # jobs to start is much higer than actual jobs
+        expected = ['/bin/bash ; pick_otus.py -h ; exit',
+                    '/bin/bash ; pick_otus.py -g ; exit',
+                    '/bin/bash ; pick_otus.py -f ; exit',
+                    '/bin/bash ; pick_otus.py -w ; exit']
+        actual = merge_to_n_commands(commands,100)
+        self.assertEqual(actual,expected)
+        
+        self.assertRaises(ValueError,merge_to_n_commands,commands,0)
+        self.assertRaises(ValueError,merge_to_n_commands,commands,-42)
+        
+        
+    def test_merge_to_n_commands_odd(self):
+        """ merge_to_n_commands functions as expected (odd number of cmds)"""
+        commands = ['pick_otus.py -h',
+                    'pick_otus.py -g',
+                    'pick_otus.py -w']
+                    
+        expected = ['pick_otus.py -h ; pick_otus.py -g ; pick_otus.py -w']
+        actual = merge_to_n_commands(commands,1)
+        self.assertEqual(actual,expected)
+                    
+        # rounds to 1 job to start
+        expected = ['pick_otus.py -h ; pick_otus.py -g ; pick_otus.py -w']
+        actual = merge_to_n_commands(commands,2)
+        self.assertEqual(actual,expected)
+                    
+        expected = ['pick_otus.py -h',
+                    'pick_otus.py -g',
+                    'pick_otus.py -w']
+        actual = merge_to_n_commands(commands,3)
+        self.assertEqual(actual,expected)
+        
+        expected = ['pick_otus.py -h',
+                    'pick_otus.py -g',
+                    'pick_otus.py -w']
+        actual = merge_to_n_commands(commands,4)
+        self.assertEqual(actual,expected)
+        
+        expected = ['pick_otus.py -h',
+                    'pick_otus.py -g',
+                    'pick_otus.py -w']
+        actual = merge_to_n_commands(commands,100)
+        self.assertEqual(actual,expected)
+        
+        self.assertRaises(ValueError,merge_to_n_commands,commands,0)
+        self.assertRaises(ValueError,merge_to_n_commands,commands,-42)
+        
         
     def test_submit_jobs_fail(self):
         """submit jobs fails by raising an error

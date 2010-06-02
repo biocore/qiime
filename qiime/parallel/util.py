@@ -6,6 +6,7 @@ from random import choice
 from os import popen, system, getenv, mkdir
 from subprocess import Popen, PIPE, STDOUT
 from os.path import split
+from math import ceil
 from cogent.parse.fasta import MinimalFastaParser
 
 __author__ = "Greg Caporaso"
@@ -57,6 +58,29 @@ def split_fasta(infile, seqs_per_file, outfile_prefix, working_dir=''):
             seq_counter = 0
             
     return out_files
+
+def merge_to_n_commands(commands,n,delimiter=' ; '):
+    """ """
+    if n < 1:
+        raise ValueError, "n must be an integer >= 1"
+    result = []
+    commands_per_merged_command = int(ceil((len(commands)/n)))
+    # begin iterating through the commands
+    cmd_counter = 0
+    current_cmds = []
+    for command in commands:
+        current_cmds.append(command)
+        cmd_counter += 1
+        
+        if cmd_counter == commands_per_merged_command:
+            result.append(delimiter.join(current_cmds))
+            current_cmds = []
+            cmd_counter = 0
+            
+    if current_cmds:
+        result[-1] = delimiter.join([result[-1]] + current_cmds)
+        
+    return result
 
 def get_random_job_prefix(fixed_prefix='',max_job_prefix_len=10,\
     leading_trailing_underscores=True):
