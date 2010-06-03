@@ -25,6 +25,7 @@ def load_tree_files(master_tree_file, support_dir):
     distance methods.  If so, warns user.
     loads trees into phylonode objects
     returns master_tree, [support_trees]
+    raises a RuntimeError if no support trees are loaded
     """
     tree_file_names = os.listdir(support_dir)
     # ignore invisible files like .DS_Store
@@ -59,6 +60,9 @@ continuing anyway..."""
         except IOError, err:
             sys.stderr.write('error loading support tree ' + fname + '\n')
             exit(1)
+    if len(support_trees) == 0:
+        raise RuntimeError('Error: no support trees loaded'+\
+            ', check that support tree directory has has valid trees')
     return master_tree, support_trees
     
 def write_bootstrap_support_files(master_tree, bootstraps, output_dir,
