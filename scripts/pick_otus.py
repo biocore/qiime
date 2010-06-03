@@ -252,8 +252,7 @@ def main():
     # Create the output and log file names
     result_path = '%s/%s_otus.txt' % (output_dir,input_seqs_basename)
     log_path = '%s/%s_otus.log' % (output_dir,input_seqs_basename)
-    
-    
+    failure_path = '%s/%s_failures.txt' % (output_dir,input_seqs_basename)
     
     ## Perform OTU picking -- parameters and calls are made 
     ## on a per-method basis
@@ -298,7 +297,8 @@ def main():
         'max_rejects':max_rejects}
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,refseqs_fp,
-                   result_path=result_path,log_path=log_path)
+                   result_path=result_path,log_path=log_path,
+                   failure_path=failure_path)
          
     ## prefix/suffix
     elif otu_picking_method == 'prefix_suffix':

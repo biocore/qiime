@@ -1021,6 +1021,8 @@ class UclustReferenceOtuPickerTests(TestCase):
                                             suffix='log')
         tmp_result_filepath = get_tmp_filename(prefix='UclustReferenceOtuPicker',
                                             suffix='txt')
+        tmp_failure_filepath = get_tmp_filename(prefix='UclustReferenceOtuPicker',
+                                            suffix='txt')
         seqs = [('s1','ACCTTGTTACTTT'),
                 ('s2','ACCTAGTTACTTT'),
                 ('s3','TTGCGTAACGTTTGAC'),
@@ -1035,15 +1037,20 @@ class UclustReferenceOtuPickerTests(TestCase):
         obs = uc(self.seqs_to_temp_fasta(seqs),
                  ref_seqs_fp,
                  result_path=tmp_result_filepath,
-                 log_path=tmp_log_filepath)
+                 log_path=tmp_log_filepath,
+                 failure_path=tmp_failure_filepath)
         
         log_file = open(tmp_log_filepath)
         log_file_str = log_file.read()
-        log_file.close()
+        log_file.close()        
+        fail_file = open(tmp_failure_filepath)
+        fail_file_str = fail_file.read()
+        fail_file.close()
         # remove the temp files before running the test, so in 
         # case it fails the temp file is still cleaned up
         remove(tmp_log_filepath)
         remove(tmp_result_filepath)
+        remove(tmp_failure_filepath)
         
         log_file_99_exp = ["OtuPicker parameters:",
          "Reference seqs:%s" % ref_seqs_fp,
@@ -1060,7 +1067,6 @@ class UclustReferenceOtuPickerTests(TestCase):
          'max_rejects:32',
          "new_cluster_identifier:qiime_otu_",
          "next_new_cluster_number:1",
-         "Failures:s3\ts4",
          "presort_by_abundance:True",
          "Result path: %s" % tmp_result_filepath]
         # compare data in log file to fake expected log file
@@ -1068,6 +1074,9 @@ class UclustReferenceOtuPickerTests(TestCase):
         # guaranteed, so testing is performed to make sure that 
         # the equal unordered lists of lines is present in actual and expected
         self.assertEqualItems(log_file_str.split('\n'), log_file_99_exp)
+        
+        failures_file_99_exp = ["s3","s4"]
+        self.assertEqualItems(fail_file_str.split('\n'), failures_file_99_exp)
         
         
     def test_default_parameters_new_clusters_allowed(self):

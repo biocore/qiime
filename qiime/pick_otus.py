@@ -829,6 +829,7 @@ class UclustReferenceOtuPicker(UclustOtuPickerBase):
                  new_cluster_identifier=None,
                  result_path=None,
                  log_path=None,
+                 failure_path=None,
                  HALT_EXEC=False):
         
         if new_cluster_identifier:
@@ -870,13 +871,15 @@ class UclustReferenceOtuPicker(UclustOtuPickerBase):
         log_lines.append('Num OTUs:%d' % len(cluster_map))
         log_lines.append('Num new OTUs:%d' % len(new_seeds))
         log_lines.append('Num failures:%d' % len(failures))
-        log_lines.append('Failures:%s' % '\t'.join(failures))
         
         cluster_map = cluster_map.items()
         result = self._prepare_results(result_path,cluster_map,log_lines)
  
         if log_path:
             self._write_log(log_path,log_lines)
+        
+        if failure_path:
+            self._write_failures(failure_path,failures)
     
         # return the result (note this is None if the data was
         # written to file)
@@ -900,6 +903,12 @@ class UclustReferenceOtuPicker(UclustOtuPickerBase):
             cluster_map[new_cluster_id] = cluster
         
         self.Params['next_new_cluster_number'] = next_new_cluster_number
+        
+    def _write_failures(self,failure_path,failures):
+        # if the user provided a log file path, log the run
+        failure_file = open(failure_path,'w')
+        failure_file.write('\n'.join(failures))
+        failure_file.close()
 
 class DoturOtuPicker(OtuPicker):
     Name = 'DoturOtuPicker'
