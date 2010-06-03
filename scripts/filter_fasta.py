@@ -70,7 +70,7 @@ def main():
         negate = opts.negate
 
     elif opts.chimera_map:
-        seqs_to_keep_lookup = get_segs_to_keep_lookup_from_chimera_file(open(opts.chimera_map),'U')
+        seqs_to_keep_lookup = get_segs_to_keep_lookup_from_chimera_file(open(opts.chimera_map,'U'))
         negate = not opts.negate
     else:
         option_parser.error("Need to specify either -c or -m")
