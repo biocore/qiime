@@ -186,7 +186,11 @@ script_info['optional_options'] = [
     make_option('--max_accepts',type='int',default=8,
               help="max_accepts value to uclust and uclust_ref [default: %default]"),
     make_option('--max_rejects',type='int',default=32,
-              help="max_rejects value to uclust and uclust_ref [default: %default]")
+              help="max_rejects value to uclust and uclust_ref [default: %default]"),
+    make_option('--uclust_otu_id_prefix',default=None,
+              help=("OTU identifier prefix (string) for the de novo uclust" 
+                    " OTU picker [default: %default, OTU ids are ascending"
+                    " integers]"))
     ]
 
 script_info['version'] = __version__
@@ -274,7 +278,8 @@ def main():
         'suppress_sort':user_sort,
         'presort_by_abundance': not suppress_presort_by_abundance_uclust,
         'max_accepts':max_accepts,
-        'max_rejects':max_rejects}
+        'max_rejects':max_rejects,
+        'new_cluster_identifier':opts.uclust_otu_id_prefix}
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,
                    result_path=result_path,log_path=log_path)

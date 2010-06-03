@@ -614,6 +614,38 @@ class UclustOtuPickerTests(TestCase):
         self.assertEqual(obs_otu_ids, exp_otu_ids)
         self.assertEqual(obs_clusters, exp_clusters)
         
+        
+    def test_call_otu_id_prefix(self):
+        """UclustOtuPicker.__call__ returns expected clusters with alt threshold
+        """
+        # adapted from test_app.test_cd_hit.test_cdhit_clusters_from_seqs
+        
+        exp_otu_ids = ['my_otu_%d' % i for i in range(9)]
+        exp_clusters = [['uclust_test_seqs_0'],
+                        ['uclust_test_seqs_1'],
+                        ['uclust_test_seqs_2'],
+                        ['uclust_test_seqs_3'],
+                        ['uclust_test_seqs_4'],
+                        ['uclust_test_seqs_5'],
+                        ['uclust_test_seqs_6','uclust_test_seqs_8'],
+                        ['uclust_test_seqs_7'],
+                        ['uclust_test_seqs_9']]
+
+        app = UclustOtuPicker(params={'Similarity':0.90,
+                                      'suppress_sort':False,
+                                      'presort_by_abundance':False,
+                                      'new_cluster_identifier':'my_otu_'})
+        obs = app(self.tmp_seq_filepath1)
+        obs_otu_ids = obs.keys()
+        obs_otu_ids.sort()
+        obs_clusters = obs.values()
+        obs_clusters.sort()
+        # The relation between otu ids and clusters is abitrary, and 
+        # is not stable due to use of dicts when parsing clusters -- therefore
+        # just checks that we have the expected group of each
+        self.assertEqual(obs_otu_ids, exp_otu_ids)
+        self.assertEqual(obs_clusters, exp_clusters)
+        
     def test_call_suppress_sort(self):
         """UclustOtuPicker.__call__ handles suppress sort
         """
@@ -745,6 +777,7 @@ class UclustOtuPickerTests(TestCase):
          'max_rejects:32',
          "exact:False",
          "Num OTUs:10",
+         "new_cluster_identifier:None",
          "presort_by_abundance:True",
          "Result path: %s" % tmp_result_filepath]
         # compare data in log file to fake expected log file

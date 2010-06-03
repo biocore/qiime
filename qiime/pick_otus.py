@@ -735,7 +735,8 @@ class UclustOtuPicker(UclustOtuPickerBase):
          'optimal':False,
          'exact':False,
          'suppress_sort':True,
-         'presort_by_abundance':True}
+         'presort_by_abundance':True,
+         'new_cluster_identifier':None}
         _params.update(params)
         OtuPicker.__init__(self, _params)
     
@@ -781,7 +782,12 @@ class UclustOtuPicker(UclustOtuPickerBase):
         log_lines = []
         log_lines.append('Num OTUs:%d' % len(clusters))
         
-        clusters = enumerate(clusters)
+        otu_id_prefix = self.Params['new_cluster_identifier']
+        if otu_id_prefix == None:
+            clusters = enumerate(clusters)
+        else:
+            clusters = [('%s%d' % (otu_id_prefix,i),c) 
+                        for i,c in enumerate(clusters)]
         result = self._prepare_results(result_path,clusters,log_lines)
         
         if log_path:

@@ -732,6 +732,7 @@ pick_otus:exact_uclust
 pick_otus:user_sort
 pick_otus:suppress_presort_by_abundance_uclust
 pick_otus:suppress_new_clusters
+pick_otus:uclust_otu_id_prefix	wf_otu_
 
 # Parallel options
 parallel:jobs_to_start	2
