@@ -21,20 +21,29 @@ from qiime.filter import filter_fasta
 options_lookup = get_options_lookup()
 
 script_info = {}
-script_info['brief_description'] = ""
+script_info['brief_description'] = "This script can be applied to remove sequences from a fasta file based on input criteria."
 script_info['script_description'] = ""
-script_info['script_usage'] = [("","","")]
+script_info['script_usage'] = [
+ ("Keep all sequences that show up in an OTU map.","",
+ "filter_fasta.py -f inseqs.fasta -o filtered_seqs.fasta -m uclust_ref_otus.txt"),
+ ("Discard all sequences that show up in chimera checking output. NOTE: It is very important to pass -n here as this tells the script to negate the request, or discard all sequences that are listed via -s. This is necessary to remove the identified chimeras from inseqs.fasta","",
+ "filter_fasta.py -f inseqs.fasta -o non_chimeric_seqs.fasta -s chimeric_seqs.txt -n"),
+ ("Keep all sequences listed in a text file.","",
+ "filter_fasta.py -f inseqs.fasta -o filtered_seqs.fasta -s seqs_to_keep.txt")]
 script_info['output_description']= ""
 script_info['required_options'] = [\
  options_lookup['input_fasta'],
  make_option('-o','--output_fasta_fp',help='the output fasta filepath')
 ]
 script_info['optional_options'] = [\
- make_option('-m','--seqs_to_keep_map',help='an OTU map where sequences ids are'
-  'those which should be retained.'),\
- make_option('-c','--chimera_map', help='The chimera file from identify_chimeric_seqs'),\
- make_option('-n','--negate', help='invert selection [default: %default]',
-             default=False, action='store_true')
+ make_option('-m','--otu_map',
+  help='an OTU map where sequences ids are those which should be retained.'),\
+ make_option('-s','--seq_id_fp', 
+  help='A list of sequence identifiers (or tab-delimited lines with'
+  ' a seq identifier in the first field) which should be retained'),\
+ make_option('-n','--negate', help='discard passed seq ids rather than'
+  'keep passed seq ids [default: %default]', default=False, 
+  action='store_true')
 ]
 script_info['version'] = __version__
 
@@ -53,32 +62,37 @@ def get_seqs_to_keep_lookup_from_otu_map(seqs_to_keep_f):
         seqs_to_keep += seq_ids
     return {}.fromkeys(seqs_to_keep)
 
-def get_segs_to_keep_lookup_from_chimera_file(chims_to_remove_fh):
+def get_seqs_to_keep_lookup_from_seq_id_file(seqs_to_keep_f):
     """generate a lookup dict of chimeras in chimera file."""
     
-    seqs_to_remove = []
-    for line in chims_to_remove_fh:
-        seqs_to_remove.append(line.split('\t')[0])
-    return {}.fromkeys(seqs_to_remove)
+    seqs_to_keep = []
+    for line in seqs_to_keep_f:
+        seqs_to_keep.append(line.strip().split()[0])
+    return {}.fromkeys(seqs_to_keep)
 
 def main():
     option_parser, opts, args =\
        parse_command_line_parameters(**script_info)
 
-    if opts.seqs_to_keep_map:    
-        seqs_to_keep_lookup = get_seqs_to_keep_lookup_from_otu_map(open(opts.seqs_to_keep_map,'U'))
-        negate = opts.negate
+    negate = opts.negate
 
-    elif opts.chimera_map:
-        seqs_to_keep_lookup = get_segs_to_keep_lookup_from_chimera_file(open(opts.chimera_map,'U'))
-        negate = not opts.negate
+    if (not opts.otu_map and not opts.seq_id_fp) or\
+       (opts.otu_map and opts.seq_id_fp):
+        option_parser.error("Must pass either -c or -m, but not both.")
+
+    if opts.otu_map:
+        seqs_to_keep_lookup =\
+         get_seqs_to_keep_lookup_from_otu_map(open(opts.otu_map,'U'))
+    elif opts.seq_id_fp:
+        seqs_to_keep_lookup =\
+         get_seqs_to_keep_lookup_from_seq_id_file(open(opts.seq_id_fp,'U'))
     else:
         option_parser.error("Need to specify either -c or -m")
-        
+    
     filter_fasta_fp(opts.input_fasta_fp,
-                        opts.output_fasta_fp,
-                        seqs_to_keep_lookup,
-                        negate)
+                    opts.output_fasta_fp,
+                    seqs_to_keep_lookup,
+                    negate)
 
 if __name__ == "__main__":
     main()
