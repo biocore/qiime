@@ -24,11 +24,11 @@ script_info = {}
 script_info['brief_description'] = "This script can be applied to remove sequences from a fasta file based on input criteria."
 script_info['script_description'] = ""
 script_info['script_usage'] = [
- ("Keep all sequences that show up in an OTU map.","",
+ ("Keep all sequences that show up in an OTU map","",
  "filter_fasta.py -f inseqs.fasta -o filtered_seqs.fasta -m uclust_ref_otus.txt"),
  ("Discard all sequences that show up in chimera checking output. NOTE: It is very important to pass -n here as this tells the script to negate the request, or discard all sequences that are listed via -s. This is necessary to remove the identified chimeras from inseqs.fasta","",
  "filter_fasta.py -f inseqs.fasta -o non_chimeric_seqs.fasta -s chimeric_seqs.txt -n"),
- ("Keep all sequences listed in a text file.","",
+ ("Keep all sequences listed in a text file","",
  "filter_fasta.py -f inseqs.fasta -o filtered_seqs.fasta -s seqs_to_keep.txt")]
 script_info['output_description']= ""
 script_info['required_options'] = [\
@@ -37,12 +37,12 @@ script_info['required_options'] = [\
 ]
 script_info['optional_options'] = [\
  make_option('-m','--otu_map',
-  help='an OTU map where sequences ids are those which should be retained.'),\
+  help='an OTU map where sequences ids are those which should be retained'),\
  make_option('-s','--seq_id_fp', 
   help='A list of sequence identifiers (or tab-delimited lines with'
   ' a seq identifier in the first field) which should be retained'),\
  make_option('-n','--negate', help='discard passed seq ids rather than'
-  'keep passed seq ids [default: %default]', default=False, 
+  ' keep passed seq ids [default: %default]', default=False, 
   action='store_true')
 ]
 script_info['version'] = __version__
