@@ -98,7 +98,7 @@ def main():
                     sample_color_prefs_and_map_data_from_options(options)
     
     #output directory check
-    if options.output_dir != '.':
+    if isinstance(options.output_dir, str) and options.output_dir != '.':
         if exists(options.output_dir):
             output_dir = options.output_dir
         else:
