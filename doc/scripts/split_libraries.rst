@@ -65,6 +65,8 @@ Sequences from samples that are not found in the mapping file (no corresponding 
 		Enable sliding window test of quality scores.  If the average score of a continuous set of w nucleotides falls below the threshold (see -s for default), the sequence is discarded. A good value would be 50. 0 (zero) means no filtering. Must pass a .qual file (see -q parameter) if this functionality is enabled. [default: 0]
 	-p, `-`-disable_primers
 		Disable primer usage when demultiplexing.  Should be enabled for unusual circumstances, such as analyzing Sanger sequence data generated with different primers.  [default: False]
+	-z, `-`-reverse_primers
+		Enable removal of the reverse primer and any subsequence sequence from the end of each read.  To enable this, there has to be a "ReversePrimer" column in the mapping file. Primers a required to be in IUPAC format and written in the 5' to  3' direction.  Valid options are 'disable', 'truncate_only', and 'truncate_remove'.  'truncate_only' will remove the primer and subsequence sequence data from the output read and will not alter output of sequences where the primer cannot be found. 'truncate_remove' will flag sequences where the primer cannot be found to not be written and will record the quantity of such failed sequences in the log file. [default: disable]
 
 
 **Output:**

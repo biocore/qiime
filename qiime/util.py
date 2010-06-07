@@ -812,8 +812,9 @@ def matrix_IQR(x):
     return min_vals, max_vals
 
 def idealfourths(data, axis=None):
-    """Returns an estimate of the lower and upper quartiles of the data along
-    the given axis, as computed with the ideal fourths.
+    """This function returns an estimate of the lower and upper quartiles of the data along
+    the given axis, as computed with the ideal fourths. This function was taken
+    from scipy.stats.mstat_extra.py (http://projects.scipy.org/scipy/browser/trunk/scipy/stats/mstats_extras.py?rev=6392)
     """
     def _idf(data):
         x = data.compressed()
@@ -833,11 +834,11 @@ def idealfourths(data, axis=None):
 
 def isarray(a):
     """
-    Test for arrayobjects.
+    This function tests whether an object is an array
     """
     try:
-        result=isinstance(a,ndarray)
+        validity=isinstance(a,ndarray)
     except:
-        result=False
+        validity=False
 
-    return result
+    return validity

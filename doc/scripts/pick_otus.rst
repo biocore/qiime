@@ -88,6 +88,12 @@ The primary inputs for `pick_otus.py <./pick_otus.html>`_ are:
 		Pass the --user_sort flag to uclust for uclust otu picking. [default: False]
 	-C, `-`-suppress_new_clusters
 		Suppress creation of new clusters using seqs that don't match reference when using -m uclust_ref [default: False]
+	`-`-max_accepts
+		Max_accepts value to uclust and uclust_ref [default: 8]
+	`-`-max_rejects
+		Max_rejects value to uclust and uclust_ref [default: 32]
+	`-`-uclust_otu_id_prefix
+		OTU identifier prefix (string) for the de novo uclust OTU picker [default: None, OTU ids are ascending integers]
 
 
 **Output:**

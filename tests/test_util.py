@@ -582,7 +582,9 @@ class BlastSeqsTests(TestCase):
         self.assertEqual(max_vals, array([8.5,9.5,10.5]))
 
     def test_idealfourths(self):
-        "idealfourths: tests the ideal-fourths function which was imported from scipy"
+        """idealfourths: tests the ideal-fourths function which was imported from scipy
+        at the following location (http://projects.scipy.org/scipy/browser/trunk/scipy/stats/tests/test_mmorestats.py?rev=4154)
+        """"
         test = numpy.arange(100)
         self.assertEqual(idealfourths(test),
                             [24.416666666666668, 74.583333333333343])
@@ -600,14 +602,14 @@ class BlastSeqsTests(TestCase):
         
     def test_isarray(self):
         "isarray: tests the isarray function"
-        test1=asarray('Test')
-        test2 = 'Test'
+        obs1=asarray('Test')
+        obs2 = 'Test'
         
         exp1 = True
         exp2 = False
         
-        self.assertEqual(isarray(test1),exp1)
-        self.assertEqual(isarray(test2),exp2)
+        self.assertEqual(isarray(obs1),exp1)
+        self.assertEqual(isarray(obs2),exp2)
         
 inseqs1 = """>s2_like_seq
 TGCAGCTTGAGCACAGGTTAGAGCCTTC

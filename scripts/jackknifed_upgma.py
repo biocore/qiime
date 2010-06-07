@@ -20,4 +20,21 @@ jackknifed_upgma.py will be removed from QIIME in version 1.2.x-dev.
 
 No analysis performed and no output written."""
 
+script_info={}
+script_info['brief_description']=""""""
+script_info['script_description']="""Usage: jackknifed_upgma.py
+
+jackknifed_upgma.py has been renamed jackknifed_beta_diversity.py.
+
+jackknifed_upgma.py will be removed from QIIME in version 1.2.x-dev.
+
+No analysis performed and no output written."""
+script_info['script_usage']=[]
+script_info['output_description']=""
+script_info['required_options']=[]
+script_info['optional_options']=[]
+
+script_info['version'] = __version__
+
+
 print deprecation_message

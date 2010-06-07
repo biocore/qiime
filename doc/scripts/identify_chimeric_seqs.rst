@@ -50,6 +50,8 @@ We suggest to use the pynast aligned representative sequences as input.
 		Number of taxonomic divisions to consider when comparing taxonomy assignments [default: 4]
 	-e, `-`-max_e_value
 		Max e-value to assign taxonomy [default: 1e-30]
+	-R, `-`-min_div_ratio
+		Min divergence ratio (passed to ChimeraSlayer). If set to None uses ChimeraSlayer default value.  [default: None]
 	-o, `-`-output_fp
 		Path to store output [default: derived from input_seqs_fp]
 

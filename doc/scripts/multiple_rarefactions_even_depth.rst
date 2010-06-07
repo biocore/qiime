@@ -32,6 +32,8 @@ To perform bootstrap, jackknife, and rarefaction analyses, the otu table must be
 		Num iterations at each seqs/sample level [default: 1]
 	`-`-lineages_included
 		Output rarefied otu tables will include taxonomic (lineage) information for each otu, if present in input otu table [default: False]
+	-k, `-`-keep_empty_otus
+		Otus (rows) of all zeros are usually omitted from the output otu tables, with -k they will not be removed from the output files [default: False]
 
 
 **Output:**

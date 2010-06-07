@@ -47,8 +47,6 @@ The steps performed by this script are:
 		Directory containing sff files [REQUIRED]
 	-e, `-`-input_experiment_fp
 		The tab-delimited text file with info about the experiment [REQUIRED]
-	-r, `-`-reference_set_fp
-		Path to reference set of 16S sequences [REQUIRED]
 	-o, `-`-output_dir
 		The output directory [REQUIRED]
 	-p, `-`-parameter_fp
@@ -64,6 +62,8 @@ The steps performed by this script are:
 		Print the commands but don't call them [default: False]
 	`-`-remove_unassigned
 		Comma-separated list of run prefixes for which to remove unassigned sequences [default: None]
+	-r, `-`-reference_set_fp
+		Path to reference set of 16S sequences [default: None; NO HUMAN SCREENING]
 
 
 **Output:**

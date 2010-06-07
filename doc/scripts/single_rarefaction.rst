@@ -30,6 +30,8 @@ To perform bootstrap, jackknife, and rarefaction analyses, the otu table must be
 		
 	`-`-lineages_included
 		Output rarefied otu tables will include taxonomic (lineage) information for each otu, if present in input otu table [default: False]
+	-k, `-`-keep_empty_otus
+		Otus (rows) of all zeros are usually omitted from the output otu table, with -k they will not be removed from the output file [default: False]
 
 
 **Output:**
