@@ -185,7 +185,7 @@ experiment_wrapper = """\
     <STUDY_REF refname="%(STUDY_REF)s" refcenter="%(SAMPLE_CENTER)s"%(STUDY_ACCESSION_ATTRIBUTE)s/>
     <DESIGN>
       <DESIGN_DESCRIPTION>%(EXPERIMENT_DESIGN_DESCRIPTION)s</DESIGN_DESCRIPTION>
-      <SAMPLE_DESCRIPTOR refname="%(STUDY_REF)s_default" refcenter="%(SAMPLE_CENTER)s"%(SAMPLE_ACCESSION_ATTRIBUTE)s>
+      <SAMPLE_DESCRIPTOR refname="%(DEFAULT_SAMPLE_NAME)s" refcenter="%(DEFAULT_SAMPLE_CENTER)s"%(DEFAULT_SAMPLE_ACCESSION_ATTRIBUTE)s>
         <POOL>%(POOL_MEMBERS_XML)s        </POOL>
       </SAMPLE_DESCRIPTOR>
       <LIBRARY_DESCRIPTOR>
@@ -461,12 +461,32 @@ def make_run_and_experiment(experiment_lines, sff_dir, attribute_file=None,
             for line in experiment_lines:
                 field_dict = dict(zip(columns, line))
                 pool_member_dict[field_dict['POOL_MEMBER_NAME']].append(field_dict)
-            #make default sample
+
+            # Set up default sample using optional fields
+            if not field_dict.get('DEFAULT_SAMPLE_NAME'):
+                field_dict['DEFAULT_SAMPLE_NAME'] = field_dict['STUDY_REF'] + '_default'
+            if not field_dict.get('DEFAULT_SAMPLE_CENTER'):
+                field_dict['DEFAULT_SAMPLE_CENTER'] = field_dict['SAMPLE_CENTER']
+            # Still use SAMPLE_ACCESSION field, but announce
+            # deprecation in favor of DEFAULT_SAMPLE_ACCESSION
+            if 'SAMPLE_ACCESSION' in field_dict:
+                stderr.write(
+                    'Warning: The SAMPLE_ACCESSION field has been deprecated. '
+                    'Please rename the field to DEFAULT_SAMPLE_ACCESSION.\n')
+                sample_acc_DEPRECATED = field_dict.get('SAMPLE_ACCESSION')
+                if sample_acc_DEPRECATED and (not field_dict.get('DEFAULT_SAMPLE_ACCESSION')):
+                    field_dict['DEFAULT_SAMPLE_ACCESSION'] = sample_acc_DEPRECATED
+            default_acc = field_dict.get('DEFAULT_SAMPLE_ACCESSION')
+            field_dict['DEFAULT_SAMPLE_ACCESSION_ATTRIBUTE'] = (
+                ' accession="%s"' % default_acc if default_acc else '')                    
+
+            #make default pool member dict
             default_field_dict = dict(zip(columns, experiment_lines[0]))
-            default_pool_member_id = default_field_dict['STUDY_REF'] + '_default_' + field_dict['RUN_PREFIX']
+            default_pool_member_id = field_dict['STUDY_REF'] + '_default_' + field_dict['RUN_PREFIX']
+            default_field_dict['RUN_ALIAS'] = default_pool_member_id
             default_field_dict['POOL_MEMBER_FILENAME'] = default_pool_member_id + '.sff'
             default_field_dict['POOL_MEMBER_NAME'] = ''
-            default_field_dict['RUN_ALIAS'] = default_pool_member_id
+
             barcodes = set()
             primers = set()
             linkers = set()
@@ -475,6 +495,7 @@ def make_run_and_experiment(experiment_lines, sff_dir, attribute_file=None,
             barcode_basecalls = []
             data_blocks = []
             MEMBER_ORDER = 1
+
             pool_member_list = [('',[default_field_dict])] + list(sorted(pool_member_dict.items()))
             for pool_name, pool_field_dicts in pool_member_list:
                 field_dict = pool_field_dicts[0]    #assume fields not related to data blocks are identical, read from first entry
