@@ -632,7 +632,7 @@ experiment_with_accessions_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
     <STUDY_REF refname="bodysites_study" refcenter="NCBI" accession="SRP001"/>
     <DESIGN>
       <DESIGN_DESCRIPTION>Pool of samples from different individual subjects</DESIGN_DESCRIPTION>
-      <SAMPLE_DESCRIPTOR refname="bodysites_study_default" refcenter="NCBI" accession="SRS077">
+      <SAMPLE_DESCRIPTOR refcenter="NCBI" accession="SRS077">
         <POOL>
             <MEMBER refname="700015468" refcenter="NCBI" member_name="F6AVWTA02_2865_700015468_V1-V3" proportion="0.014492754" accession="SRS008"><READ_LABEL read_group_tag="F6AVWTA02_AGTACACGTC">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
             <MEMBER refname="700015470" refcenter="NCBI" member_name="F6AVWTA02_2866_700015470_V1-V3" proportion="0.014492754" accession="SRS004"><READ_LABEL read_group_tag="F6AVWTA02_GCTCTGTACT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
@@ -733,7 +733,7 @@ experiment_with_accessions_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
     <STUDY_REF refname="bodysites_study" refcenter="NCBI" accession="SRP001"/>
     <DESIGN>
       <DESIGN_DESCRIPTION>Pool of samples from different individual subjects</DESIGN_DESCRIPTION>
-      <SAMPLE_DESCRIPTOR refname="bodysites_study_default" refcenter="NCBI" accession="SRS077">
+      <SAMPLE_DESCRIPTOR refcenter="NCBI" accession="SRS077">
         <POOL>
             <MEMBER refname="700015468" refcenter="NCBI" member_name="F6AVWTA01_2865_700015468_V1-V3" proportion="0.014492754" accession="SRS007"><READ_LABEL read_group_tag="F6AVWTA01_AGTACGTACT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
             <MEMBER refname="700015470" refcenter="NCBI" member_name="F6AVWTA01_2866_700015470_V1-V3" proportion="0.014492754" accession="SRS003"><READ_LABEL read_group_tag="F6AVWTA01_GCTCTACGTC">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>

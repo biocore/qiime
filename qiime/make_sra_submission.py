@@ -185,7 +185,7 @@ experiment_wrapper = """\
     <STUDY_REF refname="%(STUDY_REF)s" refcenter="%(SAMPLE_CENTER)s"%(STUDY_ACCESSION_ATTRIBUTE)s/>
     <DESIGN>
       <DESIGN_DESCRIPTION>%(EXPERIMENT_DESIGN_DESCRIPTION)s</DESIGN_DESCRIPTION>
-      <SAMPLE_DESCRIPTOR refname="%(DEFAULT_SAMPLE_NAME)s" refcenter="%(DEFAULT_SAMPLE_CENTER)s"%(DEFAULT_SAMPLE_ACCESSION_ATTRIBUTE)s>
+      <SAMPLE_DESCRIPTOR%(DEFAULT_SAMPLE_NAME_ATTRIBUTE)s refcenter="%(DEFAULT_SAMPLE_CENTER)s"%(DEFAULT_SAMPLE_ACCESSION_ATTRIBUTE)s>
         <POOL>%(POOL_MEMBERS_XML)s        </POOL>
       </SAMPLE_DESCRIPTOR>
       <LIBRARY_DESCRIPTOR>
@@ -463,10 +463,9 @@ def make_run_and_experiment(experiment_lines, sff_dir, attribute_file=None,
                 pool_member_dict[field_dict['POOL_MEMBER_NAME']].append(field_dict)
 
             # Set up default sample using optional fields
-            if not field_dict.get('DEFAULT_SAMPLE_NAME'):
-                field_dict['DEFAULT_SAMPLE_NAME'] = field_dict['STUDY_REF'] + '_default'
             if not field_dict.get('DEFAULT_SAMPLE_CENTER'):
                 field_dict['DEFAULT_SAMPLE_CENTER'] = field_dict['SAMPLE_CENTER']
+
             # Still use SAMPLE_ACCESSION field, but announce
             # deprecation in favor of DEFAULT_SAMPLE_ACCESSION
             if 'SAMPLE_ACCESSION' in field_dict:
@@ -478,7 +477,16 @@ def make_run_and_experiment(experiment_lines, sff_dir, attribute_file=None,
                     field_dict['DEFAULT_SAMPLE_ACCESSION'] = sample_acc_DEPRECATED
             default_acc = field_dict.get('DEFAULT_SAMPLE_ACCESSION')
             field_dict['DEFAULT_SAMPLE_ACCESSION_ATTRIBUTE'] = (
-                ' accession="%s"' % default_acc if default_acc else '')                    
+                ' accession="%s"' % default_acc if default_acc else '')
+
+            # If necessary, derive a default sample name
+            default_name = field_dict.get('DEFAULT_SAMPLE_NAME')
+            # If a default accession number has been provided, we
+            # should not derive the default sample name automatically.
+            if (not default_name) and (not default_acc):
+                default_name = field_dict['STUDY_REF'] + '_default'
+            field_dict['DEFAULT_SAMPLE_NAME_ATTRIBUTE'] = (
+                ' refname="%s"' % default_name if default_name else '')
 
             #make default pool member dict
             default_field_dict = dict(zip(columns, experiment_lines[0]))
