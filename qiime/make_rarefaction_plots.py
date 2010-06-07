@@ -415,7 +415,6 @@ def make_averages(color_prefs, data, background_color, label_color, rares, \
     rarefaction_legend_mat={}
     rarefaction_data_mat={}
     rare_num=0
-    
     #Iterate through the rarefaction files
     for r in natsort(rares):
 
@@ -585,7 +584,7 @@ def make_averages(color_prefs, data, background_color, label_color, rares, \
                     rarefaction_legend_mat[metric_name]['groups'][labelname][g]['groupcolor']=\
                                             data_colors[colors[g]].toHex()
 
-                
+
                 #Create the individual category average plots
                 rarefaction_data_mat,rarefaction_legend_mat=make_plots(\
                                     background_color, label_color, \
@@ -613,14 +612,14 @@ def make_averages(color_prefs, data, background_color, label_color, rares, \
                 #generate the filepath for the image file
                 file_path = os.path.join(ave_output_dir, \
                 splitext(split(rares_data['headers'][0])[1])[0])
-                
+
                 categories = [k for k in groups]
                 save_ave_rarefaction_plots(rares_data['xaxis'], rares_data['series'], \
                                        rares_data['error'], xmax, ymax, categories, \
                                        labelname, imagetype, resolution, data_colors, \
                                        colors, file_path, background_color, label_color, \
                                        metric_name)
-                                                
+
     if make_webpage:
         
         #format the html output
@@ -630,9 +629,9 @@ def make_averages(color_prefs, data, background_color, label_color, rares, \
         html_output=None
         
     return html_output
-    
 
-    
+
+
 def make_html(rarefaction_legend_mat, rarefaction_data_mat, xaxisvals, \
                 imagetype):
     rarefaction_legend_mat
@@ -695,7 +694,7 @@ def make_html(rarefaction_legend_mat, rarefaction_data_mat, xaxisvals, \
             for i in range(len(xaxisvals)):
                 data_table_html.append('<tr name="%s" style="display: none;">' % (category))
                 data_table_html.append('<td class="data" bgcolor="%s">%s</td><td class="data">%s</td>' % (category_colors[g],g,xaxisvals[i]))
-                for m in rarefaction_data_mat[category][g]:
+                for m in metrics: #bugfix, was rarefaction_data_mat[category][g]
                     data_table_html.append('<td class="data">%s</td><td class="data">%s</td>' % (rarefaction_data_mat[category][g][m]['ave'][i],rarefaction_data_mat[category][g][m]['err'][i]))
         data_table_html.append('</tr>')
     
