@@ -584,7 +584,7 @@ class BlastSeqsTests(TestCase):
     def test_idealfourths(self):
         """idealfourths: tests the ideal-fourths function which was imported from scipy
         at the following location (http://projects.scipy.org/scipy/browser/trunk/scipy/stats/tests/test_mmorestats.py?rev=4154)
-        """"
+        """
         test = numpy.arange(100)
         self.assertEqual(idealfourths(test),
                             [24.416666666666668, 74.583333333333343])
