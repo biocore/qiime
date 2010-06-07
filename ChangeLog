@@ -7,6 +7,7 @@ Add changes since QIIME 1.1.0 here
 * Renamed Qiime/scripts/jackknifed_upgma.py to Qiime/scripts/jackknifed_beta_diversity.py to reflect the addition of generating jackknifed 2d and 3d plots to this workflow script.
 * Updated parallel_multiple_rarefactions.py, parallel_alpha_diversity.py, and parallel_beta_diversity.py to use the jobs_to_start value for better control over the number of parallel runs.
 * uclust_ref otu picker now outputs an additional failures file listing the sequences which failed to cluster if the user passed --suppress_new_clusters. This is done for ease of parsing in downstream applications which want to do something special with these sequences. The failures list is no longer written to the log file (although the failures count is still written to the log file).
+* Added the filter_fasta.py script which allows users to build a fasta file from an existing fasta where specified sequences are either included or excluded from the new file. The sequences to keep or exclude can be specified by a variety of different inputs, for example as a list of sequence identifiers in a text file.
 
 QIIME 1.1.0 (14 May 2010)
 =========================
