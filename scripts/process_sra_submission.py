@@ -96,7 +96,7 @@ def main():
         status_update_callback = no_status_updates
 
     if opts.remove_unassigned:
-        remove_unassigned = remove_unassigned.split(',')
+        remove_unassigned = opts.remove_unassigned.split(',')
     else:
         remove_unassigned = []
     

@@ -1063,16 +1063,15 @@ def run_process_sra_submission(
         library_dir = join(output_dir, '%s_demultiplex' % run_prefix)
         
         params_str = get_params_str(params['split_libraries'])
-        
+
+        # Remove unassigned sequences at the split_libraries stage.
+        if run_prefix in remove_unassigned:
+            params_str = params_str + ' -r'
+
         split_libraries_cmd = \
          '%s %s/split_libraries.py -m %s -f %s -q %s -o %s %s' %\
          (python_exe_fp,script_dir,map_fp,fna_string, qual_string,
          library_dir, params_str)
-        
-        ## WHY IS THIS BEING DONE? SHOULD THIS JUST BE ADDED TO THE 
-        ## PARAMETERS FILE? PROBABLY...
-        if run_prefix in remove_unassigned:
-            split_libraries_args.append('-r')
         
         commands.append([(
             'Demultiplex run %s' % run_prefix, split_libraries_cmd)])
@@ -1143,9 +1142,6 @@ def run_process_sra_submission(
         run_sff_output_dir = join(submission_sff_dir, run_prefix)
         create_dir(run_sff_output_dir)
 
-        # for sff_fp in glob(join(per_lib_sff_dir, '*.sff')):
-        #     filename = split(fp)[1]
-        #     rename(fp,'%s/%s' % (run_sff_submission_dir,filename))
         if not per_lib_sff_dir.endswith('/'):
             per_lib_sff_dir = per_lib_sff_dir + '/'
         if not run_sff_output_dir.endswith('/'):
@@ -1163,7 +1159,7 @@ def run_process_sra_submission(
          'mv %s %s' % (orig_unassigned_fp, desired_unassigned_fp))])
     
     commands.append([('Create archive of per-library SFF files',
-                     'cd %s ; tar -czf %s %s' % 
+                     'cd "%s"; tar -czf %s %s' % 
                      (abspath(output_dir), split(submission_tar_fp)[1], 
                       split(submission_sff_dir)[1]))])
 
