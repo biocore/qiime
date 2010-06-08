@@ -1202,7 +1202,7 @@ run_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
   </RUN>
   <RUN alias="bodysites_lib2865_F6AVWTA02" center_name="JCVI" run_center="JCVI">
     <EXPERIMENT_REF refname="bodysites_F6AVWTA02" refcenter="bodysites"/>
-    <DATA_BLOCK serial="2" name="F6AVWTA02" region="0" member_name="F6AVWTA02_2865_700015468_V1-V3">
+    <DATA_BLOCK serial="1" name="F6AVWTA02" region="0" member_name="F6AVWTA02_2865_700015468_V1-V3">
       <FILES>
         <FILE filename="B-2011-01-S1.sff" filetype="sff" checksum_method="MD5" checksum="7852588b980ba08c1ff0d0ca7b686b16"/>
       </FILES>
@@ -1210,7 +1210,7 @@ run_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
   </RUN>
   <RUN alias="bodysites_lib2866_F6AVWTA02" center_name="JCVI" run_center="JCVI">
     <EXPERIMENT_REF refname="bodysites_F6AVWTA02" refcenter="bodysites"/>
-    <DATA_BLOCK serial="3" name="F6AVWTA02" region="0" member_name="F6AVWTA02_2866_700015470_V1-V3">
+    <DATA_BLOCK serial="1" name="F6AVWTA02" region="0" member_name="F6AVWTA02_2866_700015470_V1-V3">
       <FILES>
         <FILE filename="B-2008-08-S1.sff" filetype="sff" checksum_method="MD5" checksum="34f4185163c4ce10610a2427ba554ba3"/>
       </FILES>
@@ -1218,7 +1218,7 @@ run_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
   </RUN>
   <RUN alias="bodysites_lib2878_F6AVWTA02" center_name="JCVI" run_center="JCVI">
     <EXPERIMENT_REF refname="bodysites_F6AVWTA02" refcenter="bodysites"/>
-    <DATA_BLOCK serial="4" name="F6AVWTA02" region="0" member_name="F6AVWTA02_2878_700015438_V1-V3">
+    <DATA_BLOCK serial="1" name="F6AVWTA02" region="0" member_name="F6AVWTA02_2878_700015438_V1-V3">
       <FILES>
         <FILE filename="B-2008-05-S1.sff" filetype="sff" checksum_method="MD5" checksum="9fcf84e2a06a1175124e15064e9b63a1"/>
       </FILES>
@@ -1226,7 +1226,7 @@ run_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
   </RUN>
   <RUN alias="bodysites_lib2898_F6AVWTA02" center_name="JCVI" run_center="JCVI">
     <EXPERIMENT_REF refname="bodysites_F6AVWTA02" refcenter="bodysites"/>
-    <DATA_BLOCK serial="5" name="F6AVWTA02" region="0" member_name="F6AVWTA02_2898_700015766_V1-V3">
+    <DATA_BLOCK serial="1" name="F6AVWTA02" region="0" member_name="F6AVWTA02_2898_700015766_V1-V3">
       <FILES>
         <FILE filename="B-2009-06-S1.sff" filetype="sff" checksum_method="MD5" checksum="02d0751ce913ca796a5916803c574636"/>
       </FILES>
@@ -1234,7 +1234,7 @@ run_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
   </RUN>
   <RUN alias="bodysites_lib2907_F6AVWTA02" center_name="JCVI" run_center="JCVI">
     <EXPERIMENT_REF refname="bodysites_F6AVWTA02" refcenter="bodysites"/>
-    <DATA_BLOCK serial="6" name="F6AVWTA02" region="0" member_name="F6AVWTA02_2907_700016371_V1-V3">
+    <DATA_BLOCK serial="1" name="F6AVWTA02" region="0" member_name="F6AVWTA02_2907_700016371_V1-V3">
       <FILES>
         <FILE filename="B-2011-02-S1.sff" filetype="sff" checksum_method="MD5" checksum="6b2c7045be67a4cf4958d22c5b6ab790"/>
       </FILES>
@@ -1250,7 +1250,7 @@ run_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
   </RUN>
   <RUN alias="bodysites_lib2865_F6AVWTA01" center_name="JCVI" run_center="JCVI">
     <EXPERIMENT_REF refname="bodysites_F6AVWTA01" refcenter="bodysites"/>
-    <DATA_BLOCK serial="2" name="F6AVWTA01" region="0" member_name="F6AVWTA01_2865_700015468_V1-V3">
+    <DATA_BLOCK serial="1" name="F6AVWTA01" region="0" member_name="F6AVWTA01_2865_700015468_V1-V3">
       <FILES>
         <FILE filename="B-2005-06-S1.sff" filetype="sff" checksum_method="MD5" checksum="8d2ef95655a4f0cf4b6e1e2966c6ac30"/>
       </FILES>
@@ -1258,7 +1258,7 @@ run_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
   </RUN>
   <RUN alias="bodysites_lib2866_F6AVWTA01" center_name="JCVI" run_center="JCVI">
     <EXPERIMENT_REF refname="bodysites_F6AVWTA01" refcenter="bodysites"/>
-    <DATA_BLOCK serial="3" name="F6AVWTA01" region="0" member_name="F6AVWTA01_2866_700015470_V1-V3">
+    <DATA_BLOCK serial="1" name="F6AVWTA01" region="0" member_name="F6AVWTA01_2866_700015470_V1-V3">
       <FILES>
         <FILE filename="B-2004-04-S1.sff" filetype="sff" checksum_method="MD5" checksum="c693c0f79bfd05d7fb348f0182fbf808"/>
       </FILES>
@@ -1266,7 +1266,7 @@ run_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
   </RUN>
   <RUN alias="bodysites_lib2878_F6AVWTA01" center_name="JCVI" run_center="JCVI">
     <EXPERIMENT_REF refname="bodysites_F6AVWTA01" refcenter="bodysites"/>
-    <DATA_BLOCK serial="4" name="F6AVWTA01" region="0" member_name="F6AVWTA01_2878_700015438_V1-V3">
+    <DATA_BLOCK serial="1" name="F6AVWTA01" region="0" member_name="F6AVWTA01_2878_700015438_V1-V3">
       <FILES>
         <FILE filename="B-2004-03-S1.sff" filetype="sff" checksum_method="MD5" checksum="f05c1bb96759a0c3c9bcc0196ceac3bb"/>
       </FILES>
@@ -1274,7 +1274,7 @@ run_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
   </RUN>
   <RUN alias="bodysites_lib2898_F6AVWTA01" center_name="JCVI" run_center="JCVI">
     <EXPERIMENT_REF refname="bodysites_F6AVWTA01" refcenter="bodysites"/>
-    <DATA_BLOCK serial="5" name="F6AVWTA01" region="0" member_name="F6AVWTA01_2898_700015766_V1-V3">
+    <DATA_BLOCK serial="1" name="F6AVWTA01" region="0" member_name="F6AVWTA01_2898_700015766_V1-V3">
       <FILES>
         <FILE filename="B-2004-08-S1.sff" filetype="sff" checksum_method="MD5" checksum="b6f607366b77c2d5b58837870d6b07c1"/>
       </FILES>
@@ -1282,7 +1282,7 @@ run_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
   </RUN>
   <RUN alias="bodysites_lib2907_F6AVWTA01" center_name="JCVI" run_center="JCVI">
     <EXPERIMENT_REF refname="bodysites_F6AVWTA01" refcenter="bodysites"/>
-    <DATA_BLOCK serial="6" name="F6AVWTA01" region="0" member_name="F6AVWTA01_2907_700016371_V1-V3">
+    <DATA_BLOCK serial="1" name="F6AVWTA01" region="0" member_name="F6AVWTA01_2907_700016371_V1-V3">
       <FILES>
         <FILE filename="B-2006-03-S1.sff" filetype="sff" checksum_method="MD5" checksum="a20fa67736ffc9f966827275036954b5"/>
       </FILES>

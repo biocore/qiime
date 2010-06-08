@@ -66,7 +66,7 @@ run_wrapper = '''\
   </RUN>'''
 
 data_block_wrapper = '''
-    <DATA_BLOCK serial="%(MEMBER_ORDER)s" name="%(RUN_PREFIX)s" region="%(REGION)s" member_name="%(POOL_MEMBER_NAME)s">
+    <DATA_BLOCK serial="1" name="%(RUN_PREFIX)s" region="%(REGION)s" member_name="%(POOL_MEMBER_NAME)s">
       <FILES>
         <FILE filename="%(POOL_MEMBER_FILENAME)s" filetype="sff" checksum_method="MD5" checksum="%(CHECKSUM)s"/>
       </FILES>
