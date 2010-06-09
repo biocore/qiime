@@ -45,12 +45,12 @@ script_info['required_options']= [\
     make_option('-i', '--coord_fnames', \
         help='This is comma-separated list of the paths to the principal \
 coordinates files (i.e., resulting file \
-from principal_coordinates.py), e.g \'pcoa1.txt,pcoa2.txt\'')
-]
-
-script_info['optional_options']= [\
+from principal_coordinates.py), e.g \'pcoa1.txt,pcoa2.txt\''),
  make_option('-m', '--map_fname', dest='map_fname', \
      help='This is the user-generated mapping file [default=%default]'),
+]
+
+script_info['optional_options']= [
  make_option('-b', '--colorby', dest='colorby',\
      help='This is a list of the categories to color by in the plots from the \
 user-generated mapping file. The categories must match the name of a column \
