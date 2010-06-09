@@ -15,6 +15,7 @@ from numpy import array,concatenate,asarray,transpose
 from cogent.parse.table import SeparatorFormatParser
 from optparse import OptionParser
 from qiime.parse import parse_otu_table
+from qiime.util import MissingFileError
 import os
 
 def make_html_doc(js_filename):

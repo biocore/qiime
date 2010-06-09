@@ -60,6 +60,9 @@ class AlignmentMissingError(IOError):
     """Exception for missing alignment file"""
     pass
 
+class MissingFileError(IOError):
+    pass
+
 def make_safe_f(f, allowed_params):
     """Make version of f that ignores extra named params."""
     def inner(*args, **kwargs):

@@ -21,7 +21,7 @@ from random import choice
 import re
 from time import strftime
 from biplots import make_mage_taxa
-from qiime.util import load_pcoa_files, summarize_pcoas
+from qiime.util import load_pcoa_files, summarize_pcoas, MissingFileError
 
 '''
 xdata_colors = {
@@ -46,11 +46,6 @@ data_colors={'blue':'#0000FF','lime':'#00FF00','red':'#FF0000', \
              'green':'#008000','maroon':'#800000','teal':'#008080', \
              'purple':'#800080','olive':'#808000', \
              'silver':'#C0C0C0','gray':'#808080'}
-             
-
-
-class MissingFileError(IOError):
-    pass
 
 def create_dir(dir_path,plot_type):
     """Creates directory where data is stored.  If directory is not supplied in\

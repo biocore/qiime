@@ -17,6 +17,7 @@ from parse import parse_mapping_file, group_by_field, parse_otu_table
 from numpy import array
 import os
 import re
+from qiime.util import MissingFileError
 
 def string_to_rgb(s):
     """Converts hex string to RGB"""
