@@ -546,7 +546,7 @@ def get_multiple_coords(coord_fnames):
         for i in xrange(1,len(coord_fnames)):
             # edges go from first file's points to other files' points
             edges += [('%s_%d' %(_id,0), '%s_%d' %(_id,i))]
-    return edges, [coord_header, coords, eigvals, pct_var]
+    return edges, [coord_header, coords, eigvals, pct_var, None, None]
 
 def get_taxa(taxa_fname, sample_ids):
     """Opens and returns coords data"""
