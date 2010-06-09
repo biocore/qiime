@@ -85,7 +85,7 @@ def get_connection_info(lines, num_meta, meta_dict):
     con_list = []
     nodes = []
 
-    sample_ids, otu_ids, otu_table, lineages = parse_otu_table(lines)
+    sample_ids, otu_ids, otu_table, lineages = parse_otu_table(lines,count_map_f=float)
     if lineages == []:
         is_con = False
     else:
@@ -156,7 +156,7 @@ def get_connection_info(lines, num_meta, meta_dict):
         red_node_file_line = ['@'+n[0],'','otu_collapsed',str(d),str(float(d)),'other']
         red_node_file_line.extend(['otu']*num_meta)
         red_node_file_str.append('\t'.join(red_node_file_line))
-        red_edge_file_str.append('\t'.join([n[0],'@'+n[0],"1","missed",n[1]]))
+        red_edge_file_str.append('\t'.join([n[0],'@'+n[0],"1.0","missed",n[1]]))
     multi_red = defaultdict(list)
     
     for i,(o,s) in enumerate(multi.items()):
@@ -192,10 +192,11 @@ def get_num_con_cat(con_by_sample,cat_by_sample):
 
     return num_con_cat, num_con
 
-def get_num_cat(sample_by_cat):
+def get_num_cat(sample_by_cat,samples_in_otus):
     num_cat = defaultdict(int)
     for cat,samples in sample_by_cat.items():
-        num_cat[cat[0]] += (len(samples)*(len(samples)-1))/2
+        num_samples = len(set(samples_in_otus) & set(samples))
+        num_cat[cat[0]] += (num_samples*(num_samples-1))/2
     return num_cat
 
 def make_table_file(lines, labels, dir_path,filename):
@@ -261,7 +262,6 @@ def make_props_files(labels,label_list,dir_path,data,background_color,label_colo
     cat_connected_num = 0
     mapping=data['map']
     groups_and_colors=iter_color_groups(mapping,prefs)
-    
     for params in groups_and_colors:
         l = params[0]
         if l == "SampleID" or l == "Description":
@@ -299,7 +299,7 @@ def create_network_and_stats(dir_path,map_lines,otu_sample_lines,prefs,data,back
             red_edge_file_str, otu_dc, degree_counts,sample_dc, \
             = get_connection_info(otu_sample_lines, num_meta, meta_dict)
     num_con_cat, num_con = get_num_con_cat(con_by_sample,cat_by_sample)
-    num_cat = get_num_cat(sample_by_cat)
+    num_cat = get_num_cat(sample_by_cat,con_by_sample.keys())
     dir_path = os.path.join(dir_path,"otu_network")
     make_table_file(edge_file_str, labels, dir_path,"real_edge_table.txt")
     make_table_file(node_file_str,node_labels,dir_path,"real_node_table.txt")

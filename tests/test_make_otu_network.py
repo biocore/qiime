@@ -72,23 +72,23 @@ otu_10	0	2	0	4	0	Bacteria; Firmicutes; Mollicutes; Clostridium_aff_innocuum_CM97
                               '3':set(['4','2']),'4':set(['3','1','2']),
                               '5':set(['2'])}
 
-        self.edge_file_str =["2	otu_1	1	Bacteria:Actinobacteria:Coriobacteridae	090809	1800",\
-                             "5	otu_1	6	Bacteria:Actinobacteria:Coriobacteridae	091009	1200",\
-                             "1	otu_2	2	Bacteria:Bacteroidetes:Bacteroidales:Bacteroidaceae	090809	1200",\
-                             "3	otu_3	3	Bacteria:Firmicutes:Clostridia:Clostridiales	090909	1200",\
-                             "4	otu_3	1	Bacteria:Firmicutes:Clostridia:Clostridiales	090909	1800",\
-                             "5	otu_4	5	Bacteria:Spirochaetes:Spirochaetales:Spirochaetaceae	091009	1200",\
-                             "2	otu_5	4	Bacteria:Bacteroidetes:Bacteroidales:Rikenellaceae	090809	1800",\
-                             "3	otu_5	2	Bacteria:Bacteroidetes:Bacteroidales:Rikenellaceae	090909	1200",\
-                             "1	otu_6	3	Bacteria:Bacteroidetes:Bacteroidales:Dysgonomonaceae	090809	1200",\
-                             "2	otu_6	6	Bacteria:Bacteroidetes:Bacteroidales:Dysgonomonaceae	090809	1800",\
-                             "3	otu_7	4	Bacteria:Bacteroidetes:Bacteroidales:Odoribacteriaceae	090909	1200",\
-                             "4	otu_7	2	Bacteria:Bacteroidetes:Bacteroidales:Odoribacteriaceae	090909	1800",\
-                             "5	otu_8	3	Bacteria:Bacteroidetes:Bacteroidales:Dysgonomonaceae:otu_425	091009	1200",\
-                             "1	otu_9	2	Bacteria:Bacteroidetes:Bacteroidales:Dysgonomonaceae:otu_425	090809	1200",\
-                             "4	otu_9	5	Bacteria:Bacteroidetes:Bacteroidales:Dysgonomonaceae:otu_425	090909	1800",\
-                             "2	otu_10	2	Bacteria:Firmicutes:Mollicutes:Clostridium_aff_innocuum_CM970	090809	1800",\
-                             "4	otu_10	4	Bacteria:Firmicutes:Mollicutes:Clostridium_aff_innocuum_CM970	090909	1800"]
+        self.edge_file_str =["2	otu_1	1.0	Bacteria:Actinobacteria:Coriobacteridae	090809	1800",\
+                             "5	otu_1	6.0	Bacteria:Actinobacteria:Coriobacteridae	091009	1200",\
+                             "1	otu_2	2.0	Bacteria:Bacteroidetes:Bacteroidales:Bacteroidaceae	090809	1200",\
+                             "3	otu_3	3.0	Bacteria:Firmicutes:Clostridia:Clostridiales	090909	1200",\
+                             "4	otu_3	1.0	Bacteria:Firmicutes:Clostridia:Clostridiales	090909	1800",\
+                             "5	otu_4	5.0	Bacteria:Spirochaetes:Spirochaetales:Spirochaetaceae	091009	1200",\
+                             "2	otu_5	4.0	Bacteria:Bacteroidetes:Bacteroidales:Rikenellaceae	090809	1800",\
+                             "3	otu_5	2.0	Bacteria:Bacteroidetes:Bacteroidales:Rikenellaceae	090909	1200",\
+                             "1	otu_6	3.0	Bacteria:Bacteroidetes:Bacteroidales:Dysgonomonaceae	090809	1200",\
+                             "2	otu_6	6.0	Bacteria:Bacteroidetes:Bacteroidales:Dysgonomonaceae	090809	1800",\
+                             "3	otu_7	4.0	Bacteria:Bacteroidetes:Bacteroidales:Odoribacteriaceae	090909	1200",\
+                             "4	otu_7	2.0	Bacteria:Bacteroidetes:Bacteroidales:Odoribacteriaceae	090909	1800",\
+                             "5	otu_8	3.0	Bacteria:Bacteroidetes:Bacteroidales:Dysgonomonaceae:otu_425	091009	1200",\
+                             "1	otu_9	2.0	Bacteria:Bacteroidetes:Bacteroidales:Dysgonomonaceae:otu_425	090809	1200",\
+                             "4	otu_9	5.0	Bacteria:Bacteroidetes:Bacteroidales:Dysgonomonaceae:otu_425	090909	1800",\
+                             "2	otu_10	2.0	Bacteria:Firmicutes:Mollicutes:Clostridium_aff_innocuum_CM970	090809	1800",\
+                             "4	otu_10	4.0	Bacteria:Firmicutes:Mollicutes:Clostridium_aff_innocuum_CM970	090909	1800"]
 
         self.node_file_str =["1	1	user_node	3	7.0	other	090809	1200",
                              "2	2	user_node	4	13.0	other	090809	1800",
@@ -107,22 +107,22 @@ otu_10	0	2	0	4	0	Bacteria; Firmicutes; Mollicutes; Clostridium_aff_innocuum_CM97
                              "otu_10		otu_node	2	6.0	Bacteria:Firmicutes:Mollicutes:Clostridium_aff_innocuum_CM970	otu	otu"]
 
 
-        self.red_edge_file_str =["2	otu_1	1	Bacteria:Actinobacteria:Coriobacteridae	090809	1800",\
-                             "5	otu_1	6	Bacteria:Actinobacteria:Coriobacteridae	091009	1200",\
-                             "1	@1	1	missed	090809	1200",\
-                             "3	otu_3	3	Bacteria:Firmicutes:Clostridia:Clostridiales	090909	1200",
-                             "4	otu_3	1	Bacteria:Firmicutes:Clostridia:Clostridiales	090909	1800",
-                             "5	@5	1	missed	091009	1200",
-                             "2	otu_5	4	Bacteria:Bacteroidetes:Bacteroidales:Rikenellaceae	090809	1800",
-                             "3	otu_5	2	Bacteria:Bacteroidetes:Bacteroidales:Rikenellaceae	090909	1200",
-                             "1	otu_6	3	Bacteria:Bacteroidetes:Bacteroidales:Dysgonomonaceae	090809	1200",
-                             "2	otu_6	6	Bacteria:Bacteroidetes:Bacteroidales:Dysgonomonaceae	090809	1800",
-                             "3	otu_7	4	Bacteria:Bacteroidetes:Bacteroidales:Odoribacteriaceae	090909	1200",
-                             "4	otu_7	2	Bacteria:Bacteroidetes:Bacteroidales:Odoribacteriaceae	090909	1800",
-                             "1	otu_9	2	Bacteria:Bacteroidetes:Bacteroidales:Dysgonomonaceae:otu_425	090809	1200",
-                             "4	otu_9	5	Bacteria:Bacteroidetes:Bacteroidales:Dysgonomonaceae:otu_425	090909	1800",
-                             "2	otu_10	2	Bacteria:Firmicutes:Mollicutes:Clostridium_aff_innocuum_CM970	090809	1800",
-                             "4	otu_10	4	Bacteria:Firmicutes:Mollicutes:Clostridium_aff_innocuum_CM970	090909	1800"]
+        self.red_edge_file_str =["2	otu_1	1.0	Bacteria:Actinobacteria:Coriobacteridae	090809	1800",\
+                             "5	otu_1	6.0	Bacteria:Actinobacteria:Coriobacteridae	091009	1200",\
+                             "1	@1	1.0	missed	090809	1200",\
+                             "3	otu_3	3.0	Bacteria:Firmicutes:Clostridia:Clostridiales	090909	1200",
+                             "4	otu_3	1.0	Bacteria:Firmicutes:Clostridia:Clostridiales	090909	1800",
+                             "5	@5	1.0	missed	091009	1200",
+                             "2	otu_5	4.0	Bacteria:Bacteroidetes:Bacteroidales:Rikenellaceae	090809	1800",
+                             "3	otu_5	2.0	Bacteria:Bacteroidetes:Bacteroidales:Rikenellaceae	090909	1200",
+                             "1	otu_6	3.0	Bacteria:Bacteroidetes:Bacteroidales:Dysgonomonaceae	090809	1200",
+                             "2	otu_6	6.0	Bacteria:Bacteroidetes:Bacteroidales:Dysgonomonaceae	090809	1800",
+                             "3	otu_7	4.0	Bacteria:Bacteroidetes:Bacteroidales:Odoribacteriaceae	090909	1200",
+                             "4	otu_7	2.0	Bacteria:Bacteroidetes:Bacteroidales:Odoribacteriaceae	090909	1800",
+                             "1	otu_9	2.0	Bacteria:Bacteroidetes:Bacteroidales:Dysgonomonaceae:otu_425	090809	1200",
+                             "4	otu_9	5.0	Bacteria:Bacteroidetes:Bacteroidales:Dysgonomonaceae:otu_425	090909	1800",
+                             "2	otu_10	2.0	Bacteria:Firmicutes:Mollicutes:Clostridium_aff_innocuum_CM970	090809	1800",
+                             "4	otu_10	4.0	Bacteria:Firmicutes:Mollicutes:Clostridium_aff_innocuum_CM970	090909	1800"]
 
         self.red_node_file_str =["1	1	user_node	3	7.0	other	090809	1200",
                              "2	2	user_node	4	13.0	other	090809	1800",
@@ -148,6 +148,8 @@ otu_10	0	2	0	4	0	Bacteria; Firmicutes; Mollicutes; Clostridium_aff_innocuum_CM97
         self.num_con = 6
         self.num_cat = {"Day":2,
                         "time":4}
+        self.num_cat_less = {"Day":1,
+                        "time":3}
         self._paths_to_clean_up = []
         self._dir_to_clean_up = ''
 
@@ -188,8 +190,10 @@ otu_10	0	2	0	4	0	Bacteria; Firmicutes; Mollicutes; Clostridium_aff_innocuum_CM97
         self.assertEqual(num_con,self.num_con)
 
     def test_get_num_cat(self):
-        num_cat = get_num_cat(self.sample_by_cat)
+        num_cat = get_num_cat(self.sample_by_cat,self.cat_by_sample.keys())
         self.assertEqual(num_cat,self.num_cat)
+        num_cat = get_num_cat(self.sample_by_cat,self.cat_by_sample.keys()[:-1])
+        self.assertEqual(num_cat,self.num_cat_less)
         
         
     def test_make_table_file(self):
