@@ -24,7 +24,9 @@ from qiime.make_3d_plots import (make_3d_plots,scale_pc_data_matrix,
                                     get_custom_coords,remove_nans,
                                     scale_custom_coords,remove_unmapped_samples,
                                     make_edges_output,make_ellipsoid_faces,
-                                    make_mage_ellipsoids,subdivide)
+                                    make_mage_ellipsoids,subdivide,
+                                    get_multiple_coords)
+from cogent.app.util import get_tmp_filename
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -273,6 +275,49 @@ Removes any samples not present in mapping file"""
                    for ai in exp_subdivide]
         self.assertEqual(res,exp)
 
+    def test_get_multiple_coords(self):
+        # create the temporary pc files
+        pc_file_1 = '\n'.join(['pc vector number\t1\t2',
+                               'A\t1.1\t2.2',
+                               'B\t4.1\t4.2',
+                               'C\t-.1\t-.2',
+                               'eigvals\t0.52\t0.24',
+                               '% variation explained\t25.12\t13.29'])
+        pc_file_2 = '\n'.join(['pc vector number\t1\t2',
+                               'A\t2.1\t3.2',
+                               'B\t5.1\t6.2',
+                               'C\t-1.1\t-2.2',
+                               'eigvals\t0.32\t0.14',
+                               '% variation explained\t20.11\t12.28'])
+
+        fp1 = get_tmp_filename()
+        fp2 = get_tmp_filename()
+        try:
+            f1 = open(fp1,'w')
+            f2 = open(fp2,'w')
+        except IOError, e:
+            raise e,"Could not create temporary files: %s, %s" %(f1,f2)
+        
+        f1.write(pc_file_1)
+        f1.close()
+        f2.write(pc_file_2)
+        f2.close()
+        
+        exp_edges = [('A_0', 'A_1'), ('B_0', 'B_1'), ('C_0', 'C_1')]
+        exp_coords = [['A_0', 'B_0', 'C_0', 'A_1', 'B_1', 'C_1'], 
+                      array([[ 1.1,  2.2],
+                             [ 4.1,  4.2],
+                             [-0.1, -0.2],
+                             [ 2.1,  3.2],
+                             [ 5.1,  6.2],
+                             [-1.1, -2.2]]), 
+                      array([ 0.52,  0.24]), array([ 25.12,  13.29]),
+                      None, None]
+        edges, coords = get_multiple_coords([fp1,fp2])
+        self.assertEqual(edges, exp_edges)
+        self.assertEqual(coords, exp_coords)
+
+        
 
 exp_kin_full=\
 ['@kinemage {Day_unscaled}', '@dimension {PC1} {PC2} {PC3}', \
