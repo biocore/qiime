@@ -50,7 +50,7 @@ from principal_coordinates.py), e.g \'pcoa1.txt,pcoa2.txt\''),
      help='This is the user-generated mapping file [default=%default]'),
 ]
 
-script_info['optional_options']= [
+script_info['optional_options']= [\
  make_option('-b', '--colorby', dest='colorby',\
      help='This is a list of the categories to color by in the plots from the \
 user-generated mapping file. The categories must match the name of a column \
@@ -99,23 +99,6 @@ def main():
 
     # remove any samples not present in mapping file
     remove_unmapped_samples(data['map'],data['coord'],data['edges'])
-
-    #Determine which mapping headers to color by, if none given, color by all 
-    # columns in map file
-    if opts.prefs_path:
-        prefs = eval(open(opts.prefs_path, 'U').read())
-        prefs, data=process_colorby(None, data, prefs)
-    elif opts.colorby:
-        prefs,data=process_colorby(opts.colorby,data)
-    else:
-        default_colorby = ','.join(data['map'][0])
-        prefs,data=process_colorby(default_colorby,data)
-        prefs={'Sample':{'column':'SampleID'}}
-
-#    print len(data['coord'][0])
-#    print
-#    print data['map']
-#    print len(data['map'])
 
     # process custom axes, if present.
     custom_axes = None
