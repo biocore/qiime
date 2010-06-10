@@ -53,10 +53,11 @@ class SingleRarefactionMaker(FunctionWithParams):
             self.otu_table, self.depth, small_included)
         sub_otu_ids = self.taxon_names
         if empty_otus_removed:
-            sub_otu_table, sub_otu_ids = remove_empty_otus(sub_otu_table, 
-                sub_otu_ids)
+            sub_otu_table, sub_otu_ids, sub_otu_lineages = \
+                remove_empty_otus(sub_otu_table, 
+                sub_otu_ids, otu_lineages) # otu_lineages can be None
         self._write_rarefaction(output_fname, sub_sample_ids, sub_otu_ids,
-            sub_otu_table, otu_lineages)
+            sub_otu_table, sub_otu_lineages)
     
     def _write_rarefaction(self, fname, sub_sample_ids, sub_otu_ids,\
         sub_otu_table, otu_lineages):
@@ -102,10 +103,11 @@ class RarefactionMaker(FunctionWithParams):
                   small_included)
                 sub_otu_ids = self.taxon_names
                 if empty_otus_removed:
-                    sub_otu_table, sub_otu_ids =\
-                        remove_empty_otus(sub_otu_table,sub_otu_ids)
+                    sub_otu_table, sub_otu_ids, sub_otu_lineages =\
+                        remove_empty_otus(sub_otu_table,sub_otu_ids,
+                        otu_lineages)
                 self._write_rarefaction(depth, rep, sub_sample_ids, 
-                    sub_otu_ids, sub_otu_table, otu_lineages)
+                    sub_otu_ids, sub_otu_table, sub_otu_lineages)
 
         if include_full:
             self._write_rarefaction('full', 0, self.sample_names, \
@@ -173,7 +175,7 @@ def get_rare_data(sample_ids, otu_table,
     return res_sample_ids, res_otu_table
 
 
-def remove_empty_otus(otu_mtx, otu_ids):
+def remove_empty_otus(otu_mtx, otu_ids, otu_lineages=None):
     """ return matrix and otu_ids with otus of all 0's removed
     
     otu_mtx (in and out) is otus (rows) by samples (cols)"""
@@ -184,6 +186,10 @@ def remove_empty_otus(otu_mtx, otu_ids):
             nonempty_otu_idxs.append(i)
             res_otu_ids.append(otu_ids[i])
     res_otu_mtx = otu_mtx[nonempty_otu_idxs,:]
+    if otu_lineages == None:
+        res_otu_lineages = None
+    else:
+        res_otu_lineages = [otu_lineages[i] for i in nonempty_otu_idxs]
 
-    return res_otu_mtx, res_otu_ids
+    return res_otu_mtx, res_otu_ids, res_otu_lineages
 

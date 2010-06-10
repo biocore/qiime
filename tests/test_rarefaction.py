@@ -82,10 +82,13 @@ class FunctionTests(TestCase):
                                 [0,0,0,0],
                                 [.1,0,0,0]])
         otu_names = list('abc')
-        res_mtx, res_otu_names = remove_empty_otus(otu_mtx, otu_names)
+        otu_lineages = ['lin1','lin2','lin3']
+        res_mtx, res_otu_names, res_lineages = \
+            remove_empty_otus(otu_mtx, otu_names, otu_lineages)
         self.assertFloatEqual(res_mtx, numpy.array([[0,3,0,0],
                                 [.1,0,0,0]]))
         self.assertEqual(res_otu_names, list('ac'))
+        self.assertEqual(res_lineages, ['lin1','lin3'])
 #run tests if called from command line
 if __name__ == '__main__':
     main()
