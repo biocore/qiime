@@ -34,21 +34,22 @@ class TopLevelTests(TestCase):
         # copy sff file to working directory
         self.sff_dir = tempfile.mkdtemp()
         self.sff_fp = os.path.join(self.sff_dir, 'test.sff')
+        self.outpath = os.path.join(self.sff_dir,'test')
         shutil.copy(sff_original_fp, self.sff_fp)
-
+    '''
     def tearDown(self):
         shutil.rmtree(self.sff_dir)
-
+    '''
     def test_make_flow_txt(self):
         """test_make_flow_txt should make flowgram file as expected"""
-        make_flow_txt(self.sff_fp)
-        expected_fp = os.path.join(self.sff_dir, 'test.txt')
+        make_flow_txt(self.sff_fp,self.outpath)
+        expected_fp = os.path.join(self.sff_dir,'test.txt')
         observed = open(expected_fp).read()
         self.assertEqual(observed, flow_expected)
 
     def test_make_fna(self):
         """test_make_fna should make fasta file as expected"""
-        make_fna(self.sff_fp)
+        make_fna(self.sff_fp,self.outpath)
         expected_fp = os.path.join(self.sff_dir, 'test.fna')
         observed = open(expected_fp).read()
         expected = (
@@ -59,7 +60,7 @@ class TopLevelTests(TestCase):
 
     def test_make_qual(self):
         """test_make_qual should make qual file as expected"""
-        make_qual(self.sff_fp)
+        make_qual(self.sff_fp,self.outpath)
         expected_fp = os.path.join(self.sff_dir, 'test.qual')
         observed = open(expected_fp).read()
         expected = (
@@ -71,8 +72,8 @@ class TopLevelTests(TestCase):
 
     def test_prep_sffs_in_dir(self):
         """test_prep_sffs_in_dir should make fasta/qual from sffs."""
-        prep_sffs_in_dir(self.sff_dir)
-
+        prep_sffs_in_dir(self.sff_dir,False,self.sff_dir)
+        
         # Check fna file
         expected_fp = os.path.join(self.sff_dir, 'test.fna')
         observed = open(expected_fp).read()

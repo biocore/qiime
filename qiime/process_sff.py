@@ -3,7 +3,7 @@
 from cogent.util.misc import app_path
 from cogent.app.util import ApplicationNotFoundError
 from os import listdir, system
-from os.path import splitext, join
+from os.path import splitext, join, isfile, isdir
 """Converts directory of sff files into fasta and qual files.
 
 Requires that 454's off-instrument apps (sffinfo, sfffile) are on your path.
@@ -23,27 +23,41 @@ def check_sffinfo():
         raise ApplicationNotFoundError,\
          "sffinfo is not in $PATH. Is it installed? Have you added it to $PATH?"
 
-def make_flow_txt(filename):
+def make_flow_txt(filename,output_pathname):
     """Makes flowgram file from sff file."""
     check_sffinfo()
-    system('sffinfo %s > %s.txt' % (filename, splitext(filename)[0]))
+    system('sffinfo %s > %s.txt' % (filename, output_pathname))
 
-def make_fna(filename):
+def make_fna(filename,output_pathname):
     """Makes fna file from sff file."""
     check_sffinfo()
-    system('sffinfo -s %s > %s.fna' % (filename, splitext(filename)[0]))
+    system('sffinfo -s %s > %s.fna' % (filename, output_pathname))
 
-def make_qual(filename):
+def make_qual(filename,output_pathname):
     """Makes qual file from sff file."""
     check_sffinfo()
-    system('sffinfo -q %s > %s.qual' % (filename, splitext(filename)[0]))
+    system('sffinfo -q %s > %s.qual' % (filename, output_pathname))
 
-def prep_sffs_in_dir(pathname,make_flowgram):
+def prep_sffs_in_dir(pathname,make_flowgram, output_pathname):
     """Converts all sffs in dir to fasta/qual."""
     check_sffinfo()
-    for name in listdir(pathname):
-        if name.endswith('.sff'):
-            make_fna(join(pathname,name))
-            make_qual(join(pathname,name))
-            if make_flowgram:
-                make_flow_txt(join(pathname,name))
+
+    if isfile(pathname):
+        make_fna(pathname,output_pathname)
+        make_qual(pathname,output_pathname)
+        if make_flowgram:
+            make_flow_txt(pathname,output_pathname)
+    elif isdir(pathname):
+        for name in listdir(pathname):
+            if name.endswith('.sff'):
+                make_fna(join(pathname,name),join(output_pathname, \
+                                                    splitext(name)[0]))
+                make_qual(join(pathname,name),join(output_pathname, \
+                                                    splitext(name)[0]))
+                if make_flowgram:
+                    make_flow_txt(join(pathname,name), \
+                                    join(output_pathname, \
+                                    splitext(name)[0]))
+    else:
+        raise OSError, "The path '%s' is not valid!" % pathname
+        

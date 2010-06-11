@@ -1,5 +1,6 @@
 Add changes since QIIME 1.1.0 here
 ==================================
+* Added the ability to write out the flowgram file in process_sff.py, along with the ability to define and output directory.
 * SRA submission protocol updated to perform human screening with uclust_ref against 16S reference sequences, rather than cdhit/blast against reference sequences. This can be a lot faster, and reduces the complexity of the code by requiring users to have uclust installed for the human screen rather than cdhit and blast.
 * Updated SRA protocol to allow users to skip the human screening step as this takes about 2/3 or more of the total analysis time, and is not relevant for non-human-derived samples (e.g., soil samples).
 * Added ability to pass --max_accepts and --max_rejects through the uclust otu pickers. 
