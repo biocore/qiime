@@ -38,10 +38,12 @@ def make_qual(filename):
     check_sffinfo()
     system('sffinfo -q %s > %s.qual' % (filename, splitext(filename)[0]))
 
-def prep_sffs_in_dir(pathname):
+def prep_sffs_in_dir(pathname,make_flowgram):
     """Converts all sffs in dir to fasta/qual."""
     check_sffinfo()
     for name in listdir(pathname):
         if name.endswith('.sff'):
             make_fna(join(pathname,name))
             make_qual(join(pathname,name))
+            if make_flowgram:
+                make_flow_txt(join(pathname,name))
