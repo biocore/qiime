@@ -10,7 +10,7 @@ Requires that 454's off-instrument apps (sffinfo, sfffile) are on your path.
 """
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2010, The QIIME Project" 
-__credits__ = ["Rob Knight","Greg Caporaso"] 
+__credits__ = ["Rob Knight","Greg Caporaso", "Jesse Stombaugh"] 
 __license__ = "GPL"
 __version__ = "1.1.0-dev"
 __maintainer__ = "Rob Knight"
@@ -22,6 +22,11 @@ def check_sffinfo():
     if not app_path('sffinfo'):
         raise ApplicationNotFoundError,\
          "sffinfo is not in $PATH. Is it installed? Have you added it to $PATH?"
+
+def make_flow_txt(filename):
+    """Makes flowgram file from sff file."""
+    check_sffinfo()
+    system('sffinfo %s > %s.txt' % (filename, splitext(filename)[0]))
 
 def make_fna(filename):
     """Makes fna file from sff file."""
