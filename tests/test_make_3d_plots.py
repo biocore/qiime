@@ -154,7 +154,7 @@ class TopLevelTests(TestCase):
     def test_make_edge_output(self):
         """make_edge_output: Create kinemage string given the data"""
         # test without custom axes
-        exp_result = ['@vectorlist {edges} dimension=4 on', '1.0 2.0 3.0 4.0 white', '1.06 2.06 3.06 4.06 white P', '1.06 2.06 3.06 4.06 hotpink', '1.1 2.1 3.1 4.1 hotpink P', '1.0 2.0 3.0 4.0 white', '1.12 2.12 3.12 4.12 white P', '1.12 2.12 3.12 4.12 blue', '1.2 2.2 3.2 4.2 blue P']
+        exp_result = ['@vectorlist {edges} dimension=4 on master={edges} nobutton', '1.0 2.0 3.0 4.0 white', '1.06 2.06 3.06 4.06 white P', '1.06 2.06 3.06 4.06 hotpink', '1.1 2.1 3.1 4.1 hotpink P', '1.0 2.0 3.0 4.0 white', '1.12 2.12 3.12 4.12 white P', '1.12 2.12 3.12 4.12 blue', '1.2 2.2 3.2 4.2 blue P']
         edges = [['a_0','a_1'],['a_0','a_2']]
         coord_dict = {}
         coord_dict['a_0'] = array([ 1.0, 2.0, 3.0, 4.0])
@@ -290,19 +290,26 @@ Removes any samples not present in mapping file"""
                                'eigvals\t0.32\t0.14',
                                '% variation explained\t20.11\t12.28'])
 
+        edges_file = '\n'.join(['B A','B\t\t\t   \t\tC'])
+
         fp1 = get_tmp_filename()
         fp2 = get_tmp_filename()
+        fp3 = get_tmp_filename()
         try:
             f1 = open(fp1,'w')
             f2 = open(fp2,'w')
+            f3 = open(fp3,'w')
         except IOError, e:
-            raise e,"Could not create temporary files: %s, %s" %(f1,f2)
+            raise e,"Could not create temporary files: %s, %s" %(f1,f2, f3)
         
         f1.write(pc_file_1)
         f1.close()
         f2.write(pc_file_2)
         f2.close()
+        f3.write(edges_file)
+        f3.close()
         
+        # test without custom edges
         exp_edges = [('A_0', 'A_1'), ('B_0', 'B_1'), ('C_0', 'C_1')]
         exp_coords = [['A_0', 'B_0', 'C_0', 'A_1', 'B_1', 'C_1'], 
                       array([[ 1.1,  2.2],
@@ -317,6 +324,17 @@ Removes any samples not present in mapping file"""
         self.assertEqual(edges, exp_edges)
         self.assertEqual(coords, exp_coords)
 
+        # test with custom edges
+        exp_edges = [['B', 'A'], ['B', 'C']]
+        exp_coords = [['A', 'B', 'C'],
+                      array([[ 1.1,  2.2],
+                             [ 4.1,  4.2],
+                             [-0.1, -0.2]]), 
+                      array([ 0.52,  0.24]), array([ 25.12,  13.29]),
+                      None, None]
+        edges, coords = get_multiple_coords([fp1], fp3)
+        self.assertEqual(edges, exp_edges)
+        self.assertEqual(coords, exp_coords)
         
 
 exp_kin_full=\
