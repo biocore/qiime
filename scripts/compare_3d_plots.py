@@ -34,12 +34,17 @@ from cogent.util.misc import get_random_directory_name
 options_lookup = get_options_lookup()                                
 
 script_info={}
-script_info['brief_description']="""Plot two PCoA files on the same 3D plot"""
-script_info['script_description']="""This script generates a 3D plot comparing two sets of principal_coordinates coordinates using as input two principal_coordinates coordinates files. The principal_coordinates coordinates files are obtained by applying "principal_coordinates.py" to a file containing beta diversity measures. The beta diversity files are optained by applying "beta_diversity.py" to an OTU table. One may apply "transform_coordinate_matrices.py" to the principal_coordinates coordinates files before using this script to compare them."""
+script_info['brief_description']="""Plot several PCoA files on the same 3D plot"""
+script_info['script_description']="""This script generates a 3D plot comparing two or more sets of principal coordinates using as input two or more principal coordinates files. Edges are drawn in the plot connecting samples with the same ID across different principal coordinates files. The user can also include a file listing the edges to be drawn in the plot, in which case the user may submit any number of principal coordinates files (including one). If the user includes the edges file, the sample IDs need not match between principal coordinates files.
+
+The principal_coordinates coordinates files are obtained by applying "principal_coordinates.py" to a file containing beta diversity measures. The beta diversity files are optained by applying "beta_diversity.py" to an OTU table. One may apply "transform_coordinate_matrices.py" to the principal_coordinates coordinates files before using this script to compare them."""
 script_info['script_usage']=[]
 script_info['script_usage'].append(("Example 1","""Compare two pca/pcoa files in the same 3d plot where each sample ID is assigned its own color:""","""compare_3d_plots.py -i 'raw_pca_data1.txt,raw_pca_data2.txt'"""))
 script_info['script_usage'].append(("Example 2","""Compare two pca/pcoa files in the same 3d plot with two coloring schemes (Day and Type):""","""compare_3d_plots.py -i 'raw_pca_data1.txt,raw_pca_data2.txt' -m input_map.txt -b 'Day,Type'"""))
 script_info['script_usage'].append(("Example 3","""Compare two pca/pcoa files in the same 3d plot for a combination of label headers from a mapping file: ""","""compare_3d_plots.py -i 'raw_pca_data1.txt,raw_pca_data2.txt' -m input_map.txt -b 'Type&&Day' -o ./test/"""))
+script_info['script_usage'].append(("Example 4","""Compare two pca/pcoa files in the same 3d plot for a combination of label headers from a mapping file: ""","""compare_3d_plots.py -i 'raw_pca_data1.txt,raw_pca_data2.txt' -m input_map.txt -b 'Type&&Day' -o ./test/"""))
+script_info['script_usage'].append(("Example 5","""Pass in a list of desired edges and only one pca/pcoa file: ""","""compare_3d_plots.py -i 'raw_pca_data1.txt' -e edges.txt -m input_map.txt -b 'Type&&Day' -o ./test/"""))
+script_info['script_usage'].append(("Example 6","""Pass in a list of desired edges and only one pca/pcoa file: ""","""compare_3d_plots.py -i 'raw_pca_data1.txt,raw_pca_data2.txt' -e edges.txt -m input_map.txt -b 'Type&&Day' -o ./test/"""))
 script_info['output_description']="""This script results in a folder containing an html file which displays the 3D Plots generated."""
 script_info['required_options']= [\
     make_option('-i', '--coord_fnames', \
@@ -69,6 +74,10 @@ file. NOTE: This is a file with a dictionary containing preferences for the \
 analysis. See make_prefs_file.py. [default: %default]'),
  make_option('-k', '--background_color',help='This is the background color to \
 use in the plots (Options are \'black\' or \'white\'. [default: %default]'),
+ make_option('-e', '--edges_file',help='A file where each line contains two \
+sample IDs separated by a whitespace character; for each pair of sample IDs, \
+an edge will be drawn from the first sample to the second sample. \
+[default: %default]',default=None),
  options_lookup['output_dir']
 ]
 script_info['version'] = __version__
@@ -79,23 +88,26 @@ def main():
     prefs, data, background_color, label_color= \
                             sample_color_prefs_and_map_data_from_options(opts)
     
-    if len(opts.coord_fnames.split(',')) < 2:
-        parser.error('Please provide at least two coordinate files')
+    if len(opts.coord_fnames.split(',')) < 2 and opts.edges_file is None:
+        option_parser.error('Please provide at least two ' +\
+                     'coordinate files or a custom edges file')
 
     #Open and get coord data (for multiple coords files)
     coord_files = process_coord_filenames(opts.coord_fnames)
     num_coord_files = len(coord_files)
-    data['edges'], data['coord'] = get_multiple_coords(coord_files)
+    data['edges'], data['coord'] = get_multiple_coords(coord_files, opts.edges_file)
 
 
-    # duplicate samples in mapping file for all coord files being compared
-    newmap = [data['map'][0]]
-    for i in xrange(len(coord_files)):
-        for sample in data['map'][1:]:
-            newsample = ['%s_%d' %(sample[0],i)]
-            newsample.extend(sample[1:])
-            newmap.append(newsample)
-    data['map'] = newmap
+    # if the edges file wasn't supplied, we appended _i to each file's samples
+    # therefore we now add duplicated samples with _0, _1,... to mapping file
+    if opts.edges_file is None:
+        newmap = [data['map'][0]]
+        for i in xrange(len(coord_files)):
+            for sample in data['map'][1:]:
+                newsample = ['%s_%d' %(sample[0],i)]
+                newsample.extend(sample[1:])
+                newmap.append(newsample)
+        data['map'] = newmap
 
     # remove any samples not present in mapping file
     remove_unmapped_samples(data['map'],data['coord'],data['edges'])
@@ -149,7 +161,8 @@ def main():
     if action:
         action(prefs, data, custom_axes,
                background_color, label_color,
-               dir_path, data_dir_path,filename)
+               dir_path, data_dir_path,filename,
+               user_supplied_edges=not(opts.edges_file is None))
 
 if __name__ == "__main__":
     main()
