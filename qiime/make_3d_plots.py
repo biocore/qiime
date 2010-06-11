@@ -71,7 +71,8 @@ def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, \
                     background_color,label_color, \
                     taxa=None, custom_axes=None, \
                     edges=None, coords_low=None, coords_high=None, \
-                    ellipsoid_prefs=None):
+                    ellipsoid_prefs=None,
+                    user_supplied_edges=False):
     """Makes 3d plots given coords, mapping file, and prefs.
     
     Added quick-and-dirty hack for gradient coloring of columns, should
@@ -89,7 +90,6 @@ def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, \
     first gradient, then pulls the combination samples starting
     with NF, colors with the next gradient.
     """
-    
     result = []
     #Iterate through prefs and color by given mapping labels
     #Sort by the column name first
@@ -109,13 +109,15 @@ def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, \
             taxa, custom_axes,name=labelname, \
             scaled=False, edges=edges,
             coords_low=coords_low, coords_high=coords_high, \
-            ellipsoid_prefs=ellipsoid_prefs))
+            ellipsoid_prefs=ellipsoid_prefs,
+            user_supplied_edges=user_supplied_edges))
         result.extend(make_mage_output(groups, colors, coord_header, coords, \
             pct_var,background_color,label_color,data_colors, \
             taxa, custom_axes,name=labelname, \
             scaled=True, edges=edges, \
             coords_low=coords_low, coords_high=coords_high, \
-            ellipsoid_prefs=ellipsoid_prefs))
+            ellipsoid_prefs=ellipsoid_prefs,
+            user_supplied_edges=user_supplied_edges))
 
     return result
 
@@ -135,10 +137,11 @@ def make_mage_output(groups, colors, coord_header, coords, pct_var, \
                      taxa=None, custom_axes=None,name='', \
                      radius=None, alpha=.75, num_coords=10,scaled=False, \
                      coord_scale=1.05, edges=None, coords_low=None, \
-                     coords_high=None, ellipsoid_prefs=None):
+                     coords_high=None, ellipsoid_prefs=None,
+                     user_supplied_edges=False):
     """Convert groups, colors, coords and percent var into mage format"""
     result = []
-    
+
     #Scale the coords and generate header labels
     if scaled:
         scalars = pct_var
@@ -154,7 +157,7 @@ def make_mage_output(groups, colors, coord_header, coords, pct_var, \
         header_suffix = '_scaled'
     else:
         header_suffix = '_unscaled'
-        
+
     if radius is None:
         radius = auto_radius(coords)
 
@@ -179,6 +182,8 @@ def make_mage_output(groups, colors, coord_header, coords, pct_var, \
     result.append('@dimminmax '+ ' '.join(map(str, min_maxes)))
     result.append('@master {points}')
     result.append('@master {labels}')
+    if edges:
+        result.append('@master {edges}')
 
     if not taxa is None:
         result.append('@master {taxa_points}')
@@ -266,10 +271,12 @@ master={labels} nobutton' % (color, radius, alpha, num_coords))
 
     #Write edges if requested
     if edges:
-        result += make_edges_output(coord_dict, edges, num_coords,label_color)
+        result += make_edges_output(coord_dict, edges, num_coords,label_color,
+                                    user_supplied_edges=user_supplied_edges)
     return result
 
-def make_edges_output(coord_dict, edges, num_coords,label_color,tip_fraction=0.4):
+def make_edges_output(coord_dict, edges, num_coords,label_color,
+                      tip_fraction=0.4,user_supplied_edges=False):
     """Creates make output to display edges (as a kinemage vectorlist).
 
        Params:
@@ -283,7 +290,8 @@ def make_edges_output(coord_dict, edges, num_coords,label_color,tip_fraction=0.4
         result, a list of strings containing a kinemage vectorlist
     """
     result = []
-    result.append('@vectorlist {edges} dimension=%s on' % \
+    result.append(\
+        '@vectorlist {edges} dimension=%s on master={edges} nobutton' % \
                       (num_coords))
     for edge in edges:
         id_fr, id_to = edge
@@ -291,7 +299,11 @@ def make_edges_output(coord_dict, edges, num_coords,label_color,tip_fraction=0.4
         pt_fr = coord_dict[id_fr][:num_coords]
         pt_to = coord_dict[id_to][:num_coords]
         # get 'index' of the destination coords file from 'to' sampleID
-        which_set = int(id_to[id_to.rindex('_')+1:]) - 1
+        if user_supplied_edges:
+            which_set = 0
+        else:
+            which_set = int(id_to[id_to.rindex('_')+1:]) - 1
+
         # different tip color for each destination coords file
         tip_color = kinemage_colors[which_set % len(kinemage_colors)]
         # plot a color 'tip' on the line (certain % of line length)
@@ -497,7 +509,7 @@ def get_coord(coord_fname, method="IQR"):
         coord_header = list(master_pcoa[0])
         return [coord_header, coords, eigval_average, pct_var, coords_low, coords_high]
 
-def get_multiple_coords(coord_fnames):
+def get_multiple_coords(coord_fnames, edges_file=None):
     """Opens and returns coords data and edges from multiple coords files.
 
        Params:
@@ -516,6 +528,10 @@ def get_multiple_coords(coord_fnames):
     coords = []
     edges = []
 
+    # load predetermined edges if they were passed to us
+    if not edges_file is None:
+        edges = [ln.strip().split() for ln in open(edges_file,'U').readlines()]
+
     # load all coords files into same data matrix
     for i,f in enumerate(coord_fnames):
         try:
@@ -524,8 +540,10 @@ def get_multiple_coords(coord_fnames):
             raise MissingFileError, 'Coord file required for this analysis'
         coord_header_i, coords_i, eigvals_i, pct_var_i = parse_coords(coord_f)
         sampleIDs = coord_header_i
-        # append _i to this file's sampleIDs
-        coord_header_i = ['%s_%d' %(h,i) for h in coord_header_i]
+        # append _i to this file's sampleIDs unless we have predetermined edges
+        if edges_file is None:
+            coord_header_i = ['%s_%d' %(h,i) for h in coord_header_i]
+
         # get eigvals, pct_var from first coords file
         if i==0:
             eigvals = eigvals_i
@@ -536,11 +554,13 @@ def get_multiple_coords(coord_fnames):
         else:
             coord_header.extend(coord_header_i)
             coords = vstack((coords,coords_i))
-    # add all edges
-    for _id in sampleIDs:
-        for i in xrange(1,len(coord_fnames)):
-            # edges go from first file's points to other files' points
-            edges += [('%s_%d' %(_id,0), '%s_%d' %(_id,i))]
+    # add all edges unless we have predetermined edges
+    if edges_file is None:
+        for _id in sampleIDs:
+            for i in xrange(1,len(coord_fnames)):
+                # edges go from first file's points to other files' points
+                edges += [('%s_%d' %(_id,0), '%s_%d' %(_id,i))]
+
     return edges, [coord_header, coords, eigvals, pct_var, None, None]
 
 def get_taxa(taxa_fname, sample_ids):
@@ -571,7 +591,8 @@ def remove_unmapped_samples(mapping,coords,edges=None):
 
 def generate_3d_plots(prefs, data, custom_axes, background_color,label_color, \
                         dir_path='',data_file_path='',filename=None, \
-                        default_filename='out', ellipsoid_prefs=None):
+                        default_filename='out', ellipsoid_prefs=None,
+                        user_supplied_edges=False):
     """Make 3d plots according to coloring options in prefs."""
 
     if filename is None:
@@ -597,7 +618,8 @@ def generate_3d_plots(prefs, data, custom_axes, background_color,label_color, \
                         background_color,label_color, \
                         taxa, custom_axes=custom_axes,edges=edges, \
                         coords_low=coords_low, coords_high=coords_high, \
-                        ellipsoid_prefs=ellipsoid_prefs)
+                        ellipsoid_prefs=ellipsoid_prefs,
+                        user_supplied_edges=user_supplied_edges)
 
     #Write kinemage file
     f = open(kinpath, 'w')
