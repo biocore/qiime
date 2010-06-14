@@ -28,3 +28,30 @@ def filter_fasta(input_seqs,output_seqs_f,seqs_to_keep,negate=False):
         if keep_seq(seq_id):
             output_seqs_f.write('>%s\n%s\n' % (seq_id, seq))
     output_seqs_f.close()
+    
+def filter_otus_from_otu_table(otu_table_lines,otus_to_discard,negate=False):
+    """ Remove specified OTUs from otu_table """
+    otu_lookup = {}.fromkeys([e.split()[0] for e in otus_to_discard])
+    result = []
+    
+    if negate:
+        def keep_seq(s):
+            return s in otu_lookup
+    else:
+        def keep_seq(s):
+            return s not in otu_lookup
+    
+    for line in otu_table_lines:
+        line = line.strip()
+        if line:
+            if line.startswith('#'):
+                # keep all comment lines
+                result.append(line)
+            elif keep_seq(line.split()[0]):
+                result.append(line)
+            else:
+                # this line is filtered
+                pass
+            
+    return result
+    

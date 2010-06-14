@@ -63,3 +63,11 @@ def make_otu_map(otu_to_seqid, otu_to_taxonomy=None, delim='_'):
         taxonomy=None
 
     return format_otu_table(all_libs, all_otus, table, taxonomy)
+
+def remove_otus(otu_to_seqid,otus_to_exclude):
+    """Remove otus_to_exclude from otu map """
+    otus_to_exclude_lookup = [e.split()[0] for e in otus_to_exclude]
+    for otu_id in otu_to_seqid.keys():
+        if otu_id in otus_to_exclude_lookup:
+            del otu_to_seqid[otu_id]
+    return otu_to_seqid

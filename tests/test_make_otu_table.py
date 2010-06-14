@@ -12,7 +12,7 @@ __status__ = "Development"
 
 from cogent.util.unit_test import TestCase, main
 from qiime.make_otu_table import (libs_from_seqids,
-        seqids_from_otu_to_seqid, make_otu_map)
+        seqids_from_otu_to_seqid, make_otu_map, remove_otus)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -60,6 +60,44 @@ z\t0\t1\t0\t1"""
 x\t0\t0\t3\t0\tBacteria;Bacteroidetes
 z\t0\t1\t0\t1\tNone"""
         self.assertEqual(obs, exp)
+        
+    def test_remove_otus(self):
+        """remove_otus functions as expected """
+        otu_to_seqid = {'0':['ABC_0','DEF_1'],
+                        '1':['ABC_1'],
+                        'x':['GHI_2', 'GHI_3','GHI_77'],
+                        'z':['DEF_3','XYZ_1']
+                        }
+        otus_to_exclude = ['0 some comment','42 not a real otu id','z']
+        expected = {'1':['ABC_1'],
+                    'x':['GHI_2', 'GHI_3','GHI_77']}
+        actual = remove_otus(otu_to_seqid,otus_to_exclude)
+        self.assertEqual(actual,expected)
+        
+        # functions with empty otus_to_exclude
+        otu_to_seqid = {'0':['ABC_0','DEF_1'],
+                        '1':['ABC_1'],
+                        'x':['GHI_2', 'GHI_3','GHI_77'],
+                        'z':['DEF_3','XYZ_1']
+                        }
+        expected = {'0':['ABC_0','DEF_1'],
+                        '1':['ABC_1'],
+                        'x':['GHI_2', 'GHI_3','GHI_77'],
+                        'z':['DEF_3','XYZ_1']
+                        }
+        actual = remove_otus(otu_to_seqid,[])
+        self.assertEqual(actual,expected)
+        
+        # functions with complete otus_to_exclude
+        otu_to_seqid = {'0':['ABC_0','DEF_1'],
+                        '1':['ABC_1'],
+                        'x':['GHI_2', 'GHI_3','GHI_77'],
+                        'z':['DEF_3','XYZ_1']
+                        }
+        actual = remove_otus(otu_to_seqid,list('01xz'))
+        self.assertEqual(actual,{})
+        
+        
 
 
 if __name__ =='__main__':
