@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import copy
 import os
 from string import strip
 from collections import defaultdict
@@ -79,104 +80,6 @@ experiment_set_wrapper = """<?xml version="1.0" encoding="UTF-8"?>
 pool_member_wrapper = '''\
             <MEMBER refname="%(SAMPLE_ALIAS)s" refcenter="%(SAMPLE_CENTER)s" member_name="%(POOL_MEMBER_NAME)s" proportion="%(POOL_PROPORTION)s"%(POOL_MEMBER_ACCESSION_ATTRIBUTE)s><READ_LABEL read_group_tag="%(BARCODE_READ_GROUP_TAG)s">barcode</READ_LABEL><READ_LABEL read_group_tag="%(PRIMER_READ_GROUP_TAG)s">rRNA_primer</READ_LABEL></MEMBER>'''
 
-basecall_wrapper = """               <BASECALL read_group_tag="%(READ_GROUP)s" min_match="%(MATCH_LEN)s" max_mismatch="%(NUM_MISMATCHES)s" match_edge="full">%(MATCH_SEQ)s</BASECALL>"""
-
-spot_descriptor_with_linker_wrapper = """
-      <SPOT_DESCRIPTOR>
-        <SPOT_DECODE_SPEC>
-          <READ_SPEC>
-            <READ_INDEX>0</READ_INDEX>
-            <READ_CLASS>Technical Read</READ_CLASS>
-            <READ_TYPE>Adapter</READ_TYPE>
-          <EXPECTED_BASECALL>%(KEY_SEQ)s</EXPECTED_BASECALL>
-          </READ_SPEC>
-          <READ_SPEC>
-            <READ_INDEX>1</READ_INDEX>
-            <READ_LABEL>barcode</READ_LABEL>
-            <READ_CLASS>Technical Read</READ_CLASS>
-            <READ_TYPE>BarCode</READ_TYPE>
-            <EXPECTED_BASECALL_TABLE>%(BARCODE_TABLE_XML)s            </EXPECTED_BASECALL_TABLE>
-          </READ_SPEC>
-          <READ_SPEC>
-            <READ_INDEX>2</READ_INDEX>
-            <READ_LABEL>linker</READ_LABEL>
-            <READ_CLASS>Technical Read</READ_CLASS>
-            <READ_TYPE>Linker</READ_TYPE>
-            <EXPECTED_BASECALL>%(LINKER)s</EXPECTED_BASECALL>
-          </READ_SPEC>
-          <READ_SPEC>
-            <READ_INDEX>3</READ_INDEX>
-            <READ_LABEL>rRNA_primer</READ_LABEL>
-            <READ_CLASS>Technical Read</READ_CLASS>
-            <READ_TYPE>Primer</READ_TYPE>
-            <EXPECTED_BASECALL_TABLE>%(PRIMER_TABLE_XML)s            </EXPECTED_BASECALL_TABLE>
-          </READ_SPEC>
-          <READ_SPEC>
-            <READ_INDEX>4</READ_INDEX>
-            <READ_CLASS>Application Read</READ_CLASS>
-            <READ_TYPE>Forward</READ_TYPE>
-            <RELATIVE_ORDER follows_read_index=\"3\"/>
-          </READ_SPEC>
-        </SPOT_DECODE_SPEC>
-      </SPOT_DESCRIPTOR>"""
-
-spot_descriptor_without_linker_wrapper = """
-      <SPOT_DESCRIPTOR>
-        <SPOT_DECODE_SPEC>
-          <READ_SPEC>
-            <READ_INDEX>0</READ_INDEX>
-            <READ_CLASS>Technical Read</READ_CLASS>
-            <READ_TYPE>Adapter</READ_TYPE>
-          <EXPECTED_BASECALL>%(KEY_SEQ)s</EXPECTED_BASECALL>
-          </READ_SPEC>
-          <READ_SPEC>
-            <READ_INDEX>1</READ_INDEX>
-            <READ_LABEL>barcode</READ_LABEL>
-            <READ_CLASS>Technical Read</READ_CLASS>
-            <READ_TYPE>BarCode</READ_TYPE>
-            <EXPECTED_BASECALL_TABLE>%(BARCODE_TABLE_XML)s            </EXPECTED_BASECALL_TABLE>
-          </READ_SPEC>
-          <READ_SPEC>
-            <READ_INDEX>2</READ_INDEX>
-            <READ_LABEL>rRNA_primer</READ_LABEL>
-            <READ_CLASS>Technical Read</READ_CLASS>
-            <READ_TYPE>Primer</READ_TYPE>
-            <EXPECTED_BASECALL_TABLE>%(PRIMER_TABLE_XML)s            </EXPECTED_BASECALL_TABLE>
-          </READ_SPEC>
-          <READ_SPEC>
-            <READ_INDEX>3</READ_INDEX>
-            <READ_CLASS>Application Read</READ_CLASS>
-            <READ_TYPE>Forward</READ_TYPE>
-            <RELATIVE_ORDER follows_read_index=\"2\"/>
-          </READ_SPEC>
-        </SPOT_DECODE_SPEC>
-      </SPOT_DESCRIPTOR>"""
-
-spot_descriptor_barcode_only_wrapper = """
-      <SPOT_DESCRIPTOR>
-        <SPOT_DECODE_SPEC>
-          <READ_SPEC>
-            <READ_INDEX>0</READ_INDEX>
-            <READ_CLASS>Technical Read</READ_CLASS>
-            <READ_TYPE>Adapter</READ_TYPE>
-          <EXPECTED_BASECALL>%(KEY_SEQ)s</EXPECTED_BASECALL>
-          </READ_SPEC>
-          <READ_SPEC>
-            <READ_INDEX>1</READ_INDEX>
-            <READ_LABEL>barcode</READ_LABEL>
-            <READ_CLASS>Technical Read</READ_CLASS>
-            <READ_TYPE>BarCode</READ_TYPE>
-            <EXPECTED_BASECALL_TABLE>%(BARCODE_TABLE_XML)s            </EXPECTED_BASECALL_TABLE>
-          </READ_SPEC>
-          <READ_SPEC>
-            <READ_INDEX>2</READ_INDEX>
-            <READ_CLASS>Application Read</READ_CLASS>
-            <READ_TYPE>Forward</READ_TYPE>
-            <RELATIVE_ORDER follows_read_index=\"1\"/>
-          </READ_SPEC>
-        </SPOT_DECODE_SPEC>
-      </SPOT_DESCRIPTOR>"""
-
 #note: the experiment wrapper is attributing default reads at the study level, not
 #at the experiment level. we might want to revisit this design decision later.
 experiment_wrapper = """\
@@ -210,8 +113,7 @@ experiment_wrapper = """\
                     <NUMBER_OF_LEVELS>40</NUMBER_OF_LEVELS>
                     <MULTIPLIER>1.0</MULTIPLIER>
         </QUALITY_SCORES>
-      </PROCESSING>
-      %(LINK_XML)s%(ATTRIBUTE_XML)s
+      </PROCESSING>%(LINK_XML)s%(ATTRIBUTE_XML)s
   </EXPERIMENT>"""
 
 platform_blocks = { 'Titanium':
@@ -395,20 +297,6 @@ def group_lines_by_field(lines, field):
         del result['']
     return result
 
-experiment_attribute_wrapper = '''\
-        <EXPERIMENT_ATTRIBUTE>
-          <TAG>%s</TAG>
-          <VALUE>%s</VALUE>
-        </EXPERIMENT_ATTRIBUTE>'''
-
-experiment_link_wrapper = '''\
-        <EXPERIMENT_LINK>
-          <URL_LINK>
-            <LABEL>%s</LABEL>
-            <URL>%s</URL>
-          </URL_LINK>
-        </EXPERIMENT_LINK>'''
-
 def make_run_and_experiment(experiment_lines, sff_dir, attribute_file=None,
                             link_file=None):
     """Returns strings for experiment and run xml."""
@@ -495,38 +383,33 @@ def make_run_and_experiment(experiment_lines, sff_dir, attribute_file=None,
             default_field_dict['POOL_MEMBER_FILENAME'] = default_pool_member_id + '.sff'
             default_field_dict['POOL_MEMBER_NAME'] = ''
 
+            barcode_basecall_table = []
+            primer_basecall_table = []
             barcodes = set()
             primers = set()
-            linkers = set()
             pool_members = []
-            primer_basecalls = []
-            barcode_basecalls = []
             data_blocks = []
             MEMBER_ORDER = 1
 
             pool_member_list = [('',[default_field_dict])] + list(sorted(pool_member_dict.items()))
             for pool_name, pool_field_dicts in pool_member_list:
-                field_dict = pool_field_dicts[0]    #assume fields not related to data blocks are identical, read from first entry
+                # Assume fields not related to data blocks are
+                # identical, read from first entry
+                field_dict = pool_field_dicts[0]
+
                 key_seq = field_dict['KEY_SEQ']
                 barcode = field_dict['BARCODE']
                 if barcode not in barcodes:
                     barcodes.add(barcode)
-                    barcode_basecalls.append(basecall_wrapper % {
-                        'READ_GROUP':field_dict['BARCODE_READ_GROUP_TAG'],
-                        'MATCH_LEN':len(barcode),
-                        'NUM_MISMATCHES':0,
-                        'MATCH_SEQ':barcode})
+                    barcode_basecall_table.append(
+                        (field_dict['BARCODE_READ_GROUP_TAG'], barcode))
                 primer = field_dict['PRIMER']
                 if primer and primer not in primers:
                     primers.add(primer)
-                    primer_basecalls.append(basecall_wrapper % {
-                        'READ_GROUP':field_dict['PRIMER_READ_GROUP_TAG'],
-                        'MATCH_LEN':len(primer),
-                        'NUM_MISMATCHES':0,
-                        'MATCH_SEQ':primer})
+                    primer_basecall_table.append(
+                        (field_dict['PRIMER_READ_GROUP_TAG'], primer))
                 linker = field_dict['LINKER']
-                if linker:
-                    linkers.add(linker)
+
                 #create and append the pool member
                 field_dict['MEMBER_ORDER'] = MEMBER_ORDER
 
@@ -552,28 +435,18 @@ def make_run_and_experiment(experiment_lines, sff_dir, attribute_file=None,
                     except IOError: #file missing, probably because no seqs were recovered
                         stderr.write("File failed with IOError:\n%s\n" % relative_sff_path)
                         pass
-            field_dict['BARCODE_TABLE_XML'] = '\n' + '\n'.join(barcode_basecalls) + '\n'
-            field_dict['PRIMER_TABLE_XML'] = '\n' + '\n'.join(primer_basecalls) + '\n'
             field_dict['POOL_MEMBERS_XML'] = '\n' + '\n'.join(pool_members) + '\n'
-            if linkers:
-                spot_descriptor_wrapper = spot_descriptor_with_linker_wrapper
-            elif primers:
-                spot_descriptor_wrapper = spot_descriptor_without_linker_wrapper
-            else:
-                spot_descriptor_wrapper = spot_descriptor_barcode_only_wrapper
 
-            # Note that SRA uses 1-indexed lengths
-            field_dict['TOTAL_TECHNICAL_READ_LENGTH'] = \
-                len(key_seq) + len(primer) + len(barcode) + len(linker) + 1
-
-            spot_descriptor = spot_descriptor_wrapper % field_dict
+            spot_descriptor = pretty_xml(_spot_descriptor_xml(
+                key_seq, barcode_basecall_table, linker, primer_basecall_table), 3)
             field_dict['SPOT_DESCRIPTORS_XML'] = spot_descriptor
+
             field_dict['PLATFORM_XML'] = platform_blocks[field_dict['PLATFORM']]
 
-            field_dict['ATTRIBUTE_XML'] = _experiment_attribute_xml(
-                experiment_attributes[experiment_id])
-            field_dict['LINK_XML'] = _experiment_link_xml(
-                experiment_links[experiment_id])
+            field_dict['ATTRIBUTE_XML'] = pretty_xml(
+                _experiment_attribute_xml(experiment_attributes[experiment_id]), 3)
+            field_dict['LINK_XML'] = pretty_xml(
+                _experiment_link_xml(experiment_links[experiment_id]), 3)
 
             # Insert study accession attribute, if present.
             study_acc = field_dict.get('STUDY_ACCESSION')
@@ -597,8 +470,10 @@ def make_run_and_experiment(experiment_lines, sff_dir, attribute_file=None,
     return experiment_set_wrapper % ('\n'+'\n'.join(experiments)+'\n'), run_set_wrapper % ('\n'+'\n'.join(runs)+'\n')
 
 def _experiment_link_xml(links):
+    """Creates the EXPERIMENT_LINKS subtree for SRA Experiment XML
+    """
     if not links:
-        return ''
+        return None
     root = ET.Element('EXPERIMENT_LINKS')
     for label, url in links:
         link_elem = ET.SubElement(root, 'EXPERIMENT_LINK')
@@ -607,11 +482,13 @@ def _experiment_link_xml(links):
         label_elem.text = label
         url_elem = ET.SubElement(url_link_elem, 'URL')
         url_elem.text = url
-    return ET.tostring(indent_element(root, 3))
+    return root
 
 def _experiment_attribute_xml(attrs):
+    """Creates the EXPERIMENT_ATTRIBUTES subtree for SRA Experiment XML
+    """
     if not attrs:
-        return ''
+        return None
     root = ET.Element('EXPERIMENT_ATTRIBUTES')
     for tag, val in attrs:
         attr_elem = ET.SubElement(root, 'EXPERIMENT_ATTRIBUTE')
@@ -619,19 +496,125 @@ def _experiment_attribute_xml(attrs):
         tag_elem.text = tag
         val_elem = ET.SubElement(attr_elem, 'VALUE')
         val_elem.text = val
-    return ET.tostring(indent_element(root, 3))
+    return root
 
+def _spot_descriptor_xml(adapter, barcodes, linker, primers):
+    """Creates the SPOT_DESCRIPTOR subtree for SRA Experiment XML
 
-def indent_element(element, level=0):
-    """Indent xml element and sub-elements
+    The adaptor and linker are to be passed as strings.  Barcodes and
+    primers should be passed as a list of tuples, mapping read group
+    tags to basecalls.
+    """
+    root = ET.Element('SPOT_DESCRIPTOR')
+    decode_elem = ET.SubElement(root, 'SPOT_DECODE_SPEC')
+    read_index = 0
+    decode_elem.append(_read_spec_xml(
+        read_index, 'Technical Read', 'Adapter', expected_basecall=adapter))
+    read_index += 1
+    if barcodes:
+        decode_elem.append(_read_spec_xml(
+            read_index, 'Technical Read', 'BarCode', read_label='barcode',
+            expected_basecall_table=barcodes))
+        read_index += 1
+    if linker:
+        decode_elem.append(_read_spec_xml(
+            read_index, 'Technical Read', 'Linker', read_label='linker',
+            expected_basecall=linker))
+        read_index += 1
+    if primers:
+        decode_elem.append(_read_spec_xml(
+            read_index, 'Technical Read', 'Primer', read_label='rRNA_primer',
+            expected_basecall_table=primers))
+        read_index += 1
+    decode_elem.append(_read_spec_xml(
+        read_index, 'Application Read', 'Forward',
+        in_relative_order=True))
+    return root
 
-    Taken from lxml documentation at
+def _read_spec_xml(
+    read_index, read_class, read_type, read_label=None,
+    expected_basecall=None, expected_basecall_table=None,
+    in_relative_order=False):
+    """Returns XML for the READ_SPEC element of an SRA experiment.
+
+    The read_index, read_class, and read_type arguments specify the
+    text of the corresponding XML subelements of READ_SPEC.
+
+    The read_label element is used for barcodes and primers, but not
+    the technical or application reads.
+
+    Expected basecalls may be provided as a single string
+    (expected_basecall) or as a sequence of tuples mapping read group
+    tags to basecalls (expected_basecall_table).  If both are
+    provided, the expected_basecall argument is used and the
+    expected_basecall_table is discarded.
+
+    For the application read spec, it is customary to provide a
+    relative_order.  Passing a True value to the in_relative_order
+    keyword argument will generate this element with the correct
+    value.
+    """
+    root = ET.Element('READ_SPEC')
+    ET.SubElement(root, 'READ_INDEX').text = str(read_index)
+    # According to SRA.experiment.xsd v1.1, the READ_LABEL element
+    # must appear immediately following the READ_INDEX
+    if read_label:
+        ET.SubElement(root, 'READ_LABEL').text = read_label
+    ET.SubElement(root, 'READ_CLASS').text = read_class
+    ET.SubElement(root, 'READ_TYPE').text = read_type
+    if expected_basecall:
+        ET.SubElement(root, 'EXPECTED_BASECALL').text = expected_basecall
+    elif expected_basecall_table:
+        table_elem = ET.SubElement(root, 'EXPECTED_BASECALL_TABLE')
+        for read_group_tag, basecall in expected_basecall_table:
+            min_match = len(basecall)
+            basecall_elem = ET.SubElement(table_elem, 'BASECALL')
+            basecall_elem.set('read_group_tag', read_group_tag)
+            basecall_elem.set('min_match', str(min_match))
+            basecall_elem.set('max_mismatch', '0')
+            basecall_elem.set('match_edge', 'full')
+            basecall_elem.text = basecall
+    if in_relative_order:
+        prevoius_index = int(read_index) - 1
+        order_elem = ET.SubElement(root, 'RELATIVE_ORDER')
+        order_elem.set('follows_read_index', str(prevoius_index))
+    return root
+
+def pretty_xml(element, level=0):
+    """Formats XML tree as a string with proper indentation
+
+    The level kwarg specifies the indentation level for the root
+    element.  Child elements are indented with two additional spaces
+    per level.
+    """
+    if element is None:
+        return ''
+    element = copy.deepcopy(element)
+    __pretty_xml_helper(element, level)
+    # The lxml example function places a newline and spaces at the end
+    # of the parent element. We'd like these spaces to appear at the
+    # beginning of the parent element, because this helps with
+    # inclusion of pretty-printed XML in pre-formatted strings.  Since
+    # the ElementTree library does not support pre-element text, we
+    # store the whitespace from the tree and prepend it to the string
+    # output.
+    indentation = element.tail
+    element.tail = ''
+    return indentation + ET.tostring(element)
+
+def __pretty_xml_helper(element, level=0):
+    """Private helper function for pretty_xml()
+
+    Implements the recursive part of the pretty_xml function,
+    indenting the XML tree in a mutable fashion.  It has no return
+    value; the tree is indented as a side effect.  Although we copied
+    it from a vendor's website, it is clear that this function is a
+    shameless hack and should never be exposed outside the current
+    module.
+
+    Adapted from the lxml documentation at
     http://effbot.org/zone/element-lib.htm
     """
-    # This function uses a dirty trick to grab the final subelement
-    # from an iteration.  To return the top-level element at the end
-    # of the function, we must store it now under a different name.
-    original_element = element
     i = "\n" + (level * "  ")
     if len(element):
         if not element.text or not element.text.strip():
@@ -639,13 +622,12 @@ def indent_element(element, level=0):
         if not element.tail or not element.tail.strip():
             element.tail = i
         for element in element:
-            indent_element(element, level + 1)
+            __pretty_xml_helper(element, level + 1)
         if not element.tail or not element.tail.strip():
             element.tail = i
     else:
         if level and (not element.tail or not element.tail.strip()):
             element.tail = i
-    return original_element
 
 def write_xml_generic(infile_path, template_path, xml_f):
     """Writes generic xml based on contents of infilepath, returns filename."""

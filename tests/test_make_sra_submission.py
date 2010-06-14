@@ -11,7 +11,8 @@ from qiime.make_sra_submission import (
     make_study_links, twocol_data_to_dict, make_study, make_submission,
     make_sample, trim_quotes, defaultdict, group_lines_by_field,
     write_xml_generic, make_run_and_experiment, _experiment_link_xml,
-    _experiment_attribute_xml, indent_element, generate_output_fp)
+    _experiment_attribute_xml, _read_spec_xml, _spot_descriptor_xml,
+    pretty_xml, generate_output_fp)
 from qiime.util import get_qiime_project_dir
 import xml.etree.ElementTree as ET
 from cStringIO import StringIO
@@ -307,48 +308,106 @@ aa\tbb\tcc
     def test_experiment_link_xml(self):
         links = [('link1', 'http://google.com'),
                  ('links2', 'http://www.ncbi.nlm.nih.gov')]
-        expected = '''<EXPERIMENT_LINKS>
-        <EXPERIMENT_LINK>
-          <URL_LINK>
-            <LABEL>link1</LABEL>
-            <URL>http://google.com</URL>
-          </URL_LINK>
-        </EXPERIMENT_LINK>
-        <EXPERIMENT_LINK>
-          <URL_LINK>
-            <LABEL>links2</LABEL>
-            <URL>http://www.ncbi.nlm.nih.gov</URL>
-          </URL_LINK>
-        </EXPERIMENT_LINK>
-      </EXPERIMENT_LINKS>
-      '''
+        expected = '''
+        <EXPERIMENT_LINKS>
+          <EXPERIMENT_LINK>
+            <URL_LINK>
+              <LABEL>link1</LABEL>
+              <URL>http://google.com</URL>
+            </URL_LINK>
+          </EXPERIMENT_LINK>
+          <EXPERIMENT_LINK>
+            <URL_LINK>
+              <LABEL>links2</LABEL>
+              <URL>http://www.ncbi.nlm.nih.gov</URL>
+            </URL_LINK>
+          </EXPERIMENT_LINK>
+        </EXPERIMENT_LINKS>'''
         observed = _experiment_link_xml(links)
-        self.assertEqual(observed, expected)
+        self.assertEqual(pretty_xml(observed, 4), expected)
 
     def test_experiment_attribute_xml(self):
         attrs = [('a1', 'val1'),
                  ('attr2', 'something else')]
-        expected = '''<EXPERIMENT_ATTRIBUTES>
-        <EXPERIMENT_ATTRIBUTE>
-          <TAG>a1</TAG>
-          <VALUE>val1</VALUE>
-        </EXPERIMENT_ATTRIBUTE>
-        <EXPERIMENT_ATTRIBUTE>
-          <TAG>attr2</TAG>
-          <VALUE>something else</VALUE>
-        </EXPERIMENT_ATTRIBUTE>
-      </EXPERIMENT_ATTRIBUTES>
-      '''
+        expected = '''
+        <EXPERIMENT_ATTRIBUTES>
+          <EXPERIMENT_ATTRIBUTE>
+            <TAG>a1</TAG>
+            <VALUE>val1</VALUE>
+          </EXPERIMENT_ATTRIBUTE>
+          <EXPERIMENT_ATTRIBUTE>
+            <TAG>attr2</TAG>
+            <VALUE>something else</VALUE>
+          </EXPERIMENT_ATTRIBUTE>
+        </EXPERIMENT_ATTRIBUTES>'''
         observed = _experiment_attribute_xml(attrs)
-        self.assertEqual(observed, expected)
+        self.assertEqual(pretty_xml(observed, 4), expected)
 
-    def test_indent_element(self):
+        observed = _experiment_attribute_xml([])
+        self.assertEqual(pretty_xml(observed, 4), '')
+
+    def test_read_spec_xml(self):
+        expected = '''
+        <READ_SPEC>
+          <READ_INDEX>0</READ_INDEX>
+          <READ_CLASS>Technical Read</READ_CLASS>
+          <READ_TYPE>Adapter</READ_TYPE>
+          <EXPECTED_BASECALL>TCAG</EXPECTED_BASECALL>
+        </READ_SPEC>'''
+        observed = _read_spec_xml(
+            0, 'Technical Read', 'Adapter', expected_basecall='TCAG')
+        self.assertEqual(pretty_xml(observed, 4), expected)
+
+    def test_spot_descriptor_xml(self):
+        expected = '''
+        <SPOT_DESCRIPTOR>
+          <SPOT_DECODE_SPEC>
+            <READ_SPEC>
+              <READ_INDEX>0</READ_INDEX>
+              <READ_CLASS>Technical Read</READ_CLASS>
+              <READ_TYPE>Adapter</READ_TYPE>
+              <EXPECTED_BASECALL>TACG</EXPECTED_BASECALL>
+            </READ_SPEC>
+            <READ_SPEC>
+              <READ_INDEX>1</READ_INDEX>
+              <READ_LABEL>barcode</READ_LABEL>
+              <READ_CLASS>Technical Read</READ_CLASS>
+              <READ_TYPE>BarCode</READ_TYPE>
+              <EXPECTED_BASECALL_TABLE>
+                <BASECALL match_edge="full" max_mismatch="0" min_match="8" read_group_tag="Sample1">TTAACCGG</BASECALL>
+              </EXPECTED_BASECALL_TABLE>
+            </READ_SPEC>
+            <READ_SPEC>
+              <READ_INDEX>2</READ_INDEX>
+              <READ_LABEL>rRNA_primer</READ_LABEL>
+              <READ_CLASS>Technical Read</READ_CLASS>
+              <READ_TYPE>Primer</READ_TYPE>
+              <EXPECTED_BASECALL_TABLE>
+                <BASECALL match_edge="full" max_mismatch="0" min_match="15" read_group_tag="V1-V2">CTGCTGCCTYCCGTA</BASECALL>
+              </EXPECTED_BASECALL_TABLE>
+            </READ_SPEC>
+            <READ_SPEC>
+              <READ_INDEX>3</READ_INDEX>
+              <READ_CLASS>Application Read</READ_CLASS>
+              <READ_TYPE>Forward</READ_TYPE>
+              <RELATIVE_ORDER follows_read_index="2" />
+            </READ_SPEC>
+          </SPOT_DECODE_SPEC>
+        </SPOT_DESCRIPTOR>'''
+        observed = _spot_descriptor_xml(
+            'TACG', [('Sample1', 'TTAACCGG')], None,
+            [('V1-V2', 'CTGCTGCCTYCCGTA')])
+        self.assertEqual(pretty_xml(observed, 4), expected)
+
+    def test_pretty_xml(self):
         a = ET.Element('a')
         b = ET.SubElement(a, 'b')
         b.text = 'hello'
-        observed = ET.tostring(indent_element(a))
-        expected = '<a>\n  <b>hello</b>\n</a>\n'
+        observed = pretty_xml(a)
+        expected = '\n<a>\n  <b>hello</b>\n</a>'
         self.assertEqual(observed, expected)
+
+
 
 experiment = '''
 #EXPERIMENT_ALIAS	EXPERIMENT_CENTER	EXPERIMENT_TITLE	STUDY_REF	STUDY_CENTER	EXPERIMENT_DESIGN_DESCRIPTION	LIBRARY_CONSTRUCTION_PROTOCOL	SAMPLE_ALIAS	SAMPLE_CENTER	POOL_MEMBER_NAME	POOL_MEMBER_FILENAME	POOL_PROPORTION	BARCODE_READ_GROUP_TAG	BARCODE	LINKER	PRIMER_READ_GROUP_TAG	KEY_SEQ	PRIMER	RUN_PREFIX	REGION	PLATFORM	RUN_ALIAS	RUN_CENTER	RUN_DATE	INSTRUMENT_NAME
@@ -451,7 +510,7 @@ experiment_with_default_sample_xml_str = '''<?xml version="1.0" encoding="UTF-8"
             <READ_INDEX>0</READ_INDEX>
             <READ_CLASS>Technical Read</READ_CLASS>
             <READ_TYPE>Adapter</READ_TYPE>
-          <EXPECTED_BASECALL>TCAG</EXPECTED_BASECALL>
+            <EXPECTED_BASECALL>TCAG</EXPECTED_BASECALL>
           </READ_SPEC>
           <READ_SPEC>
             <READ_INDEX>1</READ_INDEX>
@@ -459,11 +518,11 @@ experiment_with_default_sample_xml_str = '''<?xml version="1.0" encoding="UTF-8"
             <READ_CLASS>Technical Read</READ_CLASS>
             <READ_TYPE>BarCode</READ_TYPE>
             <EXPECTED_BASECALL_TABLE>
-               <BASECALL read_group_tag="F6AVWTA02_ATGTTCTAGT" min_match="10" max_mismatch="0" match_edge="full">ATGTTCTAGT</BASECALL>
-               <BASECALL read_group_tag="F6AVWTA02_AGTACACGTC" min_match="10" max_mismatch="0" match_edge="full">AGTACACGTC</BASECALL>
-               <BASECALL read_group_tag="F6AVWTA02_GCTCTGTACT" min_match="10" max_mismatch="0" match_edge="full">GCTCTGTACT</BASECALL>
-               <BASECALL read_group_tag="F6AVWTA02_CATGAGCGTG" min_match="10" max_mismatch="0" match_edge="full">CATGAGCGTG</BASECALL>
-               <BASECALL read_group_tag="F6AVWTA02_TCTCTGTACT" min_match="10" max_mismatch="0" match_edge="full">TCTCTGTACT</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA02_ATGTTCTAGT" min_match="10" max_mismatch="0" match_edge="full">ATGTTCTAGT</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA02_AGTACACGTC" min_match="10" max_mismatch="0" match_edge="full">AGTACACGTC</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA02_GCTCTGTACT" min_match="10" max_mismatch="0" match_edge="full">GCTCTGTACT</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA02_CATGAGCGTG" min_match="10" max_mismatch="0" match_edge="full">CATGAGCGTG</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA02_TCTCTGTACT" min_match="10" max_mismatch="0" match_edge="full">TCTCTGTACT</BASECALL>
             </EXPECTED_BASECALL_TABLE>
           </READ_SPEC>
           <READ_SPEC>
@@ -472,7 +531,7 @@ experiment_with_default_sample_xml_str = '''<?xml version="1.0" encoding="UTF-8"
             <READ_CLASS>Technical Read</READ_CLASS>
             <READ_TYPE>Primer</READ_TYPE>
             <EXPECTED_BASECALL_TABLE>
-               <BASECALL read_group_tag="V1-V3" min_match="17" max_mismatch="0" match_edge="full">TAATCCGCGGCTGCTGG</BASECALL>
+              <BASECALL read_group_tag="V1-V3" min_match="17" max_mismatch="0" match_edge="full">TAATCCGCGGCTGCTGG</BASECALL>
             </EXPECTED_BASECALL_TABLE>
           </READ_SPEC>
           <READ_SPEC>
@@ -520,7 +579,6 @@ experiment_with_default_sample_xml_str = '''<?xml version="1.0" encoding="UTF-8"
           <VALUE>16S rRNA V1-V3 region</VALUE>
         </EXPERIMENT_ATTRIBUTE>
       </EXPERIMENT_ATTRIBUTES>
-      
   </EXPERIMENT>
   <EXPERIMENT alias="bodysites_F6AVWTA01" center_name="JCVI">
     <TITLE>Survey of multiple body sites</TITLE>
@@ -552,7 +610,7 @@ experiment_with_default_sample_xml_str = '''<?xml version="1.0" encoding="UTF-8"
             <READ_INDEX>0</READ_INDEX>
             <READ_CLASS>Technical Read</READ_CLASS>
             <READ_TYPE>Adapter</READ_TYPE>
-          <EXPECTED_BASECALL>TCAG</EXPECTED_BASECALL>
+            <EXPECTED_BASECALL>TCAG</EXPECTED_BASECALL>
           </READ_SPEC>
           <READ_SPEC>
             <READ_INDEX>1</READ_INDEX>
@@ -560,11 +618,11 @@ experiment_with_default_sample_xml_str = '''<?xml version="1.0" encoding="UTF-8"
             <READ_CLASS>Technical Read</READ_CLASS>
             <READ_TYPE>BarCode</READ_TYPE>
             <EXPECTED_BASECALL_TABLE>
-               <BASECALL read_group_tag="F6AVWTA01_ATGTTCGATG" min_match="10" max_mismatch="0" match_edge="full">ATGTTCGATG</BASECALL>
-               <BASECALL read_group_tag="F6AVWTA01_AGTACGTACT" min_match="10" max_mismatch="0" match_edge="full">AGTACGTACT</BASECALL>
-               <BASECALL read_group_tag="F6AVWTA01_GCTCTACGTC" min_match="10" max_mismatch="0" match_edge="full">GCTCTACGTC</BASECALL>
-               <BASECALL read_group_tag="F6AVWTA01_CATGAGCGTC" min_match="10" max_mismatch="0" match_edge="full">CATGAGCGTC</BASECALL>
-               <BASECALL read_group_tag="F6AVWTA01_TCTCTCTAGT" min_match="10" max_mismatch="0" match_edge="full">TCTCTCTAGT</BASECALL>
+              <BASECALL match_edge="full" max_mismatch="0" read_group_tag="F6AVWTA01_ATGTTCGATG" min_match="10">ATGTTCGATG</BASECALL>
+              <BASECALL match_edge="full" max_mismatch="0" read_group_tag="F6AVWTA01_AGTACGTACT" min_match="10">AGTACGTACT</BASECALL>
+              <BASECALL match_edge="full" max_mismatch="0" read_group_tag="F6AVWTA01_GCTCTACGTC" min_match="10">GCTCTACGTC</BASECALL>
+              <BASECALL match_edge="full" max_mismatch="0" read_group_tag="F6AVWTA01_CATGAGCGTC" min_match="10">CATGAGCGTC</BASECALL>
+              <BASECALL match_edge="full" max_mismatch="0" read_group_tag="F6AVWTA01_TCTCTCTAGT" min_match="10">TCTCTCTAGT</BASECALL>
             </EXPECTED_BASECALL_TABLE>
           </READ_SPEC>
           <READ_SPEC>
@@ -573,7 +631,7 @@ experiment_with_default_sample_xml_str = '''<?xml version="1.0" encoding="UTF-8"
             <READ_CLASS>Technical Read</READ_CLASS>
             <READ_TYPE>Primer</READ_TYPE>
             <EXPECTED_BASECALL_TABLE>
-               <BASECALL read_group_tag="V1-V3" min_match="17" max_mismatch="0" match_edge="full">TAATCCGCGGCTGCTGG</BASECALL>
+              <BASECALL match_edge="full" max_mismatch="0" min_match="17" read_group_tag="V1-V3">TAATCCGCGGCTGCTGG</BASECALL>
             </EXPECTED_BASECALL_TABLE>
           </READ_SPEC>
           <READ_SPEC>
@@ -621,7 +679,6 @@ experiment_with_default_sample_xml_str = '''<?xml version="1.0" encoding="UTF-8"
           <VALUE>16S rRNA V1-V3 region</VALUE>
         </EXPERIMENT_ATTRIBUTE>
       </EXPERIMENT_ATTRIBUTES>
-      
   </EXPERIMENT>
 </EXPERIMENT_SET>'''
 
@@ -657,7 +714,7 @@ experiment_with_accessions_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
             <READ_INDEX>0</READ_INDEX>
             <READ_CLASS>Technical Read</READ_CLASS>
             <READ_TYPE>Adapter</READ_TYPE>
-          <EXPECTED_BASECALL>TCAG</EXPECTED_BASECALL>
+            <EXPECTED_BASECALL>TCAG</EXPECTED_BASECALL>
           </READ_SPEC>
           <READ_SPEC>
             <READ_INDEX>1</READ_INDEX>
@@ -665,11 +722,11 @@ experiment_with_accessions_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
             <READ_CLASS>Technical Read</READ_CLASS>
             <READ_TYPE>BarCode</READ_TYPE>
             <EXPECTED_BASECALL_TABLE>
-               <BASECALL read_group_tag="F6AVWTA02_ATGTTCTAGT" min_match="10" max_mismatch="0" match_edge="full">ATGTTCTAGT</BASECALL>
-               <BASECALL read_group_tag="F6AVWTA02_AGTACACGTC" min_match="10" max_mismatch="0" match_edge="full">AGTACACGTC</BASECALL>
-               <BASECALL read_group_tag="F6AVWTA02_GCTCTGTACT" min_match="10" max_mismatch="0" match_edge="full">GCTCTGTACT</BASECALL>
-               <BASECALL read_group_tag="F6AVWTA02_CATGAGCGTG" min_match="10" max_mismatch="0" match_edge="full">CATGAGCGTG</BASECALL>
-               <BASECALL read_group_tag="F6AVWTA02_TCTCTGTACT" min_match="10" max_mismatch="0" match_edge="full">TCTCTGTACT</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA02_ATGTTCTAGT" min_match="10" max_mismatch="0" match_edge="full">ATGTTCTAGT</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA02_AGTACACGTC" min_match="10" max_mismatch="0" match_edge="full">AGTACACGTC</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA02_GCTCTGTACT" min_match="10" max_mismatch="0" match_edge="full">GCTCTGTACT</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA02_CATGAGCGTG" min_match="10" max_mismatch="0" match_edge="full">CATGAGCGTG</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA02_TCTCTGTACT" min_match="10" max_mismatch="0" match_edge="full">TCTCTGTACT</BASECALL>
             </EXPECTED_BASECALL_TABLE>
           </READ_SPEC>
           <READ_SPEC>
@@ -678,7 +735,7 @@ experiment_with_accessions_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
             <READ_CLASS>Technical Read</READ_CLASS>
             <READ_TYPE>Primer</READ_TYPE>
             <EXPECTED_BASECALL_TABLE>
-               <BASECALL read_group_tag="V1-V3" min_match="17" max_mismatch="0" match_edge="full">TAATCCGCGGCTGCTGG</BASECALL>
+              <BASECALL read_group_tag="V1-V3" min_match="17" max_mismatch="0" match_edge="full">TAATCCGCGGCTGCTGG</BASECALL>
             </EXPECTED_BASECALL_TABLE>
           </READ_SPEC>
           <READ_SPEC>
@@ -726,7 +783,6 @@ experiment_with_accessions_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
           <VALUE>16S rRNA V1-V3 region</VALUE>
         </EXPERIMENT_ATTRIBUTE>
       </EXPERIMENT_ATTRIBUTES>
-      
   </EXPERIMENT>
   <EXPERIMENT alias="bodysites_F6AVWTA01" center_name="JCVI">
     <TITLE>Survey of multiple body sites</TITLE>
@@ -758,7 +814,7 @@ experiment_with_accessions_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
             <READ_INDEX>0</READ_INDEX>
             <READ_CLASS>Technical Read</READ_CLASS>
             <READ_TYPE>Adapter</READ_TYPE>
-          <EXPECTED_BASECALL>TCAG</EXPECTED_BASECALL>
+            <EXPECTED_BASECALL>TCAG</EXPECTED_BASECALL>
           </READ_SPEC>
           <READ_SPEC>
             <READ_INDEX>1</READ_INDEX>
@@ -766,11 +822,11 @@ experiment_with_accessions_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
             <READ_CLASS>Technical Read</READ_CLASS>
             <READ_TYPE>BarCode</READ_TYPE>
             <EXPECTED_BASECALL_TABLE>
-               <BASECALL read_group_tag="F6AVWTA01_ATGTTCGATG" min_match="10" max_mismatch="0" match_edge="full">ATGTTCGATG</BASECALL>
-               <BASECALL read_group_tag="F6AVWTA01_AGTACGTACT" min_match="10" max_mismatch="0" match_edge="full">AGTACGTACT</BASECALL>
-               <BASECALL read_group_tag="F6AVWTA01_GCTCTACGTC" min_match="10" max_mismatch="0" match_edge="full">GCTCTACGTC</BASECALL>
-               <BASECALL read_group_tag="F6AVWTA01_CATGAGCGTC" min_match="10" max_mismatch="0" match_edge="full">CATGAGCGTC</BASECALL>
-               <BASECALL read_group_tag="F6AVWTA01_TCTCTCTAGT" min_match="10" max_mismatch="0" match_edge="full">TCTCTCTAGT</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA01_ATGTTCGATG" min_match="10" max_mismatch="0" match_edge="full">ATGTTCGATG</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA01_AGTACGTACT" min_match="10" max_mismatch="0" match_edge="full">AGTACGTACT</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA01_GCTCTACGTC" min_match="10" max_mismatch="0" match_edge="full">GCTCTACGTC</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA01_CATGAGCGTC" min_match="10" max_mismatch="0" match_edge="full">CATGAGCGTC</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA01_TCTCTCTAGT" min_match="10" max_mismatch="0" match_edge="full">TCTCTCTAGT</BASECALL>
             </EXPECTED_BASECALL_TABLE>
           </READ_SPEC>
           <READ_SPEC>
@@ -779,7 +835,7 @@ experiment_with_accessions_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
             <READ_CLASS>Technical Read</READ_CLASS>
             <READ_TYPE>Primer</READ_TYPE>
             <EXPECTED_BASECALL_TABLE>
-               <BASECALL read_group_tag="V1-V3" min_match="17" max_mismatch="0" match_edge="full">TAATCCGCGGCTGCTGG</BASECALL>
+              <BASECALL read_group_tag="V1-V3" min_match="17" max_mismatch="0" match_edge="full">TAATCCGCGGCTGCTGG</BASECALL>
             </EXPECTED_BASECALL_TABLE>
           </READ_SPEC>
           <READ_SPEC>
@@ -827,7 +883,6 @@ experiment_with_accessions_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
           <VALUE>16S rRNA V1-V3 region</VALUE>
         </EXPERIMENT_ATTRIBUTE>
       </EXPERIMENT_ATTRIBUTES>
-      
   </EXPERIMENT>
 </EXPERIMENT_SET>'''
 
@@ -863,7 +918,7 @@ metagenomic_experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
             <READ_INDEX>0</READ_INDEX>
             <READ_CLASS>Technical Read</READ_CLASS>
             <READ_TYPE>Adapter</READ_TYPE>
-          <EXPECTED_BASECALL>TCAG</EXPECTED_BASECALL>
+            <EXPECTED_BASECALL>TCAG</EXPECTED_BASECALL>
           </READ_SPEC>
           <READ_SPEC>
             <READ_INDEX>1</READ_INDEX>
@@ -871,11 +926,11 @@ metagenomic_experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
             <READ_CLASS>Technical Read</READ_CLASS>
             <READ_TYPE>BarCode</READ_TYPE>
             <EXPECTED_BASECALL_TABLE>
-               <BASECALL read_group_tag="F6AVWTA02_ATGTTCTAGT" min_match="10" max_mismatch="0" match_edge="full">ATGTTCTAGT</BASECALL>
-               <BASECALL read_group_tag="F6AVWTA02_AGTACACGTC" min_match="10" max_mismatch="0" match_edge="full">AGTACACGTC</BASECALL>
-               <BASECALL read_group_tag="F6AVWTA02_GCTCTGTACT" min_match="10" max_mismatch="0" match_edge="full">GCTCTGTACT</BASECALL>
-               <BASECALL read_group_tag="F6AVWTA02_CATGAGCGTG" min_match="10" max_mismatch="0" match_edge="full">CATGAGCGTG</BASECALL>
-               <BASECALL read_group_tag="F6AVWTA02_TCTCTGTACT" min_match="10" max_mismatch="0" match_edge="full">TCTCTGTACT</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA02_ATGTTCTAGT" min_match="10" max_mismatch="0" match_edge="full">ATGTTCTAGT</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA02_AGTACACGTC" min_match="10" max_mismatch="0" match_edge="full">AGTACACGTC</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA02_GCTCTGTACT" min_match="10" max_mismatch="0" match_edge="full">GCTCTGTACT</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA02_CATGAGCGTG" min_match="10" max_mismatch="0" match_edge="full">CATGAGCGTG</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA02_TCTCTGTACT" min_match="10" max_mismatch="0" match_edge="full">TCTCTGTACT</BASECALL>
             </EXPECTED_BASECALL_TABLE>
           </READ_SPEC>
           <READ_SPEC>
@@ -905,7 +960,6 @@ metagenomic_experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
                     <MULTIPLIER>1.0</MULTIPLIER>
         </QUALITY_SCORES>
       </PROCESSING>
-      
   </EXPERIMENT>
   <EXPERIMENT alias="bodysites_F6AVWTA01" center_name="JCVI">
     <TITLE>Survey of multiple body sites</TITLE>
@@ -937,7 +991,7 @@ metagenomic_experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
             <READ_INDEX>0</READ_INDEX>
             <READ_CLASS>Technical Read</READ_CLASS>
             <READ_TYPE>Adapter</READ_TYPE>
-          <EXPECTED_BASECALL>TCAG</EXPECTED_BASECALL>
+            <EXPECTED_BASECALL>TCAG</EXPECTED_BASECALL>
           </READ_SPEC>
           <READ_SPEC>
             <READ_INDEX>1</READ_INDEX>
@@ -945,11 +999,11 @@ metagenomic_experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
             <READ_CLASS>Technical Read</READ_CLASS>
             <READ_TYPE>BarCode</READ_TYPE>
             <EXPECTED_BASECALL_TABLE>
-               <BASECALL read_group_tag="F6AVWTA01_ATGTTCGATG" min_match="10" max_mismatch="0" match_edge="full">ATGTTCGATG</BASECALL>
-               <BASECALL read_group_tag="F6AVWTA01_AGTACGTACT" min_match="10" max_mismatch="0" match_edge="full">AGTACGTACT</BASECALL>
-               <BASECALL read_group_tag="F6AVWTA01_GCTCTACGTC" min_match="10" max_mismatch="0" match_edge="full">GCTCTACGTC</BASECALL>
-               <BASECALL read_group_tag="F6AVWTA01_CATGAGCGTC" min_match="10" max_mismatch="0" match_edge="full">CATGAGCGTC</BASECALL>
-               <BASECALL read_group_tag="F6AVWTA01_TCTCTCTAGT" min_match="10" max_mismatch="0" match_edge="full">TCTCTCTAGT</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA01_ATGTTCGATG" min_match="10" max_mismatch="0" match_edge="full">ATGTTCGATG</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA01_AGTACGTACT" min_match="10" max_mismatch="0" match_edge="full">AGTACGTACT</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA01_GCTCTACGTC" min_match="10" max_mismatch="0" match_edge="full">GCTCTACGTC</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA01_CATGAGCGTC" min_match="10" max_mismatch="0" match_edge="full">CATGAGCGTC</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA01_TCTCTCTAGT" min_match="10" max_mismatch="0" match_edge="full">TCTCTCTAGT</BASECALL>
             </EXPECTED_BASECALL_TABLE>
           </READ_SPEC>
           <READ_SPEC>
@@ -979,7 +1033,6 @@ metagenomic_experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
                     <MULTIPLIER>1.0</MULTIPLIER>
         </QUALITY_SCORES>
       </PROCESSING>
-      
   </EXPERIMENT>
 </EXPERIMENT_SET>'''
 
@@ -1015,7 +1068,7 @@ experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
             <READ_INDEX>0</READ_INDEX>
             <READ_CLASS>Technical Read</READ_CLASS>
             <READ_TYPE>Adapter</READ_TYPE>
-          <EXPECTED_BASECALL>TCAG</EXPECTED_BASECALL>
+            <EXPECTED_BASECALL>TCAG</EXPECTED_BASECALL>
           </READ_SPEC>
           <READ_SPEC>
             <READ_INDEX>1</READ_INDEX>
@@ -1023,11 +1076,11 @@ experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
             <READ_CLASS>Technical Read</READ_CLASS>
             <READ_TYPE>BarCode</READ_TYPE>
             <EXPECTED_BASECALL_TABLE>
-               <BASECALL read_group_tag="F6AVWTA02_ATGTTCTAGT" min_match="10" max_mismatch="0" match_edge="full">ATGTTCTAGT</BASECALL>
-               <BASECALL read_group_tag="F6AVWTA02_AGTACACGTC" min_match="10" max_mismatch="0" match_edge="full">AGTACACGTC</BASECALL>
-               <BASECALL read_group_tag="F6AVWTA02_GCTCTGTACT" min_match="10" max_mismatch="0" match_edge="full">GCTCTGTACT</BASECALL>
-               <BASECALL read_group_tag="F6AVWTA02_CATGAGCGTG" min_match="10" max_mismatch="0" match_edge="full">CATGAGCGTG</BASECALL>
-               <BASECALL read_group_tag="F6AVWTA02_TCTCTGTACT" min_match="10" max_mismatch="0" match_edge="full">TCTCTGTACT</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA02_ATGTTCTAGT" min_match="10" max_mismatch="0" match_edge="full">ATGTTCTAGT</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA02_AGTACACGTC" min_match="10" max_mismatch="0" match_edge="full">AGTACACGTC</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA02_GCTCTGTACT" min_match="10" max_mismatch="0" match_edge="full">GCTCTGTACT</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA02_CATGAGCGTG" min_match="10" max_mismatch="0" match_edge="full">CATGAGCGTG</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA02_TCTCTGTACT" min_match="10" max_mismatch="0" match_edge="full">TCTCTGTACT</BASECALL>
             </EXPECTED_BASECALL_TABLE>
           </READ_SPEC>
           <READ_SPEC>
@@ -1036,7 +1089,7 @@ experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
             <READ_CLASS>Technical Read</READ_CLASS>
             <READ_TYPE>Primer</READ_TYPE>
             <EXPECTED_BASECALL_TABLE>
-               <BASECALL read_group_tag="V1-V3" min_match="17" max_mismatch="0" match_edge="full">TAATCCGCGGCTGCTGG</BASECALL>
+              <BASECALL read_group_tag="V1-V3" min_match="17" max_mismatch="0" match_edge="full">TAATCCGCGGCTGCTGG</BASECALL>
             </EXPECTED_BASECALL_TABLE>
           </READ_SPEC>
           <READ_SPEC>
@@ -1084,7 +1137,6 @@ experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
           <VALUE>16S rRNA V1-V3 region</VALUE>
         </EXPERIMENT_ATTRIBUTE>
       </EXPERIMENT_ATTRIBUTES>
-      
   </EXPERIMENT>
   <EXPERIMENT alias="bodysites_F6AVWTA01" center_name="JCVI">
     <TITLE>Survey of multiple body sites</TITLE>
@@ -1116,7 +1168,7 @@ experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
             <READ_INDEX>0</READ_INDEX>
             <READ_CLASS>Technical Read</READ_CLASS>
             <READ_TYPE>Adapter</READ_TYPE>
-          <EXPECTED_BASECALL>TCAG</EXPECTED_BASECALL>
+            <EXPECTED_BASECALL>TCAG</EXPECTED_BASECALL>
           </READ_SPEC>
           <READ_SPEC>
             <READ_INDEX>1</READ_INDEX>
@@ -1124,11 +1176,11 @@ experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
             <READ_CLASS>Technical Read</READ_CLASS>
             <READ_TYPE>BarCode</READ_TYPE>
             <EXPECTED_BASECALL_TABLE>
-               <BASECALL read_group_tag="F6AVWTA01_ATGTTCGATG" min_match="10" max_mismatch="0" match_edge="full">ATGTTCGATG</BASECALL>
-               <BASECALL read_group_tag="F6AVWTA01_AGTACGTACT" min_match="10" max_mismatch="0" match_edge="full">AGTACGTACT</BASECALL>
-               <BASECALL read_group_tag="F6AVWTA01_GCTCTACGTC" min_match="10" max_mismatch="0" match_edge="full">GCTCTACGTC</BASECALL>
-               <BASECALL read_group_tag="F6AVWTA01_CATGAGCGTC" min_match="10" max_mismatch="0" match_edge="full">CATGAGCGTC</BASECALL>
-               <BASECALL read_group_tag="F6AVWTA01_TCTCTCTAGT" min_match="10" max_mismatch="0" match_edge="full">TCTCTCTAGT</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA01_ATGTTCGATG" min_match="10" max_mismatch="0" match_edge="full">ATGTTCGATG</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA01_AGTACGTACT" min_match="10" max_mismatch="0" match_edge="full">AGTACGTACT</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA01_GCTCTACGTC" min_match="10" max_mismatch="0" match_edge="full">GCTCTACGTC</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA01_CATGAGCGTC" min_match="10" max_mismatch="0" match_edge="full">CATGAGCGTC</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA01_TCTCTCTAGT" min_match="10" max_mismatch="0" match_edge="full">TCTCTCTAGT</BASECALL>
             </EXPECTED_BASECALL_TABLE>
           </READ_SPEC>
           <READ_SPEC>
@@ -1137,7 +1189,7 @@ experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
             <READ_CLASS>Technical Read</READ_CLASS>
             <READ_TYPE>Primer</READ_TYPE>
             <EXPECTED_BASECALL_TABLE>
-               <BASECALL read_group_tag="V1-V3" min_match="17" max_mismatch="0" match_edge="full">TAATCCGCGGCTGCTGG</BASECALL>
+              <BASECALL read_group_tag="V1-V3" min_match="17" max_mismatch="0" match_edge="full">TAATCCGCGGCTGCTGG</BASECALL>
             </EXPECTED_BASECALL_TABLE>
           </READ_SPEC>
           <READ_SPEC>
@@ -1185,7 +1237,6 @@ experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
           <VALUE>16S rRNA V1-V3 region</VALUE>
         </EXPERIMENT_ATTRIBUTE>
       </EXPERIMENT_ATTRIBUTES>
-      
   </EXPERIMENT>
 </EXPERIMENT_SET>
 '''
