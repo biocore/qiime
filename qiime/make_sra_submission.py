@@ -77,9 +77,6 @@ data_block_wrapper = '''
 experiment_set_wrapper = """<?xml version="1.0" encoding="UTF-8"?>
 <EXPERIMENT_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">%s</EXPERIMENT_SET>"""
 
-pool_member_wrapper = '''\
-            <MEMBER refname="%(SAMPLE_ALIAS)s" refcenter="%(SAMPLE_CENTER)s" member_name="%(POOL_MEMBER_NAME)s" proportion="%(POOL_PROPORTION)s"%(POOL_MEMBER_ACCESSION_ATTRIBUTE)s><READ_LABEL read_group_tag="%(BARCODE_READ_GROUP_TAG)s">barcode</READ_LABEL><READ_LABEL read_group_tag="%(PRIMER_READ_GROUP_TAG)s">rRNA_primer</READ_LABEL></MEMBER>'''
-
 #note: the experiment wrapper is attributing default reads at the study level, not
 #at the experiment level. we might want to revisit this design decision later.
 experiment_wrapper = """\
@@ -413,13 +410,18 @@ def make_run_and_experiment(experiment_lines, sff_dir, attribute_file=None,
                 #create and append the pool member
                 field_dict['MEMBER_ORDER'] = MEMBER_ORDER
 
-                # Insert pool member accession attribute, if present.
-                member_acc = field_dict.get('POOL_MEMBER_ACCESSION')
-                field_dict['POOL_MEMBER_ACCESSION_ATTRIBUTE'] = (
-                    ' accession="%s"' % member_acc if member_acc else '')
-
                 if pool_name:
-                    pool_members.append(pool_member_wrapper % field_dict)
+                    pool_member_xml = '          ' + ET.tostring(_pool_member_xml(
+                        refname=field_dict.get('SAMPLE_ALIAS'),
+                        refcenter=field_dict.get('SAMPLE_CENTER'),
+                        member_name=field_dict.get('POOL_MEMBER_NAME'),
+                        proportion=field_dict.get('POOL_PROPORTION'),
+                        barcode_tag=field_dict.get('BARCODE_READ_GROUP_TAG'),
+                        primer_tag=field_dict.get('PRIMER_READ_GROUP_TAG'),
+                        accession=field_dict.get('POOL_MEMBER_ACCESSION'),
+                        ))
+                    pool_members.append(pool_member_xml)
+                    
                 #create and append the data blocks
                 for f in pool_field_dicts:
                     f['MEMBER_ORDER'] = MEMBER_ORDER
@@ -469,9 +471,48 @@ def make_run_and_experiment(experiment_lines, sff_dir, attribute_file=None,
             experiments.append(experiment_wrapper % field_dict)
     return experiment_set_wrapper % ('\n'+'\n'.join(experiments)+'\n'), run_set_wrapper % ('\n'+'\n'.join(runs)+'\n')
 
-def _experiment_link_xml(links):
-    """Creates the EXPERIMENT_LINKS subtree for SRA Experiment XML
+def _pool_member_xml(
+    member_name=None, proportion=None, refcenter=None, refname=None,
+    barcode_tag=None, primer_tag=None, accession=None):
+    """Creates a MEMBER subtree for SRA Experiment XML.
+
+    The attributes of the MEMBER element are provided as optional
+    keyword arguments.  According to the SRA schema, absolutely all
+    MEMBER attributes are optional, including member_name.  This
+    function implementation is true to the SRA specification, although
+    we can't think of a case where it would be useful to create a
+    MEMBER element with no attributes.
+
+    READ_LABELs are created using the keyword args barcode_tag and
+    primer_tag.  According to the SRA schema, a MEMBER element must
+    contain at least one READ_LABEL.  Therefore, this function raises
+    a ValueError if barcode_tag and primer_tag are both None.
     """
+    if not (barcode_tag or primer_tag):
+        raise ValueError('Must provide either barcode_tag or primer_tag.')
+    member_attributes = {
+        'member_name': member_name,
+        'refcenter': refcenter,
+        'refname': refname,
+        'proportion': proportion,
+        'accession': accession,
+        }
+    root = ET.Element('MEMBER')
+    for attr, val in member_attributes.items():
+        if val:
+            root.set(attr, val)
+    if barcode_tag:
+        barcode_elem = ET.SubElement(
+            root, 'READ_LABEL', read_group_tag=barcode_tag)
+        barcode_elem.text = 'barcode'
+    if primer_tag:
+        primer_elem = ET.SubElement(
+            root, 'READ_LABEL', read_group_tag=primer_tag)
+        primer_elem.text = 'rRNA_primer'
+    return root
+
+def _experiment_link_xml(links):
+    """Creates the EXPERIMENT_LINKS subtree for SRA Experiment XML."""
     if not links:
         return None
     root = ET.Element('EXPERIMENT_LINKS')
@@ -485,8 +526,7 @@ def _experiment_link_xml(links):
     return root
 
 def _experiment_attribute_xml(attrs):
-    """Creates the EXPERIMENT_ATTRIBUTES subtree for SRA Experiment XML
-    """
+    """Creates the EXPERIMENT_ATTRIBUTES subtree for SRA Experiment XML."""
     if not attrs:
         return None
     root = ET.Element('EXPERIMENT_ATTRIBUTES')
@@ -499,7 +539,7 @@ def _experiment_attribute_xml(attrs):
     return root
 
 def _spot_descriptor_xml(adapter, barcodes, linker, primers):
-    """Creates the SPOT_DESCRIPTOR subtree for SRA Experiment XML
+    """Creates the SPOT_DESCRIPTOR subtree for SRA Experiment XML.
 
     The adaptor and linker are to be passed as strings.  Barcodes and
     primers should be passed as a list of tuples, mapping read group
@@ -581,7 +621,7 @@ def _read_spec_xml(
     return root
 
 def pretty_xml(element, level=0):
-    """Formats XML tree as a string with proper indentation
+    """Formats XML tree as a string with proper indentation.
 
     The level kwarg specifies the indentation level for the root
     element.  Child elements are indented with two additional spaces

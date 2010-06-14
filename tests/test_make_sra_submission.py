@@ -10,9 +10,9 @@ from qiime.make_sra_submission import (
     md5_path, safe_for_xml, read_tabular_data, rows_data_as_dicts,
     make_study_links, twocol_data_to_dict, make_study, make_submission,
     make_sample, trim_quotes, defaultdict, group_lines_by_field,
-    write_xml_generic, make_run_and_experiment, _experiment_link_xml,
-    _experiment_attribute_xml, _read_spec_xml, _spot_descriptor_xml,
-    pretty_xml, generate_output_fp)
+    write_xml_generic, make_run_and_experiment, _pool_member_xml,
+    _experiment_link_xml, _experiment_attribute_xml, _read_spec_xml,
+    _spot_descriptor_xml, pretty_xml, generate_output_fp)
 from qiime.util import get_qiime_project_dir
 import xml.etree.ElementTree as ET
 from cStringIO import StringIO
@@ -305,6 +305,32 @@ aa\tbb\tcc
         self.assertTrue(run_schema.validate(
             lxml.etree.fromstring(observed_run_xml)))
 
+    def test_pool_member_xml(self):
+        """_pool_member_xml should return valid XML for SRA POOL MEMBER"""
+        kwargs = {
+            'refname': '700015468',
+            'refcenter': 'NCBI',
+            'member_name': 'F6AVWTA02_2865_700015468_V1-V3',
+            'proportion': '0.014492754',
+            'barcode_tag': 'F6AVWTA02_AGTACACGTC',
+            }
+        observed =  _pool_member_xml(**kwargs)
+        expected = '''
+        <MEMBER member_name="F6AVWTA02_2865_700015468_V1-V3" proportion="0.014492754" refcenter="NCBI" refname="700015468">
+          <READ_LABEL read_group_tag="F6AVWTA02_AGTACACGTC">barcode</READ_LABEL>
+        </MEMBER>'''
+        self.assertEqual(pretty_xml(observed, 4), expected)
+
+        kwargs['primer_tag'] = 'V1-V3'
+        observed_with_primer = _pool_member_xml(**kwargs)
+        expected_with_primer = '''
+        <MEMBER member_name="F6AVWTA02_2865_700015468_V1-V3" proportion="0.014492754" refcenter="NCBI" refname="700015468">
+          <READ_LABEL read_group_tag="F6AVWTA02_AGTACACGTC">barcode</READ_LABEL>
+          <READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL>
+        </MEMBER>'''
+        self.assertEqual(
+            pretty_xml(observed_with_primer, 4), expected_with_primer)
+
     def test_experiment_link_xml(self):
         links = [('link1', 'http://google.com'),
                  ('links2', 'http://www.ncbi.nlm.nih.gov')]
@@ -425,16 +451,16 @@ bodysites_F6AVWTA02	JCVI	Survey of multiple body sites	bodysites_study	bodysites
 
 metagenomic_experiment = '''\
 #EXPERIMENT_ALIAS	EXPERIMENT_ACCESSION	EXPERIMENT_CENTER	EXPERIMENT_TITLE	STUDY_REF	STUDY_CENTER	EXPERIMENT_DESIGN_DESCRIPTION	LIBRARY_CONSTRUCTION_PROTOCOL	LIBRARY_STRATEGY	LIBRARY_SELECTION	SAMPLE_ALIAS	SAMPLE_CENTER	POOL_MEMBER_NAME	POOL_MEMBER_FILENAME	POOL_PROPORTION	BARCODE_READ_GROUP_TAG	BARCODE	LINKER	PRIMER_READ_GROUP_TAG	KEY_SEQ	PRIMER	RUN_PREFIX	REGION	PLATFORM	RUN_ALIAS	RUN_CENTER	RUN_DATE	INSTRUMENT_NAME
-bodysites_F6AVWTA01	SRX01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	WGS	RANDOM	700015438	NCBI	F6AVWTA01_2878_700015438_V1-V3	B-2004-03-S1.sff	0.014492754	F6AVWTA01_ATGTTCGATG	ATGTTCGATG		V1-V3	TCAG		F6AVWTA01	0	FLX	bodysites_lib2878_F6AVWTA01	JCVI	NULL	NULL
-bodysites_F6AVWTA02	SRX01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	WGS	RANDOM	700015438	NCBI	F6AVWTA02_2878_700015438_V1-V3	B-2008-05-S1.sff	0.014492754	F6AVWTA02_ATGTTCTAGT	ATGTTCTAGT		V1-V3	TCAG		F6AVWTA02	0	FLX	bodysites_lib2878_F6AVWTA02	JCVI	NULL	NULL
-bodysites_F6AVWTA01	SRX01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	WGS	RANDOM	700015470	NCBI	F6AVWTA01_2866_700015470_V1-V3	B-2004-04-S1.sff	0.014492754	F6AVWTA01_GCTCTACGTC	GCTCTACGTC		V1-V3	TCAG		F6AVWTA01	0	FLX	bodysites_lib2866_F6AVWTA01	JCVI	NULL	NULL
-bodysites_F6AVWTA02	SRX01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	WGS	RANDOM	700015470	NCBI	F6AVWTA02_2866_700015470_V1-V3	B-2008-08-S1.sff	0.014492754	F6AVWTA02_GCTCTGTACT	GCTCTGTACT		V1-V3	TCAG		F6AVWTA02	0	FLX	bodysites_lib2866_F6AVWTA02	JCVI	NULL	NULL
-bodysites_F6AVWTA01	SRX01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	WGS	RANDOM	700015766	NCBI	F6AVWTA01_2898_700015766_V1-V3	B-2004-08-S1.sff	0.014492754	F6AVWTA01_CATGAGCGTC	CATGAGCGTC		V1-V3	TCAG		F6AVWTA01	0	FLX	bodysites_lib2898_F6AVWTA01	JCVI	NULL	NULL
-bodysites_F6AVWTA02	SRX01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	WGS	RANDOM	700015766	NCBI	F6AVWTA02_2898_700015766_V1-V3	B-2009-06-S1.sff	0.014492754	F6AVWTA02_CATGAGCGTG	CATGAGCGTG		V1-V3	TCAG		F6AVWTA02	0	FLX	bodysites_lib2898_F6AVWTA02	JCVI	NULL	NULL
-bodysites_F6AVWTA01	SRX01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	WGS	RANDOM	700015468	NCBI	F6AVWTA01_2865_700015468_V1-V3	B-2005-06-S1.sff	0.014492754	F6AVWTA01_AGTACGTACT	AGTACGTACT		V1-V3	TCAG		F6AVWTA01	0	FLX	bodysites_lib2865_F6AVWTA01	JCVI	NULL	NULL
-bodysites_F6AVWTA02	SRX01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	WGS	RANDOM	700015468	NCBI	F6AVWTA02_2865_700015468_V1-V3	B-2011-01-S1.sff	0.014492754	F6AVWTA02_AGTACACGTC	AGTACACGTC		V1-V3	TCAG		F6AVWTA02	0	FLX	bodysites_lib2865_F6AVWTA02	JCVI	NULL	NULL
-bodysites_F6AVWTA01	SRX01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	WGS	RANDOM	700016371	NCBI	F6AVWTA01_2907_700016371_V1-V3	B-2006-03-S1.sff	0.014492754	F6AVWTA01_TCTCTCTAGT	TCTCTCTAGT		V1-V3	TCAG		F6AVWTA01	0	FLX	bodysites_lib2907_F6AVWTA01	JCVI	NULL	NULL
-bodysites_F6AVWTA02	SRX01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	WGS	RANDOM	700016371	NCBI	F6AVWTA02_2907_700016371_V1-V3	B-2011-02-S1.sff	0.014492754	F6AVWTA02_TCTCTGTACT	TCTCTGTACT		V1-V3	TCAG		F6AVWTA02	0	FLX	bodysites_lib2907_F6AVWTA02	JCVI	NULL	NULL
+bodysites_F6AVWTA01	SRX01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	WGS	RANDOM	700015438	NCBI	F6AVWTA01_2878_700015438_V1-V3	B-2004-03-S1.sff	0.014492754	F6AVWTA01_ATGTTCGATG	ATGTTCGATG			TCAG		F6AVWTA01	0	FLX	bodysites_lib2878_F6AVWTA01	JCVI	NULL	NULL
+bodysites_F6AVWTA02	SRX01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	WGS	RANDOM	700015438	NCBI	F6AVWTA02_2878_700015438_V1-V3	B-2008-05-S1.sff	0.014492754	F6AVWTA02_ATGTTCTAGT	ATGTTCTAGT			TCAG		F6AVWTA02	0	FLX	bodysites_lib2878_F6AVWTA02	JCVI	NULL	NULL
+bodysites_F6AVWTA01	SRX01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	WGS	RANDOM	700015470	NCBI	F6AVWTA01_2866_700015470_V1-V3	B-2004-04-S1.sff	0.014492754	F6AVWTA01_GCTCTACGTC	GCTCTACGTC			TCAG		F6AVWTA01	0	FLX	bodysites_lib2866_F6AVWTA01	JCVI	NULL	NULL
+bodysites_F6AVWTA02	SRX01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	WGS	RANDOM	700015470	NCBI	F6AVWTA02_2866_700015470_V1-V3	B-2008-08-S1.sff	0.014492754	F6AVWTA02_GCTCTGTACT	GCTCTGTACT			TCAG		F6AVWTA02	0	FLX	bodysites_lib2866_F6AVWTA02	JCVI	NULL	NULL
+bodysites_F6AVWTA01	SRX01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	WGS	RANDOM	700015766	NCBI	F6AVWTA01_2898_700015766_V1-V3	B-2004-08-S1.sff	0.014492754	F6AVWTA01_CATGAGCGTC	CATGAGCGTC			TCAG		F6AVWTA01	0	FLX	bodysites_lib2898_F6AVWTA01	JCVI	NULL	NULL
+bodysites_F6AVWTA02	SRX01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	WGS	RANDOM	700015766	NCBI	F6AVWTA02_2898_700015766_V1-V3	B-2009-06-S1.sff	0.014492754	F6AVWTA02_CATGAGCGTG	CATGAGCGTG			TCAG		F6AVWTA02	0	FLX	bodysites_lib2898_F6AVWTA02	JCVI	NULL	NULL
+bodysites_F6AVWTA01	SRX01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	WGS	RANDOM	700015468	NCBI	F6AVWTA01_2865_700015468_V1-V3	B-2005-06-S1.sff	0.014492754	F6AVWTA01_AGTACGTACT	AGTACGTACT			TCAG		F6AVWTA01	0	FLX	bodysites_lib2865_F6AVWTA01	JCVI	NULL	NULL
+bodysites_F6AVWTA02	SRX01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	WGS	RANDOM	700015468	NCBI	F6AVWTA02_2865_700015468_V1-V3	B-2011-01-S1.sff	0.014492754	F6AVWTA02_AGTACACGTC	AGTACACGTC			TCAG		F6AVWTA02	0	FLX	bodysites_lib2865_F6AVWTA02	JCVI	NULL	NULL
+bodysites_F6AVWTA01	SRX01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	WGS	RANDOM	700016371	NCBI	F6AVWTA01_2907_700016371_V1-V3	B-2006-03-S1.sff	0.014492754	F6AVWTA01_TCTCTCTAGT	TCTCTCTAGT			TCAG		F6AVWTA01	0	FLX	bodysites_lib2907_F6AVWTA01	JCVI	NULL	NULL
+bodysites_F6AVWTA02	SRX01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	WGS	RANDOM	700016371	NCBI	F6AVWTA02_2907_700016371_V1-V3	B-2011-02-S1.sff	0.014492754	F6AVWTA02_TCTCTGTACT	TCTCTGTACT			TCAG		F6AVWTA02	0	FLX	bodysites_lib2907_F6AVWTA02	JCVI	NULL	NULL
 '''
 
 experiment_with_accessions = '''\
@@ -487,11 +513,11 @@ experiment_with_default_sample_xml_str = '''<?xml version="1.0" encoding="UTF-8"
       <DESIGN_DESCRIPTION>Pool of samples from different individual subjects</DESIGN_DESCRIPTION>
       <SAMPLE_DESCRIPTOR refname="unidentified-protected" refcenter="NCBI" accession="SRS026543">
         <POOL>
-            <MEMBER refname="700015468" refcenter="NCBI" member_name="F6AVWTA02_2865_700015468_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_AGTACACGTC">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-            <MEMBER refname="700015470" refcenter="NCBI" member_name="F6AVWTA02_2866_700015470_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_GCTCTGTACT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-            <MEMBER refname="700015438" refcenter="NCBI" member_name="F6AVWTA02_2878_700015438_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_ATGTTCTAGT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-            <MEMBER refname="700015766" refcenter="NCBI" member_name="F6AVWTA02_2898_700015766_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_CATGAGCGTG">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-            <MEMBER refname="700016371" refcenter="NCBI" member_name="F6AVWTA02_2907_700016371_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_TCTCTGTACT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+          <MEMBER refname="700015468" refcenter="NCBI" member_name="F6AVWTA02_2865_700015468_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_AGTACACGTC">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+          <MEMBER refname="700015470" refcenter="NCBI" member_name="F6AVWTA02_2866_700015470_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_GCTCTGTACT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+          <MEMBER refname="700015438" refcenter="NCBI" member_name="F6AVWTA02_2878_700015438_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_ATGTTCTAGT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+          <MEMBER refname="700015766" refcenter="NCBI" member_name="F6AVWTA02_2898_700015766_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_CATGAGCGTG">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+          <MEMBER refname="700016371" refcenter="NCBI" member_name="F6AVWTA02_2907_700016371_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_TCTCTGTACT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
         </POOL>
       </SAMPLE_DESCRIPTOR>
       <LIBRARY_DESCRIPTOR>
@@ -587,11 +613,11 @@ experiment_with_default_sample_xml_str = '''<?xml version="1.0" encoding="UTF-8"
       <DESIGN_DESCRIPTION>Pool of samples from different individual subjects</DESIGN_DESCRIPTION>
       <SAMPLE_DESCRIPTOR refname="unidentified-protected" refcenter="NCBI" accession="SRS026543">
         <POOL>
-            <MEMBER refname="700015468" refcenter="NCBI" member_name="F6AVWTA01_2865_700015468_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_AGTACGTACT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-            <MEMBER refname="700015470" refcenter="NCBI" member_name="F6AVWTA01_2866_700015470_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_GCTCTACGTC">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-            <MEMBER refname="700015438" refcenter="NCBI" member_name="F6AVWTA01_2878_700015438_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_ATGTTCGATG">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-            <MEMBER refname="700015766" refcenter="NCBI" member_name="F6AVWTA01_2898_700015766_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_CATGAGCGTC">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-            <MEMBER refname="700016371" refcenter="NCBI" member_name="F6AVWTA01_2907_700016371_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_TCTCTCTAGT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+          <MEMBER refname="700015468" refcenter="NCBI" member_name="F6AVWTA01_2865_700015468_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_AGTACGTACT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+          <MEMBER refname="700015470" refcenter="NCBI" member_name="F6AVWTA01_2866_700015470_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_GCTCTACGTC">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+          <MEMBER refname="700015438" refcenter="NCBI" member_name="F6AVWTA01_2878_700015438_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_ATGTTCGATG">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+          <MEMBER refname="700015766" refcenter="NCBI" member_name="F6AVWTA01_2898_700015766_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_CATGAGCGTC">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+          <MEMBER refname="700016371" refcenter="NCBI" member_name="F6AVWTA01_2907_700016371_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_TCTCTCTAGT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
         </POOL>
       </SAMPLE_DESCRIPTOR>
       <LIBRARY_DESCRIPTOR>
@@ -691,11 +717,11 @@ experiment_with_accessions_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
       <DESIGN_DESCRIPTION>Pool of samples from different individual subjects</DESIGN_DESCRIPTION>
       <SAMPLE_DESCRIPTOR refcenter="NCBI" accession="SRS077">
         <POOL>
-            <MEMBER refname="700015468" refcenter="NCBI" member_name="F6AVWTA02_2865_700015468_V1-V3" proportion="0.014492754" accession="SRS008"><READ_LABEL read_group_tag="F6AVWTA02_AGTACACGTC">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-            <MEMBER refname="700015470" refcenter="NCBI" member_name="F6AVWTA02_2866_700015470_V1-V3" proportion="0.014492754" accession="SRS004"><READ_LABEL read_group_tag="F6AVWTA02_GCTCTGTACT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-            <MEMBER refname="700015438" refcenter="NCBI" member_name="F6AVWTA02_2878_700015438_V1-V3" proportion="0.014492754" accession="SRS002"><READ_LABEL read_group_tag="F6AVWTA02_ATGTTCTAGT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-            <MEMBER refname="700015766" refcenter="NCBI" member_name="F6AVWTA02_2898_700015766_V1-V3" proportion="0.014492754" accession="SRS006"><READ_LABEL read_group_tag="F6AVWTA02_CATGAGCGTG">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-            <MEMBER refname="700016371" refcenter="NCBI" member_name="F6AVWTA02_2907_700016371_V1-V3" proportion="0.014492754" accession="SRS010"><READ_LABEL read_group_tag="F6AVWTA02_TCTCTGTACT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+          <MEMBER refname="700015468" refcenter="NCBI" member_name="F6AVWTA02_2865_700015468_V1-V3" proportion="0.014492754" accession="SRS008"><READ_LABEL read_group_tag="F6AVWTA02_AGTACACGTC">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+          <MEMBER refname="700015470" refcenter="NCBI" member_name="F6AVWTA02_2866_700015470_V1-V3" proportion="0.014492754" accession="SRS004"><READ_LABEL read_group_tag="F6AVWTA02_GCTCTGTACT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+          <MEMBER refname="700015438" refcenter="NCBI" member_name="F6AVWTA02_2878_700015438_V1-V3" proportion="0.014492754" accession="SRS002"><READ_LABEL read_group_tag="F6AVWTA02_ATGTTCTAGT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+          <MEMBER refname="700015766" refcenter="NCBI" member_name="F6AVWTA02_2898_700015766_V1-V3" proportion="0.014492754" accession="SRS006"><READ_LABEL read_group_tag="F6AVWTA02_CATGAGCGTG">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+          <MEMBER refname="700016371" refcenter="NCBI" member_name="F6AVWTA02_2907_700016371_V1-V3" proportion="0.014492754" accession="SRS010"><READ_LABEL read_group_tag="F6AVWTA02_TCTCTGTACT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
         </POOL>
       </SAMPLE_DESCRIPTOR>
       <LIBRARY_DESCRIPTOR>
@@ -791,11 +817,11 @@ experiment_with_accessions_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
       <DESIGN_DESCRIPTION>Pool of samples from different individual subjects</DESIGN_DESCRIPTION>
       <SAMPLE_DESCRIPTOR refcenter="NCBI" accession="SRS077">
         <POOL>
-            <MEMBER refname="700015468" refcenter="NCBI" member_name="F6AVWTA01_2865_700015468_V1-V3" proportion="0.014492754" accession="SRS007"><READ_LABEL read_group_tag="F6AVWTA01_AGTACGTACT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-            <MEMBER refname="700015470" refcenter="NCBI" member_name="F6AVWTA01_2866_700015470_V1-V3" proportion="0.014492754" accession="SRS003"><READ_LABEL read_group_tag="F6AVWTA01_GCTCTACGTC">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-            <MEMBER refname="700015438" refcenter="NCBI" member_name="F6AVWTA01_2878_700015438_V1-V3" proportion="0.014492754" accession="SRS001"><READ_LABEL read_group_tag="F6AVWTA01_ATGTTCGATG">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-            <MEMBER refname="700015766" refcenter="NCBI" member_name="F6AVWTA01_2898_700015766_V1-V3" proportion="0.014492754" accession="SRS005"><READ_LABEL read_group_tag="F6AVWTA01_CATGAGCGTC">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-            <MEMBER refname="700016371" refcenter="NCBI" member_name="F6AVWTA01_2907_700016371_V1-V3" proportion="0.014492754" accession="SRS009"><READ_LABEL read_group_tag="F6AVWTA01_TCTCTCTAGT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+          <MEMBER refname="700015468" refcenter="NCBI" member_name="F6AVWTA01_2865_700015468_V1-V3" proportion="0.014492754" accession="SRS007"><READ_LABEL read_group_tag="F6AVWTA01_AGTACGTACT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+          <MEMBER refname="700015470" refcenter="NCBI" member_name="F6AVWTA01_2866_700015470_V1-V3" proportion="0.014492754" accession="SRS003"><READ_LABEL read_group_tag="F6AVWTA01_GCTCTACGTC">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+          <MEMBER refname="700015438" refcenter="NCBI" member_name="F6AVWTA01_2878_700015438_V1-V3" proportion="0.014492754" accession="SRS001"><READ_LABEL read_group_tag="F6AVWTA01_ATGTTCGATG">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+          <MEMBER refname="700015766" refcenter="NCBI" member_name="F6AVWTA01_2898_700015766_V1-V3" proportion="0.014492754" accession="SRS005"><READ_LABEL read_group_tag="F6AVWTA01_CATGAGCGTC">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+          <MEMBER refname="700016371" refcenter="NCBI" member_name="F6AVWTA01_2907_700016371_V1-V3" proportion="0.014492754" accession="SRS009"><READ_LABEL read_group_tag="F6AVWTA01_TCTCTCTAGT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
         </POOL>
       </SAMPLE_DESCRIPTOR>
       <LIBRARY_DESCRIPTOR>
@@ -895,11 +921,11 @@ metagenomic_experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
       <DESIGN_DESCRIPTION>Pool of samples from different individual subjects</DESIGN_DESCRIPTION>
       <SAMPLE_DESCRIPTOR refname="bodysites_study_default" refcenter="NCBI">
         <POOL>
-            <MEMBER refname="700015468" refcenter="NCBI" member_name="F6AVWTA02_2865_700015468_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_AGTACACGTC">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-            <MEMBER refname="700015470" refcenter="NCBI" member_name="F6AVWTA02_2866_700015470_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_GCTCTGTACT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-            <MEMBER refname="700015438" refcenter="NCBI" member_name="F6AVWTA02_2878_700015438_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_ATGTTCTAGT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-            <MEMBER refname="700015766" refcenter="NCBI" member_name="F6AVWTA02_2898_700015766_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_CATGAGCGTG">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-            <MEMBER refname="700016371" refcenter="NCBI" member_name="F6AVWTA02_2907_700016371_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_TCTCTGTACT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+          <MEMBER refname="700015468" refcenter="NCBI" member_name="F6AVWTA02_2865_700015468_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_AGTACACGTC">barcode</READ_LABEL></MEMBER>
+          <MEMBER refname="700015470" refcenter="NCBI" member_name="F6AVWTA02_2866_700015470_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_GCTCTGTACT">barcode</READ_LABEL></MEMBER>
+          <MEMBER refname="700015438" refcenter="NCBI" member_name="F6AVWTA02_2878_700015438_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_ATGTTCTAGT">barcode</READ_LABEL></MEMBER>
+          <MEMBER refname="700015766" refcenter="NCBI" member_name="F6AVWTA02_2898_700015766_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_CATGAGCGTG">barcode</READ_LABEL></MEMBER>
+          <MEMBER refname="700016371" refcenter="NCBI" member_name="F6AVWTA02_2907_700016371_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_TCTCTGTACT">barcode</READ_LABEL></MEMBER>
         </POOL>
       </SAMPLE_DESCRIPTOR>
       <LIBRARY_DESCRIPTOR>
@@ -968,11 +994,11 @@ metagenomic_experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
       <DESIGN_DESCRIPTION>Pool of samples from different individual subjects</DESIGN_DESCRIPTION>
       <SAMPLE_DESCRIPTOR refname="bodysites_study_default" refcenter="NCBI">
         <POOL>
-            <MEMBER refname="700015468" refcenter="NCBI" member_name="F6AVWTA01_2865_700015468_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_AGTACGTACT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-            <MEMBER refname="700015470" refcenter="NCBI" member_name="F6AVWTA01_2866_700015470_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_GCTCTACGTC">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-            <MEMBER refname="700015438" refcenter="NCBI" member_name="F6AVWTA01_2878_700015438_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_ATGTTCGATG">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-            <MEMBER refname="700015766" refcenter="NCBI" member_name="F6AVWTA01_2898_700015766_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_CATGAGCGTC">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-            <MEMBER refname="700016371" refcenter="NCBI" member_name="F6AVWTA01_2907_700016371_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_TCTCTCTAGT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+          <MEMBER refname="700015468" refcenter="NCBI" member_name="F6AVWTA01_2865_700015468_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_AGTACGTACT">barcode</READ_LABEL></MEMBER>
+          <MEMBER refname="700015470" refcenter="NCBI" member_name="F6AVWTA01_2866_700015470_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_GCTCTACGTC">barcode</READ_LABEL></MEMBER>
+          <MEMBER refname="700015438" refcenter="NCBI" member_name="F6AVWTA01_2878_700015438_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_ATGTTCGATG">barcode</READ_LABEL></MEMBER>
+          <MEMBER refname="700015766" refcenter="NCBI" member_name="F6AVWTA01_2898_700015766_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_CATGAGCGTC">barcode</READ_LABEL></MEMBER>
+          <MEMBER refname="700016371" refcenter="NCBI" member_name="F6AVWTA01_2907_700016371_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_TCTCTCTAGT">barcode</READ_LABEL></MEMBER>
         </POOL>
       </SAMPLE_DESCRIPTOR>
       <LIBRARY_DESCRIPTOR>
@@ -1045,11 +1071,11 @@ experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
       <DESIGN_DESCRIPTION>Pool of samples from different individual subjects</DESIGN_DESCRIPTION>
       <SAMPLE_DESCRIPTOR refname="bodysites_study_default" refcenter="NCBI">
         <POOL>
-            <MEMBER refname="700015468" refcenter="NCBI" member_name="F6AVWTA02_2865_700015468_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_AGTACACGTC">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-            <MEMBER refname="700015470" refcenter="NCBI" member_name="F6AVWTA02_2866_700015470_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_GCTCTGTACT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-            <MEMBER refname="700015438" refcenter="NCBI" member_name="F6AVWTA02_2878_700015438_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_ATGTTCTAGT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-            <MEMBER refname="700015766" refcenter="NCBI" member_name="F6AVWTA02_2898_700015766_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_CATGAGCGTG">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-            <MEMBER refname="700016371" refcenter="NCBI" member_name="F6AVWTA02_2907_700016371_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_TCTCTGTACT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+          <MEMBER refname="700015468" refcenter="NCBI" member_name="F6AVWTA02_2865_700015468_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_AGTACACGTC">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+          <MEMBER refname="700015470" refcenter="NCBI" member_name="F6AVWTA02_2866_700015470_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_GCTCTGTACT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+          <MEMBER refname="700015438" refcenter="NCBI" member_name="F6AVWTA02_2878_700015438_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_ATGTTCTAGT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+          <MEMBER refname="700015766" refcenter="NCBI" member_name="F6AVWTA02_2898_700015766_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_CATGAGCGTG">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+          <MEMBER refname="700016371" refcenter="NCBI" member_name="F6AVWTA02_2907_700016371_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_TCTCTGTACT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
         </POOL>
       </SAMPLE_DESCRIPTOR>
       <LIBRARY_DESCRIPTOR>
@@ -1145,11 +1171,11 @@ experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
       <DESIGN_DESCRIPTION>Pool of samples from different individual subjects</DESIGN_DESCRIPTION>
       <SAMPLE_DESCRIPTOR refname="bodysites_study_default" refcenter="NCBI">
         <POOL>
-            <MEMBER refname="700015468" refcenter="NCBI" member_name="F6AVWTA01_2865_700015468_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_AGTACGTACT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-            <MEMBER refname="700015470" refcenter="NCBI" member_name="F6AVWTA01_2866_700015470_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_GCTCTACGTC">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-            <MEMBER refname="700015438" refcenter="NCBI" member_name="F6AVWTA01_2878_700015438_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_ATGTTCGATG">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-            <MEMBER refname="700015766" refcenter="NCBI" member_name="F6AVWTA01_2898_700015766_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_CATGAGCGTC">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-            <MEMBER refname="700016371" refcenter="NCBI" member_name="F6AVWTA01_2907_700016371_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_TCTCTCTAGT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+          <MEMBER refname="700015468" refcenter="NCBI" member_name="F6AVWTA01_2865_700015468_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_AGTACGTACT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+          <MEMBER refname="700015470" refcenter="NCBI" member_name="F6AVWTA01_2866_700015470_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_GCTCTACGTC">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+          <MEMBER refname="700015438" refcenter="NCBI" member_name="F6AVWTA01_2878_700015438_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_ATGTTCGATG">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+          <MEMBER refname="700015766" refcenter="NCBI" member_name="F6AVWTA01_2898_700015766_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_CATGAGCGTC">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+          <MEMBER refname="700016371" refcenter="NCBI" member_name="F6AVWTA01_2907_700016371_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_TCTCTCTAGT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
         </POOL>
       </SAMPLE_DESCRIPTOR>
       <LIBRARY_DESCRIPTOR>
