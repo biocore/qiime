@@ -66,14 +66,6 @@ run_wrapper = '''\
     <EXPERIMENT_REF refname="%(EXPERIMENT_ALIAS)s" refcenter="%(STUDY_CENTER)s"/>%(DATA_BLOCK_XML)s
   </RUN>'''
 
-data_block_wrapper = '''
-    <DATA_BLOCK serial="1" name="%(RUN_PREFIX)s" region="%(REGION)s" member_name="%(POOL_MEMBER_NAME)s">
-      <FILES>
-        <FILE filename="%(POOL_MEMBER_FILENAME)s" filetype="sff" checksum_method="MD5" checksum="%(CHECKSUM)s"/>
-      </FILES>
-    </DATA_BLOCK>'''
- 
-
 experiment_set_wrapper = """<?xml version="1.0" encoding="UTF-8"?>
 <EXPERIMENT_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">%s</EXPERIMENT_SET>"""
 
@@ -407,9 +399,6 @@ def make_run_and_experiment(experiment_lines, sff_dir, attribute_file=None,
                         (field_dict['PRIMER_READ_GROUP_TAG'], primer))
                 linker = field_dict['LINKER']
 
-                #create and append the pool member
-                field_dict['MEMBER_ORDER'] = MEMBER_ORDER
-
                 if pool_name:
                     pool_member_xml = '          ' + ET.tostring(_pool_member_xml(
                         refname=field_dict.get('SAMPLE_ALIAS'),
@@ -421,22 +410,19 @@ def make_run_and_experiment(experiment_lines, sff_dir, attribute_file=None,
                         accession=field_dict.get('POOL_MEMBER_ACCESSION'),
                         ))
                     pool_members.append(pool_member_xml)
-                    
-                #create and append the data blocks
-                for f in pool_field_dicts:
-                    f['MEMBER_ORDER'] = MEMBER_ORDER
-                    if not f.get('POOL_MEMBER_FILENAME',''):
-                        f['POOL_MEMBER_FILENAME'] = f['POOL_MEMBER_NAME'] + '.sff'
-                    relative_sff_path = join(sff_dir,f['RUN_PREFIX'],f['POOL_MEMBER_FILENAME'])
-                    try:
-                        f['CHECKSUM'] = md5_path(relative_sff_path)
-                        field_dict['DATA_BLOCK_XML'] = data_block_wrapper % f
+
+                ####################################################
+                # RUN XML
+                ####################################################
+                for pool_field_dict in pool_field_dicts:
+                    data_block = _make_data_block(pool_field_dict, sff_dir)
+                    if data_block is not None:
+                        field_dict['DATA_BLOCK_XML'] = pretty_xml(data_block, 2)
                         runs.append(run_wrapper % field_dict)
 
-                        MEMBER_ORDER += 1   #skip members where we couldn't find the file
-                    except IOError: #file missing, probably because no seqs were recovered
-                        stderr.write("File failed with IOError:\n%s\n" % relative_sff_path)
-                        pass
+            ########################
+            # EXPERIMENT XML
+            ########################
             field_dict['POOL_MEMBERS_XML'] = '\n' + '\n'.join(pool_members) + '\n'
 
             spot_descriptor = pretty_xml(_spot_descriptor_xml(
@@ -470,6 +456,75 @@ def make_run_and_experiment(experiment_lines, sff_dir, attribute_file=None,
 
             experiments.append(experiment_wrapper % field_dict)
     return experiment_set_wrapper % ('\n'+'\n'.join(experiments)+'\n'), run_set_wrapper % ('\n'+'\n'.join(runs)+'\n')
+
+def derive_default_run_fields(experiment_entry):
+    """Derive default values for missing or blank fields in Run XML.
+
+    Derives the following fields:
+    POOL_MEMBER_FILENAME (<POOL_MEMBER_NAME>.sff)
+    """
+    vals = copy.deepcopy(experiment_entry)
+    if not vals.get('POOL_MEMBER_FILENAME'):
+        vals['POOL_MEMBER_FILENAME'] = vals['POOL_MEMBER_NAME'] + '.sff'
+    return vals
+
+def _make_data_block(experiment_entry, sff_dir):
+    """Make a data block from a single line in the experiment table.
+
+    Returns an ElementTree XML object representing the RUN_BLOCK, or
+    None if the SFF files were not found.
+    """
+    vals = derive_default_run_fields(experiment_entry)
+    relative_sff_path = join(
+        sff_dir, vals['RUN_PREFIX'], vals['POOL_MEMBER_FILENAME'])
+    if os.path.exists(relative_sff_path):
+        md5sum = md5_path(relative_sff_path)
+        data_block_file = (vals['POOL_MEMBER_FILENAME'], md5sum)
+        return _data_block_xml(
+            vals.get('POOL_MEMBER_NAME'),
+            name=vals.get('RUN_PREFIX'),
+            region=vals.get('REGION'),
+            files=[data_block_file],
+            )
+    else:
+        stderr.write(
+            'Pool member file %s not found, maybe because no sequences '
+            'were recovered.\n' % relative_sff_path)
+        return None
+
+def _data_block_xml(
+    member_name, serial='1', name=None, region=None, files=[]):
+    """Create a DATA_BLOCK subtree for SRA Run XML.
+
+    The member_name argument specifies the pool member to which this
+    data block applies.  If an empty string is passed, this value is
+    kept in the XML output.  An empty member_name attribute is used by
+    the SRA to refer to the default sample.  If member_name is None,
+    the attribute is not set.
+
+    The remaining attributes of the DATA_BLOCK element are provided as
+    optional keyword arguments.  All attributes, including
+    member_name, are optional according to the SRA schema.  As a
+    convenience, the default value of the 'serial' attribute is set to
+    1.
+
+    FILE elements are created from the list passed via the 'files'
+    keyword -- files should be provided as a list of (filename,
+    md5sum) tuples.
+    """
+    root = ET.Element('DATA_BLOCK')
+    if member_name is not None:
+        root.set('member_name', member_name)
+    block_attributes = {'serial': serial, 'name': name, 'region': region}
+    for attr, val in block_attributes.items():
+        if val:
+            root.set(attr, val)
+    if files:
+        files_elem = ET.SubElement(root, 'FILES')
+        for filename, md5sum in files:
+            ET.SubElement(files_elem, 'FILE', filename=filename, filetype='sff',
+                          checksum_method='MD5', checksum=md5sum)
+    return root
 
 def _pool_member_xml(
     member_name=None, proportion=None, refcenter=None, refname=None,

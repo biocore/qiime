@@ -12,7 +12,7 @@ from qiime.make_sra_submission import (
     make_sample, trim_quotes, defaultdict, group_lines_by_field,
     write_xml_generic, make_run_and_experiment, _pool_member_xml,
     _experiment_link_xml, _experiment_attribute_xml, _read_spec_xml,
-    _spot_descriptor_xml, pretty_xml, generate_output_fp)
+    _spot_descriptor_xml, _data_block_xml, pretty_xml, generate_output_fp)
 from qiime.util import get_qiime_project_dir
 import xml.etree.ElementTree as ET
 from cStringIO import StringIO
@@ -304,6 +304,22 @@ aa\tbb\tcc
         run_schema = lxml.etree.XMLSchema(lxml.etree.fromstring(run_xsd))
         self.assertTrue(run_schema.validate(
             lxml.etree.fromstring(observed_run_xml)))
+
+    def test_data_block_xml(self):
+        """_data_block_xml should return valid XML for SRA Run"""
+        observed = _data_block_xml(
+            member_name='F6AVWTA02_2907_700016371_V1-V3',
+            name='F6AVWTA02', region='0',
+            files=[('B-2011-02-S1.sff', '6b2c7045be67a4cf4958d22c5b6ab790')],
+            )
+        expected = '''
+        <DATA_BLOCK member_name="F6AVWTA02_2907_700016371_V1-V3" name="F6AVWTA02" region="0" serial="1">
+          <FILES>
+            <FILE checksum="6b2c7045be67a4cf4958d22c5b6ab790" checksum_method="MD5" filename="B-2011-02-S1.sff" filetype="sff" />
+          </FILES>
+        </DATA_BLOCK>'''
+        self.assertEqual(pretty_xml(observed, 4), expected)
+        
 
     def test_pool_member_xml(self):
         """_pool_member_xml should return valid XML for SRA POOL MEMBER"""
