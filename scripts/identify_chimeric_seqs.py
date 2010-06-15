@@ -66,7 +66,7 @@ script_info['optional_options']=[\
     make_option('-r', '--reference_seqs_fp',
         help='Path to reference sequences (used to build a blast db when method blast_fragments). '
         '[default: %default; REQUIRED when method blast_fragments'+\
-         ' if no blast_db is provided; REQUIRED when method ChimeraSlayer]'),
+         ' if no blast_db is provided;]'),
 
     make_option('-a', '--aligned_reference_seqs_fp',
         help='Path to (Py)Nast aligned reference sequences. '
@@ -126,11 +126,10 @@ def main():
                                     % opts.num_fragments)
 
     elif opts.chimera_detection_method == 'ChimeraSlayer':
-        if not(opts.aligned_reference_seqs_fp and opts.reference_seqs_fp):
-            option_parser.error("Must provide --aligned_reference_seqs_fp and "+\
-                                    "--reference_seqs_fp when using method "+\
+        if not opts.aligned_reference_seqs_fp:
+            option_parser.error("Must provide --aligned_reference_seqs_fp "+\
+                                    "when using method "+\
                                     "ChimeraSlayer")
-    
             
     verbose = opts.verbose #not used yet ...
     input_seqs_fp = opts.input_fasta_fp

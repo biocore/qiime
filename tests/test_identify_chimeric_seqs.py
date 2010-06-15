@@ -396,6 +396,11 @@ GTGGGGAATATTGCACAATGGGCGGAAGCCTGATGCAGCGACGCCGCGTGAGGGATGACGGCCTTCGGGTTGTAAACCTC
 
         observed = get_chimeras_from_Nast_aligned(test_seqs_fp3, ref_db_nast_fp, ref_db_fp)
         self.assertEqual(observed, [(chimera_id, parent_ids)])
+
+        #test that degapped fasta file is generated and used correctly
+        observed = get_chimeras_from_Nast_aligned(test_seqs_fp3, ref_db_nast_fp)
+        self.assertEqual(observed, [(chimera_id, parent_ids)])
+
             
 
 id_to_taxonomy_string = \

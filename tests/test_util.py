@@ -3,21 +3,26 @@
 
 from os import rmdir
 from os.path import split, abspath, dirname, exists, join
+from cogent import Sequence
 from cogent.util.unit_test import TestCase, main
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.app.util import get_tmp_filename
 from cogent.util.misc import remove_files
+from cogent.cluster.procrustes import procrustes
+from cogent.app.formatdb import build_blast_db_from_fasta_file
+from cogent.util.misc import get_random_directory_name, remove_files
+
 from qiime.util import make_safe_f, FunctionWithParams, qiime_blast_seqs,\
     extract_seqs_by_sample_id, get_qiime_project_dir, matrix_stats,\
     raise_error_on_parallel_unavailable, merge_otu_tables,\
     convert_OTU_table_relative_abundance, create_dir, handle_error_codes,\
     summarize_pcoas, _compute_jn_pcoa_avg_ranges, _flip_vectors, IQR, \
-    idealfourths, isarray, matrix_IQR, sort_fasta_by_abundance
-from cogent.app.formatdb import build_blast_db_from_fasta_file
-from cogent.util.misc import get_random_directory_name
+    idealfourths, isarray, matrix_IQR, sort_fasta_by_abundance, degap_fasta_aln, \
+    write_degapped_fasta_to_file
+
 import numpy
 from numpy import array, asarray
-from cogent.cluster.procrustes import procrustes
+
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME Project"
@@ -37,12 +42,14 @@ class TopLevelTests(TestCase):
         self.otu_table_f1 = otu_table_fake1.split('\n')
         self.otu_table_f2 = otu_table_fake2.split('\n')
         self.dirs_to_remove = []
-    
+        self.files_to_remove = []
+
     def tearDown(self):
         for dir in  self.dirs_to_remove:
             if exists(dir):
                 rmdir(dir)
-
+        remove_files(self.files_to_remove)
+                
     def test_make_safe_f(self):
         """make_safe_f should return version of f that ignores extra kwargs."""
         def f(x,y): return x*y
@@ -610,7 +617,51 @@ class BlastSeqsTests(TestCase):
         
         self.assertEqual(isarray(obs1),exp1)
         self.assertEqual(isarray(obs2),exp2)
+
+    def test_degap_fasta_aln(self):
+        """degap_fasta_align removes gps from fasta seqs."""
+
+        test_aln = [("a","AAAAAAAAAGGGG"),
+                    ("b","-A-A-G-G-A-G-C."),
+                    ('c',"..-----------"),
+                    ('d',"--------AAAAAAA"),
+                    ('e',"")]
+
+        expected_result = map(lambda (a, b): Sequence(name=a, seq=b),
+                              [("a","AAAAAAAAAGGGG"),
+                               ("b","AAGGAGC"),
+                               ('c',""),
+                               ('d',"AAAAAAA"),
+                               ('e',"")])
         
+        self.assertEqual(list(degap_fasta_aln(test_aln)), expected_result)
+
+        self.assertEqual(list(degap_fasta_aln([])),[])
+
+    def test_write_degapped_fasta_to_file(self):
+     
+        test_aln = [("a","AAAAAAAAAGGGG"),
+                    ("b","-A-A-G-G-A-G-C"),
+                    ('c',"---------------"),
+                    ('d',"--------AAAAAAA"),
+                    ('e',"")]
+
+        expected_result =""">a
+AAAAAAAAAGGGG
+>b
+AAGGAGC
+>c
+
+>d
+AAAAAAA
+>e
+
+"""
+        tmp_filename = write_degapped_fasta_to_file(test_aln)
+        self.files_to_remove.append(tmp_filename)
+        observed = "".join(list(open(tmp_filename,"U")))
+        self.assertEqual(observed, expected_result)
+
 inseqs1 = """>s2_like_seq
 TGCAGCTTGAGCACAGGTTAGAGCCTTC
 >s100

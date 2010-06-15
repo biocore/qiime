@@ -30,10 +30,14 @@ from optparse import make_option
 import sys
 import os
 from copy import deepcopy
-from cogent import LoadSeqs
+from cogent import LoadSeqs, Sequence
 from cogent.cluster.procrustes import procrustes
 from qiime.parse import parse_newick, PhyloNode
 from cogent.core.alignment import Alignment
+from cogent.core.moltype import MolType, IUPAC_DNA_chars, IUPAC_DNA_ambiguities,\
+    IUPAC_DNA_ambiguities_complements, DnaStandardPairs, ModelDnaSequence
+from cogent.data.molecular_weight import DnaMW
+from cogent.core.sequence import DnaSequence
 from cogent.app.blast import Blastall
 from cogent.app.util import get_tmp_filename
 from cogent.parse.blast import BlastResult
@@ -845,3 +849,40 @@ def isarray(a):
         validity=False
 
     return validity
+
+#make an alphabet that allows '.' as additional gaps
+DNA_with_more_gaps = MolType(
+    Sequence = DnaSequence,
+    motifset = IUPAC_DNA_chars,
+    Ambiguities = IUPAC_DNA_ambiguities,
+    label = "dna",
+    Gaps = ".",
+    MWCalculator = DnaMW,
+    Complements = IUPAC_DNA_ambiguities_complements,
+    Pairs = DnaStandardPairs,
+    make_alphabet_group=True,
+    ModelSeq = ModelDnaSequence,
+    )
+
+def degap_fasta_aln(seqs):
+    """degap a Fasta aligment.
+
+    seqs: list of label,seq pairs
+    """
+    
+    for (label,seq) in seqs:
+        degapped_seq = Sequence(moltype=DNA_with_more_gaps,
+                                seq=seq, name=label).degap()
+        degapped_seq.Name = label
+        yield degapped_seq
+
+def write_degapped_fasta_to_file(seqs):
+    """ write degapped seqs to temp fasta file."""
+
+    tmp_filename = get_tmp_filename(prefix="degapped_", suffix=".fasta")
+    fh = open(tmp_filename,"w")
+    
+    for seq in degap_fasta_aln(seqs):
+        fh.write(seq.toFasta()+"\n")
+    fh.close()
+    return tmp_filename

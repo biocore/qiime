@@ -14,7 +14,8 @@ from cogent.app.util import CommandLineApplication, ResultPath,\
     get_tmp_filename, ApplicationError, ApplicationNotFoundError
 from cogent.util.misc import remove_files
 
-from qiime.util import FunctionWithParams
+from qiime.util import FunctionWithParams, degap_fasta_aln, \
+    write_degapped_fasta_to_file
 from qiime.assign_taxonomy import BlastTaxonAssigner
 
 __author__ = "Greg Caporaso"
@@ -395,13 +396,21 @@ class ChimeraSlayer(CommandLineApplication):
     def remove_intermediate_files(self):
         """Remove all intermediate files."""
 
+        #tmp files are written in the current dir,
+        #app conreoller always jumps into dir specified via exec_dir
+        #Note: blast intermediates are not removed 
+        exec_dir =  str(self.Parameters['--exec_dir'].Value)        
         inp_file_name =  str(self.Parameters['--query_NAST'].Value)
+        
+        exec_dir = exec_dir.rstrip('"')
+        exec_dir = exec_dir.lstrip('"')
+
         inp_file_name = inp_file_name.rstrip('"')
         inp_file_name = inp_file_name.lstrip('"')
         
         tmp_suffixes = [".CPS", ".CPS.CPC", ".CPS_RENAST",".CPS_RENAST.cidx",
                         ".CPS.CPC.wTaxons", ".cidx"]
-        cs_tmp_files = [inp_file_name + x for x in tmp_suffixes]
+        cs_tmp_files = [exec_dir +'/'+ inp_file_name + x for x in tmp_suffixes]
         remove_files(cs_tmp_files, error_on_missing=False)
 
         db_param = self.Parameters['--db_NAST']
@@ -514,9 +523,19 @@ ChimeraSlayer   chimera_AJ007403        7000004131495956        S000469847      
 
 ## Start convenience functions
 
+
 def get_chimeras_from_Nast_aligned(seqs_fp, ref_db_aligned_fp=None, ref_db_fasta_fp=None,
                                    HALT_EXEC=False, min_div_ratio=None):
-    
+    """remove chimeras from seqs_fp using chimeraSlayer.
+
+    seqs_fp:  a filepath with the seqs to check in the file
+    ref_db_aligned_fp: fp to (pynast) aligned reference sequences
+    ref_db_fasta_fp: same seqs as above, just unaligned. Will be computed on the fly if not provided,
+    HALT_EXEC: stop execution if true
+    min_div_ratio: passed to ChimeraSlayer App
+    """
+
+    files_to_remove = []
     #might come in as FilePath object with quotes
     seqs_fp = str(seqs_fp)
     seqs_fp = seqs_fp.rstrip('"')
@@ -533,12 +552,16 @@ def get_chimeras_from_Nast_aligned(seqs_fp, ref_db_aligned_fp=None, ref_db_fasta
     params={'--query_NAST': new_seqs_fp,
             '--exec_dir': seqs_dir}
 
-    if ref_db_aligned_fp==None or ref_db_fasta_fp==None:
+    if ref_db_aligned_fp==None and ref_db_fasta_fp==None:
         #use default db, whose relative position to the
         #ChimeraSlayer binary is hardcoded
         pass
 
     else:
+        if not ref_db_fasta_fp:
+            ref_db_fasta_fp = write_degapped_fasta_to_file(MinimalFastaParser( \
+                    open(ref_db_aligned_fp)))
+            files_to_remove.append(ref_db_fasta_fp)
         #use user db
         params.update({'--db_NAST': ref_db_aligned_fp,
                        '--db_FASTA': ref_db_fasta_fp})
@@ -556,5 +579,7 @@ def get_chimeras_from_Nast_aligned(seqs_fp, ref_db_aligned_fp=None, ref_db_fasta
 
     chimeras = parse_CPS_file((app_results['CPS']))
     app.remove_intermediate_files()
+    remove_files(files_to_remove)
 
     return chimeras
+
