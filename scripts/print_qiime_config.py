@@ -13,7 +13,7 @@ __status__ = "Development"
 
 from optparse import make_option
 from os import access, X_OK, R_OK, W_OK, getenv
-from os.path import isdir, exists
+from os.path import isdir, exists, split
 from sys import platform, version as python_version, executable
 from subprocess import Popen, PIPE, STDOUT
 
@@ -176,7 +176,7 @@ class Qiime_config(TestCase):
 
 
     def test_for_obsolete_values(self):
-        """local qiime_config has no extra params."""
+        """local qiime_config has no extra params"""
         
         qiime_project_dir = get_qiime_project_dir()
         orig_config = parse_qiime_config_file(open(qiime_project_dir +
@@ -206,7 +206,20 @@ class Qiime_config(TestCase):
                 self.fail("The .qiime_config in your HOME contains obsolete "+
                           "parameters:\n" + ", ".join(extra_vals))
 
-                   
+    def test_chimeraSlayer_install(self):
+        """guess if ChimeraSlayer is installed properly"""
+
+        #The ChimerSalyer app requires that all its components are installed
+        # relative to the main program ChimeraSlayer.pl.
+        # We therefore check that at least one the files is there.
+        # However, if the directory structure of ChimeraSlayer changes, this test will most
+        # likely fail as well and need to be updated.
+        # Tested with the version of microbiomeutil_2010-04-29
+
+        chim_slay = app_path("ChimeraSlayer.pl")
+        dir, app_name = split(chim_slay)
+        self.assertTrue(exists(dir+"/ChimeraParentSelector/chimeraParentSelector.pl"))
+
 def test_qiime_config_variable(variable, qiime_config, test,
                                access_var=R_OK, fail_on_missing=False):
     """test if a variable is set and set to a readable path."""
