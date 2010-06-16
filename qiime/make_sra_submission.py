@@ -57,15 +57,6 @@ file_wrapper = """ <FILES>
  <FILE filename="%s" checksum_method="MD5" checksum="%s"/>
  </FILES>"""
 
-run_set_wrapper = '''\
-<?xml version="1.0" encoding="UTF-8"?>
-<RUN_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">%s</RUN_SET>'''
-
-run_wrapper = '''\
-  <RUN alias="%(RUN_ALIAS)s" center_name="%(RUN_CENTER)s" run_center="%(RUN_CENTER)s">
-    <EXPERIMENT_REF refname="%(EXPERIMENT_ALIAS)s" refcenter="%(STUDY_CENTER)s"/>%(DATA_BLOCK_XML)s
-  </RUN>'''
-
 experiment_set_wrapper = """<?xml version="1.0" encoding="UTF-8"?>
 <EXPERIMENT_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">%s</EXPERIMENT_SET>"""
 
@@ -328,7 +319,7 @@ def make_run_and_experiment(experiment_lines, sff_dir, attribute_file=None,
                        "Skipping..." % elems)
 
     experiments = []
-    runs = []
+    run_set = SraRunSet()
     for study_id, study_lines in studies.items():
         experiment_groups = group_lines_by_field(study_lines, experiment_ref_index)
         field_dict = {} # to keep the last one in scope for outer block
@@ -415,10 +406,7 @@ def make_run_and_experiment(experiment_lines, sff_dir, attribute_file=None,
                 # RUN XML
                 ####################################################
                 for pool_field_dict in pool_field_dicts:
-                    data_block = _make_data_block(pool_field_dict, sff_dir)
-                    if data_block is not None:
-                        field_dict['DATA_BLOCK_XML'] = pretty_xml(data_block, 2)
-                        runs.append(run_wrapper % field_dict)
+                    run_set.register(pool_field_dict, sff_dir)
 
             ########################
             # EXPERIMENT XML
@@ -455,7 +443,225 @@ def make_run_and_experiment(experiment_lines, sff_dir, attribute_file=None,
                 field_dict['LIBRARY_SOURCE'] = 'GENOMIC'
 
             experiments.append(experiment_wrapper % field_dict)
-    return experiment_set_wrapper % ('\n'+'\n'.join(experiments)+'\n'), run_set_wrapper % ('\n'+'\n'.join(runs)+'\n')
+    run_set_string = '<?xml version="1.0" encoding="UTF-8"?>' + \
+                     pretty_xml(run_set.to_xml())
+    return experiment_set_wrapper % ('\n'+'\n'.join(experiments)+'\n'), run_set_string
+
+
+class SraEntity(object):
+    """Base class for elements defined in the SRA's XML schema.
+    """
+
+    def from_entry(self, entry_dict):
+        """Factory method to build an SraEntity from a dict of field
+        entries in an tabular input file.
+        """
+        raise NotImplementedError(
+            'This method is not implemented in the base class.')
+
+    def to_xml(self):
+        """Generate an ElementTree XML representation of the object.
+        """
+        raise NotImplementedError(
+            'This method is not implemented in the base class.')
+    
+    def set_xml_attributes(self, xml_element, instance_attributes):
+        """Transfer attributes from an instance to an XML element.
+
+        Transfers instance attributes from the list that evaluate as
+        non-false.  Blank attributes are not transferred.
+
+        This method mutates the XML element as a side effect.  To make
+        this clear, we do not provide a return value.
+        """
+        for attr in instance_attributes:
+            val = getattr(self, attr)
+            if val:
+                xml_element.set(attr, val)
+
+
+class SraRun(SraEntity):
+    """Class representing an SRA Run entity
+
+    Data blocks associated with the run are stored in the data_blocks
+    instance attribute.
+    """
+
+    def __init__(self, alias=None, center_name=None, run_center=None,
+                 refname=None, refcenter=None):
+        """Create a new SRA Run.
+
+        The keyword arguments represent attributes in the output XML.
+        The attributes alias, center_name, and run_center are passed
+        to the RUN element.  The refname and refcenter attributes are
+        associated with the child element, EXPERIMENT_REF.
+        """
+        self.alias = alias
+        self.center_name = center_name
+        self.run_center = run_center
+        self.refname = refname
+        self.refcenter = refcenter
+        self.data_blocks = []
+
+    @classmethod
+    def from_entry(cls, experiment_entry):
+        """Factory method to create a new run from an experiment line.
+        """
+        return SraRun(
+            alias=experiment_entry.get('RUN_ALIAS'),
+            center_name=experiment_entry.get('RUN_CENTER'),
+            run_center=experiment_entry.get('RUN_CENTER'),
+            refname=experiment_entry.get('EXPERIMENT_ALIAS'),
+            refcenter=experiment_entry.get('STUDY_CENTER'),
+            )
+
+    def to_xml(self):
+        """Create an ElementTree XML object for the SRA RUN entity.
+        """
+        root = ET.Element('RUN')
+        self.set_xml_attributes(root, ['alias', 'center_name', 'run_center'])
+        expt_elem = ET.SubElement(root, 'EXPERIMENT_REF')
+        self.set_xml_attributes(expt_elem, ['refname', 'refcenter'])
+        if self.data_blocks:
+            for data_block in self.data_blocks:
+                root.append(data_block.to_xml())
+        return root
+
+
+class SraDataBlock(SraEntity):
+    """Class representing an SRA Data Block entity.
+    """
+    
+    def __init__(self, member_name, serial='1', name=None, region=None):
+        """Create a new SRA data block.
+
+        The member_name attribute specifies the pool member to which
+        this data block applies.  If an empty string is passed, this
+        value is kept in the XML output.  An empty member_name
+        attribute is used by the SRA to refer to the default sample.
+        If member_name is None, the attribute is not set in the XML.
+
+        The remaining attributes of the DATA_BLOCK element are
+        provided as optional keyword arguments.  All attributes,
+        including member_name, are optional according to the SRA
+        schema.  As a convenience, the default value of the 'serial'
+        attribute is set to 1.
+        """
+        self.member_name = member_name
+        self.serial = serial
+        self.name = name
+        self.region = region
+        self.files = []
+
+    @classmethod
+    def from_entry(cls, experiment_entry):
+        """Factory method to create a new data block from an experiment line.
+        """
+        return SraDataBlock(
+            experiment_entry.get('POOL_MEMBER_NAME'),
+            name=experiment_entry.get('RUN_PREFIX'),
+            region=experiment_entry.get('REGION'),
+            )
+
+    def to_xml(self):
+        """Create an ElementTree XML object for the SRA DATA_BLOCK entity.
+        """
+        root = ET.Element('DATA_BLOCK')
+        if self.member_name is not None:
+            root.set('member_name', self.member_name)
+        self.set_xml_attributes(root, ['name', 'serial', 'region'])
+        if self.files:
+            files_elem = ET.SubElement(root, 'FILES')
+            for f in self.files:
+                files_elem.append(f.to_xml())
+        return root
+
+
+class SraFile(SraEntity):
+    """Class representing an SRA File entity.
+    """
+
+    def __init__(self, filename=None, filetype=None, checksum_method=None,
+                 checksum=None):
+        """Create a new SRA File.
+
+        Keyword arguments correspond to File attributes in the output
+        XML.
+        """
+        self.filename = filename
+        self.filetype = filetype
+        self.checksum_method = checksum_method
+        self.checksum = checksum
+
+    @classmethod
+    def from_entry(cls, experiment_entry, data_dir):
+        """Factory method to register a new file from an experiment entry.
+
+        Searches for the file in the data directory under a folder
+        named RUN_PREFIX.  If the file is found, this method computes
+        the checksum and returns the SraFile object.  If the file is
+        not found, the method prints a warning to stderr and returns
+        None.
+        """
+        vals = derive_default_run_fields(experiment_entry)
+        filepath = os.path.join(
+            data_dir, vals['RUN_PREFIX'], vals['POOL_MEMBER_FILENAME'])
+        if not os.path.exists(filepath):
+            stderr.write(
+                'SRA Run file %s not found, maybe because no sequences were '
+                'recovered.\n' % filepath)
+            return None
+        md5sum = md5_path(filepath)
+        return SraFile(
+            filename=vals.get('POOL_MEMBER_FILENAME'), filetype='sff',
+            checksum_method='MD5', checksum=md5sum,)
+
+    def to_xml(self):
+        """Create an ElementTree XML object for the SRA FILE entity."""
+        root = ET.Element('FILE')
+        self.set_xml_attributes(
+            root, ['filename', 'filetype', 'checksum_method', 'checksum'])
+        return root
+
+class SraRunSet(SraEntity):
+    """Class representing a set of SRA Run entities.
+    """
+
+    def __init__(self):
+        """Create a new set of SRA Run entities.
+
+        The associated Runs are stored in the instance attribute,
+        runs.
+        """
+        self.runs = []
+
+    def register(self, experiment_entry, sff_dir):
+        """Register an experiment entry with the SRA Run Set.
+
+        This method takes the necessary steps to update and maintain
+        the list of SRA Runs and all sub-elements with the information
+        from the new entry.
+        """
+        sra_file = SraFile.from_entry(experiment_entry, sff_dir)
+        if sra_file is not None:
+            data_block = SraDataBlock.from_entry(experiment_entry)
+            data_block.files.append(sra_file)
+
+            run = SraRun.from_entry(experiment_entry)
+            run.data_blocks.append(data_block)
+
+            self.runs.append(run)
+
+    def to_xml(self):
+        """Create an ElementTree XML object for the SRA RUN_SET entity.
+        """
+        root = ET.Element('RUN_SET')
+        root.set('xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance')
+        for run in self.runs:
+            root.append(run.to_xml())
+        if not self.runs:
+            root.text = '\n'
+        return root
 
 def derive_default_run_fields(experiment_entry):
     """Derive default values for missing or blank fields in Run XML.
@@ -467,64 +673,6 @@ def derive_default_run_fields(experiment_entry):
     if not vals.get('POOL_MEMBER_FILENAME'):
         vals['POOL_MEMBER_FILENAME'] = vals['POOL_MEMBER_NAME'] + '.sff'
     return vals
-
-def _make_data_block(experiment_entry, sff_dir):
-    """Make a data block from a single line in the experiment table.
-
-    Returns an ElementTree XML object representing the RUN_BLOCK, or
-    None if the SFF files were not found.
-    """
-    vals = derive_default_run_fields(experiment_entry)
-    relative_sff_path = join(
-        sff_dir, vals['RUN_PREFIX'], vals['POOL_MEMBER_FILENAME'])
-    if os.path.exists(relative_sff_path):
-        md5sum = md5_path(relative_sff_path)
-        data_block_file = (vals['POOL_MEMBER_FILENAME'], md5sum)
-        return _data_block_xml(
-            vals.get('POOL_MEMBER_NAME'),
-            name=vals.get('RUN_PREFIX'),
-            region=vals.get('REGION'),
-            files=[data_block_file],
-            )
-    else:
-        stderr.write(
-            'Pool member file %s not found, maybe because no sequences '
-            'were recovered.\n' % relative_sff_path)
-        return None
-
-def _data_block_xml(
-    member_name, serial='1', name=None, region=None, files=[]):
-    """Create a DATA_BLOCK subtree for SRA Run XML.
-
-    The member_name argument specifies the pool member to which this
-    data block applies.  If an empty string is passed, this value is
-    kept in the XML output.  An empty member_name attribute is used by
-    the SRA to refer to the default sample.  If member_name is None,
-    the attribute is not set.
-
-    The remaining attributes of the DATA_BLOCK element are provided as
-    optional keyword arguments.  All attributes, including
-    member_name, are optional according to the SRA schema.  As a
-    convenience, the default value of the 'serial' attribute is set to
-    1.
-
-    FILE elements are created from the list passed via the 'files'
-    keyword -- files should be provided as a list of (filename,
-    md5sum) tuples.
-    """
-    root = ET.Element('DATA_BLOCK')
-    if member_name is not None:
-        root.set('member_name', member_name)
-    block_attributes = {'serial': serial, 'name': name, 'region': region}
-    for attr, val in block_attributes.items():
-        if val:
-            root.set(attr, val)
-    if files:
-        files_elem = ET.SubElement(root, 'FILES')
-        for filename, md5sum in files:
-            ET.SubElement(files_elem, 'FILE', filename=filename, filetype='sff',
-                          checksum_method='MD5', checksum=md5sum)
-    return root
 
 def _pool_member_xml(
     member_name=None, proportion=None, refcenter=None, refname=None,
@@ -686,6 +834,8 @@ def pretty_xml(element, level=0):
         return ''
     element = copy.deepcopy(element)
     __pretty_xml_helper(element, level)
+    if element.tail is None:
+        return '\n' + ET.tostring(element)
     # The lxml example function places a newline and spaces at the end
     # of the parent element. We'd like these spaces to appear at the
     # beginning of the parent element, because this helps with

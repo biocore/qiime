@@ -12,7 +12,8 @@ from qiime.make_sra_submission import (
     make_sample, trim_quotes, defaultdict, group_lines_by_field,
     write_xml_generic, make_run_and_experiment, _pool_member_xml,
     _experiment_link_xml, _experiment_attribute_xml, _read_spec_xml,
-    _spot_descriptor_xml, _data_block_xml, pretty_xml, generate_output_fp)
+    _spot_descriptor_xml, pretty_xml, generate_output_fp,
+    SraEntity, SraRun, SraDataBlock, SraFile)
 from qiime.util import get_qiime_project_dir
 import xml.etree.ElementTree as ET
 from cStringIO import StringIO
@@ -229,7 +230,6 @@ aa\tbb\tcc
         expected_run_xml = (
             '<?xml version="1.0" encoding="UTF-8"?>\n'
             '<RUN_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">\n'
-            '\n'
             '</RUN_SET>'
             )
         self.assertEqual(
@@ -304,22 +304,6 @@ aa\tbb\tcc
         run_schema = lxml.etree.XMLSchema(lxml.etree.fromstring(run_xsd))
         self.assertTrue(run_schema.validate(
             lxml.etree.fromstring(observed_run_xml)))
-
-    def test_data_block_xml(self):
-        """_data_block_xml should return valid XML for SRA Run"""
-        observed = _data_block_xml(
-            member_name='F6AVWTA02_2907_700016371_V1-V3',
-            name='F6AVWTA02', region='0',
-            files=[('B-2011-02-S1.sff', '6b2c7045be67a4cf4958d22c5b6ab790')],
-            )
-        expected = '''
-        <DATA_BLOCK member_name="F6AVWTA02_2907_700016371_V1-V3" name="F6AVWTA02" region="0" serial="1">
-          <FILES>
-            <FILE checksum="6b2c7045be67a4cf4958d22c5b6ab790" checksum_method="MD5" filename="B-2011-02-S1.sff" filetype="sff" />
-          </FILES>
-        </DATA_BLOCK>'''
-        self.assertEqual(pretty_xml(observed, 4), expected)
-        
 
     def test_pool_member_xml(self):
         """_pool_member_xml should return valid XML for SRA POOL MEMBER"""
@@ -449,6 +433,123 @@ aa\tbb\tcc
         expected = '\n<a>\n  <b>hello</b>\n</a>'
         self.assertEqual(observed, expected)
 
+        c = ET.Element('c')
+        c.set('myattr', '12345')
+        observed = pretty_xml(c)
+        expected = '\n<c myattr="12345" />'
+        self.assertEqual(observed, expected)
+
+class SraEntityTests(TestCase):
+    def test_set_xml_attributes(self):
+        element = ET.Element('a')
+        entity = SraEntity()
+        entity.name = 'John'
+        entity.set_xml_attributes(element, ['name'])
+        self.assertEqual(element.get('name'), 'John')
+
+class SraRunTests(TestCase):
+    def test_to_xml(self):
+        class MockSraDataBlock:
+            def to_xml(self):
+                return ET.fromstring(
+                    '<DATA_BLOCK serial="1" name="F6AVWTA02" region="0" '
+                    'member_name=""><FILES>'
+                    '<FILE filename="bodysites_study_default_F6AVWTA02.sff" '
+                    'filetype="sff" checksum_method="MD5" '
+                    'checksum="d41d8cd98f00b204e9800998ecf8427e"/>'
+                    '</FILES></DATA_BLOCK>'
+                    )
+        run = SraRun(
+            alias='bodysites_study_default_F6AVWTA02', center_name='JCVI',
+            run_center='AAAA', refname='bodysites_F6AVWTA02',
+            refcenter='bodysites')
+        run.data_blocks.append(MockSraDataBlock())
+        observed = run.to_xml()
+        expected = '''
+        <RUN alias="bodysites_study_default_F6AVWTA02" center_name="JCVI" run_center="AAAA">
+          <EXPERIMENT_REF refcenter="bodysites" refname="bodysites_F6AVWTA02" />
+          <DATA_BLOCK member_name="" name="F6AVWTA02" region="0" serial="1">
+            <FILES>
+              <FILE checksum="d41d8cd98f00b204e9800998ecf8427e" checksum_method="MD5" filename="bodysites_study_default_F6AVWTA02.sff" filetype="sff" />
+            </FILES>
+          </DATA_BLOCK>
+        </RUN>'''
+        self.assertEqual(pretty_xml(observed, 4), expected)
+
+    def test_from_entry(self):
+        vals = {
+            'RUN_ALIAS': 'GHNNEQQ',
+            'RUN_CENTER': 'UPENNBL',
+            'EXPERIMENT_ALIAS': 'my_expt_alias',
+            'STUDY_CENTER': 'NCBI',
+            }
+        a = SraRun.from_entry(vals)
+        self.assertEqual(a.alias, 'GHNNEQQ')
+        self.assertEqual(a.center_name, 'UPENNBL')
+        self.assertEqual(a.run_center, 'UPENNBL')
+        self.assertEqual(a.refname, 'my_expt_alias')
+        self.assertEqual(a.refcenter, 'NCBI')
+
+class SraDataBlockTests(TestCase):
+    def test_from_entry(self):
+        vals = {
+            'RUN_PREFIX': 'F6AVWTA02',
+            'REGION': '2',
+            }
+        a = SraDataBlock.from_entry(vals)
+        self.assertEqual(a.member_name, None)
+
+        vals['POOL_MEMBER_NAME'] = ''
+        b = SraDataBlock.from_entry(vals)
+        self.assertEqual(b.member_name, '')
+        self.assertEqual(b.serial, '1')
+        self.assertEqual(b.name, 'F6AVWTA02')
+        self.assertEqual(b.region, '2')
+    
+    def test_to_xml(self):
+        class MockSraFile:
+            def to_xml(self):
+                return ET.fromstring(
+                    '<FILE checksum="d41d8cd98f00b204e9800998ecf8427e" '
+                    'checksum_method="MD5" '
+                    'filename="bodysites_study_default_F6AVWTA02.sff" '
+                    'filetype="sff" />'
+                    )
+        block = SraDataBlock('', name='F6AVWTA02', region='0')
+        block.files.append(MockSraFile())
+        observed = block.to_xml()
+        expected = '''
+        <DATA_BLOCK member_name="" name="F6AVWTA02" region="0" serial="1">
+          <FILES>
+            <FILE checksum="d41d8cd98f00b204e9800998ecf8427e" checksum_method="MD5" filename="bodysites_study_default_F6AVWTA02.sff" filetype="sff" />
+          </FILES>
+        </DATA_BLOCK>'''
+        self.assertEqual(pretty_xml(observed, 4), expected)   
+
+class SraFileTests(TestCase):
+    def test_from_entry(self):
+        test_dir = os.path.dirname(os.path.abspath(__file__))
+        sff_dir = os.path.join(test_dir, 'sra_test_files', 'F6AVWTA')
+
+        vals = {
+            'RUN_PREFIX': 'F6AVWTA01',
+            'POOL_MEMBER_FILENAME': 'B-2004-03-S1.sff',
+            }
+        f = SraFile.from_entry(vals, sff_dir)
+        self.assertEqual(f.filename, 'B-2004-03-S1.sff')
+        self.assertEqual(f.filetype, 'sff')
+        self.assertEqual(f.checksum_method, 'MD5')
+        self.assertEqual(f.checksum, 'f05c1bb96759a0c3c9bcc0196ceac3bb')
+
+    def test_to_xml(self):
+        sra_file = SraFile(
+            filename='abc.sff', filetype='sff', checksum_method='MD5',
+            checksum='12345')
+        observed = sra_file.to_xml()
+        expected = (
+            '<FILE checksum="12345" checksum_method="MD5" filename="abc.sff" '
+            'filetype="sff" />')
+        self.assertEqual(ET.tostring(observed), expected)
 
 
 experiment = '''
