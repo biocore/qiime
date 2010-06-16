@@ -207,7 +207,7 @@ class Qiime_config(TestCase):
                           "parameters:\n" + ", ".join(extra_vals))
 
     def test_chimeraSlayer_install(self):
-        """guess if ChimeraSlayer is installed properly"""
+        """no obvious problems with ChimeraSlayer install """
 
         #The ChimerSalyer app requires that all its components are installed
         # relative to the main program ChimeraSlayer.pl.
@@ -217,8 +217,11 @@ class Qiime_config(TestCase):
         # Tested with the version of microbiomeutil_2010-04-29
 
         chim_slay = app_path("ChimeraSlayer.pl")
+        self.assertTrue(chim_slay,"ChimeraSlayer was not found in your $PATH")
         dir, app_name = split(chim_slay)
-        self.assertTrue(exists(dir+"/ChimeraParentSelector/chimeraParentSelector.pl"))
+        self.assertTrue(exists(dir+"/ChimeraParentSelector/chimeraParentSelector.pl"),
+         "ChimeraSlayer depends on external files in directoryies relative to its "
+         "install directory. Thesedo not appear to be present.")
 
 def test_qiime_config_variable(variable, qiime_config, test,
                                access_var=R_OK, fail_on_missing=False):
