@@ -206,8 +206,6 @@ class WorkflowTests(TestCase):
          self.qiime_config, 
          parallel=False,
          status_update_callback=no_status_updates)
-        
-        input_seqs = LoadSeqs(self.fasting_seqs_fp,aligned=False)
          
         input_file_basename = splitext(split(self.fasting_seqs_fp)[1])[0]
         otu_map_fp = join(self.wf_out,'uclust_picked_otus',
@@ -253,6 +251,7 @@ class WorkflowTests(TestCase):
         self.assertEqual(len(tree.tips()),aln.getNumSeqs())
         
         # parse the otu table
+        input_seqs = LoadSeqs(self.fasting_seqs_fp,aligned=False)
         sample_ids, otu_ids, otu_table, lineages =\
           parse_otu_table(open(otu_table_fp))
         expected_sample_ids = ['PC.354','PC.355','PC.356','PC.481',
@@ -308,7 +307,7 @@ class WorkflowTests(TestCase):
         self.assertTrue(getsize(log_fp) > 0)
         
     def test_run_qiime_data_preparation_muscle(self):
-        """run_qiime_data_preparation runs without error with muscle aligner"""
+        """run_qiime_data_preparation, muscle aligner generates expected data"""
         self.params['align_seqs']['alignment_method'] = 'muscle'
         run_qiime_data_preparation(
          self.fasting_seqs_fp, 
@@ -320,12 +319,41 @@ class WorkflowTests(TestCase):
          status_update_callback=no_status_updates)
          
         input_file_basename = splitext(split(self.fasting_seqs_fp)[1])[0]
+        otu_map_fp = join(self.wf_out,'uclust_picked_otus',
+         '%s_otus.txt' % input_file_basename)
+        alignment_fp = join(self.wf_out,'uclust_picked_otus','rep_set',
+         'muscle_aligned_seqs','%s_rep_set_aligned.fasta' % 
+          input_file_basename)
+        taxonomy_assignments_fp = join(self.wf_out,'uclust_picked_otus',
+         'rep_set','rdp_assigned_taxonomy','%s_rep_set_tax_assignments.txt' %
+         input_file_basename)
         otu_table_fp = join(self.wf_out,'uclust_picked_otus','rep_set',
          'rdp_assigned_taxonomy','otu_table','%s_otu_table.txt' % 
          input_file_basename)
         tree_fp = join(self.wf_out,'uclust_picked_otus','rep_set',
          'muscle_aligned_seqs','fasttree_phylogeny','%s_rep_set.tre' % 
-         input_file_basename)
+         input_file_basename)        
+         
+        # Number of OTUs falls within a range that was manually 
+        # confirmed
+        otu_map_lines = list(open(otu_map_fp))
+        num_otus = len(otu_map_lines)
+        otu_map_otu_ids = [o.split()[0] for o in otu_map_lines]
+        self.assertTrue(160 < num_otus < 190,
+         "Number of OTUs falls outside of expected range: %d" % 
+         num_otus)
+        
+        # all otus get taxonomy assignments
+        taxonomy_assignment_lines = list(open(taxonomy_assignments_fp))
+        self.assertEqual(len(taxonomy_assignment_lines),num_otus)
+        
+        # all OTUs align
+        aln = LoadSeqs(alignment_fp)
+        self.assertTrue(aln.getNumSeqs(),num_otus)
+        
+        # all OTUs in tree
+        tree = LoadTree(tree_fp)
+        self.assertEqual(len(tree.tips()),num_otus)
          
         # check that the two final output files have non-zero size
         self.assertTrue(getsize(tree_fp) > 0)
@@ -334,9 +362,25 @@ class WorkflowTests(TestCase):
         # Check that the log file is created and has size > 0
         log_fp = glob(join(self.wf_out,'log*.txt'))[0]
         self.assertTrue(getsize(log_fp) > 0)
+        
+        # parse the otu table
+        input_seqs = LoadSeqs(self.fasting_seqs_fp,aligned=False)
+        sample_ids, otu_ids, otu_table, lineages =\
+          parse_otu_table(open(otu_table_fp))
+        expected_sample_ids = ['PC.354','PC.355','PC.356','PC.481',
+                               'PC.593','PC.607','PC.634','PC.635',
+                               'PC.636']
+        # sample IDs are as expected
+        self.assertEqualItems(sample_ids,expected_sample_ids)
+        # expected OTUs
+        self.assertEqualItems(otu_ids,otu_map_otu_ids)
+        # number of sequences in the full otu table equals the number of
+        # input sequences
+        number_seqs_in_otu_table = otu_table.sum()
+        self.assertEqual(number_seqs_in_otu_table,input_seqs.getNumSeqs())
     
     def test_run_qiime_data_preparation_parallel(self):
-        """run_qiime_data_preparation runs in parallel without error"""
+        """run_qiime_data_preparation (parallel) generates expected results"""
         run_qiime_data_preparation(
          self.fasting_seqs_fp, 
          self.wf_out, 
@@ -346,21 +390,70 @@ class WorkflowTests(TestCase):
          parallel=True,
          status_update_callback=no_status_updates)
          
+         
         input_file_basename = splitext(split(self.fasting_seqs_fp)[1])[0]
+        otu_map_fp = join(self.wf_out,'uclust_picked_otus',
+         '%s_otus.txt' % input_file_basename)
+        alignment_fp = join(self.wf_out,'uclust_picked_otus','rep_set',
+         'pynast_aligned_seqs','%s_rep_set_aligned.fasta' % 
+          input_file_basename)
+        failures_fp = join(self.wf_out,'uclust_picked_otus','rep_set',
+         'pynast_aligned_seqs','%s_rep_set_failures.fasta' % 
+          input_file_basename)
+        taxonomy_assignments_fp = join(self.wf_out,'uclust_picked_otus',
+         'rep_set','rdp_assigned_taxonomy','%s_rep_set_tax_assignments.txt' %
+         input_file_basename)
         otu_table_fp = join(self.wf_out,'uclust_picked_otus','rep_set',
          'rdp_assigned_taxonomy','otu_table','%s_otu_table.txt' % 
          input_file_basename)
         tree_fp = join(self.wf_out,'uclust_picked_otus','rep_set',
          'pynast_aligned_seqs','fasttree_phylogeny','%s_rep_set.tre' % 
          input_file_basename)
+        
+        # Number of OTUs falls within a range that was manually 
+        # confirmed
+        otu_map_lines = list(open(otu_map_fp))
+        num_otus = len(otu_map_lines)
+        otu_map_otu_ids = [o.split()[0] for o in otu_map_lines]
+        self.assertTrue(160 < num_otus < 190,
+         "Number of OTUs falls outside of expected range: %d" % 
+         num_otus)
+        
+        # all otus get taxonomy assignments
+        taxonomy_assignment_lines = list(open(taxonomy_assignments_fp))
+        self.assertEqual(len(taxonomy_assignment_lines),num_otus)
+        
+        # number of seqs which aligned + num of seqs which failed to
+        # align sum to the number of OTUs
+        aln = LoadSeqs(alignment_fp)
+        failures = LoadSeqs(failures_fp,aligned=False)
+        self.assertTrue(aln.getNumSeqs() + failures.getNumSeqs(),num_otus)
          
-        # check that the two final output files have non-zero size
-        self.assertTrue(getsize(tree_fp) > 0)
-        self.assertTrue(getsize(otu_table_fp) > 0)
+        # number of tips in the tree equals the number of sequences that
+        # aligned
+        tree = LoadTree(tree_fp)
+        self.assertEqual(len(tree.tips()),aln.getNumSeqs())
+        
+        # parse the otu table
+        input_seqs = LoadSeqs(self.fasting_seqs_fp,aligned=False)
+        sample_ids, otu_ids, otu_table, lineages =\
+          parse_otu_table(open(otu_table_fp))
+        expected_sample_ids = ['PC.354','PC.355','PC.356','PC.481',
+                               'PC.593','PC.607','PC.634','PC.635',
+                               'PC.636']
+        # sample IDs are as expected
+        self.assertEqualItems(sample_ids,expected_sample_ids)
+        # otu ids are as expected
+        self.assertEqualItems(otu_map_otu_ids,otu_ids)
+        # number of sequences in the full otu table equals the number of
+        # input sequences
+        number_seqs_in_otu_table = otu_table.sum()
+        self.assertEqual(number_seqs_in_otu_table,input_seqs.getNumSeqs())
         
         # Check that the log file is created and has size > 0
         log_fp = glob(join(self.wf_out,'log*.txt'))[0]
         self.assertTrue(getsize(log_fp) > 0)
+
          
          
     def test_run_beta_diversity_through_3d_plot(self):
@@ -447,7 +540,7 @@ class WorkflowTests(TestCase):
         self.assertTrue(getsize(log_fp) > 0)
         
     def test_run_qiime_alpha_rarefaction(self):
-        """ run_qiime_alpha_rarefaction runs without error """
+        """ run_qiime_alpha_rarefaction generates expected results """
     
         run_qiime_alpha_rarefaction(
          self.fasting_otu_table_fp, 
@@ -468,6 +561,19 @@ class WorkflowTests(TestCase):
          'average_plots','PD_whole_treeTreatment.png')
         pd_averages_fp = join(self.wf_out,'alpha_rarefaction_plots',
          'average_tables','PD_whole_treeTreatment.txt')
+        pd_collated_fp = join(self.wf_out,'alpha_div_collated',
+         'PD_whole_tree.txt')
+        
+        # For all samples, test that PD generally increases 
+        # with more sequences -- this may occasionally fail, but
+        # it should be rare (because rarefaction is done randomly)
+        pd_collated_f = list(open(pd_collated_fp))
+        for col in range(3,11):
+            pd_step1 = pd_collated_f[1].strip().split()[col]
+            pd_step5 = pd_collated_f[5].strip().split()[col]
+            pd_step11 = pd_collated_f[11].strip().split()[col]
+            self.assertTrue(pd_step1 < pd_step5 < pd_step11,
+             "PD did not increase with more sequences.")
         
         # check that final output files have non-zero size
         self.assertTrue(getsize(pd_control_plot_fp) > 0)
@@ -511,7 +617,7 @@ class WorkflowTests(TestCase):
         self.assertTrue(getsize(log_fp) > 0)
          
     def test_run_jackknifed_beta_diversity(self):
-        """ run_jackknifed_beta_diversity runs without error """
+        """ run_jackknifed_beta_diversity generates expected results """
     
         run_jackknifed_beta_diversity(
          self.fasting_otu_table_fp,
@@ -531,6 +637,33 @@ class WorkflowTests(TestCase):
         unweighted_unifrac_upgma_tree_fp = join(
          self.wf_out,'unweighted_unifrac','upgma_cmp',
          'jackknife_named_nodes.tre')
+        
+        input_file_basename = splitext(split(self.fasting_otu_table_fp)[1])[0]
+        unweighted_unifrac_dm_fp = join(self.wf_out,
+         'unweighted_unifrac_%s.txt' % input_file_basename)
+        weighted_unifrac_dm_fp = join(self.wf_out,
+         'weighted_unifrac_%s.txt' % input_file_basename)
+        # check for expected relations between values in the unweighted unifrac
+        # distance matrix
+        dm = parse_distmat_to_dict(open(unweighted_unifrac_dm_fp))
+        self.assertTrue(dm['PC.354']['PC.355'] < dm['PC.354']['PC.607'],
+         "Distance between pair of control samples is larger than distance"
+         " between control and fasting sample (unweighted unifrac).")
+        self.assertTrue(dm['PC.635']['PC.636'] < dm['PC.354']['PC.635'],
+         "Distance between pair of fasting samples is larger than distance"
+         " between control and fasting sample (unweighted unifrac).")
+        self.assertEqual(dm['PC.636']['PC.636'],0)
+        
+        # check for expected relations between values in the unweighted unifrac
+        # distance matrix
+        dm = parse_distmat_to_dict(open(weighted_unifrac_dm_fp))
+        self.assertTrue(dm['PC.354']['PC.355'] < dm['PC.354']['PC.607'],
+         "Distance between pair of control samples is larger than distance"
+         " between control and fasting sample (weighted unifrac).")
+        self.assertTrue(dm['PC.635']['PC.636'] < dm['PC.354']['PC.635'],
+         "Distance between pair of fasting samples is larger than distance"
+         " between control and fasting sample (weighted unifrac).")
+        self.assertEqual(dm['PC.636']['PC.636'],0)
          
         # check that final output files have non-zero size
         self.assertTrue(getsize(weighted_unifrac_upgma_tree_fp) > 0)
@@ -541,7 +674,8 @@ class WorkflowTests(TestCase):
         self.assertTrue(getsize(log_fp) > 0)
         
     def test_run_jackknifed_beta_diversity_parallel(self):
-        """ run_jackknifed_beta_diversity runs in parallel without error """
+        """run_jackknifed_beta_diversity (parallel) generates expected results
+        """
     
         run_jackknifed_beta_diversity(
          self.fasting_otu_table_fp,
@@ -561,6 +695,33 @@ class WorkflowTests(TestCase):
         unweighted_unifrac_upgma_tree_fp = join(
          self.wf_out,'unweighted_unifrac','upgma_cmp',
          'jackknife_named_nodes.tre')
+         
+        input_file_basename = splitext(split(self.fasting_otu_table_fp)[1])[0]
+        unweighted_unifrac_dm_fp = join(self.wf_out,
+         'unweighted_unifrac_%s.txt' % input_file_basename)
+        weighted_unifrac_dm_fp = join(self.wf_out,
+         'weighted_unifrac_%s.txt' % input_file_basename)
+        # check for expected relations between values in the unweighted unifrac
+        # distance matrix
+        dm = parse_distmat_to_dict(open(unweighted_unifrac_dm_fp))
+        self.assertTrue(dm['PC.354']['PC.355'] < dm['PC.354']['PC.607'],
+         "Distance between pair of control samples is larger than distance"
+         " between control and fasting sample (unweighted unifrac).")
+        self.assertTrue(dm['PC.635']['PC.636'] < dm['PC.354']['PC.635'],
+         "Distance between pair of fasting samples is larger than distance"
+         " between control and fasting sample (unweighted unifrac).")
+        self.assertEqual(dm['PC.636']['PC.636'],0)
+        
+        # check for expected relations between values in the unweighted unifrac
+        # distance matrix
+        dm = parse_distmat_to_dict(open(weighted_unifrac_dm_fp))
+        self.assertTrue(dm['PC.354']['PC.355'] < dm['PC.354']['PC.607'],
+         "Distance between pair of control samples is larger than distance"
+         " between control and fasting sample (weighted unifrac).")
+        self.assertTrue(dm['PC.635']['PC.636'] < dm['PC.354']['PC.635'],
+         "Distance between pair of fasting samples is larger than distance"
+         " between control and fasting sample (weighted unifrac).")
+        self.assertEqual(dm['PC.636']['PC.636'],0)
          
         # check that final output files have non-zero size
         self.assertTrue(getsize(weighted_unifrac_upgma_tree_fp) > 0)
