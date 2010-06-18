@@ -4,7 +4,7 @@
 Chimera checking sequences with QIIME
 =====================================
 
-This document describes how to chimera check sequences with QIIME, and subsequently exclude chimeric sequences when building your OTU table so they will not be included in downstream analyses. (Note that because we recommend applying chimera checking after OTU and representative sequence checking, `chimeric sequence` in this document should be considered synonymous to `chimeric OTU`.)
+This document describes how to chimera check sequences with QIIME, and subsequently exclude chimeric sequences when building your tree and OTU table so they will not be included in downstream analyses. (Note that because we recommend applying chimera checking after OTU and representative sequence picking, for the purposes of this document `chimeric sequence` should be considered synonymous to `chimeric OTU`.)
 
 We recommend using QIIME's ChimeraSlayer wrapper to chimera check your sequences. As ChimeraSlayer requires aligned sequences, you should apply chimera checking after you've aligned your sequences with PyNAST, but before you apply the lanemask filtering to your alignment.
 
