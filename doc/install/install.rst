@@ -36,7 +36,7 @@ Dependencies required for a subset of QIIME's features
 
 PyNAST alignment, tree-building, taxonomy assignment, OTU picking, and other data generation steps:
 
-* uclust 1.1.579 (`src and binaries <http://www.drive5.com/uclust/downloads1_1_579.html>`_) See :ref:`uclust install notes <uclust-install>`.
+* uclust 1.1.579 (`binaries <http://www.drive5.com/uclust/downloads1_1_579.html>`_) See :ref:`uclust install notes <uclust-install>`.
 * PyNAST 1.1 (`src  <http://sourceforge.net/projects/pynast/files/PyNAST%20releases/PyNAST-1.1.tgz/download>`_)
 * greengenes core set data file (`fasta <http://greengenes.lbl.gov/Download/Sequence_Data/Fasta_data_files/core_set_aligned.fasta.imputed>`_)
 * greengenes alignment lanemask file (`txt <http://greengenes.lbl.gov/Download/Sequence_Data/lanemask_in_1s_and_0s>`_)
@@ -45,7 +45,13 @@ PyNAST alignment, tree-building, taxonomy assignment, OTU picking, and other dat
 * cd-hit 3.1 (`src <http://www.bioinformatics.org/download.php/cd-hit/cd-hit-2007-0131.tar.gz>`_)
 * jre1.6.0_05 (`link <http://java.sun.com/javase/downloads/index.jsp>`_)
 * rdp_classifier-2.0.1 (`src <http://downloads.sourceforge.net/project/rdp-classifier/rdp-classifier/rdp_classifier_2.0.1/rdp_classifier_2.0.1.tar.gz>`_) See :ref:`RDP install notes <rdp-install>`.
-* ChimeraSlayer (via microbiomeutil_2010-04-29) (`src <http://sourceforge.net/projects/microbiomeutil/files/>`_)
+* ChimeraSlayer (via microbiomeutil_2010-04-29) (`src <http://sourceforge.net/projects/microbiomeutil/files/>`_) See :ref:`ChimeraSlayer install notes <chimeraslayer-install>`.
+* mothur v.1.6.0 (`web <http://www.mothur.org/>`_)
+* sfffile and sffinfo (must be obtained from Roche/454)
+* clearcut v1.0.8 (`web <http://bioinformatics.hungry.com/clearcut/>`_)
+* raxml v7.0.3 (`web <http://icwww.epfl.ch/~stamatak/index-Dateien/Page443.htm>`_)
+* cytoscape (`web <http://www.cytoscape.org/>`_)
+* infernal 1.0 (`web <http://infernal.janelia.org/>`_)
 
 Denoising 454 data:
 
@@ -198,6 +204,7 @@ RDP_JAR_PATH Environment Variable
 If you plan to use the RDP classifier for taxonomy assignment you must also define an RDP_JAR_PATH variable. If you have the RDP classifier jar file (``rdp_classifier-2.0.1.jar``) in ``/home/qiime/app`` you can do this with the following command::
 
 	echo "export RDP_JAR_PATH=/home/qiime/app/rdp_classifier-2.0.1.jar" >> /home/qiime/.bashrc
+	source /home/qiime/.bashrc
 	
 uclust Install Notes
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -208,6 +215,25 @@ The uclust binary must be called ``uclust``, which differs from the names of the
 	
 	ln -s /home/qiime/bin/uclust1.1.579_i86linux32 /home/qiime/bin/uclust
 	
+	
+ChimeraSlayer Install Notes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. _chimeraslayer-install:
+
+ChimeraSlayer can only be run from the directory where it was unpacked and built as it depends on several of its dependencies being in specific places relative to the executable (``ChimeraSlayer/ChimeraSlayer.pl``). Carefully follow the ChimeraSlayer install instructions. Then add the directory containing ``ChimeraSlayer.pl`` to your ``$PATH`` environment variable. If your ``ChimeraSlayer`` folder is in ``/home/qiime/app/`` you can set the ``$PATH`` environment variable as follows::
+
+	echo "export PATH=/home/qiime/app/ChimeraSlayer:$PATH" >> /home/qiime/.bashrc
+	source /home/qiime/.bashrc
+
+If you're having trouble getting ChimeraSlayer to work via QIIME, you should first check to see if you can run it directly from a directory other than its install directory. For example, try running ``ChimeraSlayer.pl`` from your home directory.
+
+Once you have configured Qiime, you can test your ChimeraSlayer install by running::
+
+	print_qiime_config.py -t
+	
+This includes a check for obvious problems with your ChimeraSlayer install, and should help you determine if you have it installed correctly.
+
 Building The QIIME Documentation
 ---------------------------------
 
