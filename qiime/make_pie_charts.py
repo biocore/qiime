@@ -304,6 +304,7 @@ def make_HTML_table(l,other_frac,total,red,other_cat,
     """Makes the HTML table for one set of pie charts """
     img_data = []
     if other_cat > 0:
+        
         fracs_labels_other.append(("All Other Categories",other_frac))
         title = TITLE_include % (l,total,total,\
                         len(fracs_labels_other), total-red, other_cat)
@@ -353,9 +354,10 @@ def get_counts(label,colorby, num_categories, dir_path,level,color_data, color_p
 
     img_data.extend(make_HTML_table(label,other_frac,all_sum,red,other_cat,
                     fracs_labels_other,fracs_labels,dir_path,all_counts,level,color_data, color_prefs,background_color,label_color))
-
     if colorby is not None:
-        for i, l in enumerate(colorby):
+        for i, l in enumerate(sample_ids):
+            if l not in colorby:
+                continue
             total = 0
             sample_counts = []
             for idx, counts in enumerate(otu_table):
@@ -372,6 +374,7 @@ def get_counts(label,colorby, num_categories, dir_path,level,color_data, color_p
             img_data.extend(make_HTML_table('_'.join([label,l.strip()]),
                             other_frac,total,red,other_cat,fracs_labels_other,
                             fracs_labels,dir_path,all_counts,level,color_data, color_prefs,background_color,label_color))
+
 
     return img_data
 
