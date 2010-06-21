@@ -538,8 +538,11 @@ def make_averages(color_prefs, data, background_color, label_color, rares, \
                 #determine the ymax based on the average data
                 #multiple the ymax, since the dots can end up on the border
                 new_ymax=(max([max(v) for v in rares_data['series'].values()])+\
-                    max([max(v) for v in rares_data['error'].values()])) * 1.15
-                    
+                    max([max(e) for e in rares_data['error'].values()])) * 1.15
+                if isnan(new_ymax):
+                    new_ymax=(max([max(v) for v in \
+                                rares_data['series'].values()])) * 1.15
+
                 if new_ymax>ymax:
                     ymax=new_ymax
                     
