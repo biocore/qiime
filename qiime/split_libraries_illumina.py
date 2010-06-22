@@ -78,7 +78,6 @@ def parse_illumina_paired_end_read_files(read1_file,read2_file,barcode_length,\
         
         read1_barcode = read1['Barcode']
         read2_barcode = read2['Barcode']
-        
         if (read1_barcode.count('N') > barcode_max_N) or \
            (read2_barcode.count('N') > barcode_max_N):
            continue
@@ -93,18 +92,20 @@ def parse_illumina_paired_end_read_files(read1_file,read2_file,barcode_length,\
         seq1, qual1 = read_qual_score_filter(\
          read1['Sequence'], read1['Quality Score'],\
          max_bad_run_length, quality_threshold)
-         
-        if (len(seq1) < min_per_read_length) or (seq1.count('N') > seq_max_N):
+        if (len(seq1) < min_per_read_length):
             continue
             
         seq2, qual2 = read_qual_score_filter(\
          read2['Sequence'], read2['Quality Score'],\
          max_bad_run_length, quality_threshold)
-         
-        if (len(seq2) < min_per_read_length) or (seq2.count('N') > seq_max_N):
+        if (len(seq2) < min_per_read_length):
             continue
             
         seq = seq1 + revComp(seq2)
+        # If the total number of Ns is more than the max 
+        # allowed ignore this sequence
+        if seq.count('N') > seq_max_N:
+            continue
         qual = qual1 + qual2[::-1]
         
         yield read1_desc, read1_barcode, seq, qual
@@ -115,7 +116,7 @@ def process_illumina_paired_end_read_files(
     barcode_to_sample_id,barcode_length,
     store_unassigned,max_bad_run_length,
     quality_threshold,min_per_read_length,
-    rev_comp_barcode,start_seq_id=0):
+    rev_comp_barcode,seq_max_N=0,start_seq_id=0):
     """parses Ilimuna paired-end read file
     """
     read1_file = open(read1_fp)
@@ -126,8 +127,9 @@ def process_illumina_paired_end_read_files(
     seq_id = start_seq_id
     
     for seq_desc,barcode,seq,qual in\
-      parse_illumina_paired_end_read_files(read1_file,read2_file,barcode_length,\
-      max_bad_run_length,quality_threshold,min_per_read_length,rev_comp_barcode):
+      parse_illumina_paired_end_read_files(read1_file,read2_file,barcode_length,
+      max_bad_run_length,quality_threshold,min_per_read_length,rev_comp_barcode,
+      seq_max_N=seq_max_N):
       
       try:
           sample_id = barcode_to_sample_id[barcode]
@@ -180,7 +182,7 @@ def process_illumina_single_end_read_file(read_fp,output_seqs_fp,output_qual_fp,
     barcode_to_sample_id,barcode_length,
     store_unassigned,max_bad_run_length,
     quality_threshold,min_per_read_length, rev_comp, rev_comp_barcode,
-    start_seq_id=0):
+    seq_max_N=0, start_seq_id=0):
     """parses Ilimuna single-end read file
     """
     read_file = open(read_fp)
@@ -192,7 +194,7 @@ def process_illumina_single_end_read_file(read_fp,output_seqs_fp,output_qual_fp,
     for seq_desc,barcode,seq,qual in\
       parse_illumina_single_end_read_file(read_file,barcode_length,\
       max_bad_run_length,quality_threshold,min_per_read_length,
-      rev_comp,rev_comp_barcode):
+      rev_comp,rev_comp_barcode,seq_max_N=seq_max_N):
         try:
           sample_id = barcode_to_sample_id[barcode]
         except KeyError:

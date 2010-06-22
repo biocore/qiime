@@ -57,6 +57,10 @@ script_info['optional_options'] = [\
  make_option('-p','--min_per_read_length',type='int',\
     help='min number of consecutive high quality base calls to include'+\
     'a read (per single end read) [default: %default]',default=75),\
+ make_option('-n','--sequence_max_n',type='int',\
+    help='maximum number of N characters allowed in a sequence to retain it -- '
+    'this is applied after quality trimming, and is total over combined paired '
+    'end reads if applicable [default: %default]',default=0),
  make_option('-s','--start_seq_id',type='int',\
     help='start seq_ids as ascending integers beginning with start_seq_id'+\
     '[default: %default]',default=0)
@@ -91,6 +95,7 @@ def main():
     quality_threshold = opts.quality_threshold
     min_per_read_length = opts.min_per_read_length
     store_unassigned= opts.store_unassigned
+    seq_max_N = opts.sequence_max_n
     start_seq_id = opts.start_seq_id
     
     try:
@@ -127,6 +132,7 @@ def main():
              quality_threshold=quality_threshold,\
              min_per_read_length=min_per_read_length,\
              rev_comp_barcode=True,
+             seq_max_N=seq_max_N,
              start_seq_id=next_seq_id)
     else:
         if five_prime_read_fps:
@@ -160,6 +166,7 @@ def main():
              min_per_read_length=min_per_read_length,\
              rev_comp=rev_comp,
              rev_comp_barcode=True,
+             seq_max_N=seq_max_N,
              start_seq_id=next_seq_id)
 
 
