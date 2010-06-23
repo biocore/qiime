@@ -23,21 +23,33 @@ class AdjustSeqOrientationTests(TestCase):
     def setUp(self):
         """ """
         self.fasta_lines1 = fasta_lines1.split('\n')
-        self.fasta_lines1_exp = list(MinimalFastaParser(\
+        self.fasta_lines1_mixed_case = fasta_lines1_mixed_case.split('\n')
+        
+        self.fasta_lines1_exp = list(MinimalFastaParser(
             fasta_lines1_exp.split('\n')))
-        self.fasta_lines1_exp_null_desc_mapper = list(MinimalFastaParser(\
+        self.fasta_lines1_mixed_case_exp = list(MinimalFastaParser(
+         fasta_lines1_mixed_case_exp.split('\n')))
+        self.fasta_lines1_exp_null_desc_mapper = list(MinimalFastaParser(
             fasta_lines1_exp_null_desc_mapper.split('\n')))
             
     def test_rc_fasta_lines(self):
         """rc_fasta_lines: functions as expected w/ seq_id mapping 
         """
-        self.assertEqual(list(rc_fasta_lines(self.fasta_lines1,append_rc)),\
+        self.assertEqual(list(rc_fasta_lines(self.fasta_lines1,append_rc)),
                          self.fasta_lines1_exp)
+            
+    def test_rc_fasta_lines_mixed_case(self):
+        """rc_fasta_lines: functions with mixed cases in sequences
+        """
+        self.assertEqual(list(
+         rc_fasta_lines(self.fasta_lines1_mixed_case,append_rc)),
+         self.fasta_lines1_mixed_case_exp)
             
     def test_rc_fasta_lines_leave_seq_desc(self):
         """rc_fasta_lines: functions as expected w/o seq_id mapping 
         """
-        self.assertEqual(list(rc_fasta_lines(self.fasta_lines1,null_seq_desc_mapper)),\
+        self.assertEqual(list(
+         rc_fasta_lines(self.fasta_lines1,null_seq_desc_mapper)),
                          self.fasta_lines1_exp_null_desc_mapper)
 
 
@@ -47,10 +59,22 @@ AAATGGCGCGCG
 TTATATCCGC
 """
 
+fasta_lines1_mixed_case = """>s1 some description
+aaatGGcgcgcg
+>s2
+ttatatccgc
+"""
+
 fasta_lines1_exp = """>s1 some description RC
 CGCGCGCCATTT
 >s2 RC
 GCGGATATAA
+"""
+
+fasta_lines1_mixed_case_exp = """>s1 some description RC
+cgcgcgCCattt
+>s2 RC
+gcggatataa
 """
 
 fasta_lines1_exp_null_desc_mapper = """>s1 some description
