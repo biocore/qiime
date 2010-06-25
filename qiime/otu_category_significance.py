@@ -49,11 +49,15 @@ def filter_OTUs(OTU_sample_info, filter, num_samples=None, all_samples=True,\
         mapping file and the OTU table are in sync
     """
     result = []
-    if category_mapping_info:
-        included_samples = category_mapping_info.keys()
-        num_samples = len(included_samples)
     for OTU in OTU_sample_info:
         samples = []
+        # only consider samples that are present in mapping file AND otu table
+        if category_mapping_info:
+            mapping_file_samples = set(category_mapping_info.keys())
+            otu_table_samples = set(OTU_sample_info[OTU].keys())
+            included_samples = mapping_file_samples & otu_table_samples
+        else:
+            included_samples = OTU_sample_info[OTU].keys()
         for sample in OTU_sample_info[OTU]:
             if float(OTU_sample_info[OTU][sample]) > 0:
                 if category_mapping_info:
@@ -61,9 +65,10 @@ def filter_OTUs(OTU_sample_info, filter, num_samples=None, all_samples=True,\
                         samples.append(sample)
                 else:
                     samples.append(sample)
+                
         if len(samples) > int(filter):
             if all_samples:
-                if len(samples) < num_samples:
+                if len(samples) < len(included_samples):
                     result.append(OTU)
             else:
                 result.append(OTU)
@@ -96,7 +101,7 @@ def make_contingency_matrix(OTU_name, category_info, otu_sample_info, category_v
             OTU_count = int(OTU_count)
             worked = True
         except KeyError: 
-            print "Warning: {0} is in the  sample mapping file but not the OTU table" 
+            print sample
             worked = False
         if worked:
             if OTU_count == 0:
