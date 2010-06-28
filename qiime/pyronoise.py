@@ -111,20 +111,22 @@ def pyroNoise_app(flows, num_flows, num_cpus=2, outdir = "/tmp/", log_fh=None,
     data_opt = ""
     if data_fp:
         if not exists(data_fp):
-            raise ApplicationError("File %s not exists. Check your setting of pyronoise_data_fp in the .qiime_config." %data_fp)
+            raise ApplicationError("File %s not exists. Check your setting of pyronoise_data_fp in the .qiime_config."
+                                   %data_fp)
         data_opt = "-l %s" % data_fp
 
     if(num_cpus >1):
         mpi = "mpirun -np %d "% num_cpus
     else:
         mpi = ""
-    cmd = mpi+ "FDist %s -in %s -out %s > /dev/null" % (data_opt, filename, basename)
+    cmd = mpi+ "FDist %s -in %s -out %s > /dev/null" % \
+            (data_opt, filename, basename)
     
     if log_fh: 
         log_fh.write("Executing: %s\n" % cmd)
     system(cmd)
 
-    #Check if fdist actally produced an output file
+    #Check if fdist actually produced an output file
     if (not exists(basename+".fdist")):
         remove(filename)
         raise ApplicationError, "Something went wrong with PyroNoise."+\

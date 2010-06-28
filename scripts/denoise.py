@@ -37,7 +37,8 @@ script_info['output_description']="""This script results in a OTU mapping file a
 script_info['required_options'] = [\
     make_option('-i','--input_file', action='store',
                 type='string', dest='sff_fp',
-                help='path to flowgram file (.sff.txt)'),
+                help='path to flowgram files (.sff.txt), '+
+                'comma separated'),
 
     make_option('-f','--fasta_file', action='store',
                 type='string', dest='fasta_fp',
@@ -102,15 +103,12 @@ def main():
     """run PyroNoise on input flowgrams"""
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
-    if (not opts.sff_fp or (opts.sff_fp and not exists(opts.sff_fp))):
-        option_parser.error(('Flowgram file path does not exist:\n %s \n'+\
-                                 'Pass a valid one via -i.')% opts.sff_fp)
-
-    input_seqs_dir, input_seqs_filename = split(opts.sff_fp)
-    #split off .txt
-    input_seqs_basename, ext = splitext(input_seqs_filename)
-    #split off .sff
-    input_seqs_basename, ext = splitext(input_seqs_basename)
+    sff_files = opts.sff_fp.split(',')
+    
+    for sff_fp in sff_files:
+        if (not exists(sff_fp)):
+            option_parser.error(('Flowgram file path does not exist:\n %s \n'+\
+                                 'Pass a valid one via -i.')% sff_fp)
     outdir = opts.output_dir
 
     ret_val = create_dir(outdir, handle_errors_externally=True)  
@@ -120,7 +118,6 @@ def main():
             pass
         else:
             raise ApplicationError, "Directory exists. Use --force to overwrite."
-#            exit()
     else:
         handle_error_codes(outdir, error_code=ret_val)
 
@@ -137,6 +134,9 @@ def main():
         log_fh.write("output path: %s\n"% outdir)
 
     if opts.method=="pyronoise":
+        if len(opts.sff_fp.split(",")) > 1:
+            raise option_parser.error("PyroNoise currently supports only one .sff.txt input file. "+\
+                                          "Use --method fast instead")
         centroids, cluster_mapping = pyroNoise_otu_picker(open(opts.sff_fp, "U"),
                                                           outdir, opts.num_cpus, log_fh, opts.keep,
                                                           opts.precision, opts.cut_off)
@@ -166,7 +166,7 @@ def main():
                                                    outdir, opts.num_cpus, primer)
 
     # store mapping file and centroids
-    result_otu_path = '%s/%s_denoised_clusters.txt' % (outdir, input_seqs_basename)
+    result_otu_path = '%s/denoised_clusters.txt' % outdir
     of = open(result_otu_path,'w')
     for i,cluster in cluster_mapping.iteritems():
         of.write('%s\t%s\n' % (str(i),'\t'.join(cluster)))
