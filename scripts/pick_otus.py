@@ -11,7 +11,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
-from os.path import splitext, split
+from os.path import splitext, split, exists
 from os import makedirs
 from optparse import make_option
 from cogent.app.util import get_tmp_filename
@@ -228,9 +228,11 @@ def main():
         blast_db == None):
            option_parser.error('blast requires refseqs_fp or blast_db')
     
-    if (otu_picking_method == 'uclust_ref' and
-        refseqs_fp == None):
-           option_parser.error('uclust_ref requires refseqs_fp')
+    if (otu_picking_method == 'uclust_ref'):
+        if (refseqs_fp == None):
+            option_parser.error('uclust_ref requires refseqs_fp')
+        elif not exists(refseqs_fp):
+            option_parser.error('refseqs_fp %s does not exist' %refseqs_fp)
     # End input validation
     
     
