@@ -286,9 +286,6 @@ class BlastTaxonAssigner(TaxonAssigner):
 
 class RdpTaxonAssigner(TaxonAssigner):
     """Assign taxon using RDP's naive Bayesian classifier
-
-    NOT YET IMPLEMENTED:
-    * Training data to be used
     """
     Name = "RdpTaxonAssigner"
     Application = "RDP classfier"
@@ -305,9 +302,9 @@ class RdpTaxonAssigner(TaxonAssigner):
         """
         _params = {
             'Confidence': 0.80,
-            'id_to_taxonomy_fp':None,
-            'reference_sequences_fp':None
-             
+            'id_to_taxonomy_fp': None,
+            'reference_sequences_fp': None,
+            'training_data_properties_fp': None,
             }
         _params.update(params)
         TaxonAssigner.__init__(self, _params)
@@ -324,6 +321,7 @@ class RdpTaxonAssigner(TaxonAssigner):
         """
         
         min_confidence = self.Params['Confidence']
+        training_data_properties_fp = self.Params['training_data_properties_fp']
         reference_sequences_fp = self.Params['reference_sequences_fp']
         id_to_taxonomy_fp = self.Params['id_to_taxonomy_fp']
         
@@ -337,9 +335,10 @@ class RdpTaxonAssigner(TaxonAssigner):
                 min_confidence=min_confidence,
                 classification_output_fp=result_path)
         else:
-            # Just assign taxonomy
+            # Just assign taxonomy, using properties file if passed
             results = assign_taxonomy(
-                seq_file, min_confidence=min_confidence, output_fp=result_path)
+                seq_file, min_confidence=min_confidence, output_fp=result_path,
+                training_data_fp=training_data_properties_fp)
 
         if log_path:
             self.writeLog(log_path)

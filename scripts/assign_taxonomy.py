@@ -84,6 +84,10 @@ script_info['optional_options']=[\
         'are used to generate a blast database. For assignment with rdp, they '
         'are used as training sequences for the classifier.'
         '[default: %default; REQUIRED if -b is not provided when method is blast]'),\
+ make_option('-p', '--training_data_properties_fp',
+        help='Path to ".properties" file in pre-compiled training data for the '
+        'RDP Classifier.  This option is overridden by the -t and -r options. '
+        '[default: %default]'),\
  make_option('-m','--assignment_method',\
           type='choice',help='Taxon assignment method [default:%default]',\
           choices=assignment_method_choices, default="rdp"),\
@@ -127,7 +131,7 @@ def main():
         else:
             pass
 
-            
+
     assignment_method = opts.assignment_method
     taxon_assigner_constructor =\
      assignment_method_constructors[assignment_method]
@@ -165,7 +169,7 @@ def main():
         params['Confidence'] = opts.confidence
         params['id_to_taxonomy_fp'] = opts.id_to_taxonomy_fp
         params['reference_sequences_fp'] = opts.reference_seqs_fp
-
+        params['training_data_properties_fp'] = opts.training_data_properties_fp
     else:
         # should not be able to get here as an unknown classifier would
         # have raised an optparse error

@@ -16,12 +16,13 @@ __status__ = "Development"
 from cStringIO import StringIO
 from os import remove, system
 from glob import glob
-from tempfile import NamedTemporaryFile
+from tempfile import NamedTemporaryFile, mkdtemp
 from shutil import copy as copy_file
 from cogent.util.unit_test import TestCase, main
 from cogent import LoadSeqs
-from cogent.app.util import get_tmp_filename
+from cogent.app.util import get_tmp_filename, ApplicationError
 from cogent.app.formatdb import build_blast_db_from_fasta_path
+from cogent.app.rdp_classifier import RdpTrainer
 from cogent.util.misc import remove_files
 from cogent.parse.fasta import MinimalFastaParser
 from qiime.assign_taxonomy import TaxonAssigner, BlastTaxonAssigner,\
@@ -446,7 +447,6 @@ class RdpTaxonAssignerTests(TestCase):
 
         # see note in test_build_tree()
         self.assertEqual(actual_taxonomy_file.read(), rdp_expected_taxonomy)
-        
 
     def test_call_result_as_dict(self):
         """RdpTaxonAssigner should return correct taxonomic assignment
@@ -467,6 +467,74 @@ class RdpTaxonAssignerTests(TestCase):
         
         for i in range(num_trials):
             actual = self.default_app(self.tmp_seq_filepath)
+            # seq ids are the same, and all input sequences get a result
+            self.assertEqual(actual.keys(),expected.keys())
+            for j,seq_id in enumerate(seq_ids):
+                # confidence is above threshold
+                self.assertTrue(actual[seq_id][1] >= min_confidence)
+                # confidence roughly matches expected
+                self.assertFloatEqual(\
+                 actual[seq_id][1],expected[seq_id][1],0.1)
+                # check if the assignment is correct -- this must happen
+                # at least once per seq_id for the test to pass
+                if actual[seq_id][0] == expected[seq_id][0]:
+                    assignment_comp_results[j] = True
+            if assignment_comp_results == expected_assignment_comp_results:
+                # break once we've seen a correct assignment for each seq
+                break
+                    
+        self.assertEqual(\
+         assignment_comp_results,\
+         expected_assignment_comp_results,\
+         "Taxonomic assignments never correct in %d trials." % num_trials)
+
+    def test_call_with_missing_properties_file(self):
+        app = RdpTaxonAssigner({
+            'training_data_properties_fp': '/this/file/does/not/exist.on/any.system',
+            })
+        self.assertRaises(ApplicationError, app, self.tmp_seq_filepath)
+
+    def test_call_with_properties_file(self):
+        """RdpTaxonAssigner should return correct taxonomic assignment
+        
+           This test may periodically fail, but should be rare.
+           
+        """
+        id_to_taxonomy_file = NamedTemporaryFile(
+            prefix='RdpTaxonAssignerTest_', suffix='.txt')
+        id_to_taxonomy_file.write(rdp_id_to_taxonomy2)
+        id_to_taxonomy_file.seek(0)
+
+        app1 = RdpTaxonAssigner({
+                'id_to_taxonomy_fp': id_to_taxonomy_file.name,
+                'reference_sequences_fp': self.reference_seqs_file.name,
+                })
+        taxonomy_file, training_seqs_file = app1._generate_training_files()
+
+        training_dir = mkdtemp(prefix='RdpTrainer_')
+        trainer = RdpTrainer()
+        training_results = trainer(
+            training_seqs_file, taxonomy_file, training_dir)
+
+        training_data_fp = training_results['properties'].name
+        min_confidence = 0.80
+        app2 = RdpTaxonAssigner({
+            'training_data_properties_fp': training_data_fp,
+            'Confidence': min_confidence,
+            })
+
+        expected = rdp_trained_test2_expected_dict
+
+        # Since there is some variation in the assignments, run
+        # 10 trials and make sure we get the expected result at least once
+        num_trials = 10
+        num_seqs = len(expected)
+        seq_ids = expected.keys()
+        assignment_comp_results = [False] * num_seqs
+        expected_assignment_comp_results = [True] * num_seqs
+        
+        for i in range(num_trials):
+            actual = app2(self.tmp_seq_filepath)
             # seq ids are the same, and all input sequences get a result
             self.assertEqual(actual.keys(),expected.keys())
             for j,seq_id in enumerate(seq_ids):
@@ -560,7 +628,8 @@ Citation:Wang, Q, G. M. Garrity, J. M. Tiedje, and J. R. Cole. 2007. Naive Bayes
 Taxonomy:RDP
 Confidence:0.8
 id_to_taxonomy_fp:None
-reference_sequences_fp:None"""
+reference_sequences_fp:None
+training_data_properties_fp:None"""
 
 rdp_test1_expected_dict = {\
  'X67228 some description': ('Root;Bacteria;Proteobacteria;Alphaproteobacteria;Rhizobiales;Rhizobiaceae;Rhizobium',0.95),\
@@ -571,6 +640,11 @@ rdp_test1_expected_dict = {\
 rdp_trained_test1_expected_dict = {
     'X67228 some description': ('Bacteria;Proteobacteria;Alphaproteobacteria;Rhizobiales;Rhizobiaceae;Rhizobium', 1.0),
     'EF503697': ('Bacteria;Proteobacteria;Gammaproteobacteria', 0.83999999999999997),
+    }
+
+rdp_trained_test2_expected_dict = {
+    'X67228 some description': ('Bacteria;Proteobacteria;Alphaproteobacteria2;Rhizobiales;Rhizobiaceae;Rhizobium', 1.0),
+    'EF503697': ('Bacteria;Proteobacteria', 0.93000000000000005),
     }
 
 rdp_test1_expected_lines = [\
@@ -587,6 +661,16 @@ xxxxxx	Bacteria;Proteobacteria;Gammaproteobacteria;Pseudomonadales;Pseudomonadac
 AB004748	Bacteria;Proteobacteria;Gammaproteobacteria;Enterobacteriales;Enterobacteriaceae;Enterobacter
 AB000278	Bacteria;Proteobacteria;Gammaproteobacteria;Vibrionales;Vibrionaceae;Photobacterium
 AB000390	Bacteria;Proteobacteria;Gammaproteobacteria;Vibrionales;Vibrionaceae;Vibrio
+"""
+
+rdp_id_to_taxonomy2 = \
+"""X67228	Bacteria;Proteobacteria;Alphaproteobacteria2;Rhizobiales;Rhizobiaceae;Rhizobium
+X73443	Bacteria;Firmicutes;Clostridia2;Clostridiales;Clostridiaceae;Clostridium
+AB004750	Bacteria;Proteobacteria;Gammaproteobacteria2;Enterobacteriales;Enterobacteriaceae;Enterobacter
+xxxxxx	Bacteria;Proteobacteria;Gammaproteobacteria2;Pseudomonadales;Pseudomonadaceae;Pseudomonas
+AB004748	Bacteria;Proteobacteria;Gammaproteobacteria2;Enterobacteriales;Enterobacteriaceae;Enterobacter
+AB000278	Bacteria;Proteobacteria;Gammaproteobacteria2;Vibrionales;Vibrionaceae;Photobacterium
+AB000390	Bacteria;Proteobacteria;Gammaproteobacteria2;Vibrionales;Vibrionaceae;Vibrio
 """
 
 rdp_reference_seqs = \
