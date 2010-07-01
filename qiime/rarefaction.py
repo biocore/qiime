@@ -46,16 +46,16 @@ class SingleRarefactionMaker(FunctionWithParams):
             for rep in range(self.num_reps):"""
             
         if include_lineages:
-            otu_lineages = self.lineages
+            sub_otu_lineages = self.lineages
         else:
-            otu_lineages = None
+            sub_otu_lineages = None
         sub_sample_ids, sub_otu_table = get_rare_data(self.sample_names,
             self.otu_table, self.depth, small_included)
         sub_otu_ids = self.taxon_names
         if empty_otus_removed:
             sub_otu_table, sub_otu_ids, sub_otu_lineages = \
                 remove_empty_otus(sub_otu_table, 
-                sub_otu_ids, otu_lineages) # otu_lineages can be None
+                sub_otu_ids, sub_otu_lineages) # sub_otu_lineages can be None
         self._write_rarefaction(output_fname, sub_sample_ids, sub_otu_ids,
             sub_otu_table, sub_otu_lineages)
     
@@ -92,9 +92,9 @@ class RarefactionMaker(FunctionWithParams):
         
         this prevents large memory usage"""
         if include_lineages:
-            otu_lineages = self.lineages
+            sub_otu_lineages = self.lineages
         else:
-            otu_lineages = None
+            sub_otu_lineages = None
         self.output_dir = output_dir
         for depth in self.rare_depths:
             for rep in range(self.num_reps):
@@ -105,13 +105,13 @@ class RarefactionMaker(FunctionWithParams):
                 if empty_otus_removed:
                     sub_otu_table, sub_otu_ids, sub_otu_lineages =\
                         remove_empty_otus(sub_otu_table,sub_otu_ids,
-                        otu_lineages)
+                        sub_otu_lineages)
                 self._write_rarefaction(depth, rep, sub_sample_ids, 
                     sub_otu_ids, sub_otu_table, sub_otu_lineages)
 
         if include_full:
             self._write_rarefaction('full', 0, self.sample_names, \
-                self.taxon_names,self.otu_table, otu_lineages)
+                self.taxon_names,self.otu_table, sub_otu_lineages)
     
     def rarefy_to_list(self, small_included=False, include_full=False,
         include_lineages=False):
