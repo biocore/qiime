@@ -323,6 +323,7 @@ def parse_taxonomy(infile):
     for line in infile:
         if not line or line.startswith('#'):
             continue
+        line = line.rstrip("\n")
         fields = line.split('\t')
         otu = fields[0].split(' ')[0]
         res[otu] = fields[1]
