@@ -919,6 +919,7 @@ def process_id_map(infile, disable_primer_check=False, is_barcoded=True, \
     try:
         data, headers, run_description = parse_mapping_file(infile, \
         suppress_stripping=True)
+
         headers[0] = "#" + headers[0]
         col_headers = headers
         data.insert(0, headers)
@@ -937,6 +938,16 @@ def process_id_map(infile, disable_primer_check=False, is_barcoded=True, \
         return col_headers, id_map, description_map, run_description, errors, \
             warnings
             
+    # Test headers/data for appropriate lengths, if mapping file is not
+    # properly tab delineated, will have short lengths
+    if len(headers)<4:
+        raise ValueError, ('Headers format incorrect, '+\
+         'please ensure that mapping file headers are tab delineated.')
+    for datum in data:
+        if len(datum)<4:
+            raise ValueError, ('Mapping data incorrect, '+\
+             'please ensure that data are tab delineated in mapping file.')
+    
     # Save raw data for referencing source 'cells' in log file.
     raw_data = data
     
