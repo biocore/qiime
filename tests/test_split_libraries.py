@@ -22,6 +22,7 @@ from qiime.split_libraries import (
     seq_exceeds_homopolymers, check_window_qual_scores, check_seqs,
     local_align_primer_seq
 )
+from qiime.parse import parse_qual_score
 
 class FakeOutFile(object):
     
@@ -358,7 +359,8 @@ z\tGG\tGC\t5\tsample_z"""
          max_primer_mm=0,
          disable_primer_check=False,
          reverse_primers = 'disable',
-         rev_primers = {})
+         rev_primers = {},
+         qual_out = False)
          
         self.assertEqual(out_f.data,expected)
         
@@ -391,7 +393,8 @@ z\tGG\tGC\t5\tsample_z"""
          max_primer_mm=0,
          disable_primer_check=False,
          reverse_primers = 'disable',
-         rev_primers = {})
+         rev_primers = {},
+         qual_out = False)
          
         self.assertEqual(out_f.data,expected)
         
@@ -429,7 +432,8 @@ z\tGG\tGC\t5\tsample_z"""
          max_primer_mm=0,
          disable_primer_check=False,
          reverse_primers = 'disable',
-         rev_primers = {})
+         rev_primers = {},
+         qual_out = False)
          
         self.assertEqual(out_f.data,expected)
         
@@ -462,7 +466,8 @@ z\tGG\tGC\t5\tsample_z"""
          max_primer_mm=1,
          disable_primer_check=False,
          reverse_primers = 'disable',
-         rev_primers = {})
+         rev_primers = {},
+         qual_out = False)
          
         self.assertEqual(out_f.data,expected)
         
@@ -501,7 +506,8 @@ z\tGG\tGC\t5\tsample_z"""
          max_primer_mm=0,
          disable_primer_check=True,
          reverse_primers = 'disable',
-         rev_primers = {})
+         rev_primers = {},
+         qual_out = False)
          
         self.assertEqual(out_f.data,expected)
         
@@ -538,7 +544,8 @@ z\tGG\tGC\t5\tsample_z"""
          max_primer_mm=0,
          disable_primer_check=False,
          reverse_primers = 'truncate_only',
-         rev_primers = rev_primers_test)
+         rev_primers = rev_primers_test,
+         qual_out = False)
          
         self.assertEqual(out_f.data,expected)
         
@@ -574,7 +581,8 @@ z\tGG\tGC\t5\tsample_z"""
          max_primer_mm=0,
          disable_primer_check=False,
          reverse_primers = 'truncate_only',
-         rev_primers = rev_primers_test)
+         rev_primers = rev_primers_test,
+         qual_out = False)
          
         self.assertEqual(out_f.data,expected)
         
@@ -608,7 +616,8 @@ z\tGG\tGC\t5\tsample_z"""
          max_primer_mm=1,
          disable_primer_check=False,
          reverse_primers = 'truncate_only',
-         rev_primers = rev_primers_test)
+         rev_primers = rev_primers_test,
+         qual_out = False)
          
         self.assertEqual(out_f.data,expected)
         
@@ -644,7 +653,8 @@ z\tGG\tGC\t5\tsample_z"""
          max_primer_mm=0,
          disable_primer_check=False,
          reverse_primers = 'truncate_remove',
-         rev_primers = rev_primers_test)
+         rev_primers = rev_primers_test,
+         qual_out = False)
          
         self.assertEqual(out_f.data,expected)
         
@@ -681,10 +691,50 @@ z\tGG\tGC\t5\tsample_z"""
          max_primer_mm=1,
          disable_primer_check=False,
          reverse_primers = 'truncate_remove',
-         rev_primers = rev_primers_test)
+         rev_primers = rev_primers_test,
+         qual_out = False)
          
         self.assertEqual(out_f.data,expected)
         
+    def test_check_seqs_qual_out(self):
+        """ check_seqs handles optional quality output file """
+        
+        in_seqs = self.in_seqs_fixed_len_bc1
+        bc_map = self.bc_map_fixed_len_bc1
+        primer_seq_lens = self.primer_seq_lens_fixed_len_bc1
+        all_primers = self.all_primers_fixed_len_bc1
+        expected = expected_qual_fixed_len_bc1
+
+        
+        out_f = FakeOutFile()
+        qual_out_f = FakeOutFile()
+        
+        actual = check_seqs(
+         fasta_out=out_f, 
+         fasta_files = [in_seqs], 
+         starting_ix=0, 
+         valid_map = bc_map, 
+         qual_mappings=parse_qual_score(in_seqs_fixed_len_bc1_qual_scores), 
+         filters=[], 
+         barcode_len=12, 
+         keep_primer=False, 
+         keep_barcode=False, 
+         barcode_type="golay_12", 
+         max_bc_errors=1.5,
+         remove_unassigned=True, 
+         attempt_bc_correction=True,
+         primer_seqs_lens=primer_seq_lens,
+         all_primers=all_primers, 
+         max_primer_mm=0,
+         disable_primer_check=False,
+         reverse_primers = 'disable',
+         rev_primers = {},
+         qual_out = qual_out_f)
+         
+        self.assertEqual(qual_out_f.data,expected)
+        
+
+
 
         
 
@@ -742,6 +792,19 @@ TTTTGTCCGGACCCTTACTATATAT
 AGAGTCCTGAGCGGTCCGGTACGTTTACTGGA
 """.split()
 
+in_seqs_fixed_len_bc1_qual_scores = """>a
+37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 36 36 33 33 33 36 37 37 37 37 37 37 40 40 40 39 39 38
+>b
+35 31 31 23 23 23 31 21 21 21 35 35 37 37 37 36 36 36 36 36 36 37 37 37 37 37 37 37 37
+>c
+37 37 37 37 37 37 37 37 37 37 37 37 37 37 36 32 32 32 36 37 35 32 32 32 32 32 32 32 32 36 37 37
+>d
+36 36 36 37 37 37 37 37 37 37 37 37 37 37 37 36 36 36 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37
+>e_no_barcode_match
+23 23 23 31 21 21 21 35 35 37 37 37 36 36 36 36 36 36 37 37 37 37 37 37 37
+>d_primer_error
+31 31 23 23 23 31 21 21 21 35 35 37 37 37 36 36 36 36 36 36 37 37 37 37 37 37 37 37 37 37 37 37""".split('\n')
+
 # These test data have equal length barcodes, one degenerate primer
 bc_map_fixed_len_bc1 = {'ACACATGTCTAC':'s1','AGAGTCCTGAGC':'s2',
  'AATCGTGACTCG':'s3'}
@@ -759,6 +822,16 @@ CCCTTTCCA
 AACCGGCCGGTT
 >s1_3 d orig_bc=ACTCATGTCTAC new_bc=ACACATGTCTAC bc_diffs=1
 CCCTTACTATATAT
+"""
+
+expected_qual_fixed_len_bc1 = """>s1_0 a orig_bc=ACACATGTCTAC new_bc=ACACATGTCTAC bc_diffs=0
+33 33 36 37 37 37 37 37 37 40 40 40 39 39 38
+>s2_1 b orig_bc=AGAGTCCTGAGC new_bc=AGAGTCCTGAGC bc_diffs=0
+36 37 37 37 37 37 37 37 37
+>s3_2 c orig_bc=AATCGTGACTCG new_bc=AATCGTGACTCG bc_diffs=0
+35 32 32 32 32 32 32 32 32 36 37 37
+>s1_3 d orig_bc=ACTCATGTCTAC new_bc=ACACATGTCTAC bc_diffs=1
+37 37 37 37 37 37 37 37 37 37 37 37 37 37
 """
 
 # Will be longer because primers are no longer sliced off or checked for

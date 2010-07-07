@@ -146,7 +146,15 @@ script_info['optional_options']=[\
         "alter output of sequences where the primer cannot be found. "+\
         "'truncate_remove' will flag sequences where the primer cannot "+\
         "be found to not be written and will record the quantity of such "+\
-        "failed sequences in the log file. [default: %default]")]
+        "failed sequences in the log file. [default: %default]"),
+        
+    make_option('-d', '--record_qual_scores', default=False,
+        action='store_true', help='Enables recording of quality scores for '+\
+        'all sequences that are recorded.  If this option is enabled, a file '+\
+        'named seqs_filtered.qual will be created in the output directory, '+\
+        'and will contain the same sequence IDs in the seqs.fna file and '+\
+        'sequence quality scores matching the bases present in the seqs.fna '+\
+        'file. [default: %default]')]
 
 script_info['version'] = __version__
 
@@ -195,7 +203,8 @@ def main():
                attempt_bc_correction = not opts.disable_bc_correction,
                qual_score_window = opts.qual_score_window,
                disable_primers = opts.disable_primers,
-               reverse_primers = opts.reverse_primers)
+               reverse_primers = opts.reverse_primers,
+               record_qual_scores = opts.record_qual_scores)
  
 if __name__ == "__main__":
     main()

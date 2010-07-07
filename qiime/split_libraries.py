@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 #file split_libraries.py
+
 """Performs preprocessing steps for barcoded library analysis, e.g. 454.
 
 Specifically, does the quality-filtering step (using several criteria) and
@@ -426,7 +427,7 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
     filters, barcode_len, keep_primer, keep_barcode, barcode_type, 
     max_bc_errors,remove_unassigned, attempt_bc_correction,
     primer_seqs_lens, all_primers, max_primer_mm, disable_primer_check,
-    reverse_primers, rev_primers):
+    reverse_primers, rev_primers, qual_out):
     """Checks fasta-format sequences and qual files for validity."""
     seq_lengths = {}
     bc_counts = defaultdict(list)
@@ -444,11 +445,16 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
     
     reverse_primer_not_found = 0
     
+    
     for fasta_in in fasta_files:
         for curr_id, curr_seq in MinimalFastaParser(fasta_in):
             curr_rid = curr_id.split()[0]
             curr_len = len(curr_seq)
             curr_qual = qual_mappings.get(curr_rid, None)
+            
+            #if qual_out:
+            #    curr_qual_out_score = \
+            #     "%2.2f" % float(float(sum(curr_qual))/float(len(curr_qual)))
             seq_lengths[curr_rid] = curr_len
             failed = False
             
@@ -527,7 +533,7 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
             # split seqs
             cbc, cpr, cres = split_seq(curr_seq, barcode_len,\
              primer_len)
-
+             
             # get current barcode
             try:
                 bc_diffs, curr_bc, corrected_bc = \
@@ -546,6 +552,7 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
             # check if writing out primer
             write_seq = cres
             
+                       
             if reverse_primers == "truncate_only":
                 try:
                     rev_primer = rev_primers[curr_bc]
@@ -570,7 +577,21 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
                 except KeyError:
                     bc_counts['#FAILED'].append(curr_rid)
                     continue
-                
+                    
+            # Slice out regions of quality scores that correspond to the 
+            # written sequence, i.e., remove the barcodes/primers and reverse
+            # primers if option is enabled.
+            if qual_out:
+                qual_barcode, qual_primer, qual_scores_out = \
+                 split_seq(curr_qual, barcode_len, primer_len)
+                # Convert to strings instead of numpy arrays, strip off brackets
+                qual_barcode = format_qual_output(qual_barcode)
+                qual_primer = format_qual_output(qual_primer)
+                qual_scores_out = format_qual_output(qual_scores_out)
+
+                if reverse_primers == "truncate_remove" or \
+                 reverse_primers == "truncate_only":
+                     qual_scores_out = qual_scores_out[0:rev_primer_index]
             
             if not write_seq:
                 bc_counts['#FAILED'].append(curr_rid)
@@ -578,30 +599,50 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
             
             if keep_primer:
                 write_seq = cpr + write_seq
+                if qual_out:
+                    qual_scores_out = qual_primer + qual_scores_out
             if keep_barcode:
                 write_seq = cbc + write_seq
+                if qual_out:
+                    qual_scores_out = qual_barcode + qual_scores_out
                 
                 
             
-                
+            
+            
             # Record number of seqs associated with particular barcode.
             bc_counts[curr_bc].append(curr_rid)
                  
             if remove_unassigned or (not attempt_bc_correction):
                 if curr_samp_id!="Unassigned":
                     fasta_out.write(">%s %s orig_bc=%s new_bc=%s bc_diffs=%s\n%s\n" % 
-                    (new_id, curr_rid, cbc, curr_bc, int(bc_diffs), write_seq))
+                     (new_id, curr_rid, cbc, curr_bc, int(bc_diffs), write_seq))
+                    if qual_out:
+                        qual_out.write(">%s %s orig_bc=%s new_bc=%s bc_diffs=%s\n%s\n" % 
+                         (new_id, curr_rid, cbc, curr_bc, int(bc_diffs), qual_scores_out))
                 else:
                     bc_counts['#FAILED'].append(curr_rid)
             else:    
                 fasta_out.write(">%s %s orig_bc=%s new_bc=%s bc_diffs=%s\n%s\n" % 
                     (new_id, curr_rid, cbc, curr_bc, int(bc_diffs), write_seq))
+                if qual_out:
+                        qual_out.write(">%s %s orig_bc=%s new_bc=%s bc_diffs=%s\n%s\n" % 
+                         (new_id, curr_rid, cbc, curr_bc, int(bc_diffs), qual_scores_out))
             curr_ix += 1
     log_out = format_log(bc_counts, corr_ct, seq_lengths, valid_map, filters,\
     remove_unassigned, attempt_bc_correction, primer_mismatch_count, \
     max_primer_mm, reverse_primers, reverse_primer_not_found)
     all_seq_lengths, good_seq_lengths = get_seq_lengths(seq_lengths, bc_counts)
     return log_out, all_seq_lengths, good_seq_lengths
+
+def format_qual_output(qual_array):
+    """ Converts to string from numpy arrays, removes brackets """
+    
+    qual_array = str(qual_array)
+    qual_array = qual_array.replace('[','')
+    qual_array = qual_array.replace(']','')
+    return qual_array
+
 
 def format_log(bc_counts, corr_ct, seq_lengths, valid_map, filters,\
 remove_unassigned, attempt_bc_correction, primer_mismatch_count, max_primer_mm,\
@@ -708,7 +749,7 @@ def preprocess(fasta_files, qual_files, mapping_file,
     keep_primer=True, max_ambig=0, max_primer_mm=1, trim_seq_len=True,
     dir_prefix='.', max_bc_errors=2, max_homopolymer=4,remove_unassigned=False,
     keep_barcode=False, attempt_bc_correction=True, qual_score_window=0,
-    disable_primers=False, reverse_primers='disable'):
+    disable_primers=False, reverse_primers='disable', record_qual_scores=False):
         
 
         
@@ -775,6 +816,11 @@ def preprocess(fasta_files, qual_files, mapping_file,
     written and counted in the log file as failing for this reason.  The 
     mismatches allowed for a reverse primer match are the same as specified 
     for the forward primer mismatches with the -M parameter (default 0).
+    
+    record_qual_scores:  (default False) Will record quality scores for all
+    sequences that are written to the output seqs.fna file in a separate
+    file (seqs_filtered.qual) containing the same sequence IDs and 
+    quality scores for all bases found in the seqs.fna file.
 
     Result:
     in dir_prefix, writes the following files:
@@ -783,6 +829,8 @@ def preprocess(fasta_files, qual_files, mapping_file,
     seqs.fasta: sequences with new ids lib_index in fasta format
     lengths.xls: histograms of unfiltered and filtered lengths, resolution 10 bp
     """
+
+    
     if max_seq_len < 10:
         raise ValueError, "Max sequence must be >= 10"
     if min_seq_len >= max_seq_len:
@@ -887,6 +935,7 @@ def preprocess(fasta_files, qual_files, mapping_file,
         q_ids = all_qual_ids.difference(all_fasta_ids)
         raise ValueError, "Found %d ids in fasta file not in qual file, %d ids in qual file not in fasta"  % (len(f_ids), len(q_ids))
 
+    
     for f in fasta_files:
         f.seek(0)
     if qual_files:
@@ -945,6 +994,11 @@ def preprocess(fasta_files, qual_files, mapping_file,
 
     # Check seqs and write out
     fasta_out = open(dir_prefix + '/' + 'seqs.fna', 'w+')
+    if record_qual_scores:
+        qual_out = open(dir_prefix + '/' + 'seqs_filtered.qual', 'w+')
+    else:
+        qual_out = False
+        
     '''log_stats, pre_lens, post_lens = check_seqs(fasta_out, fasta_files, 
         starting_ix, valid_map, qual_mappings, filters, barcode_len,
         primer_seq_len, keep_primer, keep_barcode, barcode_type, max_bc_errors,
@@ -954,7 +1008,7 @@ def preprocess(fasta_files, qual_files, mapping_file,
         keep_primer, keep_barcode, barcode_type, max_bc_errors,
         remove_unassigned, attempt_bc_correction,
         primer_seqs_lens, all_primers, max_primer_mm, disable_primers,
-        reverse_primers, rev_primers)
+        reverse_primers, rev_primers, qual_out)
 
     # Write log file
     log_file = open(dir_prefix + '/' + "split_library_log.txt", 'w+')
