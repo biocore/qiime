@@ -442,9 +442,9 @@ class UclustConvenienceWrappers(TestCase):
                          stdout=PIPE,stderr=STDOUT)
         stdout = proc.stdout.read()
         version_string = stdout.strip().split('v')[-1]
-        version = tuple(map(int,version_string.split('.')))
-        self.assertTrue(version >= (1,1,577),\
-         "Unsupported uclust version. 1.1.577 or later "+\
+        version = tuple(map(int,version_string.split('.')[:2]))
+        self.assertTrue(version >= (1,2),\
+         "Unsupported uclust version. 1.2 or later "+\
          "is required, but running %s." % version_string)
 
 raw_dna_seqs = """>uclust_test_seqs_0
