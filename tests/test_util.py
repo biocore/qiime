@@ -12,13 +12,14 @@ from cogent.cluster.procrustes import procrustes
 from cogent.app.formatdb import build_blast_db_from_fasta_file
 from cogent.util.misc import get_random_directory_name, remove_files
 
+from qiime.parse import fields_to_dict
 from qiime.util import make_safe_f, FunctionWithParams, qiime_blast_seqs,\
     extract_seqs_by_sample_id, get_qiime_project_dir, matrix_stats,\
     raise_error_on_parallel_unavailable, merge_otu_tables,\
     convert_OTU_table_relative_abundance, create_dir, handle_error_codes,\
     summarize_pcoas, _compute_jn_pcoa_avg_ranges, _flip_vectors, IQR, \
     idealfourths, isarray, matrix_IQR, sort_fasta_by_abundance, degap_fasta_aln, \
-    write_degapped_fasta_to_file
+    write_degapped_fasta_to_file, compare_otu_maps, get_diff_for_otu_maps
 
 import numpy
 from numpy import array, asarray
@@ -661,6 +662,54 @@ AAAAAAA
         self.files_to_remove.append(tmp_filename)
         observed = "".join(list(open(tmp_filename,"U")))
         self.assertEqual(observed, expected_result)
+
+
+    def test_get_diff_for_otu_maps(self):
+        """get_diff_for_otu_map return correct set difference"""
+
+        #compare to self
+        self.assertEqual(get_diff_for_otu_maps(otu_map1, otu_map1), set([]))
+        
+        #compare to otu_map with one difference
+        self.assertEqual(get_diff_for_otu_maps(otu_map1, otu_map2), set(['b']))
+        
+        #compare to empty
+        self.assertEqual(get_diff_for_otu_maps(otu_map1, fields_to_dict("")),
+                         set(['a','b','c','d','e','f']))
+
+    def test_compare_otu_maps(self):
+        """compare_otu_maps computes correct values"""
+
+        self.assertEqual(compare_otu_maps(otu_map1, otu_map1), (6,0))
+        self.assertEqual(compare_otu_maps(otu_map1, otu_map3), (6,0))
+        self.assertEqual(compare_otu_maps(otu_map1, otu_map4), (4,2))
+        self.assertEqual(compare_otu_maps(otu_map3, otu_map4), (4,2))
+        self.assertEqual(compare_otu_maps(otu_map1, otu_map5), (0,6))
+ 
+otu_map1 = fields_to_dict("""1:\ta\tb\tc
+2:\td
+3:\te\tf
+""".split("\n"))
+
+#b missing
+otu_map2 = fields_to_dict("""1:\ta\tc
+3:\te\tf\td
+""".split("\n"))
+
+# several reads swapped
+otu_map3 = fields_to_dict("""1:\tc\ta\tb
+3:\te\tf
+2:\td
+""".split("\n"))
+
+# several reads swapped
+otu_map4 = fields_to_dict("""1:\tc\ta\tb\tf
+3:\te\td
+""".split("\n"))
+
+# everything differs
+otu_map5 = fields_to_dict("""4:\ta\tb\tc\td\te\tf""".split("\n"))
+
 
 inseqs1 = """>s2_like_seq
 TGCAGCTTGAGCACAGGTTAGAGCCTTC

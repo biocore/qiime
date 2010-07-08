@@ -886,3 +886,58 @@ def write_degapped_fasta_to_file(seqs):
         fh.write(seq.toFasta()+"\n")
     fh.close()
     return tmp_filename
+
+
+def get_diff_for_otu_maps(otu_map1, otu_map2):
+    """return reads in two otu_maps that are not shared
+
+    otu_map1, otu_map2: OTU to seqID mapping as dict of lists
+    """
+ 
+    otus1 = set(otu_map1.keys())
+    otus2 = set(otu_map2.keys())
+    ids1 = set([x for otu in otus1 for x in otu_map1[otu]])
+    ids2 = set([x for otu in otus2 for x in otu_map2[otu]])
+        
+    return ids1^ids2
+
+def compare_otu_maps(otu_map1, otu_map2, verbose=False):
+    """compare two otu maps and compute some stats
+
+    otu_map1, otu_map2: OTU to seqID mapping as dict of lists
+"""
+
+    right = 0
+    wrong = 0
+
+    otus1 = set(otu_map1.keys())
+    otus2 = set(otu_map2.keys())
+    shared_otus = otus1.intersection(otus2)
+    # check for equal members in shared OTUs
+    for otu in shared_otus:
+        members1 = set(otu_map1[otu])
+        members2 = set(otu_map2[otu])
+        
+        right += len(members1 & members2)
+        if (members1 != members2):
+            wrong += len(members2 ^ members1)
+            if verbose:
+                print "OTU id:%s" % otu
+                print list(members1 - members2)
+                print list(members2 - members1)
+                print 
+
+    # process OTUs in 1 not in 2
+    for otu in otus1 - shared_otus:
+        wrong += len(otu_map1[otu])
+            
+    # process OTUs in 2 not in 1
+    for otu in otus2-shared_otus:
+        wrong += len(otu_map2[otu])
+
+    #wrong count is symmetric, so should always be even if otu maps contain
+    #same reads
+    assert (wrong % 2 == 0)
+    wrong = wrong/2
+
+    return right,wrong
