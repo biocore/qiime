@@ -899,13 +899,13 @@ def get_diff_for_otu_maps(otu_map1, otu_map2):
     ids1 = set([x for otu in otus1 for x in otu_map1[otu]])
     ids2 = set([x for otu in otus2 for x in otu_map2[otu]])
         
-    return ids1^ids2
+    return ids1-ids2, ids2-ids1
 
 def compare_otu_maps(otu_map1, otu_map2, verbose=False):
-    """compare two otu maps and compute some stats
+    """compare two otu maps and compute fraction of 
 
     otu_map1, otu_map2: OTU to seqID mapping as dict of lists
-"""
+    """
 
     right = 0
     wrong = 0
@@ -919,25 +919,19 @@ def compare_otu_maps(otu_map1, otu_map2, verbose=False):
         members2 = set(otu_map2[otu])
         
         right += len(members1 & members2)
-        if (members1 != members2):
-            wrong += len(members2 ^ members1)
-            if verbose:
-                print "OTU id:%s" % otu
-                print list(members1 - members2)
-                print list(members2 - members1)
-                print 
+        missing_in_2  = members1 - members2
+        wrong += len(missing_in_2)
+        if (verbose and len(missing_in_2)>0):
+            print "OTU id: %s" % otu
+            print list(missing_in_2)
+            print 
 
     # process OTUs in 1 not in 2
     for otu in otus1 - shared_otus:
         wrong += len(otu_map1[otu])
-            
-    # process OTUs in 2 not in 1
-    for otu in otus2-shared_otus:
-        wrong += len(otu_map2[otu])
+        if verbose:
+            print "OTU id: %s" % otu
+            print list(otu_map1[otu])
 
-    #wrong count is symmetric, so should always be even if otu maps contain
-    #same reads
-    assert (wrong % 2 == 0)
-    wrong = wrong/2
+    return float(wrong)/(right+wrong)
 
-    return right,wrong

@@ -668,23 +668,25 @@ AAAAAAA
         """get_diff_for_otu_map return correct set difference"""
 
         #compare to self
-        self.assertEqual(get_diff_for_otu_maps(otu_map1, otu_map1), set([]))
+        self.assertEqual(get_diff_for_otu_maps(otu_map1, otu_map1),
+                         (set([]), set([])) )
         
         #compare to otu_map with one difference
-        self.assertEqual(get_diff_for_otu_maps(otu_map1, otu_map2), set(['b']))
+        self.assertEqual(get_diff_for_otu_maps(otu_map1, otu_map2),
+                         (set(['b']), set([])))
         
         #compare to empty
         self.assertEqual(get_diff_for_otu_maps(otu_map1, fields_to_dict("")),
-                         set(['a','b','c','d','e','f']))
+                         (set(['a','b','c','d','e','f']), set([])))
 
     def test_compare_otu_maps(self):
         """compare_otu_maps computes correct values"""
 
-        self.assertEqual(compare_otu_maps(otu_map1, otu_map1), (6,0))
-        self.assertEqual(compare_otu_maps(otu_map1, otu_map3), (6,0))
-        self.assertEqual(compare_otu_maps(otu_map1, otu_map4), (4,2))
-        self.assertEqual(compare_otu_maps(otu_map3, otu_map4), (4,2))
-        self.assertEqual(compare_otu_maps(otu_map1, otu_map5), (0,6))
+        self.assertFloatEqual(compare_otu_maps(otu_map1, otu_map1), 0.0)
+        self.assertFloatEqual(compare_otu_maps(otu_map1, otu_map3), 0.0)
+        self.assertFloatEqual(compare_otu_maps(otu_map1, otu_map4), 0.33333333333)
+        self.assertFloatEqual(compare_otu_maps(otu_map3, otu_map4), 0.33333333333)
+        self.assertFloatEqual(compare_otu_maps(otu_map1, otu_map5), 1)
  
 otu_map1 = fields_to_dict("""1:\ta\tb\tc
 2:\td
