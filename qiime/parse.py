@@ -4,7 +4,7 @@
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso",
-    "Justin Kuczynski", "Cathy Lozupone", "Jens Reeder"]
+    "Justin Kuczynski", "Cathy Lozupone", "Jens Reeder", "Antonio Gonzalez Pena"]
 __license__ = "GPL"
 __version__ = "1.1.0-dev"
 __maintainer__ = "Rob Knight"
@@ -23,6 +23,7 @@ from cogent.parse.tree import DndParser
 from cogent.core.tree import PhyloNode
 from copy import deepcopy
 import os
+import re
 from cogent.util.misc import revComp
 
 
@@ -628,3 +629,30 @@ def parse_qual_scores(qual_files):
     for qual_file in qual_files:
         qual_mappings.update(parse_qual_score(qual_file))
     return qual_mappings
+    
+def parse_trflp(lines):
+    """Load a trflp file and returns a header and data lists"""
+    
+    for i, line in enumerate(lines):
+       if i==0:
+          samples = []
+  
+          str_mask = re.compile('[^\w|^\t]')
+          otus = [ str_mask.sub('_',l) for l in line.strip().split('\t')]
+          data = [ [ 0 for k in range(len(lines)-1) ] for l in range(len(line.strip().split('\t'))) ]
+          continue
+       else:
+          elements = line.strip().split('\t')
+          for j in range(len(elements)):
+             if j==0:
+                str_mask = re.compile('[ -]')
+                elements[j] = str_mask.sub('_',elements[j])
+                str_mask = re.compile('[^\w|^\t]')
+                samples.append(str_mask.sub('',elements[j]))
+             else:
+                try:
+                   data[j-1][i-1] = int(elements[j])
+                except ValueError:
+                   continue
+                   
+    return samples, otus, array(data)
