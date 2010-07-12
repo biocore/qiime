@@ -22,7 +22,7 @@ from qiime.parse import (group_by_field, group_by_fields,
     sample_mapping_to_otu_table, parse_taxonomy, parse_mapping_file, 
     parse_metadata_state_descriptions, parse_rarefaction_data,
     parse_illumina_line, parse_qual_score, parse_qual_scores, QiimeParseError,
-    parse_newick)
+    parse_newick,parse_trflp)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -564,13 +564,36 @@ eigvals\t4.94\t1.79\t1.50
         self.assertEqual(parse_qual_scores([scores, scores2]),
             {'x':[5,10,5,12],'y':[30,40],'a':[5,10,5,12],'b':[30,40]})
 
+    def test_parse_trflp_(self):
+        """ should return a header and otu_table lists"""
+        
+        data = \
+"""	Bin (10bp)	Bin (20bp)	Bin (30bp)	Bin (40 bp)
+Sample 1	1000	2000	3000	4000
+Sample 2		2000	3000	4000
+Sample 3			3000	4000
+Sample 4				4000
+Sample 5				"""
+        samples, otus, data = parse_trflp(data.split('\n'))
+        
+        samples_exp = ['Sample_1', 'Sample_2', 'Sample_3', 'Sample_4', 'Sample_5']
+        otus_exp = ['Bin__10bp_', 'Bin__20bp_', 'Bin__30bp_', 'Bin__40_bp_']
+        data_exp = array([[1000,    0,    0,    0,    0],\
+                          [2000, 2000,    0,    0,    0],\
+                          [3000, 3000, 3000,    0,    0],\
+                          [4000, 4000, 4000, 4000,    0]])
+                
+        self.assertEqual(samples, samples_exp)
+        self.assertEqual(otus, otus_exp)
+        self.assertEqual(data, data_exp)
+        
 
 illumina_read1 = """HWI-6X_9267:1:1:4:1699#ACCACCC/1:TACGGAGGGTGCGAGCGTTAATCGCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCGAAAAAAAAAAAAAAAAAAAAAAA:abbbbbbbbbb`_`bbbbbb`bb^aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaDaabbBBBBBBBBBBBBBBBBBBB
 HWI-6X_9267:1:1:4:390#ACCTCCC/1:GACAGGAGGAGCAAGTGTTATTCAAATTATGCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCGGGGGGGGGGGGGGGAAAAAAAAAAAAAAAAAAAAAAA:aaaaaaaaaa```aa\^_aa``aVaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaBaaaaa""".split('\n')
 
 illumina_read2 = """HWI-6X_9267:1:1:4:1699#ACCACCC/2:TTTTAAAAAAAAGGGGGGGGGGGCCCCCCCCCCCCCCCCCCCCCCCCTTTTTTTTTTTTTAAAAAAAAACCCCCCCGGGGGGGGTTTTTTTAATTATTC:aaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbcccccccccccccccccBcccccccccccccccc```````BBBB
 HWI-6X_9267:1:1:4:390#ACCTCCC/2:ACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACG:aaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbb""".split('\n')
-
-
+         
+         
 if __name__ =='__main__':
     main()
