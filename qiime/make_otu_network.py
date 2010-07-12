@@ -34,6 +34,26 @@ from qiime.colors import iter_color_groups, Color, data_colors
 from qiime.parse import parse_mapping_file, parse_otu_table
 
 def get_sample_info(lines):
+    """Collects information from mapping file for easy use in following steps
+        
+        Input: lines - the mapping file as a list of lines
+
+        Output: cat_by_sample - a dictionary where the key is a id and the value
+                    is a list of the metadata from the mapping file that
+                    corresponds to the sample id
+                sample_by_cat - a dictionary where the key is a tuple
+                    (label,value) label is the heading for one of the columns in
+                    the mapping file, and value is one of the items in the 
+                    column label
+                len(category_labels) - the number of columns in the mapping file
+                meta_dict - keyed by sample id, values are the lines from 
+                    mapping file without the sample id
+                labels - headings of columns for edge file output
+                node_labels - headings of columns for node file output
+                label_list - a list containing 1 list for each header in the
+                    mapping file, each list contains all of the possible values
+                    for that header.
+    """
     mapping_data, header, comments = parse_mapping_file(lines)
     labels =["from","to","eweight","consensus_lin"]
     node_labels = ["node_name", "node_disp_name", "ntype","degree", \
@@ -69,12 +89,39 @@ def get_sample_info(lines):
 
 
 def get_connection_info(lines, num_meta, meta_dict):
+    """Collects information from OTU table for easy use in following steps
+        
+        Input: lines - the OTU table as a list of lines
+               num_meta - the number of columns of metadata in the mapping file
+               meta_dict - meta_dict returned by get_sample_info
+    
+        Output: 
+               con_by_sample - dictionary where the key is a sample id and the
+                    value for that key is a set containing all of the sample ids
+                    that the key sample shares an OTU with 
+               node_file - a list containing the lines for the file that defines
+                    the network nodes (sample nodes and OTU nodes)
+               edge_file - a list containing the lines for the file that defines
+                    the network edges (connection between sample and OTU)
+               red_node_file - a list containing the lines for the file that 
+                    defines the network nodes, where a reduced node is an OTU 
+                    node that is many OTU's collapsed into one node this happens
+                    when more than one OTU is only connected to the same one
+                    sample, then they are collapsed into one node.
+               red_edge_file - a list containing the lines for the edge file 
+                    using the collapsed nodes.
+               otu_dc - dictionary where key is a node degree and the value is 
+                    the number of otu nodes that have that degree
+               sample_dc - dictionary where key is a node degree and the value is
+                    the number of sample nodes that have that degree
+               degree_counts - dictionary with all node degree counts
+    """
     con_by_sample = defaultdict(set)
-    node_file_str = []
-    edge_file_str = []
+    node_file = []
+    edge_file = []
     red_nodes = defaultdict(int)
-    red_node_file_str = []
-    red_edge_file_str = []
+    red_node_file = []
+    red_edge_file = []
     multi = defaultdict(list)
     edge_from = []
     to = []
@@ -109,10 +156,10 @@ def get_connection_info(lines, num_meta, meta_dict):
         node_file_line = [to_otu,'','otu_node',str(degree),\
                           str(weighted_degree),con]
         node_file_line.extend(['otu']*num_meta)
-        node_file_str.append('\t'.join(node_file_line))
+        node_file.append('\t'.join(node_file_line))
 
         if len(non_zero_counts) != 1:
-            red_node_file_str.append('\t'.join(node_file_line))
+            red_node_file.append('\t'.join(node_file_line))
 
 
         otu_dc[degree] += 1
@@ -130,16 +177,16 @@ def get_connection_info(lines, num_meta, meta_dict):
             meta = meta_dict[s]
             meta[1] += 1
             data_num = str(data[int(non_zero_counts[i])])
-            edge_file_str.append('\t'.join([s, to_otu, \
+            edge_file.append('\t'.join([s, to_otu, \
                             data_num, con, meta[0]]))
             multi[to_otu].append((s,float(data[int(non_zero_counts[i])]), meta[0]))
             if len(non_zero_counts) == 1:
                 red_nodes[(sample_ids[int(non_zero_counts[0])],meta[0])] += degree
             else:
-                red_edge_file_str.append('\t'.join([s, to_otu, \
+                red_edge_file.append('\t'.join([s, to_otu, \
                                     data_num, con, meta[0]]))
 
-    num_otu_nodes = len(node_file_str)
+    num_otu_nodes = len(node_file)
     for s in meta_dict:
         meta = meta_dict[s]
         degree = meta[1]
@@ -149,14 +196,14 @@ def get_connection_info(lines, num_meta, meta_dict):
         node_file_line = '\t'.join([s,s,'user_node',str(meta[1]),\
                                     str(weighted_degree),'other',meta[0]])
         nodes.append('\t'.join([s,'user_node']))
-        node_file_str.append(node_file_line)
-        red_node_file_str.append(node_file_line)
+        node_file.append(node_file_line)
+        red_node_file.append(node_file_line)
 
     for n,d in red_nodes.items():
         red_node_file_line = ['@'+n[0],'','otu_collapsed',str(d),str(float(d)),'other']
         red_node_file_line.extend(['otu']*num_meta)
-        red_node_file_str.append('\t'.join(red_node_file_line))
-        red_edge_file_str.append('\t'.join([n[0],'@'+n[0],"1.0","missed",n[1]]))
+        red_node_file.append('\t'.join(red_node_file_line))
+        red_edge_file.append('\t'.join([n[0],'@'+n[0],"1.0","missed",n[1]]))
     multi_red = defaultdict(list)
     
     for i,(o,s) in enumerate(multi.items()):
@@ -173,11 +220,13 @@ def get_connection_info(lines, num_meta, meta_dict):
     for i,(k,v) in enumerate(multi_red.items()):
         nodes.append('\t'.join([str(i),'otu_node']))
             
-    return con_by_sample, node_file_str, edge_file_str, red_node_file_str,\
-           red_edge_file_str,otu_dc, degree_counts,sample_dc
+    return con_by_sample, node_file, edge_file, red_node_file,\
+           red_edge_file,otu_dc, degree_counts,sample_dc
 
 
 def get_num_con_cat(con_by_sample,cat_by_sample):
+    """finds the number of samples connected to the same OTU split by metadata
+    """
     num_con_cat = defaultdict(float)
     num_con = 0
     for sample, connects in con_by_sample.items():
@@ -193,6 +242,8 @@ def get_num_con_cat(con_by_sample,cat_by_sample):
     return num_con_cat, num_con
 
 def get_num_cat(sample_by_cat,samples_in_otus):
+    """Builds a dictionary of numbers of samples keyed by metadata value
+    """
     num_cat = defaultdict(int)
     for cat,samples in sample_by_cat.items():
         num_samples = len(set(samples_in_otus) & set(samples))
@@ -200,6 +251,8 @@ def get_num_cat(sample_by_cat,samples_in_otus):
     return num_cat
 
 def make_table_file(lines, labels, dir_path,filename):
+    """Generic table writer, given lines, headers, and filename it writes to file
+    """
     lines.sort()
     lines.insert(0,'\t'.join(labels))
 
@@ -210,6 +263,14 @@ def make_table_file(lines, labels, dir_path,filename):
     
 def make_stats_files(sample_dc,otu_dc,degree_counts,num_con_cat, num_con,\
                      num_cat, cat_by_sample, dir_path):
+    """Creates and writes the network statistic files including degree info
+    
+        Input: sample_dc, otu_dc, degree_counts - output from get_connection_info
+               num_con_cat, num_con - output from get_num_con_cat
+               num_cat - output from get_num_cat
+               cat_by_sample - output from get_sample_info
+               dir_path - directory path that the files should be written to
+    """
     output = open(os.path.join(dir_path,\
                     "stats/real_dc_sample_degree.txt") , 'w')
     sample_dc_out = sample_dc.items()
@@ -258,7 +319,20 @@ def make_stats_files(sample_dc,otu_dc,degree_counts,num_con_cat, num_con,\
 
 
 def make_props_files(labels,label_list,dir_path,data,background_color,label_color,prefs):
+    """Creates and writes the props file for cytoscape to automate coloring
+        
+        Input: labels - the metadata header labels
+               label_list - a list containing 1 list for each header in the
+                   mapping file, each list contains all of the possible values
+                   for that header, this is output from get_sample_info.
+               dir_path - directory path that the files should be written to
+               prefs - dictionary of user color choices
+               data - returned by sample_color_prefs_and_map_data_from_options 
+                      from qiime.colors
+               background_color - color to be used for background of network
+               label_color - color to be used for the labels on the network
 
+    """
     cat_connected_num = 0
     mapping=data['map']
     groups_and_colors=iter_color_groups(mapping,prefs)
@@ -293,19 +367,31 @@ def make_props_files(labels,label_list,dir_path,data,background_color,label_colo
         output.close()
 
 def create_network_and_stats(dir_path,map_lines,otu_sample_lines,prefs,data,background_color,label_color):
+    """Creates and writes the edge, node, props, and stats files for the network
+    
+        Input: dir_path - directory path that the files should be written to
+               map_lines - list of lines from mapping file
+               otu_sample_lines - list of lines from OTU table file
+               prefs - dictionary of user color choices
+               data - returned by sample_color_prefs_and_map_data_from_options 
+                      from qiime.colors
+               background_color - color to be used for background of network
+               label_color - color to be used for the labels on the network
+    
+    """
     cat_by_sample, sample_by_cat, num_meta, meta_dict, labels, node_labels,\
             label_list = get_sample_info(map_lines)
-    con_by_sample, node_file_str, edge_file_str,red_node_file_str,\
-            red_edge_file_str, otu_dc, degree_counts,sample_dc, \
+    con_by_sample, node_file, edge_file,red_node_file,\
+            red_edge_file, otu_dc, degree_counts,sample_dc, \
             = get_connection_info(otu_sample_lines, num_meta, meta_dict)
     num_con_cat, num_con = get_num_con_cat(con_by_sample,cat_by_sample)
     num_cat = get_num_cat(sample_by_cat,con_by_sample.keys())
     dir_path = os.path.join(dir_path,"otu_network")
-    make_table_file(edge_file_str, labels, dir_path,"real_edge_table.txt")
-    make_table_file(node_file_str,node_labels,dir_path,"real_node_table.txt")
-    make_table_file(red_edge_file_str, labels, dir_path,\
+    make_table_file(edge_file, labels, dir_path,"real_edge_table.txt")
+    make_table_file(node_file,node_labels,dir_path,"real_node_table.txt")
+    make_table_file(red_edge_file, labels, dir_path,\
            "real_reduced_edge_table.txt")
-    make_table_file(red_node_file_str,node_labels,dir_path,\
+    make_table_file(red_node_file,node_labels,dir_path,\
            "real_reduced_node_table.txt")
     make_stats_files(sample_dc,otu_dc,degree_counts,num_con_cat, num_con,num_cat\
           ,cat_by_sample,dir_path)
