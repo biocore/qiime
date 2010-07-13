@@ -657,7 +657,7 @@ def parse_trflp(lines):
             try:
                 current_row.append(int(count))
             except ValueError:
-                current_row.append(0.)
+                current_row.append(0)
                 
         data.append(current_row)
         
