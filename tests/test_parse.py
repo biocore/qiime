@@ -569,16 +569,16 @@ eigvals\t4.94\t1.79\t1.50
         
         data = \
 """	Bin (10bp)	Bin (20bp)	Bin (30bp)	Bin (40 bp)
-Sample 1	1000	2000	3000	4000
+Samp-le 1	1000	2000	3000	4000
 Sample 2		2000	3000	4000
 Sample 3			3000	4000
 Sample 4				4000
-Sample 5				"""
+Sample 5	25			"""
         samples, otus, data = parse_trflp(data.split('\n'))
         
-        samples_exp = ['Sample_1', 'Sample_2', 'Sample_3', 'Sample_4', 'Sample_5']
+        samples_exp = ['Samp_le_1', 'Sample_2', 'Sample_3', 'Sample_4', 'Sample_5']
         otus_exp = ['Bin__10bp_', 'Bin__20bp_', 'Bin__30bp_', 'Bin__40_bp_']
-        data_exp = array([[1000,    0,    0,    0,    0],\
+        data_exp = array([[1000,    0,    0,    0,    25],\
                           [2000, 2000,    0,    0,    0],\
                           [3000, 3000, 3000,    0,    0],\
                           [4000, 4000, 4000, 4000,    0]])

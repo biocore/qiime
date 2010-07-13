@@ -25,7 +25,7 @@ script_info={}
 script_info['brief_description']="""Convert TRFLP text file to an OTU table"""
 script_info['script_description']="""The input for this script is a TRLFP text file. The output of this script is an OTU table text file that can be use with QIIME for further analysis """
 script_info['script_usage'] = [
-  ("""Usage:""","""You need to pass a TRFLP text, the script will remove not wanted chars sample and otus names, and will add zeros as need it""","""trflp_file_2_otu_table.py -i trflp_file.txt -o otu_table/""")
+  ("""Usage:""","""You need to pass a TRFLP text, the script will remove not wanted chars sample and otus names, and will add zeros as need it""","""%prog -i trflp_file.txt -o otu_table/""")
 ]
 script_info['output_description']= ""
 script_info['required_options']=[
@@ -50,7 +50,7 @@ def main():
        raise IOError, \
         "Output path (%s) not valid.  Does it exist?" % opts.output_path
     
-    samples, otus, data = parse_trflp(open(opts.input_path,'U').readlines())
+    samples, otus, data = parse_trflp(open(opts.input_path,'U'))
     
     output_f = open(opts.output_path, 'w')
     output_f.write(format_otu_table(samples,otus,data, comment='Created with %s' % __file__))

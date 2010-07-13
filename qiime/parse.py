@@ -633,26 +633,32 @@ def parse_qual_scores(qual_files):
 def parse_trflp(lines):
     """Load a trflp file and returns a header and data lists"""
     
+    sample_ids = []
+    otu_ids = []
+    data = []
+    non_alphanum_mask = re.compile('[^\w|^\t]')
+    # not sure why the above regex doesn't cover the following regex...
+    dash_space_mask = re.compile('[ -]')
+    
     for i, line in enumerate(lines):
-       if i==0:
-          samples = []
-  
-          str_mask = re.compile('[^\w|^\t]')
-          otus = [ str_mask.sub('_',l) for l in line.strip().split('\t')]
-          data = [ [ 0 for k in range(len(lines)-1) ] for l in range(len(line.strip().split('\t'))) ]
-          continue
-       else:
-          elements = line.strip().split('\t')
-          for j in range(len(elements)):
-             if j==0:
-                str_mask = re.compile('[ -]')
-                elements[j] = str_mask.sub('_',elements[j])
-                str_mask = re.compile('[^\w|^\t]')
-                samples.append(str_mask.sub('',elements[j]))
-             else:
-                try:
-                   data[j-1][i-1] = int(elements[j])
-                except ValueError:
-                   continue
-                   
-    return samples, otus, array(data)
+        if i==0:
+            # special handling for the first line only
+            for otu_id in line.strip('\n').split('\t')[1:]:
+                otu_ids.append(non_alphanum_mask.sub('_',otu_id))
+            continue
+            
+        # handling of all other lines
+        current_row = []
+        elements = line.strip('\n').split('\t')
+        sample_ids.append(non_alphanum_mask.sub('',\
+                          dash_space_mask.sub('_',elements[0])))
+        
+        for count in elements[1:]:
+            try:
+                current_row.append(int(count))
+            except ValueError:
+                current_row.append(0.)
+                
+        data.append(current_row)
+        
+    return sample_ids, otu_ids, array(data).transpose()
