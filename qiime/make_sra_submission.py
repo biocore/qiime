@@ -186,9 +186,14 @@ def rows_data_as_dicts(header, body):
     for row in body:
         yield dict([(k, v) for k, v in zip(header, map(trim_quotes, row)) if v])
 
-def make_study(study_lines, study_template):
+def make_study(study_lines, study_template, twocol_input_format=True):
     """Returns string for study xml."""
-    info = twocol_data_to_dict(read_tabular_data(study_lines)[1])
+    header, rows = read_tabular_data(study_lines)
+    if twocol_input_format:
+        info = twocol_data_to_dict(rows)
+    else:
+        info_generator = rows_data_as_dicts(header[0], rows)
+        info = info_generator.next()
     pmid = info.get('PMID', '').strip()
     if pmid:
         study_links_block = '\n'+make_study_links(pmid)
@@ -198,10 +203,17 @@ def make_study(study_lines, study_template):
     return study_template % info
 
 def make_submission(submission_lines, submission_template, docnames=None,
-    submission_dir=None):
+    submission_dir=None, twocol_input_format=True):
     """Returns string for submission xml."""
+    header, rows = read_tabular_data(submission_lines)
+    if twocol_input_format:
+        info = twocol_data_to_dict(rows, True)
+    else:
+        info_generator = rows_data_as_dicts(header[0], rows)
+        info = info_generator.next()
+        if 'CONTACT' in info:
+            info['CONTACT'] = info['CONTACT'].split(',')
     docnames = docnames or {}
-    info = twocol_data_to_dict(read_tabular_data(submission_lines)[1], True)
     #build up contacts strings
     contacts = []
     if 'CONTACT' in info:
@@ -874,13 +886,15 @@ def __pretty_xml_helper(element, level=0):
         if level and (not element.tail or not element.tail.strip()):
             element.tail = i
 
-def write_xml_generic(infile_path, template_path, xml_f):
+def write_xml_generic(infile_path, template_path, xml_f, xml_kwargs=None):
     """Writes generic xml based on contents of infilepath, returns filename."""
+    if xml_kwargs is None:
+        xml_kwargs = {}
     template = open(template_path, 'U').read()
     base_path, ext = splitext(infile_path)
     outfile_path = base_path + '.xml'
     outfile = open(outfile_path, 'w')
-    result = xml_f(open(infile_path, 'U'), template)
+    result = xml_f(open(infile_path, 'U'), template, **xml_kwargs)
     outfile.write(result)
     outfile.close()
     return outfile_path

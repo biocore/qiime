@@ -138,7 +138,7 @@ aa\tbb\tcc
 
     def test_make_study(self):
         """make_study should produce expected results given info/template"""
-        study_sample_data = StringIO(study_txt)
+        study_sample_data = StringIO(study_twocol_txt)
         result = make_study(study_sample_data, study_template)
         self.assertEqual(standardize_xml(result), standardize_xml(study_xml))
 
@@ -152,14 +152,25 @@ aa\tbb\tcc
         result = make_study(study_sample_data, study_template)
         self.assertEqual(standardize_xml(result), standardize_xml(study_pmid_missing_xml))
 
+        # Test for row-based data
+        study_sample_data = StringIO(study_manycol_txt)
+        result = make_study(study_sample_data, study_template, twocol_input_format=False)
+        self.assertEqual(standardize_xml(result), standardize_xml(study_xml))        
+
     def test_make_submission(self):
         """make_submission should produce expected results given info/template"""
-        submission_sample_data = StringIO(submission_txt)
+        submission_sample_data = StringIO(submission_twocol_txt)
         result = make_submission(submission_sample_data, submission_template,
             {'study':'study.xml', 'sample':'sample.xml'})
         self.assertEqual(standardize_xml(result), standardize_xml(submission_xml))
 
-        # TODO Rewrite using only temp files.
+        # Test for row-based data
+        submission_sample_data = StringIO(submission_manycol_txt)
+        result = make_submission(submission_sample_data, submission_template,
+            {'study':'study.xml', 'sample':'sample.xml'}, twocol_input_format=False)
+        self.assertEqual(standardize_xml(result), standardize_xml(submission_xml))
+
+        # Test when data file is provided
         fake_tgz_file = tempfile.NamedTemporaryFile(suffix='.tgz')
         submission_sample_data = StringIO(
             submission_with_file_txt % fake_tgz_file.name)
@@ -1523,7 +1534,7 @@ submission_with_file_xml = '''<?xml version="1.0" encoding="UTF-8"?>
 </SUBMISSION>
 '''
 
-study_txt = '''#Field	Value	Example	Comments
+study_twocol_txt = '''#Field	Value	Example	Comments
 STUDY_alias	fierer_hand_study	fierer_handstudy	One study per publication: this is used as an id to link files
 STUDY_TITLE	"The influence of sex, handedness, and washing on the diversity of hand surface bacteria"	"The influence of sex, handedness, and washing on the diversity of hand surface bacteria"	Expected (or actual) title of the paper
 STUDY_TYPE	Metagenomics	Metagenomics	"Should be ""Metagenomics"" for 16S surveys"
@@ -1535,6 +1546,10 @@ PROJECT_ID	34527	34527	"Project ID, assigned by SRA, leave blank if not yet assi
 PMID	19004758	19004758	"PubMed ID of paper describing project, if supplied will write out STUDY_LINK block, can be multiple (comma-delimited)"
 '''
 
+study_manycol_txt = '''
+#STUDY_alias	STUDY_TITLE	STUDY_TYPE	STUDY_ABSTRACT	STUDY_DESCRIPTION	CENTER_NAME	CENTER_PROJECT_NAME	PROJECT_ID	PMID
+fierer_hand_study	"The influence of sex, handedness, and washing on the diversity of hand surface bacteria"	Metagenomics	"Short \'abstract\' with special characters <10%."	Targeted Gene Survey from Human Skin	CCME	NULL	34527	19004758
+'''
 
 study_template = '''<?xml version="1.0" encoding="UTF-8"?>
 <STUDY_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -1616,7 +1631,7 @@ CENTER_PROJECT_NAME	NULL	NULL	"Name of project as used by the sequencing center,
 PROJECT_ID	34527	34527	"Project ID, assigned by SRA, leave blank if not yet assigned."
 '''
 
-submission_txt = '''#Field	Value	Example	Comments
+submission_twocol_txt = '''#Field	Value	Example	Comments
 accession	SRA003492	SRA003492	"leave blank if not assigned yet, e.g. if new submission"
 submission_id	fierer_hand_study	fierer_hand_study	internally unique id for the submission
 center_name	CCME	CCME	name of the center preparing the submission
@@ -1625,6 +1640,11 @@ lab_name	Knight	Knight	"name of lab preparing submission, can differ from center
 submission_date	2009-10-22T01:23:00-05:00	2009-10-22T01:23:00-05:00	timestamp of submission
 CONTACT	Rob Knight;Rob.Knight@Colorado.edu	Rob Knight;Rob.Knight@Colorado.edu	"Use semicolon to separate email address from name, can be multiple contacts."
 CONTACT	Noah Fierer;Noah.Fierer@Colorado.edu	Noah Fierer;Noah.Fierer@Colorado.edu	"Use semicolon to separate email address from name, can be multiple contacts."
+'''
+
+submission_manycol_txt = '''
+#accession	submission_id	center_name	submission_comment	lab_name	submission_date	CONTACT
+SRA003492	fierer_hand_study	CCME	"Barcode submission prepared by osulliva@ncbi.nlm.nih.gov, shumwaym@ncbi.nlm.nih.gov"	Knight	2009-10-22T01:23:00-05:00	Rob Knight;Rob.Knight@Colorado.edu,Noah Fierer;Noah.Fierer@Colorado.edu
 '''
 
 submission_template = '''<?xml version="1.0" encoding="UTF-8"?>

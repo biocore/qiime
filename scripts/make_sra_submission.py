@@ -53,6 +53,8 @@ script_info['optional_options']=[\
         help='three-column, tab-delimited file of experiment attributes [default: %default]'),
     make_option('--experiment_link_fp',
         help='three-column, tab-delimited file of experiment links [default: %default]'),
+    make_option('--multicolumn_input_format', action='store_true', 
+        help='enables the use of input files for study and submission where field values are specified in columns, rather than rows [default: %default]'),
     make_option('-s', '--sff_dir', 
         help='the directory containing the demultiplexed sff files: 1 dir per run [default: %default]'),
     make_option('-o', '--output_dir',
@@ -65,13 +67,18 @@ def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     docnames = {}
+
+    xml_kwargs = {
+        'twocol_input_format': not opts.multicolumn_input_format,
+        }
+
     if opts.input_study_fp:
         docnames['study'] = write_xml_generic(opts.input_study_fp,
-            opts.template_study_fp, make_study)
+            opts.template_study_fp, make_study, xml_kwargs)
 
     if opts.input_sample_fp:
         docnames['sample'] = write_xml_generic(opts.input_sample_fp,
-            opts.template_sample_fp, make_sample)
+            opts.template_sample_fp, make_sample, xml_kwargs)
 
     if opts.input_experiment_fp:
         if not opts.sff_dir:
