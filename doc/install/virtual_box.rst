@@ -54,6 +54,36 @@ Due to licensing restrictions, we cannot package the ``sff tools`` software with
 
 You can safely ignore these, unless you are planning to process ``sff`` files directly (rather than beginning with ``fasta`` and ``qual`` files). If you do plan to process the ``sff`` files directly, you will need to install your copy of ``sff tools`` in the virtual box.
 
+Troubleshooting
+===============
+
+Error when starting the 64-bit QIIME Virtual Box on Windows
+-----------------------------------------------------------
+If you see the following error message when starting the 64-bit QIIME Virtual Box on Windows, follow the instructions below.
+
+::
+	
+	Hardware acceleration has been enabled but is not operational. Your 64-bit guest will fail to detect a 64-bit CPU and will not be able to boot.
+
+By default VT (virtualization technology) comes disabled in Windows. HP has nice instructions on how to fix this, so we point users to those instructions.
+
+Enabling virtualization in the BIOS
+
+1. Shut down the computer and turn it back on. Repeatedly press esc key at startup.
+2. Press the F10 key for BIOS Setup.
+3. Press the right arrow key to System Configuration, select Virtualization Technology and then press the enter key.
+4. Select Enabled and press the enter key.
+5. Press the F10 key and select Yes and press the enter key to save changes.
+The computer automatically restarts. If you cannot enable Virtualization Technology on in your BIOS, check if your BIOS needs to be updated.
+
+These instructions were extracted directly from HPs website `here 
+<http://h10025.www1.hp.com/ewfrf/wc/document?docname=c01959244&cc=us&lc=en&dlc=en&product=3744198>`_.
+
+If this doesn't work, you might need to instead hit F9 to enter the BIOS. See this forum discussion `here <http://forums11.itrc.hp.com/service/forums/questionanswer.do?admit=109447626+1279028363362+28353475&threadId=1120296>`_.
+
+Briefly, on booting the system, hit F9. Enter Advanced Options -> Processor Options -> Intel(R) Virtualization Technology and then hit Enable.
+
+
 .. _32-bit QIIME Virtual Box: http://bmf.colorado.edu/QIIME/QIIME-1.1.0-i386.vdi.gz
 .. _64-bit QIIME Virtual Box: http://bmf.colorado.edu/QIIME/QIIME-1.1.0-amd64.vdi.gz
 .. _VirtualBox: http://www.virtualbox.org/wiki/Downloads
