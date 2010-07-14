@@ -6,12 +6,16 @@
 SRA Submission 
 =========================
 
+QIIME's SRA submission code is changing rapidly in the ``1.1.0-dev`` versions of QIIME. We're making every effort to keep the documentation up-to-date with the code, but if you are interested in using this code you'll most likely want to get on the ``qiime-sra-users`` mailing list to stay current on the state of the code. Head `here <http://groups.google.com/group/qiime-sra-users?hl=en>`_ for information on joining that public group.
+
 Introduction 
 ------------
 
-This tutorial illustrates how to use QIIME for SRA submission of barcoded 16S community sequencing data generated on the Roche 454. To run this tutorial, you'll need to have QIIME installed, as well as the 454 off-instrument tools (``sffinfo``, ``sfffile``).
+This tutorial illustrates how to apply QIIME to submit barcoded 16S community sequencing data to the SRA. 
 
-Future versions of QIIME will likely support similar workflows and tutorials for SRA submission of meta-genomics data, and data generated on the Illumina platforms. Get in touch with qiime.help@colorado.edu if these are important applications for you.
+**To submit your own data to SRA, see** `this document <../documentation/prepare_and_submit_sra.html>`_. This tutorial focuses on a specific example data set. 
+
+To run this tutorial, you'll need to have QIIME installed, as well as the 454 off-instrument tools (``sffinfo``, ``sfffile``). Future versions of QIIME will likely support similar workflows and tutorials for SRA submission of meta-genomics data, and data generated on the Illumina platforms.
 
 This tutorial uses as an example the `Fierer et al. 2008 hand dataset <http://www.pnas.org/content/105/46/17994.long>`_. This represents the first barcoded SRA submission, and the finished product can be found via SRA accession #: `SRS001216 <http://www.ncbi.nlm.nih.gov/sites/entrez?db=sra&term=SRS001216>`_. 
 
@@ -22,7 +26,7 @@ Philosophy of QIIME's SRA submission code
 
 This document and code does not seek to capture the full complexity of what is possible in the SRA. Instead, the goal is to provide a simple pathway for submission to the SRA of the most common types of data. For example, more normalization could be provided through requiring additional tables, but this additional complexity is not justified when the appropriate rows can be copied/pasted/updated in Excel in a few seconds. More flexibility and better normalization is certainly possible and may be supported in future: the focus here is on getting something that works now.
 
-Originally, the plan was to do this as a series of standalone scripts, but this ended up with an unacceptable level of reimplementation of things that are already in QIIME. We have therefore contributed the code into QIIME.
+Originally, the plan was to do this as a series of standalone scripts, but this ended up with an unacceptable level of reimplementation of things that are already in QIIME. We have therefore included the code in QIIME.
 
 In addition to QIIME's standard dependencies, you will need several of QIIME's optional dependencies to complete this tutorial:
 
