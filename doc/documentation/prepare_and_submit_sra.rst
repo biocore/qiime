@@ -35,7 +35,19 @@ Greg will fill in.
 
 Step 2. Generation of template files using a web service.
 ---------------------------------------------------------
-Doug will fill in.
+To generate your template files, please visit the following website:
+
+`http://microbio.me/qiime <http://microbio.me/qiime>`
+
+	* If you already have an account you can use that to log into the website. If not, you can use the links at the bottom to create a new account for yourself.
+	* Once logged in, click the "Create a New Study" link and fill out the form.
+	* After creating a new study, new links will be available on the main page. Click the "Generate a MIENS-compliant metadata template" link to begin the process of generating your template files.
+	* On the new template page you will be presented with all required fields for your MIENS study type(s). You will also have the option of selecting any additional fields that apply to your study. If you do not see a field you'd like to add, scroll to the bottom of the page and use the search utility. If you still do not find the field you wish to add, you may then manually add a column to the appropriate template file after you've generated your template files (make sure these fields are less than 25 characters in length, start with a letter, and contain only letters, numbers, and the "_" character).
+	* Once you've made your field selections, click the "Generate Templates" button at the bottom of the page. You may download each file individually or download the entire bundle as a .zip archive.
+	
+Working with Ontologies:
+
+Within the generated template files is a field reference which describes each field and what the expected values are. For fields that require an ontology value it may be helpful to use the Ontology Lookup utility located on the main page (after creating or selecting a study). You may also wish to browse the ontology online. Links to the referenced ontologies are included in the field reference documentation generated when you created your templates. Look up the field in question and read the description to find the URL of the ontology of interest.
 
 Step 3. Fill in template files to describe your study and data.
 ---------------------------------------------------------------
