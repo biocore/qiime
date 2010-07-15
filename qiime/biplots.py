@@ -97,7 +97,10 @@ def make_mage_taxa(taxa, num_coords, pct_var, scaled=False, scalars=None,
     for id_ in sorted(ids):
         if id_ in coord_dict:
             # note: we display id_[5:] to suppress 'Root;'
-            coord_line = '{%s} %s' %(id_[5:], ' '.join(map(str,coord_dict[id_][:num_coords])))
+            startix = 0
+            if(id_.startswith("Root;")):
+                startix = 5
+            coord_line = '{%s} %s' %(id_[startix:], ' '.join(map(str,coord_dict[id_][:num_coords])))
             # each taxon has a different radius, so we have to create a new list
             result.append('@balllist color=%s radius=%s alpha=%s dimension=%s \
 master={taxa_points} nobutton' % (color, radius_dict[id_], taxon_alpha, num_coords))
