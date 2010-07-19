@@ -14,10 +14,10 @@ Introduction
 This document discusses using QIIME to submit your own barcoded 454 16S community sequencing data to the SRA. When you're ready to start this process you should have your sff files and your metadata mapping file. The following steps are covered: 
 
 	1. Getting an SRA study accession number from SRA.
-	1. Generation of template files using a web service provided by the QIIME team. 
-	1. Fill in template files to describe your study and data.
-	1. Applying the ``process_sra_submission.py`` workflow in QIIME to generate per-sample sff files; screen and remove human contaminants from your sequence set (if desired); and generate the SRA XML files.
-	1. Submit your data to the SRA.
+	2. Generation of template files using a web service provided by the QIIME team. 
+	3. Fill in template files to describe your study and data.
+	4. Applying the ``process_sra_submission.py`` workflow in QIIME to generate per-sample sff files; screen and remove human contaminants from your sequence set (if desired); and generate the SRA XML files.
+	5. Submit your data to the SRA.
 
 In addition to QIIME's standard dependencies, you will need several of QIIME's optional dependencies to complete this process:
 
@@ -26,18 +26,22 @@ In addition to QIIME's standard dependencies, you will need several of QIIME's o
 
 You should refer to the `QIIME install pages <../install/index.html>`_ for all information related to getting up and running with QIIME. 
 
-If you are interested in runner the latter steps with a test data set, you should review the `QIIME SRA submission tutorial <../tutorials/doc_sra_submission.html>`_.
+If you are interested in running the latter steps with a test data set, you should review the `QIIME SRA submission tutorial <../tutorials/doc_sra_submission.html>`_.
 
 
 Step 1. Getting an SRA study accession number from SRA.
 -------------------------------------------------------
-Greg will fill in.
+Go to the `SRA homepage <http://www.ncbi.nlm.nih.gov/Traces/sra>`_ and click the Submit/Submissions tag. Register (only the first time, of course) and log in via the NCBI PDA route. Now, you can create a submission. The Submission ID can be choosen freely (SRA says it should make sense to the submitter). This ID should/must/can (??) be used later as SAMPLE_ALIAS in the submission process. You will receive a SRA accession ID and a new submission without any data loaded.
+
+If you registered as a new user and belong to a center, you might want to consider to be added to the center's user list by contacting sra@ncbi.nlm.nih.gov. 
+
+
 
 Step 2. Generation of template files using a web service.
 ---------------------------------------------------------
 To generate your template files, please visit the following website:
 
-`http://microbio.me/qiime <http://microbio.me/qiime>`
+`http://microbio.me/qiime <http://microbio.me/qiime>`_
 
 	* If you already have an account you can use that to log into the website. If not, you can use the links at the bottom to create a new account for yourself.
 	* Once logged in, click the "Create a New Study" link and fill out the form.
@@ -57,31 +61,34 @@ Step 4. Applying the ``process_sra_submission.py`` workflow in QIIME.
 ---------------------------------------------------------------------
 Greg will fill in.
 
+(That should be mainly covered in the other tutorial, right?)
+
 Step 5. Submit your data to the SRA.
 ------------------------------------
-Need someone to fill in exactly what files are submitted, URLs, how to get an upload account, etc.
+
+SRA distinguishes between two types of submitters: individuals or centers. E.g. the Knight lab has registered a center name with the NCBI called "Center for Comparative Microbial Ecology" (CCME). All projects overseen by this center must be submitted via the project's account (Greg has the credentials for CCME). If you submit as an individual write an email to trace@ncbi.nlm.nih.gov to request the curent ftp address of the anonymous ftp server.
+
+The actual submission consists of several XML files and the demultiplexed sff files, usually produced with make_sra_submission.py or process_sra_submission.py.
+
+Metadata files:
+
+- Study: XML file specifying sequencing study
+- Sample: XML file specifying the target of sequencing
+- Experiment: XML file specifying experimental organization and parameters 
+- Run: One of more XML descriptors linking run data to their experiments
+- Submission XML file specifying submission session
+
+
+To check your files against the XML schema::
+
+   xmllint --schema  http://www.ncbi.nlm.nih.gov/viewvc/v1/trunk/sra/doc/SRA/SRA.run.xsd?view=co run.xml
+
+Replace "run" in the URL with "sample", "study", or "experiment" to validate the other files.
+
+The sff files are already tared and zipped by process_sra_submission.py, but the xml files should be collected in one directory and then be tared and zipped. These two files will be uploaded to the SRA ftp site, usually to the short_read subdirectory. At this point, it's a good idea to send an email to your contact at the SRA (can we give a general email sdress here?) to inform them of your upload.
 
 
 Troubleshooting
 ---------------
 
 
-Standard sra_parameters.txt file for barcoded 16S community sequencing on 454
------------------------------------------------------------------------------
-
-Currently our standard parameters files looks like the following. You can copy and paste this to a text file, and pass it with ``-p`` to ``process_sra_submission.py``. The ``pick_otus:similarity`` value has been carefully chosen to exclude human sequences but include bacterial/archaeal 16S sequences, so it's not a good idea to change that without exploring the affect it will have.
-
-::
-	
-	# split_libraries parameters
-	split_libraries:min-qual-score	5
-	split_libraries:min-seq-length	30
-	split_libraries:max-seq-length	1000
-	split_libraries:barcode-type	12
-	split_libraries:max-homopolymer	1000
-	split_libraries:max-primer-mismatch	100
-	split_libraries:max-ambig	1000
-
-	# pick_otus parameters
-	pick_otus:similarity	0.70
-	pick_otus:enable_rev_strand_match	True
