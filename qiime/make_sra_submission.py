@@ -8,7 +8,7 @@ from os.path import splitext, join
 from sys import stderr
 import xml.etree.ElementTree as ET
 
-"""This script makes the submission xml files for SRA (study, experiment, etc.).
+"""This module makes the submission xml files for SRA (study, experiment, etc.).
 
 Assumes simple tab-delimited text input (allowing examples/comments; produces
 xml output.
@@ -57,61 +57,6 @@ file_wrapper = """ <FILES>
  <FILE filename="%s" checksum_method="MD5" checksum="%s"/>
  </FILES>"""
 
-experiment_set_wrapper = """<?xml version="1.0" encoding="UTF-8"?>
-<EXPERIMENT_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">%s</EXPERIMENT_SET>"""
-
-#note: the experiment wrapper is attributing default reads at the study level, not
-#at the experiment level. we might want to revisit this design decision later.
-experiment_wrapper = """\
-  <EXPERIMENT alias="%(EXPERIMENT_ALIAS)s" center_name="%(EXPERIMENT_CENTER)s">
-    <TITLE>%(EXPERIMENT_TITLE)s</TITLE>
-    <STUDY_REF refname="%(STUDY_REF)s" refcenter="%(SAMPLE_CENTER)s"%(STUDY_ACCESSION_ATTRIBUTE)s/>
-    <DESIGN>
-      <DESIGN_DESCRIPTION>%(EXPERIMENT_DESIGN_DESCRIPTION)s</DESIGN_DESCRIPTION>
-      <SAMPLE_DESCRIPTOR%(DEFAULT_SAMPLE_NAME_ATTRIBUTE)s refcenter="%(DEFAULT_SAMPLE_CENTER)s"%(DEFAULT_SAMPLE_ACCESSION_ATTRIBUTE)s>
-        <POOL>%(POOL_MEMBERS_XML)s        </POOL>
-      </SAMPLE_DESCRIPTOR>
-      <LIBRARY_DESCRIPTOR>
-        <LIBRARY_NAME>%(EXPERIMENT_ALIAS)s</LIBRARY_NAME>
-        <LIBRARY_STRATEGY>%(LIBRARY_STRATEGY)s</LIBRARY_STRATEGY>
-        <LIBRARY_SOURCE>%(LIBRARY_SOURCE)s</LIBRARY_SOURCE>
-        <LIBRARY_SELECTION>%(LIBRARY_SELECTION)s</LIBRARY_SELECTION>
-        <LIBRARY_LAYOUT>
-          <SINGLE></SINGLE>
-        </LIBRARY_LAYOUT>
-        <LIBRARY_CONSTRUCTION_PROTOCOL>%(LIBRARY_CONSTRUCTION_PROTOCOL)s</LIBRARY_CONSTRUCTION_PROTOCOL>
-      </LIBRARY_DESCRIPTOR>%(SPOT_DESCRIPTORS_XML)s
-      </DESIGN>
-      %(PLATFORM_XML)s
-      <PROCESSING>
-        <BASE_CALLS>
-                    <SEQUENCE_SPACE>Base Space</SEQUENCE_SPACE>
-                    <BASE_CALLER>454 BaseCaller</BASE_CALLER>
-        </BASE_CALLS>
-        <QUALITY_SCORES qtype="phred">
-                    <QUALITY_SCORER>454 BaseCaller</QUALITY_SCORER>
-                    <NUMBER_OF_LEVELS>40</NUMBER_OF_LEVELS>
-                    <MULTIPLIER>1.0</MULTIPLIER>
-        </QUALITY_SCORES>
-      </PROCESSING>%(LINK_XML)s%(ATTRIBUTE_XML)s
-  </EXPERIMENT>"""
-
-platform_blocks = { 'Titanium':
-"""    <PLATFORM>
-        <LS454>
-            <INSTRUMENT_MODEL>454 Titanium</INSTRUMENT_MODEL>
-            <FLOW_SEQUENCE>TACG</FLOW_SEQUENCE>
-            <FLOW_COUNT>800</FLOW_COUNT>
-        </LS454>
-    </PLATFORM>""",
-                    'FLX':
-"""    <PLATFORM>
-        <LS454>
-            <INSTRUMENT_MODEL>454 GS FLX</INSTRUMENT_MODEL>
-            <FLOW_SEQUENCE>TACG</FLOW_SEQUENCE>
-            <FLOW_COUNT>400</FLOW_COUNT>
-        </LS454>
-    </PLATFORM>"""}
 
 
 def generate_output_fp(input_fp, ext, output_dir=None):
@@ -138,18 +83,54 @@ def safe_for_xml(s):
     """Makes string s safe for xml by replacing entities."""
     return s.replace('&', '&amp;').replace('"','&quot;').replace("'",'&apos;').replace('<','&lt;').replace('>','&gt;')
 
-def read_tabular_data(lines):
-    """Reads tabular data from lines, skipping blanks"""
-    header, body = [], []
-    for line in lines:
-        line = line.rstrip('\n')
-        if not line:
+def parse_tsv_with_header(tsv_file, data_fcn=None, header_fcn=None):
+    """Parser for TSV files with commented headers
+
+    File format:
+      header line with field names
+      optionally other comment lines starting with #
+      tab-delimited fields
+
+    Accepts keyword arguments data_fcn and header_fcn, which specify
+    string-processing functions for each token found in the body and
+    header of the tsv file.
+
+    Returns a triple of the data, header, and comment lines
+    """
+    if data_fcn is None:
+        data_fcn = lambda x: x
+    if header_fcn is None:
+        header_fcn = lambda x: x
+
+    data = []
+    header = []
+    comments = []
+
+    for line in tsv_file:
+        line = line.rstrip('\n\r')
+        # Skip lines containing only whitespace
+        if not line.strip():
             continue
-        fields = [safe_for_xml(i.strip('"')) for i in line.split('\t')]
         if line.startswith('#'):
-            header.append(fields)
+            line = line[1:]
+            if not header:
+                header = map(header_fcn, line.split('\t'))
+            else:
+                comments.append(line)
         else:
-            body.append(fields)
+            items = map(data_fcn, line.split('\t'))
+            data.append(items)
+
+    return data, header, comments
+
+def read_tabular_data(tabular_file):
+    """Reads tabular data from lines, skipping blanks"""
+    def f(s):
+        return safe_for_xml(s.strip('"'))
+    def g(s):
+        return s.strip()
+    body, header, comments = parse_tsv_with_header(
+        tabular_file, data_fcn=f, header_fcn=g)
     return header, body
 
 def make_study_links(pmid):
@@ -172,9 +153,20 @@ def twocol_data_to_dict(body, is_multiple=False):
             print rec
     return result
 
-def trim_quotes(s):
-    """Trims quotes and whitespace from string."""
-    return s.strip('"').strip()
+def threecol_data_to_dict(body):
+    result = defaultdict(list)
+    for rec in body:
+        try:
+            key = rec[0]
+            v1 = rec[1]
+            v2 = rec[2]
+            result[key].append((v1, v2))
+        except IndexError:
+            print rec
+    return result
+
+def row_data_to_dict(header, row):
+    return dict([(k, v) for k, v in zip(header, row) if v])
 
 def rows_data_as_dicts(header, body):
     """Iterates over rows as dicts where header has keys, each row has vals.
@@ -182,9 +174,8 @@ def rows_data_as_dicts(header, body):
     Omits key-value pairs where the values are empty.
     Assumes that header will be passed as a single row.
     """
-    header = [h.strip('#').strip('"') for h in header] #get rid of junk
     for row in body:
-        yield dict([(k, v) for k, v in zip(header, map(trim_quotes, row)) if v])
+        yield row_data_to_dict(header, row)
 
 def make_study(study_lines, study_template, twocol_input_format=True):
     """Returns string for study xml."""
@@ -192,7 +183,7 @@ def make_study(study_lines, study_template, twocol_input_format=True):
     if twocol_input_format:
         info = twocol_data_to_dict(rows)
     else:
-        info_generator = rows_data_as_dicts(header[0], rows)
+        info_generator = rows_data_as_dicts(header, rows)
         info = info_generator.next()
     pmid = info.get('PMID', '').strip()
     if pmid:
@@ -209,7 +200,7 @@ def make_submission(submission_lines, submission_template, docnames=None,
     if twocol_input_format:
         info = twocol_data_to_dict(rows, True)
     else:
-        info_generator = rows_data_as_dicts(header[0], rows)
+        info_generator = rows_data_as_dicts(header, rows)
         info = info_generator.next()
         if 'CONTACT' in info:
             info['CONTACT'] = info['CONTACT'].split(',')
@@ -267,7 +258,7 @@ def make_sample(sample_lines, sample_template):
     optional_title_fields = ['TAXON_ID', 'COMMON_NAME', 'ANONYMIZED_NAME']
     header, body = read_tabular_data(sample_lines)
     samples = []
-    for d in rows_data_as_dicts(header[0], body):
+    for d in rows_data_as_dicts(header, body):
         attrs = [sample_attribute_wrapper % (k,v) for k, v in 
             sorted(d.items()) if not k in title_fields]
         title_attrs = [opt_sample_field_wrapper % (k, v, k) for k, v in
@@ -292,190 +283,181 @@ def group_lines_by_field(lines, field):
 def make_run_and_experiment(experiment_lines, sff_dir, attribute_file=None,
                             link_file=None):
     """Returns strings for experiment and run xml."""
-    header, body = read_tabular_data(experiment_lines)
-    columns = [i.lstrip('#').strip() for i in header[0]]
-    study_ref_index = columns.index('STUDY_REF')
-    experiment_ref_index = columns.index('EXPERIMENT_ALIAS')
-    studies = group_lines_by_field(body, study_ref_index)
+    columns, body = read_tabular_data(experiment_lines)
 
-    # Process attribute file -- to be refactored.
+    run_set = SraRunSet(sff_dir)
+    experiment_set = SraExperimentSet()
+
+    for line in body:
+        field_dict = dict(zip(columns, line))
+        update_entry_with_deprecated_fields(field_dict)
+        update_entry_with_derived_fields(field_dict)
+        experiment_set.register(field_dict)
+        run_set.register(field_dict)
+
     experiment_attributes = defaultdict(list)
     if attribute_file is not None:
         _, attr_body = read_tabular_data(attribute_file)
-        for elems in attr_body:
-            try:
-                expt_name = elems[0]
-                attribute_name = elems[1]
-                attribute_val = elems[2]
-                experiment_attributes[expt_name].append(
-                    (attribute_name, attribute_val))
-            except IndexError:
-                print ("Not enough items in attribute line (%s), must define "
-                       "experiment name, attribute name, and attribute value. "
-                       "Skipping..." % elems)
+        experiment_attributes = threecol_data_to_dict(attr_body)
 
-    # Process links file -- to be refactored.
     experiment_links = defaultdict(list)
     if link_file is not None:
-        _, attr_body = read_tabular_data(link_file)
-        for elems in attr_body:
-            try:
-                expt_name = elems[0]
-                link_name = elems[1]
-                link_url = elems[2]
-                experiment_links[expt_name].append(
-                    (link_name, link_url))
-            except IndexError:
-                print ("Not enough items in link line (%s), must define "
-                       "experiment name, link name, and link url. "
-                       "Skipping..." % elems)
+        _, link_body = read_tabular_data(link_file)
+        experiment_links = threecol_data_to_dict(link_body)
 
-    experiments = []
-    run_set = SraRunSet()
-    for study_id, study_lines in studies.items():
-        experiment_groups = group_lines_by_field(study_lines, experiment_ref_index)
-        field_dict = {} # to keep the last one in scope for outer block
-        for experiment_id, experiment_lines in experiment_groups.items():
-            #collect unique pool members
-            pool_member_dict = defaultdict(list)
-            for line in experiment_lines:
-                field_dict = dict(zip(columns, line))
-                pool_member_dict[field_dict['POOL_MEMBER_NAME']].append(field_dict)
-
-            # Set up default sample using optional fields
-            if not field_dict.get('DEFAULT_SAMPLE_CENTER'):
-                field_dict['DEFAULT_SAMPLE_CENTER'] = field_dict['SAMPLE_CENTER']
-
-            # Still use SAMPLE_ACCESSION field, but announce
-            # deprecation in favor of DEFAULT_SAMPLE_ACCESSION
-            if 'SAMPLE_ACCESSION' in field_dict:
-                stderr.write(
-                    'Warning: The SAMPLE_ACCESSION field has been deprecated. '
-                    'Please rename the field to DEFAULT_SAMPLE_ACCESSION.\n')
-                sample_acc_DEPRECATED = field_dict.get('SAMPLE_ACCESSION')
-                if sample_acc_DEPRECATED and (not field_dict.get('DEFAULT_SAMPLE_ACCESSION')):
-                    field_dict['DEFAULT_SAMPLE_ACCESSION'] = sample_acc_DEPRECATED
-            default_acc = field_dict.get('DEFAULT_SAMPLE_ACCESSION')
-            field_dict['DEFAULT_SAMPLE_ACCESSION_ATTRIBUTE'] = (
-                ' accession="%s"' % default_acc if default_acc else '')
-
-            # If necessary, derive a default sample name
-            default_name = field_dict.get('DEFAULT_SAMPLE_NAME')
-            # If a default accession number has been provided, we
-            # should not derive the default sample name automatically.
-            if (not default_name) and (not default_acc):
-                default_name = field_dict['STUDY_REF'] + '_default'
-            field_dict['DEFAULT_SAMPLE_NAME_ATTRIBUTE'] = (
-                ' refname="%s"' % default_name if default_name else '')
-
-            #make default pool member dict
-            default_field_dict = dict(zip(columns, experiment_lines[0]))
-            default_pool_member_id = field_dict['STUDY_REF'] + '_default_' + field_dict['RUN_PREFIX']
-            default_field_dict['RUN_ALIAS'] = default_pool_member_id
-            default_field_dict['POOL_MEMBER_FILENAME'] = default_pool_member_id + '.sff'
-            default_field_dict['POOL_MEMBER_NAME'] = ''
-
-            barcode_basecall_table = []
-            primer_basecall_table = []
-            barcodes = set()
-            primers = set()
-            pool_members = []
-            data_blocks = []
-            MEMBER_ORDER = 1
-
-            pool_member_list = [('',[default_field_dict])] + list(sorted(pool_member_dict.items()))
-            for pool_name, pool_field_dicts in pool_member_list:
-                # Assume fields not related to data blocks are
-                # identical, read from first entry
-                field_dict = pool_field_dicts[0]
-
-                key_seq = field_dict['KEY_SEQ']
-                barcode = field_dict['BARCODE']
-                if barcode not in barcodes:
-                    barcodes.add(barcode)
-                    barcode_basecall_table.append(
-                        (field_dict['BARCODE_READ_GROUP_TAG'], barcode))
-                primer = field_dict['PRIMER']
-                if primer and primer not in primers:
-                    primers.add(primer)
-                    primer_basecall_table.append(
-                        (field_dict['PRIMER_READ_GROUP_TAG'], primer))
-                linker = field_dict['LINKER']
-
-                if pool_name:
-                    pool_member_xml = '          ' + ET.tostring(_pool_member_xml(
-                        refname=field_dict.get('SAMPLE_ALIAS'),
-                        refcenter=field_dict.get('SAMPLE_CENTER'),
-                        member_name=field_dict.get('POOL_MEMBER_NAME'),
-                        proportion=field_dict.get('POOL_PROPORTION'),
-                        barcode_tag=field_dict.get('BARCODE_READ_GROUP_TAG'),
-                        primer_tag=field_dict.get('PRIMER_READ_GROUP_TAG'),
-                        accession=field_dict.get('POOL_MEMBER_ACCESSION'),
-                        ))
-                    pool_members.append(pool_member_xml)
-
-                ####################################################
-                # RUN XML
-                ####################################################
-                for pool_field_dict in pool_field_dicts:
-                    run_set.register(pool_field_dict, sff_dir)
-
-            ########################
-            # EXPERIMENT XML
-            ########################
-            field_dict['POOL_MEMBERS_XML'] = '\n' + '\n'.join(pool_members) + '\n'
-
-            spot_descriptor = pretty_xml(_spot_descriptor_xml(
-                key_seq, barcode_basecall_table, linker, primer_basecall_table), 3)
-            field_dict['SPOT_DESCRIPTORS_XML'] = spot_descriptor
-
-            field_dict['PLATFORM_XML'] = platform_blocks[field_dict['PLATFORM']]
-
-            field_dict['ATTRIBUTE_XML'] = pretty_xml(
-                _experiment_attribute_xml(experiment_attributes[experiment_id]), 3)
-            field_dict['LINK_XML'] = pretty_xml(
-                _experiment_link_xml(experiment_links[experiment_id]), 3)
-
-            # Insert study accession attribute, if present.
-            study_acc = field_dict.get('STUDY_ACCESSION')
-            field_dict['STUDY_ACCESSION_ATTRIBUTE'] = (
-                ' accession="%s"' % study_acc if study_acc else '')
-
-            # Insert sample accession attribute, if present.
-            sample_acc = field_dict.get('SAMPLE_ACCESSION')
-            field_dict['SAMPLE_ACCESSION_ATTRIBUTE'] = (
-                ' accession="%s"' % sample_acc if sample_acc else '')
-
-            # Utilize optional fields for library descriptor block
-            if 'LIBRARY_SELECTION' not in field_dict:
-                field_dict['LIBRARY_SELECTION'] = 'PCR'
-            if 'LIBRARY_STRATEGY' not in field_dict:
-                field_dict['LIBRARY_STRATEGY'] = 'AMPLICON'
-            if 'LIBRARY_SOURCE' not in field_dict:
-                field_dict['LIBRARY_SOURCE'] = 'GENOMIC'
-
-            experiments.append(experiment_wrapper % field_dict)
+    for alias, expt in experiment_set.experiments:
+        expt.experiment_attributes = experiment_attributes.get(alias)
+        expt.experiment_links = experiment_links.get(alias)
+        
     run_set_string = '<?xml version="1.0" encoding="UTF-8"?>' + \
                      pretty_xml(run_set.to_xml())
-    return experiment_set_wrapper % ('\n'+'\n'.join(experiments)+'\n'), run_set_string
+    experiment_set_string = '<?xml version="1.0" encoding="UTF-8"?>' + \
+                            pretty_xml(experiment_set.to_xml())
+    return experiment_set_string, run_set_string
 
 
 class SraEntity(object):
     """Base class for elements defined in the SRA's XML schema.
+
+    The SraEntity class forms the foundation for generating valid XML
+    from input files.  The overall strategy is to create a simplified
+    representation of the XML document with a set of SraEntity
+    classes.  If this is implemented properly, users can (1)
+    instantiate an SraEntity object representing the top-level XML
+    document (2) register each line of the input file with the
+    top-level object's register() method, and (3) generate an
+    ElementTree XML representation of the document from the top-level
+    object's to_xml() method.  Each step is described in detail below.
+
+    (1) An instance of the SraEntity class corresponding to the
+    top-level document is created.  Ususally, this constructor has no
+    arguments.
+
+    (2) Each row of an input file is parsed as a dictionary and passed
+    to the top-level SraEntity object, using the register() method.
+    Inside the register() method, the field values of the new entry
+    represented at this level of the document are checked for
+    consistency with previous entries.  Where a new SraEntity
+    sub-element is needed in the document, it is created from the new
+    entry using the from_entry() factory method.  Where an SraEntity
+    sub-element already exists, the new entry is passed to it via the
+    register() method.
+
+    The process of generating a valid document continues as each new
+    entry is registered with the top-level SraEntity.  New elements of
+    the document are generated as the new entry propogates down the
+    document tree, and each entry is checked for consistency with
+    existing field values.  Once all entries are registered with the
+    top-level SraEntity, this object should contain a valid
+    representation of the XML document as a tree of SraEntity objects.
+
+    (3) The XML output is generated via the to_xml() method of the
+    top-level entity.  This method calls the to_xml() method on all
+    sub-elements, and returns an ElementTree representation of the XML
+    document.
     """
 
-    def from_entry(self, entry_dict):
-        """Factory method to build an SraEntity from a dict of field
-        entries in an tabular input file.
+    """Maps object attributes to required fields in a table entry."""
+    required_fields = {}
+    """Maps object attributes to optional fields in a table entry."""
+    optional_fields = {}
+
+    def __init__(self, attrs):
+        """Create a new SRA entity from a dict of attributes.
+
+        Sets instance attributes to the values provided in attrs.
+
+        Using a class-level list of attribute names, it ensures that
+        all necessary instance attributes are set, even if they are
+        not provided in attrs (None is the default value).  Provided
+        attributes must be found in the class-level list of attribute
+        names, or a ValueError is raised.
+
+        This method does NOT check to make sure that all required
+        attributes are present in the attrs dictionary.  This
+        responsibility falls on the register() and from_entry()
+        methods.
         """
+        self._check_attrs(attrs)
+        for attribute_name in self.attribute_names:
+            val = attrs.get(attribute_name)
+            setattr(self, attribute_name, val)
+
+    @property
+    def attribute_names(self):
+        return self.required_fields.keys() + self.optional_fields.keys()
+
+    def _check_attrs(self, attrs):
+        """Ensure that provided attribute keys are valid.
+
+        To be valid, a provided key must be found in the class-level
+        list of attribute names.
+        """
+        registered_attrs = set(self.attribute_names)
+        provided_attrs = set(attrs.keys())
+        unrecognized_attrs = provided_attrs.difference(registered_attrs)
+        if unrecognized_attrs:
+            raise ValueError(
+                'Unrecognized keys provided in attribute dictionary: %s' % \
+                ', '.join(unrecognized_attrs))
+
+    def register(self, entry):
+        """Register a new table entry with an existing SRA element.
+
+        In the default case, this method checks that the relevant
+        attributes of the new entry are consistent with the existing
+        attributes.  This method raises a ValueError if an
+        inconsistency is found.
+        """
+        for attr_name, field_name in self.required_fields.items():
+            observed_value = entry[field_name]
+            expected_value = getattr(self, attr_name)
+            if observed_value != expected_value:
+                raise ValueError(
+                    'Observed value "%s" for required field %s is not '
+                    'consistent with existing value "%s".' % (
+                        observed_value, field_name, expected_value))
+        for attr_name, field_name in self.optional_fields.items():
+            observed_value = entry.get(field_name)
+            expected_value = getattr(self, attr_name)
+            if observed_value != expected_value:
+                raise ValueError(
+                    'Observed value "%s" for optional field %s is not '
+                    'consistent with existing value "%s".' % (
+                        observed_value, field_name, expected_value))
+
+    @classmethod
+    def from_entry(cls, entry):
+        """Factory method to create a new SraEntity from a table entry."""
+        attrs = cls.gather_instance_attributes(entry)
+        return cls(attrs)
+
+    def to_xml(self):
+        """Generate an ElementTree XML representation of the object."""
         raise NotImplementedError(
             'This method is not implemented in the base class.')
 
-    def to_xml(self):
-        """Generate an ElementTree XML representation of the object.
+    @classmethod
+    def gather_instance_attributes(cls, entry):
+        """Gather object attribute values from a table entry.
+
+        The mappings between object attributes and field names of the
+        table entry are specified in two class-level dictionaries:
+        required_fields and optional_fields.
+
+        Raises a KeyError if a required field is not present.
         """
-        raise NotImplementedError(
-            'This method is not implemented in the base class.')
+        attrs = {}
+        for attr_name, field_name in cls.required_fields.items():
+            try:
+                attrs[attr_name] = entry[field_name]
+            except KeyError:
+                raise KeyError(
+                    'Required field %s was not found for the following line '
+                    'item in the input file: %s' % (field_name, entry))
+        for attr_name, field_name in cls.optional_fields.items():
+            attrs[attr_name] = entry.get(field_name)
+        return attrs
     
     def set_xml_attributes(self, xml_element, instance_attributes):
         """Transfer attributes from an instance to an XML element.
@@ -492,44 +474,525 @@ class SraEntity(object):
                 xml_element.set(attr, val)
 
 
-class SraRun(SraEntity):
-    """Class representing an SRA Run entity
-
-    Data blocks associated with the run are stored in the data_blocks
-    instance attribute.
+class SraExperimentSet(SraEntity):
+    """Class representing a set of SRA Experiment entities.
     """
 
-    def __init__(self, alias=None, center_name=None, run_center=None,
-                 refname=None, refcenter=None):
-        """Create a new SRA Run.
-
-        The keyword arguments represent attributes in the output XML.
-        The attributes alias, center_name, and run_center are passed
-        to the RUN element.  The refname and refcenter attributes are
-        associated with the child element, EXPERIMENT_REF.
+    def __init__(self):
+        """Create a new SRA experiment set.
         """
-        self.alias = alias
-        self.center_name = center_name
-        self.run_center = run_center
-        self.refname = refname
-        self.refcenter = refcenter
-        self.data_blocks = []
+        self.experiments = []
 
-    @classmethod
-    def from_entry(cls, experiment_entry):
-        """Factory method to create a new run from an experiment line.
+    def register(self, entry):
+        """Register a new entry with the experiment set.
+
+        New entries are assigned to experiments based on the value of
+        the EXPERIMENT_ALIAS field.
         """
-        return SraRun(
-            alias=experiment_entry.get('RUN_ALIAS'),
-            center_name=experiment_entry.get('RUN_CENTER'),
-            run_center=experiment_entry.get('RUN_CENTER'),
-            refname=experiment_entry.get('EXPERIMENT_ALIAS'),
-            refcenter=experiment_entry.get('STUDY_CENTER'),
-            )
+        is_registered = False
+        # Avoid raising a KeyError if EXPERIMENT_ALIAS is missing.
+        # The error will be raised with a better message in
+        # SraExperiment.from_entry()
+        entry_alias = entry.get('EXPERIMENT_ALIAS')
+        # Use list of tuples instead of dict to preserve ordering
+        for alias, experiment in self.experiments:
+            if alias == entry_alias:
+                experiment.register(entry)
+                is_registered = True
+                continue
+        if not is_registered:
+            new_experiment = SraExperiment.from_entry(entry)
+            new_experiment.register(entry)
+            self.experiments.append((entry_alias, new_experiment))
 
     def to_xml(self):
-        """Create an ElementTree XML object for the SRA RUN entity.
+        """Create an ElementTree XML object for the SRA EXPERIMENT_SET entity."""
+        root = ET.Element('EXPERIMENT_SET')
+        root.set('xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance')
+        for alias, expt in self.experiments:
+            root.append(expt.to_xml())
+        if not self.experiments:
+            root.text = '\n'
+        return root
+
+class SraExperiment(SraEntity):
+    """Class representing an SRA Experiment entity."""
+    
+    required_fields = {
+        'alias': 'EXPERIMENT_ALIAS',
+        'center_name': 'EXPERIMENT_CENTER',
+        'title': 'EXPERIMENT_TITLE',
+        'design_description': 'EXPERIMENT_DESIGN_DESCRIPTION',
+        'library_strategy': 'LIBRARY_STRATEGY',
+        'library_source': 'LIBRARY_SOURCE',
+        'library_selection': 'LIBRARY_SELECTION',
+        'library_construction_protocol': 'LIBRARY_CONSTRUCTION_PROTOCOL',
+        }
+
+    def __init__(self, attrs, study_ref, platform, sample_descriptor,
+                 spot_descriptor, experiment_links=None,
+                 experiment_attributes=None):
+        """Create a new SRA Experiment.
+
+        A valid experiment requires the following child entities,
+        which are provided as positional arguments: SraStudyRef,
+        SraPlatform, SraSampleDescriptor, and SraSpotDescriptor.
         """
+        super(SraExperiment, self).__init__(attrs)
+        self.study_ref = study_ref
+        self.platform = platform
+        self.sample_descriptor = sample_descriptor
+        self.spot_descriptor = spot_descriptor
+        self.experiment_links = experiment_links
+        self.experiment_attributes = experiment_attributes
+
+    @classmethod
+    def from_entry(cls, entry):
+        """Factory method to create a new experiment from a table entry."""
+        attrs = cls.gather_instance_attributes(entry)
+        platform = SraPlatform.from_entry(entry)
+        study_ref = SraStudyRef.from_entry(entry)
+        sample_descriptor = SraSampleDescriptor.from_entry(entry)
+        spot_descriptor = SraSpotDescriptor.from_entry(entry)
+        return cls(attrs, study_ref, platform, sample_descriptor, spot_descriptor)
+
+    def register(self, entry):
+        """Register a new table entry with the experiment."""
+        super(SraExperiment, self).register(entry)
+        self.platform.register(entry)
+        self.study_ref.register(entry)
+        self.sample_descriptor.register(entry)
+        self.spot_descriptor.register(entry)
+
+    def __library_descriptor_xml(self):
+        ld_elem = ET.Element('LIBRARY_DESCRIPTOR')
+        ET.SubElement(ld_elem, 'LIBRARY_NAME').text = self.alias
+        ET.SubElement(ld_elem, 'LIBRARY_STRATEGY').text = self.library_strategy
+        ET.SubElement(ld_elem, 'LIBRARY_SOURCE').text = self.library_source
+        ET.SubElement(ld_elem, 'LIBRARY_SELECTION').text = self.library_selection
+        ll_elem = ET.SubElement(ld_elem, 'LIBRARY_LAYOUT')
+        ET.SubElement(ll_elem, 'SINGLE')
+        lcp_elem = ET.SubElement(ld_elem, 'LIBRARY_CONSTRUCTION_PROTOCOL')
+        lcp_elem.text = self.library_construction_protocol
+        return ld_elem
+
+    @staticmethod
+    def __processing_xml():
+        proc_elem = ET.Element('PROCESSING')
+        bc_elem = ET.SubElement(proc_elem, 'BASE_CALLS')
+        ET.SubElement(bc_elem, 'SEQUENCE_SPACE').text = 'Base Space'
+        ET.SubElement(bc_elem, 'BASE_CALLER').text = '454 BaseCaller'
+        qs_elem = ET.SubElement(proc_elem, 'QUALITY_SCORES', qtype='phred')
+        ET.SubElement(qs_elem, 'QUALITY_SCORER').text = '454 BaseCaller'
+        ET.SubElement(qs_elem, 'NUMBER_OF_LEVELS').text = '40'
+        ET.SubElement(qs_elem, 'MULTIPLIER').text = '1.0'
+        return proc_elem
+
+    def to_xml(self):
+        """Create an ElementTree XML object for the SRA EXPERIMENT entity."""
+        root = ET.Element('EXPERIMENT')
+        self.set_xml_attributes(root, ['alias', 'center_name'])
+        ET.SubElement(root, 'TITLE').text = self.title
+        root.append(self.study_ref.to_xml())
+        design_elem = ET.SubElement(root, 'DESIGN')
+        dd_elem = ET.SubElement(design_elem, 'DESIGN_DESCRIPTION')
+        dd_elem.text = self.design_description
+
+        design_elem.append(self.sample_descriptor.to_xml())
+        design_elem.append(self.__library_descriptor_xml())
+        design_elem.append(self.spot_descriptor.to_xml())
+        root.append(self.platform.to_xml())
+        root.append(self.__processing_xml())
+        
+        if self.experiment_links:
+            root.append(_experiment_link_xml(self.experiment_links))
+        if self.experiment_attributes:
+            root.append(_experiment_attribute_xml(self.experiment_attributes))
+        
+        return root
+
+
+class SraStudyRef(SraEntity):
+    """Class representing an SRA Study Ref entity."""
+
+    optional_fields = {
+        'refcenter': 'SAMPLE_CENTER',
+        'refname': 'STUDY_REF',
+        'accession': 'STUDY_ACCESSION',
+        }
+
+    def to_xml(self):
+        """Create an ElementTree XML object for the SRA STUDY_REF entity."""
+        root = ET.Element('STUDY_REF')
+        self.set_xml_attributes(root, ['refname', 'refcenter', 'accession'])
+        return root
+
+
+class SraPlatform(SraEntity):
+    """Class representing an SRA Platform entity."""
+    
+    required_fields = {
+        'platform': 'PLATFORM',
+        }
+    standard_platforms = {
+        'FLX': {
+            'instrument_model': '454 GS FLX',
+            'flow_sequence': 'TACG',
+            'flow_count': '400',
+            },
+        'Titanium': {
+            'instrument_model': '454 Titanium',
+            'flow_sequence': 'TACG',
+            'flow_count': '800',            
+            },
+        }
+
+    @classmethod
+    def from_entry(cls, entry):
+        """Factory method to create a new platform from a table entry."""
+        platform = entry['PLATFORM']
+        if platform not in cls.standard_platforms:
+            raise ValueError(
+                'Platform %s not recognized (supported options are %s)' % \
+                (platform, cls.standard_platforms.keys()))
+        return super(SraPlatform, cls).from_entry(entry)
+
+    def to_xml(self):
+        """Create an ElementTree XML object for the SRA PLATFORM entity."""
+        platform_info = self.standard_platforms[self.platform]
+        root = ET.Element('PLATFORM')
+        ls454_elem = ET.SubElement(root, 'LS454')
+        ET.SubElement(ls454_elem, 'INSTRUMENT_MODEL').text = \
+            platform_info['instrument_model']
+        ET.SubElement(ls454_elem, 'FLOW_SEQUENCE').text = \
+            platform_info['flow_sequence']
+        ET.SubElement(ls454_elem, 'FLOW_COUNT').text = \
+            platform_info['flow_count']
+        return root
+
+
+class SraSpotDescriptor(SraEntity):
+    """Class representing an SRA Spot Descriptor entity."""
+
+    required_fields = {
+        'adapter': 'KEY_SEQ',
+        }
+    optional_fields = {
+        'linker': 'LINKER',
+        }
+    
+    def __init__(self, attrs):
+        """Create a new SRA Spot Descriptor."""
+        super(SraSpotDescriptor, self).__init__(attrs)
+        self.barcode_basecalls = []
+        self.primer_basecalls = []
+        self.barcodes = set()
+        self.primers = set()
+
+    def register(self, entry):
+        """Register a new table entry with the spot descriptor."""
+        super(SraSpotDescriptor, self).register(entry)
+        
+        barcode = entry.get('BARCODE')
+        if barcode and barcode not in self.barcodes:
+            self.barcode_basecalls.append(SraBarcodeBasecall.from_entry(entry))
+            self.barcodes.add(barcode)
+
+        primer = entry.get('PRIMER')
+        if primer and primer not in self.primers:
+            self.primer_basecalls.append(SraPrimerBasecall.from_entry(entry))
+            self.primers.add(primer)
+
+    def __adapter_spec_xml(self, read_index):
+        root = ET.Element('READ_SPEC')
+        ET.SubElement(root, 'READ_INDEX').text = str(read_index)
+        ET.SubElement(root, 'READ_CLASS').text = 'Technical Read'
+        ET.SubElement(root, 'READ_TYPE').text = 'Adapter'
+        ET.SubElement(root, 'EXPECTED_BASECALL').text = self.adapter
+        return root
+
+    def __barcode_spec_xml(self, read_index):
+        root = ET.Element('READ_SPEC')
+        ET.SubElement(root, 'READ_INDEX').text = str(read_index)
+        # According to SRA.experiment.xsd v1.1, the READ_LABEL element
+        # must appear immediately following the READ_INDEX
+        ET.SubElement(root, 'READ_LABEL').text = 'barcode'
+        ET.SubElement(root, 'READ_CLASS').text = 'Technical Read'
+        ET.SubElement(root, 'READ_TYPE').text = 'BarCode'
+        table_elem = ET.SubElement(root, 'EXPECTED_BASECALL_TABLE')        
+        for b in self.barcode_basecalls:
+            table_elem.append(b.to_xml())
+        return root
+
+    def __linker_spec_xml(self, read_index):
+        root = ET.Element('READ_SPEC')
+        ET.SubElement(root, 'READ_INDEX').text = str(read_index)
+        ET.SubElement(root, 'READ_LABEL').text = 'linker'
+        ET.SubElement(root, 'READ_CLASS').text = 'Technical Read'
+        ET.SubElement(root, 'READ_TYPE').text = 'Linker'
+        ET.SubElement(root, 'EXPECTED_BASECALL').text = self.linker
+        return root
+
+    def __primer_spec_xml(self, read_index):
+        root = ET.Element('READ_SPEC')
+        ET.SubElement(root, 'READ_INDEX').text = str(read_index)
+        ET.SubElement(root, 'READ_LABEL').text = 'rRNA_primer'
+        ET.SubElement(root, 'READ_CLASS').text = 'Technical Read'
+        ET.SubElement(root, 'READ_TYPE').text = 'Primer'
+        table_elem = ET.SubElement(root, 'EXPECTED_BASECALL_TABLE')        
+        for b in self.primer_basecalls:
+            table_elem.append(b.to_xml())
+        return root
+
+    def __application_spec_xml(self, read_index):
+        root = ET.Element('READ_SPEC')
+        ET.SubElement(root, 'READ_INDEX').text = str(read_index)
+        ET.SubElement(root, 'READ_CLASS').text = 'Application Read'
+        ET.SubElement(root, 'READ_TYPE').text = 'Forward'
+        prev_index = int(read_index) - 1
+        order_elem = ET.SubElement(root, 'RELATIVE_ORDER')
+        order_elem.set('follows_read_index', str(prev_index))
+        return root
+
+    def to_xml(self):
+        """Create an ElementTree XML object for the SRA SPOT_DESCRIPTOR entity."""
+        root = ET.Element('SPOT_DESCRIPTOR')
+        decode_elem = ET.SubElement(root, 'SPOT_DECODE_SPEC')
+        i = 0
+        decode_elem.append(self.__adapter_spec_xml(i))
+        i += 1
+        if self.barcode_basecalls:
+            decode_elem.append(self.__barcode_spec_xml(i))
+            i += 1
+        if self.linker:
+            decode_elem.append(self.__linker_spec_xml(i))
+            i += 1
+        if self.primers:
+            decode_elem.append(self.__primer_spec_xml(i))
+            i += 1
+        decode_elem.append(self.__application_spec_xml(i))
+        return root
+
+
+class SraBarcodeBasecall(SraEntity):
+    """Class representing an SRA Basecall entity for a barcode."""
+
+    required_fields = {
+        'basecall': 'BARCODE',
+        'read_group_tag': 'BARCODE_READ_GROUP_TAG',
+        }
+
+    def to_xml(self):
+        """Create an ElementTree XML object for the SRA BASECALL entity."""
+        root = ET.Element('BASECALL')
+        root.set('read_group_tag', self.read_group_tag)
+        root.set('min_match', str(len(self.basecall)))
+        root.set('max_mismatch', '0')
+        root.set('match_edge', 'full')
+        root.text = self.basecall
+        return root
+
+
+class SraPrimerBasecall(SraEntity):
+    """Class representing an SRA Basecall entity for a primer."""
+
+    required_fields = {
+        'basecall': 'PRIMER',
+        'read_group_tag': 'PRIMER_READ_GROUP_TAG',
+        }
+
+    def to_xml(self):
+        """Create an ElementTree XML object for the SRA BASECALL entity."""
+        root = ET.Element('BASECALL')
+        root.set('read_group_tag', self.read_group_tag)
+        root.set('min_match', str(len(self.basecall)))
+        root.set('max_mismatch', '0')
+        root.set('match_edge', 'full')
+        root.text = self.basecall
+        return root
+
+
+class SraSampleDescriptor(SraEntity):
+    """Class representing an SRA Sample Descriptor entity."""
+
+    optional_fields = {
+        'refcenter': 'DEFAULT_SAMPLE_CENTER',
+        'refname': 'DEFAULT_SAMPLE_NAME',
+        'accession': 'DEFAULT_SAMPLE_ACCESSION',
+        }
+
+    def __init__(self, attrs):
+        """Create a new SRA dample descriptor."""
+        super(SraSampleDescriptor, self).__init__(attrs)
+        self.pool_members = []
+
+    def register(self, entry):
+        """Register a new table entry with the sample descriptor."""
+        super(SraSampleDescriptor, self).register(entry)
+        self.pool_members.append(SraPoolMember.from_entry(entry))
+
+    def to_xml(self):
+        """Create an ElementTree XML object for the SRA SAMPLE_DESCRIPTOR entity."""
+        root = ET.Element('SAMPLE_DESCRIPTOR')
+        self.set_xml_attributes(root, ['refname', 'refcenter', 'accession'])
+        if self.pool_members:
+            pool_elem = ET.SubElement(root, 'POOL')
+            for m in self.pool_members:
+                pool_elem.append(m.to_xml())
+        return root
+
+
+class SraPoolMember(SraEntity):
+    """Class representing an SRA Pool Member entity."""
+
+    required_fields = {
+        'refname': 'SAMPLE_ALIAS',
+        'refcenter': 'SAMPLE_CENTER',
+        'member_name': 'POOL_MEMBER_NAME',
+        'proportion': 'POOL_PROPORTION',
+        }
+    optional_fields = {
+        'accession': 'POOL_MEMBER_ACCESSION',
+        'barcode_tag': 'BARCODE_READ_GROUP_TAG',
+        'primer_tag': 'PRIMER_READ_GROUP_TAG',
+        }
+
+    def __init__(self, attrs, barcode_tag=None, primer_tag=None):
+        """Create a new SRA Pool Member.
+
+        According to the SRA schema, all MEMBER attributes are
+        optional, including member_name.  This constructor is true to
+        the SRA specification, although we can't think of a case where
+        it would be useful to create a MEMBER element with no
+        attributes.
+
+        According to the SRA schema, a MEMBER element must contain at
+        least one READ_LABEL.  Therefore, this method raises a
+        ValueError if the barcode read group tag and the primer read
+        group tag are both None.
+        """
+        super(SraPoolMember, self).__init__(attrs)
+        if (self.barcode_tag is None) and (self.primer_tag is None):
+            raise ValueError(
+                'Must provide either barcode read group tag or primer read '
+                'group tag to create a pool member.')
+
+    def to_xml(self):
+        """Create an ElementTree XML object for the SRA MEMBER entity."""
+        root = ET.Element('MEMBER')
+        self.set_xml_attributes(
+            root, ['refname', 'refcenter', 'member_name', 'proportion', 'accession'])
+        if self.barcode_tag:
+            barcode_elem = ET.SubElement(
+                root, 'READ_LABEL', read_group_tag=self.barcode_tag)
+            barcode_elem.text = 'barcode'
+        if self.primer_tag:
+            primer_elem = ET.SubElement(
+                root, 'READ_LABEL', read_group_tag=self.primer_tag)
+            primer_elem.text = 'rRNA_primer'
+        return root
+
+
+class SraRunSet(SraEntity):
+    """Class representing a set of SRA Run entities.
+
+    SraRunSet manages the list of runs, as well as default files for each run.
+    """
+
+    def __init__(self, data_dir):
+        """Create a new set of SRA Run entities."""
+        self.data_dir = data_dir
+        self.runs = []
+        self.default_entries = set()
+
+    def register(self, entry):
+        """Register a new table entry with the SRA Run Set.
+
+        Searches for each file in the data directory under a folder
+        named RUN_PREFIX.  If the file is found, this method computes
+        the checksum and returns the SraFile object.  If the file is
+        not found, the method prints a warning to stderr and returns
+        None.
+        """
+        default_entry_identifier = (entry['STUDY_REF'], entry['EXPERIMENT_ALIAS'])
+        if not default_entry_identifier in self.default_entries:
+            default_entry = self._create_default_entry(entry)
+            checksum = self._update_entry_with_checksum(default_entry)
+            if checksum:
+                default_run = SraRun.from_entry(default_entry)
+                default_run.register(default_entry)
+                self.runs.append(default_run)
+                self.default_entries.add(default_entry_identifier)
+
+        checksum = self._update_entry_with_checksum(entry)
+        if checksum:
+            run = SraRun.from_entry(entry)
+            run.register(entry)
+            self.runs.append(run)
+
+    def _create_default_entry(self, entry):
+        default_entry = copy.deepcopy(entry)
+        default_entry['RUN_ALIAS'] = default_entry['DEFAULT_RUN_ALIAS']
+        default_entry['POOL_MEMBER_FILENAME'] = \
+            default_entry['DEFAULT_SAMPLE_FILENAME']
+        default_entry['POOL_MEMBER_NAME'] = ''
+        return default_entry
+
+    def _update_entry_with_checksum(self, entry, warn=True):
+        """Find the data file and update the entry dictionary with its checksum.
+
+        If the data file is not found, the CHECKSUM field is not set.
+
+        In addition to the side-effect of updating the CHECKSUM field of the entry, the resulting value of the
+        """
+        if not entry.get('CHECKSUM'):
+            filepath = os.path.join(
+                self.data_dir, entry['RUN_PREFIX'], entry['POOL_MEMBER_FILENAME'])
+            if os.path.exists(filepath):
+                entry['CHECKSUM'] = md5_path(filepath)
+            else:
+                if warn:
+                    stderr.write(
+                        'SFF file %s was not found (maybe because no '
+                        'sequences were recovered).\n' % filepath)
+        return entry.get('CHECKSUM')
+
+    def to_xml(self):
+        """Create an ElementTree XML object for the SRA RUN_SET entity."""
+        root = ET.Element('RUN_SET')
+        root.set('xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance')
+        for run in self.runs:
+            root.append(run.to_xml())
+        if not self.runs:
+            root.text = '\n'
+        return root
+
+
+class SraRun(SraEntity):
+    """Class representing an SRA Run entity."""
+
+    required_fields = {
+        'alias': 'RUN_ALIAS',
+        'center_name': 'RUN_CENTER',
+        'run_center': 'RUN_CENTER',
+        'refname': 'EXPERIMENT_ALIAS',
+        'refcenter': 'STUDY_CENTER',
+        }
+
+    def __init__(self, attrs):
+        """Create a new SRA Run entity."""
+        super(SraRun, self).__init__(attrs)
+        self.data_blocks = []
+
+    def register(self, entry):
+        """Register a new table entry with the run."""
+        data_block = SraDataBlock.from_entry(entry)
+        data_block.register(entry)
+        data_block.serial = str(len(self.data_blocks) + 1)
+        self.data_blocks.append(data_block)
+
+    def to_xml(self):
+        """Create an ElementTree XML object for the SRA RUN entity."""
         root = ET.Element('RUN')
         self.set_xml_attributes(root, ['alias', 'center_name', 'run_center'])
         expt_elem = ET.SubElement(root, 'EXPERIMENT_REF')
@@ -541,11 +1004,16 @@ class SraRun(SraEntity):
 
 
 class SraDataBlock(SraEntity):
-    """Class representing an SRA Data Block entity.
-    """
+    """Class representing an SRA Data Block entity."""
+
+    optional_fields = {
+        'member_name': 'POOL_MEMBER_NAME',
+        'name': 'RUN_PREFIX',
+        'region': 'REGION',
+        }
     
-    def __init__(self, member_name, serial='1', name=None, region=None):
-        """Create a new SRA data block.
+    def __init__(self, attrs):
+        """Create a new SRA Data Block entity.
 
         The member_name attribute specifies the pool member to which
         this data block applies.  If an empty string is passed, this
@@ -553,31 +1021,21 @@ class SraDataBlock(SraEntity):
         attribute is used by the SRA to refer to the default sample.
         If member_name is None, the attribute is not set in the XML.
 
-        The remaining attributes of the DATA_BLOCK element are
-        provided as optional keyword arguments.  All attributes,
-        including member_name, are optional according to the SRA
-        schema.  As a convenience, the default value of the 'serial'
-        attribute is set to 1.
+        All attributes of the DATA_BLOCK, including member_name, are
+        optional according to the SRA schema.  As a convenience, the
+        default value of the 'serial' attribute is set to 1.
         """
-        self.member_name = member_name
-        self.serial = serial
-        self.name = name
-        self.region = region
+        super(SraDataBlock, self).__init__(attrs)
+        self.serial = '1'
         self.files = []
 
-    @classmethod
-    def from_entry(cls, experiment_entry):
-        """Factory method to create a new data block from an experiment line.
-        """
-        return SraDataBlock(
-            experiment_entry.get('POOL_MEMBER_NAME'),
-            name=experiment_entry.get('RUN_PREFIX'),
-            region=experiment_entry.get('REGION'),
-            )
+    def register(self, entry):
+        """Register a new table entry with the data block."""
+        super(SraDataBlock, self).register(entry)
+        self.files.append(SraFile.from_entry(entry))
 
     def to_xml(self):
-        """Create an ElementTree XML object for the SRA DATA_BLOCK entity.
-        """
+        """Create an ElementTree XML object for the SRA DATA_BLOCK entity."""
         root = ET.Element('DATA_BLOCK')
         if self.member_name is not None:
             root.set('member_name', self.member_name)
@@ -590,141 +1048,142 @@ class SraDataBlock(SraEntity):
 
 
 class SraFile(SraEntity):
-    """Class representing an SRA File entity.
-    """
+    """Class representing an SRA File entity."""
 
-    def __init__(self, filename=None, filetype=None, checksum_method=None,
-                 checksum=None):
-        """Create a new SRA File.
-
-        Keyword arguments correspond to File attributes in the output
-        XML.
-        """
-        self.filename = filename
-        self.filetype = filetype
-        self.checksum_method = checksum_method
-        self.checksum = checksum
+    required_fields = {
+        'filename': 'POOL_MEMBER_FILENAME',
+        'checksum': 'CHECKSUM',
+        }
 
     @classmethod
-    def from_entry(cls, experiment_entry, data_dir):
-        """Factory method to register a new file from an experiment entry.
-
-        Searches for the file in the data directory under a folder
-        named RUN_PREFIX.  If the file is found, this method computes
-        the checksum and returns the SraFile object.  If the file is
-        not found, the method prints a warning to stderr and returns
-        None.
-        """
-        vals = derive_default_run_fields(experiment_entry)
-        filepath = os.path.join(
-            data_dir, vals['RUN_PREFIX'], vals['POOL_MEMBER_FILENAME'])
-        if not os.path.exists(filepath):
-            stderr.write(
-                'SRA Run file %s not found, maybe because no sequences were '
-                'recovered.\n' % filepath)
-            return None
-        md5sum = md5_path(filepath)
-        return SraFile(
-            filename=vals.get('POOL_MEMBER_FILENAME'), filetype='sff',
-            checksum_method='MD5', checksum=md5sum,)
+    def from_entry(cls, entry):
+        """Factory method to register a new file from an experiment entry."""
+        return super(SraFile, cls).from_entry(entry)
 
     def to_xml(self):
-        """Create an ElementTree XML object for the SRA FILE entity."""
+        """Create an ElementTree XML object for the SRA FILE element."""
         root = ET.Element('FILE')
-        self.set_xml_attributes(
-            root, ['filename', 'filetype', 'checksum_method', 'checksum'])
+        self.set_xml_attributes(root, ['filename', 'checksum'])
+        root.set('filetype', 'sff')
+        root.set('checksum_method', 'MD5')
         return root
 
-class SraRunSet(SraEntity):
-    """Class representing a set of SRA Run entities.
+
+def update_entry_with_deprecated_fields(entry, warn=True):
+    """Move values from deprecated fields to valid fields.
+
+    Deprecated fields:
+      - SAMPLE_ACCESSION (has become DEFAULT_SAMPLE_ACCESSION)
     """
+    deprecated_fields = [
+        ('SAMPLE_ACCESSION', 'DEFAULT_SAMPLE_ACCESSION'),
+        ]
+    for old_field, new_field in deprecated_fields:
+        if old_field in entry:
+            if warn:
+                stderr.write(
+                    'Warning: The %s field has been deprecated. Please rename '
+                    'the field to %s.\n' % (old_field, new_field))
+            if not entry.get(new_field):
+                entry[new_field] = entry[old_field]
+    return entry
 
-    def __init__(self):
-        """Create a new set of SRA Run entities.
-
-        The associated Runs are stored in the instance attribute,
-        runs.
-        """
-        self.runs = []
-
-    def register(self, experiment_entry, sff_dir):
-        """Register an experiment entry with the SRA Run Set.
-
-        This method takes the necessary steps to update and maintain
-        the list of SRA Runs and all sub-elements with the information
-        from the new entry.
-        """
-        sra_file = SraFile.from_entry(experiment_entry, sff_dir)
-        if sra_file is not None:
-            data_block = SraDataBlock.from_entry(experiment_entry)
-            data_block.files.append(sra_file)
-
-            run = SraRun.from_entry(experiment_entry)
-            run.data_blocks.append(data_block)
-
-            self.runs.append(run)
-
-    def to_xml(self):
-        """Create an ElementTree XML object for the SRA RUN_SET entity.
-        """
-        root = ET.Element('RUN_SET')
-        root.set('xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance')
-        for run in self.runs:
-            root.append(run.to_xml())
-        if not self.runs:
-            root.text = '\n'
-        return root
-
-def derive_default_run_fields(experiment_entry):
-    """Derive default values for missing or blank fields in Run XML.
+def update_entry_with_derived_fields(entry):
+    """Derive default values for blank/missing fields in input file.
 
     Derives the following fields:
-    POOL_MEMBER_FILENAME (<POOL_MEMBER_NAME>.sff)
+      - EXPERIMENT_ALIAS (<STUDY_REF>_<RUN_PREFIX>)
+      - RUN_ALIAS (<STUDY_REF>_<SAMPLE_ALIAS>_<RUN_PREFIX>)
+      - BARCODE_READ_GROUP_TAG (<RUN_PREFIX>_<BARCODE>)
+      - PRIMER_READ_GROUP_TAG (derived from table of standard primer
+        read group tags if a primer is found, raises KeyError if
+        primer is specified in entry but not found in the table)
+      - POOL_MEMBER_NAME (if a primer read group tag is found,
+        <RUN_PREFIX>_<SAMPLE_ALIAS>_<PRIMER_READ_GROUP_TAG>;
+        otherwise, <RUN_PREFIX>_<SAMPLE_ALIAS>)
+      - POOL_MEMBER_FILENAME (<POOL_MEMBER_NAME>.sff)
+      - DEFAULT_SAMPLE_CENTER (<SAMPLE_CENTER>)
+      - DEFAULT_SAMPLE_NAME (if default sample accession number is not
+        found, <STUDY_REF>_default)
+      - DEFAULT_SAMPLE_FILENAME (<STUDY_REF>_default_<RUN_PREFIX>.sff)
+      - DEFAULT_RUN_ALIAS (<STUDY_REF>_default_<RUN_PREFIX>)
+      - LIBRARY_STRATEGY (AMPLICON)
+      - LIBRARY_SOURCE (GENOMIC)
+      - LIBRARY_SELECTION (PCR)
+
+    The optional field CHECKSUM is not handled by this function, but
+    is left for the SraRunSet class to derive.
     """
-    vals = copy.deepcopy(experiment_entry)
-    if not vals.get('POOL_MEMBER_FILENAME'):
-        vals['POOL_MEMBER_FILENAME'] = vals['POOL_MEMBER_NAME'] + '.sff'
-    return vals
+    # Values of optional fields may depend on values of other optional
+    # fields, so order is important.  Probably want the order to be
+    # consistent with documentation.
+    default_format_strings = [
+        ('EXPERIMENT_ALIAS', '%(STUDY_REF)s_%(RUN_PREFIX)s'),
+        ('RUN_ALIAS', '%(STUDY_REF)s_%(SAMPLE_ALIAS)s_%(RUN_PREFIX)s'),
+        ('BARCODE_READ_GROUP_TAG', '%(RUN_PREFIX)s_%(BARCODE)s'),
+        ]
 
-def _pool_member_xml(
-    member_name=None, proportion=None, refcenter=None, refname=None,
-    barcode_tag=None, primer_tag=None, accession=None):
-    """Creates a MEMBER subtree for SRA Experiment XML.
+    # Derive PRIMER_READ_GROUP_TAG, if necessary
+    primer = entry.get('PRIMER')
+    if primer:
+        if not entry.get('PRIMER_READ_GROUP_TAG'):
+            try:
+                default_format_strings.append(
+                    ('PRIMER_READ_GROUP_TAG', PRIMER_READ_GROUP_TAGS[primer]))
+            except KeyError:
+                raise KeyError(
+                    'No PRIMER_READ_GROUP_TAG has been provided, and primer %s '
+                    'is not found in table of standard primers. Please provide '
+                    'a value for the PRIMER_READ_GROUP_TAG.' % primer)
+        default_format_strings.append(
+            ('POOL_MEMBER_NAME',
+             '%(RUN_PREFIX)s_%(SAMPLE_ALIAS)s_%(PRIMER_READ_GROUP_TAG)s'))
+    else:
+        default_format_strings.append(
+            ('POOL_MEMBER_NAME', '%(RUN_PREFIX)s_%(SAMPLE_ALIAS)s'))
 
-    The attributes of the MEMBER element are provided as optional
-    keyword arguments.  According to the SRA schema, absolutely all
-    MEMBER attributes are optional, including member_name.  This
-    function implementation is true to the SRA specification, although
-    we can't think of a case where it would be useful to create a
-    MEMBER element with no attributes.
+    default_format_strings.extend([
+        ('POOL_MEMBER_FILENAME', '%(POOL_MEMBER_NAME)s.sff'),
+        ('DEFAULT_SAMPLE_CENTER', '%(SAMPLE_CENTER)s'),
+        ])
 
-    READ_LABELs are created using the keyword args barcode_tag and
-    primer_tag.  According to the SRA schema, a MEMBER element must
-    contain at least one READ_LABEL.  Therefore, this function raises
-    a ValueError if barcode_tag and primer_tag are both None.
-    """
-    if not (barcode_tag or primer_tag):
-        raise ValueError('Must provide either barcode_tag or primer_tag.')
-    member_attributes = {
-        'member_name': member_name,
-        'refcenter': refcenter,
-        'refname': refname,
-        'proportion': proportion,
-        'accession': accession,
-        }
-    root = ET.Element('MEMBER')
-    for attr, val in member_attributes.items():
-        if val:
-            root.set(attr, val)
-    if barcode_tag:
-        barcode_elem = ET.SubElement(
-            root, 'READ_LABEL', read_group_tag=barcode_tag)
-        barcode_elem.text = 'barcode'
-    if primer_tag:
-        primer_elem = ET.SubElement(
-            root, 'READ_LABEL', read_group_tag=primer_tag)
-        primer_elem.text = 'rRNA_primer'
-    return root
+    # Derive DEFAULT_SAMPLE_NAME
+    if not entry.get('DEFAULT_SAMPLE_ACCESSION'):
+        default_format_strings.append(
+            ('DEFAULT_SAMPLE_NAME', '%(STUDY_REF)s_default'))
+
+    default_format_strings.extend([
+        ('DEFAULT_SAMPLE_FILENAME', '%(STUDY_REF)s_default_%(RUN_PREFIX)s.sff'),
+        ('DEFAULT_RUN_ALIAS', '%(STUDY_REF)s_default_%(RUN_PREFIX)s'),
+        ('LIBRARY_STRATEGY', 'AMPLICON'),
+        ('LIBRARY_SOURCE', 'GENOMIC'),
+        ('LIBRARY_SELECTION', 'PCR')
+        ])
+
+    for field_name, format_string in default_format_strings:
+        if not entry.get(field_name):
+            entry[field_name] = format_string % entry
+    return entry
+
+PRIMER_READ_GROUP_TAGS = {
+    # Standard primers
+    # BSR357
+    'CTGCTGCCTYCCGTA': 'V1-V2',
+    # BSR534
+    'ATTACCGCGGCTGCTGGC': 'V1-V3',
+    # BSR926
+    'CCGTCAATTYYTTTRAGTTT': 'V3-V5',
+    # BSR1492
+    'GYTACCTTGTTAYGACTT': 'V6-V9',
+    # Broad Institute Primers
+    # 534r
+    'ATTACCGCGGCTGCTGG': 'V1-V3',
+    # 926r
+    'CCGTCAATTCMTTTRAGT': 'V3-V5',
+    # 1492r
+    'TACGGYTACCTTGTTAYGACTT': 'V6-V9',
+    }
+
 
 def _experiment_link_xml(links):
     """Creates the EXPERIMENT_LINKS subtree for SRA Experiment XML."""
@@ -753,87 +1212,6 @@ def _experiment_attribute_xml(attrs):
         val_elem.text = val
     return root
 
-def _spot_descriptor_xml(adapter, barcodes, linker, primers):
-    """Creates the SPOT_DESCRIPTOR subtree for SRA Experiment XML.
-
-    The adaptor and linker are to be passed as strings.  Barcodes and
-    primers should be passed as a list of tuples, mapping read group
-    tags to basecalls.
-    """
-    root = ET.Element('SPOT_DESCRIPTOR')
-    decode_elem = ET.SubElement(root, 'SPOT_DECODE_SPEC')
-    read_index = 0
-    decode_elem.append(_read_spec_xml(
-        read_index, 'Technical Read', 'Adapter', expected_basecall=adapter))
-    read_index += 1
-    if barcodes:
-        decode_elem.append(_read_spec_xml(
-            read_index, 'Technical Read', 'BarCode', read_label='barcode',
-            expected_basecall_table=barcodes))
-        read_index += 1
-    if linker:
-        decode_elem.append(_read_spec_xml(
-            read_index, 'Technical Read', 'Linker', read_label='linker',
-            expected_basecall=linker))
-        read_index += 1
-    if primers:
-        decode_elem.append(_read_spec_xml(
-            read_index, 'Technical Read', 'Primer', read_label='rRNA_primer',
-            expected_basecall_table=primers))
-        read_index += 1
-    decode_elem.append(_read_spec_xml(
-        read_index, 'Application Read', 'Forward',
-        in_relative_order=True))
-    return root
-
-def _read_spec_xml(
-    read_index, read_class, read_type, read_label=None,
-    expected_basecall=None, expected_basecall_table=None,
-    in_relative_order=False):
-    """Returns XML for the READ_SPEC element of an SRA experiment.
-
-    The read_index, read_class, and read_type arguments specify the
-    text of the corresponding XML subelements of READ_SPEC.
-
-    The read_label element is used for barcodes and primers, but not
-    the technical or application reads.
-
-    Expected basecalls may be provided as a single string
-    (expected_basecall) or as a sequence of tuples mapping read group
-    tags to basecalls (expected_basecall_table).  If both are
-    provided, the expected_basecall argument is used and the
-    expected_basecall_table is discarded.
-
-    For the application read spec, it is customary to provide a
-    relative_order.  Passing a True value to the in_relative_order
-    keyword argument will generate this element with the correct
-    value.
-    """
-    root = ET.Element('READ_SPEC')
-    ET.SubElement(root, 'READ_INDEX').text = str(read_index)
-    # According to SRA.experiment.xsd v1.1, the READ_LABEL element
-    # must appear immediately following the READ_INDEX
-    if read_label:
-        ET.SubElement(root, 'READ_LABEL').text = read_label
-    ET.SubElement(root, 'READ_CLASS').text = read_class
-    ET.SubElement(root, 'READ_TYPE').text = read_type
-    if expected_basecall:
-        ET.SubElement(root, 'EXPECTED_BASECALL').text = expected_basecall
-    elif expected_basecall_table:
-        table_elem = ET.SubElement(root, 'EXPECTED_BASECALL_TABLE')
-        for read_group_tag, basecall in expected_basecall_table:
-            min_match = len(basecall)
-            basecall_elem = ET.SubElement(table_elem, 'BASECALL')
-            basecall_elem.set('read_group_tag', read_group_tag)
-            basecall_elem.set('min_match', str(min_match))
-            basecall_elem.set('max_mismatch', '0')
-            basecall_elem.set('match_edge', 'full')
-            basecall_elem.text = basecall
-    if in_relative_order:
-        prevoius_index = int(read_index) - 1
-        order_elem = ET.SubElement(root, 'RELATIVE_ORDER')
-        order_elem.set('follows_read_index', str(prevoius_index))
-    return root
 
 def pretty_xml(element, level=0):
     """Formats XML tree as a string with proper indentation.

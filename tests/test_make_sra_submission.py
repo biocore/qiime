@@ -9,11 +9,13 @@ from cogent.util.misc import remove_files
 from qiime.make_sra_submission import (
     md5_path, safe_for_xml, read_tabular_data, rows_data_as_dicts,
     make_study_links, twocol_data_to_dict, make_study, make_submission,
-    make_sample, trim_quotes, defaultdict, group_lines_by_field,
-    write_xml_generic, make_run_and_experiment, _pool_member_xml,
-    _experiment_link_xml, _experiment_attribute_xml, _read_spec_xml,
-    _spot_descriptor_xml, pretty_xml, generate_output_fp,
-    SraEntity, SraRun, SraDataBlock, SraFile)
+    make_sample, group_lines_by_field, write_xml_generic,
+    make_run_and_experiment, threecol_data_to_dict,
+    _experiment_link_xml, _experiment_attribute_xml, pretty_xml,
+    generate_output_fp, update_entry_with_derived_fields,
+    SraEntity, SraRun, SraDataBlock, SraFile, SraPoolMember,
+    SraSpotDescriptor, SraSampleDescriptor, SraExperimentSet, SraExperiment,
+    SraStudyRef, SraPlatform, update_entry_with_deprecated_fields)
 from qiime.util import get_qiime_project_dir
 import xml.etree.ElementTree as ET
 from cStringIO import StringIO
@@ -80,14 +82,14 @@ class TopLevelTests(TestCase):
 
     def test_read_tabular_data(self):
         """read_tabular_data should read simple table"""
-        data = """#a\tb\tc d
-x\ty\tz
-
-x x\ty y\tc c 
-
-"""
+        data = (
+            '#a\tb\tc d\n'
+            'x\ty\tz\n'
+            '\n'
+            'x x\ty y\tc c \n'
+            )
         self.assertEqual(read_tabular_data(data.splitlines()), 
-            ([['#a', 'b', 'c d']], [['x','y','z'],['x x', 'y y', 'c c ']]))
+            (['a', 'b', 'c d'], [['x','y','z'],['x x', 'y y', 'c c ']]))
 
     def test_make_study_links(self):
         """make_study_links should return correct study links from pmid."""
@@ -102,39 +104,37 @@ x x\ty y\tc c
 
     def test_twocol_data_to_dict(self):
         """twocol_data_to_dict should produce expected result"""
-        data = """#a\tb\tc d
-x\ty\tz
+        data = [
+            ['x','y','z'],
+            ['x x', 'y y', 'c c '],
+            ]
+        self.assertEqual(twocol_data_to_dict(data), {'x':'y', 'x x':'y y'})
 
-x x\ty y\tc c 
-
-"""
-        header, body = read_tabular_data(data.splitlines())
-        self.assertEqual(twocol_data_to_dict(body), {'x':'y', 'x x':'y y'})
-        #test the case where data are multiple
-        data = """#a\tb\tc d
-x\ty\tz
-
-x x\ty y\tc c 
-x\ty\tz
-x\tc\tv
-
-"""
-        header, body = read_tabular_data(data.splitlines())
-        self.assertEqual(twocol_data_to_dict(body, is_multiple=True),
+        multiple_data = [
+            ['x','y','z'],
+            ['x x', 'y y', 'c c '],
+            ['x', 'y', 'z'],
+            ['x', 'c', 'v'],
+            ]
+        self.assertEqual(
+            twocol_data_to_dict(multiple_data, is_multiple=True),
             {'x':['y','y','c'], 'x x':['y y']})
 
     def test_rows_data_as_dicts(self):
         """rows_data_as_dicts should iterate over trimmed row data"""
-        data = """#a\tb\tc d
-x\t\tz
-
-x x\ty y\t 
-aa\tbb\tcc
-"""
-        header, body = read_tabular_data(data.splitlines())
-        result = list(rows_data_as_dicts(header[0], body))
-        self.assertEqual(result, [{'a':'x','c d':'z'}, {'a':'x x','b':'y y'},
-            {'a':'aa', 'b':'bb','c d':'cc'}])
+        header = ['a', 'b', 'c d']
+        body = [
+            ['x', '', 'z'],  # missing second field
+            ['x x', 'y y'],  # missing/stripped final field
+            ['aa', 'bb', 'cc'],
+            ]
+        observed = rows_data_as_dicts(header, body)
+        expected = [
+            {'a':'x','c d':'z'},
+            {'a':'x x','b':'y y'},
+            {'a':'aa', 'b':'bb','c d':'cc'},
+            ]
+        self.assertEqual(list(observed), expected)
 
     def test_make_study(self):
         """make_study should produce expected results given info/template"""
@@ -185,9 +185,6 @@ aa\tbb\tcc
         result = make_sample(sample_data, sample_template)
         self.assertEqual(standardize_xml(result), standardize_xml(sample_xml))
 
-    def test_trim_quotes(self):
-        self.assertEqual(trim_quotes('"abcd"'), 'abcd')
-
     def test_group_lines_by_field(self):
         lines = [
             ['x',   'why', 'b'],
@@ -223,30 +220,6 @@ aa\tbb\tcc
             )
         self.files_to_remove = [observed_fp]
 
-    def test_make_run_and_experiment(self):
-        """make_run_and_experiment should return correct XML for minimal experiment."""
-        expt_lines = ['#STUDY_REF\tEXPERIMENT_ALIAS\n']
-        observed_experiment_xml, observed_run_xml = make_run_and_experiment(
-            expt_lines, '/tmp')
-
-        expected_experiment_xml = (
-            '<?xml version="1.0" encoding="UTF-8"?>\n'
-            '<EXPERIMENT_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">\n'
-            '\n'
-            '</EXPERIMENT_SET>'
-            )
-        self.assertEqual(standardize_xml(observed_experiment_xml), 
-            standardize_xml(expected_experiment_xml))
-
-        expected_run_xml = (
-            '<?xml version="1.0" encoding="UTF-8"?>\n'
-            '<RUN_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">\n'
-            '</RUN_SET>'
-            )
-        self.assertEqual(
-            standardize_xml(observed_run_xml),
-            standardize_xml(expected_run_xml))
-        
     def test_experiment_xml(self):
         """make_run_and_experiment should return correct XML for full experiment."""
         observed_exp_xml, observed_run_xml = make_run_and_experiment(
@@ -316,33 +289,24 @@ aa\tbb\tcc
         self.assertTrue(run_schema.validate(
             lxml.etree.fromstring(observed_run_xml)))
 
-    def test_pool_member_xml(self):
-        """_pool_member_xml should return valid XML for SRA POOL MEMBER"""
-        kwargs = {
-            'refname': '700015468',
-            'refcenter': 'NCBI',
-            'member_name': 'F6AVWTA02_2865_700015468_V1-V3',
-            'proportion': '0.014492754',
-            'barcode_tag': 'F6AVWTA02_AGTACACGTC',
+    def test_threecol_data_to_dict(self):
+        """threecol_data_to_dict should parse experiment links table correctly"""
+        header, body = read_tabular_data(StringIO(links))
+        observed = threecol_data_to_dict(body)
+        expected = {
+            'bodysites_F6AVWTA02': [(
+                'bodysites Library Construction Protocol',
+                'http://hmpdacc.org/doc/HMP_MDG_454_16S_Protocol_V4_2_102109.pdf'
+                )],
+            'bodysites_F6AVWTA01': [(
+                'bodysites Library Construction Protocol',
+                'http://hmpdacc.org/doc/HMP_MDG_454_16S_Protocol_V4_2_102109.pdf'
+                )],
             }
-        observed =  _pool_member_xml(**kwargs)
-        expected = '''
-        <MEMBER member_name="F6AVWTA02_2865_700015468_V1-V3" proportion="0.014492754" refcenter="NCBI" refname="700015468">
-          <READ_LABEL read_group_tag="F6AVWTA02_AGTACACGTC">barcode</READ_LABEL>
-        </MEMBER>'''
-        self.assertEqual(pretty_xml(observed, 4), expected)
-
-        kwargs['primer_tag'] = 'V1-V3'
-        observed_with_primer = _pool_member_xml(**kwargs)
-        expected_with_primer = '''
-        <MEMBER member_name="F6AVWTA02_2865_700015468_V1-V3" proportion="0.014492754" refcenter="NCBI" refname="700015468">
-          <READ_LABEL read_group_tag="F6AVWTA02_AGTACACGTC">barcode</READ_LABEL>
-          <READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL>
-        </MEMBER>'''
-        self.assertEqual(
-            pretty_xml(observed_with_primer, 4), expected_with_primer)
+        self.assertEqual(observed.items(), expected.items())
 
     def test_experiment_link_xml(self):
+        """experiment_link_xml should generate correct XML fragment for list of links."""
         links = [('link1', 'http://google.com'),
                  ('links2', 'http://www.ncbi.nlm.nih.gov')]
         expected = '''
@@ -364,6 +328,7 @@ aa\tbb\tcc
         self.assertEqual(pretty_xml(observed, 4), expected)
 
     def test_experiment_attribute_xml(self):
+        """experiment_attribute_xml should generate correct XML fragment for list of attributes."""
         attrs = [('a1', 'val1'),
                  ('attr2', 'something else')]
         expected = '''
@@ -383,19 +348,275 @@ aa\tbb\tcc
         observed = _experiment_attribute_xml([])
         self.assertEqual(pretty_xml(observed, 4), '')
 
-    def test_read_spec_xml(self):
+    def test_pretty_xml(self):
+        """pretty_xml should modify XML ElementTree to include correct indentation."""
+        a = ET.Element('a')
+        b = ET.SubElement(a, 'b')
+        b.text = 'hello'
+        observed = pretty_xml(a)
+        expected = '\n<a>\n  <b>hello</b>\n</a>'
+        self.assertEqual(observed, expected)
+
+        c = ET.Element('c')
+        c.set('myattr', '12345')
+        observed = pretty_xml(c)
+        expected = '\n<c myattr="12345" />'
+        self.assertEqual(observed, expected)
+
+        c = ET.Element('c')
+        c.text = '\n'
+        observed = pretty_xml(c, 1)
+        expected = '\n  <c>\n</c>'
+        self.assertEqual(observed, expected)
+
+    def test_update_entry_with_deprecated_fields(self):
+        """update_entry_with_deprecated_fields should move deprecated field values to new fields."""
+        a = {'SAMPLE_ACCESSION': '12345'}
+        expected = {'SAMPLE_ACCESSION': '12345',
+                    'DEFAULT_SAMPLE_ACCESSION': '12345'}
+        update_entry_with_deprecated_fields(a, warn=False)
+        self.assertEqual(a, expected)
+
+    def test_update_entry_with_derived_fields(self):
+        """update_entry_with_derived_fields should derive correct values for optional fields."""
+        a = {
+            'STUDY_REF': 'mystudy',
+            'RUN_PREFIX': 'RUN01',
+            'SAMPLE_ALIAS': 'mysample',
+            'BARCODE': 'AAAAGGGG',
+            'PRIMER': 'ATTACCGCGGCTGCTGGC',
+            'SAMPLE_CENTER': 'NCBI',
+            }
+        update_entry_with_derived_fields(a)
+        self.assertEqual(a['EXPERIMENT_ALIAS'], 'mystudy_RUN01')
+        self.assertEqual(a['RUN_ALIAS'], 'mystudy_mysample_RUN01')
+        self.assertEqual(a['BARCODE_READ_GROUP_TAG'], 'RUN01_AAAAGGGG')
+        self.assertEqual(a['PRIMER_READ_GROUP_TAG'], 'V1-V3')
+        self.assertEqual(a['POOL_MEMBER_NAME'], 'RUN01_mysample_V1-V3')
+        self.assertEqual(a['POOL_MEMBER_FILENAME'], 'RUN01_mysample_V1-V3.sff')
+        self.assertEqual(a['DEFAULT_SAMPLE_CENTER'], 'NCBI')
+        self.assertEqual(a['DEFAULT_SAMPLE_NAME'], 'mystudy_default')
+        self.assertEqual(a['DEFAULT_SAMPLE_FILENAME'], 'mystudy_default_RUN01.sff')
+        self.assertEqual(a['DEFAULT_RUN_ALIAS'], 'mystudy_default_RUN01')
+        self.assertEqual(a['LIBRARY_STRATEGY'], 'AMPLICON')
+        self.assertEqual(a['LIBRARY_SOURCE'], 'GENOMIC')
+        self.assertEqual(a['LIBRARY_SELECTION'], 'PCR')
+
+class SraEntityTests(TestCase):
+    def test_check_attributes(self):
+        """SraEntity.__init__ should raise ValueError if unknown attributes are provided."""
+        self.assertRaises(ValueError, SraEntity, {'a': 'b'})
+
+    def test_attribute_names(self):
+        """SraEntity.attribute_names should list all known attributes."""
+        self.assertEqual(SraEntity({}).attribute_names, [])
+
+    def test_from_entry(self):
+        """SraEntity.from_entry should return new instance."""
+        a = SraEntity.from_entry({})
+        self.assertEqual(a.__class__, SraEntity)
+
+    def test_set_xml_attributes(self):
+        """SraEntity.set_xml_attributes should transfer instance attributes to an ETree XML element."""
+        element = ET.Element('a')
+        entity = SraEntity({})
+        entity.name = 'John'
+        entity.set_xml_attributes(element, ['name'])
+        self.assertEqual(element.get('name'), 'John')
+
+
+class SraExperimentSetTests(TestCase):
+    def test_register(self):
+        """SraExperimentSet.register should preserve order of experiment entries."""
+        s = SraExperimentSet()
+        common_fields = {
+            'EXPERIMENT_CENTER': 'UPENNBL',
+            'EXPERIMENT_TITLE': 'my_experiment',
+            'EXPERIMENT_DESIGN_DESCRIPTION': 'A b c',
+            'LIBRARY_STRATEGY': 'D e f',
+            'LIBRARY_SOURCE': 'G h i',
+            'LIBRARY_SELECTION': 'J k l',
+            'LIBRARY_CONSTRUCTION_PROTOCOL': 'M n o',
+            'PLATFORM': 'FLX',
+            'KEY_SEQ': 'TCAG',
+            'BARCODE': 'AAAAGGGG',
+            'BARCODE_READ_GROUP_TAG': 'my_AAAAGGGG',
+            'SAMPLE_ALIAS': 'P q r',
+            'SAMPLE_CENTER': 'NCBI',
+            'POOL_MEMBER_NAME': 'S t u',
+            'POOL_PROPORTION': '0.1',
+            }
+        e1 = {'EXPERIMENT_ALIAS': 'experiment1'}
+        e1.update(common_fields)
+        s.register(e1)
+        e2 = {'EXPERIMENT_ALIAS': 'experiment2'}
+        e2.update(common_fields)
+        s.register(e2)
+        e3 = {'EXPERIMENT_ALIAS': 'experiment3'}
+        e3.update(common_fields)
+        s.register(e3)
+        self.assertEqual([a for a, b in s.experiments],
+                         ['experiment1', 'experiment2', 'experiment3'])
+
+    def test_to_xml(self):
+        """SraExperimentSet.to_xml should return blank experiment set."""
+        s = SraExperimentSet()
+        expected = (
+            '\n<EXPERIMENT_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">'
+            '\n</EXPERIMENT_SET>'
+            )
+        self.assertEqual(pretty_xml(s.to_xml()), expected)
+
+class SraExperimentTests(TestCase):
+    def setUp(self):
+        self.entry = {
+            'EXPERIMENT_ALIAS': 'my_experiment',
+            'EXPERIMENT_CENTER': 'UPENNBL',
+            'EXPERIMENT_TITLE': 'My first experiment',
+            'EXPERIMENT_DESIGN_DESCRIPTION': 'A b c',
+            'LIBRARY_STRATEGY': 'D e f',
+            'LIBRARY_SOURCE': 'G h i',
+            'LIBRARY_SELECTION': 'J k l',
+            'LIBRARY_CONSTRUCTION_PROTOCOL': 'M n o',
+            'PLATFORM': 'FLX',
+            'KEY_SEQ': 'TCAG',
+            'BARCODE': 'AAAAGGGG',
+            'BARCODE_READ_GROUP_TAG': 'my_AAAAGGGG',
+            'SAMPLE_ALIAS': 'P q r',
+            'SAMPLE_CENTER': 'NCBI',
+            'POOL_MEMBER_NAME': 'S t u',
+            'POOL_PROPORTION': '0.1',
+            }
+        self.experiment = SraExperiment.from_entry(self.entry)
+    
+    def test_from_entry(self):
+        """SraExperiment.from_entry should return new instance."""
+        self.assertEqual(self.experiment.__class__, SraExperiment)
+
+        del self.entry['EXPERIMENT_ALIAS']
+        self.assertRaises(KeyError, SraExperiment.from_entry, self.entry)
+
+    def test_register(self):
+        """SraExperiment.register should not raise an error for valid entry."""
+        self.entry['BARCODE'] = 'CCCCTTTT'
+        self.entry['BARCODE_READ_GROUP_TAG'] = 'my_CCCCTTTT'
+        self.assertEqual(self.experiment.register(self.entry), None)
+
+    def test_to_xml(self):
+        """SraExperiment.to_xml should return valid XML for experiment with one entry."""
+        observed = self.experiment.to_xml()
         expected = '''
-        <READ_SPEC>
-          <READ_INDEX>0</READ_INDEX>
-          <READ_CLASS>Technical Read</READ_CLASS>
-          <READ_TYPE>Adapter</READ_TYPE>
-          <EXPECTED_BASECALL>TCAG</EXPECTED_BASECALL>
-        </READ_SPEC>'''
-        observed = _read_spec_xml(
-            0, 'Technical Read', 'Adapter', expected_basecall='TCAG')
+        <EXPERIMENT alias="my_experiment" center_name="UPENNBL">
+          <TITLE>My first experiment</TITLE>
+          <STUDY_REF refcenter="NCBI" />
+          <DESIGN>
+            <DESIGN_DESCRIPTION>A b c</DESIGN_DESCRIPTION>
+            <SAMPLE_DESCRIPTOR />
+            <LIBRARY_DESCRIPTOR>
+              <LIBRARY_NAME>my_experiment</LIBRARY_NAME>
+              <LIBRARY_STRATEGY>D e f</LIBRARY_STRATEGY>
+              <LIBRARY_SOURCE>G h i</LIBRARY_SOURCE>
+              <LIBRARY_SELECTION>J k l</LIBRARY_SELECTION>
+              <LIBRARY_LAYOUT>
+                <SINGLE />
+              </LIBRARY_LAYOUT>
+              <LIBRARY_CONSTRUCTION_PROTOCOL>M n o</LIBRARY_CONSTRUCTION_PROTOCOL>
+            </LIBRARY_DESCRIPTOR>
+            <SPOT_DESCRIPTOR>
+              <SPOT_DECODE_SPEC>
+                <READ_SPEC>
+                  <READ_INDEX>0</READ_INDEX>
+                  <READ_CLASS>Technical Read</READ_CLASS>
+                  <READ_TYPE>Adapter</READ_TYPE>
+                  <EXPECTED_BASECALL>TCAG</EXPECTED_BASECALL>
+                </READ_SPEC>
+                <READ_SPEC>
+                  <READ_INDEX>1</READ_INDEX>
+                  <READ_CLASS>Application Read</READ_CLASS>
+                  <READ_TYPE>Forward</READ_TYPE>
+                  <RELATIVE_ORDER follows_read_index="0" />
+                </READ_SPEC>
+              </SPOT_DECODE_SPEC>
+            </SPOT_DESCRIPTOR>
+          </DESIGN>
+          <PLATFORM>
+            <LS454>
+              <INSTRUMENT_MODEL>454 GS FLX</INSTRUMENT_MODEL>
+              <FLOW_SEQUENCE>TACG</FLOW_SEQUENCE>
+              <FLOW_COUNT>400</FLOW_COUNT>
+            </LS454>
+          </PLATFORM>
+          <PROCESSING>
+            <BASE_CALLS>
+              <SEQUENCE_SPACE>Base Space</SEQUENCE_SPACE>
+              <BASE_CALLER>454 BaseCaller</BASE_CALLER>
+            </BASE_CALLS>
+            <QUALITY_SCORES qtype="phred">
+              <QUALITY_SCORER>454 BaseCaller</QUALITY_SCORER>
+              <NUMBER_OF_LEVELS>40</NUMBER_OF_LEVELS>
+              <MULTIPLIER>1.0</MULTIPLIER>
+            </QUALITY_SCORES>
+          </PROCESSING>
+        </EXPERIMENT>'''
         self.assertEqual(pretty_xml(observed, 4), expected)
 
-    def test_spot_descriptor_xml(self):
+class SraStudyRefTests(TestCase):
+    def test_to_xml(self):
+        """SraStudyRef.to_xml should return valid XML fragment."""
+        a = SraStudyRef.from_entry({
+            'SAMPLE_CENTER': 'mycenter',
+            'STUDY_REF': 'mystudy',
+            })
+        expected = '''
+        <STUDY_REF refcenter="mycenter" refname="mystudy" />'''
+        self.assertEqual(pretty_xml(a.to_xml(), 4), expected)
+
+        b = SraStudyRef.from_entry({
+            'SAMPLE_CENTER': 'mycenter',
+            'STUDY_ACCESSION': '12345'
+            })
+        expected = '''
+        <STUDY_REF accession="12345" refcenter="mycenter" />'''
+        self.assertEqual(pretty_xml(b.to_xml(), 4), expected)
+
+class SraPlatformTests(TestCase):
+    def test_from_entry(self):
+        """SraPlatform.from_entry should raise ValueError if PLATFORM is unrecognized."""
+        self.assertRaises(ValueError, SraPlatform.from_entry, {'PLATFORM': 'unknown'})
+
+    def test_to_xml(self):
+        """SraPlatform.to_xml should produce valid XML fragment."""
+        a = SraPlatform.from_entry({'PLATFORM': 'FLX'})
+        expected = '''
+        <PLATFORM>
+          <LS454>
+            <INSTRUMENT_MODEL>454 GS FLX</INSTRUMENT_MODEL>
+            <FLOW_SEQUENCE>TACG</FLOW_SEQUENCE>
+            <FLOW_COUNT>400</FLOW_COUNT>
+          </LS454>
+        </PLATFORM>'''
+        self.assertEqual(pretty_xml(a.to_xml(), 4), expected)
+
+class SraSpotDescriptorTests(TestCase):
+    def setUp(self):
+        entry = {
+            'KEY_SEQ': 'TACG',
+            'BARCODE_READ_GROUP_TAG': 'Sample1',
+            'BARCODE': 'TTAACCGG',
+            'PRIMER_READ_GROUP_TAG': 'V1-V2',
+            'PRIMER': 'CTGCTGCCTYCCGTA',
+            }
+        self.spot_descriptor = SraSpotDescriptor.from_entry(entry)
+        self.spot_descriptor.register(entry)
+    
+    def test_register(self):
+        """SraSpotDescriptor.register should record primers and barcodes."""
+        self.assertEqual(self.spot_descriptor.adapter, 'TACG')
+        self.assertEqual(self.spot_descriptor.linker, None)
+        self.assertEqual(self.spot_descriptor.barcodes, set(['TTAACCGG']))
+
+    def test_to_xml(self):
+        """SraSpotDescriptor.to_xml should return valid XML fragment."""
         expected = '''
         <SPOT_DESCRIPTOR>
           <SPOT_DECODE_SPEC>
@@ -431,35 +652,96 @@ aa\tbb\tcc
             </READ_SPEC>
           </SPOT_DECODE_SPEC>
         </SPOT_DESCRIPTOR>'''
-        observed = _spot_descriptor_xml(
-            'TACG', [('Sample1', 'TTAACCGG')], None,
-            [('V1-V2', 'CTGCTGCCTYCCGTA')])
-        self.assertEqual(pretty_xml(observed, 4), expected)
+        self.assertEqual(pretty_xml(self.spot_descriptor.to_xml(), 4), expected)
 
-    def test_pretty_xml(self):
-        a = ET.Element('a')
-        b = ET.SubElement(a, 'b')
-        b.text = 'hello'
-        observed = pretty_xml(a)
-        expected = '\n<a>\n  <b>hello</b>\n</a>'
-        self.assertEqual(observed, expected)
 
-        c = ET.Element('c')
-        c.set('myattr', '12345')
-        observed = pretty_xml(c)
-        expected = '\n<c myattr="12345" />'
-        self.assertEqual(observed, expected)
+class SraSampleDescriptorTests(TestCase):
+    def setUp(self):
+        self.attrs1 = {
+            'DEFAULT_SAMPLE_CENTER': 'NCBI',
+            'DEFAULT_SAMPLE_NAME': 'protected_unassigned',
+            'DEFAULT_SAMPLE_ACCESSION': '12345',
+            'SAMPLE_ALIAS': 'mysample',
+            'SAMPLE_CENTER': 'UPENNBL',
+            'POOL_MEMBER_NAME': 'pm',
+            'POOL_PROPORTION': '1.0',
+            'BARCODE': 'AAAATTTT',
+            'BARCODE_READ_GROUP_TAG': 'run1_AAAATTTT',
+            }
+    
+    def test_register(self):
+        """SraSampleDescriptor.register should raise ValueError for inconsistent entries."""
+        a = SraSampleDescriptor.from_entry(self.attrs1)
+        a.register(self.attrs1)
+        self.assertEquals(len(a.pool_members), 1)
 
-class SraEntityTests(TestCase):
-    def test_set_xml_attributes(self):
-        element = ET.Element('a')
-        entity = SraEntity()
-        entity.name = 'John'
-        entity.set_xml_attributes(element, ['name'])
-        self.assertEqual(element.get('name'), 'John')
+        incompatible_attrs = {
+            'DEFAULT_SAMPLE_CENTER': 'notNCBI',
+            'DEFAULT_SAMPLE_NAME': 'protected_unassigned',
+            'DEFAULT_SAMPLE_ACCESSION': '12345',
+            'SAMPLE_ALIAS': 'mysample_2',
+            'SAMPLE_CENTER': 'UPENNBL',
+            'POOL_MEMBER_NAME': 'pm2',
+            'POOL_PROPORTION': '1.0',
+            'BARCODE': 'AAAATTTC',
+            'BARCODE_READ_GROUP_TAG': 'run1_AAAATTTC',
+            }
+        self.assertRaises(ValueError, a.register, incompatible_attrs)
+
+    def test_to_xml(self):
+        """SraSampleDescriptor.to_xml should return valid XML fragment."""
+        a = SraSampleDescriptor.from_entry(self.attrs1)
+        a.register(self.attrs1)
+        expected = '''
+        <SAMPLE_DESCRIPTOR accession="12345" refcenter="NCBI" refname="protected_unassigned">
+          <POOL>
+            <MEMBER member_name="pm" proportion="1.0" refcenter="UPENNBL" refname="mysample">
+              <READ_LABEL read_group_tag="run1_AAAATTTT">barcode</READ_LABEL>
+            </MEMBER>
+          </POOL>
+        </SAMPLE_DESCRIPTOR>'''
+        self.assertEquals(pretty_xml(a.to_xml(), 4), expected)
+
+class SraPoolMemberTests(TestCase):
+    def test_from_entry(self):
+        """SraPoolMember.from_entry should raise ValueError if neither barcode_tag or primer_tag are provided."""
+        vals = {
+            'SAMPLE_ALIAS': 'x',
+            'SAMPLE_CENTER': 'NCBI',
+            'POOL_MEMBER_NAME': 'y',
+            'POOL_PROPORTION': '0.1',
+            'POOL_MEMBER_ACCESSION': '12345',
+            }
+        self.assertRaises(ValueError, SraPoolMember.from_entry, vals)
+    
+    def test_to_xml(self):
+        attrs = {
+            'refname': 'x',
+            'refcenter': 'NCBI',
+            'member_name': 'y',
+            'proportion': '0.1',
+            'barcode_tag': 'bc1',
+            }
+        a = SraPoolMember(attrs)
+        expected = '''
+        <MEMBER member_name="y" proportion="0.1" refcenter="NCBI" refname="x">
+          <READ_LABEL read_group_tag="bc1">barcode</READ_LABEL>
+        </MEMBER>'''
+        self.assertEqual(pretty_xml(a.to_xml(), 4), expected)
+
+        attrs['primer_tag'] = 'V1-V3'
+        b = SraPoolMember(attrs)
+        expected_with_primer = '''
+        <MEMBER member_name="y" proportion="0.1" refcenter="NCBI" refname="x">
+          <READ_LABEL read_group_tag="bc1">barcode</READ_LABEL>
+          <READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL>
+        </MEMBER>'''
+        self.assertEqual(
+            pretty_xml(b.to_xml(), 4), expected_with_primer)
 
 class SraRunTests(TestCase):
     def test_to_xml(self):
+        """SraRun.to_xml should produce valid XML fragment."""
         class MockSraDataBlock:
             def to_xml(self):
                 return ET.fromstring(
@@ -470,15 +752,17 @@ class SraRunTests(TestCase):
                     'checksum="d41d8cd98f00b204e9800998ecf8427e"/>'
                     '</FILES></DATA_BLOCK>'
                     )
-        run = SraRun(
-            alias='bodysites_study_default_F6AVWTA02', center_name='JCVI',
-            run_center='AAAA', refname='bodysites_F6AVWTA02',
-            refcenter='bodysites')
+        run = SraRun.from_entry({
+            'RUN_ALIAS': 'GHNNEQQ',
+            'RUN_CENTER': 'UPENNBL',
+            'EXPERIMENT_ALIAS': 'my_expt_alias',
+            'STUDY_CENTER': 'NCBI',
+            })
         run.data_blocks.append(MockSraDataBlock())
         observed = run.to_xml()
         expected = '''
-        <RUN alias="bodysites_study_default_F6AVWTA02" center_name="JCVI" run_center="AAAA">
-          <EXPERIMENT_REF refcenter="bodysites" refname="bodysites_F6AVWTA02" />
+        <RUN alias="GHNNEQQ" center_name="UPENNBL" run_center="UPENNBL">
+          <EXPERIMENT_REF refcenter="NCBI" refname="my_expt_alias" />
           <DATA_BLOCK member_name="" name="F6AVWTA02" region="0" serial="1">
             <FILES>
               <FILE checksum="d41d8cd98f00b204e9800998ecf8427e" checksum_method="MD5" filename="bodysites_study_default_F6AVWTA02.sff" filetype="sff" />
@@ -487,22 +771,9 @@ class SraRunTests(TestCase):
         </RUN>'''
         self.assertEqual(pretty_xml(observed, 4), expected)
 
-    def test_from_entry(self):
-        vals = {
-            'RUN_ALIAS': 'GHNNEQQ',
-            'RUN_CENTER': 'UPENNBL',
-            'EXPERIMENT_ALIAS': 'my_expt_alias',
-            'STUDY_CENTER': 'NCBI',
-            }
-        a = SraRun.from_entry(vals)
-        self.assertEqual(a.alias, 'GHNNEQQ')
-        self.assertEqual(a.center_name, 'UPENNBL')
-        self.assertEqual(a.run_center, 'UPENNBL')
-        self.assertEqual(a.refname, 'my_expt_alias')
-        self.assertEqual(a.refcenter, 'NCBI')
-
 class SraDataBlockTests(TestCase):
     def test_from_entry(self):
+        """SraDataBlock.from_entry should preserve difference between blank and null member_name."""
         vals = {
             'RUN_PREFIX': 'F6AVWTA02',
             'REGION': '2',
@@ -518,6 +789,7 @@ class SraDataBlockTests(TestCase):
         self.assertEqual(b.region, '2')
     
     def test_to_xml(self):
+        """SraDataBlock.to_xml should return valid XML fragment."""
         class MockSraFile:
             def to_xml(self):
                 return ET.fromstring(
@@ -526,7 +798,12 @@ class SraDataBlockTests(TestCase):
                     'filename="bodysites_study_default_F6AVWTA02.sff" '
                     'filetype="sff" />'
                     )
-        block = SraDataBlock('', name='F6AVWTA02', region='0')
+        attrs = {
+            'member_name': '',
+            'name': 'F6AVWTA02',
+            'region': '0',
+            }
+        block = SraDataBlock(attrs)
         block.files.append(MockSraFile())
         observed = block.to_xml()
         expected = '''
@@ -539,24 +816,23 @@ class SraDataBlockTests(TestCase):
 
 class SraFileTests(TestCase):
     def test_from_entry(self):
+        """SraFile.from_entry should return new instance, using existing CHECKSUM value."""
         test_dir = os.path.dirname(os.path.abspath(__file__))
-        sff_dir = os.path.join(test_dir, 'sra_test_files', 'F6AVWTA')
 
-        vals = {
-            'RUN_PREFIX': 'F6AVWTA01',
+        f = SraFile.from_entry({
+            'CHECKSUM': 'f05c1bb96759a0c3c9bcc0196ceac3bb',
             'POOL_MEMBER_FILENAME': 'B-2004-03-S1.sff',
-            }
-        f = SraFile.from_entry(vals, sff_dir)
+            })
         self.assertEqual(f.filename, 'B-2004-03-S1.sff')
-        self.assertEqual(f.filetype, 'sff')
-        self.assertEqual(f.checksum_method, 'MD5')
         self.assertEqual(f.checksum, 'f05c1bb96759a0c3c9bcc0196ceac3bb')
 
     def test_to_xml(self):
-        sra_file = SraFile(
-            filename='abc.sff', filetype='sff', checksum_method='MD5',
-            checksum='12345')
-        observed = sra_file.to_xml()
+        """SraFile.to_xml should return valid XML fragment."""
+        f = SraFile({
+            'checksum': '12345',
+            'filename': 'abc.sff',
+            })
+        observed = f.to_xml()
         expected = (
             '<FILE checksum="12345" checksum_method="MD5" filename="abc.sff" '
             'filetype="sff" />')
@@ -634,106 +910,6 @@ bodysites_F6AVWTA02	bodysites Library Construction Protocol	http://hmpdacc.org/d
 
 experiment_with_default_sample_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
 <EXPERIMENT_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <EXPERIMENT alias="bodysites_F6AVWTA02" center_name="JCVI">
-    <TITLE>Survey of multiple body sites</TITLE>
-    <STUDY_REF refname="bodysites_study" refcenter="NCBI"/>
-    <DESIGN>
-      <DESIGN_DESCRIPTION>Pool of samples from different individual subjects</DESIGN_DESCRIPTION>
-      <SAMPLE_DESCRIPTOR refname="unidentified-protected" refcenter="NCBI" accession="SRS026543">
-        <POOL>
-          <MEMBER refname="700015468" refcenter="NCBI" member_name="F6AVWTA02_2865_700015468_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_AGTACACGTC">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-          <MEMBER refname="700015470" refcenter="NCBI" member_name="F6AVWTA02_2866_700015470_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_GCTCTGTACT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-          <MEMBER refname="700015438" refcenter="NCBI" member_name="F6AVWTA02_2878_700015438_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_ATGTTCTAGT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-          <MEMBER refname="700015766" refcenter="NCBI" member_name="F6AVWTA02_2898_700015766_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_CATGAGCGTG">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-          <MEMBER refname="700016371" refcenter="NCBI" member_name="F6AVWTA02_2907_700016371_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_TCTCTGTACT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-        </POOL>
-      </SAMPLE_DESCRIPTOR>
-      <LIBRARY_DESCRIPTOR>
-        <LIBRARY_NAME>bodysites_F6AVWTA02</LIBRARY_NAME>
-        <LIBRARY_STRATEGY>AMPLICON</LIBRARY_STRATEGY>
-        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
-        <LIBRARY_SELECTION>PCR</LIBRARY_SELECTION>
-        <LIBRARY_LAYOUT>
-          <SINGLE></SINGLE>
-        </LIBRARY_LAYOUT>
-        <LIBRARY_CONSTRUCTION_PROTOCOL>Dummy Protocol</LIBRARY_CONSTRUCTION_PROTOCOL>
-      </LIBRARY_DESCRIPTOR>
-      <SPOT_DESCRIPTOR>
-        <SPOT_DECODE_SPEC>
-          <READ_SPEC>
-            <READ_INDEX>0</READ_INDEX>
-            <READ_CLASS>Technical Read</READ_CLASS>
-            <READ_TYPE>Adapter</READ_TYPE>
-            <EXPECTED_BASECALL>TCAG</EXPECTED_BASECALL>
-          </READ_SPEC>
-          <READ_SPEC>
-            <READ_INDEX>1</READ_INDEX>
-            <READ_LABEL>barcode</READ_LABEL>
-            <READ_CLASS>Technical Read</READ_CLASS>
-            <READ_TYPE>BarCode</READ_TYPE>
-            <EXPECTED_BASECALL_TABLE>
-              <BASECALL read_group_tag="F6AVWTA02_ATGTTCTAGT" min_match="10" max_mismatch="0" match_edge="full">ATGTTCTAGT</BASECALL>
-              <BASECALL read_group_tag="F6AVWTA02_AGTACACGTC" min_match="10" max_mismatch="0" match_edge="full">AGTACACGTC</BASECALL>
-              <BASECALL read_group_tag="F6AVWTA02_GCTCTGTACT" min_match="10" max_mismatch="0" match_edge="full">GCTCTGTACT</BASECALL>
-              <BASECALL read_group_tag="F6AVWTA02_CATGAGCGTG" min_match="10" max_mismatch="0" match_edge="full">CATGAGCGTG</BASECALL>
-              <BASECALL read_group_tag="F6AVWTA02_TCTCTGTACT" min_match="10" max_mismatch="0" match_edge="full">TCTCTGTACT</BASECALL>
-            </EXPECTED_BASECALL_TABLE>
-          </READ_SPEC>
-          <READ_SPEC>
-            <READ_INDEX>2</READ_INDEX>
-            <READ_LABEL>rRNA_primer</READ_LABEL>
-            <READ_CLASS>Technical Read</READ_CLASS>
-            <READ_TYPE>Primer</READ_TYPE>
-            <EXPECTED_BASECALL_TABLE>
-              <BASECALL read_group_tag="V1-V3" min_match="17" max_mismatch="0" match_edge="full">TAATCCGCGGCTGCTGG</BASECALL>
-            </EXPECTED_BASECALL_TABLE>
-          </READ_SPEC>
-          <READ_SPEC>
-            <READ_INDEX>3</READ_INDEX>
-            <READ_CLASS>Application Read</READ_CLASS>
-            <READ_TYPE>Forward</READ_TYPE>
-            <RELATIVE_ORDER follows_read_index="2"/>
-          </READ_SPEC>
-        </SPOT_DECODE_SPEC>
-      </SPOT_DESCRIPTOR>
-      </DESIGN>
-          <PLATFORM>
-        <LS454>
-            <INSTRUMENT_MODEL>454 GS FLX</INSTRUMENT_MODEL>
-            <FLOW_SEQUENCE>TACG</FLOW_SEQUENCE>
-            <FLOW_COUNT>400</FLOW_COUNT>
-        </LS454>
-    </PLATFORM>
-      <PROCESSING>
-        <BASE_CALLS>
-                    <SEQUENCE_SPACE>Base Space</SEQUENCE_SPACE>
-                    <BASE_CALLER>454 BaseCaller</BASE_CALLER>
-        </BASE_CALLS>
-        <QUALITY_SCORES qtype="phred">
-                    <QUALITY_SCORER>454 BaseCaller</QUALITY_SCORER>
-                    <NUMBER_OF_LEVELS>40</NUMBER_OF_LEVELS>
-                    <MULTIPLIER>1.0</MULTIPLIER>
-        </QUALITY_SCORES>
-      </PROCESSING>
-      <EXPERIMENT_LINKS>
-        <EXPERIMENT_LINK>
-          <URL_LINK>
-            <LABEL>bodysites Library Construction Protocol</LABEL>
-            <URL>http://hmpdacc.org/doc/HMP_MDG_454_16S_Protocol_V4_2_102109.pdf</URL>
-          </URL_LINK>
-        </EXPERIMENT_LINK>
-      </EXPERIMENT_LINKS>
-      <EXPERIMENT_ATTRIBUTES>
-        <EXPERIMENT_ATTRIBUTE>
-          <TAG>library_strategy</TAG>
-          <VALUE>targeted-locus</VALUE>
-        </EXPERIMENT_ATTRIBUTE>
-        <EXPERIMENT_ATTRIBUTE>
-          <TAG>gene</TAG>
-          <VALUE>16S rRNA V1-V3 region</VALUE>
-        </EXPERIMENT_ATTRIBUTE>
-      </EXPERIMENT_ATTRIBUTES>
-  </EXPERIMENT>
   <EXPERIMENT alias="bodysites_F6AVWTA01" center_name="JCVI">
     <TITLE>Survey of multiple body sites</TITLE>
     <STUDY_REF refname="bodysites_study" refcenter="NCBI"/>
@@ -741,11 +917,26 @@ experiment_with_default_sample_xml_str = '''<?xml version="1.0" encoding="UTF-8"
       <DESIGN_DESCRIPTION>Pool of samples from different individual subjects</DESIGN_DESCRIPTION>
       <SAMPLE_DESCRIPTOR refname="unidentified-protected" refcenter="NCBI" accession="SRS026543">
         <POOL>
-          <MEMBER refname="700015468" refcenter="NCBI" member_name="F6AVWTA01_2865_700015468_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_AGTACGTACT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-          <MEMBER refname="700015470" refcenter="NCBI" member_name="F6AVWTA01_2866_700015470_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_GCTCTACGTC">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-          <MEMBER refname="700015438" refcenter="NCBI" member_name="F6AVWTA01_2878_700015438_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_ATGTTCGATG">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-          <MEMBER refname="700015766" refcenter="NCBI" member_name="F6AVWTA01_2898_700015766_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_CATGAGCGTC">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-          <MEMBER refname="700016371" refcenter="NCBI" member_name="F6AVWTA01_2907_700016371_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_TCTCTCTAGT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+          <MEMBER refname="700015438" refcenter="NCBI" member_name="F6AVWTA01_2878_700015438_V1-V3" proportion="0.014492754">
+            <READ_LABEL read_group_tag="F6AVWTA01_ATGTTCGATG">barcode</READ_LABEL>
+            <READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL>
+          </MEMBER>
+          <MEMBER refname="700015470" refcenter="NCBI" member_name="F6AVWTA01_2866_700015470_V1-V3" proportion="0.014492754">
+            <READ_LABEL read_group_tag="F6AVWTA01_GCTCTACGTC">barcode</READ_LABEL>
+            <READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL>
+          </MEMBER>
+          <MEMBER refname="700015766" refcenter="NCBI" member_name="F6AVWTA01_2898_700015766_V1-V3" proportion="0.014492754">
+            <READ_LABEL read_group_tag="F6AVWTA01_CATGAGCGTC">barcode</READ_LABEL>
+            <READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL>
+          </MEMBER>
+          <MEMBER refname="700015468" refcenter="NCBI" member_name="F6AVWTA01_2865_700015468_V1-V3" proportion="0.014492754">
+            <READ_LABEL read_group_tag="F6AVWTA01_AGTACGTACT">barcode</READ_LABEL>
+            <READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL>
+          </MEMBER>
+          <MEMBER refname="700016371" refcenter="NCBI" member_name="F6AVWTA01_2907_700016371_V1-V3" proportion="0.014492754">
+            <READ_LABEL read_group_tag="F6AVWTA01_TCTCTCTAGT">barcode</READ_LABEL>
+            <READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL>
+          </MEMBER>
         </POOL>
       </SAMPLE_DESCRIPTOR>
       <LIBRARY_DESCRIPTOR>
@@ -773,9 +964,9 @@ experiment_with_default_sample_xml_str = '''<?xml version="1.0" encoding="UTF-8"
             <READ_TYPE>BarCode</READ_TYPE>
             <EXPECTED_BASECALL_TABLE>
               <BASECALL match_edge="full" max_mismatch="0" read_group_tag="F6AVWTA01_ATGTTCGATG" min_match="10">ATGTTCGATG</BASECALL>
-              <BASECALL match_edge="full" max_mismatch="0" read_group_tag="F6AVWTA01_AGTACGTACT" min_match="10">AGTACGTACT</BASECALL>
               <BASECALL match_edge="full" max_mismatch="0" read_group_tag="F6AVWTA01_GCTCTACGTC" min_match="10">GCTCTACGTC</BASECALL>
               <BASECALL match_edge="full" max_mismatch="0" read_group_tag="F6AVWTA01_CATGAGCGTC" min_match="10">CATGAGCGTC</BASECALL>
+              <BASECALL match_edge="full" max_mismatch="0" read_group_tag="F6AVWTA01_AGTACGTACT" min_match="10">AGTACGTACT</BASECALL>
               <BASECALL match_edge="full" max_mismatch="0" read_group_tag="F6AVWTA01_TCTCTCTAGT" min_match="10">TCTCTCTAGT</BASECALL>
             </EXPECTED_BASECALL_TABLE>
           </READ_SPEC>
@@ -796,148 +987,163 @@ experiment_with_default_sample_xml_str = '''<?xml version="1.0" encoding="UTF-8"
           </READ_SPEC>
         </SPOT_DECODE_SPEC>
       </SPOT_DESCRIPTOR>
-      </DESIGN>
-          <PLATFORM>
-        <LS454>
-            <INSTRUMENT_MODEL>454 GS FLX</INSTRUMENT_MODEL>
-            <FLOW_SEQUENCE>TACG</FLOW_SEQUENCE>
-            <FLOW_COUNT>400</FLOW_COUNT>
-        </LS454>
+    </DESIGN>
+    <PLATFORM>
+      <LS454>
+        <INSTRUMENT_MODEL>454 GS FLX</INSTRUMENT_MODEL>
+        <FLOW_SEQUENCE>TACG</FLOW_SEQUENCE>
+        <FLOW_COUNT>400</FLOW_COUNT>
+      </LS454>
     </PLATFORM>
-      <PROCESSING>
-        <BASE_CALLS>
-                    <SEQUENCE_SPACE>Base Space</SEQUENCE_SPACE>
-                    <BASE_CALLER>454 BaseCaller</BASE_CALLER>
-        </BASE_CALLS>
-        <QUALITY_SCORES qtype="phred">
-                    <QUALITY_SCORER>454 BaseCaller</QUALITY_SCORER>
-                    <NUMBER_OF_LEVELS>40</NUMBER_OF_LEVELS>
-                    <MULTIPLIER>1.0</MULTIPLIER>
-        </QUALITY_SCORES>
-      </PROCESSING>
-      <EXPERIMENT_LINKS>
-        <EXPERIMENT_LINK>
-          <URL_LINK>
-            <LABEL>bodysites Library Construction Protocol</LABEL>
-            <URL>http://hmpdacc.org/doc/HMP_MDG_454_16S_Protocol_V4_2_102109.pdf</URL>
-          </URL_LINK>
-        </EXPERIMENT_LINK>
-      </EXPERIMENT_LINKS>
-      <EXPERIMENT_ATTRIBUTES>
-        <EXPERIMENT_ATTRIBUTE>
-          <TAG>library_strategy</TAG>
-          <VALUE>targeted-locus</VALUE>
-        </EXPERIMENT_ATTRIBUTE>
-        <EXPERIMENT_ATTRIBUTE>
-          <TAG>gene</TAG>
-          <VALUE>16S rRNA V1-V3 region</VALUE>
-        </EXPERIMENT_ATTRIBUTE>
-      </EXPERIMENT_ATTRIBUTES>
+    <PROCESSING>
+      <BASE_CALLS>
+        <SEQUENCE_SPACE>Base Space</SEQUENCE_SPACE>
+        <BASE_CALLER>454 BaseCaller</BASE_CALLER>
+      </BASE_CALLS>
+      <QUALITY_SCORES qtype="phred">
+        <QUALITY_SCORER>454 BaseCaller</QUALITY_SCORER>
+        <NUMBER_OF_LEVELS>40</NUMBER_OF_LEVELS>
+        <MULTIPLIER>1.0</MULTIPLIER>
+      </QUALITY_SCORES>
+    </PROCESSING>
+    <EXPERIMENT_LINKS>
+      <EXPERIMENT_LINK>
+        <URL_LINK>
+          <LABEL>bodysites Library Construction Protocol</LABEL>
+          <URL>http://hmpdacc.org/doc/HMP_MDG_454_16S_Protocol_V4_2_102109.pdf</URL>
+        </URL_LINK>
+      </EXPERIMENT_LINK>
+    </EXPERIMENT_LINKS>
+    <EXPERIMENT_ATTRIBUTES>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>library_strategy</TAG>
+        <VALUE>targeted-locus</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>gene</TAG>
+        <VALUE>16S rRNA V1-V3 region</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+    </EXPERIMENT_ATTRIBUTES>
+  </EXPERIMENT>
+  <EXPERIMENT alias="bodysites_F6AVWTA02" center_name="JCVI">
+    <TITLE>Survey of multiple body sites</TITLE>
+    <STUDY_REF refname="bodysites_study" refcenter="NCBI"/>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>Pool of samples from different individual subjects</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR refname="unidentified-protected" refcenter="NCBI" accession="SRS026543">
+        <POOL>
+          <MEMBER refname="700015438" refcenter="NCBI" member_name="F6AVWTA02_2878_700015438_V1-V3" proportion="0.014492754">
+            <READ_LABEL read_group_tag="F6AVWTA02_ATGTTCTAGT">barcode</READ_LABEL>
+            <READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL>
+          </MEMBER>
+          <MEMBER refname="700015470" refcenter="NCBI" member_name="F6AVWTA02_2866_700015470_V1-V3" proportion="0.014492754">
+            <READ_LABEL read_group_tag="F6AVWTA02_GCTCTGTACT">barcode</READ_LABEL>
+            <READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL>
+          </MEMBER>
+          <MEMBER refname="700015766" refcenter="NCBI" member_name="F6AVWTA02_2898_700015766_V1-V3" proportion="0.014492754">
+            <READ_LABEL read_group_tag="F6AVWTA02_CATGAGCGTG">barcode</READ_LABEL>
+            <READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL>
+          </MEMBER>
+          <MEMBER refname="700015468" refcenter="NCBI" member_name="F6AVWTA02_2865_700015468_V1-V3" proportion="0.014492754">
+            <READ_LABEL read_group_tag="F6AVWTA02_AGTACACGTC">barcode</READ_LABEL>
+            <READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL>
+          </MEMBER>
+          <MEMBER refname="700016371" refcenter="NCBI" member_name="F6AVWTA02_2907_700016371_V1-V3" proportion="0.014492754">
+            <READ_LABEL read_group_tag="F6AVWTA02_TCTCTGTACT">barcode</READ_LABEL>
+            <READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL>
+          </MEMBER>
+        </POOL>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>bodysites_F6AVWTA02</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>AMPLICON</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>PCR</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <SINGLE></SINGLE>
+        </LIBRARY_LAYOUT>
+        <LIBRARY_CONSTRUCTION_PROTOCOL>Dummy Protocol</LIBRARY_CONSTRUCTION_PROTOCOL>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Technical Read</READ_CLASS>
+            <READ_TYPE>Adapter</READ_TYPE>
+            <EXPECTED_BASECALL>TCAG</EXPECTED_BASECALL>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>1</READ_INDEX>
+            <READ_LABEL>barcode</READ_LABEL>
+            <READ_CLASS>Technical Read</READ_CLASS>
+            <READ_TYPE>BarCode</READ_TYPE>
+            <EXPECTED_BASECALL_TABLE>
+              <BASECALL read_group_tag="F6AVWTA02_ATGTTCTAGT" min_match="10" max_mismatch="0" match_edge="full">ATGTTCTAGT</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA02_GCTCTGTACT" min_match="10" max_mismatch="0" match_edge="full">GCTCTGTACT</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA02_CATGAGCGTG" min_match="10" max_mismatch="0" match_edge="full">CATGAGCGTG</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA02_AGTACACGTC" min_match="10" max_mismatch="0" match_edge="full">AGTACACGTC</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA02_TCTCTGTACT" min_match="10" max_mismatch="0" match_edge="full">TCTCTGTACT</BASECALL>
+            </EXPECTED_BASECALL_TABLE>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>2</READ_INDEX>
+            <READ_LABEL>rRNA_primer</READ_LABEL>
+            <READ_CLASS>Technical Read</READ_CLASS>
+            <READ_TYPE>Primer</READ_TYPE>
+            <EXPECTED_BASECALL_TABLE>
+              <BASECALL read_group_tag="V1-V3" min_match="17" max_mismatch="0" match_edge="full">TAATCCGCGGCTGCTGG</BASECALL>
+            </EXPECTED_BASECALL_TABLE>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>3</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <RELATIVE_ORDER follows_read_index="2"/>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <LS454>
+        <INSTRUMENT_MODEL>454 GS FLX</INSTRUMENT_MODEL>
+        <FLOW_SEQUENCE>TACG</FLOW_SEQUENCE>
+        <FLOW_COUNT>400</FLOW_COUNT>
+      </LS454>
+    </PLATFORM>
+    <PROCESSING>
+      <BASE_CALLS>
+        <SEQUENCE_SPACE>Base Space</SEQUENCE_SPACE>
+        <BASE_CALLER>454 BaseCaller</BASE_CALLER>
+      </BASE_CALLS>
+      <QUALITY_SCORES qtype="phred">
+        <QUALITY_SCORER>454 BaseCaller</QUALITY_SCORER>
+        <NUMBER_OF_LEVELS>40</NUMBER_OF_LEVELS>
+        <MULTIPLIER>1.0</MULTIPLIER>
+      </QUALITY_SCORES>
+    </PROCESSING>
+    <EXPERIMENT_LINKS>
+      <EXPERIMENT_LINK>
+        <URL_LINK>
+          <LABEL>bodysites Library Construction Protocol</LABEL>
+          <URL>http://hmpdacc.org/doc/HMP_MDG_454_16S_Protocol_V4_2_102109.pdf</URL>
+        </URL_LINK>
+      </EXPERIMENT_LINK>
+    </EXPERIMENT_LINKS>
+    <EXPERIMENT_ATTRIBUTES>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>library_strategy</TAG>
+        <VALUE>targeted-locus</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>gene</TAG>
+        <VALUE>16S rRNA V1-V3 region</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+    </EXPERIMENT_ATTRIBUTES>
   </EXPERIMENT>
 </EXPERIMENT_SET>'''
 
 experiment_with_accessions_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
 <EXPERIMENT_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <EXPERIMENT alias="bodysites_F6AVWTA02" center_name="JCVI">
-    <TITLE>Survey of multiple body sites</TITLE>
-    <STUDY_REF refname="bodysites_study" refcenter="NCBI" accession="SRP001"/>
-    <DESIGN>
-      <DESIGN_DESCRIPTION>Pool of samples from different individual subjects</DESIGN_DESCRIPTION>
-      <SAMPLE_DESCRIPTOR refcenter="NCBI" accession="SRS077">
-        <POOL>
-          <MEMBER refname="700015468" refcenter="NCBI" member_name="F6AVWTA02_2865_700015468_V1-V3" proportion="0.014492754" accession="SRS008"><READ_LABEL read_group_tag="F6AVWTA02_AGTACACGTC">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-          <MEMBER refname="700015470" refcenter="NCBI" member_name="F6AVWTA02_2866_700015470_V1-V3" proportion="0.014492754" accession="SRS004"><READ_LABEL read_group_tag="F6AVWTA02_GCTCTGTACT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-          <MEMBER refname="700015438" refcenter="NCBI" member_name="F6AVWTA02_2878_700015438_V1-V3" proportion="0.014492754" accession="SRS002"><READ_LABEL read_group_tag="F6AVWTA02_ATGTTCTAGT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-          <MEMBER refname="700015766" refcenter="NCBI" member_name="F6AVWTA02_2898_700015766_V1-V3" proportion="0.014492754" accession="SRS006"><READ_LABEL read_group_tag="F6AVWTA02_CATGAGCGTG">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-          <MEMBER refname="700016371" refcenter="NCBI" member_name="F6AVWTA02_2907_700016371_V1-V3" proportion="0.014492754" accession="SRS010"><READ_LABEL read_group_tag="F6AVWTA02_TCTCTGTACT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-        </POOL>
-      </SAMPLE_DESCRIPTOR>
-      <LIBRARY_DESCRIPTOR>
-        <LIBRARY_NAME>bodysites_F6AVWTA02</LIBRARY_NAME>
-        <LIBRARY_STRATEGY>AMPLICON</LIBRARY_STRATEGY>
-        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
-        <LIBRARY_SELECTION>PCR</LIBRARY_SELECTION>
-        <LIBRARY_LAYOUT>
-          <SINGLE></SINGLE>
-        </LIBRARY_LAYOUT>
-        <LIBRARY_CONSTRUCTION_PROTOCOL>Dummy Protocol</LIBRARY_CONSTRUCTION_PROTOCOL>
-      </LIBRARY_DESCRIPTOR>
-      <SPOT_DESCRIPTOR>
-        <SPOT_DECODE_SPEC>
-          <READ_SPEC>
-            <READ_INDEX>0</READ_INDEX>
-            <READ_CLASS>Technical Read</READ_CLASS>
-            <READ_TYPE>Adapter</READ_TYPE>
-            <EXPECTED_BASECALL>TCAG</EXPECTED_BASECALL>
-          </READ_SPEC>
-          <READ_SPEC>
-            <READ_INDEX>1</READ_INDEX>
-            <READ_LABEL>barcode</READ_LABEL>
-            <READ_CLASS>Technical Read</READ_CLASS>
-            <READ_TYPE>BarCode</READ_TYPE>
-            <EXPECTED_BASECALL_TABLE>
-              <BASECALL read_group_tag="F6AVWTA02_ATGTTCTAGT" min_match="10" max_mismatch="0" match_edge="full">ATGTTCTAGT</BASECALL>
-              <BASECALL read_group_tag="F6AVWTA02_AGTACACGTC" min_match="10" max_mismatch="0" match_edge="full">AGTACACGTC</BASECALL>
-              <BASECALL read_group_tag="F6AVWTA02_GCTCTGTACT" min_match="10" max_mismatch="0" match_edge="full">GCTCTGTACT</BASECALL>
-              <BASECALL read_group_tag="F6AVWTA02_CATGAGCGTG" min_match="10" max_mismatch="0" match_edge="full">CATGAGCGTG</BASECALL>
-              <BASECALL read_group_tag="F6AVWTA02_TCTCTGTACT" min_match="10" max_mismatch="0" match_edge="full">TCTCTGTACT</BASECALL>
-            </EXPECTED_BASECALL_TABLE>
-          </READ_SPEC>
-          <READ_SPEC>
-            <READ_INDEX>2</READ_INDEX>
-            <READ_LABEL>rRNA_primer</READ_LABEL>
-            <READ_CLASS>Technical Read</READ_CLASS>
-            <READ_TYPE>Primer</READ_TYPE>
-            <EXPECTED_BASECALL_TABLE>
-              <BASECALL read_group_tag="V1-V3" min_match="17" max_mismatch="0" match_edge="full">TAATCCGCGGCTGCTGG</BASECALL>
-            </EXPECTED_BASECALL_TABLE>
-          </READ_SPEC>
-          <READ_SPEC>
-            <READ_INDEX>3</READ_INDEX>
-            <READ_CLASS>Application Read</READ_CLASS>
-            <READ_TYPE>Forward</READ_TYPE>
-            <RELATIVE_ORDER follows_read_index="2"/>
-          </READ_SPEC>
-        </SPOT_DECODE_SPEC>
-      </SPOT_DESCRIPTOR>
-      </DESIGN>
-          <PLATFORM>
-        <LS454>
-            <INSTRUMENT_MODEL>454 GS FLX</INSTRUMENT_MODEL>
-            <FLOW_SEQUENCE>TACG</FLOW_SEQUENCE>
-            <FLOW_COUNT>400</FLOW_COUNT>
-        </LS454>
-    </PLATFORM>
-      <PROCESSING>
-        <BASE_CALLS>
-                    <SEQUENCE_SPACE>Base Space</SEQUENCE_SPACE>
-                    <BASE_CALLER>454 BaseCaller</BASE_CALLER>
-        </BASE_CALLS>
-        <QUALITY_SCORES qtype="phred">
-                    <QUALITY_SCORER>454 BaseCaller</QUALITY_SCORER>
-                    <NUMBER_OF_LEVELS>40</NUMBER_OF_LEVELS>
-                    <MULTIPLIER>1.0</MULTIPLIER>
-        </QUALITY_SCORES>
-      </PROCESSING>
-      <EXPERIMENT_LINKS>
-        <EXPERIMENT_LINK>
-          <URL_LINK>
-            <LABEL>bodysites Library Construction Protocol</LABEL>
-            <URL>http://hmpdacc.org/doc/HMP_MDG_454_16S_Protocol_V4_2_102109.pdf</URL>
-          </URL_LINK>
-        </EXPERIMENT_LINK>
-      </EXPERIMENT_LINKS>
-      <EXPERIMENT_ATTRIBUTES>
-        <EXPERIMENT_ATTRIBUTE>
-          <TAG>library_strategy</TAG>
-          <VALUE>targeted-locus</VALUE>
-        </EXPERIMENT_ATTRIBUTE>
-        <EXPERIMENT_ATTRIBUTE>
-          <TAG>gene</TAG>
-          <VALUE>16S rRNA V1-V3 region</VALUE>
-        </EXPERIMENT_ATTRIBUTE>
-      </EXPERIMENT_ATTRIBUTES>
-  </EXPERIMENT>
   <EXPERIMENT alias="bodysites_F6AVWTA01" center_name="JCVI">
     <TITLE>Survey of multiple body sites</TITLE>
     <STUDY_REF refname="bodysites_study" refcenter="NCBI" accession="SRP001"/>
@@ -945,11 +1151,26 @@ experiment_with_accessions_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
       <DESIGN_DESCRIPTION>Pool of samples from different individual subjects</DESIGN_DESCRIPTION>
       <SAMPLE_DESCRIPTOR refcenter="NCBI" accession="SRS077">
         <POOL>
-          <MEMBER refname="700015468" refcenter="NCBI" member_name="F6AVWTA01_2865_700015468_V1-V3" proportion="0.014492754" accession="SRS007"><READ_LABEL read_group_tag="F6AVWTA01_AGTACGTACT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-          <MEMBER refname="700015470" refcenter="NCBI" member_name="F6AVWTA01_2866_700015470_V1-V3" proportion="0.014492754" accession="SRS003"><READ_LABEL read_group_tag="F6AVWTA01_GCTCTACGTC">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-          <MEMBER refname="700015438" refcenter="NCBI" member_name="F6AVWTA01_2878_700015438_V1-V3" proportion="0.014492754" accession="SRS001"><READ_LABEL read_group_tag="F6AVWTA01_ATGTTCGATG">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-          <MEMBER refname="700015766" refcenter="NCBI" member_name="F6AVWTA01_2898_700015766_V1-V3" proportion="0.014492754" accession="SRS005"><READ_LABEL read_group_tag="F6AVWTA01_CATGAGCGTC">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-          <MEMBER refname="700016371" refcenter="NCBI" member_name="F6AVWTA01_2907_700016371_V1-V3" proportion="0.014492754" accession="SRS009"><READ_LABEL read_group_tag="F6AVWTA01_TCTCTCTAGT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+          <MEMBER refname="700015438" refcenter="NCBI" member_name="F6AVWTA01_2878_700015438_V1-V3" proportion="0.014492754" accession="SRS001">
+            <READ_LABEL read_group_tag="F6AVWTA01_ATGTTCGATG">barcode</READ_LABEL>
+            <READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL>
+          </MEMBER>
+          <MEMBER refname="700015470" refcenter="NCBI" member_name="F6AVWTA01_2866_700015470_V1-V3" proportion="0.014492754" accession="SRS003">
+            <READ_LABEL read_group_tag="F6AVWTA01_GCTCTACGTC">barcode</READ_LABEL>
+            <READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL>
+          </MEMBER>
+          <MEMBER refname="700015766" refcenter="NCBI" member_name="F6AVWTA01_2898_700015766_V1-V3" proportion="0.014492754" accession="SRS005">
+            <READ_LABEL read_group_tag="F6AVWTA01_CATGAGCGTC">barcode</READ_LABEL>
+            <READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL>
+          </MEMBER>
+          <MEMBER refname="700015468" refcenter="NCBI" member_name="F6AVWTA01_2865_700015468_V1-V3" proportion="0.014492754" accession="SRS007">
+            <READ_LABEL read_group_tag="F6AVWTA01_AGTACGTACT">barcode</READ_LABEL>
+            <READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL>
+          </MEMBER>
+          <MEMBER refname="700016371" refcenter="NCBI" member_name="F6AVWTA01_2907_700016371_V1-V3" proportion="0.014492754" accession="SRS009">
+            <READ_LABEL read_group_tag="F6AVWTA01_TCTCTCTAGT">barcode</READ_LABEL>
+            <READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL>
+          </MEMBER>
         </POOL>
       </SAMPLE_DESCRIPTOR>
       <LIBRARY_DESCRIPTOR>
@@ -977,9 +1198,9 @@ experiment_with_accessions_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
             <READ_TYPE>BarCode</READ_TYPE>
             <EXPECTED_BASECALL_TABLE>
               <BASECALL read_group_tag="F6AVWTA01_ATGTTCGATG" min_match="10" max_mismatch="0" match_edge="full">ATGTTCGATG</BASECALL>
-              <BASECALL read_group_tag="F6AVWTA01_AGTACGTACT" min_match="10" max_mismatch="0" match_edge="full">AGTACGTACT</BASECALL>
               <BASECALL read_group_tag="F6AVWTA01_GCTCTACGTC" min_match="10" max_mismatch="0" match_edge="full">GCTCTACGTC</BASECALL>
               <BASECALL read_group_tag="F6AVWTA01_CATGAGCGTC" min_match="10" max_mismatch="0" match_edge="full">CATGAGCGTC</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA01_AGTACGTACT" min_match="10" max_mismatch="0" match_edge="full">AGTACGTACT</BASECALL>
               <BASECALL read_group_tag="F6AVWTA01_TCTCTCTAGT" min_match="10" max_mismatch="0" match_edge="full">TCTCTCTAGT</BASECALL>
             </EXPECTED_BASECALL_TABLE>
           </READ_SPEC>
@@ -1000,121 +1221,163 @@ experiment_with_accessions_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
           </READ_SPEC>
         </SPOT_DECODE_SPEC>
       </SPOT_DESCRIPTOR>
-      </DESIGN>
-          <PLATFORM>
-        <LS454>
-            <INSTRUMENT_MODEL>454 GS FLX</INSTRUMENT_MODEL>
-            <FLOW_SEQUENCE>TACG</FLOW_SEQUENCE>
-            <FLOW_COUNT>400</FLOW_COUNT>
-        </LS454>
+    </DESIGN>
+    <PLATFORM>
+      <LS454>
+        <INSTRUMENT_MODEL>454 GS FLX</INSTRUMENT_MODEL>
+        <FLOW_SEQUENCE>TACG</FLOW_SEQUENCE>
+        <FLOW_COUNT>400</FLOW_COUNT>
+      </LS454>
     </PLATFORM>
-      <PROCESSING>
-        <BASE_CALLS>
-                    <SEQUENCE_SPACE>Base Space</SEQUENCE_SPACE>
-                    <BASE_CALLER>454 BaseCaller</BASE_CALLER>
-        </BASE_CALLS>
-        <QUALITY_SCORES qtype="phred">
-                    <QUALITY_SCORER>454 BaseCaller</QUALITY_SCORER>
-                    <NUMBER_OF_LEVELS>40</NUMBER_OF_LEVELS>
-                    <MULTIPLIER>1.0</MULTIPLIER>
-        </QUALITY_SCORES>
-      </PROCESSING>
-      <EXPERIMENT_LINKS>
-        <EXPERIMENT_LINK>
-          <URL_LINK>
-            <LABEL>bodysites Library Construction Protocol</LABEL>
-            <URL>http://hmpdacc.org/doc/HMP_MDG_454_16S_Protocol_V4_2_102109.pdf</URL>
-          </URL_LINK>
-        </EXPERIMENT_LINK>
-      </EXPERIMENT_LINKS>
-      <EXPERIMENT_ATTRIBUTES>
-        <EXPERIMENT_ATTRIBUTE>
-          <TAG>library_strategy</TAG>
-          <VALUE>targeted-locus</VALUE>
-        </EXPERIMENT_ATTRIBUTE>
-        <EXPERIMENT_ATTRIBUTE>
-          <TAG>gene</TAG>
-          <VALUE>16S rRNA V1-V3 region</VALUE>
-        </EXPERIMENT_ATTRIBUTE>
-      </EXPERIMENT_ATTRIBUTES>
+    <PROCESSING>
+      <BASE_CALLS>
+        <SEQUENCE_SPACE>Base Space</SEQUENCE_SPACE>
+        <BASE_CALLER>454 BaseCaller</BASE_CALLER>
+      </BASE_CALLS>
+      <QUALITY_SCORES qtype="phred">
+        <QUALITY_SCORER>454 BaseCaller</QUALITY_SCORER>
+        <NUMBER_OF_LEVELS>40</NUMBER_OF_LEVELS>
+        <MULTIPLIER>1.0</MULTIPLIER>
+      </QUALITY_SCORES>
+    </PROCESSING>
+    <EXPERIMENT_LINKS>
+      <EXPERIMENT_LINK>
+        <URL_LINK>
+          <LABEL>bodysites Library Construction Protocol</LABEL>
+          <URL>http://hmpdacc.org/doc/HMP_MDG_454_16S_Protocol_V4_2_102109.pdf</URL>
+        </URL_LINK>
+      </EXPERIMENT_LINK>
+    </EXPERIMENT_LINKS>
+    <EXPERIMENT_ATTRIBUTES>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>library_strategy</TAG>
+        <VALUE>targeted-locus</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>gene</TAG>
+        <VALUE>16S rRNA V1-V3 region</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+    </EXPERIMENT_ATTRIBUTES>
+  </EXPERIMENT>
+  <EXPERIMENT alias="bodysites_F6AVWTA02" center_name="JCVI">
+    <TITLE>Survey of multiple body sites</TITLE>
+    <STUDY_REF refname="bodysites_study" refcenter="NCBI" accession="SRP001"/>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>Pool of samples from different individual subjects</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR refcenter="NCBI" accession="SRS077">
+        <POOL>
+          <MEMBER refname="700015438" refcenter="NCBI" member_name="F6AVWTA02_2878_700015438_V1-V3" proportion="0.014492754" accession="SRS002">
+            <READ_LABEL read_group_tag="F6AVWTA02_ATGTTCTAGT">barcode</READ_LABEL>
+            <READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL>
+          </MEMBER>
+          <MEMBER refname="700015470" refcenter="NCBI" member_name="F6AVWTA02_2866_700015470_V1-V3" proportion="0.014492754" accession="SRS004">
+            <READ_LABEL read_group_tag="F6AVWTA02_GCTCTGTACT">barcode</READ_LABEL>
+            <READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL>
+          </MEMBER>
+          <MEMBER refname="700015766" refcenter="NCBI" member_name="F6AVWTA02_2898_700015766_V1-V3" proportion="0.014492754" accession="SRS006">
+            <READ_LABEL read_group_tag="F6AVWTA02_CATGAGCGTG">barcode</READ_LABEL>
+            <READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL>
+          </MEMBER>
+          <MEMBER refname="700015468" refcenter="NCBI" member_name="F6AVWTA02_2865_700015468_V1-V3" proportion="0.014492754" accession="SRS008">
+            <READ_LABEL read_group_tag="F6AVWTA02_AGTACACGTC">barcode</READ_LABEL>
+            <READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL>
+          </MEMBER>
+          <MEMBER refname="700016371" refcenter="NCBI" member_name="F6AVWTA02_2907_700016371_V1-V3" proportion="0.014492754" accession="SRS010">
+            <READ_LABEL read_group_tag="F6AVWTA02_TCTCTGTACT">barcode</READ_LABEL>
+            <READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL>
+          </MEMBER>
+        </POOL>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>bodysites_F6AVWTA02</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>AMPLICON</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>PCR</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <SINGLE></SINGLE>
+        </LIBRARY_LAYOUT>
+        <LIBRARY_CONSTRUCTION_PROTOCOL>Dummy Protocol</LIBRARY_CONSTRUCTION_PROTOCOL>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Technical Read</READ_CLASS>
+            <READ_TYPE>Adapter</READ_TYPE>
+            <EXPECTED_BASECALL>TCAG</EXPECTED_BASECALL>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>1</READ_INDEX>
+            <READ_LABEL>barcode</READ_LABEL>
+            <READ_CLASS>Technical Read</READ_CLASS>
+            <READ_TYPE>BarCode</READ_TYPE>
+            <EXPECTED_BASECALL_TABLE>
+              <BASECALL read_group_tag="F6AVWTA02_ATGTTCTAGT" min_match="10" max_mismatch="0" match_edge="full">ATGTTCTAGT</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA02_GCTCTGTACT" min_match="10" max_mismatch="0" match_edge="full">GCTCTGTACT</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA02_CATGAGCGTG" min_match="10" max_mismatch="0" match_edge="full">CATGAGCGTG</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA02_AGTACACGTC" min_match="10" max_mismatch="0" match_edge="full">AGTACACGTC</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA02_TCTCTGTACT" min_match="10" max_mismatch="0" match_edge="full">TCTCTGTACT</BASECALL>
+            </EXPECTED_BASECALL_TABLE>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>2</READ_INDEX>
+            <READ_LABEL>rRNA_primer</READ_LABEL>
+            <READ_CLASS>Technical Read</READ_CLASS>
+            <READ_TYPE>Primer</READ_TYPE>
+            <EXPECTED_BASECALL_TABLE>
+              <BASECALL read_group_tag="V1-V3" min_match="17" max_mismatch="0" match_edge="full">TAATCCGCGGCTGCTGG</BASECALL>
+            </EXPECTED_BASECALL_TABLE>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>3</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <RELATIVE_ORDER follows_read_index="2"/>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <LS454>
+        <INSTRUMENT_MODEL>454 GS FLX</INSTRUMENT_MODEL>
+        <FLOW_SEQUENCE>TACG</FLOW_SEQUENCE>
+        <FLOW_COUNT>400</FLOW_COUNT>
+      </LS454>
+    </PLATFORM>
+    <PROCESSING>
+      <BASE_CALLS>
+        <SEQUENCE_SPACE>Base Space</SEQUENCE_SPACE>
+        <BASE_CALLER>454 BaseCaller</BASE_CALLER>
+      </BASE_CALLS>
+      <QUALITY_SCORES qtype="phred">
+        <QUALITY_SCORER>454 BaseCaller</QUALITY_SCORER>
+        <NUMBER_OF_LEVELS>40</NUMBER_OF_LEVELS>
+        <MULTIPLIER>1.0</MULTIPLIER>
+      </QUALITY_SCORES>
+    </PROCESSING>
+    <EXPERIMENT_LINKS>
+      <EXPERIMENT_LINK>
+        <URL_LINK>
+          <LABEL>bodysites Library Construction Protocol</LABEL>
+          <URL>http://hmpdacc.org/doc/HMP_MDG_454_16S_Protocol_V4_2_102109.pdf</URL>
+        </URL_LINK>
+      </EXPERIMENT_LINK>
+    </EXPERIMENT_LINKS>
+    <EXPERIMENT_ATTRIBUTES>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>library_strategy</TAG>
+        <VALUE>targeted-locus</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>gene</TAG>
+        <VALUE>16S rRNA V1-V3 region</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+    </EXPERIMENT_ATTRIBUTES>
   </EXPERIMENT>
 </EXPERIMENT_SET>'''
 
 metagenomic_experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
 <EXPERIMENT_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <EXPERIMENT alias="bodysites_F6AVWTA02" center_name="JCVI">
-    <TITLE>Survey of multiple body sites</TITLE>
-    <STUDY_REF refname="bodysites_study" refcenter="NCBI"/>
-    <DESIGN>
-      <DESIGN_DESCRIPTION>Pool of samples from different individual subjects</DESIGN_DESCRIPTION>
-      <SAMPLE_DESCRIPTOR refname="bodysites_study_default" refcenter="NCBI">
-        <POOL>
-          <MEMBER refname="700015468" refcenter="NCBI" member_name="F6AVWTA02_2865_700015468_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_AGTACACGTC">barcode</READ_LABEL></MEMBER>
-          <MEMBER refname="700015470" refcenter="NCBI" member_name="F6AVWTA02_2866_700015470_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_GCTCTGTACT">barcode</READ_LABEL></MEMBER>
-          <MEMBER refname="700015438" refcenter="NCBI" member_name="F6AVWTA02_2878_700015438_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_ATGTTCTAGT">barcode</READ_LABEL></MEMBER>
-          <MEMBER refname="700015766" refcenter="NCBI" member_name="F6AVWTA02_2898_700015766_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_CATGAGCGTG">barcode</READ_LABEL></MEMBER>
-          <MEMBER refname="700016371" refcenter="NCBI" member_name="F6AVWTA02_2907_700016371_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_TCTCTGTACT">barcode</READ_LABEL></MEMBER>
-        </POOL>
-      </SAMPLE_DESCRIPTOR>
-      <LIBRARY_DESCRIPTOR>
-        <LIBRARY_NAME>bodysites_F6AVWTA02</LIBRARY_NAME>
-        <LIBRARY_STRATEGY>WGS</LIBRARY_STRATEGY>
-        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
-        <LIBRARY_SELECTION>RANDOM</LIBRARY_SELECTION>
-        <LIBRARY_LAYOUT>
-          <SINGLE></SINGLE>
-        </LIBRARY_LAYOUT>
-        <LIBRARY_CONSTRUCTION_PROTOCOL>Dummy Protocol</LIBRARY_CONSTRUCTION_PROTOCOL>
-      </LIBRARY_DESCRIPTOR>
-      <SPOT_DESCRIPTOR>
-        <SPOT_DECODE_SPEC>
-          <READ_SPEC>
-            <READ_INDEX>0</READ_INDEX>
-            <READ_CLASS>Technical Read</READ_CLASS>
-            <READ_TYPE>Adapter</READ_TYPE>
-            <EXPECTED_BASECALL>TCAG</EXPECTED_BASECALL>
-          </READ_SPEC>
-          <READ_SPEC>
-            <READ_INDEX>1</READ_INDEX>
-            <READ_LABEL>barcode</READ_LABEL>
-            <READ_CLASS>Technical Read</READ_CLASS>
-            <READ_TYPE>BarCode</READ_TYPE>
-            <EXPECTED_BASECALL_TABLE>
-              <BASECALL read_group_tag="F6AVWTA02_ATGTTCTAGT" min_match="10" max_mismatch="0" match_edge="full">ATGTTCTAGT</BASECALL>
-              <BASECALL read_group_tag="F6AVWTA02_AGTACACGTC" min_match="10" max_mismatch="0" match_edge="full">AGTACACGTC</BASECALL>
-              <BASECALL read_group_tag="F6AVWTA02_GCTCTGTACT" min_match="10" max_mismatch="0" match_edge="full">GCTCTGTACT</BASECALL>
-              <BASECALL read_group_tag="F6AVWTA02_CATGAGCGTG" min_match="10" max_mismatch="0" match_edge="full">CATGAGCGTG</BASECALL>
-              <BASECALL read_group_tag="F6AVWTA02_TCTCTGTACT" min_match="10" max_mismatch="0" match_edge="full">TCTCTGTACT</BASECALL>
-            </EXPECTED_BASECALL_TABLE>
-          </READ_SPEC>
-          <READ_SPEC>
-            <READ_INDEX>2</READ_INDEX>
-            <READ_CLASS>Application Read</READ_CLASS>
-            <READ_TYPE>Forward</READ_TYPE>
-            <RELATIVE_ORDER follows_read_index="1"/>
-          </READ_SPEC>
-        </SPOT_DECODE_SPEC>
-      </SPOT_DESCRIPTOR>
-      </DESIGN>
-          <PLATFORM>
-        <LS454>
-            <INSTRUMENT_MODEL>454 GS FLX</INSTRUMENT_MODEL>
-            <FLOW_SEQUENCE>TACG</FLOW_SEQUENCE>
-            <FLOW_COUNT>400</FLOW_COUNT>
-        </LS454>
-    </PLATFORM>
-      <PROCESSING>
-        <BASE_CALLS>
-                    <SEQUENCE_SPACE>Base Space</SEQUENCE_SPACE>
-                    <BASE_CALLER>454 BaseCaller</BASE_CALLER>
-        </BASE_CALLS>
-        <QUALITY_SCORES qtype="phred">
-                    <QUALITY_SCORER>454 BaseCaller</QUALITY_SCORER>
-                    <NUMBER_OF_LEVELS>40</NUMBER_OF_LEVELS>
-                    <MULTIPLIER>1.0</MULTIPLIER>
-        </QUALITY_SCORES>
-      </PROCESSING>
-  </EXPERIMENT>
   <EXPERIMENT alias="bodysites_F6AVWTA01" center_name="JCVI">
     <TITLE>Survey of multiple body sites</TITLE>
     <STUDY_REF refname="bodysites_study" refcenter="NCBI"/>
@@ -1122,11 +1385,21 @@ metagenomic_experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
       <DESIGN_DESCRIPTION>Pool of samples from different individual subjects</DESIGN_DESCRIPTION>
       <SAMPLE_DESCRIPTOR refname="bodysites_study_default" refcenter="NCBI">
         <POOL>
-          <MEMBER refname="700015468" refcenter="NCBI" member_name="F6AVWTA01_2865_700015468_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_AGTACGTACT">barcode</READ_LABEL></MEMBER>
-          <MEMBER refname="700015470" refcenter="NCBI" member_name="F6AVWTA01_2866_700015470_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_GCTCTACGTC">barcode</READ_LABEL></MEMBER>
-          <MEMBER refname="700015438" refcenter="NCBI" member_name="F6AVWTA01_2878_700015438_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_ATGTTCGATG">barcode</READ_LABEL></MEMBER>
-          <MEMBER refname="700015766" refcenter="NCBI" member_name="F6AVWTA01_2898_700015766_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_CATGAGCGTC">barcode</READ_LABEL></MEMBER>
-          <MEMBER refname="700016371" refcenter="NCBI" member_name="F6AVWTA01_2907_700016371_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_TCTCTCTAGT">barcode</READ_LABEL></MEMBER>
+          <MEMBER refname="700015438" refcenter="NCBI" member_name="F6AVWTA01_2878_700015438_V1-V3" proportion="0.014492754">
+            <READ_LABEL read_group_tag="F6AVWTA01_ATGTTCGATG">barcode</READ_LABEL>
+          </MEMBER>
+          <MEMBER refname="700015470" refcenter="NCBI" member_name="F6AVWTA01_2866_700015470_V1-V3" proportion="0.014492754">
+            <READ_LABEL read_group_tag="F6AVWTA01_GCTCTACGTC">barcode</READ_LABEL>
+          </MEMBER>
+          <MEMBER refname="700015766" refcenter="NCBI" member_name="F6AVWTA01_2898_700015766_V1-V3" proportion="0.014492754">
+            <READ_LABEL read_group_tag="F6AVWTA01_CATGAGCGTC">barcode</READ_LABEL>
+          </MEMBER>
+          <MEMBER refname="700015468" refcenter="NCBI" member_name="F6AVWTA01_2865_700015468_V1-V3" proportion="0.014492754">
+            <READ_LABEL read_group_tag="F6AVWTA01_AGTACGTACT">barcode</READ_LABEL>
+          </MEMBER>
+          <MEMBER refname="700016371" refcenter="NCBI" member_name="F6AVWTA01_2907_700016371_V1-V3" proportion="0.014492754">
+            <READ_LABEL read_group_tag="F6AVWTA01_TCTCTCTAGT">barcode</READ_LABEL>
+          </MEMBER>
         </POOL>
       </SAMPLE_DESCRIPTOR>
       <LIBRARY_DESCRIPTOR>
@@ -1154,9 +1427,9 @@ metagenomic_experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
             <READ_TYPE>BarCode</READ_TYPE>
             <EXPECTED_BASECALL_TABLE>
               <BASECALL read_group_tag="F6AVWTA01_ATGTTCGATG" min_match="10" max_mismatch="0" match_edge="full">ATGTTCGATG</BASECALL>
-              <BASECALL read_group_tag="F6AVWTA01_AGTACGTACT" min_match="10" max_mismatch="0" match_edge="full">AGTACGTACT</BASECALL>
               <BASECALL read_group_tag="F6AVWTA01_GCTCTACGTC" min_match="10" max_mismatch="0" match_edge="full">GCTCTACGTC</BASECALL>
               <BASECALL read_group_tag="F6AVWTA01_CATGAGCGTC" min_match="10" max_mismatch="0" match_edge="full">CATGAGCGTC</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA01_AGTACGTACT" min_match="10" max_mismatch="0" match_edge="full">AGTACGTACT</BASECALL>
               <BASECALL read_group_tag="F6AVWTA01_TCTCTCTAGT" min_match="10" max_mismatch="0" match_edge="full">TCTCTCTAGT</BASECALL>
             </EXPECTED_BASECALL_TABLE>
           </READ_SPEC>
@@ -1168,130 +1441,113 @@ metagenomic_experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
           </READ_SPEC>
         </SPOT_DECODE_SPEC>
       </SPOT_DESCRIPTOR>
-      </DESIGN>
-          <PLATFORM>
-        <LS454>
-            <INSTRUMENT_MODEL>454 GS FLX</INSTRUMENT_MODEL>
-            <FLOW_SEQUENCE>TACG</FLOW_SEQUENCE>
-            <FLOW_COUNT>400</FLOW_COUNT>
-        </LS454>
+    </DESIGN>
+    <PLATFORM>
+      <LS454>
+        <INSTRUMENT_MODEL>454 GS FLX</INSTRUMENT_MODEL>
+        <FLOW_SEQUENCE>TACG</FLOW_SEQUENCE>
+        <FLOW_COUNT>400</FLOW_COUNT>
+      </LS454>
     </PLATFORM>
-      <PROCESSING>
-        <BASE_CALLS>
-                    <SEQUENCE_SPACE>Base Space</SEQUENCE_SPACE>
-                    <BASE_CALLER>454 BaseCaller</BASE_CALLER>
-        </BASE_CALLS>
-        <QUALITY_SCORES qtype="phred">
-                    <QUALITY_SCORER>454 BaseCaller</QUALITY_SCORER>
-                    <NUMBER_OF_LEVELS>40</NUMBER_OF_LEVELS>
-                    <MULTIPLIER>1.0</MULTIPLIER>
-        </QUALITY_SCORES>
-      </PROCESSING>
+    <PROCESSING>
+      <BASE_CALLS>
+        <SEQUENCE_SPACE>Base Space</SEQUENCE_SPACE>
+        <BASE_CALLER>454 BaseCaller</BASE_CALLER>
+      </BASE_CALLS>
+      <QUALITY_SCORES qtype="phred">
+        <QUALITY_SCORER>454 BaseCaller</QUALITY_SCORER>
+        <NUMBER_OF_LEVELS>40</NUMBER_OF_LEVELS>
+        <MULTIPLIER>1.0</MULTIPLIER>
+      </QUALITY_SCORES>
+    </PROCESSING>
+  </EXPERIMENT>
+  <EXPERIMENT alias="bodysites_F6AVWTA02" center_name="JCVI">
+    <TITLE>Survey of multiple body sites</TITLE>
+    <STUDY_REF refname="bodysites_study" refcenter="NCBI"/>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>Pool of samples from different individual subjects</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR refname="bodysites_study_default" refcenter="NCBI">
+        <POOL>
+          <MEMBER refname="700015438" refcenter="NCBI" member_name="F6AVWTA02_2878_700015438_V1-V3" proportion="0.014492754">
+            <READ_LABEL read_group_tag="F6AVWTA02_ATGTTCTAGT">barcode</READ_LABEL>
+          </MEMBER>
+          <MEMBER refname="700015470" refcenter="NCBI" member_name="F6AVWTA02_2866_700015470_V1-V3" proportion="0.014492754">
+            <READ_LABEL read_group_tag="F6AVWTA02_GCTCTGTACT">barcode</READ_LABEL>
+          </MEMBER>
+          <MEMBER refname="700015766" refcenter="NCBI" member_name="F6AVWTA02_2898_700015766_V1-V3" proportion="0.014492754">
+            <READ_LABEL read_group_tag="F6AVWTA02_CATGAGCGTG">barcode</READ_LABEL>
+          </MEMBER>
+          <MEMBER refname="700015468" refcenter="NCBI" member_name="F6AVWTA02_2865_700015468_V1-V3" proportion="0.014492754">
+            <READ_LABEL read_group_tag="F6AVWTA02_AGTACACGTC">barcode</READ_LABEL>
+          </MEMBER>
+          <MEMBER refname="700016371" refcenter="NCBI" member_name="F6AVWTA02_2907_700016371_V1-V3" proportion="0.014492754">
+            <READ_LABEL read_group_tag="F6AVWTA02_TCTCTGTACT">barcode</READ_LABEL>
+          </MEMBER>
+        </POOL>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>bodysites_F6AVWTA02</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>WGS</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>RANDOM</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <SINGLE></SINGLE>
+        </LIBRARY_LAYOUT>
+        <LIBRARY_CONSTRUCTION_PROTOCOL>Dummy Protocol</LIBRARY_CONSTRUCTION_PROTOCOL>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Technical Read</READ_CLASS>
+            <READ_TYPE>Adapter</READ_TYPE>
+            <EXPECTED_BASECALL>TCAG</EXPECTED_BASECALL>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>1</READ_INDEX>
+            <READ_LABEL>barcode</READ_LABEL>
+            <READ_CLASS>Technical Read</READ_CLASS>
+            <READ_TYPE>BarCode</READ_TYPE>
+            <EXPECTED_BASECALL_TABLE>
+              <BASECALL read_group_tag="F6AVWTA02_ATGTTCTAGT" min_match="10" max_mismatch="0" match_edge="full">ATGTTCTAGT</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA02_GCTCTGTACT" min_match="10" max_mismatch="0" match_edge="full">GCTCTGTACT</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA02_CATGAGCGTG" min_match="10" max_mismatch="0" match_edge="full">CATGAGCGTG</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA02_AGTACACGTC" min_match="10" max_mismatch="0" match_edge="full">AGTACACGTC</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA02_TCTCTGTACT" min_match="10" max_mismatch="0" match_edge="full">TCTCTGTACT</BASECALL>
+            </EXPECTED_BASECALL_TABLE>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>2</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <RELATIVE_ORDER follows_read_index="1"/>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <LS454>
+        <INSTRUMENT_MODEL>454 GS FLX</INSTRUMENT_MODEL>
+        <FLOW_SEQUENCE>TACG</FLOW_SEQUENCE>
+        <FLOW_COUNT>400</FLOW_COUNT>
+      </LS454>
+    </PLATFORM>
+    <PROCESSING>
+      <BASE_CALLS>
+        <SEQUENCE_SPACE>Base Space</SEQUENCE_SPACE>
+        <BASE_CALLER>454 BaseCaller</BASE_CALLER>
+      </BASE_CALLS>
+      <QUALITY_SCORES qtype="phred">
+        <QUALITY_SCORER>454 BaseCaller</QUALITY_SCORER>
+        <NUMBER_OF_LEVELS>40</NUMBER_OF_LEVELS>
+        <MULTIPLIER>1.0</MULTIPLIER>
+      </QUALITY_SCORES>
+    </PROCESSING>
   </EXPERIMENT>
 </EXPERIMENT_SET>'''
 
 experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
 <EXPERIMENT_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <EXPERIMENT alias="bodysites_F6AVWTA02" center_name="JCVI">
-    <TITLE>Survey of multiple body sites</TITLE>
-    <STUDY_REF refname="bodysites_study" refcenter="NCBI"/>
-    <DESIGN>
-      <DESIGN_DESCRIPTION>Pool of samples from different individual subjects</DESIGN_DESCRIPTION>
-      <SAMPLE_DESCRIPTOR refname="bodysites_study_default" refcenter="NCBI">
-        <POOL>
-          <MEMBER refname="700015468" refcenter="NCBI" member_name="F6AVWTA02_2865_700015468_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_AGTACACGTC">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-          <MEMBER refname="700015470" refcenter="NCBI" member_name="F6AVWTA02_2866_700015470_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_GCTCTGTACT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-          <MEMBER refname="700015438" refcenter="NCBI" member_name="F6AVWTA02_2878_700015438_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_ATGTTCTAGT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-          <MEMBER refname="700015766" refcenter="NCBI" member_name="F6AVWTA02_2898_700015766_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_CATGAGCGTG">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-          <MEMBER refname="700016371" refcenter="NCBI" member_name="F6AVWTA02_2907_700016371_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA02_TCTCTGTACT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-        </POOL>
-      </SAMPLE_DESCRIPTOR>
-      <LIBRARY_DESCRIPTOR>
-        <LIBRARY_NAME>bodysites_F6AVWTA02</LIBRARY_NAME>
-        <LIBRARY_STRATEGY>AMPLICON</LIBRARY_STRATEGY>
-        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
-        <LIBRARY_SELECTION>PCR</LIBRARY_SELECTION>
-        <LIBRARY_LAYOUT>
-          <SINGLE></SINGLE>
-        </LIBRARY_LAYOUT>
-        <LIBRARY_CONSTRUCTION_PROTOCOL>Dummy Protocol</LIBRARY_CONSTRUCTION_PROTOCOL>
-      </LIBRARY_DESCRIPTOR>
-      <SPOT_DESCRIPTOR>
-        <SPOT_DECODE_SPEC>
-          <READ_SPEC>
-            <READ_INDEX>0</READ_INDEX>
-            <READ_CLASS>Technical Read</READ_CLASS>
-            <READ_TYPE>Adapter</READ_TYPE>
-            <EXPECTED_BASECALL>TCAG</EXPECTED_BASECALL>
-          </READ_SPEC>
-          <READ_SPEC>
-            <READ_INDEX>1</READ_INDEX>
-            <READ_LABEL>barcode</READ_LABEL>
-            <READ_CLASS>Technical Read</READ_CLASS>
-            <READ_TYPE>BarCode</READ_TYPE>
-            <EXPECTED_BASECALL_TABLE>
-              <BASECALL read_group_tag="F6AVWTA02_ATGTTCTAGT" min_match="10" max_mismatch="0" match_edge="full">ATGTTCTAGT</BASECALL>
-              <BASECALL read_group_tag="F6AVWTA02_AGTACACGTC" min_match="10" max_mismatch="0" match_edge="full">AGTACACGTC</BASECALL>
-              <BASECALL read_group_tag="F6AVWTA02_GCTCTGTACT" min_match="10" max_mismatch="0" match_edge="full">GCTCTGTACT</BASECALL>
-              <BASECALL read_group_tag="F6AVWTA02_CATGAGCGTG" min_match="10" max_mismatch="0" match_edge="full">CATGAGCGTG</BASECALL>
-              <BASECALL read_group_tag="F6AVWTA02_TCTCTGTACT" min_match="10" max_mismatch="0" match_edge="full">TCTCTGTACT</BASECALL>
-            </EXPECTED_BASECALL_TABLE>
-          </READ_SPEC>
-          <READ_SPEC>
-            <READ_INDEX>2</READ_INDEX>
-            <READ_LABEL>rRNA_primer</READ_LABEL>
-            <READ_CLASS>Technical Read</READ_CLASS>
-            <READ_TYPE>Primer</READ_TYPE>
-            <EXPECTED_BASECALL_TABLE>
-              <BASECALL read_group_tag="V1-V3" min_match="17" max_mismatch="0" match_edge="full">TAATCCGCGGCTGCTGG</BASECALL>
-            </EXPECTED_BASECALL_TABLE>
-          </READ_SPEC>
-          <READ_SPEC>
-            <READ_INDEX>3</READ_INDEX>
-            <READ_CLASS>Application Read</READ_CLASS>
-            <READ_TYPE>Forward</READ_TYPE>
-            <RELATIVE_ORDER follows_read_index="2"/>
-          </READ_SPEC>
-        </SPOT_DECODE_SPEC>
-      </SPOT_DESCRIPTOR>
-      </DESIGN>
-          <PLATFORM>
-        <LS454>
-            <INSTRUMENT_MODEL>454 GS FLX</INSTRUMENT_MODEL>
-            <FLOW_SEQUENCE>TACG</FLOW_SEQUENCE>
-            <FLOW_COUNT>400</FLOW_COUNT>
-        </LS454>
-    </PLATFORM>
-      <PROCESSING>
-        <BASE_CALLS>
-                    <SEQUENCE_SPACE>Base Space</SEQUENCE_SPACE>
-                    <BASE_CALLER>454 BaseCaller</BASE_CALLER>
-        </BASE_CALLS>
-        <QUALITY_SCORES qtype="phred">
-                    <QUALITY_SCORER>454 BaseCaller</QUALITY_SCORER>
-                    <NUMBER_OF_LEVELS>40</NUMBER_OF_LEVELS>
-                    <MULTIPLIER>1.0</MULTIPLIER>
-        </QUALITY_SCORES>
-      </PROCESSING>
-      <EXPERIMENT_LINKS>
-        <EXPERIMENT_LINK>
-          <URL_LINK>
-            <LABEL>bodysites Library Construction Protocol</LABEL>
-            <URL>http://hmpdacc.org/doc/HMP_MDG_454_16S_Protocol_V4_2_102109.pdf</URL>
-          </URL_LINK>
-        </EXPERIMENT_LINK>
-      </EXPERIMENT_LINKS>
-      <EXPERIMENT_ATTRIBUTES>
-        <EXPERIMENT_ATTRIBUTE>
-          <TAG>library_strategy</TAG>
-          <VALUE>targeted-locus</VALUE>
-        </EXPERIMENT_ATTRIBUTE>
-        <EXPERIMENT_ATTRIBUTE>
-          <TAG>gene</TAG>
-          <VALUE>16S rRNA V1-V3 region</VALUE>
-        </EXPERIMENT_ATTRIBUTE>
-      </EXPERIMENT_ATTRIBUTES>
-  </EXPERIMENT>
   <EXPERIMENT alias="bodysites_F6AVWTA01" center_name="JCVI">
     <TITLE>Survey of multiple body sites</TITLE>
     <STUDY_REF refname="bodysites_study" refcenter="NCBI"/>
@@ -1299,11 +1555,26 @@ experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
       <DESIGN_DESCRIPTION>Pool of samples from different individual subjects</DESIGN_DESCRIPTION>
       <SAMPLE_DESCRIPTOR refname="bodysites_study_default" refcenter="NCBI">
         <POOL>
-          <MEMBER refname="700015468" refcenter="NCBI" member_name="F6AVWTA01_2865_700015468_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_AGTACGTACT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-          <MEMBER refname="700015470" refcenter="NCBI" member_name="F6AVWTA01_2866_700015470_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_GCTCTACGTC">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-          <MEMBER refname="700015438" refcenter="NCBI" member_name="F6AVWTA01_2878_700015438_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_ATGTTCGATG">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-          <MEMBER refname="700015766" refcenter="NCBI" member_name="F6AVWTA01_2898_700015766_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_CATGAGCGTC">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
-          <MEMBER refname="700016371" refcenter="NCBI" member_name="F6AVWTA01_2907_700016371_V1-V3" proportion="0.014492754"><READ_LABEL read_group_tag="F6AVWTA01_TCTCTCTAGT">barcode</READ_LABEL><READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL></MEMBER>
+          <MEMBER refname="700015438" refcenter="NCBI" member_name="F6AVWTA01_2878_700015438_V1-V3" proportion="0.014492754">
+            <READ_LABEL read_group_tag="F6AVWTA01_ATGTTCGATG">barcode</READ_LABEL>
+            <READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL>
+          </MEMBER>
+          <MEMBER refname="700015470" refcenter="NCBI" member_name="F6AVWTA01_2866_700015470_V1-V3" proportion="0.014492754">
+            <READ_LABEL read_group_tag="F6AVWTA01_GCTCTACGTC">barcode</READ_LABEL>
+            <READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL>
+          </MEMBER>
+          <MEMBER refname="700015766" refcenter="NCBI" member_name="F6AVWTA01_2898_700015766_V1-V3" proportion="0.014492754">
+            <READ_LABEL read_group_tag="F6AVWTA01_CATGAGCGTC">barcode</READ_LABEL>
+            <READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL>
+          </MEMBER>
+          <MEMBER refname="700015468" refcenter="NCBI" member_name="F6AVWTA01_2865_700015468_V1-V3" proportion="0.014492754">
+            <READ_LABEL read_group_tag="F6AVWTA01_AGTACGTACT">barcode</READ_LABEL>
+            <READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL>
+          </MEMBER>
+          <MEMBER refname="700016371" refcenter="NCBI" member_name="F6AVWTA01_2907_700016371_V1-V3" proportion="0.014492754">
+            <READ_LABEL read_group_tag="F6AVWTA01_TCTCTCTAGT">barcode</READ_LABEL>
+            <READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL>
+          </MEMBER>
         </POOL>
       </SAMPLE_DESCRIPTOR>
       <LIBRARY_DESCRIPTOR>
@@ -1331,9 +1602,9 @@ experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
             <READ_TYPE>BarCode</READ_TYPE>
             <EXPECTED_BASECALL_TABLE>
               <BASECALL read_group_tag="F6AVWTA01_ATGTTCGATG" min_match="10" max_mismatch="0" match_edge="full">ATGTTCGATG</BASECALL>
-              <BASECALL read_group_tag="F6AVWTA01_AGTACGTACT" min_match="10" max_mismatch="0" match_edge="full">AGTACGTACT</BASECALL>
               <BASECALL read_group_tag="F6AVWTA01_GCTCTACGTC" min_match="10" max_mismatch="0" match_edge="full">GCTCTACGTC</BASECALL>
               <BASECALL read_group_tag="F6AVWTA01_CATGAGCGTC" min_match="10" max_mismatch="0" match_edge="full">CATGAGCGTC</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA01_AGTACGTACT" min_match="10" max_mismatch="0" match_edge="full">AGTACGTACT</BASECALL>
               <BASECALL read_group_tag="F6AVWTA01_TCTCTCTAGT" min_match="10" max_mismatch="0" match_edge="full">TCTCTCTAGT</BASECALL>
             </EXPECTED_BASECALL_TABLE>
           </READ_SPEC>
@@ -1354,118 +1625,169 @@ experiment_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
           </READ_SPEC>
         </SPOT_DECODE_SPEC>
       </SPOT_DESCRIPTOR>
-      </DESIGN>
-          <PLATFORM>
-        <LS454>
-            <INSTRUMENT_MODEL>454 GS FLX</INSTRUMENT_MODEL>
-            <FLOW_SEQUENCE>TACG</FLOW_SEQUENCE>
-            <FLOW_COUNT>400</FLOW_COUNT>
-        </LS454>
+    </DESIGN>
+    <PLATFORM>
+      <LS454>
+        <INSTRUMENT_MODEL>454 GS FLX</INSTRUMENT_MODEL>
+        <FLOW_SEQUENCE>TACG</FLOW_SEQUENCE>
+        <FLOW_COUNT>400</FLOW_COUNT>
+      </LS454>
     </PLATFORM>
-      <PROCESSING>
-        <BASE_CALLS>
-                    <SEQUENCE_SPACE>Base Space</SEQUENCE_SPACE>
-                    <BASE_CALLER>454 BaseCaller</BASE_CALLER>
-        </BASE_CALLS>
-        <QUALITY_SCORES qtype="phred">
-                    <QUALITY_SCORER>454 BaseCaller</QUALITY_SCORER>
-                    <NUMBER_OF_LEVELS>40</NUMBER_OF_LEVELS>
-                    <MULTIPLIER>1.0</MULTIPLIER>
-        </QUALITY_SCORES>
-      </PROCESSING>
-      <EXPERIMENT_LINKS>
-        <EXPERIMENT_LINK>
-          <URL_LINK>
-            <LABEL>bodysites Library Construction Protocol</LABEL>
-            <URL>http://hmpdacc.org/doc/HMP_MDG_454_16S_Protocol_V4_2_102109.pdf</URL>
-          </URL_LINK>
-        </EXPERIMENT_LINK>
-      </EXPERIMENT_LINKS>
-      <EXPERIMENT_ATTRIBUTES>
-        <EXPERIMENT_ATTRIBUTE>
-          <TAG>library_strategy</TAG>
-          <VALUE>targeted-locus</VALUE>
-        </EXPERIMENT_ATTRIBUTE>
-        <EXPERIMENT_ATTRIBUTE>
-          <TAG>gene</TAG>
-          <VALUE>16S rRNA V1-V3 region</VALUE>
-        </EXPERIMENT_ATTRIBUTE>
-      </EXPERIMENT_ATTRIBUTES>
+    <PROCESSING>
+      <BASE_CALLS>
+        <SEQUENCE_SPACE>Base Space</SEQUENCE_SPACE>
+        <BASE_CALLER>454 BaseCaller</BASE_CALLER>
+      </BASE_CALLS>
+      <QUALITY_SCORES qtype="phred">
+        <QUALITY_SCORER>454 BaseCaller</QUALITY_SCORER>
+        <NUMBER_OF_LEVELS>40</NUMBER_OF_LEVELS>
+        <MULTIPLIER>1.0</MULTIPLIER>
+      </QUALITY_SCORES>
+    </PROCESSING>
+    <EXPERIMENT_LINKS>
+      <EXPERIMENT_LINK>
+        <URL_LINK>
+          <LABEL>bodysites Library Construction Protocol</LABEL>
+          <URL>http://hmpdacc.org/doc/HMP_MDG_454_16S_Protocol_V4_2_102109.pdf</URL>
+        </URL_LINK>
+      </EXPERIMENT_LINK>
+    </EXPERIMENT_LINKS>
+    <EXPERIMENT_ATTRIBUTES>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>library_strategy</TAG>
+        <VALUE>targeted-locus</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>gene</TAG>
+        <VALUE>16S rRNA V1-V3 region</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+    </EXPERIMENT_ATTRIBUTES>
+  </EXPERIMENT>
+  <EXPERIMENT alias="bodysites_F6AVWTA02" center_name="JCVI">
+    <TITLE>Survey of multiple body sites</TITLE>
+    <STUDY_REF refname="bodysites_study" refcenter="NCBI"/>
+    <DESIGN>
+      <DESIGN_DESCRIPTION>Pool of samples from different individual subjects</DESIGN_DESCRIPTION>
+      <SAMPLE_DESCRIPTOR refname="bodysites_study_default" refcenter="NCBI">
+        <POOL>
+          <MEMBER refname="700015438" refcenter="NCBI" member_name="F6AVWTA02_2878_700015438_V1-V3" proportion="0.014492754">
+            <READ_LABEL read_group_tag="F6AVWTA02_ATGTTCTAGT">barcode</READ_LABEL>
+            <READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL>
+          </MEMBER>
+          <MEMBER refname="700015470" refcenter="NCBI" member_name="F6AVWTA02_2866_700015470_V1-V3" proportion="0.014492754">
+            <READ_LABEL read_group_tag="F6AVWTA02_GCTCTGTACT">barcode</READ_LABEL>
+            <READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL>
+          </MEMBER>
+          <MEMBER refname="700015766" refcenter="NCBI" member_name="F6AVWTA02_2898_700015766_V1-V3" proportion="0.014492754">
+            <READ_LABEL read_group_tag="F6AVWTA02_CATGAGCGTG">barcode</READ_LABEL>
+            <READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL>
+          </MEMBER>
+          <MEMBER refname="700015468" refcenter="NCBI" member_name="F6AVWTA02_2865_700015468_V1-V3" proportion="0.014492754">
+            <READ_LABEL read_group_tag="F6AVWTA02_AGTACACGTC">barcode</READ_LABEL>
+            <READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL>
+          </MEMBER>
+          <MEMBER refname="700016371" refcenter="NCBI" member_name="F6AVWTA02_2907_700016371_V1-V3" proportion="0.014492754">
+            <READ_LABEL read_group_tag="F6AVWTA02_TCTCTGTACT">barcode</READ_LABEL>
+            <READ_LABEL read_group_tag="V1-V3">rRNA_primer</READ_LABEL>
+          </MEMBER>
+        </POOL>
+      </SAMPLE_DESCRIPTOR>
+      <LIBRARY_DESCRIPTOR>
+        <LIBRARY_NAME>bodysites_F6AVWTA02</LIBRARY_NAME>
+        <LIBRARY_STRATEGY>AMPLICON</LIBRARY_STRATEGY>
+        <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+        <LIBRARY_SELECTION>PCR</LIBRARY_SELECTION>
+        <LIBRARY_LAYOUT>
+          <SINGLE></SINGLE>
+        </LIBRARY_LAYOUT>
+        <LIBRARY_CONSTRUCTION_PROTOCOL>Dummy Protocol</LIBRARY_CONSTRUCTION_PROTOCOL>
+      </LIBRARY_DESCRIPTOR>
+      <SPOT_DESCRIPTOR>
+        <SPOT_DECODE_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>0</READ_INDEX>
+            <READ_CLASS>Technical Read</READ_CLASS>
+            <READ_TYPE>Adapter</READ_TYPE>
+            <EXPECTED_BASECALL>TCAG</EXPECTED_BASECALL>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>1</READ_INDEX>
+            <READ_LABEL>barcode</READ_LABEL>
+            <READ_CLASS>Technical Read</READ_CLASS>
+            <READ_TYPE>BarCode</READ_TYPE>
+            <EXPECTED_BASECALL_TABLE>
+              <BASECALL read_group_tag="F6AVWTA02_ATGTTCTAGT" min_match="10" max_mismatch="0" match_edge="full">ATGTTCTAGT</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA02_GCTCTGTACT" min_match="10" max_mismatch="0" match_edge="full">GCTCTGTACT</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA02_CATGAGCGTG" min_match="10" max_mismatch="0" match_edge="full">CATGAGCGTG</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA02_AGTACACGTC" min_match="10" max_mismatch="0" match_edge="full">AGTACACGTC</BASECALL>
+              <BASECALL read_group_tag="F6AVWTA02_TCTCTGTACT" min_match="10" max_mismatch="0" match_edge="full">TCTCTGTACT</BASECALL>
+            </EXPECTED_BASECALL_TABLE>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>2</READ_INDEX>
+            <READ_LABEL>rRNA_primer</READ_LABEL>
+            <READ_CLASS>Technical Read</READ_CLASS>
+            <READ_TYPE>Primer</READ_TYPE>
+            <EXPECTED_BASECALL_TABLE>
+              <BASECALL read_group_tag="V1-V3" min_match="17" max_mismatch="0" match_edge="full">TAATCCGCGGCTGCTGG</BASECALL>
+            </EXPECTED_BASECALL_TABLE>
+          </READ_SPEC>
+          <READ_SPEC>
+            <READ_INDEX>3</READ_INDEX>
+            <READ_CLASS>Application Read</READ_CLASS>
+            <READ_TYPE>Forward</READ_TYPE>
+            <RELATIVE_ORDER follows_read_index="2"/>
+          </READ_SPEC>
+        </SPOT_DECODE_SPEC>
+      </SPOT_DESCRIPTOR>
+    </DESIGN>
+    <PLATFORM>
+      <LS454>
+        <INSTRUMENT_MODEL>454 GS FLX</INSTRUMENT_MODEL>
+        <FLOW_SEQUENCE>TACG</FLOW_SEQUENCE>
+        <FLOW_COUNT>400</FLOW_COUNT>
+      </LS454>
+    </PLATFORM>
+    <PROCESSING>
+      <BASE_CALLS>
+        <SEQUENCE_SPACE>Base Space</SEQUENCE_SPACE>
+        <BASE_CALLER>454 BaseCaller</BASE_CALLER>
+      </BASE_CALLS>
+      <QUALITY_SCORES qtype="phred">
+        <QUALITY_SCORER>454 BaseCaller</QUALITY_SCORER>
+        <NUMBER_OF_LEVELS>40</NUMBER_OF_LEVELS>
+        <MULTIPLIER>1.0</MULTIPLIER>
+      </QUALITY_SCORES>
+    </PROCESSING>
+    <EXPERIMENT_LINKS>
+      <EXPERIMENT_LINK>
+        <URL_LINK>
+          <LABEL>bodysites Library Construction Protocol</LABEL>
+          <URL>http://hmpdacc.org/doc/HMP_MDG_454_16S_Protocol_V4_2_102109.pdf</URL>
+        </URL_LINK>
+      </EXPERIMENT_LINK>
+    </EXPERIMENT_LINKS>
+    <EXPERIMENT_ATTRIBUTES>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>library_strategy</TAG>
+        <VALUE>targeted-locus</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+      <EXPERIMENT_ATTRIBUTE>
+        <TAG>gene</TAG>
+        <VALUE>16S rRNA V1-V3 region</VALUE>
+      </EXPERIMENT_ATTRIBUTE>
+    </EXPERIMENT_ATTRIBUTES>
   </EXPERIMENT>
 </EXPERIMENT_SET>
 '''
 
 run_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
 <RUN_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <RUN alias="bodysites_study_default_F6AVWTA02" center_name="JCVI" run_center="JCVI">
-    <EXPERIMENT_REF refname="bodysites_F6AVWTA02" refcenter="bodysites"/>
-    <DATA_BLOCK serial="1" name="F6AVWTA02" region="0" member_name="">
-      <FILES>
-        <FILE filename="bodysites_study_default_F6AVWTA02.sff" filetype="sff" checksum_method="MD5" checksum="d41d8cd98f00b204e9800998ecf8427e"/>
-      </FILES>
-    </DATA_BLOCK>
-  </RUN>
-  <RUN alias="bodysites_lib2865_F6AVWTA02" center_name="JCVI" run_center="JCVI">
-    <EXPERIMENT_REF refname="bodysites_F6AVWTA02" refcenter="bodysites"/>
-    <DATA_BLOCK serial="1" name="F6AVWTA02" region="0" member_name="F6AVWTA02_2865_700015468_V1-V3">
-      <FILES>
-        <FILE filename="B-2011-01-S1.sff" filetype="sff" checksum_method="MD5" checksum="7852588b980ba08c1ff0d0ca7b686b16"/>
-      </FILES>
-    </DATA_BLOCK>
-  </RUN>
-  <RUN alias="bodysites_lib2866_F6AVWTA02" center_name="JCVI" run_center="JCVI">
-    <EXPERIMENT_REF refname="bodysites_F6AVWTA02" refcenter="bodysites"/>
-    <DATA_BLOCK serial="1" name="F6AVWTA02" region="0" member_name="F6AVWTA02_2866_700015470_V1-V3">
-      <FILES>
-        <FILE filename="B-2008-08-S1.sff" filetype="sff" checksum_method="MD5" checksum="34f4185163c4ce10610a2427ba554ba3"/>
-      </FILES>
-    </DATA_BLOCK>
-  </RUN>
-  <RUN alias="bodysites_lib2878_F6AVWTA02" center_name="JCVI" run_center="JCVI">
-    <EXPERIMENT_REF refname="bodysites_F6AVWTA02" refcenter="bodysites"/>
-    <DATA_BLOCK serial="1" name="F6AVWTA02" region="0" member_name="F6AVWTA02_2878_700015438_V1-V3">
-      <FILES>
-        <FILE filename="B-2008-05-S1.sff" filetype="sff" checksum_method="MD5" checksum="9fcf84e2a06a1175124e15064e9b63a1"/>
-      </FILES>
-    </DATA_BLOCK>
-  </RUN>
-  <RUN alias="bodysites_lib2898_F6AVWTA02" center_name="JCVI" run_center="JCVI">
-    <EXPERIMENT_REF refname="bodysites_F6AVWTA02" refcenter="bodysites"/>
-    <DATA_BLOCK serial="1" name="F6AVWTA02" region="0" member_name="F6AVWTA02_2898_700015766_V1-V3">
-      <FILES>
-        <FILE filename="B-2009-06-S1.sff" filetype="sff" checksum_method="MD5" checksum="02d0751ce913ca796a5916803c574636"/>
-      </FILES>
-    </DATA_BLOCK>
-  </RUN>
-  <RUN alias="bodysites_lib2907_F6AVWTA02" center_name="JCVI" run_center="JCVI">
-    <EXPERIMENT_REF refname="bodysites_F6AVWTA02" refcenter="bodysites"/>
-    <DATA_BLOCK serial="1" name="F6AVWTA02" region="0" member_name="F6AVWTA02_2907_700016371_V1-V3">
-      <FILES>
-        <FILE filename="B-2011-02-S1.sff" filetype="sff" checksum_method="MD5" checksum="6b2c7045be67a4cf4958d22c5b6ab790"/>
-      </FILES>
-    </DATA_BLOCK>
-  </RUN>
   <RUN alias="bodysites_study_default_F6AVWTA01" center_name="JCVI" run_center="JCVI">
     <EXPERIMENT_REF refname="bodysites_F6AVWTA01" refcenter="bodysites"/>
     <DATA_BLOCK serial="1" name="F6AVWTA01" region="0" member_name="">
       <FILES>
         <FILE filename="bodysites_study_default_F6AVWTA01.sff" filetype="sff" checksum_method="MD5" checksum="d41d8cd98f00b204e9800998ecf8427e"/>
-      </FILES>
-    </DATA_BLOCK>
-  </RUN>
-  <RUN alias="bodysites_lib2865_F6AVWTA01" center_name="JCVI" run_center="JCVI">
-    <EXPERIMENT_REF refname="bodysites_F6AVWTA01" refcenter="bodysites"/>
-    <DATA_BLOCK serial="1" name="F6AVWTA01" region="0" member_name="F6AVWTA01_2865_700015468_V1-V3">
-      <FILES>
-        <FILE filename="B-2005-06-S1.sff" filetype="sff" checksum_method="MD5" checksum="8d2ef95655a4f0cf4b6e1e2966c6ac30"/>
-      </FILES>
-    </DATA_BLOCK>
-  </RUN>
-  <RUN alias="bodysites_lib2866_F6AVWTA01" center_name="JCVI" run_center="JCVI">
-    <EXPERIMENT_REF refname="bodysites_F6AVWTA01" refcenter="bodysites"/>
-    <DATA_BLOCK serial="1" name="F6AVWTA01" region="0" member_name="F6AVWTA01_2866_700015470_V1-V3">
-      <FILES>
-        <FILE filename="B-2004-04-S1.sff" filetype="sff" checksum_method="MD5" checksum="c693c0f79bfd05d7fb348f0182fbf808"/>
       </FILES>
     </DATA_BLOCK>
   </RUN>
@@ -1477,6 +1799,38 @@ run_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
       </FILES>
     </DATA_BLOCK>
   </RUN>
+  <RUN alias="bodysites_study_default_F6AVWTA02" center_name="JCVI" run_center="JCVI">
+    <EXPERIMENT_REF refname="bodysites_F6AVWTA02" refcenter="bodysites"/>
+    <DATA_BLOCK serial="1" name="F6AVWTA02" region="0" member_name="">
+      <FILES>
+        <FILE filename="bodysites_study_default_F6AVWTA02.sff" filetype="sff" checksum_method="MD5" checksum="d41d8cd98f00b204e9800998ecf8427e"/>
+      </FILES>
+    </DATA_BLOCK>
+  </RUN>
+  <RUN alias="bodysites_lib2878_F6AVWTA02" center_name="JCVI" run_center="JCVI">
+    <EXPERIMENT_REF refname="bodysites_F6AVWTA02" refcenter="bodysites"/>
+    <DATA_BLOCK serial="1" name="F6AVWTA02" region="0" member_name="F6AVWTA02_2878_700015438_V1-V3">
+      <FILES>
+        <FILE filename="B-2008-05-S1.sff" filetype="sff" checksum_method="MD5" checksum="9fcf84e2a06a1175124e15064e9b63a1"/>
+      </FILES>
+    </DATA_BLOCK>
+  </RUN>
+  <RUN alias="bodysites_lib2866_F6AVWTA01" center_name="JCVI" run_center="JCVI">
+    <EXPERIMENT_REF refname="bodysites_F6AVWTA01" refcenter="bodysites"/>
+    <DATA_BLOCK serial="1" name="F6AVWTA01" region="0" member_name="F6AVWTA01_2866_700015470_V1-V3">
+      <FILES>
+        <FILE filename="B-2004-04-S1.sff" filetype="sff" checksum_method="MD5" checksum="c693c0f79bfd05d7fb348f0182fbf808"/>
+      </FILES>
+    </DATA_BLOCK>
+  </RUN>
+  <RUN alias="bodysites_lib2866_F6AVWTA02" center_name="JCVI" run_center="JCVI">
+    <EXPERIMENT_REF refname="bodysites_F6AVWTA02" refcenter="bodysites"/>
+    <DATA_BLOCK serial="1" name="F6AVWTA02" region="0" member_name="F6AVWTA02_2866_700015470_V1-V3">
+      <FILES>
+        <FILE filename="B-2008-08-S1.sff" filetype="sff" checksum_method="MD5" checksum="34f4185163c4ce10610a2427ba554ba3"/>
+      </FILES>
+    </DATA_BLOCK>
+  </RUN>
   <RUN alias="bodysites_lib2898_F6AVWTA01" center_name="JCVI" run_center="JCVI">
     <EXPERIMENT_REF refname="bodysites_F6AVWTA01" refcenter="bodysites"/>
     <DATA_BLOCK serial="1" name="F6AVWTA01" region="0" member_name="F6AVWTA01_2898_700015766_V1-V3">
@@ -1485,11 +1839,43 @@ run_xml_str = '''<?xml version="1.0" encoding="UTF-8"?>
       </FILES>
     </DATA_BLOCK>
   </RUN>
+  <RUN alias="bodysites_lib2898_F6AVWTA02" center_name="JCVI" run_center="JCVI">
+    <EXPERIMENT_REF refname="bodysites_F6AVWTA02" refcenter="bodysites"/>
+    <DATA_BLOCK serial="1" name="F6AVWTA02" region="0" member_name="F6AVWTA02_2898_700015766_V1-V3">
+      <FILES>
+        <FILE filename="B-2009-06-S1.sff" filetype="sff" checksum_method="MD5" checksum="02d0751ce913ca796a5916803c574636"/>
+      </FILES>
+    </DATA_BLOCK>
+  </RUN>
+  <RUN alias="bodysites_lib2865_F6AVWTA01" center_name="JCVI" run_center="JCVI">
+    <EXPERIMENT_REF refname="bodysites_F6AVWTA01" refcenter="bodysites"/>
+    <DATA_BLOCK serial="1" name="F6AVWTA01" region="0" member_name="F6AVWTA01_2865_700015468_V1-V3">
+      <FILES>
+        <FILE filename="B-2005-06-S1.sff" filetype="sff" checksum_method="MD5" checksum="8d2ef95655a4f0cf4b6e1e2966c6ac30"/>
+      </FILES>
+    </DATA_BLOCK>
+  </RUN>
+  <RUN alias="bodysites_lib2865_F6AVWTA02" center_name="JCVI" run_center="JCVI">
+    <EXPERIMENT_REF refname="bodysites_F6AVWTA02" refcenter="bodysites"/>
+    <DATA_BLOCK serial="1" name="F6AVWTA02" region="0" member_name="F6AVWTA02_2865_700015468_V1-V3">
+      <FILES>
+        <FILE filename="B-2011-01-S1.sff" filetype="sff" checksum_method="MD5" checksum="7852588b980ba08c1ff0d0ca7b686b16"/>
+      </FILES>
+    </DATA_BLOCK>
+  </RUN>
   <RUN alias="bodysites_lib2907_F6AVWTA01" center_name="JCVI" run_center="JCVI">
     <EXPERIMENT_REF refname="bodysites_F6AVWTA01" refcenter="bodysites"/>
     <DATA_BLOCK serial="1" name="F6AVWTA01" region="0" member_name="F6AVWTA01_2907_700016371_V1-V3">
       <FILES>
         <FILE filename="B-2006-03-S1.sff" filetype="sff" checksum_method="MD5" checksum="a20fa67736ffc9f966827275036954b5"/>
+      </FILES>
+    </DATA_BLOCK>
+  </RUN>
+  <RUN alias="bodysites_lib2907_F6AVWTA02" center_name="JCVI" run_center="JCVI">
+    <EXPERIMENT_REF refname="bodysites_F6AVWTA02" refcenter="bodysites"/>
+    <DATA_BLOCK serial="1" name="F6AVWTA02" region="0" member_name="F6AVWTA02_2907_700016371_V1-V3">
+      <FILES>
+        <FILE filename="B-2011-02-S1.sff" filetype="sff" checksum_method="MD5" checksum="6b2c7045be67a4cf4958d22c5b6ab790"/>
       </FILES>
     </DATA_BLOCK>
   </RUN>
