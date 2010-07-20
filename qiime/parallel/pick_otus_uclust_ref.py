@@ -25,7 +25,8 @@ def get_job_commands(python_exe_fp,pick_otus_fp,fasta_fps,
     # Create basenames for each of the output files. These will be filled
     # in to create the full list of files created by all of the runs.
     out_filenames = [job_prefix + '.%d_otus.log', 
-                     job_prefix + '.%d_otus.txt']
+                     job_prefix + '.%d_otus.txt',
+                     job_prefix + '.%s_failures.txt']
     
     # Create lists to store the results
     commands = []
@@ -74,7 +75,7 @@ def get_job_commands(python_exe_fp,pick_otus_fp,fasta_fps,
 
     return commands, result_filepaths
 
-def parallel_blast_process_run_results_f(f):
+def parallel_uclust_ref_process_run_results_f(f):
     """ Copy each list of infiles to each outfile and delete infiles
     
         f: file containing one set of mapping instructions per line
@@ -82,14 +83,17 @@ def parallel_blast_process_run_results_f(f):
         example f:
          f1.txt f2.txt f3.txt f_combined.txt
          f1.log f2.log f3.log f_combined.log
+         f1_failures.txt f2_failures.txt f3_failures.txt f_failires.txt
          
         If f contained the two lines above, this function would 
          concatenate f1.txt, f2.txt, and f3.txt into f_combined.txt
          and f1.log, f2.log, and f3.log into f_combined.log
     """
     lines = list(f)
-    # handle catting of log files
-    basic_process_run_results_f([lines[1]])
+    # handle catting of log files and failure files
+    basic_process_run_results_f([lines[1],lines[2]])
+    # # handle catting of failures files
+    # basic_process_run_results_f([lines[2]])
     # handle merging of otu maps
     fields = lines[0].strip().split()
     infiles_list = fields[:-1]

@@ -93,8 +93,6 @@ script_info['optional_options'] = [\
 script_info['version'] = __version__
 
 def main():
-    raise NotImplementedError,\
-     "This script is not yet tested, but in the svn repository to allow its multiple authors to collaborate on it. DO NOT USE THIS SCRIPT YET!"
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
    # create local copies of command-line options
@@ -176,9 +174,9 @@ def main():
         # each job should be merged into the final output files
         merge_map_filepath = '%s/merge_map.txt' % working_dir
         process_run_results_f =\
-         'qiime.parallel.pick_otus_blast.parallel_blast_process_run_results_f'
+         'qiime.parallel.pick_otus_uclust_ref.parallel_uclust_ref_process_run_results_f'
         write_merge_map_file_pick_otus(job_result_filepaths,output_dir,\
-            merge_map_filepath,input_file_basename)
+            merge_map_filepath,input_file_basename,failures=True)
         created_temp_paths.append(merge_map_filepath)
         
         # Create the filepath listing the temporary files to be deleted,

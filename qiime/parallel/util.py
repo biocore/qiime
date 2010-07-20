@@ -257,25 +257,36 @@ def write_merge_map_file_align_seqs(job_result_filepaths,output_dir,\
     f.close()
   
 def write_merge_map_file_pick_otus(job_result_filepaths,output_dir,\
-    merge_map_filepath,input_file_basename):
+    merge_map_filepath,input_file_basename,failures=False):
     
     f = open(merge_map_filepath,'w')
     
-    out_filepaths = [\
-     '%s/%s_otus.txt' % (output_dir,input_file_basename),
-     '%s/%s_otus.log' % (output_dir,input_file_basename)]
-    
     otus_fps = []
     log_fps = []
+    failures_fps = []
+    
+    if not failures:
+        out_filepaths = [\
+         '%s/%s_otus.txt' % (output_dir,input_file_basename),
+         '%s/%s_otus.log' % (output_dir,input_file_basename)]
+        in_filepaths = [otus_fps,log_fps]
+    else:
+        out_filepaths = [\
+         '%s/%s_otus.txt' % (output_dir,input_file_basename),
+         '%s/%s_otus.log' % (output_dir,input_file_basename),
+         '%s/%s_failures.txt' % (output_dir,input_file_basename)]
+        in_filepaths = [otus_fps,log_fps,failures_fps]
     
     for fp in job_result_filepaths:
         if fp.endswith('_otus.txt'):
             otus_fps.append(fp)
-        else:
+        elif fp.endswith('_otus.log'):
             log_fps.append(fp)
+        else:
+            failures_fps.append(fp)
     
     for in_files, out_file in\
-     zip([otus_fps,log_fps],out_filepaths):
+     zip(in_filepaths,out_filepaths):
         f.write('\t'.join(in_files + [out_file]))
         f.write('\n')
     f.close()

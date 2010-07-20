@@ -82,7 +82,7 @@ def basic_process_run_results_f(f):
 
         for fp in infiles_list:
             for line in open(fp):
-               of.write(line)
+               of.write('%s\n' % line.strip('\n'))
         of.close()
     # It is a good idea to have your clean_up_callback return True.
     # That way, if you get mixed up and pass it as check_run_complete_callback, 
