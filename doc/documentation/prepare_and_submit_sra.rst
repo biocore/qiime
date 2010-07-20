@@ -59,9 +59,26 @@ Kyle will fill in.
 
 Step 4. Applying the ``process_sra_submission.py`` workflow in QIIME.
 ---------------------------------------------------------------------
-Greg will fill in.
+After filling in your templates, you will run the ``process_sra_submission.py`` workflow script. This code generates per-library sff files, as required by the SRA, and performs human screen if it is necessary to remove human contaminant sequences from your sff files. (If you're not sure whether you need to human screen, perform the human screen.) 
 
-(That should be mainly covered in the other tutorial, right?)
+There are two types of human screens that can be applied: a positive screen and a negative screen. A positive screen is where all sequences are searched against a database, and those found to match the database are retained. This is used, for example, when you have 16S reads and you want to search them against greengenes to discard all sequences that don't look like they are 16S and therefore represent possible human contaminants. This is a conservative screen, but it is typically a better idea to err on the side of discarding too many reads than to accidentally submit human sequences. A negative screen, on the other hand, is where all sequences are searched against a database, and those found not to match the database are retained. This is less conservative, but necessary for example when you have metagenomic reads, and searching against a single sequence collection therefore won't work (because you'd need full genome sequences of all microbes). In this case, you can screen against the full human genome, and retain only sequences that do not match. When using a negative screen, be sure that your reference set contains the full genome, not just (e.g.) the coding regions. To bypass the human screening step, do not provide a reference set via ``-r``.
+
+You can run ``process_sra_submission.py`` as follows::
+
+	process_sra_submission.py -s sff_files/ -e experiment.txt -r 16S_reference_set.fasta -u submission.txt -p sra_parameters.txt -o sra_out/
+
+
+The options are:
+
+	* -s : directory containing sff files
+	* -e : the experiment.txt file generated in Step 2 and filled in in Step 3
+	* -r : reference set fasta file for human screening (optional: to bypass the human screen do not pass -r, but be certain that this is what you want to do)
+	* -u : the submission.txt file generated in Step 2 and filled in in Step 3
+	* -p : the parameter file -- the standard parameter file used here can be copied from `here <../tutorials/doc_sra_submission.html#standard-sra-parameters-txt-file-for-barcoded-16s-community-sequencing-on-454>`_
+	* -o : the directory where the output should be written
+
+A tutorial is provided `here <../tutorials/doc_sra_submission.html>`_ that illustrates how to run ``process_sra_submission.py`` using an example data set.
+
 
 Step 5. Submit your data to the SRA.
 ------------------------------------
