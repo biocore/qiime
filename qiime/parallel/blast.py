@@ -13,9 +13,15 @@ __status__ = "Development"
 from os.path import split, splitext
 from qiime.parallel.util import get_rename_command
 
-def get_commands(infile_paths,db_path,blast_executable_path,\
-    blastmat_path,e_value,word_size,num_hits,output_dir,working_dir,\
-    command_prefix=None,command_suffix=None):
+def get_commands(infile_paths,db_path,blast_executable_path,
+    blastmat_path,e_value,word_size,num_hits,output_dir,working_dir,
+    disable_low_complexity_filter=False,command_prefix=None,
+    command_suffix=None):
+    
+    if not disable_low_complexity_filter:
+        complexity_filter_str = 'T'
+    else:
+        complexity_filter_str = 'F'
     
     command_prefix = command_prefix or\
      '/bin/bash; export BLASTMAT=%s;' % blastmat_path
@@ -37,16 +43,17 @@ def get_commands(infile_paths,db_path,blast_executable_path,\
         result_filepaths.append(outfile_path)
         
         command = \
-         "%s %s -p blastn -m 9 -e %s -W %s -b %s -i %s -d %s > %s %s %s" % \
-         (command_prefix,\
-          blast_executable_path,\
-          e_value,\
-          word_size,\
+         "%s %s -p blastn -m 9 -e %s -F %s -W %s -b %s -i %s -d %s > %s %s %s" % \
+         (command_prefix,
+          blast_executable_path,
+          e_value,
+          complexity_filter_str,
+          word_size,
           num_hits, 
-          infile_path,\
-          db_path,\
-          working_outfile_path,\
-          rename_command,\
+          infile_path,
+          db_path,
+          working_outfile_path,
+          rename_command,
           command_suffix)
         commands.append(command)
     

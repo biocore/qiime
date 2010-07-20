@@ -46,6 +46,10 @@ script_info['required_options'] = [\
         help='name of output directory for blast jobs [REQUIRED]')
 ]
 script_info['optional_options'] = [\
+ make_option('-c','--disable_low_complexity_filter',
+        default=False,action='store_true',
+        help='disable filtering of low-complexity sequences '
+             '(i.e., -F F is passed to blast) [default: %default]'),\
  make_option('-e','--e_value',action='store',\
         type='float', default=1e-30, dest='e_value',
         help='E-value threshold for blasts [default: %default]'),\
@@ -99,6 +103,7 @@ def main():
     suppress_polling = opts.suppress_polling
     seconds_to_sleep = opts.seconds_to_sleep
     poll_directly = opts.poll_directly
+    disable_low_complexity_filter = opts.disable_low_complexity_filter
 
     created_temp_paths = []
     
@@ -144,8 +149,9 @@ def main():
     created_temp_paths.append(jobs_fp)
 
     # generate the list of commands to be pushed out to nodes    
-    commands, job_result_filepaths = get_commands(tmp_fasta_fps,refseqs_path,\
-     blastall_fp,blastmat_dir,e_value,word_size,num_hits,output_dir,working_dir,\
+    commands, job_result_filepaths = get_commands(tmp_fasta_fps,refseqs_path,
+     blastall_fp,blastmat_dir,e_value,word_size,num_hits,output_dir,working_dir,
+     disable_low_complexity_filter=disable_low_complexity_filter,
      command_prefix=None,command_suffix=None)
     created_temp_paths += job_result_filepaths
     
