@@ -68,17 +68,16 @@ def main():
 
     docnames = {}
 
-    xml_kwargs = {
-        'twocol_input_format': not opts.multicolumn_input_format,
-        }
-
     if opts.input_study_fp:
+        study_kwargs = {
+            'twocol_input_format': (not opts.multicolumn_input_format),
+            }
         docnames['study'] = write_xml_generic(opts.input_study_fp,
-            opts.template_study_fp, make_study, xml_kwargs)
+            opts.template_study_fp, make_study, study_kwargs)
 
     if opts.input_sample_fp:
         docnames['sample'] = write_xml_generic(opts.input_sample_fp,
-            opts.template_sample_fp, make_sample, xml_kwargs)
+            opts.template_sample_fp, make_sample)
 
     if opts.input_experiment_fp:
         if not opts.sff_dir:
@@ -112,9 +111,13 @@ def main():
     if opts.input_submission_fp:
         input_submission_file = open(opts.input_submission_fp, 'U')
         submission_template = open(opts.template_submission_fp, 'U').read()
+        submission_kwargs = {
+            'docnames': docnames,
+            'submission_dir': opts.output_dir,
+            'twocol_input_format': (not opts.multicolumn_input_format),
+            }
         submission_xml = make_submission(
-            input_submission_file, submission_template, docnames,
-            submission_dir=opts.output_dir,)
+            input_submission_file, submission_template, **submission_kwargs)
 
         output_submission_fp = generate_output_fp(
             opts.input_submission_fp, '.xml', opts.output_dir)
