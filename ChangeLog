@@ -9,6 +9,8 @@ Add changes since QIIME 1.1.0 here
 * Updated parallel_multiple_rarefactions.py, parallel_alpha_diversity.py, and parallel_beta_diversity.py to use the jobs_to_start value for better control over the number of parallel runs.
 * uclust_ref otu picker now outputs an additional failures file listing the sequences which failed to cluster if the user passed --suppress_new_clusters. This is done for ease of parsing in downstream applications which want to do something special with these sequences. The failures list is no longer written to the log file (although the failures count is still written to the log file).
 * Added the filter_fasta.py script which allows users to build a fasta file from an existing fasta where specified sequences are either included or excluded from the new file. The sequences to keep or exclude can be specified by a variety of different inputs, for example as a list of sequence identifiers in a text file.
+* Added parallel version of uclust_ref OTU picker.
+* Added negative screen option to process_sra_submission.py -- this allows users to screen by discarding all sequences that match a reference set, while the (default) positive screen allows users to screen by retaining only sequences that match a reference set. 
 
 QIIME 1.1.0 (14 May 2010)
 =========================
