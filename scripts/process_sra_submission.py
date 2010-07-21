@@ -76,12 +76,17 @@ script_info['optional_options'] = [
         help='comma-separated list of run prefixes for which to remove unassigned sequences [default: %default]'),
     make_option('-r', '--reference_set_fp',
         help='path to reference set of 16S sequences [default: %default; NO HUMAN SCREENING]'),
+    make_option('-n', '--negative_screen',action='store_true',
+        help='perform negative screen (i.e., sequences which don\'t match '+\
+        'reference are retained) [default: %default; positive screen: '
+        'sequences which do match reference are retained]'),
     ]
 script_info['version'] = __version__
 
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
+    positive_screen = not opts.negative_screen
 
     qiime_config = load_qiime_config()
 
@@ -116,6 +121,7 @@ def main():
             params=parse_qiime_parameters(parameter_f),
             qiime_config=qiime_config,
             command_handler=command_handler,
+            positive_screen=positive_screen,
             status_update_callback=status_update_callback,
             remove_unassigned=remove_unassigned,
             experiment_link_fp=opts.experiment_link_fp,

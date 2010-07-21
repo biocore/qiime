@@ -930,13 +930,21 @@ def run_process_sra_submission(
     params,
     qiime_config,
     command_handler,
+    positive_screen=True,
     status_update_callback=print_to_stdout,
     remove_unassigned=[],
     experiment_link_fp=None,
     experiment_attribute_fp=None):
     """Run the SRA second-stage submission process.
 
-    If human screening should be bypassed, pass refseqs_fp=None.
+    If human screening should be bypassed, pass refseqs_fp=None. A positive
+    human screen is the default, meaning that if a sequence matches a reference
+    sequence it is retained. This is used when reads are 16S, and you want to 
+    discard all non-16S sequences by querying them against (e.g.) greengenes.
+    A negative screen can be applied by passed positive_screen=False. This means
+    that if a sequence matches a reference sequence, it is discarded. This is used
+    when reads are metagenomic, and you want to search against the human genome
+    and discard all matches.
 
     The steps performed by this function are:
         Get fasta and qual from sff files
@@ -1077,8 +1085,10 @@ def run_process_sra_submission(
             'Demultiplex run %s' % run_prefix, split_libraries_cmd)])
         seqs_fp = join(library_dir, 'seqs.fna')
 
-        if perform_human_screen:
-            # pick_otus against reference set for human screen
+        if perform_human_screen and positive_screen:
+            # pick_otus against reference set for human screen -- this is
+            # a positive screen, meaning that if a sequence is found it is 
+            # retained
             params_str = get_params_str(params['pick_otus'])
             pick_otu_params = set(params['pick_otus'].keys())
             if pick_otu_params and\
@@ -1092,7 +1102,7 @@ def run_process_sra_submission(
              (python_exe_fp, script_dir, seqs_fp, library_dir, refseqs_copy_fp, params_str)
             commands.append([('Human screen with uclust_ref OTU picker', pick_otus_cmd)])
 
-            # Step xx - Screen input seqs to filter human sequences
+            # Screen input seqs to filter human sequences
             otus_fp = join(library_dir, 'seqs_otus.txt')        
             screened_seqs_fp = join(library_dir, 'screened_seqs.fasta')
             params_str = get_params_str(params['filter_fasta'])
@@ -1103,6 +1113,30 @@ def run_process_sra_submission(
             commands.append([(
                 'Filter input sequences to remove those which didn\'t pass human screen',
                 filter_fasta_cmd)])
+                
+        elif perform_human_screen and not positive_screen:
+            # perform metagenomic human screen -- this is a negative screen: if 
+            # a sequence matches the reference set it is discarded
+            params_str = get_params_str(params['parallel_blast'])
+            blast_result_dir = '%s/blast_results/' % library_dir
+            parallel_blast_cmd = \
+             '%s %s/parallel_blast.py -T -i %s -c -r %s -o %s %s' %\
+             (python_exe_fp, script_dir, seqs_fp, refseqs_copy_fp,
+              blast_result_dir, params_str)
+            commands.append([('Human screen with BLAST', parallel_blast_cmd)])
+            
+            # Screen input seqs to filter human sequences
+            blast_output_fp = '%s/seqs_blast_out.txt' % blast_result_dir
+            screened_seqs_fp = join(library_dir, 'screened_seqs.fasta')
+            params_str = get_params_str(params['filter_fasta'])
+            filter_fasta_cmd = \
+             '%s %s/filter_fasta.py -n -f %s -o %s -s %s %s' % \
+             (python_exe_fp, script_dir, seqs_fp, screened_seqs_fp, 
+              blast_output_fp, params_str)
+            commands.append([(
+                'Filter input sequences to remove those which didn\'t pass human screen',
+                filter_fasta_cmd)])
+            
         else:
             screened_seqs_fp = seqs_fp
         

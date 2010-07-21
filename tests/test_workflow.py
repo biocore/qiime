@@ -825,8 +825,8 @@ class WorkflowTests(TestCase):
         log_fp = glob(join(self.wf_out,'log*.txt'))[0]
         self.assertTrue(getsize(log_fp) > 0)
         
-    def test_run_process_sra_submission(self):
-        """run_process_sra_submission generates expected results w human screen
+    def test_run_process_sra_submission_positive_human_screen(self):
+        """run_process_sra_submission w positive human screen
         """
         # TODO: remove dependence on external files, if possible
         test_dir = os.path.dirname(os.path.abspath(__file__))
@@ -841,6 +841,7 @@ class WorkflowTests(TestCase):
                 params=self.sra_params,
                 qiime_config=self.qiime_config,
                 command_handler=call_commands_serially,
+                positive_screen=True,
                 status_update_callback=no_status_updates,
                 )
         
@@ -877,7 +878,7 @@ class WorkflowTests(TestCase):
         screened_seq_ids.sort()
         unscreened_seq_ids.sort()
         
-        # Test that some sequences were dropped during the human screen
+        # Test that expected sequences were dropped during screen`
         self.assertEqual(len(screened_seq_ids),14)
         self.assertEqual(len(unscreened_seq_ids),20)
         
@@ -902,10 +903,97 @@ class WorkflowTests(TestCase):
         combined_seq_ids.sort()
         
         # confirm that the actual sequencess extracted from the sff files
-        # are the ones that they should be (i.e., they don't contain human sequences)
+        # are the ones that they should be (i.e., they don't contain the 
+        # screened seqs)
         self.assertEqual(len(combined_seq_ids),14)
         self.assertEqual(combined_seq_ids,screened_seq_ids)
         
+        
+    def test_run_process_sra_submission_negative_human_screen(self):
+        """run_process_sra_submission w negative human screen
+        """
+        # TODO: remove dependence on external files, if possible
+        test_dir = os.path.dirname(os.path.abspath(__file__))
+        sff_dir = os.path.join(test_dir, 'sra_test_files', 'F6AVWTA')
+        
+        run_process_sra_submission(
+                input_experiment_fp=self.experiment_fp,
+                input_submission_fp=self.submission_w_file_fp,
+                sff_dir=sff_dir,
+                refseqs_fp=self.sra_refseqs_fp,
+                output_dir=self.wf_out,
+                params=self.sra_params,
+                qiime_config=self.qiime_config,
+                command_handler=call_commands_serially,
+                positive_screen=False,
+                status_update_callback=no_status_updates,
+                )
+        
+        # tar_filename is passed to the workflow function
+        tar_fp = os.path.join(self.wf_out, 'my_sffs.tgz')
+        self.assertTrue(getsize(tar_fp) > 0)
+        
+        experiment_basename = os.path.splitext(
+            os.path.basename(self.experiment_fp))[0]
+        experiment_xml_fp = os.path.join(
+            self.wf_out, experiment_basename + '.xml')
+        self.assertTrue(getsize(experiment_xml_fp) > 0)
+        run_xml_fp = os.path.join(
+            self.wf_out, experiment_basename + '.xml')
+        self.assertTrue(getsize(run_xml_fp) > 0)
+        # Test that submission file is written, and that it is 
+        # the second stage submission (ie., contains the tgz filename,
+        # and is not just a copy of the first stage submission)
+        submission_xml_fp = os.path.join(
+            self.wf_out, split(self.submission_w_file_fp)[1])
+        self.assertTrue(getsize(submission_xml_fp) > 0)
+        self.assertTrue('my_sffs.tgz' in 
+                        open(submission_xml_fp).read())
+        
+        # Test that screening is performed by comparing the size of the
+        # screened and unscreened files -- note we're grabbing the original seq 
+        # identifier here, not the post-split_libraries seq identifier
+        screened_fp = '%s/F6AVWTA01_demultiplex/screened_seqs.fasta' % self.wf_out
+        unscreened_fp = '%s/F6AVWTA01_demultiplex/seqs.fna' % self.wf_out
+        screened_seq_ids = [s[0].split()[1] 
+                            for s in MinimalFastaParser(open(screened_fp))]
+        unscreened_seq_ids = [s[0].split()[1] 
+                              for s in MinimalFastaParser(open(unscreened_fp))]
+        screened_seq_ids.sort()
+        unscreened_seq_ids.sort()
+        
+        # Test that one sequence was dropped during the human screen -- confirmed this
+        # by running blastall on all sequences against the 6 sequence reference set with
+        # parameters: 
+        # -p blastn -e 1e-20 -F F -m 9 -W 30 -b 1
+        self.assertEqual(len(screened_seq_ids),19)
+        self.assertEqual(len(unscreened_seq_ids),20)
+        
+        # Generate the fasta files from the sff files
+        sff_fp1 = '%s/per_run_sff/F6AVWTA01/F6AVWTA01_2878_700015438_V1-V3.sff'\
+         % self.wf_out
+        fna_fp1 = '%s/per_run_sff/F6AVWTA01/F6AVWTA01_2878_700015438_V1-V3.fna'\
+         % self.wf_out
+        system('sffinfo -s %s > %s' % (sff_fp1, fna_fp1))
+        
+        sff_fp2 = '%s/per_run_sff/F6AVWTA01/bodysites_study_default_F6AVWTA01.sff'\
+         % self.wf_out
+        fna_fp2 = '%s/per_run_sff/F6AVWTA01/bodysites_study_default_F6AVWTA01.fna'\
+         % self.wf_out
+        system('sffinfo -s %s > %s' % (sff_fp2,fna_fp2))
+        
+        extracted_seq_ids_1 = [s[0].split()[0] 
+                               for s in MinimalFastaParser(open(fna_fp1))]
+        extracted_seq_ids_2 = [s[0].split()[0] 
+                               for s in MinimalFastaParser(open(fna_fp2))]
+        combined_seq_ids = extracted_seq_ids_1 + extracted_seq_ids_2
+        combined_seq_ids.sort()
+        
+        # confirm that the actual sequencess extracted from the sff files
+        # are the ones that they should be (i.e., they don't contain the 
+        # screened seqs)
+        self.assertEqual(len(combined_seq_ids),19)
+        self.assertEqual(combined_seq_ids,screened_seq_ids)
         
     def test_run_process_sra_submission_no_human_screen(self):
         """run_process_sra_submission generates expected results wo human screen
@@ -993,6 +1081,8 @@ split_libraries:barcode-type	10
 split_libraries:max-homopolymer	1000
 split_libraries:max-primer-mismatch	100
 split_libraries:max-ambig	1000
+
+parallel_blast:e_value	1e-20
 
 # pick_otus parameters
 #pick_otus:similarity	0.70
