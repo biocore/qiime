@@ -55,7 +55,7 @@ Within the generated template files is a field reference which describes each fi
 
 Step 3. Fill in template files to describe your study and data.
 ---------------------------------------------------------------
-Kyle will fill in.
+Kyle will fill in.  For now, see `SRA Field List <sra_field_list.html>`_
 
 Step 4. Applying the ``process_sra_submission.py`` workflow in QIIME.
 ---------------------------------------------------------------------
