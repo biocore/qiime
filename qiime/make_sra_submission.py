@@ -57,7 +57,79 @@ file_wrapper = """ <FILES>
  <FILE filename="%s" checksum_method="MD5" checksum="%s"/>
  </FILES>"""
 
+def detect_missing_experiment_fields(input_file):
+    """Return a list of required fields missing from an experiment input file."""
+    return _detect_missing_fields(input_file, [
+        'EXPERIMENT_TITLE',
+        'STUDY_REF',
+        'STUDY_CENTER',
+        'SAMPLE_ALIAS',
+        'POOL_PROPORTION',
+        'BARCODE',
+        'RUN_PREFIX',
+        'EXPERIMENT_DESIGN_DESCRIPTION',
+        'LIBRARY_CONSTRUCTION_PROTOCOL',
+        ])
 
+def detect_missing_study_fields(input_file):
+    """Return a list of required fields missing from a study input file."""
+    return _detect_missing_fields(input_file, [
+        'STUDY_alias',
+        'STUDY_TITLE',
+        'STUDY_TYPE',
+        'STUDY_ABSTRACT',
+        'STUDY_DESCRIPTION',
+        'CENTER_NAME',
+        'CENTER_PROJECT_NAME',
+        'PMID',        
+        ])
+
+def detect_missing_submission_fields(input_file):
+    """Return a list of required fields missing from a submission input file."""
+    return _detect_missing_fields(input_file, [
+        'accession',
+        'submission_id',
+        'center_name',
+        'submission_comment',
+        'lab_name',
+        'submission_date',
+        'CONTACT',
+        'file',
+        ])
+
+def detect_missing_sample_fields(input_file):
+    """Return a list of required fields missing from a sample input file."""
+    return _detect_missing_fields(input_file, [
+        'SAMPLE_ALIAS',
+        'TITLE',
+        'TAXON_ID',
+        'COMMON_NAME',
+        'ANONYMIZED_NAME',
+        'DESCRIPTION',
+        'host_taxid',
+        ])
+
+def _detect_missing_fields(input_file, required_fields):
+    # record starting offset so we can return to it later
+    # obviously, this is not thread-safe
+    if hasattr(input_file, 'tell'):
+        file_offset = input_file.tell()
+    else:
+        file_offset = None
+
+    header, _ = read_tabular_data(input_file)
+
+    # return file to starting position
+    if file_offset is not None:
+        input_file.seek(file_offset)
+
+    observed_fields = set(header)
+    missing_fields = []
+    for field in required_fields:
+        if field not in observed_fields:
+            missing_fields.append(field)
+
+    return missing_fields
 
 def generate_output_fp(input_fp, ext, output_dir=None):
     """Generate new filepath by replacing the file's extension."""

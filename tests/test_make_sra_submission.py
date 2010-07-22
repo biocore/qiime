@@ -7,6 +7,8 @@ from cogent.util.unit_test import TestCase, main
 from cogent.app.util import get_tmp_filename
 from cogent.util.misc import remove_files
 from qiime.make_sra_submission import (
+    detect_missing_experiment_fields, detect_missing_study_fields,
+    detect_missing_submission_fields, detect_missing_sample_fields,
     md5_path, safe_for_xml, read_tabular_data, rows_data_as_dicts,
     make_study_links, twocol_data_to_dict, make_study, make_submission,
     make_sample, group_lines_by_field, write_xml_generic,
@@ -53,6 +55,70 @@ class TopLevelTests(TestCase):
 
     def tearDown(self):
         remove_files(self.files_to_remove)
+
+    def test_detect_missing_experiment_fields(self):
+        """detect_missing_experiment_fields should return a list of all required fields not found in the input file header."""
+        input_file = StringIO('#NONSENSE_FIELD\nnonsense_value\n')
+        observed = detect_missing_experiment_fields(input_file)
+        expected = [
+            'EXPERIMENT_TITLE',
+            'STUDY_REF',
+            'STUDY_CENTER',
+            'SAMPLE_ALIAS',
+            'POOL_PROPORTION',
+            'BARCODE',
+            'RUN_PREFIX',
+            'EXPERIMENT_DESIGN_DESCRIPTION',
+            'LIBRARY_CONSTRUCTION_PROTOCOL',
+            ]
+        self.assertEqual(observed, expected)
+
+    def test_detect_missing_study_fields(self):
+        """detect_missing_study_fields should return a list of all required fields not found in the input file header."""
+        input_file = StringIO('#NONSENSE_FIELD\nnonsense_value\n')
+        observed = detect_missing_study_fields(input_file)
+        expected = [
+            'STUDY_alias',
+            'STUDY_TITLE',
+            'STUDY_TYPE',
+            'STUDY_ABSTRACT',
+            'STUDY_DESCRIPTION',
+            'CENTER_NAME',
+            'CENTER_PROJECT_NAME',
+            'PMID',
+            ]
+        self.assertEqual(observed, expected)
+
+    def test_detect_missing_submission_fields(self):
+        """detect_missing_submission_fields should return a list of all required fields not found in the input file header."""
+        input_file = StringIO('#NONSENSE_FIELD\nnonsense_value\n')
+        observed = detect_missing_submission_fields(input_file)
+        expected = [
+            'accession',
+            'submission_id',
+            'center_name',
+            'submission_comment',
+            'lab_name',
+            'submission_date',
+            'CONTACT',
+            'file',
+            ]
+        self.assertEqual(observed, expected)
+
+    def test_detect_missing_sample_fields(self):
+        """detect_missing_sample_fields should return a list of all required fields not found in the input file header."""
+        input_file = StringIO('#NONSENSE_FIELD\nnonsense_value\n')
+        observed = detect_missing_sample_fields(input_file)
+        expected = [
+            'SAMPLE_ALIAS',
+            'TITLE',
+            'TAXON_ID',
+            'COMMON_NAME',
+            'ANONYMIZED_NAME',
+            'DESCRIPTION',
+            'host_taxid',
+            ]
+        self.assertEqual(observed, expected)
 
     def test_generate_output_fp(self):
         input_fp = os.path.join('tmp', 'hello.txt')
