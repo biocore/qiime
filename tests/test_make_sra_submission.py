@@ -78,7 +78,7 @@ class TopLevelTests(TestCase):
         input_file = StringIO('#NONSENSE_FIELD\nnonsense_value\n')
         observed = detect_missing_study_fields(input_file)
         expected = [
-            'STUDY_alias',
+            'STUDY_ALIAS',
             'STUDY_TITLE',
             'STUDY_TYPE',
             'STUDY_ABSTRACT',
@@ -94,14 +94,14 @@ class TopLevelTests(TestCase):
         input_file = StringIO('#NONSENSE_FIELD\nnonsense_value\n')
         observed = detect_missing_submission_fields(input_file)
         expected = [
-            'accession',
-            'submission_id',
-            'center_name',
-            'submission_comment',
-            'lab_name',
-            'submission_date',
+            'ACCESSION',
+            'SUBMISSION_ID',
+            'CENTER_NAME',
+            'SUBMISSION_COMMENT',
+            'LAB_NAME',
+            'SUBMISSION_DATE',
             'CONTACT',
-            'file',
+            'FILE',
             ]
         self.assertEqual(observed, expected)
 
@@ -116,7 +116,7 @@ class TopLevelTests(TestCase):
             'COMMON_NAME',
             'ANONYMIZED_NAME',
             'DESCRIPTION',
-            'host_taxid',
+            'HOST_TAXID',
             ]
         self.assertEqual(observed, expected)
 
@@ -134,9 +134,9 @@ class TopLevelTests(TestCase):
     def test_md5_path(self):
         """md5_path should match hand-calculated value"""
         template_fp = tempfile.mktemp(suffix='.xml')
-        open(template_fp, 'wb').write(study_template)
+        open(template_fp, 'wb').write('ABCDEFGHIJKLMNOP')
         result = md5_path(template_fp)
-        self.assertEqual(result, 'bcd7ec3afb9fe75ea09f5ac1cfeeb450')
+        self.assertEqual(result, '19fc8eff82037f1fc0d8ea1d32b5e339')
 
         self.files_to_remove.append(template_fp)
 
@@ -2005,7 +2005,7 @@ fierer_hand_study	"The influence of sex, handedness, and washing on the diversit
 
 study_template = '''<?xml version="1.0" encoding="UTF-8"?>
 <STUDY_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <STUDY alias="%(STUDY_alias)s">
+  <STUDY alias="%(STUDY_ALIAS)s">
     <DESCRIPTOR>
         <STUDY_TITLE>%(STUDY_TITLE)s</STUDY_TITLE>
         <STUDY_TYPE existing_study_type="%(STUDY_TYPE)s"/>
@@ -2101,11 +2101,11 @@ SRA003492	fierer_hand_study	CCME	"Barcode submission prepared by osulliva@ncbi.n
 
 submission_template = '''<?xml version="1.0" encoding="UTF-8"?>
 <SUBMISSION xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"%(ACCESSION_STRING)s
- submission_id="%(submission_id)s"
- center_name="%(center_name)s"
- submission_comment="%(submission_comment)s"
- lab_name="%(lab_name)s"
- submission_date="%(submission_date)s"
+ submission_id="%(SUBMISSION_ID)s"
+ center_name="%(CENTER_NAME)s"
+ submission_comment="%(SUBMISSION_COMMENT)s"
+ lab_name="%(LAB_NAME)s"
+ submission_date="%(SUBMISSION_DATE)s"
 >%(XML_CONTACT_BLOCK)s%(XML_ACTION_BLOCK)s%(XML_FILE_BLOCK)s
 </SUBMISSION>
 '''

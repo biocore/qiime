@@ -74,7 +74,7 @@ def detect_missing_experiment_fields(input_file):
 def detect_missing_study_fields(input_file):
     """Return a list of required fields missing from a study input file."""
     return _detect_missing_fields(input_file, [
-        'STUDY_alias',
+        'STUDY_ALIAS',
         'STUDY_TITLE',
         'STUDY_TYPE',
         'STUDY_ABSTRACT',
@@ -87,14 +87,14 @@ def detect_missing_study_fields(input_file):
 def detect_missing_submission_fields(input_file):
     """Return a list of required fields missing from a submission input file."""
     return _detect_missing_fields(input_file, [
-        'accession',
-        'submission_id',
-        'center_name',
-        'submission_comment',
-        'lab_name',
-        'submission_date',
+        'ACCESSION',
+        'SUBMISSION_ID',
+        'CENTER_NAME',
+        'SUBMISSION_COMMENT',
+        'LAB_NAME',
+        'SUBMISSION_DATE',
         'CONTACT',
-        'file',
+        'FILE',
         ])
 
 def detect_missing_sample_fields(input_file):
@@ -106,7 +106,7 @@ def detect_missing_sample_fields(input_file):
         'COMMON_NAME',
         'ANONYMIZED_NAME',
         'DESCRIPTION',
-        'host_taxid',
+        'HOST_TAXID',
         ])
 
 def _detect_missing_fields(input_file, required_fields):
@@ -205,6 +205,10 @@ def read_tabular_data(tabular_file):
         tabular_file, data_fcn=f, header_fcn=g)
     return header, body
 
+def canonicalize_field_name(name):
+    """Convert a field name to canonical form (ALL_CAPS)."""
+    return name.upper()
+
 def make_study_links(pmid):
     """Makes study links comment block given pmids"""
     return study_links_wrapper % (study_link_wrapper % pmid)
@@ -253,8 +257,11 @@ def make_study(study_lines, study_template, twocol_input_format=True):
     """Returns string for study xml."""
     header, rows = read_tabular_data(study_lines)
     if twocol_input_format:
+        for r in rows:
+            r[0] = canonicalize_field_name(r[0])
         info = twocol_data_to_dict(rows)
     else:
+        header = map(canonicalize_field_name, header)
         info_generator = rows_data_as_dicts(header, rows)
         info = info_generator.next()
     pmid = info.get('PMID', '').strip()
@@ -270,8 +277,11 @@ def make_submission(submission_lines, submission_template, docnames=None,
     """Returns string for submission xml."""
     header, rows = read_tabular_data(submission_lines)
     if twocol_input_format:
+        for r in rows:
+            r[0] = canonicalize_field_name(r[0])
         info = twocol_data_to_dict(rows, True)
     else:
+        header = map(canonicalize_field_name, header)
         info_generator = rows_data_as_dicts(header, rows)
         info = info_generator.next()
         if 'CONTACT' in info:
@@ -299,7 +309,7 @@ def make_submission(submission_lines, submission_template, docnames=None,
         else:
             new_info[k] = v
     info = new_info
-    accession = info.get('accession', '')
+    accession = info.get('ACCESSION', '')
     if accession:
         info['ACCESSION_STRING'] = '\n accession="%s"' % accession
     else:
@@ -312,7 +322,7 @@ def make_submission(submission_lines, submission_template, docnames=None,
     actions_str = actions_wrapper % '\n'.join(actions)
     info['XML_ACTION_BLOCK'] = actions_str
 
-    filename = info.get('file', '')
+    filename = info.get('FILE', '')
     if filename:
         if submission_dir:
             checksum = md5_path(os.path.join(submission_dir, filename))
@@ -356,6 +366,7 @@ def make_run_and_experiment(experiment_lines, sff_dir, attribute_file=None,
                             link_file=None):
     """Returns strings for experiment and run xml."""
     columns, body = read_tabular_data(experiment_lines)
+    columns = map(canonicalize_field_name, columns)
 
     run_set = SraRunSet(sff_dir)
     experiment_set = SraExperimentSet()

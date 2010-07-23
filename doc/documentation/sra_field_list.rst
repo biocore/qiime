@@ -9,7 +9,7 @@ SRA Field List
 Study Input File
 ----------------
 
-STUDY_alias
+STUDY_ALIAS
 
   One study per publication (i.e. the STUDY is supposed to be about
   the same amount of info as in a paper). This is something you define
@@ -60,46 +60,46 @@ PMID
 Submission Input File
 ---------------------
 
-accession 
+ACCESSION 
 
   Accession number for the submission: leave blank if not assigned
   yet, e.g. if new submission rather than replacing XML for an
   existing submission.
 
-submission_id
+SUBMISSION_ID
 
   Internally unique id for the submission: this is used as an ALIAS
   elsewhere so needs to be short, alphanumeric+underscores, no special
   characters.
 
-center_name
+CENTER_NAME
 
   Name of the center (e.g. sequencing center) preparing the
   submission: assigned by NCBI so you need to get a name for your
   institution rather than making something up here.
 
-submission_comment
+SUBMISSION_COMMENT
 
   Free-text comments regarding submission
 
-lab_name 
+LAB_NAME
 
   Name of lab preparing submission, can differ from center (usually
   refers to the PI's info, not the sequencing center's)
   
-submission_date
+SUBMISSION_DATE
 
-  timestamp of submission
+  Timestamp of submission.
   
 CONTACT
 
   Use semicolon to separate email address from name, can be multiple
-  contacts.  (example: Rob Knight;Rob.Knight@Colorado.edu) 
+  contacts. (Example: Rob Knight;Rob.Knight@Colorado.edu) 
 
-file (example: fierer_hand_study.seqs.tgz)
+FILE
 
   Leave blank if not submitting sequence data, put in filename
-  otherwise.
+  otherwise.  (Example: fierer_hand_study.seqs.tgz)
 
 Sample Input File
 -----------------
@@ -134,7 +134,7 @@ DESCRIPTION
   Free-text description of this specific sample.  (Example: "female
   right palm")
 
-host_taxid
+HOST_TAXID
 
   Required if there is a host (skip otherwise): taxon id that refers
   to the host. e.g. 9606 = Human.
