@@ -343,6 +343,14 @@ def make_sample(sample_lines, sample_template):
         'ANONYMIZED_NAME', 'DESCRIPTION'] #these go in the title, not the record
     optional_title_fields = ['TAXON_ID', 'COMMON_NAME', 'ANONYMIZED_NAME']
     header, body = read_tabular_data(sample_lines)
+
+    # ONLY canonicalize the standard fields in header
+    standard_fields = set(title_fields + optional_title_fields)
+    for i, observed_field_name in enumerate(header):
+        canonicalized_field_name = canonicalize_field_name(observed_field_name)
+        if canonicalized_field_name in standard_fields:
+            header[i] = canonicalized_field_name
+
     samples = []
     for d in rows_data_as_dicts(header, body):
         attrs = [sample_attribute_wrapper % (k,v) for k, v in 

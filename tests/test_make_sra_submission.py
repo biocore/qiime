@@ -251,6 +251,11 @@ class TopLevelTests(TestCase):
         result = make_sample(sample_data, sample_template)
         self.assertEqual(standardize_xml(result), standardize_xml(sample_xml))
 
+        # test with lowercase field names
+        sample_data = StringIO(sample_with_lowercase_txt)
+        result = make_sample(sample_data, sample_template)
+        self.assertEqual(standardize_xml(result), standardize_xml(sample_xml))
+
     def test_group_lines_by_field(self):
         lines = [
             ['x',   'why', 'b'],
@@ -2136,6 +2141,13 @@ fierer_hand_study_default	human hand microbiome	539655	human skin metagenome		"H
 S1	human hand microbiome	539655	human skin metagenome	subject 1	female right palm	9606	1	female	right	18	9.5	right	less than 2
 S2	human hand microbiome	539655	human skin metagenome	subject 1	female left palm	9606	1	female	left	18	9.5	right	less than 2
 '''
+
+sample_with_lowercase_txt = '''#sample_alias	title	taxon_id	COMMON_NAME	anonymized_name	description	host_taxon_id	subject	sex	hand	age	palm size	dominant hand	hours since wash
+fierer_hand_study_default	human hand microbiome	539655	human skin metagenome		"Human palm microbiome, default sample for unclassified reads"								
+S1	human hand microbiome	539655	human skin metagenome	subject 1	female right palm	9606	1	female	right	18	9.5	right	less than 2
+S2	human hand microbiome	539655	human skin metagenome	subject 1	female left palm	9606	1	female	left	18	9.5	right	less than 2
+'''
+
 
 sample_template = '''<?xml version="1.0" encoding="UTF-8"?>
 <SAMPLE_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
