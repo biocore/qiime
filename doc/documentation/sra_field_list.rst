@@ -46,10 +46,6 @@ CENTER_PROJECT_NAME
   Name of project as used by the center responsible for the study,
   NULL if none.
 
-PROJECT_ID
-
-  Project ID, assigned by SRA, leave blank if not yet assigned.
-
 PMID
 
   PubMed ID of paper describing project, if supplied will write out

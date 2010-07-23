@@ -1999,13 +1999,12 @@ STUDY_ABSTRACT	"Short \'abstract\' with special characters <10%."	"Abstract, e.g
 STUDY_DESCRIPTION	Targeted Gene Survey from Human Skin	Targeted Gene Survey from Human Skin	"Use ""Targeted Gene Survey"" for 16S or other target gene studies"
 CENTER_NAME	CCME	CCME	"NCBI-approved name of sequencing center, e.g. WUGSC"
 CENTER_PROJECT_NAME	NULL	NULL	"Name of project as used by the sequencing center, NULL if none."
-PROJECT_ID	34527	34527	"Project ID, assigned by SRA, leave blank if not yet assigned."
 PMID	19004758	19004758	"PubMed ID of paper describing project, if supplied will write out STUDY_LINK block, can be multiple (comma-delimited)"
 '''
 
 study_manycol_txt = '''
-#STUDY_alias	STUDY_TITLE	STUDY_TYPE	STUDY_ABSTRACT	STUDY_DESCRIPTION	CENTER_NAME	CENTER_PROJECT_NAME	PROJECT_ID	PMID
-fierer_hand_study	"The influence of sex, handedness, and washing on the diversity of hand surface bacteria"	Metagenomics	"Short \'abstract\' with special characters <10%."	Targeted Gene Survey from Human Skin	CCME	NULL	34527	19004758
+#STUDY_alias	STUDY_TITLE	STUDY_TYPE	STUDY_ABSTRACT	STUDY_DESCRIPTION	CENTER_NAME	CENTER_PROJECT_NAME	PMID
+fierer_hand_study	"The influence of sex, handedness, and washing on the diversity of hand surface bacteria"	Metagenomics	"Short \'abstract\' with special characters <10%."	Targeted Gene Survey from Human Skin	CCME	NULL	19004758
 '''
 
 study_template = '''<?xml version="1.0" encoding="UTF-8"?>
@@ -2018,7 +2017,6 @@ study_template = '''<?xml version="1.0" encoding="UTF-8"?>
         <STUDY_DESCRIPTION>%(STUDY_DESCRIPTION)s</STUDY_DESCRIPTION>
         <CENTER_NAME>%(CENTER_NAME)s</CENTER_NAME>
         <CENTER_PROJECT_NAME>%(CENTER_PROJECT_NAME)s</CENTER_PROJECT_NAME>
-        <PROJECT_ID>%(PROJECT_ID)s</PROJECT_ID>
     </DESCRIPTOR>%(XML_STUDY_LINKS_BLOCK)s
   </STUDY>
 </STUDY_SET>
@@ -2034,7 +2032,6 @@ study_xml = '''<?xml version="1.0" encoding="UTF-8"?>
         <STUDY_DESCRIPTION>Targeted Gene Survey from Human Skin</STUDY_DESCRIPTION>
         <CENTER_NAME>CCME</CENTER_NAME>
         <CENTER_PROJECT_NAME>NULL</CENTER_PROJECT_NAME>
-        <PROJECT_ID>34527</PROJECT_ID>
     </DESCRIPTOR>
     <STUDY_LINKS>
       <STUDY_LINK>
@@ -2056,7 +2053,6 @@ STUDY_ABSTRACT	"Short \'abstract\' with special characters <10%."	"Abstract, e.g
 STUDY_DESCRIPTION	Targeted Gene Survey from Human Skin	Targeted Gene Survey from Human Skin	"Use ""Targeted Gene Survey"" for 16S or other target gene studies"
 CENTER_NAME	CCME	CCME	"NCBI-approved name of sequencing center, e.g. WUGSC"
 CENTER_PROJECT_NAME	NULL	NULL	"Name of project as used by the sequencing center, NULL if none."
-PROJECT_ID	34527	34527	"Project ID, assigned by SRA, leave blank if not yet assigned."
 PMID		19004758	"PubMed ID of paper describing project, if supplied will write out STUDY_LINK block, can be multiple (comma-delimited)"
 '''
 
@@ -2071,7 +2067,6 @@ study_pmid_missing_xml = '''<?xml version="1.0" encoding="UTF-8"?>
         <STUDY_DESCRIPTION>Targeted Gene Survey from Human Skin</STUDY_DESCRIPTION>
         <CENTER_NAME>CCME</CENTER_NAME>
         <CENTER_PROJECT_NAME>NULL</CENTER_PROJECT_NAME>
-        <PROJECT_ID>34527</PROJECT_ID>
     </DESCRIPTOR>
   </STUDY>
 </STUDY_SET>
