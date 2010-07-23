@@ -213,7 +213,7 @@ def make_study_links(pmid):
     """Makes study links comment block given pmids"""
     return study_links_wrapper % (study_link_wrapper % pmid)
 
-def twocol_data_to_dict(body, is_multiple=False):
+def twocol_data_to_dict(body, is_multiple=False, warn=False):
     """Converts two-col data to dict of key-value pairs, ignoring other cols"""
     if is_multiple:
         result = defaultdict(list)
@@ -226,10 +226,12 @@ def twocol_data_to_dict(body, is_multiple=False):
             else:
                 result[rec[0].strip()] = rec[1].strip()
         except IndexError:
-            print rec
+            if warn:
+                stderr.write(
+                    'Less than 2 fields found in two-column input: %s' % rec)
     return result
 
-def threecol_data_to_dict(body):
+def threecol_data_to_dict(body, warn=False):
     result = defaultdict(list)
     for rec in body:
         try:
@@ -238,7 +240,9 @@ def threecol_data_to_dict(body):
             v2 = rec[2]
             result[key].append((v1, v2))
         except IndexError:
-            print rec
+            if warn:
+                stderr.write(
+                    'Less than 3 fields found in three-column input: %s' % rec)
     return result
 
 def row_data_to_dict(header, row):
