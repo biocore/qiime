@@ -67,6 +67,8 @@ Sequences from samples that are not found in the mapping file (no corresponding 
 		Disable primer usage when demultiplexing.  Should be enabled for unusual circumstances, such as analyzing Sanger sequence data generated with different primers.  [default: False]
 	-z, `-`-reverse_primers
 		Enable removal of the reverse primer and any subsequence sequence from the end of each read.  To enable this, there has to be a "ReversePrimer" column in the mapping file. Primers a required to be in IUPAC format and written in the 5' to  3' direction.  Valid options are 'disable', 'truncate_only', and 'truncate_remove'.  'truncate_only' will remove the primer and subsequence sequence data from the output read and will not alter output of sequences where the primer cannot be found. 'truncate_remove' will flag sequences where the primer cannot be found to not be written and will record the quantity of such failed sequences in the log file. [default: disable]
+	-d, `-`-record_qual_scores
+		Enables recording of quality scores for all sequences that are recorded.  If this option is enabled, a file named seqs_filtered.qual will be created in the output directory, and will contain the same sequence IDs in the seqs.fna file and sequence quality scores matching the bases present in the seqs.fna file. [default: False]
 
 
 **Output:**
@@ -148,5 +150,14 @@ Note: When analyzing large datasets (>100,000 seqs), users may want to use a gen
 **Linkers and Primers:**
 
 The linker and primer sequence (or all the degenerate possibilities) are associated with each barcode from the mapping file. If a barcode cannot be identified, all the possible primers in the mapping file are tested to find a matching sequence. Using truncated forms of the same primer can lead to unexpected results for rare circumstances where the barcode cannot be identified and the sequence following the barcode matches multiple primers.
+
+**Reverse Primer Removal:**
+
+In many cases, sequence reads are long enough to sequence through the reverse primer and sequencing adapter.  To remove these primers and all following sequences, the -z option can be used.  By default, this option is set to 'disable'.  If it is set to 'truncate_only', split_libraries will trim the primer and any sequence following it if the primer is found.  If the 'truncate_remove' option is set, `split_libraries.py <./split_libraries.html>`_ will trim the primer if found, and will not write the sequence if the primer is not found. The allowed mismatches for the reverse primer shares the parameter value for the forward primer, -M (default 0).  To use reverse primer removal, one must include a 'ReversePrimer' column in the mapping file, with the reverse primer recorded in the 5' to 3' orientation.
+Example reverse primer removal, where primers are trimmed if found, and sequence is written unchanged if not found.  Mismatches are increased to 1 from the default 0:
+
+::
+
+	split_libraries.py -m Mapping_File.txt -f 1.TCA.454Reads.fna -q 1.TCA.454Reads.qual -o Split_Library_Output/ -M 1 -z truncate_only
 
 
