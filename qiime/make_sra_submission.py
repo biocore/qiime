@@ -180,15 +180,17 @@ def parse_tsv_with_header(tsv_file, data_fcn=None, header_fcn=None):
 
     for line in tsv_file:
         line = line.rstrip('\n\r')
+        if not header:
+            if line.startswith('#'):
+                line = line[1:]
+            header = map(header_fcn, line.split('\t'))
+            continue
         # Skip lines containing only whitespace
         if not line.strip():
             continue
         if line.startswith('#'):
             line = line[1:]
-            if not header:
-                header = map(header_fcn, line.split('\t'))
-            else:
-                comments.append(line)
+            comments.append(line)
         else:
             items = map(data_fcn, line.split('\t'))
             data.append(items)

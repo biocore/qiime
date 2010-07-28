@@ -148,14 +148,21 @@ class TopLevelTests(TestCase):
 
     def test_read_tabular_data(self):
         """read_tabular_data should read simple table"""
-        data = (
-            '#a\tb\tc d\n'
-            'x\ty\tz\n'
-            '\n'
-            'x x\ty y\tc c \n'
+        data = [
+            'a\tb\tc d',
+            'x\ty\tz',
+            '',
+            'x x\ty y\tc c ',
+            ]
+        expected = (
+            ['a', 'b', 'c d'],
+            [['x','y','z'], ['x x', 'y y', 'c c ']],
             )
-        self.assertEqual(read_tabular_data(data.splitlines()), 
-            (['a', 'b', 'c d'], [['x','y','z'],['x x', 'y y', 'c c ']]))
+        self.assertEqual(read_tabular_data(data), expected)
+
+        # Test with pound sign in header
+        data[0] = '#' + data[0]
+        self.assertEqual(read_tabular_data(data), expected)
 
     def test_make_study_links(self):
         """make_study_links should return correct study links from pmid."""
@@ -910,7 +917,7 @@ class SraFileTests(TestCase):
         self.assertEqual(ET.tostring(observed), expected)
 
 
-experiment = '''
+experiment = '''\
 #EXPERIMENT_ALIAS	EXPERIMENT_CENTER	EXPERIMENT_TITLE	STUDY_REF	STUDY_CENTER	EXPERIMENT_DESIGN_DESCRIPTION	LIBRARY_CONSTRUCTION_PROTOCOL	SAMPLE_ALIAS	SAMPLE_CENTER	POOL_MEMBER_NAME	POOL_MEMBER_FILENAME	POOL_PROPORTION	BARCODE_READ_GROUP_TAG	BARCODE	LINKER	PRIMER_READ_GROUP_TAG	KEY_SEQ	PRIMER	RUN_PREFIX	REGION	PLATFORM	RUN_ALIAS	RUN_CENTER	RUN_DATE	INSTRUMENT_NAME
 bodysites_F6AVWTA01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015438	NCBI	F6AVWTA01_2878_700015438_V1-V3	B-2004-03-S1.sff	0.014492754	F6AVWTA01_ATGTTCGATG	ATGTTCGATG		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA01	0	FLX	bodysites_lib2878_F6AVWTA01	JCVI	NULL	NULL
 bodysites_F6AVWTA02	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015438	NCBI	F6AVWTA02_2878_700015438_V1-V3	B-2008-05-S1.sff	0.014492754	F6AVWTA02_ATGTTCTAGT	ATGTTCTAGT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	0	FLX	bodysites_lib2878_F6AVWTA02	JCVI	NULL	NULL
@@ -966,14 +973,14 @@ bodysites_F6AVWTA01	JCVI	Survey of multiple body sites	bodysites_study	bodysites
 bodysites_F6AVWTA02	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	unidentified-protected	SRS026543	NCBI	700016371	NCBI	F6AVWTA02_2907_700016371_V1-V3	B-2011-02-S1.sff	0.014492754	F6AVWTA02_TCTCTGTACT	TCTCTGTACT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	0	FLX	bodysites_lib2907_F6AVWTA02	JCVI	NULL	NULL
 '''
 
-attrs = '''
+attrs = '''\
 #Experiment	Attribute	Value
 bodysites_F6AVWTA01	library_strategy	targeted-locus
 bodysites_F6AVWTA01	gene	16S rRNA V1-V3 region
 bodysites_F6AVWTA02	library_strategy	targeted-locus
 bodysites_F6AVWTA02	gene	16S rRNA V1-V3 region'''
 
-links = '''
+links = '''\
 #Experiment	Link Name	Link URL
 bodysites_F6AVWTA01	bodysites Library Construction Protocol	http://hmpdacc.org/doc/HMP_MDG_454_16S_Protocol_V4_2_102109.pdf
 bodysites_F6AVWTA02	bodysites Library Construction Protocol	http://hmpdacc.org/doc/HMP_MDG_454_16S_Protocol_V4_2_102109.pdf
@@ -2002,7 +2009,7 @@ CENTER_PROJECT_NAME	NULL	NULL	"Name of project as used by the sequencing center,
 PMID	19004758	19004758	"PubMed ID of paper describing project, if supplied will write out STUDY_LINK block, can be multiple (comma-delimited)"
 '''
 
-study_manycol_txt = '''
+study_manycol_txt = '''\
 #STUDY_alias	STUDY_TITLE	STUDY_TYPE	STUDY_ABSTRACT	STUDY_DESCRIPTION	CENTER_NAME	CENTER_PROJECT_NAME	PMID
 fierer_hand_study	"The influence of sex, handedness, and washing on the diversity of hand surface bacteria"	Metagenomics	"Short \'abstract\' with special characters <10%."	Targeted Gene Survey from Human Skin	CCME	NULL	19004758
 '''
@@ -2094,7 +2101,7 @@ CONTACT	Rob Knight;Rob.Knight@Colorado.edu	Rob Knight;Rob.Knight@Colorado.edu	"U
 CONTACT	Noah Fierer;Noah.Fierer@Colorado.edu	Noah Fierer;Noah.Fierer@Colorado.edu	"Use semicolon to separate email address from name, can be multiple contacts."
 '''
 
-submission_manycol_txt = '''
+submission_manycol_txt = '''\
 #accession	submission_id	center_name	submission_comment	lab_name	submission_date	CONTACT
 SRA003492	fierer_hand_study	CCME	"Barcode submission prepared by osulliva@ncbi.nlm.nih.gov, shumwaym@ncbi.nlm.nih.gov"	Knight	2009-10-22T01:23:00-05:00	Rob Knight;Rob.Knight@Colorado.edu,Noah Fierer;Noah.Fierer@Colorado.edu
 '''
