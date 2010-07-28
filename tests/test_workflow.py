@@ -57,73 +57,73 @@ class WorkflowTests(TestCase):
         self.dirs_to_remove = []
         self.files_to_remove = []
         
-        tmp_dir = self.qiime_config['temp_dir'] or '/tmp/'
-        if not exists(tmp_dir):
-            makedirs(tmp_dir)
+        self.tmp_dir = self.qiime_config['temp_dir'] or '/tmp/'
+        if not exists(self.tmp_dir):
+            makedirs(self.tmp_dir)
             # if test creates the temp dir, also remove it
-            self.dirs_to_remove.append(tmp_dir)
+            self.dirs_to_remove.append(self.tmp_dir)
         
-        self.wf_out = get_tmp_filename(tmp_dir=tmp_dir,
+        self.wf_out = get_tmp_filename(tmp_dir=self.tmp_dir,
          prefix='qiime_wf_out',suffix='',result_constructor=str)
         self.dirs_to_remove.append(self.wf_out)
         
-        self.fasting_mapping_fp = get_tmp_filename(tmp_dir=tmp_dir,
+        self.fasting_mapping_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
          prefix='qiime_wf_mapping',suffix='.txt')
         fasting_mapping_f = open(self.fasting_mapping_fp,'w')
         fasting_mapping_f.write(fasting_map)
         fasting_mapping_f.close()
         self.files_to_remove.append(self.fasting_mapping_fp)
         
-        self.fasting_seqs_fp = get_tmp_filename(tmp_dir=tmp_dir,
+        self.fasting_seqs_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
             prefix='qiime_wf_seqs',suffix='.fasta')
         fasting_seqs_f = open(self.fasting_seqs_fp,'w')
         fasting_seqs_f.write(fasting_seqs_subset)
         fasting_seqs_f.close()
         self.files_to_remove.append(self.fasting_seqs_fp)
         
-        self.fasting_seqs_denoiser_fp = get_tmp_filename(tmp_dir=tmp_dir,
+        self.fasting_seqs_denoiser_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
             prefix='qiime_wf_seqs',suffix='.fasta')
         fasting_seqs_f = open(self.fasting_seqs_denoiser_fp,'w')
         fasting_seqs_f.write('\n'.join(fasting_seqs_subset.split('\n')[:44]))
         fasting_seqs_f.close()
         self.files_to_remove.append(self.fasting_seqs_denoiser_fp)
         
-        self.fasting_otu_table_fp = get_tmp_filename(tmp_dir=tmp_dir,
+        self.fasting_otu_table_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
             prefix='qiime_wf_otu_table',suffix='.txt')
         fasting_otu_table_f = open(self.fasting_otu_table_fp,'w')
         fasting_otu_table_f.write(fasting_subset_otu_table)
         fasting_otu_table_f.close()
         self.files_to_remove.append(self.fasting_otu_table_fp)
         
-        self.fasting_tree_fp = get_tmp_filename(tmp_dir=tmp_dir,
+        self.fasting_tree_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
             prefix='qiime_wf_tree',suffix='.tre')
         fasting_tree_f = open(self.fasting_tree_fp,'w')
         fasting_tree_f.write(fasting_subset_tree)
         fasting_tree_f.close()
         self.files_to_remove.append(self.fasting_tree_fp)
         
-        self.template_aln_fp = get_tmp_filename(tmp_dir=tmp_dir,
+        self.template_aln_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
          prefix='wf_template',suffix='.fasta')
         template_aln_f = open(self.template_aln_fp,'w')
         template_aln_f.write(template_alignment_subset)
         template_aln_f.close()
         self.files_to_remove.append(self.template_aln_fp)
         
-        self.sra_refseqs_fp = get_tmp_filename(tmp_dir=tmp_dir,
+        self.sra_refseqs_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
          prefix='wf_template',suffix='.fasta')
         template_aln_f = open(self.sra_refseqs_fp,'w')
         template_aln_f.write(sra_ref_collection)
         template_aln_f.close()
         self.files_to_remove.append(self.sra_refseqs_fp)
         
-        self.lanemask_fp = get_tmp_filename(tmp_dir=tmp_dir,
+        self.lanemask_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
          prefix='wf_lanemask',suffix='.txt')
         lanemask_f = open(self.lanemask_fp,'w')
         lanemask_f.write(lanemask)
         lanemask_f.close()
         self.files_to_remove.append(self.lanemask_fp)
         
-        self.sff_fp = get_tmp_filename(tmp_dir=tmp_dir,
+        self.sff_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
          prefix='wf_sff',suffix='.txt')
         sff_f = open(self.sff_fp,'w')
         sff_f.write(fasting_subset_sff)
@@ -140,20 +140,20 @@ class WorkflowTests(TestCase):
         self.params['filter_alignment']['lane_mask_fp'] = self.lanemask_fp
 
         self.experiment_fp = get_tmp_filename(
-            tmp_dir=tmp_dir, prefix='SRA_wf_exp', suffix='.txt')
+            tmp_dir=self.tmp_dir, prefix='SRA_wf_exp', suffix='.txt')
         f = open(self.experiment_fp, 'w')
         f.write(sra_experiment_txt)
         f.close()
         self.files_to_remove.append(self.experiment_fp)
 
-        self.submission_w_file_fp = get_tmp_filename(tmp_dir=tmp_dir,
+        self.submission_w_file_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
             prefix='SRA_wf_sub',suffix='.txt')
         f = open(self.submission_w_file_fp, 'w')
         f.write(sra_submission_txt_w_file)
         f.close()
         self.files_to_remove.append(self.submission_w_file_fp)
         
-        self.submission_wo_file_fp = get_tmp_filename(tmp_dir=tmp_dir,
+        self.submission_wo_file_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
             prefix='SRA_wf_sub',suffix='.txt')
         f = open(self.submission_wo_file_fp, 'w')
         f.write(sra_submission_txt_wo_file)
@@ -1070,6 +1070,58 @@ class WorkflowTests(TestCase):
         self.assertEqual(len(combined_seq_ids),20)
         self.assertEqual(combined_seq_ids,seq_ids)
         
+    def test_run_process_sra_submission_error_on_missing_fields(self):
+        """run_process_sra_submission detects missing fields in input files
+        """
+        test_dir = os.path.dirname(os.path.abspath(__file__))
+        sff_dir = os.path.join(test_dir, 'sra_test_files', 'F6AVWTA')
+
+        ## Test detection of missing field in experiment file
+        experiment_fp = get_tmp_filename(
+            tmp_dir=self.tmp_dir, prefix='SRA_wf_exp', suffix='.txt')
+        f = open(experiment_fp, 'w')
+        f.write(bad_experiment_txt_file)
+        f.close()
+        self.files_to_remove.append(experiment_fp)
+        # Calling run_process_sra_submission now raises a KeyError
+        self.assertRaises(KeyError,run_process_sra_submission,
+                input_experiment_fp=experiment_fp,
+                input_submission_fp=self.submission_wo_file_fp,
+                sff_dir=sff_dir,
+                refseqs_fp=None,
+                output_dir=self.wf_out,
+                params=self.sra_params,
+                qiime_config=self.qiime_config,
+                command_handler=call_commands_serially,
+                status_update_callback=no_status_updates,
+                )
+        # Error occurred early in the process (i.e., before the output
+        # directory is created)
+        self.assertFalse(exists(self.wf_out))
+        
+        ## Test detection of missing field in submission file
+        submission_fp = get_tmp_filename(
+            tmp_dir=self.tmp_dir, prefix='SRA_wf_exp', suffix='.txt')
+        f = open(submission_fp, 'w')
+        f.write(bad_sra_submission_txt)
+        f.close()
+        self.files_to_remove.append(submission_fp)
+        # Calling run_process_sra_submission now raises a KeyError
+        self.assertRaises(KeyError,run_process_sra_submission,
+                input_experiment_fp=self.experiment_fp,
+                input_submission_fp=submission_fp,
+                sff_dir=sff_dir,
+                refseqs_fp=None,
+                output_dir=self.wf_out,
+                params=self.sra_params,
+                qiime_config=self.qiime_config,
+                command_handler=call_commands_serially,
+                status_update_callback=no_status_updates,
+                )
+        # Error occurred early in the process (i.e., before the output
+        # directory is created)
+        self.assertFalse(exists(self.wf_out))
+        
         
 sra_submission_params_f = """# split_libraries parameters
 split_libraries:min-qual-score	5
@@ -1104,11 +1156,27 @@ bodysites_F6AVWTA01	JCVI	Survey of multiple body sites	bodysites_study	bodysites
 bodysites_F6AVWTA02	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700016371	NCBI	F6AVWTA02_2907_700016371_V1-V3	B-2011-02-S1.sff	0.014492754	F6AVWTA02_TCTCTGTACT	TCTCTGTACT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	F6AVWTA02_2907	0	FLX	JCVI 	NULL	NULL
 '''
 
+bad_experiment_txt_file  ='''#EXPERIMENT_ALIAS	EXPERIMENT_CENTER	STUDY_REF	STUDY_CENTER	EXPERIMENT_DESIGN_DESCRIPTION	LIBRARY_CONSTRUCTION_PROTOCOL	SAMPLE_ALIAS	SAMPLE_CENTER	POOL_MEMBER_NAME	POOL_MEMBER_FILENAME	POOL_PROPORTION	BARCODE_READ_GROUP_TAG	BARCODE	LINKER	PRIMER_READ_GROUP_TAG	KEY_SEQ	PRIMER	RUN_PREFIX	RUN_ALIAS	REGION	PLATFORM	RUN_CENTER	RUN_DATE	INSTRUMENT_NAME
+bodysites_F6AVWTA01	JCVI	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015438	NCBI	F6AVWTA01_2878_700015438_V1-V3	B-2004-03-S1.sff	0.014492754	F6AVWTA01_ATGTTCGATG	AGACTCTGCT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA01	F6AVWTA01_2878	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA02	JCVI	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015438	NCBI	F6AVWTA02_2878_700015438_V1-V3	B-2008-05-S1.sff	0.014492754	F6AVWTA02_ATGTTCTAGT	ATGTTCTAGT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	F6AVWTA02_2878	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA01	JCVI	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015470	NCBI	F6AVWTA01_2866_700015470_V1-V3	B-2004-04-S1.sff	0.014492754	F6AVWTA01_GCTCTACGTC	GCTCTACGTC		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA01	F6AVWTA01_2866	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA02	JCVI	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015470	NCBI	F6AVWTA02_2866_700015470_V1-V3	B-2008-08-S1.sff	0.014492754	F6AVWTA02_GCTCTGTACT	GCTCTGTACT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	F6AVWTA02_2866	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA01	JCVI	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015766	NCBI	F6AVWTA01_2898_700015766_V1-V3	B-2004-08-S1.sff	0.014492754	F6AVWTA01_CATGAGCGTC	CATGAGCGTC		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA01	F6AVWTA01_2898	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA02	JCVI	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015766	NCBI	F6AVWTA02_2898_700015766_V1-V3	B-2009-06-S1.sff	0.014492754	F6AVWTA02_CATGAGCGTG	CATGAGCGTG		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	F6AVWTA02_2898	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA01	JCVI	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015468	NCBI	F6AVWTA01_2865_700015468_V1-V3	B-2005-06-S1.sff	0.014492754	F6AVWTA01_AGTACGTACT	AGTACGTACT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA01	F6AVWTA01_2865	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA02	JCVI	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015468	NCBI	F6AVWTA02_2865_700015468_V1-V3	B-2011-01-S1.sff	0.014492754	F6AVWTA02_AGTACACGTC	AGTACACGTC		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	F6AVWTA02_2865	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA01	JCVI	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700016371	NCBI	F6AVWTA01_2907_700016371_V1-V3	B-2006-03-S1.sff	0.014492754	F6AVWTA01_TCTCTCTAGT	TCTCTCTAGT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA01	F6AVWTA01_2907	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA02	JCVI	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700016371	NCBI	F6AVWTA02_2907_700016371_V1-V3	B-2011-02-S1.sff	0.014492754	F6AVWTA02_TCTCTGTACT	TCTCTGTACT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	F6AVWTA02_2907	0	FLX	JCVI 	NULL	NULL
+'''
+
 sra_submission_txt_wo_file = '''#ACCESSION	SUBMISSION_ID	CENTER_NAME	SUBMISSION_COMMENT	LAB_NAME	SUBMISSION_DATE	CONTACT
 SRA003492	fierer_hand_study	CCME	"Barcode submission prepared by osulliva@ncbi.nlm.nih.gov, shumwaym@ncbi.nlm.nih.gov"	Knight	2009-10-22T01:23:00-05:00	Rob Knight;Rob.Knight@Colorado.edu,Noah Fierer;Noah.Fierer@Colorado.edu'''
 
 sra_submission_txt_w_file = '''#ACCESSION	SUBMISSION_ID	CENTER_NAME	SUBMISSION_COMMENT	LAB_NAME	SUBMISSION_DATE	CONTACT	FILE
 SRA003492	fierer_hand_study	CCME	"Barcode submission prepared by osulliva@ncbi.nlm.nih.gov, shumwaym@ncbi.nlm.nih.gov"	Knight	2009-10-22T01:23:00-05:00	Rob Knight;Rob.Knight@Colorado.edu,Noah Fierer;Noah.Fierer@Colorado.edu	my_sffs.tgz'''
+
+bad_sra_submission_txt = '''#ACCESSION	CENTER_NAME	SUBMISSION_COMMENT	LAB_NAME	SUBMISSION_DATE	CONTACT	FILE
+SRA003492	CCME	"Barcode submission prepared by osulliva@ncbi.nlm.nih.gov, shumwaym@ncbi.nlm.nih.gov"	Knight	2009-10-22T01:23:00-05:00	Rob Knight;Rob.Knight@Colorado.edu,Noah Fierer;Noah.Fierer@Colorado.edu	my_sffs.tgz'''
 
 qiime_parameters_f = """# qiime_parameters.txt
 # WARNING: DO NOT EDIT OR DELETE Qiime/qiime_parameters.txt. Users should copy this file and edit copies of it.

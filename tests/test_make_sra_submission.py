@@ -101,7 +101,6 @@ class TopLevelTests(TestCase):
             'LAB_NAME',
             'SUBMISSION_DATE',
             'CONTACT',
-            'FILE',
             ]
         self.assertEqual(observed, expected)
 

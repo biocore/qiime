@@ -94,7 +94,6 @@ def detect_missing_submission_fields(input_file):
         'LAB_NAME',
         'SUBMISSION_DATE',
         'CONTACT',
-        'FILE',
         ])
 
 def detect_missing_sample_fields(input_file):

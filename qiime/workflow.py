@@ -10,7 +10,12 @@ from qiime.parse import parse_mapping_file
 from qiime.util import (compute_seqs_per_library_stats, 
                         get_qiime_scripts_dir,
                         create_dir)
-from qiime.make_sra_submission import parse_submission, generate_output_fp
+from qiime.make_sra_submission import (parse_submission, 
+                              generate_output_fp,
+                              detect_missing_study_fields,
+                              detect_missing_experiment_fields,
+                              detect_missing_submission_fields,
+                              detect_missing_sample_fields)
 from qiime.sra_spreadsheet_to_map_files import get_study_groups
 
 __author__ = "Greg Caporaso"
@@ -923,6 +928,14 @@ def get_sff_filenames(sff_dir, run_prefix):
      listdir(sff_dir))
 
 
+def validate_input_file_from_fp(fp,validator):
+    """apply validator function to SRA submission input filepath"""
+    missing_fields = validator(open(fp,'U'))
+    if missing_fields:
+        raise KeyError,\
+         "The following required fields are missing from %s:%s" % (
+          fp,'\t'.join(missing_fields))
+
 def run_process_sra_submission(
     input_experiment_fp,
     input_submission_fp,
@@ -974,6 +987,12 @@ def run_process_sra_submission(
     The remove_unassigned keyword argument is a list of run prefixes
      for which to remove unassigned sequences.
     """
+    # Begin by performing validation
+    validate_input_file_from_fp(input_experiment_fp,
+                                detect_missing_experiment_fields)
+    validate_input_file_from_fp(input_submission_fp,
+                                detect_missing_submission_fields)
+    
     commands = []
     python_exe_fp = qiime_config['python_exe_fp']
     script_dir = get_qiime_scripts_dir()
