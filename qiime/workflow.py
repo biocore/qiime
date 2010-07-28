@@ -10,7 +10,7 @@ from qiime.parse import parse_mapping_file
 from qiime.util import (compute_seqs_per_library_stats, 
                         get_qiime_scripts_dir,
                         create_dir)
-from qiime.make_sra_submission import twocol_data_to_dict, read_tabular_data, generate_output_fp
+from qiime.make_sra_submission import parse_submission, generate_output_fp
 from qiime.sra_spreadsheet_to_map_files import get_study_groups
 
 __author__ = "Greg Caporaso"
@@ -905,9 +905,12 @@ def run_jackknifed_beta_diversity(otu_table_fp,tree_fp,seqs_per_sample,
 
 ## Begin SRA submission workflow and related functions
 
-def get_submission_info(submission_fp):
-    f = open(submission_fp, 'U')
-    return twocol_data_to_dict(read_tabular_data(f)[1])
+def format_submission(submission_info):
+    items = submission_info.items()
+    field_labels, vals = zip(*items)
+    header = '#' + '\t'.join(field_labels) + '\n'
+    body = '\t'.join(vals) + '\n'
+    return header + body
 
 def get_run_info(experiment_fp):
     infile = open(experiment_fp, 'U')
@@ -918,7 +921,6 @@ def get_sff_filenames(sff_dir, run_prefix):
     return filter(
      lambda x: x.startswith(run_prefix) and x.endswith('.sff'),
      listdir(sff_dir))
-
 
 
 def run_process_sra_submission(
@@ -983,11 +985,11 @@ def run_process_sra_submission(
                             params=params,
                             qiime_config=qiime_config)
 
-    submission_info = get_submission_info(input_submission_fp)
-    if 'file' in submission_info:
+    submission_info = parse_submission(open(input_submission_fp, 'U'))
+    if 'FILE' in submission_info:
         # if a sff tar filename was provided in the submission,
         # grab it and copy the submission file
-        submission_tar_fn = submission_info['file']
+        submission_tar_fn = submission_info['FILE']
         second_stage_submission_fp = join(output_dir,split(input_submission_fp)[1])
         commands.append([(
             'Create a copy of submission text file in output directory',
@@ -997,15 +999,12 @@ def run_process_sra_submission(
         # a name from the submission_id, and append it to the copy of the
         # submission file
         submission_tar_fn = \
-         '%s.tgz' % submission_info['submission_id'].replace(' ','_')
+            '%s.tgz' % submission_info['SUBMISSION_ID'].replace(' ','_')
+        submission_info['FILE'] = submission_tar_fn
         second_stage_submission_fp = join(output_dir,'submission_second_stage.txt')
-        second_stage_submission_f = open(second_stage_submission_fp,'w')
-        second_stage_submission_f.write(open(input_submission_fp,'U').read())
-        second_stage_submission_f.write('\n%s' %
-         '\t'.join(['file',submission_tar_fn,submission_tar_fn,
-                    "tgz filename, if submitting sffs"]))
-        second_stage_submission_f.close()
-    
+        open(second_stage_submission_fp, 'w').write(
+            format_submission(submission_info))
+
     submission_tar_fp = join(output_dir, submission_tar_fn)
 
     # Prelude: Create sff directory for submission data

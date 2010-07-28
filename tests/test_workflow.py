@@ -1104,36 +1104,11 @@ bodysites_F6AVWTA01	JCVI	Survey of multiple body sites	bodysites_study	bodysites
 bodysites_F6AVWTA02	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700016371	NCBI	F6AVWTA02_2907_700016371_V1-V3	B-2011-02-S1.sff	0.014492754	F6AVWTA02_TCTCTGTACT	TCTCTGTACT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	F6AVWTA02_2907	0	FLX	JCVI 	NULL	NULL
 '''
 
-sra_submission_txt_wo_file = '''#Field	Value	Example	Comments
-accession	SRA003492	SRA003492	"leave blank if not assigned yet, e.g. if new submission"
-submission_id	fierer_hand_study	fierer_hand_study	internally unique id for the submission
-center_name	CCME	CCME	name of the center preparing the submission
-submission_comment	"Barcode submission prepared by osulliva@ncbi.nlm.nih.gov, shumwaym@ncbi.nlm.nih.gov"	"Barcode submission prepared by osulliva@ncbi.nlm.nih.gov, shumwaym@ncbi.nlm.nih.gov"	Free-text comments regarding submission
-lab_name	Knight	Knight	"name of lab preparing submission, can differ from center (usually refers to the PI\'s info, not the sequencing center\'s)"
-submission_date	2009-10-22T01:23:00-05:00	2009-10-22T01:23:00-05:00	timestamp of submission
-CONTACT	Rob Knight;Rob.Knight@Colorado.edu	Rob Knight;Rob.Knight@Colorado.edu	"Use semicolon to separate email address from name, can be multiple contacts."
-CONTACT	Noah Fierer;Noah.Fierer@Colorado.edu	Noah Fierer;Noah.Fierer@Colorado.edu	"Use semicolon to separate email address from name, can be multiple contacts."
-study	study.xml	fierer_hand_study.study.xml	"leave blank if not submitting study, put in filename otherwise"
-sample	sample.xml	fierer_hand_study.sample.xml	"leave blank if not submitting sample, put in filename otherwise"
-experiment	experiment.xml	fierer_hand_study.experiment.xml	"leave blank if not submitting experiment, put in filename otherwise"
-run	run.xml	fierer_hand_study.run.xml	"leave blank if not submitting run, put in filename otherwise"'''
+sra_submission_txt_wo_file = '''#ACCESSION	SUBMISSION_ID	CENTER_NAME	SUBMISSION_COMMENT	LAB_NAME	SUBMISSION_DATE	CONTACT
+SRA003492	fierer_hand_study	CCME	"Barcode submission prepared by osulliva@ncbi.nlm.nih.gov, shumwaym@ncbi.nlm.nih.gov"	Knight	2009-10-22T01:23:00-05:00	Rob Knight;Rob.Knight@Colorado.edu,Noah Fierer;Noah.Fierer@Colorado.edu'''
 
-sra_submission_txt_w_file = '''#Field	Value	Example	Comments
-accession	SRA003492	SRA003492	"leave blank if not assigned yet, e.g. if new submission"
-submission_id	fierer_hand_study	fierer_hand_study	internally unique id for the submission
-center_name	CCME	CCME	name of the center preparing the submission
-submission_comment	"Barcode submission prepared by osulliva@ncbi.nlm.nih.gov, shumwaym@ncbi.nlm.nih.gov"	"Barcode submission prepared by osulliva@ncbi.nlm.nih.gov, shumwaym@ncbi.nlm.nih.gov"	Free-text comments regarding submission
-lab_name	Knight	Knight	"name of lab preparing submission, can differ from center (usually refers to the PI\'s info, not the sequencing center\'s)"
-submission_date	2009-10-22T01:23:00-05:00	2009-10-22T01:23:00-05:00	timestamp of submission
-CONTACT	Rob Knight;Rob.Knight@Colorado.edu	Rob Knight;Rob.Knight@Colorado.edu	"Use semicolon to separate email address from name, can be multiple contacts."
-CONTACT	Noah Fierer;Noah.Fierer@Colorado.edu	Noah Fierer;Noah.Fierer@Colorado.edu	"Use semicolon to separate email address from name, can be multiple contacts."
-study	study.xml	fierer_hand_study.study.xml	"leave blank if not submitting study, put in filename otherwise"
-sample	sample.xml	fierer_hand_study.sample.xml	"leave blank if not submitting sample, put in filename otherwise"
-experiment	experiment.xml	fierer_hand_study.experiment.xml	"leave blank if not submitting experiment, put in filename otherwise"
-run	run.xml	fierer_hand_study.run.xml	"leave blank if not submitting run, put in filename otherwise
-file	my_sffs.tgz	my_sffs.tgz	"leave blank if not submitting sequence data, put in filename otherwise"'''
-
-
+sra_submission_txt_w_file = '''#ACCESSION	SUBMISSION_ID	CENTER_NAME	SUBMISSION_COMMENT	LAB_NAME	SUBMISSION_DATE	CONTACT	FILE
+SRA003492	fierer_hand_study	CCME	"Barcode submission prepared by osulliva@ncbi.nlm.nih.gov, shumwaym@ncbi.nlm.nih.gov"	Knight	2009-10-22T01:23:00-05:00	Rob Knight;Rob.Knight@Colorado.edu,Noah Fierer;Noah.Fierer@Colorado.edu	my_sffs.tgz'''
 
 qiime_parameters_f = """# qiime_parameters.txt
 # WARNING: DO NOT EDIT OR DELETE Qiime/qiime_parameters.txt. Users should copy this file and edit copies of it.

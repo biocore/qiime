@@ -53,8 +53,8 @@ script_info['optional_options']=[\
         help='three-column, tab-delimited file of experiment attributes [default: %default]'),
     make_option('--experiment_link_fp',
         help='three-column, tab-delimited file of experiment links [default: %default]'),
-    make_option('--multicolumn_input_format', action='store_true', 
-        help='enables the use of input files for study and submission where field values are specified in columns, rather than rows [default: %default]'),
+    make_option('--twocolumn_input_format', action='store_true', default=False,
+        help='use legacy input file format for study and submission, where field names are specified in the first column and field values in the second column [default: %default]'),
     make_option('-s', '--sff_dir', 
         help='the directory containing the demultiplexed sff files: 1 dir per run [default: %default]'),
     make_option('-o', '--output_dir',
@@ -70,7 +70,7 @@ def main():
 
     if opts.input_study_fp:
         study_kwargs = {
-            'twocol_input_format': (not opts.multicolumn_input_format),
+            'twocol_input_format': opts.twocolumn_input_format,
             }
         docnames['study'] = write_xml_generic(opts.input_study_fp,
             opts.template_study_fp, make_study, study_kwargs)
@@ -114,7 +114,7 @@ def main():
         submission_kwargs = {
             'docnames': docnames,
             'submission_dir': opts.output_dir,
-            'twocol_input_format': (not opts.multicolumn_input_format),
+            'twocol_input_format': opts.twocolumn_input_format,
             }
         submission_xml = make_submission(
             input_submission_file, submission_template, **submission_kwargs)

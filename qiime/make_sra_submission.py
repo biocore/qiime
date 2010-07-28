@@ -276,10 +276,9 @@ def make_study(study_lines, study_template, twocol_input_format=True):
     info['XML_STUDY_LINKS_BLOCK'] = study_links_block
     return study_template % info
 
-def make_submission(submission_lines, submission_template, docnames=None,
-    submission_dir=None, twocol_input_format=True):
-    """Returns string for submission xml."""
-    header, rows = read_tabular_data(submission_lines)
+def parse_submission(submission_file, twocol_input_format=False):
+    """Parse an SRA submission input file and return info dict."""
+    header, rows = read_tabular_data(submission_file)
     if twocol_input_format:
         for r in rows:
             r[0] = canonicalize_field_name(r[0])
@@ -288,13 +287,21 @@ def make_submission(submission_lines, submission_template, docnames=None,
         header = map(canonicalize_field_name, header)
         info_generator = rows_data_as_dicts(header, rows)
         info = info_generator.next()
-        if 'CONTACT' in info:
-            info['CONTACT'] = info['CONTACT'].split(',')
+    return info
+
+def make_submission(submission_lines, submission_template, docnames=None,
+    submission_dir=None, twocol_input_format=True):
+    """Returns string for submission xml."""
+    info = parse_submission(
+        submission_lines, twocol_input_format=twocol_input_format)
     docnames = docnames or {}
     #build up contacts strings
     contacts = []
-    if 'CONTACT' in info:
-        for c in info['CONTACT']:
+    contact_info = info.get('CONTACT')
+    if contact_info:
+        if not twocol_input_format:
+            contact_info = contact_info.split(',')
+        for c in contact_info:
             name, address = map(strip, c.split(';'))
             contacts.append(contact_wrapper % (name, address, address))
         contacts_str = '\n' + (contacts_wrapper % '\n'.join(contacts)) + '\n'
