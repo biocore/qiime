@@ -346,7 +346,7 @@ An alternative to viewing the OTU table as a heatmap is to create an OTU network
 
     make_otu_network.py -m Fasting_Map.txt -i wf_da/uclust_picked_otus/rep_set/rdp_assigned_taxonomy/otu_table/seqs_otu_table.txt -o wf_da/uclust_picked_otus/rep_set/rdp_assigned_taxonomy/otu_table/OTU_Network
 
-To visualize the network, we use the Cytoscape_ program (which you can run by calling Cytoscape from the command line, beginning with a capital C, if you have Cytoscape installed), where each red circle represents a sample and each white square represents an OTU. The lines represent the OTUs present in a particular sample (blue for controls and green for fasting). For more information about opening the files in Cytoscape_ please refer `here <../scripts/cytoscape_usage.html>`_.
+To visualize the network, we use the Cytoscape_ program (which you can run by calling cytoscape from the command line -- you may need to call this beginning either with a capital or lowercase 'C' depending on your version of Cytoscape), where each red circle represents a sample and each white square represents an OTU. The lines represent the OTUs present in a particular sample (blue for controls and green for fasting). For more information about opening the files in Cytoscape_ please refer `here <../scripts/cytoscape_usage.html>`_.
 
 .. image:: ../images/ network.png
    :align: center
