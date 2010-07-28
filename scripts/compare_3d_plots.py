@@ -21,7 +21,8 @@ from optparse import make_option
 from qiime.make_3d_plots import generate_3d_plots,\
 get_coord,remove_unmapped_samples,\
 process_coord_filenames,get_multiple_coords,\
-process_colorby, process_custom_axes, get_custom_coords, remove_nans, scale_custom_coords
+process_colorby, process_custom_axes, get_custom_coords, remove_nans, scale_custom_coords,\
+validate_coord_files
 from qiime.parse import parse_coords,group_by_field,group_by_fields
 from qiime.colors import get_map
 from qiime.colors import sample_color_prefs_and_map_data_from_options
@@ -94,6 +95,10 @@ def main():
 
     #Open and get coord data (for multiple coords files)
     coord_files = process_coord_filenames(opts.coord_fnames)
+    coord_files_valid = validate_coord_files(coord_files)
+    if not coord_files_valid:
+        option_parser.error('Every line of every coord file must ' +\
+                            'have the same number of columns.')
     num_coord_files = len(coord_files)
     data['edges'], data['coord'] = get_multiple_coords(coord_files, opts.edges_file)
 

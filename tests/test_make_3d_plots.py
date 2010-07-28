@@ -25,7 +25,7 @@ from qiime.make_3d_plots import (make_3d_plots,scale_pc_data_matrix,
                                     scale_custom_coords,remove_unmapped_samples,
                                     make_edges_output,make_ellipsoid_faces,
                                     make_mage_ellipsoids,subdivide,
-                                    get_multiple_coords)
+                                    get_multiple_coords,validate_coord_files)
 from cogent.app.util import get_tmp_filename
 
 class TopLevelTests(TestCase):
@@ -336,6 +336,85 @@ Removes any samples not present in mapping file"""
         self.assertEqual(edges, exp_edges)
         self.assertEqual(coords, exp_coords)
         
+        # clean up
+        remove(fp1)
+        remove(fp2)
+        remove(fp3)
+ 
+
+    def test_validate_coord_files(self):
+        """Verifies that validate_coord_files works correctly"""
+        # create the temporary pc files
+        # one line has 4 columns
+        pc_file_1 = '\n'.join(['pc vector number\t1\t2',
+                               'A\t1.1\t2.2',
+                               'B\t4.1\t4.2',
+                               'C\t-.1\t-.2',
+                               'eigvals\t0.52\t0.24\t0.11',
+                               '% variation explained\t25.12\t13.29'])
+        # all lines have 3 columns
+        pc_file_2 = '\n'.join(['pc vector number\t1\t2',
+                               'A\t2.1\t3.2',
+                               'B\t5.1\t6.2',
+                               'C\t-1.1\t-2.2',
+                               'eigvals\t0.32\t0.14',
+                               '% variation explained\t20.11\t12.28'])
+        # all lines have two columns
+        pc_file_3 = '\n'.join(['pc vector number\t1',
+                               'A\t2.1',
+                               'B\t5.1',
+                               'C\t-1.1',
+                               'eigvals\t0.32',
+                               '% variation explained\t20.11'])
+        # all lines have 3 columns
+        pc_file_4 = '\n'.join(['pc vector number\t1\t2',
+                               'A\t1.1\t2.2',
+                               'B\t4.1\t4.2',
+                               'C\t-.1\t-.2',
+                               'eigvals\t0.52\t0.24',
+                               '% variation explained\t25.12\t13.29'])
+
+        fp1 = get_tmp_filename()
+        fp2 = get_tmp_filename()
+        fp3 = get_tmp_filename()
+        fp4 = get_tmp_filename()
+
+        try:
+            f1 = open(fp1,'w')
+            f2 = open(fp2,'w')
+            f3 = open(fp3,'w')
+            f4 = open(fp4,'w')
+        except IOError, e:
+            raise e,"Could not create temporary files: %s, %s" %(f1,f2,f3,f4)
+        
+        f1.write(pc_file_1)
+        f1.close()
+        f2.write(pc_file_2)
+        f2.close()
+        f3.write(pc_file_3)
+        f3.close()
+        f4.write(pc_file_4)
+        f4.close()
+         
+        # one file with internal inconsistency
+        result = validate_coord_files(fp1)
+        self.assertEqual(result, False)
+        # one file has two columns, one has 3 
+        result = validate_coord_files([fp2,fp3])
+        self.assertEqual(result, False)
+        # first file consistent, second file not
+        result = validate_coord_files([fp2, fp1])
+        self.assertEqual(result, False)
+        # both files consistent
+        result = validate_coord_files([fp2, fp4])
+        self.assertEqual(result, True)
+        
+        
+        # clean up
+        remove(fp1)
+        remove(fp2)
+        remove(fp3)
+        remove(fp4)
 
 exp_kin_full=\
 ['@kinemage {Day_unscaled}', '@dimension {PC1} {PC2} {PC3}', \

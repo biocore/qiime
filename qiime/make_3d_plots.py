@@ -427,6 +427,22 @@ def process_coord_filenames(coord_filenames):
     """Parses the custom_axes option from the command line"""
     return coord_filenames.strip().strip("'").strip('"').split(',')
 
+def validate_coord_files(coord_filenames):
+    """Returns True if there are the same number of column headers, 
+       coords, eigvals, and pct var's in every coord file"""
+    # if coord_filenames is a string (not a list), make it into a list
+    if isinstance(coord_filenames, str):
+        coord_filenames = [coord_filenames]
+    # initialize n_columns using the first line of the first file
+    n_columns = len(open(coord_filenames[0],'U').readlines()[0].strip().split('\t'))
+    for fn in coord_filenames:
+        lines = open(fn, 'U').readlines()
+        for line in lines:
+            line = line.strip()
+            if len(line) > 0 and len(line.split('\t')) != n_columns:
+                return False
+    return True
+        
 def get_custom_coords(axis_names,mapping, coords):
     """Gets custom axis coords from the mapping file.
        Appends custom as first column(s) of PCoA coords matrix.

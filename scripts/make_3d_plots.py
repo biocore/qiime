@@ -28,7 +28,8 @@ from qiime.util import get_qiime_project_dir
 from qiime.make_3d_plots import get_coord,get_map,remove_unmapped_samples, \
                                 get_custom_coords, \
                                 process_custom_axes, process_coord_filenames, \
-                                remove_nans, scale_custom_coords
+                                remove_nans, scale_custom_coords,\
+                                validate_coord_files
 from qiime.biplots import get_taxa,get_taxa_coords,get_taxa_prevalence,\
     remove_rare_taxa, make_mage_taxa
 from cogent.util.misc import get_random_directory_name
@@ -154,7 +155,13 @@ Valid methods are: " + ', '.join(ellipsoid_methods) + ".")
     ellipsoid_prefs = {}
     ellipsoid_prefs["smoothness"] = ellipsoid_smoothness
     ellipsoid_prefs["alpha"] = ellipsoid_alpha
-        
+
+    # make sure that coord file has internally consistent # of columns
+    coord_files_valid = validate_coord_files(opts.coord_fname)
+    if not coord_files_valid:
+        option_parser.error('Every line of every coord file must ' +\
+                            'have the same number of columns.')
+
     #Open and get coord data
     data['coord'] = get_coord(opts.coord_fname, opts.ellipsoid_method)
     
