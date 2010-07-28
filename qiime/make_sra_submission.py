@@ -122,10 +122,10 @@ def _detect_missing_fields(input_file, required_fields):
     if file_offset is not None:
         input_file.seek(file_offset)
 
-    observed_fields = set(header)
+    observed_fields = map(canonicalize_field_name,set(header))
     missing_fields = []
     for field in required_fields:
-        if field not in observed_fields:
+        if canonicalize_field_name(field) not in observed_fields:
             missing_fields.append(field)
 
     return missing_fields

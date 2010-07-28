@@ -72,6 +72,36 @@ class TopLevelTests(TestCase):
             'LIBRARY_CONSTRUCTION_PROTOCOL',
             ]
         self.assertEqual(observed, expected)
+        
+        # EXPERIMENT_TITLE is present, so doesn't show up in missing fields
+        input_file = StringIO('#NONSENSE_FIELD\tEXPERIMENT_TITLE\nnonsense_value\tfake_title\n')
+        observed = detect_missing_experiment_fields(input_file)
+        expected = [
+            'STUDY_REF',
+            'STUDY_CENTER',
+            'SAMPLE_ALIAS',
+            'POOL_PROPORTION',
+            'BARCODE',
+            'RUN_PREFIX',
+            'EXPERIMENT_DESIGN_DESCRIPTION',
+            'LIBRARY_CONSTRUCTION_PROTOCOL',
+            ]
+        self.assertEqual(observed, expected)
+        
+        # case of EXPERIMENT_TITLE in headers doesn't matter
+        input_file = StringIO('#NONSENSE_FIELD\tExPeRiMeNt_TiTlE\nnonsense_value\tfake_title\n')
+        observed = detect_missing_experiment_fields(input_file)
+        expected = [
+            'STUDY_REF',
+            'STUDY_CENTER',
+            'SAMPLE_ALIAS',
+            'POOL_PROPORTION',
+            'BARCODE',
+            'RUN_PREFIX',
+            'EXPERIMENT_DESIGN_DESCRIPTION',
+            'LIBRARY_CONSTRUCTION_PROTOCOL',
+            ]
+        self.assertEqual(observed, expected)
 
     def test_detect_missing_study_fields(self):
         """detect_missing_study_fields should return a list of all required fields not found in the input file header."""
