@@ -427,15 +427,21 @@ def process_coord_filenames(coord_filenames):
     """Parses the custom_axes option from the command line"""
     return coord_filenames.strip().strip("'").strip('"').split(',')
 
-def validate_coord_files(coord_filenames):
+def validate_coord_files(coord_files):
     """Returns True if there are the same number of column headers, 
        coords, eigvals, and pct var's in every coord file"""
-    # if coord_filenames is a string (not a list), make it into a list
-    if isinstance(coord_filenames, str):
-        coord_filenames = [coord_filenames]
+    # if coord_filenames is a string, and it's a directory, get list of files
+    if isinstance(coord_files, str):
+        if os.path.isdir(coord_files):
+            dirname = coord_files
+            coord_files = os.listdir(dirname)
+            coord_files = [os.path.join(dirname, fn) for fn in coord_files] 
+        else:
+            coord_files = [coord_files]
+    
     # initialize n_columns using the first line of the first file
-    n_columns = len(open(coord_filenames[0],'U').readlines()[0].strip().split('\t'))
-    for fn in coord_filenames:
+    n_columns = len(open(coord_files[0],'U').readlines()[0].strip().split('\t'))
+    for fn in coord_files:
         lines = open(fn, 'U').readlines()
         for line in lines:
             line = line.strip()
