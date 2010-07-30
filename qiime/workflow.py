@@ -934,7 +934,7 @@ def validate_input_file_from_fp(fp,validator):
     if missing_fields:
         raise KeyError,\
          "The following required fields are missing from %s:%s" % (
-          fp,'\t'.join(missing_fields))
+          fp,' '.join(missing_fields))
 
 def run_process_sra_submission(
     input_experiment_fp,
@@ -945,6 +945,8 @@ def run_process_sra_submission(
     params,
     qiime_config,
     command_handler,
+    input_sample_fp=None,
+    input_study_fp=None,
     positive_screen=True,
     status_update_callback=print_to_stdout,
     remove_unassigned=[],
@@ -992,6 +994,10 @@ def run_process_sra_submission(
                                 detect_missing_experiment_fields)
     validate_input_file_from_fp(input_submission_fp,
                                 detect_missing_submission_fields)
+    if input_sample_fp: validate_input_file_from_fp(input_sample_fp,
+                                detect_missing_sample_fields)
+    if input_study_fp: validate_input_file_from_fp(input_study_fp,
+                                detect_missing_study_fields)
     
     commands = []
     python_exe_fp = qiime_config['python_exe_fp']
@@ -1215,11 +1221,17 @@ def run_process_sra_submission(
                      (abspath(output_dir), split(submission_tar_fp)[1], 
                       split(submission_sff_dir)[1]))])
 
-    # Step 11
+    # Step 11 : generate xml files
     params_str = get_params_str(params['make_sra_submission'])
+    first_stage_str = ''
+    if input_sample_fp:
+        first_stage_str += ' -a %s ' % input_sample_fp
+    if input_study_fp:
+        first_stage_str += ' -t %s ' % input_study_fp
     make_sra_submission_cmd = \
-     '%s %s/make_sra_submission.py -u %s -e %s -s %s -o %s %s' %\
-     (python_exe_fp, script_dir, second_stage_submission_fp, input_experiment_copy_fp,
+     '%s %s/make_sra_submission.py %s -u %s -e %s -s %s -o %s %s' %\
+     (python_exe_fp, script_dir, first_stage_str,
+      second_stage_submission_fp, input_experiment_copy_fp,
       submission_sff_dir, output_dir, params_str)
     commands.append([('Make SRA submission XML files', 
                       make_sra_submission_cmd)])

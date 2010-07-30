@@ -66,6 +66,10 @@ script_info['required_options'] = [
         help='path to the parameter file [REQUIRED]')
     ]
 script_info['optional_options'] = [
+    make_option('-a', '--input_sample_fp',
+        help='the tab-delimited text file with info about the sample [default: %default]'),
+    make_option('-t', '--input_study_fp',
+        help='the tab-delimited text file with info about the study [default: %default]'),
     make_option('--experiment_attribute_fp',
         help='three-column, tab-delimited file of experiment attributes [default: %default]'),
     make_option('--experiment_link_fp',
@@ -121,6 +125,8 @@ def main():
             params=parse_qiime_parameters(parameter_f),
             qiime_config=qiime_config,
             command_handler=command_handler,
+            input_sample_fp=opts.input_sample_fp,
+            input_study_fp=opts.input_study_fp,
             positive_screen=positive_screen,
             status_update_callback=status_update_callback,
             remove_unassigned=remove_unassigned,

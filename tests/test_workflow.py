@@ -160,6 +160,20 @@ class WorkflowTests(TestCase):
         f.close()
         self.files_to_remove.append(self.submission_wo_file_fp)
         
+        self.study_fp = get_tmp_filename(
+            tmp_dir=self.tmp_dir, prefix='SRA_wf_study', suffix='.txt')
+        f = open(self.study_fp, 'w')
+        f.write(sra_study_txt)
+        f.close()
+        self.files_to_remove.append(self.study_fp)
+        
+        self.sample_fp = get_tmp_filename(
+            tmp_dir=self.tmp_dir, prefix='SRA_wf_sample', suffix='.txt')
+        f = open(self.sample_fp, 'w')
+        f.write(sra_sample_txt)
+        f.close()
+        self.files_to_remove.append(self.sample_fp)
+        
         self.sra_params = parse_qiime_parameters(sra_submission_params_f)
         
         signal.signal(signal.SIGALRM, timeout)
@@ -835,6 +849,8 @@ class WorkflowTests(TestCase):
         run_process_sra_submission(
                 input_experiment_fp=self.experiment_fp,
                 input_submission_fp=self.submission_w_file_fp,
+                input_sample_fp=self.sample_fp,
+                input_study_fp=self.study_fp,
                 sff_dir=sff_dir,
                 refseqs_fp=self.sra_refseqs_fp,
                 output_dir=self.wf_out,
@@ -865,6 +881,18 @@ class WorkflowTests(TestCase):
         self.assertTrue(getsize(submission_xml_fp) > 0)
         self.assertTrue('my_sffs.tgz' in 
                         open(submission_xml_fp).read())
+        # Test that sample.xml file is written and not empty
+        sample_basename = os.path.splitext(
+            os.path.basename(self.sample_fp))[0]
+        sample_xml_fp = os.path.join(
+            self.wf_out, sample_basename + '.xml')
+        self.assertTrue(getsize(sample_xml_fp) > 0)
+        # Test that study.xml file is written and not empty
+        study_basename = os.path.splitext(
+            os.path.basename(self.study_fp))[0]
+        study_xml_fp = os.path.join(
+            self.wf_out, study_basename + '.xml')
+        self.assertTrue(getsize(study_xml_fp) > 0)
         
         # Test that screening is performed by comparing the size of the
         # screened and unscreened files -- note we're grabbing the original seq 
@@ -916,6 +944,7 @@ class WorkflowTests(TestCase):
         test_dir = os.path.dirname(os.path.abspath(__file__))
         sff_dir = os.path.join(test_dir, 'sra_test_files', 'F6AVWTA')
         
+        # no sample or study provided in this test
         run_process_sra_submission(
                 input_experiment_fp=self.experiment_fp,
                 input_submission_fp=self.submission_w_file_fp,
@@ -949,6 +978,18 @@ class WorkflowTests(TestCase):
         self.assertTrue(getsize(submission_xml_fp) > 0)
         self.assertTrue('my_sffs.tgz' in 
                         open(submission_xml_fp).read())
+        # Test that sample.xml file is not written
+        sample_basename = os.path.splitext(
+            os.path.basename(self.sample_fp))[0]
+        sample_xml_fp = os.path.join(
+            self.wf_out, sample_basename + '.xml')
+        self.assertFalse(exists(sample_xml_fp))
+        # Test that study.xml file is not written
+        study_basename = os.path.splitext(
+            os.path.basename(self.study_fp))[0]
+        study_xml_fp = os.path.join(
+            self.wf_out, study_basename + '.xml')
+        self.assertFalse(exists(study_xml_fp))
         
         # Test that screening is performed by comparing the size of the
         # screened and unscreened files -- note we're grabbing the original seq 
@@ -1005,6 +1046,8 @@ class WorkflowTests(TestCase):
         run_process_sra_submission(
                 input_experiment_fp=self.experiment_fp,
                 input_submission_fp=self.submission_wo_file_fp,
+                input_sample_fp=self.sample_fp,
+                input_study_fp=self.study_fp,
                 sff_dir=sff_dir,
                 refseqs_fp=None,
                 output_dir=self.wf_out,
@@ -1035,6 +1078,18 @@ class WorkflowTests(TestCase):
         self.assertTrue(getsize(submission_xml_fp) > 0)
         self.assertTrue('fierer_hand_study.tgz' in 
                         open(submission_xml_fp).read())
+        # Test that sample.xml file is written and not empty
+        sample_basename = os.path.splitext(
+            os.path.basename(self.sample_fp))[0]
+        sample_xml_fp = os.path.join(
+            self.wf_out, sample_basename + '.xml')
+        self.assertTrue(getsize(sample_xml_fp) > 0)
+        # Test that study.xml file is written and not empty
+        study_basename = os.path.splitext(
+            os.path.basename(self.study_fp))[0]
+        study_xml_fp = os.path.join(
+            self.wf_out, study_basename + '.xml')
+        self.assertTrue(getsize(study_xml_fp) > 0)
         
         # Test that screening is not performed by checking the size of the
         # seqs file -- note we're grabbing the original seq identifier here,
@@ -1087,6 +1142,8 @@ class WorkflowTests(TestCase):
         self.assertRaises(KeyError,run_process_sra_submission,
                 input_experiment_fp=experiment_fp,
                 input_submission_fp=self.submission_wo_file_fp,
+                input_sample_fp=self.sample_fp,
+                input_study_fp=self.study_fp,
                 sff_dir=sff_dir,
                 refseqs_fp=None,
                 output_dir=self.wf_out,
@@ -1110,6 +1167,8 @@ class WorkflowTests(TestCase):
         self.assertRaises(KeyError,run_process_sra_submission,
                 input_experiment_fp=self.experiment_fp,
                 input_submission_fp=submission_fp,
+                input_sample_fp=self.sample_fp,
+                input_study_fp=self.study_fp,
                 sff_dir=sff_dir,
                 refseqs_fp=None,
                 output_dir=self.wf_out,
@@ -1122,6 +1181,55 @@ class WorkflowTests(TestCase):
         # directory is created)
         self.assertFalse(exists(self.wf_out))
         
+        ## Test detection of missing field in sample file
+        sample_fp = get_tmp_filename(
+            tmp_dir=self.tmp_dir, prefix='SRA_wf_sample', suffix='.txt')
+        f = open(sample_fp, 'w')
+        f.write(bad_sample_txt)
+        f.close()
+        self.files_to_remove.append(sample_fp)
+        # Calling run_process_sra_submission now raises a KeyError
+        self.assertRaises(KeyError,run_process_sra_submission,
+                input_experiment_fp=self.experiment_fp,
+                input_submission_fp=self.submission_wo_file_fp,
+                input_sample_fp=sample_fp,
+                input_study_fp=self.study_fp,
+                sff_dir=sff_dir,
+                refseqs_fp=None,
+                output_dir=self.wf_out,
+                params=self.sra_params,
+                qiime_config=self.qiime_config,
+                command_handler=call_commands_serially,
+                status_update_callback=no_status_updates,
+                )
+        # Error occurred early in the process (i.e., before the output
+        # directory is created)
+        self.assertFalse(exists(self.wf_out))
+
+        ## Test detection of missing field in study file
+        study_fp = get_tmp_filename(
+            tmp_dir=self.tmp_dir, prefix='SRA_wf_study', suffix='.txt')
+        f = open(study_fp, 'w')
+        f.write(bad_study_txt)
+        f.close()
+        self.files_to_remove.append(study_fp)
+        # Calling run_process_sra_submission now raises a KeyError
+        self.assertRaises(KeyError,run_process_sra_submission,
+                input_experiment_fp=self.experiment_fp,
+                input_submission_fp=self.submission_wo_file_fp,
+                input_sample_fp=self.sample_fp,
+                input_study_fp=study_fp,
+                sff_dir=sff_dir,
+                refseqs_fp=None,
+                output_dir=self.wf_out,
+                params=self.sra_params,
+                qiime_config=self.qiime_config,
+                command_handler=call_commands_serially,
+                status_update_callback=no_status_updates,
+                )
+        # Error occurred early in the process (i.e., before the output
+        # directory is created)
+        self.assertFalse(exists(self.wf_out))
         
 sra_submission_params_f = """# split_libraries parameters
 split_libraries:min-qual-score	5
@@ -1177,6 +1285,24 @@ SRA003492	fierer_hand_study	CCME	"Barcode submission prepared by osulliva@ncbi.n
 
 bad_sra_submission_txt = '''#ACCESSION	CENTER_NAME	SUBMISSION_COMMENT	LAB_NAME	SUBMISSION_DATE	CONTACT	FILE
 SRA003492	CCME	"Barcode submission prepared by osulliva@ncbi.nlm.nih.gov, shumwaym@ncbi.nlm.nih.gov"	Knight	2009-10-22T01:23:00-05:00	Rob Knight;Rob.Knight@Colorado.edu,Noah Fierer;Noah.Fierer@Colorado.edu	my_sffs.tgz'''
+
+sra_study_txt = '''#STUDY_alias	STUDY_TITLE	STUDY_TYPE	STUDY_ABSTRACT	STUDY_DESCRIPTION	CENTER_NAME	CENTER_PROJECT_NAME	PMID
+fierer_hand_study	"The influence of sex, handedness, and washing on the diversity of hand surface bacteria"	Metagenomics	"Short \'abstract\' with special characters <10%."	Targeted Gene Survey from Human Skin	CCME	NULL	19004758
+'''
+
+bad_study_txt = '''#STUDY_ALIAS	STUDY_TYPE	STUDY_ABSTRACT	STUDY_DESCRIPTION	CENTER_NAME	CENTER_PROJECT_NAME	PMID
+fierer_hand_study	Metagenomics	"Short \'abstract\' with special characters <10%."	Targeted Gene Survey from Human Skin	CCME	NULL	19004758'''
+
+sra_sample_txt = '''#SAMPLE_ALIAS	TITLE	TAXON_ID	COMMON_NAME	ANONYMIZED_NAME	DESCRIPTION	HOST_TAXID	subject	sex	hand	age	palm size	dominant hand	hours since wash
+fierer_hand_study_default	human hand microbiome	539655	human skin metagenome		"Human palm microbiome, default sample for unclassified reads"								
+S1	human hand microbiome	539655	human skin metagenome	subject 1	female right palm	9606	1	female	right	18	9.5	right	less than 2
+S2	human hand microbiome	539655	human skin metagenome	subject 1	female left palm	9606	1	female	left	18	9.5	right	less than 2
+'''
+
+bad_sample_txt = '''#SAMPLE_ALIAS	TITLE	COMMON_NAME	ANONYMIZED_NAME	DESCRIPTION	host_taxon_id	subject	sex	hand	age	palm size	dominant hand	hours since wash
+fierer_hand_study_default	human hand microbiome	human skin metagenome		"Human palm microbiome, default sample for unclassified reads"								
+S1	human hand microbiome	human skin metagenome	subject 1	female right palm	9606	1	female	right	18	9.5	right	less than 2
+S2	human hand microbiome	human skin metagenome	subject 1	female left palm	9606	1	female	left	18	9.5	right	less than 2'''
 
 qiime_parameters_f = """# qiime_parameters.txt
 # WARNING: DO NOT EDIT OR DELETE Qiime/qiime_parameters.txt. Users should copy this file and edit copies of it.
