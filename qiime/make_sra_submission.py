@@ -1367,13 +1367,14 @@ def __pretty_xml_helper(element, level=0):
         if level and (not element.tail or not element.tail.strip()):
             element.tail = i
 
-def write_xml_generic(infile_path, template_path, xml_f, xml_kwargs=None):
+def write_xml_generic(infile_path, template_path, xml_f, xml_kwargs=None,
+                      output_dir=None):
     """Writes generic xml based on contents of infilepath, returns filename."""
     if xml_kwargs is None:
         xml_kwargs = {}
     template = open(template_path, 'U').read()
     base_path, ext = splitext(infile_path)
-    outfile_path = base_path + '.xml'
+    outfile_path = generate_output_fp(base_path, '.xml', output_dir=output_dir)
     outfile = open(outfile_path, 'w')
     result = xml_f(open(infile_path, 'U'), template, **xml_kwargs)
     outfile.write(result)

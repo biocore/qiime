@@ -73,11 +73,12 @@ def main():
             'twocol_input_format': opts.twocolumn_input_format,
             }
         docnames['study'] = write_xml_generic(opts.input_study_fp,
-            opts.template_study_fp, make_study, study_kwargs)
+            opts.template_study_fp, make_study, xml_kwargs=study_kwargs,
+            output_dir=opts.output_dir)
 
     if opts.input_sample_fp:
         docnames['sample'] = write_xml_generic(opts.input_sample_fp,
-            opts.template_sample_fp, make_sample)
+            opts.template_sample_fp, make_sample, output_dir=opts.output_dir)
 
     if opts.input_experiment_fp:
         if not opts.sff_dir:
