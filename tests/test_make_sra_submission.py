@@ -2038,7 +2038,7 @@ CENTER_PROJECT_NAME	NULL	NULL	"Name of project as used by the sequencing center,
 PMID	19004758	19004758	"PubMed ID of paper describing project, if supplied will write out STUDY_LINK block, can be multiple (comma-delimited)"
 '''
 
-study_manycol_txt = '''\
+study_manycol_txt = '''
 #STUDY_alias	STUDY_TITLE	STUDY_TYPE	STUDY_ABSTRACT	STUDY_DESCRIPTION	CENTER_NAME	CENTER_PROJECT_NAME	PMID
 fierer_hand_study	"The influence of sex, handedness, and washing on the diversity of hand surface bacteria"	Metagenomics	"Short \'abstract\' with special characters <10%."	Targeted Gene Survey from Human Skin	CCME	NULL	19004758
 '''
