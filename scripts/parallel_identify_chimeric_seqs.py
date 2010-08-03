@@ -240,7 +240,7 @@ def main():
         #otherwise create it
         else:
             reference_seqs_fp = write_degapped_fasta_to_file(MinimalFastaParser( \
-                    open(aligned_reference_seqs_fp)))
+                    open(aligned_reference_seqs_fp)), tmp_dir=working_dir)
 
         #delete it afterwards
         created_temp_paths.append(reference_seqs_fp)

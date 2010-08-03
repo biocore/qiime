@@ -876,10 +876,10 @@ def degap_fasta_aln(seqs):
         degapped_seq.Name = label
         yield degapped_seq
 
-def write_degapped_fasta_to_file(seqs):
+def write_degapped_fasta_to_file(seqs, tmp_dir="/tmp/"):
     """ write degapped seqs to temp fasta file."""
 
-    tmp_filename = get_tmp_filename(prefix="degapped_", suffix=".fasta")
+    tmp_filename = get_tmp_filename(tmp_dir=tmp_dir, prefix="degapped_", suffix=".fasta")
     fh = open(tmp_filename,"w")
     
     for seq in degap_fasta_aln(seqs):
