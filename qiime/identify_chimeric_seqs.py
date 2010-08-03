@@ -3,10 +3,11 @@
 
 from __future__ import division
 
-from os import remove, makedirs
+from os import remove, makedirs, system
 from os.path import split, splitext, basename, isdir, abspath, isfile, exists
+from subprocess import PIPE, Popen
 
-from cogent.util.misc import remove_files
+from cogent.util.misc import remove_files, app_path
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from cogent.app.parameters import ValuedParameter, FlagParameter
@@ -26,6 +27,12 @@ __version__ = "1.1.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
+
+#NOTE: The next ChimeraSlayer release will have an option to increase the number of
+#      iterations performed. Currently the hard coded default is 100, which leads to 
+#      considerable fluctuations in the classification. As of Brian Haas recommendation
+#      we should increase this value to (optimally to 1000, need to test if a lower value
+#      is a good compromise)
 
 class ChimeraChecker(FunctionWithParams):
     """A ChimeraChecker takes a sequence collection and returns list of chimeric seqs.
@@ -116,17 +123,19 @@ class ChimeraSlayerChimeraChecker(ChimeraChecker):
         pass  
 
     def __call__ (self, seq_path, db_FASTA_fp=None, db_NAST_fp=None,
-                  result_path=None, log_path=None, min_div_ratio=None):
+                  result_path=None, log_path=None, min_div_ratio=None,
+                  keep_intermediates=False):
         """Run chimeraSlayer on input seqs."""
 
         chimeras = get_chimeras_from_Nast_aligned(seq_path, ref_db_aligned_fp=db_NAST_fp,
                                                   ref_db_fasta_fp=db_FASTA_fp,
-                                                  min_div_ratio=min_div_ratio)
+                                                  min_div_ratio=min_div_ratio,
+                                                  keep_intermediates=keep_intermediates)
         return chimeras
 
 def chimeraSlayer_identify_chimeras(seqs_fp, db_FASTA_fp=None,
                                     db_NAST_fp=None, output_fp=None,
-                                    min_div_ratio=None):
+                                    min_div_ratio=None, keep_intermediates=False):
     """ """
     params = {}
     cc = ChimeraSlayerChimeraChecker(params)
@@ -135,7 +144,8 @@ def chimeraSlayer_identify_chimeras(seqs_fp, db_FASTA_fp=None,
         of = open(output_fp,'w')
         for seq_id, parents in cc(seqs_fp, db_FASTA_fp=db_FASTA_fp,
                                   db_NAST_fp=db_NAST_fp,
-                                  min_div_ratio=min_div_ratio):
+                                  min_div_ratio=min_div_ratio,
+                                  keep_intermediates=keep_intermediates):
             of.write('\t'.join([seq_id] + parents))
             of.write('\n')
         of.close()
@@ -143,9 +153,11 @@ def chimeraSlayer_identify_chimeras(seqs_fp, db_FASTA_fp=None,
     else:
         result = list(cc(seqs_fp, db_FASTA_fp=db_FASTA_fp,
                          db_NAST_fp=db_NAST_fp,
-                         min_div_ratio=min_div_ratio))
+                         min_div_ratio=min_div_ratio,
+                         keep_intermediates=keep_intermediates))
     
-    cc.cleanUp()
+    if not keep_intermediates:
+        cc.cleanUp()
     return result
 
 class BlastFragmentsChimeraChecker(ChimeraChecker):
@@ -388,7 +400,10 @@ class ChimeraSlayer(CommandLineApplication):
                 pass
             else:
                 inp_file_name = exec_dir +"/" +inp_file_name
-                
+         
+        if not exists(inp_file_name+".CPS.CPC"):
+            raise ApplicationError,"Calling ChimeraSlayer failed."
+
         result['CPS'] = ResultPath(Path=inp_file_name + ".CPS.CPC",\
                                        IsWritten=True)
         return result
@@ -397,7 +412,7 @@ class ChimeraSlayer(CommandLineApplication):
         """Remove all intermediate files."""
 
         #tmp files are written in the current dir,
-        #app conreoller always jumps into dir specified via exec_dir
+        #app controller always jumps into dir specified via exec_dir
         #Note: blast intermediates are not removed 
         exec_dir =  str(self.Parameters['--exec_dir'].Value)        
         inp_file_name =  str(self.Parameters['--query_NAST'].Value)
@@ -418,9 +433,12 @@ class ChimeraSlayer(CommandLineApplication):
             nast_db_name = str(db_param.Value)
             nast_db_name = nast_db_name.rstrip('"')
             nast_db_name = nast_db_name.lstrip('"')
-            
-            remove_files([nast_db_name + ".cidx"],
-                         error_on_missing=False)
+ 
+            #Better do not remove this file since other ChimeraSlayer
+            #instances running on the same ref set might use this file
+            #Should be rather deleted in the calling function
+#            remove_files([nast_db_name + ".cidx"],
+#                         error_on_missing=False)
  
         fasta_param = self.Parameters['--db_FASTA']
         if fasta_param.isOn():
@@ -430,7 +448,6 @@ class ChimeraSlayer(CommandLineApplication):
 
             blast_db_files = [fasta_name + x for x in [".nsq",".nin",".nhr",".cidx"]]
             remove_files(blast_db_files, error_on_missing=False)
-
 
     def getHelp(self):
         """Method that points to documentation"""
@@ -523,9 +540,10 @@ ChimeraSlayer   chimera_AJ007403        7000004131495956        S000469847      
 
 ## Start convenience functions
 
-
-def get_chimeras_from_Nast_aligned(seqs_fp, ref_db_aligned_fp=None, ref_db_fasta_fp=None,
-                                   HALT_EXEC=False, min_div_ratio=None):
+def get_chimeras_from_Nast_aligned(seqs_fp, ref_db_aligned_fp=None,
+                                   ref_db_fasta_fp=None,
+                                   HALT_EXEC=False, min_div_ratio=None,
+                                   keep_intermediates=False):
     """remove chimeras from seqs_fp using chimeraSlayer.
 
     seqs_fp:  a filepath with the seqs to check in the file
@@ -548,7 +566,7 @@ def get_chimeras_from_Nast_aligned(seqs_fp, ref_db_aligned_fp=None, ref_db_fasta
         seqs_dir = "./"
 
     #Chimera Slayer puts some temp files in current dir and some in dir of input file
-    #use exe_dir to change to dir of input file
+    #use exe_dir to change to dir of input file, so to have all tmp files in one place
     params={'--query_NAST': new_seqs_fp,
             '--exec_dir': seqs_dir}
 
@@ -559,6 +577,7 @@ def get_chimeras_from_Nast_aligned(seqs_fp, ref_db_aligned_fp=None, ref_db_fasta
 
     else:
         if not ref_db_fasta_fp:
+            #make degapped reference file 
             ref_db_fasta_fp = write_degapped_fasta_to_file(MinimalFastaParser( \
                     open(ref_db_aligned_fp)))
             files_to_remove.append(ref_db_fasta_fp)
@@ -578,8 +597,28 @@ def get_chimeras_from_Nast_aligned(seqs_fp, ref_db_aligned_fp=None, ref_db_fasta
 #         raise ApplicationError, "ChimeraSlayer failed. No output file."
 
     chimeras = parse_CPS_file((app_results['CPS']))
-    app.remove_intermediate_files()
-    remove_files(files_to_remove)
+    if not keep_intermediates:
+        app.remove_intermediate_files()
+        remove_files(files_to_remove)
 
     return chimeras
 
+
+def make_cidx_file(fp):
+    """make a CS index file.
+        
+    fp: reference DB to make an index of
+    
+    ChimeraSlayer implicetely performs this task when the file is not
+    already created and deletes it when done. Especially in a parallel
+    environment it mkaes sense to manually make and delete the file.
+    """
+
+    if app_path("cdbfasta"):
+        #cdbfasta comes with the microbiometools/CS
+        #should always be installed when using CS
+        args = ["cdbfasta", fp]
+        #cdbfasta write one line to stderr
+        Popen(args, stderr=PIPE, stdout=PIPE).wait()
+    else:
+        raise ApplicationNotFoundError

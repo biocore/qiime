@@ -1,26 +1,16 @@
-.. _identify_chimeric_seqs:
+.. _parallel_identify_chimeric_seqs:
 
-.. index:: identify_chimeric_seqs.py
+.. index:: parallel_identify_chimeric_seqs.py
 
-*identify_chimeric_seqs.py* -- Identify chimeric sequences in input FASTA file
+*parallel_identify_chimeric_seqs.py* -- Parallel chimera detection
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Description:**
 
-A FASTA file of sequences, can be screened to remove chimeras (sequences generated due to the PCR amplification of multiple templates or parent sequences). QIIME currently includes a taxonomy-assignment-based approach, blast_fragments, for identifying sequences as chimeric and the ChimeraSlayer algorithm. 
-
-1. Blast_fragments approach: 
-
-The reference sequences (-r) and id-to-taxonomy map (-t) provided are the same format as those provided to `assign_taxonomy.py <./assign_taxonomy.html>`_. The reference sequences are in fasta format, and the id-to-taxonomy map contains tab-separated lines where the first field is a sequence identifier, and the second field is the taxonomy separated by semi-colons (e.g., Archaea;Euryarchaeota;Methanobacteriales;Methanobacterium). The reference collection should be derived from a chimera-checked database (such as the full greengenes database), and filtered to contain only sequences at, for example, a maximum of 97% sequence identity.
-
-2. ChimeraSlayer:
-
-ChimeraSlayer uses BLAST to identify potential chimera parents and computes the optimal branching alignment of the query against two parents.
-We suggest to use the pynast aligned representative sequences as input.
+This script works like the `identify_chimeric_seqs.py <./identify_chimeric_seqs.html>`_ script, but is intended to make use of multicore/multiprocessor environments to perform analyses in parallel.
 
 
-
-**Usage:** :file:`identify_chimeric_seqs.py [options]`
+**Usage:** :file:`parallel_identify_chimeric_seqs.py [options]`
 
 **Input Arguments:**
 
@@ -34,12 +24,12 @@ We suggest to use the pynast aligned representative sequences as input.
 	
 	**[OPTIONAL]**
 		
+	-a, `-`-aligned_reference_seqs_fp
+		Path to (Py)Nast aligned reference sequences. REQUIRED when method ChimeraSlayer [default: None]
 	-t, `-`-id_to_taxonomy_fp
 		Path to tab-delimited file mapping sequences to assigned taxonomy. Each assigned taxonomy is provided as a comma-separated list. [default: None; REQUIRED when method is blast_fragments]
 	-r, `-`-reference_seqs_fp
 		Path to reference sequences (used to build a blast db when method blast_fragments). [default: None; REQUIRED when method blast_fragments if no blast_db is provided;]
-	-a, `-`-aligned_reference_seqs_fp
-		Path to (Py)Nast aligned reference sequences. REQUIRED when method ChimeraSlayer [default: None]
 	-b, `-`-blast_db
 		Database to blast against. Must provide either --blast_db or --reference_seqs_fp when method is blast_fragments [default: None]
 	-m, `-`-chimera_detection_method
@@ -50,17 +40,37 @@ We suggest to use the pynast aligned representative sequences as input.
 		Number of taxonomic divisions to consider when comparing taxonomy assignments [default: 4]
 	-e, `-`-max_e_value
 		Max e-value to assign taxonomy [default: 1e-30]
-	-R, `-`-min_div_ratio
+	`-`-min_div_ratio
 		Min divergence ratio (passed to ChimeraSlayer). If set to None uses ChimeraSlayer default value.  [default: None]
-	-k, `-`-keep_intermediates
-		Keep intermediate files, useful for debugging  [default: False]
 	-o, `-`-output_fp
 		Path to store output [default: derived from input_seqs_fp]
+	-N, `-`-identify_chimeric_seqs_fp
+		Full path to scripts/`identify_chimeric_seqs.py <./identify_chimeric_seqs.html>`_ [default: /Users/jreeder/Projects/qiime/trunk/scripts/`identify_chimeric_seqs.py <./identify_chimeric_seqs.html>`_]
+	-O, `-`-jobs_to_start
+		Number of jobs to start [default: 2]
+	-P, `-`-poller_fp
+		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /Users/jreeder/Projects/qiime/trunk/scripts/`poller.py <./poller.html>`_]
+	-R, `-`-retain_temp_files
+		Retain temporary files after runs complete (useful for debugging) [default: False]
+	-S, `-`-suppress_submit_jobs
+		Only split input and write commands file - don't submit jobs [default: False]
+	-T, `-`-poll_directly
+		Poll directly for job completion rather than running poller as a separate job. If -T is specified this script will not return until all jobs have completed. [default: False]
+	-U, `-`-cluster_jobs_fp
+		Path to `cluster_jobs.py <./cluster_jobs.html>`_ script  [default: /Users/jreeder/Projects/qiime/trunk/scripts/`start_parallel_jobs.py <./start_parallel_jobs.html>`_]
+	-W, `-`-suppress_polling
+		Suppress polling of jobs and merging of results upon completion [default: False]
+	-X, `-`-job_prefix
+		Job prefix [default: descriptive prefix + random chars]
+	-Y, `-`-python_exe_fp
+		Full path to python executable [default: /Library/Frameworks/Python.framework/Versions/2.6/bin/python]
+	-Z, `-`-seconds_to_sleep
+		Number of seconds to sleep between checks for run  completion when polling runs [default: 60]
 
 
 **Output:**
 
-The result of `identify_chimeric_seqs.py <./identify_chimeric_seqs.html>`_ is a text file that identifies which sequences are chimeric.
+The result of `parallel_identify_chimeric_seqs.py <./parallel_identify_chimeric_seqs.html>`_ is a text file that identifies which sequences are chimeric.
 
 
 **blast_fragments example:**
@@ -79,14 +89,14 @@ blast_fragments begins with the assumption that a sequence is non-chimeric, and 
 
 ::
 
-	identify_chimeric_seqs.py -i repr_set_seqs.fasta -t taxonomy_assignment.txt -r ref_seq_set.fna -o chimeric_seqs.txt
+	parallel_identify_chimeric_seqs.py -i repr_set_seqs.fasta -t taxonomy_assignment.txt -r ref_seq_set.fna -o chimeric_seqs.txt
 
 **ChimeraSlayer Example:**
 
-Identify chimeric sequences using the ChimeraSlayer algorithm against a user provided reference data base. The input sequences need to be provided in aligned (Py)Nast format. The reference data base needs to be provided as aligned FASTA (-a). Note that the reference database needs to be the same that was used to build the alignment of the input sequences!
+Identify chimeric sequences using the ChimeraSlayer algorithm against a user provided reference database. The input sequences need to be provided in aligned (Py)Nast format and the reference database needs to be provided as aligned FASTA (-a). Note that the reference database needs to be the same that was used to build the alignment of the input sequences!
 
 ::
 
-	identify_chimeric_seqs.py -m ChimeraSlayer -i repr_set_seqs_aligned.fasta -a ref_seq_set_aligned.fasta -o chimeric_seqs.txt
+	parallel_identify_chimeric_seqs.py -m ChimeraSlayer -i repr_set_seqs_aligned.fasta -a ref_seq_set_aligned.fasta -o chimeric_seqs.txt
 
 

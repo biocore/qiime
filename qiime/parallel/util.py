@@ -325,3 +325,29 @@ def write_merge_map_file_blast(job_result_filepaths,output_dir,\
     f.write('\t'.join(job_result_filepaths + [out_filepath]))
     f.write('\n')
     f.close()
+
+def write_merge_map_file_identify_chimeric_seqs(job_result_filepaths,output_dir,\
+    merge_map_filepath,input_file_basename, out_fp=None):
+    
+    f = open(merge_map_filepath,'w')
+    
+    if out_fp:
+        out_filepaths = [out_fp]
+    else:
+        out_filepaths = [\
+            '%s/%s_chimeric.txt' % (output_dir,input_file_basename)]
+
+    chims_fps = []
+    logs_fps = [] #logs_fp currently not used
+
+    for fp in job_result_filepaths:
+        if fp.endswith('_chimeric.txt'):
+            chims_fps.append(fp)
+        else:
+            log_fps.append(fp)
+    
+    for in_files, out_file in\
+     zip([chims_fps],out_filepaths):
+        f.write('\t'.join(in_files + [out_file]))
+        f.write('\n')
+    f.close()

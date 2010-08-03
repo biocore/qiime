@@ -10,7 +10,7 @@ We recommend using QIIME's ChimeraSlayer wrapper to chimera check your sequences
 
 Applying ChimeraSlayer is done as follows::
 
-	identify_chimeric_seqs.py -m ChimeraSlayer -i rep_set_aligned.fasta -a reference_set_aligned.fasta -r reference_set_unaligned.fasta -o chimeric_seqs.txt
+	identify_chimeric_seqs.py -m ChimeraSlayer -i rep_set_aligned.fasta -a reference_set_aligned.fasta -o chimeric_seqs.txt
 
 Before building your phylogenetic tree, you should now remove chimeric sequences from your alignment using your chimeric sequence list (``chimeric_seqs.txt`` in this example) and the alignment to as follows::
 

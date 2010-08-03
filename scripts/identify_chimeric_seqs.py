@@ -37,7 +37,7 @@ We suggest to use the pynast aligned representative sequences as input.
 """
 
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""blast_fragments example""","""The blast_fragments chimera detection method is the default method used by identify_chimeric_seqs.py. For each sequence provided as input, the blast_fragments method splits the input sequence into n roughly-equal-sized, non-overlapping fragments, and assigns taxonomy to each fragment against a reference database. The BlastTaxonAssigner (implemented in assign_taxonomy.py) is used for this. The taxonomies of the fragments are compared with one another (at a default depth of 4), and if contradictory assignments are returned the sequence is identified as chimeric. For example, if an input sequence was split into 3 fragments, and the following taxon assignments were returned:
+script_info['script_usage'].append(("""blast_fragments example""","""For each sequence provided as input, the blast_fragments method splits the input sequence into n roughly-equal-sized, non-overlapping fragments, and assigns taxonomy to each fragment against a reference database. The BlastTaxonAssigner (implemented in assign_taxonomy.py) is used for this. The taxonomies of the fragments are compared with one another (at a default depth of 4), and if contradictory assignments are returned the sequence is identified as chimeric. For example, if an input sequence was split into 3 fragments, and the following taxon assignments were returned:
 
 ==========  ==========================================================
 fragment1:  Archaea;Euryarchaeota;Methanobacteriales;Methanobacterium
@@ -47,10 +47,10 @@ fragment3:  Archaea;Euryarchaeota;Methanobacteriales;Methanobacterium
 
 The sequence would be considered chimeric at a depth of 3 (Methanobacteriales vs. Halobacteriales), but non-chimeric at a depth of 2 (all Euryarchaeota).
 
-blast_fragments begins with the assumption that a sequence is non-chimeric, and looks for evidence to the contrary. This is important when, for example, no taxonomy assignment can be made because no blast result is returned. If a sequence is split into three fragments, and only one returns a blast hit, that sequence would be considered non-chimeric. This is because there is no evidence (i.e., contradictory blast assignments) for the sequence being chimeric. This script can be run by the following command, where the resulting data is written to the directory "identify_chimeras/" and using default parameters (e.g. chimera detection method ("-m blast_fragments"), number of fragments ("-n 3"), taxonomy depth ("-d 4") and maximum E-value ("-e 1e-30")):""","""identify_chimeric_seqs.py -i repr_set_seqs.fasta -t taxonomy_assignment.txt -r ref_seq_set.fna -o chimeric_seqs.txt"""))
+blast_fragments begins with the assumption that a sequence is non-chimeric, and looks for evidence to the contrary. This is important when, for example, no taxonomy assignment can be made because no blast result is returned. If a sequence is split into three fragments, and only one returns a blast hit, that sequence would be considered non-chimeric. This is because there is no evidence (i.e., contradictory blast assignments) for the sequence being chimeric. This script can be run by the following command, where the resulting data is written to the directory "identify_chimeras/" and using default parameters (e.g. chimera detection method ("-m blast_fragments"), number of fragments ("-n 3"), taxonomy depth ("-d 4") and maximum E-value ("-e 1e-30")):""","""%prog -i repr_set_seqs.fasta -t taxonomy_assignment.txt -r ref_seq_set.fna -o chimeric_seqs.txt"""))
 
-script_info['script_usage'].append(("""ChimeraSlayer Example:""","""Identify chimeric sequences using the ChimeraSlayer algorithm against a user provided reference data base. The input sequences need to be provided in aligned (Py)Nast format. The reference data base needs to be provided both as unaligned FASTA (-r) and aligned FASTA (-a). Note that the reference database needs to be the same that was used to build the alignment of the input sequences!""",
-                                    """identify_chimeric_seqs.py -m ChimeraSlayer -i repr_set_seqs_aligned.fasta -a ref_seq_set_aligned.fasta -r ref_seq_set.fna -o chimeric_seqs.txt"""))
+script_info['script_usage'].append(("""ChimeraSlayer Example:""","""Identify chimeric sequences using the ChimeraSlayer algorithm against a user provided reference data base. The input sequences need to be provided in aligned (Py)Nast format. The reference data base needs to be provided as aligned FASTA (-a). Note that the reference database needs to be the same that was used to build the alignment of the input sequences!""",
+                                    """%prog -m ChimeraSlayer -i repr_set_seqs_aligned.fasta -a ref_seq_set_aligned.fasta -o chimeric_seqs.txt"""))
 
 script_info['output_description']="""The result of identify_chimeric_seqs.py is a text file that identifies which sequences are chimeric."""
 script_info['required_options']=[options_lookup['fasta_as_primary_input']]
@@ -78,8 +78,9 @@ script_info['optional_options']=[\
         
     make_option('-m','--chimera_detection_method',\
           type='choice',help='Chimera detection method. Choices: '+\
-                    " or ".join(chimera_detection_method_choices) +'. [default:%default]',\
-          choices=chimera_detection_method_choices, default='blast_fragments'),
+                    " or ".join(chimera_detection_method_choices) +\
+                    '. [default:%default]',\
+          choices=chimera_detection_method_choices, default='ChimeraSlayer'),
           
     make_option('-n','--num_fragments',\
           type='int',help='Number of fragments to split sequences into' +\
@@ -92,18 +93,23 @@ script_info['optional_options']=[\
           default=4),
           
     make_option('-e','--max_e_value',\
-          type='float',help='Max e-value to assign taxonomy' +\
-          ' [default: %default]', default=1e-30),
+                    type='float',help='Max e-value to assign taxonomy' +\
+                    ' [default: %default]', default=1e-30),
 
     make_option('-R','--min_div_ratio',\
                     type='float',help='min divergence ratio '+\
                     '(passed to ChimeraSlayer). If set to None uses ' +\
                     'ChimeraSlayer default value. '+\
                     ' [default: %default]', default=None),       
-
+  
+    make_option('-k','--keep_intermediates',\
+                    action='store_true',help='Keep intermediate files, '+\
+                    'useful for debugging ' +\
+                    ' [default: %default]', default=False),  
+    
     make_option('-o', '--output_fp',
         help='Path to store output [default: derived from input_seqs_fp]')
-]
+    ]
 script_info['version'] = __version__
 
 def main():
@@ -128,8 +134,7 @@ def main():
     elif opts.chimera_detection_method == 'ChimeraSlayer':
         if not opts.aligned_reference_seqs_fp:
             option_parser.error("Must provide --aligned_reference_seqs_fp "+\
-                                    "when using method "+\
-                                    "ChimeraSlayer")
+                                    "when using method ChimeraSlayer")
             
     verbose = opts.verbose #not used yet ...
     input_seqs_fp = opts.input_fasta_fp
@@ -141,13 +146,14 @@ def main():
     taxonomy_depth = opts.taxonomy_depth
     max_e_value = opts.max_e_value
     blast_db = opts.blast_db
+    keep_intermediates = opts.keep_intermediates
     
     if not output_fp:
         input_basename = splitext(split(input_seqs_fp)[1])[0]
         output_fp = '%s_chimeric.txt' % input_basename
     if chimera_detection_method == 'blast_fragments':
         blast_fragments_identify_chimeras(input_seqs_fp,
-            id_to_taxonomy_fp,\
+             id_to_taxonomy_fp,\
             reference_seqs_fp,blast_db=blast_db,
             num_fragments=opts.num_fragments,\
             max_e_value=max_e_value,\
@@ -159,7 +165,8 @@ def main():
                                          output_fp=output_fp,
                                          db_FASTA_fp=opts.reference_seqs_fp,
                                          db_NAST_fp=opts.aligned_reference_seqs_fp,
-                                         min_div_ratio=opts.min_div_ratio)
+                                         min_div_ratio=opts.min_div_ratio,
+                                         keep_intermediates=keep_intermediates)
 
 if __name__ == "__main__":
     main()
