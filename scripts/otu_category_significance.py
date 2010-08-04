@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Doug Wendel"
 __copyright__ = "Copyright 2010, The QIIME project"
-__credits__ = ["Catherine Lozupone", "Jesse Stombaugh", "Doug Wendel"]
+__credits__ = ["Catherine Lozupone", "Jesse Stombaugh", "Doug Wendel", "Dan Knights"]
 __license__ = "GPL"
 __version__ = "1.1.0-dev"
 __maintainer__ = "Doug Wendel"
@@ -12,17 +12,22 @@ __email__ = "wendel@colorado.edu"
 __status__ = "Development"
  
 
-from qiime.otu_category_significance import test_wrapper
+from qiime.otu_category_significance import test_wrapper, test_wrapper_multiple
 from qiime.util import parse_command_line_parameters
 from optparse import make_option
+from os.path import isdir, join
+from os import listdir
 
 script_info={}
 script_info['brief_description']="""OTU significance and co-occurence analysis"""
-script_info['script_description']="""The script otu_category_significance.py tests whether any of the OTUs in an OTU table are significantly associated with a category in the category mapping file. This code uses, ANOVA, the G test of independence, or Pearson correlation to find OTUs whose members are differentially represented across experimental treatments or measured variables. It can also be used with presence/absence or abundance data for a phylogenetic group (such as that determined with quantitative PCR) to determine if any OTUs co-occur with a taxon of interest."""
+script_info['script_description']="""The script otu_category_significance.py tests whether any of the OTUs in an OTU table are significantly associated with a category in the category mapping file. This code uses, ANOVA, the G test of independence, or Pearson correlation to find OTUs whose members are differentially represented across experimental treatments or measured variables. It can also be used with presence/absence or abundance data for a phylogenetic group (such as that determined with quantitative PCR) to determine if any OTUs co-occur with a taxon of interest.
+
+This test can be performed on a single OTU table or on a directory of OTU tables (for example, the output of multiple_rarefactions_even_depth.py). If the script is called on a directory, the resulting p-values are the average of the p-values observed when running a single test on each otu_table separately."""
 script_info['script_usage']=[]
 script_info['script_usage'].append(("Example 1","""If the user would like to perform a G test on their OTU table using default parameters, while testing the category "Sex", they can run the following command:""","""otu_category_significance.py -i otu_table.txt -m Mapping_file.txt -s g_test -c Sex"""))
 script_info['script_usage'].append(("Example 2","""If the user would like to perform the same test using numerical qPCR data, where everything below a threshold value should be considered "absent" and everything above that value "present", the user will need to set the threshold by running the following command:""","""otu_category_significance.py -i otu_table.txt -m Mapping_file.txt -s g_test -c qPCR -t 0.16"""))
 script_info['script_usage'].append(("Example 3","""Alternatively, the user could run an ANOVA test on the same data by using the following command:""","""otu_category_significance.py -i otu_table.txt -m Mapping_file.txt -s ANOVA -c Sex"""))
+script_info['script_usage'].append(("Example 4","""If the user would like to perform an ANOVA on an entire directory of rarefied  OTU tables using default parameters, while testing the category "Sex", they can run the following command:""","""otu_category_significance.py -i otu_table_dir -m Mapping_file.txt -s g_test -c Sex"""))
 script_info['output_description']="""The G test results are output as tab delimited text, which can be examined in Excel. The output has the following columns:
 
 * OTU: The name of the OTU.
@@ -54,7 +59,7 @@ The correlation test results are output as tab delimited text, which can be exam
 
 script_info['required_options']=[\
     make_option('-i','--otu_table_fp', dest='otu_table_fp',\
-        help='path to the otu table'),\
+        help='path to the otu table, or to a directory containing OTU tables'),\
     make_option('-m','--category_mapping_fp',\
         dest='category_mapping_fp',\
         help='path to category mapping file'),\
@@ -96,8 +101,6 @@ def main():
 
     verbose = opts.verbose
 
-    otu_table_fp = opts.otu_table_fp
-    otu_table = open(otu_table_fp,'U')
     output_fp = opts.output_fp
 
     category_mapping_fp = opts.category_mapping_fp
@@ -116,8 +119,18 @@ def main():
     else:
         otu_include = None
 
-    output = test_wrapper(test, otu_table, category_mapping, category, \
-                threshold, filter, output_fp, otu_include)
+    otu_table_fp = opts.otu_table_fp
+    if not isdir(opts.otu_table_fp):
+        # if single file, process normally
+        otu_table = open(otu_table_fp,'U')
+        output = test_wrapper(test, otu_table, category_mapping, category, \
+                                  threshold, filter, otu_include)
+    else:
+        otu_table_paths = [join(otu_table_fp,fp) for fp in listdir(otu_table_fp)]
+        # if directory, get aggregated results
+        output = test_wrapper_multiple(test, otu_table_paths, category_mapping, category, \
+                                  threshold, filter, otu_include)
+        
     of = open(output_fp, 'w')
     of.write('\n'.join(output))
     of.close()
