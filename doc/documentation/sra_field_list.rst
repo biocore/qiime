@@ -6,15 +6,29 @@
 SRA Field List
 =========================
 
+The make_sra_submission.py QIIME script uses tab-delimited input files
+to generate valid XML files for an SRA submission.  This document
+lists the fields in each type of input file, and gives details on how
+to fill them in.
+
+If a field is labeled as *optional*, it may be omitted from the
+header.  For fields labeled *derived automatically*, a value will be
+generated for each entry in the input file if the field is missing or
+empty.
+
 Study Input File
 ----------------
 
 STUDY_ALIAS
 
   One study per publication (i.e. the STUDY is supposed to be about
-  the same amount of info as in a paper). This is something you define
-  arbitrarily, and is used as an id to link files (so can contain only
-  alphanumeric characters and underscores).
+  the same amount of info as in a paper). 
+
+  The STUDY_ALIAS is used as a unique identifier for the study (it
+  should be unique among all studies submitted from your institution).
+  It should contain only alphanumeric characters and underscores.
+
+  *Example*: hand_study
 
 STUDY_TITLE 
 
@@ -143,6 +157,12 @@ EXPERIMENT_TITLE
   Title of the experiment. Must be the same for every member of a
   given pool. Free text.
 
+  *Example*: ``Sampling and pyrosequencing methods for quantifying
+  bacterial communities in the human gut``
+
+  *Output*: This field is used as the text of the <TITLE> element in
+  the SRA Experiment XML file.
+
 STUDY_REF
 
   Official alias of the study registered with SRA.  Must be the same
@@ -152,12 +172,19 @@ STUDY_REF
   reference the same RUN_PREFIX so they can pull sffs from the same
   files.
 
+  This field is used as the *refname* attribute of the
+  <STUDY_REF> element in the SRA Experiment XML file.  It is also used
+  to derive several optional fields.
+
 STUDY_CENTER
 
   Name of the center associated with the overall STUDY, i.e. whoever
   is designated as having overall responsibility for the STUDY (this
   is a controlled vocabulary, assigned by NCBI). Needs to be the same
   for every member of a pool.
+
+  This field is used as the *refcenter* attribute of the
+  <EXPERIMENT_REF> element in the SRA Run XML file.
 
 SAMPLE_ALIAS
 
@@ -167,15 +194,26 @@ SAMPLE_ALIAS
   same EXPRIMENT, the components from each STUDY need to be registered
   as a separate EXPERIMENT.
 
+  This field is used as the *refname* attribute of the
+  <MEMBER> element in the SRA Experiment XML file.  It is also used to
+  derive several optional fields.
+
 POOL_PROPORTION
 
   Floating-point number representing the fraction of the pool that was
   intended to come from that library member.
 
+  This field is used as the *proportion* attribute of the
+  <MEMBER> element in the SRA Experiment XML file.
+
 BARCODE
 
   Barcode sequence used for each pool member.  Each combination of
   barcode, primer and plate region must be unique.
+
+  This field is used as the text of the <BASECALL> element in
+  the SRA Experiment XML file.  It is also used to derive several
+  optional fields.
 
 RUN_PREFIX
 
@@ -185,6 +223,10 @@ RUN_PREFIX
   allows you to designate a pool as per-library rather than per sff
   file (otherwise you would need to duplicate all the info per run for
   each sff file).
+
+  This field is used as the *name* attribute of the
+  <DATA_BLOCK> element in the SRA Run XML file.  It is also used to
+  derive several optional fields.
 
 EXPERIMENT_DESIGN_DESCRIPTION
 

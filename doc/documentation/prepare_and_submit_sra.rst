@@ -55,7 +55,27 @@ Within the generated template files is a field reference which describes each fi
 
 Step 3. Fill in template files to describe your study and data.
 ---------------------------------------------------------------
-Kyle will fill in.  For now, see `SRA Field List <sra_field_list.html>`_
+The SRA submission workflow involves four input files:
+
+1. Study input file
+2. Sample input file
+3. Experiment input file
+4. Submission input file
+
+The SRA input files are formatted as tab-delimited text.  The first
+non-blank line is the header line, and specifies the field labels for
+the input file.  Field labels may appear in any order, but all
+required field labels must be present for each file type.  Subsequent
+lines specify a set of values for the fields.  SRA input files may
+contain comment lines, which must start with '#'.
+
+A spreadsheet program may be used to edit the SRA input files.  After
+editing, they must be exported to TSV format for use with QIIME.  On
+Google Docs, the menu item *File -> Download as -> Text (current sheet)*
+will generate a file in the correct format.
+
+The `SRA Field List <sra_field_list.html>`_ describes all available
+fields for each type of input file.
 
 Step 4. Applying the ``process_sra_submission.py`` workflow in QIIME.
 ---------------------------------------------------------------------
