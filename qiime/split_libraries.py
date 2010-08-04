@@ -124,6 +124,8 @@ def MatchScorerAmbigs(match, mismatch, matches=None):
     positive and mismatch should be negative.
 
     Resulting function has signature f(x,y) -> number.
+    
+    Code original from Greg Caporaso
     """
     
     matches = matches or \
@@ -165,7 +167,9 @@ expanded_equality_scorer_ambigs = MatchScorerAmbigs(1, -1,\
     
 def pair_hmm_align_unaligned_seqs(seqs,moltype=DNA,params={}):
     """
-        This needs to be moved to cogent.align.align
+        Checks parameters for pairwise alignment, returns alignment.
+        
+        Code from Greg Caporaso.
     """
     
     seqs = LoadSeqs(data=seqs,moltype=moltype,aligned=False)
@@ -194,11 +198,13 @@ def pair_hmm_align_unaligned_seqs(seqs,moltype=DNA,params={}):
 def local_align_primer_seq(primer,sequence,sw_scorer=equality_scorer_ambigs):
     """Perform local alignment of primer and sequence
     
-        primer: 
-        sequence: 
+        primer: Input primer sequence
+        sequence: target sequence to test primer against
         
-        Returns the primer sequence, the target sequence, number of mismatches,
+        Returns the number of mismatches,
          and the start position in sequence of the hit.
+         
+        Modified from code written by Greg Caporaso.
     """
     
     query_primer = primer

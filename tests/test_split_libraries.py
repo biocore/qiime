@@ -205,14 +205,7 @@ z\tGG\tGC\t5\tsample_z"""
         actual = local_align_primer_seq(primer,seq)
         self.assertEqual(actual,expected)
         
-        # reverse primer
-        primer = DNA.makeSequence('GCTA',Name='R5')
-        seq = 'TAGC'
-        # mismatch_count, hit_start
-        expected = (0,0)
-        actual = local_align_primer_seq(primer,seq)
-        self.assertEqual(actual,expected)
-        
+       
         primer = DNA.makeSequence('GCTC',Name='R5')
         seq = 'TAGCCCCC'
         # mismatch_count, hit_start
