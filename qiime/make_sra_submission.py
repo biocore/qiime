@@ -33,6 +33,27 @@ study_link_wrapper = """
         </ENTREZ_LINK>
       </STUDY_LINK>"""
 
+study_set_wrapper = """<?xml version="1.0" encoding="UTF-8"?>
+<STUDY_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <STUDY alias="%(STUDY_ALIAS)s">
+    <DESCRIPTOR>
+        <STUDY_TITLE>%(STUDY_TITLE)s</STUDY_TITLE>
+        <STUDY_TYPE existing_study_type="%(STUDY_TYPE)s"/>
+        <STUDY_ABSTRACT>%(STUDY_ABSTRACT)s</STUDY_ABSTRACT>
+        <STUDY_DESCRIPTION>%(STUDY_DESCRIPTION)s</STUDY_DESCRIPTION>
+        <CENTER_NAME>%(CENTER_NAME)s</CENTER_NAME>
+        <CENTER_PROJECT_NAME>%(CENTER_PROJECT_NAME)s</CENTER_PROJECT_NAME>
+    </DESCRIPTOR>%(XML_STUDY_LINKS_BLOCK)s
+  </STUDY>
+</STUDY_SET>
+"""
+
+sample_set_wrapper = """<?xml version="1.0" encoding="UTF-8"?>
+<SAMPLE_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+%(XML_SAMPLE_BLOCK)s
+</SAMPLE_SET>
+"""
+
 sample_attribute_wrapper = """      <SAMPLE_ATTRIBUTE> <TAG>%s</TAG> <VALUE>%s</VALUE> </SAMPLE_ATTRIBUTE>"""
 
 sample_wrapper = """  <SAMPLE alias="%(SAMPLE_ALIAS)s">
@@ -56,6 +77,17 @@ actions_wrapper = """ <ACTIONS>\n%s\n   <ACTION><RELEASE/></ACTION>\n </ACTIONS>
 file_wrapper = """ <FILES>
  <FILE filename="%s" checksum_method="MD5" checksum="%s"/>
  </FILES>"""
+
+submission_wrapper = '''<?xml version="1.0" encoding="UTF-8"?>
+<SUBMISSION xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"%(ACCESSION_STRING)s
+ submission_id="%(SUBMISSION_ID)s"
+ center_name="%(CENTER_NAME)s"
+ submission_comment="%(SUBMISSION_COMMENT)s"
+ lab_name="%(LAB_NAME)s"
+ submission_date="%(SUBMISSION_DATE)s"
+>%(XML_CONTACT_BLOCK)s%(XML_ACTION_BLOCK)s%(XML_FILE_BLOCK)s
+</SUBMISSION>
+'''
 
 def detect_missing_experiment_fields(input_file):
     """Return a list of required fields missing from an experiment input file."""
@@ -258,7 +290,7 @@ def rows_data_as_dicts(header, body):
     for row in body:
         yield row_data_to_dict(header, row)
 
-def make_study(study_lines, study_template, twocol_input_format=True):
+def make_study(study_lines, twocol_input_format=True):
     """Returns string for study xml."""
     header, rows = read_tabular_data(study_lines)
     if twocol_input_format:
@@ -275,7 +307,7 @@ def make_study(study_lines, study_template, twocol_input_format=True):
     else:
         study_links_block = ''
     info['XML_STUDY_LINKS_BLOCK'] = study_links_block
-    return study_template % info
+    return study_set_wrapper % info
 
 def parse_submission(submission_file, twocol_input_format=False):
     """Parse an SRA submission input file and return info dict."""
@@ -290,8 +322,8 @@ def parse_submission(submission_file, twocol_input_format=False):
         info = info_generator.next()
     return info
 
-def make_submission(submission_lines, submission_template, docnames=None,
-    submission_dir=None, twocol_input_format=True):
+def make_submission(submission_lines, docnames=None, submission_dir=None,
+                    twocol_input_format=True):
     """Returns string for submission xml."""
     info = parse_submission(
         submission_lines, twocol_input_format=twocol_input_format)
@@ -343,9 +375,9 @@ def make_submission(submission_lines, submission_template, docnames=None,
         info['XML_FILE_BLOCK'] = '\n' + file_wrapper % (filename, checksum)
     else:
         info['XML_FILE_BLOCK'] = ''
-    return submission_template % info
+    return submission_wrapper % info
 
-def make_sample(sample_lines, sample_template):
+def make_sample(sample_lines):
     """Returns string for sample xml."""
     title_fields = ['SAMPLE_ALIAS', 'TITLE', 'TAXON_ID', 'COMMON_NAME', 
         'ANONYMIZED_NAME', 'DESCRIPTION'] #these go in the title, not the record
@@ -371,7 +403,7 @@ def make_sample(sample_lines, sample_template):
         d['SAMPLE_ATTRIBUTES_XML'] = '\n'.join(attrs)
         d['OPTIONAL_TITLE_FIELDS'] = '\n' + '\n'.join(title_attrs)
         samples.append(sample_wrapper % d)
-    return sample_template % {'XML_SAMPLE_BLOCK':'\n'.join(samples)}
+    return sample_set_wrapper % {'XML_SAMPLE_BLOCK':'\n'.join(samples)}
 
 def group_lines_by_field(lines, field):
     """Returns dict of {state:[lines]} by state of field."""
@@ -1367,17 +1399,12 @@ def __pretty_xml_helper(element, level=0):
         if level and (not element.tail or not element.tail.strip()):
             element.tail = i
 
-def write_xml_generic(infile_path, template_path, xml_f, xml_kwargs=None,
-                      output_dir=None):
+def write_xml_generic(infile_path, xml_f, xml_kwargs=None, output_dir=None):
     """Writes generic xml based on contents of infilepath, returns filename."""
     if xml_kwargs is None:
         xml_kwargs = {}
-    template = open(template_path, 'U').read()
-    base_path, ext = splitext(infile_path)
-    outfile_path = generate_output_fp(base_path, '.xml', output_dir=output_dir)
-    outfile = open(outfile_path, 'w')
-    result = xml_f(open(infile_path, 'U'), template, **xml_kwargs)
-    outfile.write(result)
-    outfile.close()
+    outfile_path = generate_output_fp(infile_path, '.xml', output_dir=output_dir)
+    infile = open(infile_path, 'U')
+    open(outfile_path, 'w').write(xml_f(infile, **xml_kwargs))
     return outfile_path
 

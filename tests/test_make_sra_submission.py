@@ -241,55 +241,54 @@ class TopLevelTests(TestCase):
     def test_make_study(self):
         """make_study should produce expected results given info/template"""
         study_sample_data = StringIO(study_twocol_txt)
-        result = make_study(study_sample_data, study_template)
+        result = make_study(study_sample_data)
         self.assertEqual(standardize_xml(result), standardize_xml(study_xml))
 
         # Test when pmid field is empty
         study_sample_data = StringIO(study_pmid_empty_txt)
-        result = make_study(study_sample_data, study_template)
+        result = make_study(study_sample_data)
         self.assertEqual(standardize_xml(result), standardize_xml(study_pmid_missing_xml))
 
         # Test when pmid field is missing
         study_sample_data = StringIO(study_pmid_missing_txt)
-        result = make_study(study_sample_data, study_template)
+        result = make_study(study_sample_data)
         self.assertEqual(standardize_xml(result), standardize_xml(study_pmid_missing_xml))
 
         # Test for row-based data
         study_sample_data = StringIO(study_manycol_txt)
-        result = make_study(study_sample_data, study_template, twocol_input_format=False)
+        result = make_study(study_sample_data, twocol_input_format=False)
         self.assertEqual(standardize_xml(result), standardize_xml(study_xml))        
 
     def test_make_submission(self):
         """make_submission should produce expected results given info/template"""
         submission_sample_data = StringIO(submission_twocol_txt)
-        result = make_submission(submission_sample_data, submission_template,
-            {'study':'study.xml', 'sample':'sample.xml'})
+        my_docnames = {'study':'study.xml', 'sample':'sample.xml'}
+        result = make_submission(submission_sample_data, docnames=my_docnames)
         self.assertEqual(standardize_xml(result), standardize_xml(submission_xml))
 
         # Test for row-based data
         submission_sample_data = StringIO(submission_manycol_txt)
-        result = make_submission(submission_sample_data, submission_template,
-            {'study':'study.xml', 'sample':'sample.xml'}, twocol_input_format=False)
+        result = make_submission(submission_sample_data, docnames=my_docnames,
+                                 twocol_input_format=False)
         self.assertEqual(standardize_xml(result), standardize_xml(submission_xml))
 
         # Test when data file is provided
         fake_tgz_file = tempfile.NamedTemporaryFile(suffix='.tgz')
         submission_sample_data = StringIO(
             submission_with_file_txt % fake_tgz_file.name)
-        result = make_submission(submission_sample_data, submission_template,
-            {'study':'study.xml', 'sample':'sample.xml'})
+        result = make_submission(submission_sample_data, docnames=my_docnames)
         self.assertEqual(standardize_xml(result), standardize_xml(
             submission_with_file_xml  % fake_tgz_file.name))
 
     def test_make_sample(self):
         """make_sample should produce expected reuslts given info/template"""
         sample_data = StringIO(sample_txt)
-        result = make_sample(sample_data, sample_template)
+        result = make_sample(sample_data)
         self.assertEqual(standardize_xml(result), standardize_xml(sample_xml))
 
         # test with lowercase field names
         sample_data = StringIO(sample_with_lowercase_txt)
-        result = make_sample(sample_data, sample_template)
+        result = make_sample(sample_data)
         self.assertEqual(standardize_xml(result), standardize_xml(sample_xml))
 
     def test_group_lines_by_field(self):
@@ -311,15 +310,11 @@ class TopLevelTests(TestCase):
         input_file.write('abc')
         input_file.seek(0)
         
-        template_file = tempfile.NamedTemporaryFile()
-        template_file.write('<xml>%s</xml>')
-        template_file.seek(0)
-
-        def simple_xml_f(lines, template):
-            return template % ''.join(lines)
+        def simple_xml_f(lines, template=None):
+            return '<xml>%s</xml>' % ''.join(lines)
         
         observed_fp = write_xml_generic(
-            input_file.name, template_file.name, simple_xml_f)
+            input_file.name, simple_xml_f)
         observed = open(observed_fp).read()
         self.assertEqual(
             standardize_xml(observed),
@@ -2043,21 +2038,6 @@ study_manycol_txt = '''
 fierer_hand_study	"The influence of sex, handedness, and washing on the diversity of hand surface bacteria"	Metagenomics	"Short \'abstract\' with special characters <10%."	Targeted Gene Survey from Human Skin	CCME	NULL	19004758
 '''
 
-study_template = '''<?xml version="1.0" encoding="UTF-8"?>
-<STUDY_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <STUDY alias="%(STUDY_ALIAS)s">
-    <DESCRIPTOR>
-        <STUDY_TITLE>%(STUDY_TITLE)s</STUDY_TITLE>
-        <STUDY_TYPE existing_study_type="%(STUDY_TYPE)s"/>
-        <STUDY_ABSTRACT>%(STUDY_ABSTRACT)s</STUDY_ABSTRACT>
-        <STUDY_DESCRIPTION>%(STUDY_DESCRIPTION)s</STUDY_DESCRIPTION>
-        <CENTER_NAME>%(CENTER_NAME)s</CENTER_NAME>
-        <CENTER_PROJECT_NAME>%(CENTER_PROJECT_NAME)s</CENTER_PROJECT_NAME>
-    </DESCRIPTOR>%(XML_STUDY_LINKS_BLOCK)s
-  </STUDY>
-</STUDY_SET>
-'''
-
 study_xml = '''<?xml version="1.0" encoding="UTF-8"?>
 <STUDY_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <STUDY alias="fierer_hand_study">
@@ -2135,16 +2115,6 @@ submission_manycol_txt = '''\
 SRA003492	fierer_hand_study	CCME	"Barcode submission prepared by osulliva@ncbi.nlm.nih.gov, shumwaym@ncbi.nlm.nih.gov"	Knight	2009-10-22T01:23:00-05:00	Rob Knight;Rob.Knight@Colorado.edu,Noah Fierer;Noah.Fierer@Colorado.edu
 '''
 
-submission_template = '''<?xml version="1.0" encoding="UTF-8"?>
-<SUBMISSION xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"%(ACCESSION_STRING)s
- submission_id="%(SUBMISSION_ID)s"
- center_name="%(CENTER_NAME)s"
- submission_comment="%(SUBMISSION_COMMENT)s"
- lab_name="%(LAB_NAME)s"
- submission_date="%(SUBMISSION_DATE)s"
->%(XML_CONTACT_BLOCK)s%(XML_ACTION_BLOCK)s%(XML_FILE_BLOCK)s
-</SUBMISSION>
-'''
 
 submission_xml = '''<?xml version="1.0" encoding="UTF-8"?>
 <SUBMISSION xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -2179,12 +2149,6 @@ S1	human hand microbiome	539655	human skin metagenome	subject 1	female right pal
 S2	human hand microbiome	539655	human skin metagenome	subject 1	female left palm	9606	1	female	left	18	9.5	right	less than 2
 '''
 
-
-sample_template = '''<?xml version="1.0" encoding="UTF-8"?>
-<SAMPLE_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-%(XML_SAMPLE_BLOCK)s
-</SAMPLE_SET>
-'''
 
 sample_xml = '''<?xml version="1.0" encoding="UTF-8"?>
 <SAMPLE_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">

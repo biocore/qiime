@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<SUBMISSION xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"%(ACCESSION_STRING)s
- submission_id="%(SUBMISSION_ID)s"
- center_name="%(CENTER_NAME)s"
- submission_comment="%(SUBMISSION_COMMENT)s"
- lab_name="%(LAB_NAME)s"
- submission_date="%(SUBMISSION_DATE)s"
->%(XML_CONTACT_BLOCK)s%(XML_ACTION_BLOCK)s%(XML_FILE_BLOCK)s
-</SUBMISSION>

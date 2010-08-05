@@ -34,19 +34,10 @@ script_info['required_options']=[]
 script_info['optional_options']=[\
     make_option('-a','--input_sample_fp',\
         help='the tab-delimited text file with info about samples [default: %default]'),
-    make_option('--template_sample_fp',
-        default=os.path.join(sra_template_dir, 'sample_template.xml'),
-        help='the template file for samples [default: %default]'),
     make_option('-t','--input_study_fp',\
         help='the tab-delimited text file with info about the study [default: %default]'),
-    make_option('--template_study_fp',
-        default=os.path.join(sra_template_dir, 'study_template.xml'),
-        help='the template file for the study [default: %default]'),
     make_option('-u','--input_submission_fp',\
         help='the tab-delimited text file with info about the submission [default: %default]'),
-    make_option('--template_submission_fp',
-        default=os.path.join(sra_template_dir, 'submission_template.xml'),
-        help='the template file for the submission [default: %default]'),
     make_option('-e', '--input_experiment_fp', \
         help='the tab-delimited text file with info about the experiment [default: %default]'),
     make_option('--experiment_attribute_fp',
@@ -73,12 +64,12 @@ def main():
             'twocol_input_format': opts.twocolumn_input_format,
             }
         docnames['study'] = write_xml_generic(opts.input_study_fp,
-            opts.template_study_fp, make_study, xml_kwargs=study_kwargs,
+            make_study, xml_kwargs=study_kwargs,
             output_dir=opts.output_dir)
 
     if opts.input_sample_fp:
         docnames['sample'] = write_xml_generic(opts.input_sample_fp,
-            opts.template_sample_fp, make_sample, output_dir=opts.output_dir)
+            make_sample, output_dir=opts.output_dir)
 
     if opts.input_experiment_fp:
         if not opts.sff_dir:
@@ -111,14 +102,13 @@ def main():
 
     if opts.input_submission_fp:
         input_submission_file = open(opts.input_submission_fp, 'U')
-        submission_template = open(opts.template_submission_fp, 'U').read()
         submission_kwargs = {
             'docnames': docnames,
             'submission_dir': opts.output_dir,
             'twocol_input_format': opts.twocolumn_input_format,
             }
         submission_xml = make_submission(
-            input_submission_file, submission_template, **submission_kwargs)
+            input_submission_file, **submission_kwargs)
 
         output_submission_fp = generate_output_fp(
             opts.input_submission_fp, '.xml', opts.output_dir)
