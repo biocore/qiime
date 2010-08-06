@@ -70,7 +70,7 @@ Combine centroids and singletons from both runs::
 
 Sort the combined FASTA file by cluster size::
      
-     sort_denoiser_output.py -i denoised.fasta -o denoised_sorted.fasta
+     sort_denoiser_output.py -f denoised.fasta -o denoised_sorted.fasta
 
 Concatenate the output of `split_libraries.py <../scripts/split_libraries.html>`_::
 
