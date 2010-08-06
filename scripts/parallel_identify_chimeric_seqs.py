@@ -241,9 +241,14 @@ def main():
         else:
             reference_seqs_fp = write_degapped_fasta_to_file(MinimalFastaParser( \
                     open(aligned_reference_seqs_fp)), tmp_dir=working_dir)
-
         #delete it afterwards
         created_temp_paths.append(reference_seqs_fp)
+
+        #build blast db of reference, otherwise ChimeraSlayer will do it
+        #and parallel jobs clash
+        _, db_files_to_remove = \
+             build_blast_db_from_fasta_path(reference_seqs_fp)
+        created_temp_paths.extend(db_files_to_remove)
 
         #make the index file globally
         #Reason: ChimeraSlayer first checks to see if the index file is there.

@@ -20,7 +20,8 @@ def get_job_commands(python_exe_fp, identify_chimeric_seqs_fp, fasta_fps,
                      aligned_reference_seqs_fp, blast_db,
                      chimera_detection_method, min_div_ratio, num_fragments,
                      taxonomy_depth, max_e_value, id_to_taxonomy_fp,
-                     command_prefix='/bin/bash; ', command_suffix='; exit'):
+                     command_prefix='', command_suffix=''):
+#                     command_prefix='/bin/bash; ', command_suffix='; exit'):
     """Generate identify_chimeric_seqs commands which should be run
     """
     # Create basenames for each of the output files. These will be filled
