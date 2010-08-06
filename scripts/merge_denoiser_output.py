@@ -65,11 +65,11 @@ script_info['required_options'] = [\
     make_option('-m','--map_file',action='store',\
                     type='string',dest='denoiser_map_file',\
                     help='path to denoiser cluster mapping file '+\
-                    '[default: %default]'),
+                    '[REQUIRED]'),
 
     make_option('-p','--otu_picker_map_file', action='store',\
                     type='string',dest='otu_picker_map_file',\
-                    help='path to OTU mapping file from OTU picker'+\
+                    help='path to OTU mapping file from OTU picker '+\
                     '[REQUIRED]'),
     
     make_option('-f','--fasta_fp',action='store',\

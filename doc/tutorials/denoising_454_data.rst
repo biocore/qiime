@@ -82,7 +82,7 @@ Run the QIIME OTU picker::
 
 Combine denoiser and QIIME OTU picker output::
 
-	merge_denoiser_output.py -f seqs.fna  -d denoised_sorted.fasta  -p uclust_picked_otus/denoised_sorted_otus.txt
+	merge_denoiser_output.py -f seqs.fna  -d denoised_sorted.fasta  -p uclust_picked_otus/denoised_sorted_otus.txt -m denoiser_mapping.txt
 
 This command creates two new files in a directory (default: :file:`Denoiser_out_otu_picked/`):
 
