@@ -7,7 +7,7 @@ The pyrosequencing technology employed by 454 sequencing machines produces chara
 
 Note: Data sets with at most one full 454 run (~500,000) can be denoised without manual intervention using the workflow script `pick_otus_through_otu_table.py <../scripts/pick_otus_through_otu_table.html>`_. 
 
-If there are multiple, large 454 runs, follow this tutorial to denoise the data set and analyze it with QIIME. In short, each 454 run needs to be preprocessed with `split_libraries.py <../scripts/split_libraries.html>`_ and denoised separately. Afterwards the output files are combined for OTU picking. We will show an example with two 454 runs (:file:`run1.sff` and :file:`run2.sff`)
+If there are multiple, large 454 runs, follow this tutorial to denoise the data set and analyze it with QIIME. In short, each 454 run needs to be preprocessed with `split_libraries.py <../scripts/split_libraries.html>`_ and denoised separately. Afterwards the output files are combined for OTU picking. We will show an example with two 454 runs (:file:`run1.sff` and :file:`run2.sff`).
 
 **Data preparation:**
 
@@ -71,6 +71,10 @@ Combine centroids and singletons from both runs::
 Sort the combined FASTA file by cluster size::
      
      sort_denoiser_output.py -f denoised.fasta -o denoised_sorted.fasta
+
+Concatenate the cluster mappings::
+
+	cat run1/denoised/denoiser_mapping.txt  run2/denoised/denoiser_mapping.txt > denoiser_mapping.txt 
 
 Concatenate the output of `split_libraries.py <../scripts/split_libraries.html>`_::
 
