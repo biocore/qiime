@@ -52,6 +52,7 @@ PyNAST alignment, tree-building, taxonomy assignment, OTU picking, and other dat
 * raxml v7.0.3 (`web <http://icwww.epfl.ch/~stamatak/index-Dateien/Page443.htm>`_)
 * cytoscape (`web <http://www.cytoscape.org/>`_)
 * infernal 1.0 (`web <http://infernal.janelia.org/>`_)
+* lxml 2.2.27 (optional, used by the SRA submission tests `web <http://codespeak.net/lxml/>`_)
 
 Denoising 454 data:
 

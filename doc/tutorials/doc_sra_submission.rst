@@ -60,23 +60,6 @@ Download and unpack the tutorial data, and change to the resulting directory::
 	unzip knight_handstudy_demo-v1.1.0-dev.zip
 	cd knight_handstudy_demo-v1.1.0-dev
 
-Generate the study and sample metadata submissions
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-	Input: 
-		a. ``study.txt`` - tabular metadata about the study (this is used to accession the study). 
-		b. ``sample.txt`` - tabular metadata about each sample (this is used to accession samples). 
-		c. ``submission.txt`` - a two-column file of tabular metadata about the submission.
-	
-	Output: 
-		a. ``study.xml`` - xml-format metadata about the study. 
-		b. ``sample.xml`` - xml-format metadata about each sample 
-		c. ``submission.xml`` - xml-format metadata about the study and sample submission
-
-Run the following command::
-
-	make_sra_submission.py -a sample.txt -t study.txt -u submission.txt
-
-This produces ``sample.xml``, ``study.xml``, and ``submission.xml`` from the corresponding tab-delimited text files. 
 
 Generate the experiment and run metadata submissions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -86,23 +69,50 @@ Generate the experiment and run metadata submissions
 		b. ``sff_files`` - a directory of multiple sff files containing the actual sequence data. 
 		c. ``submission.txt`` - a two-column file of tabular metadata about the submission.
 		d. ``sra_parameters.txt`` - a qiime parameters file, defining what parameters should be passed to the individual component scripts
-		e. ``greengenes_unaligned.fasta-OTUs_at_0.05.fasta`` - a FASTA file of known 16S sequences to screen for non-16S contaminants (here, we use a subset of the unaligned greengenes database, filtered at 95% sequence identity)  [**only required to perform human screen**]
+		e. ``greengenes_unaligned.fasta-OTUs_at_0.05.fasta`` - a FASTA file of known 16S sequences to screen for non-16S contaminants (here, we use a subset of the unaligned greengenes database, filtered at 95% sequence identity)  [**optional: only required to perform human screen**]
+		f. ``study.txt`` - tabular metadata about the study (this is used to accession the study) [**optional**]. 
+		g. ``sample.txt`` - tabular metadata about each sample (this is used to accession samples) [**optional**].
 
 	**Output:** 
 		a. ``experiment.xml`` - xml-format metadata about the set of experiments described in ``library.txt`` 
 		b. ``run.xml`` - xml-format metadata about each run, i.e. the association between a specific member of a pool and a specific xml file. 
 		c. ``data.tgz`` - a gzipped tar archive containing individual sff files for each SRA RUN (see the Questions above if you are unclear on the distinction between the SRA RUN concept and the concept of an instrument run). 
+		d. ``study.xml`` - xml-format metadata about the study. 
+		e. ``sample.xml`` - xml-format metadata about each sample 
+		f. ``submission.xml`` - xml-format metadata about the study and sample submission
 
 The workflow script `process_sra_submission.py <../scripts/process_sra_submission.html>`_ may be used to create a submission of experiment and run metadata in one step.  
 
 Run the following command::
 
-	process_sra_submission.py -s sff_files -e experiment.txt -r greengenes_unaligned.fasta-OTUs_at_0.05.fasta -u submission.txt -p sra_parameters.txt -o sra_out
+	process_sra_submission.py -s sff_files -e experiment.txt -r greengenes_unaligned.fasta-OTUs_at_0.05.fasta -u submission.txt -p sra_parameters.txt -o sra_out -a samples.txt -t study.txt
 
 This produces a tar archive of per-sample SFF files, :file:`experiment.xml`, :file:`run.xml`, and :file:`submission.xml` from the input files. The list of commands that were actually run is available in the log file in the top-level ``sra_out/`` directory.
 
 Users who wish to bypass the human screening step (which occupies at least 2/3 of the total runtime of ``process_sra_submission.py``) can achieve this by not passing ``-r greengenes_unaligned.fasta-OTUs_at_0.05.fasta``. This is useful, for example, when analyzing soil data which is unlikely to have human contaminants in high abundance.
 
+The -a and -t parameters are optional. These (and the other xml files) can be generated directly using the ``make_sra_submission.py`` script.
+
+
+Generate the metadata xml submission files without processing the sequence data
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+	Input: 
+		a. ``study.txt`` - tabular metadata about the study (this is used to accession the study). 
+		b. ``sample.txt`` - tabular metadata about each sample (this is used to accession samples). 
+		c. ``submission.txt`` - a two-column file of tabular metadata about the submission.
+		d. ``experiment.txt`` - tabular metadata about the contents of each combination of library and sff file. 
+	
+	Output: 
+		a. ``study.xml`` - xml-format metadata about the study. 
+		b. ``sample.xml`` - xml-format metadata about each sample 
+		c. ``submission.xml`` - xml-format metadata about the study and sample submission
+		d. ``experiment.xml`` - xml-format metadata about the contents of each combination of library and sff file.
+
+Run the following command::
+
+	make_sra_submission.py -a sample.txt -t study.txt -u submission.txt -e experiment.txt
+
+This produces ``sample.xml``, ``study.xml``, ``experiment.xml``, and ``submission.xml`` from the corresponding tab-delimited text files. Any or all of the -a, -t, -u, -e options to generate the corresponding xml files.
 
 Notes regarding individual steps of the SRA submission process
 --------------------------------------------------------------
