@@ -15,9 +15,10 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
-def get_job_commands(python_exe_fp,pick_otus_fp,fasta_fps,\
-    output_dir,blast_db,job_prefix,working_dir,max_e_value,\
-    similarity,command_prefix='/bin/bash; ',command_suffix='; exit'):
+def get_job_commands(python_exe_fp,pick_otus_fp,fasta_fps,
+    output_dir,blast_db,job_prefix,working_dir,max_e_value,
+    similarity,min_aligned_percent,
+    command_prefix='/bin/bash; ',command_suffix='; exit'):
     """Generate pick_otus commands which should be submitted to cluster
     """
     # Create basenames for each of the output files. These will be filled
@@ -38,15 +39,16 @@ def get_job_commands(python_exe_fp,pick_otus_fp,fasta_fps,\
         result_filepaths += current_result_filepaths
             
         command = \
-         '%s %s %s -i %s -b %s -m blast -o %s -e %s -s %s %s %s' %\
-         (command_prefix,\
-          python_exe_fp,\
-          pick_otus_fp,\
-          fasta_fp,\
-          blast_db,\
-          working_dir,\
-          max_e_value,\
-          similarity,\
+         '%s %s %s -i %s -b %s -m blast -o %s -e %s -s %s --min_aligned_percent %s %s %s' %\
+         (command_prefix,
+          python_exe_fp,
+          pick_otus_fp,
+          fasta_fp,
+          blast_db,
+          working_dir,
+          max_e_value,
+          similarity,
+          min_aligned_percent,
           rename_command,
           command_suffix)
           

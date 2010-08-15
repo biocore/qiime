@@ -13,6 +13,7 @@ Add changes since QIIME 1.1.0 here
 * Added negative screen option to process_sra_submission.py -- this allows users to screen by discarding all sequences that match a reference set, while the (default) positive screen allows users to screen by retaining only sequences that match a reference set.
 * Added options to split_libraries.py to enable the detection and removal of reverse primers from input sequences, and an option to record a filtered quality score output file that matches the bases found in the output seqs.fna file.
 * Added the trflp_file_to_otu_table.py script that allows users to create an OTU table simile from a Terminal restriction fragment length polymorphism (T-RFLP) text file.
+* Added min_aligned_length parameter to the BLAST OTU picker. By default, BLAST alignments now must cover at least 50% of the input sequence for OTU assignment to occur.
 
 QIIME 1.1.0 (14 May 2010)
 =========================
