@@ -198,6 +198,46 @@ class BlastOtuPickerTests(TestCase):
             refseqs_fp=self.reference_seqs_fp)
         self.assertEqual(actual,expected)
         
+    def test_call_alt_min_aligned_length(self):
+        """BLAST OTU picker handles alt min_aligned_percent values """
+        # first 12 bases match perfect, and no alignment from there
+        seqs = [('s1','TGCAGCTTGAGCGTTGTTACCGCTTT')]
+        ref_seqs = [\
+         ('r1','TGCAGCTTGAGCCACGCCGAATAGCCGAGTTTGACCGGGCCCAGGAGGAGAGAGAGAGCTTC')]
+        
+        seqs_fp = get_tmp_filename(
+            prefix='BlastOtuPickerTest_', suffix='.fasta')
+        reference_seqs_fp = get_tmp_filename(
+            prefix='BlastOtuPickerTest_', suffix='.fasta')
+            
+        f = open(seqs_fp, 'w')
+        f.write('\n'.join(['>%s\n%s' % s for s in seqs]))
+        f.close()
+        
+        f = open(reference_seqs_fp, 'w')
+        f.write('\n'.join(['>%s\n%s' % s for s in ref_seqs]))
+        f.close()
+        
+        self._files_to_remove.append(seqs_fp)
+        self._files_to_remove.append(reference_seqs_fp)
+        
+        # with low min_aligned_percent s1 matches r1
+        otu_picker = BlastOtuPicker({'max_e_value':1e-3,
+                                     'min_aligned_percent':0.10})
+        expected = {'r1':['s1']}
+        actual = otu_picker(seqs_fp,\
+            refseqs_fp=reference_seqs_fp)
+        self.assertEqual(actual,expected)
+        
+        # with min_aligned_percent s1 doesn't match r1
+        otu_picker = BlastOtuPicker({'max_e_value':1e-3,
+                                     'min_aligned_percent':0.50})
+        expected = {}
+        actual = otu_picker(seqs_fp,\
+            refseqs_fp=reference_seqs_fp)
+        self.assertEqual(actual,expected)
+         
+        
     def test_call_rc(self):
         """BLAST OTU picker: RC seqs cluster to same OTU as forward orientation
         """

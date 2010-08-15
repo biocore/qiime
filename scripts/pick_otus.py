@@ -132,6 +132,9 @@ script_info['optional_options'] = [
     make_option('-b', '--blast_db',
         help=('Pre-existing database to blast against when using -m blast '
               '[default: %default]')),
+    make_option('--min_aligned_percent',
+        help=('Minimum percent of query sequence that can be aligned to consider a hit '
+              ' (BLAST OTU picker only) [default: %default]'),default=0.50,type='float'),
     make_option('-s', '--similarity', type='float', default=0.97,
         help=('Sequence similarity threshold (for cdhit, uclust, or uclust_ref) '
               '[default: %default]')),
@@ -217,6 +220,7 @@ def main():
     user_sort = opts.user_sort
     max_accepts = opts.max_accepts
     max_rejects = opts.max_rejects
+    min_aligned_percent = opts.min_aligned_percent
     
     # Input validation to throw a useful error message on common mistakes
     if (otu_picking_method == 'cdhit' and
@@ -327,7 +331,8 @@ def main():
     ## blast
     elif otu_picking_method == 'blast':
         params = {'max_e_value':opts.max_e_value,
-                  'Similarity': opts.similarity}
+                  'Similarity': opts.similarity,
+                  'min_aligned_percent':min_aligned_percent}
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,
                    result_path=result_path, log_path=log_path,

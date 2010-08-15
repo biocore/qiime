@@ -150,7 +150,8 @@ class BlastOtuPicker(OtuPicker):
         """
         _params = {'max_e_value':1e-10,\
                    'seqs_per_blast_run':1000,\
-                   'Similarity':0.97}
+                   'Similarity':0.97,\
+                   'min_aligned_percent':0.50}
         _params.update(params)
         OtuPicker.__init__(self, _params)
     
@@ -253,9 +254,10 @@ class BlastOtuPicker(OtuPicker):
             return result, failures
         # Get the blast hits with e-values less than self.Params['max_e_value']
         # and percent identity greater than self.Params['Similarity']
-        blast_hits = get_blast_hits(seqs,self.blast_db,\
-         max_e_value=self.Params['max_e_value'],\
-         min_pct_identity=self.Params['Similarity'])
+        blast_hits = get_blast_hits(seqs,self.blast_db,
+         max_e_value=self.Params['max_e_value'],
+         min_pct_identity=self.Params['Similarity'],
+         min_aligned_percent=self.Params['min_aligned_percent'])
         # Choose the longest alignment out of the acceptable blast hits -- 
         # the result will therefore be the blast hit with at least
         # self.Params['Similarity'] percent identity to the input sequence
@@ -305,7 +307,11 @@ class BlastOtuPicker(OtuPicker):
 
 # THIS FUNCTION SHOULD DO THE SeqsPerBlastRun splitting, would be _much_
 # cleaner that way. 
-def get_blast_hits(seqs,blast_db,max_e_value=1e-10,min_pct_identity=0.75):
+def get_blast_hits(seqs,
+                   blast_db,
+                   max_e_value=1e-10,
+                   min_pct_identity=0.75,
+                   min_aligned_percent=0.50):
     """ blast each seq in seqs against blast_db and retain good hits
     """
     max_evalue = max_e_value
@@ -324,13 +330,15 @@ def get_blast_hits(seqs,blast_db,max_e_value=1e-10,min_pct_identity=0.75):
     else:
         return {}.fromkeys(seq_ids,[])
         
-    for seq_id in seq_ids:
+    for seq_id,seq in seqs:
         blast_result_id = seq_id.split()[0]
+        min_alignment_length = len(seq) * min_aligned_percent
         result[seq_id] = []
         if blast_result_id in blast_result:
             for e in blast_result[blast_result_id][0]:
-                if (float(e['E-VALUE']) <= max_evalue and \
-                    float(e['% IDENTITY']) / 100. >= min_percent_identity):
+                if (float(e['E-VALUE']) <= max_evalue and\
+                    float(e['% IDENTITY']) / 100. >= min_percent_identity and\
+                    int(e['ALIGNMENT LENGTH']) >= min_alignment_length):
                     result[seq_id].append(e)
 
     return result
