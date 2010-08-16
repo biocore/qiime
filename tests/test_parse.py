@@ -564,7 +564,7 @@ eigvals\t4.94\t1.79\t1.50
         self.assertEqual(parse_qual_scores([scores, scores2]),
             {'x':[5,10,5,12],'y':[30,40],'a':[5,10,5,12],'b':[30,40]})
 
-    def test_parse_trflp_(self):
+    def test_parse_trflp(self):
         """ should return a header and otu_table lists"""
         
         data = \
@@ -582,6 +582,50 @@ Sample 5	25			"""
                           [2000, 2000,    0,    0,    0],\
                           [3000, 3000, 3000,    0,    0],\
                           [4000, 4000, 4000, 4000,    0]])
+                
+        self.assertEqual(samples, samples_exp)
+        self.assertEqual(otus, otus_exp)
+        self.assertEqual(data, data_exp)
+        
+    def test_parse_trflp_headerless(self):
+        """ should return a header and otu_table lists"""
+        
+        data = \
+"""Samp-le 1	1000	2000	3000	4000
+Sample 2		2000	3000	4000
+Sample 3			3000	4000
+Sample 4				4000
+Sample 5	25			"""
+        samples, otus, data = parse_trflp(data.split('\n'))
+        
+        samples_exp = ['Samp_le_1', 'Sample_2', 'Sample_3', 'Sample_4', 'Sample_5']
+        otus_exp = ['Bin__0', 'Bin__1', 'Bin__2', 'Bin__3']
+        data_exp = array([[1000,    0,    0,    0,    25],\
+                          [2000, 2000,    0,    0,    0],\
+                          [3000, 3000, 3000,    0,    0],\
+                          [4000, 4000, 4000, 4000,    0]])
+                
+        self.assertEqual(samples, samples_exp)
+        self.assertEqual(otus, otus_exp)
+        self.assertEqual(data, data_exp)
+        
+    def test_parse_trflp_headerless_diff_row_len(self):
+        """ should return a header and otu_table lists"""
+        
+        data = \
+"""Samp-le 1	1000	2000
+Sample 2		2000	3000	4000
+Sample 3			3000	4000
+Sample 4				4000
+Sample 5	25			"""
+        samples, otus, data = parse_trflp(data.split('\n'))
+        
+        samples_exp = ['Samp_le_1', 'Sample_2', 'Sample_3', 'Sample_4', 'Sample_5']
+        otus_exp = ['Bin__0', 'Bin__1', 'Bin__2', 'Bin__3']
+        data_exp = array([[1000,    0,    0,    0,    25],\
+                          [2000, 2000,    0,    0,    0],\
+                          [0, 3000, 3000,    0,    0],\
+                          [0, 4000, 4000, 4000,    0]])
                 
         self.assertEqual(samples, samples_exp)
         self.assertEqual(otus, otus_exp)

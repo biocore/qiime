@@ -659,12 +659,26 @@ def parse_trflp(lines):
         sample_ids.append(non_alphanum_mask.sub('',\
                           dash_space_mask.sub('_',elements[0])))
         
+        # converting each value in the row to int
         for count in elements[1:]:
             try:
                 current_row.append(int(round(float(count),0)))
             except ValueError:
                 current_row.append(0)
-                
+        
+        # validating the size of the headers to add missing columns
+        # this is only valid when there is no header
+        if len(current_row)>len(otu_ids):
+            # modify header data
+            extra_cols = []
+            for j in range(len(otu_ids),len(current_row)):
+                extra_cols.append(non_alphanum_mask.sub('_','Bin%3d' % j))
+            # modify data
+            for j in range(len(data)):
+               data[j].extend([0]*(len(current_row)-len(otu_ids)))
+               
+            otu_ids.extend(extra_cols)
+            
         data.append(current_row)
         
     return sample_ids, otu_ids, array(data).transpose()
