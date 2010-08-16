@@ -641,15 +641,21 @@ def parse_trflp(lines):
     dash_space_mask = re.compile('[ -]')
     
     for i, line in enumerate(lines):
+        elements = line.strip('\n').split('\t')
+        
+        # special handling for the first line only
         if i==0:
-            # special handling for the first line only
-            for otu_id in line.strip('\n').split('\t')[1:]:
-                otu_ids.append(non_alphanum_mask.sub('_',otu_id))
-            continue
+            # validating if the file has a header
+            if elements[0]=='':
+                for otu_id in elements[1:]:
+                    otu_ids.append(non_alphanum_mask.sub('_',otu_id))
+                continue
+            else:
+                for j, otu_id in enumerate(elements[1:]):
+                    otu_ids.append(non_alphanum_mask.sub('_','Bin%3d' % j))
             
         # handling of all other lines
         current_row = []
-        elements = line.strip('\n').split('\t')
         sample_ids.append(non_alphanum_mask.sub('',\
                           dash_space_mask.sub('_',elements[0])))
         
