@@ -661,7 +661,7 @@ def parse_trflp(lines):
         
         for count in elements[1:]:
             try:
-                current_row.append(int(count))
+                current_row.append(int(round(float(count),0)))
             except ValueError:
                 current_row.append(0)
                 
