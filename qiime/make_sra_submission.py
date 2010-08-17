@@ -1384,6 +1384,9 @@ def __pretty_xml_helper(element, level=0):
 
     Adapted from the lxml documentation at
     http://effbot.org/zone/element-lib.htm
+
+    The original source code for this function is listed as public
+    domain. See http://effbot.org/zone/copyright.htm for details.
     """
     i = "\n" + (level * "  ")
     if len(element):
