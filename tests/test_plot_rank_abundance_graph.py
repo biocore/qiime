@@ -13,7 +13,7 @@ __status__ = "Development"
  
 
 from cogent.util.unit_test import TestCase, main
-from qiime.plot_rank_abundance_curve import make_sorted_frequencies
+from qiime.plot_rank_abundance_graph import make_sorted_frequencies
 from numpy import array
 
 class PlotRankAbundanace(TestCase):

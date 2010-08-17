@@ -22,7 +22,7 @@ from cogent.app.util import get_tmp_filename
 from qiime.util import parse_command_line_parameters, get_options_lookup, \
     parse_otu_table, create_dir
 from qiime.colors import data_color_order
-from qiime.plot_rank_abundance_curve import plot_rank_abundance_graph
+from qiime.plot_rank_abundance_graph import plot_rank_abundance_graph
 
 
 options_lookup = get_options_lookup()
