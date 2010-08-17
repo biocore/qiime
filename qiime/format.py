@@ -2,7 +2,7 @@
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2010, The QIIME Project" 
-__credits__ = ["Rob Knight", "Justin Kuczynski","Jeremy Widmann"] 
+__credits__ = ["Rob Knight", "Justin Kuczynski","Jeremy Widmann", "Antonio Gonzalez Pena"] 
 #remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.1.0-dev"
@@ -184,7 +184,7 @@ def build_prefs_string(mapping_headers_to_use, background_color, monte_carlo_dis
         level = max([len(t.split(';')) - 1 for t in otu_ids])
         taxon_coloring.append(taxon_start % (str(level),str(level)))
         taxons=[]
-        otu_id_iter=(240/(len(otu_ids)+1))
+        otu_id_iter=(240.0/(len(otu_ids)+1))
         counter=0    
         for i in otu_ids:
             taxons.append(taxon_colors % (i,str(counter),counter))
