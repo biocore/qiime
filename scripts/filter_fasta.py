@@ -41,6 +41,8 @@ script_info['optional_options'] = [\
  make_option('-s','--seq_id_fp', 
   help='A list of sequence identifiers (or tab-delimited lines with'
   ' a seq identifier in the first field) which should be retained'),\
+ make_option('-a','--subject_fasta_fp',
+  help='A fasta file where the seq ids should be retained.'),
  make_option('-n','--negate', help='discard passed seq ids rather than'
   ' keep passed seq ids [default: %default]', default=False, 
   action='store_true')
@@ -69,6 +71,13 @@ def get_seqs_to_keep_lookup_from_seq_id_file(seqs_to_keep_f):
     for line in seqs_to_keep_f:
         seqs_to_keep.append(line.strip().split()[0])
     return {}.fromkeys(seqs_to_keep)
+    
+def get_seqs_to_keep_lookup_from_fasta_file(fasta_f):
+    seqs_to_keep = []
+    for seq_id, seq in MinimalFastaParser(fasta_f):
+        seqs_to_keep.append(seq_id.split()[0])
+    return {}.fromkeys(seqs_to_keep)
+    
 
 def main():
     option_parser, opts, args =\
@@ -76,18 +85,25 @@ def main():
 
     negate = opts.negate
 
-    if (not opts.otu_map and not opts.seq_id_fp) or\
-       (opts.otu_map and opts.seq_id_fp):
-        option_parser.error("Must pass either -c or -m, but not both.")
+    if 1 != sum(map(bool,[opts.otu_map,
+                          opts.seq_id_fp,
+                          opts.subject_fasta_fp])): 
+        option_parser.error("Must pass exactly one of -a, -s, or -m.")
 
     if opts.otu_map:
         seqs_to_keep_lookup =\
-         get_seqs_to_keep_lookup_from_otu_map(open(opts.otu_map,'U'))
+         get_seqs_to_keep_lookup_from_otu_map(
+         open(opts.otu_map,'U'))
     elif opts.seq_id_fp:
         seqs_to_keep_lookup =\
-         get_seqs_to_keep_lookup_from_seq_id_file(open(opts.seq_id_fp,'U'))
+         get_seqs_to_keep_lookup_from_seq_id_file(
+         open(opts.seq_id_fp,'U'))
+    elif opts.subject_fasta_fp:
+        seqs_to_keep_lookup =\
+         get_seqs_to_keep_lookup_from_fasta_file(
+         open(opts.subject_fasta_fp,'U'))
     else:
-        option_parser.error("Need to specify either -c or -m")
+        option_parser.error("Must pass exactly one of -a, -s, or -m.")
     
     filter_fasta_fp(opts.input_fasta_fp,
                     opts.output_fasta_fp,
