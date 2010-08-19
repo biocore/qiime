@@ -91,7 +91,7 @@ very coarse "ellipsoids" but is fast to render. The default value is 2. \
 If you encounter a memory error \
 when generating or displaying the plots, try including just one metadata \
 column in your plot. If you still have trouble, reduce the smoothness \
-level to 0 or 1.', default=2),
+level to 0 or 1.', default=1),
  make_option('--ellipsoid_opacity',help='Used when plotting ellipsoids for \
 a summary plot (i.e. using a directory of coord files instead of a single coord \
 file). Valid range is 0-3. A value of 0 produces completely transparent \
