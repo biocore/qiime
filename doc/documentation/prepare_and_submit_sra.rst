@@ -125,7 +125,13 @@ Replace "run" in the URL with "sample", "study", or "experiment" to validate the
 The sff files are already tared and zipped by process_sra_submission.py, but the xml files should be collected in one directory and then be tared and zipped. These two files will be uploaded to the SRA ftp site, usually to the short_read subdirectory. At this point, it's a good idea to send an email to your contact at the SRA (can we give a general email sdress here?) to inform them of your upload.
 
 
-Troubleshooting
+Resubmitting and changing your data in SRA
 ---------------
+
+As long as your data in not succesfully loaded and was assigned an SRA ID, you can simply re-upload new XML files. The new ones will replace the old ones. Once at least part of your data is accepted you have to use the MODIFY flag in the submission.xml like this::
+
+   <ACTION>
+	<MODIFY source="experiment_modified.xml" target="SRX025053 " notes="Modifying SRX025053"/>
+   ...
 
 
