@@ -6,7 +6,7 @@ from unittest import TestCase, main
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME Project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso","Jesse Stombaugh"]
 __license__ = "GPL"
 __version__ = "1.1.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -29,7 +29,8 @@ class MergeMappingFilesTests(TestCase):
         actual = merge_mapping_files([self.m1,self.m2,self.m3])
         expected = self.m1_m2_m3_exp
         
-        self.assertTrue(actual[0].startswith('#SampleID\tBarcodeSequence'))
+        self.assertTrue(actual[0].startswith(\
+                        '#SampleID\tBarcodeSequence\tLinkerPrimerSequence'))
         self.assertTrue(actual[0].endswith('Description'))
         
         actual.sort()
@@ -74,28 +75,28 @@ class MergeMappingFilesTests(TestCase):
         
 
 
-m1 = """#SampleID\tBarcodeSequence\tdata1\tdata2\tDescription
-samp1_1\tAAAA\t42\t36.9\tsomething
-samp1_2\tAAAA\t99\t22.5\t"nothing interesting"
+m1 = """#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tdata1\tdata2\tDescription
+samp1_1\tAAAA\tCCCCC\t42\t36.9\tsomething
+samp1_2\tAAAA\tCCCCC\t99\t22.5\t"nothing interesting"
 """
 
-m2 = """#SampleID\tBarcodeSequence\tdata 3\tdata4\tdata5\tdata2\tDescription
-samp2_1\tAAAA\tgreen\tsoil\t99.8\t44.5\tother
+m2 = """#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tdata 3\tdata4\tdata5\tdata2\tDescription
+samp2_1\tAAAA\tCCCCC\tgreen\tsoil\t99.8\t44.5\tother
 """
 
-m3 = """#SampleID\tBarcodeSequence\tdata1\tDescription
-samp3_1\tAAAT\t8\tmisc1
-samp3_2\tAAAG\t6\tmisc2
-samp3_3\tAAAC\t7\tmisc3
+m3 = """#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tdata1\tDescription
+samp3_1\tAAAT\tCCCCA\t8\tmisc1
+samp3_2\tAAAG\tCCCCG\t6\tmisc2
+samp3_3\tAAAC\tCCCCU\t7\tmisc3
 """
 
-m1_m2_m3_exp = """#SampleID\tBarcodeSequence\tdata1\tdata2\tdata 3\tdata4\tdata5\tDescription
-samp1_1\tAAAA\t42\t36.9\tno_data\tno_data\tno_data\tsomething
-samp1_2\tAAAA\t99\t22.5\tno_data\tno_data\tno_data\t"nothing interesting"
-samp2_1\tAAAA\tno_data\t44.5\tgreen\tsoil\t99.8\tother
-samp3_1\tAAAT\t8\tno_data\tno_data\tno_data\tno_data\tmisc1
-samp3_2\tAAAG\t6\tno_data\tno_data\tno_data\tno_data\tmisc2
-samp3_3\tAAAC\t7\tno_data\tno_data\tno_data\tno_data\tmisc3"""
+m1_m2_m3_exp = """#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tdata1\tdata2\tdata 3\tdata4\tdata5\tDescription
+samp1_1\tAAAA\tCCCCC\t42\t36.9\tno_data\tno_data\tno_data\tsomething
+samp1_2\tAAAA\tCCCCC\t99\t22.5\tno_data\tno_data\tno_data\t"nothing interesting"
+samp2_1\tAAAA\tCCCCC\tno_data\t44.5\tgreen\tsoil\t99.8\tother
+samp3_1\tAAAT\tCCCCA\t8\tno_data\tno_data\tno_data\tno_data\tmisc1
+samp3_2\tAAAG\tCCCCG\t6\tno_data\tno_data\tno_data\tno_data\tmisc2
+samp3_3\tAAAC\tCCCCU\t7\tno_data\tno_data\tno_data\tno_data\tmisc3"""
 
 if __name__ == "__main__":
     main()

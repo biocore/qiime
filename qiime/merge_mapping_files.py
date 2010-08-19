@@ -39,8 +39,9 @@ def merge_mapping_files(mapping_files,no_data_value='no_data'):
     # remove and place the fields whose order is important
     del all_headers['SampleID']
     del all_headers['BarcodeSequence']
+    del all_headers['LinkerPrimerSequence']
     del all_headers['Description']
-    all_headers = ['SampleID','BarcodeSequence'] \
+    all_headers = ['SampleID','BarcodeSequence','LinkerPrimerSequence'] \
      + list(all_headers) + ['Description']
     
     # generate the mapping file lines containing all fields
