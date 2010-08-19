@@ -131,7 +131,10 @@ def maxTipTipDistance(tree):
         return distmtx[idx_max], max_pair
         
 def root_midpt(tree):
-    """ this is instead of PhyloNode.rootAtMidpoint(), which is slow and broke
+    """ this was instead of PhyloNode.rootAtMidpoint(), which is slow and broke
+    
+    this should be deprecated in a future release once the release version
+    of PyCogent's tree.rootAtMidpoint() is identical to this function
     
     this fn doesn't preserve the internal node naming or structure,
     but does keep tip to tip distances correct.  uses unrootedDeepcopy()
@@ -141,7 +144,8 @@ def root_midpt(tree):
     
     max_dist, tip_names = maxTipTipDistance(tree)
     half_max_dist = max_dist/2.0
-    # print tip_names
+    if max_dist == 0.0: # only pathological cases with no lengths
+        return tree.unrootedDeepcopy()
     tip1 = tree.getNodeMatchingName(tip_names[0])
     tip2 = tree.getNodeMatchingName(tip_names[1])
     lca = tree.getConnectingNode(tip_names[0],tip_names[1]) # last comm ancestor
@@ -150,16 +154,17 @@ def root_midpt(tree):
     else:
         climb_node = tip2
         
-    dist_climbed = climb_node.Length
-    while dist_climbed <= half_max_dist:
-        climb_node = climb_node.Parent
+    dist_climbed = 0.0
+    while dist_climbed + climb_node.Length < half_max_dist:
         dist_climbed += climb_node.Length
+        climb_node = climb_node.Parent
     
-    dist_climbed -= climb_node.Length # dist is now dist from tip to climb_node
-        
-    # now midpt is either at climb_node or on the branch to its parent
+    # now midpt is either at on the branch to climb_node's  parent
+    # or midpt is at climb_node's parent
     # print dist_climbed, half_max_dist, 'dists cl hamax'
-    if dist_climbed == half_max_dist:
+    if dist_climbed + climb_node.Length == half_max_dist:
+        # climb to midpoint spot
+        climb_node = climb_node.Parent
         if climb_node.isTip():
             raise RuntimeError('error trying to root tree at tip')
         else:
@@ -167,6 +172,7 @@ def root_midpt(tree):
             return climb_node.unrootedDeepcopy()
         
     else:
+        # make a new node on climb_node's branch to its parent
         old_br_len = climb_node.Length
         new_root = type(tree)()
         new_root.Parent = climb_node.Parent
