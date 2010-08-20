@@ -145,8 +145,8 @@ class ProcrustesTests(TestCase):
         # just some sanity checks as the individual componenets are 
         # already tested -- these are based on looking at the output of the
         # run, and testing to ensure that it hasn't changed
-        self.assertEqual(set(actual[0].split('\n')),set('pc vector number\t1\t2\t3\t4\nS1\t0.116737988534\t0.414627960015\t0.201315243115\t0.113769076804\t-0.283025353088\t-0.144278863311\nS2\t-0.238263544222\t-0.37724227779\t-0.169458651217\t0.0305157004776\t0.112181007345\t0.0677415967093\nS3\t-0.199225958574\t-0.250846540029\t-0.119813087305\t-0.155652031006\t0.18495315824\t-0.160875399364\nS4\t0.320751514262\t0.213460857804\t0.0879564954067\t0.0113672537238\t-0.0141088124974\t0.237412665966\n\n\neigvals\t8976580.24393\t6044862.67619\t4372581.39431\t3161360.10319\t2583594.45275\t2407555.39787\n% variation explained\t23.1764657118\t15.6071186064\t11.2894866423\t8.16225689998\t6.67053450426\t6.21602253997'.split('\n')))
-        self.assertEqual(set(actual[1].split('\n')),set('pc vector number\t1\t2\t3\t4\nS1\t0.116737988534\t0.414627960015\t0.201315243115\t0.113769076804\t-0.283025353088\t-0.144278863311\nS2\t-0.238263544222\t-0.37724227779\t-0.169458651217\t0.0305157004776\t0.112181007345\t0.0677415967093\nS3\t-0.199225958574\t-0.250846540029\t-0.119813087305\t-0.155652031006\t0.18495315824\t-0.160875399364\nS4\t0.320751514262\t0.213460857804\t0.0879564954067\t0.0113672537238\t-0.0141088124974\t0.237412665966\n\n\neigvals\t8976580.24393\t6044862.67619\t4372581.39431\t3161360.10319\t2583594.45275\t2407555.39787\n% variation explained\t23.1764657118\t15.6071186064\t11.2894866423\t8.16225689998\t6.67053450426\t6.21602253997'.split('\n')))
+        self.assertEqual(set(actual[0].split('\n')),set('pc vector number\t1\t2\t3\t4\t5\t6\nS1\t0.116737988534\t0.414627960015\t0.201315243115\t0.113769076804\t-0.283025353088\t-0.144278863311\nS2\t-0.238263544222\t-0.37724227779\t-0.169458651217\t0.0305157004776\t0.112181007345\t0.0677415967093\nS3\t-0.199225958574\t-0.250846540029\t-0.119813087305\t-0.155652031006\t0.18495315824\t-0.160875399364\nS4\t0.320751514262\t0.213460857804\t0.0879564954067\t0.0113672537238\t-0.0141088124974\t0.237412665966\n\n\neigvals\t8976580.24393\t6044862.67619\t4372581.39431\t3161360.10319\t2583594.45275\t2407555.39787\n% variation explained\t23.1764657118\t15.6071186064\t11.2894866423\t8.16225689998\t6.67053450426\t6.21602253997'.split('\n')))
+        self.assertEqual(set(actual[1].split('\n')),set('pc vector number\t1\t2\t3\t4\t5\t6\nS1\t0.116737988534\t0.414627960015\t0.201315243115\t0.113769076804\t-0.283025353088\t-0.144278863311\nS2\t-0.238263544222\t-0.37724227779\t-0.169458651217\t0.0305157004776\t0.112181007345\t0.0677415967093\nS3\t-0.199225958574\t-0.250846540029\t-0.119813087305\t-0.155652031006\t0.18495315824\t-0.160875399364\nS4\t0.320751514262\t0.213460857804\t0.0879564954067\t0.0113672537238\t-0.0141088124974\t0.237412665966\n\n\neigvals\t8976580.24393\t6044862.67619\t4372581.39431\t3161360.10319\t2583594.45275\t2407555.39787\n% variation explained\t23.1764657118\t15.6071186064\t11.2894866423\t8.16225689998\t6.67053450426\t6.21602253997'.split('\n')))
         self.assertTrue(actual[2] < 6e-30)
         
     def test_get_procrustes_results_imprefect_sample_overlap(self):
@@ -164,19 +164,24 @@ class ProcrustesTests(TestCase):
         
         
     def test_procrustes_monte_carlo(self):
-        """ sanity test of procrustes_monte_carlo wrapper function"""
-        actual = procrustes_monte_carlo(self.pcoa1_f,self.pcoa2_f,trials=10)
+        """ sanity test of procrustes_monte_carlo wrapper function
+          
+          THIS TEST MAY RANDOMLY FAIL BECAUSE IT IS BASED ON TESTING 
+          RANDOM PERMUTATIONS, BUT THAT SHOULD BE RARE.
+        
+        """
+        actual = procrustes_monte_carlo(self.pcoa1_f,self.pcoa2_f,trials=100)
         # just some sanity checks as the individual componenets are 
         # already tested -- these are based on looking at the output of the
-        # run, and testing to ensure that it hasn't changed
+        # run, and testing to ensure that it hasn't changed 
         expected_actual_m2 = 0.0211
-        expected_len_trial_m2 = 10
-        expected_count_better = 0
-        expected_p_value = 0.0
+        expected_len_trial_m2 = 100
+        max_expected_count_better = 40
+        max_expected_p_value = 0.4
         self.assertAlmostEqual(actual[0],expected_actual_m2,3)
         self.assertEqual(len(actual[1]),expected_len_trial_m2)
-        self.assertEqual(actual[2],expected_count_better)
-        self.assertEqual(actual[3],expected_p_value)
+        self.assertTrue(actual[2] < max_expected_count_better)
+        self.assertTrue(actual[3] < max_expected_p_value)
 
 
 pcoa1_f = """pc vector number	1	2	3	4	5	6

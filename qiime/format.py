@@ -93,7 +93,7 @@ def format_coords(coord_header, coords, eigvals, pct_var):
     """formats coords given specified coords matrix etc."""
     result = []
     result.append('pc vector number\t' +
-        '\t'.join(map(str, range(1,len(coord_header)+1))))
+        '\t'.join(map(str, range(1,len(coords[0])+1))))
     for name, row in zip(coord_header, coords):
         result.append('\t'.join([name] + map(str, row)))
     result.append('')

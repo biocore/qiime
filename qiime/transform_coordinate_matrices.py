@@ -136,6 +136,8 @@ def get_procrustes_results(coords_f1,coords_f2,sample_id_map=None,\
         coords2 = filter_coords_matrix(coords2,max_dimensions)
         pct_var1 = pct_var1[:max_dimensions]
         pct_var2 = pct_var2[:max_dimensions]
+        eigvals1 = eigvals1[:max_dimensions]
+        eigvals2 = eigvals2[:max_dimensions]
     
     # Run the Procrustes analysis
     transformed_coords_m1, transformed_coords_m2, m_squared =\
@@ -160,7 +162,7 @@ def procrustes_monte_carlo(coords_f1,\
                            coords_f2,\
                            trials=1000,\
                            max_dimensions=None,\
-                           shuffle_f=shuffle_within_rows,\
+                           shuffle_f=shuffle_col_order,\
                            sample_id_map=None):
     """ Run procrustes analysis with random trials
     
