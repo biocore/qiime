@@ -614,19 +614,21 @@ Sample 5	25			"""
         
         data = \
 """Samp-le 1	1000	2000
-Sample 2		2000	3000	4000
-Sample 3			3000	4000
+Sample 2		2000
+Sample 3			3000
 Sample 4				4000
-Sample 5	25			"""
+Sample 5	25
+				
+"""
         samples, otus, data = parse_trflp(data.split('\n'))
         
         samples_exp = ['Samp_le_1', 'Sample_2', 'Sample_3', 'Sample_4', 'Sample_5']
         otus_exp = ['Bin__0', 'Bin__1', 'Bin__2', 'Bin__3']
         data_exp = array([[1000,    0,    0,    0,    25],\
                           [2000, 2000,    0,    0,    0],\
-                          [0, 3000, 3000,    0,    0],\
-                          [0, 4000, 4000, 4000,    0]])
-                
+                          [0, 0, 3000,    0,    0],\
+                          [0, 0, 0, 4000,    0]])
+        
         self.assertEqual(samples, samples_exp)
         self.assertEqual(otus, otus_exp)
         self.assertEqual(data, data_exp)

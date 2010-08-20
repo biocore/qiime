@@ -656,8 +656,6 @@ def parse_trflp(lines):
             
         # handling of all other lines
         current_row = []
-        sample_ids.append(non_alphanum_mask.sub('',\
-                          dash_space_mask.sub('_',elements[0])))
         
         # converting each value in the row to int
         for count in elements[1:]:
@@ -665,6 +663,15 @@ def parse_trflp(lines):
                 current_row.append(int(round(float(count),0)))
             except ValueError:
                 current_row.append(0)
+        
+        # if the sum of all the values is equial to 0 ignore line
+        if sum(current_row)==0: continue
+        
+        # adding sample header to list
+        sample_ids.append(non_alphanum_mask.sub('',\
+                          dash_space_mask.sub('_',elements[0])))
+        
+        
         
         # validating the size of the headers to add missing columns
         # this is only valid when there is no header
@@ -678,7 +685,10 @@ def parse_trflp(lines):
                data[j].extend([0]*(len(current_row)-len(otu_ids)))
                
             otu_ids.extend(extra_cols)
+        elif len(current_row)<len(otu_ids):
+            # modify data
+            current_row.extend([0]*(len(otu_ids)-len(current_row)))
             
         data.append(current_row)
-        
+    
     return sample_ids, otu_ids, array(data).transpose()
