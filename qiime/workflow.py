@@ -698,7 +698,7 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,\
 
 def run_jackknifed_beta_diversity(otu_table_fp,tree_fp,seqs_per_sample,
     output_dir, command_handler, params, qiime_config, mapping_fp,
-    parallel=False,status_update_callback=print_to_stdout):
+    parallel=False,status_update_callback=print_to_stdout, master_tree=None):
     """ Run the data preparation steps of Qiime 
     
         The steps performed by this function are:
@@ -708,11 +708,16 @@ def run_jackknifed_beta_diversity(otu_table_fp,tree_fp,seqs_per_sample,
           3) Build UPGMA tree from full distance matrix;
           4) Compute distance matrics for rarefied OTU tables;
           5) Build UPGMA trees from rarefied OTU table distance matrices;
+          5.5) Build a consensus tree from the rarefied UPGMA trees
           6) Compare rarefied OTU table distance matrix UPGMA trees 
            to tree full UPGMA tree and write support file and newick tree
            with support values as node labels.
+           
+        master_tree can be 'full' or 'consensus', default full
     """
     # Prepare some variables for the later steps
+    if master_tree == None:
+        master_tree = 'full'
     otu_table_dir, otu_table_filename = split(otu_table_fp)
     otu_table_basename, otu_table_ext = splitext(otu_table_filename)
     create_dir(output_dir)
@@ -771,17 +776,19 @@ def run_jackknifed_beta_diversity(otu_table_fp,tree_fp,seqs_per_sample,
          (output_dir, beta_diversity_metric, otu_table_basename)
     
         # Prep the hierarchical clustering command (for full distance matrix)
-        master_tree_fp = '%s/%s_upgma.tre' % (metric_output_dir,otu_table_basename)
+        full_tree_fp = '%s/%s_upgma.tre' % (metric_output_dir,otu_table_basename)
         try:
             params_str = get_params_str(params['upgma_cluster'])
         except KeyError:
             params_str = ''
         # Build the hierarchical clustering command (for full distance matrix)
         hierarchical_cluster_cmd = '%s %s/upgma_cluster.py -i %s -o %s %s' %\
-         (python_exe_fp, script_dir, distance_matrix_fp, master_tree_fp, params_str)
+         (python_exe_fp, script_dir, distance_matrix_fp, full_tree_fp, params_str)
         commands.append(\
          [('UPGMA on full distance matrix: %s' % beta_diversity_metric,\
            hierarchical_cluster_cmd)])
+           
+           
            
         # Prep the beta diversity command (for rarefied OTU tables)
         dm_dir = '%s/rare_dm/' % metric_output_dir
@@ -835,7 +842,18 @@ def run_jackknifed_beta_diversity(otu_table_fp,tree_fp,seqs_per_sample,
         commands.append(\
          [('UPGMA on rarefied distance matrix (%s)' % beta_diversity_metric,\
            hierarchical_cluster_cmd)])
+        
 
+        # Build the consensus tree command
+        consensus_tree_cmd =\
+         '%s %s/consensus_tree.py -i %s -o %s %s' %\
+         (python_exe_fp, script_dir, upgma_dir, upgma_dir + "/consensus.tre",
+            params_str)
+        commands.append(\
+         [('consensus on rarefied distance matrices (%s)' % beta_diversity_metric,\
+           consensus_tree_cmd)])
+           
+           
         # Prep the tree compare command
         tree_compare_dir = '%s/upgma_cmp/' % metric_output_dir
         try:
@@ -846,7 +864,14 @@ def run_jackknifed_beta_diversity(otu_table_fp,tree_fp,seqs_per_sample,
             params_str = get_params_str(params['tree_compare'])
         except KeyError:
             params_str = ''
+
         # Build the tree compare command
+        if master_tree == "full":
+            master_tree_fp = full_tree_fp
+        elif master_tree == "consensus":
+            master_tree_fp = upgma_dir + "/consensus.tre"
+        else:
+            raise RuntimeError('master tree method "%s" not found' % (master_tree,))
         tree_compare_cmd = '%s %s/tree_compare.py -s %s -m %s -o %s %s' %\
          (python_exe_fp, script_dir, upgma_dir, master_tree_fp, \
           tree_compare_dir, params_str)

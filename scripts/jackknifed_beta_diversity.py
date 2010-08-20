@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME Project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Justin Kuczynski"]
 __license__ = "GPL"
 __version__ = "1.1.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -35,7 +35,9 @@ script_info['script_usage'].append(("""Example:""","""These steps are performed 
 
 5. Build UPGMA trees from rarefied OTU table distance matrices;
 
-6. Compare rarefied OTU table distance matrix UPGMA trees to tree full UPGMA tree and write support file and newick tree with support values as node labels.
+5.5 Build a consensus tree from the rarefied UPGMA trees
+
+6. Compare rarefied OTU table distance matrix UPGMA trees to either (full or consensus) tree for jackknife support of tree nodes.
 
 7. Perform principal coordinates analysis on distance matrices generated from rarefied OTU tables.
 
@@ -64,6 +66,11 @@ script_info['optional_options']=[\
  make_option('-t','--tree_fp',\
             help='path to the tree file [default: %default; '+\
             'REQUIRED for phylogenetic measures]'),\
+ make_option('--master_tree', default="full",
+        help='method for computing master trees in jackknife analysis.'+\
+        ' "consensus": consensus of trees from jackknifed otu tables. '+\
+        ' "full": tree generated from input (unsubsambled) otu table. '+\
+        ' [default: %default]'),\
  make_option('-f','--force',action='store_true',\
         dest='force',help='Force overwrite of existing output directory'+\
         ' (note: existing files in output_dir will not be removed)'+\
@@ -91,6 +98,7 @@ def main():
     seqs_per_sample = opts.seqs_per_sample
     verbose = opts.verbose
     print_only = opts.print_only
+    master_tree = opts.master_tree
     
     parallel = opts.parallel
     if parallel: raise_error_on_parallel_unavailable()
@@ -133,7 +141,8 @@ def main():
      qiime_config=qiime_config,\
      mapping_fp=opts.mapping_fp,\
      parallel=parallel,\
-     status_update_callback=status_update_callback)
+     status_update_callback=status_update_callback,
+     master_tree=master_tree)
 
 
 if __name__ == "__main__":
