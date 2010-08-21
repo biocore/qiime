@@ -42,6 +42,9 @@ script_info['optional_options']=[\
  make_option('-s','--sample_id_map_fp',\
     help='Map of original sample ids to new sample ids [default: %default]',\
     default=None),\
+ make_option('--store_trial_details',\
+    help='Store PC matrices for individual trials [default: %default]',\
+    default=False,action='store_true'),\
 ]
 
 script_info['version'] = __version__
@@ -58,6 +61,11 @@ def main():
     
     if not exists(output_dir): 
         makedirs(output_dir)
+    
+    if opts.store_trial_details:
+        trial_output_dir = '%s/trial_details/' % output_dir
+    else:
+        trial_output_dir = None
     
     input_fps = opts.input_fps.split(',')
     input_fp1 = input_fps[0]
@@ -100,7 +108,8 @@ def main():
                                     coords_f2,\
                                     trials=random_trials,\
                                     max_dimensions=max_dims,\
-                                    sample_id_map=sample_id_map)
+                                    sample_id_map=sample_id_map,
+                                    trial_output_dir=trial_output_dir)
             summary_file_lines.append('%s %s %s %1.5f %d %1.3f' %\
              (input_fp1, input_fp2, str(max_dims), mc_p_value,\
               count_better, actual_m_squared))

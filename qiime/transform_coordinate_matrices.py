@@ -15,6 +15,7 @@ from random import shuffle
 from numpy import array, mean
 from cogent.cluster.procrustes import procrustes
 from cogent.util.dict2d import Dict2D
+from qiime.util import create_dir
 from qiime.parse import parse_coords
 from qiime.format import format_coords
 
@@ -112,8 +113,6 @@ def get_procrustes_results(coords_f1,coords_f2,sample_id_map=None,\
     get_eigenvalues=get_mean_eigenvalues,\
     get_percent_variation_explained=get_mean_percent_variation):
     """ """
-    # If this is a random trial, apply the shuffling function passed as 
-    # randomize()
     # Parse the PCoA files
     sample_ids1, coords1, eigvals1, pct_var1 = parse_coords(coords_f1)
     sample_ids2, coords2, eigvals2, pct_var2 = parse_coords(coords_f2)
@@ -127,6 +126,8 @@ def get_procrustes_results(coords_f1,coords_f2,sample_id_map=None,\
     coords1 = reorder_coords(coords1,sample_ids1,order)
     coords2 = reorder_coords(coords2,sample_ids2,order)
     
+    # If this is a random trial, apply the shuffling function passed as 
+    # randomize()
     if randomize:
         coords2 = randomize(coords2)
         
@@ -142,6 +143,8 @@ def get_procrustes_results(coords_f1,coords_f2,sample_id_map=None,\
     # Run the Procrustes analysis
     transformed_coords_m1, transformed_coords_m2, m_squared =\
      procrustes(coords1,coords2)
+    
+    #print transformed_coords_m2
     
     eigvals = get_eigenvalues(eigvals1, eigvals2)
     pct_var = get_percent_variation_explained(pct_var1,pct_var2)
@@ -163,7 +166,8 @@ def procrustes_monte_carlo(coords_f1,\
                            trials=1000,\
                            max_dimensions=None,\
                            shuffle_f=shuffle_col_order,\
-                           sample_id_map=None):
+                           sample_id_map=None,
+                           trial_output_dir=None):
     """ Run procrustes analysis with random trials
     
         This analysis could be made more efficient, as the current version 
@@ -179,21 +183,56 @@ def procrustes_monte_carlo(coords_f1,\
      sample_id_map=sample_id_map,\
      randomize=None,\
      max_dimensions=max_dimensions)[2]
+    
+    try:
+        max_dimensions_str = 'maxdim_%d' % max_dimensions 
+    except TypeError:
+        max_dimensions_str = 'alldim'
+    
+    # prep for storing trial details if a trial output dir 
+    # was provided
+    if trial_output_dir:
+        create_dir(trial_output_dir)
+        trail_summary_fp = '%s/trial_summary_%s.txt' %\
+         (trial_output_dir,max_dimensions_str)
+        trial_summary_f = open(trail_summary_fp,'w')
         
     # Get the M^2 for the random trials, and count how many
     # are lower than or equal to the actual M^2
     trial_m_squareds = []
     count_better = 0
     for i in range(trials):
-        trial_m_squared = get_procrustes_results(\
-             coords_f1,\
-             coords_f2,\
-             sample_id_map=sample_id_map,\
-             randomize=shuffle_f,\
-             max_dimensions=max_dimensions)[2]
+        # perform the procrustes analysis
+        transformed_coords1, transformed_coords2, trial_m_squared =\
+          get_procrustes_results(
+             coords_f1,
+             coords_f2,
+             sample_id_map=sample_id_map,
+             randomize=shuffle_f,
+             max_dimensions=max_dimensions)
         trial_m_squareds.append(trial_m_squared)
         
         if trial_m_squared <= actual_m_squared:
             count_better += 1
+            
+        # write the transformed coordinate matrices, if they're being
+        # stor
+        if trial_output_dir:
+            trial_id = '%s_trial%d' % (max_dimensions_str,i)
+            output_matrix1_fp = '%s/pc1_randomized_%s.txt' \
+             % (trial_output_dir,trial_id)
+            output_matrix2_fp = '%s/pc2_randomized_%s.txt' \
+             % (trial_output_dir,trial_id)
+            output_matrix1_f = open(output_matrix1_fp,'w')
+            output_matrix1_f.write(transformed_coords1)
+            output_matrix1_f.close()
+            output_matrix2_f = open(output_matrix2_fp,'w')
+            output_matrix2_f.write(transformed_coords2)
+            output_matrix2_f.close()
+            trial_summary_f.write('%s\t%2.2f\n' % (trial_id,trial_m_squared))
+    
+    # Close the trial summary file, if one is being created
+    if trial_output_dir:
+        trial_summary_f.close()
     
     return actual_m_squared, trial_m_squareds, count_better, count_better/trials
