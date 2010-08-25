@@ -3,6 +3,7 @@ import copy
 import os
 from string import strip
 from collections import defaultdict
+from cStringIO import StringIO
 from hashlib import md5
 from os.path import splitext, join
 from sys import stderr
@@ -22,72 +23,6 @@ __maintainer__ = "Kyle Bittinger"
 __email__ = "kylebittinger@gmail.com"
 __status__ = "Development"
 
-study_links_wrapper = """    <STUDY_LINKS>%s
-    </STUDY_LINKS>"""
-
-study_link_wrapper = """
-      <STUDY_LINK>
-        <ENTREZ_LINK>
-         <DB>pubmed</DB>
-         <ID>%s</ID>
-        </ENTREZ_LINK>
-      </STUDY_LINK>"""
-
-study_set_wrapper = """<?xml version="1.0" encoding="UTF-8"?>
-<STUDY_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <STUDY alias="%(STUDY_ALIAS)s">
-    <DESCRIPTOR>
-        <STUDY_TITLE>%(STUDY_TITLE)s</STUDY_TITLE>
-        <STUDY_TYPE existing_study_type="%(STUDY_TYPE)s"/>
-        <STUDY_ABSTRACT>%(STUDY_ABSTRACT)s</STUDY_ABSTRACT>
-        <STUDY_DESCRIPTION>%(STUDY_DESCRIPTION)s</STUDY_DESCRIPTION>
-        <CENTER_NAME>%(CENTER_NAME)s</CENTER_NAME>
-        <CENTER_PROJECT_NAME>%(CENTER_PROJECT_NAME)s</CENTER_PROJECT_NAME>
-    </DESCRIPTOR>%(XML_STUDY_LINKS_BLOCK)s
-  </STUDY>
-</STUDY_SET>
-"""
-
-sample_set_wrapper = """<?xml version="1.0" encoding="UTF-8"?>
-<SAMPLE_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-%(XML_SAMPLE_BLOCK)s
-</SAMPLE_SET>
-"""
-
-sample_attribute_wrapper = """      <SAMPLE_ATTRIBUTE> <TAG>%s</TAG> <VALUE>%s</VALUE> </SAMPLE_ATTRIBUTE>"""
-
-sample_wrapper = """  <SAMPLE alias="%(SAMPLE_ALIAS)s">
-    <TITLE>%(TITLE)s</TITLE>
-    <SAMPLE_NAME>%(OPTIONAL_TITLE_FIELDS)s
-    </SAMPLE_NAME>
-    <DESCRIPTION>%(DESCRIPTION)s</DESCRIPTION>%(SAMPLE_ATTRIBUTES_XML)s
-  </SAMPLE>"""
-opt_sample_field_wrapper =  '      <%s>%s</%s>'
-
-contact_wrapper = """    <CONTACT name="%s" inform_on_status="%s" inform_on_error="%s"/>"""
-
-contacts_wrapper = """ <CONTACTS>
-%s
- </CONTACTS>"""
-
-action_wrapper = """   <ACTION><ADD source="%s" schema="%s" notes="%s metadata"/></ACTION>"""
-
-actions_wrapper = """ <ACTIONS>\n%s\n   <ACTION><RELEASE/></ACTION>\n </ACTIONS>"""
-
-file_wrapper = """ <FILES>
- <FILE filename="%s" checksum_method="MD5" checksum="%s"/>
- </FILES>"""
-
-submission_wrapper = '''<?xml version="1.0" encoding="UTF-8"?>
-<SUBMISSION xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"%(ACCESSION_STRING)s
- submission_id="%(SUBMISSION_ID)s"
- center_name="%(CENTER_NAME)s"
- submission_comment="%(SUBMISSION_COMMENT)s"
- lab_name="%(LAB_NAME)s"
- submission_date="%(SUBMISSION_DATE)s"
->%(XML_CONTACT_BLOCK)s%(XML_ACTION_BLOCK)s%(XML_FILE_BLOCK)s
-</SUBMISSION>
-'''
 
 def detect_missing_experiment_fields(input_file):
     """Return a list of required fields missing from an experiment input file."""
@@ -103,6 +38,7 @@ def detect_missing_experiment_fields(input_file):
         'LIBRARY_CONSTRUCTION_PROTOCOL',
         ])
 
+
 def detect_missing_study_fields(input_file):
     """Return a list of required fields missing from a study input file."""
     return _detect_missing_fields(input_file, [
@@ -116,10 +52,10 @@ def detect_missing_study_fields(input_file):
         'PMID',        
         ])
 
+
 def detect_missing_submission_fields(input_file):
     """Return a list of required fields missing from a submission input file."""
     return _detect_missing_fields(input_file, [
-        'ACCESSION',
         'SUBMISSION_ID',
         'CENTER_NAME',
         'SUBMISSION_COMMENT',
@@ -127,6 +63,7 @@ def detect_missing_submission_fields(input_file):
         'SUBMISSION_DATE',
         'CONTACT',
         ])
+
 
 def detect_missing_sample_fields(input_file):
     """Return a list of required fields missing from a sample input file."""
@@ -139,6 +76,7 @@ def detect_missing_sample_fields(input_file):
         'DESCRIPTION',
         'HOST_TAXID',
         ])
+
 
 def _detect_missing_fields(input_file, required_fields):
     # record starting offset so we can return to it later
@@ -162,14 +100,6 @@ def _detect_missing_fields(input_file, required_fields):
 
     return missing_fields
 
-def generate_output_fp(input_fp, ext, output_dir=None):
-    """Generate new filepath by replacing the file's extension."""
-    input_dir, input_filename = os.path.split(input_fp)
-    basename, _ = os.path.splitext(input_filename)
-    output_filename = basename + ext
-    if output_dir is None:
-        output_dir = input_dir
-    return os.path.join(output_dir, output_filename)
 
 def md5_path(filename, block_size=8192):
     """Returns md5 hash from fileame without reading whole thing into memory"""
@@ -182,9 +112,11 @@ def md5_path(filename, block_size=8192):
     infile.close()
     return m.hexdigest()
 
+
 def safe_for_xml(s):
     """Makes string s safe for xml by replacing entities."""
     return s.replace('&', '&amp;').replace('"','&quot;').replace("'",'&apos;').replace('<','&lt;').replace('>','&gt;')
+
 
 def parse_tsv_with_header(tsv_file, data_fcn=None, header_fcn=None):
     """Parser for TSV files with commented headers
@@ -228,6 +160,7 @@ def parse_tsv_with_header(tsv_file, data_fcn=None, header_fcn=None):
 
     return data, header, comments
 
+
 def read_tabular_data(tabular_file):
     """Reads tabular data from lines, skipping blanks"""
     def f(s):
@@ -238,33 +171,35 @@ def read_tabular_data(tabular_file):
         tabular_file, data_fcn=f, header_fcn=g)
     return header, body
 
+
 def canonicalize_field_name(name):
     """Convert a field name to canonical form (ALL_CAPS)."""
     return name.upper()
 
-def make_study_links(pmid):
-    """Makes study links comment block given pmids"""
-    return study_links_wrapper % (study_link_wrapper % pmid)
 
 def twocol_data_to_dict(body, is_multiple=False, warn=False):
     """Converts two-col data to dict of key-value pairs, ignoring other cols"""
-    if is_multiple:
-        result = defaultdict(list)
-    else:
-        result = {}
+    result = {}
     for rec in body:
         try:
-            if is_multiple:
-                result[rec[0].strip()].append(rec[1].strip())
-            else:
-                result[rec[0].strip()] = rec[1].strip()
+            key = rec[0].strip()
+            val = rec[1].strip()
         except IndexError:
             if warn:
                 stderr.write(
                     'Less than 2 fields found in two-column input: %s' % rec)
+        if result.get(key) and is_multiple:
+            # Stringify multiple entries in the same format as
+            # multicolumn input.  Hacky, but acceptable because this
+            # function is only around for legacy support.
+            result[key] = '%s,%s' % (result[key], val)
+        else:
+            result[key] = val
     return result
 
+
 def threecol_data_to_dict(body, warn=False):
+    """Converts three-col data to dict of key: (value1, value2) , ignoring other cols"""
     result = defaultdict(list)
     for rec in body:
         try:
@@ -278,8 +213,6 @@ def threecol_data_to_dict(body, warn=False):
                     'Less than 3 fields found in three-column input: %s' % rec)
     return result
 
-def row_data_to_dict(header, row):
-    return dict([(k, v) for k, v in zip(header, row) if v])
 
 def rows_data_as_dicts(header, body):
     """Iterates over rows as dicts where header has keys, each row has vals.
@@ -288,7 +221,9 @@ def rows_data_as_dicts(header, body):
     Assumes that header will be passed as a single row.
     """
     for row in body:
-        yield row_data_to_dict(header, row)
+        data = dict([(k, v) for k, v in zip(header, row) if v])
+        yield data
+
 
 def make_study(study_lines, twocol_input_format=True):
     """Returns string for study xml."""
@@ -301,17 +236,15 @@ def make_study(study_lines, twocol_input_format=True):
         header = map(canonicalize_field_name, header)
         info_generator = rows_data_as_dicts(header, rows)
         info = info_generator.next()
-    pmid = info.get('PMID', '').strip()
-    if pmid:
-        study_links_block = '\n'+make_study_links(pmid)
-    else:
-        study_links_block = ''
-    info['XML_STUDY_LINKS_BLOCK'] = study_links_block
-    return study_set_wrapper % info
 
-def parse_submission(submission_file, twocol_input_format=False):
-    """Parse an SRA submission input file and return info dict."""
-    header, rows = read_tabular_data(submission_file)
+    study_set = SraStudySet()
+    study_set.register(info)
+    return pretty_xml(study_set.to_xml(), encoding='UTF-8')
+
+
+def parse_submission(submission_lines, twocol_input_format=False):
+    """Parse an SRA Submission input file and return an entry dict."""
+    header, rows = read_tabular_data(submission_lines)
     if twocol_input_format:
         for r in rows:
             r[0] = canonicalize_field_name(r[0])
@@ -322,105 +255,51 @@ def parse_submission(submission_file, twocol_input_format=False):
         info = info_generator.next()
     return info
 
+
 def make_submission(submission_lines, docnames=None, submission_dir=None,
                     twocol_input_format=True):
     """Returns string for submission xml."""
-    info = parse_submission(
-        submission_lines, twocol_input_format=twocol_input_format)
-    docnames = docnames or {}
-    #build up contacts strings
-    contacts = []
-    contact_info = info.get('CONTACT')
-    if contact_info:
-        if not twocol_input_format:
-            contact_info = contact_info.split(',')
-        for c in contact_info:
-            name, address = map(strip, c.split(';'))
-            contacts.append(contact_wrapper % (name, address, address))
-        contacts_str = '\n' + (contacts_wrapper % '\n'.join(contacts)) + '\n'
-    else:
-        contacts_str = '\n'
-    info['XML_CONTACT_BLOCK'] = contacts_str
-    
-    #convert info vals to scalar at this point since none multiple
-    new_info = {}
-    for k, v in info.items():
-        if isinstance(v, list):
-            try:
-                new_info[k] = v[0]
-            except IndexError:
-                pass  # Empty list: do not make entry in new_info
-        else:
-            new_info[k] = v
-    info = new_info
-    accession = info.get('ACCESSION', '')
-    if accession:
-        info['ACCESSION_STRING'] = '\n accession="%s"' % accession
-    else:
-        info['ACCESSION_STRING'] = ''
+    info = parse_submission(submission_lines, twocol_input_format)
+    submission = SraSubmission.from_entry(info, submission_dir)
+    if docnames:
+        submission.register_documents(docnames)
+    return pretty_xml(submission.to_xml(), encoding='UTF-8')
 
-    actions=[]
-    for k, v in docnames.items():
-        if v:
-            actions.append(action_wrapper % (v, k, k))
-    actions_str = actions_wrapper % '\n'.join(actions)
-    info['XML_ACTION_BLOCK'] = actions_str
-
-    filename = info.get('FILE', '')
-    if filename:
-        if submission_dir:
-            checksum = md5_path(os.path.join(submission_dir, filename))
-        else:
-            checksum = md5_path(filename)
-        info['XML_FILE_BLOCK'] = '\n' + file_wrapper % (filename, checksum)
-    else:
-        info['XML_FILE_BLOCK'] = ''
-    return submission_wrapper % info
 
 def make_sample(sample_lines):
     """Returns string for sample xml."""
-    title_fields = ['SAMPLE_ALIAS', 'TITLE', 'TAXON_ID', 'COMMON_NAME', 
-        'ANONYMIZED_NAME', 'DESCRIPTION'] #these go in the title, not the record
-    optional_title_fields = ['TAXON_ID', 'COMMON_NAME', 'ANONYMIZED_NAME']
     header, body = read_tabular_data(sample_lines)
 
     # ONLY canonicalize the standard fields in header
-    standard_fields = set(title_fields + optional_title_fields)
-    for i, observed_field_name in enumerate(header):
-        canonicalized_field_name = canonicalize_field_name(observed_field_name)
-        if canonicalized_field_name in standard_fields:
-            header[i] = canonicalized_field_name
+    standard_fields = SraSampleAttributes.standard_fields()
+    for i, name in enumerate(header):
+        canonicalized_name = canonicalize_field_name(name)
+        if canonicalized_name in standard_fields:
+            header[i] = canonicalized_name
 
-    samples = []
-    for d in rows_data_as_dicts(header, body):
-        attrs = [sample_attribute_wrapper % (k,v) for k, v in 
-            sorted(d.items()) if not k in title_fields]
-        title_attrs = [opt_sample_field_wrapper % (k, v, k) for k, v in
-            sorted(d.items()) if k in optional_title_fields]
-        if attrs:
-            attrs = ['\n    <SAMPLE_ATTRIBUTES>'] + attrs + \
-                ['    </SAMPLE_ATTRIBUTES>']
-        d['SAMPLE_ATTRIBUTES_XML'] = '\n'.join(attrs)
-        d['OPTIONAL_TITLE_FIELDS'] = '\n' + '\n'.join(title_attrs)
-        samples.append(sample_wrapper % d)
-    return sample_set_wrapper % {'XML_SAMPLE_BLOCK':'\n'.join(samples)}
+    s = SraSampleSet()
+    for entry in rows_data_as_dicts(header, body):
+        s.register(entry)
+    return pretty_xml(s.to_xml(), encoding='UTF-8')
 
-def group_lines_by_field(lines, field):
-    """Returns dict of {state:[lines]} by state of field."""
-    result = defaultdict(list)
-    for line in lines:
-        result[line[field]].append(line)
-    if '' in result:
-        del result['']
-    return result
 
-def make_run_and_experiment(experiment_lines, sff_dir, attribute_file=None,
-                            link_file=None):
-    """Returns strings for experiment and run xml."""
+def make_run(experiment_lines, sff_dir=None):
     columns, body = read_tabular_data(experiment_lines)
     columns = map(canonicalize_field_name, columns)
 
     run_set = SraRunSet(sff_dir)
+    for line in body:
+        field_dict = dict(zip(columns, line))
+        update_entry_with_deprecated_fields(field_dict)
+        update_entry_with_derived_fields(field_dict)
+        run_set.register(field_dict)
+    return pretty_xml(run_set.to_xml(), encoding='UTF-8')
+  
+
+def make_experiment(experiment_lines, attribute_file=None, link_file=None):
+    columns, body = read_tabular_data(experiment_lines)
+    columns = map(canonicalize_field_name, columns)
+
     experiment_set = SraExperimentSet()
 
     for line in body:
@@ -428,7 +307,6 @@ def make_run_and_experiment(experiment_lines, sff_dir, attribute_file=None,
         update_entry_with_deprecated_fields(field_dict)
         update_entry_with_derived_fields(field_dict)
         experiment_set.register(field_dict)
-        run_set.register(field_dict)
 
     experiment_attributes = defaultdict(list)
     if attribute_file is not None:
@@ -444,12 +322,8 @@ def make_run_and_experiment(experiment_lines, sff_dir, attribute_file=None,
         expt.experiment_attributes = experiment_attributes.get(alias)
         expt.experiment_links = experiment_links.get(alias)
         
-    run_set_string = '<?xml version="1.0" encoding="UTF-8"?>' + \
-                     pretty_xml(run_set.to_xml())
-    experiment_set_string = '<?xml version="1.0" encoding="UTF-8"?>' + \
-                            pretty_xml(experiment_set.to_xml())
-    return experiment_set_string, run_set_string
-
+    return pretty_xml(experiment_set.to_xml(), encoding='UTF-8')
+    
 
 class SraEntity(object):
     """Base class for elements defined in the SRA's XML schema.
@@ -607,11 +481,363 @@ class SraEntity(object):
             val = getattr(self, attr)
             if val:
                 xml_element.set(attr, val)
+        
 
+class SraSubmission(SraEntity):
+    """Class representing an SRA Submission entity."""
+
+    required_fields = {
+        'alias': 'SUBMISSION_ID',
+        'center': 'CENTER_NAME',
+        'comment': 'SUBMISSION_COMMENT',
+        'lab': 'LAB_NAME',
+        'date': 'SUBMISSION_DATE',
+        'contact_string': 'CONTACT',
+        }
+
+    optional_fields = {
+        'accession': 'ACCESSION',
+        }
+    
+    def __init__(self, attrs, contacts, files=None):
+        """Create a new SRA Submission Entity."""
+        super(SraSubmission, self).__init__(attrs)
+        self.contacts = contacts
+        self.files = files
+        self.actions = None
+
+    @classmethod
+    def from_entry(cls, entry, data_dir=None):
+        """Factory method to create a new submission from a table entry."""
+        attrs = cls.gather_instance_attributes(entry)
+        contacts = SraContacts.from_entry(entry)
+
+        cls._update_entry_with_checksum(entry, data_dir)
+        if entry.get('SUBMISSION_FILE_CHECKSUM'):
+            files = SraSubmissionFiles.from_entry(entry)
+        else:
+            files = None
+        return cls(attrs, contacts, files)
+
+    def register_documents(self, document_dict):
+        """Register a set of documents with the submission."""
+        self.actions = SraActions.from_entry(document_dict)
+
+    @staticmethod
+    def _update_entry_with_checksum(entry, data_dir=None):
+        """Find the submission file and update the entry with its checksum.
+
+        A missing submission data file is regarded as a critical
+        error.  If the data file is not found, this method raises an
+        exception.
+        """
+        filename = entry.get('FILE')
+        if filename and not entry.get('SUBMISSION_FILE_CHECKSUM'):
+            if data_dir:
+                filepath = os.path.join(data_dir, filename)
+            else:
+                filepath = filename
+            entry['SUBMISSION_FILE_CHECKSUM'] = md5_path(filepath)
+
+    def to_xml(self):
+        """Create an ElementTree XML object for the SRA SUBMISSION entity."""
+        root = ET.Element('SUBMISSION')
+        root.set('xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance')
+        if self.accession:
+            root.set('accession', self.accession)
+        root.set('submission_id', self.alias)
+        root.set('center_name', self.center)
+        root.set('submission_comment', self.comment)
+        root.set('lab_name', self.lab)
+        root.set('submission_date', self.date)
+        root.append(self.contacts.to_xml())
+        if self.actions:
+            root.append(self.actions.to_xml())
+        if self.files:
+            root.append(self.files.to_xml())
+        return root
+
+
+class SraSubmissionFiles(SraEntity):
+    """Class representing an SRA Files entity."""
+    
+    required_fields = {
+        'filename': 'FILE',
+        'checksum': 'SUBMISSION_FILE_CHECKSUM',
+        }
+
+    def to_xml(self):
+        """Create an ElementTree XML object for the SRA FILES entity."""
+        root = ET.Element('FILES')
+        ET.SubElement(root, 'FILE', filename=self.filename, checksum_method='MD5',
+                      checksum=self.checksum)
+        return root
+
+
+class SraActions(SraEntity):
+    """Class representing an SRA Actions entity."""
+    
+    schema = ['study', 'sample', 'experiment', 'run']
+    optional_fields = dict([(x, x) for x in schema])
+
+    def to_xml(self):
+        """Create an ElementTree XML object for the SRA ACTIONS entity."""
+        root = ET.Element('ACTIONS')
+        for sch in self.schema:
+            source = getattr(self, sch)
+            if source:
+                action_elem = ET.SubElement(root, 'ACTION')
+                add_elem = ET.SubElement(
+                    action_elem, 'ADD', schema=sch, source=source)
+                add_elem.set('notes', '%s metadata' % sch)
+        action_elem = ET.SubElement(root, 'ACTION')
+        ET.SubElement(action_elem, 'RELEASE')
+        return root
+
+
+class SraContacts(SraEntity):
+    """Class representing an SRA Contacts Entity."""
+    
+    required_fields = {
+        'contact_string': 'CONTACT'
+        }
+    
+    def __init__(self, attrs):
+        """Create a new set of SRA Contacts."""
+        super(SraContacts, self).__init__(attrs)
+        self.contacts = self._parse_contacts(self.contact_string)
+
+    @staticmethod
+    def _parse_contacts(contact_string):
+        """Parse a list of contacts (name, email pairs) from a string."""
+        contacts = []
+        for c in contact_string.split(','):
+            toks = map(strip, c.split(';'))
+            if len(toks) != 2:
+                raise ValueError(
+                    'Improperly formatted contacts string: "%s" (name and '
+                    'email should be separated by a semicolon in substring '
+                    '"%s")' % (self.contact_string, c))
+            name = toks[0]
+            email = toks[1]
+            contacts.append((name, email))
+        return contacts
+
+    def to_xml(self):
+        """Create an ElementTree XML object for the SRA CONTACTS entity."""
+        root = ET.Element('CONTACTS')
+        for name, email in self.contacts:
+            ET.SubElement(
+                root, 'CONTACT', name=name, inform_on_status=email,
+                inform_on_error=email)
+        return root
+
+    
+class SraStudySet(SraEntity):
+    """Class repersenting a set of SRA Studies."""
+
+    def __init__(self):
+        """Create a new set of SRA Studies"""
+        self.studies = []
+
+    def register(self, entry):
+        """Register a new table entry with the study set."""
+        new_study = SraStudy.from_entry(entry)
+        self.studies.append(new_study)
+
+    def to_xml(self):
+        """Create an ElementTree XML object for the SRA STUDY_SET entity."""
+        root = ET.Element('STUDY_SET')
+        root.set('xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance')
+        for s in self.studies:
+            root.append(s.to_xml())
+        if not self.studies:
+            root.text = '\n'
+        return root
+
+
+class SraStudy(SraEntity):
+    """Class representing an SRA Study entity."""
+
+    required_fields = {
+        'alias': 'STUDY_ALIAS',
+        'title': 'STUDY_TITLE',
+        'type': 'STUDY_TYPE',
+        'abstract': 'STUDY_ABSTRACT',
+        'description': 'STUDY_DESCRIPTION',
+        'center': 'CENTER_NAME',
+        'project': 'CENTER_PROJECT_NAME',
+        }
+    optional_fields = {
+        'pubmed_id': 'PMID',
+        }
+
+    def to_xml(self):
+        """Create an ElementTree XML object for the SRA STUDY entity."""
+        root = ET.Element('STUDY')
+        self.set_xml_attributes(root, ['alias'])
+        desc = ET.SubElement(root, 'DESCRIPTOR')
+        ET.SubElement(desc, 'STUDY_TITLE').text = self.title
+        ET.SubElement(desc, 'STUDY_TYPE', existing_study_type=self.type)
+        ET.SubElement(desc, 'STUDY_ABSTRACT').text = self.abstract
+        ET.SubElement(desc, 'STUDY_DESCRIPTION').text = self.description
+        ET.SubElement(desc, 'CENTER_NAME').text = self.center
+        ET.SubElement(desc, 'CENTER_PROJECT_NAME').text = self.project
+        if self.pubmed_id:
+            link_elem = ET.SubElement(ET.SubElement(ET.SubElement(
+                root, 'STUDY_LINKS'), 'STUDY_LINK'), 'ENTREZ_LINK')
+            ET.SubElement(link_elem, 'DB').text = 'pubmed'
+            ET.SubElement(link_elem, 'ID').text = self.pubmed_id
+        return root
+
+class SraSampleSet(SraEntity):
+    """Class repersenting a set of SRA samples."""
+
+    def __init__(self):
+        """Create a new set of SRA Samples"""
+        self.samples = []
+
+    def register(self, entry):
+        new_sample = SraSample.from_entry(entry)
+        self.samples.append(new_sample)
+
+    def to_xml(self):
+        """Create an ElementTree XML object for the SRA SAMPLE_SET entity."""
+        root = ET.Element('SAMPLE_SET')
+        root.set('xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance')
+        for s in self.samples:
+            root.append(s.to_xml())
+        if not self.samples:
+            root.text = '\n'
+        return root
+
+
+class SraSample(SraEntity):
+    """Class representing an SRA Sample entity."""
+    
+    required_fields = {
+        'alias': 'SAMPLE_ALIAS',
+        'title': 'TITLE',
+        'description': 'DESCRIPTION',
+        }
+
+    def __init__(self, attrs, sample_name, sample_attributes):
+        """Create a new SRA sample."""
+        super(SraSample, self).__init__(attrs)
+        self.sample_name = sample_name
+        self.sample_attributes = sample_attributes
+
+    @classmethod
+    def from_entry(cls, entry):
+        """Factory method to creat a new sample from a table entry."""
+        attrs = cls.gather_instance_attributes(entry)
+        sample_name = SraSampleName.from_entry(entry)
+        sample_attributes = SraSampleAttributes.from_entry(entry)
+        return cls(attrs, sample_name, sample_attributes)
+
+    def to_xml(self):
+        """Create an ElementTree XML object for the SRA SAMPLE entity."""
+        root = ET.Element('SAMPLE')
+        self.set_xml_attributes(root, ['alias'])
+        ET.SubElement(root, 'TITLE').text = self.title
+        if self.sample_name:
+            root.append(self.sample_name.to_xml())
+        ET.SubElement(root, 'DESCRIPTION').text = self.description
+        if self.sample_attributes:
+            root.append(self.sample_attributes.to_xml())
+        return root
+
+
+class SraSampleName(SraEntity):
+    """Class representing an SRA Sample name."""
+
+    optional_fields = {
+        'taxon_id': 'TAXON_ID',
+        'common_name': 'COMMON_NAME',
+        'anonymized_name': 'ANONYMIZED_NAME',
+        }
+
+    def __nonzero__(self):
+        return any([getattr(self, k) for k in self.optional_fields.keys()])
+
+    def to_xml(self):
+        """Create an ElementTree XML object for the SRA SAMPLE_NAME entity."""
+        root = ET.Element('SAMPLE_NAME')
+        subelements = [(y, x) for (x, y) in self.optional_fields.items()]
+        if not subelements:
+            return None
+        # sort by element name
+        subelements.sort()
+        for elem_name, attr in subelements:
+            val = getattr(self, attr)
+            if val:
+                x = ET.SubElement(root, elem_name)
+                x.text = val
+        return root
+
+
+class SraSampleAttributes(SraEntity):
+    """Class representing a set of SRA Sample Attribute entities."""
+    
+    def __init__(self, attrs):
+        """Create a new SRA sample attribute set.
+
+        Attribute tags may be any string, so we place no restrictions
+        on them.
+        """
+        self.sample_attributes = attrs
+
+    def __nonzero__(self):
+        return bool(self.sample_attributes)
+
+    @classmethod
+    def from_entry(cls, entry):
+        """Factory method to create new sample attributes from a table entry.
+        """
+        attrs = {}
+        for k in cls.attribute_fields(entry):
+            attrs[k] = entry[k]
+        return cls(attrs)
+
+    @classmethod
+    def attribute_fields(cls, entry):
+        """Determine the field names that correspond to SRA Attribute tags.
+
+        This is computed by comparing the set of field names in the
+        entry to the set of standard field names for an SRA Sample.
+        If there is no match, the field is assumed to be an SRA Sample
+        Atribute.
+        """
+        entry_keys = set(entry.keys())
+        return entry_keys.difference(cls.standard_fields())
+
+    @staticmethod
+    def standard_fields():
+        """Find the list of all standard field names for an SRA Sample.
+        """
+        fs = set()
+        sample_classes = [SraSampleName, SraSample]
+        for sample_class in sample_classes:
+            fs.update(sample_class.required_fields.values())
+            fs.update(sample_class.optional_fields.values())
+        return fs
+
+    def to_xml(self):
+        """Create an ElementTree XML object for the SRA SAMPLE_ATTRIBUTES entity."""
+        if not self.sample_attributes:
+            return None
+        root = ET.Element('SAMPLE_ATTRIBUTES')
+        attributes = self.sample_attributes.items()
+        attributes.sort()
+        for tag, value in attributes:
+            attr_elem = ET.SubElement(root, 'SAMPLE_ATTRIBUTE')
+            ET.SubElement(attr_elem, 'TAG').text = tag
+            ET.SubElement(attr_elem, 'VALUE').text = value
+        return root
+        
 
 class SraExperimentSet(SraEntity):
-    """Class representing a set of SRA Experiment entities.
-    """
+    """Class representing a set of SRA Experiment entities."""
 
     def __init__(self):
         """Create a new SRA experiment set.
@@ -996,10 +1222,8 @@ class SraPoolMember(SraEntity):
         """Create a new SRA Pool Member.
 
         According to the SRA schema, all MEMBER attributes are
-        optional, including member_name.  This constructor is true to
-        the SRA specification, although we can't think of a case where
-        it would be useful to create a MEMBER element with no
-        attributes.
+        optional, including member_name.  We require a minimum of
+        refname, refcenter, member_name, and proportion.
 
         According to the SRA schema, a MEMBER element must contain at
         least one READ_LABEL.  Therefore, this method raises a
@@ -1031,7 +1255,8 @@ class SraPoolMember(SraEntity):
 class SraRunSet(SraEntity):
     """Class representing a set of SRA Run entities.
 
-    SraRunSet manages the list of runs, as well as default files for each run.
+    SraRunSet manages the list of runs, as well as default files for
+    each run.
     """
 
     def __init__(self, data_dir):
@@ -1052,15 +1277,15 @@ class SraRunSet(SraEntity):
         default_entry_identifier = (entry['STUDY_REF'], entry['EXPERIMENT_ALIAS'])
         if not default_entry_identifier in self.default_entries:
             default_entry = self._create_default_entry(entry)
-            checksum = self._update_entry_with_checksum(default_entry)
-            if checksum:
+            self._update_entry_with_checksum(default_entry)
+            if default_entry.get('CHECKSUM'):
                 default_run = SraRun.from_entry(default_entry)
                 default_run.register(default_entry)
                 self.runs.append(default_run)
                 self.default_entries.add(default_entry_identifier)
 
-        checksum = self._update_entry_with_checksum(entry)
-        if checksum:
+        self._update_entry_with_checksum(entry)
+        if entry.get('CHECKSUM'):
             run = SraRun.from_entry(entry)
             run.register(entry)
             self.runs.append(run)
@@ -1076,9 +1301,9 @@ class SraRunSet(SraEntity):
     def _update_entry_with_checksum(self, entry, warn=True):
         """Find the data file and update the entry dictionary with its checksum.
 
-        If the data file is not found, the CHECKSUM field is not set.
-
-        In addition to the side-effect of updating the CHECKSUM field of the entry, the resulting value of the
+        If the data file is not found, the CHECKSUM field is not set,
+        and a warning is printed to stderr if the warning keyword
+        argument is set to True.
         """
         if not entry.get('CHECKSUM'):
             filepath = os.path.join(
@@ -1192,7 +1417,7 @@ class SraFile(SraEntity):
 
     @classmethod
     def from_entry(cls, entry):
-        """Factory method to register a new file from an experiment entry."""
+        """Factory method to create a new file from an experiment entry."""
         return super(SraFile, cls).from_entry(entry)
 
     def to_xml(self):
@@ -1222,6 +1447,7 @@ def update_entry_with_deprecated_fields(entry, warn=True):
             if not entry.get(new_field):
                 entry[new_field] = entry[old_field]
     return entry
+
 
 def update_entry_with_derived_fields(entry):
     """Derive default values for blank/missing fields in input file.
@@ -1300,6 +1526,7 @@ def update_entry_with_derived_fields(entry):
             entry[field_name] = format_string % entry
     return entry
 
+
 PRIMER_READ_GROUP_TAGS = {
     # Standard primers
     # BSR357
@@ -1334,6 +1561,7 @@ def _experiment_link_xml(links):
         url_elem.text = url
     return root
 
+
 def _experiment_attribute_xml(attrs):
     """Creates the EXPERIMENT_ATTRIBUTES subtree for SRA Experiment XML."""
     if not attrs:
@@ -1348,19 +1576,23 @@ def _experiment_attribute_xml(attrs):
     return root
 
 
-def pretty_xml(element, level=0):
+def pretty_xml(element, level=0, encoding=None):
     """Formats XML tree as a string with proper indentation.
 
     The level kwarg specifies the indentation level for the root
     element.  Child elements are indented with two additional spaces
     per level.
+
+    If the encoding keyword argument is provided, an XML encoding
+    declaration is prepended to the resultant string.  The value of
+    the encoding argument is used as the encoding attribute, inside
+    the declaration.
     """
     if element is None:
         return ''
     element = copy.deepcopy(element)
     __pretty_xml_helper(element, level)
-    if element.tail is None:
-        return '\n' + ET.tostring(element)
+
     # The lxml example function places a newline and spaces at the end
     # of the parent element. We'd like these spaces to appear at the
     # beginning of the parent element, because this helps with
@@ -1368,9 +1600,26 @@ def pretty_xml(element, level=0):
     # the ElementTree library does not support pre-element text, we
     # store the whitespace from the tree and prepend it to the string
     # output.
-    indentation = element.tail
-    element.tail = ''
-    return indentation + ET.tostring(element)
+    if element.tail is None:
+        indentation = '\n'
+    else:
+        indentation = element.tail
+        element.tail = ''
+
+    # HACK: The ElementTree library escapes ampersand characters, but
+    # not other characters that we want to escape in the XML (like >,
+    # <, ", or ').  Support for this is improved in python 2.7.  For
+    # now, we handle the escaping BEFORE stringifying the XML.  As a
+    # consequence, we must go back and un-escape the ampersand
+    # characters now.
+    xml_string = indentation + ET.tostring(element).replace('&amp;', '&')
+
+    if encoding is None:
+        encoding_string = ''
+    else:
+        encoding_string = '<?xml version="1.0" encoding="%s"?>' % encoding
+    return encoding_string + xml_string
+
 
 def __pretty_xml_helper(element, level=0):
     """Private helper function for pretty_xml()
@@ -1401,6 +1650,17 @@ def __pretty_xml_helper(element, level=0):
     else:
         if level and (not element.tail or not element.tail.strip()):
             element.tail = i
+
+
+def generate_output_fp(input_fp, ext, output_dir=None):
+    """Generate new filepath by replacing the file's extension."""
+    input_dir, input_filename = os.path.split(input_fp)
+    basename, _ = os.path.splitext(input_filename)
+    output_filename = basename + ext
+    if output_dir is None:
+        output_dir = input_dir
+    return os.path.join(output_dir, output_filename)
+
 
 def write_xml_generic(infile_path, xml_f, xml_kwargs=None, output_dir=None):
     """Writes generic xml based on contents of infilepath, returns filename."""

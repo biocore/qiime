@@ -17,8 +17,8 @@ from optparse import make_option
 from os.path import splitext
 from qiime.util import get_qiime_project_dir
 from qiime.make_sra_submission import (write_xml_generic, 
-    make_run_and_experiment, make_submission, make_study, make_sample,
-    generate_output_fp)
+    make_run, make_experiment, make_submission, make_study, make_sample)
+
 
 sra_template_dir = os.path.join(
     get_qiime_project_dir(), 'qiime', 'support_files', 'sra_xml_templates')
@@ -60,61 +60,49 @@ def main():
     docnames = {}
 
     if opts.input_study_fp:
-        study_kwargs = {
-            'twocol_input_format': opts.twocolumn_input_format,
-            }
-        docnames['study'] = write_xml_generic(opts.input_study_fp,
-            make_study, xml_kwargs=study_kwargs,
-            output_dir=opts.output_dir)
+        docnames['study'] = write_xml_generic(
+            opts.input_study_fp, make_study, output_dir=opts.output_dir,
+            xml_kwargs={'twocol_input_format': opts.twocolumn_input_format})
 
     if opts.input_sample_fp:
-        docnames['sample'] = write_xml_generic(opts.input_sample_fp,
-            make_sample, output_dir=opts.output_dir)
+        docnames['sample'] = write_xml_generic(
+            opts.input_sample_fp, make_sample, output_dir=opts.output_dir)
 
     if opts.input_experiment_fp:
         if not opts.sff_dir:
-            option_parser.error("Must specify an sff dir if making an experiment.")
+            option_parser.error(
+                'Must specify an sff directory (sff_dir option) if an SRA '
+                'Experiment input file is provided (input_experiment_fp).')
 
+        attribute_file = None
         if opts.experiment_attribute_fp:
             attribute_file = open(opts.experiment_attribute_fp, 'U')
-        else:
-            attribute_file = None
+
+        link_file = None
         if opts.experiment_link_fp:
             link_file = open(opts.experiment_link_fp, 'U')
-        else:
-            link_file = None
 
-        experiment_xml, run_xml = make_run_and_experiment(
-            open(opts.input_experiment_fp, 'U'), opts.sff_dir,
-            attribute_file=attribute_file, link_file=link_file)
+        docnames['experiment'] = write_xml_generic(
+            opts.input_experiment_fp, make_experiment,
+            output_dir=opts.output_dir, xml_kwargs={
+                'attribute_file': attribute_file,
+                'link_file': link_file,
+                })
 
-        output_experiment_fp = generate_output_fp(
-            opts.input_experiment_fp, '.xml', opts.output_dir)
-        with open(output_experiment_fp, 'w') as f:
-            f.write(experiment_xml)
-        docnames['experiment'] = os.path.basename(output_experiment_fp)
-
-        output_run_fp = generate_output_fp(
-            opts.input_experiment_fp, '_run.xml', opts.output_dir)
-        with open(output_run_fp, 'w') as f:
-            f.write(run_xml)
-        docnames['run'] = os.path.basename(output_run_fp)
+        docnames['run'] = write_xml_generic(
+            opts.input_experiment_fp, make_run, output_dir=opts.output_dir,
+            xml_kwargs={
+                'sff_dir': opts.sff_dir,
+                })
 
     if opts.input_submission_fp:
-        input_submission_file = open(opts.input_submission_fp, 'U')
-        submission_kwargs = {
-            'docnames': docnames,
-            'submission_dir': opts.output_dir,
-            'twocol_input_format': opts.twocolumn_input_format,
-            }
-        submission_xml = make_submission(
-            input_submission_file, **submission_kwargs)
-
-        output_submission_fp = generate_output_fp(
-            opts.input_submission_fp, '.xml', opts.output_dir)
-        with open(output_submission_fp, 'w') as f:
-            f.write(submission_xml)
-
+        write_xml_generic(
+            opts.input_submission_fp, make_submission,
+            output_dir=opts.output_dir, xml_kwargs={
+                'docnames': docnames,
+                'submission_dir': opts.output_dir,
+                'twocol_input_format': opts.twocolumn_input_format,
+                })
 
 if __name__ == "__main__":
     main()

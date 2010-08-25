@@ -10,14 +10,16 @@ from qiime.make_sra_submission import (
     detect_missing_experiment_fields, detect_missing_study_fields,
     detect_missing_submission_fields, detect_missing_sample_fields,
     md5_path, safe_for_xml, read_tabular_data, rows_data_as_dicts,
-    make_study_links, twocol_data_to_dict, make_study, make_submission,
-    make_sample, group_lines_by_field, write_xml_generic,
-    make_run_and_experiment, threecol_data_to_dict,
+    twocol_data_to_dict, make_study, make_submission,
+    make_sample, write_xml_generic,
+    make_run, make_experiment, threecol_data_to_dict,
     _experiment_link_xml, _experiment_attribute_xml, pretty_xml,
     generate_output_fp, update_entry_with_derived_fields,
     SraEntity, SraRun, SraDataBlock, SraFile, SraPoolMember,
     SraSpotDescriptor, SraSampleDescriptor, SraExperimentSet, SraExperiment,
-    SraStudyRef, SraPlatform, update_entry_with_deprecated_fields)
+    SraStudyRef, SraPlatform, update_entry_with_deprecated_fields,
+    SraSample, SraSampleName, SraSampleAttributes, SraSampleSet, SraStudy,
+    SraContacts, SraActions, SraSubmissionFiles, SraSubmission)
 from qiime.util import get_qiime_project_dir
 import xml.etree.ElementTree as ET
 from cStringIO import StringIO
@@ -124,7 +126,6 @@ class TopLevelTests(TestCase):
         input_file = StringIO('#NONSENSE_FIELD\nnonsense_value\n')
         observed = detect_missing_submission_fields(input_file)
         expected = [
-            'ACCESSION',
             'SUBMISSION_ID',
             'CENTER_NAME',
             'SUBMISSION_COMMENT',
@@ -193,17 +194,6 @@ class TopLevelTests(TestCase):
         data[0] = '#' + data[0]
         self.assertEqual(read_tabular_data(data), expected)
 
-    def test_make_study_links(self):
-        """make_study_links should return correct study links from pmid."""
-        self.assertEqual(make_study_links(19004758), """    <STUDY_LINKS>
-      <STUDY_LINK>
-        <ENTREZ_LINK>
-         <DB>pubmed</DB>
-         <ID>19004758</ID>
-        </ENTREZ_LINK>
-      </STUDY_LINK>
-    </STUDY_LINKS>""")
-
     def test_twocol_data_to_dict(self):
         """twocol_data_to_dict should produce expected result"""
         data = [
@@ -220,7 +210,7 @@ class TopLevelTests(TestCase):
             ]
         self.assertEqual(
             twocol_data_to_dict(multiple_data, is_multiple=True),
-            {'x':['y','y','c'], 'x x':['y y']})
+            {'x': 'y,y,c', 'x x': 'y y'})
 
     def test_rows_data_as_dicts(self):
         """rows_data_as_dicts should iterate over trimmed row data"""
@@ -291,20 +281,6 @@ class TopLevelTests(TestCase):
         result = make_sample(sample_data)
         self.assertEqual(standardize_xml(result), standardize_xml(sample_xml))
 
-    def test_group_lines_by_field(self):
-        lines = [
-            ['x',   'why', 'b'],
-            ['x x', 'y y', 'a'],
-            ['wx ', 'y y', 'c']
-            ]
-        observed = group_lines_by_field(lines, 1).items()
-        observed.sort()
-        expected = [
-            ('why', [['x',   'why', 'b']]),
-            ('y y', [['x x', 'y y', 'a'], ['wx ', 'y y', 'c']]),
-            ]
-        self.assertEqual(observed, expected)
-
     def test_write_xml_generic(self):
         input_file = tempfile.NamedTemporaryFile()
         input_file.write('abc')
@@ -322,16 +298,19 @@ class TopLevelTests(TestCase):
             )
         self.files_to_remove = [observed_fp]
 
-    def test_experiment_xml(self):
-        """make_run_and_experiment should return correct XML for full experiment."""
-        observed_exp_xml, observed_run_xml = make_run_and_experiment(
-            StringIO(experiment), self.sff_dir,
-            attribute_file=StringIO(attrs),
-            link_file=StringIO(links),
-            )
+
+    def test_make_run(self):
+        observed_run_xml = make_run(StringIO(experiment), self.sff_dir)
         self.assertEqual(
             standardize_xml(observed_run_xml),
             standardize_xml(run_xml_str),
+            )
+
+    def test_make_experiment(self):
+        observed_exp_xml = make_experiment(
+            StringIO(experiment),
+            attribute_file=StringIO(attrs),
+            link_file=StringIO(links),
             )
         self.assertEqual(
             standardize_xml(observed_exp_xml),
@@ -340,8 +319,8 @@ class TopLevelTests(TestCase):
 
     def test_experiment_with_accession_xml(self):
         """make_run_and_experiment should return correct XML for experiment with accession numbers."""
-        observed_exp_xml, observed_run_xml = make_run_and_experiment(
-            StringIO(experiment_with_accessions), self.sff_dir,
+        observed_exp_xml = make_experiment(
+            StringIO(experiment_with_accessions),
             attribute_file=StringIO(attrs),
             link_file=StringIO(links),
             )
@@ -351,9 +330,9 @@ class TopLevelTests(TestCase):
             )
 
     def test_experiment_with_default_sample_xml(self):
-        """make_run_and_experiment should return correct XML for experiment with user-specified default sample."""
-        observed_exp_xml, observed_run_xml = make_run_and_experiment(
-            StringIO(experiment_with_default_sample), self.sff_dir,
+        """make_experiment should return correct XML for experiment with user-specified default sample."""
+        observed_exp_xml = make_experiment(
+            StringIO(experiment_with_default_sample),
             attribute_file=StringIO(attrs),
             link_file=StringIO(links),
             )
@@ -363,30 +342,40 @@ class TopLevelTests(TestCase):
             )
 
     def test_metagenomic_experiment_xml(self):
-        """make_run_and_experiment should return correct XML for metagenomic experiment."""
-        observed_exp_xml, observed_run_xml = make_run_and_experiment(
-             StringIO(metagenomic_experiment), self.sff_dir)
+        """make_experiment should return correct XML for metagenomic experiment."""
+        observed_exp_xml = make_experiment(
+             StringIO(metagenomic_experiment))
         self.assertEqual(
             standardize_xml(observed_exp_xml),
             standardize_xml(metagenomic_experiment_xml_str),
             )
 
-    def test_validate_xml(self):
-        """make_run_and_experiment should produce valid XML according to official schema"""
+    def test_validate_experiment_xml(self):
+        """make_experiment should produce valid XML according to official schema"""
         try:
             import lxml.etree
         except:
             return None
-        observed_exp_xml, observed_run_xml = make_run_and_experiment(
-            StringIO(experiment), self.sff_dir, 
-            attribute_file=StringIO(attrs), link_file=StringIO(links),
-            )
 
+        observed_exp_xml = make_experiment(
+            StringIO(experiment),
+            attribute_file=StringIO(attrs),
+            link_file=StringIO(links),
+            )
         experiment_schema = lxml.etree.XMLSchema(
             lxml.etree.fromstring(experiment_xsd))
         self.assertTrue(experiment_schema.validate(
             lxml.etree.fromstring(observed_exp_xml)))
 
+    def test_validate_run_xml(self):
+        """make_run should produce valid XML according to official schema"""
+        try:
+            import lxml.etree
+        except:
+            return None
+
+        observed_run_xml = make_run(
+            StringIO(experiment), self.sff_dir)
         run_schema = lxml.etree.XMLSchema(lxml.etree.fromstring(run_xsd))
         self.assertTrue(run_schema.validate(
             lxml.etree.fromstring(observed_run_xml)))
@@ -504,6 +493,7 @@ class TopLevelTests(TestCase):
         self.assertEqual(a['LIBRARY_SOURCE'], 'GENOMIC')
         self.assertEqual(a['LIBRARY_SELECTION'], 'PCR')
 
+
 class SraEntityTests(TestCase):
     def test_check_attributes(self):
         """SraEntity.__init__ should raise ValueError if unknown attributes are provided."""
@@ -525,6 +515,199 @@ class SraEntityTests(TestCase):
         entity.name = 'John'
         entity.set_xml_attributes(element, ['name'])
         self.assertEqual(element.get('name'), 'John')
+
+
+class SraSubmissionTests(TestCase):
+    def test_to_xml(self):
+        entry = {
+            'FILE': 'my_submission.tgz',
+            'SUBMISSION_FILE_CHECKSUM': 'abcdefg12345',
+            }
+        expected = '''
+        <SUBMISSION accession="SRA003492" center_name="CCME" lab_name="Knight" submission_comment="Barcode submission prepared by osulliva@ncbi.nlm.nih.gov, shumwaym@ncbi.nlm.nih.gov" submission_date="2009-10-22T01:23:00-05:00" submission_id="fierer_hand_study" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <CONTACTS>
+          <CONTACT inform_on_error="Rob.Knight@Colorado.edu" inform_on_status="Rob.Knight@Colorado.edu" name="Rob Knight" />
+          <CONTACT inform_on_error="Noah.Fierer@Colorado.edu" inform_on_status="Noah.Fierer@Colorado.edu" name="Noah Fierer" />
+        </CONTACTS>
+        <ACTIONS>
+          <ACTION>
+            <ADD notes="study metadata" schema="study" source="study.xml" />
+          </ACTION>
+          <ACTION>
+            <ADD notes="sample metadata" schema="sample" source="sample.xml" />
+          </ACTION>
+          <ACTION>
+            <RELEASE />
+          </ACTION>
+        </ACTIONS>
+        <FILES>
+          <FILE checksum="abcdefg12345" checksum_method="MD5" filename="my_submission.tgz" />
+        </FILES>
+        </SUBMISSION>'''
+
+class SraSubmissionFilesTests(TestCase):
+    def test_to_xml(self):
+        entry = {
+            'FILE': 'my_submission.tgz',
+            'SUBMISSION_FILE_CHECKSUM': 'abcdefg12345',
+            }
+        f = SraSubmissionFiles.from_entry(entry)
+        expected = '''
+        <FILES>
+          <FILE checksum="abcdefg12345" checksum_method="MD5" filename="my_submission.tgz" />
+        </FILES>'''
+        self.assertEqual(pretty_xml(f.to_xml(), 4), expected)
+
+
+class SraActionsTests(TestCase):
+    def test_to_xml(self):
+        documents = {'study':'study.xml', 'sample':'sample.xml'}
+        a = SraActions.from_entry(documents)
+        expected = '''
+        <ACTIONS>
+          <ACTION>
+            <ADD notes="study metadata" schema="study" source="study.xml" />
+          </ACTION>
+          <ACTION>
+            <ADD notes="sample metadata" schema="sample" source="sample.xml" />
+          </ACTION>
+          <ACTION>
+            <RELEASE />
+          </ACTION>
+        </ACTIONS>'''
+        self.assertEqual(pretty_xml(a.to_xml(), 4), expected)
+
+
+class SraContactsTests(TestCase):
+    def test_parse_contacts(self):
+        observed = SraContacts._parse_contacts(
+            'jane;smith@college.edu, john; doe@company.com ')
+        expected = [
+            ('jane', 'smith@college.edu'),
+            ('john', 'doe@company.com'),
+            ]
+        self.assertEqual(observed, expected)
+
+    def test_to_xml(self):
+        entry = {
+            'CONTACT': 'Rob Knight;Rob.Knight@Colorado.edu, Noah Fierer;Noah.Fierer@Colorado.edu'
+            }
+        c = SraContacts.from_entry(entry)
+        expected = '''
+        <CONTACTS>
+          <CONTACT inform_on_error="Rob.Knight@Colorado.edu" inform_on_status="Rob.Knight@Colorado.edu" name="Rob Knight" />
+          <CONTACT inform_on_error="Noah.Fierer@Colorado.edu" inform_on_status="Noah.Fierer@Colorado.edu" name="Noah Fierer" />
+        </CONTACTS>'''
+        self.assertEqual(pretty_xml(c.to_xml(), 4), expected)
+
+
+class SraStudyTests(TestCase):
+    def test_to_xml(self):
+        """ """
+        entry = {
+            'STUDY_ALIAS': 'fierer_hand_study',
+            'STUDY_TITLE': (
+                'The influence of sex, handedness, and washing on '
+                'the diversity of hand surface bacteria'),
+            'STUDY_ABSTRACT': (
+                'Short &apos;abstract&apos; with special characters &lt;10%.'),
+            'STUDY_DESCRIPTION': 'Targeted Gene Survey from Human Skin',
+            'STUDY_TYPE': 'Metagenomics',
+            'CENTER_NAME': 'CCME',
+            'CENTER_PROJECT_NAME': 'NULL',
+            'PMID': '19004758',
+            }
+        s = SraStudy.from_entry(entry)
+        expected = '''
+        <STUDY alias="fierer_hand_study">
+          <DESCRIPTOR>
+            <STUDY_TITLE>The influence of sex, handedness, and washing on the diversity of hand surface bacteria</STUDY_TITLE>
+            <STUDY_TYPE existing_study_type="Metagenomics" />
+            <STUDY_ABSTRACT>Short &apos;abstract&apos; with special characters &lt;10%.</STUDY_ABSTRACT>
+            <STUDY_DESCRIPTION>Targeted Gene Survey from Human Skin</STUDY_DESCRIPTION>
+            <CENTER_NAME>CCME</CENTER_NAME>
+            <CENTER_PROJECT_NAME>NULL</CENTER_PROJECT_NAME>
+          </DESCRIPTOR>
+          <STUDY_LINKS>
+            <STUDY_LINK>
+              <ENTREZ_LINK>
+                <DB>pubmed</DB>
+                <ID>19004758</ID>
+              </ENTREZ_LINK>
+            </STUDY_LINK>
+          </STUDY_LINKS>
+        </STUDY>'''
+        self.assertEqual(pretty_xml(s.to_xml(), 4), expected)
+
+class SraSampleSetTests(TestCase):
+    def test_to_xml(self):
+        """ """
+        ss = SraSampleSet()
+        expected = (
+            '\n<SAMPLE_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">'
+            '\n</SAMPLE_SET>')
+        self.assertEqual(pretty_xml(ss.to_xml()), expected)
+
+
+class SraSampleTests(TestCase):
+    def test_to_xml(self):
+        """ """
+        entry = {
+            'SAMPLE_ALIAS': 'fierer_hand_study_default',
+            'DESCRIPTION': 'default sample for unclassified reads',
+            'TITLE': 'human hand microbiome'
+            }
+        s = SraSample.from_entry(entry)
+        expected =  '''
+        <SAMPLE alias="fierer_hand_study_default">
+          <TITLE>human hand microbiome</TITLE>
+          <DESCRIPTION>default sample for unclassified reads</DESCRIPTION>
+        </SAMPLE>'''
+        self.assertEqual(pretty_xml(s.to_xml(), 4), expected)
+
+
+class SraSampleNameTests(TestCase):
+    def test_to_xml(self):
+        """SraSamplename.to_xml should produce valid XML."""
+        entry = {
+            'TAXON_ID': '66545',
+            'COMMON_NAME': 'aname',
+            'ANONYMIZED_NAME': 'hhyot',
+            }
+        s = SraSampleName.from_entry(entry)
+        expected = '''
+        <SAMPLE_NAME>
+          <ANONYMIZED_NAME>hhyot</ANONYMIZED_NAME>
+          <COMMON_NAME>aname</COMMON_NAME>
+          <TAXON_ID>66545</TAXON_ID>
+        </SAMPLE_NAME>'''
+        self.assertEqual(pretty_xml(s.to_xml(), 4), expected)
+
+
+class SraSampleAttributesTests(TestCase):
+    def test_to_xml(self):
+        """SraSampleAttributes.to_xml should produce valid XML."""
+        entry = {
+            'TAXON_ID': '66545',
+            'COMMON_NAME': 'aname',
+            'ANONYMIZED_NAME': 'hhyot',
+            'hand': 'left',
+            'age': '45',
+            }
+        s = SraSampleAttributes.from_entry(entry)
+        expected = '''
+        <SAMPLE_ATTRIBUTES>
+          <SAMPLE_ATTRIBUTE>
+            <TAG>age</TAG>
+            <VALUE>45</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+            <TAG>hand</TAG>
+            <VALUE>left</VALUE>
+          </SAMPLE_ATTRIBUTE>
+        </SAMPLE_ATTRIBUTES>'''
+
+        self.assertEqual(pretty_xml(s.to_xml(), 4), expected)
 
 
 class SraExperimentSetTests(TestCase):
@@ -2007,18 +2190,24 @@ submission_with_file_xml = '''<?xml version="1.0" encoding="UTF-8"?>
  lab_name="Knight"
  submission_date="2009-10-22T01:23:00-05:00"
 >
- <CONTACTS>
+  <CONTACTS>
     <CONTACT name="Rob Knight" inform_on_status="Rob.Knight@Colorado.edu" inform_on_error="Rob.Knight@Colorado.edu"/>
     <CONTACT name="Noah Fierer" inform_on_status="Noah.Fierer@Colorado.edu" inform_on_error="Noah.Fierer@Colorado.edu"/>
- </CONTACTS>
- <ACTIONS>
-   <ACTION><ADD source="sample.xml" schema="sample" notes="sample metadata"/></ACTION>
-   <ACTION><ADD source="study.xml" schema="study" notes="study metadata"/></ACTION>
-   <ACTION><RELEASE/></ACTION>
- </ACTIONS>
- <FILES>
- <FILE filename="%s" checksum_method="MD5" checksum="d41d8cd98f00b204e9800998ecf8427e"/>
- </FILES>
+  </CONTACTS>
+  <ACTIONS>
+    <ACTION>
+      <ADD source="study.xml" schema="study" notes="study metadata"/>
+    </ACTION>
+    <ACTION>
+      <ADD source="sample.xml" schema="sample" notes="sample metadata"/>
+    </ACTION>
+    <ACTION>
+      <RELEASE/>
+    </ACTION>
+  </ACTIONS>
+  <FILES>
+    <FILE filename="%s" checksum_method="MD5" checksum="d41d8cd98f00b204e9800998ecf8427e"/>
+  </FILES>
 </SUBMISSION>
 '''
 
@@ -2042,18 +2231,18 @@ study_xml = '''<?xml version="1.0" encoding="UTF-8"?>
 <STUDY_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <STUDY alias="fierer_hand_study">
     <DESCRIPTOR>
-        <STUDY_TITLE>The influence of sex, handedness, and washing on the diversity of hand surface bacteria</STUDY_TITLE>
-        <STUDY_TYPE existing_study_type="Metagenomics"/>
-        <STUDY_ABSTRACT>Short &apos;abstract&apos; with special characters &lt;10%.</STUDY_ABSTRACT>
-        <STUDY_DESCRIPTION>Targeted Gene Survey from Human Skin</STUDY_DESCRIPTION>
-        <CENTER_NAME>CCME</CENTER_NAME>
-        <CENTER_PROJECT_NAME>NULL</CENTER_PROJECT_NAME>
+      <STUDY_TITLE>The influence of sex, handedness, and washing on the diversity of hand surface bacteria</STUDY_TITLE>
+      <STUDY_TYPE existing_study_type="Metagenomics"/>
+      <STUDY_ABSTRACT>Short &apos;abstract&apos; with special characters &lt;10%.</STUDY_ABSTRACT>
+      <STUDY_DESCRIPTION>Targeted Gene Survey from Human Skin</STUDY_DESCRIPTION>
+      <CENTER_NAME>CCME</CENTER_NAME>
+      <CENTER_PROJECT_NAME>NULL</CENTER_PROJECT_NAME>
     </DESCRIPTOR>
     <STUDY_LINKS>
       <STUDY_LINK>
         <ENTREZ_LINK>
-         <DB>pubmed</DB>
-         <ID>19004758</ID>
+          <DB>pubmed</DB>
+          <ID>19004758</ID>
         </ENTREZ_LINK>
       </STUDY_LINK>
     </STUDY_LINKS>
@@ -2077,12 +2266,12 @@ study_pmid_missing_xml = '''<?xml version="1.0" encoding="UTF-8"?>
 <STUDY_SET xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <STUDY alias="fierer_hand_study">
     <DESCRIPTOR>
-        <STUDY_TITLE>The influence of sex, handedness, and washing on the diversity of hand surface bacteria</STUDY_TITLE>
-        <STUDY_TYPE existing_study_type="Metagenomics"/>
-        <STUDY_ABSTRACT>Short &apos;abstract&apos; with special characters &lt;10%.</STUDY_ABSTRACT>
-        <STUDY_DESCRIPTION>Targeted Gene Survey from Human Skin</STUDY_DESCRIPTION>
-        <CENTER_NAME>CCME</CENTER_NAME>
-        <CENTER_PROJECT_NAME>NULL</CENTER_PROJECT_NAME>
+      <STUDY_TITLE>The influence of sex, handedness, and washing on the diversity of hand surface bacteria</STUDY_TITLE>
+      <STUDY_TYPE existing_study_type="Metagenomics"/>
+      <STUDY_ABSTRACT>Short &apos;abstract&apos; with special characters &lt;10%.</STUDY_ABSTRACT>
+      <STUDY_DESCRIPTION>Targeted Gene Survey from Human Skin</STUDY_DESCRIPTION>
+      <CENTER_NAME>CCME</CENTER_NAME>
+      <CENTER_PROJECT_NAME>NULL</CENTER_PROJECT_NAME>
     </DESCRIPTOR>
   </STUDY>
 </STUDY_SET>
@@ -2125,15 +2314,21 @@ submission_xml = '''<?xml version="1.0" encoding="UTF-8"?>
  lab_name="Knight"
  submission_date="2009-10-22T01:23:00-05:00"
 >
- <CONTACTS>
+  <CONTACTS>
     <CONTACT name="Rob Knight" inform_on_status="Rob.Knight@Colorado.edu" inform_on_error="Rob.Knight@Colorado.edu"/>
     <CONTACT name="Noah Fierer" inform_on_status="Noah.Fierer@Colorado.edu" inform_on_error="Noah.Fierer@Colorado.edu"/>
- </CONTACTS>
- <ACTIONS>
-   <ACTION><ADD source="sample.xml" schema="sample" notes="sample metadata"/></ACTION>
-   <ACTION><ADD source="study.xml" schema="study" notes="study metadata"/></ACTION>
-   <ACTION><RELEASE/></ACTION>
- </ACTIONS>
+  </CONTACTS>
+  <ACTIONS>
+    <ACTION>
+      <ADD source="study.xml" schema="study" notes="study metadata" />
+    </ACTION>
+    <ACTION>
+      <ADD source="sample.xml" schema="sample" notes="sample metadata" />
+    </ACTION>
+    <ACTION>
+      <RELEASE />
+    </ACTION>
+  </ACTIONS>
 </SUBMISSION>
 '''
 
@@ -2169,14 +2364,38 @@ sample_xml = '''<?xml version="1.0" encoding="UTF-8"?>
     </SAMPLE_NAME>
     <DESCRIPTION>female right palm</DESCRIPTION>
     <SAMPLE_ATTRIBUTES>
-      <SAMPLE_ATTRIBUTE> <TAG>age</TAG> <VALUE>18</VALUE> </SAMPLE_ATTRIBUTE>
-      <SAMPLE_ATTRIBUTE> <TAG>dominant hand</TAG> <VALUE>right</VALUE> </SAMPLE_ATTRIBUTE>
-      <SAMPLE_ATTRIBUTE> <TAG>hand</TAG> <VALUE>right</VALUE> </SAMPLE_ATTRIBUTE>
-      <SAMPLE_ATTRIBUTE> <TAG>host_taxon_id</TAG> <VALUE>9606</VALUE> </SAMPLE_ATTRIBUTE>
-      <SAMPLE_ATTRIBUTE> <TAG>hours since wash</TAG> <VALUE>less than 2</VALUE> </SAMPLE_ATTRIBUTE>
-      <SAMPLE_ATTRIBUTE> <TAG>palm size</TAG> <VALUE>9.5</VALUE> </SAMPLE_ATTRIBUTE>
-      <SAMPLE_ATTRIBUTE> <TAG>sex</TAG> <VALUE>female</VALUE> </SAMPLE_ATTRIBUTE>
-      <SAMPLE_ATTRIBUTE> <TAG>subject</TAG> <VALUE>1</VALUE> </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>age</TAG>
+        <VALUE>18</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>dominant hand</TAG>
+        <VALUE>right</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>hand</TAG>
+        <VALUE>right</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>host_taxon_id</TAG>
+        <VALUE>9606</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>hours since wash</TAG>
+        <VALUE>less than 2</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>palm size</TAG>
+        <VALUE>9.5</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>sex</TAG>
+        <VALUE>female</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>subject</TAG>
+        <VALUE>1</VALUE>
+      </SAMPLE_ATTRIBUTE>
     </SAMPLE_ATTRIBUTES>
   </SAMPLE>
   <SAMPLE alias="S2">
@@ -2188,14 +2407,38 @@ sample_xml = '''<?xml version="1.0" encoding="UTF-8"?>
     </SAMPLE_NAME>
     <DESCRIPTION>female left palm</DESCRIPTION>
     <SAMPLE_ATTRIBUTES>
-      <SAMPLE_ATTRIBUTE> <TAG>age</TAG> <VALUE>18</VALUE> </SAMPLE_ATTRIBUTE>
-      <SAMPLE_ATTRIBUTE> <TAG>dominant hand</TAG> <VALUE>right</VALUE> </SAMPLE_ATTRIBUTE>
-      <SAMPLE_ATTRIBUTE> <TAG>hand</TAG> <VALUE>left</VALUE> </SAMPLE_ATTRIBUTE>
-      <SAMPLE_ATTRIBUTE> <TAG>host_taxon_id</TAG> <VALUE>9606</VALUE> </SAMPLE_ATTRIBUTE>
-      <SAMPLE_ATTRIBUTE> <TAG>hours since wash</TAG> <VALUE>less than 2</VALUE> </SAMPLE_ATTRIBUTE>
-      <SAMPLE_ATTRIBUTE> <TAG>palm size</TAG> <VALUE>9.5</VALUE> </SAMPLE_ATTRIBUTE>
-      <SAMPLE_ATTRIBUTE> <TAG>sex</TAG> <VALUE>female</VALUE> </SAMPLE_ATTRIBUTE>
-      <SAMPLE_ATTRIBUTE> <TAG>subject</TAG> <VALUE>1</VALUE> </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>age</TAG>
+        <VALUE>18</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>dominant hand</TAG>
+        <VALUE>right</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>hand</TAG>
+        <VALUE>left</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>host_taxon_id</TAG>
+        <VALUE>9606</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>hours since wash</TAG>
+        <VALUE>less than 2</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>palm size</TAG>
+        <VALUE>9.5</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>sex</TAG>
+        <VALUE>female</VALUE>
+      </SAMPLE_ATTRIBUTE>
+      <SAMPLE_ATTRIBUTE>
+        <TAG>subject</TAG>
+        <VALUE>1</VALUE>
+      </SAMPLE_ATTRIBUTE>
     </SAMPLE_ATTRIBUTES>
   </SAMPLE>
 </SAMPLE_SET>
