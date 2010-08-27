@@ -13,17 +13,12 @@ __status__ = "Development"
  
 
 from optparse import make_option
-from itertools import cycle
 
-from matplotlib.pyplot import ylim, xlim, show, legend, \
-    savefig
 from cogent.app.util import get_tmp_filename
 
+from qiime.plot_rank_abundance_graph import plot_rank_abundance_graphs
 from qiime.util import parse_command_line_parameters, get_options_lookup, \
-    parse_otu_table, create_dir
-from qiime.colors import data_color_order
-from qiime.plot_rank_abundance_graph import plot_rank_abundance_graph
-
+    create_dir
 
 options_lookup = get_options_lookup()
 
@@ -78,72 +73,29 @@ script_info['optional_options'] = [\
 script_info['version'] = __version__
 
 
-
 def main():
     option_parser, opts, args =\
         parse_command_line_parameters(**script_info)
     
-    sample_ids, otu_ids, otu_table, lineages = parse_otu_table(open(opts.otu_table_fp, "U"))
-
+    #set up and create the outpurt dir
     if opts.output_dir:  
         output_dir = opts.output_dir
     else:
         output_dir = get_tmp_filename(tmp_dir='./', prefix='rank_abundance_', suffix='')
     create_dir(output_dir, fail_on_exist=True)
     
+
     if opts.verbose:
         log_fh = open(output_dir+"/plot_rank_abundance_log.txt",'w')
         log_fh.write("OTU table file: %s\n"% opts.otu_table_fp)
         log_fh.write("sample names: %s\n" % opts.sample_name)
-        
-    #figure out which samples to draw
-    if opts.sample_name=='*':
-        user_sample_names = sample_ids
     else:
-        user_sample_names = opts.sample_name.split(',')
-        if len(user_sample_names)<1:
-            raise ValueError, "sample IDs must be comma separated list of "\
-            +"sample names - found %s" % opts.sample_name 
-
-    # do the actual drawing
-    ax=None
-    for sample_name,color in zip(user_sample_names, cycle(data_color_order)):
-        try:
-            index = sample_ids.index(sample_name)
-        except ValueError:
-            if opts.verbose:
-                log_fh.write("Warning: Sample name %s not in OTU table - skipping." % sample_name)
-            continue     
-        ax = plot_rank_abundance_graph(otu_table[:,index], color= color,
-                                       absolute=opts.absolute_counts,
-                                       label=sample_name)
-        ax.set_label(sample_name)
-    
-    if ax==None:
-        #ax should be defined if at least one series has been drawn
-        raise ValueError("No data series drawn. Check your OTU table and sample names")
-
-    #settings for all series
-    ax.grid()      
-    ax.set_xlabel('Species rank')
-    ax.set_ylabel('Relative abundance')
-
-    if not opts.x_linear_scale:
-        ax.set_xscale('log')
-    if not opts.y_linear_scale:
-        ax.set_yscale('log')
-  
-    if not opts.no_legend:
-        legend()
-
-    #build output fp    
-    output_fp = output_dir+ "/rank_abundance"
-    if len(user_sample_names) < 6:
-        output_fp += '_'.join(user_sample_names) 
-    output_fp += ".%s" % opts.file_type
-
-    savefig(output_fp, format=opts.file_type)
-    
+        log_fh=None
+        
+    plot_rank_abundance_graphs(opts.sample_name, open(opts.otu_table_fp,"U"),
+                               output_dir, opts.file_type,
+                               opts.absolute_counts, opts.x_linear_scale,
+                               opts.y_linear_scale, opts.no_legend, log_fh)
     
 if __name__ == "__main__":
     main()
