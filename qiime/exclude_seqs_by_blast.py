@@ -313,14 +313,14 @@ def check_options(parser,options):
               "Please check -d option: cannot read from subject FASTA filepath")
     if options.outputfilename is None:
         parser.error(\
-                "Please check -f option: must specify base output path")  
+                "Please check -o option: must specify base output path")  
     try:
         f=open(options.outputfilename,'w')
         f.close()
         remove_files([FilePath(options.outputfilename)])
     except IOError:
         parser.error(\
-              "Please check -f option: cannot write to output file")  
+              "Please check -o option: cannot write to output file")  
 
 
 def format_options_as_lines(options):
