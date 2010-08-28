@@ -41,7 +41,9 @@ def main():
     print ' Mean: %s' % str(mean_counts)
     print ''
     print 'Seqs/sample detail:'
-    for k,v in counts_per_sample.items():
+    sorted_counts_per_sample = [(v,k) for k,v in counts_per_sample.items()]
+    sorted_counts_per_sample.sort()
+    for v,k in sorted_counts_per_sample:
         print ' %s: %s' % (k,str(v))
     
 if __name__ == "__main__":
