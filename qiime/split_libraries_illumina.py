@@ -151,12 +151,13 @@ def process_illumina_paired_end_read_files(
     
 def parse_illumina_single_end_read_file(read_file,barcode_length,\
     max_bad_run_length,quality_threshold,min_per_read_length,
-    rev_comp,rev_comp_barcode,barcode_max_N=0,seq_max_N=0):
+    rev_comp,rev_comp_barcode,barcode_in_seq,barcode_max_N=0,seq_max_N=0):
     """Parses Illumina single-end read file
     """
     
     for read_line in read_file:
-        read = parse_illumina_line(read_line,barcode_length,rev_comp_barcode)
+        read = parse_illumina_line(read_line,barcode_length,
+                                   rev_comp_barcode,barcode_in_seq)
         
         read_desc = illumina_read_description_from_read_data(read)
         
@@ -182,7 +183,7 @@ def process_illumina_single_end_read_file(read_fp,output_seqs_fp,output_qual_fp,
     barcode_to_sample_id,barcode_length,
     store_unassigned,max_bad_run_length,
     quality_threshold,min_per_read_length, rev_comp, rev_comp_barcode,
-    seq_max_N=0, start_seq_id=0):
+    barcode_in_seq, seq_max_N=0, start_seq_id=0):
     """parses Ilimuna single-end read file
     """
     read_file = open(read_fp)
@@ -192,9 +193,10 @@ def process_illumina_single_end_read_file(read_fp,output_seqs_fp,output_qual_fp,
     seq_id = start_seq_id
     
     for seq_desc,barcode,seq,qual in\
-      parse_illumina_single_end_read_file(read_file,barcode_length,\
+      parse_illumina_single_end_read_file(read_file,barcode_length,
       max_bad_run_length,quality_threshold,min_per_read_length,
-      rev_comp,rev_comp_barcode,seq_max_N=seq_max_N):
+      rev_comp,rev_comp_barcode,barcode_in_seq=barcode_in_seq,
+      seq_max_N=seq_max_N):
         try:
           sample_id = barcode_to_sample_id[barcode]
         except KeyError:

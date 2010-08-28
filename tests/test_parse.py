@@ -497,8 +497,8 @@ eigvals\t4.94\t1.79\t1.50
             'BodySite':set(['Palm','Stool'])})
             
         
-    def test_parse_illumina_line(self):
-        """parse_illumina_line: functions with several lines """
+    def test_parse_illumina_line_barcode_in_header(self):
+        """parse_illumina_line: handles barcode in header correctly """
         illumina_line0 = illumina_read1[0]
         illumina_line1 = illumina_read1[1]
         actual = parse_illumina_line(
@@ -546,6 +546,32 @@ eigvals\t4.94\t1.79\t1.50
         actual = parse_illumina_line(
          illumina_line1,barcode_length=6,rev_comp_barcode=False)
         expected['Barcode'] = 'ACCTCC'
+        
+        
+    def test_parse_illumina_line_barcode_in_sequence(self):
+        """parse_illumina_line: handles barcode in sequence correctly """
+        illumina_line0 = illumina_read3[0]
+        actual = parse_illumina_line(
+         illumina_line0,barcode_length=12,
+         rev_comp_barcode=False,barcode_in_sequence=True)
+        expected = {\
+         'Full description':'HWI-EAS440_0386:1:23:19516:1031#0/1',
+         'Machine Name':'HWI-EAS440_0386',
+         'Channel Number':1,
+         'Tile Number':23,
+         'X Position':19516,
+         'Y Position':1031,
+         'Barcode':'ACAGCTAGCTTG',
+         'Full Y Position Field':'1031#0/1',
+         'Sequence':
+          'TACGNAGGATCCGAGCGTTATCCGGATTTATTGGGTTTAAAGGGAGCGTAGGTGGATT'
+          'GTTAAGTCAGTTGTGAAAGTTTGCGGCTCAACCGTAAAATTGCAGTTGATACTGGGTGTCTTGAGT'
+          'ACAGTAGAGGCAGGCGGAATTCGTGGGG',
+         'Quality Score':
+          'fffcGddd\_``_gggggggggggfgggggegggggcgggggggggggeeffafdcdfgbdggdbe]fbf'
+          'dddddbdadadcddaf`abb`cVNRNUScaa``aOY]]]_[_BBBBBBBBBBB'
+          'BBBBBBBBBBBBBBBBBBBBBBBBBBBBB'}
+        self.assertEqual(actual,expected)
 
     def test_parse_qual_score(self):
         """qual_score should return dict of {id: qual_scores}"""
@@ -639,7 +665,9 @@ HWI-6X_9267:1:1:4:390#ACCTCCC/1:GACAGGAGGAGCAAGTGTTATTCAAATTATGCCCCCCCCCCCCCCCCC
 
 illumina_read2 = """HWI-6X_9267:1:1:4:1699#ACCACCC/2:TTTTAAAAAAAAGGGGGGGGGGGCCCCCCCCCCCCCCCCCCCCCCCCTTTTTTTTTTTTTAAAAAAAAACCCCCCCGGGGGGGGTTTTTTTAATTATTC:aaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbcccccccccccccccccBcccccccccccccccc```````BBBB
 HWI-6X_9267:1:1:4:390#ACCTCCC/2:ACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACG:aaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbb""".split('\n')
-         
+
+illumina_read3 = """HWI-EAS440_0386:1:23:19516:1031#0/1:ACAGCTAGCTTGTACGNAGGATCCGAGCGTTATCCGGATTTATTGGGTTTAAAGGGAGCGTAGGTGGATTGTTAAGTCAGTTGTGAAAGTTTGCGGCTCAACCGTAAAATTGCAGTTGATACTGGGTGTCTTGAGTACAGTAGAGGCAGGCGGAATTCGTGGGG:gggggggeggcffffcGddd\_``_gggggggggggfgggggegggggcgggggggggggeeffafdcdfgbdggdbe]fbfdddddbdadadcddaf`abb`cVNRNUScaa``aOY]]]_[_BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+HWI-EAS440_0386:1:23:19660:1034#0/1:CATATCGCAGTTTACGNAAGGTCCGAGCGTTGTCCGGAATCATTGGGCGTAAAGGGTACGTAGGCGGGTAAGCAAGTTAGAAGTGAAATCCTATAGCTCAACTATAGTAAGCTTTTAAAACTGCTCATCTTGAGGTATGGAAGGGAAAGTGGAATTCCTAGTTA:fhhghhhhfhghhhhcHdcddccddhhhhhhfhhhhghhhdghhhhhhhhhhfhhhdhghgghhhhhhbfdfdbagdgdgfffafa]dad_acdabZcaabad[a__^_`cbddefb_cd^]_L\]U_]^aaZ___]bBBBBBBBBBBBBBBBBBBBBBBBBBB""".split('\n')
          
 if __name__ =='__main__':
     main()

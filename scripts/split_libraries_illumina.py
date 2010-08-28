@@ -63,7 +63,13 @@ script_info['optional_options'] = [\
     'end reads if applicable [default: %default]',default=0),
  make_option('-s','--start_seq_id',type='int',\
     help='start seq_ids as ascending integers beginning with start_seq_id'+\
-    '[default: %default]',default=0)
+    '[default: %default]',default=0),\
+ make_option('--rev_comp_barcode',action='store_true',\
+    help='reverse compliment barcodes before lookup'+\
+    '[default: %default]',default=False),\
+ make_option('--barcode_in_header',action='store_true',\
+    help='barcode is in header line (rather than beginning of sequence)'+\
+    '[default: %default]',default=False)
 ]
 script_info['version'] = __version__
 
@@ -97,6 +103,13 @@ def main():
     store_unassigned= opts.store_unassigned
     seq_max_N = opts.sequence_max_n
     start_seq_id = opts.start_seq_id
+    barcode_in_seq = not opts.barcode_in_header
+    
+    if barcode_in_seq and three_prime_read_fps:
+        parser.error(\
+            '--barcode_in_header is only supported option '
+            'for 5\' single end read data -- contact qiime.help@colorado.edu '
+            'with questions')
     
     try:
         makedirs(output_dir)
@@ -120,18 +133,18 @@ def main():
             log_fp = '%s/%s_seqs.log' % (output_dir,output_basename)
             output_qual_fp = '%s/%s_qual.txt' % (output_dir,output_basename)
         
-            next_seq_id = process_illumina_paired_end_read_files(\
-             five_prime_read_fp,\
-             three_prime_read_fp,\
-             output_seqs_fp,\
-             output_qual_fp,\
-             barcode_to_sample_id,\
-             barcode_length=barcode_length,\
-             store_unassigned=store_unassigned,\
-             max_bad_run_length=max_bad_run_length,\
-             quality_threshold=quality_threshold,\
-             min_per_read_length=min_per_read_length,\
-             rev_comp_barcode=True,
+            next_seq_id = process_illumina_paired_end_read_files(
+             five_prime_read_fp,
+             three_prime_read_fp,
+             output_seqs_fp,
+             output_qual_fp,
+             barcode_to_sample_id,
+             barcode_length=barcode_length,
+             store_unassigned=store_unassigned,
+             max_bad_run_length=max_bad_run_length,
+             quality_threshold=quality_threshold,
+             min_per_read_length=min_per_read_length,
+             rev_comp_barcode=opts.rev_comp_barcode,
              seq_max_N=seq_max_N,
              start_seq_id=next_seq_id)
     else:
@@ -165,7 +178,8 @@ def main():
              quality_threshold=quality_threshold,\
              min_per_read_length=min_per_read_length,\
              rev_comp=rev_comp,
-             rev_comp_barcode=True,
+             rev_comp_barcode=opts.rev_comp_barcode,
+             barcode_in_seq=barcode_in_seq,
              seq_max_N=seq_max_N,
              start_seq_id=next_seq_id)
 

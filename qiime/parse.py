@@ -581,14 +581,24 @@ def parse_metadata_state_descriptions(state_string):
             result[colname] = set(vals)
     return result
 
-def parse_illumina_line(l,barcode_length,rev_comp_barcode):
+def parse_illumina_line(l,barcode_length,rev_comp_barcode,
+                        barcode_in_sequence=False):
     """Parses a single line of Illumina data
     """
     fields = l.strip().split(':')
     
     y_position_subfields = fields[4].split('#')
     y_position = int(y_position_subfields[0])
-    barcode = y_position_subfields[1][:barcode_length]
+    sequence = fields[5]
+    qual_string = fields[6]
+    
+    if barcode_in_sequence:
+        barcode = sequence[:barcode_length]
+        sequence = sequence[barcode_length:]
+        qual_string = qual_string[barcode_length:]
+    else:
+        barcode = y_position_subfields[1][:barcode_length]
+    
     if rev_comp_barcode:
         barcode = revComp(barcode)
     
@@ -601,8 +611,8 @@ def parse_illumina_line(l,barcode_length,rev_comp_barcode):
      'Y Position':y_position,\
      'Barcode':barcode,\
      'Full Y Position Field':fields[4],\
-     'Sequence':fields[5],\
-     'Quality Score':fields[6]}
+     'Sequence':sequence,\
+     'Quality Score':qual_string}
      
     return result
 

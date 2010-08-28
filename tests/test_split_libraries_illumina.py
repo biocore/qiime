@@ -58,6 +58,11 @@ class IlluminaParserTests(TestCase):
         self.expected_5prime_qual_file1 = expected_5prime_qual_file1
         self.expected_5prime_seqs_file2 = expected_5prime_seqs_file2
         self.expected_5prime_qual_file2 = expected_5prime_qual_file2
+        
+        self.barcode_to_sample_id4 = barcode_to_sample_id4
+        self.illumina_read3_bc_in_seq = illumina_read3_bc_in_seq
+        self.expected_seq_file_bc_in_seq1 = expected_seq_file_bc_in_seq1
+        self.expected_qual_file_bc_in_seq1 = expected_qual_file_bc_in_seq1
     
     def tearDown(self):
         remove_files(self.files_to_remove)
@@ -86,7 +91,7 @@ class IlluminaParserTests(TestCase):
         """
         actual = list(parse_illumina_single_end_read_file(illumina_read1,barcode_length=6,\
             max_bad_run_length=0,quality_threshold=1e-5,min_per_read_length=70,
-            rev_comp=False,rev_comp_barcode=True))
+            rev_comp=False,rev_comp_barcode=True,barcode_in_seq=False))
         expected =[
          ('HWI-6X_9267:1:1:4:1699#ACCACCC','GGTGGT',\
           'TACGGAGGGTGCGAGCGTTAATCGCCCCCCCCCCCCCCCCCCCCCCCCCCC'+\
@@ -105,7 +110,7 @@ class IlluminaParserTests(TestCase):
         """
         actual = list(parse_illumina_single_end_read_file(illumina_read2,barcode_length=6,\
             max_bad_run_length=0,quality_threshold=1e-5,min_per_read_length=70,
-            rev_comp=True,rev_comp_barcode=True))
+            rev_comp=True,rev_comp_barcode=True,barcode_in_seq=False))
         expected =[
          ('HWI-6X_9267:1:1:4:1699#ACCACCC','GGTGGT',\
           'GGTTTTTTTTTAAAAAAAAAAAAAGGGGGGGGGGGGGGGGGGGG'+\
@@ -124,7 +129,7 @@ class IlluminaParserTests(TestCase):
         """
         actual = list(parse_illumina_single_end_read_file(illumina_read2_N,barcode_length=6,\
             max_bad_run_length=0,quality_threshold=1e-5,min_per_read_length=70,
-            rev_comp=True,rev_comp_barcode=True))
+            rev_comp=True,rev_comp_barcode=True,barcode_in_seq=False))
         expected =[]
         self.assertEqual(actual,expected)
         
@@ -133,14 +138,15 @@ class IlluminaParserTests(TestCase):
         """
         actual = list(parse_illumina_single_end_read_file(illumina_read2_N,barcode_length=6,\
             max_bad_run_length=0,quality_threshold=1e-5,min_per_read_length=70,
-            rev_comp=True,rev_comp_barcode=True))
+            rev_comp=True,rev_comp_barcode=True,barcode_in_seq=False))
         expected =[]
         self.assertEqual(actual,expected)
         
         # allow one N in barcode
         actual = list(parse_illumina_single_end_read_file(illumina_read2_N,barcode_length=6,\
             max_bad_run_length=0,quality_threshold=1e-5,min_per_read_length=70,
-            rev_comp=True,rev_comp_barcode=True,barcode_max_N=1,seq_max_N=0))
+            rev_comp=True,rev_comp_barcode=True,barcode_in_seq=False,
+            barcode_max_N=1,seq_max_N=0))
         expected =[
          ('HWI-6X_9267:1:1:4:390#ACNTCCC','GGANGT',\
           'CGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTA'+\
@@ -152,7 +158,8 @@ class IlluminaParserTests(TestCase):
         # allow one N in barcode
         actual = list(parse_illumina_single_end_read_file(illumina_read2_N,barcode_length=6,\
             max_bad_run_length=0,quality_threshold=1e-5,min_per_read_length=70,
-            rev_comp=True,rev_comp_barcode=True,barcode_max_N=0,seq_max_N=1))
+            rev_comp=True,rev_comp_barcode=True,barcode_in_seq=False,
+            barcode_max_N=0,seq_max_N=1))
         expected =[
          ('HWI-6X_9267:1:1:4:1699#ACCACCC','GGTGGT',\
           'GGTTTTTTTTTAAAAAAAAAAAAAGGGGGGGGGGGGGGGGGGGGGGGGCC'+\
@@ -164,7 +171,8 @@ class IlluminaParserTests(TestCase):
         # allow one N in barcode and one N in seq
         actual = list(parse_illumina_single_end_read_file(illumina_read2_N,barcode_length=6,\
             max_bad_run_length=0,quality_threshold=1e-5,min_per_read_length=70,
-            rev_comp=True,rev_comp_barcode=True,barcode_max_N=1,seq_max_N=1))
+            rev_comp=True,rev_comp_barcode=True,barcode_in_seq=False,
+            barcode_max_N=1,seq_max_N=1))
         expected =[
          ('HWI-6X_9267:1:1:4:1699#ACCACCC','GGTGGT',\
           'GGTTTTTTTTTAAAAAAAAAAAAAGGGGGGGGGGGGGGGGGGGGGGGGCC'+\
@@ -476,7 +484,7 @@ class IlluminaParserTests(TestCase):
          output_qual_fp,barcode_to_sample_id=self.barcode_to_sample_id1, 
          barcode_length=6,store_unassigned=True,max_bad_run_length=0,
          quality_threshold=1e-5,min_per_read_length=70,rev_comp=False,
-         rev_comp_barcode=True,seq_max_N=0,start_seq_id=0)
+         rev_comp_barcode=True,barcode_in_seq=False,seq_max_N=0,start_seq_id=0)
         
         self.files_to_remove.append(output_seqs_fp)
         self.files_to_remove.append(output_qual_fp)
@@ -511,7 +519,7 @@ class IlluminaParserTests(TestCase):
          output_qual_fp,barcode_to_sample_id=self.barcode_to_sample_id1, 
          barcode_length=6,store_unassigned=True,max_bad_run_length=0,
          quality_threshold=1e-5,min_per_read_length=70,rev_comp=False,
-         rev_comp_barcode=True,seq_max_N=1,start_seq_id=0)
+         rev_comp_barcode=True,barcode_in_seq=False,seq_max_N=1,start_seq_id=0)
         
         self.files_to_remove.append(output_seqs_fp)
         self.files_to_remove.append(output_qual_fp)
@@ -532,7 +540,7 @@ class IlluminaParserTests(TestCase):
          output_qual_fp,barcode_to_sample_id=self.barcode_to_sample_id1, 
          barcode_length=6,store_unassigned=True,max_bad_run_length=0,
          quality_threshold=1e-5,min_per_read_length=70,rev_comp=False,
-         rev_comp_barcode=True,seq_max_N=0,start_seq_id=0)
+         rev_comp_barcode=True,barcode_in_seq=False,seq_max_N=0,start_seq_id=0)
 
         # next_seq_id is returned correctly
         self.assertEqual(actual,0)
@@ -682,6 +690,40 @@ class IlluminaParserTests(TestCase):
         
         # correct qual file is returned
         self.assertEqual([l.strip() for l in list(open(output_qual_fp))],[])
+        
+    def test_process_illumina_single_end_read_file_bc_in_seq(self):
+        """process_illumina_single_end_read_file: functions as expected with bc in seq
+        """
+        output_seqs_fp = get_tmp_filename(\
+         prefix='ParseIlluminaTests',suffix='.fasta')
+        output_qual_fp = get_tmp_filename(\
+         prefix='ParseIlluminaTests',suffix='.txt')
+        read_fp = get_tmp_filename(\
+         prefix='ParseIlluminaTests',suffix='.txt')
+        
+        open(read_fp,'w').write('\n'.join(self.illumina_read3_bc_in_seq))
+        self.files_to_remove.append(read_fp)
+        
+        actual = process_illumina_single_end_read_file(read_fp,output_seqs_fp,
+         output_qual_fp,barcode_to_sample_id=self.barcode_to_sample_id4, 
+         barcode_length=12,store_unassigned=True,max_bad_run_length=0,
+         quality_threshold=1e-5,min_per_read_length=70,rev_comp=False,
+         rev_comp_barcode=False,barcode_in_seq=True,
+         seq_max_N=0,start_seq_id=0)
+        
+        self.files_to_remove.append(output_seqs_fp)
+        self.files_to_remove.append(output_qual_fp)
+
+        # next_seq_id is returned correctly
+        self.assertEqual(actual,2)
+        
+        # correct seq file is returned
+        self.assertEqual([l.strip() for l in list(open(output_seqs_fp))],\
+         self.expected_seq_file_bc_in_seq1)
+        
+        # correct qual file is returned
+        self.assertEqual([l.strip() for l in list(open(output_qual_fp))],\
+         self.expected_qual_file_bc_in_seq1)
 
 illumina_read1 = """HWI-6X_9267:1:1:4:1699#ACCACCC/1:TACGGAGGGTGCGAGCGTTAATCGCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCGAAAAAAAAAAAAAAAAAAAAAAA:abbbbbbbbbb`_`bbbbbb`bb^aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaDaabbBBBBBBBBBBBBBBBBBBB
 HWI-6X_9267:1:1:4:390#ACCTCCC/1:GACAGGAGGAGCAAGTGTTATTCAAATTATGCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCGGGGGGGGGGGGGGGAAAAAAAAAAAAAAAAAAAAAAA:aaaaaaaaaa```aa\^_aa``aVaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaBaaaaa""".split('\n')
@@ -758,6 +800,23 @@ expected_qual_file3 = """>Samp2_0 HWI-6X_9267:1:1:4:1699#ACCACCC
 abbbbbbbbbb`_`bbbbbb`bb^aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaacccccccccccccccccbbbbbbbbbbbbbbbbbbbbbbbbbaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 >SAMP_1_1 HWI-6X_9267:1:1:4:390#ACCTCCC
 aaaaaaaaaa```aa\^_aa``aVaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbaaaaaaaaaaaaaaaaaaaaabbbbbbbbbbbbbbbbbbbbbbbbbbbbbaaaaaaaaaaaaaaaaaaaaaaaaaa""".split('\n')
+
+
+barcode_to_sample_id4 = {'ACAGCTAGCTTG':'S1',
+                         'CATATCGCAGTT':'S2'}
+
+illumina_read3_bc_in_seq = """HWI-EAS440_0386:1:23:19516:1031#0/1:ACAGCTAGCTTGTACGCAGGATCCGAGCGTTATCCGGATTTATTGGGTTTAAAGGGAGCGTAGGTGGATTGTTAAGTCAGTTGTGAAAGTTTGCGGCTCAACCGTAAAATTGCAGTTGATACTGGGTGTCTTGAGTACAGTAGAGGCAGGCGGAATTCGTGGGG:gggggggeggcffffcGddd\_``_gggggggggggfgggggegggggcgggggggggggeeffafdcdfgbdggdbe]fbfdddddbdadadcddaf`abb`cVNRNUScaa``aOY]]]_[_BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+HWI-EAS440_0386:1:23:19660:1034#0/1:CATATCGCAGTTTACGCAAGGTCCGAGCGTTGTCCGGAATCATTGGGCGTAAAGGGTACGTAGGCGGGTAAGCAAGTTAGAAGTGAAATCCTATAGCTCAACTATAGTAAGCTTTTAAAACTGCTCATCTTGAGGTATGGAAGGGAAAGTGGAATTCCTAGTTA:fhhghhhhfhghhhhcHdcddccddhhhhhhfhhhhghhhdghhhhhhhhhhfhhhdhghgghhhhhhbfdfdbagdgdgfffafa]dad_acdabZcaabad[a__^_`cbddefb_cd^]_L\]U_]^aaZ___]bBBBBBBBBBBBBBBBBBBBBBBBBBB""".split('\n')
+
+expected_seq_file_bc_in_seq1 = """>S1_0 HWI-EAS440_0386:1:23:19516:1031#0
+TACGCAGGATCCGAGCGTTATCCGGATTTATTGGGTTTAAAGGGAGCGTAGGTGGATTGTTAAGTCAGTTGTGAAAGTTTGCGGCTCAACCGTAAAATTGCAGTTGATACTG
+>S2_1 HWI-EAS440_0386:1:23:19660:1034#0
+TACGCAAGGTCCGAGCGTTGTCCGGAATCATTGGGCGTAAAGGGTACGTAGGCGGGTAAGCAAGTTAGAAGTGAAATCCTATAGCTCAACTATAGTAAGCTTTTAAAACTGCTCATCTTGAGGTAT""".split('\n')
+
+expected_qual_file_bc_in_seq1 = """>S1_0 HWI-EAS440_0386:1:23:19516:1031#0
+fffcGddd\_``_gggggggggggfgggggegggggcgggggggggggeeffafdcdfgbdggdbe]fbfdddddbdadadcddaf`abb`cVNRNUScaa``aOY]]]_[_
+>S2_1 HWI-EAS440_0386:1:23:19660:1034#0
+hhhcHdcddccddhhhhhhfhhhhghhhdghhhhhhhhhhfhhhdhghgghhhhhhbfdfdbagdgdgfffafa]dad_acdabZcaabad[a__^_`cbddefb_cd^]_L\]U_]^aaZ___]b""".split('\n')
 
 mapping_f = """#SampleID	BarcodeSequence Something Description
 Samp2	GGTGGT	True
