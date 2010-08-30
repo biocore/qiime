@@ -51,6 +51,7 @@ from pycogent_backports.misc import parse_command_line_parameters
 
 from cogent.util.misc import curry
 from qiime.parse import parse_otu_table, parse_qiime_config_files, parse_coords
+from qiime.format import format_otu_table
 
 class TreeMissingError(IOError):
     """Exception for missing tree file"""
@@ -525,6 +526,13 @@ def merge_otu_tables(otu_table_f1,otu_table_f2):
      'Overlapping sample ids detected.'
     sample_ids_result = sample_ids1 + sample_ids2
     
+    # Will need to add support for OTU tables wo tax info at some 
+    # point -- in a rush now so don't have time to add it without an
+    # immediate use case.
+    assert lineages1 and lineages2,\
+     ('No taxonomic information included. This information is '
+     'currently required for this functionality.')
+    
     # map OTU ids to lineages -- in case of conflicts (i.e, OTU assigned)
     # different lineage in different otu tables, the lineage from 
     # OTU table 1 will be taken
@@ -555,6 +563,21 @@ def merge_otu_tables(otu_table_f1,otu_table_f2):
     lineages_result = [otu_id_to_lineage[otu_id] for otu_id in otu_ids_result]
     
     return sample_ids_result, otu_ids_result, otu_table, lineages_result
+    
+def merge_n_otu_tables(otu_table_fs):
+    """ Merge n otu tables """
+    if len(otu_table_fs) < 2:
+        raise ValueError, "Two or more OTU tables must be provided."
+    otu_table_f0 = otu_table_fs[0]
+    for otu_table_f in otu_table_fs[1:]:
+        sample_names, otu_names, data, taxonomy = \
+         merge_otu_tables(otu_table_f0,otu_table_f)
+        otu_table_f0 = format_otu_table(sample_names=sample_names, 
+                                    otu_names=otu_names,
+                                    data=data,
+                                    taxonomy=taxonomy).split('\n')
+    
+    return sample_names, otu_names, data, taxonomy
 
 def convert_OTU_table_relative_abundance(otu_table):
     """convert the OTU table to have relative abundances rather than raw counts

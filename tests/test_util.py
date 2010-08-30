@@ -13,13 +13,14 @@ from cogent.app.formatdb import build_blast_db_from_fasta_file
 from cogent.util.misc import get_random_directory_name, remove_files
 
 from qiime.parse import fields_to_dict
-from qiime.util import make_safe_f, FunctionWithParams, qiime_blast_seqs,\
-    extract_seqs_by_sample_id, get_qiime_project_dir, matrix_stats,\
-    raise_error_on_parallel_unavailable, merge_otu_tables,\
-    convert_OTU_table_relative_abundance, create_dir, handle_error_codes,\
-    summarize_pcoas, _compute_jn_pcoa_avg_ranges, _flip_vectors, IQR, \
-    idealfourths, isarray, matrix_IQR, sort_fasta_by_abundance, degap_fasta_aln, \
-    write_degapped_fasta_to_file, compare_otu_maps, get_diff_for_otu_maps
+from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
+    extract_seqs_by_sample_id, get_qiime_project_dir, matrix_stats,
+    raise_error_on_parallel_unavailable, merge_otu_tables,
+    convert_OTU_table_relative_abundance, create_dir, handle_error_codes,
+    summarize_pcoas, _compute_jn_pcoa_avg_ranges, _flip_vectors, IQR,
+    idealfourths, isarray, matrix_IQR, sort_fasta_by_abundance, degap_fasta_aln,
+    write_degapped_fasta_to_file, compare_otu_maps, get_diff_for_otu_maps,
+    merge_n_otu_tables)
 
 import numpy
 from numpy import array, asarray
@@ -42,6 +43,7 @@ class TopLevelTests(TestCase):
     def setUp(self):
         self.otu_table_f1 = otu_table_fake1.split('\n')
         self.otu_table_f2 = otu_table_fake2.split('\n')
+        self.otu_table_f3 = otu_table_fake3.split('\n')
         self.dirs_to_remove = []
         self.files_to_remove = []
 
@@ -200,6 +202,15 @@ class TopLevelTests(TestCase):
         # error on overlapping sample ids
         self.assertRaises(AssertionError,\
          merge_otu_tables,iter(self.otu_table_f1),iter(self.otu_table_f1))
+        
+    def test_merge_n_otu_tables_error(self):
+        """merge_n_otu_tables throws error on overlapping sample IDs"""
+        # error on overlapping sample ids
+        self.assertRaises(AssertionError,merge_n_otu_tables,
+                          [iter(self.otu_table_f1),
+                           iter(self.otu_table_f2),
+                           iter(self.otu_table_f3),
+                           iter(self.otu_table_f1)])
     
     def test_merge_otu_tables(self):
         """merge_otu_tables functions as expected"""
@@ -220,6 +231,31 @@ class TopLevelTests(TestCase):
                     ['Root','Bacteria','Bacteroidetes'],\
                     ['Root','Archaea']]
         actual = merge_otu_tables(otu_table_f1,otu_table_f2)
+        self.assertEqual(actual[0],exp_sample_ids)
+        self.assertEqual(actual[1],exp_otu_ids)
+        self.assertEqual(actual[2],exp_otu_table)
+        self.assertEqual(actual[3],exp_lineages)
+        
+    def test_merge_n_otu_tables(self):
+        """merge_n_otu_tables functions as expected"""
+        otu_table_f1 = iter(self.otu_table_f1)
+        otu_table_f2 = iter(self.otu_table_f2)
+        otu_table_f3 = iter(self.otu_table_f3)
+        exp_sample_ids = ['S1','S2','S3','S4','S5','samp7']
+        exp_otu_ids = ['0','1','2','3','4','6']
+        exp_otu_table = array([[1,0,1,0,1,0],\
+                           [1,0,0,0,0,0],\
+                           [4,0,1,0,1,0],\
+                           [0,0,2,0,1,0],\
+                           [0,0,1,0,9,0],\
+                           [0,0,1,25,42,1]])
+        exp_lineages = [['Root','Bacteria'],\
+                    ['Root','Bacteria','Verrucomicrobia'],
+                    ['Root','Bacteria'],\
+                    ['Root','Bacteria','Acidobacteria'],\
+                    ['Root','Bacteria','Bacteroidetes'],\
+                    ['Root','Archaea']]
+        actual = merge_n_otu_tables([otu_table_f1,otu_table_f2,otu_table_f3])
         self.assertEqual(actual[0],exp_sample_ids)
         self.assertEqual(actual[1],exp_otu_ids)
         self.assertEqual(actual[2],exp_otu_table)
@@ -316,8 +352,12 @@ otu_table_fake2 = """#Full OTU Counts
 3	2	0	1	Root;Bacteria;Acidobacteria
 4	1	0	9	Root;Bacteria;Bacteroidetes
 2	1	0	1	Root;Bacteria;Acidobacteria;Acidobacteria;Gp5
-6	1	25	42	Root;Archaea"""       
-        
+6	1	25	42	Root;Archaea"""
+
+otu_table_fake3 = """#Full OTU Counts
+#OTU ID	samp7	Consensus Lineage
+6	1	Root;Archaea""" 
+
                                     
 class FunctionWithParamsTests(TestCase):
     """Tests of the FunctionWithParams class.
