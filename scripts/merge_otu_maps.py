@@ -34,7 +34,7 @@ and otu_map2.txt contains:
 221 1
 === =   =
 
-The resulting OTU table will be:
+The resulting OTU map will be:
 
 === ====    ====    ====    ====    ====    ====
 110 seq1    seq2    seq5    seq6    seq7    seq8
@@ -42,7 +42,7 @@ The resulting OTU table will be:
 === ====    ====    ====    ====    ====    ====
 """
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Example:""","""If the seq_ids in otu_table2.txt are otu_ids in otu_table1.txt, expand the seq_ids in otu_table2.txt to be the full list of associated seq_ids from otu_table1.txt. Write the resulting otu table to otu_table.txt (-o).""","""merge_otu_maps.py -i otu_map1.txt,otu_map2.txt -o otu_table.txt"""))
+script_info['script_usage'].append(("""Example:""","""If the seq_ids in otu_map2.txt are otu_ids in otu_map1.txt, expand the seq_ids in otu_map2.txt to be the full list of associated seq_ids from otu_map1.txt. Write the resulting otu map to otu_map.txt (-o).""","""merge_otu_maps.py -i otu_map1.txt,otu_map2.txt -o otu_map.txt"""))
 script_info['output_description']="""The result of this script is an OTU mapping file."""
 script_info['required_options']=[\
     make_option('-i','--otu_map_fps',\
