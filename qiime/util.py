@@ -525,6 +525,8 @@ def merge_otu_tables(otu_table_f1,otu_table_f2):
     assert set(sample_ids1) & set(sample_ids2) == set(),\
      'Overlapping sample ids detected.'
     sample_ids_result = sample_ids1 + sample_ids2
+    sample_ids_result_lookup = dict(
+     [(sid,i) for i, sid in enumerate(sample_ids_result)])
     
     # Will need to add support for OTU tables wo tax info at some 
     # point -- in a rush now so don't have time to add it without an
@@ -546,18 +548,24 @@ def merge_otu_tables(otu_table_f1,otu_table_f2):
     otu_ids_lookup = {}.fromkeys(otu_ids1)
     otu_ids_result.extend([otu_id for otu_id in otu_ids2 \
                                   if otu_id not in otu_ids_lookup])
+    otu_ids_result_lookup = dict(
+     [(oid,i) for i, oid in enumerate(otu_ids_result)])
     
     otu_table = zeros(shape=(len(otu_ids_result),len(sample_ids_result)),dtype=int)
     for i,sample_id in enumerate(sample_ids1):
-        col_index = sample_ids_result.index(sample_id)
+        #col_index = sample_ids_result.index(sample_id)
+        col_index = sample_ids_result_lookup[sample_id]
         for j,otu_id in enumerate(otu_ids1):
-            row_index = otu_ids_result.index(otu_id)
+            #row_index = otu_ids_result.index(otu_id)
+            row_index = otu_ids_result_lookup[otu_id]
             otu_table[row_index,col_index] = otu_table1[j,i]
         
     for i,sample_id in enumerate(sample_ids2):
-        col_index = sample_ids_result.index(sample_id)
+        #col_index = sample_ids_result.index(sample_id)
+        col_index = sample_ids_result_lookup[sample_id]
         for j,otu_id in enumerate(otu_ids2):
-            row_index = otu_ids_result.index(otu_id)
+            #row_index = otu_ids_result.index(otu_id)
+            row_index = otu_ids_result_lookup[otu_id]
             otu_table[row_index,col_index] = otu_table2[j,i]
 
     lineages_result = [otu_id_to_lineage[otu_id] for otu_id in otu_ids_result]
