@@ -345,7 +345,13 @@ def check_barcode(curr_barcode, barcode_type, valid_map,
         corrected_bc = True
         return num_errors, barcode, corrected_bc
     else:
-        return True, None, corrected_bc
+        try:
+            expect_len, curr_bc_fun = int(barcode_type), correct_barcode
+            barcode, num_errors = curr_bc_fun(curr_barcode, valid_map)
+            corrected_bc = True
+        except ValueError:
+            raise ValueError, "Unsupported barcode type: %s" % barcode_type
+        return num_errors, barcode, corrected_bc
 
 def make_histograms(pre_lengths, post_lengths, binwidth=10):
     """Makes histogram data for pre and post lengths"""
