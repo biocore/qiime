@@ -572,6 +572,9 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
                      local_align_primer_seq(rev_primer,cres)
                     if rev_primer_mm <= max_primer_mm:
                         write_seq = write_seq[0:rev_primer_index]
+                        if qual_out:
+                            curr_qual = curr_qual[0:barcode_len +\
+                             primer_len + rev_primer_index]
                     else:
                         reverse_primer_not_found += 1
                 except KeyError:
@@ -583,6 +586,9 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
                      local_align_primer_seq(rev_primer,cres)
                     if rev_primer_mm <= max_primer_mm:
                         write_seq = write_seq[0:rev_primer_index]
+                        if qual_out:
+                            curr_qual = curr_qual[0:barcode_len +\
+                             primer_len + rev_primer_index]
                     else:
                         reverse_primer_not_found += 1
                         write_seq = False
@@ -601,9 +607,6 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
                 qual_primer = format_qual_output(qual_primer)
                 qual_scores_out = format_qual_output(qual_scores_out)
 
-                if reverse_primers == "truncate_remove" or \
-                 reverse_primers == "truncate_only":
-                     qual_scores_out = qual_scores_out[0:rev_primer_index]
             
             if not write_seq:
                 bc_counts['#FAILED'].append(curr_rid)
