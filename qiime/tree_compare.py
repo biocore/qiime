@@ -11,7 +11,7 @@ import copy
 
 __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2010, The QIIME Project"
-__credits__ = ["Justin Kuczynski"]
+__credits__ = ["Justin Kuczynski", "Daniel McDonald"]
 __license__ = "GPL"
 __version__ = "1.1.0-dev"
 __maintainer__ = "Justin Kuczynski"
@@ -212,6 +212,7 @@ def tree_support(master, subsampled_tree):
         else:
             return (node.Name not in master_tipnames)
     subsampled_tree_trimmed.removeDeleted(delete_test)
+    subsampled_tree_trimmed.prune()
 
     # subsampled_tree_nodes_names is a list of lists.
     # each elem is list of tip names for a node
