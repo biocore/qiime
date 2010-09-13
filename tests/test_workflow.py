@@ -925,16 +925,12 @@ class WorkflowTests(TestCase):
         
         extracted_seq_ids_1 = [s[0].split()[0] 
                                for s in MinimalFastaParser(open(fna_fp1))]
+        # one sequence is removed by the filtering
+        self.assertEqual(len(extracted_seq_ids_1), 3)
+
         extracted_seq_ids_2 = [s[0].split()[0] 
                                for s in MinimalFastaParser(open(fna_fp2))]
-        combined_seq_ids = extracted_seq_ids_1 + extracted_seq_ids_2
-        combined_seq_ids.sort()
-        
-        # confirm that the actual sequencess extracted from the sff files
-        # are the ones that they should be (i.e., they don't contain the 
-        # screened seqs)
-        self.assertEqual(len(combined_seq_ids),14)
-        self.assertEqual(combined_seq_ids,screened_seq_ids)
+        self.assertEqual(len(extracted_seq_ids_2), 0)
         
         
     def test_run_process_sra_submission_negative_human_screen(self):
@@ -1025,16 +1021,12 @@ class WorkflowTests(TestCase):
         
         extracted_seq_ids_1 = [s[0].split()[0] 
                                for s in MinimalFastaParser(open(fna_fp1))]
+        self.assertEqual(len(extracted_seq_ids_1), 4)
+
         extracted_seq_ids_2 = [s[0].split()[0] 
                                for s in MinimalFastaParser(open(fna_fp2))]
-        combined_seq_ids = extracted_seq_ids_1 + extracted_seq_ids_2
-        combined_seq_ids.sort()
-        
-        # confirm that the actual sequencess extracted from the sff files
-        # are the ones that they should be (i.e., they don't contain the 
-        # screened seqs)
-        self.assertEqual(len(combined_seq_ids),19)
-        self.assertEqual(combined_seq_ids,screened_seq_ids)
+        self.assertEqual(len(extracted_seq_ids_2), 0)
+
         
     def test_run_process_sra_submission_no_human_screen(self):
         """run_process_sra_submission generates expected results wo human screen
@@ -1115,15 +1107,12 @@ class WorkflowTests(TestCase):
         
         extracted_seq_ids_1 = [s[0].split()[0] 
                                for s in MinimalFastaParser(open(fna_fp1))]
+        self.assertEqual(len(extracted_seq_ids_1), 4)
+
         extracted_seq_ids_2 = [s[0].split()[0] 
                                for s in MinimalFastaParser(open(fna_fp2))]
-        combined_seq_ids = extracted_seq_ids_1 + extracted_seq_ids_2
-        combined_seq_ids.sort()
-        
-        # confirm that the actual sequencess extracted from the sff files
-        # are the ones that they should be
-        self.assertEqual(len(combined_seq_ids),20)
-        self.assertEqual(combined_seq_ids,seq_ids)
+        self.assertEqual(len(extracted_seq_ids_2), 0)
+
         
     def test_run_process_sra_submission_error_on_missing_fields(self):
         """run_process_sra_submission detects missing fields in input files
@@ -1252,29 +1241,29 @@ pick_otus:similarity	0.62
 pick_otus:enable_rev_strand_match   True""".split('\n')
 
 sra_experiment_txt = '''#EXPERIMENT_ALIAS	EXPERIMENT_CENTER	EXPERIMENT_TITLE	STUDY_REF	STUDY_CENTER	EXPERIMENT_DESIGN_DESCRIPTION	LIBRARY_CONSTRUCTION_PROTOCOL	SAMPLE_ALIAS	SAMPLE_CENTER	POOL_MEMBER_NAME	POOL_MEMBER_FILENAME	POOL_PROPORTION	BARCODE_READ_GROUP_TAG	BARCODE	LINKER	PRIMER_READ_GROUP_TAG	KEY_SEQ	PRIMER	RUN_PREFIX	RUN_ALIAS	REGION	PLATFORM	RUN_CENTER	RUN_DATE	INSTRUMENT_NAME
-bodysites_F6AVWTA01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015438	NCBI	F6AVWTA01_2878_700015438_V1-V3	B-2004-03-S1.sff	0.014492754	F6AVWTA01_ATGTTCGATG	AGACTCTGCT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA01	F6AVWTA01_2878	0	FLX	JCVI 	NULL	NULL
-bodysites_F6AVWTA02	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015438	NCBI	F6AVWTA02_2878_700015438_V1-V3	B-2008-05-S1.sff	0.014492754	F6AVWTA02_ATGTTCTAGT	ATGTTCTAGT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	F6AVWTA02_2878	0	FLX	JCVI 	NULL	NULL
-bodysites_F6AVWTA01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015470	NCBI	F6AVWTA01_2866_700015470_V1-V3	B-2004-04-S1.sff	0.014492754	F6AVWTA01_GCTCTACGTC	GCTCTACGTC		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA01	F6AVWTA01_2866	0	FLX	JCVI 	NULL	NULL
-bodysites_F6AVWTA02	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015470	NCBI	F6AVWTA02_2866_700015470_V1-V3	B-2008-08-S1.sff	0.014492754	F6AVWTA02_GCTCTGTACT	GCTCTGTACT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	F6AVWTA02_2866	0	FLX	JCVI 	NULL	NULL
-bodysites_F6AVWTA01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015766	NCBI	F6AVWTA01_2898_700015766_V1-V3	B-2004-08-S1.sff	0.014492754	F6AVWTA01_CATGAGCGTC	CATGAGCGTC		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA01	F6AVWTA01_2898	0	FLX	JCVI 	NULL	NULL
-bodysites_F6AVWTA02	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015766	NCBI	F6AVWTA02_2898_700015766_V1-V3	B-2009-06-S1.sff	0.014492754	F6AVWTA02_CATGAGCGTG	CATGAGCGTG		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	F6AVWTA02_2898	0	FLX	JCVI 	NULL	NULL
-bodysites_F6AVWTA01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015468	NCBI	F6AVWTA01_2865_700015468_V1-V3	B-2005-06-S1.sff	0.014492754	F6AVWTA01_AGTACGTACT	AGTACGTACT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA01	F6AVWTA01_2865	0	FLX	JCVI 	NULL	NULL
-bodysites_F6AVWTA02	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015468	NCBI	F6AVWTA02_2865_700015468_V1-V3	B-2011-01-S1.sff	0.014492754	F6AVWTA02_AGTACACGTC	AGTACACGTC		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	F6AVWTA02_2865	0	FLX	JCVI 	NULL	NULL
-bodysites_F6AVWTA01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700016371	NCBI	F6AVWTA01_2907_700016371_V1-V3	B-2006-03-S1.sff	0.014492754	F6AVWTA01_TCTCTCTAGT	TCTCTCTAGT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA01	F6AVWTA01_2907	0	FLX	JCVI 	NULL	NULL
-bodysites_F6AVWTA02	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700016371	NCBI	F6AVWTA02_2907_700016371_V1-V3	B-2011-02-S1.sff	0.014492754	F6AVWTA02_TCTCTGTACT	TCTCTGTACT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	F6AVWTA02_2907	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015438	NCBI	F6AVWTA01_2878_700015438_V1-V3	B-2004-03-S1.sff	0.014492754	F6AVWTA01_CAGTAGTCCT	CAGTAGTCCT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA01	F6AVWTA01_2878	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA02	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015438	NCBI	F6AVWTA02_2878_700015438_V1-V3	B-2008-05-S1.sff	0.014492754	F6AVWTA02_GCATATCGCT	GCATATCGCT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	F6AVWTA02_2878	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015470	NCBI	F6AVWTA01_2866_700015470_V1-V3	B-2004-04-S1.sff	0.014492754	F6AVWTA01_CATCGTAGCT	CATCGTAGCT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA01	F6AVWTA01_2866	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA02	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015470	NCBI	F6AVWTA02_2866_700015470_V1-V3	B-2008-08-S1.sff	0.014492754	F6AVWTA02_GACTCTGACT	GACTCTGACT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	F6AVWTA02_2866	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015766	NCBI	F6AVWTA01_2898_700015766_V1-V3	B-2004-08-S1.sff	0.014492754	F6AVWTA01_CAGTCAGTCT	CAGTCAGTCT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA01	F6AVWTA01_2898	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA02	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015766	NCBI	F6AVWTA02_2898_700015766_V1-V3	B-2009-06-S1.sff	0.014492754	F6AVWTA02_GACATCTGCT	GACATCTGCT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	F6AVWTA02_2898	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015468	NCBI	F6AVWTA01_2865_700015468_V1-V3	B-2005-06-S1.sff	0.014492754	F6AVWTA01_AGACTCTGCT	AGACTCTGCT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA01	F6AVWTA01_2865	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA02	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015468	NCBI	F6AVWTA02_2865_700015468_V1-V3	B-2011-01-S1.sff	0.014492754	F6AVWTA02_CATGTGCACT	CATGTGCACT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	F6AVWTA02_2865	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA01	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700016371	NCBI	F6AVWTA01_2907_700016371_V1-V3	B-2006-03-S1.sff	0.014492754	F6AVWTA01_CTGACTGACT	CTGACTGACT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA01	F6AVWTA01_2907	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA02	JCVI	Survey of multiple body sites	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700016371	NCBI	F6AVWTA02_2907_700016371_V1-V3	B-2011-02-S1.sff	0.014492754	F6AVWTA02_CATGAGCTCT	CATGAGCTCT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	F6AVWTA02_2907	0	FLX	JCVI 	NULL	NULL
 '''
 
 bad_experiment_txt_file  ='''#EXPERIMENT_ALIAS	EXPERIMENT_CENTER	STUDY_REF	STUDY_CENTER	EXPERIMENT_DESIGN_DESCRIPTION	LIBRARY_CONSTRUCTION_PROTOCOL	SAMPLE_ALIAS	SAMPLE_CENTER	POOL_MEMBER_NAME	POOL_MEMBER_FILENAME	POOL_PROPORTION	BARCODE_READ_GROUP_TAG	BARCODE	LINKER	PRIMER_READ_GROUP_TAG	KEY_SEQ	PRIMER	RUN_PREFIX	RUN_ALIAS	REGION	PLATFORM	RUN_CENTER	RUN_DATE	INSTRUMENT_NAME
-bodysites_F6AVWTA01	JCVI	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015438	NCBI	F6AVWTA01_2878_700015438_V1-V3	B-2004-03-S1.sff	0.014492754	F6AVWTA01_ATGTTCGATG	AGACTCTGCT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA01	F6AVWTA01_2878	0	FLX	JCVI 	NULL	NULL
-bodysites_F6AVWTA02	JCVI	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015438	NCBI	F6AVWTA02_2878_700015438_V1-V3	B-2008-05-S1.sff	0.014492754	F6AVWTA02_ATGTTCTAGT	ATGTTCTAGT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	F6AVWTA02_2878	0	FLX	JCVI 	NULL	NULL
-bodysites_F6AVWTA01	JCVI	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015470	NCBI	F6AVWTA01_2866_700015470_V1-V3	B-2004-04-S1.sff	0.014492754	F6AVWTA01_GCTCTACGTC	GCTCTACGTC		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA01	F6AVWTA01_2866	0	FLX	JCVI 	NULL	NULL
-bodysites_F6AVWTA02	JCVI	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015470	NCBI	F6AVWTA02_2866_700015470_V1-V3	B-2008-08-S1.sff	0.014492754	F6AVWTA02_GCTCTGTACT	GCTCTGTACT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	F6AVWTA02_2866	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA01	JCVI	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015438	NCBI	F6AVWTA01_2878_700015438_V1-V3	B-2004-03-S1.sff	0.014492754	F6AVWTA01_CTGACTGACT	CTGACTGACT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA01	F6AVWTA01_2878	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA02	JCVI	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015438	NCBI	F6AVWTA02_2878_700015438_V1-V3	B-2008-05-S1.sff	0.014492754	F6AVWTA02_CAGTAGTCCT	CAGTAGTCCT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	F6AVWTA02_2878	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA01	JCVI	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015470	NCBI	F6AVWTA01_2866_700015470_V1-V3	B-2004-04-S1.sff	0.014492754	F6AVWTA01_CATCGTAGCT	CATCGTAGCT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA01	F6AVWTA01_2866	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA02	JCVI	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015470	NCBI	F6AVWTA02_2866_700015470_V1-V3	B-2008-08-S1.sff	0.014492754	F6AVWTA02_CATCGTAGCT	CATCGTAGCT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	F6AVWTA02_2866	0	FLX	JCVI 	NULL	NULL
 bodysites_F6AVWTA01	JCVI	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015766	NCBI	F6AVWTA01_2898_700015766_V1-V3	B-2004-08-S1.sff	0.014492754	F6AVWTA01_CATGAGCGTC	CATGAGCGTC		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA01	F6AVWTA01_2898	0	FLX	JCVI 	NULL	NULL
-bodysites_F6AVWTA02	JCVI	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015766	NCBI	F6AVWTA02_2898_700015766_V1-V3	B-2009-06-S1.sff	0.014492754	F6AVWTA02_CATGAGCGTG	CATGAGCGTG		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	F6AVWTA02_2898	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA02	JCVI	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015766	NCBI	F6AVWTA02_2898_700015766_V1-V3	B-2009-06-S1.sff	0.014492754	F6AVWTA02_CAGTCAGTCT	CAGTCAGTCT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	F6AVWTA02_2898	0	FLX	JCVI 	NULL	NULL
 bodysites_F6AVWTA01	JCVI	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015468	NCBI	F6AVWTA01_2865_700015468_V1-V3	B-2005-06-S1.sff	0.014492754	F6AVWTA01_AGTACGTACT	AGTACGTACT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA01	F6AVWTA01_2865	0	FLX	JCVI 	NULL	NULL
-bodysites_F6AVWTA02	JCVI	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015468	NCBI	F6AVWTA02_2865_700015468_V1-V3	B-2011-01-S1.sff	0.014492754	F6AVWTA02_AGTACACGTC	AGTACACGTC		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	F6AVWTA02_2865	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA02	JCVI	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700015468	NCBI	F6AVWTA02_2865_700015468_V1-V3	B-2011-01-S1.sff	0.014492754	F6AVWTA02_AGACTCTGCT	AGACTCTGCT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	F6AVWTA02_2865	0	FLX	JCVI 	NULL	NULL
 bodysites_F6AVWTA01	JCVI	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700016371	NCBI	F6AVWTA01_2907_700016371_V1-V3	B-2006-03-S1.sff	0.014492754	F6AVWTA01_TCTCTCTAGT	TCTCTCTAGT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA01	F6AVWTA01_2907	0	FLX	JCVI 	NULL	NULL
-bodysites_F6AVWTA02	JCVI	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700016371	NCBI	F6AVWTA02_2907_700016371_V1-V3	B-2011-02-S1.sff	0.014492754	F6AVWTA02_TCTCTGTACT	TCTCTGTACT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	F6AVWTA02_2907	0	FLX	JCVI 	NULL	NULL
+bodysites_F6AVWTA02	JCVI	bodysites_study	bodysites	Pool of samples from different individual subjects	Dummy Protocol	700016371	NCBI	F6AVWTA02_2907_700016371_V1-V3	B-2011-02-S1.sff	0.014492754	F6AVWTA02_CTGACTGACT	CTGACTGACT		V1-V3	TCAG	TAATCCGCGGCTGCTGG	F6AVWTA02	F6AVWTA02_2907	0	FLX	JCVI 	NULL	NULL
 '''
 
 sra_submission_txt_wo_file = '''#ACCESSION	SUBMISSION_ID	CENTER_NAME	SUBMISSION_COMMENT	LAB_NAME	SUBMISSION_DATE	CONTACT
