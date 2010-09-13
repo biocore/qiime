@@ -76,12 +76,17 @@ script_info['optional_options']= [\
         'warnings about barcodes of unequal length. [default: %default]'),
     make_option('-p', '--disable_primer_check',
         action='store_true', default=False,
-        help='Use -p to disable checks for primers. [default: %default]')
-]
+        help='Use -p to disable checks for primers. [default: %default]'),
+    make_option('-v', '--verbose',
+        action='store_false', default=True,
+        help='Turn on this flag to disable verbose output. '+\
+        ' [default: %default]')]
+        
 script_info['version'] = __version__
 
 def main():
-    option_parser, opts, args = parse_command_line_parameters(**script_info)
+    option_parser, opts, args =\
+     parse_command_line_parameters(suppress_verbose=True, **script_info)
       
     infile_name = opts.map_fname
     has_barcodes = not opts.not_barcoded
@@ -90,6 +95,7 @@ def main():
     var_len_barcodes = opts.variable_len_barcodes
     verbose = opts.verbose
     disable_primer_check = opts.disable_primer_check
+    
     
     valid_replacement_chars=digits+letters+"_"
     if char_replace not in valid_replacement_chars:
