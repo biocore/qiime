@@ -401,7 +401,7 @@ class DistanceHistogramsTests(TestCase):
             obs_fields = obs.split('\t')
             exp_fields = exp.split('\t')
             #Check first 10 fields should be identical from run to run.
-            for i in [0,1,2,3,5,6,7,8,9,11,13]:
+            for i in [0,1,2,3,4,5,6,7,8,9]:
                 self.assertEqual(obs_fields[i],exp_fields[i])
 
     def test_permute_for_monte_carlo(self):

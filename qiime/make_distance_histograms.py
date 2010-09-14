@@ -25,6 +25,7 @@ from random import choice
 from numpy.random import permutation
 from qiime.colors import data_colors, Color, rgb_tuple_to_hsv, \
     mage_hsv_tuple_to_rgb
+from math import ceil
 from os import mkdir
 
 def matplotlib_rgb_color(rgb_color):
@@ -279,7 +280,10 @@ def draw_all_histograms(single_field, paired_field, dmat, histogram_dir,\
         field_to_color_prefs))
         
     
-    BINS=arange(0,1.01,0.05)
+    
+    max_val = max(dmat.flat)
+    bin_size = max_val/20.
+    BINS=arange(0,ceil(max_val)+.01,bin_size)
     xscale, yscale = get_histogram_scale(distances_dict,nbins=BINS)
     #draw histograms
 
@@ -333,10 +337,9 @@ def draw_histogram(distances, color, nbins, outfile_name,\
     xscale=None, yscale=None, background_color='white',\
     title='', **kwargs):
     """Draws histogram to outfile_name.
-    """
+    """    
     average = mean(distances)
     maximum = max(distances)
-    
     histogram = hist(distances,bins=nbins,facecolor=color, \
         normed=True,**kwargs)
     
@@ -575,6 +578,7 @@ def group_distances(mapping_file,dmatrix_file,fields,dir_prefix='',\
     
     distance_header, distance_matrix = \
         parse_distmat(open(dmatrix_file,'U'))
+
     if fields is None:
         fields = [mapping[0][0]]
     single_field = defaultdict(dict)
@@ -629,6 +633,7 @@ def monte_carlo_group_distances(mapping_file, dmatrix_file, prefs, \
 
     distance_header, distance_matrix = \
         parse_distmat(open(dmatrix_file,'U'))
+
     orig_distance_matrix = distance_matrix.copy()
 
     path_prefix = _make_path([dir_prefix,subdir_prefix])
@@ -653,6 +658,9 @@ def monte_carlo_group_distances(mapping_file, dmatrix_file, prefs, \
         else:
             groups = group_by_field(mapping, field)
         outfile = open(path_prefix+'group_distances_'+field+'.xls', 'w')
+        outfile.write('\t'.join(['Category_1a','Category_1b','Avg',\
+            'Category_2a','Category_2b','Avg','t','p',\
+            'p_greater','p_less','Iterations\n']))
         real_dists = distances_by_groups(distance_header, distance_matrix,\
             groups)
         rand_distances = [distances_by_groups(distance_header, \
@@ -672,15 +680,12 @@ def monte_carlo_group_distances(mapping_file, dmatrix_file, prefs, \
                 ttests = [t_two_sample(rand_dists_1[n],rand_dists_2[n])[0] \
                     for n in range(num_iters)]
                 real_ttest = t_two_sample(distances_g1, distances_g2)
-                curr_line = [first_g1, 'to', second_g1, 'avg', real_dist_1, \
-                    'compared with', first_g2, 'to', second_g2, 'avg', \
-                    real_dist_2]
-                curr_line.extend([': t=', real_ttest[0], 'p=', real_ttest[1],
-                    'p_greater:', \
+                curr_line = [first_g1, second_g1, real_dist_1, \
+                    first_g2, second_g2, real_dist_2]
+                curr_line.extend([real_ttest[0], real_ttest[1],\
                     (array(ttests)>real_ttest[0]).sum()/float(num_iters), \
-                    'p_less:', 
                     (array(ttests)<real_ttest[0]).sum()/float(num_iters), \
-                    'num_iters:', num_iters])
+                    num_iters])
                 outfile.write('\t'.join(map(str, curr_line)))
                 outfile.write('\n')
 

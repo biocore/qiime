@@ -30,11 +30,11 @@ script_info={}
 script_info['brief_description']="""Make distance histograms"""
 script_info['script_description']="""To visualize the distance between samples and/or categories in the metadata mapping file, the user can generate histograms to represent the distances between samples. This script generates an HTML file, where the user can compare the distances between samples based on the different categories associated to each sample in the metadata mapping file. """
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Examples:""","""Distance Histograms are a way to compare different categories and see which tend to have larger/smaller distances than others. For example, in the hand study, you may want to compare the distances between hands to the distances between individuals (with the file "hand_distances.txt" using the parameter -d hand_distances.txt). The categories are defined in the metadata mapping file (specified using the parameter -m hand_map.txt). If you want to look at the distances between hands and individuals, choose the "Hand" field and "Individual" field (using the parameter --fields Hand,Individual (notice the fields are comma delimited)). For each of these groups of distances a histogram is made. The output is a HTML file ("QIIME_Distance_Histograms.html" when the parameter --html_output is specified) which is created in the "Distance_Histograms" directory (using the parameter -o Distance_Histograms to specify output directory) where you can look at all the distance histograms individually, and compare them between each other.
+script_info['script_usage'].append(("""Examples:""","""Distance Histograms are a way to compare different categories and see which tend to have larger/smaller distances than others. For example, in the hand study, you may want to compare the distances between hands to the distances between individuals (with the file "hand_distances.txt" using the parameter -d hand_distances.txt). The categories are defined in the metadata mapping file (specified using the parameter -m hand_map.txt). If you want to look at the distances between hands and individuals, choose the "Hand" field and "Individual" field (using the parameter --fields Hand,Individual (notice the fields are comma delimited)). For each of these groups of distances a histogram is made. The output is a HTML file ("QIIME_Distance_Histograms.html") which is created in the "Distance_Histograms" directory (using the parameter -o Distance_Histograms to specify output directory) where you can look at all the distance histograms individually, and compare them between each other.
 
 In the following command, the user only supplies a distance matrix (i.e. resulting file from beta_diversity.py), the user-generated metadata mapping file and one category (e.g. pH):""","""make_distance_histograms.py -d beta_div.txt -m Mapping_file.txt --fields pH"""))
 script_info['script_usage'].append(("""""","""For comparison of multiple categories (e.g. pH, salinity), you can use the following command:""","""make_distance_histograms.py -d beta_div.txt -m Mapping_file.txt --fields pH,salinity"""))
-script_info['script_usage'].append(("""""","""If the user would like to write the result to a dynamic HTML, you can use the following command:""","""make_distance_histograms.py -d beta_div.txt -m Mapping_file.txt --fields pH --html_output"""))
+script_info['script_usage'].append(("""""","""HTML output is automatically generated. If the user would like to suppress the HTML output, you can use the following command:""","""make_distance_histograms.py -d beta_div.txt -m Mapping_file.txt --fields pH --suppress_html_output"""))
 script_info['script_usage'].append(("""""","""In the case that the user generates their own preferences file (prefs.txt), they can use the following command:""","""make_distance_histograms.py -d beta_div.txt -m Mapping_file.txt -p prefs.txt"""))
 script_info['script_usage'].append(("""""","""Note: In the case that a preferences file is passed, the user does not need to supply fields in the command-line.""",""""""))
 script_info['output_description']="""The result of this script will be a folder containing images and/or an html file (with appropriate javascript files), depending on the user-defined parameters."""
@@ -57,12 +57,12 @@ analysis.  This dict must have a "Fields" key mapping to a list of desired field
     [default: %default]'),\
     make_option('--monte_carlo',dest='monte_carlo',default=False,\
         action='store_true',help='''Perform Monte Carlo analysis on distances.  [Default: %default]'''),\
-    make_option('--html_output',dest='html_output',default=False,\
-        action='store_true',help='''Write output in HTML format. [Default: %default]'''),\
+    make_option('--suppress_html_output',dest='suppress_html_output',\
+        default=False,action='store_true',help='''Suppress HTML format output. [Default: %default]'''),\
     make_option('-f','--fields', dest='fields',\
-        help='Comma delimited list of fields to compare.  This overwrites fields in prefs file.  If this is not provided, the first field in metadata mapping file will be used.  Usage: --fields Field1,Field2,Field3'),\
+        help='Comma delimited list of fields to compare.  Put list of fields in quotes.  This overwrites fields in prefs file.  If this is not provided, the first field in metadata mapping file will be used.  Usage: --fields "Field1,Field2,Field3"'),\
     make_option('--monte_carlo_iters', dest='monte_carlo_iters',type="int",\
-        default=10,help='Number of iterations to perform for Monte Carlo analysis. [default: %default]'),\
+        default=100,help='Number of iterations to perform for Monte Carlo analysis. [default: %default]'),\
 
 ]
 
@@ -94,6 +94,7 @@ def main():
     fields = opts.fields
     if fields is not None:
         fields = map(strip,fields.split(','))
+        fields = [i.strip('"').strip("'") for i in fields]
     elif opts.prefs_path is not None:
         prefs = eval(open(opts.prefs_path, 'U').read())
         fields = prefs.get('FIELDS',None)
@@ -105,7 +106,7 @@ def main():
         dir_prefix=get_random_directory_name(output_dir=opts.dir_path,\
             prefix='distances'))
     
-    if opts.html_output:
+    if not opts.suppress_html_output:
         #histograms output path
         histograms_path = \
             _make_path([opts.dir_path,'histograms'])
