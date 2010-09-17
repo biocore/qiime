@@ -62,7 +62,8 @@ def remove_rare_taxa(taxdata,nkeep=-1):
         ixs = ixs[::-1][:nkeep]
         ixs.sort()
         taxdata['counts'] = taxdata['counts'][ixs,:]
-        taxdata['lineages'] = taxdata['lineages'][ixs]
+        tmp = [taxdata['lineages'][idx] for idx in ixs]
+        taxdata['lineages'] = tmp
         taxdata['prevalence'] = taxdata['prevalence'][ixs]
 
     # remove empty taxa
