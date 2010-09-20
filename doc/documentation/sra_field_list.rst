@@ -196,6 +196,20 @@ HOST_TAXID
 Experiment Input File
 ---------------------
 
+We have tried to minimize the required fields for the SRA Experiment
+input file as much as possible.  Although only 10 fields are necessary
+for many submissions, we include many optional fields to customize the
+process.  Optional fields are evaluated and filled in on a per-item
+basis.  Fields with a blank value are treated identically to missing
+fields.
+
+Fields listed as "optional" without further annotation are unused if
+blank or missing.  Fields listed as "optional, default value provided
+automatically" have a simple default value, which is used if the field
+is blank or missing.  Fields listed as "optional, derived
+automatically" have a default value that depends on other fields.  The
+format for deriving a value is given in the field definition.
+
 EXPERIMENT_TITLE
 
   Title of the experiment. Must be the same for every member of a
@@ -206,6 +220,18 @@ EXPERIMENT_TITLE
 
   *Output*: Used as the text of the <TITLE> element in the SRA
   Experiment XML file.
+
+EXPERIMENT_CENTER
+
+  Official abbreviation for the sequencing center associated with the
+  experiment, i.e. who made the pool. Needs to be the same for every
+  member of a given pool. This is your center name as assigned by NCBI
+  and is often the same as the STUDY center.
+
+  *Example*: ``UPENNBL``
+
+  *Output*: Used as the *center_name* attribute of the <EXPERIMENT>
+  element in the SRA Experiment XML file.
 
 STUDY_REF
 
@@ -223,18 +249,6 @@ STUDY_REF
   *Output*: Used as the *refname* attribute of the <STUDY_REF> element
   in the SRA Experiment XML file.  It is also used to derive several
   optional fields.
-
-STUDY_CENTER
-
-  Name of the center that registered the SRA Study.  Study center
-  names are assigned by the SRA, so you must contact them if your
-  institution does not have an official study center designation.
-  Needs to be the same for every member of a given SRA Experiment.
-
-  *Example*: ``UPENNBL``
-
-  *Output*: Used as the *refcenter* attribute of the <EXPERIMENT_REF>
-  element in the SRA Run XML file.
 
 SAMPLE_ALIAS
 
@@ -262,7 +276,7 @@ POOL_PROPORTION
 BARCODE
 
   Barcode sequence used for each pool member.  Each combination of
-  barcode, primer and sequencing region must be unique.
+  BARCODE, PRIMER and RUN_PREFIX must be unique.
 
   *Example*: ``ACGTCTGTAGCA``
 
@@ -274,10 +288,9 @@ RUN_PREFIX
 
   The 454 instrument usually produces more than one sff file. This
   should be the prefix of the sff file name that was produced by a
-  given run (usually these will have 01, 02, etc. sufixes). This
-  allows you to designate a pool as per-library rather than per sff
-  file (otherwise you would need to duplicate all the info per run for
-  each sff file).
+  given run.  This allows you to designate a pool as per-library
+  rather than per sff file (otherwise you would need to duplicate all
+  the info per run for each sff file).
 
   *Example*: ``GAMA2IO``, for an SFF file named ``GAMA2IO01.sff``
 
@@ -308,10 +321,11 @@ LIBRARY_CONSTRUCTION_PROTOCOL
   *Output*: Used as the text of the <LIBRARY_CONSTRUCTION_PROTOCOL>
   element in the SRA Experiment XML file.
 
-SAMPLE_CENTER *
+SAMPLE_CENTER (optional, derived automatically)
 
   Name of the center that provided the sample, can be separate for
-  each sample.  
+  each sample.  If this field is blank or absent, the value of
+  EXPERIMENT_CENTER will be used.
 
   If sample information is stored in dbGAP, the SAMPLE_CENTER should
   be set to "NCBI".
@@ -322,21 +336,37 @@ SAMPLE_CENTER *
   <STUDY_REF> elements in the SRA Experiment XML file.  It is also
   used to derive the DEFAULT_SAMPLE_CENTER field.
 
-PLATFORM *
+STUDY_CENTER (optional, derived automatically)
+
+  Name of the center that registered the SRA Study.  Study center
+  names are assigned by the SRA, so you must contact them if your
+  institution does not have an official study center designation.
+  Needs to be the same for every member of a given SRA Experiment.  If
+  this field is blank or absent, the value of EXPERIMENT_CENTER will
+  be used.
+
+  *Example*: ``UPENNBL``
+
+  *Output*: Used as the *refcenter* attribute of the <EXPERIMENT_REF>
+  element in the SRA Run XML file.
+
+PLATFORM (optional, default value provided automatically)
 
   The sequencing platform, either ``FLX`` or ``Titanium``.  If the
   platform value is not found in a table of supported platforms, the
-  QIIME script will halt with an error.
+  QIIME script will halt with an error.  If this field is blank or
+  absent, the region will be set to 'Titanium'.
 
   *Example*: ``Titanium``
 
   *Output*: Used to generate the contents of the <PLATFORM> element in
   the SRA Experiment XML file.
 
-KEY_SEQ *
+KEY_SEQ (optional, default value provided automatically)
 
   This is a technical aspect of the 454 platform, is usually TCAG, can
-  be obtained from the sff file using the sfftools.
+  be obtained from the sff file using the sfftools.  If this
+  field is blank or absent, the region will be set to 'TCAG'.
 
   *Example*: ``TCAG``
 
@@ -344,38 +374,28 @@ KEY_SEQ *
   the <READ_SPEC> element for the Adapter sequence in the SRA
   Experiment XML file.
 
-REGION *
+REGION (optional, default value provided automatically)
 
   Region of the plate that was sequenced.  If the plate contained only
-  a single region, the SRA requires that this be set to '0'.
+  a single region, the SRA requires that this be set to '0'.  If this
+  field is blank or absent, the region will be set to '0'.
 
   *Example*: ``1``
 
   *Output*: Used as the *region* attribute of the <DATA_BLOCK> element
   in the SRA Run XML file.
 
-RUN_CENTER *
+RUN_CENTER (optional, derived automatically)
 
   Name of the institution that performed the run, assigned by
   NCBI. You can use the center name for your lab for this even if you
-  had the sequencing done elsewhere according to SRA.
+  had the sequencing done elsewhere according to SRA.  If this field
+  is blank or absent, the value of EXPERIMENT_CENTER will be used.
 
   *Example*: ``UPENNBL``
 
   *Output*: Used as the *center_name* and *run_center* attributes of
   the <RUN> element in the SRA Run XML file.
-
-EXPERIMENT_CENTER *
-
-  Official abbreviation for the sequencing center associated with the
-  experiment, i.e. who made the pool. Needs to be the same for every
-  member of a given pool. This is your center name as assigned by NCBI
-  and is often the same as the STUDY center.
-
-  *Example*: ``UPENNBL``
-
-  *Output*: Used as the *center_name* attribute of the <EXPERIMENT>
-  element in the SRA Experiment XML file.
 
 EXPERIMENT_ALIAS (optional, derived automatically)
 

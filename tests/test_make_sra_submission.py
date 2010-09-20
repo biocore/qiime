@@ -476,7 +476,7 @@ class TopLevelTests(TestCase):
             'SAMPLE_ALIAS': 'mysample',
             'BARCODE': 'AAAAGGGG',
             'PRIMER': 'ATTACCGCGGCTGCTGGC',
-            'SAMPLE_CENTER': 'NCBI',
+            'EXPERIMENT_CENTER': 'NCBI',
             }
         update_entry_with_derived_fields(a)
         self.assertEqual(a['EXPERIMENT_ALIAS'], 'mystudy_RUN01')

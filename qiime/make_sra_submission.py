@@ -1453,6 +1453,7 @@ def update_entry_with_derived_fields(entry):
     """Derive default values for blank/missing fields in input file.
 
     Derives the following fields:
+      - REGION (0)
       - EXPERIMENT_ALIAS (<STUDY_REF>_<RUN_PREFIX>)
       - RUN_ALIAS (<STUDY_REF>_<SAMPLE_ALIAS>_<RUN_PREFIX>)
       - BARCODE_READ_GROUP_TAG (<RUN_PREFIX>_<BARCODE>)
@@ -1463,11 +1464,16 @@ def update_entry_with_derived_fields(entry):
         <RUN_PREFIX>_<SAMPLE_ALIAS>_<PRIMER_READ_GROUP_TAG>;
         otherwise, <RUN_PREFIX>_<SAMPLE_ALIAS>)
       - POOL_MEMBER_FILENAME (<POOL_MEMBER_NAME>.sff)
+      - RUN_CENTER (<EXPERIMENT_CENTER>)
+      - STUDY_CENTER (<EXPERIMENT_CENTER>)
+      - SAMPLE_CENTER (<EXPERIMENT_CENTER>)
       - DEFAULT_SAMPLE_CENTER (<SAMPLE_CENTER>)
       - DEFAULT_SAMPLE_NAME (if default sample accession number is not
         found, <STUDY_REF>_default)
       - DEFAULT_SAMPLE_FILENAME (<STUDY_REF>_default_<RUN_PREFIX>.sff)
       - DEFAULT_RUN_ALIAS (<STUDY_REF>_default_<RUN_PREFIX>)
+      - PLATFORM (Titanium)
+      - KEY_SEQ (TCAG)
       - LIBRARY_STRATEGY (AMPLICON)
       - LIBRARY_SOURCE (GENOMIC)
       - LIBRARY_SELECTION (PCR)
@@ -1479,6 +1485,7 @@ def update_entry_with_derived_fields(entry):
     # fields, so order is important.  Probably want the order to be
     # consistent with documentation.
     default_format_strings = [
+        ('REGION', '0'),
         ('EXPERIMENT_ALIAS', '%(STUDY_REF)s_%(RUN_PREFIX)s'),
         ('RUN_ALIAS', '%(STUDY_REF)s_%(SAMPLE_ALIAS)s_%(RUN_PREFIX)s'),
         ('BARCODE_READ_GROUP_TAG', '%(RUN_PREFIX)s_%(BARCODE)s'),
@@ -1505,6 +1512,9 @@ def update_entry_with_derived_fields(entry):
 
     default_format_strings.extend([
         ('POOL_MEMBER_FILENAME', '%(POOL_MEMBER_NAME)s.sff'),
+        ('RUN_CENTER', '%(EXPERIMENT_CENTER)s'),
+        ('STUDY_CENTER', '%(EXPERIMENT_CENTER)s'),
+        ('SAMPLE_CENTER', '%(EXPERIMENT_CENTER)s'),
         ('DEFAULT_SAMPLE_CENTER', '%(SAMPLE_CENTER)s'),
         ])
 
@@ -1516,6 +1526,8 @@ def update_entry_with_derived_fields(entry):
     default_format_strings.extend([
         ('DEFAULT_SAMPLE_FILENAME', '%(STUDY_REF)s_default_%(RUN_PREFIX)s.sff'),
         ('DEFAULT_RUN_ALIAS', '%(STUDY_REF)s_default_%(RUN_PREFIX)s'),
+        ('PLATFORM', 'Titanium'),
+        ('KEY_SEQ', 'TCAG'),
         ('LIBRARY_STRATEGY', 'AMPLICON'),
         ('LIBRARY_SOURCE', 'GENOMIC'),
         ('LIBRARY_SELECTION', 'PCR')
@@ -1523,7 +1535,12 @@ def update_entry_with_derived_fields(entry):
 
     for field_name, format_string in default_format_strings:
         if not entry.get(field_name):
-            entry[field_name] = format_string % entry
+            try:
+                entry[field_name] = format_string % entry
+            except ValueError:
+                raise ValueError(
+                    'Formatting error: could not use format string %s with '
+                    'entry %s for %s field.' % (format_string, entry, field_name))
     return entry
 
 
