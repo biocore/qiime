@@ -296,7 +296,18 @@ class TopLevelTests(TestCase):
             standardize_xml(observed),
             standardize_xml('<xml>abc</xml>')
             )
-        self.files_to_remove = [observed_fp]
+        self.files_to_remove.append(observed_fp)
+
+        observed_fp2 = write_xml_generic(
+            input_file.name, simple_xml_f, output_suffix='testsuffix')
+        self.assertTrue(observed_fp2.endswith('testsuffix.xml'))
+        observed = open(observed_fp2).read()
+        self.assertEqual(
+            standardize_xml(observed),
+            standardize_xml('<xml>abc</xml>')
+            )
+        self.files_to_remove.append(observed_fp2)
+
 
 
     def test_make_run(self):

@@ -1679,11 +1679,12 @@ def generate_output_fp(input_fp, ext, output_dir=None):
     return os.path.join(output_dir, output_filename)
 
 
-def write_xml_generic(infile_path, xml_f, xml_kwargs=None, output_dir=None):
+def write_xml_generic(infile_path, xml_f, xml_kwargs=None, output_dir=None, output_suffix=''):
     """Writes generic xml based on contents of infilepath, returns filename."""
     if xml_kwargs is None:
         xml_kwargs = {}
-    outfile_path = generate_output_fp(infile_path, '.xml', output_dir=output_dir)
+    output_filepath_ext = output_suffix + '.xml'
+    outfile_path = generate_output_fp(infile_path, output_filepath_ext, output_dir=output_dir)
     infile = open(infile_path, 'U')
     open(outfile_path, 'w').write(xml_f(infile, **xml_kwargs))
     return outfile_path

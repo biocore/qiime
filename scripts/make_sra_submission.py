@@ -91,7 +91,7 @@ def main():
 
         docnames['run'] = write_xml_generic(
             opts.input_experiment_fp, make_run, output_dir=opts.output_dir,
-            xml_kwargs={
+            output_suffix='_run', xml_kwargs={
                 'sff_dir': opts.sff_dir,
                 })
 
