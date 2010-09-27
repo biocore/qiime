@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from cStringIO import StringIO
 import os
+import re
 import shutil
 import tempfile
 from cogent.util.unit_test import TestCase, main
@@ -19,7 +20,7 @@ from qiime.make_sra_submission import (
     SraSpotDescriptor, SraSampleDescriptor, SraExperimentSet, SraExperiment,
     SraStudyRef, SraPlatform, update_entry_with_deprecated_fields,
     SraSample, SraSampleName, SraSampleAttributes, SraSampleSet, SraStudy,
-    SraContacts, SraActions, SraSubmissionFiles, SraSubmission)
+    SraContacts, SraActions, SraSubmissionFiles, SraSubmission, SraSubmissionTable)
 from qiime.util import get_qiime_project_dir
 import xml.etree.ElementTree as ET
 from cStringIO import StringIO
@@ -125,13 +126,13 @@ class TopLevelTests(TestCase):
         """detect_missing_submission_fields should return a list of all required fields not found in the input file header."""
         input_file = StringIO('#NONSENSE_FIELD\nnonsense_value\n')
         observed = detect_missing_submission_fields(input_file)
+        observed.sort()
         expected = [
-            'SUBMISSION_ID',
             'CENTER_NAME',
-            'SUBMISSION_COMMENT',
+            'CONTACT',
             'LAB_NAME',
             'SUBMISSION_DATE',
-            'CONTACT',
+            'SUBMISSION_ID',
             ]
         self.assertEqual(observed, expected)
 
@@ -504,6 +505,87 @@ class TopLevelTests(TestCase):
         self.assertEqual(a['LIBRARY_SOURCE'], 'GENOMIC')
         self.assertEqual(a['LIBRARY_SELECTION'], 'PCR')
 
+class SraSubmissionTableTests(TestCase):
+    def setUp(self):
+        self.input_file = StringIO(submission_manycol_txt)
+        self.twocol_input_file = StringIO(submission_twocol_txt)
+        self.expected_entry =  {
+            'SUBMISSION_DATE': '2009-10-22T01:23:00-05:00',
+            'SUBMISSION_ID': 'fierer_hand_study',
+            'CENTER_NAME': 'CCME',
+            'ACCESSION': 'SRA003492',
+            'LAB_NAME': 'Knight',
+            'CONTACT': (
+                'Rob Knight;Rob.Knight@Colorado.edu,'
+                'Noah Fierer;Noah.Fierer@Colorado.edu'),
+            'SUBMISSION_COMMENT': (
+                'Barcode submission prepared by osulliva@ncbi.nlm.nih.gov, '
+                'shumwaym@ncbi.nlm.nih.gov'),
+            }
+    
+    def test_entries(self):
+        t = SraSubmissionTable(['Col1', 'Col2'], [
+            ['a', 'b'],
+            ['c', 'd'],
+            ])
+        observed = list(t.entries)
+        expected = [
+            {'Col1': 'a', 'Col2': 'b'},
+            {'Col1': 'c', 'Col2': 'd'},
+            ]
+        self.assertEqual(observed, expected)
+
+    def test_parse(self):
+        t = SraSubmissionTable.parse(self.input_file)
+        self.assertEqual(t.entries.next(), self.expected_entry)
+
+    def test_parse_twocol_format(self):
+        t = SraSubmissionTable.parse_twocol_format(self.twocol_input_file)
+        self.assertEqual(t.entries.next(), self.expected_entry)
+
+    def test_get_required_fields(self):
+        observed = SraSubmissionTable.get_required_fields()
+        expected = set([
+            'SUBMISSION_ID',
+            'CENTER_NAME',
+            'LAB_NAME',
+            'CONTACT',
+            'SUBMISSION_DATE',
+            ])
+        self.assertEqual(observed, expected)
+
+    def test_derive_optional_fields(self):
+        t = SraSubmissionTable([], [[]])
+        t.derive_optional_fields()
+        entry = t.entries.next()
+        observed_datetime = entry.get('SUBMISSION_DATE')
+        # Regular expression constructed from w3 XML documentation
+        datetime_regex = re.compile(
+            '-?\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\d'
+            '(\.\d+)?'
+            '(Z|([+-]\d\d:\d\d))?'
+            '$'
+            )
+        self.assertTrue(datetime_regex.match(observed_datetime))
+
+        # TODO: Test with file, check that correct checksum is derived
+
+    def test_to_sra(self):
+        t = SraSubmissionTable(
+            ['SUBMISSION_ID', 'CENTER_NAME', 'LAB_NAME', 'CONTACT'],
+            [['test', 'ABCD', 'Lab1', 'Bob;bob@abcd.com']],
+            )
+        t.derive_optional_fields()
+        date_str = t.entries.next()['SUBMISSION_DATE']
+        expected = '''
+        <SUBMISSION center_name="ABCD" lab_name="Lab1" submission_date="%s" submission_id="test" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+          <CONTACTS>
+            <CONTACT inform_on_error="bob@abcd.com" inform_on_status="bob@abcd.com" name="Bob" />
+          </CONTACTS>
+        </SUBMISSION>'''
+        submission = t.to_sra()
+        self.assertEqual(pretty_xml(submission.to_xml(), 4), expected % date_str)
+
 
 class SraEntityTests(TestCase):
     def test_check_attributes(self):
@@ -529,32 +611,26 @@ class SraEntityTests(TestCase):
 
 
 class SraSubmissionTests(TestCase):
-    def test_to_xml(self):
-        entry = {
-            'FILE': 'my_submission.tgz',
-            'SUBMISSION_FILE_CHECKSUM': 'abcdefg12345',
-            }
+    def test_minimal_submission(self):
+        s = SraSubmission.from_entry({
+            'SUBMISSION_ID': 'minimal_submission',
+            'CENTER_NAME': 'QIIME',
+            'SUBMISSION_DATE': '2009-10-22T01:23:00-05:00',
+            'LAB_NAME': 'MYLAB',
+            'CONTACT': (
+                'Person One;personone@school.edu,'
+                'Person Two;persontwo@company.com'),
+            })
         expected = '''
-        <SUBMISSION accession="SRA003492" center_name="CCME" lab_name="Knight" submission_comment="Barcode submission prepared by osulliva@ncbi.nlm.nih.gov, shumwaym@ncbi.nlm.nih.gov" submission_date="2009-10-22T01:23:00-05:00" submission_id="fierer_hand_study" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-        <CONTACTS>
-          <CONTACT inform_on_error="Rob.Knight@Colorado.edu" inform_on_status="Rob.Knight@Colorado.edu" name="Rob Knight" />
-          <CONTACT inform_on_error="Noah.Fierer@Colorado.edu" inform_on_status="Noah.Fierer@Colorado.edu" name="Noah Fierer" />
-        </CONTACTS>
-        <ACTIONS>
-          <ACTION>
-            <ADD notes="study metadata" schema="study" source="study.xml" />
-          </ACTION>
-          <ACTION>
-            <ADD notes="sample metadata" schema="sample" source="sample.xml" />
-          </ACTION>
-          <ACTION>
-            <RELEASE />
-          </ACTION>
-        </ACTIONS>
-        <FILES>
-          <FILE checksum="abcdefg12345" checksum_method="MD5" filename="my_submission.tgz" />
-        </FILES>
+        <SUBMISSION center_name="QIIME" lab_name="MYLAB" submission_date="2009-10-22T01:23:00-05:00" submission_id="minimal_submission" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+          <CONTACTS>
+            <CONTACT inform_on_error="personone@school.edu" inform_on_status="personone@school.edu" name="Person One" />
+            <CONTACT inform_on_error="persontwo@company.com" inform_on_status="persontwo@company.com" name="Person Two" />
+          </CONTACTS>
         </SUBMISSION>'''
+        self.assertEqual(pretty_xml(s.to_xml(), 4), expected)
+
+
 
 class SraSubmissionFilesTests(TestCase):
     def test_to_xml(self):
@@ -2341,6 +2417,11 @@ submission_xml = '''<?xml version="1.0" encoding="UTF-8"?>
     </ACTION>
   </ACTIONS>
 </SUBMISSION>
+'''
+
+minimal_submission_txt = '''\
+#SUBMISSION_ID	CENTER_NAME	LAB_NAME	SUBMISSION_DATE	CONTACT
+fierer_hand_study	CCME	Knight	2009-10-22T01:23:00-05:00	Rob Knight;Rob.Knight@Colorado.edu,Noah Fierer;Noah.Fierer@Colorado.edu
 '''
 
 sample_txt = '''#SAMPLE_ALIAS	TITLE	TAXON_ID	COMMON_NAME	ANONYMIZED_NAME	DESCRIPTION	host_taxon_id	subject	sex	hand	age	palm size	dominant hand	hours since wash

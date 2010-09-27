@@ -16,13 +16,77 @@ header.  For fields labeled *derived automatically*, a value will be
 generated for each entry in the input file if the field is missing or
 empty.
 
+
+Submission Input File
+---------------------
+
+SUBMISSION_ID
+
+  Internally unique id for the submission (unique among all
+  submissions from your CENTER_NAME).  It should contain only
+  alphanumeric characters and underscores.
+
+  *Example*: ``knight_handstudy``
+
+CENTER_NAME
+
+  Official name of the center preparing the submission, as it is
+  registered with the SRA.  This is a controlled vocabulary; a value
+  not recognized by the SRA will cause the submission to fail.
+
+  *Example*: ``CCME``
+
+LAB_NAME
+
+  Name of the lab preparing the submission, and usually refers to the
+  identity of the PI, not the sequencing center.  The values of this
+  field are not part of a controlled vocabulary, so you are free to
+  fill in a convenient name for the lab.
+  
+  *Example*: ``Knight``
+
+CONTACT
+
+  Use a semicolon to separate email address from name.  Multiple
+  contacts can be included by separating them with a comma.
+
+  *Example*: ``Jane Smith;janesmith@college.edu,John Doe;johndoe@company.com``
+
+FILE (optional)
+
+  Filename of tar-gzipped sequence data.  If not submitting sequence
+  data, omit this field or leave it blank.
+
+  *Example*: ``fierer_hand_study.seqs.tgz``
+
+ACCESSION (optional)
+
+  Accession number for the submission: leave blank if not assigned
+  yet, e.g. if new submission rather than replacing XML for an
+  existing submission.
+
+  *Example*: ``SRA020077``
+
+SUBMISSION_DATE (optional, derived automatically)
+
+  Timestamp of submission.  The format of such a timestamp is
+  described in the W3 XML Schema specification, part 2
+  (http://www.w3.org/TR/xmlschema-2/#dateTime).  If this field is
+  blank or absent, it is set to the date and time that the submission
+  XML file was created.
+  
+  *Example*: ``2009-10-22T06:23:00Z``
+
+SUBMISSION_COMMENT (optional)
+
+  Free-text comments regarding the submission.
+
+
 Study Input File
 ----------------
 
 One study per publication (i.e. the STUDY is supposed to be about the
 same amount of info as in a paper).
-
-
 
 STUDY_ALIAS
 
@@ -82,64 +146,6 @@ PMID
 
   *Example*: ``19004758``
 
-
-Submission Input File
----------------------
-
-ACCESSION 
-
-  Accession number for the submission: leave blank if not assigned
-  yet, e.g. if new submission rather than replacing XML for an
-  existing submission.
-
-  *Example*: ``SRA020077``
-
-SUBMISSION_ID
-
-  Internally unique id for the submission: this is used as an ALIAS
-  elsewhere so needs to be short, alphanumeric characters with
-  underscores, no special characters.
-
-  *Example*: ``knight_handstudy``
-
-CENTER_NAME
-
-  Name of the center (e.g. sequencing center) preparing the
-  submission: assigned by NCBI so you need to get a name for your
-  institution rather than making something up here.
-
-  *Example*: ``CCME``
-
-SUBMISSION_COMMENT
-
-  Free-text comments regarding submission
-
-LAB_NAME
-
-  Name of lab preparing submission, can differ from center (usually
-  refers to the PI's info, not the sequencing center's)
-  
-  *Example*: ``Knight``
-
-SUBMISSION_DATE
-
-  Timestamp of submission.
-  
-  *Example*: ``2009-10-22T06:23:00Z``
-
-CONTACT
-
-  Use semicolon to separate email address from name.  Can include
-  multiple contact fields.
-
-  *Example*: ``Jane Smith;janesmith@college.edu``
-
-FILE
-
-  Leave blank if not submitting sequence data, put in filename
-  otherwise.
-
-  *Example*: ``fierer_hand_study.seqs.tgz``
 
 Sample Input File
 -----------------

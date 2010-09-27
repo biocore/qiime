@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import copy
+import datetime
 import os
 from string import strip
 from collections import defaultdict
@@ -55,14 +56,8 @@ def detect_missing_study_fields(input_file):
 
 def detect_missing_submission_fields(input_file):
     """Return a list of required fields missing from a submission input file."""
-    return _detect_missing_fields(input_file, [
-        'SUBMISSION_ID',
-        'CENTER_NAME',
-        'SUBMISSION_COMMENT',
-        'LAB_NAME',
-        'SUBMISSION_DATE',
-        'CONTACT',
-        ])
+    return _detect_missing_fields(
+        input_file, SraSubmissionTable.get_required_fields())
 
 
 def detect_missing_sample_fields(input_file):
@@ -242,25 +237,179 @@ def make_study(study_lines, twocol_input_format=True):
     return pretty_xml(study_set.to_xml(), encoding='UTF-8')
 
 
-def parse_submission(submission_lines, twocol_input_format=False):
-    """Parse an SRA Submission input file and return an entry dict."""
-    header, rows = read_tabular_data(submission_lines)
-    if twocol_input_format:
+class SraDerivedFieldError(Exception): pass
+
+class SraSubmissionTable(object):
+    """Class representing the input table for an SRA Submission
+    """
+    
+    def __init__(self, header, rows):
+        self.header = header
+        self.rows = rows
+
+    @property
+    def entries(self):
+        """Iterate over each row in the table as a dict.
+        """
+        for row in self.rows:
+            yield self._get_entry(row)
+
+    @property
+    def first_entry(self):
+        return self._get_entry(self.rows[0])
+
+    def _get_entry(self, row):
+        """Transform a row of the table into a dict.
+        """
+        return dict([(k, v) for k, v in zip(self.header, row) if v])
+
+    def add_field(self, fieldname):
+        """Add a new field to the table.
+
+        The value in each row will be set to an empty string.
+        """
+        self.header.append(fieldname)
+        for row in self.rows:
+            row.append('')
+
+    @classmethod
+    def parse(cls, submission_input_file):
+        """Parse an input file to create a new SRA Submission Table.
+        """
+        header, rows = read_tabular_data(submission_input_file)
+        header = map(canonicalize_field_name, header)
+        return cls(header, rows)
+
+    @classmethod
+    def parse_twocol_format(cls, submission_input_file):
+        """Parse a legacy-format file to create a new SRA Submission Table.
+        """
+        _, rows = read_tabular_data(submission_input_file)
         for r in rows:
             r[0] = canonicalize_field_name(r[0])
         info = twocol_data_to_dict(rows, True)
+        # Unzip
+        header, firstrow = map(list, zip(*info.items()))
+        return cls(header, [firstrow])
+
+    def to_tsv(self):
+        """Format an input table as a string of tab separated values.
+        """
+        lines = []
+        lines.append('#' + '\t'.join(self.header))
+        for row in self.rows:
+            lines.append('\t'.join(row))
+        return '\n'.join(lines)
+
+    @classmethod
+    def get_required_fields(cls):
+        """Return a list of all required fields for this input table.
+        """
+        fields = set()
+        for subclass in [SraSubmission, SraContacts]:
+            fields.update(subclass.required_fields.values())
+        return fields
+
+    def detect_missing_fields(self):
+        """Detect missing columns or values in required fields.
+        """
+        required_fields = self.get_required_fields()
+        messages = []
+        missing_from_header = set()
+        for f in required_fields:
+            if f not in header:
+                messages.append(
+                    'Field "%s" missing from input file header.' % f)
+            else:
+                required_entry_fields.add(f)
+
+        for n, entry in enumerate(self.entries):
+            for f in requred_entry_fields:
+                if not entry.get(f):
+                    messages.append(
+                        'Field "%s" missing from entry number %s', (f, n))
+        return messages
+
+    def derive_optional_fields(self, data_dir=None):
+        """Derive default values for optional fields.
+        """
+        date_obj = datetime.datetime.now().replace(microsecond=0)
+        self.update_with_format(
+            'SUBMISSION_DATE', date_obj.isoformat())
+
+        def derive_checksum(entry):
+            filename = entry.get('FILE')
+            if filename:
+                if data_dir:
+                    filepath = os.path.join(data_dir, filename)
+                else:
+                    filepath = filename
+                return md5_path(filepath)
+            return None
+        
+        self.update_with_function(
+            'SUBMISSION_FILE_CHECKSUM', derive_checksum)
+
+    def update_with_function(self, field, fcn):
+        """Derive an optional field using the provided function.
+        """
+        if field not in self.header:
+            self.add_field(field)
+
+        idx = self.header.index(field)
+        for row in self.rows:
+            if not row[idx]:
+                entry = self._get_entry(row)
+                row[idx] = fcn(entry)
+
+    def update_with_format(self, field, format_string):
+        """Derive an optional field using the provided format string.
+        """
+        if field not in self.header:
+            self.add_field(field)
+
+        idx = self.header.index(field)
+        for row in self.rows:
+            if not row[idx]:
+                entry = self._get_entry(row)
+                try:
+                    row[idx] = format_string % entry
+                except ValueError:
+                    message_vars = (format_string, entry, field)
+                    raise SraDerivedFieldError(
+                        'Formatting error: could not use format string %s '
+                        'with entry %s for field "%s".' % message_vars)
+
+    def to_sra(self, **kwargs):
+        """Create a new SRA Submission from this table.
+        """
+        first_entry = self.entries.next()
+        return SraSubmission.from_entry(first_entry, **kwargs)
+
+
+def make_submission(
+    submission_file,
+    docnames=None,
+    submission_dir=None,
+    twocol_input_format=True,
+    ):
+    """Returns string for submission xml.
+
+    The docnames keyword specifies a dictionary of document filenames,
+    which will be added to the submission.  The submission_dir keyword
+    specifies the directory where these documents are to be found.  If
+    the submission_dir is None, the current working directory is used.
+
+    Finally, legacy two-column formatted files amy be used as input.
+    The twocol_input_format keyword specifies if they are to be parsed
+    using this format.
+    """
+    if twocol_input_format:
+        table = SraSubmissionTable.parse_twocol_format(submission_file)
     else:
-        header = map(canonicalize_field_name, header)
-        info_generator = rows_data_as_dicts(header, rows)
-        info = info_generator.next()
-    return info
-
-
-def make_submission(submission_lines, docnames=None, submission_dir=None,
-                    twocol_input_format=True):
-    """Returns string for submission xml."""
-    info = parse_submission(submission_lines, twocol_input_format)
-    submission = SraSubmission.from_entry(info, submission_dir)
+        table = SraSubmissionTable.parse(submission_file)
+    table.derive_optional_fields(submission_dir)
+    submission = table.to_sra()
     if docnames:
         submission.register_documents(docnames)
     return pretty_xml(submission.to_xml(), encoding='UTF-8')
@@ -489,13 +638,12 @@ class SraSubmission(SraEntity):
     required_fields = {
         'alias': 'SUBMISSION_ID',
         'center': 'CENTER_NAME',
-        'comment': 'SUBMISSION_COMMENT',
         'lab': 'LAB_NAME',
         'date': 'SUBMISSION_DATE',
-        'contact_string': 'CONTACT',
         }
 
     optional_fields = {
+        'comment': 'SUBMISSION_COMMENT',
         'accession': 'ACCESSION',
         }
     
@@ -507,12 +655,11 @@ class SraSubmission(SraEntity):
         self.actions = None
 
     @classmethod
-    def from_entry(cls, entry, data_dir=None):
+    def from_entry(cls, entry):
         """Factory method to create a new submission from a table entry."""
         attrs = cls.gather_instance_attributes(entry)
         contacts = SraContacts.from_entry(entry)
 
-        cls._update_entry_with_checksum(entry, data_dir)
         if entry.get('SUBMISSION_FILE_CHECKSUM'):
             files = SraSubmissionFiles.from_entry(entry)
         else:
@@ -523,22 +670,6 @@ class SraSubmission(SraEntity):
         """Register a set of documents with the submission."""
         self.actions = SraActions.from_entry(document_dict)
 
-    @staticmethod
-    def _update_entry_with_checksum(entry, data_dir=None):
-        """Find the submission file and update the entry with its checksum.
-
-        A missing submission data file is regarded as a critical
-        error.  If the data file is not found, this method raises an
-        exception.
-        """
-        filename = entry.get('FILE')
-        if filename and not entry.get('SUBMISSION_FILE_CHECKSUM'):
-            if data_dir:
-                filepath = os.path.join(data_dir, filename)
-            else:
-                filepath = filename
-            entry['SUBMISSION_FILE_CHECKSUM'] = md5_path(filepath)
-
     def to_xml(self):
         """Create an ElementTree XML object for the SRA SUBMISSION entity."""
         root = ET.Element('SUBMISSION')
@@ -547,7 +678,8 @@ class SraSubmission(SraEntity):
             root.set('accession', self.accession)
         root.set('submission_id', self.alias)
         root.set('center_name', self.center)
-        root.set('submission_comment', self.comment)
+        if self.comment:
+            root.set('submission_comment', self.comment)
         root.set('lab_name', self.lab)
         root.set('submission_date', self.date)
         root.append(self.contacts.to_xml())
@@ -632,7 +764,7 @@ class SraContacts(SraEntity):
                 inform_on_error=email)
         return root
 
-    
+
 class SraStudySet(SraEntity):
     """Class repersenting a set of SRA Studies."""
 
