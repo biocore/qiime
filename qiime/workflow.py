@@ -1046,7 +1046,7 @@ def run_process_sra_submission(
         # submission file
         submission_tar_fn = \
             '%s.tgz' % submission_info['SUBMISSION_ID'].replace(' ','_')
-        submission_table.update_with_format('FILE', submission_tar_fn)
+        submission_table.derive_with_format('FILE', submission_tar_fn)
         second_stage_submission_fp = join(
             output_dir, 'submission_second_stage.txt')
         open(second_stage_submission_fp, 'w').write(

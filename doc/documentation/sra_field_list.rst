@@ -131,14 +131,14 @@ CENTER_NAME
 
   *Example*: ``CCME``
 
-CENTER_PROJECT_NAME
+CENTER_PROJECT_NAME (optional)
 
   Name of project as used by the center responsible for the study,
   NULL if none.
 
   *Example*: ``NULL``
 
-PMID
+PMID (optional)
 
   PubMed ID of paper describing project, if supplied will write out
   STUDY_LINK block, can be multiple (comma-delimited), can be absent
@@ -152,10 +152,9 @@ Sample Input File
 
 SAMPLE_ALIAS
 
-  Unique sample identifier, within each center.  (Note: for dbGAP
-  submissions, the name of each specimen is provided from dbGAP). Must
-  be formatted as alphanumeric characters plus underscores, with no
-  special characters.
+  Unique sample identifier, within each center.  Must be formatted as
+  alphanumeric characters plus underscores, with no special
+  characters.
 
   *Example*: ``hand_sample_1``
 
@@ -171,13 +170,13 @@ TAXON_ID
 
   *Example*: ``539655`` (human skin metagenome, species, metagenomes)
 
-COMMON_NAME
+COMMON_NAME (optional)
 
   Common name of the sample, should match taxon id's name.
 
   *Example*: ``human skin metagenome``
 
-ANONYMIZED_NAME
+ANONYMIZED_NAME (optional)
 
   Anonymized name of the subject, if applicable (e.g. deidentified
   subject IDs from dbGAP, deidentified subject ids from your
@@ -186,13 +185,13 @@ ANONYMIZED_NAME
 
   *Example*: ``Subject 1``
 
-DESCRIPTION
+DESCRIPTION (optional)
 
   Free-text description of this specific sample.
 
   *Example*: ``female right palm``
 
-HOST_TAXID
+HOST_TAXID (optional)
 
   Required if there is a host (skip otherwise): taxon id that refers
   to the host. e.g. 9606 = Human.

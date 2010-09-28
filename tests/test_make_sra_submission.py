@@ -10,17 +10,18 @@ from cogent.util.misc import remove_files
 from qiime.make_sra_submission import (
     detect_missing_experiment_fields, detect_missing_study_fields,
     detect_missing_submission_fields, detect_missing_sample_fields,
-    md5_path, safe_for_xml, read_tabular_data, rows_data_as_dicts,
-    twocol_data_to_dict, make_study, make_submission,
+    md5_path, safe_for_xml, read_tabular_data,
+    make_study, make_submission,
     make_sample, write_xml_generic,
     make_run, make_experiment, threecol_data_to_dict,
     _experiment_link_xml, _experiment_attribute_xml, pretty_xml,
-    generate_output_fp, update_entry_with_derived_fields,
+    generate_output_fp, #update_entry_with_derived_fields,
     SraEntity, SraRun, SraDataBlock, SraFile, SraPoolMember,
     SraSpotDescriptor, SraSampleDescriptor, SraExperimentSet, SraExperiment,
-    SraStudyRef, SraPlatform, update_entry_with_deprecated_fields,
+    SraStudyRef, SraPlatform, #update_entry_with_deprecated_fields,
     SraSample, SraSampleName, SraSampleAttributes, SraSampleSet, SraStudy,
-    SraContacts, SraActions, SraSubmissionFiles, SraSubmission, SraSubmissionTable)
+    SraContacts, SraActions, SraSubmissionFiles, SraSubmission,
+    SraSubmissionTable, SraInputTable)
 from qiime.util import get_qiime_project_dir
 import xml.etree.ElementTree as ET
 from cStringIO import StringIO
@@ -63,31 +64,33 @@ class TopLevelTests(TestCase):
         """detect_missing_experiment_fields should return a list of all required fields not found in the input file header."""
         input_file = StringIO('#NONSENSE_FIELD\nnonsense_value\n')
         observed = detect_missing_experiment_fields(input_file)
+        observed.sort()
         expected = [
-            'EXPERIMENT_TITLE',
-            'STUDY_REF',
-            'STUDY_CENTER',
-            'SAMPLE_ALIAS',
-            'POOL_PROPORTION',
             'BARCODE',
-            'RUN_PREFIX',
+            'EXPERIMENT_CENTER',
             'EXPERIMENT_DESIGN_DESCRIPTION',
+            'EXPERIMENT_TITLE',
             'LIBRARY_CONSTRUCTION_PROTOCOL',
+            'POOL_PROPORTION',
+            'RUN_PREFIX',
+            'SAMPLE_ALIAS',
+            'STUDY_REF',
             ]
         self.assertEqual(observed, expected)
         
         # EXPERIMENT_TITLE is present, so doesn't show up in missing fields
         input_file = StringIO('#NONSENSE_FIELD\tEXPERIMENT_TITLE\nnonsense_value\tfake_title\n')
         observed = detect_missing_experiment_fields(input_file)
+        observed.sort()
         expected = [
-            'STUDY_REF',
-            'STUDY_CENTER',
-            'SAMPLE_ALIAS',
-            'POOL_PROPORTION',
             'BARCODE',
-            'RUN_PREFIX',
+            'EXPERIMENT_CENTER',
             'EXPERIMENT_DESIGN_DESCRIPTION',
             'LIBRARY_CONSTRUCTION_PROTOCOL',
+            'POOL_PROPORTION',
+            'RUN_PREFIX',
+            'SAMPLE_ALIAS',
+            'STUDY_REF',
             ]
         self.assertEqual(observed, expected)
         
@@ -95,14 +98,14 @@ class TopLevelTests(TestCase):
         input_file = StringIO('#NONSENSE_FIELD\tExPeRiMeNt_TiTlE\nnonsense_value\tfake_title\n')
         observed = detect_missing_experiment_fields(input_file)
         expected = [
-            'STUDY_REF',
-            'STUDY_CENTER',
-            'SAMPLE_ALIAS',
-            'POOL_PROPORTION',
             'BARCODE',
-            'RUN_PREFIX',
+            'EXPERIMENT_CENTER',
             'EXPERIMENT_DESIGN_DESCRIPTION',
             'LIBRARY_CONSTRUCTION_PROTOCOL',
+            'POOL_PROPORTION',
+            'RUN_PREFIX',
+            'SAMPLE_ALIAS',
+            'STUDY_REF',
             ]
         self.assertEqual(observed, expected)
 
@@ -110,15 +113,15 @@ class TopLevelTests(TestCase):
         """detect_missing_study_fields should return a list of all required fields not found in the input file header."""
         input_file = StringIO('#NONSENSE_FIELD\nnonsense_value\n')
         observed = detect_missing_study_fields(input_file)
+        observed.sort()
         expected = [
-            'STUDY_ALIAS',
-            'STUDY_TITLE',
-            'STUDY_TYPE',
-            'STUDY_ABSTRACT',
-            'STUDY_DESCRIPTION',
             'CENTER_NAME',
             'CENTER_PROJECT_NAME',
-            'PMID',
+            'STUDY_ABSTRACT',
+            'STUDY_ALIAS',
+            'STUDY_DESCRIPTION',
+            'STUDY_TITLE',
+            'STUDY_TYPE',
             ]
         self.assertEqual(observed, expected)
 
@@ -140,14 +143,11 @@ class TopLevelTests(TestCase):
         """detect_missing_sample_fields should return a list of all required fields not found in the input file header."""
         input_file = StringIO('#NONSENSE_FIELD\nnonsense_value\n')
         observed = detect_missing_sample_fields(input_file)
+        observed.sort()
         expected = [
             'SAMPLE_ALIAS',
-            'TITLE',
             'TAXON_ID',
-            'COMMON_NAME',
-            'ANONYMIZED_NAME',
-            'DESCRIPTION',
-            'HOST_TAXID',
+            'TITLE',
             ]
         self.assertEqual(observed, expected)
 
@@ -194,40 +194,6 @@ class TopLevelTests(TestCase):
         # Test with pound sign in header
         data[0] = '#' + data[0]
         self.assertEqual(read_tabular_data(data), expected)
-
-    def test_twocol_data_to_dict(self):
-        """twocol_data_to_dict should produce expected result"""
-        data = [
-            ['x','y','z'],
-            ['x x', 'y y', 'c c '],
-            ]
-        self.assertEqual(twocol_data_to_dict(data), {'x':'y', 'x x':'y y'})
-
-        multiple_data = [
-            ['x','y','z'],
-            ['x x', 'y y', 'c c '],
-            ['x', 'y', 'z'],
-            ['x', 'c', 'v'],
-            ]
-        self.assertEqual(
-            twocol_data_to_dict(multiple_data, is_multiple=True),
-            {'x': 'y,y,c', 'x x': 'y y'})
-
-    def test_rows_data_as_dicts(self):
-        """rows_data_as_dicts should iterate over trimmed row data"""
-        header = ['a', 'b', 'c d']
-        body = [
-            ['x', '', 'z'],  # missing second field
-            ['x x', 'y y'],  # missing/stripped final field
-            ['aa', 'bb', 'cc'],
-            ]
-        observed = rows_data_as_dicts(header, body)
-        expected = [
-            {'a':'x','c d':'z'},
-            {'a':'x x','b':'y y'},
-            {'a':'aa', 'b':'bb','c d':'cc'},
-            ]
-        self.assertEqual(list(observed), expected)
 
     def test_make_study(self):
         """make_study should produce expected results given info/template"""
@@ -472,59 +438,64 @@ class TopLevelTests(TestCase):
         expected = '\n  <c>\n</c>'
         self.assertEqual(observed, expected)
 
-    def test_update_entry_with_deprecated_fields(self):
-        """update_entry_with_deprecated_fields should move deprecated field values to new fields."""
-        a = {'SAMPLE_ACCESSION': '12345'}
-        expected = {'SAMPLE_ACCESSION': '12345',
-                    'DEFAULT_SAMPLE_ACCESSION': '12345'}
-        update_entry_with_deprecated_fields(a, warn=False)
-        self.assertEqual(a, expected)
+    ## def test_update_entry_with_deprecated_fields(self):
+    ##     """update_entry_with_deprecated_fields should move deprecated field values to new fields."""
+    ##     a = {'SAMPLE_ACCESSION': '12345'}
+    ##     expected = {'SAMPLE_ACCESSION': '12345',
+    ##                 'DEFAULT_SAMPLE_ACCESSION': '12345'}
+    ##     update_entry_with_deprecated_fields(a, warn=False)
+    ##     self.assertEqual(a, expected)
 
-    def test_update_entry_with_derived_fields(self):
-        """update_entry_with_derived_fields should derive correct values for optional fields."""
-        a = {
-            'STUDY_REF': 'mystudy',
-            'RUN_PREFIX': 'RUN01',
-            'SAMPLE_ALIAS': 'mysample',
-            'BARCODE': 'AAAAGGGG',
-            'PRIMER': 'ATTACCGCGGCTGCTGGC',
-            'EXPERIMENT_CENTER': 'NCBI',
-            }
-        update_entry_with_derived_fields(a)
-        self.assertEqual(a['EXPERIMENT_ALIAS'], 'mystudy_RUN01')
-        self.assertEqual(a['RUN_ALIAS'], 'mystudy_mysample_RUN01')
-        self.assertEqual(a['BARCODE_READ_GROUP_TAG'], 'RUN01_AAAAGGGG')
-        self.assertEqual(a['PRIMER_READ_GROUP_TAG'], 'V1-V3')
-        self.assertEqual(a['POOL_MEMBER_NAME'], 'RUN01_mysample_V1-V3')
-        self.assertEqual(a['POOL_MEMBER_FILENAME'], 'RUN01_mysample_V1-V3.sff')
-        self.assertEqual(a['DEFAULT_SAMPLE_CENTER'], 'NCBI')
-        self.assertEqual(a['DEFAULT_SAMPLE_NAME'], 'mystudy_default')
-        self.assertEqual(a['DEFAULT_SAMPLE_FILENAME'], 'mystudy_default_RUN01.sff')
-        self.assertEqual(a['DEFAULT_RUN_ALIAS'], 'mystudy_default_RUN01')
-        self.assertEqual(a['LIBRARY_STRATEGY'], 'AMPLICON')
-        self.assertEqual(a['LIBRARY_SOURCE'], 'GENOMIC')
-        self.assertEqual(a['LIBRARY_SELECTION'], 'PCR')
+    ## def test_update_entry_with_derived_fields(self):
+    ##     """update_entry_with_derived_fields should derive correct values for optional fields."""
+    ##     a = {
+    ##         'STUDY_REF': 'mystudy',
+    ##         'RUN_PREFIX': 'RUN01',
+    ##         'SAMPLE_ALIAS': 'mysample',
+    ##         'BARCODE': 'AAAAGGGG',
+    ##         'PRIMER': 'ATTACCGCGGCTGCTGGC',
+    ##         'EXPERIMENT_CENTER': 'NCBI',
+    ##         }
+    ##     update_entry_with_derived_fields(a)
+    ##     self.assertEqual(a['EXPERIMENT_ALIAS'], 'mystudy_RUN01')
+    ##     self.assertEqual(a['RUN_ALIAS'], 'mystudy_mysample_RUN01')
+    ##     self.assertEqual(a['BARCODE_READ_GROUP_TAG'], 'RUN01_AAAAGGGG')
+    ##     self.assertEqual(a['PRIMER_READ_GROUP_TAG'], 'V1-V3')
+    ##     self.assertEqual(a['POOL_MEMBER_NAME'], 'RUN01_mysample_V1-V3')
+    ##     self.assertEqual(a['POOL_MEMBER_FILENAME'], 'RUN01_mysample_V1-V3.sff')
+    ##     self.assertEqual(a['DEFAULT_SAMPLE_CENTER'], 'NCBI')
+    ##     self.assertEqual(a['DEFAULT_SAMPLE_NAME'], 'mystudy_default')
+    ##     self.assertEqual(a['DEFAULT_SAMPLE_FILENAME'], 'mystudy_default_RUN01.sff')
+    ##     self.assertEqual(a['DEFAULT_RUN_ALIAS'], 'mystudy_default_RUN01')
+    ##     self.assertEqual(a['LIBRARY_STRATEGY'], 'AMPLICON')
+    ##     self.assertEqual(a['LIBRARY_SOURCE'], 'GENOMIC')
+    ##     self.assertEqual(a['LIBRARY_SELECTION'], 'PCR')
 
-class SraSubmissionTableTests(TestCase):
+class SraInputTableTests(TestCase):
     def setUp(self):
         self.input_file = StringIO(submission_manycol_txt)
         self.twocol_input_file = StringIO(submission_twocol_txt)
-        self.expected_entry =  {
-            'SUBMISSION_DATE': '2009-10-22T01:23:00-05:00',
-            'SUBMISSION_ID': 'fierer_hand_study',
-            'CENTER_NAME': 'CCME',
-            'ACCESSION': 'SRA003492',
-            'LAB_NAME': 'Knight',
-            'CONTACT': (
-                'Rob Knight;Rob.Knight@Colorado.edu,'
-                'Noah Fierer;Noah.Fierer@Colorado.edu'),
-            'SUBMISSION_COMMENT': (
-                'Barcode submission prepared by osulliva@ncbi.nlm.nih.gov, '
-                'shumwaym@ncbi.nlm.nih.gov'),
-            }
+        self.expected_header = [
+            'ACCESSION',
+            'SUBMISSION_ID',
+            'CENTER_NAME',
+            'SUBMISSION_COMMENT',
+            'LAB_NAME',
+            'SUBMISSION_DATE',
+            'CONTACT',
+            ]
+        self.expected_rows = [[ 
+            'SRA003492',
+            'fierer_hand_study',
+            'CCME',
+            'Barcode submission prepared by osulliva@ncbi.nlm.nih.gov, shumwaym@ncbi.nlm.nih.gov',
+            'Knight',
+            '2009-10-22T01:23:00-05:00',
+            'Rob Knight;Rob.Knight@Colorado.edu,Noah Fierer;Noah.Fierer@Colorado.edu',
+            ]]
     
     def test_entries(self):
-        t = SraSubmissionTable(['Col1', 'Col2'], [
+        t = SraInputTable(['Col1', 'Col2'], [
             ['a', 'b'],
             ['c', 'd'],
             ])
@@ -536,24 +507,46 @@ class SraSubmissionTableTests(TestCase):
         self.assertEqual(observed, expected)
 
     def test_parse(self):
-        t = SraSubmissionTable.parse(self.input_file)
-        self.assertEqual(t.entries.next(), self.expected_entry)
+        t = SraInputTable.parse(self.input_file)
+        self.assertEqual(t.header, self.expected_header)
+        self.assertEqual(t.rows, self.expected_rows)
 
     def test_parse_twocol_format(self):
-        t = SraSubmissionTable.parse_twocol_format(self.twocol_input_file)
-        self.assertEqual(t.entries.next(), self.expected_entry)
+        t = SraInputTable.parse_twocol_format(self.twocol_input_file)
+        self.assertEqual(t.header, self.expected_header)
+        self.assertEqual(t.rows, self.expected_rows)
+        
+        multiple_data = [
+            '#ignored\n',
+            'G\ty\tz\n',
+            'G x\ty y\tc c\n',
+            'G\t1\tzzz\n',
+            'G\tc\tcomment\n',
+            ]
+        t2 = SraInputTable.parse_twocol_format(multiple_data)
+        self.assertEqual(t2.header, ['G', 'G X'])
+        self.assertEqual(t2.rows, [['y,1,c', 'y y']])
 
-    def test_get_required_fields(self):
-        observed = SraSubmissionTable.get_required_fields()
-        expected = set([
-            'SUBMISSION_ID',
-            'CENTER_NAME',
-            'LAB_NAME',
-            'CONTACT',
-            'SUBMISSION_DATE',
-            ])
-        self.assertEqual(observed, expected)
+    def test_get_entry(self):
+        """_get_entry should return dict from list of row values"""
+        t = SraInputTable(['a', 'b', 'c d'], None)
+        self.assertEqual(
+            t._get_entry(['aa', 'bb', 'cc']),
+            {'a': 'aa', 'b': 'bb', 'c d': 'cc'},
+            )
+        # missing second field
+        self.assertEqual(
+            t._get_entry(['x', '', 'z']),
+            {'a': 'x', 'c d': 'z'},
+            )
+        # missing final field
+        self.assertEqual(
+            t._get_entry(['x x', 'y y']),
+            {'a': 'x x', 'b': 'y y'},
+            )
 
+
+class SraSubmissionTableTests(TestCase):
     def test_derive_optional_fields(self):
         t = SraSubmissionTable([], [[]])
         t.derive_optional_fields()
@@ -570,22 +563,7 @@ class SraSubmissionTableTests(TestCase):
 
         # TODO: Test with file, check that correct checksum is derived
 
-    def test_to_sra(self):
-        t = SraSubmissionTable(
-            ['SUBMISSION_ID', 'CENTER_NAME', 'LAB_NAME', 'CONTACT'],
-            [['test', 'ABCD', 'Lab1', 'Bob;bob@abcd.com']],
-            )
-        t.derive_optional_fields()
-        date_str = t.entries.next()['SUBMISSION_DATE']
-        expected = '''
-        <SUBMISSION center_name="ABCD" lab_name="Lab1" submission_date="%s" submission_id="test" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-          <CONTACTS>
-            <CONTACT inform_on_error="bob@abcd.com" inform_on_status="bob@abcd.com" name="Bob" />
-          </CONTACTS>
-        </SUBMISSION>'''
-        submission = t.to_sra()
-        self.assertEqual(pretty_xml(submission.to_xml(), 4), expected % date_str)
-
+ 
 
 class SraEntityTests(TestCase):
     def test_check_attributes(self):
@@ -611,25 +589,42 @@ class SraEntityTests(TestCase):
 
 
 class SraSubmissionTests(TestCase):
-    def test_minimal_submission(self):
-        s = SraSubmission.from_entry({
-            'SUBMISSION_ID': 'minimal_submission',
-            'CENTER_NAME': 'QIIME',
-            'SUBMISSION_DATE': '2009-10-22T01:23:00-05:00',
-            'LAB_NAME': 'MYLAB',
-            'CONTACT': (
-                'Person One;personone@school.edu,'
-                'Person Two;persontwo@company.com'),
-            })
-        expected = '''
-        <SUBMISSION center_name="QIIME" lab_name="MYLAB" submission_date="2009-10-22T01:23:00-05:00" submission_id="minimal_submission" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    def test_with_date(self):
+        class mocktable:
+            first_entry = {
+                'SUBMISSION_ID': 'fierer_hand_study',
+                'CENTER_NAME': 'CCME',
+                'LAB_NAME': 'Knight',
+                'SUBMISSION_DATE': '2009-10-22T01:23:00-05:00',
+                'CONTACT': (
+                    'Rob Knight;Rob.Knight@Colorado.edu,'
+                    'Noah Fierer;Noah.Fierer@Colorado.edu'),
+                }
+        s = SraSubmission.from_table(mocktable)
+        expected = '''<?xml version="1.0" encoding="UTF-8"?>
+        <SUBMISSION center_name="CCME" lab_name="Knight" submission_date="2009-10-22T01:23:00-05:00" submission_id="fierer_hand_study" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
           <CONTACTS>
-            <CONTACT inform_on_error="personone@school.edu" inform_on_status="personone@school.edu" name="Person One" />
-            <CONTACT inform_on_error="persontwo@company.com" inform_on_status="persontwo@company.com" name="Person Two" />
+            <CONTACT inform_on_error="Rob.Knight@Colorado.edu" inform_on_status="Rob.Knight@Colorado.edu" name="Rob Knight" />
+            <CONTACT inform_on_error="Noah.Fierer@Colorado.edu" inform_on_status="Noah.Fierer@Colorado.edu" name="Noah Fierer" />
           </CONTACTS>
         </SUBMISSION>'''
-        self.assertEqual(pretty_xml(s.to_xml(), 4), expected)
+        self.assertEqual(s.to_xml_string(level=4), expected)
 
+    def test_without_date(self):
+        t = SraSubmissionTable(
+            ['SUBMISSION_ID', 'CENTER_NAME', 'LAB_NAME', 'CONTACT'],
+            [['test', 'ABCD', 'Lab1', 'Bob;bob@abcd.com']],
+            )
+        t.derive_optional_fields()
+        date_str = t.entries.next()['SUBMISSION_DATE']
+        expected = '''
+        <SUBMISSION center_name="ABCD" lab_name="Lab1" submission_date="%s" submission_id="test" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+          <CONTACTS>
+            <CONTACT inform_on_error="bob@abcd.com" inform_on_status="bob@abcd.com" name="Bob" />
+          </CONTACTS>
+        </SUBMISSION>'''
+        submission = SraSubmission.from_table(t)
+        self.assertEqual(pretty_xml(submission.to_xml(), 4), expected % date_str)
 
 
 class SraSubmissionFilesTests(TestCase):

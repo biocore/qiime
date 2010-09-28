@@ -27,73 +27,22 @@ __status__ = "Development"
 
 def detect_missing_experiment_fields(input_file):
     """Return a list of required fields missing from an experiment input file."""
-    return _detect_missing_fields(input_file, [
-        'EXPERIMENT_TITLE',
-        'STUDY_REF',
-        'STUDY_CENTER',
-        'SAMPLE_ALIAS',
-        'POOL_PROPORTION',
-        'BARCODE',
-        'RUN_PREFIX',
-        'EXPERIMENT_DESIGN_DESCRIPTION',
-        'LIBRARY_CONSTRUCTION_PROTOCOL',
-        ])
+    return SraExperimentTable.parse(input_file).detect_missing_fields()
 
 
 def detect_missing_study_fields(input_file):
     """Return a list of required fields missing from a study input file."""
-    return _detect_missing_fields(input_file, [
-        'STUDY_ALIAS',
-        'STUDY_TITLE',
-        'STUDY_TYPE',
-        'STUDY_ABSTRACT',
-        'STUDY_DESCRIPTION',
-        'CENTER_NAME',
-        'CENTER_PROJECT_NAME',
-        'PMID',        
-        ])
+    return SraStudyTable.parse(input_file).detect_missing_fields()
 
 
 def detect_missing_submission_fields(input_file):
     """Return a list of required fields missing from a submission input file."""
-    return _detect_missing_fields(
-        input_file, SraSubmissionTable.get_required_fields())
+    return SraSubmissionTable.parse(input_file).detect_missing_fields()
 
 
 def detect_missing_sample_fields(input_file):
     """Return a list of required fields missing from a sample input file."""
-    return _detect_missing_fields(input_file, [
-        'SAMPLE_ALIAS',
-        'TITLE',
-        'TAXON_ID',
-        'COMMON_NAME',
-        'ANONYMIZED_NAME',
-        'DESCRIPTION',
-        'HOST_TAXID',
-        ])
-
-
-def _detect_missing_fields(input_file, required_fields):
-    # record starting offset so we can return to it later
-    # obviously, this is not thread-safe
-    if hasattr(input_file, 'tell'):
-        file_offset = input_file.tell()
-    else:
-        file_offset = None
-
-    header, _ = read_tabular_data(input_file)
-
-    # return file to starting position
-    if file_offset is not None:
-        input_file.seek(file_offset)
-
-    observed_fields = map(canonicalize_field_name,set(header))
-    missing_fields = []
-    for field in required_fields:
-        if canonicalize_field_name(field) not in observed_fields:
-            missing_fields.append(field)
-
-    return missing_fields
+    return SraSampleTable.parse(input_file).detect_missing_fields()
 
 
 def md5_path(filename, block_size=8192):
@@ -167,83 +116,19 @@ def read_tabular_data(tabular_file):
     return header, body
 
 
-def canonicalize_field_name(name):
-    """Convert a field name to canonical form (ALL_CAPS)."""
-    return name.upper()
-
-
-def twocol_data_to_dict(body, is_multiple=False, warn=False):
-    """Converts two-col data to dict of key-value pairs, ignoring other cols"""
-    result = {}
-    for rec in body:
-        try:
-            key = rec[0].strip()
-            val = rec[1].strip()
-        except IndexError:
-            if warn:
-                stderr.write(
-                    'Less than 2 fields found in two-column input: %s' % rec)
-        if result.get(key) and is_multiple:
-            # Stringify multiple entries in the same format as
-            # multicolumn input.  Hacky, but acceptable because this
-            # function is only around for legacy support.
-            result[key] = '%s,%s' % (result[key], val)
-        else:
-            result[key] = val
-    return result
-
-
-def threecol_data_to_dict(body, warn=False):
-    """Converts three-col data to dict of key: (value1, value2) , ignoring other cols"""
-    result = defaultdict(list)
-    for rec in body:
-        try:
-            key = rec[0]
-            v1 = rec[1]
-            v2 = rec[2]
-            result[key].append((v1, v2))
-        except IndexError:
-            if warn:
-                stderr.write(
-                    'Less than 3 fields found in three-column input: %s' % rec)
-    return result
-
-
-def rows_data_as_dicts(header, body):
-    """Iterates over rows as dicts where header has keys, each row has vals.
-
-    Omits key-value pairs where the values are empty.
-    Assumes that header will be passed as a single row.
-    """
-    for row in body:
-        data = dict([(k, v) for k, v in zip(header, row) if v])
-        yield data
-
-
-def make_study(study_lines, twocol_input_format=True):
-    """Returns string for study xml."""
-    header, rows = read_tabular_data(study_lines)
-    if twocol_input_format:
-        for r in rows:
-            r[0] = canonicalize_field_name(r[0])
-        info = twocol_data_to_dict(rows)
-    else:
-        header = map(canonicalize_field_name, header)
-        info_generator = rows_data_as_dicts(header, rows)
-        info = info_generator.next()
-
-    study_set = SraStudySet()
-    study_set.register(info)
-    return pretty_xml(study_set.to_xml(), encoding='UTF-8')
-
-
 class SraDerivedFieldError(Exception): pass
 
-class SraSubmissionTable(object):
-    """Class representing the input table for an SRA Submission
+class SraInputFormatError(Exception): pass
+
+class SraInputTable(object):
+    """Class representing an input table for SRA submissions.
     """
+    required_fields = []
+    deprecated_fields = []
     
     def __init__(self, header, rows):
+        """Create a new table from a header and a sequence of rows.
+        """
         self.header = header
         self.rows = rows
 
@@ -256,6 +141,8 @@ class SraSubmissionTable(object):
 
     @property
     def first_entry(self):
+        """Retrieve the first entry in the table.
+        """
         return self._get_entry(self.rows[0])
 
     def _get_entry(self, row):
@@ -263,34 +150,34 @@ class SraSubmissionTable(object):
         """
         return dict([(k, v) for k, v in zip(self.header, row) if v])
 
-    def add_field(self, fieldname):
-        """Add a new field to the table.
-
-        The value in each row will be set to an empty string.
-        """
-        self.header.append(fieldname)
-        for row in self.rows:
-            row.append('')
-
     @classmethod
-    def parse(cls, submission_input_file):
-        """Parse an input file to create a new SRA Submission Table.
+    def parse(cls, input_file):
+        """Parse an input file to create a new Input Table.
         """
-        header, rows = read_tabular_data(submission_input_file)
-        header = map(canonicalize_field_name, header)
+        header, rows = read_tabular_data(input_file)
+        header = map(cls.canonicalize_field_name, header)
         return cls(header, rows)
 
     @classmethod
-    def parse_twocol_format(cls, submission_input_file):
-        """Parse a legacy-format file to create a new SRA Submission Table.
+    def parse_twocol_format(cls, input_file):
+        """Parse a legacy-format file to create a new Input Table.
         """
-        _, rows = read_tabular_data(submission_input_file)
-        for r in rows:
-            r[0] = canonicalize_field_name(r[0])
-        info = twocol_data_to_dict(rows, True)
-        # Unzip
-        header, firstrow = map(list, zip(*info.items()))
-        return cls(header, [firstrow])
+        _, records = read_tabular_data(input_file)
+        table = cls([], [[]])
+        for rec in records:
+            field_name = cls.canonicalize_field_name(rec[0])
+            table._ensure_field_exists(field_name)
+            try:
+                val = rec[1].strip()
+            except IndexError:
+                raise SraInputFormatError(
+                    'Only one column found in two-column input file: %s' % rec)
+            table.append_with_value(field_name, val)
+        return table
+
+    @classmethod
+    def canonicalize_field_name(cls, field_name):
+        return field_name.upper()
 
     def to_tsv(self):
         """Format an input table as a string of tab separated values.
@@ -301,40 +188,124 @@ class SraSubmissionTable(object):
             lines.append('\t'.join(row))
         return '\n'.join(lines)
 
-    @classmethod
-    def get_required_fields(cls):
-        """Return a list of all required fields for this input table.
+    def derive_with_function(self, field, fcn):
+        """Update a column of the table using a function.
+
+        The funcion should take a single argument, the current entry
+        in the table.
         """
-        fields = set()
-        for subclass in [SraSubmission, SraContacts]:
-            fields.update(subclass.required_fields.values())
-        return fields
+        self._ensure_field_exists(field)
+
+        field_idx = self.header.index(field)
+        for row_num, row in enumerate(self.rows):
+            if not row[field_idx]:
+                entry = self._get_entry(row)
+                try:
+                    val = fcn(entry)
+                except:
+                    raise SraDerivedFieldError(
+                        'Derivation of field %s failed in row %s, '
+                        'parsed as %s.' % (field, row_num, entry))
+                if val:
+                    row[field_idx] = val
+
+    def append_with_value(self, field, val, sep=','):
+        self._ensure_field_exists(field)
+
+        field_idx = self.header.index(field)
+        for row in self.rows:
+            if row[field_idx]:
+                row[field_idx] = row[field_idx] + sep + val
+            else:
+                row[field_idx] = val
+
+    def derive_with_value(self, field, val):
+        self.derive_with_function(field, lambda x: val)
+
+    def derive_with_format(self, field, format_string):
+        """Update a column of the table using a format string.
+
+        For each row, the format string will be evaluated using the
+        current entry in the table.
+        """
+        try:
+            self.derive_with_function(field, lambda x: format_string % x)
+        except SraDerivedFieldError as e:
+            raise SraDerivedFieldError(
+                '%s Format string: %s' % (e, format_string))
+
+    def _ensure_field_exists(self, fieldname):
+        """Add a new field to the table.
+
+        The value in each row will be set to an empty string.
+        """
+        if fieldname not in self.header:
+            self.header.append(fieldname)
+            for row in self.rows:
+                row.append('')
+
+    def derive_optional_fields(self):
+        """Derive default values for optional fields.
+        """
+        pass
+
+    def fix_deprecated_fields(self):
+        """Move values from deprecated fields to new locations.
+        """
+        for old_field, new_field in self.deprecated_fields:
+            if old_field in self.header:
+                self._ensure_field_exists(new_field)
+                stderr.write(
+                    'Warning: The %s field has been deprecated. Please rename '
+                    'the field to %s.\n' % (old_field, new_field))
+                self.derive_with_format(new_field, '%(' + old_field + ')s')
 
     def detect_missing_fields(self):
-        """Detect missing columns or values in required fields.
-        """
-        required_fields = self.get_required_fields()
-        messages = []
-        missing_from_header = set()
-        for f in required_fields:
-            if f not in header:
-                messages.append(
-                    'Field "%s" missing from input file header.' % f)
-            else:
-                required_entry_fields.add(f)
+        missing_fields = []
+        for field in self.required_fields:
+            if field not in self.header:
+                missing_fields.append(field)
+        return missing_fields
 
-        for n, entry in enumerate(self.entries):
-            for f in requred_entry_fields:
-                if not entry.get(f):
-                    messages.append(
-                        'Field "%s" missing from entry number %s', (f, n))
-        return messages
+
+class SraStudyTable(SraInputTable):
+    required_fields = [
+        'CENTER_NAME',
+        'CENTER_PROJECT_NAME',
+        'STUDY_ABSTRACT',
+        'STUDY_ALIAS',
+        'STUDY_DESCRIPTION',
+        'STUDY_TITLE',
+        'STUDY_TYPE',
+        ]
+
+
+def make_study(input_file, twocol_input_format=True):
+    """Returns string for study xml."""
+    if twocol_input_format:
+        table = SraStudyTable.parse_twocol_format(input_file)
+    else:
+        table = SraStudyTable.parse(input_file)
+    study = SraStudySet.from_table(table)
+    return study.to_xml_string()
+
+
+class SraSubmissionTable(SraInputTable):
+    """Class representing the input table for an SRA Submission
+    """
+    required_fields = [
+        'CENTER_NAME',
+        'CONTACT',
+        'LAB_NAME',
+        'SUBMISSION_DATE',
+        'SUBMISSION_ID',
+        ]
 
     def derive_optional_fields(self, data_dir=None):
         """Derive default values for optional fields.
         """
         date_obj = datetime.datetime.now().replace(microsecond=0)
-        self.update_with_format(
+        self.derive_with_format(
             'SUBMISSION_DATE', date_obj.isoformat())
 
         def derive_checksum(entry):
@@ -347,52 +318,12 @@ class SraSubmissionTable(object):
                 return md5_path(filepath)
             return None
         
-        self.update_with_function(
+        self.derive_with_function(
             'SUBMISSION_FILE_CHECKSUM', derive_checksum)
 
-    def update_with_function(self, field, fcn):
-        """Derive an optional field using the provided function.
-        """
-        if field not in self.header:
-            self.add_field(field)
 
-        idx = self.header.index(field)
-        for row in self.rows:
-            if not row[idx]:
-                entry = self._get_entry(row)
-                row[idx] = fcn(entry)
-
-    def update_with_format(self, field, format_string):
-        """Derive an optional field using the provided format string.
-        """
-        if field not in self.header:
-            self.add_field(field)
-
-        idx = self.header.index(field)
-        for row in self.rows:
-            if not row[idx]:
-                entry = self._get_entry(row)
-                try:
-                    row[idx] = format_string % entry
-                except ValueError:
-                    message_vars = (format_string, entry, field)
-                    raise SraDerivedFieldError(
-                        'Formatting error: could not use format string %s '
-                        'with entry %s for field "%s".' % message_vars)
-
-    def to_sra(self, **kwargs):
-        """Create a new SRA Submission from this table.
-        """
-        first_entry = self.entries.next()
-        return SraSubmission.from_entry(first_entry, **kwargs)
-
-
-def make_submission(
-    submission_file,
-    docnames=None,
-    submission_dir=None,
-    twocol_input_format=True,
-    ):
+def make_submission(submission_file, docnames=None, submission_dir=None,
+                    twocol_input_format=True):
     """Returns string for submission xml.
 
     The docnames keyword specifies a dictionary of document filenames,
@@ -409,53 +340,142 @@ def make_submission(
     else:
         table = SraSubmissionTable.parse(submission_file)
     table.derive_optional_fields(submission_dir)
-    submission = table.to_sra()
+    submission = SraSubmission.from_table(table)
     if docnames:
         submission.register_documents(docnames)
-    return pretty_xml(submission.to_xml(), encoding='UTF-8')
+    return submission.to_xml_string()
 
 
-def make_sample(sample_lines):
+class SraSampleTable(SraInputTable):
+    """Class representing the input table for an SRA Sample
+    """
+    required_fields = [
+        'SAMPLE_ALIAS',
+        'TAXON_ID',
+        'TITLE',
+        ]
+
+    @classmethod
+    def canonicalize_field_name(cls, field_name):
+        cn = super(SraSampleTable, cls).canonicalize_field_name(field_name)
+        if cn in SraSampleAttributes.standard_fields():
+            return cn
+        return field_name
+
+
+def make_sample(input_file):
     """Returns string for sample xml."""
-    header, body = read_tabular_data(sample_lines)
-
-    # ONLY canonicalize the standard fields in header
-    standard_fields = SraSampleAttributes.standard_fields()
-    for i, name in enumerate(header):
-        canonicalized_name = canonicalize_field_name(name)
-        if canonicalized_name in standard_fields:
-            header[i] = canonicalized_name
-
-    s = SraSampleSet()
-    for entry in rows_data_as_dicts(header, body):
-        s.register(entry)
-    return pretty_xml(s.to_xml(), encoding='UTF-8')
+    table = SraSampleTable.parse(input_file)
+    sample_set = SraSampleSet.from_table(table)
+    return sample_set.to_xml_string()
 
 
-def make_run(experiment_lines, sff_dir=None):
-    columns, body = read_tabular_data(experiment_lines)
-    columns = map(canonicalize_field_name, columns)
+class SraExperimentTable(SraInputTable):
+    required_fields = [
+        'BARCODE',
+        'EXPERIMENT_CENTER',
+        'EXPERIMENT_DESIGN_DESCRIPTION',
+        'EXPERIMENT_TITLE',
+        'LIBRARY_CONSTRUCTION_PROTOCOL',
+        'POOL_PROPORTION',
+        'RUN_PREFIX',
+        'SAMPLE_ALIAS',
+        'STUDY_REF',
+        ]
+    deprecated_fields = [
+        ('SAMPLE_ACCESSION', 'DEFAULT_SAMPLE_ACCESSION'),
+        ]
+    
+    def derive_optional_fields(self):
+        """Derive default values for optional fields.
+        The optional field CHECKSUM is not handled by this function,
+        but is left for the SraRunSet class to derive.
+        """        
+        f = self.derive_with_format
+        g = self.derive_with_function
 
+        f('REGION', '0')
+        f('EXPERIMENT_ALIAS', '%(STUDY_REF)s_%(RUN_PREFIX)s')
+        f('RUN_ALIAS', '%(STUDY_REF)s_%(SAMPLE_ALIAS)s_%(RUN_PREFIX)s')
+        f('BARCODE_READ_GROUP_TAG', '%(RUN_PREFIX)s_%(BARCODE)s')
+        g('PRIMER_READ_GROUP_TAG', self.__derive_primer_tag)
+        g('POOL_MEMBER_NAME', self.__derive_pool_member_name)
+        f('POOL_MEMBER_FILENAME', '%(POOL_MEMBER_NAME)s.sff')
+        f('RUN_CENTER', '%(EXPERIMENT_CENTER)s')
+        f('STUDY_CENTER', '%(EXPERIMENT_CENTER)s')
+        f('SAMPLE_CENTER', '%(EXPERIMENT_CENTER)s')
+        f('DEFAULT_SAMPLE_CENTER', '%(SAMPLE_CENTER)s')
+        g('DEFAULT_SAMPLE_NAME', self.__derive_default_sample_name)
+        f('DEFAULT_SAMPLE_FILENAME', '%(STUDY_REF)s_default_%(RUN_PREFIX)s.sff')
+        f('DEFAULT_RUN_ALIAS', '%(STUDY_REF)s_default_%(RUN_PREFIX)s')
+        f('PLATFORM', 'Titanium')
+        f('KEY_SEQ', 'TCAG')
+        f('LIBRARY_STRATEGY', 'AMPLICON')
+        f('LIBRARY_SOURCE', 'GENOMIC')
+        f('LIBRARY_SELECTION', 'PCR')
+
+    def __derive_primer_tag(self, entry):
+        primer = entry.get('PRIMER')
+        if primer:
+            try:
+                return self.PRIMER_READ_GROUP_TAGS[primer]
+            except KeyError:
+                raise KeyError(
+                    'No PRIMER_READ_GROUP_TAG has been provided, and '
+                    'primer %s is not found in table of standard '
+                    'primers. Please provide a value for the '
+                    'PRIMER_READ_GROUP_TAG.' % primer)
+
+    PRIMER_READ_GROUP_TAGS = {
+        # Standard primers
+        # BSR357
+        'CTGCTGCCTYCCGTA': 'V1-V2',
+        # BSR534
+        'ATTACCGCGGCTGCTGGC': 'V1-V3',
+        # BSR926
+        'CCGTCAATTYYTTTRAGTTT': 'V3-V5',
+        # BSR1492
+        'GYTACCTTGTTAYGACTT': 'V6-V9',
+        # Broad Institute Primers
+        # 534r
+        'ATTACCGCGGCTGCTGG': 'V1-V3',
+        # 926r
+        'CCGTCAATTCMTTTRAGT': 'V3-V5',
+        # 1492r
+        'TACGGYTACCTTGTTAYGACTT': 'V6-V9',
+        }
+
+    def __derive_pool_member_name(self, entry):
+        primer_tag = entry.get('PRIMER_READ_GROUP_TAG')
+        if primer_tag:
+            s = '%(RUN_PREFIX)s_%(SAMPLE_ALIAS)s_%(PRIMER_READ_GROUP_TAG)s'
+        else:
+            s = '%(RUN_PREFIX)s_%(SAMPLE_ALIAS)s'
+        return s % entry
+
+    def __derive_default_sample_name(self, entry):
+        if not entry.get('DEFAULT_SAMPLE_ACCESSION'):
+            return '%(STUDY_REF)s_default' % entry
+
+
+def make_run(input_file, sff_dir=None):
+    table = SraExperimentTable.parse(input_file)
+    table.derive_optional_fields()
+    table.fix_deprecated_fields()
     run_set = SraRunSet(sff_dir)
-    for line in body:
-        field_dict = dict(zip(columns, line))
-        update_entry_with_deprecated_fields(field_dict)
-        update_entry_with_derived_fields(field_dict)
-        run_set.register(field_dict)
-    return pretty_xml(run_set.to_xml(), encoding='UTF-8')
-  
+    for entry in table.entries:
+        run_set.register(entry)
+    return run_set.to_xml_string()
 
-def make_experiment(experiment_lines, attribute_file=None, link_file=None):
-    columns, body = read_tabular_data(experiment_lines)
-    columns = map(canonicalize_field_name, columns)
 
+def make_experiment(input_file, attribute_file=None, link_file=None):
+    table = SraExperimentTable.parse(input_file)
+    table.derive_optional_fields()
+    table.fix_deprecated_fields()
     experiment_set = SraExperimentSet()
 
-    for line in body:
-        field_dict = dict(zip(columns, line))
-        update_entry_with_deprecated_fields(field_dict)
-        update_entry_with_derived_fields(field_dict)
-        experiment_set.register(field_dict)
+    for entry in table.entries:
+        experiment_set.register(entry)
 
     experiment_attributes = defaultdict(list)
     if attribute_file is not None:
@@ -471,8 +491,8 @@ def make_experiment(experiment_lines, attribute_file=None, link_file=None):
         expt.experiment_attributes = experiment_attributes.get(alias)
         expt.experiment_links = experiment_links.get(alias)
         
-    return pretty_xml(experiment_set.to_xml(), encoding='UTF-8')
-    
+    return experiment_set.to_xml_string()
+
 
 class SraEntity(object):
     """Base class for elements defined in the SRA's XML schema.
@@ -595,6 +615,9 @@ class SraEntity(object):
         raise NotImplementedError(
             'This method is not implemented in the base class.')
 
+    def to_xml_string(self, level=0):
+        return pretty_xml(self.to_xml(), level=level, encoding='UTF-8')
+
     @classmethod
     def gather_instance_attributes(cls, entry):
         """Gather object attribute values from a table entry.
@@ -630,7 +653,7 @@ class SraEntity(object):
             val = getattr(self, attr)
             if val:
                 xml_element.set(attr, val)
-        
+
 
 class SraSubmission(SraEntity):
     """Class representing an SRA Submission entity."""
@@ -655,8 +678,10 @@ class SraSubmission(SraEntity):
         self.actions = None
 
     @classmethod
-    def from_entry(cls, entry):
-        """Factory method to create a new submission from a table entry."""
+    def from_table(cls, table):
+        """Create a new SRA Submission from an input table.
+        """
+        entry = table.first_entry
         attrs = cls.gather_instance_attributes(entry)
         contacts = SraContacts.from_entry(entry)
 
@@ -772,6 +797,13 @@ class SraStudySet(SraEntity):
         """Create a new set of SRA Studies"""
         self.studies = []
 
+    @classmethod
+    def from_table(cls, table):
+        instance = cls()
+        for entry in table.entries:
+            instance.register(entry)
+        return instance
+
     def register(self, entry):
         """Register a new table entry with the study set."""
         new_study = SraStudy.from_entry(entry)
@@ -828,6 +860,13 @@ class SraSampleSet(SraEntity):
     def __init__(self):
         """Create a new set of SRA Samples"""
         self.samples = []
+
+    @classmethod
+    def from_table(cls, table):
+        instance = cls()
+        for entry in table.entries:
+            instance.register(entry)
+        return instance
 
     def register(self, entry):
         new_sample = SraSample.from_entry(entry)
@@ -1561,139 +1600,20 @@ class SraFile(SraEntity):
         return root
 
 
-def update_entry_with_deprecated_fields(entry, warn=True):
-    """Move values from deprecated fields to valid fields.
-
-    Deprecated fields:
-      - SAMPLE_ACCESSION (has become DEFAULT_SAMPLE_ACCESSION)
-    """
-    deprecated_fields = [
-        ('SAMPLE_ACCESSION', 'DEFAULT_SAMPLE_ACCESSION'),
-        ]
-    for old_field, new_field in deprecated_fields:
-        if old_field in entry:
+def threecol_data_to_dict(body, warn=False):
+    """Converts three-col data to dict of key: (value1, value2) , ignoring other cols"""
+    result = defaultdict(list)
+    for rec in body:
+        try:
+            key = rec[0]
+            v1 = rec[1]
+            v2 = rec[2]
+            result[key].append((v1, v2))
+        except IndexError:
             if warn:
                 stderr.write(
-                    'Warning: The %s field has been deprecated. Please rename '
-                    'the field to %s.\n' % (old_field, new_field))
-            if not entry.get(new_field):
-                entry[new_field] = entry[old_field]
-    return entry
-
-
-def update_entry_with_derived_fields(entry):
-    """Derive default values for blank/missing fields in input file.
-
-    Derives the following fields:
-      - REGION (0)
-      - EXPERIMENT_ALIAS (<STUDY_REF>_<RUN_PREFIX>)
-      - RUN_ALIAS (<STUDY_REF>_<SAMPLE_ALIAS>_<RUN_PREFIX>)
-      - BARCODE_READ_GROUP_TAG (<RUN_PREFIX>_<BARCODE>)
-      - PRIMER_READ_GROUP_TAG (derived from table of standard primer
-        read group tags if a primer is found, raises KeyError if
-        primer is specified in entry but not found in the table)
-      - POOL_MEMBER_NAME (if a primer read group tag is found,
-        <RUN_PREFIX>_<SAMPLE_ALIAS>_<PRIMER_READ_GROUP_TAG>;
-        otherwise, <RUN_PREFIX>_<SAMPLE_ALIAS>)
-      - POOL_MEMBER_FILENAME (<POOL_MEMBER_NAME>.sff)
-      - RUN_CENTER (<EXPERIMENT_CENTER>)
-      - STUDY_CENTER (<EXPERIMENT_CENTER>)
-      - SAMPLE_CENTER (<EXPERIMENT_CENTER>)
-      - DEFAULT_SAMPLE_CENTER (<SAMPLE_CENTER>)
-      - DEFAULT_SAMPLE_NAME (if default sample accession number is not
-        found, <STUDY_REF>_default)
-      - DEFAULT_SAMPLE_FILENAME (<STUDY_REF>_default_<RUN_PREFIX>.sff)
-      - DEFAULT_RUN_ALIAS (<STUDY_REF>_default_<RUN_PREFIX>)
-      - PLATFORM (Titanium)
-      - KEY_SEQ (TCAG)
-      - LIBRARY_STRATEGY (AMPLICON)
-      - LIBRARY_SOURCE (GENOMIC)
-      - LIBRARY_SELECTION (PCR)
-
-    The optional field CHECKSUM is not handled by this function, but
-    is left for the SraRunSet class to derive.
-    """
-    # Values of optional fields may depend on values of other optional
-    # fields, so order is important.  Probably want the order to be
-    # consistent with documentation.
-    default_format_strings = [
-        ('REGION', '0'),
-        ('EXPERIMENT_ALIAS', '%(STUDY_REF)s_%(RUN_PREFIX)s'),
-        ('RUN_ALIAS', '%(STUDY_REF)s_%(SAMPLE_ALIAS)s_%(RUN_PREFIX)s'),
-        ('BARCODE_READ_GROUP_TAG', '%(RUN_PREFIX)s_%(BARCODE)s'),
-        ]
-
-    # Derive PRIMER_READ_GROUP_TAG, if necessary
-    primer = entry.get('PRIMER')
-    if primer:
-        if not entry.get('PRIMER_READ_GROUP_TAG'):
-            try:
-                default_format_strings.append(
-                    ('PRIMER_READ_GROUP_TAG', PRIMER_READ_GROUP_TAGS[primer]))
-            except KeyError:
-                raise KeyError(
-                    'No PRIMER_READ_GROUP_TAG has been provided, and primer %s '
-                    'is not found in table of standard primers. Please provide '
-                    'a value for the PRIMER_READ_GROUP_TAG.' % primer)
-        default_format_strings.append(
-            ('POOL_MEMBER_NAME',
-             '%(RUN_PREFIX)s_%(SAMPLE_ALIAS)s_%(PRIMER_READ_GROUP_TAG)s'))
-    else:
-        default_format_strings.append(
-            ('POOL_MEMBER_NAME', '%(RUN_PREFIX)s_%(SAMPLE_ALIAS)s'))
-
-    default_format_strings.extend([
-        ('POOL_MEMBER_FILENAME', '%(POOL_MEMBER_NAME)s.sff'),
-        ('RUN_CENTER', '%(EXPERIMENT_CENTER)s'),
-        ('STUDY_CENTER', '%(EXPERIMENT_CENTER)s'),
-        ('SAMPLE_CENTER', '%(EXPERIMENT_CENTER)s'),
-        ('DEFAULT_SAMPLE_CENTER', '%(SAMPLE_CENTER)s'),
-        ])
-
-    # Derive DEFAULT_SAMPLE_NAME
-    if not entry.get('DEFAULT_SAMPLE_ACCESSION'):
-        default_format_strings.append(
-            ('DEFAULT_SAMPLE_NAME', '%(STUDY_REF)s_default'))
-
-    default_format_strings.extend([
-        ('DEFAULT_SAMPLE_FILENAME', '%(STUDY_REF)s_default_%(RUN_PREFIX)s.sff'),
-        ('DEFAULT_RUN_ALIAS', '%(STUDY_REF)s_default_%(RUN_PREFIX)s'),
-        ('PLATFORM', 'Titanium'),
-        ('KEY_SEQ', 'TCAG'),
-        ('LIBRARY_STRATEGY', 'AMPLICON'),
-        ('LIBRARY_SOURCE', 'GENOMIC'),
-        ('LIBRARY_SELECTION', 'PCR')
-        ])
-
-    for field_name, format_string in default_format_strings:
-        if not entry.get(field_name):
-            try:
-                entry[field_name] = format_string % entry
-            except ValueError:
-                raise ValueError(
-                    'Formatting error: could not use format string %s with '
-                    'entry %s for %s field.' % (format_string, entry, field_name))
-    return entry
-
-
-PRIMER_READ_GROUP_TAGS = {
-    # Standard primers
-    # BSR357
-    'CTGCTGCCTYCCGTA': 'V1-V2',
-    # BSR534
-    'ATTACCGCGGCTGCTGGC': 'V1-V3',
-    # BSR926
-    'CCGTCAATTYYTTTRAGTTT': 'V3-V5',
-    # BSR1492
-    'GYTACCTTGTTAYGACTT': 'V6-V9',
-    # Broad Institute Primers
-    # 534r
-    'ATTACCGCGGCTGCTGG': 'V1-V3',
-    # 926r
-    'CCGTCAATTCMTTTRAGT': 'V3-V5',
-    # 1492r
-    'TACGGYTACCTTGTTAYGACTT': 'V6-V9',
-    }
+                    'Less than 3 fields found in three-column input: %s' % rec)
+    return result
 
 
 def _experiment_link_xml(links):
