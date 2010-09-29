@@ -11,6 +11,8 @@ __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 __status__ = "Development"
 
+import matplotlib
+matplotlib.use('PDF')
 from optparse import make_option
 from qiime.parse import parse_newick
 from qiime.util import parse_command_line_parameters
