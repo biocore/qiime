@@ -633,7 +633,7 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
                     fasta_out.write(">%s %s orig_bc=%s new_bc=%s bc_diffs=%s\n%s\n" % 
                      (new_id, curr_rid, cbc, curr_bc, int(bc_diffs), write_seq))
                     if qual_out:
-                        qual_out.write(">%s %s orig_bc=%s new_bc=%s bc_diffs=%s\n%s\n" % 
+                        qual_out.write(">%s %s orig_bc=%s new_bc=%s bc_diffs=%s\n%s" % 
                          (new_id, curr_rid, cbc, curr_bc, int(bc_diffs), qual_scores_out))
                 else:
                     bc_counts['#FAILED'].append(curr_rid)
@@ -641,7 +641,7 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
                 fasta_out.write(">%s %s orig_bc=%s new_bc=%s bc_diffs=%s\n%s\n" % 
                     (new_id, curr_rid, cbc, curr_bc, int(bc_diffs), write_seq))
                 if qual_out:
-                        qual_out.write(">%s %s orig_bc=%s new_bc=%s bc_diffs=%s\n%s\n" % 
+                        qual_out.write(">%s %s orig_bc=%s new_bc=%s bc_diffs=%s\n%s" % 
                          (new_id, curr_rid, cbc, curr_bc, int(bc_diffs), qual_scores_out))
             curr_ix += 1
     log_out = format_log(bc_counts, corr_ct, seq_lengths, valid_map, filters,\
@@ -653,11 +653,23 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
 def format_qual_output(qual_array):
     """ Converts to string from numpy arrays, removes brackets """
     
-    qual_array = str(qual_array)
+    # Size of lines needed for proper quality score file format
+    qual_line_size = 60
+    
+    qual_scores = ""
+    
+    for slice in range(0, len(qual_array), qual_line_size):
+            current_segment = qual_array[slice:slice + qual_line_size]
+            current_segment =\
+             " ".join(str(score) for score in current_segment) + "\n"
+            
+            qual_scores += current_segment
+    
+    '''qual_array = str(qual_array)
     qual_array = qual_array.replace('[','')
-    qual_array = qual_array.replace(']','')
-    return qual_array
-
+    qual_array = qual_array.replace(']','') '''
+    return qual_scores
+    
 
 def format_log(bc_counts, corr_ct, seq_lengths, valid_map, filters,\
 remove_unassigned, attempt_bc_correction, primer_mismatch_count, max_primer_mm,\
