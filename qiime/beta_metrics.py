@@ -55,8 +55,8 @@ dist_unweighted_unifrac_full_tree = make_unifrac_metric(False,
 dist_weighted_unifrac = make_unifrac_metric(True, weighted_unifrac, True)
 dist_weighted_normalized_unifrac = make_unifrac_metric('correct',
     weighted_unifrac, True)
-dist_unifrac_G = make_unifrac_metric(False, G, False)
-dist_unifrac_G_full_tree = make_unifrac_metric(False, unnormalized_G, False)
+dist_unifrac_g = make_unifrac_metric(False, G, False)
+dist_unifrac_g_full_tree = make_unifrac_metric(False, unnormalized_G, False)
 
 def _reorder_unifrac_res(unifrac_res, sample_names_in_desired_order):
     """ reorder unifrac result
