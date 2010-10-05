@@ -24,6 +24,7 @@ from numpy import array
 import sys
 from qiime.util import convert_OTU_table_relative_abundance
 import numpy as np
+from qiime.parse import parse_otu_table, parse_mapping_file
 
 """Look for OTUs that are associated with a category. Currently can do:
     1) perform g-test of independence to determine whether OTU presence
@@ -303,40 +304,34 @@ def fdr_correction(probs):
         corrected_probs[index] = fdr_p
     return corrected_probs
 
-def parse_otu_table(otu_table):
-    """parse otu_file to get dict of OTU names mapped to sample:count dicts
+def get_otu_table_info(sample_ids, otu_ids, otu_data, lineages):
+    """change parse_otu_table outputs 
     
-    if taxonomic information is in there also returns a dict mapping OTU_names
-        to taxonomy info.
-    also returns the number of samples
+    returns: 1) a dict of OTU names mapped to sample:count dicts
+            2) if taxonomic information is in there returns a dict mapping 
+            OTU_names to taxonomy info.
+            3) the number of samples
     """
-    result = {}
+    OTU_sample_count_info = {}
+    num_samples = len(sample_ids)
     taxonomy_info = {}
-    for line in otu_table:
-        if line.startswith('#OTU ID'):
-            sample_names = line.strip().split('\t')
-            if not sample_names[-1] == 'Consensus Lineage':
-                num_samples = len(sample_names) - 1
-                taxonomy = True
-            else:
-                num_samples = len(sample_names) - 2
-                taxonomy = False
-        elif line and not line.startswith('#'):
-            line = line.strip().split('\t')
-            OTU_name = line[0]
-            result[OTU_name] = {}
-            if taxonomy:
-                for index, sample in enumerate(sample_names):
-                    if index != 0:
-                        result[OTU_name][sample] = line[index]
-            else:
-                for index, sample in enumerate(sample_names):
-                    if index != 0 and index != len(sample_names) -1:
-                        result[OTU_name][sample] = line[index]
-                taxonomy_info[OTU_name] = line[-1]
-    return result, num_samples, taxonomy_info
+    #make OTU_sample_count_info
+    for OTU_index, OTU_id in enumerate(otu_ids):
+        sample_count_dict = {}
+        for sample_index, sample_name in enumerate(sample_ids):
+            sample_count_dict[sample_name] = \
+                str(otu_data[OTU_index, sample_index])
+        OTU_sample_count_info[OTU_id] = sample_count_dict
+    #taxonomy_info
+    if lineages:
+        taxonomy_info = {}
+        for OTU_index, OTU_id in enumerate(otu_ids):
+            lineage = lineages[OTU_index]
+            taxonomy_info[OTU_id] = '; '.join(lineage)
+    return OTU_sample_count_info, num_samples, taxonomy_info
 
-def parse_category_mapping(category_mapping, category, threshold=None):
+
+def get_category_info(mapping_data, header, category, threshold=None):
     """parse category mapping file
     
     returns a dict mapping the sample name to the value of category
@@ -353,25 +348,21 @@ def parse_category_mapping(category_mapping, category, threshold=None):
     else:
         category_values = []
     
-    for line in category_mapping:
-        if line.startswith("#SampleID"):
-            line = line.strip().split('\t')
-            category_index = line.index(category)
-        elif not line.startswith('#') and line.strip():
-            line = line.strip().split('\t')
-            sample_name = line[0]
-            if threshold and threshold != 'None':
-                val = line[category_index]
-                val = float(val)
-                if val > threshold:
-                    result[sample_name] = '1'
-                else:
-                    result[sample_name] = '0'
+    category_index = header.index(category)
+    for line in mapping_data:
+        sample_name = line[0]
+        if threshold and threshold != 'None':
+            val = line[category_index]
+            val = float(val)
+            if val > threshold:
+                result[sample_name] = '1'
             else:
-                category_val = line[category_index]
-                result[sample_name] = category_val
-                if category_val not in category_values:
-                    category_values.append(category_val)
+                result[sample_name] = '0'
+        else:
+            category_val = line[category_index]
+            result[sample_name] = category_val
+            if category_val not in category_values:
+                category_values.append(category_val)
     return result, category_values
 
 def aggregate_multiple_results_ANOVA(all_results):
@@ -438,15 +429,23 @@ def test_wrapper(test, otu_table, category_mapping, category, threshold, \
 
     if test == 'ANOVA' or test == 'correlation': 
         otu_table = convert_OTU_table_relative_abundance(otu_table)
-        otu_sample_info, num_samples, taxonomy_info = parse_otu_table(otu_table)
-        category_info, category_values = parse_category_mapping(category_mapping,\
-                category, threshold)
+        sample_ids, otu_ids, otu_data, lineages = \
+            parse_otu_table(otu_table, float)
+        otu_sample_info, num_samples, taxonomy_info = \
+            get_otu_table_info(sample_ids, otu_ids, otu_data, lineages)
+        mapping_data, header, comments = parse_mapping_file(category_mapping)
+        category_info, category_values = \
+            get_category_info(mapping_data, header, category, threshold)
         OTU_list = filter_OTUs(otu_sample_info, _filter, all_samples= False, \
             category_mapping_info=category_info)
     elif test == 'g_test':
-        otu_sample_info, num_samples, taxonomy_info = parse_otu_table(otu_table)
-        category_info, category_values = parse_category_mapping(category_mapping,\
-                category, threshold)
+        sample_ids, otu_ids, otu_data, lineages = \
+            parse_otu_table(otu_table, float)
+        otu_sample_info, num_samples, taxonomy_info = \
+            get_otu_table_info(sample_ids, otu_ids, otu_data, lineages)
+        mapping_data, header, comments = parse_mapping_file(category_mapping)
+        category_info, category_values = \
+            get_category_info(mapping_data, header, category, threshold)
         OTU_list = filter_OTUs(otu_sample_info, _filter, all_samples= True, \
             category_mapping_info=category_info)
     else:
@@ -484,7 +483,10 @@ def get_common_OTUs(otu_table_paths, _filter, category_info, \
         count += 1
         sys.stdout.flush()
         otu_table = open(otu_table_fp,'U')
-        otu_sample_info, num_samples, taxonomy_info = parse_otu_table(otu_table)
+        sample_ids, otu_ids, otu_data, lineages = \
+            parse_otu_table(otu_table, float)
+        otu_sample_info, num_samples, taxonomy_info = \
+            get_otu_table_info(sample_ids, otu_ids, otu_data, lineages)
         otu_table.close()
         OTU_list_i = filter_OTUs(otu_sample_info, _filter, all_samples=filter_all_samples, \
             category_mapping_info=category_info)
@@ -516,8 +518,9 @@ def test_wrapper_multiple(test, otu_table_paths, category_mapping, category, thr
        Unlike the test_wrapper() method, this method includes all OTUs, even when 
        some have zero counts.
     """
-    category_info, category_values = parse_category_mapping(category_mapping,\
-               category, threshold)
+    mapping_data, header, comments = parse_mapping_file(category_mapping)
+    category_info, category_values = \
+        get_category_info(mapping_data, header, category, threshold)
     
     # if this is the g_test, disallow otus that are present in all samples 
     filter_all_samples = test == "g_test"
@@ -538,7 +541,10 @@ def test_wrapper_multiple(test, otu_table_paths, category_mapping, category, thr
             otu_table = convert_OTU_table_relative_abundance(otu_table)
         elif not test=='g_test':
             raise ValueError("An invalid test statistic was given. (-s option). Valid values are ANOVA, correlation, and g_test.")
-        otu_sample_info, num_samples, taxonomy_info = parse_otu_table(otu_table)
+        sample_ids, otu_ids, otu_data, lineages = \
+            parse_otu_table(otu_table, float)
+        otu_sample_info, num_samples, taxonomy_info = \
+            get_otu_table_info(sample_ids, otu_ids, otu_data, lineages)
 
         if test == 'ANOVA':
             results = run_ANOVA_OTUs(OTU_list, category_info, otu_sample_info, \
