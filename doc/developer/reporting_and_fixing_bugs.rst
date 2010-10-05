@@ -5,11 +5,11 @@ Report and fixing bugs
 I found a bug in QIIME. What should I do?
 =========================================
 
-If you find a bug in QIIME, you should `report it as a bug in the bug tracker on sourceforge <http://sourceforge.net/tracker/?group_id=272178&atid=1157164>`_. It's useful to report even small bugs with the bug tracker, and it allows us to keep records of how frequently bugs are found and fixed.
+If you find a bug in QIIME, you should `report it as a bug in the bug tracker on sourceforge <http://sourceforge.net/tracker/?group_id=272178&atid=1157164>`_. It's useful to report even small bugs with the bug tracker, and it allows us to keep records of how frequently bugs are found and fixed. You may first want to review the `Qiime Forum <http://groups.google.com/group/qiime-forum>`_ to ensure that no one has run into your issue before.
 
 This will alert the project managers about the bug, and the bug tracker is actively monitored by the QIIME team.
 
-Please include some way for us to get it touch with you regarding the bug as we may have questions about your bug report. You can do this by logging in with your sourceforge account before reporting the bug, including your e-mail address in the bug report (which you may not want to do), or sending an e-mail to qiime-developers@googlegroups.com with the bug tracker ID number, and any contact details that we might need.
+Please include some way for us to get it touch with you regarding the bug as we may have questions about your bug report. You can do this by logging in with your sourceforge account before reporting the bug, including your e-mail address in the bug report (which you may not want to do), or sending an e-mail to qiime-help@colorado.edu with the bug tracker ID number, and any contact details that we might need.
 
 We aim to be very responsive regarding QIIME bugs, and we greatly appreciate your help in making QIIME a better software package.
 
