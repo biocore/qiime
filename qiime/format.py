@@ -80,8 +80,13 @@ def format_otu_table(sample_names, otu_names, data, taxonomy=None,
             if (skip_empty and filter(lambda a: a!=0, vals)==[]):
                 #skip otu with zero counts
                 continue
-            if not isinstance(taxon, str):
-                taxon = ';'.join(taxon)
+            if isinstance(taxon, str):
+                pass # taxon string will be added to row
+            elif hasattr(taxon, '__iter__'):
+                taxon = ';'.join(taxon) # taxon is now a string
+            else:
+                raise TypeError, "unrecognized taxonomy format" +\
+                    ", try a list of strings"
             lines.append('\t'.join([otu_name] + map(str, vals.tolist()) + [taxon]))
     else:
         lines.append('\t'.join(['#OTU ID'] + sample_names))
@@ -102,6 +107,19 @@ def format_coords(coord_header, coords, eigvals, pct_var):
     result.append('% variation explained\t' +
         '\t'.join(map(str, pct_var)))
     return '\n'.join(result)
+
+def format_nmds_coords(samples, points, stress):
+    """ samples is list, points is samples by axis coord (typ many by 2 mtx)
+    """
+    result = []
+    result.append('nmds\t' +
+        '\t'.join(map(str, range(1,points.shape[1]+1))))
+    for name, row in zip(samples, points):
+        result.append('\t'.join([name] + map(str, row)))
+    result.append('')
+    result.append('stress\t' + str(stress))
+    return '\n'.join(result)    
+    
 
 def build_prefs_string(mapping_headers_to_use, background_color, monte_carlo_dist, headers, otu_ids):
     """Create a preferences file, which can be used for some of the \
