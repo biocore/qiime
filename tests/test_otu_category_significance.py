@@ -18,15 +18,15 @@ from qiime.otu_category_significance import filter_OTUs, \
     add_fdr_correction_to_results, output_results_G_test, \
     run_single_ANOVA, run_ANOVA_OTUs, output_results_ANOVA,\
     run_correlation_OTUs, run_single_correlation, output_results_correlation,\
-    parse_otu_table, parse_category_mapping,\
+    get_otu_table_info, get_category_info,\
     aggregate_multiple_results_ANOVA, aggregate_multiple_results_G_test,\
     aggregate_multiple_results_correlation, get_common_OTUs,\
     test_wrapper_multiple, test_wrapper
 from numpy import array
-from qiime.otu_category_significance import parse_otu_table
 from cogent.util.dict2d import Dict2D
 from cogent.app.util import get_tmp_filename
 from os import remove
+from qiime.parse import parse_otu_table, parse_mapping_file
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -38,7 +38,10 @@ class TopLevelTests(TestCase):
 0\t0\t2\t0
 1\t1\t0\t0
 2\t1\t1\t1""".split('\n')
-        OTU_sample_info, num_samples, taxonomy_info = parse_otu_table(otu_table)
+        sample_ids, otu_ids, otu_data, lineages = \
+            parse_otu_table(otu_table, float)
+        OTU_sample_info, num_samples, taxonomy_info = \
+            get_otu_table_info(sample_ids, otu_ids, otu_data, lineages)
         result = filter_OTUs(OTU_sample_info, 2, 3)
         self.assertEqual(result, [])
         result = filter_OTUs(OTU_sample_info, 1, 3)
@@ -265,14 +268,17 @@ class TopLevelTests(TestCase):
         self.assertEqual(output[1], '1\t4.4408920985e-16\t1.7763568394e-15\t8.881784197e-16\t-1.0\ttaxon2')
         self.assertEqual(len(output), 5)
 
-    def test_parse_otu_table(self):
-        """parse otu_table works"""
+    def test_get_otu_table_info(self):
+        """get_otu_table_info works"""
         otu_table = """#Full OTU Counts
 #OTU ID\tsample1\tsample2\tsample3
 0\t0\t2\t0
 1\t1\t0\t0
 2\t1\t1\t1""".split('\n')
-        result, num_samples, taxonomy_info = parse_otu_table(otu_table)
+        sample_ids, otu_ids, otu_data, lineages = \
+            parse_otu_table(otu_table)
+        result, num_samples, taxonomy_info = \
+            get_otu_table_info(sample_ids, otu_ids, otu_data, lineages)
         self.assertEqual(result['1'], {'sample1': '1', 'sample3': '0', 'sample2': '0'})
         self.assertEqual(result['0'], {'sample1': '0', 'sample3': '0', 'sample2': '2'})
         self.assertEqual(result['2'], {'sample1': '1', 'sample3': '1', 'sample2': '1'})
@@ -285,23 +291,29 @@ class TopLevelTests(TestCase):
 0\t0\t2\t0\tBacteria; Bacteroidetes; Bacteroidales; Parabacteroidaceae; Unclassified; otu_475
 1\t1\t0\t0\tBacteria; Bacteroidetes; Bacteroidales; adhufec77-25; Barnesiella; Barnesiella_viscericola; otu_369
 2\t1\t1\t1\tBacteria; Firmicutes; Clostridia; Clostridiales; Faecalibacterium; Unclassified; otu_1121""".split('\n')
-        result, num_samples, taxonomy_info = parse_otu_table(otu_table)
+        sample_ids, otu_ids, otu_data, lineages = \
+            parse_otu_table(otu_table)
+        result, num_samples, taxonomy_info = \
+            get_otu_table_info(sample_ids, otu_ids, otu_data, lineages)
         self.assertEqual(result['1'], {'sample1': '1', 'sample3': '0', 'sample2': '0'})
         self.assertEqual(result['0'], {'sample1': '0', 'sample3': '0', 'sample2': '2'})
         self.assertEqual(result['2'], {'sample1': '1', 'sample3': '1', 'sample2': '1'})
         self.assertEqual(num_samples, 3)
         self.assertEqual(taxonomy_info, {'1': 'Bacteria; Bacteroidetes; Bacteroidales; adhufec77-25; Barnesiella; Barnesiella_viscericola; otu_369', '0': 'Bacteria; Bacteroidetes; Bacteroidales; Parabacteroidaceae; Unclassified; otu_475', '2': 'Bacteria; Firmicutes; Clostridia; Clostridiales; Faecalibacterium; Unclassified; otu_1121'})
 
-    def test_parse_category_mapping(self):
-        """parse_category_mapping works"""
+    def test_get_category_info(self):
+        """get_category_info works"""
         category_mapping = """#SampleID\tcat1\tcat2
 sample1\tA\t0
 sample2\tB\t8.0
 sample3\tC\t1.0""".split('\n')
-        result, cat_vals = parse_category_mapping(category_mapping, 'cat1')
+        mapping_data, header, comments = parse_mapping_file(category_mapping)
+        result, cat_vals = get_category_info(mapping_data, header, 'cat1')
         self.assertEqual(result, {'sample1': 'A', 'sample3': 'C', 'sample2': 'B'})
         self.assertEqual(cat_vals, (['A', 'B', 'C']))
-        result, cat_vals = parse_category_mapping(category_mapping, 'cat2', threshold=5.0)
+        mapping_data, header, comments = parse_mapping_file(category_mapping)
+        result, cat_vals = get_category_info(mapping_data, header, \
+                        'cat2', threshold=5.0)
         self.assertEqual(result, {'sample1': '0', 'sample3': '0', 'sample2': '1'})
         self.assertEqual(cat_vals, (['0', '1']))
         
