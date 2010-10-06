@@ -12,7 +12,7 @@ __status__ = "Development"
 
 from cogent.util.unit_test import TestCase, main
 import shutil
-from os import mkdir, listdir
+from os import mkdir, listdir, path
 from qiime.parse import parse_mapping_file, parse_distmat, group_by_field,\
     group_by_fields
 from numpy import array, arange
@@ -26,7 +26,8 @@ from qiime.make_distance_histograms import between_sample_distances, \
     _make_histogram_filenames, _make_path, _make_relative_paths, \
     _make_random_filename, _get_script_dir, matplotlib_rgb_color, \
     average_colors, average_all_colors, assign_unassigned_colors,\
-    assign_mapped_colors
+    assign_mapped_colors, monte_carlo_group_distances_within_between,\
+    get_random_dists
     
 from qiime.colors import data_colors
 from collections import defaultdict
@@ -34,7 +35,12 @@ from collections import defaultdict
 class DistanceHistogramsTests(TestCase):
     """Tests for make_distance_histograms.py
     """
-    
+        
+    def tearDown(self):
+        """clean up after running all tests.
+        """
+        shutil.rmtree(self.working_dir)
+        
     def setUp(self):
         """setup data function for DistanceHistogramsTests."""
         self.working_dir = '/tmp/distance_histogram_tests/'
@@ -101,11 +107,6 @@ class DistanceHistogramsTests(TestCase):
         dist_out = open(self.distances_file,'w')
         dist_out.write(DISTANCES_OUT)
         dist_out.close()
-
-    def tearDown(self):
-        """clean up after running all tests.
-        """
-        shutil.rmtree(self.working_dir)
     
     def test_matplotlib_rgb_color(self):
         """matplotlib_rgb_color should correctly convert RGB to decimal.
@@ -400,8 +401,9 @@ class DistanceHistogramsTests(TestCase):
         for obs, exp in zip(obs_res, exp_res):
             obs_fields = obs.split('\t')
             exp_fields = exp.split('\t')
-            #Check first 10 fields should be identical from run to run.
-            for i in [0,1,2,3,4,5,6,7,8,9]:
+
+            #Check first 8 fields should be identical from run to run.
+            for i in range(8):
                 self.assertEqual(obs_fields[i],exp_fields[i])
 
     def test_permute_for_monte_carlo(self):
@@ -411,6 +413,39 @@ class DistanceHistogramsTests(TestCase):
         self.assertNotEqual(obs,self.dmat)
         self.assertEqual(len(obs),len(self.dmat))
         self.assertEqual(sorted(obs.flat),sorted(self.dmat.flat))
+    
+    def test_monte_carlo_group_distances_within_between(self):
+        """monte_carlo_group_distances_within_between should return correct.
+        """
+        mc_group_dist_path = self.working_dir+\
+            'monte_carlo_group_distances/group_distances_within_and_between.xls'
+        monte_carlo_group_distances_within_between(\
+            single_field=self.single_field_treatment,\
+            paired_field=self.paired_field_treatment,\
+            dmat=self.dmat,\
+            dir_prefix=self.working_dir)
+        obs_res = open(mc_group_dist_path,'U').readlines()
+        exp_res = MONTE_CARLO_DISTANCES_WITHIN_BETWEEN.split('\n')
+        for obs, exp in zip(obs_res, exp_res):
+            obs_fields = obs.split('\t')
+            exp_fields = exp.split('\t')
+            #Check first 8 fields should be identical from run to run.
+            for i in range(8):
+                self.assertEqual(obs_fields[i],exp_fields[i])
+
+    def test_get_random_dists(self):
+        """get_random_dists should return correct result.
+        """
+        real_dists = [['first_a','second_a',[.1,.2,.3,.4,.5]],\
+                      ['first_b','second_b',[.01,.02,.03,.04,.05]]]
+        obs_dists = get_random_dists(real_dists, self.dmat, 2)
+        exp_dists = [[['first_a','second_a',[.5,.1,.6,.01,.2]],\
+               ['first_b','second_b',[.61,.32,.13,.94,.25]],\
+               ['first_a','second_a',[.7,.02,.12,.40,.05]],\
+               ['first_b','second_b',[.93,.62,.88,.41,.85]]]]
+        for obs, exp in zip(obs_dists[0], exp_dists[0]):
+            self.assertEqual(obs[:2], exp[:2])
+            self.assertEqual(len(obs[2]),len(exp[2]))
 
     def test__make_histogram_filenames(self):
         """_make_histogram_filenames should return correct result.
@@ -498,9 +533,10 @@ Fast_to_Fast\t0.718\t0.666\t0.727\t0.6\t0.578\t0.623
 """
 
 MONTE_CARLO_DISTANCES = \
-"""Control\tto\tFast\tavg\t0.730721926055\tcompared with\tControl\tto\tControl\tavg\t0.648710844983\t: t=\t3.2800428288\tp=\t0.00597272430874\tp_greater:\t0.0\tp_less:\t1.0\tnum_iters:\t10
-Control\tto\tFast\tavg\t0.730721926055\tcompared with\tFast\tto\tFast\tavg\t0.651918984745\t: t=\t2.48083030062\tp=\t0.0349438048591\tp_greater:\t0.0\tp_less:\t1.0\tnum_iters:\t10
-Control\tto\tControl\tavg\t0.648710844983\tcompared with\tFast\tto\tFast\tavg\t0.651918984745\t: t=\t-0.114952651644\tp=\t0.910115083574\tp_greater:\t0.6\tp_less:\t0.4\tnum_iters:\t10"""
+"""Category_1a\tCategory_1b\tAvg\tCategory_2a\tCategory_2b\tAvg\tt\tp\tp_greater\tp_less\tIterations\nControl\tFast\t0.7307\tControl\tControl\t0.6488\t3.27735729274\t0.0060036701418\t0.0\t1.0\t10\nControl\tFast\t0.7307\tFast\tFast\t0.652\t2.4827593877\t0.0348333795055\t0.0\t1.0\t10\nControl\tControl\t0.6488\tFast\tFast\t0.652\t-0.11479781274\t0.910235587908\t0.6\t0.4\t10\n"""
+
+MONTE_CARLO_DISTANCES_WITHIN_BETWEEN = \
+"""Comparison\tCategory_1\tAvg\tComparison\tCategory_2\tAvg\tt\tp\tp_greater\tp_less\tIterations\nWithin\tTreatment\t0.65\tBetween\tTreatment\t0.7307\t-5.42842519819\t4.76810168062e-06\t1.0\t0.0\t10\nWithin\tTreatment\t0.65\tWithin\tAll_Fields\t0.65\t0.0\t1.0\t0.2\t0.8\t10\nBetween\tTreatment\t0.7307\tWithin\tAll_Fields\t0.65\t5.42842519819\t4.76810168062e-06\t0.0\t1.0\t10\n'"""
 
 NAV_HTML = \
 """<td>

@@ -17,7 +17,7 @@ from qiime.util import parse_command_line_parameters, get_qiime_project_dir,\
 from optparse import make_option
 from qiime.make_distance_histograms import group_distances, _make_path, \
     draw_all_histograms, _make_relative_paths, make_main_html, \
-    monte_carlo_group_distances
+    monte_carlo_group_distances, monte_carlo_group_distances_within_between
 from cogent.util.misc import get_random_directory_name
 from qiime.colors import sample_color_prefs_and_map_data_from_options,\
     iter_color_groups
@@ -159,12 +159,20 @@ def main():
         logo_out.close()
     
     if opts.monte_carlo:
+        #Do Monte Carlo for all fields
         monte_carlo_group_distances(mapping_file=opts.map_fname,\
             dmatrix_file=opts.distance_matrix_file,\
             prefs=prefs, \
             dir_prefix = opts.dir_path,\
             fields=fields,\
             default_iters=opts.monte_carlo_iters)
+            
+        #Do Monte Carlo for within and between fields
+        monte_carlo_group_distances_within_between(\
+            single_field=within_distances,\
+            paired_field=between_distances, dmat=dmat, \
+            dir_prefix = opts.dir_path,\
+            num_iters=opts.monte_carlo_iters)
 
 
 if __name__ == "__main__":

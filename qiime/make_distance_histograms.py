@@ -26,7 +26,7 @@ from numpy.random import permutation
 from qiime.colors import data_colors, Color, rgb_tuple_to_hsv, \
     mage_hsv_tuple_to_rgb
 from math import ceil
-from os import mkdir
+from os import mkdir, path
 
 def matplotlib_rgb_color(rgb_color):
     """Returns RGB color in matplotlib format.
@@ -107,7 +107,8 @@ def between_sample_distances(dmat):
             distances.append(dmat[i][j])
     return {'All_Between_Sample_Distances':distances}
 
-def within_category_distances_grouped(single_field):
+def within_category_distances_grouped(single_field, \
+    label_suffix='_All_Within_Category_Distances'):
     """Returns all within category distances grouped for every field.
     
         - single_field is from calling group_distances and taking single_field
@@ -118,11 +119,11 @@ def within_category_distances_grouped(single_field):
         for data in groups:
             if data[0] == data[1]:
                 all = array(data[2])
-                distances[field+\
-                    '_All_Within_Category_Distances'].extend(all.flat)
+                distances[field+label_suffix].extend(all.flat)
     return distances
 
-def between_category_distances_grouped(single_field):
+def between_category_distances_grouped(single_field,\
+    label_suffix='_All_Between_Category_Distances'):
     """Returns all between category distances grouped for every field.
     
         - single_field is from calling group_distances and taking single_field
@@ -133,8 +134,7 @@ def between_category_distances_grouped(single_field):
         for data in groups:
             if data[0] != data[1]:
                 all = array(data[2])
-                distances[field+\
-                    '_All_Between_Category_Distances'].extend(all.flat)
+                distances[field+label_suffix].extend(all.flat)
     return distances
 
 def within_category_distances(single_field):
@@ -637,10 +637,11 @@ def monte_carlo_group_distances(mapping_file, dmatrix_file, prefs, \
     orig_distance_matrix = distance_matrix.copy()
 
     path_prefix = _make_path([dir_prefix,subdir_prefix])
-    try:
+    
+    #if dir doesn't exist
+    if not path.isdir(path_prefix):
+        # make directory
         mkdir(path_prefix)
-    except OSError:     #raised if dir exists
-        pass
     
     if fields is None:
         fields = [mapping[0][0]]
@@ -667,13 +668,16 @@ def monte_carlo_group_distances(mapping_file, dmatrix_file, prefs, \
             permute_for_monte_carlo(distance_matrix), groups) \
             for i in range(num_iters)]
         #iterate over the groups
+
         for i, (first_g1, second_g1, distances_g1) in \
             enumerate(real_dists[:-1]):
+
             real_dist_1 = average(distances_g1)
             rand_dists_1 = [rand_distances[n][i][-1] for n in range(num_iters)]
             #then for each other pair (not including same group)
             for j in range(i+1,len(real_dists)):
                 first_g2, second_g2, distances_g2 = real_dists[j]
+
                 real_dist_2 = average(distances_g2)
                 rand_dists_2 = [rand_distances[n][j][-1] \
                     for n in range(num_iters)]
@@ -689,11 +693,97 @@ def monte_carlo_group_distances(mapping_file, dmatrix_file, prefs, \
                 outfile.write('\t'.join(map(str, curr_line)))
                 outfile.write('\n')
 
+def monte_carlo_group_distances_within_between(single_field, \
+    paired_field, dmat, dir_prefix = '', \
+    subdir_prefix='monte_carlo_group_distances',\
+    num_iters=10):
+    """Calculate Monte Carlo stats within and between fields.
+    
+    Specifically:
+    - find the groups for each specified col (or combination of cols)
+    - do t test between each pair of groups
+    - randomize matrix n times and find empirical value of t for each pair
+    - compare the actual value of t to the randomized values
+    """
+
+    path_prefix = _make_path([dir_prefix,subdir_prefix])
+    #if dir doesn't exist
+    if not path.isdir(path_prefix):
+        # make directory
+        mkdir(path_prefix)
+    
+    real_dists = []
+    within_category_distances = \
+        within_category_distances_grouped(single_field,label_suffix='')
+    real_dists.extend([['Within',field,distances] for field,\
+        distances in within_category_distances.items()])
+        
+    between_category_distances = \
+        between_category_distances_grouped(single_field,label_suffix='')
+    real_dists.extend([['Between',field,distances] for field,\
+        distances in between_category_distances.items()])
+    
+    within_and_between = \
+        within_and_between_fields(paired_field)
+    real_dists.extend([[field.split('_',1)[0],\
+        field.split('_',1)[1],distances] for \
+        field, distances in within_and_between.items()])
+    
+    outfile = open(path_prefix+'group_distances_within_and_between.xls', 'w')
+    outfile.write('\t'.join(['Comparison','Category_1','Avg',\
+        'Comparison','Category_2','Avg','t','p',\
+        'p_greater','p_less','Iterations\n']))
+
+    rand_distances = get_random_dists(real_dists, dmat, num_iters)
+    
+    #iterate over the groups
+    for i, (first_g1, second_g1, distances_g1) in \
+        enumerate(real_dists[:-1]):
+        real_dist_1 = average(distances_g1)
+        rand_dists_1 = [rand_distances[n][i][-1] for n in range(num_iters)]
+        #then for each other pair (not including same group)
+        for j in range(i+1,len(real_dists)):
+            first_g2, second_g2, distances_g2 = real_dists[j]
+            real_dist_2 = average(distances_g2)
+            rand_dists_2 = [rand_distances[n][j][-1] \
+                for n in range(num_iters)]
+            ttests = [t_two_sample(rand_dists_1[n],rand_dists_2[n])[0] \
+                for n in range(num_iters)]
+            real_ttest = t_two_sample(distances_g1, distances_g2)
+            curr_line = [first_g1, second_g1, real_dist_1, \
+                first_g2, second_g2, real_dist_2]
+            curr_line.extend([real_ttest[0], real_ttest[1],\
+                (array(ttests)>real_ttest[0]).sum()/float(num_iters), \
+                (array(ttests)<real_ttest[0]).sum()/float(num_iters), \
+                num_iters])
+            outfile.write('\t'.join(map(str, curr_line)))
+            outfile.write('\n')
+    
+
 def permute_for_monte_carlo(dist_matrix):
     """Returns permuted copy of distance matrix for Monte Carlo tests."""
     size = len(dist_matrix)
     p = permutation(size)
     return dist_matrix[p][:,p]
+
+def get_random_dists(real_dists, dmat, num_iters):
+    """Returns random distances same size as real_dists.
+    
+        - real_dists: list of distances:
+            [[first_group, second_group, distancdes],...]
+        - dmat: full distance matrix
+        - num_iters: integer number of random dmats to make.
+    """
+    rand_dists = []
+    upper_triangle = between_sample_distances(dmat).values()[0]
+    for i in range(num_iters):
+        curr_rand_dists = []
+        for first,second,real_dist in real_dists:    
+            curr_rand_dists.append([first,second,[choice(upper_triangle) for j \
+                in range(len(real_dist))]])
+        rand_dists.append(curr_rand_dists)
+    return rand_dists
+        
 
 def _make_histogram_filenames(distances,histogram_dir):
     """From distances dict, returns dict of keys to histogram filenames.
