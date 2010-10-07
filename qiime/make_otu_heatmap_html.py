@@ -179,7 +179,7 @@ def line_converter():
 def get_otu_counts(fpath, data):
     """Reads the OTU table file into memory"""
     try:
-        sample_ids,otu_ids,otu_table,lineages=parse_otu_table(open(fpath))    
+        sample_ids,otu_ids,otu_table,lineages=parse_otu_table(open(fpath,'U'))    
     except (TypeError, IOError):
         raise MissingFileError, 'OTU Count file required for this analysis'
     
