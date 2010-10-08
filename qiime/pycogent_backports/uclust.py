@@ -512,9 +512,6 @@ def get_clusters_from_fasta_filepath(
             pass
         uclust_cluster.cleanUp()
     
-    if len(clusters) == 0:
-        raise ApplicationError, ('Clusters result empty, please check source '+\
-         'fasta file for proper formatting.')
     
     if return_cluster_maps:
         return clusters, failures, seeds
