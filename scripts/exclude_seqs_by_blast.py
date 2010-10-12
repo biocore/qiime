@@ -234,10 +234,12 @@ def main():
             print FORMAT_BAR
         
         if not options.no_format_db:
-            print "Cleaning up formatdb files:", formatdb_filepaths
+            if options.verbose:
+                print "Cleaning up formatdb files:", formatdb_filepaths
             remove_files(formatdb_filepaths)
         else:
-            print "Formatdb not run...nothing to clean"
+            if options.verbose:
+                print "Formatdb not run...nothing to clean"
 
 if __name__ == "__main__":
     main()
