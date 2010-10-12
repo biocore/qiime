@@ -122,7 +122,7 @@ class BlastTaxonAssigner(TaxonAssigner):
         # build the mapping of sequence identifier 
         # (wrt to the blast db seqs) to taxonomy
         id_to_taxonomy_map = self._parse_id_to_taxonomy_file(\
-         open(self.Params['id_to_taxonomy_filepath'])) 
+         open(self.Params['id_to_taxonomy_filepath'],'U')) 
         
         ## Iterate over the input self.SeqsPerBlastRun seqs at a time. 
         # There are two competing issues here when dealing with very large
