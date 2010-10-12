@@ -441,10 +441,10 @@ class UclustConvenienceWrappers(TestCase):
         proc = Popen(command,shell=True,universal_newlines=True,\
                          stdout=PIPE,stderr=STDOUT)
         stdout = proc.stdout.read()
-        version_string = stdout.strip().split('v')[-1]
-        version = tuple(map(int,version_string.split('.')[:2]))
-        self.assertTrue(version >= (1,2),\
-         "Unsupported uclust version. 1.2 or later "+\
+        version_string = stdout.strip().split('v')[-1].strip('q')
+        version = tuple(map(int,version_string.split('.')))
+        self.assertTrue(version >= (1,2,16),\
+         "Unsupported uclust version. 1.2.16 or later "+\
          "is required, but running %s." % version_string)
 
 raw_dna_seqs = """>uclust_test_seqs_0
