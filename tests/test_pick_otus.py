@@ -819,6 +819,7 @@ class UclustOtuPickerTests(TestCase):
          "Num OTUs:10",
          "new_cluster_identifier:None",
          "presort_by_abundance:True",
+         "stable_sort:False",
          "Result path: %s" % tmp_result_filepath]
         # compare data in log file to fake expected log file
         # NOTE: Since app.params is a dict, the order of lines is not
@@ -1105,6 +1106,7 @@ class UclustReferenceOtuPickerTests(TestCase):
          "Num failures:2",
          'max_accepts:8',
          'max_rejects:32',
+         "stable_sort:False",
          "new_cluster_identifier:qiime_otu_",
          "next_new_cluster_number:1",
          "presort_by_abundance:True",
