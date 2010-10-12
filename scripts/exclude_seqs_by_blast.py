@@ -151,7 +151,6 @@ def main():
         for v in app_result.values():
             try:
                 formatdb_filepaths.append(v.name)
-                print formatdb_filepaths
             except AttributeError:
                 # not a file object, so no path to return
                 pass
