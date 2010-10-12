@@ -42,7 +42,9 @@ script_info['optional_options'] = [\
   help='A list of sequence identifiers (or tab-delimited lines with'
   ' a seq identifier in the first field) which should be retained'),\
  make_option('-a','--subject_fasta_fp',
-  help='A fasta file where the seq ids should be retained.'),
+  help='A fasta file where the seq ids should be retained.'),\
+ make_option('-p','--seq_id_prefix',
+  help='keep seqs where seq_id starts with this prefix'),\
  make_option('-n','--negate', help='discard passed seq ids rather than'
   ' keep passed seq ids [default: %default]', default=False, 
   action='store_true')
@@ -77,7 +79,12 @@ def get_seqs_to_keep_lookup_from_fasta_file(fasta_f):
     for seq_id, seq in MinimalFastaParser(fasta_f):
         seqs_to_keep.append(seq_id.split()[0])
     return {}.fromkeys(seqs_to_keep)
-    
+
+def get_seqs_to_keep_lookup_from_prefix(fasta_f,prefix):
+    seqs_to_keep = [seq_id
+                    for seq_id, seq in MinimalFastaParser(fasta_f)
+                    if seq_id.startswith(prefix)]
+    return {}.fromkeys(seqs_to_keep)
 
 def main():
     option_parser, opts, args =\
@@ -87,8 +94,9 @@ def main():
 
     if 1 != sum(map(bool,[opts.otu_map,
                           opts.seq_id_fp,
-                          opts.subject_fasta_fp])): 
-        option_parser.error("Must pass exactly one of -a, -s, or -m.")
+                          opts.subject_fasta_fp,
+                          opts.seq_id_prefix])): 
+        option_parser.error("Must pass exactly one of -a, -s, -p, or -m.")
 
     if opts.otu_map:
         seqs_to_keep_lookup =\
@@ -102,6 +110,10 @@ def main():
         seqs_to_keep_lookup =\
          get_seqs_to_keep_lookup_from_fasta_file(
          open(opts.subject_fasta_fp,'U'))
+    elif opts.seq_id_prefix:
+        seqs_to_keep_lookup =\
+         get_seqs_to_keep_lookup_from_prefix(
+         open(opts.input_fasta_fp),opts.seq_id_prefix)
     else:
         option_parser.error("Must pass exactly one of -a, -s, or -m.")
     
