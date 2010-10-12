@@ -4,7 +4,7 @@ from __future__ import division
 import numpy
 from time import time
 from os import system, getcwd
-from os.path import join, split
+from os.path import join, split, abspath
 from cogent.app.formatdb import FormatDb
 from cogent.app.parameters import FilePath
 from cogent.util.misc import remove_files
@@ -126,18 +126,17 @@ def main():
     if not options.no_format_db:
 
         #initialize object 
-        inpath = FilePath(options.subjectdb)
+        inpath = FilePath(abspath(options.subjectdb))
         subject_dir, subj_file = split(inpath)
-
 
         fdb = FormatDb(WorkingDir = subject_dir ) 
         # Currently we do not support protein blasts, but
         # this would be easy to add in the future...
         fdb.Parameters['-p'].on('F')
+        
         # Create indices for record lookup
         fdb.Parameters['-o'].on('T')
-        # Set log output path
-        #fdb.Parameters['-l'].on(FilePath(formatdb_log_path))
+        
         # Set input database 
         fdb.Parameters['-i'].on(subject_db)
         
@@ -152,6 +151,7 @@ def main():
         for v in app_result.values():
             try:
                 formatdb_filepaths.append(v.name)
+                print formatdb_filepaths
             except AttributeError:
                 # not a file object, so no path to return
                 pass
