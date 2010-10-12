@@ -99,6 +99,8 @@ class Uclust(CommandLineApplication):
         # Same as --maxrejects 0 --maxaccepts 0 --nowordcountreject -- 
         # comes with a performance hit.
         '--optimal':FlagParameter('--',Name='optimal'),
+
+        '--stable_sort':FlagParameter('--',Name='stable_sort'),
     }
      
     _suppress_stdout = False
@@ -375,6 +377,7 @@ def uclust_cluster_from_sorted_fasta_filepath(
     enable_rev_strand_matching=False,
     subject_fasta_filepath=None,
     suppress_new_clusters=False,
+    stable_sort=False,
     HALT_EXEC=False):
     """ Returns clustered uclust file from sorted fasta"""
     output_filepath = output_filepath or \
@@ -392,6 +395,7 @@ def uclust_cluster_from_sorted_fasta_filepath(
     if suppress_sort: app.Parameters['--usersort'].on()
     if subject_fasta_filepath: app.Parameters['--lib'].on(subject_fasta_filepath)
     if suppress_new_clusters: app.Parameters['--libonly'].on()
+    if stable_sort: app.Parameters['--stable_sort'].on()
     
     app_result = app({'--input':fasta_filepath,'--uc':output_filepath})
     return app_result
@@ -427,6 +431,7 @@ def get_clusters_from_fasta_filepath(
     subject_fasta_filepath=None,
     suppress_new_clusters=False,
     return_cluster_maps=False,
+    stable_sort=False,
     HALT_EXEC=False):
     """ Main convenience wrapper for using uclust to generate cluster files
     
@@ -488,6 +493,7 @@ def get_clusters_from_fasta_filepath(
          enable_rev_strand_matching=enable_rev_strand_matching,
          subject_fasta_filepath=subject_fasta_filepath,
          suppress_new_clusters=suppress_new_clusters,
+         stable_sort=stable_sort,
          HALT_EXEC=HALT_EXEC)
         # Get cluster file name from application wrapper
     except ApplicationError:

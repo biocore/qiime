@@ -71,6 +71,9 @@ script_info['optional_options'] = [\
               help="max_accepts value to uclust and uclust_ref [default: %default]"),
     make_option('--max_rejects',type='int',default=32,
               help="max_rejects value to uclust and uclust_ref [default: %default]"),
+    make_option('--uclust_stable_sort',default=False,action='store_true',
+              help=("pass --stable_sort to uclust (uclust versions uclustq1.2.16"
+                    " and later only) [default: %default]")),
           
     #Define parallel-script-specific parameters
     make_option('-N','--pick_otus_fp',action='store',\
@@ -109,6 +112,7 @@ def main():
     seconds_to_sleep = opts.seconds_to_sleep
     similarity = opts.similarity
     poll_directly = opts.poll_directly
+    uclust_stable_sort = opts.uclust_stable_sort
     
     enable_rev_strand_match = opts.enable_rev_strand_match
     optimal_uclust = opts.optimal_uclust
@@ -159,7 +163,8 @@ def main():
     commands, job_result_filepaths = \
      get_job_commands(python_exe_fp,pick_otus_fp,tmp_fasta_fps,
      output_dir,refseqs_fp,job_prefix,working_dir,similarity,
-     enable_rev_strand_match,optimal_uclust,exact_uclust,max_accepts,max_rejects)
+     enable_rev_strand_match,optimal_uclust,exact_uclust,max_accepts,max_rejects,
+     uclust_stable_sort)
     created_temp_paths += job_result_filepaths
 
     # Set up poller apparatus if the user does not suppress polling

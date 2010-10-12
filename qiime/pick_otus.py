@@ -744,7 +744,8 @@ class UclustOtuPicker(UclustOtuPickerBase):
          'exact':False,
          'suppress_sort':True,
          'presort_by_abundance':True,
-         'new_cluster_identifier':None}
+         'new_cluster_identifier':None,
+         'stable_sort':False}
         _params.update(params)
         OtuPicker.__init__(self, _params)
     
@@ -782,6 +783,7 @@ class UclustOtuPicker(UclustOtuPickerBase):
           self.Params['enable_rev_strand_matching'],
          max_accepts=self.Params['max_accepts'],
          max_rejects=self.Params['max_rejects'],
+         stable_sort=self.Params['stable_sort'],
          HALT_EXEC=HALT_EXEC)
         
         # clean up any temp files that were created
@@ -826,7 +828,8 @@ class UclustReferenceOtuPicker(UclustOtuPickerBase):
                    'suppress_sort':False,
                    'new_cluster_identifier':'qiime_otu_',
                    'next_new_cluster_number':1,
-                   'presort_by_abundance':True}
+                   'presort_by_abundance':True,
+                   'stable_sort':False}
         _params.update(params)
         OtuPicker.__init__(self, _params)
     
@@ -867,6 +870,7 @@ class UclustReferenceOtuPicker(UclustOtuPickerBase):
             exact=self.Params['exact'],
             suppress_sort=self.Params['suppress_sort'],
             return_cluster_maps=True,
+            stable_sort=self.Params['stable_sort'],
             HALT_EXEC=HALT_EXEC)
         
         self._rename_clusters(cluster_map,new_seeds)
