@@ -442,8 +442,13 @@ class UclustConvenienceWrappers(TestCase):
                          stdout=PIPE,stderr=STDOUT)
         stdout = proc.stdout.read()
         version_string = stdout.strip().split('v')[-1].strip('q')
-        version = tuple(map(int,version_string.split('.')))
-        self.assertTrue(version >= (1,2,16),\
+        try:
+            version = tuple(map(int,version_string.split('.')))
+            acceptable_version = version >= (1,2,16)
+        except ValueError:
+            acceptable_version = False
+        
+        self.assertTrue(acceptable_version,\
          "Unsupported uclust version. 1.2.16 or later "+\
          "is required, but running %s." % version_string)
 
