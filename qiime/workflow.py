@@ -953,9 +953,6 @@ def run_gain_calculations(
     parallel=False,
     status_update_callback=print_to_stdout):
     
-    if parallel: 
-        raise NotImplementedError, "Parallel process not yet implemented"
-    
     input_seqs_dir, input_seqs_filename = split(input_seqs_fp)
     input_seqs_basename, input_seqs_ext = splitext(input_seqs_filename)
     refseqs_dir, refseqs_filename = split(refseqs_fp)
@@ -1018,7 +1015,6 @@ def run_gain_calculations(
         params_str = get_params_str(params['pick_rep_set'])
     except KeyError:
         params_str = ''
-    # Build the OTU picking command
     pick_rep_set_cmd = '%s %s/pick_rep_set.py -f %s -i %s -o %s -r %s %s' %\
      (python_exe_fp, script_dir, input_seqs_fp, otu_fp, 
       rep_seq_path, refseqs_fp, params_str)
@@ -1026,47 +1022,22 @@ def run_gain_calculations(
     
     # Filter rep set
     filtered_rep_seq_path =\
-     '%s/%s_rep_seqs_nc_only.fna' % (pick_otu_dir,input_seqs_basename)
+     '%s/%s_new_clusters_only.fasta' % (pick_otu_dir,input_seqs_basename)
     filter_rep_set_cmd = '%s %s/filter_fasta.py -f %s -o %s -p %s' %\
      (python_exe_fp, script_dir,rep_seq_path,
       filtered_rep_seq_path,new_cluster_prefix)
     commands.append([('Filter rep set to new clusters only',
                        filter_rep_set_cmd)])
     
-    # chimera check
-    chimera_check_output = \
-     '%s/%s_chimeric_nc_only.txt' % (pick_otu_dir,input_seqs_basename)
-    try:
-        params_str = get_params_str(params['identify_chimeric_seqs'])
-    except KeyError:
-        params_str = ''
-    chimera_check_cmd = \
-     '%s %s/identify_chimeric_seqs.py -i %s -a %s -o %s %s' %\
-     (python_exe_fp, script_dir, filtered_rep_seq_path,
-      chimera_slayer_template_alignment, chimera_check_output,
-      params_str)
-    commands.append([('Chimera check sequences',
-                       chimera_check_cmd)])
-    
-    # Filter to remove chimeric sequences
-    chimera_filtered_fasta =\
-     '%s/%s_rep_seqs_non_chimeric.fasta' % (pick_otu_dir,input_seqs_basename)
-    filter_chimeric_seqs_cmd = \
-     '%s %s/filter_fasta.py -f %s -o %s -s %s -n' %\
-     (python_exe_fp, script_dir, filtered_rep_seq_path, chimera_filtered_fasta,
-      chimera_check_output)
-    commands.append([('Filter to remove chimeric sequences',
-                       filter_chimeric_seqs_cmd)])
-    
     # PyNAST align
     pynast_dir = '%s/pynast_aligned_seqs' % pick_otu_dir
-    aln_fp = '%s/%s_rep_seqs_non_chimeric_aligned.fasta' %\
+    aln_fp = '%s/%s_new_clusters_only_aligned.fasta' %\
      (pynast_dir,input_seqs_basename)
     try:
         # Only valid alignment method is pynast, so we'll pass it
         # explicitly
-        del params['alignment_method']
-        params_str = ' %s' % get_params_str(d)
+        del params['align_seqs']['alignment_method']
+        params_str = ' %s' % get_params_str(params['align_seqs'])
     except KeyError:
         params_str = ''
     
@@ -1079,22 +1050,45 @@ def run_gain_calculations(
         
         # Build the parallel pynast alignment command
         align_seqs_cmd = '%s %s/parallel_align_seqs_pynast.py -i %s -o %s -T %s' %\
-         (python_exe_fp, script_dir, chimera_filtered_fasta, pynast_dir, params_str)
+         (python_exe_fp, script_dir, filtered_rep_seq_path, pynast_dir, params_str)
     else:
         # Build the pynast alignment command
         align_seqs_cmd = '%s %s/align_seqs.py -i %s -o %s -m pynast %s' %\
-         (python_exe_fp, script_dir, chimera_filtered_fasta, pynast_dir, params_str)
+         (python_exe_fp, script_dir, filtered_rep_seq_path, pynast_dir, params_str)
     commands.append([\
-     ('Align non-chimeric representative sequences', align_seqs_cmd)])
+     ('Align representative sequences', align_seqs_cmd)])
     
+    # chimera check
+    chimera_seqs_fp = \
+     '%s/%s_chimeric_seq_ids.txt' % (pick_otu_dir,input_seqs_basename)
+    try:
+        params_str = get_params_str(params['identify_chimeric_seqs'])
+    except KeyError:
+        params_str = ''
+    chimera_check_cmd = \
+     '%s %s/identify_chimeric_seqs.py -i %s -a %s -o %s %s' %\
+     (python_exe_fp, script_dir, aln_fp,
+      chimera_slayer_template_alignment, chimera_seqs_fp,
+      params_str)
+    commands.append([('Chimera check aligned sequences',
+                       chimera_check_cmd)])
+    
+    # Filter to remove chimeric sequences
+    chimera_filtered_fasta =\
+     '%s/%s_non_chimeric_aligned.fasta' % (pick_otu_dir,input_seqs_basename)
+    filter_chimeric_seqs_cmd = \
+     '%s %s/filter_fasta.py -f %s -o %s -s %s -n' %\
+     (python_exe_fp, script_dir, aln_fp, chimera_filtered_fasta,
+      chimera_seqs_fp)
+    commands.append([('Filter alignment to remove chimeric sequences',
+                       filter_chimeric_seqs_cmd)])
     
     # Merge the aligned reference sequences and the aligned 
     merged_alignment_fp = '%s/all_aligned.fasta' % pynast_dir
     merge_alignments_command = 'cat %s %s >> %s' %\
-     (refseqs_aligned_fp, aln_fp, merged_alignment_fp)
+     (refseqs_aligned_fp, chimera_filtered_fasta, merged_alignment_fp)
     commands.append([('Merge reference alignment and new clusters alignment',
                       merge_alignments_command)])
-    
     
     # Lanemask
     filtered_aln_fp = '%s/all_aligned_pfiltered.fasta' % pynast_dir
