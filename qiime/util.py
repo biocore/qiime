@@ -531,17 +531,20 @@ def merge_otu_tables(otu_table_f1,otu_table_f2):
     # Will need to add support for OTU tables wo tax info at some 
     # point -- in a rush now so don't have time to add it without an
     # immediate use case.
-    assert lineages1 and lineages2,\
-     ('No taxonomic information included. This information is '
-     'currently required for this functionality.')
-    
-    # map OTU ids to lineages -- in case of conflicts (i.e, OTU assigned)
-    # different lineage in different otu tables, the lineage from 
-    # OTU table 1 will be taken
-    otu_id_to_lineage = dict(zip(otu_ids1,lineages1))
-    otu_id_to_lineage.update(dict([(otu_id,lineage)\
-     for otu_id,lineage in zip(otu_ids2,lineages2)\
-     if otu_id not in otu_id_to_lineage]))
+    if lineages1 and lineages2:    
+        # map OTU ids to lineages -- in case of conflicts (i.e, OTU assigned)
+        # different lineage in different otu tables, the lineage from 
+        # OTU table 1 will be taken
+        lineages = True
+        otu_id_to_lineage = dict(zip(otu_ids1,lineages1))
+        otu_id_to_lineage.update(dict([(otu_id,lineage)\
+         for otu_id,lineage in zip(otu_ids2,lineages2)\
+         if otu_id not in otu_id_to_lineage]))
+    elif not (lineages1 or lineages2):
+        lineages = False
+    else:
+      raise ValueError, ('Taxonomic information must be provided either'
+       ' for all or none of the OTU tables')
     
     # Get the union of the otu IDs
     otu_ids_result = list(otu_ids1)
@@ -567,8 +570,12 @@ def merge_otu_tables(otu_table_f1,otu_table_f2):
             #row_index = otu_ids_result.index(otu_id)
             row_index = otu_ids_result_lookup[otu_id]
             otu_table[row_index,col_index] = otu_table2[j,i]
-
-    lineages_result = [otu_id_to_lineage[otu_id] for otu_id in otu_ids_result]
+    
+    if lineages:
+        lineages_result = [otu_id_to_lineage[otu_id] 
+         for otu_id in otu_ids_result]
+    else:
+        lineages_result = None
     
     return sample_ids_result, otu_ids_result, otu_table, lineages_result
     

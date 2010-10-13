@@ -44,6 +44,9 @@ class TopLevelTests(TestCase):
         self.otu_table_f1 = otu_table_fake1.split('\n')
         self.otu_table_f2 = otu_table_fake2.split('\n')
         self.otu_table_f3 = otu_table_fake3.split('\n')
+        self.otu_table_f1_no_tax = otu_table_fake1_no_tax.split('\n')
+        self.otu_table_f2_no_tax = otu_table_fake2_no_tax.split('\n')
+        self.otu_table_f3_no_tax = otu_table_fake3_no_tax.split('\n')
         self.dirs_to_remove = []
         self.files_to_remove = []
 
@@ -261,6 +264,46 @@ class TopLevelTests(TestCase):
         self.assertEqual(actual[2],exp_otu_table)
         self.assertEqual(actual[3],exp_lineages)
 
+    def test_merge_n_otu_tables_no_tax(self):
+        """merge_n_otu_tables functions as expected with no taxonomy"""
+        otu_table_f1 = iter(self.otu_table_f1_no_tax)
+        otu_table_f2 = iter(self.otu_table_f2_no_tax)
+        otu_table_f3 = iter(self.otu_table_f3_no_tax)
+        exp_sample_ids = ['S1','S2','S3','S4','S5','samp7']
+        exp_otu_ids = ['0','1','2','3','4','6']
+        exp_otu_table = array([[1,0,1,0,1,0],\
+                           [1,0,0,0,0,0],\
+                           [4,0,1,0,1,0],\
+                           [0,0,2,0,1,0],\
+                           [0,0,1,0,9,0],\
+                           [0,0,1,25,42,1]])
+        exp_lineages = None
+        actual = merge_n_otu_tables([otu_table_f1,otu_table_f2,otu_table_f3])
+        self.assertEqual(actual[0],exp_sample_ids)
+        self.assertEqual(actual[1],exp_otu_ids)
+        self.assertEqual(actual[2],exp_otu_table)
+        self.assertEqual(actual[3],exp_lineages)
+        
+    def test_merge_n_otu_tables_error_on_mixed_tax(self):
+        """merge_n_otu_tables fails with some tax, some no tax"""
+        otu_table_f1 = iter(self.otu_table_f1)
+        otu_table_f2 = iter(self.otu_table_f2_no_tax)
+        otu_table_f3 = iter(self.otu_table_f3_no_tax)
+        self.assertRaises(ValueError,
+         merge_n_otu_tables,[otu_table_f1,otu_table_f2,otu_table_f3])
+         
+        otu_table_f1 = iter(self.otu_table_f1)
+        otu_table_f2 = iter(self.otu_table_f2)
+        otu_table_f3 = iter(self.otu_table_f3_no_tax)
+        self.assertRaises(ValueError,
+         merge_n_otu_tables,[otu_table_f1,otu_table_f2,otu_table_f3])
+         
+        otu_table_f1 = iter(self.otu_table_f1_no_tax)
+        otu_table_f2 = iter(self.otu_table_f2)
+        otu_table_f3 = iter(self.otu_table_f3)
+        self.assertRaises(ValueError,
+         merge_n_otu_tables,[otu_table_f1,otu_table_f2,otu_table_f3])
+
     def test_create_dir(self):
         """create_dir creates dir and fails meaningful."""
 
@@ -357,6 +400,24 @@ otu_table_fake2 = """#Full OTU Counts
 otu_table_fake3 = """#Full OTU Counts
 #OTU ID	samp7	Consensus Lineage
 6	1	Root;Archaea""" 
+
+otu_table_fake1_no_tax = """#Full OTU Counts
+#OTU ID	S1	S2
+0	1	0
+1	1	0
+2	4	0"""
+    
+otu_table_fake2_no_tax = """#Full OTU Counts
+#OTU ID	S3	S4	S5
+0	1	0	1
+3	2	0	1
+4	1	0	9
+2	1	0	1
+6	1	25	42"""
+
+otu_table_fake3_no_tax = """#Full OTU Counts
+#OTU ID	samp7
+6	1""" 
 
                                     
 class FunctionWithParamsTests(TestCase):
