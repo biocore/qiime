@@ -306,6 +306,7 @@ def main():
         'suppress_new_clusters':opts.suppress_new_clusters,
         'max_accepts':max_accepts,
         'max_rejects':max_rejects,
+        'new_cluster_identifier':opts.uclust_otu_id_prefix,
         'stable_sort':uclust_stable_sort}
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,refseqs_fp,

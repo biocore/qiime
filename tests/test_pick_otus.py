@@ -1020,8 +1020,8 @@ class UclustReferenceOtuPickerTests(TestCase):
         # testing is harder for new clusters, since the otu identifiers are
         # arbitrary, and otu identifier assignment is based on order of 
         # iteration over a dict
-        exp1 = {'qiime_otu_1':['s1'],'qiime_otu_2':['s2']}
-        exp2 = {'qiime_otu_2':['s1'],'qiime_otu_1':['s2']}
+        exp1 = {'QiimeOTU1':['s1'],'QiimeOTU2':['s2']}
+        exp2 = {'QiimeOTU2':['s1'],'QiimeOTU1':['s2']}
         self.assertTrue(obs == exp1 or obs == exp2)
  
     def test_toggle_rev_strand_matching(self):
@@ -1107,7 +1107,7 @@ class UclustReferenceOtuPickerTests(TestCase):
          'max_accepts:8',
          'max_rejects:32',
          "stable_sort:False",
-         "new_cluster_identifier:qiime_otu_",
+         "new_cluster_identifier:QiimeOTU",
          "next_new_cluster_number:1",
          "presort_by_abundance:True",
          "Result path: %s" % tmp_result_filepath]
@@ -1130,12 +1130,12 @@ class UclustReferenceOtuPickerTests(TestCase):
                'ref2':['uclust_test_seqs_1'],
                'ref3':['uclust_test_seqs_2'],
                'ref4':['uclust_test_seqs_3'],
-               'qiime_otu_1':['uclust_test_seqs_4'],
-               'qiime_otu_2':['uclust_test_seqs_5'],
-               'qiime_otu_3':['uclust_test_seqs_6'],
-               'qiime_otu_4':['uclust_test_seqs_7'],
-               'qiime_otu_5':['uclust_test_seqs_8'],
-               'qiime_otu_6':['uclust_test_seqs_9']}
+               'QiimeOTU1':['uclust_test_seqs_4'],
+               'QiimeOTU2':['uclust_test_seqs_5'],
+               'QiimeOTU3':['uclust_test_seqs_6'],
+               'QiimeOTU4':['uclust_test_seqs_7'],
+               'QiimeOTU5':['uclust_test_seqs_8'],
+               'QiimeOTU6':['uclust_test_seqs_9']}
         
         # expected number of clusters observed
         self.assertEqual(len(obs),len(exp))
@@ -1172,11 +1172,11 @@ class UclustReferenceOtuPickerTests(TestCase):
                'ref2':['uclust_test_seqs_1'],
                'ref3':['uclust_test_seqs_2'],
                'ref4':['uclust_test_seqs_3'],
-               'qiime_otu_1':['uclust_test_seqs_4'],
-               'qiime_otu_2':['uclust_test_seqs_5'],
-               'qiime_otu_3':['uclust_test_seqs_6','uclust_test_seqs_8'],
-               'qiime_otu_4':['uclust_test_seqs_7'],
-               'qiime_otu_5':['uclust_test_seqs_9']}
+               'QiimeOTU1':['uclust_test_seqs_4'],
+               'QiimeOTU2':['uclust_test_seqs_5'],
+               'QiimeOTU3':['uclust_test_seqs_6','uclust_test_seqs_8'],
+               'QiimeOTU4':['uclust_test_seqs_7'],
+               'QiimeOTU5':['uclust_test_seqs_9']}
         
         # expected number of clusters observed
         self.assertEqual(len(obs),len(exp))

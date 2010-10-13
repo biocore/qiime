@@ -826,7 +826,7 @@ class UclustReferenceOtuPicker(UclustOtuPickerBase):
                    'optimal':False,
                    'exact':False,
                    'suppress_sort':False,
-                   'new_cluster_identifier':'qiime_otu_',
+                   'new_cluster_identifier':'QiimeOTU',
                    'next_new_cluster_number':1,
                    'presort_by_abundance':True,
                    'stable_sort':False}
