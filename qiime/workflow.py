@@ -952,7 +952,7 @@ def run_gain_calculations(
         command_handler,
         parallel=False,
         status_update_callback=print_to_stdout):
-    """ Compute gain (or amount of new diversity) for a pair of sequences
+    """ Compute gain (or amount of new diversity) for a pair of seq collections
     
         We have a sequence collection S (input_seqs_fp), and we want to know 
         how much diversity that adds to another sequence collection R 
@@ -1003,19 +1003,21 @@ def run_gain_calculations(
     
     
     ## Pick OTUs
+
     pick_otu_dir = '%s/ucr_picked_otus/' % output_dir
     otu_fp = '%s/%s_otus.txt' % (pick_otu_dir,input_seqs_basename)
-    
+    try:
+        # Only valid alignment method is uclust_ref, so we'll pass it
+        # explicitly
+        del params['pick_otus']['otu_picking_method']
+    except KeyError:
+        pass
     try:
         new_cluster_prefix = params['pick_otus']['uclust_otu_id_prefix']
     except KeyError:
-        new_cluster_prefix = 'QiimeOTU'
-        params['pick_otus']['uclust_otu_id_prefix'] = 'QiimeOTU'
-    
-    try:
-        params_str = get_params_str(params['pick_otus'])
-    except KeyError:
-        params_str = ''
+        new_cluster_prefix = 'GainedOTU'
+        params['pick_otus']['uclust_otu_id_prefix'] = 'GainedOTU'
+    params_str = get_params_str(params['pick_otus'])
     pick_otus_cmd = '%s %s/pick_otus.py -m uclust_ref -i %s -o %s -r %s %s' %\
      (python_exe_fp, script_dir, input_seqs_fp, pick_otu_dir, refseqs_fp, params_str)
     commands.append([('Pick OTUs', pick_otus_cmd)])

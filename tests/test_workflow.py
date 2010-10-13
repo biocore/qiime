@@ -3244,23 +3244,13 @@ gain_ref_aligned1 = """>153907
 """
 
 gain_params1_f = """
-# OTU picker parameters
-pick_otus:otu_picking_method	uclust
-pick_otus:clustering_algorithm	furthest
-pick_otus:max_cdhit_memory	400
-pick_otus:refseqs_fp
-pick_otus:blast_db
+# standard compute_gain.py parameters file (13 Oct 2010)
+
 pick_otus:similarity	0.97
-pick_otus:max_e_value	1e-10
-pick_otus:prefix_prefilter_length
-pick_otus:trie_prefilter
-pick_otus:prefix_length
-pick_otus:suffix_length
 pick_otus:optimal_uclust
 pick_otus:exact_uclust
 pick_otus:user_sort
 pick_otus:suppress_presort_by_abundance_uclust
-pick_otus:suppress_new_clusters
 pick_otus:uclust_otu_id_prefix
 
 # Parallel options
