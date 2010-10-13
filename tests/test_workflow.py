@@ -18,6 +18,7 @@ from glob import glob
 from tarfile import open as open_tarfile
 from os.path import join, exists, getsize, split, splitext
 from os import makedirs, system
+from numpy import array, absolute
 from cogent import LoadTree, LoadSeqs
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.util.unit_test import TestCase, main
@@ -25,12 +26,13 @@ from cogent.util.misc import remove_files
 from cogent.app.util import get_tmp_filename, ApplicationNotFoundError
 from qiime.util import load_qiime_config
 from qiime.parse import (parse_qiime_parameters, parse_otu_table,
-    parse_distmat_to_dict)
+    parse_distmat_to_dict,parse_distmat)
 from qiime.workflow import (run_qiime_data_preparation,
     run_beta_diversity_through_3d_plot,
     run_qiime_alpha_rarefaction,
     run_jackknifed_beta_diversity,
     run_process_sra_submission,
+    run_gain_calculations,
     call_commands_serially,
     no_status_updates,WorkflowError,print_commands)
 
@@ -176,6 +178,29 @@ class WorkflowTests(TestCase):
         
         self.sra_params = parse_qiime_parameters(sra_submission_params_f)
         
+        self.gain_in1 = get_tmp_filename(
+            tmp_dir=self.tmp_dir, prefix='gain_wf_in', suffix='.fna')
+        f = open(self.gain_in1, 'w')
+        f.write(gain_in1)
+        f.close()
+        self.files_to_remove.append(self.gain_in1)
+        
+        self.gain_ref1 = get_tmp_filename(
+            tmp_dir=self.tmp_dir, prefix='gain_wf_ref', suffix='.fna')
+        f = open(self.gain_ref1, 'w')
+        f.write(gain_ref1)
+        f.close()
+        self.files_to_remove.append(self.gain_ref1)
+        
+        self.gain_ref_aligned1 = get_tmp_filename(
+            tmp_dir=self.tmp_dir, prefix='gain_wf_ref_aligned', suffix='.fna')
+        f = open(self.gain_ref_aligned1, 'w')
+        f.write(gain_ref_aligned1)
+        f.close()
+        self.files_to_remove.append(self.gain_ref_aligned1)
+        
+        self.gain_params1 = parse_qiime_parameters(gain_params1_f)
+        
         signal.signal(signal.SIGALRM, timeout)
         # set the 'alarm' to go off in allowed_seconds seconds
         signal.alarm(allowed_seconds_per_test)
@@ -209,6 +234,71 @@ class WorkflowTests(TestCase):
         # Check that the log file is created and has size > 0
         log_fp = glob(join(self.wf_out,'log*.txt'))[0]
         self.assertTrue(getsize(log_fp) > 0)
+        
+    def test_run_gain_calculations_serial(self):
+        """run_gain_calculations generates expected results
+        """
+        run_gain_calculations(
+         self.gain_in1,
+         self.gain_ref1,
+         self.gain_ref_aligned1,
+         self.gain_ref_aligned1,
+         self.gain_ref_aligned1, 
+         self.wf_out, 
+         self.gain_params1,
+         self.qiime_config,
+         call_commands_serially,
+         parallel=False,
+         status_update_callback=no_status_updates)
+        
+        # Check that the log file is created and has size > 0
+        log_fp = glob(join(self.wf_out,'log*.txt'))[0]
+        self.assertTrue(getsize(log_fp) > 0)
+        
+        # Confirm that distances are as expected
+        expected_sids = ['in','reference']
+        expected_unifrac_g = array([[0.0,0.3502],[0.6498,0.0]])
+        
+        dm_fp = '%s/unifrac_g_otu_table.txt' % self.wf_out
+        sids, dm = parse_distmat(open(dm_fp))
+        self.assertEqual(sids,expected_sids)
+        # confirm that all actual unifrac_g values are within 
+        # 0.01 of expected
+        self.assertTrue((absolute(dm - expected_unifrac_g) <
+         array([[0.01,0.01],[0.01,0.01]])).all())
+         
+    # def test_run_gain_calculations_parallel(self):
+    #     """run_gain_calculations in parallel generates expected results
+    #     """
+    #     run_gain_calculations(
+    #      self.gain_in1,
+    #      self.gain_ref1,
+    #      self.gain_ref_aligned1,
+    #      self.gain_ref_aligned1,
+    #      self.gain_ref_aligned1, 
+    #      self.wf_out, 
+    #      self.gain_params1,
+    #      self.qiime_config,
+    #      call_commands_serially,
+    #      parallel=True,
+    #      status_update_callback=no_status_updates)
+    #     
+    #     # Check that the log file is created and has size > 0
+    #     log_fp = glob(join(self.wf_out,'log*.txt'))[0]
+    #     self.assertTrue(getsize(log_fp) > 0)
+    #     
+    #     # Confirm that distances are as expected
+    #     expected_sids = ['in','reference']
+    #     expected_unifrac_g = array([[0.0,0.3502],[0.6498,0.0]])
+    #     
+    #     dm_fp = '%s/unifrac_g_otu_table.txt' % self.wf_out
+    #     sids, dm = parse_distmat(open(dm_fp))
+    #     self.assertEqual(sids,expected_sids)
+    #     # confirm that actual distances are within 0.01 of expected
+    #     # distances
+    #     self.assertTrue((dm - expected_unifrac_g <
+    #      array([[0.01,0.01],[0.01,0.01]])).all())
+        
         
     def test_run_qiime_data_preparation(self):
         """run_qiime_data_preparation generates expected results"""
@@ -1313,7 +1403,7 @@ pick_otus:exact_uclust
 pick_otus:user_sort
 pick_otus:suppress_presort_by_abundance_uclust
 pick_otus:suppress_new_clusters
-pick_otus:uclust_otu_id_prefix	wf_otu_
+pick_otus:uclust_otu_id_prefix  workflowOTU
 
 # Parallel options
 parallel:jobs_to_start	2
@@ -3133,6 +3223,73 @@ Flow Indexes:	1	3	6	8	10	12	15	18	20	23	26	27	29	29	32	33	35	38	41	44	47	49	52	5
 Bases:	tcagAGCAGCACTTGTCATGCTGCCTCCCGTAGGAGTTTGGGCCGTGTCTCAGTACCAGTGTGGGGGACCTTCCTCTCAGAACCCCTACGCATCGTCGCCTCGGTGGGCCGTTACCCCGCCGACTAGCTAATGCGCCGCATGGCCATCCGCAGCCGATAAATCTTTAAACATCGGGAGATGCCTCCCAACGTTCTTACGCGGTATTAGACGGAATTTCTTCCGCTTATCCCCCTGCTGCGGGCAGGTTCCATACGTGTTACTCACCCGTGCGCCGG
 Quality Scores:	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	40	40	40	40	38	38	38	39	39	39	39	39	39	39	34	34	36	30	30	30	39	39	39	39	39	39	39	37	37	37	37	37	37	37	37	37	37	37	38	38	33	33	33	33	33	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	38	38	38	38	38	38	37	37	37	37	37	37	37	38	38	38	38	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	38	38	38	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	37	38	36	37	38	38	37	37	38	38	38	38	38	38	38	38	38	38	38	38	36	36	36	38	38	38	38	29	29	29	23	28	30	31	32	31	31	31	31	32	32	32	32	32	32	31	31	31	32	32	31	28	25	19	18	18	16
 """
+
+gain_in1 = """>in_350772 k__Bacteria;p__Verrucomicrobia;c__Opitutae;o__;f__Opitutaceae;g__Opitutus;s__
+UGAACGCUGGCGGCGUGGUUAAGACAUGCAAGUCGAACGGUUUGUUGUGUAGCAAUACAUAACAAGCAGUGGCGAACGGGUGCGUAACACGUGAACAAUCUACCUCCAAGUGGGGAAUAGCUCUUCGAAAGAAGAGAUAAUACCGCAUCAGGUUGUCCUUCGCAUGAAGGGCAACCAAAGUCAGGGACCGCAAGGCCUGACGCUCGGAGAGGAGUUCGCGGCCUAUCAGCUAGUUGGCGAGGUAACGGCUCACCAAGGCUAAGACGGGUAGCUGGUCUGAGAGGAUGAUCAGCCACACUGGAACUGAGACACGGUCCAGACACCUACGGGUGGCAGCAGUUUCGAAUCAUUCACAAUGGGCGAAAGCCUGAUGGUGCGACGCCGCGUGAGGGAUGAAGGUCUUCGGAUUGUAAACCUCUGUCACCGGGGAAGAAACGCUUCAAGUUAAUAGCUUGAAGCCUGACUUAACCCGGAGAGGAAGCAGUGGCUAACUCUGUGCCAGCAGCCGCGGUAAUACAGAGACUGCAAGCGUUAUUCGGAUUCACUGGGCGUAAAGGGUGCGCAGGUGGCCAAGUGUGUUAGGCGUGAAAGCCCGGGGCUUAACCCCGGAAUUGCACCUAAAACUACAUGGCUAGAGCAUUGGAGAGGGGAGCAGAAUUCACGGUGUAGCAGUGAAAUGCGUAGAUAUCGUGAGGAAUACCAGAGGCGAAGGCGGCUCCCUGGACAAUUGCUGACACUCAGGCACGAAAGCGUGGGGAGCAAAAGGGAUUAGAUACCCCUGUAGUCCACGCCCUAAACGGUGCACACUAGGUCUUGGCGGAUUCGACCCCACCAGGGCCCAAGCUAACGCGUUAAGUGUGCCGCCUGAGGACUACGGCCGCAAGGCUAAAACUCAAAGGAAUUGACGGGGGCCCGCACAAGCGGUGGAGCAUGUGGCUUAAUUCGAUGCAACGCGAAGAACCUUACCUAGCCUUGACAUGCACUAGACAUACGCUGAAAGGCGUACUCCCUUCGGGGCUGGUGCACAGGUGCUGCAUGGCUGUCGUCAGCUCGUGUCGUGAGAUGUUGCGUUAAGUCGCGCAACGAGCGCAACCCCUGUCCUUAGUUGCCAUCAUUAAGUUGGGCACUCUAGGGAGACACCCUCUAUGAGGGUGGGAAGGUGGGGAUGACGUCAAGUCAGGAUGGCCCUUACGGCUAGGGCUGCACACGUGCUACAAUGCCUGGUACAGAGGGAUGCAAUACCGCGAGGUGGAGCAAAUCCUCAAAACCAGGCCCAGUUCAGAUUGUAGUCUGCAACUCGACUACAUGAAGUUGGAAUCGCUAGUAAUGGCGUAUCAGCUACGACGCCGUGAAUACGUUCCCGGGCCUUGUACACACCGCCCGUCACGUCAUGAAAGCCGGUUUCGCCCGAAGUGCGCUUGCCAACCAGCAAUGGAGGCGGCGCCCUAAGGUGAGGCUGGUGAUUGGGACGAAGUCAUAACAAGGUAGCCGUA"""
+
+gain_ref1 = """>153907 k__Bacteria;p__Aquificae;c__Aquificae (class);o__Aquificales;f__Aquificaceae;g__Aquifex;s__Aquifex aeolicus
+AGAGUUUGAUCCUGGCUCAGCGCGAACGCUGGCGGCGUGCCUAACACAUGCAAGUCGUGCGCAGGGUCGGCCCCUUUUGGGGCCGGCCCUGAGCGGCAAACGGGUGAGUAACACGUGGGUAACCUACCCCCAGGAGGGGGAUAACCCCGGGAAACCGGGGCUAAUACCCCAUAAUGCCACCCGCCACUAGGCGCGGUGGCCAAAGGGGGCCUUGUUCGCAGCUCCCGCCUGGGGAUGGGCCCGCGGCCCAUCAGGUAGUUGGUGGGGUAACGGCCCACCAAGCCUAUGACGGGUAGCCGGCCUGAGAGGGUGGCCGGCCACAGCGGGACUGAGACACGGCCCGCACCCCUACGGGGGGCAGCAGUGGGGAAUCGUGGGCAAUGGGCGAAAGCCUGACCCCGCGACGCCGCGUGGGGGAUGAAGCCCUGCGGGGUGUAAACCCCUGUCGGGGGGGACGAUGCGGACACGGGUUAAUAGCCCGUGUCCGUGACGGUACCCCCAGAGGAAGGGACGGCUAACUACGUGCCAGCAGCCGCGGUAAUACGUAGGUCCCAAGCGUUGCGCGAAGUCACUGGGCGUAAAGCGUCCGCAGCCGGUCGGGUAAGCGGGAUGUCAAAGCCCACGGCUCAACCGUGGACCGGCAUCCCGAACUGCCCGACUUGAGGCACGCCCGGGCAGGCGGAAUUCCCGGGGUAGCGGUGAAAUGCGUAGAUCUCGGGAGGAACACCGAAGGGGAAGCCAGCCUGCUGGGGCUGUCCUGACGGUCAGGGACGAAAGCCGGGGGAGCAAACCGGAUUAGAUACCCGGGUAGUCCCGGCCGUAAACCAUGGGCGCUAGGGCUUGUCCCUCUGGGGCAGGCUCGCAGCUAACGCGUUAAGCGCCCCGCCUGGGGAGUACGGGCGCAAGCCUGAAACUCAAAGGAAUUGGCGGGGGCCCGCACAACCGGUGGAGCGUCUGGUUCAAUUCGAUGCUAACCGAAGAACCUUACCCGGGCUUGACAUGCCGGGGAGACUCCGCGAAAGCGGAGUUGGUCCCAGGAUCCCCCGGCACAGGUGGUGCAUGGCCGUCGUCAGCUCGUGUCGUGAGAUGUUGGGUUAAGUCCCGCAACGAGCGCAACCCCUGCCCCCAGUUGCUACCCCGUUUGGGGAGCACUCUGGGGGGACCGCCGGCGAUAAGCCGGAGGAAGGGGGGGAUGACGUCAGGUCAGUAUGCCCUUUAUGCCCGGGGCCACACAGGCGCUACAGUGGCCGGGACAAUGGGAUGCGACCCCGUAAGGGGGAGCUAAUCCCUAAACCCGGUCAUGGUGCGGAUUGGGGGCUGAAACUCGCCCCCAUGAAGCCGGAAUCGGUAGUAACGGGGUAUCAGCGAUGUCCCCGUGAAUACGUUCUCGGGCCUUGCACACACCGCCCGUCACGCCACGGAAGUCGGUCCGGCCGGAAGUCCCCGAGCUAACCGUUCGCGGAGGCAGGGGCCGAUGGCCGGGCCGGCGACUGGGGCGAAGUCGUAACAAGGUAGCCGUAGGGGAACCUGCGGCUGGAUCACCUCCUU
+>550151 k__Bacteria;p__Thermotogae;c__Thermotogae (class);o__Thermotogales;f__Thermotogaceae;g__S1;s__
+AGAGUUUGAUCCUGGCUCAGGGUUAACGCUGGCGGCGUGCCUAACACAUGCAAGUCGAACGGUUCUAAGUGAAAGCUUAGGGUAGUGGCGAACGGGUGAGUAAAAGGUAGGAAUCUGCCCCUUGGACGGAGAUAGCUACUGGAAACGGUAGGUAAACUUCGAUAAGCCCGAGAGGGGAAAUGUGAGCAGCCGAGGGAUGAGCCUACUCUCCAUCAGGUAGUUGGUGAGAUAAAAGCUUACCAAGCCGAUGACGGAUAACUGGUGUGAGAGCAUGAACGGUCACAAGGGCACUGAGACACGGGCCCUACUCCUACGGGAGGCAGCAGUGGGGAAUCUUGGACAAUGGGCGGAAGCCUGAUCCAGCGACGCCGCGUGGAGGAAGAAGUCCUUCGGGACGUAAACUUCUGAACUAGCCGAAUAAAAGGCCUGUGGACACACAGGAGAAGAAAGUAAGCUAGGAAAAGUCCCGGCUAACUACGUGCCAGCAGCCGCGGUAAGACGUAGGGGGCGAGCGUUACCCGGAAUUACUGGGCGUAAAGGGGGCGUAGGCGGUGAUACAAGUCAUCUGUGAAAACCUAUUGCUCAACGAUAGGCUAGCGGAUGAAACUGUAUUACUUGAGUGCACCAGAGGUAGACGGAAUUACCCGAGUAGGGGUGAAAUCCGCAGAUACGGGUAGGAACGCCGGUGGAGAAGUCGGUCUACUGGGGUGUAACAGACGCUGAGGCCCGAAAGCUAGGGGAGCAAACCGGAUUAGAUACCCGGGUAGUCCUAGCCGUAAACGAUGCUCACUAGGUGUAGGGAGUGACAAACUCUCUGUGCUGAAGCAAACGCGCUAAGUGAGCCGCCUGGGGAGUACGUCCGCAAGGAUGAAACUCAAAGGAAUUGACGGGGGUCCGCACAAGCGGUGGAGCAUGUGGUUUAAUUCGAUGCUAACCGAAGAACCUUACCAGGGUUUGACAUGAACUGAAGGUAGAGAAAUCUACUGGCCCUGAAAGGGGAGGUUACACAGGUGGUGCACGGCCGUCGUCAGCUCGUGCCGUGAGGUGUUGGGUUAAGUCCCGCAACGAGCGCAACCCCUGCGAUUAGUUGCUAACGCGUAAAGGCGAGGACUCUAAUCGGACUGCCGCCGACGAGGCGGAGGAAGGAGGGGAUGACGUCAGGUAAGCGUGCCCCUAAUGCUCUGGGCGACACACGUGCUACAAUGGGGAGGACAAAGGGGAGCGAAGCCGCGAGGUGGGGCGAAUCCCGAAAAACUCUCCUCAAUACGGAUUGUAGGCUGCAACCCGCCUACAUGAAGUUGGAAUCGCUAGUAAUCGCAGGUCAGCCAAACUGCGGUGAAUACGUUCCCGGGCCUUGUACACACCGCCCGUCACGCCACCCGAGUUGGGAACACCUGAAGACAGUGCGUAGGUACUGUUGAAGGUGGGCUUGGCGAGGGGGGCGAAGUCGUAACAAGGUAGGUGUACCGGAAGGUGCGGCUGGAUCACCUCCUU
+"""
+
+gain_ref_aligned1 = """>153907
+------------------------------------------------------------------------------------------------------------AGAGTTT-GA--T-CC-T-G-GCTC-AG-CG-CGAA-C-GC--TGG-C--G-GC-G-TG--C----C-T--AACACA-T-GC-A-AGT-CGT-G-CGC---------A-----GG--------------GT--------------CGGC-C-CC----------------------------------------------------TTT-T----------------------------------------------------------------------------------GGG-GCCGGC----------------C---C--TG-----AG-C-GG-C-AA-A--C-------------GGG-TGAGT-A--AC-AC-G-T-G-GG---TAA--C-CT-A--C-C-CCC--AG-G------------------------------------------------------------------A-GG----GGG-AT-AA-CCC-------------------------C-G-G-----------------------GAA-A---CCG-GGG-CTAA-TA---CC-C--C-AT-A----------A--------------------T-G--C-C-A--C--C------------------C---GC-C-----------------------------------------------------------------------------------------------------------------------A-CT-A--------------------------------------------------------------------------------------------------------------------------------------G-G-C--G-C---------------G--G-T-G-G-C-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------CAAA--G-G-G-GG-----C--CT-T--G--------------------------------------------------------------------------------------------------------------------TTC-G----------------------------------------------------------------------------------------------------------------------C-A--GC-TC--C---C-G--------------C----C-T---G-GG-G---AT---G-G-----G-CCC-GCG--G-CCC--A------TC--A--G-GT-A----G---TTGG-T-G-GG-G-T----AAC-GG-C-C-C-ACCA--A-GC-C-T--A-TG-A------------CGG-G-T------AG-CC-G-G-CCT-G-AG----A--GG-GT--G-GC-C-GG-CCAC-A-GCGGG--A-C-TG-A-GA-C-AC-G-G-CCCGCA-CCCC-TAC-G--G-G-G-G-GC-A-GC-A-G-TG---GG-G-A-ATC-GTGGG-C-AA-T-GG--GC-GA-A----A-G-CC-T-GA-CC-CC-GCGA-CGCC-G-CG-T---G-G-G--G--GA-T-G--A--A-G-C-CC-----TG-CG---------G-G-G-T-G-T--A---AA-C-CCC--------TG-TC-G-G--G-GGG----GA-C--G---ATGCGGA---CACG-GG----T--T--AA-T---A----G-----CC-C-GTG-TCC-GT-GA-CG-GT-A-C-CC-C-CA-G---------AG-----------GAAGG-GAC-GG-C-TAA---C--T-ACGT--GCCA--G-C---A--GCCG---C-GG--TA-AT--AC---GT-AG-GTC-CCA-A-G-CG-TTGC-G-CGA-AG-TC-A--C-T--GGGC-GTA----AA-GCGT-CC--G-CA-G-C-C-G------------G--T-CG-G-G-T-AA----G-C-G-G---G-ATG-TC-A-AA-GC--CC-ACG-G--------------------------------------------------------------------CT-C-AA-------------------------------------------------------------------------CC-G-T-GG-AC-C----G-G-C-A-T-C--------C--CG-A-A-C-T-G-CCC--G-A-C---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------T-T-G-A-G-G-C-----A-CG--CC-C-G------------G-GC-A-GG-C----GG--AATT-CCC-G-GG--GT-A-GCG-GTGAAA-TG-CGT-AGAT-C-TC-G-GGA--GG-A-AC-A-CC-GA--A--G--GG-GAA-G--C-C---A----G--C-C-TGCTG------G-GG-CT--------------------------------------------------------------GT-C-C-T--GA--CG-----GT-CA-GG--G-A-CGA--AA-G-C--------------C-GGGG-GAG-C-A-AACC--GG-ATTA-G-ATA-C-----CC-G-G-GTA-G-T----C-CC--G-G-CCG-T-AAA--C-CATG-GG--CG-CT---------A-GG--G--C-T-TG-T-CC-C------------------------------------------------------------------------------------------TC-T-----------------------------------------------------------------------------------------------------------------------------------------------------G-G-GG--C-A-G-G-CT-C------GC--A----GC-TAA--CG-C-G-T--T--AA-GC--G----C-CCC-GCC-T-G-GG-GAG-TA---CGG-----G-C--G-C-A-A-GCC-T--GAA-ACTC-AAA---------GGAA-TTG-GCGGG-G-G-CCCG----C-A--C-A-A-CCG-GT-G--G--AG-CG-T--CT-GGT-TC-AATT-C-G-ATG-CTAA-C-CG-A-AG-A-A-CC-TT-A-CC-CGGGC-TT-G-AC-A-T-G------------C-CGG-G-G-------------A-GA-C-T-C--CG--C-GA-A-A-G--C-G-G--A-G-T-T--G-G-----TC-------------------------------------C--CA-G------------------------------------------GA----T----C---CC-CCG---G--CA---------------------------------------------------C-A-G-G-T-GGTG-CA-TGG-CC--GTC-GTC-A-GC-TC---G-TG-TC-G--TGA-GA-TGT-T-GG-G-TT-AA-GT-CCCGC-AA--------C-GAG-CGC-A-ACC-C-C-TG--CC--C-CCAG--T-T-G-C-T---AC-C-C--C--G-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------TTTG----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------G----G-G------------A----G---C-A--CT---------------C-T-G-G-G-GG-G--AC-C-G-CCG--G-C------------------------------------G-A---TAA----------------------------------G-C-C-G--G-A-GG-A--AGG-G--GGGG-A-TGAC-GTC--AGGT-C---AGT-A-T-G-C-C-C-TTT----AT-G--CC-C-G-GG-GC-CA-CAC-AGGCG-C--TA--CAGTG---G-CCGG-G-A--C-AAT-GG-GA--------------------------------------------------------------------------------------------------T-G-C-G-A--C-CCCG-T--A---------------------------------------A-GG-G-G-----------G--A-G-CT---A----------A--TCC-C------T---AAACC-CG-G-T-C-A-TGG-TGC--------GGA-T-TGGGG-GC--T-GAAA-CT-C-------------------------------------------------------------------------------------------------G-CCCCC-A-T-G-AA-G-CC-GGAAT-CG-G-TA--G-TA-AC-G-G-G----GTA-TC-A-G-CG------AT--GTC-CC-C-GT-G-AAT-ACGT-T-CTCGGGCCT-TGCA----CACACCG-CCC-GTC-----A---CG--CCA-CG-GA-A--G---TCG-G-TC-CG-GCC--G-GAA------G--T-CCC-CG-A-G-C-T-AA-C-C-G-----------------------------------------------------------T-TC-G---------------------------------------------------------------------------------------------------C--GG-A--GG-C--A---GG-GGC--CG--ATG-G----C-CGG-GC-CGG------------------------CG--ACT-GGGG-CG-AAG-TCGTAACAA-GGTAG-CCGT-AGGGGAA-CCTG-CGGC-TGGATCACCTCCTT-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+>550151
+------------------------------------------------------------------------------------------------------------AGAGTTT-GA--T-CC-T-G-GCTC-AG-GG-TTAA-C-GC--TGG-C--G-GC-G-TG--C----C-T--AACACA-T-GC-A-AGT-CGA-A-CGG--------------------------------T--------------TCTA-A-GT----------------------------------------------------GAA-A----------------------------------------------------------------------------------GCT-TAGGG-------------------------T-----AG-T-GG-C-GA-A--C-------------GGG-TGAGT-A--AA-AG-G-T-A-GG---A-A--T-CT-G--C-C-CCT--TG-G------------------------------------------------------------------A-CG----GAG-AT-AG-CTA-------------------------C-T-G-----------------------GAA-A---CGG-TAG-GTAA-AC---TT-C--G-AT-A----------A--------------------G-------------------------------------CC-C-----------------------------------------------------------------------------------------------------------------------G-AG-A--------------------------------------------------------------------------------------------------------------------------------------G-G-G---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------GAAA--T-G----------------------------------------------------------------------------------------------------------------------------------------TGA-G----------------------------------------------------------------------------------------------------------------------------------C---A-G--------------C----C-G---A-GG-G---AT---G-A-----G-CCT-ACT--C-TCC--A------TC--A--G-GT-A----G---TTGG-T-G-AG-A-T----AAA-AG-C-T-T-ACCA--A-GC-C-G--A-TG-A------------CGG-A-T------AA-CT-G-G-TGT-G-AG----A--GC-AT--G-AA-C-GG-TCAC-A-AGGGC--A-C-TG-A-GA-C-AC-G-G-GCCCTA-CTCC-TAC-G--G-G-A-G-GC-A-GC-A-G-TG---GG-G-A-ATC-TTGGA-C-AA-T-GG--GC-GG-A----A-G-CC-T-GA-TC-CA-GCGA-CGCC-G-CG-T---G-G-A--G--GA-A-G--A--A-G-T-CC-----TT-CG---------G-G-A-C-G-T--A---AA-C-TTC--------TG-AA-C-T--A-GCC----GA-A--T---AAAAGGC---CTGT-G--------G--AC-A---------------C-A-CAG-GAG-AA-GA-AA-GT-A-A-GC-T-AG-G---------AA------------AAGT-CCC-GG-C-TAA---C--T-ACGT--GCCA--G-C---A--GCCG---C-GG--TA-AG--AC---GT-AG-GGG-GCG-A-G-CG-TTAC-C-CGG-AA-TT-A--C-T--GGGC-GTA----AA-GGGG-GC--G-TA-G-G-C-G------------G--T-GA-T-A-C-AA----G-T-C-A---T-CTG-TG-A-AA-AC--CT-ATT-G--------------------------------------------------------------------CT-C-AA-------------------------------------------------------------------------CG-A-T-AG-GC-T----A-G-C-G-G-A--------T--GA-A-A-C-T-G-TAT--T-A-C---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------T-T-G-A-G-T-G-----C-AC--CA-G-A------------G-GT-A-GA-C----GG--AATT-ACC-C-GA--GT-A-GGG-GTGAAA-TC-CGC-AGAT-A-CG-G-GTA--GG-A-AC-G-CC-GG--T--G--GA-GAA-G--T-C---G----G--T-C-TACTG------G-GG-TG--------------------------------------------------------------TA-A-C-A--GA--CG-----CT-GA-GG--C-C-CGA--AA-G-C--------------T-AGGG-GAG-C-A-AACC--GG-ATTA-G-ATA-C-----CC-G-G-GTA-G-T----C-CT--A-G-CCG-T-AAA--C-GATG-CT--CA-CT---------A-GG--T--G-T-AG-G-GA-G--T--------------------------------------------------------------------------------------GAC-AA--------------------------------------------------------------------------------------------------------------------------------------------------A-C-T-CT--C-T-G-T-GC-T------GA--A----GC-AAA--CG-C-G-C--T--AA-GT--G----A-GCC-GCC-T-G-GG-GAG-TA---CGT-----C-C--G-C-A-A-GGA-T--GAA-ACTC-AAA---------GGAA-TTG-ACGGG-G-G-TCCG----C-A--C-A-A-GCG-GT-G--G--AG-CA-T--GT-GGT-TT-AATT-C-G-ATG-CTAA-C-CG-A-AG-A-A-CC-TT-A-CC-AGGGT-TT-G-AC-A-T-G--------------AA--C-T-------------G-AA-G-G-T--AG--A-GA-A-A-T--C-T-A--C-T-G-G--C-C-----CT-------------------------------------G--AA-A------------------------------------------GG----G----G---AG-GTT---A--CA---------------------------------------------------C-A-G-G-T-GGTG-CA-CGG-CC--GTC-GTC-A-GC-TC---G-TG-CC-G--TGA-GG-TGT-T-GG-G-TT-AA-GT-CCCGC-AA--------C-GAG-CGC-A-ACC-C-C-TG--CG--A-TTAG--T-T-G-C-T---AA-C-G--C--G-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------TAAA------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------G---G----C-G------------A----G---G-A--CT---------------C-T-A-A-T-CG-G--AC-T-G-CCG--C-C------------------------------------G-A---CGA----------------------------------G-G-C-G--G-A-GG-A--AGG-A--GGGG-A-TGAC-GTC--AGGT-A---AGC-G-T-G-C-C-C-CTA----AT-G--CT-C-T-GG-GC-GA-CAC-ACGTG-C--TA--CAATG---G-GGAG-G-A--C-AAA-GG-GG--------------------------------------------------------------------------------------------------A-G-C-G-A--A-GCCG-C--G---------------------------------------A-GG-T-G-----------G--G-G-CG---A----------A--TCC-C------G-A-AAAAC-TC-T-C-C-T-CAA-TAC--------GGA-T-TGTAG-GC--T-GCAA-CC-C-------------------------------------------------------------------------------------------------G-CCTAC-A-T-G-AA-G-TT-GGAAT-CG-C-TA--G-TA-AT-C-G-C----AGG-TC-A-G-CC------AA--ACT-GC-G-GT-G-AAT-ACGT-T-CCCGGGCCT-TGTA----CACACCG-CCC-GTC-----A---CG--CCA-CC-CG-A--G---TTG-G-GA-AC-ACC--T-GAA------G--A-CAG-TG--------------C-------------------------------------------------------------G-TA-G------------------------------------------------------------------------------------------------------G-----------T---AC-TGT--TG--AAG-G----T-GGG-CT-TGG------------------------CG--AGG-GGGG-CG-AAG-TCGTAACAA-GGTAG-GTGT-ACCGGAA-GGTG-CGGC-TGGATCACCTCCTT-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+"""
+
+gain_params1_f = """
+# OTU picker parameters
+pick_otus:otu_picking_method	uclust
+pick_otus:clustering_algorithm	furthest
+pick_otus:max_cdhit_memory	400
+pick_otus:refseqs_fp
+pick_otus:blast_db
+pick_otus:similarity	0.97
+pick_otus:max_e_value	1e-10
+pick_otus:prefix_prefilter_length
+pick_otus:trie_prefilter
+pick_otus:prefix_length
+pick_otus:suffix_length
+pick_otus:optimal_uclust
+pick_otus:exact_uclust
+pick_otus:user_sort
+pick_otus:suppress_presort_by_abundance_uclust
+pick_otus:suppress_new_clusters
+pick_otus:uclust_otu_id_prefix
+
+# Parallel options
+parallel:jobs_to_start	2
+parallel:retain_temp_files	False
+parallel:seconds_to_sleep	1
+
+# Representative set picker parameters
+pick_rep_set:rep_set_picking_method	most_abundant
+pick_rep_set:sort_by	otu
+
+# Multiple sequence alignment parameters
+align_seqs:template_fp
+align_seqs:alignment_method	pynast
+align_seqs:pairwise_alignment_method	uclust
+align_seqs:blast_db
+align_seqs:min_length	150
+align_seqs:min_percent_id	75.0
+
+# Alignment filtering (prior to tree-building) parameters
+filter_alignment:lane_mask_fp
+filter_alignment:allowed_gap_frac	 0.999999
+filter_alignment:remove_outliers	False
+filter_alignment:threshold	3.0
+
+# Phylogenetic tree building parameters
+make_phylogeny:tree_method	fasttree
+make_phylogeny:root_method	tree_method_default
+
+# Beta diversity parameters
+beta_diversity:metrics	unifrac_g
+
+""".split('\n')
 
 if __name__ == "__main__":
     main()

@@ -6,7 +6,10 @@ from os import makedirs, listdir
 from glob import glob
 from os.path import split, splitext, join, dirname, abspath
 from datetime import datetime
+from numpy import array
+from cogent.parse.fasta import MinimalFastaParser
 from qiime.parse import parse_mapping_file
+from qiime.format import format_otu_table
 from qiime.util import (compute_seqs_per_library_stats, 
                         get_qiime_scripts_dir,
                         create_dir)
@@ -934,6 +937,212 @@ def run_jackknifed_beta_diversity(otu_table_fp,tree_fp,seqs_per_sample,
            
     # Call the command handler on the list of commands
     command_handler(commands,status_update_callback,logger)
+
+## Begin Gain Calculation workflow and related functions
+
+def run_gain_calculations(
+    input_seqs_fp,
+    refseqs_fp,
+    refseqs_aligned_fp,
+    chimera_slayer_template_alignment,
+    pynast_template_alignment,
+    output_dir,
+    params,
+    qiime_config,
+    command_handler,
+    parallel=False,
+    status_update_callback=print_to_stdout):
+    
+    if parallel: 
+        raise NotImplementedError, "Parallel process not yet implemented"
+    
+    input_seqs_dir, input_seqs_filename = split(input_seqs_fp)
+    input_seqs_basename, input_seqs_ext = splitext(input_seqs_filename)
+    refseqs_dir, refseqs_filename = split(refseqs_fp)
+    create_dir(output_dir)
+    commands = []
+    python_exe_fp = qiime_config['python_exe_fp']
+    script_dir = get_qiime_scripts_dir()
+    logger = WorkflowLogger(generate_log_fp(output_dir),
+                            params=params,
+                            qiime_config=qiime_config)
+    
+    # Write the reference collection otu table
+    ref_otu_table_fp = '%s/ref_otu_table.txt' % output_dir
+    seq_ids = []
+    for seq_id, seq in MinimalFastaParser(open(refseqs_fp,'U')):
+        seq_ids.append(seq_id.split()[0])
+    otu_table_s = format_otu_table(['reference'], seq_ids, array([[1]]*len(seq_ids)))
+    ref_otu_table_f = open(ref_otu_table_fp,'w')
+    ref_otu_table_f.write(otu_table_s)
+    ref_otu_table_f.close()
+    
+    pick_otu_dir = '%s/ucr_picked_otus/' % output_dir
+    otu_fp = '%s/%s_otus.txt' % (pick_otu_dir,input_seqs_basename)
+    
+    try:
+        new_cluster_prefix = params['pick_otus']['uclust_otu_id_prefix']
+    except KeyError:
+        new_cluster_prefix = 'QiimeOTU'
+        params['pick_otus']['uclust_otu_id_prefix'] = 'QiimeOTU'
+    
+    try:
+        params_str = get_params_str(params['pick_otus'])
+    except KeyError:
+        params_str = ''
+    # Build the OTU picking command
+    pick_otus_cmd = '%s %s/pick_otus.py -m uclust_ref -i %s -o %s -r %s %s' %\
+     (python_exe_fp, script_dir, input_seqs_fp, pick_otu_dir, refseqs_fp, params_str)
+    commands.append([('Pick OTUs', pick_otus_cmd)])
+    
+    # Write the new OTU table
+    otu_table_fp = '%s/%s_otu_table.txt' % (pick_otu_dir,input_seqs_basename)
+    make_otu_table_cmd = '%s %s/make_otu_table.py -i %s -o %s' %\
+     (python_exe_fp, script_dir, otu_fp, otu_table_fp)
+    commands.append([('Make OTU table', make_otu_table_cmd)])
+    
+    # Merge OTU tables
+    master_otu_table_fp = '%s/otu_table.txt' % output_dir
+    merge_otu_tables_cmd = '%s %s/merge_otu_tables.py -i %s,%s -o %s' %\
+     (python_exe_fp, script_dir, otu_table_fp, ref_otu_table_fp, 
+      master_otu_table_fp)
+    commands.append([('Merge OTU tables', merge_otu_tables_cmd)])
+    
+    # Clean-up temporary otu tables
+    clean_up_cmd = 'rm %s %s' % (otu_table_fp, ref_otu_table_fp)
+    commands.append([('Clean up temp OTU tables', clean_up_cmd)])
+    
+    # Pick representative sequences preferring the reference sequences
+    rep_seq_path = '%s/%s_rep_seqs.fasta' % (pick_otu_dir,input_seqs_basename)
+    try:
+        params_str = get_params_str(params['pick_rep_set'])
+    except KeyError:
+        params_str = ''
+    # Build the OTU picking command
+    pick_rep_set_cmd = '%s %s/pick_rep_set.py -f %s -i %s -o %s -r %s %s' %\
+     (python_exe_fp, script_dir, input_seqs_fp, otu_fp, 
+      rep_seq_path, refseqs_fp, params_str)
+    commands.append([('Pick representative set', pick_rep_set_cmd)])
+    
+    # Filter rep set
+    filtered_rep_seq_path =\
+     '%s/%s_rep_seqs_nc_only.fna' % (pick_otu_dir,input_seqs_basename)
+    filter_rep_set_cmd = '%s %s/filter_fasta.py -f %s -o %s -p %s' %\
+     (python_exe_fp, script_dir,rep_seq_path,
+      filtered_rep_seq_path,new_cluster_prefix)
+    commands.append([('Filter rep set to new clusters only',
+                       filter_rep_set_cmd)])
+    
+    # chimera check
+    chimera_check_output = \
+     '%s/%s_chimeric_nc_only.txt' % (pick_otu_dir,input_seqs_basename)
+    try:
+        params_str = get_params_str(params['identify_chimeric_seqs'])
+    except KeyError:
+        params_str = ''
+    chimera_check_cmd = \
+     '%s %s/identify_chimeric_seqs.py -i %s -a %s -o %s %s' %\
+     (python_exe_fp, script_dir, filtered_rep_seq_path,
+      chimera_slayer_template_alignment, chimera_check_output,
+      params_str)
+    commands.append([('Chimera check sequences',
+                       chimera_check_cmd)])
+    
+    # Filter to remove chimeric sequences
+    chimera_filtered_fasta =\
+     '%s/%s_rep_seqs_non_chimeric.fasta' % (pick_otu_dir,input_seqs_basename)
+    filter_chimeric_seqs_cmd = \
+     '%s %s/filter_fasta.py -f %s -o %s -s %s -n' %\
+     (python_exe_fp, script_dir, filtered_rep_seq_path, chimera_filtered_fasta,
+      chimera_check_output)
+    commands.append([('Filter to remove chimeric sequences',
+                       filter_chimeric_seqs_cmd)])
+    
+    # PyNAST align
+    pynast_dir = '%s/pynast_aligned_seqs' % pick_otu_dir
+    aln_fp = '%s/%s_rep_seqs_non_chimeric_aligned.fasta' %\
+     (pynast_dir,input_seqs_basename)
+    try:
+        # Only valid alignment method is pynast, so we'll pass it
+        # explicitly
+        del params['alignment_method']
+        params_str = ' %s' % get_params_str(d)
+    except KeyError:
+        params_str = ''
+    
+    if parallel:
+        # Grab the parallel-specific parameters
+        try:
+            params_str += get_params_str(params['parallel'])
+        except KeyError:
+            pass
+        
+        # Build the parallel pynast alignment command
+        align_seqs_cmd = '%s %s/parallel_align_seqs_pynast.py -i %s -o %s -T %s' %\
+         (python_exe_fp, script_dir, chimera_filtered_fasta, pynast_dir, params_str)
+    else:
+        # Build the pynast alignment command
+        align_seqs_cmd = '%s %s/align_seqs.py -i %s -o %s -m pynast %s' %\
+         (python_exe_fp, script_dir, chimera_filtered_fasta, pynast_dir, params_str)
+    commands.append([\
+     ('Align non-chimeric representative sequences', align_seqs_cmd)])
+    
+    
+    # Merge the aligned reference sequences and the aligned 
+    merged_alignment_fp = '%s/all_aligned.fasta' % pynast_dir
+    merge_alignments_command = 'cat %s %s >> %s' %\
+     (refseqs_aligned_fp, aln_fp, merged_alignment_fp)
+    commands.append([('Merge reference alignment and new clusters alignment',
+                      merge_alignments_command)])
+    
+    
+    # Lanemask
+    filtered_aln_fp = '%s/all_aligned_pfiltered.fasta' % pynast_dir
+    try:
+        params_str = get_params_str(params['filter_alignment'])
+    except KeyError:
+        params_str = ''
+    # Build the alignment filtering command
+    filter_alignment_cmd = '%s %s/filter_alignment.py -o %s -i %s %s' %\
+     (python_exe_fp, script_dir, pynast_dir, merged_alignment_fp, params_str)
+    commands.append([('Filter alignment', filter_alignment_cmd)])
+    
+    # Build tree
+    phylogeny_dir = '%s/%s_phylogeny' %\
+     (pynast_dir, params['make_phylogeny']['tree_method'])
+    try:
+        makedirs(phylogeny_dir)
+    except OSError:
+        pass
+    tree_fp = '%s/%s_all.tre' % (phylogeny_dir,input_seqs_basename)
+    log_fp = '%s/%s_all_phylogeny.log' % (phylogeny_dir,input_seqs_basename)
+    try:
+        params_str = get_params_str(params['make_phylogeny'])
+    except KeyError:
+        params_str = ''
+    make_phylogeny_cmd = '%s %s/make_phylogeny.py -i %s -o %s -l %s %s' %\
+     (python_exe_fp, script_dir, filtered_aln_fp, tree_fp, log_fp,\
+     params_str)
+    commands.append([('Build the combined tree', make_phylogeny_cmd)])
+    
+    # Compute gain
+    beta_diversity_metrics = params['beta_diversity']['metrics'].split(',')
+    try:
+        params_str = get_params_str(params['beta_diversity'])
+    except KeyError:
+        params_str = ''
+    params_str = '%s -t %s' % (params_str,tree_fp)
+    # Build the beta-diversity command
+    beta_div_cmd = '%s %s/beta_diversity.py -i %s -o %s %s' %\
+     (python_exe_fp, script_dir, master_otu_table_fp, output_dir, params_str)
+    commands.append(\
+     [('Beta Diversity (%s)' % ', '.join(beta_diversity_metrics), beta_div_cmd)])
+    
+    
+    # Call the command handler on the list of commands
+    command_handler(commands,status_update_callback,logger)
+
+## End Gain Calculation workflow and related functions
 
 ## Begin SRA submission workflow and related functions
 
