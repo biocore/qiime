@@ -941,18 +941,43 @@ def run_jackknifed_beta_diversity(otu_table_fp,tree_fp,seqs_per_sample,
 ## Begin Gain Calculation workflow and related functions
 
 def run_gain_calculations(
-    input_seqs_fp,
-    refseqs_fp,
-    refseqs_aligned_fp,
-    chimera_slayer_template_alignment,
-    pynast_template_alignment,
-    output_dir,
-    params,
-    qiime_config,
-    command_handler,
-    parallel=False,
-    status_update_callback=print_to_stdout):
+        input_seqs_fp,
+        refseqs_fp,
+        refseqs_aligned_fp,
+        chimera_slayer_template_alignment,
+        pynast_template_alignment,
+        output_dir,
+        params,
+        qiime_config,
+        command_handler,
+        parallel=False,
+        status_update_callback=print_to_stdout):
+    """ Compute gain (or amount of new diversity) for a pair of sequences
     
+        We have a sequence collection S (input_seqs_fp), and we want to know 
+        how much diversity that adds to another sequence collection R 
+        (refseqs_fp). For example, S might be some new sample of suspected
+        novel diversity, and R might be the latest build of greengenes. The
+        workflow runs as follows:
+
+        1) Apply uclust_ref to S using R as the reference set, and allowing
+         for new clusters.
+        2) Create an 'OTU table' for R and S, to represent the reference
+         seqs and the new clusters. This is an unusual way to build the
+         OTU table, but it allows us to use the beta_diversity.py script
+         directly for the gain calculation.
+        3) Pick representative sequences for all OTUs.
+        4) Filter the representative sequences to contain only the new 
+         clusters (these are the only ones that represent gain).
+        5) Align sequences from (3) with PyNAST.
+        6) Chimera check alignment from (4) and remove chimeric sequences
+         from the alignment.
+        7) Apply lanemask.
+        8) Apply FastTree, defaults to 1000 bootstrap iterations.
+        9) Compute unifrac_g on the OTU table to compute phylogenetic gain.
+    
+    """
+    # Prepare the input data
     input_seqs_dir, input_seqs_filename = split(input_seqs_fp)
     input_seqs_basename, input_seqs_ext = splitext(input_seqs_filename)
     refseqs_dir, refseqs_filename = split(refseqs_fp)
@@ -960,11 +985,13 @@ def run_gain_calculations(
     commands = []
     python_exe_fp = qiime_config['python_exe_fp']
     script_dir = get_qiime_scripts_dir()
+    # initiate logging
     logger = WorkflowLogger(generate_log_fp(output_dir),
                             params=params,
                             qiime_config=qiime_config)
     
-    # Write the reference collection otu table
+    
+    ## Write the reference collection (R) otu table
     ref_otu_table_fp = '%s/ref_otu_table.txt' % output_dir
     seq_ids = []
     for seq_id, seq in MinimalFastaParser(open(refseqs_fp,'U')):
@@ -974,6 +1001,8 @@ def run_gain_calculations(
     ref_otu_table_f.write(otu_table_s)
     ref_otu_table_f.close()
     
+    
+    ## Pick OTUs
     pick_otu_dir = '%s/ucr_picked_otus/' % output_dir
     otu_fp = '%s/%s_otus.txt' % (pick_otu_dir,input_seqs_basename)
     
@@ -987,29 +1016,32 @@ def run_gain_calculations(
         params_str = get_params_str(params['pick_otus'])
     except KeyError:
         params_str = ''
-    # Build the OTU picking command
     pick_otus_cmd = '%s %s/pick_otus.py -m uclust_ref -i %s -o %s -r %s %s' %\
      (python_exe_fp, script_dir, input_seqs_fp, pick_otu_dir, refseqs_fp, params_str)
     commands.append([('Pick OTUs', pick_otus_cmd)])
     
-    # Write the new OTU table
+    
+    ## Write the sequence collection (S) OTU table
     otu_table_fp = '%s/%s_otu_table.txt' % (pick_otu_dir,input_seqs_basename)
     make_otu_table_cmd = '%s %s/make_otu_table.py -i %s -o %s' %\
      (python_exe_fp, script_dir, otu_fp, otu_table_fp)
     commands.append([('Make OTU table', make_otu_table_cmd)])
     
-    # Merge OTU tables
+    
+    ## Merge OTU tables for R and S
     master_otu_table_fp = '%s/otu_table.txt' % output_dir
     merge_otu_tables_cmd = '%s %s/merge_otu_tables.py -i %s,%s -o %s' %\
      (python_exe_fp, script_dir, otu_table_fp, ref_otu_table_fp, 
       master_otu_table_fp)
     commands.append([('Merge OTU tables', merge_otu_tables_cmd)])
     
-    # Clean-up temporary otu tables
+    
+    ## Clean-up temporary otu tables (individual R and S tables)
     clean_up_cmd = 'rm %s %s' % (otu_table_fp, ref_otu_table_fp)
     commands.append([('Clean up temp OTU tables', clean_up_cmd)])
     
-    # Pick representative sequences preferring the reference sequences
+    
+    ## Pick representative sequences, preferring the reference sequences
     rep_seq_path = '%s/%s_rep_seqs.fasta' % (pick_otu_dir,input_seqs_basename)
     try:
         params_str = get_params_str(params['pick_rep_set'])
@@ -1020,7 +1052,9 @@ def run_gain_calculations(
       rep_seq_path, refseqs_fp, params_str)
     commands.append([('Pick representative set', pick_rep_set_cmd)])
     
-    # Filter rep set
+    
+    ## Filter the representative sequence collection to retain only
+    ## new clusters
     filtered_rep_seq_path =\
      '%s/%s_new_clusters_only.fasta' % (pick_otu_dir,input_seqs_basename)
     filter_rep_set_cmd = '%s %s/filter_fasta.py -f %s -o %s -p %s' %\
@@ -1029,7 +1063,8 @@ def run_gain_calculations(
     commands.append([('Filter rep set to new clusters only',
                        filter_rep_set_cmd)])
     
-    # PyNAST align
+    
+    ## PyNAST align the representative sequences
     pynast_dir = '%s/pynast_aligned_seqs' % pick_otu_dir
     aln_fp = '%s/%s_new_clusters_only_aligned.fasta' %\
      (pynast_dir,input_seqs_basename)
@@ -1058,22 +1093,39 @@ def run_gain_calculations(
     commands.append([\
      ('Align representative sequences', align_seqs_cmd)])
     
-    # chimera check
+    
+    ## Chimera check the alignment
     chimera_seqs_fp = \
      '%s/%s_chimeric_seq_ids.txt' % (pick_otu_dir,input_seqs_basename)
     try:
-        params_str = get_params_str(params['identify_chimeric_seqs'])
+        # Only valid method is ChimeraSlayer, so we'll pass it
+        # explicitly
+        del params['identify_chimeric_seqs']['chimera_detection_method']
+        params_str = ' %s' % get_params_str(params['identify_chimeric_seqs'])
     except KeyError:
         params_str = ''
-    chimera_check_cmd = \
-     '%s %s/identify_chimeric_seqs.py -i %s -a %s -o %s %s' %\
-     (python_exe_fp, script_dir, aln_fp,
-      chimera_slayer_template_alignment, chimera_seqs_fp,
-      params_str)
+    if parallel:
+        # Grab the parallel-specific parameters
+        try:
+            params_str += get_params_str(params['parallel'])
+        except KeyError:
+            pass
+        chimera_check_cmd = \
+         '%s %s/parallel_identify_chimeric_seqs.py -i %s -a %s -o %s -T %s' %\
+         (python_exe_fp, script_dir, aln_fp,
+          chimera_slayer_template_alignment, chimera_seqs_fp,
+          params_str)
+    else:
+        chimera_check_cmd = \
+         '%s %s/identify_chimeric_seqs.py -i %s -a %s -o %s %s' %\
+         (python_exe_fp, script_dir, aln_fp,
+          chimera_slayer_template_alignment, chimera_seqs_fp,
+          params_str)
     commands.append([('Chimera check aligned sequences',
-                       chimera_check_cmd)])
+                           chimera_check_cmd)])
     
-    # Filter to remove chimeric sequences
+    
+    ## Filter alignment to remove chimeric sequences
     chimera_filtered_fasta =\
      '%s/%s_non_chimeric_aligned.fasta' % (pick_otu_dir,input_seqs_basename)
     filter_chimeric_seqs_cmd = \
@@ -1083,25 +1135,27 @@ def run_gain_calculations(
     commands.append([('Filter alignment to remove chimeric sequences',
                        filter_chimeric_seqs_cmd)])
     
-    # Merge the aligned reference sequences and the aligned 
+    
+    ## Merge the aligned reference sequences and the aligned sequence
+    ## collection into a single alignment
     merged_alignment_fp = '%s/all_aligned.fasta' % pynast_dir
     merge_alignments_command = 'cat %s %s >> %s' %\
      (refseqs_aligned_fp, chimera_filtered_fasta, merged_alignment_fp)
     commands.append([('Merge reference alignment and new clusters alignment',
                       merge_alignments_command)])
     
-    # Lanemask
+    ## Lanemask the alignment
     filtered_aln_fp = '%s/all_aligned_pfiltered.fasta' % pynast_dir
     try:
         params_str = get_params_str(params['filter_alignment'])
     except KeyError:
         params_str = ''
-    # Build the alignment filtering command
     filter_alignment_cmd = '%s %s/filter_alignment.py -o %s -i %s %s' %\
      (python_exe_fp, script_dir, pynast_dir, merged_alignment_fp, params_str)
     commands.append([('Filter alignment', filter_alignment_cmd)])
     
-    # Build tree
+    
+    ## Build the phylogenetic tree
     phylogeny_dir = '%s/%s_phylogeny' %\
      (pynast_dir, params['make_phylogeny']['tree_method'])
     try:
@@ -1119,14 +1173,14 @@ def run_gain_calculations(
      params_str)
     commands.append([('Build the combined tree', make_phylogeny_cmd)])
     
-    # Compute gain
+    
+    ## Compute gain using beta_diversity
     beta_diversity_metrics = params['beta_diversity']['metrics'].split(',')
     try:
         params_str = get_params_str(params['beta_diversity'])
     except KeyError:
         params_str = ''
     params_str = '%s -t %s' % (params_str,tree_fp)
-    # Build the beta-diversity command
     beta_div_cmd = '%s %s/beta_diversity.py -i %s -o %s %s' %\
      (python_exe_fp, script_dir, master_otu_table_fp, output_dir, params_str)
     commands.append(\
