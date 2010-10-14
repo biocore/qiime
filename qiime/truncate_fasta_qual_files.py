@@ -139,20 +139,21 @@ def write_trunc_qual(trunc_qual_scores,
     
     for label in seq_order:
         trunc_label = label.split()[0].strip()
+        current_trunc_qual_scores = trunc_qual_scores[trunc_label]
         qual_out.write(">%s\n" % label)
-        qual_scores = ""
+        current_qual_scores_lines = []
         # Quality score format is a string of 60 base calls, followed by a 
         # newline, until the last N bases are written
         for slice in range(0, len(trunc_qual_scores[trunc_label]),\
          qual_line_size):
-            current_segment = trunc_qual_scores[trunc_label][slice:slice +\
+            current_segment = current_trunc_qual_scores[slice:slice +\
              qual_line_size]
-            current_segment =\
-             " ".join(str(score) for score in current_segment) + "\n"
+            current_qual_scores_lines.append(
+             " ".join(str(score) for score in current_segment))
             
-            qual_scores += current_segment
             
-        qual_out.write(qual_scores)
+        qual_out.write('\n'.join(current_qual_scores_lines))
+        qual_out.write('\n')
             
 
 
