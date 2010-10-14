@@ -257,6 +257,21 @@ class WorkflowTests(TestCase):
         log_fp = glob(join(self.wf_out,'log*.txt'))[0]
         self.assertTrue(getsize(log_fp) > 0)
         
+        # Check that the chimeric seq was identified and doesn't show up
+        # in the final tree
+        chimeric_seq_ids_fp =\
+         glob(join(self.wf_out,'ucr_picked_otus','*chimeric_seq_ids.txt'))[0]
+        expected_chimeric_line = "GainedOTU2\t105109\t114239"
+        actual_chimeric_line = [l.strip() for l in open(chimeric_seq_ids_fp)][0]
+        # seq was identified
+        self.assertEqual(actual_chimeric_line,expected_chimeric_line)
+        # seq was removed from alignment/tree
+        tree_fp = glob(join(self.wf_out,'ucr_picked_otus','pynast_aligned_seqs',
+         'fasttree_phylogeny','*_all.tre'))[0]
+        t = LoadTree(tree_fp)
+        self.assertFalse('GainedOTU2' in t.getTipNames(),
+                         "Chimeric sequence is still in tree.")
+        
         # Confirm that distances are as expected
         expected_sids = ['in','reference']
         expected_unifrac_g = array([[0.0,0.3502],[0.6498,0.0]])
@@ -288,6 +303,21 @@ class WorkflowTests(TestCase):
         # Check that the log file is created and has size > 0
         log_fp = glob(join(self.wf_out,'log*.txt'))[0]
         self.assertTrue(getsize(log_fp) > 0)
+        
+        # Check that the chimeric seq was identified and doesn't show up
+        # in the final tree
+        chimeric_seq_ids_fp =\
+         glob(join(self.wf_out,'ucr_picked_otus','*chimeric_seq_ids.txt'))[0]
+        expected_chimeric_line = "GainedOTU2\t105109\t114239"
+        actual_chimeric_line = [l.strip() for l in open(chimeric_seq_ids_fp)][0]
+        # seq was identified
+        self.assertEqual(actual_chimeric_line,expected_chimeric_line)
+        # seq was removed from alignment/tree
+        tree_fp = glob(join(self.wf_out,'ucr_picked_otus','pynast_aligned_seqs',
+         'fasttree_phylogeny','*_all.tre'))[0]
+        t = LoadTree(tree_fp)
+        self.assertFalse('GainedOTU2' in t.getTipNames(),
+                         "Chimeric sequence is still in tree.")
         
         # Confirm that distances are as expected
         expected_sids = ['in','reference']
