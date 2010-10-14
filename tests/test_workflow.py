@@ -261,10 +261,10 @@ class WorkflowTests(TestCase):
         # in the final tree
         chimeric_seq_ids_fp =\
          glob(join(self.wf_out,'ucr_picked_otus','*chimeric_seq_ids.txt'))[0]
-        expected_chimeric_line = "GainedOTU2\t105109\t114239"
+        expected_chimeric_line_choices = ["GainedOTU2\t105109\t114239","GainedOTU2\t114239\t105109"]
         actual_chimeric_line = [l.strip() for l in open(chimeric_seq_ids_fp)][0]
         # seq was identified
-        self.assertEqual(actual_chimeric_line,expected_chimeric_line)
+        self.assertTrue(actual_chimeric_line in expected_chimeric_line_choices,"Expected chimera line not found")
         # seq was removed from alignment/tree
         tree_fp = glob(join(self.wf_out,'ucr_picked_otus','pynast_aligned_seqs',
          'fasttree_phylogeny','*_all.tre'))[0]
@@ -308,10 +308,10 @@ class WorkflowTests(TestCase):
         # in the final tree
         chimeric_seq_ids_fp =\
          glob(join(self.wf_out,'ucr_picked_otus','*chimeric_seq_ids.txt'))[0]
-        expected_chimeric_line = "GainedOTU2\t105109\t114239"
+        expected_chimeric_line_choices = ["GainedOTU2\t105109\t114239","GainedOTU2\t114239\t105109"]
         actual_chimeric_line = [l.strip() for l in open(chimeric_seq_ids_fp)][0]
         # seq was identified
-        self.assertEqual(actual_chimeric_line,expected_chimeric_line)
+        self.assertTrue(actual_chimeric_line in expected_chimeric_line_choices,"Expected chimera line not found")
         # seq was removed from alignment/tree
         tree_fp = glob(join(self.wf_out,'ucr_picked_otus','pynast_aligned_seqs',
          'fasttree_phylogeny','*_all.tre'))[0]
