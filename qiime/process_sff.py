@@ -23,6 +23,17 @@ def check_sffinfo():
         raise ApplicationNotFoundError,\
          "sffinfo is not in $PATH. Is it installed? Have you added it to $PATH?"
 
+def check_sfffile():
+    """Raise error if sfffile is not in $PATH """
+    if not app_path('sfffile'):
+        raise ApplicationNotFoundError,\
+        "sfffile is not in $PATH. Is it installed? Have you added it to $PATH?"
+
+def convert_Ti_to_FLX(filename,output_pathname):
+    """Converts Titanium SFF to FLX length reads."""
+    check_sfffile()
+    system('sfffile -flx -o %s %s' % (output_pathname,filename))
+
 def make_flow_txt(filename,output_pathname):
     """Makes flowgram file from sff file."""
     check_sffinfo()
@@ -38,11 +49,16 @@ def make_qual(filename,output_pathname):
     check_sffinfo()
     system('sffinfo -q %s > %s.qual' % (filename, output_pathname))
 
-def prep_sffs_in_dir(pathname,make_flowgram, output_pathname):
+def prep_sffs_in_dir(pathname,make_flowgram, output_pathname,convert_to_flx):
     """Converts all sffs in dir to fasta/qual."""
     check_sffinfo()
 
     if isfile(pathname):
+        if convert_to_flx:
+            FLX_fname=splitext(pathname)[0]+'_FLX.sff'
+            convert_Ti_to_FLX(pathname,FLX_fname)
+            pathname=FLX_fname
+
         make_fna(pathname,output_pathname)
         make_qual(pathname,output_pathname)
         if make_flowgram:
@@ -50,6 +66,11 @@ def prep_sffs_in_dir(pathname,make_flowgram, output_pathname):
     elif isdir(pathname):
         for name in listdir(pathname):
             if name.endswith('.sff'):
+                if convert_to_flx:
+                    FLX_fname=splitext(pathname)[0]+'_FLX.sff'
+                    convert_Ti_to_FLX(pathname,FLX_fname)
+                    pathname=FLX_fname
+                    
                 make_fna(join(pathname,name),join(output_pathname, \
                                                     splitext(name)[0]))
                 make_qual(join(pathname,name),join(output_pathname, \

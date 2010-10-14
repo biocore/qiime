@@ -5,7 +5,7 @@ import tempfile
 from cogent.util.unit_test import TestCase, main
 from cogent.app.util import ApplicationNotFoundError
 from cogent.util.misc import app_path
-from qiime.process_sff import (make_flow_txt,make_fna, make_qual, prep_sffs_in_dir)
+from qiime.process_sff import (make_flow_txt,make_fna, make_qual, prep_sffs_in_dir,convert_Ti_to_FLX)
 from qiime.util import get_qiime_project_dir
 
 """Tests of the process_sff.py file.
@@ -40,6 +40,13 @@ class TopLevelTests(TestCase):
     def tearDown(self):
         shutil.rmtree(self.sff_dir)
     '''
+    def test_convert_Ti_to_FLX(self):
+        """test_make_flow_txt should make flowgram file as expected"""
+        convert_Ti_to_FLX(self.sff_fp,self.outpath+'_FLX.sff')
+        expected_fp = os.path.join(self.sff_dir,'test_FLX.sff')
+        fsize=os.path.getsize(expected_fp)
+        self.failIfEqual(0, fsize)
+    
     def test_make_flow_txt(self):
         """test_make_flow_txt should make flowgram file as expected"""
         make_flow_txt(self.sff_fp,self.outpath)
@@ -72,7 +79,7 @@ class TopLevelTests(TestCase):
 
     def test_prep_sffs_in_dir(self):
         """test_prep_sffs_in_dir should make fasta/qual from sffs."""
-        prep_sffs_in_dir(self.sff_dir,False,self.sff_dir)
+        prep_sffs_in_dir(self.sff_dir,False,self.sff_dir,False)
         
         # Check fna file
         expected_fp = os.path.join(self.sff_dir, 'test.fna')

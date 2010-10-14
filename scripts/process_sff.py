@@ -35,6 +35,7 @@ script_info['required_options'] = [\
 ]
 script_info['optional_options']=[\
     make_option('-f', '--make_flowgram', action='store_true', help='this allows for generating a flowgram file. [default: %default]', default=False),
+    make_option('-t', '--convert_to_FLX', action='store_true', help='this converts Titanium length read to FLX length. [default: %default]', default=False),
     options_lookup['output_dir'],
 ]
 script_info['version'] = __version__
@@ -64,7 +65,8 @@ def main():
         elif isfile(opts.input_dir):
             output_pathname=splitext(opts.input_dir)[0]
             
-    prep_sffs_in_dir(opts.input_dir,opts.make_flowgram,output_pathname)
+    prep_sffs_in_dir(opts.input_dir,opts.make_flowgram,output_pathname,\
+                        opts.convert_to_FLX)
 
 if __name__ == "__main__":
     main()
