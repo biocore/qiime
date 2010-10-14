@@ -336,6 +336,57 @@ class PrefixSuffixOtuPickerTests(TestCase):
             prefix_length=4,suffix_length=4)
         self.assertEqual(actual,expected)
         
+    def test_call_extra_long_lengths(self):
+        """Prefix/suffix OTU Picker functions as expected
+        """
+        seqs = [\
+         ('s1  some description',
+          'ACGTAATGGTCCCCCCCCCGGGGGGGGCCCCCCGGG'),\
+         ('s2','ATTTAATGGT'),\
+         ('s3','ACGTAATTTT'),\
+         ('s4','AAATAAAAA'),\
+         ('s5','ACGTTGGT'),\
+         ('s6','ACGTATTTTAATTTGGCATGGT'),\
+         ('s7','ACGTATTTTAATTTGGCATGG'),\
+         ('s1_dup',
+          'ACGTAATGGTCCCCCCCCCGGGGGGGGCCCCCCGGG'),\
+         ('s2_dup','ATTTAATGGT'),\
+        ]
+        seq_path = get_tmp_filename(
+            prefix='PrefixSuffixOtuPickerTest_', suffix='.fasta')
+        self._files_to_remove = [seq_path]
+        f = open(seq_path, 'w')
+        f.write('\n'.join(['>%s\n%s' % s for s in seqs]))
+        f.close()
+        expected = {1:['s1','s1_dup'],\
+                    2:['s2','s2_dup'],\
+                    3:['s3'],\
+                    4:['s4'],\
+                    5:['s5'],\
+                    6:['s6'],
+                    7:['s7']}
+        
+        # long prefix collapses identical sequences
+        actual = self.otu_picker(seq_path,\
+            prefix_length=400,suffix_length=0)
+        actual_clusters = actual.values()
+        expected_clusters = expected.values()
+        self.assertEqualItems(actual_clusters,expected_clusters)
+        
+        # long suffixes collapses identical sequences
+        actual = self.otu_picker(seq_path,\
+            prefix_length=0,suffix_length=400)
+        actual_clusters = actual.values()
+        expected_clusters = expected.values()
+        self.assertEqualItems(actual_clusters,expected_clusters)
+        
+        # long prefix and suffixes collapses identical sequences
+        actual = self.otu_picker(seq_path,\
+            prefix_length=400,suffix_length=400)
+        actual_clusters = actual.values()
+        expected_clusters = expected.values()
+        self.assertEqualItems(actual_clusters,expected_clusters)
+        
         
     def test_collapse_exact_matches_prefix_and_suffix(self):
         """Prefix/suffix: collapse_exact_matches fns with pref/suf len > 0
