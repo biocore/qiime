@@ -58,6 +58,7 @@ def prep_sffs_in_dir(pathname,make_flowgram, output_pathname,convert_to_flx):
             FLX_fname=splitext(pathname)[0]+'_FLX.sff'
             convert_Ti_to_FLX(pathname,FLX_fname)
             pathname=FLX_fname
+            output_pathname+='_FLX'
 
         make_fna(pathname,output_pathname)
         make_qual(pathname,output_pathname)
@@ -66,19 +67,16 @@ def prep_sffs_in_dir(pathname,make_flowgram, output_pathname,convert_to_flx):
     elif isdir(pathname):
         for name in listdir(pathname):
             if name.endswith('.sff'):
+                output_pathname=join(output_pathname,splitext(name)[0])
                 if convert_to_flx:
-                    FLX_fname=splitext(pathname)[0]+'_FLX.sff'
+                    FLX_fname=splitext(join(pathname,name))[0]+'_FLX.sff'
                     convert_Ti_to_FLX(pathname,FLX_fname)
                     pathname=FLX_fname
-                    
-                make_fna(join(pathname,name),join(output_pathname, \
-                                                    splitext(name)[0]))
-                make_qual(join(pathname,name),join(output_pathname, \
-                                                    splitext(name)[0]))
+                    output_pathname+='_FLX'
+                make_fna(join(pathname,name),output_pathname)
+                make_qual(join(pathname,name),output_pathname)
                 if make_flowgram:
-                    make_flow_txt(join(pathname,name), \
-                                    join(output_pathname, \
-                                    splitext(name)[0]))
+                    make_flow_txt(join(pathname,name),output_pathname)
     else:
         raise OSError, "The path '%s' is not valid!" % pathname
         
