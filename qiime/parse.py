@@ -648,7 +648,7 @@ def parse_trflp(lines):
     data = []
     non_alphanum_mask = re.compile('[^\w|^\t]')
     # not sure why the above regex doesn't cover the following regex...
-    dash_space_mask = re.compile('[ -]')
+    dash_space_mask = re.compile('[_ -]')
     
     for i, line in enumerate(lines):
         elements = line.strip('\n').split('\t')
@@ -678,8 +678,8 @@ def parse_trflp(lines):
         if sum(current_row)==0: continue
         
         # adding sample header to list
-        sample_ids.append(non_alphanum_mask.sub('',\
-                          dash_space_mask.sub('_',elements[0])))
+        sample_ids.append(non_alphanum_mask.sub('.',\
+                          dash_space_mask.sub('.',elements[0])))
         
         
         
