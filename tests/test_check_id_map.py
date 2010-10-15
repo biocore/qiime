@@ -252,8 +252,32 @@ class TopLevelTests(TestCase):
             ['y','y','>','No','x'],
             ])
         
-        self.assertEqual(check_bad_chars((bad_vals, field_types)),((array([['sample', 'bc', 'ph', 'ctl', 'x'],['x', 'x_', '3', 'Yes', 'x'], ['y', 'y', '_', 'No', 'x']], dtype='|S6'), {'sample': 'uid', 'ctl': ['Yes', 'No'], 'ph': float, 'bc': 'uid'}), 'Removed bad chars from cell x! (now x_) in sample id x, col bc. Location (row, column):\t0,1\nRemoved bad chars from cell > (now _) in sample id y, col ph. Location (row, column):\t1,2'))
+        self.assertEqual(check_bad_chars((bad_vals, field_types)),\
+         ((array([['sample', 'bc', 'ph', 'ctl', 'x'],['x', 'x_', '3', 'Yes', 'x'], ['y', 'y', '_', 'No', 'x']], dtype='|S6'), {'sample': 'uid', 'ctl': ['Yes', 'No'], 'ph': float, 'bc': 'uid'}), 'Removed bad chars from cell x! (now x_) in sample id x, col bc. Location (row, column):\t0,1\nRemoved bad chars from cell > (now _) in sample id y, col ph. Location (row, column):\t1,2'))
 
+    def test_check_bad_chars_meins(self):
+        """ Should enforce MEINS compliance in SampleID column (first column)
+        """
+        field_types = {'bc':'uid','ph':float,'sample':'uid','ctl':['Yes','No']}
+        meins_compliant_data = array([
+            ['#SampleID','Barcode','LinkerPrimerSequence','Treatment','Description'],
+            ['Sample.1','AATCT','CCGTA','Yes','x'],
+            ['TestSubject','ATCCT','CCGTA','No_placebo','x'],
+            ])
+            
+        self.assertEqual(check_bad_chars((meins_compliant_data, field_types)), 
+                ((meins_compliant_data, field_types),''))
+                
+        non_meins_compliant_data = array([
+            ['#SampleID','Barcode','LinkerPrimerSequence','Treatment','Description'],
+            ['Sample_1','AATCT','CCGTA','Yes','x'],
+            ['TestSubject','ATCCT','CCGTA','No','x'],
+            ])
+        
+        self.assertEqual(check_bad_chars((non_meins_compliant_data, field_types)),\
+        ((array([['#SampleID', 'Barcode', 'LinkerPrimerSequence', 'Treatment','Description'], ['Sample.1', 'AATCT', 'CCGTA', 'Yes', 'x'], ['TestSubject', 'ATCCT', 'CCGTA', 'No', 'x']], dtype='|S20'), {'sample': 'uid', 'ctl': ['Yes', 'No'], 'ph': float, 'bc': 'uid'}), 'Removed bad chars from cell Sample_1 (now Sample.1) in sample id Sample.1, col #SampleID. Location (row, column):\t0,0'))
+    
+    
     def test_check_mixed_caps(self):
         """check_mixed_caps should return string of errors for invalid fields"""
         field_types = {'bc':'uid','ph':float,'sample':'uid','ctl':['Yes','No']}

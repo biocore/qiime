@@ -78,6 +78,8 @@ ALLOWED_DESC_CHARS = ALLOWED_CHARS_HEADER + EXTRA_DESC_CHARS
 # Comment line(s) following header should not be used for parsing data
 # Should allow more characters.
 ALLOWED_SUBCAT_CHARS = ALLOWED_CHARS_HEADER + EXTRA_DESC_CHARS
+# SampleID names very restricted to be MIENS compliant
+ALLOWED_SAMPLEID_CHARS = "." + digits + letters
 
 def find_diff_length(items):
     """Return items that differ in length from the first, with indices.
@@ -157,6 +159,8 @@ descr_filter = CharFilter(ALLOWED_DESC_CHARS, "Description Filter",
     default_char='_')
 subcat_filter = CharFilter(ALLOWED_SUBCAT_CHARS, "Subcat Filter", 
     default_char='_')
+sample_id_filter = CharFilter(ALLOWED_SAMPLEID_CHARS, "SampleID Filter",
+    default_char='.')
 
 class DupChecker(object):
     """Checks set of objects for duplicates in canonical representation.
@@ -547,15 +551,36 @@ def check_same_length((data, field_types),col_name=BARCODE_KEY, raw_data=None):
     return (data, field_types), '\n'.join(errors)
 
 
-
-def check_bad_chars((data, field_types), filter_f=subcat_filter, raw_data=None):
-    """Checks all fields for bad chars, removing and warning."""
+def check_sample_id_chars((data, field_types), filter_f=sample_id_filter,
+    raw_data=None):
+    """ Checks Sample IDs for MEINS compliance, only alphanumeric and . chars
+    """
     problems = []
     headers, body = data[0], data[1:]
 
     for i, row in enumerate(body):
         for j, val in enumerate(row):
             new_val, e = filter_f.resultAndError(val)
+            if e:
+                row[j] = new_val
+                problems.append(
+            "Removed bad chars from cell %s (now %s) in sample id %s, col %s." %
+             (val, new_val, row[0], headers[j]) + " Location (row, column):"+\
+             "\t%d,%d" % (i,j))
+    return (data, field_types), '\n'.join(problems)
+
+def check_bad_chars((data, field_types), filter_f=descr_filter,
+    filter_sample_id=sample_id_filter, raw_data=None):
+    """Checks all fields for bad chars, removing and warning."""
+    problems = []
+    headers, body = data[0], data[1:]
+
+    for i, row in enumerate(body):
+        for j, val in enumerate(row):
+            if j==0:
+                new_val, e = filter_sample_id.resultAndError(val)
+            else:
+                new_val, e = filter_f.resultAndError(val)
             if e:
                 row[j] = new_val
                 problems.append(
@@ -815,6 +840,7 @@ STANDARD_COL_CHECKS = [
         (check_bad_chars, 'warning'),
         (check_mixed_caps, 'warning'),
         ]
+
         
 
 BARCODE_COL_CHECKS = [(check_same_length, 'warning')]
@@ -924,8 +950,8 @@ def process_id_map(infile, disable_primer_check=False, is_barcoded=True, \
         col_headers = headers
         data.insert(0, headers)
         if run_description:
-        	for n in range(len(run_description)):
-        		run_description[n] = run_description[n].replace('\n','')
+            for n in range(len(run_description)):
+                run_description[n] = run_description[n].replace('\n','')
         # Need to replace newline characters in data
         for row in range(len(data)):
             for column in range(len(data[row])):
@@ -995,6 +1021,8 @@ def process_id_map(infile, disable_primer_check=False, is_barcoded=True, \
     run_checks((sample_descriptions, sample_ids,run_description, \
      ), sample_description_checks, problems, raw_data)
      
+
+    
     #check primers,barcodes for valid IUPAC DNA characters
     primers, barcodes = get_primers_barcodes(data, is_barcoded, \
      disable_primer_check)
@@ -1086,7 +1114,7 @@ def write_logfile(errors, warnings, log_filepath, mapping_filepath):
 def check_mapping_file(infile_name, output_dir, has_barcodes, char_replace, \
  verbose, var_len_barcodes, disable_primer_check):
     """ Central program function for checking mapping file """
-	
+
     
     headers, id_map, description_map, run_description, errors, warnings = \
      process_id_map(open(infile_name, 'U'), disable_primer_check,

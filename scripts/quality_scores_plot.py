@@ -34,6 +34,10 @@ position, so that one may easily visualize how sequence length drops off.
 A dotted line shows the cut-off point for a score to be acceptable (default
 is 25).
 
+An text file logging the average, standard deviation, and base count 
+for each base position is also generated.  These three sections are comma 
+separated.
+
 The truncate_fasta_qual_files.py module can be used to create truncated
 versions of the input fasta and quality score files.  By using this module
 to assess the beginning of poor quality base calls, one can determine 
