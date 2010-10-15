@@ -17,7 +17,7 @@ from cogent.app.util import get_tmp_filename
 from cogent.util.misc import remove_files
 
 from qiime.quality_scores_plot import generate_histogram,\
- plot_qual_report, get_qual_stats, bin_qual_scores
+ plot_qual_report, get_qual_stats, bin_qual_scores, write_qual_report
 from qiime.util import create_dir
 
 class QualityScoresPlotTests(TestCase):
@@ -47,7 +47,7 @@ class QualityScoresPlotTests(TestCase):
             rmtree('/tmp/test_dir_qual_scores/')
             
     def test_generate_histogram(self):
-        """ No errors when calling function, creates output file"""
+        """ No errors when calling function, creates output files"""
         
         # Cannot test content of graphics file, only successful execution
         
@@ -58,6 +58,51 @@ class QualityScoresPlotTests(TestCase):
         # Should not raise an error with good data
         
         generate_histogram(self.qual_fp, output_dir)
+        
+        expected_outfile = '/tmp/test_dir_qual_scores/quality_scores_plot.pdf'
+        
+        self.assertTrue(isfile(expected_outfile))
+        
+    def test_write_qual_repot(self):
+        """ Writes data to output text file properly """
+        
+        
+        output_dir = '/tmp/test_dir_qual_scores/'
+        
+        create_dir(output_dir)
+        
+        qual_bins = [[1, 2, 6], [1, 2, 3], [2, 4], [4]]
+        
+        expected_ave_bins = [3.00, 2.00, 3.00, 4.00]
+        expected_std_dev_bins = [2.16, 0.816, 1.0, 0]
+        expected_total_bases_bins = [3, 3, 2, 1]
+        
+        write_qual_report(expected_ave_bins, expected_std_dev_bins,
+         expected_total_bases_bins, output_dir)
+        
+        # Test text file output for proper data
+        text_output_fp = "/tmp/test_dir_qual_scores/quality_bins.txt"
+        
+        text_output_f = open(text_output_fp, "U")
+        
+        actual_text_output = [line.strip() for line in text_output_f]
+        
+        ave_bin_index = 1
+        std_dev_bin_index = 3
+        total_bases_index = 5
+        
+        actual_bins_ave =\
+         [float(f) for f in actual_text_output[ave_bin_index].split(',')]
+        actual_bins_std =\
+         [float(f) for f in actual_text_output[std_dev_bin_index].split(',')]
+        actual_bins_total_bases =\
+         [float(f) for f in actual_text_output[total_bases_index].split(',')]
+        
+
+        self.assertEqual(actual_bins_ave, expected_ave_bins)
+        self.assertEqual(actual_bins_std, expected_std_dev_bins)
+        self.assertEqual(actual_bins_total_bases, expected_total_bases_bins)
+        
         
         
         
@@ -103,7 +148,7 @@ class QualityScoresPlotTests(TestCase):
         
         
     def test_plot_qual_report(self):
-        """ Is called without error, creates output file """
+        """ Is called without error, creates output file correctly """
         
         output_dir = '/tmp/test_dir_qual_scores/'
         
@@ -118,9 +163,9 @@ class QualityScoresPlotTests(TestCase):
         plot_qual_report(ave_bins, std_dev_bins, total_bases_bins, score_min,
          output_dir)
         
-        expected_outfile = '/tmp/test_dir_qual_scores/quality_scores_plot.pdf'
         
-        self.assertTrue(isfile(expected_outfile))
+        
+        
         
         
         

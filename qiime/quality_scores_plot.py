@@ -143,7 +143,34 @@ def plot_qual_report(ave_bins,
     savefig(outfile_name)
 
     
+def write_qual_report(ave_bins,
+                      std_dev_bins,
+                      total_bases_bins,
+                      output_dir):
+    """ Writes data in bins to output text file
     
+    ave_bins: list with average quality score for each base position
+    std_dev_bins: list with standard deviation for each base position
+    total_bases_bins: list with total counts of bases for each position
+    output_dir: output directory
+    """
+    
+    outfile_name = output_dir + "/quality_bins.txt"
+    
+    outfile = open(outfile_name, "w")
+    
+    outfile.write("# Average quality score bins\n")
+    
+    outfile.write(",".join(str("%2.3f" % ave) for ave in ave_bins) + "\n")
+    
+    outfile.write("# Standard deviation bins\n")
+    
+    outfile.write(",".join(str("%2.3f" % std) for std in std_dev_bins) + "\n")
+    
+    outfile.write("# Total bases per nucleotide position bins\n")
+    
+    outfile.write(",".join(str("%d" %\
+     total_bases) for total_bases in total_bases_bins))
     
 def generate_histogram(qual_fp,
                        output_dir,
@@ -169,3 +196,6 @@ def generate_histogram(qual_fp,
     
     plot_qual_report(ave_bins, std_dev_bins, total_bases_bins, score_min,
      output_dir)
+     
+    # Save values to output text file
+    write_qual_report(ave_bins, std_dev_bins, total_bases_bins, output_dir)
