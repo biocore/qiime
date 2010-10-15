@@ -3,7 +3,7 @@
 from cogent.util.misc import app_path
 from cogent.app.util import ApplicationNotFoundError
 from os import listdir, system
-from os.path import splitext, join, isfile, isdir
+from os.path import splitext, join, isfile, isdir,split
 """Converts directory of sff files into fasta and qual files.
 
 Requires that 454's off-instrument apps (sffinfo, sfffile) are on your path.
@@ -33,6 +33,7 @@ def convert_Ti_to_FLX(filename,output_pathname):
     """Converts Titanium SFF to FLX length reads."""
     check_sfffile()
     system('sfffile -flx -o %s %s' % (output_pathname,filename))
+    print 'sfffile -flx -o %s %s' % (output_pathname,filename)
 
 def make_flow_txt(filename,output_pathname):
     """Makes flowgram file from sff file."""
@@ -52,31 +53,53 @@ def make_qual(filename,output_pathname):
 def prep_sffs_in_dir(pathname,make_flowgram, output_pathname,convert_to_flx):
     """Converts all sffs in dir to fasta/qual."""
     check_sffinfo()
-
+    
+    # this statement is for passing a single sff file
     if isfile(pathname):
-        if convert_to_flx:
-            FLX_fname=splitext(pathname)[0]+'_FLX.sff'
-            convert_Ti_to_FLX(pathname,FLX_fname)
-            pathname=FLX_fname
-            output_pathname+='_FLX'
-
-        make_fna(pathname,output_pathname)
-        make_qual(pathname,output_pathname)
-        if make_flowgram:
-            make_flow_txt(pathname,output_pathname)
+        name=split(pathname)[-1]
+        pathname=split(pathname)[:-1][0]
+        # if this an sff do the following
+        if name.endswith('.sff'):
+            new_pathname=join(pathname,name)
+            
+            # if the user wants to convert to FLX len we need to write a new
+            # sff file
+            if convert_to_flx:
+                check_sfffile()
+                FLX_fname=join(output_pathname,splitext(name)[0]+'_FLX.sff')
+                convert_Ti_to_FLX(join(pathname,name),FLX_fname)
+                new_pathname=FLX_fname
+                name=splitext(name)[0]+'_FLX.sff'
+            
+            # write fna and qual files
+            make_fna(new_pathname,join(output_pathname,splitext(name)[0]))
+            make_qual(new_pathname,join(output_pathname,splitext(name)[0]))
+            
+            #write flow file
+            if make_flowgram:
+                make_flow_txt(new_pathname,join(output_pathname,splitext(name)[0]))
+                
+    # this statement is for passing a directory containing sff files
     elif isdir(pathname):
         for name in listdir(pathname):
+            
             if name.endswith('.sff'):
-                output_pathname=join(output_pathname,splitext(name)[0])
+                new_pathname=join(pathname,name)
+                # if the user wants to convert to FLX len we need to write a new
+                # sff file
                 if convert_to_flx:
-                    FLX_fname=splitext(join(pathname,name))[0]+'_FLX.sff'
-                    convert_Ti_to_FLX(pathname,FLX_fname)
-                    pathname=FLX_fname
-                    output_pathname+='_FLX'
-                make_fna(join(pathname,name),output_pathname)
-                make_qual(join(pathname,name),output_pathname)
+                    check_sfffile()
+                    FLX_fname=join(output_pathname,splitext(name)[0]+'_FLX.sff')
+                    convert_Ti_to_FLX(join(pathname,name),FLX_fname)
+                    new_pathname=FLX_fname
+                    name=splitext(name)[0]+'_FLX.sff'
+                
+                # write fna and qual files
+                make_fna(new_pathname,join(output_pathname,splitext(name)[0]))
+                make_qual(new_pathname,join(output_pathname,splitext(name)[0]))
+                #write flow file
                 if make_flowgram:
-                    make_flow_txt(join(pathname,name),output_pathname)
+                    make_flow_txt(new_pathname,join(output_pathname,splitext(name)[0]))
     else:
         raise OSError, "The path '%s' is not valid!" % pathname
         

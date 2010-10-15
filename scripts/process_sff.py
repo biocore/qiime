@@ -43,29 +43,17 @@ script_info['version'] = __version__
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
+    
     if opts.output_dir:
         #try to make the output directory
         try:
             mkdir(opts.output_dir)
         except OSError:
             pass
-            
-        #create the output pathname depending on whether a file is supplied
-        #or a directory
-        if isdir(opts.input_dir):
-            output_pathname=opts.output_dir
-        elif isfile(opts.input_dir):
-            output_pathname=join(opts.output_dir, \
-                                    split(splitext(opts.input_dir)[0])[-1])
     else:
-        #create the output pathname depending on whether a file is supplied
-        #or a directory
-        if isdir(opts.input_dir):
-            output_pathname=opts.input_dir
-        elif isfile(opts.input_dir):
-            output_pathname=splitext(opts.input_dir)[0]
+        opts.output_dir='./'
             
-    prep_sffs_in_dir(opts.input_dir,opts.make_flowgram,output_pathname,\
+    prep_sffs_in_dir(opts.input_dir,opts.make_flowgram,opts.output_dir,\
                         opts.convert_to_FLX)
 
 if __name__ == "__main__":
