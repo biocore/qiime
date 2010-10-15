@@ -114,7 +114,7 @@ Each column header MUST contain alphanumeric (a-z, A-Z and 1-9) and/or underscor
 
 Currently, the user has the ability to define their own column headers, however; QIIME will be adopting the MIENS standard, therefore all column headings MUST correspond the proper MIENS nomenclature (http://gensc.org/gc_wiki/index.php/MIENS). The following details the current mapping file guidelines:
 
-1. The first column header must be "#SampleID", and the data in this column must contain unique (short and meaningful) sample identifiers containing only alphanumeric, period (".") and/or underscore ("_") characters.
+1. The first column header must be "#SampleID", and the data in this column must contain unique (short and meaningful) sample identifiers containing only alphanumeric and period (".") characters.
 2. The second column header must be "BarcodeSequence", where each value in that column corresponds to the barcode used for each sample.  Only IUPAC DNA characters are acceptable.
 3. The third column header must be “LinkerPrimerSequence”, where each value in that column corresponds to the primer used to amplify that sample.  Only IUPAC DNA characters are acceptable.
 4. All subsequent column headers (except the last one) are metadata headers. For example, a "Smoker" column would include either "Yes" or "No". Note that the data in each column is assumed to be categorical unless specified otherwise. Categorical data columns must include at least 2 unique values per column. All metadata must be composed of only alphanumeric, underscore ("_"), period ("."), minus sign ("-"), plus sign ("+") and/or percentage ("%") characters. For missing data, write "NA"; do not leave blanks.
