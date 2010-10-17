@@ -60,17 +60,17 @@ class TopLevelTests(TestCase):
         """_filter_table_samples removes small samples from OTU table
         """
 
-        otu_table = """#Full OTU Counts
-#OTU ID\tsample1\tsample2\tsample3
+        otu_table = """# QIIME v%s OTU table\n#OTU ID\tsample1\tsample2\tsample3
 0\t0\t2\t0
 1\t1\t0\t0
-2\t1\t1\t1""".split('\n')
+2\t1\t1\t1""" % __version__
+        otu_table = otu_table.split('\n')
         result = _filter_table_samples(otu_table, 2)
-        self.assertEqual(result, "#Full OTU Counts\n#OTU ID\tsample1\tsample2\n0\t0\t2\n1\t1\t0\n2\t1\t1")
+        self.assertEqual(result, "# QIIME v%s OTU table\n#OTU ID\tsample1\tsample2\n0\t0\t2\n1\t1\t0\n2\t1\t1" % __version__)
         result = _filter_table_samples(otu_table, 1)
         self.assertEqual(result, '\n'.join(otu_table))
         result = _filter_table_samples(otu_table, 3)
-        self.assertEqual(result, "#Full OTU Counts\n#OTU ID\tsample2\n0\t2\n1\t0\n2\t1")
+        self.assertEqual(result, "# QIIME v%s OTU table\n#OTU ID\tsample2\n0\t2\n1\t0\n2\t1" % __version__)
 
 #run tests if called from command line
 if __name__ == "__main__":

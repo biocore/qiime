@@ -12,7 +12,7 @@ __status__ = "Development"
 
 from cogent.util.unit_test import TestCase, main
 from qiime.make_otu_table import (libs_from_seqids,
-        seqids_from_otu_to_seqid, make_otu_map, remove_otus)
+        seqids_from_otu_to_seqid, make_otu_table, remove_otus)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -28,37 +28,71 @@ class TopLevelTests(TestCase):
         self.assertEqual(seqids_from_otu_to_seqid(otu_to_seqid),
             set(['ABC_0', 'DEF_1', 'GHI_2']))
 
-    def test_make_otu_map_no_taxonomy(self):
-        """make_otu_map should work without supplied taxonomy"""
+
+    def test_make_otu_table_no_taxonomy_legacy(self):
+        """make_otu_table should work without tax (legacy OTU table)"""
         otu_to_seqid ={ '0':['ABC_0','DEF_1'],
                         '1':['ABC_1'],
                         'x':['GHI_2', 'GHI_3','GHI_77'],
                         'z':['DEF_3','XYZ_1']
                         }
-        obs = make_otu_map(otu_to_seqid)
-        exp = """#Full OTU Counts
+        obs = make_otu_table(otu_to_seqid)
+        exp = """# QIIME v%s OTU table
 #OTU ID\tABC\tDEF\tGHI\tXYZ
 0\t1\t1\t0\t0
 1\t1\t0\t0\t0
 x\t0\t0\t3\t0
-z\t0\t1\t0\t1"""
+z\t0\t1\t0\t1""" % __version__
         self.assertEqual(obs, exp)
 
-    def test_make_otu_map_taxonomy(self):
-        """make_otu_map should work with supplied taxonomy"""
+    def test_make_otu_table_taxonomy_legacy(self):
+        """make_otu_table should work wit tax (legacy OTU table)"""
         otu_to_seqid ={ '0':['ABC_0','DEF_1'],
                         '1':['ABC_1'],
                         'x':['GHI_2', 'GHI_3','GHI_77'],
                         'z':['DEF_3','XYZ_1']
                         }
         taxonomy = {'0':'Bacteria;Firmicutes', 'x':'Bacteria;Bacteroidetes'}
-        obs = make_otu_map(otu_to_seqid, taxonomy)
-        exp = """#Full OTU Counts
+        obs = make_otu_table(otu_to_seqid, taxonomy)
+        exp = """# QIIME v%s OTU table
 #OTU ID\tABC\tDEF\tGHI\tXYZ\tConsensus Lineage
 0\t1\t1\t0\t0\tBacteria;Firmicutes
 1\t1\t0\t0\t0\tNone
 x\t0\t0\t3\t0\tBacteria;Bacteroidetes
-z\t0\t1\t0\t1\tNone"""
+z\t0\t1\t0\t1\tNone""" % __version__
+        self.assertEqual(obs, exp)
+
+    def test_make_otu_table_no_taxonomy(self):
+        """make_otu_table should work without tax (new-style OTU table)"""
+        otu_to_seqid ={ '0':['ABC_0','DEF_1'],
+                        '1':['ABC_1'],
+                        'x':['GHI_2', 'GHI_3','GHI_77'],
+                        'z':['DEF_3','XYZ_1']
+                        }
+        obs = make_otu_table(otu_to_seqid, legacy=False)
+        exp = """# QIIME v%s OTU table
+OTU ID\tABC\tDEF\tGHI\tXYZ
+0\t1\t1\t0\t0
+1\t1\t0\t0\t0
+x\t0\t0\t3\t0
+z\t0\t1\t0\t1""" % __version__
+        self.assertEqual(obs, exp)
+
+    def test_make_otu_table_taxonomy(self):
+        """make_otu_table should work wit tax (new-style OTU table)"""
+        otu_to_seqid ={ '0':['ABC_0','DEF_1'],
+                        '1':['ABC_1'],
+                        'x':['GHI_2', 'GHI_3','GHI_77'],
+                        'z':['DEF_3','XYZ_1']
+                        }
+        taxonomy = {'0':'Bacteria;Firmicutes', 'x':'Bacteria;Bacteroidetes'}
+        obs = make_otu_table(otu_to_seqid, taxonomy, legacy=False)
+        exp = """# QIIME v%s OTU table
+OTU ID\tABC\tDEF\tGHI\tXYZ\tConsensus Lineage
+0\t1\t1\t0\t0\tBacteria;Firmicutes
+1\t1\t0\t0\t0\tNone
+x\t0\t0\t3\t0\tBacteria;Bacteroidetes
+z\t0\t1\t0\t1\tNone""" % __version__
         self.assertEqual(obs, exp)
         
     def test_remove_otus(self):

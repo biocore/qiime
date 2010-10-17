@@ -57,24 +57,40 @@ def format_matrix(data, row_names, col_names):
     return '\n'.join(lines)
 
 def format_otu_table(sample_names, otu_names, data, taxonomy=None,
-    comment='Full OTU Counts', skip_empty=False):
+    comment=None, skip_empty=False,legacy=True):
     """Writes OTU table as tab-delimited text.
     
     inputs: sample_names, otu_names are lists of strings
     data is numpy 2d array, num_otus x num_samples
     taxonomy is list of length = num_otus
     
+    legacy: write 'legacy' format otu table -- these are
+     the pre-Qiime 1.2.0-dev OTU tables. This is True by
+     default, until after the 1.2.0 release.
+    
     """
+    lines = []
+    if comment == None:
+        comment_line = " QIIME v%s OTU table" % __version__
+    else:
+        comment_line = str(comment)
+        
+    if legacy:
+        otu_id_s = "#OTU ID"
+    else:
+        otu_id_s = "OTU ID"
+    lines.append('#'+comment_line)
+            
     if data.shape != (len(otu_names), len(sample_names)):
         raise ValueError, "Data shape of %s doesn't match %s OTUs, %s samples" \
             % (data.shape, len(otu_names), len(sample_names))
-    lines = []
     #data = numpy.array(data, dtype='str') ##BAD! truncates some ints!
+    
     sample_names = map(str, sample_names)
     otu_names = map(str, otu_names)
-    lines.append('#'+comment)
+    
     if taxonomy:
-        lines.append('\t'.join(['#OTU ID'] + sample_names + 
+        lines.append('\t'.join([otu_id_s] + sample_names + 
             ['Consensus Lineage']))
         for otu_name, vals, taxon in zip(otu_names, data, taxonomy):
             if (skip_empty and filter(lambda a: a!=0, vals)==[]):
@@ -89,9 +105,10 @@ def format_otu_table(sample_names, otu_names, data, taxonomy=None,
                     ", try a list of strings"
             lines.append('\t'.join([otu_name] + map(str, vals.tolist()) + [taxon]))
     else:
-        lines.append('\t'.join(['#OTU ID'] + sample_names))
+        lines.append('\t'.join([otu_id_s] + sample_names))
         for otu_name, vals in zip(otu_names, data):
             lines.append('\t'.join([otu_name] + map(str,vals.tolist())))
+    
     return '\n'.join(lines)
 
 def format_coords(coord_header, coords, eigvals, pct_var):

@@ -15,7 +15,7 @@ from sys import argv, exit, stderr, stdout
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from optparse import make_option
 from qiime.parse import fields_to_dict, parse_taxonomy
-from qiime.make_otu_table import make_otu_map, remove_otus
+from qiime.make_otu_table import make_otu_table, remove_otus
 
 options_lookup = get_options_lookup()
 
@@ -63,7 +63,7 @@ def main():
     if exclude_otus_fp:
         otu_to_seqid = remove_otus(otu_to_seqid,open(exclude_otus_fp,'U'))
 
-    outfile.write(make_otu_map(otu_to_seqid, otu_to_taxonomy))
+    outfile.write(make_otu_table(otu_to_seqid, otu_to_taxonomy))
     
 
 if __name__ == "__main__":

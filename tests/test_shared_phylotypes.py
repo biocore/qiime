@@ -18,7 +18,7 @@ from qiime.shared_phylotypes import _calc_shared_phylotypes_pairwise,\
 
 class Test_shared_phylotypes(TestCase):
     def setUp(self):
-        self.otu_table_as_string = ["Test otu table",
+        self.otu_table_as_string = ["#Test otu table",
                        "\t".join(["#OTU ID","S1","S2","S3"]),
                        "\t".join(["0",      "1" ,"0" ,"2" ]),
                        "\t".join(["1",      "1" ,"2" ,"0" ]),

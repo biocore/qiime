@@ -33,8 +33,8 @@ def seqids_from_otu_to_seqid(otu_to_seqid):
     """Returns set of all seq ids from libs"""
     return set(flatten(otu_to_seqid.values()))
 
-def make_otu_map(otu_to_seqid, otu_to_taxonomy=None, delim='_'):
-    """Makes OTU map from otu_to_seqid and otu_to_taxonomy maps."""
+def make_otu_table(otu_to_seqid, otu_to_taxonomy=None, delim='_', legacy=True):
+    """Makes OTU table from otu_to_seqid and otu_to_taxonomy maps."""
     all_seqs = seqids_from_otu_to_seqid(otu_to_seqid)
     try:
         all_otus = map(str, sorted(map(int, otu_to_seqid.keys())))
@@ -62,7 +62,7 @@ def make_otu_map(otu_to_seqid, otu_to_taxonomy=None, delim='_'):
     else:
         taxonomy=None
 
-    return format_otu_table(all_libs, all_otus, table, taxonomy)
+    return format_otu_table(all_libs, all_otus, table, taxonomy, legacy=legacy)
 
 def remove_otus(otu_to_seqid,otus_to_exclude):
     """Remove otus_to_exclude from otu map """
