@@ -2,7 +2,7 @@
 
 __author__ = "William Walters"
 __copyright__ = "Copyright 2010, The QIIME project"
-__credits__ = ["William Walters"]
+__credits__ = ["William Walters","Greg Caporaso"]
 __license__ = "GPL"
 __version__ = "1.1.0-dev"
 __maintainer__ = "William Walters"
@@ -91,7 +91,8 @@ class TruncateFastaQualFilesTests(TestCase):
         
         fasta_data = {'seq1':'AATC', 'seq2':'GGAT'}
         
-        qual_data = {'seq1':[40, 36, 35, 18], 'seq2':[39, 18, 22, 23]}
+        qual_data = {'seq1':["40", "36", "35", "18"], 
+                     'seq2':["39", "18", "22", "23"]}
         
         # Should not raise any errors
         verify_equivalency(fasta_data, qual_data)
@@ -99,14 +100,16 @@ class TruncateFastaQualFilesTests(TestCase):
         # Make number of sequences unequal, and should raise error.
         fasta_data = {'seq1':'AATC', 'seq2':'GGAT', 'seq3':'ACTG'}
         
-        qual_data = {'seq1':[40, 36, 35, 18], 'seq2':[39, 18, 22, 23]}
+        qual_data = {'seq1':["40", "36", "35", "18"], 
+                     'seq2':["39", "18", "22", "23"]}
         
         self.assertRaises(ValueError, verify_equivalency, fasta_data, qual_data)
         
         # Should raise error if lens of values different
         fasta_data = {'seq1':'AATC', 'seq2':'GGAT'}
         
-        qual_data = {'seq1':[50, 40, 36, 35, 18], 'seq2':[39, 18, 22, 23]}
+        qual_data = {'seq1':["50", "40", "36", "35", "18"], 
+                     'seq2':["39", "18", "22", "23"]}
         
         self.assertRaises(ValueError, verify_equivalency, fasta_data, qual_data)
         
@@ -145,14 +148,14 @@ class TruncateFastaQualFilesTests(TestCase):
         
         fasta_seqs = {'seq1':'GAAATCAAGAATAC', 
          'seq2':'ATAAACAAGAT'}
-        qual_scores = {'seq1':array([20, 10, 15, 25, 24, 25, 27]),
-         'seq2':array([22, 21, 15, 12, 22, 25, 27, 28])}
+        qual_scores = {'seq1':array(map(str,[20, 10, 15, 25, 24, 25, 27])),
+         'seq2':array(map(str,[22, 21, 15, 12, 22, 25, 27, 28]))}
          
         expected_fasta = {'seq1':'GAAAT', 
          'seq2':'ATAAA'}
          
-        expected_qual = {'seq1':array([20, 10, 15, 25, 24]),
-         'seq2':array([22, 21, 15, 12, 22])}
+        expected_qual = {'seq1':map(str,array([20, 10, 15, 25, 24])),
+         'seq2':map(str,array([22, 21, 15, 12, 22]))}
          
         actual_fasta_seqs, actual_qual_scores =\
          truncate_seqs(fasta_seqs, qual_scores, base_pos)
@@ -305,9 +308,9 @@ ACAGAGTCGGCTCATGCTGCCTCCCGTAGGAGTTTGGGCCGTGTCTCAGTCCCAATGTGGCCGTTCACCCTCTCAGGCCG
 >seq3
 ACGGTGAGTGTCCATGCTGCCTCCCGTAGGAGTTTGGACCGTGTCTCAGTTCCAATGTGGGGGACCTTCCTCTCAGAACCCCTATCCATCGAAGACTAGGTGGGCCGTTACCCCGCCTACTATCTAATGGAACGCATCCCCATCTTATACCGGTAAACCTTTAATCATGAGAAAATGCTCACTCATGATACCATCTTGTATTAATCTCCCTTTCAGAAGGCTATCCAAGAGTATAAGGCAGGTTGGATACGCGTTACTCACCCGTGCGCCGG"""
 
-trunc_qual_scores = {'seq1':array([36, 36, 36, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 38, 38, 39, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 37, 37, 37, 37, 37, 33, 33, 33, 36, 36, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37]),
-'seq2':array([35, 35, 35, 35, 33, 31, 31, 31, 33, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 23, 20, 20, 31, 31, 33, 33, 33, 35, 23, 17, 17, 21, 20, 20, 20, 31, 31, 33, 35, 35, 35, 35, 35, 33, 33, 33, 35, 31, 31, 31, 35, 35, 35, 35, 35, 35, 35, 31, 31, 31, 33, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 31, 31, 31, 26, 26, 26]),
-'seq3':array([32, 32, 32, 32, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 38, 38, 39, 39, 32, 32, 32, 35, 35, 35, 35, 35, 34, 31, 21, 21, 25, 35, 32, 25, 25, 25, 32, 35, 35, 37, 39, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 32, 32, 32, 32, 32, 35, 32, 32, 32, 32, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 32, 32])}
+trunc_qual_scores = {'seq1':array(map(str,[36, 36, 36, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 38, 38, 39, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 37, 37, 37, 37, 37, 33, 33, 33, 36, 36, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37, 37])),
+'seq2':array(map(str,[35, 35, 35, 35, 33, 31, 31, 31, 33, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 23, 20, 20, 31, 31, 33, 33, 33, 35, 23, 17, 17, 21, 20, 20, 20, 31, 31, 33, 35, 35, 35, 35, 35, 33, 33, 33, 35, 31, 31, 31, 35, 35, 35, 35, 35, 35, 35, 31, 31, 31, 33, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 31, 31, 31, 26, 26, 26])),
+'seq3':array(map(str,[32, 32, 32, 32, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 38, 38, 39, 39, 32, 32, 32, 35, 35, 35, 35, 35, 34, 31, 21, 21, 25, 35, 32, 25, 25, 25, 32, 35, 35, 37, 39, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 32, 32, 32, 32, 32, 35, 32, 32, 32, 32, 35, 35, 35, 35, 35, 35, 35, 35, 35, 35, 32, 32]))}
 
 if __name__ == "__main__":
     main()

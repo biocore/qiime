@@ -654,14 +654,14 @@ def parse_illumina_line(l,barcode_length,rev_comp_barcode,
      
     return result
 
-def parse_qual_score(infile):
+def parse_qual_score(infile,value_cast_f=int):
     """Load quality scores into dict."""
     id_to_qual = {}
     for rec in FastaFinder(infile):
         curr_id = rec[0][1:]
         curr_qual = ' '.join(rec[1:])
         try:
-            parts = array(map(int, curr_qual.split()))
+            parts = array(map(value_cast_f, curr_qual.split()))
         except ValueError:
             raise QiimeParseError,"Invalid qual file. Check the format of the qual files." 
         curr_pid = curr_id.split()[0]

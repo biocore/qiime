@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "William Walters"
 __copyright__ = "Copyright 2010, The QIIME project"
-__credits__ = ["William Walters"]
+__credits__ = ["William Walters","Greg Caporaso"]
 __license__ = "GPL"
 __version__ = "1.1.0-dev"
 __maintainer__ = "William Walters"
@@ -146,10 +146,10 @@ def write_trunc_qual(trunc_qual_scores,
         # newline, until the last N bases are written
         for slice in range(0, len(trunc_qual_scores[trunc_label]),\
          qual_line_size):
-            current_segment = current_trunc_qual_scores[slice:slice +\
-             qual_line_size]
-            current_qual_scores_lines.append(
-             " ".join(str(score) for score in current_segment))
+            #current_segment = map(str,
+            # current_trunc_qual_scores[slice:slice + qual_line_size])
+            current_segment = current_trunc_qual_scores[slice:slice + qual_line_size]
+            current_qual_scores_lines.append(" ".join(current_segment))
             
             
         qual_out.write('\n'.join(current_qual_scores_lines))
@@ -172,7 +172,7 @@ def truncate_fasta_qual(fasta_fp,
     qual_lines = open(qual_fp, "U")
     fasta_lines = open(fasta_fp, "U")
     
-    qual_scores = parse_qual_score(qual_lines)
+    qual_scores = parse_qual_score(qual_lines,value_cast_f=str)
     
     # Get dict of fasta label:seq, and the sequence order (so output can
     # be in the same order as the input sequences.
