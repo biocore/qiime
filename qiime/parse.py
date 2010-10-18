@@ -331,41 +331,79 @@ def parse_taxonomy(infile):
 
     return res
 
+def process_otu_table_sample_ids(sample_id_fields):
+    """ process the sample IDs line of an OTU table """
+    if len(sample_id_fields) == 0:
+            raise ValueError, \
+             'Error parsing sample ID line in OTU table. Fields are %s' \
+             % ' '.join(sample_id_fields)
+            
+    # Detect if a metadata column is included as the last column. This
+    # field will be named either 'Consensus Lineage' or 'OTU Metadata',
+    # but we don't care about case or spaces.
+    last_column_header = sample_id_fields[-1].strip().replace(' ','').lower()
+    if last_column_header in ['consensuslineage', 'otumetadata']:
+        has_metadata = True
+        sample_ids = sample_id_fields[:-1]
+    else:
+        has_metadata = False
+        sample_ids = sample_id_fields
+    
+    # Return the list of sample IDs and boolean indicating if a metadata
+    # column is included.
+    return sample_ids, has_metadata
+
 def parse_otu_table(lines,count_map_f=int):
-    """parses otu file
+    """parses otu table (sample ID x OTU ID map)
 
     Returns tuple: sample_ids, otu_ids, matrix of OTUs(rows) x samples(cols),
-    and lineages from infile."""
+    and lineages from infile.
+    """
     otu_table = []
     otu_ids = []
-    lineages = []
+    metadata = []
+    sample_ids = []
+    # iterate over lines in the OTU table -- keep track of line number 
+    # to support legacy (Qiime 1.2.0 and earlier) OTU tables
     for i, line in enumerate(lines):
-        if i == 0: continue # skip header line
-        
-        elif i == 1: # parse sample id line
-            sample_ids = line.strip().split('\t')[1:]
-            if len(sample_ids) == 0:
-                    raise RuntimeError('no samples found in otu table')
-            if sample_ids[-1].strip().replace(' ','').lower() == 'consensuslineage':
-                has_consensus = True
-                sample_ids = sample_ids[:-1]
-            else:
-                has_consensus = False
-                
-        else: # parse each otu line
-            line = line.strip()
-            if line:
-                fields = line.split('\t')
-                #first and last col are otu id and consensus lineage respectively
-                if has_consensus:
-                    otu_table.append(array(map(count_map_f, fields[1:-1])))
+        line = line.strip()
+        if line:
+            if i == 1 and line.startswith('#OTU ID') and not sample_ids:
+                # we've got a legacy OTU table
+                try:
+                    sample_ids, has_metadata = process_otu_table_sample_ids(
+                     line.strip().split('\t')[1:])
+                except ValueError:
+                    raise ValueError, \
+                     "Error parsing sample IDs in OTU table. Appears to be a"+\
+                     " legacy OTU table. Sample ID line:\n %s" % line
+            elif not line.startswith('#'):
+                if not sample_ids:
+                    # current line is the first non-space, non-comment line 
+                    # in OTU table, so contains the sample IDs
+                    try:
+                        sample_ids, has_metadata = process_otu_table_sample_ids(
+                         line.strip().split('\t')[1:])
+                    except ValueError:
+                        raise ValueError,\
+                         "Error parsing sample IDs in OTU table."+\
+                         " Sample ID line:\n %s" % line
                 else:
-                    otu_table.append(array(map(count_map_f, fields[1:])))
-                otu_id = fields[0].strip()
-                otu_ids.append(otu_id)
-                if has_consensus:
-                    lineages.append(map(strip, fields[-1].split(';')))
-    return sample_ids, otu_ids, array(otu_table), lineages
+                    # current line is OTU line in OTU table
+                    fields = line.split('\t')
+                    # grab the OTU ID
+                    otu_id = fields[0].strip()
+                    otu_ids.append(otu_id)
+                    if has_metadata:
+                        # if there is OTU metadata the last column gets appended
+                        # to the metadata list
+                        otu_table.append(array(map(count_map_f, fields[1:-1])))
+                        metadata.append(map(strip, fields[-1].split(';')))
+                    else:
+                        # otherwise all columns are appended to otu_table
+                        otu_table.append(array(map(count_map_f, fields[1:])))
+                        
+    return sample_ids, otu_ids, array(otu_table), metadata
 
 def filter_otus_by_lineage(sample_ids, otu_ids, otu_table, lineages, \
     wanted_lineage, max_seqs_per_sample, min_seqs_per_sample):

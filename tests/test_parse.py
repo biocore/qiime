@@ -60,6 +60,10 @@ class TopLevelTests(TestCase):
         self.SampleMapping2 = ["OTU1\tsample1", "OTU1\tsample3", \
         "OTU2\tsample1", "OTU2\tsample2"]
         
+        self.legacy_otu_table1 = legacy_otu_table1
+        self.otu_table1 = otu_table1
+        self.expected_lineages1 = expected_lineages1
+        
     def test_parse_newick(self):
         """parse_newick correctly matches escaped tip names to otu ids
         """
@@ -304,28 +308,30 @@ eigvals\t4.94\t1.79\t1.50
         self.assertEqual(obs, exp)
 
     
-    def test_parse_otu_table(self):
-        """parse_otu_table should return correct result from small table"""
-        data = """#Full OTU Counts
-#OTU ID	Fing	Key	NA	Consensus Lineage
-0	19111	44536	42	Bacteria; Actinobacteria; Actinobacteridae; Propionibacterineae; Propionibacterium
-
-1	1216	3500	6	Bacteria; Firmicutes; Alicyclobacillaceae; Bacilli; Lactobacillales; Lactobacillales; Streptococcaceae; Streptococcus
-2	1803	1184	2	Bacteria; Actinobacteria; Actinobacteridae; Gordoniaceae; Corynebacteriaceae
-3	1722	4903	17	Bacteria; Firmicutes; Alicyclobacillaceae; Bacilli; Staphylococcaceae
-4	589	2074	34	Bacteria; Cyanobacteria; Chloroplasts; vectors
-"""
+    def test_parse_otu_table_legacy(self):
+        """parse_otu_table functions as expected with legacy OTU table
+        """
+        data = self.legacy_otu_table1
         data_f = (data.split('\n'))
         obs = parse_otu_table(data_f)
         exp = (['Fing','Key','NA'],
                ['0','1','2','3','4'],
-               array([[19111,44536,42],[1216,3500,6],[1803,1184,2],\
-                    [1722,4903,17], [589,2074,34]]),
-               [['Bacteria','Actinobacteria','Actinobacteridae','Propionibacterineae','Propionibacterium'],
-                ['Bacteria','Firmicutes','Alicyclobacillaceae','Bacilli','Lactobacillales','Lactobacillales','Streptococcaceae','Streptococcus'],
-                ['Bacteria','Actinobacteria','Actinobacteridae','Gordoniaceae','Corynebacteriaceae'],
-                ['Bacteria','Firmicutes','Alicyclobacillaceae','Bacilli','Staphylococcaceae'],
-                ['Bacteria','Cyanobacteria','Chloroplasts','vectors']])
+               array([[19111,44536,42],[1216,3500,6],[1803,1184,2],
+                      [1722,4903,17], [589,2074,34]]),
+               self.expected_lineages1)
+        self.assertEqual(obs, exp)
+        
+    def test_parse_otu_table(self):
+        """parse_otu_table functions as expected with new-style OTU table
+        """
+        data = self.otu_table1
+        data_f = (data.split('\n'))
+        obs = parse_otu_table(data_f)
+        exp = (['Fing','Key','NA'],
+               ['0','1','2','3','4'],
+               array([[19111,44536,42],[1216,3500,6],[1803,1184,2],
+                      [1722,4903,17], [589,2074,34]]),
+               self.expected_lineages1)
         self.assertEqual(obs, exp)
         
     def test_parse_otu_table_float_counts(self):
@@ -668,6 +674,38 @@ HWI-6X_9267:1:1:4:390#ACCTCCC/2:ACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGTACGT
 
 illumina_read3 = """HWI-EAS440_0386:1:23:19516:1031#0/1:ACAGCTAGCTTGTACGNAGGATCCGAGCGTTATCCGGATTTATTGGGTTTAAAGGGAGCGTAGGTGGATTGTTAAGTCAGTTGTGAAAGTTTGCGGCTCAACCGTAAAATTGCAGTTGATACTGGGTGTCTTGAGTACAGTAGAGGCAGGCGGAATTCGTGGGG:gggggggeggcffffcGddd\_``_gggggggggggfgggggegggggcgggggggggggeeffafdcdfgbdggdbe]fbfdddddbdadadcddaf`abb`cVNRNUScaa``aOY]]]_[_BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
 HWI-EAS440_0386:1:23:19660:1034#0/1:CATATCGCAGTTTACGNAAGGTCCGAGCGTTGTCCGGAATCATTGGGCGTAAAGGGTACGTAGGCGGGTAAGCAAGTTAGAAGTGAAATCCTATAGCTCAACTATAGTAAGCTTTTAAAACTGCTCATCTTGAGGTATGGAAGGGAAAGTGGAATTCCTAGTTA:fhhghhhhfhghhhhcHdcddccddhhhhhhfhhhhghhhdghhhhhhhhhhfhhhdhghgghhhhhhbfdfdbagdgdgfffafa]dad_acdabZcaabad[a__^_`cbddefb_cd^]_L\]U_]^aaZ___]bBBBBBBBBBBBBBBBBBBBBBBBBBB""".split('\n')
-         
+
+legacy_otu_table1 = """# some comment goes here
+#OTU ID	Fing	Key	NA	Consensus Lineage
+0	19111	44536	42	Bacteria; Actinobacteria; Actinobacteridae; Propionibacterineae; Propionibacterium
+
+1	1216	3500	6	Bacteria; Firmicutes; Alicyclobacillaceae; Bacilli; Lactobacillales; Lactobacillales; Streptococcaceae; Streptococcus
+2	1803	1184	2	Bacteria; Actinobacteria; Actinobacteridae; Gordoniaceae; Corynebacteriaceae
+3	1722	4903	17	Bacteria; Firmicutes; Alicyclobacillaceae; Bacilli; Staphylococcaceae
+4	589	2074	34	Bacteria; Cyanobacteria; Chloroplasts; vectors
+"""
+
+otu_table1 = """# Some comment
+
+
+
+
+OTU ID	Fing	Key	NA	Consensus Lineage
+0	19111	44536	42	Bacteria; Actinobacteria; Actinobacteridae; Propionibacterineae; Propionibacterium
+# some other comment
+1	1216	3500	6	Bacteria; Firmicutes; Alicyclobacillaceae; Bacilli; Lactobacillales; Lactobacillales; Streptococcaceae; Streptococcus
+2	1803	1184	2	Bacteria; Actinobacteria; Actinobacteridae; Gordoniaceae; Corynebacteriaceae
+# comments
+#    everywhere!
+3	1722	4903	17	Bacteria; Firmicutes; Alicyclobacillaceae; Bacilli; Staphylococcaceae
+4	589	2074	34	Bacteria; Cyanobacteria; Chloroplasts; vectors
+"""
+
+expected_lineages1 = [['Bacteria','Actinobacteria','Actinobacteridae','Propionibacterineae','Propionibacterium'],
+['Bacteria','Firmicutes','Alicyclobacillaceae','Bacilli','Lactobacillales','Lactobacillales','Streptococcaceae','Streptococcus'],
+['Bacteria','Actinobacteria','Actinobacteridae','Gordoniaceae','Corynebacteriaceae'],
+['Bacteria','Firmicutes','Alicyclobacillaceae','Bacilli','Staphylococcaceae'],
+['Bacteria','Cyanobacteria','Chloroplasts','vectors']]
+
 if __name__ =='__main__':
     main()
