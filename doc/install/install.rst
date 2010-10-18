@@ -46,7 +46,7 @@ PyNAST alignment, tree-building, taxonomy assignment, OTU picking, and other dat
 * jre1.6.0_05 (`link <http://java.sun.com/javase/downloads/index.jsp>`_)
 * rdp_classifier-2.0.1 (`src <http://downloads.sourceforge.net/project/rdp-classifier/rdp-classifier/rdp_classifier_2.0.1/rdp_classifier_2.0.1.tar.gz>`_) See :ref:`RDP install notes <rdp-install>`.
 * ChimeraSlayer (via microbiomeutil_2010-04-29) (`src <http://sourceforge.net/projects/microbiomeutil/files/>`_) See :ref:`ChimeraSlayer install notes <chimeraslayer-install>`.
-* mothur v.1.6.0 (`web <http://www.mothur.org/>`_)
+* mothur v.1.9.0 (`web <http://www.mothur.org/>`_)
 * sfffile and sffinfo (must be obtained from Roche/454)
 * clearcut v1.0.8 (`web <http://bioinformatics.hungry.com/clearcut/>`_)
 * raxml v7.0.3 (`web <http://icwww.epfl.ch/~stamatak/index-Dateien/Page443.htm>`_)
