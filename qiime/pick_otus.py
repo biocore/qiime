@@ -1167,6 +1167,7 @@ def expand_otu_map_seq_ids(otu_map,seq_id_map):
 def expand_failures(failures,seq_id_map):
     result = []
     for failure in failures:
+        failure = failure.strip()
         result += seq_id_map[failure]
     return result
                 

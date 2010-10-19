@@ -1678,7 +1678,7 @@ class PickOtusStandaloneFunctions(TestCase):
         self.otu_map3_file = ['a\t110\t221']
         
         self.failures1 = ['110']
-        self.failures2 = ['110','221']
+        self.failures2 = ['110\n','221']
         self.failures3 = ['a']
         
         
