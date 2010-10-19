@@ -42,17 +42,22 @@ The resulting OTU map will be:
 === ====    ====    ====    ====    ====    ====
 """
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Example:""","""If the seq_ids in otu_map2.txt are otu_ids in otu_map1.txt, expand the seq_ids in otu_map2.txt to be the full list of associated seq_ids from otu_map1.txt. Write the resulting otu map to otu_map.txt (-o).""","""merge_otu_maps.py -i otu_map1.txt,otu_map2.txt -o otu_map.txt"""))
+script_info['script_usage'].append(("""Expand an OTU map:""","""If the seq_ids in otu_map2.txt are otu_ids in otu_map1.txt, expand the seq_ids in otu_map2.txt to be the full list of associated seq_ids from otu_map1.txt. Write the resulting otu map to otu_map.txt (-o).""","""merge_otu_maps.py -i otu_map1.txt,otu_map2.txt -o otu_map.txt"""))
+
+script_info['script_usage'].append(("""Expand a failures file:""",""" Some OTU pickers (e.g. uclust_ref) will generate a list of failures for sequences which could not be assigned to OTUs. If this occurs in a chained OTU picking process, the failures file will need to be expanded to include the orignal sequence ids. To do this, pass the failures file via -f, and the otu maps up to, but not including, the step that generated the failures file. ""","""merge_otu_maps.py -i otu_map1.txt,otu_map2.txt -f fail.txt -o all_failures.txt"""))
+
 script_info['output_description']="""The result of this script is an OTU mapping file."""
-script_info['required_options']=[\
-    make_option('-i','--otu_map_fps',\
-                    help='the otu map filepaths, comma-separated and '+\
-                    'ordered as the OTU pickers were run [REQUIRED]')\
+script_info['required_options']=[
+    make_option('-i','--otu_map_fps',
+                    help=('the otu map filepaths, comma-separated and '
+                    'ordered as the OTU pickers were run [REQUIRED]')),
+    make_option('-o','--output_fp',
+                help='path to write output OTU map [REQUIRED]')
 ]
 
-script_info['optional_options']=[\
-    make_option('-o','--output_fp',\
-                help='path to write output OTU map [REQUIRED]')\
+script_info['optional_options']=[
+    make_option('-f','--failures_fp',
+                help='failures filepath, if applicable')
 ]
 
 script_info['version'] = __version__
@@ -62,16 +67,28 @@ def main():
        parse_command_line_parameters(**script_info)
     
     otu_files = map(open,opts.otu_map_fps.split(','))
+    failures_fp = opts.failures_fp
+    output_fp = opts.output_fp
+    if failures_fp:
+        failures_f = open(failures_fp,'U')
+    else:
+        failures_f = None
     
     try:
-        otu_map = map_otu_map_files(otu_files)
+        result = map_otu_map_files(otu_files,failures_file=failures_f)
     except KeyError,e:
-        print 'Some keys do not map ('+ str(e) +') -- is the order of'+\
-        ' your OTU maps equivalent to the order in which the OTU pickers'+\
-        ' were run?'
+        print ('Some keys do not map ('+ str(e) +') -- is the order of'
+        ' your OTU maps equivalent to the order in which the OTU pickers'
+        ' were run? If expanding a failures file, did you remember to leave'
+        ' out the otu map from the run which generated the failures file?')
         exit(1)
-        
-    write_otu_map(otu_map,opts.output_fp)
+    
+    if failures_fp != None:
+        of = open(output_fp,'w')
+        of.write('\n'.join(result))
+        of.close()
+    else:
+        write_otu_map(result,output_fp)
 
     
 if __name__ == "__main__":

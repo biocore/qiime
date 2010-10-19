@@ -1163,14 +1163,22 @@ def expand_otu_map_seq_ids(otu_map,seq_id_map):
          [seq_id_map[seq_id] for seq_id in seq_ids])
         otu_map[otu_id] = mapped_seq_ids
     return otu_map
+    
+def expand_failures(failures,seq_id_map):
+    result = []
+    for failure in failures:
+        result += seq_id_map[failure]
+    return result
                 
-def map_otu_map_files(otu_files):
+def map_otu_map_files(otu_files,failures_file=None):
     # passing delim=None splits on any whitespace, so can handle mixed tabs
     # and spaces
     result = fields_to_dict(otu_files[0],delim=None)
     for otu_file in otu_files[1:]:
         current_otu_map = fields_to_dict(otu_file,delim=None)
         result = expand_otu_map_seq_ids(current_otu_map,result)
+    if failures_file:
+        result = expand_failures(failures_file,result)
     return result
 
 def write_otu_map(otu_map,output_fp):
