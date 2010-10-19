@@ -34,7 +34,8 @@ def make_new_summary_file(otu_table, level, delimitor, relative_abundance):
         elif line.startswith('#'):
             output.append(line.strip('\n') + '\n')
         else:
-            result = process_data_line(line, result, delimitor, level)
+            result = process_data_line(line, result, delimitor, level,
+                relative_abundance)
     for key, val in sorted(result.items()):
         output.append('\t'.join([key] + map(str, val))+'\n')
     return output
@@ -53,7 +54,8 @@ def add_summary_category_mapping(otu_table, category_mapping, \
         if line.startswith('#OTU ID'):
             samples = line.strip().split('\t')[1:-1]
         if not line.startswith('#'):
-            result = process_data_line(line, result, delimitor, level)
+            result = process_data_line(line, result, delimitor, level,
+                relative_abundance)
     for line in category_mapping:
         if line.startswith('#SampleID'):
             header = line.strip().split('\t')
@@ -74,12 +76,15 @@ def add_summary_category_mapping(otu_table, category_mapping, \
                 output.append('\t'.join(line) + '\n')
     return output
 
-def process_data_line(line, result, delimitor, level):
-    """
+def process_data_line(line, result, delimitor, level, use_float='True'):
+    """ beware use_float is a STRING!!!
     """
     fields = line.split('\t')
     vals = [float(i) for i in fields[1:-1]]
-    data = array(vals, dtype=float)
+    if use_float == 'True':
+        data = array(vals, dtype=float)
+    else:
+        data = array(vals, dtype=int)
     tax = map(strip, fields[-1].split(delimitor)[:level])
     if len(tax) < level:
         tax.append('Other')

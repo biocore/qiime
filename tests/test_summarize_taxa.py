@@ -32,7 +32,7 @@ class TopLevelTests(TestCase):
 2\t0\t1\t1\t0\tRoot;Bacteria;Firmicutes;"Clostridia"
 3\t1\t2\t1\t0\tRoot;Bacteria""".split('\n')
         result = make_new_summary_file(otu_table, 3, ';', 'False')
-        self.assertEqual(result, ['#Full OTU Counts\n', 'Taxon\ts1\ts2\ts3\ts4\n', 'Root;Bacteria;Actinobacteria\t1.0\t0.0\t2.0\t4.0\n', 'Root;Bacteria;Firmicutes\t1.0\t3.0\t1.0\t1.0\n', 'Root;Bacteria;Other\t1.0\t2.0\t1.0\t0.0\n'])
+        self.assertEqual(result, ['#Full OTU Counts\n', 'Taxon\ts1\ts2\ts3\ts4\n', 'Root;Bacteria;Actinobacteria\t1\t0\t2\t4\n', 'Root;Bacteria;Firmicutes\t1\t3\t1\t1\n', 'Root;Bacteria;Other\t1\t2\t1\t0\n'])
         #test that works with relative abundances
         result = make_new_summary_file(otu_table, 3, ';', 'True')
         self.assertEqual(result, ['#Full OTU Counts\n', 'Taxon\ts1\ts2\ts3\ts4\n', 'Root;Bacteria;Actinobacteria\t0.333333333333\t0.0\t0.5\t0.8\n', 'Root;Bacteria;Firmicutes\t0.333333333333\t0.6\t0.25\t0.2\n', 'Root;Bacteria;Other\t0.333333333333\t0.4\t0.25\t0.0\n'])
@@ -54,7 +54,7 @@ s3\tCCCC\tExp\tDisease mouse, I.D. 356
 s4\tTTTT\tExp\tDisease mouse, I.D. 357""".split('\n')
         result = add_summary_category_mapping(otu_table, cat_mapping, 3, ';',
             'False')
-        self.assertEqual(result, ['#SampleID\tBarcodeSequence\tTreatment\tDescription\tRoot;Bacteria;Actinobacteria\tRoot;Bacteria;Firmicutes\tRoot;Bacteria;Other\n', '#Test mapping file\n', 's1\tAAAA\tControl\tControl mouse, I.D. 354\t1.0\t1.0\t1.0\n', 's2\tGGGG\tControl\tControl mouse, I.D. 355\t0.0\t3.0\t2.0\n', 's3\tCCCC\tExp\tDisease mouse, I.D. 356\t2.0\t1.0\t1.0\n', 's4\tTTTT\tExp\tDisease mouse, I.D. 357\t4.0\t1.0\t0.0\n'])
+        self.assertEqual(result, ['#SampleID\tBarcodeSequence\tTreatment\tDescription\tRoot;Bacteria;Actinobacteria\tRoot;Bacteria;Firmicutes\tRoot;Bacteria;Other\n', '#Test mapping file\n', 's1\tAAAA\tControl\tControl mouse, I.D. 354\t1\t1\t1\n', 's2\tGGGG\tControl\tControl mouse, I.D. 355\t0\t3\t2\n', 's3\tCCCC\tExp\tDisease mouse, I.D. 356\t2\t1\t1\n', 's4\tTTTT\tExp\tDisease mouse, I.D. 357\t4\t1\t0\n'])
         result = add_summary_category_mapping(otu_table, cat_mapping, 3, ';',
             'True')
         self.assertEqual(result, ['#SampleID\tBarcodeSequence\tTreatment\tDescription\tRoot;Bacteria;Actinobacteria\tRoot;Bacteria;Firmicutes\tRoot;Bacteria;Other\n', '#Test mapping file\n', 's1\tAAAA\tControl\tControl mouse, I.D. 354\t0.333333333333\t0.333333333333\t0.333333333333\n', 's2\tGGGG\tControl\tControl mouse, I.D. 355\t0.0\t0.6\t0.4\n', 's3\tCCCC\tExp\tDisease mouse, I.D. 356\t0.5\t0.25\t0.25\n', 's4\tTTTT\tExp\tDisease mouse, I.D. 357\t0.8\t0.2\t0.0\n'])
