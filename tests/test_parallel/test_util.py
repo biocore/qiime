@@ -164,6 +164,12 @@ class UtilTests(TestCase):
          command_suffix='',delimiter=' ! ')
         self.assertEqual(actual,expected)
         
+        commands = map(str,range(10))
+        actual = merge_to_n_commands(commands,5,command_prefix='',
+         command_suffix='',delimiter=',')
+        expected = ['0,1','2,3','4,5','6,7','8,9']
+        self.assertEqual(actual,expected)
+        
         
     def test_submit_jobs_fail(self):
         """submit jobs fails by raising an error
