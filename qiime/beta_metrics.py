@@ -14,8 +14,9 @@ __status__ = "Development"
 most metrics are from cogent.math.distance_transform.py,
 but some need wrappers to look like f(data, taxon_names, tree)-> dist_mtx
 """
-from cogent.maths.unifrac.fast_tree import (unifrac, unnormalized_unifrac,
-    G, unnormalized_G, weighted_unifrac)
+import cogent.maths.unifrac.fast_tree as fast_tree
+ # (unifrac, unnormalized_unifrac,
+ #    G, unnormalized_G, weighted_unifrac)
 from cogent.maths.unifrac.fast_unifrac import fast_unifrac
 from qiime.parse import make_envs_dict
 import numpy
@@ -49,14 +50,17 @@ def make_unifrac_metric(weighted, metric, is_symmetric):
 # length is present in one sample but not (both samples OR NEITHER
 # SAMPLE).  Divide by total branch length of full tree.  
 # G is asymmetric unifrac
-dist_unweighted_unifrac = make_unifrac_metric(False, unifrac, True)
+dist_unweighted_unifrac = make_unifrac_metric(False, fast_tree.unifrac, True)
+dist_unifrac = dist_unweighted_unifrac # default unifrac is just unifrac
 dist_unweighted_unifrac_full_tree = make_unifrac_metric(False, 
-    unnormalized_unifrac, True)
-dist_weighted_unifrac = make_unifrac_metric(True, weighted_unifrac, True)
+    fast_tree.unnormalized_unifrac, True)
+dist_weighted_unifrac = make_unifrac_metric(True, 
+    fast_tree.weighted_unifrac, True)
 dist_weighted_normalized_unifrac = make_unifrac_metric('correct',
-    weighted_unifrac, True)
-dist_unifrac_g = make_unifrac_metric(False, G, False)
-dist_unifrac_g_full_tree = make_unifrac_metric(False, unnormalized_G, False)
+    fast_tree.weighted_unifrac, True)
+dist_unifrac_g = make_unifrac_metric(False, fast_tree.G, False)
+dist_unifrac_g_full_tree = make_unifrac_metric(False, 
+    fast_tree.unnormalized_G, False)
 
 def _reorder_unifrac_res(unifrac_res, sample_names_in_desired_order):
     """ reorder unifrac result
