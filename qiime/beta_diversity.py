@@ -35,6 +35,9 @@ import qiime.beta_diversity
 from sys import exit, stderr
 import os.path
 
+from qiime.parse import parse_otu_table, parse_newick, PhyloNode
+from qiime.format import format_matrix
+
 def get_nonphylogenetic_metric(name):
     """Gets metric by name from cogent.maths.distance_transform.
     
@@ -165,7 +168,7 @@ class BetaDiversityCalc(FunctionWithParams):
         data, sample_names = result
         return format_distance_matrix(sample_names, data)
 
-def single_file_beta(input_path, metrics, tree_path, output_dir):
+def single_file_beta(input_path, metrics, tree_path, output_dir, rowids=None):
     """ does beta diversity calc on a single otu table
 
     uses name in metrics to name output beta diversity files
@@ -178,7 +181,7 @@ def single_file_beta(input_path, metrics, tree_path, output_dir):
     metrics_list = metrics.split(',')
     for metric in metrics_list:
         outfilepath = os.path.join(output_dir, metric + '_' +
-            os.path.split(input_path)[1])        
+            os.path.split(input_path)[1])
         try:
             metric_f = get_nonphylogenetic_metric(metric)
             is_phylogenetic = False
@@ -190,20 +193,51 @@ def single_file_beta(input_path, metrics, tree_path, output_dir):
                 stderr.write("Could not find metric %s.\n\nKnown metrics are: %s\n"\
                     % (metric, ', '.join(list_known_metrics())))
                 exit(1)
-        calc = BetaDiversityCalc(metric_f, metric, is_phylogenetic)
+        if rowids ==None:
+            # standard way
+            calc = BetaDiversityCalc(metric_f, metric, is_phylogenetic)
 
-        try:
-            result = calc(data_path=input_path, 
-                tree_path=tree_path, 
-                result_path=outfilepath, log_path=None)
-            if result: #can send to stdout instead of file
-                print c.formatResult(result)
-        except IOError, e:
-            stderr.write("Failed because of missing files.\n")
-            stderr.write(str(e)+'\n')
-            exit(1)
-
-def multiple_file_beta(input_path, output_dir, metrics, tree_path):
+            try:
+                result = calc(data_path=input_path, 
+                    tree_path=tree_path, 
+                    result_path=outfilepath, log_path=None)
+                if result: #can send to stdout instead of file
+                    print c.formatResult(result)
+            except IOError, e:
+                stderr.write("Failed because of missing files.\n")
+                stderr.write(str(e)+'\n')
+                exit(1)
+        else:
+            # only calc d(rowid1, *) for each rowid
+            rowids_list = rowids.split(',')
+            f = open(input_path,'U')
+            samids, otuids, otumtx, lineages = parse_otu_table(f)
+            # otu mtx is otus by samples
+            f.close()
+            if is_phylogenetic:
+                f = open(tree_path, 'U')
+                tree = parse_newick(f, PhyloNode)
+                f.close()
+            row_dissims = [] # same order as rowids_list
+            for rowid in rowids_list:
+                rowidx = samids.index(rowid)
+                dissims = []
+                for i in range(len(samids)):
+                    if is_phylogenetic:
+                        dissim = metric_f(otumtx.T[[rowidx,i],:],
+                            otuids, tree, [samids[rowidx],samids[i]])[0,1]
+                    else:
+                        dissim = metric_f(otumtx.T[[rowidx,i],:])[0,1]
+                    dissims.append(dissim)
+                row_dissims.append(dissims)
+            
+            rows_outfilepath = os.path.join(output_dir, metric + '_' +\
+                '_'.join(rowids_list) + '_' + os.path.split(input_path)[1])
+            f = open(rows_outfilepath,'w')
+            f.write(format_matrix(row_dissims,rowids_list,samids))
+            f.close()
+            
+def multiple_file_beta(input_path, output_dir, metrics, tree_path, rowids):
     """ runs beta diversity for each input file in the input directory 
     
     performs minimal error checking on input args, then calls single_file_beta
@@ -217,7 +251,6 @@ def multiple_file_beta(input_path, output_dir, metrics, tree_path):
 
     """
     metrics_list = metrics.split(',')
-    #beta_script = qiime.beta_diversity.__file__ # removed below
     file_names = os.listdir(input_path)
     file_names = [fname for fname in file_names if not fname.startswith('.')]
     try:
@@ -239,14 +272,4 @@ def multiple_file_beta(input_path, output_dir, metrics, tree_path):
     
     for fname in file_names:
         single_file_beta(os.path.join(input_path, fname),
-            metrics, tree_path, output_dir)
-        
-        ### from old version, designed for future parallelization
-            # outfilepath = options.output_dir
-            #         beta_div_cmd = 'python ' + beta_script + ' -i '+\
-            #             os.path.join(options.input_path, fname) + " -m " + options.metrics\
-            #             + ' -o ' + outfilepath
-            #         if options.tree_path:
-            #             beta_div_cmd += ' -t ' + options.tree_path
-            #         os.system(beta_div_cmd)
-
+            metrics, tree_path, output_dir, rowids)

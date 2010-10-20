@@ -34,7 +34,9 @@ script_info['required_options']=[]
 script_info['optional_options']=[
  make_option('-i', '--input_path',
      help='input path: otu table, or dir of otu tables for batch mode'),
-     
+ make_option('-r', '--rows', default=None,
+     help='compute only these rows of the distance matrix.' +\
+      ' pass a list of sample names, e.g. "s1,s3" [default: %default]'),
  make_option('-o', '--output_dir',
      help="output directory, will be created if doesn't exist"),
 
@@ -77,10 +79,10 @@ def main():
         pass # hopefully dir already exists 
     if os.path.isdir(opts.input_path):
         multiple_file_beta(opts.input_path, opts.output_dir, opts.metrics, 
-            opts.tree_path)
+            opts.tree_path, opts.rows)
     elif os.path.isfile(opts.input_path):
         single_file_beta(opts.input_path, opts.metrics, opts.tree_path, 
-          opts.output_dir)
+          opts.output_dir, opts.rows)
     else:
       print("io error, input path not valid.  Does it exist?")
       exit(1)
