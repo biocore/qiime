@@ -230,19 +230,26 @@ def single_file_beta(input_path, metrics, tree_path, output_dir, rowids=None):
             row_dissims = [] # same order as rowids_list
             for rowid in rowids_list:
                 rowidx = samids.index(rowid)
-                if not is_phylogenetic:
-                    # just get the correct row from the distance matrix
+                
+                # first test if we can the dissim is a fn of only the pair
+                # if not, just calc the whole matrix
+                if metric_f.__name__ == 'dist_chisq' or \
+                    metric_f.__name__ == 'dist_gower' or \
+                    metric_f.__name__ == 'dist_hellinger' or\
+                    metric_f.__name__ == 'binary_dist_chisq':
                     row_dissims.append(metric_f(otumtx.T)[rowidx])
                 else:
-
                     try:
                         row_metric = get_phylogenetic_row_metric(metric)
                     except AttributeError:
                         # do element by element
                         dissims = []
                         for i in range(len(samids)):
-                            dissim = metric_f(otumtx.T[[rowidx,i],:],
-                                otuids, tree, [samids[rowidx],samids[i]])[0,1]
+                            if is_phylogenetic:
+                                dissim = metric_f(otumtx.T[[rowidx,i],:],
+                                    otuids, tree, [samids[rowidx],samids[i]])[0,1]
+                            else:
+                                dissim = metric_f(otumtx.T[[rowidx,i],:])[0,1]
                             dissims.append(dissim)
                         row_dissims.append(dissims)
                     else:

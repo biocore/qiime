@@ -20,7 +20,8 @@ from cogent.core.tree import PhyloNode
 from cogent.maths.distance_transform import dist_chisq
 from qiime.parse import parse_newick, parse_distmat, parse_matrix
 from qiime.format import format_otu_table
-from qiime.beta_diversity import BetaDiversityCalc, single_file_beta
+from qiime.beta_diversity import BetaDiversityCalc, single_file_beta,\
+list_known_nonphylogenetic_metrics, list_known_phylogenetic_metrics
 from qiime.beta_metrics import dist_unweighted_unifrac
 
 import os
@@ -123,16 +124,17 @@ class BetaDiversityCalcTests(TestCase):
         f = open(tree_path,'w')
         f.write(l19_tree)
         f.close()
-        metrics = 'gower,chisq,spearman_approx,unweighted_unifrac,unifrac_g'
+        metrics = list_known_nonphylogenetic_metrics()
+        metrics.extend(list_known_phylogenetic_metrics())
         output_dir = get_tmp_filename(suffix = '')
         os.mkdir(output_dir)        
         
         self.files_to_remove.extend([input_path,tree_path])
         self.folders_to_remove.append(output_dir)
         
-        for metric in metrics.split(','):
+        for metric in metrics:
             # do it
-            single_file_beta(input_path, metrics, tree_path, output_dir,
+            single_file_beta(input_path, ','.join(metrics), tree_path, output_dir,
                 rowids=None)
             sams, dmtx = parse_distmat(open(output_dir + '/' +\
                 metric + '_' + in_fname))
@@ -141,7 +143,7 @@ class BetaDiversityCalcTests(TestCase):
             rows = 'sam5,sam3'
             row_outname = output_dir + '/' + metric + '_' +\
                 '_'.join(rows.split(',')) + '_' + in_fname
-            single_file_beta(input_path, metrics, tree_path, output_dir,
+            single_file_beta(input_path, ','.join(metrics), tree_path, output_dir,
                 rowids=rows)
             col_sams, row_sams, row_dmtx = parse_matrix(open(row_outname))
             
