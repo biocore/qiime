@@ -33,7 +33,6 @@ def convert_Ti_to_FLX(filename,output_pathname):
     """Converts Titanium SFF to FLX length reads."""
     check_sfffile()
     system('sfffile -flx -o %s %s' % (output_pathname,filename))
-    print 'sfffile -flx -o %s %s' % (output_pathname,filename)
 
 def make_flow_txt(filename,output_pathname):
     """Makes flowgram file from sff file."""
