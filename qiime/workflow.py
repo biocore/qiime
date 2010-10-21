@@ -467,7 +467,10 @@ def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,
          5) Generate a 3D plot for all mapping fields with colors
           optimized for discrete data.
     
-    """   
+    """  
+    if parallel:
+        raise NotImplementedError,\
+         "Debugging a memory leak - parallel option is not currently safe. This will be fixed ASAP."
     # Prepare some variables for the later steps
     otu_table_dir, otu_table_filename = split(otu_table_fp)
     otu_table_basename, otu_table_ext = splitext(otu_table_filename)
