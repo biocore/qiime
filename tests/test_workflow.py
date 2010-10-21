@@ -1032,9 +1032,9 @@ class WorkflowTests(TestCase):
         self.assertEqual(len(unscreened_seq_ids),20)
         
         # Generate the fasta files from the sff files
-        sff_fp1 = '%s/per_run_sff/F6AVWTA01/F6AVWTA01_2878_700015438_V1-V3.sff'\
+        sff_fp1 = '%s/per_run_sff/F6AVWTA01/F6AVWTA01.2878.700015438.V1.V3.sff'\
          % self.wf_out
-        fna_fp1 = '%s/per_run_sff/F6AVWTA01/F6AVWTA01_2878_700015438_V1-V3.fna'\
+        fna_fp1 = '%s/per_run_sff/F6AVWTA01/F6AVWTA01.2878.700015438.V1.V3.fna'\
          % self.wf_out
         system('sffinfo -s %s > %s' % (sff_fp1, fna_fp1))
         
@@ -1128,9 +1128,9 @@ class WorkflowTests(TestCase):
         self.assertEqual(len(unscreened_seq_ids),20)
         
         # Generate the fasta files from the sff files
-        sff_fp1 = '%s/per_run_sff/F6AVWTA01/F6AVWTA01_2878_700015438_V1-V3.sff'\
+        sff_fp1 = '%s/per_run_sff/F6AVWTA01/F6AVWTA01.2878.700015438.V1.V3.sff'\
          % self.wf_out
-        fna_fp1 = '%s/per_run_sff/F6AVWTA01/F6AVWTA01_2878_700015438_V1-V3.fna'\
+        fna_fp1 = '%s/per_run_sff/F6AVWTA01/F6AVWTA01.2878.700015438.V1.V3.fna'\
          % self.wf_out
         system('sffinfo -s %s > %s' % (sff_fp1, fna_fp1))
         
@@ -1214,9 +1214,9 @@ class WorkflowTests(TestCase):
         self.assertEqual(len(seq_ids),20)
         
         # Generate the fasta files from the sff files
-        sff_fp1 = '%s/per_run_sff/F6AVWTA01/F6AVWTA01_2878_700015438_V1-V3.sff'\
+        sff_fp1 = '%s/per_run_sff/F6AVWTA01/F6AVWTA01.2878.700015438.V1.V3.sff'\
          % self.wf_out
-        fna_fp1 = '%s/per_run_sff/F6AVWTA01/F6AVWTA01_2878_700015438_V1-V3.fna'\
+        fna_fp1 = '%s/per_run_sff/F6AVWTA01/F6AVWTA01.2878.700015438.V1.V3.fna'\
          % self.wf_out
         system('sffinfo -s %s > %s' % (sff_fp1, fna_fp1))
         

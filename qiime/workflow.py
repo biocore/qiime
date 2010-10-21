@@ -1373,8 +1373,8 @@ def run_process_sra_submission(
         ('bash -c %s' % bash_command))])
 
     # Step 1
-    process_sff_cmd = '%s %s/process_sff.py -i %s' %\
-     (python_exe_fp,script_dir, sff_working_dir)
+    process_sff_cmd = '%s %s/process_sff.py -i %s -o %s' %\
+     (python_exe_fp,script_dir, sff_working_dir, sff_working_dir)
 
     commands.append([(
         'Process SFF files to create FASTA and QUAL files',
