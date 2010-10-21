@@ -16,6 +16,7 @@ Add changes since QIIME 1.1.0 here
 * Added the trflp_file_to_otu_table.py script that allows users to create an OTU table simile from a Terminal restriction fragment length polymorphism (T-RFLP) text file.
 * Added min_aligned_length parameter to the BLAST OTU picker. By default, BLAST alignments now must cover at least 50% of the input sequence for OTU assignment to occur.
 * Changed default randomization strategy in Procrustes monte carlo from shuffling within coordinate vectors to shuffing the labels on the vectors themselves. This doesn't appear to affect clearly significant cases at all, but is more conservative and therefore favors non-significance of results in borderline cases.
+* Added ability to run beta diversity calculations in parallel at the single OTU table level to improve performance when computing diversity on very large collections of samples. This functionality is now hooked up to the beta_diversity_through_3d_plots.py workflow script, and includes the new -r parameter to beta_diversity.py which allows users to specify samples to compute diversity vectors for (rather than requiring that the full all-against-all diversity matrix is created).
 
 QIIME 1.1.0 (14 May 2010)
 =========================

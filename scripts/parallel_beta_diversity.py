@@ -16,15 +16,17 @@ from optparse import make_option
 from optparse import OptionParser
 from glob import glob
 from os import popen, makedirs
-from os.path import split, splitext, join
+from os.path import split, splitext, join, isfile
 from subprocess import check_call, CalledProcessError
 from cogent.app.util import get_tmp_filename
 from qiime.parallel.util import get_random_job_prefix, write_jobs_file,\
-    submit_jobs, get_poller_command, get_rename_command,\
+    submit_jobs, get_rename_command,\
     write_filepaths_to_file, merge_to_n_commands
 from qiime.beta_diversity import list_known_metrics
 from qiime.util import load_qiime_config, get_qiime_scripts_dir, get_options_lookup
-from qiime.parallel.beta_diversity import get_job_commands
+from qiime.parallel.beta_diversity import (get_job_commands_single_otu_table,
+    get_job_commands_multiple_otu_tables, create_merge_map_file_single_otu_table,
+    get_poller_command)
 
 qiime_config = load_qiime_config()
 options_lookup = get_options_lookup()
@@ -71,7 +73,7 @@ def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
     
     # create local copies of command-line options
-    input_dir = opts.input_path
+    input_path = opts.input_path
     output_dir = opts.output_path
     metrics = opts.metrics
     tree_fp = opts.tree_path
@@ -85,16 +87,21 @@ def main():
     seconds_to_sleep = opts.seconds_to_sleep
     poll_directly = opts.poll_directly
     jobs_to_start = opts.jobs_to_start
+    
+    if isfile(input_path):
+        single_otu_table_mode = True
+    else:
+        single_otu_table_mode = False
+        input_fps = glob('%s/*' % input_path)
 
     created_temp_paths = []
-    input_fps = glob('%s/*' % input_dir)
     # split the input filepath into directory and filename, base filename and
     # extension
-    # input_dir, input_fn = split(input_path)
+    # input_path, input_fn = split(input_path)
     # input_file_basename, input_file_ext = splitext(input_fn)
     
     # set the job_prefix either based on what the user passed in,
-    # or a random string beginning with ALDIV (ALphaDIVersity)
+    # or a random string beginning with BDIV
     job_prefix = opts.job_prefix or get_random_job_prefix('BDIV')
     
     # A temporary output directory is created in output_dir named
@@ -115,14 +122,20 @@ def main():
     created_temp_paths.append(jobs_fp)
     
     # Get the list of commands to be run and the expected result files
-    commands, job_result_filepaths  = \
-     get_job_commands(python_exe_fp,beta_diversity_fp,tree_fp,job_prefix,\
-     metrics,input_fps,output_dir,working_dir,
-     command_prefix=' ',command_suffix=' ')
-     
-    # Merge commands into jobs_to_start number of jobs
-    commands = merge_to_n_commands(commands,jobs_to_start)
-    
+    if single_otu_table_mode:
+        commands, job_result_filepaths  = \
+         get_job_commands_single_otu_table(python_exe_fp,beta_diversity_fp,
+         tree_fp,job_prefix,metrics,input_path,output_dir,working_dir,
+         jobs_to_start,command_prefix=' ',command_suffix=' ')
+        created_temp_paths += job_result_filepaths
+    else:
+        commands, job_result_filepaths  = \
+         get_job_commands_multiple_otu_tables(python_exe_fp,beta_diversity_fp,
+         tree_fp,job_prefix,metrics,input_fps,output_dir,working_dir,
+         command_prefix=' ',command_suffix=' ')
+        # Merge commands into jobs_to_start number of jobs
+        commands = merge_to_n_commands(commands,jobs_to_start)
+        
     # Set up poller apparatus if the user does not suppress polling
     if not suppress_polling:
         # Write the list of files which must exist for the jobs to be 
@@ -134,7 +147,15 @@ def main():
         # Write the mapping file which described how the output files from
         # each job should be merged into the final output files
         merge_map_filepath = '%s/merge_map.txt' % working_dir
-        open(merge_map_filepath,'w').close()
+        if single_otu_table_mode:
+            create_merge_map_file_single_otu_table(
+             input_path,output_dir,metrics,merge_map_filepath,
+             expected_files_filepath)
+            process_run_results_f =\
+             'qiime.parallel.beta_diversity.parallel_beta_diversity_process_run_results_f'
+        else:
+            open(merge_map_filepath,'w').close()
+            process_run_results_f = None
         created_temp_paths.append(merge_map_filepath)
         
         # Create the filepath listing the temporary files to be deleted,
@@ -146,16 +167,18 @@ def main():
             # Generate the command to run the poller, and the list of temp files
             # created by the poller
             poller_command, poller_result_filepaths =\
-             get_poller_command(python_exe_fp,poller_fp,expected_files_filepath,\
-             merge_map_filepath,deletion_list_filepath,\
+             get_poller_command(python_exe_fp,poller_fp,expected_files_filepath,
+             merge_map_filepath,deletion_list_filepath,
+             process_run_results_f=process_run_results_f,
              seconds_to_sleep=seconds_to_sleep)
             # append the poller command to the list of job commands
             commands.append(poller_command)
         else:
             poller_command, poller_result_filepaths =\
-             get_poller_command(python_exe_fp,poller_fp,expected_files_filepath,\
-             merge_map_filepath,deletion_list_filepath,\
-             seconds_to_sleep=seconds_to_sleep,\
+             get_poller_command(python_exe_fp,poller_fp,expected_files_filepath,
+             merge_map_filepath,deletion_list_filepath,
+             seconds_to_sleep=seconds_to_sleep,
+             process_run_results_f=process_run_results_f,
              command_prefix='',command_suffix='')            
         created_temp_paths += poller_result_filepaths
         

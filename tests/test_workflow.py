@@ -641,7 +641,6 @@ class WorkflowTests(TestCase):
         # Check that the log file is created and has size > 0
         log_fp = glob(join(self.wf_out,'log*.txt'))[0]
         self.assertTrue(getsize(log_fp) > 0)
-
          
          
     def test_run_beta_diversity_through_3d_plot(self):

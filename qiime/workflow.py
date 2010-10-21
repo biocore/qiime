@@ -451,8 +451,8 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,
     # Call the command handler on the list of commands
     command_handler(commands,status_update_callback,logger=logger)
     
-def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,\
-    output_dir, command_handler, params, qiime_config, tree_fp=None,\
+def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,
+    output_dir, command_handler, params, qiime_config, tree_fp=None,
     parallel=False, status_update_callback=print_to_stdout):
     """ Run the data preparation steps of Qiime 
     
@@ -484,19 +484,6 @@ def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,\
     
     beta_diversity_metrics = params['beta_diversity']['metrics'].split(',')
     
-    # Prep the beta-diversity command
-    try:
-        params_str = get_params_str(params['beta_diversity'])
-    except KeyError:
-        params_str = ''
-    if tree_fp:
-        params_str = '%s -t %s' % (params_str,tree_fp)
-    # Build the beta-diversity command
-    beta_div_cmd = '%s %s/beta_diversity.py -i %s -o %s %s' %\
-     (python_exe_fp, script_dir, otu_table_fp, output_dir, params_str)
-    commands.append(\
-     [('Beta Diversity (%s)' % ', '.join(beta_diversity_metrics), beta_div_cmd)])
-    
     # Prep the 3d prefs file generator command
     prefs_fp = '%s/prefs.txt' % output_dir
     try:
@@ -510,6 +497,41 @@ def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,\
     commands.append([('Build prefs file', prefs_cmd)])
         
     for beta_diversity_metric in beta_diversity_metrics:
+        
+        # Prep the beta-diversity command
+        try:
+            bdiv_params_copy = params['beta_diversity'].copy()
+        except KeyError:
+            bdiv_params_copy = {}
+        try:
+            del bdiv_params_copy['metric']
+        except KeyError:
+            pass
+        
+        params_str = get_params_str(bdiv_params_copy)
+            
+        if tree_fp:
+            params_str = '%s -t %s ' % (params_str,tree_fp)
+            
+        # Build the beta-diversity command
+        if parallel:
+            # Grab the parallel-specific parameters
+            try:
+                params_str += get_params_str(params['parallel'])
+            except KeyError:
+                pass
+            beta_div_cmd = '%s %s/parallel_beta_diversity.py -i %s -o %s --metrics %s -T %s' %\
+             (python_exe_fp, script_dir, otu_table_fp,
+              output_dir, beta_diversity_metric, params_str)
+            commands.append(\
+             [('Beta Diversity (%s)' % beta_diversity_metric, beta_div_cmd)])
+        else:
+            beta_div_cmd = '%s %s/beta_diversity.py -i %s -o %s --metrics %s %s' %\
+             (python_exe_fp, script_dir, otu_table_fp, 
+              output_dir, beta_diversity_metric, params_str)
+            commands.append(\
+             [('Beta Diversity (%s)' % beta_diversity_metric, beta_div_cmd)])
+        
         
         beta_div_fp = '%s/%s_%s' % \
          (output_dir, beta_diversity_metric, otu_table_filename)
