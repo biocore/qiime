@@ -2,8 +2,11 @@
 #file process_sff.py
 from cogent.util.misc import app_path
 from cogent.app.util import ApplicationNotFoundError
-from os import listdir, system
-from os.path import splitext, join, isfile, isdir,split
+from os import listdir
+from os.path import splitext, join, isfile, isdir, split
+import os
+import subprocess
+
 """Converts directory of sff files into fasta and qual files.
 
 Requires that 454's off-instrument apps (sffinfo, sfffile) are on your path.
@@ -17,11 +20,17 @@ __maintainer__ = "Rob Knight"
 __email__ = "rob@spot.colorado.edu"
 __status__ = "Development"
 
+def _silent_check_call(*args, **kwargs):
+    kwargs['stderr'] = open(os.devnull, 'w')
+    return subprocess.check_call(*args, **kwargs)
+
+
 def check_sffinfo():
     """Raise error if sffinfo is not in $PATH """
     if not app_path('sffinfo'):
         raise ApplicationNotFoundError,\
          "sffinfo is not in $PATH. Is it installed? Have you added it to $PATH?"
+
 
 def check_sfffile():
     """Raise error if sfffile is not in $PATH """
@@ -29,27 +38,37 @@ def check_sfffile():
         raise ApplicationNotFoundError,\
         "sfffile is not in $PATH. Is it installed? Have you added it to $PATH?"
 
-def convert_Ti_to_FLX(filename,output_pathname):
+
+def convert_Ti_to_FLX(filename, output_pathname):
     """Converts Titanium SFF to FLX length reads."""
     check_sfffile()
-    system('sfffile -flx -o %s %s' % (output_pathname,filename))
+    _silent_check_call(
+        ['sfffile', '-flx', '-o', output_pathname, filename],
+        stdout=open(os.devnull, 'w'))
 
-def make_flow_txt(filename,output_pathname):
+
+def make_flow_txt(filename, output_pathname):
     """Makes flowgram file from sff file."""
     check_sffinfo()
-    system('sffinfo %s > %s.txt' % (filename, output_pathname))
+    output_fp = output_pathname + '.txt'
+    _silent_check_call(['sffinfo', filename], stdout=open(output_fp, 'w'))
 
-def make_fna(filename,output_pathname):
+
+def make_fna(filename, output_pathname):
     """Makes fna file from sff file."""
     check_sffinfo()
-    system('sffinfo -s %s > %s.fna' % (filename, output_pathname))
+    output_fp = output_pathname + '.fna'
+    _silent_check_call(['sffinfo', '-s', filename], stdout=open(output_fp, 'w'))
 
-def make_qual(filename,output_pathname):
+
+def make_qual(filename, output_pathname):
     """Makes qual file from sff file."""
     check_sffinfo()
-    system('sffinfo -q %s > %s.qual' % (filename, output_pathname))
+    output_fp = output_pathname + '.qual'
+    _silent_check_call(['sffinfo', '-q', filename], stdout=open(output_fp, 'w'))
 
-def prep_sffs_in_dir(pathname,make_flowgram, output_pathname,convert_to_flx):
+
+def prep_sffs_in_dir(pathname, make_flowgram, output_pathname, convert_to_flx):
     """Converts all sffs in dir to fasta/qual."""
     check_sffinfo()
     

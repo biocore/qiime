@@ -36,10 +36,10 @@ class TopLevelTests(TestCase):
         self.sff_fp = os.path.join(self.sff_dir, 'test.sff')
         self.outpath = os.path.join(self.sff_dir,'test')
         shutil.copy(sff_original_fp, self.sff_fp)
-    '''
+
     def tearDown(self):
         shutil.rmtree(self.sff_dir)
-    '''
+
     def test_convert_Ti_to_FLX(self):
         """test_make_flow_txt should make flowgram file as expected"""
         convert_Ti_to_FLX(self.sff_fp,self.outpath+'_FLX.sff')
