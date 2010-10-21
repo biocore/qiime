@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2010, The QIIME project"
-__credits__ = ["Jens Reeder"]
+__credits__ = ["Jens Reeder","Greg Caporaso"]
 __license__ = "GPL"
 __version__ = "1.1.0-dev"
 __maintainer__ = "Jens Reeder"
@@ -12,7 +12,7 @@ __email__ = "jens.reeder@gmail.com"
 __status__ = "Development"
  
 from os.path import exists
-from os import rmdir
+from shutil import rmtree
 from numpy import array
 from matplotlib.axes import Subplot
 
@@ -35,7 +35,7 @@ class PlotRankAbundance(TestCase):
         
         remove_files(self.files_to_remove)
         if self.tmp_dir:
-            rmdir(self.tmp_dir)
+            rmtree(self.tmp_dir)
         
     def test_make_sorted_frequencies(self):
         """make_sorted_frequencies transforms and sorts correctly"""

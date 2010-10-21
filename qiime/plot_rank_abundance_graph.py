@@ -19,7 +19,7 @@ from itertools import cycle
 from matplotlib.pyplot import plot, gca,  ylim, xlim, show, legend, \
     savefig
 
-from qiime.util import parse_otu_table
+from qiime.parse import parse_otu_table
 from qiime.colors import data_color_order
 
 def make_sorted_frequencies(counts, absolute=False):
