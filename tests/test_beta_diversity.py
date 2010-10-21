@@ -123,7 +123,7 @@ class BetaDiversityCalcTests(TestCase):
         f = open(tree_path,'w')
         f.write(l19_tree)
         f.close()
-        metrics = 'chisq,unweighted_unifrac,unifrac_g'
+        metrics = 'gower,chisq,spearman_approx,unweighted_unifrac,unifrac_g'
         output_dir = get_tmp_filename(suffix = '')
         os.mkdir(output_dir)        
         
@@ -138,15 +138,17 @@ class BetaDiversityCalcTests(TestCase):
                 metric + '_' + in_fname))
 
             # do it by rows
-            rows = 'sam12,sam3'
+            rows = 'sam5,sam3'
+            row_outname = output_dir + '/' + metric + '_' +\
+                '_'.join(rows.split(',')) + '_' + in_fname
             single_file_beta(input_path, metrics, tree_path, output_dir,
-                rowids=None)
-            col_sams, row_sams, row_dmtx = parse_matrix(
-                open(output_dir + '/' +\
-                metric + '_' + in_fname))
+                rowids=rows)
+            col_sams, row_sams, row_dmtx = parse_matrix(open(row_outname))
+            
+            self.assertEqual(row_dmtx.shape, (len(rows.split(',')),len(sams)))
         
             # make sure rows same as full
-            for i in range(2):
+            for i in range(len(rows.split(','))):
                 for j in range(len(sams)):
                     row_v1 = row_dmtx[i,j]
                     full_v1 =\

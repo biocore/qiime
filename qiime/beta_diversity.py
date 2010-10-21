@@ -73,6 +73,15 @@ def get_phylogenetic_metric(name):
             return getattr(qiime.beta_metrics, 
               name.lower())
 
+def get_phylogenetic_row_metric(name):
+    """Gets metric by name from qiime.beta_metrics
+    
+    Metrics should be f(matrix) -> distance_array.
+    """
+    # looks for name, inserting one_sample to find functions
+    # in qiime.beta_metrics
+    return getattr(qiime.beta_metrics, 'one_sample_' + name.lower())
+
 def list_known_nonphylogenetic_metrics():
     """Lists known metrics by name from cogent.maths.distance_transform.
 
@@ -193,7 +202,7 @@ def single_file_beta(input_path, metrics, tree_path, output_dir, rowids=None):
                 stderr.write("Could not find metric %s.\n\nKnown metrics are: %s\n"\
                     % (metric, ', '.join(list_known_metrics())))
                 exit(1)
-        if rowids ==None:
+        if rowids == None:
             # standard way
             calc = BetaDiversityCalc(metric_f, metric, is_phylogenetic)
 
@@ -221,16 +230,27 @@ def single_file_beta(input_path, metrics, tree_path, output_dir, rowids=None):
             row_dissims = [] # same order as rowids_list
             for rowid in rowids_list:
                 rowidx = samids.index(rowid)
-                dissims = []
-                for i in range(len(samids)):
-                    if is_phylogenetic:
-                        dissim = metric_f(otumtx.T[[rowidx,i],:],
-                            otuids, tree, [samids[rowidx],samids[i]])[0,1]
+                if not is_phylogenetic:
+                    # just get the correct row from the distance matrix
+                    row_dissims.append(metric_f(otumtx.T)[rowidx])
+                else:
+
+                    try:
+                        row_metric = get_phylogenetic_row_metric(metric)
+                    except AttributeError:
+                        # do element by element
+                        dissims = []
+                        for i in range(len(samids)):
+                            dissim = metric_f(otumtx.T[[rowidx,i],:],
+                                otuids, tree, [samids[rowidx],samids[i]])[0,1]
+                            dissims.append(dissim)
+                        row_dissims.append(dissims)
                     else:
-                        dissim = metric_f(otumtx.T[[rowidx,i],:])[0,1]
-                    dissims.append(dissim)
-                row_dissims.append(dissims)
-            
+                        # do whole row at once
+                        dissims = row_metric(otumtx.T,
+                                    otuids, tree, samids, rowid)
+                        row_dissims.append(dissims)
+
             rows_outfilepath = os.path.join(output_dir, metric + '_' +\
                 '_'.join(rowids_list) + '_' + os.path.split(input_path)[1])
             f = open(rows_outfilepath,'w')

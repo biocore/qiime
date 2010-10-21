@@ -36,7 +36,8 @@ script_info['optional_options']=[
      help='input path: otu table, or dir of otu tables for batch mode'),
  make_option('-r', '--rows', default=None,
      help='compute only these rows of the distance matrix.' +\
-      ' pass a list of sample names, e.g. "s1,s3" [default: %default]'),
+      ' pass a list of sample names, e.g. "s1,s3" [by default, +\
+      the full n x n matrix is generated]'),
  make_option('-o', '--output_dir',
      help="output directory, will be created if doesn't exist"),
 
