@@ -18,6 +18,8 @@ from qiime.beta_diversity import (single_file_beta, multiple_file_beta,
 list_known_metrics)
 import os
 from sys import stderr
+from cogent.app.util import get_tmp_filename
+from qiime.parse import parse_otu_table, parse_newick, PhyloNode
 
 script_info={}
 script_info['brief_description']="""Calculate beta diversity (pairwise sample dissimilarity) on one or many otu tables"""
@@ -50,7 +52,13 @@ script_info['optional_options']=[
 
  make_option('-t', '--tree_path', default=None,
      help='path to newick tree file, required for phylogenetic metrics'+\
-     ' [default: %default]')
+     ' [default: %default]'),
+
+ make_option('-f', '--full_tree', action="store_true",
+     help='by default, we first compute the intersection of the tree with'+\
+     ' the otus present in the otu table. pass -f if you already have a'+\
+     ' minimal tree, and this script will run faster'),
+
 ]
 
 script_info['version'] = __version__
@@ -63,7 +71,7 @@ def main():
         print("Known metrics are: %s\n" \
               % (', '.join(list_known_metrics()),))
         exit(0)
-    
+
     almost_required_options = ['input_path','output_dir','metrics']
     for option in almost_required_options:
         if getattr(opts,option) == None:
@@ -78,11 +86,26 @@ def main():
         os.makedirs(opts.output_dir)
     except OSError:
         pass # hopefully dir already exists 
+    
+    if opts.full_tree:
+        new_tree_path = opts.tree_path
+    else:
+        f = open(opts.input_path,'U')
+        samids, otuids, otumtx, lineages = parse_otu_table(f)
+        # otu mtx is otus by samples
+        f.close()
+        new_tree_path = get_tmp_filename(suffix='.tre')
+        f = open(opts.tree_path, 'U')
+        tree = parse_newick(f, PhyloNode)
+        f.close()
+        tree = tree.getSubTree(otuids, ignore_missing=True)
+        tree.writeToFile(new_tree_path)
+
     if os.path.isdir(opts.input_path):
         multiple_file_beta(opts.input_path, opts.output_dir, opts.metrics, 
-            opts.tree_path, opts.rows)
+            new_tree_path, opts.rows)
     elif os.path.isfile(opts.input_path):
-        single_file_beta(opts.input_path, opts.metrics, opts.tree_path, 
+        single_file_beta(opts.input_path, opts.metrics, new_tree_path, 
           opts.output_dir, opts.rows)
     else:
       print("io error, input path not valid.  Does it exist?")

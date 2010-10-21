@@ -161,10 +161,7 @@ class BetaDiversityCalc(FunctionWithParams):
         
         sample_names, taxon_names, data, lineages = \
             self.getOtuTable(data_path)
-        #prune tree so we only look at otus actually present
-        if tree:
-            tree = tree.getSubTree(taxon_names, ignore_missing=True)
-
+            
         # get the 2d dist matrix from beta diversity analysis
         if self.IsPhylogenetic:
             return (self.Metric(data.T, taxon_names, tree, sample_names),
@@ -181,11 +178,14 @@ def single_file_beta(input_path, metrics, tree_path, output_dir, rowids=None):
     """ does beta diversity calc on a single otu table
 
     uses name in metrics to name output beta diversity files
+    assumes input tree is already trimmed to contain only otus present in otu
+    table, doesn't call getSubTree()
     inputs:
      input_path (str)
      metrics (str, comma delimited if more than 1 metric)
      tree_path (str)
      output_dir (str)
+     rowids (comma separated str)
     """
     metrics_list = metrics.split(',')
     for metric in metrics_list:
