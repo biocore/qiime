@@ -86,30 +86,18 @@ def main():
         os.makedirs(opts.output_dir)
     except OSError:
         pass # hopefully dir already exists 
-    
-    if opts.full_tree:
-        new_tree_path = opts.tree_path
-    else:
-        f = open(opts.input_path,'U')
-        samids, otuids, otumtx, lineages = parse_otu_table(f)
-        # otu mtx is otus by samples
-        f.close()
-        new_tree_path = get_tmp_filename(suffix='.tre')
-        f = open(opts.tree_path, 'U')
-        tree = parse_newick(f, PhyloNode)
-        f.close()
-        tree = tree.getSubTree(otuids, ignore_missing=True)
-        tree.writeToFile(new_tree_path)
+
 
     if os.path.isdir(opts.input_path):
         multiple_file_beta(opts.input_path, opts.output_dir, opts.metrics, 
-            new_tree_path, opts.rows)
+            opts.tree_path, opts.rows, opts.full_tree)
     elif os.path.isfile(opts.input_path):
-        single_file_beta(opts.input_path, opts.metrics, new_tree_path, 
-          opts.output_dir, opts.rows)
+        single_file_beta(opts.input_path, opts.metrics, opts.tree_path, 
+          opts.output_dir, opts.rows, opts.full_tree)
     else:
-      print("io error, input path not valid.  Does it exist?")
-      exit(1)
+        stderr.write("io error, input path not valid.  Does it exist?")
+        exit(1)
+
 
 if __name__ == "__main__":
     main()
