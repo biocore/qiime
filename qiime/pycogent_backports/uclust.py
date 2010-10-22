@@ -507,9 +507,11 @@ def get_clusters_from_fasta_filepath(
         # Get cluster file name from application wrapper
     except ApplicationError:
         remove_files(files_to_remove)
-        raise ApplicationError, ('Error running uclust, make sure the proper '+\
-         'version (1.1.579 or greater) is installed and the input fasta file '+\
-         'is properly formatted.')
+        raise ApplicationError, ('Error running uclust. Possible causes are '
+         'unsupported version (current supported version is v1.2.16) is installed; '
+         'improperly formatted input file was provided; or uclust segfaulted. '
+         'Segfaults are a known issue (in uclust, not QIIME) and we\'re currently '
+         'waiting on a fix.')
     except ApplicationNotFoundError:
         remove_files(files_to_remove)
         raise ApplicationNotFoundError('uclust not found, is it properly '+\
