@@ -258,9 +258,9 @@ def clusters_from_uc_file(uc_lines):
     clusters = {}
     failures = []
     seeds = []
-    # the three types of hit lines we're interested in here
-    # are hit (H), seed (S), and no hit (N)
-    hit_types={}.fromkeys(list('HSN'))
+    # the types of hit lines we're interested in here
+    # are hit (H), seed (S), library seed (L) and no hit (N) 
+    hit_types={}.fromkeys(list('HSNL'))
     for record in get_next_record_type(uc_lines,hit_types):
         hit_type = record[0]
         # sequence identifiers from the fasta header lines only 
@@ -270,18 +270,33 @@ def clusters_from_uc_file(uc_lines):
         query_id = record[8].split()[0]
         target_cluster = record[9].split()[0]
         if hit_type == 'H':
-            try:
-                # add the hit to an existing cluster
-                clusters[target_cluster].append(query_id)
-            except KeyError:
-                # will get here the first time a reference 
-                # sequence (i.e., from --lib) is used as a seed
-                clusters[target_cluster] = [query_id]
+            # add the hit to it's existing cluster (either library
+            # or new cluster)
+            clusters[target_cluster].append(query_id)
         elif hit_type == 'S':
             # a new seed was identified -- create a cluster with this 
             # sequence as the first instance
+            if query_id in clusters:
+                raise UclustParseError,\
+                 ("A seq id was provided as a seed, but that seq id already "
+                  "represents a cluster. Are there overlapping seq ids in your "
+                  "reference and input files or repeated seq ids in either? "
+                  "Offending seq id is %s" % query_id)
             clusters[query_id] = [query_id]
             seeds.append(query_id)
+        elif hit_type == 'L':
+            # a library seed was identified -- create a cluster with this 
+            # id as the index, but don't give it any instances yet bc the hit
+            # line will be specified separately. note we need to handle these
+            # lines separately from the H lines to detect overlapping seq ids 
+            # between the reference and the input fasta files
+            if query_id in clusters:
+                raise UclustParseError,\
+                 ("A seq id was provided as a seed, but that seq id already "
+                  "represents a cluster. Are there overlapping seq ids in your "
+                  "reference and input files or repeated seq ids in either? "
+                  "Offending seq id is %s" % query_id)
+            clusters[query_id] = []
         elif hit_type == 'N':
             # a failure was identified -- add it to the failures list
             failures.append(query_id)
