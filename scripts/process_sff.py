@@ -7,8 +7,8 @@ __copyright__ = "Copyright 2010, The QIIME project"
 __credits__ = ["Rob Knight", "Kyle Bittinger", "Jesse Stombaugh"]
 __license__ = "GPL"
 __version__ = "1.1.0-dev"
-__maintainer__ = "Rob Knight"
-__email__ = "rob@spot.colorado.edu"
+__maintainer__ = "Kyle Bittinger"
+__email__ = "kylebittinger@gmail.com"
 __status__ = "Development"
  
 
@@ -23,8 +23,7 @@ options_lookup = get_options_lookup()
 script_info={}
 script_info['brief_description']="""Convert sff to FASTA and QUAL files"""
 script_info['script_description']="""This script converts a directory of sff files into FASTA, QUAL and flowgram files.
-
-This script requires that 454's off-instrument apps (sffinfo, sfffile) are in your path."""
+"""
 script_info['script_usage']=[]
 script_info['script_usage'].append(("""Simple example""","""Convert all the sffs in directory \"sffs/\" to fasta and qual.""","""process_sff.py -i sffs/"""))
 script_info['script_usage'].append(("""Flowgram example""","""Convert all the sffs in directory \"sffs/\" to fasta and qual, along with a flowgram file.""","""process_sff.py -i sffs/ -f"""))
@@ -33,9 +32,15 @@ script_info['output_description']="""This script results in FASTA and QUAL forma
 script_info['required_options'] = [\
     make_option('-i', '--input_dir', help='Input directory of sff files'),
 ]
-script_info['optional_options']=[\
-    make_option('-f', '--make_flowgram', action='store_true', help='this allows for generating a flowgram file. [default: %default]', default=False),
-    make_option('-t', '--convert_to_FLX', action='store_true', help='this converts Titanium length read to FLX length. [default: %default]', default=False),
+
+script_info['optional_options'] = [
+    make_option('-f', '--make_flowgram', action='store_true', default=False,
+        help='generate a flowgram file. [default: %default]'),
+    make_option('-t', '--convert_to_FLX', action='store_true', default=False,
+        help='convert Titanium reads to FLX length. [default: %default]'),
+    make_option('--use_sfftools', action='store_true', default=False,
+        help=('use the external programs sfffile and sffinfo for processing, '
+              'instead of the equivalent python implementation')),
     options_lookup['output_dir'],
 ]
 script_info['version'] = __version__
@@ -53,8 +58,13 @@ def main():
     else:
         opts.output_dir='./'
             
-    prep_sffs_in_dir(opts.input_dir,opts.make_flowgram,opts.output_dir,\
-                        opts.convert_to_FLX)
+    prep_sffs_in_dir(
+        opts.input_dir,
+        opts.output_dir,
+        make_flowgram=opts.make_flowgram,
+        convert_to_flx=opts.convert_to_FLX,
+        use_sfftools=opts.use_sfftools,
+        )
 
 if __name__ == "__main__":
     main()

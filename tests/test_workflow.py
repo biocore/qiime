@@ -27,6 +27,7 @@ from cogent.app.util import get_tmp_filename, ApplicationNotFoundError
 from qiime.util import load_qiime_config
 from qiime.parse import (parse_qiime_parameters, parse_otu_table,
     parse_distmat_to_dict,parse_distmat)
+from qiime.pycogent_backports.binary_sff import parse_binary_sff
 from qiime.workflow import (run_qiime_data_preparation,
     run_beta_diversity_through_3d_plot,
     run_qiime_alpha_rarefaction,
@@ -1027,31 +1028,20 @@ class WorkflowTests(TestCase):
         screened_seq_ids.sort()
         unscreened_seq_ids.sort()
         
-        # Test that expected sequences were dropped during screen`
+        # Test that expected sequences were dropped during screen
         self.assertEqual(len(screened_seq_ids),14)
         self.assertEqual(len(unscreened_seq_ids),20)
         
-        # Generate the fasta files from the sff files
-        sff_fp1 = '%s/per_run_sff/F6AVWTA01/F6AVWTA01.2878.700015438.V1.V3.sff'\
-         % self.wf_out
-        fna_fp1 = '%s/per_run_sff/F6AVWTA01/F6AVWTA01.2878.700015438.V1.V3.fna'\
-         % self.wf_out
-        system('sffinfo -s %s > %s' % (sff_fp1, fna_fp1))
-        
-        sff_fp2 = '%s/per_run_sff/F6AVWTA01/bodysites_study_default_F6AVWTA01.sff'\
-         % self.wf_out
-        fna_fp2 = '%s/per_run_sff/F6AVWTA01/bodysites_study_default_F6AVWTA01.fna'\
-         % self.wf_out
-        system('sffinfo -s %s > %s' % (sff_fp2,fna_fp2))
-        
-        extracted_seq_ids_1 = [s[0].split()[0] 
-                               for s in MinimalFastaParser(open(fna_fp1))]
-        # one sequence is removed by the filtering
-        self.assertEqual(len(extracted_seq_ids_1), 3)
+        per_run_dir = '%s/per_run_sff/F6AVWTA01' % self.wf_out
 
-        extracted_seq_ids_2 = [s[0].split()[0] 
-                               for s in MinimalFastaParser(open(fna_fp2))]
-        self.assertEqual(len(extracted_seq_ids_2), 0)
+        # one sequence is removed by the filtering
+        _, reads1 = parse_binary_sff(open(os.path.join(
+            per_run_dir, 'F6AVWTA01.2878.700015438.V1.V3.sff')))
+        self.assertEqual(len(list(reads1)), 3)  # one sequence removed
+
+        _, reads2 = parse_binary_sff(open(os.path.join(
+            per_run_dir, 'bodysites_study_default_F6AVWTA01.sff')))
+        self.assertEqual(len(list(reads1)), 0)
         
         
     def test_run_process_sra_submission_negative_human_screen(self):
@@ -1127,26 +1117,15 @@ class WorkflowTests(TestCase):
         self.assertEqual(len(screened_seq_ids),19)
         self.assertEqual(len(unscreened_seq_ids),20)
         
-        # Generate the fasta files from the sff files
-        sff_fp1 = '%s/per_run_sff/F6AVWTA01/F6AVWTA01.2878.700015438.V1.V3.sff'\
-         % self.wf_out
-        fna_fp1 = '%s/per_run_sff/F6AVWTA01/F6AVWTA01.2878.700015438.V1.V3.fna'\
-         % self.wf_out
-        system('sffinfo -s %s > %s' % (sff_fp1, fna_fp1))
-        
-        sff_fp2 = '%s/per_run_sff/F6AVWTA01/bodysites_study_default_F6AVWTA01.sff'\
-         % self.wf_out
-        fna_fp2 = '%s/per_run_sff/F6AVWTA01/bodysites_study_default_F6AVWTA01.fna'\
-         % self.wf_out
-        system('sffinfo -s %s > %s' % (sff_fp2,fna_fp2))
-        
-        extracted_seq_ids_1 = [s[0].split()[0] 
-                               for s in MinimalFastaParser(open(fna_fp1))]
-        self.assertEqual(len(extracted_seq_ids_1), 4)
+        per_run_dir = '%s/per_run_sff/F6AVWTA01' % self.wf_out
 
-        extracted_seq_ids_2 = [s[0].split()[0] 
-                               for s in MinimalFastaParser(open(fna_fp2))]
-        self.assertEqual(len(extracted_seq_ids_2), 0)
+        _, reads1 = parse_binary_sff(open(os.path.join(
+            per_run_dir, 'F6AVWTA01.2878.700015438.V1.V3.sff')))
+        self.assertEqual(len(list(reads1)), 4)  # no sequences removed
+
+        _, reads2 = parse_binary_sff(open(os.path.join(
+            per_run_dir, 'bodysites_study_default_F6AVWTA01.sff')))
+        self.assertEqual(len(list(reads1)), 0)
 
         
     def test_run_process_sra_submission_no_human_screen(self):
@@ -1213,26 +1192,15 @@ class WorkflowTests(TestCase):
         seq_ids.sort()
         self.assertEqual(len(seq_ids),20)
         
-        # Generate the fasta files from the sff files
-        sff_fp1 = '%s/per_run_sff/F6AVWTA01/F6AVWTA01.2878.700015438.V1.V3.sff'\
-         % self.wf_out
-        fna_fp1 = '%s/per_run_sff/F6AVWTA01/F6AVWTA01.2878.700015438.V1.V3.fna'\
-         % self.wf_out
-        system('sffinfo -s %s > %s' % (sff_fp1, fna_fp1))
-        
-        sff_fp2 = '%s/per_run_sff/F6AVWTA01/bodysites_study_default_F6AVWTA01.sff'\
-         % self.wf_out
-        fna_fp2 = '%s/per_run_sff/F6AVWTA01/bodysites_study_default_F6AVWTA01.fna'\
-         % self.wf_out
-        system('sffinfo -s %s > %s' % (sff_fp2,fna_fp2))
-        
-        extracted_seq_ids_1 = [s[0].split()[0] 
-                               for s in MinimalFastaParser(open(fna_fp1))]
-        self.assertEqual(len(extracted_seq_ids_1), 4)
+        per_run_dir = '%s/per_run_sff/F6AVWTA01' % self.wf_out
 
-        extracted_seq_ids_2 = [s[0].split()[0] 
-                               for s in MinimalFastaParser(open(fna_fp2))]
-        self.assertEqual(len(extracted_seq_ids_2), 0)
+        _, reads1 = parse_binary_sff(open(os.path.join(
+            per_run_dir, 'F6AVWTA01.2878.700015438.V1.V3.sff')))
+        self.assertEqual(len(list(reads1)), 4)  # no sequences removed
+
+        _, reads2 = parse_binary_sff(open(os.path.join(
+            per_run_dir, 'bodysites_study_default_F6AVWTA01.sff')))
+        self.assertEqual(len(list(reads1)), 0)
 
         
     def test_run_process_sra_submission_error_on_missing_fields(self):
