@@ -148,6 +148,15 @@ class Uclust(CommandLineApplication):
          
         return result
         
+    def _accept_exit_status(self,exit_status):
+        """ Test for acceptable exit status
+        
+            uclust can seg fault and still generate a parsable .uc file
+            so we explicitly check the exit status
+        
+        """
+        return exit_status == 0
+        
     def getHelp(self):
         """Method that points to documentation"""
         help_str =\
