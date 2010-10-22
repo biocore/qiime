@@ -194,6 +194,7 @@ def single_file_beta(input_path, metrics, tree_path, output_dir, rowids=None,
     samids, otuids, otumtx, lineages = parse_otu_table(f)
     # otu mtx is otus by samples
     f.close()
+    tree = None
     if tree_path:
         f = open(tree_path, 'U')
         tree = parse_newick(f, PhyloNode)
@@ -213,6 +214,10 @@ def single_file_beta(input_path, metrics, tree_path, output_dir, rowids=None,
             try:
                 metric_f = get_phylogenetic_metric(metric)
                 is_phylogenetic = True
+                if tree == None:
+                    stderr.write("metric %s requires a tree, but none found\n"\
+                        % (metric,))
+                    exit(1)
             except AttributeError:
                 stderr.write("Could not find metric %s.\n\nKnown metrics are: %s\n"\
                     % (metric, ', '.join(list_known_metrics())))

@@ -82,6 +82,9 @@ def main():
           ' automatically.  And we refuse to make .txt directories\n')
         exit(1)
     
+    if opts.tree_path == "None":
+        opts.tree_path = None
+    
     try: 
         os.makedirs(opts.output_dir)
     except OSError:
