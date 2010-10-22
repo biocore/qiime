@@ -36,6 +36,7 @@ from cogent.util.trie import build_prefix_map
 from cogent.util.misc import flatten
 from qiime.util import FunctionWithParams, sort_fasta_by_abundance
 from qiime.parse import fields_to_dict
+from qiime.format import write_otu_map
 
 class OtuPicker(FunctionWithParams):
     """An OtuPicker dereplicates a set of sequences at a given similarity.
@@ -1181,15 +1182,7 @@ def map_otu_map_files(otu_files,failures_file=None):
     if failures_file:
         result = expand_failures(failures_file,result)
     return result
-
-def write_otu_map(otu_map,output_fp):
-    """
-    """
-    of = open(output_fp,'w')
-    for otu_id in sorted(otu_map.keys()):
-        of.write('\t'.join([otu_id] + otu_map[otu_id]))
-        of.write('\n')
-    of.close()
+    
 # End functions to support merging OTU tables
 
 

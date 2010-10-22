@@ -20,6 +20,29 @@ from cogent import Sequence
 A lot of this might migrate into cogent at some point.
 """
 
+def write_otu_map(otu_map,output_fp,otu_id_prefix=''):
+    """
+    """
+    of = open(output_fp,'w')
+    for line in format_otu_map(otu_map,otu_id_prefix):
+        of.write(line)
+    of.close()
+    
+def format_otu_map(otu_map,otu_id_prefix):
+    """
+    """
+    # raise error if prefix contains chars other than . or alnums
+    # this functionality needs to be centralized
+    for c in otu_id_prefix:
+        if not c.isalnum() and not c == '.':
+            raise ValueError, "%s char is not allowed in OTU IDs" % c
+    
+    for otu_id in sorted(otu_map.keys()):
+        yield '%s%s\t%s\n' % (otu_id_prefix, 
+                            otu_id,
+                            '\t'.join(otu_map[otu_id]))
+    return
+
 def format_distance_matrix(labels, data):
     """Writes distance matrix as tab-delimited text, uses format_matrix"""
     return format_matrix(data, labels, labels)

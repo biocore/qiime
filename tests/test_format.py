@@ -12,17 +12,74 @@ __email__ = "rob@spot.colorado.edu"
 __status__ = "Development"
 
 from os import remove
+from cogent.util.misc import remove_files
 from cogent.util.unit_test import TestCase, main
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.app.util import get_tmp_filename
 from numpy import array, nan
+from qiime.parse import fields_to_dict
 from qiime.format import (format_distance_matrix, format_otu_table,
     format_coords, build_prefs_string, format_matrix, format_map_file,
     format_histograms, write_Fasta_from_name_seq_pairs, 
-    format_unifrac_sample_mapping)
+    format_unifrac_sample_mapping,format_otu_map,write_otu_map)
 
 class TopLevelTests(TestCase):
     """Tests of top-level module functions."""
+    
+    def setUp(self):
+        self.otu_map1 = {'0':['seq1','seq2','seq5'],
+                    '1':['seq3','seq4'],
+                    '2':['seq6','seq7','seq8']}
+        self.tmp_fp1 = get_tmp_filename(prefix='FormatTests_',suffix='.txt')
+        self.files_to_remove = []
+        
+    def tearDown(self):
+        remove_files(self.files_to_remove)
+    
+    def test_format_otu_map(self):
+        """format_otu_map functions as expected """
+        actual = list(format_otu_map(self.otu_map1,''))
+        actual.sort()
+        expected = ['0\tseq1\tseq2\tseq5\n',
+                    '1\tseq3\tseq4\n',
+                    '2\tseq6\tseq7\tseq8\n']
+        expected.sort()
+        self.assertEqual(actual,expected)
+        
+    def test_write_otu_map(self):
+        """write_otu_map functions as expected """
+        write_otu_map(self.otu_map1,self.tmp_fp1)
+        actual = fields_to_dict(open(self.tmp_fp1))
+        self.files_to_remove.append(self.tmp_fp1)
+        self.assertEqual(actual,self.otu_map1)
+        
+        
+    def test_write_otu_map_prefix(self):
+        """write_otu_map functions as expected w otu prefix """
+        write_otu_map(self.otu_map1,self.tmp_fp1,'my.otu.')
+        actual = fields_to_dict(open(self.tmp_fp1))
+        self.files_to_remove.append(self.tmp_fp1)
+        
+        exp = {'my.otu.0':['seq1','seq2','seq5'],
+               'my.otu.1':['seq3','seq4'],
+               'my.otu.2':['seq6','seq7','seq8']}
+        self.assertEqual(actual,exp)
+        
+    
+    def test_format_otu_map_prefix(self):
+        """format_otu_map functions as expected w prefix"""
+        actual = list(format_otu_map(self.otu_map1,'my.otu.'))
+        actual.sort()
+        expected = ['my.otu.0\tseq1\tseq2\tseq5\n',
+                    'my.otu.1\tseq3\tseq4\n',
+                    'my.otu.2\tseq6\tseq7\tseq8\n']
+        expected.sort()
+        self.assertEqual(actual,expected)
+    
+    def test_format_otu_map_error_on_bad_prefix(self):
+        """format_otu_map functions as expected with bad prefix char"""
+        self.assertRaises(ValueError,list,
+                          format_otu_map(self.otu_map1,'my_otu_'))
 
     def test_format_distance_matrix(self):
         """format_distance_matrix should return tab-delimited dist mat"""
