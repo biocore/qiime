@@ -36,7 +36,6 @@ from cogent.util.trie import build_prefix_map
 from cogent.util.misc import flatten
 from qiime.util import FunctionWithParams, sort_fasta_by_abundance
 from qiime.parse import fields_to_dict
-from qiime.format import write_otu_map
 
 class OtuPicker(FunctionWithParams):
     """An OtuPicker dereplicates a set of sequences at a given similarity.

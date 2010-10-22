@@ -19,7 +19,7 @@ from cogent.util.misc import remove_files, revComp
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from qiime.pick_otus import (CdHitOtuPicker, DoturOtuPicker, OtuPicker,
     MothurOtuPicker, PrefixSuffixOtuPicker, TrieOtuPicker, BlastOtuPicker,
-    expand_otu_map_seq_ids, map_otu_map_files, write_otu_map, UclustOtuPicker,
+    expand_otu_map_seq_ids, map_otu_map_files, UclustOtuPicker,
     UclustReferenceOtuPicker, expand_failures)
 
 
@@ -1774,28 +1774,6 @@ class PickOtusStandaloneFunctions(TestCase):
          [self.otu_map1_file,self.otu_map2_file,['a\t110 221']])
         self.assertEqual(exp123,actual123)
     
-    def test_write_otu_map(self):
-        """write_otu_map: functions as expected
-        """
-        fp = get_tmp_filename(prefix='PickOtusStandaloneFunctions_',\
-         suffix='.txt')
-         
-        write_otu_map(self.otu_map1,fp)
-        lines = [l.strip() for l in list(open(fp))]
-        remove(fp)
-        self.assertEqual(lines,self.otu_map1_file)
-        
-        write_otu_map(self.otu_map2,fp)
-        lines = [l.strip() for l in list(open(fp))]
-        remove(fp)
-        self.assertEqual(lines,self.otu_map2_file)
-        
-        write_otu_map(self.otu_map3,fp)
-        lines = [l.strip() for l in list(open(fp))]
-        remove(fp)
-        self.assertEqual(lines,self.otu_map3_file)
-    
-
 dna_seqs_1 = """>cdhit_test_seqs_0 comment fields, not part of sequence identifiers
 AACCCCCACGGTGGATGCCACACGCCCCATACAAAGGGTAGGATGCTTAAGACACATCGCGTCAGGTTTGTGTCAGGCCT
 > cdhit_test_seqs_1
