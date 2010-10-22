@@ -23,12 +23,18 @@ __status__ = "Development"
 
 def get_job_commands_multiple_otu_tables(
     python_exe_fp,beta_diversity_fp,tree_fp,job_prefix,metrics,input_fps,
-    output_dir,working_dir,command_prefix=None,command_suffix=None):
+    output_dir,working_dir,command_prefix=None,command_suffix=None,
+    full_tree=False):
     """Generate beta diversity to split multiple OTU tables to multiple jobs
     """
 
     command_prefix = command_prefix or '/bin/bash; '
     command_suffix = command_suffix or '; exit'
+    
+    if full_tree:
+        full_tree_str = '-f'
+    else:
+        full_tree_str = ''
     
     commands = []
     result_filepaths = []
@@ -41,7 +47,7 @@ def get_job_commands_multiple_otu_tables(
          output_fns,working_dir,output_dir)
         result_filepaths += current_result_filepaths
         
-        command = '%s %s %s -i %s -o %s -t %s -m %s %s %s' %\
+        command = '%s %s %s -i %s -o %s -t %s -m %s %s %s %s' %\
          (command_prefix,\
           python_exe_fp,\
           beta_diversity_fp,\
@@ -49,6 +55,7 @@ def get_job_commands_multiple_otu_tables(
           working_dir + '/',
           tree_fp,
           metrics,
+          full_tree_str,
           rename_command,
           command_suffix)
           
@@ -61,6 +68,8 @@ def get_job_commands_single_otu_table(
     output_dir,working_dir,jobs_to_start,command_prefix=None,
     command_suffix=None):
     """Generate beta diversity to split single OTU table to multiple jobs
+    
+    always passes -f to beta_diversity.py
     """
 
     command_prefix = command_prefix or '/bin/bash; '
@@ -82,7 +91,7 @@ def get_job_commands_single_otu_table(
          output_fns,working_dir,output_dir)
         result_filepaths += current_result_filepaths
         
-        command = '%s %s %s -i %s -o %s -t %s -m %s -r %s %s %s' %\
+        command = '%s %s %s -i %s -o %s -t %s -m %s -f -r %s %s %s' %\
          (command_prefix,\
           python_exe_fp,\
           beta_diversity_fp,\

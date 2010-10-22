@@ -27,6 +27,7 @@ from qiime.util import load_qiime_config, get_qiime_scripts_dir, get_options_loo
 from qiime.parallel.beta_diversity import (get_job_commands_single_otu_table,
     get_job_commands_multiple_otu_tables, create_merge_map_file_single_otu_table,
     get_poller_command)
+from qiime.parse import parse_otu_table, parse_newick, PhyloNode
 
 qiime_config = load_qiime_config()
 options_lookup = get_options_lookup()
@@ -65,7 +66,12 @@ script_info['optional_options'] = [\
  options_lookup['job_prefix'],\
  options_lookup['python_exe_fp'],\
  options_lookup['seconds_to_sleep'],\
- options_lookup['jobs_to_start']
+ options_lookup['jobs_to_start'],
+ make_option('-f', '--full_tree', action="store_true",
+     help='By default, we first compute the intersection of the tree with'+\
+     ' the otus present in the otu table. pass -f if you already have a'+\
+     ' minimal tree, and this script will run faster'),
+
 ]
 script_info['version'] = __version__
 
@@ -123,6 +129,31 @@ def main():
     
     # Get the list of commands to be run and the expected result files
     if single_otu_table_mode:
+        if opts.tree_path and not opts.full_tree:
+            # get subtree once here, rather than again for each job
+            # we call each job with --full_tree, so it's here or nowhere
+            if opts.verbose:
+                print 'parsing otu table'
+            f = open(opts.input_path,'U')
+            samids, otuids, otumtx, lineages = parse_otu_table(f)
+            # otu mtx is otus by samples
+            f.close()
+            if opts.verbose:
+                print 'done parsing otu table'
+            new_tree_path = get_tmp_filename(suffix='.tre')
+            created_temp_paths.append(new_tree_path)
+            if opts.verbose:
+                print 'parsing tree'
+            f = open(opts.tree_path, 'U')
+            tree = parse_newick(f, PhyloNode)
+            f.close()
+            if opts.verbose:
+                print 'done parsing tree'
+            tree = tree.getSubTree(otuids, ignore_missing=True)
+            tree.writeToFile(new_tree_path)
+            tree_fp = new_tree_path
+            if opts.verbose:
+                print 'done writing new intersection tree to: ', tree_fp
         commands, job_result_filepaths  = \
          get_job_commands_single_otu_table(python_exe_fp,beta_diversity_fp,
          tree_fp,job_prefix,metrics,input_path,output_dir,working_dir,
@@ -132,7 +163,7 @@ def main():
         commands, job_result_filepaths  = \
          get_job_commands_multiple_otu_tables(python_exe_fp,beta_diversity_fp,
          tree_fp,job_prefix,metrics,input_fps,output_dir,working_dir,
-         command_prefix=' ',command_suffix=' ')
+         command_prefix=' ',command_suffix=' ', full_tree=opts.full_tree)
         # Merge commands into jobs_to_start number of jobs
         commands = merge_to_n_commands(commands,jobs_to_start)
         
