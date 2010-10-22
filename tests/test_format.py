@@ -27,9 +27,9 @@ class TopLevelTests(TestCase):
     """Tests of top-level module functions."""
     
     def setUp(self):
-        self.otu_map1 = {'0':['seq1','seq2','seq5'],
-                    '1':['seq3','seq4'],
-                    '2':['seq6','seq7','seq8']}
+        self.otu_map1 = [('0',['seq1','seq2','seq5']),
+                         ('1',['seq3','seq4']),
+                         ('2',['seq6','seq7','seq8'])]
         self.tmp_fp1 = get_tmp_filename(prefix='FormatTests_',suffix='.txt')
         self.files_to_remove = []
         
@@ -51,7 +51,7 @@ class TopLevelTests(TestCase):
         write_otu_map(self.otu_map1,self.tmp_fp1)
         actual = fields_to_dict(open(self.tmp_fp1))
         self.files_to_remove.append(self.tmp_fp1)
-        self.assertEqual(actual,self.otu_map1)
+        self.assertEqual(actual,dict(self.otu_map1))
         
         
     def test_write_otu_map_prefix(self):

@@ -29,7 +29,7 @@ def write_otu_map(otu_map,output_fp,otu_id_prefix=''):
     of.close()
     
 def format_otu_map(otu_map,otu_id_prefix):
-    """
+    """ Takes list of format [(otu_id,[seq_ids]), ... ]
     """
     # raise error if prefix contains chars other than . or alnums
     # this functionality needs to be centralized
@@ -37,10 +37,10 @@ def format_otu_map(otu_map,otu_id_prefix):
         if not c.isalnum() and not c == '.':
             raise ValueError, "%s char is not allowed in OTU IDs" % c
     
-    for otu_id in sorted(otu_map.keys()):
+    for otu_id, seq_ids in otu_map:
         yield '%s%s\t%s\n' % (otu_id_prefix, 
-                            otu_id,
-                            '\t'.join(otu_map[otu_id]))
+                              otu_id,
+                              '\t'.join(seq_ids))
     return
 
 def format_distance_matrix(labels, data):
