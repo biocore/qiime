@@ -33,13 +33,12 @@ def main():
     
     min_counts, max_counts, median_counts, mean_counts, counts_per_sample =\
      compute_seqs_per_library_stats(open(opts.otu_table_fp,'U'))
-
+    
     print 'Seqs/sample summary:' 
     print ' Min: %s' % str(min_counts)
     print ' Max: %s' % str(max_counts)
     print ' Median: %s' % str(median_counts)
     print ' Mean: %s' % str(mean_counts)
-    print ' Number of samples: %s' % str(len(counts_per_sample))
     print ''
     print 'Seqs/sample detail:'
     sorted_counts_per_sample = [(v,k) for k,v in counts_per_sample.items()]
