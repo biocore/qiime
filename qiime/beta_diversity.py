@@ -200,7 +200,6 @@ def single_file_beta(input_path, metrics, tree_path, output_dir, rowids=None,
         tree = parse_newick(f, PhyloNode)
         f.close()
         if not full_tree:
-            new_tree_path = get_tmp_filename(suffix='.tre')
             tree = tree.getSubTree(otuids, ignore_missing=True)
 
     metrics_list = metrics.split(',')

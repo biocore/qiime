@@ -140,7 +140,7 @@ def main():
             f.close()
             if opts.verbose:
                 print 'done parsing otu table'
-            new_tree_path = get_tmp_filename(suffix='.tre')
+            new_tree_path = '%s/%s_intersection.tre' % (output_dir, job_prefix)
             created_temp_paths.append(new_tree_path)
             if opts.verbose:
                 print 'parsing tree'

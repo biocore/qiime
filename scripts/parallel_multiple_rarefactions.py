@@ -182,6 +182,7 @@ def main():
         
     if poll_directly:
         try:
+            print poller_command
             check_call(poller_command.split())
         except CalledProcessError, e:
             print '**Error occuring when calling the poller directly. '+\
