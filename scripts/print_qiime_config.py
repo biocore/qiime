@@ -223,6 +223,23 @@ class Qiime_config(TestCase):
          "ChimeraSlayer depends on external files in directoryies relative to its "
          "install directory. Thesedo not appear to be present.")
 
+    def test_uclust_supported_version(self):
+        """uclust version is supported """
+        command = 'uclust --version'
+        proc = Popen(command,shell=True,universal_newlines=True,\
+                         stdout=PIPE,stderr=STDOUT)
+        stdout = proc.stdout.read()
+        version_string = stdout.strip().split('v')[-1].strip('q')
+        try:
+            version = tuple(map(int,version_string.split('.')))
+            acceptable_version = version >= (1,2,21)
+        except ValueError:
+            acceptable_version = False
+    
+        self.assertTrue(acceptable_version,\
+         "Unsupported uclust version. 1.2.21 or later "+\
+         "is required, but running %s." % version_string)
+
 def test_qiime_config_variable(variable, qiime_config, test,
                                access_var=R_OK, fail_on_missing=False):
     """test if a variable is set and set to a readable path."""
@@ -245,6 +262,8 @@ def test_qiime_config_variable(variable, qiime_config, test,
     #test if file readable    
     test.assertTrue(access(fp, access_var),
                     "%s is not %s: %s" % (variable, modes[access_var], fp))
+
+
 
 if __name__ == "__main__":
     option_parser, opts, args = parse_command_line_parameters(**script_info)
