@@ -170,18 +170,32 @@ class ProcrustesTests(TestCase):
           RANDOM PERMUTATIONS, BUT THAT SHOULD BE RARE.
         
         """
-        actual = procrustes_monte_carlo(self.pcoa1_f,self.pcoa2_f,trials=100)
+        def shuffle_f(coords):
+            """ A fake shuffle function -- used to avoid random test failures 
+                
+                returns a re-ordered coords2
+            """
+            return array(\
+             [[-0.16713783,  0.22321481,  0.33766418,  0.22785083, -0.23830446, -0.18754852],
+              [-0.14864343,  0.07290181, -0.06250315,  0.03201972, -0.0966749 , -0.10337987],
+              [ 0.35725269, -0.00761567,  0.09044279, -0.21006839, -0.01355589, -0.04590791],
+              [ 0.26535811,  0.09772598,  0.04339214, -0.21014987,  0.14089095, -0.10261849]])
+              
+        actual = procrustes_monte_carlo(self.pcoa1_f,
+                                        self.pcoa2_f,
+                                        trials=100,
+                                        shuffle_f=shuffle_f)
         # just some sanity checks as the individual componenets are 
         # already tested -- these are based on looking at the output of the
         # run, and testing to ensure that it hasn't changed 
         expected_actual_m2 = 0.0211
         expected_len_trial_m2 = 100
-        max_expected_count_better = 40
-        max_expected_p_value = 0.4
+        expected_count_better = 0
+        expected_p_value = 0.0
         self.assertAlmostEqual(actual[0],expected_actual_m2,3)
         self.assertEqual(len(actual[1]),expected_len_trial_m2)
-        self.assertTrue(actual[2] < max_expected_count_better)
-        self.assertTrue(actual[3] < max_expected_p_value)
+        self.assertEqual(actual[2], expected_count_better)
+        self.assertEqual(actual[3], expected_p_value)
 
 
 pcoa1_f = """pc vector number	1	2	3	4	5	6
