@@ -265,9 +265,9 @@ def single_file_beta(input_path, metrics, tree_path, output_dir, rowids=None,
                                     otuids, tree, samids, rowid)
                         row_dissims.append(dissims)
 
-            rows_outfilepath = os.path.join(output_dir, metric + '_' +\
-                '_'.join(rowids_list) + '_' + os.path.split(input_path)[1])
-            f = open(rows_outfilepath,'w')
+            # rows_outfilepath = os.path.join(output_dir, metric + '_' +\
+            #     '_'.join(rowids_list) + '_' + os.path.split(input_path)[1])
+            f = open(outfilepath,'w')
             f.write(format_matrix(row_dissims,rowids_list,samids))
             f.close()
             
