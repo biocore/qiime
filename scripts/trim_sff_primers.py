@@ -12,11 +12,9 @@ __email__ = "rob@spot.colorado.edu"
 __status__ = "Development"
  
 from qiime.util import parse_command_line_parameters
-from qiime.trim_sff_primers import (sfffile_cmd, sffinfo_cmd, 
-    get_technical_lengths)
-from sys import stderr
-from os.path import join
-from os import walk, popen, system
+from qiime.trim_sff_primers import (
+    get_technical_lengths, set_sff_trimpoints, set_sff_trimpoints_with_sfftools,
+    )
 from optparse import make_option
 
 script_info={}
@@ -34,11 +32,14 @@ script_info['required_options'] = [
     ]
 
 script_info['optional_options']=[
-    make_option("-p", "--sfffile_path", dest='sfffile_path', default='sfffile', 
+    make_option("-p", "--sfffile_path", default='sfffile', 
         help="Path to sfffile binary [default: %default]"),
-    make_option("-q", "--sffinfo_path", dest='sffinfo_path', default='sffinfo',
+    make_option("-q", "--sffinfo_path", default='sffinfo',
         help="Path to sffinfo binary [default: %default]"),
-    make_option('--debug', dest='debug', default=False, action='store_true',
+    make_option('--use_sfftools', action='store_true', default=False,
+        help=('Use external sffinfo and sfffile programs instead of '
+              'equivalent Python implementation.')),
+    make_option('--debug', default=False, action='store_true',
         help="Print command-line output for debugging [default: %default]"),
     ]
 script_info['version'] = __version__
@@ -47,50 +48,15 @@ script_info['version'] = __version__
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
-    technical_lengths = get_technical_lengths(open(opts.input_map, 'U'),
-        opts.debug)
+    technical_lengths = get_technical_lengths(
+        open(opts.input_map, 'U'), opts.debug)
 
-    for dirpath, dirnames, fnames in walk(opts.libdir):
-        for fname in fnames:
-            if fname.endswith('.sff'):
-                sff_path = join(dirpath, fname)
-                lib_id = fname.rsplit('.',1)[0]
-                try:
-                    readlength = technical_lengths[lib_id]
-                except KeyError:
-                    continue
-                sffinfo_cmd_to_run = sffinfo_cmd % (opts.sffinfo_path,'-s',
-                    sff_path)
-                if opts.debug:
-                    print "Running sffinfo command to get ids and lengths:", \
-                        sffinfo_cmd_to_run
-                lines = popen(sffinfo_cmd_to_run)
-                seqlengths = {}
-                for line in lines:
-                    if line.startswith('>'):
-                        fields = line[1:].split()
-                        seqlengths[fields[0]] = fields[1].split('=')[1]
-
-                outfile_path = sff_path + '.trim'
-                outfile = open(outfile_path, 'w')
-                for id_, length in seqlengths.items():
-                    curr_length = int(seqlengths[id_])
-                    left_trim = readlength + 1
-                    if curr_length > left_trim:
-                        outfile.write("%s\t%s\t%s\n" %(id_,left_trim,  
-                            #need +1 for 1-based index 
-                            curr_length))
-                    else:
-                        stderr.write('Rejected read %s with trim points %s and %s (orig length %s)' % (id_, left_trim, curr_length, length))
-                outfile.close()
-
-                sfffile_cmd_to_run = sfffile_cmd % (opts.sfffile_path,
-                    outfile_path, sff_path+'.trimmed', sff_path)
-                if opts.debug:
-                    print "Running sfffile command:", sfffile_cmd_to_run
-                system(sfffile_cmd_to_run)
-                system('mv %s.trimmed %s' % (sff_path, sff_path))
-
+    if opts.use_sfftools:
+        set_sff_trimpoints_with_sfftools(
+            opts.libdir, technical_lengths, opts.sffinfo_path,
+            opts.sfffile_path, opts.debug)
+    else:
+        set_sff_trimpoints(opts.libdir, technical_lengths)
 
 if __name__ == "__main__":
     main()
