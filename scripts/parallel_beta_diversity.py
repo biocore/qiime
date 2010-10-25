@@ -129,6 +129,14 @@ def main():
     
     # Get the list of commands to be run and the expected result files
     if single_otu_table_mode:
+        # these will be the row dissim matrices
+        # temp for making, then move to output/i so the poller knows we're done
+        for i in range(jobs_to_start):
+            makedirs(working_dir + '/' + str(i))
+            created_temp_paths.append(working_dir + '/' + str(i))
+            makedirs(output_dir + '/' + str(i))
+            created_temp_paths.append(output_dir + '/' + str(i))
+            
         if opts.tree_path and not opts.full_tree:
             # get subtree once here, rather than again for each job
             # we call each job with --full_tree, so it's here or nowhere
@@ -188,7 +196,7 @@ def main():
             open(merge_map_filepath,'w').close()
             process_run_results_f = None
         created_temp_paths.append(merge_map_filepath)
-        
+
         # Create the filepath listing the temporary files to be deleted,
         # but don't write it yet
         deletion_list_filepath = '%s/deletion_list.txt' % working_dir
@@ -212,7 +220,6 @@ def main():
              process_run_results_f=process_run_results_f,
              command_prefix='',command_suffix='')            
         created_temp_paths += poller_result_filepaths
-        
         if not retain_temp_files:
             # If the user wants temp files deleted, now write the list of 
             # temp files to be deleted

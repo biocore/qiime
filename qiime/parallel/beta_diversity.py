@@ -8,6 +8,7 @@ File created on 7 Jan 2010.
 """
 from __future__ import division
 from os.path import split, join
+import os
 from qiime.parallel.util import get_rename_command, merge_to_n_commands
 from qiime.parse import parse_otu_table
 from qiime.format import format_distance_matrix
@@ -81,14 +82,17 @@ def get_job_commands_single_otu_table(
     sids = parse_otu_table(open(input_fp,'U'))[0]
     
     sample_id_groups = merge_to_n_commands(sids,jobs_to_start,',','','')
-    
-    for sample_id_group in sample_id_groups:
+    for i, sample_id_group in enumerate(sample_id_groups):
+        working_dir_i = os.path.join(working_dir, str(i))
+        output_dir_i = os.path.join(output_dir, str(i))
         input_dir, input_fn = split(input_fp)
         sample_id_desc = sample_id_group.replace(',','_')
-        output_fns = ['%s_%s_%s' % (metric, sample_id_desc, input_fn) \
+        output_fns = ['%s_%s' % (metric, input_fn) \
          for metric in metrics.split(',')]
         rename_command, current_result_filepaths = get_rename_command(\
-         output_fns,working_dir,output_dir)
+         output_fns,working_dir_i,output_dir_i)
+        print current_result_filepaths
+
         result_filepaths += current_result_filepaths
         
         command = '%s %s %s -i %s -o %s -t %s -m %s -f -r %s %s %s' %\
@@ -96,12 +100,13 @@ def get_job_commands_single_otu_table(
           python_exe_fp,\
           beta_diversity_fp,\
           input_fp,
-          working_dir + '/',
+          working_dir_i + '/',
           tree_fp,
           metrics,
           sample_id_group,
           rename_command,
           command_suffix)
+        print command
           
         commands.append(command)
         
