@@ -624,7 +624,10 @@ class CdHitOtuPicker(OtuPicker):
             # to cd-hit-est. We may want to change that in the future 
             # to avoid the overhead of loading large sequence collections
             # during this step. 
-            seqs = LoadSeqs(seq_path,moltype=moltype,aligned=False)
+            seqs = LoadSeqs(seq_path,
+                            moltype=moltype,
+                            aligned=False,
+                            label_to_name=lambda x: x.split()[0])
         
         
         # Get the clusters by running cd-hit-est against the
