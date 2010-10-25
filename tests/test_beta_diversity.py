@@ -142,7 +142,7 @@ class BetaDiversityCalcTests(TestCase):
             # do it by rows
             rows = 'sam5,sam3'
             row_outname = output_dir + '/' + metric + '_' +\
-                '_'.join(rows.split(',')) + '_' + in_fname
+                in_fname
             single_file_beta(input_path, ','.join(metrics), tree_path, output_dir,
                 rowids=rows)
             col_sams, row_sams, row_dmtx = parse_matrix(open(row_outname))
