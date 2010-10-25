@@ -275,16 +275,15 @@ def write_read_data(sff_file, read_data):
 
 def format_read_data(read_data, read_header):
     """Format a dictionary representation of an SFF read data as text.
+
+    The read data is expected to be in native flowgram format.
     """
     out = StringIO()
     out.write('\n')
 
     out.write('Flowgram:')
-    flow_vals = read_data['flowgram_values']
-    if any((x > 10 for x in flow_vals)):
-        flow_vals = [x * 0.01 for x in flow_vals]
-    for x in flow_vals:
-        out.write('\t%01.2f' % x)
+    for x in read_data['flowgram_values']:
+        out.write('\t%01.2f' % (x * 0.01))
     out.write('\n')
 
     out.write('Flow Indexes:')
@@ -391,7 +390,7 @@ def format_binary_sff(sff_file, output_file=None):
     """
     if output_file is None:
         output_file = StringIO()
-    header, reads = parse_binary_sff(sff_file)
+    header, reads = parse_binary_sff(sff_file, True)
     output_file.write(format_common_header(header))
     for read in reads:
         output_file.write(format_read(read))
