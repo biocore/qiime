@@ -91,7 +91,6 @@ def get_job_commands_single_otu_table(
          for metric in metrics.split(',')]
         rename_command, current_result_filepaths = get_rename_command(\
          output_fns,working_dir_i,output_dir_i)
-        print current_result_filepaths
 
         result_filepaths += current_result_filepaths
         
@@ -106,7 +105,6 @@ def get_job_commands_single_otu_table(
           sample_id_group,
           rename_command,
           command_suffix)
-        print command
           
         commands.append(command)
         
