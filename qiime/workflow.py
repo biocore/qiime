@@ -25,7 +25,7 @@ from qiime.sra_spreadsheet_to_map_files import get_study_groups
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME Project"
-__credits__ = ["Greg Caporaso", "Kyle Bittinger"]
+__credits__ = ["Greg Caporaso", "Kyle Bittinger", "Justin Kuczynski"]
 __license__ = "GPL"
 __version__ = "1.1.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -504,7 +504,7 @@ def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,
         except KeyError:
             bdiv_params_copy = {}
         try:
-            del bdiv_params_copy['metric']
+            del bdiv_params_copy['metrics']
         except KeyError:
             pass
         
