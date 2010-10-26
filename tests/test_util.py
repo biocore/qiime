@@ -303,39 +303,6 @@ class TopLevelTests(TestCase):
         otu_table_f3 = iter(self.otu_table_f3)
         self.assertRaises(ValueError,
          merge_n_otu_tables,[otu_table_f1,otu_table_f2,otu_table_f3])
-
-    def test_create_dir(self):
-        """create_dir creates dir and fails meaningful."""
-
-        tmp_dir_path = get_random_directory_name()
-        tmp_dir_path2 = get_random_directory_name(suppress_mkdir=True)
-        tmp_dir_path3 = get_random_directory_name(suppress_mkdir=True)
-
-        self.dirs_to_remove.append(tmp_dir_path)
-        self.dirs_to_remove.append(tmp_dir_path2)
-        self.dirs_to_remove.append(tmp_dir_path3)
-
-        # create on existing dir raises OSError if fail_on_exist=True
-        self.assertRaises(OSError, create_dir, tmp_dir_path,
-                          fail_on_exist=True)
-        self.assertEquals(create_dir(tmp_dir_path,
-                                     fail_on_exist=True,
-                                     handle_errors_externally=True), 1)
-
-        # return should be 1 if dir exist and fail_on_exist=False 
-        self.assertEqual(create_dir(tmp_dir_path, fail_on_exist=False), 1)
-
-        # if dir not there make it and return always 0
-        self.assertEqual(create_dir(tmp_dir_path2), 0)
-        self.assertEqual(create_dir(tmp_dir_path3, fail_on_exist=True), 0)
-
-    def test_handle_error_codes(self):
-        """handle_error_codes raises the right error."""
-
-        self.assertRaises(OSError, handle_error_codes, "test", False,1)
-        self.assertEqual(handle_error_codes("test", True, 1), 1)
-        self.assertEqual(handle_error_codes("test", False, 0), 0)
-        self.assertEqual(handle_error_codes("test"), 0)
         
     def test_sort_fasta_by_abundance(self):
         """sort_fasta_by_abundance functions as expected"""
