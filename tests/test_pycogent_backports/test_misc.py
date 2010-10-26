@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from os.path import rmdir
+from os import rmdir
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files, get_random_directory_name
 from qiime.pycogent_backports.misc import (parse_command_line_parameters, 
