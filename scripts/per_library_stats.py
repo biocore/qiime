@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME Project"
-__credits__ = ["Greg Caporaso", "Daniel McDonald"]
+__credits__ = ["Greg Caporaso", "Daniel McDonald","Justin Kuczynski"]
 __license__ = "GPL"
 __version__ = "1.1.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -33,6 +33,8 @@ def main():
     
     min_counts, max_counts, median_counts, mean_counts, counts_per_sample =\
      compute_seqs_per_library_stats(open(opts.otu_table_fp,'U'))
+    
+    print 'Num samples: %s\n' % str(len(counts_per_sample))
     
     print 'Seqs/sample summary:' 
     print ' Min: %s' % str(min_counts)
