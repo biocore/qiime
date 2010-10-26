@@ -4,11 +4,11 @@ from __future__ import division
 
 __author__ = "Julia Goodrich"
 __copyright__ = "Copyright 2010, The QIIME project"
-__credits__ = ["Julia Goodrich"]
+__credits__ = ["Julia Goodrich", "Justin Kuczynski"]
 __license__ = "GPL"
 __version__ = "1.1.0-dev"
-__maintainer__ = "Julia Goodrich"
-__email__ = "julia.goodrich@colorado.edu"
+__maintainer__ = "Justin Kuczynski"
+__email__ = "justinak@gmail.com"
 __status__ = "Development"
 """
 This script generates taxonomy pie charts
@@ -45,14 +45,14 @@ make_option('-l', '--labels', dest='labels',action='store',type='string',
 
 script_info['optional_options']=[\
 make_option('-s', '--sample_flag', dest='do_sample',
-    help='if True pie charts will be created for each sample',default=False,
-                      action = 'store_true'),
+    help='if -s is passed, pie charts will be created for each sample',
+        default=False, action = 'store_true'),
 make_option('-n', '--num', dest='num_categories', \
              help='Maximum number of individual categories in each pie chart. \
 All additional categories are grouped into an "other" category. \
 [default: %default]', default='20'),
 make_option('-o', '--dir-prefix', dest='dir_path',\
-             help='directory prefix for all analyses'),
+             help='output folder'),
 make_option('-b', '--colorby', dest='colorby',\
      help='This is the samples to make pie charts for in the counts files from  \
 summarize_taxa.py. The sample name must match the name of a sample id \
