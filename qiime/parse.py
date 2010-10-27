@@ -405,6 +405,10 @@ def parse_otu_table(lines,count_map_f=int):
                         
     return sample_ids, otu_ids, array(otu_table), metadata
 
+def parse_taxa_summary_table(lines):
+    result = parse_otu_table(lines,count_map_f=float)
+    return result[0], result[1], result[2]
+
 def filter_otus_by_lineage(sample_ids, otu_ids, otu_table, lineages, \
     wanted_lineage, max_seqs_per_sample, min_seqs_per_sample):
     """Filter OTU table to keep only desired lineages and sample sizes."""

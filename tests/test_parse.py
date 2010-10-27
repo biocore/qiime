@@ -22,7 +22,7 @@ from qiime.parse import (group_by_field, group_by_fields,
     sample_mapping_to_otu_table, parse_taxonomy, parse_mapping_file, 
     parse_metadata_state_descriptions, parse_rarefaction_data,
     parse_illumina_line, parse_qual_score, parse_qual_scores, QiimeParseError,
-    parse_newick,parse_trflp)
+    parse_newick,parse_trflp,parse_taxa_summary_table)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -63,6 +63,17 @@ class TopLevelTests(TestCase):
         self.legacy_otu_table1 = legacy_otu_table1
         self.otu_table1 = otu_table1
         self.expected_lineages1 = expected_lineages1
+        self.taxa_summary1 = taxa_summary1
+        self.taxa_summary1_expected = taxa_summary1_expected
+        
+    def test_parse_taxa_summary_table(self):
+        """ parse_taxa_summary_table functions as expected """
+        actual = parse_taxa_summary_table(self.taxa_summary1.split('\n'))
+        self.assertEqual(actual[0],self.taxa_summary1_expected[0])
+        self.assertEqual(actual[1],self.taxa_summary1_expected[1])
+        self.assertEqual(actual[2],self.taxa_summary1_expected[2])
+        self.assertEqual(actual,self.taxa_summary1_expected)
+        
         
     def test_parse_newick(self):
         """parse_newick correctly matches escaped tip names to otu ids
@@ -700,6 +711,33 @@ OTU ID	Fing	Key	NA	Consensus Lineage
 3	1722	4903	17	Bacteria; Firmicutes; Alicyclobacillaceae; Bacilli; Staphylococcaceae
 4	589	2074	34	Bacteria; Cyanobacteria; Chloroplasts; vectors
 """
+
+taxa_summary1 = """#Full OTU Counts
+Taxon	Even1	Even2	Even3
+Bacteria;Actinobacteria;Actinobacteria(class);Actinobacteridae	0.0880247251673	0.0721968465746	0.081371761759
+Bacteria;Bacteroidetes/Chlorobigroup;Bacteroidetes;Bacteroidia	0.192137761955	0.191095101593	0.188504131885
+Bacteria;Firmicutes;Bacilli;Lactobacillales	0.0264895739603	0.0259942669171	0.0318460745596
+# some comment
+Bacteria;Firmicutes;Clostridia;Clostridiales	0.491800007824	0.526186212556	0.49911159984
+Bacteria;Firmicutes;Erysipelotrichi;Erysipelotrichales	0.0311411916592	0.0184083913576	0.0282325481054
+Bacteria;Proteobacteria;Gammaproteobacteria;Enterobacteriales	0.166137214246	0.163087129528	0.168923372865
+No blast hit;Other	0.00426952518811	0.00303205147361	0.0020105109874"""
+
+taxa_summary1_expected = (['Even1','Even2','Even3'],
+ ['Bacteria;Actinobacteria;Actinobacteria(class);Actinobacteridae',
+ 'Bacteria;Bacteroidetes/Chlorobigroup;Bacteroidetes;Bacteroidia',
+ 'Bacteria;Firmicutes;Bacilli;Lactobacillales',
+ 'Bacteria;Firmicutes;Clostridia;Clostridiales',
+ 'Bacteria;Firmicutes;Erysipelotrichi;Erysipelotrichales',
+ 'Bacteria;Proteobacteria;Gammaproteobacteria;Enterobacteriales',
+ 'No blast hit;Other'],
+ array([[0.0880247251673, 0.0721968465746, 0.081371761759],
+        [0.192137761955, 0.191095101593, 0.188504131885],
+        [0.0264895739603, 0.0259942669171, 0.0318460745596],
+        [0.491800007824, 0.526186212556, 0.49911159984],
+        [0.0311411916592, 0.0184083913576, 0.0282325481054],
+        [0.166137214246, 0.163087129528, 0.168923372865],
+        [0.00426952518811, 0.00303205147361, 0.0020105109874]]))
 
 expected_lineages1 = [['Bacteria','Actinobacteria','Actinobacteridae','Propionibacterineae','Propionibacterium'],
 ['Bacteria','Firmicutes','Alicyclobacillaceae','Bacilli','Lactobacillales','Lactobacillales','Streptococcaceae','Streptococcus'],
