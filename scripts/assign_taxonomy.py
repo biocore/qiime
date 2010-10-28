@@ -75,8 +75,8 @@ script_info['required_options']=[\
 script_info['optional_options']=[\
  make_option('-t', '--id_to_taxonomy_fp',
         help='Path to tab-delimited file mapping sequences to assigned '
-         'taxonomy. Each assigned taxonomy is provided as a comma-separated '
-         'list. For assignment with rdp, each assigned taxonomy must be '
+         'taxonomy. Each assigned taxonomy is provided as a semicolon-separated'
+         ' list. For assignment with rdp, each assigned taxonomy must be '
          'exactly 6 levels deep. [default: %default; REQUIRED when method is '
          'blast]'),\
  make_option('-r', '--reference_seqs_fp',
