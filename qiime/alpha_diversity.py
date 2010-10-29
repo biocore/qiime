@@ -236,6 +236,7 @@ alph.osd.return_names = ('observed', 'singles', 'doubles')
 #are modified above
 phylogenetic_metrics = [fast_unifrac.PD_whole_tree]
 nonphylogenetic_metrics = [
+alph.ACE,
 alph.berger_parker_d,
 alph.brillouin_d,
 alph.chao1,
