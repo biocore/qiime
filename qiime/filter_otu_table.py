@@ -9,8 +9,8 @@ __copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Rob Knight and Jesse Stombaugh"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "1.1.0-dev"
-__maintainer__ = "Rob Knight"
-__email__ = "rob@spot.colorado.edu"
+__maintainer__ = "Tony Walters"
+__email__ = "William.A.Walters@colorado.edu"
 __status__ = "Development"
 
 from qiime.parse import parse_otu_table

@@ -8,8 +8,8 @@ __copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Rob Knight", "Kyle Bittinger", "Greg Caporaso"] 
 __license__ = "GPL"
 __version__ = "1.1.0-dev"
-__maintainer__ = "Rob Knight"
-__email__ = "rob@spot.colorado.edu"
+__maintainer__ = "Daniel McDonald"
+__email__ = "wasade@gmail.com"
 __status__ = "Development"
 
 from os import remove

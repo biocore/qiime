@@ -7,8 +7,8 @@ __copyright__ = "Copyright 2010, The QIIME project"
 __credits__ = ["Rob Knight", "Justin Kuczynski","Jesse Stombaugh"]
 __license__ = "GPL"
 __version__ = "1.1.0-dev"
-__maintainer__ = "Jesse Stombaugh"
-__email__ = "jesse.stombaugh@colorado.edu"
+__maintainer__ = "Greg Caporaso"
+__email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
  
 from sys import argv, exit, stderr, stdout

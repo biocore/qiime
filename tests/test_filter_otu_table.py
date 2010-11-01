@@ -6,8 +6,8 @@ __copyright__ = "Copyright 2010, The QIIME Project" #consider project name
 __credits__ = ["Jesse Stombaugh"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "1.1.0-dev"
-__maintainer__ = "Jesse Stombaugh"
-__email__ = "jesse.stombaugh@colorado.edu"
+__maintainer__ = "Tony Walters"
+__email__ = "William.A.Walters@colorado.edu"
 __status__ = "Development"
 
 from sys import argv

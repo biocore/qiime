@@ -7,8 +7,8 @@ __copyright__ = "Copyright 2010, The QIIME project"
 __credits__ = ["Julia Goodrich", "Justin Kuczynski"]
 __license__ = "GPL"
 __version__ = "1.1.0-dev"
-__maintainer__ = "Justin Kuczynski"
-__email__ = "justinak@gmail.com"
+__maintainer__ = "Jesse Stombaugh"
+__email__ = "jesse.stombaugh@colorado.edu"
 __status__ = "Development"
 """
 This script generates taxonomy pie charts

@@ -6,8 +6,8 @@ __credits__ = ["Rob Knight", "Justin Kuczynski","Jeremy Widmann", "Antonio Gonza
 #remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.1.0-dev"
-__maintainer__ = "Rob Knight"
-__email__ = "rob@spot.colorado.edu"
+__maintainer__ = "Greg Caporaso"
+__email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
 import numpy

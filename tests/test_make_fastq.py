@@ -10,8 +10,8 @@ __copyright__ = "Copyright 2010, The QIIME Project" #consider project name
 __credits__ = ["Rob Knight"] #remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.1.0-dev"
-__maintainer__ = "Rob Knight"
-__email__ = "rob@spot.colorado.edu"
+__maintainer__ = "Kyle Bittinger"
+__email__ = "kylebittinger@gmail.com"
 __status__ = "Development"
 
 class TopLevelTests(TestCase):

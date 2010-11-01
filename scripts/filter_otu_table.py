@@ -7,8 +7,8 @@ __copyright__ = "Copyright 2010, The QIIME project"
 __credits__ = ["Rob Knight","Jesse Stombaugh","Dan Knights","Daniel McDonald"]
 __license__ = "GPL"
 __version__ = "1.1.0-dev"
-__maintainer__ = "Rob Knight"
-__email__ = "rob@spot.colorado.edu"
+__maintainer__ = "Tony Walters"
+__email__ = "William.A.Walters@colorado.edu"
 __status__ = "Development"
  
 

@@ -7,8 +7,8 @@ __copyright__ = "Copyright 2010, The QIIME project"
 __credits__ = ["Rob Knight", "Antonio Gonzalez Pena","Greg Caporaso"] #remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.1.0-dev"
-__maintainer__ = "Antonio Gonzalez Pena"
-__email__ = "antgonza@gmail.com"
+__maintainer__ = "Tony Walters"
+__email__ = "William.A.Walters@colorado.edu"
 __status__ = "Development"
  
 

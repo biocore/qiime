@@ -6,8 +6,8 @@ __copyright__ = "Copyright 2010, The QIIME project"
 __credits__ = ["Rob Knight", "Daniel McDonald"]
 __license__ = "GPL"
 __version__ = "1.1.0-dev"
-__maintainer__ = "Rob Knight"
-__email__ = "rob@spot.colorado.edu"
+__maintainer__ = "Justin Kuczynski"
+__email__ = "justinak@gmail.com"
 __status__ = "Development"
 
 from cogent.parse.fasta import MinimalFastaParser
