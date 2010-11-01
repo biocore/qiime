@@ -14,6 +14,7 @@ __status__ = "Development"
 from optparse import make_option
 from os.path import split, splitext, exists
 from os import makedirs
+from numpy import log10
 from qiime.util import parse_command_line_parameters
 from qiime.parse import fields_to_dict
 from qiime.transform_coordinate_matrices import procrustes_monte_carlo,\
@@ -55,6 +56,9 @@ def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     random_trials = opts.random_trials
+    if random_trials != None and random_trials < 10:
+        option_parser.error('Must perform >= 10 trails for Monte Carlo analysis.')
+        
     output_dir = opts.output_dir
     sample_id_map_fp = opts.sample_id_map_fp
     num_dimensions = opts.num_dimensions
@@ -99,7 +103,7 @@ def main():
     output_matrix2_f.close()
     
     if random_trials:
-        summary_file_lines = ['FP1 FP2 Included_dimensions MC_p_value M^2']
+        summary_file_lines = ['FP1 FP2 Included_dimensions MC_p_value Count_better M^2']
         coords_f1 = list(open(input_fp1,'U'))
         coords_f2 = list(open(input_fp2,'U'))
         for max_dims in [3,5,10,15,20,None]:
@@ -110,8 +114,12 @@ def main():
                                     max_dimensions=max_dims,\
                                     sample_id_map=sample_id_map,
                                     trial_output_dir=trial_output_dir)
-            summary_file_lines.append('%s %s %s %1.5f %d %1.3f' %\
-             (input_fp1, input_fp2, str(max_dims), mc_p_value,\
+            # truncate the p-value to the correct number of significant
+            # digits
+            decimal_places = int(log10(random_trials))
+            mc_p_value_str = ('%1.'+'%df' % decimal_places) % mc_p_value
+            summary_file_lines.append('%s %s %s %s %d %1.3f' %\
+             (input_fp1, input_fp2, str(max_dims), mc_p_value_str,\
               count_better, actual_m_squared))
         f = open(output_summary_fp,'w')
         f.write('\n'.join(summary_file_lines))
