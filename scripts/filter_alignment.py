@@ -18,7 +18,7 @@ from qiime.filter_alignment import apply_lane_mask_and_gap_filter, \
 from qiime.util import parse_command_line_parameters
 from optparse import make_option
 from cogent.core.alignment import eps
-from os.path import split, exists, splitext
+from os.path import split, exists, splitext, getsize
 from os import mkdir, remove
 from qiime.util import load_qiime_config
 
@@ -76,6 +76,13 @@ def main():
         pass
     input_dir, input_filename = split(opts.input_fasta_file)
     input_basename, ext = splitext(input_filename)
+    
+    if getsize(opts.input_fasta_file) == 0:
+        raise ValueError, ("An empty fasta file was provided. "
+        "Did the alignment complete sucessfully? "
+        "Did PyNAST discard all sequences due to too-stringent minimum length "
+        "or minimum percent ID settings?")
+    
     output_fp = '%s/%s_pfiltered.fasta' % (opts.output_dir,input_basename)
 
     try:
