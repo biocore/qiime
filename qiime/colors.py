@@ -83,7 +83,12 @@ class Color(object):
         rgb = self.toRGB()
         return ('#%02s%02s%02s' % (hex(rgb[0])[2:], hex(rgb[1])[2:], \
             hex(rgb[2])[2:])).replace(' ','0')
-
+            
+    def toInt(self):
+        """Returns self as hex string."""
+        rgb = self.toHex()[1:]
+        return int(float.fromhex(rgb))
+        
     def __str__(self):
         """Return string representation of self"""
         return str(self.Name) + ':' + self.toHex()

@@ -61,6 +61,12 @@ class ColorTests(TestCase):
         self.assertEqual(self.black.toHex(), '#000000')
         self.assertEqual(self.red.toHex(), '#ff0000')
         self.assertEqual(self.pink.toHex(), '#640000')
+        
+    def test_toInt(self):
+        """Color toHex should give correct hex string"""
+        self.assertEqual(self.black.toInt(), 0)
+        self.assertEqual(self.red.toInt(), 16711680)
+        self.assertEqual(self.pink.toInt(), 6553600)
 
 
 class TopLevelTests(TestCase):
