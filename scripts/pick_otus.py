@@ -196,7 +196,11 @@ script_info['optional_options'] = [
                     " integers]")),
     make_option('--uclust_stable_sort',default=False,action='store_true',
               help=("pass --stable_sort to uclust (uclust versions uclustq1.2.15"
-                    " and later only) [default: %default]"))
+                    " and later only) [default: %default]")),
+    make_option('-d', '--save_uc_files', default=True, action='store_false',
+              help=("Enable preservation of intermediate uclust (.uc) files "
+              "that are used to generate clusters via uclust. "
+              "[default: %default]"))
     ]
 
 script_info['version'] = __version__
@@ -225,6 +229,9 @@ def main():
     max_rejects = opts.max_rejects
     min_aligned_percent = opts.min_aligned_percent
     uclust_stable_sort = opts.uclust_stable_sort
+    save_uc_files = opts.save_uc_files
+    
+
     
     # Input validation to throw a useful error message on common mistakes
     if (otu_picking_method == 'cdhit' and
@@ -289,7 +296,9 @@ def main():
         'max_accepts':max_accepts,
         'max_rejects':max_rejects,
         'new_cluster_identifier':opts.uclust_otu_id_prefix,
-        'stable_sort':uclust_stable_sort}
+        'stable_sort':uclust_stable_sort,
+        'save_uc_files':save_uc_files,
+        'output_dir':output_dir}
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,
                    result_path=result_path,log_path=log_path)
@@ -307,7 +316,9 @@ def main():
         'max_accepts':max_accepts,
         'max_rejects':max_rejects,
         'new_cluster_identifier':opts.uclust_otu_id_prefix,
-        'stable_sort':uclust_stable_sort}
+        'stable_sort':uclust_stable_sort,
+        'save_uc_files':save_uc_files,
+        'output_dir':output_dir}
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,refseqs_fp,
                    result_path=result_path,log_path=log_path,

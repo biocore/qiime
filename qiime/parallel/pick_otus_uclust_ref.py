@@ -18,7 +18,8 @@ __status__ = "Development"
 def get_job_commands(python_exe_fp,pick_otus_fp,fasta_fps,
      output_dir,refseqs_fp,job_prefix,working_dir,similarity,
      enable_rev_strand_match,optimal_uclust,exact_uclust,
-     max_accepts,max_rejects,stable_sort,command_prefix='/bin/bash; ',
+     max_accepts,max_rejects,stable_sort,save_uc_files,
+     command_prefix='/bin/bash; ',
      command_suffix='; exit'):
     """Generate pick_otus commands which should be run
     """
@@ -48,6 +49,10 @@ def get_job_commands(python_exe_fp,pick_otus_fp,fasta_fps,
         stable_sort_str = '--uclust_stable_sort'
     else:
         stable_sort_str = ''
+    if save_uc_files:
+        save_uc_files = ''
+    else:
+        save_uc_files = '-d'
         
     
     # Iterate over the input files
@@ -59,7 +64,7 @@ def get_job_commands(python_exe_fp,pick_otus_fp,fasta_fps,
         result_filepaths += current_result_filepaths
             
         command = \
-         '%s %s %s -i %s -r %s -m uclust_ref --suppress_new_clusters -o %s -s %s %s %s %s --max_accepts %s --max_rejects %s %s %s %s' %\
+         '%s %s %s -i %s -r %s -m uclust_ref --suppress_new_clusters -o %s -s %s %s %s %s --max_accepts %s --max_rejects %s %s %s %s %s' %\
          (command_prefix,\
           python_exe_fp,\
           pick_otus_fp,\
@@ -73,8 +78,10 @@ def get_job_commands(python_exe_fp,pick_otus_fp,fasta_fps,
           max_accepts,
           max_rejects,
           stable_sort_str,
+          save_uc_files,
           rename_command,
           command_suffix)
+
           
         commands.append(command)
 

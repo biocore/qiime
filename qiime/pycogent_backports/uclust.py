@@ -391,7 +391,7 @@ def uclust_search_and_align_from_fasta_filepath(
 
 def uclust_cluster_from_sorted_fasta_filepath(
     fasta_filepath,
-    output_filepath=None, 
+    uc_save_filepath=None, 
     percent_ID=0.97, 
     max_accepts=1,
     max_rejects=8, 
@@ -404,8 +404,9 @@ def uclust_cluster_from_sorted_fasta_filepath(
     stable_sort=False,
     HALT_EXEC=False):
     """ Returns clustered uclust file from sorted fasta"""
-    output_filepath = output_filepath or \
+    output_filepath = uc_save_filepath or \
      get_tmp_filename(prefix='uclust_clusters',suffix='.uc')
+     
     
     params = {'--id':percent_ID,
               '--maxaccepts':max_accepts,
@@ -426,24 +427,23 @@ def uclust_cluster_from_sorted_fasta_filepath(
 
 
 def get_output_filepaths(output_dir, fasta_filepath):
-    """ Returns filepaths for intermediate files to be kept """
+    """ Returns filepaths for intermediate file to be kept """
     
-    output_dir, output_filename = split(output_dir)
-    output_dir = output_dir or './'
-    output_file_basename, output_file_ext = splitext(fasta_filepath)
-    fasta_output_filepath = '%s/%s_sorted.fasta' % \
-     (output_dir,output_file_basename)
-    uc_output_filepath = '%s/%s_sorted.uc' % \
-     (output_dir,output_file_basename)
-    cd_hit_filepath = '%s/%s_cdhit.clstr' % \
-     (output_dir,output_file_basename)
-     
-    return fasta_output_filepath, uc_output_filepath, cd_hit_filepath, \
-     output_dir
+    if not output_dir.endswith('/'):
+        output_dir += '/'
+        
+    output_file_basename = "".join(basename(fasta_filepath).split('.')[0:-1])
+    uc_save_filepath = '%s%s_clusters.uc' % \
+     (output_dir, output_file_basename)
+
+    return uc_save_filepath
+
+
 
 
 def get_clusters_from_fasta_filepath(
     fasta_filepath,
+    original_fasta_path,
     percent_ID=0.97,
     max_accepts=1,
     max_rejects=8, 
@@ -456,6 +456,7 @@ def get_clusters_from_fasta_filepath(
     suppress_new_clusters=False,
     return_cluster_maps=False,
     stable_sort=False,
+    save_uc_files=True,
     HALT_EXEC=False):
     """ Main convenience wrapper for using uclust to generate cluster files
     
@@ -473,22 +474,49 @@ def get_clusters_from_fasta_filepath(
     i.e., if 99% were the parameter, all sequences that were 99% identical
     would be grouped as a cluster.
     """
+    
+
+
     # Create readable intermediate filenames if they are to be kept
-    if output_dir:
+    
+    fasta_output_filepath = None
+    uc_output_filepath = None
+    cd_hit_filepath = None
+    
+    if output_dir and not output_dir.endswith('/'):
+        output_dir += '/'
+    
+    
+    if save_uc_files:
+
+        uc_save_filepath = get_output_filepaths(output_dir, original_fasta_path)
+    else:
+        uc_save_filepath = None
+        
+    """if save_uc_files:
         if not (output_dir.endswith("/")):
             output_dir += "/"
-        fasta_output_filepath, uc_output_filepath, cd_hit_filepath, \
-         output_dir = get_output_filepaths(output_dir, fasta_filepath)
+        '''fasta_output_filepath, uc_output_filepath, cd_hit_filepath, \
+         output_dir = get_output_filepaths(output_dir, original_fasta_path)'''
+        uc_output_filepath, output_dir =\
+         get_output_filepaths(output_dir, original_fasta_path)
         if not isdir(output_dir):
             makedirs(output_dir)
     else:
         fasta_output_filepath = None
         uc_output_filepath = None
-        cd_hit_filepath = None
+        cd_hit_filepath = None"""
+        
+    
+        
+
+        
         
     sorted_fasta_filepath = ""
     uc_filepath = ""
     clstr_filepath = ""
+    
+
 
     # Error check in case any app controller fails
     files_to_remove = []
@@ -496,18 +524,21 @@ def get_clusters_from_fasta_filepath(
         if not suppress_sort:
             # Sort fasta input file from largest to smallest sequence 
             sort_fasta = uclust_fasta_sort_from_filepath(fasta_filepath, \
-            fasta_output_filepath)
+            output_filepath=fasta_output_filepath)
+            
             # Get sorted fasta name from application wrapper
             sorted_fasta_filepath = sort_fasta['Output'].name
             files_to_remove.append(sorted_fasta_filepath)
         else:
             sort_fasta = None
             sorted_fasta_filepath = fasta_filepath
+            
+    
     
         # Generate uclust cluster file (.uc format)
         uclust_cluster = uclust_cluster_from_sorted_fasta_filepath(
          sorted_fasta_filepath,
-         uc_output_filepath, 
+         uc_save_filepath, 
          percent_ID=percent_ID,
          max_accepts=max_accepts,
          max_rejects=max_rejects, 
@@ -532,12 +563,13 @@ def get_clusters_from_fasta_filepath(
         raise ApplicationNotFoundError('uclust not found, is it properly '+\
          'installed?')
     
+
     # Get list of lists for each cluster
     clusters, failures, seeds = \
      clusters_from_uc_file(uclust_cluster['ClusterFile'])
     
     # Remove temp files unless user specifies output filepath
-    if not output_dir:
+    if not save_uc_files:
         try:
             sort_fasta.cleanUp()
         except AttributeError:
@@ -551,3 +583,19 @@ def get_clusters_from_fasta_filepath(
         return clusters.values(), failures, seeds
 
 ## End uclust convenience functions
+
+'''def get_output_filepaths(output_dir, fasta_filepath):
+    """ Returns filepaths for intermediate files to be kept """
+    
+    output_dir, output_filename = split(output_dir)
+    output_dir = output_dir or './'
+    output_file_basename = basename(fasta_filepath).split('.')[0]
+    fasta_output_filepath = '%s/%s_sorted.fasta' % \
+     (output_dir,output_file_basename)
+    uc_output_filepath = '%s/%s_sorted.uc' % \
+     (output_dir,output_file_basename)
+    cd_hit_filepath = '%s/%s_cdhit.clstr' % \
+     (output_dir,output_file_basename)
+     
+    return fasta_output_filepath, uc_output_filepath, cd_hit_filepath, \
+     output_dir'''

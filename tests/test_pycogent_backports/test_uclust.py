@@ -251,27 +251,20 @@ class UclustConvenienceWrappers(TestCase):
     def test_get_output_filepaths(self):
         """ Properly generates output filepath names """
         
-        fasta_res, uc_res, cd_hit_res, output_dir_res = \
+        uc_res = \
          get_output_filepaths("/tmp/","test_seqs.fasta")
         
-        self.assertEqual(fasta_res, "/tmp/test_seqs_sorted.fasta")
-        self.assertEqual(uc_res, "/tmp/test_seqs_sorted.uc")
-        self.assertEqual(cd_hit_res, "/tmp/test_seqs_cdhit.clstr")
-        self.assertEqual(output_dir_res, "/tmp")
+        self.assertEqual(uc_res, "/tmp/test_seqs_clusters.uc")
+
         
-        fasta_res, uc_res, cd_hit_res, output_dir_res = \
-         get_output_filepaths(".","test_seqs.fasta")
-        self.assertEqual(fasta_res, ".//test_seqs_sorted.fasta")
-        self.assertEqual(uc_res, ".//test_seqs_sorted.uc")
-        self.assertEqual(cd_hit_res, ".//test_seqs_cdhit.clstr")
-        self.assertEqual(output_dir_res, "./")
+
         
     def test_get_clusters_from_fasta_filepath(self):
         """ Tests for return of lists of OTUs from given fasta filepath """
         
         clusters_res = \
          get_clusters_from_fasta_filepath(self.tmp_unsorted_fasta_filepath, \
-          percent_ID = 0.90)
+          original_fasta_path = None, percent_ID = 0.90, save_uc_files=False)
         expected_cluster_list.sort()
         expected_failure_list.sort()
         expected_new_seed_list.sort()
@@ -287,6 +280,8 @@ class UclustConvenienceWrappers(TestCase):
         """
         clusters_res = get_clusters_from_fasta_filepath(
           self.tmp_unsorted_fasta_filepath,
+          original_fasta_path = None, 
+          save_uc_files=False,
           max_accepts=7,max_rejects=12,
           percent_ID = 0.90,
           subject_fasta_filepath=self.ref_dna_seqs_fp,
@@ -309,11 +304,13 @@ class UclustConvenienceWrappers(TestCase):
         """
         clusters_res = get_clusters_from_fasta_filepath(
           self.tmp_unsorted_fasta_filepath,
+          original_fasta_path = None,
           max_accepts=7,max_rejects=12,
           percent_ID = 0.90,
           subject_fasta_filepath=self.ref_dna_seqs_fp,
           suppress_new_clusters=False,enable_rev_strand_matching=True,
-          HALT_EXEC=False)
+          HALT_EXEC=False,
+          save_uc_files=False)
         
         self.ref_test_clusters2.sort()
         self.ref_test_failures2.sort()
@@ -335,6 +332,7 @@ class UclustConvenienceWrappers(TestCase):
         # optimal
         clusters_res = \
          get_clusters_from_fasta_filepath(self.tmp_unsorted_fasta_filepath,
+          original_fasta_path = None, save_uc_files=False,
           percent_ID = 0.90, optimal = True)
         expected_cluster_list.sort()
         expected_failure_list.sort()
@@ -358,7 +356,8 @@ class UclustConvenienceWrappers(TestCase):
                     ['uclust_test_seqs_7'], ['uclust_test_seqs_9']]
         clusters_res = \
          get_clusters_from_fasta_filepath(self.tmp_unsorted_fasta_filepath,
-          percent_ID = 0.90, suppress_sort = True)
+          original_fasta_path = None,
+          percent_ID = 0.90, suppress_sort = True, save_uc_files=False)
         expected_cluster_list.sort()
         expected_failure_list.sort()
         expected_new_seed_list.sort()
@@ -379,6 +378,7 @@ class UclustConvenienceWrappers(TestCase):
         expected_new_seed_list = ['uclust_test_seqs_0', 'uclust_test_seqs_0_rc']
         clusters_res = \
          get_clusters_from_fasta_filepath(self.tmp_raw_dna_seqs_rc_filepath,
+          original_fasta_path = None, save_uc_files=False,
           percent_ID = 0.90, enable_rev_strand_matching = False)
         
         expected_cluster_list.sort()
@@ -397,6 +397,7 @@ class UclustConvenienceWrappers(TestCase):
         expected_new_seed_list = ['uclust_test_seqs_0']
         clusters_res = \
          get_clusters_from_fasta_filepath(self.tmp_raw_dna_seqs_rc_filepath,
+          original_fasta_path = None, save_uc_files=False,
           percent_ID = 0.90, enable_rev_strand_matching = True)
         
         expected_cluster_list.sort()

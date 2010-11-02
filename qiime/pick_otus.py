@@ -748,7 +748,9 @@ class UclustOtuPicker(UclustOtuPickerBase):
          'suppress_sort':True,
          'presort_by_abundance':True,
          'new_cluster_identifier':None,
-         'stable_sort':False}
+         'stable_sort':False,
+         'save_uc_files':True,
+         'output_dir':'.'}
         _params.update(params)
         OtuPicker.__init__(self, _params)
     
@@ -766,6 +768,9 @@ class UclustOtuPicker(UclustOtuPickerBase):
         log_path: path to log, which includes dump of params.
 
         """
+        
+        original_fasta_path = seq_path
+        
         if self.Params['presort_by_abundance']:
             # seq path will become the temporary sorted sequences
             # filepath, to be cleaned up after the run
@@ -775,9 +780,11 @@ class UclustOtuPicker(UclustOtuPickerBase):
             # create a dummy list of files to clean up
             files_to_remove = []
         
+        
         # perform the clustering
         clusters, failures, seeds = get_clusters_from_fasta_filepath(
          seq_path,
+         original_fasta_path,
          percent_ID = self.Params['Similarity'],
          optimal = self.Params['optimal'],
          exact = self.Params['exact'],
@@ -787,6 +794,8 @@ class UclustOtuPicker(UclustOtuPickerBase):
          max_accepts=self.Params['max_accepts'],
          max_rejects=self.Params['max_rejects'],
          stable_sort=self.Params['stable_sort'],
+         save_uc_files=self.Params['save_uc_files'],
+         output_dir=self.Params['output_dir'],
          HALT_EXEC=HALT_EXEC)
         
         # clean up any temp files that were created
@@ -832,7 +841,9 @@ class UclustReferenceOtuPicker(UclustOtuPickerBase):
                    'new_cluster_identifier':'QiimeOTU',
                    'next_new_cluster_number':1,
                    'presort_by_abundance':True,
-                   'stable_sort':False}
+                   'stable_sort':False,
+                   'save_uc_files':True,
+                   'output_dir':'.'}
         _params.update(params)
         OtuPicker.__init__(self, _params)
     
@@ -845,6 +856,8 @@ class UclustReferenceOtuPicker(UclustOtuPickerBase):
                  log_path=None,
                  failure_path=None,
                  HALT_EXEC=False):
+                     
+        original_fasta_path = seq_fp
         
         if new_cluster_identifier:
             self.Params['new_cluster_identifier'] = new_cluster_identifier
@@ -859,10 +872,12 @@ class UclustReferenceOtuPicker(UclustOtuPickerBase):
         else:
             # create a dummy list of files to clean up
             files_to_remove = []
+
         
         # perform the clustering
         cluster_map, failures, new_seeds = get_clusters_from_fasta_filepath(
             seq_fp,
+            original_fasta_path,
             subject_fasta_filepath=refseqs_fp,
             percent_ID=self.Params['Similarity'],
             enable_rev_strand_matching=self.Params['enable_rev_strand_matching'],
@@ -874,7 +889,11 @@ class UclustReferenceOtuPicker(UclustOtuPickerBase):
             suppress_sort=self.Params['suppress_sort'],
             return_cluster_maps=True,
             stable_sort=self.Params['stable_sort'],
+            save_uc_files=self.Params['save_uc_files'],
+            output_dir=self.Params['output_dir'],
             HALT_EXEC=HALT_EXEC)
+            
+        
         
         self._rename_clusters(cluster_map,new_seeds)
         
