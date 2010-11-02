@@ -12,7 +12,7 @@ from cogent.cluster.procrustes import procrustes
 from cogent.app.formatdb import build_blast_db_from_fasta_file
 from cogent.util.misc import get_random_directory_name, remove_files
 
-from qiime.parse import fields_to_dict
+from qiime.parse import fields_to_dict, parse_otu_table
 from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
     extract_seqs_by_sample_id, get_qiime_project_dir, matrix_stats,
     raise_error_on_parallel_unavailable, merge_otu_tables,
@@ -20,7 +20,7 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
     summarize_pcoas, _compute_jn_pcoa_avg_ranges, _flip_vectors, IQR,
     idealfourths, isarray, matrix_IQR, sort_fasta_by_abundance, degap_fasta_aln,
     write_degapped_fasta_to_file, compare_otu_maps, get_diff_for_otu_maps,
-    merge_n_otu_tables)
+    merge_n_otu_tables, convert_otu_table_relative)
 
 import numpy
 from numpy import array, asarray
@@ -56,6 +56,18 @@ class TopLevelTests(TestCase):
                 rmdir(dir)
         remove_files(self.files_to_remove)
                 
+    def test_convert_otu_table_relative(self):
+        """should convert a parsed otu table into relative abundances"""
+        otu_table = parse_otu_table(self.otu_table_f1)
+        exp_counts = array([[1.0/6, 0],
+                            [1.0/6, 0],
+                            [4.0/6, 0]])
+        rel_otu_table = convert_otu_table_relative(otu_table)
+        self.assertEqual(rel_otu_table[0], otu_table[0])
+        self.assertEqual(rel_otu_table[1], otu_table[1])
+        self.assertEqual(rel_otu_table[2], exp_counts)
+        self.assertEqual(rel_otu_table[3], otu_table[3])
+
     def test_make_safe_f(self):
         """make_safe_f should return version of f that ignores extra kwargs."""
         def f(x,y): return x*y

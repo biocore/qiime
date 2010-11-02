@@ -24,7 +24,8 @@ from numpy import min, max, median, mean
 import numpy
 from numpy.ma import MaskedArray
 from numpy.ma.extras import apply_along_axis
-from numpy import array, zeros, argsort, shape, vstack,ndarray
+from numpy import array, zeros, argsort, shape, vstack,ndarray, asarray, \
+        float, where, isnan
 from collections import defaultdict
 from optparse import make_option
 import sys
@@ -254,9 +255,9 @@ def get_qiime_scripts_dir():
     else:
         result = join(get_qiime_project_dir(),'scripts')
     
-    assert exists(result),\
-     "qiime_scripts_dir does not exist: %s." % result +\
-     " Have you defined it correctly in your qiime_config?"
+    #assert exists(result),\
+    # "qiime_scripts_dir does not exist: %s." % result +\
+    # " Have you defined it correctly in your qiime_config?"
     
     return result
     
@@ -593,6 +594,17 @@ def merge_n_otu_tables(otu_table_fs):
                                     taxonomy=taxonomy).split('\n')
     
     return sample_names, otu_names, data, taxonomy
+
+def convert_otu_table_relative(otu_table):
+    """Convert the OTU table to relative abundances
+
+    this method works on a parsed OTU table
+    """
+    sample_ids, otu_ids, otu_counts, consensus = otu_table
+    otu_counts = asarray(otu_counts, float)
+    otu_counts = otu_counts / otu_counts.sum(axis=0)
+    otu_counts = where(isnan(otu_counts), 0.0, otu_counts)
+    return (sample_ids, otu_ids, otu_counts, consensus)
 
 def convert_OTU_table_relative_abundance(otu_table):
     """convert the OTU table to have relative abundances rather than raw counts

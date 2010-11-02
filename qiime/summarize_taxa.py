@@ -11,87 +11,84 @@ __status__ = "Development"
 
 """Contains code for summarizing OTU table with taxa in last field.
 """
+from collections import defaultdict
 from sys import stdout, stderr
 from optparse import OptionParser
 from string import strip
 from numpy import array
-from qiime.util import convert_OTU_table_relative_abundance
+from qiime.parse import parse_otu_table, parse_mapping_file
 
-def make_new_summary_file(otu_table, level, delimitor, relative_abundance): 
-    """makes a summary file with taxa on rows and samples in columns
+def make_summary(otu_table, level): 
+    """Returns taxonomy summary data
+
+    header is a list of:
+    [(Taxon),sample1,sample2,...]
+
+    taxonomy_summary is a list of lists of:
+    [[(taxon1),count,count,...],[(taxon2),count,count,...]...]
     """
-    #Note: the OTU table is often too large to read into memory, hence
-    #working on file directly.
+    header = ['Taxon']
+    header.extend(otu_table[0]) # sample ids
+
+    counts_by_consensus, sample_map = sum_counts_by_consensus(otu_table, level)
+
+    taxonomy_summary = []
+    for consensus, otu_counts in sorted(counts_by_consensus.items()):
+        new_row = [(consensus)]
+        new_row.extend(otu_counts)
+        taxonomy_summary.append(new_row)
+
+    return taxonomy_summary, header
+
+def sum_counts_by_consensus(otu_table, level, missing_name='Other'):
+    """Returns a dict keyed by consensus, valued by otu counts
+
+    otu counts are summed together if they have the same consensus
+
+    if the consensus string doesn't reach to level, missing_name is appended on
+    until the taxonomy string is of length level
+    """
     result = {}
-    output = []
-    if relative_abundance == 'True':
-        otu_table = convert_OTU_table_relative_abundance(otu_table)
-    for line in otu_table:
-        if line.startswith('#OTU ID'):
-            line = line.replace('#OTU ID', 'Taxon')
-            line = line.replace('\tConsensus Lineage', '')
-            output.append(line.strip('\n') + '\n')
-        elif line.startswith('#'):
-            output.append(line.strip('\n') + '\n')
-        else:
-            result = process_data_line(line, result, delimitor, level,
-                relative_abundance)
-    for key, val in sorted(result.items()):
-        output.append('\t'.join([key] + map(str, val))+'\n')
-    return output
+    sample_map = dict([(s,i) for i,s in enumerate(otu_table[0])])
 
-def add_summary_category_mapping(otu_table, category_mapping, \
-    level, delimitor, relative_abundance): 
-    """makes a summary file with taxa on rows and samples in columns
-    """
-    #Note: the OTU table is often too large to read into memory, hence
-    #working on file directly.
-    result = {}
-    output = []
-    if relative_abundance == 'True':
-        otu_table = convert_OTU_table_relative_abundance(otu_table)
-    for line in otu_table:
-        if line.startswith('#OTU ID'):
-            samples = line.strip().split('\t')[1:-1]
-        if not line.startswith('#'):
-            result = process_data_line(line, result, delimitor, level,
-                relative_abundance)
-    for line in category_mapping:
-        if line.startswith('#SampleID'):
-            header = line.strip().split('\t')
-            header.extend(sorted(result.keys()))
-            output.append('\t'.join(header) + '\n')
-        elif line.startswith('#'):
-            output.append(line + '\n')
+    for counts, consensus in zip(otu_table[2], otu_table[3]):
+        n_ranks = len(consensus)
+        if n_ranks > level:
+            consensus = consensus[:level]
+        elif n_ranks < level:
+            consensus.extend([missing_name for i in range(level - n_ranks)])
         else:
-            line = line.strip().split('\t')
-            sample_name = line[0]
-            try:
-                index = samples.index(sample_name)
-            except ValueError:
-                pass # don't include this sample, as was not found in otu table
-            else:
-                for key, val in sorted(result.items()):
-                    line.append(str(val[index]))
-                output.append('\t'.join(line) + '\n')
-    return output
+            # consensus is the correct number of levels
+            pass
 
-def process_data_line(line, result, delimitor, level, use_float='True'):
-    """ beware use_float is a STRING!!!
+        consensus = tuple(consensus)
+        if consensus in result:
+            result[consensus] += counts
+        else:
+            result[consensus] = counts.copy()
+
+    return result, sample_map
+
+def add_summary_mapping(otu_table, mapping, level): 
+    """Returns sample summary of sample counts by taxon
+    
+    Summary is keyed by sample_id, valued by otu counts for each taxon
+    Taxon order is a list of taxons where idx n corresponds to otu count idx n
     """
-    fields = line.split('\t')
-    vals = [float(i) for i in fields[1:-1]]
-    if use_float == 'True':
-        data = array(vals, dtype=float)
-    else:
-        data = array(vals, dtype=int)
-    tax = map(strip, fields[-1].split(delimitor)[:level])
-    if len(tax) < level:
-        tax.append('Other')
-    tax_str = ';'.join(tax)
-    if tax_str in result:
-        result[tax_str] += data
-    else:
-        result[tax_str] = data
-    return result
+    counts_by_consensus, sample_map = sum_counts_by_consensus(otu_table, level)
+    
+    summary = defaultdict(list)
+    for row in mapping:
+        # grab otu idx if the sample exists, otherwise ignore it
+        sample_id = row[0]
+        if sample_id not in sample_map:
+            continue
+        otu_idx = sample_map[sample_id]
+
+        for consensus, counts in sorted(counts_by_consensus.items()):
+            summary[sample_id].append(counts[otu_idx])
+
+    taxon_order = sorted(counts_by_consensus.keys())
+
+    return summary, taxon_order
 
