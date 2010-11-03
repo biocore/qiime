@@ -19,6 +19,8 @@ from optparse import make_option
 from qiime.summarize_taxa import make_summary, add_summary_mapping
 from sys import stdout, stderr
 from qiime.parse import parse_otu_table, parse_mapping_file
+from qiime.format import write_summarize_taxa, write_add_taxa_summary_mapping,\
+        format_summarize_taxa, format_add_taxa_summary_mapping
 
 script_info={}
 script_info['brief_description']="""Summarize Taxa"""
@@ -91,28 +93,18 @@ def main():
         outfile = stdout
 
     if mapping:
-        summary, taxon_order = add_summary_mapping(otu_table, mapping, level)
-        taxon_order = [delimiter.join(tax) for tax in taxon_order]
-        header.extend(taxon_order)
+        summary, tax_order = add_summary_mapping(otu_table, mapping, level)
+        if output_fname:
+            write_add_taxa_summary_mapping(summary,tax_order,mapping,header,output_fname,delimiter)
+        else:
+            print ''.join(format_add_taxa_summary_mapping(summary,tax_order,mapping,header,delimiter))
 
-        output = ['\t'.join(header)]
-        for row in mapping:
-            sample_id = row[0]
-            if sample_id not in summary:
-                continue
-            row.extend(map(str, summary[sample_id]))
-            output.append('\t'.join(row))
     else:
         summary, header = make_summary(otu_table, level)
-        output = ['\t'.join(header)]
-        for row in summary:
-            line = []
-            taxon = row[0]
-            taxon = delimiter.join(taxon)
-            line.append(taxon)
-            line.extend(map(str, row[1:]))
-            output.append('\t'.join(line))
-    outfile.write('\n'.join(output))
+        if output_fname:
+            write_summarize_taxa(summary, header, output_fname, delimiter)
+        else:
+            print ''.join(format_summarize_taxa(summary,header,delimiter))
 
 
 if __name__ == "__main__":

@@ -21,7 +21,9 @@ from qiime.parse import fields_to_dict
 from qiime.format import (format_distance_matrix, format_otu_table,
     format_coords, build_prefs_string, format_matrix, format_map_file,
     format_histograms, write_Fasta_from_name_seq_pairs, 
-    format_unifrac_sample_mapping,format_otu_map,write_otu_map)
+    format_unifrac_sample_mapping,format_otu_map,write_otu_map, 
+    format_summarize_taxa, write_summarize_taxa, 
+    format_add_taxa_summary_mapping, write_add_taxa_summary_mapping)
 
 class TopLevelTests(TestCase):
     """Tests of top-level module functions."""
@@ -32,10 +34,65 @@ class TopLevelTests(TestCase):
                          ('2',['seq6','seq7','seq8'])]
         self.tmp_fp1 = get_tmp_filename(prefix='FormatTests_',suffix='.txt')
         self.files_to_remove = []
-        
+
+        self.taxa_summary = [[('a','b','c'),0,1,2],
+                             [('d','e','f'),3,4,5]]
+        self.taxa_header = ['Taxon','foo','bar','foobar']
+       
+        self.add_taxa_summary = {'s1':[1,2],'s2':[3,4]}
+        self.add_taxa_header = ['sample_id','foo','bar']
+        self.add_taxa_order = [('a','b','c'),('d','e','f')]
+        self.add_taxa_mapping = [['s1','something1','something2'],
+                                 ['s2','something3','something4'],
+                                 ['s3','something5','something6']]
     def tearDown(self):
         remove_files(self.files_to_remove)
-    
+
+    def test_format_summarize_taxa(self):
+        """format_summarize_taxa functions as expected"""
+        exp = '\n'.join(['#Taxon\tfoo\tbar\tfoobar',
+                         'a;b;c\t0\t1\t2',
+                         'd;e;f\t3\t4\t5\n'])
+        obs = ''.join(list(format_summarize_taxa(self.taxa_summary, \
+                                                 self.taxa_header)))
+        self.assertEqual(obs, exp)
+        
+    def test_write_summarize_taxa(self):
+        """write_summarize_taxa functions as expected"""
+        write_summarize_taxa(self.taxa_summary, self.taxa_header, self.tmp_fp1)
+        obs = open(self.tmp_fp1).read()
+        exp = '\n'.join(['#Taxon\tfoo\tbar\tfoobar',
+                         'a;b;c\t0\t1\t2',
+                         'd;e;f\t3\t4\t5\n'])
+        self.assertEqual(obs,exp)
+        self.files_to_remove.append(self.tmp_fp1)
+
+    def test_format_add_taxa_summary_mapping(self):
+        """format_add_taxa_summary_mapping functions as expected"""
+        exp = '\n'.join(['#sample_id\tfoo\tbar\ta;b;c\td;e;f',
+                         's1\tsomething1\tsomething2\t1\t2',
+                         's2\tsomething3\tsomething4\t3\t4\n'])
+        tmp = format_add_taxa_summary_mapping(self.add_taxa_summary,\
+                                              self.add_taxa_order,\
+                                              self.add_taxa_mapping, \
+                                              self.add_taxa_header)
+        obs = ''.join(list(tmp))
+        self.assertEqual(obs,exp)
+
+    def test_write_add_taxa_summary_mapping(self):
+        """write_add_taxa_summary_mapping functions as expected"""
+        write_add_taxa_summary_mapping(self.add_taxa_summary,\
+                                       self.add_taxa_order,\
+                                       self.add_taxa_mapping,\
+                                       self.add_taxa_header,\
+                                       self.tmp_fp1)
+        obs = open(self.tmp_fp1).read()
+        exp = '\n'.join(['#sample_id\tfoo\tbar\ta;b;c\td;e;f',
+                         's1\tsomething1\tsomething2\t1\t2',
+                         's2\tsomething3\tsomething4\t3\t4\n'])
+        self.assertEqual(obs, exp)
+        self.files_to_remove.append(self.tmp_fp1)
+
     def test_format_otu_map(self):
         """format_otu_map functions as expected """
         actual = list(format_otu_map(self.otu_map1,''))

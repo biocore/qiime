@@ -2,7 +2,8 @@
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2010, The QIIME Project" 
-__credits__ = ["Rob Knight", "Justin Kuczynski","Jeremy Widmann", "Antonio Gonzalez Pena"] 
+__credits__ = ["Rob Knight", "Justin Kuczynski","Jeremy Widmann", \
+        "Antonio Gonzalez Pena", "Daniel McDonald"] 
 #remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.1.0-dev"
@@ -19,6 +20,53 @@ from cogent import Sequence
 
 A lot of this might migrate into cogent at some point.
 """
+
+def format_summarize_taxa(summary, header, delimiter=';'):
+    """Formats a summarized taxonomy table for output"""
+    yield "#%s\n" % '\t'.join(header)
+    for row in summary:
+        # taxon is tuple, join together for foo;bar;foobar
+        taxon = row[0]
+        line = [delimiter.join(taxon)]
+
+        # add on otu counts
+        line.extend(map(str, row[1:]))
+
+        yield "%s\n" % '\t'.join(line)
+ 
+def write_summarize_taxa(summary, header, output_fp, delimiter=';'):
+    """ """
+    of = open(output_fp,'w')
+    for line in format_summarize_taxa(summary, header, delimiter):
+        of.write(line)
+    of.close()
+
+def format_add_taxa_summary_mapping(summary, tax_order, mapping, header, \
+        delimiter=';'):
+    """Formats a summarized taxonomy with mapping information"""
+    tax_order = [delimiter.join(tax) for tax in tax_order]
+    header.extend(tax_order)
+    yield "#%s\n" % '\t'.join(header)
+
+    for row in mapping:
+        sample_id = row[0]
+
+        # only save samples we have summaries for
+        if sample_id not in summary:
+            continue
+
+        # grab otu counts for each taxon
+        row.extend(map(str, summary[sample_id]))
+        yield "%s\n" % '\t'.join(row)
+
+def write_add_taxa_summary_mapping(summary, tax_order, mapping, header, \
+        output_fp, delimiter=';'):
+    """ """
+    of = open(output_fp,'w')
+    for line in format_add_taxa_summary_mapping(summary, tax_order, mapping, \
+                                                header, delimiter):
+        of.write(line)
+    of.close()
 
 def write_otu_map(otu_map,output_fp,otu_id_prefix=''):
     """
