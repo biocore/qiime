@@ -21,6 +21,7 @@ from qiime.make_distance_histograms import group_distances, _make_path, \
 from cogent.util.misc import get_random_directory_name
 from qiime.colors import sample_color_prefs_and_map_data_from_options,\
     iter_color_groups
+from qiime.parse import parse_mapping_file, parse_distmat, parse_prefs_file
 from os import mkdir
 from string import strip
 
@@ -49,10 +50,12 @@ script_info['optional_options']=[\
     make_option('-p', '--prefs_path',help='This is the user-generated preferences \
 file. NOTE: This is a file with a dictionary containing preferences for the \
 analysis.  This dict must have a "Fields" key mapping to a list of desired fields. [default: %default]'),
-    make_option('-o', '--dir_path', dest='dir_path', default='.',\
+    make_option('-o', '--dir_path', dest='dir_path', type='string', \
+        default='.',\
         help='Directory to output data for all analyses. [default: %default]'
 ),\
-    make_option('-k', '--background_color', default='white', help='This is the \
+    make_option('-k', '--background_color', dest='background_color',\
+        default='white', help='This is the \
     background color to use in the plots (Options are \'black\' or \'white\'. \
     [default: %default]'),\
     make_option('--monte_carlo',dest='monte_carlo',default=False,\
@@ -71,6 +74,38 @@ script_info['version'] = __version__
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
     
+    #Some code for error checking of input args:
+    
+    #Check if distance_matrix_file is valid:
+    try:
+        d_header, d_mat = parse_distmat(open(opts.distance_matrix_file,'U'))
+    except:
+        option_parser.error("This does not look like a valid distance matrix file.  Please supply a valid distance matrix file using the -d option.")
+    
+    #Check if map_fname is valid:
+    try:
+        mapping, m_header, m_comments = \
+            parse_mapping_file(open(opts.map_fname,'U'))
+    except:
+        option_parser.error("This does not look like a valid metadata mapping file.  Please supply a valid mapping file using the -m option.")
+    
+    #make sure background_color is valid
+    if opts.background_color not in ['black','white']:
+        option_parser.error("'%s' is not a valid background color.  Please pass in either 'black' or 'white' using the -k option."%(opts.background_color))
+    
+    #make sure prefs file is valid if it exists
+    if opts.prefs_path is not None:
+        try:
+            prefs_file = open(opts.prefs_path, 'U').read()
+        except IOError:
+            option_parser.error("Provided prefs file, '%s', does not exist.  Please pass in a valid prefs file with the -p option."%(opts.prefs_path))
+            
+    if opts.prefs_path is not None:
+        prefs = parse_prefs_file(prefs_file)
+    else:
+        prefs=None
+
+    
     color_prefs, color_data, background_color, label_color= \
                             sample_color_prefs_and_map_data_from_options(opts)
     
@@ -86,18 +121,19 @@ def main():
     
     qiime_dir = get_qiime_project_dir()+'/qiime/support_files/'
     
-    if opts.prefs_path:
-        prefs = eval(open(opts.prefs_path, 'U').read())
-    else:
-        prefs=None
-    
+        
     fields = opts.fields
     if fields is not None:
         fields = map(strip,fields.split(','))
         fields = [i.strip('"').strip("'") for i in fields]
-    elif opts.prefs_path is not None:
-        prefs = eval(open(opts.prefs_path, 'U').read())
+    elif prefs is not None:
         fields = prefs.get('FIELDS',None)
+    
+    #Check that all provided fields are valid:
+    if fields is not None:
+        for f in fields:
+            if f not in m_header:
+                option_parser.error("The field, %s, is not in the provided mapping file.  Please supply correct fields (using the -f option or providing a 'FIELDS' list in the prefs file) corresponding to fields in mapping file."%(f))
     
     within_distances, between_distances, dmat = \
         group_distances(mapping_file=opts.map_fname,\

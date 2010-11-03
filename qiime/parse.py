@@ -104,7 +104,7 @@ def parse_prefs_file(prefs_string):
     """
     try:
         prefs = dict(eval(prefs_string))
-    except TypeError:
+    except TypeError, IOError:
         raise QiimeParseError, "Invalid prefs file. Prefs file must contain a valid prefs dictionary."
     return prefs
     
