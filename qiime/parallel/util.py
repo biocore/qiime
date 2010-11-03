@@ -137,12 +137,15 @@ def submit_jobs(path_to_cluster_jobs, jobs_fp, job_prefix):
     cmd = '%s -ms %s %s' % (path_to_cluster_jobs, jobs_fp, job_prefix)
     proc = Popen(cmd,shell=True,universal_newlines=True,\
                  stdout=PIPE,stderr=STDOUT)
+    # Read stdout/stderr before waiting to avoid blocking 
+    # (see here: http://bugs.python.org/issue1606)
+    stdout = proc.stdout.read()
     return_value = proc.wait()
     if return_value != 0:
         msg = "\n\n*** Could not start parallel jobs. \n" +\
          "Command run was:\n %s\n" % cmd +\
          "Command returned exit status: %d\n" % return_value +\
-         "Stdout/stderr:\n%s\n" % proc.stdout.read()
+         "Stdout/stderr:\n%s\n" % stdout
         raise RuntimeError, msg
 
 def compute_seqs_per_file(input_fasta_fp,num_jobs_to_start):
