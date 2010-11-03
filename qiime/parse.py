@@ -96,6 +96,18 @@ def parse_mapping_file(lines, strip_quotes=True, suppress_stripping=False):
 
     return mapping_data, header, comments
 
+def parse_prefs_file(prefs_string):
+    """Returns prefs dict evaluated from prefs_string.
+    
+        prefs_string: read buffer from prefs file or string containing prefs
+            dict.  Must be able to evauluated as a dict using eval.
+    """
+    try:
+        prefs = dict(eval(prefs_string))
+    except TypeError:
+        raise QiimeParseError, "Invalid prefs file. Prefs file must contain a valid prefs dictionary."
+    return prefs
+    
 
 def group_by_field(table, name):
     """Returns dict of field_state:[row_headers] from table.

@@ -22,7 +22,7 @@ from qiime.parse import (group_by_field, group_by_fields,
     sample_mapping_to_otu_table, parse_taxonomy, parse_mapping_file, 
     parse_metadata_state_descriptions, parse_rarefaction_data,
     parse_illumina_line, parse_qual_score, parse_qual_scores, QiimeParseError,
-    parse_newick,parse_trflp,parse_taxa_summary_table)
+    parse_newick,parse_trflp,parse_taxa_summary_table, parse_prefs_file)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -114,6 +114,27 @@ class TopLevelTests(TestCase):
               '"x "\t" y "\t z ', ' ', '"#more skip"', 'i\t"j"\tk']
         obs = parse_mapping_file(s2)
         self.assertEqual(obs, exp)
+    
+    def test_parse_prefs_file(self):
+        """parse_prefs_file should correctly eval prefs string.
+        """
+        #Test good input
+        ps1 = """{'bgcolor':'white','colors':
+            {'id':'blue','name':'green'},'list':[1,2,3]}"""
+        exp1 = {'bgcolor':'white','colors':{'id':'blue','name':'green'},\
+            'list':[1,2,3]}
+        self.assertEqual(parse_prefs_file(ps1),exp1)
+        
+        #Test bad input
+        #list of valid input rather than multiline string should fail.
+        ps_bad_1 = ["{'bgcolor':'white',",
+            "'colors':{'id':'blue','name':'green'}",\
+            ",'list':[1,2,3]}"]
+        self.assertRaises(QiimeParseError,parse_prefs_file,ps_bad_1)
+        
+        #bad data. Can be evaluated but not a dict.
+        ps_bad_2 = "[1,2,3]"
+        self.assertRaises(QiimeParseError,parse_prefs_file,ps_bad_2)
 
     def test_group_by_field(self):
         """group_by_field should group table by fields"""
