@@ -488,34 +488,13 @@ def get_clusters_from_fasta_filepath(
     
     
     if save_uc_files:
-
         uc_save_filepath = get_output_filepaths(output_dir, original_fasta_path)
     else:
         uc_save_filepath = None
-        
-    """if save_uc_files:
-        if not (output_dir.endswith("/")):
-            output_dir += "/"
-        '''fasta_output_filepath, uc_output_filepath, cd_hit_filepath, \
-         output_dir = get_output_filepaths(output_dir, original_fasta_path)'''
-        uc_output_filepath, output_dir =\
-         get_output_filepaths(output_dir, original_fasta_path)
-        if not isdir(output_dir):
-            makedirs(output_dir)
-    else:
-        fasta_output_filepath = None
-        uc_output_filepath = None
-        cd_hit_filepath = None"""
-        
     
-        
-
-        
-        
     sorted_fasta_filepath = ""
     uc_filepath = ""
     clstr_filepath = ""
-    
 
 
     # Error check in case any app controller fails
@@ -532,9 +511,7 @@ def get_clusters_from_fasta_filepath(
         else:
             sort_fasta = None
             sorted_fasta_filepath = fasta_filepath
-            
-    
-    
+        
         # Generate uclust cluster file (.uc format)
         uclust_cluster = uclust_cluster_from_sorted_fasta_filepath(
          sorted_fasta_filepath,
@@ -554,15 +531,12 @@ def get_clusters_from_fasta_filepath(
     except ApplicationError:
         remove_files(files_to_remove)
         raise ApplicationError, ('Error running uclust. Possible causes are '
-         'unsupported version (current supported version is v1.2.16) is installed; '
-         'improperly formatted input file was provided; or uclust segfaulted. '
-         'Segfaults are a known issue (in uclust, not QIIME) and we\'re currently '
-         'waiting on a fix.')
+         'unsupported version (current supported version is v1.2.16) is installed or '
+         'improperly formatted input file was provided')
     except ApplicationNotFoundError:
         remove_files(files_to_remove)
         raise ApplicationNotFoundError('uclust not found, is it properly '+\
          'installed?')
-    
 
     # Get list of lists for each cluster
     clusters, failures, seeds = \
@@ -576,26 +550,9 @@ def get_clusters_from_fasta_filepath(
             pass
         uclust_cluster.cleanUp()
     
-    
     if return_cluster_maps:
         return clusters, failures, seeds
     else:
         return clusters.values(), failures, seeds
 
 ## End uclust convenience functions
-
-'''def get_output_filepaths(output_dir, fasta_filepath):
-    """ Returns filepaths for intermediate files to be kept """
-    
-    output_dir, output_filename = split(output_dir)
-    output_dir = output_dir or './'
-    output_file_basename = basename(fasta_filepath).split('.')[0]
-    fasta_output_filepath = '%s/%s_sorted.fasta' % \
-     (output_dir,output_file_basename)
-    uc_output_filepath = '%s/%s_sorted.uc' % \
-     (output_dir,output_file_basename)
-    cd_hit_filepath = '%s/%s_cdhit.clstr' % \
-     (output_dir,output_file_basename)
-     
-    return fasta_output_filepath, uc_output_filepath, cd_hit_filepath, \
-     output_dir'''
