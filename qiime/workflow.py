@@ -124,13 +124,16 @@ def call_commands_serially(commands,
             status_update_callback('%s\n%s' % e)
             logger.write('# %s command \n%s\n\n' % e)
             proc = Popen(e[1],shell=True,universal_newlines=True,\
-                         stdout=PIPE,stderr=STDOUT)
-            return_value = proc.wait()
+                         stdout=PIPE,stderr=PIPE)
+            # communicate pulls all stdout/stderr from the PIPEs to 
+            # avoid blocking -- don't remove this line!
+            stdout, stderr = proc.communicate()
+            return_value = proc.returncode
             if return_value != 0:
                 msg = "\n\n*** ERROR RAISED DURING STEP: %s\n" % e[0] +\
                  "Command run was:\n %s\n" % e[1] +\
                  "Command returned exit status: %d\n" % return_value +\
-                 "Stdout/stderr:\n%s\n" % proc.stdout.read()
+                 "Stdout:\n%s\nStderr\n%s\n" % (stdout,stderr)
                 logger.write(msg)
                 logger.close()
                 raise WorkflowError, msg

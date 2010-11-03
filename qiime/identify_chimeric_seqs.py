@@ -619,6 +619,6 @@ def make_cidx_file(fp):
         #should always be installed when using CS
         args = ["cdbfasta", fp]
         #cdbfasta write one line to stderr
-        Popen(args, stderr=PIPE, stdout=PIPE).wait()
+        stdout, stderr = Popen(args, stderr=PIPE, stdout=PIPE).communicate()
     else:
         raise ApplicationNotFoundError

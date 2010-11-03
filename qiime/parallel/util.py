@@ -136,17 +136,22 @@ def submit_jobs(path_to_cluster_jobs, jobs_fp, job_prefix):
     """
     cmd = '%s -ms %s %s' % (path_to_cluster_jobs, jobs_fp, job_prefix)
     proc = Popen(cmd,shell=True,universal_newlines=True,\
-                 stdout=PIPE,stderr=STDOUT)
-    # Read stdout/stderr before waiting to avoid blocking 
-    # (see here: http://bugs.python.org/issue1606)
-    stdout = proc.stdout.read()
-    return_value = proc.wait()
+                 stdout=PIPE,stderr=PIPE)
+    # communicate pulls all stdout/stderr from the PIPEs to 
+    # avoid blocking -- don't remove this line!
+    stdout, stderr = proc.communicate()
+    return_value = proc.returncode
     if return_value != 0:
         msg = "\n\n*** Could not start parallel jobs. \n" +\
          "Command run was:\n %s\n" % cmd +\
          "Command returned exit status: %d\n" % return_value +\
-         "Stdout/stderr:\n%s\n" % stdout
+         "Stdout:\n%s\nStderr\n%s\n" % (stdout,stderr)
         raise RuntimeError, msg
+    
+    # Leave this comments in as they're useful for debugging.
+    # print 'Return value: %d\n' % return_value
+    # print 'STDOUT: %s\n' % stdout
+    # print 'STDERR: %s\n' % stderr
 
 def compute_seqs_per_file(input_fasta_fp,num_jobs_to_start):
     """ Compute the number of sequences to include in each split file
