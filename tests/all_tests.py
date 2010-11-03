@@ -70,7 +70,7 @@ if script_directory_found:
     bad_scripts = []
 
     for script_name in script_names:
-        script_good_pattern = re.compile('^Usage: %s' % split(script_name)[1])
+        script_good_pattern = re.compile('Usage: %s' % split(script_name)[1])
         print "Testing %s." % script_name
         command = '%s %s -h' % (python_name, script_name)
         result = Popen(command,shell=True,universal_newlines=True,\
