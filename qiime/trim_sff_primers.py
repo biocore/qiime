@@ -22,6 +22,8 @@ import subprocess
 import sys
 import tempfile
 
+from cogent.util.misc import app_path
+from cogent.app.util import ApplicationNotFoundError
 from qiime.parse import parse_mapping_file
 from qiime.pycogent_backports.binary_sff import (
     parse_binary_sff, write_binary_sff
@@ -113,6 +115,13 @@ def set_sff_trimpoints_with_sfftools(
     This function essentially provides the reference implementation.
     It uses the official sfftools from Roche to process the SFF files.
     """
+    if not (os.path.exists(sffinfo_path) or app_path(sffinfo_path)):
+        raise ApplicationNotFoundError(
+            'sffinfo executable not found. Is it installed and in your $PATH?')
+    if not (os.path.exists(sfffile_path) or app_path(sfffile_path)):
+        raise ApplicationNotFoundError(
+            'sfffile executable not found. Is it installed and in your $PATH?')
+    
     for lib_id, sff_fp in get_per_lib_sff_fps(sff_dir):
         try:
             readlength = technical_lengths[lib_id]
