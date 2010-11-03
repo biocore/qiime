@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2010, The QIIME project"
-__credits__ = ["Jens Reeder","Dan Knights"]
+__credits__ = ["Jens Reeder","Dan Knights", "Antonio Gonzalez Pena"]
 __license__ = "GPL"
 __version__ = "1.1.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -224,7 +224,11 @@ class Qiime_config(TestCase):
          "install directory. Thesedo not appear to be present.")
 
     def test_uclust_supported_version(self):
-        """uclust version is supported """
+        """uclust is in path and version is supported """
+        acceptable_version = (1,2,21)
+        self.assertTrue(app_path('uclust'),
+         "uclust not found. This may or may not be a problem depending on "+\
+         "which components of QIIME you plan to use.")
         command = 'uclust --version'
         proc = Popen(command,shell=True,universal_newlines=True,\
                          stdout=PIPE,stderr=STDOUT)
@@ -232,14 +236,256 @@ class Qiime_config(TestCase):
         version_string = stdout.strip().split('v')[-1].strip('q')
         try:
             version = tuple(map(int,version_string.split('.')))
-            acceptable_version = version >= (1,2,21)
+            pass_test = version >= acceptable_version
         except ValueError:
-            acceptable_version = False
-    
-        self.assertTrue(acceptable_version,\
-         "Unsupported uclust version. 1.2.21 or later "+\
-         "is required, but running %s." % version_string)
+            pass_test = False
+            version_string = stdout
+        self.assertTrue(pass_test,\
+         "Unsupported uclust version. %s or later is required, but running %s." \
+         % ('.'.join(map(str,acceptable_version)), version_string))
 
+    def test_python_supported_version(self):
+        """python is in path and version is supported """
+        acceptable_version = (2,6,0)
+        command = 'python --version'
+        proc = Popen(command,shell=True,universal_newlines=True,\
+                         stdout=PIPE,stderr=STDOUT)
+        stdout = proc.stdout.read()
+        version_string = stdout.strip().split('Python')[-1].strip()
+        try:
+            version = tuple(map(int,version_string.split('.')))
+            pass_test = version >= acceptable_version
+        except ValueError:
+            pass_test = False
+            version_string = stdout
+        self.assertTrue(pass_test,\
+         "Unsupported python version. %s or later is required, but running %s." \
+         % ('.'.join(map(str,acceptable_version)), version_string))
+
+    def test_blast_supported_version(self):
+        """blast is in path and version is supported """
+        acceptable_version = (2,2,21)
+        self.assertTrue(app_path('blastall'),
+         "blast not found. This may or may not be a problem depending on "+\
+         "which components of QIIME you plan to use.")
+        command = 'blastall | grep blastall'
+        proc = Popen(command,shell=True,universal_newlines=True,\
+                         stdout=PIPE,stderr=STDOUT)
+        stdout = proc.stdout.read()
+        version_string = stdout.strip().split(' ')[1].strip()
+        try:
+            version = tuple(map(int,version_string.split('.')))
+            pass_test = version >= acceptable_version
+        except ValueError:
+            pass_test = False
+            version_string = stdout
+        self.assertTrue(pass_test,\
+         "Unsupported blast version. %s or later is required, but running %s." \
+         % ('.'.join(map(str,acceptable_version)), version_string))
+         
+    def test_FastTree_supported_version(self):
+        """FastTree is in path and version is supported """
+        acceptable_version = (2,1,1)
+        self.assertTrue(app_path('FastTree'),
+         "FastTree not found. This may or may not be a problem depending on "+\
+         "which components of QIIME you plan to use.")
+        command = "FastTree 2>&1 > /dev/null | grep version"
+        proc = Popen(command,shell=True,universal_newlines=True,\
+                         stdout=PIPE,stderr=STDOUT)
+        stdout = proc.stdout.read()
+        version_string = stdout.strip().split(' ')[4].strip()
+        try:
+            version = tuple(map(int,version_string.split('.')))
+            pass_test = version >= acceptable_version
+        except ValueError:
+            pass_test = False
+            version_string = stdout
+        self.assertTrue(pass_test,\
+         "Unsupported FastTree version. %s or later is required, but running %s." \
+         % ('.'.join(map(str,acceptable_version)), version_string))
+    
+    def test_cdbtools_supported_version(self):
+        """cdbtools is in path and version is supported """
+        acceptable_version = (0,99)
+        self.assertTrue(app_path('cdbfasta'),
+         "cdbtools not found. This may or may not be a problem depending on "+\
+         "which components of QIIME you plan to use.")
+        command = "cdbfasta -v"
+        proc = Popen(command,shell=True,universal_newlines=True,\
+                         stdout=PIPE,stderr=STDOUT)
+        stdout = proc.stdout.read()
+        version_string = stdout.strip().split(' ')[2].strip()
+        try:
+            version = tuple(map(int,version_string.split('.')))
+            pass_test = version >= acceptable_version
+        except ValueError:
+            pass_test = False
+            version_string = stdout
+        self.assertTrue(pass_test,\
+         "Unsupported cdbtools version. %s or later is required, but running %s." \
+         % ('.'.join(map(str,acceptable_version)), version_string))
+        
+    def test_INFERNAL_supported_version(self):
+        """INFERNAL is in path and version is supported """
+        acceptable_version = (1,0,2)
+        self.assertTrue(app_path('cmbuild'),
+         "Infernal not found. This may or may not be a problem depending on "+\
+         "which components of QIIME you plan to use.")
+        command = "cmbuild -h | grep INF"
+        proc = Popen(command,shell=True,universal_newlines=True,\
+                         stdout=PIPE,stderr=STDOUT)
+        stdout = proc.stdout.read()
+        version_string = stdout.strip().split(' ')[2].strip()
+        try:
+            version = tuple(map(int,version_string.split('.')))
+            pass_test = version >= acceptable_version
+        except ValueError:
+            pass_test = False
+            version_string = stdout
+        self.assertTrue(pass_test,\
+         "Unsupported INFERNAL version. %s or later is required, but running %s." \
+         % ('.'.join(map(str,acceptable_version)), version_string))
+        
+    def test_muscle_supported_version(self):
+        """muscle is in path and version is supported """
+        acceptable_version = (3,8,31)
+        self.assertTrue(app_path('muscle'),
+         "muscle not found. This may or may not be a problem depending on "+\
+         "which components of QIIME you plan to use.")
+        command = "muscle -version"
+        proc = Popen(command,shell=True,universal_newlines=True,\
+                         stdout=PIPE,stderr=STDOUT)
+        stdout = proc.stdout.read()
+        version_string = stdout.strip().split(' ')[1].strip('v')
+        try:
+            version = tuple(map(int,version_string.split('.')))
+            pass_test = version >= acceptable_version
+        except ValueError:
+            pass_test = False
+            version_string = stdout
+        self.assertTrue(pass_test,\
+         "Unsupported muscle version. %s or later is required, but running %s." \
+         % ('.'.join(map(str,acceptable_version)), version_string))
+        
+    def test_mothur_supported_version(self):
+        """mothur is in path and version is supported """
+        acceptable_version = (0,1,19)
+        self.assertTrue(app_path('mothur'),
+         "mothur not found. This may or may not be a problem depending on "+\
+         "which components of QIIME you plan to use.")
+        command = "mothur"
+        proc = Popen(command,shell=True,universal_newlines=True,\
+                         stdout=PIPE,stderr=STDOUT)
+        stdout = proc.stdout.read()
+        version_string = stdout.strip().split(' ')[1].strip('v.')
+        try:
+            version = tuple(map(int,version_string.split('.')))
+            pass_test = version >= acceptable_version
+        except ValueError:
+            pass_test = False
+            version_string = stdout
+        self.assertTrue(pass_test,\
+         "Unsupported mothur version. %s or later is required, but running %s." \
+         % ('.'.join(map(str,acceptable_version)), version_string))
+         
+    def test_denoiser_supported_version(self):
+        """denoiser is in path and version is supported """
+        acceptable_version = (0,851)
+        try:
+            from Denoiser import __version__ as version_string
+            try:
+                version = tuple(map(int,version_string.split('.')))
+                pass_test = version >= acceptable_version
+            except ValueError:
+                pass_test = False
+                version_string = stdout
+        except ImportError:
+            self.assertTrue(False,"denoiser not found. This may or may not "+\
+             "be a problem depending on which components of QIIME you plan to use.")
+            version_string = "Not installed."
+            pass_test = False
+        self.assertTrue(pass_test,\
+         "Unsupported muscle version. %s or later is required, but running %s." \
+         % ('.'.join(map(str,acceptable_version)), version_string))
+        
+    def test_raxmlHPC_supported_version(self):
+        """raxmlHPC is in path and version is supported """
+        acceptable_version = (7,0,3)
+        self.assertTrue(app_path('raxmlHPC'),
+         "raxmlHPC not found. This may or may not be a problem depending on "+\
+         "which components of QIIME you plan to use.")
+        command = "raxmlHPC -v | grep version"
+        proc = Popen(command,shell=True,universal_newlines=True,\
+                         stdout=PIPE,stderr=STDOUT)
+        stdout = proc.stdout.read()
+        version_string = stdout.strip().split(' ')[4].strip()
+        try:
+            version = tuple(map(int,version_string.split('.')))
+            pass_test = version >= acceptable_version
+        except ValueError:
+            pass_test = False
+            version_string = stdout
+        self.assertTrue(pass_test,\
+         "Unsupported raxmlHPC version. %s or later is required, but running %s." \
+         % ('.'.join(map(str,acceptable_version)), version_string))
+        
+    def test_clearcut_supported_version(self):
+        """clearcut is in path and version is supported """
+        acceptable_version = (1,0,9)
+        self.assertTrue(app_path('clearcut'),
+         "clearcut not found. This may or may not be a problem depending on "+\
+         "which components of QIIME you plan to use.")
+        command = "clearcut -V"
+        proc = Popen(command,shell=True,universal_newlines=True,\
+                         stdout=PIPE,stderr=STDOUT)
+        stdout = proc.stdout.read()
+        version_string = stdout.strip().split(' ')[2].strip()
+        try:
+            version = tuple(map(int,version_string.split('.')))
+            pass_test = version >= acceptable_version
+        except ValueError:
+            pass_test = False
+            version_string = stdout
+        self.assertTrue(pass_test,\
+         "Unsupported clearcut version. %s or later is required, but running %s." \
+         % ('.'.join(map(str,acceptable_version)), version_string))
+        
+    def test_pyronoise2_supported_version(self):
+        """pyrnoise2 is in path and version is supported """
+        self.assertTrue(app_path('PCluster'),
+         "Pyronoise not found. This may or may not be a problem depending on "+\
+         "which components of QIIME you plan to use.") 
+        # pyrnoise2 does not have a version print in their program
+        
+    def test_cdhit_supported_version(self):
+        """cd-hit is in path and version is supported """
+        self.assertTrue(app_path('cd-hit'),
+         "cd-hit not found. This may or may not be a problem depending on "+\
+         "which components of QIIME you plan to use.")
+        # cd-hit does not have a version print in their program
+        
+    def test_dotur_supported_version(self):
+        """dotur is in path and version is supported """
+        self.assertTrue(app_path('dotur'),
+         "dotur not found. This may or may not be a problem depending on "+\
+         "which components of QIIME you plan to use.")
+        # dotur does not have a version print in their program
+    
+    #def test_rdp_classifier_supported_version(self):
+    #    """rdp_classifier is in path and version is supported """
+    #    #rdp_classifier does not have a version print in their program, not in their
+    #    #command line or in their java manifest, if in the future they add it to the
+    #    #manifest the command is:
+    #    #unzip -c self.config['rdp_classifier_fp'] META-INF/MANIFEST.MF
+    #    pass
+        
+    #def test_ChimeraSlayer_supported_version(self):
+    #    """ChimeraSlayer is in path and version is supported """
+    #    #chim_slay = app_path("ChimeraSlayer.pl")
+    #    #ChimeraSlayer does not have a version print in their program
+    #    pass
+        
+        
 def test_qiime_config_variable(variable, qiime_config, test,
                                access_var=R_OK, fail_on_missing=False):
     """test if a variable is set and set to a readable path."""
