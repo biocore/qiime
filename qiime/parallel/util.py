@@ -282,8 +282,10 @@ def write_merge_map_file_pick_otus(job_result_filepaths,output_dir,\
             otus_fps.append(fp)
         elif fp.endswith('_otus.log'):
             log_fps.append(fp)
-        else:
+        elif fp.endswith('_failures.txt'):
             failures_fps.append(fp)
+        else:
+            pass
     
     for in_files, out_file in\
      zip(in_filepaths,out_filepaths):

@@ -51,6 +51,7 @@ def get_job_commands(python_exe_fp,pick_otus_fp,fasta_fps,
         stable_sort_str = ''
     if save_uc_files:
         save_uc_files = ''
+        out_filenames += [job_prefix + '%d_clusters.uc']
     else:
         save_uc_files = '-d'
         

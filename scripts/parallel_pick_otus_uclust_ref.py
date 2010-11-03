@@ -170,7 +170,12 @@ def main():
      output_dir,refseqs_fp,job_prefix,working_dir,similarity,
      enable_rev_strand_match,optimal_uclust,exact_uclust,max_accepts,max_rejects,
      uclust_stable_sort, save_uc_files)
-    created_temp_paths += job_result_filepaths
+    if save_uc_files:
+        # keep any .uc files that get created
+        created_temp_paths +=\
+         [fp for fp in job_result_filepaths if not fp.endswith('.uc')]
+    else:
+        created_temp_paths += [job_result_filepaths]
 
     # Set up poller apparatus if the user does not suppress polling
     if not suppress_polling:
@@ -210,7 +215,7 @@ def main():
              merge_map_filepath,deletion_list_filepath,process_run_results_f,\
              seconds_to_sleep=seconds_to_sleep,command_prefix='',command_suffix='')
             created_temp_paths += poller_result_filepaths
-        
+            
         if not retain_temp_files:
             # If the user wants temp files deleted, now write the list of 
             # temp files to be deleted
