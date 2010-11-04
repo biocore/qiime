@@ -17,8 +17,9 @@ returning an alignment. Mostly, it will be thin wrappers for code
 already in cogent.app.*, to which wrappers for e.g. PyNAST need to be
 added..
 """
+import warnings
+warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
 from os import remove
-
 from cogent import LoadSeqs, DNA
 from cogent.core.alignment import DenseAlignment, SequenceCollection, Alignment
 from cogent.core.sequence import DnaSequence as Dna
