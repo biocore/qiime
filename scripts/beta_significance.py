@@ -15,6 +15,8 @@ __status__ = "Development"
 from optparse import make_option
 import os
 
+import warnings
+warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
 from cogent.maths.unifrac.fast_unifrac import fast_unifrac_permutations_file
 from cogent.maths.unifrac.fast_unifrac import fast_p_test_file
 

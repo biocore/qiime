@@ -27,14 +27,18 @@ The output is a sample x sample matrix of distances, incl. row/col headers.
     is expected to be a tab.
 """
 from StringIO import StringIO
-from qiime.util import FunctionWithParams, TreeMissingError, OtuMissingError
-from qiime.format import format_distance_matrix
-import cogent.maths.distance_transform #avoid hard-coding metrics
-import qiime.beta_metrics
-import qiime.beta_diversity
 from sys import exit, stderr
 import os.path
+
+import warnings
+warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
 from cogent.app.util import get_tmp_filename
+import cogent.maths.distance_transform #avoid hard-coding metrics
+
+from qiime.util import FunctionWithParams, TreeMissingError, OtuMissingError
+from qiime.format import format_distance_matrix
+import qiime.beta_metrics
+import qiime.beta_diversity
 
 
 from qiime.parse import parse_otu_table, parse_newick, PhyloNode

@@ -34,18 +34,23 @@ __email__ = "rob@spot.colorado.edu, william.a.walters@colorado.edu"
 __status__ = "Development"
 
 import re
+from gzip import GzipFile
+from os import mkdir, stat
+from collections import defaultdict
+
+from numpy import array, mean, arange, histogram
+from numpy import __version__ as numpy_version
+
+import warnings
+warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.seqsim.sequence_generators import SequenceGenerator, IUPAC_DNA
 from cogent.core.moltype import IUPAC_DNA_ambiguities
 from cogent import DNA, LoadSeqs
 from cogent.align.align import make_dna_scoring_dict, local_pairwise
-from numpy import array, mean, arange, histogram
-from numpy import __version__ as numpy_version
+
 from qiime.check_id_map import process_id_map
 from qiime.barcode import correct_barcode
-from gzip import GzipFile
-from os import mkdir, stat
-from collections import defaultdict
 from qiime.hamming import decode_barcode_8
 from qiime.golay import decode as decode_golay_12
 from qiime.format import format_histograms
