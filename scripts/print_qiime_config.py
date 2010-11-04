@@ -15,10 +15,11 @@ from optparse import make_option
 from os import access, X_OK, R_OK, W_OK, getenv
 from os.path import isdir, exists, split
 from sys import platform, version as python_version, executable
+from shutil import rmtree
 from subprocess import Popen, PIPE, STDOUT
 
 from cogent.util.unit_test import TestCase, main as test_main
-from cogent.util.misc import app_path
+from cogent.util.misc import app_path, get_random_directory_name
 from cogent.app.util import ApplicationNotFoundError
 
 from qiime.parse import parse_qiime_config_file
@@ -369,14 +370,16 @@ class Qiime_config(TestCase):
         
     def test_mothur_supported_version(self):
         """mothur is in path and version is supported """
-        acceptable_version = (0,1,19)
+        acceptable_version = (1,15,0)
         self.assertTrue(app_path('mothur'),
          "mothur not found. This may or may not be a problem depending on "+\
          "which components of QIIME you plan to use.")
-        command = "mothur"
+        # mothur creates a log file in cwd, so create a tmp and cd there first
+        tmp_dir = get_random_directory_name(output_dir='/tmp/')
+        command = "cd %s ; mothur -v | grep ^mothur" % tmp_dir
         proc = Popen(command,shell=True,universal_newlines=True,\
                          stdout=PIPE,stderr=STDOUT)
-        stdout = proc.stdout.read()
+        stdout, stderr = proc.communicate()
         version_string = stdout.strip().split(' ')[1].strip('v.')
         try:
             version = tuple(map(int,version_string.split('.')))
@@ -387,6 +390,9 @@ class Qiime_config(TestCase):
         self.assertTrue(pass_test,\
          "Unsupported mothur version. %s or later is required, but running %s." \
          % ('.'.join(map(str,acceptable_version)), version_string))
+        
+        # remove the directory and the log file
+        rmtree(tmp_dir)
          
     def test_denoiser_supported_version(self):
         """denoiser is in path and version is supported """
