@@ -11,6 +11,8 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
+import warnings
+warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
 from optparse import make_option
 from os.path import split, splitext, join
 from os import popen, system, makedirs, mkdir
