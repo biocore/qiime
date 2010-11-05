@@ -455,8 +455,8 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,
     command_handler(commands,status_update_callback,logger=logger)
     
 def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,
-    output_dir, command_handler, params, qiime_config, tree_fp=None,
-    parallel=False, status_update_callback=print_to_stdout):
+    output_dir, command_handler, params, qiime_config, sampling_depth=None,
+    tree_fp=None, parallel=False, status_update_callback=print_to_stdout):
     """ Run the data preparation steps of Qiime 
     
         The steps performed by this function are:
@@ -484,6 +484,22 @@ def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,
     
     mapping_file_header = parse_mapping_file(open(mapping_fp,'U'))[1]
     mapping_fields = ','.join(mapping_file_header)
+    
+    if sampling_depth:
+        # Sample the OTU table at even depth
+        even_sampled_otu_table_fp = '%s/%s_even%d%s' %\
+         (output_dir, otu_table_basename, 
+          sampling_depth, otu_table_ext)
+        single_rarefaction_cmd = \
+         '%s %s/single_rarefaction.py -i %s -o %s -d %d' %\
+         (python_exe_fp, script_dir, otu_table_fp,
+          even_sampled_otu_table_fp, sampling_depth)
+        commands.append([
+         ('Sample OTU table at %d seqs/sample' % sampling_depth,
+          single_rarefaction_cmd)])
+        otu_table_fp = even_sampled_otu_table_fp
+        otu_table_dir, otu_table_filename = split(even_sampled_otu_table_fp)
+        otu_table_basename, otu_table_ext = splitext(otu_table_filename)
     
     beta_diversity_metrics = params['beta_diversity']['metrics'].split(',')
     

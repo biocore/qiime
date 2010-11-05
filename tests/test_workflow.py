@@ -698,7 +698,65 @@ class WorkflowTests(TestCase):
         # Check that the log file is created and has size > 0
         log_fp = glob(join(self.wf_out,'log*.txt'))[0]
         self.assertTrue(getsize(log_fp) > 0)
+
+         
+    def test_run_beta_diversity_through_3d_plot_even_sampling(self):
+        """ run_beta_diversity_through_3d_plot functions with even sampling
+        """
+        run_beta_diversity_through_3d_plot(
+         self.fasting_otu_table_fp, 
+         self.fasting_mapping_fp,
+         self.wf_out, 
+         call_commands_serially,
+         self.params,
+         self.qiime_config,
+         sampling_depth=147,
+         tree_fp=self.fasting_tree_fp,
+         parallel=False, 
+         status_update_callback=no_status_updates)
         
+        otu_table_basename = \
+         splitext(split(self.fasting_otu_table_fp)[1])[0] + '_even147'
+        unweighted_unifrac_dm_fp = join(self.wf_out,
+         'unweighted_unifrac_%s.txt' % otu_table_basename)
+        weighted_unifrac_dm_fp = join(self.wf_out,
+         'weighted_unifrac_%s.txt' % otu_table_basename)
+        unweighted_unifrac_pc_fp = join(self.wf_out,'unweighted_unifrac_pc.txt')
+        weighted_unifrac_pc_fp = join(self.wf_out,'weighted_unifrac_pc.txt')
+        weighted_unifrac_html_fp = join(self.wf_out,
+        'weighted_unifrac_3d_continuous','weighted_unifrac_pc.txt_3D.html')
+
+        # check for expected relations between values in the unweighted unifrac
+        # distance matrix
+        dm = parse_distmat_to_dict(open(unweighted_unifrac_dm_fp))
+        self.assertFalse('PC.355' in dm,
+                         "Even sampling does not drop expected sample.")
+        self.assertTrue(dm['PC.635']['PC.636'] < dm['PC.354']['PC.635'],
+         "Distance between pair of fasting samples is larger than distance"
+         " between control and fasting sample (unweighted unifrac).")
+        self.assertEqual(dm['PC.636']['PC.636'],0)
+        
+        # check for expected relations between values in the unweighted unifrac
+        # distance matrix
+        dm = parse_distmat_to_dict(open(weighted_unifrac_dm_fp))
+        self.assertFalse('PC.355' in dm,
+                         "Even sampling does not drop expected sample.")
+        self.assertTrue(dm['PC.635']['PC.636'] < dm['PC.354']['PC.635'],
+         "Distance between pair of fasting samples is larger than distance"
+         " between control and fasting sample (weighted unifrac).")
+        self.assertEqual(dm['PC.636']['PC.636'],0)
+        
+        # check that final output files have non-zero size
+        self.assertTrue(getsize(unweighted_unifrac_pc_fp) > 0)
+        self.assertTrue(getsize(weighted_unifrac_pc_fp) > 0)
+        self.assertTrue(getsize(weighted_unifrac_html_fp) > 0)
+        
+        # Check that the log file is created and has size > 0
+        log_fp = glob(join(self.wf_out,'log*.txt'))[0]
+        self.assertTrue(getsize(log_fp) > 0)
+
+
+
       
     def test_run_beta_diversity_through_3d_plot_parallel(self):
         """run_beta_diversity_through_3d_plot (parallel) generates expected results

@@ -58,20 +58,22 @@ script_info['required_options']=[\
             help='the output directory [REQUIRED]'),\
  make_option('-p','--parameter_fp',\
             help='path to the parameter file [REQUIRED]')]
-script_info['optional_options']=[\
- make_option('-t','--tree_fp',\
+script_info['optional_options']=[
+ make_option('-t','--tree_fp',
             help='path to the tree file [default: %default; '+\
-            'REQUIRED for phylogenetic measures]'),\
- make_option('-f','--force',action='store_true',\
+            'REQUIRED for phylogenetic measures]'),
+ make_option('-f','--force',action='store_true',
         dest='force',help='Force overwrite of existing output directory'+\
         ' (note: existing files in output_dir will not be removed)'+\
-        ' [default: %default]'),\
- make_option('-w','--print_only',action='store_true',\
+        ' [default: %default]'),
+ make_option('-w','--print_only',action='store_true',
         dest='print_only',help='Print the commands but don\'t call them -- '+\
-        'useful for debugging [default: %default]',default=False),\
- make_option('-a','--parallel',action='store_true',\
-        dest='parallel',default=False,\
-        help='Run in parallel where available [default: %default]')]
+        'useful for debugging [default: %default]',default=False),
+ make_option('-a','--parallel',action='store_true',
+        dest='parallel',default=False,
+        help='Run in parallel where available [default: %default]'),
+ make_option('-e','--seqs_per_sample',type='int',
+     help='depth of coverage for even sampling [default: %default]')]
 script_info['version'] = __version__
 
 def main():
@@ -85,6 +87,7 @@ def main():
     tree_fp = opts.tree_fp
     verbose = opts.verbose
     print_only = opts.print_only
+    seqs_per_sample = opts.seqs_per_sample
    
     parallel = opts.parallel
     if parallel: raise_error_on_parallel_unavailable()
@@ -118,14 +121,15 @@ def main():
     else:
         status_update_callback = no_status_updates
      
-    run_beta_diversity_through_3d_plot(otu_table_fp=otu_table_fp,\
-     mapping_fp=mapping_fp,\
-     output_dir=output_dir,\
-     command_handler=command_handler,\
-     params=parse_qiime_parameters(parameter_f),\
-     qiime_config=qiime_config,\
-     tree_fp=tree_fp,\
-     parallel=parallel,\
+    run_beta_diversity_through_3d_plot(otu_table_fp=otu_table_fp,
+     mapping_fp=mapping_fp,
+     output_dir=output_dir,
+     command_handler=command_handler,
+     params=parse_qiime_parameters(parameter_f),
+     qiime_config=qiime_config,
+     sampling_depth=seqs_per_sample,
+     tree_fp=tree_fp,
+     parallel=parallel,
      status_update_callback=status_update_callback)
 
 if __name__ == "__main__":
