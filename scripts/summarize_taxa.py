@@ -56,7 +56,7 @@ make_option('-d','--delimiter',action='store',\
           help='Delimitor that separates taxonomy categories.[default: %default]'),
 make_option('-r', '--relative_abundance', action='store',\
         dest='relative_abundance', default='', \
-        help='DEPRECIATED: please use -a/--absolute_abundance to disable ' +\
+        help='DEPRECATED: please use -a/--absolute_abundance to disable ' +\
         'relative abundance [default: %default]'),
 make_option('-a', '--absolute_abundance', action='store_true',\
         dest='absolute_abundance', default=False, \
