@@ -25,7 +25,7 @@ make_otu_network.py -m Fasting_Map.txt -i wf_da/uclust_picked_otus/rep_set/rdp_a
 
 #Make Pie Charts
 echo "Summarize taxa"
-summarize_taxa.py -i wf_da/uclust_picked_otus/rep_set/rdp_assigned_taxonomy/otu_table/seqs_otu_table.txt -o wf_da/uclust_picked_otus/rep_set/rdp_assigned_taxonomy/otu_table/otu_table_Level3.txt -L 3 -r 0
+summarize_taxa.py -i wf_da/uclust_picked_otus/rep_set/rdp_assigned_taxonomy/otu_table/seqs_otu_table.txt -o wf_da/uclust_picked_otus/rep_set/rdp_assigned_taxonomy/otu_table/otu_table_Level3.txt -L 3
 
 echo "Make Pie Charts"
 make_pie_charts.py -i wf_da/uclust_picked_otus/rep_set/rdp_assigned_taxonomy/otu_table/otu_table_Level3.txt -l Phylum -o wf_da/uclust_picked_otus/rep_set/rdp_assigned_taxonomy/otu_table/Pie_Charts -k white -s
