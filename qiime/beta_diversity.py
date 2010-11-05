@@ -38,8 +38,6 @@ import cogent.maths.distance_transform #avoid hard-coding metrics
 from qiime.util import FunctionWithParams, TreeMissingError, OtuMissingError
 from qiime.format import format_distance_matrix
 import qiime.beta_metrics
-import qiime.beta_diversity
-
 
 from qiime.parse import parse_otu_table, parse_newick, PhyloNode
 from qiime.format import format_matrix
