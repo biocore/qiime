@@ -370,7 +370,7 @@ class Qiime_config(TestCase):
         
     def test_mothur_supported_version(self):
         """mothur is in path and version is supported """
-        acceptable_version = (1,15,0)
+        acceptable_version = (1,14,0)
         self.assertTrue(app_path('mothur'),
          "mothur not found. This may or may not be a problem depending on "+\
          "which components of QIIME you plan to use.")
