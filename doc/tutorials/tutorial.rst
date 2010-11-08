@@ -296,25 +296,6 @@ Now that we have set the parameters necessary for this workflow script, the user
 
     pick_otus_through_otu_table.py -i split_library_output/seqs.fna -p custom_parameters.txt -o wf_da
 
-
-.. _rareotutableremovehetero:
-
-Rarify OTU Table to Remove Sample Heterogeneity (Optional)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-To remove sample heterogeneity, we can perform rarefaction on our OTU table. Rarefaction is an ecological approach that allows users to standardize the data obtained from samples with different sequencing efforts, and to compare the OTU richness of the samples using this standardized platform. For instance, if one of your samples yielded 10,000 sequence counts, and another yielded only 1,000 counts, the species diversity within those samples may be much more influenced by sequencing effort than underlying biology. The approach of rarefaction is to randomly sample the same number of OTUs from each sample, and use this data to compare the communities at a given level of sampling effort.
-
-To perform rarefaction, you need to set the boundaries for sampling and the step size between sampling intervals. You can find the number of sequences associated with each sample by looking in the :file:`split_library_log.txt` file generated in :ref:`assignsamples` above. The line from our tutorial is pasted here:
-
-.. note::
-
-   * Sample ct min/max/mean: 146 / 150 / 148.11
-
-Since we are only removing sample heterogeneity from the OTU table, we will use `single_rarefaction.py <../scripts/single_rarefaction.html>`_, which only requires the depth of sampling. Rarefaction is most useful when most samples have the specified number of sequences, so your upper bound of rarefaction should be close to the minimum number of sequences found in a sample. For this case, we will set the depth to 146. ::
-
-    single_rarefaction.py -i wf_da/uclust_picked_otus/rep_set/rdp_assigned_taxonomy/otu_table/seqs_otu_table.txt -d 146 -o wf_da/uclust_picked_otus/rep_set/rdp_assigned_taxonomy/otu_table/rarified_otu_table.txt
-
-As a result, a newly created file :file:`wf_da/uclust_picked_otus/rep_set/rdp_assigned_taxonomy/otu_table/rarified_otu_table.txt` has been written. For all subsequent analyses, one can use this text file in place of :file:`seqs_otu_table.txt`, since this file is also an OTU table, except that it has been rarified.
-
 .. _makeheatmap:
 
 Make OTU Heatmap
@@ -493,14 +474,28 @@ Compute Beta Diversity and Generate 3D Principal Coordinate Analysis (PCoA) Plot
 
 Here we will be running the `beta_diversity_through_3d_plots.py <../scripts/beta_diversity_through_3d_plots.html>`_ workflow, which consists of the following steps:
 
-1. Compute Beta Diversity (for more information, refer to `beta_diversity.py <../scripts/beta_diversity.html>`_)
-2. Generate Principal Coordinates (for more information, refer to `principal_coordinates.py <../scripts/principal_coordinates.html>`_)
-3. Make preferences file (for more information, refer to `make_prefs_file.py <../scripts/make_prefs_file.html>`_)
-4. Generate 3D PCoA plots (for more information, refer to `make_3d_plots.py <../scripts/make_3d_plots.html>`_)
+1. Rarify OTU table (for more information, refer to `single_rarefaction.py <../scripts/single_rarefaction.html>`_)
+2. Compute Beta Diversity (for more information, refer to `beta_diversity.py <../scripts/beta_diversity.html>`_)
+3. Generate Principal Coordinates (for more information, refer to `principal_coordinates.py <../scripts/principal_coordinates.html>`_)
+4. Make preferences file (for more information, refer to `make_prefs_file.py <../scripts/make_prefs_file.html>`_)
+5. Generate 3D PCoA plots (for more information, refer to `make_3d_plots.py <../scripts/make_3d_plots.html>`_)
 
 .. _compbetadiv:
 
-Step 1. Compute Beta Diversity
+Step 1. Rarify OTU Table to Remove Sample Heterogeneity (Optional)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+To remove sample heterogeneity, we can perform rarefaction on our OTU table. Rarefaction is an ecological approach that allows users to standardize the data obtained from samples with different sequencing efforts, and to compare the OTU richness of the samples using this standardized platform. For instance, if one of your samples yielded 10,000 sequence counts, and another yielded only 1,000 counts, the species diversity within those samples may be much more influenced by sequencing effort than underlying biology. The approach of rarefaction is to randomly sample the same number of OTUs from each sample, and use this data to compare the communities at a given level of sampling effort.
+
+To perform rarefaction, you need to set the boundaries for sampling and the step size between sampling intervals. You can find the number of sequences associated with each sample by looking in the :file:`split_library_log.txt` file generated in :ref:`assignsamples` above. The line from our tutorial is pasted here:
+
+.. note::
+
+   * Sample ct min/max/mean: 146 / 150 / 148.11
+
+Since we are only removing sample heterogeneity from the OTU table, we will use the "-e" option, which only requires the depth of sampling. Rarefaction is most useful when most samples have the specified number of sequences, so your upper bound of rarefaction should be close to the minimum number of sequences found in a sample. For this case, we will set the depth to 146.
+
+
+Step 2. Compute Beta Diversity
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Beta-diversity metrics assess the differences between microbial communities. In general, these metrics are calculated to study diversity along an environmental gradient (pH or temperature) or different disease states (lean vs. obese). The basic output of this comparison is a square matrix where a "distance" is calculated between every pair of samples reflecting the similarity between the samples. The data in this distance matrix can be visualized with clustering analyses, namely Principal Coordinate Analysis (PCoA) and UPGMA clustering. Like alpha diversity, there are many possible metrics which can be calculated with the QIIME pipeline - the full list of options can be found `here <../scripts/beta_diversity_metrics.html>`_. For our example, we will calculate weighted and unweighted unifrac, which are phylogenetic measures used extensively in recent microbial community sequencing projects, by defining the metric parameter in the :file:`custom_parameters.txt` file, as follows:
 
@@ -511,7 +506,7 @@ Beta-diversity metrics assess the differences between microbial communities. In 
 
 The resulting distance matrices ( :file:`wf_bdiv/unweighted_unifrac_seqs_otu_table.txt` and :file:`wf_bdiv/weighted_unifrac_seqs_otu_table.txt`) are the basis for two methods of visualization and sample comparison: PCoA and UPGMA.
 
-Step 2. Generate Principal Coordinates
+Step 3. Generate Principal Coordinates
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Principal Coordinate Analysis (PCoA) is a technique that helps to extract and visualize a few highly informative gradients of variation from complex, multidimensional data. This is a complex transformation that maps the distance matrix to a new set of orthogonal axes such that a maximum amount of variation is explained by the first principal coordinate, the second largest amount of variation is explained by the second principal coordinate, etc. The principal coordinates can be plotted in two or three dimensions to provide an intuitive visualization of the data structure and look at differences between the samples, and look for similarities by sample category. The transformation is accomplished with the script `principal_coordinates.py <../scripts/principal_coordinates.html>`_.  Since this script only takes an input/output file, there are no parameters for the user to set in  :file:`custom_parameters.txt`.
 
@@ -519,7 +514,7 @@ The files :file:`wf_bdiv/unweighted_unifrac_pc.txt` and :file:`wf_bdiv/weighted_
 
 .. _gen2d3dpcoa:
 
-Step 3. Make Preferences File
+Step 4. Make Preferences File
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 In order to generate the PCoA plots, we want to generate a preferences file, which defines the colors for each of the samples or for a particular category within a mapping column.  For more information on making a preferences file, please refer to `make_prefs_file.py <../scripts/make_prefs_file.html>`_.  In the  :file:`custom_parameters.txt` file, the user can set the background color to be used for the 3D PCoA plot (either black or white), the mapping header categories to plot (uses ALL if left blank) and the monte carlo distance to use (this is for `make_distance_histograms.py <../scripts/make_distance_histograms.html>`_, which we will do in a few steps).
 
@@ -530,7 +525,7 @@ In order to generate the PCoA plots, we want to generate a preferences file, whi
     * make_prefs_file:mapping_headers_to_use    Treatment,DOB
     * make_prefs_file:monte_carlo_dists 10
 
-Step 4. Generate 3D PCoA Plots
+Step 5. Generate 3D PCoA Plots
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 To plot the coordinates, you can use the QIIME scripts `make_2d_plots.py <../scripts/make_2d_plots.html>`_ and `make_3d_plots.py <../scripts/make_3d_plots.html>`_. The two dimensional plot will be rendered as a html file which can be opened with a standard web browser, while the three dimensional plot will be a kinemage file which requires additional software to render and manipulate. The usage for both scripts use the same convention, detailed in `make_3d_plots.py <../scripts/make_3d_plots.html>`_.  Since the coloring was set for the preferences file parameters, we only need to set the custom_axes in the :file:`custom_parameters.txt`, although we can leave it blank, as follows:
 
@@ -546,9 +541,10 @@ The html files are created in :file:`wf_bdiv/unweighted_unifrac_3d...` and :file
 
 Running beta_diversity_through_3d_plots.py
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Now that we have set the parameters, necessary for this workflow script, the user can run the following command, where we define the input OTU table "-i" and tree file "-t" (from `pick_otus_through_otu_table.py <../scripts/pick_otus_through_otu_table.html>`_), the parameter file to use "-p", the user-defined mapping file "-m" and the output directory "-o"::
 
-    beta_diversity_through_3d_plots.py -i wf_da/uclust_picked_otus/rep_set/rdp_assigned_taxonomy/otu_table/seqs_otu_table.txt -m Fasting_Map.txt -o wf_bdiv/ -p custom_parameters.txt -t wf_da/uclust_picked_otus/rep_set/pynast_aligned_seqs/fasttree_phylogeny/seqs_rep_set.tre
+Now that we have set the parameters, necessary for this workflow script, the user can run the following command, where we define the input OTU table "-i" and tree file "-t" (from `pick_otus_through_otu_table.py <../scripts/pick_otus_through_otu_table.html>`_), the parameter file to use "-p", the user-defined mapping file "-m", the output directory "-o" and set the sequences per sample depth to 146. ::
+
+    beta_diversity_through_3d_plots.py -i wf_da/uclust_picked_otus/rep_set/rdp_assigned_taxonomy/otu_table/seqs_otu_table.txt -m Fasting_Map.txt -o wf_bdiv/ -p custom_parameters.txt -t wf_da/uclust_picked_otus/rep_set/pynast_aligned_seqs/fasttree_phylogeny/seqs_rep_set.tre -e 146
 
 Generate 2D PCoA Plots
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -568,7 +564,7 @@ Generate Distance Histograms
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Distance Histograms are a way to compare different categories and see which tend to have larger/smaller distances than others. For example, in the hand study, you may want to compare the distances between hands to the distances between individuals. Here we will use the distance matrix and prefs file generated by `beta_diversity_through_3d_plots.py <../scripts/beta_diversity_through_3d_plots.html>`_, the mapping file, an output directory :file:`wf_bdiv/Distance_Histograms` and write the output as html, as follows::
 
-    make_distance_histograms.py -d wf_bdiv/unweighted_unifrac_seqs_otu_table.txt -m Fasting_Map.txt -o wf_bdiv/Distance_Histograms -p wf_bdiv/prefs.txt --html_output
+    make_distance_histograms.py -d wf_bdiv/unweighted_unifrac_seqs_otu_table_even146.txt -m Fasting_Map.txt -o wf_bdiv/Distance_Histograms -p wf_bdiv/prefs.txt --html_output
 
 For each of these groups of distances a histogram is made. The output is a HTML file (:file:`wf_bdiv/Distance_Histograms/QIIME_Distance_Histograms.html`) where you can look at all the distance histograms individually, and compare them between each other. Within the webpage, the user can mouseover and/or select the checkboxes in the right panel to turn on/off the different distances within/between categories. For this example, we are comparing the distances between the samples in the Control versus themselves, along with samples from Fasting versus the Control.
 
