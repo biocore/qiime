@@ -21,7 +21,8 @@ from qiime.make_distance_histograms import group_distances, _make_path, \
 from cogent.util.misc import get_random_directory_name
 from qiime.colors import sample_color_prefs_and_map_data_from_options,\
     iter_color_groups
-from qiime.parse import parse_mapping_file, parse_distmat, parse_prefs_file
+from qiime.parse import (parse_mapping_file, parse_distmat, 
+    parse_prefs_file, QiimeParseError)
 from os import mkdir
 from string import strip
 
@@ -86,7 +87,7 @@ def main():
     try:
         mapping, m_header, m_comments = \
             parse_mapping_file(open(opts.map_fname,'U'))
-    except:
+    except QiimeParseError:
         option_parser.error("This does not look like a valid metadata mapping file.  Please supply a valid mapping file using the -m option.")
     
     #make sure background_color is valid

@@ -58,6 +58,15 @@ def parse_mapping_file(lines, strip_quotes=True, suppress_stripping=False):
 
     Result: list of lists of fields, incl. headers.
     """
+    if hasattr(lines,"upper"):
+        # Try opening if a string was passed
+        try:
+            lines = open(lines,'U')
+        except IOError:
+            raise QiimeParseError,\
+             ("A string was passed that doesn't refer "
+              "to an accessible filepath.")
+        
     if strip_quotes:
         if suppress_stripping:
             # remove quotes but not spaces
@@ -93,7 +102,11 @@ def parse_mapping_file(lines, strip_quotes=True, suppress_stripping=False):
                 comments.append(line)
         else:
             mapping_data.append(map(strip_f, line.split('\t')))
-
+    if not header:
+        raise QiimeParseError, "No header line was found in mapping file."
+    if not mapping_data:
+        raise QiimeParseError, "No data found in mapping file."
+    
     return mapping_data, header, comments
 
 def parse_prefs_file(prefs_string):

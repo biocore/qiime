@@ -13,7 +13,9 @@ __status__ = "Development"
 
 from numpy import array, nan
 from StringIO import StringIO
-from cogent.util.unit_test import TestCase, main
+from cogent.util.unit_test import TestCase,main
+from cogent.util.misc import remove_files
+from cogent.app.util import get_tmp_filename
 from qiime.parse import (group_by_field, group_by_fields, 
     parse_distmat, parse_rarefaction_record, parse_rarefaction, parse_coords, 
     parse_otu_table, make_envs_dict, fields_to_dict, parse_rarefaction_fname,
@@ -65,6 +67,10 @@ class TopLevelTests(TestCase):
         self.expected_lineages1 = expected_lineages1
         self.taxa_summary1 = taxa_summary1
         self.taxa_summary1_expected = taxa_summary1_expected
+        self.files_to_remove = []
+    
+    def tearDown(self):
+        remove_files(self.files_to_remove)
         
     def test_parse_taxa_summary_table(self):
         """ parse_taxa_summary_table functions as expected """
@@ -109,11 +115,82 @@ class TopLevelTests(TestCase):
         obs = parse_mapping_file(s1)
         self.assertEqual(obs, exp)
         
+        # We don't currently support this, but we should soon...
+        # # check that first non-comment, non-blank line is used as 
+        # # header
+        # s1 = ['sample\ta\tb', '#comment line to skip',\
+        #       'x \t y \t z ', ' ', '#more skip', 'i\tj\tk']
+        # exp = ([['x','y','z'],['i','j','k']],\
+        #        ['sample','a','b'],\
+        #        ['comment line to skip','more skip'])
+        # obs = parse_mapping_file(s1)
+        # self.assertEqual(obs, exp)
+        
         #check that we strip double quotes by default
         s2 = ['#sample\ta\tb', '#comment line to skip',\
               '"x "\t" y "\t z ', ' ', '"#more skip"', 'i\t"j"\tk']
         obs = parse_mapping_file(s2)
         self.assertEqual(obs, exp)
+        
+    def test_parse_mapping_file_handles_filepath(self):
+        """ parse_mapping_file handles being passed a mapping filepath
+        """
+        fp = get_tmp_filename(prefix='test_parse_mapping_file',
+                              suffix='.txt')
+        self.files_to_remove.append(fp)
+        open(fp,'w').write('\n'.join(['#sample\ta\tb',
+                                      '#comment line to skip',
+                                      'x \t y \t z ', ' ',
+                                      '#more skip',
+                                      'i\tj\tk']))
+        obs = parse_mapping_file(fp)
+        exp = ([['x','y','z'],['i','j','k']],\
+               ['sample','a','b'],\
+               ['comment line to skip','more skip'])
+        self.assertEqual(obs, exp)
+        
+    def test_parse_mapping_file_handles_file_handle(self):
+        """ parse_mapping_file handles being passed a mapping filepath
+        """
+        fp = get_tmp_filename(prefix='test_parse_mapping_file',
+                              suffix='.txt')
+        self.files_to_remove.append(fp)
+        open(fp,'w').write('\n'.join(['#sample\ta\tb',
+                                      '#comment line to skip',
+                                      'x \t y \t z ', ' ',
+                                      '#more skip',
+                                      'i\tj\tk']))
+        obs = parse_mapping_file(open(fp))
+        exp = ([['x','y','z'],['i','j','k']],\
+               ['sample','a','b'],\
+               ['comment line to skip','more skip'])
+        self.assertEqual(obs, exp)
+        
+    def test_parse_mapping_file_handles_errors(self):
+        """parse_mapping_file handles bad mapping files"""
+        # Empty file
+        self.assertRaises(QiimeParseError,
+                          parse_mapping_file,
+                          [])
+        # string
+        self.assertRaises(QiimeParseError,
+                          parse_mapping_file,
+                          'my_mapping_file.txt')
+        # invalid format (no header line with leading # sign)
+        self.assertRaises(QiimeParseError,
+                          parse_mapping_file,
+                          ['sampleID\ta\tb',
+                           '1\tf\t43',
+                           '2\tt\t44'])
+        # invalid format (no non-header lines)
+        self.assertRaises(QiimeParseError,
+                          parse_mapping_file,
+                          ['#sampleID\ta\tb'])
+        # invalid format (no header line)
+        self.assertRaises(QiimeParseError,
+                          parse_mapping_file,
+                          ['1\tf\t43',
+                           '2\tt\t44'])
     
     def test_parse_prefs_file(self):
         """parse_prefs_file should correctly eval prefs string.
