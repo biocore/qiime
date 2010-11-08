@@ -504,13 +504,13 @@ Beta-diversity metrics assess the differences between microbial communities. In 
     * # Beta diversity parameters
     * beta_diversity:metrics    weighted_unifrac,unweighted_unifrac
 
-The resulting distance matrices ( :file:`wf_bdiv/unweighted_unifrac_seqs_otu_table.txt` and :file:`wf_bdiv/weighted_unifrac_seqs_otu_table.txt`) are the basis for two methods of visualization and sample comparison: PCoA and UPGMA.
+The resulting distance matrices ( :file:`wf_bdiv_even146/unweighted_unifrac_seqs_otu_table.txt` and :file:`wf_bdiv_even146/weighted_unifrac_seqs_otu_table.txt`) are the basis for two methods of visualization and sample comparison: PCoA and UPGMA.
 
 Step 3. Generate Principal Coordinates
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Principal Coordinate Analysis (PCoA) is a technique that helps to extract and visualize a few highly informative gradients of variation from complex, multidimensional data. This is a complex transformation that maps the distance matrix to a new set of orthogonal axes such that a maximum amount of variation is explained by the first principal coordinate, the second largest amount of variation is explained by the second principal coordinate, etc. The principal coordinates can be plotted in two or three dimensions to provide an intuitive visualization of the data structure and look at differences between the samples, and look for similarities by sample category. The transformation is accomplished with the script `principal_coordinates.py <../scripts/principal_coordinates.html>`_.  Since this script only takes an input/output file, there are no parameters for the user to set in  :file:`custom_parameters.txt`.
 
-The files :file:`wf_bdiv/unweighted_unifrac_pc.txt` and :file:`wf_bdiv/weighted_unifrac_pc.txt` lists every sample in the first column, and the subsequent columns contain the value for the sample against the noted principal coordinate. At the bottom of each Principal Coordinate column, you will find the eigenvalue and percent of variation explained by the coordinate. To determine which axes are useful for your project, you can generate a "scree plot" by plotting the eigenvalues of each principal component in descending order.
+The files :file:`wf_bdiv_even146/unweighted_unifrac_pc.txt` and :file:`wf_bdiv_even146/weighted_unifrac_pc.txt` lists every sample in the first column, and the subsequent columns contain the value for the sample against the noted principal coordinate. At the bottom of each Principal Coordinate column, you will find the eigenvalue and percent of variation explained by the coordinate. To determine which axes are useful for your project, you can generate a "scree plot" by plotting the eigenvalues of each principal component in descending order.
 
 .. _gen2d3dpcoa:
 
@@ -534,7 +534,7 @@ To plot the coordinates, you can use the QIIME scripts `make_2d_plots.py <../scr
     * # Make 3D plot parameters
     * make_3d_plots:custom_axes
     
-The html files are created in :file:`wf_bdiv/unweighted_unifrac_3d...` and :file:`wf_bdiv/weighted_unifrac_3d...` directories.  In the :file:`custom_parameters.txt`, we specified that the samples should be colored by the value of the "Treatment" and "DOB" columns under the make_prefs_file parameters. For the "Treatment" column, all samples with the same "Treatment" will get the same color. For our tutorial, the five control samples are all blue and the four control samples are all green. This lets you easily visualize "clustering" by metadata category. The 3d visualization software allows you to rotate the axes to see the data from different perspectives. By default, the script will plot the first three dimensions in your file. Other combinations can be viewed using the "Views:Choose viewing axes" option in the KiNG viewer (may require the installation of kinemage software). The first 10 components can be viewed using "Views:Paralleled coordinates" option or typing "/".
+The html files are created in :file:`wf_bdiv_even146/unweighted_unifrac_3d...` and :file:`wf_bdiv_even146/weighted_unifrac_3d...` directories.  In the :file:`custom_parameters.txt`, we specified that the samples should be colored by the value of the "Treatment" and "DOB" columns under the make_prefs_file parameters. For the "Treatment" column, all samples with the same "Treatment" will get the same color. For our tutorial, the five control samples are all blue and the four control samples are all green. This lets you easily visualize "clustering" by metadata category. The 3d visualization software allows you to rotate the axes to see the data from different perspectives. By default, the script will plot the first three dimensions in your file. Other combinations can be viewed using the "Views:Choose viewing axes" option in the KiNG viewer (may require the installation of kinemage software). The first 10 components can be viewed using "Views:Paralleled coordinates" option or typing "/".
 
 .. image:: ../images/ pcoa2.png
    :align: center
@@ -544,15 +544,15 @@ Running beta_diversity_through_3d_plots.py
 
 Now that we have set the parameters, necessary for this workflow script, the user can run the following command, where we define the input OTU table "-i" and tree file "-t" (from `pick_otus_through_otu_table.py <../scripts/pick_otus_through_otu_table.html>`_), the parameter file to use "-p", the user-defined mapping file "-m", the output directory "-o" and set the sequences per sample depth to 146. ::
 
-    beta_diversity_through_3d_plots.py -i wf_da/uclust_picked_otus/rep_set/rdp_assigned_taxonomy/otu_table/seqs_otu_table.txt -m Fasting_Map.txt -o wf_bdiv/ -p custom_parameters.txt -t wf_da/uclust_picked_otus/rep_set/pynast_aligned_seqs/fasttree_phylogeny/seqs_rep_set.tre -e 146
+    beta_diversity_through_3d_plots.py -i wf_da/uclust_picked_otus/rep_set/rdp_assigned_taxonomy/otu_table/seqs_otu_table.txt -m Fasting_Map.txt -o wf_bdiv_even146/ -p custom_parameters.txt -t wf_da/uclust_picked_otus/rep_set/pynast_aligned_seqs/fasttree_phylogeny/seqs_rep_set.tre -e 146
 
 Generate 2D PCoA Plots
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-To plot the coordinates for the unweighted unifrac principal coordinates in 2D, you can use the QIIME script `make_2d_plots.py <../scripts/make_2d_plots.html>`_.  Here we will use the same preferences file generated from the `beta_diversity_through_3d_plots.py <../scripts/beta_diversity_through_3d_plots.html>`_, set the background color "-k" to white and output the results to `wf_bdiv/unweighted_unifrac_2d`::
+To plot the coordinates for the unweighted unifrac principal coordinates in 2D, you can use the QIIME script `make_2d_plots.py <../scripts/make_2d_plots.html>`_.  Here we will use the same preferences file generated from the `beta_diversity_through_3d_plots.py <../scripts/beta_diversity_through_3d_plots.html>`_, set the background color "-k" to white and output the results to `wf_bdiv_even146/unweighted_unifrac_2d`::
 
-    make_2d_plots.py -i wf_bdiv/unweighted_unifrac_pc.txt -m Fasting_Map.txt -o wf_bdiv/unweighted_unifrac_2d -k white -p wf_bdiv/prefs.txt
+    make_2d_plots.py -i wf_bdiv_even146/unweighted_unifrac_pc.txt -m Fasting_Map.txt -o wf_bdiv_even146/unweighted_unifrac_2d -k white -p wf_bdiv_even146/prefs.txt
 
-The html file created in directory :file:`wf_bdiv/unweighted_unifrac_2d` shows a plot for each combination of the first three principal coordinates. Since we specified Treatment and DOB to use for coloring the samples, each sample colored according to the category it corresponds. You can get the name for each sample by holding your mouse over the data point.
+The html file created in directory :file:`wf_bdiv_even146/unweighted_unifrac_2d` shows a plot for each combination of the first three principal coordinates. Since we specified Treatment and DOB to use for coloring the samples, each sample colored according to the category it corresponds. You can get the name for each sample by holding your mouse over the data point.
 
 .. image:: ../images/ pcoa1.png
    :align: center
@@ -562,11 +562,11 @@ The html file created in directory :file:`wf_bdiv/unweighted_unifrac_2d` shows a
 
 Generate Distance Histograms
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Distance Histograms are a way to compare different categories and see which tend to have larger/smaller distances than others. For example, in the hand study, you may want to compare the distances between hands to the distances between individuals. Here we will use the distance matrix and prefs file generated by `beta_diversity_through_3d_plots.py <../scripts/beta_diversity_through_3d_plots.html>`_, the mapping file, an output directory :file:`wf_bdiv/Distance_Histograms` and write the output as html, as follows::
+Distance Histograms are a way to compare different categories and see which tend to have larger/smaller distances than others. For example, in the hand study, you may want to compare the distances between hands to the distances between individuals. Here we will use the distance matrix and prefs file generated by `beta_diversity_through_3d_plots.py <../scripts/beta_diversity_through_3d_plots.html>`_, the mapping file, an output directory :file:`wf_bdiv_even146/Distance_Histograms` and write the output as html, as follows::
 
-    make_distance_histograms.py -d wf_bdiv/unweighted_unifrac_seqs_otu_table_even146.txt -m Fasting_Map.txt -o wf_bdiv/Distance_Histograms -p wf_bdiv/prefs.txt --html_output
+    make_distance_histograms.py -d wf_bdiv_even146/unweighted_unifrac_seqs_otu_table_even146.txt -m Fasting_Map.txt -o wf_bdiv_even146/Distance_Histograms -p wf_bdiv_even146/prefs.txt --html_output
 
-For each of these groups of distances a histogram is made. The output is a HTML file (:file:`wf_bdiv/Distance_Histograms/QIIME_Distance_Histograms.html`) where you can look at all the distance histograms individually, and compare them between each other. Within the webpage, the user can mouseover and/or select the checkboxes in the right panel to turn on/off the different distances within/between categories. For this example, we are comparing the distances between the samples in the Control versus themselves, along with samples from Fasting versus the Control.
+For each of these groups of distances a histogram is made. The output is a HTML file (:file:`wf_bdiv_even146/Distance_Histograms/QIIME_Distance_Histograms.html`) where you can look at all the distance histograms individually, and compare them between each other. Within the webpage, the user can mouseover and/or select the checkboxes in the right panel to turn on/off the different distances within/between categories. For this example, we are comparing the distances between the samples in the Control versus themselves, along with samples from Fasting versus the Control.
 
 .. image:: ../images/ hist.png
    :align: center
