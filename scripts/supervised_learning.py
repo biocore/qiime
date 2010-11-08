@@ -46,7 +46,11 @@ mapping file column containing discrete values as the class labels.
 By default, this script removes OTUs that are present in less than 10% of the \
 samples. Run with "--show_params" to see how to set this manually. For an \
 overview of the application of supervised classification to microbiota, \
-see PubMed ID 21039646."""
+see PubMed ID 21039646.
+
+This script requires that R is installed and in the search path. To install R \
+visit: http://www.r-project.org/. Once R is installed, run R and excecute the \
+command "install.packages('randomForest')", then type q() to exit."""
 
 script_info['script_usage']=[]
 script_info['script_usage'].append(("""Simple example of random forests classifier""","""""","""supervised_learning.py -i otutable.txt -m map.txt -c 'Individual' -o ml"""))
