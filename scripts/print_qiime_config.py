@@ -261,7 +261,7 @@ class Qiime_config(TestCase):
 
     def test_blast_supported_version(self):
         """blast is in path and version is supported """
-        acceptable_version = (2,2,21)
+        acceptable_version = (2,2,22)
         self.assertTrue(app_path('blastall'),
          "blast not found. This may or may not be a problem depending on "+\
          "which components of QIIME you plan to use.")
