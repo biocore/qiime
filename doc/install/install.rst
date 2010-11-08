@@ -233,10 +233,9 @@ uclust Install Notes
 
 .. _uclust-install:
 
-The uclust binary must be called ``uclust``, which differs from the names of the posted binaries, but is the name of the binary if you build from source. If you've installed the binary ``uclust1.1.579_i86linux32`` as ``/home/qiime/bin/uclust1.1.579_i86linux32``, we recommend creating a symbolic link to this file::
+The uclust binary must be called ``uclust``, which differs from the names of the posted binaries, but is the name of the binary if you build from source. If you've installed the binary ``uclust1.2.21q_i86linux64`` as ``/home/qiime/bin/uclust1.2.21q_i86linux64``, we recommend creating a symbolic link to this file::
 	
-	ln -s /home/qiime/bin/uclust1.1.579_i86linux32 /home/qiime/bin/uclust
-	
+	ln -s /home/qiime/bin/uclust1.2.21q_i86linux64 /home/qiime/bin/uclust
 	
 ChimeraSlayer Install Notes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
