@@ -1,5 +1,6 @@
 Add changes since QIIME 1.1.0 here
 ==================================
+* Added capability to perform supervised classification of metadata categories using the Random Forests classifier. Outputs include a ranking of OTUs by discriminatory power, and the estimated probability of each metadata category for each sample. The latter may be useful for detecting potentially mislabeled samples.
 * When computing jackknife support for sample clustering (e.g.: UPGMA sample trees), Qiime can now compute a consensus tree from the jackknife replicates, in addition to the existing functionality of using the full dataset as the master tree, and annotating that tree with jackknife support values. See jackknifed_beta_diversity.py --master_tree and consensus_tree.py .
 * Added the ability to write out the flowgram file in process_sff.py, along with the ability to define and output directory.
 * SRA submission protocol updated to perform human screening with uclust_ref against 16S reference sequences, rather than cdhit/blast against reference sequences. This can be a lot faster, and reduces the complexity of the code by requiring users to have uclust installed for the human screen rather than cdhit and blast.
