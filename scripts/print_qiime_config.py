@@ -237,7 +237,7 @@ class Qiime_config(TestCase):
         version_string = stdout.strip().split('v')[-1].strip('q')
         try:
             version = tuple(map(int,version_string.split('.')))
-            pass_test = version >= acceptable_version
+            pass_test = version == acceptable_version
         except ValueError:
             pass_test = False
             version_string = stdout
@@ -247,7 +247,8 @@ class Qiime_config(TestCase):
 
     def test_python_supported_version(self):
         """python is in path and version is supported """
-        acceptable_version = (2,6,0)
+        min_acceptable_version = (2,6,0)
+        min_unacceptable_version = (2,7,0)
         command = 'python --version'
         proc = Popen(command,shell=True,universal_newlines=True,\
                          stdout=PIPE,stderr=STDOUT)
@@ -255,13 +256,15 @@ class Qiime_config(TestCase):
         version_string = stdout.strip().split('Python')[-1].strip()
         try:
             version = tuple(map(int,version_string.split('.')))
-            pass_test = version >= acceptable_version
+            pass_test = (version >= min_acceptable_version and version < min_unacceptable_version)
         except ValueError:
             pass_test = False
             version_string = stdout
         self.assertTrue(pass_test,\
-         "Unsupported python version. %s or later is required, but running %s." \
-         % ('.'.join(map(str,acceptable_version)), version_string))
+         "Unsupported python version. Must be >= %s and < %s , but running %s." \
+         % ('.'.join(map(str,min_acceptable_version)),
+            '.'.join(map(str,min_unacceptable_version)),
+            version_string))
 
     def test_blast_supported_version(self):
         """blast is in path and version is supported """
@@ -276,7 +279,7 @@ class Qiime_config(TestCase):
         version_string = stdout.strip().split(' ')[1].strip()
         try:
             version = tuple(map(int,version_string.split('.')))
-            pass_test = version >= acceptable_version
+            pass_test = version == acceptable_version
         except ValueError:
             pass_test = False
             version_string = stdout
@@ -286,7 +289,7 @@ class Qiime_config(TestCase):
          
     def test_FastTree_supported_version(self):
         """FastTree is in path and version is supported """
-        acceptable_version = (2,1,1)
+        acceptable_version = (2,1,0)
         self.assertTrue(app_path('FastTree'),
          "FastTree not found. This may or may not be a problem depending on "+\
          "which components of QIIME you plan to use.")
@@ -297,7 +300,7 @@ class Qiime_config(TestCase):
         version_string = stdout.strip().split(' ')[4].strip()
         try:
             version = tuple(map(int,version_string.split('.')))
-            pass_test = version >= acceptable_version
+            pass_test = version == acceptable_version
         except ValueError:
             pass_test = False
             version_string = stdout
@@ -318,7 +321,7 @@ class Qiime_config(TestCase):
         version_string = stdout.strip().split(' ')[2].strip()
         try:
             version = tuple(map(int,version_string.split('.')))
-            pass_test = version >= acceptable_version
+            pass_test = version == acceptable_version
         except ValueError:
             pass_test = False
             version_string = stdout
@@ -328,7 +331,7 @@ class Qiime_config(TestCase):
         
     def test_INFERNAL_supported_version(self):
         """INFERNAL is in path and version is supported """
-        acceptable_version = (1,0,2)
+        acceptable_version = (1,0)
         self.assertTrue(app_path('cmbuild'),
          "Infernal not found. This may or may not be a problem depending on "+\
          "which components of QIIME you plan to use.")
@@ -339,7 +342,7 @@ class Qiime_config(TestCase):
         version_string = stdout.strip().split(' ')[2].strip()
         try:
             version = tuple(map(int,version_string.split('.')))
-            pass_test = version >= acceptable_version
+            pass_test = version == acceptable_version
         except ValueError:
             pass_test = False
             version_string = stdout
@@ -370,7 +373,7 @@ class Qiime_config(TestCase):
         
     def test_mothur_supported_version(self):
         """mothur is in path and version is supported """
-        acceptable_version = (1,14,0)
+        acceptable_version = (1,13,0)
         self.assertTrue(app_path('mothur'),
          "mothur not found. This may or may not be a problem depending on "+\
          "which components of QIIME you plan to use.")
@@ -383,7 +386,7 @@ class Qiime_config(TestCase):
         version_string = stdout.strip().split(' ')[1].strip('v.')
         try:
             version = tuple(map(int,version_string.split('.')))
-            pass_test = version >= acceptable_version
+            pass_test = version == acceptable_version
         except ValueError:
             pass_test = False
             version_string = stdout
@@ -401,7 +404,7 @@ class Qiime_config(TestCase):
             from Denoiser import __version__ as version_string
             try:
                 version = tuple(map(int,version_string.split('.')))
-                pass_test = version >= acceptable_version
+                pass_test = version == acceptable_version
             except ValueError:
                 pass_test = False
                 version_string = stdout
@@ -427,7 +430,7 @@ class Qiime_config(TestCase):
         version_string = stdout.strip().split(' ')[4].strip()
         try:
             version = tuple(map(int,version_string.split('.')))
-            pass_test = version >= acceptable_version
+            pass_test = version == acceptable_version
         except ValueError:
             pass_test = False
             version_string = stdout
@@ -448,7 +451,7 @@ class Qiime_config(TestCase):
         version_string = stdout.strip().split(' ')[2].strip()
         try:
             version = tuple(map(int,version_string.split('.')))
-            pass_test = version >= acceptable_version
+            pass_test = version == acceptable_version
         except ValueError:
             pass_test = False
             version_string = stdout
