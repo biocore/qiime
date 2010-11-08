@@ -51,6 +51,10 @@ in the heatmap',default=None),
  make_option('-m', '--map_fname', dest='map_fname', type="string",
      help='Metadata mapping file to be used for sorting Samples in the \
 heatmap',default=None),
+ make_option('--sample_tree', dest='sample_tree', type="string",
+     help='Tree file to be used for sorting samples (e.g, output from \
+upgma_cluster.py). If both this and the \
+sample mapping file are provided, the mapping file is ignored.',default=None),
 ]
 
 script_info['version'] = __version__
@@ -110,7 +114,19 @@ def main():
         f.close()
         ordered_otu_names = [tip.Name for tip in tree.iterTips()]
     ordered_sample_names = None
-    if not opts.map_fname is None:
+    
+    # load tree for sorting Samples
+    if not opts.sample_tree is None:
+        try:
+            f = open(opts.sample_tree, 'U')
+        except (TypeError, IOError):
+            raise TreeMissingError, \
+                "Couldn't read tree file at path: %s" % tree_source
+        tree = parse_newick(f, PhyloNode) 
+        f.close()
+        ordered_sample_names = [tip.Name for tip in tree.iterTips()]
+    # if there's no sample tree, load sample map for sorting samples
+    elif not opts.map_fname is None:
         lines = open(opts.map_fname,'U').readlines()
         map = parse_mapping_file(lines)[0]
         ordered_sample_names = [row[0] for row in map]

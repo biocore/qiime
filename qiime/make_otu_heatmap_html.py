@@ -195,12 +195,9 @@ def generate_heatmap_plots(options,data, dir_path, js_dir_path,filename):
     num_otu_hits=int(options.num_otu_hits)
     #Filter by number of OTU hits
     rows=filter_by_otu_hits(num_otu_hits, data)
-    #print rows
-    #print rows[0]
     
     # This sorts the otus by the tree supplied
     if data['otu_order']:
-        #print data['otu_order']
         new_otu_table=[]
         tran_rows=rows.transpose()
     
@@ -210,10 +207,23 @@ def generate_heatmap_plots(options,data, dir_path, js_dir_path,filename):
                 if i==j[0]:
                     new_otu_table.append(j)
         rows= asarray(new_otu_table).transpose()
+
+    # This sorts the samples by the order supplied
+    if data['sample_order']:
+        new_otu_table=[]
+        new_otu_table.append(rows[0])
+        for i in data['sample_order']:
+            for j in rows:
+                if i==j[0]:
+                    new_otu_table.append(j)
+        # last row is lineages
+        new_otu_table.append(rows[-1])
+        rows= asarray(new_otu_table)
         
     #Convert OTU counts into a javascript array
     js_array=create_javascript_array(rows)
 
+    #~ print js_array
     #Write otu filter number
     js_otu_cutoff='var otu_num_cutoff=%i;' % num_otu_hits
     
