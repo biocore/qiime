@@ -82,13 +82,6 @@ class Qiime_config(TestCase):
         if not out_string:
             self.fail("Something is wrong with your python\n." \
                           +" Check you python_exe_fp:%s" %python)
-
-        #get the version number out of "python 2.6.2\n"
-        version = out_string.rstrip().split(" ")[1].split(".")
-        version = tuple(map(int, version))
-        self.assertTrue(version >= (2, 6, 0),
-                        "Qiime requires at least python version 2.6.0. "+\
-                        "You are running " + out_string)
     
     def test_cluster_jobs_fp(self):
         """cluster_jobs_fp is set to a valid path and is executable"""       
@@ -373,7 +366,7 @@ class Qiime_config(TestCase):
         
     def test_mothur_supported_version(self):
         """mothur is in path and version is supported """
-        acceptable_version = (1,13,0)
+        acceptable_version = (1,6,0)
         self.assertTrue(app_path('mothur'),
          "mothur not found. This may or may not be a problem depending on "+\
          "which components of QIIME you plan to use.")
