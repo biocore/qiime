@@ -411,7 +411,7 @@ class Qiime_config(TestCase):
             version_string = "Not installed."
             pass_test = False
         self.assertTrue(pass_test,\
-         "Unsupported muscle version. %s or later is required, but running %s." \
+         "Unsupported denoiser version. %s or later is required, but running %s." \
          % ('.'.join(map(str,acceptable_version)), version_string))
         
     def test_raxmlHPC_supported_version(self):
