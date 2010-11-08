@@ -41,7 +41,7 @@ script_info['script_usage'].append(("""Example""","""""","""alpha_rarefaction.py
 script_info['output_description']="""The results of this script is a folder ("rare1/") containing rarefied otu tables, alpha-diversity for each otu table, a file containing the results from collating the alpha-diversity results and a folder containing the rarefaction plots."""
 script_info['required_options']=[\
  make_option('-i','--otu_table_fp',\
-            help='the input fasta file [REQUIRED]'),\
+            help='the input otu table [REQUIRED]'),\
  make_option('-m','--mapping_fp',\
             help='path to the mapping file [REQUIRED]'),\
  make_option('-o','--output_dir',\
