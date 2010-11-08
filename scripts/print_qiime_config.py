@@ -349,7 +349,7 @@ class Qiime_config(TestCase):
         
     def test_muscle_supported_version(self):
         """muscle is in path and version is supported """
-        acceptable_version = (3,8,31)
+        acceptable_version = (3,6)
         self.assertTrue(app_path('muscle'),
          "muscle not found. This may or may not be a problem depending on "+\
          "which components of QIIME you plan to use.")
@@ -360,12 +360,12 @@ class Qiime_config(TestCase):
         version_string = stdout.strip().split(' ')[1].strip('v')
         try:
             version = tuple(map(int,version_string.split('.')))
-            pass_test = version >= acceptable_version
+            pass_test = version == acceptable_version
         except ValueError:
             pass_test = False
             version_string = stdout
         self.assertTrue(pass_test,\
-         "Unsupported muscle version. %s or later is required, but running %s." \
+         "Unsupported muscle version. %s is required, but running %s." \
          % ('.'.join(map(str,acceptable_version)), version_string))
         
     def test_mothur_supported_version(self):
