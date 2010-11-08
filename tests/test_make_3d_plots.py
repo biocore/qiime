@@ -340,6 +340,82 @@ Removes any samples not present in mapping file"""
         remove(fp1)
         remove(fp2)
         remove(fp3)
+
+    def test_get_multiple_coords_serial(self):
+        # create the temporary pc files
+        pc_file_1 = '\n'.join(['pc vector number\t1\t2',
+                               'A\t1.1\t2.2',
+                               'B\t4.1\t4.2',
+                               'C\t-.1\t-.2',
+                               'eigvals\t0.52\t0.24',
+                               '% variation explained\t25.12\t13.29'])
+        pc_file_2 = '\n'.join(['pc vector number\t1\t2',
+                               'A\t2.1\t3.2',
+                               'B\t5.1\t6.2',
+                               'C\t-1.1\t-2.2',
+                               'eigvals\t0.32\t0.14',
+                               '% variation explained\t20.11\t12.28'])
+        pc_file_3 = '\n'.join(['pc vector number\t1\t2',
+                               'A\t2.2\t3.3',
+                               'B\t5.2\t6.3',
+                               'C\t-1.2\t-2.3',
+                               'eigvals\t0.34\t0.15',
+                               '% variation explained\t10.11\t2.28'])
+
+        fp1 = get_tmp_filename()
+        fp2 = get_tmp_filename()
+        fp3 = get_tmp_filename()
+        try:
+            f1 = open(fp1,'w')
+            f2 = open(fp2,'w')
+            f3 = open(fp3,'w')
+        except IOError, e:
+            raise e,"Could not create temporary files: %s, %s" %(f1,f2, f3)
+        
+        f1.write(pc_file_1)
+        f1.close()
+        f2.write(pc_file_2)
+        f2.close()
+        f3.write(pc_file_3)
+        f3.close()
+        
+        # test without serial
+        exp_edges = [('A_0', 'A_1'), ('A_0', 'A_2'), 
+                     ('B_0', 'B_1'), ('B_0', 'B_2'),
+                     ('C_0', 'C_1'),('C_0', 'C_2')
+                    ]
+        exp_coords = [['A_0', 'B_0', 'C_0',
+                       'A_1', 'B_1', 'C_1',
+                       'A_2', 'B_2', 'C_2'], 
+                      array([[ 1.1,  2.2],
+                             [ 4.1,  4.2],
+                             [-0.1, -0.2],
+                             [ 2.1,  3.2],
+                             [ 5.1,  6.2],
+                             [-1.1, -2.2],
+                             [ 2.2,  3.3],
+                             [ 5.2,  6.3],
+                             [-1.2, -2.3]]), 
+                      array([ 0.52,  0.24]), array([ 25.12,  13.29]),
+                      None, None]
+        edges, coords = get_multiple_coords([fp1,fp2,fp3],serial=False)
+        self.assertEqual(edges, exp_edges)
+        self.assertEqual(coords, exp_coords)
+
+        # test with serial
+        exp_edges = [('A_0', 'A_1'), ('A_1', 'A_2'),
+                     ('B_0', 'B_1'), ('B_1', 'B_2'),
+                     ('C_0', 'C_1'),('C_1', 'C_2')
+                    ]
+        edges, coords = get_multiple_coords([fp1,fp2,fp3],serial=True)
+        self.assertEqual(edges, exp_edges)
+        self.assertEqual(coords, exp_coords)
+
+
+        # clean up
+        remove(fp1)
+        remove(fp2)
+        remove(fp3)
  
 
     def test_validate_coord_files(self):

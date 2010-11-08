@@ -79,6 +79,10 @@ use in the plots (Options are \'black\' or \'white\'. [default: %default]'),
 sample IDs separated by a whitespace character; for each pair of sample IDs, \
 an edge will be drawn from the first sample to the second sample. \
 [default: %default]',default=None),
+ make_option('--serial',action="store_true", \
+ help='Connect the 1st set of points to the 2nd, the 2nd to the 3rd, etc. \
+Default behavior is to connect each set of points back to the 1st set. This \
+flag is ignored if the user specifies an edges file.'),
  options_lookup['output_dir']
 ]
 script_info['version'] = __version__
@@ -100,7 +104,8 @@ def main():
         option_parser.error('Every line of every coord file must ' +\
                             'have the same number of columns.')
     num_coord_files = len(coord_files)
-    data['edges'], data['coord'] = get_multiple_coords(coord_files, opts.edges_file)
+    data['edges'], data['coord'] = \
+        get_multiple_coords(coord_files, opts.edges_file, opts.serial)
 
 
     # if the edges file wasn't supplied, we appended _i to each file's samples
@@ -162,6 +167,7 @@ def main():
         action = generate_3d_plots
     except NameError:
         action = None
+
     #Place this outside try/except so we don't mask NameError in action
     if action:
         action(prefs, data, custom_axes,

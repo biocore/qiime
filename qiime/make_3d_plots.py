@@ -89,6 +89,7 @@ def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, \
     pulls the combination samples starting with RK, colors with
     first gradient, then pulls the combination samples starting
     with NF, colors with the next gradient.
+    
     """
     result = []
     #Iterate through prefs and color by given mapping labels
@@ -531,7 +532,7 @@ def get_coord(coord_fname, method="IQR"):
         coord_header = list(master_pcoa[0])
         return [coord_header, coords, eigval_average, pct_var, coords_low, coords_high]
 
-def get_multiple_coords(coord_fnames, edges_file=None):
+def get_multiple_coords(coord_fnames, edges_file=None, serial=False):
     """Opens and returns coords data and edges from multiple coords files.
 
        Params:
@@ -544,6 +545,10 @@ def get_multiple_coords(coord_fnames, edges_file=None):
             all coords are put in a single data matrix.
             Sample IDs from ith file have _i appended to them.
             eigvals, pct_var are taken from first coords file
+
+       If "serial" is True, connects points ending with _0 to those with _1, 
+       those with _1 to those with _2, etc. Otherwise all sets are connected
+       back to those ending with _0.
     """
     # start with empty data structures
     coord_header = []
@@ -579,9 +584,14 @@ def get_multiple_coords(coord_fnames, edges_file=None):
     # add all edges unless we have predetermined edges
     if edges_file is None:
         for _id in sampleIDs:
-            for i in xrange(1,len(coord_fnames)):
-                # edges go from first file's points to other files' points
-                edges += [('%s_%d' %(_id,0), '%s_%d' %(_id,i))]
+            if serial:
+                for i in xrange(len(coord_fnames)-1):
+                    # edges go from one set to the next
+                    edges += [('%s_%d' %(_id,i), '%s_%d' %(_id,i+1))]
+            else:
+                for i in xrange(1,len(coord_fnames)):
+                    # edges go from first file's points to other files' points
+                    edges += [('%s_%d' %(_id,0), '%s_%d' %(_id,i))]
 
     return edges, [coord_header, coords, eigvals, pct_var, None, None]
 
