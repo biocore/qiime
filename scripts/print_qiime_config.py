@@ -235,7 +235,7 @@ class Qiime_config(TestCase):
             pass_test = False
             version_string = stdout
         self.assertTrue(pass_test,\
-         "Unsupported uclust version. %s or later is required, but running %s." \
+         "Unsupported uclust version. %s is required, but running %s." \
          % ('.'.join(map(str,acceptable_version)), version_string))
 
     def test_python_supported_version(self):
@@ -277,7 +277,7 @@ class Qiime_config(TestCase):
             pass_test = False
             version_string = stdout
         self.assertTrue(pass_test,\
-         "Unsupported blast version. %s or later is required, but running %s." \
+         "Unsupported blast version. %s is required, but running %s." \
          % ('.'.join(map(str,acceptable_version)), version_string))
          
     def test_FastTree_supported_version(self):
@@ -298,7 +298,7 @@ class Qiime_config(TestCase):
             pass_test = False
             version_string = stdout
         self.assertTrue(pass_test,\
-         "Unsupported FastTree version. %s or later is required, but running %s." \
+         "Unsupported FastTree version. %s is required, but running %s." \
          % ('.'.join(map(str,acceptable_version)), version_string))
     
     def test_cdbtools_supported_version(self):
@@ -319,7 +319,7 @@ class Qiime_config(TestCase):
             pass_test = False
             version_string = stdout
         self.assertTrue(pass_test,\
-         "Unsupported cdbtools version. %s or later is required, but running %s." \
+         "Unsupported cdbtools version. %s is required, but running %s." \
          % ('.'.join(map(str,acceptable_version)), version_string))
         
     def test_INFERNAL_supported_version(self):
@@ -340,7 +340,7 @@ class Qiime_config(TestCase):
             pass_test = False
             version_string = stdout
         self.assertTrue(pass_test,\
-         "Unsupported INFERNAL version. %s or later is required, but running %s." \
+         "Unsupported INFERNAL version. %s is required, but running %s." \
          % ('.'.join(map(str,acceptable_version)), version_string))
         
     def test_muscle_supported_version(self):
@@ -384,7 +384,7 @@ class Qiime_config(TestCase):
             pass_test = False
             version_string = stdout
         self.assertTrue(pass_test,\
-         "Unsupported mothur version. %s or later is required, but running %s." \
+         "Unsupported mothur version. %s is required, but running %s." \
          % ('.'.join(map(str,acceptable_version)), version_string))
         
         # remove the directory and the log file
@@ -407,7 +407,7 @@ class Qiime_config(TestCase):
             version_string = "Not installed."
             pass_test = False
         self.assertTrue(pass_test,\
-         "Unsupported denoiser version. %s or later is required, but running %s." \
+         "Unsupported denoiser version. %s is required, but running %s." \
          % ('.'.join(map(str,acceptable_version)), version_string))
         
     def test_raxmlHPC_supported_version(self):
@@ -428,7 +428,7 @@ class Qiime_config(TestCase):
             pass_test = False
             version_string = stdout
         self.assertTrue(pass_test,\
-         "Unsupported raxmlHPC version. %s or later is required, but running %s." \
+         "Unsupported raxmlHPC version. %s is required, but running %s." \
          % ('.'.join(map(str,acceptable_version)), version_string))
         
     def test_clearcut_supported_version(self):
@@ -449,7 +449,7 @@ class Qiime_config(TestCase):
             pass_test = False
             version_string = stdout
         self.assertTrue(pass_test,\
-         "Unsupported clearcut version. %s or later is required, but running %s." \
+         "Unsupported clearcut version. %s is required, but running %s." \
          % ('.'.join(map(str,acceptable_version)), version_string))
         
     def test_pyronoise2_supported_version(self):
