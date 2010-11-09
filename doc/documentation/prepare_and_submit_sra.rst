@@ -6,7 +6,7 @@
 SRA Submission 
 =========================
 
-QIIME's SRA submission code is changing rapidly in the ``1.1.0-dev`` versions of QIIME. We're making every effort to keep the documentation up-to-date with the code, but if you are interested in using this code you'll most likely want to get on the ``qiime-sra-users`` mailing list to stay current on the state of the code. Head `here <http://groups.google.com/group/qiime-sra-users?hl=en>`_ for information on joining that public group.
+QIIME's SRA submission code is changing rapidly in the ``1.2.0-dev`` versions of QIIME. We're making every effort to keep the documentation up-to-date with the code, but if you are interested in using this code you'll most likely want to get on the ``qiime-sra-users`` mailing list to stay current on the state of the code. Head `here <http://groups.google.com/group/qiime-sra-users?hl=en>`_ for information on joining that public group.
 
 Introduction 
 --------------
