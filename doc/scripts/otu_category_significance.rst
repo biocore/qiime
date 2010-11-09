@@ -9,6 +9,8 @@
 
 The script `otu_category_significance.py <./otu_category_significance.html>`_ tests whether any of the OTUs in an OTU table are significantly associated with a category in the category mapping file. This code uses, ANOVA, the G test of independence, or Pearson correlation to find OTUs whose members are differentially represented across experimental treatments or measured variables. It can also be used with presence/absence or abundance data for a phylogenetic group (such as that determined with quantitative PCR) to determine if any OTUs co-occur with a taxon of interest.
 
+This test can be performed on a single OTU table or on a directory of OTU tables (for example, the output of `multiple_rarefactions_even_depth.py <./multiple_rarefactions_even_depth.html>`_). If the script is called on a directory, the resulting p-values are the average of the p-values observed when running a single test on each otu_table separately.
+
 
 **Usage:** :file:`otu_category_significance.py [options]`
 
@@ -20,7 +22,7 @@ The script `otu_category_significance.py <./otu_category_significance.html>`_ te
 	**[REQUIRED]**
 		
 	-i, `-`-otu_table_fp
-		Path to the otu table
+		Path to the otu table, or to a directory containing OTU tables
 	-m, `-`-category_mapping_fp
 		Path to category mapping file
 	-c, `-`-category
@@ -95,5 +97,13 @@ Alternatively, the user could run an ANOVA test on the same data by using the fo
 ::
 
 	otu_category_significance.py -i otu_table.txt -m Mapping_file.txt -s ANOVA -c Sex
+
+**Example 4:**
+
+If the user would like to perform an ANOVA on an entire directory of rarefied  OTU tables using default parameters, while testing the category "Sex", they can run the following command:
+
+::
+
+	otu_category_significance.py -i otu_table_dir -m Mapping_file.txt -s g_test -c Sex
 
 

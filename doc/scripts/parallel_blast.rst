@@ -28,6 +28,8 @@ This script for performing blast while making use of multicore/multiprocessor en
 	
 	**[OPTIONAL]**
 		
+	-c, `-`-disable_low_complexity_filter
+		Disable filtering of low-complexity sequences (i.e., -F F is passed to blast) [default: False]
 	-e, `-`-e_value
 		E-value threshold for blasts [default: 1e-30]
 	-n, `-`-num_hits

@@ -34,6 +34,8 @@ To directly measure the robustness of individual UPGMA clusters and clusters in 
 		
 	-t, `-`-tree_fp
 		Path to the tree file [default: None; REQUIRED for phylogenetic measures]
+	`-`-master_tree
+		Method for computing master trees in jackknife analysis. "consensus": consensus of trees from jackknifed otu tables.  "full": tree generated from input (unsubsambled) otu table.  [default: full]
 	-f, `-`-force
 		Force overwrite of existing output directory (note: existing files in output_dir will not be removed) [default: None]
 	-w, `-`-print_only
@@ -61,7 +63,9 @@ These steps are performed by the following command:
 
 5. Build UPGMA trees from rarefied OTU table distance matrices;
 
-6. Compare rarefied OTU table distance matrix UPGMA trees to tree full UPGMA tree and write support file and newick tree with support values as node labels.
+5.5 Build a consensus tree from the rarefied UPGMA trees
+
+6. Compare rarefied OTU table distance matrix UPGMA trees to either (full or consensus) tree for jackknife support of tree nodes.
 
 7. Perform principal coordinates analysis on distance matrices generated from rarefied OTU tables.
 

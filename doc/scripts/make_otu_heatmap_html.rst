@@ -32,6 +32,8 @@ Once the OTU table has been generated, the user can create an interactive OTU he
 		Tree file to be used for sorting OTUs in the heatmap
 	-m, `-`-map_fname
 		Metadata mapping file to be used for sorting Samples in the heatmap
+	`-`-sample_tree
+		Tree file to be used for sorting samples (e.g, output from `upgma_cluster.py <./upgma_cluster.html>`_). If both this and the sample mapping file are provided, the mapping file is ignored.
 
 
 **Output:**

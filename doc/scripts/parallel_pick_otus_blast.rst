@@ -34,6 +34,8 @@ This script performs like the `pick_otus.py <./pick_otus.html>`_ script, but is 
 		Full path to template alignment [default: None]
 	-b, `-`-blast_db
 		Database to blast against [default: None]
+	`-`-min_aligned_percent
+		Minimum percent of query sequence that can be aligned to consider a hit (BLAST OTU picker only) [default: 0.5]
 	-N, `-`-pick_otus_fp
 		Full path to scripts/`pick_otus.py <./pick_otus.html>`_ [default: /python_software/Qiime/scripts/`pick_otus.py <./pick_otus.html>`_]
 	-O, `-`-jobs_to_start

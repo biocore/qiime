@@ -32,6 +32,8 @@ This script transformms 2 coordinate matrices (e.g., the output of `principal_co
 		Number of dimensions to include in output matrices [default: Consider all dimensions]
 	-s, `-`-sample_id_map_fp
 		Map of original sample ids to new sample ids [default: None]
+	`-`-store_trial_details
+		Store PC matrices for individual trials [default: False]
 
 
 **Output:**

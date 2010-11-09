@@ -30,7 +30,7 @@ The steps performed by this script are:
 	**[REQUIRED]**
 		
 	-i, `-`-otu_table_fp
-		The input fasta file [REQUIRED]
+		The input otu table [REQUIRED]
 	-m, `-`-mapping_fp
 		Path to the mapping file [REQUIRED]
 	-o, `-`-output_dir

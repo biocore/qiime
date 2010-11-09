@@ -28,6 +28,8 @@ The script `make_otu_table.py <./make_otu_table.html>`_ tabulates the number of 
 		Path to taxonomy assignment, containing the assignments of \ taxons to sequences (i.e., resulting txt file from `assign_taxonomy.py <./assign_taxonomy.html>`_)  [default: None]
 	-o, `-`-output_fp
 		The output filepath
+	-e, `-`-exclude_otus_fp
+		A filepath listing OTU identifiers that should not be included in the OTU table (e.g., the output of `identify_chimeric_sequences.py <./identify_chimeric_sequences.html>`_)
 
 
 **Output:**
@@ -35,12 +37,16 @@ The script `make_otu_table.py <./make_otu_table.html>`_ tabulates the number of 
 The output of `make_otu_table.py <./make_otu_table.html>`_ is a tab-delimited text file, where the columns correspond to Samples and rows correspond to OTUs and the number of times a sample appears in a particular OTU.
 
 
-**Example:**
-
-For this example the input is an OTU file containing sequence ids assigned to each OTU (i.e., resulting OTU file from `pick_otus.py <./pick_otus.html>`_) and a text file containing the taxonomy assignments (i.e., resulting text file from `assign_taxonomy.py <./assign_taxonomy.html>`_), where the output file is defined as otu_table.txt:
+Make an OTU table from an OTU map (i.e., result from `pick_otus.py <./pick_otus.html>`_) and a taxonomy assignment file (i.e., result from `assign_taxonomy.py <./assign_taxonomy.html>`_). Write the output file to otu_table.txt.
 
 ::
 
-	make_otu_table.py -i seqs_otus.txt -t repr_set_tax_assignments.txt -o otu_table.txt
+	make_otu_table.py -i otu_map.txt -t tax_assignments.txt -o otu_table.txt
+
+Make an OTU table, excluding the sequences listed in chimeric_seqs.txt
+
+::
+
+	make_otu_table.py -i otu_map.txt -o otu_table.txt -e chimeric_seqs.txt
 
 

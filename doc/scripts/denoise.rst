@@ -20,7 +20,7 @@ This script will denoise a flowgram file in  .sff.txt format, which is the outpu
 	**[REQUIRED]**
 		
 	-i, `-`-input_file
-		Path to flowgram file (.sff.txt)
+		Path to flowgram files (.sff.txt), comma separated
 	-f, `-`-fasta_file
 		Path to fasta file from `split_libraries.py <./split_libraries.html>`_
 	

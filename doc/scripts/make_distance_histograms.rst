@@ -34,12 +34,12 @@ To visualize the distance between samples and/or categories in the metadata mapp
 		This is the     background color to use in the plots (Options are 'black' or 'white'.     [default: white]
 	`-`-monte_carlo
 		Perform Monte Carlo analysis on distances.  [Default: False]
-	`-`-html_output
-		Write output in HTML format. [Default: False]
+	`-`-suppress_html_output
+		Suppress HTML format output. [Default: False]
 	-f, `-`-fields
-		Comma delimited list of fields to compare.  This overwrites fields in prefs file.  If this is not provided, the first field in metadata mapping file will be used.  Usage: --fields Field1,Field2,Field3
+		Comma delimited list of fields to compare.  Put list of fields in quotes.  This overwrites fields in prefs file.  If this is not provided, the first field in metadata mapping file will be used.  Usage: --fields "Field1,Field2,Field3"
 	`-`-monte_carlo_iters
-		Number of iterations to perform for Monte Carlo analysis. [default: 10]
+		Number of iterations to perform for Monte Carlo analysis. [default: 100]
 
 
 **Output:**
@@ -49,7 +49,7 @@ The result of this script will be a folder containing images and/or an html file
 
 **Examples:**
 
-Distance Histograms are a way to compare different categories and see which tend to have larger/smaller distances than others. For example, in the hand study, you may want to compare the distances between hands to the distances between individuals (with the file "hand_distances.txt" using the parameter -d hand_distances.txt). The categories are defined in the metadata mapping file (specified using the parameter -m hand_map.txt). If you want to look at the distances between hands and individuals, choose the "Hand" field and "Individual" field (using the parameter --fields Hand,Individual (notice the fields are comma delimited)). For each of these groups of distances a histogram is made. The output is a HTML file ("QIIME_Distance_Histograms.html" when the parameter --html_output is specified) which is created in the "Distance_Histograms" directory (using the parameter -o Distance_Histograms to specify output directory) where you can look at all the distance histograms individually, and compare them between each other.
+Distance Histograms are a way to compare different categories and see which tend to have larger/smaller distances than others. For example, in the hand study, you may want to compare the distances between hands to the distances between individuals (with the file "hand_distances.txt" using the parameter -d hand_distances.txt). The categories are defined in the metadata mapping file (specified using the parameter -m hand_map.txt). If you want to look at the distances between hands and individuals, choose the "Hand" field and "Individual" field (using the parameter --fields Hand,Individual (notice the fields are comma delimited)). For each of these groups of distances a histogram is made. The output is a HTML file ("QIIME_Distance_Histograms.html") which is created in the "Distance_Histograms" directory (using the parameter -o Distance_Histograms to specify output directory) where you can look at all the distance histograms individually, and compare them between each other.
 
 In the following command, the user only supplies a distance matrix (i.e. resulting file from `beta_diversity.py <./beta_diversity.html>`_), the user-generated metadata mapping file and one category (e.g. pH):
 
@@ -63,11 +63,11 @@ For comparison of multiple categories (e.g. pH, salinity), you can use the follo
 
 	make_distance_histograms.py -d beta_div.txt -m Mapping_file.txt --fields pH,salinity
 
-If the user would like to write the result to a dynamic HTML, you can use the following command:
+HTML output is automatically generated. If the user would like to suppress the HTML output, you can use the following command:
 
 ::
 
-	make_distance_histograms.py -d beta_div.txt -m Mapping_file.txt --fields pH --html_output
+	make_distance_histograms.py -d beta_div.txt -m Mapping_file.txt --fields pH --suppress_html_output
 
 In the case that the user generates their own preferences file (prefs.txt), they can use the following command:
 

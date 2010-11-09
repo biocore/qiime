@@ -23,6 +23,8 @@ A number of metrics are currently supported, including unweighted and weighted U
 		
 	-i, `-`-input_path
 		Input path: otu table, or dir of otu tables for batch mode
+	-r, `-`-rows
+		Compute only these rows of the distance matrix. pass a list of sample names, e.g. "s1,s3" [by default, +      the full n x n matrix is generated]
 	-o, `-`-output_dir
 		Output directory, will be created if doesn't exist
 	-m, `-`-metrics
@@ -31,6 +33,8 @@ A number of metrics are currently supported, including unweighted and weighted U
 		Show available beta diversity metrics and quit
 	-t, `-`-tree_path
 		Path to newick tree file, required for phylogenetic metrics [default: None]
+	-f, `-`-full_tree
+		By default, we first compute the intersection of the tree with the otus present in the otu table. pass -f if you already have a minimal tree, and this script will run faster
 
 
 **Output:**

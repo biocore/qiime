@@ -20,16 +20,18 @@ This script generates per-library sff files using the id lists.
 	**[REQUIRED]**
 		
 	-i, `-`-input_sff
-		The path to an input sff file (or files: separate w/ comma, no spaces)
+		Input sff file (separate multiple files w/ comma)
 	-l, `-`-libdir
-		 The directory containing per-library id files
+		Directory containing per-library id files
 	
 	**[OPTIONAL]**
 		
 	-p, `-`-sfffile_path
-		 Path to sfffile binary [default: sfffile]
+		Path to sfffile binary [default: use sfffile in $PATH]
+	`-`-use_sfftools
+		Use external sfffile program instead of equivalent Python routines.
 	`-`-debug
-		Print command-line for debugging [default: False]
+		Print debugging output to stdout [default: False]
 
 
 **Output:**

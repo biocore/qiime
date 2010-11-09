@@ -21,22 +21,18 @@ This script makes the submission xml files for SRA (study, experiment, etc.).  T
 		
 	-a, `-`-input_sample_fp
 		The tab-delimited text file with info about samples [default: None]
-	`-`-template_sample_fp
-		The template file for samples [default: /python_software/Qiime/qiime/support_files/sra_xml_templates/sample_template.xml]
 	-t, `-`-input_study_fp
 		The tab-delimited text file with info about the study [default: None]
-	`-`-template_study_fp
-		The template file for the study [default: /python_software/Qiime/qiime/support_files/sra_xml_templates/study_template.xml]
 	-u, `-`-input_submission_fp
 		The tab-delimited text file with info about the submission [default: None]
-	`-`-template_submission_fp
-		The template file for the submission [default: /python_software/Qiime/qiime/support_files/sra_xml_templates/submission_template.xml]
 	-e, `-`-input_experiment_fp
 		The tab-delimited text file with info about the experiment [default: None]
 	`-`-experiment_attribute_fp
 		Three-column, tab-delimited file of experiment attributes [default: None]
 	`-`-experiment_link_fp
 		Three-column, tab-delimited file of experiment links [default: None]
+	`-`-twocolumn_input_format
+		Use legacy input file format for study and submission, where field names are specified in the first column and field values in the second column [default: False]
 	-s, `-`-sff_dir
 		The directory containing the demultiplexed sff files: 1 dir per run [default: None]
 	-o, `-`-output_dir

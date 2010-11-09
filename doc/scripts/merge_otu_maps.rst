@@ -24,7 +24,7 @@ and otu_map2.txt contains:
 221 1
 === =   =
 
-The resulting OTU table will be:
+The resulting OTU map will be:
 
 === ====    ====    ====    ====    ====    ====
 110 seq1    seq2    seq5    seq6    seq7    seq8
@@ -44,11 +44,13 @@ The resulting OTU table will be:
 		
 	-i, `-`-otu_map_fps
 		The otu map filepaths, comma-separated and ordered as the OTU pickers were run [REQUIRED]
+	-o, `-`-output_fp
+		Path to write output OTU map [REQUIRED]
 	
 	**[OPTIONAL]**
 		
-	-o, `-`-output_fp
-		Path to write output OTU map [REQUIRED]
+	-f, `-`-failures_fp
+		Failures filepath, if applicable
 
 
 **Output:**
@@ -56,12 +58,20 @@ The resulting OTU table will be:
 The result of this script is an OTU mapping file.
 
 
-**Example:**
+**Expand an OTU map:**
 
-If the seq_ids in otu_table2.txt are otu_ids in otu_table1.txt, expand the seq_ids in otu_table2.txt to be the full list of associated seq_ids from otu_table1.txt. Write the resulting otu table to otu_table.txt (-o).
+If the seq_ids in otu_map2.txt are otu_ids in otu_map1.txt, expand the seq_ids in otu_map2.txt to be the full list of associated seq_ids from otu_map1.txt. Write the resulting otu map to otu_map.txt (-o).
 
 ::
 
-	merge_otu_maps.py -i otu_map1.txt,otu_map2.txt -o otu_table.txt
+	merge_otu_maps.py -i otu_map1.txt,otu_map2.txt -o otu_map.txt
+
+**Expand a failures file:**
+
+ Some OTU pickers (e.g. uclust_ref) will generate a list of failures for sequences which could not be assigned to OTUs. If this occurs in a chained OTU picking process, the failures file will need to be expanded to include the orignal sequence ids. To do this, pass the failures file via -f, and the otu maps up to, but not including, the step that generated the failures file. 
+
+::
+
+	merge_otu_maps.py -i otu_map1.txt,otu_map2.txt -f fail.txt -o all_failures.txt
 
 

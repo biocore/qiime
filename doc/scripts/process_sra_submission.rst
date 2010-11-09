@@ -54,6 +54,10 @@ The steps performed by this script are:
 	
 	**[OPTIONAL]**
 		
+	-a, `-`-input_sample_fp
+		The tab-delimited text file with info about the sample [default: None]
+	-t, `-`-input_study_fp
+		The tab-delimited text file with info about the study [default: None]
 	`-`-experiment_attribute_fp
 		Three-column, tab-delimited file of experiment attributes [default: None]
 	`-`-experiment_link_fp
@@ -64,6 +68,8 @@ The steps performed by this script are:
 		Comma-separated list of run prefixes for which to remove unassigned sequences [default: None]
 	-r, `-`-reference_set_fp
 		Path to reference set of 16S sequences [default: None; NO HUMAN SCREENING]
+	-n, `-`-negative_screen
+		Perform negative screen (i.e., sequences which don't match reference are retained) [default: None; positive screen: sequences which do match reference are retained]
 
 
 **Output:**

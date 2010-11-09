@@ -38,8 +38,14 @@ Script for parsing, library splitting, and quality filtering of raw Illumina Gen
 		Max number of consecutive low quality base calls allowed before truncating a read [default: 1; the read is trucated at thesecond low quality call]
 	-p, `-`-min_per_read_length
 		Min number of consecutive high quality base calls to includea read (per single end read) [default: 75]
+	-n, `-`-sequence_max_n
+		Maximum number of N characters allowed in a sequence to retain it -- this is applied after quality trimming, and is total over combined paired end reads if applicable [default: 0]
 	-s, `-`-start_seq_id
 		Start seq_ids as ascending integers beginning with start_seq_id[default: 0]
+	`-`-rev_comp_barcode
+		Reverse compliment barcodes before lookup[default: False]
+	`-`-barcode_in_header
+		Barcode is in header line (rather than beginning of sequence)[default: False]
 
 
 **Output:**

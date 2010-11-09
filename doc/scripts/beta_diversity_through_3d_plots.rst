@@ -47,6 +47,8 @@ This is the value that would be passed to `beta_diversity.py <./beta_diversity.h
 		Print the commands but don't call them -- useful for debugging [default: False]
 	-a, `-`-parallel
 		Run in parallel where available [default: False]
+	-e, `-`-seqs_per_sample
+		Depth of coverage for even sampling [default: None]
 
 
 **Output:**

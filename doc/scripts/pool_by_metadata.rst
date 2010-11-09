@@ -57,7 +57,7 @@ Pooling all samples in both Control and Fast in the Treatment field (i.e. poolin
 
 	pool_by_metadata.py -i seqs_otus.txt -m Fasting_Map.txt -s 'Treatment:Control,Fast' -l pooledSamples
 
-Excluding Fast in the Treatment field (same as the first example) - the syntax here is "*" to keep everything, then !Fast to eliminate the Fast group:
+Excluding Fast in the Treatment field - the syntax here is "*" to keep everything, then !Fast to eliminate the Fast group:
 
 ::
 

@@ -35,7 +35,7 @@
 The output is a newick formatted tree compatible with most standard tree viewing programs
 
 
-**basic usage, given a directory of trees 'jackknifed_trees', compute the majority consensus and save as a newick formatted text file:**
+**basic usage: given a directory of trees 'jackknifed_trees', compute the majority consensus and save as a newick formatted text file:**
 
 ::
 

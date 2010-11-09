@@ -27,7 +27,7 @@ Download QIIME
 
  * Virtual Box: The QIIME Virtual Box is an Ubuntu Linux virtual machine, pre-loaded with QIIME and its dependencies. This is the quickest way to start using QIIME. To get the Virtual Box, please `go here <./install/virtual_box.html>`_.
 
- * Stable Release: Currently the most stable version of QIIME is our 1.1.0 release, which you can `download here <http://sourceforge.net/projects/qiime/files/releases/Qiime-1.1.0.tar.gz/download>`_.
+ * Stable Release: Currently the most stable version of QIIME is our 1.2.0 release, which you can `download here <http://sourceforge.net/projects/qiime/files/releases/Qiime-1.2.0.tar.gz/download>`_.
 
  * Development Version: QIIME is under very active development. To get the latest development version of QIIME, you access our Sourceforge repository. While this code is subject to minor changes in interface, it will provide access to the latest and greatest features. The official web documentation is likely to be out-of-date with respect to the development software. You should instead refer to the svn documentation in Qiime/doc. Check out the latest version of QIIME using svn with the command::
 

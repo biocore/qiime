@@ -9,7 +9,7 @@ SRA Submission
 QIIME's SRA submission code is changing rapidly in the ``1.1.0-dev`` versions of QIIME. We're making every effort to keep the documentation up-to-date with the code, but if you are interested in using this code you'll most likely want to get on the ``qiime-sra-users`` mailing list to stay current on the state of the code. Head `here <http://groups.google.com/group/qiime-sra-users?hl=en>`_ for information on joining that public group.
 
 Introduction 
-------------
+--------------
 
 This document discusses using QIIME to submit your own barcoded 454 16S community sequencing data to the SRA. When you're ready to start this process you should have your sff files and your metadata mapping file. The following steps are covered: 
 
@@ -126,7 +126,7 @@ The sff files are already tared and zipped by process_sra_submission.py, but the
 
 
 Resubmitting and changing your data in SRA
----------------
+--------------------------------------------
 
 As long as your data in not succesfully loaded and was assigned an SRA ID, you can simply re-upload new XML files. The new ones will replace the old ones. Once at least part of your data is accepted you have to use the MODIFY flag in the submission.xml like this::
 

@@ -52,6 +52,8 @@ This script performs like the `beta_diversity.py <./beta_diversity.html>`_ scrip
 		Number of seconds to sleep between checks for run  completion when polling runs [default: 60]
 	-O, `-`-jobs_to_start
 		Number of jobs to start [default: 2]
+	-f, `-`-full_tree
+		By default, we first compute the intersection of the tree with the otus present in the otu table. pass -f if you already have a minimal tree, and this script will run faster
 
 
 **Output:**

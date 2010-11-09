@@ -6,7 +6,7 @@
 SRA Submission 
 =========================
 
-QIIME's SRA submission code is changing rapidly in the ``1.1.0-dev`` versions of QIIME. We're making every effort to keep the documentation up-to-date with the code, but if you are interested in using this code you'll most likely want to get on the ``qiime-sra-users`` mailing list to stay current on the state of the code. Head `here <http://groups.google.com/group/qiime-sra-users?hl=en>`_ for information on joining that public group.
+QIIME's SRA submission code is changing rapidly in the ``1.2.0-dev`` versions of QIIME. We're making every effort to keep the documentation up-to-date with the code, but if you are interested in using this code you'll most likely want to get on the ``qiime-sra-users`` mailing list to stay current on the state of the code. Head `here <http://groups.google.com/group/qiime-sra-users?hl=en>`_ for information on joining that public group.
 
 Introduction 
 ------------
@@ -19,7 +19,7 @@ To run this tutorial, you'll need to have QIIME installed, as well as the 454 of
 
 This tutorial uses as an example the `Fierer et al. 2008 hand dataset <http://www.pnas.org/content/105/46/17994.long>`_. This represents the first barcoded SRA submission, and the finished product can be found via SRA accession #: `SRS001216 <http://www.ncbi.nlm.nih.gov/sites/entrez?db=sra&term=SRS001216>`_. 
 
-To get started, download the data from: `SRA Tutorial Data <http://bmf.colorado.edu/QIIME/knight_handstudy_demo-v1.1.0-dev.zip>`_
+To get started, download the data from: `SRA Tutorial Data <http://bmf.colorado.edu/QIIME/knight_handstudy_demo-v1.2.0-dev.zip>`_
 
 Philosophy of QIIME's SRA submission code
 -----------------------------------------
@@ -56,9 +56,9 @@ Set up your data for the tutorial run
 
 Download and unpack the tutorial data, and change to the resulting directory::
 
-	wget http://bmf.colorado.edu/QIIME/knight_handstudy_demo-v1.1.0-dev.zip
-	unzip knight_handstudy_demo-v1.1.0-dev.zip
-	cd knight_handstudy_demo-v1.1.0-dev
+	wget http://bmf.colorado.edu/QIIME/knight_handstudy_demo-v1.2.0-dev.zip
+	unzip knight_handstudy_demo-v1.2.0-dev.zip
+	cd knight_handstudy_demo-v1.2.0-dev
 
 
 Generate the experiment and run metadata submissions

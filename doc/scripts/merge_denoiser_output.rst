@@ -35,9 +35,9 @@ See the tutorial on 454 Denoising in the QIIME tutorials on how to use this scri
 	**[REQUIRED]**
 		
 	-m, `-`-map_file
-		Path to denoiser cluster mapping file [default: None]
+		Path to denoiser cluster mapping file [REQUIRED]
 	-p, `-`-otu_picker_map_file
-		Path to OTU mapping file from OTU picker[REQUIRED]
+		Path to OTU mapping file from OTU picker [REQUIRED]
 	-f, `-`-fasta_fp
 		Path to FASTA file, output of `split_libraries.py <./split_libraries.html>`_ [REQUIRED]
 	-d, `-`-denoised_fasta_fp

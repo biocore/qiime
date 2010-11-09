@@ -30,6 +30,10 @@
 		An OTU map where sequences ids are those which should be retained
 	-s, `-`-seq_id_fp
 		A list of sequence identifiers (or tab-delimited lines with a seq identifier in the first field) which should be retained
+	-a, `-`-subject_fasta_fp
+		A fasta file where the seq ids should be retained.
+	-p, `-`-seq_id_prefix
+		Keep seqs where seq_id starts with this prefix
 	-n, `-`-negate
 		Discard passed seq ids rather than keep passed seq ids [default: False]
 

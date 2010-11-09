@@ -62,6 +62,8 @@ The primary inputs for `pick_otus.py <./pick_otus.html>`_ are:
 		Path to reference sequences to search against when using -m blast or -m uclust_ref [default: None]
 	-b, `-`-blast_db
 		Pre-existing database to blast against when using -m blast [default: None]
+	`-`-min_aligned_percent
+		Minimum percent of query sequence that can be aligned to consider a hit  (BLAST OTU picker only) [default: 0.5]
 	-s, `-`-similarity
 		Sequence similarity threshold (for cdhit, uclust, or uclust_ref) [default: 0.97]
 	-e, `-`-max_e_value
@@ -94,6 +96,10 @@ The primary inputs for `pick_otus.py <./pick_otus.html>`_ are:
 		Max_rejects value to uclust and uclust_ref [default: 32]
 	`-`-uclust_otu_id_prefix
 		OTU identifier prefix (string) for the de novo uclust OTU picker [default: None, OTU ids are ascending integers]
+	`-`-uclust_stable_sort
+		Pass --stable_sort to uclust (uclust versions uclustq1.2.15 and later only) [default: False]
+	-d, `-`-save_uc_files
+		Enable preservation of intermediate uclust (.uc) files that are used to generate clusters via uclust. [default: True]
 
 
 **Output:**

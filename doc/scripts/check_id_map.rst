@@ -16,6 +16,7 @@ Specifically, we check that:
     - There are not duplicate near-unique but not exactly unique values within each column (warning)
     - The headers do not contain invalid characters (alphanumeric and underscore only)
     - The data fields do not contain invalid characters (alphanumeric, underscore, and +-%. characters)
+    - SampleID fields are MIENS compliant (only alphanumeric and . characters)
     - There are no duplicates when the primer and barcodes are appended
     - If there is a field ReversePrimer for reverse primers (for removal with split_libraries), the characters are DNA IUPAC compliant and no fields are empty
     
@@ -62,6 +63,8 @@ Specifically, we check that:
 		Use -B if variable length barcodes are present to suppress warnings about barcodes of unequal length. [default: False]
 	-p, `-`-disable_primer_check
 		Use -p to disable checks for primers. [default: False]
+	-v, `-`-verbose
+		Turn on this flag to disable verbose output.  [default: True]
 
 
 **Output:**

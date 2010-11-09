@@ -103,7 +103,7 @@ First, change to the directory where you would like to download QIIME::
 
 Stable Pre-Release
 ^^^^^^^^^^^^^^^^^^
-Currently the most stable version of QIIME is our 1.1.0 release, which you can download from `here <http://sourceforge.net/projects/qiime/files/releases/Qiime-1.1.0.tar.gz/download>`_.
+Currently the most stable version of QIIME is our 1.2.0 release, which you can download from `here <http://sourceforge.net/projects/qiime/files/releases/Qiime-1.2.0.tar.gz/download>`_.
 
 Latest Development Version
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -123,8 +123,8 @@ After downloading the QIIME release tar file you'll need to unpack the code. For
 Unpack the release Qiime tar file with the commands::
 
 	cd /home/qiime_user
-	tar -xvzf Qiime-1.1.0.tar.gz
-	ln -s /home/qiime/Qiime-1.1.0 /home/qiime/Qiime
+	tar -xvzf Qiime-1.2.0.tar.gz
+	ln -s /home/qiime/Qiime-1.2.0 /home/qiime/Qiime
 	
 If you have downloaded from svn, QIIME is already unpacked.
 	

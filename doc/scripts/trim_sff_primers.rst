@@ -30,6 +30,8 @@ Finds the technical read regions for each library, and resets the left trim.
 		Path to sfffile binary [default: sfffile]
 	-q, `-`-sffinfo_path
 		Path to sffinfo binary [default: sffinfo]
+	`-`-use_sfftools
+		Use external sffinfo and sfffile programs instead of equivalent Python implementation.
 	`-`-debug
 		Print command-line output for debugging [default: False]
 

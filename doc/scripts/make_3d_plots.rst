@@ -106,10 +106,10 @@ If you have created jackknifed PCoA files, you can pass the folder containing th
 
 **Bi-Plots:**
 
-If the user would like to see which taxa are more prevalent in different areas of the PCoA plot, they can generate Bi-Plots, by passing a principal coordinates file or folder "-i", a mapping file "-m", a summarized taxa file "-t" from `summarize_taxa.py <./summarize_taxa.html>`_, and the master principal coordinates file "--master_pcoa", as follows:
+If the user would like to see which taxa are more prevalent in different areas of the PCoA plot, they can generate Bi-Plots, by passing a principal coordinates file or folder "-i", a mapping file "-m", and a summarized taxa file "-t" from `summarize_taxa.py <./summarize_taxa.html>`_. Can be combined with jacknifed principal coordinates.
 
 ::
 
-	make_3d_plots.py -i jackknifed_pcoas/ -m Mapping_file.txt -t otu_table_level3.txt --master_pcoa=unweighted_unifrac_pc.txt
+	make_3d_plots.py -i pcoa.txt -m Mapping_file.txt -t otu_table_level3.txt
 
 

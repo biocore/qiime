@@ -22,6 +22,7 @@ Installing the QIIME Virtual Box
   * Select "Use existing hard drive", and click the folder icon next to the selector (it has a green up arrow). In the new window click 'Add', and locate the virtual hard drive that was downloaded in step 2. Click Select and then click Next.
   * In the new window click Finish.
 
+
 4. Double click on the new virtual machine created -- it will be called QIIME -- to boot it for the first time.
 5. Review any messages that are shown, and select whatever options are best for you.
 6. When your new virtual machine boots, you will see a folder on the Desktop called 'Before_you_start'. Double click on that folder to open it, and then double click on the 'Welcome' file in that folder. This will get you started with using your QIIME virtual box.
@@ -85,6 +86,7 @@ Enabling virtualization in the BIOS
 3. Press the right arrow key to System Configuration, select Virtualization Technology and then press the enter key.
 4. Select Enabled and press the enter key.
 5. Press the F10 key and select Yes and press the enter key to save changes.
+
 The computer automatically restarts. If you cannot enable Virtualization Technology on in your BIOS, check if your BIOS needs to be updated.
 
 These instructions were extracted directly from HPs website `here 
@@ -96,5 +98,5 @@ Briefly, on booting the system, hit F9. Enter Advanced Options -> Processor Opti
 
 .. _CloVR: http://clovr.org
 .. _QIIME deploy script: http://broken_deploy_script_link.com.org
-.. _64-bit QIIME Virtual Box: http://bmf.colorado.edu/QIIME/QIIME-1.1.0-amd64.vdi.gz
+.. _64-bit QIIME Virtual Box: http://bmf.colorado.edu/QIIME/QIIME-1.2.0-amd64.vdi.gz
 .. _VirtualBox: http://www.virtualbox.org/wiki/Downloads
