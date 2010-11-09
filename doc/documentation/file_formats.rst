@@ -4,14 +4,14 @@
 Input Files
 ===========
 
-File Format Details
-^^^^^^^^^^^^^^^^^^^
+General suggestions for formatting your files
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-These are general guidelines that apply to multiple files:
+These are general guidelines that apply to formatting files for use with QIIME, and command line tools in general:
 
 1. Files should have proper file type suffix. For example, ``.fna`` or ``.fasta`` for FASTA files; ``.qual`` for quality score files; ``.sff`` for sff files; ``.txt`` for mapping files.
-2. Do not use spaces in your filenames. Use underscores or MixedCase instead. For example: :file:`amazon soil.fna` is not allowed -- instead use :file:`amazon_soil.fna` or :file:`AmazonSoil.fna`.
-3. In general, edit your files with a text editor such as TextEdit or TextMate (on Mac), gedit (on Linux), vim, or emacs, but not Microsoft Word, which is a `word processor <http://en.wikipedia.org/wiki/Word_processor>`_, not a `text editor <http://en.wikipedia.org/wiki/Text_editor>`_. Mapping files and OTU tables can be edited in Microsoft Excel, but should always be saved as tab-delimited text.
+2. Do not use spaces in your filenames. Use underscores or MixedCase instead. For example, instead of :file:`amazon soil.fna` use :file:`amazon_soil.fna` or :file:`AmazonSoil.fna`.
+3. Edit your files with a text editor such as TextEdit or TextMate (on Mac), gedit (on Linux), vim, or emacs, but not Microsoft Word, which is a `word processor <http://en.wikipedia.org/wiki/Word_processor>`_, not a `text editor <http://en.wikipedia.org/wiki/Text_editor>`_. Mapping files and OTU tables can be edited in Microsoft Excel, but should always be saved as tab-delimited text.
 
 
 
