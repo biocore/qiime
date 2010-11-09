@@ -1,11 +1,13 @@
-Add changes since QIIME 1.1.0 here
+Add changes since QIIME 1.2.0 here
 ==================================
-* Added capability to perform supervised classification of metadata categories using the Random Forests classifier. Outputs include a ranking of OTUs by discriminatory power, and the estimated probability of each metadata category for each sample. The latter may be useful for detecting potentially mislabeled samples.
+
+QIIME 1.1.0 (10 Nov 2010)
+==================================
 * When computing jackknife support for sample clustering (e.g.: UPGMA sample trees), Qiime can now compute a consensus tree from the jackknife replicates, in addition to the existing functionality of using the full dataset as the master tree, and annotating that tree with jackknife support values. See jackknifed_beta_diversity.py --master_tree and consensus_tree.py .
 * Added the ability to write out the flowgram file in process_sff.py, ability to define an output directory and convert Titanium reads to FLX length.
 * SRA submission protocol updated to perform human screening with uclust_ref against 16S reference sequences, rather than cdhit/blast against reference sequences. This can be a lot faster, and reduces the complexity of the code by requiring users to have uclust installed for the human screen rather than cdhit and blast.
 * Updated SRA protocol to allow users to skip the human screening step as this takes about 2/3 or more of the total analysis time, and is not relevant for non-human-derived samples (e.g., soil samples).
-* Added ability to pass --max_accepts and --max_rejects through the uclust otu pickers. 
+* Added ability to pass --max_accepts, --max_rejects, and --stable_sort through the uclust otu pickers. 
 * Added a -r parameters to pick_rep_set.py to allow users to pass "preferred" representative sequences in a fasta file. This is useful, for example, if users have picked OTUs with uclust_ref, and would like to use the reference sequences as their representatives, rather than sequences from their sequencing run. 
 * Renamed Qiime/scripts/jackknifed_upgma.py to Qiime/scripts/jackknifed_beta_diversity.py to reflect the addition of generating jackknifed 2d and 3d plots to this workflow script.
 * Updated parallel_multiple_rarefactions.py, parallel_alpha_diversity.py, and parallel_beta_diversity.py to use the jobs_to_start value for better control over the number of parallel runs.
@@ -19,6 +21,26 @@ Add changes since QIIME 1.1.0 here
 * Changed default randomization strategy in Procrustes monte carlo from shuffling within coordinate vectors to shuffing the labels on the vectors themselves. This doesn't appear to affect clearly significant cases at all, but is more conservative and therefore favors non-significance of results in borderline cases.
 * Added ability to run beta diversity calculations in parallel at the single OTU table level to improve performance when computing diversity on very large collections of samples. This functionality is now hooked up to the beta_diversity_through_3d_plots.py workflow script, and includes the new -r parameter to beta_diversity.py which allows users to specify samples to compute diversity vectors for (rather than requiring that the full all-against-all diversity matrix is created).
 * uclust-based analyses now retain the .uc files as these contain a lot of useful information that was previously being discarded.
+* Improved handling of blank lines in parse_otu_table -- these are now ignored. Other improvements were made to the parse_otu_table format to better support these files coming from sources other than QIIME (such as MG-RAST).
+* Allow the -R option to be passed to ChimeraSlayer. Closes feature request 3007445.
+* Added capability for pairwise sample/sample, monte carlo significance tests. These are frequently done via the unifrac web interface. Users hitting max size limitations on the web can now thrash their own hardware.
+* Fixed a bug in make_rarefaction_plots where the table below the plots had column labels sorted by natsort, while the values in the table were sorted arbitrarily by dict keys. The plots themselves were fine.
+* Added a Procrustes analysis/plotting tutorial.
+* Added code to exclude OTU ids from an OTU table when building the OTU table. This allows users to discard OTUs that were identified as chimeric. Accessible by passing --exclude_otus_fp to make_otu_table.py. 
+* Modified identify_chimeric_sequences.py to no longer require the ref db in unaligned format when using chimeraSlayer.
+* Added a tutorial document on applying chimera checking in QIIME.
+* Added ability to pass -F T/F to parallel_blast to allow disabling of the low-complexity filtering in BLAST.
+* Added new script (shared_phylotypes.py) for computing shared OTUs between pairs of samples. Batch mode can be used in combination with dissimilarity_mtx_stats.py to calculate stats for a set or rarefied OTU tables.
+* Added min_aligned_percent parameter to BLAST OTU picker workflow, with default set at 50%. This will now require that an alignment must cover at least 50% of a sequence OTU assignment to occur.
+* Add script to draw rank abundance graphs (plot_rank_abundance_graph.py).
+* Modified interface of make_distance_histograms so --html_output is now the default. A new parameter, --suppress_html_output, was added to produce the old behavior.
+* Added script (quality_scores_plot.py) to plot quality score by position given a .qual file. This is useful with another new script (truncate_fasta_qual_files.py) to truncate fasta/qual files at the point where quality begins to decrease, and has been useful in controlling for quality issues on 454 Ti runs.
+* Added binary SFF parsing module from PyCogent, removed sfftools dependency from workflow test, process_sff, and other areas of QIIME.
+* Added ACE calculation to alpha_diversity.py.
+* Updated documentation on file formats used by Qiime.
+* Added more extensive error checking in parse_mapping_file to handle some cryptic error messages that were arising from scripts that were passed bad mapping files.
+* Added capability to perform supervised classification of metadata categories using the Random Forests classifier. Outputs include a ranking of OTUs by discriminatory power, and the estimated probability of each metadata category for each sample. The latter may be useful for detecting potentially mislabeled samples.
+
 
 QIIME 1.1.0 (14 May 2010)
 =========================
