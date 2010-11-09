@@ -26,9 +26,9 @@ To install most of following dependencies you need to have a build environment o
 
 The following are required by QIIME:
 
-* Python 2.6 (`src <http://www.python.org/ftp/python/2.6.4/Python-2.6.4.tgz>`_)
-* PyCogent 1.5.0 (`src <http://sourceforge.net/projects/pycogent/files/PyCogent/1.5.0/PyCogent-1.5.0.tgz/download>`_)
-* Numpy 1.3.0 (`src <http://sourceforge.net/projects/numpy/files/NumPy/1.3.0/numpy-1.3.0.tar.gz/download>`_)
+* Python 2.6 (`src <http://www.python.org/ftp/python/2.6.4/Python-2.6.4.tgz>`_) (license: PSF)
+* PyCogent 1.5 (`src <http://sourceforge.net/projects/pycogent/files/PyCogent/1.5/PyCogent-1.5.tgz/download>`_) (license: GPL)
+* Numpy 1.3.0 (`src <http://sourceforge.net/projects/numpy/files/NumPy/1.3.0/numpy-1.3.0.tar.gz/download>`_) (license: BSD)
 
 Dependencies required for a subset of QIIME's features
 ------------------------------------------------------
@@ -36,44 +36,44 @@ Dependencies required for a subset of QIIME's features
 
 PyNAST alignment, tree-building, taxonomy assignment, OTU picking, and other data generation steps (required in default pipeline):
 
-* uclust 1.2.21q (`binaries <http://www.drive5.com/uclust/downloads1_2_21q.html>`_) See :ref:`uclust install notes <uclust-install>`.
-* PyNAST 1.1 (`src  <http://sourceforge.net/projects/pynast/files/PyNAST%20releases/PyNAST-1.1.tgz/download>`_)
+* uclust 1.2.21q (`binaries <http://www.drive5.com/uclust/downloads1_2_21q.html>`_) See :ref:`uclust install notes <uclust-install>`. (licensed specially for Qiime and PyNAST users)
+* PyNAST 1.1 (`src  <http://sourceforge.net/projects/pynast/files/PyNAST%20releases/PyNAST-1.1.tgz/download>`_) (license: GPL)
 * greengenes core set data file (`fasta <http://greengenes.lbl.gov/Download/Sequence_Data/Fasta_data_files/core_set_aligned.fasta.imputed>`_)
 * greengenes alignment lanemask file (`txt <http://greengenes.lbl.gov/Download/Sequence_Data/lanemask_in_1s_and_0s>`_)
-* fasttree 2.1.0 (`src <http://www.microbesonline.org/fasttree/FastTree-2.1.0.c>`_)
-* jre1.6.0_05 (`link <http://java.sun.com/javase/downloads/index.jsp>`_)
-* rdp_classifier-2.0.1 (`src <http://downloads.sourceforge.net/project/rdp-classifier/rdp-classifier/rdp_classifier_2.0.1/rdp_classifier_2.0.1.tar.gz>`_) See :ref:`RDP install notes <rdp-install>`.
+* fasttree 2.1.0 (`src <http://www.microbesonline.org/fasttree/FastTree-2.1.0.c>`_) (license: GPL)
+* jre1.6.0_05 (`link <http://java.sun.com/javase/downloads/index.jsp>`_) (license: GPL2)
+* rdp_classifier-2.0.1 (`src <http://downloads.sourceforge.net/project/rdp-classifier/rdp-classifier/rdp_classifier_2.0.1/rdp_classifier_2.0.1.tar.gz>`_) See :ref:`RDP install notes <rdp-install>`. (license: GPL)
 
 Alignment, tree-building, taxonomy assignment, OTU picking, and other data generation steps (required for alternative pipelines):
 
-* blast-2.2.22 (legacy BLAST from NCBI, *NOT* BLAST+) (`OS X <ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/2.2.22/blast-2.2.22-universal-macosx.tar.gz>`_ or `linux 32-bit <ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/2.2.22/blast-2.2.22-ia32-linux.tar.gz>`_)
-* cd-hit 3.1.1 (`src <http://www.bioinformatics.org/download.php/cd-hit/cd-hit-2007-0131.tar.gz>`_)
+* blast-2.2.22 (legacy BLAST from NCBI, *NOT* BLAST+) (`OS X <ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/2.2.22/blast-2.2.22-universal-macosx.tar.gz>`_ or `linux 32-bit <ftp://ftp.ncbi.nlm.nih.gov/blast/executables/release/2.2.22/blast-2.2.22-ia32-linux.tar.gz>`_) (license: GNU)
+* cd-hit 3.1.1 (`src <http://www.bioinformatics.org/download.php/cd-hit/cd-hit-2007-0131.tar.gz>`_) (license: Free access)
 * ChimeraSlayer (via microbiomeutil_2010-04-29) (`src <http://sourceforge.net/projects/microbiomeutil/files/>`_) See :ref:`ChimeraSlayer install notes <chimeraslayer-install>`.
-* mothur v.1.6.0 (`web <http://www.mothur.org/w/images/e/e8/Mothur.1.6.0.zip>`_)
+* mothur v.1.6.0 (`web <http://www.mothur.org/w/images/e/e8/Mothur.1.6.0.zip>`_) (license: GPL)
 * clearcut v1.0.9 (`src <http://www.mothur.org/w/images/9/91/Clearcut.source.zip>`_)
 * raxml v7.0.3 (`web <http://icwww.epfl.ch/~stamatak/index-Dateien/Page443.htm>`_)
-* infernal 1.0.2 (`web <http://infernal.janelia.org/>`_)
+* infernal 1.0.2 (`web <http://infernal.janelia.org/>`_) (license: GPL)
 * cdbtools (`src <ftp://occams.dfci.harvard.edu/pub/bio/tgi/software/cdbfasta/cdbfasta.tar.gz>`_)
-* muscle 3.6 (`web <http://www.drive5.com/muscle/>`_)
-* dotur 1.53 (`src <http://www.plantpath.wisc.edu/fac/joh/DOTUR/dotur-1.53.tgz>`_)
+* muscle 3.6 (`web <http://www.drive5.com/muscle/>`_) (Public domain)
+* dotur 1.53 (`src <http://www.plantpath.wisc.edu/fac/joh/DOTUR/dotur-1.53.tgz>`_) (license: GPL)
 
 Processing sff files:
 
-* sfffile and sffinfo (optional, must be obtained from Roche/454 -- QIIME 1.2.0 and later contain built-in tools for processing sff files although they are about 10x slower than the tools from Roche)
+* sfffile and sffinfo (optional, QIIME 1.2.0 and later contain built-in tools for processing sff files although they are about 10x slower than the tools from Roche) (license: proprietary - must be obtained from Roche/454)
 
 Denoising 454 data:
 
-* Denoiser 0.851 (`src <http://www.microbio.me/denoiser/>`_ -- remember to add* the top-level ``Denoiser_0.851`` directory to your ``$PYTHONPATH``)
-* pyronoise 2 (`src <http://people.civil.gla.ac.uk/~quince/Software/PyroNoise2.zip>`_)
+* Denoiser 0.851 (`src <http://www.microbio.me/denoiser/>`_ -- remember to add* the top-level ``Denoiser_0.851`` directory to your ``$PYTHONPATH``) (license: GPL)
+* pyronoise 2 (`src <http://people.civil.gla.ac.uk/~quince/Software/PyroNoise2.zip>`_) (license: free for research or education)
 
 Visualization and plotting steps:
 
-* MatPlotLib 0.98.5.3 (`src <http://iweb.dl.sourceforge.net/project/matplotlib/OldFiles/matplotlib-0.98.5.3.tar.gz>`_)
-* cytoscape v2.7.0 (`web <http://www.cytoscape.org/>`_)
+* MatPlotLib 0.98.5.3 (`src <http://iweb.dl.sourceforge.net/project/matplotlib/OldFiles/matplotlib-0.98.5.3.tar.gz>`_) (license: PFS)
+* cytoscape v2.7.0 (`web <http://www.cytoscape.org/>`_) (license: LGPL)
 
 Supervised learning (``supervised_learning.py``):
 
-* R 2.12.0 (`source <http://www.r-project.org/>`_) See :ref:`R install notes <R-install>`.
+* R 2.12.0 (`source <http://www.r-project.org/>`_) See :ref:`R install notes <R-install>`. (license: GPL2)
 
 Assigning taxonomy using BLAST or picking OTUs against Greengenes filtered at 97% identity:
 
@@ -81,12 +81,15 @@ Assigning taxonomy using BLAST or picking OTUs against Greengenes filtered at 97
 
 If you plan to build the QIIME documentation locally:
 
-* Sphinx 1.0.4 (`src <http://pypi.python.org/pypi/Sphinx>`_) See :ref:`Building the QIIME documentation <build-qiime-docs>`
+* Sphinx 1.0.4 (`src <http://pypi.python.org/pypi/Sphinx>`_) See :ref:`Building the QIIME documentation <build-qiime-docs>` (license: BSD)
 
 SRA submission:
 
-* lxml 2.2.7 (optional, used by the SRA submission tests `web <http://codespeak.net/lxml/>`_)
+* lxml 2.2.7 (optional, used by the SRA submission tests) (`web <http://codespeak.net/lxml/>`_) (license: BSD)
 
+License information for external dependencies
+---------------------------------------------
+We have attempted to provide accurate licensing information for the above dependencies for the convenience of our users. This information is by no means definitive and may contain errors. Any questions about licenses or the legality of specific uses of these software packages should be directed to the authors of the software. Do not rely solely on the license information presented above!
 
 Shortcuts in this document
 --------------------------
