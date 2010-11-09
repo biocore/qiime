@@ -324,7 +324,7 @@ class Qiime_config(TestCase):
         
     def test_INFERNAL_supported_version(self):
         """INFERNAL is in path and version is supported """
-        acceptable_version = (1,0)
+        acceptable_version = (1,0,2)
         self.assertTrue(app_path('cmbuild'),
          "Infernal not found. This may or may not be a problem depending on "+\
          "which components of QIIME you plan to use.")

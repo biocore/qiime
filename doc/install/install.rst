@@ -52,7 +52,7 @@ Alignment, tree-building, taxonomy assignment, OTU picking, and other data gener
 * mothur v.1.6.0 (`web <http://www.mothur.org/w/images/e/e8/Mothur.1.6.0.zip>`_)
 * clearcut v1.0.9 (`src <http://www.mothur.org/w/images/9/91/Clearcut.source.zip>`_)
 * raxml v7.0.3 (`web <http://icwww.epfl.ch/~stamatak/index-Dateien/Page443.htm>`_)
-* infernal 1.0 (`web <http://infernal.janelia.org/>`_)
+* infernal 1.0.2 (`web <http://infernal.janelia.org/>`_)
 * cdbtools (`src <ftp://occams.dfci.harvard.edu/pub/bio/tgi/software/cdbfasta/cdbfasta.tar.gz>`_)
 * muscle 3.6 (`web <http://www.drive5.com/muscle/>`_)
 * dotur 1.53 (`src <http://www.plantpath.wisc.edu/fac/joh/DOTUR/dotur-1.53.tgz>`_)
