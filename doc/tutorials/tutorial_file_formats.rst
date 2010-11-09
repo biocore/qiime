@@ -117,3 +117,26 @@ To validate such a mapping file, the user will need to disable barcode and prime
 
 
 
+Sequence ID to Taxonomy Mapping Files
+-------------------------------------
+
+Several QIIME modules, such as `assign_taxonomy.py <../scripts/assign_taxonomy.html>`_, require a sequence ID to taxonomy mapping file when one is using a custom training sequence set or BLAST database.  ID to taxonomy mapping files are tab delimited, with the sequence ID as the first column, and a semicolon-separated taxonomy, in descending order, as the second column.  An example of an ID to taxonomy mapping file is show below:
+
+.. note::
+
+   * 339039	Bacteria;Proteobacteria;Alphaproteobacteria;Rhodospirillales;unclassified_Rhodospirillales
+   * 199390	Bacteria;Chloroflexi;Anaerolineae;Caldilineae;Caldilineales;Caldilineacea;unclassified_Caldilineacea
+   * 370251	Bacteria;Proteobacteria;Gammaproteobacteria;unclassified_Gammaproteobacteria
+   * 11544	Bacteria;Actinobacteria;Actinobacteria;Actinobacteridae;Actinomycetales;unclassified_Actinomycetales
+   * 460067	Unclassified
+   * 256904	Bacteria
+   * 286896	Bacteria;Actinobacteria;Actinobacteria;Actinobacteridae;Actinomycetales;Micrococcineae;Micrococcaceae;Kocuria
+   * 127471	Bacteria;Bacteroidetes;Sphingobacteria;Sphingobacteriales;Crenotrichaceae;Terrimonas
+   * 155634	Archaea;Euryarchaeota;Methanobacteria;Methanobacteriales;Methanobacteriaceae;Methanosphaera
+
+This file can be downloaded here: `Example ID to Taxonomy Mapping File <../../../documentation/Examples/File_Formats/Example_ID_to_Taxonomy_mapping_File.txt>`_ (Right click and use 'download' or 'save as' to save this file)
+
+Several Greegenes (http://greengenes.lbl.gov/) sequence ID to taxonomy mapping files are available for download in this Greengenes sequences, OTU, and mapping file collection: (`Greengenes OTU, sequences, and mapping files <http://greengenes.lbl.gov/Download/Sequence_Data/Greengenes_format/greengenes16SrRNAgenes.txt.gz>`_
+
+To add taxonomy mapping to an existing sequence ID to taxonomy mapping file, open the existing taxonomy mapping file in a spreadsheet, such as Microsoft Excel.  Save new sequence IDs in the first column, and the semicolon-separated taxa in the second column (make sure there are not extra spaces, tabs, or other white space around these entries).  Save this modified mapping file with the field delimiter as a tab, and leave the text delimiter blank.  It is best to visually inspect the modified ID to taxonomy mapping file in a basic text editor to ensure that no extraneous characters or spacings were saved during this process.
+
