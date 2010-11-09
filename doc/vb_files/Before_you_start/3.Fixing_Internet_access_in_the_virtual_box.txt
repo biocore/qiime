@@ -1,0 +1,22 @@
+If your virtual machine does not have Internet, follow these steps:
+
+- Open a terminal and paste the following command: 
+
+  sudo lshw -c network
+
+- This should show you the network card(s) available to your virtual machine. Look for their "logical name" and write them down.
+
+- Enter the following command to open a file for editing:
+
+   sudo gedit /etc/network/interfaces
+
+- For each network card available, add entries to this file that looks like: 
+
+   auto logical_name
+   iface logical_name inet dhcp
+
+- Finally, run this command: 
+
+   sudo /etc/init.d/networking restart
+
+You may need to restart the virtual machine again. You will only need to do this once. 

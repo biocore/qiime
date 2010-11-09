@@ -1,0 +1,30 @@
+This release of the QIIME virtual box includes the following software:
+
+Software	Version		License			Execution in the CLI
+
+Ubuntu		10.04		GPL
+Python          2.6.5           PSF
+ipython         0.10            LGPL
+Numpy           1.3.0           BSD
+Java            1.6.0           GPL2
+BLAST           2.2.22          GNU
+FastTree        2.1.0           GPL
+CD-HIT          0131            Free access
+RDP Classifier  2.0.1           GPL
+uclust (32bit)  1.1.579         Licensed for use in PyNAST and QIIME.
+MPICH2          1.2.1           Goverment License
+Infernal        1.0.2           GPL
+figtree         1.3.1           GPL2                    figtree
+Cytoscape       2.7.0           LGPL                    cytoscape
+dotur           1.53            GPL
+mothur          1.8             GPL
+matplotlib      0.98.5.2        PFS
+Pyronoise       2               
+PyCogent        1.4.1           GPL
+muscle (32bit)	3.8.31
+clustalw2	2.0.12
+clustalw	1.83
+mafft		6.717		BSD
+PyNAST          1.1             GPL
+cdbfasta	
+Denoiser	0.84		
