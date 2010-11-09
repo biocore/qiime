@@ -29,12 +29,17 @@ Installing the QIIME Virtual Box
 
 Upgrading from previous versions of the QIIME Virtual Box
 =========================================================
-A QIIME deploy script is provided for existing 64-bit Virtual Box users to upgrade to the latest version of QIIME without having to reinstall the QIIME VB. To upgrade your VB follow these steps:
-
-	* From within your QIIME VB, download the `QIIME deploy script`_.
-	* Run the deploy script with the following command::
+A QIIME upgrade/deploy script is provided for existing 64-bit Virtual Box users to upgrade to the latest version of QIIME without having to reinstall the QIIME VB. To upgrade your VB follow these steps, launch your existing QIIME VB, open a terminal, and run the following commands::
 	
-	command goes here!!
+	wget http://bmf.colorado.edu/QIIME/qiime_deploy.tgz
+	tar zxvf qiime_deploy.tgz
+	cd qiime_deploy
+	./update.sh
+	exit
+	
+Then open a new terminal, and to confirm that you are now running the latest version of Qiime run::
+	
+	print_qiime_config.py -t
 	
 QIIME VB and CloVR
 ==================
@@ -95,6 +100,5 @@ If this doesn't work, you might need to instead hit F9 to enter the BIOS. See th
 Briefly, on booting the system, hit F9. Enter Advanced Options -> Processor Options -> Intel(R) Virtualization Technology and then hit Enable.
 
 .. _CloVR: http://clovr.org
-.. _QIIME deploy script: http://broken_deploy_script_link.com.org
 .. _64-bit QIIME Virtual Box: http://bmf.colorado.edu/QIIME/QIIME-1.2.0-amd64.vdi.gz
 .. _VirtualBox: http://www.virtualbox.org/wiki/Downloads
