@@ -21,7 +21,8 @@ from qiime.make_sra_submission import (
     SraStudyRef, SraPlatform, #update_entry_with_deprecated_fields,
     SraSample, SraSampleName, SraSampleAttributes, SraSampleSet, SraStudy,
     SraContacts, SraActions, SraSubmissionFiles, SraSubmission,
-    SraSubmissionTable, SraInputTable)
+    SraSubmissionTable, SraInputTable, SraExperimentTable,
+    )
 from qiime.util import get_qiime_project_dir
 import xml.etree.ElementTree as ET
 from cStringIO import StringIO
@@ -97,6 +98,7 @@ class TopLevelTests(TestCase):
         # case of EXPERIMENT_TITLE in headers doesn't matter
         input_file = StringIO('#NONSENSE_FIELD\tExPeRiMeNt_TiTlE\nnonsense_value\tfake_title\n')
         observed = detect_missing_experiment_fields(input_file)
+        observed.sort()
         expected = [
             'BARCODE',
             'EXPERIMENT_CENTER',

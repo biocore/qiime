@@ -132,6 +132,9 @@ class SraInputTable(object):
         self.header = header
         self.rows = rows
 
+    def __eq__(self, other):
+        return (self.header == other.header) and (self.rows == other.rows)
+
     @property
     def entries(self):
         """Iterate over each row in the table as a dict.
@@ -438,11 +441,11 @@ class SraExperimentTable(SraInputTable):
         'GYTACCTTGTTAYGACTT': 'V6-V9',
         # Broad Institute Primers
         # 534r
-        'ATTACCGCGGCTGCTGG': 'V1-V3',
+        'ATTACCGCGGCTGCTGG': 'V1-V3b',
         # 926r
-        'CCGTCAATTCMTTTRAGT': 'V3-V5',
+        'CCGTCAATTCMTTTRAGT': 'V3-V5b',
         # 1492r
-        'TACGGYTACCTTGTTAYGACTT': 'V6-V9',
+        'TACGGYTACCTTGTTAYGACTT': 'V6-V9b',
         }
 
     def __derive_pool_member_name(self, entry):
@@ -889,6 +892,8 @@ class SraSample(SraEntity):
     required_fields = {
         'alias': 'SAMPLE_ALIAS',
         'title': 'TITLE',
+        }
+    optional_fields = {
         'description': 'DESCRIPTION',
         }
 

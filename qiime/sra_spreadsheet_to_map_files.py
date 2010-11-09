@@ -1,8 +1,13 @@
 #!/usr/bin/env python
 #file sra_spreadsheet_to_map_files.py
-from qiime.parse import parse_mapping_file
-from os.path import split, join
+
+import os
 from collections import defaultdict
+from cStringIO import StringIO
+
+from qiime.make_sra_submission import SraExperimentTable
+from qiime.parse import parse_mapping_file
+
 """This script reads the SRA submission spreadsheet, makes QIIME map files.
 
 Produces one map file per (STUDY, RUN_PREFIX) combination. Note that the 
@@ -64,10 +69,16 @@ def get_study_groups(infile):
 def write_map_files(in_path):
     """Writes map files for each study covered in infile."""
     infile = open(in_path, 'U')
-    col_names, study_groups = get_study_groups(infile)
-    basedir, filename = split(in_path)
+
+    table = SraExperimentTable.parse(infile)
+    table.derive_optional_fields()
+    table.fix_deprecated_fields()
+    table_file = StringIO("#" + table.to_tsv())
+
+    col_names, study_groups = get_study_groups(table_file)
+    basedir, filename = os.path.split(in_path)
     for name, lines in study_groups.items():
-        outfile = open(join(basedir, '_'.join(name))+'.map', 'w')
+        outfile = open(os.path.join(basedir, '_'.join(name))+'.map', 'w')
         for line in remap_lines(col_names, lines):
             outfile.write('\t'.join(line) + '\n')
 
