@@ -109,7 +109,7 @@ In some circumstances, users may need to generate a mapping file that does not c
    * PC.635		Fast	20080116	Fasting_mouse__I.D._635
    * PC.636		Fast	20080116	Fasting_mouse__I.D._636
 
-To validate such a mapping file, the user will need to disable barcode and primer testing with the -p and -b parameters.  An example script follows.
+To validate such a mapping file, the user will need to disable barcode and primer testing with the -p and -b parameters:
 
 ::
 
