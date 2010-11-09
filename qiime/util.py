@@ -48,7 +48,7 @@ from cogent.util.dict2d import Dict2D
 from cogent.app.formatdb import build_blast_db_from_fasta_path,\
     build_blast_db_from_fasta_file
 from cogent import LoadSeqs
-from pycogent_backports.misc import (parse_command_line_parameters, 
+from cogent.util.misc import (parse_command_line_parameters, 
                                      create_dir, 
                                      handle_error_codes)
 from qiime.parse import parse_otu_table, parse_qiime_config_files, parse_coords

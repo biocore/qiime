@@ -9,7 +9,7 @@ from qiime.process_sff import (
     make_flow_txt, make_fna, make_qual, prep_sffs_in_dir, convert_Ti_to_FLX,
     adjust_sff_cycles,
     )
-from qiime.pycogent_backports.binary_sff import parse_binary_sff
+from cogent.parse.binary_sff import parse_binary_sff
 from qiime.util import get_qiime_project_dir
 
 """Tests of the process_sff.py file.

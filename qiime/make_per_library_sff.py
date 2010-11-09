@@ -18,7 +18,7 @@ import subprocess
 from qiime.process_sff import (
     check_sfffile,
     )
-from qiime.pycogent_backports.binary_sff import (
+from cogent.parse.binary_sff import (
     parse_binary_sff, write_binary_sff,
     )
 

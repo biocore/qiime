@@ -28,7 +28,7 @@ from cogent.app.dotur import dotur_from_alignment
 from cogent.app.mothur import Mothur
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from cogent.app.blast import blast_seqs, Blastall, BlastResult
-from qiime.pycogent_backports.uclust import get_clusters_from_fasta_filepath
+from cogent.app.uclust import get_clusters_from_fasta_filepath
 from cogent.core.sequence import DnaSequence
 from cogent.util.misc import remove_files
 from cogent import LoadSeqs, DNA, Alignment

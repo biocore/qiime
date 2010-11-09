@@ -24,10 +24,10 @@ from cogent.parse.fasta import MinimalFastaParser
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files
 from cogent.app.util import get_tmp_filename, ApplicationNotFoundError
+from cogent.parse.binary_sff import parse_binary_sff
 from qiime.util import load_qiime_config
 from qiime.parse import (parse_qiime_parameters, parse_otu_table,
     parse_distmat_to_dict,parse_distmat)
-from qiime.pycogent_backports.binary_sff import parse_binary_sff
 from qiime.workflow import (run_qiime_data_preparation,
     run_beta_diversity_through_3d_plot,
     run_qiime_alpha_rarefaction,

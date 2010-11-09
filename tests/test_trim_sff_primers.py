@@ -21,7 +21,7 @@ import shutil
 import tempfile
 
 from cogent.util.unit_test import TestCase, main
-from qiime.pycogent_backports.binary_sff import (
+from cogent.parse.binary_sff import (
     parse_binary_sff, write_binary_sff,
     )
 from qiime.trim_sff_primers import (

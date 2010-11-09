@@ -2,7 +2,7 @@
 #file process_sff.py
 from cogent.util.misc import app_path
 from cogent.app.util import ApplicationNotFoundError
-from qiime.pycogent_backports.binary_sff import (
+from cogent.parse.binary_sff import (
     parse_binary_sff, format_binary_sff, write_binary_sff, decode_accession,
     )
 from os import listdir
