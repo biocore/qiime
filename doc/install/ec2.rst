@@ -17,3 +17,7 @@ ANTONIO/NIGEL, PLEASE ADD TEXT HERE.
 Acknowledgements
 ================
 We'd like to acknowledge the support of AWS: the QIIME EC2 image was developed using an AWS in Education (for Researchers) grant of compute resource time. 
+
+As of the QIIME 1.2.0 release, the QIIME VB and EC2 images are built using `CloVR`_.  CloVR provides a platform for building portable virtual machines. The platform automates builds in formats compatible with VirtualBox, VMware, and Clouds, including Amazon EC2.  The `CloVR developer <http://clovr.org/developers>`_ pages have more information on the platform and build process.
+
+.. _CloVR: http://clovr.org
