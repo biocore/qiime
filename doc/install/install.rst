@@ -51,10 +51,10 @@ Alignment, tree-building, taxonomy assignment, OTU picking, and other data gener
 * ChimeraSlayer (via microbiomeutil_2010-04-29) (`src <http://sourceforge.net/projects/microbiomeutil/files/>`_) See :ref:`ChimeraSlayer install notes <chimeraslayer-install>`.
 * mothur v.1.6.0 (`web <http://www.mothur.org/w/images/e/e8/Mothur.1.6.0.zip>`_) (license: GPL)
 * clearcut v1.0.9 (`src <http://www.mothur.org/w/images/9/91/Clearcut.source.zip>`_)
-* raxml v7.0.3 (`web <http://icwww.epfl.ch/~stamatak/index-Dateien/Page443.htm>`_)
-* infernal 1.0.2 (`web <http://infernal.janelia.org/>`_) (license: GPL)
+* raxml v7.0.3 (`src <http://icwww.epfl.ch/~stamatak/index-Dateien/countSource7.0.3.php>`_)
+* infernal 1.0.2 (`src <ftp://selab.janelia.org/pub/software/infernal/infernal.tar.gz>`_) (license: GPL)
 * cdbtools (`src <ftp://occams.dfci.harvard.edu/pub/bio/tgi/software/cdbfasta/cdbfasta.tar.gz>`_)
-* muscle 3.6 (`web <http://www.drive5.com/muscle/>`_) (Public domain)
+* muscle 3.6 (`src <http://drive5.com/muscle/downloads3.6/muscle3.6_src.tar.gz>`_) (Public domain)
 * dotur 1.53 (`src <http://www.plantpath.wisc.edu/fac/joh/DOTUR/dotur-1.53.tgz>`_) (license: GPL)
 
 Processing sff files:
