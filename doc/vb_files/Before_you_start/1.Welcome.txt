@@ -13,6 +13,7 @@ The steps to install it are:
 
 Again, the directory name VBOXADDITIONS... may differ depending on your version of VirtualBox. You can run 'ls /media' to find the name of this directory. When prompted, enter the password: qiime
 
-4. When that command is finished running (i.e., you get a command prompt back), restart the virtual machine by clicking the word 'qiime' in the upper right corner of the virtual machine window and then selecting 'Restart...'.
+4. When that command is finished running (i.e., you get a command prompt back), restart the virtual machine by clicking the power button to the right of word 'qiime' in the upper right corner of the virtual machine window and then selecting 'Restart...'.
+restart option can be under the 'qiime' box or under the power button icon to the right of the 'qiime' box).
 
 After the virtual box restarts, if you are interested in knowing which software has been installed in this Virtual Machine move on to Document 2; if you are having problems with the network, i.e. the wget commands do not work, move to Document 3; otherwise move along to Document 4. All the Documents are in the Before_you_start folder on your desktop.
