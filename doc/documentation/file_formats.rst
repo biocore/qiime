@@ -65,7 +65,7 @@ You are highly encouraged to validate your mapping file using `check_id_map.py <
    * PC.635	ACCGCAGAGTCA	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	Fasting_mouse__I.D._635
    * PC.636	ACGGTGAGTGTC	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	Fasting_mouse__I.D._636
 
-This example mapping file is available here: `Example Mapping File <../../../documentation/Examples/File_Formats/Example_Mapping_File.txt>`_ (Right click and use 'download' or 'save as' to save this file)
+This example mapping file is available here: `Example Mapping File <../_static/File_Formats/Example_Mapping_File.txt>`_ (Right click and use 'download' or 'save as' to save this file)
 
 During demultiplexing with `split_libraries.py <../scripts/split_libraries.html>`_, the `SampleID` that is associated with the barcode found in a given sequence is used to label the output sequence.  An example set of such assignments are seen in the `Tutorial <../tutorial.html#assign-samples-to-multiplex-reads>`_.  Note that in this example, the barcode associated with "PC.634", "ACAGAGTCGGCT" was found in the first two sequences, and so the output "seqs.fna" file has these sequences labeled as "PC.634_1" and "PC.634_2" respectively.  The third sequence contained the barcode "AGCACGAGCCTA", and hence was associated with "PC.354".
 
@@ -168,7 +168,7 @@ Here is an example of the post-split libraries FASTA file format:
    * >PC.481_4 FLP3FBN01DEHK3 orig_bc=ACCAGCGACTAG new_bc=ACCAGCGACTAG bc_diffs=0
    * CTGGGCCGTGTCTCAGTCCCAATGTGGCCGTTCAACCTCTCAGTCCGGCTACTGATCGTCGACTTGGTGAGCCGTT
 
-An example of the post-split_libraries FASTA  file is available here: `Example Post Split Libraries Sequence File <../../../documentation/Examples/File_Formats/example_fasta_after_split_libraries.fna>`_ 
+An example of the post-split_libraries FASTA  file is available here: `Example Post Split Libraries Sequence File <../_static/File_Formats/example_fasta_after_split_libraries.fna>`_ 
 
 (Right click and use 'download' or 'save as' to save this file.  In general it is preferable to download these files directly rather than opening them in your browser and then cutting and pasting the text into a word-processor such as Microsoft Word or OpenOffice, as these programs often silently introduce small but important changes in the file format.)
 
@@ -200,6 +200,7 @@ was the first sequence in the fasta file, and it was associated with the sample 
    * >PC.634_1 FLP3FBN01ELBSX orig_bc=ACAGAGTCGGCT new_bc=ACAGAGTCGGCT bc_diffs=0
    * CTGGGCCGTGTCTCAGTCCCAATGTGGCCGTTTACCCTCTCAGGCCGGCTACGCATCATCGCCTTGGTGGGC
 
+.. _otu-table-format:
 
 OTU table
 ^^^^^^^^^^
@@ -208,7 +209,6 @@ OTU tables are sample x observation matrices, and are central to a lot of downst
 
 OTU Table overview
 ++++++++++++++++++
-
 
 The OTU table file format holds information about which OTUs are found in each
 sample.   For a typical QIIME run, it is not necessary to manually construct an
@@ -237,7 +237,7 @@ Here is an example of the OTU table file format:
    * 14  0   0   0   0   0   0   0   0   2   Root;Bacteria;Firmicutes;"Bacilli";Bacillales;"Staphylococcaceae";Staphylococcus
 
 
-An example OTU file is available here: `Example OTU Table <../../../documentation/Examples/File_Formats/example_otu_table.txt>`_ 
+An example OTU file is available here: `Example OTU Table <../_static/File_Formats/example_otu_table.txt>`_ 
 
 (Right click and use 'download' or 'save as' to save this file.  In general it is preferable to download these files directly rather than opening them in your browser and then cutting and pasting the text into a word-processor such as Microsoft Word or OpenOffice, as these programs often silently introduce small but important changes in the file format.)
 
@@ -276,7 +276,7 @@ Several QIIME modules, such as `assign_taxonomy.py <../scripts/assign_taxonomy.h
    * 127471	Bacteria;Bacteroidetes;Sphingobacteria;Sphingobacteriales;Crenotrichaceae;Terrimonas
    * 155634	Archaea;Euryarchaeota;Methanobacteria;Methanobacteriales;Methanobacteriaceae;Methanosphaera
 
-This file can be downloaded here: `Example ID to Taxonomy Mapping File <../../../documentation/Examples/File_Formats/Example_ID_to_Taxonomy_mapping_File.txt>`_ (Right click and use 'download' or 'save as' to save this file)
+This file can be downloaded here: `Example ID to Taxonomy Mapping File <../_static/File_Formats/Example_ID_to_Taxonomy_mapping_File.txt>`_ (Right click and use 'download' or 'save as' to save this file)
 
 Several Greegenes (http://greengenes.lbl.gov/) sequence ID to taxonomy mapping files are available for download in this Greengenes sequences, OTU, and mapping file collection: `Greengenes OTU, sequences, and mapping files <http://greengenes.lbl.gov/Download/OTUs/gg_otus_6oct2010.zip>`_
 
