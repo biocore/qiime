@@ -34,6 +34,13 @@ A QIIME deploy script is provided for existing 64-bit Virtual Box users to upgra
 	* Run the deploy script with the following command::
 	
 	command goes here!!
+	
+QIIME VB and CloVR
+==================
+
+As of the QIIME 1.2.0 release, the QIIME VB and EC2 images are built using `CloVR`_. 
+
+SAM, ADD TEXT HERE!
 
 Limitations of the QIIME Virtual Box
 ====================================
@@ -87,7 +94,7 @@ If this doesn't work, you might need to instead hit F9 to enter the BIOS. See th
 
 Briefly, on booting the system, hit F9. Enter Advanced Options -> Processor Options -> Intel(R) Virtualization Technology and then hit Enable.
 
-
+.. _CloVR: http://clovr.org
 .. _QIIME deploy script: http://broken_deploy_script_link.com.org
 .. _64-bit QIIME Virtual Box: http://bmf.colorado.edu/QIIME/QIIME-1.1.0-amd64.vdi.gz
 .. _VirtualBox: http://www.virtualbox.org/wiki/Downloads
