@@ -12,10 +12,10 @@ __copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Justin Kuczynski", "Rob Knight", "Antonio Gonzalez Pena", \
     "Catherine Lozupone"]
 __license__ = "GPL"
-__version__ = "1.2.0"
+__status__ = "1.2.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
-__status__ = "Release"
+__status__ = "Development"
 
 
 def pcoa(file):

@@ -18,10 +18,10 @@ __copyright__ = "Copyright 2010, The QIIME Project"
 #remember to add yourself if you make changes
 __credits__ = ["Rob Knight"]
 __license__ = "GPL"
-__version__ = "1.2.0"
+__status__ = "1.2.0-dev"
 __maintainer__ = "Kyle Bittinger"
 __email__ = "kylebittinger@gmail.com"
-__status__ = "Release"
+__status__ = "Development"
 
 class TopLevelTests(TestCase):
     """Top-level tests of functions in sra_spreadsheet_to_map_files.py"""

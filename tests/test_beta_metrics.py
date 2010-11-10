@@ -4,10 +4,10 @@ __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Rob Knight", "Justin Kuczynski"]
 __license__ = "GPL"
-__version__ = "1.2.0"
+__status__ = "1.2.0-dev"
 __maintainer__ = "justin kuczynski"
 __email__ = "justinak@gmail.com"
-__status__ = "Release"
+__status__ = "Development"
 
 
 """Contains tests for beta_metrics  functions."""

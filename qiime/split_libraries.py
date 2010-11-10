@@ -28,10 +28,10 @@ __author__ = "Rob Knight and Micah Hamady"
 __copyright__ = "Copyright 2010, The QIIME Project" 
 __credits__ = ["Rob Knight", "Micah Hamady", "Greg Caporaso", "Kyle Bittinger","Jesse Stombaugh","William Walters","Jens Reeder"] #remember to add yourself
 __license__ = "GPL"
-__version__ = "1.2.0"
+__status__ = "1.2.0-dev"
 __maintainer__ = "William Walters"
 __email__ = "rob@spot.colorado.edu, william.a.walters@colorado.edu"
-__status__ = "Release"
+__status__ = "Development"
 
 import re
 from gzip import GzipFile
