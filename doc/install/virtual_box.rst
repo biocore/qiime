@@ -61,7 +61,7 @@ You can safely ignore these as QIIME contains built-in tools for parsing sff fil
 
 Support for the 32-bit QIIME Virtual Box is discontinued
 ========================================================
-As of Qiime 1.2.0, we no longer build and distribute the 32 bit Virtual Box. The majority of our users work on 64 bit platforms, and supporting multiple versions has become too time-consuming. We apologize for the inconvenience. If upgrading to a 64-bit system is not an option for you, you might want to look into the `QIIME EC image <./ec2.html>`_.
+As of Qiime 1.2.0, we no longer build and distribute the 32 bit Virtual Box. The majority of our users work on 64 bit platforms, and supporting multiple versions has become too time-consuming. We apologize for the inconvenience. If upgrading to a 64-bit system is not an option for you, you might want to look into the `QIIME EC image <./vm_ec2.html>`_.
 
 If you don't know whether your machine is 32 or 64 bit, go through the following steps.
 

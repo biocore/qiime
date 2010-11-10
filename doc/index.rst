@@ -33,7 +33,7 @@ Download QIIME
 
 	svn co https://qiime.svn.sourceforge.net/svnroot/qiime/trunk Qiime
 	
- * Amazon EC2 image (BETA): As of QIIME 1.2.0, we're releasing a QIIME EC2 image that can be loaded in the Amazon Web Services cloud. For details, `go here <./install/ec2.html>`_.
+ * Amazon EC2 image (BETA): As of QIIME 1.2.0, we're releasing a QIIME EC2 image that can be loaded in the Amazon Web Services cloud. For details, `go here <./install/vm_ec2.html>`_.
 
 Installing and using QIIME
 ==========================

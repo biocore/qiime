@@ -67,7 +67,7 @@ You are highly encouraged to validate your mapping file using `check_id_map.py <
 
 This example mapping file is available here: `Example Mapping File <../_static/Examples/File_Formats/Example_Mapping_File.txt>`_ (Right click and use 'download' or 'save as' to save this file)
 
-During demultiplexing with `split_libraries.py <../scripts/split_libraries.html>`_, the `SampleID` that is associated with the barcode found in a given sequence is used to label the output sequence.  An example set of such assignments are seen in the `Tutorial <../tutorial.html#assign-samples-to-multiplex-reads>`_.  Note that in this example, the barcode associated with "PC.634", "ACAGAGTCGGCT" was found in the first two sequences, and so the output "seqs.fna" file has these sequences labeled as "PC.634_1" and "PC.634_2" respectively.  The third sequence contained the barcode "AGCACGAGCCTA", and hence was associated with "PC.354".
+During demultiplexing with `split_libraries.py <../scripts/split_libraries.html>`_, the `SampleID` that is associated with the barcode found in a given sequence is used to label the output sequence.  An example set of such assignments are seen in the `Tutorial <../tutorials/tutorial.html#assign-samples-to-multiplex-reads>`_.  Note that in this example, the barcode associated with "PC.634", "ACAGAGTCGGCT" was found in the first two sequences, and so the output "seqs.fna" file has these sequences labeled as "PC.634_1" and "PC.634_2" respectively.  The third sequence contained the barcode "AGCACGAGCCTA", and hence was associated with "PC.354".
 
 Generating a Mapping File by Hand
 +++++++++++++++++++++++++++++++++
@@ -149,7 +149,7 @@ Demultiplexed sequences
 Post- split_libraries FASTA File Overview
 +++++++++++++++++++++++++++++++++++++++++
 
-When performing a typical workflow, it is not necessary for users to put together the specially formatted post-splitlibraries FASTA file.  Thus, this section is primarily useful for users who would like to use the downstream capabilities of QIIME without running split_libraries.py.   For a description of the essential files for the typical workflow see their description in the QIIME `Tutorial <../tutorial.html>`_.
+When performing a typical workflow, it is not necessary for users to put together the specially formatted post-splitlibraries FASTA file.  Thus, this section is primarily useful for users who would like to use the downstream capabilities of QIIME without running split_libraries.py.   For a description of the essential files for the typical workflow see their description in the QIIME `Tutorial <../tutorials/tutorial.html>`_.
 
 The purpose of the post-split_libraries FASTA is to relate each sequence to the sample from which it came, while also recording information about the original and error-corrected barcodes from which this inference was made.
 
@@ -212,7 +212,7 @@ OTU Table overview
 
 The OTU table file format holds information about which OTUs are found in each
 sample.   For a typical QIIME run, it is not necessary to manually construct an
-OTU table, as this is done automatically from your sequences (see the QIIME `Tutorial <../tutorial.html>`_).  However, for some applications it is useful to be able to use the
+OTU table, as this is done automatically from your sequences (see the QIIME `Tutorial <../tutorials/tutorial.html>`_).  However, for some applications it is useful to be able to use the
 downstream capabilities of the QIIME workflow starting directly from an OTU table.
 
 Here is an example of the OTU table file format:
