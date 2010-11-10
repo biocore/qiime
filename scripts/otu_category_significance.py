@@ -6,10 +6,10 @@ __author__ = "Doug Wendel"
 __copyright__ = "Copyright 2010, The QIIME project"
 __credits__ = ["Catherine Lozupone", "Jesse Stombaugh", "Doug Wendel", "Dan Knights"]
 __license__ = "GPL"
-__version__ = "1.1.0-dev"
+__version__ = "1.2.0"
 __maintainer__ = "Doug Wendel"
 __email__ = "wendel@colorado.edu"
-__status__ = "Development"
+__status__ = "Release"
  
 
 from qiime.otu_category_significance import test_wrapper, test_wrapper_multiple

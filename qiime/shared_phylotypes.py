@@ -6,10 +6,10 @@ __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2010, The QIIME project"
 __credits__ = ["Jens Reeder, Justin Kuczynski"]
 __license__ = "GPL"
-__version__ = "1.1.0-dev"
+__version__ = "1.2.0"
 __maintainer__ = "Jose Clemente"
 __email__ = "jose.clemente@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
  
 """Computes shared phylotypes between samples"""
 

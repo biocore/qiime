@@ -5,10 +5,10 @@ __author__ = "Julia Goodrich and Micah Hamady"
 __copyright__ = "Copyright 2010, The QIIME Project" 
 __credits__ = ["Julia Goodrich"] #remember to add yourself
 __license__ = "GPL"
-__version__ = "1.1.0-dev"
+__version__ = "1.2.0"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
-__status__ = "Development"
+__status__ = "Release"
 
 
 """

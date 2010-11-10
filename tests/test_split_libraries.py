@@ -5,10 +5,10 @@ __author__ = "Rob Knight"
 __copyright__ = "Copyright 2010, The QIIME Project" #consider project name
 __credits__ = ["Rob Knight", "William Walters"] #remember to add yourself
 __license__ = "GPL"
-__version__ = "1.1.0-dev"
+__version__ = "1.2.0"
 __maintainer__ = "William Walters"
 __email__ = "william.a.walters@colorado.edu"
-__status__ = "Development"
+__status__ = "Release"
 
 from cogent.util.unit_test import TestCase, main
 from cogent import DNA

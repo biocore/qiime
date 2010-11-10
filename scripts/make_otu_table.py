@@ -6,10 +6,10 @@ __author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2010, The QIIME project"
 __credits__ = ["Rob Knight", "Justin Kuczynski","Jesse Stombaugh"]
 __license__ = "GPL"
-__version__ = "1.1.0-dev"
+__version__ = "1.2.0"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
  
 from sys import argv, exit, stderr, stdout
 from qiime.util import parse_command_line_parameters, get_options_lookup
@@ -37,7 +37,7 @@ script_info['optional_options']=[ \
   options_lookup['output_fp'],
   make_option('-e','--exclude_otus_fp',\
    help=("a filepath listing OTU identifiers that should not be included in the "
-         "OTU table (e.g., the output of identify_chimeric_seqs.py)"))
+         "OTU table (e.g., the output of identify_chimeric_sequences.py)"))
 ]
 
 script_info['version'] = __version__

@@ -38,10 +38,10 @@ __copyright__ = "Copyright 2010, The QIIME Project"
 #remember to add yourself if you make changes
 __credits__ = ["Rob Knight", "Greg Caporaso", "Kyle Bittinger", "Rohini Sinha"]
 __license__ = "GPL"
-__version__ = "1.1.0-dev"
+__version__ = "1.2.0"
 __maintainer__ = "Kyle Bittinger"
 __email__ = "kylebittinger@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 
 def standardize_xml(xml_str):

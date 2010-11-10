@@ -10,10 +10,10 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Greg Caporaso","Justin Kuczynski"] 
 __license__ = "GPL"
-__version__ = "1.1.0-dev"
+__version__ = "1.2.0"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 def get_job_commands(python_exe_fp,alpha_diversity_fp,tree_fp,job_prefix,\
     metrics,input_fps,output_dir,working_dir,\

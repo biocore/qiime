@@ -4,10 +4,10 @@ __author__ = "William Walters"
 __copyright__ = "Copyright 2010, The QIIME project"
 __credits__ = ["William Walters","Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.1.0-dev"
+__version__ = "1.2.0"
 __maintainer__ = "William Walters"
 __email__ = "William.A.Walters@colorado.edu"
-__status__ = "Development"
+__status__ = "Release"
 
 from os.path import isdir, isfile, basename
 from shutil import rmtree
