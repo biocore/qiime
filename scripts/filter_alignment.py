@@ -7,7 +7,7 @@ __copyright__ = "Copyright 2010, The QIIME project"
 __credits__ = ["Greg Caporaso", "Justin Kuczynski", "Dan Knights", \
     "Doug Wendel"]
 __license__ = "GPL"
-__status__ = "1.2.0-dev"
+__version__ = "1.2.0-dev"
 __maintainer__ = "Doug Wendel"
 __email__ = "wendel@colorado.edu"
 __status__ = "Development"

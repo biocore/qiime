@@ -32,7 +32,7 @@ __copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Rob Knight", "Daniel McDonald","Greg Caporaso", 
                "Justin Kuczynski", "Jens Reeder", "Catherine Lozupone"] 
 __license__ = "GPL"
-__status__ = "1.2.0-dev"
+__version__ = "1.2.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"

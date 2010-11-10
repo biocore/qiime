@@ -7,7 +7,7 @@ __copyright__ = "Copyright 2010, The QIIME project"
 __credits__ = ["Rob Knight", "Catherine Lozupone", "Justin Kuczynski",\
         "Julia Goodrich", "Daniel McDonald"]
 __license__ = "GPL"
-__status__ = "1.2.0-dev"
+__version__ = "1.2.0-dev"
 __maintainer__ = "Daniel McDonald"
 __email__ = "wasade@gmail.com"
 __status__ = "Development"

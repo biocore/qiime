@@ -7,7 +7,7 @@ __copyright__ = "Copyright 2010, The QIIME project"
 __credits__ = ["Justin Kuczynski", "Rob Knight", "Antonio Gonzalez Pena",\
     "Catherine Lozupone"]
 __license__ = "GPL"
-__status__ = "1.2.0-dev"
+__version__ = "1.2.0-dev"
 __maintainer__ = "Antonio Gonzalez Pena"
 __email__ = "antgonza@gmail.com"
 __status__ = "Development"
