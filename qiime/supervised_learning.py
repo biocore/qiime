@@ -225,9 +225,19 @@ class RSupervisedLearner(CommandLineApplication):
             # don't attempt to open the out/err files more than once
             if i == 1:
                 out = err = None
-            result[model] = CommandLineAppResult(
-                out, err, exit_status, 
-                result_paths=self._get_result_paths(subdir))
+            try:
+                result[model] = CommandLineAppResult(
+                    out, err, exit_status, 
+                    result_paths=self._get_result_paths(subdir))
+            except ApplicationError, ae:
+                msg = str(ae) + \
+                    '\n\ncommand: %s'\
+                    % (command) +\
+                    ' \n\nProgram stdout:\n%s'\
+                      %(''.join(open(outfilepath,'r').readlines())) +\
+                     ' \n\nProgram stderr:\n%s'\
+                     %(''.join(open(errfilepath,'r').readlines()))
+                raise ApplicationError, msg
 
         # Clean up the input file if one was created
         if remove_tmp:
