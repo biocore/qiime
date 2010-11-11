@@ -79,7 +79,8 @@ setup(name='QIIME',
                     'support_files/images/*png',\
                     'support_files/jar/*jar',\
                     'support_files/js/*js',\
-                    'support_files/sra_xml_templates/*xml']},
+                    'support_files/sra_xml_templates/*xml',\
+                    'support_files/R/*r']},
       long_description=long_description,
 )
 
