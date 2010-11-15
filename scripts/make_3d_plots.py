@@ -7,7 +7,7 @@ from __future__ import division
 __author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2010, The QIIME project"
 __credits__ = ["Jesse Stombaugh", "Rob Knight", "Micah Hamady", "Dan Knights",
-    "Justin Kuczynski"]
+    "Justin Kuczynski", "Antonio Gonzalez Pena"]
 __license__ = "GPL"
 __version__ = "1.2.0-dev"
 __maintainer__ = "Jesse Stombaugh"
@@ -17,7 +17,7 @@ __status__ = "Development"
 
 from qiime.util import parse_command_line_parameters, get_options_lookup, create_dir
 from optparse import make_option
-from qiime.make_3d_plots import generate_3d_plots
+from qiime.make_3d_plots import generate_3d_plots, generate_3d_plots_invue
 from qiime.parse import parse_coords,group_by_field,group_by_fields
 import shutil
 import os
@@ -113,6 +113,16 @@ files, the other coord files will be aligned to this one through procrustes \
 analysis. This master file will not be included in the averaging. \
 If this master coord file is not provided, one of the other coord files will \
 be chosen arbitrarily as the target alignment. [default: %default]',default=None),
+
+# inVUE options
+ make_option('--output_format',help='Output format. Valid choices are: king, \
+invue. If this option is set to invue you will need to also use the option -b to \
+define which column(s) from the metadata file the script will write an output file \
+from; it will also do not account for any other optional paramenter pass. \
+[default: %default]', default='king'),
+ make_option('-n', '--interpolation_points', type=int, help='Number of extra \
+points to use between samples and interpolate, the minimum is 2. Only used \
+with the inVUE output. The value  [default: %default]', default=0),
 ]
 
 script_info['version'] = __version__
@@ -122,6 +132,48 @@ def main():
 
     prefs, data, background_color, label_color= \
                             sample_color_prefs_and_map_data_from_options(opts)
+    
+    if opts.output_format == 'invue':
+        # validating the number of points for interpolation
+        if (opts.interpolation_points<0):
+            option_parser.error('The --interpolation_points should be ' +\
+                            'greater or equal to 0.')
+                            
+        # make sure that coord file has internally consistent # of columns
+        coord_files_valid = validate_coord_files(opts.coord_fname)
+        if not coord_files_valid:
+            option_parser.error('Every line of every coord file must ' +\
+                            'have the same number of columns.')
+       
+        coord_files_valid = validate_coord_files(opts.coord_fname)
+        if not coord_files_valid:
+            option_parser.error('Every line of every coord file must ' +\
+                            'have the same number of columns.')
+        #Open and get coord data
+        data['coord'] = get_coord(opts.coord_fname, opts.ellipsoid_method)
+    
+        # remove any samples not present in mapping file
+        remove_unmapped_samples(data['map'],data['coord'])
+
+        if opts.output_dir:
+            create_dir(opts.output_dir,False)
+            dir_path=opts.output_dir
+        else:
+            dir_path='./'
+        
+        filepath=opts.coord_fname
+        if os.path.isdir(filepath):
+            coord_files = [fname for fname in os.listdir(filepath) if not \
+                           fname.startswith('.')]
+            filename = os.path.split(coord_files[0])[-1]
+        else:
+            filename = os.path.split(filepath)[-1]
+	
+        generate_3d_plots_invue(prefs, data, dir_path, filename, \
+            opts.interpolation_points)
+        
+        #finish script
+        return
 
     # Potential conflicts
     if not opts.custom_axes is None and os.path.isdir(opts.coord_fname):

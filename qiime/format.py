@@ -182,18 +182,20 @@ def format_otu_table(sample_names, otu_names, data, taxonomy=None,
     
     return '\n'.join(lines)
 
-def format_coords(coord_header, coords, eigvals, pct_var):
+def format_coords(coord_header, coords, eigvals, pct_var, headers = True):
     """formats coords given specified coords matrix etc."""
     result = []
-    result.append('pc vector number\t' +
-        '\t'.join(map(str, range(1,len(coords[0])+1))))
+    if (headers):
+        result.append('pc vector number\t' +
+           '\t'.join(map(str, range(1,len(coords[0])+1))))
     for name, row in zip(coord_header, coords):
         result.append('\t'.join([name] + map(str, row)))
-    result.append('')
-    result.append('')
-    result.append('eigvals\t' + '\t'.join(map(str,eigvals)))
-    result.append('% variation explained\t' +
-        '\t'.join(map(str, pct_var)))
+    if (headers):
+        result.append('')
+        result.append('')
+        result.append('eigvals\t' + '\t'.join(map(str,eigvals)))
+        result.append('% variation explained\t' +
+           '\t'.join(map(str, pct_var)))
     return '\n'.join(result)
 
 def format_nmds_coords(samples, points, stress):

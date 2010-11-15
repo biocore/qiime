@@ -3,7 +3,8 @@
 
 __author__ = "Jesse Stombaugh, Rob Knight, and Dan Knights"
 __copyright__ = "Copyright 2010, The QIIME Project" 
-__credits__ = ["Jesse Stombaugh", "Rob Knight", "Micah Hamady", "Dan Knights"] #remember to add yourself
+__credits__ = ["Jesse Stombaugh", "Rob Knight", "Micah Hamady", "Dan Knights",\
+"Antonio Gonzalez Pena"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "1.2.0-dev"
 __maintainer__ = "Jesse Stombaugh"
@@ -22,6 +23,8 @@ import re
 from time import strftime
 from biplots import make_mage_taxa
 from qiime.util import load_pcoa_files, summarize_pcoas, MissingFileError
+from qiime.format import format_coords
+
 
 '''
 xdata_colors = {
@@ -620,6 +623,90 @@ def remove_unmapped_samples(mapping,coords,edges=None):
             edge = edges[i]
             if not edge[0] in sample_IDs or not edge[1] in sample_IDs:
                 del(edges[i])
+
+
+def make_3d_plots_invue(data, groups_and_colors, intp_pts):
+    """Makes 3d plots given the groups_and_colors output.
+    """    
+    
+    smp_lbl = {}
+    smp_lbl_grp = {}
+    for i in range(len(groups_and_colors)):
+        labelname=groups_and_colors[i][0]
+        groups=groups_and_colors[i][1]
+        colors=groups_and_colors[i][2]
+        data_colors=groups_and_colors[i][3]
+        
+        # Binning data per metadata info
+        smp_lbl[labelname] = {'coords': [], 'headrs': []}
+        smp_lbl_grp[labelname] = {}
+        for gr in groups:
+            smp_lbl_grp[labelname][gr] = {'coords':[], 'headrs':[]}
+            
+            for i,elm in enumerate(groups[gr]):
+                try:
+                    idx = data['coord'][0].index(elm)
+                except (ValueError):
+                    continue
+                    #raise ValueError, 'ValueError: list.index(x): %s not in list' % elm
+                
+                # Creating interpolation points
+                if intp_pts==0:
+                    smp_lbl_grp[labelname][gr]['coords'].append(data['coord'][1][idx][:3])
+                    smp_lbl_grp[labelname][gr]['headrs'].append(elm)
+                else:
+                    if i==0:
+                        smp_lbl_grp[labelname][gr]['coords'].append(data['coord'][1][idx][:3])
+                        smp_lbl_grp[labelname][gr]['headrs'].append(elm)
+                        pass
+                    else:
+                        new_pts = linear_gradient(prev_pts,data['coord'][1][idx][:3],intp_pts+2)
+                        for j,tmp in enumerate(new_pts[1:]):
+                            smp_lbl_grp[labelname][gr]['headrs'].append("%s.%d" % (elm,j))
+                            smp_lbl_grp[labelname][gr]['coords'].append(array(tmp))
+                            
+                prev_pts=data['coord'][1][idx][:3]
+                
+                # Saving the coords
+                smp_lbl[labelname]['coords'].append(np.append(data['coord'][1][idx][:3],\
+                    [data_colors[colors[gr]].toInt()]))
+                smp_lbl[labelname]['headrs'].append(elm)
+    
+    return smp_lbl, smp_lbl_grp
+
+
+def generate_3d_plots_invue(prefs, data, dir_path, filename, intp_pts):
+    """ Make files to be imported to inVUE 
+        http://sourceforge.net/projects/invue/"""
+    
+    # Validating existance of all columns
+    for col in prefs:
+        if col not in data['map'][0]:
+            raise ValueError, 'Column given "%s" does not exits in mapping \
+                file' % col
+    
+    # Split matrix by labelname, groups & give colors
+    groups_and_colors=iter_color_groups(data['map'],prefs)
+    groups_and_colors=list(groups_and_colors)
+    
+    smp_lbl, smp_lbl_grp = make_3d_plots_invue(data, groups_and_colors, intp_pts)
+                
+    # Looping to binning result to write full and binned files
+    for lbl in smp_lbl:
+        for grp in smp_lbl_grp[lbl]:
+            # writting individual files
+            ind_path = "%s/%s_%s_%s.txt" % (dir_path, filename, lbl, grp)
+            smp = smp_lbl_grp[lbl][grp]
+            outfile = open(ind_path, 'w')
+            outfile.write(format_coords(smp['headrs'], smp['coords'], [], [], False))
+            outfile.close()
+        # writing full file
+        full_path = "%s/%s_%s.txt" % (dir_path, filename, lbl)
+        outfile = open(full_path, 'w')
+        outfile.write (format_coords(smp_lbl[lbl]['headrs'], smp_lbl[lbl]['coords'], \
+            [], [], False))
+        outfile.close()
+
 
 def generate_3d_plots(prefs, data, custom_axes, background_color,label_color, \
                         dir_path='',data_file_path='',filename=None, \

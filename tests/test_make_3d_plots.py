@@ -3,7 +3,7 @@
 
 __author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2010, The QIIME Project" #consider project name
-__credits__ = ["Jesse Stombaugh", "Dan Knights"] #remember to add yourself
+__credits__ = ["Jesse Stombaugh", "Dan Knights", "Antonio Gonzalez Pena"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "1.2.0-dev"
 __maintainer__ = "Jesse Stombaugh"
@@ -25,7 +25,8 @@ from qiime.make_3d_plots import (make_3d_plots,scale_pc_data_matrix,
                                     scale_custom_coords,remove_unmapped_samples,
                                     make_edges_output,make_ellipsoid_faces,
                                     make_mage_ellipsoids,subdivide,
-                                    get_multiple_coords,validate_coord_files)
+                                    get_multiple_coords,validate_coord_files,
+                                    make_3d_plots_invue)
 from cogent.app.util import get_tmp_filename
 
 class TopLevelTests(TestCase):
@@ -80,7 +81,7 @@ class TopLevelTests(TestCase):
             'sample1 sample2 sample11 sample12'.split())
 
     def test_make_3d_plots(self):
-        """make_3d_plots: main script to create kinemage and html file"""
+        """make_3d_plots_invue: main script to create invue files"""
         obs_kin=make_3d_plots(self.coord_header,self.coords,self.pct_var, \
                           self.mapping,self.prefs,self.background_color, \
                           self.label_color)
@@ -111,6 +112,53 @@ class TopLevelTests(TestCase):
         text = '\n'.join(obs_kin)
         
         self.assertTrue(text.find('Day_unscaled') < text.find('Type_unscaled'))
+        
+    def test_make_3d_plots_invue(self):
+        """make_3d_plots: main script to create kinemage and html file"""
+        data = {'map': [
+                  ['SampleID', 'Treatment'], ['PC.354', 'Control'], ['PC.355', 'Control'], 
+                  ['PC.607', 'Fast']], 
+                'coord': [['PC.354', 'PC.355', 'PC.607',],
+                array([[ -2.93088213e-01,   4.31583200e-02,  -6.10931011e-02, 
+                     -4.45457646e-02,   1.83903403e-01,   5.62150139e-02, 
+                     1.05297152e-01,   2.13883515e-01,  -5.71356497e-09],
+                   [ -2.09986576e-01,  -2.20253966e-01,   3.20511936e-02,
+                     8.55386819e-02,  -2.25272826e-01,  -4.17365121e-02,
+                     1.99893660e-01,  -4.00712898e-02,  -5.71356497e-09],
+                   [  1.08572516e-01,   3.82643187e-01,   2.15202408e-01,
+                     1.05970644e-01,  -1.22775938e-01,  -2.16486387e-02, 
+                     7.14806423e-03,   5.56601903e-02,  -5.71356497e-09]]), 
+                array([  4.95533900e-01,   2.89252050e-01,   1.52106359e-01]),
+                array([  2.72623936e+01,   1.59135495e+01,   8.36831432e+00,]), None, None]}
+        groups_and_colors = [('Treatment', {'Control': ['PC.354', 'PC.355'], 'Fast': ['PC.607']}, 
+           {'Control': 'blue', 'Fast': 'lime'}, data_colors, data_colors.keys())]
+        intp_pts = 2
+        
+        smp_lbl_exp = {'Treatment': {
+                         'coords': [array([ -2.93088213e-01,   4.31583200e-02,  -6.10931011e-02,
+                                   2.55000000e+02]), array([ -2.09986576e-01,  -2.20253966e-01,   
+                                   3.20511936e-02, 2.55000000e+02]), array([  1.08572516e-01,
+                                   3.82643187e-01,   2.15202408e-01, 6.52800000e+04])], 
+                         'headrs': ['PC.354', 'PC.355', 'PC.607']}
+                      }
+        smp_lbl_grp_exp = {'Treatment': {
+                         'Control': {
+                            'coords': [array([-0.29308821,  0.04315832, -0.0610931 ]), 
+                                       array([-0.26538767, -0.04464578, -0.030045  ]),
+                                       array([-0.23768712, -0.13244987,  0.0010031 ]), 
+                                       array([-0.20998658, -0.22025397,  0.03205119])], 
+                            'headrs': ['PC.354', 'PC.355.0', 'PC.355.1', 'PC.355.2']}, 
+                         'Fast': {
+                            'coords': [array([ 0.10857252,  0.38264319,  0.21520241])], 
+                            'headrs': ['PC.607']
+                                 }
+                      }}
+        
+        smp_lbl, smp_lbl_grp = make_3d_plots_invue(data, groups_and_colors, intp_pts)
+
+        self.assertFloatEqual(smp_lbl['Treatment']['coords'],smp_lbl_exp['Treatment']['coords'], 1e-5)
+        self.assertFloatEqual(smp_lbl_grp['Treatment']['Control']['coords'],\
+                  smp_lbl_grp_exp['Treatment']['Control']['coords'], 1e-5)
     
     def test_scale_pc_data_matrix(self):
         """scale_pc_data_matrix: Scales the pc data for use in the 3d plots"""
