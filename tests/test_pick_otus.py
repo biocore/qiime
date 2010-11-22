@@ -938,7 +938,7 @@ class UclustOtuPickerTests(TestCase):
          "Num OTUs:10",
          "new_cluster_identifier:None",
          "presort_by_abundance:True",
-         "stable_sort:False",
+         "stable_sort:True",
          "output_dir:.",
          "save_uc_files:False",
          "Result path: %s" % tmp_result_filepath]
@@ -1243,7 +1243,7 @@ class UclustReferenceOtuPickerTests(TestCase):
          "Num failures:2",
          'max_accepts:8',
          'max_rejects:32',
-         "stable_sort:False",
+         "stable_sort:True",
          "new_cluster_identifier:QiimeOTU",
          "next_new_cluster_number:1",
          "presort_by_abundance:True",

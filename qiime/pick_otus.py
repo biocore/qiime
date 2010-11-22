@@ -748,7 +748,7 @@ class UclustOtuPicker(UclustOtuPickerBase):
          'suppress_sort':True,
          'presort_by_abundance':True,
          'new_cluster_identifier':None,
-         'stable_sort':False,
+         'stable_sort':True,
          'save_uc_files':True,
          'output_dir':'.'}
         _params.update(params)
@@ -841,7 +841,7 @@ class UclustReferenceOtuPicker(UclustOtuPickerBase):
                    'new_cluster_identifier':'QiimeOTU',
                    'next_new_cluster_number':1,
                    'presort_by_abundance':True,
-                   'stable_sort':False,
+                   'stable_sort':True,
                    'save_uc_files':True,
                    'output_dir':'.'}
         _params.update(params)

@@ -194,9 +194,11 @@ script_info['optional_options'] = [
               help=("OTU identifier prefix (string) for the de novo uclust" 
                     " OTU picker [default: %default, OTU ids are ascending"
                     " integers]")),
-    make_option('--uclust_stable_sort',default=False,action='store_true',
-              help=("pass --stable_sort to uclust (uclust versions uclustq1.2.15"
-                    " and later only) [default: %default]")),
+    make_option('--uclust_stable_sort',default=True,action='store_true',
+              help=("Deprecated: stable sort enabled by default, pass "
+                    "--uclust_suppress_stable_sort to disable [default: %default]")),
+    make_option('--suppress_uclust_stable_sort',default=False,action='store_true',
+        help=("Don't pass --stable-sort to uclust [default: %default]")),
     make_option('-d', '--save_uc_files', default=True, action='store_false',
               help=("Enable preservation of intermediate uclust (.uc) files "
               "that are used to generate clusters via uclust. "
@@ -228,7 +230,7 @@ def main():
     max_accepts = opts.max_accepts
     max_rejects = opts.max_rejects
     min_aligned_percent = opts.min_aligned_percent
-    uclust_stable_sort = opts.uclust_stable_sort
+    uclust_stable_sort = not opts.suppress_uclust_stable_sort
     save_uc_files = opts.save_uc_files
     
 
@@ -301,7 +303,7 @@ def main():
         'output_dir':output_dir}
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,
-                   result_path=result_path,log_path=log_path)
+                   result_path=result_path,log_path=log_path,HALT_EXEC=False)
              
     ## uclust (reference-based)
     elif otu_picking_method == 'uclust_ref':

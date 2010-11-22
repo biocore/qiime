@@ -1,7 +1,8 @@
 Add changes since QIIME 1.2.0 here
 ==================================
+* --stable_sort option enabled by default for uclust OTU pickers.
 
-QIIME 1.1.0 (10 Nov 2010)
+QIIME 1.2.0 (10 Nov 2010)
 ==================================
 * When computing jackknife support for sample clustering (e.g.: UPGMA sample trees), Qiime can now compute a consensus tree from the jackknife replicates, in addition to the existing functionality of using the full dataset as the master tree, and annotating that tree with jackknife support values. See jackknifed_beta_diversity.py --master_tree and consensus_tree.py .
 * Added the ability to write out the flowgram file in process_sff.py, ability to define an output directory and convert Titanium reads to FLX length.
