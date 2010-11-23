@@ -92,7 +92,10 @@ class CogentTreeBuilder(TreeBuilder):
         #TODO: allow command-line access to important aln params.
         """
         module = self.Params['Module']
-        seqs = self.getAlignment(aln_path)
+        # standard qiime says we just consider the first word as the unique ID
+        # the rest of the defline of the fasta alignment often doesn't match
+        # the otu names in the otu table
+        seqs = LoadSeqs(aln_path, Aligned=True, label_to_name=lambda x: x.split()[0])
         result = module.build_tree_from_alignment(seqs, moltype=DNA)
 
         try: 
@@ -110,8 +113,7 @@ class CogentTreeBuilder(TreeBuilder):
         return FunctionWithParams.__call__(self, result_path=result_path,
                                            log_path=log_path, *args, **kwargs)
 
-
-tree_method_constructors = {}  #currently unused
+tree_method_constructors = {}
 tree_module_names = {'muscle':cogent.app.muscle, 
     'clustalw':cogent.app.clustalw,
     #'mafft':cogent.app.mafft,   
