@@ -187,9 +187,17 @@ script_info['optional_options'] = [
               help="Suppress creation of new clusters using seqs that don't" +
               " match reference when using -m uclust_ref [default: %default]"),
     make_option('--max_accepts',type='int',default=8,
-              help="max_accepts value to uclust and uclust_ref [default: %default]"),
+              help="max_accepts value to uclust and "
+                   "uclust_ref [default: %default]"),
     make_option('--max_rejects',type='int',default=32,
-              help="max_rejects value to uclust and uclust_ref [default: %default]"),
+              help="max_rejects value to uclust and "
+                   "uclust_ref [default: %default]"),
+   make_option('--stepwords',type='int',default=8,
+             help="stepwords value to uclust and "
+                  "uclust_ref [default: %default]"),
+   make_option('--word_length',type='int',default=8,
+             help="w value to uclust and "
+                  "uclust_ref [default: %default]"),
     make_option('--uclust_otu_id_prefix',default=None,
               help=("OTU identifier prefix (string) for the de novo uclust" 
                     " OTU picker [default: %default, OTU ids are ascending"
@@ -229,6 +237,8 @@ def main():
     user_sort = opts.user_sort
     max_accepts = opts.max_accepts
     max_rejects = opts.max_rejects
+    stepwords = opts.stepwords
+    word_length = opts.word_length
     min_aligned_percent = opts.min_aligned_percent
     uclust_stable_sort = not opts.suppress_uclust_stable_sort
     save_uc_files = opts.save_uc_files
@@ -297,6 +307,8 @@ def main():
         'presort_by_abundance': not suppress_presort_by_abundance_uclust,
         'max_accepts':max_accepts,
         'max_rejects':max_rejects,
+        'stepwords':stepwords,
+        'word_length':word_length,
         'new_cluster_identifier':opts.uclust_otu_id_prefix,
         'stable_sort':uclust_stable_sort,
         'save_uc_files':save_uc_files,
@@ -317,6 +329,8 @@ def main():
         'suppress_new_clusters':opts.suppress_new_clusters,
         'max_accepts':max_accepts,
         'max_rejects':max_rejects,
+        'stepwords':stepwords,
+        'word_length':word_length,
         'new_cluster_identifier':opts.uclust_otu_id_prefix,
         'stable_sort':uclust_stable_sort,
         'save_uc_files':save_uc_files,
