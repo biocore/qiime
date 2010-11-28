@@ -23,7 +23,7 @@ A lot of this might migrate into cogent at some point.
 
 def format_summarize_taxa(summary, header, delimiter=';'):
     """Formats a summarized taxonomy table for output"""
-    yield "#%s\n" % '\t'.join(header)
+    yield "%s\n" % '\t'.join(header)
     for row in summary:
         # taxon is tuple, join together for foo;bar;foobar
         taxon = row[0]
