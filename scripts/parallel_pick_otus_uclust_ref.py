@@ -71,14 +71,19 @@ script_info['optional_options'] = [\
               help="max_accepts value to uclust and uclust_ref [default: %default]"),
     make_option('--max_rejects',type='int',default=32,
               help="max_rejects value to uclust and uclust_ref [default: %default]"),
-    make_option('--uclust_stable_sort',default=False,action='store_true',
-              help=("pass --stable_sort to uclust (uclust versions uclustq1.2.16"
-                    " and later only) [default: %default]")),
+    make_option('--stepwords',type='int',default=8,
+              help="stepwords value to uclust and uclust_ref [default: %default]"),
+    make_option('--word_length',type='int',default=8,
+              help="w value to uclust and uclust_ref [default: %default]"),
+    make_option('--uclust_stable_sort',default=True,action='store_true',
+              help=("Deprecated: stable sort enabled by default, pass "
+                  "--uclust_suppress_stable_sort to disable [default: %default]")),         
+    make_option('--suppress_uclust_stable_sort',default=False,action='store_true',
+                  help=("Don't pass --stable-sort to uclust [default: %default]")),
     make_option('-d', '--save_uc_files', default=True, action='store_false',
               help=("Enable preservation of intermediate uclust (.uc) files "
               "that are used to generate clusters via uclust. "
               "[default: %default]")),
-          
     #Define parallel-script-specific parameters
     make_option('-N','--pick_otus_fp',action='store',\
            type='string',help='full path to '+\
@@ -116,7 +121,7 @@ def main():
     seconds_to_sleep = opts.seconds_to_sleep
     similarity = opts.similarity
     poll_directly = opts.poll_directly
-    uclust_stable_sort = opts.uclust_stable_sort
+    uclust_stable_sort = not opts.suppress_uclust_stable_sort
     save_uc_files = opts.save_uc_files
     
     enable_rev_strand_match = opts.enable_rev_strand_match
@@ -124,6 +129,8 @@ def main():
     exact_uclust = opts.exact_uclust
     max_accepts = opts.max_accepts
     max_rejects = opts.max_rejects
+    stepwords = opts.stepwords
+    word_length = opts.word_length
 
     created_temp_paths = []
     
@@ -169,7 +176,7 @@ def main():
      get_job_commands(python_exe_fp,pick_otus_fp,tmp_fasta_fps,
      output_dir,refseqs_fp,job_prefix,working_dir,similarity,
      enable_rev_strand_match,optimal_uclust,exact_uclust,max_accepts,max_rejects,
-     uclust_stable_sort, save_uc_files)
+     stepwords, word_length, uclust_stable_sort, save_uc_files)
     if save_uc_files:
         # keep any .uc files that get created
         created_temp_paths +=\
