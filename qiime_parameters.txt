@@ -18,6 +18,9 @@ pick_otus:exact_uclust
 pick_otus:user_sort
 pick_otus:suppress_presort_by_abundance_uclust
 pick_otus:suppress_new_clusters
+pick_otus:suppress_uclust_stable_sort
+pick_otus:word_length
+pick_otus:stepwords
 
 # Parallel options
 parallel:jobs_to_start	1
@@ -62,7 +65,7 @@ make_3d_plots:custom_axes
 make_3d_plots:ellipsoid_smoothness   1
 
 # Rarefaction parameters
-multiple_rarefactions:num-reps	5
+multiple_rarefactions:num-reps	10
 multiple_rarefactions:depth
 multiple_rarefactions:lineages_included	False
 
