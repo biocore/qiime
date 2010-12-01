@@ -197,6 +197,7 @@ def format_coords(coord_header, coords, eigvals, pct_var, headers = True):
            '\t'.join(map(str, pct_var)))
     else:
         result = ['\t'.join(map(str, row)) for row in coords]
+        result.append('')
     return '\n'.join(result)
 
 def format_nmds_coords(samples, points, stress):
