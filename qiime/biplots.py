@@ -87,6 +87,7 @@ def make_mage_taxa(taxa, num_coords, pct_var, scaled=False, scalars=None,
     taxa_coords = taxa['coord']
     if scaled:
         taxa_coords = scale_taxa_data_matrix(taxa_coords,pct_var)
+
     taxa_radii = radius * (min_taxon_radius+(max_taxon_radius-min_taxon_radius)*taxa['prevalence'])
     radius_dict = dict(zip(ids,taxa_radii))  
 #    if scaled:
@@ -112,6 +113,23 @@ master={taxa_labels} nobutton' % (color, radius_dict[id_], taxon_alpha, num_coor
 
     return result
 
+
+def make_biplot_scores_output(taxa):
+    """Create convenient output format of taxon biplot coordinates
+       
+       taxa is a dict containing 'lineages' and a coord matrix 'coord'
+       
+       output is a list of lines, each containing coords for one taxon
+    """
+    output = []
+    ndims = len(taxa['coord'][1])
+    header = '#Taxon\t' + '\t'.join(['pc%d' %(i) for i in xrange(ndims)])
+    output.append(header)
+    for i, taxon in enumerate(taxa['lineages']):
+        line = taxon + '\t'
+        line += '\t'.join(map(str, taxa['coord'][i]))
+        output.append(line)
+    return output
 
 def scale_taxa_data_matrix(coords, pct_var):
     """Scales pc data matrix by percent variation"""

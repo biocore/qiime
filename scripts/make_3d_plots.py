@@ -31,7 +31,7 @@ from qiime.make_3d_plots import get_coord,get_map,remove_unmapped_samples, \
                                 remove_nans, scale_custom_coords,\
                                 validate_coord_files
 from qiime.biplots import get_taxa,get_taxa_coords,get_taxa_prevalence,\
-    remove_rare_taxa, make_mage_taxa
+    remove_rare_taxa, make_mage_taxa, make_biplot_scores_output
 from cogent.util.misc import get_random_directory_name
 import numpy as np
 
@@ -108,6 +108,9 @@ file). Valid values are "IQR" (The Interquartile Range) and "sdev" (The standard
  make_option('--n_taxa_keep',help='If performing a biplot, the number of taxa \
 to display; use -1 to \
 display all. [default: %default]',default=10),
+ make_option('--biplot_output_file',type='string', help='If performing a biplot, \
+save the biplot coordinates in this file. [default: %default]',
+default=None),
  make_option('--master_pcoa',help='If performing averaging on multiple coord \
 files, the other coord files will be aligned to this one through procrustes \
 analysis. This master file will not be included in the averaging. \
@@ -236,7 +239,14 @@ Valid methods are: " + ', '.join(ellipsoid_methods) + ".")
         # get coordinates of taxa (weighted mean of sample scores)
         data['taxa']['coord'] = get_taxa_coords(data['taxa']['counts'],
             data['coord'][1])
-    
+        data['taxa']['coord']
+
+        # write taxa coords if requested
+        if not opts.biplot_output_file is None:
+            output = make_biplot_scores_output(data['taxa'])            
+            fout = open(opts.biplot_output_file,'w')
+            fout.write('\n'.join(output))
+            fout.close()
 
     # process custom axes, if present.
     custom_axes = None

@@ -116,8 +116,22 @@ class BiplotTests(TestCase):
                                     min_taxon_radius=10, max_taxon_radius=20,
                                     taxon_alpha=.7)
         self.assertEqual(res, taxa_mage_no_scale)
-        pass
 
+    def test_make_biplot_scores_output(self):
+        """make_biplot_scores_output correctly formats biplot scores"""
+        taxa = {}
+        taxa['lineages'] = list('ABC')
+        taxa['coord'] = np.array([  [2.1,0.2,0.2,1.4],
+                                 [1.1,1.2,1.3,1.5],
+                                 [-.3,-2,2.5,1.9]],float)
+        res = bp.make_biplot_scores_output(taxa)
+        exp = ['#Taxon\tpc0\tpc1\tpc2\tpc3',
+               'A\t2.1\t0.2\t0.2\t1.4',
+               'B\t1.1\t1.2\t1.3\t1.5',
+               'C\t-0.3\t-2.0\t2.5\t1.9',
+              ]
+        self.assertEqual(res, exp)
+    
 taxa_mage_no_scale = [\
 '@group {Taxa (n=3)} collapsible', \
 '@balllist color=white radius=10.0 alpha=0.7 dimension=3 master={taxa_points} nobutton', \
