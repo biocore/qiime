@@ -158,6 +158,12 @@ def main():
         # remove any samples not present in mapping file
         remove_unmapped_samples(data['map'],data['coord'])
 
+        # if no samples overlapped between mapping file and otu table, exit
+        if len(data['coord'][0]) == 0:
+            print "\nError: OTU table and mapping file had no samples in common\n"
+            exit(1)
+        
+
         if opts.output_dir:
             create_dir(opts.output_dir,False)
             dir_path=opts.output_dir
@@ -222,6 +228,11 @@ Valid methods are: " + ', '.join(ellipsoid_methods) + ".")
     
     # remove any samples not present in mapping file
     remove_unmapped_samples(data['map'],data['coord'])
+    
+    # if no samples overlapped between mapping file and otu table, exit
+    if len(data['coord'][0]) == 0:
+        print "\nError: OTU table and mapping file had no samples in common\n"
+        exit(1)
 
     if opts.taxa_fname != None:
         # get taxonomy counts
