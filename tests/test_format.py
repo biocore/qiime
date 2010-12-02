@@ -50,7 +50,7 @@ class TopLevelTests(TestCase):
 
     def test_format_summarize_taxa(self):
         """format_summarize_taxa functions as expected"""
-        exp = '\n'.join(['#Taxon\tfoo\tbar\tfoobar',
+        exp = '\n'.join(['Taxon\tfoo\tbar\tfoobar',
                          'a;b;c\t0\t1\t2',
                          'd;e;f\t3\t4\t5\n'])
         obs = ''.join(list(format_summarize_taxa(self.taxa_summary, \
@@ -61,7 +61,7 @@ class TopLevelTests(TestCase):
         """write_summarize_taxa functions as expected"""
         write_summarize_taxa(self.taxa_summary, self.taxa_header, self.tmp_fp1)
         obs = open(self.tmp_fp1).read()
-        exp = '\n'.join(['#Taxon\tfoo\tbar\tfoobar',
+        exp = '\n'.join(['Taxon\tfoo\tbar\tfoobar',
                          'a;b;c\t0\t1\t2',
                          'd;e;f\t3\t4\t5\n'])
         self.assertEqual(obs,exp)
