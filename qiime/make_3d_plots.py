@@ -643,7 +643,7 @@ def make_3d_plots_invue(data, groups_and_colors, intp_pts):
         for gr in groups:
             smp_lbl_grp[labelname][gr] = {'coords':[], 'headrs':[]}
             
-            for i,elm in enumerate(groups[gr]):
+            for elm in groups[gr]:
                 try:
                     idx = data['coord'][0].index(elm)
                 except (ValueError):
@@ -655,7 +655,7 @@ def make_3d_plots_invue(data, groups_and_colors, intp_pts):
                     smp_lbl_grp[labelname][gr]['coords'].append(data['coord'][1][idx][:3])
                     smp_lbl_grp[labelname][gr]['headrs'].append(elm)
                 else:
-                    if i==0:
+                    if len(smp_lbl_grp[labelname][gr]['coords'])==0:
                         smp_lbl_grp[labelname][gr]['coords'].append(data['coord'][1][idx][:3])
                         smp_lbl_grp[labelname][gr]['headrs'].append(elm)
                         pass
