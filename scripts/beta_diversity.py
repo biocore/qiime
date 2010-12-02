@@ -25,7 +25,7 @@ script_info={}
 script_info['brief_description']="""Calculate beta diversity (pairwise sample dissimilarity) on one or many otu tables"""
 script_info['script_description']="""The input for this script is the OTU table containing the number of sequences observed in each OTU (rows) for each sample (columns). For more information pertaining to the OTU table refer to the documentation for make_otu_table. If the user would like phylogenetic beta diversity metrics using UniFrac, a phylogenetic tree must also be passed as input (see make_phylogeny.py). The output of this script is a distance matrix containing a dissimilarity value for each pairwise comparison.
 
-A number of metrics are currently supported, including unweighted and weighted UniFrac (pass the -s option to see available metrics). In general, because unifrac uses phylogenetic information, one of the unifrac metrics is recommended, as results can be vastly more useful (Hamady & Knight, 2009). Quantitative measures (e.g. weighted unifrac) are ideally suited to revealing community differences that are due to changes in relative taxon abundance (e.g., when a particular set of taxa flourish because a limiting nutrient source becomes abundant). Qualitative measures (e.g. unweighted unifrac) are most informative when communities differ primarily by what can live in them (e.g., at high temperatures), in part because abundance information can obscure significant patterns of variation in which taxa are present (Lozupone et al., 2007). Typically both weighted and unweighted unifrac are applied."""
+A number of metrics are currently supported, including unweighted and weighted UniFrac (pass the -s option to see available metrics). In general, because unifrac uses phylogenetic information, one of the unifrac metrics is recommended, as results can be vastly more useful (Hamady & Knight, 2009). Quantitative measures (e.g. weighted unifrac) are ideally suited to revealing community differences that are due to changes in relative taxon abundance (e.g., when a particular set of taxa flourish because a limiting nutrient source becomes abundant). Qualitative measures (e.g. unweighted unifrac) are most informative when communities differ primarily by what can live in them (e.g., at high temperatures), in part because abundance information can obscure significant patterns of variation in which taxa are present (Lozupone et al., 2007). Most qualitative measures are referred to here e.g. "binary_jaccard". Typically both weighted and unweighted unifrac are used."""
 script_info['script_usage']=[]
 script_info['script_usage'].append(("""Single File Beta Diversity:""","""To perform beta diversity (using e.g. euclidean distance) on a single OTU table, where the results are output to beta_div.txt, use the following command:""","""beta_diversity.py -i otu_table.txt -m euclidean -o beta_div/"""))
 script_info['script_usage'].append(("""""","""Note: Since this is a non-phylogenetic metric, the tree does not need to be supplied.""",""""""))
@@ -48,7 +48,7 @@ script_info['optional_options']=[
          'no spaces'),
      
  make_option('-s', '--show_metrics', action='store_true', 
-     help='show available beta diversity metrics and quit'),
+     help='show available beta diversity metrics and quit. "binary_..." specifies that a metric is qualitative, and considers only the presence or absence of each taxon'),
 
  make_option('-t', '--tree_path', default=None,
      help='path to newick tree file, required for phylogenetic metrics'+\
