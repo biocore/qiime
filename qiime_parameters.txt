@@ -19,6 +19,8 @@ pick_otus:user_sort
 pick_otus:suppress_presort_by_abundance_uclust
 pick_otus:suppress_new_clusters
 pick_otus:suppress_uclust_stable_sort
+pick_otus:max_accepts
+pick_otus:max_rejects
 pick_otus:word_length
 pick_otus:stepwords
 
