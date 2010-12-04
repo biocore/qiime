@@ -28,7 +28,7 @@ parallel:retain_temp_files	False
 parallel:seconds_to_sleep	60
 
 # Representative set picker parameters
-pick_rep_set:rep_set_picking_method	most_abundant
+pick_rep_set:rep_set_picking_method	first
 pick_rep_set:sort_by	otu
 
 # Multiple sequence alignment parameters

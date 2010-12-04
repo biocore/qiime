@@ -1,6 +1,7 @@
 Add changes since QIIME 1.2.0 here
 ==================================
 * --stable_sort option enabled by default for uclust OTU pickers.
+* Changed defaults for uclust and uclust_ref OTU pickers. The new parameters make both OTU pickers about 2-3x slower, but the resulting clusters are significantly better in terms of making the best choice of OTU for a given sequence, and ensuring that cluster seeds are less than 97% identical to one another. The default rep seq picking method was also changed to "first" from "most_abundant" which ensures that the seed sequence is chosen as the representative for a cluster. Abundance is instead taken into account at the otu picking stage (as it has been for a while) by pre-sorting the sequences by abundance so most abundant sequences are more likely to be seeds. In practice, with presorting by abundance, the same sequence is usually chosen as the representative when passing first or most_abundant as the OTU picking method.
 
 QIIME 1.2.0 (10 Nov 2010)
 ==================================

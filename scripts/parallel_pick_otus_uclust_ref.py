@@ -67,13 +67,13 @@ script_info['optional_options'] = [\
               default=False,
               help=('Pass the --exact flag to uclust for uclust otu'
               ' picking. [default: %default]')),
-    make_option('--max_accepts',type='int',default=8,
+    make_option('--max_accepts',type='int',default=20,
               help="max_accepts value to uclust and uclust_ref [default: %default]"),
-    make_option('--max_rejects',type='int',default=32,
+    make_option('--max_rejects',type='int',default=500,
               help="max_rejects value to uclust and uclust_ref [default: %default]"),
-    make_option('--stepwords',type='int',default=8,
+    make_option('--stepwords',type='int',default=20,
               help="stepwords value to uclust and uclust_ref [default: %default]"),
-    make_option('--word_length',type='int',default=8,
+    make_option('--word_length',type='int',default=12,
               help="w value to uclust and uclust_ref [default: %default]"),
     make_option('--uclust_stable_sort',default=True,action='store_true',
               help=("Deprecated: stable sort enabled by default, pass "

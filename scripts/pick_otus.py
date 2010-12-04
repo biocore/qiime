@@ -186,16 +186,16 @@ script_info['optional_options'] = [
     make_option('-C','--suppress_new_clusters',action='store_true',default=False,
               help="Suppress creation of new clusters using seqs that don't" +
               " match reference when using -m uclust_ref [default: %default]"),
-    make_option('--max_accepts',type='int',default=8,
+    make_option('--max_accepts',type='int',default=20,
               help="max_accepts value to uclust and "
                    "uclust_ref [default: %default]"),
-    make_option('--max_rejects',type='int',default=32,
+    make_option('--max_rejects',type='int',default=500,
               help="max_rejects value to uclust and "
                    "uclust_ref [default: %default]"),
-   make_option('--stepwords',type='int',default=8,
+   make_option('--stepwords',type='int',default=20,
              help="stepwords value to uclust and "
                   "uclust_ref [default: %default]"),
-   make_option('--word_length',type='int',default=8,
+   make_option('--word_length',type='int',default=12,
              help="w value to uclust and "
                   "uclust_ref [default: %default]"),
     make_option('--uclust_otu_id_prefix',default=None,

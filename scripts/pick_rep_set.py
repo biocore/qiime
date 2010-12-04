@@ -42,8 +42,8 @@ script_info['optional_options']=[\
           type='choice',dest='rep_set_picking_method',
           help=('Method for picking representative sets.  Valid choices are ' +\
                 ', '.join(rep_set_picking_method_choices) +\
-                '[default: %default]'),\
-          choices=rep_set_picking_method_choices,default='most_abundant'),\
+                ' [default: %default (first chooses cluster seed when picking otus with uclust)]'),\
+          choices=rep_set_picking_method_choices,default='first'),\
  make_option('-o','--result_fp',action='store',\
           type='string',dest='result_fp',help='Path to store '+\
           'result file [default: <input_sequences_filepath>_rep_set.fasta]'),\

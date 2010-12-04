@@ -125,8 +125,8 @@ class GenericRepSetPicker(RepSetPicker):
         Application: 3rd-party application used
         """
         _params = {'Application':'None',
-         'Algorithm':'random: "random choice from each OTU"',
-         'ChoiceF':random_id,
+         'Algorithm':'first: "chooses first seq listed, corresponding to cluster seed for uclust"',
+         'ChoiceF':first,
          'ChoiceFRequiresSeqs':False
          }
         _params.update(params)
@@ -216,8 +216,8 @@ class ReferenceRepSetPicker(RepSetPicker):
         Application: 3rd-party application used
         """
         _params = {'Application':'None',
-         'Algorithm':'random: "random choice from each OTU"',
-         'ChoiceF':random_id,
+         'Algorithm':'first: "chooses first seq listed, corresponding to cluster seed for uclust"',
+         'ChoiceF':first,
          'ChoiceFRequiresSeqs':False
          }
         _params.update(params)
