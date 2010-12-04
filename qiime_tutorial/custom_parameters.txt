@@ -17,9 +17,14 @@ pick_otus:exact_uclust
 pick_otus:user_sort
 pick_otus:suppress_presort_by_abundance_uclust
 pick_otus:suppress_new_clusters
+pick_otus:suppress_uclust_stable_sort
+pick_otus:max_accepts
+pick_otus:max_rejects
+pick_otus:word_length
+pick_otus:stepwords
 
 # Representative set picker parameters
-pick_rep_set:rep_set_picking_method	most_abundant
+pick_rep_set:rep_set_picking_method	first
 pick_rep_set:sort_by	otu
 
 # Multiple sequence alignment parameters
