@@ -19,7 +19,7 @@ from cogent.util.misc import remove_files
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.parse import parse_mapping_file
 from qiime.supervised_learning import run_R_supervised_learner,\
-    R_format_map_file, R_format_otu_table
+    R_format_table
 options_lookup = get_options_lookup()
 valid_methods = ['random_forest']
 
@@ -43,9 +43,19 @@ mapping file column containing discrete values as the class labels.
         params.txt: a list of any non-default parameters used in training
             the model.
     
-By default, this script removes OTUs that are present in less than 10% of the \
-samples. Run with "--show_params" to see how to set this manually. For an \
-overview of the application of supervised classification to microbiota, \
+It is strongly recommended that you remove low-depth samples and rare OTUs \
+before running this script. This can drastically reduce the run-time, and in \
+many circumstances will not hurt performance. It is also recommended to perform \
+rarefaction to control for sampling effort before running this \
+script. For example, to remove remove OTUs present in < 100 samples, \
+and then samples with < 200 sequences, and then rarefy at depth 200, run:
+
+filter_otu_table.py -i otu_table.txt -o tmp -s 100
+filter_otu_table.py -i tmp/otu_table_filtered.txt -p 200; rm -r tmp
+single_rarefaction.py -i otu_table_filtered.txt -d 200 -o otu_table_filtered_rarefied200.txt
+
+Run this script with "--show_params" to see how to set any model-specific parameters. \
+For an overview of the application of supervised classification to microbiota, \
 see PubMed ID 21039646.
 
 This script requires that R is installed and in the search path. To install R \
@@ -54,6 +64,13 @@ command "install.packages("randomForest")", then type q() to exit."""
 
 script_info['script_usage']=[]
 script_info['script_usage'].append(("""Simple example of random forests classifier""","""""","""supervised_learning.py -i otutable.txt -m map.txt -c 'Individual' -o ml"""))
+script_info['script_usage'].append(("""Simple example, filter OTU table first""","""""",\
+"""filter_otu_table.py -i otu_table.txt -o tmp -s 100
+ filter_otu_table.py -i tmp/otu_table_filtered.txt -p 200; rm -r tmp
+ single_rarefaction.py -i otu_table_filtered.txt -d 200 -o otu_table_filtered_rarefied200.txt
+ supervised_learning.py -i otutable_filtered_rarefied200.txt -m map.txt -c 'Individual' -o ml
+"""))
+
 script_info['script_usage'].append(("""Getting a sample params file for the random forests classifier""","""""","""supervised_learning.py -i otutable.txt -m map.txt -c 'Individual' -o ml --show_params"""))
 script_info['script_usage'].append(("""Running with a user-specified params file for the random forests classifier""","""""","""supervised_learning.py -i otutable.txt -m map.txt -c 'Individual' -o ml -p params.txt"""))
 script_info['output_description']="""Outputs a ranking of features (e.g. OTUs) by importance, an estimation of the generalization error of the classifier, and the predicted class labels and posterior class probabilities \
@@ -93,20 +110,11 @@ sample_params = {
 # commented lines (starting with "#") are ignored
 
 # number of trees in forest; more improves generalization error estimate
-params$ntree = 500
+params$ntree = 1000
 
 # seed integer for the random number generator (between 0 and 1e9)
 # can be used to replicate results for stochastic processes
 params$seed = 0
-
-# specify the minimum number of samples in which an OTU must be present
-# if both min.num.samples and min.percent.samples are specified, the larger
-# of the two is used
-params$min.num.samples = 50
-
-# specify the minimum percent of samples in which an OTU must be present
-params$min.percent.samples = .1
-
 """
 }
 
@@ -152,10 +160,15 @@ def main():
         exit(1)
 
     # convert otu table and mapping file to R format
-    otu_fp = R_format_otu_table(opts.input_data, data_output_dir)
-    map_fp = R_format_map_file(opts.mapping_file, data_output_dir)
+    print 'Formatting otu table...'
+    otu_fp = join(data_output_dir, 'otus_R_format.txt')
+    R_format_table(opts.input_data, output_filepath=otu_fp)
+    print 'Formatting mapping file...'
+    map_fp = join(data_output_dir, 'map_R_format.txt')
+    R_format_table(opts.mapping_file, output_filepath=map_fp)
 
     # run the supervised learning algorithm
+    print 'Running R...'
     results = run_R_supervised_learner(otu_fp, map_fp,
         opts.category, model_names, opts.output_dir,
         param_file=opts.param_file)

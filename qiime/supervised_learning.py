@@ -20,7 +20,7 @@ from cogent.app.util import CommandLineApplication, CommandLineAppResult, \
     FilePath, ResultPath, ApplicationError
 from cogent.app.parameters import Parameters
 from qiime.parse import parse_otu_table, parse_mapping_file
-from numpy import array
+from numpy import array, set_printoptions, nan
 
 def run_R_supervised_learner(
     predictor_fp, response_fp, response_name,
@@ -35,54 +35,52 @@ def run_R_supervised_learner(
 
     return results
 
-def R_format_otu_table(otu_filepath, output_dir=None, write_to_tmp_file=True):
-    """Formats OTU table for R (remove comments & column 1 header)
-       If write_to_tmp_file, writes formatted file to tmp file and returns path
-       else, returns lines to go in file
+def R_format_table(input_filepath, output_filepath=None, write_to_file=True):
+    """Formats OTU table or mapping file for R. Removes '#' from header line
+       If write_to_tmp_file, writes formatted file to file and returns path
+       else, returns lines of new file
+       
+       Note: proper way to do this is to use, e.g.,  parse_otu_table, but that
+       is very slow for large tables.
+       This works whether there are comment lines or not, and whether the header
+       has a '#' at the beginning r not. This method would break if there were
+       a comment line before the header that happened to have the same number 
+       of delimeters (i.e. tabs) as the data rows.
     """
-    sample_ids, otu_ids, otu_matrix, lineages = \
-        parse_otu_table(open(otu_filepath,'U').readlines())
-    # first line is sample ids, no header for first column (how R likes it)
-    lines = ['\t'.join(sample_ids)]
-    for i in xrange(len(otu_ids)):
-        # note: casting array as a string and calling "split" is much faster
-        # than mapping "str" onto the array
-        array_as_strings = str(otu_matrix[i,:])[1:-1].split()
-        lines.append(otu_ids[i] + '\t' + '\t'.join(array_as_strings))
-    if write_to_tmp_file:
-        if output_dir is None:
-            tmp_fp = get_tmp_filename(
-                prefix='otus_R_format', suffix='.txt')
-        else:
-            tmp_fp = join(output_dir, 'otus_R_format.txt')
-        fout = open(tmp_fp, 'w')
-        fout.write('\n'.join(lines))
-        fout.close()
-        return tmp_fp
+    
+    # preprocessing: determine number of columns in data
+    fin = open(input_filepath, 'U')
+    line = fin.readline()
+    while line.startswith('#'):
+        line = fin.readline()
+    num_columns = len(line.strip().split('\t'))
+    fin.close()
+    
+    # open a temporary file
+    if write_to_file:
+        if output_filepath is None:
+            output_filepath = get_tmp_filename(
+                prefix='table_R_format', suffix='.txt')
+        fout = open(output_filepath, 'w')
     else:
-        return lines
+        lines = []        
 
-def R_format_map_file(map_filepath, output_dir=None, write_to_tmp_file=True):
-    """Formats map file for R (remove comments & column 1 header)
-       If write_to_tmp_file, writes formatted file to tmp file and returns path
-       else, returns lines to go in file
-    """
-    map_list = parse_mapping_file(open(map_filepath,'U').readlines())
-    rows, headers = map_list[0], map_list[1]
-
-    # first line is column headers, no header for first column (how R likes it)
-    lines = ['\t'.join(headers[1:])]
-    lines += ['\t'.join(row) for row in rows]
-    if write_to_tmp_file:
-        if output_dir is None:
-            tmp_fp = get_tmp_filename(
-                prefix='map_R_format', suffix='.txt')
+    # copy all lines to new file, but strip comment character from header
+    fin = open(input_filepath, 'U')
+    for line in fin:
+        if line.startswith('#'):
+            if len(line.strip().split('\t')) == num_columns:
+                line = line[1:]
+        if write_to_file:
+            fout.write(line.strip() + '\n')
         else:
-            tmp_fp = join(output_dir, 'map_R_format.txt')
-        fout = open(tmp_fp, 'w')
-        fout.write('\n'.join(lines))
+            lines.append(line.strip())
+
+    fin.close()
+    
+    if write_to_file:
         fout.close()
-        return tmp_fp
+        return output_filepath
     else:
         return lines
 

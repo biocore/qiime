@@ -34,8 +34,10 @@ source(sprintf('%s/util.r',source.dir))
 model.fcns <- list('random_forest'=train.rf.wrapper)
 
 # load data
-x <- t(read.table(x.fp,sep='\t',check.names=FALSE))
-map <- read.table(map.fp, sep='\t',check.names=FALSE,comment.char='')
+x <- read.table(x.fp,sep='\t',row.names=1,header=TRUE,check.names=FALSE)
+# remove lineage if present
+x <- t(x[,!grepl("Lineage", colnames(x))])
+map <- read.table(map.fp,sep='\t',row.names=1,header=TRUE,check.names=FALSE)
 y <- as.factor(map[,categ])
 names(y) <- rownames(map)
 
@@ -44,18 +46,15 @@ shared.rows <- intersect(rownames(x), names(y))
 x <- x[shared.rows,]
 y <- y[shared.rows]
 
-# drop features present in < 1% of samples or in < 3 samples
-rare.cutoff.by.num = 0
-rare.cutoff.by.percent = ceiling(.1 * nrow(x))
-if(is.element('min.num.samples',names(params))){
-    rare.cutoff.by.num <- params$min.num.samples
+# Verify that some rows were shared between map and data file
+if(length(shared.rows) == 0){
+    cat('Mapping file and OTU table have no sample IDs in common.\n',
+         file=stderr())
+    q(save='no',status=1,runLast=FALSE);
 }
-if(is.element('min.percent.samples', names(params))){
-    rare.cutoff.by.percent <- ceiling(params$min.percent.samples * nrow(x))
-}
-rare.cutoff <- max(rare.cutoff.by.num, rare.cutoff.by.percent)
-x <- x[,apply(x,2,function(x) sum(x>0)) >= rare.cutoff]
 
+# normalize x
+x <- sweep(x, 1, apply(x, 1, sum), '/')
 
 # do learning, save results
 for(model.name in model.names){

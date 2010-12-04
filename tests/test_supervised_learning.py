@@ -21,8 +21,7 @@ from cogent.util.unit_test import TestCase, main
 from cogent.app.util import get_tmp_filename, ApplicationError
 from cogent.util.misc import remove_files
 from qiime.supervised_learning import RSupervisedLearner,\
-    R_format_otu_table, R_format_map_file,\
-    run_R_supervised_learner
+    R_format_table, run_R_supervised_learner
 
 def is_float(input_string):
     """True if string can be cast as a float"""
@@ -68,26 +67,21 @@ class RSupervisedLearnerTests(TestCase):
             if exists(d):
                 rmtree(d)
 
-    def test_R_format_otu_table(self):
-        """Correctly formats otu table for R
+    def test_R_format_table(self):
+        """Correctly formats otu table and mapping file for R
         """
-        # expected value has no comment line, no column header for OTU ID
-        exp = test_otu_table.split('\n')[1:]
-        exp[0] = '\t'.join(exp[0].split('\t')[1:]) # remove first column header
-        # remove last column (lineages) from each line
-        exp = ['\t'.join(line.split('\t')[:-1]) for line in exp]
-        converted = R_format_otu_table(self.tmp_otu_filepath,
-            write_to_tmp_file=False)
+        # expected value has comment lines, but no comment char in header
+        exp = test_otu_table.split('\n')
+        exp[1] = exp[1][1:] # remove '#' from header
+        converted = R_format_table(self.tmp_otu_filepath,
+            write_to_file=False)
         self.assertEqual(converted, exp)
-        
-    def test_R_format_map_table(self):
-        """Correctly formats mapping file for R
-        """
-        # expected value has no comment line, no column header for OTU ID
+
+        # mapping file
         exp = test_map.split('\n')
-        exp[0] = '\t'.join(exp[0].split('\t')[1:])
-        converted = R_format_map_file(self.tmp_map_filepath,
-            write_to_tmp_file=False)
+        exp[0] = exp[0][1:] # remove '#' from header
+        converted = R_format_table(self.tmp_map_filepath,
+            write_to_file=False)
         self.assertEqual(converted, exp)
     
     def test_R_run_learning(self):
@@ -146,8 +140,8 @@ class RSupervisedLearnerTests(TestCase):
     
     def prep_learning_input_files(self):
         # temporarily reformat otu_table, map_file, put in tmp files
-        otu_fp = R_format_otu_table(self.tmp_otu_filepath)
-        map_fp = R_format_map_file(self.tmp_map_filepath)
+        otu_fp = R_format_table(self.tmp_otu_filepath)
+        map_fp = R_format_table(self.tmp_map_filepath)
 
         # make tmp output dir
         output_dir = mkdtemp()
