@@ -625,10 +625,36 @@ def remove_unmapped_samples(mapping,coords,edges=None):
                 del(edges[i])
 
 
-def make_3d_plots_invue(data, groups_and_colors, intp_pts):
+def make_3d_plots_invue(data, groups_and_colors, intp_pts, polyh_pts, offset):
     """Makes 3d plots given the groups_and_colors output.
-    """    
-    
+    """
+    data3d = data['coord'][1][:,:3]
+    centroid = np.average(data3d,axis=0)
+    for i in range(polyh_pts):
+        idx = np.sqrt(np.sum(np.square(data3d-centroid),axis=1)).argmax()
+        if i==0:
+            polypts = [data3d[idx]]
+            centroid = polypts
+        elif i==1:
+            polypts = np.append(polypts,[data3d[idx]],axis=0)
+            centroid = np.average(polypts[:i+1],axis=0)
+        elif i==2:
+            polypts = np.append(polypts,[data3d[idx]],axis=0)
+            polypts = np.append(polypts,[polypts[0]],axis=0)
+            centroid = np.average(polypts[:i+1],axis=0)
+            lastpts = polypts[:-1]
+        elif i==3:
+            polypts = np.append(polypts,[data3d[idx]],axis=0)
+            polypts = np.append(polypts,polypts[i-2:i],axis=0)
+            lastpts = np.append(lastpts,[data3d[idx]],axis=0)
+            centroid = np.average(lastpts[:-3],axis=0)
+        else:
+            polypts = np.append(polypts,[data3d[idx]],axis=0)
+            polypts = np.append(polypts,polypts[i-2:i-1],axis=0)
+            polypts = np.append(polypts,[data3d[idx]],axis=0)
+            lastpts = np.append(lastpts,[data3d[idx]],axis=0)
+            centroid = np.average(lastpts[:-3],axis=0)
+           
     smp_lbl = {}
     smp_lbl_grp = {}
     for i in range(len(groups_and_colors)):
@@ -672,10 +698,10 @@ def make_3d_plots_invue(data, groups_and_colors, intp_pts):
                     [data_colors[colors[gr]].toInt()]))
                 smp_lbl[labelname]['headrs'].append(elm)
     
-    return smp_lbl, smp_lbl_grp
+    return smp_lbl, smp_lbl_grp, polypts*offset
 
 
-def generate_3d_plots_invue(prefs, data, dir_path, filename, intp_pts):
+def generate_3d_plots_invue(prefs, data, dir_path, filename, intp_pts, polyh_pts, offset):
     """ Make files to be imported to inVUE 
         http://sourceforge.net/projects/invue/"""
     
@@ -689,7 +715,8 @@ def generate_3d_plots_invue(prefs, data, dir_path, filename, intp_pts):
     groups_and_colors=iter_color_groups(data['map'],prefs)
     groups_and_colors=list(groups_and_colors)
     
-    smp_lbl, smp_lbl_grp = make_3d_plots_invue(data, groups_and_colors, intp_pts)
+    smp_lbl, smp_lbl_grp, polypts = make_3d_plots_invue(data, groups_and_colors, \
+       intp_pts, polyh_pts, offset)
                 
     # Looping to binning result to write full and binned files
     for lbl in smp_lbl:
@@ -706,7 +733,14 @@ def generate_3d_plots_invue(prefs, data, dir_path, filename, intp_pts):
         outfile.write (format_coords(smp_lbl[lbl]['headrs'], smp_lbl[lbl]['coords'], \
             [], [], False))
         outfile.close()
-
+    
+    # Writing tetraVertices.txt
+    ind_path = "%s/tetraVertices.txt" % (dir_path)
+    outfile = open(ind_path, 'w')
+    outfile.write('\n'.join(['\t'.join(map(str, row)) for row in polypts]))
+    outfile.write('\n')
+    outfile.close()
+    
 
 def generate_3d_plots(prefs, data, custom_axes, background_color,label_color, \
                         dir_path='',data_file_path='',filename=None, \

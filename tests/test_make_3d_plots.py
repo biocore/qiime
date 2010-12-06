@@ -153,12 +153,18 @@ class TopLevelTests(TestCase):
                             'headrs': ['PC.607']
                                  }
                       }}
+        poly_pts_exp = array([[0.16285877,0.57396478,0.32280361],\
+           [-0.31497986,-0.33038095,0.04807679],[-0.31497986,-0.33038095,0.04807679],\
+           [0.16285877,0.57396478,0.32280361],[0.16285877,0.57396478,0.32280361],\
+           [-0.31497986,-0.33038095,0.04807679],[-0.31497986,-0.33038095,0.04807679]])
+                      
+        smp_lbl, smp_lbl_grp, poly_pts = make_3d_plots_invue(data, groups_and_colors, intp_pts, \
+           polyh_pts=4, offset=1.5)
         
-        smp_lbl, smp_lbl_grp = make_3d_plots_invue(data, groups_and_colors, intp_pts)
-
         self.assertFloatEqual(smp_lbl['Treatment']['coords'],smp_lbl_exp['Treatment']['coords'], 1e-5)
         self.assertFloatEqual(smp_lbl_grp['Treatment']['Control']['coords'],\
                   smp_lbl_grp_exp['Treatment']['Control']['coords'], 1e-5)
+        self.assertFloatEqual(poly_pts,poly_pts_exp)
     
     def test_scale_pc_data_matrix(self):
         """scale_pc_data_matrix: Scales the pc data for use in the 3d plots"""

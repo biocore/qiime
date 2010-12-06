@@ -125,7 +125,13 @@ from; it will also do not account for any other optional paramenter pass. \
 [default: %default]', default='king'),
  make_option('-n', '--interpolation_points', type=int, help='Number of extra \
 points to use between samples and interpolate, the minimum is 2. Only used \
-with the inVUE output. The value  [default: %default]', default=0),
+with the inVUE output. [default: %default]', default=0),
+ make_option('--polyhedron_points', type=int, help='Points to be generated \
+ to create a frame around the PCoA plots. Only used when --output_format is \
+ inVUE. [default: %default]', default=4),
+ make_option('--polyhedron_offset', type=float, help='Offset to be added to \
+ the points created in the --polyheadron_points option. Only used when \
+ --output_format is inVUE. [default: %default]', default=1.5)
 ]
 
 script_info['version'] = __version__
@@ -179,7 +185,8 @@ def main():
             filename = os.path.split(filepath)[-1]
 	
         generate_3d_plots_invue(prefs, data, dir_path, filename, \
-            opts.interpolation_points)
+            opts.interpolation_points, opts.polyhedron_points, \
+            opts.polyhedron_offset)
         
         #finish script
         return
