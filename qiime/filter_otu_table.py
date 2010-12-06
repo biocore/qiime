@@ -37,35 +37,98 @@ def split_tax(tax):
         fields = fields[0].split(',')
     return map(strip_quotes, fields)
 
-def _filter_table(params,filtered_table_path,otu_file):
+def filter_table(params,filtered_table_path,otu_file):
+    """ Filters table according to OTU counts, occurance, and taxonomy
+    
+    params: Dictionary containing minimum sequence count (min_otu_count) 
+     per OTU, minimum number of samples that OTU needs to occur in
+     (min_otu_samples), targetted taxonomy to retain (included_taxa), and
+     taxonomy to exclude (excluded_taxa). 
+    filtered_table_path:  Open file object to write filtered table to.
+    otu_file: Open file object of input OTU file.
+    """
+    
 
     min_otu_count=params['min_otu_count']
     min_otu_samples=params['min_otu_samples']
     included_taxa=params['included_taxa']
     excluded_taxa=params['excluded_taxa']
     
-    for line in otu_file:
-        line = line.strip()
-        if line.startswith('#'):
-            filtered_table_path.write(line+'\n')
+    otu_data = parse_otu_table(otu_file)
+    
+    # Create list of OTUs that fail to pass filters
+    flagged_otus = []
+    
+    otu_index = 1
+    otus = otu_data[otu_index]
+    
+    otu_counts_index = 2
+    otu_counts = otu_data[otu_counts_index]
+    
+    taxa_index = 3
+    
+    try:
+        taxa_lines = otu_data[taxa_index]
+        if len(taxa_lines):
+            taxa_present = True
         else:
-            fields = line.split('\t')
-            try:
-                vals = array(map(int, fields[1:]), dtype=int)
-                taxa = None
-            except ValueError:
-                vals = array(map(int, fields[1:-1]), dtype=int)
-                taxa = set(map(strip, split_tax(fields[-1])))
-            if vals.sum() >= min_otu_count and \
-                (vals > 0).sum() >= min_otu_samples:
-                if not taxa:
-                    filtered_table_path.write(line+'\n')
-                else:
-                    if taxa.intersection(included_taxa) and not \
-                        taxa.intersection(excluded_taxa):
-                        filtered_table_path.write(line+'\n')
-                    elif not included_taxa and not excluded_taxa:
-                        filtered_table_path.write(line+'\n')
+            taxa_present = False
+    except IndexError:
+        taxa_present = False
+    
+    index_counter = -1
+    for otu_count in otu_counts:
+
+        index_counter += 1
+        
+        if otu_count.sum() < min_otu_count or \
+         (otu_count > 0).sum() < min_otu_samples:
+             flagged_otus.append(otus[index_counter])
+             continue
+        if taxa_present:
+            taxa = set(taxa_lines[index_counter])
+            # Check for targetted taxa that also are not excluded
+            if taxa.intersection(included_taxa) and not \
+             taxa.intersection(excluded_taxa):
+                continue
+            # If taxonomy found in included taxa and no excluded taxa 
+            # given, skip filtering.
+            elif taxa.intersection(included_taxa) and not excluded_taxa:
+                continue
+            # Skip any taxonomic filtering if taxa present but no filters given
+            elif not included_taxa and not excluded_taxa:
+                continue
+            # If only specifying exluded taxa, allow inclusion of this OTU
+            # if taxa not in excluded set.
+            elif not included_taxa and not taxa.intersection(excluded_taxa):
+                continue
+            # taxa does is not included, or falls in excluded set, so flag
+            # this OTU for removal
+            else:
+                flagged_otus.append(otus[index_counter])
+
+    sample_id_index = 0
+        
+    raw_otu_table = (format_otu_table(otu_data[sample_id_index], 
+     otus, otu_counts, taxonomy=taxa_lines, skip_empty=True)).split('\n')
+     
+    # Filter out lines of the OTU table that are flagged
+    
+    filtered_otu_table = ""
+    
+    for line in raw_otu_table:
+        if line.startswith("#"):
+            filtered_otu_table += line + '\n'
+            continue
+        curr_otu_id = line.split('\t')[0].strip()
+        
+        if curr_otu_id in flagged_otus:
+            continue
+        else:
+            filtered_otu_table += line + '\n'
+        
+    filtered_table_path.write(filtered_otu_table)
+  
     
 
 def _filter_table_samples(otu_table_lines, min_seqs_per_sample):

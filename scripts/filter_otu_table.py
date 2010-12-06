@@ -14,7 +14,7 @@ __status__ = "Development"
 
 from qiime.util import parse_command_line_parameters, get_options_lookup, \
                        create_dir
-from qiime.filter_otu_table import _filter_table, _filter_table_samples, \
+from qiime.filter_otu_table import filter_table, _filter_table_samples, \
                                    split_tax
 from optparse import make_option
 from string import strip
@@ -107,7 +107,7 @@ def main():
             opts.exclude_taxonomy<>''):
         raise ValueError, 'You cannot supply seqs per sample with other filtering options. These features are mutually exclusive.'
     else:
-        _filter_table(params,filtered_table_path,otu_file)
+        filter_table(params,filtered_table_path,otu_file)
         
 
 if __name__ == "__main__":
