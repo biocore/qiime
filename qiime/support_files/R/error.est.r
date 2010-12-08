@@ -11,60 +11,105 @@
  
 # run with: R --vanilla --slave --args otus.txt map.txt Individual < /bio/../code/r/error.est.r
 
-# parse arg list
-argv <- commandArgs(trailingOnly=T)
-source.dir <- argv[1]
-x.fp <- argv[2]
-map.fp <- argv[3]
-categ <- argv[4]
-output.dir <- argv[5]
-model.names <- strsplit(argv[6],',')[[1]]
-
-# if there are seven arguments, last one is params file: parse it
-params <- NULL
-if(length(argv)==7) source(argv[7])
-
-# generate a random seed if one wasn't provided; set seed
-if(!is.element('seed', names(params))) params$seed=floor(runif(1,0,1e9))
-set.seed(params$seed)
-
-# load helper files from qiime source directory
-source(sprintf('%s/ml.wrappers.r',source.dir))
-source(sprintf('%s/util.r',source.dir))
-model.fcns <- list('random_forest'=train.rf.wrapper)
-
-# load data
-x <- read.table(x.fp,sep='\t',row.names=1,header=TRUE,check.names=FALSE)
-# remove lineage if present
-x <- t(x[,!grepl("Lineage", colnames(x))])
-map <- read.table(map.fp,sep='\t',row.names=1,header=TRUE,check.names=FALSE)
-y <- as.factor(map[,categ])
-names(y) <- rownames(map)
-
-# keep only rows shared between map and data, make sure order is consistent
-shared.rows <- intersect(rownames(x), names(y))
-x <- x[shared.rows,]
-y <- y[shared.rows]
-
-# Verify that some rows were shared between map and data file
-if(length(shared.rows) == 0){
-    cat('Mapping file and OTU table have no sample IDs in common.\n',
-         file=stderr())
-    q(save='no',status=1,runLast=FALSE);
+# assumes that NO args are positional
+# allows flags without argument
+"parse.args" <- function(allowed.args){
+    argv <- commandArgs(trailingOnly=T)
+    argpos <- 1
+    for(name in names(allowed.args)){
+        argpos <- which(argv == name)
+        if(length(argpos) > 0){
+            # test for flag without argument
+            if(argpos == length(argv) || substring(argv[argpos + 1],1,1) == '-')
+                allowed.args[[name]] <- TRUE
+            else {
+                allowed.args[[name]] <- argv[argpos + 1]
+            }
+        }
+    }
+    return(allowed.args)
 }
 
-# normalize x
-x <- sweep(x, 1, apply(x, 1, sum), '/')
+# runs filter, returns table of nfeatures, err, stderr
+"train.filter" <- function(x,y,filter.min=2, filter.max=200, filter.step=1, nreps=10, type="BSSWSS"){
+    filter.max <- min(filter.max, ncol(x))
+    n.to.try <- seq(filter.min, filter.max, filter.step)
+    errs <- matrix(0,length(n.to.try),nreps)
+    if(verbose) cat(sprintf('Applying filter from %d to %d in steps of %d...\n',
+                    filter.min, filter.max, filter.step))
+    for(n in n.to.try) {
+        if(verbose) cat(n,'features','\n')
+        for(i in 1:nreps){
+            if(verbose) cat('\trep', i, 'of', nreps,'\n')
+            folds <- balanced.folds(y)
+            err <- 0
+            for(fold in 1:max(folds)){
+                if(verbose) cat('\t\tfold', fold, 'of', 
+                    length(unique(folds)),'\n')
+                if(arglist[['--filter']] == 'BSSWSS'){
+                    features <- bss.wss(x[folds!=fold,],
+                                        y[folds!=fold])$ix
+                }
+                res <- tune.model(model.fcn,
+                                  x[folds!=fold,features[1:n]],
+                                  y[folds!=fold],params)
+                yhat <- predict(res$model,x[folds==fold,features[1:n]])
+                err <- err + sum(yhat != y[folds==fold])
+            }
+            err <- err/length(y)
+            errs[which(n.to.try==n),i] <- res$err$err
+        }
+    }
+    means <- apply(errs,1,mean)
+    stderrs <- apply(errs,1,sd)/sqrt(nreps)
+    features <- colnames(x)[bss.wss(x,y)$ix]
+    
+    return(list(error=data.frame("Mean error"=means,
+                    "Standard error"=stderrs,
+                    row.names=n.to.try,check.names=FALSE),
+                features=features))
+}
+
+# parse arg list
+allowed.args <- list('-i'=NULL,'-o'=NULL,'-m'=NULL, '-c'=NULL,
+                        '--filter'=NULL, '--params'=NULL,
+                        '--models'=NULL, '--sourcedir'=NULL,
+                        '--filter_min'='10', '--filter_max'='50',
+                        '--filter_step'='10', '--filter_reps'='10',
+                        '--verbose'=NULL)
+arglist <- parse.args(allowed.args)
+
+# load helper files from qiime source directory
+source(sprintf('%s/ml.wrappers.r',arglist[['--sourcedir']]))
+source(sprintf('%s/util.r',arglist[['--sourcedir']]))
+
+# load data
+params <- NULL
+opts <- load.data(arglist)
+verbose <- !is.null(arglist[['--verbose']])
+if(verbose && is.null(arglist[['--filter']])) params$do.trace=TRUE
 
 # do learning, save results
-for(model.name in model.names){
-    subdir <- paste(output.dir,model.name,sep='/')
-    load.libraries(model.name)
-    model.fcn <- model.fcns[[model.name]]
+for(modelname in opts$modelnames){
+    subdir <- paste(opts$output.dir,modelname,sep='/')
+    load.libraries(modelname)
+    model.fcn <- opts$model.fcns[[modelname]]
 
-    res <- tune.model(model.fcn,x,y,params)
-    # save results
-    save.results(res,subdir,model.name, params$seed)
+    if(!is.null(arglist[['--filter']])){
+        filter.res <- train.filter(opts$x,opts$y,
+                                   as.numeric(arglist[['--filter_min']]),
+                                   as.numeric(arglist[['--filter_max']]),
+                                   as.numeric(arglist[['--filter_step']]),
+                                   as.numeric(arglist[['--filter_reps']]))
+        filter.res$params <- params
+        save.filter.results(filter.res, opts, subdir,
+            modelname, arglist[['--filter']])
+    } else {
+        res <- tune.model(model.fcn,opts$x,opts$y,params)
+        res$params <- params        
+        # save results
+        save.classification.results(res,subdir,modelname,opts$params$seed)
+    }
 }
 
 # quit without saving history and workspace

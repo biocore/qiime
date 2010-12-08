@@ -14,6 +14,8 @@
 "get.params" <- function(object,...) object$params
 "get.err" <- function(object,...) UseMethod("get.err")
 "get.probabilities" <- function(object,newx,...) predict(object,newx,type='prob')
+"get.cv.probabilities" <- function(object,newx,...) predict(object,newx,type='cv.prob')
+"get.cv.votes" <- function(object,newx,...) predict(object,newx,type='cv.votes')
 
 # Produduces a trained object using wrapper for ML package
 #
@@ -22,6 +24,7 @@
 #
 "tune.model" <- function(train.fcn, x, y, params=NULL, ...){
     result <- list()
+    result$y <- y
     result$model <- train.fcn(x, y, params=params, ...)
     result$params <- get.params(result$model)
     result$importance <- importance(result$model)
@@ -29,6 +32,8 @@
     result$err <- get.err(result$model)
     result$predictions <- predict(result$model, x)
     result$probabilities <- get.probabilities(result$model, x)
+    result$cv.probabilities <- get.cv.probabilities(result$model, x)
+    result$cv.votes <- get.cv.votes(result$model, x)
     invisible(result)  
 }
 
@@ -41,7 +46,9 @@
 "train.rf.wrapper" <- function(x, y, params, ntree=1000, do.trace=FALSE, ...){
     if(is.element("ntree",names(params))) ntree <- params$ntree
     if(is.element("do.trace",names(params))) do.trace <- params$do.trace
-    model <- list("rf.wrapper" = randomForest(x,y,ntree=ntree,do.trace=do.trace,...))
+    model <- list("rf.wrapper" = randomForest(x,y,
+    	     		       ntree=ntree,do.trace=do.trace,
+			       keep.inbag=TRUE,...))
     model$params <- list(ntree=ntree, ...)
     class(model) <- "rf.wrapper"
     invisible(model)
@@ -61,14 +68,46 @@
 }
 
 # Level 3 predict method for randomforest wrapper class
-"predict.rf.wrapper" <- function(model, newx, type='response', ...){
+"predict.rf.wrapper" <- function(model, newx, type='response'){
     if(type == 'prob'){
         yhat <- predict(model$rf.wrapper, newx, type='prob')
+    } else if(type == 'cv.prob'){
+        yhat <- get.oob.probability.from.forest(model$rf.wrapper, newx)
+    } else if(type == 'cv.votes'){
+        yhat <- get.oob.votes.from.forest(model$rf.wrapper, newx)
     } else {
-        yhat <- predict(model$rf.wrapper, newx, ...)
+        yhat <- predict(model$rf.wrapper, newx)
         names(yhat) <- rownames(newx)
     }
     return(yhat)
 }
 
+# get probability of each class using only out-of-bag predictions from RF
+"get.oob.probability.from.forest" <- function(model,x){
+    # get aggregated class votes for each sample using only OOB trees
+    votes <- get.oob.votes.from.forest(model,x)
+    # convert to probs
+    probs <- sweep(votes, 1, apply(votes, 1, sum), '/')
+    rownames(probs) <- rownames(x)
+    colnames(probs) <- model$classes
+    
+    return(invisible(probs))
+}
 
+# get probability of each class using only out-of-bag predictions from RF
+"get.oob.votes.from.forest" <- function(model,x){
+    # get aggregated class votes for each sample using only OOB trees
+    votes <- matrix(0, nrow=nrow(x), ncol=length(model$classes))
+   
+    rf.pred <- predict(model, x, type="vote",predict.all=T)
+    for(i in 1:nrow(x)){
+        # find which trees are not inbag for this sample
+        outofbag <- model$inbag[i,]==0
+        # get oob predictions for this sample
+        votes[i,] <- table(factor(rf.pred$individual[i,][outofbag],levels=model$classes))
+    }
+    rownames(votes) <- rownames(x)
+    colnames(votes) <- model$classes
+    
+    return(invisible(votes))
+}

@@ -21,7 +21,8 @@ from cogent.util.unit_test import TestCase, main
 from cogent.app.util import get_tmp_filename, ApplicationError
 from cogent.util.misc import remove_files
 from qiime.supervised_learning import RSupervisedLearner,\
-    R_format_table, run_R_supervised_learner
+    RSupervisedLearnerFilter, R_format_table
+from numpy import array
 
 def is_float(input_string):
     """True if string can be cast as a float"""
@@ -84,8 +85,31 @@ class RSupervisedLearnerTests(TestCase):
             write_to_file=False)
         self.assertEqual(converted, exp)
     
-    def test_R_run_learning(self):
+    def test_RSupervisedLearner(self):
         """Verify that classification algorithms work through R app controller.
+        """
+
+        # Prep input files in R format
+        otu_fp, map_fp, output_dir = self.prep_learning_input_files()
+
+        # test random forests
+        # Temporary param file
+        params = ['params$ntree=100','params$seed=0']
+        tmp_param_fp = get_tmp_filename(prefix='params_', suffix='.txt')
+        param_file = open(tmp_param_fp, 'w')
+        param_file.write('\n'.join(params))
+        param_file.close()
+
+        self.files_to_remove.append(tmp_param_fp)
+        mkdir(join(output_dir, 'random_forest'))
+        results = RSupervisedLearner()(
+            otu_fp, map_fp,
+            'Individual', ['random_forest'], output_dir,
+            param_file=tmp_param_fp)
+        self.verify_random_forests(results)
+
+    def test_RSupervisedLearnerFilter(self):
+        """Verify that classification with pre-filter works through R app controller.
            
            Note: the elastic net code below is commented-out. This classifier
            is likely to work on all data sets, but is not yet enabled
@@ -106,10 +130,12 @@ class RSupervisedLearnerTests(TestCase):
 
         self.files_to_remove.append(tmp_param_fp)
         mkdir(join(output_dir, 'random_forest'))
-        results = run_R_supervised_learner(
+        results = RSupervisedLearnerFilter()(
             otu_fp, map_fp,
-            'Individual', ['random_forest'], output_dir, tmp_param_fp)
-        self.verify_random_forests(results)
+            'Individual', ['random_forest'], output_dir,
+            param_file=tmp_param_fp, filter='BSSWSS', filter_min=5,
+            filter_max=15,filter_step=5,filter_reps=2)
+        self.verify_random_forests_filter(results)
 
     def test_param_file(self):
         """Verify that R correctly reads in params file.        
@@ -130,9 +156,9 @@ class RSupervisedLearnerTests(TestCase):
         self.files_to_remove.append(tmp_param_fp)
 
         # test random forests
-        results = run_R_supervised_learner(
+        results = RSupervisedLearner()(
             otu_fp, map_fp,
-            'Individual', ['random_forest'], output_dir, tmp_param_fp)
+            'Individual', ['random_forest'], output_dir, param_file=tmp_param_fp)
         obs_params = results['random_forest']['params'].readlines()
         obs_param_dict = dict([l.strip().split('\t') for l in obs_params[2:]])
         self.assertEqual(obs_param_dict['ntree:'],'100')
@@ -166,34 +192,16 @@ class RSupervisedLearnerTests(TestCase):
             self.assertEqual(words[0] in test_OTU_IDs, True)
             self.assertEqual(is_float(words[1]), True)
 
-    def verify_predictions_format(self,results):
-        # verify FORMAT of predictions file
-        predictions_output = results['predictions'].readlines()
-
-        # ensure that all input samples were predicted
-        num_samples_returned = len(predictions_output)-1
-        self.assertEqual(num_samples_returned, len(test_sample_IDs))
-
-        # ensure that each line has two elements, and that the first one
-        # is the name of one of the OTUs, the second is a float
-        for line in predictions_output[1:]:
-            words = line.strip().split('\t')
-            line_length = len(words)
-            self.assertEqual(line_length, 2)
-            self.assertEqual(words[0] in test_sample_IDs, True)            
-            self.assertEqual(words[1] in ['S1','S2','S3'], True)
-
-
-    def verify_probabilities_format(self,results):
-        # verify FORMAT of probabilities file
-        probabilities_output = results['probabilities'].readlines()
+    def verify_cv_probabilities_format(self,results):
+        # verify FORMAT of cross-validation probabilities file
+        probabilities_output = results['cv_probabilities'].readlines()
 
         # ensure that all input samples were predicted
         num_samples_returned = len(probabilities_output)-1
         self.assertEqual(num_samples_returned, len(test_sample_IDs))
 
-        # ensure that each line has two elements, and that the first one
-        # is the name of one of the OTUs, the second is a float
+        # ensure that each line has five elements, and that the first one
+        # is the name of one of the samples, the others are floats
         for line in probabilities_output[1:]:
             words = line.strip().split('\t')
             line_length = len(words)
@@ -202,19 +210,74 @@ class RSupervisedLearnerTests(TestCase):
             for word in words[1:3]:
                 self.assertEqual(is_float(word),True)
 
+    def verify_mislabeling_format(self,results):
+        # verify FORMAT of mislabeling predictions file
+        mislabeling_output = results['mislabeling'].readlines()
+
+        # ensure that all input samples were predicted
+        num_samples_returned = len(mislabeling_output)-1
+        self.assertEqual(num_samples_returned, len(test_sample_IDs))
+
+        # ensure that each line has five elements, and that the first one
+        # is the name of one of the samples, the others are floats
+        exp = "SampleID\tP(alleged label)\tP(second best)\tP(alleged label)-P(second best)"
+        self.assertEqual(mislabeling_output[0].strip(), exp)
+        for line in mislabeling_output[1:]:
+            words = line.strip().split('\t')
+            line_length = len(words)
+            self.assertEqual(line_length, 4)
+            self.assertEqual(words[0] in test_sample_IDs, True)            
+            for word in words[1:3]:
+                self.assertEqual(is_float(word),True)
+
+    def verify_filter_features_format(self, results):
+        features_output = results['filter_features'].readlines()
+
+        # ensure that at least one feature is listed (skip header and comment)
+        num_features_returned = len(features_output) - 1
+        self.assertGreaterThan(num_features_returned, 0)
+
+        self.assertEqual(features_output[0].strip(), 'OTU ID')
+        # ensure that each line contains an OTU
+        for line in features_output[1:]:
+            words = line.strip().split('\t')
+            line_length = len(words)
+            self.assertEqual(line_length, 1)
+            self.assertEqual(words[0] in test_OTU_IDs, True)
+
+    def verify_filter_error_format(self, errors_output):
+
+        # ensure that at least one feature is listed (skip header and comment)
+        self.assertEqual(len(errors_output)-1, 3)
+        
+        # check first line
+        exp = "Number of features\tMean error\tStandard error"
+        self.assertEqual(errors_output[0].strip(), exp)
+        
+        # ensure that each line has three elements,
+        # the number of features, the error, and the std. error
+        nfeatures = ['5','10','15']
+        for i,line in enumerate(errors_output[1:]):
+            words = line.strip().split('\t')
+            line_length = len(words)
+            self.assertEqual(line_length, 3)
+            self.assertEqual(words[0], nfeatures[i])
+            self.assertEqual(is_float(words[1]), True)
+            self.assertEqual(is_float(words[2]), True)
+
     def verify_random_forests(self, results):
         # verify FORMAT of features file, since method is stochastic and 
         # external package is subject to change without notice
         self.verify_features_format(results['random_forest'])
-        self.verify_predictions_format(results['random_forest'])
-        self.verify_probabilities_format(results['random_forest'])
+        self.verify_mislabeling_format(results['random_forest'])
+        self.verify_cv_probabilities_format(results['random_forest'])
 
         # verify parameters file
         parameters_output = results['random_forest']['params'].readlines()
         exp = ['# values of all non-default parameters\n',
                 '# method was "random_forest"\n',
                 'ntree:\t100\n',
-                'random seed:\t0\n']
+                'seed:\t0\n']
         self.assertEqual(parameters_output,exp)
         
         # verify summary file (except don't explicitly test error value)
@@ -233,6 +296,60 @@ class RSupervisedLearnerTests(TestCase):
         words = summary_output[2].strip().split(' = ')
         self.assertEqual(words[0], exp)
         self.assertEqual(is_float(words[1]), True)       
+
+    def verify_otu_subset_format(self, results, errors_output):
+        output = results['otu_subset'].readlines()
+        nfeatures = array([int(line.split('\t')[0]) for line in errors_output[1:]])
+        errs = array([float(line.split('\t')[1]) for line in errors_output[1:]])
+        best_n = nfeatures[errs.argmin()]
+        
+        # ensure that the correct number of features is listed
+        num_features_returned = len(output) - 2
+        self.assertEqual(num_features_returned, nfeatures[errs.argmin()])
+        
+        # check header format (and initial comment line)
+        self.assertEqual(output[0][0], '#')
+        self.assertEqual(output[1].strip().split('\t')[0], 'OTU ID')
+        self.assertEqual(output[1].strip().split('\t')[-1], 'Consensus Lineage')
+        self.assertEqual(output[1].strip().split('\t')[1:-1],
+            test_sample_IDs)
+        
+        # ensure that each line is extracted from the OTU table
+        # make dict of test_otu_table
+        test_otu_lines = test_otu_table.split('\n')[2:]
+        test_otu_lineages = {}
+        for line in test_otu_lines:
+            words = line.strip().split('\t')
+            otuid = words[0]
+            lineage = words[-1]
+            test_otu_lineages[otuid] = lineage
+            
+        for line in output[2:]:
+            words = line.strip().split('\t')            
+            otuid = words[0]
+            
+            self.assertEqual(otuid in test_OTU_IDs, True)
+            self.assertEqual(words[-1], test_otu_lineages[otuid])
+            for count in words[1:-1]:
+                self.assertFloatEqual(is_float(count), True)
+
+
+    def verify_random_forests_filter(self, results):
+        # verify FORMAT of filter_features file, since method is stochastic and 
+        # external package is subject to change without notice
+        self.verify_filter_features_format(results['random_forest'])
+        errors_output = results['random_forest']['filter_errors'].readlines()
+        self.verify_filter_error_format(errors_output)
+        self.verify_otu_subset_format(results['random_forest'], errors_output)
+
+        # verify parameters file
+        parameters_output = results['random_forest']['params'].readlines()
+        exp = ['# values of all non-default parameters\n',
+                '# method was "random_forest"\n',
+                '# filter was "BSSWSS"\n',
+                'ntree:\t100\n',
+                'seed:\t0\n']
+        self.assertEqual(parameters_output,exp)
 
 
 test_sample_IDs = ['S1RingL', 'S1keyM', 'S1keySpace', 'S1IndexL', 'S1keyK', 'S1ThumbR', 'S1keyV', 'S1IndexR', 'S1keyA', 'S1RingR', 'S1MiddleR', 'S1keyD', 'S2keySpace', 'S2keyJ', 'S2keyLeftShift', 'S2keyN', 'S2keyZ', 'S2IndexL', 'S2keyA', 'S2PinkyL', 'S2keyK', 'S2keyRightShift', 'S2keyM', 'S2keyI', 'S2PinkyR', 'S3keySpace', 'S3keyEnter', 'S3keyS', 'S3IndexR', 'S3ThumbR', 'S3MiddleR', 'S3keyY', 'S3ThumbL', 'S3keyF', 'S3IndexL', 'S3keyW', 'S3keyQ', 'S3keyL']

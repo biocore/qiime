@@ -18,8 +18,8 @@ from os.path import join
 from cogent.util.misc import remove_files
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.parse import parse_mapping_file
-from qiime.supervised_learning import run_R_supervised_learner,\
-    R_format_table
+from qiime.supervised_learning import RSupervisedLearner,\
+    RSupervisedLearnerFilter, R_format_table
 options_lookup = get_options_lookup()
 valid_methods = ['random_forest']
 
@@ -47,12 +47,11 @@ It is strongly recommended that you remove low-depth samples and rare OTUs \
 before running this script. This can drastically reduce the run-time, and in \
 many circumstances will not hurt performance. It is also recommended to perform \
 rarefaction to control for sampling effort before running this \
-script. For example, to remove remove OTUs present in < 100 samples, \
-and then samples with < 200 sequences, and then rarefy at depth 200, run:
+script. For example, to rarefy at depth 200, then remove remove OTUs present in \
+< 10 samples run:
 
-filter_otu_table.py -i otu_table.txt -o tmp -s 100
-filter_otu_table.py -i tmp/otu_table_filtered.txt -p 200; rm -r tmp
-single_rarefaction.py -i otu_table_filtered.txt -d 200 -o otu_table_filtered_rarefied200.txt
+single_rarefaction.py -i otu_table_filtered.txt -d 200 -o otu_table_rarefied200.txt
+filter_otu_table.py -i otu_table_rarefied200.txt -s 10
 
 Run this script with "--show_params" to see how to set any model-specific parameters. \
 For an overview of the application of supervised classification to microbiota, \
@@ -65,9 +64,8 @@ command "install.packages("randomForest")", then type q() to exit."""
 script_info['script_usage']=[]
 script_info['script_usage'].append(("""Simple example of random forests classifier""","""""","""supervised_learning.py -i otutable.txt -m map.txt -c 'Individual' -o ml"""))
 script_info['script_usage'].append(("""Simple example, filter OTU table first""","""""",\
-"""filter_otu_table.py -i otu_table.txt -o tmp -s 100
- filter_otu_table.py -i tmp/otu_table_filtered.txt -p 200; rm -r tmp
- single_rarefaction.py -i otu_table_filtered.txt -d 200 -o otu_table_filtered_rarefied200.txt
+"""single_rarefaction.py -i otu_table_filtered.txt -d 200 -o otu_table_rarefied200.txt
+ filter_otu_table.py -i otu_table_rarefied200.txt -s 10
  supervised_learning.py -i otutable_filtered_rarefied200.txt -m map.txt -c 'Individual' -o ml
 """))
 
@@ -79,27 +77,36 @@ script_info['required_options'] = [\
     make_option('-i', '--input_data', help='Input data file containing predictors (e.g. otu table)'),
     make_option('-m', '--mapping_file', help='File containing meta data (response variables)'),
     make_option('-c', '--category', help='Name of meta data category to predict'),
-    make_option('-o','--output_dir',\
-            help='the output directory [REQUIRED]'),\
 ]
 script_info['optional_options']=[\
+    make_option('-o','--output_dir',default='.',\
+            help='the output directory [deafult: %default]'),
     make_option('-s', '--method', default='random_forest',
         help= 'Comma-separated list of supervised learning methods to apply. '\
             + 'Currently one option is available: "random_forest" '\
             + '[default: %default].'),
-
     make_option('-f','--force',action='store_true',\
         dest='force',help='Force overwrite of existing output directory'+\
         ' (note: existing files in output_dir will not be removed)'+\
-        ' [default: %default]'),\
+        ' [default: %default]'),
     make_option('-p','--param_file',type='string',\
         help='file containing parameters for the ' +\
              'supervised learning model inference [default: %default]',
-             default=None),\
-    make_option('--show_params',action="store_true",\
-        help='show sample parameters file for a given method [default: %default]'),\
+             default=None),
+    make_option('--show_params',action="store_true",default=False,\
+        help='show sample parameters file for a given method [default: %default]'),
+    make_option('--filter_type',type="string",default=None,\
+        help='type of filter to use. Currently one is available: BSSWSS. [default: %default]'),
+    make_option('--filter_min',type='int',default=2,\
+        help='minimum number of features to try with filter [default: %default]'),
+    make_option('--filter_max',type='int',default=20,\
+        help='maximum number of features to try with filter [default: %default]'),
+    make_option('--filter_step',type='int',default=1,\
+        help='step increment for number of features to try with filter [default: %default]'),
+    make_option('--filter_reps',type='int',default=10,\
+        help='Number of models to train for estimating filter error [default: %default]'),
     make_option('-k','--keepfiles',action='store_true',\
-        help='Keep R-formatted input files [default: %default]')\
+        help='Keep R-formatted input files [default: %default]'),
 ]
 script_info['version'] = __version__
 
@@ -160,18 +167,29 @@ def main():
         exit(1)
 
     # convert otu table and mapping file to R format
-    print 'Formatting otu table...'
+    if opts.verbose:
+        print 'Formatting otu table...'
     otu_fp = join(data_output_dir, 'otus_R_format.txt')
     R_format_table(opts.input_data, output_filepath=otu_fp)
-    print 'Formatting mapping file...'
+    if opts.verbose:
+        print 'Formatting mapping file...'
     map_fp = join(data_output_dir, 'map_R_format.txt')
     R_format_table(opts.mapping_file, output_filepath=map_fp)
 
     # run the supervised learning algorithm
-    print 'Running R...'
-    results = run_R_supervised_learner(otu_fp, map_fp,
-        opts.category, model_names, opts.output_dir,
-        param_file=opts.param_file)
+    if opts.verbose:
+        print 'Running R...'
+
+    if not opts.filter_type is None:
+        learner = RSupervisedLearnerFilter()
+    else:
+        learner = RSupervisedLearner()
+    results = learner(otu_fp, map_fp, opts.category, 
+                        model_names, opts.output_dir,
+                        param_file=opts.param_file, filter=opts.filter_type,
+                        filter_min=opts.filter_min,filter_max=opts.filter_max,
+                        filter_step=opts.filter_step, filter_reps=opts.filter_reps,
+                        verbose=opts.verbose)
     
     # delete R-formatted otu table and map file
     if not opts.keepfiles:
