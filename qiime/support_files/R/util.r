@@ -61,6 +61,7 @@ libraries <- list('random_forest'='randomForest','elastic_net'='glmnet')
     # normalize x (skip samples that sum to 0)
     skip.rows <- which(apply(x,1,sum)==0)
     x[-skip.rows,] <- sweep(x[-skip.rows,], 1, 
+                        apply(x[-skip.rows,], 1, sum), '/')
 
     # drop singletons
     singletons <- which(apply(x,2,function(x) sum(x>0)) <= 1)
