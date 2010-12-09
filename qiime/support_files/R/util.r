@@ -31,7 +31,6 @@ libraries <- list('random_forest'='randomForest','elastic_net'='glmnet')
 
     # load data
     x <- read.table(x.fp,sep='\t',row.names=1,header=TRUE,check.names=FALSE)
-    print(x)
     # remove lineage if present
     lineages <- NULL
     lineage.column <- grep("Lineage", colnames(x))
