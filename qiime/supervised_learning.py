@@ -590,6 +590,7 @@ class RSupervisedLearnerFilter(RSupervisedLearner):
         """Returns the filepaths for all result files"""
         files = {
             'params': 'params.txt',
+            'filter_summary': 'filter_summary.txt',
             'filter_errors': 'filter_errors.txt',
             'filter_features': 'filter_features.txt',
             'otu_subset': 'otu_subset_table.txt',

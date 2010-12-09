@@ -351,6 +351,23 @@ class RSupervisedLearnerTests(TestCase):
                 'seed:\t0\n']
         self.assertEqual(parameters_output,exp)
 
+        # verify summary file (except don't explicitly test error value)
+        summary_output = results['random_forest']['filter_summary'].readlines()
+        # check generalization error as a float
+        exp_error_message = 'Estimated generalization error'
+        result_error = summary_output[0].strip().split(' = ')
+        self.assertEqual(result_error[0],exp_error_message)
+        self.assertEqual(is_float(result_error[1]), True)
+        # make sure error is between 0 and 1        
+        assert(float(result_error[1]) >= 0)
+        assert(float(result_error[1]) <= 1)       
+        exp = 'Error estimation method = Out-of-bag prediction of training data\n'
+        self.assertEqual(summary_output[1],exp)
+        exp = 'Optimal feature subset size'
+        words = summary_output[2].strip().split(' = ')
+        self.assertEqual(words[0], exp)
+        self.assertEqual(is_float(words[1]), True)       
+
 
 test_sample_IDs = ['S1RingL', 'S1keyM', 'S1keySpace', 'S1IndexL', 'S1keyK', 'S1ThumbR', 'S1keyV', 'S1IndexR', 'S1keyA', 'S1RingR', 'S1MiddleR', 'S1keyD', 'S2keySpace', 'S2keyJ', 'S2keyLeftShift', 'S2keyN', 'S2keyZ', 'S2IndexL', 'S2keyA', 'S2PinkyL', 'S2keyK', 'S2keyRightShift', 'S2keyM', 'S2keyI', 'S2PinkyR', 'S3keySpace', 'S3keyEnter', 'S3keyS', 'S3IndexR', 'S3ThumbR', 'S3MiddleR', 'S3keyY', 'S3ThumbL', 'S3keyF', 'S3IndexL', 'S3keyW', 'S3keyQ', 'S3keyL']
 test_OTU_IDs = ['88', '131', '144', '158', '193', '225', '260', '588', '634', '721', '821', '843', '883', '891', '976', '979', '983', '1035', '1088', '1156', '1287', '1314', '1351', '1373', '1487', '1582', '1591', '1784', '1848', '1886', '2007', '2059', '2096', '2187', '2218', '2270', '2328', '2360', '2366', '2407', '2519', '2526', '2810', '2915', '2932', '2956', '3006', '3060', '3108', '3127']

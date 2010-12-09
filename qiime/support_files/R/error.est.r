@@ -67,6 +67,7 @@
     return(list(error=data.frame("Mean error"=means,
                     "Standard error"=stderrs,
                     row.names=n.to.try,check.names=FALSE),
+                err.method=res$err$err.method,
                 features=features))
 }
 

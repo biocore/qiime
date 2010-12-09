@@ -192,6 +192,12 @@ libraries <- list('random_forest'='randomForest','elastic_net'='glmnet')
     }
     sink(NULL)
 
+    sink('filter_summary.txt')
+    cat(sprintf('Estimated generalization error = %f\n',min(res$error[,1])))
+    cat(sprintf('Error estimation method = %s\n',res$err.method))
+    cat(sprintf('Optimal feature subset size = %d\n', best.n))
+    sink(NULL)
+
     sink('otu_subset_table.txt')
     cat(sprintf('# OTU subset from supervised_learning.py. Classifier = %s, Filter = %s\n',
         model.name, filter.type))
