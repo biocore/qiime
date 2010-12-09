@@ -31,6 +31,7 @@ libraries <- list('random_forest'='randomForest','elastic_net'='glmnet')
 
     # load data
     x <- read.table(x.fp,sep='\t',row.names=1,header=TRUE,check.names=FALSE)
+    print(x)
     # remove lineage if present
     lineages <- NULL
     lineage.column <- grep("Lineage", colnames(x))
@@ -40,6 +41,7 @@ libraries <- list('random_forest'='randomForest','elastic_net'='glmnet')
         x <- x[,-lineage.column]
     }
     x <- t(x)
+    
     map <- read.table(map.fp,sep='\t',row.names=1,header=TRUE,check.names=FALSE)
     y <- as.factor(map[,categ])
     names(y) <- rownames(map)
@@ -56,8 +58,10 @@ libraries <- list('random_forest'='randomForest','elastic_net'='glmnet')
         q(save='no',status=1,runLast=FALSE);
     }
 
-    # normalize x
-    x <- sweep(x, 1, apply(x, 1, sum), '/')
+    # normalize x (skip samples that sum to 0)
+    skip.rows <- which(apply(x,1,sum)==0)
+    x[-skip.rows,] <- sweep(x[-skip.rows,], 1, 
+
     # drop singletons
     singletons <- which(apply(x,2,function(x) sum(x>0)) <= 1)
     if(length(singletons) > 0){
