@@ -87,6 +87,8 @@ class FunctionTests(TestCase):
         make_per_library_sff_with_sfffile(self.sff_fps, id_list_file.name)
 
         header, reads = parse_binary_sff(open(id_list_file.name + '.sff'))
+        # The index length varies between versions of sfftools
+        del header['index_length']
         self.assertEquals(header, per_library_header_sfffile)
 
         self.assertEqual(reads.next()['Name'], 'GA202I001ER3QL')
@@ -98,7 +100,6 @@ class FunctionTests(TestCase):
 per_library_header_sfffile = {
     'header_length': 440,
     'flowgram_format_code': 1,
-    'index_length': 560,
     'magic_number': 779314790,
     'number_of_flows_per_read': 400,
     'version': 1,
