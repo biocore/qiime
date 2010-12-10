@@ -44,7 +44,7 @@ script_info['optional_options']=[\
 options_lookup['output_dir'],
  make_option('-n', '--num_otu_hits', help='This is the minimum number of \
 Samples that an OTU is present in, for an OTU to be kept in the OTU table \
-[default: %default]',default=5),
+[default: %default]',default=5, type='int'),
  make_option('-t','--tree', type="string",
   help='Tree file to be used for sorting OTUs \
 in the heatmap',default=None),
@@ -60,16 +60,25 @@ sample mapping file are provided, the mapping file is ignored.',default=None),
 script_info['version'] = __version__
 
 
-
-
-
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
       
     data = {}
 
     #Open and get coord data
-    data['otu_counts'] = get_otu_counts(opts.otu_table_fp, data)
+    data['otu_counts'] = list(get_otu_counts(opts.otu_table_fp, data))
+    # determine whether fractional values are present in OTU table
+    fractional_values = ((data['otu_counts'][2] > 0) & \
+                         (data['otu_counts'][2] < 1)).any()
+    
+    # test: if using relative abundances, and opts.num_otu_hits > 0
+    # print warning and set to 0
+    if fractional_values and (data['otu_counts'][2]).max() <= 1:
+        if opts.num_otu_hits > 0:
+            print "Warning: OTU table appears to be using relative abundances",\
+                    "and num_otu_hits was set to %d. Setting num_otu_hits to 0."\
+                    %(opts.num_otu_hits)
+            opts.num_otu_hits = 0
 
     filepath=opts.otu_table_fp
     filename=filepath.strip().split('/')[-1].split('.')[0]
@@ -140,7 +149,7 @@ def main():
         action = None
     #Place this outside try/except so we don't mask NameError in action
     if action:
-        action(opts,data, dir_path,js_dir_path,filename)
+        action(opts,data, dir_path,js_dir_path,filename, fractional_values)
 
 if __name__ == "__main__":
     main()

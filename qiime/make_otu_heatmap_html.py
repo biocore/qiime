@@ -119,7 +119,7 @@ def make_html_doc(js_filename):
     </html>''' % (js_filename)
     return html_script
 
-def create_javascript_array(rows):
+def create_javascript_array(rows, use_floats=False):
     """Convert the OTU table counts into a javascript array"""
     
     js_array='\
@@ -127,13 +127,16 @@ def create_javascript_array(rows):
     var i=0;\n\
     for (i==0;i<%i;i++) {\n\
     OTU_table[i]=new Array();}\n' % (len(rows))
-    
+
     for i in range(len(rows)):
         for j in range(len(rows[i])):
             if i==0 or j==0 or i==len(rows)-1:
                 js_array+="OTU_table[%i][%i]='%s';\n" % (i,j,(rows[i][j]))
             else:
-                js_array+="OTU_table[%i][%i]=%s;\n" % (i,j,int(rows[i][j]))
+                if use_floats:
+                    js_array+="OTU_table[%i][%i]=%.4f;\n" % (i,j,float(rows[i][j]))
+                else:
+                    js_array+="OTU_table[%i][%i]=%d;\n" % (i,j,int(float(rows[i][j])))
             
     return js_array
 
@@ -179,7 +182,8 @@ def line_converter():
 def get_otu_counts(fpath, data):
     """Reads the OTU table file into memory"""
     try:
-        sample_ids,otu_ids,otu_table,lineages=parse_otu_table(open(fpath,'U'))    
+        sample_ids,otu_ids,otu_table,lineages = \
+            parse_otu_table(open(fpath,'U'), count_map_f=float)
     except (TypeError, IOError):
         raise MissingFileError, 'OTU Count file required for this analysis'
     
@@ -188,14 +192,13 @@ def get_otu_counts(fpath, data):
         
     return sample_ids,otu_ids,otu_table,lineages
 
-def generate_heatmap_plots(options,data, dir_path, js_dir_path,filename):
+def generate_heatmap_plots(options,data, dir_path, js_dir_path,
+                        filename,fractional_values=False):
     """Generate HTML heatmap and javascript array for OTU counts"""
 
-    #Convert number of otu hits argument into an integer
-    num_otu_hits=int(options.num_otu_hits)
     #Filter by number of OTU hits
-    rows=filter_by_otu_hits(num_otu_hits, data)
-    
+    rows=filter_by_otu_hits(options.num_otu_hits, data)
+
     # This sorts the otus by the tree supplied
     if data['otu_order']:
         new_otu_table=[]
@@ -221,11 +224,10 @@ def generate_heatmap_plots(options,data, dir_path, js_dir_path,filename):
         rows= asarray(new_otu_table)
         
     #Convert OTU counts into a javascript array
-    js_array=create_javascript_array(rows)
+    js_array=create_javascript_array(rows, fractional_values)
 
-    #~ print js_array
     #Write otu filter number
-    js_otu_cutoff='var otu_num_cutoff=%i;' % num_otu_hits
+    js_otu_cutoff='var otu_num_cutoff=%d;' % options.num_otu_hits
     
     #Write js array to file
     js_filename=os.path.join(js_dir_path,filename)+'.js'
