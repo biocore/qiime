@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 #file make_otu_heatmap_html.py
 
+from __future__ import division
+
 __author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2010, The QIIME Project" 
 __credits__ = ["Jesse Stombaugh"] #remember to add yourself
@@ -11,7 +13,8 @@ __email__ = "jesse.stombaugh@colorado.edu"
 __status__ = "Development"
 
 
-from numpy import array,concatenate,asarray,transpose
+from numpy import array,concatenate,asarray,transpose,log,invert,asarray,\
+    float32,float64
 from cogent.parse.table import SeparatorFormatParser
 from optparse import OptionParser
 from qiime.parse import parse_otu_table
@@ -178,6 +181,23 @@ def line_converter():
                 append(element)
         return new
     return callable
+
+def get_log_transform(data, eps=None):
+    # ensure data are floats
+    data = asarray(data,dtype=float64)
+    if not data.dtype == float32 and not data.dtype == float64:
+        data = asarray(data,dtype=float32)
+
+    # set all zero entries to a small value
+    zero_entries = data == 0
+    if eps is None:
+        smallest_nonzero = (data[invert(zero_entries)]).min()
+        eps = smallest_nonzero/2
+    data[zero_entries] = eps
+    data = log(data)
+    # set minimum to 0
+    data = data - (data).min()
+    return data
     
 def get_otu_counts(fpath, data):
     """Reads the OTU table file into memory"""

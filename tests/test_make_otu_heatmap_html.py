@@ -10,10 +10,11 @@ __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 __status__ = "Development"
 
-from numpy import array
+from numpy import array, log
 from cogent.util.unit_test import TestCase, main
 from qiime.make_otu_heatmap_html import (make_html_doc,create_javascript_array,\
-                                       filter_by_otu_hits,line_converter)
+                                       filter_by_otu_hits,line_converter,\
+                                       get_log_transform)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -55,7 +56,18 @@ javascript array"""
         obs=filter_by_otu_hits(self.num_otu_hits,self.data)
  
         self.assertEqual(obs,exp)
+    
+    def test_get_log_transform(self):
+        data = array([[0,1,2],[1000,0,0]])
+        logdata = get_log_transform(data,eps=None)
 
+        # set zeros to 1/2s
+        exp = log(array([[.5,1,2],[1000,.5,.5]]))
+        # translate to 0
+        exp -= exp.min()
+
+        self.assertFloatEqual(logdata, exp)
+        
 exp_js_array='''\
     var OTU_table=new Array();\n\
     var i=0;\n\

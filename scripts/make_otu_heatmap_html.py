@@ -16,13 +16,15 @@ __status__ = "Development"
 
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from optparse import make_option
-from qiime.make_otu_heatmap_html import generate_heatmap_plots,get_otu_counts
+from qiime.make_otu_heatmap_html import generate_heatmap_plots,get_otu_counts,\
+    get_log_transform
 import os
 import shutil
 import os
 from qiime.util import get_qiime_project_dir
 from qiime.parse import parse_mapping_file
 from qiime.parse import parse_newick, PhyloNode
+from sys import exit
 
 options_lookup = get_options_lookup()
 
@@ -55,6 +57,14 @@ heatmap',default=None),
      help='Tree file to be used for sorting samples (e.g, output from \
 upgma_cluster.py). If both this and the \
 sample mapping file are provided, the mapping file is ignored.',default=None),
+ make_option('--log_transform', action="store_true", 
+     help='Data will be log-transformed. All zeros will be set to a small \
+value (default is 1/2 the smallest non-zero entry). Data will be translated \
+to be non-negative after log transform, and num_otu_hits will be set to 0.',
+default=False),
+make_option('--log_eps', type="float", 
+     help='Small value to replace zeros for log transform. \
+[default: 1/2 the smallest non-zero entry].',default=None),
 ]
 
 script_info['version'] = __version__
@@ -68,11 +78,18 @@ def main():
     #Open and get coord data
     data['otu_counts'] = list(get_otu_counts(opts.otu_table_fp, data))
     # determine whether fractional values are present in OTU table
-    fractional_values = ((data['otu_counts'][2] > 0) & \
-                         (data['otu_counts'][2] < 1)).any()
-    
+
+    if opts.log_transform:
+        if not opts.log_eps is None and opts.log_eps <= 0:
+            print "Parameter 'log_eps' must be positive. Value was", opts.log_eps
+            exit(1)
+        data['otu_counts'][2] = get_log_transform(data['otu_counts'][2], opts.log_eps)
+        opts.num_otu_hits = 0
+        
     # test: if using relative abundances, and opts.num_otu_hits > 0
     # print warning and set to 0
+    fractional_values = ((data['otu_counts'][2] > 0) & \
+                         (data['otu_counts'][2] < 1)).any()
     if fractional_values and (data['otu_counts'][2]).max() <= 1:
         if opts.num_otu_hits > 0:
             print "Warning: OTU table appears to be using relative abundances",\
