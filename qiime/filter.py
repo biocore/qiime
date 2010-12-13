@@ -35,28 +35,34 @@ def filter_fasta(input_seqs,output_seqs_f,seqs_to_keep,negate=False):
     
 def filter_otus_from_otu_table(otu_table_lines,otus_to_discard,negate=False):
     """ Remove specified OTUs from otu_table """
+    otu_table_data = parse_otu_table(otu_table_lines)
+    
     otu_lookup = {}.fromkeys([e.split()[0] for e in otus_to_discard])
-    result = []
+    new_otu_table_data = []
+    new_otu_ids = []
+    new_taxa = []
     
     if negate:
-        def keep_seq(s):
+        def keep_otu(s):
             return s in otu_lookup
     else:
-        def keep_seq(s):
+        def keep_otu(s):
             return s not in otu_lookup
     
-    for line in otu_table_lines:
-        line = line.strip()
-        if line:
-            if line.startswith('#'):
-                # keep all comment lines
-                result.append(line)
-            elif keep_seq(line.split()[0]):
-                result.append(line)
-            else:
-                # this line is filtered
-                pass
+    sample_ids, otu_ids, otu_table_data, taxa = otu_table_data
+    
+    for row,otu_id,taxonomy in zip(otu_table_data,otu_ids,taxa):
+        if keep_otu(otu_id):
+            new_otu_table_data.append(row)
+            new_otu_ids.append(otu_id)
+            new_taxa.append(taxonomy)
+    
+    new_otu_table_data = array(new_otu_table_data)
             
+    result = format_otu_table(sample_ids,
+                              new_otu_ids,
+                              new_otu_table_data,
+                              new_taxa).split('\n')
     return result
     
 def filter_samples_from_otu_table(otu_table_lines,

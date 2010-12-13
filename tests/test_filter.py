@@ -121,23 +121,23 @@ AA
 T
 """
 
-input_otu_table1 = """#Full OTU Counts
+input_otu_table1 = """# QIIME v%s OTU table
 #OTU ID\tABC\tDEF\tGHI\tXYZ\tConsensus Lineage
 0\t1\t1\t0\t0\tBacteria;Firmicutes
 1\t1\t0\t0\t0\tNone
 x\t0\t0\t3\t0\tBacteria;Bacteroidetes
 z\t0\t1\t0\t1\tNone
-"""
+""" % __version__
 
-expected_otu_table1a = """#Full OTU Counts
+expected_otu_table1a = """# QIIME v%s OTU table
 #OTU ID\tABC\tDEF\tGHI\tXYZ\tConsensus Lineage
 0\t1\t1\t0\t0\tBacteria;Firmicutes
-z\t0\t1\t0\t1\tNone"""
+z\t0\t1\t0\t1\tNone""" % __version__
 
-expected_otu_table1b = """#Full OTU Counts
+expected_otu_table1b = """# QIIME v%s OTU table
 #OTU ID\tABC\tDEF\tGHI\tXYZ\tConsensus Lineage
 1\t1\t0\t0\t0\tNone
-x\t0\t0\t3\t0\tBacteria;Bacteroidetes"""
+x\t0\t0\t3\t0\tBacteria;Bacteroidetes""" % __version__
 
 input_seqs_to_discard1 = """x
 1 some comment
