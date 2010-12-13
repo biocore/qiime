@@ -165,5 +165,5 @@ def set_sff_trimpoints_with_sfftools(
         if debug:
             print "Running sfffile command:", sfffile_args
         subprocess.check_call(sfffile_args, stdout=open(os.devnull, 'w'))
-        subprocess.check_call(['mv', trimmed_sff_fp, sff_fp])
-
+        os.remove(sff_fp)
+        os.rename(trimmed_sff_fp, sff_fp)
