@@ -13,7 +13,9 @@ __status__ = "Development"
  
 
 from cogent.util.unit_test import TestCase, main
-from qiime.filter import filter_fasta, filter_otus_from_otu_table
+from qiime.filter import (filter_fasta, 
+                          filter_otus_from_otu_table,
+                          filter_samples_from_otu_table)
 
 class fake_output_f():
     
@@ -35,6 +37,8 @@ class FilterTests(TestCase):
         self.input_seqs_to_discard1 = input_seqs_to_discard1.split('\n')
         self.expected_otu_table1a = expected_otu_table1a.split('\n')
         self.expected_otu_table1b = expected_otu_table1b.split('\n')
+        self.expected_otu_table1c = expected_otu_table1c.split('\n')
+        self.expected_otu_table1d = expected_otu_table1d.split('\n')
         
     def tearDown(self):
         pass
@@ -80,6 +84,26 @@ class FilterTests(TestCase):
                                             negate=True)
         self.assertEqual(actual,self.expected_otu_table1b)
         
+    def test_filter_samples_from_otu_table(self):
+        """filter_samples_from_otu_table functions as expected """
+        
+        actual = filter_samples_from_otu_table(self.input_otu_table1,
+                                              ["DEF","GHI tfasd"])
+        self.assertEqual(actual,self.expected_otu_table1c)
+        
+        # order of otu table is retained regardless of samples_to_keep order
+        actual = filter_samples_from_otu_table(self.input_otu_table1,
+                                               ["XYZ"])
+        self.assertEqual(actual,self.expected_otu_table1d)
+        
+    def test_filter_samples_from_otu_table_negate(self):
+        """filter_samples_from_otu_table functions w negate """
+        actual = filter_samples_from_otu_table(self.input_otu_table1,
+                                               ["ABC blah","XYZ"],
+                                               negate=True)
+        self.assertEqual(actual,self.expected_otu_table1c)
+        
+        
         
 
 filter_fasta_expected1 = """>Seq1 some comment
@@ -118,6 +142,20 @@ x\t0\t0\t3\t0\tBacteria;Bacteroidetes"""
 input_seqs_to_discard1 = """x
 1 some comment
 42 not a real otu id"""
+
+expected_otu_table1c = """# QIIME v%s OTU table
+#OTU ID\tABC\tXYZ\tConsensus Lineage
+0\t1\t0\tBacteria;Firmicutes
+1\t1\t0\tNone
+x\t0\t0\tBacteria;Bacteroidetes
+z\t0\t1\tNone""" % __version__
+
+expected_otu_table1d = """# QIIME v%s OTU table
+#OTU ID\tABC\tDEF\tGHI\tConsensus Lineage
+0\t1\t1\t0\tBacteria;Firmicutes
+1\t1\t0\t0\tNone
+x\t0\t0\t3\tBacteria;Bacteroidetes
+z\t0\t1\t0\tNone""" % __version__
 
 if __name__ == "__main__":
     main()

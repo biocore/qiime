@@ -10,7 +10,11 @@ __version__ = "1.2.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
- 
+
+from numpy import array
+from qiime.parse import parse_otu_table
+from qiime.format import format_otu_table
+
 def filter_fasta(input_seqs,output_seqs_f,seqs_to_keep,negate=False):
     """ Write filtered input_seqs to output_seqs_f which contains only seqs_to_keep
     """
@@ -54,4 +58,40 @@ def filter_otus_from_otu_table(otu_table_lines,otus_to_discard,negate=False):
                 pass
             
     return result
+    
+def filter_samples_from_otu_table(otu_table_lines,
+                                  samples_to_discard,
+                                  negate=False):
+    """ Remove specified samples from OTU table """
+    otu_table_data = parse_otu_table(otu_table_lines)
+    
+    sample_lookup = {}.fromkeys([e.split()[0] for e in samples_to_discard])
+    new_otu_table_data = []
+    new_sample_ids = []
+    
+    if negate:
+        def keep_sample(s):
+            return s in sample_lookup
+    else:
+        def keep_sample(s):
+            return s not in sample_lookup
+    
+    sample_ids, otu_ids, otu_table_data, taxa = otu_table_data
+    otu_table_data = otu_table_data.transpose()
+    
+    for row,sample_id in zip(otu_table_data,sample_ids):
+        if keep_sample(sample_id):
+            new_otu_table_data.append(row)
+            new_sample_ids.append(sample_id)
+    
+    new_otu_table_data = array(new_otu_table_data).transpose()
+    
+    result = format_otu_table(new_sample_ids,
+                              otu_ids,
+                              new_otu_table_data,
+                              taxa).split('\n')
+    return result
+    
+    
+    
     
