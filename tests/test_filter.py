@@ -13,9 +13,11 @@ __status__ = "Development"
  
 
 from cogent.util.unit_test import TestCase, main
+from qiime.parse import parse_otu_table
 from qiime.filter import (filter_fasta, 
                           filter_otus_from_otu_table,
-                          filter_samples_from_otu_table)
+                          filter_samples_from_otu_table,
+                          filter_otu_table_to_n_samples)
 
 class fake_output_f():
     
@@ -102,6 +104,55 @@ class FilterTests(TestCase):
                                                ["ABC blah","XYZ"],
                                                negate=True)
         self.assertEqual(actual,self.expected_otu_table1c)
+    
+    def test_filter_otu_table_to_n_samples(self):
+        """filter_otu_table_to_n_samples functions as expected """
+        actual = filter_otu_table_to_n_samples(self.input_otu_table1,1)
+        sample_ids,otu_ids,data,taxa = parse_otu_table(actual)
+        self.assertTrue(len(sample_ids),1)
+        self.assertEqual(data.shape,(4,1))
+        
+        actual = filter_otu_table_to_n_samples(self.input_otu_table1,2)
+        sample_ids,otu_ids,data,taxa = parse_otu_table(actual)
+        self.assertTrue(len(sample_ids),2)
+        self.assertEqual(data.shape,(4,2))
+        
+        actual = filter_otu_table_to_n_samples(self.input_otu_table1,3)
+        sample_ids,otu_ids,data,taxa = parse_otu_table(actual)
+        self.assertTrue(len(sample_ids),3)
+        self.assertEqual(data.shape,(4,3))
+        
+        actual = filter_otu_table_to_n_samples(self.input_otu_table1,4)
+        sample_ids,otu_ids,data,taxa = parse_otu_table(actual)
+        self.assertTrue(len(sample_ids),4)
+        self.assertEqualItems(sample_ids,["ABC","DEF","GHI","XYZ"])
+        self.assertEqual(data.shape,(4,4))
+        
+        actual = filter_otu_table_to_n_samples(self.input_otu_table1,5)
+        sample_ids,otu_ids,data,taxa = parse_otu_table(actual)
+        self.assertTrue(len(sample_ids),4)
+        self.assertEqualItems(sample_ids,["ABC","DEF","GHI","XYZ"])
+        self.assertEqual(data.shape,(4,4))
+        
+        # different samples selected on different runs
+        r = []
+        for i in range(25):
+            actual = filter_otu_table_to_n_samples(self.input_otu_table1,1)
+            sample_ids,otu_ids,data,taxa = parse_otu_table(actual)
+            r.append(tuple(sample_ids))
+        self.assertTrue(len({}.fromkeys(r)) > 1)
+
+        def test_filter_otu_table_to_n_samples_handles_bad_n(self):
+            """filter_otu_table_to_n_samples handles bad n """
+            # ValueError if n < 1
+            actual = self.assertRaises(ValueError,
+                                       filter_otu_table_to_n_samples,
+                                       self.input_otu_table1,
+                                       0)
+            actual = self.assertRaises(ValueError,
+                                       filter_otu_table_to_n_samples,
+                                       self.input_otu_table1,
+                                       -1)
         
         
         

@@ -11,6 +11,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
+from random import shuffle
 from numpy import array
 from qiime.parse import parse_otu_table
 from qiime.format import format_otu_table
@@ -98,6 +99,22 @@ def filter_samples_from_otu_table(otu_table_lines,
                               taxa).split('\n')
     return result
     
+def filter_otu_table_to_n_samples(otu_table_lines,n):
+    """
+        randomly select n samples from the otu table
+    """
+    if n < 1:
+        raise ValueError,\
+         "number of randomly selected sample ids must be greater than 1"
+    sample_ids, otu_ids, otu_table_data, taxa = parse_otu_table(otu_table_lines)
     
+    shuffle(sample_ids)
+    samples_to_keep = sample_ids[:n]
+    otu_table_lines = format_otu_table(\
+     sample_ids, otu_ids, otu_table_data, taxa).split('\n')
+    result = filter_samples_from_otu_table(otu_table_lines,
+                                           samples_to_keep,
+                                           negate=True)
+    return result
     
     
