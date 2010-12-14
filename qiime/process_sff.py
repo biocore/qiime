@@ -185,7 +185,10 @@ def make_flow_txt(sff_fp, output_fp, use_sfftools=False):
         check_sffinfo()
         _check_call(['sffinfo', sff_fp], stdout=open(output_fp, 'w'))
     else:
-        format_binary_sff(open(sff_fp), open(output_fp, 'w'))
+        try:
+            format_binary_sff(open(sff_fp), open(output_fp, 'w'))
+        except:
+            raise IOError("Could not parse SFF %s" % sff_fp)
 
 
 def make_fna(sff_fp, output_fp, use_sfftools=False):
@@ -194,7 +197,10 @@ def make_fna(sff_fp, output_fp, use_sfftools=False):
         check_sffinfo()
         _check_call(['sffinfo', '-s', sff_fp], stdout=open(output_fp, 'w'))
     else:
-        format_binary_sff_as_fna(open(sff_fp), open(output_fp, 'w'))
+        try:
+            format_binary_sff_as_fna(open(sff_fp), open(output_fp, 'w'))
+        except:
+            raise IOError("Could not parse SFF %s" % sff_fp)
 
 
 def make_qual(sff_fp, output_fp, use_sfftools=False):
@@ -203,7 +209,10 @@ def make_qual(sff_fp, output_fp, use_sfftools=False):
         check_sffinfo()
         _check_call(['sffinfo', '-q', sff_fp], stdout=open(output_fp, 'w'))
     else:
-        format_binary_sff_as_fna(open(sff_fp), open(output_fp, 'w'), qual=True)
+        try:
+            format_binary_sff_as_fna(open(sff_fp), open(output_fp, 'w'), qual=True)
+        except:
+            raise IOError("Could not parse SFF %s" % sff_fp)
 
 
 def prep_sffs_in_dir(
