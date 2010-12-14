@@ -17,7 +17,8 @@ from qiime.parse import parse_otu_table
 from qiime.filter import (filter_fasta, 
                           filter_otus_from_otu_table,
                           filter_samples_from_otu_table,
-                          filter_otu_table_to_n_samples)
+                          filter_otu_table_to_n_samples,
+                          filter_samples_from_distance_matrix)
 
 class fake_output_f():
     
@@ -41,6 +42,9 @@ class FilterTests(TestCase):
         self.expected_otu_table1b = expected_otu_table1b.split('\n')
         self.expected_otu_table1c = expected_otu_table1c.split('\n')
         self.expected_otu_table1d = expected_otu_table1d.split('\n')
+        self.input_dm1 = input_dm1.split('\n')
+        self.expected_dm1a = expected_dm1a.split('\n')
+        self.expected_dm1b = expected_dm1b.split('\n')
         
     def tearDown(self):
         pass
@@ -142,19 +146,37 @@ class FilterTests(TestCase):
             r.append(tuple(sample_ids))
         self.assertTrue(len({}.fromkeys(r)) > 1)
 
-        def test_filter_otu_table_to_n_samples_handles_bad_n(self):
-            """filter_otu_table_to_n_samples handles bad n """
-            # ValueError if n < 1
-            actual = self.assertRaises(ValueError,
-                                       filter_otu_table_to_n_samples,
-                                       self.input_otu_table1,
-                                       0)
-            actual = self.assertRaises(ValueError,
-                                       filter_otu_table_to_n_samples,
-                                       self.input_otu_table1,
-                                       -1)
+    def test_filter_otu_table_to_n_samples_handles_bad_n(self):
+        """filter_otu_table_to_n_samples handles bad n """
+        # ValueError if n < 1
+        actual = self.assertRaises(ValueError,
+                                   filter_otu_table_to_n_samples,
+                                   self.input_otu_table1,
+                                   0)
+        actual = self.assertRaises(ValueError,
+                                   filter_otu_table_to_n_samples,
+                                   self.input_otu_table1,
+                                   -1)
         
-        
+    def test_filter_samples_from_distance_matrix(self):
+        """filter_samples_from_distance_matrix functions as expected """
+        actual = filter_samples_from_distance_matrix(self.input_dm1,
+                                               ["GHI blah","XYZ"])
+        self.assertEqual(actual,expected_dm1a)
+        actual = filter_samples_from_distance_matrix(self.input_dm1,
+                                              ["GHI","DEF"])
+        self.assertEqual(actual,expected_dm1b)
+
+    def test_filter_samples_from_distance_matrix_negate(self):
+        """filter_samples_from_distance_matrix functions w negate """
+        actual = filter_samples_from_distance_matrix(self.input_dm1,
+                                               ["ABC blah","DEF"],
+                                               negate=True)
+        self.assertEqual(actual,expected_dm1a)
+        actual = filter_samples_from_distance_matrix(self.input_dm1,
+                                             ["ABC","XYZ"],
+                                             negate=True)
+        self.assertEqual(actual,expected_dm1b)
         
 
 filter_fasta_expected1 = """>Seq1 some comment
@@ -207,6 +229,20 @@ expected_otu_table1d = """# QIIME v%s OTU table
 1\t1\t0\t0\tNone
 x\t0\t0\t3\tBacteria;Bacteroidetes
 z\t0\t1\t0\tNone""" % __version__
+
+input_dm1 = """\tABC\tDEF\tGHI\tXYZ
+ABC\t0.0\t0.75\t0.00\t0.0063
+DEF\t0.75\t0.0\t0.01\t0.65
+GHI\t0.00\t0.01\t0.0\t1.0
+XYZ\t0.0063\t0.065\t1.0\t0.0"""
+
+expected_dm1a = """\tABC\tDEF
+ABC\t0.0\t0.75
+DEF\t0.75\t0.0"""
+
+expected_dm1b = """\tABC\tXYZ
+ABC\t0.0\t0.0063
+XYZ\t0.0063\t0.0"""
 
 if __name__ == "__main__":
     main()

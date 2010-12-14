@@ -13,8 +13,8 @@ __status__ = "Development"
 
 from random import shuffle
 from numpy import array
-from qiime.parse import parse_otu_table
-from qiime.format import format_otu_table
+from qiime.parse import parse_otu_table, parse_distmat
+from qiime.format import format_otu_table, format_distance_matrix
 
 def filter_fasta(input_seqs,output_seqs_f,seqs_to_keep,negate=False):
     """ Write filtered input_seqs to output_seqs_f which contains only seqs_to_keep
@@ -117,4 +117,32 @@ def filter_otu_table_to_n_samples(otu_table_lines,n):
                                            negate=True)
     return result
     
+def filter_samples_from_distance_matrix(dm_lines,samples_to_discard,negate=False):
+    """ Remove specified samples from distance matrix """
+    sample_ids, dm_data = parse_distmat(dm_lines)
+    
+    sample_lookup = {}.fromkeys([e.split()[0] for e in samples_to_discard])
+    temp_dm_data = []
+    new_dm_data = []
+    new_sample_ids = []
+    
+    if negate:
+        def keep_sample(s):
+            return s in sample_lookup
+    else:
+        def keep_sample(s):
+            return s not in sample_lookup
+            
+    for row,sample_id in zip(dm_data,sample_ids):
+        if keep_sample(sample_id):
+            temp_dm_data.append(row)
+            new_sample_ids.append(sample_id)
+    temp_dm_data = array(temp_dm_data).transpose()
+    
+    for col,sample_id in zip(temp_dm_data,sample_ids):
+        if keep_sample(sample_id):
+            new_dm_data.append(col)
+    new_dm_data = array(new_dm_data).transpose()
+    
+    return format_distance_matrix(new_sample_ids, new_dm_data)
     
