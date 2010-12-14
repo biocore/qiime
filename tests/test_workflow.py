@@ -421,7 +421,7 @@ class WorkflowTests(TestCase):
              self.qiime_config, 
              self.sff_fp,
              self.fasting_mapping_fp,
-             parallel=False,
+             parallel=True,
              status_update_callback=no_status_updates)
         except WorkflowError:
             raise ApplicationNotFoundError,\
