@@ -106,7 +106,7 @@ def main():
         summary_file_lines = ['FP1 FP2 Included_dimensions MC_p_value Count_better M^2']
         coords_f1 = list(open(input_fp1,'U'))
         coords_f2 = list(open(input_fp2,'U'))
-        for max_dims in [3,5,10,15,20,None]:
+        for max_dims in [2,3,5,None]:
             actual_m_squared, trial_m_squareds, count_better, mc_p_value =\
              procrustes_monte_carlo(coords_f1,\
                                     coords_f2,\
