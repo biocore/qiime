@@ -53,12 +53,16 @@ def bin_qual_scores(qual_scores):
     
     return qual_bins
     
-def get_qual_stats(qual_bins):
+def get_qual_stats(qual_bins, score_min):
     """ Generates bins of averages, std devs, total NT from quality bins"""
     
     ave_bins = []
     std_dev_bins = []
     total_bases_bins = []
+    
+    found_first_poor_qual_pos = False
+    
+    suggested_trunc_pos = None
     
     for base_position in qual_bins:
         
@@ -67,9 +71,14 @@ def get_qual_stats(qual_bins):
         std_dev_bins.append(std(base_position))
         
         ave_bins.append(average(base_position))
+        
+        if not found_first_poor_qual_pos:
+            if average(base_position) < score_min:
+                suggested_trunc_pos = qual_bins.index(base_position)
+                found_first_poor_qual_pos = True
     
     
-    return ave_bins, std_dev_bins, total_bases_bins
+    return ave_bins, std_dev_bins, total_bases_bins, suggested_trunc_pos
     
     
     
@@ -146,18 +155,25 @@ def plot_qual_report(ave_bins,
 def write_qual_report(ave_bins,
                       std_dev_bins,
                       total_bases_bins,
-                      output_dir):
+                      output_dir,
+                      suggested_trunc_pos):
     """ Writes data in bins to output text file
     
     ave_bins: list with average quality score for each base position
     std_dev_bins: list with standard deviation for each base position
     total_bases_bins: list with total counts of bases for each position
     output_dir: output directory
+    suggested_trunc_pos: Position where average quality score dropped below
+     the score minimum (25 by default)
     """
     
     outfile_name = output_dir + "/quality_bins.txt"
     
     outfile = open(outfile_name, "w")
+    
+    outfile.write("# Suggested nucleotide truncation position (None if "+\
+     "quality score average did not drop below the score minimum threshold)"+\
+     ": %s\n" % suggested_trunc_pos)
     
     outfile.write("# Average quality score bins\n")
     
@@ -174,7 +190,8 @@ def write_qual_report(ave_bins,
     
 def generate_histogram(qual_fp,
                        output_dir,
-                       score_min=25):
+                       score_min=25,
+                       verbose=True):
     """ Main program function for generating quality score histogram
 
     qual_fp: quality score filepath
@@ -192,10 +209,17 @@ def generate_histogram(qual_fp,
     qual_bins = bin_qual_scores(qual_scores)
     
     # Get average, std dev, and total nucleotide counts for each base position
-    ave_bins, std_dev_bins, total_bases_bins = get_qual_stats(qual_bins)
+    ave_bins, std_dev_bins, total_bases_bins, suggested_trunc_pos =\
+     get_qual_stats(qual_bins, score_min)
     
     plot_qual_report(ave_bins, std_dev_bins, total_bases_bins, score_min,
      output_dir)
      
     # Save values to output text file
-    write_qual_report(ave_bins, std_dev_bins, total_bases_bins, output_dir)
+    write_qual_report(ave_bins, std_dev_bins, total_bases_bins, output_dir,
+     suggested_trunc_pos)
+     
+    if verbose:
+        print "Suggested nucleotide truncation position (None if quality "+\
+         "score average did not fall below the minimum score parameter): %s\n"%\
+         suggested_trunc_pos

@@ -59,21 +59,27 @@ script_info['optional_options']= [\
     make_option('-s', '--score_min',
         help='Minimum quality score to be considered acceptable.  Used to '+\
         'draw dotted line on histogram for easy visualization of poor '+\
-        'quality scores. [default: %default]', default=25, )]
+        'quality scores. [default: %default]', default=25, ),
+        
+    make_option('-v', '--verbose',
+        action='store_false', default=True,
+        help='Turn on this flag to disable verbose output. '+\
+        ' [default: %default]')]
         
 script_info['version'] = __version__
 
 def main():
     option_parser, opts, args =\
-     parse_command_line_parameters(**script_info)
+     parse_command_line_parameters(suppress_verbose=True, **script_info)
       
     qual_fp = opts.qual_fp
     output_dir = opts.output_dir
     score_min = int(opts.score_min)
+    verbose = opts.verbose
     
     create_dir(output_dir)
     
-    generate_histogram(qual_fp, output_dir, score_min)
+    generate_histogram(qual_fp, output_dir, score_min, verbose)
     
 
 
