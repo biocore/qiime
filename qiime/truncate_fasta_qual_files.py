@@ -49,7 +49,7 @@ def verify_equivalency(fasta_seqs,
          'and qual file.')
     
          
-    qual_scores_labels = qual_scores.keys()
+    qual_scores_labels = set(qual_scores.keys())
     
     for label in fasta_seqs.keys():
         
