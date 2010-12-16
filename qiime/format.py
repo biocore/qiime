@@ -213,7 +213,9 @@ def format_nmds_coords(samples, points, stress):
     return '\n'.join(result)    
     
 
-def build_prefs_string(mapping_headers_to_use, background_color, monte_carlo_dist, headers, otu_ids):
+def build_prefs_string(mapping_headers_to_use, background_color, \
+       monte_carlo_dist, headers, otu_ids, ball_scale, \
+       arrow_line_color, arrow_head_color):
     """Create a preferences file, which can be used for some of the \
     visualization scripts."""
     
@@ -304,7 +306,7 @@ def build_prefs_string(mapping_headers_to_use, background_color, monte_carlo_dis
         taxon_coloring.append(taxon_start % (str(1),str(1)))
         taxon_coloring.append(taxon_colors % ('Root;Bacteria',str(0),0))
     
-    taxon_coloring.append("\n\t\t\t}\n\t\t}\n\t}")
+    taxon_coloring.append("\n\t\t\t}\n\t\t}\n\t},\n")
     taxonomy_coloring_str=''.join(taxon_coloring)
     
     #Close and convert the sample_coloring dictionary to a string
@@ -333,8 +335,22 @@ def build_prefs_string(mapping_headers_to_use, background_color, monte_carlo_dis
     pref_lines.append(monte_carlo_str)
     pref_lines.append(field_dict_str)
     pref_lines.append(taxonomy_coloring_str)
+    
+    # Add ball_scale
+    b_scale="'ball_scale':'%f',\n" % (ball_scale)
+    pref_lines.append(b_scale)
+    
+    # Add arrow_line_color
+    alc="'arrow_line_color':'%s',\n" % (arrow_line_color)
+    pref_lines.append(alc)
+    
+    # Add arrow_head_color
+    ahc="'arrow_head_color':'%s'" % (arrow_head_color)
+    pref_lines.append(ahc)
+    
+    # Closing tabs
     pref_lines.append('\n}')
-
+    
     return ''.join(pref_lines)
 
 def format_map_file(headers, id_map, desc_key, sample_id_key, \
