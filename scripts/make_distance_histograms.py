@@ -107,7 +107,7 @@ def main():
         prefs=None
 
     
-    color_prefs, color_data, background_color, label_color= \
+    color_prefs, color_data, background_color, label_color, ball_scale, arrow_colors= \
                             sample_color_prefs_and_map_data_from_options(opts)
     
     #list of labelname, groups, colors, data_colors, data_color_order    

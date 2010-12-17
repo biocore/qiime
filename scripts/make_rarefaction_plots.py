@@ -94,7 +94,7 @@ def main():
         exit(0)
     
     #Get the command-line options.
-    prefs, data, background_color, label_color = \
+    prefs, data, background_color, label_color, ball_scale, arrow_colors = \
                     sample_color_prefs_and_map_data_from_options(options)
     
     #output directory check

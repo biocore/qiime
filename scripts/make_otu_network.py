@@ -77,7 +77,7 @@ def main():
     if not opts.map_fname:
         parser.error("A Map file must be specified")
 
-    prefs,data,background_color,label_color= \
+    prefs,data,background_color,label_color, ball_scale, arrow_colors= \
              sample_color_prefs_and_map_data_from_options(opts)
 
 

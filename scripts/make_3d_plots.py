@@ -139,7 +139,7 @@ script_info['version'] = __version__
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
-    prefs, data, background_color, label_color= \
+    prefs, data, background_color, label_color, ball_scale, arrow_colors= \
                             sample_color_prefs_and_map_data_from_options(opts)
     
     if opts.output_format == 'invue':
