@@ -208,15 +208,16 @@ class TopLevelTests(TestCase):
     def test_make_edge_output(self):
         """make_edge_output: Create kinemage string given the data"""
         # test without custom axes
-        exp_result = ['@vectorlist {edges} dimension=4 on master={edges} nobutton', '1.0 2.0 3.0 4.0 white', '1.06 2.06 3.06 4.06 white P', '1.06 2.06 3.06 4.06 hotpink', '1.1 2.1 3.1 4.1 hotpink P', '1.0 2.0 3.0 4.0 white', '1.12 2.12 3.12 4.12 white P', '1.12 2.12 3.12 4.12 blue', '1.2 2.2 3.2 4.2 blue P']
+        exp_result = ['@vectorlist {edges} dimension=4 on master={edges} nobutton', '1.0 2.0 3.0 4.0 white', '1.06 2.06 3.06 4.06 white P', '1.06 2.06 3.06 4.06 hotpink', '1.1 2.1 3.1 4.1 hotpink P', '1.0 2.0 3.0 4.0 white', '1.12 2.12 3.12 4.12 white P', '1.12 2.12 3.12 4.12 hotpink', '1.2 2.2 3.2 4.2 hotpink P']
         edges = [['a_0','a_1'],['a_0','a_2']]
         coord_dict = {}
         coord_dict['a_0'] = array([ 1.0, 2.0, 3.0, 4.0])
         coord_dict['a_1'] = array([ 1.1, 2.1, 3.1, 4.1])
         coord_dict['a_2'] = array([ 1.2, 2.2, 3.2, 4.2])
         num_coords=4
+        arrow_colors={'line_color': 'white', 'head_color': 'hotpink'}
         obs_result=make_edges_output(coord_dict, edges, num_coords, \
-                                        self.label_color)
+                        self.label_color, arrow_colors=arrow_colors)
         
         self.assertEqual(obs_result, exp_result)
     

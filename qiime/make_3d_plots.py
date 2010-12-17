@@ -74,8 +74,9 @@ def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, \
                     background_color,label_color, \
                     taxa=None, custom_axes=None, \
                     edges=None, coords_low=None, coords_high=None, \
-                    ellipsoid_prefs=None,
-                    user_supplied_edges=False):
+                    ellipsoid_prefs=None, \
+                    user_supplied_edges=False, ball_scale=1.0, \
+                    arrow_colors={'line_color': 'white', 'head_color': 'red'}):
     """Makes 3d plots given coords, mapping file, and prefs.
     
     Added quick-and-dirty hack for gradient coloring of columns, should
@@ -113,15 +114,17 @@ def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, \
             taxa, custom_axes,name=labelname, \
             scaled=False, edges=edges,
             coords_low=coords_low, coords_high=coords_high, \
-            ellipsoid_prefs=ellipsoid_prefs,
-            user_supplied_edges=user_supplied_edges))
+            ellipsoid_prefs=ellipsoid_prefs, \
+            user_supplied_edges=user_supplied_edges, \
+            ball_scale=ball_scale, arrow_colors=arrow_colors))
         result.extend(make_mage_output(groups, colors, coord_header, coords, \
             pct_var,background_color,label_color,data_colors, \
             taxa, custom_axes,name=labelname, \
             scaled=True, edges=edges, \
             coords_low=coords_low, coords_high=coords_high, \
-            ellipsoid_prefs=ellipsoid_prefs,
-            user_supplied_edges=user_supplied_edges))
+            ellipsoid_prefs=ellipsoid_prefs, \
+            user_supplied_edges=user_supplied_edges, \
+            ball_scale=ball_scale, arrow_colors=arrow_colors))
 
     return result
 
@@ -142,7 +145,8 @@ def make_mage_output(groups, colors, coord_header, coords, pct_var, \
                      radius=None, alpha=.75, num_coords=10,scaled=False, \
                      coord_scale=1.05, edges=None, coords_low=None, \
                      coords_high=None, ellipsoid_prefs=None,
-                     user_supplied_edges=False):
+                     user_supplied_edges=False, ball_scale=1.0, \
+                     arrow_colors={'line_color': 'white', 'head_color': 'red'}):
     """Convert groups, colors, coords and percent var into mage format"""
     result = []
 
@@ -163,8 +167,10 @@ def make_mage_output(groups, colors, coord_header, coords, pct_var, \
         header_suffix = '_unscaled'
 
     if radius is None:
-        radius = auto_radius(coords)
-
+        radius = float(auto_radius(coords))*float(ball_scale)
+    else:
+        radius = float(radius)*float(ball_scale)
+        
     maxes = coords.max(0)[:num_coords]
     mins = coords.min(0)[:num_coords]
     pct_var = pct_var[:num_coords]    #scale from fraction
@@ -201,7 +207,7 @@ def make_mage_output(groups, colors, coord_header, coords, pct_var, \
         result.append('@hsvcolor {black} 0.0 0.0 0.0')
     else:
         result.append('@hsvcolor {white} 180.0 0.0 100.0')
-   
+    
     #Write the groups, colors and coords
     coord_dict = dict(zip(coord_header, coords))
     if not coords_low is None:
@@ -275,11 +281,12 @@ master={labels} nobutton' % (color, radius, alpha, num_coords))
 
     #Write edges if requested
     if edges:
-        result += make_edges_output(coord_dict, edges, num_coords,label_color,
+        result += make_edges_output(coord_dict, edges, num_coords, label_color,
+                                    arrow_colors=arrow_colors,
                                     user_supplied_edges=user_supplied_edges)
     return result
 
-def make_edges_output(coord_dict, edges, num_coords,label_color,
+def make_edges_output(coord_dict, edges, num_coords, label_color, arrow_colors, 
                       tip_fraction=0.4,user_supplied_edges=False):
     """Creates make output to display edges (as a kinemage vectorlist).
 
@@ -309,12 +316,17 @@ def make_edges_output(coord_dict, edges, num_coords,label_color,
             which_set = int(id_to[id_to.rindex('_')+1:]) - 1
 
         # different tip color for each destination coords file
-        tip_color = kinemage_colors[which_set % len(kinemage_colors)]
+        #tip_color = kinemage_colors[which_set % len(kinemage_colors)]
         # plot a color 'tip' on the line (certain % of line length)
         # this gets the coords of the beginning of the 'tip'
         diffs = (pt_to-pt_fr) * (1-tip_fraction)
         middles = pt_fr + diffs
-        # add a default-color line segment 
+        # add a default-color line segment
+        
+        # modified to use user defined
+        tip_color = arrow_colors['head_color']
+        label_color = arrow_colors['line_color']
+        
         result.append('%s %s' % \
                           (' '.join(map(str, pt_fr)),label_color))
         result.append('%s %s P' % \
@@ -742,12 +754,13 @@ def generate_3d_plots_invue(prefs, data, dir_path, filename, intp_pts, polyh_pts
     outfile.close()
     
 
-def generate_3d_plots(prefs, data, custom_axes, background_color,label_color, \
+def generate_3d_plots(prefs, data, custom_axes, background_color, label_color, \
                         dir_path='',data_file_path='',filename=None, \
-                        default_filename='out', ellipsoid_prefs=None,
-                        user_supplied_edges=False):
+                        default_filename='out', ellipsoid_prefs=None, \
+                        user_supplied_edges=False, ball_scale=1.0, \
+                        arrow_colors={'line_color': 'white', 'head_color': 'red'}):
     """Make 3d plots according to coloring options in prefs."""
-
+    
     if filename is None:
         filename = default_filename
     kinpath = os.path.join(data_file_path,filename) + ".kin"
@@ -771,8 +784,9 @@ def generate_3d_plots(prefs, data, custom_axes, background_color,label_color, \
                         background_color,label_color, \
                         taxa, custom_axes=custom_axes,edges=edges, \
                         coords_low=coords_low, coords_high=coords_high, \
-                        ellipsoid_prefs=ellipsoid_prefs,
-                        user_supplied_edges=user_supplied_edges)
+                        ellipsoid_prefs=ellipsoid_prefs, \
+                        user_supplied_edges=user_supplied_edges, \
+                        ball_scale=ball_scale, arrow_colors=arrow_colors)
 
     #Write kinemage file
     f = open(kinpath, 'w')

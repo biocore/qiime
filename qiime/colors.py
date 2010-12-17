@@ -478,6 +478,21 @@ def sample_color_prefs_and_map_data_from_options(options):
             background_color= prefs['background_color']
         else:
             background_color='black'
+        
+        if prefs.has_key('ball_scale'):
+            ball_scale=prefs['ball_scale']
+        else:
+            ball_scale=1.0
+        
+        arrow_colors={}
+        if prefs.has_key('arrow_line_color'):
+            arrow_colors['line_color']=prefs['arrow_line_color']
+        else:
+            arrow_colors['line_color']='white'
+        if prefs.has_key('arrow_head_color'):
+            arrow_colors['head_color']=prefs['arrow_head_color']
+        else:
+            arrow_colors['head_color']='red'
     else:
         background_color='black'
         color_prefs, data=process_colorby(colorby, data, None)
@@ -492,7 +507,7 @@ def sample_color_prefs_and_map_data_from_options(options):
     else:
         label_color='black'
 
-    return color_prefs,data,background_color,label_color
+    return color_prefs,data,background_color,label_color,ball_scale,arrow_colors
 
 def taxonomy_color_prefs_and_map_data_from_options(options):
     """Returns color prefs and counts data based on options.

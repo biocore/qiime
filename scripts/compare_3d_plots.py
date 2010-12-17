@@ -9,7 +9,7 @@ from __future__ import division
 
 __author__ = "Dan Knights"
 __copyright__ = "Copyright 2010, The QIIME project"
-__credits__ = ["Dan Knights"] #remember to add yourself
+__credits__ = ["Dan Knights", "Antonio Gonzalez Pena"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "1.2.0-dev"
 __maintainer__ = "Dan Knights"
@@ -90,7 +90,7 @@ script_info['version'] = __version__
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
-    prefs, data, background_color, label_color= \
+    prefs, data, background_color, label_color, ball_scale, arrow_colors = \
                             sample_color_prefs_and_map_data_from_options(opts)
     
     if len(opts.coord_fnames.split(',')) < 2 and opts.edges_file is None:
@@ -170,9 +170,10 @@ def main():
 
     #Place this outside try/except so we don't mask NameError in action
     if action:
-        action(prefs, data, custom_axes,
+        generate_3d_plots(prefs, data, custom_axes,
                background_color, label_color,
-               dir_path, data_dir_path,filename,
+               dir_path, data_dir_path, filename,
+               ball_scale=ball_scale, arrow_colors=arrow_colors,
                user_supplied_edges=not(opts.edges_file is None))
 
 if __name__ == "__main__":
