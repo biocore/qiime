@@ -496,6 +496,8 @@ def sample_color_prefs_and_map_data_from_options(options):
     else:
         background_color='black'
         color_prefs, data=process_colorby(colorby, data, None)
+        ball_scale=1.0
+        arrow_colors={'line_color':'white', 'head_color':'red'}
     
     if options.prefs_path and options.background_color:
         background_color=options.background_color
