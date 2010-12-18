@@ -129,9 +129,7 @@ class TopLevelTests(TestCase):
         self.assertEqual(open(qual_fp).read(), qual_txt)
 
         flow_fp = os.path.join(output_dir, 'test_FLX.txt')
-        open('../sffout.txt', 'w').write(open(flow_fp).read())
         self.assertEqual(open(flow_fp).read(), flx_flow_txt)
-
 
         shutil.rmtree(output_dir)
 
