@@ -12,7 +12,7 @@ from cogent.cluster.procrustes import procrustes
 from cogent.app.formatdb import build_blast_db_from_fasta_file
 from cogent.util.misc import get_random_directory_name, remove_files
 
-from qiime.parse import fields_to_dict, parse_otu_table
+from qiime.parse import fields_to_dict, parse_otu_table, parse_mapping_file
 from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
     extract_seqs_by_sample_id, get_qiime_project_dir, matrix_stats,
     raise_error_on_parallel_unavailable, merge_otu_tables,
@@ -20,7 +20,7 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
     summarize_pcoas, _compute_jn_pcoa_avg_ranges, _flip_vectors, IQR,
     idealfourths, isarray, matrix_IQR, sort_fasta_by_abundance, degap_fasta_aln,
     write_degapped_fasta_to_file, compare_otu_maps, get_diff_for_otu_maps,
-    merge_n_otu_tables, convert_otu_table_relative)
+    merge_n_otu_tables, convert_otu_table_relative, sort_sample_ids_by_mapping_value)
 
 import numpy
 from numpy import array, asarray
@@ -47,6 +47,7 @@ class TopLevelTests(TestCase):
         self.otu_table_f1_no_tax = otu_table_fake1_no_tax.split('\n')
         self.otu_table_f2_no_tax = otu_table_fake2_no_tax.split('\n')
         self.otu_table_f3_no_tax = otu_table_fake3_no_tax.split('\n')
+        self.mapping_f1 = mapping_f1.split('\n')
         self.dirs_to_remove = []
         self.files_to_remove = []
 
@@ -55,6 +56,30 @@ class TopLevelTests(TestCase):
             if exists(dir):
                 rmdir(dir)
         remove_files(self.files_to_remove)
+        
+    
+    def test_sort_sample_ids_by_mapping_value(self):
+        """ sort_sample_ids_by_mapping_value functions as expected """
+        actual = sort_sample_ids_by_mapping_value(mapping_file=self.mapping_f1,
+                                         field='days_since_epoch',
+                                         field_type_f=float)
+        expected = zip(['NotInOtuTable','1','Z2','Z1','A'],
+                       [0.0,5.7,10,23,400000])
+        self.assertEqual(actual,expected)
+        
+    def test_sort_sample_ids_by_mapping_value_error(self):
+        """ sort_sample_ids_by_mapping_value handles errors """
+        self.assertRaises(ValueError,
+                          sort_sample_ids_by_mapping_value,
+                          mapping_file=self.mapping_f1,
+                          field='years_since_spoch',
+                          field_type_f=float)
+                          
+        self.assertRaises(ValueError,
+                          sort_sample_ids_by_mapping_value,
+                          mapping_file=self.mapping_f1,
+                          field='Something',
+                          field_type_f=float)
                 
     def test_convert_otu_table_relative(self):
         """should convert a parsed otu table into relative abundances"""
@@ -823,6 +848,13 @@ TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
 >s8
 CCAGAGCGAGTGAGATAGACACCCAC
 """
+
+mapping_f1 = """#SampleID\tSomething\tdays_since_epoch
+Z1\t42\t23
+Z2\thello\t10
+A\t4\t400000
+1\tr\t5.7
+NotInOtuTable\tf\t0"""
 
 
 #run unit tests if run from command-line

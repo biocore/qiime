@@ -18,22 +18,21 @@ A lot of this might migrate into cogent at some point.
 
 from StringIO import StringIO
 from os import getenv, makedirs
-#from scipy.stats.mstats import idealfourths
+from operator import itemgetter
 from os.path import abspath, exists, dirname, join, isdir
+from collections import defaultdict
+from optparse import make_option
+import sys
+import os
+from copy import deepcopy
 from numpy import min, max, median, mean
 import numpy
 from numpy.ma import MaskedArray
 from numpy.ma.extras import apply_along_axis
 from numpy import array, zeros, argsort, shape, vstack,ndarray, asarray, \
         float, where, isnan
-from collections import defaultdict
-from optparse import make_option
-import sys
-import os
-from copy import deepcopy
 from cogent import LoadSeqs, Sequence
 from cogent.cluster.procrustes import procrustes
-from qiime.parse import parse_newick, PhyloNode
 from cogent.core.alignment import Alignment
 from cogent.core.moltype import MolType, IUPAC_DNA_chars, IUPAC_DNA_ambiguities,\
     IUPAC_DNA_ambiguities_complements, DnaStandardPairs, ModelDnaSequence
@@ -51,7 +50,12 @@ from cogent import LoadSeqs
 from cogent.util.misc import (parse_command_line_parameters, 
                                      create_dir, 
                                      handle_error_codes)
-from qiime.parse import parse_otu_table, parse_qiime_config_files, parse_coords
+from qiime.parse import (parse_otu_table,
+                         parse_qiime_config_files,
+                         parse_coords,
+                         parse_newick,
+                         PhyloNode,
+                         parse_mapping_file)
 from qiime.format import format_otu_table
 
 class TreeMissingError(IOError):
@@ -909,4 +913,21 @@ def compare_otu_maps(otu_map1, otu_map2, verbose=False):
             print list(otu_map1[otu])
 
     return float(wrong)/(right+wrong)
+    
+
+def sort_sample_ids_by_mapping_value(mapping_file,field,field_type_f=float):
+    """ Return list of sample ids sorted by ascending value from mapping file
+    """
+    data, headers, comments = parse_mapping_file(mapping_file)
+
+    try:
+        column = headers.index(field)
+    except ValueError:
+        raise ValueError,\
+         "Column (%s) not found in mapping file headers:\n %s" %\
+         (field,' '.join(headers))
+
+    results = [(e[0],field_type_f(e[column])) for e in data]
+    results.sort(key=itemgetter(1))
+    return results
 
