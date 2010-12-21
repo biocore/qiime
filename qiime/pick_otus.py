@@ -386,7 +386,7 @@ class PrefixSuffixOtuPicker(OtuPicker):
 
         """
         log_lines = []
-        log_lines.append('Prefix length: %d' % suffix_length)
+        log_lines.append('Prefix length: %d' % prefix_length)
         log_lines.append('Suffix length: %d' % suffix_length)
         
         assert prefix_length >= 0, 'Prefix length (%d) must be >= 0' % prefix_length
