@@ -12,6 +12,7 @@ __email__ = "jreeder@colorado.edu"
 __status__ = "Development"
  
 from optparse import make_option
+from cogent.app.util import ApplicationNotFoundError
 from qiime.util import parse_command_line_parameters, get_options_lookup, create_dir
 
 # Adapted from align_seqs.py
