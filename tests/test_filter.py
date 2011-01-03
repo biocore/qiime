@@ -111,32 +111,41 @@ class FilterTests(TestCase):
     
     def test_filter_otu_table_to_n_samples(self):
         """filter_otu_table_to_n_samples functions as expected """
+        
+        def check_no_zero_count_otus(data,otu_ids):
+            for d,id_ in zip(data,otu_ids):
+                self.assertTrue(sum(d)>0,
+                 "OTU (%s) with total count=0 not " % id_ +\
+                 "filtered from OTU table.")
+        
         actual = filter_otu_table_to_n_samples(self.input_otu_table1,1)
         sample_ids,otu_ids,data,taxa = parse_otu_table(actual)
         self.assertTrue(len(sample_ids),1)
-        self.assertEqual(data.shape,(4,1))
+        check_no_zero_count_otus(data,otu_ids)
         
         actual = filter_otu_table_to_n_samples(self.input_otu_table1,2)
         sample_ids,otu_ids,data,taxa = parse_otu_table(actual)
         self.assertTrue(len(sample_ids),2)
-        self.assertEqual(data.shape,(4,2))
+        check_no_zero_count_otus(data,otu_ids)
         
         actual = filter_otu_table_to_n_samples(self.input_otu_table1,3)
         sample_ids,otu_ids,data,taxa = parse_otu_table(actual)
         self.assertTrue(len(sample_ids),3)
-        self.assertEqual(data.shape,(4,3))
+        check_no_zero_count_otus(data,otu_ids)
         
         actual = filter_otu_table_to_n_samples(self.input_otu_table1,4)
         sample_ids,otu_ids,data,taxa = parse_otu_table(actual)
         self.assertTrue(len(sample_ids),4)
         self.assertEqualItems(sample_ids,["ABC","DEF","GHI","XYZ"])
         self.assertEqual(data.shape,(4,4))
+        check_no_zero_count_otus(data,otu_ids)
         
         actual = filter_otu_table_to_n_samples(self.input_otu_table1,5)
         sample_ids,otu_ids,data,taxa = parse_otu_table(actual)
         self.assertTrue(len(sample_ids),4)
         self.assertEqualItems(sample_ids,["ABC","DEF","GHI","XYZ"])
         self.assertEqual(data.shape,(4,4))
+        check_no_zero_count_otus(data,otu_ids)
         
         # different samples selected on different runs
         r = []
@@ -220,7 +229,6 @@ expected_otu_table1c = """# QIIME v%s OTU table
 #OTU ID\tABC\tXYZ\tConsensus Lineage
 0\t1\t0\tBacteria;Firmicutes
 1\t1\t0\tNone
-x\t0\t0\tBacteria;Bacteroidetes
 z\t0\t1\tNone""" % __version__
 
 expected_otu_table1d = """# QIIME v%s OTU table
