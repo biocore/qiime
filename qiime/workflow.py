@@ -223,7 +223,8 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,
     otu_picking_method = params['pick_otus']['otu_picking_method']
     pick_otu_dir = '%s/%s_picked_otus' % (output_dir, otu_picking_method)
     otu_fp = '%s/%s_otus.txt' % (pick_otu_dir,input_basename)
-    if parallel and otu_picking_method == 'blast':
+    if parallel and (otu_picking_method == 'blast' or 
+                     otu_picking_method == 'uclust_ref'):
         # Grab the parallel-specific parameters
         try:
             params_str = get_params_str(params['parallel'])
@@ -240,10 +241,14 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,
             params_str += ' %s' % get_params_str(d)
         except KeyError:
             pass
-            
+        otu_picking_script = 'parallel_pick_otus_%s.py' % otu_picking_method
         # Build the OTU picking command
-        pick_otus_cmd = '%s %s/parallel_pick_otus_blast.py -i %s -o %s -T %s' %\
-         (python_exe_fp, script_dir, input_fp, pick_otu_dir, params_str)
+        pick_otus_cmd = '%s %s/%s -i %s -o %s -T %s' % (python_exe_fp, 
+                                                        script_dir, 
+                                                        otu_picking_script,
+                                                        input_fp,
+                                                        pick_otu_dir,
+                                                        params_str)
     else:
         if denoise:
             # we want to make sure the user is using the right set of commands
