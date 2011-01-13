@@ -456,6 +456,119 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,
     # Call the command handler on the list of commands
     command_handler(commands,status_update_callback,logger=logger)
     
+    
+    
+    
+    
+## Start reference otu picking workflow
+
+
+## Begin task-specific workflow functions
+def run_pick_reference_otus_through_otu_table(
+                              input_fp, 
+                              refseqs_fp,
+                              output_dir,
+                              taxonomy_fp,
+                              command_handler,
+                              params,
+                              qiime_config,
+                              parallel=False,
+                              status_update_callback=print_to_stdout):
+    """ Run the data preparation steps of Qiime 
+    
+        The steps performed by this function are:
+          1) Pick OTUs;
+          2) Build an OTU table with optional pre-defined taxonmy.
+    
+    """
+    
+    # confirm that a valid otu picking method was supplied before doing
+    # any work
+    reference_otu_picking_methods = ['blast','uclust_ref']
+    otu_picking_method = params['pick_otus']['otu_picking_method']
+    assert otu_picking_method in reference_otu_picking_methods,\
+     "Invalid OTU picking method supplied: %s. Valid choices are: %s"\
+     % (otu_picking_method,' '.join(reference_otu_picking_methods))
+    
+    # Prepare some variables for the later steps
+    input_dir, input_filename = split(input_fp)
+    input_basename, input_ext = splitext(input_filename)
+    create_dir(output_dir)
+    commands = []
+    python_exe_fp = qiime_config['python_exe_fp']
+    script_dir = get_qiime_scripts_dir()
+    logger = WorkflowLogger(generate_log_fp(output_dir),
+                            params=params,
+                            qiime_config=qiime_config)
+    
+    # Prep the OTU picking command
+    pick_otu_dir = '%s/%s_picked_otus' % (output_dir, otu_picking_method)
+    otu_fp = '%s/%s_otus.txt' % (pick_otu_dir,input_basename)
+    if parallel and (otu_picking_method == 'blast' or 
+                     otu_picking_method == 'uclust_ref'):
+        # Grab the parallel-specific parameters
+        try:
+            params_str = get_params_str(params['parallel'])
+        except KeyError:
+            params_str = ''
+        
+        # Grab the OTU picker parameters
+        try:
+            # Want to find a cleaner strategy for this: the parallel script
+            # is method-specific, so doesn't take a --otu_picking_method
+            # option. This works for now though.
+            d = params['pick_otus'].copy()
+            del d['otu_picking_method']
+            params_str += ' %s' % get_params_str(d)
+        except KeyError:
+            pass
+        otu_picking_script = 'parallel_pick_otus_%s.py' % otu_picking_method
+        # Build the OTU picking command
+        pick_otus_cmd = '%s %s/%s -i %s -o %s -r %s -T %s' %\
+          (python_exe_fp, 
+           script_dir, 
+           otu_picking_script,
+           input_fp,
+           pick_otu_dir,
+           refseqs_fp,
+           params_str)
+    else:
+        try:
+            params_str = get_params_str(params['pick_otus'])
+        except KeyError:
+            params_str = ''
+        # Build the OTU picking command
+        pick_otus_cmd = '%s %s/pick_otus.py -i %s -o %s -r %s %s' %\
+         (python_exe_fp,
+          script_dir,
+          input_fp,
+          pick_otu_dir,
+          refseqs_fp,
+          params_str)
+
+    commands.append([('Pick OTUs', pick_otus_cmd)])
+
+    # Prep the OTU table building command
+    otu_table_fp = '%s/%s_otu_table.txt' % (pick_otu_dir,input_basename)
+    try:
+        params_str = get_params_str(params['make_otu_table'])
+    except KeyError:
+        params_str = ''
+    if taxonomy_fp:
+        taxonomy_str = '-t %s' % taxonomy_fp
+    else:
+        taxonomy_str = ''
+    # Build the OTU table building command
+    make_otu_table_cmd = '%s %s/make_otu_table.py -i %s %s -o %s %s' %\
+     (python_exe_fp, script_dir, otu_fp, taxonomy_str, otu_table_fp, params_str)
+    
+    commands.append([('Make OTU table', make_otu_table_cmd)])
+    
+    # Call the command handler on the list of commands
+    command_handler(commands, status_update_callback, logger)
+
+
+
 def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,
     output_dir, command_handler, params, qiime_config, sampling_depth=None,
     tree_fp=None, parallel=False, status_update_callback=print_to_stdout):

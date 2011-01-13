@@ -29,6 +29,7 @@ from qiime.util import load_qiime_config
 from qiime.parse import (parse_qiime_parameters, parse_otu_table,
     parse_distmat_to_dict,parse_distmat)
 from qiime.workflow import (run_qiime_data_preparation,
+    run_pick_reference_otus_through_otu_table,
     run_beta_diversity_through_3d_plot,
     run_qiime_alpha_rarefaction,
     run_jackknifed_beta_diversity,
@@ -204,6 +205,31 @@ class WorkflowTests(TestCase):
         self.gain_params1['align_seqs']['template_fp'] = self.template_aln_fp
         self.gain_params1['filter_alignment']['lane_mask_fp'] = self.lanemask_fp
         
+        
+        self.pick_ref_otus_seqs1 = get_tmp_filename(
+            tmp_dir=self.tmp_dir,prefix='ref_otus_wf',suffix='.fna')
+        f = open(self.pick_ref_otus_seqs1,'w')
+        f.write(pick_ref_otus_seqs1)
+        f.close()
+        self.files_to_remove.append(self.pick_ref_otus_seqs1)
+        
+        self.pick_ref_otus_refseqs1 = get_tmp_filename(
+            tmp_dir=self.tmp_dir,prefix='ref_otus_wf',suffix='.fna')
+        f = open(self.pick_ref_otus_refseqs1,'w')
+        f.write(pick_ref_otus_refseqs1)
+        f.close()
+        self.files_to_remove.append(self.pick_ref_otus_refseqs1)
+        
+        self.pick_ref_otus_tax1 = get_tmp_filename(
+            tmp_dir=self.tmp_dir,prefix='ref_otus_wf',suffix='.fna')
+        f = open(self.pick_ref_otus_tax1,'w')
+        f.write(pick_ref_otus_tax1)
+        f.close()
+        self.files_to_remove.append(self.pick_ref_otus_tax1)
+        
+        self.pick_ref_otus_params1 =\
+         parse_qiime_parameters(pick_ref_otus_params1.split('\n'))
+        
         signal.signal(signal.SIGALRM, timeout)
         # set the 'alarm' to go off in allowed_seconds seconds
         signal.alarm(allowed_seconds_per_test)
@@ -237,6 +263,106 @@ class WorkflowTests(TestCase):
         # Check that the log file is created and has size > 0
         log_fp = glob(join(self.wf_out,'log*.txt'))[0]
         self.assertTrue(getsize(log_fp) > 0)
+        
+    def test_run_pick_reference_otus_through_otu_table(self):
+        """run_pick_reference_otus_through_otu_table generates expected results"""
+        run_pick_reference_otus_through_otu_table(
+         self.pick_ref_otus_seqs1,
+         self.pick_ref_otus_refseqs1,
+         self.wf_out,
+         self.pick_ref_otus_tax1,
+         call_commands_serially,
+         self.pick_ref_otus_params1, 
+         self.qiime_config, 
+         parallel=False,
+         status_update_callback=no_status_updates)
+
+        input_file_basename = splitext(split(self.pick_ref_otus_seqs1)[1])[0]
+        otu_map_fp = join(self.wf_out,'uclust_ref_picked_otus',
+         '%s_otus.txt' % input_file_basename)
+        otu_table_fp = join(self.wf_out,'uclust_ref_picked_otus',
+         '%s_otu_table.txt' % input_file_basename)
+
+        # Number of OTUs matches manually confirmed result
+        otu_map_lines = list(open(otu_map_fp))
+        num_otus = len(otu_map_lines)
+        otu_map_otu_ids = [o.split()[0] for o in otu_map_lines]
+        self.assertEqual(num_otus,8)
+
+        # parse the otu table
+        input_seqs = LoadSeqs(self.pick_ref_otus_seqs1,aligned=False)
+        sample_ids, otu_ids, otu_table, lineages =\
+          parse_otu_table(open(otu_table_fp))
+        expected_sample_ids = ['S1','S2','S3']
+        # sample IDs are as expected
+        self.assertEqualItems(sample_ids,expected_sample_ids)
+        # otu ids are as expected
+        self.assertEqualItems(otu_map_otu_ids,otu_ids)
+        # number of sequences in the full otu table equals the number of
+        # input sequences
+        number_seqs_in_otu_table = otu_table.sum()
+        self.assertEqual(number_seqs_in_otu_table,input_seqs.getNumSeqs())
+        
+        # One tax assignment per otu
+        self.assertEqual(len(lineages),8)
+
+        # Check that the log file is created and has size > 0
+        log_fp = glob(join(self.wf_out,'log*.txt'))[0]
+        self.assertTrue(getsize(log_fp) > 0)
+        
+    def test_run_pick_reference_otus_through_otu_table_parallel(self):
+        """run_pick_reference_otus_through_otu_table generates expected results"""
+        run_pick_reference_otus_through_otu_table(
+         self.pick_ref_otus_seqs1,
+         self.pick_ref_otus_refseqs1,
+         self.wf_out,
+         None,
+         call_commands_serially,
+         self.pick_ref_otus_params1, 
+         self.qiime_config, 
+         parallel=True,
+         status_update_callback=no_status_updates)
+
+        input_file_basename = splitext(split(self.pick_ref_otus_seqs1)[1])[0]
+        otu_map_fp = join(self.wf_out,'uclust_ref_picked_otus',
+         '%s_otus.txt' % input_file_basename)
+        otu_table_fp = join(self.wf_out,'uclust_ref_picked_otus',
+         '%s_otu_table.txt' % input_file_basename)
+
+        # Number of OTUs matches manually confirmed result -- 
+        # in parallel there are no new clusters so num otus will be 4
+        otu_map_lines = list(open(otu_map_fp))
+        num_otus = len(otu_map_lines)
+        otu_map_otu_ids = [o.split()[0] for o in otu_map_lines]
+        otu_map_seqs = []
+        for o in otu_map_lines:
+            otu_map_seqs.extend(o.strip().split()[1:])
+        self.assertEqual(num_otus,4)
+        self.assertFalse("S1_s0" in otu_map_seqs)
+        self.assertFalse("S1_s7" in otu_map_seqs)
+        self.assertTrue("S3_s4" in otu_map_seqs)
+
+        # parse the otu table
+        input_seqs = LoadSeqs(self.pick_ref_otus_seqs1,aligned=False)
+        sample_ids, otu_ids, otu_table, lineages =\
+          parse_otu_table(open(otu_table_fp))
+        expected_sample_ids = ['S1','S2','S3']
+        # sample IDs are as expected
+        self.assertEqualItems(sample_ids,expected_sample_ids)
+        # otu ids are as expected
+        self.assertEqualItems(otu_map_otu_ids,otu_ids)
+        # number of sequences in the full otu table equals the number of
+        # input sequences
+        number_seqs_in_otu_table = otu_table.sum()
+        self.assertEqual(number_seqs_in_otu_table,5)
+
+        # No taxa were provided, so should have an empty list
+        self.assertEqual(len(lineages),0)
+
+        # Check that the log file is created and has size > 0
+        log_fp = glob(join(self.wf_out,'log*.txt'))[0]
+        self.assertTrue(getsize(log_fp) > 0)
+        
         
     def test_run_gain_calculations_serial(self):
         """run_gain_calculations generates expected results
@@ -3336,6 +3462,55 @@ make_phylogeny:root_method	tree_method_default
 beta_diversity:metrics	unifrac_g
 
 """.split('\n')
+
+pick_ref_otus_seqs1 = """>S1_s0
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+>S1_s1
+TGCAGCTTGAGCCACAGGAGAGAGAGAGCTTC
+>S2_s2
+TGCAGCTTGAGCCACAGGAGAGAGCCTTC
+>S3_s3
+TGCAGCTTGAGCCACAGGAGAGAGAGAGCTTC
+>S3_s4
+ACCGATGAGATATTAGCACAGGGGAATTAGAACCA
+>S2_s5
+TGTCGAGAGTGAGATGAGATGAGAACA
+>S2_s6
+ACGTATTTTAATTTGGCATGGT
+>S1_s7
+TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
+>S3_s8
+CCAGAGCGAGTGAGATAGACACCCAC
+"""
+
+pick_ref_otus_refseqs1 = """>ref1
+TGCAGCTTGAGCCACAGGAGAGAGAGAGCTTC
+>ref2
+ACCGATGAGATATTAGCACAGGGGAATTAGAACCA
+>ref3
+TGTCGAGAGTGAGATGAGATGAGAACA
+>ref4
+ACGTATTTTAATGGGGCATGGT
+>ref5 (s8 minus two bases)
+CCAGAGCGAGTGAGATAGACACCC
+>ref6 (s8 with one sub)
+CCAGAGCGAGTGAGATCGACACCCAC
+"""
+
+pick_ref_otus_tax1 = """ref1	Archaea; 1
+ref2	Archaea; 2
+ref3	Archaea; 3
+ref4	Bacteria; 22
+ref5	Bacteria; 42
+ref6	Eukarya; 99
+"""
+
+pick_ref_otus_params1 = """pick_otus:otu_picking_method	uclust_ref
+pick_otus:similarity	0.97
+parallel:jobs_to_start	2
+parallel:retain_temp_files	False
+parallel:seconds_to_sleep	1"""
+
 
 if __name__ == "__main__":
     main()
