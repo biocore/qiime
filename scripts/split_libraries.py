@@ -132,6 +132,14 @@ script_info['optional_options']=[\
         'Must pass a .qual file (see -q parameter) if this '+\
         'functionality is enabled. [default: %default]'),
         
+    make_option('-g', '--discard_bad_windows', dest="discard_bad_windows",
+                default=False,
+        action='store_true', help='If the qual_score_window option (-w) is '+\
+        'enabled, by default, sequences will be truncated at first base of '+\
+        'a window that falls below the quality score threshold.  To '+\
+        'completely discard sequences that have a bad quality window, enable '+\
+        'this option. [default: %default]'),
+        
     make_option('-p', '--disable_primers', default=False,
         action='store_true', help='Disable primer usage when demultiplexing.'+\
         '  Should be enabled for unusual circumstances, such as analyzing '+\
@@ -207,7 +215,8 @@ def main():
                qual_score_window = opts.qual_score_window,
                disable_primers = opts.disable_primers,
                reverse_primers = opts.reverse_primers,
-               record_qual_scores = opts.record_qual_scores)
+               record_qual_scores = opts.record_qual_scores,
+               discard_bad_windows = opts.discard_bad_windows)
  
 if __name__ == "__main__":
     main()

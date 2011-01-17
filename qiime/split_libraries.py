@@ -435,16 +435,18 @@ def check_window_qual_scores(qual_scores, window=50, min_average=25):
             idx += 1
     if (idx == l-window):
         # we processed all qual_scores, must be good
-        return True
+        # Return index for truncation purposes
+        return True, idx
     else:
-        return False
+        return False, idx
 
 
 def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings, 
     filters, barcode_len, keep_primer, keep_barcode, barcode_type, 
     max_bc_errors,remove_unassigned, attempt_bc_correction,
     primer_seqs_lens, all_primers, max_primer_mm, disable_primer_check,
-    reverse_primers, rev_primers, qual_out):
+    reverse_primers, rev_primers, qual_out, qual_score_window=0,
+    discard_bad_windows=False, min_qual_score=25, min_seq_len=200):
     """Checks fasta-format sequences and qual files for validity."""
     seq_lengths = {}
     bc_counts = defaultdict(list)
@@ -462,6 +464,10 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
     
     reverse_primer_not_found = 0
     
+    sliding_window_failed = 0
+    
+    below_seq_min_after_trunc = 0
+
     
     for fasta_in in fasta_files:
         for curr_id, curr_seq in MinimalFastaParser(fasta_in):
@@ -480,6 +486,10 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
             if failed:  #if we failed any of the checks, bail out here
                 bc_counts['#FAILED'].append(curr_rid)
                 continue
+                
+            
+
+                
                 
             if barcode_type == 'variable_length':
                 # Reset the raw_barcode, raw_seq, and barcode_len -- if 
@@ -601,6 +611,30 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
                     bc_counts['#FAILED'].append(curr_rid)
                     continue
                     
+            # Check for quality score windows, truncate or remove sequence
+            # if poor window found.  Previously tested whole sequence-now 
+            # testing the post barcode/primer removed sequence only.
+            if qual_score_window:
+                passed_window_check, window_index =\
+                 check_window_qual_scores(curr_qual, qual_score_window,
+                 min_qual_score)
+                # Throw out entire sequence if discard option True
+                if discard_bad_windows and not passed_window_check:
+                    sliding_window_failed += 1
+                    write_seq = False
+                # Otherwise truncate to index of bad window
+                elif not discard_bad_windows and not passed_window_check:
+                    sliding_window_failed += 1
+                    write_seq = write_seq[0:window_index]
+                    # Check for sequences that are too short after truncation
+                    if len(write_seq) < min_seq_len:
+                        write_seq = False
+                        below_seq_min_after_trunc += 1
+                        
+                    
+                 
+
+                    
             # Slice out regions of quality scores that correspond to the 
             # written sequence, i.e., remove the barcodes/primers and reverse
             # primers if option is enabled.
@@ -650,8 +684,10 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
                          (new_id, curr_rid, cbc, curr_bc, int(bc_diffs), qual_scores_out))
             curr_ix += 1
     log_out = format_log(bc_counts, corr_ct, seq_lengths, valid_map, filters,\
-    remove_unassigned, attempt_bc_correction, primer_mismatch_count, \
-    max_primer_mm, reverse_primers, reverse_primer_not_found)
+     remove_unassigned, attempt_bc_correction, primer_mismatch_count, \
+     max_primer_mm, reverse_primers, reverse_primer_not_found,
+     sliding_window_failed, below_seq_min_after_trunc, qual_score_window, 
+     discard_bad_windows, min_seq_len)
     all_seq_lengths, good_seq_lengths = get_seq_lengths(seq_lengths, bc_counts)
     return log_out, all_seq_lengths, good_seq_lengths
 
@@ -678,7 +714,8 @@ def format_qual_output(qual_array):
 
 def format_log(bc_counts, corr_ct, seq_lengths, valid_map, filters,\
 remove_unassigned, attempt_bc_correction, primer_mismatch_count, max_primer_mm,\
-reverse_primers, reverse_primer_not_found):
+reverse_primers, reverse_primer_not_found, sliding_window_failed,
+below_seq_min_after_trunc, qual_score_window, discard_bad_windows, min_seq_len):
     """Makes log lines"""
 
     
@@ -704,6 +741,21 @@ reverse_primers, reverse_primer_not_found):
         log_out.append('-z truncate_remove option enabled; sequences '+\
          'without a discernable reverse primer as well as sequences with a '+\
          'valid barcode not found in the mapping file will not be written.\n')
+    if qual_score_window:
+        log_out.append('Size of quality score window, in base pairs: %d' %\
+         qual_score_window)
+        log_out.append('Number of sequences where a low quality score '+\
+         'window was detected: %d' % sliding_window_failed)
+        if discard_bad_windows:
+            log_out.append('Sequences with a low quality score were not '+\
+             'written, -g option enabled.\n')
+        else:
+            log_out.append('Sequences with low quality score window were '+\
+             'truncated to the first base of the window.')
+            log_out.append('Sequences discarded after truncation due to '+\
+             'sequence length below the minimum %d: %d\n' %\
+             (min_seq_len, below_seq_min_after_trunc))
+        
     log_out.append("Raw len min/max/avg\t%.1f/%.1f/%.1f" % 
         (min(all_seq_lengths), max(all_seq_lengths), mean(all_seq_lengths)))
     
@@ -781,7 +833,8 @@ def preprocess(fasta_files, qual_files, mapping_file,
     keep_primer=True, max_ambig=0, max_primer_mm=1, trim_seq_len=True,
     dir_prefix='.', max_bc_errors=2, max_homopolymer=4,remove_unassigned=False,
     keep_barcode=False, attempt_bc_correction=True, qual_score_window=0,
-    disable_primers=False, reverse_primers='disable', record_qual_scores=False):
+    disable_primers=False, reverse_primers='disable', record_qual_scores=False,
+    discard_bad_windows=False):
         
 
         
@@ -853,6 +906,10 @@ def preprocess(fasta_files, qual_files, mapping_file,
     sequences that are written to the output seqs.fna file in a separate
     file (seqs_filtered.qual) containing the same sequence IDs and 
     quality scores for all bases found in the seqs.fna file.
+    
+    discard_bad_windows: (default False) If True, will completely discard
+    sequences that have a low quality window.  If False, sequences will be
+    truncated to the first base of the bad window.
 
     Result:
     in dir_prefix, writes the following files:
@@ -1010,12 +1067,12 @@ def preprocess(fasta_files, qual_files, mapping_file,
         filters.append(SeqQualBad(
             'Mean qual score below minimum of %s' % min_qual_score, 
             lambda id_, seq, qual: mean(qual) < min_qual_score))
-    if qual_score_window:
+    """if qual_score_window:
             filters.append(SeqQualBad('Mean window qual score below '+\
                             'minimum of %s' % min_qual_score,
                                       lambda id_, seq, qual: \
              not check_window_qual_scores(qual, qual_score_window, \
-             min_qual_score)))
+             min_qual_score))) """
 
     # Changed this to check entire sequence after barcode-could cause issue
     # if barcode-linker-primer have long homopolymers though.
@@ -1040,7 +1097,8 @@ def preprocess(fasta_files, qual_files, mapping_file,
         keep_primer, keep_barcode, barcode_type, max_bc_errors,
         remove_unassigned, attempt_bc_correction,
         primer_seqs_lens, all_primers, max_primer_mm, disable_primers,
-        reverse_primers, rev_primers, qual_out)
+        reverse_primers, rev_primers, qual_out, qual_score_window,
+        discard_bad_windows, min_qual_score, min_seq_len)
 
     # Write log file
     log_file = open(dir_prefix + '/' + "split_library_log.txt", 'w+')

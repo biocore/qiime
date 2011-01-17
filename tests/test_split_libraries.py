@@ -73,21 +73,23 @@ class TopLevelTests(TestCase):
          expected_in_seqs_reverse_primers_full_remove
         self.expected_in_seqs_reverse_primers_mismatch_allowed =\
          expected_in_seqs_reverse_primers_mismatch_allowed
+        self.expected_fasta_fixed_len_bc1_sliding_window =\
+         expected_fasta_fixed_len_bc1_sliding_window
          
          
 
     def test_check_window_qual_scores(self):
-        """check_window_qual_scores returns False if window below qual 
+        """check_window_qual_scores returns False, index if window below qual 
         threshold."""
         scores1 = [8,8,8,8,8,8,8,2,2,2,2,2]
-        self.assertEqual(check_window_qual_scores(scores1, 5, 5), False)
-        self.assertEqual(check_window_qual_scores(scores1, 10, 5), True)
+        self.assertEqual(check_window_qual_scores(scores1, 5, 5), (False, 5))
+        self.assertEqual(check_window_qual_scores(scores1, 10, 5), (True, 2))
         # windowsize larger than qual score list works
-        self.assertEqual(check_window_qual_scores(scores1, 100, 5), True)
+        self.assertEqual(check_window_qual_scores(scores1, 100, 5), (True, 0))
         self.assertEqual(check_window_qual_scores([], 5, 1), True)
         #check each base  in its own window
-        self.assertEqual(check_window_qual_scores(scores1, 1, 2), True)
-        self.assertEqual(check_window_qual_scores(scores1, 1, 5), False)
+        self.assertEqual(check_window_qual_scores(scores1, 1, 2), (True, 11))
+        self.assertEqual(check_window_qual_scores(scores1, 1, 5), (False, 7))
 
     
     def test_expand_degeneracies(self):
@@ -321,6 +323,51 @@ z\tGG\tGC\t5\tsample_z"""
         self.assertEqual(post_hist, array([0,0,0,2]))
         self.assertEqual(bin_edges, array([100,110,120,130,140]))
         
+    def test_check_seqs_sliding_window(self):
+        """check_seqs handles sliding window truncations/removal """
+        
+
+        in_seqs = self.in_seqs_fixed_len_bc1
+        bc_map = self.bc_map_fixed_len_bc1
+        primer_seq_lens = self.primer_seq_lens_fixed_len_bc1
+        all_primers = self.all_primers_fixed_len_bc1
+        expected = self.expected_fasta_fixed_len_bc1_sliding_window
+
+        
+        out_f = FakeOutFile()
+        
+        actual = check_seqs(
+         fasta_out=out_f, 
+         fasta_files = [in_seqs], 
+         starting_ix=0, 
+         valid_map = bc_map, 
+         qual_mappings=parse_qual_score(in_seqs_fixed_len_bc1_qual_scores), 
+         filters=[], 
+         barcode_len=12, 
+         keep_primer=False, 
+         keep_barcode=False, 
+         barcode_type="golay_12", 
+         max_bc_errors=1.5,
+         remove_unassigned=True, 
+         attempt_bc_correction=True,
+         primer_seqs_lens=primer_seq_lens,
+         all_primers=all_primers, 
+         max_primer_mm=0,
+         disable_primer_check=False,
+         reverse_primers = 'disable',
+         rev_primers = {},
+         qual_out = False,
+         qual_score_window=5,
+         discard_bad_windows=False,
+         min_qual_score=25,
+         min_seq_len=200)
+         
+        self.assertEqual(out_f.data,expected)
+        
+
+
+
+
     def test_check_seqs_variable_len_bc(self):
         """check_seqs handles variable length barcodes """
         
@@ -814,6 +861,15 @@ CCCTTTCCA
 >s3_2 c orig_bc=AATCGTGACTCG new_bc=AATCGTGACTCG bc_diffs=0
 AACCGGCCGGTT
 >s1_3 d orig_bc=ACTCATGTCTAC new_bc=ACACATGTCTAC bc_diffs=1
+CCCTTACTATATAT
+"""
+
+# Poor quality window results in second sequence being removed
+expected_fasta_fixed_len_bc1_sliding_window = """>s1_0 a orig_bc=ACACATGTCTAC new_bc=ACACATGTCTAC bc_diffs=0
+CCCTTATATATATAT
+>s3_1 c orig_bc=AATCGTGACTCG new_bc=AATCGTGACTCG bc_diffs=0
+AACCGGCCGGTT
+>s1_2 d orig_bc=ACTCATGTCTAC new_bc=ACACATGTCTAC bc_diffs=1
 CCCTTACTATATAT
 """
 
