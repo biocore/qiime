@@ -17,7 +17,7 @@ from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files
 from cogent.app.util import get_tmp_filename
 from cogent.core.tree import PhyloNode
-from cogent.maths.distance_transform import dist_chisq
+from qiime.pycogent_backports.distance_transform import dist_chisq
 from qiime.parse import parse_newick, parse_distmat, parse_matrix
 from qiime.format import format_otu_table
 from qiime.beta_diversity import BetaDiversityCalc, single_file_beta,\

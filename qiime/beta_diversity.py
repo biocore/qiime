@@ -33,7 +33,7 @@ import os.path
 import warnings
 warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
 from cogent.app.util import get_tmp_filename
-import cogent.maths.distance_transform #avoid hard-coding metrics
+import qiime.pycogent_backports.distance_transform #avoid hard-coding metrics
 
 from qiime.util import FunctionWithParams, TreeMissingError, OtuMissingError
 from qiime.format import format_distance_matrix
@@ -43,7 +43,7 @@ from qiime.parse import parse_otu_table, parse_newick, PhyloNode
 from qiime.format import format_matrix
 
 def get_nonphylogenetic_metric(name):
-    """Gets metric by name from cogent.maths.distance_transform.
+    """Gets metric by name from qiime.pycogent_backports.distance_transform.
     
     Metrics should be f(matrix) -> distances.
     """
@@ -51,13 +51,13 @@ def get_nonphylogenetic_metric(name):
     # in distance_transform.py named e.g.:
     # binary_dist_chisq / dist_bray_curtis
     try:
-        return getattr(cogent.maths.distance_transform, 'dist_' + name.lower())
+        return getattr(qiime.pycogent_backports.distance_transform, 'dist_' + name.lower())
     except AttributeError:
         try:
-            return getattr(cogent.maths.distance_transform, 
+            return getattr(qiime.pycogent_backports.distance_transform, 
               name.replace('binary', 'binary_dist').lower())
         except AttributeError:
-            return getattr(cogent.maths.distance_transform, 
+            return getattr(qiime.pycogent_backports.distance_transform, 
               name.lower())
 
 def get_phylogenetic_metric(name):
@@ -87,12 +87,12 @@ def get_phylogenetic_row_metric(name):
     return getattr(qiime.beta_metrics, 'one_sample_' + name.lower())
 
 def list_known_nonphylogenetic_metrics():
-    """Lists known metrics by name from cogent.maths.distance_transform.
+    """Lists known metrics by name from qiime.pycogent_backports.distance_transform.
 
     Assumes that functions starting with dist_ or binary_dist are metrics.
     """
     result = []
-    for name in dir(cogent.maths.distance_transform):
+    for name in dir(qiime.pycogent_backports.distance_transform):
         if name.startswith('dist_'):
             result.append(name[5:])
         elif name.startswith('binary_dist_'):
