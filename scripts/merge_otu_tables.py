@@ -40,7 +40,9 @@ def main():
     option_parser, opts, args =\
        parse_command_line_parameters(**script_info)
        
-    input_fs = map(open,opts.input_fps.split(','))
+    input_fs = []
+    for input_fp in opts.input_fps.split(','):
+        input_fs.append(open(input_fp,'U'))
     
     sample_names, otu_names, data, taxonomy = merge_n_otu_tables(input_fs)
     
