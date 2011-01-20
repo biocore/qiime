@@ -24,7 +24,8 @@ from qiime.parse import (group_by_field, group_by_fields,
     sample_mapping_to_otu_table, parse_taxonomy, parse_mapping_file, 
     parse_metadata_state_descriptions, parse_rarefaction_data,
     parse_illumina_line, parse_qual_score, parse_qual_scores, QiimeParseError,
-    parse_newick,parse_trflp,parse_taxa_summary_table, parse_prefs_file)
+    parse_newick,parse_trflp,parse_taxa_summary_table, parse_prefs_file,
+    parse_mapping_file_to_dict, mapping_file_to_dict)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -131,7 +132,31 @@ class TopLevelTests(TestCase):
               '"x "\t" y "\t z ', ' ', '"#more skip"', 'i\t"j"\tk']
         obs = parse_mapping_file(s2)
         self.assertEqual(obs, exp)
-        
+
+    def test_mapping_file_to_dict(self):
+        """parse_mapping_file functions as expected"""
+        s1 = ['#sample\ta\tb', '#comment line to skip',\
+              'x \t y \t z ', ' ', '#more skip', 'i\tj\tk']
+        exp = ([['x','y','z'],['i','j','k']],\
+               ['sample','a','b'],\
+               ['comment line to skip','more skip'])
+        mapres = parse_mapping_file(s1) # map_data, header, comments
+        mapdict = mapping_file_to_dict(*mapres[:2])
+        expdict = {'x':{'a':'y','b':'z'}, 'i':{'a':'j','b':'k'}}
+        self.assertEqual(mapdict, expdict)
+
+    def test_parse_mapping_file_to_dict(self):
+        """parse_mapping_file functions as expected"""
+        s1 = ['#sample\ta\tb', '#comment line to skip',\
+              'x \t y \t z ', ' ', '#more skip', 'i\tj\tk']
+        exp = ([['x','y','z'],['i','j','k']],\
+               ['sample','a','b'],\
+               ['comment line to skip','more skip'])
+        mapdict, comments = parse_mapping_file_to_dict(s1)
+        expdict = {'x':{'a':'y','b':'z'}, 'i':{'a':'j','b':'k'}}
+        self.assertEqual(mapdict, expdict)
+        self.assertEqual(comments, ['comment line to skip','more skip'])
+
     def test_parse_mapping_file_handles_filepath(self):
         """ parse_mapping_file handles being passed a mapping filepath
         """

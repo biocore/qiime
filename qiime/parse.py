@@ -13,6 +13,7 @@ __status__ = "Development"
 
 from string import strip
 from collections import defaultdict
+from cogent.util.dict2d import Dict2D
 from cogent.util.misc import unzip
 from cogent.maths.stats.rarefaction import subsample
 from numpy import array, concatenate, repeat, zeros, nan
@@ -109,6 +110,34 @@ def parse_mapping_file(lines, strip_quotes=True, suppress_stripping=False):
     
     return mapping_data, header, comments
 
+def parse_mapping_file_to_dict(*args, **kwargs):
+    """Parser for map file that relates samples to metadata.
+    
+    input format: header line with fields
+            optionally other comment lines starting with #
+            tab-delimited fields
+
+    calls parse_mapping_file, then processes the result into a 2d dict, assuming
+    the first field is the sample id
+    e.g.: {'sample1':{'age':'3','sex':'male'},'sample2':...
+
+    returns the dict, and a list of comment lines
+"""
+    mapping_data, header, comments = parse_mapping_file(*args,**kwargs)
+    return mapping_file_to_dict(mapping_data, header), comments
+
+def mapping_file_to_dict(mapping_data, header):
+    """processes mapping data in list of lists format into a 2 deep dict"""
+    map_dict = {}
+    for i in range(len(mapping_data)):
+        sam = mapping_data[i]
+        map_dict[sam[0]] = {}
+        for j in range(len(header)):
+            if j == 0: continue # sampleID field
+            map_dict[sam[0]][header[j]] = sam[j]
+    return Dict2D(map_dict)
+
+
 def parse_prefs_file(prefs_string):
     """Returns prefs dict evaluated from prefs_string.
     
@@ -191,7 +220,6 @@ def parse_distmat_to_dict(table):
     """
     
     col_headers, row_headers, data = parse_matrix(table)
-    
     assert(col_headers==row_headers)
     
     result = defaultdict(dict)
@@ -580,6 +608,7 @@ def parse_sample_mapping(lines):
         count = line[2]
         OTU_sample_info[OTU_name][sample_name] = count
     return OTU_sample_info, all_sample_names
+
 
 def parse_qiime_config_file(qiime_config_file):
     """ Parse lines in a qiime_config file
