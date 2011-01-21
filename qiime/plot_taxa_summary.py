@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#file make_pie_charts.py
+#file plot_taxa_summary.py
 
 __author__ = "Jesse Stobmaugh"
 __copyright__ = "Copyright 2010, The QIIME Project" 
@@ -249,7 +249,7 @@ def make_pie_chart(data, dir_path,level,prefs,pref_colors,background_color,\
 
 def make_area_chart(sample_ids,taxa_percents,taxa,dir_path,level,prefs,\
                     pref_colors,\
-                    background_color,label_color,\
+                    background_color,label_color,chart_type,\
                     file_prefix = None,props={},y_len=6.5,\
                     dpi=80,generate_eps=False, generate_pdf=True,\
                     others_key = "All Other Categories",\
@@ -288,37 +288,50 @@ def make_area_chart(sample_ids,taxa_percents,taxa,dir_path,level,prefs,\
     
     x = numpy.arange(0, len(sample_ids))
     y_data = numpy.row_stack((zip(*taxa_percents)))
-
+    bar_y_data=zip(*taxa_percents)
     y_data_stacked = numpy.cumsum(y_data, axis=0)
 
-    ax1.fill_between(x, 0, y_data_stacked[0,:],\
-                     facecolor=data_colors[pref_colors[taxa[0]]].toHex(),\
-                     alpha=1)
+    if chart_type=='area':
+        ax1.fill_between(x, 0, y_data_stacked[0,:],\
+                        facecolor=data_colors[pref_colors[taxa[0]]].toHex(),\
+                        alpha=1)
 
-    for i,j in enumerate(y_data_stacked):
-        if i < len(y_data_stacked)-1:
-            next=i+1
-            ax1.fill_between(x, y_data_stacked[i,:], y_data_stacked[next,:],\
+        for i,j in enumerate(y_data_stacked):
+            if i < len(y_data_stacked)-1:
+                next=i+1
+                ax1.fill_between(x, y_data_stacked[i,:], y_data_stacked[next,:],\
                         facecolor=data_colors[pref_colors[taxa[i+1]]].toHex(),\
                         alpha=1)
-        else:
-            ax1.fill_between(x, y_data_stacked[i,:], 1,\
-                        facecolor=data_colors[pref_colors[taxa[i+1]]].toHex(),\
-                             alpha=1)   
+            else:
+                ax1.fill_between(x, y_data_stacked[i,:], 1,\
+                        facecolor=data_colors[pref_colors[taxa[i]]].toHex(),\
+                        alpha=1) 
 
-    if "title" in props:
-        mtitle = props["title"]
+    elif chart_type=='bar':
+        for i,j in enumerate(bar_y_data):
+            if i > 0:
+                ax1.bar(x, bar_y_data[i],width=0.75, \
+                        color=data_colors[pref_colors[taxa[i]]].toHex(),\
+                        bottom=numpy.sum(bar_y_data[:i], axis=0),align='center')
+            else:
+                ax1.bar(x, bar_y_data[i],width=0.75, \
+                        color=data_colors[pref_colors[taxa[i]]].toHex(),\
+                        align='center')
+                
 
     ax1.xaxis.set_ticks(x)
     ax1.set_xticklabels(sample_ids,rotation='vertical')
-    ax1.set_yticks([])
-   
-    #title(mtitle, fontsize='10',color=label_color)
+    ax1.set_yticks([])    
+     
+    if "title" in props:
+        mtitle = props["title"]
 
     if file_prefix is None:
         img_name = make_img_name()
     else:
         img_name = file_prefix
+
+    
     img_abs =  os.path.join(dir_path,'charts', img_name)
     savefig(img_abs, dpi=dpi,facecolor=background_color)
     eps_link = ""
@@ -389,9 +402,15 @@ def get_fracs(counts, num_categories, total, chart_type,sort_data=True):
     # data table
     for j,(n, t, s) in enumerate(counts):
         frac = float(n)/total
-        if j < num_categories-1:
-            red += n
-            fracs_labels_other.append((t,frac))
+        if chart_type=='pie':
+            if j < num_categories-1:
+                red += n
+                fracs_labels_other.append((t,frac))
+        elif chart_type=='area' or chart_type=='bar':
+            if j < num_categories:
+                red += n
+                fracs_labels_other.append((t,frac))
+                
         tax = s.strip().split("<br>")[-1]
         tax = tax.replace('"','')
         for_overlib = s.strip().rpartition("<br>")[0]
@@ -401,12 +420,12 @@ def get_fracs(counts, num_categories, total, chart_type,sort_data=True):
         ###differently for the area charts
         if chart_type=='pie':
             all_counts.append(DATA_HTML % (n,frac*100,for_overlib,tax, tax,t))
-        elif chart_type=='area':
+        elif chart_type=='area' or chart_type=='bar':
             area_table_out.append(str(n))
 
     #returning a dictionary for the case of area charts, which is different
     #than the array passed by the pie charts
-    if chart_type=='area':
+    if chart_type=='area' or chart_type=='bar':
         all_counts=area_table_out
         
     if len(counts) > num_categories:
@@ -467,16 +486,19 @@ def make_HTML_table(l,other_frac,total,red,other_cat,fracs_labels_other,\
             img_data.append(TABLE_graph % tuple(all_taxons))
             img_data.append(DATA_TABLE_HTML % '\n'.join(all_counts))
 
-    elif chart_type=='area':
+    elif chart_type=='area' or chart_type=='bar':
+        
         taxa_percents=fracs_labels_other
+        
         sample_ids=l
         taxa=other_cat
+
         all_categories=[]
         title = TITLE % (label,total,total,len(fracs_labels_other))
         all_taxons = [label]
         area = make_area_chart(sample_ids,taxa_percents,taxa,dir_path,\
                                level,prefs,pref_colors,\
-                               background_color,label_color,\
+                               background_color,label_color,chart_type,\
                                props = {'title':title})
         all_taxons.extend(area)
         all_taxons.extend(("",""))
@@ -540,7 +562,7 @@ def get_counts(label,colorby,num_categories,dir_path,level,color_data,\
                             prefs,pref_colors,background_color,label_color,\
                             chart_type,l.strip()))
     
-    elif chart_type=='area':
+    elif chart_type=='area' or chart_type=='bar':
         area_plot_arr=[]
         area_plot_sample_ids=[]
         area_plot_taxa_arr=[]
@@ -574,6 +596,7 @@ def get_counts(label,colorby,num_categories,dir_path,level,color_data,\
                 for i in fracs_labels_other:
                     area_plot_per.append(i[1])
                     area_plot_taxa.append(i[0])
+                    
                 area_plot_arr.append(area_plot_per)
                 area_plot_taxa_arr.append(area_plot_taxa)
         

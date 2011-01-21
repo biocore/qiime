@@ -171,7 +171,7 @@ class TopLevelTests(TestCase):
 
         obs1,obs2=make_pie_chart(self.fracs,dir_path,1,\
                     self.prefs,self.color_prefs, "black","white","pie_chart",\
-                    self.props,
+                    props=self.props,\
                     generate_eps=True, generate_pdf = True)
 
         self.assertTrue(exists(filename1),'The png file was not created in \
@@ -201,11 +201,10 @@ the appropriate location')
             mkdir("/tmp/qiimewebfiles/charts")
         except OSError:
             pass
-                    
+ 
         obs1,obs2=make_area_chart(self.sample_ids,self.area_fracs,self.taxa,dir_path,1,\
-                    self.prefs,self.color_prefs, "black","white","area_chart",\
-                    self.props,
-                    generate_eps=True, generate_pdf = True)
+                    self.prefs,self.color_prefs, "black","white","area","area_chart",\
+                    self.props,generate_eps=True, generate_pdf = True)
 
         self.assertTrue(exists(filename1),'The png file was not created in \
 the appropriate location')

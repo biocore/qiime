@@ -123,7 +123,6 @@ def main():
     if colorby==None:
         colorby=[]
         for c in color_data['counts'].values():
-            print c[0]
             colorby.extend(c[0])
     else:
         colorby=colorby.strip().strip("'").split(',')
