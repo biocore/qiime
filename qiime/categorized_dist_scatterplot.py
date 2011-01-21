@@ -51,7 +51,6 @@ def get_sam_ids(map_data, map_header, colorby, cat,
 
         sample_ids = qiime.filter_by_metadata.get_sample_ids(\
             map_data, map_header, {colorby:[cat]})
-    primary_key, primary_value = primary_state.split(':')
     # primary key is the category label, e.g. AgeCategory
     # value is the val for that category, e.g. Adult
 

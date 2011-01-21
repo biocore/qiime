@@ -88,8 +88,8 @@ def main():
         lines = [str(xvals[i])+'\t'+str(state1_avg_dists[i])+\
             '\t'+state1_samids[i]+'\n' for i in range(len(xvals))]
         text_fh.writelines(lines)
-        
-    plt.legend(colorby_cats)
+
+    if opts.colorby != None: plt.legend(colorby_cats)
     plt.savefig(opts.output_path)
 
 if __name__ == "__main__":
