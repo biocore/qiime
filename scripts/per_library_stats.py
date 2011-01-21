@@ -12,6 +12,7 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
 from optparse import make_option
+from numpy import std
 from qiime.util import (compute_seqs_per_library_stats, 
     parse_command_line_parameters, get_options_lookup)
 
@@ -41,6 +42,7 @@ def main():
     print ' Max: %s' % str(max_counts)
     print ' Median: %s' % str(median_counts)
     print ' Mean: %s' % str(mean_counts)
+    print ' Std. dev.: %s' % (str(std(counts_per_sample.values())))
     print ''
     print 'Seqs/sample detail:'
     sorted_counts_per_sample = [(v,k) for k,v in counts_per_sample.items()]
