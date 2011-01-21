@@ -1,0 +1,96 @@
+#!/usr/bin/env python
+# File created on 19 Jan 2011
+from __future__ import division
+
+__author__ = "Justin Kuczynski"
+__copyright__ = "Copyright 2010, The QIIME project"
+__credits__ = ["Justin Kuczynski"]
+__license__ = "GPL"
+__version__ = "1.2.0-dev"
+__maintainer__ = "Justin Kuczynski"
+__email__ = "justinak@gmail.com"
+__status__ = "Development"
+
+
+from optparse import make_option
+
+import warnings
+warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
+
+from qiime.parse import parse_distmat_to_dict, parse_mapping_file, mapping_file_to_dict
+from qiime.util import parse_command_line_parameters
+import numpy
+import matplotlib.pyplot as plt
+
+from qiime.categorized_dist_scatterplot import get_avg_dists, get_sam_ids
+
+script_info = {}
+script_info['brief_description'] = "makes a figure representing average distances between samples, broken down by categories. I call it a 'categorized distance scatterplot'"
+script_info['script_description'] = "makes a figure representing average distances between samples, broken down by categories. I call it a 'categorized distance scatterplot'. See script usage for more details. The mapping file specifies the relavent data - if you have e.g. 'N/A' values or samples you don't want included, first use filter_by_metadata.py to remove unwanted samples from the mapping file, and thus the analysis."
+script_info['script_usage'] = [("Canonical Example:","Split samples by country. Within each country compare each child to all adults. Plot the average distance from that child to all adults, vs. the age of that child","python categorized_dist_scatterplot.py -m map.txt -d unifrac_distance.txt -c Country -p AgeCategory:Child -s AgeCategory:Adult -a AgeYears -o fig1.png"),("Example 2:","Same as above, but compares Child with all other categories (e.g.: NA, Infant, etc.)","python categorized_dist_scatterplot.py -m map.txt -d unifrac_distance.txt -c Country -p AgeCategory:Child -a AgeYears -o fig1.svg")]
+script_info['output_description']= "a figure and the text dat for that figure "
+script_info['required_options'] = [\
+ make_option('-m', '--map',
+     help='mapping file'),
+ make_option('-d', '--distance_matrix',
+     help='distance matrix'),
+ make_option('-p', '--primary_state',
+     help="Samples matching this state will be plotted. E.g.: AgeCategory:Child . See qiime's filter_by_metadata.py for more syntax options"),
+ make_option('-a', '--axis_category',
+     help='this will form the horizontal axis of the figure, e.g.: AgeYears . Must be numbers'),
+ make_option('-o', '--output_path',
+     help='output figure, filename extention determines format. E.g.: "fig1.png" or similar. A "fig1.txt" or similar will also be created with the data underlying the figure'),
+]
+script_info['optional_options'] = [
+ make_option('-c', '--colorby',
+     help='samples will first be separated by this column of the mapping file. They will be colored by this column of the mapping file, and all comparisons will be done only among samples with the same value in this column. e.g.: Country. You may omit -c, and the samples will not be separated'),
+ make_option('-s', '--secondary_state',
+     help='all samples matching the primary state will be compared to samples matcthing this secondary state. E.g.: AgeCategory:Adult'),
+]
+script_info['version'] = __version__
+
+def main():
+    option_parser, opts, args =\
+        parse_command_line_parameters(**script_info)
+    map_data, map_header, map_comments = parse_mapping_file(open(opts.map,'U'))
+    map_dict = mapping_file_to_dict(map_data, map_header)
+
+    distdict = parse_distmat_to_dict(open(opts.distance_matrix,'U'))
+
+    if opts.colorby == None:
+        colorby_cats = [None]
+    else:
+        colorby_idx = map_header.index(opts.colorby)
+        colorby_cats = list(set([map_data[i][colorby_idx] for i in range(len(map_data))]))
+    import os
+    textfilename = os.path.splitext(opts.output_path)[0] + '.txt'
+    text_fh = open(textfilename,'w')
+    text_fh.write(opts.axis_category+'\tdistance\tSampleID'+'\n')
+    for cat_num, cat in enumerate(colorby_cats):
+        # collect the primary and secondary samples within this category
+        state1_samids, state2_samids = get_sam_ids(map_data, map_header, opts.colorby, cat, opts.primary_state, opts.secondary_state)
+        if state1_samids == [] or state2_samids == [] or \
+            (len(state1_samids) == 1 and state1_samids == state2_samids):
+            raise RuntimeError("one category of samples didn't have any valid distances. try eliminating sampels from -p or -s, or changing your mapping file with filter_by_metadata.py")
+        # go through dmtx
+        state1_avg_dists = get_avg_dists(state1_samids,state2_samids,distdict)
+
+        # plot
+        xvals = [float(map_dict[sam][opts.axis_category]) for sam in state1_samids]
+        try:
+            color = plt.cm.jet(cat_num / (len(colorby_cats)-1))
+        except ZeroDivisionError: # only one cat
+            color = 'b'
+        plt.scatter(xvals, state1_avg_dists, edgecolors=color, alpha=.5, facecolors='none')
+        plt.xlabel(opts.axis_category)
+        plt.ylabel('average distance')
+
+        lines = [str(xvals[i])+'\t'+str(state1_avg_dists[i])+\
+            '\t'+state1_samids[i]+'\n' for i in range(len(xvals))]
+        text_fh.writelines(lines)
+        
+    plt.legend(colorby_cats)
+    plt.savefig(opts.output_path)
+
+if __name__ == "__main__":
+    main()
