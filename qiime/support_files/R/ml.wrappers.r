@@ -48,6 +48,7 @@
     if(is.element("do.trace",names(params))) do.trace <- params$do.trace
     model <- list("rf.wrapper" = randomForest(x,y,
     	     		       ntree=ntree,do.trace=do.trace,
+                           importance=TRUE,
 			       keep.inbag=TRUE,...))
     model$params <- list(ntree=ntree, ...)
     class(model) <- "rf.wrapper"
@@ -56,9 +57,9 @@
 
 # Returns mean decrease in Gini for all vars
 "importance.rf.wrapper" <- function(model, ...){
-    invisible(list('scores' = model$rf.wrapper$importance[,'MeanDecreaseGini'],
+    invisible(list('scores' = model$rf.wrapper$importance[,'MeanDecreaseAccuracy'],
                    'importance.method' = 
-            "Mean decrease in Gini index when the feature is ignored"))
+            "Mean decrease in accuracy when the feature is ignored"))
 }
 
 # Returns list of OOB error, and description of error method
