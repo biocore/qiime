@@ -45,6 +45,9 @@ libraries <- list('random_forest'='randomForest','elastic_net'='glmnet')
     y <- as.factor(map[,categ])
     names(y) <- rownames(map)
 
+    # drop NA values
+    y <- y[!is.na(y)]
+
     # keep only rows shared between map and data, make sure order is consistent
     shared.rows <- intersect(rownames(x), names(y))
     x <- x[shared.rows,]
@@ -58,9 +61,9 @@ libraries <- list('random_forest'='randomForest','elastic_net'='glmnet')
     }
 
     # normalize x (skip samples that sum to 0)
-    skip.rows <- which(apply(x,1,sum)==0)
-    x[-skip.rows,] <- sweep(x[-skip.rows,], 1, 
-                        apply(x[-skip.rows,], 1, sum), '/')
+    nonzero.rows <- apply(x,1,sum)>0
+    x[nonzero.rows,] <- sweep(x[nonzero.rows,], 1, 
+                        apply(x[nonzero.rows,], 1, sum), '/')
 
     # drop singletons
     singletons <- which(apply(x,2,function(x) sum(x>0)) <= 1)
@@ -69,8 +72,10 @@ libraries <- list('random_forest'='randomForest','elastic_net'='glmnet')
         lineages <- lineages[-singletons]
     }
 
-    return(list(x=x,y=y,params=params, modelnames=modelnames,
-            output.dir=output.dir, model.fcns=model.fcns, lineages=lineages))
+    return(list(x=x, 
+                y=y,params=params, modelnames=modelnames,
+                output.dir=output.dir,
+                model.fcns=model.fcns, lineages=lineages))
 }
 
 # Attempts to load a given library. If does not exists, fails gracefully
@@ -155,8 +160,13 @@ libraries <- list('random_forest'='randomForest','elastic_net'='glmnet')
             res$importance$importance.method))
     cat('feature_id\timportance_score\n')
     keepix <- res$importance$scores > 0
-    write.table(res$importance$scores[keepix],sep='\t',
-        quote=FALSE,col.names=FALSE)
+    for(i in 1:length(res$importance$scores[keepix])){
+        cat(sprintf('%s\t%0.8f\n',
+            names(res$importance$scores[keepix])[i], 
+            res$importance$scores[keepix][i]))
+    }
+#~     write.table(res$importance$scores[keepix],sep='\t',
+#~         quote=FALSE,col.names=FALSE)
     sink(NULL)
     
     # return to the original working directory
@@ -207,12 +217,13 @@ libraries <- list('random_forest'='randomForest','elastic_net'='glmnet')
         model.name, filter.type))
     cat('OTU ID\t')
     otu_subset <- t(opts$x[,res$features[1:best.n]])
-    lineage_subset <- opts$lineages[res$features[1:best.n]]
-    otu_subset <- cbind(otu_subset, lineage_subset)
-    colnames(otu_subset)[ncol(otu_subset)] <- "Consensus Lineage"
+    if(!is.null(opts$lineages)){
+        lineage_subset <- opts$lineages[res$features[1:best.n]]
+        otu_subset <- cbind(otu_subset, lineage_subset)
+        colnames(otu_subset)[ncol(otu_subset)] <- "Consensus Lineage"
+    }
     write.table(otu_subset,sep='\t',quote=FALSE)
     sink(NULL)
-    
     # return to the original working directory
     setwd(currwd)
 }
