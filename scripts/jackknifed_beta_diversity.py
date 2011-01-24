@@ -66,7 +66,7 @@ script_info['optional_options']=[\
  make_option('-t','--tree_fp',\
             help='path to the tree file [default: %default; '+\
             'REQUIRED for phylogenetic measures]'),\
- make_option('--master_tree', default="full",
+ make_option('--master_tree', default="consensus",
         help='method for computing master trees in jackknife analysis.'+\
         ' "consensus": consensus of trees from jackknifed otu tables. '+\
         ' "full": tree generated from input (unsubsambled) otu table. '+\
