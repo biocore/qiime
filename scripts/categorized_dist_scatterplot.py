@@ -14,10 +14,13 @@ __status__ = "Development"
 
 from optparse import make_option
 
+import os
+
 import warnings
 warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
 
-from qiime.parse import parse_distmat_to_dict, parse_mapping_file, mapping_file_to_dict
+from qiime.parse import parse_distmat_to_dict, parse_mapping_file,\
+    mapping_file_to_dict
 from qiime.util import parse_command_line_parameters
 import numpy
 import matplotlib.pyplot as plt
@@ -26,7 +29,7 @@ from qiime.categorized_dist_scatterplot import get_avg_dists, get_sam_ids
 
 script_info = {}
 script_info['brief_description'] = "makes a figure representing average distances between samples, broken down by categories. I call it a 'categorized distance scatterplot'"
-script_info['script_description'] = "makes a figure representing average distances between samples, broken down by categories. I call it a 'categorized distance scatterplot'. See script usage for more details. The mapping file specifies the relavent data - if you have e.g. 'N/A' values or samples you don't want included, first use filter_by_metadata.py to remove unwanted samples from the mapping file, and thus the analysis."
+script_info['script_description'] = "makes a figure representing average distances between samples, broken down by categories. I call it a 'categorized distance scatterplot'. See script usage for more details. The mapping file specifies the relavent data - if you have e.g. 'N/A' values or samples you don't want included, first use filter_by_metadata.py to remove unwanted samples from the mapping file, and thus the analysis. Note that the resulting plot will include only samples in both the mapping file AND the distance matrix."
 script_info['script_usage'] = [("Canonical Example:","Split samples by country. Within each country compare each child to all adults. Plot the average distance from that child to all adults, vs. the age of that child","python categorized_dist_scatterplot.py -m map.txt -d unifrac_distance.txt -c Country -p AgeCategory:Child -s AgeCategory:Adult -a AgeYears -o fig1.png"),("Example 2:","Same as above, but compares Child with all other categories (e.g.: NA, Infant, etc.)","python categorized_dist_scatterplot.py -m map.txt -d unifrac_distance.txt -c Country -p AgeCategory:Child -a AgeYears -o fig1.svg")]
 script_info['output_description']= "a figure and the text dat for that figure "
 script_info['required_options'] = [\
@@ -62,8 +65,8 @@ def main():
         colorby_cats = [None]
     else:
         colorby_idx = map_header.index(opts.colorby)
-        colorby_cats = list(set([map_data[i][colorby_idx] for i in range(len(map_data))]))
-    import os
+        colorby_cats = list(set([map_data[i][colorby_idx] for\
+            i in range(len(map_data))]))
     textfilename = os.path.splitext(opts.output_path)[0] + '.txt'
     text_fh = open(textfilename,'w')
     text_fh.write(opts.axis_category+'\tdistance\tSampleID'+'\n')
@@ -71,24 +74,29 @@ def main():
     plt.figure()
     for cat_num, cat in enumerate(colorby_cats):
         # collect the primary and secondary samples within this category
-        state1_samids, state2_samids = get_sam_ids(map_data, map_header, opts.colorby, cat, opts.primary_state, opts.secondary_state)
+        state1_samids, state2_samids = get_sam_ids(map_data, map_header, 
+            opts.colorby, cat, opts.primary_state, opts.secondary_state)
         state1_samids =\
             list(set(state1_samids).intersection(set(distdict.keys())))
         state2_samids =\
             list(set(state2_samids).intersection(set(distdict.keys())))
         if state1_samids == [] or state2_samids == [] or \
             (len(state1_samids) == 1 and state1_samids == state2_samids):
-            raise RuntimeError("one category of samples didn't have any valid distances. try eliminating sampels from -p or -s, or changing your mapping file with filter_by_metadata.py")
+            raise RuntimeError("one category of samples didn't have any valid"+\
+            " distances. try eliminating sampels from -p or -s, or changing"+\
+            " your mapping file with filter_by_metadata.py")
         # go through dmtx
         state1_avg_dists = get_avg_dists(state1_samids,state2_samids,distdict)
 
         # plot
-        xvals = [float(map_dict[sam][opts.axis_category]) for sam in state1_samids]
+        xvals = [float(map_dict[sam][opts.axis_category]) for\
+            sam in state1_samids]
         try:
             color = plt.cm.jet(cat_num / (len(colorby_cats)-1))
         except ZeroDivisionError: # only one cat
             color = 'b'
-        plt.scatter(xvals, state1_avg_dists, edgecolors=color, alpha=.5, facecolors='none')
+        plt.scatter(xvals, state1_avg_dists, edgecolors=color, alpha=.5,
+            facecolors='none')
         plt.xlabel(opts.axis_category)
         plt.ylabel('average distance')
 
