@@ -57,6 +57,7 @@ def main():
 
     distdict = parse_distmat_to_dict(open(opts.distance_matrix,'U'))
 
+
     if opts.colorby == None:
         colorby_cats = [None]
     else:
@@ -66,9 +67,15 @@ def main():
     textfilename = os.path.splitext(opts.output_path)[0] + '.txt'
     text_fh = open(textfilename,'w')
     text_fh.write(opts.axis_category+'\tdistance\tSampleID'+'\n')
+    colorby_cats.sort()
+    plt.figure()
     for cat_num, cat in enumerate(colorby_cats):
         # collect the primary and secondary samples within this category
         state1_samids, state2_samids = get_sam_ids(map_data, map_header, opts.colorby, cat, opts.primary_state, opts.secondary_state)
+        state1_samids =\
+            list(set(state1_samids).intersection(set(distdict.keys())))
+        state2_samids =\
+            list(set(state2_samids).intersection(set(distdict.keys())))
         if state1_samids == [] or state2_samids == [] or \
             (len(state1_samids) == 1 and state1_samids == state2_samids):
             raise RuntimeError("one category of samples didn't have any valid distances. try eliminating sampels from -p or -s, or changing your mapping file with filter_by_metadata.py")
