@@ -24,15 +24,17 @@ import matplotlib
 import os
 import shutil
 
+plot_filetype_choices = ['pdf','svg','png']
+
 script_info={}
 script_info['brief_description']="""Make taxaonomy summary charts based on taxonomy assignment"""
-script_info['script_description']="""This script automates the construction of pie and area charts showing the breakdown of taxonomy by given levels. The script creates an html file for easy visualization of all of the charts on the same page. It uses the taxonomy or category counts from summarize_taxa.py for combined samples by level (-i) and user specified labels for each file passed in (-l). Output will be in a randomly generated folder name within the user specified folder (-o) the default is the current working directory. There is also additional functionality that breaks each taxonomic level up by sample (-s). This will create a chart for each sample at each specified level. The user can also specify the number of categories displayed in a single pie charts the rest are grouped together as 'other category' (-n) default is 20.
+script_info['script_description']="""This script automates the construction of pie, bar and area charts showing the breakdown of taxonomy by given levels. The script creates an html file for each chart type for easy visualization. It uses the taxonomy or category counts from summarize_taxa.py for combined samples by level (-i) and user specified labels for each file passed in (-l). Output will be written tothe user specified folder (-o) the, where the default is the current working directory. The user can also specify the number of categories displayed for within a single pie chart, where the rest are grouped together as the 'other category' using the (-n) option, default is 20.
 """
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Examples:""","""If you wish to run the code using default parameters, you must supply a counts file (Class.txt) along with the taxon level label (Class), by using the following command:""","""plot_taxa_summary.py -i Class.txt -l Class"""))
-script_info['script_usage'].append(("""""","""If you want to make pie charts for multiple levels at a time (phylum.txt,class.txt,genus.txt) use the following command:""","""plot_taxa_summary.py -i phylum.txt,class.txt,genus.txt -l phylum,class,genus"""))
-script_info['script_usage'].append(("""""","""If you want specify an output directory (e.g. "pie_charts/", regardless of whether the directory exists, use the following command:""","""plot_taxa_summary.py -i Class.txt -l Class -o pie_charts/"""))
-script_info['script_usage'].append(("""""","""Additionally, if you would like to display on a set number of taxa ("-n 10") and generate pie charts for all samples ("-s"), you can use the following command:""","""plot_taxa_summary.py -i Class.txt -l Class -o pie_charts/ -n 10 -s"""))
+script_info['script_usage'].append(("""Examples:""","""If you wish to run the code using default parameters, you must supply a counts file (Class.txt) along with the taxon level label (Class) and the type(s) of chart, by using the following command:""","""plot_taxa_summary.py -i Class.txt -l Class -c pie,bar,area"""))
+script_info['script_usage'].append(("""""","""If you want to make charts for multiple levels at a time (phylum.txt,class.txt,genus.txt) use the following command:""","""plot_taxa_summary.py -i phylum.txt,class.txt,genus.txt -l phylum,class,genus -c pie,bar,area"""))
+script_info['script_usage'].append(("""""","""If you want specify an output directory (e.g. "output_charts/", regardless of whether the directory exists, use the following command:""","""plot_taxa_summary.py -i Class.txt -l Class -c pie,bar,area -o output_charts/"""))
+script_info['script_usage'].append(("""""","""Additionally, if you would like to display on a set number of taxa ("-n 10"), you can use the following command:""","""plot_taxa_summary.py -i Class.txt -l Class -c pie -o pie_charts/ -n 10"""))
 script_info['script_usage'].append(("""""","""If you would like to display generate pie charts for samples samples: 'sample1' and 'sample2' that are in the counts file header, you can use the following command:""","""plot_taxa_summary.py -i Class.txt -l Class -o pie_charts/ -b sample1,sample2"""))
 script_info['output_description']="""The script generates an output folder, which contains several files. For each pie chart there is a png and a pdf file. The best way to view all of the pie charts is by opening up the file taxonomy_summary_pie_chart.html."""
 
@@ -41,18 +43,10 @@ make_option('-i', '--input_files', dest='counts_fname',\
     action='store',type='string',\
     help='list of files with sample counts by taxonomy [REQUIRED]'),
 make_option('-l', '--labels', dest='labels',action='store',type='string',
-    help='list of labels for pie chart (i.e. Phylum, Class) [REQUIRED]'),
-make_option('-c', '--chart_type', dest='chart_type',\
-    action='store',type='string',\
-    help='type of chart to plot (i.e. pie or area). The user has the ability\
- to plot multiple types, by using a comma-separated list (e.g. area,pie)\
- [REQUIRED]')
+    help='list of labels for pie chart (i.e. Phylum, Class) [REQUIRED]')
 ]
 
 script_info['optional_options']=[\
-#make_option('-s', '--sample_flag', dest='do_sample',
-#    help='if -s is passed, pie charts will be created for each sample',
-#        default=False, action = 'store_true'),
 make_option('-n', '--num', dest='num_categories', \
     help='Maximum number of individual categories in each pie chart. \
 All additional categories are grouped into an "other" category. \
@@ -74,7 +68,20 @@ file. NOTE: This is a file with a dictionary containing preferences for the \
 analysis. The label taxonomy_coloring is used for the coloring, see example \
 prefs file preferences_file. [default: %default]'),
  make_option('-k', '--background_color',help='This is the background color to \
-use in the plots. [default: %default]')
+use in the plots. [default: %default]'),
+ make_option('-d', '--dpi',help='This is the dpi to \
+use in the plots. [default: %default]',default='80'),
+ make_option('-x', '--x_width',help='This is the width to \
+use in the plots. [default: %default]',default='12'),
+ make_option('-y', '--y_height',help='This is the height to \
+use in the plots. [default: %default]',default='6'),
+make_option('-w', '--bar_width', dest='bar_width', \
+    help='This the width of the bars in the bar graph and should be a number between 0 and 1. NOTE: this is only used for bar charts. [default: %default]', default='0.75'),
+ make_option('-t', '--type_of_file',type='choice',help='This is the filename suffix to use for each high-res plot. (i.e. '+','.join(plot_filetype_choices)+') [default: %default]', choices=plot_filetype_choices,default='pdf'),
+ make_option('-c', '--chart_type', dest='chart_type',\
+     action='store',type='string',\
+     help='type of chart to plot (i.e. pie, bar or area). The user has the \ ability to plot multiple types, by using a comma-separated list (e.g. area,pie)\
+  [default: %default]',default='area,bar,pie')
 ]
 
 script_info['version']=__version__
@@ -104,21 +111,6 @@ def main():
     color_prefs, color_data, background_color, label_color= \
                    taxonomy_color_prefs_and_map_data_from_options(opts)
     
-    # set the colorby options
-    #colorby = opts.colorby
-    #do_sample = opts.do_sample
-    '''
-    if colorby is None and not do_sample:
-        colorby = None
-    elif colorby is not None and not do_sample:
-        colorby = colorby.strip().strip("'").split(',')
-    else:
-        colorby = []
-        for c in color_data['counts'].values():
-            colorby.extend(c[0])
-        colorby = set(colorby)
-        
-    '''
     colorby = opts.colorby
     if colorby==None:
         colorby=[]
@@ -126,19 +118,19 @@ def main():
             colorby.extend(c[0])
     else:
         colorby=colorby.strip().strip("'").split(',')
-
-    #colorby = list(set(colorby)
     
     counts_fname = opts.counts_fname
     
     #Define labels to use
     labels = opts.labels
     data = [(label,f.strip()) \
-            for f,label in zip(counts_fname.split(","),labels.split(","))]
+        for f,label in zip(counts_fname.split(","),labels.split(","))]
     filepath=data[0][1]
     
     filename=filepath.strip().rpartition('/')[0]
     num_categories = int(opts.num_categories)
+    if num_categories<=0:
+        raise ValueError, 'The number of categories has to be greater than 0!'
 
     #create directory path
     if opts.dir_path:
@@ -155,9 +147,7 @@ def main():
         
     if dir_path == './':
         dir_path = os.getcwd()
-    
-    #data_dir_path = get_random_directory_name(output_dir=dir_path)
-    
+
     #make javascript output directory
     javascript_path = os.path.join(dir_path,'js')
     try:
@@ -182,9 +172,31 @@ def main():
                     'css/qiime_style.css'),\
                     os.path.join(css_path,'qiime_style.css'))
 
+    # verify all parameters are valid
+    plot_width=float(opts.x_width)
+    if plot_width<=0:
+        raise ValueError, 'The width of the plot has to be greater than 0!'
+    
+    plot_height=float(opts.y_height)
+    if plot_height<=0:
+        raise ValueError, 'The height of the plot has to be greater than 0!'
+    
+    bar_width=float(opts.bar_width)
+    if bar_width<=0 or bar_width>1:
+        raise ValueError, 'The bar width of the plot has to be between 0 and 1!'
+
+    dpi=float(opts.dpi)    
+    if dpi<=0:
+        raise ValueError, 'The dpi of the plot has to be greater than 0!'
+    
+    generate_image_type=opts.type_of_file
     plots_to_make=opts.chart_type.split(',')
+    chart_types=['area','pie','bar']
     for i in plots_to_make:
         chart_type=i.lower().strip()
+        if chart_type not in chart_types:
+            raise ValueError, 'Please type in one of the appropriate chart types (i.e. %s)!' % ','.join(chart_types) 
+            
         #make pie chart output path
         charts_path = os.path.join(dir_path,'charts')
         try:
@@ -194,7 +206,7 @@ def main():
         
         make_all_charts(data,dir_path,filename,num_categories, \
         colorby,args,color_data, color_prefs,background_color,label_color,\
-        chart_type)
+        chart_type,generate_image_type,plot_width,plot_height,bar_width,dpi)
         
     
 if __name__ == "__main__":
