@@ -157,14 +157,20 @@ def make_legend(data_ids,colors,plot_width,plot_height,label_color,\
     
     out_fpath=img_path+'_legend.'+generate_image_type
     fname=os.path.split(out_fpath)[-1]
-    
-    fig = figure(randrange(10000), figsize=(plot_width,plot_height))
-    figlegend = figure(figsize=(plot_width,plot_height))
-    ax = fig.add_subplot(111)
-    fp = FontProperties()
-    fp.set_size('8')
 
-    rc('font', size='8')
+    #determine the number of text values and the max length of those values
+    num_ids=len(data_ids)
+    max_id_len=0
+    for i in data_ids:
+        if len(i)>max_id_len:
+            max_id_len=len(i)
+    
+    fig = figure(randrange(10000), figsize=(1,1))
+    figlegend = figure(figsize=(max_id_len*0.08,num_ids*0.22))
+    ax = fig.add_subplot(111)
+
+    fsize=8
+    rc('font', size=fsize)
     rc('text', color=label_color)
     rc('patch', linewidth=0)
     rc('axes', linewidth=0,edgecolor=label_color)
@@ -404,20 +410,33 @@ def make_area_bar_chart(sample_ids,taxa_percents,taxa,dir_path,level,prefs,\
     all_labels = []
     colors = []
     
+    # set font-size based on the number of samples
+    fsize=0
+    for i in range(11):
+        fsize=11-i
+        if len(sample_ids)<=(i*10):
+            break
+    
     #define figure parameters
-    rc('font', size='10')
+    rc('font', size=fsize)
     rc('text', color=label_color)
     rc('patch', linewidth=.1)
-    rc('axes', linewidth=.5,edgecolor=label_color)
+    rc('axes', linewidth=.1,edgecolor=label_color)
     rc('text', usetex=False)
-    rc('xtick', labelsize=8,color=label_color)
+    rc('xtick', labelsize=fsize,color=label_color)
     
     #define figure
     fig = figure(figsize=(plot_width,plot_height))
-    ax1 = fig.add_subplot(111)
-    fp = FontProperties()
-    fp.set_size('8')
 
+    ax1 = fig.add_subplot(111,axisbg=background_color)
+    fp = FontProperties()
+
+    for line in ax1.xaxis.get_ticklines(): 
+        # line is a matplotlib.lines.Line2D instance 
+        line.set_color(label_color)
+        line.set_markersize(1) 
+        line.set_markeredgewidth(.5)  
+    
     #create an iterative array for length of sample_ids
     x = numpy.arange(0, len(sample_ids))
     
@@ -433,7 +452,7 @@ def make_area_bar_chart(sample_ids,taxa_percents,taxa,dir_path,level,prefs,\
         #positions
         bar_width=0.05
         #fill the first taxa
-        ax1.fill_between(x, 0, y_data_stacked[0,:],\
+        ax1.fill_between(x, 0, y_data_stacked[0,:],linewidth=0,\
                         facecolor=data_colors[pref_colors[taxa[0]]].toHex(),\
                         alpha=1)
 
@@ -442,15 +461,14 @@ def make_area_bar_chart(sample_ids,taxa_percents,taxa,dir_path,level,prefs,\
             if i < len(y_data_stacked)-1:
                 next=i+1
                 ax1.fill_between(x, y_data_stacked[i,:],\
-                        y_data_stacked[next,:],\
+                        y_data_stacked[next,:],linewidth=0,\
                         facecolor=data_colors[pref_colors[taxa[i+1]]].toHex(),\
                         alpha=1)
             #fill the last taxa to the total height of 1/
             else:
-                ax1.fill_between(x, y_data_stacked[i,:], 1,\
+                ax1.fill_between(x, y_data_stacked[i,:], 1,linewidth=0,\
                         facecolor=data_colors[pref_colors[taxa[i]]].toHex(),\
-                        alpha=1)
-                        
+                        alpha=1)   
     #if area chart we use bar
     elif chart_type=='bar':
         
@@ -458,15 +476,19 @@ def make_area_bar_chart(sample_ids,taxa_percents,taxa,dir_path,level,prefs,\
         for i,j in enumerate(bar_y_data):
             #if we are not in the first row of array, append more taxa
             if i > 0:
-                ax1.bar(x, bar_y_data[i],width=bar_width, \
+                ax1.bar(x, bar_y_data[i],width=bar_width,linewidth=0, \
                         color=data_colors[pref_colors[taxa[i]]].toHex(),\
                         bottom=numpy.sum(bar_y_data[:i], axis=0),align='center')
             #make the bars for the first row of array
             else:
-                ax1.bar(x, bar_y_data[i],width=bar_width, \
+                ax1.bar(x, bar_y_data[i],width=bar_width, linewidth=0,\
                         color=data_colors[pref_colors[taxa[i]]].toHex(),\
                         align='center')
-
+    
+    #this cleans up the whitespace around the subplot
+    ax1.set_ylim((0, 1))
+    ax1.set_xlim((-0.5,len(sample_ids)-0.5))
+    
     # transform bar_data into an area map for html mouseovers
     xmap=transform_and_generate_xmap(ax1,bar_y_data,bar_width,taxa,x,\
                                      plot_height,dpi,taxa_percents)
@@ -841,17 +863,17 @@ def get_counts(label,colorby,num_categories,dir_path,level,color_data,\
         data_table=zip(*total_area_table_out)
         
         #create link for raw data file
-        data_html_str='<table<tr class=ntitle><td>View Table: <a href="%s">%s</a></td></tr><table>' % \
+        data_html_str='<table><tr class=ntitle><td><a href="%s">View Table (%s)</a></td></tr></table>' % \
          (os.path.join('raw_data',os.path.split(raw_fpath)[-1]),\
-            os.path.split(raw_fpath)[-1])
+            os.path.splitext(raw_fpath)[-1])
         
         
         #create the output table
         data_html_str+='<table cellpadding=1 cellspacing=1 border=1 ' + \
                       'style=\"text-align:center;border-color:white;'+\
                       'border-style:groove;\">' + \
-                      '<tr class=ntitle><td colspan="2"></td><td ' + \
-                      'valign=bottom class=header colspan="2">Total</td>\n'
+                      '<tr class=ntitle><td class=header colspan="2"></td><td'+\
+                      ' valign=bottom class=header colspan="2">Total</td>\n'
         
         ct_head_row='<tr class=ntitle>' + \
                     '<td valign=bottom ' + \
@@ -863,7 +885,7 @@ def get_counts(label,colorby,num_categories,dir_path,level,color_data,\
         for i in area_plot_sample_ids:
             data_html_str+='<td colspan="2"valign=bottom \
                             class=header>%s</td>\n' % (i)
-            ct_head_row+='<td>count</td><td>%</td>'
+            ct_head_row+='<td class=header>count</td><td class=header>%</td>'
             
         data_html_str+='</tr>'
         ct_head_row+='</tr>'
@@ -875,7 +897,8 @@ def get_counts(label,colorby,num_categories,dir_path,level,color_data,\
             tax=dat
             split_label = [i for i in tax.strip().split(";")]
             split_label[-1]="<a href=javascript:gg(\'%s\');>%s</a>" % \
-                             (split_label[-1],split_label[-1])
+                             (split_label[-1].replace(' ','+'),\
+                              split_label[-1].replace(' ','&nbsp;'))
             joined_label=';'.join(split_label).replace('"','')
             row_sum= sum([float(i) for i in data_table[ct]])
             data_html_str+="<tr><td class=\"normal\" bgcolor=\"%s\">\
