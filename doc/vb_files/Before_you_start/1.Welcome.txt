@@ -6,10 +6,10 @@ Before getting started with QIIME, you should install the VirtualBox guest addit
 
 The steps to install it are:
 1. Release the mouse pointer from this Window using either the left Command-key (Mac) or the right Control-key (Windows). 
-2. Go to the virtual box menu and select Devices->Install Guest Additions... Click back into the virtual box, and then click 'Places' on the menu bar. Select VBOXADDITIONS_3.1.6_59351. (Note the name VBOXADDITIONS... may differ depending on your version of VirtualBox.) A new window should appear in the virtual machine. Hit Open Autorun Prompt.
+2. Go to the virtual box menu and select Devices->Install Guest Additions... Click back into the virtual box, and then click 'Places' on the menu bar. Select VBOXADDITIONS_4.0.2_69518. (Note the name VBOXADDITIONS... may differ depending on your version of VirtualBox.) A new window should appear in the virtual machine. Hit Open Autorun Prompt.
 3. Open a terminal by clicking on the black window with a > in the top menu bar of the virtual machine, and paste this command into the terminal: 
 
- sudo /media/VBOXADDITIONS_3.1.6_59351/VBoxLinuxAdditions-amd64.run
+ sudo /media/VBOXADDITIONS_4.0.2_69518/VBoxLinuxAdditions.run
 
 Again, the directory name VBOXADDITIONS... may differ depending on your version of VirtualBox. You can run 'ls /media' to find the name of this directory. When prompted, enter the password: qiime
 
