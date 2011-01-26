@@ -155,6 +155,13 @@ def main():
     except OSError: #raised if dir exists
         pass
         
+    #make raw_data output directory
+    raw_data_path = os.path.join(dir_path,'raw_data')
+    try:
+        os.mkdir(raw_data_path)
+    except OSError: #raised if dir exists
+        pass
+        
     # move javascript file to javascript output directory
     shutil.copyfile(os.path.join(qiime_dir,'qiime','support_files',\
                     'js/overlib.js'),\

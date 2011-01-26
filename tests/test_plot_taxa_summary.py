@@ -99,7 +99,8 @@ the appropriate location')
                               "/tmp/qiimewebfiles/",1,self.lines_parsed,\
                               self.prefs,self.color_prefs,'black','white',\
                               'pie',self.generate_image_type,self.plot_width,\
-                              self.plot_height,self.bar_width,self.dpi)
+                              self.plot_height,self.bar_width,self.dpi,\
+                              'file.txt')
     
         self.assertEqual(len(img_data), 8)
         
@@ -108,7 +109,8 @@ the appropriate location')
                               "/tmp/qiimewebfiles/",1,self.lines_parsed,\
                               self.prefs,self.color_prefs,'black','white',\
                               'area',self.generate_image_type,self.plot_width,\
-                              self.plot_height,self.bar_width,self.dpi)
+                              self.plot_height,self.bar_width,self.dpi,\
+                              'file.txt')
 
         self.assertEqual(len(img_data), 2)
         
@@ -117,7 +119,8 @@ the appropriate location')
                               "/tmp/qiimewebfiles/",1,self.lines_parsed,\
                               self.prefs,self.color_prefs,'black','white',\
                               'bar',self.generate_image_type,self.plot_width,\
-                              self.plot_height,self.bar_width,self.dpi)
+                              self.plot_height,self.bar_width,self.dpi,\
+                              'file.txt')
 
         self.assertEqual(len(img_data), 2)
          

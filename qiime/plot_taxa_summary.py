@@ -105,7 +105,7 @@ DATA_HTML = """<tr class=normal><td>%s</td> <td nowrap>%.2f%%</td>\
 onmouseout="return nd();">%s</a></td></tr>"""
 
 AREA_SRC = """<AREA shape="rect" coords="%d,%d,%d,%d" href="#%s"  \
-onmouseover="return overlib('%s');" onmouseout="return nd();">\n"""
+onmouseover="return overlib('%s&nbsp;(%.2f%%)');" onmouseout="return nd();">\n"""
 
 IMG_MAP_SRC = """<img src="%s" border="0" ismap usemap="#points%s" width="%d" \
 height="%d" />\n"""
@@ -312,7 +312,7 @@ def make_pie_chart(data, dir_path,level,prefs,pref_colors,background_color,\
                     (os.path.join('charts',img_name),points_id),xmap_html
 
 def transform_and_generate_xmap(ax1,bar_y_data,bar_width,taxa,x,plot_height,\
-                                dpi):
+                                dpi,taxa_percents):
     '''This function takes the bar graph data and generate html coordinates
        which can be used with an area map'''
        
@@ -369,13 +369,14 @@ def transform_and_generate_xmap(ax1,bar_y_data,bar_width,taxa,x,plot_height,\
                     img_height-all_ycoords[prev][r],\
                     all_xcoords[i][r]+half_iterx,\
                     img_height-all_ycoords[i][r],\
-                    taxa[i],taxa[i]))
+                    taxa[i],taxa[i],taxa_percents[r][i]*100))
             else:
                 #if at the beginning of the array and the value is not 0
                 if all_ycoords[i][r]!=starty:
                     xmap.append(AREA_SRC % (all_xcoords[i][r]-half_iterx,\
                      img_height-starty,all_xcoords[i][r]+half_iterx,\
-                     img_height-all_ycoords[i][r], taxa[i],taxa[i]))
+                     img_height-all_ycoords[i][r], taxa[i],taxa[i],\
+                     taxa_percents[r][i]*100))
 
     return xmap
     
@@ -468,7 +469,7 @@ def make_area_bar_chart(sample_ids,taxa_percents,taxa,dir_path,level,prefs,\
 
     # transform bar_data into an area map for html mouseovers
     xmap=transform_and_generate_xmap(ax1,bar_y_data,bar_width,taxa,x,\
-                                     plot_height,dpi)
+                                     plot_height,dpi,taxa_percents)
     
     #rename each area map based on the level passed in.
     points_id = 'rect%s' % (level)
@@ -655,6 +656,7 @@ def make_HTML_table(l,other_frac,total,red,other_cat,fracs_labels_other,\
                                 generate_image_type,\
                                 plot_width,plot_height,bar_width,dpi,\
                                 props = {'title':title})
+                                
             pie_charts_placement.append(pie[0] + '&nbsp;&nbsp;' + pie[1] +\
                                         '</td></tr><tr><td class="ntitle">' +\
                                         pie[2])
@@ -713,8 +715,9 @@ def make_HTML_table(l,other_frac,total,red,other_cat,fracs_labels_other,\
 def get_counts(label,colorby,num_categories,dir_path,level,color_data,\
                prefs,pref_colors,background_color,label_color,chart_type,\
                generate_image_type,plot_width,plot_height,\
-               bar_width,dpi):
+               bar_width,dpi,raw_fpath):
     """gets all the counts for one input file"""
+    
     img_data = []
     labels = []
     level_counts = []
@@ -788,6 +791,8 @@ def get_counts(label,colorby,num_categories,dir_path,level,color_data,\
         area_plot_taxa_arr=[]
         taxa_html=[]
         total_area_table_out=[]
+        total_sums=[]
+
         if colorby is not None:
             #in the case the user specifies only certain samples we need to 
             #handle that case
@@ -816,7 +821,8 @@ def get_counts(label,colorby,num_categories,dir_path,level,color_data,\
                                                 chart_type,False)
     
                 total_area_table_out.append(all_counts)
-                
+                total_sums.append(sum([float(i) for i in all_counts]))
+
                 #get the percents for each taxa and sample
                 area_plot_per=[]
                 area_plot_taxa=[]
@@ -831,47 +837,78 @@ def get_counts(label,colorby,num_categories,dir_path,level,color_data,\
         #data table
         taxa_html.append('<tr><th>'+l.strip()+\
                          '</th></tr>'+''.join(all_counts)+'')
-        
+       
         data_table=zip(*total_area_table_out)
-        data_html_str='<table cellpadding=1 cellspacing=1 border=1 ' + \
-                      'style=\"border-color:white;border-style:groove;\" ' + \
-                      '><tr class=ntitle><td valign=bottom ' + \
-                      'class=header>Legend</td><td ' + \
-                      'valign=bottom class=header>Taxonomy</td>\n'
         
+        #create link for raw data file
+        data_html_str='<table<tr class=ntitle><td>View Table: <a href="%s">%s</a></td></tr><table>' % \
+         (os.path.join('raw_data',os.path.split(raw_fpath)[-1]),\
+            os.path.split(raw_fpath)[-1])
+        
+        
+        #create the output table
+        data_html_str+='<table cellpadding=1 cellspacing=1 border=1 ' + \
+                      'style=\"text-align:center;border-color:white;'+\
+                      'border-style:groove;\">' + \
+                      '<tr class=ntitle><td colspan="2"></td><td ' + \
+                      'valign=bottom class=header colspan="2">Total</td>\n'
+        
+        ct_head_row='<tr class=ntitle>' + \
+                    '<td valign=bottom ' + \
+                          'class=header>Legend</td><td ' + \
+                          'valign=bottom class=header>Taxonomy</td>' + \
+                     '<td>count</td><td>%</td>'
+                     
         #list all samples in the header
         for i in area_plot_sample_ids:
-            data_html_str+='<td valign=bottom class=header>%s</td>\n' % (i)
+            data_html_str+='<td colspan="2"valign=bottom \
+                            class=header>%s</td>\n' % (i)
+            ct_head_row+='<td>count</td><td>%</td>'
+            
         data_html_str+='</tr>'
+        ct_head_row+='</tr>'
+        data_html_str+=ct_head_row
+        table_sum=sum(total_sums)
         
         #list taxa in first row
         for ct,dat in enumerate(otu_ids):
             tax=dat
             split_label = [i for i in tax.strip().split(";")]
-            joined_label='<br>'.join(split_label)
-            data_html_str+="<tr><td class=\"normal\" \
-              bgcolor=\"%s\">&nbsp;&nbsp;</td><td class=\"normal\" ><a \
-              onmouseover=\"return  overlib(\'<b>Taxonomy:</b><br>%s<br><a \
-              href=javascript:gg(\\'%s\\');>%s</a> \',STICKY,MOUSEOFF,RIGHT);\"\
-               onmouseout=\"return nd();\">%s</a></td>" % \
-              (data_colors[pref_colors[tax]].toHex(),\
-              joined_label.replace('"',''),split_label[-1].replace('"',''),\
-              split_label[-1].replace('"',''),tax.replace('"',''))
-            
+            split_label[-1]="<a href=javascript:gg(\'%s\');>%s</a>" % \
+                             (split_label[-1],split_label[-1])
+            joined_label=';'.join(split_label).replace('"','')
+            row_sum= sum([float(i) for i in data_table[ct]])
+            data_html_str+="<tr><td class=\"normal\" bgcolor=\"%s\">\
+                &nbsp;&nbsp;</td><td style=\"text-align:left;\" \
+                class=\"normal\">%s</td>\
+                <td class=\"normal\">%5.0f</td><td class=\"normal\">%5.2f</td>"\
+                % (data_colors[pref_colors[tax]].toHex(),joined_label,\
+                   row_sum,row_sum/table_sum*100)
+
             #add the percent taxa for each sample
-            for per_tax in data_table[ct]:
+            for i,per_tax in enumerate(data_table[ct]):
                 if float(per_tax)>0:
                     data_html_str+='<td class=\"normal\" \
                      style=\"text-align:center;border-color:%s;border-width: \
-                     medium;border-style:solid;\">%5.2f</td>\n' % \
-                    (data_colors[pref_colors[tax]].toHex(),(float(per_tax)*100))
+                     medium;border-style:solid;\">%5.0f</td>\
+                     <td class=\"normal\" \
+                      style=\"text-align:center;border-color:%s;border-width: \
+                      medium;border-style:solid;\">%5.2f&#37;</td>\n' % \
+                    (data_colors[pref_colors[tax]].toHex(),float(per_tax),\
+                     data_colors[pref_colors[tax]].toHex(),\
+                        (float(per_tax)/total_sums[i]*100))
                 else:
                     data_html_str+='<td class=\"normal\" \
-                     style="text-align:center">%5.2f</td>\n' % \
-                    ((float(per_tax)*100))
+                     style="text-align:center">%5.0f</td>\
+                     <td class=\"normal\" \
+                     style="text-align:center">%5.2f&#37;</td>\n' % \
+                    (float(per_tax),float(per_tax)/total_sums[i]*100)
             data_html_str+='</tr>\n'
         
         data_html_str+='</table>'
+        
+        #add a note on the counts since they can be relative or absolute values
+        data_html_str+='<p><em>NOTE: the counts displayed pertain to either relative or absolute values depending on your selection from summarize_taxa.py. For relative values, the numbers are converted to integer, so counts below 0.5 appear as 0.</em></p>'
 
         #make sure that the taxa array is in the proper order
         for i in range(len(area_plot_taxa_arr)-1):
@@ -894,10 +931,14 @@ def make_all_charts(data,dir_path,filename,num_categories,colorby,args,\
                         chart_type,generate_image_type,plot_width,plot_height,\
                         bar_width,dpi):
     """Generate interactive charts in one HTML file"""
-    
+
     #iterate over the preferences and assign colors according to taxonomy
     img_data = []
-    for label,f_name in data:    
+    for label,f_name in data:
+        
+        raw_fpath=os.path.join(dir_path,'raw_data',os.path.split(f_name)[-1])
+        # move raw file to output directory
+        shutil.copyfile(f_name,raw_fpath)
         
         f = color_data['counts'][f_name]
         level = max([len(t.split(';')) - 1 for t in f[1]])
@@ -927,7 +968,7 @@ def make_all_charts(data,dir_path,filename,num_categories,colorby,args,\
         
         for key in pref_colors:
             updated_pref_colors[key.replace('"','')]=pref_colors[key]
-        #print f
+        
         for i,val in enumerate(f[1]):
             f[1][i]=val.replace('"','')
             
@@ -936,7 +977,7 @@ def make_all_charts(data,dir_path,filename,num_categories,colorby,args,\
                         dir_path,level,f,prefs,updated_pref_colors,\
                         background_color,\
                         label_color,chart_type,generate_image_type,\
-                        plot_width,plot_height,bar_width,dpi))
+                        plot_width,plot_height,bar_width,dpi,raw_fpath))
 
     #generate html filepath
     outpath = os.path.join(dir_path,'taxonomy_%s_summary_chart.html' % \
