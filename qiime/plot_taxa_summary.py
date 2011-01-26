@@ -165,10 +165,14 @@ def make_legend(data_ids,colors,plot_width,plot_height,label_color,\
         if len(i)>max_id_len:
             max_id_len=len(i)
     
+    #define the figure and a separate figure for the legend
     fig = figure(randrange(10000), figsize=(1,1))
+    
+    #numbers multiplied by were tweaked by hand
     figlegend = figure(figsize=(max_id_len*0.08,num_ids*0.22))
     ax = fig.add_subplot(111)
-
+    
+    #set some of the legend parameters
     fsize=8
     rc('font', size=fsize)
     rc('text', color=label_color)
@@ -186,6 +190,7 @@ def make_legend(data_ids,colors,plot_width,plot_height,label_color,\
     close(fig)
     close(figlegend)
     clf()
+    
     return fname
     
     
@@ -427,15 +432,13 @@ def make_area_bar_chart(sample_ids,taxa_percents,taxa,dir_path,level,prefs,\
     
     #define figure
     fig = figure(figsize=(plot_width,plot_height))
-
     ax1 = fig.add_subplot(111,axisbg=background_color)
-    fp = FontProperties()
 
-    for line in ax1.xaxis.get_ticklines(): 
-        # line is a matplotlib.lines.Line2D instance 
-        line.set_color(label_color)
-        line.set_markersize(1) 
-        line.set_markeredgewidth(.5)  
+    #change the tick colors and width
+    for tick in ax1.xaxis.get_ticklines(): 
+        tick.set_color(label_color)
+        tick.set_markersize(1) 
+        tick.set_markeredgewidth(.5)  
     
     #create an iterative array for length of sample_ids
     x = numpy.arange(0, len(sample_ids))
@@ -863,9 +866,10 @@ def get_counts(label,colorby,num_categories,dir_path,level,color_data,\
         data_table=zip(*total_area_table_out)
         
         #create link for raw data file
-        data_html_str='<table><tr class=ntitle><td><a href="%s">View Table (%s)</a></td></tr></table>' % \
-         (os.path.join('raw_data',os.path.split(raw_fpath)[-1]),\
-            os.path.splitext(raw_fpath)[-1])
+        data_html_str='<table><tr class=ntitle><td><a href="%s">View Table\
+                        (%s)</a></td></tr></table>' % \
+                        (os.path.join('raw_data',os.path.split(raw_fpath)[-1]),\
+                         os.path.splitext(raw_fpath)[-1])
         
         
         #create the output table
