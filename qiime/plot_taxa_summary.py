@@ -169,7 +169,7 @@ def make_legend(data_ids,colors,plot_width,plot_height,label_color,\
     fig = figure(randrange(10000), figsize=(1,1))
     
     #numbers multiplied by were tweaked by hand
-    figlegend = figure(figsize=(max_id_len*0.09,num_ids*0.22))
+    figlegend = figure(figsize=(max_id_len*0.15,num_ids*0.22))
     ax = fig.add_subplot(111)
     
     #set some of the legend parameters
