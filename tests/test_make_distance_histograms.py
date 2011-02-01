@@ -129,8 +129,7 @@ class DistanceHistogramsTests(TestCase):
         """average_all_colors should properly average all colors.
         """
         to_average = ['Treatment_Control_to_Fast', 'DOB_20070314_to_20061126']
-        exp = {'Treatment_Control_to_Fast':(0.,.5,.5),\
-            'DOB_20070314_to_20061126':(.5,0.,.5)}
+        exp = {'Treatment_Control_to_Fast': (0.0039215686274509803, 0.47843137254901963, 0.52745098039215688), 'DOB_20070314_to_20061126': (0.5, 0.0, 0.5)}
         self.assertEqual(average_all_colors(to_average,FIELD_TO_COLOR_PREFS),\
             exp)
     
@@ -138,10 +137,7 @@ class DistanceHistogramsTests(TestCase):
         """assign_unassigned_colors should correctly assign unassigned.
         """
         unassigned = ['first','second','third']
-        exp = {'first':(0., 0., 1.),\
-            'second':(0.50196078431372548, 0.50196078431372548,\
-                0.50196078431372548),\
-            'third':(0.50196078431372548, 0., 0.50196078431372548)}
+        exp = {'second': (0.6470588235294118, 0.27843137254901962, 0.0), 'third': (0.9882352941176471, 0.77647058823529413, 0.53333333333333333), 'first': (0.94901960784313721, 0.45098039215686275, 0.015686274509803921)}
         self.assertEqual(assign_unassigned_colors(unassigned),exp)
     
     def test_assign_mapped_colors(self):
@@ -674,10 +670,10 @@ Distance Histograms
 </table>
 """
 
-DATA_COLOR_ORDER = ['blue', 'lime', 'red', 'aqua', 'fuchsia', 'yellow', \
-    'green', 'maroon', 'teal', 'purple', 'olive', 'silver', 'gray']
+DATA_COLOR_ORDER = ['blue1', 'lime', 'red1', 'blue2', 'purple1', 'yellow1', \
+    'green2', 'red2', 'teal1', 'purple', 'olive', 'silver', 'gray']
 
-FIELD_TO_COLOR_PREFS = {'DOB': ({'20070314': ['PC.481'], '20071112': ['PC.607'], '20080116': ['PC.634', 'PC.635', 'PC.636'], '20061126': ['PC.356'], '20061218': ['PC.354', 'PC.355'], '20071210': ['PC.593']}, {'20070314': 'red', '20071112': 'aqua', '20080116': 'yellow', '20061126': 'blue', '20061218': 'lime', '20071210': 'fuchsia'}, data_colors, DATA_COLOR_ORDER),'Treatment': ({'Control': ['PC.354', 'PC.355', 'PC.356', 'PC.481', 'PC.593'], 'Fast': ['PC.607', 'PC.634', 'PC.635', 'PC.636']}, {'Control': 'blue', 'Fast': 'lime'}, data_colors, DATA_COLOR_ORDER), 'BarcodeSequence': ({'ACCAGCGACTAG': ['PC.481'], 'ACCGCAGAGTCA': ['PC.635'], 'AACTGTGCGTAC': ['PC.607'], 'AGCAGCACTTGT': ['PC.593'], 'ACAGAGTCGGCT': ['PC.634'], 'AACTCGTCGATG': ['PC.355'], 'ACGGTGAGTGTC': ['PC.636'], 'AGCACGAGCCTA': ['PC.354'], 'ACAGACCACTCA': ['PC.356']}, {'ACCAGCGACTAG': 'fuchsia', 'ACCGCAGAGTCA': 'yellow', 'AACTGTGCGTAC': 'lime', 'ACAGACCACTCA': 'red', 'ACAGAGTCGGCT': 'aqua', 'AACTCGTCGATG': 'blue', 'ACGGTGAGTGTC': 'green', 'AGCAGCACTTGT': 'teal', 'AGCACGAGCCTA': 'maroon'}, data_colors, DATA_COLOR_ORDER),'Description': ({'Fasting mouse, I.D. 607': ['PC.607'], 'Control mouse, I.D. 481': ['PC.481'], 'Control mouse, I.D. 593': ['PC.593'], 'Control mouse, I.D. 356': ['PC.356'], 'Control mouse, I.D. 354': ['PC.354'], 'Control mouse, I.D. 355': ['PC.355'], 'Fasting mouse, I.D. 634': ['PC.634'], 'Fasting mouse, I.D. 635': ['PC.635'], 'Fasting mouse, I.D. 636': ['PC.636']}, {'Fasting mouse, I.D. 607': 'yellow', 'Control mouse, I.D. 481': 'aqua', 'Control mouse, I.D. 593': 'fuchsia', 'Control mouse, I.D. 356': 'red', 'Control mouse, I.D. 354': 'blue', 'Control mouse, I.D. 355': 'lime', 'Fasting mouse, I.D. 634': 'green', 'Fasting mouse, I.D. 635': 'maroon', 'Fasting mouse, I.D. 636': 'teal'}, data_colors, DATA_COLOR_ORDER), 'SampleID': ({'PC.636': ['PC.636'], 'PC.355': ['PC.355'], 'PC.607': ['PC.607'], 'PC.634': ['PC.634'], 'PC.635': ['PC.635'], 'PC.593': ['PC.593'], 'PC.356': ['PC.356'], 'PC.481': ['PC.481'], 'PC.354': ['PC.354']}, {'PC.636': 'teal', 'PC.355': 'lime', 'PC.607': 'yellow', 'PC.634': 'green', 'PC.635': 'maroon', 'PC.593': 'fuchsia', 'PC.356': 'red', 'PC.481': 'aqua', 'PC.354': 'blue'}, data_colors, DATA_COLOR_ORDER)}
+FIELD_TO_COLOR_PREFS = {'DOB': ({'20070314': ['PC.481'], '20071112': ['PC.607'], '20080116': ['PC.634', 'PC.635', 'PC.636'], '20061126': ['PC.356'], '20061218': ['PC.354', 'PC.355'], '20071210': ['PC.593']}, {'20070314': 'red1', '20071112': 'blue2', '20080116': 'yellow1', '20061126': 'blue1', '20061218': 'lime', '20071210': 'purple1'}, data_colors, DATA_COLOR_ORDER),'Treatment': ({'Control': ['PC.354', 'PC.355', 'PC.356', 'PC.481', 'PC.593'], 'Fast': ['PC.607', 'PC.634', 'PC.635', 'PC.636']}, {'Control': 'blue1', 'Fast': 'lime'}, data_colors, DATA_COLOR_ORDER), 'BarcodeSequence': ({'ACCAGCGACTAG': ['PC.481'], 'ACCGCAGAGTCA': ['PC.635'], 'AACTGTGCGTAC': ['PC.607'], 'AGCAGCACTTGT': ['PC.593'], 'ACAGAGTCGGCT': ['PC.634'], 'AACTCGTCGATG': ['PC.355'], 'ACGGTGAGTGTC': ['PC.636'], 'AGCACGAGCCTA': ['PC.354'], 'ACAGACCACTCA': ['PC.356']}, {'ACCAGCGACTAG': 'purple1', 'ACCGCAGAGTCA': 'yellow1', 'AACTGTGCGTAC': 'lime', 'ACAGACCACTCA': 'red1', 'ACAGAGTCGGCT': 'blue2', 'AACTCGTCGATG': 'blue1', 'ACGGTGAGTGTC': 'green2', 'AGCAGCACTTGT': 'teal1', 'AGCACGAGCCTA': 'red2'}, data_colors, DATA_COLOR_ORDER),'Description': ({'Fasting mouse, I.D. 607': ['PC.607'], 'Control mouse, I.D. 481': ['PC.481'], 'Control mouse, I.D. 593': ['PC.593'], 'Control mouse, I.D. 356': ['PC.356'], 'Control mouse, I.D. 354': ['PC.354'], 'Control mouse, I.D. 355': ['PC.355'], 'Fasting mouse, I.D. 634': ['PC.634'], 'Fasting mouse, I.D. 635': ['PC.635'], 'Fasting mouse, I.D. 636': ['PC.636']}, {'Fasting mouse, I.D. 607': 'yellow1', 'Control mouse, I.D. 481': 'blue2', 'Control mouse, I.D. 593': 'purple1', 'Control mouse, I.D. 356': 'red1', 'Control mouse, I.D. 354': 'blue1', 'Control mouse, I.D. 355': 'lime', 'Fasting mouse, I.D. 634': 'green2', 'Fasting mouse, I.D. 635': 'red2', 'Fasting mouse, I.D. 636': 'teal1'}, data_colors, DATA_COLOR_ORDER), 'SampleID': ({'PC.636': ['PC.636'], 'PC.355': ['PC.355'], 'PC.607': ['PC.607'], 'PC.634': ['PC.634'], 'PC.635': ['PC.635'], 'PC.593': ['PC.593'], 'PC.356': ['PC.356'], 'PC.481': ['PC.481'], 'PC.354': ['PC.354']}, {'PC.636': 'teal1', 'PC.355': 'lime', 'PC.607': 'yellow1', 'PC.634': 'green2', 'PC.635': 'red2', 'PC.593': 'purple1', 'PC.356': 'red1', 'PC.481': 'blue2', 'PC.354': 'blue1'}, data_colors, DATA_COLOR_ORDER)}
 
 #run tests if called from command line
 if __name__ == "__main__":

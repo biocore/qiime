@@ -20,7 +20,7 @@ from matplotlib.pyplot import plot, gca,  ylim, xlim, show, legend, \
     savefig
 
 from qiime.parse import parse_otu_table
-from qiime.colors import data_color_order
+from qiime.colors import data_color_order,data_colors
 
 def make_sorted_frequencies(counts, absolute=False):
     """transform and sort a vector of count.
@@ -88,6 +88,7 @@ def plot_rank_abundance_graphs(sample_names, otu_table_fh,
     # do the actual drawing
     ax=None
     for sample_name,color in zip(user_sample_names, cycle(data_color_order)):
+        color=data_colors[color].toHex()
         try:
             index = sample_ids.index(sample_name)
         except ValueError:

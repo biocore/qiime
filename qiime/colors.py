@@ -120,9 +120,6 @@ def natsort(seq):
     alist.sort(key=_natsort_key)
     return alist
 
-data_color_order = ['blue','lime','red','aqua','fuchsia','yellow','green', \
-              'maroon','teal','purple','olive','silver','gray']
-
 def color_dict_to_objects(d, colorspace='hsv'):
     """Converts color dict to dict of Color objects"""
     result = {}
@@ -132,6 +129,8 @@ def color_dict_to_objects(d, colorspace='hsv'):
 
 
 #Note: these are all in Mage HSV colorspace
+'''
+These are the old colors
 data_color_hsv = {
         'aqua':     (180, 100, 100),
         'blue':     (240,100,100),
@@ -147,6 +146,61 @@ data_color_hsv = {
         'teal':     (180,100,50.2),
         'yellow':   (60,100,100)
 }
+
+This is the old order
+data_color_order = ['blue','lime','red','aqua','fuchsia','yellow','green', \
+              'maroon','teal','purple','olive','silver','gray']
+
+'''
+
+data_color_hsv = {
+#'black1':	(0,0,20),
+'red1':	(0,100,100),
+'blue1':	(240,100,100),
+'orange1':	(28,98,95),
+'green1':	(120,100,50.2),
+'purple1':	(302,73,57),
+'yellow1':	(60,100,100),
+'cyan1':	(184, 49, 96),
+'pink1':	(333,37,96),
+'teal1':	(178,42,63),
+'brown1':	(36,89,42),
+'gray1':	(0,0,50.2),
+'lime':	(123,99,96),
+'red2':	(14,51,97),
+'blue2':	(211,42,85),
+'orange2':	(32,46,99),
+'green2':	(142,36,79),
+'purple2':	(269,29,75),
+'yellow2':	(56,40,100),
+#'black2':	(303,100,24),
+'gray2':	(0, 0, 75.3),
+#'teal2':	(192,100,24),
+'red3':	(325,100,93),
+'blue3':	(197,100,100),
+#'purple3':	(271,43,36),
+'brown2':	(33,45,77),
+'green3':	(60,100,50.2),
+'purple4':	(264,75,100),
+#'yellow3':	(60,66,75),
+#'blue4':	(213,45,77),
+'red4':	(348,31,74),
+'teal3':	(180,100,50.2),
+#'brown3':	(60,100,28),
+'red5':	(0,100,50.2),
+'green4':	(81,100,26),
+#'purple5':	(240,100,41),
+'orange3':	(26,100,65)
+#'brown4':	(25,100,20),
+#'red6':	(17,100,63),
+#'purple6':(272,100,44)
+}
+
+data_color_order =['red1','blue1','orange1','green1','purple1','yellow1',\
+              'cyan1', 'pink1','teal1','brown1','gray1','lime','red2','blue2',\
+              'orange2','green2','purple2','yellow2','gray2','red3',\
+              'blue3','brown2','green3','purple4',\
+              'red4','teal3','red5','green4','orange3']
 
 data_colors = color_dict_to_objects(data_color_hsv)
 

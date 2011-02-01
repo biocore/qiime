@@ -89,7 +89,7 @@ class TopLevelTests(TestCase):
         self.groups['Day1']=['Sample1','Sample2','Sample3']
         self.pct_var=array([25.00,30.00,35.00])
         self.coord_tups = [("1", "2"), ("3", "2"), ("1", "3")]
-        self.colors={"Day1":"blue"}
+        self.colors={"Day1":"red1"}
         self.filename='test_pca.txt'
         self.dir_path='/tmp/' 
         self.prefs={}
@@ -105,22 +105,54 @@ class TopLevelTests(TestCase):
         self.mapping=[["Sample-ID","Day","Type"],["Sample1","Day1","Soil"],\
                       ["Sample2","Day1","Soil"],["Sample3","Day1","Soil"]]
         self.data_color_hsv = {
-              'aqua':     (180, 100, 100),
-              'blue':     (240,100,100),
-              'fuchsia':  (300,100,100),
-              'gray':     (300,0,50.2),
-              'green':    (120,100,50.2),
-              'lime':     (120,100,100),
-              'maroon':   (0,100,50.2),
-              'olive':    (60,100,50.2),
-              'purple':   (300,100,50.2),
-              'red':      (0,100,100),
-              'silver':   (0, 0, 75.3),
-              'teal':     (180,100,50.2),
-              'yellow':   (60,100,100)
+            #'black1':	(0,0,20),
+            'red1':	(0,100,100),
+            'blue1':	(240,100,100),
+            'orange1':	(28,98,95),
+            'green1':	(120,100,50.2),
+            'purple1':	(302,73,57),
+            'yellow1':	(60,100,100),
+            'cyan1':	(184, 49, 96),
+            'pink1':	(333,37,96),
+            'teal1':	(178,42,63),
+            'brown1':	(36,89,42),
+            'gray1':	(0,0,50.2),
+            'lime':	(123,99,96),
+            'red2':	(14,51,97),
+            'blue2':	(211,42,85),
+            'orange2':	(32,46,99),
+            'green2':	(142,36,79),
+            'purple2':	(269,29,75),
+            'yellow2':	(56,40,100),
+            #'black2':	(303,100,24),
+            'gray2':	(0, 0, 75.3),
+            #'teal2':	(192,100,24),
+            'red3':	(325,100,93),
+            'blue3':	(197,100,100),
+            #'purple3':	(271,43,36),
+            'brown2':	(33,45,77),
+            'green3':	(60,100,50.2),
+            'purple4':	(264,75,100),
+            #'yellow3':	(60,66,75),
+            #'blue4':	(213,45,77),
+            'red4':	(348,31,74),
+            'teal3':	(180,100,50.2),
+            #'brown3':	(60,100,28),
+            'red5':	(0,100,50.2),
+            'green4':	(81,100,26),
+            #'purple5':	(240,100,41),
+            'orange3':	(26,100,65)
+            #'brown4':	(25,100,20),
+            #'red6':	(17,100,63),
+            #'purple6':(272,100,44)
         }
-        self.data_color_order = ['blue','lime','red','aqua','fuchsia','yellow',\
-                      'green','maroon','teal','purple','olive','silver','gray']
+        
+        self.data_color_order = ['red1', 'blue1', 'orange1', 'green1',\
+                    'purple1', 'yellow1', 'cyan1', 'pink1', 'teal1', 'brown1',\
+                    'gray1', 'lime', 'red2', 'blue2', 'orange2', 'green2',\
+                    'purple2', 'yellow2', 'gray2', 'red3', 'blue3', 'brown2',\
+                    'green3', 'purple4', 'red4', 'teal3', 'red5', 'green4',\
+                    'orange3']
         
         self._paths_to_clean_up = []
         self._dir_to_clean_up = ''
@@ -137,7 +169,6 @@ class TopLevelTests(TestCase):
         self.assertEqual(strgb('#FFFFFF'), (255,255,255))
         self.assertEqual(strgb('#F0F0F0'), (240,240,240))
         self.assertEqual(strgb('#AFF0AA'), (175, 240, 170))
-
 
     def test_rgb_tuple_to_hsv(self):
         """rgb_tuple_to_hsv should accept and emit tuples on right scale"""
@@ -240,7 +271,8 @@ from mapping file to color by"""
         #Need to iterate through color object, since they has different ids 
         #assigned each time using color_dict_to_objects
         for key in data_colors:
-            self.assertEqual(obs_data_colors[key].toHex(),data_colors[key].toHex())
+            self.assertEqual(obs_data_colors[key].toHex(),\
+                             data_colors[key].toHex())
         
         self.assertEqual(obs_data_color_order,self.data_color_order)
         
@@ -249,7 +281,8 @@ from mapping file to color by"""
 
         data_colors = color_dict_to_objects(self.data_color_hsv)
         exp=(self.colors,data_colors,self.data_color_order)
-        obs=get_group_colors(self.groups,self.colors,data_colors,self.data_color_order)
+        obs=get_group_colors(self.groups,self.colors,data_colors,\
+                             self.data_color_order)
         
         self.assertEqual(obs,exp)
 
@@ -257,9 +290,9 @@ from mapping file to color by"""
         """get_color should get colors by several means"""
         sgc = lambda x: str(get_color(x))
 
-        self.assertEqual(sgc('red'), 'red:#ff0000')
-        self.assertEqual(sgc(('red', '#00cc00')), 'red:#00cc00')
-        self.assertEqual(sgc(('red', (120,100,50))), 'red:#007f00')
+        self.assertEqual(sgc('red1'), 'red1:#ff0000')
+        self.assertEqual(sgc(('red1', '#00cc00')), 'red1:#00cc00')
+        self.assertEqual(sgc(('red1', (120,100,50))), 'red1:#007f00')
         self.assertRaises(ValueError, sgc, 'xyz')
  
     def test_color_groups(self):

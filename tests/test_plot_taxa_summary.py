@@ -45,8 +45,8 @@ class TopLevelTests(TestCase):
         self.colors=['#0000ff', '#00ff00', '#ff0000', '#00ffff']
         self.area_fracs=[[0.1,0.3,0.2],[0.0,0.2,0.1],\
                          [0.4,0.0,0.3],[0.5,0.0,0.1]]
-        self.color_prefs={"a;b;c": 'lime', "d;e;i": 'blue', "d;e;f": 'aqua', \
-                          "a;g;h": 'lime'}
+        self.color_prefs={"a;b;c": 'blue1', "d;e;i": 'red1', "d;e;f": 'blue2', \
+                          "a;g;h": 'red2'}
         self.dpi=80
         self.plot_width=12
         self.plot_height=6

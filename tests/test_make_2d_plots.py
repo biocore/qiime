@@ -44,27 +44,14 @@ class TopLevelTests(TestCase):
         self.groups={}
         self.groups['Day1']=['Sample1','Sample2']
         self.colors={}
-        self.colors['Day1']='blue'
+        self.colors['Day1']='blue1'
         self.prefs={}
         self.prefs['Sample']={}
         self.prefs['Sample']['column']='Day'
         self.data_color_hsv = {
-              'aqua':     (180, 100, 100),
-              'blue':     (240,100,100),
-              'fuchsia':  (300,100,100),
-              'gray':     (300,0,50.2),
-              'green':    (120,100,50.2),
-              'lime':     (120,100,100),
-              'maroon':   (0,100,50.2),
-              'olive':    (60,100,50.2),
-              'purple':   (300,100,50.2),
-              'red':      (0,100,100),
-              'silver':   (0, 0, 75.3),
-              'teal':     (180,100,50.2),
-              'yellow':   (60,100,100),
+              'blue1':     (240,100,100)
         }
-        self.data_color_order = ['blue','lime','red','aqua','fuchsia','yellow',\
-                        'green','maroon','teal','purple','olive','silver','gray',[]]
+        self.data_color_order = ['blue1',[]]
         self.background_color='black'
         self.label_color='white'
         self.dir_path='/tmp/'
