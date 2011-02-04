@@ -14,7 +14,7 @@ __status__ = "Development"
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from optparse import make_option
 from os import makedirs
-from qiime.util import load_qiime_config, raise_error_on_parallel_unavailable
+from qiime.util import load_qiime_config
 from qiime.parse import parse_qiime_parameters
 from qiime.workflow import run_qiime_alpha_rarefaction, print_commands,\
     call_commands_serially, print_to_stdout, no_status_updates
@@ -81,7 +81,9 @@ def main():
 
     
     parallel = opts.parallel
-    if parallel: raise_error_on_parallel_unavailable()
+    # No longer checking that jobs_to_start > 2, but
+    # commenting as we may change our minds about this.
+    #if parallel: raise_error_on_parallel_unavailable()
     
     try:
         parameter_f = open(opts.parameter_fp)

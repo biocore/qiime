@@ -15,8 +15,7 @@ __status__ = "Development"
 from optparse import make_option
 from os import makedirs
 from qiime.util import (load_qiime_config, 
-                        parse_command_line_parameters,
-                        raise_error_on_parallel_unavailable)
+                        parse_command_line_parameters)
 from qiime.parse import parse_qiime_parameters
 from qiime.workflow import (run_pick_reference_otus_through_otu_table,
                             print_commands,
@@ -69,7 +68,9 @@ def main():
     print_only = opts.print_only
     
     parallel = opts.parallel
-    if parallel: raise_error_on_parallel_unavailable()
+    # No longer checking that jobs_to_start > 2, but
+    # commenting as we may change our minds about this.
+    #if parallel: raise_error_on_parallel_unavailable()
     
     try:
         parameter_f = open(opts.parameter_fp)
