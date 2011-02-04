@@ -305,7 +305,8 @@ def get_group_colors(groups, colors, data_colors=data_colors, data_color_order=d
             color_groups(groups, colors, data_color_order)
             #add new colors
             data_colors.update(added_data_colors)
-            data_color_order.append(natsort(added_data_colors))
+            if added_data_colors != {}:
+                data_color_order.append(''.join(natsort(added_data_colors)))
         else:
             #handle case where no prefs is used
             color_groups(groups, colors, data_color_order)
