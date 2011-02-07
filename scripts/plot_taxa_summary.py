@@ -34,7 +34,7 @@ script_info['script_usage']=[]
 script_info['script_usage'].append(("""Examples:""","""If you wish to run the code using default parameters, you must supply a counts file (Class.txt) along with the taxon level label (Class) and the type(s) of chart, by using the following command:""","""plot_taxa_summary.py -i Class.txt -l Class -c pie,bar,area"""))
 script_info['script_usage'].append(("""""","""If you want to make charts for multiple levels at a time (phylum.txt,class.txt,genus.txt) use the following command:""","""plot_taxa_summary.py -i phylum.txt,class.txt,genus.txt -l phylum,class,genus -c pie,bar,area"""))
 script_info['script_usage'].append(("""""","""If you want specify an output directory (e.g. "output_charts/", regardless of whether the directory exists, use the following command:""","""plot_taxa_summary.py -i Class.txt -l Class -c pie,bar,area -o output_charts/"""))
-script_info['script_usage'].append(("""""","""Additionally, if you would like to display on a set number of taxa ("-n 10"), you can use the following command:""","""plot_taxa_summary.py -i Class.txt -l Class -c pie -o pie_charts/ -n 10"""))
+script_info['script_usage'].append(("""""","""Additionally, if you would like to display on a set number of taxa ("-n 10") in the pie charts, you can use the following command:""","""plot_taxa_summary.py -i Class.txt -l Class -c pie -o pie_charts/ -n 10"""))
 script_info['script_usage'].append(("""""","""If you would like to display generate pie charts for samples samples: 'sample1' and 'sample2' that are in the counts file header, you can use the following command:""","""plot_taxa_summary.py -i Class.txt -l Class -o pie_charts/ -b sample1,sample2"""))
 script_info['output_description']="""The script generates an output folder, which contains several files. For each pie chart there is a png and a pdf file. The best way to view all of the pie charts is by opening up the file taxonomy_summary_pie_chart.html."""
 
@@ -43,7 +43,7 @@ make_option('-i', '--input_files', dest='counts_fname',\
     action='store',type='string',\
     help='list of files with sample counts by taxonomy [REQUIRED]'),
 make_option('-l', '--labels', dest='labels',action='store',type='string',
-    help='list of labels for pie chart (i.e. Phylum, Class) [REQUIRED]')
+    help='list of labels (i.e. Phylum, Class) [REQUIRED]')
 ]
 
 script_info['optional_options']=[\
@@ -55,13 +55,10 @@ NOTE: this is only used for the pie charts. \
 make_option('-o', '--dir-prefix', dest='dir_path',\
     help='output folder'),
 make_option('-b', '--colorby', dest='colorby',\
-    help='This is the samples to make pie charts for in the counts files from\
+    help='This is the samples to make charts for in the counts files from \
 summarize_taxa.py. The sample name must match the name of a sample id \
 in the header of the counts file exactly and multiple categories can be \
-list by comma separating them without spaces. If you want to see the pie charts\
- broken up by all samples -s is still funtional. If -s is set and -b is used \
- it will just be broken up by all samples. If neither -s or -b are set the \
- pie charts will be based on all samples put together, one for each level. \
+list by comma separating them without spaces. \
  [default: %default]',default=None),
  make_option('-p', '--prefs_path',help='This is the user-generated preferences \
 file. NOTE: This is a file with a dictionary containing preferences for the \
