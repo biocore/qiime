@@ -20,7 +20,8 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
     summarize_pcoas, _compute_jn_pcoa_avg_ranges, _flip_vectors, IQR,
     idealfourths, isarray, matrix_IQR, sort_fasta_by_abundance, degap_fasta_aln,
     write_degapped_fasta_to_file, compare_otu_maps, get_diff_for_otu_maps,
-    merge_n_otu_tables, convert_otu_table_relative, sort_sample_ids_by_mapping_value)
+    merge_n_otu_tables, convert_otu_table_relative, sort_sample_ids_by_mapping_value,
+    split_fasta_on_sample_ids, split_fasta_on_sample_ids_to_dict)
 
 import numpy
 from numpy import array, asarray
@@ -47,6 +48,7 @@ class TopLevelTests(TestCase):
         self.otu_table_f1_no_tax = otu_table_fake1_no_tax.split('\n')
         self.otu_table_f2_no_tax = otu_table_fake2_no_tax.split('\n')
         self.otu_table_f3_no_tax = otu_table_fake3_no_tax.split('\n')
+        self.fasta1 = fasta1.split('\n')
         self.mapping_f1 = mapping_f1.split('\n')
         self.dirs_to_remove = []
         self.files_to_remove = []
@@ -56,7 +58,28 @@ class TopLevelTests(TestCase):
             if exists(dir):
                 rmdir(dir)
         remove_files(self.files_to_remove)
-        
+    
+    def test_split_fasta_on_sample_ids(self):
+        """ split_fasta_on_sample_ids functions as expected 
+        """
+        actual = list(split_fasta_on_sample_ids(\
+                      MinimalFastaParser(self.fasta1)))
+        expected = [('Samp1','Samp1_42','ACCGGTT'),
+                       ('s2_a','s2_a_50','GGGCCC'),
+                       ('Samp1','Samp1_43 some comme_nt','AACCG'),
+                       ('s3','s3_25','AAACCC')]
+        self.assertEqual(actual,expected)
+    
+    def test_split_fasta_on_sample_ids_to_dict(self):
+        """ split_fasta_on_sample_ids_to_dict functions as expected
+        """
+        actual = split_fasta_on_sample_ids_to_dict(\
+                      MinimalFastaParser(self.fasta1))
+        expected = {'Samp1':[('Samp1_42','ACCGGTT'),
+                             ('Samp1_43 some comme_nt','AACCG')],
+                    's2_a':[('s2_a_50','GGGCCC')],
+                    's3':[('s3_25','AAACCC')]}
+        self.assertEqual(actual,expected)
     
     def test_sort_sample_ids_by_mapping_value(self):
         """ sort_sample_ids_by_mapping_value functions as expected """
@@ -855,6 +878,17 @@ Z2\thello\t10
 A\t4\t400000
 1\tr\t5.7
 NotInOtuTable\tf\t0"""
+
+fasta1 = """>Samp1_42
+ACCGGTT
+>s2_a_50
+GGGCCC
+>Samp1_43 some comme_nt
+AACCG
+>s3_25
+AAACCC"""
+
+
 
 
 #run unit tests if run from command-line
