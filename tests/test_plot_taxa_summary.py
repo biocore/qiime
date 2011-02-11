@@ -100,7 +100,7 @@ the appropriate location')
                               self.prefs,self.color_prefs,'black','white',\
                               'pie',self.generate_image_type,self.plot_width,\
                               self.plot_height,self.bar_width,self.dpi,\
-                              'file.txt')
+                              'file.txt',0)
     
         self.assertEqual(len(img_data), 8)
         
@@ -110,7 +110,7 @@ the appropriate location')
                               self.prefs,self.color_prefs,'black','white',\
                               'area',self.generate_image_type,self.plot_width,\
                               self.plot_height,self.bar_width,self.dpi,\
-                              'file.txt')
+                              'file.txt',0)
 
         self.assertEqual(len(img_data), 2)
         
@@ -120,7 +120,7 @@ the appropriate location')
                               self.prefs,self.color_prefs,'black','white',\
                               'bar',self.generate_image_type,self.plot_width,\
                               self.plot_height,self.bar_width,self.dpi,\
-                              'file.txt')
+                              'file.txt',0)
 
         self.assertEqual(len(img_data), 2)
          
@@ -138,6 +138,7 @@ the appropriate location')
                         DATA_HTML%('3',(3.0/10)*100,'d<br>e','f', 'f',"d;e;f"),\
                         DATA_HTML%('2',(2.0/10)*100,'d<br>e','i', 'i',"d;e;i"),\
                         DATA_HTML%('1',(1.0/10)*100,'a<br>b','c', 'c',"a;b;c")]
+        
         fracs_labels_other,fracs_labels,all_counts, other_cat, red,other_frac \
                                         = get_fracs(self.counts1,5,10,'pie')
         
@@ -229,7 +230,7 @@ the appropriate location')
                                    self.color_prefs,'black','white','pie',\
                                    'Test1',\
                                    self.generate_image_type,self.plot_width,\
-                                   self.plot_height,self.bar_width,self.dpi)
+                                   self.plot_height,self.bar_width,self.dpi,0)
         
         self.assertEqual(len(img_data),2)
         
@@ -243,7 +244,7 @@ the appropriate location')
                                    self.color_prefs,'black','white','pie',\
                                    'Test1',\
                                    self.generate_image_type,self.plot_width,\
-                                   self.plot_height,self.bar_width,self.dpi)
+                                   self.plot_height,self.bar_width,self.dpi,0)
         
         self.assertEqual(len(img_data),2)
         
@@ -257,7 +258,7 @@ the appropriate location')
                                    self.color_prefs,'black','white','pie',\
                                    'Test1',\
                                    self.generate_image_type,self.plot_width,\
-                                   self.plot_height,self.bar_width,self.dpi)
+                                   self.plot_height,self.bar_width,self.dpi,0)
         
         self.assertEqual(len(img_data),2)
         self._paths_to_clean_up = ["/tmp/qiimewebfiles/charts/"+f \
@@ -308,7 +309,7 @@ the appropriate location')
                                       self.color_prefs,"black","white","area",\
                                       self.generate_image_type,self.plot_width,\
                                       self.plot_height,self.bar_width,\
-                                      self.dpi,"area_chart")
+                                      self.dpi,0,"area_chart")
 
         self.assertTrue(exists(filename1),'The png file was not created in \
 the appropriate location')
@@ -324,7 +325,7 @@ the appropriate location')
                                       self.color_prefs,"black","white","bar",\
                                       self.generate_image_type,self.plot_width,\
                                       self.plot_height,self.bar_width,self.dpi,\
-                                      "bar_chart",self.props)
+                                      0,"bar_chart",self.props)
                                   
         self.assertTrue(exists(filename4),'The png file was not created in \
 the appropriate location')

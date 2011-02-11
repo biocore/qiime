@@ -28,7 +28,7 @@ plot_filetype_choices = ['pdf','svg','png']
 
 script_info={}
 script_info['brief_description']="""Make taxaonomy summary charts based on taxonomy assignment"""
-script_info['script_description']="""This script automates the construction of pie, bar and area charts showing the breakdown of taxonomy by given levels. The script creates an html file for each chart type for easy visualization. It uses the taxonomy or category counts from summarize_taxa.py for combined samples by level (-i) and user specified labels for each file passed in (-l). Output will be written tothe user specified folder (-o) the, where the default is the current working directory. The user can also specify the number of categories displayed for within a single pie chart, where the rest are grouped together as the 'other category' using the (-n) option, default is 20.
+script_info['script_description']="""This script automates the construction of pie, bar and area charts showing the breakdown of taxonomy by given levels. The script creates an html file for each chart type for easy visualization. It uses the taxonomy or category counts from summarize_taxa.py for combined samples by level (-i) and user specified labels for each file passed in (-l). Output will be written to the user specified folder (-o) the, where the default is the current working directory. The user can also specify the number of categories displayed for within a single pie chart, where the rest are grouped together as the 'other category' using the (-n) option, default is 20.
 """
 script_info['script_usage']=[]
 script_info['script_usage'].append(("""Examples:""","""If you wish to run the code using default parameters, you must supply a counts file (Class.txt) along with the taxon level label (Class) and the type(s) of chart, by using the following command:""","""plot_taxa_summary.py -i Class.txt -l Class -c pie,bar,area"""))
@@ -78,7 +78,11 @@ make_option('-w', '--bar_width', dest='bar_width', \
  make_option('-c', '--chart_type', dest='chart_type',\
      action='store',type='string',\
      help='type of chart to plot (i.e. pie, bar or area). The user has the \ ability to plot multiple types, by using a comma-separated list (e.g. area,pie)\
-  [default: %default]',default='area,bar,pie')
+  [default: %default]',default='area,bar,pie'),
+ make_option('-r', '--resize_nth_label', dest='resize_nth_label',\
+    action='store',type='string',\
+    help='this is for large area and bar charts where the font on the x-axis is small. This allows you to set every nth label to be larger on the x-axis.This requires an integer value greater than 0.\
+[default: %default]',default='0')
 ]
 
 script_info['version']=__version__
@@ -193,6 +197,10 @@ def main():
     if dpi<=0:
         raise ValueError, 'The dpi of the plot has to be greater than 0!'
     
+    resize_nth_label=int(opts.resize_nth_label)
+    if resize_nth_label<0:
+        raise ValueError, 'The resize_nth_label of the plot has to be greater than 0!'
+    
     generate_image_type=opts.type_of_file
     plots_to_make=opts.chart_type.split(',')
     chart_types=['area','pie','bar']
@@ -210,7 +218,8 @@ def main():
         
         make_all_charts(data,dir_path,filename,num_categories, \
         colorby,args,color_data, color_prefs,background_color,label_color,\
-        chart_type,generate_image_type,plot_width,plot_height,bar_width,dpi)
+        chart_type,generate_image_type,plot_width,plot_height,bar_width,dpi,\
+        resize_nth_label)
         
     
 if __name__ == "__main__":
