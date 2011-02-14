@@ -20,7 +20,7 @@ Many downstream analyses require that the phylogenetic tree relating the OTUs in
 	**[REQUIRED]**
 		
 	-i, `-`-input_fp
-		Path to read input alignment
+		Path to read input fasta alignment, only first word in defline will be considered
 	
 	**[OPTIONAL]**
 		
@@ -37,6 +37,8 @@ Many downstream analyses require that the phylogenetic tree relating the OTUs in
 **Output:**
 
 The result of `make_phylogeny.py <./make_phylogeny.html>`_ consists of a newick formatted tree file (.tre) and optionally a log file. The tree file is formatted using the Newick format and this file can be viewed using most tree visualization tools, such as TopiaryTool, FigTree, etc.
+
+The tips of the tree are the first word from the input sequences from the fasta file, e.g.: '>101 PC.481_71 RC:1..220' is represented in the tree as '101'.
 
 
 **Examples:**

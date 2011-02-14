@@ -91,13 +91,19 @@ The primary inputs for `pick_otus.py <./pick_otus.html>`_ are:
 	-C, `-`-suppress_new_clusters
 		Suppress creation of new clusters using seqs that don't match reference when using -m uclust_ref [default: False]
 	`-`-max_accepts
-		Max_accepts value to uclust and uclust_ref [default: 8]
+		Max_accepts value to uclust and uclust_ref [default: 20]
 	`-`-max_rejects
-		Max_rejects value to uclust and uclust_ref [default: 32]
+		Max_rejects value to uclust and uclust_ref [default: 500]
+	`-`-stepwords
+		Stepwords value to uclust and uclust_ref [default: 20]
+	`-`-word_length
+		W value to uclust and uclust_ref [default: 12]
 	`-`-uclust_otu_id_prefix
 		OTU identifier prefix (string) for the de novo uclust OTU picker [default: None, OTU ids are ascending integers]
 	`-`-uclust_stable_sort
-		Pass --stable_sort to uclust (uclust versions uclustq1.2.15 and later only) [default: False]
+		Deprecated: stable sort enabled by default, pass --uclust_suppress_stable_sort to disable [default: True]
+	`-`-suppress_uclust_stable_sort
+		Don't pass --stable-sort to uclust [default: False]
 	-d, `-`-save_uc_files
 		Enable preservation of intermediate uclust (.uc) files that are used to generate clusters via uclust. [default: True]
 

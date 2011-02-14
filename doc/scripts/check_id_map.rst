@@ -36,6 +36,11 @@ Specifically, we check that:
     `check_id_map.py <./check_id_map.html>`_ should not raise exceptions itself under normal 
     circumstances, except for situations such as having a misformatted input 
     metadata mapping file.
+    
+    If pooled primers are used, separate with a comma.  For instance, a pooled
+    set of three 27f primers (used to increase taxonomic coverage) could be
+    specified in the LinkerPrimerSequence fields as such:
+    AGGGTTCGATTCTGGCTCAG,AGAGTTTGATCCTGGCTTAG,AGAATTTGATCTTGGTTCAG
 
 
 

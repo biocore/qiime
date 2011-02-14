@@ -34,6 +34,10 @@ Once the OTU table has been generated, the user can create an interactive OTU he
 		Metadata mapping file to be used for sorting Samples in the heatmap
 	`-`-sample_tree
 		Tree file to be used for sorting samples (e.g, output from `upgma_cluster.py <./upgma_cluster.html>`_). If both this and the sample mapping file are provided, the mapping file is ignored.
+	`-`-log_transform
+		Data will be log-transformed. All zeros will be set to a small value (default is 1/2 the smallest non-zero entry). Data will be translated to be non-negative after log transform, and num_otu_hits will be set to 0.
+	`-`-log_eps
+		Small value to replace zeros for log transform. [default: 1/2 the smallest non-zero entry].
 
 
 **Output:**

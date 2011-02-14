@@ -62,7 +62,9 @@ Sequences from samples that are not found in the mapping file (no corresponding 
 	-c, `-`-disable_bc_correction
 		Disable attempts to find nearest corrected barcode.  Can improve performance. [default: False]
 	-w, `-`-qual_score_window
-		Enable sliding window test of quality scores.  If the average score of a continuous set of w nucleotides falls below the threshold (see -s for default), the sequence is discarded. A good value would be 50. 0 (zero) means no filtering. Must pass a .qual file (see -q parameter) if this functionality is enabled. [default: 0]
+		Enable sliding window test of quality scores.  If the average score of a continuous set of w nucleotides falls below the threshold (see -s for default), the sequence is discarded. A good value would be 50. 0 (zero) means no filtering. Must pass a .qual file (see -q parameter) if this functionality is enabled.  Default behavior for this function is to truncate the sequence at the beginning of the poor quality window, and test for minimal length (-l parameter) of the resulting sequence. [default: 0]
+	-g, `-`-discard_bad_windows
+		If the qual_score_window option (-w) is enabled, this will override the default truncation behavior and discard any sequences where a bad window is found.  [default: False]
 	-p, `-`-disable_primers
 		Disable primer usage when demultiplexing.  Should be enabled for unusual circumstances, such as analyzing Sanger sequence data generated with different primers.  [default: False]
 	-z, `-`-reverse_primers

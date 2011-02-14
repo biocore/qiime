@@ -9,7 +9,7 @@
 
 The input for this script is the OTU table containing the number of sequences observed in each OTU (rows) for each sample (columns). For more information pertaining to the OTU table refer to the documentation for make_otu_table. If the user would like phylogenetic beta diversity metrics using UniFrac, a phylogenetic tree must also be passed as input (see `make_phylogeny.py <./make_phylogeny.html>`_). The output of this script is a distance matrix containing a dissimilarity value for each pairwise comparison.
 
-A number of metrics are currently supported, including unweighted and weighted UniFrac (pass the -s option to see available metrics). In general, because unifrac uses phylogenetic information, one of the unifrac metrics is recommended, as results can be vastly more useful (Hamady & Knight, 2009). Weighted unifrac is sensitive to factors affecting the relative abundance of different taxa, such as salinity or pH while unweighted unifrac considers only the presence or absence of taxa, and is sensitive to factors such as nutrient availability (Costello, personal communication). Typically both weighted and unweighted unifrac are applied.
+A number of metrics are currently supported, including unweighted and weighted UniFrac (pass the -s option to see available metrics). In general, because unifrac uses phylogenetic information, one of the unifrac metrics is recommended, as results can be vastly more useful (Hamady & Knight, 2009). Quantitative measures (e.g. weighted unifrac) are ideally suited to revealing community differences that are due to changes in relative taxon abundance (e.g., when a particular set of taxa flourish because a limiting nutrient source becomes abundant). Qualitative measures (e.g. unweighted unifrac) are most informative when communities differ primarily by what can live in them (e.g., at high temperatures), in part because abundance information can obscure significant patterns of variation in which taxa are present (Lozupone et al., 2007). Most qualitative measures are referred to here e.g. "binary_jaccard". Typically both weighted and unweighted unifrac are used.
 
 
 **Usage:** :file:`beta_diversity.py [options]`
@@ -30,7 +30,7 @@ A number of metrics are currently supported, including unweighted and weighted U
 	-m, `-`-metrics
 		Metrics to use, comma delimited if >1 metric, no spaces
 	-s, `-`-show_metrics
-		Show available beta diversity metrics and quit
+		Show available beta diversity metrics and quit. "binary_..." specifies that a metric is qualitative, and considers only the presence or absence of each taxon
 	-t, `-`-tree_path
 		Path to newick tree file, required for phylogenetic metrics [default: None]
 	-f, `-`-full_tree

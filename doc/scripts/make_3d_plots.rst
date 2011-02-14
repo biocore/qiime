@@ -46,8 +46,18 @@ This script automates the construction of 3D plots (kinemage format) from the PC
 		If you wish to perform a biplot, where taxa are plotted along with samples, supply an otu table format file.  Typically this is the output from `summarize_taxa.py <./summarize_taxa.html>`_.
 	`-`-n_taxa_keep
 		If performing a biplot, the number of taxa to display; use -1 to display all. [default: 10]
+	`-`-biplot_output_file
+		If performing a biplot, save the biplot coordinates in this file. [default: None]
 	`-`-master_pcoa
 		If performing averaging on multiple coord files, the other coord files will be aligned to this one through procrustes analysis. This master file will not be included in the averaging. If this master coord file is not provided, one of the other coord files will be chosen arbitrarily as the target alignment. [default: None]
+	`-`-output_format
+		Output format. Valid choices are: king, invue. If this option is set to invue you will need to also use the option -b to define which column(s) from the metadata file the script will write an output file from; it will also do not account for any other optional paramenter pass. [default: king]
+	-n, `-`-interpolation_points
+		Number of extra points to use between samples and interpolate, the minimum is 2. Only used with the inVUE output. [default: 0]
+	`-`-polyhedron_points
+		Points to be generated  to create a frame around the PCoA plots. Only used when --output_format is  inVUE. [default: 4]
+	`-`-polyhedron_offset
+		Offset to be added to  the points created in the --polyheadron_points option. Only used when  --output_format is inVUE. [default: 1.5]
 
 
 **Output:**

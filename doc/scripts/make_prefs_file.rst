@@ -7,7 +7,7 @@
 
 **Description:**
 
-This script generates a preferences (prefs) file, which can be passed to `make_distance_histograms.py <./make_distance_histograms.html>`_, `make_2d_plots.py <./make_2d_plots.html>`_ and `make_3d_plots.py <./make_3d_plots.html>`_. The prefs file allows for defining the monte_carlo distance and gradient coloring of continuous values in the 2D and 3D plots. Currently there is only one color gradient: red to blue.
+This script generates a preferences (prefs) file, which can be passed to `make_distance_histograms.py <./make_distance_histograms.html>`_, `make_2d_plots.py <./make_2d_plots.html>`_ and `make_3d_plots.py <./make_3d_plots.html>`_. The prefs file allows for defining the monte_carlo distance, gradient coloring of continuous values in the 2D and 3D plots, the ball size scale for all the samples and the color of the arrow and the line of the arrow for the procrustes analysis. Currently there is only one color gradient: red to blue.
 
 
 **Usage:** :file:`make_prefs_file.py [options]`
@@ -34,6 +34,12 @@ This script generates a preferences (prefs) file, which can be passed to `make_d
 		Monte carlo distanceto use for each sample header [default: 10]
 	-i, `-`-input_taxa_file
 		Summarized taxa file with samplecounts by taxonomy (resulting file from `summarize_taxa.py <./summarize_taxa.html>`_)
+	-s, `-`-ball_scale
+		Scale factor for the size of each ball in the plots [default: 1.0]
+	-l, `-`-arrow_line_color
+		Arrow line color forprocrustes analysis. [default: white]
+	-a, `-`-arrow_head_color
+		Arrow head color forprocrustes analysis. [default: red]
 
 
 **Output:**
@@ -72,5 +78,17 @@ If the user would like to add a list of taxons they can pass the '-i' option, wh
 ::
 
 	make_prefs_file.py -i taxa_level_3.txt -o prefs_out.txt
+
+If the user would like to add the ball size scale they can pass the '-s' option as follows: 
+
+::
+
+	make_prefs_file.py -m map_fname.txt -s 2.5 -o prefs_out.txt
+
+If the user would like to add the head and line color for the arrows in the procrustes analysis plot they can pass the '-a' and '-l' options as follows: 
+
+::
+
+	make_prefs_file.py -m map_fname.txt -a black -l blue -o prefs_out.txt
 
 

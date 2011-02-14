@@ -47,6 +47,8 @@ the base position to begin truncating sequences at.
 		Output directory.  Will be created if does not exist.  [default: .]
 	-s, `-`-score_min
 		Minimum quality score to be considered acceptable.  Used to draw dotted line on histogram for easy visualization of poor quality scores. [default: 25]
+	-v, `-`-verbose
+		Turn on this flag to disable verbose output.  [default: True]
 
 
 **Output:**

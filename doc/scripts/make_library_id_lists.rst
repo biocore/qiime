@@ -7,7 +7,7 @@
 
 **Description:**
 
-Makes a list of the ids corresponding to each library represented in the input fasta file. Assumes that the libraries are the output of `split_libraries.py <./split_libraries.html>`_ and that they contain the 454 read id for each sequence as is standard in the `split_libraries.py <./split_libraries.html>`_ output. Produces a separate file for each library. These are used to retrieve the corresponding reads from the sff files for SRA deposition.
+Makes a list of the ids corresponding to each library represented in the input fasta file. Assumes that the libraries are the output of `split_libraries.py <./split_libraries.html>`_ and that they contain the 454 read id for each sequence as is standard in the `split_libraries.py <./split_libraries.html>`_ output. Produces a separate file for each library.
 
 
 **Usage:** :file:`make_library_id_lists.py [options]`

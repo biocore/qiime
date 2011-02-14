@@ -35,7 +35,7 @@ To directly measure the robustness of individual UPGMA clusters and clusters in 
 	-t, `-`-tree_fp
 		Path to the tree file [default: None; REQUIRED for phylogenetic measures]
 	`-`-master_tree
-		Method for computing master trees in jackknife analysis. "consensus": consensus of trees from jackknifed otu tables.  "full": tree generated from input (unsubsambled) otu table.  [default: full]
+		Method for computing master trees in jackknife analysis. "consensus": consensus of trees from jackknifed otu tables.  "full": tree generated from input (unsubsambled) otu table.  [default: consensus]
 	-f, `-`-force
 		Force overwrite of existing output directory (note: existing files in output_dir will not be removed) [default: None]
 	-w, `-`-print_only

@@ -27,7 +27,7 @@ After picking OTUs, you can then pick a representative set of sequences. For eac
 	-f, `-`-fasta_file
 		Path to input fasta file [REQUIRED if not picking against a reference set; default: None]
 	-m, `-`-rep_set_picking_method
-		Method for picking representative sets.  Valid choices are random, longest, most_abundant, first[default: most_abundant]
+		Method for picking representative sets.  Valid choices are random, longest, most_abundant, first [default: first (first chooses cluster seed when picking otus with uclust)]
 	-o, `-`-result_fp
 		Path to store result file [default: <input_sequences_filepath>_rep_set.fasta]
 	-l, `-`-log_fp
