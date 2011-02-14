@@ -17,6 +17,6 @@ These pages provide references on different features of QIIME. If you're instead
    introduction
    file_formats
    script_index
-   prepare_and_submit_sra
+
 
 

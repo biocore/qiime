@@ -20,7 +20,7 @@ from os import makedirs
 
 script_info={}
 script_info['brief_description']="""Make library id lists"""
-script_info['script_description']="""Makes a list of the ids corresponding to each library represented in the input fasta file. Assumes that the libraries are the output of split_libraries.py and that they contain the 454 read id for each sequence as is standard in the split_libraries.py output. Produces a separate file for each library. These are used to retrieve the corresponding reads from the sff files for SRA deposition."""
+script_info['script_description']="""Makes a list of the ids corresponding to each library represented in the input fasta file. Assumes that the libraries are the output of split_libraries.py and that they contain the 454 read id for each sequence as is standard in the split_libraries.py output. Produces a separate file for each library."""
 script_info['script_usage']=[]
 script_info['script_usage'].append(("""Example:""","""Create a list containing library ids for a fasta file (seqs.fna):""","""make_library_id_lists.py -i seqs.fna -o results/"""))
 script_info['output_description']="""This script produces a separate file for each library."""
@@ -77,7 +77,7 @@ def main():
     ids = get_ids(open(options.in_fasta, 'U'), options.field, bad_seq_ids,
         options.debug)
 
-    #add empty unassigned ids for file creation (required by sra)
+    #add empty unassigned ids for file creation
     if 'Unassigned' not in ids:
         ids['Unassigned'] = []
 
