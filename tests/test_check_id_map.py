@@ -249,11 +249,24 @@ class TopLevelTests(TestCase):
         bad_vals = array([
             ['sample','bc','ph','ctl','x'],
             ['x','x!','3','Yes','x'],
-            ['y','y','>','No','x'],
+            ['y','y','3','No&','x'],
             ])
         
         self.assertEqual(check_bad_chars((bad_vals, field_types)),\
-         ((array([['sample', 'bc', 'ph', 'ctl', 'x'],['x', 'x_', '3', 'Yes', 'x'], ['y', 'y', '_', 'No', 'x']], dtype='|S6'), {'sample': 'uid', 'ctl': ['Yes', 'No'], 'ph': float, 'bc': 'uid'}), 'Removed bad chars from cell x! (now x_) in sample id x, col bc. Location (row, column):\t0,1\nRemoved bad chars from cell > (now _) in sample id y, col ph. Location (row, column):\t1,2'))
+         ((array([['sample', 'bc', 'ph', 'ctl', 'x'],['x', 'x_', '3', 'Yes', 'x'], ['y', 'y', '3', 'No_', 'x']], dtype='|S6'), {'sample': 'uid', 'ctl': ['Yes', 'No'], 'ph': float, 'bc': 'uid'}), 'Removed bad chars from cell x! (now x_) in sample id x, col bc. Location (row, column):\t0,1\nRemoved bad chars from cell No& (now No_) in sample id y, col ctl. Location (row, column):\t1,3'))
+         
+    def test_check_bad_chars_handles_primer_pool(self):
+        """ Should allow commas in primer field for primer pools """
+        
+        field_types = {'bc':'uid','LinkerPrimerSequence':float,
+         'sample':'uid','ctl':['Yes','No']}
+        good_data = array([
+            ['sample','bc','LinkerPrimerSequence','ctl','x'],
+            ['x','x','ATTCG,AYCGA','Yes','x'],
+            ['y','y','ACSGGAYT','No','x'],
+            ])
+        self.assertEqual(check_bad_chars((good_data, field_types)), 
+                ((good_data, field_types),''))
 
     def test_check_bad_chars_meins(self):
         """ Should enforce MEINS compliance in SampleID column (first column)

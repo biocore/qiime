@@ -94,8 +94,8 @@ class TopLevelTests(TestCase):
     
     def test_expand_degeneracies(self):
         """generate_possibilities should make possible strings"""
-        self.assertEqual(expand_degeneracies('ACG'), ['ACG'])
-        self.assertEqual(expand_degeneracies('RGY'), 
+        self.assertEqual(expand_degeneracies(['ACG']), ['ACG'])
+        self.assertEqual(expand_degeneracies(['RGY']), 
             ['AGT', 'AGC', 'GGT', 'GGC'])
 
     def test_get_infile(self):
@@ -132,8 +132,35 @@ z\tGG\tGC\t5\tsample_z"""
          primer_seqs_lens, all_primers = check_map(f)
 
         self.assertEqual(barcode_to_sample_id, {'AA':'x','AC':'y','GG':'z'})
+
         self.assertEqual(errors, [])
         self.assertEqual(warnings, [])
+        
+    def test_check_map_primer_pool(self):
+        """check_map should handle primer pools as expected"""
+        s = """#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tX\tDescription
+#fake data
+x\tAA\tAC\t3\tsample_x
+y\t"AC"\tAT,DC\t4\t"sample_y"
+z\tGG\tGC\t5\tsample_z"""
+        f = StringIO(s)
+        f.name='test.xls'
+        headers, id_map, barcode_to_sample_id, warnings, errors, \
+         primer_seqs_lens, all_primers = check_map(f)
+
+        self.assertEqual(barcode_to_sample_id, {'AA':'x','AC':'y','GG':'z'})
+        self.assertEqual(errors, [])
+        self.assertEqual(warnings, [])
+        
+        # Returns all possible primers with lengths associated.
+        expected_all_primers = {'AC': 2, 'GC': 2, 'AT': 2, 'TC': 2}
+        self.assertEqual(all_primers, expected_all_primers)
+        
+        # Returns all primers associated with each barcode.
+        expected_primer_seqs_lens = {'AA': {'AC': 2}, 'GG': {'GC': 2},
+         'AC': {'AC': 2, 'GC': 2, 'AT': 2, 'TC': 2}}
+
+        self.assertEqual(primer_seqs_lens, expected_primer_seqs_lens)
 
     def test_fasta_ids(self):
         """fasta_ids should return list of ids in fasta files, no dups"""

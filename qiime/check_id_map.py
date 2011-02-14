@@ -81,6 +81,8 @@ ALLOWED_SUBCAT_CHARS = ALLOWED_CHARS_HEADER + EXTRA_DESC_CHARS
 # SampleID names very restricted to be MIENS compliant
 ALLOWED_SAMPLEID_CHARS = "." + digits + letters
 
+ALLOWED_PRIMER_CHARS = "," + "ATCGRYMKWSBDHVN"
+
 def find_diff_length(items):
     """Return items that differ in length from the first, with indices.
     
@@ -161,6 +163,8 @@ subcat_filter = CharFilter(ALLOWED_SUBCAT_CHARS, "Subcat Filter",
     default_char='_')
 sample_id_filter = CharFilter(ALLOWED_SAMPLEID_CHARS, "SampleID Filter",
     default_char='.')
+primer_filter = CharFilter(ALLOWED_PRIMER_CHARS, "Primer Filter",
+    default_char='')
 
 class DupChecker(object):
     """Checks set of objects for duplicates in canonical representation.
@@ -574,11 +578,16 @@ def check_bad_chars((data, field_types), filter_f=descr_filter,
     """Checks all fields for bad chars, removing and warning."""
     problems = []
     headers, body = data[0], data[1:]
+    
+    sample_id_index = 0
+    linker_primer_index = 2
 
     for i, row in enumerate(body):
         for j, val in enumerate(row):
-            if j==0:
+            if j==sample_id_index:
                 new_val, e = filter_sample_id.resultAndError(val)
+            elif j == linker_primer_index:
+                continue
             else:
                 new_val, e = filter_f.resultAndError(val)
             if e:
@@ -737,18 +746,26 @@ def check_primers_barcodes(primers, barcodes, problems, is_barcoded=True,
     characters and for the presence of a primer or barcode.  No testing
     for valid Golay/Hamming barcodes or duplicates are performed in this
     function."""
+    
+    
 
     
     for row in range(len(primers)):
+        
+        # Split primers in case pooled primers were passed
+        curr_primers = primers[row].split(',')
+        
+        for curr_primer in curr_primers:
+            
 
-        for base in primers[row]:
-            try:
-                IUPAC_DNA[base]
-            except KeyError:
-                # The primers are always located in the third column
-                problems['warning'].append('The primer %s ' % primers[row] +\
-                'has invalid characters.  Location (row, column):\t' +\
-                '%d,2' % row)
+            for base in curr_primer:
+                try:
+                    IUPAC_DNA[base]
+                except KeyError:
+                    # The primers are always located in the third column
+                    problems['warning'].append('The primer %s ' % primers[row] +\
+                    'has invalid characters.  Location (row, column):\t' +\
+                    '%d,2' % row)
         if len(primers[row])==0 and not disable_primer_check:
             problems['warning'].append('Missing primer.  ' +\
              'Location (row, column):\t%d,2' % row)
@@ -1157,8 +1174,6 @@ def check_mapping_file(infile_name, output_dir, has_barcodes, char_replace, \
         print('Errors and/or warnings occurred, see log file %s' % log_filepath)
     if verbose and not(errors or warnings):
         print('No errors or warnings for mapfile %s' % infile_name)
-	
-	
 
 
     

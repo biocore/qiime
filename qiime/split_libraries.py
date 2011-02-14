@@ -246,13 +246,17 @@ def local_align_primer_seq(primer,sequence,sw_scorer=equality_scorer_ambigs):
    
     return mismatch_count, hit_start
 
-def expand_degeneracies(raw_primer):
+def expand_degeneracies(raw_primers):
     """ Returns all non-degenerate versions of a given primer sequence """
     
-    primers=SequenceGenerator(template=raw_primer,alphabet=IUPAC_DNA)
     expanded_primers=[]
-    for primer in primers:
-        expanded_primers.append(primer)
+    
+    for raw_primer in raw_primers:
+        primers=SequenceGenerator(template=raw_primer.strip(),
+         alphabet=IUPAC_DNA)
+        
+        for primer in primers:
+            expanded_primers.append(primer)
         
     return expanded_primers
     
@@ -270,13 +274,15 @@ def check_map(infile, has_barcodes=True, disable_primer_check=False):
     for sample_id, sample in id_map.items():
         barcode_to_sample_id[sample['BarcodeSequence'].upper()] = sample_id
         if not disable_primer_check:
-            raw_primer = sample['LinkerPrimerSequence'].upper()
-            expanded_primers = expand_degeneracies(raw_primer)
+            raw_primers = sample['LinkerPrimerSequence'].upper().split(',')
+            expanded_primers = expand_degeneracies(raw_primers)
             curr_bc_primers = {}
             for primer in expanded_primers:
                 curr_bc_primers[primer] = len(primer)
                 all_primers[primer] = len(primer)
             primer_seqs_lens[sample['BarcodeSequence']] = curr_bc_primers
+    
+    
     
     
     return hds, id_map, barcode_to_sample_id, warnings, errors, \

@@ -50,6 +50,11 @@ script_info['script_description']="""Specifically, we check that:
     check_id_map.py should not raise exceptions itself under normal 
     circumstances, except for situations such as having a misformatted input 
     metadata mapping file.
+    
+    If pooled primers are used, separate with a comma.  For instance, a pooled
+    set of three 27f primers (used to increase taxonomic coverage) could be
+    specified in the LinkerPrimerSequence fields as such:
+    AGGGTTCGATTCTGGCTCAG,AGAGTTTGATCCTGGCTTAG,AGAATTTGATCTTGGTTCAG
 """
 script_info['script_usage']=[]
 script_info['script_usage'].append(("""Example:""","""Check the test_mapping.txt mapping file for problems, supplying the required mapping file and output directory (in this case mapping_info)""","""check_id_map.py -m test_mapping.txt -o mapping_info/"""))

@@ -130,15 +130,17 @@ script_info['optional_options']=[\
         'falls below the threshold (see -s for default), the sequence is '+\
         'discarded. A good value would be 50. 0 (zero) means no filtering. '+\
         'Must pass a .qual file (see -q parameter) if this '+\
-        'functionality is enabled. [default: %default]'),
+        'functionality is enabled.  Default behavior for this function '+\
+        'is to truncate the sequence at the beginning of the poor quality '+\
+        'window, and test for minimal length (-l parameter) of the resulting '+\
+        'sequence. [default: %default]'),
         
     make_option('-g', '--discard_bad_windows', dest="discard_bad_windows",
                 default=False,
         action='store_true', help='If the qual_score_window option (-w) is '+\
-        'enabled, by default, sequences will be truncated at first base of '+\
-        'a window that falls below the quality score threshold.  To '+\
-        'completely discard sequences that have a bad quality window, enable '+\
-        'this option. [default: %default]'),
+        'enabled, this will override the default truncation behavior and '+\
+        'discard any sequences where a bad window is found. '+\
+        ' [default: %default]'),
         
     make_option('-p', '--disable_primers', default=False,
         action='store_true', help='Disable primer usage when demultiplexing.'+\
