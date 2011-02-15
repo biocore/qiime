@@ -33,15 +33,13 @@ script_info['output_description']="""There are two possible output formats depen
 """
 
 script_info['required_options']= [\
-make_option('-i','--otu_file',action='store',\
-          type='string',dest='otu_fp',help='Path to read '+\
-          'otu file [REQUIRED]')
+make_option('-i','--otu_table_fp',
+          dest='otu_table_fp',help='Path to read otu file [REQUIRED]'),
+make_option('-o','--output_fp',dest='output_fp',
+           help='Path to write output file [REQUIRED]'),
 ]
 
 script_info['optional_options'] = [\
-make_option('-o','--output_file',action='store',\
-          type='string',dest='out_fp',help='Path to write '+\
-          'output file'),
 make_option('-L','--level',action='store',\
           type='int',dest='level', default=2, 
           help='Level of taxonomy to use [default: %default]'),
@@ -70,9 +68,9 @@ script_info['version'] = __version__
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
-    output_fname = opts.out_fp
-    otu_fp = opts.otu_fp
-    otu_table = parse_otu_table(open(otu_fp, 'U'))
+    output_fname = opts.output_fp
+    otu_table_fp = opts.otu_table_fp
+    otu_table = parse_otu_table(open(otu_table_fp, 'U'))
     delimiter = opts.delimiter
     mapping = opts.mapping
     level = opts.level
@@ -82,7 +80,8 @@ def main():
         mapping, header, comments = parse_mapping_file(mapping_file)
 
     if opts.relative_abundance != '':
-        raise option_parser.error("Depreciated. Please use --absolute_abundances to disable relative abundance")
+        raise option_parser.error(\
+         "Depreciated. Please use --absolute_abundances to disable relative abundance")
 
     if not opts.absolute_abundance:
         otu_table = convert_otu_table_relative(otu_table)
@@ -94,18 +93,11 @@ def main():
 
     if mapping:
         summary, tax_order = add_summary_mapping(otu_table, mapping, level)
-        if output_fname:
-            write_add_taxa_summary_mapping(summary,tax_order,mapping,header,output_fname,delimiter)
-        else:
-            print ''.join(format_add_taxa_summary_mapping(summary,tax_order,mapping,header,delimiter))
-
+        write_add_taxa_summary_mapping(
+             summary,tax_order,mapping,header,output_fname,delimiter)
     else:
         summary, header = make_summary(otu_table, level)
-        if output_fname:
-            write_summarize_taxa(summary, header, output_fname, delimiter)
-        else:
-            print ''.join(format_summarize_taxa(summary,header,delimiter))
-
+        write_summarize_taxa(summary, header, output_fname, delimiter)
 
 if __name__ == "__main__":
     main()
