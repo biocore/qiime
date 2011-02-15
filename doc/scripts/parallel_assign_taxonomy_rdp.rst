@@ -27,7 +27,7 @@ This script performs like the `assign_taxonomy.py <./assign_taxonomy.html>`_ scr
 	**[OPTIONAL]**
 		
 	-r, `-`-rdp_classifier_fp
-		Full path to rdp classifier jar file [default: /Users/jistombaugh/bin/rdp_classifier/rdp_classifier-2.0.jar]
+		Full path to rdp classifier jar file [default: /software/rdp_classifier/rdp_classifier-2.0.jar]
 	-c, `-`-confidence
 		Minimum confidence to record an assignment [default: 0.8]
 	-N, `-`-assign_taxonomy_fp
@@ -49,7 +49,7 @@ This script performs like the `assign_taxonomy.py <./assign_taxonomy.html>`_ scr
 	-X, `-`-job_prefix
 		Job prefix [default: descriptive prefix + random chars]
 	-Y, `-`-python_exe_fp
-		Full path to python executable [default: /usr/bin/python2.6]
+		Full path to python executable [default: /opt/local/bin/python]
 	-Z, `-`-seconds_to_sleep
 		Number of seconds to sleep between checks for run  completion when polling runs [default: 60]
 

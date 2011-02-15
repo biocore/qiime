@@ -35,7 +35,7 @@ This script performs like the `assign_taxonomy.py <./assign_taxonomy.html>`_ scr
 	-e, `-`-e_value
 		Maximum e-value to record an assignment, only used for blast method [default: 0.001]
 	-B, `-`-blastmat_dir
-		Full path to directory containing blastmat file [default: /Users/jistombaugh/bin/blast-2.2.22/data]
+		Full path to directory containing blastmat file [default: /software/blast-2.2.22/data]
 	-N, `-`-assign_taxonomy_fp
 		Full path to scripts/`assign_taxonomy.py <./assign_taxonomy.html>`_ [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`assign_taxonomy.py <./assign_taxonomy.html>`_]
 	-O, `-`-jobs_to_start
@@ -55,7 +55,7 @@ This script performs like the `assign_taxonomy.py <./assign_taxonomy.html>`_ scr
 	-X, `-`-job_prefix
 		Job prefix [default: descriptive prefix + random chars]
 	-Y, `-`-python_exe_fp
-		Full path to python executable [default: /usr/bin/python2.6]
+		Full path to python executable [default: /opt/local/bin/python]
 	-Z, `-`-seconds_to_sleep
 		Number of seconds to sleep between checks for run  completion when polling runs [default: 60]
 

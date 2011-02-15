@@ -63,7 +63,7 @@ This script works like the `identify_chimeric_seqs.py <./identify_chimeric_seqs.
 	-X, `-`-job_prefix
 		Job prefix [default: descriptive prefix + random chars]
 	-Y, `-`-python_exe_fp
-		Full path to python executable [default: /usr/bin/python2.6]
+		Full path to python executable [default: /opt/local/bin/python]
 	-Z, `-`-seconds_to_sleep
 		Number of seconds to sleep between checks for run  completion when polling runs [default: 60]
 

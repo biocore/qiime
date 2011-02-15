@@ -19,13 +19,13 @@ The `summarize_taxa.py <./summarize_taxa.html>`_ script provides summary informa
 	
 	**[REQUIRED]**
 		
-	-i, `-`-otu_file
+	-i, `-`-otu_table_fp
 		Path to read otu file [REQUIRED]
+	-o, `-`-output_fp
+		Path to write output file [REQUIRED]
 	
 	**[OPTIONAL]**
 		
-	-o, `-`-output_file
-		Path to write output file
 	-L, `-`-level
 		Level of taxonomy to use [default: 2]
 	-m, `-`-mapping

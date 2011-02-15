@@ -39,7 +39,7 @@ This script for performing blast while making use of multicore/multiprocessor en
 	-D, `-`-suppress_format_blastdb
 		Supress format of blastdb [default: False]
 	-a, `-`-blastmat_dir
-		Full path to directory containing blastmat file [default: /Users/jistombaugh/bin/blast-2.2.22/data]
+		Full path to directory containing blastmat file [default: /software/blast-2.2.22/data]
 	-b, `-`-blastall_fp
 		Path to blastall [default: blastall]
 	-O, `-`-jobs_to_start
@@ -59,7 +59,7 @@ This script for performing blast while making use of multicore/multiprocessor en
 	-X, `-`-job_prefix
 		Job prefix [default: descriptive prefix + random chars]
 	-Y, `-`-python_exe_fp
-		Full path to python executable [default: /usr/bin/python2.6]
+		Full path to python executable [default: /opt/local/bin/python]
 	-Z, `-`-seconds_to_sleep
 		Number of seconds to sleep between checks for run  completion when polling runs [default: 60]
 
