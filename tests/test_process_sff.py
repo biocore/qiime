@@ -33,7 +33,7 @@ class TopLevelTests(TestCase):
 
         # Cannot use get_qiime_project_dir() due to test errors in virtual box
         test_dir = os.path.dirname(os.path.abspath(__file__))
-        sff_original_fp =  os.path.join(test_dir, 'sra_test_files', 'test.sff')
+        sff_original_fp =  os.path.join(test_dir, 'test_support_files', 'test.sff')
 
         # copy sff file to working directory
         self.sff_dir = tempfile.mkdtemp()

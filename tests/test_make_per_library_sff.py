@@ -24,7 +24,7 @@ class FunctionTests(TestCase):
         test_dir = os.path.dirname(os.path.abspath(__file__))
         sff_filenames = ['F6AVWTA01.sff', 'F6AVWTA02.sff']
         self.sff_fps = [
-            os.path.join(test_dir, 'sra_test_files', 'F6AVWTA', fn)
+            os.path.join(test_dir, 'test_support_files', 'F6AVWTA', fn)
             for fn in sff_filenames
             ]
 

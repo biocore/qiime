@@ -36,7 +36,7 @@ class TopLevelTests(TestCase):
     def setUp(self):
         test_dir = os.path.dirname(os.path.abspath(__file__))
         self.sff_fn = 'F6AVWTA01.sff'
-        orig_sff_fp = os.path.join(test_dir, 'sra_test_files', 'F6AVWTA', self.sff_fn)
+        orig_sff_fp = os.path.join(test_dir, 'test_support_files', 'F6AVWTA', self.sff_fn)
         self.sff_dir = tempfile.mkdtemp()
         self.sff_fp = os.path.join(self.sff_dir, self.sff_fn)
         shutil.copy(orig_sff_fp, self.sff_fp)
