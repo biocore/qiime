@@ -16,8 +16,8 @@ from os import makedirs
 from optparse import make_option
 from cogent.app.util import get_tmp_filename
 from cogent.util.misc import remove_files
-from qiime.util import (parse_command_line_parameters, create_dir,
- sort_fasta_by_abundance)
+from qiime.util import (parse_command_line_parameters, create_dir)
+from qiime.sort import sort_fasta_by_abundance
 from qiime.pick_otus  import otu_picking_method_constructors,\
  otu_picking_method_choices, MothurOtuPicker
 

@@ -33,7 +33,8 @@ from cogent.util.misc import remove_files
 from cogent import LoadSeqs, DNA, Alignment
 from cogent.util.trie import build_prefix_map
 from cogent.util.misc import flatten
-from qiime.util import FunctionWithParams, sort_fasta_by_abundance
+from qiime.util import FunctionWithParams
+from qiime.sort import sort_fasta_by_abundance
 from qiime.parse import fields_to_dict
 from qiime.pycogent_backports.uclust import get_clusters_from_fasta_filepath
 

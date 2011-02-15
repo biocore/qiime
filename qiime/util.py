@@ -434,36 +434,7 @@ def raise_error_on_parallel_unavailable(qiime_config=None):
         "Parallel QIIME is not available. (Have you set"+\
         " jobs_to_start to greater than 1 in your qiime_config?"
         
-def sort_fasta_by_abundance(fasta_lines,fasta_out_f):
-    """ Sort seqs in fasta_line by abundance, write all seqs to fasta_out_f
-    
-     Note that all sequences are written out, not just unique ones.
-     
-     fasta_lines: input file handle (or similar object)
-     fasta_out_f: output file handle (or similar object)
-     
-    ** I am currently doing some work to figure out what the
-     best way to do this is. The current implementation is going
-     to have problems on very large (e.g., Illumina) files. --Greg
-    
-    """
-    seq_index = {}
-    count = 0
-    for seq_id,seq in MinimalFastaParser(fasta_lines):
-        count += 1
-        try:
-            seq_index[seq].append(seq_id)
-        except KeyError:
-            seq_index[seq] = [seq_id]
-    
-    seqs = []
-    for k,v in seq_index.items():
-        seqs.append((len(v),k,v))
-        del seq_index[k]
-    seqs.sort()
-    for count, seq, seq_ids in seqs[::-1]:
-        for seq_id in seq_ids:
-            fasta_out_f.write('>%s\n%s\n' % (seq_id,seq))
+
 
 def get_options_lookup():
     """ Return dict of commonly used options """
@@ -960,19 +931,5 @@ def compare_otu_maps(otu_map1, otu_map2, verbose=False):
     return float(wrong)/(right+wrong)
     
 
-def sort_sample_ids_by_mapping_value(mapping_file,field,field_type_f=float):
-    """ Return list of sample ids sorted by ascending value from mapping file
-    """
-    data, headers, comments = parse_mapping_file(mapping_file)
 
-    try:
-        column = headers.index(field)
-    except ValueError:
-        raise ValueError,\
-         "Column (%s) not found in mapping file headers:\n %s" %\
-         (field,' '.join(headers))
-
-    results = [(e[0],field_type_f(e[column])) for e in data]
-    results.sort(key=itemgetter(1))
-    return results
 

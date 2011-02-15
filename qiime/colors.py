@@ -19,6 +19,7 @@ from numpy import array
 import os
 import re
 from qiime.util import MissingFileError
+from qiime.sort import natsort
 
 def string_to_rgb(s):
     """Converts hex string to RGB"""
@@ -93,33 +94,6 @@ class Color(object):
     def __str__(self):
         """Return string representation of self"""
         return str(self.Name) + ':' + self.toHex()
-
-def _natsort_key(item):
-    """Provides normalized version of item for sorting with digits.
-
-    From: 
-    http://lists.canonical.org/pipermail/kragen-hacks/2005-October/000419.html
-    """
-    chunks = re.split('(\d+(?:\.\d+)?)', item)
-    for ii in range(len(chunks)):
-        if chunks[ii] and chunks[ii][0] in '0123456789':
-            if '.' in chunks[ii]: numtype = float
-            else: numtype = int
-            # wrap in tuple with '0' to explicitly specify numbers come first
-            chunks[ii] = (0, numtype(chunks[ii]))
-        else:
-            chunks[ii] = (1, chunks[ii])
-    return (chunks, item)
-
-def natsort(seq):
-    """Sort a sequence of text strings in a reasonable order.
-
-    From: 
-    http://lists.canonical.org/pipermail/kragen-hacks/2005-October/000419.html
-    """
-    alist = list(seq)
-    alist.sort(key=_natsort_key)
-    return alist
 
 def color_dict_to_objects(d, colorspace='hsv'):
     """Converts color dict to dict of Color objects"""

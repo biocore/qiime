@@ -24,8 +24,9 @@ from time import strftime
 from random import choice
 from qiime.util import summarize_pcoas,isarray
 from qiime.parse import group_by_field,group_by_fields
-from qiime.colors import natsort, data_color_order, data_colors, \
+from qiime.colors import data_color_order, data_colors, \
                             get_group_colors,data_colors,iter_color_groups
+from qiime.sort import natsort
 from cogent.util.misc import get_random_directory_name
 import os
 import numpy

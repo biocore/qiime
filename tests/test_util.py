@@ -18,9 +18,9 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
     raise_error_on_parallel_unavailable, merge_otu_tables,
     convert_OTU_table_relative_abundance, create_dir, handle_error_codes,
     summarize_pcoas, _compute_jn_pcoa_avg_ranges, _flip_vectors, IQR,
-    idealfourths, isarray, matrix_IQR, sort_fasta_by_abundance, degap_fasta_aln,
+    idealfourths, isarray, matrix_IQR, degap_fasta_aln,
     write_degapped_fasta_to_file, compare_otu_maps, get_diff_for_otu_maps,
-    merge_n_otu_tables, convert_otu_table_relative, sort_sample_ids_by_mapping_value,
+    merge_n_otu_tables, convert_otu_table_relative,
     split_fasta_on_sample_ids, split_fasta_on_sample_ids_to_dict)
 
 import numpy
@@ -80,29 +80,6 @@ class TopLevelTests(TestCase):
                     's2_a':[('s2_a_50','GGGCCC')],
                     's3':[('s3_25','AAACCC')]}
         self.assertEqual(actual,expected)
-    
-    def test_sort_sample_ids_by_mapping_value(self):
-        """ sort_sample_ids_by_mapping_value functions as expected """
-        actual = sort_sample_ids_by_mapping_value(mapping_file=self.mapping_f1,
-                                         field='days_since_epoch',
-                                         field_type_f=float)
-        expected = zip(['NotInOtuTable','1','Z2','Z1','A'],
-                       [0.0,5.7,10,23,400000])
-        self.assertEqual(actual,expected)
-        
-    def test_sort_sample_ids_by_mapping_value_error(self):
-        """ sort_sample_ids_by_mapping_value handles errors """
-        self.assertRaises(ValueError,
-                          sort_sample_ids_by_mapping_value,
-                          mapping_file=self.mapping_f1,
-                          field='years_since_spoch',
-                          field_type_f=float)
-                          
-        self.assertRaises(ValueError,
-                          sort_sample_ids_by_mapping_value,
-                          mapping_file=self.mapping_f1,
-                          field='Something',
-                          field_type_f=float)
                 
     def test_convert_otu_table_relative(self):
         """should convert a parsed otu table into relative abundances"""
@@ -363,49 +340,6 @@ class TopLevelTests(TestCase):
         otu_table_f3 = iter(self.otu_table_f3)
         self.assertRaises(ValueError,
          merge_n_otu_tables,[otu_table_f1,otu_table_f2,otu_table_f3])
-        
-    def test_sort_fasta_by_abundance(self):
-        """sort_fasta_by_abundance functions as expected"""
-        class FakeOutF(object):
-            def __init__(self):
-                self.s = ""
-            def write(self,s):
-                self.s += s
-        
-        actual = FakeOutF()
-        expected = ""
-        sort_fasta_by_abundance([],actual)
-        self.assertEqual(actual.s,expected)
-        
-        # no sorting necessary
-        actual = FakeOutF()
-        expected1 = "\n".join(['>s1','ACCGT','>s2 comment','ATTGC',''])
-        expected2 = "\n".join(['>s2 comment','ATTGC','>s1','ACCGT',''])
-        sort_fasta_by_abundance(['>s1','ACCGT','>s2 comment','ATTGC'],actual)
-        # order is unimportant here
-        self.assertTrue(actual.s == expected1 or actual.s == expected2)
-        
-        # sorting necessary
-        actual = FakeOutF()
-        inseqs = ['>s1','ACCGT',
-                   '>s2 comment','ATTGC',
-                   '>s3 blah','ATTGC']
-        expected = "\n".join(['>s2 comment','ATTGC',
-                              '>s3 blah','ATTGC',
-                              '>s1','ACCGT',''])
-        sort_fasta_by_abundance(inseqs,actual)
-        self.assertEqual(actual.s,expected)
-        
-        # sorting necessary, but skipped due to low sampling
-        # actual = FakeOutF()
-        # inseqs = ['>s1','ACCGT',
-        #            '>s2 comment','ATTGC'
-        #            '>s3 blah','ATTGC']
-        # expected = "\n".join(['>s1','ACCGT',
-        #                       '>s2 comment','ATTGC'
-        #                       '>s3 blah','ATTGC',''])
-        # sort_fasta_by_abundance(inseqs,actual,sample=2)
-        # self.assertEqual(actual.s,expected)
         
 
 

@@ -14,7 +14,8 @@ __status__ = "Development"
 
 from cogent.util.misc import flatten
 from qiime.parse import parse_coords,group_by_field,parse_mapping_file
-from qiime.colors import natsort, get_group_colors, color_groups, make_color_dict, combine_map_label_cols, process_colorby, linear_gradient, iter_color_groups, get_map, kinemage_colors
+from qiime.colors import get_group_colors, color_groups, make_color_dict, combine_map_label_cols, process_colorby, linear_gradient, iter_color_groups, get_map, kinemage_colors
+from qiime.sort import natsort
 from numpy import array, shape, apply_along_axis, dot, delete, vstack, sqrt
 import numpy as np
 import os

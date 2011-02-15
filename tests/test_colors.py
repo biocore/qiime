@@ -188,12 +188,6 @@ class TopLevelTests(TestCase):
         self.assertEqual(htr((240,100,100)), (0,0,255))
         self.assertFloatEqual(htr((0,0,49.803921568627452)), (127,127,127))
 
-    def test_natsort(self):
-        """natsort should perform numeric comparisons on strings"""
-        s = 'sample1 sample2 sample11 sample12'.split()
-        self.assertEqual(natsort(s), 
-            'sample1 sample2 sample11 sample12'.split())
-
     def test_combine_map_label_cols(self):
         """combine_map_label_cols: Combine two or more columns from the \
 mapping file"""

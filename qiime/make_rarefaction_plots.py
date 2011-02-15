@@ -18,7 +18,8 @@ from matplotlib.pylab import savefig,clf,gca,gcf,errorbar
 import matplotlib.pyplot as plt
 import os.path
 from os.path import splitext, split
-from qiime.colors import natsort, iter_color_groups
+from qiime.colors import iter_color_groups
+from qiime.sort import natsort
 from qiime.util import create_dir
 from numpy import isnan,nan,array,transpose,mean,std,arange
 

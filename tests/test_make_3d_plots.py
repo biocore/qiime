@@ -74,12 +74,6 @@ class TopLevelTests(TestCase):
         if self._dir_to_clean_up != '':
             shutil.rmtree(self._dir_to_clean_up)
 
-    def test_natsort(self):
-        """natsort should perform numeric comparisons on strings"""
-        s = 'sample1 sample2 sample11 sample12'.split()
-        self.assertEqual(natsort(s), 
-            'sample1 sample2 sample11 sample12'.split())
-
     def test_make_3d_plots(self):
         """make_3d_plots_invue: main script to create invue files"""
         obs_kin=make_3d_plots(self.coord_header,self.coords,self.pct_var, \
