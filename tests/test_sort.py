@@ -26,6 +26,7 @@ class SortTests(TestCase):
         self.age_sorted_otu_table1 = age_sorted_otu_table1.split('\n')
         self.name_sorted_otu_table1 = name_sorted_otu_table1.split('\n')
         self.nothing_sorted_otu_table1 = nothing_sorted_otu_table1.split('\n')
+        self.otu_table1_bad_sampleID = otu_table1_bad_sampleID.split('\n')
         self.dirs_to_remove = []
         self.files_to_remove = []
 
@@ -165,6 +166,14 @@ class SortTests(TestCase):
         # taxa match expected
         self.assertEqual(actual[3],expected[3])
 
+    def test_sort_otu_table_error(self):
+        """ sort_otu_table fails on samples in otu table but not mapping"""
+
+        self.assertRaises(KeyError,sort_otu_table,
+                                   parse_otu_table(self.otu_table1_bad_sampleID),
+                                   parse_mapping_file(self.mapping_f2),
+                                   sort_field = "Age")
+
 
 
 mapping_f1 = """#SampleID\tSomething\tdays_since_epoch
@@ -176,6 +185,16 @@ NotInOtuTable\tf\t0"""
 
 otu_table1 = """# Some comment
 OTU ID	Fing	Key	NA	Consensus Lineage
+0	19111	44536	42	Bacteria; Actinobacteria; Actinobacteridae; Propionibacterineae; Propionibacterium
+1	1216	3500	6	Bacteria; Firmicutes; Alicyclobacillaceae; Bacilli; Lactobacillales; Lactobacillales; Streptococcaceae; Streptococcus
+2	1803	1184	2	Bacteria; Actinobacteria; Actinobacteridae; Gordoniaceae; Corynebacteriaceae
+# comment
+3	1722	4903	17	Bacteria; Firmicutes; Alicyclobacillaceae; Bacilli; Staphylococcaceae
+4	589	2074	34	Bacteria; Cyanobacteria; Chloroplasts; vectors
+"""
+
+otu_table1_bad_sampleID = """# Some comment
+OTU ID	Fing	Key	NotInMapping	Consensus Lineage
 0	19111	44536	42	Bacteria; Actinobacteria; Actinobacteridae; Propionibacterineae; Propionibacterium
 1	1216	3500	6	Bacteria; Firmicutes; Alicyclobacillaceae; Bacilli; Lactobacillales; Lactobacillales; Streptococcaceae; Streptococcus
 2	1803	1184	2	Bacteria; Actinobacteria; Actinobacteridae; Gordoniaceae; Corynebacteriaceae

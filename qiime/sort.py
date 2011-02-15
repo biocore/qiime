@@ -114,6 +114,10 @@ def sort_otu_table(otu_table_data,
     sorted_sample_ids = [(e[mapping_field_index], e[0]) for e in mapping_data]
     sorted_sample_ids = sort_f(sorted_sample_ids)
     sorted_sample_ids = [e[1] for e in sorted_sample_ids]
+    if set(sample_ids) - set(sorted_sample_ids):
+        raise KeyError,\
+         "Sample IDs present in OTU table but not mapping file: " + \
+         ' '.join(list(set(sample_ids) - set(sorted_sample_ids)))
 
     otu_data = otu_data.transpose()
     sample_id_results = []
