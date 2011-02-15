@@ -77,8 +77,8 @@ make_option('-w', '--bar_width', dest='bar_width', \
  make_option('-t', '--type_of_file',type='choice',help='This is the filename suffix to use for each high-res plot. (i.e. '+','.join(plot_filetype_choices)+') [default: %default]', choices=plot_filetype_choices,default='pdf'),
  make_option('-c', '--chart_type', dest='chart_type',\
      action='store',type='string',\
-     help='type of chart to plot (i.e. pie, bar or area). The user has the \ ability to plot multiple types, by using a comma-separated list (e.g. area,pie)\
-  [default: %default]',default='area,bar,pie'),
+     help='type of chart to plot (i.e. pie, bar or area). The user has the ability to plot multiple types, by using a comma-separated list (e.g. area,pie)\
+  [default: %default]',default='area,bar'),
  make_option('-r', '--resize_nth_label', dest='resize_nth_label',\
     action='store',type='string',\
     help='this is for large area and bar charts where the font on the x-axis is small. This allows you to set every nth label to be larger on the x-axis.This requires an integer value greater than 0.\

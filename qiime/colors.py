@@ -13,7 +13,8 @@ __status__ = "Development"
 """Code for coloring series based on prefs file.
 """
 from colorsys import rgb_to_hsv, hsv_to_rgb
-from parse import parse_mapping_file, group_by_field, parse_otu_table
+from parse import parse_mapping_file, group_by_field, parse_otu_table,\
+                  parse_taxa_summary_table
 from numpy import array
 import os
 import re
@@ -583,10 +584,10 @@ def taxonomy_color_prefs_and_map_data_from_options(options):
             counts_f = open(f, 'U').readlines()
         except (TypeError, IOError):
             raise MissingFileError, 'Counts file required for this analysis'
-        sample_ids, otu_ids, otu_table, lineages = \
-                       parse_otu_table(counts_f,count_map_f=float)
+        sample_ids, otu_ids, otu_table = \
+                       parse_taxa_summary_table(counts_f,count_map_f=float)
 
-        data['counts'][f] = (sample_ids, otu_ids, otu_table, lineages)
+        data['counts'][f] = (sample_ids, otu_ids, otu_table)
         level = max([len(t.split(';')) - 1 for t in otu_ids])
 
         taxonomy_levels.append(str(level))

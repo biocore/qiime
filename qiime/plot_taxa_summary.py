@@ -784,8 +784,8 @@ def get_counts(label,colorby,num_categories,dir_path,level,color_data,\
     img_data = []
     labels = []
     level_counts = []
-    
-    sample_ids, otu_ids, otu_table, lineages = color_data
+
+    sample_ids, otu_ids, otu_table = color_data
     labels = sample_ids    
 
     #iterate over the counts table and cleanup taxa labels
