@@ -58,7 +58,7 @@ Optionally the user can have the relative abundances added to the user-generated
 
 	summarize_taxa.py -i otu_table.txt -L 4 -m Mapping_file.txt
 
-Alternatively, the user may want to output the raw counts of each lineage within a sample, which can be used in the next step for making pie charts, by using the following command:
+Alternatively, the user may want to output the raw counts of each lineage within a sample, which can be used in the next step for making area, bar and pie charts, by using the following command:
 
 ::
 

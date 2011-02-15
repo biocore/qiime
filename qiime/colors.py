@@ -585,7 +585,7 @@ def taxonomy_color_prefs_and_map_data_from_options(options):
         except (TypeError, IOError):
             raise MissingFileError, 'Counts file required for this analysis'
         sample_ids, otu_ids, otu_table = \
-                       parse_taxa_summary_table(counts_f,count_map_f=float)
+                       parse_taxa_summary_table(counts_f)
 
         data['counts'][f] = (sample_ids, otu_ids, otu_table)
         level = max([len(t.split(';')) - 1 for t in otu_ids])

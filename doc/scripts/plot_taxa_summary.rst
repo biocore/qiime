@@ -48,7 +48,7 @@ This script automates the construction of pie, bar and area charts showing the b
 	-t, `-`-type_of_file
 		This is the filename suffix to use for each high-res plot. (i.e. pdf,svg,png) [default: pdf]
 	-c, `-`-chart_type
-		Type of chart to plot (i.e. pie, bar or area). The user has the \ ability to plot multiple types, by using a comma-separated list (e.g. area,pie)  [default: area,bar,pie]
+		Type of chart to plot (i.e. pie, bar or area). The user has the ability to plot multiple types, by using a comma-separated list (e.g. area,pie)  [default: area,bar]
 	-r, `-`-resize_nth_label
 		This is for large area and bar charts where the font on the x-axis is small. This allows you to set every nth label to be larger on the x-axis.This requires an integer value greater than 0.[default: 0]
 

@@ -352,22 +352,22 @@ The script will generate a new OTU table :file:`wf_da/uclust_picked_otus/rep_set
    * Root;Bacteria;Verrucomicrobia  0.0 0.0 0.0 0.0 0.0 0.0 1.0 0.0 0.0
    * Root;Other         0.0 0.0 2.0 0.0 0.0 0.0 0.0 1.0 0.0
 
-.. _makepiecharts:
+.. _maketaxacharts:
 
-Make Pie Charts
-^^^^^^^^^^^^^^^
-To visualize the summarized taxa, you can use the `make_pie_charts.py <../scripts/make_pie_charts.html>`_ script, which shows which taxons are present in all samples or within each sample (-s).  To use this script, we need to set the taxonomy level label "-l", an output directory "-o", and the background color "-k" as white::
+Make Taxonomy Summary Charts
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+To visualize the summarized taxa, you can use the `plot_taxa_summary.py <../scripts/plot_taxa_summary.html>`_ script, which shows which taxons are present in all samples.  To use this script, we need to set the taxonomy level label "-l", an output directory "-o", and the background color "-k" as white::
 
-    make_pie_charts.py -i wf_da/uclust_picked_otus/rep_set/rdp_assigned_taxonomy/otu_table/otu_table_Level3.txt -l Phylum -o wf_da/uclust_picked_otus/rep_set/rdp_assigned_taxonomy/otu_table/Pie_Charts -k white -s
+    plot_taxa_summary.py -i wf_da/uclust_picked_otus/rep_set/rdp_assigned_taxonomy/otu_table/otu_table_Level3.txt -l Phylum -o wf_da/uclust_picked_otus/rep_set/rdp_assigned_taxonomy/otu_table/Taxa_Charts -k white
 
-To view the resulting pie charts, open the html file located in the :file:`wf_da/uclust_picked_otus/rep_set/rdp_assigned_taxonomy/otu_table/Pie_Charts/` folder. The following pie chart shows the taxa assignments for all samples.
+To view the resulting charts, open the area or bar chart html file located in the  :file:`wf_da/uclust_picked_otus/rep_set/rdp_assigned_taxonomy/otu_table/Taxa_Charts/` folder. The following chart shows the taxa assignments for each sample as an area chart.  Users can mouseover the plot to see which taxa are contributing to the percentage shown.
 
-.. image:: ../images/ piechart1.png
+.. image:: ../images/areachart1.png
    :align: center
 
-The following pie chart shows the taxa assignments for one of the samples (PC.354).
+The following chart shows the taxa assignments for each sample as a bar chart.
 
-.. image:: ../images/ piechart2.png
+.. image:: ../images/barchart1.png
    :align: center
 
 .. _compalphadivrarecurves:
@@ -386,7 +386,7 @@ Community ecologists typically describe the microbial diversity within their stu
 
 Step 1. Rarify OTU Table
 ^^^^^^^^^^^^^^^^^^^^^^^^^
-For this highly artificial example, all of the samples had sequence counts between 146 and 150, as discussed in :ref:`rareotutableremovehetero`. In real datasets, the range will generally be much larger. In practice, rarefaction is most useful when most samples have the specified number of sequences, so your upper bound of rarefaction should be close to the minimum number of sequences found in a sample.  For the this workflow script the min/max values are defined by the workflow script.  If the user would like to define their own values, they should perform each step individually.  In :file:`custom_parameters.txt`, the user can define the number of iterations at each sequence/sample level, where we will use "num-rep 5" and whether to include lineages, which we set to False:
+For this highly artificial example, all of the samples had sequence counts between 146 and 150, which is discussed in more detail in :ref:`compbetadiv`. In real datasets, the range will generally be much larger. In practice, rarefaction is most useful when most samples have the specified number of sequences, so your upper bound of rarefaction should be close to the minimum number of sequences found in a sample.  For the this workflow script the min/max values are defined by the workflow script.  If the user would like to define their own values, they should perform each step individually.  In :file:`custom_parameters.txt`, the user can define the number of iterations at each sequence/sample level, where we will use "num-rep 5" and whether to include lineages, which we set to False:
 
 .. note::
 
