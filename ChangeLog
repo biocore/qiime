@@ -1,5 +1,7 @@
 Add changes since QIIME 1.2.0 here
 ==================================
+* Added sort_otu_table.py script which allows for sorting samples in an OTU table based on their associated values in a mapping file.
+* Remove DOTUR OTU picker.
 * Removed support of SRA submission and processing scripts along with related documentation and tutorial. This included the following scripts: make_sra_submission, sra_spreadsheets_to_map_files, process_sra_submission (starting revision 1786)
 * Added a new list of distinct colors to the colors.py module
 * Added Area and Bar taxa summary plots to a new script plot_taxa_summary.py.  This script allows for writing of Pie Charts as well, thereby deprecating the make_pie_charts.py script.
