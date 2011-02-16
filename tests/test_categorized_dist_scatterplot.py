@@ -42,7 +42,7 @@ s3\t.6\t.7\t0.0
         self.assertFloatEqual(exp_avgs, obs_avgs)
 
     def test_get_sam_ids(self):
-        """hi"""
+        """set of sample ids in get_sam_ids should be correct"""
         map_file = StringIO.StringIO("""#SampleID	Country	AgeYears	Family	AgeCat
     h208A.1	Malawi	0.032854209	h208	Child
     h301A.1	Malawi	0.05	h301	Child
