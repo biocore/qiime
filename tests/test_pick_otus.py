@@ -8,8 +8,8 @@ __copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Kyle Bittinger", "Greg Caporaso", "Rob Knight", "Jens Reeder","William Walters"] 
 __license__ = "GPL"
 __version__ = "1.2.0-dev"
-__maintainer__ = "Kyle Bittinger"
-__email__ = "kylebittinger@gmail.com"
+__maintainer__ = "Greg Caporaso"
+__email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
 from os import remove
@@ -19,7 +19,7 @@ from cogent.util.unit_test import TestCase, main
 from cogent.app.util import get_tmp_filename
 from cogent.util.misc import remove_files, revComp
 from cogent.app.formatdb import build_blast_db_from_fasta_path
-from qiime.pick_otus import (CdHitOtuPicker, DoturOtuPicker, OtuPicker,
+from qiime.pick_otus import (CdHitOtuPicker, OtuPicker,
     MothurOtuPicker, PrefixSuffixOtuPicker, TrieOtuPicker, BlastOtuPicker,
     expand_otu_map_seq_ids, map_otu_map_files, UclustOtuPicker,
     UclustReferenceOtuPicker, expand_failures)
@@ -1717,101 +1717,7 @@ class CdHitOtuPickerTests(TestCase):
         app = CdHitOtuPicker(params={'Similarity':0.99},)
         self.assertEqual(app(self.tmp_seq_filepath2,prefix_prefilter_length=5),\
                              dna_seqs_2_result_prefilter)
-        
-        
-class DorurOtuPickerTests(TestCase):
-    """Tests for the Dotur-based OTU picker."""
 
-    def setUp(self):
-        self.seqs = """>a
-UAGGCUCUGAUAUAAUAGCUCUC---------
->c
-------------UGACUACGCAU---------
->b
-----UAUCGCUUCGACGAUUCUCUGAUAGAGA
-"""
-
-        # create the temporary input file
-        self.tmp_seq_filepath1 = get_tmp_filename(prefix='CdHitOtuPickerTest_',
-                                                 suffix='.fasta')
-        seq_file = open(self.tmp_seq_filepath1, 'w')
-        seq_file.write(self.seqs)
-        seq_file.close()
-
-    def tearDown(self):
-        remove(self.tmp_seq_filepath1)
-
-    def test_init(self):
-        """DoturOtuPicker.__init__ should set default attributes and params"""
-        d = DoturOtuPicker({})
-        self.assertEqual(d.Name, 'DoturOtuPicker')
-
-    def test_call(self):
-        """DoturOtuPicker.__call__ should return correct OTU's"""
-        exp = {0: ['a'], 1: ['b'], 2: ['c']}
-
-        params = {}
-        d = DoturOtuPicker(params)
-        self.assertEquals(d(self.tmp_seq_filepath1), exp)
-        
-    def test_call_prefilters_when_requested(self):
-        """DoturOtuPicker.__call__ raise NotImplementedError on pre-filter
-        """
-        # no pre-filtering results in one cluster per sequence as they all
-        # differ at their 3' ends
-        app = DoturOtuPicker(params={'Similarity':0.99})
-        self.assertRaises(NotImplementedError,app,self.tmp_seq_filepath1,\
-         prefix_prefilter_length=5)
-
-    def test_call_output_to_file(self):
-        """DoturOtuPicker.__call__ should write output to file when expected"""
-        exp = "0\ta\n1\tb\n2\tc\n"
-
-        tmp_result_filepath = get_tmp_filename(
-            prefix='DoturOtuPickerTest.test_call_output_to_file_',
-            suffix='.txt')
-        
-        app = DoturOtuPicker(params={})
-        obs = app(self.tmp_seq_filepath1, result_path=tmp_result_filepath)
-        
-        result_file = open(tmp_result_filepath)
-        result_file_str = result_file.read()
-        result_file.close()
-        # remove the result file before running the test, so in 
-        # case it fails the temp file is still cleaned up
-        remove(tmp_result_filepath)
-
-        # compare data in result file to fake expected file
-        self.assertEqual(result_file_str, exp)
-        # confirm that nothing is returned when result_path is specified
-        self.assertEqual(obs, None)
-
-    def test_call_log_file(self):
-        """DoturOtuPicker.__call__ should write log when expected"""
-        tmp_log_filepath = get_tmp_filename(
-            prefix='DoturOtuPickerTest.test_call_output_to_file_l_',
-            suffix='.txt')
-        tmp_result_filepath = get_tmp_filename(
-            prefix='DoturOtuPickerTest.test_call_output_to_file_r_',
-            suffix='.txt')
-
-        app = DoturOtuPicker(params={})
-        obs = app(self.tmp_seq_filepath1,
-                  result_path=tmp_result_filepath,
-                  log_path=tmp_log_filepath)
-
-        log_file = open(tmp_log_filepath)
-        log_file_str = log_file.read()
-        log_file.close()
-        # remove the temp files before running the test, so in 
-        # case it fails the temp file is still cleaned up
-        remove(tmp_log_filepath)
-        remove(tmp_result_filepath)
-
-        exp = "%s\nResult path: %s\n" % (str(app), tmp_result_filepath)
-        
-        # compare data in log file to fake expected log file
-        self.assertEqual(log_file_str, exp)
 
 class PickOtusStandaloneFunctions(TestCase):
     """ Tests of stand-alone functions in pick_otus.py """
