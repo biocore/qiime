@@ -26,8 +26,8 @@ script_info['script_usage'] = [("Example","The user can submit a post-split-libr
 script_info['output_description']= "The resulting directory will contain all of the sample-separated FASTA files, along with a log html file, which informs the user of the jobs started on MG-RAST"
 script_info['required_options'] = [\
  options_lookup['fasta_as_primary_input'],
- make_option('-w','--web_key_auth',help='the input directory'),
- make_option('-p','--project_id',help='the input directory'),
+ make_option('-w','--web_key_auth',help='the web services authorization key from MG-RAST'),
+ make_option('-p','--project_id',help='the title to be used for the project'),
  options_lookup['output_dir'],
 ]
 script_info['optional_options'] = [\
