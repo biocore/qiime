@@ -3,7 +3,7 @@
 
 __author__ = "Julia Goodrich"
 __copyright__ = "Copyright 2010, The QIIME Project" 
-__credits__ = ["Julia Goodrich"] #remember to add yourself
+__credits__ = ["Julia Goodrich", "Jesse Stombaugh"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "1.2.0-dev"
 __maintainer__ = "Daniel McDonald"
@@ -138,9 +138,6 @@ def get_counts_by_cat(lines, num_meta, meta_dict, cat_list,category,num_samples_
     return  cat_otu_table, otus, taxonomy
 
 
-
-
-
 def summarize_by_cat(map_lines,otu_sample_lines,category,dir_path,norm):
     """creates the category otu table"""
     cat_by_sample, sample_by_cat, num_meta, meta_dict, label_lists_dict, \
@@ -149,8 +146,20 @@ def summarize_by_cat(map_lines,otu_sample_lines,category,dir_path,norm):
     lines, otus, taxonomy = get_counts_by_cat(otu_sample_lines, num_meta, \
                   meta_dict,label_lists_dict[category],category,num_samples_by_cat,\
                   norm)
-
-    lines = format_otu_table(label_lists_dict[category], otus, array(lines), \
+    
+    #This for loop was added to remove columns that sum to 0, since you may 
+    #pass a mapping file that has more samples than in the OTU table, hence resulting
+    #in columns with no counts
+    new_labels=[]
+    new_lines=[]
+    for i,line in enumerate(zip(*lines)):
+        total_col=sum([float(x) for x in line])
+        if total_col>0:
+            new_lines.append(line)
+            new_labels.append(label_lists_dict[category][i])
+    new_lines=zip(*new_lines)
+    
+    lines = format_otu_table(new_labels, otus, array(new_lines), \
                   taxonomy=taxonomy,
                   comment='Category OTU Counts-%s'% category)
 
