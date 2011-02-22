@@ -43,11 +43,11 @@ Note that if certain optional applications are not installed this will be indica
 Tips for use
 ^^^^^^^^^^^^
 
-All QIIME scripts provide usage information when called with their -h option. This should be the first place to look for information about how to interact with QIIME's scripts. For example, to learn about how QIIME's align_seqs.py script works, call:
+All QIIME scripts provide usage information when called with their -h option. This should be the first place to look for information about how to interact with QIIME's scripts. For example, to learn about how QIIME's pick_otus.py script works, call:
 
 ::
     
-    $ python Qiime/scripts/align_seqs.py -h	
+    $ pick_otus.py -h	
 
 .. _Python: http://www.python.org
 .. _BLAST: ftp://ftp.ncbi.nlm.nih.gov/blast/executables/LATEST/
