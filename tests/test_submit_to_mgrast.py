@@ -32,7 +32,8 @@ class TopLevelTests(TestCase):
         self.sample_id='qiime_sample1'
         self.params=[('key', self.key), ('sample', self.sample_id), \
                      ('project', self.project_id)]
-        self.seq_file=path.join(qiime_dir,'tests','test_support_files',\
+        test_dir = path.dirname(path.abspath(__file__))
+        self.seq_file=path.join(test_dir,'test_support_files',\
                                 'qiime_tutorial_split_lib_seqs_subset.fna')
         self.output_dir='/tmp/qiime_test_mgrast/'
         self.sample_file=[('file','qiime_test.fna',fasta_example)]
