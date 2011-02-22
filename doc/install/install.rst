@@ -151,7 +151,7 @@ Combine these options as follows::
 	
 	python setup.py install --install-scripts=/home/qiime/bin/ --install-purelib=/home/qiime/lib/
 
-For a complete discussion of customizations related to the setup.py script, `see this page <http://docs.python.org/install/index.html#alternate-installation-the-home-scheme>`_.
+For a complete discussion of customizations related to the setup.py script, `see this page <http://docs.python.org/release/2.6.6/install/index.html#alternate-installation-the-home-scheme>`_.
 
 If you used default values for ``--install-scripts`` and ``--install-purelib`` (by not specifying them), your installation should be complete. If you specified an alternate value for ``--install-scripts``, you'll need to ensure that the shell knows where to look for the scripts. If you are using the bash shell and the locations specified in the examples above, you can do this with the following command::
 	

@@ -23,7 +23,7 @@ To process our data, we will perform the following steps, each of which is descr
 
 Essential Files
 -----------------
-All the files you will need for this tutorial are here (http://bmf.colorado.edu/QIIME/qiime_tutorial-v1.2.0.zip). Descriptions of these files are below.
+All the files you will need for this tutorial are here (http://bmf.colorado.edu/QIIME/qiime_tutorial-v1.2.1.zip). Descriptions of these files are below.
 
 Sequences (.fna)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -71,7 +71,7 @@ To generate a quality score file ::
 
 Data Analysis Steps
 ---------------------
-In this walkthrough, white text on a black background denote the command-line invocation of scripts. You can find full usage information for each script by passing the -h option (help) and/or by reading the full description in the `Documentation <../documentation/index.html>`_. First, assemble the sequences (.fna), quality scores (.qual), and metadata mapping file into a directory. Execute all tutorial commands from within the :file:`qiime_tutorial` directory, which can be downloaded from `here <http://bmf.colorado.edu/QIIME/qiime_tutorial-v1.2.0.zip>`_.
+In this walkthrough, white text on a black background denote the command-line invocation of scripts. You can find full usage information for each script by passing the -h option (help) and/or by reading the full description in the `Documentation <../documentation/index.html>`_. First, assemble the sequences (.fna), quality scores (.qual), and metadata mapping file into a directory. Execute all tutorial commands from within the :file:`qiime_tutorial` directory, which can be downloaded from `here <http://bmf.colorado.edu/QIIME/qiime_tutorial-v1.2.1.zip>`_.
 
 .. _preprocessing454:
 
