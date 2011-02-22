@@ -43,11 +43,11 @@ The result is a filtered OTU table and mapping file meeting the desired criteria
 
 **Examples:**
 
-The following command can be used, where all options are passed (using the resulting OTU file from `make_otu_table.py <./make_otu_table.html>`_, the original Fasting_Map.txt, and keeping only the Control sequences in the Treatment field) with the resulting data being written to seqs_otus.txt.filtered.xls and Fasting_Map.txt.filtered.xls:
+The following command can be used, where all options are passed (using the resulting OTU file from `make_otu_table.py <./make_otu_table.html>`_, the original Fasting_Map.txt, and keeping only the Control sequences in the Treatment field) with the resulting data being written to otu_table.txt.filtered.xls and Fasting_Map.txt.filtered.xls:
 
 ::
 
-	filter_by_metadata.py -i seqs_otus.txt -m Fasting_Map.txt -s 'Treatment:Control'
+	filter_by_metadata.py -i otu_table.txt -m Fasting_Map.txt -s 'Treatment:Control'
 
 Some variations (not so useful on this dataset, but more useful on larger datasets) are: 
 
@@ -55,25 +55,25 @@ Keeping both Control and Fast in the Treatment field (i.e. keeping everything):
 
 ::
 
-	filter_by_metadata.py -i seqs_otus.txt -m Fasting_Map.txt -s 'Treatment:Control,Fast'
+	filter_by_metadata.py -i otu_table.txt -m Fasting_Map.txt -s 'Treatment:Control,Fast'
 
 Excluding Fast in the Treatment field (same as the first example) - the syntax here is "*" to keep everything, then !Fast to eliminate the Fast group:
 
 ::
 
-	filter_by_metadata.py -i seqs_otus.txt -m Fasting_Map.txt -s 'Treatment:*,!Fast'
+	filter_by_metadata.py -i otu_table.txt -m Fasting_Map.txt -s 'Treatment:*,!Fast'
 
 Keeping only samples with both Control in the Treatment field and 20061218 in the DOB field:
 
 ::
 
-	        filter_by_metadata.py -i seqs_otus.txt -m Fasting_Map.txt -s 'Treatment:Control;DOB:20061218'
+	        filter_by_metadata.py -i otu_table.txt -m Fasting_Map.txt -s 'Treatment:Control;DOB:20061218'
 
 Keeping only samples with Control in the Treatment field and OTUs with counts of at least 5 across samples:
 
 ::
 
-	filter_by_metadata.py -i seqs_otus.txt -m Fasting_Map.txt -s 'Treatment:Control' -n 5
+	filter_by_metadata.py -i otu_table.txt -m Fasting_Map.txt -s 'Treatment:Control' -n 5
 
 Note that the filtered mapping file will automatically exclude any columns that are the same for all the samples that are left, and will also exclude (except for SampleID) any columns that are different for all the samples that are left, making it more useful for downstream analyses with the coloring tools.
 

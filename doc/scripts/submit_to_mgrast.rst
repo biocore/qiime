@@ -22,9 +22,9 @@ This script takes a split-library FASTA file and generates individual FASTA file
 	-i, `-`-input_fasta_fp
 		Path to the input fasta file
 	-w, `-`-web_key_auth
-		The input directory
+		The web services authorization key from MG-RAST
 	-p, `-`-project_id
-		The input directory
+		The title to be used for the project
 	-o, `-`-output_dir
 		Path to the output directory
 
