@@ -15,4 +15,4 @@ Note that the command wget works as follows: "wget URL_to_file". The entire comm
 This will download the two required files to your home directory. These files are used by QIIME and their location is set in the /home/qiime/.qiime_config file, if you move them from your home directory, please, update this file with the new location.
 
 Once you have downloaded these files, you should be ready to run your first QIIME analysis. The best way to start is reading the tutorial, available locally by double clicking on the documentation.html in the Before_you_start folder. If you are using the current Virtual Machine version you can also use the online documetation, here:
-   http://qiime.sourceforge.net/
+   http://www.qiime.org/

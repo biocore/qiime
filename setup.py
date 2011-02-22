@@ -19,11 +19,11 @@ __status__ = "Development"
  
  
 long_description = """QIIME: Quantitative Insights Into Microbial Ecology
-http://qiime.sourceforge.net
+http://www.qiime.org
 
 QIIME Allows Integration and Analysis of High-Throughput Community Sequencing Data
 J. Gregory Caporaso, Justin Kuczynski, Jesse Stombaugh, Kyle Bittinger, Frederic D. Bushman, Elizabeth K. Costello, Noah Fierer, Antonio Gonzalez Pena, Julia K. Goodrich, Jeffrey I. Gordon, Gavin A. Huttley, Scott T. Kelley, Dan Knights, Jeremy E. Koenig, Ruth E. Ley, Cathy A. Lozupone, Daniel McDonald, Brian D. Muegge, Meg Pirrung, Jens Reeder, Joel R. Sevinsky, Peter J. Turnbaugh, William van Treuren, William A. Walters, Jeremy Widmann, Tanya Yatsunenko, Jesse Zaneveld and Rob Knight. 
-Manuscript under review. 2010.
+Nature Methods, 2010.
 """
 
 doc_imports_failed = False
@@ -58,8 +58,8 @@ except ImportError:
 pycogent_version = tuple([int(v) \
         for v in re.split("[^\d]", cogent.__version__) if v.isdigit()])
         
-if pycogent_version < (1,4):
-    print "PyCogent >= 1.4.0 required, but %s is installed." % cogent.__version__
+if pycogent_version < (1,5):
+    print "PyCogent >= 1.5.0 required, but %s is installed." % cogent.__version__
     exit(1)
     
 setup(name='QIIME',
@@ -69,7 +69,7 @@ setup(name='QIIME',
       author_email=__email__,
       maintainer=__maintainer__,
       maintainer_email=__email__,
-      url='http://qiime.sourceforge.net',
+      url='http://www.qiime.org',
       packages=['qiime','qiime/parallel','qiime/pycogent_backports'],
       scripts=glob('scripts/*py'),
       package_data={'qiime':\
@@ -79,7 +79,6 @@ setup(name='QIIME',
                     'support_files/images/*png',\
                     'support_files/jar/*jar',\
                     'support_files/js/*js',\
-                    'support_files/sra_xml_templates/*xml',\
                     'support_files/R/*r']},
       long_description=long_description,
 )
