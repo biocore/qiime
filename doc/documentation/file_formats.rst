@@ -278,7 +278,7 @@ Several QIIME modules, such as `assign_taxonomy.py <../scripts/assign_taxonomy.h
 
 This file can be downloaded here: `Example ID to Taxonomy Mapping File <../_static/Examples/File_Formats/Example_ID_to_Taxonomy_mapping_File.txt>`_ (Right click and use 'download' or 'save as' to save this file)
 
-Several Greegenes (http://greengenes.lbl.gov/) sequence ID to taxonomy mapping files are available for download in this Greengenes sequences, OTU, and mapping file collection: `Greengenes OTU, sequences, and mapping files <http://greengenes.lbl.gov/Download/OTUs/gg_otus_6oct2010.zip>`_
+Several Greegenes (http://greengenes.lbl.gov/) sequence ID to taxonomy mapping files are available for download in our Greengenes OTU build. To ensure you have the latest version, follow the link to `Most recent Greengenes OTUs` on the top right of `this page. <http://blog.qiime.org>`_
 
 To add taxonomy mapping to an existing sequence ID to taxonomy mapping file, open the existing taxonomy mapping file in a spreadsheet, such as Microsoft Excel.  Save new sequence IDs in the first column, and the semicolon-separated taxa in the second column (make sure there are not extra spaces, tabs, or other white space around these entries).  Save this modified mapping file with the field delimiter as a tab, and leave the text delimiter blank.  It is best to visually inspect the modified ID to taxonomy mapping file in a basic text editor to ensure that no extraneous characters or spacings were saved during this process.
 
