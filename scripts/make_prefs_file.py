@@ -5,10 +5,10 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Greg Caporaso", "Jesse Stombaugh","Jeremy Widmann", "Antonio Gonzalez Pena"]
 __license__ = "GPL"
-__version__ = "1.2.0-dev"
+__version__ = "1.2.1"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
-__status__ = "Development"
+__status__ = "Release"
 
 from optparse import make_option
 from qiime.util import parse_command_line_parameters, get_options_lookup

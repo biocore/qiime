@@ -4,10 +4,10 @@ __author__ = "Rob Knight"
 __copyright__ = "Copyright 2010, The QIIME Project" 
 __credits__ = ["Rob Knight"] #remember to add yourself if you make changes
 __license__ = "GPL"
-__version__ = "1.2.0-dev"
+__version__ = "1.2.1"
 __maintainer__ = "Daniel McDonald"
 __email__ = "wasade@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 """Contains code for adding taxa to OTU table that lacks them.
 """

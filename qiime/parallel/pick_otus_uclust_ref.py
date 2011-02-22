@@ -10,10 +10,10 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Greg Caporaso"] 
 __license__ = "GPL"
-__version__ = "1.2.0-dev"
+__version__ = "1.2.1"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 def get_job_commands(python_exe_fp,pick_otus_fp,fasta_fps,
      output_dir,refseqs_fp,job_prefix,working_dir,similarity,

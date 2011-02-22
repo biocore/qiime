@@ -6,10 +6,10 @@ __author__ = "William Walters"
 __copyright__ = "Copyright 2010, The QIIME project"
 __credits__ = ["William Walters"]
 __license__ = "GPL"
-__version__ = "1.2.0-dev"
+__version__ = "1.2.1"
 __maintainer__ = "William Walters"
 __email__ = "William.A.Walters@colorado.edu"
-__status__ = "Development"
+__status__ = "Release"
  
 
 from qiime.util import parse_command_line_parameters, get_options_lookup
@@ -30,7 +30,7 @@ script_info['script_description']="""Specifically, we check that:
     - There are not duplicate near-unique but not exactly unique values within each column (warning)
     - The headers do not contain invalid characters (alphanumeric and underscore only)
     - The data fields do not contain invalid characters (alphanumeric, underscore, and +-%. characters)
-    - SampleID fields are MIMARKS compliant (only alphanumeric and . characters)
+    - SampleID fields are MIENS compliant (only alphanumeric and . characters)
     - There are no duplicates when the primer and barcodes are appended
     - If there is a field ReversePrimer for reverse primers (for removal with split_libraries), the characters are DNA IUPAC compliant and no fields are empty
     

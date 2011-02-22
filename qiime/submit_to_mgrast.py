@@ -6,10 +6,10 @@ __author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2010, The QIIME project"
 __credits__ = ["Jesse Stombaugh"]
 __license__ = "GPL"
-__version__ = "1.2.0-dev"
+__version__ = "1.2.1"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
-__status__ = "Development"
+__status__ = "Release"
  
 from urllib2 import urlopen, URLError
 from qiime.util import split_fasta_on_sample_ids_to_files

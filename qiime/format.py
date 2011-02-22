@@ -6,10 +6,10 @@ __credits__ = ["Rob Knight", "Justin Kuczynski","Jeremy Widmann", \
         "Antonio Gonzalez Pena", "Daniel McDonald"] 
 #remember to add yourself if you make changes
 __license__ = "GPL"
-__version__ = "1.2.0-dev"
+__version__ = "1.2.1"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 import numpy
 from numpy import isnan

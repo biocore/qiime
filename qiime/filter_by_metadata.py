@@ -12,10 +12,10 @@ __author__ = "Rob Knight"
 __copyright__ = "Copyright 2010, The QIIME Project" 
 __credits__ = ["Rob Knight", "Antonio Gonzalez Pena"] #remember to add yourself if you make changes
 __license__ = "GPL"
-__version__ = "1.2.0-dev"
+__version__ = "1.2.1"
 __maintainer__ = "Tony Walters"
 __email__ = "William.A.Walters@colorado.edu"
-__status__ = "Development"
+__status__ = "Release"
 
 """This filter allows for the removal of sequences and OTUs that either do or don't match specified 
 metadata, for instance, isolating samples from a specific set of studies or body sites. This script 
