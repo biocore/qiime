@@ -53,7 +53,9 @@ def parse_and_submit_params(key,project_id,seq_file,output_dir,\
     log_data.append('<th>md5</th></tr>')
     num=0
     #iterate over the fasta files in the given directory
-    for i in glob('%s/*.fasta' % output_dir):
+    fasta_filepaths = glob('%s/*.fasta' % output_dir)
+    fasta_filepaths.sort()
+    for i in fasta_filepaths:
         
         #Get the sample id from the fasta filename
         sample_id=os.path.split(os.path.splitext(i)[0])[-1]
