@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso, Justin Kuczynski"]
 __license__ = "GPL"
 __version__ = "1.2.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -45,6 +45,14 @@ def shuffle_col_order(m):
         result.append(current_row)
         current_row = []
     return array(result)
+
+def shuffle_row_order(m):
+    """ jk thinks this should be the one used for monte carlo analyses
+
+    procrustes takes samples (rows) by dimensions(cols)"""
+    order = range(m.shape[0])
+    shuffle(order)
+    return array(m[order]) # new object
 
 
 def map_sample_ids(sample_ids,sample_id_map):
@@ -143,7 +151,7 @@ def get_procrustes_results(coords_f1,coords_f2,sample_id_map=None,\
     # Run the Procrustes analysis
     transformed_coords_m1, transformed_coords_m2, m_squared =\
      procrustes(coords1,coords2)
-    
+    # print coords2
     #print transformed_coords_m2
     
     eigvals = get_eigenvalues(eigvals1, eigvals2)
@@ -165,9 +173,9 @@ def procrustes_monte_carlo(coords_f1,\
                            coords_f2,\
                            trials=1000,\
                            max_dimensions=None,\
-                           shuffle_f=shuffle_col_order,\
+                           shuffle_f=shuffle_row_order,\
                            sample_id_map=None,
-                           trial_output_dir=None):
+                           trial_output_dir=None): # rows are samples here
     """ Run procrustes analysis with random trials
     
         This analysis could be made more efficient, as the current version 

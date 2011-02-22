@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2010, The QIIME project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso","Justin Kuczynski"]
 __license__ = "GPL"
 __version__ = "1.2.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -106,21 +106,21 @@ def main():
         summary_file_lines = ['FP1 FP2 Included_dimensions MC_p_value Count_better M^2']
         coords_f1 = list(open(input_fp1,'U'))
         coords_f2 = list(open(input_fp2,'U'))
-        for max_dims in [2,3,5,None]:
-            actual_m_squared, trial_m_squareds, count_better, mc_p_value =\
-             procrustes_monte_carlo(coords_f1,\
-                                    coords_f2,\
-                                    trials=random_trials,\
-                                    max_dimensions=max_dims,\
-                                    sample_id_map=sample_id_map,
-                                    trial_output_dir=trial_output_dir)
-            # truncate the p-value to the correct number of significant
-            # digits
-            decimal_places = int(log10(random_trials))
-            mc_p_value_str = ('%1.'+'%df' % decimal_places) % mc_p_value
-            summary_file_lines.append('%s %s %s %s %d %1.3f' %\
-             (input_fp1, input_fp2, str(max_dims), mc_p_value_str,\
-              count_better, actual_m_squared))
+        actual_m_squared, trial_m_squareds, count_better, mc_p_value =\
+         procrustes_monte_carlo(coords_f1,\
+                                coords_f2,\
+                                trials=random_trials,\
+                                max_dimensions=num_dimensions,
+                                sample_id_map=sample_id_map,
+                                trial_output_dir=trial_output_dir)
+        # truncate the p-value to the correct number of significant
+        # digits
+        decimal_places = int(log10(random_trials))
+        mc_p_value_str = ('%1.'+'%df' % decimal_places) % mc_p_value
+        max_dims_str = str(num_dimensions or 'alldim')
+        summary_file_lines.append('%s %s %s %s %d %1.3f' %\
+         (input_fp1, input_fp2, str(max_dims_str), mc_p_value_str,\
+          count_better, actual_m_squared))
         f = open(output_summary_fp,'w')
         f.write('\n'.join(summary_file_lines))
         f.close()
