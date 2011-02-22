@@ -13,6 +13,7 @@ __status__ = "Development"
  
 
 from cogent.util.unit_test import TestCase, main
+from cogent.util.misc import get_random_directory_name
 from qiime.submit_to_mgrast import parse_and_submit_params,post_multipart,\
                                    encode_multipart_formdata,get_content_type
 from os import mkdir,remove,removedirs,path,listdir
@@ -35,11 +36,10 @@ class TopLevelTests(TestCase):
         test_dir = path.dirname(path.abspath(__file__))
         self.seq_file=path.join(test_dir,'test_support_files',\
                                 'qiime_tutorial_split_lib_seqs_subset.fna')
-        self.output_dir='/tmp/qiime_test_mgrast/'
+        self.output_dir=get_random_directory_name(output_dir='/tmp/')
         self.sample_file=[('file','qiime_test.fna',fasta_example)]
         self._paths_to_clean_up = []
         self._dirs_to_clean_up = []
-        self.dir_path = "/tmp/qiimewebfiles/"
 
         #make the webfile directory
         try:
@@ -49,7 +49,7 @@ class TopLevelTests(TestCase):
 
         
         #define directory to clean up
-        self._dirs_to_clean_up = ["/tmp/qiime_test_mgrast/"]
+        self._dirs_to_clean_up = [self.output_dir]
         
     def tearDown(self):
         map(remove,self._paths_to_clean_up)
