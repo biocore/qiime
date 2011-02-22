@@ -37,7 +37,7 @@ script_info['optional_options']=[ \
   options_lookup['output_fp'],
   make_option('-e','--exclude_otus_fp',\
    help=("a filepath listing OTU identifiers that should not be included in the "
-         "OTU table (e.g., the output of identify_chimeric_sequences.py)"))
+         "OTU table (e.g., the output of identify_chimeric_seqs.py)"))
 ]
 
 script_info['version'] = __version__
