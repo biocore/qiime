@@ -1,13 +1,27 @@
-Add changes since QIIME 1.2.0 here
+Add changes since QIIME 1.2.1 here
+==================================
+
+QIIME 1.2.1 (22 Feb 2011)
 ==================================
 * Added submit_to_mgrast.py script which takes a post-split-libraries fasta file and submits it to the MG-RAST database.
 * Added sort_otu_table.py script which allows for sorting samples in an OTU table based on their associated values in a mapping file.
-* Remove DOTUR OTU picker.
-* Removed support of SRA submission and processing scripts along with related documentation and tutorial. This included the following scripts: make_sra_submission, sra_spreadsheets_to_map_files, process_sra_submission (starting revision 1786)
+* Remove DOTUR OTU picker. This was requested by Pat Schloss as Mothur has replaced DOTUR.
+* Removed support of SRA submission and processing scripts along with related documentation and tutorial. This included the following scripts: make_sra_submission, sra_spreadsheets_to_map_files, process_sra_submission (starting revision 1786).
+* Added categorized_dist_scatterplot.py script.
+* Added OTU gain as a new beta diversity metric to compute non-phylogenetic gain (G).
+* Added features to split_libraries to allow truncation or removal of sequences with quality score windows, and increased information deposited in log file about sliding window quality score tests.  Added unit test for quality score truncation/removal.
+* Added reference-based OTU picking workflow script. This can be applied for database OTU picking, as well as for applying Shotgun UniFrac (Caporaso et al. 2011, PLoS One, accepted).
 * Added a new list of distinct colors to the colors.py module
 * Added Area and Bar taxa summary plots to a new script plot_taxa_summary.py.  This script allows for writing of Pie Charts as well, thereby deprecating the make_pie_charts.py script.
+* Added support for output of biplot coords to make_3d_plots script (SF feature req. 3124713).
 * --stable_sort option enabled by default for uclust OTU pickers.
 * Changed defaults for uclust and uclust_ref OTU pickers. The new parameters make both OTU pickers about 2-3x slower, but the resulting clusters are significantly better in terms of making the best choice of OTU for a given sequence, and ensuring that cluster seeds are less than 97% identical to one another. The default rep seq picking method was also changed to "first" from "most_abundant" which ensures that the seed sequence is chosen as the representative for a cluster. Abundance is instead taken into account at the otu picking stage (as it has been for a while) by pre-sorting the sequences by abundance so most abundant sequences are more likely to be seeds. In practice, with presorting by abundance, the same sequence is usually chosen as the representative when passing first or most_abundant as the OTU picking method.
+* Added support for generating inVUE plots in make_3d_plots.py.
+* Changed tree type default for upgma comparisons, to consensus tree rather than the upgma tree based on the full otu table.
+* Disabled the check that jobs_to_start > 1 in a user's qiime_config before allowing them to start parallel jobs. This is inconvenient in several places (e.g., EC2 images when used with n3phele), and after some discussion we decided that it should be up to the user to have understood how parallel qiime should be configured before using it.
+* Added ability to pool primers for mapping files passed to check_id_map and split_libraries.py.  Primers are separated by commas, and autodetected.
+* Added sort_otu_table.txt for sorting the sample IDs in an OTU table based on their value in a mapping file.
+* Changed the method for p-value calculation in Procrustes analysis Monte Carlo in response to SF bug # 3189200.
 
 QIIME 1.2.0 (10 Nov 2010)
 ==================================
