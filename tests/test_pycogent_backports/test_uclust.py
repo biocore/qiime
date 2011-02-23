@@ -453,12 +453,12 @@ class UclustConvenienceWrappers(TestCase):
         version_string = stdout.strip().split('v')[-1].strip('q')
         try:
             version = tuple(map(int,version_string.split('.')))
-            acceptable_version = version >= (1,2,21)
+            acceptable_version = version >= (1,2,22)
         except ValueError:
             acceptable_version = False
         
         self.assertTrue(acceptable_version,\
-         "Unsupported uclust version. 1.2.21 or later "+\
+         "Unsupported uclust version. 1.2.22 or later "+\
          "is required, but running %s." % version_string)
 
 raw_dna_seqs = """>uclust_test_seqs_0

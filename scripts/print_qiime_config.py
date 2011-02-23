@@ -219,7 +219,7 @@ class Qiime_config(TestCase):
 
     def test_uclust_supported_version(self):
         """uclust is in path and version is supported """
-        acceptable_version = (1,2,21)
+        acceptable_version = (1,2,22)
         self.assertTrue(app_path('uclust'),
          "uclust not found. This may or may not be a problem depending on "+\
          "which components of QIIME you plan to use.")
