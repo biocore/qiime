@@ -5,10 +5,10 @@ __author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2010, The QIIME Project" #consider project name
 __credits__ = ["Jesse Stombaugh"] #remember to add yourself
 __license__ = "GPL"
-__version__ = "1.2.1"
+__version__ = "1.2.1-dev"
 __maintainer__ = "Tony Walters"
 __email__ = "William.A.Walters@colorado.edu"
-__status__ = "Release"
+__status__ = "Development"
 
 
 from sys import argv
@@ -360,7 +360,7 @@ sample_unfiltered_otu_table_no_taxa = """#Full OTU Counts
 
 
 # identical to input file, except for the header
-expected_otu_table_output_leniant = """# QIIME v1.2.1 OTU table
+expected_otu_table_output_leniant = """# QIIME v1.2.1-dev OTU table
 #OTU ID	PC.354	PC.355	PC.356	PC.481	PC.593	PC.607	PC.634	PC.635	PC.636	Consensus Lineage
 0	0	0	0	0	0	0	0	0	1	Root;Bacteria;Actinobacteria;Actinobacteria;Coriobacteridae;Coriobacteriales;Coriobacterineae;Coriobacteriaceae
 1	0	0	0	3	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
@@ -371,7 +371,7 @@ expected_otu_table_output_leniant = """# QIIME v1.2.1 OTU table
 14	0	0	0	0	0	0	0	0	2	Root;Bacteria;Firmicutes;"Bacilli";Bacillales;"Staphylococcaceae";Staphylococcus"""
 
 # OTUs that only appear in one sample should be removed
-expected_otu_table_output_default = """# QIIME v1.2.1 OTU table
+expected_otu_table_output_default = """# QIIME v1.2.1-dev OTU table
 #OTU ID	PC.354	PC.355	PC.356	PC.481	PC.593	PC.607	PC.634	PC.635	PC.636	Consensus Lineage
 5	0	0	0	0	1	0	0	2	1	Root;Bacteria;Bacteroidetes
 6	0	0	2	0	0	0	0	1	0	Root;Bacteria
@@ -379,7 +379,7 @@ expected_otu_table_output_default = """# QIIME v1.2.1 OTU table
 13	0	0	0	1	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales"""
 
 # Remove all OTUs with sequences less than 3
-expected_otu_table_output_sequence_count_three = """# QIIME v1.2.1 OTU table
+expected_otu_table_output_sequence_count_three = """# QIIME v1.2.1-dev OTU table
 #OTU ID	PC.354	PC.355	PC.356	PC.481	PC.593	PC.607	PC.634	PC.635	PC.636	Consensus Lineage
 1	0	0	0	3	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
 5	0	0	0	0	1	0	0	2	1	Root;Bacteria;Bacteroidetes
@@ -387,13 +387,13 @@ expected_otu_table_output_sequence_count_three = """# QIIME v1.2.1 OTU table
 12	0	1	0	0	0	3	1	1	0	Root;Bacteria;Bacteroidetes"""
 
 # Removes all OTUs lacking the specified taxa Clostridiales
-expected_otu_table_include_taxa = """# QIIME v1.2.1 OTU table
+expected_otu_table_include_taxa = """# QIIME v1.2.1-dev OTU table
 #OTU ID	PC.354	PC.355	PC.356	PC.481	PC.593	PC.607	PC.634	PC.635	PC.636	Consensus Lineage
 1	0	0	0	3	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
 13	0	0	0	1	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales"""
 
 # Removes otus flagged for removal by excluded taxa, Bacteroidetes
-expected_otu_table_exclude_taxa = """# QIIME v1.2.1 OTU table
+expected_otu_table_exclude_taxa = """# QIIME v1.2.1-dev OTU table
 #OTU ID	PC.354	PC.355	PC.356	PC.481	PC.593	PC.607	PC.634	PC.635	PC.636	Consensus Lineage
 0	0	0	0	0	0	0	0	0	1	Root;Bacteria;Actinobacteria;Actinobacteria;Coriobacteridae;Coriobacteriales;Coriobacterineae;Coriobacteriaceae
 1	0	0	0	3	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
@@ -402,13 +402,13 @@ expected_otu_table_exclude_taxa = """# QIIME v1.2.1 OTU table
 14	0	0	0	0	0	0	0	0	2	Root;Bacteria;Firmicutes;"Bacilli";Bacillales;"Staphylococcaceae";Staphylococcus"""
 
 # Filter to include Firmicutes but exclude Bacillales
-expected_otu_table_include_exclude_taxa = """# QIIME v1.2.1 OTU table
+expected_otu_table_include_exclude_taxa = """# QIIME v1.2.1-dev OTU table
 #OTU ID	PC.354	PC.355	PC.356	PC.481	PC.593	PC.607	PC.634	PC.635	PC.636	Consensus Lineage
 1	0	0	0	3	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
 13	0	0	0	1	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales"""
 
 
-expected_otu_table_output_default_no_taxa = """# QIIME v1.2.1 OTU table
+expected_otu_table_output_default_no_taxa = """# QIIME v1.2.1-dev OTU table
 #OTU ID	PC.354	PC.355	PC.356	PC.481	PC.593	PC.607	PC.634	PC.635	PC.636
 5	0	0	0	0	1	0	0	2	1
 6	0	0	2	0	0	0	0	1	0

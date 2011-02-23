@@ -4,10 +4,10 @@ __author__ = "Kyle Bittinger"
 __copyright__ = "Copyright 2010, The QIIME project"
 __credits__ = ["Kyle Bittinger"]
 __license__ = "GPL"
-__version__ = "1.2.1"
+__version__ = "1.2.1-dev"
 __maintainer__ = "Kyle Bittinger"
 __email__ = "kylebittinger@gmail.com"
-__status__ = "Release"
+__status__ = "Development"
 
 import os
 import tempfile

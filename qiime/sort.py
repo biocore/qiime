@@ -13,10 +13,10 @@ __copyright__ = "Copyright 2010, The QIIME project"
 __credits__ = ["Greg Caporaso",
                "Rob Knight"]
 __license__ = "GPL"
-__version__ = "1.2.1"
+__version__ = "1.2.1-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Release"
+__status__ = "Development"
 
 
 def _natsort_key(item):

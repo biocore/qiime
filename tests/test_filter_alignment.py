@@ -4,10 +4,10 @@ __author__ = "Dan Knights"
 __copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Greg Caporaso","Dan Knights"]
 __license__ = "GPL"
-__version__ = "1.2.1"
+__version__ = "1.2.1-dev"
 __maintainer__ = "Dan Knights"
 __email__ = "danknights@gmail.com"
-__status__ = "Release"
+__status__ = "Development"
 
 from cogent.util.unit_test import TestCase, main
 from cogent import LoadSeqs

@@ -6,10 +6,10 @@ __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2010, The QIIME project"
 __credits__ = ["Jens Reeder"]
 __license__ = "GPL"
-__version__ = "1.2.1"
+__version__ = "1.2.1-dev"
 __maintainer__ = "Jens Reeder"
 __email__ = "jreeder@colorado.edu"
-__status__ = "Release"
+__status__ = "Development"
  
 from optparse import make_option
 from cogent.app.util import ApplicationNotFoundError

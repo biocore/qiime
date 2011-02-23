@@ -6,10 +6,10 @@ __author__ = "William Walters"
 __copyright__ = "Copyright 2010, The QIIME project"
 __credits__ = ["William Walters"]
 __license__ = "GPL"
-__version__ = "1.2.1"
+__version__ = "1.2.1-dev"
 __maintainer__ = "William Walters"
 __email__ = "William.A.Walters@colorado.edu"
-__status__ = "Release"
+__status__ = "Development"
  
 from cogent.parse.fasta import MinimalFastaParser
 from numpy import arange, std, average

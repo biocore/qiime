@@ -5,10 +5,10 @@ __author__ = "Jeremy Widmann"
 __copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Jeremy Widmann"]
 __license__ = "GPL"
-__version__ = "1.2.1"
+__version__ = "1.2.1-dev"
 __maintainer__ = "Jeremy Widmann"
 __email__ = "jeremy.widmann@colorado.edu"
-__status__ = "Release"
+__status__ = "Development"
 
 from cogent.util.unit_test import TestCase, main
 import shutil

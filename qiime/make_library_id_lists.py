@@ -10,10 +10,10 @@ __author__ = "Rob Knight"
 __copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Rob Knight"]
 __license__ = "GPL"
-__version__ = "1.2.1"
+__version__ = "1.2.1-dev"
 __maintainer__ = "Kyle Bittinger"
 __email__ = "kylebittinger@gmail.com"
-__status__ = "Release"
+__status__ = "Development"
 
 def get_ids(lines, field, bad_ids=None, debug=False):
     """Make dict of lib:ids"""
