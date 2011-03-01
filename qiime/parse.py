@@ -714,7 +714,11 @@ def parse_illumina_line(l,barcode_length,rev_comp_barcode,
 
 def parse_qual_score(infile,value_cast_f=int):
     """Load quality scores into dict."""
-    id_to_qual = {}
+    id_to_qual = dict([rec for rec in MinimalQualParser(infile, value_cast_f)])
+    return id_to_qual
+        
+def MinimalQualParser(infile,value_cast_f=int):
+    """Yield quality scores"""
     for rec in FastaFinder(infile):
         curr_id = rec[0][1:]
         curr_qual = ' '.join(rec[1:])
@@ -723,8 +727,7 @@ def parse_qual_score(infile,value_cast_f=int):
         except ValueError:
             raise QiimeParseError,"Invalid qual file. Check the format of the qual files." 
         curr_pid = curr_id.split()[0]
-        id_to_qual[curr_pid] = parts
-    return id_to_qual
+        yield (curr_pid, parts)
 
 def parse_qual_scores(qual_files):
     """Load qual scores into dict of {id:qual_scores}.

@@ -4,7 +4,7 @@
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2010, The QIIME Project"
 __credits__ = ["Rob Knight", "Justin Kuczynski", "Greg Caporaso",\
-                "Cathy Lozupone", "Jens Reeder"] #remember to add yourself
+                "Cathy Lozupone", "Jens Reeder", "Daniel McDonald"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "1.2.1-dev"
 __maintainer__ = "Greg Caporaso"
@@ -25,7 +25,7 @@ from qiime.parse import (group_by_field, group_by_fields,
     parse_metadata_state_descriptions, parse_rarefaction_data,
     parse_illumina_line, parse_qual_score, parse_qual_scores, QiimeParseError,
     parse_newick,parse_trflp,parse_taxa_summary_table, parse_prefs_file,
-    parse_mapping_file_to_dict, mapping_file_to_dict)
+    parse_mapping_file_to_dict, mapping_file_to_dict, MinimalQualParser)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -729,6 +729,18 @@ eigvals\t4.94\t1.79\t1.50
         scores2= StringIO('>a\n5 10 5\n12\n>b\n30 40')
         self.assertEqual(parse_qual_scores([scores, scores2]),
             {'x':[5,10,5,12],'y':[30,40],'a':[5,10,5,12],'b':[30,40]})
+    
+    def test_MinimalQualParser(self):
+        """MinimalQualParser should yield (id_, quals)"""
+        scores = ['>x','5 10 5','12',
+                  '>y','30 40',
+                  '>a','5 10 5','12',
+                  '>b','30 40']
+        gen = MinimalQualParser(scores)
+        self.assertEqual(list(gen), [('x',[5,10,5,12]),
+                                     ('y',[30,40]),
+                                     ('a',[5,10,5,12]),
+                                     ('b',[30,40])])
 
     def test_parse_trflp(self):
         """ should return a header and otu_table lists"""
