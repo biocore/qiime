@@ -26,7 +26,8 @@ td.header2  { background-color: #e4fdf8; border: 1px solid #cccccc; color: black
 td.header3  { background-color: #e4fdf5; border: 1px solid #cccccc; color: black; font-family:Arial, Verdana; font-size:11; font-weight:bold;}
 td.header4  { background-color: #e4e8fd; border: 1px solid #cccccc; color: black; font-family:Arial, Verdana; font-size:11; font-weight:bold;}
 td.header5  { background-color: #f5f7ef; border: 1px solid #DDDDDD; color: black; font-family:Arial, Verdana; font-size:11; font-weight:bold;}
-td.header  { background-color: #eff4f7; border: 1px solid #DDDDDD; color: black; font-family:Arial, Verdana; font-size:11; font-weight:bold;}
+td.header  { background-color: #eff4f7; border: 1px solid #DDDDDD; color: black; font-family:Arial, Verdana; font-size:10; font-weight:bold;}
+td.normal  { text-align:center;border-width:medium;border-style:solid;border: 1px solid #DDDDDD; color: black; font-family:Arial, Verdana; font-size:9; font-weight:bold;}
 
 td.nav_sel  { background-color: red; border: 1px solid #DDDDDD; color: white; font-family:Arial, Verdana; font-size:11; font-weight:bold;}
 td.nav_grey  { background-color: eeeeee; border: 1px solid #DDDDDD; color: red; font-family:Arial, Verdana; font-size:11; font-weight:bold;}

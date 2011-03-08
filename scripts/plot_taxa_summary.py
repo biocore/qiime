@@ -25,6 +25,7 @@ import os
 import shutil
 
 plot_filetype_choices = ['pdf','svg','png']
+labeltype_choices = ['str','int','float']
 
 script_info={}
 script_info['brief_description']="""Make taxaonomy summary charts based on taxonomy assignment"""
@@ -82,7 +83,15 @@ make_option('-w', '--bar_width', dest='bar_width', \
  make_option('-r', '--resize_nth_label', dest='resize_nth_label',\
     action='store',type='string',\
     help='this is for large area and bar charts where the font on the x-axis is small. This allows you to set every nth label to be larger on the x-axis.This requires an integer value greater than 0.\
-[default: %default]',default='0')
+[default: %default]',default='0'),
+make_option('-s', '--suppress_html_legend', action='store_true',\
+    dest='suppress_html_legend', default=False, \
+    help='If present, suppresses the writing of the legend in the html page [default: %default]'),
+make_option('-m', '--suppress_html_counts', action='store_true',\
+    dest='suppress_html_counts', default=False, \
+    help='If present, suppresses the writing of the counts in the html table [default: %default]'),
+make_option('-a', '--a_label_type',type='choice',help='This is the label type. (i.e. '+','.join(labeltype_choices)+') [default: %default]', choices=labeltype_choices,default='str'),
+
 ]
 
 script_info['version']=__version__
@@ -121,7 +130,7 @@ def main():
         colorby=colorby.strip().strip("'").split(',')
     
     counts_fname = opts.counts_fname
-    
+
     #Define labels to use
     labels = opts.labels
     data = [(label,f.strip()) \
@@ -202,6 +211,9 @@ def main():
         raise ValueError, 'The resize_nth_label of the plot has to be greater than 0!'
     
     generate_image_type=opts.type_of_file
+    label_type=opts.a_label_type
+    suppress_html_legend=opts.suppress_html_legend
+    suppress_html_counts=opts.suppress_html_counts  
     plots_to_make=opts.chart_type.split(',')
     chart_types=['area','pie','bar']
     for i in plots_to_make:
@@ -219,7 +231,7 @@ def main():
         make_all_charts(data,dir_path,filename,num_categories, \
         colorby,args,color_data, color_prefs,background_color,label_color,\
         chart_type,generate_image_type,plot_width,plot_height,bar_width,dpi,\
-        resize_nth_label)
+        resize_nth_label,label_type,suppress_html_legend,suppress_html_counts)
         
     
 if __name__ == "__main__":

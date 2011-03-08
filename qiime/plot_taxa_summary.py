@@ -12,7 +12,6 @@ __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 __status__ = "Development"
 
-
 """
 Requirements:
 MatPlotLib 0.98.5.2
@@ -105,7 +104,7 @@ DATA_HTML = """<tr class=normal><td>%s</td> <td nowrap>%.2f%%</td>\
 <a href=javascript:gg(\\'%s\\');>%s</a> ',STICKY,MOUSEOFF,RIGHT);" \
 onmouseout="return nd();">%s</a></td></tr>"""
 
-AREA_SRC = """<AREA shape="rect" coords="%d,%d,%d,%d" href="#%s"  \
+AREA_SRC = """<AREA shape="rect" coords="%.4f%%,%.4f%%,%.4f%%,%.4f%%" href="#%s"  \
 onmouseover="return overlib('%s&nbsp;(%.2f%%)');" onmouseout="return nd();">\n"""
 
 IMG_MAP_SRC = """<img src="%s" border="0" ismap usemap="#points%s" width="%d" \
@@ -120,7 +119,7 @@ MAP_SRC = """
 IMG_SRC = """<img src=\\'%s\\' border=1 />"""
 
 IMG_SRC_2 = """<img src='%s' border=1 ismap usemap="#points%s" />&nbsp;<img src='%s' border=1/>"""
-
+IMG_SRC_minus_legend = """<img src='%s' border=1 ismap usemap="#points%s" />"""
 DOWNLOAD_LINK = """<a href=\\'%s\\' target="_blank">%s</a>"""
 
 PDF_LINK= """<a href=\'%s\' target="_blank">%s</a>"""
@@ -174,7 +173,7 @@ def make_legend(data_ids,colors,plot_width,plot_height,label_color,\
     ax = fig.add_subplot(111)
     
     #set some of the legend parameters
-    fsize=8
+    fsize=6
     rc('font', size=fsize)
     rc('text', color=label_color)
     rc('patch', linewidth=0)
@@ -197,7 +196,7 @@ def make_legend(data_ids,colors,plot_width,plot_height,label_color,\
     
 def make_pie_chart(data, dir_path,level,prefs,pref_colors,background_color,\
                   label_color, generate_image_type,\
-                  plot_width,plot_height,bar_width,dpi,\
+                  plot_width,plot_height,bar_width,dpi,suppress_html_legend,\
                   file_prefix = None,props={},\
                   others_key = "All Other Categories",\
                   others_color = "#eeeeee", should_capitalize=True):
@@ -309,18 +308,21 @@ def make_pie_chart(data, dir_path,level,prefs,pref_colors,background_color,\
         else:
             updated_taxa.append(others_key)
             updated_colors.append(others_color)
-            
-    # first make a low-res png legend for display on webpage
-    legend_fname_png=make_legend(updated_taxa,updated_colors,\
+    
+    if not suppress_html_legend:
+        # first make a low-res png legend for display on webpage
+        legend_fname_png=make_legend(updated_taxa,updated_colors,\
                              plot_width,plot_height,label_color,\
                              background_color,img_abs,'png',80)
+        legend_fpath_png=(os.path.join('charts', legend_fname_png))
+
 
     # make hi-res legend
     legend_fname=make_legend(updated_taxa,updated_colors,\
                           plot_width,plot_height,label_color,\
                           background_color,img_abs,generate_image_type,dpi)
                           
-    legend_fpath_png=(os.path.join('charts', legend_fname_png))
+    
     legend_fpath=(os.path.join('charts', legend_fname))
     legend_link=LEGEND_LINK % (legend_fpath, 'View Legend (.%s)' % \
                                 generate_image_type)
@@ -330,25 +332,30 @@ def make_pie_chart(data, dir_path,level,prefs,pref_colors,background_color,\
     points_id=''
     xmap_html=''
     
-    return eps_link, legend_link, IMG_SRC_2 % \
-                    (os.path.join('charts',img_name),points_id,\
-                     legend_fpath_png),xmap_html
+    
+    if suppress_html_legend:
+        IMG_TEXT=IMG_SRC_minus_legend % (os.path.join('charts',img_name),\
+                                         points_id)
+    else:
+        IMG_TEXT=IMG_SRC_2 % (os.path.join('charts',img_name),\
+                              points_id,legend_fpath_png)
+        
+    return eps_link, legend_link, IMG_TEXT,xmap_html
 
 def transform_and_generate_xmap(ax1,bar_y_data,bar_width,taxa,x,plot_height,\
-                                dpi,taxa_percents):
+                                dpi,taxa_percents,sample_ids):
     '''This function takes the bar graph data and generate html coordinates
        which can be used with an area map'''
        
     #transform the data into coordinates
     ax1.set_transform(ax1.axes.transData)
     trans=ax1.get_transform()
-    
     #get transformed edges for the start/end of the plot
     starty=trans.transform((0,0))[1]
     endy=trans.transform((0,1))[1]
     startx=trans.transform((0,0))[0]
-    endx=trans.transform((1,0))[0]
-    
+    endx=trans.transform((len(x)-1,0))[0]
+
     #define the distance between x-axis points, so we can estimate width of
     #rectangle to use
     iterx=endx-startx
@@ -371,7 +378,7 @@ def transform_and_generate_xmap(ax1,bar_y_data,bar_width,taxa,x,plot_height,\
     
     #determine width of rectangle to use
     half_iterx=iterx/2*bar_width
-    
+
     #iterate over y-coordinates and define area_map
     for i,j in enumerate(all_ycoords):
         #iterate over the x-coordinates
@@ -386,19 +393,20 @@ def transform_and_generate_xmap(ax1,bar_y_data,bar_width,taxa,x,plot_height,\
                 #use +/- half distance between x(0)->x(1) to make the width
                 #of rectangle
                 prev=i-1
+                
                 #also we don't want to plot points that have an area of 0
                 if all_ycoords[i][r]!=all_ycoords[prev][r]:
                     xmap.append(AREA_SRC % (all_xcoords[i][r]-half_iterx,\
                     img_height-all_ycoords[prev][r],\
                     all_xcoords[i][r]+half_iterx,\
                     img_height-all_ycoords[i][r],\
-                    taxa[i],taxa[i],taxa_percents[r][i]*100))
+                    taxa[i],sample_ids[r]+':'+taxa[i],taxa_percents[r][i]*100))
             else:
                 #if at the beginning of the array and the value is not 0
                 if all_ycoords[i][r]!=starty:
                     xmap.append(AREA_SRC % (all_xcoords[i][r]-half_iterx,\
                      img_height-starty,all_xcoords[i][r]+half_iterx,\
-                     img_height-all_ycoords[i][r], taxa[i],taxa[i],\
+                     img_height-all_ycoords[i][r], taxa[i],sample_ids[r]+':'+taxa[i],\
                      taxa_percents[r][i]*100))
 
     return xmap
@@ -407,7 +415,8 @@ def make_area_bar_chart(sample_ids,taxa_percents,taxa,dir_path,level,prefs,\
                     pref_colors,\
                     background_color,label_color,chart_type,\
                     generate_image_type,\
-                    plot_width,plot_height,bar_width,dpi,resize_nth_label,\
+                    plot_width,plot_height,bar_width,dpi,resize_nth_label,
+                    label_type,suppress_html_legend,suppress_html_counts,\
                     file_prefix = None,props={},\
                     others_key = "All Other Categories",\
                     others_color = "#eeeeee", should_capitalize=True):
@@ -428,7 +437,7 @@ def make_area_bar_chart(sample_ids,taxa_percents,taxa,dir_path,level,prefs,\
     
     # set font-size based on the number of samples
     fsize=0
-    for i in range(11):
+    for i in range(7):
         fsize=11-i
         if len(sample_ids)<=(i*10):
             break
@@ -437,7 +446,7 @@ def make_area_bar_chart(sample_ids,taxa_percents,taxa,dir_path,level,prefs,\
     rc('font', size=fsize)
     rc('text', color=label_color)
     rc('patch', linewidth=.1)
-    rc('axes', linewidth=.1,edgecolor=label_color)
+    rc('axes', linewidth=0,edgecolor=background_color)
     rc('text', usetex=False)
     rc('xtick', labelsize=fsize,color=label_color)
     
@@ -448,11 +457,18 @@ def make_area_bar_chart(sample_ids,taxa_percents,taxa,dir_path,level,prefs,\
     #change the tick colors and width
     for tick in ax1.xaxis.get_ticklines(): 
         tick.set_color(label_color)
-        tick.set_markersize(1) 
+        tick.set_markersize(0) 
         tick.set_markeredgewidth(.5)  
     
     #create an iterative array for length of sample_ids
-    x = numpy.arange(0, len(sample_ids))
+    if label_type=='str':
+        x = numpy.arange(0, len(sample_ids))
+    elif label_type=='int':
+        x= map(lambda x: int(x),sample_ids)
+    elif label_type=='float':
+        x= map(lambda x: float(x),sample_ids)
+    else:
+        raise ValueError, 'Label type is not valid!'
     
     #get the raw data into a form, we can use for plotting areas and bars
     y_data = numpy.row_stack((zip(*taxa_percents)))
@@ -464,7 +480,7 @@ def make_area_bar_chart(sample_ids,taxa_percents,taxa,dir_path,level,prefs,\
         #bar_width is for mouseovers, and since area charts are more polygonal
         #we use a small width, so user can at least mouseover on the x-axis
         #positions
-        bar_width=0.05
+        bar_width=0.005
         #fill the first taxa
         ax1.fill_between(x, 0, y_data_stacked[0,:],linewidth=0,\
                         facecolor=data_colors[pref_colors[taxa[0]]].toHex(),\
@@ -485,7 +501,7 @@ def make_area_bar_chart(sample_ids,taxa_percents,taxa,dir_path,level,prefs,\
                         alpha=1)
 
         #this cleans up the whitespace around the subplot
-        ax1.set_xlim((0,len(sample_ids)-1))
+        #ax1.set_xlim((0,len(x)))
         ax1.set_ylim((0, 1)) 
         
     #if area chart we use bar
@@ -511,7 +527,7 @@ def make_area_bar_chart(sample_ids,taxa_percents,taxa,dir_path,level,prefs,\
     
     # transform bar_data into an area map for html mouseovers
     xmap=transform_and_generate_xmap(ax1,bar_y_data,bar_width,taxa,x,\
-                                     plot_height,dpi,taxa_percents)
+                                     plot_height,dpi,taxa_percents,sample_ids)
     
     #rename each area map based on the level passed in.
     points_id = 'rect%s' % (level)
@@ -520,22 +536,59 @@ def make_area_bar_chart(sample_ids,taxa_percents,taxa,dir_path,level,prefs,\
     map_html=MAP_SRC % (points_id, ''.join(xmap))
     
     #set the values for the x-ticks
-    ax1.xaxis.set_ticks(x)
-    ax1.set_xticklabels(sample_ids,rotation='vertical')
+    #ax1.xaxis.set_ticks(x)
+    #create an iterative array for length of sample_ids
+    if label_type=='int' or label_type=='float':
+        x_axis_labels = numpy.arange(min(x), max(x))
+        output_labels=[]
+        if resize_nth_label > 0:
+            #xlabels=ax1.get_xticklabels()
+            start=x_axis_labels[0]
+            iterator_size=0
+            for i,l in enumerate(x_axis_labels):
+                if l==start:
+                    output_labels.append(l)
+                else:
+                    if (iterator_size==(resize_nth_label-1)):
+                        output_labels.append(l)
+                        iterator_size=0
+                    else:
+                        iterator_size=iterator_size+1
+
+            ax1.xaxis.set_ticks(output_labels)
+            ax1.set_xticklabels(output_labels,rotation='vertical')
+        else:
+            ax1.xaxis.set_ticks(x)
+            ax1.set_xticklabels(x_axis_labels,rotation='vertical')
+        
+    else:    
+        x_axis_labels = numpy.arange(0,len(sample_ids))
+        # if the user would like to create larger labels for every nth label
+        # this iterates over the labels and adds the value 4 to the font-size, 
+        # thereby making the fontsize larger
+        x_tick_locations=[]
+        output_labels=[]
+        if resize_nth_label > 0:
+            xlabels=ax1.get_xticklabels()
+            iterator_size=0
+            for i,l in enumerate(x_axis_labels):
+                if i==0:
+                    output_labels.append(sample_ids[i])
+                    x_tick_locations.append(i)
+                else:
+                    if iterator_size==(resize_nth_label-1):
+                        output_labels.append(sample_ids[i])
+                        x_tick_locations.append(i)
+                        iterator_size=0
+                    else:
+                        iterator_size=iterator_size+1
+            ax1.xaxis.set_ticks(x_tick_locations)
+            ax1.set_xticklabels(output_labels,rotation='vertical')
+        else:
+            ax1.xaxis.set_ticks(x)
+            ax1.set_xticklabels(sample_ids,rotation='vertical')
+            
     ax1.set_yticks([])    
-    
-    # if the user would like to create larger labels for every nth label
-    # this iterates over the labels and adds the value 4 to the font-size, 
-    # thereby making the fontsize larger
-    if resize_nth_label > 0:
-        xlabels=ax1.get_xticklabels()
-        iterator_size=0
-        for i,l in enumerate(xlabels):
-            if iterator_size==(resize_nth_label-1):
-                xlabels[i].set_size(fsize+4)
-                iterator_size=0
-            else:
-                iterator_size=iterator_size+1
                 
     #write out
     if file_prefix is None:
@@ -580,25 +633,33 @@ def make_area_bar_chart(sample_ids,taxa_percents,taxa,dir_path,level,prefs,\
         else:
             updated_taxa.append(others_key)
             updated_colors.append(others_color)
-            
-    # first make a low-res png legend for display on webpage
-    legend_fname_png=make_legend(updated_taxa,updated_colors,\
+    
+    if not suppress_html_legend:
+        # first make a low-res png legend for display on webpage
+        legend_fname_png=make_legend(updated_taxa,updated_colors,\
                              plot_width,plot_height,label_color,\
                              background_color,img_abs,'png',80)
-    
+
+        legend_fpath_png=(os.path.join('charts', legend_fname_png))
+        
     # make high-res legend
     legend_fname=make_legend(updated_taxa,updated_colors,\
                           plot_width,plot_height,label_color,\
                           background_color,img_abs,generate_image_type,dpi)
 
-    legend_fpath_png=(os.path.join('charts', legend_fname_png))
+
     legend_fpath=(os.path.join('charts', legend_fname))
     legend_link=LEGEND_LINK % (legend_fpath, 'View Legend (.%s)' % \
                                 (generate_image_type))
+
+    if suppress_html_legend:
+        IMG_TEXT=IMG_SRC_minus_legend % (os.path.join('charts',img_name),\
+                                         points_id)
+    else:
+        IMG_TEXT=IMG_SRC_2 % (os.path.join('charts',img_name),\
+                              points_id,legend_fpath_png)
     
-    return eps_link, legend_link, IMG_SRC_2 % \
-                (os.path.join('charts',img_name),points_id,legend_fpath_png),\
-                map_html
+    return eps_link, legend_link, IMG_TEXT , map_html
 
 def make_img_name(file_ext='.png'):
     """ Generate a random file name """
@@ -610,7 +671,7 @@ def make_img_name(file_ext='.png'):
 
 def write_html_file(out_table,outpath):
     """Write pie charts into an html file"""
-    page_out = PAGE_HTML % (outpath, out_table)
+    page_out = PAGE_HTML % ('Taxa Summaries', out_table)
     out = open(outpath, "w+")
     out.write(page_out)
     out.close()
@@ -681,7 +742,8 @@ def make_HTML_table(l,other_frac,total,red,other_cat,fracs_labels_other,\
                     fracs_labels,dir_path,all_counts,level,\
                     prefs,pref_colors,background_color, label_color,chart_type,\
                     label,generate_image_type,\
-                    plot_width,plot_height,bar_width,dpi,resize_nth_label):
+                    plot_width,plot_height,bar_width,dpi,resize_nth_label,\
+                    label_type,suppress_html_legend,suppress_html_counts):
     """Makes the HTML table for one set of charts """
     img_data = []
 
@@ -702,7 +764,9 @@ def make_HTML_table(l,other_frac,total,red,other_cat,fracs_labels_other,\
                                 prefs,pref_colors,background_color,label_color,\
                                 generate_image_type,\
                                 plot_width,plot_height,bar_width,dpi,\
+                                suppress_html_legend,\
                                 props = {'title':title})
+                                
             pie_charts_placement.append(pie[0] + '&nbsp;&nbsp;' + pie[1] +\
                                         '</td></tr><tr><td>' +pie[2]+\
                                          '</td></tr><tr><td class="ntitle">')
@@ -718,6 +782,7 @@ def make_HTML_table(l,other_frac,total,red,other_cat,fracs_labels_other,\
                                 prefs,pref_colors,background_color,label_color,\
                                 generate_image_type,\
                                 plot_width,plot_height,bar_width,dpi,\
+                                suppress_html_legend,\
                                 props = {'title':title})
                                 
             pie_charts_placement.append(pie[0] + '&nbsp;&nbsp;' + pie[1] +\
@@ -729,7 +794,7 @@ def make_HTML_table(l,other_frac,total,red,other_cat,fracs_labels_other,\
             
             #put the charts into the html image data
             img_data.append(TABLE_graph % tuple(all_taxons))
-            img_data.append(DATA_TABLE_HTML % '\n'.join(all_counts))
+            img_data.append(DATA_TABLE_HTML % ''.join(all_counts))
 
         else:
             #if there is no category cutoff generate plots, without other cat
@@ -741,13 +806,14 @@ def make_HTML_table(l,other_frac,total,red,other_cat,fracs_labels_other,\
                             prefs,pref_colors,background_color,label_color,\
                             generate_image_type,\
                             plot_width,plot_height,bar_width,dpi,\
+                            suppress_html_legend,\
                             props = {'title':title})
             
             all_taxons.extend(pie)
             
             #put the charts into the html image data
             img_data.append(TABLE_graph % tuple(all_taxons))
-            img_data.append(DATA_TABLE_HTML % '\n'.join(all_counts))
+            img_data.append(DATA_TABLE_HTML % ''.join(all_counts))
 
     #generate html for bar and area charts
     elif chart_type=='area' or chart_type=='bar':
@@ -766,7 +832,9 @@ def make_HTML_table(l,other_frac,total,red,other_cat,fracs_labels_other,\
                                background_color,label_color,chart_type,\
                                generate_image_type,\
                                plot_width,plot_height,bar_width,dpi,\
-                               resize_nth_label,props = {'title':title})
+                               resize_nth_label,label_type,\
+                               suppress_html_legend,suppress_html_counts,\
+                               props = {'title':title})
         
         all_taxons.extend(area)
         
@@ -778,7 +846,8 @@ def make_HTML_table(l,other_frac,total,red,other_cat,fracs_labels_other,\
 def get_counts(label,colorby,num_categories,dir_path,level,color_data,\
                prefs,pref_colors,background_color,label_color,chart_type,\
                generate_image_type,plot_width,plot_height,\
-               bar_width,dpi,raw_fpath,resize_nth_label):
+               bar_width,dpi,raw_fpath,resize_nth_label,label_type,\
+               suppress_html_legend,suppress_html_counts):
     """gets all the counts for one input file"""
     
     img_data = []
@@ -811,7 +880,9 @@ def get_counts(label,colorby,num_categories,dir_path,level,color_data,\
                                 all_counts,level,prefs,pref_colors,\
                                 background_color,label_color,chart_type,\
                                 label,generate_image_type,plot_width,\
-                                plot_height,bar_width,dpi,resize_nth_label))
+                                plot_height,bar_width,dpi,resize_nth_label,\
+                                label_type,suppress_html_legend,\
+                                suppress_html_counts))
 
         
         if colorby is not None:
@@ -845,7 +916,8 @@ def get_counts(label,colorby,num_categories,dir_path,level,color_data,\
                             prefs,pref_colors,background_color,label_color,\
                             chart_type,l.strip(),generate_image_type,\
                             plot_width,plot_height,bar_width,dpi,\
-                            resize_nth_label))
+                            resize_nth_label,label_type,suppress_html_legend,
+                            suppress_html_counts))
     
     #if making an area/bar chart we do not make per sample images, instead
     #we make a total chart only
@@ -907,8 +979,7 @@ def get_counts(label,colorby,num_categories,dir_path,level,color_data,\
         data_table=zip(*total_area_table_out)
         
         #create link for raw data file
-        data_html_str='<table><tr class=ntitle><td><a href="%s" \
-                      target="_blank">View Table (%s)</a></td></tr></table>' % \
+        data_html_str='<table><tr class=ntitle><td><a href="%s" target="_blank">View Table (%s)</a></td></tr></table>' % \
                         (os.path.join('raw_data',os.path.split(raw_fpath)[-1]),\
                          os.path.splitext(raw_fpath)[-1])
         
@@ -917,21 +988,29 @@ def get_counts(label,colorby,num_categories,dir_path,level,color_data,\
         data_html_str+='<table cellpadding=1 cellspacing=1 border=1 ' + \
                       'style=\"text-align:center;border-color:white;'+\
                       'border-style:groove;\">' + \
-                      '<tr class=ntitle><td class=header colspan="2"></td><td'+\
-                      ' valign=bottom class=header colspan="2">Total</td>\n'
+                      '<tr class=\"ntitle\"><td class=\"header\" colspan="2"></td><td'+\
+                      ' valign=\"bottom\" class=\"header\" colspan="2">Total</td>'
         
         ct_head_row='<tr class=ntitle>' + \
-                    '<td valign=bottom ' + \
-                          'class=header>Legend</td><td ' + \
-                          'valign=bottom class=header>Taxonomy</td>' + \
-                     '<td>count</td><td>%</td>'
-                     
-        #list all samples in the header
-        for i in area_plot_sample_ids:
-            data_html_str+='<td colspan="2"valign=bottom \
-                            class=header>%s</td>\n' % (i)
-            ct_head_row+='<td class=header>count</td><td class=header>%</td>'
-            
+                    '<td valign=\"bottom\" ' + \
+                          'class=\"header\">Legend</td><td ' + \
+                          'valign=\"bottom\" class=\"header\">Taxonomy</td>' + \
+                     '<td class=\"header\">count</td><td class=\"header\">%</td>'
+        
+    
+        if suppress_html_counts:
+            #list all samples in the header
+            for i in area_plot_sample_ids:
+                data_html_str+='<td valign=bottom class=header>%s</td>' % (i)
+                ct_head_row+='<td class=\"header\">%</td>'
+        else:
+            #list all samples in the header
+            for i in area_plot_sample_ids:
+                data_html_str+='<td colspan=\"2\" valign=\"bottom\" class=\"header\">%s</td>'\
+                                % (i)
+                ct_head_row+='<td class=\"header\">count</td><td class=\"header\">%</td>'
+        
+        
         data_html_str+='</tr>'
         ct_head_row+='</tr>'
         data_html_str+=ct_head_row
@@ -946,37 +1025,37 @@ def get_counts(label,colorby,num_categories,dir_path,level,color_data,\
                               split_label[-1].replace(' ','&nbsp;'))
             joined_label=';'.join(split_label).replace('"','')
             row_sum= sum([float(i) for i in data_table[ct]])
-            data_html_str+="<tr><td class=\"normal\" bgcolor=\"%s\">\
-                &nbsp;&nbsp;</td><td style=\"text-align:left;\" \
-                class=\"normal\">%s</td>\
-                <td class=\"normal\">%5.0f</td><td class=\"normal\">%5.2f</td>"\
+            data_html_str+="<tr><td class=\"normal\" bgcolor=\"%s\">&nbsp;&nbsp;</td><td style=\"text-align:left;\" class=\"normal\">%s</td><td class=\"normal\">%5.0f</td><td class=\"normal\">%5.1f&#37;</td>"\
                 % (data_colors[pref_colors[tax]].toHex(),joined_label,\
                    row_sum,row_sum/table_sum*100)
 
             #add the percent taxa for each sample
             for i,per_tax in enumerate(data_table[ct]):
                 if float(per_tax)>0:
-                    data_html_str+='<td class=\"normal\" \
-                     style=\"text-align:center;border-color:%s;border-width: \
-                     medium;border-style:solid;\">%5.0f</td>\
-                     <td class=\"normal\" \
-                      style=\"text-align:center;border-color:%s;border-width: \
-                      medium;border-style:solid;\">%5.2f&#37;</td>\n' % \
-                    (data_colors[pref_colors[tax]].toHex(),float(per_tax),\
-                     data_colors[pref_colors[tax]].toHex(),\
+                    if suppress_html_counts:
+                        data_html_str+='<td class=\"normal\" style=\"border-color:%s;\">%5.1f&#37;</td>'%\
+                        (data_colors[pref_colors[tax]].toHex(),\
+                        (float(per_tax)/total_sums[i]*100))
+                    else:
+                        data_html_str+='<td class=\"normal\" style=\"border-color:%s;\">%5.0f</td><td class=\"normal\" style=\"border-color:%s;\">%5.1f&#37;</td>'%\
+                        (data_colors[pref_colors[tax]].toHex(),float(per_tax),\
+                        data_colors[pref_colors[tax]].toHex(),\
                         (float(per_tax)/total_sums[i]*100))
                 else:
-                    data_html_str+='<td class=\"normal\" \
-                     style="text-align:center">%5.0f</td>\
-                     <td class=\"normal\" \
-                     style="text-align:center">%5.2f&#37;</td>\n' % \
-                    (float(per_tax),float(per_tax)/total_sums[i]*100)
-            data_html_str+='</tr>\n'
+                    if suppress_html_counts:
+                        data_html_str+='<td class=\"normal\">%5.1f&#37;</td>' % \
+                        (float(per_tax)/total_sums[i]*100)
+                    else:
+                        data_html_str+='<td class=\"normal\">%5.0f</td><td class=\"normal\">%5.1f&#37;</td>' % \
+                        (float(per_tax),float(per_tax)/total_sums[i]*100)
+                        
+            data_html_str+='</tr>'
         
         data_html_str+='</table>'
         
-        #add a note on the counts since they can be relative or absolute values
-        data_html_str+='<p><em>NOTE: the counts displayed pertain to either relative or absolute values depending on your selection from summarize_taxa.py. For relative values, the numbers are converted to integer, so counts below 0.5 appear as 0.</em></p>'
+        if not suppress_html_counts:
+            #add a note on the counts since they can be relative or absolute values
+            data_html_str+='<p><em>NOTE: the counts displayed pertain to either relative or absolute values depending on your selection from summarize_taxa.py. For relative values, the numbers are converted to integer, so counts below 0.5 appear as 0.</em></p>'
 
         #make sure that the taxa array is in the proper order
         for i in range(len(area_plot_taxa_arr)-1):
@@ -989,7 +1068,8 @@ def get_counts(label,colorby,num_categories,dir_path,level,color_data,\
                     fracs_labels,dir_path,[' '.join(taxa_html)],level,\
                     prefs,pref_colors,background_color,label_color,chart_type,\
                     label,generate_image_type,\
-                    plot_width,plot_height,bar_width,dpi,resize_nth_label))
+                    plot_width,plot_height,bar_width,dpi,resize_nth_label,\
+                    label_type,suppress_html_legend,suppress_html_counts))
         img_data.append(data_html_str)
         
     return img_data
@@ -997,13 +1077,13 @@ def get_counts(label,colorby,num_categories,dir_path,level,color_data,\
 def make_all_charts(data,dir_path,filename,num_categories,colorby,args,\
                         color_data, prefs,background_color,label_color,
                         chart_type,generate_image_type,plot_width,plot_height,\
-                        bar_width,dpi,resize_nth_label):
+                        bar_width,dpi,resize_nth_label,label_type,\
+                        suppress_html_legend,suppress_html_counts):
     """Generate interactive charts in one HTML file"""
 
     #iterate over the preferences and assign colors according to taxonomy
     img_data = []
     for label,f_name in data:
-        
         raw_fpath=os.path.join(dir_path,'raw_data',os.path.split(f_name)[-1])
         # move raw file to output directory
         shutil.copyfile(f_name,raw_fpath)
@@ -1046,11 +1126,11 @@ def make_all_charts(data,dir_path,filename,num_categories,colorby,args,\
                         background_color,\
                         label_color,chart_type,generate_image_type,\
                         plot_width,plot_height,bar_width,dpi,raw_fpath,\
-                        resize_nth_label))
+                        resize_nth_label,label_type,suppress_html_legend,\
+                        suppress_html_counts))
 
     #generate html filepath
-    outpath = os.path.join(dir_path,'taxonomy_%s_summary_chart.html' % \
-                                                                    chart_type)
-    out_table = '\n'.join(img_data)
+    outpath = os.path.join(dir_path,'index.html')
+    out_table = ''.join(img_data)
     #write out html file
     write_html_file(out_table,outpath)
