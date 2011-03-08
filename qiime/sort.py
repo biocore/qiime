@@ -9,7 +9,7 @@ from cogent.parse.fasta import MinimalFastaParser
 from qiime.parse import (parse_mapping_file, parse_otu_table)
 
 __author__ = "Greg Caporaso"
-__copyright__ = "Copyright 2010, The QIIME project"
+__copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso",
                "Rob Knight"]
 __license__ = "GPL"

@@ -2,7 +2,7 @@
 #parallel_blast.py: make and run parallel blast given file of seqs and db
 
 __author__ = "Rob Knight, Greg Caporaso"
-__copyright__ = "Copyright 2010, The QIIME Project"
+__copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso"] 
 __license__ = "GPL"
 __version__ = "1.2.1-dev"

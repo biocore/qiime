@@ -4,7 +4,7 @@ from __future__ import division
 """Pyronoise app controller and pyronoise OTU picker."""
 
 __author__ = "Jens Reeder"
-__copyright__ = "Copyright 2010, The QIIME Project" 
+__copyright__ = "Copyright 2011, The QIIME Project" 
 __credits__ = ["Jens Reeder"]
 __license__ = "GPL"
 __version__ = "1.2.1-dev"

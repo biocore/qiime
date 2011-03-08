@@ -9,7 +9,7 @@ from glob import glob
 import re
 
 __author__ = "Greg Caporaso"
-__copyright__ = "Copyright 2010, The QIIME project"
+__copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso", "Kyle Bittinger"]
 __license__ = "GPL"
 __version__ = "1.2.1-dev"

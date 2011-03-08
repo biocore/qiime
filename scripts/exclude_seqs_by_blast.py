@@ -24,7 +24,7 @@ from qiime.exclude_seqs_by_blast import blast_genome,\
                                         compose_logfile_lines
 
 __author__ = "Jesse Zaneveld"
-__copyright__ = "Copyright 2010, The QIIME project"
+__copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jesse Zaneveld","Rob Knight", "Justin Kuczynski"]
 __license__ = "GPL"
 __version__ = "1.2.1-dev"

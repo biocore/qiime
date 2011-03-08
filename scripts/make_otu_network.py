@@ -3,7 +3,7 @@
 from __future__ import division
 
 __author__ = "Julia Goodrich"
-__copyright__ = "Copyright 2010, The QIIME project"
+__copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Julia Goodrich"]
 __license__ = "GPL"
 __version__ = "1.2.1-dev"

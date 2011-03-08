@@ -4,7 +4,7 @@ from qiime.make_library_id_lists import (get_ids, get_first_id)
 """Tests of the make_library_id_lists.py file.
 """
 __author__ = "Rob Knight"
-__copyright__ = "Copyright 2010, The QIIME Project"
+__copyright__ = "Copyright 2011, The QIIME Project"
 #remember to add yourself if you make changes
 __credits__ = ["Rob Knight"]
 __license__ = "GPL"

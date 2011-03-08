@@ -28,7 +28,7 @@ from numpy import array, asarray
 
 
 __author__ = "Greg Caporaso"
-__copyright__ = "Copyright 2010, The QIIME Project"
+__copyright__ = "Copyright 2011, The QIIME Project"
 #remember to add yourself if you make changes
 __credits__ = ["Rob Knight", "Daniel McDonald","Greg Caporaso", 
                "Justin Kuczynski", "Jens Reeder", "Catherine Lozupone"] 

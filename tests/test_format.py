@@ -2,7 +2,7 @@
 #unit tests for format.py
 
 __author__ = "Rob Knight"
-__copyright__ = "Copyright 2010, The QIIME Project" #consider project name
+__copyright__ = "Copyright 2011, The QIIME Project" #consider project name
 __credits__ = ["Rob Knight","Jeremy Widmann","Jens Reeder"] 
 #remember to add yourself if you make changes
 __license__ = "GPL"

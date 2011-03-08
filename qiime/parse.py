@@ -2,7 +2,7 @@
 #file parse.py: parsers for map file, distance matrix file, env file
 
 __author__ = "Rob Knight"
-__copyright__ = "Copyright 2010, The QIIME Project"
+__copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso",
     "Justin Kuczynski", "Cathy Lozupone", "Jens Reeder", "Antonio Gonzalez Pena"]
 __license__ = "GPL"

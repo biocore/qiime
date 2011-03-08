@@ -8,7 +8,7 @@ from __future__ import division
 #file compare_3d_plots.py
 
 __author__ = "Dan Knights"
-__copyright__ = "Copyright 2010, The QIIME project"
+__copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Dan Knights", "Antonio Gonzalez Pena"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "1.2.1-dev"

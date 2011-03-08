@@ -7,7 +7,7 @@ and make them executable.
 """
 
 __author__ = "Greg Caporaso"
-__copyright__ = "Copyright 2010, The QIIME Project" 
+__copyright__ = "Copyright 2011, The QIIME Project" 
 __credits__ = ["Greg Caporaso"]
 __license__ = "GPL"
 __version__ = "1.2.1-dev"

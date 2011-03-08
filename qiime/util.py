@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 __author__ = "Daniel McDonald"
-__copyright__ = "Copyright 2010, The QIIME Project" 
+__copyright__ = "Copyright 2011, The QIIME Project" 
 __credits__ = ["Rob Knight", "Daniel McDonald", "Greg Caporaso", 
 "Justin Kuczynski","Jens Reeder","Catherine Lozupone"] #remember to add yourself if you make changes
 __license__ = "GPL"

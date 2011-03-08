@@ -3,7 +3,7 @@
 """Tests of code for OTU picking"""
 
 __author__ = "Kyle Bittinger, Greg Caporaso"
-__copyright__ = "Copyright 2010, The QIIME Project" 
+__copyright__ = "Copyright 2011, The QIIME Project" 
 #remember to add yourself if you make changes
 __credits__ = ["Kyle Bittinger", "Greg Caporaso", "Rob Knight", "Jens Reeder","William Walters"] 
 __license__ = "GPL"

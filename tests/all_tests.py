@@ -9,7 +9,7 @@ from qiime.util import get_qiime_scripts_dir
 import re
 
 __author__ = "Rob Knight"
-__copyright__ = "Copyright 2010, The QIIME Project" #consider project name
+__copyright__ = "Copyright 2011, The QIIME Project" #consider project name
 __credits__ = ["Rob Knight","Greg Caporaso"] #remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.2.1-dev"

@@ -2,7 +2,7 @@
 # File created on 09 Feb 2010
 
 __author__ = "Greg Caporaso"
-__copyright__ = "Copyright 2010, The QIIME Project" 
+__copyright__ = "Copyright 2011, The QIIME Project" 
 __credits__ = ["Rob Knight","Greg Caporaso", "Kyle Bittinger",
                "Jens Reeder","William Walters"] 
 __license__ = "GPL"

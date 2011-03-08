@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 
 __author__ = "Cathy Lozupone"
-__copyright__ = "Copyright 2010, The QIIME project"
+__copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Catherine Lozupone"]
 __license__ = "GPL"
 __version__ = "1.2.1-dev"

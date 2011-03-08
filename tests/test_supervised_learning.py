@@ -3,7 +3,7 @@
 """Tests of code for assigning taxonomy"""
 
 __author__ = "Dan Knights"
-__copyright__ = "Copyright 2010, The QIIME Project" 
+__copyright__ = "Copyright 2011, The QIIME Project" 
 #remember to add yourself if you make changes
 __credits__ = ["Dan Knights"] 
 __license__ = "GPL"

@@ -2,7 +2,7 @@
 #file make_3d_plots.py
 
 __author__ = "Jesse Stombaugh, Rob Knight, and Dan Knights"
-__copyright__ = "Copyright 2010, The QIIME Project" 
+__copyright__ = "Copyright 2011, The QIIME Project" 
 __credits__ = ["Jesse Stombaugh", "Rob Knight", "Micah Hamady", "Dan Knights",\
 "Antonio Gonzalez Pena"] #remember to add yourself
 __license__ = "GPL"

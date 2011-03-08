@@ -17,7 +17,7 @@ from qiime.parallel.util import (split_fasta, get_random_job_prefix,
  submit_jobs, merge_to_n_commands)
 
 __author__ = "Greg Caporaso"
-__copyright__ = "Copyright 2010, The QIIME Project"
+__copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso"] 
 __license__ = "GPL"
 __version__ = "1.2.1-dev"

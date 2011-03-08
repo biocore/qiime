@@ -3,7 +3,7 @@
 """Tests of code for pyronoise"""
 
 __author__ = "Jens Reeder"
-__copyright__ = "Copyright 2010, The QIIME Project" 
+__copyright__ = "Copyright 2011, The QIIME Project" 
 #remember to add yourself if you make changes
 __credits__ = ["Jens Reeder"]
 __license__ = "GPL"

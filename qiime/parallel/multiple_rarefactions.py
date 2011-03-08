@@ -6,7 +6,7 @@ from __future__ import division
 from qiime.parallel.util import get_rename_command
 
 __author__ = "Greg Caporaso"
-__copyright__ = "Copyright 2010, The QIIME Project"
+__copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso","Justin Kuczynski"] 
 __license__ = "GPL"
 __version__ = "1.2.1-dev"

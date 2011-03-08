@@ -4,7 +4,7 @@
 """
 
 __author__ = "Catherine Lozupone"
-__copyright__ = "Copyright 2010, The QIIME Project" 
+__copyright__ = "Copyright 2011, The QIIME Project" 
 __credits__ = ["Catherine Lozupone", "Dan Knights"] 
 __license__ = "GPL"
 __version__ = "1.2.1-dev"

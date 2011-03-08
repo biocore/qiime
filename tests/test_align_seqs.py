@@ -3,7 +3,7 @@
 """Tests of code for aligning 16S sequences"""
 
 __author__ = "Greg Caporaso"
-__copyright__ = "Copyright 2010, The QIIME Project" 
+__copyright__ = "Copyright 2011, The QIIME Project" 
 __credits__ = ["Greg Caporaso","Jeremy Widmann"] 
 __license__ = "GPL"
 __version__ = "1.2.1-dev"

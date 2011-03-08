@@ -3,7 +3,7 @@ from __future__ import division
 #file plot_taxa_summary.py
 
 __author__ = "Jesse Stobmaugh"
-__copyright__ = "Copyright 2010, The QIIME Project" 
+__copyright__ = "Copyright 2011, The QIIME Project" 
 __credits__ = ["Jesse Stobmaugh","Julia Goodrich",\
                "Micah Hamady"] #remember to add yourself
 __license__ = "GPL"

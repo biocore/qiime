@@ -3,7 +3,7 @@
 from __future__ import division
 
 __author__ = "Antonio Gonzalez Pena"
-__copyright__ = "Copyright 2010, The QIIME project"
+__copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Justin Kuczynski", "Rob Knight", "Antonio Gonzalez Pena",\
     "Catherine Lozupone"]
 __license__ = "GPL"

@@ -2,7 +2,7 @@
 #file trim_sff_primers.py: resets trim values in sff file based on primers.
 
 __author__ = "Rob Knight"
-__copyright__ = "Copyright 2010, The QIIME Project"
+__copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Rob Knight", 'Kyle Bittinger']
 __license__ = "GPL"
 __version__ = "1.2.1-dev"

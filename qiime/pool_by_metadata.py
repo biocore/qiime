@@ -6,7 +6,7 @@ from qiime.parse import parse_mapping_file, parse_otu_table
 from qiime.format import format_otu_table
 
 __author__ = "Justin Kuczynski"
-__copyright__ = "Copyright 2010, The QIIME Project" 
+__copyright__ = "Copyright 2011, The QIIME Project" 
 __credits__ = ["Justin Kuczynski"] #remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.2.1-dev"

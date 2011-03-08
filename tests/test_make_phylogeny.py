@@ -3,7 +3,7 @@
 """Tests of code for building tree from aligned sequences"""
 
 __author__ = "Rob Knight"
-__copyright__ = "Copyright 2010, The QIIME Project" 
+__copyright__ = "Copyright 2011, The QIIME Project" 
 #remember to add yourself if you make changes
 __credits__ = ["Rob Knight"] 
 __license__ = "GPL"

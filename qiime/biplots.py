@@ -2,7 +2,7 @@
 #file make_3d_plots.py
 
 __author__ = "Dan Knights"
-__copyright__ = "Copyright 2010, The QIIME Project" 
+__copyright__ = "Copyright 2011, The QIIME Project" 
 __credits__ = ["Dan Knights", "Justin Kuczynski"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "1.2.1-dev"

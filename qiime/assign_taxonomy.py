@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 __author__ = "Rob Knight, Greg Caporaso"
-__copyright__ = "Copyright 2010, The QIIME Project"
+__copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Rob Knight", "Greg Caporaso", "Kyle Bittinger", "Antonio Gonzalez Pena"]
 __license__ = "GPL"
 __version__ = "1.2.1-dev"

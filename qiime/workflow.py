@@ -15,7 +15,7 @@ from qiime.util import (compute_seqs_per_library_stats,
                         create_dir)
 
 __author__ = "Greg Caporaso"
-__copyright__ = "Copyright 2010, The QIIME Project"
+__copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso", "Kyle Bittinger", "Justin Kuczynski"]
 __license__ = "GPL"
 __version__ = "1.2.1-dev"

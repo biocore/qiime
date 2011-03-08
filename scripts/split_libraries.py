@@ -3,7 +3,7 @@
 from __future__ import division
 
 __author__ = "Rob Knight and Micah Hamady"
-__copyright__ = "Copyright 2010, The QIIME project"
+__copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ =  ["Rob Knight", "Micah Hamady", "Greg Caporaso", "Kyle Bittinger","Jesse Stombaugh","William Walters", "Jens Reeder"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "1.2.1-dev"

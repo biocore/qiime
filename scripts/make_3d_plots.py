@@ -5,7 +5,7 @@
 from __future__ import division
 
 __author__ = "Jesse Stombaugh"
-__copyright__ = "Copyright 2010, The QIIME project"
+__copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jesse Stombaugh", "Rob Knight", "Micah Hamady", "Dan Knights",
     "Justin Kuczynski", "Antonio Gonzalez Pena"]
 __license__ = "GPL"

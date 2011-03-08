@@ -2,7 +2,7 @@
 #file make_rarefaction_plots.py
 from __future__ import division
 __author__ = "Meg Pirrung"
-__copyright__ = "Copyright 2010, The QIIME Project"
+__copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Meg Pirrung", "Jesse Stombaugh"] 
 __license__ = "GPL"
 __version__ = "1.2.1-dev"

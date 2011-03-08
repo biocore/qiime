@@ -1,7 +1,7 @@
 # File ml.wrappers.r
 #
 # __author__ = "Dan Knights"
-# __copyright__ = "Copyright 2010, The QIIME project"
+# __copyright__ = "Copyright 2011, The QIIME Project"
 # __credits__ = ["Dan Knights"]
 # __license__ = "GPL"
 # __version__ = "1.2.1-dev"

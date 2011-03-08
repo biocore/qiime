@@ -2,7 +2,7 @@
 from __future__ import division
 
 __author__ = "Justin Kuczynski"
-__copyright__ = "Copyright 2010, The QIIME Project" 
+__copyright__ = "Copyright 2011, The QIIME Project" 
 __credits__ = ["Justin Kuczynski"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "1.2.1-dev"

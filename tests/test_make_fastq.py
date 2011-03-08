@@ -6,7 +6,7 @@ from qiime.make_fastq import make_fastq_rec, split_lib_transform, iter_fastq
 from qiime.parse import parse_qual_score
 
 __author__ = "Rob Knight"
-__copyright__ = "Copyright 2010, The QIIME Project" #consider project name
+__copyright__ = "Copyright 2011, The QIIME Project" #consider project name
 __credits__ = ["Rob Knight"] #remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.2.1-dev"

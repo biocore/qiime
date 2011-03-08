@@ -2,7 +2,7 @@
 #file summarize_otu_by_cat.py
 
 __author__ = "Julia Goodrich"
-__copyright__ = "Copyright 2010, The QIIME Project" 
+__copyright__ = "Copyright 2011, The QIIME Project" 
 __credits__ = ["Julia Goodrich", "Jesse Stombaugh"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "1.2.1-dev"

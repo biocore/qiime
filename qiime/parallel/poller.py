@@ -10,7 +10,7 @@ from cogent.util.misc import remove_files
 from qiime.parse import parse_tmp_to_final_filepath_map_file
 
 __author__ = "Greg Caporaso"
-__copyright__ = "Copyright 2010, The QIIME Project"
+__copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso"] 
 __license__ = "GPL"
 __version__ = "1.2.1-dev"

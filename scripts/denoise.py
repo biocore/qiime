@@ -5,7 +5,7 @@ from __future__ import division
 """Denoising of 454 *.sff.txt files"""
 
 __author__ = "Jens Reeder"
-__copyright__ = "Copyright 2010, The QIIME project"
+__copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jens Reeder"]
 __license__ = "GPL"
 __version__ = "1.2.1-dev"

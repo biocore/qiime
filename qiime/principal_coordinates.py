@@ -8,7 +8,7 @@ from qiime.format import format_coords
 from qiime.parse import parse_distmat
 
 __author__ = "Justin Kuzynski"
-__copyright__ = "Copyright 2010, The QIIME Project"
+__copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Justin Kuczynski", "Rob Knight", "Antonio Gonzalez Pena", \
     "Catherine Lozupone"]
 __license__ = "GPL"

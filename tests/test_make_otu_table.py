@@ -2,7 +2,7 @@
 #file test_make_otu_table
 
 __author__ = "Rob Knight"
-__copyright__ = "Copyright 2010, The QIIME Project" #consider project name
+__copyright__ = "Copyright 2011, The QIIME Project" #consider project name
 __credits__ = ["Rob Knight", "Justin Kuczynski"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "1.2.1-dev"
