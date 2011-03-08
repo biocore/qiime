@@ -207,6 +207,9 @@ script_info['optional_options'] = [
                     "--uclust_suppress_stable_sort to disable [default: %default]")),
     make_option('--suppress_uclust_stable_sort',default=False,action='store_true',
         help=("Don't pass --stable-sort to uclust [default: %default]")),
+    make_option('--suppress_uclust_prefilter_exact_match',
+                default=False,action='store_true',
+        help=("Don't collapse exact matches before calling uclust [default: %default]")),
     make_option('-d', '--save_uc_files', default=True, action='store_false',
               help=("Enable preservation of intermediate uclust (.uc) files "
               "that are used to generate clusters via uclust. "
@@ -242,6 +245,7 @@ def main():
     min_aligned_percent = opts.min_aligned_percent
     uclust_stable_sort = not opts.suppress_uclust_stable_sort
     save_uc_files = opts.save_uc_files
+    prefilter_identical_sequences = not opts.suppress_uclust_prefilter_exact_match
     
 
     
@@ -312,7 +316,8 @@ def main():
         'new_cluster_identifier':opts.uclust_otu_id_prefix,
         'stable_sort':uclust_stable_sort,
         'save_uc_files':save_uc_files,
-        'output_dir':output_dir}
+        'output_dir':output_dir,
+        'prefilter_identical_sequences':prefilter_identical_sequences}
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,
                    result_path=result_path,log_path=log_path,HALT_EXEC=False)
@@ -334,7 +339,8 @@ def main():
         'new_cluster_identifier':opts.uclust_otu_id_prefix,
         'stable_sort':uclust_stable_sort,
         'save_uc_files':save_uc_files,
-        'output_dir':output_dir}
+        'output_dir':output_dir,
+        'prefilter_identical_sequences':prefilter_identical_sequences}
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,refseqs_fp,
                    result_path=result_path,log_path=log_path,

@@ -105,6 +105,29 @@ class OtuPicker(FunctionWithParams):
             seq_id_map[data[1]] = data[0]
 
         return filtered_seqs, seq_id_map
+        
+    def _prefilter_exact_matches(self,seqs):
+        """
+        """
+        unique_sequences = {}
+        seq_id_map = {}
+        filtered_seqs = []
+        for seq_id,seq in seqs:
+            seq_id = seq_id.split()[0]
+            try:
+                temp_seq_id = unique_sequences[seq]
+            except KeyError:
+                # unseen sequence so create a new temp_seq_id,
+                # a new unique_sequence entry, and new seq_id_map 
+                # entry, and add the sequence to the list of 
+                # filtered seqs -- this will retain the order
+                # of the input sequences too
+                temp_seq_id = 'QiimeExactMatch.%s' % seq_id
+                unique_sequences[seq] = temp_seq_id
+                seq_id_map[temp_seq_id] = []
+                filtered_seqs.append((temp_seq_id,seq))
+            seq_id_map[temp_seq_id].append(seq_id)
+        return filtered_seqs, seq_id_map
 
 
     def _prefilter_with_trie(self, seq_path):
@@ -753,7 +776,8 @@ class UclustOtuPicker(UclustOtuPickerBase):
          'new_cluster_identifier':None,
          'stable_sort':True,
          'save_uc_files':True,
-         'output_dir':'.'}
+         'output_dir':'.',
+         'prefilter_identical_sequences':True}
         _params.update(params)
         OtuPicker.__init__(self, _params)
     
@@ -771,7 +795,8 @@ class UclustOtuPicker(UclustOtuPickerBase):
         log_path: path to log, which includes dump of params.
 
         """
-        
+        prefilter_identical_sequences =\
+         self.Params['prefilter_identical_sequences']
         original_fasta_path = seq_path
         
         if self.Params['presort_by_abundance']:
@@ -783,6 +808,21 @@ class UclustOtuPicker(UclustOtuPickerBase):
             # create a dummy list of files to clean up
             files_to_remove = []
         
+        # Collapse idetical sequences to a new file
+        if prefilter_identical_sequences:
+            unique_seqs_fp = get_tmp_filename(
+             prefix='UclustExactMatchFilter',suffix='.fasta')
+            seqs_to_cluster, exact_match_id_map =\
+             self._prefilter_exact_matches(MinimalFastaParser(open(seq_path,'U')))
+            files_to_remove.append(unique_seqs_fp)
+            unique_seqs_f = open(unique_seqs_fp,'w')
+            for seq_id,seq in seqs_to_cluster:
+                unique_seqs_f.write('>%s\n%s\n' % (seq_id,seq))
+            unique_seqs_f.close()
+            # clean up the seqs_to_cluster list as it can be big and we
+            # don't need it again
+            del(seqs_to_cluster)
+            seq_path = unique_seqs_fp
         
         # perform the clustering
         clusters, failures, seeds = get_clusters_from_fasta_filepath(
@@ -808,6 +848,11 @@ class UclustOtuPicker(UclustOtuPickerBase):
         
         log_lines = []
         log_lines.append('Num OTUs:%d' % len(clusters))
+        
+        # expand identical sequences to create full OTU map
+        if prefilter_identical_sequences:
+            clusters = self._map_filtered_clusters_to_full_clusters(
+                        clusters,exact_match_id_map)
         
         otu_id_prefix = self.Params['new_cluster_identifier']
         if otu_id_prefix == None:

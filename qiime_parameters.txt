@@ -23,6 +23,7 @@ pick_otus:max_accepts
 pick_otus:max_rejects
 pick_otus:word_length
 pick_otus:stepwords
+pick_otus:suppress_uclust_prefilter_exact_match
 
 # Parallel options
 parallel:jobs_to_start	1

@@ -38,6 +38,26 @@ class OtuPickerTests(TestCase):
         """Abstract OtuPicker __call__ should raise NotImplementedError"""
         p = OtuPicker({})
         self.assertRaises(NotImplementedError, p, '/path/to/seqs')
+        
+    def test_prefilter_exact_matches(self):
+        """Abstract OtuPicker _prefilter_exact_matches functions as expected
+        """
+        seqs = [('s1 comment1','ACCTTGTTACTTT'),  # three copies
+                ('s2 comment2','ACCTTGTTACTTTC'), # one copy
+                ('s3 comment3','ACCTTGTTACTTTCC'),# two copies
+                ('s4 comment4','ACCTTGTTACTTT'),
+                ('s5 comment5','ACCTTGTTACTTTCC'),
+                ('s6 comment6','ACCTTGTTACTTT')]
+        expected0 = [('QiimeExactMatch.s1','ACCTTGTTACTTT'),
+                     ('QiimeExactMatch.s2','ACCTTGTTACTTTC'),
+                     ('QiimeExactMatch.s3','ACCTTGTTACTTTCC')]
+        expected1 = {'QiimeExactMatch.s1':['s1','s4','s6'],
+                     'QiimeExactMatch.s2':['s2'],
+                     'QiimeExactMatch.s3':['s3','s5']}
+        expected = (expected0,expected1)
+        p = OtuPicker({})
+        actual = p._prefilter_exact_matches(seqs)
+        self.assertEqual(actual,expected)
 
 
 class MothurOtuPickerTests(TestCase):
@@ -566,8 +586,16 @@ class UclustOtuPickerTests(TestCase):
         seq_file.write(dna_seqs_5)
         seq_file.close()
         
+        self.tmp_seq_filepath4 = get_tmp_filename(\
+         prefix='UclustOtuPickerTest_',\
+         suffix='.fasta')
+        seq_file = open(self.tmp_seq_filepath4,'w')
+        seq_file.write(dna_seqs_6)
+        seq_file.close()
+        
         self._files_to_remove =\
-         [self.tmp_seq_filepath1, self.tmp_seq_filepath2, self.tmp_seq_filepath3]
+         [self.tmp_seq_filepath1, self.tmp_seq_filepath2, 
+          self.tmp_seq_filepath3, self.tmp_seq_filepath4]
         
     def tearDown(self):
         remove_files(self._files_to_remove)
@@ -583,6 +611,31 @@ class UclustOtuPickerTests(TestCase):
             seq_file.write('>%s\n%s\n' % s)
         seq_file.close()
         return fp
+        
+    def test_toggle_collapse_identical_sequences(self):
+        """UclustOtuPicker: toggle prefilter identical seqs doesn't affect clusters
+        """
+        
+        # generate result including prefilter
+        app_w_collapse_identical =\
+          UclustOtuPicker(params={'Similarity':0.90,
+                                  'save_uc_files':True,
+                                  'prefilter_identical_sequences':True})
+        result_w_collapse_identical = \
+         app_w_collapse_identical(self.tmp_seq_filepath4).values()
+        result_w_collapse_identical.sort()
+        
+        # generate result excluding prefilter
+        app_wo_collapse_identical =\
+          UclustOtuPicker(params={'Similarity':0.90,
+                                  'save_uc_files':False,
+                                  'prefilter_identical_sequences':False})
+        result_wo_collapse_identical = \
+         app_wo_collapse_identical(self.tmp_seq_filepath4).values()
+        result_wo_collapse_identical.sort()
+        
+        self.assertEqual(result_w_collapse_identical,
+                         result_wo_collapse_identical)
         
     def test_toggle_suppress_sort(self):
         """UclustOtuPicker: togging suppress sort functions as expected
@@ -614,7 +667,7 @@ class UclustOtuPickerTests(TestCase):
                                       'presort_by_abundance':False,
                                       'save_uc_files':False})
         obs = app(seqs_fp)
-        exp = {0:['s1','s2','s3','s4','s5','s6']}
+        exp = {0:['s1','s4','s6','s2','s3','s5']}
         self.assertEqual(obs,exp)
         
     def test_abundance_sort(self):
@@ -680,7 +733,8 @@ class UclustOtuPickerTests(TestCase):
         # just checks that we have the expected group of each
         self.assertEqual(obs_otu_ids, exp_otu_ids)
         self.assertEqual(obs_clusters, exp_clusters)
-        
+
+
     def test_call_default_params_save_uc_file(self):
         """ returns expected clusters default params, writes correct .uc file"""
 
@@ -943,6 +997,7 @@ class UclustOtuPickerTests(TestCase):
          "stable_sort:True",
          "output_dir:.",
          "save_uc_files:False",
+         "prefilter_identical_sequences:True",
          "Result path: %s" % tmp_result_filepath]
         # compare data in log file to fake expected log file
         # NOTE: Since app.params is a dict, the order of lines is not
@@ -1088,7 +1143,6 @@ class UclustReferenceOtuPickerTests(TestCase):
         obs = app(seqs_fp,ref_seqs_fp)
         exp = {'r1':['s1','s4','s6','s3','s5','s2']}
         self.assertEqual(obs,exp)
-
         
     def test_toggle_suppress_new_clusters(self):
         """UclustReferenceOtuPicker: toggle suppress new clusters 
@@ -1121,10 +1175,6 @@ class UclustReferenceOtuPickerTests(TestCase):
                  self.seqs_to_temp_fasta(ref_seqs),HALT_EXEC=False)
         exp = {'r1':['s1','s2'],'new_42':['s3']}
         self.assertEqual(obs,exp)
-        
-
-        
-
         
     def test_varied_similarity(self):
         """UclustReferenceOtuPicker: varying similarity affects clustering
@@ -1967,6 +2017,27 @@ ACGGTGGCTACAAGACGTCCCATCCAACGGGTTGGATACTTAAGGCACATCACGTCAGTTTTGTGTCAGAGCT
 AGCTCTGACACAAAACTGACGTGATGTGCCTTAAGTATCCAACCCGTTGGATGGGACGTCTTGTAGCCACCGT
 """
 
+dna_seqs_6 = """>uclust_test_seqs_0 some comment0
+AACCCCCACGGTGGATGCCACACGCCCCATACAAAGGGTAGGATGCTTAAGACACATCGCGTCAGGTTTGTGTCAGGCCT
+>uclust_test_seqs_1 some comment1
+AACCCCCACGGTGGATGCCACACGCCCCATACAAAGGGTAGGATGCTTAAGACACATCGCGTCAGGTTTGTGTCAGGCCT
+>uclust_test_seqs_2 some comment2
+CCCCCACGGTGGCAGCAACACGTCACATACAACGGGTTGGATTCTAAAGACAAACCGCGTCAAAGTTGTGTCAGAACT
+>uclust_test_seqs_3 some comment3
+CCCCACGGTAGCTGCAACACGTCCCATACCACGGGTAGGATGCTAAAGACACATCGGGTCTGTTTTGTGTCAGGGCT
+>uclust_test_seqs_4 some comment4
+GCCACGGTGGGTACAACACGTCCACTACATCGGCTTGGAAGGTAAAGACACGTCGCGTCAGTATTGCGTCAGGGCT
+>uclust_test_seqs_5 some comment4_again
+AACCCCCACGGTGGATGCCACACGCCCCATACAAAGGGTAGGATGCTTAAGACACATCGCGTCAGGTTTGTGTCAGGCCT
+>uclust_test_seqs_6 some comment6
+CGCGGTGGCTGCAAGACGTCCCATACAACGGGTTGGATGCTTAAGACACATCGCAACAGTTTTGAGTCAGGGCT
+>uclust_test_seqs_7 some comment7
+AACCCCCACGGTGGATGCCACACGCCCCATACCAAGGGTAGGATGCTTAAGACACATCGCGTCAGGTTTGTGTCAGGCCT
+>uclust_test_seqs_8 some comment8
+CGGTGGCTGCAACACGTGGCATACAACGGGTTGGATGCTTAAGACACATCGCCTCAGTTTTGTGTCAGGGCT
+>uclust_test_seqs_9 some comment9
+GGTGGCTGAAACACATCCCATACAACGGGTTGGATGCTTAAGACACATCGCATCAGTTTTATGTCAGGGGA"""
+
 dna_seqs_4_result_prefilter =\
  {0: ['uclust_test_seqs_0','uclust_test_seqs_1','uclust_test_seqs_2']}
  
@@ -1977,26 +2048,26 @@ expected_uc_output =\
           '# For C and D types, PctId is average id with seed.',
           '# QueryStart and SeedStart are zero-based relative to start of sequence.',
           '# If minus strand, SeedStart is relative to reverse-complemented seed.',
-          'S\t0\t71\t*\t*\t*\t*\t*\tuclust_test_seqs_9 some comment9\t*',
-          'S\t1\t76\t*\t*\t*\t*\t*\tuclust_test_seqs_4 some comment4\t*',
-          'S\t2\t72\t*\t*\t*\t*\t*\tuclust_test_seqs_8 some comment8\t*',
-          'S\t3\t74\t*\t*\t*\t*\t*\tuclust_test_seqs_6 some comment6\t*',
-          'S\t4\t75\t*\t*\t*\t*\t*\tuclust_test_seqs_5 some comment4_again\t*',
-          'S\t5\t78\t*\t*\t*\t*\t*\tuclust_test_seqs_2 some comment2\t*',
-          'S\t6\t77\t*\t*\t*\t*\t*\tuclust_test_seqs_3 some comment3\t*',
-          'S\t7\t73\t*\t*\t*\t*\t*\tuclust_test_seqs_7 some comment7\t*',
-          'S\t8\t79\t*\t*\t*\t*\t*\tuclust_test_seqs_1 some comment1\t*',
-          'S\t9\t80\t*\t*\t*\t*\t*\tuclust_test_seqs_0 some comment0\t*',
-          'C\t0\t1\t*\t*\t*\t*\t*\tuclust_test_seqs_9 some comment9\t*',
-          'C\t1\t1\t*\t*\t*\t*\t*\tuclust_test_seqs_4 some comment4\t*',
-          'C\t2\t1\t*\t*\t*\t*\t*\tuclust_test_seqs_8 some comment8\t*',
-          'C\t3\t1\t*\t*\t*\t*\t*\tuclust_test_seqs_6 some comment6\t*',
-          'C\t4\t1\t*\t*\t*\t*\t*\tuclust_test_seqs_5 some comment4_again\t*',
-          'C\t5\t1\t*\t*\t*\t*\t*\tuclust_test_seqs_2 some comment2\t*',
-          'C\t6\t1\t*\t*\t*\t*\t*\tuclust_test_seqs_3 some comment3\t*',
-          'C\t7\t1\t*\t*\t*\t*\t*\tuclust_test_seqs_7 some comment7\t*',
-          'C\t8\t1\t*\t*\t*\t*\t*\tuclust_test_seqs_1 some comment1\t*',
-          'C\t9\t1\t*\t*\t*\t*\t*\tuclust_test_seqs_0 some comment0\t*']
+          'S\t0\t71\t*\t*\t*\t*\t*\tQiimeExactMatch.uclust_test_seqs_9\t*',
+          'S\t1\t76\t*\t*\t*\t*\t*\tQiimeExactMatch.uclust_test_seqs_4\t*',
+          'S\t2\t72\t*\t*\t*\t*\t*\tQiimeExactMatch.uclust_test_seqs_8\t*',
+          'S\t3\t74\t*\t*\t*\t*\t*\tQiimeExactMatch.uclust_test_seqs_6\t*',
+          'S\t4\t75\t*\t*\t*\t*\t*\tQiimeExactMatch.uclust_test_seqs_5\t*',
+          'S\t5\t78\t*\t*\t*\t*\t*\tQiimeExactMatch.uclust_test_seqs_2\t*',
+          'S\t6\t77\t*\t*\t*\t*\t*\tQiimeExactMatch.uclust_test_seqs_3\t*',
+          'S\t7\t73\t*\t*\t*\t*\t*\tQiimeExactMatch.uclust_test_seqs_7\t*',
+          'S\t8\t79\t*\t*\t*\t*\t*\tQiimeExactMatch.uclust_test_seqs_1\t*',
+          'S\t9\t80\t*\t*\t*\t*\t*\tQiimeExactMatch.uclust_test_seqs_0\t*',
+          'C\t0\t1\t*\t*\t*\t*\t*\tQiimeExactMatch.uclust_test_seqs_9\t*',
+          'C\t1\t1\t*\t*\t*\t*\t*\tQiimeExactMatch.uclust_test_seqs_4\t*',
+          'C\t2\t1\t*\t*\t*\t*\t*\tQiimeExactMatch.uclust_test_seqs_8\t*',
+          'C\t3\t1\t*\t*\t*\t*\t*\tQiimeExactMatch.uclust_test_seqs_6\t*',
+          'C\t4\t1\t*\t*\t*\t*\t*\tQiimeExactMatch.uclust_test_seqs_5\t*',
+          'C\t5\t1\t*\t*\t*\t*\t*\tQiimeExactMatch.uclust_test_seqs_2\t*',
+          'C\t6\t1\t*\t*\t*\t*\t*\tQiimeExactMatch.uclust_test_seqs_3\t*',
+          'C\t7\t1\t*\t*\t*\t*\t*\tQiimeExactMatch.uclust_test_seqs_7\t*',
+          'C\t8\t1\t*\t*\t*\t*\t*\tQiimeExactMatch.uclust_test_seqs_1\t*',
+          'C\t9\t1\t*\t*\t*\t*\t*\tQiimeExactMatch.uclust_test_seqs_0\t*']
  
 expected_ref_uc_file =\
     ['# Tab-separated fields:',
