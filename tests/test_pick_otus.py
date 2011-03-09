@@ -1104,7 +1104,7 @@ class UclustReferenceOtuPickerTests(TestCase):
                                       'presort_by_abundance':False,
                                       'save_uc_files':False})
         obs = app(seqs_fp,ref_seqs_fp)
-        exp = {'r1':['s1','s2','s3','s4','s5','s6']}
+        exp = {'r1':['s1','s4','s6','s2','s3','s5']}
         self.assertEqual(obs,exp)
         
     def test_abundance_sort(self):
@@ -1176,6 +1176,102 @@ class UclustReferenceOtuPickerTests(TestCase):
         exp = {'r1':['s1','s2'],'new_42':['s3']}
         self.assertEqual(obs,exp)
         
+        
+    def test_toggle_collapse_identical_sequences_prefilter_w_new_clusters(self):
+        """UclustReferenceOtuPicker: ident. seqs prefilter fns w new clusters
+        """
+        # s4 == s2 and s3 == s5
+        seqs = [('s1 a','ACCTTGTTACTTT'),
+                ('s2 bb','ACCTAGTTACTTT'),
+                ('s4 bb','ACCTAGTTACTTT'),
+                ('s3 c  c','TTGCGTAACGTTTGAC'),
+                ('s5 c  c','TTGCGTAACGTTTGAC')]
+        ref_seqs = [
+                ('r1 d','ACCTCGTTACTTT')]
+        exp = {'r1':['s2','s4','s1'],
+               'new_42':['s3','s5']}
+               
+        # add seq that clusters independently
+        uc = UclustReferenceOtuPicker({'Similarity':0.80,
+                                       'new_cluster_identifier':'new_',
+                                       'next_new_cluster_number':42,
+                                       'suppress_new_clusters':False,
+                                       'save_uc_files':False,
+                                       'prefilter_identical_sequences':False})
+        obs_no_prefilter = uc(self.seqs_to_temp_fasta(seqs),
+                 self.seqs_to_temp_fasta(ref_seqs),HALT_EXEC=False)
+        self.assertEqual(obs_no_prefilter,exp)
+        
+        uc = UclustReferenceOtuPicker({'Similarity':0.80,
+                                       'new_cluster_identifier':'new_',
+                                       'next_new_cluster_number':42,
+                                       'suppress_new_clusters':False,
+                                       'save_uc_files':False,
+                                       'prefilter_identical_sequences':True})
+        obs_prefilter = uc(self.seqs_to_temp_fasta(seqs),
+                 self.seqs_to_temp_fasta(ref_seqs),HALT_EXEC=False)
+        self.assertEqual(obs_prefilter,exp)
+        
+        # a little paranoia never hurt anyone
+        self.assertEqual(obs_prefilter,obs_no_prefilter)
+
+    def test_toggle_collapse_identical_sequences_prefilter_wo_new_clusters(self):
+        """UclustReferenceOtuPicker: ident. seqs prefilter fns wo new clusters
+        """
+        # s4 == s2 and s3 == s5
+        seqs = [('s1 a','ACCTTGTTACTTT'),
+                ('s2 bb','ACCTAGTTACTTT'),
+                ('s4 bb','ACCTAGTTACTTT'),
+                ('s3 c  c','TTGCGTAACGTTTGAC'),
+                ('s5 c  c','TTGCGTAACGTTTGAC')]
+        ref_seqs = [
+                ('r1 d','ACCTCGTTACTTT')]
+        
+        exp = {'r1':['s2','s4','s1']}
+        
+        # add seq that clusters independently
+        uc = UclustReferenceOtuPicker({'Similarity':0.80,
+                                       'new_cluster_identifier':'new_',
+                                       'next_new_cluster_number':42,
+                                       'suppress_new_clusters':True,
+                                       'save_uc_files':False,
+                                       'prefilter_identical_sequences':False})
+        fail_path_no_prefilter = get_tmp_filename(
+         prefix='UclustRefOtuPickerFailures',suffix='.txt')
+        self._files_to_remove.append(fail_path_no_prefilter)
+        obs_no_prefilter = uc(self.seqs_to_temp_fasta(seqs),
+                              self.seqs_to_temp_fasta(ref_seqs),
+                              failure_path=fail_path_no_prefilter,
+                              HALT_EXEC=False)
+        self.assertEqual(obs_no_prefilter,exp)
+        self.assertEqual(open(fail_path_no_prefilter).read(),
+                         "s3\ns5")
+        
+        uc = UclustReferenceOtuPicker({'Similarity':0.80,
+                                       'new_cluster_identifier':'new_',
+                                       'next_new_cluster_number':42,
+                                       'suppress_new_clusters':True,
+                                       'save_uc_files':False,
+                                       'prefilter_identical_sequences':True})
+        fail_path_prefilter = get_tmp_filename(
+         prefix='UclustRefOtuPickerFailures',suffix='.txt')
+        self._files_to_remove.append(fail_path_prefilter)
+        obs_prefilter = uc(self.seqs_to_temp_fasta(seqs),
+                           self.seqs_to_temp_fasta(ref_seqs),
+                           failure_path=fail_path_prefilter,
+                           HALT_EXEC=False)
+        self.assertEqual(obs_prefilter,exp)
+        self.assertEqual(open(fail_path_prefilter).read(),
+                         "s3\ns5")
+        
+        # a little paranoia never hurt anyone
+        self.assertEqual(obs_prefilter,obs_no_prefilter)
+        self.assertEqual(open(fail_path_prefilter).read(),
+                         open(fail_path_no_prefilter).read())
+
+
+
+
     def test_varied_similarity(self):
         """UclustReferenceOtuPicker: varying similarity affects clustering
         """
@@ -1303,6 +1399,7 @@ class UclustReferenceOtuPickerTests(TestCase):
          "presort_by_abundance:True",
          'save_uc_files:False',
          'output_dir:.',
+         'prefilter_identical_sequences:True',
          "Result path: %s" % tmp_result_filepath]
         # compare data in log file to fake expected log file
         # NOTE: Since app.params is a dict, the order of lines is not
@@ -2075,29 +2172,30 @@ expected_ref_uc_file =\
     '# Record types (field 1): L=LibSeed, S=NewSeed, H=Hit, R=Reject, D=LibCluster, C=NewCluster, N=NoHit', '# For C and D types, PctId is average id with seed.',
     '# QueryStart and SeedStart are zero-based relative to start of sequence.',
     '# If minus strand, SeedStart is relative to reverse-complemented seed.',
-    'S\t4\t71\t*\t*\t*\t*\t*\tuclust_test_seqs_9 some comment\t*',
+    'S\t4\t71\t*\t*\t*\t*\t*\tQiimeExactMatch.uclust_test_seqs_9\t*',
     'L\t1\t91\t*\t*\t*\t*\t*\tref2 15 random bases prepended to uclust_test_seqs_1 and one mismatch\t*',
-    'H\t1\t76\t98.7\t+\t0\t0\t15I76M\tuclust_test_seqs_1 some comment bbb\tref2 15 random bases prepended to uclust_test_seqs_1 and one mismatch',
-    'S\t5\t72\t*\t*\t*\t*\t*\tuclust_test_seqs_8 some comment8\t*',
-    'S\t6\t74\t*\t*\t*\t*\t*\tuclust_test_seqs_6 some comment6\t*',
-    'S\t7\t75\t*\t*\t*\t*\t*\tuclust_test_seqs_5 some comment\t*',
+    'H\t1\t76\t98.7\t+\t0\t0\t15I76M\tQiimeExactMatch.uclust_test_seqs_1\tref2 15 random bases prepended to uclust_test_seqs_1 and one mismatch',
+    'S\t5\t72\t*\t*\t*\t*\t*\tQiimeExactMatch.uclust_test_seqs_8\t*',
+    'S\t6\t74\t*\t*\t*\t*\t*\tQiimeExactMatch.uclust_test_seqs_6\t*',
+    'S\t7\t75\t*\t*\t*\t*\t*\tQiimeExactMatch.uclust_test_seqs_5\t*',
     'L\t2\t93\t*\t*\t*\t*\t*\tref3 5 random bases prepended and 10 random bases appended to uclust_test_seqs_2\t*',
-    'H\t2\t78\t100.0\t+\t0\t0\t5I78M10I\tuclust_test_seqs_2 some comment vv\tref3 5 random bases prepended and 10 random bases appended to uclust_test_seqs_2',
+    'H\t2\t78\t100.0\t+\t0\t0\t5I78M10I\tQiimeExactMatch.uclust_test_seqs_2\tref3 5 random bases prepended and 10 random bases appended to uclust_test_seqs_2',
     'L\t3\t77\t*\t*\t*\t*\t*\tref4 exact match to uclust_test_seqs_3\t*',
-    'H\t3\t77\t100.0\t+\t0\t0\t77M\tuclust_test_seqs_3 some comment\tref4 exact match to uclust_test_seqs_3',
+    'H\t3\t77\t100.0\t+\t0\t0\t77M\tQiimeExactMatch.uclust_test_seqs_3\tref4 exact match to uclust_test_seqs_3',
     'L\t0\t98\t*\t*\t*\t*\t*\tref1 25 random bases appended to uclust_test_seqs_0 and one mismatch\t*',
-    'H\t0\t73\t98.6\t+\t0\t0\t73M25I\tuclust_test_seqs_0 some comment aaa\tref1 25 random bases appended to uclust_test_seqs_0 and one mismatch',
-    'S\t8\t79\t*\t*\t*\t*\t*\tuclust_test_seqs_4 some comment\t*',
-    'S\t9\t80\t*\t*\t*\t*\t*\tuclust_test_seqs_7 some comment\t*',
+    'H\t0\t73\t98.6\t+\t0\t0\t73M25I\tQiimeExactMatch.uclust_test_seqs_0\tref1 25 random bases appended to uclust_test_seqs_0 and one mismatch',
+    'S\t8\t79\t*\t*\t*\t*\t*\tQiimeExactMatch.uclust_test_seqs_4\t*',
+    'S\t9\t80\t*\t*\t*\t*\t*\tQiimeExactMatch.uclust_test_seqs_7\t*',
     'D\t0\t2\t*\t*\t*\t*\t98.6\tref1 25 random bases appended to uclust_test_seqs_0 and one mismatch\t*',
     'D\t1\t2\t*\t*\t*\t*\t98.7\tref2 15 random bases prepended to uclust_test_seqs_1 and one mismatch\t*',
     'D\t2\t2\t*\t*\t*\t*\t100.0\tref3 5 random bases prepended and 10 random bases appended to uclust_test_seqs_2\t*',
-    'D\t3\t2\t*\t*\t*\t*\t100.0\tref4 exact match to uclust_test_seqs_3\t*', 'C\t4\t1\t*\t*\t*\t*\t*\tuclust_test_seqs_9 some comment\t*',
-    'C\t5\t1\t*\t*\t*\t*\t*\tuclust_test_seqs_8 some comment8\t*',
-    'C\t6\t1\t*\t*\t*\t*\t*\tuclust_test_seqs_6 some comment6\t*',
-    'C\t7\t1\t*\t*\t*\t*\t*\tuclust_test_seqs_5 some comment\t*',
-    'C\t8\t1\t*\t*\t*\t*\t*\tuclust_test_seqs_4 some comment\t*',
-    'C\t9\t1\t*\t*\t*\t*\t*\tuclust_test_seqs_7 some comment\t*']
+    'D\t3\t2\t*\t*\t*\t*\t100.0\tref4 exact match to uclust_test_seqs_3\t*', 
+    'C\t4\t1\t*\t*\t*\t*\t*\tQiimeExactMatch.uclust_test_seqs_9\t*',
+    'C\t5\t1\t*\t*\t*\t*\t*\tQiimeExactMatch.uclust_test_seqs_8\t*',
+    'C\t6\t1\t*\t*\t*\t*\t*\tQiimeExactMatch.uclust_test_seqs_6\t*',
+    'C\t7\t1\t*\t*\t*\t*\t*\tQiimeExactMatch.uclust_test_seqs_5\t*',
+    'C\t8\t1\t*\t*\t*\t*\t*\tQiimeExactMatch.uclust_test_seqs_4\t*',
+    'C\t9\t1\t*\t*\t*\t*\t*\tQiimeExactMatch.uclust_test_seqs_7\t*']
 
 #run unit tests if run from command-line
 if __name__ == '__main__':

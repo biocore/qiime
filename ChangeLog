@@ -1,5 +1,6 @@
 Add changes since QIIME 1.2.1 here
 ==================================
+* uclust and uclust_ref OTU pickers now incorporate a pre-filtering step where identical sequences are collapsed before calling uclust and then expanded after calling uclust. This gives a big speed improvement (5-20x) on reasonably sized input sets (>200k sequences) with no effect on the resulting OTUs. This is now the default behavior for pick_otus.py, and can be disabled by passing --suppress_uclust_prefilter_exact_match to pick_otus.py.
 
 QIIME 1.2.1 (22 Feb 2011)
 ==================================

@@ -739,6 +739,22 @@ class UclustOtuPickerBase(OtuPicker):
             log_lines.append('Result path: None, returned as dict.')
             
         return result
+    
+    def _apply_identical_sequences_prefilter(self,seq_path):
+        """ """
+        unique_seqs_fp = get_tmp_filename(
+         prefix='UclustExactMatchFilter',suffix='.fasta')
+        seqs_to_cluster, exact_match_id_map =\
+         self._prefilter_exact_matches(MinimalFastaParser(open(seq_path,'U')))
+        self.files_to_remove.append(unique_seqs_fp)
+        unique_seqs_f = open(unique_seqs_fp,'w')
+        for seq_id,seq in seqs_to_cluster:
+            unique_seqs_f.write('>%s\n%s\n' % (seq_id,seq))
+        unique_seqs_f.close()
+        # clean up the seqs_to_cluster list as it can be big and we
+        # don't need it again
+        # del(seqs_to_cluster)
+        return exact_match_id_map, unique_seqs_fp
 
 class UclustOtuPicker(UclustOtuPickerBase):
     """ Uclust based OTU picker
@@ -798,31 +814,18 @@ class UclustOtuPicker(UclustOtuPickerBase):
         prefilter_identical_sequences =\
          self.Params['prefilter_identical_sequences']
         original_fasta_path = seq_path
+        self.files_to_remove = []
         
         if self.Params['presort_by_abundance']:
             # seq path will become the temporary sorted sequences
             # filepath, to be cleaned up after the run
             seq_path = self._presort_by_abundance(seq_path)
-            files_to_remove = [seq_path]
-        else:
-            # create a dummy list of files to clean up
-            files_to_remove = []
+            self.files_to_remove.append(seq_path)
         
         # Collapse idetical sequences to a new file
         if prefilter_identical_sequences:
-            unique_seqs_fp = get_tmp_filename(
-             prefix='UclustExactMatchFilter',suffix='.fasta')
-            seqs_to_cluster, exact_match_id_map =\
-             self._prefilter_exact_matches(MinimalFastaParser(open(seq_path,'U')))
-            files_to_remove.append(unique_seqs_fp)
-            unique_seqs_f = open(unique_seqs_fp,'w')
-            for seq_id,seq in seqs_to_cluster:
-                unique_seqs_f.write('>%s\n%s\n' % (seq_id,seq))
-            unique_seqs_f.close()
-            # clean up the seqs_to_cluster list as it can be big and we
-            # don't need it again
-            del(seqs_to_cluster)
-            seq_path = unique_seqs_fp
+            exact_match_id_map, seq_path =\
+             self._apply_identical_sequences_prefilter(seq_path)
         
         # perform the clustering
         clusters, failures, seeds = get_clusters_from_fasta_filepath(
@@ -844,7 +847,7 @@ class UclustOtuPicker(UclustOtuPickerBase):
          HALT_EXEC=HALT_EXEC)
         
         # clean up any temp files that were created
-        remove_files(files_to_remove)
+        remove_files(self.files_to_remove)
         
         log_lines = []
         log_lines.append('Num OTUs:%d' % len(clusters))
@@ -895,7 +898,8 @@ class UclustReferenceOtuPicker(UclustOtuPickerBase):
                    'presort_by_abundance':True,
                    'stable_sort':True,
                    'save_uc_files':True,
-                   'output_dir':'.'}
+                   'output_dir':'.',
+                   'prefilter_identical_sequences':True}
         _params.update(params)
         OtuPicker.__init__(self, _params)
     
@@ -910,21 +914,25 @@ class UclustReferenceOtuPicker(UclustOtuPickerBase):
                  HALT_EXEC=False):
                      
         original_fasta_path = seq_fp
+        prefilter_identical_sequences =\
+         self.Params['prefilter_identical_sequences']
         
         if new_cluster_identifier:
             self.Params['new_cluster_identifier'] = new_cluster_identifier
         if next_new_cluster_number != None:
             self.Params['next_new_cluster_number'] = next_new_cluster_number
-            
+        self.files_to_remove = []
+        
         if self.Params['presort_by_abundance']:
             # seq path will become the temporary sorted sequences
             # filepath, to be cleaned up after the run
             seq_fp = self._presort_by_abundance(seq_fp)
-            files_to_remove = [seq_fp]
-        else:
-            # create a dummy list of files to clean up
-            files_to_remove = []
+            self.files_to_remove.append(seq_fp)
 
+        # Collapse idetical sequences to a new file
+        if prefilter_identical_sequences:
+            exact_match_id_map, seq_fp =\
+             self._apply_identical_sequences_prefilter(seq_fp)
         
         # perform the clustering
         cluster_map, failures, new_seeds = get_clusters_from_fasta_filepath(
@@ -946,13 +954,28 @@ class UclustReferenceOtuPicker(UclustOtuPickerBase):
             save_uc_files=self.Params['save_uc_files'],
             output_dir=self.Params['output_dir'],
             HALT_EXEC=HALT_EXEC)
-            
         
+        # expand identical sequences to create full OTU map
+        if prefilter_identical_sequences:
+            # expand the clusters (while retaining the names of
+            # the clusters so we know which are new OTUs and
+            # which are reference OTUs)
+            cluster_names = cluster_map.keys()
+            clusters = [cluster_map[c] for c in cluster_names]
+            clusters = self._map_filtered_clusters_to_full_clusters(
+                        clusters,exact_match_id_map)
+            cluster_map = dict(zip(cluster_names,clusters))
+            
+            # expand failures
+            temp_failures = []
+            for fa in failures:
+                temp_failures.extend(exact_match_id_map[fa])
+            failures = temp_failures
         
         self._rename_clusters(cluster_map,new_seeds)
         
         # clean up any temp files that were created
-        remove_files(files_to_remove)
+        remove_files(self.files_to_remove)
         
         log_lines = []
         log_lines.append('Reference seqs:%s' % refseqs_fp)
