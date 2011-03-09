@@ -33,7 +33,6 @@ from qiime.workflow import (run_qiime_data_preparation,
     run_beta_diversity_through_3d_plot,
     run_qiime_alpha_rarefaction,
     run_jackknifed_beta_diversity,
-    run_gain_calculations,
     call_commands_serially,
     no_status_updates,WorkflowError,print_commands,print_to_stdout)
 
@@ -317,102 +316,6 @@ class WorkflowTests(TestCase):
         # Check that the log file is created and has size > 0
         log_fp = glob(join(self.wf_out,'log*.txt'))[0]
         self.assertTrue(getsize(log_fp) > 0)
-        
-        
-    def test_run_gain_calculations_serial(self):
-        """run_gain_calculations generates expected results
-        """
-        run_gain_calculations(
-         self.gain_in1,
-         self.gain_ref1,
-         self.gain_ref_aligned1,
-         self.template_aln_fp,
-         self.template_aln_fp, 
-         self.wf_out, 
-         self.gain_params1,
-         self.qiime_config,
-         call_commands_serially,
-         parallel=False,
-         status_update_callback=no_status_updates)
-        
-        # Check that the log file is created and has size > 0
-        log_fp = glob(join(self.wf_out,'log*.txt'))[0]
-        self.assertTrue(getsize(log_fp) > 0)
-        
-        # Check that the chimeric seq was identified and doesn't show up
-        # in the final tree
-        chimeric_seq_ids_fp =\
-         glob(join(self.wf_out,'ucr_picked_otus','*chimeric_seq_ids.txt'))[0]
-        expected_chimeric_line_choices = ["GainedOTU2\t105109\t114239","GainedOTU2\t114239\t105109"]
-        actual_chimeric_line = [l.strip() for l in open(chimeric_seq_ids_fp)][0]
-        # seq was identified
-        self.assertTrue(actual_chimeric_line in expected_chimeric_line_choices,"Expected chimera line not found")
-        # seq was removed from alignment/tree
-        tree_fp = glob(join(self.wf_out,'ucr_picked_otus','pynast_aligned_seqs',
-         'fasttree_phylogeny','*_all.tre'))[0]
-        t = LoadTree(tree_fp)
-        self.assertFalse('GainedOTU2' in t.getTipNames(),
-                         "Chimeric sequence is still in tree.")
-        
-        # Confirm that distances are as expected
-        expected_sids = ['in','reference']
-        expected_unifrac_g = array([[0.0,0.3502],[0.6498,0.0]])
-        
-        dm_fp = '%s/unifrac_g_otu_table.txt' % self.wf_out
-        sids, dm = parse_distmat(open(dm_fp))
-        self.assertEqual(sids,expected_sids)
-        # confirm that all actual unifrac_g values are within 
-        # 0.01 of expected
-        self.assertTrue((absolute(dm - expected_unifrac_g) <
-         array([[0.01,0.01],[0.01,0.01]])).all())
-         
-    def test_run_gain_calculations_parallel(self):
-        """run_gain_calculations in parallel generates expected results
-        """
-        run_gain_calculations(
-         self.gain_in1,
-         self.gain_ref1,
-         self.gain_ref_aligned1,
-         self.template_aln_fp,
-         self.template_aln_fp, 
-         self.wf_out, 
-         self.gain_params1,
-         self.qiime_config,
-         call_commands_serially,
-         parallel=True,
-         status_update_callback=no_status_updates)
-        
-        # Check that the log file is created and has size > 0
-        log_fp = glob(join(self.wf_out,'log*.txt'))[0]
-        self.assertTrue(getsize(log_fp) > 0)
-        
-        # Check that the chimeric seq was identified and doesn't show up
-        # in the final tree
-        chimeric_seq_ids_fp =\
-         glob(join(self.wf_out,'ucr_picked_otus','*chimeric_seq_ids.txt'))[0]
-        expected_chimeric_line_choices = ["GainedOTU2\t105109\t114239","GainedOTU2\t114239\t105109"]
-        actual_chimeric_line = [l.strip() for l in open(chimeric_seq_ids_fp)][0]
-        # seq was identified
-        self.assertTrue(actual_chimeric_line in expected_chimeric_line_choices,"Expected chimera line not found")
-        # seq was removed from alignment/tree
-        tree_fp = glob(join(self.wf_out,'ucr_picked_otus','pynast_aligned_seqs',
-         'fasttree_phylogeny','*_all.tre'))[0]
-        t = LoadTree(tree_fp)
-        self.assertFalse('GainedOTU2' in t.getTipNames(),
-                         "Chimeric sequence is still in tree.")
-        
-        # Confirm that distances are as expected
-        expected_sids = ['in','reference']
-        expected_unifrac_g = array([[0.0,0.3502],[0.6498,0.0]])
-        
-        dm_fp = '%s/unifrac_g_otu_table.txt' % self.wf_out
-        sids, dm = parse_distmat(open(dm_fp))
-        self.assertEqual(sids,expected_sids)
-        # confirm that actual distances are within 0.01 of expected
-        # distances
-        self.assertTrue((dm - expected_unifrac_g <
-         array([[0.01,0.01],[0.01,0.01]])).all())
-        
         
     def test_run_qiime_data_preparation(self):
         """run_qiime_data_preparation generates expected results"""
