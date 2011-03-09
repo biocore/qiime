@@ -44,7 +44,7 @@ def parse_and_submit_params(key,project_id,seq_file,output_dir,\
     split_fasta_on_sample_ids_to_files(fasta_file,output_dir)
     
     #set the MG-RAST link for QIIME
-    host = 'metagenomics.nmpdr.org'
+    host = 'metagenomics.anl.gov'
 
     #open the log html
     log_file=open(os.path.join(output_dir,'log.html'),'w')
@@ -121,7 +121,7 @@ def post_multipart(host, fields, files, submit_to_server):
     content_type, body = encode_multipart_formdata(fields, files)
     h = httplib.HTTP(host)
     # needed to change the following url to be handled properly by MG-RAST
-    h.putrequest('POST', 'http://metagenomics.nmpdr.org/qiime.cgi')
+    h.putrequest('POST', 'http://metagenomics.anl.gov/qiime.cgi')
     h.putheader('Content-Type', content_type)
     h.putheader('Content-Length', str(len(body)))
     h.endheaders()
@@ -131,6 +131,7 @@ def post_multipart(host, fields, files, submit_to_server):
     if submit_to_server:
         h.send(body)
         errcode, errmsg, headers = h.getreply()
+
         #verify the data was received by MG-RAST
         if errcode==200:
             response=h.file.read()
