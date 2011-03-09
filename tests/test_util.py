@@ -20,7 +20,7 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
     summarize_pcoas, _compute_jn_pcoa_avg_ranges, _flip_vectors, IQR,
     idealfourths, isarray, matrix_IQR, degap_fasta_aln,
     write_degapped_fasta_to_file, compare_otu_maps, get_diff_for_otu_maps,
-    merge_n_otu_tables, convert_otu_table_relative,
+    merge_n_otu_tables, convert_otu_table_relative, write_seqs_to_fasta,
     split_fasta_on_sample_ids, split_fasta_on_sample_ids_to_dict)
 
 import numpy
@@ -58,6 +58,26 @@ class TopLevelTests(TestCase):
             if exists(dir):
                 rmdir(dir)
         remove_files(self.files_to_remove)
+    
+    def test_write_seqs_to_fasta(self):
+        """ write_seqs_to_fasta functions as expected """
+        output_fp = get_tmp_filename(
+                     prefix="qiime_util_write_seqs_to_fasta_test",
+                     suffix='.fasta')
+        self.files_to_remove.append(output_fp)
+        seqs = [('s1','ACCGGTTGG'),('s2','CCTTGG'),('S4 some comment string','A')]
+        exp = ">s1\nACCGGTTGG\n>s2\nCCTTGG\n>S4 some comment string\nA\n"
+        # works in write mode
+        write_seqs_to_fasta(output_fp,seqs,'w')
+        self.assertEqual(open(output_fp).read(),exp)
+        # calling again in write mode overwrites original file
+        write_seqs_to_fasta(output_fp,seqs,'w')
+        self.assertEqual(open(output_fp).read(),exp)
+        # works in append mode
+        exp2 = exp + exp
+        write_seqs_to_fasta(output_fp,seqs,'a')
+        self.assertEqual(open(output_fp).read(),exp2)
+        
     
     def test_split_fasta_on_sample_ids(self):
         """ split_fasta_on_sample_ids functions as expected 
