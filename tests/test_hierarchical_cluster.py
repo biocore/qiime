@@ -9,7 +9,7 @@ __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 __status__ = "Development"
 
-from qiime.hierarchical_cluster import single_file_upgma
+from qiime.hierarchical_cluster import single_file_upgma, single_file_nj
 from qiime.format import format_distance_matrix
 from cogent.util.unit_test import TestCase, main
 from cogent.app.util import get_tmp_filename
@@ -48,6 +48,23 @@ class FunctionTests(TestCase):
             result_constructor=str)
         self._paths_to_clean_up.append(fname2)
         single_file_upgma(fname,fname2)
+        assert(os.path.exists(fname2))
+
+    def test_single_file_nj(self):
+        """ single_file_nj should throw no errors"""
+
+        titles = ['hi','ho','yo']
+        distdata = numpy.array([[0,.5,.3],[.5,0.,.9],[.3,.9,0.]])
+        fname = get_tmp_filename(prefix='nj_',suffix='.txt')
+        f = open(fname,'w')
+        self._paths_to_clean_up.append(fname)
+        f.write(format_distance_matrix(titles, distdata))
+        f.close()
+        
+        fname2 = get_tmp_filename(prefix='nj_',suffix='.txt',
+            result_constructor=str)
+        self._paths_to_clean_up.append(fname2)
+        single_file_nj(fname,fname2)
         assert(os.path.exists(fname2))
 
     def tearDown(self):
