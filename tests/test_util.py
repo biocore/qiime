@@ -51,6 +51,7 @@ class TopLevelTests(TestCase):
         self.otu_table_f2_no_tax = otu_table_fake2_no_tax.split('\n')
         self.otu_table_f3_no_tax = otu_table_fake3_no_tax.split('\n')
         self.fasta1 = fasta1.split('\n')
+        self.fasta2 = fasta2.split('\n')
         self.mapping_f1 = mapping_f1.split('\n')
         self.dirs_to_remove = []
         self.files_to_remove = []
@@ -110,14 +111,14 @@ class TopLevelTests(TestCase):
         self.dirs_to_remove.append(temp_output_dir)
         
         split_fasta_on_sample_ids_to_files(
-         MinimalFastaParser(self.fasta1),
+         MinimalFastaParser(self.fasta2),
          output_dir=temp_output_dir,
-         per_sample_buffer_size=5)
+         per_sample_buffer_size=2)
         self.files_to_remove.extend(glob('%s/*fasta' % temp_output_dir))
         
         # confirm that all files are as expected
         self.assertEqual(open('%s/Samp1.fasta' % temp_output_dir).read(),
-            ">Samp1_42\nACCGGTT\n>Samp1_43 some comme_nt\nAACCG\n")
+            ">Samp1_42\nACCGGTT\n>Samp1_43 some comme_nt\nAACCG\n>Samp1_44\nA\n")
         self.assertEqual(open('%s/s2_a.fasta' % temp_output_dir).read(),
             ">s2_a_50\nGGGCCC\n")
         self.assertEqual(open('%s/s3.fasta' % temp_output_dir).read(),
@@ -867,6 +868,16 @@ AACCG
 >s3_25
 AAACCC"""
 
+fasta2 = """>Samp1_42
+ACCGGTT
+>s2_a_50
+GGGCCC
+>Samp1_43 some comme_nt
+AACCG
+>s3_25
+AAACCC
+>Samp1_44
+A"""
 
 
 
