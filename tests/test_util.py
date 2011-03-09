@@ -3,6 +3,7 @@
 
 from os import rmdir
 from os.path import split, abspath, dirname, exists, join
+from glob import glob
 from cogent import Sequence
 from cogent.util.unit_test import TestCase, main
 from cogent.parse.fasta import MinimalFastaParser
@@ -21,7 +22,8 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
     idealfourths, isarray, matrix_IQR, degap_fasta_aln,
     write_degapped_fasta_to_file, compare_otu_maps, get_diff_for_otu_maps,
     merge_n_otu_tables, convert_otu_table_relative, write_seqs_to_fasta,
-    split_fasta_on_sample_ids, split_fasta_on_sample_ids_to_dict)
+    split_fasta_on_sample_ids, split_fasta_on_sample_ids_to_dict,
+    split_fasta_on_sample_ids_to_files)
 
 import numpy
 from numpy import array, asarray
@@ -53,11 +55,11 @@ class TopLevelTests(TestCase):
         self.dirs_to_remove = []
         self.files_to_remove = []
 
-    def tearDown(self):
+    def tearDown(self):    
+        remove_files(self.files_to_remove)
         for dir in  self.dirs_to_remove:
             if exists(dir):
                 rmdir(dir)
-        remove_files(self.files_to_remove)
     
     def test_write_seqs_to_fasta(self):
         """ write_seqs_to_fasta functions as expected """
@@ -100,6 +102,29 @@ class TopLevelTests(TestCase):
                     's2_a':[('s2_a_50','GGGCCC')],
                     's3':[('s3_25','AAACCC')]}
         self.assertEqual(actual,expected)
+
+    def test_split_fasta_on_sample_ids_to_files(self):
+        """ split_fasta_on_sample_ids_to_files functions as expected 
+        """
+        temp_output_dir = get_random_directory_name(output_dir='/tmp/')
+        self.dirs_to_remove.append(temp_output_dir)
+        
+        split_fasta_on_sample_ids_to_files(
+         MinimalFastaParser(self.fasta1),
+         output_dir=temp_output_dir,
+         per_sample_buffer_size=5)
+        self.files_to_remove.extend(glob('%s/*fasta' % temp_output_dir))
+        
+        # confirm that all files are as expected
+        self.assertEqual(open('%s/Samp1.fasta' % temp_output_dir).read(),
+            ">Samp1_42\nACCGGTT\n>Samp1_43 some comme_nt\nAACCG\n")
+        self.assertEqual(open('%s/s2_a.fasta' % temp_output_dir).read(),
+            ">s2_a_50\nGGGCCC\n")
+        self.assertEqual(open('%s/s3.fasta' % temp_output_dir).read(),
+            ">s3_25\nAAACCC\n")
+        # confirm number of files is as expected
+        self.assertEqual(len(glob('%s/*' % temp_output_dir)),3)
+
                 
     def test_convert_otu_table_relative(self):
         """should convert a parsed otu table into relative abundances"""

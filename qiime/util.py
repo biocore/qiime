@@ -416,7 +416,6 @@ def split_fasta_on_sample_ids_to_files(seqs,
         This function takes a buffered approach to writing files to 
         avoid hitting errors arising from too many files being open
         when working with large numbers of samples ids (e.g. > 1024 on linux)
-    
     """
     create_dir(output_dir)
     file_lookup = {}
@@ -431,7 +430,7 @@ def split_fasta_on_sample_ids_to_files(seqs,
                  (" %s already exists. Will not perform split -- remove this"
                   " file or specify a different output directory." % current_fp)
             current_seqs = list()
-            file_lookup[sample_id] = (current_fp,current_seqs)
+            file_lookup[sample_id] = [current_fp,current_seqs]
         
         # append the current sequence to the current seqs list
         current_seqs.append((seq_id,seq))
