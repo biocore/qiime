@@ -99,25 +99,34 @@ def sort_fasta_by_abundance(fasta_lines,fasta_out_f):
         for seq_id in seq_ids:
             fasta_out_f.write('>%s\n%s\n' % (seq_id,seq))
 
-def sort_otu_table(otu_table_data,
-                   mapping_file_data,
-                   sort_field,
-                   sort_f=natsort):
+def sort_otu_table_by_mapping_field(otu_table_data,
+                                    mapping_file_data,
+                                    sort_field,
+                                    sort_f=natsort):
     """ sort otu table based on the value of sort_field for each sample 
     """
-    sample_ids, otu_ids, otu_data, taxa = otu_table_data
     mapping_data, header_data, comments = mapping_file_data
-
-    unsorted_sample_id_index = dict([(e,i) for i,e in enumerate(sample_ids)])
 
     mapping_field_index = header_data.index(sort_field)
     sorted_sample_ids = [(e[mapping_field_index], e[0]) for e in mapping_data]
     sorted_sample_ids = sort_f(sorted_sample_ids)
     sorted_sample_ids = [e[1] for e in sorted_sample_ids]
-    if set(sample_ids) - set(sorted_sample_ids):
+    
+    return sort_otu_table(otu_table_data,sorted_sample_ids)
+    
+def sort_otu_table(otu_table_data,
+                   sorted_sample_ids):
+    sample_ids, otu_ids, otu_data, taxa = otu_table_data
+    unsorted_sample_id_index = dict([(e,i) for i,e in enumerate(sample_ids)])
+    
+    sorted_sample_ids_set = set(sorted_sample_ids)
+    if set(sample_ids) - sorted_sample_ids_set:
         raise KeyError,\
-         "Sample IDs present in OTU table but not mapping file: " + \
+         "Sample IDs present in OTU table but not sorted sample id list: " + \
          ' '.join(list(set(sample_ids) - set(sorted_sample_ids)))
+    if len(sorted_sample_ids_set) != len(sorted_sample_ids):
+        raise ValueError,\
+         "Duplicate sample IDs are present in sorted sample id list."
 
     otu_data = otu_data.transpose()
     sample_id_results = []

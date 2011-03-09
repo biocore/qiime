@@ -16,7 +16,7 @@ from optparse import make_option
 from qiime.parse import parse_mapping_file, parse_otu_table
 from qiime.format import format_otu_table
 from qiime.util import parse_command_line_parameters, get_options_lookup
-from qiime.sort import sort_otu_table
+from qiime.sort import sort_otu_table, sort_otu_table_by_mapping_field
 
 options_lookup = get_options_lookup()
 
@@ -25,31 +25,54 @@ script_info['brief_description'] = "Script for sorting the sample IDs in an OTU 
 script_info['script_description'] = ""
 script_info['script_usage'] = [("",
                                 "sort samples by the age field in the mapping file",
-                                "sort_otu_table.py -i otu_table.txt -o age_sorted_otu_table.txt -m map.txt -s Age")]
+                                "sort_otu_table.py -i otu_table.txt -o age_sorted_otu_table.txt -m map.txt -s Age"),
+                                ("",
+                                 "sort samples based on order in a file where each line starts with a sample id",
+                                 "sort_otu_table.py -i otu_table.txt -o age_sorted_otu_table.txt -l sorted_sample_id_list.txt")]
 script_info['output_description']= ""
 script_info['required_options'] = [
  make_option('-i','--input_otu_table',help='the input otu table'),
  make_option('-o','--output_fp',help='output otu table filepath'),
- make_option('-m','--mapping_fp',help='the mapping file'),
- make_option('-s','--sort_field',help='field to sort by'),
+
  
 ]
-script_info['optional_options'] = []
+script_info['optional_options'] = [
+ make_option('-m','--mapping_fp',help='the mapping file [default: %default]'),
+ make_option('-s','--sort_field',help='field to sort by [default: %default]'),
+ make_option('-l','--sorted_sample_ids_fp',help='list of sorted sample ids [default: %default]')
+]
 script_info['version'] = __version__
 
-
+def sample_ids_from_f(lines):
+    result = []
+    for line in lines:
+        line = line.strip()
+        if line and not line.startswith('#'):
+            result.append(line.split()[0])
+    return result
 
 def main():
     option_parser, opts, args =\
       parse_command_line_parameters(**script_info)
 
-    mapping_data = parse_mapping_file(open(opts.mapping_fp,'U'))
     otu_table_data = parse_otu_table(open(opts.input_otu_table,'U'))
+    sort_field = opts.sort_field
+    mapping_fp = opts.mapping_fp
+    sorted_sample_ids_fp = opts.sorted_sample_ids_fp
     
-    result = sort_otu_table(otu_table_data,
-                           mapping_data,
-                           opts.sort_field)
+    if sort_field and mapping_fp:
+        mapping_data = parse_mapping_file(open(mapping_fp,'U'))
+        result = sort_otu_table_by_mapping_field(otu_table_data,
+                                                 mapping_data,
+                                                 sort_field)
+    elif sorted_sample_ids_fp:
+        sorted_sample_ids = sample_ids_from_f(open(sorted_sample_ids_fp,'U'))
+        result = sort_otu_table(otu_table_data,
+                                sorted_sample_ids)
+    else:
+        parser.error("must provide either --sort_field and --mapping_fp OR --sorted_sample_ids_fp")
 
+    # format and write the otu table
     result_str = format_otu_table(result[0],result[1],result[2],result[3])
     of = open(opts.output_fp,'w')
     of.write(result_str)
