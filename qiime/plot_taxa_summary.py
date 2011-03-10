@@ -343,7 +343,7 @@ def make_pie_chart(data, dir_path,level,prefs,pref_colors,background_color,\
     return eps_link, legend_link, IMG_TEXT,xmap_html
 
 def transform_and_generate_xmap(ax1,bar_y_data,bar_width,taxa,x,plot_height,\
-                                dpi,taxa_percents,sample_ids):
+                                dpi,taxa_percents,sample_ids,chart_type):
     '''This function takes the bar graph data and generate html coordinates
        which can be used with an area map'''
        
@@ -377,8 +377,12 @@ def transform_and_generate_xmap(ax1,bar_y_data,bar_width,taxa,x,plot_height,\
     img_height = plot_height * 80
     
     #determine width of rectangle to use
-    half_iterx=iterx/2*bar_width
-
+    if chart_type=='area':
+        half_iterx=iterx/2*bar_width
+        #half_iterx=iterx*bar_width/17
+    elif chart_type=='bar':
+        half_iterx=iterx*bar_width/17
+        
     #iterate over y-coordinates and define area_map
     for i,j in enumerate(all_ycoords):
         #iterate over the x-coordinates
@@ -519,15 +523,15 @@ def make_area_bar_chart(sample_ids,taxa_percents,taxa,dir_path,level,prefs,\
                 ax1.bar(x, bar_y_data[i],width=bar_width, linewidth=0,\
                         color=data_colors[pref_colors[taxa[i]]].toHex(),\
                         align='center')
-    
         #this cleans up the whitespace around the subplot
-        ax1.set_xlim((-0.5,len(sample_ids)-0.5))
+        #ax1.set_xlim((-0.5,len(sample_ids)-0.5))
         ax1.set_ylim((0, 1))
     
     
     # transform bar_data into an area map for html mouseovers
     xmap=transform_and_generate_xmap(ax1,bar_y_data,bar_width,taxa,x,\
-                                     plot_height,dpi,taxa_percents,sample_ids)
+                                     plot_height,dpi,taxa_percents,sample_ids,
+                                     chart_type)
     
     #rename each area map based on the level passed in.
     points_id = 'rect%s' % (level)
