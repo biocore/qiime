@@ -1130,7 +1130,7 @@ def make_all_charts(data,dir_path,filename,num_categories,colorby,args,\
                         suppress_html_counts))
 
     #generate html filepath
-    outpath = os.path.join(dir_path,'index.html')
+    outpath = os.path.join(dir_path,'%s_charts.html' % chart_type)
     out_table = ''.join(img_data)
     #write out html file
     write_html_file(out_table,outpath)
