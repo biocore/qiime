@@ -392,7 +392,7 @@ class Qiime_config(TestCase):
          
     def test_denoiser_supported_version(self):
         """denoiser is in path and version is supported """
-        acceptable_version = (0,851)
+        acceptable_version = (0,91)
         try:
             from Denoiser import __version__ as version_string
             try:
