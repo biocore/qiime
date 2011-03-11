@@ -266,15 +266,16 @@ def pyroNoise_otu_picker(sff_fh, outdir="/tmp/", num_cpus=1,
         
     return centroids, otu_map
 
-def fast_denoiser(sff_fp, fasta_fp, tmp_outdir, num_cpus, primer, verbose=True):
+def fast_denoiser(sff_fp, fasta_fp, tmp_outdir, num_cpus, primer, verbose=True,
+                  titanium=False):
     """wrapper function calling methods from the Denoiser pakcage."""
     if num_cpus>1:
         denoise_seqs(sff_fp, fasta_fp, tmp_outdir,
-                     primer=primer,  cluster=True, num_cpus=num_cpus,
-                     verbose=verbose)
+                     primer=primer, cluster=True, num_cpus=num_cpus,
+                     verbose=verbose, titanium=titanium)
     else:
         denoise_seqs(sff_fp, fasta_fp, tmp_outdir, primer=primer,
-                     verbose=verbose)
+                     verbose=verbose, titanium=titanium)
 
     #read centroids and singletons
     centroids = MinimalFastaParser(open(tmp_outdir+"/centroids.fasta"))

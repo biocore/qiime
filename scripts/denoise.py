@@ -94,7 +94,12 @@ script_info['optional_options'] = [\
                     type='string',dest='primer',\
                     help='primer sequence '+\
                     '[default: %default]',
-                default=None)
+                default=None),
+
+    make_option('--titanium', action='store_true',
+                dest='titanium', default=False,
+                help='Select titanium defaults for denoiser '+\
+                    '[default: %default]')
     ]
 
 script_info['version'] = __version__
@@ -163,7 +168,8 @@ def main():
             primer=opts.primer
 
         centroids, cluster_mapping = fast_denoiser(opts.sff_fp,opts.fasta_fp,
-                                                   outdir, opts.num_cpus, primer)
+                                                   outdir, opts.num_cpus, primer,
+                                                   titanium=opts.titanium)
 
     # store mapping file and centroids
     result_otu_path = '%s/denoised_clusters.txt' % outdir
