@@ -23,7 +23,7 @@ qiime_config = load_qiime_config()
 script_info={}
 script_info['brief_description'] = """A workflow script for running a core QIIME workflow."""
 script_info['script_description'] = """This script plugs several QIIME steps together to form a basic full data analysis workflow. The steps include quality filtering and demultiplexing sequences, running the pick_otus_through_otu_table.py workflow (pick otus and representative sequences, assign taxonomy, align representative sequences, build a tree, and build and OTU table), generating 3d beta diversity PCoA plots, generating alpha rarefaction plots, identifying OTUs that are differentially represented in different categories, and several additional analysis."""
-script_info['script_usage'] = [("","Run serial analysis","core_qiime_analyses.py -i Fasting_Example.fna -q Fasting_Example.qual -o FastingStudy -p custom_parameters.txt -m Fasting_Map.txt -c Treatment,DOB -e 100")]
+script_info['script_usage'] = [("","Run serial analysis","%prog -i Fasting_Example.fna -q Fasting_Example.qual -o FastingStudy -p custom_parameters.txt -m Fasting_Map.txt -c Treatment,DOB -e 100")]
 
 
 script_info['output_description'] ="""
@@ -40,8 +40,6 @@ script_info['required_options'] = [
         help='path to the parameter file [REQUIRED]'),
     make_option('-m','--mapping_fp',
         help='the mapping filepath [REQUIRED]'),
-    make_option('-c','--categories',
-        help='the categories to compare (for otu_category_significance and cluster_quality) [REQUIRED]'),
     ]
 
 script_info['optional_options'] = [\
@@ -62,6 +60,10 @@ script_info['optional_options'] = [\
  make_option('-t','--reference_tree_fp',
             help='path to the tree file if one should be used (otherwise de novo '+\
             ' tree will be used) [default: %default]'),
+ make_option('-c','--categories',
+            help='the categories to compare (for otu_category_significance,'+\
+            'supervised_learning.py, and cluster_quality.py steps) '+\
+            '[default: %default; skip these steps]'),
 ]
 script_info['version'] = __version__
 

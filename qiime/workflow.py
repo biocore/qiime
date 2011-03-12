@@ -1117,7 +1117,10 @@ def run_core_qiime_analyses(
     fna_fp0 = fna_fps.split(',')[0]
     input_dir, input_filename = split(fna_fp0)
     input_basename, input_ext = splitext(input_filename)
-    categories = categories.split(',')
+    if categories:
+        categories = categories.split(',')
+    else:
+        categories= []
     create_dir(output_dir)
     commands = []
     python_exe_fp = qiime_config['python_exe_fp']
@@ -1243,7 +1246,7 @@ def run_core_qiime_analyses(
      status_update_callback=status_update_callback)
     
     
-    # OTU category significance
+    # OTU category significance and supervised learning
     for category in categories:
         category_signifance_fp = \
          '%s/category_significance_%s.txt' % (output_dir, category)
@@ -1257,28 +1260,22 @@ def run_core_qiime_analyses(
          (otu_table_fp, mapping_fp, category, 
           category_signifance_fp, params_str)
         commands.append([('OTU category significance (%s)' % category, 
-                          category_significance_cmd)])    
-
-
-
+                          category_significance_cmd)])
+                          
+        supervised_learning_dir = \
+         '%s/supervised_learning_%s' % (output_dir, category)
+        try:
+            params_str = get_params_str(params['supervised_learning'])
+        except KeyError:
+            params_str = ''
+        # Build the supervised_learning command
+        supervised_learning_cmd = \
+         'supervised_learning.py -i %s -m %s -c %s -o %s %s' %\
+         (otu_table_fp, mapping_fp, category, 
+          supervised_learning_dir, params_str)
+        commands.append([('Supervised learning (%s)' % category, 
+                          supervised_learning_cmd)])
     
-    # Prep the OTU table building command
-    # otu_table_fp = '%s/%s_otu_table.txt' % (pick_otu_dir,input_basename)
-    # try:
-    #     params_str = get_params_str(params['make_otu_table'])
-    # except KeyError:
-    #     params_str = ''
-    # if taxonomy_fp:
-    #     taxonomy_str = '-t %s' % taxonomy_fp
-    # else:
-    #     taxonomy_str = ''
-    # # Build the OTU table building command
-    # make_otu_table_cmd = '%s %s/make_otu_table.py -i %s %s -o %s %s' %\
-    #  (python_exe_fp, script_dir, otu_fp, taxonomy_str, otu_table_fp, params_str)
-    # 
-    # commands.append([('Make OTU table', make_otu_table_cmd)])
-    
-    # Call the command handler on the list of commands
     command_handler(commands, status_update_callback, logger)
     
                                
