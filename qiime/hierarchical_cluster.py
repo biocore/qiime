@@ -12,6 +12,8 @@ __status__ = "Development"
 """runs upgma or nj on a distance matrix file, writes the resulting tree
 with distances to specified output file
 """
+import warnings
+warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
 from optparse import OptionParser
 from qiime.parse import parse_distmat
 from cogent.core.tree import PhyloNode
