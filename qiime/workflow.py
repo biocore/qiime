@@ -96,7 +96,8 @@ class WorkflowLogger(object):
 
 def print_commands(commands,
                    status_update_callback,
-                   logger):
+                   logger,
+                   close_logger_on_success=True):
     """Print list of commands to run """
     logger.write("Printing commands only.\n\n")
     for c in commands:
@@ -107,7 +108,8 @@ def print_commands(commands,
             
 def call_commands_serially(commands,
                            status_update_callback,
-                           logger):
+                           logger,
+                           close_logger_on_success=True):
     """Run list of commands, one after another """
     logger.write("Executing commands.\n\n")
     for c in commands:
@@ -128,7 +130,7 @@ def call_commands_serially(commands,
                 logger.write(msg)
                 logger.close()
                 raise WorkflowError, msg
-    logger.close()
+    if close_logger_on_success: logger.close()
 
 def print_to_stdout(s):
     print s
@@ -447,7 +449,7 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,
     # Call the command handler on the list of commands
     command_handler(commands,status_update_callback,logger=logger)
     
-    
+    return abspath(tree_fp), abspath(otu_table_fp)
     
     
     
@@ -620,7 +622,8 @@ def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,
      '%s %s/make_prefs_file.py -m %s -o %s %s' %\
      (python_exe_fp, script_dir, mapping_fp, prefs_fp, params_str)
     commands.append([('Build prefs file', prefs_cmd)])
-        
+    
+    dm_fps = []
     for beta_diversity_metric in beta_diversity_metrics:
         
         # Prep the beta-diversity command
@@ -660,6 +663,7 @@ def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,
         
         beta_div_fp = '%s/%s_%s' % \
          (output_dir, beta_diversity_metric, otu_table_filename)
+        dm_fps.append((beta_diversity_metric, beta_div_fp))
         
         # Prep the principal coordinates command
         pc_fp = '%s/%s_pc.txt' % (output_dir, beta_diversity_metric)
@@ -715,6 +719,8 @@ def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,
     
     # Call the command handler on the list of commands
     command_handler(commands, status_update_callback, logger)
+    
+    return dm_fps
 
 
 def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,\
@@ -755,7 +761,7 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,\
     
     min_count, max_count, median_count, mean_count, counts_per_sample =\
      compute_seqs_per_library_stats(otu_table_f)
-    step = int((median_count - min_seqs_per_sample) / num_steps)
+    step = int((median_count - min_seqs_per_sample) / num_steps) or 1
     median_count = int(median_count)
     
     rarefaction_dir = '%s/rarefaction/' % output_dir
@@ -1084,3 +1090,196 @@ def run_jackknifed_beta_diversity(otu_table_fp,tree_fp,seqs_per_sample,
            
     # Call the command handler on the list of commands
     command_handler(commands,status_update_callback,logger)
+    
+
+# Run QIIME method comparison workflow
+def run_core_qiime_analyses(
+    fna_fps,
+    qual_fps,
+    mapping_fp,
+    output_dir,
+    command_handler,
+    params,
+    qiime_config,
+    categories=None,
+    sampling_depth=None,
+    arare_min_seqs_per_sample=10,
+    arare_num_steps=10,
+    reference_tree_fp=None,
+    sff_input_fp=None,
+    parallel=False,
+    status_update_callback=print_to_stdout):
+    """ Run full QIIME workflow generating output files for method comparison
+    
+    """
+    
+    # Prepare some variables for the later steps
+    fna_fp0 = fna_fps.split(',')[0]
+    input_dir, input_filename = split(fna_fp0)
+    input_basename, input_ext = splitext(input_filename)
+    categories = categories.split(',')
+    create_dir(output_dir)
+    commands = []
+    python_exe_fp = qiime_config['python_exe_fp']
+    script_dir = get_qiime_scripts_dir()
+    logger = WorkflowLogger(generate_log_fp(output_dir),
+                            params=params,
+                            qiime_config=qiime_config)
+    
+    ## Split libraries
+    # Prep the split_libraries command
+    split_libraries_output_dir = '%s/sl_out/' % output_dir
+    split_libraries_seqs_fp = '%s/seqs.fna' % split_libraries_output_dir
+    try:
+        params_str = get_params_str(params['split_libraries'])
+    except KeyError:
+        params_str = ''
+    # Build the split libraries command
+    split_libraries_cmd = 'split_libraries.py -f %s -q %s -m %s -o %s %s' %\
+     (fna_fps, qual_fps, mapping_fp, split_libraries_output_dir, params_str)
+    
+    commands.append([('Split libraries', split_libraries_cmd)])
+    
+    # Call the command handler on the list of commands
+    command_handler(commands, 
+                    status_update_callback, 
+                    logger, 
+                    close_logger_on_success=False)
+    # Reset the commands list
+    commands = []
+    
+    ## OTU picking through OTU table workflow
+    data_analysis_output_dir = '%s/da/' % output_dir
+    de_novo_tree_fp, otu_table_fp = \
+     run_qiime_data_preparation(input_fp=split_libraries_seqs_fp, 
+                                output_dir=data_analysis_output_dir, 
+                                command_handler=command_handler,
+                                params=params,
+                                qiime_config=qiime_config,
+                                sff_input_fp=sff_input_fp,
+                                mapping_fp=mapping_fp,
+                                parallel=parallel,
+                                status_update_callback=status_update_callback)
+    
+    # If a reference tree was passed, use it for downstream analysis. Otherwise
+    # use the de novo tree.
+    tree_fp = reference_tree_fp or de_novo_tree_fp
+    
+    ## Beta diversity through 3D plots workflow
+    bdiv_full_output_dir = '%s/bdiv/' % output_dir
+    full_dm_fps = run_beta_diversity_through_3d_plot(
+     otu_table_fp=otu_table_fp, 
+     mapping_fp=mapping_fp,
+     output_dir=bdiv_full_output_dir,
+     command_handler=command_handler,
+     params=params,
+     qiime_config=qiime_config,
+     sampling_depth=None,
+     tree_fp=tree_fp,
+     parallel=parallel,
+     status_update_callback=status_update_callback)
+    # cluster quality stub
+    for bdiv_metric, dm_fp in full_dm_fps:
+        for category in categories:
+            cluster_quality_fp = '%s/%s_%s_cluster_quality.txt' %\
+             (output_dir,bdiv_metric,category)
+            try:
+                params_str = get_params_str(params['cluster_quality'])
+            except KeyError:
+                params_str = ''
+            # Build the cluster quality command
+            cluster_quality_cmd = \
+             'cluster_quality.py -i %s -c %s -o %s -m %s %s' %\
+              (dm_fp, category, cluster_quality_fp, mapping_fp, params_str)
+    
+            commands.append([
+             ('Cluster quality (%s; %s)' % (bdiv_metric, category),
+              cluster_quality_cmd)])
+
+    
+    if sampling_depth:
+        bdiv_even_output_dir = '%s/bdiv_even%d/' % (output_dir,sampling_depth)
+        even_dm_fps = run_beta_diversity_through_3d_plot(
+         otu_table_fp=otu_table_fp, 
+         mapping_fp=mapping_fp,
+         output_dir=bdiv_even_output_dir,
+         command_handler=command_handler,
+         params=params,
+         qiime_config=qiime_config,
+         sampling_depth=sampling_depth,
+         tree_fp=tree_fp,
+         parallel=parallel,
+         status_update_callback=status_update_callback)
+        for bdiv_metric, dm_fp in even_dm_fps:
+            for category in categories:
+                cluster_quality_fp = '%s/%s_%s_cluster_quality_even%d.txt' %\
+                 (output_dir,bdiv_metric,category,sampling_depth)
+                try:
+                    params_str = get_params_str(params['cluster_quality'])
+                except KeyError:
+                    params_str = ''
+                # Build the cluster quality command
+                cluster_quality_cmd = \
+                 'cluster_quality.py -i %s -c %s -o %s -m %s %s' %\
+                  (dm_fp, category, cluster_quality_fp, mapping_fp, params_str)
+    
+                commands.append([
+                 ('Cluster quality (%s; %s)' % (bdiv_metric, category),
+                  cluster_quality_cmd)])
+        
+    ## Alpha rarefaction workflow
+    arare_full_output_dir = '%s/arare/' % output_dir
+    run_qiime_alpha_rarefaction(
+     otu_table_fp=otu_table_fp,
+     mapping_fp=mapping_fp,
+     output_dir=arare_full_output_dir,
+     command_handler=command_handler,
+     params=params,
+     qiime_config=qiime_config,
+     tree_fp=tree_fp,
+     num_steps=arare_num_steps,
+     parallel=parallel,
+     min_seqs_per_sample=arare_min_seqs_per_sample,
+     status_update_callback=status_update_callback)
+    
+    
+    # OTU category significance
+    for category in categories:
+        category_signifance_fp = \
+         '%s/category_significance_%s.txt' % (output_dir, category)
+        try:
+            params_str = get_params_str(params['otu_category_significance'])
+        except KeyError:
+            params_str = ''
+        # Build the OTU cateogry significance command
+        category_significance_cmd = \
+         'otu_category_significance.py -i %s -m %s -c %s -o %s %s' %\
+         (otu_table_fp, mapping_fp, category, 
+          category_signifance_fp, params_str)
+        commands.append([('OTU category significance (%s)' % category, 
+                          category_significance_cmd)])    
+
+
+
+    
+    # Prep the OTU table building command
+    # otu_table_fp = '%s/%s_otu_table.txt' % (pick_otu_dir,input_basename)
+    # try:
+    #     params_str = get_params_str(params['make_otu_table'])
+    # except KeyError:
+    #     params_str = ''
+    # if taxonomy_fp:
+    #     taxonomy_str = '-t %s' % taxonomy_fp
+    # else:
+    #     taxonomy_str = ''
+    # # Build the OTU table building command
+    # make_otu_table_cmd = '%s %s/make_otu_table.py -i %s %s -o %s %s' %\
+    #  (python_exe_fp, script_dir, otu_fp, taxonomy_str, otu_table_fp, params_str)
+    # 
+    # commands.append([('Make OTU table', make_otu_table_cmd)])
+    
+    # Call the command handler on the list of commands
+    command_handler(commands, status_update_callback, logger)
+    
+                               
+    

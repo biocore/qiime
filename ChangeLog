@@ -2,6 +2,7 @@ Add changes since QIIME 1.2.1 here
 ==================================
 * uclust and uclust_ref OTU pickers now incorporate a pre-filtering step where identical sequences are collapsed before calling uclust and then expanded after calling uclust. This gives a big speed improvement (5-20x) on reasonably sized input sets (>200k sequences) with no effect on the resulting OTUs. This is now the default behavior for pick_otus.py, and can be disabled by passing --suppress_uclust_prefilter_exact_match to pick_otus.py.
 * Added ability to pass a file to sort_otu_table.py that contains a sorted list of sample ids, and use that information rather than the mapping file for sorting the OTU table. This allows users to, e.g., pass sorted mapping files as input. 
+* Added core_analyses.py script and workflow function. This plugs together many components of QIIME (split libraries, pick_otus_through_otu_table.py, beta_diversity_through_3d_plots.py, alpha_rarefaction.py) into a single command and parameters file.
 
 QIIME 1.2.1 (22 Feb 2011)
 ==================================

@@ -1,6 +1,27 @@
 # qiime_parameters.txt
 # WARNING: DO NOT EDIT OR DELETE Qiime/qiime_parameters.txt. Users should copy this file and edit copies of it.
 
+# split libraries parameters
+split_libraries:min-seq-length
+split_libraries:max-seq-length
+split_libraries:trim-seq-length
+split_libraries:min-qual-score
+split_libraries:keep-primer
+split_libraries:keep-barcode
+split_libraries:max-ambig
+split_libraries:max-homopolymer
+split_libraries:max-primer-mismatch
+split_libraries:barcode-type
+split_libraries:max-barcode-errors
+split_libraries:start-numbering-at
+split_libraries:remove_unassigned	True
+split_libraries:disable_bc_correction
+split_libraries:qual_score_window
+split_libraries:discard_bad_windows
+split_libraries:disable_primers
+split_libraries:reverse_primers
+split_libraries:record_qual_scores
+
 # OTU picker parameters
 pick_otus:otu_picking_method	uclust
 pick_otus:clustering_algorithm	furthest
@@ -86,4 +107,10 @@ make_rarefaction_plots:prefs_path
 
 # Collate alpha
 collate_alpha:example_path
+
+# OTU category significance
+otu_category_significance:test
+otu_category_significance:filter	3
+otu_category_significance:threshold
+otu_category_significance:otu_include_fp
 
