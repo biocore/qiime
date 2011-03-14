@@ -18,7 +18,8 @@ from qiime.filter import (filter_fasta,
                           filter_otus_from_otu_table,
                           filter_samples_from_otu_table,
                           filter_otu_table_to_n_samples,
-                          filter_samples_from_distance_matrix)
+                          filter_samples_from_distance_matrix,
+                          split_otu_table_on_taxonomy)
 
 class fake_output_f():
     
@@ -46,8 +47,41 @@ class FilterTests(TestCase):
         self.expected_dm1a = expected_dm1a.split('\n')
         self.expected_dm1b = expected_dm1b.split('\n')
         
+        # split otu table test data
+        self.input_otu_table2 = input_otu_table2.split('\n')
+        self.input_otu_table2_bacteria = str(bacteria_otu_table1)
+        self.input_otu_table2_none = str(none_otu_table1)
+        self.input_otu_table2_archaea = str(archaea_otu_table1)
+        self.input_otu_table2_firmicutes = str(firmicutes_otu_table1)
+        self.input_otu_table2_bacteroidetes = str(bacteroidetes_otu_table1)
+        
     def tearDown(self):
         pass
+        
+    def test_split_otu_table_on_taxonomy(self):
+        """ splitting OTU table on taxonomy functions as expected
+        """
+        # Level 1
+        actual = list(split_otu_table_on_taxonomy(
+                       self.input_otu_table2,1))
+        actual.sort()
+        expected = [('Bacteria',self.input_otu_table2_bacteria),
+                    ('None',self.input_otu_table2_none),
+                    ('Archaea',self.input_otu_table2_archaea)]
+        expected.sort()
+        self.assertEqual(actual,expected)
+        
+        # Level 2
+        actual = list(split_otu_table_on_taxonomy(
+                       self.input_otu_table2,2))
+        actual.sort()
+        expected = [('Bacteria;Bacteroidetes',self.input_otu_table2_bacteroidetes),
+                    ('Bacteria;Firmicutes',self.input_otu_table2_firmicutes),
+                    ('None',self.input_otu_table2_none),
+                    ('Archaea',self.input_otu_table2_archaea)]
+        expected.sort()
+        self.assertEqual(actual,expected)
+        
         
     def test_filter_fasta(self):
         """filter_fasta functions as expected """
@@ -251,6 +285,43 @@ DEF\t0.75\t0.0"""
 expected_dm1b = """\tABC\tXYZ
 ABC\t0.0\t0.0063
 XYZ\t0.0063\t0.0"""
+
+input_otu_table2 = """# QIIME v%s OTU table
+#OTU ID\tABC\tDEF\tGHI\tXYZ\tConsensus Lineage
+0\t1\t1\t0\t0\tBacteria;Firmicutes;Something;Something else
+1\t1\t0\t0\t0\tNone
+0\t1\t1\t0\t2\tBacteria;Firmicutes;Something;Nothing
+x\t0\t0\t3\t0\tBacteria;Bacteroidetes
+z\t0\t1\t0\t1\tNone
+z\t0\t1\t0\t1\tArchaea""" % __version__
+
+bacteria_otu_table1 = """# QIIME v%s OTU table
+#OTU ID\tABC\tDEF\tGHI\tXYZ\tConsensus Lineage
+0\t1\t1\t0\t0\tBacteria;Firmicutes;Something;Something else
+0\t1\t1\t0\t2\tBacteria;Firmicutes;Something;Nothing
+x\t0\t0\t3\t0\tBacteria;Bacteroidetes""" % __version__
+
+archaea_otu_table1 = """# QIIME v%s OTU table
+#OTU ID\tABC\tDEF\tGHI\tXYZ\tConsensus Lineage
+z\t0\t1\t0\t1\tArchaea""" % __version__
+
+none_otu_table1 = """# QIIME v%s OTU table
+#OTU ID\tABC\tDEF\tGHI\tXYZ\tConsensus Lineage
+1\t1\t0\t0\t0\tNone
+z\t0\t1\t0\t1\tNone""" % __version__
+
+firmicutes_otu_table1 = """# QIIME v%s OTU table
+#OTU ID\tABC\tDEF\tGHI\tXYZ\tConsensus Lineage
+0\t1\t1\t0\t0\tBacteria;Firmicutes;Something;Something else
+0\t1\t1\t0\t2\tBacteria;Firmicutes;Something;Nothing""" % __version__
+
+bacteroidetes_otu_table1 = """# QIIME v%s OTU table
+#OTU ID\tABC\tDEF\tGHI\tXYZ\tConsensus Lineage
+x\t0\t0\t3\t0\tBacteria;Bacteroidetes""" % __version__
+
+nothing_otu_table1 = """# QIIME v%s OTU table
+#OTU ID\tABC\tDEF\tGHI\tXYZ\tConsensus Lineage
+0\t1\t1\t0\t2\tBacteria;Firmicutes;Nothing""" % __version__
 
 if __name__ == "__main__":
     main()

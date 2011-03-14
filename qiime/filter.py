@@ -150,3 +150,29 @@ def filter_samples_from_distance_matrix(dm_lines,samples_to_discard,negate=False
     
     return format_distance_matrix(new_sample_ids, new_dm_data)
     
+def split_otu_table_on_taxonomy(otu_table_lines,level):
+    """ Split OTU table by taxonomic level, yielding formatted OTU tables 
+    """
+    if level < 1:
+        raise ValueError, "Taxonomic level must be greater than zero"
+    sample_ids, otu_ids, otu_table_data, taxa = parse_otu_table(otu_table_lines)
+    taxon_data = {}
+    for otu_id, counts, taxon in zip(otu_ids, otu_table_data, taxa):
+        taxon_at_level = ';'.join(taxon[:level])
+        try:
+            current_taxon_table = taxon_data[taxon_at_level]
+        except KeyError:
+            taxon_data[taxon_at_level] = [[],[],[]]
+            current_taxon_table = taxon_data[taxon_at_level]
+        current_taxon_table[0].append(otu_id)
+        current_taxon_table[1].append(counts)
+        current_taxon_table[2].append(taxon)
+        
+    
+    for taxon_at_level, taxon_datum in taxon_data.items():
+        yield taxon_at_level, format_otu_table(sample_ids, 
+                                               taxon_datum[0],
+                                               array(taxon_datum[1]),
+                                               taxon_datum[2])
+    
+    
