@@ -54,6 +54,8 @@ class FilterTests(TestCase):
         self.input_otu_table2_archaea = str(archaea_otu_table1)
         self.input_otu_table2_firmicutes = str(firmicutes_otu_table1)
         self.input_otu_table2_bacteroidetes = str(bacteroidetes_otu_table1)
+        self.input_otu_table2_none_no_l2 = str(none_no_l2_otu_table1)
+        self.input_otu_table2_none_firmicutes = str(none_firmicutes_otu_table1)
         
     def tearDown(self):
         pass
@@ -77,7 +79,8 @@ class FilterTests(TestCase):
         actual.sort()
         expected = [('Bacteria;Bacteroidetes',self.input_otu_table2_bacteroidetes),
                     ('Bacteria;Firmicutes',self.input_otu_table2_firmicutes),
-                    ('None',self.input_otu_table2_none),
+                    ('None',self.input_otu_table2_none_no_l2),
+                    ('None;Firmicutes',self.input_otu_table2_none_firmicutes),
                     ('Archaea',self.input_otu_table2_archaea)]
         expected.sort()
         self.assertEqual(actual,expected)
@@ -292,7 +295,7 @@ input_otu_table2 = """# QIIME v%s OTU table
 1\t1\t0\t0\t0\tNone
 0\t1\t1\t0\t2\tBacteria;Firmicutes;Something;Nothing
 x\t0\t0\t3\t0\tBacteria;Bacteroidetes
-z\t0\t1\t0\t1\tNone
+z\t0\t1\t0\t1\tNone;Firmicutes
 z\t0\t1\t0\t1\tArchaea""" % __version__
 
 bacteria_otu_table1 = """# QIIME v%s OTU table
@@ -308,7 +311,7 @@ z\t0\t1\t0\t1\tArchaea""" % __version__
 none_otu_table1 = """# QIIME v%s OTU table
 #OTU ID\tABC\tDEF\tGHI\tXYZ\tConsensus Lineage
 1\t1\t0\t0\t0\tNone
-z\t0\t1\t0\t1\tNone""" % __version__
+z\t0\t1\t0\t1\tNone;Firmicutes""" % __version__
 
 firmicutes_otu_table1 = """# QIIME v%s OTU table
 #OTU ID\tABC\tDEF\tGHI\tXYZ\tConsensus Lineage
@@ -322,6 +325,14 @@ x\t0\t0\t3\t0\tBacteria;Bacteroidetes""" % __version__
 nothing_otu_table1 = """# QIIME v%s OTU table
 #OTU ID\tABC\tDEF\tGHI\tXYZ\tConsensus Lineage
 0\t1\t1\t0\t2\tBacteria;Firmicutes;Nothing""" % __version__
+
+none_no_l2_otu_table1 = """# QIIME v%s OTU table
+#OTU ID\tABC\tDEF\tGHI\tXYZ\tConsensus Lineage
+1\t1\t0\t0\t0\tNone""" % __version__
+
+none_firmicutes_otu_table1 = """# QIIME v%s OTU table
+#OTU ID\tABC\tDEF\tGHI\tXYZ\tConsensus Lineage
+z\t0\t1\t0\t1\tNone;Firmicutes""" % __version__
 
 if __name__ == "__main__":
     main()
