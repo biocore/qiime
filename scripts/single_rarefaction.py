@@ -42,7 +42,7 @@ make_option('--suppress_lineages_included', default=False, action="store_true",
     help="""prevent output rarefied otu tables from including taxonomic (lineage) information for each otu, if present in input otu table [default: %default]"""),
 
 make_option('-k', '--keep_empty_otus', default=False, action='store_true',
-        help='otus (rows) of all zeros are usually omitted from the output otu table, with -k they will not be removed from the output file [default: %default]'),
+    help='otus (rows) of all zeros are usually omitted from the output otu table, with -k they will not be removed from the output file [default: %default]'),
 
 ]
 script_info['version'] = __version__
