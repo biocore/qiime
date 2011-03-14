@@ -282,7 +282,7 @@ class Qiime_config(TestCase):
          
     def test_FastTree_supported_version(self):
         """FastTree is in path and version is supported """
-        acceptable_version = (2,1,0)
+        acceptable_version = (2,1,3)
         self.assertTrue(app_path('FastTree'),
          "FastTree not found. This may or may not be a problem depending on "+\
          "which components of QIIME you plan to use.")
