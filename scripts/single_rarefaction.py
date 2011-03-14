@@ -35,11 +35,13 @@ script_info['required_options']=[
 ]
 script_info['optional_options']=[
 
-make_option('--lineages_included', dest='lineages_included', default=False,
-    action="store_true",
-    help="""output rarefied otu tables will include taxonomic (lineage) information for each otu, if present in input otu table [default: %default]"""),
+make_option('--lineages_included', default=True, action="store_true",
+    help="""Deprecated: lineages are now included by default. pass --supress_lineages_included to prevent output rarefied otu tables from including taxonomic (lineage) information for each otu, if present in input otu table [default: %default]"""),
 
-    make_option('-k', '--keep_empty_otus', default=False, action='store_true',
+make_option('--suppress_lineages_included', default=False, action="store_true",
+    help="""prevent output rarefied otu tables from including taxonomic (lineage) information for each otu, if present in input otu table [default: %default]"""),
+
+make_option('-k', '--keep_empty_otus', default=False, action='store_true',
         help='otus (rows) of all zeros are usually omitted from the output otu table, with -k they will not be removed from the output file [default: %default]'),
 
 ]
