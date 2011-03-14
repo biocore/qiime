@@ -44,7 +44,7 @@ def split_otu_table_on_taxonomy_to_files(otu_table_fp,
     for taxon_at_level, otu_table_str in\
      split_otu_table_on_taxonomy(open(otu_table_fp,'U'),level):
         taxon_fn = taxon_at_level.replace(';','-').replace(' ','_')
-        output_fp = '%s/%s_%s.txt' % (output_dir,taxon_fn,filename_suffix)
+        output_fp = '%s/%s_%s' % (output_dir,taxon_fn,filename_suffix)
         output_f = open(output_fp,'w')
         output_f.write(otu_table_str)
         output_f.close()
