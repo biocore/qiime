@@ -21,6 +21,23 @@ from cogent import Sequence
 A lot of this might migrate into cogent at some point.
 """
 
+def format_qiime_parameters(params, header="#QIIME parameters"):
+    """Formats lines for qiime_parameters.txt"""
+    qiime_params = [header]
+    for script, options in sorted(params.items()):
+        for option, value in sorted(options.items()):
+            specific_option = ':'.join([script, option])
+            
+            # Based on how qiime_parameters is parsed
+            if value is None:
+                value = "True"
+
+            # cast value to string just in case
+            full_line = '\t'.join([specific_option, str(value)])
+
+            qiime_params.append(full_line)
+    return qiime_params
+
 def format_summarize_taxa(summary, header, delimiter=';'):
     """Formats a summarized taxonomy table for output"""
     yield "%s\n" % '\t'.join(header)

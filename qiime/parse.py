@@ -550,10 +550,7 @@ def parse_qiime_parameters(lines):
             else:
                 pass
             
-            try:
-                result[script_id][parameter_id] = value
-            except KeyError:
-                result[script_id] = {parameter_id:value}
+            result[script_id][parameter_id] = value
     return result
 
 def sample_mapping_to_otu_table(lines):

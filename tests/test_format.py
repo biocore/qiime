@@ -3,7 +3,7 @@
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project" #consider project name
-__credits__ = ["Rob Knight","Jeremy Widmann","Jens Reeder"] 
+__credits__ = ["Rob Knight","Jeremy Widmann","Jens Reeder", "Daniel McDonald"] 
 #remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.2.1-dev"
@@ -23,7 +23,8 @@ from qiime.format import (format_distance_matrix, format_otu_table,
     format_histograms, write_Fasta_from_name_seq_pairs, 
     format_unifrac_sample_mapping,format_otu_map,write_otu_map, 
     format_summarize_taxa, write_summarize_taxa, 
-    format_add_taxa_summary_mapping, write_add_taxa_summary_mapping)
+    format_add_taxa_summary_mapping, write_add_taxa_summary_mapping,
+    format_qiime_parameters)
 
 class TopLevelTests(TestCase):
     """Tests of top-level module functions."""
@@ -78,6 +79,19 @@ class TopLevelTests(TestCase):
                                               self.add_taxa_header)
         obs = ''.join(list(tmp))
         self.assertEqual(obs,exp)
+
+    def test_format_qiime_parameters(self):
+        """format_qiime_parameters: returns lines in qiime_parameters format"""
+        params = {'pick_otus':
+                    {'similarity':'0.94','otu_picking_method':'cdhit'},
+                 'assign_taxonomy':
+                    {'use_rdp':None}}
+        obs = format_qiime_parameters(params)
+        exp = ["#QIIME parameters",
+               "assign_taxonomy:use_rdp\tTrue",
+               "pick_otus:otu_picking_method\tcdhit",
+               "pick_otus:similarity\t0.94"]
+        self.assertEqual(obs, exp)
 
     def test_write_add_taxa_summary_mapping(self):
         """write_add_taxa_summary_mapping functions as expected"""
