@@ -40,7 +40,7 @@ PyNAST alignment, tree-building, taxonomy assignment, OTU picking, and other dat
 * PyNAST 1.1 (`src  <http://sourceforge.net/projects/pynast/files/PyNAST%20releases/PyNAST-1.1.tgz/download>`_) (license: GPL)
 * greengenes core set data file (`fasta <http://greengenes.lbl.gov/Download/Sequence_Data/Fasta_data_files/core_set_aligned.fasta.imputed>`_)
 * greengenes alignment lanemask file (`txt <http://greengenes.lbl.gov/Download/Sequence_Data/lanemask_in_1s_and_0s>`_)
-* fasttree 2.1.3 (`src <http://www.microbesonline.org/fasttree/FastTree.c>`_) (license: GPL)
+* fasttree 2.1.3 (`src <http://www.microbesonline.org/fasttree/FastTree-2.1.3.c>`_) (license: GPL)
 * jre1.6.0_05 (`link <http://java.sun.com/javase/downloads/index.jsp>`_) (license: GPL2)
 * rdp_classifier-2.0.1 (`src <http://downloads.sourceforge.net/project/rdp-classifier/rdp-classifier/rdp_classifier_2.0.1/rdp_classifier_2.0.1.tar.gz>`_) See :ref:`RDP install notes <rdp-install>`. (license: GPL)
 
