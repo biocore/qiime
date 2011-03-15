@@ -531,9 +531,7 @@ def parse_qiime_parameters(lines):
     """
     # The qiime_config object is a default dict: if keys are not
     # present, {} is returned
-    def return_empty_dict():
-        return dict()
-    result = defaultdict(return_empty_dict)
+    result = defaultdict(dict)
     
     for line in lines:
         line = line.strip()
