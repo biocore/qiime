@@ -598,10 +598,17 @@ def merge_otu_tables(otu_table_f1,otu_table_f2):
          reference database, as with the BLAST OTU picker.
     
     """
-    sample_ids1, otu_ids1, otu_table1, lineages1 =\
-        parse_otu_table(otu_table_f1)
-    sample_ids2, otu_ids2, otu_table2, lineages2 =\
-        parse_otu_table(otu_table_f2)
+    if isinstance(otu_table_f1, tuple):
+        sample_ids1, otu_ids1, otu_table1, lineages1 = otu_table_f1
+    else:
+        sample_ids1, otu_ids1, otu_table1, lineages1 =\
+            parse_otu_table(otu_table_f1)
+    
+    if isinstance(otu_table_f2, tuple):
+        sample_ids2, otu_ids2, otu_table2, lineages2 = otu_table_f2
+    else:
+        sample_ids2, otu_ids2, otu_table2, lineages2 =\
+            parse_otu_table(otu_table_f2)
     
     assert set(sample_ids1) & set(sample_ids2) == set(),\
      'Overlapping sample ids detected.'

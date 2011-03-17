@@ -343,7 +343,29 @@ class TopLevelTests(TestCase):
         self.assertEqual(actual[1],exp_otu_ids)
         self.assertEqual(actual[2],exp_otu_table)
         self.assertEqual(actual[3],exp_lineages)
-        
+    
+    def test_merge_otu_tables_passed_in_tables(self):
+        """merge_otu_tables functions with otu_table tuples"""
+        otu_table1 = parse_otu_table(self.otu_table_f1)
+        otu_table2 = parse_otu_table(self.otu_table_f2)
+        exp_sample_ids = ['S1','S2','S3','S4','S5']
+        exp_otu_ids = ['0','1','2','3','4','6']
+        exp_otu_table = array([[1,0,1,0,1],\
+                           [1,0,0,0,0],\
+                           [4,0,1,0,1],\
+                           [0,0,2,0,1],\
+                           [0,0,1,0,9],\
+                           [0,0,1,25,42]])
+        exp_lineages = [['Root','Bacteria'],\
+                    ['Root','Bacteria','Verrucomicrobia'],
+                    ['Root','Bacteria'],\
+                    ['Root','Bacteria','Acidobacteria'],\
+                    ['Root','Bacteria','Bacteroidetes'],\
+                    ['Root','Archaea']]
+        exp = (exp_sample_ids,exp_otu_ids,exp_otu_table,exp_lineages)
+        obs = merge_otu_tables(otu_table1,otu_table2)
+        self.assertEqual(obs,exp)
+
     def test_merge_n_otu_tables(self):
         """merge_n_otu_tables functions as expected"""
         otu_table_f1 = iter(self.otu_table_f1)
