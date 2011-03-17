@@ -21,9 +21,9 @@ from qiime.util import parse_command_line_parameters, get_options_lookup
 options_lookup = get_options_lookup()
 
 script_info = {}
-script_info['brief_description'] = ""
+script_info['brief_description'] = "Script for computing Mantel correlations between as set of distance matrices"
 script_info['script_description'] = ""
-script_info['script_usage'] = [("","","")]
+script_info['script_usage'] = [("","Perform Mantel test on all pairs of four distance matrices, including 1000 Monte Carlo iterations. Write the output to mantel_out.txt.","mantel.py -i weighted_unifrac_dm.txt,unweighted_unifrac_dm.txt,weighted_unifrac_even100_dm.txt,unweighted_unifrac_even100_dm.txt -o mantel_out.txt -n 1000")]
 script_info['output_description']= ""
 script_info['required_options'] = [\
  # Example required option
