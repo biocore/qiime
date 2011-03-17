@@ -17,6 +17,7 @@ from os import makedirs
 from numpy import log10
 from qiime.util import parse_command_line_parameters
 from qiime.parse import fields_to_dict
+from qiime.format import format_p_value_for_num_iters
 from qiime.transform_coordinate_matrices import procrustes_monte_carlo,\
     get_procrustes_results
 
@@ -115,8 +116,7 @@ def main():
                                 trial_output_dir=trial_output_dir)
         # truncate the p-value to the correct number of significant
         # digits
-        decimal_places = int(log10(random_trials))
-        mc_p_value_str = ('%1.'+'%df' % decimal_places) % mc_p_value
+        mc_p_value_str = format_p_value_for_num_iters(mc_p_value, random_trials)
         max_dims_str = str(num_dimensions or 'alldim')
         summary_file_lines.append('%s %s %s %s %d %1.3f' %\
          (input_fp1, input_fp2, str(max_dims_str), mc_p_value_str,\
