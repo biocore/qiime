@@ -5,7 +5,7 @@ Add changes since QIIME 1.2.1 here
 * Added core_analyses.py script and workflow function. This plugs together many components of QIIME (split libraries, pick_otus_through_otu_table.py, beta_diversity_through_3d_plots.py, alpha_rarefaction.py) into a single command and parameters file.
 * Added script (split_otu_table_by_taxonomy.py) which will create taxon-specific OTU tables from a master OTU table for taxon-specific analyses of alpha/beta diversity, etc.
 * Changed default behavior of single_rarefaction.py. Now lineage information is included by default, but can be turned off with --suppress_include_lineages
-
+* Added script (mantel.py) for computing mantel correlations between a set of distance matrices.
 QIIME 1.2.1 (22 Feb 2011)
 ==================================
 * Added submit_to_mgrast.py script which takes a post-split-libraries fasta file and submits it to the MG-RAST database.

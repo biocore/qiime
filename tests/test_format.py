@@ -24,7 +24,7 @@ from qiime.format import (format_distance_matrix, format_otu_table,
     format_unifrac_sample_mapping,format_otu_map,write_otu_map, 
     format_summarize_taxa, write_summarize_taxa, 
     format_add_taxa_summary_mapping, write_add_taxa_summary_mapping,
-    format_qiime_parameters)
+    format_qiime_parameters, format_p_value_for_num_iters)
 
 class TopLevelTests(TestCase):
     """Tests of top-level module functions."""
@@ -48,6 +48,26 @@ class TopLevelTests(TestCase):
                                  ['s3','something5','something6']]
     def tearDown(self):
         remove_files(self.files_to_remove)
+        
+    def test_format_p_value_for_num_iters(self):
+        """ format_p_value_for_num_iters functions as expected """
+        self.assertEqual(\
+         format_p_value_for_num_iters(0.119123123123,100),"0.12")
+        self.assertEqual(\
+         format_p_value_for_num_iters(0.119123123123,250),"0.12")
+        self.assertEqual(\
+         format_p_value_for_num_iters(0.119123123123,1000),"0.119")
+        # test num_iters too low still returns a string (this can
+        # be the last step of a long process, so we don't want to fail)
+        self.assertEqual(\
+         format_p_value_for_num_iters(0.119123123123,9),
+         "Too few iters to compute p-value (num_iters=9)")
+        self.assertEqual(\
+         format_p_value_for_num_iters(0.119123123123,1),
+         "Too few iters to compute p-value (num_iters=1)")
+        self.assertEqual(\
+         format_p_value_for_num_iters(0.119123123123,0),
+         "Too few iters to compute p-value (num_iters=0)")
 
     def test_format_summarize_taxa(self):
         """format_summarize_taxa functions as expected"""

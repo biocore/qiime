@@ -12,7 +12,7 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
 import numpy
-from numpy import isnan
+from numpy import isnan, log10
 from StringIO import StringIO
 from cogent import Sequence
 
@@ -20,6 +20,18 @@ from cogent import Sequence
 
 A lot of this might migrate into cogent at some point.
 """
+
+
+def format_p_value_for_num_iters(p,num_iters):
+    """adjust p to str w correct num of decimals for num monte carlo iters
+    """
+    if num_iters < 10:
+        # this can be the last step of a long process, so we don't 
+        # want to fail
+        return "Too few iters to compute p-value (num_iters=%d)" % num_iters
+    decimal_places = int(log10(num_iters))
+    result = ('%1.'+'%df' % decimal_places) % p
+    return result
 
 def format_qiime_parameters(params, header="#QIIME parameters"):
     """Formats lines for qiime_parameters.txt"""
