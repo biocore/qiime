@@ -15,7 +15,8 @@ __status__ = "Development"
 from cogent.util.unit_test import TestCase, main
 from qiime.parallel.beta_diversity import assemble_distance_matrix
 from qiime.parse import parse_distmat_to_dict
-from qiime.util import get_qiime_scripts_dir
+from qiime.util import get_qiime_scripts_dir, get_temp_dir
+import qiime.util
 
 import tempfile
 import string
@@ -45,8 +46,12 @@ class ParallelBetaDiversityTests(TestCase):
                 shutil.rmtree(d)
     def test_parallel_beta_diversity(self):
 
-        maindir = os.path.join(tempfile.gettempdir(),
-         ''.join(random.choice(string.ascii_letters + string.digits) for x in range(10)))
+        qiime_config = qiime.util.load_qiime_config()
+        tempdir = qiime_config['temp_dir'] or tempfile.gettempdir() 
+        # tempfile may not work on cluster, if e.g. /tmp isn't mirrored via nfs
+        maindir = os.path.join(tempdir,
+         ''.join(random.choice(string.ascii_letters + string.digits) \
+         for x in range(10)))
 
 
         os.makedirs(maindir)
@@ -64,8 +69,11 @@ class ParallelBetaDiversityTests(TestCase):
 
         scripts_dir = get_qiime_scripts_dir()
         # parallel
-        cmd = scripts_dir+'/parallel_beta_diversity.py -O 3 --retain_temp_files -i %s -o %s -m unifrac -t %s' % (otuf, maindir+'/para1', treef)
-        proc = subprocess.Popen(cmd,shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        cmd = scripts_dir+'/parallel_beta_diversity.py -O 3'+\
+         '--retain_temp_files -i %s -o %s -m unifrac -t %s' %\
+         (otuf, maindir+'/para1', treef)
+        proc = subprocess.Popen(cmd,shell=True, 
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         betaout, betaerr = proc.communicate()
         # first paralel version
         if betaout or betaerr:
@@ -74,16 +82,20 @@ class ParallelBetaDiversityTests(TestCase):
         # retain temp files doesn't matter, we just delete the folder
 
         # now with serial bdiv
-        cmd=scripts_dir+'/beta_diversity.py -i %s -o %s -m unifrac -t %s' % (otuf, maindir+'/serial1', treef)
-        proc = subprocess.Popen(cmd,shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        cmd=scripts_dir+'/beta_diversity.py -i %s -o %s -m unifrac -t %s' %\
+         (otuf, maindir+'/serial1', treef)
+        proc = subprocess.Popen(cmd,shell=True, 
+            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         betaout, betaerr = proc.communicate()
         if betaout or betaerr:
             raise RuntimeError(betaout + betaerr)
 
 
-        serialdist = parse_distmat_to_dict(open(maindir+'/serial1/unifrac_otuf','U'))
+        serialdist =\
+            parse_distmat_to_dict(open(maindir+'/serial1/unifrac_otuf','U'))
 
-        paradist = parse_distmat_to_dict(open(maindir+'/para1/unifrac_otuf','U'))
+        paradist =\
+            parse_distmat_to_dict(open(maindir+'/para1/unifrac_otuf','U'))
 
         web_res = open(maindir+'/web_res','w')
 
