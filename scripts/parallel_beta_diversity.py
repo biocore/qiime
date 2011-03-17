@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso","Justin Kuczynski"]
 __license__ = "GPL"
 __version__ = "1.2.1-dev"
 __maintainer__ = "Greg Caporaso"
@@ -74,6 +74,14 @@ script_info['optional_options'] = [\
 
 ]
 script_info['version'] = __version__
+
+def jk_get_subtree(tree, otuids):
+    tree.prune()
+    tips = tree.tips()
+    for tip in tips:
+        if tip.Name not in otuids:
+            tip.Parent.remove(tip)
+            tree.prune()
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
@@ -157,7 +165,7 @@ def main():
             f.close()
             if opts.verbose:
                 print 'done parsing tree'
-            tree = tree.getSubTree(otuids, ignore_missing=True)
+            jk_get_subtree(tree, otuids) # acts on tree in place
             tree.writeToFile(new_tree_path)
             tree_fp = new_tree_path
             if opts.verbose:
@@ -244,7 +252,6 @@ def main():
             'Jobs may have been submitted, but are not being polled.'
             print str(e)
             exit(-1)
-
 
 if __name__ == "__main__":
     main()
