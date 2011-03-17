@@ -15,7 +15,7 @@ __status__ = "Development"
 from cogent.util.unit_test import TestCase, main
 from qiime.parallel.beta_diversity import assemble_distance_matrix
 from qiime.parse import parse_distmat_to_dict
-from qiime.util import get_qiime_scripts_dir, get_temp_dir
+from qiime.util import get_qiime_scripts_dir
 import qiime.util
 
 import tempfile
@@ -69,7 +69,7 @@ class ParallelBetaDiversityTests(TestCase):
 
         scripts_dir = get_qiime_scripts_dir()
         # parallel
-        cmd = scripts_dir+'/parallel_beta_diversity.py -O 3'+\
+        cmd = scripts_dir+'/parallel_beta_diversity.py -O 3 '+\
          '--retain_temp_files -i %s -o %s -m unifrac -t %s' %\
          (otuf, maindir+'/para1', treef)
         proc = subprocess.Popen(cmd,shell=True, 
