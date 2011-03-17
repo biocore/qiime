@@ -14,7 +14,8 @@ __status__ = "Development"
 from optparse import make_option
 from numpy import std
 from qiime.util import (compute_seqs_per_library_stats, 
-    parse_command_line_parameters, get_options_lookup)
+    parse_command_line_parameters, get_options_lookup, 
+    median_absolute_deviation, guess_even_sampling_depth)
 
 options_lookup = get_options_lookup()
 
@@ -35,6 +36,10 @@ def main():
     min_counts, max_counts, median_counts, mean_counts, counts_per_sample =\
      compute_seqs_per_library_stats(open(opts.otu_table_fp,'U'))
     
+    counts_per_sample_values = counts_per_sample.values()
+    med_abs_dev = median_absolute_deviation(counts_per_sample_values)[0]
+    even_sampling_depth = guess_even_sampling_depth(counts_per_sample_values)
+    
     print 'Num samples: %s\n' % str(len(counts_per_sample))
     
     print 'Seqs/sample summary:' 
@@ -42,7 +47,10 @@ def main():
     print ' Max: %s' % str(max_counts)
     print ' Median: %s' % str(median_counts)
     print ' Mean: %s' % str(mean_counts)
-    print ' Std. dev.: %s' % (str(std(counts_per_sample.values())))
+    print ' Std. dev.: %s' % (str(std(counts_per_sample_values)))
+    print ' Median Absolute Deviation: %s' % str(med_abs_dev)
+    print ' Default even sampling depth in\n  core_qiime_analyses.py (just a suggestion): %s' %\
+     str(even_sampling_depth)
     print ''
     print 'Seqs/sample detail:'
     sorted_counts_per_sample = [(v,k) for k,v in counts_per_sample.items()]

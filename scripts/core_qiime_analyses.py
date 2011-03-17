@@ -22,8 +22,8 @@ qiime_config = load_qiime_config()
 
 script_info={}
 script_info['brief_description'] = """A workflow script for running a core QIIME workflow."""
-script_info['script_description'] = """This script plugs several QIIME steps together to form a basic full data analysis workflow. The steps include quality filtering and demultiplexing sequences, running the pick_otus_through_otu_table.py workflow (pick otus and representative sequences, assign taxonomy, align representative sequences, build a tree, and build and OTU table), generating 3d beta diversity PCoA plots, generating alpha rarefaction plots, identifying OTUs that are differentially represented in different categories, and several additional analysis."""
-script_info['script_usage'] = [("","Run serial analysis","%prog -i Fasting_Example.fna -q Fasting_Example.qual -o FastingStudy -p custom_parameters.txt -m Fasting_Map.txt -c Treatment,DOB -e 100")]
+script_info['script_description'] = """This script plugs several QIIME steps together to form a basic full data analysis workflow. The steps include quality filtering and demultiplexing sequences, running the pick_otus_through_otu_table.py workflow (pick otus and representative sequences, assign taxonomy, align representative sequences, build a tree, and build and OTU table), generating 3d beta diversity PCoA plots, generating alpha rarefaction plots, identifying OTUs that are differentially represented in different categories, and several additional analysis. Beta diversity calculations will be run both with and without an even sampling step, where the depth of sampling can either be passed on the command line or QIIME will try to make a reasonable guess."""
+script_info['script_usage'] = [("","Run serial analysis, and guess the even sampling depth (no -e provided)","%prog -i Fasting_Example.fna -q Fasting_Example.qual -o FastingStudy -p custom_parameters.txt -m Fasting_Map.txt -c Treatment,DOB")]
 
 
 script_info['output_description'] ="""
@@ -57,6 +57,11 @@ script_info['optional_options'] = [\
         help='the sff file [REQUIRED for denoising]'),
  make_option('-e','--seqs_per_sample',type='int',
      help='depth of coverage for even sampling [default: %default]'),
+ make_option('--even_sampling_keeps_all_samples',
+     help='if -e is not provided, chose the sampling depth to force retaining '+\
+     'all samples rather than guessing a sampling depth which may favor keeping '+\
+     'more sequences while dropping some samples [default: %default]', 
+     default=False, action='store_true'),
  make_option('-t','--reference_tree_fp',
             help='path to the tree file if one should be used (otherwise de novo '+\
             ' tree will be used) [default: %default]'),
@@ -82,6 +87,7 @@ def main():
     sff_fp = opts.sff_fp
     verbose = opts.verbose
     print_only = opts.print_only
+    even_sampling_keeps_all_samples = opts.even_sampling_keeps_all_samples
     
     parallel = opts.parallel
     
@@ -124,6 +130,7 @@ def main():
         qiime_config=qiime_config,
         categories=categories,
         sampling_depth=sampling_depth,
+        even_sampling_keeps_all_samples=even_sampling_keeps_all_samples,
         arare_min_seqs_per_sample=10,
         arare_num_steps=10,
         reference_tree_fp=reference_tree_fp,

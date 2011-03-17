@@ -454,7 +454,35 @@ def compute_seqs_per_library_stats(otu_f):
         
     return min(counts), max(counts), median(counts), mean(counts),\
      dict(zip(sample_ids,counts))
-     
+
+def median_absolute_deviation(x):
+    """ compute the median of the absolute deviations from the median """
+    median_x = median(x)
+    median_abs_deviation = median(map(abs,[e - median_x for e in x]))
+    return median_abs_deviation, median_x
+
+def guess_even_sampling_depth(counts_per_sample,num_deviations=2.25):
+    """ guess a depth for even sampling 
+    
+        this is currently computed as the smallest seqs per sample 
+         count >= the median seqs per sample count - (2.25 * the median absolute 
+         deviation). 2.25 was chosen emprically by seeing how different values
+         of num_deviations resulted in a choice that was similar to what
+         I've chosen on several real OTU tables.
+    """
+    counts_per_sample.sort()
+    median_abs_dev, median_count = \
+     median_absolute_deviation(counts_per_sample)
+    min_threshold = median_count - (num_deviations * median_abs_dev)
+    for e in counts_per_sample:
+        if e >= min_threshold:
+            return e
+    raise ValueError,\
+     "No acceptable even sampling depth identified. "+\
+     "It shouldn't be possible to get here, but just in case here's the " +\
+     "counts per sample: %s" ' '.join(map(str,counts_per_sample)) 
+    
+    
 def raise_error_on_parallel_unavailable(qiime_config=None):
     """Raise error if no parallel QIIME bc user hasn't set jobs_to_start
     """

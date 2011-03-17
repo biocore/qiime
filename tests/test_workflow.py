@@ -259,6 +259,8 @@ class WorkflowTests(TestCase):
         sample_ids.sort()
         expected_sample_ids.sort()
         self.assertEqual(sample_ids,expected_sample_ids)
+        # even sampling directory exists
+        self.assertTrue(exists('%s/bdiv_even100' % self.wf_out))
         
         otu_category_significance_fp =\
          '%s/category_significance_Treatment.txt' % self.wf_out
@@ -301,6 +303,8 @@ class WorkflowTests(TestCase):
         sample_ids.sort()
         expected_sample_ids.sort()
         self.assertEqual(sample_ids,expected_sample_ids)
+        # even sampling directory exists
+        self.assertTrue(exists('%s/bdiv_even146' % self.wf_out))
         
         otu_category_significance_fp =\
          '%s/category_significance_Treatment.txt' % self.wf_out

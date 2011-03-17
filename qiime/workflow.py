@@ -10,9 +10,9 @@ from numpy import array
 from cogent.parse.fasta import MinimalFastaParser
 from qiime.parse import parse_mapping_file
 from qiime.format import format_otu_table
-from qiime.util import (compute_seqs_per_library_stats, 
+from qiime.util import (compute_seqs_per_library_stats,
                         get_qiime_scripts_dir,
-                        create_dir)
+                        create_dir, guess_even_sampling_depth)
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
@@ -1103,6 +1103,7 @@ def run_core_qiime_analyses(
     qiime_config,
     categories=None,
     sampling_depth=None,
+    even_sampling_keeps_all_samples=False,
     arare_min_seqs_per_sample=10,
     arare_num_steps=10,
     reference_tree_fp=None,
@@ -1167,6 +1168,15 @@ def run_core_qiime_analyses(
     # If a reference tree was passed, use it for downstream analysis. Otherwise
     # use the de novo tree.
     tree_fp = reference_tree_fp or de_novo_tree_fp
+    
+    if sampling_depth == None:
+        min_count, max_count, median_count, mean_count, counts_per_sample =\
+         compute_seqs_per_library_stats(open(otu_table_fp))
+        if even_sampling_keeps_all_samples:
+            sampling_depth = min_count
+        else:
+            sampling_depth = \
+             guess_even_sampling_depth(counts_per_sample.values())
     
     ## Beta diversity through 3D plots workflow
     bdiv_full_output_dir = '%s/bdiv/' % output_dir

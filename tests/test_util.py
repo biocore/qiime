@@ -23,7 +23,8 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
     write_degapped_fasta_to_file, compare_otu_maps, get_diff_for_otu_maps,
     merge_n_otu_tables, convert_otu_table_relative, write_seqs_to_fasta,
     split_fasta_on_sample_ids, split_fasta_on_sample_ids_to_dict,
-    split_fasta_on_sample_ids_to_files)
+    split_fasta_on_sample_ids_to_files, median_absolute_deviation,
+    guess_even_sampling_depth)
 
 import numpy
 from numpy import array, asarray
@@ -61,6 +62,27 @@ class TopLevelTests(TestCase):
         for dir in  self.dirs_to_remove:
             if exists(dir):
                 rmdir(dir)
+                
+    def test_median_absolute_deviation(self):
+        """ median_absolute_deviation returns MAD and median """
+        data = [0,0,0,0,0,0]
+        expected = (0,0)
+        self.assertEqual(median_absolute_deviation(data),expected)
+        data = [1,1,1,1,1,1]
+        expected = (0,1)
+        self.assertEqual(median_absolute_deviation(data),expected)
+        data = [6,1,2,9,4,1,2]
+        expected = (1,2)
+        self.assertEqual(median_absolute_deviation(data),expected)
+        data = [-6,-1,-2,-9,-4,-1,-2]
+        expected = (1,-2)
+        self.assertEqual(median_absolute_deviation(data),expected)
+        
+    def test_guess_even_sampling_depth(self):
+        """ guess_even_sampling_depth functions as expected """
+        data = [6,1,2,9,4,1,2]
+        expected = 1 # MAD = 2.25; med - MAD = -0.25
+        self.assertEqual(guess_even_sampling_depth(data),expected)
     
     def test_write_seqs_to_fasta(self):
         """ write_seqs_to_fasta functions as expected """
