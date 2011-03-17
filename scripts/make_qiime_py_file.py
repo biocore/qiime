@@ -54,7 +54,7 @@ help="The script author's (probably you) e-mail address to be included"+\
 " the header variables. [default:%default]",default='AUTHOR_EMAIL'),
 make_option('-c','--copyright',
 help="The copyright information to be included in"+\
-" the header variables. [default:%default]",default='Copyright 2010, The QIIME project')
+" the header variables. [default:%default]",default='Copyright 2011, The QIIME project')
 ] 
 
 script_info['version'] = __version__
