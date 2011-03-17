@@ -69,9 +69,10 @@ class ParallelBetaDiversityTests(TestCase):
 
         scripts_dir = get_qiime_scripts_dir()
         # parallel
-        cmd = scripts_dir+'/parallel_beta_diversity.py -O 3 '+\
+        cmd = scripts_dir+'/parallel_beta_diversity.py -T -O 3 '+\
          '--retain_temp_files -i %s -o %s -m unifrac -t %s' %\
          (otuf, maindir+'/para1', treef)
+	# -T so doesn't return yet
         proc = subprocess.Popen(cmd,shell=True, 
             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         betaout, betaerr = proc.communicate()
