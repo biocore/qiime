@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # File created on 30 Dec 2009.
 from __future__ import division
+import sys
 from subprocess import Popen, PIPE, STDOUT
 from os import makedirs, listdir
 from glob import glob
@@ -130,6 +131,15 @@ def call_commands_serially(commands,
                 logger.write(msg)
                 logger.close()
                 raise WorkflowError, msg
+            else:
+                # write stdout and stderr to log file
+                logger.write("Stdout:\n%s\nStderr:\n%s\n" % (stdout,stderr))
+                # write stdout to stdout
+                if stdout:
+			print stdout
+                # write stderr to stderr
+		if stderr:
+                	sys.stderr.write(stderr)
     if close_logger_on_success: logger.close()
 
 def print_to_stdout(s):
@@ -1290,3 +1300,4 @@ def run_core_qiime_analyses(
     
                                
     
+
