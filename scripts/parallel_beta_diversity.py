@@ -78,6 +78,7 @@ script_info['version'] = __version__
 def jk_get_subtree(tree, otuids):
     tree.prune()
     tips = tree.tips()
+    otuids = set(otuids)
     for tip in tips:
         if tip.Name not in otuids:
             tip.Parent.remove(tip)
