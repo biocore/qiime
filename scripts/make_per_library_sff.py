@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Rob Knight", "Daniel McDonald"]
+__credits__ = ["Rob Knight", "Daniel McDonald", "Kyle Bittinger"]
 __license__ = "GPL"
 __version__ = "1.2.1-dev"
 __maintainer__ = "Kyle Bittinger"
@@ -20,8 +20,11 @@ from qiime.util import parse_command_line_parameters
 
 #make_per_library_sff.py
 script_info={}
-script_info['brief_description']="""Make per-library sff files from id lists"""
-script_info['script_description']="""This script generates per-library sff files using the id lists."""
+script_info['brief_description']="""Make per-library sff files from ID lists"""
+script_info['script_description']="""This script generates per-library sff files using a directory of text files, one per library, which list read ID's to be included.
+
+The ID list files should contain one read ID per line. If a line contains multiple words (separated by whitespace), then only the first word is used. A '>' character is stripped from the beginning of the line, if present. Blank lines in the file are skipped.
+"""
 script_info['script_usage']=[]
 script_info['script_usage'].append(("""Example:""","""Make per-library sff files using input.sff and a directory of libs where each file in the directory contains the id lists for each library:""","""make_per_library_sff.py -i input.sff -l libs"""))
 script_info['output_description']="""The result of this script generates sff files for each library."""
@@ -30,7 +33,7 @@ script_info['required_options'] = [
     make_option("-i", "--input_sff",
         help="Input sff file (separate multiple files w/ comma)"),
     make_option("-l", "--libdir",
-        help="Directory containing per-library id files"),
+        help="Directory containing ID list text files, one per library"),
 ]
 
 script_info['optional_options'] = [
