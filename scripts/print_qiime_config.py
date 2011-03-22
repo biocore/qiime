@@ -280,7 +280,7 @@ class Qiime_config(TestCase):
     def test_matplotlib_suported_version(self):
         """maptplotlib version is supported """
         min_acceptable_version = (0,98,5,3)
-        min_unacceptable_version = (0,98,5,3)
+        min_unacceptable_version = (0,98,5,4)
         try:
             from matplotlib import __version__ as matplotlib_lib_version
             version = tuple(map(int,matplotlib_lib_version.split('.')))
@@ -298,7 +298,7 @@ class Qiime_config(TestCase):
     def test_pynast_suported_version(self):
         """pynast version is supported """
         min_acceptable_version = (1,1)
-        min_unacceptable_version = (1,1)
+        min_unacceptable_version = (1,2)
         try:
             from pynast import __version__ as pynast_lib_version
             version = tuple(map(int,pynast_lib_version.split('.')))
