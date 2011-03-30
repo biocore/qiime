@@ -591,7 +591,7 @@ def matrix_stats(headers_list, distmats):
 
 
 def merge_otu_tables(otu_table_f1,otu_table_f2):
-    """ Merge two otu tables with the same sample IDs
+    """ Merge two otu tables with non-overlapping sample IDs
     
         WARNING: The OTU ids must refer to the same OTUs, which
          typically only happens when OTUs were picked against a 
