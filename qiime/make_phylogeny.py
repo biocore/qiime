@@ -2,7 +2,7 @@
 
 __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Rob Knight", "Justin Kuczynski"] 
+__credits__ = ["Rob Knight", "Justin Kuczynski", "Daniel McDonald"] 
 __license__ = "GPL"
 __version__ = "1.2.1-dev"
 __maintainer__ = "Justin Kuczynski"
@@ -29,6 +29,10 @@ import cogent.app.raxml
 import cogent.app.fasttree
 import cogent.app.fasttree_v1
 import cogent.app.clearcut
+
+### to be removed at next pycogent update. will require light changes to
+### calling code
+from qiime.pycogent_backports.tree import getMaxTipTipDistance
 
 class TreeBuilder(FunctionWithParams):
     """A TreeBuilder takes a aligned set of sequences and returns a tree.
@@ -122,16 +126,40 @@ tree_module_names = {'muscle':cogent.app.muscle,
     'raxml':cogent.app.raxml, 'clearcut':cogent.app.clearcut,
     }
     
-    
-def maxTipTipDistance(tree):
-        """returns the max distance between any pair of tips
-        
-        Also returns the tip names  that it is between as a tuple"""
-        distmtx, tip_order = tree.tipToTipDistances()
-        idx_max = divmod(distmtx.argmax(),distmtx.shape[1])
-        max_pair = (tip_order[idx_max[0]].Name, tip_order[idx_max[1]].Name)
-        return distmtx[idx_max], max_pair
-        
+#def maxTipTipDistance(tree):
+#        """returns the max distance between any pair of tips
+#        
+#        Also returns the tip names  that it is between as a tuple"""
+#        distmtx, tip_order = tree.tipToTipDistances()
+#        idx_max = divmod(distmtx.argmax(),distmtx.shape[1])
+#        max_pair = (tip_order[idx_max[0]].Name, tip_order[idx_max[1]].Name)
+#        return distmtx[idx_max], max_pair
+#
+#def decorate_max_tip_to_tip_distance(self):
+#    """Propagate tip distance information up the tree
+#
+#    This method was originally implemented by Julia Goodrich with the intent
+#    of being able to determine max tip to tip distances between nodes on large
+#    trees efficiently. The code has been modified to track the specific tips
+#    the distance is between
+#    """
+#    for n in self.postorder():
+#        if n.isTip():
+#            n.MaxDistTips = [(0.0, n.Name), (0.0, n.Name)]
+#        else:
+#            n.MaxDistTips = [max(c.MaxDistTips) for c in n.Children][:2]
+#
+#    max_dist = 0.0
+#    max_names = [None, None]
+#    for n in tree.nontips():
+#        tip_a, tip_b = n.MaxTipsTips
+#        dist = tip_a[0] + tip_b[0]
+#        if dist > max_dist:
+#            max_dist = dist
+#            max_names = [tip_a[1], tip_b[1]]
+#    
+#    return max_dist, max_names
+
 def root_midpt(tree):
     """ this was instead of PhyloNode.rootAtMidpoint(), which is slow and broke
     
@@ -141,10 +169,8 @@ def root_midpt(tree):
     this fn doesn't preserve the internal node naming or structure,
     but does keep tip to tip distances correct.  uses unrootedDeepcopy()
     """
-    # max_dist, tip_names = tree.maxTipTipDistance()
-    # this is slow
-    
-    max_dist, tip_names = maxTipTipDistance(tree)
+    max_dist, tip_names, int_node = getMaxTipTipDistance(tree)
+
     half_max_dist = max_dist/2.0
     if max_dist == 0.0: # only pathological cases with no lengths
         return tree.unrootedDeepcopy()
@@ -175,10 +201,29 @@ def root_midpt(tree):
         
     else:
         # make a new node on climb_node's branch to its parent
+        tmp_node_name = "TMP_ROOT_NODE_NAME"
+        parent = climb_node.Parent
+        parent.removeNode(climb_node)
+        climb_node.Parent = None
+        new_node = parent.__class__()
+        new_node.Name = tmp_node_name
+
+        # adjust branch lengths
         old_br_len = climb_node.Length
-        new_root = type(tree)()
-        new_root.Parent = climb_node.Parent
-        climb_node.Parent = new_root
         climb_node.Length = half_max_dist - dist_climbed
-        new_root.Length = old_br_len - climb_node.Length
-        return new_root.unrootedDeepcopy()
+        new_node.Length = old_br_len - climb_node.Length
+
+        if climb_node.Length < 0.0 or new_node.Length < 0.0:
+            raise RuntimeError('attempting to create a negative branch length!')
+
+        # re-attach tree
+        parent.append(new_node)
+        new_node.append(climb_node)
+        
+        # reroot and remove the temporary node name
+        new_tree = tree.rootedAt(tmp_node_name)
+        new_root = new_tree.getNodeMatchingName(tmp_node_name)
+        new_root.Name = None
+        
+        return new_tree
+
