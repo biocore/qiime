@@ -106,7 +106,7 @@ def main():
     barcode_in_seq = not opts.barcode_in_header
     
     if barcode_in_seq and three_prime_read_fps:
-        parser.error(\
+        option_parser.error(\
             '--barcode_in_header is only supported option '
             'for 5\' single end read data -- contact qiime.help@colorado.edu '
             'with questions')
