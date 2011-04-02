@@ -68,9 +68,7 @@ script_info['optional_options'] = [\
  options_lookup['seconds_to_sleep'],\
  options_lookup['jobs_to_start'],
  make_option('-f', '--full_tree', action="store_true",
-     help='By default, we first compute the intersection of the tree with'+\
-     ' the otus present in the otu table. pass -f if you already have a'+\
-     ' minimal tree, and this script will run faster'),
+     help='By default, each job removes calls _fast_unifrac_setup to remove unused parts of the tree. pass -f if you already have a minimal tree, and this script will run faster'),
 
 ]
 script_info['version'] = __version__
@@ -145,36 +143,15 @@ def main():
             created_temp_paths.append(working_dir + '/' + str(i))
             makedirs(output_dir + '/' + str(i))
             created_temp_paths.append(output_dir + '/' + str(i))
-            
-        if opts.tree_path and not opts.full_tree:
-            # get subtree once here, rather than again for each job
-            # we call each job with --full_tree, so it's here or nowhere
-            if opts.verbose:
-                print 'parsing otu table'
-            f = open(opts.input_path,'U')
-            samids, otuids, otumtx, lineages = parse_otu_table(f)
-            # otu mtx is otus by samples
-            f.close()
-            if opts.verbose:
-                print 'done parsing otu table'
-            new_tree_path = '%s/%s_intersection.tre' % (output_dir, job_prefix)
-            created_temp_paths.append(new_tree_path)
-            if opts.verbose:
-                print 'parsing tree'
-            f = open(opts.tree_path, 'U')
-            tree = parse_newick(f, PhyloNode)
-            f.close()
-            if opts.verbose:
-                print 'done parsing tree'
-            jk_get_subtree(tree, otuids) # acts on tree in place
-            tree.writeToFile(new_tree_path)
-            tree_fp = new_tree_path
-            if opts.verbose:
-                print 'done writing new intersection tree to: ', tree_fp
+
+        # to speed up this process, if not opts.full_tree: call setup here once
+        # and then use full_tree=True
+        # not implemented yet
         commands, job_result_filepaths  = \
          get_job_commands_single_otu_table(python_exe_fp,beta_diversity_fp,
          tree_fp,job_prefix,metrics,input_path,output_dir,working_dir,
-         jobs_to_start,command_prefix=' ',command_suffix=' ')
+         jobs_to_start,command_prefix=' ',command_suffix=' ',
+         full_tree=opts.full_tree)
         created_temp_paths += job_result_filepaths
     else:
         commands, job_result_filepaths  = \

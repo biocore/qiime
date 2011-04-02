@@ -67,10 +67,11 @@ def get_job_commands_multiple_otu_tables(
 def get_job_commands_single_otu_table(
     python_exe_fp,beta_diversity_fp,tree_fp,job_prefix,metrics,input_fp,
     output_dir,working_dir,jobs_to_start,command_prefix=None,
-    command_suffix=None):
+    command_suffix=None, full_tree=False):
     """Generate beta diversity to split single OTU table to multiple jobs
     
-    always passes -f to beta_diversity.py
+    full_tree=True is faster: beta_diversity.py -f will make things
+    go faster, but be sure you already have the correct minimal tree.
     """
 
     command_prefix = command_prefix or '/bin/bash; '
@@ -93,19 +94,30 @@ def get_job_commands_single_otu_table(
          output_fns,working_dir_i,output_dir_i)
 
         result_filepaths += current_result_filepaths
-        
-        command = '%s %s %s -i %s -o %s -t %s -m %s -f -r %s %s %s' %\
-         (command_prefix,\
-          python_exe_fp,\
-          beta_diversity_fp,\
-          input_fp,
-          working_dir_i + '/',
-          tree_fp,
-          metrics,
-          sample_id_group,
-          rename_command,
-          command_suffix)
-          
+        if full_tree:
+            command = '%s %s %s -i %s -o %s -t %s -m %s -f -r %s %s %s' %\
+             (command_prefix,\
+              python_exe_fp,\
+              beta_diversity_fp,\
+              input_fp,
+              working_dir_i + '/',
+              tree_fp,
+              metrics,
+              sample_id_group,
+              rename_command,
+              command_suffix)
+        else:
+            command = '%s %s %s -i %s -o %s -t %s -m %s -r %s %s %s' %\
+             (command_prefix,\
+              python_exe_fp,\
+              beta_diversity_fp,\
+              input_fp,
+              working_dir_i + '/',
+              tree_fp,
+              metrics,
+              sample_id_group,
+              rename_command,
+              command_suffix)
         commands.append(command)
         
     return commands, result_filepaths
