@@ -79,7 +79,7 @@ def make_unifrac_row_metric(weighted, metric, is_symmetric):
         """
         envs = make_envs_dict(data, sample_names, taxon_names)
         unifrac_res = fast_unifrac_one_sample(one_sample_name,
-            tree, envs, weighted=weighted, metric=metric)
+            tree, envs, weighted=weighted, metric=metric,make_subtree=True)
         dist_mtx = _reorder_unifrac_res_one_sample(unifrac_res,
             sample_names)
         return dist_mtx
