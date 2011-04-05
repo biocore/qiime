@@ -301,7 +301,10 @@ class Qiime_config(TestCase):
         min_unacceptable_version = (1,2)
         try:
             from pynast import __version__ as pynast_lib_version
-            version = tuple(map(int,pynast_lib_version.split('.')))
+            version = pynast_lib_version.split('.')
+            if version[-1][-4:]=='-dev':
+                 version[-1] = version[-1][:-4]
+            version = tuple(map(int,version))
             pass_test = (version >= min_acceptable_version and version < min_unacceptable_version)
             version_string = str(pynast_lib_version)
         except ImportError:
