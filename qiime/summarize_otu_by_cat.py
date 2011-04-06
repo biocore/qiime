@@ -138,7 +138,7 @@ def get_counts_by_cat(lines, num_meta, meta_dict, cat_list,category,num_samples_
     return  cat_otu_table, otus, taxonomy
 
 
-def summarize_by_cat(map_lines,otu_sample_lines,category,dir_path,norm):
+def summarize_by_cat(map_lines,otu_sample_lines,category,norm):
     """creates the category otu table"""
     cat_by_sample, sample_by_cat, num_meta, meta_dict, label_lists_dict, \
                    num_samples_by_cat = get_sample_cat_info(map_lines,category)
@@ -162,11 +162,4 @@ def summarize_by_cat(map_lines,otu_sample_lines,category,dir_path,norm):
     lines = format_otu_table(new_labels, otus, array(new_lines), \
                   taxonomy=taxonomy,
                   comment='Category OTU Counts-%s'% category)
-
-    if norm:
-        file_name = os.path.join(dir_path,'%s_otu_table_norm.txt'%category)
-    else:
-        file_name = os.path.join(dir_path,'%s_otu_table.txt'%category)
-    f = open(file_name,'w')
-    f.write(lines)
-    f.close()
+    return lines

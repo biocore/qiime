@@ -19,55 +19,49 @@ from qiime.summarize_otu_by_cat import summarize_by_cat
 
 
 script_info={}
-script_info['brief_description']="""Create a summarized OTU table for a specific metadata category"""
-script_info['script_description']="""This script generates an otu table where the SampleIDs are replaced by a specific category from the user-generated mapping file. The script uses the OTU file otus.txt (-c) and the user mapping file meta.txt. The user must also specify a metadata category equivalent to one of the column names in the mapping file. If the user wants the counts to be normalized by sample use th normalize flag (-n) the default is False meaning it is only the raw counts. The output is a file called <meta category>_otu_table.txt, it will be put int the current working directory unless specified by the user (-o)."""
+script_info['brief_description']="""Summarize an OTU table by a single column in the mapping file."""
+script_info['script_description']="""Collapse an OTU table based on values in a single column in the mapping file. For example, if you have 10 samples, five of which are from females and five of which are from males, you could use this script to collapse the ten samples into two corresponding based on their values in a 'Sex' column in your mapping file."""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Example:""","""Create an otu table for a user specified category. This script uses an OTU table (otu_table.txt) and a user-generated mapping file (mapping_file.txt). The user must also specify a metadata category equivalent to one of the column names in their mapping file (i.e. time). If the user wants the counts to be normalized by sample, they can use the normalize flag (-n), however; the default value for this flag is False, which means it will use the raw counts. The resulting files will be it will be written in the current working directory, unless specified by the user (-o).""","""summarize_otu_by_cat.py -c otu_table.txt -i mapping_file.txt -m time -o qiime_run/ -n"""))
-script_info['output_description']="""The output is an otu table called <meta category>_otu_table.txt, """
+script_info['script_usage'].append(("""Example:""",""" Collapsed otu_table.txt on the 'Sex' column in map.txt and write the resulting OTU table to otu_table_by_sex.txt""","""summarize_otu_by_cat.py -c otu_table.txt -i map.txt -m Sex -o otu_table_by_sex.txt"""))
+script_info['output_description']= """"""
 script_info['required_options']=[\
-make_option('-i', '--input_map', dest='map_file',action='store',type='string',\
-                help='name of input map file [REQUIRED]'),
-make_option('-c', '--otu_file', dest='counts_file',\
-            action='store',type='string',
-            help='name of otu table file [REQUIRED]'),
-make_option('-m', '--meta_category', dest='category',\
-                action='store',type='string',
-               help='name of category for OTU table [REQUIRED]')
+make_option('-i', '--mapping_fp',
+            help='path to mapping file [REQUIRED]'),
+make_option('-c', '--otu_table_fp',
+            help='path to otu table [REQUIRED]'),
+make_option('-m', '--mapping_category',
+            help='mapping category to collapse otu table on [REQUIRED]'),
+make_option('-o', '--output_fp', dest='output_fp',
+            help='path to store output file [REQUIRED]'),
 ]
 
 script_info['optional_options']=[\
-make_option('-o', '--dir-prefix', dest='dir_path',action='store',type='string',\
-               help='directory prefix for all analyses [default: cwd]'),
-make_option('-n', '--normalize_flag', dest='normalize',
-     help='if True will normalize counts [default: %default]',default=False,
-                      action = 'store_true')
+    make_option('-n', '--normalize',
+         help='if True will normalize counts [default: %default]',
+         default=False,
+         action = 'store_true')
 ]
 
 script_info["version"] = __version__
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
+    
+    mapping_fp = opts.mapping_fp
+    mapping_category = opts.mapping_category
+    normalize = opts.normalize
+    otu_table_fp = opts.otu_table_fp
+    output_fp = opts.output_fp
+    
+    mapping_f = open(mapping_fp,'U')
+    otu_table_f = open(otu_table_fp,'U')
 
-    if not opts.counts_file:
-        parser.error("An otu table file must be specified")
-
-    if not opts.map_file:
-        parser.error("A Map file must be specified")
-
-    dir_path = opts.dir_path
-    category = opts.category
-    norm = opts.normalize
-
-    if dir_path == "./" or dir_path is None:
-        dir_path = getcwd()
-    try:
-        makedirs(dir_path)
-    except OSError:
-        pass
-    map_lines = open(opts.map_file,'U').readlines()
-    otu_sample_lines = open(opts.counts_file,'U').readlines()
-
-    summarize_by_cat(map_lines,otu_sample_lines,category,dir_path,norm)
+    summarized_otu_table = \
+     summarize_by_cat(mapping_f,otu_table_f,mapping_category,normalize)
+     
+    f = open(output_fp,'w')
+    f.write(summarized_otu_table)
+    f.close()
 
 if __name__ == "__main__":
     main()
