@@ -3,7 +3,7 @@
 
 __author__ = "Julia Goodrich"
 __copyright__ = "Copyright 2011, The QIIME Project" 
-__credits__ = ["Julia Goodrich", "Jesse Stombaugh"] #remember to add yourself
+__credits__ = ["Julia Goodrich", "Jesse Stombaugh","Greg Caporaso"]
 __license__ = "GPL"
 __version__ = "1.2.1-dev"
 __maintainer__ = "Daniel McDonald"
