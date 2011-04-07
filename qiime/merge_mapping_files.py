@@ -37,12 +37,23 @@ def merge_mapping_files(mapping_files,no_data_value='no_data'):
             mapping_lines.append(current_values)
     
     # remove and place the fields whose order is important
-    del all_headers['SampleID']
-    del all_headers['BarcodeSequence']
-    del all_headers['LinkerPrimerSequence']
-    del all_headers['Description']
-    all_headers = ['SampleID','BarcodeSequence','LinkerPrimerSequence'] \
-     + list(all_headers) + ['Description']
+    ordered_beginning = []
+    for e in ['SampleID','BarcodeSequence','LinkerPrimerSequence']:
+        try:
+            del all_headers[e]
+            ordered_beginning.append(e)
+        except KeyError:
+            pass
+            
+    ordered_end = []
+    for e in ['Description']:
+        try:
+            del all_headers[e]
+            ordered_end.append(e)
+        except KeyError:
+            pass
+    all_headers = ordered_beginning  + list(all_headers) + ordered_end
+    
     
     # generate the mapping file lines containing all fields
     result.append('#' + '\t'.join(all_headers))
