@@ -24,7 +24,7 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
     merge_n_otu_tables, convert_otu_table_relative, write_seqs_to_fasta,
     split_fasta_on_sample_ids, split_fasta_on_sample_ids_to_dict,
     split_fasta_on_sample_ids_to_files, median_absolute_deviation,
-    guess_even_sampling_depth)
+    guess_even_sampling_depth, compute_days_since_epoch)
 
 import numpy
 from numpy import array, asarray
@@ -839,6 +839,14 @@ AAAAAAA
         self.assertFloatEqual(compare_otu_maps(otu_map1, otu_map4), 0.33333333333)
         self.assertFloatEqual(compare_otu_maps(otu_map3, otu_map4), 0.33333333333)
         self.assertFloatEqual(compare_otu_maps(otu_map1, otu_map5), 1)
+        
+    def test_compute_days_since_epoch(self):
+        """compute_days_since_epoch functions as expected """
+        self.assertEqual(compute_days_since_epoch(29,10,2002),11989)
+        # can pass keyword arguments
+        self.assertEqual(compute_days_since_epoch(year=2002,month=10,day=29),11989)
+        self.assertEqual(compute_days_since_epoch(day=27,month=3,year=2009),14330)
+        
  
 otu_map1 = fields_to_dict("""1:\ta\tb\tc
 2:\td

@@ -25,6 +25,7 @@ from optparse import make_option
 import sys
 import os
 from copy import deepcopy
+from datetime import datetime
 from numpy import min, max, median, mean
 import numpy
 from numpy.ma import MaskedArray
@@ -997,6 +998,10 @@ def compare_otu_maps(otu_map1, otu_map2, verbose=False):
 
     return float(wrong)/(right+wrong)
     
-
+def compute_days_since_epoch(day,month,year):
+    """ pass day, month, year to compute days since epoch (1 Jan 1970) """
+    d = datetime(year,month,day)
+    epoch = datetime.utcfromtimestamp(0)
+    return (d - epoch).days
 
 
