@@ -846,6 +846,7 @@ AAAAAAA
         # can pass keyword arguments
         self.assertEqual(compute_days_since_epoch(year=2002,month=10,day=29),11989)
         self.assertEqual(compute_days_since_epoch(day=27,month=3,year=2009),14330)
+        self.assertEqual(compute_days_since_epoch(day="27",month="3",year="2009"),14330)
         
  
 otu_map1 = fields_to_dict("""1:\ta\tb\tc

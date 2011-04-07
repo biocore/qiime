@@ -999,8 +999,12 @@ def compare_otu_maps(otu_map1, otu_map2, verbose=False):
     return float(wrong)/(right+wrong)
     
 def compute_days_since_epoch(day,month,year):
-    """ pass day, month, year to compute days since epoch (1 Jan 1970) """
-    d = datetime(year,month,day)
+    """ pass day, month, year to compute days since epoch (1/1/1970) 
+        
+        Note that full years should always be provided: 09 is a 
+        different year than 2009!
+    """
+    d = datetime(int(year),int(month),int(day))
     epoch = datetime.utcfromtimestamp(0)
     return (d - epoch).days
 
