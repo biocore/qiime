@@ -34,7 +34,11 @@ script_info['script_usage'].append(("""""","""To filter by the number of sequenc
 script_info['script_usage'].append(("""""","""To include ("Bacteria") and exclude ("Proteobacteria") certain taxon groups (options -t / -e respectively), you can use the code as follows.  The include and exclude parameters must be used together:""","""filter_otu_table.py -i otu_table.txt -t Bacteria -e Proteobacteria"""))
 script_info['script_usage'].append(("""Filter samples by number of sequences""","""A user may want to remove samples that have low sequence coverage. NOTE: this feature is mutually exclusive from the other filtering options, so if you pass this, you will need to perform a subsequent filter to remove by the other options.""","""filter_otu_table.py -i otu_table.txt -p 10"""))
 script_info['output_description']="""The result of filter_otu_table.py creates a new OTU table, where the filename uses the input OTU filename and appends "filtered.txt" to the end of the name."""
-script_info['required_options'] = [options_lookup['otu_table_as_primary_input']]
+script_info['required_options'] = [
+ options_lookup['otu_table_as_primary_input'],
+ make_option('-o', '--output_otu_table_fp',
+    help='the output otu table filepath [REQUIRED]'),
+ ]
 
 script_info['optional_options']=[\
     make_option('-c', '--min_count', default=1, type=int,
@@ -45,8 +49,6 @@ script_info['optional_options']=[\
         help='list of taxonomy terms to include [default=%default]'),\
     make_option('-e', '--exclude_taxonomy', default='', 
         help='list of taxonomy terms to exclude [default=%default]'),\
-    make_option('-o', '--dir_path', default='./',
-        help='directory prefix for all analyses [default=%default]'),
     make_option('-p', '--seqs_per_sample',type=int,
         help='minimum sequences per sample to retain the sample. [default=%default]')
 ]
@@ -67,19 +69,10 @@ def main():
     params['min_otu_count'] = opts.min_count
     params['min_otu_samples'] = opts.min_samples
     params['seqs_per_sample']=opts.seqs_per_sample
-    dir_path=opts.dir_path
     seqs_per_sample=params['seqs_per_sample']
     otu_file=open(params['otu_file'], 'U')
 
-    if not os.path.exists(dir_path):
-        create_dir(dir_path,False)
-        
-    if not dir_path.endswith("/"):
-        dir_path=dir_path+"/"
-        
-        
-    filtered_table_path=open(os.path.join(dir_path, \
-                                'otu_table_filtered.txt'), 'w')
+    filtered_table_path=open(opts.output_otu_table_fp, 'w')
                                 
     if opts.include_taxonomy:
         included_taxa = set(map(strip, split_tax(opts.include_taxonomy)))
