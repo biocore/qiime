@@ -121,9 +121,19 @@ def filter_otu_table_to_n_samples(otu_table_lines,n):
                                            negate=True)
     return result
     
-def filter_samples_from_distance_matrix(dm_lines,samples_to_discard,negate=False):
-    """ Remove specified samples from distance matrix """
-    sample_ids, dm_data = parse_distmat(dm_lines)
+def filter_samples_from_distance_matrix(dm,samples_to_discard,negate=False):
+    """ Remove specified samples from distance matrix 
+    
+        dm: (sample_ids, dm_data) tuple, as returned from 
+         qiime.parse.parse_distmat; or a file handle that can be passed
+         to qiime.parse.parse_distmat
+    
+    """
+    try:
+        sample_ids, dm_data = dm
+    except ValueError:
+        # input was provide as a file handle
+        sample_ids, dm_data = parse_distmat(dm)
     
     sample_lookup = {}.fromkeys([e.split()[0] for e in samples_to_discard])
     temp_dm_data = []

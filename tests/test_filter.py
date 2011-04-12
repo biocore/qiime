@@ -13,7 +13,7 @@ __status__ = "Development"
  
 
 from cogent.util.unit_test import TestCase, main
-from qiime.parse import parse_otu_table
+from qiime.parse import parse_otu_table, parse_distmat
 from qiime.filter import (filter_fasta, 
                           filter_otus_from_otu_table,
                           filter_samples_from_otu_table,
@@ -206,6 +206,16 @@ class FilterTests(TestCase):
         
     def test_filter_samples_from_distance_matrix(self):
         """filter_samples_from_distance_matrix functions as expected """
+        actual = filter_samples_from_distance_matrix(parse_distmat(self.input_dm1),
+                                               ["GHI blah","XYZ"])
+        self.assertEqual(actual,expected_dm1a)
+        actual = filter_samples_from_distance_matrix(parse_distmat(self.input_dm1),
+                                              ["GHI","DEF"])
+        self.assertEqual(actual,expected_dm1b)
+        
+        
+    def test_filter_samples_from_distance_matrix_file_input(self):
+        """filter_samples_from_distance_matrix handles file input """
         actual = filter_samples_from_distance_matrix(self.input_dm1,
                                                ["GHI blah","XYZ"])
         self.assertEqual(actual,expected_dm1a)
@@ -215,13 +225,15 @@ class FilterTests(TestCase):
 
     def test_filter_samples_from_distance_matrix_negate(self):
         """filter_samples_from_distance_matrix functions w negate """
-        actual = filter_samples_from_distance_matrix(self.input_dm1,
-                                               ["ABC blah","DEF"],
-                                               negate=True)
+        actual = filter_samples_from_distance_matrix(
+          parse_distmat(self.input_dm1),
+          ["ABC blah","DEF"],
+          negate=True)
         self.assertEqual(actual,expected_dm1a)
-        actual = filter_samples_from_distance_matrix(self.input_dm1,
-                                             ["ABC","XYZ"],
-                                             negate=True)
+        actual = filter_samples_from_distance_matrix(\
+         parse_distmat(self.input_dm1),
+         ["ABC","XYZ"],
+         negate=True)
         self.assertEqual(actual,expected_dm1b)
         
 
