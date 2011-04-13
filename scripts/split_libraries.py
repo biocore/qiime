@@ -115,7 +115,7 @@ script_info['optional_options']=[\
         default=1, type=int,
         help='seq id to use for the first sequence [default: %default]'),
 
-    make_option('-r', '--remove_unassigned', default=False,
+    make_option('-r', '--remove_unassigned', default=True,
         action='store_true', help='remove sequences which are Unassigned from \
             output [default: %default]'),
 
