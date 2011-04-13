@@ -17,14 +17,15 @@ from cogent.util.unit_test import TestCase, main
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.app.util import get_tmp_filename
 from numpy import array, nan
-from qiime.parse import fields_to_dict
+from qiime.parse import fields_to_dict, parse_mapping_file
 from qiime.format import (format_distance_matrix, format_otu_table,
     format_coords, build_prefs_string, format_matrix, format_map_file,
     format_histograms, write_Fasta_from_name_seq_pairs, 
     format_unifrac_sample_mapping,format_otu_map,write_otu_map, 
     format_summarize_taxa, write_summarize_taxa, 
     format_add_taxa_summary_mapping, write_add_taxa_summary_mapping,
-    format_qiime_parameters, format_p_value_for_num_iters)
+    format_qiime_parameters, format_p_value_for_num_iters,
+    format_mapping_file)
 
 class TopLevelTests(TestCase):
     """Tests of top-level module functions."""
@@ -48,7 +49,19 @@ class TopLevelTests(TestCase):
                                  ['s3','something5','something6']]
     def tearDown(self):
         remove_files(self.files_to_remove)
-        
+
+    def test_format_mapping_file(self):
+        """ format_mapping file should match expected result"""
+        headers = ['SampleID','col1','col0','Description']
+        samples =\
+         [['bsample','v1_3','v0_3','d1'],['asample','aval','another','d2']]
+        comments = ['this goes after headers','this too']
+        self.assertEqual(format_mapping_file(headers,samples,comments),
+         example_mapping_file)
+        # need file or stringIO for roundtrip test
+        # roundtrip = parse_mapping_file(format_mapping_file(headers,samples,comments))
+        # self.assertEqual(roundtrip, [headers,samples,comments])
+
     def test_format_p_value_for_num_iters(self):
         """ format_p_value_for_num_iters functions as expected """
         self.assertEqual(\
@@ -313,6 +326,12 @@ y\t5\t6\tsample y""")
         sample_ids = ['Sa','Sb','Sc']
         result = format_unifrac_sample_mapping(sample_ids, otu_ids, a)
         self.assertEqual(result, ['OTUa\tSa\t1', 'OTUb\tSb\t2', 'OTUb\tSc\t4', 'OTUc\tSa\t7', 'OTUc\tSc\t9.0'])
+
+example_mapping_file = """#SampleID\tcol1\tcol0\tDescription
+#this goes after headers
+#this too
+bsample\tv1_3\tv0_3\td1
+asample\taval\tanother\td2"""
 
 #run unit tests if run from command-line
 if __name__ == '__main__':
