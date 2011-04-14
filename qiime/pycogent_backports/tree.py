@@ -51,7 +51,7 @@ def getMaxTipTipDistance(tree):
     Returns (dist, tip_names, internal_node)
     """
     if not hasattr(tree, 'MaxDistTips'):
-        tree.setMaxTipTipDistance()
+        setMaxTipTipDistance(tree)
 
     longest = 0.0
     names = [None,None]
