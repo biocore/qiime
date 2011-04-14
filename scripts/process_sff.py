@@ -41,7 +41,8 @@ script_info['optional_options'] = [
     make_option('--use_sfftools', action='store_true', default=False,
         help=('use the external programs sfffile and sffinfo for processing, '
               'instead of the equivalent python implementation')),
-    options_lookup['output_dir'],
+    make_option('-o', '--output_dir',default=None,
+     help='Input directory of sff files [default: same as input dir]'),
 ]
 script_info['version'] = __version__
 
@@ -56,7 +57,7 @@ def main():
         except OSError:
             pass
     else:
-        opts.output_dir='./'
+        opts.output_dir = opts.input_dir
             
     prep_sffs_in_dir(
         opts.input_dir,
