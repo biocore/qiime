@@ -637,6 +637,9 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
                         write_seq = False
                         below_seq_min_after_trunc += 1
                         
+
+
+                        
                     
                  
 
@@ -688,6 +691,11 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
                 if qual_out:
                         qual_out.write(">%s %s orig_bc=%s new_bc=%s bc_diffs=%s\n%s" % 
                          (new_id, curr_rid, cbc, curr_bc, int(bc_diffs), qual_scores_out))
+                         
+            curr_len = len(curr_seq)
+
+            seq_lengths[curr_rid] = curr_len
+            
             curr_ix += 1
     log_out = format_log(bc_counts, corr_ct, seq_lengths, valid_map, filters,\
      remove_unassigned, attempt_bc_correction, primer_mismatch_count, \
