@@ -5,7 +5,7 @@ from __future__ import division
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Rob Knight", "Catherine Lozupone", "Justin Kuczynski",\
-        "Julia Goodrich", "Daniel McDonald"]
+        "Julia Goodrich", "Daniel McDonald", "Antonio Gonzalez Pena"]
 __license__ = "GPL"
 __version__ = "1.2.1-dev"
 __maintainer__ = "Daniel McDonald"
@@ -59,7 +59,17 @@ make_option('-r', '--relative_abundance', action='store',\
 make_option('-a', '--absolute_abundance', action='store_true',\
         dest='absolute_abundance', default=False, \
         help='If present, reports the absolute abundance of the lineage in ' +\
-            'each sample. By default uses relative abundance [default: %default]')
+            'each sample. By default uses relative abundance [default: %default]'),
+make_option('-l', '--lower_percentage', type='float', default=None, \
+        help='If present, trims the OTUs that have a higher absolute abundance. ' +\
+            'To remove the OTUs that makes up more than 5% of the total dataset ' +\
+            'you will pass 0.05. This option only works with relative abundances. ' +\
+            '[default: %default]'),
+make_option('-u', '--upper_percentage', type='float', default=None, \
+        help='If present, trims the OTUs that have a lower absolute abundance. ' +\
+            'To remove the OTUs that makes up less than 45% of the total dataset ' +\
+            'you will pass 0.45. This option only works with relative abundances. ' +\
+            '[default: %default]')
 ]
 
 script_info['version'] = __version__
@@ -68,6 +78,8 @@ script_info['version'] = __version__
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
+    lower_percentage = opts.lower_percentage
+    upper_percentage = opts.upper_percentage
     output_fname = opts.output_fp
     otu_table_fp = opts.otu_table_fp
     otu_table = parse_otu_table(open(otu_table_fp, 'U'))
@@ -75,6 +87,15 @@ def main():
     mapping = opts.mapping
     level = opts.level
 
+    if upper_percentage!=None and lower_percentage!=None:
+        raise ValueError("upper_percentage and lower_percentage are mutually exclusive")
+    if upper_percentage!=None and lower_percentage!=None and mapping:
+        raise ValueError("upper_percentage and lower_percentage can not be using with mapping file")    
+    if upper_percentage!=None and (upper_percentage<0 or upper_percentage>1.0):
+        raise ValueError('max_otu_percentage should be between 0.0 and 1.0')
+    if lower_percentage!=None and (lower_percentage<0 or lower_percentage>1.0):
+        raise ValueError('lower_percentage should be between 0.0 and 1.0')
+        
     if mapping:
         mapping_file = open(mapping, 'U')
         mapping, header, comments = parse_mapping_file(mapping_file)
@@ -96,7 +117,8 @@ def main():
         write_add_taxa_summary_mapping(
              summary,tax_order,mapping,header,output_fname,delimiter)
     else:
-        summary, header = make_summary(otu_table, level)
+        summary, header = make_summary(
+             otu_table, level, upper_percentage, lower_percentage)
         write_summarize_taxa(summary, header, output_fname, delimiter)
 
 if __name__ == "__main__":

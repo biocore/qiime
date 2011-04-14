@@ -5,7 +5,7 @@
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project" 
 #remember to add yourself if you make changes
-__credits__ = ["Rob Knight", "Daniel McDonald"] 
+__credits__ = ["Rob Knight", "Daniel McDonald", "Antonio Gonzalez Pena"] 
 __license__ = "GPL"
 __version__ = "1.2.1-dev"
 __maintainer__ = "Daniel McDonald"
@@ -66,8 +66,9 @@ s4\tTTTT\tExp\tDisease mouse, I.D. 357""".split('\n')
     def test_make_new_summary_file(self):
         """make_new_summary_file works
         """
+        lower_percentage, upper_percentage = None, None
         otu_table = parse_otu_table(self.otu_table, int)
-        summary, header = make_summary(otu_table, 3)
+        summary, header = make_summary(otu_table, 3, upper_percentage, lower_percentage)
         self.assertEqual(header, ['Taxon','s1','s2','s3','s4'])
         self.assertEqual(summary, [[('Root','Bacteria','Actinobacteria'),1,0,2,4], 
                                    [('Root','Bacteria','Firmicutes'),1,3,1,1], 
@@ -76,7 +77,7 @@ s4\tTTTT\tExp\tDisease mouse, I.D. 357""".split('\n')
         #test that works with relative abundances
         otu_table = parse_otu_table(self.otu_table, float)
         otu_table = convert_otu_table_relative(otu_table)
-        summary, header = make_summary(otu_table, 3)
+        summary, header = make_summary(otu_table, 3, upper_percentage, lower_percentage)
         self.assertEqual(header, ['Taxon','s1','s2','s3','s4'])
         self.assertEqual(summary[0][0], ('Root','Bacteria','Actinobacteria'))
         self.assertFloatEqual(summary[0][1:], [1.0 / 3, 0.0, 0.5, 0.8])
@@ -84,6 +85,21 @@ s4\tTTTT\tExp\tDisease mouse, I.D. 357""".split('\n')
         self.assertFloatEqual(summary[1][1:], [1.0 / 3, 0.6, 0.25, 0.2])
         self.assertEqual(summary[2][0], ('Root','Bacteria','Other'))
         self.assertFloatEqual(summary[2][1:], [1.0 / 3, 0.4, 0.25, 0.0])
+        
+        ##
+        # testing lower triming 
+        lower_percentage, upper_percentage = 0.3, None
+        summary, header = make_summary(otu_table, 3, upper_percentage, lower_percentage)
+        self.assertEqual(summary[0][0], ('Root','Bacteria','Other'))
+        self.assertFloatEqual(summary[0][1:], [1.0 / 3, 0.4, 0.25, 0.0])
+        
+        ##
+        # testing upper triming 
+        lower_percentage, upper_percentage = None, 0.4
+        summary, header = make_summary(otu_table, 3, upper_percentage, lower_percentage)
+        self.assertEqual(summary[0][0], ('Root','Bacteria','Actinobacteria'))
+        self.assertFloatEqual(summary[0][1:], [1.0 / 3, 0.0, 0.5, 0.8])
+        
 
     def test_add_summary_category_mapping(self):
         """make_new_summary_file works
