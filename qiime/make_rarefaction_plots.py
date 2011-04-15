@@ -78,7 +78,8 @@ def save_ave_rarefaction_plots(xaxis, yvals, err, xmax, ymax, ops, \
 
 def save_single_ave_rarefaction_plots(xaxis, yvals, err, xmax, ymax, ops, \
             mapping_category, imagetype, res, data_colors, colors, fpath,\
-            background_color,label_color,rarefaction_legend_mat,metric_name):
+            background_color,label_color,rarefaction_legend_mat,metric_name,
+            mapping_lookup):
     '''This function creates the images, using matplotlib.'''
     
     #Add the lines to the plot
@@ -128,7 +129,7 @@ def save_single_ave_rarefaction_plots(xaxis, yvals, err, xmax, ymax, ops, \
         y.set_name('Arial')
         
         #Create file for image
-        imgpath = fpath+mapping_category+o+ '_ave.'+imagetype
+        imgpath = fpath+mapping_lookup[mapping_category+'-'+o]+ '_ave.'+imagetype
     
         #Save the image
         plt.savefig(imgpath, format=imagetype, dpi=res,transparent=True)
@@ -137,7 +138,7 @@ def save_single_ave_rarefaction_plots(xaxis, yvals, err, xmax, ymax, ops, \
         image_loc = imgpath
         rarefaction_legend_mat[metric_name]['groups'][mapping_category][o]['ave_link']= \
                     os.path.join('html_plots', \
-                    metric_name+mapping_category + o + '_ave.'+imagetype)
+                    metric_name+mapping_lookup[mapping_category+'-'+o] + '_ave.'+imagetype)
 
         plt.close()
     return rarefaction_legend_mat
@@ -146,7 +147,7 @@ def save_single_rarefaction_plots(sample_dict,imagetype, metric_name,
                                   data_colors, colors,fpath,
                                   background_color,label_color,res,ymax,xmax,
                                   rarefaction_legend_mat,groups,
-                                  mapping_category,group_id):
+                                  mapping_category,group_id,mapping_lookup):
     '''This function creates the images, using matplotlib.'''
     #Create the plot image
     plt.clf()
@@ -200,7 +201,7 @@ def save_single_rarefaction_plots(sample_dict,imagetype, metric_name,
     y.set_name('Arial')
 
     #Create file for image
-    imgpath = fpath+ '_raw.'+imagetype
+    imgpath = os.path.join(fpath,metric_name+mapping_lookup[mapping_category+'-'+group_id]+'_raw.'+imagetype)
 
     #Save the image
     plt.savefig(imgpath, format=imagetype, dpi=res,transparent=True)
@@ -213,7 +214,7 @@ def save_single_rarefaction_plots(sample_dict,imagetype, metric_name,
     #raw link as well        
     rarefaction_legend_mat[metric_name]['groups'][mapping_category][group_id]['raw_link']= \
                 os.path.join('html_plots', \
-                metric_name+mapping_category + o + '_raw.'+imagetype)
+                metric_name+mapping_lookup[mapping_category+'-'+group_id] + '_raw.'+imagetype)
     return rarefaction_legend_mat
 
 def get_rarefaction_data(rarefaction_data, col_headers):
@@ -416,6 +417,14 @@ def make_averages(color_prefs, data, background_color, label_color, rares, \
     rarefaction_legend_mat={}
     rarefaction_data_mat={}
     rare_num=0
+    
+    # this is  a fix for the issue of writing field values as the filenames
+    mapping_lookup={}
+    for i,column in enumerate(data['map'][0]):
+        for j,row in enumerate(data['map'][1:]):
+            mapping_lookup['%s-%s' % (column,row[i])]='col_%s_row_%s' % \
+                                                        (str(i),str(j)) 
+            
     #Iterate through the rarefaction files
     for r in natsort(rares):
 
@@ -597,7 +606,7 @@ def make_averages(color_prefs, data, background_color, label_color, rares, \
                                     data_colors,metric_name,labelname, \
                                     rarefaction_data_mat,rarefaction_legend_mat,
                                     sample_dict,sample_data_colors,
-                                    sample_colors)
+                                    sample_colors,mapping_lookup)
                                     
                 #generate the filepath for the image file
                 file_path = os.path.join(ave_output_dir, \
@@ -628,7 +637,7 @@ def make_averages(color_prefs, data, background_color, label_color, rares, \
         
         #format the html output
         html_output=make_html(rarefaction_legend_mat, \
-                                rarefaction_data_mat,xaxisvals,imagetype)
+                                rarefaction_data_mat,xaxisvals,imagetype,mapping_lookup)
     else:
         html_output=None
         
@@ -637,7 +646,7 @@ def make_averages(color_prefs, data, background_color, label_color, rares, \
 
 
 def make_html(rarefaction_legend_mat, rarefaction_data_mat, xaxisvals, \
-                imagetype):
+                imagetype,mapping_lookup):
     rarefaction_legend_mat
     legend_td=['<b>Legend</b><div STYLE="border: thin black solid; height: 300px; width: 200px; font-size: 12px; overflow: auto;"><table>']
     summarized_table=[]
@@ -661,7 +670,7 @@ def make_html(rarefaction_legend_mat, rarefaction_data_mat, xaxisvals, \
             if cat_iter==0:
                 cat_links=[]
                 for i in rarefaction_legend_mat[m]['groups'][category]:
-                    cat_links.append(i)
+                    cat_links.append(mapping_lookup[category+'-'+i])
                 category_select_html.append('<option value="%s">%s</option>' % \
                             (category+'$#!'+'$#!'.join(cat_links),category))
             
@@ -678,11 +687,11 @@ def make_html(rarefaction_legend_mat, rarefaction_data_mat, xaxisvals, \
                               
                 plot_iterator=plot_iterator+1
                 
-                legend_td.append('<tr id="%s" name="%s" style="display: none;"><td class="data" onmouseover="document.body.style.cursor=\'pointer\'"  onmouseout="document.body.style.cursor=\'default\'" onclick="toggle(%s)" id="%s" name="%s">&#x25B6;</td><td><input name="%s" type="checkbox" checked="True" onclick="show_hide_category(this)"></td><td style="color:%s">&#x25A0;&nbsp;</td><td class="data"><b>%s</b></td></tr>' % (m+category,m+category,"'"+m+category+group+"'",m+category+group,','.join(sample_list),m+category+group+'_raw.'+imagetype,rarefaction_legend_mat[m]['groups'][category][group]['groupcolor'], group)) 
+                legend_td.append('<tr id="%s" name="%s" style="display: none;"><td class="data" onmouseover="document.body.style.cursor=\'pointer\'"  onmouseout="document.body.style.cursor=\'default\'" onclick="toggle(%s)" id="%s" name="%s">&#x25B6;</td><td><input name="%s" type="checkbox" checked="True" onclick="show_hide_category(this)"></td><td style="color:%s">&#x25A0;&nbsp;</td><td class="data"><b>%s</b></td></tr>' % (m+category,m+category,"'"+m+mapping_lookup[category+'-'+group]+"'",m+mapping_lookup[category+'-'+group],','.join(sample_list),m+mapping_lookup[category+'-'+group]+'_raw.'+imagetype,rarefaction_legend_mat[m]['groups'][category][group]['groupcolor'], group)) 
 
                 for sample in natsort(rarefaction_legend_mat[m]['groups'][category][group]['groupsamples']):
                     sample=str(sample)
-                    legend_td.append('<tr id="%s" name="%s" style="display: none;"><td class="data" align="right">&#x221F;</td><td></td><td style="color:%s">&#x25C6;</td><td class="data" align="left"><b>%s</b></td></tr>' % (m+category+group+'_raw',m+category+group,rarefaction_legend_mat[m]['samples'][sample]['color'], sample)) 
+                    legend_td.append('<tr id="%s" name="%s" style="display: none;"><td class="data" align="right">&#x221F;</td><td></td><td style="color:%s">&#x25C6;</td><td class="data" align="left"><b>%s</b></td></tr>' % (m+mapping_lookup[category+'-'+group]+'_raw',m+mapping_lookup[category+'-'+group],rarefaction_legend_mat[m]['samples'][sample]['color'], sample)) 
 
         cat_iter=1
         
@@ -719,7 +728,7 @@ def make_plots(background_color, label_color, rares, ymax, xmax,\
                 output_dir, resolution, imagetype,groups,colors,data_colors, \
                 metric_name,labelname,rarefaction_data_mat,\
                 rarefaction_legend_mat,sample_dict,sample_data_colors,
-                sample_colors):   
+                sample_colors,mapping_lookup):   
     '''This is the main function for generating the rarefaction plots and html
         file.'''
     #Get the alpha rare data
@@ -728,7 +737,7 @@ def make_plots(background_color, label_color, rares, ymax, xmax,\
     #generate the filepath for the image file
     file_path = os.path.join(output_dir, \
     splitext(split(raredata['headers'][0])[1])[0])
-
+    
     #Sort and iterate through the groups
     for i in natsort(groups):
 
@@ -772,7 +781,7 @@ def make_plots(background_color, label_color, rares, ymax, xmax,\
                 rarefaction_data_mat[labelname][i][metric_name]['err'].append(''.join('%10.3f' % ((raredata['error'][i][j]))))
  
         #Create raw plots for each group in a category
-        fpath = os.path.join(output_dir, metric_name+labelname+i)
+        fpath = output_dir
         rarefaction_legend_mat=save_single_rarefaction_plots( \
                                     sample_dict, \
                                     imagetype,metric_name, \
@@ -780,7 +789,7 @@ def make_plots(background_color, label_color, rares, ymax, xmax,\
                                     fpath,background_color, \
                                     label_color,resolution,ymax,xmax,
                                     rarefaction_legend_mat,groups[i],
-                                    labelname,i)
+                                    labelname,i,mapping_lookup)
     categories = [k for k in groups]
 
                                 
@@ -790,7 +799,7 @@ def make_plots(background_color, label_color, rares, ymax, xmax,\
                            raredata['error'], xmax, ymax, categories, \
                            labelname, imagetype, resolution, data_colors, \
                            colors, file_path, background_color, label_color, \
-                           rarefaction_legend_mat, metric_name)
+                           rarefaction_legend_mat, metric_name,mapping_lookup)
     #
 
 
@@ -882,9 +891,9 @@ function changeMetric(SelObject){
         for (var i=1, il=array.length; i<il; i++){
 			img=document.createElement('img')
 			img.setAttribute('width',"600px") 
-			img.setAttribute('id',new_cat+array[i]+'_ave'+imagetype)
+			img.setAttribute('id',array[i]+'_ave'+imagetype)
 			img.setAttribute('style','position:absolute;z-index:0')
-			img.setAttribute('src',"./html_plots/"+new_cat+array[i]+'_ave'+imagetype)
+			img.setAttribute('src',"./html_plots/"+array[i]+'_ave'+imagetype)
 			plots.appendChild(img)
 		}
 		plots.style.display=''
@@ -931,9 +940,9 @@ function changeCategory(SelObject){
         for (var i=1, il=array.length; i<il; i++){
 			img=document.createElement('img')
 			img.setAttribute('width',"600px") 
-			img.setAttribute('id',cat+array[i]+'_ave'+imagetype)
+			img.setAttribute('id',metric+array[i]+'_ave'+imagetype)
 			img.setAttribute('style','position:absolute;z-index:0')
-			img.setAttribute('src',"./html_plots/"+cat+array[i]+'_ave'+imagetype)
+			img.setAttribute('src',"./html_plots/"+metric+array[i]+'_ave'+imagetype)
 			plots.appendChild(img)
 		}
 		plots.style.display=''
