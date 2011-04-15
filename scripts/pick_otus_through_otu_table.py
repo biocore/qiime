@@ -102,7 +102,7 @@ script_info['optional_options'] = [\
  make_option('-m','--mapping_fp',
         help='the mapping filepath [REQUIRED for denoising]'),
  make_option('-s','--sff_fp',
-        help='the sff file [REQUIRED for denoising]'),
+        help='the flowgrams filepath [REQUIRED for denoising]'),
 ]
 script_info['version'] = __version__
 

@@ -54,7 +54,7 @@ script_info['optional_options'] = [\
         dest='parallel',default=False,
         help='Run in parallel where available [default: %default]'),
  make_option('-s','--sff_fp',
-        help='the sff file [REQUIRED for denoising]'),
+        help='the flowgrams filepath [REQUIRED for denoising]'),
  make_option('-e','--seqs_per_sample',type='int',
      help='depth of coverage for even sampling [default: %default]'),
  make_option('--even_sampling_keeps_all_samples',
