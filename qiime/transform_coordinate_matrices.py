@@ -12,7 +12,7 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
 from random import shuffle
-from numpy import array, mean
+from numpy import array, mean, append, zeros
 from cogent.cluster.procrustes import procrustes
 from cogent.util.dict2d import Dict2D
 from qiime.util import create_dir
@@ -147,7 +147,14 @@ def get_procrustes_results(coords_f1,coords_f2,sample_id_map=None,\
         pct_var2 = pct_var2[:max_dimensions]
         eigvals1 = eigvals1[:max_dimensions]
         eigvals2 = eigvals2[:max_dimensions]
-    
+    else:
+        if len(pct_var1)>len(pct_var2):
+            pct_var2 = append(pct_var2,zeros(len(pct_var1)-len(pct_var2)))
+            eigvals2 = append(eigvals2,zeros(len(eigvals1)-len(eigvals2)))
+        elif len(pct_var1)<len(pct_var2):
+            pct_var1 = append(pct_var1,zeros(len(pct_var2)-len(pct_var1)))
+            eigvals1 = append(eigvals1,zeros(len(eigvals2)-len(eigvals1)))
+
     # Run the Procrustes analysis
     transformed_coords_m1, transformed_coords_m2, m_squared =\
      procrustes(coords1,coords2)
