@@ -131,15 +131,17 @@ def call_commands_serially(commands,
                 logger.write(msg)
                 logger.close()
                 raise WorkflowError, msg
+            # in the no error case, we write commands' output to the log
+            # and also echo to this proc's stdout/stderr
             else:
                 # write stdout and stderr to log file
                 logger.write("Stdout:\n%s\nStderr:\n%s\n" % (stdout,stderr))
                 # write stdout to stdout
                 if stdout:
-			print stdout
+                    print stdout
                 # write stderr to stderr
-		if stderr:
-                	sys.stderr.write(stderr)
+                if stderr:
+                    sys.stderr.write(stderr)
     if close_logger_on_success: logger.close()
 
 def print_to_stdout(s):
