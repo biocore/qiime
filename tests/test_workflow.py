@@ -51,7 +51,29 @@ def timeout(signum, frame):
     raise TimeExceededError,\
      "Test failed to run in allowed time (%d seconds)."\
       % allowed_seconds_per_test
-    
+
+
+def core_analyses_sigalrm_setup(allowed_seconds = 480):
+    """ call this in e.g. test_core_qiime... - allows longer time before timeout
+    """
+    #this test takes a long time, turn off the alarm from setUp
+    # and reset it
+
+    # reset alarm (note only one at a time can be set)
+    signal.alarm(0)
+
+    # can't reuse global fn timeout - alredy has 240s set
+    def core_timeout(signum, frame):
+        raise TimeExceededError,\
+         "Test failed to run in allowed time (%d seconds)."\
+         % allowed_seconds
+    signal.signal(signal.SIGALRM, core_timeout)
+    # set the 'alarm' to go off in allowed_seconds seconds
+    signal.alarm(allowed_seconds)
+
+    # tearDown will reset our alarm when finished
+
+
 class WorkflowTests(TestCase):
     
     def setUp(self):
@@ -227,6 +249,8 @@ class WorkflowTests(TestCase):
     def test_run_core_qiime_analyses_serial(self):
         """run_core_qiime_analyses: functions as expected (serially)
         """
+        # this takes a long time, so use a longer sigalrm
+        core_analyses_sigalrm_setup()
         run_core_qiime_analyses(
             fna_fps=self.fasting_fna_fp,
             qual_fps=self.fasting_qual_fp,
@@ -271,6 +295,8 @@ class WorkflowTests(TestCase):
         """run_core_qiime_analyses: functions as expected (serially, alt params)
         """
         # Single category and sampling_depth=None
+        # this takes a long time, so use a longer sigalrm
+        core_analyses_sigalrm_setup()
         run_core_qiime_analyses(
             fna_fps=self.fasting_fna_fp,
             qual_fps=self.fasting_qual_fp,
@@ -314,6 +340,8 @@ class WorkflowTests(TestCase):
     def test_run_core_qiime_analyses_parallel(self):
         """run_core_qiime_analyses: functions as expected in parallel
         """
+        # this takes a long time, so use a longer sigalrm
+        core_analyses_sigalrm_setup()
         run_core_qiime_analyses(
             fna_fps=self.fasting_fna_fp,
             qual_fps=self.fasting_qual_fp,
@@ -1071,7 +1099,7 @@ class WorkflowTests(TestCase):
          
     def test_run_jackknifed_beta_diversity(self):
         """ run_jackknifed_beta_diversity generates expected results """
-    
+
         run_jackknifed_beta_diversity(
          self.fasting_otu_table_fp,
          self.fasting_tree_fp,
