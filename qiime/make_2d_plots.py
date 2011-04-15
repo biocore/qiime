@@ -419,7 +419,6 @@ def generate_2d_plots(prefs,data,html_dir_path,data_dir_path,filename,
                 summarize_pcoas(data['coord'], data['support_pcoas'], method=data['ellipsoid_method'])
             data['coord'] = \
                 (m_names,matrix_average,data['coord'][2],data['coord'][3])
-            print data['coord'][3]
             for i in range(len(m_names)):
                 sample_location[m_names[i]]=i
         else: 
