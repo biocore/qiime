@@ -286,7 +286,7 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,
     
     # Prep the merge_denoiser_output.py command, if denoising
     if denoise:
-        pick_otu_dir = '%s/denoised_otus/' % pick_otu_dir
+        #pick_otu_dir = '%s/denoised_otus/' % pick_otu_dir
         
         try:
             params_str = get_params_str(params['merge_denoiser_output'])
@@ -294,7 +294,7 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,
             params_str = ''
         merge_denoiser_output_cmd = \
          '%s %s/merge_denoiser_output.py -m %s -p %s -f %s -d %s -o %s %s' %\
-         (python_exe_fp, script_dir, denoised_mapping_fp, otu_fp, 
+         (python_exe_fp, script_dir, denoised_mapping_fp, otu_fp,
           original_input_fp, denoised_seqs_fp, pick_otu_dir, params_str)
           
         input_fp = '%s/denoised_all.fasta' % pick_otu_dir
@@ -302,7 +302,7 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,
         commands.append([('Merge denoiser output', merge_denoiser_output_cmd)])
     
     # Prep the representative set picking command
-    rep_set_dir = '%s/rep_set/' % pick_otu_dir
+    rep_set_dir = '%s/rep_set/' % output_dir
     try:
         makedirs(rep_set_dir)
     except OSError:
@@ -332,7 +332,7 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,
     # Prep the taxonomy assignment command
     assignment_method = params['assign_taxonomy']['assignment_method']
     assign_taxonomy_dir = '%s/%s_assigned_taxonomy' %\
-     (rep_set_dir,assignment_method)
+     (output_dir,assignment_method)
     taxonomy_fp = '%s/%s_rep_set_tax_assignments.txt' % \
      (assign_taxonomy_dir,input_basename)
     if parallel and (assignment_method == 'rdp' or assignment_method == 'blast'):
@@ -376,7 +376,7 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,
         makedirs(otu_table_dir)
     except OSError:
         pass
-    otu_table_fp = '%s/%s_otu_table.txt' % (otu_table_dir,input_basename)
+    otu_table_fp = '%s/otu_table.txt' % output_dir
     try:
         params_str = get_params_str(params['make_otu_table'])
     except KeyError:
@@ -389,7 +389,7 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,
     
     # Prep the pynast alignment command
     pynast_dir = '%s/%s_aligned_seqs' % \
-     (rep_set_dir,params['align_seqs']['alignment_method'])
+     (output_dir,params['align_seqs']['alignment_method'])
     aln_fp = '%s/%s_rep_set_aligned.fasta' % (pynast_dir,input_basename)
     alignment_method = params['align_seqs']['alignment_method']
     if parallel and alignment_method == 'pynast':
@@ -440,21 +440,14 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,
         filtered_aln_fp = aln_fp
     
     # Prep the tree building command
-    phylogeny_dir = '%s/%s_phylogeny' %\
-     (pynast_dir, params['make_phylogeny']['tree_method'])
-    try:
-        makedirs(phylogeny_dir)
-    except OSError:
-        pass
-    tree_fp = '%s/%s_rep_set.tre' % (phylogeny_dir,input_basename)
-    log_fp = '%s/%s_rep_set_phylogeny.log' % (phylogeny_dir,input_basename)
+    tree_fp = '%s/rep_set.tre' % output_dir
     try:
         params_str = get_params_str(params['make_phylogeny'])
     except KeyError:
         params_str = ''
     # Build the tree building command
-    make_phylogeny_cmd = '%s %s/make_phylogeny.py -i %s -o %s -l %s %s' %\
-     (python_exe_fp, script_dir, filtered_aln_fp, tree_fp, log_fp,\
+    make_phylogeny_cmd = '%s %s/make_phylogeny.py -i %s -o %s %s' %\
+     (python_exe_fp, script_dir, filtered_aln_fp, tree_fp,\
      params_str)
     commands.append([('Build phylogenetic tree', make_phylogeny_cmd)])
     

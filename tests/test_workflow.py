@@ -270,12 +270,7 @@ class WorkflowTests(TestCase):
         
         # Basic sanity test of OTU table as details are tested 
         # in the pick_otus_through_otu_table tests
-        otu_table_fp = join(self.wf_out,'da',
-                            'uclust_picked_otus',
-                            'rep_set',
-                            'rdp_assigned_taxonomy',
-                            'otu_table',
-                            'seqs_otu_table.txt')
+        otu_table_fp = join(self.wf_out,'da','otu_table.txt')
         sample_ids, otu_ids, otu_table, lineages =\
           parse_otu_table(open(otu_table_fp))
         expected_sample_ids = ['PC.354','PC.355','PC.356','PC.481',
@@ -316,12 +311,7 @@ class WorkflowTests(TestCase):
         
         # Basic sanity test of OTU table as details are tested 
         # in the pick_otus_through_otu_table tests
-        otu_table_fp = join(self.wf_out,'da',
-                            'uclust_picked_otus',
-                            'rep_set',
-                            'rdp_assigned_taxonomy',
-                            'otu_table',
-                            'seqs_otu_table.txt')
+        otu_table_fp = join(self.wf_out,'da','otu_table.txt')
         sample_ids, otu_ids, otu_table, lineages =\
           parse_otu_table(open(otu_table_fp))
         expected_sample_ids = ['PC.354','PC.355','PC.356','PC.481',
@@ -361,12 +351,7 @@ class WorkflowTests(TestCase):
         
         # Basic sanity test of OTU table as details are tested 
         # in the pick_otus_through_otu_table tests
-        otu_table_fp = join(self.wf_out,'da',
-                            'uclust_picked_otus',
-                            'rep_set',
-                            'rdp_assigned_taxonomy',
-                            'otu_table',
-                            'seqs_otu_table.txt')
+        otu_table_fp = join(self.wf_out,'da','otu_table.txt')
         sample_ids, otu_ids, otu_table, lineages =\
           parse_otu_table(open(otu_table_fp))
         expected_sample_ids = ['PC.354','PC.355','PC.356','PC.481',
@@ -537,21 +522,17 @@ class WorkflowTests(TestCase):
         input_file_basename = splitext(split(self.fasting_seqs_fp)[1])[0]
         otu_map_fp = join(self.wf_out,'uclust_picked_otus',
          '%s_otus.txt' % input_file_basename)
-        alignment_fp = join(self.wf_out,'uclust_picked_otus','rep_set',
+        alignment_fp = join(self.wf_out,
          'pynast_aligned_seqs','%s_rep_set_aligned.fasta' % 
           input_file_basename)
-        failures_fp = join(self.wf_out,'uclust_picked_otus','rep_set',
+        failures_fp = join(self.wf_out,
          'pynast_aligned_seqs','%s_rep_set_failures.fasta' % 
           input_file_basename)
-        taxonomy_assignments_fp = join(self.wf_out,'uclust_picked_otus',
-         'rep_set','rdp_assigned_taxonomy','%s_rep_set_tax_assignments.txt' %
+        taxonomy_assignments_fp = join(self.wf_out,
+         'rdp_assigned_taxonomy','%s_rep_set_tax_assignments.txt' %
          input_file_basename)
-        otu_table_fp = join(self.wf_out,'uclust_picked_otus','rep_set',
-         'rdp_assigned_taxonomy','otu_table','%s_otu_table.txt' % 
-         input_file_basename)
-        tree_fp = join(self.wf_out,'uclust_picked_otus','rep_set',
-         'pynast_aligned_seqs','fasttree_phylogeny','%s_rep_set.tre' % 
-         input_file_basename)
+        otu_table_fp = join(self.wf_out,'otu_table.txt')
+        tree_fp = join(self.wf_out,'rep_set.tre')
         
         self.assertEqual(actual_tree_fp,tree_fp)
         self.assertEqual(actual_otu_table_fp,otu_table_fp)
@@ -621,23 +602,18 @@ class WorkflowTests(TestCase):
             "Denoiser (or other dependency) cannot be found."
          
         input_file_basename = 'denoised_seqs'
-        otu_map_fp = join(self.wf_out,'uclust_picked_otus','denoised_otus',
+        otu_map_fp = join(self.wf_out,'uclust_picked_otus',
          'denoised_otu_map.txt')
-        alignment_fp = join(self.wf_out,'uclust_picked_otus','denoised_otus',
-         'rep_set','pynast_aligned_seqs','%s_rep_set_aligned.fasta' % 
+        alignment_fp = join(self.wf_out,
+         'pynast_aligned_seqs','%s_rep_set_aligned.fasta' % 
           input_file_basename)
-        failures_fp = join(self.wf_out,'uclust_picked_otus','denoised_otus',
-         'rep_set','pynast_aligned_seqs','%s_rep_set_failures.fasta' % 
+        failures_fp = join(self.wf_out,
+         'pynast_aligned_seqs','%s_rep_set_failures.fasta' % 
           input_file_basename)
-        taxonomy_assignments_fp = join(self.wf_out,'uclust_picked_otus',
-         'denoised_otus','rep_set','rdp_assigned_taxonomy',
+        taxonomy_assignments_fp = join(self.wf_out,'rdp_assigned_taxonomy',
          '%s_rep_set_tax_assignments.txt' % input_file_basename)
-        otu_table_fp = join(self.wf_out,'uclust_picked_otus','denoised_otus',
-         'rep_set','rdp_assigned_taxonomy','otu_table','%s_otu_table.txt' % 
-         input_file_basename)
-        tree_fp = join(self.wf_out,'uclust_picked_otus','denoised_otus',
-         'rep_set','pynast_aligned_seqs','fasttree_phylogeny',
-         '%s_rep_set.tre' % input_file_basename)
+        otu_table_fp = join(self.wf_out,'otu_table.txt')
+        tree_fp = join(self.wf_out,'rep_set.tre')
          
         # Number of OTUs falls within a range that was manually 
         # confirmed
@@ -702,18 +678,14 @@ class WorkflowTests(TestCase):
         input_file_basename = splitext(split(self.fasting_seqs_fp)[1])[0]
         otu_map_fp = join(self.wf_out,'uclust_picked_otus',
          '%s_otus.txt' % input_file_basename)
-        alignment_fp = join(self.wf_out,'uclust_picked_otus','rep_set',
+        alignment_fp = join(self.wf_out,
          'muscle_aligned_seqs','%s_rep_set_aligned.fasta' % 
           input_file_basename)
-        taxonomy_assignments_fp = join(self.wf_out,'uclust_picked_otus',
-         'rep_set','rdp_assigned_taxonomy','%s_rep_set_tax_assignments.txt' %
+        taxonomy_assignments_fp = join(self.wf_out,
+         'rdp_assigned_taxonomy','%s_rep_set_tax_assignments.txt' %
          input_file_basename)
-        otu_table_fp = join(self.wf_out,'uclust_picked_otus','rep_set',
-         'rdp_assigned_taxonomy','otu_table','%s_otu_table.txt' % 
-         input_file_basename)
-        tree_fp = join(self.wf_out,'uclust_picked_otus','rep_set',
-         'muscle_aligned_seqs','fasttree_phylogeny','%s_rep_set.tre' % 
-         input_file_basename)        
+        otu_table_fp = join(self.wf_out,'otu_table.txt')
+        tree_fp = join(self.wf_out,'rep_set.tre')        
          
         # Number of OTUs falls within a range that was manually 
         # confirmed
@@ -776,21 +748,17 @@ class WorkflowTests(TestCase):
         input_file_basename = splitext(split(self.fasting_seqs_fp)[1])[0]
         otu_map_fp = join(self.wf_out,'uclust_picked_otus',
          '%s_otus.txt' % input_file_basename)
-        alignment_fp = join(self.wf_out,'uclust_picked_otus','rep_set',
+        alignment_fp = join(self.wf_out,
          'pynast_aligned_seqs','%s_rep_set_aligned.fasta' % 
           input_file_basename)
-        failures_fp = join(self.wf_out,'uclust_picked_otus','rep_set',
+        failures_fp = join(self.wf_out,
          'pynast_aligned_seqs','%s_rep_set_failures.fasta' % 
           input_file_basename)
-        taxonomy_assignments_fp = join(self.wf_out,'uclust_picked_otus',
-         'rep_set','rdp_assigned_taxonomy','%s_rep_set_tax_assignments.txt' %
+        taxonomy_assignments_fp = join(self.wf_out,
+         'rdp_assigned_taxonomy','%s_rep_set_tax_assignments.txt' %
          input_file_basename)
-        otu_table_fp = join(self.wf_out,'uclust_picked_otus','rep_set',
-         'rdp_assigned_taxonomy','otu_table','%s_otu_table.txt' % 
-         input_file_basename)
-        tree_fp = join(self.wf_out,'uclust_picked_otus','rep_set',
-         'pynast_aligned_seqs','fasttree_phylogeny','%s_rep_set.tre' % 
-         input_file_basename)
+        otu_table_fp = join(self.wf_out,'otu_table.txt')
+        tree_fp = join(self.wf_out,'rep_set.tre')
         
         # Number of OTUs falls within a range that was manually 
         # confirmed
