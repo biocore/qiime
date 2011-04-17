@@ -2,6 +2,7 @@
 # File created on 30 Dec 2009.
 from __future__ import division
 import sys
+import re
 from subprocess import Popen, PIPE, STDOUT
 from os import makedirs, listdir
 from glob import glob
@@ -1097,6 +1098,38 @@ def run_jackknifed_beta_diversity(otu_table_fp,tree_fp,seqs_per_sample,
     command_handler(commands,status_update_callback,logger)
     
 
+
+def format_index_link(link_description,relative_path):
+    
+    return '<td>%s</td><td> <a href="%s">%s</a></td>' % (link_description,
+                                        relative_path,
+                                        split(relative_path)[1])
+
+def generate_index_page(index_links,index_fp):
+    # get containing directory for index_fp
+    top_level_dir = split(split(index_fp)[0])[1]
+    index_page_header = "<html><head><title>QIIME results</title></head><body>\n"
+    index_lines = [index_page_header]
+    d = {}
+    for e in index_links:
+        try:
+            d[e[2]].append((e[0],e[1]))
+        except KeyError:
+            d[e[2]] = [(e[0],e[1])]
+    index_lines.append('<table border=1>\n')
+    for k,v in d.items():
+        index_lines.append(
+         '<tr colspan=2 align=center bgcolor=ltgrey><td colspan=2 align=center>%s</td></tr>\n' % k)
+        for description,path in v:
+            path = re.sub('.*%s' % top_level_dir,'./',path)
+            index_lines.append('<tr>%s</tr>\n' % format_index_link(description,path))
+    index_lines.append('</table>')
+    
+    index_page_footer = "</body></html>"
+    index_lines.append(index_page_footer)
+    
+    open(index_fp,'w').write(''.join(index_lines))
+
 # Run QIIME method comparison workflow
 def run_core_qiime_analyses(
     fna_fps,
@@ -1128,10 +1161,14 @@ def run_core_qiime_analyses(
     else:
         categories= []
     create_dir(output_dir)
+    index_fp = '%s/index.html' % output_dir
+    index_links = []
     commands = []
     python_exe_fp = qiime_config['python_exe_fp']
     script_dir = get_qiime_scripts_dir()
-    logger = WorkflowLogger(generate_log_fp(output_dir),
+    log_fp = generate_log_fp(output_dir)
+    index_links.append(('Master run log',log_fp,'Master logs'))
+    logger = WorkflowLogger(log_fp,
                             params=params,
                             qiime_config=qiime_config)
     
@@ -1139,6 +1176,11 @@ def run_core_qiime_analyses(
     # Prep the split_libraries command
     split_libraries_output_dir = '%s/sl_out/' % output_dir
     split_libraries_seqs_fp = '%s/seqs.fna' % split_libraries_output_dir
+    split_libraries_hist_fp = '%s/histograms.txt' % split_libraries_output_dir
+    split_libraries_log_fp = '%s/split_library_log.txt' % split_libraries_output_dir
+    index_links.append(('Demultiplexed sequences',split_libraries_seqs_fp,'Split libraries results'))
+    index_links.append(('Split libraries log',split_libraries_log_fp,'Split libraries results'))
+    index_links.append(('Sequence length histograms',split_libraries_hist_fp,'Split libraries results'))
     try:
         params_str = get_params_str(params['split_libraries'])
     except KeyError:
@@ -1169,6 +1211,8 @@ def run_core_qiime_analyses(
                                 mapping_fp=mapping_fp,
                                 parallel=parallel,
                                 status_update_callback=status_update_callback)
+    index_links.append(('Phylogenetic tree',de_novo_tree_fp,'OTU workflow results'))
+    index_links.append(('OTU table',otu_table_fp,'OTU workflow results'))
     
     # If a reference tree was passed, use it for downstream analysis. Otherwise
     # use the de novo tree.
@@ -1196,6 +1240,7 @@ def run_core_qiime_analyses(
      tree_fp=tree_fp,
      parallel=parallel,
      status_update_callback=status_update_callback)
+                            
     # cluster quality stub
     for bdiv_metric, dm_fp in full_dm_fps:
         for category in categories:
@@ -1213,6 +1258,27 @@ def run_core_qiime_analyses(
             commands.append([
              ('Cluster quality (%s; %s)' % (bdiv_metric, category),
               cluster_quality_cmd)])
+              
+            index_links.append(('Cluster quality results (%s, %s)' % (bdiv_metric,category),
+                                cluster_quality_fp,
+                                'Beta diversity results'))
+        # Create links for the bdiv results
+        index_links.append(('3D plot (%s, continuous coloring)' % bdiv_metric,
+                            '%s/%s_3d_continuous/%s_pc.txt_3D.html' % \
+                             (bdiv_full_output_dir,bdiv_metric,bdiv_metric),
+                            'Beta diversity results'))
+        index_links.append(('3D plot (%s, discrete coloring)' % bdiv_metric,
+                            '%s/%s_3d_discrete/%s_pc.txt_3D.html' % \
+                             (bdiv_full_output_dir,bdiv_metric,bdiv_metric),
+                            'Beta diversity results'))
+        index_links.append(('Distance matrix (%s)' % bdiv_metric,
+                            '%s/%s_dm.txt' % \
+                             (bdiv_full_output_dir,bdiv_metric),
+                            'Beta diversity results'))
+        index_links.append(('Principal coordinate matrix (%s)' % bdiv_metric,
+                            '%s/%s_pc.txt' % \
+                             (bdiv_full_output_dir,bdiv_metric),
+                            'Beta diversity results'))
 
     
     if sampling_depth:
@@ -1244,6 +1310,26 @@ def run_core_qiime_analyses(
                 commands.append([
                  ('Cluster quality (%s; %s)' % (bdiv_metric, category),
                   cluster_quality_cmd)])
+                index_links.append(('Cluster quality results (%s, %s)' % (bdiv_metric,category),
+                    cluster_quality_fp,
+                    'Beta diversity results (even sampling: %d)' % sampling_depth))
+                    # Create links for the bdiv results
+            index_links.append(('3D plot (%s, continuous coloring)' % bdiv_metric,
+                                '%s/%s_3d_continuous/%s_pc.txt_3D.html' % \
+                                 (bdiv_even_output_dir,bdiv_metric,bdiv_metric),
+                                'Beta diversity results (even sampling: %d)' % sampling_depth))
+            index_links.append(('3D plot (%s, discrete coloring)' % bdiv_metric,
+                                '%s/%s_3d_discrete/%s_pc.txt_3D.html' % \
+                                 (bdiv_even_output_dir,bdiv_metric,bdiv_metric),
+                                'Beta diversity results (even sampling: %d)' % sampling_depth))
+            index_links.append(('Distance matrix (%s)' % bdiv_metric,
+                                '%s/%s_dm.txt' % \
+                                 (bdiv_even_output_dir,bdiv_metric),
+                                'Beta diversity results (even sampling: %d)' % sampling_depth))
+            index_links.append(('Principal coordinate matrix (%s)' % bdiv_metric,
+                                '%s/%s_pc.txt' % \
+                                 (bdiv_even_output_dir,bdiv_metric),
+                                'Beta diversity results (even sampling: %d)' % sampling_depth))
         
     ## Alpha rarefaction workflow
     arare_full_output_dir = '%s/arare/' % output_dir
@@ -1259,6 +1345,11 @@ def run_core_qiime_analyses(
      parallel=parallel,
      min_seqs_per_sample=arare_min_seqs_per_sample,
      status_update_callback=status_update_callback)
+    
+    index_links.append(('Alpha rarefaction plots',
+                        '%s/alpha_rarefaction_plots/rarefaction_plots.html'\
+                          % arare_full_output_dir,
+                        "Alpha rarefaction results"))
     
     
     # OTU category significance and supervised learning
@@ -1290,9 +1381,20 @@ def run_core_qiime_analyses(
           supervised_learning_dir, params_str)
         commands.append([('Supervised learning (%s)' % category, 
                           supervised_learning_cmd)])
+                          
+        index_links.append(('Category significance (%s)' % category,
+                    category_signifance_fp,
+                    "Category results"))
+        index_links.append(('Supervised learning (%s)' % category,
+                    supervised_learning_dir,
+                    "Supervised learning results"))
     
     command_handler(commands, status_update_callback, logger)
-    
-                               
-    
+    generate_index_page(index_links,index_fp)
+
+
+
+
+
+
 
