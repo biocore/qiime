@@ -667,8 +667,12 @@ def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,
              [('Beta Diversity (%s)' % beta_diversity_metric, beta_div_cmd)])
         
         
-        beta_div_fp = '%s/%s_%s' % \
+        orig_beta_div_fp = '%s/%s_%s' % \
          (output_dir, beta_diversity_metric, otu_table_filename)
+        beta_div_fp = '%s/%s_dm.txt' % \
+         (output_dir, beta_diversity_metric)
+        commands.append([('Rename distance matrix (%s)' % beta_diversity_metric,
+                         'mv %s %s' % (orig_beta_div_fp, beta_div_fp))])
         dm_fps.append((beta_diversity_metric, beta_div_fp))
         
         # Prep the principal coordinates command
@@ -1119,7 +1123,7 @@ def generate_index_page(index_links,index_fp):
     index_lines.append('<table border=1>\n')
     for k,v in d.items():
         index_lines.append(
-         '<tr colspan=2 align=center bgcolor=ltgrey><td colspan=2 align=center>%s</td></tr>\n' % k)
+         '<tr colspan=2 align=center bgcolor=wheat><td colspan=2 align=center>%s</td></tr>\n' % k)
         for description,path in v:
             path = re.sub('.*%s' % top_level_dir,'./',path)
             index_lines.append('<tr>%s</tr>\n' % format_index_link(description,path))

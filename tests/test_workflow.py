@@ -820,10 +820,8 @@ class WorkflowTests(TestCase):
          status_update_callback=no_status_updates)
         
         input_file_basename = splitext(split(self.fasting_otu_table_fp)[1])[0]
-        unweighted_unifrac_dm_fp = join(self.wf_out,
-         'unweighted_unifrac_%s.txt' % input_file_basename)
-        weighted_unifrac_dm_fp = join(self.wf_out,
-         'weighted_unifrac_%s.txt' % input_file_basename)
+        unweighted_unifrac_dm_fp = join(self.wf_out,'unweighted_unifrac_dm.txt')
+        weighted_unifrac_dm_fp = join(self.wf_out,'weighted_unifrac_dm.txt')
         unweighted_unifrac_pc_fp = join(self.wf_out,'unweighted_unifrac_pc.txt')
         weighted_unifrac_pc_fp = join(self.wf_out,'weighted_unifrac_pc.txt')
         weighted_unifrac_html_fp = join(self.wf_out,
@@ -878,10 +876,8 @@ class WorkflowTests(TestCase):
         
         otu_table_basename = \
          splitext(split(self.fasting_otu_table_fp)[1])[0] + '_even147'
-        unweighted_unifrac_dm_fp = join(self.wf_out,
-         'unweighted_unifrac_%s.txt' % otu_table_basename)
-        weighted_unifrac_dm_fp = join(self.wf_out,
-         'weighted_unifrac_%s.txt' % otu_table_basename)
+        unweighted_unifrac_dm_fp = join(self.wf_out,'unweighted_unifrac_dm.txt')
+        weighted_unifrac_dm_fp = join(self.wf_out,'weighted_unifrac_dm.txt')
         unweighted_unifrac_pc_fp = join(self.wf_out,'unweighted_unifrac_pc.txt')
         weighted_unifrac_pc_fp = join(self.wf_out,'weighted_unifrac_pc.txt')
         weighted_unifrac_html_fp = join(self.wf_out,
@@ -934,10 +930,8 @@ class WorkflowTests(TestCase):
          status_update_callback=no_status_updates)
         
         input_file_basename = splitext(split(self.fasting_otu_table_fp)[1])[0]
-        unweighted_unifrac_dm_fp = join(self.wf_out,
-         'unweighted_unifrac_%s.txt' % input_file_basename)
-        weighted_unifrac_dm_fp = join(self.wf_out,
-         'weighted_unifrac_%s.txt' % input_file_basename)
+        unweighted_unifrac_dm_fp = join(self.wf_out,'unweighted_unifrac_dm.txt')
+        weighted_unifrac_dm_fp = join(self.wf_out,'weighted_unifrac_dm.txt')
         unweighted_unifrac_pc_fp = join(self.wf_out,'unweighted_unifrac_pc.txt')
         weighted_unifrac_pc_fp = join(self.wf_out,'weighted_unifrac_pc.txt')
         weighted_unifrac_html_fp = join(self.wf_out,
