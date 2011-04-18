@@ -372,11 +372,6 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,
     commands.append([('Assign taxonomy',assign_taxonomy_cmd)])
     
     # Prep the OTU table building command
-    otu_table_dir = '%s/otu_table/' % assign_taxonomy_dir
-    try:
-        makedirs(otu_table_dir)
-    except OSError:
-        pass
     otu_table_fp = '%s/otu_table.txt' % output_dir
     try:
         params_str = get_params_str(params['make_otu_table'])
@@ -1204,7 +1199,7 @@ def run_core_qiime_analyses(
     commands = []
     
     ## OTU picking through OTU table workflow
-    data_analysis_output_dir = '%s/da/' % output_dir
+    data_analysis_output_dir = '%s/otus/' % output_dir
     de_novo_tree_fp, otu_table_fp = \
      run_qiime_data_preparation(input_fp=split_libraries_seqs_fp, 
                                 output_dir=data_analysis_output_dir, 

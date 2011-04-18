@@ -270,7 +270,7 @@ class WorkflowTests(TestCase):
         
         # Basic sanity test of OTU table as details are tested 
         # in the pick_otus_through_otu_table tests
-        otu_table_fp = join(self.wf_out,'da','otu_table.txt')
+        otu_table_fp = join(self.wf_out,'otus','otu_table.txt')
         sample_ids, otu_ids, otu_table, lineages =\
           parse_otu_table(open(otu_table_fp))
         expected_sample_ids = ['PC.354','PC.355','PC.356','PC.481',
@@ -311,7 +311,7 @@ class WorkflowTests(TestCase):
         
         # Basic sanity test of OTU table as details are tested 
         # in the pick_otus_through_otu_table tests
-        otu_table_fp = join(self.wf_out,'da','otu_table.txt')
+        otu_table_fp = join(self.wf_out,'otus','otu_table.txt')
         sample_ids, otu_ids, otu_table, lineages =\
           parse_otu_table(open(otu_table_fp))
         expected_sample_ids = ['PC.354','PC.355','PC.356','PC.481',
@@ -351,7 +351,7 @@ class WorkflowTests(TestCase):
         
         # Basic sanity test of OTU table as details are tested 
         # in the pick_otus_through_otu_table tests
-        otu_table_fp = join(self.wf_out,'da','otu_table.txt')
+        otu_table_fp = join(self.wf_out,'otus','otu_table.txt')
         sample_ids, otu_ids, otu_table, lineages =\
           parse_otu_table(open(otu_table_fp))
         expected_sample_ids = ['PC.354','PC.355','PC.356','PC.481',
