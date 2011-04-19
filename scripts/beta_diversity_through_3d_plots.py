@@ -62,6 +62,11 @@ script_info['optional_options']=[
  make_option('-t','--tree_fp',
             help='path to the tree file [default: %default; '+\
             'REQUIRED for phylogenetic measures]'),
+ make_option('--color_by_all_fields',
+            help='plots will have coloring for all mapping fields '+\
+            '[default: %default; only include fields with greater than one value '+\
+            'and fewer values than the number of samples]',
+            default=False,action='store_true'),
  make_option('-f','--force',action='store_true',
         dest='force',help='Force overwrite of existing output directory'+\
         ' (note: existing files in output_dir will not be removed)'+\
@@ -75,6 +80,8 @@ script_info['optional_options']=[
  make_option('-e','--seqs_per_sample',type='int',
      help='depth of coverage for even sampling [default: %default]')]
 script_info['version'] = __version__
+
+
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
@@ -129,6 +136,7 @@ def main():
      command_handler=command_handler,
      params=parse_qiime_parameters(parameter_f),
      qiime_config=qiime_config,
+     color_by_interesting_fields_only=not opts.color_by_all_fields,
      sampling_depth=seqs_per_sample,
      tree_fp=tree_fp,
      parallel=parallel,

@@ -14,7 +14,8 @@ from qiime.parse import parse_mapping_file
 from qiime.format import format_otu_table
 from qiime.util import (compute_seqs_per_library_stats,
                         get_qiime_scripts_dir,
-                        create_dir, guess_even_sampling_depth)
+                        create_dir, guess_even_sampling_depth,
+                        get_interesting_mapping_fields)
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
@@ -564,7 +565,8 @@ def run_pick_reference_otus_through_otu_table(
 
 
 def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,
-    output_dir, command_handler, params, qiime_config, sampling_depth=None,
+    output_dir, command_handler, params, qiime_config,
+    color_by_interesting_fields_only=True,sampling_depth=None,
     tree_fp=None, parallel=False, status_update_callback=print_to_stdout):
     """ Run the data preparation steps of Qiime 
     
@@ -591,8 +593,18 @@ def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,
                             params=params,
                             qiime_config=qiime_config)
     
-    mapping_file_header = parse_mapping_file(open(mapping_fp,'U'))[1]
-    mapping_fields = ','.join(mapping_file_header)
+    mapping_data, mapping_header, mapping_comments =\
+     parse_mapping_file(open(mapping_fp,'U'))
+    # Get the interesting mapping fields to color by -- if none are
+    # interesting, take all of them. Interesting is defined as those
+    # which have greater than one value and fewer values than the number 
+    # of samples
+    if color_by_interesting_fields_only:
+        mapping_fields =\
+          get_interesting_mapping_fields(mapping_data, mapping_header) or mapping_header
+    else:
+        mapping_fields = mapping_header
+    mapping_fields = ','.join(mapping_fields)
     
     if sampling_depth:
         # Sample the OTU table at even depth
@@ -618,6 +630,9 @@ def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,
         params_str = get_params_str(params['make_prefs_file'])
     except KeyError:
         params_str = ''
+    if not 'mapping_headers_to_use' in params['make_prefs_file']:
+        params_str = '%s --mapping_headers_to_use %s' \
+         % (params_str,mapping_fields)
     # Build the 3d prefs file generator command
     prefs_cmd = \
      '%s %s/make_prefs_file.py -m %s -o %s %s' %\

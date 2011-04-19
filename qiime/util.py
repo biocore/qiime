@@ -1007,5 +1007,24 @@ def compute_days_since_epoch(day,month,year):
     d = datetime(int(year),int(month),int(day))
     epoch = datetime.utcfromtimestamp(0)
     return (d - epoch).days
+    
+def get_interesting_mapping_fields(mapping_data,mapping_headers):
+    """ Returns headers for fields that are useful to color by in plots 
+    
+        These fields are the ones that contain greater than one value 
+         and less values than the number of entries (so for example 
+         not SampleID) 
+    """
+    result = []
+    num_samples = len(mapping_data)
+    num_cols = len(mapping_headers)
+    transposed_data = array(mapping_data).T
+    for header, datum in zip(mapping_headers, transposed_data):
+        d = set(datum)
+        len_d = len(d)
+        if len_d > 1 and len_d < num_samples:
+            result.append(header)
+    return result
+    
 
 

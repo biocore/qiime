@@ -24,7 +24,8 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
     merge_n_otu_tables, convert_otu_table_relative, write_seqs_to_fasta,
     split_fasta_on_sample_ids, split_fasta_on_sample_ids_to_dict,
     split_fasta_on_sample_ids_to_files, median_absolute_deviation,
-    guess_even_sampling_depth, compute_days_since_epoch)
+    guess_even_sampling_depth, compute_days_since_epoch,
+    get_interesting_mapping_fields)
 
 import numpy
 from numpy import array, asarray
@@ -54,6 +55,8 @@ class TopLevelTests(TestCase):
         self.fasta1 = fasta1.split('\n')
         self.fasta2 = fasta2.split('\n')
         self.mapping_f1 = mapping_f1.split('\n')
+        self.mapping_f2 = mapping_f2.split('\n')
+        self.mapping_f3 = mapping_f3.split('\n')
         self.dirs_to_remove = []
         self.files_to_remove = []
 
@@ -430,6 +433,34 @@ class TopLevelTests(TestCase):
         otu_table_f3 = iter(self.otu_table_f3)
         self.assertRaises(ValueError,
          merge_n_otu_tables,[otu_table_f1,otu_table_f2,otu_table_f3])
+        
+    def test_compute_days_since_epoch(self):
+        """compute_days_since_epoch functions as expected """
+        self.assertEqual(compute_days_since_epoch(29,10,2002),11989)
+        # can pass keyword arguments
+        self.assertEqual(compute_days_since_epoch(year=2002,month=10,day=29),11989)
+        self.assertEqual(compute_days_since_epoch(day=27,month=3,year=2009),14330)
+        self.assertEqual(compute_days_since_epoch(day="27",month="3",year="2009"),14330)
+    
+    def test_get_interesting_mapping_fields(self):
+        """get_interesting_mapping_fields returns expected fields """
+        # all columns are completely unique
+        d = parse_mapping_file(self.mapping_f1)
+        actual = get_interesting_mapping_fields(d[0],d[1])
+        expected = []
+        self.assertEqual(actual,expected)
+        
+        # all columns are completely identical
+        d = parse_mapping_file(self.mapping_f2)
+        actual = get_interesting_mapping_fields(d[0],d[1])
+        expected = []
+        self.assertEqual(actual,expected)
+        
+        # some columns retained
+        d = parse_mapping_file(self.mapping_f3)
+        actual = get_interesting_mapping_fields(d[0],d[1])
+        expected = ['Something','days_since_epoch']
+        self.assertEqual(actual,expected)
         
 
 
@@ -840,14 +871,6 @@ AAAAAAA
         self.assertFloatEqual(compare_otu_maps(otu_map3, otu_map4), 0.33333333333)
         self.assertFloatEqual(compare_otu_maps(otu_map1, otu_map5), 1)
         
-    def test_compute_days_since_epoch(self):
-        """compute_days_since_epoch functions as expected """
-        self.assertEqual(compute_days_since_epoch(29,10,2002),11989)
-        # can pass keyword arguments
-        self.assertEqual(compute_days_since_epoch(year=2002,month=10,day=29),11989)
-        self.assertEqual(compute_days_since_epoch(day=27,month=3,year=2009),14330)
-        self.assertEqual(compute_days_since_epoch(day="27",month="3",year="2009"),14330)
-        
  
 otu_map1 = fields_to_dict("""1:\ta\tb\tc
 2:\td
@@ -932,7 +955,19 @@ AAACCC
 >Samp1_44
 A"""
 
+mapping_f2 = """#SampleID\tSomething\tdays_since_epoch
+Z1\thello\t23
+Z2\thello\t23
+A\thello\t23
+1\thello\t23
+NotInOtuTable\thello\t23"""
 
+mapping_f3 = """#SampleID\tSomething\tdays_since_epoch
+Z1\t42\t23
+Z2\t42\t10
+A\t4\t400000
+1\t4\t5.7
+NotInOtuTable\t9\t5.7"""
 
 #run unit tests if run from command-line
 if __name__ == '__main__':
