@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Antonio Gonzalez Pena"]
 __license__ = "GPL"
 __version__ = "1.2.1-dev"
 __maintainer__ = "Greg Caporaso"
@@ -14,7 +14,7 @@ __status__ = "Development"
 
 from optparse import make_option
 from os import popen, system, mkdir, makedirs, getenv
-from os.path import split, splitext, join
+from os.path import split, splitext, join, isfile
 from subprocess import check_call, CalledProcessError
 from cogent.app.util import get_tmp_filename
 from qiime.util import parse_command_line_parameters
@@ -44,7 +44,7 @@ script_info['required_options'] = [\
 ]
 rdp_classifier_fp = qiime_config['rdp_classifier_fp'] or getenv('RDP_JAR_PATH')
 script_info['optional_options'] = [\
- make_option('-r','--rdp_classifier_fp',action='store',\
+ make_option('--rdp_classifier_fp',action='store',\
            type='string',help='full path to rdp classifier jar file '+\
            '[default: %default]',\
            default=rdp_classifier_fp),\
@@ -55,6 +55,11 @@ script_info['optional_options'] = [\
            type='string',help='full path to '+\
            'scripts/assign_taxonomy.py [default: %default]',\
            default=join(get_qiime_scripts_dir(),'assign_taxonomy.py')),\
+ make_option('-t','--id_to_taxonomy_fp',action='store',\
+           type='string',help='full path to '+\
+           'id_to_taxonomy mapping file [REQUIRED]'),\
+ make_option('-r','--reference_seqs_fp',action='store',\
+        help='Ref seqs to rdp against. [default: %default]'),\
  options_lookup['jobs_to_start'],\
  options_lookup['poller_fp'],\
  options_lookup['retain_temp_files'],\
@@ -76,6 +81,8 @@ def main():
     assign_taxonomy_fp = opts.assign_taxonomy_fp
     confidence = opts.confidence
     rdp_classifier_fp = opts.rdp_classifier_fp
+    id_to_taxonomy_fp = opts.id_to_taxonomy_fp
+    reference_seqs_fp = opts.reference_seqs_fp
     cluster_jobs_fp = opts.cluster_jobs_fp
     input_fasta_fp = opts.input_fasta_fp 
     jobs_to_start = opts.jobs_to_start
@@ -86,6 +93,15 @@ def main():
     seconds_to_sleep = opts.seconds_to_sleep
     poll_directly = opts.poll_directly
 
+    if not isfile(input_fasta_fp):
+        raise ValueError('This file does not exists: %s' % input_fasta_fp)
+
+    if id_to_taxonomy_fp or reference_seqs_fp:
+        if not id_to_taxonomy_fp or not isfile(id_to_taxonomy_fp):
+            raise ValueError('This file does not exits: %s' % id_to_taxonomy_fp)
+        if not reference_seqs_fp or not isfile(reference_seqs_fp):
+            raise ValueError('This file does not exits: %s' % reference_seqs_fp)
+            
     try:
         makedirs(output_dir)
     except OSError:
@@ -119,7 +135,7 @@ def main():
     # compute the number of sequences that should be included in
     # each file after splitting the input fasta file   
     num_seqs_per_file = compute_seqs_per_file(input_fasta_fp,jobs_to_start)
-     
+    
     # split the fasta files and get the list of resulting files
     tmp_fasta_fps =\
       split_fasta(open(input_fasta_fp),num_seqs_per_file,job_prefix,output_dir)
@@ -132,9 +148,10 @@ def main():
     # generate the list of commands to be pushed out to nodes
     commands, job_result_filepaths = \
      get_commands(python_exe_fp,assign_taxonomy_fp,confidence,job_prefix,\
-     tmp_fasta_fps,rdp_classifier_fp,output_dir,working_dir)
+     tmp_fasta_fps,rdp_classifier_fp,output_dir,working_dir,\
+     id_to_taxonomy_fp=id_to_taxonomy_fp,reference_seqs_fp=reference_seqs_fp)
     created_temp_paths += job_result_filepaths
-
+    
     # Set up poller apparatus if the user does not suppress polling
     if not suppress_polling:
         # Write the list of files which must exist for the jobs to be 

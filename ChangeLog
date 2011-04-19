@@ -7,6 +7,7 @@ Add changes since QIIME 1.2.1 here
 * Changed default behavior of single_rarefaction.py. Now lineage information is included by default, but can be turned off with --suppress_include_lineages
 * Added script (compare_distance_matrices.py) for computing mantel correlations between a set of distance matrices.
 * Interface changes to summarize_otu_by_cat.py. This allows the user to pass the output file name, rather than a directory where the output file should be written.
+* Parameter -r reassignment in parallel_assign_taxonomy_rdp.py. Now -r is used for reference_seqs_fp as before was for rdp_classifier_fp.
 
 QIIME 1.2.1 (22 Feb 2011)
 ==================================
