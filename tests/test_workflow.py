@@ -53,7 +53,7 @@ def timeout(signum, frame):
       % allowed_seconds_per_test
 
 
-def core_analyses_sigalrm_setup(allowed_seconds = 480):
+def core_analyses_sigalrm_setup(allowed_seconds = 600):
     """ call this in e.g. test_core_qiime... - allows longer time before timeout
     """
     #this test takes a long time, turn off the alarm from setUp
