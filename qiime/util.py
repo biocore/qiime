@@ -458,8 +458,9 @@ def compute_seqs_per_library_stats(otu_f):
 
 def median_absolute_deviation(x):
     """ compute the median of the absolute deviations from the median """
+    x = asarray(x)
     median_x = median(x)
-    median_abs_deviation = median(map(abs,[e - median_x for e in x]))
+    median_abs_deviation = median(abs(x - median_x))
     return median_abs_deviation, median_x
 
 def guess_even_sampling_depth(counts_per_sample,num_deviations=2.25):
