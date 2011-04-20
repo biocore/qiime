@@ -284,7 +284,7 @@ class WorkflowTests(TestCase):
         otu_category_significance_fp =\
          '%s/category_significance_Treatment.txt' % self.wf_out
         cat_sig_line2 = list(open(otu_category_significance_fp))[1]
-        self.assertTrue(cat_sig_line2.startswith('319	11.31'))
+        self.assertAlmostEqual(float(cat_sig_line2.split()[1]),11.317,3)
 
     def test_run_core_qiime_analyses_serial_alt_params(self):
         """run_core_qiime_analyses: functions as expected (serially, alt params)
@@ -325,7 +325,7 @@ class WorkflowTests(TestCase):
         otu_category_significance_fp =\
          '%s/category_significance_Treatment.txt' % self.wf_out
         cat_sig_line2 = list(open(otu_category_significance_fp))[1]
-        self.assertTrue(cat_sig_line2.startswith('319	11.31'))
+        self.assertAlmostEqual(float(cat_sig_line2.split()[1]),11.317,3)
 
     def test_run_core_qiime_analyses_parallel(self):
         """run_core_qiime_analyses: functions as expected in parallel
@@ -363,7 +363,7 @@ class WorkflowTests(TestCase):
         otu_category_significance_fp =\
          '%s/category_significance_Treatment.txt' % self.wf_out
         cat_sig_line2 = list(open(otu_category_significance_fp))[1]
-        self.assertTrue(cat_sig_line2.startswith('319	11.31'))
+        self.assertAlmostEqual(float(cat_sig_line2.split()[1]),11.317,3)
     
     ## Need to generate a better test that makes use of denoiser. This
     ## fails because the data set is too small to be used by 
