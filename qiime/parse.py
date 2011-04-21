@@ -796,3 +796,19 @@ def parse_trflp(lines):
         data.append(current_row)
     
     return sample_ids, otu_ids, array(data).transpose()
+    
+def parse_denoiser_mapping(denoiser_map):
+    """ read a denoiser mapping file into a dictionary """
+    result = {}
+    for line in denoiser_map:
+        line = line.strip().split('\t')
+        denoised_id = line[0].rstrip(':')
+        original_ids = line[1:]
+        if denoised_id in result:
+            # just a healthy dose of paranoia
+            raise ValueError, \
+             ("Duplicated identifiers in denoiser mapping file: "
+              "are you sure you merged the correct files?")
+        else:
+            result[denoised_id] = original_ids
+    return result

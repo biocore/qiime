@@ -25,7 +25,8 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
     split_fasta_on_sample_ids, split_fasta_on_sample_ids_to_dict,
     split_fasta_on_sample_ids_to_files, median_absolute_deviation,
     guess_even_sampling_depth, compute_days_since_epoch,
-    get_interesting_mapping_fields)
+    get_interesting_mapping_fields,inflate_denoiser_output,
+    flowgram_id_to_seq_id_map)
 
 import numpy
 from numpy import array, asarray
@@ -59,6 +60,10 @@ class TopLevelTests(TestCase):
         self.mapping_f3 = mapping_f3.split('\n')
         self.dirs_to_remove = []
         self.files_to_remove = []
+        self.centroid_seqs1 = centroid_seqs1.split('\n')
+        self.singleton_seqs1 = singleton_seqs1.split('\n')
+        self.denoiser_mapping1 = denoiser_mapping1.split('\n')
+        self.raw_seqs1 = raw_seqs1.split('\n')
 
     def tearDown(self):    
         remove_files(self.files_to_remove)
@@ -462,7 +467,61 @@ class TopLevelTests(TestCase):
         expected = ['Something','days_since_epoch']
         self.assertEqual(actual,expected)
         
+    def test_inflate_denoiser_output(self):
+        """ inflate_denoiser_output expands denoiser results as expected """
+        actual = list(inflate_denoiser_output(
+         MinimalFastaParser(self.centroid_seqs1),
+         MinimalFastaParser(self.singleton_seqs1),
+         self.denoiser_mapping1,
+         MinimalFastaParser(self.raw_seqs1)))
+        expected = [("S1_0 FXX111 some comments","TTTT"),
+                    ("S1_2 FXX113 some other comments","TTTT"),
+                    ("S2_1 FXX112 some comments","TATT"),
+                    ("S3_5 FXX114","TATT"),
+                    ("S3_6 FXX115","TTGA"),
+                    ("S3_6 FXX116","TAGA")]
+        self.assertEqual(actual,expected)
+    
+    def test_flowgram_id_to_seq_id_map(self):
+        """ flowgram_id_to_seq_id_map functions as expected """
+        actual = flowgram_id_to_seq_id_map(MinimalFastaParser(self.raw_seqs1))
+        expected = {'FXX111':'S1_0 FXX111 some comments',
+                    'FXX112':'S2_1 FXX112 some comments',
+                    'FXX113':'S1_2 FXX113 some other comments',
+                    'FXX114':'S3_5 FXX114',
+                    'FXX115':'S3_6 FXX115',
+                    'FXX116':'S3_6 FXX116'}
+        self.assertEqual(actual,expected)
+        
 
+
+raw_seqs1 = """>S1_0 FXX111 some comments
+TTTT
+>S2_1 FXX112 some comments
+TATT
+>S1_2 FXX113 some other comments
+GGGG
+>S3_5 FXX114
+GGGA
+>S3_6 FXX115
+TTGA
+>S3_6 FXX116
+TAGA"""
+
+centroid_seqs1 = """>FXX111
+TTTT
+>FXX112
+TATT"""
+
+singleton_seqs1 = """>FXX115
+TTGA
+>FXX116
+TAGA"""
+        
+denoiser_mapping1 = """FXX111:\tFXX111\tFXX113
+FXX115:
+FXX112:\tFXX112\tFXX114
+FXX116:"""
 
 
 otu_table_fake1 = """#Full OTU Counts

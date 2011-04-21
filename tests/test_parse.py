@@ -25,7 +25,8 @@ from qiime.parse import (group_by_field, group_by_fields,
     parse_metadata_state_descriptions, parse_rarefaction_data,
     parse_illumina_line, parse_qual_score, parse_qual_scores, QiimeParseError,
     parse_newick,parse_trflp,parse_taxa_summary_table, parse_prefs_file,
-    parse_mapping_file_to_dict, mapping_file_to_dict, MinimalQualParser)
+    parse_mapping_file_to_dict, mapping_file_to_dict, MinimalQualParser,
+    parse_denoiser_mapping)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -69,6 +70,7 @@ class TopLevelTests(TestCase):
         self.taxa_summary1 = taxa_summary1
         self.taxa_summary1_expected = taxa_summary1_expected
         self.files_to_remove = []
+        self.denoiser_mapping1 = denoiser_mapping1.split('\n')
     
     def tearDown(self):
         remove_files(self.files_to_remove)
@@ -810,6 +812,16 @@ Sample 5	25
         self.assertEqual(samples, samples_exp)
         self.assertEqual(otus, otus_exp)
         self.assertEqual(data, data_exp)
+
+
+    def test_parse_denoiser_mapping(self):
+        """ parse_denoiser_mapping creates {} from denoiser mapping file
+        """
+        actual = parse_denoiser_mapping(self.denoiser_mapping1)
+        expected = {'Read1':['Read4','Read5 some comment'],
+                    'Read2':[],
+                    'Read3':['Read6']}
+        self.assertEqual(actual,expected)
         
 
 illumina_read1 = """HWI-6X_9267:1:1:4:1699#ACCACCC/1:TACGGAGGGTGCGAGCGTTAATCGCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCGAAAAAAAAAAAAAAAAAAAAAAA:abbbbbbbbbb`_`bbbbbb`bb^aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaDaabbBBBBBBBBBBBBBBBBBBB
@@ -879,6 +891,11 @@ expected_lineages1 = [['Bacteria','Actinobacteria','Actinobacteridae','Propionib
 ['Bacteria','Actinobacteria','Actinobacteridae','Gordoniaceae','Corynebacteriaceae'],
 ['Bacteria','Firmicutes','Alicyclobacillaceae','Bacilli','Staphylococcaceae'],
 ['Bacteria','Cyanobacteria','Chloroplasts','vectors']]
+
+denoiser_mapping1 = """Read1:\tRead4\tRead5 some comment
+Read2:
+Read3:\tRead6"""
+
 
 if __name__ =='__main__':
     main()

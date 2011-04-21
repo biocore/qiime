@@ -56,7 +56,8 @@ from qiime.parse import (parse_otu_table,
                          parse_coords,
                          parse_newick,
                          PhyloNode,
-                         parse_mapping_file)
+                         parse_mapping_file,
+                         parse_denoiser_mapping)
 from qiime.format import format_otu_table
 
 class TreeMissingError(IOError):
@@ -1027,5 +1028,30 @@ def get_interesting_mapping_fields(mapping_data,mapping_headers):
             result.append(header)
     return result
     
+def flowgram_id_to_seq_id_map(seqs):
+    """Map flowgram ids to sequence ids from a post-split_libraries fasta file
+    """
+    result = {}
+    for id_, seq in seqs:
+        fields = id_.split()
+        seq_id = id_
+        flowgram_id = fields[1]
+        result[flowgram_id] = seq_id
+    return result
+    
+def inflate_denoiser_output(centroid_seqs,singleton_seqs,denoiser_map,raw_seqs):
+    """Expand denoiser fasta files based on denoiser map
+    """
+    id_lookup = parse_denoiser_mapping(denoiser_map)
+    flowgram_to_seq_id_lookup = flowgram_id_to_seq_id_map(raw_seqs)
+    for id_, seq in centroid_seqs:
+        cluster_member_ids = id_lookup[id_]
+        for c in cluster_member_ids:
+            yield flowgram_to_seq_id_lookup[c], seq
+    
+    for id_, seq in singleton_seqs:
+        yield flowgram_to_seq_id_lookup[id_], seq
+    
+    return
 
 
