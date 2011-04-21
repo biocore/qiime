@@ -48,7 +48,13 @@ def single_file_upgma(input_file, output_file):
 
     # write output
     f = open(output_file,'w')
-    f.write(c.getNewick(with_distances=True))
+    try:
+        f.write(c.getNewick(with_distances=True))
+    except AttributeError:
+        if c == None:
+            raise RuntimeError("""input file %s did not make a UPGMA tree.
+ Ensure it has more than one sample present""" % (str(input_file),))
+        raise
     f.close()
 
 def single_file_nj(input_file, output_file):
