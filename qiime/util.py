@@ -1041,6 +1041,16 @@ def flowgram_id_to_seq_id_map(seqs):
     
 def inflate_denoiser_output(centroid_seqs,singleton_seqs,denoiser_map,raw_seqs):
     """Expand denoiser fasta files based on denoiser map
+    
+        The inflation process works as follows: write each centroid 
+         sequence n times, where n is the number of reads in that 
+         cluster, and write each singleton once. While writing these 
+         out map back to original sequence identifiers.
+         
+        The seqs objects passed in are lists of (seq_id, seq) tuples,
+         as returned from MinimalFastaParser.
+
+    
     """
     id_lookup = parse_denoiser_mapping(denoiser_map)
     flowgram_to_seq_id_lookup = flowgram_id_to_seq_id_map(raw_seqs)
