@@ -818,9 +818,9 @@ Sample 5	25
         """ parse_denoiser_mapping creates {} from denoiser mapping file
         """
         actual = parse_denoiser_mapping(self.denoiser_mapping1)
-        expected = {'Read1':['Read4','Read5 some comment'],
-                    'Read2':[],
-                    'Read3':['Read6']}
+        expected = {'Read1':['Read1','Read4','Read5 some comment'],
+                    'Read2':['Read2'],
+                    'Read3':['Read3','Read6']}
         self.assertEqual(actual,expected)
         
 

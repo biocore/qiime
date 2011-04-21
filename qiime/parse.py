@@ -803,7 +803,7 @@ def parse_denoiser_mapping(denoiser_map):
     for line in denoiser_map:
         line = line.strip().split('\t')
         denoised_id = line[0].rstrip(':')
-        original_ids = line[1:]
+        original_ids = [denoised_id] + line[1:]
         if denoised_id in result:
             # just a healthy dose of paranoia
             raise ValueError, \

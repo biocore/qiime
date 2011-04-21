@@ -476,6 +476,7 @@ class TopLevelTests(TestCase):
          MinimalFastaParser(self.raw_seqs1)))
         expected = [("S1_0 FXX111 some comments","TTTT"),
                     ("S1_2 FXX113 some other comments","TTTT"),
+                    ("S3_7 FXX117","TTTT"),
                     ("S2_1 FXX112 some comments","TATT"),
                     ("S3_5 FXX114","TATT"),
                     ("S3_6 FXX115","TTGA"),
@@ -490,7 +491,8 @@ class TopLevelTests(TestCase):
                     'FXX113':'S1_2 FXX113 some other comments',
                     'FXX114':'S3_5 FXX114',
                     'FXX115':'S3_6 FXX115',
-                    'FXX116':'S3_6 FXX116'}
+                    'FXX116':'S3_6 FXX116',
+                    'FXX117':'S3_7 FXX117'}
         self.assertEqual(actual,expected)
         
 
@@ -506,7 +508,9 @@ GGGA
 >S3_6 FXX115
 TTGA
 >S3_6 FXX116
-TAGA"""
+TAGA
+>S3_7 FXX117
+TAGT"""
 
 centroid_seqs1 = """>FXX111
 TTTT
@@ -518,9 +522,9 @@ TTGA
 >FXX116
 TAGA"""
         
-denoiser_mapping1 = """FXX111:\tFXX111\tFXX113
+denoiser_mapping1 = """FXX111:\tFXX113\tFXX117
 FXX115:
-FXX112:\tFXX112\tFXX114
+FXX112:\tFXX114
 FXX116:"""
 
 
