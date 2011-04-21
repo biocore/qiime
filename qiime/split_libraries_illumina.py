@@ -13,7 +13,7 @@ __status__ = "Development"
 
 from itertools import izip
 from numpy import log10
-from cogent.util.misc import revComp
+from cogent import DNA
 from os.path import split, splitext
 from os import makedirs
 from qiime.parse import (parse_illumina_line, IlluminaParseError)
@@ -101,7 +101,7 @@ def parse_illumina_paired_end_read_files(read1_file,read2_file,barcode_length,\
         if (len(seq2) < min_per_read_length):
             continue
             
-        seq = seq1 + revComp(seq2)
+        seq = seq1 + DNA.rc(seq2)
         # If the total number of Ns is more than the max 
         # allowed ignore this sequence
         if seq.count('N') > seq_max_N:
@@ -174,7 +174,7 @@ def parse_illumina_single_end_read_file(read_file,barcode_length,\
             continue
             
         if rev_comp:
-            seq = revComp(seq)
+            seq = DNA.rc(seq)
             qual = qual[::-1]
         
         yield read_desc, read_barcode, seq, qual

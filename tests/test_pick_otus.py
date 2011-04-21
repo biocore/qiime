@@ -17,7 +17,8 @@ from os import remove
 from cogent.util.misc import create_dir
 from cogent.util.unit_test import TestCase, main
 from cogent.app.util import get_tmp_filename
-from cogent.util.misc import remove_files, revComp
+from cogent.util.misc import remove_files
+from cogent import DNA
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from qiime.pick_otus import (CdHitOtuPicker, OtuPicker,
     MothurOtuPicker, PrefixSuffixOtuPicker, TrieOtuPicker, BlastOtuPicker,
@@ -119,10 +120,10 @@ class BlastOtuPickerTests(TestCase):
         ]
         
         self.ref_seqs_rc = [\
-         ('ref1',revComp('TGCAGCTTGAGCCACAGGAGAGAGAGAGCTTC')),\
-         ('ref2',revComp('ACCGATGAGATATTAGCACAGGGGAATTAGAACCA')),\
-         ('ref3',revComp('TGTCGAGAGTGAGATGAGATGAGAACA')),\
-         ('ref4',revComp('ACGTATTTTAATGGGGCATGGT')),\
+         ('ref1',DNA.rc('TGCAGCTTGAGCCACAGGAGAGAGAGAGCTTC')),\
+         ('ref2',DNA.rc('ACCGATGAGATATTAGCACAGGGGAATTAGAACCA')),\
+         ('ref3',DNA.rc('TGTCGAGAGTGAGATGAGATGAGAACA')),\
+         ('ref4',DNA.rc('ACGTATTTTAATGGGGCATGGT')),\
         ]
         
         self.seqs_fp = get_tmp_filename(

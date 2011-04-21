@@ -25,7 +25,7 @@ from cogent.core.tree import PhyloNode
 from copy import deepcopy
 import os
 import re
-from cogent.util.misc import revComp
+from cogent import DNA
 
 
 class QiimeParseError(Exception):
@@ -691,7 +691,7 @@ def parse_illumina_line(l,barcode_length,rev_comp_barcode,
         barcode = y_position_subfields[1][:barcode_length]
     
     if rev_comp_barcode:
-        barcode = revComp(barcode)
+        barcode = DNA.rc(barcode)
     
     result = {\
      'Full description':':'.join(fields[:5]),\

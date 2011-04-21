@@ -13,7 +13,7 @@ __status__ = "Development"
 
 from os.path import split, splitext
 from cogent.parse.fasta import MinimalFastaParser
-from cogent.util.misc import revComp
+from cogent import DNA
 
 usage_str = """usage: %prog [options] {-i INPUT_FASTA_FP}
 
@@ -40,7 +40,7 @@ def rc_fasta_lines(fasta_lines,seq_desc_mapper=append_rc):
     """
     for seq_id, seq in MinimalFastaParser(fasta_lines):
         seq_id = seq_desc_mapper(seq_id)
-        seq = revComp(seq)
+        seq = DNA.rc(seq.upper())
         yield seq_id, seq
     return
         

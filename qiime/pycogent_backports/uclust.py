@@ -25,7 +25,8 @@ from cogent.parse.fasta import MinimalFastaParser
 from cogent.app.parameters import ValuedParameter, FlagParameter
 from cogent.app.util import CommandLineApplication, ResultPath,\
  get_tmp_filename, ApplicationError, ApplicationNotFoundError
-from cogent.util.misc import revComp as reverse_complement, remove_files
+from cogent.util.misc import remove_files
+from cogent import DNA
 
 class UclustParseError(Exception):
     pass
@@ -237,9 +238,9 @@ def process_uclust_pw_alignment_results(fasta_pairs_lines,uc_lines):
             
         if target_rev_match:
             query_id = uc_query_id + ' RC'
-            aligned_query = reverse_complement(aligned_query)
+            aligned_query = DNA.rc(aligned_query)
             target_id = uc_target_id
-            aligned_target = reverse_complement(aligned_target)
+            aligned_target = DNA.rc(aligned_target)
         else:
             query_id = uc_query_id
             aligned_query = aligned_query

@@ -72,9 +72,9 @@ GCGGATATAA
 """
 
 fasta_lines1_mixed_case_exp = """>s1 some description RC
-cgcgcgCCattt
+CGCGCGCCATTT
 >s2 RC
-gcggatataa
+GCGGATATAA
 """
 
 fasta_lines1_exp_null_desc_mapper = """>s1 some description
