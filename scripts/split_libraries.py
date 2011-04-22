@@ -64,6 +64,9 @@ script_info['required_options']=[\
 script_info['optional_options']=[\
     make_option('-q', '--qual', dest='qual_fnames', 
         help='names of qual files, comma-delimited [default: %default]'),
+    make_option('-r', '--remove_unassigned',action='store_true',
+        help='DEPRECATED: pass --retain_unassigned_reads to keep '+\
+        'unassigned reads  [default: %default]'),
 
     make_option('-l', '--min-seq-length', dest='min_seq_len',
         type=int, default=200,
@@ -116,7 +119,7 @@ script_info['optional_options']=[\
         help='seq id to use for the first sequence [default: %default]'),
             
     make_option("--retain_unassigned_reads", default=False,
-        action='store_true', help='Deprecated: retain sequences which are '+\
+        action='store_true', help='retain sequences which are '+\
         'Unassigned in the output sequence file[default: %default]'),
 
     make_option('-c', '--disable_bc_correction', default=False,
