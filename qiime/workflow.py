@@ -1159,7 +1159,6 @@ def run_core_qiime_analyses(
     arare_min_seqs_per_sample=10,
     arare_num_steps=10,
     reference_tree_fp=None,
-    sff_input_fp=None,
     parallel=False,
     status_update_callback=print_to_stdout):
     """ Run full QIIME workflow generating output files for method comparison
@@ -1221,7 +1220,6 @@ def run_core_qiime_analyses(
                                 command_handler=command_handler,
                                 params=params,
                                 qiime_config=qiime_config,
-                                sff_input_fp=sff_input_fp,
                                 mapping_fp=mapping_fp,
                                 parallel=parallel,
                                 status_update_callback=status_update_callback)

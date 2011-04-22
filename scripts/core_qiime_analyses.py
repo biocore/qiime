@@ -53,8 +53,6 @@ script_info['optional_options'] = [\
  make_option('-a','--parallel',action='store_true',
         dest='parallel',default=False,
         help='Run in parallel where available [default: %default]'),
- make_option('-s','--sff_fp',
-        help='the flowgrams filepath [REQUIRED for denoising]'),
  make_option('-e','--seqs_per_sample',type='int',
      help='depth of coverage for even sampling [default: %default]'),
  make_option('--even_sampling_keeps_all_samples',
@@ -84,7 +82,6 @@ def main():
     categories = opts.categories
     reference_tree_fp = opts.reference_tree_fp
     mapping_fp = opts.mapping_fp
-    sff_fp = opts.sff_fp
     verbose = opts.verbose
     print_only = opts.print_only
     even_sampling_keeps_all_samples = opts.even_sampling_keeps_all_samples
@@ -134,7 +131,6 @@ def main():
         arare_min_seqs_per_sample=10,
         arare_num_steps=10,
         reference_tree_fp=reference_tree_fp,
-        sff_input_fp=sff_fp,
         parallel=parallel,
         status_update_callback=status_update_callback)
 

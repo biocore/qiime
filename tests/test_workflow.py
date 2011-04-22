@@ -264,7 +264,6 @@ class WorkflowTests(TestCase):
             arare_min_seqs_per_sample=10,
             arare_num_steps=10,
             reference_tree_fp=None,
-            sff_input_fp=None,
             parallel=False,
             status_update_callback=no_status_updates)
         
@@ -305,7 +304,6 @@ class WorkflowTests(TestCase):
             arare_min_seqs_per_sample=10,
             arare_num_steps=10,
             reference_tree_fp=None,
-            sff_input_fp=None,
             parallel=False,
             status_update_callback=no_status_updates)
         
@@ -345,7 +343,6 @@ class WorkflowTests(TestCase):
             arare_min_seqs_per_sample=10,
             arare_num_steps=10,
             reference_tree_fp=None,
-            sff_input_fp=None,
             parallel=True,
             status_update_callback=no_status_updates)
         
