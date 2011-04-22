@@ -32,11 +32,11 @@ script_info['script_usage'].append(("""Simple example""","""The following comman
 
 2. Pick a representative set with the most_abundant method;
 
-3. Align the representative set with PyNAST (REQUIRED: SPECIFY TEMPLATE ALIGNMENT with align_seqs:template_fp in the parameters file);
+3. Align the representative set with PyNAST;
 
 4. Assign taxonomy with RDP classifier;
 
-5. Filter the alignment prior to tree building - remove positions which are all gaps, and specified as 0 in the lanemask (REQUIRED: SPECIFY LANEMASK with filter_alignment:lane_mask_fp in the parameters file);
+5. Filter the alignment prior to tree building - remove positions which are all gaps, and specified as 0 in the lanemask;
 
 6. Build a phylogenetic tree with FastTree;
 
@@ -45,28 +45,6 @@ script_info['script_usage'].append(("""Simple example""","""The following comman
 All output files will be written to the directory specified by -o, and 
 subdirectories as appropriate.
 ""","""pick_otus_through_otu_table.py -i inseqs1.fasta -o wf1/ -p custom_parameters.txt"""))
-
-script_info['script_usage'].append(("""Simple example with denoising""","""This command will do the same steps as the previous example and additionally denoise the data set prior to OTU picking. Only flowgrams in the input sff.txt file that have a matching identifier in inseqs1.fasta are considered here, the rest is discarded.
-
-1. Denoise flowgrams in inseqs1.sff.txt;
-
-2. Pick OTUs with uclust at similarity of 0.97;
-
-3. Pick a representative set with the most_abundant method;
-
-4. Align the representative set with PyNAST (REQUIRED: SPECIFY TEMPLATE ALIGNMENT with align_seqs:template_fp in the parameters file);
-
-5. Assign taxonomy with RDP classifier;
-
-6. Filter the alignment prior to tree building - remove positions which are all gaps, and specified as 0 in the lanemask (REQUIRED: SPECIFY LANEMASK with filter_alignment:lane_mask_fp in the parameters file);
-
-7. Build a phylogenetic tree with FastTree;
-
-8. Build an OTU table.
-
-All output files will be written to the directory specified by -o, and 
-subdirectories as appropriate.
-""","""pick_otus_through_otu_table.py -s inseqs1.sff.txt -m metadata_mapping.txt -i inseqs1.fasta -o wf2/ -p custom_parameters.txt"""))
 
 script_info['output_description'] ="""This script will produce a set of cluster centroids (as a FASTA file) and a cluster mapping file (from denoise.py if sff.txt and mapping file were provided), an OTU mapping file (pick_otus.py), a representative set of sequences (FASTA file from pick_rep_set.py), a sequence alignment file (FASTA file from align_seqs.py), taxonomy assignment file (from assign_taxonomy.py), a filtered sequence alignment (from filter_alignment.py), a phylogenetic tree (Newick file from make_phylogeny.py) and an OTU table (from make_otu_table.py)."""
 
@@ -89,11 +67,7 @@ script_info['optional_options'] = [\
         'useful for debugging [default: %default]',default=False),\
  make_option('-a','--parallel',action='store_true',\
         dest='parallel',default=False,\
-        help='Run in parallel where available [default: %default]'),\
- make_option('-m','--mapping_fp',
-        help='the mapping filepath [REQUIRED for denoising]'),
- make_option('-s','--sff_fp',
-        help='the flowgrams filepath [REQUIRED for denoising]'),
+        help='Run in parallel where available [default: %default]'),
 ]
 script_info['version'] = __version__
 
@@ -118,11 +92,6 @@ def main():
         raise IOError,\
          "Can't open parameters file (%s). Does it exist? Do you have read access?"\
          % opts.parameter_fp
-         
-    if opts.sff_fp or opts.mapping_fp:
-        assert opts.sff_fp and opts.mapping_fp,\
-         "The sff and mapping fp are only required when denoising, "+\
-         "and both must be provided in that case."
     
     try:
         makedirs(output_dir)
@@ -152,8 +121,6 @@ def main():
      command_handler=command_handler,
      params=parse_qiime_parameters(parameter_f),
      qiime_config=qiime_config,
-     sff_input_fp=opts.sff_fp, 
-     mapping_fp=opts.mapping_fp,
      parallel=parallel,\
      status_update_callback=status_update_callback)
 

@@ -163,9 +163,13 @@ def get_params_str(params):
 ## End utilities used by the workflow functions
 
 ## Begin task-specific workflow functions
-def run_qiime_data_preparation(input_fp, output_dir, command_handler,
-    params, qiime_config, sff_input_fp=None, mapping_fp=None,
-    parallel=False, status_update_callback=print_to_stdout):
+def run_qiime_data_preparation(input_fp, 
+                               output_dir, 
+                               command_handler,
+                               params, 
+                               qiime_config,
+                               parallel=False,
+                               status_update_callback=print_to_stdout):
     """ Run the data preparation steps of Qiime 
     
         The steps performed by this function are:
@@ -191,40 +195,6 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,
     logger = WorkflowLogger(generate_log_fp(output_dir),
                             params=params,
                             qiime_config=qiime_config)
-    
-    # Prep the denoising command
-    if sff_input_fp != None:
-        denoise = True
-        assert mapping_fp != None,\
-         "Mapping file must be provided for denoising."+\
-         " (Need to extract the primer sequence.)"
-        denoise_output_dir = '%s/denoised_seqs/' % output_dir
-        denoised_seqs_fp = '%s/denoised_seqs.fasta' % denoise_output_dir
-        denoised_mapping_fp = '%s/denoiser_mapping.txt' % denoise_output_dir
-        
-        if parallel:
-            parallel_str = '-n %s' % qiime_config['jobs_to_start']
-        else:
-            parallel_str = ''
-            
-        try:
-            params_str = get_params_str(params['denoise'])
-        except KeyError:
-            params_str = ''
-        
-        # build the denoiser command
-        denoise_cmd = '%s %s/denoise.py -i %s -f %s --method fast -m %s -o %s %s %s' %\
-         (python_exe_fp, script_dir, sff_input_fp, input_fp, mapping_fp,
-          denoise_output_dir, parallel_str, params_str)
-        commands.append([('Denoise', denoise_cmd)])
-        
-        # some values that get passed to subsequent steps change when 
-        # denoising -- set those here
-        original_input_fp = input_fp
-        input_fp = denoised_seqs_fp
-        input_basename, input_ext = splitext(split(denoised_seqs_fp)[1])
-    else:
-        denoise = False
     
     # Prep the OTU picking command
     otu_picking_method = params['pick_otus']['otu_picking_method']
@@ -257,25 +227,6 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,
                                                         pick_otu_dir,
                                                         params_str)
     else:
-        if denoise:
-            # we want to make sure the user is using the right set of commands
-            # For now we force to use uclust --user_sort --optimal
-            # in the future we might want to do this more clever
-            # and force the user to have a good parameter set in the config file
-            if 'optimal_uclust' not in params['pick_otus']:
-                logger.write("Warning: Setting option pick_otus:optimal_uclust to True "
-                             + "for compatibility with denoising\n")
-            params['pick_otus']['optimal_uclust']=None
-
-            if 'user_sort' not in params['pick_otus']:
-                logger.write("Warning: Setting option pick_otus:user_sort to True "
-                                 + "for compatibility with denoising\n")
-            params['pick_otus']['user_sort']=None
-
-            if 'presort_by_abundance_uclust' in params['pick_otus']:
-                logger.write("Warning: Disabling option pick_otus:presort_by_abundance_uclust "
-                              +"with uclust OTU picker for compatibility with denoising")
-                del params['pick_otus']['presort_by_abundance_uclust']
         try:
             params_str = get_params_str(params['pick_otus'])
         except KeyError:
@@ -286,23 +237,6 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,
 
     commands.append([('Pick OTUs', pick_otus_cmd)])
     
-    # Prep the merge_denoiser_output.py command, if denoising
-    if denoise:
-        #pick_otu_dir = '%s/denoised_otus/' % pick_otu_dir
-        
-        try:
-            params_str = get_params_str(params['merge_denoiser_output'])
-        except KeyError:
-            params_str = ''
-        merge_denoiser_output_cmd = \
-         '%s %s/merge_denoiser_output.py -m %s -p %s -f %s -d %s -o %s %s' %\
-         (python_exe_fp, script_dir, denoised_mapping_fp, otu_fp,
-          original_input_fp, denoised_seqs_fp, pick_otu_dir, params_str)
-          
-        input_fp = '%s/denoised_all.fasta' % pick_otu_dir
-        otu_fp = '%s/denoised_otu_map.txt' % pick_otu_dir
-        commands.append([('Merge denoiser output', merge_denoiser_output_cmd)])
-    
     # Prep the representative set picking command
     rep_set_dir = '%s/rep_set/' % output_dir
     try:
@@ -312,15 +246,6 @@ def run_qiime_data_preparation(input_fp, output_dir, command_handler,
     rep_set_fp = '%s/%s_rep_set.fasta' % (rep_set_dir,input_basename)
     rep_set_log_fp = '%s/%s_rep_set.log' % (rep_set_dir,input_basename)
     
-    if denoise:
-        #force rep_set picking methd to be 'first' if not already set
-        #Required for picking output from merge_denoiser_output
-        if ('rep_set_picking_method' in params['pick_rep_set']
-            and not params['pick_rep_set']['rep_set_picking_method'] == 'first'):
-            logger.write("Warning: Setting pick_rep_set:rep_set_picking_method to 'first' "+
-                     "for compatibility with denoising.\n")
-            params['pick_rep_set']['rep_set_picking_method'] = 'first'
-        
     try:
         params_str = get_params_str(params['pick_rep_set'])
     except KeyError:
@@ -1220,7 +1145,6 @@ def run_core_qiime_analyses(
                                 command_handler=command_handler,
                                 params=params,
                                 qiime_config=qiime_config,
-                                mapping_fp=mapping_fp,
                                 parallel=parallel,
                                 status_update_callback=status_update_callback)
     index_links.append(('Phylogenetic tree',de_novo_tree_fp,'OTU workflow results'))

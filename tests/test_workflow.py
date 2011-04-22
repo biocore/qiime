@@ -361,47 +361,6 @@ class WorkflowTests(TestCase):
          '%s/category_significance_Treatment.txt' % self.wf_out
         cat_sig_line2 = list(open(otu_category_significance_fp))[1]
         self.assertAlmostEqual(float(cat_sig_line2.split()[1]),11.317,3)
-    
-    ## Need to generate a better test that makes use of denoiser. This
-    ## fails because the data set is too small to be used by 
-    ## the alpha rarefaction workflow. Have tested with the tutorial
-    ## data and everything works, but that takes too long (>10 mins)
-    ## to be included as a unit test. 
-    # def test_run_core_qiime_analyses_parallel_denoise(self):
-    #     """run_core_qiime_analyses: functions as expected in parallel
-    #     """
-    #     run_core_qiime_analyses(
-    #         fna_fps=self.fasting_subset_fna,
-    #         qual_fps=self.fasting_subset_qual,
-    #         mapping_fp=self.fasting_mapping_fp,
-    #         output_dir=self.wf_out,
-    #         command_handler=call_commands_serially,
-    #         params=self.run_core_qiime_analyses_params1,
-    #         qiime_config=self.qiime_config,
-    #         categories='Treatment,DOB',
-    #         sampling_depth=2,
-    #         arare_min_seqs_per_sample=10,
-    #         arare_num_steps=10,
-    #         reference_tree_fp=None,
-    #         sff_input_fp=self.sff_fp,
-    #         parallel=True,
-    #         status_update_callback=print_to_stdout)
-    #     
-    #     # Basic sanity test of OTU table as details are tested 
-    #     # in the pick_otus_through_otu_table tests
-    #     otu_table_fp = join(self.wf_out,'da',
-    #                         'uclust_picked_otus',
-    #                         'rep_set',
-    #                         'rdp_assigned_taxonomy',
-    #                         'otu_table',
-    #                         'denoised_seqs_otu_table.txt')
-    #     sample_ids, otu_ids, otu_table, lineages =\
-    #       parse_otu_table(open(otu_table_fp))
-    #     expected_sample_ids = ['PC.354','PC.355','PC.356','PC.481',
-    #                            'PC.593','PC.607','PC.634','PC.635','PC.636']
-    #     sample_ids.sort()
-    #     expected_sample_ids.sort()
-    #     self.assertEqual(sample_ids,expected_sample_ids)
         
     def test_run_pick_reference_otus_through_otu_table(self):
         """run_pick_reference_otus_through_otu_table generates expected results"""
@@ -564,87 +523,6 @@ class WorkflowTests(TestCase):
           parse_otu_table(open(otu_table_fp))
         expected_sample_ids = ['PC.354','PC.355','PC.356','PC.481',
                                'PC.593','PC.607','PC.634','PC.635',
-                               'PC.636']
-        # sample IDs are as expected
-        self.assertEqualItems(sample_ids,expected_sample_ids)
-        # otu ids are as expected
-        self.assertEqualItems(otu_map_otu_ids,otu_ids)
-        # number of sequences in the full otu table equals the number of
-        # input sequences
-        number_seqs_in_otu_table = otu_table.sum()
-        self.assertEqual(number_seqs_in_otu_table,input_seqs.getNumSeqs())
-        
-        # Check that the log file is created and has size > 0
-        log_fp = glob(join(self.wf_out,'log*.txt'))[0]
-        self.assertTrue(getsize(log_fp) > 0)
-
-
-
-    def test_run_qiime_data_preparation_denoise(self):
-        """run_qiime_data_preparation w denoises generates expected results 
-        """
-        try:
-            run_qiime_data_preparation(
-             self.fasting_seqs_denoiser_fp, 
-             self.wf_out, 
-             call_commands_serially,
-             self.params, 
-             self.qiime_config, 
-             self.sff_fp,
-             self.fasting_mapping_fp,
-             parallel=True,
-             status_update_callback=no_status_updates)
-        except WorkflowError:
-            raise ApplicationNotFoundError,\
-            "Denoiser (or other dependency) cannot be found."
-         
-        input_file_basename = 'denoised_seqs'
-        otu_map_fp = join(self.wf_out,'uclust_picked_otus',
-         'denoised_otu_map.txt')
-        alignment_fp = join(self.wf_out,
-         'pynast_aligned_seqs','%s_rep_set_aligned.fasta' % 
-          input_file_basename)
-        failures_fp = join(self.wf_out,
-         'pynast_aligned_seqs','%s_rep_set_failures.fasta' % 
-          input_file_basename)
-        taxonomy_assignments_fp = join(self.wf_out,'rdp_assigned_taxonomy',
-         '%s_rep_set_tax_assignments.txt' % input_file_basename)
-        otu_table_fp = join(self.wf_out,'otu_table.txt')
-        tree_fp = join(self.wf_out,'rep_set.tre')
-         
-        # Number of OTUs falls within a range that was manually 
-        # confirmed
-        otu_map_lines = list(open(otu_map_fp))
-        num_otus = len(otu_map_lines)
-        otu_map_otu_ids = [o.split()[0] for o in otu_map_lines]
-        self.assertTrue(10 < num_otus < 30,
-         "Number of OTUs falls outside of expected range: %d" % 
-         num_otus)
-        
-        # all otus get taxonomy assignments
-        taxonomy_assignment_lines = list(open(taxonomy_assignments_fp))
-        self.assertEqual(len(taxonomy_assignment_lines),num_otus)
-        
-        # number of seqs which aligned + num of seqs which failed to
-        # align sum to the number of OTUs
-        aln = LoadSeqs(alignment_fp)
-        failures = LoadSeqs(failures_fp,aligned=False)
-        self.assertTrue(aln.getNumSeqs() + failures.getNumSeqs(),num_otus)
-         
-        # number of tips in the tree equals the number of sequences that
-        # aligned
-        tree = LoadTree(tree_fp)
-        self.assertEqual(len(tree.tips()),aln.getNumSeqs())
-        
-        # parse the otu table
-        input_seqs = LoadSeqs(self.fasting_seqs_denoiser_fp,aligned=False)
-        sample_ids, otu_ids, otu_table, lineages =\
-          parse_otu_table(open(otu_table_fp))
-        # note: only 8 of the samples actually show up in the subset of
-        # seqs we test the denoiser with -- we therefore leave 'PC.607'
-        # out of this list
-        expected_sample_ids = ['PC.354','PC.355','PC.356','PC.481',
-                               'PC.593','PC.634','PC.635',
                                'PC.636']
         # sample IDs are as expected
         self.assertEqualItems(sample_ids,expected_sample_ids)
