@@ -114,10 +114,10 @@ script_info['optional_options']=[\
     make_option('-n', '--start-numbering-at', dest='start_index',
         default=1, type=int,
         help='seq id to use for the first sequence [default: %default]'),
-
-    make_option('-r', '--remove_unassigned', default=True,
-        action='store_true', help='remove sequences which are Unassigned from \
-            output [default: %default]'),
+            
+    make_option("--retain_unassigned_reads", default=False,
+        action='store_true', help='Deprecated: retain sequences which are '+\
+        'Unassigned in the output sequence file[default: %default]'),
 
     make_option('-c', '--disable_bc_correction', default=False,
         action='store_true', help='Disable attempts to find nearest '+\
@@ -212,7 +212,8 @@ def main():
                dir_prefix=opts.dir_prefix,
                max_bc_errors = opts.max_bc_errors,
                max_homopolymer = opts.max_homopolymer,
-               remove_unassigned = opts.remove_unassigned,
+               retain_unassigned_reads = opts.retain_unassigned_reads,
+               #remove_unassigned = opts.remove_unassigned,
                attempt_bc_correction = not opts.disable_bc_correction,
                qual_score_window = opts.qual_score_window,
                disable_primers = opts.disable_primers,

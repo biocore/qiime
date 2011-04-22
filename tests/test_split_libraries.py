@@ -75,6 +75,8 @@ class TopLevelTests(TestCase):
          expected_in_seqs_reverse_primers_mismatch_allowed
         self.expected_fasta_fixed_len_bc1_sliding_window =\
          expected_fasta_fixed_len_bc1_sliding_window
+        self.in_seqs_fixed_len_extra_bc = in_seqs_fixed_len_extra_bc
+        self.expected_fasta_extra_bc = expected_fasta_extra_bc
          
          
 
@@ -375,7 +377,7 @@ z\tGG\tGC\t5\tsample_z"""
          keep_barcode=False, 
          barcode_type="golay_12", 
          max_bc_errors=1.5,
-         remove_unassigned=True, 
+         retain_unassigned_reads=False, 
          attempt_bc_correction=True,
          primer_seqs_lens=primer_seq_lens,
          all_primers=all_primers, 
@@ -419,7 +421,7 @@ z\tGG\tGC\t5\tsample_z"""
          keep_barcode=False, 
          barcode_type="variable_length", 
          max_bc_errors=0,
-         remove_unassigned=True, 
+         retain_unassigned_reads=False, 
          attempt_bc_correction=False,
          primer_seqs_lens=primer_seq_lens,
          all_primers=all_primers, 
@@ -453,7 +455,7 @@ z\tGG\tGC\t5\tsample_z"""
          keep_barcode=False, 
          barcode_type="variable_length", 
          max_bc_errors=0,
-         remove_unassigned=True, 
+         retain_unassigned_reads=False, 
          attempt_bc_correction=False,
          primer_seqs_lens=primer_seq_lens,
          all_primers=all_primers, 
@@ -492,7 +494,7 @@ z\tGG\tGC\t5\tsample_z"""
          keep_barcode=False, 
          barcode_type="golay_12", 
          max_bc_errors=1.5,
-         remove_unassigned=True, 
+         retain_unassigned_reads=False, 
          attempt_bc_correction=True,
          primer_seqs_lens=primer_seq_lens,
          all_primers=all_primers, 
@@ -526,7 +528,7 @@ z\tGG\tGC\t5\tsample_z"""
          keep_barcode=False, 
          barcode_type="golay_12", 
          max_bc_errors=0.5,
-         remove_unassigned=True, 
+         retain_unassigned_reads=False, 
          attempt_bc_correction=True,
          primer_seqs_lens=primer_seq_lens,
          all_primers=all_primers, 
@@ -566,7 +568,7 @@ z\tGG\tGC\t5\tsample_z"""
          keep_barcode=False, 
          barcode_type="golay_12", 
          max_bc_errors=1.5,
-         remove_unassigned=True, 
+         retain_unassigned_reads=False, 
          attempt_bc_correction=True,
          primer_seqs_lens=primer_seq_lens,
          all_primers=all_primers, 
@@ -604,7 +606,7 @@ z\tGG\tGC\t5\tsample_z"""
          keep_barcode=False, 
          barcode_type="golay_12", 
          max_bc_errors=1.5,
-         remove_unassigned=True, 
+         retain_unassigned_reads=False, 
          attempt_bc_correction=True,
          primer_seqs_lens=primer_seq_lens,
          all_primers=all_primers, 
@@ -641,7 +643,7 @@ z\tGG\tGC\t5\tsample_z"""
          keep_barcode=False, 
          barcode_type="golay_12", 
          max_bc_errors=1.5,
-         remove_unassigned=True, 
+         retain_unassigned_reads=False, 
          attempt_bc_correction=True,
          primer_seqs_lens=primer_seq_lens,
          all_primers=all_primers, 
@@ -676,7 +678,7 @@ z\tGG\tGC\t5\tsample_z"""
          keep_barcode=False, 
          barcode_type="golay_12", 
          max_bc_errors=1.5,
-         remove_unassigned=True, 
+         retain_unassigned_reads=False, 
          attempt_bc_correction=True,
          primer_seqs_lens=primer_seq_lens,
          all_primers=all_primers, 
@@ -713,7 +715,7 @@ z\tGG\tGC\t5\tsample_z"""
          keep_barcode=False, 
          barcode_type="golay_12", 
          max_bc_errors=1.5,
-         remove_unassigned=True, 
+         retain_unassigned_reads=False, 
          attempt_bc_correction=True,
          primer_seqs_lens=primer_seq_lens,
          all_primers=all_primers, 
@@ -751,7 +753,7 @@ z\tGG\tGC\t5\tsample_z"""
          keep_barcode=False, 
          barcode_type="golay_12", 
          max_bc_errors=1.5,
-         remove_unassigned=True, 
+         retain_unassigned_reads=False, 
          attempt_bc_correction=True,
          primer_seqs_lens=primer_seq_lens,
          all_primers=all_primers, 
@@ -788,7 +790,7 @@ z\tGG\tGC\t5\tsample_z"""
          keep_barcode=False, 
          barcode_type="golay_12", 
          max_bc_errors=1.5,
-         remove_unassigned=True, 
+         retain_unassigned_reads=False, 
          attempt_bc_correction=True,
          primer_seqs_lens=primer_seq_lens,
          all_primers=all_primers, 
@@ -799,6 +801,43 @@ z\tGG\tGC\t5\tsample_z"""
          qual_out = qual_out_f)
          
         self.assertEqual(qual_out_f.data,expected)
+        
+    def test_check_seqs_retain_unassigned_reads(self):
+        """ check_seqs handles retaining Unassigned reads """
+        
+        in_seqs = self.in_seqs_fixed_len_extra_bc
+        bc_map = self.bc_map_fixed_len_bc1
+        primer_seq_lens = self.primer_seq_lens_fixed_len_bc1
+        all_primers = self.all_primers_fixed_len_bc1
+        expected = self.expected_fasta_extra_bc
+
+        
+        out_f = FakeOutFile()
+        
+        actual = check_seqs(
+         fasta_out=out_f, 
+         fasta_files = [in_seqs], 
+         starting_ix=0, 
+         valid_map = bc_map, 
+         qual_mappings={}, 
+         filters=[], 
+         barcode_len=12, 
+         keep_primer=False, 
+         keep_barcode=False, 
+         barcode_type="golay_12", 
+         max_bc_errors=1.5,
+         retain_unassigned_reads=True, 
+         attempt_bc_correction=True,
+         primer_seqs_lens=primer_seq_lens,
+         all_primers=all_primers, 
+         max_primer_mm=0,
+         disable_primer_check=False,
+         reverse_primers = 'disable',
+         rev_primers = {},
+         qual_out = False)
+         
+         
+        self.assertEqual(out_f.data,expected)
         
 
 
@@ -858,6 +897,24 @@ TTTTGTCCGGACCCTTACTATATAT
 >d_primer_error
 AGAGTCCTGAGCGGTCCGGTACGTTTACTGGA
 """.split()
+
+
+# Fixed barcode test data, with one valid BC not in mapping data
+in_seqs_fixed_len_extra_bc = """>a
+ACACATGTCTACGGTCCGGACCCTTATATATATAT
+>b
+AGAGTCCTGAGCGGTCCGGACCCTTTCCA
+>c
+AACTGTGCGTACGGTCTGGAAACCGGCCGGTT
+>d
+ACTCATGTCTACGGTCCGGACCCTTACTATATAT
+>e_no_barcode_match
+TTTTGTCCGGACCCTTACTATATAT
+>d_primer_error
+AGAGTCCTGAGCGGTCCGGTACGTTTACTGGA
+""".split()
+
+expected_fasta_extra_bc = """>s1_0 a orig_bc=ACACATGTCTAC new_bc=ACACATGTCTAC bc_diffs=0\nCCCTTATATATATAT\n>s2_1 b orig_bc=AGAGTCCTGAGC new_bc=AGAGTCCTGAGC bc_diffs=0\nCCCTTTCCA\n>Unassigned_2 c orig_bc=AACTGTGCGTAC new_bc=AACTGTGCGTAC bc_diffs=0\nAACCGGCCGGTT\n>s1_3 d orig_bc=ACTCATGTCTAC new_bc=ACACATGTCTAC bc_diffs=1\nCCCTTACTATATAT\n"""
 
 in_seqs_fixed_len_bc1_qual_scores = """>a
 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 36 36 33 33 33 36 37 37 37 37 37 37 40 40 40 39 39 38

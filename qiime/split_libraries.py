@@ -449,7 +449,7 @@ def check_window_qual_scores(qual_scores, window=50, min_average=25):
 
 def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings, 
     filters, barcode_len, keep_primer, keep_barcode, barcode_type, 
-    max_bc_errors,remove_unassigned, attempt_bc_correction,
+    max_bc_errors, retain_unassigned_reads, attempt_bc_correction,
     primer_seqs_lens, all_primers, max_primer_mm, disable_primer_check,
     reverse_primers, rev_primers, qual_out, qual_score_window=0,
     discard_bad_windows=False, min_qual_score=25, min_seq_len=200):
@@ -675,22 +675,28 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
             
             # Record number of seqs associated with particular barcode.
             bc_counts[curr_bc].append(curr_rid)
-                 
-            if remove_unassigned or (not attempt_bc_correction):
-                if curr_samp_id!="Unassigned":
-                    fasta_out.write(">%s %s orig_bc=%s new_bc=%s bc_diffs=%s\n%s\n" % 
-                     (new_id, curr_rid, cbc, curr_bc, int(bc_diffs), write_seq))
-                    if qual_out:
-                        qual_out.write(">%s %s orig_bc=%s new_bc=%s bc_diffs=%s\n%s" % 
-                         (new_id, curr_rid, cbc, curr_bc, int(bc_diffs), qual_scores_out))
-                else:
-                    bc_counts['#FAILED'].append(curr_rid)
-            else:    
-                fasta_out.write(">%s %s orig_bc=%s new_bc=%s bc_diffs=%s\n%s\n" % 
-                    (new_id, curr_rid, cbc, curr_bc, int(bc_diffs), write_seq))
+            
+            if retain_unassigned_reads and curr_samp_id == "Unassigned":
+                fasta_out.write(
+                 ">%s %s orig_bc=%s new_bc=%s bc_diffs=%s\n%s\n" % 
+                 (new_id, curr_rid, cbc, curr_bc, int(bc_diffs), write_seq))
                 if qual_out:
-                        qual_out.write(">%s %s orig_bc=%s new_bc=%s bc_diffs=%s\n%s" % 
-                         (new_id, curr_rid, cbc, curr_bc, int(bc_diffs), qual_scores_out))
+                    qual_out.write(
+                     ">%s %s orig_bc=%s new_bc=%s bc_diffs=%s\n%s" % 
+                     (new_id, curr_rid, cbc, curr_bc, int(bc_diffs),
+                     qual_scores_out))
+            elif not retain_unassigned_reads and curr_samp_id == "Unassigned":
+                 bc_counts['#FAILED'].append(curr_rid)
+            else:
+                fasta_out.write(
+                 ">%s %s orig_bc=%s new_bc=%s bc_diffs=%s\n%s\n" % 
+                 (new_id, curr_rid, cbc, curr_bc, int(bc_diffs), write_seq))
+                if qual_out:
+                    qual_out.write(
+                     ">%s %s orig_bc=%s new_bc=%s bc_diffs=%s\n%s" % 
+                     (new_id, curr_rid, cbc, curr_bc, int(bc_diffs),
+                     qual_scores_out))
+                 
                          
             curr_len = len(curr_seq)
 
@@ -698,7 +704,7 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
             
             curr_ix += 1
     log_out = format_log(bc_counts, corr_ct, seq_lengths, valid_map, filters,\
-     remove_unassigned, attempt_bc_correction, primer_mismatch_count, \
+     retain_unassigned_reads, attempt_bc_correction, primer_mismatch_count, \
      max_primer_mm, reverse_primers, reverse_primer_not_found,
      sliding_window_failed, below_seq_min_after_trunc, qual_score_window, 
      discard_bad_windows, min_seq_len)
@@ -727,7 +733,7 @@ def format_qual_output(qual_array):
     
 
 def format_log(bc_counts, corr_ct, seq_lengths, valid_map, filters,\
-remove_unassigned, attempt_bc_correction, primer_mismatch_count, max_primer_mm,\
+retain_unassigned_reads, attempt_bc_correction, primer_mismatch_count, max_primer_mm,\
 reverse_primers, reverse_primer_not_found, sliding_window_failed,
 below_seq_min_after_trunc, qual_score_window, discard_bad_windows, min_seq_len):
     """Makes log lines"""
@@ -788,8 +794,8 @@ below_seq_min_after_trunc, qual_score_window, discard_bad_windows, min_seq_len):
         log_out.append("Uncorrected barcodes will not be written to the "+\
         "output fasta file.\nCorrected barcodes will be written with "+\
         "the appropriate barcode category.\nCorrected but unassigned "+\
-        "sequences will be written as such unless disabled via the -r "+\
-        "option.\n")
+        "sequences will not be written unless --retain_unassigned_reads "+\
+        "is enabled.\n")
     else:
         log_out.append("Barcode correction has been disabled via the -c "+\
         "option.\n")
@@ -799,16 +805,17 @@ below_seq_min_after_trunc, qual_score_window, discard_bad_windows, min_seq_len):
         log_out.append("Barcodes not in mapping file\tCount")
         for count, bc in reversed(sorted(valid_bc_nomap_counts)):
             log_out.append("%s\t%d" % (bc, count))
-    if remove_unassigned:
+    if retain_unassigned_reads:
         log_out.append("Sequences associated with valid barcodes that are not"+\
-        " in the mapping file will not be written. -r option enabled.")
+        " in the mapping file will be written. --retain_unassigned_reads "+\
+        "option enabled.")
     elif not attempt_bc_correction:
         log_out.append("Barcode correction has been disabled (-c option), "+\
         "no unassigned or invalid barcode sequences will be recorded.")
     else:
         log_out.append("Sequences associated with valid barcodes that are "+\
-        "not in the mapping file will be written as 'unassigned'.  -r option "+\
-        "disabled.")
+        "not in the mapping file will not be written.")
+        
     log_out.append("\nBarcodes in mapping file")
    
     sample_cts = [(len(bc_counts[bc]), bc, sample_id) for bc, sample_id 
@@ -845,8 +852,9 @@ def preprocess(fasta_files, qual_files, mapping_file,
     barcode_type="golay_12",
     min_seq_len=200, max_seq_len=1000, min_qual_score=25, starting_ix=1,
     keep_primer=True, max_ambig=0, max_primer_mm=1, trim_seq_len=True,
-    dir_prefix='.', max_bc_errors=2, max_homopolymer=4,remove_unassigned=False,
-    keep_barcode=False, attempt_bc_correction=True, qual_score_window=0,
+    dir_prefix='.', max_bc_errors=2, max_homopolymer=4,
+    retain_unassigned_reads=False, keep_barcode=False, 
+    attempt_bc_correction=True, qual_score_window=0,
     disable_primers=False, reverse_primers='disable', record_qual_scores=False,
     discard_bad_windows=False):
         
@@ -892,9 +900,9 @@ def preprocess(fasta_files, qual_files, mapping_file,
     max_homopolymer: maximum number of a nucleotide that can be 
     repeated in a given sequence.
     
-    remove_unassigned: If True (False default), will not write seqs to the
+    retain_unassigned_reads: If True (False default), will write seqs to the
     output .fna file that have a valid barcode (by Golay or Hamming standard)
-    but are not included in the input mapping file.
+    but are not included in the input mapping file, as "Unassigned."
     
     attempt_bc_correction: (default True) will attempt to find nearest valid
     barcode.  Can be disabled to improve performance.
@@ -1105,11 +1113,11 @@ def preprocess(fasta_files, qual_files, mapping_file,
     '''log_stats, pre_lens, post_lens = check_seqs(fasta_out, fasta_files, 
         starting_ix, valid_map, qual_mappings, filters, barcode_len,
         primer_seq_len, keep_primer, keep_barcode, barcode_type, max_bc_errors,
-        remove_unassigned) '''
+        retain_unassigned_reads) '''
     log_stats, pre_lens, post_lens = check_seqs(fasta_out, fasta_files, 
         starting_ix, valid_map, qual_mappings, filters, barcode_len,
         keep_primer, keep_barcode, barcode_type, max_bc_errors,
-        remove_unassigned, attempt_bc_correction,
+        retain_unassigned_reads, attempt_bc_correction,
         primer_seqs_lens, all_primers, max_primer_mm, disable_primers,
         reverse_primers, rev_primers, qual_out, qual_score_window,
         discard_bad_windows, min_qual_score, min_seq_len)
