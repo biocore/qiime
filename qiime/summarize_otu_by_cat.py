@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 #file summarize_otu_by_cat.py
+from __future__ import division
 
 __author__ = "Julia Goodrich"
 __copyright__ = "Copyright 2011, The QIIME Project" 
@@ -21,7 +22,6 @@ Python 2.5
 This script generates the otu table for a specific category
 """
 
-from __future__ import division
 from optparse import OptionParser
 from collections import defaultdict
 from numpy import nonzero, arange, array
