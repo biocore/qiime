@@ -2,8 +2,8 @@
 #file test_summarize_otu_by_cat.py
 
 __author__ = "Julia Goodrich"
-__copyright__ = "Copyright 2011, The QIIME Project" #consider project name
-__credits__ = ["Julia Goodrich"] #remember to add yourself
+__copyright__ = "Copyright 2011, The QIIME Project"
+__credits__ = ["Julia Goodrich","Justin Kuczynski"]
 __license__ = "GPL"
 __version__ = "1.2.1-dev"
 __maintainer__ = "Daniel McDonald"
@@ -12,6 +12,7 @@ __status__ = "Development"
 
 from cogent.util.unit_test import TestCase, main
 from qiime.summarize_otu_by_cat import get_sample_cat_info, get_counts_by_cat
+from qiime.parse import parse_otu_table
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -80,16 +81,16 @@ otu_10\t0\t2\t0\t4\t0\tBacteria; Firmicutes; Mollicutes; Clostridium_aff_innocuu
 2\t4\t0"""
 
 
-        self.cat_otu_table_norm = """3.84615\t0.0\t42.85714
-14.28571\t0.0\t0.0
-0.0\t20.83333\t0.0
-0.0\t0.0\t35.71429
-15.38462\t11.11111\t0.0
-44.50549\t0.0\t0.0
-0.0\t30.55556\t0.0
-0.0\t0.0\t21.42857
-14.28571\t20.83333\t0.0
-7.69231\t16.66667\t0.0"""
+        self.cat_otu_table_norm = """0.0384615\t0.0\t0.4285714
+0.1428571\t0.0\t0.0
+0.0\t0.2083333\t0.0
+0.0\t0.0\t0.3571429
+0.1538462\t0.1111111\t0.0
+0.4450549\t0.0\t0.0
+0.0\t0.3055556\t0.0
+0.0\t0.0\t0.2142857
+0.1428571\t0.2083333\t0.0
+0.0769231\t0.1666667\t0.0"""
 
 
         self.otus = ["otu_1","otu_2","otu_3","otu_4","otu_5","otu_6","otu_7","otu_8","otu_9","otu_10"]
@@ -134,7 +135,8 @@ otu_10\t0\t2\t0\t4\t0\tBacteria; Firmicutes; Mollicutes; Clostridium_aff_innocuu
         cat_otu_table_test = []
         for l in cat_otu_table:
             cat_otu_table_test.append('\t'.join(map(str,l)))
-        self.assertEqual('\n'.join(cat_otu_table_test),self.cat_otu_table_norm)
+        sams, otunames, obs, lineages = parse_otu_table(cat_otu_table_test,float)
+        sams, otunames, exp, lineages = parse_otu_table(self.cat_otu_table_norm.split('\n'),float)
         self.assertEqual(otus,self.otus)
         self.assertEqual(taxonomy,self.taxonomy)
 

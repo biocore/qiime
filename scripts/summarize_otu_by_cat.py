@@ -5,7 +5,7 @@ from __future__ import division
 
 __author__ = "Julia Goodrich"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Julia Goodrich","Greg Caporaso"]
+__credits__ = ["Julia Goodrich","Greg Caporaso","Justin Kuczynski"]
 __license__ = "GPL"
 __version__ = "1.2.1-dev"
 __maintainer__ = "Daniel McDonald"
@@ -37,9 +37,8 @@ make_option('-o', '--output_fp', dest='output_fp',
 
 script_info['optional_options']=[\
     make_option('-n', '--normalize',
-         help='if True will normalize counts [default: %default]',
-         default=False,
-         action = 'store_true')
+         help='pass -n to normalize counts. Output otu table columns will sum to 1',
+         default=False, action = 'store_true')
 ]
 
 script_info["version"] = __version__

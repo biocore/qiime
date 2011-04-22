@@ -3,7 +3,7 @@
 
 __author__ = "Julia Goodrich"
 __copyright__ = "Copyright 2011, The QIIME Project" 
-__credits__ = ["Julia Goodrich", "Jesse Stombaugh","Greg Caporaso"]
+__credits__ = ["Julia Goodrich", "Jesse Stombaugh","Greg Caporaso","Justin Kuczynski"]
 __license__ = "GPL"
 __version__ = "1.2.1-dev"
 __maintainer__ = "Daniel McDonald"
@@ -21,7 +21,7 @@ Python 2.5
 This script generates the otu table for a specific category
 """
 
-
+from __future__ import division
 from optparse import OptionParser
 from collections import defaultdict
 from numpy import nonzero, arange, array
@@ -133,7 +133,7 @@ def get_counts_by_cat(lines, num_meta, meta_dict, cat_list,category,num_samples_
                 if i in samples_from_mapping:
                     label_dict[meta_dict[i][0][0]] += float(c)/(sample_counts[i])
             for i in cat_list:
-                new_line.append(round((label_dict[i]/ num_samples_by_cat[(category,i)])*100,5))
+                new_line.append(round((label_dict[i]/ num_samples_by_cat[(category,i)]),5))
             cat_otu_table.append(new_line)
     return  cat_otu_table, otus, taxonomy
 
