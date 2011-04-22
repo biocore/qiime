@@ -512,9 +512,9 @@ TAGA
 >S3_7 FXX117
 TAGT"""
 
-centroid_seqs1 = """>FXX111
+centroid_seqs1 = """>FXX111 | cluster size: 3
 TTTT
->FXX112
+>FXX112 | cluster size: 2
 TATT"""
 
 singleton_seqs1 = """>FXX115

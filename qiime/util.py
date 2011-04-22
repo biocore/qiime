@@ -1055,7 +1055,10 @@ def inflate_denoiser_output(centroid_seqs,singleton_seqs,denoiser_map,raw_seqs):
     id_lookup = parse_denoiser_mapping(denoiser_map)
     flowgram_to_seq_id_lookup = flowgram_id_to_seq_id_map(raw_seqs)
     for id_, seq in centroid_seqs:
-        cluster_member_ids = id_lookup[id_]
+        #centroid headers look like
+        #>FZTHQMS01E140G | cluster size: 4353
+        id, cluster_size_str = id_.split(' | ')
+        cluster_member_ids = id_lookup[id]
         for c in cluster_member_ids:
             yield flowgram_to_seq_id_lookup[c], seq
     
