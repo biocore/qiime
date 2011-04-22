@@ -22,16 +22,7 @@ qiime_config = load_qiime_config()
 
 script_info={}
 script_info['brief_description'] = """A workflow script for picking OTUs through building OTU tables"""
-script_info['script_description'] = """This script takes a sequence file and performs all processing steps through building the OTU table.
-
-REQUIRED: You must add values for the following parameters in a custom parameters file:
- align_seqs:template_fp
- filter_alignment:lane_mask_fp 
- 
-These are the values that you would typically pass as --template_fp to align_seqs.py and lane_mask_fp to filter_alignment.py, respectively.
-
-
-"""
+script_info['script_description'] = """This script takes a sequence file and performs all processing steps through building the OTU table."""
 
 script_info['script_usage'] = []
 
