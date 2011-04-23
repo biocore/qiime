@@ -379,7 +379,7 @@ class WorkflowTests(TestCase):
         otu_map_fp = join(self.wf_out,'uclust_ref_picked_otus',
          '%s_otus.txt' % input_file_basename)
         otu_table_fp = join(self.wf_out,'uclust_ref_picked_otus',
-         '%s_otu_table.txt' % input_file_basename)
+         'otu_table.txt')
         sample_ids, otu_ids, otu_table, lineages =\
           parse_otu_table(open(otu_table_fp))
         expected_sample_ids = ['S1','S2','S3']
@@ -428,7 +428,7 @@ class WorkflowTests(TestCase):
         otu_map_fp = join(self.wf_out,'uclust_ref_picked_otus',
          '%s_otus.txt' % input_file_basename)
         otu_table_fp = join(self.wf_out,'uclust_ref_picked_otus',
-         '%s_otu_table.txt' % input_file_basename)
+         'otu_table.txt')
 
         # Number of OTUs matches manually confirmed result -- 
         # in parallel there are no new clusters so num otus will be 4
