@@ -11,19 +11,15 @@ __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 __status__ = "Development"
 
-import numpy
-import random
-import re 
-
 from optparse import make_option
 
 from cogent.parse.tree import DndParser
 
 from qiime.parse import parse_otu_table
-from qiime.util import parse_command_line_parameters, merge_n_otu_tables
+from qiime.util import parse_command_line_parameters
 from qiime.format import format_otu_table
 
-from qiime.simsam import sort_nicely, get_new_otu_id, combine_sample_dicts
+from qiime.simsam import sim_otu_table
 
 script_info = {}
 script_info['brief_description'] = "Simulate samples for each sample in an OTU table, using a phylogenetic tree."
@@ -50,35 +46,16 @@ def main():
 
     out_fh = open(opts.output_file,'w')
     otu_table_fh = open(opts.otu_table,'U')
-    sample_ids, otu_ids, otu_mtx, lineages = parse_otu_table(otu_table_fh)
+    sample_ids, otu_ids, otu_mtx, otu_metadata = parse_otu_table(otu_table_fh)
     tree_fh = open(opts.tree_file,'U')
     tree = DndParser(tree_fh)
-    tree_tips = [tip.Name for tip in tree.tips()]
-    sort_nicely(tree_tips) # don't need sort here?
-    # format of sample_dict: otu_id: num_seqs
-    # sample_otu_tables = []
 
-    # beware, get_new_otu_id may return something we already have in the table
-    # don't want to rows of the same otu
-    sample_dicts = []
-    out_sam_names = []
-    for i in range(len(sample_ids)):
-        for j in range(opts.num):
-            sample_dict = {}
-            sample_vector = otu_mtx[:,i]
-            for k in range(len(otu_ids)):
-                if sample_vector[k] == 0: continue
-                new_otu_id = get_new_otu_id(otu_ids[k], tree, opts.dissim)
-                if sample_dict.has_key(new_otu_id):
-                    sample_dict[new_otu_id] += sample_vector[k]
-                else:
-                    sample_dict[new_otu_id] = sample_vector[k]
-            sample_dicts.append(sample_dict)
-            out_sam_names.append(sample_ids[i] + '_' + str(j))
+    out_sam_names, res_otus, res_otu_mtx, res_otu_metadata = \
+     sim_otu_table(sample_ids, otu_ids, otu_mtx, otu_metadata, 
+     tree, opts.num, opts.dissim)
 
-
-    res_otu_mtx, res_otus = combine_sample_dicts(sample_dicts)
-    out_fh.write(format_otu_table(out_sam_names, res_otus, res_otu_mtx))
+    out_fh.write(format_otu_table(out_sam_names, res_otus, 
+     res_otu_mtx, res_otu_metadata))
 
 
 if __name__ == "__main__":
