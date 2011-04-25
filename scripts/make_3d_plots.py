@@ -16,7 +16,7 @@ __status__ = "Development"
  
 
 from qiime.util import parse_command_line_parameters, get_options_lookup, create_dir
-from optparse import make_option
+from qiime.util import make_option
 from qiime.make_3d_plots import generate_3d_plots, generate_3d_plots_invue
 from qiime.parse import parse_coords,group_by_field,group_by_fields
 import shutil

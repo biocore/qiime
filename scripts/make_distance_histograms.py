@@ -14,7 +14,7 @@ __status__ = "Development"
 
 from qiime.util import parse_command_line_parameters, get_qiime_project_dir,\
     get_options_lookup
-from optparse import make_option
+from qiime.util import make_option
 from qiime.make_distance_histograms import group_distances, _make_path, \
     draw_all_histograms, _make_relative_paths, make_main_html, \
     monte_carlo_group_distances, monte_carlo_group_distances_within_between

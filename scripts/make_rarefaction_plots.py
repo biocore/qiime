@@ -11,7 +11,7 @@ __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 __status__ = "Development"
  
-from optparse import make_option
+from qiime.util import make_option
 from qiime.util import parse_command_line_parameters, get_qiime_project_dir, \
                        create_dir,get_options_lookup
 from cogent.util.misc import get_random_directory_name

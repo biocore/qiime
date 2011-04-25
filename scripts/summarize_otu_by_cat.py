@@ -14,7 +14,7 @@ __status__ = "Development"
  
 from os import getcwd, makedirs
 from qiime.util import parse_command_line_parameters
-from optparse import make_option
+from qiime.util import make_option
 from qiime.summarize_otu_by_cat import summarize_by_cat
 
 

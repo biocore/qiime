@@ -15,7 +15,7 @@ This script generates taxonomy charts
 """
 
 from qiime.util import parse_command_line_parameters, get_qiime_project_dir
-from optparse import make_option
+from qiime.util import make_option
 from qiime.plot_taxa_summary import make_all_charts
 from cogent.util.misc import get_random_directory_name
 from qiime.colors import taxonomy_color_prefs_and_map_data_from_options

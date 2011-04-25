@@ -14,7 +14,7 @@ __status__ = "Development"
 
 from qiime.otu_category_significance import test_wrapper, test_wrapper_multiple
 from qiime.util import parse_command_line_parameters
-from optparse import make_option
+from qiime.util import make_option
 from os.path import isdir, join
 from os import listdir
 

@@ -12,7 +12,7 @@ __email__ = "daniel.knights@colorado.edu"
 __status__ = "Development"
  
 
-from optparse import make_option
+from qiime.util import make_option
 from os import makedirs, rmdir, listdir
 from os.path import join
 from cogent.util.misc import remove_files

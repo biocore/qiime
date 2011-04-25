@@ -11,7 +11,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
-from optparse import make_option
+from qiime.util import make_option
 from os.path import split, splitext, exists
 from os import makedirs
 from numpy import log10

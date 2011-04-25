@@ -12,7 +12,7 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
 from qiime.util import parse_command_line_parameters
-from optparse import make_option
+from qiime.util import make_option
 from os import makedirs, system
 from os.path import exists, split, splitext
 from subprocess import check_call, CalledProcessError

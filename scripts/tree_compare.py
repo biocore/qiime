@@ -14,7 +14,7 @@ __status__ = "Development"
 
 from qiime.util import parse_command_line_parameters, create_dir
 from qiime.tree_compare import load_tree_files, bootstrap_support, write_bootstrap_support_files
-from optparse import make_option
+from qiime.util import make_option
 import os.path
 from os.path import exists
 

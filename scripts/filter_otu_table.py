@@ -16,7 +16,7 @@ from qiime.util import parse_command_line_parameters, get_options_lookup, \
                        create_dir
 from qiime.filter_otu_table import filter_table, _filter_table_samples, \
                                    split_tax
-from optparse import make_option
+from qiime.util import make_option
 from string import strip
 from qiime.parse import parse_otu_table
 import os

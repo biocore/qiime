@@ -13,7 +13,7 @@ __maintainer__ = "Jens Reeder"
 __email__ = "jens.reeder@gmail.com"
 __status__ = "Development"
  
-from optparse import make_option
+from qiime.util import make_option
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from cogent.parse.fasta import MinimalFastaParser
 from qiime.format import write_Fasta_from_name_seq_pairs

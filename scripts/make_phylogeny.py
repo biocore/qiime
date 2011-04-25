@@ -12,7 +12,7 @@ __email__ = "justinak@gmail.com"
 __status__ = "Development"
  
 from os.path import splitext
-from optparse import make_option
+from qiime.util import make_option
 
 from qiime.util import parse_command_line_parameters
 

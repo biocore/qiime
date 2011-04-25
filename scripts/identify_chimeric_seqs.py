@@ -13,7 +13,7 @@ __status__ = "Development"
  
 
 from qiime.util import parse_command_line_parameters, get_options_lookup
-from optparse import make_option
+from qiime.util import make_option
 from os.path import split, splitext
 
 from qiime.identify_chimeric_seqs import blast_fragments_identify_chimeras,\

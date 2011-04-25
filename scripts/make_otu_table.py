@@ -13,7 +13,7 @@ __status__ = "Development"
  
 from sys import argv, exit, stderr, stdout
 from qiime.util import parse_command_line_parameters, get_options_lookup
-from optparse import make_option
+from qiime.util import make_option
 from qiime.parse import fields_to_dict, parse_taxonomy
 from qiime.make_otu_table import make_otu_table, remove_otus
 

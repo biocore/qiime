@@ -13,7 +13,7 @@ __status__ = "Development"
  
 
 from qiime.util import parse_command_line_parameters, get_options_lookup
-from optparse import make_option
+from qiime.util import make_option
 from qiime.parse import parse_qual_scores
 from qiime.make_fastq import make_fastq_single, make_fastq_multi
 

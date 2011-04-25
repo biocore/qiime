@@ -13,7 +13,7 @@ __status__ = "Development"
  
 
 from qiime.util import parse_command_line_parameters
-from optparse import make_option
+from qiime.util import make_option
 from os import popen, system, mkdir, makedirs
 from os.path import split, splitext, join
 from subprocess import check_call, CalledProcessError

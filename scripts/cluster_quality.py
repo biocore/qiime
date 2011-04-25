@@ -13,7 +13,7 @@ __status__ = "Development"
  
 
 from qiime.util import parse_command_line_parameters
-from optparse import make_option
+from qiime.util import make_option
 from qiime.parse import parse_mapping_file_to_dict, parse_distmat
 import os
 import sys

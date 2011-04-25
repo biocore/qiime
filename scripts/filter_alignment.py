@@ -16,7 +16,7 @@ __status__ = "Development"
 from qiime.filter_alignment import apply_lane_mask_and_gap_filter, \
   remove_outliers
 from qiime.util import parse_command_line_parameters
-from optparse import make_option
+from qiime.util import make_option
 from cogent.core.alignment import eps
 from os.path import split, exists, splitext, getsize
 from os import mkdir, remove

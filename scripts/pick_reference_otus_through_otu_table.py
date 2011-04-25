@@ -12,7 +12,7 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
  
 
-from optparse import make_option
+from qiime.util import make_option
 from os import makedirs
 from qiime.util import (load_qiime_config, 
                         parse_command_line_parameters)

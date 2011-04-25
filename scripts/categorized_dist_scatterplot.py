@@ -12,7 +12,7 @@ __email__ = "justinak@gmail.com"
 __status__ = "Development"
 
 
-from optparse import make_option
+from qiime.util import make_option
 
 import os
 

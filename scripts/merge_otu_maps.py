@@ -11,7 +11,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
-from optparse import make_option
+from qiime.util import make_option
 from qiime.pick_otus import map_otu_map_files
 from qiime.format import write_otu_map
 from qiime.util import parse_command_line_parameters

@@ -16,7 +16,7 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
 from qiime.util import parse_command_line_parameters, get_options_lookup
-from optparse import make_option
+from qiime.util import make_option
 from sys import exit
 from os import popen
 from os.path import exists
@@ -60,10 +60,8 @@ help="The copyright information to be included in"+\
 script_info['version'] = __version__
 
 
-script_block = """from optparse import make_option
-from qiime.util import parse_command_line_parameters, get_options_lookup
-
-options_lookup = get_options_lookup()
+script_block = """
+from qiime.util import parse_command_line_parameters, make_option
 
 script_info = {}
 script_info['brief_description'] = ""
@@ -72,12 +70,11 @@ script_info['script_usage'] = [("","","")]
 script_info['output_description']= ""
 script_info['required_options'] = [\\
  # Example required option
- #make_option('-i','--input_dir',help='the input directory'),\\
- #options_lookup['input_fasta']
+ #make_option('-i','--input_dir',type="existing_filepath",help='the input directory'),\\
 ]
 script_info['optional_options'] = [\\
  # Example optional option
- #make_option('-o','--output_dir',help='the output directory [default: %default]'),\\
+ #make_option('-o','--output_dir',type="new_dirpath",help='the output directory [default: %default]'),\\
 ]
 script_info['version'] = __version__"""
 

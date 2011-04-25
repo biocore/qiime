@@ -13,7 +13,7 @@ __status__ = "Development"
 
 import matplotlib
 matplotlib.use('PDF')
-from optparse import make_option
+from qiime.util import make_option
 from qiime.parse import parse_newick
 from qiime.util import parse_command_line_parameters
 from qiime.make_bootstrapped_tree import write_pdf_bootstrap_tree

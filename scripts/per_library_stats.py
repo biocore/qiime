@@ -11,7 +11,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
-from optparse import make_option
+from qiime.util import make_option
 from numpy import std
 from qiime.util import (compute_seqs_per_library_stats, 
     parse_command_line_parameters, get_options_lookup, 

@@ -14,7 +14,7 @@ __status__ = "Development"
 
 from qiime.make_library_id_lists import get_first_id, get_ids
 from qiime.util import parse_command_line_parameters
-from optparse import make_option
+from qiime.util import make_option
 from os.path import exists, join
 from os import makedirs
 

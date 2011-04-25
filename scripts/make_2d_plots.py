@@ -18,7 +18,7 @@ from matplotlib import use
 use('Agg',warn=False)
 import matplotlib,re
 from qiime.util import parse_command_line_parameters, get_options_lookup
-from optparse import make_option
+from qiime.util import make_option
 from qiime.make_2d_plots import generate_2d_plots
 from qiime.parse import parse_coords,group_by_field,group_by_fields
 import shutil

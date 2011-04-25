@@ -13,7 +13,7 @@ __status__ = "Development"
  
 
 from qiime.util import parse_command_line_parameters
-from optparse import make_option
+from qiime.util import make_option
 from qiime.beta_diversity import (single_file_beta, multiple_file_beta,
 list_known_metrics)
 import os

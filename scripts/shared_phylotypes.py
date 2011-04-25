@@ -13,7 +13,7 @@ __status__ = "Development"
  
 from glob import glob
 from os.path import exists, split, splitext, isdir
-from optparse import make_option
+from qiime.util import make_option
 
 from qiime.util import parse_command_line_parameters,\
     get_options_lookup, create_dir

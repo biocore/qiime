@@ -13,7 +13,7 @@ __status__ = "Development"
  
 
 from qiime.util import parse_command_line_parameters,get_options_lookup
-from optparse import make_option
+from qiime.util import make_option
 from os import mkdir
 from os.path import splitext,split,join,isfile, isdir
 from qiime.process_sff import prep_sffs_in_dir

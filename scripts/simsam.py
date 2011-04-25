@@ -11,7 +11,7 @@ __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 __status__ = "Development"
 
-from optparse import make_option
+from qiime.util import make_option
 
 from cogent.parse.tree import DndParser
 

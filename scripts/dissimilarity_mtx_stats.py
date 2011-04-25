@@ -13,7 +13,7 @@ __status__ = "Development"
  
 
 from qiime.util import parse_command_line_parameters, matrix_stats
-from optparse import make_option
+from qiime.util import make_option
 import os
 from qiime.parse import parse_distmat
 from qiime.format import format_distance_matrix

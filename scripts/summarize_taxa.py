@@ -15,7 +15,7 @@ __status__ = "Development"
 
 from qiime.util import parse_command_line_parameters, \
         convert_otu_table_relative
-from optparse import make_option
+from qiime.util import make_option
 from qiime.summarize_taxa import make_summary, add_summary_mapping
 from sys import stdout, stderr
 from qiime.parse import parse_otu_table, parse_mapping_file

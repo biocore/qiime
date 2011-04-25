@@ -11,7 +11,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
-from optparse import make_option
+from qiime.util import make_option
 from os import access, X_OK, R_OK, W_OK, getenv
 from os.path import isdir, exists, split
 from sys import platform, version as python_version, executable

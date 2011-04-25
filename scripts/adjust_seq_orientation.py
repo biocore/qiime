@@ -12,7 +12,7 @@ __email__ = "antgonza@gmail.com"
 __status__ = "Development"
 
 from qiime.util import parse_command_line_parameters, get_options_lookup
-from optparse import make_option
+from qiime.util import make_option
 from os.path import split, splitext
 from cogent.parse.fasta import MinimalFastaParser
 from cogent import DNA

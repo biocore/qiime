@@ -12,7 +12,7 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
  
 
-from optparse import make_option
+from qiime.util import make_option
 from cogent.maths.stats.test import mantel
 from qiime.parse import parse_distmat
 from qiime.format import format_p_value_for_num_iters

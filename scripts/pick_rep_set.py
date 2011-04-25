@@ -12,7 +12,7 @@ __email__ = "wasade@gmail.com"
 __status__ = "Development"
 
 from qiime.util import parse_command_line_parameters
-from optparse import make_option
+from qiime.util import make_option
 from qiime.pick_rep_set import (rep_set_picking_methods, 
  reference_rep_set_picking_methods)
 

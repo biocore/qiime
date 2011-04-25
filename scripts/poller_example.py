@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # File created on 08 Nov 2009.
 from __future__ import division
-from optparse import make_option
+from qiime.util import make_option
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from os import system, makedirs
 from qiime.parallel.poller import remove_all

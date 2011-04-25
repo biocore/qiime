@@ -13,7 +13,7 @@ __email__ = "antgonza@gmail.com"
 __status__ = "Development"
  
 from qiime.util import parse_command_line_parameters, get_options_lookup
-from optparse import make_option
+from qiime.util import make_option
 from qiime.principal_coordinates import pcoa, multiple_file_pcoa
 from qiime.parse import parse_distmat
 import os

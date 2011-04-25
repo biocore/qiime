@@ -15,7 +15,7 @@ import numpy
 import random
 import re 
 
-from optparse import make_option
+from qiime.util import make_option
 
 from qiime.parse import parse_otu_table
 from qiime.util import parse_command_line_parameters

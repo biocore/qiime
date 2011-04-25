@@ -15,7 +15,7 @@ from qiime.util import parse_command_line_parameters
 from qiime.trim_sff_primers import (
     get_technical_lengths, set_sff_trimpoints, set_sff_trimpoints_with_sfftools,
     )
-from optparse import make_option
+from qiime.util import make_option
 
 script_info={}
 script_info['brief_description']="""Trim sff primers"""

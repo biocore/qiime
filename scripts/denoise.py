@@ -14,7 +14,7 @@ __email__ = "jens.reeder@gmail.com"
 __status__ = "Development"
  
 from os.path import exists, splitext, split
-from optparse import make_option
+from qiime.util import make_option
 from numpy import array
 
 from cogent.core.alignment import SequenceCollection

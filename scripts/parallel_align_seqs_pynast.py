@@ -13,7 +13,7 @@ __status__ = "Development"
 
 import warnings
 warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
-from optparse import make_option
+from qiime.util import make_option
 from os.path import split, splitext, join
 from os import popen, system, makedirs, mkdir
 from subprocess import check_call, CalledProcessError

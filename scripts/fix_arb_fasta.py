@@ -13,7 +13,7 @@ __status__ = "Development"
 from cogent.parse.fasta import MinimalFastaParser
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from sys import argv
-from optparse import make_option
+from qiime.util import make_option
 
 options_lookup = get_options_lookup()
 

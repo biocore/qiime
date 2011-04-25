@@ -21,7 +21,6 @@ from os import getenv, makedirs
 from operator import itemgetter
 from os.path import abspath, exists, dirname, join, isdir
 from collections import defaultdict
-from optparse import make_option
 import sys
 import os
 from copy import deepcopy
@@ -48,9 +47,10 @@ from cogent.util.dict2d import Dict2D
 from cogent.app.formatdb import build_blast_db_from_fasta_path,\
     build_blast_db_from_fasta_file
 from cogent import LoadSeqs
-from cogent.util.misc import (parse_command_line_parameters, 
-                                     create_dir, 
-                                     handle_error_codes)
+from cogent.util.misc import (create_dir, 
+                              handle_error_codes)
+from qiime.pycogent_backports.option_parsing import (parse_command_line_parameters,
+                                        make_option)
 from qiime.parse import (parse_otu_table,
                          parse_qiime_config_files,
                          parse_coords,
@@ -504,23 +504,29 @@ def get_options_lookup():
     qiime_config = load_qiime_config()
     result = {}
     result['fasta_as_primary_input'] =\
-     make_option('-i','--input_fasta_fp',help='path to the input fasta file')
+     make_option('-i','--input_fasta_fp',type="existing_filepath",
+      help='path to the input fasta file')
     result['otu_table_as_primary_input'] =\
-     make_option('-i','--otu_table_fp',\
+     make_option('-i','--otu_table_fp',type="existing_filepath",
       help='path to the input OTU table (i.e., the output from make_otu_table.py)')
     result['otu_map_as_primary_input'] =\
-     make_option('-i','--otu_map_fp',\
+     make_option('-i','--otu_map_fp',type="existing_filepath",
       help='path to the input OTU map (i.e., the output from pick_otus.py)')
     result['log_fp'] =\
-     make_option('-l','--log_fp',help='path to write the log file')
+     make_option('-l','--log_fp',type="new_filepath",
+     help='path to write the log file')
     result['input_fasta'] =\
-     make_option('-f','--input_fasta_fp',help='path to the input fasta file')
+     make_option('-f','--input_fasta_fp',type="existing_filepath",
+      help='path to the input fasta file')
     result['output_dir'] =\
-     make_option('-o','--output_dir',help='path to the output directory')
+     make_option('-o','--output_dir',type="new_dirpath",
+     help='path to the output directory')
     result['output_fp'] =\
-     make_option('-o','--output_fp',help='the output filepath')
+     make_option('-o','--output_fp',type="new_filepath",
+     help='the output filepath')
     result['mapping_fp'] =\
-     make_option('-m','--mapping_fp',help='the mapping filepath')
+     make_option('-m','--mapping_fp',type="existing_filepath",
+     help='the mapping filepath')
     
     ## Define options used by the parallel scripts
     result['jobs_to_start'] =\
@@ -529,7 +535,7 @@ def get_options_lookup():
        default=qiime_config['jobs_to_start'])
     result['poller_fp'] =\
      make_option('-P','--poller_fp',action='store',\
-       type='string',help='full path to '+\
+       help='full path to '+\
        'qiime/parallel/poller.py [default: %default]',\
        default=join(get_qiime_scripts_dir(),'poller.py'))
     result['retain_temp_files'] =\

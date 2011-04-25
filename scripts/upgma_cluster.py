@@ -13,7 +13,7 @@ __status__ = "Development"
  
 
 from qiime.util import parse_command_line_parameters
-from optparse import make_option
+from qiime.util import make_option
 from qiime.hierarchical_cluster import single_file_upgma, multiple_file_upgma
 import os
 

@@ -10,7 +10,7 @@ __email__ = "lozupone@colorado.edu"
 __status__ = "Development"
 
 from qiime.parse import parse_otu_table
-from optparse import make_option
+from qiime.util import make_option
 from qiime.util import parse_command_line_parameters
 from qiime.format import format_unifrac_sample_mapping
 

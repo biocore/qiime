@@ -15,7 +15,7 @@ __status__ = "Development"
 
 
 from qiime.util import parse_command_line_parameters, get_options_lookup
-from optparse import make_option
+from qiime.util import make_option
 from qiime.util import MissingFileError
 from qiime.make_otu_heatmap_html import get_otu_counts, \
     filter_by_otu_hits

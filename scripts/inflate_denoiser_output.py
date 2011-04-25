@@ -12,7 +12,7 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
  
 
-from optparse import make_option
+from qiime.util import make_option
 from itertools import chain
 from cogent.parse.fasta import MinimalFastaParser
 from qiime.util import parse_command_line_parameters, get_options_lookup

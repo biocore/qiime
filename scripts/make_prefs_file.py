@@ -10,7 +10,7 @@ __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
 __status__ = "Development"
 
-from optparse import make_option
+from qiime.util import make_option
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.format import build_prefs_string
 from qiime.colors import get_map

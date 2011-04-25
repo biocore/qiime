@@ -13,7 +13,7 @@ __status__ = "Development"
 
 from os.path import split, splitext
 from os import makedirs
-from optparse import make_option
+from qiime.util import make_option
 from qiime.split_libraries_illumina import (
     mapping_data_to_barcode_map,
     read_qual_score_filter, bad_chars_from_threshold, IlluminaParseError,

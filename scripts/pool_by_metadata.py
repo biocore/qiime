@@ -13,7 +13,7 @@ __status__ = "Development"
  
 
 from qiime.util import parse_command_line_parameters, get_options_lookup
-from optparse import make_option
+from qiime.util import make_option
 from string import strip
 from qiime.filter_by_metadata import parse_metadata_state_descriptions,\
 get_sample_ids
