@@ -893,7 +893,7 @@ function changeMetric(SelObject){
 			img.setAttribute('width',"600px") 
 			img.setAttribute('id',array[i]+'_ave'+imagetype)
 			img.setAttribute('style','position:absolute;z-index:0')
-			img.setAttribute('src',"./html_plots/"+array[i]+'_ave'+imagetype)
+			img.setAttribute('src',"./html_plots/"+SelObject.value+array[i]+'_ave'+imagetype)
 			plots.appendChild(img)
 		}
 		plots.style.display=''
