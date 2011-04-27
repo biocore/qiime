@@ -35,6 +35,12 @@ def check_existing_filepath(option, opt, value):
     else:
         return value
 
+def check_existing_filepaths(option, opt, value):
+    values = value.split(',')
+    for v in values:
+        check_existing_filepath(option,opt,v)
+    return values
+
 def check_existing_dirpath(option, opt, value):
     if not exists(value):
         raise OptionValueError(
@@ -50,17 +56,45 @@ def check_new_filepath(option, opt, value):
         
 def check_new_dirpath(option, opt, value):
     return value
-        
+    
+def check_existing_path(option, opt, value):
+    if not exists(value):
+        raise OptionValueError(
+            "option %s: path does not exist: %r" % (opt, value))
+    return value
+    
+def check_new_path(option, opt, value):
+    return value
+
 
 class CogentOption(Option):
-    TYPES = Option.TYPES + ("existing_filepath",
+    TYPES = Option.TYPES + ("existing_path",
+                            "new_path",
+                            "existing_filepath",
+                            "existing_filepaths",
                             "new_filepath",
                             "existing_dirpath",
                             "new_dirpath",)
     TYPE_CHECKER = copy(Option.TYPE_CHECKER)
+    # for cases where the user specifies an existing file or directory
+    # as input, but it can be either a dir or a file
+    TYPE_CHECKER["existing_path"] = check_existing_path
+    # for cases where the user specifies a new file or directory
+    # as output, but it can be either a dir or a file
+    TYPE_CHECKER["new_path"] = check_new_path
+    # for cases where the user passes a single existing file
     TYPE_CHECKER["existing_filepath"] = check_existing_filepath
+    # for cases where the user passes one or more existing files
+    # as a comma-separated list - paths are returned as a list
+    TYPE_CHECKER["existing_filepaths"] = check_existing_filepaths
+    # for cases where the user is passing a new path to be 
+    # create (e.g., an output file)
     TYPE_CHECKER["new_filepath"] = check_new_filepath
+    # for cases where the user is passing an existing directory
+    # (e.g., containing a set of input files)
     TYPE_CHECKER["existing_dirpath"] = check_existing_dirpath
+    # for cases where the user is passing a new directory to be 
+    # create (e.g., an output dir which will contain many result files)
     TYPE_CHECKER["new_dirpath"] = check_new_dirpath
 
 make_option = CogentOption
