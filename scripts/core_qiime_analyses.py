@@ -22,8 +22,8 @@ qiime_config = load_qiime_config()
 
 script_info={}
 script_info['brief_description'] = """A workflow script for running a core QIIME workflow."""
-script_info['script_description'] = """This script plugs several QIIME steps together to form a basic full data analysis workflow. The steps include quality filtering and demultiplexing sequences, running the pick_otus_through_otu_table.py workflow (pick otus and representative sequences, assign taxonomy, align representative sequences, build a tree, and build and OTU table), generating 3d beta diversity PCoA plots, generating alpha rarefaction plots, identifying OTUs that are differentially represented in different categories, and several additional analysis. Beta diversity calculations will be run both with and without an even sampling step, where the depth of sampling can either be passed on the command line or QIIME will try to make a reasonable guess."""
-script_info['script_usage'] = [("","Run serial analysis, and guess the even sampling depth (no -e provided)","%prog -i Fasting_Example.fna -q Fasting_Example.qual -o FastingStudy -p custom_parameters.txt -m Fasting_Map.txt -c Treatment,DOB")]
+script_info['script_description'] = """This script plugs several QIIME steps together to form a basic full data analysis workflow. The steps include quality filtering and demultiplexing sequences (optional), running the pick_otus_through_otu_table.py workflow (pick otus and representative sequences, assign taxonomy, align representative sequences, build a tree, and build and OTU table), generating 3d beta diversity PCoA plots, generating alpha rarefaction plots, identifying OTUs that are differentially represented in different categories, and several additional analysis. Beta diversity calculations will be run both with and without an even sampling step, where the depth of sampling can either be passed on the command line or QIIME will try to make a reasonable guess."""
+script_info['script_usage'] = [("","Run serial analysis, and guess the even sampling depth (no -e provided)","%prog -i Fasting_Example.fna -q Fasting_Example.qual -o FastingStudy -p custom_parameters.txt -m Fasting_Map.txt -c Treatment,DOB"),("","Run serial analysis, and guess the even sampling depth (no -e provided). Skip split libraries by starting with already demultiplexed sequences.","%prog -i seqs.fna -o FastingStudy -p custom_parameters.txt -m Fasting_Map.txt -c Treatment,DOB")]
 
 
 script_info['output_description'] ="""
@@ -31,9 +31,8 @@ script_info['output_description'] ="""
 
 script_info['required_options'] = [
     make_option('-i','--input_fnas',
-        help='the input fna files (pre-split_libraries) [REQUIRED]'),
-    make_option('-q','--input_quals',
-        help='the input qual files (pre-split_libraries) [REQUIRED]'),
+        help='the input fasta file(s) -- comma-separated '+\
+        'if more than one [REQUIRED]'),
     make_option('-o','--output_dir',
         help='the output directory [REQUIRED]'),
     make_option('-p','--parameter_fp',
@@ -43,6 +42,9 @@ script_info['required_options'] = [
     ]
 
 script_info['optional_options'] = [\
+ make_option('-q','--input_quals',
+        help='the input qual files  -- comma-separated '+\
+        'if more than one [default: %default]'),
  make_option('-f','--force',action='store_true',\
         dest='force',help='Force overwrite of existing output directory'+\
         ' (note: existing files in output_dir will not be removed)'+\
@@ -64,9 +66,15 @@ script_info['optional_options'] = [\
             help='path to the tree file if one should be used (otherwise de novo '+\
             ' tree will be used) [default: %default]'),
  make_option('-c','--categories',
-            help='the categories to compare (for otu_category_significance,'+\
-            'supervised_learning.py, and cluster_quality.py steps) '+\
+            help='the metadata category or categories to compare '+\
+            '(for otu_category_significance,'+\
+            'supervised_learning.py, and cluster_quality.py steps)  '+\
+            '-- comma-separated if more than one '+\
             '[default: %default; skip these steps]'),
+ make_option('--suppress_split_libraries',action='store_true',default=False,
+            help='skip demultiplexing/quality filtering (i.e. split_libraries) -'+\
+            ' this assumes that sequence identifiers are in post-split_libraries'+\
+            ' format (i.e., sampleID_seqID) [default: %default]'),
 ]
 script_info['version'] = __version__
 
@@ -84,9 +92,14 @@ def main():
     mapping_fp = opts.mapping_fp
     verbose = opts.verbose
     print_only = opts.print_only
+    suppress_split_libraries = opts.suppress_split_libraries
     even_sampling_keeps_all_samples = opts.even_sampling_keeps_all_samples
     
     parallel = opts.parallel
+    
+    if suppress_split_libraries and len(input_fnas.split(',')) > 1:
+        option_parser.error("Only a single fasta file can be passed with "+\
+                            "--suppress_split_libraries")
     
     try:
         parameter_f = open(opts.parameter_fp)
@@ -127,6 +140,7 @@ def main():
         qiime_config=qiime_config,
         categories=categories,
         sampling_depth=sampling_depth,
+        suppress_split_libraries=suppress_split_libraries,
         even_sampling_keeps_all_samples=even_sampling_keeps_all_samples,
         arare_min_seqs_per_sample=10,
         arare_num_steps=10,

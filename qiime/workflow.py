@@ -1081,6 +1081,7 @@ def run_core_qiime_analyses(
     categories=None,
     sampling_depth=None,
     even_sampling_keeps_all_samples=False,
+    suppress_split_libraries=False,
     arare_min_seqs_per_sample=10,
     arare_num_steps=10,
     reference_tree_fp=None,
@@ -1112,30 +1113,46 @@ def run_core_qiime_analyses(
     
     ## Split libraries
     # Prep the split_libraries command
-    split_libraries_output_dir = '%s/sl_out/' % output_dir
-    split_libraries_seqs_fp = '%s/seqs.fna' % split_libraries_output_dir
-    split_libraries_hist_fp = '%s/histograms.txt' % split_libraries_output_dir
-    split_libraries_log_fp = '%s/split_library_log.txt' % split_libraries_output_dir
-    index_links.append(('Demultiplexed sequences',split_libraries_seqs_fp,'Split libraries results'))
-    index_links.append(('Split libraries log',split_libraries_log_fp,'Split libraries results'))
-    index_links.append(('Sequence length histograms',split_libraries_hist_fp,'Split libraries results'))
-    try:
-        params_str = get_params_str(params['split_libraries'])
-    except KeyError:
-        params_str = ''
-    # Build the split libraries command
-    split_libraries_cmd = 'split_libraries.py -f %s -q %s -m %s -o %s %s' %\
-     (fna_fps, qual_fps, mapping_fp, split_libraries_output_dir, params_str)
+    if suppress_split_libraries:
+        if len(fna_fps.split(',')) > 1:
+            raise ValueError, \
+             "Only one fasta file can be passed when suppress_split_libraries=True"
+        split_libraries_seqs_fp = fna_fp0
+    else:
+        split_libraries_output_dir = \
+         '%s/sl_out/' % output_dir
+        split_libraries_seqs_fp = \
+         '%s/seqs.fna' % split_libraries_output_dir
+        split_libraries_hist_fp = \
+         '%s/histograms.txt' % split_libraries_output_dir
+        split_libraries_log_fp = \
+         '%s/split_library_log.txt' % split_libraries_output_dir
+        index_links.append(('Demultiplexed sequences',
+                            split_libraries_seqs_fp,
+                            'Split libraries results'))
+        index_links.append(('Split libraries log',
+                            split_libraries_log_fp,
+                            'Split libraries results'))
+        index_links.append(('Sequence length histograms',
+                            split_libraries_hist_fp,
+                            'Split libraries results'))
+        try:
+            params_str = get_params_str(params['split_libraries'])
+        except KeyError:
+            params_str = ''
+        # Build the split libraries command
+        split_libraries_cmd = 'split_libraries.py -f %s -q %s -m %s -o %s %s' %\
+         (fna_fps, qual_fps, mapping_fp, split_libraries_output_dir, params_str)
     
-    commands.append([('Split libraries', split_libraries_cmd)])
+        commands.append([('Split libraries', split_libraries_cmd)])
     
-    # Call the command handler on the list of commands
-    command_handler(commands, 
-                    status_update_callback, 
-                    logger, 
-                    close_logger_on_success=False)
-    # Reset the commands list
-    commands = []
+        # Call the command handler on the list of commands
+        command_handler(commands, 
+                        status_update_callback, 
+                        logger, 
+                        close_logger_on_success=False)
+        # Reset the commands list
+        commands = []
     
     ## OTU picking through OTU table workflow
     data_analysis_output_dir = '%s/otus/' % output_dir
