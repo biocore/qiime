@@ -27,25 +27,34 @@ script_info['output_description']="""The results of single_rarefaction.py consis
 
 script_info['required_options']=[
     make_option('-i', '--input_path',
-        help='input otu table filepath'),
+        help='Input OTU table filepath.',
+        type='existing_filepath'),
     make_option('-o', '--output_path',
-        help='write output rarefied otu tables to this filepath'),
+        help='Output OTU table filepath.',
+        type='new_filepath'),
     make_option('-d', '--depth', type=int,
-        help='sequences per sample to subsample'),
+        help='Number of sequences to subsample per sample.'),
 ]
 script_info['optional_options']=[
-
-make_option('--lineages_included',
-    help="""Deprecated: lineages are now included by default. pass --supress_lineages_included to prevent output rarefied otu tables from including taxonomic (lineage) information for each otu, if present in input otu table"""),
-
-make_option('--suppress_lineages_included', default=True, action="store_false",
-    dest='lineages_included',
-    help="""prevent output rarefied otu tables from including taxonomic (lineage) information for each otu, if present in input otu table"""),
-
-make_option('-k', '--keep_empty_otus', default=False, action='store_true',
-    help='otus (rows) of all zeros are usually omitted from the output otu table, with -k they will not be removed from the output file [default: %default]'),
-
+    make_option('--lineages_included',
+        help='Deprecated: lineages are now included by default. Pass' +\
+        ' --supress_lineages_included to prevent output OTU tables' +\
+        ' from including taxonomic (lineage) information for each OTU. Note:' +\
+        ' this will only work if lineage information is in the input OTU' +\
+        ' table.'),
+    make_option('--suppress_lineages_included', default=True, 
+        action="store_false",dest='lineages_included',
+        help='Exclude taxonomic (lineage) information for each OTU.'),
+    make_option('-k', '--keep_empty_otus', default=False, action='store_true',
+        help='Retain OTUs of all zeros, which are usually omitted from' +\
+        ' the output OTU tables. [default: %default]'),
 ]
+script_info['option_label']={'input_path':'OTU table filepath',
+                             'output_path': 'Output filepath',
+                             'depth': '# of seqs/sample',
+                             'suppress_lineages_included':'Suppress lineages',
+                             'lineages_included': 'Include lineages',
+                             'keep_empty_otus':'Retain empty OTUs'}
 script_info['version'] = __version__
 
 

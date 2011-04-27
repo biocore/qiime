@@ -37,19 +37,63 @@ script_info['script_usage'].append(("""Set Background Color:""","""Alternatively
 script_info['script_usage'].append(("""Generate raw data without interactive webpages:""","""The user can choose to not create an interactive webpage ("-w" option).  This is for the case, where the user just wants the average plots and the raw average data.""","""make_rarefaction_plots.py -i collated_alpha/ -m mapping_file.txt -w"""))
 script_info['output_description']="""The result of this script produces a folder and within that folder there is a sub-folder containing image files. Within the main folder, there is an html file."""
 script_info['required_options']=[\
-make_option('-i', '--input_dir', help='name of folder containing rarefaction files, takes output from collate_alpha.py.  The user can also supply a list of files, which are comma-separated. [REQUIRED]'),
-make_option('-m', '--map_fname', help='name of mapping file [REQUIRED]')
+    make_option('-i', '--input_dir', 
+        help='Input directory containing results from collate_alpha.py.' +\
+        ' [REQUIRED]',
+        type='existing_dirpath'),
+    make_option('-m', '--map_fname', 
+        help='Input metadata mapping filepath. [REQUIRED]',
+        type='existing_filepath')
 ]
 script_info['optional_options']=[\
-make_option('-b', '--colorby', type='string', help='name of columns to make rarefaction graphs of, comma delimited no spaces.'),
-make_option('-p', '--prefs_path', type='string', help='preferences file for coloring of columns.'),
-make_option('-k', '--background_color', type='string', help='Background color for graphs.',default='white'),
-make_option('-g', '--imagetype', type='string', help='extension for image type choose from (png, svg, pdf).  WARNING: Some formats may not properly open in your browser! [default: %default]', default='png'),
-make_option('-d', '--resolution', help='output image resolution, [default: %default]', type='int', default='75'),
-make_option('-y', '--ymax', type='int', help='this is the ymax value to be used for the plots, so you can compare rarefaction plots between two different analyses [default: %default]'),
-make_option('-w', '--webpage', action='store_false', help='this is allows to user to not create the webpage, which may be slow with large datasets [default: %default]', default=True),
-options_lookup['output_dir']
+    make_option('-b', '--colorby', dest='colorby',\
+        help='Comma-separated list categories metadata categories' +\
+        ' (column headers) ' +\
+        'to color by in the plots. The categories must match the name of a ' +\
+        'column header in the mapping file exactly. Multiple categories ' +\
+        'can be list by comma separating them without spaces. The user can ' +\
+        'also combine columns in the mapping file by separating the ' +\
+        'categories by "&&" without spaces. [default=color by all]'),
+    make_option('-p', '--prefs_path',
+        help='Input user-generated preferences filepath. NOTE: This is a' +\
+        ' file with a dictionary containing preferences for the analysis.' +\
+        ' [default: %default]',
+        type='existing_filepath'),
+    make_option('-k', '--background_color', 
+        help='Background color to use in the plots' +\
+        '[default: %default]',default='white', 
+        type='choice',choices=['black','white'],),
+    make_option('-g', '--imagetype',
+        help='Type of image to produce (i.e. png, svg, pdf).' +\
+        ' WARNING: Some formats may not properly open in your browser!' +\
+        ' [default: %default]', default='png',type="choice",
+        choices=['png','pdf','svg']),
+    make_option('-d', '--resolution', 
+        help='Resolution of the plot. [default: %default]', 
+        type='int', default='75'),
+    make_option('-y', '--ymax', type='int', 
+        help='Maximum y-value to be used for the plots. Allows' +\
+        ' for directly comparable rarefaction plots between analyses' +\
+        ' [default: %default]'),
+    make_option('-w', '--webpage', action='store_false', 
+        help='Suppress HTML output. [default: %default]', default=True),
+    ### The webpage option should be replaced with
+    ### suppress_html_output, even though that would screw up backwards 
+    ### compatibility.
+    # make_option('--suppress_html_output', action='store_true', 
+    #     help='Do not generate html', default=False),
+    options_lookup['output_dir']
 ]
+script_info['option_label']={'input_dir':'Collated alpha-diversity directory',
+                             'map_fname':'QIIME-formatted mapping filepath',
+                             'colorby': 'Colorby category',
+                             'output_dir': 'Output directory',
+                             'prefs_path': 'Preferences filepath',
+                             'imagetype': 'Image type',
+                             'resolution':'Image resolution',
+                             'ymax': 'Y-axis height',
+                             'webpage':'Suppress HTML',
+                             'suppress_html_output':'Suppress HTML'}
 script_info['version'] = __version__
 
 def main():

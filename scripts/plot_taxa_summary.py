@@ -40,59 +40,122 @@ script_info['script_usage'].append(("""""","""If you would like to display gener
 script_info['output_description']="""The script generates an output folder, which contains several files. For each pie chart there is a png and a pdf file. The best way to view all of the pie charts is by opening up the file taxonomy_summary_pie_chart.html."""
 
 script_info['required_options']=[\
-make_option('-i', '--input_files', dest='counts_fname',\
-    action='store',type='string',\
-    help='list of files with sample counts by taxonomy [REQUIRED]'),
-make_option('-l', '--labels', dest='labels',action='store',type='string',
-    help='list of labels (i.e. Phylum, Class) [REQUIRED]')
+    ### dest should equal long-form parameter names! Can you clean this up?
+    ### Also note that you don't need to pass type='string' - that's the default
+    make_option('-i', '--input_files', dest='counts_fname',\
+        action='store',
+        help='Input comma-separated list of summarized taxa filepaths' +\
+        ' (i.e results from summarize_taxa.py) [REQUIRED]',
+        type='existing_filepaths'),
+    make_option('-l', '--labels', dest='labels',action='store',type='string',
+        help='Comma-separated list of taxonomic levels (e.g.' +\
+        ' Phylum,Class,Order) [REQUIRED]')
 ]
-
 script_info['optional_options']=[\
-make_option('-n', '--num', dest='num_categories', \
-    help='Maximum number of individual categories in each pie chart. \
-All additional categories are grouped into an "other" category. \
-NOTE: this is only used for the pie charts. \
-[default: %default]', default='20'),
-make_option('-o', '--dir-prefix', dest='dir_path',\
-    help='output folder'),
-make_option('-b', '--colorby', dest='colorby',\
-    help='This is the samples to make charts for in the counts files from \
-summarize_taxa.py. The sample name must match the name of a sample id \
-in the header of the counts file exactly and multiple categories can be \
-list by comma separating them without spaces. \
- [default: %default]',default=None),
- make_option('-p', '--prefs_path',help='This is the user-generated preferences \
-file. NOTE: This is a file with a dictionary containing preferences for the \
-analysis. The label taxonomy_coloring is used for the coloring, see example \
-prefs file preferences_file. [default: %default]'),
- make_option('-k', '--background_color',help='This is the background color to \
-use in the plots. [default: %default]'),
- make_option('-d', '--dpi',help='This is the dpi to \
-use in the plots. [default: %default]',default='80'),
- make_option('-x', '--x_width',help='This is the width to \
-use in the plots. [default: %default]',default='12'),
- make_option('-y', '--y_height',help='This is the height to \
-use in the plots. [default: %default]',default='6'),
-make_option('-w', '--bar_width', dest='bar_width', \
-    help='This the width of the bars in the bar graph and should be a number between 0 and 1. NOTE: this is only used for bar charts. [default: %default]', default='0.75'),
- make_option('-t', '--type_of_file',type='choice',help='This is the filename suffix to use for each high-res plot. (i.e. '+','.join(plot_filetype_choices)+') [default: %default]', choices=plot_filetype_choices,default='pdf'),
- make_option('-c', '--chart_type', dest='chart_type',\
-     action='store',type='string',\
-     help='type of chart to plot (i.e. pie, bar or area). The user has the ability to plot multiple types, by using a comma-separated list (e.g. area,pie)\
-  [default: %default]',default='area,bar'),
- make_option('-r', '--resize_nth_label', dest='resize_nth_label',\
-    action='store',type='string',\
-    help='this is for large area and bar charts where the font on the x-axis is small. This allows you to set every nth label to be larger on the x-axis.This requires an integer value greater than 0.\
-[default: %default]',default='0'),
-make_option('-s', '--suppress_html_legend', action='store_true',\
-    dest='suppress_html_legend', default=False, \
-    help='If present, suppresses the writing of the legend in the html page [default: %default]'),
-make_option('-m', '--suppress_html_counts', action='store_true',\
-    dest='suppress_html_counts', default=False, \
-    help='If present, suppresses the writing of the counts in the html table [default: %default]'),
-make_option('-a', '--a_label_type',type='choice',help='This is the label type. (i.e. '+','.join(labeltype_choices)+') [default: %default]', choices=labeltype_choices,default='str'),
-
+    # changed this from type='string' (default) to type='int'
+    make_option('-n', '--num', dest='num_categories', \
+        help='The maximum number of taxonomies to show in each pie chart.' +\
+        ' All additional taxonomies are grouped into an "other" category.' +\
+        ' NOTE: this functionality only applies to the pie charts.' +\
+        ' [default: %default]', default=20,type='int'),
+    make_option('-o', '--dir-prefix', dest='dir_path',\
+        help='Output directory',
+        type='new_dirpath'),
+    make_option('-b', '--colorby', dest='colorby',\
+        help='This is the categories to color by in the plots from the' +\
+        ' metadata mapping file. The categories must match the name of a ' +\
+        ' column header in the mapping file exactly and multiple categories' +\
+        ' can be list by comma separating them without spaces.' +\
+        ' [default=%default]'),
+    make_option('-p', '--prefs_path',
+        help='Input user-generated preferences filepath. NOTE: This is a' +\
+        ' file with a dictionary containing preferences for the analysis.' +\
+        ' The key taxonomy_coloring is used for the coloring.' +\
+        ' [default: %default]',
+        type='existing_filepath'),
+    make_option('-k', '--background_color',
+        help='This is the background color to use in the plots' +\
+        ' (black or white) [default: %default]',default='white',
+        type='choice',choices=['black','white'],),
+    make_option('-d', '--dpi',
+        help='This is the resolution of the plot. [default: %default]', 
+        type='int',default=80),### you defined this as a string:  default='80'),
+    ### You need to clean up all cases where options are defined as strings but 
+    ### should be ints. The option parser needs to handle these type errors for
+    ### consistency with other code, and to simplify your code. Are you explicitly 
+    ### checking that each of these values is an int before using it? The option
+    ### parser would.
+    make_option('-x', '--x_width',
+        help='This is the width of the x-axis to use in the plots.' +\
+        ' [default: %default]',default=12,type=int),
+    make_option('-y', '--y_height',
+        help='This is the height of the y-axis to use in the plots.' +\
+        ' [default: %default]',default=6,type=int),
+    # type = string should be type='float'
+    make_option('-w', '--bar_width', dest='bar_width', \
+        help='This the width of the bars in the bar graph and should be a' +\
+        ' number between 0 and 1. NOTE: this only applies to the bar charts.' +\
+        ' [default: %default]', default=0.75,type=float),
+    make_option('-t', '--type_of_file',type='choice',
+        help='This is the type of image to produce (i.e. ' +\
+        ','.join(plot_filetype_choices) + '). [default: %default]',
+        choices=plot_filetype_choices,default='pdf'),
+    make_option('-c', '--chart_type', dest='chart_type',\
+         action='store',type='string',\
+         help='This is the type of chart to plot (i.e. pie, bar or area).' +\
+         ' The user has the ability to plot multiple types, by using a' +\
+         ' comma-separated list (e.g. area,pie) [default: %default]',
+         default='area,bar'),
+    make_option('-r', '--resize_nth_label', dest='resize_nth_label',\
+        action='store',type=int,\
+        help='Make every nth label larger than the other lables.' +\
+        ' This is for large area and bar charts where the font on the x-axis' +\
+        ' is small. This requires an integer value greater than 0.' +\
+        ' [default: %default]',default=0),
+    # Make this 'True' by replacing this option with a 
+    # '--include_html_legend'.
+    make_option('-s', '--suppress_html_legend', action='store_true',\
+        dest='suppress_html_legend', default=False, \
+        help='Suppress HTML legend. If present, the writing of the legend' +\
+        ' in the html page is suppressed. [default: %default]'),
+    make_option('-m', '--suppress_html_counts', action='store_true',\
+        dest='suppress_html_counts', default=False, \
+        help='Suppress HTML counts. If present, the writing of the counts' +\
+        ' in the html table is suppressed [default: %default]'),
+    ### why is this call a_label_type? what is the 'a' for? 
+    ### this would probably make more sense as the following commented
+    ### block
+    make_option('-a', '--a_label_type',type='choice',
+        help='Label type. (i.e. ' + ','.join(labeltype_choices) +\
+        '). If the label is defined as int/float, then the x-axis will use' +\
+        ' the values to define the x-axis, otherwise the number of x-ticks' +\
+        ' will correspond to the number of categories. [default: %default]', 
+        choices=labeltype_choices,default='str'),
+    # make_option('-a', '--label_type',type='choice',
+    #     help='Label type ("numeric" or "categorical"). '+\
+    #     ' If the label type is defined as numeric, the x-axis will be' +\
+    #     ' scaled accordingly. Otherwise the x-values will treated' +\
+    #     ' categorically and be evenly spaced [default: %default].', 
+    #     choices=['categorical','numeric'],default='categorical'),
 ]
+script_info['option_label']={'input_files':'Summarized taxa filepaths',
+                             'labels':'Taxonomic levels',
+                             'num': '# of categories to retain',
+                             'map_fname':'QIIME-formatted mapping filepath',
+                             'colorby': 'Colorby category',
+                             'dir-prefix': 'Output directory',
+                             'prefs_path': 'Preferences filepath',
+                             'background_color': 'Background color',
+                             'type_of_file': 'Image type',
+                             'dpi':'Image resolution',
+                             'x_width': 'X-axis width',
+                             'y_height': 'Y-axis height',
+                             'bar_width':'Bar width',
+                             'chart_type': 'Chart type(s)',
+                             'resize_nth_label':'Resize nth label',
+                             'suppress_html_legend':'Suppress HTML legend',
+                             'suppress_html_counts':'Suppress HTML counts',
+                             'a_label_type': 'X-axis label type'}
 
 script_info['version']=__version__
 
@@ -134,7 +197,7 @@ def main():
     #Define labels to use
     labels = opts.labels
     data = [(label,f.strip()) \
-        for f,label in zip(counts_fname.split(","),labels.split(","))]
+        for f,label in zip(counts_fname,labels.split(","))]
     filepath=data[0][1]
     
     filename=filepath.strip().rpartition('/')[0]

@@ -33,44 +33,52 @@ script_info['output_description']="""There are two possible output formats depen
 """
 
 script_info['required_options']= [\
-make_option('-i','--otu_table_fp',
-          dest='otu_table_fp',help='Path to read otu file [REQUIRED]'),
-make_option('-o','--output_fp',dest='output_fp',
-           help='Path to write output file [REQUIRED]'),
+    make_option('-i','--otu_table_fp', dest='otu_table_fp',
+        help='Input OTU table filepath [REQUIRED]',
+        type='existing_filepath'),
+    make_option('-o','--output_fp',dest='output_fp',
+        help='Output OTU table filepath [REQUIRED]',
+        type='new_filepath'),
 ]
-
 script_info['optional_options'] = [\
-make_option('-L','--level',action='store',\
-          type='int',dest='level', default=2, 
-          help='Level of taxonomy to use [default: %default]'),
-make_option('-m','--mapping',action='store',\
-          type='string',dest='mapping', 
-          help='if supplied - the taxon information will be added ' +\
-             'to the mapping file. This mapping file can ' +\
-             'be used to color PCoA plots by taxon abundance or to ' +\
-             'perform statistical tests of taxon/mappingy associations.'),
-make_option('-d','--delimiter',action='store',\
-          type='string',dest='delimiter',default=';', 
-          help='Delimitor that separates taxonomy categories.[default: %default]'),
-make_option('-r', '--relative_abundance', action='store',\
+    make_option('-L','--level',action='store',type='int',dest='level',default=2, 
+        help='Taxonomic level to summarize by. [default: %default]'),
+    make_option('-m','--mapping', 
+        help='Input metadata mapping filepath. If supplied, then the taxon' +\
+        ' information will be added to this file. This option is ' +\
+        ' useful for coloring PCoA plots by taxon abundance or to ' +\
+        ' perform statistical tests of taxon/mapping associations.',
+        type='existing_filepath'),
+    make_option('-d','--delimiter',action='store',type='string',
+        dest='delimiter',default=';', 
+        help='Delimitor separating taxonomy levels. [default: %default]'),
+    make_option('-r', '--relative_abundance', action='store',\
         dest='relative_abundance', default='', \
         help='DEPRECATED: please use -a/--absolute_abundance to disable ' +\
         'relative abundance [default: %default]'),
-make_option('-a', '--absolute_abundance', action='store_true',\
+    make_option('-a', '--absolute_abundance', action='store_true',\
         dest='absolute_abundance', default=False, \
-        help='If present, reports the absolute abundance of the lineage in ' +\
-            'each sample. By default uses relative abundance [default: %default]'),
-make_option('-l', '--lower_percentage', type='float', default=None, \
-        help='If present, trims the OTUs that have a higher absolute abundance. ' +\
-            'To remove the OTUs that makes up more than 5% of the total dataset ' +\
-            'you will pass 0.05. This option only works with relative abundances. ' +\
-            '[default: %default]'),
-make_option('-u', '--upper_percentage', type='float', default=None, \
-        help='If present, trims the OTUs that have a lower absolute abundance. ' +\
-            'To remove the OTUs that makes up less than 45% of the total dataset ' +\
-            'you will pass 0.45. This option only works with relative abundances. ' +\
-            '[default: %default]')
+        help='If present, the absolute abundance of the lineage in ' +\
+        ' each sample is reported. By default, this script uses relative' +\
+        ' abundance [default: %default]'),
+    make_option('-l', '--lower_percentage', type='float', default=None, \
+        help='If present, OTUs having higher absolute abundance are' +\
+        ' trimmed. To remove OTUs that make up more than 5% of the total' +\
+        ' dataset you would pass 0.05. [default: %default]'),
+    make_option('-u', '--upper_percentage', type='float', default=None, \
+        help='If present, OTUs having lower absolute abundance are' +\
+        ' trimmed. To remove the OTUs that makes up less than 45% of the' +\
+        ' total dataset you would pass 0.45. [default: %default]')
 ]
+script_info['option_label']={'otu_table_fp':'OTU table filepath',
+                             'output_fp': 'Output filepath',
+                             'mapping':'QIIME-formatted mapping filepath',
+                             'level':'Summarize level',
+                             'delimiter': 'Taxonomic delimiter',
+                             'relative_abundance':'Use relative abundance',
+                             'absolute_abundance':'Use absolute abundance',
+                             'lower_percentage':'Top % of OTUs to remove',
+                             'upper_percentage':'Bottom % of OTUs to remove'}
 
 script_info['version'] = __version__
 

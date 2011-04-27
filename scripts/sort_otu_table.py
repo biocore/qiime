@@ -31,16 +31,28 @@ script_info['script_usage'] = [("",
                                  "sort_otu_table.py -i otu_table.txt -o age_sorted_otu_table.txt -l sorted_sample_id_list.txt")]
 script_info['output_description']= ""
 script_info['required_options'] = [
- make_option('-i','--input_otu_table',help='the input otu table'),
- make_option('-o','--output_fp',help='output otu table filepath'),
-
- 
+    make_option('-i','--input_otu_table',
+        help='Input OTU table filepath.',
+        type='existing_filepath'),
+    make_option('-o','--output_fp',
+        help='Output OTU table filepath.',
+        type='new_filepath'),
 ]
 script_info['optional_options'] = [
- make_option('-m','--mapping_fp',help='the mapping file [default: %default]'),
- make_option('-s','--sort_field',help='field to sort by [default: %default]'),
- make_option('-l','--sorted_sample_ids_fp',help='list of sorted sample ids [default: %default]')
+    make_option('-m','--mapping_fp',
+        help='Input metadata mapping filepath. [default: %default]',
+        type='existing_filepath'),
+    make_option('-s','--sort_field',
+        help='Category to sort OTU table by. [default: %default]'),
+    make_option('-l','--sorted_sample_ids_fp',
+        help='Sorted sample id filepath [default: %default]',
+        type='existing_filepath')
 ]
+script_info['option_label']={'input_otu_table':'OTU table filepath',
+                             'output_fp': 'Output filepath',
+                             'mapping_fp':'QIIME-formatted mapping filepath',
+                             'sort_field':'Category to sort by',
+                             'sorted_sample_ids_fp': 'Sorted sample id filepath'}
 script_info['version'] = __version__
 
 def sample_ids_from_f(lines):

@@ -25,37 +25,48 @@ script_info['script_usage'].append(("""Examples:""","""An example of this script
 script_info['script_usage'].append(("""""","""As a result, this command produces subsamples of the input otu_table.txt at 100 seqs per sample (twice), 200 seqs per sample (twice) ... 1200 seqs per sample (twice), which produces 24 rarefied otu talbes in the "rarefaction_tables" directory.""",""""""))
 script_info['script_usage'].append(("""""","""Any sample containing fewer sequences in the input file than the requested number of sequences per sample is removed from the output rarefied otu table. To include samples with fewer than the requested number, you must manually add those samples to the resulting otu tables""",""""""))
 script_info['output_description']="""The result of multiple_rarefactions.py consists of a number of files, which depend on the minimum/maximum number of sequences per samples, steps and iterations. The files have the same otu table format as the input otu_table.txt, and are named in the following way: rarefaction_100_0.txt, where "100" corresponds to the sequences per sample and "0" the iteration."""
+
 script_info['required_options']=[
     make_option('-i', '--input_path',
-        help='input otu table filepath'),
-
+        help='Input OTU table filepath.',
+        type='existing_filepath'),
     make_option('-o', '--output_path',
-        help="write output rarefied otu tables files to this dir makes dir if it doesn't exist"),
-
+        help="Output directory.",
+        type='new_dirpath'),
     make_option('-m', '--min', type=int,
-    help='min seqs/sample'),
-    
+        help='Minimum number of seqs/sample for rarefaction.'),
     make_option('-x', '--max', type=int,
-    help='max seqs/sample (inclusive)'),
-    
+        help='Maximum number of seqs/sample (inclusive) for rarefaction. '),
     make_option('-s', '--step', type=int,
-    help='levels: min, min+step... for level <= max')
+        help='Size of each steps between the min/max of' +\
+        ' seqs/sample (e.g. min, min+step... for level <= max).')
 ]
-
-
 script_info['optional_options']=[
-
+    ### This option is screwed up: dest should equal the long form parameter name, 
+    ### but I'm not sure if we can do anything about it since '-' is not allowed
+    ### in variable names... Hmmm... Changing the long-form parameter name
+    ### would cause older parameter files not to work.
     make_option('-n', '--num-reps', dest='num_reps', default=1, type=int,
-        help='num iterations at each seqs/sample level [default: %default]'),
-     
-    make_option('--lineages_included', dest='lineages_included', default=False,
+        help='The number of iterations at each step. [default: %default]'),
+    make_option('--lineages_included', default=False,
         action="store_true",
-          help="""output rarefied otu tables will include taxonomic (lineage) information for each otu, if present in input otu table [default: %default]"""),
-
+        help='Retain taxonomic (lineage) information for each OTU. Note:' +\
+        ' this will only work if lineage information is in the input OTU' +\
+        ' table. [default: %default]'),
     make_option('-k', '--keep_empty_otus', default=False, action='store_true',
-        help='otus (rows) of all zeros are usually omitted from the output otu tables, with -k they will not be removed from the output files [default: %default]'),
-
+        help='Retain OTUs of all zeros, which are usually omitted from' +\
+        ' the output OTU tables. [default: %default]'),
 ]
+
+script_info['option_label']={'input_path':'OTU table filepath',
+                             'output_path': 'Output directory',
+                             'min': 'Min # of seqs/sample',
+                             'max': 'Max # of seqs/sample',
+                             'step': 'Step size',
+                             'num-reps':'# of iterations',
+                             'lineages_included': 'Include lineages',
+                             'keep_empty_otus':'Retain empty OTUs'}
+
 script_info['version'] = __version__
 
 

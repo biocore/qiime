@@ -35,30 +35,34 @@ script_info['output_description']="""Each file in the input directory should be 
 script_info['required_options']=[]
 script_info['optional_options']=[
  make_option('-i', '--input_path',
-     help='input path: otu table, or dir of otu tables for batch mode'),
+     help='Input OTU table filepath or input directory containing OTU tables' +\
+     ' for batch processing. [default: %default]',
+     type='existing_path'),
  make_option('-r', '--rows', default=None,
-     help='compute only these rows of the distance matrix.' +\
-      ' pass a list of sample names, e.g. "s1,s3" [by default, +\
-      the full n x n matrix is generated]'),
+     help='Compute for only these rows of the distance matrix.' +\
+      ' User should pass a list of sample names (e.g. "s1,s3")' +\
+      ' [default: %default; full n x n matrix is generated]'),
  make_option('-o', '--output_dir',
-     help="output directory, will be created if doesn't exist"),
-
+     help="Output directory. One will be created if it doesn't exist.' +\
+     ' [default: %default]",
+     type='new_dirpath'),
  make_option('-m', '--metrics',
-     help='metrics to use, comma delimited if >1 metric, '+\
-         'no spaces'),
-     
+     help='Beta-diversity metric(s) to use. A comma-separated list should be' +\
+     ' provided when multiple metrics are specified. [default: %default]'),
  make_option('-s', '--show_metrics', action='store_true', 
-     help='show available beta diversity metrics and quit. "binary_..." specifies that a metric is qualitative, and considers only the presence or absence of each taxon'),
-
+     help='Show the available beta-diversity metrics and exit. Metrics' +\
+     ' starting with' +\
+     ' "binary_..." specifies that a metric is qualitative, and considers' +\
+     ' only the presence or absence of each taxon [default: %default]'),
  make_option('-t', '--tree_path', default=None,
-     help='path to newick tree file, required for phylogenetic metrics'+\
-     ' [default: %default]'),
-
+     help='Input newick tree filepath, which is required when phylogenetic' +\
+     ' metrics are specified. [default: %default]',
+     type='existing_filepath'),
  make_option('-f', '--full_tree', action="store_true",
-     help='by default, we first compute the intersection of the tree with'+\
-     ' the otus present in the otu table. pass -f if you already have a'+\
-     ' minimal tree, and this script will run faster'),
-
+     help='By default, tips not corresponding to OTUs in the OTU table are '+\
+     'removed from the tree for diversity calculations. ' +\
+     'Pass to skip this step if you\'re already passing a minimal tree.' +\
+     ' [default: %default]'),
 ]
 
 script_info['version'] = __version__

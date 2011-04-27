@@ -55,85 +55,125 @@ script_info['script_usage'].append(("""Jackknifed Principal Coordinates (w/ conf
 script_info['script_usage'].append(("""Bi-Plots:""","""If the user would like to see which taxa are more prevalent in different areas of the PCoA plot, they can generate Bi-Plots, by passing a principal coordinates file or folder "-i", a mapping file "-m", and a summarized taxa file "-t" from summarize_taxa.py. Can be combined with jacknifed principal coordinates.""", """%prog -i pcoa.txt -m Mapping_file.txt -t otu_table_level3.txt"""))
 script_info['output_description']="""By default, the script will plot the first three dimensions in your file. Other combinations can be viewed using the "Views:Choose viewing axes" option in the KiNG viewer (Chen, Davis, & Richardson, 2009), which may require the installation of kinemage software. The first 10 components can be viewed using "Views:Paralled coordinates" option or typing "/". The mouse can be used to modify display parameters, to click and rotate the viewing axes, to select specific points (clicking on a point shows the sample identity in the low left corner), or to select different analyses (upper right window). Although samples are most easily viewed in 2D, the third dimension is indicated by coloring each sample (dot/label) along a gradient corresponding to the depth along the third component (bright colors indicate points close to the viewer)."""
 script_info['required_options']=[\
-make_option('-i', '--coord_fname', dest='coord_fname', \
-help='This is the path to the principal coordinates file (i.e., resulting \
-file from principal_coordinates.py), or to a directory containing multiple coord files \
-for averaging (e.g. resulting files from multiple_rarefactions_even_depth.py, \
-followed by multiple beta_diversity.py, followed by multiple principal_coordinates.py).'), \
-make_option('-m', '--map_fname', dest='map_fname', \
-     help='This is the metadata mapping file  [default=%default]'), \
-]
+    make_option('-i', '--coord_fname',
+        help='Input principal coordinates filepath (i.e.,' +\
+        ' resulting file from principal_coordinates.py).  Alternatively,' +\
+        ' a directory containing multiple principal coordinates files for' +\
+        ' jackknifed PCoA results.',
+        type='existing_path'),
+    make_option('-m', '--map_fname', dest='map_fname',
+        help='Input metadata mapping filepath',
+        type='existing_filepath')
+    ]
 script_info['optional_options']=[\
- make_option('-b', '--colorby', dest='colorby',\
-     help='This is the categories to color by in the plots from the \
-user-generated mapping file. The categories must match the name of a column \
-header in the mapping file exactly and multiple categories can be list by \
-comma separating them without spaces. The user can also combine columns in the \
-mapping file by separating the categories by "&&" without spaces \
-[default=%default]'),
- make_option('-a', '--custom_axes',help='This is the category from the \
-user-generated mapping file to use as a custom axis in the plot.  For instance,\
-there is a pH category and would like to seethe samples plotted on that axis \
-instead of PC1, PC2, etc., one can use this option.  It is also useful for \
-plotting time-series data [default: %default]'),
- make_option('-p', '--prefs_path',help='This is the user-generated preferences \
-file. NOTE: This is a file with a dictionary containing preferences for the \
-analysis [default: %default]'),
- make_option('-k', '--background_color',help='This is the background color to \
-use in the plots (Options are \'black\' or \'white\'. [default: %default]'),
- options_lookup['output_dir'],
-
-# summary plot stuff
- make_option('--ellipsoid_smoothness',help='The level of smoothness used in \
-plotting ellipsoids for a summary plot (i.e. using a directory of coord files \
-instead of a single coord file). Valid range is 0-3. A value of 0 produces \
-very coarse "ellipsoids" but is fast to render. The default value is 2. \
-If you encounter a memory error \
-when generating or displaying the plots, try including just one metadata \
-column in your plot. If you still have trouble, reduce the smoothness \
-level to 0 or 1.', default=1),
- make_option('--ellipsoid_opacity',help='Used when plotting ellipsoids for \
-a summary plot (i.e. using a directory of coord files instead of a single coord \
-file). Valid range is 0-3. A value of 0 produces completely transparent \
-(invisible) ellipsoids. A value of 1 produces completely opaque ellipsoids. The default value is 0.33.', \
-default=0.33),
- make_option('--ellipsoid_method',help='Used when plotting ellipsoids for \
-a summary plot (i.e. using a directory of coord files instead of a single coord \
-file). Valid values are "IQR" (The Interquartile Range) and "sdev" (The standard deviation). The default is IQR.',default="IQR"),
-     
-#biplot stuff
- make_option('-t', '--taxa_fname',help='If you wish to perform a biplot, ' +\
- 'where taxa are plotted along with samples, supply an otu table format file.'+\
- '  Typically this is the output from summarize_taxa.py.', default=None),
- make_option('--n_taxa_keep',help='If performing a biplot, the number of taxa \
-to display; use -1 to \
-display all. [default: %default]',default=10),
- make_option('--biplot_output_file',type='string', help='If performing a biplot, \
-save the biplot coordinates in this file. [default: %default]',
-default=None),
- make_option('--master_pcoa',help='If performing averaging on multiple coord \
-files, the other coord files will be aligned to this one through procrustes \
-analysis. This master file will not be included in the averaging. \
-If this master coord file is not provided, one of the other coord files will \
-be chosen arbitrarily as the target alignment. [default: %default]',default=None),
-
-# inVUE options
- make_option('--output_format',help='Output format. Valid choices are: king, \
-invue. If this option is set to invue you will need to also use the option -b to \
-define which column(s) from the metadata file the script will write an output file \
-from; it will also do not account for any other optional paramenter pass. \
-[default: %default]', default='king'),
- make_option('-n', '--interpolation_points', type=int, help='Number of extra \
-points to use between samples and interpolate, the minimum is 2. Only used \
-with the inVUE output. [default: %default]', default=0),
- make_option('--polyhedron_points', type=int, help='Points to be generated \
- to create a frame around the PCoA plots. Only used when --output_format is \
- inVUE. [default: %default]', default=4),
- make_option('--polyhedron_offset', type=float, help='Offset to be added to \
- the points created in the --polyheadron_points option. Only used when \
- --output_format is inVUE. [default: %default]', default=1.5)
+    make_option('-b', '--colorby', dest='colorby',\
+        help='Comma-separated list categories metadata categories' +\
+        ' (column headers) ' +\
+        'to color by in the plots. The categories must match the name of a ' +\
+        'column header in the mapping file exactly. Multiple categories ' +\
+        'can be list by comma separating them without spaces. The user can ' +\
+        'also combine columns in the mapping file by separating the ' +\
+        'categories by "&&" without spaces. [default=color by all]'),
+    make_option('-a', '--custom_axes',
+        help='This is the category from the metadata mapping file to use as' +\
+        ' a custom axis in the plot.  For instance, if there is a pH' +\
+        ' category and you would like to see the samples plotted on that' +\
+        ' axis instead of PC1, PC2, etc., one can use this option.  It is' +\
+        ' also useful for plotting time-series data. Note: if there is any' +\
+        ' non-numeric data in the column, it will not be plotted' +\
+        ' [default: %default]'),
+    make_option('-p', '--prefs_path',
+        help='Input user-generated preferences filepath. NOTE: This is a' +\
+        ' file with a dictionary containing preferences for the analysis.' +\
+        ' [default: %default]',
+        type='existing_filepath'),
+    make_option('-k', '--background_color',
+        help='Background color to use in the plots. [default: %default]'),
+    make_option('--ellipsoid_smoothness',
+        help='Used only when plotting ellipsoids for jackknifed' +\
+        ' beta diversity (i.e. using a directory of coord files' +\
+        ' instead of a single coord file). Valid choices are 0-3.' +\
+        ' A value of 0 produces very coarse "ellipsoids" but is' +\
+        ' fast to render. If you encounter a memory' +\
+        ' error when generating or displaying the plots, try including' +\
+        ' just one metadata column in your plot. If you still have trouble,' +\
+        ' reduce the smoothness level to 0. [default: %default]',
+        default=1,type="int"),
+    make_option('--ellipsoid_opacity',
+        help='Used only when plotting ellipsoids for jackknifed' +\
+        ' beta diversity (i.e. using a directory of coord files' +\
+        ' instead of a single coord file). The valid range is between 0-1.' +\
+        ' 0 produces completely transparent (invisible) ellipsoids' +\
+        ' and 1 produces completely opaque ellipsoids.' +\
+        ' [default=%default]', \
+        default=0.33,type=float),
+    make_option('--ellipsoid_method',
+        help='Used only when plotting ellipsoids for jackknifed' +\
+        ' beta diversity (i.e. using a directory of coord files' +\
+        ' instead of a single coord file). Valid values are "IQR" and' +\
+        ' "sdev". [default=%default]',default="IQR",
+        type="choice",choices=["IQR","sdev"]),
+    make_option('--master_pcoa',
+        help='Used only when plotting ellipsoids for jackknifed beta' +\
+        ' diversity (i.e. using a directory of coord files' +\
+        ' instead of a single coord file). These coordinates will be the' +\
+        ' center of each ellipisoid. [default: %default; arbitrarily' +\
+        ' chosen PC matrix will define the center point]',default=None,
+        type='existing_filepath'),
+    #bipot options
+    make_option('-t', '--taxa_fname',
+        help='Used only when generating BiPlots. Input summarized taxa '+\
+        'filepath (i.e., from summarize_taxa.py). '+\
+        'Taxa will be plotted with the samples. [default=%default]', 
+        default=None,
+        type='existing_filepath'),
+    make_option('--n_taxa_keep',
+        help='Used only when generating BiPlots. This is the number of taxa '+\
+        ' to display. Use -1 to display all. [default: %default]',default=10,
+        type="int"),
+    make_option('--biplot_output_file', 
+        help='Used only when generating BiPlots. Output coordinates filepath '+\
+        ' when generating a biplot. [default: %default]',default=None,
+        type='new_filepath'),
+    make_option('--output_format',
+        help='Output format. If this option is set to invue you will' +\
+        ' need to also use the option -b to define which column(s) from the' +\
+        ' metadata file the script should use when writing an output file.' +\
+        ' [default: %default]', default='king',type='choice',
+        choices=['king','invue']),
+    # inVUE options
+    make_option('-n', '--interpolation_points', type="int", 
+        help='Used only when generating inVUE plots. Number of points' +\
+        ' between samples for interpolatation. [default: %default]', default=0),
+    make_option('--polyhedron_points', type="int", 
+        help='Used only when generating inVUE plots. The number of points' +\
+        ' to be generated when creating a frame' +\
+        ' around the PCoA plots. [default: %default]', default=4),
+    make_option('--polyhedron_offset', type="float", 
+        help='Used only when generating inVUE plots. The offset to be added' +\
+        ' to each point created when using the' +\
+        ' --polyhedron_points option. This is only used when' +\
+        ' using the invue output_format. [default: %default]', default=1.5),
+    options_lookup['output_dir'],
 ]
 
+script_info['option_label']={'coord_fname':'Principal coordinates filepath',
+                             'map_fname':'QIIME-formatted mapping filepath',
+                             'colorby': 'Colorby category',
+                             'prefs_path': 'Preferences filepath',
+                             'background_color': 'Background color',
+                             'ellipsoid_opacity':'Ellipsoid opacity',
+                             'ellipsoid_method':'Ellipsoid method',
+                             'ellipsoid_smoothness':'Ellipsoid smoothness',
+                             'taxa_fname': 'Summarized Taxa filepath',
+                             'n_taxa_keep': '# of taxa to keep',
+                             'biplot_output_file':'Output biplot coordinate filepath',
+                             'master_pcoa':'Master principal coordinates filepath',
+                             'output_dir': 'Output directory',
+                             'output_format': 'Output format',
+                             'interpolation_points': '# of interpolation points',
+                             'polyhedron_points':'# of polyhedron points',
+                             'polyhedron_offset':'Polyhedron offset'}
 script_info['version'] = __version__
 
 def main():

@@ -37,24 +37,33 @@ script_info['output_description']="""The result of filter_otu_table.py creates a
 script_info['required_options'] = [
  options_lookup['otu_table_as_primary_input'],
  make_option('-o', '--output_otu_table_fp',
-    help='the output otu table filepath [REQUIRED]'),
+    help='Output OTU table filepath [REQUIRED]',
+    type='new_filepath'),
  ]
-
 script_info['optional_options']=[\
     make_option('-c', '--min_count', default=1, type=int,
-        help='retain OTUs with at least this many sequences [default=%default]'),\
+        help='Retain OTUs with at least this many sequences.' +\
+        ' [default=%default]'),\
     make_option('-s', '--min_samples', default=2, type=int,
-        help='retain OTUs found in at least this many samples [default=%default]'),\
+        help='Retain OTUs found in at least this many samples.' +\
+        ' [default=%default]'),\
     make_option('-t', '--include_taxonomy', default='',
-        help='list of taxonomy terms to include [default=%default]'),\
+        help='List of taxonomy terms to include. [default=%default]'),\
     make_option('-e', '--exclude_taxonomy', default='', 
-        help='list of taxonomy terms to exclude [default=%default]'),\
+        help='List of taxonomy terms to exclude. [default=%default]'),\
     make_option('-p', '--seqs_per_sample',type=int,
-        help='minimum sequences per sample to retain the sample. [default=%default]')
+        help='Minimum sequences per sample to retain the sample.' +\
+        ' [default=%default]')
 ]
 script_info['version'] = __version__
 
-
+script_info['option_label']={'otu_table_fp':'OTU table filepath',
+                             'min_count':'# of sequences',
+                             'min_samples': '# of samples',
+                             'include_taxonomy': 'Taxonomy to include',
+                             'exclude_taxonomy': 'Taxonomy to exclude',
+                             'seqs_per_sample':'# of sequences per sample',
+                             'output_otu_table_fp': 'Output filepath'}
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)

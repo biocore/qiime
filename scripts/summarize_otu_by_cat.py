@@ -25,21 +25,28 @@ script_info['script_usage']=[]
 script_info['script_usage'].append(("""Example:""",""" Collapsed otu_table.txt on the 'Sex' column in map.txt and write the resulting OTU table to otu_table_by_sex.txt""","""summarize_otu_by_cat.py -c otu_table.txt -i map.txt -m Sex -o otu_table_by_sex.txt"""))
 script_info['output_description']= """"""
 script_info['required_options']=[\
-make_option('-i', '--mapping_fp',
-            help='path to mapping file [REQUIRED]'),
-make_option('-c', '--otu_table_fp',
-            help='path to otu table [REQUIRED]'),
-make_option('-m', '--mapping_category',
-            help='mapping category to collapse otu table on [REQUIRED]'),
-make_option('-o', '--output_fp', dest='output_fp',
-            help='path to store output file [REQUIRED]'),
+    make_option('-i', '--mapping_fp',
+        help='Input metadata mapping filepath [REQUIRED]',
+        type='existing_filepath'),
+    make_option('-c', '--otu_table_fp',
+        help='Input OTU table filepath. [REQUIRED]',
+        type='existing_filepath'),
+    make_option('-m', '--mapping_category',
+        help='Summarize OTU table using this category. [REQUIRED]'),
+    make_option('-o', '--output_fp', dest='output_fp',
+        help='Output OTU table filepath. [REQUIRED]',
+        type='new_filepath'),
 ]
-
 script_info['optional_options']=[\
     make_option('-n', '--normalize',
-         help='pass -n to normalize counts. Output otu table columns will sum to 1',
+         help='Normalize OTU counts, where the OTU table columns sum to 1.',
          default=False, action = 'store_true')
 ]
+script_info['option_label']={'otu_table_fp':'OTU table filepath',
+                             'output_fp': 'Output filepath',
+                             'mapping_fp':'QIIME-formatted mapping filepath',
+                             'mapping_category':'Summarize category',
+                             'normalize': 'Normalize counts'}
 
 script_info["version"] = __version__
 

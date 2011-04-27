@@ -40,35 +40,57 @@ script_info['script_usage'].append(("""""","""HTML output is automatically gener
 script_info['script_usage'].append(("""""","""In the case that the user generates their own preferences file (prefs.txt), they can use the following command:""","""make_distance_histograms.py -d beta_div.txt -m Mapping_file.txt -p prefs.txt"""))
 script_info['script_usage'].append(("""""","""Note: In the case that a preferences file is passed, the user does not need to supply fields in the command-line.""",""""""))
 script_info['output_description']="""The result of this script will be a folder containing images and/or an html file (with appropriate javascript files), depending on the user-defined parameters."""
+
 script_info['required_options']=[\
-    make_option('-d','--distance_matrix_file',dest='distance_matrix_file',\
-        type='string',help='''Path to distance matrix file.'''),\
+    make_option('-d','--distance_matrix_file',
+        help='Input distance matrix filepath (i.e. the result of' +\
+        ' beta_diversity.py).',
+        type='existing_filepath'),\
     make_option('-m', '--map_fname', dest='map_fname', \
-         help='This is the metadata mapping file  [default=%default]'), \
+         help='Input metadata mapping filepath.',
+         type='existing_filepath'), \
 ]
 
 script_info['optional_options']=[\
-    make_option('-p', '--prefs_path',help='This is the user-generated preferences \
-file. NOTE: This is a file with a dictionary containing preferences for the \
-analysis.  This dict must have a "Fields" key mapping to a list of desired fields. [default: %default]'),
-    make_option('-o', '--dir_path', dest='dir_path', type='string', \
-        default='.',\
-        help='Directory to output data for all analyses. [default: %default]'
-),\
+    make_option('-p', '--prefs_path',
+        help='Input user-generated preferences filepath. NOTE: This is a' +\
+        ' file with a dictionary containing preferences for the analysis.' +\
+        ' This dictionary must have a "Fields" key mapping to a list of' +\
+        ' desired fields. [default: %default]',
+        type='existing_filepath'),
+    make_option('-o', '--dir_path',
+        default='./',help='Output directory. [default: %default]',
+        type='new_dirpath'),\
     make_option('-k', '--background_color', dest='background_color',\
-        default='white', help='This is the \
-    background color to use in the plots (Options are \'black\' or \'white\'. \
-    [default: %default]'),\
-    make_option('--monte_carlo',dest='monte_carlo',default=False,\
-        action='store_true',help='''Perform Monte Carlo analysis on distances.  [Default: %default]'''),\
+        default='white', type='choice',choices=['black','white'],
+        help='Background color for use in the plots' +\
+        ' (black or white) [default: %default]'),
+    make_option('--monte_carlo',dest='monte_carlo',default=None,\
+        action='store_true',
+        help='Deprecated: pass --monte_carlo_iters > 0 to enable'),\
     make_option('--suppress_html_output',dest='suppress_html_output',\
-        default=False,action='store_true',help='''Suppress HTML format output. [Default: %default]'''),\
-    make_option('-f','--fields', dest='fields',\
-        help='Comma delimited list of fields to compare.  Put list of fields in quotes.  This overwrites fields in prefs file.  If this is not provided, the first field in metadata mapping file will be used.  Usage: --fields "Field1,Field2,Field3"'),\
+        default=False,action='store_true',
+        help='Suppress HTML output. [default: %default]'),\
+    make_option('-f','--fields', default=None,
+        help='Comma-separated list of fields to compare, where the list of' +\
+        ' fields should be in quotes (e.g. "Field1,Field2,Field3").' +\
+        ' Note: if this option is passed on the' +\
+        ' command-line, it will overwrite the fields in prefs file.'+\
+        ' [default:%default; first field in mapping file is used]'),\
     make_option('--monte_carlo_iters', dest='monte_carlo_iters',type="int",\
-        default=100,help='Number of iterations to perform for Monte Carlo analysis. [default: %default]'),\
-
+        default=0,
+        help='Number of iterations to perform for Monte Carlo analysis.' +\
+        ' [default: %default; No monte carlo simulation performed]'),\
 ]
+script_info['option_label']={'distance_matrix_file':'Distance matrix filepath',
+                             'map_fname':'QIIME-formatted mapping filepath',
+                             'prefs_path': 'Preferences filepath',
+                             'dir_path': 'Output directory',
+                             'background_color': 'Background color',
+                             'monte_carlo': 'Perform Monte Carlo',
+                             'monte_carlo_iters':'# of Monte Carlo iterations',
+                             'suppress_html_output': 'Suppress HTML',
+                             'fields':'Categories to compare'}
 
 script_info['version'] = __version__
 
@@ -194,22 +216,23 @@ def main():
         logo_out = open(logo_path+'/qiime_header.png','w')
         logo_out.write(open(qiime_dir+'images/qiime_header.png').read())
         logo_out.close()
-    
-    if opts.monte_carlo:
+        
+    monte_carlo_iters = opts.monte_carlo_iters
+    if monte_carlo_iters > 0:
         #Do Monte Carlo for all fields
         monte_carlo_group_distances(mapping_file=opts.map_fname,\
             dmatrix_file=opts.distance_matrix_file,\
             prefs=prefs, \
             dir_prefix = opts.dir_path,\
             fields=fields,\
-            default_iters=opts.monte_carlo_iters)
+            default_iters=monte_carlo_iters)
             
         #Do Monte Carlo for within and between fields
         monte_carlo_group_distances_within_between(\
             single_field=within_distances,\
             paired_field=between_distances, dmat=dmat, \
             dir_prefix = opts.dir_path,\
-            num_iters=opts.monte_carlo_iters)
+            num_iters=monte_carlo_iters)
 
 
 if __name__ == "__main__":

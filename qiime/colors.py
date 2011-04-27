@@ -552,7 +552,7 @@ def taxonomy_color_prefs_and_map_data_from_options(options):
     #need to set some other way from sample ids
     #Determine which mapping headers to color by, if none given, color by \
     #Sample ID's
-    taxonomy_count_files = options.counts_fname.strip().strip("'").split(',')
+    taxonomy_count_files = options.counts_fname
     for f in taxonomy_count_files:
         try:
             counts_f = open(f, 'U').readlines()

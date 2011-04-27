@@ -24,7 +24,7 @@ from qiime.colors import (Color, rgb_tuple_to_hsv, mage_hsv_tuple_to_rgb,
     iter_color_groups, get_group_colors,
     get_color, color_groups,string_to_rgb,
     get_map,map_from_coords,sample_color_prefs_and_map_data_from_options,
-    taxonomy_color_prefs_and_map_data_from_options,taxonomy_process_prefs)
+    taxonomy_process_prefs)
 
 class ColorTests(TestCase):
     """Tests of the Color class"""

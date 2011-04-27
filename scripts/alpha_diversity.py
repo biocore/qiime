@@ -49,19 +49,24 @@ PC.636 0.925   3.78882       16.0
 script_info['required_options']=[]
 script_info['optional_options']=[\
  make_option('-i', '--input_path',
-     help='input path.  directory for batch processing, '+\
-      'filename for single file operation'), 
+     help='Input OTU table filepath or input directory containing OTU' +\
+     ' tables for batch processing. [default: %default]',
+     type='existing_path'),
  make_option('-o', '--output_path',
-     help='output path. directory for batch processing, '+\
-      'filename for single file operation'),
+     help='Output distance matrix filepath or output directory to store' +\
+     ' distance matrices when batch processing. [default: %default]',
+     type='new_path'),
  make_option('-m', '--metrics',
-     help='metrics to use, comma delimited'), 
+     help='Alpha-diversity metric(s) to use. A comma-separated list should' +\
+     ' be provided when multiple metrics are specified. [default: %default]'), 
  make_option('-s', '--show_metrics', action='store_true', 
      dest="show_metrics",
-     help='show available alpha diversity metrics and quit'),
+     help='Show the available alpha-diversity metrics and exit.' +\
+     ' [default: %default]'),
  make_option('-t', '--tree_path', default=None,
-     help='path to newick tree file, required for phylogenetic metrics'+\
-     ' [default: %default]')
+     help='Input newick tree filepath.' +\
+     ' [default: %default; REQUIRED for phylogenetic metrics]',
+     type='existing_filepath')
 ]
 
 script_info['version'] = __version__

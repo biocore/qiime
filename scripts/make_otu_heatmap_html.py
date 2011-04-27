@@ -39,33 +39,49 @@ script_info['script_usage'].append(("","""If you would like to specify a differe
 script_info['script_usage'].append(("","""If you would like to sort the heatmap by Sample ID's then you should supply the mapping file, as follows:""","""%prog -i otu_table.txt -o otu_heatmap -m mapping_file.txt"""))
 script_info['script_usage'].append(("","""If you would like to sort the heatmap by Sample ID's and the tips in the tree, you can supply a tree as follows:""","""%prog -i otu_table.txt -o otu_heatmap -m mapping_file.txt -t tree_file.txt"""))
 script_info['output_description']="""The interactive heatmap is located in a randomly generated folder where the name of the folder starts with "otu_table". The resulting folder contains the interactive heatmap (html file) along with a javascript library folder. This web application has been tested in Mozilla Firefox and Safari. Safari is recommended for viewing the OTU Heatmap, since the HTML table generation is much faster."""
+
 script_info['required_options']=[\
  options_lookup['otu_table_as_primary_input']
 ]
 script_info['optional_options']=[\
-options_lookup['output_dir'],
- make_option('-n', '--num_otu_hits', help='This is the minimum number of \
-Samples that an OTU is present in, for an OTU to be kept in the OTU table \
-[default: %default]',default=5, type='int'),
- make_option('-t','--tree', type="string",
-  help='Tree file to be used for sorting OTUs \
-in the heatmap',default=None),
- make_option('-m', '--map_fname', dest='map_fname', type="string",
-     help='Metadata mapping file to be used for sorting Samples in the \
-heatmap',default=None),
- make_option('--sample_tree', dest='sample_tree', type="string",
-     help='Tree file to be used for sorting samples (e.g, output from \
-upgma_cluster.py). If both this and the \
-sample mapping file are provided, the mapping file is ignored.',default=None),
- make_option('--log_transform', action="store_true", 
-     help='Data will be log-transformed. All zeros will be set to a small \
-value (default is 1/2 the smallest non-zero entry). Data will be translated \
-to be non-negative after log transform, and num_otu_hits will be set to 0.',
-default=False),
-make_option('--log_eps', type="float", 
-     help='Small value to replace zeros for log transform. \
-[default: 1/2 the smallest non-zero entry].',default=None),
+    options_lookup['output_dir'],
+    make_option('-n', '--num_otu_hits', 
+        help='Only include OTUs with at least this many sequences.' +\
+        ' [default: %default]',default=5, type='int'),
+    make_option('-t','--tree',
+        help='Path to newick tree where OTUs are tips, used for sorting' +\
+        ' OTUs in the heatmap',default=None,
+        type='existing_filepath'),
+    make_option('-m', '--map_fname',
+        help='Input metadata mapping filepath, used for sorting' +\
+        ' samples in the heatmap',default=None,
+        type='existing_filepath'),
+    make_option('--sample_tree',
+        help='Path to newick tree where samples are tips' +\
+        ' (e.g, output from upgma_cluster.py) used for sorting samples in' +\
+        ' the heatmap. If both this and the metadata' +\
+        ' mapping file are provided, the mapping file will be ignored.',
+        default=None,
+        type='existing_filepath'),
+    make_option('--log_transform', action="store_true", 
+        help='Log-transform the data. All zeros will be set' +\
+        ' to a small value (default is 1/2 of the smallest non-zero entry).' +\
+        ' Data will be translated to be non-negative after log transform and' +\
+        ' the num_otu_hits will be set to 0.',
+         default=False),
+    make_option('--log_eps', type="float", 
+        help='Small value to replace zeros when performing log' +\
+        ' transformation. [default: 1/2 the smallest non-zero entry].',
+        default=None),
 ]
+script_info['option_label']={'otu_table_as_primary_input':'OTU table filepath',
+                             'map_fname':'QIIME-formatted mapping filepath',
+                             'num_otu_hits': '# of sequences',
+                             'output_dir': 'Output directory',
+                             'tree': 'Newick tree filepath',
+                             'sample_tree': 'Newick tree filepath (containing samples on tips)',
+                             'log_transform':'Perform log transformation',
+                             'log_eps': 'Replace zeros w this value x smallest non-zero value'}
 
 script_info['version'] = __version__
 
