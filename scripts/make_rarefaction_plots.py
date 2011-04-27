@@ -76,12 +76,10 @@ script_info['optional_options']=[\
         ' for directly comparable rarefaction plots between analyses' +\
         ' [default: %default]'),
     make_option('-w', '--webpage', action='store_false', 
-        help='Suppress HTML output. [default: %default]', default=True),
-    ### The webpage option should be replaced with
-    ### suppress_html_output, even though that would screw up backwards 
-    ### compatibility.
-    # make_option('--suppress_html_output', action='store_true', 
-    #     help='Do not generate html', default=False),
+        help='Deprecated: Suppress HTML output. [default: %default]',
+         default=True),
+    make_option('-s','--suppress_html_output', action='store_true', 
+         help='Suppress HTML output. [default: %default]', default=False),
     options_lookup['output_dir']
 ]
 script_info['option_label']={'input_dir':'Collated alpha-diversity directory',
@@ -92,8 +90,9 @@ script_info['option_label']={'input_dir':'Collated alpha-diversity directory',
                              'imagetype': 'Image type',
                              'resolution':'Image resolution',
                              'ymax': 'Y-axis height',
-                             'webpage':'Suppress HTML',
+                             'webpage':'Suppress HTML (Deprecated)',
                              'suppress_html_output':'Suppress HTML'}
+                             
 script_info['version'] = __version__
 
 def main():
@@ -157,10 +156,10 @@ def main():
     
     #Generate the plots and html text
     ymax=options.ymax
-    make_webpage=options.webpage
+    suppress_webpage=options.suppress_html_output
     html_output = make_averages(prefs, data, background_color, label_color, \
                                 rares, output_dir,resolution,imagetype,ymax,
-                                make_webpage)
+                                suppress_webpage)
                                 
     if html_output:
         #Write the html file.

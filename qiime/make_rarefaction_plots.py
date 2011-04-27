@@ -391,7 +391,7 @@ mapping_category, colors, rare_type, data_colors, groups):
     return lines   
 
 def make_averages(color_prefs, data, background_color, label_color, rares, \
-                    output_dir,resolution,imagetype,ymax,make_webpage):
+                    output_dir,resolution,imagetype,ymax,suppress_webpage):
     '''This is the main function, which takes the rarefaction files, calls the
         functions to make plots and formatting the output html.''' 
     rarelines = []
@@ -402,7 +402,7 @@ def make_averages(color_prefs, data, background_color, label_color, rares, \
     else:
         user_ymax=False
     
-    if make_webpage:
+    if not suppress_webpage:
         
         #Create the directories, where plots and data will be written
         all_output_dir = os.path.join(output_dir, 'html_plots')
@@ -574,7 +574,7 @@ def make_averages(color_prefs, data, background_color, label_color, rares, \
             rares_data = parse_rarefaction_data( \
                                         ''.join(rare_lines[:]).split('\n'))
                                         
-            if make_webpage:
+            if not suppress_webpage:
                 
                 if iterator_num==0:
                     rarefaction_legend_mat[metric_name]['samples']={}
@@ -633,7 +633,7 @@ def make_averages(color_prefs, data, background_color, label_color, rares, \
                                        colors, file_path, background_color, label_color, \
                                        metric_name)
 
-    if make_webpage:
+    if not suppress_webpage:
         
         #format the html output
         html_output=make_html(rarefaction_legend_mat, \
