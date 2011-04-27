@@ -1181,7 +1181,7 @@ def run_core_qiime_analyses(
     for bdiv_metric, dm_fp in full_dm_fps:
         for category in categories:
             cluster_quality_fp = '%s/%s_%s_cluster_quality.txt' %\
-             (output_dir,bdiv_metric,category)
+             (bdiv_full_output_dir,bdiv_metric,category)
             try:
                 params_str = get_params_str(params['cluster_quality'])
             except KeyError:
@@ -1232,8 +1232,8 @@ def run_core_qiime_analyses(
          status_update_callback=status_update_callback)
         for bdiv_metric, dm_fp in even_dm_fps:
             for category in categories:
-                cluster_quality_fp = '%s/%s_%s_cluster_quality_even%d.txt' %\
-                 (output_dir,bdiv_metric,category,sampling_depth)
+                cluster_quality_fp = '%s/%s_%s_cluster_quality.txt' %\
+                 (bdiv_even_output_dir,bdiv_metric,category)
                 try:
                     params_str = get_params_str(params['cluster_quality'])
                 except KeyError:
