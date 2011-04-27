@@ -25,7 +25,6 @@ import os
 import shutil
 
 plot_filetype_choices = ['pdf','svg','png']
-labeltype_choices = ['str','int','float']
 
 script_info={}
 script_info['brief_description']="""Make taxaonomy summary charts based on taxonomy assignment"""
@@ -42,23 +41,22 @@ script_info['output_description']="""The script generates an output folder, whic
 script_info['required_options']=[\
     ### dest should equal long-form parameter names! Can you clean this up?
     ### Also note that you don't need to pass type='string' - that's the default
-    make_option('-i', '--input_files', dest='counts_fname',\
-        action='store',
+    make_option('-i', '--counts_fname',
         help='Input comma-separated list of summarized taxa filepaths' +\
         ' (i.e results from summarize_taxa.py) [REQUIRED]',
         type='existing_filepaths'),
-    make_option('-l', '--labels', dest='labels',action='store',type='string',
+    make_option('-l', '--labels',
         help='Comma-separated list of taxonomic levels (e.g.' +\
         ' Phylum,Class,Order) [REQUIRED]')
 ]
 script_info['optional_options']=[\
     # changed this from type='string' (default) to type='int'
-    make_option('-n', '--num', dest='num_categories', \
+    make_option('-n', '--num_categories', dest='num_categories', \
         help='The maximum number of taxonomies to show in each pie chart.' +\
         ' All additional taxonomies are grouped into an "other" category.' +\
         ' NOTE: this functionality only applies to the pie charts.' +\
         ' [default: %default]', default=20,type='int'),
-    make_option('-o', '--dir-prefix', dest='dir_path',\
+    make_option('-o', '--dir_path',
         help='Output directory',
         type='new_dirpath'),
     make_option('-b', '--colorby', dest='colorby',\
@@ -79,68 +77,49 @@ script_info['optional_options']=[\
         type='choice',choices=['black','white'],),
     make_option('-d', '--dpi',
         help='This is the resolution of the plot. [default: %default]', 
-        type='int',default=80),### you defined this as a string:  default='80'),
-    ### You need to clean up all cases where options are defined as strings but 
-    ### should be ints. The option parser needs to handle these type errors for
-    ### consistency with other code, and to simplify your code. Are you explicitly 
-    ### checking that each of these values is an int before using it? The option
-    ### parser would.
+        type='int',default=80),
     make_option('-x', '--x_width',
         help='This is the width of the x-axis to use in the plots.' +\
         ' [default: %default]',default=12,type=int),
     make_option('-y', '--y_height',
         help='This is the height of the y-axis to use in the plots.' +\
         ' [default: %default]',default=6,type=int),
-    # type = string should be type='float'
-    make_option('-w', '--bar_width', dest='bar_width', \
+    make_option('-w', '--bar_width',
         help='This the width of the bars in the bar graph and should be a' +\
         ' number between 0 and 1. NOTE: this only applies to the bar charts.' +\
-        ' [default: %default]', default=0.75,type=float),
+        ' [default: %default]', default=0.75,type='float'),
     make_option('-t', '--type_of_file',type='choice',
         help='This is the type of image to produce (i.e. ' +\
         ','.join(plot_filetype_choices) + '). [default: %default]',
         choices=plot_filetype_choices,default='pdf'),
-    make_option('-c', '--chart_type', dest='chart_type',\
-         action='store',type='string',\
+    make_option('-c', '--chart_type',
          help='This is the type of chart to plot (i.e. pie, bar or area).' +\
          ' The user has the ability to plot multiple types, by using a' +\
          ' comma-separated list (e.g. area,pie) [default: %default]',
          default='area,bar'),
-    make_option('-r', '--resize_nth_label', dest='resize_nth_label',\
-        action='store',type=int,\
+    make_option('-r', '--resize_nth_label', type='int',\
         help='Make every nth label larger than the other lables.' +\
         ' This is for large area and bar charts where the font on the x-axis' +\
         ' is small. This requires an integer value greater than 0.' +\
         ' [default: %default]',default=0),
-    # Make this 'True' by replacing this option with a 
-    # '--include_html_legend'.
-    make_option('-s', '--suppress_html_legend', action='store_true',\
-        dest='suppress_html_legend', default=False, \
-        help='Suppress HTML legend. If present, the writing of the legend' +\
-        ' in the html page is suppressed. [default: %default]'),
-    make_option('-m', '--suppress_html_counts', action='store_true',\
-        dest='suppress_html_counts', default=False, \
-        help='Suppress HTML counts. If present, the writing of the counts' +\
-        ' in the html table is suppressed [default: %default]'),
-    ### why is this call a_label_type? what is the 'a' for? 
-    ### this would probably make more sense as the following commented
-    ### block
-    make_option('-a', '--a_label_type',type='choice',
-        help='Label type. (i.e. ' + ','.join(labeltype_choices) +\
-        '). If the label is defined as int/float, then the x-axis will use' +\
-        ' the values to define the x-axis, otherwise the number of x-ticks' +\
-        ' will correspond to the number of categories. [default: %default]', 
-        choices=labeltype_choices,default='str'),
-    # make_option('-a', '--label_type',type='choice',
-    #     help='Label type ("numeric" or "categorical"). '+\
-    #     ' If the label type is defined as numeric, the x-axis will be' +\
-    #     ' scaled accordingly. Otherwise the x-values will treated' +\
-    #     ' categorically and be evenly spaced [default: %default].', 
-    #     choices=['categorical','numeric'],default='categorical'),
+    make_option('-s', '--include_html_legend', action='store_true',\
+        dest='include_html_legend', default=False, \
+        help='Include HTML legend. If present, the writing of the legend' +\
+        ' in the html page is included. [default: %default]'),
+    make_option('-m', '--include_html_counts', action='store_true',\
+        dest='include_html_counts', default=False, \
+        help='Include HTML counts. If present, the writing of the counts' +\
+        ' in the html table is included [default: %default]'),
+    make_option('-a', '--label_type',type='choice',
+        help='Label type ("numeric" or "categorical"). '+\
+        ' If the label type is defined as numeric, the x-axis will be' +\
+        ' scaled accordingly. Otherwise the x-values will treated' +\
+        ' categorically and be evenly spaced [default: %default].', 
+        choices=['categorical','numeric'],default='categorical'),
 ]
-script_info['option_label']={'input_files':'Summarized taxa filepaths',
+script_info['option_label']={'counts_fname':'Summarized taxa filepaths',
                              'labels':'Taxonomic levels',
-                             'num': '# of categories to retain',
+                             'num_categories': '# of categories to retain',
                              'map_fname':'QIIME-formatted mapping filepath',
                              'colorby': 'Colorby category',
                              'dir-prefix': 'Output directory',
@@ -153,9 +132,9 @@ script_info['option_label']={'input_files':'Summarized taxa filepaths',
                              'bar_width':'Bar width',
                              'chart_type': 'Chart type(s)',
                              'resize_nth_label':'Resize nth label',
-                             'suppress_html_legend':'Suppress HTML legend',
-                             'suppress_html_counts':'Suppress HTML counts',
-                             'a_label_type': 'X-axis label type'}
+                             'include_html_legend':'Include HTML legend',
+                             'include_html_counts':'Include HTML counts',
+                             'label_type': 'X-axis label type'}
 
 script_info['version']=__version__
 
@@ -274,9 +253,9 @@ def main():
         raise ValueError, 'The resize_nth_label of the plot has to be greater than 0!'
     
     generate_image_type=opts.type_of_file
-    label_type=opts.a_label_type
-    suppress_html_legend=opts.suppress_html_legend
-    suppress_html_counts=opts.suppress_html_counts  
+    label_type=opts.label_type
+    include_html_legend=opts.include_html_legend
+    include_html_counts=opts.include_html_counts  
     plots_to_make=opts.chart_type.split(',')
     chart_types=['area','pie','bar']
     for i in plots_to_make:
@@ -294,7 +273,7 @@ def main():
         make_all_charts(data,dir_path,filename,num_categories, \
         colorby,args,color_data, color_prefs,background_color,label_color,\
         chart_type,generate_image_type,plot_width,plot_height,bar_width,dpi,\
-        resize_nth_label,label_type,suppress_html_legend,suppress_html_counts)
+        resize_nth_label,label_type,include_html_legend,include_html_counts)
         
     
 if __name__ == "__main__":
