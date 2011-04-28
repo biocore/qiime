@@ -14,6 +14,10 @@ from cogent.util.unit_test import TestCase, main
 from cogent import DNA
 from StringIO import StringIO
 from numpy import array
+
+from cogent.app.util import get_tmp_filename
+from cogent.util.misc import remove_files
+
 from qiime.split_libraries import (
     expand_degeneracies, get_infile, count_mismatches,
     ok_mm_primer, check_map, fasta_ids,
@@ -31,6 +35,9 @@ class FakeOutFile(object):
     
     def write(self,s):
         self.data += s
+        
+        
+
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -77,6 +84,23 @@ class TopLevelTests(TestCase):
          expected_fasta_fixed_len_bc1_sliding_window
         self.in_seqs_fixed_len_extra_bc = in_seqs_fixed_len_extra_bc
         self.expected_fasta_extra_bc = expected_fasta_extra_bc
+        self.expected_fasta_mad = expected_fasta_mad
+        self.sample_seqs_fna_file = sample_seqs_fna_file
+        
+        self.sample_fasta_file = get_tmp_filename(prefix = "sample_seqs_",
+         suffix = ".fasta")
+        seq_file = open(self.sample_fasta_file, 'w')
+        seq_file.write(sample_seqs_fna_file)
+        seq_file.close()
+        
+        
+        self._files_to_remove =\
+         [self.sample_fasta_file]
+        
+        
+        
+    def tearDown(self):
+        remove_files(self._files_to_remove)
          
          
 
@@ -363,7 +387,9 @@ z\tGG\tGC\t5\tsample_z"""
         expected = self.expected_fasta_fixed_len_bc1_sliding_window
 
         
-        out_f = FakeOutFile()
+        out_f = open(get_tmp_filename(prefix = "sample_seqs_",
+         suffix = ".fna.tmp"), "w")
+        self._files_to_remove.append(out_f.name.replace('.tmp',''))
         
         actual = check_seqs(
          fasta_out=out_f, 
@@ -391,7 +417,10 @@ z\tGG\tGC\t5\tsample_z"""
          min_qual_score=25,
          min_seq_len=200)
          
-        self.assertEqual(out_f.data,expected)
+        out_f = open(out_f.name.replace('.tmp',''), "U")
+        actual_results = '\n'.join([line.strip() for line in out_f])
+         
+        self.assertEqual(actual_results, expected)
         
 
 
@@ -407,7 +436,9 @@ z\tGG\tGC\t5\tsample_z"""
         all_primers = self.all_primers_variable_len_bc1
         expected = self.expected_fasta_variable_len_bc1
         
-        out_f = FakeOutFile()
+        out_f = open(get_tmp_filename(prefix = "sample_seqs_",
+         suffix = ".fna.tmp"), "w")
+        self._files_to_remove.append(out_f.name.replace('.tmp',''))
         
         actual = check_seqs(
          fasta_out=out_f, 
@@ -431,7 +462,10 @@ z\tGG\tGC\t5\tsample_z"""
          rev_primers = {},
          qual_out = False)
          
-        self.assertEqual(out_f.data,expected)
+        out_f = open(out_f.name.replace('.tmp',''), "U")
+        actual_results = '\n'.join([line.strip() for line in out_f])
+         
+        self.assertEqual(actual_results, expected)
         
         # Second test, includes truncated form of one of the barcodes-the
         # longest barcode should be found first
@@ -441,7 +475,9 @@ z\tGG\tGC\t5\tsample_z"""
         all_primers = self.all_primers_variable_len_bc2
         expected = self.expected_fasta_variable_len_bc2
         
-        out_f = FakeOutFile()
+        out_f = open(get_tmp_filename(prefix = "sample_seqs_",
+         suffix = ".fna.tmp"), "w")
+        self._files_to_remove.append(out_f.name.replace('.tmp',''))
         
         actual = check_seqs(
          fasta_out=out_f, 
@@ -465,7 +501,10 @@ z\tGG\tGC\t5\tsample_z"""
          rev_primers = {},
          qual_out = False)
          
-        self.assertEqual(out_f.data,expected)
+        out_f = open(out_f.name.replace('.tmp',''), "U")
+        actual_results = '\n'.join([line.strip() for line in out_f])
+         
+        self.assertEqual(actual_results, expected)
         
 
     def test_check_seqs_fixed_len_bc(self):
@@ -480,7 +519,9 @@ z\tGG\tGC\t5\tsample_z"""
         expected = self.expected_fasta_fixed_len_bc1
 
         
-        out_f = FakeOutFile()
+        out_f = open(get_tmp_filename(prefix = "sample_seqs_",
+         suffix = ".fna.tmp"), "w")
+        self._files_to_remove.append(out_f.name.replace('.tmp',''))
         
         actual = check_seqs(
          fasta_out=out_f, 
@@ -504,7 +545,10 @@ z\tGG\tGC\t5\tsample_z"""
          rev_primers = {},
          qual_out = False)
          
-        self.assertEqual(out_f.data,expected)
+        out_f = open(out_f.name.replace('.tmp',''), "U")
+        actual_results = '\n'.join([line.strip() for line in out_f])
+         
+        self.assertEqual(actual_results, expected)
         
         # Fourth test-set max_bc_errors to 0, and allow some primer mismatches
         in_seqs = self.in_seqs_fixed_len_bc2
@@ -514,7 +558,9 @@ z\tGG\tGC\t5\tsample_z"""
         expected = self.expected_fasta_fixed_len_bc2
 
         
-        out_f = FakeOutFile()
+        out_f = open(get_tmp_filename(prefix = "sample_seqs_",
+         suffix = ".fna.tmp"), "w")
+        self._files_to_remove.append(out_f.name.replace('.tmp',''))
         
         actual = check_seqs(
          fasta_out=out_f, 
@@ -538,7 +584,10 @@ z\tGG\tGC\t5\tsample_z"""
          rev_primers = {},
          qual_out = False)
          
-        self.assertEqual(out_f.data,expected)
+        out_f = open(out_f.name.replace('.tmp',''), "U")
+        actual_results = '\n'.join([line.strip() for line in out_f])
+         
+        self.assertEqual(actual_results, expected)
         
 
         
@@ -554,7 +603,9 @@ z\tGG\tGC\t5\tsample_z"""
         expected = self.expected_fasta_fixed_len_bc1_no_primers
 
         
-        out_f = FakeOutFile()
+        out_f = open(get_tmp_filename(prefix = "sample_seqs_",
+         suffix = ".fna.tmp"), "w")
+        self._files_to_remove.append(out_f.name.replace('.tmp',''))
         
         actual = check_seqs(
          fasta_out=out_f, 
@@ -578,7 +629,10 @@ z\tGG\tGC\t5\tsample_z"""
          rev_primers = {},
          qual_out = False)
          
-        self.assertEqual(out_f.data,expected)
+        out_f = open(out_f.name.replace('.tmp',''), "U")
+        actual_results = '\n'.join([line.strip() for line in out_f])
+         
+        self.assertEqual(actual_results, expected)
         
     def test_check_seqs_reverse_primers(self):
         """check_seqs handles truncating reverse primers """
@@ -592,7 +646,9 @@ z\tGG\tGC\t5\tsample_z"""
         rev_primers_test = self.reverse_primers_fixed_len_bc1
         
         
-        out_f = FakeOutFile()
+        out_f = open(get_tmp_filename(prefix = "sample_seqs_",
+         suffix = ".fna.tmp"), "w")
+        self._files_to_remove.append(out_f.name.replace('.tmp',''))
         
         actual = check_seqs(
          fasta_out=out_f, 
@@ -616,7 +672,10 @@ z\tGG\tGC\t5\tsample_z"""
          rev_primers = rev_primers_test,
          qual_out = False)
          
-        self.assertEqual(out_f.data,expected)
+        out_f = open(out_f.name.replace('.tmp',''), "U")
+        actual_results = '\n'.join([line.strip() for line in out_f])
+         
+        self.assertEqual(actual_results, expected)
         
         # Second test with a mismatch in seq a, should not find reverse primer
         # and will write out entire sequence.
@@ -629,7 +688,9 @@ z\tGG\tGC\t5\tsample_z"""
         rev_primers_test = self.reverse_primers_fixed_len_bc1
         
         
-        out_f = FakeOutFile()
+        out_f = open(get_tmp_filename(prefix = "sample_seqs_",
+         suffix = ".fna.tmp"), "w")
+        self._files_to_remove.append(out_f.name.replace('.tmp',''))
         
         actual = check_seqs(
          fasta_out=out_f, 
@@ -653,7 +714,10 @@ z\tGG\tGC\t5\tsample_z"""
          rev_primers = rev_primers_test,
          qual_out = False)
          
-        self.assertEqual(out_f.data,expected)
+        out_f = open(out_f.name.replace('.tmp',''), "U")
+        actual_results = '\n'.join([line.strip() for line in out_f])
+         
+        self.assertEqual(actual_results, expected)
         
         # With mismatches allowed set to 1, should restore truncation.
         in_seqs = self.in_seqs_reverse_primers_mismatch
@@ -664,7 +728,9 @@ z\tGG\tGC\t5\tsample_z"""
         rev_primers_test = self.reverse_primers_fixed_len_bc1
         
         
-        out_f = FakeOutFile()
+        out_f = open(get_tmp_filename(prefix = "sample_seqs_",
+         suffix = ".fna.tmp"), "w")
+        self._files_to_remove.append(out_f.name.replace('.tmp',''))
         
         actual = check_seqs(
          fasta_out=out_f, 
@@ -688,7 +754,10 @@ z\tGG\tGC\t5\tsample_z"""
          rev_primers = rev_primers_test,
          qual_out = False)
          
-        self.assertEqual(out_f.data,expected)
+        out_f = open(out_f.name.replace('.tmp',''), "U")
+        actual_results = '\n'.join([line.strip() for line in out_f])
+         
+        self.assertEqual(actual_results, expected)
         
         # Testing truncate_remove, which should not write sequences where
         # the reverse primer is not found
@@ -701,7 +770,9 @@ z\tGG\tGC\t5\tsample_z"""
         
 
         
-        out_f = FakeOutFile()
+        out_f = open(get_tmp_filename(prefix = "sample_seqs_",
+         suffix = ".fna.tmp"), "w")
+        self._files_to_remove.append(out_f.name.replace('.tmp',''))
         
         actual = check_seqs(
          fasta_out=out_f, 
@@ -725,7 +796,10 @@ z\tGG\tGC\t5\tsample_z"""
          rev_primers = rev_primers_test,
          qual_out = False)
          
-        self.assertEqual(out_f.data,expected)
+        out_f = open(out_f.name.replace('.tmp',''), "U")
+        actual_results = '\n'.join([line.strip() for line in out_f])
+         
+        self.assertEqual(actual_results, expected)
         
         # Testing truncate_remove, with mismatch set to 1 should allow
         # all 4 sequences to be written, truncated
@@ -739,7 +813,9 @@ z\tGG\tGC\t5\tsample_z"""
 
         
         
-        out_f = FakeOutFile()
+        out_f = open(get_tmp_filename(prefix = "sample_seqs_",
+         suffix = ".fna.tmp"), "w")
+        self._files_to_remove.append(out_f.name.replace('.tmp',''))
         
         actual = check_seqs(
          fasta_out=out_f, 
@@ -763,7 +839,10 @@ z\tGG\tGC\t5\tsample_z"""
          rev_primers = rev_primers_test,
          qual_out = False)
          
-        self.assertEqual(out_f.data,expected)
+        out_f = open(out_f.name.replace('.tmp',''), "U")
+        actual_results = '\n'.join([line.strip() for line in out_f])
+         
+        self.assertEqual(actual_results, expected)
         
     def test_check_seqs_qual_out(self):
         """ check_seqs handles optional quality output file """
@@ -775,7 +854,10 @@ z\tGG\tGC\t5\tsample_z"""
         expected = expected_qual_fixed_len_bc1
 
         
-        out_f = FakeOutFile()
+        out_f = open(get_tmp_filename(prefix = "sample_seqs_",
+         suffix = ".fna.tmp"), "w")
+        self._files_to_remove.append(out_f.name.replace('.tmp',''))
+        
         qual_out_f = FakeOutFile()
         
         actual = check_seqs(
@@ -812,7 +894,9 @@ z\tGG\tGC\t5\tsample_z"""
         expected = self.expected_fasta_extra_bc
 
         
-        out_f = FakeOutFile()
+        out_f = open(get_tmp_filename(prefix = "sample_seqs_",
+         suffix = ".fna.tmp"), "w")
+        self._files_to_remove.append(out_f.name.replace('.tmp',''))
         
         actual = check_seqs(
          fasta_out=out_f, 
@@ -837,7 +921,54 @@ z\tGG\tGC\t5\tsample_z"""
          qual_out = False)
          
          
-        self.assertEqual(out_f.data,expected)
+        out_f = open(out_f.name.replace('.tmp',''), "U")
+        actual_results = '\n'.join([line.strip() for line in out_f])
+         
+        self.assertEqual(actual_results, expected)
+        
+    def test_check_seqs_median_abs_dev(self):
+        """ check_seqs handles median absolute deviation calculations """
+        
+        in_seqs = self.in_seqs_fixed_len_bc1
+        bc_map = self.bc_map_fixed_len_bc1
+        primer_seq_lens = self.primer_seq_lens_fixed_len_bc1
+        all_primers = self.all_primers_fixed_len_bc1
+        expected = self.expected_fasta_mad
+
+        
+        out_f = open(get_tmp_filename(prefix = "sample_seqs_",
+         suffix = ".fna.tmp"), "w")
+        self._files_to_remove.append(out_f.name.replace('.tmp',''))
+        
+        actual = check_seqs(
+         fasta_out=out_f, 
+         fasta_files = [in_seqs], 
+         starting_ix=0, 
+         valid_map = bc_map, 
+         qual_mappings={}, 
+         filters=[], 
+         barcode_len=12, 
+         keep_primer=False, 
+         keep_barcode=False, 
+         barcode_type="golay_12", 
+         max_bc_errors=1.5,
+         retain_unassigned_reads=False, 
+         attempt_bc_correction=True,
+         primer_seqs_lens=primer_seq_lens,
+         all_primers=all_primers, 
+         max_primer_mm=0,
+         disable_primer_check=False,
+         reverse_primers = 'disable',
+         rev_primers = {},
+         qual_out = False,
+         median_length_filtering=2.0)
+         
+         
+        
+        out_f = open(out_f.name.replace('.tmp',''), "U")
+        actual_results = '\n'.join([line.strip() for line in out_f])
+         
+        self.assertEqual(actual_results, expected)
         
 
 
@@ -873,8 +1004,8 @@ CCCTTTCCA
 >s3_2 c orig_bc=ATTA new_bc=ATTA bc_diffs=0
 AACCGGCCGGTT
 >s1_3 d orig_bc=ACC new_bc=ACC bc_diffs=0
-CCCTTACTATATAT
-"""
+CCCTTACTATATAT"""
+
 bc_map_variable_len_bc2 = {'ACC':'s1','AGGA':'s2','ATTA':'s3','AGG':'s4'}
 primer_seq_lens_variable_len_bc2 = {'ACC':{'GGTCCGGA':8},
                                     'AGGA':{'GTCCGGA':7},
@@ -914,7 +1045,7 @@ TTTTGTCCGGACCCTTACTATATAT
 AGAGTCCTGAGCGGTCCGGTACGTTTACTGGA
 """.split()
 
-expected_fasta_extra_bc = """>s1_0 a orig_bc=ACACATGTCTAC new_bc=ACACATGTCTAC bc_diffs=0\nCCCTTATATATATAT\n>s2_1 b orig_bc=AGAGTCCTGAGC new_bc=AGAGTCCTGAGC bc_diffs=0\nCCCTTTCCA\n>Unassigned_2 c orig_bc=AACTGTGCGTAC new_bc=AACTGTGCGTAC bc_diffs=0\nAACCGGCCGGTT\n>s1_3 d orig_bc=ACTCATGTCTAC new_bc=ACACATGTCTAC bc_diffs=1\nCCCTTACTATATAT\n"""
+expected_fasta_extra_bc = """>s1_0 a orig_bc=ACACATGTCTAC new_bc=ACACATGTCTAC bc_diffs=0\nCCCTTATATATATAT\n>s2_1 b orig_bc=AGAGTCCTGAGC new_bc=AGAGTCCTGAGC bc_diffs=0\nCCCTTTCCA\n>Unassigned_2 c orig_bc=AACTGTGCGTAC new_bc=AACTGTGCGTAC bc_diffs=0\nAACCGGCCGGTT\n>s1_3 d orig_bc=ACTCATGTCTAC new_bc=ACACATGTCTAC bc_diffs=1\nCCCTTACTATATAT"""
 
 in_seqs_fixed_len_bc1_qual_scores = """>a
 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 37 36 36 33 33 33 36 37 37 37 37 37 37 40 40 40 39 39 38
@@ -945,8 +1076,7 @@ CCCTTTCCA
 >s3_2 c orig_bc=AATCGTGACTCG new_bc=AATCGTGACTCG bc_diffs=0
 AACCGGCCGGTT
 >s1_3 d orig_bc=ACTCATGTCTAC new_bc=ACACATGTCTAC bc_diffs=1
-CCCTTACTATATAT
-"""
+CCCTTACTATATAT"""
 
 # Poor quality window results in second sequence being removed
 expected_fasta_fixed_len_bc1_sliding_window = """>s1_0 a orig_bc=ACACATGTCTAC new_bc=ACACATGTCTAC bc_diffs=0
@@ -954,8 +1084,7 @@ CCCTTATATATATAT
 >s3_1 c orig_bc=AATCGTGACTCG new_bc=AATCGTGACTCG bc_diffs=0
 AACCGGCCGGTT
 >s1_2 d orig_bc=ACTCATGTCTAC new_bc=ACACATGTCTAC bc_diffs=1
-CCCTTACTATATAT
-"""
+CCCTTACTATATAT"""
 
 expected_qual_fixed_len_bc1 = """>s1_0 a orig_bc=ACACATGTCTAC new_bc=ACACATGTCTAC bc_diffs=0
 33 33 36 37 37 37 37 37 37 40 40 40 39 39 38
@@ -978,8 +1107,7 @@ GGTCTGGAAACCGGCCGGTT
 >s1_3 d orig_bc=ACTCATGTCTAC new_bc=ACACATGTCTAC bc_diffs=1
 GGTCCGGACCCTTACTATATAT
 >s2_4 d_primer_error orig_bc=AGAGTCCTGAGC new_bc=AGAGTCCTGAGC bc_diffs=0
-GGTCCGGTACGTTTACTGGA
-"""
+GGTCCGGTACGTTTACTGGA"""
 # Equal length barcodes, primers, should give different results
 # Due to parameter changes regarding barcode changes, primer mismatches
 
@@ -990,8 +1118,7 @@ CCCTTTCCA
 >s3_2 c orig_bc=AATCGTGACTCG new_bc=AATCGTGACTCG bc_diffs=0
 AACCGGCCGGTT
 >s2_3 d_primer_error orig_bc=AGAGTCCTGAGC new_bc=AGAGTCCTGAGC bc_diffs=0
-ACGTTTACTGGA
-"""
+ACGTTTACTGGA"""
 
 # These test data have equal length barcodes
 reverse_primers_fixed_len_bc1 = {'ACACATGTCTAC':'CTTATAT',
@@ -1016,10 +1143,10 @@ AGAGTCCTGAGCGGGGAGGTACGTTTACTGGA
 # expected to find the reverse rprimers for seqs a, b, and c, but does not
 # find the reverse primer for d so writes out whole sequence following forward
 # primer.
-expected_in_seqs_reverse_primers = '>s1_0 a orig_bc=ACACATGTCTAC new_bc=ACACATGTCTAC bc_diffs=0\nGTACCATGATCGGCC\n>s2_1 b orig_bc=AGAGTCCTGAGC new_bc=AGAGTCCTGAGC bc_diffs=0\nACCGTCGGATCA\n>s3_2 c orig_bc=AATCGTGACTCG new_bc=AATCGTGACTCG bc_diffs=0\nAACCGATCGACCAT\n>s1_3 d orig_bc=ACTCATGTCTAC new_bc=ACACATGTCTAC bc_diffs=1\nATACGTTACGTCCCTTACTATATAT\n'
+expected_in_seqs_reverse_primers = '>s1_0 a orig_bc=ACACATGTCTAC new_bc=ACACATGTCTAC bc_diffs=0\nGTACCATGATCGGCC\n>s2_1 b orig_bc=AGAGTCCTGAGC new_bc=AGAGTCCTGAGC bc_diffs=0\nACCGTCGGATCA\n>s3_2 c orig_bc=AATCGTGACTCG new_bc=AATCGTGACTCG bc_diffs=0\nAACCGATCGACCAT\n>s1_3 d orig_bc=ACTCATGTCTAC new_bc=ACACATGTCTAC bc_diffs=1\nATACGTTACGTCCCTTACTATATAT'
 
 # Will truncate sequence d properly if mismatch in primer allowed
-expected_in_seqs_reverse_primers_mismatch_allowed = '>s1_0 a orig_bc=ACACATGTCTAC new_bc=ACACATGTCTAC bc_diffs=0\nGTACCATGATCGGCC\n>s2_1 b orig_bc=AGAGTCCTGAGC new_bc=AGAGTCCTGAGC bc_diffs=0\nACCGTCGGATCA\n>s3_2 c orig_bc=AATCGTGACTCG new_bc=AATCGTGACTCG bc_diffs=0\nAACCGATCGACCAT\n>s1_3 d orig_bc=ACTCATGTCTAC new_bc=ACACATGTCTAC bc_diffs=1\nATACGTTACGTCC\n'
+expected_in_seqs_reverse_primers_mismatch_allowed = '>s1_0 a orig_bc=ACACATGTCTAC new_bc=ACACATGTCTAC bc_diffs=0\nGTACCATGATCGGCC\n>s2_1 b orig_bc=AGAGTCCTGAGC new_bc=AGAGTCCTGAGC bc_diffs=0\nACCGTCGGATCA\n>s3_2 c orig_bc=AATCGTGACTCG new_bc=AATCGTGACTCG bc_diffs=0\nAACCGATCGACCAT\n>s1_3 d orig_bc=ACTCATGTCTAC new_bc=ACACATGTCTAC bc_diffs=1\nATACGTTACGTCC'
 
 # Fixed barcode, reverse primers test data
 in_seqs_reverse_primers_mismatch = """>a
@@ -1038,11 +1165,24 @@ AGAGTCCTGAGCGGTCCTTTACGCCCACTGGA
 
 # expected to find the reverse rprimers for seqs b, and c, will not find
 # seq a's reverse primer due to mismatch and will write the whole sequence
-expected_in_seqs_reverse_primers_mismatch = '>s1_0 a orig_bc=ACACATGTCTAC new_bc=ACACATGTCTAC bc_diffs=0\nGTACCATGATCGGCCCCTATATATATAT\n>s2_1 b orig_bc=AGAGTCCTGAGC new_bc=AGAGTCCTGAGC bc_diffs=0\nACCGTCGGATCA\n>s3_2 c orig_bc=AATCGTGACTCG new_bc=AATCGTGACTCG bc_diffs=0\nAACCGATCGACCAT\n>s1_3 d orig_bc=ACTCATGTCTAC new_bc=ACACATGTCTAC bc_diffs=1\nATACGTTACGTCCCTTACATATCCAT\n'
+expected_in_seqs_reverse_primers_mismatch = '>s1_0 a orig_bc=ACACATGTCTAC new_bc=ACACATGTCTAC bc_diffs=0\nGTACCATGATCGGCCCCTATATATATAT\n>s2_1 b orig_bc=AGAGTCCTGAGC new_bc=AGAGTCCTGAGC bc_diffs=0\nACCGTCGGATCA\n>s3_2 c orig_bc=AATCGTGACTCG new_bc=AATCGTGACTCG bc_diffs=0\nAACCGATCGACCAT\n>s1_3 d orig_bc=ACTCATGTCTAC new_bc=ACACATGTCTAC bc_diffs=1\nATACGTTACGTCCCTTACATATCCAT'
 
 # Will not write the d sequence, as the primer mismatches.
-expected_in_seqs_reverse_primers_full_remove = '>s1_0 a orig_bc=ACACATGTCTAC new_bc=ACACATGTCTAC bc_diffs=0\nGTACCATGATCGGCC\n>s2_1 b orig_bc=AGAGTCCTGAGC new_bc=AGAGTCCTGAGC bc_diffs=0\nACCGTCGGATCA\n>s3_2 c orig_bc=AATCGTGACTCG new_bc=AATCGTGACTCG bc_diffs=0\nAACCGATCGACCAT\n'
+expected_in_seqs_reverse_primers_full_remove = '>s1_0 a orig_bc=ACACATGTCTAC new_bc=ACACATGTCTAC bc_diffs=0\nGTACCATGATCGGCC\n>s2_1 b orig_bc=AGAGTCCTGAGC new_bc=AGAGTCCTGAGC bc_diffs=0\nACCGTCGGATCA\n>s3_2 c orig_bc=AATCGTGACTCG new_bc=AATCGTGACTCG bc_diffs=0\nAACCGATCGACCAT'
 
+# Sample seqs.fna output file
+sample_seqs_fna_file = """>a1 testing
+ACACATGTCTACGGTCCGGAACGACGACGAGCGAGGGTAGC
+>b2 testing more
+AGAGTCCTGAGCGGTCCGGAACAGACAGGGAGAGACAGAA
+>a3 testing
+ACAACAGACGAGTTAGACCAA
+>d4
+AATCGTGACTCGGGTCTGGACAGACGAGAACGAGTTACAGACCAGA"""
+
+
+
+expected_fasta_mad = """>s1_0 a orig_bc=ACACATGTCTAC new_bc=ACACATGTCTAC bc_diffs=0\nCCCTTATATATATAT\n>s3_2 c orig_bc=AATCGTGACTCG new_bc=AATCGTGACTCG bc_diffs=0\nAACCGGCCGGTT\n>s1_3 d orig_bc=ACTCATGTCTAC new_bc=ACACATGTCTAC bc_diffs=1\nCCCTTACTATATAT"""
 
 class SeqQualBadTests(TestCase):
     """Tests of the SeqQualBad class"""

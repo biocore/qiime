@@ -170,7 +170,15 @@ script_info['optional_options']=[\
         'named seqs_filtered.qual will be created in the output directory, '+\
         'and will contain the same sequence IDs in the seqs.fna file and '+\
         'sequence quality scores matching the bases present in the seqs.fna '+\
-        'file. [default: %default]')]
+        'file. [default: %default]'),
+        
+    make_option('-i', '--median_length_filtering', default=None,
+        action='store', help='Disables minimum and maximum sequence length '+\
+        'filtering, and instead calculates the median sequence length '+\
+        'and filters the sequences based upon the number of median absolute '+\
+        'deviations specified by this parameter.  Any sequences with lengths '+\
+        'outside the number of deviations will be removed. '+\
+        '[default: %default]')]
 
 script_info['version'] = __version__
 
@@ -222,7 +230,8 @@ def main():
                disable_primers = opts.disable_primers,
                reverse_primers = opts.reverse_primers,
                record_qual_scores = opts.record_qual_scores,
-               discard_bad_windows = opts.discard_bad_windows)
+               discard_bad_windows = opts.discard_bad_windows,
+               median_length_filtering = opts.median_length_filtering)
  
 if __name__ == "__main__":
     main()
