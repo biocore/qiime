@@ -11,7 +11,7 @@ __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 __status__ = "Development"
  
-from os.path import exists
+from os.path import exists,abspath
 from shutil import rmtree
 from numpy import array
 from matplotlib.axes import Subplot
@@ -29,6 +29,7 @@ class PlotRankAbundance(TestCase):
     def setUp(self):
 
         self.tmp_dir = None
+        
         self.files_to_remove = []
     
     def tearDown(self):
@@ -98,7 +99,7 @@ class PlotRankAbundance(TestCase):
         """plot_rank_abundance_graphs works with all filetypes"""
  
         self.otu_table = otu_table_fake.split('\n')       
-        self.tmp_dir = get_tmp_filename(prefix="test_plot_rank_abundance",
+        self.tmp_dir = get_tmp_filename(tmp_dir='./',prefix="test_plot_rank_abundance",
                                    suffix="/")
         create_dir(self.tmp_dir)
 
@@ -108,7 +109,7 @@ class PlotRankAbundance(TestCase):
         for file_type in ['pdf','svg','png','eps']:
             plot_rank_abundance_graphs('S3', iter(self.otu_table), self.tmp_dir,
                                        file_type=file_type)
-            tmp_file = self.tmp_dir+"rank_abundanceS3."+file_type
+            tmp_file = abspath(self.tmp_dir+"rank_abundance_S3."+file_type)
             self.files_to_remove.append(tmp_file)
             self.assertTrue(exists(tmp_file))
             
@@ -116,7 +117,8 @@ class PlotRankAbundance(TestCase):
         """plot_rank_abundance_graphs works with any number of samples"""
  
         self.otu_table = otu_table_fake.split('\n')       
-        self.tmp_dir = get_tmp_filename(prefix="test_plot_rank_abundance",
+        self.tmp_dir = get_tmp_filename(tmp_dir='./',
+                                   prefix="test_plot_rank_abundance",
                                    suffix="/")
         create_dir(self.tmp_dir)
  
@@ -132,14 +134,15 @@ class PlotRankAbundance(TestCase):
         file_type="pdf"
         plot_rank_abundance_graphs('S3,S5', iter(self.otu_table), self.tmp_dir,
                                        file_type=file_type)
-        tmp_file = self.tmp_dir+"rank_abundanceS3_S5."+file_type
-        self.files_to_remove.append(tmp_file)
+        tmp_file = abspath(self.tmp_dir+"rank_abundance_S3_S5."+file_type)
+
         self.assertTrue(exists(tmp_file)) 
- 
+        self.files_to_remove.append(tmp_file)
         # test with all samples
         plot_rank_abundance_graphs('*', iter(self.otu_table), self.tmp_dir,
                                        file_type=file_type)
-        tmp_file = self.tmp_dir+"rank_abundanceS3_S4_S5."+file_type
+        tmp_file = abspath(self.tmp_dir+"rank_abundance_S3_S4_S5."+file_type)
+        
         self.files_to_remove.append(tmp_file)
         self.assertTrue(exists(tmp_file)) 
 

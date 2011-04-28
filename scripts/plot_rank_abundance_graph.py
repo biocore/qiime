@@ -82,6 +82,7 @@ def main():
         output_dir = opts.output_dir
     else:
         output_dir = get_tmp_filename(tmp_dir='./', prefix='rank_abundance_', suffix='')
+        
     create_dir(output_dir, fail_on_exist=True)
     
 
