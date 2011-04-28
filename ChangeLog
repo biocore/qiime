@@ -11,6 +11,7 @@ Add changes since QIIME 1.2.1 here
 * Added script inflate_denoiser_output.py to expand clusters to fasta representing all sequences. This allows denoiser results to be passed directly to the OTU pickers (and OTU picking workflows) which should greatly reduce the complexity of denoiser runs. The "Denoising 454 Data" tutorial has been updated to reflect how the pipeline should now be run. The denoising functionality was removed from the pick_otus_through_otu_table.py workflow script as that could only be used in very special circumstances - this allows us to focus our attention on supporting the new pipeline described in the updated tutorial.
 * Reorganized output from pick_otus_through_otu_table.py to get rid of the confusing output directory structure. 
 * Modified the naming of distance matrices in beta_diversity_through_3d_plots.py so these are now named <metric>_dm.txt. The previous naming convention, where it was based on the name of the input file, lead to confusion as the string 'otu_table' frequently ended up in the distance matrices.
+* Added script plot_semivariogram.py to plot semivariograms using two distance matrices. This script also plots a fitting curve of the data values.
 
 QIIME 1.2.1 (22 Feb 2011)
 ==================================

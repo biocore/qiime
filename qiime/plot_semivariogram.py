@@ -1,0 +1,145 @@
+#!/usr/bin/env python
+import sys
+import os.path
+from optparse import OptionParser
+from cogent.maths.fit_function import fit_function
+from qiime.parse import parse_distmat
+from numpy import exp, cos, pi, tri, argsort, asarray, arange, mean, isnan, zeros
+
+__author__ = "Antonio Gonzalez Pena"
+__copyright__ = "Copyright 2011, The QIIME Project"
+__credits__ = ["Antonio Gonzalez Pena"]
+__license__ = "GPL"
+__version__ = "1.2.1-dev"
+__maintainer__ = "Antonio Gonzalez Pena"
+__email__ = "antgonza@gmail.com"
+__status__ = "Development"
+
+class fit_models:
+    """This class defines the available models and their functions for a 
+    semivariogram.
+    """
+    options = ['nugget','exponential','gaussian','periodic']
+    
+    def fit(self):
+        # Funcion definition
+        def periodic(x, a):
+            return a[0]+(a[2]*(1-cos(2*pi*x/a[1])))
+            
+        def gaussian(x, a):
+            return a[0]+(a[2]*(1-exp((-3*x*x)/(a[1]*a[1]))))
+        
+        def exponential(x, a):
+            return a[0]+(a[2]*(1-exp(-3*x/a[1])))
+        
+        def nugget(x, a):
+             return a[0]
+             
+        if self.model!='nugget':
+            params = fit_function(self.x, self.y, eval(self.model), 3, 10)
+        else:
+            params = fit_function(self.x, self.y, eval(self.model), 1, 1)
+        
+        return eval(self.model)(self.x, params)
+        
+    def __init__(self, x, y, model):
+        self.x = x
+        self.y = y
+        self.model = model
+
+def hist_bins(bins, vals):
+    """ Creates a histogram given the bins and the vals
+    :Parameters:
+       bins : list
+           bins to use
+       vals : list
+           values to bin
+           
+   :Returns:
+       bins: array
+           The bins
+       hist:
+           The hist of the values/bins
+    """
+    
+    hist = zeros(len(bins))
+    j = 0
+    for i in vals:
+        while bins[j]<i: j+=1
+        hist[j]+=1
+        
+    return asarray(bins), hist
+
+def fit_semivariogram(x_distmtx, y_distmtx, model, ranges):
+    """ Creates semivariogram values from two distance matrices.    
+    :Parameters:
+       x_file : array matrix distance matrix for x
+           distance matrix
+       y_file : file handle
+           distance matrix file handle
+       model: string
+           model to fit
+       ranges: list
+           the list of ranges to bin the data
+
+   :Returns:
+       x_vals: array
+           Values for x
+       y_vals: array
+           Values for y
+       y_fit: array
+           Values for y fitted from model
+    """
+        
+    if x_distmtx.shape!=y_distmtx.shape:
+        raise ValueError, 'The distance matrices have different sizes'
+    
+    # get upper triangle from matrix in a 1d array
+    x_tmp_vals = x_distmtx.compress(tri(len(x_distmtx)).ravel()==0)
+    y_tmp_vals = y_distmtx.compress(tri(len(y_distmtx)).ravel()==0)
+    
+    # sorting lists and transforming to arrays
+    x_vals, y_vals = [], []
+    for i in argsort(x_tmp_vals):
+        x_vals.append(x_tmp_vals[i])
+        y_vals.append(y_tmp_vals[i])
+    x_vals = asarray(x_vals)
+    y_vals = asarray(y_vals)
+    
+    # fitting model
+    fit_func = fit_models(x_vals, y_vals, model)
+    y_fit = fit_func.fit()
+    x_fit = x_vals
+    
+    # section for bins
+    if ranges!=[]:
+        # creating bins in x
+        min = 0
+        x_bins = []
+        for r in ranges[:-1]:
+           x_bins.extend(arange(min,r[1],r[0]))
+           min = r[1]
+        x_bins.extend(arange(min, max(x_vals), ranges[-1][0]))
+        x_bins[-1] = max(x_vals)
+        
+        x_vals, hist = hist_bins(x_bins, x_vals)
+        
+        # avg per bin, y values
+        y_tmp = []
+        for i,val in enumerate(hist):
+            if i==0:
+                low = val
+                continue
+            high = low+val
+            
+            y_tmp.append(mean(y_vals[low:high]))
+            
+            low = high
+        y_vals = asarray(y_tmp)
+        
+        # removing nans
+        x_vals = x_vals[~isnan(y_vals)]
+        y_vals = y_vals[~isnan(y_vals)]
+    
+    return x_vals, y_vals, x_fit, y_fit
+    
