@@ -227,7 +227,7 @@ def main():
                #remove_unassigned = opts.remove_unassigned,
                attempt_bc_correction = not opts.disable_bc_correction,
                qual_score_window = opts.qual_score_window,
-               disable_primers = opts.disable_primers,
+               disable_primer_check = opts.disable_primers,
                reverse_primers = opts.reverse_primers,
                record_qual_scores = opts.record_qual_scores,
                discard_bad_windows = opts.discard_bad_windows,

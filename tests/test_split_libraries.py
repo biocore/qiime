@@ -155,7 +155,8 @@ z\tGG\tGC\t5\tsample_z"""
         f = StringIO(s)
         f.name='test.xls'
         headers, id_map, barcode_to_sample_id, warnings, errors, \
-         primer_seqs_lens, all_primers = check_map(f)
+         primer_seqs_lens, all_primers = check_map(f, 
+          disable_primer_check=False)
 
         self.assertEqual(barcode_to_sample_id, {'AA':'x','AC':'y','GG':'z'})
 
@@ -172,7 +173,8 @@ z\tGG\tGC\t5\tsample_z"""
         f = StringIO(s)
         f.name='test.xls'
         headers, id_map, barcode_to_sample_id, warnings, errors, \
-         primer_seqs_lens, all_primers = check_map(f)
+         primer_seqs_lens, all_primers = check_map(f,
+         disable_primer_check=False)
 
         self.assertEqual(barcode_to_sample_id, {'AA':'x','AC':'y','GG':'z'})
         self.assertEqual(errors, [])

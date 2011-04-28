@@ -262,11 +262,15 @@ def expand_degeneracies(raw_primers):
     return expanded_primers
     
 
-def check_map(infile, has_barcodes=True, disable_primer_check=False):
+def check_map(infile, disable_primer_check, has_barcodes=True):
     """Check mapping file and extract list of valid barcodes, primers """
+    
+   
     hds, id_map, dsp, run_description, errors, warnings = \
         process_id_map(infile, is_barcoded=has_barcodes, \
         disable_primer_check=disable_primer_check)
+        
+    
     barcode_to_sample_id = {}
     
     primer_seqs_lens = {}
@@ -276,6 +280,10 @@ def check_map(infile, has_barcodes=True, disable_primer_check=False):
         barcode_to_sample_id[sample['BarcodeSequence'].upper()] = sample_id
         if not disable_primer_check:
             raw_primers = sample['LinkerPrimerSequence'].upper().split(',')
+            
+            if len(raw_primers[0].strip()) == 0:
+                raise ValueError,('No primers detected, please use the '+\
+                 '-p parameter to disable primer detection.')
             expanded_primers = expand_degeneracies(raw_primers)
             curr_bc_primers = {}
             for primer in expanded_primers:
@@ -955,10 +963,10 @@ def preprocess(fasta_files, qual_files, mapping_file,
     dir_prefix='.', max_bc_errors=2, max_homopolymer=4,
     retain_unassigned_reads=False, keep_barcode=False, 
     attempt_bc_correction=True, qual_score_window=0,
-    disable_primers=False, reverse_primers='disable', record_qual_scores=False,
-    discard_bad_windows=False, median_length_filtering=None):
+    disable_primer_check=False, reverse_primers='disable', 
+    record_qual_scores=False, discard_bad_windows=False, 
+    median_length_filtering=None):
         
-
         
     """
     Preprocess barcoded libraries, e.g. from 454.
@@ -991,7 +999,7 @@ def preprocess(fasta_files, qual_files, mapping_file,
 
     max_primer_mm: maximum number of primer mismatches to allow.
 
-    trim_seq_len: if True (default), calculates lengths after trimming.
+    trim_seq_len: if True, calculates lengths after trimming.
 
     dir_prefix: prefix of directories to write files into.
 
@@ -1007,7 +1015,7 @@ def preprocess(fasta_files, qual_files, mapping_file,
     attempt_bc_correction: (default True) will attempt to find nearest valid
     barcode.  Can be disabled to improve performance.
     
-    disable_primers: (default False) Disables testing for primers in the
+    disable_primer_check: (default False) Disables testing for primers in the
     input mapping file and primer testing in the input sequence files.
     
     reverse_primers: (default 'disable') Enables removal of reverse primers and
@@ -1080,8 +1088,7 @@ def preprocess(fasta_files, qual_files, mapping_file,
     # Check mapping file and get barcode mapping 
     map_file = open(mapping_file, 'U')
     headers, id_map, valid_map, warnings, errors, \
-     primer_seqs_lens, all_primers = check_map(map_file, \
-     disable_primer_check = disable_primers )
+     primer_seqs_lens, all_primers = check_map(map_file, disable_primer_check)
      
     if reverse_primers != 'disable':
         if 'ReversePrimer' not in headers:
@@ -1121,6 +1128,8 @@ def preprocess(fasta_files, qual_files, mapping_file,
     # of the barcodes used, a check on the actual barcode lengths needs to
     # be done, and an exception raised if they are variable length and not
     # specified as so.
+
+    
     if barcode_type != "variable_length":
         # Raise error if variable length barcodes are present but not
         # specified
@@ -1174,11 +1183,14 @@ def preprocess(fasta_files, qual_files, mapping_file,
             # This processing occurs before primer testing, will use largest
             # primer length to calculate lengths.  the dict all_primers has
             # keys of each primer with the length of said primer as the value
-            if not disable_primer_check:
-                primer_seq_len = max(all_primers.values())
-            else:
-                # Set to zero if primers not used
+            if disable_primer_check:
                 primer_seq_len = 0
+            else:
+                primer_seq_len = max(all_primers.values())
+                
+            if barcode_type == "variable_length":
+                barcode_len = max(barcode_length_check)
+            
             trim = barcode_len + primer_seq_len
             filters.append(SeqQualBad(
                 'Length outside bounds of %s and %s' % (min_seq_len,max_seq_len),
@@ -1227,7 +1239,7 @@ def preprocess(fasta_files, qual_files, mapping_file,
         starting_ix, valid_map, qual_mappings, filters, barcode_len,
         keep_primer, keep_barcode, barcode_type, max_bc_errors,
         retain_unassigned_reads, attempt_bc_correction,
-        primer_seqs_lens, all_primers, max_primer_mm, disable_primers,
+        primer_seqs_lens, all_primers, max_primer_mm, disable_primer_check,
         reverse_primers, rev_primers, qual_out, qual_score_window,
         discard_bad_windows, min_qual_score, min_seq_len,
         median_length_filtering)
