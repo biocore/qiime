@@ -50,9 +50,9 @@ script_info['optional_options'] = [\
         dest='force',help='Force overwrite of existing output directory'+\
         ' (note: existing files in output_dir will not be removed)'+\
         ' [default: %default]'),
- make_option('-w','--print_only',action='store_true',
-        dest='print_only',help='Print the commands but don\'t call them -- '+\
-        'useful for debugging [default: %default]',default=False),
+ # make_option('-w','--print_only',action='store_true',
+ #        dest='print_only',help='Print the commands but don\'t call them -- '+\
+ #        'useful for debugging [default: %default]',default=False),
  make_option('-a','--parallel',action='store_true',
         dest='parallel',default=False,
         help='Run in parallel where available [default: %default]'),
@@ -92,7 +92,7 @@ def main():
     reference_tree_fp = opts.reference_tree_fp
     mapping_fp = opts.mapping_fp
     verbose = opts.verbose
-    print_only = opts.print_only
+    print_only = False # This feature is not currently supported
     suppress_split_libraries = opts.suppress_split_libraries
     even_sampling_keeps_all_samples = opts.even_sampling_keeps_all_samples
     
