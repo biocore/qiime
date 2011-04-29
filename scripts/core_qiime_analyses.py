@@ -23,7 +23,7 @@ qiime_config = load_qiime_config()
 script_info={}
 script_info['brief_description'] = """A workflow script for running a core QIIME workflow."""
 script_info['script_description'] = """This script plugs several QIIME steps together to form a basic full data analysis workflow. The steps include quality filtering and demultiplexing sequences (optional), running the pick_otus_through_otu_table.py workflow (pick otus and representative sequences, assign taxonomy, align representative sequences, build a tree, and build and OTU table), generating 3d beta diversity PCoA plots, generating alpha rarefaction plots, identifying OTUs that are differentially represented in different categories, and several additional analysis. Beta diversity calculations will be run both with and without an even sampling step, where the depth of sampling can either be passed on the command line or QIIME will try to make a reasonable guess."""
-script_info['script_usage'] = [("","Run serial analysis, and guess the even sampling depth (no -e provided)","%prog -i Fasting_Example.fna -q Fasting_Example.qual -o FastingStudy -p custom_parameters.txt -m Fasting_Map.txt -c Treatment,DOB"),("","Run serial analysis, and guess the even sampling depth (no -e provided). Skip split libraries by starting with already demultiplexed sequences.","%prog -i seqs.fna -o FastingStudy -p custom_parameters.txt -m Fasting_Map.txt -c Treatment,DOB")]
+script_info['script_usage'] = [("","Run serial analysis using default parameters, and guess the even sampling depth (no -e provided)","%prog -i Fasting_Example.fna -q Fasting_Example.qual -o FastingStudy -m Fasting_Map.txt -c Treatment,DOB"),("","Run serial analysis, and guess the even sampling depth (no -e provided). Skip split libraries by starting with already demultiplexed sequences.","%prog -i seqs.fna -o FastingStudy -p custom_parameters.txt -m Fasting_Map.txt -c Treatment,DOB")]
 
 
 script_info['output_description'] ="""
@@ -35,13 +35,14 @@ script_info['required_options'] = [
         'if more than one [REQUIRED]'),
     make_option('-o','--output_dir',
         help='the output directory [REQUIRED]'),
-    make_option('-p','--parameter_fp',
-        help='path to the parameter file [REQUIRED]'),
     make_option('-m','--mapping_fp',
         help='the mapping filepath [REQUIRED]'),
     ]
 
 script_info['optional_options'] = [\
+ make_option('-p','--parameter_fp',
+        help='path to the parameter file '+\
+        '[default: %default; default parameters will be used]'),
  make_option('-q','--input_quals',
         help='the input qual files  -- comma-separated '+\
         'if more than one [default: %default]'),
@@ -101,12 +102,16 @@ def main():
         option_parser.error("Only a single fasta file can be passed with "+\
                             "--suppress_split_libraries")
     
-    try:
-        parameter_f = open(opts.parameter_fp)
-    except IOError:
-        raise IOError,\
-         "Can't open parameters file (%s). Does it exist? Do you have read access?"\
-         % opts.parameter_fp
+    if opts.parameter_fp != None:
+        try:
+            parameter_f = open(opts.parameter_fp)
+        except IOError:
+            raise IOError,\
+             "Can't open parameters file (%s). Does it exist? Do you have read access?"\
+             % opts.parameter_fp
+        parse_qiime_parameters(parameter_f)
+    else:
+        params = None
     
     try:
         makedirs(output_dir)
@@ -136,7 +141,7 @@ def main():
         mapping_fp=mapping_fp,
         output_dir=output_dir,
         command_handler=command_handler,
-        params=parse_qiime_parameters(parameter_f),
+        params=params,
         qiime_config=qiime_config,
         categories=categories,
         sampling_depth=sampling_depth,

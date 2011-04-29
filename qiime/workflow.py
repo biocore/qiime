@@ -10,7 +10,7 @@ from os.path import split, splitext, join, dirname, abspath
 from datetime import datetime
 from numpy import array
 from cogent.parse.fasta import MinimalFastaParser
-from qiime.parse import parse_mapping_file
+from qiime.parse import parse_mapping_file, parse_qiime_parameters
 from qiime.format import format_otu_table
 from qiime.util import (compute_seqs_per_library_stats,
                         get_qiime_scripts_dir,
@@ -1076,8 +1076,8 @@ def run_core_qiime_analyses(
     mapping_fp,
     output_dir,
     command_handler,
-    params,
     qiime_config,
+    params=None,
     categories=None,
     sampling_depth=None,
     even_sampling_keeps_all_samples=False,
@@ -1108,6 +1108,8 @@ def run_core_qiime_analyses(
                  "choices are: (%s)" % (c,', '.join(mapping_categories)))
     else:
         categories= []
+    if params == None:
+        params = get_default_parameters()
     create_dir(output_dir)
     index_fp = '%s/index.html' % output_dir
     index_links = []
@@ -1354,7 +1356,110 @@ def run_core_qiime_analyses(
     command_handler(commands, status_update_callback, logger)
     generate_index_page(index_links,index_fp)
 
+## Default QIIME parameters, currently used only in core_qiime_analyses.py.
+## These hit the script defaults for the most part, with exceptions being
+## the choice of metrics for alpha and beta diversity.
 
+def get_default_parameters():
+    default_parameters = """split_libraries:min-seq-length
+split_libraries:max-seq-length
+split_libraries:trim-seq-length
+split_libraries:min-qual-score
+split_libraries:keep-primer
+split_libraries:keep-barcode
+split_libraries:max-ambig
+split_libraries:max-homopolymer
+split_libraries:max-primer-mismatch
+split_libraries:barcode-type
+split_libraries:max-barcode-errors
+split_libraries:start-numbering-at
+split_libraries:remove_unassigned	True
+split_libraries:disable_bc_correction
+split_libraries:qual_score_window
+split_libraries:discard_bad_windows
+split_libraries:disable_primers
+split_libraries:reverse_primers
+split_libraries:record_qual_scores
+
+otu_category_significance:test
+otu_category_significance:filter	3
+otu_category_significance:threshold
+otu_category_significance:otu_include_fp
+
+# OTU picker parameters
+pick_otus:otu_picking_method	uclust
+pick_otus:similarity	0.97
+
+# Representative set picker parameters
+pick_rep_set:rep_set_picking_method	first
+pick_rep_set:sort_by	otu
+
+# Multiple sequence alignment parameters
+align_seqs:template_fp
+align_seqs:alignment_method	pynast
+align_seqs:pairwise_alignment_method	uclust
+align_seqs:blast_db
+align_seqs:min_length	150
+align_seqs:min_percent_id	75.0
+
+# Alignment filtering (prior to tree-building) parameters
+filter_alignment:lane_mask_fp
+filter_alignment:allowed_gap_frac	 0.999999
+filter_alignment:remove_outliers	False
+filter_alignment:threshold	3.0
+
+# Taxonomy assignment parameters
+assign_taxonomy:assignment_method	rdp
+
+# Phylogenetic tree building parameters
+make_phylogeny:tree_method	fasttree
+make_phylogeny:root_method	tree_method_default
+
+###alpha_rarefaction.py parameters###
+
+# Rarefaction parameters
+multiple_rarefactions:num-reps	10
+multiple_rarefactions:depth
+multiple_rarefactions:lineages_included	False
+
+# Alpha diversity parameters
+alpha_diversity:metrics	chao1,observed_species,PD_whole_tree
+
+# Collate alpha
+collate_alpha:example_path
+
+# Make rarefaction plots parameters
+make_rarefaction_plots:imagetype	png
+make_rarefaction_plots:resolution	75
+make_rarefaction_plots:background_color	white
+make_rarefaction_plots:prefs_path
+
+###beta_diversity_through_3d_plots.py parameters###
+
+# Beta diversity parameters
+beta_diversity:metrics	weighted_unifrac,unweighted_unifrac,bray_curtis
+
+# Make prefs file parameters
+make_prefs_file:background_color	black
+make_prefs_file:mapping_headers_to_use
+make_prefs_file:monte_carlo_dists	10
+
+# Make 3D plot parameters
+make_3d_plots:custom_axes
+make_3d_plots:ellipsoid_smoothness   1
+
+###jackknife_upgma.py parameters###
+
+# Even-depth rarefaction parameters
+multiple_rarefactions_even_depth:num-reps	20
+
+###parallel workflow###
+
+# Parallel options
+parallel:retain_temp_files	False
+parallel:seconds_to_sleep	1
+""".split("\n")
+    return parse_qiime_parameters(default_parameters)
 
 
 

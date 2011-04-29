@@ -247,7 +247,7 @@ class WorkflowTests(TestCase):
         self.assertTrue(getsize(log_fp) > 0)
 
     def test_run_core_qiime_analyses_serial(self):
-        """run_core_qiime_analyses: functions as expected (serially)
+        """run_core_qiime_analyses: functions (serially) using default qiime params
         """
         # this takes a long time, so use a longer sigalrm
         core_analyses_sigalrm_setup()
@@ -257,7 +257,7 @@ class WorkflowTests(TestCase):
             mapping_fp=self.fasting_mapping_fp,
             output_dir=self.wf_out,
             command_handler=call_commands_serially,
-            params=self.run_core_qiime_analyses_params1,
+            params=None,
             qiime_config=self.qiime_config,
             categories='Treatment,DOB',
             sampling_depth=100,
