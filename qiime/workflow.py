@@ -1095,8 +1095,17 @@ def run_core_qiime_analyses(
     fna_fp0 = fna_fps.split(',')[0]
     input_dir, input_filename = split(fna_fp0)
     input_basename, input_ext = splitext(input_filename)
+    mapping_categories = parse_mapping_file(open(mapping_fp,'U'))[1]
     if categories:
-        categories = categories.split(',')
+        # split categories skipping any empty strings (to handle
+        # e.g. trailing commas)
+        categories = [c for c in categories.split(',') if c]
+        for c in categories:
+            if c not in mapping_categories:
+                raise ValueError, ("Category '%s' is not a column header "
+                 "in your mapping file. "
+                 "Categories are case and white space sensitive. Valid "
+                 "choices are: (%s)" % (c,', '.join(mapping_categories)))
     else:
         categories= []
     create_dir(output_dir)
