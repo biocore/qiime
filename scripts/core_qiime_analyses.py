@@ -109,7 +109,7 @@ def main():
             raise IOError,\
              "Can't open parameters file (%s). Does it exist? Do you have read access?"\
              % opts.parameter_fp
-        parse_qiime_parameters(parameter_f)
+        params = parse_qiime_parameters(parameter_f)
     else:
         params = None
     
