@@ -149,7 +149,6 @@ def make_interactive_scatter(plot_label,dir_path,data_file_link,
     xmap,img_height,img_width=generate_xmap(x_len,y_len,all_cids,all_xcoords,\
                                             all_ycoords)
 
-
     points_id = plot_label+x_label[1:2]+y_label[1:2]
 
     return IMG_MAP_SRC % (os.path.join(data_file_link,img_name), points_id, 
@@ -203,7 +202,8 @@ def draw_scatterplot(props,xy_coords,x_len,y_len,size,background_color,
                 line.set_color(label_color)
                 line.set_markeredgewidth(1)
             
-            if isarray(s_data[5][0]) and isarray(s_data[6][0]) and isarray(s_data[7][0]):
+            if isarray(s_data[5][0]) and isarray(s_data[6][0]) and \
+                                                    isarray(s_data[7][0]):
                 matrix_low=s_data[5][0]
                 matrix_high=s_data[6][0]
                 ellipse_ave=s_data[7][0]
@@ -416,7 +416,8 @@ def generate_2d_plots(prefs,data,html_dir_path,data_dir_path,filename,
         
         if data.has_key('support_pcoas'):
             matrix_average, matrix_low, matrix_high, eigval_average, m_names = \
-                summarize_pcoas(data['coord'], data['support_pcoas'], method=data['ellipsoid_method'])
+                summarize_pcoas(data['coord'], data['support_pcoas'], 
+                method=data['ellipsoid_method'])
             data['coord'] = \
                 (m_names,matrix_average,data['coord'][2],data['coord'][3])
             for i in range(len(m_names)):
@@ -430,7 +431,8 @@ def generate_2d_plots(prefs,data,html_dir_path,data_dir_path,filename,
         iterator=0
 
         for coord_tup in coord_tups:
-            if isarray(matrix_low) and isarray(matrix_high) and isarray(matrix_average):
+            if isarray(matrix_low) and isarray(matrix_high) and \
+                                                isarray(matrix_average):
                 coord_1r=asarray(matrix_low)
                 coord_2r=asarray(matrix_high)
                 mat_ave=asarray(matrix_average)

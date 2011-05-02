@@ -793,9 +793,11 @@ def generate_3d_plots(prefs, data, custom_axes, background_color, label_color, \
     f = open(kinpath, 'w')
     f.write('\n'.join(res))
     f.close()
-    
+    basename,extension=os.path.splitext(filename)
+    filename='%s_3D_PCoA_plots' % ('_'.join(basename.split('_')[:-1]))
+ 
     #Write html page with the kinemage embedded
-    f2 = open(os.path.join(htmlpath,filename)+'_3D.html', 'w')
+    f2 = open(os.path.join(htmlpath,filename)+'.html', 'w')
     f2.write("<html><head></head><body><applet code='king/Kinglet.class' \
 archive='./jar/king.jar' width=800 height=600> \
 <param name='kinSource' value='%s'></body></html>" % (kinlink)) 
