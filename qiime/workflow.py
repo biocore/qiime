@@ -197,7 +197,10 @@ def run_qiime_data_preparation(input_fp,
                             qiime_config=qiime_config)
     
     # Prep the OTU picking command
-    otu_picking_method = params['pick_otus']['otu_picking_method']
+    try:
+        otu_picking_method = params['pick_otus']['otu_picking_method']
+    except KeyError:
+        otu_picking_method = 'uclust'
     pick_otu_dir = '%s/%s_picked_otus' % (output_dir, otu_picking_method)
     otu_fp = '%s/%s_otus.txt' % (pick_otu_dir,input_basename)
     if parallel and (otu_picking_method == 'blast' or 
@@ -257,7 +260,10 @@ def run_qiime_data_preparation(input_fp,
     commands.append([('Pick representative set', pick_rep_set_cmd)])
     
     # Prep the taxonomy assignment command
-    assignment_method = params['assign_taxonomy']['assignment_method']
+    try:
+        assignment_method = params['assign_taxonomy']['assignment_method']
+    except KeyError:
+        assignment_method = 'rdp'
     assign_taxonomy_dir = '%s/%s_assigned_taxonomy' %\
      (output_dir,assignment_method)
     taxonomy_fp = '%s/%s_rep_set_tax_assignments.txt' % \
@@ -310,10 +316,12 @@ def run_qiime_data_preparation(input_fp,
     commands.append([('Make OTU table', make_otu_table_cmd)])
     
     # Prep the pynast alignment command
-    pynast_dir = '%s/%s_aligned_seqs' % \
-     (output_dir,params['align_seqs']['alignment_method'])
+    try:
+        alignment_method = params['align_seqs']['alignment_method']
+    except KeyError:
+        alignment_method = 'pynast'
+    pynast_dir = '%s/%s_aligned_seqs' % (output_dir,alignment_method)
     aln_fp = '%s/%s_rep_set_aligned.fasta' % (pynast_dir,input_basename)
-    alignment_method = params['align_seqs']['alignment_method']
     if parallel and alignment_method == 'pynast':
         # Grab the parallel-specific parameters
         try:
@@ -1365,33 +1373,14 @@ def run_core_qiime_analyses(
 ## the choice of metrics for alpha and beta diversity.
 
 def get_default_parameters():
-    default_parameters = """split_libraries:min-seq-length
-split_libraries:max-seq-length
-split_libraries:trim-seq-length
-split_libraries:min-qual-score
-split_libraries:keep-primer
-split_libraries:keep-barcode
-split_libraries:max-ambig
-split_libraries:max-homopolymer
-split_libraries:max-primer-mismatch
-split_libraries:barcode-type
-split_libraries:max-barcode-errors
-split_libraries:start-numbering-at
-split_libraries:remove_unassigned	True
-split_libraries:disable_bc_correction
-split_libraries:qual_score_window
-split_libraries:discard_bad_windows
-split_libraries:disable_primers
-split_libraries:reverse_primers
-split_libraries:record_qual_scores
-
+    default_parameters = """
 otu_category_significance:test
 otu_category_significance:filter	3
 otu_category_significance:threshold
 otu_category_significance:otu_include_fp
 
 # OTU picker parameters
-pick_otus:otu_picking_method	uclust
+#pick_otus:otu_picking_method	uclust
 pick_otus:similarity	0.97
 
 # Representative set picker parameters
@@ -1400,7 +1389,7 @@ pick_rep_set:sort_by	otu
 
 # Multiple sequence alignment parameters
 align_seqs:template_fp
-align_seqs:alignment_method	pynast
+#align_seqs:alignment_method	pynast
 align_seqs:pairwise_alignment_method	uclust
 align_seqs:blast_db
 align_seqs:min_length	150
@@ -1413,7 +1402,7 @@ filter_alignment:remove_outliers	False
 filter_alignment:threshold	3.0
 
 # Taxonomy assignment parameters
-assign_taxonomy:assignment_method	rdp
+#assign_taxonomy:assignment_method	rdp
 
 # Phylogenetic tree building parameters
 make_phylogeny:tree_method	fasttree
