@@ -27,16 +27,16 @@ from qiime.util import create_dir
 class PlotRankAbundance(TestCase):
     
     def setUp(self):
-
-        self.tmp_dir = None
-        
+        self.tmp_dir='/tmp/'
         self.files_to_remove = []
-    
+        self._dirs_to_remove=[]
+        
     def tearDown(self):
         
         remove_files(self.files_to_remove)
-        if self.tmp_dir:
-            rmtree(self.tmp_dir)
+        if self._dirs_to_remove:
+            for i in self._dirs_to_remove:
+                rmtree(i)
         
     def test_make_sorted_frequencies(self):
         """make_sorted_frequencies transforms and sorts correctly"""
@@ -99,17 +99,18 @@ class PlotRankAbundance(TestCase):
         """plot_rank_abundance_graphs works with all filetypes"""
  
         self.otu_table = otu_table_fake.split('\n')       
-        self.tmp_dir = get_tmp_filename(tmp_dir='./',prefix="test_plot_rank_abundance",
+        self.dir = get_tmp_filename(tmp_dir=self.tmp_dir,
+                                   prefix="test_plot_rank_abundance",
                                    suffix="/")
-        create_dir(self.tmp_dir)
-
-
+                                   
+        create_dir(self.dir)
+        self._dirs_to_remove.append(self.dir)
     
         #test all supported filetypes
         for file_type in ['pdf','svg','png','eps']:
-            plot_rank_abundance_graphs('S3', iter(self.otu_table), self.tmp_dir,
+            plot_rank_abundance_graphs('S3', iter(self.otu_table), self.dir,
                                        file_type=file_type)
-            tmp_file = abspath(self.tmp_dir+"rank_abundance_S3."+file_type)
+            tmp_file = abspath(self.dir+"rank_abundance_cols_0."+file_type)
             self.files_to_remove.append(tmp_file)
             self.assertTrue(exists(tmp_file))
             
@@ -117,31 +118,31 @@ class PlotRankAbundance(TestCase):
         """plot_rank_abundance_graphs works with any number of samples"""
  
         self.otu_table = otu_table_fake.split('\n')       
-        self.tmp_dir = get_tmp_filename(tmp_dir='./',
+        self.dir = get_tmp_filename(tmp_dir=self.tmp_dir,
                                    prefix="test_plot_rank_abundance",
                                    suffix="/")
-        create_dir(self.tmp_dir)
- 
+        create_dir(self.dir)
+        self._dirs_to_remove.append(self.dir)
         #test empty sample name
         self.assertRaises(ValueError, plot_rank_abundance_graphs, '',
-                          iter(self.otu_table), self.tmp_dir)
+                          iter(self.otu_table), self.dir)
         #test invalid sample name
         self.assertRaises(ValueError, plot_rank_abundance_graphs,
                           'Invalid_sample_name',
-                          iter(self.otu_table), self.tmp_dir)
+                          iter(self.otu_table), self.dir)
 
         #test with two samples
         file_type="pdf"
-        plot_rank_abundance_graphs('S3,S5', iter(self.otu_table), self.tmp_dir,
+        plot_rank_abundance_graphs('S3,S5', iter(self.otu_table), self.dir,
                                        file_type=file_type)
-        tmp_file = abspath(self.tmp_dir+"rank_abundance_S3_S5."+file_type)
+        tmp_file = abspath(self.dir+"rank_abundance_cols_0_2."+file_type)
 
         self.assertTrue(exists(tmp_file)) 
         self.files_to_remove.append(tmp_file)
         # test with all samples
-        plot_rank_abundance_graphs('*', iter(self.otu_table), self.tmp_dir,
+        plot_rank_abundance_graphs('*', iter(self.otu_table), self.dir,
                                        file_type=file_type)
-        tmp_file = abspath(self.tmp_dir+"rank_abundance_S3_S4_S5."+file_type)
+        tmp_file = abspath(self.dir+"rank_abundance_cols_0_1_2."+file_type)
         
         self.files_to_remove.append(tmp_file)
         self.assertTrue(exists(tmp_file)) 

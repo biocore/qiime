@@ -121,10 +121,16 @@ def plot_rank_abundance_graphs(sample_names, otu_table_fh,
     output_fp = output_dir
     MAX_SAMPLES_TO_SHOW_IN_FILENAME = 6
     
-    if len(user_sample_names) < MAX_SAMPLES_TO_SHOW_IN_FILENAME:
-        output_fp=join(output_fp,"rank_abundance_"+'_'.join(user_sample_names)) 
+    rows_for_fname=[]
+    for i,nam in enumerate(sample_ids):
+        for j,sel_name in enumerate(user_sample_names):
+            if sel_name==nam:
+                rows_for_fname.append(str(i))
+    
+    if len(rows_for_fname) < MAX_SAMPLES_TO_SHOW_IN_FILENAME:
+        output_fp=join(output_fp,"rank_abundance_cols_"+'_'.join(rows_for_fname)) 
     else:
-        output_fp=join(output_fp,"rank_abundance_"+'_'.join(user_sample_names)[0]) 
+        output_fp=join(output_fp,"rank_abundance_cols_"+'_'.join(rows_for_fname)) 
         
     output_fp += ".%s" % file_type
 
