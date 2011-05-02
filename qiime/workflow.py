@@ -1152,8 +1152,12 @@ def run_core_qiime_analyses(
         except KeyError:
             params_str = ''
         # Build the split libraries command
-        split_libraries_cmd = 'split_libraries.py -f %s -q %s -m %s -o %s %s' %\
-         (fna_fps, qual_fps, mapping_fp, split_libraries_output_dir, params_str)
+        if qual_fps:
+            qual_str = '-q %s' % qual_fps
+        else:
+            qual_str = ''
+        split_libraries_cmd = 'split_libraries.py -f %s %s -m %s -o %s %s' %\
+         (fna_fps, qual_str, mapping_fp, split_libraries_output_dir, params_str)
     
         commands.append([('Split libraries', split_libraries_cmd)])
     
