@@ -1240,11 +1240,11 @@ def run_core_qiime_analyses(
                                 'Beta diversity results'))
         # Create links for the bdiv results
         index_links.append(('3D plot (%s, continuous coloring)' % bdiv_metric,
-                            '%s/%s_3d_continuous/%s_pc.txt_3D.html' % \
+                            '%s/%s_3d_continuous/%s_3D_PCoA_plots.html' % \
                              (bdiv_full_output_dir,bdiv_metric,bdiv_metric),
                             'Beta diversity results'))
         index_links.append(('3D plot (%s, discrete coloring)' % bdiv_metric,
-                            '%s/%s_3d_discrete/%s_pc.txt_3D.html' % \
+                            '%s/%s_3d_discrete/%s_3D_PCoA_plots.html' % \
                              (bdiv_full_output_dir,bdiv_metric,bdiv_metric),
                             'Beta diversity results'))
         index_links.append(('Distance matrix (%s)' % bdiv_metric,
@@ -1291,11 +1291,11 @@ def run_core_qiime_analyses(
                     'Beta diversity results (even sampling: %d)' % sampling_depth))
                     # Create links for the bdiv results
             index_links.append(('3D plot (%s, continuous coloring)' % bdiv_metric,
-                                '%s/%s_3d_continuous/%s_pc.txt_3D.html' % \
+                                '%s/%s_3d_continuous/%s_3D_PCoA_plots.html' % \
                                  (bdiv_even_output_dir,bdiv_metric,bdiv_metric),
                                 'Beta diversity results (even sampling: %d)' % sampling_depth))
             index_links.append(('3D plot (%s, discrete coloring)' % bdiv_metric,
-                                '%s/%s_3d_discrete/%s_pc.txt_3D.html' % \
+                                '%s/%s_3d_discrete/%s_3D_PCoA_plots.html' % \
                                  (bdiv_even_output_dir,bdiv_metric,bdiv_metric),
                                 'Beta diversity results (even sampling: %d)' % sampling_depth))
             index_links.append(('Distance matrix (%s)' % bdiv_metric,
