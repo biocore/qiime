@@ -56,13 +56,12 @@ script_info['optional_options']=[\
      help='Output distance matrix filepath or output directory to store' +\
      ' distance matrices when batch processing. [default: %default]',
      type='new_path'),
- make_option('-m', '--metrics',
+ make_option('-m', '--metrics', default='PD_whole_tree,chao1,observed_species',
      help='Alpha-diversity metric(s) to use. A comma-separated list should' +\
      ' be provided when multiple metrics are specified. [default: %default]'), 
  make_option('-s', '--show_metrics', action='store_true', 
      dest="show_metrics",
-     help='Show the available alpha-diversity metrics and exit.' +\
-     ' [default: %default]'),
+     help='Show the available alpha-diversity metrics and exit.'),
  make_option('-t', '--tree_path', default=None,
      help='Input newick tree filepath.' +\
      ' [default: %default; REQUIRED for phylogenetic metrics]',

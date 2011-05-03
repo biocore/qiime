@@ -46,7 +46,7 @@ script_info['optional_options']=[
      help="Output directory. One will be created if it doesn't exist.' +\
      ' [default: %default]",
      type='new_dirpath'),
- make_option('-m', '--metrics',
+ make_option('-m', '--metrics', default='unweighted_unifrac,weighted_unifrac',
      help='Beta-diversity metric(s) to use. A comma-separated list should be' +\
      ' provided when multiple metrics are specified. [default: %default]'),
  make_option('-s', '--show_metrics', action='store_true', 
