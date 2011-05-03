@@ -261,8 +261,8 @@ def format_nmds_coords(samples, points, stress):
     """ samples is list, points is samples by axis coord (typ many by 2 mtx)
     """
     result = []
-    result.append('nmds\t' +
-        '\t'.join(map(str, range(1,points.shape[1]+1))))
+    col_headers = ["NMDS"+str(aa) for aa in range(1,points.shape[1]+1)]
+    result.append('sample\t' + '\t'.join(col_headers) )
     for name, row in zip(samples, points):
         result.append('\t'.join([name] + map(str, row)))
     result.append('')
