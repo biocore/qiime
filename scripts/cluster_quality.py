@@ -53,7 +53,8 @@ make_option('-s', '--short',action="store_true",
 make_option('--metric', default='ratio',
      help='choice of quality metric to apply. Currently only one option '+\
      'exists, the ratio of mean(distances between samples from different '+\
-     'clusters) to mean(distances between samples from the same cluster)'),
+     'clusters) to mean(distances between samples from the same cluster) '+\
+     'Default: %default'),
 ]
 script_info['version'] = __version__
 
