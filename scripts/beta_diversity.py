@@ -63,6 +63,10 @@ script_info['optional_options']=[
      'removed from the tree for diversity calculations. ' +\
      'Pass to skip this step if you\'re already passing a minimal tree.' +\
      ' [default: %default]'),
+ make_option('--float', action="store_true", default=False,
+     help='By default, the script expects integer matrices (OTUs) '+\
+     'but if this flag is True it will proces float numbers.'+\
+     ' [default: %default]'),
 ]
 
 script_info['version'] = __version__
@@ -97,10 +101,10 @@ def main():
 
     if os.path.isdir(opts.input_path):
         multiple_file_beta(opts.input_path, opts.output_dir, opts.metrics, 
-            opts.tree_path, opts.rows, opts.full_tree)
+            opts.tree_path, opts.rows, opts.full_tree, use_float=opts.float)
     elif os.path.isfile(opts.input_path):
         single_file_beta(opts.input_path, opts.metrics, opts.tree_path, 
-          opts.output_dir, opts.rows, opts.full_tree)
+          opts.output_dir, opts.rows, opts.full_tree, use_float=opts.float)
     else:
         stderr.write("io error, input path not valid.  Does it exist?")
         exit(1)
