@@ -23,8 +23,10 @@ from cogent.util.misc import app_path, get_random_directory_name
 from cogent.app.util import ApplicationNotFoundError
 
 from qiime.parse import parse_qiime_config_file
-from qiime.util import load_qiime_config, get_qiime_project_dir, parse_command_line_parameters
-from qiime import __version__ as qiime_lib_version
+from qiime.util import (load_qiime_config, 
+                        get_qiime_project_dir, 
+                        parse_command_line_parameters,
+                        get_qiime_library_version)
 from cogent import __version__ as pycogent_lib_version
 from numpy import __version__ as numpy_lib_version
 try:
@@ -589,7 +591,7 @@ if __name__ == "__main__":
      ("PyCogent version", pycogent_lib_version),
      ("NumPy version", numpy_lib_version),
      ("matplotlib version", matplotlib_lib_version),
-     ("QIIME library version", qiime_lib_version),
+     ("QIIME library version", get_qiime_library_version()),
      ("QIIME script version", __version__),
      ("PyNAST version (if installed)", pynast_lib_version),
      ("Denoiser version (if installed)", denoiser_version)]
