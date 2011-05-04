@@ -8,6 +8,7 @@ from subprocess import Popen, PIPE, STDOUT
 from os.path import split
 from math import ceil
 from cogent.parse.fasta import MinimalFastaParser
+from qiime.util import qiime_system_call
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
@@ -135,12 +136,7 @@ def submit_jobs(path_to_cluster_jobs, jobs_fp, job_prefix):
     """ Submit the jobs to the queue using cluster_jobs.py
     """
     cmd = '%s -ms %s %s' % (path_to_cluster_jobs, jobs_fp, job_prefix)
-    proc = Popen(cmd,shell=True,universal_newlines=True,\
-                 stdout=PIPE,stderr=PIPE)
-    # communicate pulls all stdout/stderr from the PIPEs to 
-    # avoid blocking -- don't remove this line!
-    stdout, stderr = proc.communicate()
-    return_value = proc.returncode
+    stdout, stderr, return_value = qiime_system_call(cmd)
     if return_value != 0:
         msg = "\n\n*** Could not start parallel jobs. \n" +\
          "Command run was:\n %s\n" % cmd +\
