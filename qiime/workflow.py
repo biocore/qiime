@@ -15,7 +15,7 @@ from qiime.format import format_otu_table
 from qiime.util import (compute_seqs_per_library_stats,
                         get_qiime_scripts_dir,
                         create_dir, guess_even_sampling_depth,
-                        get_interesting_mapping_fields)
+                        get_interesting_mapping_fields,qiime_system_call)
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
@@ -119,12 +119,7 @@ def call_commands_serially(commands,
         for e in c:
             status_update_callback('%s\n%s' % e)
             logger.write('# %s command \n%s\n\n' % e)
-            proc = Popen(e[1],shell=True,universal_newlines=True,\
-                         stdout=PIPE,stderr=PIPE)
-            # communicate pulls all stdout/stderr from the PIPEs to 
-            # avoid blocking -- don't remove this line!
-            stdout, stderr = proc.communicate()
-            return_value = proc.returncode
+            stdout, stderr, return_value = qiime_system_call(e[1])
             if return_value != 0:
                 msg = "\n\n*** ERROR RAISED DURING STEP: %s\n" % e[0] +\
                  "Command run was:\n %s\n" % e[1] +\
