@@ -25,6 +25,7 @@ import sys
 import os
 from copy import deepcopy
 from datetime import datetime
+from subprocess import Popen, PIPE, STDOUT
 from numpy import min, max, median, mean
 import numpy
 from numpy.ma import MaskedArray
@@ -1045,6 +1046,29 @@ def flowgram_id_to_seq_id_map(seqs):
         result[flowgram_id] = seq_id
     return result
     
+def qiime_system_call(cmd):
+    """ Call cmd and return (stdout, stderr, return_value)"""
+    proc = Popen(cmd,shell=True,universal_newlines=True,\
+                 stdout=PIPE,stderr=PIPE)
+    # communicate pulls all stdout/stderr from the PIPEs to 
+    # avoid blocking -- don't remove this line!
+    stdout, stderr = proc.communicate()
+    return_value = proc.returncode
+    return stdout, stderr, return_value
+    
+def get_qiime_version():
+    """get QIIME version, including the svn version if applicable"""
+    qiime_dir = get_qiime_project_dir()
+    qiime_version = __version__
+    cmd_call = 'svn info %s | egrep "Revision: "' % (qiime_dir)
+    o,e,r = qiime_system_call(cmd_call)
+    svn_revision = o.replace("Revision: ","").strip()
+    
+    if len(svn_revision) > 0:
+        return '%s, svn revision %s' % (__version__, svn_revision)
+    else:
+        return '%s (release version)' % __version__
+
 def inflate_denoiser_output(centroid_seqs,singleton_seqs,denoiser_map,raw_seqs):
     """Expand denoiser fasta files based on denoiser map
     
