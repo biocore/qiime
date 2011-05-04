@@ -50,6 +50,7 @@ from cogent.app.formatdb import build_blast_db_from_fasta_path,\
 from cogent import LoadSeqs
 from cogent.util.misc import (create_dir, 
                               handle_error_codes)
+from qiime import __version__ as qiime_library_version
 from qiime.pycogent_backports.option_parsing import (parse_command_line_parameters,
                                         make_option)
 from qiime.parse import (parse_otu_table,
@@ -1059,7 +1060,7 @@ def qiime_system_call(cmd):
 def get_qiime_library_version():
     """get QIIME version, including the svn version if applicable"""
     qiime_dir = get_qiime_project_dir()
-    qiime_version = __version__
+    qiime_version = qiime_library_version
     cmd_call = 'svn info %s | egrep "Revision: "' % (qiime_dir)
     o,e,r = qiime_system_call(cmd_call)
     svn_revision = o.replace("Revision: ","").strip()
