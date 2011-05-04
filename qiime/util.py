@@ -1056,7 +1056,7 @@ def qiime_system_call(cmd):
     return_value = proc.returncode
     return stdout, stderr, return_value
     
-def get_qiime_version():
+def get_qiime_library_version():
     """get QIIME version, including the svn version if applicable"""
     qiime_dir = get_qiime_project_dir()
     qiime_version = __version__

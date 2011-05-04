@@ -15,7 +15,8 @@ from qiime.format import format_otu_table
 from qiime.util import (compute_seqs_per_library_stats,
                         get_qiime_scripts_dir,
                         create_dir, guess_even_sampling_depth,
-                        get_interesting_mapping_fields,qiime_system_call)
+                        get_interesting_mapping_fields,qiime_system_call,
+                        get_qiime_library_version)
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
@@ -53,7 +54,8 @@ class WorkflowLogger(object):
         else:
             self._f = None
         start_time = datetime.now().strftime('%H:%M:%S on %d %b %Y')
-        self.write('Logging started at %s\n\n' % start_time)
+        self.write('Logging started at %s\n' % start_time)
+        self.write('QIIME version: %s\n\n' % get_qiime_library_version())
         self.writeQiimeConfig(qiime_config)
         self.writeParams(params)
     
