@@ -44,12 +44,13 @@ script_info['required_options'] = [\
  make_option('-i', '--input_path',
         help='input path, must be directory [REQUIRED]'),\
  make_option('-o', '--output_path',
-        help='output path, must be directory [REQUIRED]'),\
- make_option('-m', '--metrics',
-        help='metrics to use [REQUIRED]')
+        help='output path, must be directory [REQUIRED]'),
 ]
 
-script_info['optional_options'] = [\
+script_info['optional_options'] = [
+ make_option('-m', '--metrics', default='unweighted_unifrac,weighted_unifrac',
+     help='Beta-diversity metric(s) to use. A comma-separated list should be' +\
+     ' provided when multiple metrics are specified. [default: %default]'),
  make_option('-t', '--tree_path',
         help='path to newick tree file, required for phylogenetic metrics'+\
         ' [default: %default]'),\
