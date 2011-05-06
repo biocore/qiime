@@ -111,6 +111,10 @@ def main():
     if mapping_fp:
         mapping_file = open(mapping_fp, 'U')
         mapping, header, comments = parse_mapping_file(mapping_file)
+        
+        # use the input Mapping file for producing the output filenames
+        map_dir_path,map_fname=split(mapping_fp)
+        map_basename,map_fname_ext=splitext(map_fname)
 
     if opts.relative_abundance != '':
         raise option_parser.error("Deprecated. Please use --absolute_abundances to disable relative abundance")
@@ -128,10 +132,6 @@ def main():
     # use the input OTU table to produce the output filenames
     dir_path,fname=split(otu_table_fp)
     basename,fname_ext=splitext(fname)
-    
-    # use the input Mapping file for producing the output filenames
-    map_dir_path,map_fname=split(mapping_fp)
-    map_basename,map_fname_ext=splitext(map_fname)
     
     # Iterate over the levels and generate a summarized taxonomy for each
     for level in levels:
