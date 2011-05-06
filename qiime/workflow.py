@@ -551,8 +551,10 @@ def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,
         otu_table_fp = even_sampled_otu_table_fp
         otu_table_dir, otu_table_filename = split(even_sampled_otu_table_fp)
         otu_table_basename, otu_table_ext = splitext(otu_table_filename)
-    
-    beta_diversity_metrics = params['beta_diversity']['metrics'].split(',')
+    try:
+        beta_diversity_metrics = params['beta_diversity']['metrics'].split(',')
+    except KeyError:
+        beta_diversity_metrics = ['weighted_unifrac','unweighted_unifrac']
     
     # Prep the 3d prefs file generator command
     prefs_fp = '%s/prefs.txt' % output_dir
@@ -697,8 +699,6 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,\
                             params=params,
                             qiime_config=qiime_config)
     
-    alpha_diversity_metrics = params['alpha_diversity']['metrics'].split(',')
-    
     # Prep the rarefaction command
     try:
         otu_table_f = open(otu_table_fp,'U')
@@ -835,8 +835,10 @@ def run_jackknifed_beta_diversity(otu_table_fp,tree_fp,seqs_per_sample,
     logger = WorkflowLogger(generate_log_fp(output_dir),
                             params=params,
                             qiime_config=qiime_config)
-    
-    beta_diversity_metrics = params['beta_diversity']['metrics'].split(',')
+    try:
+        beta_diversity_metrics = params['beta_diversity']['metrics'].split(',')
+    except KeyError:
+        beta_diversity_metrics = ['weighted_unifrac','unweighted_unifrac']
     
     # Prep the beta-diversity command
     try:
@@ -1114,7 +1116,7 @@ def run_core_qiime_analyses(
     else:
         categories= []
     if params == None:
-        params = get_default_parameters()
+        params = parse_qiime_parameters([])
     create_dir(output_dir)
     index_fp = '%s/index.html' % output_dir
     index_links = []
@@ -1369,87 +1371,87 @@ def run_core_qiime_analyses(
 ## These hit the script defaults for the most part, with exceptions being
 ## the choice of metrics for alpha and beta diversity.
 
-def get_default_parameters():
-    default_parameters = """
-otu_category_significance:test
-otu_category_significance:filter	3
-otu_category_significance:threshold
-otu_category_significance:otu_include_fp
-
-# OTU picker parameters
-#pick_otus:otu_picking_method	uclust
-pick_otus:similarity	0.97
-
-# Representative set picker parameters
-pick_rep_set:rep_set_picking_method	first
-pick_rep_set:sort_by	otu
-
-# Multiple sequence alignment parameters
-align_seqs:template_fp
-#align_seqs:alignment_method	pynast
-align_seqs:pairwise_alignment_method	uclust
-align_seqs:blast_db
-align_seqs:min_length	150
-align_seqs:min_percent_id	75.0
-
-# Alignment filtering (prior to tree-building) parameters
-filter_alignment:lane_mask_fp
-filter_alignment:allowed_gap_frac	 0.999999
-filter_alignment:remove_outliers	False
-filter_alignment:threshold	3.0
-
-# Taxonomy assignment parameters
-#assign_taxonomy:assignment_method	rdp
-
-# Phylogenetic tree building parameters
-make_phylogeny:tree_method	fasttree
-make_phylogeny:root_method	tree_method_default
-
-###alpha_rarefaction.py parameters###
-
-# Rarefaction parameters
-multiple_rarefactions:num-reps	10
-multiple_rarefactions:depth
-multiple_rarefactions:lineages_included	False
-
-# Alpha diversity parameters
-alpha_diversity:metrics	chao1,observed_species,PD_whole_tree
-
-# Collate alpha
-collate_alpha:example_path
-
-# Make rarefaction plots parameters
-make_rarefaction_plots:imagetype	png
-make_rarefaction_plots:resolution	75
-make_rarefaction_plots:background_color	white
-make_rarefaction_plots:prefs_path
-
-###beta_diversity_through_3d_plots.py parameters###
-
-# Beta diversity parameters
-beta_diversity:metrics	weighted_unifrac,unweighted_unifrac,bray_curtis
-
-# Make prefs file parameters
-make_prefs_file:background_color	black
-make_prefs_file:mapping_headers_to_use
-make_prefs_file:monte_carlo_dists	10
-
-# Make 3D plot parameters
-make_3d_plots:custom_axes
-make_3d_plots:ellipsoid_smoothness   1
-
-###jackknife_upgma.py parameters###
-
-# Even-depth rarefaction parameters
-multiple_rarefactions_even_depth:num-reps	20
-
-###parallel workflow###
-
-# Parallel options
-parallel:retain_temp_files	False
-parallel:seconds_to_sleep	1
-""".split("\n")
-    return parse_qiime_parameters(default_parameters)
+# def get_default_parameters():
+#     default_parameters = """
+# otu_category_significance:test
+# otu_category_significance:filter  3
+# otu_category_significance:threshold
+# otu_category_significance:otu_include_fp
+# 
+# # OTU picker parameters
+# #pick_otus:otu_picking_method uclust
+# pick_otus:similarity  0.97
+# 
+# # Representative set picker parameters
+# pick_rep_set:rep_set_picking_method   first
+# pick_rep_set:sort_by  otu
+# 
+# # Multiple sequence alignment parameters
+# align_seqs:template_fp
+# #align_seqs:alignment_method  pynast
+# align_seqs:pairwise_alignment_method  uclust
+# align_seqs:blast_db
+# align_seqs:min_length 150
+# align_seqs:min_percent_id 75.0
+# 
+# # Alignment filtering (prior to tree-building) parameters
+# filter_alignment:lane_mask_fp
+# filter_alignment:allowed_gap_frac  0.999999
+# filter_alignment:remove_outliers  False
+# filter_alignment:threshold    3.0
+# 
+# # Taxonomy assignment parameters
+# #assign_taxonomy:assignment_method    rdp
+# 
+# # Phylogenetic tree building parameters
+# make_phylogeny:tree_method    fasttree
+# make_phylogeny:root_method    tree_method_default
+# 
+# ###alpha_rarefaction.py parameters###
+# 
+# # Rarefaction parameters
+# multiple_rarefactions:num-reps    10
+# multiple_rarefactions:depth
+# multiple_rarefactions:lineages_included   False
+# 
+# # Alpha diversity parameters
+# alpha_diversity:metrics   chao1,observed_species,PD_whole_tree
+# 
+# # Collate alpha
+# collate_alpha:example_path
+# 
+# # Make rarefaction plots parameters
+# make_rarefaction_plots:imagetype  png
+# make_rarefaction_plots:resolution 75
+# make_rarefaction_plots:background_color   white
+# make_rarefaction_plots:prefs_path
+# 
+# ###beta_diversity_through_3d_plots.py parameters###
+# 
+# # Beta diversity parameters
+# beta_diversity:metrics    weighted_unifrac,unweighted_unifrac,bray_curtis
+# 
+# # Make prefs file parameters
+# make_prefs_file:background_color  black
+# make_prefs_file:mapping_headers_to_use
+# make_prefs_file:monte_carlo_dists 10
+# 
+# # Make 3D plot parameters
+# make_3d_plots:custom_axes
+# make_3d_plots:ellipsoid_smoothness   1
+# 
+# ###jackknife_upgma.py parameters###
+# 
+# # Even-depth rarefaction parameters
+# multiple_rarefactions_even_depth:num-reps 20
+# 
+# ###parallel workflow###
+# 
+# # Parallel options
+# parallel:retain_temp_files    False
+# parallel:seconds_to_sleep 1
+# """.split("\n")
+#     return parse_qiime_parameters(default_parameters)
 
 
 

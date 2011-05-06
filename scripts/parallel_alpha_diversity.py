@@ -41,8 +41,6 @@ script_info['required_options'] = [\
         help='input path, must be directory [REQUIRED]'),\
  make_option('-o', '--output_path',
         help='output path, must be directory [REQUIRED]'),\
- make_option('-m', '--metrics',
-        help='metrics to use, comma delimited [REQUIRED]')
 ]
 
 script_info['optional_options'] = [\
@@ -53,6 +51,9 @@ script_info['optional_options'] = [\
            type='string',help='full path to '+\
            'scripts/alpha_diversity.py [default: %default]',\
            default=join(get_qiime_scripts_dir(),'alpha_diversity.py')),\
+ make_option('-m', '--metrics',
+        help='metrics to use, comma delimited',
+        default='PD_whole_tree,chao1,observed_species'),
  options_lookup['poller_fp'],\
  options_lookup['retain_temp_files'],\
  options_lookup['suppress_submit_jobs'],\
