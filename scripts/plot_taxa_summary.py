@@ -45,12 +45,12 @@ script_info['required_options']=[\
         help='Input comma-separated list of summarized taxa filepaths' +\
         ' (i.e results from summarize_taxa.py) [REQUIRED]',
         type='existing_filepaths'),
-    make_option('-l', '--labels',
-        help='Comma-separated list of taxonomic levels (e.g.' +\
-        ' Phylum,Class,Order) [REQUIRED]')
 ]
 script_info['optional_options']=[\
     # changed this from type='string' (default) to type='int'
+    make_option('-l', '--labels',
+        help='Comma-separated list of taxonomic levels (e.g.' +\
+        ' Phylum,Class,Order)'),
     make_option('-n', '--num_categories', dest='num_categories', \
         help='The maximum number of taxonomies to show in each pie chart.' +\
         ' All additional taxonomies are grouped into an "other" category.' +\
@@ -155,9 +155,6 @@ def main():
 
     if not opts.counts_fname:
         option_parser.error("A list of input files must be specified")
-    if not opts.labels:
-        option_parser.error(\
-            "A list of label names cooresponding to files must be specified")
 
     #get color preferences
     color_prefs, color_data, background_color, label_color= \
@@ -175,6 +172,14 @@ def main():
 
     #Define labels to use
     labels = opts.labels
+    
+    if not opts.labels:
+        new_labels=[]
+        #create an empty list since the user didn't specify labels
+        for i in counts_fname:
+            new_labels.append("")
+        labels=','.join(new_labels)
+        
     data = [(label,f.strip()) \
         for f,label in zip(counts_fname,labels.split(","))]
     filepath=data[0][1]
