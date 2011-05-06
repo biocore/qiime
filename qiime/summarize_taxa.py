@@ -36,9 +36,11 @@ def make_summary(otu_table, level, upper_percentage, lower_percentage):
     total_counts = float(sum([sum(i) for i in counts_by_consensus.values()]))
     taxonomy_summary = []
     for consensus, otu_counts in sorted(counts_by_consensus.items()):
-        if lower_percentage!=None and otu_counts.sum()/total_counts>lower_percentage:
+        if lower_percentage!=None and \
+                                otu_counts.sum()/total_counts>lower_percentage:
             continue
-        elif upper_percentage!=None and otu_counts.sum()/total_counts<upper_percentage:
+        elif upper_percentage!=None and \
+                                otu_counts.sum()/total_counts<upper_percentage:
             continue
         new_row = [(consensus)]
         new_row.extend(otu_counts)

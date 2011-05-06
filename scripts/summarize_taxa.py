@@ -5,7 +5,8 @@ from __future__ import division
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Rob Knight", "Catherine Lozupone", "Justin Kuczynski",\
-        "Julia Goodrich", "Daniel McDonald", "Antonio Gonzalez Pena"]
+        "Julia Goodrich", "Daniel McDonald", "Antonio Gonzalez Pena",
+        "Jesse Stombaugh"]
 __license__ = "GPL"
 __version__ = "1.2.1-dev"
 __maintainer__ = "Daniel McDonald"
@@ -15,12 +16,15 @@ __status__ = "Development"
 
 from qiime.util import parse_command_line_parameters, \
         convert_otu_table_relative
-from qiime.util import make_option
+from qiime.util import make_option,get_options_lookup,create_dir
 from qiime.summarize_taxa import make_summary, add_summary_mapping
 from sys import stdout, stderr
 from qiime.parse import parse_otu_table, parse_mapping_file
 from qiime.format import write_summarize_taxa, write_add_taxa_summary_mapping,\
         format_summarize_taxa, format_add_taxa_summary_mapping
+from os.path import split,splitext,join
+
+options_lookup = get_options_lookup()
 
 script_info={}
 script_info['brief_description']="""Summarize Taxa"""
@@ -36,12 +40,9 @@ script_info['required_options']= [\
     make_option('-i','--otu_table_fp', dest='otu_table_fp',
         help='Input OTU table filepath [REQUIRED]',
         type='existing_filepath'),
-    make_option('-o','--output_fp',dest='output_fp',
-        help='Output OTU table filepath [REQUIRED]',
-        type='new_filepath'),
 ]
 script_info['optional_options'] = [\
-    make_option('-L','--level',action='store',type='int',dest='level',default=2, 
+    make_option('-L','--level',default='2,3,4,5,6' ,
         help='Taxonomic level to summarize by. [default: %default]'),
     make_option('-m','--mapping', 
         help='Input metadata mapping filepath. If supplied, then the taxon' +\
@@ -68,7 +69,8 @@ script_info['optional_options'] = [\
     make_option('-u', '--upper_percentage', type='float', default=None, \
         help='If present, OTUs having lower absolute abundance are' +\
         ' trimmed. To remove the OTUs that makes up less than 45% of the' +\
-        ' total dataset you would pass 0.45. [default: %default]')
+        ' total dataset you would pass 0.45. [default: %default]'),
+    options_lookup['output_dir'],
 ]
 script_info['option_label']={'otu_table_fp':'OTU table filepath',
                              'output_fp': 'Output filepath',
@@ -88,46 +90,68 @@ def main():
 
     lower_percentage = opts.lower_percentage
     upper_percentage = opts.upper_percentage
-    output_fname = opts.output_fp
     otu_table_fp = opts.otu_table_fp
     otu_table = parse_otu_table(open(otu_table_fp, 'U'))
     delimiter = opts.delimiter
-    mapping = opts.mapping
-    level = opts.level
+    mapping_fp = opts.mapping
+    levels = opts.level.split(',')
 
     if upper_percentage!=None and lower_percentage!=None:
         raise ValueError("upper_percentage and lower_percentage are mutually exclusive")
+    
     if upper_percentage!=None and lower_percentage!=None and mapping:
-        raise ValueError("upper_percentage and lower_percentage can not be using with mapping file")    
+        raise ValueError("upper_percentage and lower_percentage can not be using with mapping file")
+        
     if upper_percentage!=None and (upper_percentage<0 or upper_percentage>1.0):
         raise ValueError('max_otu_percentage should be between 0.0 and 1.0')
+    
     if lower_percentage!=None and (lower_percentage<0 or lower_percentage>1.0):
         raise ValueError('lower_percentage should be between 0.0 and 1.0')
         
-    if mapping:
-        mapping_file = open(mapping, 'U')
+    if mapping_fp:
+        mapping_file = open(mapping_fp, 'U')
         mapping, header, comments = parse_mapping_file(mapping_file)
 
     if opts.relative_abundance != '':
-        raise option_parser.error(\
-         "Depreciated. Please use --absolute_abundances to disable relative abundance")
+        raise option_parser.error("Deprecated. Please use --absolute_abundances to disable relative abundance")
 
     if not opts.absolute_abundance:
         otu_table = convert_otu_table_relative(otu_table)
 
-    if output_fname:
-        outfile = open(output_fname, 'w')
+    # introduced output directory to will allow for multiple outputs
+    if opts.output_dir:
+        create_dir(opts.output_dir,False)
+        output_dir_path=opts.output_dir
     else:
-        outfile = stdout
+        output_dir_path='./'
 
-    if mapping:
-        summary, tax_order = add_summary_mapping(otu_table, mapping, level)
-        write_add_taxa_summary_mapping(
-             summary,tax_order,mapping,header,output_fname,delimiter)
-    else:
-        summary, header = make_summary(
-             otu_table, level, upper_percentage, lower_percentage)
-        write_summarize_taxa(summary, header, output_fname, delimiter)
+    # use the input OTU table to produce the output filenames
+    dir_path,fname=split(otu_table_fp)
+    basename,fname_ext=splitext(fname)
+    
+    # use the input Mapping file for producing the output filenames
+    map_dir_path,map_fname=split(mapping_fp)
+    map_basename,map_fname_ext=splitext(map_fname)
+    
+    # Iterate over the levels and generate a summarized taxonomy for each
+    for level in levels:
+        if mapping_fp:
+            #define output filename
+            output_fname = join(output_dir_path,
+                                        map_basename+'_L%s.txt' % (level))
+                                        
+            summary, tax_order = add_summary_mapping(otu_table, mapping,
+                                                     int(level))
+            write_add_taxa_summary_mapping(summary,tax_order,mapping,
+                                            header,output_fname,delimiter)
+        else:
+            #define output filename
+            output_fname = join(output_dir_path,basename+'_L%s.txt' % (level))
+            
+            summary, header = make_summary(otu_table, int(level),
+                                            upper_percentage, lower_percentage)
+            write_summarize_taxa(summary, header, output_fname, delimiter)
+            
 
 if __name__ == "__main__":
     main()
