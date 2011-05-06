@@ -87,7 +87,7 @@ def save_single_ave_rarefaction_plots(xaxis, yvals, err, xmax, ymax, ops, \
         #Create the plot image
         
         plt.clf()
-        plt.title(metric_name + ": " + mapping_category,weight='regular',name='Arial')
+        plt.title(metric_name + ": " + mapping_category,weight='regular')
         
         fig  = plt.gcf()
         
@@ -123,10 +123,10 @@ def save_single_ave_rarefaction_plots(xaxis, yvals, err, xmax, ymax, ops, \
     
         x=ax.xaxis.get_label()
         x.set_weight('regular')
-        x.set_name('Arial')
+        #x.set_name('Arial')
         y=ax.yaxis.get_label()
         y.set_weight('regular')
-        y.set_name('Arial')
+        #y.set_name('Arial')
         
         #Create file for image
         imgpath = fpath+mapping_lookup[mapping_category+'-'+o]+ '_ave.'+imagetype
@@ -195,10 +195,10 @@ def save_single_rarefaction_plots(sample_dict,imagetype, metric_name,
 
     x=ax.xaxis.get_label()
     x.set_weight('regular')
-    x.set_name('Arial')
+    #x.set_name('Arial')
     y=ax.yaxis.get_label()
     y.set_weight('regular')
-    y.set_name('Arial')
+    #y.set_name('Arial')
 
     #Create file for image
     imgpath = os.path.join(fpath,metric_name+mapping_lookup[mapping_category+'-'+group_id]+'_raw.'+imagetype)
