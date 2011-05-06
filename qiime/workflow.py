@@ -166,6 +166,7 @@ def run_qiime_data_preparation(input_fp,
                                params, 
                                qiime_config,
                                parallel=False,
+                               logger=None,
                                status_update_callback=print_to_stdout):
     """ Run the data preparation steps of Qiime 
     
@@ -189,9 +190,13 @@ def run_qiime_data_preparation(input_fp,
     commands = []
     python_exe_fp = qiime_config['python_exe_fp']
     script_dir = get_qiime_scripts_dir()
-    logger = WorkflowLogger(generate_log_fp(output_dir),
-                            params=params,
-                            qiime_config=qiime_config)
+    if logger == None:
+        logger = WorkflowLogger(generate_log_fp(output_dir),
+                                params=params,
+                                qiime_config=qiime_config)
+        close_logger_on_success = True
+    else:
+        close_logger_on_success = False
     
     # Prep the OTU picking command
     try:
@@ -379,7 +384,10 @@ def run_qiime_data_preparation(input_fp,
     commands.append([('Build phylogenetic tree', make_phylogeny_cmd)])
     
     # Call the command handler on the list of commands
-    command_handler(commands,status_update_callback,logger=logger)
+    command_handler(commands,
+                    status_update_callback,
+                    logger=logger,
+                    close_logger_on_success=close_logger_on_success)
     
     return abspath(tree_fp), abspath(otu_table_fp)
     
@@ -398,6 +406,7 @@ def run_pick_reference_otus_through_otu_table(
                               params,
                               qiime_config,
                               parallel=False,
+                              logger=None,
                               status_update_callback=print_to_stdout):
     """ Run the data preparation steps of Qiime 
     
@@ -422,9 +431,13 @@ def run_pick_reference_otus_through_otu_table(
     commands = []
     python_exe_fp = qiime_config['python_exe_fp']
     script_dir = get_qiime_scripts_dir()
-    logger = WorkflowLogger(generate_log_fp(output_dir),
-                            params=params,
-                            qiime_config=qiime_config)
+    if logger == None:
+        logger = WorkflowLogger(generate_log_fp(output_dir),
+                                params=params,
+                                qiime_config=qiime_config)
+        close_logger_on_success = True
+    else:
+        close_logger_on_success = False
     
     # Prep the OTU picking command
     pick_otu_dir = '%s/%s_picked_otus' % (output_dir, otu_picking_method)
@@ -489,15 +502,20 @@ def run_pick_reference_otus_through_otu_table(
     
     commands.append([('Make OTU table', make_otu_table_cmd)])
     
+
     # Call the command handler on the list of commands
-    command_handler(commands, status_update_callback, logger)
+    command_handler(commands,
+                    status_update_callback,
+                    logger=logger,
+                    close_logger_on_success=close_logger_on_success)
 
 
 
 def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,
     output_dir, command_handler, params, qiime_config,
     color_by_interesting_fields_only=True,sampling_depth=None,
-    tree_fp=None, parallel=False, status_update_callback=print_to_stdout):
+    tree_fp=None, parallel=False, logger=None,
+    status_update_callback=print_to_stdout):
     """ Run the data preparation steps of Qiime 
     
         The steps performed by this function are:
@@ -519,9 +537,13 @@ def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,
     commands = []
     python_exe_fp = qiime_config['python_exe_fp']
     script_dir = get_qiime_scripts_dir()
-    logger = WorkflowLogger(generate_log_fp(output_dir),
-                            params=params,
-                            qiime_config=qiime_config)
+    if logger == None:
+        logger = WorkflowLogger(generate_log_fp(output_dir),
+                                params=params,
+                                qiime_config=qiime_config)
+        close_logger_on_success = True
+    else:
+        close_logger_on_success = False
     
     mapping_data, mapping_header, mapping_comments =\
      parse_mapping_file(open(mapping_fp,'U'))
@@ -669,15 +691,19 @@ def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,
           ('Make 3D plots (discrete coloring, %s)' %\
             beta_diversity_metric,discrete_3d_command,)])
     
+
     # Call the command handler on the list of commands
-    command_handler(commands, status_update_callback, logger)
+    command_handler(commands,
+                    status_update_callback,
+                    logger=logger,
+                    close_logger_on_success=close_logger_on_success)
     
     return dm_fps
 
 
-def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,\
-    output_dir, command_handler, params, qiime_config, tree_fp=None,\
-    num_steps=10, parallel=False, min_seqs_per_sample=10,\
+def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,
+    output_dir, command_handler, params, qiime_config, tree_fp=None,
+    num_steps=10, parallel=False, logger=None, min_seqs_per_sample=10,
     status_update_callback=print_to_stdout):
     """ Run the data preparation steps of Qiime 
     
@@ -695,9 +721,13 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,\
     commands = []
     python_exe_fp = qiime_config['python_exe_fp']
     script_dir = get_qiime_scripts_dir()
-    logger = WorkflowLogger(generate_log_fp(output_dir),
-                            params=params,
-                            qiime_config=qiime_config)
+    if logger == None:
+        logger = WorkflowLogger(generate_log_fp(output_dir),
+                                params=params,
+                                qiime_config=qiime_config)
+        close_logger_on_success = True
+    else:
+        close_logger_on_success = False
     
     # Prep the rarefaction command
     try:
@@ -802,11 +832,15 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,\
          [('Rarefaction plot: %s' % 'All metrics',make_rarefaction_plot_cmd)])
     
     # Call the command handler on the list of commands
-    command_handler(commands,status_update_callback,logger)
+    command_handler(commands,
+                    status_update_callback,
+                    logger=logger,
+                    close_logger_on_success=close_logger_on_success)
 
 def run_jackknifed_beta_diversity(otu_table_fp,tree_fp,seqs_per_sample,
     output_dir, command_handler, params, qiime_config, mapping_fp,
-    parallel=False,status_update_callback=print_to_stdout, master_tree=None):
+    parallel=False,logger=None,
+    status_update_callback=print_to_stdout, master_tree=None):
     """ Run the data preparation steps of Qiime 
     
         The steps performed by this function are:
@@ -832,9 +866,13 @@ def run_jackknifed_beta_diversity(otu_table_fp,tree_fp,seqs_per_sample,
     commands = []
     python_exe_fp = qiime_config['python_exe_fp']
     script_dir = get_qiime_scripts_dir()
-    logger = WorkflowLogger(generate_log_fp(output_dir),
-                            params=params,
-                            qiime_config=qiime_config)
+    if logger == None:
+        logger = WorkflowLogger(generate_log_fp(output_dir),
+                                params=params,
+                                qiime_config=qiime_config)
+        close_logger_on_success = True
+    else:
+        close_logger_on_success = False
     try:
         beta_diversity_metrics = params['beta_diversity']['metrics'].split(',')
     except KeyError:
@@ -1040,8 +1078,12 @@ def run_jackknifed_beta_diversity(otu_table_fp,tree_fp,seqs_per_sample,
          [('3d plots (%s)' % beta_diversity_metric, plots_3d_cmd)])
            
            
+
     # Call the command handler on the list of commands
-    command_handler(commands,status_update_callback,logger)
+    command_handler(commands,
+                    status_update_callback,
+                    logger=logger,
+                    close_logger_on_success=close_logger_on_success)
     
 
 
@@ -1124,7 +1166,7 @@ def run_core_qiime_analyses(
     python_exe_fp = qiime_config['python_exe_fp']
     script_dir = get_qiime_scripts_dir()
     log_fp = generate_log_fp(output_dir)
-    index_links.append(('Master run log',log_fp,'Master logs'))
+    index_links.append(('Master run log',log_fp,'Log files'))
     logger = WorkflowLogger(log_fp,
                             params=params,
                             qiime_config=qiime_config)
@@ -1185,6 +1227,7 @@ def run_core_qiime_analyses(
                                 params=params,
                                 qiime_config=qiime_config,
                                 parallel=parallel,
+                                logger=logger,
                                 status_update_callback=status_update_callback)
     index_links.append(('Phylogenetic tree',de_novo_tree_fp,'OTU workflow results'))
     index_links.append(('OTU table',otu_table_fp,'OTU workflow results'))
@@ -1214,6 +1257,7 @@ def run_core_qiime_analyses(
      sampling_depth=None,
      tree_fp=tree_fp,
      parallel=parallel,
+     logger=logger,
      status_update_callback=status_update_callback)
                             
     # cluster quality stub
@@ -1268,6 +1312,7 @@ def run_core_qiime_analyses(
          sampling_depth=sampling_depth,
          tree_fp=tree_fp,
          parallel=parallel,
+         logger=logger,
          status_update_callback=status_update_callback)
         for bdiv_metric, dm_fp in even_dm_fps:
             for category in categories:
@@ -1318,6 +1363,7 @@ def run_core_qiime_analyses(
      tree_fp=tree_fp,
      num_steps=arare_num_steps,
      parallel=parallel,
+     logger=logger,
      min_seqs_per_sample=arare_min_seqs_per_sample,
      status_update_callback=status_update_callback)
     
@@ -1367,91 +1413,6 @@ def run_core_qiime_analyses(
     command_handler(commands, status_update_callback, logger)
     generate_index_page(index_links,index_fp)
 
-## Default QIIME parameters, currently used only in core_qiime_analyses.py.
-## These hit the script defaults for the most part, with exceptions being
-## the choice of metrics for alpha and beta diversity.
-
-# def get_default_parameters():
-#     default_parameters = """
-# otu_category_significance:test
-# otu_category_significance:filter  3
-# otu_category_significance:threshold
-# otu_category_significance:otu_include_fp
-# 
-# # OTU picker parameters
-# #pick_otus:otu_picking_method uclust
-# pick_otus:similarity  0.97
-# 
-# # Representative set picker parameters
-# pick_rep_set:rep_set_picking_method   first
-# pick_rep_set:sort_by  otu
-# 
-# # Multiple sequence alignment parameters
-# align_seqs:template_fp
-# #align_seqs:alignment_method  pynast
-# align_seqs:pairwise_alignment_method  uclust
-# align_seqs:blast_db
-# align_seqs:min_length 150
-# align_seqs:min_percent_id 75.0
-# 
-# # Alignment filtering (prior to tree-building) parameters
-# filter_alignment:lane_mask_fp
-# filter_alignment:allowed_gap_frac  0.999999
-# filter_alignment:remove_outliers  False
-# filter_alignment:threshold    3.0
-# 
-# # Taxonomy assignment parameters
-# #assign_taxonomy:assignment_method    rdp
-# 
-# # Phylogenetic tree building parameters
-# make_phylogeny:tree_method    fasttree
-# make_phylogeny:root_method    tree_method_default
-# 
-# ###alpha_rarefaction.py parameters###
-# 
-# # Rarefaction parameters
-# multiple_rarefactions:num-reps    10
-# multiple_rarefactions:depth
-# multiple_rarefactions:lineages_included   False
-# 
-# # Alpha diversity parameters
-# alpha_diversity:metrics   chao1,observed_species,PD_whole_tree
-# 
-# # Collate alpha
-# collate_alpha:example_path
-# 
-# # Make rarefaction plots parameters
-# make_rarefaction_plots:imagetype  png
-# make_rarefaction_plots:resolution 75
-# make_rarefaction_plots:background_color   white
-# make_rarefaction_plots:prefs_path
-# 
-# ###beta_diversity_through_3d_plots.py parameters###
-# 
-# # Beta diversity parameters
-# beta_diversity:metrics    weighted_unifrac,unweighted_unifrac,bray_curtis
-# 
-# # Make prefs file parameters
-# make_prefs_file:background_color  black
-# make_prefs_file:mapping_headers_to_use
-# make_prefs_file:monte_carlo_dists 10
-# 
-# # Make 3D plot parameters
-# make_3d_plots:custom_axes
-# make_3d_plots:ellipsoid_smoothness   1
-# 
-# ###jackknife_upgma.py parameters###
-# 
-# # Even-depth rarefaction parameters
-# multiple_rarefactions_even_depth:num-reps 20
-# 
-# ###parallel workflow###
-# 
-# # Parallel options
-# parallel:retain_temp_files    False
-# parallel:seconds_to_sleep 1
-# """.split("\n")
-#     return parse_qiime_parameters(default_parameters)
 
 
 
