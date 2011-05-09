@@ -25,12 +25,18 @@ class TopLevelTests(TestCase):
 3\t090909\t1200\tsome description of sample3
 4\t090909\t1800\tsome description of sample4
 5\t091009\t1200\tsome description of sample5"""
-        self.cat_by_sample = {"1":[("Day","090809"),("time","1200"),('Description', 'some description of sample1')],
-                              "2":[("Day","090809"),("time","1800"),('Description', 'some description of sample2')],
-                              "3":[("Day","090909"),("time","1200"),('Description', 'some description of sample3')],
-                              "4":[("Day","090909"),("time","1800"),('Description', 'some description of sample4')],
-                              "5":[("Day","091009"),("time","1200"),('Description', 'some description of sample5')]}
-        self.sample_by_cat = {("Day","090809"):["1","2"],
+        self.cat_by_sample = {'1': [('SampleID', '1'), ('Day', '090809'), ('time', '1200'), ('Description', 'some description of sample1')], 
+                              '2': [('SampleID', '2'), ('Day', '090809'), ('time', '1800'), ('Description', 'some description of sample2')],
+                              '3': [('SampleID', '3'), ('Day', '090909'), ('time', '1200'), ('Description', 'some description of sample3')], 
+                              '4': [('SampleID', '4'), ('Day', '090909'), ('time', '1800'), ('Description', 'some description of sample4')],
+                              '5': [('SampleID', '5'), ('Day', '091009'), ('time', '1200'), ('Description', 'some description of sample5')]}
+                              
+        self.sample_by_cat = {("SampleID","1"):["1"],
+                              ("SampleID","2"):["2"],
+                              ("SampleID","3"):["3"],
+                              ("SampleID","4"):["4"],
+                              ("SampleID","5"):["5"],
+                              ("Day","090809"):["1","2"],
                               ("Day","090909"):["3","4"],
                               ("Day","091009"):["5"],
                               ("time","1200"):["1","3","5"],
@@ -40,16 +46,22 @@ class TopLevelTests(TestCase):
                               ('Description', 'some description of sample3'):['3'],
                               ('Description', 'some description of sample4'):['4'],
                               ('Description', 'some description of sample5'):['5']}
-        self.num_cats = 3
+        self.num_cats = 4
         self.meta_dict = {"1":[("090809",0)],
                               "2":[("090809",0)],
                               "3":[("090909",0)],
                               "4":[("090909",0)],
                               "5":[("091009",0)]}
-        self.labels_lists_dict = {"Day":["090809","090909","091009"],
+        self.labels_lists_dict = {"SampleID":['1','2','3','4','5'],
+                              "Day":["090809","090909","091009"],
                               "time":["1200","1800"],
                               'Description': ['some description of sample1', 'some description of sample2', 'some description of sample3', 'some description of sample4', 'some description of sample5']}
-        self.num_samples_by_cat = {("Day","090809"):2,("Day","090909"):2,\
+        self.num_samples_by_cat = {('SampleID', '1'): 1,
+                                  ('SampleID', '2'): 1,
+                                  ('SampleID', '3'): 1,
+                                  ('SampleID', '4'): 1,
+                                  ('SampleID', '5'): 1,
+                                  ("Day","090809"):2,("Day","090909"):2,\
                                   ("Day","091009"):1,("time","1200"):3,\
                                   ("time","1800"):2,
                                     ('Description', 'some description of sample1'):1,

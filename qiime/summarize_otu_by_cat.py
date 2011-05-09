@@ -41,8 +41,8 @@ def get_sample_cat_info(lines, category):
     label_lists_dict = defaultdict(list)
     mapping_data, header, comments = parse_mapping_file(lines)
     
-    category_labels = header[1:]
-    index = category_labels.index(category)+1
+    category_labels = header
+    index = category_labels.index(category)
 
     for line in mapping_data:
         categories = line[0:len(category_labels)+1]
@@ -50,10 +50,10 @@ def get_sample_cat_info(lines, category):
         meta_dict[sample] = [(categories[index],0)]
 
         cat_by_sample[sample] = [(l.strip(),c.strip()) \
-                             for l,c in zip(category_labels,categories[1:])]
+                             for l,c in zip(category_labels,categories)]
 
         cat_list = []
-        for i,(l,c) in enumerate(zip(category_labels,categories[1:])):
+        for i,(l,c) in enumerate(zip(category_labels,categories)):
             if c not in label_lists_dict[l]:
                 label_lists_dict[l].append(c)
             l = l.strip()
