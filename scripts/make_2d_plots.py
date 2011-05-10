@@ -71,7 +71,8 @@ script_info['optional_options']=[\
         ' [default: %default]',
         type='existing_filepath'),
     make_option('-k', '--background_color',
-        help='Background color to use in the plots. [default: %default]'),
+        help='Background color to use in the plots. [default: %default]',
+        default='white', type='choice',choices=['black','white'],),
     make_option('--ellipsoid_opacity',
         help='Used only when plotting ellipsoids for jackknifed' +\
         ' beta diversity (i.e. using a directory of coord files' +\

@@ -88,7 +88,8 @@ script_info['optional_options']=[\
         ' [default: %default]',
         type='existing_filepath'),
     make_option('-k', '--background_color',
-        help='Background color to use in the plots. [default: %default]'),
+        help='Background color to use in the plots. [default: %default]',
+        default='black',type='choice',choices=['black','white'],),
     make_option('--ellipsoid_smoothness',
         help='Used only when plotting ellipsoids for jackknifed' +\
         ' beta diversity (i.e. using a directory of coord files' +\
@@ -98,7 +99,7 @@ script_info['optional_options']=[\
         ' error when generating or displaying the plots, try including' +\
         ' just one metadata column in your plot. If you still have trouble,' +\
         ' reduce the smoothness level to 0. [default: %default]',
-        default=1,type="int"),
+        default="1",type="choice",choices=["0","1","2","3"]),
     make_option('--ellipsoid_opacity',
         help='Used only when plotting ellipsoids for jackknifed' +\
         ' beta diversity (i.e. using a directory of coord files' +\
@@ -173,7 +174,8 @@ script_info['option_label']={'coord_fname':'Principal coordinates filepath',
                              'output_format': 'Output format',
                              'interpolation_points': '# of interpolation points',
                              'polyhedron_points':'# of polyhedron points',
-                             'polyhedron_offset':'Polyhedron offset'}
+                             'polyhedron_offset':'Polyhedron offset',
+                             'custom_axes':'Custom Axis'}
 script_info['version'] = __version__
 
 def main():
