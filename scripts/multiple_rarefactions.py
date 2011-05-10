@@ -63,7 +63,7 @@ script_info['option_label']={'input_path':'OTU table filepath',
                              'min': 'Min # of seqs/sample',
                              'max': 'Max # of seqs/sample',
                              'step': 'Step size',
-                             'num-reps':'# of iterations',
+                             'num_reps':'# of iterations',
                              'lineages_included': 'Include lineages',
                              'keep_empty_otus':'Retain empty OTUs'}
 
