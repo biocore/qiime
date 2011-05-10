@@ -65,7 +65,7 @@ script_info['optional_options']=[
      ' [default: %default]'),
  make_option('--float', action="store_true", default=False,
      help='By default, the script expects integer matrices (OTUs) '+\
-     'but if this flag is True it will proces float numbers.'+\
+     'but if this flag is True it will process float numbers.'+\
      ' [default: %default]'),
 ]
 script_info['option_label']={'input_path':'OTU table filepath',
