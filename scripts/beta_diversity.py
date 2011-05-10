@@ -68,14 +68,14 @@ script_info['optional_options']=[
      'but if this flag is True it will proces float numbers.'+\
      ' [default: %default]'),
 ]
-script_info['option_label']={'--input_path':'OTU table filepath',
-                             '--rows':'List of samples for compute',
-                             '--metrics': 'Metrics to use',
-                             '--show_metrics': 'Show metrics',
-                             '--tree_path':'Newick tree filepath',
-                             '--full_tree':'Tree already trimmed',
-                             '--output_dir': 'Output directory',
-                             '--float': 'OTU table contains floats'}
+script_info['option_label']={'input_path':'OTU table filepath',
+                             'rows':'List of samples for compute',
+                             'metrics': 'Metrics to use',
+                             'show_metrics': 'Show metrics',
+                             'tree_path':'Newick tree filepath',
+                             'full_tree':'Tree already trimmed',
+                             'output_dir': 'Output directory',
+                             'float': 'OTU table contains floats'}
                              
 script_info['version'] = __version__
 
