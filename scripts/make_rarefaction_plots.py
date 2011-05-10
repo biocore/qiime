@@ -70,13 +70,13 @@ script_info['optional_options']=[\
         choices=['png','pdf','svg']),
     make_option('-d', '--resolution', 
         help='Resolution of the plot. [default: %default]', 
-        type='int', default='75'),
+        type='int', default=75),
     make_option('-y', '--ymax', type='int', 
         help='Maximum y-value to be used for the plots. Allows' +\
         ' for directly comparable rarefaction plots between analyses' +\
         ' [default: %default]'),
     make_option('-w', '--webpage', action='store_false', 
-        help='Deprecated: Suppress HTML output. [default: %default]',
+        help='DEPRECATED: Suppress HTML output. [default: %default]',
          default=True),
     make_option('-s','--suppress_html_output', action='store_true', 
          help='Suppress HTML output. [default: %default]', default=False),
