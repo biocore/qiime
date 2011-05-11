@@ -69,6 +69,7 @@ class TopLevelTests(TestCase):
         self.expected_lineages1 = expected_lineages1
         self.taxa_summary1 = taxa_summary1
         self.taxa_summary1_expected = taxa_summary1_expected
+        self.otu_table1_floats=otu_table1_floats
         self.files_to_remove = []
         self.denoiser_mapping1 = denoiser_mapping1.split('\n')
     
@@ -469,6 +470,21 @@ eigvals\t4.94\t1.79\t1.50
                       [1722,4903,17], [589,2074,34]]),
                self.expected_lineages1)
         self.assertEqual(obs, exp)
+    
+    def test_parse_otu_table_floats_in_table(self):
+        """parse_otu_table functions using an OTU table containing floats
+           but cast as int....this will automatically cast into floats"""
+           
+        data = self.otu_table1_floats
+        data_f = (data.split('\n'))
+        obs = parse_otu_table(data_f)
+        exp = (['Fing','Key','NA'],
+               ['0','1','2','3','4'],
+               array([[19111.0,44536.0,42.0],[1216.0,3500.0,6.0],
+                      [1803.0,1184.0,2.0],[1722.1,4903.2,17.0],
+                      [589.6,2074.4,34.5]]),
+               self.expected_lineages1)
+        self.assertEqual(obs, exp)  
         
     def test_parse_otu_table_float_counts(self):
         """parse_otu_table should return correct result from small table"""
@@ -592,6 +608,7 @@ eigvals\t4.94\t1.79\t1.50
         OTU_sample_info, all_sample_names = parse_sample_mapping(lines)
         self.assertEqual(OTU_sample_info, {'OTU2': {'sample1': '1', 'sample3': '0', 'sample2': '1'}, 'OTU1': {'sample1': '1', 'sample3': '1', 'sample2': '0'}})
         self.assertEqual(all_sample_names, set(['sample1', 'sample3', 'sample2']))
+
     def test_sample_mapping_to_otu_table(self):
         """sample_mapping_to_otu_table works"""
         lines = self.SampleMapping
@@ -857,6 +874,22 @@ OTU ID	Fing	Key	NA	Consensus Lineage
 #    everywhere!
 3	1722	4903	17	Bacteria; Firmicutes; Alicyclobacillaceae; Bacilli; Staphylococcaceae
 4	589	2074	34	Bacteria; Cyanobacteria; Chloroplasts; vectors
+"""
+
+otu_table1_floats = """# Some comment
+
+
+
+
+OTU ID	Fing	Key	NA	Consensus Lineage
+0	19111.0	44536.0	42.0	Bacteria; Actinobacteria; Actinobacteridae; Propionibacterineae; Propionibacterium
+# some other comment
+1	1216.0	3500.0	6.0	Bacteria; Firmicutes; Alicyclobacillaceae; Bacilli; Lactobacillales; Lactobacillales; Streptococcaceae; Streptococcus
+2	1803.0	1184.0	2.0	Bacteria; Actinobacteria; Actinobacteridae; Gordoniaceae; Corynebacteriaceae
+# comments
+#    everywhere!
+3	1722.1	4903.2	17	Bacteria; Firmicutes; Alicyclobacillaceae; Bacilli; Staphylococcaceae
+4	589.6	2074.4	34.5	Bacteria; Cyanobacteria; Chloroplasts; vectors
 """
 
 taxa_summary1 = """#Full OTU Counts

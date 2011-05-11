@@ -450,11 +450,23 @@ def parse_otu_table(lines,count_map_f=int):
                     if has_metadata:
                         # if there is OTU metadata the last column gets appended
                         # to the metadata list
-                        otu_table.append(array(map(count_map_f, fields[1:-1])))
+                        # added in a try/except to handle OTU tables containing
+                        # floating numbers
+                        try:
+                            otu_table.append(array(map(count_map_f,
+                                                       fields[1:-1])))
+                        except ValueError:
+                            otu_table.append(array(map(float, fields[1:-1])))
+                            
                         metadata.append(map(strip, fields[-1].split(';')))
                     else:
                         # otherwise all columns are appended to otu_table
-                        otu_table.append(array(map(count_map_f, fields[1:])))
+                        # added in a try/except to handle OTU tables containing
+                        # floating numbers
+                        try:
+                            otu_table.append(array(map(count_map_f,fields[1:])))
+                        except ValueError:
+                            otu_table.append(array(map(float, fields[1:])))
                         
     return sample_ids, otu_ids, array(otu_table), metadata
 
