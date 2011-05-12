@@ -178,7 +178,21 @@ script_info['optional_options']=[\
         'and filters the sequences based upon the number of median absolute '+\
         'deviations specified by this parameter.  Any sequences with lengths '+\
         'outside the number of deviations will be removed. '+\
-        '[default: %default]')]
+        '[default: %default]'),
+    
+    make_option('-j', '--added_demultiplex_field',
+        action='store', default=None,
+        help='Use -j to add a field to use in the mapping file as an '+\
+        'additional demultiplexing option to the barcode.  All combinations '+\
+        'of barcodes and the values in these fields must be unique. The '+\
+        'fields must contain values that can be parsed from the fasta labels '+\
+        'such as "plate=R_2008_12_09".  In this case, "plate" would be the '+\
+        'column header and "R_2008_12_09" would be the field data (minus '+\
+        'quotes) in the mapping file.  To use the run prefix from the fasta '+\
+        'label, such as ">FLP3FBN01ELBSX", where "FLP3FBN01" is generated '+\
+        'from the run ID, use "-j run_prefix" and set the run prefix to '+\
+        'be used as the data under the column headerr "run_prefix". '+\
+        ' [default: %default]')]
 
 script_info['version'] = __version__
 
@@ -231,7 +245,8 @@ def main():
                reverse_primers = opts.reverse_primers,
                record_qual_scores = opts.record_qual_scores,
                discard_bad_windows = opts.discard_bad_windows,
-               median_length_filtering = opts.median_length_filtering)
+               median_length_filtering = opts.median_length_filtering,
+               added_demultiplex_field = opts.added_demultiplex_field)
  
 if __name__ == "__main__":
     main()

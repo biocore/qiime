@@ -48,17 +48,17 @@ class TopLevelTests(TestCase):
 
     def test_run_checks(self):
         """run_checks should run a series of checks on data"""
-        def bad_if_upper(x, raw_data=None):
+        def bad_if_upper(x, raw_data=None, added_demultiplex_field=None):
             if x.upper() == x:
                 return x.lower(), 'X is uppercase'
             else:
                 return x, ''
-        def bad_if_short(x, raw_data=None):
+        def bad_if_short(x, raw_data=None, added_demultiplex_field=None):
             if len(x) < 10:
                 return x+'-----', 'X is short'
             else:
                 return x, ''
-        def bad_if_lower(x, raw_data=None):
+        def bad_if_lower(x, raw_data=None, added_demultiplex_field=None):
             if x.lower() == x:
                 return x, 'X is lowercase'
             else:
@@ -70,7 +70,8 @@ class TopLevelTests(TestCase):
             ]
         
         problems = defaultdict(list)
-        result = run_checks('ABC', checks, problems)
+        result = run_checks('ABC', checks, problems,
+         added_demultiplex_field=None)
         self.assertEqual(problems, {'error':['X is uppercase', 'X is short']})
         self.assertEqual(result, 'abc-----')
 
@@ -384,6 +385,78 @@ z\tGG\tACGT\t5\tsample_z"""
         self.assertEqual(errors, [])
         self.assertEqual(warnings, [])
         
+    def test_process_id_map_added_demultiplex(self):
+        """process_id_map handles added demultiplex fields"""
+        s = """#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tX\tDescription
+#fake data
+x\tAA\tACGT\t3\tsample_x
+y\t"AC"\tACGT\t4\t"sample_y"
+z\tGG\tACGT\t5\tsample_z"""
+        f = StringIO(s)
+        f.name='test.xls'
+        
+        # Should raise error since demultiplex field not in mapping data.
+        self.assertRaises(ValueError, process_id_map, f, added_demultiplex_field = 'Not_A_Field')
+
+        """process_id_map should return correct results on small test map with
+         the combinations of barcodes and added demultiplex fields unique"""
+        s = """#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tX\tJanus\tDescription
+#fake data
+x\tAA\tACGT\t3\tDown\tsample_x
+y\t"AC"\tACGT\t4\tDown\t"sample_y"
+z\tAA\tACGT\t5\tNotUp\tsample_z"""
+        f = StringIO(s)
+        f.name='test.xls'
+        headers, id_map, description_map, run_description, errors, warnings = \
+            process_id_map(f, added_demultiplex_field='Janus')
+
+        self.assertEqual(headers, ['BarcodeSequence', 'LinkerPrimerSequence', \
+         'X', 'Janus'])
+        self.assertEqual(id_map, {'y': {'X': '4', 'Janus':'Down', 'LinkerPrimerSequence': \
+         'ACGT', 'BarcodeSequence': 'AC'}, 'x': {'X': '3', 'Janus':'Down', \
+         'LinkerPrimerSequence': 'ACGT', 'BarcodeSequence': 'AA'}, 'z': \
+        {'X': '5', 'Janus':'NotUp', 'LinkerPrimerSequence': 'ACGT', 'BarcodeSequence': 'AA'}})
+        self.assertEqual(description_map, {
+            'x':'sample_x',
+            'y':'sample_y',
+            'z':'sample_z',
+        })
+        self.assertEqual(run_description, ['fake data'])
+        self.assertEqual(errors, [])
+        self.assertEqual(warnings, [])
+        
+        # Should get warnings with non-unique combinations of barcodes and 
+        # added demultiplex.
+        s = """#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tX\tJanus\tDescription
+#fake data
+x\tAA\tACGT\t3\tDown\tsample_x
+y\t"AC"\tACGT\t4\tDown\t"sample_y"
+z\tAA\tACGT\t5\tDown\tsample_z"""
+        f = StringIO(s)
+        f.name='test.xls'
+        headers, id_map, description_map, run_description, errors, warnings = \
+            process_id_map(f, added_demultiplex_field='Janus')
+
+        self.assertEqual(headers, ['BarcodeSequence', 'LinkerPrimerSequence', \
+         'X', 'Janus'])
+        self.assertEqual(id_map, {'y': {'X': '4', 'Janus':'Down', 'LinkerPrimerSequence': \
+         'ACGT', 'BarcodeSequence': 'AC'}, 'x': {'X': '3', 'Janus':'Down', \
+         'LinkerPrimerSequence': 'ACGT', 'BarcodeSequence': 'AA'}, 'z': \
+        {'X': '5', 'Janus':'Down', 'LinkerPrimerSequence': 'ACGT', 'BarcodeSequence': 'AA'}})
+        self.assertEqual(description_map, {
+            'x':'sample_x',
+            'y':'sample_y',
+            'z':'sample_z',
+        })
+        self.assertEqual(run_description, ['fake data'])
+        
+        expected_errors = ["DupChecker 'BarcodeSequence' found the following possible duplicates. If these metadata should have the same name, please correct.:\nGroup\tOriginal names\nAA\tAA,Down, AA,Down\nRow, column for all possible duplicate descriptions:\nLocation (row, column):\t0,1\nLocation (row, column):\t0,4\nLocation (row, column):\t2,1\nLocation (row, column):\t2,4\n"]
+                
+        self.assertEqual(errors, expected_errors)
+        
+        self.assertEqual(warnings, [])
+
+        
     def test_get_primers_barcodes(self):
         """ get_primers_barcodes should properly return primers, barcodes """
         
@@ -397,6 +470,53 @@ z\tGG\tACGT\t5\tsample_z"""
          
         primers, barcodes = get_primers_barcodes(mapping_data, \
          is_barcoded=True, disable_primer_check=False)
+         
+        self.assertEqual(barcodes, expected_barcodes)
+        self.assertEqual(primers, expected_primers)
+        
+        # Should return empty list if barcodes disabled
+        expected_barcodes = []
+        
+        primers, barcodes = get_primers_barcodes(mapping_data, \
+         is_barcoded=False, disable_primer_check=False)
+         
+        self.assertEqual(barcodes, expected_barcodes)
+        self.assertEqual(primers, expected_primers)
+        
+        # Should return empty list if primers disabled
+        expected_barcodes = ['ATCG','ATTA']
+        expected_primers = []
+        
+        primers, barcodes = get_primers_barcodes(mapping_data, \
+         is_barcoded=True, disable_primer_check=True)
+         
+        self.assertEqual(barcodes, expected_barcodes)
+        self.assertEqual(primers, expected_primers)
+        
+        # Both primers and barcodes should be empty lists if both disabled
+        expected_barcodes = []
+        expected_primers = []
+        
+        primers, barcodes = get_primers_barcodes(mapping_data, \
+         is_barcoded=False, disable_primer_check=True)
+         
+        self.assertEqual(barcodes, expected_barcodes)
+        self.assertEqual(primers, expected_primers)
+        
+    def test_get_primers_barcodes_added_demultiplex(self):
+        """ get_primers_barcodes handles added demultiplex option """
+        
+        expected_barcodes = ['ATCG,20061218', 'ATTA,20061216']
+        expected_primers = ['CCTT','CCTAT']
+        
+        mapping_data = \
+         [['#SampleID','BarcodeSequence','LinkerPrimerSequence','DOB'],
+         ['PC.354','ATCG','CCTT','20061218'],
+         ['PC.356','ATTA','CCTAT','20061216']]
+         
+        primers, barcodes = get_primers_barcodes(mapping_data, \
+         is_barcoded=True, disable_primer_check=False,
+         added_demultiplex_field='DOB')
          
         self.assertEqual(barcodes, expected_barcodes)
         self.assertEqual(primers, expected_primers)
@@ -629,7 +749,7 @@ class SameCheckerTests(TestCase):
          problems, is_barcoded=True, disable_primer_check=True),\
          defaultdict(list))
          
-    def test_check_reveres_primers(self):
+    def test_check_reverse_primers(self):
         """ Should give warnings for invalid or missing primers """
         
         

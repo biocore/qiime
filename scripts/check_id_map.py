@@ -86,6 +86,19 @@ script_info['optional_options']= [\
     make_option('-v', '--verbose',
         action='store_false', default=True,
         help='Turn on this flag to disable verbose output. '+\
+        ' [default: %default]'),
+    make_option('-j', '--added_demultiplex_field',
+        action='store', default=None,
+        help='Use -j to add a field to use in the mapping file as an '+\
+        'additional demultiplexing option to the barcode.  All combinations '+\
+        'of barcodes and the values in these fields must be unique. The '+\
+        'fields must contain values that can be parsed from the fasta labels '+\
+        'such as "plate=R_2008_12_09".  In this case, "plate" would be the '+\
+        'column header and "R_2008_12_09" would be the field data (minus '+\
+        'quotes) in the mapping file.  To use the run prefix from the fasta '+\
+        'label, such as ">FLP3FBN01ELBSX", where "FLP3FBN01" is generated '+\
+        'from the run ID, use "-j run_prefix" and set the run prefix to '+\
+        'be used as the data under the column headerr "run_prefix". '+\
         ' [default: %default]')]
         
 script_info['version'] = __version__
@@ -101,6 +114,7 @@ def main():
     var_len_barcodes = opts.variable_len_barcodes
     verbose = opts.verbose
     disable_primer_check = opts.disable_primer_check
+    added_demultiplex_field = opts.added_demultiplex_field
     
     
     valid_replacement_chars=digits+letters+"_"
@@ -111,7 +125,7 @@ def main():
         option_parser.error('-c parameter must be a single character.')
     
     check_mapping_file(infile_name, output_dir, has_barcodes, char_replace,\
-     verbose, var_len_barcodes, disable_primer_check)
+     verbose, var_len_barcodes, disable_primer_check, added_demultiplex_field)
 
 
 if __name__ == "__main__":

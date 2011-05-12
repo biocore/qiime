@@ -173,48 +173,100 @@ class DupChecker(object):
     """
 
     def __init__(self, canonical_f=None, name=None, allow_exact_dup=False,\
-     raw_data=None):
+     raw_data=None, added_demultiplex_field=None):
         """Returns new DupChecker, will use canonical_f for test."""
         self.CanonicalF = canonical_f
         self.Name = name
         self.AllowExactDup = allow_exact_dup
         self.Raw_Data=raw_data
+        self.added_demultiplex_field=added_demultiplex_field
         # Need to allow exact duplicates for linker-primer sequences
         if self.Name=="LinkerPrimerSequence":
             self.AllowExactDup = True
 
     def __call__(self, input):
         """Checks input for non-uniqueness."""
-        result = defaultdict(list)
-        if self.CanonicalF:
-            for i in input:
-                result[self.CanonicalF(i)].append(i)
+        
+        # Need to combine barcodes and added demultiplex field to test 
+        # for uniqueness.
+        if self.Name=="BarcodeSequence" and self.added_demultiplex_field:
+            column_index = 1
+            try:
+                added_column_index =\
+                 self.Raw_Data[0].index(self.added_demultiplex_field)
+            except ValueError:
+                raise ValueError,('Specified added_demultiplex_field %s ' %\
+                 self.added_demultiplex_field + 'not found in mapping file.')
+
+            result = defaultdict(list)
+            
+            row_correction = 1
+            
+            for i in range(len(input)):
+                result[input[i]].append("%s,%s" %\
+                 (input[i],
+                 self.Raw_Data[i + row_correction][added_column_index]))
+                 
+
+
+        
         else:
-            for i in input:
-                result[i].append(i)
+            result = defaultdict(list)
+            if self.CanonicalF:
+                for i in input:
+                    result[self.CanonicalF(i)].append(i)
+            else:
+                for i in input:
+                    result[i].append(i)
+                
+        
+        
+        
 
         bad_pairs = []
+        
+        
         for k, v in result.items():
+            
+            if self.Name=="BarcodeSequence" and self.added_demultiplex_field:
+                v_to_test = v
+                
             if self.AllowExactDup:
                 v_to_test = set(v)
             else:
                 v_to_test = v
-            if len(v_to_test) > 1:
-                bad_pairs.append((k, v))
+
+            if not self.added_demultiplex_field:
+                if len(v_to_test) > 1:
+                    
+                    bad_pairs.append((k, v))
+            else:
+                if len(v_to_test) != len(set(v_to_test)):
+                    bad_pairs.append((k, v))
+
+
         
         return dict(bad_pairs)
 
     def errMsg(self, input, field_name=None):
         """Generates error message from input ('' if OK)."""
         bad = sorted(self(input).items())
+
         if bad:
             # Record column index for row, column locations
-            if self.Raw_Data:
+            if self.Raw_Data and field_name:
                 column_index = self.Raw_Data[0].index(field_name)
-            elif self.Name=="BarcodeSequence":
+            elif self.Name=="BarcodeSequence" and not \
+             self.added_demultiplex_field:
                 column_index = 1
+            elif self.Name=="BarcodeSequence" and self.added_demultiplex_field:
+                column_index = 1
+                added_column_index =\
+                 self.Raw_Data[0].index(self.added_demultiplex_field)
             else:
                 column_index = None
+
+            
 
             res = "DupChecker '%s' found the following possible duplicates" \
                 % str(self.Name) +". If these metadata should have the same "+\
@@ -230,17 +282,29 @@ class DupChecker(object):
             index_counter = 0
             bad_data = []
             for bad_d in bad:
-                bad_data += bad_d[1]
+                # Pull out barcodes if problems with uniqueness using added
+                # demultiplex
+                if self.added_demultiplex_field:
+                    bad_data = [curr_bad[0] for curr_bad in bad]
+                else:
+                    bad_data += bad_d[1]
+                
             for row_datum in input:
                 if row_datum in bad_data:
                     row_indices.append(index_counter)
                 index_counter += 1
+            
+
             # Only append data if raw_data passed
             if column_index:
                 # Append row, column indices messages
                 res += "Row, column for all possible duplicate descriptions:\n"
                 for row in row_indices:
-                    res += "Location (row, column):\t%d,%d\n" % (row, column_index)
+                    res += "Location (row, column):\t%d,%d\n" %\
+                     (row, column_index)
+                    if self.added_demultiplex_field:
+                        res += "Location (row, column):\t%d,%d\n" %\
+                         (row, added_column_index)
                 
 
             return res
@@ -319,7 +383,8 @@ class SameChecker(object):
         else:
             return ''
 
-def run_checks(data, checks, problems, all_mapping_data=None):
+def run_checks(data, checks, problems, all_mapping_data=None,
+               added_demultiplex_field=None):
     """Runs checks on data, reports issues in problems and returns clean data.
 
     checks should be list of (check_f, type) tuples.
@@ -329,12 +394,13 @@ def run_checks(data, checks, problems, all_mapping_data=None):
     """
     
     for check, type_ in checks:
-        data, problem = check(data, raw_data=all_mapping_data)
+        data, problem = check(data, raw_data=all_mapping_data,
+         added_demultiplex_field=added_demultiplex_field)
         if problem:
             problems[type_].append(problem)
     return data
 
-def filename_has_space(fname, raw_data=None):
+def filename_has_space(fname, raw_data=None, added_demultiplex_field=None):
     """Returns message if filename contains space character"""
     if ' ' in fname:
         return fname.replace(' ','_'), \
@@ -355,7 +421,8 @@ def run_description_missing(desc, default_value=RUN_DESCRIPTION_DEFAULT):
 def adapt_dupchecker(f, name, field_name=None):
     """Returns function that adapts DupChecker to API for checkers."""
     dup_checker = DupChecker(f, name)
-    def inner_f(data, field_name=field_name, raw_data=None):
+    def inner_f(data, field_name=field_name, raw_data=None,
+                added_demultiplex_field=None):
         """returns f(data) -> (clean_data, error_msg)"""
         return data, dup_checker.errMsg(data, field_name=field_name)
     return inner_f
@@ -367,7 +434,8 @@ space_dup_checker_header = adapt_dupchecker(lwu,
     'Duplicate checker including whitespace and capitalization', 'Header')
 
 #checks for valid headers
-def sampleid_missing(fields, field_name=SAMPLE_ID_KEY, raw_data=None):
+def sampleid_missing(fields, field_name=SAMPLE_ID_KEY, raw_data=None,
+                     added_demultiplex_field=None):
     """Returns error message if sample id field doesn't start with #"""
 
 
@@ -381,7 +449,7 @@ def sampleid_missing(fields, field_name=SAMPLE_ID_KEY, raw_data=None):
     ' and that the %s field is first.  Found %s' %\
      (SAMPLE_ID_KEY,fields[0].strip())
 
-def blank_header(fields, raw_data=None):
+def blank_header(fields, raw_data=None, added_demultiplex_field=None):
     """Returns error message if any header is empty"""
     stripped_fields = map(strip, fields)
     if '' in stripped_fields:
@@ -391,7 +459,7 @@ def blank_header(fields, raw_data=None):
     else:
         return fields, ''
 
-def bad_char_in_header(fields, raw_data=None):
+def bad_char_in_header(fields, raw_data=None, added_demultiplex_field=None):
     """Returns error message if bad char in header"""
     bad_chars = []
     filtered_fields=[]
@@ -405,7 +473,7 @@ def bad_char_in_header(fields, raw_data=None):
             '\n'.join(["%s\t%s" % (bad, f) for bad, f in bad_chars])
     return fields, ''
 
-def barcode_missing(fields, raw_data=None):
+def barcode_missing(fields, raw_data=None, added_demultiplex_field=None):
     """Returns error message if second field is not barcode field"""
     if len(fields) < 2:
         return fields, \
@@ -431,7 +499,7 @@ def linker_primer_missing(fields, raw_data=None):
             " expected %s but got %s." % (LINKER_PRIMER_KEY, fields[2]) +\
             " Correct header errors before attempting to address warnings."
 
-def description_missing(fields, raw_data=None):
+def description_missing(fields, raw_data=None, added_demultiplex_field=None):
     """Returns error message if last field is not description field"""
     if fields[-1] == DESC_KEY:
         return fields, ''
@@ -506,7 +574,8 @@ def check_vals_by_contains(vals, contains):
             result.append(i)
     return result
 
-def check_field_types((data, field_types), raw_data=None):
+def check_field_types((data, field_types), raw_data=None,
+                      added_demultiplex_field=None):
     """Checks that field types match data"""
     errors = []
     col_headers = list(data[0])
@@ -523,7 +592,9 @@ def check_field_types((data, field_types), raw_data=None):
                     "Could not convert %s (sample id %s, col %s) to right type"
                         % (vals[i], body[i,0], col))
             elif type_ == 'uid':
-                dup_checker = DupChecker(name=col)
+                dup_checker = DupChecker(name=col,\
+                 added_demultiplex_field=added_demultiplex_field,
+                 raw_data=raw_data)
                 err_msg = dup_checker.errMsg(vals)
                 if err_msg:
                     errors.append(err_msg)
@@ -535,7 +606,8 @@ def check_field_types((data, field_types), raw_data=None):
                     (vals[i], body[i,0], col, type_))
     return (data, field_types), '\n'.join(errors)
 
-def check_same_length((data, field_types),col_name=BARCODE_KEY, raw_data=None):
+def check_same_length((data, field_types),col_name=BARCODE_KEY, raw_data=None,
+ added_demultiplex_field=None):
     """Checks field lengths, reporting mismatch: assumes column present."""
     col_headers = list(data[0])
     errors = []
@@ -574,7 +646,8 @@ def check_sample_id_chars((data, field_types), filter_f=sample_id_filter,
     return (data, field_types), '\n'.join(problems)
 
 def check_bad_chars((data, field_types), filter_f=descr_filter,
-    filter_sample_id=sample_id_filter, raw_data=None):
+    filter_sample_id=sample_id_filter, raw_data=None,
+    added_demultiplex_field=None):
     """Checks all fields for bad chars, removing and warning."""
     problems = []
     headers, body = data[0], data[1:]
@@ -599,7 +672,8 @@ def check_bad_chars((data, field_types), filter_f=descr_filter,
     return (data, field_types), '\n'.join(problems)
 
 def check_mixed_caps((data, field_types), dup_f=lwu, 
-    dup_name='Caps and Whitespace', allow_exact_dup=True, raw_data=None):
+    dup_name='Caps and Whitespace', allow_exact_dup=True, raw_data=None,
+    added_demultiplex_field=None):
     """Checks all fields for mixed caps, warning."""
     
     dup_checker = DupChecker(dup_f, dup_name, allow_exact_dup,\
@@ -613,7 +687,8 @@ def check_mixed_caps((data, field_types), dup_f=lwu,
     return (data, field_types), '\n'.join(problems)
 
 def check_missing_descriptions((sample_descriptions, sample_ids, 
-    run_description), column_index=None, raw_data=None):
+    run_description), column_index=None, raw_data=None,
+    added_demultiplex_field=None):
     """Returns warnings for sample ids with missing descriptions."""
     missing = []
     for i, desc in enumerate(sample_descriptions):
@@ -650,7 +725,7 @@ def check_missing_sampleIDs(sample_ids, problems):
     return problems
 
 def check_duplicate_descriptions((sample_descriptions, sample_ids,
-    run_description), raw_data=None):
+    run_description), raw_data=None, added_demultiplex_field=None):
     """Returns warnings for duplicate descriptions"""
     
     d = DupChecker()
@@ -684,11 +759,12 @@ def check_duplicate_descriptions((sample_descriptions, sample_ids,
         '\n'.join(problems)
         
 def check_duplicate_sample_ids((sample_descriptions, sample_ids,
-    run_description), raw_data=None):
+    run_description), raw_data=None, added_demultiplex_field=None):
     """Returns warnings for duplicate sample_ids"""
     
 
-    d = DupChecker()
+    d = DupChecker(raw_data=raw_data,
+     added_demultiplex_field=added_demultiplex_field)
     dup_indices = d.dupIndices(sample_ids)
     problems = []
     for k, v in dup_indices.items():
@@ -739,7 +815,7 @@ def check_reverse_primers(reverse_primers, problems, col_headers):
     
         
 def check_primers_barcodes(primers, barcodes, problems, is_barcoded=True,
- disable_primer_check=False):
+ disable_primer_check=False, added_demultiplex_field=None):
     """Returns warnings for primers/barcodes that have invalid characters 
     
     The check_primers_barcodes function only tests for valid IUPAC DNA
@@ -772,7 +848,10 @@ def check_primers_barcodes(primers, barcodes, problems, is_barcoded=True,
     
     if is_barcoded:
         for row in range(len(barcodes)):
-            for base in barcodes[row]:
+            curr_barcode = barcodes[row]
+            if added_demultiplex_field:
+                curr_barcode = curr_barcode.split(',')[0]
+            for base in curr_barcode:
                 try:
                     IUPAC_DNA[base]
                 except KeyError:
@@ -787,7 +866,7 @@ def check_primers_barcodes(primers, barcodes, problems, is_barcoded=True,
     return problems
 
 def check_description_chars((sample_descriptions, sample_ids, run_description),\
- filter_f=descr_filter, raw_data=None):
+ filter_f=descr_filter, raw_data=None, added_demultiplex_field=None):
     """Returns warnings for descriptions with bad chars, replacing them."""
     new_descr = map(filter_f, sample_descriptions)
     errors = []
@@ -863,11 +942,14 @@ STANDARD_COL_CHECKS = [
 BARCODE_COL_CHECKS = [(check_same_length, 'warning')]
 PRIMER_COL_CHECKS = [(linker_primer_missing, 'error')]
 
-def get_primers_barcodes(data, is_barcoded, disable_primer_check):
+def get_primers_barcodes(data, is_barcoded, disable_primer_check,
+                         added_demultiplex_field=None):
     """ Returns list of primers, barcodes from mapping file """
     
     primers=[]
     barcodes=[]
+    
+    header_index = 0
     
     if not is_barcoded and disable_primer_check:
         return primers, barcodes
@@ -879,14 +961,48 @@ def get_primers_barcodes(data, is_barcoded, disable_primer_check):
         if not is_barcoded:
             if sample[1]== "LinkerPrimerSequence":
                 continue
-        if is_barcoded and not disable_primer_check:
+        if is_barcoded and not disable_primer_check and \
+         not added_demultiplex_field:
             barcodes.append(sample[1].upper())
             primers.append(sample[2].upper())
+            
+        elif is_barcoded and not disable_primer_check and \
+         added_demultiplex_field:
+            
+            try:
+                added_demultiplex_index =\
+                 list(data[header_index]).index(added_demultiplex_field)
+            except ValueError:
+                raise ValueError,('Specified demultiplex -j option '+\
+                 '%s not found in mapping file header.' %\
+                 added_demultiplex_field)
+                 
+                 
+            barcodes.append(sample[1].upper() + "," +\
+             sample[added_demultiplex_index])
+            primers.append(sample[2].upper())
+            
         elif not is_barcoded and not disable_primer_check:
             primers.append(sample[2].upper())
-        elif is_barcoded and disable_primer_check:
+            
+        elif is_barcoded and disable_primer_check and \
+         not added_demultiplex_field:
             barcodes.append(sample[1].upper())
-
+            
+        elif is_barcoded and disable_primer_check and added_demultiplex_field:
+            
+            try:
+                added_demultiplex_index =\
+                 list(data[header_index]).index(added_demultiplex_field)
+            except ValueError:
+                raise ValueError,('Specified demultiplex -j option '+\
+                 '%s not found in mapping file header.' %\
+                 added_demultiplex_field)
+                 
+                 
+            barcodes.append(sample[1].upper() + "," +\
+             sample[added_demultiplex_index])
+    
     
     return primers, barcodes
     
@@ -906,14 +1022,18 @@ def get_reverse_primers(data, col_headers):
   
     return reverse_primers
     
-def check_dup_var_barcodes_primers(primers, barcodes, problems):
+def check_dup_var_barcodes_primers(primers, barcodes, problems,
+                                   disable_primer_check=False):
     """ Checks that no duplicate seqs occur when barcodes/primers appended """
     
     # Get list of concatenated barcodes + primers
     concat_barcodes_primers = []
     
     for primer, barcode in map(None, primers, barcodes):
-        concat_barcodes_primers.append(barcode+primer)
+        if not disable_primer_check:
+            concat_barcodes_primers.append(barcode+primer)
+        else:
+            concat_barcodes_primers.append(barcode)
     
     
     
@@ -929,7 +1049,7 @@ def check_dup_var_barcodes_primers(primers, barcodes, problems):
     
 
 def process_id_map(infile, disable_primer_check=False, is_barcoded=True, \
-    char_replace="_", var_len_barcodes = False, 
+    char_replace="_", var_len_barcodes = False, added_demultiplex_field=None,
     filename_checks=STANDARD_FILENAME_CHECKS, 
     #run_description_checks=STANDARD_RUN_DESCRIPTION_CHECKS,
     sample_description_checks=STANDARD_SAMPLE_DESCRIPTION_CHECKS,
@@ -937,6 +1057,8 @@ def process_id_map(infile, disable_primer_check=False, is_barcoded=True, \
     col_checks=STANDARD_COL_CHECKS,
     field_types=STANDARD_FIELD_TYPES):
         
+    
+    
     """ Parse ID mapping file.
    
     Returns the following:
@@ -998,17 +1120,17 @@ def process_id_map(infile, disable_primer_check=False, is_barcoded=True, \
     data = array(pad_rows(data))
     
 
-
     #add barcode checks if needed
     if is_barcoded:
         col_header_checks.extend(BARCODE_COL_HEADER_CHECKS)
-        if not var_len_barcodes:
+        if not var_len_barcodes and not added_demultiplex_field:
             col_checks.extend(BARCODE_COL_CHECKS)
 
         
     
     #check col headers
     col_headers = run_checks(col_headers, col_header_checks, problems, raw_data)
+
 
     #check col values
     data = array(pad_rows(data))
@@ -1026,10 +1148,9 @@ def process_id_map(infile, disable_primer_check=False, is_barcoded=True, \
         data, sample_descriptions = data, array([DESC_KEY] + ['']*(len(data)-1))
 
     data, field_types = run_checks((data, field_types), col_checks, problems, \
-     raw_data)
+     raw_data, added_demultiplex_field)
     sample_ids = data[:,0]
     
-
 
 
 
@@ -1042,10 +1163,13 @@ def process_id_map(infile, disable_primer_check=False, is_barcoded=True, \
     
     #check primers,barcodes for valid IUPAC DNA characters
     primers, barcodes = get_primers_barcodes(data, is_barcoded, \
-     disable_primer_check)
+     disable_primer_check, added_demultiplex_field)
+     
+     
+
     problems = check_primers_barcodes(primers, barcodes, problems, \
-     is_barcoded, disable_primer_check)
-    
+     is_barcoded, disable_primer_check, added_demultiplex_field)
+         
     if not disable_primer_check:
         reverse_primers = get_reverse_primers(data, col_headers)
         if reverse_primers:
@@ -1053,7 +1177,8 @@ def process_id_map(infile, disable_primer_check=False, is_barcoded=True, \
              problems, col_headers)
      
     if var_len_barcodes:
-        problems = check_dup_var_barcodes_primers(primers, barcodes, problems)
+        problems = check_dup_var_barcodes_primers(primers, barcodes, problems,
+         disable_primer_check)
         
     
     #check for missing sample_IDs
@@ -1129,14 +1254,15 @@ def write_logfile(errors, warnings, log_filepath, mapping_filepath):
 
 
 def check_mapping_file(infile_name, output_dir, has_barcodes, char_replace, \
- verbose, var_len_barcodes, disable_primer_check):
+ verbose, var_len_barcodes, disable_primer_check, added_demultiplex_field=None):
     """ Central program function for checking mapping file """
 
     
     headers, id_map, description_map, run_description, errors, warnings = \
      process_id_map(open(infile_name, 'U'), disable_primer_check,
      has_barcodes, char_replace,\
-     var_len_barcodes)
+     var_len_barcodes, added_demultiplex_field)
+     
 
     chars_replaced = test_for_replacement_chars(warnings)
 

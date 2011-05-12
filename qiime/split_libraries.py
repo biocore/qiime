@@ -262,13 +262,16 @@ def expand_degeneracies(raw_primers):
     return expanded_primers
     
 
-def check_map(infile, disable_primer_check, has_barcodes=True):
+def check_map(infile, disable_primer_check, added_demultiplex_field=None,
+              has_barcodes=True):
     """Check mapping file and extract list of valid barcodes, primers """
     
-   
+
+    
     hds, id_map, dsp, run_description, errors, warnings = \
         process_id_map(infile, is_barcoded=has_barcodes, \
-        disable_primer_check=disable_primer_check)
+        disable_primer_check=disable_primer_check,
+        added_demultiplex_field=added_demultiplex_field)
         
     
     barcode_to_sample_id = {}
@@ -276,8 +279,13 @@ def check_map(infile, disable_primer_check, has_barcodes=True):
     primer_seqs_lens = {}
     all_primers = {}
 
+
     for sample_id, sample in id_map.items():
-        barcode_to_sample_id[sample['BarcodeSequence'].upper()] = sample_id
+        if added_demultiplex_field:
+            barcode_to_sample_id[sample['BarcodeSequence'].upper() + "," +\
+             sample[added_demultiplex_field]] = sample_id
+        else:
+            barcode_to_sample_id[sample['BarcodeSequence'].upper()] = sample_id
         if not disable_primer_check:
             raw_primers = sample['LinkerPrimerSequence'].upper().split(',')
             
@@ -291,7 +299,7 @@ def check_map(infile, disable_primer_check, has_barcodes=True):
                 all_primers[primer] = len(primer)
             primer_seqs_lens[sample['BarcodeSequence']] = curr_bc_primers
     
-    
+
     
     
     return hds, id_map, barcode_to_sample_id, warnings, errors, \
@@ -350,25 +358,85 @@ def seq_exceeds_homopolymers(curr_seq, max_len=6):
     return False
 
 def check_barcode(curr_barcode, barcode_type, valid_map,
- attempt_correction=True):
+                  attempt_correction=True, added_demultiplex_field=None,
+                  curr_id=None):
     """Return whether barcode is valid, and attempt correction."""
     
+    
     corrected_bc = False
-    if curr_barcode in valid_map:
-        return False, curr_barcode, corrected_bc
-    elif attempt_correction == False:
-        return True, curr_barcode, corrected_bc
+    
+
+    if added_demultiplex_field:
+        
+        added_demultiplex_lens =\
+         set([len(bc.split(',')[1]) for bc in valid_map])
+         
+        # using set() will put in order of smallest to largest and removes
+        # redundant lengths, converting to list to sort from largest to smallest
+        added_demultiplex_lens =\
+         [length for length in added_demultiplex_lens][::-1]
+             
+
+        
+        # Handle specific case of run_prefix
+        # Need to slice out size(s) of label that matches run prefix size(s)
+        if added_demultiplex_field.upper() == "RUN_PREFIX":
+            added_demultiplex =\
+             [curr_id.split()[0][0:added_demultiplex_len] for \
+             added_demultiplex_len in added_demultiplex_lens]
+
+        else:
+            for label_item in curr_id.split():
+                if label_item.startswith(added_demultiplex_field):
+                    added_demultiplex = [label_item.split('=')[1]]
+                    
+        all_bcs = [bc.split(',')[0] for bc in valid_map]
+        all_added_demultiplex = [bc.split(',')[1] for bc in valid_map]
+
+        
+        for curr_added_demultiplex in added_demultiplex:
+
+            bc_and_demultiplex = curr_barcode + "," + curr_added_demultiplex
+            
+
+            
+            if bc_and_demultiplex in valid_map:
+                return False, bc_and_demultiplex, corrected_bc
+            elif attempt_correction == False:
+                return True, curr_barcode, corrected_bc
+    else:
+        if curr_barcode in valid_map:
+            return False, curr_barcode, corrected_bc
+        elif attempt_correction == False:
+            return True, curr_barcode, corrected_bc
     
     if barcode_type in BARCODE_TYPES:
         expect_len, curr_bc_fun  = BARCODE_TYPES[barcode_type]
         barcode, num_errors = curr_bc_fun(curr_barcode, valid_map)
         corrected_bc = True
-        return num_errors, barcode, corrected_bc
+
+        if added_demultiplex_field:
+
+            for curr_added_demultiplex in added_demultiplex:
+                bc_and_demultiplex = barcode + "," + curr_added_demultiplex
+                if bc_and_demultiplex in valid_map:
+                    return num_errors, bc_and_demultiplex, corrected_bc
+
+        else:
+            return num_errors, barcode, corrected_bc
     else:
         try:
             expect_len, curr_bc_fun = int(barcode_type), correct_barcode
             barcode, num_errors = curr_bc_fun(curr_barcode, valid_map)
             corrected_bc = True
+            
+            if added_demultiplex_field:
+
+                for curr_added_demultiplex in added_demultiplex:
+                    bc_and_demultiplex = barcode + "," + curr_added_demultiplex
+                    if bc_and_demultiplex in valid_map:
+                        return num_errors, bc_and_demultiplex, corrected_bc
+                    
         except ValueError:
             raise ValueError, "Unsupported barcode type: %s" % barcode_type
         return num_errors, barcode, corrected_bc
@@ -462,17 +530,21 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
     primer_seqs_lens, all_primers, max_primer_mm, disable_primer_check,
     reverse_primers, rev_primers, qual_out, qual_score_window=0,
     discard_bad_windows=False, min_qual_score=25, min_seq_len=200,
-    median_length_filtering=None):
+    median_length_filtering=None, added_demultiplex_field=None):
     """Checks fasta-format sequences and qual files for validity."""
+    
+    
     seq_lengths = {}
     bc_counts = defaultdict(list)
     curr_ix = starting_ix
     corr_ct = 0 #count of corrected barcodes
 
     # get the list of barcode lengths in reverse order
-    barcode_length_order = list(set([len(bc) for bc in valid_map]))
+    barcode_length_order =\
+     list(set([len(bc.split(',')[0]) for bc in valid_map]))
     barcode_length_order.sort()
     barcode_length_order = barcode_length_order[::-1]
+    
 
     primer_mismatch_count = 0
     all_primers_lens = list(set(all_primers.values()))
@@ -488,6 +560,7 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
     for fasta_in in fasta_files:
         for curr_id, curr_seq in MinimalFastaParser(fasta_in):
             curr_rid = curr_id.split()[0]
+
             curr_len = len(curr_seq)
             curr_qual = qual_mappings.get(curr_rid, None)
             
@@ -502,16 +575,16 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
             if failed:  #if we failed any of the checks, bail out here
                 bc_counts['#FAILED'].append(curr_rid)
                 continue
-                
             
-
-                
                 
             if barcode_type == 'variable_length':
                 # Reset the raw_barcode, raw_seq, and barcode_len -- if 
                 # we don't match a barcode from the mapping file, we want
                 # these values to be None
                 raw_barcode, raw_seq, barcode_len = (None, None, None)
+                
+                curr_valid_map =\
+                 [curr_bc.split(',')[0] for curr_bc in valid_map]
                 # Iterate through the barcode length from longest to shortest
                 for l in barcode_length_order:
                     # extract the current length barcode from the sequence
@@ -519,7 +592,7 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
                     # check if the sliced sequence corresponds to a valid
                     # barcode, and if so set raw_barcode, raw_seq, and 
                     # barcode_len for use in the next steps
-                    if bc in valid_map:
+                    if bc in curr_valid_map:
                         raw_barcode, raw_seq = bc, seq
                         barcode_len = len(raw_barcode)
                         break
@@ -581,7 +654,7 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
             try:
                 bc_diffs, curr_bc, corrected_bc = \
                     check_barcode(cbc, barcode_type, valid_map.keys(), \
-                    attempt_bc_correction)
+                    attempt_bc_correction, added_demultiplex_field, curr_id)
                 if bc_diffs > max_bc_errors:
                     raise ValueError, "Too many errors in barcode"
                 corr_ct += bool(corrected_bc)
@@ -959,13 +1032,13 @@ def get_reverse_primers(id_map):
 def preprocess(fasta_files, qual_files, mapping_file, 
     barcode_type="golay_12",
     min_seq_len=200, max_seq_len=1000, min_qual_score=25, starting_ix=1,
-    keep_primer=True, max_ambig=0, max_primer_mm=1, trim_seq_len=True,
+    keep_primer=False, max_ambig=0, max_primer_mm=0, trim_seq_len=False,
     dir_prefix='.', max_bc_errors=2, max_homopolymer=4,
     retain_unassigned_reads=False, keep_barcode=False, 
     attempt_bc_correction=True, qual_score_window=0,
     disable_primer_check=False, reverse_primers='disable', 
     record_qual_scores=False, discard_bad_windows=False, 
-    median_length_filtering=None):
+    median_length_filtering=None, added_demultiplex_field=None):
         
         
     """
@@ -1046,6 +1119,16 @@ def preprocess(fasta_files, qual_files, mapping_file,
     median length of all sequences output, and instead filter out sequences
     based upon whether or not they fall within the number of median absolute
     deviations given by this parameter.
+    
+    added_demultiplex_field: (default None) If enabled, will attempt to 
+    demultiplex by both a barcode and data that can be parsed from the fasta
+    label/comment.  If 'run_prefix' is specified will pull the character string
+    immediatly following the '>' at the beginning of the fasta label.  Any 
+    other field specified will be pulled from the comment.  Example: if 'plate'
+    is specified, the string following 'plate=' will be used.  The mapping file
+    must contain a column with a header matching the name specified by the -j
+    option, and every combination of barcode + added demultiplex option must
+    be unique.
 
     Result:
     in dir_prefix, writes the following files:
@@ -1084,11 +1167,15 @@ def preprocess(fasta_files, qual_files, mapping_file,
     """# Generate primer sequence patterns - changing to mapping file primers.
     all_primer_seqs, primer_seq_len = \
         get_primer_seqs(primer_seq_pats.split(',')) """
-        
+    
+
     # Check mapping file and get barcode mapping 
     map_file = open(mapping_file, 'U')
     headers, id_map, valid_map, warnings, errors, \
-     primer_seqs_lens, all_primers = check_map(map_file, disable_primer_check)
+     primer_seqs_lens, all_primers = check_map(map_file, disable_primer_check,
+     added_demultiplex_field)
+     
+
      
     if reverse_primers != 'disable':
         if 'ReversePrimer' not in headers:
@@ -1112,9 +1199,11 @@ def preprocess(fasta_files, qual_files, mapping_file,
         "Validate with check_id_map first: %s" % "\n".join(errors)
 
     # Find actual length of barcodes in the mapping file, also check for
-    # variable lengths
-    barcode_length_check = list(set([len(bc) for bc in valid_map]))
-    # Check barcode type
+    # variable lengths, in case of added_demultiplex, split on comma.
+    barcode_length_check =\
+     list(set([len(bc.split(',')[0]) for bc in valid_map]))
+    
+        # Check barcode type
     if barcode_type not in BARCODE_TYPES:
         try:
             barcode_len, barcode_fun = int(barcode_type), correct_barcode
@@ -1242,7 +1331,7 @@ def preprocess(fasta_files, qual_files, mapping_file,
         primer_seqs_lens, all_primers, max_primer_mm, disable_primer_check,
         reverse_primers, rev_primers, qual_out, qual_score_window,
         discard_bad_windows, min_qual_score, min_seq_len,
-        median_length_filtering)
+        median_length_filtering, added_demultiplex_field)
 
     # Write log file
     log_file = open(dir_prefix + '/' + "split_library_log.txt", 'w+')
