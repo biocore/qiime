@@ -336,7 +336,7 @@ You can group OTUs by different taxonomic levels (division, class, family) with 
 
     summarize_taxa.py -i wf_da/otu_table.txt -o wf_da/Taxa_Charts -L 3
 
-The script will generate a new OTU table :file:`wf_da/otu_table_L3.txt`, where the value of each *ij* entry in the matrix is the count of the number of times all OTUs belonging to the taxon *i* (for example, Phylum Actinobacteria) were found in the sequences for sample *j*.
+The script will generate a new OTU table :file:`wf_da/Taxa_Charts/otu_table_L3.txt`, where the value of each *ij* entry in the matrix is the count of the number of times all OTUs belonging to the taxon *i* (for example, Phylum Actinobacteria) were found in the sequences for sample *j*.
 
 .. note::
 
@@ -358,7 +358,7 @@ Make Taxonomy Summary Charts
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 To visualize the summarized taxa, you can use the `plot_taxa_summary.py <../scripts/plot_taxa_summary.html>`_ script, which shows which taxons are present in all samples.  To use this script, we need to set the taxonomy level label "-l", an output directory "-o", and the background color "-k" as white::
 
-    plot_taxa_summary.py -i wf_da/Taxa_Charts/otu_table_Level3.txt -l Phylum -o wf_da/Taxa_Charts -k white
+    plot_taxa_summary.py -i wf_da/Taxa_Charts/otu_table_L3.txt -l Phylum -o wf_da/Taxa_Charts -k white
 
 To view the resulting charts, open the area or bar chart html file located in the  :file:`wf_da/Taxa_Charts/` folder. The following chart shows the taxa assignments for each sample as an area chart.  Users can mouseover the plot to see which taxa are contributing to the percentage shown.
 
