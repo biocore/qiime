@@ -131,7 +131,7 @@ script_info['optional_options']=[\
     make_option('--n_taxa_keep',
         help='Used only when generating BiPlots. This is the number of taxa '+\
         ' to display. Use -1 to display all. [default: %default]',default=10,
-        type="int"),
+        type=int),
     make_option('--biplot_output_file', 
         help='Used only when generating BiPlots. Output coordinates filepath '+\
         ' when generating a biplot. [default: %default]',default=None,

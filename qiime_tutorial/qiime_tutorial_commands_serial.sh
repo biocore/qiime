@@ -21,10 +21,10 @@ make_otu_network.py -m Fasting_Map.txt -i wf_da/otu_table.txt -o wf_da/OTU_Netwo
 
 #Make Taxa Summary Charts
 echo "Summarize taxa"
-summarize_taxa.py -i wf_da/otu_table.txt -o wf_da/otu_table_Level3.txt -L 3
+summarize_taxa.py -i wf_da/otu_table.txt -o wf_da/Taxa_Charts -L 3
 
 echo "Make Taxa Summary Charts"
-plot_taxa_summary.py -i wf_da/otu_table_Level3.txt -l Phylum -o wf_da/Taxa_Charts -k white
+plot_taxa_summary.py -i wf_da/Taxa_Charts/otu_table_L3.txt -l Phylum -o wf_da/Taxa_Charts -k white
 
 echo "Alpha rarefaction"
 rm -rf wf_arare ; alpha_rarefaction.py -i wf_da/otu_table.txt -m Fasting_Map.txt -o wf_arare/ -p custom_parameters.txt -t wf_da/rep_set.tre

@@ -142,7 +142,8 @@ def main():
         data['coord'] = get_coord(opts.coord_fname)
 
     filepath=opts.coord_fname
-    filename='2d_pcoa_plots'
+    basename,extension=os.path.splitext(filepath)
+    filename='%s_2D_PCoA_plots' % ('_'.join(basename.split('_')[:-1]))
 
     qiime_dir=get_qiime_project_dir()
 

@@ -14,7 +14,7 @@ Users can sort their OTU table using the mapping file and `sort_otu_table.py <..
 
 ::
 	
-	sort_otu_table.py -i seqs_otu_table.txt -o seqs_otu_table_sorted_by_DOB.txt -m Fasting_Map.txt -s DOB
+	sort_otu_table.py -i wf_da/otu_table.txt -o otu_table_sorted_by_DOB.txt -m Fasting_Map.txt -s DOB
 	
 	
 The resulting OTU Table will look something like the following, where the samples are sorted by the mouse date of birth:
@@ -37,7 +37,7 @@ Users can summarize their OTU table using one of the column headers in the mappi
 
 ::
 	
-	summarize_otu_by_cat.py -i Fasting_Map.txt -c seqs_otu_table.txt -m Treatment
+	summarize_otu_by_cat.py -i Fasting_Map.txt -c wf_da/otu_table.txt -m Treatment -o Treatment_otu_table.txt
 	
 The resulting OTU Table (:file:`Treatment_otu_table.txt`) will have category ids instead of sample ids as shown below. 
 
@@ -63,7 +63,7 @@ Example 1: case where the user did not perform Steps 1 or 2.
 ==============================================================
 ::
 	
-	summarize_taxa.py -L 3 -i seqs_otu_table.txt -o seqs_otu_table_summarized.txt
+	summarize_taxa.py -L 3 -i wf_da/otu_table.txt -o bar_charts
 
 The resulting summarized taxa will look something like:
 ::
@@ -78,7 +78,7 @@ Example 2: case where the user performed Step 1.
 ==============================================================
 ::
 
-    summarize_taxa.py -L 3 -i seqs_otu_table_sorted_by_DOB.txt -o seqs_otu_table_sorted_by_DOB_summarized.txt
+    summarize_taxa.py -L 3 -i otu_table_sorted_by_DOB.txt -o bar_charts
 
 The resulting summarized taxa will look something like:
 ::
@@ -93,7 +93,7 @@ Example 3: case where the user performed Step 2.
 ==============================================================
 ::
 
-	summarize_taxa.py -L 3 -i Treatment_otu_table.txt -o Treatment_otu_table_summarized.txt
+	summarize_taxa.py -L 3 -i Treatment_otu_table.txt -o bar_charts
 
 The resulting summarized taxa will look something like:	
 ::
@@ -112,7 +112,7 @@ Example 1: case where the user did not perform Steps 1 or 2.
 ==============================================================
 ::
 	
-	plot_taxa_summary.py -i seqs_otu_table_summarized.txt -l Phylum -o bar_charts -c bar -k white
+	plot_taxa_summary.py -i bar_charts/otu_table_L3.txt -l Phylum -o bar_charts -c bar -k white
 
 The resulting plot should look like the following:
 
@@ -123,7 +123,7 @@ Example 2: case where the user performed Step 1.
 ==============================================================
 ::
 
-	plot_taxa_summary.py -i seqs_otu_table_summarized.txt -l Phylum -o bar_charts -c bar -k white
+	plot_taxa_summary.py -i bar_charts/otu_table_sorted_by_DOB_L3.txt -l Phylum -o bar_charts -c bar -k white
 
 The resulting plot should look like the following and notice that PC.356 is now the first sample based on the sorting of sample ids from Step 1:
 
@@ -134,7 +134,7 @@ Example 3: case where the user performed Step 2.
 ==============================================================
 ::
 
-	plot_taxa_summary.py -i seqs_otu_table_summarized.txt -l Phylum -o bar_charts -c bar -k white
+	plot_taxa_summary.py -i bar_charts/Treatment_otu_table_L3.txt -l Phylum -o bar_charts -c bar -k white
 
 The resulting plot should look like the following:
 
