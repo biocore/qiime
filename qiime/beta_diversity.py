@@ -250,6 +250,8 @@ def single_file_beta(input_path, metrics, tree_path, output_dir, rowids=None,
                     metric_f.__name__ == 'dist_gower' or \
                     metric_f.__name__ == 'dist_hellinger' or\
                     metric_f.__name__ == 'binary_dist_chisq':
+                    warnings.warn('dissimilarity '+metric_f.__name__+\
+                      ' is not parallelized, calculating the whole matrix...')
                     row_dissims.append(metric_f(otumtx.T)[rowidx])
                 else:
                     try:
