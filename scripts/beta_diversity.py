@@ -35,20 +35,19 @@ script_info['output_description']="""Each file in the input directory should be 
 script_info['required_options']=[]
 script_info['optional_options']=[
  make_option('-i', '--input_path',
-     help='Input OTU table filepath or input directory containing OTU tables' +\
-     ' for batch processing. [default: %default]',
+     help='Input OTU table filepath or input directory containing OTU ' +\
+     'tables for batch processing. [default: %default]',
      type='existing_path'),
  make_option('-r', '--rows', default=None,
      help='Compute for only these rows of the distance matrix.' +\
       ' User should pass a list of sample names (e.g. "s1,s3")' +\
       ' [default: %default; full n x n matrix is generated]'),
  make_option('-o', '--output_dir',
-     help="Output directory. One will be created if it doesn't exist.' +\
-     ' [default: %default]",
+     help="Output directory. One will be created if it doesn't exist.",
      type='new_dirpath'),
  make_option('-m', '--metrics', default='unweighted_unifrac,weighted_unifrac',
-     help='Beta-diversity metric(s) to use. A comma-separated list should be' +\
-     ' provided when multiple metrics are specified. [default: %default]'),
+     help='Beta-diversity metric(s) to use. A comma-separated list should' +\
+     ' be provided when multiple metrics are specified. [default: %default]'),
  make_option('-s', '--show_metrics', action='store_true', 
      help='Show the available beta-diversity metrics and exit. Metrics' +\
      ' starting with' +\
@@ -64,7 +63,7 @@ script_info['optional_options']=[
      'Pass to skip this step if you\'re already passing a minimal tree.' +\
      ' [default: %default]'),
  make_option('--float', action="store_true", default=False,
-     help='By default, the script expects integer matrices (OTUs) '+\
+     help='By default, the script expects integer OTU tables '+\
      'but if this flag is True it will process float numbers.'+\
      ' [default: %default]'),
 ]
