@@ -13,6 +13,8 @@ __status__ = "Development"
 """Contains tests for performing beta diversity analyses."""
 
 import numpy
+import warnings
+
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files
 from cogent.app.util import get_tmp_filename
@@ -127,8 +129,15 @@ class BetaDiversityCalcTests(TestCase):
         metrics = list_known_nonphylogenetic_metrics()
         metrics.extend(list_known_phylogenetic_metrics())
         output_dir = get_tmp_filename(suffix = '')
-        os.mkdir(output_dir)        
-        
+        os.mkdir(output_dir)
+
+        # new metrics that don't trivially parallelize must be dealt with
+        # carefully
+        warnings.filterwarnings('ignore','dissimilarity binary_dist_chisq is not parallelized, calculating the whole matrix...')
+        warnings.filterwarnings('ignore','dissimilarity dist_chisq is not parallelized, calculating the whole matrix...')  
+        warnings.filterwarnings('ignore','dissimilarity dist_gower is not parallelized, calculating the whole matrix...')     
+        warnings.filterwarnings('ignore','dissimilarity dist_hellinger is not parallelized, calculating the whole matrix...')  
+
         self.files_to_remove.extend([input_path,tree_path])
         self.folders_to_remove.append(output_dir)
         
@@ -176,3 +185,4 @@ l19_tree = """((((tax7:0.1,tax3:0.2):.98,tax8:.3, tax4:.3):.4, ((tax1:0.3, tax6:
 #run tests if called from command line
 if __name__ == '__main__':
     main()
+
