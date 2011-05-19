@@ -106,8 +106,7 @@ def main():
     num_coord_files = len(coord_files)
     data['edges'], data['coord'] = \
         get_multiple_coords(coord_files, opts.edges_file, opts.serial)
-
-
+    
     # if the edges file wasn't supplied, we appended _i to each file's samples
     # therefore we now add duplicated samples with _0, _1,... to mapping file
     if opts.edges_file is None:
@@ -122,6 +121,9 @@ def main():
     # remove any samples not present in mapping file
     remove_unmapped_samples(data['map'],data['coord'],data['edges'])
 
+    if(len(data['coord'][1]) == 0):
+        raise ValueError, '\n\nError: None of the sample IDs in the coordinates files were present in the mapping file.\n'
+    
     # process custom axes, if present.
     custom_axes = None
     if opts.custom_axes:
