@@ -29,14 +29,8 @@ plot_taxa_summary.py -i wf_da/Taxa_Charts/otu_table_L3.txt -l Phylum -o wf_da/Ta
 echo "Alpha rarefaction"
 rm -rf wf_arare ; alpha_rarefaction.py -i wf_da/otu_table.txt -m Fasting_Map.txt -o wf_arare/ -p custom_parameters.txt -t wf_da/rep_set.tre
 
-echo "Beta diversity/3d plots"
-rm -rf wf_bdiv_even146 ; beta_diversity_through_3d_plots.py -i wf_da/otu_table.txt -m Fasting_Map.txt -o wf_bdiv_even146/ -p custom_parameters.txt -t wf_da/rep_set.tre -e 146
-
-echo "Make 2D Plots - Unweighted Unifrac"
-make_2d_plots.py -i wf_bdiv_even146/unweighted_unifrac_pc.txt -m Fasting_Map.txt -o wf_bdiv_even146/unweighted_unifrac_2d -k white -p wf_bdiv_even146/prefs.txt
-
-echo "Make Distance Histograms - Unweighted Unifrac"
-make_distance_histograms.py -d wf_bdiv_even146/unweighted_unifrac_dm.txt -m Fasting_Map.txt -o wf_bdiv_even146/Distance_Histograms -p wf_bdiv_even146/prefs.txt
+echo "Beta diversity and plots"
+rm -rf wf_bdiv_even146 ; beta_diversity_through_plots.py -i wf_da/otu_table.txt -m Fasting_Map.txt -o wf_bdiv_even146/ -p custom_parameters.txt -t wf_da/rep_set.tre -e 146
 
 echo "Jackknifed beta diversity"
 rm -rf wf_jack ; jackknifed_beta_diversity.py -i wf_da/otu_table.txt -o wf_jack -p custom_parameters.txt -e 110 -t wf_da/rep_set.tre -m Fasting_Map.txt
