@@ -27,7 +27,7 @@ import subprocess
 
 
 class ParallelBetaDiversityTests(TestCase):
-    
+
     def setUp(self):
         """ """
         self.dm_comp1 = dm_comp1.split('\n')
@@ -72,7 +72,7 @@ class ParallelBetaDiversityTests(TestCase):
         cmd = scripts_dir+'/parallel_beta_diversity.py -T -O 3 '+\
          '--retain_temp_files -i %s -o %s -m unifrac -t %s' %\
          (otuf, maindir+'/para1', treef)
-	# -T so doesn't return yet
+        # -T so doesn't return yet
         proc = subprocess.Popen(cmd,shell=True, 
             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         betaout, betaerr = proc.communicate()
