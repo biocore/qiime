@@ -30,7 +30,7 @@ from qiime.parse import (parse_qiime_parameters, parse_otu_table,
     parse_distmat_to_dict,parse_distmat)
 from qiime.workflow import (run_qiime_data_preparation,
     run_pick_reference_otus_through_otu_table,
-    run_beta_diversity_through_3d_plot,
+    run_beta_diversity_through_plots,
     run_qiime_alpha_rarefaction,
     run_jackknifed_beta_diversity,
     call_commands_serially,
@@ -224,7 +224,7 @@ class WorkflowTests(TestCase):
     def test_unsupported_options_handled_nicely(self):
         """WorkflowError raised on unsupported option """
         self.params['beta_diversity']['blah'] = self.fasting_otu_table_fp
-        self.assertRaises(WorkflowError,run_beta_diversity_through_3d_plot,
+        self.assertRaises(WorkflowError,run_beta_diversity_through_plots,
          self.fasting_otu_table_fp, 
          self.fasting_mapping_fp,
          self.wf_out, 
@@ -673,10 +673,10 @@ class WorkflowTests(TestCase):
         self.assertTrue(getsize(log_fp) > 0)
          
          
-    def test_run_beta_diversity_through_3d_plot(self):
-        """ run_beta_diversity_through_3d_plot generates expected results
+    def test_run_beta_diversity_through_plots(self):
+        """ run_beta_diversity_through_plots generates expected results
         """
-        run_beta_diversity_through_3d_plot(
+        run_beta_diversity_through_plots(
          self.fasting_otu_table_fp, 
          self.fasting_mapping_fp,
          self.wf_out, 
@@ -727,10 +727,10 @@ class WorkflowTests(TestCase):
         self.assertTrue(getsize(log_fp) > 0)
 
          
-    def test_run_beta_diversity_through_3d_plot_even_sampling(self):
-        """ run_beta_diversity_through_3d_plot functions with even sampling
+    def test_run_beta_diversity_through_plots_even_sampling(self):
+        """ run_beta_diversity_through_plots functions with even sampling
         """
-        run_beta_diversity_through_3d_plot(
+        run_beta_diversity_through_plots(
          self.fasting_otu_table_fp, 
          self.fasting_mapping_fp,
          self.wf_out, 
@@ -783,10 +783,10 @@ class WorkflowTests(TestCase):
 
 
       
-    def test_run_beta_diversity_through_3d_plot_parallel(self):
-        """run_beta_diversity_through_3d_plot (parallel) generates expected results
+    def test_run_beta_diversity_through_plots_parallel(self):
+        """run_beta_diversity_through_plots (parallel) generates expected results
         """
-        run_beta_diversity_through_3d_plot(
+        run_beta_diversity_through_plots(
          self.fasting_otu_table_fp, 
          self.fasting_mapping_fp,
          self.wf_out, 

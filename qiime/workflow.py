@@ -511,10 +511,11 @@ def run_pick_reference_otus_through_otu_table(
 
 
 
-def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,
+def run_beta_diversity_through_plots(otu_table_fp, mapping_fp,
     output_dir, command_handler, params, qiime_config,
     color_by_interesting_fields_only=True,sampling_depth=None,
-    tree_fp=None, parallel=False, logger=None,
+    tree_fp=None, parallel=False, logger=None, suppress_3d_plots=False,
+    suppress_2d_plots=False, suppress_distance_histograms=False,
     status_update_callback=print_to_stdout):
     """ Run the data preparation steps of Qiime 
     
@@ -650,47 +651,112 @@ def run_beta_diversity_through_3d_plot(otu_table_fp, mapping_fp,
          (python_exe_fp, script_dir, beta_div_fp, pc_fp, params_str)
         commands.append(\
          [('Principal coordinates (%s)' % beta_diversity_metric, pc_cmd)])
+        
+        # Generate 3d plots
+        if not suppress_3d_plots:
+            # Prep the continuous-coloring 3d plots command
+            continuous_3d_dir = '%s/%s_3d_continuous/' %\
+             (output_dir, beta_diversity_metric)
+            try:
+                makedirs(continuous_3d_dir)
+            except OSError:
+                pass
+            try:
+                params_str = get_params_str(params['make_3d_plots'])
+            except KeyError:
+                params_str = ''
+            # Build the continuous-coloring 3d plots command
+            continuous_3d_command = \
+             '%s %s/make_3d_plots.py -p %s -i %s -o %s -m %s %s' %\
+              (python_exe_fp, script_dir, prefs_fp, pc_fp, continuous_3d_dir,\
+               mapping_fp, params_str)
     
-        # Prep the continuous-coloring 3d plots command
-        continuous_3d_dir = '%s/%s_3d_continuous/' %\
-         (output_dir, beta_diversity_metric)
-        try:
-            makedirs(continuous_3d_dir)
-        except OSError:
-            pass
-        try:
-            params_str = get_params_str(params['make_3d_plots'])
-        except KeyError:
-            params_str = ''
-        # Build the continuous-coloring 3d plots command
-        continuous_3d_command = \
-         '%s %s/make_3d_plots.py -p %s -i %s -o %s -m %s %s' %\
-          (python_exe_fp, script_dir, prefs_fp, pc_fp, continuous_3d_dir,\
-           mapping_fp, params_str)
-    
-        # Prep the discrete-coloring 3d plots command
-        discrete_3d_dir = '%s/%s_3d_discrete/' %\
-         (output_dir, beta_diversity_metric)
-        try:
-            makedirs(discrete_3d_dir)
-        except OSError:
-            pass
-        try:
-            params_str = get_params_str(params['make_3d_plots'])
-        except KeyError:
-            params_str = ''
-        # Build the discrete-coloring 3d plots command
-        discrete_3d_command = \
-         '%s %s/make_3d_plots.py -b "%s" -i %s -o %s -m %s %s' %\
-          (python_exe_fp, script_dir, mapping_fields, pc_fp, discrete_3d_dir,\
-           mapping_fp, params_str)
+            # Prep the discrete-coloring 3d plots command
+            discrete_3d_dir = '%s/%s_3d_discrete/' %\
+             (output_dir, beta_diversity_metric)
+            try:
+                makedirs(discrete_3d_dir)
+            except OSError:
+                pass
+            try:
+                params_str = get_params_str(params['make_3d_plots'])
+            except KeyError:
+                params_str = ''
+            # Build the discrete-coloring 3d plots command
+            discrete_3d_command = \
+             '%s %s/make_3d_plots.py -b "%s" -i %s -o %s -m %s %s' %\
+              (python_exe_fp, script_dir, mapping_fields, pc_fp, discrete_3d_dir,\
+               mapping_fp, params_str)
        
-        commands.append([\
-          ('Make 3D plots (continuous coloring, %s)' %\
-            beta_diversity_metric,continuous_3d_command),\
-          ('Make 3D plots (discrete coloring, %s)' %\
-            beta_diversity_metric,discrete_3d_command,)])
+            commands.append([\
+              ('Make 3D plots (continuous coloring, %s)' %\
+                beta_diversity_metric,continuous_3d_command),\
+              ('Make 3D plots (discrete coloring, %s)' %\
+                beta_diversity_metric,discrete_3d_command,)])
     
+        # Generate 3d plots
+        if not suppress_2d_plots:
+            # Prep the continuous-coloring 3d plots command
+            continuous_2d_dir = '%s/%s_2d_continuous/' %\
+             (output_dir, beta_diversity_metric)
+            try:
+                makedirs(continuous_2d_dir)
+            except OSError:
+                pass
+            try:
+                params_str = get_params_str(params['make_2d_plots'])
+            except KeyError:
+                params_str = ''
+            # Build the continuous-coloring 3d plots command
+            continuous_2d_command = \
+             '%s %s/make_2d_plots.py -p %s -i %s -o %s -m %s %s' %\
+              (python_exe_fp, script_dir, prefs_fp, pc_fp, continuous_2d_dir,\
+               mapping_fp, params_str)
+               
+            # Prep the discrete-coloring 3d plots command
+            discrete_2d_dir = '%s/%s_2d_discrete/' %\
+             (output_dir, beta_diversity_metric)
+            try:
+                makedirs(discrete_2d_dir)
+            except OSError:
+                pass
+            try:
+                params_str = get_params_str(params['make_2d_plots'])
+            except KeyError:
+                params_str = ''
+            # Build the discrete-coloring 2d plots command
+            discrete_2d_command = \
+             '%s %s/make_2d_plots.py -b "%s" -i %s -o %s -m %s %s' %\
+              (python_exe_fp, script_dir, mapping_fields, pc_fp, discrete_2d_dir,\
+               mapping_fp, params_str)
+       
+            commands.append([\
+              ('Make 2D plots (continuous coloring, %s)' %\
+                beta_diversity_metric,continuous_2d_command),\
+              ('Make 2D plots (discrete coloring, %s)' %\
+                beta_diversity_metric,discrete_2d_command,)])
+                
+        if not suppress_distance_histograms:
+            # Prep the discrete-coloring 3d plots command
+            histograms_dir = '%s/%s_histograms/' %\
+             (output_dir, beta_diversity_metric)
+            try:
+                makedirs(histograms_dir)
+            except OSError:
+                pass
+            try:
+                params_str = get_params_str(params['make_distance_histograms'])
+            except KeyError:
+                params_str = ''
+            # Build the make_distance_histograms command
+            distance_histograms_command = \
+             '%s %s/make_distance_histograms.py -d %s -o %s -m %s %s' %\
+              (python_exe_fp, script_dir, beta_div_fp, 
+               histograms_dir, mapping_fp, params_str)
+       
+            commands.append([\
+              ('Make Distance Histograms (%s)' %\
+                beta_diversity_metric,distance_histograms_command)])
 
     # Call the command handler on the list of commands
     command_handler(commands,
@@ -1247,7 +1313,7 @@ def run_core_qiime_analyses(
     
     ## Beta diversity through 3D plots workflow
     bdiv_full_output_dir = '%s/bdiv/' % output_dir
-    full_dm_fps = run_beta_diversity_through_3d_plot(
+    full_dm_fps = run_beta_diversity_through_plots(
      otu_table_fp=otu_table_fp, 
      mapping_fp=mapping_fp,
      output_dir=bdiv_full_output_dir,
@@ -1302,7 +1368,7 @@ def run_core_qiime_analyses(
     
     if sampling_depth:
         bdiv_even_output_dir = '%s/bdiv_even%d/' % (output_dir,sampling_depth)
-        even_dm_fps = run_beta_diversity_through_3d_plot(
+        even_dm_fps = run_beta_diversity_through_plots(
          otu_table_fp=otu_table_fp, 
          mapping_fp=mapping_fp,
          output_dir=bdiv_even_output_dir,

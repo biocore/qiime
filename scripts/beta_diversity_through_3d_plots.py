@@ -16,7 +16,7 @@ from os import makedirs
 from qiime.util import load_qiime_config, parse_command_line_parameters,\
  get_options_lookup
 from qiime.parse import parse_qiime_parameters
-from qiime.workflow import run_beta_diversity_through_3d_plot, print_commands,\
+from qiime.workflow import run_beta_diversity_through_plots, print_commands,\
     call_commands_serially, print_to_stdout, no_status_updates
 
 
@@ -78,7 +78,16 @@ script_info['optional_options']=[
         dest='parallel',default=False,
         help='Run in parallel where available [default: %default]'),
  make_option('-e','--seqs_per_sample',type='int',
-     help='depth of coverage for even sampling [default: %default]')]
+     help='depth of coverage for even sampling [default: %default]'),
+ make_option('--suppress_distance_histograms',action='store_true',
+        help='Do not generate distance histograms [default: %default]',
+        default=False),
+ make_option('--suppress_2d_plots',action='store_true',
+        help='Do not generate 2D plots [default: %default]',
+        default=False),
+ make_option('--suppress_3d_plots',action='store_true',
+        help='Do not generate 3D plots [default: %default]',
+        default=False),]
 script_info['version'] = __version__
 
 
@@ -130,7 +139,7 @@ def main():
     else:
         status_update_callback = no_status_updates
      
-    run_beta_diversity_through_3d_plot(otu_table_fp=otu_table_fp,
+    run_beta_diversity_through_plots(otu_table_fp=otu_table_fp,
      mapping_fp=mapping_fp,
      output_dir=output_dir,
      command_handler=command_handler,
@@ -140,6 +149,9 @@ def main():
      sampling_depth=seqs_per_sample,
      tree_fp=tree_fp,
      parallel=parallel,
+     suppress_3d_plots=opts.suppress_3d_plots,
+     suppress_2d_plots=opts.suppress_2d_plots,
+     suppress_distance_histograms=opts.suppress_distance_histograms,
      status_update_callback=status_update_callback)
 
 if __name__ == "__main__":
