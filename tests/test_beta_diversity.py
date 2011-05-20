@@ -13,8 +13,9 @@ __status__ = "Development"
 """Contains tests for performing beta diversity analyses."""
 
 import numpy
+numpy.seterr('ignore')
 import warnings
-
+warnings.filterwarnings('ignore')
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files
 from cogent.app.util import get_tmp_filename
@@ -114,17 +115,19 @@ class BetaDiversityCalcTests(TestCase):
             tree_path=tree_fp, result_path=None, log_path=None)
         self.assertEqual(escaped_result,non_escaped_result)
         
-    def test_single_file_beta(self):
+    def single_file_beta(self, otu_table_string, tree_string, missing_sams=None):
         """ running single_file_beta should give same result using --rows"""
+        if missing_sams==None:
+            missing_sams = []
         # setup
         input_path = get_tmp_filename()
         in_fname = os.path.split(input_path)[1]
         f = open(input_path,'w')
-        f.write(l19_otu_table)
+        f.write(otu_table_string)
         f.close()
         tree_path = get_tmp_filename()
         f = open(tree_path,'w')
-        f.write(l19_tree)
+        f.write(tree_string)
         f.close()
         metrics = list_known_nonphylogenetic_metrics()
         metrics.extend(list_known_phylogenetic_metrics())
@@ -140,32 +143,73 @@ class BetaDiversityCalcTests(TestCase):
 
         self.files_to_remove.extend([input_path,tree_path])
         self.folders_to_remove.append(output_dir)
-        
+        os.mkdir(output_dir+'/ft/')
+
         for metric in metrics:
             # do it
-            single_file_beta(input_path, ','.join(metrics), tree_path, output_dir,
+            single_file_beta(input_path, metric, tree_path, output_dir,
                 rowids=None)
             sams, dmtx = parse_distmat(open(output_dir + '/' +\
                 metric + '_' + in_fname))
 
             # do it by rows
-            rows = 'sam5,sam3'
-            row_outname = output_dir + '/' + metric + '_' +\
-                in_fname
-            single_file_beta(input_path, ','.join(metrics), tree_path, output_dir,
-                rowids=rows)
-            col_sams, row_sams, row_dmtx = parse_matrix(open(row_outname))
-            
-            self.assertEqual(row_dmtx.shape, (len(rows.split(',')),len(sams)))
-        
-            # make sure rows same as full
-            for i in range(len(rows.split(','))):
-                for j in range(len(sams)):
-                    row_v1 = row_dmtx[i,j]
-                    full_v1 =\
-                        dmtx[sams.index(row_sams[i]),sams.index(col_sams[j])]
-                    self.assertFloatEqual(row_v1, full_v1)
-        
+            for i in range(len(sams)):
+                if sams[i] in missing_sams: continue
+                rows = sams[i]
+                row_outname = output_dir + '/' + metric + '_' +\
+                    in_fname
+                single_file_beta(input_path, metric, tree_path, output_dir,
+                    rowids=rows)
+                col_sams, row_sams, row_dmtx = parse_matrix(open(row_outname))
+
+                self.assertEqual(row_dmtx.shape, (len(rows.split(',')),len(sams)))
+
+                # make sure rows same as full
+                for j in range(len(rows.split(','))):
+                    for k in range(len(sams)):
+                        row_v1 = row_dmtx[j,k]
+                        full_v1 =\
+                            dmtx[sams.index(row_sams[j]),sams.index(col_sams[k])]
+                        self.assertFloatEqual(row_v1, full_v1)
+
+
+            ### full tree run:
+            if 'full_tree' in str(metric).lower(): continue
+            # do it by rows with full tree
+            for i in range(len(sams)):
+                if sams[i] in missing_sams: continue
+                rows = sams[i]
+                
+                row_outname = output_dir + '/ft/' + metric + '_' +\
+                    in_fname
+                single_file_beta(input_path, metric, tree_path, output_dir+'/ft/',
+                    rowids=rows,full_tree=True)
+                col_sams, row_sams, row_dmtx = parse_matrix(open(row_outname))
+
+                self.assertEqual(row_dmtx.shape, (len(rows.split(',')),len(sams)))
+
+                # make sure rows same as full
+                for j in range(len(rows.split(','))):
+                    for k in range(len(sams)):
+                        row_v1 = row_dmtx[j,k]
+                        full_v1 =\
+                            dmtx[sams.index(row_sams[j]),sams.index(col_sams[k])]
+                        self.assertFloatEqual(row_v1, full_v1)
+
+            # # do it with full tree
+            single_file_beta(input_path, metric, tree_path, output_dir+'/ft/',
+                rowids=None,full_tree=True)
+            sams_ft, dmtx_ft = parse_distmat(open(output_dir + '/ft/' +\
+                metric + '_' + in_fname))
+            self.assertEqual(sams_ft, sams)
+            self.assertFloatEqual(dmtx_ft, dmtx)
+
+    def test_single_file_beta(self):
+        self.single_file_beta(l19_otu_table, l19_tree)
+
+    def test_single_file_beta_missing(self):
+        self.single_file_beta(missing_otu_table, missing_tree, missing_sams=['M'])
+
 
 l19_otu_table = """#comment line
 #OTU ID	sam1	sam2	sam3	sam4	sam5	sam6	sam7	sam8	sam9	sam_middle	sam11	sam12	sam13	sam14	sam15	sam16	sam17	sam18	sam19
@@ -181,6 +225,15 @@ tax9	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	4	1	0"""
 
 l19_tree = """((((tax7:0.1,tax3:0.2):.98,tax8:.3, tax4:.3):.4, ((tax1:0.3, tax6:.09):0.43,tax2:0.4):0.5):.2, (tax9:0.3, endbigtaxon:.08));"""
 
+missing_tree="""((a:1,b:2):4,((c:3, (j:1,k:2)mt:17),(d:1,e:1):2):3)"""
+missing_otu_table="""#Full OTU Counts
+#OTU ID	A	B	C	M
+a	1	0	2	0
+c	0	1	0	0
+b	1	1	0	0
+e	0	0	1	0
+m	0	0	0	88
+d	0	3	0	0"""
 
 #run tests if called from command line
 if __name__ == '__main__':
