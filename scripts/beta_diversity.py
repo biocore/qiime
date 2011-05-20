@@ -48,7 +48,7 @@ script_info['optional_options']=[
  make_option('-m', '--metrics', default='unweighted_unifrac,weighted_unifrac',
      help='Beta-diversity metric(s) to use. A comma-separated list should' +\
      ' be provided when multiple metrics are specified. [default: %default]'),
- make_option('-s', '--show_metrics', action='store_true', default=False
+ make_option('-s', '--show_metrics', action='store_true', default=False,
      help='Show the available beta-diversity metrics and exit. Metrics' +\
      ' starting with' +\
      ' "binary_..." specifies that a metric is qualitative, and considers' +\
