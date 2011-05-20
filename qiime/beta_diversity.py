@@ -230,7 +230,8 @@ def single_file_beta(input_path, metrics, tree_path, output_dir, rowids=None,
         if rowids == None:
             # standard, full way
             if is_phylogenetic:
-                dissims = metric_f(otumtx.T, otuids, tree, samids)
+                dissims = metric_f(otumtx.T, otuids, tree, samids,
+                    make_subtree = (not full_tree))
             else:
                 dissims = metric_f(otumtx.T)
 
@@ -262,7 +263,8 @@ def single_file_beta(input_path, metrics, tree_path, output_dir, rowids=None,
                         for i in range(len(samids)):
                             if is_phylogenetic:
                                 dissim = metric_f(otumtx.T[[rowidx,i],:],
-                                    otuids, tree, [samids[rowidx],samids[i]])[0,1]
+                                    otuids, tree, [samids[rowidx],samids[i]],
+                                    make_subtree = (not full_tree))[0,1]
                             else:
                                 dissim = metric_f(otumtx.T[[rowidx,i],:])[0,1]
                             dissims.append(dissim)
@@ -270,7 +272,8 @@ def single_file_beta(input_path, metrics, tree_path, output_dir, rowids=None,
                     else:
                         # do whole row at once
                         dissims = row_metric(otumtx.T,
-                                    otuids, tree, samids, rowid)
+                                    otuids, tree, samids, rowid,
+                                    make_subtree = (not full_tree))
                         row_dissims.append(dissims)
 
             # rows_outfilepath = os.path.join(output_dir, metric + '_' +\

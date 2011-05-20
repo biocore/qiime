@@ -30,15 +30,17 @@ def make_unifrac_metric(weighted, metric, is_symmetric):
     weighted: bool, if True does the necessary root to tip calcs.
     metric: f(branch_lengths, i, j) -> distance
     is_symmetric: saves calc time if metric is symmetric.
+    kwargs passed to fast_unifrac
     """
-    def result(data, taxon_names, tree, sample_names):
+    def result(data, taxon_names, tree, sample_names, **kwargs):
         """ wraps the fast_unifrac fn to return just a matrix, in correct order
         
             sample_names: list of unique strings
         """
+
         envs = make_envs_dict(data, sample_names, taxon_names)
         unifrac_res = fast_unifrac(tree, envs, weighted=weighted, metric=metric,
-            is_symmetric=is_symmetric, modes=["distance_matrix"])
+            is_symmetric=is_symmetric, modes=["distance_matrix"],**kwargs)
         dist_mtx = _reorder_unifrac_res(unifrac_res['distance_matrix'],
             sample_names)
         return dist_mtx
@@ -72,14 +74,14 @@ def make_unifrac_row_metric(weighted, metric, is_symmetric):
     is_symmetric: ignored
     sample_name: of the sample corresponding to the row of the dissim mtx
     """
-    def result(data, taxon_names, tree, sample_names, one_sample_name):
+    def result(data, taxon_names, tree, sample_names, one_sample_name,**kwargs):
         """ wraps the fast_unifrac fn to return just a matrix, in correct order
 
             sample_names: list of unique strings
         """
         envs = make_envs_dict(data, sample_names, taxon_names)
         unifrac_res = fast_unifrac_one_sample(one_sample_name,
-            tree, envs, weighted=weighted, metric=metric,make_subtree=True)
+            tree, envs, weighted=weighted, metric=metric,**kwargs)
         dist_mtx = _reorder_unifrac_res_one_sample(unifrac_res,
             sample_names)
         return dist_mtx
