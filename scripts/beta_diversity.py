@@ -36,7 +36,7 @@ script_info['required_options']=[]
 script_info['optional_options']=[
  make_option('-i', '--input_path',
      help='Input OTU table filepath or input directory containing OTU ' +\
-     'tables for batch processing. [default: %default]',
+     'tables for batch processing.',
      type='existing_path'),
  make_option('-r', '--rows', default=None,
      help='Compute for only these rows of the distance matrix.' +\
@@ -48,7 +48,7 @@ script_info['optional_options']=[
  make_option('-m', '--metrics', default='unweighted_unifrac,weighted_unifrac',
      help='Beta-diversity metric(s) to use. A comma-separated list should' +\
      ' be provided when multiple metrics are specified. [default: %default]'),
- make_option('-s', '--show_metrics', action='store_true', 
+ make_option('-s', '--show_metrics', action='store_true', default=False
      help='Show the available beta-diversity metrics and exit. Metrics' +\
      ' starting with' +\
      ' "binary_..." specifies that a metric is qualitative, and considers' +\
@@ -57,15 +57,15 @@ script_info['optional_options']=[
      help='Input newick tree filepath, which is required when phylogenetic' +\
      ' metrics are specified. [default: %default]',
      type='existing_filepath'),
- make_option('-f', '--full_tree', action="store_true",
+ make_option('-f', '--full_tree', action="store_true", default=False,
      help='By default, tips not corresponding to OTUs in the OTU table are '+\
      'removed from the tree for diversity calculations. ' +\
      'Pass to skip this step if you\'re already passing a minimal tree.' +\
-     ' [default: %default]'),
+     ' Beware with "full_tree" metrics, as extra tips in the tree'+\
+     ' change the result'),
  make_option('--float', action="store_true", default=False,
      help='By default, the script expects integer OTU tables '+\
-     'but if this flag is True it will process float numbers.'+\
-     ' [default: %default]'),
+     'but if this flag is True it will process float numbers.'),
 ]
 script_info['option_label']={'input_path':'OTU table filepath',
                              'rows':'List of samples for compute',
@@ -108,10 +108,12 @@ def main():
 
     if os.path.isdir(opts.input_path):
         multiple_file_beta(opts.input_path, opts.output_dir, opts.metrics, 
-            opts.tree_path, opts.rows, opts.full_tree, use_float=opts.float)
+            opts.tree_path, opts.rows, full_tree=opts.full_tree,
+            use_float=opts.float)
     elif os.path.isfile(opts.input_path):
         single_file_beta(opts.input_path, opts.metrics, opts.tree_path, 
-          opts.output_dir, opts.rows, opts.full_tree, use_float=opts.float)
+          opts.output_dir, opts.rows, full_tree=opts.full_tree,
+          use_float=opts.float)
     else:
         stderr.write("io error, input path not valid.  Does it exist?")
         exit(1)
