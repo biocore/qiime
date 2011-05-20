@@ -17,7 +17,7 @@ but some need wrappers to look like f(data, taxon_names, tree)-> dist_mtx
 import cogent.maths.unifrac.fast_tree as fast_tree
  # (unifrac, unnormalized_unifrac,
  #    G, unnormalized_G, weighted_unifrac)
-from cogent.maths.unifrac.fast_unifrac import fast_unifrac, fast_unifrac_one_sample
+from qiime.pycogent_backports.fast_unifrac import fast_unifrac, fast_unifrac_one_sample
 from qiime.parse import make_envs_dict
 import numpy
 import warnings

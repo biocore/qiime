@@ -13,9 +13,7 @@ __status__ = "Development"
 """Contains tests for performing beta diversity analyses."""
 
 import numpy
-numpy.seterr('ignore')
 import warnings
-warnings.filterwarnings('ignore')
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files
 from cogent.app.util import get_tmp_filename
@@ -140,6 +138,7 @@ class BetaDiversityCalcTests(TestCase):
         warnings.filterwarnings('ignore','dissimilarity dist_chisq is not parallelized, calculating the whole matrix...')  
         warnings.filterwarnings('ignore','dissimilarity dist_gower is not parallelized, calculating the whole matrix...')     
         warnings.filterwarnings('ignore','dissimilarity dist_hellinger is not parallelized, calculating the whole matrix...')  
+        warnings.filterwarnings('ignore','unifrac had no information for sample M*')
 
         self.files_to_remove.extend([input_path,tree_path])
         self.folders_to_remove.append(output_dir)
