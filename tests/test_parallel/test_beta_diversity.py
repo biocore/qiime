@@ -25,7 +25,6 @@ import os
 import shutil
 import subprocess
 
-
 class ParallelBetaDiversityTests(TestCase):
 
     def setUp(self):
@@ -76,9 +75,10 @@ class ParallelBetaDiversityTests(TestCase):
         proc = subprocess.Popen(cmd,shell=True, 
             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         betaout, betaerr = proc.communicate()
-        # first paralel version
+        # first paralell version
         if betaout or betaerr:
-            raise RuntimeError(betaout + betaerr)
+            raise RuntimeError("parallel_beta_diversity.py should should "+\
+              "not generate stdout or stderr. results:" + betaout + betaerr)
 
         # retain temp files doesn't matter, we just delete the folder
 
@@ -89,7 +89,8 @@ class ParallelBetaDiversityTests(TestCase):
             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         betaout, betaerr = proc.communicate()
         if betaout or betaerr:
-            raise RuntimeError(betaout + betaerr)
+            raise RuntimeError("parallel_beta_diversity.py should should "+\
+              "not generate stdout or stderr. results:" + betaout + betaerr)
 
 
         serialdist =\
@@ -147,7 +148,8 @@ class ParallelBetaDiversityTests(TestCase):
             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         betaout, betaerr = proc.communicate()
         if betaout or betaerr:
-            raise RuntimeError(betaout + betaerr)
+            raise RuntimeError("parallel_beta_diversity.py should should "+\
+              "not generate stdout or stderr. results:" + betaout + betaerr)
 
         # parallel on trimmed_tree
         cmd = scripts_dir+'/parallel_beta_diversity.py -T -O 3 '+\
@@ -157,7 +159,8 @@ class ParallelBetaDiversityTests(TestCase):
             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         betaout, betaerr = proc.communicate()
         if betaout or betaerr:
-            raise RuntimeError(betaout + betaerr)
+            raise RuntimeError("parallel_beta_diversity.py should should "+\
+              "not generate stdout or stderr. results:" + betaout + betaerr)
 
 
         # retain temp files doesn't matter, we just delete the folder
