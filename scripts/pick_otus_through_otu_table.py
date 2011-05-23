@@ -53,11 +53,14 @@ script_info['required_options'] = [
         help='the input fasta file [REQUIRED]'),
     make_option('-o','--output_dir',
         help='the output directory [REQUIRED]'),
-    make_option('-p','--parameter_fp',
-        help='path to the parameter file [REQUIRED]'),
     ]
 
 script_info['optional_options'] = [\
+ make_option('-p','--parameter_fp',
+    help='path to the parameter file, which specifies changes'+\
+        ' to the default behavior. '+\
+        'See http://www.qiime.org/documentation/file_formats.html#qiime-parameters .'+\
+        ' [if omitted, default values will be used]'),
  make_option('-f','--force',action='store_true',\
         dest='force',help='Force overwrite of existing output directory'+\
         ' (note: existing files in output_dir will not be removed)'+\
@@ -86,12 +89,17 @@ def main():
     # commenting as we may change our minds about this.
     #if parallel: raise_error_on_parallel_unavailable()
     
-    try:
-        parameter_f = open(opts.parameter_fp)
-    except IOError:
-        raise IOError,\
-         "Can't open parameters file (%s). Does it exist? Do you have read access?"\
-         % opts.parameter_fp
+    if opts.parameter_fp:
+        try:
+            parameter_f = open(opts.parameter_fp)
+        except IOError:
+            raise IOError,\
+             "Can't open parameters file (%s). Does it exist? Do you have read access?"\
+             % opts.parameter_fp
+        params = parse_qiime_parameters(parameter_f)
+    else:
+        params = parse_qiime_parameters([]) 
+        # empty list returns empty defaultdict for now
     
     try:
         makedirs(output_dir)
@@ -119,7 +127,7 @@ def main():
      input_fp, 
      output_dir,
      command_handler=command_handler,
-     params=parse_qiime_parameters(parameter_f),
+     params=params,
      qiime_config=qiime_config,
      parallel=parallel,\
      status_update_callback=status_update_callback)

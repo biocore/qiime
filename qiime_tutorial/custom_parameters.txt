@@ -1,99 +1,12 @@
-###pick_otus_through_otu_table.py parameters###
-
-# OTU picker parameters
-pick_otus:otu_picking_method	uclust
-pick_otus:clustering_algorithm	furthest
-pick_otus:max_cdhit_memory	400
-pick_otus:refseqs_fp
-pick_otus:blast_db
-pick_otus:similarity	0.97
-pick_otus:max_e_value	1e-10
-pick_otus:prefix_prefilter_length
-pick_otus:trie_prefilter
-pick_otus:prefix_length
-pick_otus:suffix_length
-pick_otus:optimal_uclust
-pick_otus:exact_uclust
-pick_otus:user_sort
-pick_otus:suppress_presort_by_abundance_uclust
-pick_otus:suppress_new_clusters
-pick_otus:suppress_uclust_stable_sort
-pick_otus:max_accepts
-pick_otus:max_rejects
-pick_otus:word_length
-pick_otus:stepwords
-
-# Representative set picker parameters
-pick_rep_set:rep_set_picking_method	first
-pick_rep_set:sort_by	otu
-
-# Multiple sequence alignment parameters
-align_seqs:template_fp
-align_seqs:alignment_method	pynast
-align_seqs:pairwise_alignment_method	uclust
-align_seqs:blast_db
-align_seqs:min_length	150
-align_seqs:min_percent_id	75.0
-
-# Alignment filtering (prior to tree-building) parameters
-filter_alignment:lane_mask_fp
-filter_alignment:allowed_gap_frac	 0.999999
-filter_alignment:remove_outliers	False
-filter_alignment:threshold	3.0
-
-# Taxonomy assignment parameters
-assign_taxonomy:id_to_taxonomy_fp
-assign_taxonomy:reference_seqs_fp
-assign_taxonomy:assignment_method	rdp
-assign_taxonomy:blast_db
-assign_taxonomy:confidence	0.8
-#assign_taxonomy:e_value	0.001
-
-# Phylogenetic tree building parameters
-make_phylogeny:tree_method	fasttree
-make_phylogeny:root_method	tree_method_default
-
-###alpha_rarefaction.py parameters###
-
 # Rarefaction parameters
 multiple_rarefactions:num-reps	5
-multiple_rarefactions:depth
-multiple_rarefactions:lineages_included	False
-
-# Alpha diversity parameters
-alpha_diversity:metrics	chao1,observed_species,PD_whole_tree
-
-# Collate alpha
-collate_alpha:example_path
-
-# Make rarefaction plots parameters
-make_rarefaction_plots:imagetype	png
-make_rarefaction_plots:resolution	75
-make_rarefaction_plots:background_color	white
-make_rarefaction_plots:prefs_path
-
-###beta_diversity_through_3d_plots.py parameters###
-
-# Beta diversity parameters
-beta_diversity:metrics	weighted_unifrac,unweighted_unifrac
 
 # Make prefs file parameters
-make_prefs_file:background_color	black
 make_prefs_file:mapping_headers_to_use	Treatment,DOB
-make_prefs_file:monte_carlo_dists	10
-
-# Make 3D plot parameters
-make_3d_plots:custom_axes
-make_3d_plots:ellipsoid_smoothness   1
-
-###jackknife_upgma.py parameters###
 
 # Even-depth rarefaction parameters
-multiple_rarefactions_even_depth:num-reps	20
-
-###parallel workflow###
+multiple_rarefactions_even_depth:num-reps	5
 
 # Parallel options
 parallel:jobs_to_start	2
-parallel:retain_temp_files	False
-parallel:seconds_to_sleep	60
+parallel:seconds_to_sleep	4

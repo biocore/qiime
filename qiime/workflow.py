@@ -419,7 +419,11 @@ def run_pick_reference_otus_through_otu_table(
     # confirm that a valid otu picking method was supplied before doing
     # any work
     reference_otu_picking_methods = ['blast','uclust_ref']
-    otu_picking_method = params['pick_otus']['otu_picking_method']
+
+    try:
+        otu_picking_method = params['pick_otus']['otu_picking_method']
+    except KeyError:
+        otu_picking_method = 'uclust_ref'
     assert otu_picking_method in reference_otu_picking_methods,\
      "Invalid OTU picking method supplied: %s. Valid choices are: %s"\
      % (otu_picking_method,' '.join(reference_otu_picking_methods))

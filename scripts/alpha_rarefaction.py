@@ -45,10 +45,14 @@ script_info['required_options']=[\
  make_option('-m','--mapping_fp',\
             help='path to the mapping file [REQUIRED]'),\
  make_option('-o','--output_dir',\
-            help='the output directory [REQUIRED]'),\
- make_option('-p','--parameter_fp',\
-            help='path to the parameter file [REQUIRED]')]
+            help='the output directory [REQUIRED]'),
+]
 script_info['optional_options']=[\
+ make_option('-p','--parameter_fp',
+    help='path to the parameter file, which specifies changes'+\
+        ' to the default behavior. '+\
+        'See http://www.qiime.org/documentation/file_formats.html#qiime-parameters .'+\
+        ' [if omitted, default values will be used]'),
  make_option('-n','--num_steps',type='int',\
      help='number of steps (or rarefied OTU table sizes) to make between '+\
       'min and max counts [default: %default]',default=10),\
@@ -85,12 +89,17 @@ def main():
     # commenting as we may change our minds about this.
     #if parallel: raise_error_on_parallel_unavailable()
     
-    try:
-        parameter_f = open(opts.parameter_fp)
-    except IOError:
-        raise IOError,\
-         "Can't open parameters file (%s). Does it exist? Do you have read access?"\
-         % opts.parameter_fp
+    if opts.parameter_fp:
+        try:
+            parameter_f = open(opts.parameter_fp)
+        except IOError:
+            raise IOError,\
+             "Can't open parameters file (%s). Does it exist? Do you have read access?"\
+             % opts.parameter_fp
+        params = parse_qiime_parameters(parameter_f)
+    else:
+        params = parse_qiime_parameters([]) 
+        # empty list returns empty defaultdict for now
     
     try:
         makedirs(output_dir)
@@ -118,7 +127,7 @@ def main():
      mapping_fp=mapping_fp,\
      output_dir=output_dir,\
      command_handler=command_handler,\
-     params=parse_qiime_parameters(parameter_f),\
+     params=params,
      qiime_config=qiime_config,\
      tree_fp=tree_fp,\
      num_steps=num_steps,\

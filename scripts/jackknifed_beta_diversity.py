@@ -52,8 +52,6 @@ script_info['required_options']=[\
             help='the input fasta file [REQUIRED]'),\
  make_option('-o','--output_dir',\
             help='the output directory [REQUIRED]'),\
- make_option('-p','--parameter_fp',\
-            help='path to the parameter file [REQUIRED]'),\
  make_option('-e','--seqs_per_sample',type='int',\
      help='number of sequences to include in each jackknifed subset'+\
             ' [REQUIRED]'),
@@ -64,7 +62,12 @@ script_info['required_options']=[\
 script_info['optional_options']=[\
  make_option('-t','--tree_fp',\
             help='path to the tree file [default: %default; '+\
-            'REQUIRED for phylogenetic measures]'),\
+            'REQUIRED for phylogenetic measures]'),
+ make_option('-p','--parameter_fp',
+    help='path to the parameter file, which specifies changes'+\
+        ' to the default behavior. '+\
+        'See http://www.qiime.org/documentation/file_formats.html#qiime-parameters .'+\
+        ' [if omitted, default values will be used]'),
  make_option('--master_tree', default="consensus",
         help='method for computing master trees in jackknife analysis.'+\
         ' "consensus": consensus of trees from jackknifed otu tables. '+\
@@ -104,12 +107,17 @@ def main():
     # commenting as we may change our minds about this.
     #if parallel: raise_error_on_parallel_unavailable()
     
-    try:
-        parameter_f = open(opts.parameter_fp)
-    except IOError:
-        raise IOError,\
-         "Can't open parameters file (%s). Does it exist? Do you have read access?"\
-         % opts.parameter_fp
+    if opts.parameter_fp:
+        try:
+            parameter_f = open(opts.parameter_fp)
+        except IOError:
+            raise IOError,\
+             "Can't open parameters file (%s). Does it exist? Do you have read access?"\
+             % opts.parameter_fp
+        params = parse_qiime_parameters(parameter_f)
+    else:
+        params = parse_qiime_parameters([]) 
+        # empty list returns empty defaultdict for now
     
     try:
         makedirs(output_dir)
@@ -138,7 +146,7 @@ def main():
      seqs_per_sample=seqs_per_sample,\
      output_dir=output_dir, 
      command_handler=command_handler,
-     params=parse_qiime_parameters(parameter_f),\
+     params=params,
      qiime_config=qiime_config,\
      mapping_fp=opts.mapping_fp,\
      parallel=parallel,\

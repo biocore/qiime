@@ -41,8 +41,10 @@ script_info['required_options'] = [
 
 script_info['optional_options'] = [\
  make_option('-p','--parameter_fp',
-        help='path to the parameter file '+\
-        '[default: %default; default parameters will be used]'),
+    help='path to the parameter file, which specifies changes'+\
+        ' to the default behavior. '+\
+        'See http://www.qiime.org/documentation/file_formats.html#qiime-parameters .'+\
+        ' [if omitted, default values will be used]'),
  make_option('-q','--input_quals',
         help='the input qual files  -- comma-separated '+\
         'if more than one [default: %default]'),

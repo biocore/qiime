@@ -39,7 +39,7 @@ script_info['required_options']=[
 
 script_info['optional_options']=[
 
-    make_option('-n', '--num-reps', dest='num_reps', default=1, type=int,
+    make_option('-n', '--num-reps', dest='num_reps', default=10, type=int,
         help='num iterations at each seqs/sample level [default: %default]'),
      
     make_option('--lineages_included', dest='lineages_included', default=False,
