@@ -182,14 +182,14 @@ class ParallelBetaDiversityTests(TestCase):
             parse_distmat_to_dict(open(maindir+'/para1/unifrac_otuf','U'))
 
         paradist_trim =\
-            parse_distmat_to_dict(open(maindir+'/para1/unifrac_otuf','U'))
+            parse_distmat_to_dict(open(maindir+'/para_trim/unifrac_otuf','U'))
 
-        expected = open(maindir+'/res','w')
+        expected = open(maindir+'/expected','w')
 
         ## use unifrac_dmtx below, from fast unifrac website march 2011
         expected.write(big_dmtx)
         expected.close()
-        unifdist = parse_distmat_to_dict(open(maindir+'/res','U'))
+        unifdist = parse_distmat_to_dict(open(maindir+'/expected','U'))
         sam_keys = unifdist.keys()
         for i in range(len(sam_keys)):
             key_i = sam_keys[i]
