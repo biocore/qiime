@@ -20,21 +20,27 @@ from qiime.util import FunctionWithParams
 import os.path
 import numpy
 from cogent.maths.stats.rarefaction import subsample
+from qiime.parse import parse_otu_table
 
 class SingleRarefactionMaker(FunctionWithParams):
     def __init__(self, otu_path, depth):
         """ init a singlerarefactionmaker
         
-        otu_path can be path or otu tuple, defined by util.py's getOtuTable
+        otu_path has to be parseable when opened by parse_otu_table,
+        or it can be a 4-tuple.
         we just ignore any rarefaction levels beyond any sample in the data
         """
-        
+
         self.depth = depth
 
-        self.sample_names, self.taxon_names, self.otu_table, self.lineages = \
-            self.getOtuTable(otu_path)
-        self.max_num_taxa = (self.otu_table.sum(1)).max()
+        if type(otu_path) == type(('a',1)):
+            self.sample_names, self.taxon_names, \
+            self.otu_table, self.lineages = otu_path
 
+        else:
+            self.sample_names, self.taxon_names, \
+            self.otu_table, self.lineages = parse_otu_table(open(otu_path,'U'))
+        self.max_num_taxa = (self.otu_table.sum(1)).max()
 
     def rarefy_to_file(self, output_fname, small_included=False,
         include_lineages=False,empty_otus_removed=False):
@@ -55,7 +61,8 @@ class SingleRarefactionMaker(FunctionWithParams):
         if empty_otus_removed:
             sub_otu_table, sub_otu_ids, sub_otu_lineages = \
                 remove_empty_otus(sub_otu_table, 
-                sub_otu_ids, sub_otu_lineages) # sub_otu_lineages can be None
+                sub_otu_ids, sub_otu_lineages) 
+                # sub_otu_lineages can be None or []
         self._write_rarefaction(output_fname, sub_sample_ids, sub_otu_ids,
             sub_otu_table, sub_otu_lineages)
     
@@ -186,8 +193,8 @@ def remove_empty_otus(otu_mtx, otu_ids, otu_lineages=None):
             nonempty_otu_idxs.append(i)
             res_otu_ids.append(otu_ids[i])
     res_otu_mtx = otu_mtx[nonempty_otu_idxs,:]
-    if otu_lineages == None:
-        res_otu_lineages = None
+    if otu_lineages == None or otu_lineages == []:
+        res_otu_lineages = []
     else:
         res_otu_lineages = [otu_lineages[i] for i in nonempty_otu_idxs]
 
