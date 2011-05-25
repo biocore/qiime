@@ -251,6 +251,8 @@ class Qiime_config(TestCase):
         version_string = stdout.strip().split('Python')[-1].strip()
         try:
             version = tuple(map(int,version_string.split('.')))
+            if len(version) == 2:
+                version = tuple(version[0],version[1],0)
             pass_test = (version >= min_acceptable_version and version < min_unacceptable_version)
         except ValueError:
             pass_test = False
