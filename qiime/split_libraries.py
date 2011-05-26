@@ -1151,8 +1151,6 @@ def preprocess(fasta_files, qual_files, mapping_file,
         raise ValueError, "Max ambig chars must be >= 0."
     if max_primer_mm < 0:
         raise ValueError, "Max primer mismatches must be >= 0."
-    if min_qual_score < 5:
-        raise ValueError, "Min qual score must be >= 5."
     if reverse_primers not in ['disable','truncate_only','truncate_remove']:
         raise ValueError, ("reverse_primers parameter must be 'disable', "+\
          "truncate_only, or truncate_remove.")
