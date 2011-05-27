@@ -1068,7 +1068,7 @@ def get_qiime_library_version():
     if len(svn_revision) > 0:
         return '%s, svn revision %s' % (__version__, svn_revision)
     else:
-        return '%s (release version)' % __version__
+        return '%s' % __version__
 
 def inflate_denoiser_output(centroid_seqs,singleton_seqs,denoiser_map,raw_seqs):
     """Expand denoiser fasta files based on denoiser map
