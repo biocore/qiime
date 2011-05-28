@@ -486,7 +486,7 @@ def barcode_missing(fields, raw_data=None, added_demultiplex_field=None):
             " expected %s but got %s." % (BARCODE_KEY, fields[1]) +\
             "  Correct header errors before attempting to address warnings."
             
-def linker_primer_missing(fields, raw_data=None):
+def linker_primer_missing(fields, raw_data=None, added_demultiplex_field=None):
     """Returns error message if third field is not linker_primer field"""
     if len(fields) < 3:
         return fields, \
@@ -1125,6 +1125,9 @@ def process_id_map(infile, disable_primer_check=False, is_barcoded=True, \
         col_header_checks.extend(BARCODE_COL_HEADER_CHECKS)
         if not var_len_barcodes and not added_demultiplex_field:
             col_checks.extend(BARCODE_COL_CHECKS)
+            
+    if not disable_primer_check:
+        col_header_checks.extend(PRIMER_COL_CHECKS)
 
         
     
