@@ -157,6 +157,17 @@ def get_params_str(params):
             result.append(param_value)
     return ' '.join(result)
 
+def validate_and_set_jobs_to_start(params,
+                                   jobs_to_start,
+                                   default_jobs_to_start,
+                                   parallel,
+                                   option_parser):
+    if (jobs_to_start != default_jobs_to_start) and \
+       not parallel:
+        option_parser.error("Passing -O requires that -a is also passed.")
+    params['parallel']['jobs_to_start'] = str(jobs_to_start)
+    
+
 ## End utilities used by the workflow functions
 
 ## Begin task-specific workflow functions

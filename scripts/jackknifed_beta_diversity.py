@@ -13,10 +13,13 @@ __status__ = "Development"
 
 from qiime.util import make_option
 from os import makedirs
-from qiime.util import load_qiime_config, parse_command_line_parameters
+from qiime.util import (load_qiime_config, 
+                        parse_command_line_parameters,
+                        get_options_lookup)
 from qiime.parse import parse_qiime_parameters
-from qiime.workflow import run_jackknifed_beta_diversity, print_commands,\
-    call_commands_serially, print_to_stdout, no_status_updates
+from qiime.workflow import (run_jackknifed_beta_diversity, print_commands,
+    call_commands_serially, print_to_stdout, no_status_updates,
+    validate_and_set_jobs_to_start)
 
 script_info={}
 script_info['brief_description']="""A workflow script for performing jackknifed UPGMA clustering and build jackknifed 2d and 3D PCoA plots."""
@@ -46,6 +49,7 @@ script_info['script_usage'].append(("""Example:""","""These steps are performed 
 script_info['output_description']="""This scripts results in several distance matrices (from beta_diversity.py), several rarified otu tables (from multiple_rarefactions.py) several UPGMA trees (from upgma_cluster.py), a supporting file and newick tree with support values (from tree_compare.py), and 2D and 3D PCoA plots."""
 
 qiime_config = load_qiime_config()
+options_lookup = get_options_lookup()
 
 script_info['required_options']=[\
  make_option('-i','--otu_table_fp',\
@@ -82,7 +86,8 @@ script_info['optional_options']=[\
         'useful for debugging [default: %default]',default=False),\
  make_option('-a','--parallel',action='store_true',\
         dest='parallel',default=False,\
-        help='Run in parallel where available [default: %default]')
+        help='Run in parallel where available [default: %default]'),
+ options_lookup['jobs_to_start_workflow']
 ]
 
 script_info['version'] = __version__
@@ -118,6 +123,14 @@ def main():
     else:
         params = parse_qiime_parameters([]) 
         # empty list returns empty defaultdict for now
+    
+    jobs_to_start = opts.jobs_to_start
+    default_jobs_to_start = qiime_config['jobs_to_start']
+    validate_and_set_jobs_to_start(params,
+                                   jobs_to_start,
+                                   default_jobs_to_start,
+                                   parallel,
+                                   option_parser)
     
     try:
         makedirs(output_dir)

@@ -16,8 +16,9 @@ from os import makedirs
 from qiime.util import load_qiime_config, parse_command_line_parameters,\
  get_options_lookup
 from qiime.parse import parse_qiime_parameters
-from qiime.workflow import run_beta_diversity_through_plots, print_commands,\
-    call_commands_serially, print_to_stdout, no_status_updates
+from qiime.workflow import (run_beta_diversity_through_plots, print_commands,
+    call_commands_serially, print_to_stdout, no_status_updates,
+    validate_and_set_jobs_to_start)
 
 
 #beta_diversity_through_3d_plots.py
@@ -91,7 +92,8 @@ script_info['optional_options']=[
         default=False),
  make_option('--suppress_3d_plots',action='store_true',
         help='Do not generate 3D plots [default: %default]',
-        default=False),]
+        default=False),
+ options_lookup['jobs_to_start_workflow']]
 script_info['version'] = __version__
 
 
@@ -125,6 +127,14 @@ def main():
     else:
         params = parse_qiime_parameters([]) 
         # empty list returns empty defaultdict for now
+
+    jobs_to_start = opts.jobs_to_start
+    default_jobs_to_start = qiime_config['jobs_to_start']
+    validate_and_set_jobs_to_start(params,
+                                   jobs_to_start,
+                                   default_jobs_to_start,
+                                   parallel,
+                                   option_parser)
 
     try:
         makedirs(output_dir)

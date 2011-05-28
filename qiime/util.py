@@ -529,6 +529,15 @@ def get_options_lookup():
     result['mapping_fp'] =\
      make_option('-m','--mapping_fp',type="existing_filepath",
      help='the mapping filepath')
+     
+    ## Define options used by the workflow scripts
+    result['jobs_to_start_workflow'] =\
+     make_option('-O','--jobs_to_start',type='int',
+       help='Number of jobs to start. NOTE: you must also'
+       ' pass -a to run in parallel, this defines the number of'
+       ' jobs to be started if and only if -a is passed'
+       ' [default: %default]',
+       default=qiime_config['jobs_to_start'])
     
     ## Define options used by the parallel scripts
     result['jobs_to_start'] =\

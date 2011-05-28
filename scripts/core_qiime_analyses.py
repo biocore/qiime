@@ -13,12 +13,16 @@ __status__ = "Development"
 
 from qiime.util import make_option
 from os import makedirs
-from qiime.util import load_qiime_config, parse_command_line_parameters
+from qiime.util import (load_qiime_config, 
+                        parse_command_line_parameters, 
+                        get_options_lookup)
 from qiime.parse import parse_qiime_parameters
-from qiime.workflow import run_core_qiime_analyses, print_commands,\
-    call_commands_serially, print_to_stdout, no_status_updates
+from qiime.workflow import (run_core_qiime_analyses, print_commands,
+    call_commands_serially, print_to_stdout, no_status_updates,
+    validate_and_set_jobs_to_start)
 
 qiime_config = load_qiime_config()
+options_lookup = get_options_lookup()
 
 script_info={}
 script_info['brief_description'] = """A workflow script for running a core QIIME workflow."""
@@ -78,6 +82,7 @@ script_info['optional_options'] = [\
             help='skip demultiplexing/quality filtering (i.e. split_libraries) -'+\
             ' this assumes that sequence identifiers are in post-split_libraries'+\
             ' format (i.e., sampleID_seqID) [default: %default]'),
+ options_lookup['jobs_to_start_workflow']
 ]
 script_info['version'] = __version__
 
@@ -113,7 +118,15 @@ def main():
              % opts.parameter_fp
         params = parse_qiime_parameters(parameter_f)
     else:
-        params = None
+        params = parse_qiime_parameters([])
+    
+    jobs_to_start = opts.jobs_to_start
+    default_jobs_to_start = qiime_config['jobs_to_start']
+    validate_and_set_jobs_to_start(params,
+                                   jobs_to_start,
+                                   default_jobs_to_start,
+                                   parallel,
+                                   option_parser)
     
     try:
         makedirs(output_dir)

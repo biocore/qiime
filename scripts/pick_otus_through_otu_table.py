@@ -13,13 +13,16 @@ __status__ = "Development"
 
 from qiime.util import make_option
 from os import makedirs
-from qiime.util import load_qiime_config, parse_command_line_parameters
+from qiime.util import (load_qiime_config, 
+                        parse_command_line_parameters,
+                        get_options_lookup)
 from qiime.parse import parse_qiime_parameters
-from qiime.workflow import run_qiime_data_preparation, print_commands,\
-    call_commands_serially, print_to_stdout, no_status_updates
+from qiime.workflow import (run_qiime_data_preparation, print_commands,
+    call_commands_serially, print_to_stdout, no_status_updates,
+    validate_and_set_jobs_to_start)
 
 qiime_config = load_qiime_config()
-
+options_lookup = get_options_lookup()
 script_info={}
 script_info['brief_description'] = """A workflow script for picking OTUs through building OTU tables"""
 script_info['script_description'] = """This script takes a sequence file and performs all processing steps through building the OTU table."""
@@ -71,6 +74,7 @@ script_info['optional_options'] = [\
  make_option('-a','--parallel',action='store_true',\
         dest='parallel',default=False,\
         help='Run in parallel where available [default: %default]'),
+ options_lookup['jobs_to_start_workflow']
 ]
 script_info['version'] = __version__
 
@@ -100,6 +104,14 @@ def main():
     else:
         params = parse_qiime_parameters([]) 
         # empty list returns empty defaultdict for now
+    
+    jobs_to_start = opts.jobs_to_start
+    default_jobs_to_start = qiime_config['jobs_to_start']
+    validate_and_set_jobs_to_start(params,
+                                   jobs_to_start,
+                                   default_jobs_to_start,
+                                   parallel,
+                                   option_parser)
     
     try:
         makedirs(output_dir)

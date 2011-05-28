@@ -16,8 +16,9 @@ from qiime.util import make_option
 from os import makedirs
 from qiime.util import load_qiime_config
 from qiime.parse import parse_qiime_parameters
-from qiime.workflow import run_qiime_alpha_rarefaction, print_commands,\
-    call_commands_serially, print_to_stdout, no_status_updates
+from qiime.workflow import (run_qiime_alpha_rarefaction, print_commands,
+    call_commands_serially, print_to_stdout, no_status_updates,
+    validate_and_set_jobs_to_start)
 
 qiime_config = load_qiime_config()
 
@@ -68,7 +69,8 @@ script_info['optional_options']=[\
         help='Run in parallel where available [default: %default]'),\
  make_option('-t','--tree_fp',\
             help='path to the tree file [default: %default; '+\
-            'REQUIRED for phylogenetic measures]')]
+            'REQUIRED for phylogenetic measures]'),
+ options_lookup['jobs_to_start_workflow']]
 script_info['version'] = __version__
 
 def main():
@@ -82,12 +84,7 @@ def main():
     num_steps = opts.num_steps
     verbose = opts.verbose
     print_only = opts.print_only
-
-    
     parallel = opts.parallel
-    # No longer checking that jobs_to_start > 2, but
-    # commenting as we may change our minds about this.
-    #if parallel: raise_error_on_parallel_unavailable()
     
     if opts.parameter_fp:
         try:
@@ -101,6 +98,14 @@ def main():
         params = parse_qiime_parameters([]) 
         # empty list returns empty defaultdict for now
     
+    jobs_to_start = opts.jobs_to_start
+    default_jobs_to_start = qiime_config['jobs_to_start']
+    validate_and_set_jobs_to_start(params,
+                                   jobs_to_start,
+                                   default_jobs_to_start,
+                                   parallel,
+                                   option_parser)
+                                   
     try:
         makedirs(output_dir)
     except OSError:
