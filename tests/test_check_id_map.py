@@ -26,7 +26,8 @@ from qiime.check_id_map import (find_diff_length, CharFilter, lwu,
     check_missing_descriptions, check_duplicate_descriptions,
     check_description_chars, process_id_map, get_primers_barcodes,
     check_primers_barcodes, check_missing_sampleIDs,
-    check_dup_var_barcodes_primers, get_reverse_primers, check_reverse_primers
+    check_dup_var_barcodes_primers, get_reverse_primers, check_reverse_primers,
+    linker_primer_missing
     )
 
 
@@ -138,6 +139,18 @@ class TopLevelTests(TestCase):
         fields = ['x']
         self.assertEqual(barcode_missing(fields), (fields,
         "Second field should be barcode field but got < 2 fields.  Correct header errors before attempting to address warnings."))
+        
+    def test_linkerprimersequence_missing(self):
+        """ linker_primer_missing should test for presence of field """
+        fields = ['x', 'BarcodeSequence', 'LinkerPrimerSequence', 'y']
+        
+        
+        self.assertEqual(linker_primer_missing(fields), (fields, ''))
+        # Should return error if not named correctly.
+        fields = ['x', 'BarcodeSequence', 'LinkerPrimer', 'y']
+        self.assertEqual(linker_primer_missing(fields), (fields,
+         "Third field should be linker_primer field: expected LinkerPrimerSequence but got LinkerPrimer. Correct header errors before attempting to address warnings."))
+        
 
     def test_description_missing(self):
         """description_missing should complain if description missing"""
