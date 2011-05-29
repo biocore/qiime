@@ -31,7 +31,7 @@ import numpy
 from numpy.ma import MaskedArray
 from numpy.ma.extras import apply_along_axis
 from numpy import array, zeros, argsort, shape, vstack,ndarray, asarray, \
-        float, where, isnan
+        float, where, isnan, mean, std
 from cogent import LoadSeqs, Sequence
 from cogent.cluster.procrustes import procrustes
 from cogent.core.alignment import Alignment
@@ -1125,12 +1125,15 @@ def count_seqs_from_file(fasta_file):
     
     """
     result = 0
-    for line in fasta_file:
-        # count the number of lines beginning with a '>' -- 
-        # this is the number of sequences in a fasta file
-        if line.startswith('>'):
-            result += 1
-    return result
+    lens = []
+    for seq_id,seq in MinimalFastaParser(fasta_file):
+        result += 1
+        lens.append(len(seq))
+    if result == 0:
+        return result, None, None
+    else:
+        return result, mean(lens), std(lens)
+        
 
 def count_seqs_in_filepaths(fasta_filepaths,seq_counter=count_seqs):
     """ Wrapper to apply seq_counter to fasta_filepaths
@@ -1152,7 +1155,7 @@ def count_seqs_in_filepaths(fasta_filepaths,seq_counter=count_seqs):
             # store it
             counts.append((current_count,fasta_filepath))
             # and increment the total count
-            total += current_count
+            total += current_count[0]
         except IOError:
             # if the file couldn't be open, keep track of the filepath
             inaccessible_filepaths.append(fasta_filepath)

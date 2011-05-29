@@ -506,10 +506,10 @@ class TopLevelTests(TestCase):
         f2 = ['> s42','ABCDEFG',
               '>s33','A',
               '> 4>','AA>',
-              '>blah']
-        self.assertEqual(count_seqs_from_file(f1),3)
-        self.assertEqual(count_seqs_from_file(f2),4)
-        self.assertEqual(count_seqs_from_file([]),0)
+              '>blah','AA']
+        self.assertFloatEqual(count_seqs_from_file(f1),(3,8.666,2.4944),0.001)
+        self.assertFloatEqual(count_seqs_from_file(f2),(4,3.25,2.2776),0.001)
+        self.assertEqual(count_seqs_from_file([]),(0,None,None))
         
     def test_count_seqs(self):
         """ count_seqs functions as expected with fake seq_counter

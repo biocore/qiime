@@ -46,11 +46,12 @@ script_info['optional_options'] = [
 ]
 script_info['version'] = __version__
 
-def format_output(counts, total, inaccessible_filepaths, suppress_errors=False):
+def format_output(count_data, total, inaccessible_filepaths, suppress_errors=False):
     """ Output formatter """
     lines = ['']
-    for count in counts:
-        lines.append('%d  : %s' % count)
+    for c in count_data:
+        lines.append('%d  : %s (Sequence lengths (mean +/- std): %1.4f +/- %1.4f)' % 
+                     (c[0][0],c[1],c[0][1],c[0][2]))
     lines.append('%d  : Total' % total)
     
     if inaccessible_filepaths and not suppress_errors:
@@ -72,8 +73,8 @@ def main():
     input_fps = set(input_fps)
     output_fp = opts.output_fp
 
-    counts, total, inaccessible_filepaths = count_seqs_in_filepaths(input_fps)
-    r = format_output(counts, total, inaccessible_filepaths, suppress_errors)
+    count_data, total, inaccessible_filepaths = count_seqs_in_filepaths(input_fps)
+    r = format_output(count_data, total, inaccessible_filepaths, suppress_errors)
     
     if opts.output_fp:
         f = open(output_fp,'w')
