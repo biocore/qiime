@@ -1106,5 +1106,59 @@ def inflate_denoiser_output(centroid_seqs,singleton_seqs,denoiser_map,raw_seqs):
         yield flowgram_to_seq_id_lookup[id_], seq
     
     return
+    
+## Functions for counting sequences in fasta files
+
+def count_seqs(fasta_filepath):
+    """ Count the sequences in fasta_filepath 
+    
+        fasta_filepath: string indicating the full path to the file
+    """
+    # Open the file and pass it to py_count_seqs_from_file -- wrapping
+    # this makes for easier unit testing
+    return count_seqs_from_file(open(fasta_filepath))
+
+def count_seqs_from_file(fasta_file):
+    """Return number of sequences in fasta_file (no format checking performed)
+    
+        fasta_file: an open file object
+    
+    """
+    result = 0
+    for line in fasta_file:
+        # count the number of lines beginning with a '>' -- 
+        # this is the number of sequences in a fasta file
+        if line.startswith('>'):
+            result += 1
+    return result
+
+def count_seqs_in_filepaths(fasta_filepaths,seq_counter=count_seqs):
+    """ Wrapper to apply seq_counter to fasta_filepaths
+    
+        fasta_filepaths: list of one or more fasta filepaths
+        seq_counter: a function which takes a single filepath 
+         and returns the count of the number of sequences
+         (default: count_seqs) -- this is parameterized to
+         facilitate unit testing
+    """
+    total = 0
+    counts = []
+    inaccessible_filepaths = []
+    # iterate over the input files
+    for fasta_filepath in fasta_filepaths:
+        try:
+            # get the count of sequences in the current file
+            current_count = seq_counter(fasta_filepath)
+            # store it
+            counts.append((current_count,fasta_filepath))
+            # and increment the total count
+            total += current_count
+        except IOError:
+            # if the file couldn't be open, keep track of the filepath
+            inaccessible_filepaths.append(fasta_filepath)
+    
+    return counts, total, inaccessible_filepaths
+
+## End functions for counting sequences in fasta files
 
 

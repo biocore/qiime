@@ -26,7 +26,8 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
     split_fasta_on_sample_ids_to_files, median_absolute_deviation,
     guess_even_sampling_depth, compute_days_since_epoch,
     get_interesting_mapping_fields,inflate_denoiser_output,
-    flowgram_id_to_seq_id_map)
+    flowgram_id_to_seq_id_map, count_seqs, count_seqs_from_file,
+    count_seqs_in_filepaths)
 
 import numpy
 from numpy import array, asarray
@@ -494,7 +495,49 @@ class TopLevelTests(TestCase):
                     'FXX116':'S3_6 FXX116',
                     'FXX117':'S3_7 FXX117'}
         self.assertEqual(actual,expected)
+
+
+    def test_count_seqs_from_file(self):
+        """ count_seqs: functions as expected with varied data
+        """
+        f1 = ['>seq1','AACCTT','ACTGGT',
+              '>seq2','CCAATT',
+              '>seq3','CCC---GG']
+        f2 = ['> s42','ABCDEFG',
+              '>s33','A',
+              '> 4>','AA>',
+              '>blah']
+        self.assertEqual(count_seqs_from_file(f1),3)
+        self.assertEqual(count_seqs_from_file(f2),4)
+        self.assertEqual(count_seqs_from_file([]),0)
         
+    def test_count_seqs(self):
+        """ count_seqs functions as expected with fake seq_counter
+        """
+        def seq_counter(filepath):
+            # Fake sequence counter to test count_seqs without
+            # having to write files to disk (note don't need to
+            # test actual sequence counters here as they're tested
+            # elsewhere)
+            if filepath.startswith('fake'):
+                raise IOError
+            else:
+                return len(filepath)
+                
+        in_fps = ['1.fasta','fake1.fasta','fake.fasta','2.fa']
+        expected = [(7,'1.fasta'),(4,'2.fa')], 11, ['fake1.fasta','fake.fasta']
+        self.assertEqual(count_seqs_in_filepaths(\
+         in_fps,seq_counter),expected)
+        
+        in_fps = ['fake1.fasta','fake.fasta']
+        expected = [], 0, ['fake1.fasta','fake.fasta']
+        self.assertEqual(count_seqs_in_filepaths(\
+         in_fps,seq_counter),expected)
+                
+        in_fps = ['1.fasta','2.fa','12.txt']
+        expected = [(7,'1.fasta'),(4,'2.fa'),(6,'12.txt')], 17, []
+        self.assertEqual(count_seqs_in_filepaths(\
+         in_fps,seq_counter),expected)
 
 
 raw_seqs1 = """>S1_0 FXX111 some comments
