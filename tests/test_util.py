@@ -522,10 +522,12 @@ class TopLevelTests(TestCase):
             if filepath.startswith('fake'):
                 raise IOError
             else:
-                return len(filepath)
+                return len(filepath), 0, 0
                 
         in_fps = ['1.fasta','fake1.fasta','fake.fasta','2.fa']
-        expected = [(7,'1.fasta'),(4,'2.fa')], 11, ['fake1.fasta','fake.fasta']
+        expected = [((7,0,0),'1.fasta'),
+                    ((4,0,0),'2.fa')],\
+                    11, ['fake1.fasta','fake.fasta']
         self.assertEqual(count_seqs_in_filepaths(\
          in_fps,seq_counter),expected)
         
@@ -535,7 +537,9 @@ class TopLevelTests(TestCase):
          in_fps,seq_counter),expected)
                 
         in_fps = ['1.fasta','2.fa','12.txt']
-        expected = [(7,'1.fasta'),(4,'2.fa'),(6,'12.txt')], 17, []
+        expected = [((7,0,0),'1.fasta'),
+                    ((4,0,0),'2.fa'),
+                    ((6,0,0),'12.txt')], 17, []
         self.assertEqual(count_seqs_in_filepaths(\
          in_fps,seq_counter),expected)
 
