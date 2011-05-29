@@ -162,7 +162,7 @@ def validate_and_set_jobs_to_start(params,
                                    default_jobs_to_start,
                                    parallel,
                                    option_parser):
-    if (jobs_to_start != default_jobs_to_start) and \
+    if (jobs_to_start != int(default_jobs_to_start)) and \
        not parallel:
         option_parser.error("Passing -O requires that -a is also passed.")
     params['parallel']['jobs_to_start'] = str(jobs_to_start)
