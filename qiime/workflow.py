@@ -1171,7 +1171,7 @@ def run_jackknifed_beta_diversity(otu_table_fp,tree_fp,seqs_per_sample,
 def format_index_link(link_description,relative_path):
     
     return '<td>%s</td><td> <a href="%s">%s</a></td>' % (link_description,
-                                        relative_path,
+                                        re.sub('/+','/',relative_path),
                                         split(relative_path)[1])
 
 def generate_index_page(index_links,index_fp):
