@@ -25,13 +25,12 @@ qiime_config = load_qiime_config()
 options_lookup = get_options_lookup()
 
 script_info={}
-script_info['brief_description'] = """A workflow script for running a core QIIME workflow."""
-script_info['script_description'] = """This script plugs several QIIME steps together to form a basic full data analysis workflow. The steps include quality filtering and demultiplexing sequences (optional), running the pick_otus_through_otu_table.py workflow (pick otus and representative sequences, assign taxonomy, align representative sequences, build a tree, and build and OTU table), generating 3d beta diversity PCoA plots, generating alpha rarefaction plots, identifying OTUs that are differentially represented in different categories, and several additional analysis. Beta diversity calculations will be run both with and without an even sampling step, where the depth of sampling can either be passed on the command line or QIIME will try to make a reasonable guess."""
+script_info['brief_description'] = """A workflow for running a core set of QIIME analyses."""
+script_info['script_description'] = """This script plugs several QIIME steps together to form a basic full data analysis workflow. The steps include quality filtering and demultiplexing sequences (optional), running the pick_otus_through_otu_table.py workflow (pick otus and representative sequences, assign taxonomy, align representative sequences, build a tree, and build the OTU table), generating 2d and 3d beta diversity PCoA plots, generating alpha rarefaction plots, identifying OTUs that are differentially represented in different categories, and several additional analysis. Beta diversity calculations will be run both with and without an even sampling step, where the depth of sampling can either be passed to the script or QIIME will try to make a reasonable guess."""
 script_info['script_usage'] = [("","Run serial analysis using default parameters, and guess the even sampling depth (no -e provided)","%prog -i Fasting_Example.fna -q Fasting_Example.qual -o FastingStudy -m Fasting_Map.txt -c Treatment,DOB"),("","Run serial analysis, and guess the even sampling depth (no -e provided). Skip split libraries by starting with already demultiplexed sequences.","%prog -i seqs.fna -o FastingStudy -p custom_parameters.txt -m Fasting_Map.txt -c Treatment,DOB")]
 
 
-script_info['output_description'] ="""
-"""
+script_info['output_description'] =""""""
 
 script_info['required_options'] = [
     make_option('-i','--input_fnas',
@@ -47,11 +46,13 @@ script_info['optional_options'] = [\
  make_option('-p','--parameter_fp',
     help='path to the parameter file, which specifies changes'+\
         ' to the default behavior. '+\
-        'See http://www.qiime.org/documentation/file_formats.html#qiime-parameters .'+\
+        'See http://www.qiime.org/documentation/file_formats.html#qiime-parameters.'+\
         ' [if omitted, default values will be used]'),
  make_option('-q','--input_quals',
-        help='the input qual files  -- comma-separated '+\
-        'if more than one [default: %default]'),
+        help='The 454 qual files. Comma-separated'+\
+        ' if more than one, and must correspond to the '+\
+        ' order of the fasta files. Not relevant if passing '+\
+        ' --suppress_split_libraries. [default: %default]'),
  make_option('-f','--force',action='store_true',\
         dest='force',help='Force overwrite of existing output directory'+\
         ' (note: existing files in output_dir will not be removed)'+\
@@ -61,26 +62,34 @@ script_info['optional_options'] = [\
  #        'useful for debugging [default: %default]',default=False),
  make_option('-a','--parallel',action='store_true',
         dest='parallel',default=False,
-        help='Run in parallel where available [default: %default]'),
+        help='Run in parallel where available. Specify number of'+\
+        ' jobs to start with -O or in the parameters file. [default: %default]'),
  make_option('-e','--seqs_per_sample',type='int',
-     help='depth of coverage for even sampling [default: %default]'),
+     help='Depth of coverage for diversity analyses that incorporate'+\
+     ' subsampling the OTU table to an equal number of sequences per'+\
+     ' sample. [default: determined automatically - bad choices can be'+\
+     ' made in some circumstances]'),
  make_option('--even_sampling_keeps_all_samples',
-     help='if -e is not provided, chose the sampling depth to force retaining '+\
-     'all samples rather than guessing a sampling depth which may favor keeping '+\
-     'more sequences while dropping some samples [default: %default]', 
+     help='if -e/--seqs_per_sample is not provided, chose the even sampling'+\
+     ' depth to force retaining all samples (rather then default which will'+\
+     ' choose a sampling depth which may favor keeping '+\
+     ' more sequences by excluding some samples) [default: %default]', 
      default=False, action='store_true'),
  make_option('-t','--reference_tree_fp',
-            help='path to the tree file if one should be used (otherwise de novo '+\
-            ' tree will be used) [default: %default]'),
+     help='Path to the tree file if one should be used.'+\
+     ' Relevant for closed-reference-based OTU picking'+\
+     ' methods only (i.e., uclust_ref -C and BLAST)'+\
+     ' [default: de novo tree will be used]'),
  make_option('-c','--categories',
-            help='the metadata category or categories to compare '+\
-            '(for otu_category_significance,'+\
-            'supervised_learning.py, and cluster_quality.py steps)  '+\
-            '-- comma-separated if more than one '+\
-            '[default: %default; skip these steps]'),
+            help='The metadata category or categories to compare'+\
+            ' (i.e., column headers in the mapping file)' +\
+            ' for the otu_category_significance,'+\
+            ' supervised_learning.py, and cluster_quality.py steps.'+\
+            ' Pass a comma-separated list if more than one category'+\
+            ' [default: %default; skip these steps]'),
  make_option('--suppress_split_libraries',action='store_true',default=False,
-            help='skip demultiplexing/quality filtering (i.e. split_libraries) -'+\
-            ' this assumes that sequence identifiers are in post-split_libraries'+\
+            help='Skip demultiplexing/quality filtering (i.e. split_libraries).'+\
+            ' This assumes that sequence identifiers are in post-split_libraries'+\
             ' format (i.e., sampleID_seqID) [default: %default]'),
  options_lookup['jobs_to_start_workflow']
 ]
