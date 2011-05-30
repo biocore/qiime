@@ -546,7 +546,7 @@ def get_clusters_from_fasta_filepath(
     except ApplicationError:
         remove_files(files_to_remove)
         raise ApplicationError, ('Error running uclust. Possible causes are '
-         'unsupported version (current supported version is v1.2.16) is installed or '
+         'unsupported version (current supported version is v1.2.22) is installed or '
          'improperly formatted input file was provided')
     except ApplicationNotFoundError:
         remove_files(files_to_remove)
