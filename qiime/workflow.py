@@ -1518,8 +1518,135 @@ def run_core_qiime_analyses(
     command_handler(commands, status_update_callback, logger)
     generate_index_page(index_links,index_fp)
 
+def run_summarize_taxa_through_plots(otu_table_fp, mapping_fp,
+    output_dir, mapping_cat, command_handler, params, qiime_config,
+    logger=None, status_update_callback=print_to_stdout):
+    """ Run the data preparation for summarizing taxonomies and generating plots
+    
+        The steps performed by this function are:
+          1) Summarize OTU by Categore
+          2) Summarize Taxonomy
+          3) Plot Taxonomy Summary
+          
+    """
+    # Prepare some variables for the later steps
+    otu_table_dir, otu_table_filename = split(otu_table_fp)
+    otu_table_basename, otu_table_ext = splitext(otu_table_filename)
+    create_dir(output_dir)
+    
+    commands = []
+    python_exe_fp = qiime_config['python_exe_fp']
+    script_dir = get_qiime_scripts_dir()
+    
+    if logger == None:
+        logger = WorkflowLogger(generate_log_fp(output_dir),
+                                params=params,
+                                qiime_config=qiime_config)
+        close_logger_on_success = True
+    else:
+        close_logger_on_success = False
+    
+    # Prep the summarize otu by category command
+    try:
+        otu_table_f = open(otu_table_fp,'U')
+    except IOError,e:
+        logger.write('OTU table filepath cannot be opened. Does it exist?\n' +
+                     ' %s\n' % otu_table_fp +
+                     'Original Error:\n%s\n' % str(e))
+        logger.close()
+        raise IOError,e
+    
+    # if mapping category not passed via command-line, 
+    # check if it is passed in params file
+    if not mapping_cat:
+        try:
+            mapping_cat=params['summarize_otu_by_cat']['mapping_category']
+        except:
+            mapping_cat=None
+        
+    try:
+        params_str = get_params_str(params['summarize_otu_by_cat'])
+        # Need to remove the mapping category option, since it is defined above.
+        # Using this method since we don't want to change the params dict
+        split_params=params_str.split('--')
+        updated_params_str=[]
+        for i in split_params:
+            if not i.startswith('mapping_category'):
+                updated_params_str.append(i)
+        params_str='--'.join(updated_params_str)
+    except:
+        params_str = ''
+    
+    if mapping_cat:
+        output_fp=join(output_dir,'%s_otu_table.txt' % (mapping_cat))
+        # Build the summarize otu by category command
+        summarize_otu_by_cat_cmd = \
+         "%s %s/summarize_otu_by_cat.py -i %s -c %s -o %s -m %s %s" %\
+         (python_exe_fp, script_dir, mapping_fp, otu_table_fp, output_fp, \
+          mapping_cat, params_str)
+        
+        commands.append(\
+         [('Summarize OTU table by Category',summarize_otu_by_cat_cmd)])
+         
+        otu_table_fp=output_fp
+     
+    # Prep the summarize taxonomy command
+    try:
+        params_str = get_params_str(params['summarize_taxa'])
+    except:
+        params_str = ''
+    
+    try:
+        sum_taxa_levels=params['summarize_taxa']['level']
+    except:
+        sum_taxa_levels=None
+        
+    # Build the summarize taxonomy command
+    summarize_taxa_cmd = '%s %s/summarize_taxa.py -i %s -o %s %s' %\
+     (python_exe_fp, script_dir, otu_table_fp, \
+      output_dir, params_str)
+    
+    commands.append([('Summarize Taxonomy',summarize_taxa_cmd)])
 
+    sum_taxa_fps=[]
+    
+    if sum_taxa_levels:
+        basename,extension=splitext(otu_table_fp)
+        for i in sum_taxa_levels.split(','):
+            sum_taxa_fps.append(basename+'_L%s.txt' % (str(i)))
+    else:
+        basename=join(output_dir,splitext(split(otu_table_fp)[-1])[0])
+        # this is the default levels from summarize_taxa, but cannot import
+        # script to get these values
+        for i in [2,3,4,5,6]:
+            sum_taxa_fps.append(basename+'_L%s.txt' % (str(i)))
 
+    # Prep the plot taxa summary plot command(s)
+    taxa_summary_plots_dir = '%s/taxa_summary_plots/' % output_dir
+    try:
+        makedirs(taxa_summary_plots_dir)
+    except OSError:
+        pass
+        
+    try:
+        params_str = get_params_str(params['plot_taxa_summary'])
+    except:
+        params_str = ''
+    # Build the plot taxa summary plot command(s)
+
+    plot_taxa_summary_cmd =\
+         '%s %s/plot_taxa_summary.py -i %s -o %s %s' %\
+         (python_exe_fp, script_dir, ','.join(sum_taxa_fps),
+          taxa_summary_plots_dir, params_str)
+    
+    commands.append(\
+         [('Plot Taxonomy Summary',plot_taxa_summary_cmd)])
+    
+    # Call the command handler on the list of commands
+    command_handler(commands,
+                    status_update_callback,
+                    logger=logger,
+                    close_logger_on_success=close_logger_on_success)
 
 
 

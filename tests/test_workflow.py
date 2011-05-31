@@ -27,7 +27,7 @@ from cogent.app.util import get_tmp_filename, ApplicationNotFoundError
 from cogent.parse.binary_sff import parse_binary_sff
 from qiime.util import load_qiime_config
 from qiime.parse import (parse_qiime_parameters, parse_otu_table,
-    parse_distmat_to_dict,parse_distmat)
+    parse_distmat_to_dict,parse_distmat,parse_taxa_summary_table)
 from qiime.workflow import (run_qiime_data_preparation,
     run_pick_reference_otus_through_otu_table,
     run_beta_diversity_through_plots,
@@ -35,7 +35,8 @@ from qiime.workflow import (run_qiime_data_preparation,
     run_jackknifed_beta_diversity,
     call_commands_serially,
     no_status_updates,WorkflowError,
-    print_commands,print_to_stdout,run_core_qiime_analyses)
+    print_commands,print_to_stdout,run_core_qiime_analyses,
+    run_summarize_taxa_through_plots)
 
 ## The test case timing code included in this file is adapted from
 ## recipes provided at:
@@ -1042,6 +1043,151 @@ class WorkflowTests(TestCase):
         log_fp = glob(join(self.wf_out,'log*.txt'))[0]
         self.assertTrue(getsize(log_fp) > 0)
 
+  
+    def test_run_summarize_taxa_through_plots(self):
+        """ run_summarize_taxa_through_plots generates expected results when
+            using a parameters file """
+        
+        # define the params and mapping_category
+        params=self.params
+        try:
+            mapping_cat=params['summarize_otu_by_cat']['mapping_category']
+        except:
+            mapping_cat=None
+
+        run_summarize_taxa_through_plots(
+         self.fasting_otu_table_fp,
+         self.fasting_mapping_fp,
+         self.wf_out,
+         mapping_cat,
+         call_commands_serially,
+         params,
+         self.qiime_config,
+         status_update_callback=no_status_updates)
+        
+        if mapping_cat:
+            new_otu_table_fp=join(self.wf_out,
+                                  '%s_otu_table.txt' % (mapping_cat))
+        else:
+            new_otu_table_fp=self.fasting_otu_table_fp
+           
+        input_file_basename = splitext(split(new_otu_table_fp)[1])[0]
+        
+        # this is the default levels from summarize_taxa, but cannot import
+        # script to get these values
+        try:
+            sum_levels=params['summarize_taxa']['level']
+        except:
+            sum_levels=[2,3,4,5,6]
+            
+        # Check that the OTU table file have non-zero size
+        self.assertTrue(getsize(new_otu_table_fp) > 0)
+        
+        exp_head=['Control','Fast']
+        exp_lineages='Root;Bacteria;Actinobacteria'
+
+        # Check that summarized taxonomy files have non-zero size
+        for i in sum_levels:
+            sum_taxa_file=join(self.wf_out,input_file_basename+'_L%s.txt' \
+                            % (str(i)))
+            header,lineages,otu_table=parse_taxa_summary_table(\
+                                                open(sum_taxa_file).readlines())
+            
+            # validate the first lineage
+            self.assertEqual(lineages[0],exp_lineages)
+            
+            # validate the header
+            self.assertEqual(header,exp_head)
+            
+            #verify file is not empty
+            self.assertTrue(getsize(sum_taxa_file) > 0)
+        
+        # Check the html files are generated
+        self.assertTrue(getsize(join(self.wf_out,'taxa_summary_plots',
+                            'area_charts.html')) > 0)
+        
+        self.assertTrue(getsize(join(self.wf_out,'taxa_summary_plots',
+                            'area_charts.html')) > 0)
+        
+        # Check that the log file is created and has size > 0
+        log_fp = glob(join(self.wf_out,'log*.txt'))[0]
+        self.assertTrue(getsize(log_fp) > 0)
+    
+    
+    def test_run_summarize_taxa_through_plots_no_params(self):
+        """ run_summarize_taxa_through_plots generates expected results when
+            not passing a parameters file """
+        
+        # define the params and mapping_category
+        params=None
+        try:
+            mapping_cat=params['summarize_otu_by_cat']['mapping_category']
+        except:
+            mapping_cat=None
+            
+        run_summarize_taxa_through_plots(
+         self.fasting_otu_table_fp,
+         self.fasting_mapping_fp,
+         self.wf_out,
+         mapping_cat,
+         call_commands_serially,
+         params,
+         self.qiime_config,
+         status_update_callback=no_status_updates)
+        
+        if mapping_cat:
+            new_otu_table_fp=join(self.wf_out,
+                                  '%s_otu_table.txt' % (mapping_cat))
+        else:
+            new_otu_table_fp=self.fasting_otu_table_fp
+           
+        input_file_basename = splitext(split(new_otu_table_fp)[1])[0]
+        
+        # this is the default levels from summarize_taxa, but cannot import
+        # script to get these values
+        try:
+            sum_levels=params['summarize_taxa']['level']
+        except:
+            sum_levels=[2,3,4,5,6]
+            
+        # Check that the OTU table file have non-zero size
+        self.assertTrue(getsize(new_otu_table_fp) > 0)
+        
+        exp_head=['PC.354', 'PC.355', 'PC.356', 'PC.481', 'PC.593', 'PC.607', 
+                   'PC.634', 'PC.635', 'PC.636']
+        exp_lineages=['Root;Bacteria','Root;Bacteria;Actinobacteria',
+'Root;Bacteria;Actinobacteria;Actinobacteria',
+'Root;Bacteria;Actinobacteria;Actinobacteria;Coriobacteridae',
+'Root;Bacteria;Actinobacteria;Actinobacteria;Coriobacteridae;Coriobacteriales']
+
+        # Check that summarized taxonomy files have non-zero size
+        for i in sum_levels:
+            sum_taxa_file=join(self.wf_out,input_file_basename+'_L%s.txt' \
+                            % (str(i)))
+            header,lineages,otu_table=parse_taxa_summary_table(\
+                                                open(sum_taxa_file).readlines())
+
+            # validate the header is in a list of valid headers based on level
+            self.assertTrue(lineages[0] in exp_lineages)
+
+            # validate the header
+            self.assertEqual(header,exp_head)
+            
+            #verify file is not empty
+            self.assertTrue(getsize(sum_taxa_file) > 0)
+        
+        # Check the html files are generated
+        self.assertTrue(getsize(join(self.wf_out,'taxa_summary_plots',
+                            'area_charts.html')) > 0)
+        
+        self.assertTrue(getsize(join(self.wf_out,'taxa_summary_plots',
+                            'bar_charts.html')) > 0)
+        
+        # Check that the log file is created and has size > 0
+        log_fp = glob(join(self.wf_out,'log*.txt'))[0]
+        self.assertTrue(getsize(log_fp) > 0)
+        
+        
 qiime_parameters_f = """# qiime_parameters.txt
 # WARNING: DO NOT EDIT OR DELETE Qiime/qiime_parameters.txt. Users should copy this file and edit copies of it.
 
@@ -1096,6 +1242,20 @@ assign_taxonomy:confidence	0.8
 # Phylogenetic tree building parameters
 make_phylogeny:tree_method	fasttree
 make_phylogeny:root_method	tree_method_default
+
+# Summarize OTU by Category parameters
+summarize_otu_by_cat:normalize True
+summarize_otu_by_cat:mapping_category Treatment
+
+# Summarize taxonomy parameters
+summarize_taxa:level 3
+summarize_taxa:absolute_abundance True
+
+# Summarize taxonomy parameters
+plot_taxa_summary:include_html_legend True
+plot_taxa_summary:include_html_counts True
+plot_taxa_summary:background black
+plot_taxa_summary:labels Class
 
 # Beta diversity parameters
 beta_diversity:metrics	weighted_unifrac,unweighted_unifrac
