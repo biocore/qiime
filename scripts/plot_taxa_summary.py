@@ -50,7 +50,7 @@ script_info['optional_options']=[\
     # changed this from type='string' (default) to type='int'
     make_option('-l', '--labels',
         help='Comma-separated list of taxonomic levels (e.g.' +\
-        ' Phylum,Class,Order)'),
+        ' Phylum,Class,Order)  [default=%default]',default=None),
     make_option('-n', '--num_categories', dest='num_categories', \
         help='The maximum number of taxonomies to show in each pie chart.' +\
         ' All additional taxonomies are grouped into an "other" category.' +\
