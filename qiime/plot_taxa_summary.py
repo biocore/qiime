@@ -1096,7 +1096,7 @@ def make_all_charts(data,dir_path,filename,num_categories,colorby,args,\
         
         f = color_data['counts'][f_name]
         level = max([len(t.split(';')) - 1 for t in f[1]])
-        prefs=prefs
+        
         for key in prefs.keys():
             if prefs[key]['column'] != str(level):
                 continue
@@ -1119,6 +1119,9 @@ def make_all_charts(data,dir_path,filename,num_categories,colorby,args,\
                 get_group_colors(groups, pref_colors)
         
         updated_pref_colors={}
+        
+        if chart_type=='area' and len(f[0])==1:
+            raise ValueError, 'When generating area charts, the number of samples (or category values) must be greater than 1.  However, you can still produce a pie chart or bar chart with only 1 sample (or category value), but you must remove the area chart value from the input arguments.'
         
         for key in pref_colors:
             updated_pref_colors[key.replace('"','')]=pref_colors[key]
