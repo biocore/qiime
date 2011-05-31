@@ -28,7 +28,7 @@ extensions = []
 templates_path = ['_templates']
 
 # The suffix of source filenames.
-source_suffix = '.rst'
+source_suffix = '.rst' 
 
 # The encoding of source files.
 #source_encoding = 'utf-8'
@@ -173,6 +173,8 @@ htmlhelp_basename = 'qiimedoc'
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
   ('index', 'qiime.tex', u'QIIME Homepage',
+   u'QIIME Team', 'manual'),
+     ('tutorials/tutorial', 'tutorial.tex', u'QIIME tut',
    u'QIIME Team', 'manual'),
 ]
 
