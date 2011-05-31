@@ -381,7 +381,10 @@ def transform_and_generate_xmap(ax1,bar_y_data,bar_width,taxa,x,plot_height,\
         half_iterx=iterx/2*bar_width
         #half_iterx=iterx*bar_width/17
     elif chart_type=='bar':
-        half_iterx=iterx*bar_width/17
+        if len(all_xcoords[0]) > 1:
+            half_iterx=((all_xcoords[0][1]-all_xcoords[0][0])/2) * bar_width
+        else:
+            half_iterx=all_xcoords[0][0]/2
         
     #iterate over y-coordinates and define area_map
     for i,j in enumerate(all_ycoords):
@@ -410,7 +413,8 @@ def transform_and_generate_xmap(ax1,bar_y_data,bar_width,taxa,x,plot_height,\
                 if all_ycoords[i][r]!=starty:
                     xmap.append(AREA_SRC % (all_xcoords[i][r]-half_iterx,\
                      img_height-starty,all_xcoords[i][r]+half_iterx,\
-                     img_height-all_ycoords[i][r], taxa[i],sample_ids[r]+':'+taxa[i],\
+                     img_height-all_ycoords[i][r],\
+                     taxa[i],sample_ids[r]+':'+taxa[i],\
                      taxa_percents[r][i]*100))
 
     return xmap

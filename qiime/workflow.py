@@ -1611,7 +1611,7 @@ def run_summarize_taxa_through_plots(otu_table_fp, mapping_fp,
     sum_taxa_fps=[]
     
     if sum_taxa_levels:
-        basename,extension=splitext(otu_table_fp)
+        basename=join(output_dir,splitext(split(otu_table_fp)[-1])[0])
         for i in sum_taxa_levels.split(','):
             sum_taxa_fps.append(basename+'_L%s.txt' % (str(i)))
     else:
