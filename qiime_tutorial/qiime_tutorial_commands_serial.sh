@@ -1,39 +1,43 @@
 #!/bin/bash
+# interactive commands are commented out
+#print_qiime_config.py
 
 # Pre-processing
-echo "Check Mapping"
+echo "Check mapping file"
 rm -rf mapping_output ; check_id_map.py -m Fasting_Map.txt -o mapping_output -v
 
-echo "De-multiplexing"
+echo "Demultiplexing"
 rm -rf split_library_output ; split_libraries.py -m Fasting_Map.txt -f Fasting_Example.fna -q Fasting_Example.qual -o split_library_output
 
-# Data analysis
+# otus
 echo "Pick OTUs through OTU table"
-rm -rf wf_da ; pick_otus_through_otu_table.py -i split_library_output/seqs.fna -p custom_parameters.txt -o wf_da
+rm -rf otus ; pick_otus_through_otu_table.py -i split_library_output/seqs.fna -o otus
+
+#per_library_stats.py -i otus/otu_table.txt
 
 #OTU Heatmap
 echo "OTU Heatmap"
-make_otu_heatmap_html.py -i wf_da/otu_table.txt -o wf_da/OTU_Heatmap
+make_otu_heatmap_html.py -i otus/otu_table.txt -o otus/OTU_Heatmap/
 
 #OTU Network
 echo "OTU Network"
-make_otu_network.py -m Fasting_Map.txt -i wf_da/otu_table.txt -o wf_da/OTU_Network
+make_otu_network.py -m Fasting_Map.txt -i otus/otu_table.txt -o otus/OTU_Network
 
 #Make Taxa Summary Charts
 echo "Summarize taxa"
-summarize_taxa.py -i wf_da/otu_table.txt -o wf_da/Taxa_Charts -L 3
-
-echo "Make Taxa Summary Charts"
-plot_taxa_summary.py -i wf_da/Taxa_Charts/otu_table_L3.txt -l Phylum -o wf_da/Taxa_Charts -k white
+rm -rf wf_taxa_summary ; summarize_taxa_through_plots.py -i otus/otu_table.txt -o wf_taxa_summary -m Fasting_Map.txt
 
 echo "Alpha rarefaction"
-rm -rf wf_arare ; alpha_rarefaction.py -i wf_da/otu_table.txt -m Fasting_Map.txt -o wf_arare/ -p custom_parameters.txt -t wf_da/rep_set.tre
+#alpha_diversity.py -h
+echo "alpha_diversity:metrics shannon,PD_whole_tree,chao1,observed_species" > alpha_params.txt
+
+rm -rf wf_arare ; alpha_rarefaction.py -i otus/otu_table.txt -m Fasting_Map.txt -o wf_arare/ -p alpha_params.txt -t otus/rep_set.tre
 
 echo "Beta diversity and plots"
-rm -rf wf_bdiv_even146 ; beta_diversity_through_plots.py -i wf_da/otu_table.txt -m Fasting_Map.txt -o wf_bdiv_even146/ -p custom_parameters.txt -t wf_da/rep_set.tre -e 146
+rm -rf wf_bdiv_even146 ; beta_diversity_through_plots.py -i otus/otu_table.txt -m Fasting_Map.txt -o wf_bdiv_even146/ -t otus/rep_set.tre -e 146
 
 echo "Jackknifed beta diversity"
-rm -rf wf_jack ; jackknifed_beta_diversity.py -i wf_da/otu_table.txt -o wf_jack -p custom_parameters.txt -e 110 -t wf_da/rep_set.tre -m Fasting_Map.txt
+rm -rf wf_jack ; jackknifed_beta_diversity.py -i otus/otu_table.txt -t otus/rep_set.tre -m Fasting_Map.txt -o wf_jack -e 110
 
 echo "Make Bootstrapped Tree"
 make_bootstrapped_tree.py -m wf_jack/unweighted_unifrac/upgma_cmp/master_tree.tre -s wf_jack/unweighted_unifrac/upgma_cmp/jackknife_support.txt -o wf_jack/unweighted_unifrac/upgma_cmp/jackknife_named_nodes.pdf
