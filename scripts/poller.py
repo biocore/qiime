@@ -47,7 +47,7 @@ script_info['optional_options'] = [\
            ' [default: %default]'),\
  make_option('-t','--time_to_sleep',type='int',\
            help='time to wait between calls to status_callback_f'+\
-           ' (in seconds) [default: %default]',default=60)
+           ' (in seconds) [default: %default]',default=3)
 ]
 
 
