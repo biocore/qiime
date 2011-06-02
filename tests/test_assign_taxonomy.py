@@ -14,7 +14,7 @@ __status__ = "Development"
 
 
 from cStringIO import StringIO
-from os import remove, system
+from os import remove, system, path, getenv
 from glob import glob
 from tempfile import NamedTemporaryFile, mkdtemp
 from shutil import copy as copy_file
@@ -22,11 +22,12 @@ from cogent.util.unit_test import TestCase, main
 from cogent import LoadSeqs
 from cogent.app.util import get_tmp_filename, ApplicationError
 from cogent.app.formatdb import build_blast_db_from_fasta_path
-from cogent.app.rdp_classifier import RdpTrainer
+from cogent.app.rdp_classifier import train_rdp_classifier
 from cogent.util.misc import remove_files
 from cogent.parse.fasta import MinimalFastaParser
-from qiime.assign_taxonomy import TaxonAssigner, BlastTaxonAssigner,\
- RdpTaxonAssigner
+from qiime.assign_taxonomy import (
+    TaxonAssigner, BlastTaxonAssigner, RdpTaxonAssigner, Rdp20TaxonAssigner,
+    )
 
 
 class TaxonAssignerTests(TestCase):
@@ -327,7 +328,7 @@ class BlastTaxonAssignerTests(TestCase):
         # the equal unordered lists of lines is present in actual and expected
         self.assertEqualItems(log_file_str.split('\n'), log_file_exp)
         
-        
+
 class RdpTaxonAssignerTests(TestCase):
     """Tests for the Rdp-based taxonomy assigner.
 
@@ -375,13 +376,20 @@ class RdpTaxonAssignerTests(TestCase):
             prefix='RdpTaxonAssignerTest_', suffix='.fasta')
         self.reference_seqs_file.write(rdp_reference_seqs)
         self.reference_seqs_file.seek(0)
-        
 
-
-        self.default_app = RdpTaxonAssigner({})
-        
-        # Why is this giving weird results (strings get increasingly longer)
-        # print str(self.default_app)
+        jar_fp = getenv("RDP_JAR_PATH")
+        jar_basename = path.basename(jar_fp)
+        if '2.2' in jar_basename: 
+            self.app_class = RdpTaxonAssigner
+            self.version = 2.2
+        elif '2.0' in jar_basename:
+            self.app_class = Rdp20TaxonAssigner
+            self.version = 2.0
+        else:
+            raise ApplicationError(
+                "RDP_JAR_PATH does not point to version 2.0 or 2.2 of the "
+                "RDP Classifier.")
+        self.default_app = self.app_class({})
 
     def tearDown(self):
         remove_files(self._paths_to_clean_up)
@@ -389,8 +397,10 @@ class RdpTaxonAssignerTests(TestCase):
     def test_init(self):
         """RdpTaxonAssigner.__init__ should set default attributes and params
         """
-        a = RdpTaxonAssigner({})
-        self.assertEqual(a.Name, 'RdpTaxonAssigner')
+        if self.version == 2.0:
+            self.assertEqual(self.default_app.Name, 'Rdp20TaxonAssigner')
+        else:
+            self.assertEqual(self.default_app.Name, 'RdpTaxonAssigner')
         
     def test_train_on_the_fly(self):
         """Training on-the-fly classifies reference sequence correctly with 100% certainty
@@ -400,22 +410,25 @@ class RdpTaxonAssignerTests(TestCase):
         input_seqs_file.write(test_seq_coll.toFasta())
         input_seqs_file.seek(0)
 
-        expected = rdp_trained_test1_expected_dict
+        if self.version == 2.0:
+            exp_assignments = rdp20_trained_test1_expected_dict
+        else:
+            exp_assignments = rdp_trained_test1_expected_dict
         
-        app = RdpTaxonAssigner({
+        app = self.app_class({
                 'id_to_taxonomy_fp': self.id_to_taxonomy_file.name,
                 'reference_sequences_fp': self.reference_seqs_file.name,
                 })
-        actual = app(self.tmp_seq_filepath)
+        obs_assignments = app(self.tmp_seq_filepath)
         
         key = 'X67228 some description'
-        self.assertEqual(actual[key], expected[key])
+        self.assertEqual(obs_assignments[key], exp_assignments[key])
 
     def test_parse_lineage(self):
         """Lineage in csv format is correctly parsed to a list
         """
         str = 'Archaea;Euryarchaeota;Methanomicrobiales;Methanomicrobium et rel.;a;b'
-        actual = RdpTaxonAssigner._parse_lineage(str)
+        actual = self.app_class._parse_lineage(str)
         expected = ['Archaea', 'Euryarchaeota', 'Methanomicrobiales', 
                     'Methanomicrobium et rel.', 'a', 'b']
         self.assertEqual(actual, expected)
@@ -423,7 +436,7 @@ class RdpTaxonAssignerTests(TestCase):
     def test_build_tree(self):
         """RdpTaxonAssigner._build_tree() should return a tree with correct Rdp-format taxonomy
         """
-        tree = RdpTaxonAssigner._build_tree(self.id_to_taxonomy_file)
+        tree = self.app_class._build_tree(self.id_to_taxonomy_file)
         actual = tree.rdp_taxonomy()
         # The order of the lines in this file depends on python's
         # dict() implementation, so we should ideally build two sets
@@ -432,13 +445,13 @@ class RdpTaxonAssignerTests(TestCase):
         self.assertEqual(actual, expected)
 
     def test_generate_training_seqs(self):
-        seqs = RdpTaxonAssigner._generate_training_seqs(
+        seqs = self.app_class._generate_training_seqs(
             self.reference_seqs_file, self.id_to_taxonomy_file)
         actual = LoadSeqs(data=seqs, aligned=False).toFasta()
         self.assertEqual(actual, rdp_expected_training_seqs)
         
     def test_generate_training_files(self):
-        app = RdpTaxonAssigner({
+        app = self.app_class({
                 'id_to_taxonomy_fp': self.id_to_taxonomy_file.name,
                 'reference_sequences_fp': self.reference_seqs_file.name,
                 })
@@ -454,42 +467,40 @@ class RdpTaxonAssignerTests(TestCase):
            This test may periodically fail, but should be rare.
            
         """
-        expected = rdp_test1_expected_dict
+        if self.version == 2.0:
+            exp_assignments = rdp20_test1_expected_dict
+        else:
+            exp_assignments = rdp_test1_expected_dict
         min_confidence = self.default_app.Params['Confidence']
         
         # Since there is some variation in the assignments, run
         # 10 trials and make sure we get the expected result at least once
         num_trials = 10
-        num_seqs = len(expected)
-        seq_ids = expected.keys()
-        assignment_comp_results = [False] * num_seqs
-        expected_assignment_comp_results = [True] * num_seqs
-        
+        unverified_seq_ids = set(exp_assignments.keys())
         for i in range(num_trials):
-            actual = self.default_app(self.tmp_seq_filepath)
-            # seq ids are the same, and all input sequences get a result
-            self.assertEqual(actual.keys(),expected.keys())
-            for j,seq_id in enumerate(seq_ids):
-                # confidence is above threshold
-                self.assertTrue(actual[seq_id][1] >= min_confidence)
-                # confidence roughly matches expected
-                self.assertFloatEqual(\
-                 actual[seq_id][1],expected[seq_id][1],0.1)
-                # check if the assignment is correct -- this must happen
-                # at least once per seq_id for the test to pass
-                if actual[seq_id][0] == expected[seq_id][0]:
-                    assignment_comp_results[j] = True
-            if assignment_comp_results == expected_assignment_comp_results:
-                # break once we've seen a correct assignment for each seq
+            obs_assignments = self.default_app(self.tmp_seq_filepath)
+            for seq_id in list(unverified_seq_ids):
+                obs_assignment, obs_confidence = obs_assignments[seq_id]
+                exp_assignment, exp_confidence = exp_assignments[seq_id]
+                self.assertTrue(obs_confidence >= min_confidence)
+                if obs_assignment == exp_assignment:
+                    unverified_seq_ids.remove(seq_id)
+            if not unverified_seq_ids:
                 break
-                    
-        self.assertEqual(\
-         assignment_comp_results,\
-         expected_assignment_comp_results,\
-         "Taxonomic assignments never correct in %d trials." % num_trials)
+
+        messages = []
+        for seq_id in unverified_seq_ids:
+            messages.append(
+                "Unable to verify %s in %s trials" % (seq_id, num_trials))
+            messages.append("  Expected: %s" % exp_assignments[seq_id][0])
+            messages.append("  Observed: %s" % obs_assignments[seq_id][0])
+            messages.append("  Confidence: %s" % obs_assignments[seq_id][1])
+
+        # make sure all taxonomic results were correct at least once
+        self.assertFalse(unverified_seq_ids, msg='\n'.join(messages))
 
     def test_call_with_missing_properties_file(self):
-        app = RdpTaxonAssigner({
+        app = self.app_class({
             'training_data_properties_fp': '/this/file/does/not/exist.on/any.system',
             })
         self.assertRaises(ApplicationError, app, self.tmp_seq_filepath)
@@ -505,25 +516,27 @@ class RdpTaxonAssignerTests(TestCase):
         id_to_taxonomy_file.write(rdp_id_to_taxonomy2)
         id_to_taxonomy_file.seek(0)
 
-        app1 = RdpTaxonAssigner({
+        app1 = self.app_class({
                 'id_to_taxonomy_fp': id_to_taxonomy_file.name,
                 'reference_sequences_fp': self.reference_seqs_file.name,
                 })
         taxonomy_file, training_seqs_file = app1._generate_training_files()
 
         training_dir = mkdtemp(prefix='RdpTrainer_')
-        trainer = RdpTrainer()
-        training_results = trainer(
+        training_results = train_rdp_classifier(
             training_seqs_file, taxonomy_file, training_dir)
 
         training_data_fp = training_results['properties'].name
         min_confidence = 0.80
-        app2 = RdpTaxonAssigner({
+        app2 = self.app_class({
             'training_data_properties_fp': training_data_fp,
             'Confidence': min_confidence,
             })
 
-        expected = rdp_trained_test2_expected_dict
+        if self.version == 2.0:
+            expected = rdp20_trained_test2_expected_dict
+        else:
+            expected = rdp_trained_test2_expected_dict
 
         # Since there is some variation in the assignments, run
         # 10 trials and make sure we get the expected result at least once
@@ -550,7 +563,7 @@ class RdpTaxonAssignerTests(TestCase):
             if assignment_comp_results == expected_assignment_comp_results:
                 # break once we've seen a correct assignment for each seq
                 break
-                    
+
         self.assertEqual(\
          assignment_comp_results,\
          expected_assignment_comp_results,\
@@ -562,7 +575,10 @@ class RdpTaxonAssignerTests(TestCase):
            This test may periodically fail, but should be rare.
            
         """
-        expected_lines = rdp_test1_expected_lines
+        if self.version == 2.0:
+            expected_lines = rdp20_test1_expected_lines
+        else:
+            expected_lines = rdp_test1_expected_lines
         
         # Since there is some variation in the assignments, run
         # 10 trials and make sure we get the expected result at least once
@@ -589,30 +605,30 @@ class RdpTaxonAssignerTests(TestCase):
                     assignment_comp_results[j] = True
             if assignment_comp_results == expected_assignment_comp_results:
                 break
-                    
+
         self.assertEqual(\
          assignment_comp_results,\
          expected_assignment_comp_results,\
          "Taxonomic assignments never correct in %d trials." % num_trials)
 
-
     def test_log(self):
         """RdpTaxonAssigner should write correct message to log file"""
         # expected result when no result_path is provided
-        a = RdpTaxonAssigner({})
+        a = self.app_class({})
         a(seq_path=self.tmp_seq_filepath, 
           result_path=None, 
           log_path=self.tmp_log_filepath)
             
         # open the actual log file and the expected file, and pass into lists
         obs = [l.strip() for l in list(open(self.tmp_log_filepath, 'r'))]
-        exp = rdp_test1_log_file_contents.split('\n')
+        exp_log_str = rdp_test1_log_file_contents % (self.app_class.Name, self.version)
+        exp = exp_log_str.split('\n')
         # sort the lists as the entries are written from a dict,
         # so order may vary
         obs.sort()
         exp.sort()
         self.assertEqual(obs, exp)
-        
+
 
 rdp_test1_fasta = \
 """>X67228 some description
@@ -622,8 +638,8 @@ TAAAATGACTAGCCTGCGAGTCACGCCGTAAGGCGTGGCATACAGGCTCAGTAACACGTAGTCAACATGCCCAAAGGACG
 """
 
 rdp_test1_log_file_contents = \
-"""RdpTaxonAssigner parameters:
-Application:RDP classfier
+"""%s parameters:
+Application:RDP classfier, version %1.1f
 Citation:Wang, Q, G. M. Garrity, J. M. Tiedje, and J. R. Cole. 2007. Naive Bayesian Classifier for Rapid Assignment of rRNA Sequences into the New Bacterial Taxonomy. Appl Environ Microbiol. 73(16):5261-7.
 Taxonomy:RDP
 Confidence:0.8
@@ -631,15 +647,45 @@ id_to_taxonomy_fp:None
 reference_sequences_fp:None
 training_data_properties_fp:None"""
 
-rdp_test1_expected_dict = {\
- 'X67228 some description': ('Root;Bacteria;Proteobacteria;Alphaproteobacteria;Rhizobiales;Rhizobiaceae;Rhizobium',0.95),\
- 'EF503697': ('Root;Archaea;Crenarchaeota;Thermoprotei',0.88)
-}
+rdp_test1_expected_dict = {
+    'X67228 some description': (
+        'Bacteria;Proteobacteria;Alphaproteobacteria;Rhizobiales', 0.95),
+    'EF503697': (
+        'Archaea;Crenarchaeota;Thermoprotei', 0.88),
+    }
 
+rdp20_test1_expected_dict = {
+    'X67228 some description': (
+        'Root;Bacteria;Proteobacteria;Alphaproteobacteria;Rhizobiales;'
+        'Rhizobiaceae;Rhizobium', 0.95),
+    'EF503697': (
+        'Root;Archaea;Crenarchaeota;Thermoprotei', 0.88),
+    }
+
+rdp_test1_expected_lines = [\
+ "\t".join(["X67228 some description",\
+  "Bacteria;Proteobacteria;Alphaproteobacteria;Rhizobiales",\
+  "0.9"]),
+ "\t".join(['EF503697','Archaea;Crenarchaeota;Thermoprotei','0.8'])]
+
+rdp20_test1_expected_lines = [
+    "\t".join([
+        "X67228 some description",
+        ("Root;Bacteria;Proteobacteria;Alphaproteobacteria;Rhizobiales;"
+         "Rhizobiaceae;Rhizobium"),
+        "0.9"]),
+    "\t".join([
+        'EF503697','Root;Archaea;Crenarchaeota;Thermoprotei','0.8']),
+    ]
 
 rdp_trained_test1_expected_dict = {
     'X67228 some description': ('Bacteria;Proteobacteria;Alphaproteobacteria;Rhizobiales;Rhizobiaceae;Rhizobium', 1.0),
-    'EF503697': ('Bacteria;Proteobacteria;Gammaproteobacteria', 0.83999999999999997),
+    'EF503697': ('Bacteria;Proteobacteria', 0.93000000000000005),
+    }
+
+rdp20_trained_test1_expected_dict = {
+    'X67228 some description': ('Root;Bacteria;Proteobacteria;Alphaproteobacteria;Rhizobiales;Rhizobiaceae;Rhizobium', 1.0),
+    'EF503697': ('Root;Bacteria;Proteobacteria', 0.93000000000000005),
     }
 
 rdp_trained_test2_expected_dict = {
@@ -647,11 +693,10 @@ rdp_trained_test2_expected_dict = {
     'EF503697': ('Bacteria;Proteobacteria', 0.93000000000000005),
     }
 
-rdp_test1_expected_lines = [\
- "\t".join(["X67228 some description",\
-  "Root;Bacteria;Proteobacteria;Alphaproteobacteria;Rhizobiales;Rhizobiaceae;Rhizobium",\
-  "0.9"]),
- "\t".join(['EF503697','Root;Archaea;Crenarchaeota;Thermoprotei','0.8'])]
+rdp20_trained_test2_expected_dict = {
+    'X67228 some description': ('Root;Bacteria;Proteobacteria;Alphaproteobacteria2;Rhizobiales;Rhizobiaceae;Rhizobium', 1.0),
+    'EF503697': ('Root;Bacteria;Proteobacteria', 0.93000000000000005),
+    }
 
 rdp_id_to_taxonomy = \
 """X67228	Bacteria;Proteobacteria;Alphaproteobacteria;Rhizobiales;Rhizobiaceae;Rhizobium
@@ -691,46 +736,47 @@ tggctcagattgaacgctggcggcaggcctaacacatgcaagtcgagcggaaacgantnntntgaaccttcggggnacga
 """
 
 
-rdp_expected_taxonomy = \
-"""1*Bacteria*0*0*domain
-2*Firmicutes*1*1*phylum
-3*Clostridia*2*2*class
-4*Clostridiales*3*3*order
-5*Clostridiaceae*4*4*family
-6*Clostridium*5*5*genus
-7*Proteobacteria*1*1*phylum
-8*Alphaproteobacteria*7*2*class
-9*Rhizobiales*8*3*order
-10*Rhizobiaceae*9*4*family
-11*Rhizobium*10*5*genus
-12*Gammaproteobacteria*7*2*class
-13*Enterobacteriales*12*3*order
-14*Enterobacteriaceae*13*4*family
-15*Enterobacter*14*5*genus
-16*Pseudomonadales*12*3*order
-17*Pseudomonadaceae*16*4*family
-18*Pseudomonas*17*5*genus
-19*Vibrionales*12*3*order
-20*Vibrionaceae*19*4*family
-21*Photobacterium*20*5*genus
-22*Vibrio*20*5*genus
+rdp_expected_taxonomy = """\
+0*Root*0*0*norank
+1*Bacteria*0*1*domain
+2*Firmicutes*1*2*phylum
+3*Clostridia*2*3*class
+4*Clostridiales*3*4*order
+5*Clostridiaceae*4*5*family
+6*Clostridium*5*6*genus
+7*Proteobacteria*1*2*phylum
+8*Alphaproteobacteria*7*3*class
+9*Rhizobiales*8*4*order
+10*Rhizobiaceae*9*5*family
+11*Rhizobium*10*6*genus
+12*Gammaproteobacteria*7*3*class
+13*Enterobacteriales*12*4*order
+14*Enterobacteriaceae*13*5*family
+15*Enterobacter*14*6*genus
+16*Pseudomonadales*12*4*order
+17*Pseudomonadaceae*16*5*family
+18*Pseudomonas*17*6*genus
+19*Vibrionales*12*4*order
+20*Vibrionaceae*19*5*family
+21*Photobacterium*20*6*genus
+22*Vibrio*20*6*genus
 """
 
 # newline at the end makes a difference
 rdp_expected_training_seqs = \
-""">AB000278 Bacteria;Proteobacteria;Gammaproteobacteria;Vibrionales;Vibrionaceae;Photobacterium
+""">AB000278 Root;Bacteria;Proteobacteria;Gammaproteobacteria;Vibrionales;Vibrionaceae;Photobacterium
 caggcctaacacatgcaagtcgaacggtaanagattgatagcttgctatcaatgctgacgancggcggacgggtgagtaatgcctgggaatataccctgatgtgggggataactattggaaacgatagctaataccgcataatctcttcggagcaaagagggggaccttcgggcctctcgcgtcaggattagcccaggtgggattagctagttggtggggtaatggctcaccaaggcgacgatccctagctggtctgagaggatgatcagccacactggaactgagacacggtccagactcctacgggaggcagcagtggggaatattgcacaatgggggaaaccctgatgcagccatgccgcgtgta
->AB000390 Bacteria;Proteobacteria;Gammaproteobacteria;Vibrionales;Vibrionaceae;Vibrio
+>AB000390 Root;Bacteria;Proteobacteria;Gammaproteobacteria;Vibrionales;Vibrionaceae;Vibrio
 tggctcagattgaacgctggcggcaggcctaacacatgcaagtcgagcggaaacgantnntntgaaccttcggggnacgatnacggcgtcgagcggcggacgggtgagtaatgcctgggaaattgccctgatgtgggggataactattggaaacgatagctaataccgcataatgtctacggaccaaagagggggaccttcgggcctctcgcttcaggatatgcccaggtgggattagctagttggtgaggtaatggctcaccaaggcgacgatccctagctggtctgagaggatgatcagccacactggaactgag
->AB004748 Bacteria;Proteobacteria;Gammaproteobacteria;Enterobacteriales;Enterobacteriaceae;Enterobacter
+>AB004748 Root;Bacteria;Proteobacteria;Gammaproteobacteria;Enterobacteriales;Enterobacteriaceae;Enterobacter
 acgctggcggcaggcctaacacatgcaagtcgaacggtagcagaaagaagcttgcttctttgctgacgagtggcggacgggtgagtaatgtctgggaaactgcccgatggagggggataactactggaaacggtagctaataccgcataacgtcttcggaccaaagagggggaccttcgggcctcttgccatcggatgtgcccagatgggattagctagtaggtggggtaacggctcacctaggcgacgatccctagctggtctgagaggatgaccagccacactggaactgagacacggtccagactcctacgggaggcagcagtggggaatattgcacaatgggcgcaagcctgatgcagccatgccgcgtgtatgaagaaggccttcgggttg
->AB004750 Bacteria;Proteobacteria;Gammaproteobacteria;Enterobacteriales;Enterobacteriaceae;Enterobacter
+>AB004750 Root;Bacteria;Proteobacteria;Gammaproteobacteria;Enterobacteriales;Enterobacteriaceae;Enterobacter
 acgctggcggcaggcctaacacatgcaagtcgaacggtagcagaaagaagcttgcttctttgctgacgagtggcggacgggtgagtaatgtctgggaaactgcccgatggagggggataactactggaaacggtagctaataccgcataacgtcttcggaccaaagagggggaccttcgggcctcttgccatcggatgtgcccagatgggattagctagtaggtggggtaacggctcacctaggcgacgatccctagctggtctgagaggatgaccagccacactggaactgagacacggtccagactcctacgggaggcagcagtggggaatattgca
->X67228 Bacteria;Proteobacteria;Alphaproteobacteria;Rhizobiales;Rhizobiaceae;Rhizobium
+>X67228 Root;Bacteria;Proteobacteria;Alphaproteobacteria;Rhizobiales;Rhizobiaceae;Rhizobium
 aacgaacgctggcggcaggcttaacacatgcaagtcgaacgctccgcaaggagagtggcagacgggtgagtaacgcgtgggaatctacccaaccctgcggaatagctctgggaaactggaattaataccgcatacgccctacgggggaaagatttatcggggatggatgagcccgcgttggattagctagttggtggggtaaaggcctaccaaggcgacgatccatagctggtctgagaggatgatcagccacattgggactgagacacggcccaaa
->X73443 Bacteria;Firmicutes;Clostridia;Clostridiales;Clostridiaceae;Clostridium
+>X73443 Root;Bacteria;Firmicutes;Clostridia;Clostridiales;Clostridiaceae;Clostridium
 nnnnnnngagatttgatcctggctcaggatgaacgctggccggccgtgcttacacatgcagtcgaacgaagcgcttaaactggatttcttcggattgaagtttttgctgactgagtggcggacgggtgagtaacgcgtgggtaacctgcctcatacagggggataacagttagaaatgactgctaataccnnataagcgcacagtgctgcatggcacagtgtaaaaactccggtggtatgagatggacccgcgtctgattagctagttggtggggt
->xxxxxx Bacteria;Proteobacteria;Gammaproteobacteria;Pseudomonadales;Pseudomonadaceae;Pseudomonas
+>xxxxxx Root;Bacteria;Proteobacteria;Gammaproteobacteria;Pseudomonadales;Pseudomonadaceae;Pseudomonas
 ttgaacgctggcggcaggcctaacacatgcaagtcgagcggcagcannnncttcgggaggctggcgagcggcggacgggtgagtaacgcatgggaacttacccagtagtgggggatagcccggggaaacccggattaataccgcatacgccctgagggggaaagcgggctccggtcgcgctattggatgggcccatgtcggattagttagttggtggggtaatggcctaccaaggcgacgatccgtagctggtctgagaggatgatcagccacaccgggactgagacacggcccggactcctacgggaggcagcagtggggaatattggacaatgggggcaaccctgatccagccatgccg"""
 
 id_to_taxonomy_string = \

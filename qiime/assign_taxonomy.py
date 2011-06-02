@@ -23,8 +23,8 @@ from cogent import LoadSeqs, DNA
 from cogent.app.util import get_tmp_filename
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from cogent.app.blast import blast_seqs, Blastall, BlastResult
-from cogent.app.rdp_classifier import assign_taxonomy, \
-    train_rdp_classifier_and_assign_taxonomy
+import cogent.app.rdp_classifier
+import cogent.app.rdp_classifier20
 from cogent.parse.fasta import MinimalFastaParser
 from qiime.util import FunctionWithParams
 
@@ -288,11 +288,11 @@ class RdpTaxonAssigner(TaxonAssigner):
     """Assign taxon using RDP's naive Bayesian classifier
     """
     Name = "RdpTaxonAssigner"
-    Application = "RDP classfier"
+    Application = "RDP classfier, version 2.2"
     Citation = "Wang, Q, G. M. Garrity, J. M. Tiedje, and J. R. Cole. 2007. Naive Bayesian Classifier for Rapid Assignment of rRNA Sequences into the New Bacterial Taxonomy. Appl Environ Microbiol. 73(16):5261-7."
     Taxonomy = "RDP"
     _tracked_properties = ['Application','Citation','Taxonomy']
-
+    
     def __init__(self, params):
         """Return new RdpTaxonAssigner object with specified params.
         
@@ -309,6 +309,14 @@ class RdpTaxonAssigner(TaxonAssigner):
         _params.update(params)
         TaxonAssigner.__init__(self, _params)
 
+    @property
+    def _assign_fcn(self):
+        return cogent.app.rdp_classifier.assign_taxonomy
+
+    @property
+    def _train_fcn(self):
+        return cogent.app.rdp_classifier.train_rdp_classifier_and_assign_taxonomy
+
     def __call__(self, seq_path, result_path=None, log_path=None):
         """Returns dict mapping {seq_id:(taxonomy, confidence)} for
         each seq.
@@ -320,24 +328,23 @@ class RdpTaxonAssigner(TaxonAssigner):
         log_path: path to log, which should include dump of params.
         """
         
-        min_confidence = self.Params['Confidence']
+        min_conf = self.Params['Confidence']
         training_data_properties_fp = self.Params['training_data_properties_fp']
         reference_sequences_fp = self.Params['reference_sequences_fp']
         id_to_taxonomy_fp = self.Params['id_to_taxonomy_fp']
         
         seq_file = open(seq_path, 'r')
-
         if reference_sequences_fp and id_to_taxonomy_fp:
             # Train and assign taxonomy
             taxonomy_file, training_seqs_file = self._generate_training_files()
-            results = train_rdp_classifier_and_assign_taxonomy(
+            results = self._train_fcn(
                 training_seqs_file, taxonomy_file, seq_file, 
-                min_confidence=min_confidence,
+                min_confidence=min_conf,
                 classification_output_fp=result_path)
         else:
             # Just assign taxonomy, using properties file if passed
-            results = assign_taxonomy(
-                seq_file, min_confidence=min_confidence, output_fp=result_path,
+            results = self._assign_fcn(
+                seq_file, min_confidence=min_conf, output_fp=result_path,
                 training_data_fp=training_data_properties_fp)
 
         if log_path:
@@ -373,8 +380,8 @@ class RdpTaxonAssigner(TaxonAssigner):
 
         return rdp_taxonomy_file, rdp_training_seqs_file
 
-    @staticmethod
-    def _generate_training_seqs(reference_seqs_file, id_to_taxonomy_file):
+    @classmethod
+    def _generate_training_seqs(cls, reference_seqs_file, id_to_taxonomy_file):
         """Returns an iterator of valid training sequences in
         RDP-compatible format
 
@@ -388,24 +395,24 @@ class RdpTaxonAssigner(TaxonAssigner):
         # whitespace with an underscore.  Classification may fail if
         # the replacement method generates a name collision.
 
-        id_to_taxonomy_map = RdpTaxonAssigner._parse_id_to_taxonomy_file(
+        id_to_taxonomy_map = cls._parse_id_to_taxonomy_file(
             id_to_taxonomy_file)
 
         for id, seq in MinimalFastaParser(reference_seqs_file):
             taxonomy = id_to_taxonomy_map[id]
-            lineage = RdpTaxonAssigner._parse_lineage(taxonomy)
-            rdp_id = '%s %s' % (re.sub('\s', '_', id), ';'.join(lineage))
+            lineage = cls._parse_lineage(taxonomy)
+            rdp_id = '%s Root;%s' % (re.sub('\s', '_', id), ';'.join(lineage))
             yield rdp_id, seq
 
-    @staticmethod
-    def _build_tree(id_to_taxonomy_file):
+    @classmethod
+    def _build_tree(cls, id_to_taxonomy_file):
         """Returns an RdpTree object representing the taxonomic tree
         derived from the id_to_taxonomy file.
         """
-        tree = RdpTaxonAssigner.RdpTree()
+        tree = cls.RdpTree()
         for line in id_to_taxonomy_file:
             id, taxonomy = map(strip, line.split('\t'))
-            lineage = RdpTaxonAssigner._parse_lineage(taxonomy)
+            lineage = cls._parse_lineage(taxonomy)
             tree.insert_lineage(lineage)
         return tree
 
@@ -433,8 +440,8 @@ class RdpTaxonAssigner(TaxonAssigner):
         """Simple, specialized tree class used to generate a taxonomy
         file for the Rdp Classifier.
         """
-        taxonomic_ranks = ['domain', 'phylum', 'class', 
-                           'order', 'family', 'genus']
+        taxonomic_ranks = [
+            'norank', 'domain', 'phylum', 'class', 'order', 'family', 'genus']
 
         def __init__(self, name='Root', parent=None):
             self.name = name
@@ -451,11 +458,11 @@ class RdpTaxonAssigner(TaxonAssigner):
             Lineage must support the iterator interface, or provide an
             __iter__() method that returns an iterator.
             """
-            lineage = lineage.__iter__()
+            lineage = iter(lineage)
             try:
                 taxon = lineage.next()
                 if taxon not in self.children:
-                    self.children[taxon] = RdpTaxonAssigner.RdpTree(name=taxon, parent=self)
+                    self.children[taxon] = self.__class__(name=taxon, parent=self)
                 self.children[taxon].insert_lineage(lineage)
             except StopIteration:
                 pass
@@ -465,39 +472,37 @@ class RdpTaxonAssigner(TaxonAssigner):
             """Returns a string, in Rdp-compatible format.
             """
             if counter is None:
-                # initialize a new counter to assign IDs
                 counter = count(0)
 
             # Assign ID to current node; used by child nodes
             self.id = counter.next()
-
+            self.rank = self.taxonomic_ranks[self.depth]
+            # RDP uses 0 for the parent ID of the root node
             if self.parent is None:
-                # do not print line for Root node
-                retval = ''
+                parent_id = 0
             else:
-                # Rdp taxonomy file does not count the root node
-                # when considering the depth of the taxon.  We
-                # therefore specify a taxon depth which is one
-                # less than the tree depth.
-                taxon_depth = self.depth - 1
+                parent_id = self.parent.id
 
-                # In this simplest-possible implementation, we
-                # also use the taxon depth to retrieve the string
-                # value of the taxonomic rank.  Taxa beyond the
-                # depth of our master list are given a rank of ''.
-                try:
-                    taxon_rank = self.taxonomic_ranks[taxon_depth]
-                except IndexError:
-                    taxon_rank = ''
-
-                fields = [self.id, self.name, self.parent.id, taxon_depth,
-                          taxon_rank]
-                retval = '*'.join(map(str, fields)) + "\n"
+            fields = [
+                self.id, self.name, parent_id, self.depth, self.rank]
+            taxonomy_str = '*'.join(map(str, fields)) + "\n"
 
             # Recursively append lines from sorted list of subtrees
             child_names = self.children.keys()
             child_names.sort()
             subtrees = [self.children[name] for name in child_names]
             for subtree in subtrees:
-                retval += subtree.rdp_taxonomy(counter)
-            return retval
+                taxonomy_str += subtree.rdp_taxonomy(counter)
+            return taxonomy_str
+
+class Rdp20TaxonAssigner(RdpTaxonAssigner):
+    Name = "Rdp20TaxonAssigner"
+    Application = "RDP classfier, version 2.0"
+    
+    @property
+    def _assign_fcn(self):
+        return cogent.app.rdp_classifier20.assign_taxonomy
+
+    @property
+    def _train_fcn(self):
+        return cogent.app.rdp_classifier20.train_rdp_classifier_and_assign_taxonomy

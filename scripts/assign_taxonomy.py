@@ -16,11 +16,14 @@ from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.util import make_option
 from os import system, remove, path, mkdir
 from os.path import split, splitext
-from qiime.assign_taxonomy import BlastTaxonAssigner, RdpTaxonAssigner
+from qiime.assign_taxonomy import (
+    BlastTaxonAssigner, RdpTaxonAssigner, Rdp20TaxonAssigner,
+    )
 
 assignment_method_constructors = {
     'blast': BlastTaxonAssigner,
     'rdp': RdpTaxonAssigner,
+    'rdp20': Rdp20TaxonAssigner,
     }
  
 assignment_method_choices = assignment_method_constructors.keys()
@@ -88,9 +91,10 @@ script_info['optional_options']=[\
         help='Path to ".properties" file in pre-compiled training data for the '
         'RDP Classifier.  This option is overridden by the -t and -r options. '
         '[default: %default]'),\
- make_option('-m','--assignment_method',\
-          type='choice',help='Taxon assignment method [default:%default]',\
-          choices=assignment_method_choices, default="rdp"),\
+ make_option('-m', '--assignment_method', type='choice',
+        help='Taxon assignment method, either blast, rdp, or rdp20 (RDP '
+        'Classifier version 2.0) [default:%default]',
+        choices=assignment_method_choices, default="rdp"),\
  make_option('-b', '--blast_db',
         help='Database to blast against.  Must provide either --blast_db or '
         '--reference_seqs_db for assignment with blast [default: %default]'),\
@@ -118,7 +122,7 @@ def main():
                          'reference sequences (via -r) must be passed to '
                          'assign taxonomy using blast.')
 
-    if opts.assignment_method == 'rdp':
+    if opts.assignment_method.startswith('rdp'):
         if opts.id_to_taxonomy_fp:
             if opts.reference_seqs_fp is None:
                 option_parser.error('A filepath for reference sequences must be '
@@ -165,7 +169,7 @@ def main():
             params['reference_seqs_filepath'] = opts.reference_seqs_fp
         params['Max E value'] = opts.e_value
 
-    elif opts.assignment_method == 'rdp':
+    elif opts.assignment_method.startswith('rdp'):
         params['Confidence'] = opts.confidence
         params['id_to_taxonomy_fp'] = opts.id_to_taxonomy_fp
         params['reference_sequences_fp'] = opts.reference_seqs_fp
