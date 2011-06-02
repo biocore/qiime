@@ -21,19 +21,19 @@ After the OTU has been generated, the user may want to filter the table based on
 		
 	-i, `-`-otu_table_fp
 		Path to the input OTU table (i.e., the output from `make_otu_table.py <./make_otu_table.html>`_)
+	-o, `-`-output_otu_table_fp
+		Output OTU table filepath [REQUIRED]
 	
 	**[OPTIONAL]**
 		
 	-c, `-`-min_count
-		Retain OTUs with at least this many sequences [default=1]
+		Retain OTUs with at least this many sequences. [default=1]
 	-s, `-`-min_samples
-		Retain OTUs found in at least this many samples [default=2]
+		Retain OTUs found in at least this many samples. [default=2]
 	-t, `-`-include_taxonomy
-		List of taxonomy terms to include [default=]
+		List of taxonomy terms to include. [default=]
 	-e, `-`-exclude_taxonomy
-		List of taxonomy terms to exclude [default=]
-	-o, `-`-dir_path
-		Directory prefix for all analyses [default=./]
+		List of taxonomy terms to exclude. [default=]
 	-p, `-`-seqs_per_sample
 		Minimum sequences per sample to retain the sample. [default=None]
 

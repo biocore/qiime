@@ -22,26 +22,28 @@ This script creates an html file of rarefaction plots based on the supplied coll
 	**[REQUIRED]**
 		
 	-i, `-`-input_dir
-		Name of folder containing rarefaction files, takes output from `collate_alpha.py <./collate_alpha.html>`_.  The user can also supply a list of files, which are comma-separated. [REQUIRED]
+		Input directory containing results from `collate_alpha.py <./collate_alpha.html>`_. [REQUIRED]
 	-m, `-`-map_fname
-		Name of mapping file [REQUIRED]
+		Input metadata mapping filepath. [REQUIRED]
 	
 	**[OPTIONAL]**
 		
 	-b, `-`-colorby
-		Name of columns to make rarefaction graphs of, comma delimited no spaces.
+		Comma-separated list categories metadata categories (column headers) to color by in the plots. The categories must match the name of a column header in the mapping file exactly. Multiple categories can be list by comma separating them without spaces. The user can also combine columns in the mapping file by separating the categories by "&&" without spaces. [default=color by all]
 	-p, `-`-prefs_path
-		Preferences file for coloring of columns.
+		Input user-generated preferences filepath. NOTE: This is a file with a dictionary containing preferences for the analysis. [default: None]
 	-k, `-`-background_color
-		Background color for graphs.
+		Background color to use in the plots[default: white]
 	-g, `-`-imagetype
-		Extension for image type choose from (png, svg, pdf).  WARNING: Some formats may not properly open in your browser! [default: png]
+		Type of image to produce (i.e. png, svg, pdf). WARNING: Some formats may not properly open in your browser! [default: png]
 	-d, `-`-resolution
-		Output image resolution, [default: 75]
+		Resolution of the plot. [default: 75]
 	-y, `-`-ymax
-		This is the ymax value to be used for the plots, so you can compare rarefaction plots between two different analyses [default: None]
+		Maximum y-value to be used for the plots. Allows for directly comparable rarefaction plots between analyses [default: None]
 	-w, `-`-webpage
-		This is allows to user to not create the webpage, which may be slow with large datasets [default: True]
+		DEPRECATED: Suppress HTML output. [default: True]
+	-s, `-`-suppress_html_output
+		Suppress HTML output. [default: False]
 	-o, `-`-output_dir
 		Path to the output directory
 

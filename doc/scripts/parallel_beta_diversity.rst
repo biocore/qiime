@@ -23,11 +23,11 @@ This script performs like the `beta_diversity.py <./beta_diversity.html>`_ scrip
 		Input path, must be directory [REQUIRED]
 	-o, `-`-output_path
 		Output path, must be directory [REQUIRED]
-	-m, `-`-metrics
-		Metrics to use [REQUIRED]
 	
 	**[OPTIONAL]**
 		
+	-m, `-`-metrics
+		Beta-diversity metric(s) to use. A comma-separated list should be provided when multiple metrics are specified. [default: unweighted_unifrac,weighted_unifrac]
 	-t, `-`-tree_path
 		Path to newick tree file, required for phylogenetic metrics [default: None]
 	-N, `-`-beta_diversity_fp
@@ -53,7 +53,7 @@ This script performs like the `beta_diversity.py <./beta_diversity.html>`_ scrip
 	-O, `-`-jobs_to_start
 		Number of jobs to start [default: 2]
 	-f, `-`-full_tree
-		By default, we first compute the intersection of the tree with the otus present in the otu table. pass -f if you already have a minimal tree, and this script will run faster
+		By default, each job removes calls _fast_unifrac_setup to remove unused parts of the tree. pass -f if you already have a minimal tree, and this script will run faster
 
 
 **Output:**

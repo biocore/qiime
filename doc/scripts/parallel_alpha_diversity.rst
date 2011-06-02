@@ -23,8 +23,6 @@ This script performs like the `alpha_diversity.py <./alpha_diversity.html>`_ scr
 		Input path, must be directory [REQUIRED]
 	-o, `-`-output_path
 		Output path, must be directory [REQUIRED]
-	-m, `-`-metrics
-		Metrics to use, comma delimited [REQUIRED]
 	
 	**[OPTIONAL]**
 		
@@ -32,6 +30,8 @@ This script performs like the `alpha_diversity.py <./alpha_diversity.html>`_ scr
 		Path to newick tree file, required for phylogenetic metrics [default: None]
 	-N, `-`-alpha_diversity_fp
 		Full path to scripts/`alpha_diversity.py <./alpha_diversity.html>`_ [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`alpha_diversity.py <./alpha_diversity.html>`_]
+	-m, `-`-metrics
+		Metrics to use, comma delimited
 	-P, `-`-poller_fp
 		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`poller.py <./poller.html>`_]
 	-R, `-`-retain_temp_files

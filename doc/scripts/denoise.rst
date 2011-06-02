@@ -44,6 +44,8 @@ This script will denoise a flowgram file in  .sff.txt format, which is the outpu
 		Name of mapping file, Has to contain field LinkerPrimerSequence. [REQUIRED] when method is fast
 	-p, `-`-primer
 		Primer sequence [default: None]
+	`-`-titanium
+		Select titanium defaults for denoiser [default: False]
 
 
 **Output:**

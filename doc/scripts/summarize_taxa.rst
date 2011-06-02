@@ -20,22 +20,26 @@ The `summarize_taxa.py <./summarize_taxa.html>`_ script provides summary informa
 	**[REQUIRED]**
 		
 	-i, `-`-otu_table_fp
-		Path to read otu file [REQUIRED]
-	-o, `-`-output_fp
-		Path to write output file [REQUIRED]
+		Input OTU table filepath [REQUIRED]
 	
 	**[OPTIONAL]**
 		
 	-L, `-`-level
-		Level of taxonomy to use [default: 2]
+		Taxonomic level to summarize by. [default: 2,3,4,5,6]
 	-m, `-`-mapping
-		If supplied - the taxon information will be added to the mapping file. This mapping file can be used to color PCoA plots by taxon abundance or to perform statistical tests of taxon/mappingy associations.
+		Input metadata mapping filepath. If supplied, then the taxon information will be added to this file. This option is  useful for coloring PCoA plots by taxon abundance or to  perform statistical tests of taxon/mapping associations.
 	-d, `-`-delimiter
-		Delimitor that separates taxonomy categories.[default: ;]
+		Delimitor separating taxonomy levels. [default: ;]
 	-r, `-`-relative_abundance
 		DEPRECATED: please use -a/--absolute_abundance to disable relative abundance [default: ]
 	-a, `-`-absolute_abundance
-		If present, reports the absolute abundance of the lineage in each sample. By default uses relative abundance [default: False]
+		If present, the absolute abundance of the lineage in  each sample is reported. By default, this script uses relative abundance [default: False]
+	-l, `-`-lower_percentage
+		If present, OTUs having higher absolute abundance are trimmed. To remove OTUs that make up more than 5% of the total dataset you would pass 0.05. [default: None]
+	-u, `-`-upper_percentage
+		If present, OTUs having lower absolute abundance are trimmed. To remove the OTUs that makes up less than 45% of the total dataset you would pass 0.45. [default: None]
+	-o, `-`-output_dir
+		Path to the output directory
 
 
 **Output:**
@@ -46,11 +50,11 @@ There are two possible output formats depending on whether or not a mapping file
 
 **Examples:**
 
-The following command can be used to summarize taxa based on the Class, where the default parameters are used (no mapping file, delimiter for RDP ("-d ;") and output relative abundance) and the results are written to the file "Class.txt":
+The following command can be used to summarize taxa based on the Class, where the default parameters are used (no mapping file, delimiter for RDP ("-d ;") and output relative abundance) and the results are written to the directory "Class":
 
 ::
 
-	summarize_taxa.py -i otu_table.txt -L 4 -o Class.txt
+	summarize_taxa.py -i otu_table.txt -L 4 -o ./Class
 
 Optionally the user can have the relative abundances added to the user-generated mapping file, by using the following command:
 

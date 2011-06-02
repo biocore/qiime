@@ -104,6 +104,8 @@ The primary inputs for `pick_otus.py <./pick_otus.html>`_ are:
 		Deprecated: stable sort enabled by default, pass --uclust_suppress_stable_sort to disable [default: True]
 	`-`-suppress_uclust_stable_sort
 		Don't pass --stable-sort to uclust [default: False]
+	`-`-suppress_uclust_prefilter_exact_match
+		Don't collapse exact matches before calling uclust [default: False]
 	-d, `-`-save_uc_files
 		Enable preservation of intermediate uclust (.uc) files that are used to generate clusters via uclust. [default: True]
 

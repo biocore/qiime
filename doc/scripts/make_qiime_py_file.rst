@@ -34,7 +34,7 @@ and make them executable.
 	-e, `-`-author_email
 		The script author's (probably you) e-mail address to be included the header variables. [default:AUTHOR_EMAIL]
 	-c, `-`-copyright
-		The copyright information to be included in the header variables. [default:Copyright 2010, The QIIME project]
+		The copyright information to be included in the header variables. [default:Copyright 2011, The QIIME project]
 
 
 **Output:**

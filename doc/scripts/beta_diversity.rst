@@ -22,19 +22,21 @@ A number of metrics are currently supported, including unweighted and weighted U
 	**[OPTIONAL]**
 		
 	-i, `-`-input_path
-		Input path: otu table, or dir of otu tables for batch mode
+		Input OTU table filepath or input directory containing OTU tables for batch processing.
 	-r, `-`-rows
-		Compute only these rows of the distance matrix. pass a list of sample names, e.g. "s1,s3" [by default, +      the full n x n matrix is generated]
+		Compute for only these rows of the distance matrix. User should pass a list of sample names (e.g. "s1,s3") [default: None; full n x n matrix is generated]
 	-o, `-`-output_dir
-		Output directory, will be created if doesn't exist
+		Output directory. One will be created if it doesn't exist.
 	-m, `-`-metrics
-		Metrics to use, comma delimited if >1 metric, no spaces
+		Beta-diversity metric(s) to use. A comma-separated list should be provided when multiple metrics are specified. [default: unweighted_unifrac,weighted_unifrac]
 	-s, `-`-show_metrics
-		Show available beta diversity metrics and quit. "binary_..." specifies that a metric is qualitative, and considers only the presence or absence of each taxon
+		Show the available beta-diversity metrics and exit. Metrics starting with "binary_..." specifies that a metric is qualitative, and considers only the presence or absence of each taxon [default: False]
 	-t, `-`-tree_path
-		Path to newick tree file, required for phylogenetic metrics [default: None]
+		Input newick tree filepath, which is required when phylogenetic metrics are specified. [default: None]
 	-f, `-`-full_tree
-		By default, we first compute the intersection of the tree with the otus present in the otu table. pass -f if you already have a minimal tree, and this script will run faster
+		By default, tips not corresponding to OTUs in the OTU table are removed from the tree for diversity calculations. Pass to skip this step if you're already passing a minimal tree. Beware with "full_tree" metrics, as extra tips in the tree change the result
+	`-`-float
+		By default, the script expects integer OTU tables but if this flag is True it will process float numbers.
 
 
 **Output:**

@@ -31,6 +31,8 @@ Sequences from samples that are not found in the mapping file (no corresponding 
 		
 	-q, `-`-qual
 		Names of qual files, comma-delimited [default: None]
+	-r, `-`-remove_unassigned
+		DEPRECATED: pass --retain_unassigned_reads to keep unassigned reads  [default: None]
 	-l, `-`-min-seq-length
 		Minimum sequence length, in nucleotides [default: 200]
 	-L, `-`-max-seq-length
@@ -57,8 +59,8 @@ Sequences from samples that are not found in the mapping file (no corresponding 
 		Maximum number of errors in barcode [default: 1.5]
 	-n, `-`-start-numbering-at
 		Seq id to use for the first sequence [default: 1]
-	-r, `-`-remove_unassigned
-		Remove sequences which are Unassigned from             output [default: False]
+	`-`-retain_unassigned_reads
+		Retain sequences which are Unassigned in the output sequence file[default: False]
 	-c, `-`-disable_bc_correction
 		Disable attempts to find nearest corrected barcode.  Can improve performance. [default: False]
 	-w, `-`-qual_score_window
@@ -71,6 +73,10 @@ Sequences from samples that are not found in the mapping file (no corresponding 
 		Enable removal of the reverse primer and any subsequence sequence from the end of each read.  To enable this, there has to be a "ReversePrimer" column in the mapping file. Primers a required to be in IUPAC format and written in the 5' to  3' direction.  Valid options are 'disable', 'truncate_only', and 'truncate_remove'.  'truncate_only' will remove the primer and subsequence sequence data from the output read and will not alter output of sequences where the primer cannot be found. 'truncate_remove' will flag sequences where the primer cannot be found to not be written and will record the quantity of such failed sequences in the log file. [default: disable]
 	-d, `-`-record_qual_scores
 		Enables recording of quality scores for all sequences that are recorded.  If this option is enabled, a file named seqs_filtered.qual will be created in the output directory, and will contain the same sequence IDs in the seqs.fna file and sequence quality scores matching the bases present in the seqs.fna file. [default: False]
+	-i, `-`-median_length_filtering
+		Disables minimum and maximum sequence length filtering, and instead calculates the median sequence length and filters the sequences based upon the number of median absolute deviations specified by this parameter.  Any sequences with lengths outside the number of deviations will be removed. [default: None]
+	-j, `-`-added_demultiplex_field
+		Use -j to add a field to use in the mapping file as an additional demultiplexing option to the barcode.  All combinations of barcodes and the values in these fields must be unique. The fields must contain values that can be parsed from the fasta labels such as "plate=R_2008_12_09".  In this case, "plate" would be the column header and "R_2008_12_09" would be the field data (minus quotes) in the mapping file.  To use the run prefix from the fasta label, such as ">FLP3FBN01ELBSX", where "FLP3FBN01" is generated from the run ID, use "-j run_prefix" and set the run prefix to be used as the data under the column headerr "run_prefix".  [default: None]
 
 
 **Output:**

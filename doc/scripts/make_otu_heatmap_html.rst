@@ -27,17 +27,17 @@ Once the OTU table has been generated, the user can create an interactive OTU he
 	-o, `-`-output_dir
 		Path to the output directory
 	-n, `-`-num_otu_hits
-		This is the minimum number of Samples that an OTU is present in, for an OTU to be kept in the OTU table [default: 5]
+		Only include OTUs with at least this many sequences. [default: 5]
 	-t, `-`-tree
-		Tree file to be used for sorting OTUs in the heatmap
+		Path to newick tree where OTUs are tips, used for sorting OTUs in the heatmap
 	-m, `-`-map_fname
-		Metadata mapping file to be used for sorting Samples in the heatmap
+		Input metadata mapping filepath, used for sorting samples in the heatmap
 	`-`-sample_tree
-		Tree file to be used for sorting samples (e.g, output from `upgma_cluster.py <./upgma_cluster.html>`_). If both this and the sample mapping file are provided, the mapping file is ignored.
+		Path to newick tree where samples are tips (e.g, output from `upgma_cluster.py <./upgma_cluster.html>`_) used for sorting samples in the heatmap. If both this and the metadata mapping file are provided, the mapping file will be ignored.
 	`-`-log_transform
-		Data will be log-transformed. All zeros will be set to a small value (default is 1/2 the smallest non-zero entry). Data will be translated to be non-negative after log transform, and num_otu_hits will be set to 0.
+		Log-transform the data. All zeros will be set to a small value (default is 1/2 of the smallest non-zero entry). Data will be translated to be non-negative after log transform and the num_otu_hits will be set to 0.
 	`-`-log_eps
-		Small value to replace zeros for log transform. [default: 1/2 the smallest non-zero entry].
+		Small value to replace zeros when performing log transformation. [default: 1/2 the smallest non-zero entry].
 
 
 **Output:**

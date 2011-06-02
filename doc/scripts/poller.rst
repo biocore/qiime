@@ -35,7 +35,7 @@ Script for polling parallel runs to check completion. See Qiime/scripts/`poller_
 	-d, `-`-clean_up_file
 		List of files and directories to remove after run [default: None]
 	-t, `-`-time_to_sleep
-		Time to wait between calls to status_callback_f (in seconds) [default: 60]
+		Time to wait between calls to status_callback_f (in seconds) [default: 3]
 
 
 **Output:**

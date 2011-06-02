@@ -20,44 +20,44 @@ This script automates the construction of 3D plots (kinemage format) from the PC
 	**[REQUIRED]**
 		
 	-i, `-`-coord_fname
-		This is the path to the principal coordinates file (i.e., resulting file from `principal_coordinates.py <./principal_coordinates.html>`_), or to a directory containing multiple coord files for averaging (e.g. resulting files from `multiple_rarefactions_even_depth.py <./multiple_rarefactions_even_depth.html>`_, followed by multiple `beta_diversity.py <./beta_diversity.html>`_, followed by multiple `principal_coordinates.py <./principal_coordinates.html>`_).
+		Input principal coordinates filepath (i.e., resulting file from `principal_coordinates.py <./principal_coordinates.html>`_).  Alternatively, a directory containing multiple principal coordinates files for jackknifed PCoA results.
 	-m, `-`-map_fname
-		This is the metadata mapping file  [default=None]
+		Input metadata mapping filepath
 	
 	**[OPTIONAL]**
 		
 	-b, `-`-colorby
-		This is the categories to color by in the plots from the user-generated mapping file. The categories must match the name of a column header in the mapping file exactly and multiple categories can be list by comma separating them without spaces. The user can also combine columns in the mapping file by separating the categories by "&&" without spaces [default=None]
+		Comma-separated list categories metadata categories (column headers) to color by in the plots. The categories must match the name of a column header in the mapping file exactly. Multiple categories can be list by comma separating them without spaces. The user can also combine columns in the mapping file by separating the categories by "&&" without spaces. [default=color by all]
 	-a, `-`-custom_axes
-		This is the category from the user-generated mapping file to use as a custom axis in the plot.  For instance,there is a pH category and would like to seethe samples plotted on that axis instead of PC1, PC2, etc., one can use this option.  It is also useful for plotting time-series data [default: None]
+		This is the category from the metadata mapping file to use as a custom axis in the plot.  For instance, if there is a pH category and you would like to see the samples plotted on that axis instead of PC1, PC2, etc., one can use this option.  It is also useful for plotting time-series data. Note: if there is any non-numeric data in the column, it will not be plotted [default: None]
 	-p, `-`-prefs_path
-		This is the user-generated preferences file. NOTE: This is a file with a dictionary containing preferences for the analysis [default: None]
+		Input user-generated preferences filepath. NOTE: This is a file with a dictionary containing preferences for the analysis. [default: None]
 	-k, `-`-background_color
-		This is the background color to use in the plots (Options are 'black' or 'white'. [default: None]
+		Background color to use in the plots. [default: black]
+	`-`-ellipsoid_smoothness
+		Used only when plotting ellipsoids for jackknifed beta diversity (i.e. using a directory of coord files instead of a single coord file). Valid choices are 0-3. A value of 0 produces very coarse "ellipsoids" but is fast to render. If you encounter a memory error when generating or displaying the plots, try including just one metadata column in your plot. If you still have trouble, reduce the smoothness level to 0. [default: 1]
+	`-`-ellipsoid_opacity
+		Used only when plotting ellipsoids for jackknifed beta diversity (i.e. using a directory of coord files instead of a single coord file). The valid range is between 0-1. 0 produces completely transparent (invisible) ellipsoids and 1 produces completely opaque ellipsoids. [default=0.33]
+	`-`-ellipsoid_method
+		Used only when plotting ellipsoids for jackknifed beta diversity (i.e. using a directory of coord files instead of a single coord file). Valid values are "IQR" and "sdev". [default=IQR]
+	`-`-master_pcoa
+		Used only when plotting ellipsoids for jackknifed beta diversity (i.e. using a directory of coord files instead of a single coord file). These coordinates will be the center of each ellipisoid. [default: None; arbitrarily chosen PC matrix will define the center point]
+	-t, `-`-taxa_fname
+		Used only when generating BiPlots. Input summarized taxa filepath (i.e., from `summarize_taxa.py <./summarize_taxa.html>`_). Taxa will be plotted with the samples. [default=None]
+	`-`-n_taxa_keep
+		Used only when generating BiPlots. This is the number of taxa  to display. Use -1 to display all. [default: 10]
+	`-`-biplot_output_file
+		Used only when generating BiPlots. Output coordinates filepath  when generating a biplot. [default: None]
+	`-`-output_format
+		Output format. If this option is set to invue you will need to also use the option -b to define which column(s) from the metadata file the script should use when writing an output file. [default: king]
+	-n, `-`-interpolation_points
+		Used only when generating inVUE plots. Number of points between samples for interpolatation. [default: 0]
+	`-`-polyhedron_points
+		Used only when generating inVUE plots. The number of points to be generated when creating a frame around the PCoA plots. [default: 4]
+	`-`-polyhedron_offset
+		Used only when generating inVUE plots. The offset to be added to each point created when using the --polyhedron_points option. This is only used when using the invue output_format. [default: 1.5]
 	-o, `-`-output_dir
 		Path to the output directory
-	`-`-ellipsoid_smoothness
-		The level of smoothness used in plotting ellipsoids for a summary plot (i.e. using a directory of coord files instead of a single coord file). Valid range is 0-3. A value of 0 produces very coarse "ellipsoids" but is fast to render. The default value is 2. If you encounter a memory error when generating or displaying the plots, try including just one metadata column in your plot. If you still have trouble, reduce the smoothness level to 0 or 1.
-	`-`-ellipsoid_opacity
-		Used when plotting ellipsoids for a summary plot (i.e. using a directory of coord files instead of a single coord file). Valid range is 0-3. A value of 0 produces completely transparent (invisible) ellipsoids. A value of 1 produces completely opaque ellipsoids. The default value is 0.33.
-	`-`-ellipsoid_method
-		Used when plotting ellipsoids for a summary plot (i.e. using a directory of coord files instead of a single coord file). Valid values are "IQR" (The Interquartile Range) and "sdev" (The standard deviation). The default is IQR.
-	-t, `-`-taxa_fname
-		If you wish to perform a biplot, where taxa are plotted along with samples, supply an otu table format file.  Typically this is the output from `summarize_taxa.py <./summarize_taxa.html>`_.
-	`-`-n_taxa_keep
-		If performing a biplot, the number of taxa to display; use -1 to display all. [default: 10]
-	`-`-biplot_output_file
-		If performing a biplot, save the biplot coordinates in this file. [default: None]
-	`-`-master_pcoa
-		If performing averaging on multiple coord files, the other coord files will be aligned to this one through procrustes analysis. This master file will not be included in the averaging. If this master coord file is not provided, one of the other coord files will be chosen arbitrarily as the target alignment. [default: None]
-	`-`-output_format
-		Output format. Valid choices are: king, invue. If this option is set to invue you will need to also use the option -b to define which column(s) from the metadata file the script will write an output file from; it will also do not account for any other optional paramenter pass. [default: king]
-	-n, `-`-interpolation_points
-		Number of extra points to use between samples and interpolate, the minimum is 2. Only used with the inVUE output. [default: 0]
-	`-`-polyhedron_points
-		Points to be generated  to create a frame around the PCoA plots. Only used when --output_format is  inVUE. [default: 4]
-	`-`-polyhedron_offset
-		Offset to be added to  the points created in the --polyheadron_points option. Only used when  --output_format is inVUE. [default: 1.5]
 
 
 **Output:**

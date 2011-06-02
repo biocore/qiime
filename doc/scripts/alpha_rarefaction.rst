@@ -35,11 +35,11 @@ The steps performed by this script are:
 		Path to the mapping file [REQUIRED]
 	-o, `-`-output_dir
 		The output directory [REQUIRED]
-	-p, `-`-parameter_fp
-		Path to the parameter file [REQUIRED]
 	
 	**[OPTIONAL]**
 		
+	-p, `-`-parameter_fp
+		Path to the parameter file, which specifies changes to the default behavior. See http://www.qiime.org/documentation/file_formats.html#qiime-parameters . [if omitted, default values will be used]
 	-n, `-`-num_steps
 		Number of steps (or rarefied OTU table sizes) to make between min and max counts [default: 10]
 	-f, `-`-force
@@ -50,6 +50,8 @@ The steps performed by this script are:
 		Run in parallel where available [default: False]
 	-t, `-`-tree_fp
 		Path to the tree file [default: None; REQUIRED for phylogenetic measures]
+	-O, `-`-jobs_to_start
+		Number of jobs to start. NOTE: you must also pass -a to run in parallel, this defines the number of jobs to be started if and only if -a is passed [default: 2]
 
 
 **Output:**

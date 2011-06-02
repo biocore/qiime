@@ -2,12 +2,12 @@
 
 .. index:: summarize_otu_by_cat.py
 
-*summarize_otu_by_cat.py* -- Create a summarized OTU table for a specific metadata category
+*summarize_otu_by_cat.py* -- Summarize an OTU table by a single column in the mapping file.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Description:**
 
-This script generates an otu table where the SampleIDs are replaced by a specific category from the user-generated mapping file. The script uses the OTU file otus.txt (-c) and the user mapping file meta.txt. The user must also specify a metadata category equivalent to one of the column names in the mapping file. If the user wants the counts to be normalized by sample use th normalize flag (-n) the default is False meaning it is only the raw counts. The output is a file called <meta category>_otu_table.txt, it will be put int the current working directory unless specified by the user (-o).
+Collapse an OTU table based on values in a single column in the mapping file. For example, if you have 10 samples, five of which are from females and five of which are from males, you could use this script to collapse the ten samples into two corresponding based on their values in a 'Sex' column in your mapping file.
 
 
 **Usage:** :file:`summarize_otu_by_cat.py [options]`
@@ -19,32 +19,32 @@ This script generates an otu table where the SampleIDs are replaced by a specifi
 	
 	**[REQUIRED]**
 		
-	-i, `-`-input_map
-		Name of input map file [REQUIRED]
-	-c, `-`-otu_file
-		Name of otu table file [REQUIRED]
-	-m, `-`-meta_category
-		Name of category for OTU table [REQUIRED]
+	-i, `-`-mapping_fp
+		Input metadata mapping filepath [REQUIRED]
+	-c, `-`-otu_table_fp
+		Input OTU table filepath. [REQUIRED]
+	-m, `-`-mapping_category
+		Summarize OTU table using this category. [REQUIRED]
+	-o, `-`-output_fp
+		Output OTU table filepath. [REQUIRED]
 	
 	**[OPTIONAL]**
 		
-	-o, `-`-dir-prefix
-		Directory prefix for all analyses [default: cwd]
-	-n, `-`-normalize_flag
-		If True will normalize counts [default: False]
+	-n, `-`-normalize
+		Normalize OTU counts, where the OTU table columns sum to 1.
 
 
 **Output:**
 
-The output is an otu table called <meta category>_otu_table.txt, 
+
 
 
 **Example:**
 
-Create an otu table for a user specified category. This script uses an OTU table (otu_table.txt) and a user-generated mapping file (mapping_file.txt). The user must also specify a metadata category equivalent to one of the column names in their mapping file (i.e. time). If the user wants the counts to be normalized by sample, they can use the normalize flag (-n), however; the default value for this flag is False, which means it will use the raw counts. The resulting files will be it will be written in the current working directory, unless specified by the user (-o).
+ Collapsed otu_table.txt on the 'Sex' column in map.txt and write the resulting OTU table to otu_table_by_sex.txt
 
 ::
 
-	summarize_otu_by_cat.py -c otu_table.txt -i mapping_file.txt -m time -o qiime_run/ -n
+	summarize_otu_by_cat.py -c otu_table.txt -i map.txt -m Sex -o otu_table_by_sex.txt
 
 

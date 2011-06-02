@@ -20,15 +20,15 @@ This script calculates alpha diversity, or within-sample diversity, using an otu
 	**[OPTIONAL]**
 		
 	-i, `-`-input_path
-		Input path.  directory for batch processing, filename for single file operation
+		Input OTU table filepath or input directory containing OTU tables for batch processing. [default: None]
 	-o, `-`-output_path
-		Output path. directory for batch processing, filename for single file operation
+		Output distance matrix filepath or output directory to store distance matrices when batch processing. [default: None]
 	-m, `-`-metrics
-		Metrics to use, comma delimited
+		Alpha-diversity metric(s) to use. A comma-separated list should be provided when multiple metrics are specified. [default: PD_whole_tree,chao1,observed_species]
 	-s, `-`-show_metrics
-		Show available alpha diversity metrics and quit
+		Show the available alpha-diversity metrics and exit.
 	-t, `-`-tree_path
-		Path to newick tree file, required for phylogenetic metrics [default: None]
+		Input newick tree filepath. [default: None; REQUIRED for phylogenetic metrics]
 
 
 **Output:**

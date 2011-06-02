@@ -36,6 +36,8 @@ This script should be applied to generate a useful tree when aligning against a 
 		Remove seqs very dissimilar to the alignment consensus (see --threshold).  [default: False]
 	-t, `-`-threshold
 		With -r, remove seqs whose dissimilarity to the consensus sequence is approximately > x standard devaitions above the mean of the sequences [default: 3.0]
+	-e, `-`-entropy_threshold
+		Sets percent threshold for removing base positions with the highest entropy.  For example, if 0.10 were specified, the top 10% most entropic base positions would be filtered.  If this value is used, any lane mask supplied will be ignored.  Entropy filtered occurs after gap filtering.    [default: None]
 
 
 **Output:**

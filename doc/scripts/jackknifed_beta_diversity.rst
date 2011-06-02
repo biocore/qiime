@@ -23,8 +23,6 @@ To directly measure the robustness of individual UPGMA clusters and clusters in 
 		The input fasta file [REQUIRED]
 	-o, `-`-output_dir
 		The output directory [REQUIRED]
-	-p, `-`-parameter_fp
-		Path to the parameter file [REQUIRED]
 	-e, `-`-seqs_per_sample
 		Number of sequences to include in each jackknifed subset [REQUIRED]
 	-m, `-`-mapping_fp
@@ -34,6 +32,8 @@ To directly measure the robustness of individual UPGMA clusters and clusters in 
 		
 	-t, `-`-tree_fp
 		Path to the tree file [default: None; REQUIRED for phylogenetic measures]
+	-p, `-`-parameter_fp
+		Path to the parameter file, which specifies changes to the default behavior. See http://www.qiime.org/documentation/file_formats.html#qiime-parameters . [if omitted, default values will be used]
 	`-`-master_tree
 		Method for computing master trees in jackknife analysis. "consensus": consensus of trees from jackknifed otu tables.  "full": tree generated from input (unsubsambled) otu table.  [default: consensus]
 	-f, `-`-force
@@ -42,6 +42,8 @@ To directly measure the robustness of individual UPGMA clusters and clusters in 
 		Print the commands but don't call them -- useful for debugging [default: False]
 	-a, `-`-parallel
 		Run in parallel where available [default: False]
+	-O, `-`-jobs_to_start
+		Number of jobs to start. NOTE: you must also pass -a to run in parallel, this defines the number of jobs to be started if and only if -a is passed [default: 2]
 
 
 **Output:**

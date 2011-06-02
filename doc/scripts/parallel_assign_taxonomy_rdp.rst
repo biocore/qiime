@@ -26,12 +26,16 @@ This script performs like the `assign_taxonomy.py <./assign_taxonomy.html>`_ scr
 	
 	**[OPTIONAL]**
 		
-	-r, `-`-rdp_classifier_fp
+	`-`-rdp_classifier_fp
 		Full path to rdp classifier jar file [default: /software/rdp_classifier/rdp_classifier-2.0.jar]
 	-c, `-`-confidence
 		Minimum confidence to record an assignment [default: 0.8]
 	-N, `-`-assign_taxonomy_fp
 		Full path to scripts/`assign_taxonomy.py <./assign_taxonomy.html>`_ [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`assign_taxonomy.py <./assign_taxonomy.html>`_]
+	-t, `-`-id_to_taxonomy_fp
+		Full path to id_to_taxonomy mapping file [REQUIRED]
+	-r, `-`-reference_seqs_fp
+		Ref seqs to rdp against. [default: None]
 	-O, `-`-jobs_to_start
 		Number of jobs to start [default: 2]
 	-P, `-`-poller_fp

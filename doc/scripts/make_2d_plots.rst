@@ -20,24 +20,24 @@ This script generates 2D PCoA plots using the principal coordinates file generat
 	**[REQUIRED]**
 		
 	-i, `-`-coord_fname
-		This is the path to the principal coordinates file (i.e., resulting file from `principal_coordinates.py <./principal_coordinates.html>`_).  Alternatively, the user can supply a directory containing multiple principal coordinates files.
+		Input principal coordinates filepath (i.e., resulting file from `principal_coordinates.py <./principal_coordinates.html>`_).  Alternatively, a directory containing multiple principal coordinates files for jackknifed PCoA results.
 	-m, `-`-map_fname
-		This is the metadata mapping file [default=None]
+		Input metadata mapping filepath
 	
 	**[OPTIONAL]**
 		
 	-b, `-`-colorby
-		This is the categories to color by in the plots from the user-generated mapping file. The categories must match the name of a column header in the mapping file exactly and multiple categories can be list by comma separating them without spaces. The user can also combine columns in the mapping file by separating the categories by "&&" without spaces [default=None]
+		Comma-separated list categories metadata categories (column headers) to color by in the plots. The categories must match the name of a column header in the mapping file exactly. Multiple categories can be list by comma separating them without spaces. The user can also combine columns in the mapping file by separating the categories by "&&" without spaces. [default=color by all]
 	-p, `-`-prefs_path
-		This is the user-generated preferences file. NOTE: This is a file with a dictionary containing preferences for the analysis [default: None]
+		Input user-generated preferences filepath. NOTE: This is a file with a dictionary containing preferences for the analysis. [default: None]
 	-k, `-`-background_color
-		This is the background color to use in the plots. [default: None]
+		Background color to use in the plots. [default: white]
 	`-`-ellipsoid_opacity
-		Used when plotting ellipsoids for a summary plot (i.e. using a directory of coord files instead of a single coordfile). Valid range is 0-1. A value of 0 produces completely transparent (invisible) ellipsoids. A value of 1 produces completely opaque ellipsoids.
+		Used only when plotting ellipsoids for jackknifed beta diversity (i.e. using a directory of coord files instead of a single coord file). The valid range is between 0-1. 0 produces completely transparent (invisible) ellipsoids and 1 produces completely opaque ellipsoids. [default=0.33]
 	`-`-ellipsoid_method
-		Used when plotting ellipsoids for a summary plot (i.e. using a directory of coord files instead of a single coord file). Valid values are "IQR" and "sdev".
+		Used only when plotting ellipsoids for jackknifed beta diversity (i.e. using a directory of coord files instead of a single coord file). Valid values are "IQR" and "sdev". [default=IQR]
 	`-`-master_pcoa
-		If performing averaging on multiple coord files, the other coord files will be aligned to this one through procrustes analysis. This master file will not be included in the averaging. If this master coord file is not provided, one of the other coord files will be chosen arbitrarily as the target alignment. [default: None]
+		Used only when plotting ellipsoids for jackknifed beta diversity  (i.e. using a directory of coord files instead of a single coord file). These coordinates will be the center of each ellipisoid. [default: None; arbitrarily chosen PC matrix will define the center point]
 	-o, `-`-output_dir
 		Path to the output directory
 

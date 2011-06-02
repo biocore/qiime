@@ -20,24 +20,24 @@ To perform bootstrap, jackknife, and rarefaction analyses, the otu table must be
 	**[REQUIRED]**
 		
 	-i, `-`-input_path
-		Input otu table filepath
+		Input OTU table filepath.
 	-o, `-`-output_path
-		Write output rarefied otu tables files to this dir makes dir if it doesn't exist
+		Output directory.
 	-m, `-`-min
-		Min seqs/sample
+		Minimum number of seqs/sample for rarefaction.
 	-x, `-`-max
-		Max seqs/sample (inclusive)
+		Maximum number of seqs/sample (inclusive) for rarefaction. 
 	-s, `-`-step
-		Levels: min, min+step... for level <= max
+		Size of each steps between the min/max of seqs/sample (e.g. min, min+step... for level <= max).
 	
 	**[OPTIONAL]**
 		
 	-n, `-`-num-reps
-		Num iterations at each seqs/sample level [default: 1]
+		The number of iterations at each step. [default: 10]
 	`-`-lineages_included
-		Output rarefied otu tables will include taxonomic (lineage) information for each otu, if present in input otu table [default: False]
+		Retain taxonomic (lineage) information for each OTU. Note: this will only work if lineage information is in the input OTU table. [default: False]
 	-k, `-`-keep_empty_otus
-		Otus (rows) of all zeros are usually omitted from the output otu tables, with -k they will not be removed from the output files [default: False]
+		Retain OTUs of all zeros, which are usually omitted from the output OTU tables. [default: False]
 
 
 **Output:**

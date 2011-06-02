@@ -33,7 +33,7 @@ This script performs like the `multiple_rarefactions.py <./multiple_rarefactions
 	**[OPTIONAL]**
 		
 	-n, `-`-num-reps
-		Num iterations at each seqs/sample level [default: 1]
+		Num iterations at each seqs/sample level [default: 10]
 	`-`-lineages_included
 		Output rarefied otu tables will include taxonomic (lineage) information for each otu, if present in input otu table [default: False]
 	-N, `-`-single_rarefaction_fp

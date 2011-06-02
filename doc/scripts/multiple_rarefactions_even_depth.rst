@@ -29,7 +29,7 @@ To perform bootstrap, jackknife, and rarefaction analyses, the otu table must be
 	**[OPTIONAL]**
 		
 	-n, `-`-num-reps
-		Num iterations at each seqs/sample level [default: 1]
+		Num iterations at each seqs/sample level [default: 10]
 	`-`-lineages_included
 		Output rarefied otu tables will include taxonomic (lineage) information for each otu, if present in input otu table [default: False]
 	-k, `-`-keep_empty_otus
@@ -47,6 +47,6 @@ subsample otu_table.txt at 400 seqs/sample (-d), 100 times (-n), write results t
 
 ::
 
-	single_rarefaction.py -i otu_table.txt -o rarefaction_tables -d 400 -n 100
+	multiple_rarefactions_even_depth.py -i otu_table.txt -o rarefaction_tables -d 400 -n 100
 
 

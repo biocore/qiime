@@ -32,7 +32,7 @@ This script converts a directory of sff files into FASTA, QUAL and flowgram file
 	`-`-use_sfftools
 		Use the external programs sfffile and sffinfo for processing, instead of the equivalent python implementation
 	-o, `-`-output_dir
-		Path to the output directory
+		Input directory of sff files [default: same as input dir]
 
 
 **Output:**

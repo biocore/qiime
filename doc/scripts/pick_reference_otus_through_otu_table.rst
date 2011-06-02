@@ -25,11 +25,11 @@ This script picks OTUs using a reference-based method and constructs an OTU tabl
 		The reference sequences
 	-o, `-`-output_dir
 		The output directory
-	-p, `-`-parameter_fp
-		Path to the parameter file
 	
 	**[OPTIONAL]**
 		
+	-p, `-`-parameter_fp
+		Path to the parameter file, which specifies changes to the default behavior. See http://www.qiime.org/documentation/file_formats.html#qiime-parameters . [if omitted, default values will be used]
 	-t, `-`-taxonomy_fp
 		The taxonomy map [default: None]
 	-f, `-`-force
@@ -38,6 +38,8 @@ This script picks OTUs using a reference-based method and constructs an OTU tabl
 		Print the commands but don't call them -- useful for debugging [default: False]
 	-a, `-`-parallel
 		Run in parallel where available [default: False]
+	-O, `-`-jobs_to_start
+		Number of jobs to start. NOTE: you must also pass -a to run in parallel, this defines the number of jobs to be started if and only if -a is passed [default: 2]
 
 
 **Output:**

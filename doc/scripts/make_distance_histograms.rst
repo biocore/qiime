@@ -20,26 +20,26 @@ To visualize the distance between samples and/or categories in the metadata mapp
 	**[REQUIRED]**
 		
 	-d, `-`-distance_matrix_file
-		Path to distance matrix file.
+		Input distance matrix filepath (i.e. the result of `beta_diversity.py <./beta_diversity.html>`_).
 	-m, `-`-map_fname
-		This is the metadata mapping file  [default=None]
+		Input metadata mapping filepath.
 	
 	**[OPTIONAL]**
 		
 	-p, `-`-prefs_path
-		This is the user-generated preferences file. NOTE: This is a file with a dictionary containing preferences for the analysis.  This dict must have a "Fields" key mapping to a list of desired fields. [default: None]
+		Input user-generated preferences filepath. NOTE: This is a file with a dictionary containing preferences for the analysis. This dictionary must have a "Fields" key mapping to a list of desired fields. [default: None]
 	-o, `-`-dir_path
-		Directory to output data for all analyses. [default: .]
+		Output directory. [default: ./]
 	-k, `-`-background_color
-		This is the     background color to use in the plots (Options are 'black' or 'white'.     [default: white]
+		Background color for use in the plots (black or white) [default: white]
 	`-`-monte_carlo
-		Perform Monte Carlo analysis on distances.  [Default: False]
+		Deprecated: pass --monte_carlo_iters > 0 to enable
 	`-`-suppress_html_output
-		Suppress HTML format output. [Default: False]
+		Suppress HTML output. [default: False]
 	-f, `-`-fields
-		Comma delimited list of fields to compare.  Put list of fields in quotes.  This overwrites fields in prefs file.  If this is not provided, the first field in metadata mapping file will be used.  Usage: --fields "Field1,Field2,Field3"
+		Comma-separated list of fields to compare, where the list of fields should be in quotes (e.g. "Field1,Field2,Field3"). Note: if this option is passed on the command-line, it will overwrite the fields in prefs file. [default:None; first field in mapping file is used]
 	`-`-monte_carlo_iters
-		Number of iterations to perform for Monte Carlo analysis. [default: 100]
+		Number of iterations to perform for Monte Carlo analysis. [default: 0; No monte carlo simulation performed]
 
 
 **Output:**
@@ -49,7 +49,7 @@ The result of this script will be a folder containing images and/or an html file
 
 **Examples:**
 
-Distance Histograms are a way to compare different categories and see which tend to have larger/smaller distances than others. For example, in the hand study, you may want to compare the distances between hands to the distances between individuals (with the file "hand_distances.txt" using the parameter -d hand_distances.txt). The categories are defined in the metadata mapping file (specified using the parameter -m hand_map.txt). If you want to look at the distances between hands and individuals, choose the "Hand" field and "Individual" field (using the parameter --fields Hand,Individual (notice the fields are comma delimited)). For each of these groups of distances a histogram is made. The output is a HTML file ("QIIME_Distance_Histograms.html") which is created in the "Distance_Histograms" directory (using the parameter -o Distance_Histograms to specify output directory) where you can look at all the distance histograms individually, and compare them between each other.
+Distance Histograms are a way to compare different categories and see which tend to have larger/smaller distances than others. For example, in the hand study, you may want to compare the distances between hands to the distances between individuals (with the file "hand_distances.txt" using the parameter -d hand_distances.txt). The categories are defined in the metadata mapping file (specified using the parameter -m hand_map.txt). If you want to look at the distances between hands and individuals, choose the "Hand" field and "Individual" field (using the parameter --fields Hand,Individual (notice the fields are comma delimited)). For each of these groups of distances a histogram is made. The output is a HTML file which is created in the "Distance_Histograms" directory (using the parameter -o Distance_Histograms to specify output directory) where you can look at all the distance histograms individually, and compare them between each other.
 
 In the following command, the user only supplies a distance matrix (i.e. resulting file from `beta_diversity.py <./beta_diversity.html>`_), the user-generated metadata mapping file and one category (e.g. pH):
 
