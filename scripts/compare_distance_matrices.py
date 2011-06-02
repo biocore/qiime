@@ -31,7 +31,7 @@ script_info['required_options'] = [\
  make_option('-o','--output_fp',help='the output filepath'),\
 ]
 script_info['optional_options'] = [
- make_option('-n','--num_iterations',default=100,type='int')
+ make_option('-n','--num_iterations',help='the number of iterations to perform',default=100,type='int')
 ]
 script_info['version'] = __version__
 
