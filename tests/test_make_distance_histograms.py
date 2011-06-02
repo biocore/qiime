@@ -23,8 +23,8 @@ from qiime.make_distance_histograms import between_sample_distances, \
     draw_histogram, make_nav_html, make_main_html, get_valid_indices, \
     distances_by_groups, write_distance_files, group_distances, \
     monte_carlo_group_distances, permute_for_monte_carlo, \
-    _make_histogram_filenames, _make_path, _make_relative_paths, \
-    _make_random_filename, _get_script_dir, matplotlib_rgb_color, \
+    _make_histogram_filenames, _make_relative_paths, \
+    _make_random_filename, matplotlib_rgb_color, \
     average_colors, average_all_colors, assign_unassigned_colors,\
     assign_mapped_colors, monte_carlo_group_distances_within_between,\
     get_random_dists
@@ -49,7 +49,7 @@ class DistanceHistogramsTests(TestCase):
         except OSError: #except already exisits
             pass
         
-        self.histogram_dir = self.working_dir+'histograms/'
+        self.histogram_dir = path.join(self.working_dir,'histograms')
         try:
             mkdir(self.histogram_dir)
         except OSError: #except already exisits remove it and make a new one
@@ -75,7 +75,6 @@ class DistanceHistogramsTests(TestCase):
         header = [header]
         header.extend(mapping)
         self.mapping=header
-
         
         #Create prefs file
         self.prefs_file = self.working_dir+'prefs.txt'
@@ -128,8 +127,11 @@ class DistanceHistogramsTests(TestCase):
     def test_average_all_colors(self):
         """average_all_colors should properly average all colors.
         """
-        to_average = ['Treatment_Control_to_Fast', 'DOB_20070314_to_20061126']
-        exp = {'Treatment_Control_to_Fast': (0.0039215686274509803, 0.47843137254901963, 0.52745098039215688), 'DOB_20070314_to_20061126': (0.5, 0.0, 0.5)}
+        to_average = ['Treatment###FIELDDATA###Control_to_Fast',
+                      'DOB###FIELDDATA###20070314_to_20061126']
+        exp = {'Treatment###FIELDDATA###Control_to_Fast': \
+            (0.0039215686274509803, 0.47843137254901963, 0.52745098039215688), 
+            'DOB###FIELDDATA###20070314_to_20061126': (0.5, 0.0, 0.5)}
         self.assertEqual(average_all_colors(to_average,FIELD_TO_COLOR_PREFS),\
             exp)
     
@@ -137,7 +139,11 @@ class DistanceHistogramsTests(TestCase):
         """assign_unassigned_colors should correctly assign unassigned.
         """
         unassigned = ['first','second','third']
-        exp = {'second': (0.6470588235294118, 0.27843137254901962, 0.0), 'third': (0.9882352941176471, 0.77647058823529413, 0.53333333333333333), 'first': (0.94901960784313721, 0.45098039215686275, 0.015686274509803921)}
+        exp = {'second': (0.6470588235294118, 0.27843137254901962, 0.0), 
+               'third': (0.9882352941176471, 0.77647058823529413, 
+                         0.53333333333333333), 
+               'first': (0.94901960784313721, 0.45098039215686275, 
+                         0.015686274509803921)}
         self.assertEqual(assign_unassigned_colors(unassigned),exp)
     
     def test_assign_mapped_colors(self):
@@ -205,16 +211,17 @@ class DistanceHistogramsTests(TestCase):
     def test_all_category_distances(self):
         """all_category_distances should return correct result.
         """
-        exp = {'Treatment_Control_to_Control':\
+        exp = {'Treatment###FIELDDATA###Control_to_Control':\
                                        [0.625, 0.623, 0.61, 0.577, 0.615,\
                                         0.642, 0.673, 0.682, 0.737, 0.704],\
-               'Treatment_Control_to_Fast':[0.729,  0.8  ,  0.721, 0.765,\
+               'Treatment###FIELDDATA###Control_to_Fast':\
+                                           [0.729,  0.8  ,  0.721, 0.765,\
                                             0.776,  0.744,  0.749, 0.677,\
                                             0.734,  0.777,  0.733, 0.724,\
                                             0.696,  0.675,  0.654, 0.696,\
                                             0.731,  0.758,  0.738, 0.737],\
-               'Treatment_Fast_to_Fast':[0.718,  0.666, 0.727, 0.6, 0.578,\
-                                         0.623]
+               'Treatment###FIELDDATA###Fast_to_Fast':[0.718,  0.666, 0.727,\
+                                            0.6, 0.578,0.623]
                 }
         self.assertEqual(all_category_distances(\
             self.single_field_treatment),exp)
@@ -300,8 +307,8 @@ class DistanceHistogramsTests(TestCase):
         main_html_obs = \
             open(self.working_dir+\
                 'QIIME_Distance_Histograms.html','U').readlines()
-        
-        self.assertEqual(len(main_html_obs),len(MAIN_HTML.split('\n')))
+                
+        self.assertEqual(len(''.join(main_html_obs)),len(MAIN_HTML))
 
     def test_get_valid_indices(self):
         """get_valid_indices should return correct result.
@@ -449,18 +456,12 @@ class DistanceHistogramsTests(TestCase):
         distances = {'Distances1':[0,.5,.6,.7],\
                      'Distances2':[.3,.7,.9,.2,1.]}
         obs = _make_histogram_filenames(distances,self.histogram_dir)
+
         self.assertEqual(obs.keys(),distances.keys())
         for k,v in obs.items():
-            exp_prefix = self.histogram_dir+k
-            self.assertEquals(v[:len(exp_prefix)],exp_prefix)
+            exp_prefix = self.histogram_dir
+            self.assertEquals(path.split(v)[0],exp_prefix)
             self.assertEquals(v[-4:],'.png')
-
-    def test__make_path(self):
-        """_make_path should return correct result.
-        """
-        exp = 'path/to/files/'
-        paths = ['path','to','files']
-        self.assertEqual(_make_path(paths),exp)
 
     def test__make_relative_paths(self):
         """_make_relative_paths should return correct result.
@@ -475,21 +476,15 @@ class DistanceHistogramsTests(TestCase):
     def test__make_random_filename(self):
         """_make_random_filename should return correct result.
         """
-        prefix = 'test_prefix'
+        base_dir = './'
         suffix = 'test_suffix'
         num_chars = 10
-        obs = _make_random_filename(prefix=prefix,suffix=suffix,\
+        obs = _make_random_filename(base_dir=base_dir,suffix=suffix,\
             num_chars=num_chars)
-        self.assertEqual(len(obs),sum([len(prefix),len(suffix),num_chars]))
-        self.assertEqual(obs[:len(prefix)],prefix)
-        self.assertEqual(obs[len(prefix)+num_chars:],suffix)
 
-    def test__get_script_dir(self):
-        """_get_script_dir should return correct result.
-        """
-        script_path = '/Qiime/qiime/make_distance_histograms.py'
-        exp = '/Qiime/qiime/'
-        self.assertEqual(_get_script_dir(script_path),exp)
+        self.assertEqual(len(obs),sum([len(base_dir),len(suffix),num_chars]))
+        self.assertEqual(obs[:len(base_dir)],base_dir)
+        self.assertEqual(obs[len(base_dir)+num_chars:],suffix)
 
 
 DISTANCE_MATRIX_STRING = \
@@ -535,42 +530,13 @@ MONTE_CARLO_DISTANCES_WITHIN_BETWEEN = \
 """Comparison\tCategory_1\tAvg\tComparison\tCategory_2\tAvg\tt\tp\tp_greater\tp_less\tIterations\nWithin\tTreatment\t0.65\tBetween\tTreatment\t0.7307\t-5.42842519819\t4.76810168062e-06\t1.0\t0.0\t10\nWithin\tTreatment\t0.65\tWithin\tAll_Fields\t0.65\t0.0\t1.0\t0.2\t0.8\t10\nBetween\tTreatment\t0.7307\tWithin\tAll_Fields\t0.65\t5.42842519819\t4.76810168062e-06\t0.0\t1.0\t10\n'"""
 
 NAV_HTML = \
-"""<td>
-    <div style="overflow:scroll; width: 300px; height: 400px;">
-    
-    <p>
-<span class="normal">All_Within_Category_Grouped</span><br />
-<span class="smnorm"><input type="checkbox" id="check_Treatment_All_Within_Category_Distances"  onclick="visibilityAndOpacity(this, 'Treatment_All_Within_Category_Distances')" />
-<a onmouseover="mouseoverVisible('Treatment_All_Within_Category_Distances')"; onmouseout="mouseoverHidden('Treatment_All_Within_Category_Distances')">Treatment_All_Within_Category_Distances</a></span><br />
-<span class="normal">All_Between_Category_Grouped</span><br />
-<span class="smnorm"><input type="checkbox" id="check_Treatment_All_Between_Category_Distances"  onclick="visibilityAndOpacity(this, 'Treatment_All_Between_Category_Distances')" />
-<a onmouseover="mouseoverVisible('Treatment_All_Between_Category_Distances')"; onmouseout="mouseoverHidden('Treatment_All_Between_Category_Distances')">Treatment_All_Between_Category_Distances</a></span><br />
-<span class="normal">All_Between_Sample_Distances</span><br />
-<span class="smnorm"><input type="checkbox" id="check_All_Between_Sample_Distances" checked onclick="visibilityAndOpacity(this, 'All_Between_Sample_Distances')" />
-<a onmouseover="mouseoverVisible('All_Between_Sample_Distances')"; onmouseout="mouseoverHidden('All_Between_Sample_Distances')">All_Between_Sample_Distances</a></span><br />
-<span class="normal">All_Within_And_Between_Fields</span><br />
-<span class="smnorm"><input type="checkbox" id="check_Within_All_Fields"  onclick="visibilityAndOpacity(this, 'Within_All_Fields')" />
-<a onmouseover="mouseoverVisible('Within_All_Fields')"; onmouseout="mouseoverHidden('Within_All_Fields')">Within_All_Fields</a></span><br />
-<span class="normal">All_Category_Pairs</span><br />
-<span class="smnorm"><input type="checkbox" id="check_Treatment_Control_to_Control"  onclick="visibilityAndOpacity(this, 'Treatment_Control_to_Control')" />
-<a onmouseover="mouseoverVisible('Treatment_Control_to_Control')"; onmouseout="mouseoverHidden('Treatment_Control_to_Control')">Treatment_Control_to_Control</a></span><br />
-<span class="smnorm"><input type="checkbox" id="check_Treatment_Control_to_Fast"  onclick="visibilityAndOpacity(this, 'Treatment_Control_to_Fast')" />
-<a onmouseover="mouseoverVisible('Treatment_Control_to_Fast')"; onmouseout="mouseoverHidden('Treatment_Control_to_Fast')">Treatment_Control_to_Fast</a></span><br />
-<span class="smnorm"><input type="checkbox" id="check_Treatment_Fast_to_Fast"  onclick="visibilityAndOpacity(this, 'Treatment_Fast_to_Fast')" />
-<a onmouseover="mouseoverVisible('Treatment_Fast_to_Fast')"; onmouseout="mouseoverHidden('Treatment_Fast_to_Fast')">Treatment_Fast_to_Fast</a></span><br />
-<span class="normal">All_Within_Categories</span><br />
-<span class="smnorm"><input type="checkbox" id="check_Treatment_Within_Control_Distances"  onclick="visibilityAndOpacity(this, 'Treatment_Within_Control_Distances')" />
-<a onmouseover="mouseoverVisible('Treatment_Within_Control_Distances')"; onmouseout="mouseoverHidden('Treatment_Within_Control_Distances')">Treatment_Within_Control_Distances</a></span><br />
-<span class="smnorm"><input type="checkbox" id="check_Treatment_Within_Fast_Distances"  onclick="visibilityAndOpacity(this, 'Treatment_Within_Fast_Distances')" />
-<a onmouseover="mouseoverVisible('Treatment_Within_Fast_Distances')"; onmouseout="mouseoverHidden('Treatment_Within_Fast_Distances')">Treatment_Within_Fast_Distances</a></span><br />
-    </p>
-    </div>
-    </td>
+"""<td>\n    <div style="overflow:scroll;white-space:nowrap;width:300px;height: 400px;">\n    <p>\n<span class="normal">All_Within_Category_Grouped</span><br />\n<span class="smnorm"><input type="checkbox" id="check_Treatment_All_Within_Category_Distances"  onclick="visibilityAndOpacity(this, \'Treatment_All_Within_Category_Distances\')" />\n<a onmouseover="mouseoverVisible(\'Treatment_All_Within_Category_Distances\')"; onmouseout="mouseoverHidden(\'Treatment_All_Within_Category_Distances\')">Treatment_All_Within_Category_Distances</a></span><br />\n<span class="normal">All_Between_Category_Grouped</span><br />\n<span class="smnorm"><input type="checkbox" id="check_Treatment_All_Between_Category_Distances"  onclick="visibilityAndOpacity(this, \'Treatment_All_Between_Category_Distances\')" />\n<a onmouseover="mouseoverVisible(\'Treatment_All_Between_Category_Distances\')"; onmouseout="mouseoverHidden(\'Treatment_All_Between_Category_Distances\')">Treatment_All_Between_Category_Distances</a></span><br />\n<span class="normal">All_Between_Sample_Distances</span><br />\n<span class="smnorm"><input type="checkbox" id="check_All_Between_Sample_Distances" checked onclick="visibilityAndOpacity(this, \'All_Between_Sample_Distances\')" />\n<a onmouseover="mouseoverVisible(\'All_Between_Sample_Distances\')"; onmouseout="mouseoverHidden(\'All_Between_Sample_Distances\')">All_Between_Sample_Distances</a></span><br />\n<span class="normal">All_Within_And_Between_Fields</span><br />\n<span class="smnorm"><input type="checkbox" id="check_Within_All_Fields"  onclick="visibilityAndOpacity(this, \'Within_All_Fields\')" />\n<a onmouseover="mouseoverVisible(\'Within_All_Fields\')"; onmouseout="mouseoverHidden(\'Within_All_Fields\')">Within_All_Fields</a></span><br />\n<span class="normal">All_Category_Pairs</span><br />\n<span class="smnorm"><input type="checkbox" id="check_Treatment###FIELDDATA###Control_to_Control"  onclick="visibilityAndOpacity(this, \'Treatment###FIELDDATA###Control_to_Control\')" />\n<a onmouseover="mouseoverVisible(\'Treatment###FIELDDATA###Control_to_Control\')"; onmouseout="mouseoverHidden(\'Treatment###FIELDDATA###Control_to_Control\')">Treatment_Control_to_Control</a></span><br />\n<span class="smnorm"><input type="checkbox" id="check_Treatment###FIELDDATA###Control_to_Fast"  onclick="visibilityAndOpacity(this, \'Treatment###FIELDDATA###Control_to_Fast\')" />\n<a onmouseover="mouseoverVisible(\'Treatment###FIELDDATA###Control_to_Fast\')"; onmouseout="mouseoverHidden(\'Treatment###FIELDDATA###Control_to_Fast\')">Treatment_Control_to_Fast</a></span><br />\n<span class="smnorm"><input type="checkbox" id="check_Treatment###FIELDDATA###Fast_to_Fast"  onclick="visibilityAndOpacity(this, \'Treatment###FIELDDATA###Fast_to_Fast\')" />\n<a onmouseover="mouseoverVisible(\'Treatment###FIELDDATA###Fast_to_Fast\')"; onmouseout="mouseoverHidden(\'Treatment###FIELDDATA###Fast_to_Fast\')">Treatment_Fast_to_Fast</a></span><br />\n<span class="normal">All_Within_Categories</span><br />\n<span class="smnorm"><input type="checkbox" id="check_Treatment_Within_Control_Distances"  onclick="visibilityAndOpacity(this, \'Treatment_Within_Control_Distances\')" />\n<a onmouseover="mouseoverVisible(\'Treatment_Within_Control_Distances\')"; onmouseout="mouseoverHidden(\'Treatment_Within_Control_Distances\')">Treatment_Within_Control_Distances</a></span><br />\n<span class="smnorm"><input type="checkbox" id="check_Treatment_Within_Fast_Distances"  onclick="visibilityAndOpacity(this, \'Treatment_Within_Fast_Distances\')" />\n<a onmouseover="mouseoverVisible(\'Treatment_Within_Fast_Distances\')"; onmouseout="mouseoverHidden(\'Treatment_Within_Fast_Distances\')">Treatment_Within_Fast_Distances</a></span><br />\n    </p>\n    </div>\n    </td>\n\
 """
 
 MAIN_HTML = \
-"""<html><head> <title>
-Distance Histograms
+"""
+<html><head> <title>
+QIIME - Distance Histograms
 </title>
 <script type="text/javascript" src="./js/histograms.js"></script>
  <style type="text/css">
@@ -581,62 +547,48 @@ Distance Histograms
 </head>
 <body> 
 <div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
-<table width="200" border="0" cellspacing="2" cellpadding="2"> <table width="200" border="0" cellspacing="2" cellpadding="2"> <tr><td colspan="2" class="header_qiime" align="center">
-    <table width=800 cellpadding=0 cellspacing=0 border=0>
-    <tr valign=middle><td class=ntitle width=200 valign="middle"><img src="./web_resources/qiime_header.png" border="0" /></td>
-        <td width=300 align=center >
-            &nbsp; 
-        </td>
-    </tr> 
-    </table>
-</td></tr>
-<tr><td colspan="2" align="left" valign="top">&nbsp;</td></tr> 
- </table>  <tr><td colspan="2" align="left" valign="top" class="normal"> <table border="0" cellspacing="1" cellpadding="0" width="800">
-
-</table>  </td> </tr> </table>
 <div>
     <table>
         <tr>
             
-<td style="position:absolute; top:100; left:0;">
-<img style="z-index:1; opacity:1.0;filter:alpha(opacity=100); visibility:visible;" id="All_Between_Sample_Distances" name="visible" src=".//histograms/All_Between_Sample_Distances_VDGtFjE1p2qRCvzsBt0w.png" border="0"></td>
+<td style="position:absolute;left:0;">
+<img style="z-index:1; opacity:1.0;filter:alpha(opacity=100); visibility:visible;" id="All_Between_Sample_Distances" name="visible" src="/tmp/distance_histogram_tests/histograms/FSFRIojoGyfL2iGYVFbr.png" border="0"></td>
 
-<td style="position:absolute; top:100; left:0;">
-<img style="z-index:1; opacity:1.0;filter:alpha(opacity=100); visibility:hidden;" id="Treatment_Within_Fast_Distances" name="hidden" src=".//histograms/Treatment_Within_Fast_Distances_oMHomERhcoGVy0taqoXy.png" border="0"></td>
+<td style="position:absolute;left:0;">
+<img style="z-index:1; opacity:1.0;filter:alpha(opacity=100); visibility:hidden;" id="All_Between_Sample_Distances" name="hidden" src="/tmp/distance_histogram_tests/histograms/FSFRIojoGyfL2iGYVFbr.png" border="0"></td>
 
-<td style="position:absolute; top:100; left:0;">
-<img style="z-index:1; opacity:1.0;filter:alpha(opacity=100); visibility:hidden;" id="Within_All_Fields" name="hidden" src=".//histograms/Within_All_Fields_Ne8iQ6jzEs0QKECgkaOJ.png" border="0"></td>
+<td style="position:absolute;left:0;">
+<img style="z-index:1; opacity:1.0;filter:alpha(opacity=100); visibility:hidden;" id="Treatment_Within_Fast_Distances" name="hidden" src="/tmp/distance_histogram_tests/histograms/6aMGfDaBtx1UctPtV4qT.png" border="0"></td>
 
-<td style="position:absolute; top:100; left:0;">
-<img style="z-index:1; opacity:1.0;filter:alpha(opacity=100); visibility:hidden;" id="Treatment_All_Between_Category_Distances" name="hidden" src=".//histograms/Treatment_All_Between_Category_Distances_O8U91gtDsRDPfkc1B5Bg.png" border="0"></td>
+<td style="position:absolute;left:0;">
+<img style="z-index:1; opacity:1.0;filter:alpha(opacity=100); visibility:hidden;" id="Within_All_Fields" name="hidden" src="/tmp/distance_histogram_tests/histograms/uBnt1Qbg0qoasH8xCg5Q.png" border="0"></td>
 
-<td style="position:absolute; top:100; left:0;">
-<img style="z-index:1; opacity:1.0;filter:alpha(opacity=100); visibility:hidden;" id="Treatment_Control_to_Fast" name="hidden" src=".//histograms/Treatment_Control_to_Fast_BguPgXBBPQHd3JGZiWWy.png" border="0"></td>
+<td style="position:absolute;left:0;">
+<img style="z-index:1; opacity:1.0;filter:alpha(opacity=100); visibility:hidden;" id="Treatment###FIELDDATA###Fast_to_Fast" name="hidden" src="/tmp/distance_histogram_tests/histograms/YdQdIIROef1jixUaS3X4.png" border="0"></td>
 
-<td style="position:absolute; top:100; left:0;">
-<img style="z-index:1; opacity:1.0;filter:alpha(opacity=100); visibility:hidden;" id="Treatment_Control_to_Control" name="hidden" src=".//histograms/Treatment_Control_to_Control_VwziTye01o8i5masUoN2.png" border="0"></td>
+<td style="position:absolute;left:0;">
+<img style="z-index:1; opacity:1.0;filter:alpha(opacity=100); visibility:hidden;" id="Treatment###FIELDDATA###Control_to_Fast" name="hidden" src="/tmp/distance_histogram_tests/histograms/mPBMbyfSxunyeR2GSQpQ.png" border="0"></td>
 
-<td style="position:absolute; top:100; left:0;">
-<img style="z-index:1; opacity:1.0;filter:alpha(opacity=100); visibility:hidden;" id="All_Between_Sample_Distances" name="hidden" src=".//histograms/All_Between_Sample_Distances_VDGtFjE1p2qRCvzsBt0w.png" border="0"></td>
+<td style="position:absolute;left:0;">
+<img style="z-index:1; opacity:1.0;filter:alpha(opacity=100); visibility:hidden;" id="Treatment_All_Between_Category_Distances" name="hidden" src="/tmp/distance_histogram_tests/histograms/3leAJFaXwrMqtJKgTm7v.png" border="0"></td>
 
-<td style="position:absolute; top:100; left:0;">
-<img style="z-index:1; opacity:1.0;filter:alpha(opacity=100); visibility:hidden;" id="Treatment_All_Within_Category_Distances" name="hidden" src=".//histograms/Treatment_All_Within_Category_Distances_y2jFfSgOfxmpRJAbc5LP.png" border="0"></td>
+<td style="position:absolute;left:0;">
+<img style="z-index:1; opacity:1.0;filter:alpha(opacity=100); visibility:hidden;" id="Treatment_All_Within_Category_Distances" name="hidden" src="/tmp/distance_histogram_tests/histograms/JHmUx9dH2lmdmxPlDumP.png" border="0"></td>
 
-<td style="position:absolute; top:100; left:0;">
-<img style="z-index:1; opacity:1.0;filter:alpha(opacity=100); visibility:hidden;" id="Treatment_Fast_to_Fast" name="hidden" src=".//histograms/Treatment_Fast_to_Fast_czBTLqB8WcaJyGREPG12.png" border="0"></td>
+<td style="position:absolute;left:0;">
+<img style="z-index:1; opacity:1.0;filter:alpha(opacity=100); visibility:hidden;" id="Treatment###FIELDDATA###Control_to_Control" name="hidden" src="/tmp/distance_histogram_tests/histograms/wfy4pNiN0j7843Tawase.png" border="0"></td>
 
-<td style="position:absolute; top:100; left:0;">
-<img style="z-index:1; opacity:1.0;filter:alpha(opacity=100); visibility:hidden;" id="Treatment_Within_Control_Distances" name="hidden" src=".//histograms/Treatment_Within_Control_Distances_tRN8cTb1QXc0qzknWKQQ.png" border="0"></td>
+<td style="position:absolute;left:0;">
+<img style="z-index:1; opacity:1.0;filter:alpha(opacity=100); visibility:hidden;" id="Treatment_Within_Control_Distances" name="hidden" src="/tmp/distance_histogram_tests/histograms/geDPwHcu38bQINLYappd.png" border="0"></td>
         </tr>
     </table>
 </div>
 
 
-<table style="position:absolute; top:100; left:600">
+<table style="position:absolute;left:600">
     <tr>
     <td>
-    <div style="overflow:scroll; width: 300px; height: 400px;">
-    
+    <div style="overflow:scroll;white-space:nowrap;width:300px;height: 400px;">
     <p>
 <span class="normal">All_Within_Category_Grouped</span><br />
 <span class="smnorm"><input type="checkbox" id="check_Treatment_All_Within_Category_Distances"  onclick="visibilityAndOpacity(this, 'Treatment_All_Within_Category_Distances')" />
@@ -651,12 +603,12 @@ Distance Histograms
 <span class="smnorm"><input type="checkbox" id="check_Within_All_Fields"  onclick="visibilityAndOpacity(this, 'Within_All_Fields')" />
 <a onmouseover="mouseoverVisible('Within_All_Fields')"; onmouseout="mouseoverHidden('Within_All_Fields')">Within_All_Fields</a></span><br />
 <span class="normal">All_Category_Pairs</span><br />
-<span class="smnorm"><input type="checkbox" id="check_Treatment_Control_to_Control"  onclick="visibilityAndOpacity(this, 'Treatment_Control_to_Control')" />
-<a onmouseover="mouseoverVisible('Treatment_Control_to_Control')"; onmouseout="mouseoverHidden('Treatment_Control_to_Control')">Treatment_Control_to_Control</a></span><br />
-<span class="smnorm"><input type="checkbox" id="check_Treatment_Control_to_Fast"  onclick="visibilityAndOpacity(this, 'Treatment_Control_to_Fast')" />
-<a onmouseover="mouseoverVisible('Treatment_Control_to_Fast')"; onmouseout="mouseoverHidden('Treatment_Control_to_Fast')">Treatment_Control_to_Fast</a></span><br />
-<span class="smnorm"><input type="checkbox" id="check_Treatment_Fast_to_Fast"  onclick="visibilityAndOpacity(this, 'Treatment_Fast_to_Fast')" />
-<a onmouseover="mouseoverVisible('Treatment_Fast_to_Fast')"; onmouseout="mouseoverHidden('Treatment_Fast_to_Fast')">Treatment_Fast_to_Fast</a></span><br />
+<span class="smnorm"><input type="checkbox" id="check_Treatment###FIELDDATA###Control_to_Control"  onclick="visibilityAndOpacity(this, 'Treatment###FIELDDATA###Control_to_Control')" />
+<a onmouseover="mouseoverVisible('Treatment###FIELDDATA###Control_to_Control')"; onmouseout="mouseoverHidden('Treatment###FIELDDATA###Control_to_Control')">Treatment_Control_to_Control</a></span><br />
+<span class="smnorm"><input type="checkbox" id="check_Treatment###FIELDDATA###Control_to_Fast"  onclick="visibilityAndOpacity(this, 'Treatment###FIELDDATA###Control_to_Fast')" />
+<a onmouseover="mouseoverVisible('Treatment###FIELDDATA###Control_to_Fast')"; onmouseout="mouseoverHidden('Treatment###FIELDDATA###Control_to_Fast')">Treatment_Control_to_Fast</a></span><br />
+<span class="smnorm"><input type="checkbox" id="check_Treatment###FIELDDATA###Fast_to_Fast"  onclick="visibilityAndOpacity(this, 'Treatment###FIELDDATA###Fast_to_Fast')" />
+<a onmouseover="mouseoverVisible('Treatment###FIELDDATA###Fast_to_Fast')"; onmouseout="mouseoverHidden('Treatment###FIELDDATA###Fast_to_Fast')">Treatment_Fast_to_Fast</a></span><br />
 <span class="normal">All_Within_Categories</span><br />
 <span class="smnorm"><input type="checkbox" id="check_Treatment_Within_Control_Distances"  onclick="visibilityAndOpacity(this, 'Treatment_Within_Control_Distances')" />
 <a onmouseover="mouseoverVisible('Treatment_Within_Control_Distances')"; onmouseout="mouseoverHidden('Treatment_Within_Control_Distances')">Treatment_Within_Control_Distances</a></span><br />

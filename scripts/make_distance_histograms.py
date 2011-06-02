@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Jeremy Widmann"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Jeremy Widmann","Rob Knight"]
+__credits__ = ["Jeremy Widmann","Rob Knight","Jesse Stombaugh"]
 __license__ = "GPL"
 __version__ = "1.2.1-dev"
 __maintainer__ = "Jeremy Widmann"
@@ -14,8 +14,8 @@ __status__ = "Development"
 
 from qiime.util import parse_command_line_parameters, get_qiime_project_dir,\
     get_options_lookup
-from qiime.util import make_option
-from qiime.make_distance_histograms import group_distances, _make_path, \
+from qiime.util import make_option,get_interesting_mapping_fields
+from qiime.make_distance_histograms import group_distances, \
     draw_all_histograms, _make_relative_paths, make_main_html, \
     monte_carlo_group_distances, monte_carlo_group_distances_within_between
 from cogent.util.misc import get_random_directory_name
@@ -23,7 +23,7 @@ from qiime.colors import sample_color_prefs_and_map_data_from_options,\
     iter_color_groups
 from qiime.parse import (parse_mapping_file, parse_distmat, 
     parse_prefs_file, QiimeParseError)
-from os import mkdir
+from os import mkdir,path
 from string import strip
 
 options_lookup = get_options_lookup()
@@ -32,7 +32,7 @@ script_info={}
 script_info['brief_description']="""Make distance histograms"""
 script_info['script_description']="""To visualize the distance between samples and/or categories in the metadata mapping file, the user can generate histograms to represent the distances between samples. This script generates an HTML file, where the user can compare the distances between samples based on the different categories associated to each sample in the metadata mapping file. """
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Examples:""","""Distance Histograms are a way to compare different categories and see which tend to have larger/smaller distances than others. For example, in the hand study, you may want to compare the distances between hands to the distances between individuals (with the file "hand_distances.txt" using the parameter -d hand_distances.txt). The categories are defined in the metadata mapping file (specified using the parameter -m hand_map.txt). If you want to look at the distances between hands and individuals, choose the "Hand" field and "Individual" field (using the parameter --fields Hand,Individual (notice the fields are comma delimited)). For each of these groups of distances a histogram is made. The output is a HTML file ("QIIME_Distance_Histograms.html") which is created in the "Distance_Histograms" directory (using the parameter -o Distance_Histograms to specify output directory) where you can look at all the distance histograms individually, and compare them between each other.
+script_info['script_usage'].append(("""Examples:""","""Distance Histograms are a way to compare different categories and see which tend to have larger/smaller distances than others. For example, in the hand study, you may want to compare the distances between hands to the distances between individuals (with the file "hand_distances.txt" using the parameter -d hand_distances.txt). The categories are defined in the metadata mapping file (specified using the parameter -m hand_map.txt). If you want to look at the distances between hands and individuals, choose the "Hand" field and "Individual" field (using the parameter --fields Hand,Individual (notice the fields are comma delimited)). For each of these groups of distances a histogram is made. The output is a HTML file which is created in the "Distance_Histograms" directory (using the parameter -o Distance_Histograms to specify output directory) where you can look at all the distance histograms individually, and compare them between each other.
 
 In the following command, the user only supplies a distance matrix (i.e. resulting file from beta_diversity.py), the user-generated metadata mapping file and one category (e.g. pH):""","""make_distance_histograms.py -d beta_div.txt -m Mapping_file.txt --fields pH"""))
 script_info['script_usage'].append(("""""","""For comparison of multiple categories (e.g. pH, salinity), you can use the following command:""","""make_distance_histograms.py -d beta_div.txt -m Mapping_file.txt --fields pH,salinity"""))
@@ -129,8 +129,8 @@ def main():
         prefs=None
 
     
-    color_prefs, color_data, background_color, label_color, ball_scale, arrow_colors= \
-                            sample_color_prefs_and_map_data_from_options(opts)
+    color_prefs, color_data, background_color, label_color, ball_scale,\
+     arrow_colors=sample_color_prefs_and_map_data_from_options(opts)
     
     #list of labelname, groups, colors, data_colors, data_color_order    
     groups_and_colors=list(iter_color_groups(mapping=color_data['map'],\
@@ -143,7 +143,6 @@ def main():
         field_to_colors[color_info[0]]=color_info[1:]
     
     qiime_dir = get_qiime_project_dir()+'/qiime/support_files/'
-    
         
     fields = opts.fields
     if fields is not None:
@@ -151,6 +150,8 @@ def main():
         fields = [i.strip('"').strip("'") for i in fields]
     elif prefs is not None:
         fields = prefs.get('FIELDS',None)
+    else:
+        fields = get_interesting_mapping_fields(mapping, m_header)
     
     #Check that all provided fields are valid:
     if fields is not None:
@@ -167,8 +168,7 @@ def main():
     
     if not opts.suppress_html_output:
         #histograms output path
-        histograms_path = \
-            _make_path([opts.dir_path,'histograms'])
+        histograms_path = path.join(opts.dir_path,'histograms')
         try:
             mkdir(histograms_path)
         except OSError:     #raised if dir exists
@@ -187,7 +187,9 @@ def main():
         label_to_histogram_filename_relative = \
             _make_relative_paths(label_to_histogram_filename, opts.dir_path)
         
-        outfile_name = 'QIIME_Distance_Histograms.html'
+        dm_fname=path.split(opts.distance_matrix_file)[-1]
+        basename='_'.join(path.splitext(dm_fname)[0].split('_')[:-1])
+        outfile_name = basename+'_distance_histograms.html'
         make_main_html(distances_dict=distances_dict,\
             label_to_histogram_filename=label_to_histogram_filename_relative,\
             root_outdir=opts.dir_path, \
@@ -196,8 +198,7 @@ def main():
         
         #Handle saving web resources locally.
         #javascript file
-        javascript_path = \
-            _make_path([opts.dir_path,'js'])
+        javascript_path = path.join(opts.dir_path,'js')
         try:
             mkdir(javascript_path)
         except OSError:     #raised if dir exists
@@ -205,17 +206,6 @@ def main():
         js_out = open(javascript_path+'/histograms.js','w')
         js_out.write(open(qiime_dir+'js/histograms.js').read())
         js_out.close()
-        
-        #Qiime logo
-        logo_path = \
-            _make_path([opts.dir_path,'web_resources'])
-        try:
-            mkdir(logo_path)
-        except OSError:     #raised if dir exists
-            pass
-        logo_out = open(logo_path+'/qiime_header.png','w')
-        logo_out.write(open(qiime_dir+'images/qiime_header.png').read())
-        logo_out.close()
         
     monte_carlo_iters = opts.monte_carlo_iters
     if monte_carlo_iters > 0:

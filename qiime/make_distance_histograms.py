@@ -3,7 +3,7 @@ from __future__ import division
 
 __author__ = "Jeremy Widmann"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Jeremy Widmann","Rob Knight"]
+__credits__ = ["Jeremy Widmann","Rob Knight","Jesse Stombaugh"]
 __license__ = "GPL"
 __version__ = "1.2.1-dev"
 __maintainer__ = "Jeremy Widmann"
@@ -30,15 +30,13 @@ from os import mkdir, path
 
 def matplotlib_rgb_color(rgb_color):
     """Returns RGB color in matplotlib format.
-    
-        ex: (255,0,255) will return (1.0,0.0,1.0)
+       ex: (255,0,255) will return (1.0,0.0,1.0)
     """
     return tuple([i/255. for i in rgb_color])
 
 def average_colors(color1, color2):
-    """Returns average of two RGB colors.
-        
-        -color1 and color2 are RGB tuples.
+    """Returns average of two RGB colors. 
+       - color1 and color2 are RGB tuples.
     """
     avg_list = []
     for i,j in zip(color1,color2):
@@ -58,7 +56,7 @@ def average_all_colors(paired_field_names, field_to_color_prefs):
     """
     paired_field_to_color = {}
     for name in paired_field_names:
-        field, data = name.split('_',1)
+        field, data = name.split('###FIELDDATA###')
         first,second = data.split('_to_')
         field_prefs = field_to_color_prefs[field]
         color1 = field_prefs[1][first]
@@ -135,6 +133,7 @@ def between_category_distances_grouped(single_field,\
             if data[0] != data[1]:
                 all = array(data[2])
                 distances[field+label_suffix].extend(all.flat)
+        
     return distances
 
 def within_category_distances(single_field):
@@ -185,7 +184,8 @@ def all_category_distances(single_field):
     for field, groups in single_field.items():
         for data in groups:
             all = array(data[2])
-            distances[field+'_'+data[0]+'_to_'+data[1]].extend(all.flat)
+            distances[field + '###FIELDDATA###' + data[0] + '_to_' + \
+                      data[1]].extend(all.flat)
     return distances
 
 def draw_all_histograms(single_field, paired_field, dmat, histogram_dir,\
@@ -220,6 +220,7 @@ def draw_all_histograms(single_field, paired_field, dmat, histogram_dir,\
     #Get all within category distances grouped together
     all_within_category_grouped = \
         within_category_distances_grouped(single_field)
+        
     distances_dict['All_Within_Category_Grouped']=all_within_category_grouped
     
     #add to unassigned colors list.
@@ -264,10 +265,10 @@ def draw_all_histograms(single_field, paired_field, dmat, histogram_dir,\
     #Get all category distances
     all_categories = all_category_distances(single_field)
     distances_dict['All_Category_Pairs']=all_categories
-    
+
     #add colors to be averaged
     colors_to_average.extend(all_categories.keys())
-
+    
     label_to_histogram_filename.update(\
         _make_histogram_filenames(all_categories,histogram_dir))
     
@@ -279,8 +280,6 @@ def draw_all_histograms(single_field, paired_field, dmat, histogram_dir,\
     label_to_color.update(assign_mapped_colors(colors_to_map,\
         field_to_color_prefs))
         
-    
-    
     max_val = max(dmat.flat)
     bin_size = max_val/20.
     BINS=arange(0,ceil(max_val)+.01,bin_size)
@@ -345,7 +344,6 @@ def draw_histogram(distances, color, nbins, outfile_name,\
     
     fig  = gcf()
     axis = fig.gca()
-
     
     #set labels
     axis.set_xlabel('Distance')
@@ -387,7 +385,7 @@ def draw_histogram(distances, color, nbins, outfile_name,\
         axis.set_axis_bgcolor(background_color)
         transparent=False
 
-    savefig(outfile_name,format='png',dpi=75, transparent=transparent)
+    savefig(outfile_name,format='png',dpi=72, transparent=transparent)
 
     close()
     return histogram
@@ -398,8 +396,7 @@ NAV_HTML_TR = '''<span class="smnorm"><input type="checkbox" id="%s" %s onclick=
 NAV_HTML_TR_BREAK = '''<span class="normal">%s</span><br />'''
 
 NAV_HTML_FRAME_START = '''<td>
-    <div style="overflow:scroll; width: 300px; height: 400px;">
-    
+    <div style="overflow:scroll;white-space:nowrap;width:300px;height: 400px;">
     <p>
 '''
 NAV_HTML_FRAME_END = '''
@@ -422,19 +419,6 @@ FULL_HTML_JS_FRAME = """
 </head>
 <body> 
 <div id="overDiv" style="position:absolute; visibility:hidden; z-index:1000;"></div>
-<table width="200" border="0" cellspacing="2" cellpadding="2"> <table width="200" border="0" cellspacing="2" cellpadding="2"> <tr><td colspan="2" class="header_qiime" align="center">
-    <table width=800 cellpadding=0 cellspacing=0 border=0>
-    <tr valign=middle><td class=ntitle width=200 valign="middle"><img src="./web_resources/qiime_header.png" border="0" /></td>
-        <td width=300 align=center >
-            &nbsp; 
-        </td>
-    </tr> 
-    </table>
-</td></tr>
-<tr><td colspan="2" align="left" valign="top">&nbsp;</td></tr> 
- </table>  <tr><td colspan="2" align="left" valign="top" class="normal"> <table border="0" cellspacing="1" cellpadding="0" width="800">
-
-</table>  </td> </tr> </table>
 """
 
 FULL_HTML_MAIN_IMAGE = '''<div>
@@ -448,11 +432,11 @@ FULL_HTML_MAIN_IMAGE = '''<div>
 '''
 
 SINGLE_IMAGE_BLOCK = '''
-<td style="position:absolute; top:100; left:0;">
+<td style="position:absolute;left:0;">
 <img style="z-index:1; opacity:1.0;filter:alpha(opacity=100); visibility:%s;" id="%s" name="%s" src="%s" border="0"></td>'''
 
 FULL_HTML_NAV_FRAME = """
-<table style="position:absolute; top:100; left:600">
+<table style="position:absolute;left:600">
     <tr>
     %s
     </tr>
@@ -471,6 +455,7 @@ def make_nav_html(distances_dict, label_to_histogram_filename, \
                 continue
             hist_filename = label_to_histogram_filename[sub_label].strip('./')
             hist_filename = "'"+hist_filename+"'"
+            #sub_label=sub_label.replace('###FIELDDATA###','_')
             checked = ''
             if main_block == default:
                 checked = 'checked'
@@ -478,7 +463,7 @@ def make_nav_html(distances_dict, label_to_histogram_filename, \
             html_list.append(NAV_HTML_TR%\
                 ('check_'+sub_label, checked, \
                     sub_label_quoted, sub_label_quoted,\
-                    sub_label_quoted, sub_label))
+                    sub_label_quoted, sub_label.replace('###FIELDDATA###','_')))
     nav_html = '\n'.join(html_list)
     return NAV_HTML_FRAME_START + nav_html + NAV_HTML_FRAME_END
 
@@ -528,6 +513,7 @@ def distances_by_groups(distance_header, distance_matrix, groups):
     """
     result = []
     group_items = groups.items()
+
     for i, (row_group, row_ids) in enumerate(group_items):
         row_indices = get_valid_indices(distance_header, row_ids)
         #handle the case where indices are separate: just return blocks
@@ -536,6 +522,7 @@ def distances_by_groups(distance_header, distance_matrix, groups):
             col_indices = get_valid_indices(distance_header, col_ids)
             vals = distance_matrix[row_indices][:,col_indices]
             result.append([row_group, col_group, vals])
+            
         #handle the case where indices are the same so need to omit diag
         block = distance_matrix[row_indices][:,row_indices]
         size = len(row_indices)
@@ -544,25 +531,28 @@ def distances_by_groups(distance_header, distance_matrix, groups):
             for j in range(i,size):
                 if i != j:
                     indices.append(block[i][j])
-
         result.append([row_group, row_group, array(indices)])
     return result
 
 def write_distance_files(group_distance_dict,dir_prefix = '', \
     subdir_prefix='distances'):
     """writes distance files for each col of mapping file."""
-    path_prefix = _make_path([dir_prefix,subdir_prefix])
+    path_prefix = path.join(dir_prefix,subdir_prefix)
     try:
         mkdir(path_prefix)
     except OSError:     #raised if dir exists
         pass
-
+        
     for field, data in group_distance_dict.items(): #skip sample id field
-        fname = path_prefix  + 'dist_' + field + '.xls'
+        fname = path.join(path_prefix, 'dist_' + field + '.xls')
         outfile = open(fname, 'w')
         for d in data:
-            outfile.write('\t'.join([str(d[0])+'_to_'+str(d[1])] + \
-                map(str, d[2].flat)))
+            if subdir_prefix.endswith('pairs'):
+                outfile.write('\t'.join([':'.join(d[0]) + '_to_' + \
+                              ':'.join(d[1])] + map(str, d[2].flat)))
+            else:
+                outfile.write('\t'.join([str(d[0]) + '_to_' + \
+                              str(d[1])] + map(str, d[2].flat)))
             outfile.write('\n')
         outfile.close()
 
@@ -575,12 +565,13 @@ def group_distances(mapping_file,dmatrix_file,fields,dir_prefix='',\
     header = [header]
     header.extend(mapping)
     mapping=header
-    
+
     distance_header, distance_matrix = \
         parse_distmat(open(dmatrix_file,'U'))
 
-    if fields is None:
-        fields = [mapping[0][0]]
+    if fields == []:
+        raise ValueError, 'Since no fields were defined and the values within your fields are either all the same or all unique, a field was not chosen for analysis. Please define a field to analyse.'
+        
     single_field = defaultdict(dict)
     for i in range(len(fields)):
         field = fields[i]
@@ -588,13 +579,13 @@ def group_distances(mapping_file,dmatrix_file,fields,dir_prefix='',\
         data = distances_by_groups(distance_header, distance_matrix, groups)
         #Need to remove pound signs from field name.
         field_name = field.replace('#','')
-
         single_field[field_name]=data
 
     write_distance_files(group_distance_dict=single_field,\
         dir_prefix=dir_prefix,subdir_prefix=subdir_prefix+'_single')
         
     paired_field = defaultdict(dict)
+    paired_field_for_writing = defaultdict(dict)
     for i in range(len(fields)):
         for j in range(i,len(fields)):
             fieldi = fields[i]
@@ -602,8 +593,9 @@ def group_distances(mapping_file,dmatrix_file,fields,dir_prefix='',\
             groups = group_by_fields(mapping, [fieldi,fieldj])
             data = distances_by_groups(distance_header, distance_matrix, groups)
             paired_field[fieldi+'_to_'+fieldj]=data
-
-    write_distance_files(group_distance_dict=paired_field,\
+            paired_field_for_writing[fieldi+'_to_'+field]=data
+    
+    write_distance_files(group_distance_dict=paired_field_for_writing,\
         dir_prefix=dir_prefix,subdir_prefix=subdir_prefix+'_pairs')
     
     return single_field, paired_field, distance_matrix
@@ -636,7 +628,7 @@ def monte_carlo_group_distances(mapping_file, dmatrix_file, prefs, \
 
     orig_distance_matrix = distance_matrix.copy()
 
-    path_prefix = _make_path([dir_prefix,subdir_prefix])
+    path_prefix = path.join(dir_prefix,subdir_prefix)
     
     #if dir doesn't exist
     if not path.isdir(path_prefix):
@@ -652,13 +644,13 @@ def monte_carlo_group_distances(mapping_file, dmatrix_file, prefs, \
     if 'MONTE_CARLO_GROUP_DISTANCES' not in prefs:
         prefs = build_monte_carlo_prefs(fields,default_iters)
             
-
     for field, num_iters in prefs['MONTE_CARLO_GROUP_DISTANCES'].items():
         if '&&' in field:
             groups = group_by_fields(mapping, field.split('&&'))
         else:
             groups = group_by_field(mapping, field)
-        outfile = open(path_prefix+'group_distances_'+field+'.xls', 'w')
+        outfile = open(path.join(path_prefix,
+                                 'group_distances_'+field+'.xls'), 'w')
         outfile.write('\t'.join(['Category_1a','Category_1b','Avg',\
             'Category_2a','Category_2b','Avg','t','p',\
             'p_greater','p_less','Iterations\n']))
@@ -706,7 +698,7 @@ def monte_carlo_group_distances_within_between(single_field, \
     - compare the actual value of t to the randomized values
     """
 
-    path_prefix = _make_path([dir_prefix,subdir_prefix])
+    path_prefix = path.join(dir_prefix,subdir_prefix)
     #if dir doesn't exist
     if not path.isdir(path_prefix):
         # make directory
@@ -725,11 +717,13 @@ def monte_carlo_group_distances_within_between(single_field, \
     
     within_and_between = \
         within_and_between_fields(paired_field)
+    
     real_dists.extend([[field.split('_',1)[0],\
         field.split('_',1)[1],distances] for \
         field, distances in within_and_between.items()])
     
-    outfile = open(path_prefix+'group_distances_within_and_between.xls', 'w')
+    outfile = open(path.join(path_prefix,
+                            'group_distances_within_and_between.xls'), 'w')
     outfile.write('\t'.join(['Comparison','Category_1','Avg',\
         'Comparison','Category_2','Avg','t','p',\
         'p_greater','p_less','Iterations\n']))
@@ -793,22 +787,12 @@ def _make_histogram_filenames(distances,histogram_dir):
         returns dict of label to filename: {label: label_randomchars.png}
     """
     filename_dict = {}
+    
     for label in distances.keys():
-        filename_dict[label]=_make_random_filename(prefix=\
-            histogram_dir+label+'_', \
+        filename_dict[label]=_make_random_filename(base_dir=histogram_dir, \
             suffix='.png')
     
     return filename_dict
-
-def _make_path(paths):
-    """join together the paths (e.g. dir and subdir prefix), empty str default"""
-    curr = ''
-    for p in paths:
-        if p:
-            curr += p
-            if curr and (not curr.endswith('/')):
-                curr += '/'
-    return curr
 
 def _make_relative_paths(label_to_path_dict, prefix):
     """Returns relative path from full path where prefix is replaced with ./
@@ -818,18 +802,11 @@ def _make_relative_paths(label_to_path_dict, prefix):
         label_to_path_dict_relative[k] = v.replace(prefix,'./',1)
     return label_to_path_dict_relative
 
-def _make_random_filename(prefix='',suffix='',num_chars=20):
+def _make_random_filename(base_dir='',suffix='',num_chars=20):
     """Returns filename with random characters between prefix and suffix.
     """
     all = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
     rand_region = ''.join([choice(all) for i in range(num_chars)])
-    return prefix+rand_region+suffix
+    return path.join(base_dir,rand_region+suffix)
 
-def _get_script_dir(script_path):
-    """Returns directory current script is running in.
-    """
-    if '/' in script_path:
-        script_dir = script_path.rsplit('/',1)[0]+'/'
-    else:
-        script_dir = './'
-    return script_dir
+
