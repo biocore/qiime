@@ -30,10 +30,6 @@ import cogent.app.fasttree
 import cogent.app.fasttree_v1
 import cogent.app.clearcut
 
-### to be removed at next pycogent update. will require light changes to
-### calling code
-from qiime.pycogent_backports.tree import getMaxTipTipDistance
-
 class TreeBuilder(FunctionWithParams):
     """A TreeBuilder takes a aligned set of sequences and returns a tree.
 
@@ -169,7 +165,8 @@ def root_midpt(tree):
     this fn doesn't preserve the internal node naming or structure,
     but does keep tip to tip distances correct.  uses unrootedDeepcopy()
     """
-    max_dist, tip_names, int_node = getMaxTipTipDistance(tree)
+    #max_dist, tip_names, int_node = getMaxTipTipDistance(tree)
+    max_dist, tip_names, int_node = tree.getMaxTipTipDistance()
 
     half_max_dist = max_dist/2.0
     if max_dist == 0.0: # only pathological cases with no lengths
