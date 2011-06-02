@@ -289,7 +289,7 @@ To visualize the network, we use the Cytoscape_ program (which you can run by ca
 
 Summarize Communities by Taxonomic Composition
 ----------------------------------------------------------------------------
-You can group OTUs by different taxonomic levels (division, class, family, etc.) with the workflow script `summarize_taxa_through_plots.py <../scripts/summarize_taxa_through_plots.html>`_. Note that this process depends directly on the method used to assign taxonomic information to OTUS (see `Assigning Taxonomy`__ above). Type: 
+You can group OTUs by samples or categories (when "-c" option is passed) by different taxonomic levels (division, class, family, etc.) with the workflow script `summarize_taxa_through_plots.py <../scripts/summarize_taxa_through_plots.html>`_. Note that this process depends directly on the method used to assign taxonomic information to OTUS (see `Assigning Taxonomy`__ above). Type: 
 
 __ assigntax_
 
@@ -297,7 +297,7 @@ __ assigntax_
 
     summarize_taxa_through_plots.py -i otus/otu_table.txt -o wf_taxa_summary -m Fasting_Map.txt
 
-The script will generate a new table grouping sequences by taxonomic assignment at various levels, for example the phylum level table at: :file:`otus/Taxa_Charts/otu_table_L3.txt`. The value of each *i,j* entry in the matrix is the count of the number of times all OTUs belonging to the taxon *i* (for example, Phylum Actinobacteria) were found in the sequences for sample *j*.
+The script will generate a new table grouping sequences by taxonomic assignment at various levels, for example the phylum level table at: :file:`wf_taxa_summary/otu_table_L3.txt`. The value of each *i,j* entry in the matrix is the count of the number of times all OTUs belonging to the taxon *i* (for example, Phylum Actinobacteria) were found in the sequences for sample *j*.
 
 .. note::
 
@@ -315,7 +315,7 @@ The script will generate a new table grouping sequences by taxonomic assignment 
 
 .. _maketaxacharts:
 
-To view the resulting charts, open the area or bar chart html file located in the  :file:`otus/Taxa_Charts/` folder. The following chart shows the taxa assignments for each sample as an area chart. You can mouseover the plot to see which taxa are contributing to the percentage shown.
+To view the resulting charts, open the area or bar chart html file located in the  :file:`wf_taxa_summary/taxa_summary_plots` folder. The following chart shows the taxa assignments for each sample as an area chart. You can mouseover the plot to see which taxa are contributing to the percentage shown.
 
 .. image:: ../images/areachart1.png
    :align: center
@@ -507,6 +507,7 @@ The two dimensional plot will be rendered as a html file which can be opened wit
 
 .. image:: ../images/ pcoa1.png
    :align: center
+   :width: 900px
 
 
 .. _gendisthist:
@@ -515,7 +516,7 @@ Step 7. Generate Distance Histograms
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Distance Histograms are a way to compare samples from different categories and see which categories tend to have larger/smaller beta diversity than others.
 
-For each of these groups of distances a histogram is made. The output is a HTML file (:file:`wf_bdiv_even146/Distance_Histograms/QIIME_Distance_Histograms.html`) where you can look at all the distance histograms individually, and compare them between each other. Within the webpage, the user can mouseover and/or select the checkboxes in the right panel to turn on/off the different distances within/between categories. In this example, we are comparing the distances between the samples in the Control versus themselves, and in another color, pairwise distances between communities of fasting mice and control mice.
+For each of these groups of distances a histogram is made. The output is an HTML file which is defined by the beta-diversity metric used (e.g.,  :file:`wf_bdiv_even146/unweighted_unifrac_histograms/unweighted_unifrac_distance_histograms.html`). Within the HTML you can look at all the distance histograms individually, and compare them between each other. Within the webpage, the user can mouseover and/or select the checkboxes in the right panel to turn on/off the different distances within/between categories. In this example, we are comparing the distances between the samples in the Control versus themselves, and in another color, pairwise distances between communities of fasting mice and control mice.
 
 .. image:: ../images/ hist.png
    :align: center
@@ -552,7 +553,7 @@ The output is a file that can be opened with tree viewing software, such as FigT
 
 .. image:: ../images/ UPGMAbytreatment.png
    :align: center
-   :scale: 50
+   :width: 700px
 
 This tree shows the relationship among the 9 samples, and reveals that the 4 samples from the guts of fasting mice cluster together (PC.6xx, fasting data is in :file:`Fasting_Map.txt`). 
 
@@ -601,7 +602,8 @@ The jackknifed replicate PCoA plots can be compared to assess the degree of vari
 
 .. image:: ../images/ jackpcoa.png
    :align: center
-   :scale: 50
+   :width: 700px
+   
 .. _genboottree:
 
 Generate Bootstrapped Tree
