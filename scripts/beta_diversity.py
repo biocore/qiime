@@ -63,9 +63,6 @@ script_info['optional_options']=[
      'Pass to skip this step if you\'re already passing a minimal tree.' +\
      ' Beware with "full_tree" metrics, as extra tips in the tree'+\
      ' change the result'),
- make_option('--float', action="store_true", default=False,
-     help='By default, the script expects integer OTU tables '+\
-     'but if this flag is True it will process float numbers.'),
 ]
 script_info['option_label']={'input_path':'OTU table filepath',
                              'rows':'List of samples for compute',
@@ -73,8 +70,7 @@ script_info['option_label']={'input_path':'OTU table filepath',
                              'show_metrics': 'Show metrics',
                              'tree_path':'Newick tree filepath',
                              'full_tree':'Tree already trimmed',
-                             'output_dir': 'Output directory',
-                             'float': 'OTU table contains floats'}
+                             'output_dir': 'Output directory'}
                              
 script_info['version'] = __version__
 
@@ -108,12 +104,10 @@ def main():
 
     if os.path.isdir(opts.input_path):
         multiple_file_beta(opts.input_path, opts.output_dir, opts.metrics, 
-            opts.tree_path, opts.rows, full_tree=opts.full_tree,
-            use_float=opts.float)
+            opts.tree_path, opts.rows, full_tree=opts.full_tree)
     elif os.path.isfile(opts.input_path):
         single_file_beta(opts.input_path, opts.metrics, opts.tree_path, 
-          opts.output_dir, opts.rows, full_tree=opts.full_tree,
-          use_float=opts.float)
+          opts.output_dir, opts.rows, full_tree=opts.full_tree)
     else:
         stderr.write("io error, input path not valid.  Does it exist?")
         exit(1)

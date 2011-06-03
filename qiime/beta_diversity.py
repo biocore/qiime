@@ -179,7 +179,7 @@ class BetaDiversityCalc(FunctionWithParams):
         return format_distance_matrix(sample_names, data)
 
 def single_file_beta(input_path, metrics, tree_path, output_dir, rowids=None,
-    full_tree=False, use_float=False):
+    full_tree=False):
     """ does beta diversity calc on a single otu table
 
     uses name in metrics to name output beta diversity files
@@ -193,13 +193,8 @@ def single_file_beta(input_path, metrics, tree_path, output_dir, rowids=None,
      rowids (comma separated str)
     """
     f = open(input_path,'U')
-    
-    if use_float: 
-        count_map_f = float
-    else:
-        count_map_f = int
-        
-    samids, otuids, otumtx, lineages = parse_otu_table(f, count_map_f=count_map_f)
+            
+    samids, otuids, otumtx, lineages = parse_otu_table(f)
     # otu mtx is otus by samples
     f.close()
     tree = None
@@ -283,7 +278,7 @@ def single_file_beta(input_path, metrics, tree_path, output_dir, rowids=None,
             f.close()
             
 def multiple_file_beta(input_path, output_dir, metrics, tree_path, rowids=None,
-    full_tree=False, use_float=False):
+    full_tree=False):
     """ runs beta diversity for each input file in the input directory 
     
     performs minimal error checking on input args, then calls single_file_beta
@@ -318,4 +313,4 @@ def multiple_file_beta(input_path, output_dir, metrics, tree_path, rowids=None,
     
     for fname in file_names:
         single_file_beta(os.path.join(input_path, fname),
-            metrics, tree_path, output_dir, rowids, full_tree, use_float=use_float)
+            metrics, tree_path, output_dir, rowids, full_tree)
