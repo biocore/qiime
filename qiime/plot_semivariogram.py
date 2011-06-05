@@ -15,38 +15,54 @@ __maintainer__ = "Antonio Gonzalez Pena"
 __email__ = "antgonza@gmail.com"
 __status__ = "Development"
 
-class fit_models:
+class FitModel(object):
     """This class defines the available models and their functions for a 
     semivariogram.
     """
-    options = ['nugget','exponential','gaussian','periodic']
     
-    def fit(self):
-        # Funcion definition
-        def periodic(x, a):
-            return a[0]+(a[2]*(1-cos(2*pi*x/a[1])))
-            
-        def gaussian(x, a):
-            return a[0]+(a[2]*(1-exp((-3*x*x)/(a[1]*a[1]))))
-        
-        def exponential(x, a):
-            return a[0]+(a[2]*(1-exp(-3*x/a[1])))
-        
-        def nugget(x, a):
-             return a[0]
-             
-        if self.model!='nugget':
-            params = fit_function(self.x, self.y, eval(self.model), 3, 10)
-        else:
-            params = fit_function(self.x, self.y, eval(self.model), 1, 1)
-        
-        return eval(self.model)(self.x, params)
-        
     def __init__(self, x, y, model):
         self.x = x
         self.y = y
-        self.model = model
+        self.model = self._get_model(model)
 
+    # Funcion definition -- defining these in your function makes this 
+    # very difficult to test
+    options = ['nugget','exponential','gaussian','periodic']
+    
+    def _periodic(self, x, a):
+        return a[0]+(a[2]*(1-cos(2*pi*x/a[1])))
+    
+    def _gaussian(self, x, a):
+        return a[0]+(a[2]*(1-exp((-3*x*x)/(a[1]*a[1]))))
+    
+    def _exponential(self, x, a):
+        return a[0]+(a[2]*(1-exp(-3*x/a[1])))
+        
+    def _nugget(self, x, a):
+        return a[0] 
+
+    def _get_model(self, model):
+        if model == 'periodic':
+            return self._periodic
+        elif model == 'gaussian':
+        	return self._gaussian
+        elif model == 'exponential':
+            return self._exponential
+        elif model == 'nugget':
+            return self._nugget
+        else:
+            raise ValueError, "Unknown model type: %s" % model
+    
+    def __call__(self):
+        if self.model!='nugget':
+            # what are 3 and 10? should these be parametrizable?
+            params = fit_function(self.x, self.y, self.model, 3, 10)
+        else:
+            # what are 1 and 1? should these be parametrizable?
+            params = fit_function(self.x, self.y, self.model, 1, 1)
+        
+        return self.model(self.x, params)
+        
 def hist_bins(bins, vals):
     """ Creates a histogram given the bins and the vals
     :Parameters:
@@ -107,8 +123,8 @@ def fit_semivariogram(x_distmtx, y_distmtx, model, ranges):
     y_vals = asarray(y_vals)
     
     # fitting model
-    fit_func = fit_models(x_vals, y_vals, model)
-    y_fit = fit_func.fit()
+    fit_func = FitModel(x_vals, y_vals, model)
+    y_fit = fit_func()
     x_fit = x_vals
     
     # section for bins

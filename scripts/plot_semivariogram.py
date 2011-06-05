@@ -13,7 +13,7 @@ __status__ = "Development"
  
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from optparse import make_option
-from qiime.plot_semivariogram import fit_semivariogram, fit_models #, plot_semivariogram
+from qiime.plot_semivariogram import fit_semivariogram, FitModel
 from qiime.parse import parse_distmat
 from pylab import plot, xlabel, ylabel, title, savefig
 from numpy import asarray
@@ -35,9 +35,9 @@ script_info['required_options']=[\
  make_option('-y', '--input_path_y',\
      help='path to distance matrix to be displayed in the y axis'),\
  make_option('-m', '--model', type='choice',\
-     choices=fit_models.options, default='exponential', 
+     choices=FitModel.options, default='exponential', 
      help='model to be fitted to the data. Valid ' +\
-     'choices are:' + ', '.join(fit_models.options) + '. [default: %default]'),\
+     'choices are:' + ', '.join(FitModel.options) + '. [default: %default]'),\
  make_option('-o', '--output_path',
      help='output path. directory for batch processing, '+\
        'filename for single file operation'),\
@@ -64,7 +64,7 @@ def main():
         if opts.binning.count('[')!=opts.binning.count(']') or\
           opts.binning.count('[')!=opts.binning.count(','):
             raise ValueError, "The binning input has an error: '%s'; " % opts.binning +\
-             "the format should be [increment1,top_limit1][increment,2top_limit2]" 
+             "\nthe format should be [increment1,top_limit1][increment2,top_limit2]" 
         # spliting in ranges
         rgn_txt = opts.binning.split('][')
         # removing left [ and right ]
