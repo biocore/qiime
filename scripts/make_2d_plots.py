@@ -143,7 +143,7 @@ def main():
 
     filepath=opts.coord_fname
     basename,extension=os.path.splitext(filepath)
-    filename='%s_2D_PCoA_plots' % ('_'.join(basename.split('_')[:-1]))
+    filename='%s_2D_PCoA_plots' % (basename)
 
     qiime_dir=get_qiime_project_dir()
 

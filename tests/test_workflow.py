@@ -694,7 +694,7 @@ class WorkflowTests(TestCase):
         unweighted_unifrac_pc_fp = join(self.wf_out,'unweighted_unifrac_pc.txt')
         weighted_unifrac_pc_fp = join(self.wf_out,'weighted_unifrac_pc.txt')
         weighted_unifrac_html_fp = join(self.wf_out,
-        'weighted_unifrac_3d_continuous','weighted_unifrac_3D_PCoA_plots.html')
+        'weighted_unifrac_3d_continuous','weighted_unifrac_pc_3D_PCoA_plots.html')
 
         # check for expected relations between values in the unweighted unifrac
         # distance matrix
@@ -750,7 +750,7 @@ class WorkflowTests(TestCase):
         unweighted_unifrac_pc_fp = join(self.wf_out,'unweighted_unifrac_pc.txt')
         weighted_unifrac_pc_fp = join(self.wf_out,'weighted_unifrac_pc.txt')
         weighted_unifrac_html_fp = join(self.wf_out,
-        'weighted_unifrac_3d_continuous','weighted_unifrac_3D_PCoA_plots.html')
+        'weighted_unifrac_3d_continuous','weighted_unifrac_pc_3D_PCoA_plots.html')
 
         # check for expected relations between values in the unweighted unifrac
         # distance matrix
@@ -804,7 +804,7 @@ class WorkflowTests(TestCase):
         unweighted_unifrac_pc_fp = join(self.wf_out,'unweighted_unifrac_pc.txt')
         weighted_unifrac_pc_fp = join(self.wf_out,'weighted_unifrac_pc.txt')
         weighted_unifrac_html_fp = join(self.wf_out,
-        'weighted_unifrac_3d_continuous','weighted_unifrac_3D_PCoA_plots.html')
+        'weighted_unifrac_3d_continuous','weighted_unifrac_pc_3D_PCoA_plots.html')
 
         # check for expected relations between values in the unweighted unifrac
         # distance matrix

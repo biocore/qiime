@@ -188,7 +188,7 @@ def main():
             _make_relative_paths(label_to_histogram_filename, opts.dir_path)
         
         dm_fname=path.split(opts.distance_matrix_file)[-1]
-        basename='_'.join(path.splitext(dm_fname)[0].split('_')[:-1])
+        basename=path.splitext(dm_fname)[0]
         outfile_name = basename+'_distance_histograms.html'
         make_main_html(distances_dict=distances_dict,\
             label_to_histogram_filename=label_to_histogram_filename_relative,\

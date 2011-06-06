@@ -794,7 +794,7 @@ def generate_3d_plots(prefs, data, custom_axes, background_color, label_color, \
     f.write('\n'.join(res))
     f.close()
     basename,extension=os.path.splitext(filename)
-    filename='%s_3D_PCoA_plots' % ('_'.join(basename.split('_')[:-1]))
+    filename='%s_3D_PCoA_plots' % (basename)
  
     #Write html page with the kinemage embedded
     f2 = open(os.path.join(htmlpath,filename)+'.html', 'w')
