@@ -56,7 +56,13 @@ def quality_filter_sequence(header,
                             max_bad_run_length,
                             quality_threshold,
                             min_per_read_length,
-                            seq_max_N):
+                            seq_max_N,
+                            filter_bad_illumina_qual_digit):
+    if filter_bad_illumina_qual_digit:
+        illumina_quality_digit = int(header.split()[0].split('/')[1])
+        if illumina_quality_digit == 0:
+            return 3, sequence, quality
+        
     sequence, quality = read_qual_score_filter(sequence,
                                        quality,
                                        max_bad_run_length, 
@@ -104,7 +110,8 @@ def process_fastq_single_end_read_file(fastq_f,
                                        rev_comp_barcode=False,
                                        barcode_in_seq=False,
                                        seq_max_N=0,
-                                       start_seq_id=0):
+                                       start_seq_id=0,
+                                       filter_bad_illumina_qual_digit=True):
     """parses fastq single-end read file
     """
     
@@ -137,7 +144,8 @@ def process_fastq_single_end_read_file(fastq_f,
                                   max_bad_run_length,
                                   quality_threshold,
                                   min_per_read_length,
-                                  seq_max_N)
+                                  seq_max_N,
+                                  filter_bad_illumina_qual_digit)
         if quality_filter_result != 0:
             # if the quality filter didn't pass record why and 
             # move on to the next record
@@ -158,5 +166,3 @@ def process_fastq_single_end_read_file(fastq_f,
         yield fasta_header, sequence, quality, seq_id
         seq_id += 1
 
-def mapping_data_to_barcode_map(mapping_data):
-    return dict([(d[1].upper(),d[0]) for d in mapping_data])

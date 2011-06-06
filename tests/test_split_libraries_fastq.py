@@ -335,7 +335,66 @@ class SplitLibrariesFastqTests(TestCase):
                                          max_bad_run_length=0,
                                          quality_threshold='B',
                                          min_per_read_length=75,
-                                         seq_max_N=0)
+                                         seq_max_N=0,
+                                         filter_bad_illumina_qual_digit=True)
+        self.assertEqual(actual,(0,
+         "GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC",
+         "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"))
+         
+    def test_quality_filter_illumina_qual(self):
+        """quality_filter_sequence functions as expected with bad illumina qual digit
+        """
+        # header ends with /1 passes
+        header = "990:2:4:11271:5323/1 AAAAAAAAAAAA"
+        sequence = \
+         "GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC"
+        quality =  \
+         "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"
+        actual = quality_filter_sequence(header,
+                                         sequence,
+                                         quality,
+                                         max_bad_run_length=0,
+                                         quality_threshold='B',
+                                         min_per_read_length=75,
+                                         seq_max_N=0,
+                                         filter_bad_illumina_qual_digit=True)
+        self.assertEqual(actual,(0,
+         "GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC",
+         "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"))
+         
+        # header ends with /0 fails
+        header = "990:2:4:11271:5323/0 AAAAAAAAAAAA"
+        sequence = \
+         "GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC"
+        quality =  \
+         "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"
+        actual = quality_filter_sequence(header,
+                                         sequence,
+                                         quality,
+                                         max_bad_run_length=0,
+                                         quality_threshold='B',
+                                         min_per_read_length=75,
+                                         seq_max_N=0,
+                                         filter_bad_illumina_qual_digit=True)
+        self.assertEqual(actual,(3,
+         "GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC",
+         "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"))
+         
+        
+        # header ends with /0 passes if this filter is turned off
+        header = "990:2:4:11271:5323/0 AAAAAAAAAAAA"
+        sequence = \
+         "GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC"
+        quality =  \
+         "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"
+        actual = quality_filter_sequence(header,
+                                         sequence,
+                                         quality,
+                                         max_bad_run_length=0,
+                                         quality_threshold='B',
+                                         min_per_read_length=75,
+                                         seq_max_N=0,
+                                         filter_bad_illumina_qual_digit=False)
         self.assertEqual(actual,(0,
          "GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC",
          "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"))
@@ -356,7 +415,8 @@ class SplitLibrariesFastqTests(TestCase):
                                          max_bad_run_length=0,
                                          quality_threshold='B',
                                          min_per_read_length=75,
-                                         seq_max_N=0)
+                                         seq_max_N=0,
+                                         filter_bad_illumina_qual_digit=True)
         self.assertEqual(actual,(1,"GCACTCACCGCCCGTCAC","bbbbbbbbbbbbbbbbbb"))
         
         # increasing max_bad_run_length rescues read
@@ -371,7 +431,8 @@ class SplitLibrariesFastqTests(TestCase):
                                          max_bad_run_length=1,
                                          quality_threshold='B',
                                          min_per_read_length=75,
-                                         seq_max_N=0)
+                                         seq_max_N=0,
+                                         filter_bad_illumina_qual_digit=True)
         self.assertEqual(actual,(0,
          "GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC",
          "bbbbbbbbbbbbbbbbbbBbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"))
@@ -388,7 +449,8 @@ class SplitLibrariesFastqTests(TestCase):
                                          max_bad_run_length=0,
                                          quality_threshold='A',
                                          min_per_read_length=75,
-                                         seq_max_N=0)
+                                         seq_max_N=0,
+                                         filter_bad_illumina_qual_digit=True)
         self.assertEqual(actual,(0,
          "GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC",
          "bbbbbbbbbbbbbbbbbbBbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"))
@@ -405,7 +467,8 @@ class SplitLibrariesFastqTests(TestCase):
                                          max_bad_run_length=0,
                                          quality_threshold='B',
                                          min_per_read_length=5,
-                                         seq_max_N=0)
+                                         seq_max_N=0,
+                                         filter_bad_illumina_qual_digit=True)
         self.assertEqual(actual,(0,"GCACTCACCGCCCGTCAC","bbbbbbbbbbbbbbbbbb"))
         
     def test_quality_filter_sequence_fail_w_N(self):
@@ -424,7 +487,8 @@ class SplitLibrariesFastqTests(TestCase):
                                          max_bad_run_length=0,
                                          quality_threshold='B',
                                          min_per_read_length=75,
-                                         seq_max_N=0)
+                                         seq_max_N=0,
+                                         filter_bad_illumina_qual_digit=True)
         expected = (2,
          "GCACTCACCGCCCGTCACACCACGAAAGTNGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC",
          "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`")
@@ -442,7 +506,8 @@ class SplitLibrariesFastqTests(TestCase):
                                          max_bad_run_length=0,
                                          quality_threshold='B',
                                          min_per_read_length=75,
-                                         seq_max_N=1)
+                                         seq_max_N=1,
+                                         filter_bad_illumina_qual_digit=True)
 
         expected = (0,
          "GCACTCACCGCCCGTCACACCACGAAAGTNGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC",
@@ -463,7 +528,8 @@ class SplitLibrariesFastqTests(TestCase):
                                          max_bad_run_length=0,
                                          quality_threshold='B',
                                          min_per_read_length=50,
-                                         seq_max_N=0)
+                                         seq_max_N=0,
+                                         filter_bad_illumina_qual_digit=True)
 
         expected = (0,
          "GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTG",
