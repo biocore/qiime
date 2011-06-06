@@ -120,6 +120,7 @@ def process_fastq_single_end_read_file(fastq_f,
     count_not_barcode_in_map = 0
     count_too_short = 0
     count_too_many_N = 0
+    count_bad_illumina_qual_digit = 0
     
     for header,sequence,quality in MinimalFastqParser(fastq_f,strict=False):
         barcode, sequence, quality = extract_barcode(header,
@@ -153,6 +154,8 @@ def process_fastq_single_end_read_file(fastq_f,
                 count_too_short += 1
             elif quality_filter_result == 2:
                 count_too_many_N += 1
+            elif count_bad_illumina_qual_digit == 3:
+                count_bad_illumina_qual_digit += 1
             else:
                 raise ValueError,\
                  "Unknown quality filter result: %d" % quality_filter_result
