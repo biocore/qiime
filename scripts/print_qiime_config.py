@@ -57,7 +57,7 @@ script_info['script_usage'].append(
 script_info['output_description'] = """This prints the qiime_config to stdout."""
 script_info['version'] = __version__
 script_info['help_on_no_arguments'] = False
-
+script_info['required_options']=[]
 script_info['optional_options'] = [\
     make_option('-t','--test', action='store_true',
                 dest='test', default = False,

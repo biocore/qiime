@@ -207,7 +207,7 @@ def main():
                     inputs=inputs+'\t'+str(cmd_arg)+'\n\t\t'+ new_help_str+'\n'
 
 
-            if not script.script_info.has_key('required_options') and not script.script_info.has_key('optional_options'):
+            if (not script.script_info.has_key('required_options') and not script.script_info.has_key('optional_options')) or ( script.script_info['required_options']==[] and script.script_info['optional_options']==[]):
                 inputs='\t\n\tNone'
                 
             script_examples=''

@@ -51,7 +51,7 @@ script_info['optional_options']=[
  make_option('-s', '--show_metrics', action='store_true', default=False,
      help='Show the available beta-diversity metrics and exit. Metrics' +\
      ' starting with' +\
-     ' "binary_..." specifies that a metric is qualitative, and considers' +\
+     ' "binary..." specifies that a metric is qualitative, and considers' +\
      ' only the presence or absence of each taxon [default: %default]'),
  make_option('-t', '--tree_path', default=None,
      help='Input newick tree filepath, which is required when phylogenetic' +\

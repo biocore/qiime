@@ -30,7 +30,7 @@ A number of metrics are currently supported, including unweighted and weighted U
 	-m, `-`-metrics
 		Beta-diversity metric(s) to use. A comma-separated list should be provided when multiple metrics are specified. [default: unweighted_unifrac,weighted_unifrac]
 	-s, `-`-show_metrics
-		Show the available beta-diversity metrics and exit. Metrics starting with "binary_..." specifies that a metric is qualitative, and considers only the presence or absence of each taxon [default: False]
+		Show the available beta-diversity metrics and exit. Metrics starting with "binary..." specifies that a metric is qualitative, and considers only the presence or absence of each taxon [default: False]
 	-t, `-`-tree_path
 		Input newick tree filepath, which is required when phylogenetic metrics are specified. [default: None]
 	-f, `-`-full_tree
