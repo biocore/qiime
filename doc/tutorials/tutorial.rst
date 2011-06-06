@@ -516,7 +516,7 @@ Step 7. Generate Distance Histograms
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Distance Histograms are a way to compare samples from different categories and see which categories tend to have larger/smaller beta diversity than others.
 
-For each of these groups of distances a histogram is made. The output is an HTML file which is defined by the beta-diversity metric used (e.g.,  :file:`wf_bdiv_even146/unweighted_unifrac_histograms/unweighted_unifrac_distance_histograms.html`). Within the HTML you can look at all the distance histograms individually, and compare them between each other. Within the webpage, the user can mouseover and/or select the checkboxes in the right panel to turn on/off the different distances within/between categories. In this example, we are comparing the distances between the samples in the Control versus themselves, and in another color, pairwise distances between communities of fasting mice and control mice.
+For each of these groups of distances a histogram is made. The output is an HTML file which is defined by the beta-diversity metric used (e.g.,  :file:`wf_bdiv_even146/unweighted_unifrac_histograms/unweighted_unifrac_dm_distance_histograms.html`). Within the HTML you can look at all the distance histograms individually, and compare them between each other. Within the webpage, the user can mouseover and/or select the checkboxes in the right panel to turn on/off the different distances within/between categories. In this example, we are comparing the distances between the samples in the Control versus themselves, and in another color, pairwise distances between communities of fasting mice and control mice.
 
 .. image:: ../images/ hist.png
    :align: center
