@@ -20,7 +20,7 @@ from cogent.app.util import get_tmp_filename
 
 
 from qiime.denoiser.make_cluster_jobs import QSUB_TEXT, make_jobs, \
-    submit_jobs, main as _main
+    submit_jobs
 
 class Test_make_cluster_jobs(TestCase):
 
@@ -75,20 +75,6 @@ class Test_make_cluster_jobs(TestCase):
         self.fail("The test job apparently never finished.\n"
                   +"check the jobs error log and check the queue status\n.")
               
-    def test_main(self):
-        """the command line interface works as expected"""
-
-        args = ["-ms", self.tmp_name, "testmain"]
-        _main(args)
-        
-        for i in range(10):
-            if exists(self.tmp_result_file):
-                return
-            else:
-                #wait for job to finish
-                sleep(10)
-        self.fail("The test job apparently never finished.\n"
-                  +"check the jobs error log and check the queue status\n.")
 
 if __name__ == "__main__":
     main()
