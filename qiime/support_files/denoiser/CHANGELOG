@@ -1,0 +1,34 @@
+Change log
+------------
+
+== Qiime1.3 ===
+Denoiser was integrated into the qiime 1.3 release and wil not be published stand-alone anymore.
+
+== 0.9 ==
+- Add titanium error profile and titanium switch to change thresholds and use new error profile.
+- Combine individual sample results after denoising samples separately
+- add switch -m/--max_num_rounds to abort phase II early. 
+- add worst-case estimate of remaining rounds to log output.
+- Fixed bug that left process hanging in rare cases.
+
+== 0.851 ==
+Fixed bug in denoise_postprocess for compatibility with Qiime.
+
+== 0.85 ==
+Replace file based client-server communication with sockets. Translates into much shorter execution time for most cluster environments.
+Add -S option to denoiser.py: Split input into libraries and denoise on each lib separately.
+
+== 0.84 ==
+Fixed an issue with how centroids for a cluster are chosen. Output fasta file now sorted by length, which allows e.g. uclust to choose better centroids with the --user_sort option. This version is consistent with the latest QIIME svn version.
+
+
+== 0.83 ==
+Make scripts compatible with QIIME workflow scripts (pick_otus_through_otu_table.py). Compatible with the QIIME 1.0 release.
+
+
+== 0.81 ==
+Added new script make_cluster_jobs.py for submitting to qsub based clusters running PBS.
+
+
+== 0.8==
+Initial pre-release version

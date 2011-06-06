@@ -1,0 +1,101 @@
+Installation Notes:
+
+Prerequisites:
+
+Python:		  >= 2.5.1				http://www.python.org 
+PyCogent toolkit: >= 1.4				http://pycogent.sourceforge.net
+ghc: 	 	  >= 6.8 (recommended for install) 	http://haskell.org/ghc
+QIIME:		  >= 1.0 (optional)   	  		http://qiime.sourceforge.net
+		  (some features discussed below are only available in the QIIME SVN version)		  
+
+GHC and python are available via package-managers on most linux distributions. E.g. on ubuntu, try:
+    apt-get install ghc
+This will install ghc and all it's dependencies automatically.
+
+--------------------------------------------------
+
+1. Unpack the package:
+
+$ tar -xvzf Denoiser_0.9.tgz
+
+2. Build the alignment tool:
+
+   The alignment program uses ghc to compile.
+   Download a recent version of the ghc at http://www.haskell.org/ghc/.
+   Older versions of ghc (we tested 6.8+) will work, however 6.10 and 6.12
+   produce much faster code. After installing ghc, compile and install to the
+   project's bin directory: 
+
+$ cd Denoiser_0.9/FlowgramAli
+$ make
+$ make install
+
+   If you don't want to install ghc for compilation, there are some precompiled
+   linux binaries in the bin directory:
+
+      FlowgramAli_4frame_linux_x86_64 (compiled on x86_64 linux running kernel 2.6.18 using ghc 7.0.1)
+      FlowgramAli_4frame_linux_x86 (compiled on 32 bit linux running kernel 2.6.15 using ghc 7.0.1)
+
+   They will usually run on similar systems, but for maximum performance we suggest to
+   compile yourself using the newest ghc compiler available for your platform.
+   If using one of the precompiled binaries copy/move it to bin/FlowgramAli_4frame.
+
+
+3. Set the PYTHON PATH to the local install directory.
+   E.g. for bash if the package is installed in $HOME/software/Denoiser_0.9/, add
+   (or extend if already set) the install location to your .bashrc or .bash_profile
+   like this:
+
+PYTHONPATH=$PYTHONPATH/:$HOME/software/Denoiser_0.9/
+export PYTHONPATH
+
+
+4. Make sure the se valeus are set in your qiime_config file:
+
+python_exe_fp:   	The full path to python if python is not in yur path. Use which python to figure it out
+cluster_jobs_fp: 	The path to the job submission script.
+			(see "Notes on cluster" below  for more details)
+denoiser_min_per_core: Once the average number of flowgrams per core is lower than this number,
+                       workers are released. This means a low number, say 50, results in the highest throughput.
+                       Higher numbers might slow down the process, but give you a higher cluster utilization.
+
+5. Test the installation
+
+   To test the installation type in the main project dir:
+   
+   $python tests/test_denoiser/test_settings.py
+   
+   This test the basic settings. If something fails here, usually the other tests fail as well.
+
+   $python tests/all_tests.py
+
+   This runs the whole qiime test suite.
+   All tests should pass, however some cluster related test are allowed to
+   fail if you don't run in parallel. You will get a message complaining about "Missing dependencies".
+
+
+
+Notes on a cluster installation:
+
+The program relies on a custom script to submit jobs to the cluster environment.
+This script uses a simple interface and is responsible for submitting the jobs.
+For starting jobs locally on a multi-core machine use
+Qiime/scripts/start_parallel_jobs.py. Also, we provide a simple, compatible
+script for clusters using qsub (scripts/denoiser/make_cluster_jobs.py). This script
+should run on most clusters using a queuing system based on qsub. Some minor
+modifications, such as the name of the queue, might need to be adjusted in the
+script. If you need to write your own script for your cluster follow this
+simple interface:
+
+$ script_name -ms list_of_commands.txt identifier
+
+The script needs to have the option -ms to make and submit the jobs. The second
+argument to the script is a text file with commands to be executed on the cluster,
+one command per line. The script should submit a job for each command in the file.
+The third argument is an identifier, that might be used to monitor the progress on
+the cluster. The script can be written in any language, as long as it is executable.
+Note that the full file path to the script has to be specified in settings.py
+and the program has to be executable.
+
+
+For questions or comments contact jens.reeder@gmail.com

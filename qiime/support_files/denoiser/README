@@ -1,0 +1,232 @@
+====== Mini Tutorial ======
+
+Data preparation:
+
+From the raw, binary sff file, three files need to be generated with
+the sffinfo tool from 454. You should have this tool if you have a 454
+sequencer. Otherwise ask the sequencing facility.
+
+sffinfo  454Reads.sff > 454Reads.sff.txt
+sffinfo -s 454Reads.sff > 454Reads.fasta
+sffinfo -q 454Reads.sff > 454Reads.qual
+
+Note that the qiime package v1.2 has a replacement for the sfftools.
+
+For more details on the available options of each script explained in
+the following use the -h option.
+
+-------------------------------------
+Step 1. Quality filtering and barcode assignment
+-------------------------------------
+
+Prior to denoising, each read has to be assigned to one barcode/sample
+and low quality reads need to be filtered out. We suggest to use the
+split_libraries.py script from QIIME for this task.
+An example command would be:
+
+$ split_libraries.py -f 454Reads.fasta -q 454Reads.qual -m barcode_to_sample_mapping.txt -w 50 -r -l 150 -L 350
+
+See the QIIME doc for more details on the available options.
+
+The output of split_libraries is:
+    i) a log file that records how many sequences were removed by
+       each quality filter and the total number of sequences per sample
+       that survived filtering. Always check this file and make sure the
+       outcome is consistent with your expectation!
+
+   ii) a FASTA file seqs.fna containing the read to sample/barcode
+       mapping. It has the following format: 
+       > sampleID_counter readID orig_bc=.......... new_bc=.......... bc_diffs=x
+
+Example:
+>Uneven1_1 FV9NWLF01EVGI8 orig_bc=TCGAGCGAATCT new_bc=TCGAGCGAATCT bc_diffs=0
+TTGGACCGTGTCTCAGTTCCAATGTGGGGGACCTTCCTCTCAGAACCCCTATCCATCGCAGGCTAGGTG
+GGCCGTTACCCCGCCTACTACCTAATGGAACGCATCCCCATCGTTTACCAATAAATCTTTAATGGTGCC
+ATCATGCAATCTCACCATACTATCAGGTATTAATCTTTCTTTCGAAAGGCTATCCCTGAGTAAACGGAA
+GGTTGGATACGTGTTACTCACCCGTGCGCCGGTCG
+>Even1_2 FV9NWLF01DROG9 orig_bc=TAGTTGCGAGTC new_bc=TAGTTGCGAGTC bc_diffs=0
+CTGGGCCGTGTCTCAGTCCCAATGTGGCCGTTCACCCTCTCAGGCCGGCTACTGATCGTCGGCTTGGTA
+GGCCGTTACCCCACCAACTACCTAATCAGACGCGGGTCCATCTCATACCACCTCAGTTTTTCACACCAG
+ACCATGCGATCCTGTGCGCTTATGCGGCATTAGCAGCCATTTCTAACTGTTATTCCCCTGTATGAGGCA
+GGTTACCCACGCG
+...
+
+
+This FASTA file needs to be provided to the denoiser in the next step.
+
+
+For a single, non-barcoded sample, split_libraries.py can be provided
+with a mapping file that has an empty field for the BarcodeSequence.
+
+Example:
+
+#SampleID   BarcodeSequence	LinkerPrimerSequence	 Description
+Artificial    			ATTAGATACCCNGGTAG	 ArtificialGSFLX_from_Quince_et_al
+
+Note that fields must be separated by a single tab. For the empty barcode there must be two
+tabs between SampleID and the primer sequence. Use QIIME's
+check_id_map.py to test for validity. Then, use split_libraries as usual, but with
+option -b 0.
+
+
+-------------------------------------
+Step 2. Cluster phase 1 - prefix clustering
+-------------------------------------
+
+All flowgrams corresponding to the sequences that survived the quality
+filtering  are pulled from the .sff.txt file and primer, barcodes and
+the 454 key sequence are removed. Then, the first clustering phase
+groups reads based on common prefixes. For a full 454 run this will
+usually take less than an hour on a standard computer and requires
+less than 1 GB of memory.
+ 
+
+Example command:
+
+$ preprocess.py -i 454Reads.sff.txt -f seqs.fna -o example_pp -s -v -p CATGCTGCCTCCCGTAGGAGT
+
+Several files are stored in the specified output directory. To see the
+clustering stastics check the file preprocess.log  in the output
+directory. Basically the less clusters there are (especially small
+clusters) the faster the next phase  will run.  If there are more than
+100.000 sequences remaining, the input set should be split, to achieve
+a reasonable run time. The files in the output directory are used in
+the next step.
+
+
+-------------------------------------
+Step 3. Flowgram clustering or Denoising
+-------------------------------------
+This is the main clustering step and the computationally most expensive one. 
+Flowgrams are clustered based on their similarity.
+
+Example command:
+
+$ denoiser.py -i 454Reads.sff.txt -p example_pp -v -o example_denoised
+
+The preprocessing information in example_pp is used and the output is
+stored in a randomly named, new direcory in example_denoised. Because
+of the potential long runtime, we suggest to distribute the work over
+many cpus. If you have a multi-core system or cluster available and
+set up the required job submission script (see INSTALL doc for
+details) the following command will distribute the computation over 24
+cpus: 
+
+$ denoiser.py -i 454Reads.sff.txt -p example_pp -v -o example_denoised -c -n 24
+
+Make sure the output directory is shared by all cluster
+nodes. Depending on the complexity of the data this step might take up
+to a day even on a 24 core system for a full 454 run with 400-500 k
+sequences. Smaller data sets will be finished much faster. The output
+will be written to a randomly named directory within the specified
+output directory. 
+The output files are:
+
+denoiser.log: Information about the clustering procedure if run in verbose mode (-v).
+	      	     Can be used to monitor the program's progress.
+
+centroids.fasta: The centroids of clusters with 2 and more members
+
+singletons.fasta: Reads that could not be clustered. 
+
+denoiser_mapping.txt: The cluster to read mapping.
+
+Usually the centroid and singleton files are combined for downstream analysis,
+but occasionally it might make sense to remove the low confidence singletons.
+
+
+-------------------------------------
+Step 4. Re-integrating the denoised data into QIIME
+-------------------------------------
+
+Note: this step is only neccessary if the data should go into the QIIME pipeline. 
+      Please, also read the tutorial on "denoising 454 data" in the QIIME documention.
+
+Note: Qiime-1.3+ contains a script inflate_denoiser_output.py, that makes the process of re-integrating
+      denoised data into the pipeline easier. Refer to the "denoising 454 data" tutorial in the QIIME doc.
+
+The final step in a denoising run usually is the re-integration of the
+data into the QIIME pipeline. Since the denoiser uses flowgram
+similarity for clustering there is no guaranteed sequence
+(dis)-similarity between cluster centroids. In order to create the
+usual species-level OTUS at 97% sequence similarity, run one of
+QIIME's OTU pickers on the denoiser output and combine both outputs.
+We recommend using the uclust OTU picker with option
+--user_sort and --optimal_uclust (-A -B are the corresponding short options).
+This assures that the best possible OTUs are chosen. The centroids.fasta file is
+sorted by cluster size, such that uclust --user_sort considers huge clusters as OTUs first.
+--optimal_uclust mught be prohibitive if there are too many clusters after denoising.
+In that case, Qiime's default (which are higher as uclust's default as of Qiime 1.2) might be a 
+good compromise.
+
+These are the required steps:
+
+Combine centroids and singletons (in this order!):
+$ cat centroids.fasta singletons.fasta > denoised.fasta
+
+Run the QIIME OTU picker:
+$ pick_otus.py -s 0.97 -i denoised.fasta -m uclust -A -B
+
+Combine denoiser and QIIME OTU picker output:
+$ denoise_postprocess.py -f seqs.fna -d denoised.fasta -m denoiser_mapping.txt -p uclust_picked_otus/denoised_otus.txt
+
+This command creates two new files in a directory (default: Denoiser_out_otu_picked/):
+
+denoised_otu_map.txt: In this mapping the read/flowgram IDs are
+		replaced by sample_id from the split_libraries.py
+		fasta file. Also, the lists for each OTU are sorted
+		such that the largest cluster from denosing appears
+		first. This will be important for the next step,
+		picking representative sequences.
+
+denoised_all.fasta: A fasta sequence where the header lines are
+		updated with the new sample_ids
+
+Since the sample_ids in the otu map are already sorted, we can simply
+pick the most abundant sequence for an OTU by using the "first" method with
+pick_representative.py :
+$ pick_rep_set.py -f denoised_all.fasta -i denoised_otu_map.txt  -m first
+
+
+The resulting set of representative sequences can then be fed into the
+QIIME pipeline as any other representative set.
+
+
+
+
+
+Some random notes:
+
+- See the QIIME tutorial on denoising for instructions on how to denoise and
+  combine multiple 454 runs
+
+- support for multiple primers is currently experimental. Primers of the same length,
+  ending on the same nucleotide have been succesfully used, but we give no guarantee.
+  If in doubt split the input data into per-primer libaries (sfffile, split_libraries and
+  per-primer mapping files are your friends here)
+
+- When the -p option is not specified in step 3,  step 2 is invoked
+  from denoiser.py implicitly. This can be useful if the data set is
+  relatively small. In most cases however, we recommend to run the
+  steps separately. This saves time if step 3 needs to be re-run,
+  e.g. because of problems with the cluster environment. 
+
+- We observed several Titanium runs, that seem to have a lower overall base calling accuracy,
+  when compared to FLX. While denoising removes a substantial amount of these erroneous reads,
+  we expect that denoised Titanium data  has still a highe noise level than denoised FLX runs.
+  Follow the Qiime blog and forums on updates and potential improvements on this matter.
+
+
+Notes for running on cluster/multicore system:
+
+We use a very simple setup to farm out the flowgram alignments to a cluster.
+A master process (denoiser.py) sends data to each worker (denoise_worker.py).
+A worker sleeps while waiting for the data. Once the file appears it processes it and
+sends the result back to the master and goes back to sleep. The master collects all results
+and iterates. As such, performance is higly dependent on the
+actual cluster setup :
+ - The overall speed is governed by the slowest worker node
+ - The parallel steps will only start when all worker jobs are established. That means as long
+   as one jobs remains queued, the other jobs will block your cluster. Decrease the number of workers
+   if you run into this problem.
+

@@ -182,7 +182,6 @@ def run_qiime_data_preparation(input_fp,
     """ Run the data preparation steps of Qiime 
     
         The steps performed by this function are:
-          0) Optionally denoise the sequences (if sff_input_fp=True);
           1) Pick OTUs;
           2) Pick a representative set;
           3) Align the representative set; 

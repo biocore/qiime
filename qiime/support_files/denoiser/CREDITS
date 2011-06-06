@@ -1,0 +1,4 @@
+We thank Chris Quince for granting permission to distribute the data files (LookUp.dat, renamed to FLX_error_profile.txt) 
+of his PyroNoise program (http://people.civil.gla.ac.uk/~quince/PyroNoise.html).
+We also thank Susanne Balzer and Ketil Malde for providing us with data from their 
+[Bioinformatics. 2010 Sep 15;26(18):i420-5] paper, that we used to generate the error profiles for titanium.

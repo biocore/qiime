@@ -25,20 +25,7 @@ from cogent.app.util import ApplicationNotFoundError, ApplicationError
 from cogent.parse.record import RecordError
 
 from qiime.util import load_qiime_config
-
-# Adapted from align_seqs.py
-# Load Denoiser if it's available. If it's not, skip it if not but set up
-# to raise errors if the user tries to use it.
-try:
-    from Denoiser.flowgram_clustering import denoise_seqs
-
-except ImportError:
-    def raise_denoiser_not_found_error(*args, **kwargs):
-        raise ApplicationNotFoundError,\
-         "Denoiser cannot be found.\nIs it installed? Is it in your $PYTHONPATH?"+\
-         "\nYou can obtain the Denoiser from http://www.microbio.me/denoiser .\n"
-    # set functions which cannot be imported to raise_denoiser_not_found_error
-    denoise_seqs = raise_denoiser_not_found_error
+from qiime.denoiser.flowgram_clustering import denoise_seqs
 
 def write_pyronoise_file(flowgrams, num_flows, filename=None, prefix = "/tmp/"):
     """Write flowgrams to a (randomly) named file.
@@ -268,7 +255,7 @@ def pyroNoise_otu_picker(sff_fh, outdir="/tmp/", num_cpus=1,
 
 def fast_denoiser(sff_fp, fasta_fp, tmp_outdir, num_cpus, primer, verbose=True,
                   titanium=False):
-    """wrapper function calling methods from the Denoiser pakcage."""
+    """wrapper function calling methods from the Denoiser package."""
     if num_cpus>1:
         denoise_seqs(sff_fp, fasta_fp, tmp_outdir,
                      primer=primer, cluster=True, num_cpus=num_cpus,
@@ -308,4 +295,3 @@ def extract_cluster_size(line):
     except ValueError:
         return 0
     return cluster_size
-        

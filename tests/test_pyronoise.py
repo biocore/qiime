@@ -23,8 +23,8 @@ from cogent.parse.flowgram import Flowgram
 from cogent.parse.flowgram_collection import FlowgramCollection
 from cogent.parse.flowgram_parser import get_header_info
 
-from qiime.pyronoise import write_pyronoise_file, pyroNoise, pyroNoise_otu_picker,\
-    fast_denoiser, extract_cluster_size
+from qiime.pyronoise import write_pyronoise_file, pyroNoise,\
+    pyroNoise_otu_picker, fast_denoiser, extract_cluster_size
 
 class PyroNoiseTests(TestCase):
     """Tests of the abstract PyroNoise OTU Picker class"""
@@ -132,7 +132,6 @@ class PyroNoiseTests(TestCase):
 
     def test_extract_cluster_size(self):
         """extract_cluster_size grabs the correct cluster size"""
-
         
         header1 = ">GCC6FHY01EQVIC | cluster size: 5"
         header2 = ">blabla"
