@@ -19,7 +19,7 @@ from qiime.compare_alpha_diversity import compare_alpha_diversities,\
 
 script_info = {}
 script_info['brief_description'] = """This script compares alpha 
-	diversities based on a t_two_sample test"""
+    diversities based on a t_two_sample test"""
  
 script_info['script_description'] = """This script compares the alpha 
  diversity of entries in a rarefaction file after they have been grouped 
@@ -28,7 +28,7 @@ script_info['script_description'] = """This script compares the alpha
  
 script_info['script_usage'] = []
 script_info['script_usage'].append(("""Explanation:\
-	Inputs: mapping file lines (lines of a mapping file which associates
+    Inputs: mapping file lines (lines of a mapping file which associates
     to each OTU/sample a number of characteristics, given as file path),
     rarefaction file lines (lines of a rarefaction file that has scores 
     for each OTU/sample based on a certain rarefaction depth, given as a
@@ -64,26 +64,26 @@ script_info['version'] = __version__
 
 
 def main():
-	option_parser, opts, args = parse_command_line_parameters(**script_info)
-	rarefaction_lines = open(opts.rarefaction_fp, 'U')
-	
-	mapping_lines = open(opts.mapping_fp, 'U')
-	category = opts.category
-	depth = int(opts.depth)
-	output_path = opts.output_fp
-	
-	
-	result = compare_alpha_diversities(rarefaction_lines,\
-									   mapping_lines,\
-									   category,\
-									   depth)
-	outfile = open(output_path, 'w')
-	outfile.write(str(result))
-	
-	outfile.close()
-	rarefaction_lines.close()
-	mapping_lines.close()	
-	
-	
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
+    rarefaction_lines = open(opts.rarefaction_fp, 'U')
+    
+    mapping_lines = open(opts.mapping_fp, 'U')
+    category = opts.category
+    depth = int(opts.depth)
+    output_path = opts.output_fp
+    
+    
+    result = compare_alpha_diversities(rarefaction_lines,\
+                                       mapping_lines,\
+                                       category,\
+                                       depth)
+    outfile = open(output_path, 'w')
+    outfile.write(str(result))
+    
+    outfile.close()
+    rarefaction_lines.close()
+    mapping_lines.close()   
+    
+    
 if __name__ == "__main__":
     main()
