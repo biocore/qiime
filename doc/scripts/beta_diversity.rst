@@ -35,8 +35,6 @@ A number of metrics are currently supported, including unweighted and weighted U
 		Input newick tree filepath, which is required when phylogenetic metrics are specified. [default: None]
 	-f, `-`-full_tree
 		By default, tips not corresponding to OTUs in the OTU table are removed from the tree for diversity calculations. Pass to skip this step if you're already passing a minimal tree. Beware with "full_tree" metrics, as extra tips in the tree change the result
-	`-`-float
-		By default, the script expects integer OTU tables but if this flag is True it will process float numbers.
 
 
 **Output:**

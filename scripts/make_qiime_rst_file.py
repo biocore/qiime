@@ -121,6 +121,7 @@ def main():
         #Import the script file to get the dictionary values
         try:
             script=__import__(file)
+            
         except ValueError:
             print "Error"
         #print script.__maintainer__

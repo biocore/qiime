@@ -12,7 +12,7 @@ __email__ = "justinak@gmail.com"
 __status__ = "Development"
 
 from matplotlib import use
-use('Agg')
+use('Agg',warn=False)
 
 from numpy import arange,  array
 from itertools import cycle

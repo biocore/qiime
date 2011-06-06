@@ -31,4 +31,8 @@ script_info['optional_options']=[]
 script_info['version'] = __version__
 
 
-print deprecation_message
+def main():
+    print deprecation_message
+
+if __name__ == "__main__":
+    main()

@@ -20,8 +20,9 @@ from optparse import OptionParser
 from qiime.parse import parse_otu_table
 from qiime.util import MissingFileError
 import os
+from matplotlib import use
+use('Agg',warn=False)
 import matplotlib
-matplotlib.use('Agg') 
 from matplotlib.pylab import *
 from qiime.beta_diversity import get_nonphylogenetic_metric
 from cogent.core.tree import PhyloNode
