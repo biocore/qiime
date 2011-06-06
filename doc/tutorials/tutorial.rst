@@ -503,7 +503,7 @@ QIIME allows for the inspection of PCoA plots in three dimensions. html files ar
 
 Step 6. Generate 2D PCoA Plots
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The two dimensional plot will be rendered as a html file which can be opened with a standard web browser. The html file created in directory :file:`wf_bdiv_even146/unweighted_unifrac_2d` shows a plot for each combination of the first three principal coordinates. You can view the name for each sample by holding your mouse cursor over the data point.
+The two dimensional plot will be rendered as a html file which can be opened with a standard web browser. The html file created in directories :file:`wf_bdiv_even146/unweighted_unifrac_2d...` shows a plot for each combination of the first three principal coordinates. You can view the name for each sample by holding your mouse cursor over the data point.
 
 .. image:: ../images/ pcoa1.png
    :align: center
