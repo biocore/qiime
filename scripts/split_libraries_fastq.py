@@ -152,7 +152,7 @@ def main():
                                                 filter_bad_illumina_qual_digit,
                                                log_f=log_f,
                                                histogram_f=histogram_f):
-            output_f.write('>%s\n%s\n')
+            output_f.write('>%s\n%s\n' % (fasta_header,sequence))
         start_seq_id = seq_id + 1                                       
         log_f.write('\n---\n\n')
         
