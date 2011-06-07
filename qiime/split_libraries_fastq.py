@@ -59,7 +59,7 @@ def quality_filter_sequence(header,
                             sequence,
                             quality,
                             max_bad_run_length,
-                            first_bad_quality_char,
+                            last_bad_quality_char,
                             min_per_read_length,
                             seq_max_N,
                             filter_bad_illumina_qual_digit):
@@ -82,7 +82,7 @@ def quality_filter_sequence(header,
     sequence, quality = read_qual_score_filter(sequence,
                                        quality,
                                        max_bad_run_length, 
-                                       first_bad_quality_char)
+                                       last_bad_quality_char)
                                        
     if (len(sequence) < min_per_read_length):
         return 1, sequence, quality
@@ -106,7 +106,7 @@ def process_fastq_single_end_read_file(fastq_read_f,
                                        barcode_to_sample_id,
                                        store_unassigned=False,
                                        max_bad_run_length=0,
-                                       first_bad_quality_char='B',
+                                       last_bad_quality_char='B',
                                        min_per_read_length=75,
                                        rev_comp=False,
                                        rev_comp_barcode=False,
@@ -168,7 +168,7 @@ def process_fastq_single_end_read_file(fastq_read_f,
                                   sequence,
                                   quality,
                                   max_bad_run_length,
-                                  first_bad_quality_char,
+                                  last_bad_quality_char,
                                   min_per_read_length,
                                   seq_max_N,
                                   filter_bad_illumina_qual_digit)
@@ -213,7 +213,7 @@ def process_fastq_single_end_read_file(fastq_read_f,
                              seqs_per_sample_counts)
         log_f.write(log_str)
     
-    if histogram_f != None:
+    if len(sequence_lengths) and histogram_f != None:
         counts, bin_edges = make_histograms(sequence_lengths)
         histogram_str = format_histogram_one_count(counts,bin_edges)
         histogram_f.write(histogram_str)

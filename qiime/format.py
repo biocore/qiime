@@ -479,6 +479,7 @@ def format_split_libraries_fastq_log(count_barcode_not_in_map,
     log_out.append("Median sequence length: %1.2f" % median(sequence_lengths))
     counts = [(v,k) for k,v in seqs_per_sample_counts.items()]
     counts.sort()
+    counts.reverse()
     for sequence_count, sample_id in counts:
         log_out.append('%s\t%d' % (sample_id,sequence_count))
     return '\n'.join(log_out)
