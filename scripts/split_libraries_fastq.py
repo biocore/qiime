@@ -76,11 +76,12 @@ script_info['optional_options'] = [
         '(i.e., these character and those before it will be considered '+\
         'low quality base calls) [default: %default]',
         default='B'),
-     make_option('--filter_bad_illumina_qual_digit',
-        action='store_true',\
-        help='filter sequences which are tagged as not passing the Illumina'+\
-        ' quality filter [default: %default]',
-        default=False),\
+     # NEED TO FIX THIS FUNCTIONALITY - CURRENTLY READING THE WRONG FIELD
+     # make_option('--filter_bad_illumina_qual_digit',
+     #    action='store_true',\
+     #    help='filter sequences which are tagged as not passing the Illumina'+\
+     #    ' quality filter [default: %default]',
+     #    default=False),\
 ]
 script_info['version'] = __version__
 
@@ -102,7 +103,8 @@ def main():
     rev_comp_barcode = opts.rev_comp_barcode
     seq_max_N = opts.sequence_max_n
     start_seq_id = opts.start_seq_id
-    filter_bad_illumina_qual_digit = opts.filter_bad_illumina_qual_digit
+    # NEED TO FIX THIS FUNCTIONALITY - CURRENTLY READING THE WRONG FIELD
+    filter_bad_illumina_qual_digit = False #opts.filter_bad_illumina_qual_digit
     
     if len(sequence_read_fps) != len(barcode_read_fps):
         parser.error("Same number of sequence and barcode files must be provided.")
