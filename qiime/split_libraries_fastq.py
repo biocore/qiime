@@ -12,11 +12,12 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
 from itertools import izip
-from numpy import log10
-from cogent import DNA
-from cogent.parse.fastq import MinimalFastqParser
 from os.path import split, splitext
 from os import makedirs
+from numpy import log10, median, arange, histogram
+from cogent import DNA
+from cogent.parse.fastq import MinimalFastqParser
+from qiime.format import format_histogram_one_count
 
 class FastqParseError(Exception):
     pass
@@ -110,7 +111,9 @@ def process_fastq_single_end_read_file(fastq_read_f,
                                        rev_comp_barcode=False,
                                        seq_max_N=0,
                                        start_seq_id=0,
-                                       filter_bad_illumina_qual_digit=True):
+                                       filter_bad_illumina_qual_digit=True,
+                                       log_f=None,
+                                       histogram_f=None):
     """parses fastq single-end read file
     """
     header_index = 0
@@ -119,14 +122,18 @@ def process_fastq_single_end_read_file(fastq_read_f,
     
     seq_id = start_seq_id
     
-    count_not_barcode_in_map = 0
+    # prep data for logging
+    input_sequence_count = 0
+    count_barcode_not_in_map = 0
     count_too_short = 0
     count_too_many_N = 0
     count_bad_illumina_qual_digit = 0
+    sequence_lengths = []
+    seqs_per_sample_counts = {}
     
     for bc_data,read_data in izip(MinimalFastqParser(fastq_barcode_f,strict=False),
                                   MinimalFastqParser(fastq_read_f,strict=False)):
-        
+        input_sequence_count += 1
         # Confirm match between barcode and read headers
         if not check_header_match(bc_data[header_index],
                                   read_data[header_index]):
@@ -150,7 +157,7 @@ def process_fastq_single_end_read_file(fastq_read_f,
           sample_id = barcode_to_sample_id[barcode]
         except KeyError:
           if not store_unassigned:
-              count_not_barcode_in_map += 1
+              count_barcode_not_in_map += 1
               continue
           else:
               sample_id = 'Unassigned'
@@ -164,6 +171,8 @@ def process_fastq_single_end_read_file(fastq_read_f,
                                   min_per_read_length,
                                   seq_max_N,
                                   filter_bad_illumina_qual_digit)
+        
+        # process quality result
         if quality_filter_result != 0:
             # if the quality filter didn't pass record why and 
             # move on to the next record
@@ -178,6 +187,13 @@ def process_fastq_single_end_read_file(fastq_read_f,
                  "Unknown quality filter result: %d" % quality_filter_result
             continue
         
+        sequence_lengths.append(len(sequence))
+        
+        try:
+            seqs_per_sample_counts[sample_id] += 1
+        except KeyError:
+            seqs_per_sample_counts[sample_id] = 1
+        
         if rev_comp:
             sequence = DNA.rc(sequence)
             quality = quality[::-1]
@@ -186,3 +202,52 @@ def process_fastq_single_end_read_file(fastq_read_f,
         yield fasta_header, sequence, quality, seq_id
         seq_id += 1
 
+    if log_f != None:
+        log_str = format_log(count_barcode_not_in_map,
+                             count_too_short,
+                             count_too_many_N,
+                             count_bad_illumina_qual_digit,
+                             input_sequence_count,
+                             sequence_lengths,
+                             seqs_per_sample_counts)
+        log_f.write(log_str)
+    
+    if histogram_f != None:
+        counts, bin_edges = make_histograms(sequence_lengths)
+        histogram_str = format_histogram_one_count(counts,bin_edges)
+        histogram_f.write(histogram_str)
+
+def format_log(count_barcode_not_in_map,
+               count_too_short,
+               count_too_many_N,
+               count_bad_illumina_qual_digit,
+               input_sequence_count,
+               sequence_lengths,
+               seqs_per_sample_counts):
+    """ Format the split libraries log """
+    log_out = ["Quality filter results"]
+    log_out.append("Total number of input sequences: %d" % input_sequence_count)
+    log_out.append("Barcode not in mapping file: %d" % count_barcode_not_in_map)
+    log_out.append("Read too short after quality truncation: %d" % count_too_short)
+    log_out.append("Count of N characters exceeds limit: %d" % count_too_many_N)
+    log_out.append("Illumina quality digit = 0: %d" % count_bad_illumina_qual_digit)
+    
+    log_out.append("")
+    
+    log_out.append("Result summary (after quality filtering)")
+    log_out.append("Median sequence length: %1.2f" % median(sequence_lengths))
+    counts = [(v,k) for k,v in seqs_per_sample_counts.items()]
+    counts.sort()
+    for sequence_count, sample_id in counts:
+        log_out.append('%s\t%d' % (sample_id,sequence_count))
+    return '\n'.join(log_out)
+    
+def make_histograms(lengths, binwidth=10):
+    """Makes histogram data for pre and post lengths"""
+    min_len = min(lengths)
+    max_len = max(lengths)
+    floor = (min_len/binwidth)*binwidth
+    ceil = ((max_len/binwidth)+2)*binwidth
+    bins = arange(floor, ceil, binwidth)
+    hist, bin_edges = histogram(lengths,bins)
+    return hist, bin_edges

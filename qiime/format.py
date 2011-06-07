@@ -449,6 +449,14 @@ def format_histograms(pre_hist, post_hist, bin_edges):
     for edge, pre, post in zip(bin_edges, pre_hist, post_hist):
         lines.append('\t'.join(map(str, [edge, pre, post])))
     return '\n'.join(lines)
+    
+def format_histogram_one_count(counts, bin_edges):
+    """Returns text-formatted histogram with only one count."""
+    lines = []
+    lines.append('Length\tCount')
+    for edge, count in zip(bin_edges, counts):
+        lines.append('\t'.join(map(str, [edge, count])))
+    return '\n'.join(lines)
 
 def format_unifrac_sample_mapping(sample_ids, otu_ids, otu_table_array):
     """Returns a unifrac sample mapping file from output of parse_otu_table

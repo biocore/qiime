@@ -22,6 +22,15 @@ from qiime.split_libraries_fastq import (
  FastqParseError,
  check_header_match)
 
+class FakeFile(object):
+    
+    def __init__(self):
+        self.s = ""
+    def write(self,s):
+        self.s += s
+    def close(self):
+        pass
+
 class SplitLibrariesFastqTests(TestCase):
     """ """
     
@@ -68,6 +77,28 @@ class SplitLibrariesFastqTests(TestCase):
         self.assertEqual(len(actual),len(expected))
         for i in range(len(expected)):
             self.assertEqual(actual[i],expected[i])
+            
+    def test_process_fastq_single_end_read_file_handles_log(self):
+        """ process_fastq_single_end_read_file generates log when expected 
+        """
+        log = FakeFile()
+        list(process_fastq_single_end_read_file(self.fastq1,
+                               self.barcode_fastq1,
+                               self.barcode_map1,
+                               min_per_read_length=45,
+                               log_f=log))
+        self.assertTrue(log.s.startswith("Quality filter results"))
+        
+    def test_process_fastq_single_end_read_file_handles_histogram(self):
+        """ process_fastq_single_end_read_file generates histogram when expected 
+        """
+        histogram = FakeFile()
+        list(process_fastq_single_end_read_file(self.fastq1,
+                               self.barcode_fastq1,
+                               self.barcode_map1,
+                               min_per_read_length=45,
+                               histogram_f=histogram))
+        self.assertTrue(histogram.s.startswith("Length"))
             
     def test_check_header_match(self):
         """check_header_match functions as expected with varied input """
