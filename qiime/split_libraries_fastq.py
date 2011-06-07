@@ -14,10 +14,11 @@ __status__ = "Development"
 from itertools import izip
 from os.path import split, splitext
 from os import makedirs
-from numpy import log10, median, arange, histogram
+from numpy import log10, arange, histogram
 from cogent import DNA
 from cogent.parse.fastq import MinimalFastqParser
-from qiime.format import format_histogram_one_count
+from qiime.format import (format_histogram_one_count,
+                          format_split_libraries_fastq_log)
 
 class FastqParseError(Exception):
     pass
@@ -203,7 +204,7 @@ def process_fastq_single_end_read_file(fastq_read_f,
         seq_id += 1
 
     if log_f != None:
-        log_str = format_log(count_barcode_not_in_map,
+        log_str = format_split_libraries_fastq_log(count_barcode_not_in_map,
                              count_too_short,
                              count_too_many_N,
                              count_bad_illumina_qual_digit,
@@ -216,31 +217,6 @@ def process_fastq_single_end_read_file(fastq_read_f,
         counts, bin_edges = make_histograms(sequence_lengths)
         histogram_str = format_histogram_one_count(counts,bin_edges)
         histogram_f.write(histogram_str)
-
-def format_log(count_barcode_not_in_map,
-               count_too_short,
-               count_too_many_N,
-               count_bad_illumina_qual_digit,
-               input_sequence_count,
-               sequence_lengths,
-               seqs_per_sample_counts):
-    """ Format the split libraries log """
-    log_out = ["Quality filter results"]
-    log_out.append("Total number of input sequences: %d" % input_sequence_count)
-    log_out.append("Barcode not in mapping file: %d" % count_barcode_not_in_map)
-    log_out.append("Read too short after quality truncation: %d" % count_too_short)
-    log_out.append("Count of N characters exceeds limit: %d" % count_too_many_N)
-    log_out.append("Illumina quality digit = 0: %d" % count_bad_illumina_qual_digit)
-    
-    log_out.append("")
-    
-    log_out.append("Result summary (after quality filtering)")
-    log_out.append("Median sequence length: %1.2f" % median(sequence_lengths))
-    counts = [(v,k) for k,v in seqs_per_sample_counts.items()]
-    counts.sort()
-    for sequence_count, sample_id in counts:
-        log_out.append('%s\t%d' % (sample_id,sequence_count))
-    return '\n'.join(log_out)
     
 def make_histograms(lengths, binwidth=10):
     """Makes histogram data for pre and post lengths"""

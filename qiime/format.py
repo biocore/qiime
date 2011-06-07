@@ -12,7 +12,7 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
 import numpy
-from numpy import isnan, log10
+from numpy import isnan, log10, median
 from StringIO import StringIO
 from cogent import Sequence
 
@@ -457,6 +457,31 @@ def format_histogram_one_count(counts, bin_edges):
     for edge, count in zip(bin_edges, counts):
         lines.append('\t'.join(map(str, [edge, count])))
     return '\n'.join(lines)
+    
+def format_split_libraries_fastq_log(count_barcode_not_in_map,
+               count_too_short,
+               count_too_many_N,
+               count_bad_illumina_qual_digit,
+               input_sequence_count,
+               sequence_lengths,
+               seqs_per_sample_counts):
+    """ Format the split libraries log """
+    log_out = ["Quality filter results"]
+    log_out.append("Total number of input sequences: %d" % input_sequence_count)
+    log_out.append("Barcode not in mapping file: %d" % count_barcode_not_in_map)
+    log_out.append("Read too short after quality truncation: %d" % count_too_short)
+    log_out.append("Count of N characters exceeds limit: %d" % count_too_many_N)
+    log_out.append("Illumina quality digit = 0: %d" % count_bad_illumina_qual_digit)
+    
+    log_out.append("")
+    
+    log_out.append("Result summary (after quality filtering)")
+    log_out.append("Median sequence length: %1.2f" % median(sequence_lengths))
+    counts = [(v,k) for k,v in seqs_per_sample_counts.items()]
+    counts.sort()
+    for sequence_count, sample_id in counts:
+        log_out.append('%s\t%d' % (sample_id,sequence_count))
+    return '\n'.join(log_out)
 
 def format_unifrac_sample_mapping(sample_ids, otu_ids, otu_table_array):
     """Returns a unifrac sample mapping file from output of parse_otu_table
