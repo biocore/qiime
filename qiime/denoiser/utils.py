@@ -32,18 +32,24 @@ from cogent.parse.flowgram_parser import lazy_parse_sff_handle
 from qiime.util import get_qiime_project_dir, FileFormatError
 from qiime.denoiser .flowgram_filter import write_sff_header
 
+#    Wrap into explicit function so we can easily move the data dir around.
 def get_denoiser_data_dir():
     """Return the directory of the denoiser error profiles.
-    
-    Wrap into explicit function so we can easily move the data dir around.
     """
     dir = get_qiime_project_dir() + "/qiime/support_files/denoiser/Data/"
     return dir
 
-def check_flowgramAli_bin():
+def get_flowgram_ali_exe():
+    """Return the path to the flowgram alignment prog
+    """
+    fp = get_qiime_project_dir() +\
+        "/qiime/support_files/denoiser/bin/FlowgramAli_4frame"
+    return fp
+
+def check_flowgram_ali_exe():
    """Check if we have a working FlowgramAligner"""
 
-   ali_fp = get_qiime_project_dir()+"/bin/FlowgramAli_4frame"
+   ali_fp = get_flowgram_ali_exe()
 
    if (not exists(ali_fp) ):
        raise ApplicationNotFoundError,\

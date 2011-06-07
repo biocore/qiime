@@ -28,8 +28,8 @@ from qiime.util import get_qiime_project_dir, load_qiime_config
 
 from qiime.denoiser.utils import init_flowgram_file, append_to_flowgram_file,\
     FlowgramContainerFile, FlowgramContainerArray, make_stats, store_mapping,\
-    store_clusters, read_denoiser_mapping, check_flowgramAli_bin,\
-    sort_seqs_by_clustersize, get_denoiser_data_dir
+    store_clusters, read_denoiser_mapping, check_flowgram_ali_exe,\
+    sort_seqs_by_clustersize, get_denoiser_data_dir, get_flowgram_ali_exe
 from qiime.denoiser.cluster_utils import setup_workers, adjust_workers, stop_workers,\
                                    check_workers, setup_server, ClientHandler,\
                                    save_send, send_flowgram_to_socket
@@ -59,7 +59,7 @@ def get_flowgram_distances_on_cluster(id, flowgram, flowgrams, fc, ids, num_core
 
     client_sockets: A list of open sockets for client-server communication
     """
-    check_flowgramAli_bin()
+    check_flowgram_ali_exe()
 
     qiime_config = load_qiime_config()
     min_per_core = int(qiime_config['denoiser_min_per_core'])
@@ -138,7 +138,7 @@ def get_flowgram_distances(id, flowgram, flowgrams, fc, ids, outdir,
 
     error_profile: path to error profile *.dat file
     """
-    check_flowgramAli_bin()
+    check_flowgram_ali_exe()
     # File that serves as input for external alignment program
     (fh, tmpfile) = init_flowgram_file(prefix = outdir)
     append_to_flowgram_file(id, flowgram, fh)
@@ -155,7 +155,7 @@ def get_flowgram_distances(id, flowgram, flowgrams, fc, ids, outdir,
 
     #TODO capture stderr and warn user
     scores_fh = popen("%s -relscore_pairid %s %s " % \
-                          (get_qiime_project_dir() + '/bin/FlowgramAli_4frame',
+                          (get_flowgram_ali_exe(),
                            error_profile, tmpfile), 'r')
     scores = [map(float, (s.split())) for s in scores_fh if s != "\n"]
     
@@ -451,7 +451,7 @@ def denoise_seqs(sff_fp, fasta_fp, tmpoutdir, preprocess_fp=None, cluster=False,
     """The main routine to denoise flowgrams"""
 
     #abort if binary is missing
-    check_flowgramAli_bin()
+    check_flowgram_ali_exe()
 
     if verbose:
         #switch of buffering for log file
@@ -537,7 +537,7 @@ def denoise_per_sample(sff_fp, fasta_fp, tmpoutdir, cluster=False,
     """Denoise each sample separately"""
 
     #abort early if binary is missing
-    check_flowgramAli_bin()
+    check_flowgram_ali_exe()
 
     log_fh = None    
     if log_fp:

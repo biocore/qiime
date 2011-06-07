@@ -16,7 +16,8 @@ from os import access, X_OK, R_OK
 from os.path import exists
 from subprocess import Popen, PIPE, STDOUT
 from cogent.util.unit_test import TestCase, main
-from qiime.util import get_qiime_project_dir, load_qiime_config
+from qiime.util import get_qiime_scripts_dir, load_qiime_config
+from qiime.denoiser.utils import get_flowgram_ali_exe
 
 class DenoiserTests(TestCase):
 
@@ -46,12 +47,12 @@ class DenoiserTests(TestCase):
             self.fail('denoiser_min_per_core not defined in qiime_config.')
  
     def test_denoise_worker(self):
-        """DENOISE_WORKER is where it belongs and is callable."""
+        """denoiser_worker.py is where it belongs and is callable."""
 
         qiime_config = load_qiime_config()
         PYTHON_BIN = qiime_config['python_exe_fp']
 
-        DENOISE_WORKER = get_qiime_project_dir()+"/scripts/denoiser/denoise_worker.py"
+        DENOISE_WORKER = get_qiime_scripts_dir()+"/denoiser_worker.py"
 
         self.assertTrue(exists(DENOISE_WORKER),
                         "DENOISER_WORKER is not where it's supposed to be: %s"
@@ -63,7 +64,8 @@ class DenoiserTests(TestCase):
                        stdout=PIPE,stderr=STDOUT)
 
         if (proc.wait() != 0):
-            self.fail("Calling %s failed. Check permissions and that it is in fact an executable." % DENOISE_WORKER)
+            self.fail("Calling %s failed. Check permissions and that it is in fact an executable." \
+                          % DENOISE_WORKER)
 
         result = proc.stdout.read()     
         #check that the help string looks correct
@@ -72,7 +74,7 @@ class DenoiserTests(TestCase):
     def test_flowgramAli_bin(self):
         """Check if we have a working FlowgramAligner"""
 
-        ali_fp = get_qiime_project_dir()+"/bin/FlowgramAli_4frame"
+        ali_fp = get_flowgram_ali_exe()
 
         self.assertTrue(exists(ali_fp),
                         "The alignment program is not where it's supposed to be: %s"

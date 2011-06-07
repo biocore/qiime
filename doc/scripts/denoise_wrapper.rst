@@ -1,16 +1,16 @@
-.. _denoise:
+.. _denoise_wrapper:
 
-.. index:: denoise.py
+.. index:: denoise_wrapper.py
 
-*denoise.py* -- Denoise a flowgram file
+*denoise_wrapper.py* -- Denoise a flowgram file
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Description:**
 
-This script will denoise a flowgram file in  .sff.txt format, which is the output of sffinfo.
+This script will denoise a flowgram file in .sff.txt format, which is the output of sffinfo.
 
 
-**Usage:** :file:`denoise.py [options]`
+**Usage:** :file:`denoise_wrapper.py [options]`
 
 **Input Arguments:**
 
@@ -50,7 +50,7 @@ This script will denoise a flowgram file in  .sff.txt format, which is the outpu
 
 **Output:**
 
-This script results in a OTU mapping file along with a sequence file of denoised (FASTA-format). Note that the sequences coming from denoising are no real OTUs, and have to be sent to `pick_otus.py <./pick_otus.html>`_ if the users wishes to have a defined similarity threshold. 
+This script results in a OTU mapping file along with a sequence file of denoised (FASTA-format). Note that the sequences coming from denoising are no real OTUs, and have to be sent to `pick_otus.py <./pick_otus.html>`_ if the users wishes to have a defined similarity threshold.
 
 
 **Example:**
@@ -59,7 +59,7 @@ Denoise flowgrams in file 454Reads.sff.txt:
 
 ::
 
-	denoise.py -i 454Reads.sff.txt
+	denoise_wrapper.py.py -i 454Reads.sff.txt
 
 **Multi-core Example:**
 
@@ -67,6 +67,6 @@ Denoise flowgrams in file 454Reads.sff.txt using 2 cores on your machine in para
 
 ::
 
-	denoise.py -n 2 -i 454Reads.sff.txt
+	denoise_wrapper.py -n 2 -i 454Reads.sff.txt
 
 

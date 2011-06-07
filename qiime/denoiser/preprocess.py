@@ -271,8 +271,8 @@ def preprocess_on_cluster(sff_fp, log_fp, fasta_fp=None, out_fp="/tmp/",
     qiime_config = load_qiime_config()
     python_bin =  qiime_config['python_exe_fp']
     
-    cmd = "%s %s/denoiser/preprocess.py -i %s -l %s -o %s" % (python_bin,
-                                     get_qiime_scripts_dir(), sff_fp, log_fp, out_fp)
+    cmd = "%s %s/denoiser_preprocess.py -i %s -l %s -o %s" %\
+        (python_bin, get_qiime_scripts_dir(), sff_fp, log_fp, out_fp)
     if (fasta_fp):
         cmd += " -f %s" % fasta_fp
     if(squeeze):

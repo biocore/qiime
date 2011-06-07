@@ -28,11 +28,19 @@ from qiime.format import  write_Fasta_from_name_seq_pairs
 
 script_info={}
 script_info['brief_description']="""Denoise a flowgram file"""
-script_info['script_description']="""This script will denoise a flowgram file in  .sff.txt format, which is the output of sffinfo."""
-script_info['script_usage']=[]
-script_info['script_usage'].append(("""Example:""","""Denoise flowgrams in file 454Reads.sff.txt:""","""denoise.py -i 454Reads.sff.txt"""))
-script_info['script_usage'].append(("""Multi-core Example:""","""Denoise flowgrams in file 454Reads.sff.txt using 2 cores on your machine in parallel (requires mpirun):""","""denoise.py -n 2 -i 454Reads.sff.txt"""))
-script_info['output_description']="""This script results in a OTU mapping file along with a sequence file of denoised (FASTA-format). Note that the sequences coming from denoising are no real OTUs, and have to be sent to pick_otus.py if the users wishes to have a defined similarity threshold. """
+script_info['script_description']="""This script will denoise a flowgram file in .sff.txt format, which is the output of sffinfo."""
+
+script_info['script_usage']=[\
+    ("""Example:""",
+     """Denoise flowgrams in file 454Reads.sff.txt:""",
+     """%prog.py -i 454Reads.sff.txt"""),
+
+    ("""Multi-core Example:""",
+     """Denoise flowgrams in file 454Reads.sff.txt using 2 cores on your machine in parallel (requires mpirun):""",
+     """%prog -n 2 -i 454Reads.sff.txt""")
+    ]
+
+script_info['output_description']="""This script results in a OTU mapping file along with a sequence file of denoised (FASTA-format). Note that the sequences coming from denoising are no real OTUs, and have to be sent to pick_otus.py if the users wishes to have a defined similarity threshold."""
 
 script_info['required_options'] = [\
     make_option('-i','--input_file', action='store',

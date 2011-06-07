@@ -23,7 +23,7 @@ from cogent.util.unit_test import TestCase, main
 from cogent.parse.fasta import MinimalFastaParser
 
 from qiime.util import get_qiime_project_dir, get_qiime_scripts_dir
-from qiime.denoiser.utils import check_flowgramAli_bin
+from qiime.denoiser.utils import check_flowgram_ali_exe
 from qiime.denoiser.preprocess import make_tmp_name
 
 PROJECT_HOME = get_qiime_project_dir()
@@ -43,7 +43,7 @@ class DenoiserTests(TestCase):
 
     def setUp(self):
         #abort all tests without the alignment binary
-        check_flowgramAli_bin()
+        check_flowgram_ali_exe()
 
         signal.signal(signal.SIGALRM, timeout)
         # set the 'alarm' to go off in allowed_seconds seconds
@@ -104,7 +104,7 @@ FS8APND01DCIOO:
 FS8APND01CKOMZ:
 """
 
-        command =  " ".join( ["%s/denoiser/denoiser.py" % get_qiime_scripts_dir(),
+        command =  " ".join( ["%s/denoiser.py" % get_qiime_scripts_dir(),
                               "--force", "-o", self.test_dir, "-i",
                               "%s/tests/test_denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME] );
 
@@ -123,7 +123,7 @@ FS8APND01CKOMZ:
     def test_main_with_fasta(self):
         """Denoiser with fasta file should always give same result on test data"""
 
-        command =  " ".join( ["%s/denoiser/denoiser.py" % get_qiime_scripts_dir(),
+        command =  " ".join( ["%s/denoiser.py" % get_qiime_scripts_dir(),
                               "--force", "-o", self.test_dir,
                               "-i", "%s/tests/test_denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME, 
                               "-f", "%s/tests/test_denoiser/TestData/test_set_seqs.fna" % PROJECT_HOME] )
@@ -141,7 +141,7 @@ FS8APND01CKOMZ:
     def test_main_with_titanium_error(self):
         """Denoiser with titanium error should always give same result on test data"""
 
-        command =  " ".join( ["%s/denoiser/denoiser.py" % get_qiime_scripts_dir(),
+        command =  " ".join( ["%s/denoiser.py" % get_qiime_scripts_dir(),
                               "--force", "-o", self.test_dir,
                               "-i", "%s/tests/test_denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME,
                               "-f", "%s/tests/test_denoiser/TestData/test_set_seqs.fna" % PROJECT_HOME,
@@ -160,7 +160,7 @@ FS8APND01CKOMZ:
     def test_main_on_cluster(self):
         """Denoiser works in a cluster environment"""
 
-        command =  " ".join( ["%s/denoiser/denoiser.py" % get_qiime_scripts_dir(),
+        command =  " ".join( ["%s/denoiser.py" % get_qiime_scripts_dir(),
                               "--force","-o", self.test_dir, "-c", "-n", "2",
                               "-i", "%s/tests/test_denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME, 
                               "-f", "%s/tests/test_denoiser/TestData/test_set_seqs.fna" % PROJECT_HOME] )
@@ -175,7 +175,7 @@ FS8APND01CKOMZ:
     def test_main_low_mem(self):
         """Denoiser works using low_memory"""
 
-        command =  " ".join( ["%s/denoiser/denoiser.py" % get_qiime_scripts_dir(),
+        command =  " ".join( ["%s/denoiser.py" % get_qiime_scripts_dir(),
                               "-f", "%s/tests/test_denoiser/TestData/test_set_seqs.fna" % PROJECT_HOME,
                               "-i", "%s/tests/test_denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME,
                               "-o", self.test_dir, "--low_memory"] )
@@ -190,7 +190,7 @@ FS8APND01CKOMZ:
     def test_main_split(self):
         """Denoiser in split mode should always give same result on test data"""
 
-        command =  " ".join( ["%s/denoiser/denoiser.py" % get_qiime_scripts_dir(),
+        command =  " ".join( ["%s/denoiser.py" % get_qiime_scripts_dir(),
                               "-S", "--force",
                               "-i", "%s/tests/test_denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME,
                               "-f", "%s/tests/test_denoiser/TestData/test_set_seqs.fna" % PROJECT_HOME,
@@ -210,7 +210,7 @@ FS8APND01CKOMZ:
     def test_main_split_cluster(self):
         """Denoiser on cluster in split mode should always give same result on test data"""
         
-        command =  " ".join( ["%s/denoiser/denoiser.py" % get_qiime_scripts_dir(),
+        command =  " ".join( ["%s/denoiser.py" % get_qiime_scripts_dir(),
                               "-S", "--force", '-c', '-n 2',
                               "-i", "%s/tests/test_denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME,
                               "-f", "%s/tests/test_denoiser/TestData/test_set_seqs.fna" % PROJECT_HOME,

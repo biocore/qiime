@@ -21,7 +21,7 @@ from socket import socket, AF_INET, SOCK_STREAM, gethostname, error
 
 from qiime.util  import get_qiime_project_dir
 from qiime.denoiser.utils import get_denoiser_data_dir,\
-    init_flowgram_file
+    init_flowgram_file, get_flowgram_ali_exe
 
 def setup_worker(fp, server_addr, port, counter=0, verbose=False,
                              error_profile=None):
@@ -67,7 +67,7 @@ def _process_data(this_round_fp, log_fh=None, error_profile=None):
 
     # we have data!
     cmd = "%s -relscore_pairid %s %s.dat"\
-        % (get_qiime_project_dir() + '/bin/FlowgramAli_4frame',
+        % (get_flowgram_ali_exe(),
            error_profile, this_round_fp)
     proc = Popen(cmd, shell=True, universal_newlines=True,\
                   stdout=PIPE, stderr=PIPE)

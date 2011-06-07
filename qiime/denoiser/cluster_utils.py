@@ -62,7 +62,7 @@ def setup_workers(num_cpus, outdir, server_socket, queue=None, verbose=True,
 """
 
     qiime_config = load_qiime_config()
-    DENOISE_WORKER = get_qiime_scripts_dir() + "/denoiser/denoise_worker.py"
+    DENOISE_WORKER = get_qiime_scripts_dir() + "/denoiser_worker.py"
 
     workers = []
     client_sockets = []

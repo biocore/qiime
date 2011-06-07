@@ -28,6 +28,8 @@ from qiime.util import (load_qiime_config,
                         get_qiime_project_dir, 
                         parse_command_line_parameters,
                         get_qiime_library_version)
+from qiime.denoiser.utils import check_flowgram_ali_exe
+
 from cogent import __version__ as pycogent_lib_version
 from numpy import __version__ as numpy_lib_version
 try:
@@ -453,24 +455,17 @@ class Qiime_config(TestCase):
         rmtree(tmp_dir)
          
     def test_denoiser_supported_version(self):
-        """denoiser is in path and version is supported """
-        acceptable_version = (0,91)
+        """denoiser aligner is ready to use """
+
+        pass_test = True
         try:
-            from Denoiser import __version__ as version_string
-            try:
-                version = tuple(map(int,version_string.split('.')))
-                pass_test = version == acceptable_version
-            except ValueError:
-                pass_test = False
-                version_string = stdout
-        except ImportError:
-            self.assertTrue(False,"denoiser not found. This may or may not "+\
-             "be a problem depending on which components of QIIME you plan to use.")
-            version_string = "Not installed."
+            check_flowgram_ali_exe()
+        except (ApplicationNotFoundError, ApplicationError):
             pass_test = False
-        self.assertTrue(pass_test,\
-         "Unsupported denoiser version. %s is required, but running %s." \
-         % ('.'.join(map(str,acceptable_version)), version_string))
+            
+        self.assertTrue(pass_test, "Denoiser flowgram aligner not found or not executable."+\
+                            "This may or may not be a problem depending on "+\
+                            "which components of QIIME you plan to use.")
         
     def test_raxmlHPC_supported_version(self):
         """raxmlHPC is in path and version is supported """
