@@ -161,7 +161,7 @@ def process_fastq_single_end_read_file(fastq_read_f,
                 count_too_short += 1
             elif quality_filter_result == 2:
                 count_too_many_N += 1
-            elif count_bad_illumina_qual_digit == 3:
+            elif quality_filter_result == 3:
                 count_bad_illumina_qual_digit += 1
             else:
                 raise ValueError,\
