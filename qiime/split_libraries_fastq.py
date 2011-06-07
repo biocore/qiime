@@ -59,9 +59,20 @@ def quality_filter_sequence(header,
                             seq_max_N,
                             filter_bad_illumina_qual_digit):
     if filter_bad_illumina_qual_digit:
-        illumina_quality_digit = int(header.split()[0].split('/')[1])
-        if illumina_quality_digit == 0:
-            return 3, sequence, quality
+        h = header.split()[0]
+        try:
+            # this block is a little strange because each of these 
+            # can throw a ValueError. The same thing needs to be done
+            # in either case, so it doesn't really make sense to split
+            # into two separate try/excepts, particulary because that would
+            # complicate the logic
+            quality_char = header[h.index('#')+1]
+            illumina_quality_digit = int(quality_char)
+        except ValueError:
+            pass
+        else:
+            if illumina_quality_digit == 0:
+                return 3, sequence, quality
         
     sequence, quality = read_qual_score_filter(sequence,
                                        quality,
@@ -74,34 +85,10 @@ def quality_filter_sequence(header,
         return 2, sequence, quality
     else:
         return 0, sequence, quality
-    
-def extract_barcode(header,
-                    sequence,
-                    quality,
-                    barcode_length,
-                    rev_comp_barcode,
-                    barcode_in_seq):
-    if barcode_in_seq:
-        barcode = sequence[:barcode_length]
-        sequence = sequence[barcode_length:]
-        quality = quality[barcode_length:]
-    else:
-        try:
-            barcode = header.split()[1]
-        except IndexError:
-            raise IndexError, \
-             ("Barcode is not present in header - is it included in "
-              "the sequence?\n Bad header: %s" % header)
-        
-    if rev_comp_barcode:
-        barcode = DNA.rc(barcode)
-    
-    return barcode, sequence, quality
 
-
-def process_fastq_single_end_read_file(fastq_f,
+def process_fastq_single_end_read_file(fastq_read_f,
+                                       fastq_barcode_f,
                                        barcode_to_sample_id,
-                                       barcode_length,
                                        store_unassigned=False,
                                        max_bad_run_length=0,
                                        quality_threshold='B',
@@ -114,6 +101,9 @@ def process_fastq_single_end_read_file(fastq_f,
                                        filter_bad_illumina_qual_digit=True):
     """parses fastq single-end read file
     """
+    header_index = 0
+    sequence_index = 1
+    quality_index = 2
     
     seq_id = start_seq_id
     
@@ -122,13 +112,28 @@ def process_fastq_single_end_read_file(fastq_f,
     count_too_many_N = 0
     count_bad_illumina_qual_digit = 0
     
-    for header,sequence,quality in MinimalFastqParser(fastq_f,strict=False):
-        barcode, sequence, quality = extract_barcode(header,
-                                                      sequence,
-                                                      quality,
-                                                      barcode_length,
-                                                      rev_comp_barcode,
-                                                      barcode_in_seq)
+    for bc_data,read_data in izip(MinimalFastqParser(fastq_barcode_f,strict=False),
+                                  MinimalFastqParser(fastq_read_f,strict=False)):
+        
+        # Confirm match between barcode and read headers
+        if bc_data[header_index].split('/')[0] != \
+           read_data[header_index].split('/')[0]:
+            raise FastqParseError,\
+             ("Headers of barcode and read do not match. Can't continue. "
+              "Confirm that the barcode fastq and read fastq that you are "
+              "passing match one another.")
+        else:
+            header = read_data[header_index]
+        
+        # Grab the barcode sequence
+        barcode = bc_data[sequence_index]
+        if rev_comp_barcode:
+            barcode = DNA.rc(barcode)
+        # Grab the read sequence
+        sequence = read_data[1]
+        # Grab the read quality
+        quality = read_data[2]
+        
         try:
           sample_id = barcode_to_sample_id[barcode]
         except KeyError:
