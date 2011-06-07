@@ -89,6 +89,16 @@ def quality_filter_sequence(header,
     else:
         return 0, sequence, quality
 
+def check_header_match(header1,header2):
+    
+    # split on '#' and '/' to handle cases with and without the
+    # Illumina quality digit
+    header1 = header1.split('#')[0].split('/')[0]
+    header2 = header2.split('#')[0].split('/')[0]
+    
+    return header1 == header2
+
+
 def process_fastq_single_end_read_file(fastq_read_f,
                                        fastq_barcode_f,
                                        barcode_to_sample_id,
@@ -118,8 +128,8 @@ def process_fastq_single_end_read_file(fastq_read_f,
                                   MinimalFastqParser(fastq_read_f,strict=False)):
         
         # Confirm match between barcode and read headers
-        if bc_data[header_index].split('/')[0] != \
-           read_data[header_index].split('/')[0]:
+        if not check_header_match(bc_data[header_index],
+                                  read_data[header_index]):
             raise FastqParseError,\
              ("Headers of barcode and read do not match. Can't continue. "
               "Confirm that the barcode fastq and read fastq that you are "

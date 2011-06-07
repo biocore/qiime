@@ -19,7 +19,8 @@ from qiime.split_libraries_fastq import (
  bad_chars_from_threshold,
  get_illumina_qual_chars,
  quality_filter_sequence,
- FastqParseError)
+ FastqParseError,
+ check_header_match)
 
 class SplitLibrariesFastqTests(TestCase):
     """ """
@@ -67,6 +68,34 @@ class SplitLibrariesFastqTests(TestCase):
         self.assertEqual(len(actual),len(expected))
         for i in range(len(expected)):
             self.assertEqual(actual[i],expected[i])
+            
+    def test_check_header_match(self):
+        """check_header_match functions as expected with varied input """
+        
+        ## match w illumina qual string
+        self.assertTrue(check_header_match("@990:2:4:11272:5533#1/1",
+                                           "@990:2:4:11272:5533#1/2"))
+        self.assertTrue(check_header_match("@990:2:4:11272:5533#1/1",
+                                           "@990:2:4:11272:5533#1/3"))
+        # qual string differs (this is acceptable)
+        self.assertTrue(check_header_match("@990:2:4:11272:5533#1/1",
+                                           "@990:2:4:11272:5533#0/3"))
+        # match wo illumina qual string
+        self.assertTrue(check_header_match("@990:2:4:11272:5533/1",
+                                           "@990:2:4:11272:5533/2"))
+        self.assertTrue(check_header_match("@990:2:4:11272:5533/1",
+                                           "@990:2:4:11272:5533/3"))
+                                           
+        # mismatch w illumina qual string
+        self.assertFalse(check_header_match("@990:2:4:11272:5533#1/1",
+                                            "@990:2:4:11272:5532#1/2"))
+        self.assertFalse(check_header_match("@990:2:4:11272:5533#1/1",
+                                            "@890:2:4:11272:5533#1/2"))
+        # mismatch wo illumina qual string
+        self.assertFalse(check_header_match("@990:2:4:11272:5533/1",
+                                            "@990:2:4:11272:5532/2"))
+        self.assertFalse(check_header_match("@990:2:4:11272:5533/1",
+                                            "@890:2:4:11272:5533/2"))
             
     def test_process_fastq_single_end_read_file_toggle_store_unassigned(self):
         """process_fastq_single_end_read_file handles store_unassigned
