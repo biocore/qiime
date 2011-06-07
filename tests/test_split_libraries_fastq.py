@@ -18,7 +18,8 @@ from qiime.split_libraries_fastq import (
  quality_filter_sequence,
  bad_chars_from_threshold,
  get_illumina_qual_chars,
- quality_filter_sequence)
+ quality_filter_sequence,
+ FastqParseError)
 
 class SplitLibrariesFastqTests(TestCase):
     """ """
@@ -170,6 +171,35 @@ class SplitLibrariesFastqTests(TestCase):
          "`U^RY^QTTWIb_^b]aa_ab[_`a`babbbb`bbbbbbbbbbbbb`\``Ybbbbbbbbbbbbbbbbbbbbbbbbb",
          0)]
         self.assertEqual(actual,expected)
+        
+    def test_process_fastq_single_end_read_file_error_on_header_mismatch(self):
+        """ValueError on barcode/read header mismatch
+        """
+        fastq_f = [
+         "@990:2:4:11272:5533/1",
+         "GCACACACCGCCCGTCACACCACGAGAGTCGGCAACACCCGAAGTCGGTGAGGTAACCCCGAAAGGGGAGCCAGCC",
+         "+",
+         "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"]
+        barcode_fastq_f = [
+         "@990:2:4:11272:5532/2",
+         "TTTTTTTTTTTT",
+         "+",
+         "bbbbbbbbbbbb"]
+        barcode_to_sample_id = {'AAAAAAAAAAAA':'s1'}
+        actual = process_fastq_single_end_read_file(
+                          fastq_f,
+                          barcode_fastq_f,
+                          barcode_to_sample_id,
+                          store_unassigned=False,
+                          max_bad_run_length=0,
+                          first_bad_quality_char='B',
+                          min_per_read_length=75,
+                          rev_comp=False,
+                          rev_comp_barcode=False,
+                          barcode_in_seq=False,
+                          seq_max_N=0,
+                          start_seq_id=0)                       
+        self.assertRaises(FastqParseError,list,actual)
         
     def test_process_fastq_single_end_read_file_toggle_rev_comp_barcode(self):
         """process_fastq_single_end_read_file handles rev_comp_barcode

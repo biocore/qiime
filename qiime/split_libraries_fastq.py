@@ -18,6 +18,9 @@ from cogent.parse.fastq import MinimalFastqParser
 from os.path import split, splitext
 from os import makedirs
 
+class FastqParseError(Exception):
+    pass
+
 def get_illumina_qual_chars():
     return '@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~'
 
