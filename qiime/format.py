@@ -506,5 +506,46 @@ def write_Fasta_from_name_seq_pairs(name_seqs, fh):
 
     for (name,seq) in name_seqs:
         fh.write("%s\n"% Sequence(name=name, seq = seq).toFasta())
+        
+def illumina_data_to_fastq(read_data,number_of_bases=None):
+    """ given data from an Illumina qseq file, write to fastq 
     
+        read data: generator of tuples with the following data
+         (machine ID, 
+          ... [GREG: NEED TO FILL IN DETAILS!]
+          illumina quality digit (0:failed screen; 1: passed screen)
+          read number,
+          sequence,
+          quality string)
+          
+        number_of_bases: number of bases to keep, starting from
+         beginnng of the read - useful when additional cycles are
+         applied (e.g., sometimes happens when sequencing barcodes)
+    
+    """
+    seq_index = 8
+    qual_index = 9
+    for read_datum in read_data:
+        if number_of_bases == None:
+            seq = read_datum[seq_index].replace('.','N')
+            qual = read_datum[qual_index]
+        else:
+            seq = read_datum[seq_index][:number_of_bases].replace('.','N')
+            qual = read_datum[qual_index][:number_of_bases]
+        
+        
+        header = '%s_%s:%s:%s:%s:%s#%s/%s' % (
+          read_datum[0],
+          read_datum[1],
+          read_datum[2],
+          read_datum[3],
+          read_datum[4],
+          read_datum[5],
+          read_datum[6],
+          read_datum[7])
+        
+        yield '@%s\n%s\n+\n%s' % (header,
+          seq,
+          qual)
+
 

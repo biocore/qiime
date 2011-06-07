@@ -25,7 +25,7 @@ from qiime.format import (format_distance_matrix, format_otu_table,
     format_summarize_taxa, write_summarize_taxa, 
     format_add_taxa_summary_mapping, write_add_taxa_summary_mapping,
     format_qiime_parameters, format_p_value_for_num_iters,
-    format_mapping_file)
+    format_mapping_file,illumina_data_to_fastq)
 
 class TopLevelTests(TestCase):
     """Tests of top-level module functions."""
@@ -326,6 +326,16 @@ y\t5\t6\tsample y""")
         sample_ids = ['Sa','Sb','Sc']
         result = format_unifrac_sample_mapping(sample_ids, otu_ids, a)
         self.assertEqual(result, ['OTUa\tSa\t1', 'OTUb\tSb\t2', 'OTUb\tSc\t4', 'OTUc\tSa\t7', 'OTUc\tSc\t9.0'])
+        
+    def test_illumina_data_to_fastq(self):
+        """illumina_data_to_fastq functions as expected """
+        in1 = [("M10","68","1","1","28680","29475","0","1","AACGAAAGGCAGTTTTGGAAGTAGGCGAATTAGGGTAACGCATATAGGATGCTAATACAACGTGAATGAAGTACTGCATCTATGTCACCAGCTTATTACAGCAGCTTGTCATACATGGCCGTACAGGAAACACACATCATAGCATCACACG.","BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB","0")]
+        expected = """@M10_68:1:1:28680:29475#0/1\nAACGAAAGGCAGTTTTGGAAGTAGGCGAATTAGGGTAACGCATATAGGATGCTAATACAACGTGAATGAAGTACTGCATCTATGTCACCAGCTTATTACAGCAGCTTGTCATACATGGCCGTACAGGAAACACACATCATAGCATCACACGN\n+\nBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"""
+        
+        self.assertEqual(list(illumina_data_to_fastq(in1)),[expected])
+
+        expected12 = """@M10_68:1:1:28680:29475#0/1\nAACGAAAGGCAG\n+\nBBBBBBBBBBBB"""
+        self.assertEqual(list(illumina_data_to_fastq(in1,number_of_bases=12)),[expected12])
 
 example_mapping_file = """#SampleID\tcol1\tcol0\tDescription
 #this goes after headers
