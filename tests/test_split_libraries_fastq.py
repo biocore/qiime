@@ -46,7 +46,6 @@ class SplitLibrariesFastqTests(TestCase):
                                        min_per_read_length=0,
                                        rev_comp=False,
                                        rev_comp_barcode=False,
-                                       barcode_in_seq=False,
                                        seq_max_N=1000,
                                        start_seq_id=0)
         actual = list(actual)
@@ -92,7 +91,6 @@ class SplitLibrariesFastqTests(TestCase):
                                                     min_per_read_length=75,
                                                     rev_comp=False,
                                                     rev_comp_barcode=False,
-                                                    barcode_in_seq=False,
                                                     seq_max_N=0,
                                                     start_seq_id=0)                       
         actual = list(actual)
@@ -109,7 +107,6 @@ class SplitLibrariesFastqTests(TestCase):
                                                     min_per_read_length=75,
                                                     rev_comp=False,
                                                     rev_comp_barcode=False,
-                                                    barcode_in_seq=False,
                                                     seq_max_N=0,
                                                     start_seq_id=0)                       
         actual = list(actual)
@@ -143,7 +140,6 @@ class SplitLibrariesFastqTests(TestCase):
                                                     min_per_read_length=75,
                                                     rev_comp=False,
                                                     rev_comp_barcode=False,
-                                                    barcode_in_seq=False,
                                                     seq_max_N=0,
                                                     start_seq_id=0)                       
         actual = list(actual)
@@ -162,7 +158,6 @@ class SplitLibrariesFastqTests(TestCase):
                                                     min_per_read_length=75,
                                                     rev_comp=True,
                                                     rev_comp_barcode=False,
-                                                    barcode_in_seq=False,
                                                     seq_max_N=0,
                                                     start_seq_id=0)                       
         actual = list(actual)
@@ -196,7 +191,6 @@ class SplitLibrariesFastqTests(TestCase):
                           min_per_read_length=75,
                           rev_comp=False,
                           rev_comp_barcode=False,
-                          barcode_in_seq=False,
                           seq_max_N=0,
                           start_seq_id=0)                       
         self.assertRaises(FastqParseError,list,actual)
@@ -224,7 +218,6 @@ class SplitLibrariesFastqTests(TestCase):
                                                     min_per_read_length=75,
                                                     rev_comp=False,
                                                     rev_comp_barcode=False,
-                                                    barcode_in_seq=False,
                                                     seq_max_N=0,
                                                     start_seq_id=0)                       
         actual = list(actual)
@@ -240,7 +233,6 @@ class SplitLibrariesFastqTests(TestCase):
                                                     min_per_read_length=75,
                                                     rev_comp=False,
                                                     rev_comp_barcode=True,
-                                                    barcode_in_seq=False,
                                                     seq_max_N=0,
                                                     start_seq_id=0)                       
         actual = list(actual)
@@ -260,7 +252,6 @@ class SplitLibrariesFastqTests(TestCase):
                                                     min_per_read_length=75,
                                                     rev_comp=False,
                                                     rev_comp_barcode=True,
-                                                    barcode_in_seq=False,
                                                     seq_max_N=0,
                                                     start_seq_id=0)
         actual = list(actual)

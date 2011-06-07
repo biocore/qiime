@@ -98,7 +98,6 @@ def process_fastq_single_end_read_file(fastq_read_f,
                                        min_per_read_length=75,
                                        rev_comp=False,
                                        rev_comp_barcode=False,
-                                       barcode_in_seq=False,
                                        seq_max_N=0,
                                        start_seq_id=0,
                                        filter_bad_illumina_qual_digit=True):
