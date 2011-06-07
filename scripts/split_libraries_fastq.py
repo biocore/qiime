@@ -20,9 +20,9 @@ from qiime.split_libraries import check_map
 from qiime.split_libraries_illumina import get_illumina_qual_chars
 
 script_info = {}
-script_info['brief_description'] = ""
+script_info['brief_description'] = "This script performs demultiplexing of Fastq sequence data where barcodes and sequences are contained in two separate fastq files (common on Illumina runs)."
 script_info['script_description'] = ""
-script_info['script_usage'] = [("","","")]
+script_info['script_usage'] = [("Demultiplex and quality filter two lanes of Illumina run results and write results to ./sl_out/.","","%prog -i s_7_2_sequence.txt,s_8_2_sequence.txt -b s_7_1_sequence.txt,s_8_1_sequence.txt -o ./sl_out/ -m lane7_map.txt,lane8_map.txt")]
 script_info['output_description']= ""
 script_info['required_options'] = [\
  # Example required option
