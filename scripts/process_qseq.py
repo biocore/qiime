@@ -69,7 +69,7 @@ def main():
                                        iter_split_lines(open(read1_fp,'U')),
                                        number_of_bases=bases):
                 output_f.write('%s\n' % record)
-                output_f.close()
+            output_f.close()
 
 if __name__ == "__main__":
     main()
