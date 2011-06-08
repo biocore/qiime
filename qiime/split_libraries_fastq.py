@@ -217,6 +217,7 @@ def process_fastq_single_end_read_file(fastq_read_f,
         counts, bin_edges = make_histograms(sequence_lengths)
         histogram_str = format_histogram_one_count(counts,bin_edges)
         histogram_f.write(histogram_str)
+        histogram_f.write('\n--\n\n')
     
 def make_histograms(lengths, binwidth=10):
     """Makes histogram data for pre and post lengths"""
