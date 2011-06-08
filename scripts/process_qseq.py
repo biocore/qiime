@@ -62,6 +62,9 @@ def main():
         read1_fps =  glob('%s/s_%s_%d_*qseq.txt' % (input_dir,
                                                    lane.replace(',',''),
                                                    read))
+        # sort so results will be consistent across different runs (important
+        # so amplicon and barcodes read headers will match)
+        read1_fps.sort()
         for read1_fp in read1_fps:                
             output_fp =  '%s/s_%s_%s_sequences.fastq' % (output_dir,lane,read)
             output_f = open(output_fp,'w')
