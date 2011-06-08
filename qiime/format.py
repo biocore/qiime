@@ -507,7 +507,7 @@ def write_Fasta_from_name_seq_pairs(name_seqs, fh):
     for (name,seq) in name_seqs:
         fh.write("%s\n"% Sequence(name=name, seq = seq).toFasta())
         
-def illumina_data_to_fastq(read_data,number_of_bases=None):
+def illumina_data_to_fastq(record_data,number_of_bases=None):
     """ given data from an Illumina qseq file, write to fastq 
     
         read data: generator of tuples with the following data
@@ -525,27 +525,26 @@ def illumina_data_to_fastq(read_data,number_of_bases=None):
     """
     seq_index = 8
     qual_index = 9
-    for read_datum in read_data:
-        if number_of_bases == None:
-            seq = read_datum[seq_index].replace('.','N')
-            qual = read_datum[qual_index]
-        else:
-            seq = read_datum[seq_index][:number_of_bases].replace('.','N')
-            qual = read_datum[qual_index][:number_of_bases]
-        
-        
-        header = '%s_%s:%s:%s:%s:%s#%s/%s' % (
-          read_datum[0],
-          read_datum[1],
-          read_datum[2],
-          read_datum[3],
-          read_datum[4],
-          read_datum[5],
-          read_datum[6],
-          read_datum[7])
-        
-        yield '@%s\n%s\n+\n%s' % (header,
-          seq,
-          qual)
+    if number_of_bases == None:
+        seq = record_data[seq_index].replace('.','N')
+        qual = record_data[qual_index]
+    else:
+        seq = record_data[seq_index][:number_of_bases].replace('.','N')
+        qual = record_data[qual_index][:number_of_bases]
+    
+    
+    header = '%s_%s:%s:%s:%s:%s#%s/%s' % (
+      record_data[0],
+      record_data[1],
+      record_data[2],
+      record_data[3],
+      record_data[4],
+      record_data[5],
+      record_data[6],
+      record_data[7])
+    
+    return '@%s\n%s\n+\n%s' % (header,
+      seq,
+      qual)
 
 

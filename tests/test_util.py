@@ -27,7 +27,8 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
     guess_even_sampling_depth, compute_days_since_epoch,
     get_interesting_mapping_fields,inflate_denoiser_output,
     flowgram_id_to_seq_id_map, count_seqs, count_seqs_from_file,
-    count_seqs_in_filepaths,get_split_libraries_fastq_params_and_file_types)
+    count_seqs_in_filepaths,get_split_libraries_fastq_params_and_file_types,
+    iseq_to_qseq_fields)
 
 import numpy
 from numpy import array, asarray
@@ -1005,7 +1006,33 @@ AAAAAAA
         self.assertFloatEqual(compare_otu_maps(otu_map1, otu_map4), 0.33333333333)
         self.assertFloatEqual(compare_otu_maps(otu_map3, otu_map4), 0.33333333333)
         self.assertFloatEqual(compare_otu_maps(otu_map1, otu_map5), 1)
-    
+
+    def test_iseq_to_qseq_fields(self):
+        """iseq_to_qseq_fields functions as expected"""
+        i = "HWI-ST753_50:6:1101:15435:9071#0/1:ACCAGACGATGCTACGGAGGGAGCTAGCGTTGTTCGGAATTACTGGGCGTAAAGCGCACGTAGGCGGCTTTGTAAGTTAGAGGTGAAAGCCTGGAGCTCAAC:gggggggfggdegggggggggggggggggggegggggggggegggggggeggcccccFUZSU_]]^^ggggggdggdgeeeccYacadcbeddceegggeeg"
+        # barcode in sequence, barcode length = 12
+        expected = (("HWI-ST753","50","6","1101","15435","9071","0","1"),
+                    "TACGGAGGGAGCTAGCGTTGTTCGGAATTACTGGGCGTAAAGCGCACGTAGGCGGCTTTGTAAGTTAGAGGTGAAAGCCTGGAGCTCAAC","gggggggggggggggggggegggggggggegggggggeggcccccFUZSU_]]^^ggggggdggdgeeeccYacadcbeddceegggeeg","ACCAGACGATGC","gggggggfggde")
+        self.assertEqual(iseq_to_qseq_fields(i,barcode_in_header=False,barcode_length=12),
+                         expected)
+        # barcode in sequence, barcode length = 6
+        expected = (("HWI-ST753","50","6","1101","15435","9071","0","1"),
+                    "CGATGCTACGGAGGGAGCTAGCGTTGTTCGGAATTACTGGGCGTAAAGCGCACGTAGGCGGCTTTGTAAGTTAGAGGTGAAAGCCTGGAGCTCAAC","gfggdegggggggggggggggggggegggggggggegggggggeggcccccFUZSU_]]^^ggggggdggdgeeeccYacadcbeddceegggeeg","ACCAGA","gggggg")
+        self.assertEqual(iseq_to_qseq_fields(i,barcode_in_header=False,barcode_length=6),
+                         expected)
+                         
+        # barcode in header, barcode length = 6
+        i = "HWI-6X_9267:1:1:4:1699#ACCACCC/1:TACGGAGGGTGCGAGCGTTAATCGCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCGAAAAAAAAAAAAAAAAAAAAAAA:abbbbbbbbbb`_`bbbbbb`bb^aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaDaabbBBBBBBBBBBBBBBBBBBB"
+        expected = (("HWI-6X","9267","1","1","4","1699","ACCACCC", "1"),
+         "TACGGAGGGTGCGAGCGTTAATCGCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCGAAAAAAAAAAAAAAAAAAAAAAA","abbbbbbbbbb`_`bbbbbb`bb^aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaDaabbBBBBBBBBBBBBBBBBBBB","ACCACC","bbbbbb")
+        self.assertEqual(iseq_to_qseq_fields(i,barcode_in_header=True,barcode_length=6),
+                         expected)
+        # barcode in header, barcode length = 3
+        expected = (("HWI-6X","9267","1","1","4","1699","ACCACCC", "1"),
+         "TACGGAGGGTGCGAGCGTTAATCGCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCGAAAAAAAAAAAAAAAAAAAAAAA","abbbbbbbbbb`_`bbbbbb`bb^aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaDaabbBBBBBBBBBBBBBBBBBBB","ACC","bbb")
+        self.assertEqual(iseq_to_qseq_fields(i,barcode_in_header=True,barcode_length=3),
+                         expected)
+
  
 otu_map1 = fields_to_dict("""1:\ta\tb\tc
 2:\td

@@ -1166,6 +1166,8 @@ def count_seqs_in_filepaths(fasta_filepaths,seq_counter=count_seqs):
             inaccessible_filepaths.append(fasta_filepath)
     
     return counts, total, inaccessible_filepaths
+    
+## End functions for counting sequences in fasta files
 
 def get_split_libraries_fastq_params_and_file_types(fastq_fps,mapping_fp):
     """ The function takes a list of open fastq files and a mapping file, then 
@@ -1232,7 +1234,24 @@ def get_split_libraries_fastq_params_and_file_types(fastq_fps,mapping_fp):
                                       ','.join(barcode_files),
                                       barcode_orientation)
     return split_lib_str
-    
-## End functions for counting sequences in fasta files
 
 
+def iseq_to_qseq_fields(line,barcode_in_header,barcode_length,barcode_qual_c='b'):
+    """ Split an Illumina sequence line into qseq fields"""
+    record = line.strip().split(':')
+    rec_0_1, rec_0_2 = record[0].split('_')
+    rec_4_1, rec_4_23 = record[4].split('#')
+    rec_4_2, rec_4_3 = rec_4_23.split('/')
+    if barcode_in_header:   
+        barcode = rec_4_2[:barcode_length]
+        sequence = record[5]
+        barcode_qual = barcode_qual_c*barcode_length
+        sequence_qual = record[6]
+    else:
+        barcode = record[5][:barcode_length]
+        sequence = record[5][barcode_length:]
+        barcode_qual = record[6][:barcode_length]
+        sequence_qual = record[6][barcode_length:]
+    return (rec_0_1,rec_0_2,record[1],record[2],record[3],\
+            rec_4_1,rec_4_2,rec_4_3), sequence, sequence_qual,\
+            barcode,barcode_qual
