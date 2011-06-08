@@ -21,7 +21,7 @@ from subprocess import Popen, PIPE, STDOUT
 
 from cogent.util.unit_test import TestCase, main as test_main
 from cogent.util.misc import app_path, get_random_directory_name
-from cogent.app.util import ApplicationNotFoundError
+from cogent.app.util import ApplicationNotFoundError, ApplicationError
 
 from qiime.parse import parse_qiime_config_file
 from qiime.util import (load_qiime_config, 
@@ -40,11 +40,6 @@ try:
     from pynast import __version__ as pynast_lib_version
 except ImportError:
     pynast_lib_version = "Not installed."
-
-try:
-    from Denoiser import __version__ as denoiser_version
-except ImportError:
-    denoiser_version = "Not installed."
 
 script_info = {}
 script_info['brief_description']= """Print out the qiime config settings."""
@@ -591,8 +586,7 @@ if __name__ == "__main__":
      ("matplotlib version", matplotlib_lib_version),
      ("QIIME library version", get_qiime_library_version()),
      ("QIIME script version", __version__),
-     ("PyNAST version (if installed)", pynast_lib_version),
-     ("Denoiser version (if installed)", denoiser_version)]
+     ("PyNAST version (if installed)", pynast_lib_version)]
     max_len =  max([len(e[0]) for e in version_info])
     print "\nDependency versions"
     print  "===================" 
