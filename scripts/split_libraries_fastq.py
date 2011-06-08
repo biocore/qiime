@@ -118,8 +118,6 @@ def main():
     log_f = open(log_fp,'w')
     histogram_fp = '%s/histograms.txt' % output_dir
     histogram_f = open(histogram_fp,'w')
-    # Check mapping file and get barcode mapping 
-    
     
     for sequence_read_fp, barcode_read_fp, mapping_fp in\
       zip(sequence_read_fps, barcode_read_fps, mapping_fps):
