@@ -12,20 +12,20 @@ This example illustrates how to use `split_libraries_fastq.py <../scripts/split_
 
 Input file formats
 ------------------
-The preferred format in QIIME for Illumina data is fastq. This format is illustrated `HERE <>`_. Two other file formats can be used, but require additional steps detailed `HERE <>`_. These steps convert other common formats to fastq, allowing you to begin processing your data with ``split_libraries_fastq.py``. 
+The preferred format in QIIME for Illumina data is fastq. This format is illustrated ADD LINK. Two other file formats can be used, but require additional steps detailed ADD LINK. These steps convert other common formats to fastq, allowing you to begin processing your data with ``split_libraries_fastq.py``. 
 
 This tutorial is focused on processing data sequenced with the Caporaso et al., PNAS 2010 protocol (`published here <http://www.ncbi.nlm.nih.gov/pubmed/20534432>`_). Because amplicons and barcodes are sequenced independently with this protocol in two separate runs, this process starts with two separate fastq files corresponding to the amplicon reads and the barcode reads. (If you're running a paired-end sequencing run, you'll have three fastq files, corresponding to 5` reads, 3` reads, and barcodes.) 
 
 Demultiplexing and quality filtering one lane of Illumina fastq reads with QIIME
 --------------------------------------------------------------------------------
 
-To demultiplex your reads you'll need to know which of your fastq files corresponds to your barcodes, which corresponds to your amplicons, and you'll also need a metadata mapping file (format described `HERE <>`_.) To determine which are your barcode reads and which are your amplicon reads you can look at the first 4 lines of each file with the ``head`` command. For example::
+To demultiplex your reads you'll need to know which of your fastq files corresponds to your barcodes, which corresponds to your amplicons, and you'll also need a metadata mapping file (format described ADD LINK.) To determine which are your barcode reads and which are your amplicon reads you can look at the first 4 lines of each file with the ``head`` command. For example::
 
 	head -n 4 s_8_2_sequence.fastq
 	
 Will give you the first fastq record in s_8_2_sequence.fastq. If the length of the sequence (on the second line) corresponds to the length of your barcode, then this is your barcode read file. If not, check your other fastq file.
 
-To demultiplex and quality filter (details on the quality filtering `HERE <>`_) your fastq data, run the following command::
+To demultiplex and quality filter (details on the quality filtering ADD LINK) your fastq data, run the following command::
 
 	split_libraries_fastq.py -i s_8_2_sequence.fastq -o sl_out/ -b s_8_1_sequence.txt -m s_8_map.txt
 	
@@ -79,8 +79,8 @@ Example qseq file for amplicon read::
 	M10	68	1	1	28680	29475	0	1	AACGAAAGGCAGTTTTGGAAGTAGGCGAATTAGGGTAACGCATATAGGATGCTAATACAACGTGAATGAAGTACTGCATCTATGTCACCAGCTTATTACAGCAGCTTGTCATACATGGCCGTACAGGAAACACACATCATAGCATCACACGA	BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB	0
 	M10	68	1	1	19607	29475	0	1	GACATAAGGGTGGTTAGTATACCGGCAAGGACGGGGTTACTAGTGACGTCCTTCCCCGTATGCCGGGCAATAATGTTTATGTTGGTTTCATGGTTTGGTCTAACTTTACCGCTACTAAATGCTGCGGATTGGTTTCGCTGAATCAGATTATT	Z__c\JQ`cc[[_[bfff[[`Qbdge_YYOOHO^cF[FUb_VHMHV`T`dBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB	1
 	M10	68	1	1	22962	29475	0	1	TAATCGAGCTCAACGCCCTGCATACGAAAAGACAGAATCTCTTGCAAGATGTTGGTGCGGTTAGCCAGCTGCTTATGGAAGCCAAGCATTGGGGATTGAGAAAGAGTAGAAATGCCACAAGCCTCAATAGCAGGTTTAAGAGCCTCGATACG	JJY````JO[`bab`b`bbaaaaa`\`a`OVT``]]`aa^aI\HMMMWWHHNNNGLL\`________\Z^]]^^^^^^GX]\QTXXZ[YZ^^XZ[Z^\Z^GW\^^\\^^^VZ\Y^^^^\\\\[^[\\\^VWYWWXWWZYZW^[X^\\Z^[TQ	0
-	
-	Example qseq file for barcode read::
+
+Example qseq file for barcode read::
 	
 	M10	68	1	1	28680	29475	0	2	ACTCACGGTATTA	\_J\Sa^Y[ZYK`	0
 	M10	68	1	1	19607	29475	0	2	AGACTGAGTACTA	PP\JJ\JQ`\RK^	1
@@ -135,6 +135,39 @@ To generate fastq from iseq files with six base barcodes contained in the index 
 Note that in the second example there are actually seven bases in the index field. If only six correspond to your barcode (and the remaining bases in e.g. a technical artifact) you can specify --barcode_length 6 (as done here) to extract only the first six bases of the barcode.
 
 Once these steps are complete you'll have fastq files that can be passed to split_libraries_fastq.py.
+
+Example fastq format (QIIME default)
+------------------------------------
+
+Example of amplicon read fastq::
+
+	@M10_68:1:1:28680:29475#0/1
+	AACGAAAGGCAGTTTTGGAAGTAGGCGAATTAGGGTAACGCATATAGGATGCTAATACAACGTGAATGAAGTACTGCATCTATGTCACCAGCTTATTACAGCAGCTTGTCATACATGGCCGTACAGGAAACACACATCATAGCATCACACGA
+	+
+	BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+	@M10_68:1:1:19607:29475#0/1
+	GACATAAGGGTGGTTAGTATACCGGCAAGGACGGGGTTACTAGTGACGTCCTTCCCCGTATGCCGGGCAATAATGTTTATGTTGGTTTCATGGTTTGGTCTAACTTTACCGCTACTAAATGCTGCGGATTGGTTTCGCTGAATCAGATTATT
+	+
+	Z__c\JQ`cc[[_[bfff[[`Qbdge_YYOOHO^cF[FUb_VHMHV`T`dBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB
+	@M10_68:1:1:22962:29475#0/1
+	TAATCGAGCTCAACGCCCTGCATACGAAAAGACAGAATCTCTTGCAAGATGTTGGTGCGGTTAGCCAGCTGCTTATGGAAGCCAAGCATTGGGGATTGAGAAAGAGTAGAAATGCCACAAGCCTCAATAGCAGGTTTAAGAGCCTCGATACG
+	+
+	JJY````JO[`bab`b`bbaaaaa`\`a`OVT``]]`aa^aI\HMMMWWHHNNNGLL\`________\Z^]]^^^^^^GX]\QTXXZ[YZ^^XZ[Z^\Z^GW\^^\\^^^VZ\Y^^^^\\\\[^[\\\^VWYWWXWWZYZW^[X^\\Z^[TQ
+
+Example of corresponding barcode read fastq::
+
+	@M10_68:1:1:28680:29475#0/2
+	ACTCACGGTATT
+	+
+	\_J\Sa^Y[ZYK
+	@M10_68:1:1:19607:29475#0/2
+	AGACTGAGTACT
+	+
+	PP\JJ\JQ`\RK
+	@M10_68:1:1:22962:29475#0/2
+	AGACGTGCAATT
+	+
+	^_aecceeeQ`[
 
 
 Quality filtering of Illumina data
