@@ -543,6 +543,31 @@ class TopLevelTests(TestCase):
         self.assertEqual(count_seqs_in_filepaths(\
          in_fps,seq_counter),expected)
 
+    def test_get_split_libraries_fastq_params_and_file_types_reverse(self):
+        """get_split_libraries_fastq_params_and_file_types using reverse 
+           barcodes computes correct values"""
+    
+        #set the string for the reverse barcode mapping
+        map_file=fastq_mapping_rev
+    
+        exp='-i /path/to/s_1_2_sequence.fastq -b /path/to/s_1_1_sequence.fastq --rev_comp_barcode'
+    
+        obs=get_split_libraries_fastq_params_and_file_types(fastq_fps,map_file)
+    
+        self.assertEqual(obs,exp)
+
+    def test_get_split_libraries_fastq_params_and_file_types_forward(self):
+        """get_split_libraries_fastq_params_and_file_types using forward
+           barcodes computes correct values"""
+    
+        #set the string for the forward barcode mapping
+        map_file=fastq_mapping_fwd
+    
+        exp='-i /path/to/s_1_2_sequence.fastq -b /path/to/s_1_1_sequence.fastq '
+    
+        obs=get_split_libraries_fastq_params_and_file_types(fastq_fps,map_file)
+    
+        self.assertEqual(obs,exp)
 
 raw_seqs1 = """>S1_0 FXX111 some comments
 TTTT
@@ -981,31 +1006,6 @@ AAAAAAA
         self.assertFloatEqual(compare_otu_maps(otu_map3, otu_map4), 0.33333333333)
         self.assertFloatEqual(compare_otu_maps(otu_map1, otu_map5), 1)
     
-    def test_get_split_libraries_fastq_params_and_file_types_reverse(self):
-        """get_split_libraries_fastq_params_and_file_types using reverse 
-           barcodes computes correct values"""
-        
-        #set the string for the reverse barcode mapping
-        map_file=fastq_mapping_rev
-        
-        exp='-i /path/to/s_1_2_sequence.fastq -b /path/to/s_1_1_sequence.fastq --rev_comp_barcode'
-        
-        obs=get_split_libraries_fastq_params_and_file_types(fastq_fps,map_file)
-        
-        self.assertEqual(obs,exp)
-
-    def test_get_split_libraries_fastq_params_and_file_types_forward(self):
-        """get_split_libraries_fastq_params_and_file_types using forward
-           barcodes computes correct values"""
-        
-        #set the string for the forward barcode mapping
-        map_file=fastq_mapping_fwd
-        
-        exp='-i /path/to/s_1_2_sequence.fastq -b /path/to/s_1_1_sequence.fastq '
-        
-        obs=get_split_libraries_fastq_params_and_file_types(fastq_fps,map_file)
-        
-        self.assertEqual(obs,exp)
  
 otu_map1 = fields_to_dict("""1:\ta\tb\tc
 2:\td
