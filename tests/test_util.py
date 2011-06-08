@@ -28,7 +28,7 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
     get_interesting_mapping_fields,inflate_denoiser_output,
     flowgram_id_to_seq_id_map, count_seqs, count_seqs_from_file,
     count_seqs_in_filepaths,get_split_libraries_fastq_params_and_file_types,
-    iseq_to_qseq_fields)
+    iseq_to_qseq_fields,get_top_fastq_two_lines)
 
 import numpy
 from numpy import array, asarray
@@ -550,6 +550,8 @@ class TopLevelTests(TestCase):
     
         #set the string for the reverse barcode mapping
         map_file=fastq_mapping_rev
+        
+        #convert string into open file object
         updated_fastq_fps={}
         for i in fastq_fps:
             updated_fastq_fps[i]=StringIO(fastq_fps[i])
@@ -567,6 +569,8 @@ class TopLevelTests(TestCase):
     
         #set the string for the forward barcode mapping
         map_file=fastq_mapping_fwd
+        
+        #convert string into open file object
         updated_fastq_fps={}
         for i in fastq_fps:
             updated_fastq_fps[i]=StringIO(fastq_fps[i])
@@ -577,6 +581,27 @@ class TopLevelTests(TestCase):
                                                             map_file)
     
         self.assertEqual(obs,exp)
+
+    def test_get_top_fastq_two_lines(self):
+        """ get_top_fastq_two_lines: this function gets the first 4 lines of 
+            the open fastq file
+        """
+        
+        exp=[('@HWUSI-EAS552R_0357:8:1:10040:6364#0/1\n', 'GACGAGTCAGTC\n', 
+              '+HWUSI-EAS552R_0357:8:1:10040:6364#0/1\n', 'hhhhhhhhhhhh\n'),
+             ('@HWUSI-EAS552R_0357:8:1:10040:6364#0/2\n', 
+              'TACAGGGGATGCAAGTGTTATCCGGAATTATTGGGCGTAAAGCGTCTGCAGGTTGCTCACTAAGTCTTTTGTTAAATCTTCGGGCTTAACCCGAAACCTGCAAAAGAAACTAGTGCTCTCGAGTATGGTAGAGGTAAAGGGAATTTCCAG\n', 
+              '+HWUSI-EAS552R_0357:8:1:10040:6364#0/2\n', 
+              'hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhfhhhhhhgghhhhhWhfcffehf]hhdhhhhhgcghhhchhhhfhcfhhgggdfhgdcffadccfdcccca]^b``ccfdd_caccWbb[b_dfdcdeaec`^`^_daba_b_WdY^`\n')]
+        
+        #iterate of dict and make sure the top 4 lines of each file are in the
+        #expected list
+        updated_fastq_fps={}
+        for i in fastq_fps:
+            obs=get_top_fastq_two_lines(StringIO(fastq_fps[i]))
+            self.assertTrue(obs in exp)
+        
+
 
 raw_seqs1 = """>S1_0 FXX111 some comments
 TTTT
