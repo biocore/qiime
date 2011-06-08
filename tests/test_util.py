@@ -27,7 +27,7 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
     guess_even_sampling_depth, compute_days_since_epoch,
     get_interesting_mapping_fields,inflate_denoiser_output,
     flowgram_id_to_seq_id_map, count_seqs, count_seqs_from_file,
-    count_seqs_in_filepaths)
+    count_seqs_in_filepaths,get_split_libraries_fastq_params_and_file_types)
 
 import numpy
 from numpy import array, asarray
@@ -980,7 +980,32 @@ AAAAAAA
         self.assertFloatEqual(compare_otu_maps(otu_map1, otu_map4), 0.33333333333)
         self.assertFloatEqual(compare_otu_maps(otu_map3, otu_map4), 0.33333333333)
         self.assertFloatEqual(compare_otu_maps(otu_map1, otu_map5), 1)
+    
+    def test_get_split_libraries_fastq_params_and_file_types_reverse(self):
+        """get_split_libraries_fastq_params_and_file_types using reverse 
+           barcodes computes correct values"""
         
+        #set the string for the reverse barcode mapping
+        map_file=fastq_mapping_rev
+        
+        exp='-i /path/to/s_1_2_sequence.fastq -b /path/to/s_1_1_sequence.fastq --rev_comp_barcode'
+        
+        obs=get_split_libraries_fastq_params_and_file_types(fastq_fps,map_file)
+        
+        self.assertEqual(obs,exp)
+
+    def test_get_split_libraries_fastq_params_and_file_types_forward(self):
+        """get_split_libraries_fastq_params_and_file_types using forward
+           barcodes computes correct values"""
+        
+        #set the string for the forward barcode mapping
+        map_file=fastq_mapping_fwd
+        
+        exp='-i /path/to/s_1_2_sequence.fastq -b /path/to/s_1_1_sequence.fastq '
+        
+        obs=get_split_libraries_fastq_params_and_file_types(fastq_fps,map_file)
+        
+        self.assertEqual(obs,exp)
  
 otu_map1 = fields_to_dict("""1:\ta\tb\tc
 2:\td
@@ -1078,6 +1103,31 @@ Z2\t42\t10
 A\t4\t400000
 1\t4\t5.7
 NotInOtuTable\t9\t5.7"""
+
+fastq_fps={'/path/to/s_1_1_sequence.fastq':["@HWUSI-EAS552R_0357:8:1:10040:6364#0/1",
+"GACGAGTCAGTC",
+"+HWUSI-EAS552R_0357:8:1:10040:6364#0/1",
+"hhhhhhhhhhhh",
+"@HWUSI-EAS552R_0357:8:1:10184:6365#0/1",
+"GTCTGACAGTTG",
+"+HWUSI-EAS552R_0357:8:1:10184:6365#0/1",
+"hhhhhhhhhhhh"],'/path/to/s_1_2_sequence.fastq':["@HWUSI-EAS552R_0357:8:1:10040:6364#0/2",
+"TACAGGGGATGCAAGTGTTATCCGGAATTATTGGGCGTAAAGCGTCTGCAGGTTGCTCACTAAGTCTTTTGTTAAATCTTCGGGCTTAACCCGAAACCTGCAAAAGAAACTAGTGCTCTCGAGTATGGTAGAGGTAAAGGGAATTTCCAG",
+"+HWUSI-EAS552R_0357:8:1:10040:6364#0/2",
+"hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhfhhhhhhgghhhhhWhfcffehf]hhdhhhhhgcghhhchhhhfhcfhhgggdfhgdcffadccfdcccca]^b``ccfdd_caccWbb[b_dfdcdeaec`^`^_daba_b_WdY^`",
+"@HWUSI-EAS552R_0357:8:1:10184:6365#0/2",
+"TACGAAGGGGGCTAGCGTTGCTCGGAATCACTGGGCGTAAAGCGCACGTAGGCGGGCTCTTAAGTCGGAGGTGAAATCCCAAGGCTCAACCTTGGAACTGCCTTCGATACTGAGAGTCTTGAGTCCGGAAGAGGTAAGTGGAACTCCAAG",
+"+HWUSI-EAS552R_0357:8:1:10184:6365#0/2",
+"hfhhchhghhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhfghghhhggfhhfghfeghfggfdhdfdfffacbfcddgcfccddbcddbccada_aadWaaaacddccccdacaaa_acbc]c`aa[a\\a_a^V\T_^^^^X^R_BBBB"]}
+
+fastq_mapping_rev=["#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tDescription",
+"sample1\tCTGACTGAGCAG\tCCGGACTACHVGGGTWTCTAAT\tsample1",
+"sample2\tGTTGACAGTCTG\tCCGGACTACHVGGGTWTCTAAT\tsample2"]
+
+fastq_mapping_fwd=["#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tDescription",
+"sample1\tGACGAGTCAGTC\tCCGGACTACHVGGGTWTCTAAT\tsample1",
+"sample2\tGTCTGACAGTTG\tCCGGACTACHVGGGTWTCTAAT\tsample2"]
+
 
 #run unit tests if run from command-line
 if __name__ == '__main__':

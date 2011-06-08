@@ -43,6 +43,7 @@ from cogent.app.blast import Blastall
 from cogent.app.util import get_tmp_filename
 from cogent.parse.blast import BlastResult
 from cogent.parse.fasta import MinimalFastaParser
+from cogent.parse.fastq import MinimalFastqParser
 from cogent.util.misc import remove_files
 from cogent.util.dict2d import Dict2D
 from cogent.app.formatdb import build_blast_db_from_fasta_path,\
@@ -1166,6 +1167,72 @@ def count_seqs_in_filepaths(fasta_filepaths,seq_counter=count_seqs):
     
     return counts, total, inaccessible_filepaths
 
+def get_split_libraries_fastq_params_and_file_types(fastq_fps,mapping_fp):
+    """ The function takes a list of open fastq files and a mapping file, then 
+        returns a recommended parameters string for split_libraries_fastq
+    """
+    #parse the mapping
+    data, headers, run_description= parse_mapping_file(mapping_fp)
+    
+    #determine the which column of mapping file is the BarcodeSequence
+    for i,col_head in enumerate(headers):
+        if col_head=='BarcodeSequence':
+            barcode_column=i
+            
+    #create a set of barcodes for easier lookup
+    barcode_mapping_column=set(zip(*data)[barcode_column])
+    
+    # get the filenames and sort them, so the file1 corresponds to file2
+    fnames=fastq_fps.keys()
+    fnames.sort()
+    
+    # get the len of the sequence in each of the files, so we can determine
+    # which file is the sequence file and which is the barcode sequence
+    get_file_type_info={}
+    for fastq_file in fastq_fps:
+        parsed_fastq=MinimalFastqParser(fastq_fps[fastq_file])
+        for i,seq_data in enumerate(parsed_fastq):
+            if i==0:
+                get_file_type_info[fastq_file]=len(seq_data[1])
+            else:
+                break
+    
+    # iterate over the sequence lengths and assign each file to either 
+    # a sequence list or barcode list
+    barcode_files=[]
+    sequence_files=[]
+    for i in range(0,len(fnames),2):
+        if get_file_type_info[fnames[i]]<get_file_type_info[fnames[i+1]]:
+            barcode_files.append(fnames[i])
+            sequence_files.append(fnames[i+1])
+        else:
+            barcode_files.append(fnames[i+1])
+            sequence_files.append(fnames[i])
+    
+    # count the number of barcode matches in the forward and reverse direction
+    # to determine if the rev_comp_barcode option needs passed
+    fwd_count=0
+    rev_count=0
+    for bfile in barcode_files:
+        parsed_fastq=MinimalFastqParser(fastq_fps[bfile])
+        for bdata in parsed_fastq:
+            if bdata[1] in barcode_mapping_column:
+                fwd_count+=1
+            elif bdata[1][::-1] in barcode_mapping_column:
+                rev_count+=1
+    
+    # determine which barcode direction is correct
+    if rev_count > fwd_count:
+        barcode_orientation='--rev_comp_barcode'
+    else:
+        barcode_orientation=''
+    
+    #generate the string to use in command call to split_libraries_fastq
+    split_lib_str='-i %s -b %s %s' % (','.join(sequence_files),
+                                      ','.join(barcode_files),
+                                      barcode_orientation)
+    return split_lib_str
+    
 ## End functions for counting sequences in fasta files
 
 
