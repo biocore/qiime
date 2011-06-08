@@ -32,7 +32,7 @@ from numpy.ma import MaskedArray
 from numpy.ma.extras import apply_along_axis
 from numpy import array, zeros, argsort, shape, vstack,ndarray, asarray, \
         float, where, isnan, mean, std
-from cogent import LoadSeqs, Sequence
+from cogent import LoadSeqs, Sequence,DNA
 from cogent.cluster.procrustes import procrustes
 from cogent.core.alignment import Alignment
 from cogent.core.moltype import MolType, IUPAC_DNA_chars, IUPAC_DNA_ambiguities,\
@@ -1184,6 +1184,13 @@ def get_split_libraries_fastq_params_and_file_types(fastq_fps,mapping_fp):
     #create a set of barcodes for easier lookup
     barcode_mapping_column=set(zip(*data)[barcode_column])
     
+    #create set of reverse complement barcodes from mapping file
+    revcomp_barcode_mapping_column=[]
+    for i in barcode_mapping_column:
+        revcomp_barcode_mapping_column.append(DNA.rc(i))
+    revcomp_barcode_mapping_column=set(revcomp_barcode_mapping_column)
+    
+    
     # get the filenames and sort them, so the file1 corresponds to file2
     fnames=fastq_fps.keys()
     fnames.sort()
@@ -1220,7 +1227,7 @@ def get_split_libraries_fastq_params_and_file_types(fastq_fps,mapping_fp):
         for bdata in parsed_fastq:
             if bdata[1] in barcode_mapping_column:
                 fwd_count+=1
-            elif bdata[1][::-1] in barcode_mapping_column:
+            elif bdata[1] in revcomp_barcode_mapping_column:
                 rev_count+=1
     
     # determine which barcode direction is correct

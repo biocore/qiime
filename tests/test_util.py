@@ -1148,8 +1148,8 @@ fastq_fps={'/path/to/s_1_1_sequence.fastq':["@HWUSI-EAS552R_0357:8:1:10040:6364#
 "hfhhchhghhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhfghghhhggfhhfghfeghfggfdhdfdfffacbfcddgcfccddbcddbccada_aadWaaaacddccccdacaaa_acbc]c`aa[a\\a_a^V\T_^^^^X^R_BBBB"]}
 
 fastq_mapping_rev=["#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tDescription",
-"sample1\tCTGACTGAGCAG\tCCGGACTACHVGGGTWTCTAAT\tsample1",
-"sample2\tGTTGACAGTCTG\tCCGGACTACHVGGGTWTCTAAT\tsample2"]
+"sample1\tGACTGACTCGTC\tCCGGACTACHVGGGTWTCTAAT\tsample1",
+"sample2\tCAACTGTCAGAC\tCCGGACTACHVGGGTWTCTAAT\tsample2"]
 
 fastq_mapping_fwd=["#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tDescription",
 "sample1\tGACGAGTCAGTC\tCCGGACTACHVGGGTWTCTAAT\tsample1",
