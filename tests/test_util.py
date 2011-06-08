@@ -12,7 +12,7 @@ from cogent.util.misc import remove_files
 from cogent.cluster.procrustes import procrustes
 from cogent.app.formatdb import build_blast_db_from_fasta_file
 from cogent.util.misc import get_random_directory_name, remove_files
-
+from StringIO import StringIO
 from qiime.parse import fields_to_dict, parse_otu_table, parse_mapping_file
 from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
     extract_seqs_by_sample_id, get_qiime_project_dir, matrix_stats,
@@ -550,10 +550,14 @@ class TopLevelTests(TestCase):
     
         #set the string for the reverse barcode mapping
         map_file=fastq_mapping_rev
-    
+        updated_fastq_fps={}
+        for i in fastq_fps:
+            updated_fastq_fps[i]=StringIO(fastq_fps[i])
+            
         exp='-i /path/to/s_1_2_sequence.fastq -b /path/to/s_1_1_sequence.fastq --rev_comp_barcode'
     
-        obs=get_split_libraries_fastq_params_and_file_types(fastq_fps,map_file)
+        obs=get_split_libraries_fastq_params_and_file_types(updated_fastq_fps,
+                                                            map_file)
     
         self.assertEqual(obs,exp)
 
@@ -563,10 +567,14 @@ class TopLevelTests(TestCase):
     
         #set the string for the forward barcode mapping
         map_file=fastq_mapping_fwd
-    
+        updated_fastq_fps={}
+        for i in fastq_fps:
+            updated_fastq_fps[i]=StringIO(fastq_fps[i])
+            
         exp='-i /path/to/s_1_2_sequence.fastq -b /path/to/s_1_1_sequence.fastq '
     
-        obs=get_split_libraries_fastq_params_and_file_types(fastq_fps,map_file)
+        obs=get_split_libraries_fastq_params_and_file_types(updated_fastq_fps,
+                                                            map_file)
     
         self.assertEqual(obs,exp)
 
@@ -1131,21 +1139,21 @@ A\t4\t400000
 1\t4\t5.7
 NotInOtuTable\t9\t5.7"""
 
-fastq_fps={'/path/to/s_1_1_sequence.fastq':["@HWUSI-EAS552R_0357:8:1:10040:6364#0/1",
-"GACGAGTCAGTC",
-"+HWUSI-EAS552R_0357:8:1:10040:6364#0/1",
-"hhhhhhhhhhhh",
-"@HWUSI-EAS552R_0357:8:1:10184:6365#0/1",
-"GTCTGACAGTTG",
-"+HWUSI-EAS552R_0357:8:1:10184:6365#0/1",
-"hhhhhhhhhhhh"],'/path/to/s_1_2_sequence.fastq':["@HWUSI-EAS552R_0357:8:1:10040:6364#0/2",
-"TACAGGGGATGCAAGTGTTATCCGGAATTATTGGGCGTAAAGCGTCTGCAGGTTGCTCACTAAGTCTTTTGTTAAATCTTCGGGCTTAACCCGAAACCTGCAAAAGAAACTAGTGCTCTCGAGTATGGTAGAGGTAAAGGGAATTTCCAG",
-"+HWUSI-EAS552R_0357:8:1:10040:6364#0/2",
-"hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhfhhhhhhgghhhhhWhfcffehf]hhdhhhhhgcghhhchhhhfhcfhhgggdfhgdcffadccfdcccca]^b``ccfdd_caccWbb[b_dfdcdeaec`^`^_daba_b_WdY^`",
-"@HWUSI-EAS552R_0357:8:1:10184:6365#0/2",
-"TACGAAGGGGGCTAGCGTTGCTCGGAATCACTGGGCGTAAAGCGCACGTAGGCGGGCTCTTAAGTCGGAGGTGAAATCCCAAGGCTCAACCTTGGAACTGCCTTCGATACTGAGAGTCTTGAGTCCGGAAGAGGTAAGTGGAACTCCAAG",
-"+HWUSI-EAS552R_0357:8:1:10184:6365#0/2",
-"hfhhchhghhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhfghghhhggfhhfghfeghfggfdhdfdfffacbfcddgcfccddbcddbccada_aadWaaaacddccccdacaaa_acbc]c`aa[a\\a_a^V\T_^^^^X^R_BBBB"]}
+fastq_fps={'/path/to/s_1_1_sequence.fastq':"@HWUSI-EAS552R_0357:8:1:10040:6364#0/1\n\
+GACGAGTCAGTC\n\
++HWUSI-EAS552R_0357:8:1:10040:6364#0/1\n\
+hhhhhhhhhhhh\n\
+@HWUSI-EAS552R_0357:8:1:10184:6365#0/1\n\
+GTCTGACAGTTG\n\
++HWUSI-EAS552R_0357:8:1:10184:6365#0/1\n\
+hhhhhhhhhhhh\n",'/path/to/s_1_2_sequence.fastq':"@HWUSI-EAS552R_0357:8:1:10040:6364#0/2\n\
+TACAGGGGATGCAAGTGTTATCCGGAATTATTGGGCGTAAAGCGTCTGCAGGTTGCTCACTAAGTCTTTTGTTAAATCTTCGGGCTTAACCCGAAACCTGCAAAAGAAACTAGTGCTCTCGAGTATGGTAGAGGTAAAGGGAATTTCCAG\n\
++HWUSI-EAS552R_0357:8:1:10040:6364#0/2\n\
+hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhfhhhhhhgghhhhhWhfcffehf]hhdhhhhhgcghhhchhhhfhcfhhgggdfhgdcffadccfdcccca]^b``ccfdd_caccWbb[b_dfdcdeaec`^`^_daba_b_WdY^`\n\
+@HWUSI-EAS552R_0357:8:1:10184:6365#0/2\n\
+TACGAAGGGGGCTAGCGTTGCTCGGAATCACTGGGCGTAAAGCGCACGTAGGCGGGCTCTTAAGTCGGAGGTGAAATCCCAAGGCTCAACCTTGGAACTGCCTTCGATACTGAGAGTCTTGAGTCCGGAAGAGGTAAGTGGAACTCCAAG\n\
++HWUSI-EAS552R_0357:8:1:10184:6365#0/2\n\
+hfhhchhghhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhfghghhhggfhhfghfeghfggfdhdfdfffacbfcddgcfccddbcddbccada_aadWaaaacddccccdacaaa_acbc]c`aa[a\\a_a^V\T_^^^^X^R_BBBB\n"}
 
 fastq_mapping_rev=["#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tDescription",
 "sample1\tGACTGACTCGTC\tCCGGACTACHVGGGTWTCTAAT\tsample1",

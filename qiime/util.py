@@ -1169,6 +1169,17 @@ def count_seqs_in_filepaths(fasta_filepaths,seq_counter=count_seqs):
     
 ## End functions for counting sequences in fasta files
 
+def get_top_fastq_two_lines(open_file):
+    """ This function returns the first 4 lines of the open fastq file
+    """
+    line1 = open_file.readline()
+    line2 = open_file.readline()
+    line3 = open_file.readline()
+    line4 = open_file.readline()
+    open_file.seek(0)
+    return line1, line2, line3, line4
+    
+
 def get_split_libraries_fastq_params_and_file_types(fastq_fps,mapping_fp):
     """ The function takes a list of open fastq files and a mapping file, then 
         returns a recommended parameters string for split_libraries_fastq
@@ -1183,7 +1194,7 @@ def get_split_libraries_fastq_params_and_file_types(fastq_fps,mapping_fp):
             
     #create a set of barcodes for easier lookup
     barcode_mapping_column=set(zip(*data)[barcode_column])
-    
+
     #create set of reverse complement barcodes from mapping file
     revcomp_barcode_mapping_column=[]
     for i in barcode_mapping_column:
@@ -1199,13 +1210,14 @@ def get_split_libraries_fastq_params_and_file_types(fastq_fps,mapping_fp):
     # which file is the sequence file and which is the barcode sequence
     get_file_type_info={}
     for fastq_file in fastq_fps:
-        parsed_fastq=MinimalFastqParser(fastq_fps[fastq_file])
+        file_lines=get_top_fastq_two_lines(fastq_fps[fastq_file])
+        parsed_fastq=MinimalFastqParser(file_lines,strict=False)
         for i,seq_data in enumerate(parsed_fastq):
             if i==0:
                 get_file_type_info[fastq_file]=len(seq_data[1])
             else:
                 break
-    
+        
     # iterate over the sequence lengths and assign each file to either 
     # a sequence list or barcode list
     barcode_files=[]
@@ -1223,7 +1235,7 @@ def get_split_libraries_fastq_params_and_file_types(fastq_fps,mapping_fp):
     fwd_count=0
     rev_count=0
     for bfile in barcode_files:
-        parsed_fastq=MinimalFastqParser(fastq_fps[bfile])
+        parsed_fastq=MinimalFastqParser(fastq_fps[bfile],strict=False)
         for bdata in parsed_fastq:
             if bdata[1] in barcode_mapping_column:
                 fwd_count+=1
