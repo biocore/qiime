@@ -1186,7 +1186,7 @@ def get_split_libraries_fastq_params_and_file_types(fastq_fps,mapping_fp):
         returns a recommended parameters string for split_libraries_fastq
     """
     #parse the mapping
-    data, headers, run_description= parse_mapping_file(mapping_fp)
+    data, headers, run_description= parse_mapping_file(open(mapping_fp))
     
     #determine the which column of mapping file is the BarcodeSequence
     for i,col_head in enumerate(headers):
@@ -1195,53 +1195,55 @@ def get_split_libraries_fastq_params_and_file_types(fastq_fps,mapping_fp):
             
     #create a set of barcodes for easier lookup
     barcode_mapping_column=set(zip(*data)[barcode_column])
-
+    
     #create set of reverse complement barcodes from mapping file
     revcomp_barcode_mapping_column=[]
     for i in barcode_mapping_column:
         revcomp_barcode_mapping_column.append(DNA.rc(i))
     revcomp_barcode_mapping_column=set(revcomp_barcode_mapping_column)
     
-    
     # get the filenames and sort them, so the file1 corresponds to file2
-    fnames=fastq_fps.keys()
-    fnames.sort()
+    fastq_fps.sort()
     
     # get the len of the sequence in each of the files, so we can determine
     # which file is the sequence file and which is the barcode sequence
     get_file_type_info={}
     for fastq_file in fastq_fps:
-        file_lines=get_top_fastq_two_lines(fastq_fps[fastq_file])
+        fastq_fp=open(fastq_file)
+        file_lines=get_top_fastq_two_lines(fastq_fp)
         parsed_fastq=MinimalFastqParser(file_lines,strict=False)
         for i,seq_data in enumerate(parsed_fastq):
             if i==0:
                 get_file_type_info[fastq_file]=len(seq_data[1])
             else:
                 break
-        
+        fastq_fp.close()
+
     # iterate over the sequence lengths and assign each file to either 
     # a sequence list or barcode list
     barcode_files=[]
     sequence_files=[]
-    for i in range(0,len(fnames),2):
-        if get_file_type_info[fnames[i]]<get_file_type_info[fnames[i+1]]:
-            barcode_files.append(fnames[i])
-            sequence_files.append(fnames[i+1])
+    for i in range(0,len(fastq_fps),2):
+        if get_file_type_info[fastq_fps[i]]<get_file_type_info[fastq_fps[i+1]]:
+            barcode_files.append(fastq_fps[i])
+            sequence_files.append(fastq_fps[i+1])
         else:
-            barcode_files.append(fnames[i+1])
-            sequence_files.append(fnames[i])
+            barcode_files.append(fastq_fps[i+1])
+            sequence_files.append(fastq_fps[i])
     
     # count the number of barcode matches in the forward and reverse direction
     # to determine if the rev_comp_barcode option needs passed
     fwd_count=0
     rev_count=0
     for bfile in barcode_files:
-        parsed_fastq=MinimalFastqParser(fastq_fps[bfile],strict=False)
+        fastq_fp=open(bfile)
+        parsed_fastq=MinimalFastqParser(fastq_fp,strict=False)
         for bdata in parsed_fastq:
             if bdata[1] in barcode_mapping_column:
                 fwd_count+=1
             elif bdata[1] in revcomp_barcode_mapping_column:
                 rev_count+=1
+        fastq_fp.close()
     
     # determine which barcode direction is correct
     if rev_count > fwd_count:
