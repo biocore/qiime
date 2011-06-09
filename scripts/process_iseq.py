@@ -22,12 +22,13 @@ from qiime.split_libraries_illumina import get_illumina_qual_chars
 script_info = {}
 script_info['brief_description'] = "Given a directory of per-swath qseq files, this script generates a single fastq per lane."
 script_info['script_description'] = ""
-script_info['script_usage'] = [("","Generate fastq files from all lanes of read 1 data in the current directory.","process_qseq.py -i ./ -o ./fastq/ -r 1"),
-                               ("","Generate fastq files from all lanes of read 2 data in the current directory, truncating the sequences after the first 12 bases.","process_qseq.py -i ./ -o ./fastq/ -r 2 -b 12")]
+script_info['script_usage'] = [("","Generate fastq files from lanes 1 and 2 (read 1 data) where barcodes are contained as the first tweleve bases of the sequences.","process_qseq.py -i ./s_1_1_sequence.txt,./s_2_1_sequence.txt -b 12 -o ./fastq/"),
+ ("","Generate fastq files from the gzipped lanes 1 and 2 (read 1 data) where barcodes are contained as the first tweleve bases of the sequences.","process_qseq.py -i ./s_1_1_sequence.txt.gz,./s_2_1_sequence.txt.gz -b 12 -o ./fastq/")
+                               ]
 script_info['output_description']= ""
 script_info['required_options'] = [
  make_option('-i','--input_fps',type='existing_filepaths',
-  help='the input filepaths (comma-separated if more than one)'),
+  help='the input filepaths (either iseq or gzipped iseq format; comma-separated if more than one). See Processing Illumina Data tutorial for a description of the iseq file type.'),
  make_option('-o','--output_dir',help='the output directory'),
  make_option('-b','--barcode_length',type='int',
   help='length of the barcode'),
