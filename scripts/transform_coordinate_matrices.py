@@ -86,7 +86,7 @@ def main():
     
     if sample_id_map_fp:
         sample_id_map = dict([(k,v[0]) \
-         for k,v in fields_to_dict(open(sample_id_map_fp)).items()])
+         for k,v in fields_to_dict(open(sample_id_map_fp, "U")).items()])
     else:
         sample_id_map = None
     
