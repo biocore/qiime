@@ -11,7 +11,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
  
-
+from os import rename
 from cogent.util.misc import safe_md5, create_dir
 from qiime.util import parse_command_line_parameters, make_option
 from qiime.parse import parse_mapping_file
@@ -112,8 +112,9 @@ def main():
     output_dir = opts.output_dir
     create_dir(output_dir)
     
+    output_fp_temp = '%s/seqs.fna.incomplete' % output_dir
     output_fp = '%s/seqs.fna' % output_dir
-    output_f = open(output_fp,'w')
+    output_f = open(output_fp_temp,'w')
     log_fp = '%s/split_library_log.txt' % output_dir
     log_f = open(log_fp,'w')
     histogram_fp = '%s/histograms.txt' % output_dir
@@ -156,7 +157,8 @@ def main():
         start_seq_id = seq_id + 1                                       
         log_f.write('\n---\n\n')
         
-
+    output_f.close()
+    rename(output_fp_temp,output_fp)
 
 if __name__ == "__main__":
     main()
