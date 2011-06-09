@@ -15,7 +15,7 @@ from glob import glob
 from os.path import split, splitext
 from cogent.util.misc import create_dir
 from qiime.util import (parse_command_line_parameters, make_option,
-                        iseq_to_qseq_fields)
+                        iseq_to_qseq_fields, gzip_open)
 from qiime.format import illumina_data_to_fastq
 from qiime.split_libraries_illumina import get_illumina_qual_chars
 
@@ -55,12 +55,17 @@ def main():
     barcode_qual_c = opts.barcode_qual_c
     
     for input_fp in input_fps:
-        input_basename = split(splitext(input_fp)[0])[1]              
+        if input_fp.endswith('.gz'):
+            open_f = gzip_open
+            input_basename = split(splitext(splitext(input_fp)[0])[0])[1]
+        else:              
+            input_basename = split(splitext(input_fp)[0])[1]
+            open_f = open
         sequence_output_fp =  '%s/%s.fastq' % (output_dir,input_basename)
         sequence_output_f = open(sequence_output_fp,'w')              
         barcode_output_fp =  '%s/%s_barcodes.fastq' % (output_dir,input_basename)
         barcode_output_f = open(barcode_output_fp,'w')
-        for line in open(input_fp,'U'):
+        for line in open_f(input_fp):
             common_fields, sequence, sequence_qual, barcode, barcode_qual =\
              iseq_to_qseq_fields(line, barcode_in_header, barcode_length, barcode_qual_c)
             

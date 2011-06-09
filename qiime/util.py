@@ -21,6 +21,7 @@ from os import getenv, makedirs
 from operator import itemgetter
 from os.path import abspath, exists, dirname, join, isdir
 from collections import defaultdict
+import gzip
 import sys
 import os
 from copy import deepcopy
@@ -1274,3 +1275,6 @@ def iseq_to_qseq_fields(line,barcode_in_header,barcode_length,barcode_qual_c='b'
     return (rec_0_1,rec_0_2,record[1],record[2],record[3],\
             rec_4_1,rec_4_2,rec_4_3), sequence, sequence_qual,\
             barcode,barcode_qual
+            
+def gzip_open(fp):
+    return gzip.open(fp,'rb')
