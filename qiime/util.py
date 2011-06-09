@@ -1186,7 +1186,7 @@ def get_split_libraries_fastq_params_and_file_types(fastq_fps,mapping_fp):
         returns a recommended parameters string for split_libraries_fastq
     """
     #parse the mapping
-    data, headers, run_description= parse_mapping_file(open(mapping_fp))
+    data, headers, run_description= parse_mapping_file(open(mapping_fp,'U'))
     
     #determine the which column of mapping file is the BarcodeSequence
     for i,col_head in enumerate(headers):
