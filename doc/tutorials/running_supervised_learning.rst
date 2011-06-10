@@ -50,6 +50,8 @@ Cautions
 ---------
 Supervised classification is most useful for larger data sets. When data sets are too small, the estimates of the generalization error, feature importance, and class probabilities may be quite variable. How large a data set needs to be depends on, among other things, how subtle are the differences between classes, and how many noisy features (e.g. OTUs) there are.
 
+Note: we recommend running `single_rarefaction.py` on your OTU table before using it as input to `supervised_learning.py`, to control for variation in sequencing effort.
+
 References
 ------------
 Knights D, Costello EK, Knight R (2010). "Supervised Classification of Human Microbiota". FEMS Microbiology Reviews 35, 343-359
