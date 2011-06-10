@@ -4,7 +4,7 @@
 
 __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2011, The QIIME Project" 
-__credits__ = ["Jens Reeder", "Rob Knight"]#remember to add yourself if you make changes
+__credits__ = ["Jens Reeder", "Rob Knight", "Nigel Cook"]#remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.2.1-dev"
 __maintainer__ = "Jens Reeder"
@@ -16,6 +16,9 @@ from os.path import exists
 from collections import defaultdict
 from itertools import izip, imap, ifilter, chain
 from asyncore import loop
+import datetime
+from time import time
+from math import fsum, trunc
 
 from cogent.app.util import get_tmp_filename, ApplicationNotFoundError
 from cogent.parse.flowgram_parser import lazy_parse_sff_handle
@@ -40,7 +43,7 @@ from qiime.denoiser.preprocess import preprocess, preprocess_on_cluster,\
 DENOISER_DATA_DIR = get_denoiser_data_dir()
 
 def get_flowgram_distances_on_cluster(id, flowgram, flowgrams, fc, ids, num_cores,
-                                      num_flows, client_sockets=[]):
+                                      num_flows, spread, client_sockets=[]):
     """Computes distance scores of flowgram to all flowgrams in parser.
 
     id: The flowgram identifier, also used to name intermediate files
@@ -58,11 +61,17 @@ def get_flowgram_distances_on_cluster(id, flowgram, flowgrams, fc, ids, num_core
     num_flows: Number of flows in parser
 
     client_sockets: A list of open sockets for client-server communication
+    
+    spread: historical distribution of processing runtimes
+
     """
+    epoch = time()
+
     check_flowgram_ali_exe()
 
     qiime_config = load_qiime_config()
     min_per_core = int(qiime_config['denoiser_min_per_core'])
+    CLOUD = not qiime_config['cloud_environment'] == "False"
     #if using from future import division this has to be checked,
     #as we want true integer division here
 
@@ -76,19 +85,38 @@ def get_flowgram_distances_on_cluster(id, flowgram, flowgrams, fc, ids, num_core
     flowgrams_iter=flowgrams.__iter__()    
     #prepare input files and commands
     #synchronous client-server communication
+    
+    # sigma is the sum of the normalized processing velocity scores
+    # for each cluster processor. In a perfect world, sigma == num_cores
+    # and the normalized processing velocity (in spread) == 1.0
+    sigma = fsum(spread[0:num_cores])
+    workload = [ trunc((num_flows * x / sigma))for x in spread[0:num_cores] ]
+
+    while sum(workload) < num_flows :
+        finish = workload[0]/spread[0]
+        i = 0
+        for x in range(1,num_cores):
+            t = workload[x]/spread[x]
+            if t < finish:
+                finish = t
+                i = x
+        workload[i] += 1
+
+    dispatched = 0
+
     debug_count = 0
     for i in range(num_cores):
         socket,addr = client_sockets[i]
         #send master flowgram to file first
         send_flowgram_to_socket(id, flowgram, socket)
 
-        if(i*per_core> num_flows):
+        if(workload[i] < 1):
             #no data left for this poor guy
             save_send(socket, "--END--")             
             continue
         else:
             # Then add all others which are still valid, i.e. in ids
-            for (k,f) in (izip (range(per_core),
+            for (k,f) in (izip (range(workload[i]),
                                 ifilter(lambda f: ids.has_key(f.Name), flowgrams_iter))):
                 fc.add(f)
                 send_flowgram_to_socket(k, f, socket, trim=False)
@@ -100,11 +128,26 @@ def get_flowgram_distances_on_cluster(id, flowgram, flowgrams, fc, ids, num_core
     #asynchronous client-server communication
     #ClientHandlers write data in results
     results = [None]*num_cores #
+    timing = [0.0 for x in xrange(num_cores)]
     for i in range (num_cores):
         socket,addr = client_sockets[i]
-        ClientHandler(socket, i, results)
+        ClientHandler(socket, i, results, timing)
     loop()
     #end asynchronous loop
+    
+    # adjust processing time
+    # sigma is the total through put in flowgrams/sec
+    sigma = 0.0
+    for i in range (num_cores):
+        timing[i] = workload[i]/(timing[i] - epoch)
+        sigma += timing[i]
+    #
+    # spread represents the normalized flowgram/s processing rate
+    # with 1.0 being the nominal processing speed
+    #
+    for i in range (num_cores):
+        spread[i] = (timing[i] * num_cores)/sigma
+   
 
     #flatten list
     scores = [item for list in results for item in list]
@@ -171,7 +214,7 @@ def get_flowgram_distances(id, flowgram, flowgrams, fc, ids, outdir,
 
 def filter_with_flowgram(id, flowgram, flowgrams, header, ids, num_flows, bestscores, log_fh,
                        outdir="/tmp/", threshold=3.75, num_cpus=32,
-                       fast_method=True, on_cluster = False, mapping=None,
+                       fast_method=True, on_cluster = False, mapping=None, spread=[],
                        verbose=False, pair_id_thresh=0.97, client_sockets=[],
                        error_profile=DENOISER_DATA_DIR+'FLX_error_profile.dat'):
     """Filter all files in flows_filename with flowgram and split according to threshold.
@@ -203,6 +246,8 @@ def filter_with_flowgram(id, flowgram, flowgrams, header, ids, num_flows, bestsc
     on_cluster: Boolean flag for local vs cluster
 
     mapping: the current cluster mapping
+    
+    spread: worker processing throughput
 
     error_profile: Path to error profile *.dat file
     
@@ -231,7 +276,7 @@ def filter_with_flowgram(id, flowgram, flowgrams, header, ids, num_flows, bestsc
     if on_cluster:
         (scores, names, flowgrams) =\
             get_flowgram_distances_on_cluster(id, flowgram, flowgrams, fc, ids, num_cpus,
-                                              num_flows, client_sockets=client_sockets) 
+                                              num_flows, spread=spread, client_sockets=client_sockets) 
     else:
         (scores, names, flowgrams) =\
             get_flowgram_distances(id, flowgram, flowgrams, fc, ids, outdir=outdir,
@@ -359,6 +404,7 @@ def greedy_clustering(sff_fp, seqs, cluster_mapping, outdir, num_flows,
     workers=None
     client_sockets=None
     client_socks_and_adrs=None
+    spread = [1.0 for x in range(num_cpus)]
     if on_cluster:
         server_socket = setup_server()
         workers, client_socks_and_adrs = setup_workers(num_cpus, outdir, server_socket,
@@ -399,11 +445,16 @@ def greedy_clustering(sff_fp, seqs, cluster_mapping, outdir, num_flows,
             remaining_rounds = calc_remaining_rounds(ids, cluster_mapping, bail_out)
             log_fh.write("Round %d:\n" % round_ctr)
             log_fh.write("Rounds remaining in worst case: %d\n" % remaining_rounds)
+            log_fh.write("Iteration %s %f round %d max %d workers %d flows %d\n" % (str(datetime.datetime.now()), time(), round_ctr, remaining_rounds, num_cpus, l))
+
         #check and delete workers if no longer needed
         if on_cluster:
             num_cpus = adjust_workers(l, num_cpus, client_sockets, log_fh)
             #check for dead workers
             check_workers(workers, client_sockets, log_fh)
+            if num_cpus != len(spread):
+                spread = [1.0 for x in range(num_cpus)]
+
         
         ideal_flow = seq_to_flow(seqs[key])
         (new_flowgrams, newl) = filter_with_flowgram(key, ideal_flow, flowgrams, header, ids,
@@ -416,7 +467,7 @@ def greedy_clustering(sff_fp, seqs, cluster_mapping, outdir, num_flows,
                                                    threshold=threshold,
                                                    pair_id_thresh=pair_id_thresh,
                                                    client_sockets=client_socks_and_adrs,
-                                                   error_profile=error_profile)
+                                                   error_profile=error_profile, spread=spread)
         cluster_size[id] +=  (l-newl)
         l = newl
         flowgrams = new_flowgrams
@@ -424,6 +475,9 @@ def greedy_clustering(sff_fp, seqs, cluster_mapping, outdir, num_flows,
         if(newl==0):
             #all flowgrams clustered
             break
+        if log_fh:
+            log_fh.write(("Throughput Spread %s\n"%str(spread)))
+ 
 
     if on_cluster:
         stop_workers(client_sockets, log_fh)

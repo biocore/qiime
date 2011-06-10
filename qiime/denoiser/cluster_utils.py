@@ -4,7 +4,7 @@
 
 __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2011, The QIIME Project" 
-__credits__ = ["Jens Reeder", "Rob Knight"]#remember to add yourself if you make changes
+__credits__ = ["Jens Reeder", "Rob Knight", "Nigel Cook"]#remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.2.1-dev"
 __maintainer__ = "Jens Reeder"
@@ -14,7 +14,7 @@ __status__ = "Development"
 from os import remove, system
 from string import join, lowercase
 from os.path import exists
-from time import sleep
+from time import sleep, time
 from random import sample
 
 from asynchat import async_chat
@@ -36,6 +36,7 @@ def submit_jobs(commands, prefix):
 
     if not CLUSTER_JOBS_SCRIPT or not exists(CLUSTER_JOBS_SCRIPT):
         raise ApplicationNotFoundError,"cluster_jobs_fp not set in config file!"
+
     outfilename = prefix+"_commands.txt"
     fh = open(outfilename, "w") 
     fh.write("\n".join(commands))
@@ -63,6 +64,9 @@ def setup_workers(num_cpus, outdir, server_socket, queue=None, verbose=True,
 
     qiime_config = load_qiime_config()
     DENOISE_WORKER = get_qiime_scripts_dir() + "/denoiser_worker.py"
+    CLOUD_DISPATCH = get_qiime_scripts_dir() + "/ec2Dispatch"
+    CLOUD_ENV = qiime_config['cloud_environment']
+    CLOUD = not CLOUD_ENV == "False"
 
     workers = []
     client_sockets = []
@@ -74,7 +78,11 @@ def setup_workers(num_cpus, outdir, server_socket, queue=None, verbose=True,
     for i in range(num_cpus):
         name = outdir+("/%sworker%d" % (tmpname, i))
         workers.append(name)
-        cmd  = "%s %s -f %s -s %s -p %s" % (qiime_config['python_exe_fp'],
+        if CLOUD :
+            cmd  = "%s %d %s %s -f %s -s %s -p %s" % (CLOUD_DISPATCH, i+1, qiime_config['python_exe_fp'],
+                                            DENOISE_WORKER, name, host, port)
+        else :
+            cmd  = "%s %s -f %s -s %s -p %s" % (qiime_config['python_exe_fp'],
                                             DENOISE_WORKER, name, host, port)
         if verbose:
             cmd += " -v"
@@ -237,12 +245,13 @@ class ClientHandler(async_chat):
     #Note: the incomgn socket is expected to be connected upon initialization
     #      and remains connected after this handler is destroyed
 
-    def __init__(self, sock, worker_number, result_array, log_fh=None):
+    def __init__(self, sock, worker_number, result_array, timing, log_fh=None):
         async_chat.__init__(self, sock)
         self.in_buffer = []
         self.set_terminator("--END--")
         self.number = worker_number
         self.results = result_array
+        self.timing = timing;
         if log_fh:
             log_fh.write("Started client handler on %s: %s\n" % self.addr)
 
@@ -261,6 +270,7 @@ class ClientHandler(async_chat):
         self.results[self.number] = [map(float, (s.split())) for s in data.split("\n")
                                      if s != ""]
         self.in_buffer = []
+        self.timing[self.number] = time()
         #delete this channel from the global map, but don't close the socket
         #as we will use it again in the next round.
         #Once global map is empty, asynchronous loop in server will finish
