@@ -51,7 +51,7 @@ script_info['optional_options'] = [
  make_option('-m', '--metrics', default='unweighted_unifrac,weighted_unifrac',
      help='Beta-diversity metric(s) to use. A comma-separated list should be' +\
      ' provided when multiple metrics are specified. [default: %default]'),
- make_option('-t', '--tree_path',
+ make_option('-t', '--tree_path', default=None,
         help='path to newick tree file, required for phylogenetic metrics'+\
         ' [default: %default]'),\
  make_option('-N','--beta_diversity_fp',action='store',\
@@ -73,15 +73,6 @@ script_info['optional_options'] = [
 
 ]
 script_info['version'] = __version__
-
-def jk_get_subtree(tree, otuids):
-    tree.prune()
-    tips = tree.tips()
-    otuids = set(otuids)
-    for tip in tips:
-        if tip.Name not in otuids:
-            tip.Parent.remove(tip)
-            tree.prune()
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
