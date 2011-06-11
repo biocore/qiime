@@ -63,8 +63,11 @@ def main():
     print 'Seqs/sample detail:'
     sorted_counts_per_sample = [(v,k) for k,v in counts_per_sample.items()]
     sorted_counts_per_sample.sort()
+    total_count = 0
     for v,k in sorted_counts_per_sample:
+        total_count += v
         print ' %s: %s' % (k,str(v))
+    print '\nTotal observations (sequences): %d' % total_count
 
     if opts.mapfile:
         if not opts.outputfile:
