@@ -4,7 +4,7 @@
 
 __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2011, The QIIME Project" 
-__credits__ = ["Jens Reeder", "Rob Knight"]#remember to add yourself if you make changes
+__credits__ = ["Jens Reeder", "Rob Knight", "Nigel Cook"]#remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.2.1-dev"
 __maintainer__ = "Jens Reeder"
@@ -43,6 +43,9 @@ def setup_worker(fp, server_addr, port, counter=0, verbose=False,
         raise ValueError, "setup_worker needs file path for worker"
     log_fh=None
     if verbose:
+        dir = os.path.dirname(fp+".log")
+        if not os.path.exists(dir):
+            os.makedirs(dir)
         log_fh = open(fp+".log","a",0)
 
     #use local tmp if possible
