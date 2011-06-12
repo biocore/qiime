@@ -11,8 +11,8 @@ __maintainer__ = "Jens Reeder"
 __email__ = "jens.reeder@gmail.com"
 __status__ = "Development"
 
-from os import remove
-from os.path import exists, split
+from os import remove, makedirs
+from os.path import exists, split, dirname
 from time import sleep, time
 from subprocess import Popen, PIPE, STDOUT
 from asyncore import dispatcher, loop
@@ -43,9 +43,9 @@ def setup_worker(fp, server_addr, port, counter=0, verbose=False,
         raise ValueError, "setup_worker needs file path for worker"
     log_fh=None
     if verbose:
-        dir = os.path.dirname(fp+".log")
-        if not os.path.exists(dir):
-            os.makedirs(dir)
+        dir = dirname(fp+".log")
+        if not exists(dir):
+            makedirs(dir)
         log_fh = open(fp+".log","a",0)
 
     #use local tmp if possible
