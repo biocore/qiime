@@ -507,10 +507,6 @@ def denoise_seqs(sff_fp, fasta_fp, tmpoutdir, preprocess_fp=None, cluster=False,
     #abort if binary is missing
     check_flowgram_ali_exe()
 
-    #get CLOUD disposition
-    qiime_config = load_qiime_config()
-    CLOUD = not qiime_config['cloud_environment'] == "False"
-
     if verbose:
         #switch of buffering for log file
         log_fh = open(tmpoutdir+"/"+log_fp, "w", 0)
@@ -531,7 +527,6 @@ def denoise_seqs(sff_fp, fasta_fp, tmpoutdir, preprocess_fp=None, cluster=False,
         log_fh.write("Preprocess dir: %s\n" % preprocess_fp)
         log_fh.write("Primer sequence: %s\n" % primer)
         log_fh.write("Running on cluster: %s\n" % cluster)
-        log_fh.write("Running on cloud: %s\n" % CLOUD)
         log_fh.write("Num CPUs: %d\n" % num_cpus)
         log_fh.write("Squeeze Seqs: %s\n" % squeeze)
         log_fh.write("tmpdir: %s\n" % tmpoutdir)
@@ -548,7 +543,7 @@ def denoise_seqs(sff_fp, fasta_fp, tmpoutdir, preprocess_fp=None, cluster=False,
     if(preprocess_fp):
         # we already have preprocessed data, so use it
         (deprefixed_sff_fp, l, mapping, seqs) = read_preprocessed_data(preprocess_fp)
-    elif(cluster and not CLOUD):
+    elif(cluster):
         preprocess_on_cluster(sff_fp, log_fp, fasta_fp=fasta_fp,
                               out_fp=tmpoutdir, verbose=verbose,
                               squeeze=squeeze, primer=primer)
