@@ -6,15 +6,16 @@ Processing Illumina Data
 
 This document describes how to process Illumina sequencing data with QIIME. It covers a standard workflow beginning with fastq files, and take users through one pipeline for generation of an OTU table. Due to the huge amount of data in Illumina files, it's best to run the OTU picking through OTU table steps on a cluster. For a full HiSeq2000 run, this process can take up to 500 CPU hours.
 
-QIIME can be used to parse single-end or paired-end read data from the Illumina platform. The downstream support for analysis of paired-end read data is currently more limited. The parsed output is in standard fasta format, so all scripts (such as align_seqs.py and assign_taxonomy.py) can read it. However because there may be a 'big gap' between the 5' and 3' reads if the primers are distant in the sequence, or conversely because the reads may overlap if the primers are close, your mileage with the downstream tools may vary. 
-
 This example illustrates how to use `split_libraries_fastq.py <../scripts/split_libraries_fastq.html>`_ to parse your Illumina output into a format that can be used by QIIME. 
 
 Input file formats
-------------------
-The preferred format in QIIME for Illumina data is fastq. This format is illustrated ADD LINK. Two other file formats can be used, but require additional steps detailed ADD LINK. These steps convert other common formats to fastq, allowing you to begin processing your data with ``split_libraries_fastq.py``. 
+^^^^^^^^^^^^^^^^^^
+The preferred format in QIIME for Illumina data is fastq. This format is illustrated :ref:`here <fastq_format>`. Two other file formats can be used, but require additional steps detailed :ref:`here <other_file_formats>`. These steps convert other common formats to fastq, allowing you to begin processing your data with ``split_libraries_fastq.py``. 
 
-This tutorial is focused on processing data sequenced with the Caporaso et al., PNAS 2010 protocol (`published here <http://www.ncbi.nlm.nih.gov/pubmed/20534432>`_). Because amplicons and barcodes are sequenced independently with this protocol in two separate runs, this process starts with two separate fastq files corresponding to the amplicon reads and the barcode reads. (If you're running a paired-end sequencing run, you'll have three fastq files, corresponding to 5` reads, 3` reads, and barcodes.) 
+To get information on the full set of parameters that can be passed to ``split_libraries_fastq.py``, review the `script documentation here <../scripts/split_libraries_fastq.html>`_.
+
+Demultiplexing Illumina fastq with QIIME
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Demultiplexing and quality filtering one lane of Illumina fastq reads with QIIME
 --------------------------------------------------------------------------------
@@ -23,11 +24,11 @@ To demultiplex your reads you'll need to know which of your fastq files correspo
 
 	head -n 4 s_8_2_sequence.fastq
 	
-Will give you the first fastq record in s_8_2_sequence.fastq. If the length of the sequence (on the second line) corresponds to the length of your barcode, then this is your barcode read file. If not, check your other fastq file.
+Will give you the first fastq record in s_8_2_sequence.fastq. If the length of the sequence (on the second line) corresponds to the length of your barcode, then this is your barcode read file. If not, check your other fastq file. Note: due to a sequencing artifact the barcode reads may be a single base longer than your actual barcodes. 
 
 To demultiplex and quality filter (details on the quality filtering ADD LINK) your fastq data, run the following command::
 
-	split_libraries_fastq.py -i s_8_2_sequence.fastq -o sl_out/ -b s_8_1_sequence.txt -m s_8_map.txt
+	split_libraries_fastq.py -i s_8_2_sequence.fastq -o sl_out/ -b s_8_1_sequence.fastq -m s_8_map.txt
 	
 In this example ``s_8_2_sequence.fastq`` contains my amplicon reads and ``s_8_1_sequence.fastq`` contains my barcode reads. My metadata mapping file is ``s_8_map.txt``, and the output will be written to ``./sl_out/``. This command can take tens of minutes to a couple of hours to run, depending on your computer. 
 
@@ -45,14 +46,15 @@ Demultiplexing and quality filtering multiple lanes of Illumina fastq reads with
 
 If you have multiple lanes of Illumina data that you want to demultiplex together, you'll use a similar commands as for a single lane, but will specify per-lane amplicon read, barcode read, and mapping files. To do that, call the same command with comma-separated filepaths. Note that the order of the files must correspond for each of these parameters. For example, to demultiplex data from lanes 6, 7, and 8, your command would be::
 
-	split_libraries_fastq.py -i s_6_2_sequence.fastq,s_7_2_sequence.fastq,s_8_2_sequence.fastq -o sl_out/ -b s_6_1_sequence.txt,s_7_1_sequence.txt,s_8_1_sequence.txt -m s_6_map.txt,s_7_map.txts_8_map.txt
+	split_libraries_fastq.py -i s_6_2_sequence.fastq,s_7_2_sequence.fastq,s_8_2_sequence.fastq -o sl_out/ -b s_6_1_sequence.fastq,s_7_1_sequence.fastq,s_8_1_sequence.fastq -m s_6_map.txt,s_7_map.txts_8_map.txt
 	
 When the command completes you'll have the same output as when running on a single lane, but note that the data in the log and histogram files are broken down by lane. All of the sequence data will be in ``seqs.fna``.
 
 Again, you may wish to review ``split_libraries_log.txt`` and adjust quality filtering parameters and rerun. When you're satisfied, you're read to move on to downstream analysis.
 
 Using Illumina data in downstream analysis
--------------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 Once you have processed your Illumina data with `split_libraries_fastq.py <../scripts/split_libraries_fastq.html>`_, you can use the resulting files in all downstream QIIME scripts, including the workflow scripts.
 
 A common way that we have processed Illumina data is using a closed reference OTU picking protocol, where OTUs are picked against a reference data set, and any reads that do not match a reference sequence at greater than or equal to 97% sequence identity are discarded. This has the benefit of providing a very strict quality filter (while studies to better understand quality filtering of Illumina amplicon data are in progress), but has the draw back of throwing away real sequences that do not match to know sequences.
@@ -68,6 +70,13 @@ This step will generate an OTU table, which is the input for a lot of the analys
 	beta_diversity_through_plots.py -i ucrC/uclust_ref_picked_otus/otu_table.txt -o bdiv/ -t gg_otus_4feb2011/trees/gg_97_otus_4feb2011.tre -m ./s_8_map.txt
 	
 Note that because we picked OTUs against a reference set, we can use the reference set phylogenetic tree for the UniFrac analysis. That is passed with ``-t`` in this example. To visualize the 3D UniFrac PCoA plots, you can open the ``bdiv/unweighted_unifrac_3d_continuous/unweighted_unifrac_pc_3D_PCoA_plots.html`` file that is generated in this analysis. This will launch the KiNG applet, and your 3D plots. These may take a little while to load depending on the quantity of data you have. (Improving these visualizations is something we're currently working on.)
+
+.. _other_file_formats:
+
+Processing non-fastq Illumina data with QIIME
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+QIIME supports several formats of non-fastq data, but the strategy is to convert from these formats to fastq. For that reason your analyses will be more convenient if you can get your sequencing center to provide data in fastq format (as supported by the Illumina CASAVA software).
+
 
 Processing qseq files with QIIME
 --------------------------------
@@ -136,6 +145,11 @@ Note that in the second example there are actually seven bases in the index fiel
 
 Once these steps are complete you'll have fastq files that can be passed to split_libraries_fastq.py.
 
+Other topics
+^^^^^^^^^^^^
+
+.. _fastq_format:
+
 Example fastq format (QIIME default)
 ------------------------------------
 
@@ -170,8 +184,8 @@ Example of corresponding barcode read fastq::
 	^_aecceeeQ`[
 
 
-Quality filtering of Illumina data
-------------------------------------
+Quality filtering of Illumina data with QIIME
+---------------------------------------------
 A sequence is discarded if any of the following conditions are met:
 	
 	* The barcode is not an exact match to a barcode in the mapping file (to disable this, pass ``-u``, which will cause the resulting sequences to be store with sample ID ``Unassigned``.)
@@ -181,8 +195,11 @@ A sequence is discarded if any of the following conditions are met:
 
 Processing paired-end read data with QIIME
 ------------------------------------------
+QIIME can be used to parse single-end or paired-end read data from the Illumina platform. The downstream support for analysis of paired-end read data is currently limited. The parsed output is in standard fasta format, so all scripts (such as align_seqs.py and assign_taxonomy.py) can read it. However because there may be a 'big gap' between the 5' and 3' reads if the primers are distant in the sequence, or conversely because the reads may overlap if the primers are close, the reads are written to separate fasta files in separate runs. It is up to the user to merge these into a single file depending on how they wish to process the data (e.g., assemble over-lapping reads into contigs). 
 
-	
+If specific use cases become popular we will likely add support for them in QIIME. If you're interested in getting a specific workflow implemented you can contact us on the `QIIME Forum <http://forum.qiime.org>`_. The information we'll be interested in is an explanation of the workflow, and evidence that using paired-end reads improves results over using single-end reads alone. We are happy to share raw paired-end read Illumina data to facilitate such analyses.
+
+To analyze demultiplex paired-end read data, run the split_libraries_fastq.py script on each read file independently. You can use the ``--rev_comp`` option on the reverse (3 prime) reads to reverse complement the reads so they'll be in the same orientation as the forward (5 prime) reads, if this is desired.
 
 
 
