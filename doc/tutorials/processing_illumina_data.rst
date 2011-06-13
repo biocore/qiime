@@ -20,13 +20,13 @@ Demultiplexing Illumina fastq with QIIME
 Demultiplexing and quality filtering one lane of Illumina fastq reads with QIIME
 --------------------------------------------------------------------------------
 
-To demultiplex your reads you'll need to know which of your fastq files corresponds to your barcodes, which corresponds to your amplicons, and you'll also need a metadata mapping file (format described ADD LINK.) To determine which are your barcode reads and which are your amplicon reads you can look at the first 4 lines of each file with the ``head`` command. For example::
+To demultiplex your reads you'll need to know which of your fastq files corresponds to your barcodes, which corresponds to your amplicons, and you'll also need a metadata mapping file (format described `here <../documentation/file_formats.html#metadata-mapping-files>`_). To determine which are your barcode reads and which are your amplicon reads you can look at the first 4 lines of each file with the ``head`` command. For example::
 
 	head -n 4 s_8_2_sequence.fastq
 	
 Will give you the first fastq record in s_8_2_sequence.fastq. If the length of the sequence (on the second line) corresponds to the length of your barcode, then this is your barcode read file. If not, check your other fastq file. Note: due to a sequencing artifact the barcode reads may be a single base longer than your actual barcodes. 
 
-To demultiplex and quality filter (details on the quality filtering ADD LINK) your fastq data, run the following command::
+To demultiplex and quality filter (details on the quality filtering :ref:`here <illumina_quality_filtering>`) your fastq data, run the following command::
 
 	split_libraries_fastq.py -i s_8_2_sequence.fastq -o sl_out/ -b s_8_1_sequence.fastq -m s_8_map.txt
 	
@@ -44,7 +44,7 @@ After reviewing your split_libraries_log.txt you may choose to rerun with adjust
 Demultiplexing and quality filtering multiple lanes of Illumina fastq reads with QIIME
 --------------------------------------------------------------------------------------
 
-If you have multiple lanes of Illumina data that you want to demultiplex together, you'll use a similar commands as for a single lane, but will specify per-lane amplicon read, barcode read, and mapping files. To do that, call the same command with comma-separated filepaths. Note that the order of the files must correspond for each of these parameters. For example, to demultiplex data from lanes 6, 7, and 8, your command would be::
+If you have multiple lanes of Illumina data that you want to demultiplex together, you'll use a similar command as for a single lane, but will specify per-lane amplicon read, barcode read, and mapping files. To do that, call the same command with comma-separated filepaths. Note that the order of the files must correspond for each of these parameters. For example, to demultiplex data from lanes 6, 7, and 8, your command would be::
 
 	split_libraries_fastq.py -i s_6_2_sequence.fastq,s_7_2_sequence.fastq,s_8_2_sequence.fastq -o sl_out/ -b s_6_1_sequence.fastq,s_7_1_sequence.fastq,s_8_1_sequence.fastq -m s_6_map.txt,s_7_map.txts_8_map.txt
 	
@@ -183,6 +183,7 @@ Example of corresponding barcode read fastq::
 	+
 	^_aecceeeQ`[
 
+.. _illumina_quality_filtering:
 
 Quality filtering of Illumina data with QIIME
 ---------------------------------------------
