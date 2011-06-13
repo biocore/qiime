@@ -303,7 +303,7 @@ def main():
     ## uclust (de novo)
     elif otu_picking_method == 'uclust':
         params = {'Similarity':opts.similarity,
-        'enable_reverse_strand_matching':opts.enable_rev_strand_match,
+        'enable_rev_strand_matching':opts.enable_rev_strand_match,
         'optimal':opts.optimal_uclust,
         'exact':opts.exact_uclust,
         # suppress_sort=True when seqs are or will be pre-sorted
@@ -325,7 +325,7 @@ def main():
     ## uclust (reference-based)
     elif otu_picking_method == 'uclust_ref':
         params = {'Similarity':opts.similarity,
-        'enable_reverse_strand_matching':opts.enable_rev_strand_match,
+        'enable_rev_strand_matching':opts.enable_rev_strand_match,
         'optimal':opts.optimal_uclust,
         'exact':opts.exact_uclust,
         # suppress_sort=True when seqs are or will be pre-sorted
