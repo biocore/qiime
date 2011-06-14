@@ -167,7 +167,7 @@ def process_fastq_single_end_read_file(fastq_read_f,
     count_too_short = 0
     count_too_many_N = 0
     count_bad_illumina_qual_digit = 0
-    barcode_errors_exceed_max = 0
+    count_barcode_errors_exceed_max = 0
     sequence_lengths = []
     seqs_per_sample_counts = {}
     
@@ -198,7 +198,7 @@ def process_fastq_single_end_read_file(fastq_read_f,
          correct_barcode(barcode,barcode_to_sample_id,barcode_correction_fn)
         # skip samples with too many errors
         if (num_barcode_errors > max_barcode_errors):
-          barcode_errors_exceed_max += 1
+          count_barcode_errors_exceed_max += 1
           continue
         
         # skip unassignable samples unless otherwise requested
@@ -255,6 +255,7 @@ def process_fastq_single_end_read_file(fastq_read_f,
                              count_too_short,
                              count_too_many_N,
                              count_bad_illumina_qual_digit,
+                             count_barcode_errors_exceed_max,
                              input_sequence_count,
                              sequence_lengths,
                              seqs_per_sample_counts)

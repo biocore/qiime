@@ -462,6 +462,7 @@ def format_split_libraries_fastq_log(count_barcode_not_in_map,
                count_too_short,
                count_too_many_N,
                count_bad_illumina_qual_digit,
+               count_barcode_errors_exceed_max,
                input_sequence_count,
                sequence_lengths,
                seqs_per_sample_counts):
@@ -472,6 +473,7 @@ def format_split_libraries_fastq_log(count_barcode_not_in_map,
     log_out.append("Read too short after quality truncation: %d" % count_too_short)
     log_out.append("Count of N characters exceeds limit: %d" % count_too_many_N)
     log_out.append("Illumina quality digit = 0: %d" % count_bad_illumina_qual_digit)
+    log_out.append("Barcode errors exceed max: %d" % count_barcode_errors_exceed_max)
     
     log_out.append("")
     
