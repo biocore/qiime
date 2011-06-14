@@ -484,9 +484,11 @@ class RdpTaxonAssigner(TaxonAssigner):
                 name = node.name
                 rank_names = taxa_by_rank.get(rank, set())
                 if name in rank_names:
-                    raise ValueError("Duplicate name %s at rank %s" % (name, rank))
-                if name in all_taxa:
-                    raise ValueError("Duplicate taxon name: %s" % name)
+                    raise ValueError(
+                        "Duplicate name %s at rank %s (%s). At each rank of "
+                        "the taxonomy, all taxon names must be unique to "
+                        "train the RDP Classifier." % (
+                            name, rank, self.taxonomic_ranks[rank]))
                 rank_names.add(name)
                 taxa_by_rank[rank] = rank_names
                 all_taxa.add(name)
