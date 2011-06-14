@@ -189,9 +189,10 @@ Quality filtering of Illumina data with QIIME
 ---------------------------------------------
 A sequence is discarded if any of the following conditions are met:
 	
-	* The barcode is not an exact match to a barcode in the mapping file (to disable this, pass ``-u``, which will cause the resulting sequences to be store with sample ID ``Unassigned``.)
 	* The sequence contains one or more ``N`` bases, corresponding to ambiguous base calls (adjustable with the -n parameter).
 	* The high-quality region of the sequence is less than 75 bases long (adjustable with the ``-p`` parameter), where high-quality regions is defined a stretch of bases containing no more than 1 (adjustable with the ``-r`` parameter) quality character less than ``B`` (i.e., any of ``@``, ``A``, and ``B`` are considered to be low quality scores, adjustable with the ``-q`` parameter). In other words, with the default parameter settings, the read is truncated at the base preceding the first low quality stretch, and the truncated sequence must be greater than or equal to 75 bases long to be retained. 
+	* If barcode error correction is disabled and the barcode is not an exact match to a barcode in the mapping file (to disable this, pass ``-u``, which will cause the resulting sequences to be store with sample ID ``Unassigned``.)
+	* If barcode error correction is enabled and the barcode is not correctable or within ``max_barcode_errors`` (specified on the command line with ``--max_barcode_errors``) of a good barcode. 
 
 
 Processing paired-end read data with QIIME
