@@ -77,6 +77,8 @@ def decode_barcode_8(nt_barcode):
         nt_barcode = None
     
     return nt_barcode, num_errors/2.0
+# alt name for function to support consistency with golay
+decode_hamming_8 = decode_barcode_8
 
 # mapping from barcode used to original sample id 
 DEMO_SAMPLE_MAPPING = {

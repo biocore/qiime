@@ -50,6 +50,13 @@ TO DOs:
 * test speed performance
 """
 
+def get_invalid_golay_barcodes(seqs):
+    result = []
+    for e in seqs:
+        if decode(e)[1] > 0:
+            result.append(e)
+    return result
+
 def decode(seq, nt_to_bits=None):
     """decodes a nucleotide string of 12 bases, using bitwise error checking
     
@@ -68,6 +75,8 @@ def decode(seq, nt_to_bits=None):
     else:
         # put match into nucleotide format
         return _bits_to_seq(corrected_bits, nt_to_bits), num_errors
+# alt name for the decode function for consistency with hamming decoding
+decode_golay_12 = decode
 
 def encode(bits, nt_to_bits=None):
     """ takes any 12 bits, returns the golay 24bit codeword in nucleotide format

@@ -19,6 +19,8 @@ from cogent import DNA
 from cogent.parse.fastq import MinimalFastqParser
 from qiime.format import (format_histogram_one_count,
                           format_split_libraries_fastq_log)
+from qiime.hamming import decode_hamming_8
+from qiime.golay import decode_golay_12
 
 class FastqParseError(Exception):
     pass
@@ -99,6 +101,40 @@ def check_header_match(header1,header2):
     header2 = header2.split('#')[0].split('/')[0]
     
     return header1 == header2
+    
+BARCODE_DECODER_LOOKUP = {
+ 'golay_12':decode_golay_12,
+ #'hamming_8':decode_hamming_8,
+}
+    
+def correct_barcode(barcode,barcode_to_sample_id,correction_fn):
+    """Correct barcode given barcode, dict of valid barcodes, and correction fn
+    
+       return value: (number of errors,
+                      corrected barcode,
+                      correction was attempted (bool),
+                      sample id [None if can't be determined])
+    
+    """
+    # Map the barcode if possible
+    try:
+        sample_id = barcode_to_sample_id[barcode]
+    except KeyError:
+        sample_id = None
+    
+    if sample_id != None or correction_fn == None:
+        # barcode isn't corrected, either because is maps directly to
+        # a sample ID, or because we're not correcting barcodes
+        return 0, barcode, False, sample_id
+    else:
+        # correct the barcode
+        corrected_barcode, num_errors = correction_fn(barcode)
+        try:
+            sample_id = barcode_to_sample_id[corrected_barcode]
+        except KeyError:
+            sample_id = None
+        
+        return num_errors, corrected_barcode, True, sample_id
 
 
 def process_fastq_single_end_read_file(fastq_read_f,
@@ -114,7 +150,9 @@ def process_fastq_single_end_read_file(fastq_read_f,
                                        start_seq_id=0,
                                        filter_bad_illumina_qual_digit=True,
                                        log_f=None,
-                                       histogram_f=None):
+                                       histogram_f=None,
+                                       barcode_correction_fn=None,
+                                       max_barcode_errors=1.5):
     """parses fastq single-end read file
     """
     header_index = 0
@@ -129,6 +167,7 @@ def process_fastq_single_end_read_file(fastq_read_f,
     count_too_short = 0
     count_too_many_N = 0
     count_bad_illumina_qual_digit = 0
+    barcode_errors_exceed_max = 0
     sequence_lengths = []
     seqs_per_sample_counts = {}
     
@@ -154,9 +193,16 @@ def process_fastq_single_end_read_file(fastq_read_f,
         # Grab the read quality
         quality = read_data[2]
         
-        try:
-          sample_id = barcode_to_sample_id[barcode]
-        except KeyError:
+        # correct the barcode (if applicable) and map to sample id
+        num_barcode_errors, corrected_barcode, correction_attempted, sample_id = \
+         correct_barcode(barcode,barcode_to_sample_id,barcode_correction_fn)
+        # skip samples with too many errors
+        if (num_barcode_errors > max_barcode_errors):
+          barcode_errors_exceed_max += 1
+          continue
+        
+        # skip unassignable samples unless otherwise requested
+        if sample_id == None:
           if not store_unassigned:
               count_barcode_not_in_map += 1
               continue
@@ -199,7 +245,8 @@ def process_fastq_single_end_read_file(fastq_read_f,
             sequence = DNA.rc(sequence)
             quality = quality[::-1]
         
-        fasta_header = '%s_%s %s' % (sample_id,seq_id,header)
+        fasta_header = '%s_%s %s orig_bc=%s new_bc=%s bc_diffs=%d' %\
+          (sample_id,seq_id,header,barcode,corrected_barcode,num_barcode_errors)
         yield fasta_header, sequence, quality, seq_id
         seq_id += 1
 
