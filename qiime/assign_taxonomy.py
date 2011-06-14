@@ -23,7 +23,7 @@ from cogent import LoadSeqs, DNA
 from cogent.app.util import get_tmp_filename
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from cogent.app.blast import blast_seqs, Blastall, BlastResult
-import cogent.app.rdp_classifier
+import qiime.pycogent_backports.rdp_classifier
 import cogent.app.rdp_classifier20
 from cogent.parse.fasta import MinimalFastaParser
 from qiime.util import FunctionWithParams
@@ -398,11 +398,12 @@ class RdpTaxonAssigner(TaxonAssigner):
         id_to_taxonomy_map = cls._parse_id_to_taxonomy_file(
             id_to_taxonomy_file)
 
-        for id, seq in MinimalFastaParser(reference_seqs_file):
-            taxonomy = id_to_taxonomy_map[id]
-            lineage = cls._parse_lineage(taxonomy)
-            rdp_id = '%s Root;%s' % (re.sub('\s', '_', id), ';'.join(lineage))
-            yield rdp_id, seq
+        for seq_id, seq in MinimalFastaParser(reference_seqs_file):
+            if seq_id in id_to_taxonomy_map:
+                taxonomy = id_to_taxonomy_map[seq_id]
+                lineage = cls._parse_lineage(taxonomy)
+                rdp_id = '%s Root;%s' % (re.sub('\s', '_', seq_id), ';'.join(lineage))
+                yield rdp_id, seq
 
     @classmethod
     def _build_tree(cls, id_to_taxonomy_file):
@@ -468,9 +469,33 @@ class RdpTaxonAssigner(TaxonAssigner):
                 pass
             return self
 
+        def get_nodes(self):
+            yield self
+            for child in self.children.values():
+                child_nodes = child.get_nodes()
+                for node in child_nodes:
+                    yield node
+
+        def check_duplicate_names(self):
+            taxa_by_rank = {}
+            all_taxa = set()
+            for node in self.get_nodes():
+                rank = node.depth
+                name = node.name
+                rank_names = taxa_by_rank.get(rank, set())
+                if name in rank_names:
+                    raise ValueError("Duplicate name %s at rank %s" % (name, rank))
+                if name in all_taxa:
+                    raise ValueError("Duplicate taxon name: %s" % name)
+                rank_names.add(name)
+                taxa_by_rank[rank] = rank_names
+                all_taxa.add(name)
+
         def rdp_taxonomy(self, counter=None):
             """Returns a string, in Rdp-compatible format.
             """
+            if self.depth == 0:
+                self.check_duplicate_names()
             if counter is None:
                 counter = count(0)
 
