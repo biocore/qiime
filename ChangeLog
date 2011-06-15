@@ -18,6 +18,7 @@ Add changes since QIIME 1.2.1 here
 * Changed beta diversity scripts to do unweighted_unifrac,weighted_unifrac by default
 * Changed output of summarize_taxa.py to a directory instead of filepath. This allows for multiple levels to be processed simultaneously.
 * The beta_diversity_through_3d_plots.py now contains some additional functionality -- 2d plots and distance histograms. It has therefore been renamed beta_diversity_through_plots.py. Any of the plots can be disabled by passing the options  --suppress_distance_histograms, --suppress_2d_plots, and --suppress_3d_plots.
+* Added split_otu_table.py script which splits a single OTU table into several OTU tables based on the values in a specified column of the mapping file. This is useful, for example, when a single OTU table is generated that covers multiple studies.
 
 QIIME 1.2.1 (22 Feb 2011)
 ==================================
