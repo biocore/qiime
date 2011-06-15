@@ -63,7 +63,7 @@ def main():
                             open(mapping_output_fp,'w'), 
                             open(otu_table_output_fp,'w'),
                             valid_states_str="%s:%s" % (mapping_field,v),
-                            num_seqs_per_otu=0)
+                            num_seqs_per_otu=1)
     
 
 
