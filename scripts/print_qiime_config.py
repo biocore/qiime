@@ -13,7 +13,7 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
 from qiime.util import make_option
-from os import access, X_OK, R_OK, W_OK, getenv
+from os import access, X_OK, R_OK, W_OK, getenv, environ
 from os.path import isdir, exists, split
 from sys import platform, version as python_version, executable
 from shutil import rmtree
@@ -107,35 +107,34 @@ class Qiime_config(TestCase):
         test_qiime_config_variable("blastall_fp", self.config, self, X_OK)
 
     def test_rdp_classifier_fp(self):
-        """rdp_classifier is set to a valid path"""
-            
+        """rdp_classifier, if set, is set to a valid path"""
         test_qiime_config_variable("rdp_classifier_fp", self.config, self)
         
     def test_pynast_template_alignment_fp(self):
-        """pynast_template_alignment is set to a valid path"""
+        """pynast_template_alignment, if set, is set to a valid path"""
             
         test_qiime_config_variable("pynast_template_alignment_fp",
                                    self.config, self)
             
     def test_pynast_template_alignment_blastdb_fp(self):
-        """pynast_template_alignment_blastdb is set to a valid path"""
+        """pynast_template_alignment_blastdb, if set, is set to a valid path"""
             
         test_qiime_config_variable("pynast_template_alignment_blastdb_fp",
                                    self.config, self)
     def test_pynast_template_alignment_blastdb_fp(self):
-        """pynast_template_alignment_blastdb is set to a valid path"""
+        """pynast_template_alignment_blastdb, if set, is set to a valid path"""
         
         test_qiime_config_variable("pynast_template_alignment_blastdb_fp",
                                    self.config, self)
         
     def test_template_alignment_lanemask_fp(self):
-        """template_alignment_lanemask is set to a valid path"""
+        """template_alignment_lanemask, if set, is set to a valid path"""
             
         test_qiime_config_variable("template_alignment_lanemask_fp",
                                    self.config, self)
     
     def test_qiime_scripts_dir(self):
-        """qiime_scripts_dir is set to a valid path"""
+        """qiime_scripts_dir, if set, is set to a valid path"""
 
         scripts_dir = self.config["qiime_scripts_dir"]
         
@@ -147,9 +146,23 @@ class Qiime_config(TestCase):
         else:
             pass
             #self.fail("scripts_dir is not set.")
-                        
+
+    def test_temp_dir(self):
+        """temp_dir, if set, is set to a valid path"""
+
+        temp_dir = self.config["temp_dir"]
+        
+        if temp_dir:
+            self.assertTrue(exists(temp_dir),
+                            "temp_dir does not exist: %s" % temp_dir)
+            self.assertTrue(isdir(temp_dir),
+                            "temp_dir is not a directory: %s" % temp_dir)
+        else:
+            pass
+            #self.fail("temp_dir is not set.")
+
     def test_working_dir(self):
-        """working_dir is set to a valid path"""
+        """working_dir, if set, is set to a valid path"""
 
         working_dir = self.config["working_dir"]
         
@@ -563,12 +576,22 @@ def test_qiime_config_variable(variable, qiime_config, test,
     test.assertTrue(access(fp, access_var),
                     "%s is not %s: %s" % (variable, modes[access_var], fp))
 
-
+def get_rdp_jarpath(qiime_config):
+    """ Return jar file name for RDP classifier """
+    rdp_jarpath = qiime_config['rdp_classifier_fp'] or \
+                  getenv('RDP_JAR_PATH')
+    return rdp_jarpath
 
 if __name__ == "__main__":
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     qiime_config = load_qiime_config()
+    
+    rdp_jarpath = get_rdp_jarpath(qiime_config)
+    if rdp_jarpath == None:
+        rdp_version = "Not installed."
+    else:
+        rdp_version = split(rdp_jarpath)[1]
 
     system_info = [
      ("Platform", platform),
@@ -586,7 +609,8 @@ if __name__ == "__main__":
      ("matplotlib version", matplotlib_lib_version),
      ("QIIME library version", get_qiime_library_version()),
      ("QIIME script version", __version__),
-     ("PyNAST version (if installed)", pynast_lib_version)]
+     ("PyNAST version (if installed)", pynast_lib_version),
+     ("RDP Classifier version (if installed)", rdp_version)]
     max_len =  max([len(e[0]) for e in version_info])
     print "\nDependency versions"
     print  "===================" 
