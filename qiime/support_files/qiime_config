@@ -19,3 +19,4 @@ temp_dir
 pyronoise_data_fp
 denoiser_min_per_core	50
 cloud_environment	False
+topiaryexplorer_project_dir
