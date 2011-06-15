@@ -2,6 +2,10 @@
 
 Upgrading to the latest version of QIIME
 ========================================
+This page documents how to install a new version of QIIME from an installation of the previous version. It should also be possible to follow the steps to upgrade from older versions to the most recent version, but it's best to review all steps in that case to ensure that you won't be performing unnecessary steps. 
+
+For a detailed history of the most notable changes between versions see the `QIIME ChangeLog <http://qiime.svn.sourceforge.net/viewvc/qiime/trunk/ChangeLog?view=markup>`_. This points to the most recent version, so will usually also give a preview of the changes that are coming in the next version of QIIME.
+
 
 QIIME 1.2.1 to QIIME 1.3.0
 --------------------------
