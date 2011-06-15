@@ -289,9 +289,9 @@ def get_qiime_temp_dir():
     
 def get_tmp_filename(tmp_dir=None, prefix="tmp", suffix=".txt",
     result_constructor=FilePath):
+    """ Wrap cogent.app.util.get_tmp_filename to modify the default tmp_dir """
     if tmp_dir == None:
         tmp_dir = get_qiime_temp_dir()
-    """ Wrap cogent.app.util.get_tmp_filename to modify the default tmp_dir """
     return cogent_get_tmp_filename(tmp_dir=tmp_dir,
                                    prefix=prefix,
                                    suffix=suffix,
