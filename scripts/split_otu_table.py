@@ -56,8 +56,9 @@ def main():
     create_dir(output_dir)
     
     for v in mapping_values:
-        otu_table_output_fp = join(output_dir,'%s_%s.txt' % (otu_table_base_name, v))
-        mapping_output_fp = join(output_dir,'mapping_%s.txt' % v)
+        v_fp_str = v.replace(' ','_')
+        otu_table_output_fp = join(output_dir,'%s_%s.txt' % (otu_table_base_name, v_fp_str))
+        mapping_output_fp = join(output_dir,'mapping_%s.txt' % v_fp_str)
         filter_otus_and_map(open(mapping_fp,'U'), 
                             open(otu_table_fp,'U'), 
                             open(mapping_output_fp,'w'), 
