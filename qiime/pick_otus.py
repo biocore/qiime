@@ -22,7 +22,6 @@ from os import makedirs
 from itertools import imap
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.parse.mothur import parse_otu_list as mothur_parse
-from cogent.app.util import get_tmp_filename
 from cogent.app.cd_hit import cdhit_clusters_from_seqs
 from cogent.app.dotur import dotur_from_alignment
 from cogent.app.mothur import Mothur
@@ -33,7 +32,7 @@ from cogent.util.misc import remove_files
 from cogent import LoadSeqs, DNA, Alignment
 from cogent.util.trie import build_prefix_map
 from cogent.util.misc import flatten
-from qiime.util import FunctionWithParams
+from qiime.util import FunctionWithParams, get_tmp_filename
 from qiime.sort import sort_fasta_by_abundance
 from qiime.parse import fields_to_dict
 from qiime.pycogent_backports.uclust import get_clusters_from_fasta_filepath
@@ -703,7 +702,6 @@ class UclustOtuPickerBase(OtuPicker):
         # Get a temp file name for the sorted fasta file
         sorted_input_seqs_filepath = \
          get_tmp_filename(prefix=self.Name,suffix='.fasta')
-        
         # Sort input seqs by abundance, and write to the temp
         # file
         sort_fasta_by_abundance(open(seq_path,'U'),

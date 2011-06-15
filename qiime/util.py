@@ -41,7 +41,7 @@ from cogent.core.moltype import MolType, IUPAC_DNA_chars, IUPAC_DNA_ambiguities,
 from cogent.data.molecular_weight import DnaMW
 from cogent.core.sequence import DnaSequence
 from cogent.app.blast import Blastall
-from cogent.app.util import get_tmp_filename
+from cogent.app.util import get_tmp_filename as cogent_get_tmp_filename, FilePath
 from cogent.parse.blast import BlastResult
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.parse.fastq import MinimalFastqParser
@@ -274,6 +274,28 @@ def get_qiime_scripts_dir():
     # " Have you defined it correctly in your qiime_config?"
     
     return result
+    
+def get_qiime_temp_dir():
+    """ Returns the temp directory that should be used by QIIME scripts
+    
+    """
+    qiime_config = load_qiime_config()
+    qiime_config_value = qiime_config['temp_dir']
+    if qiime_config_value != None:
+        result = qiime_config_value
+    else:
+        result = '/tmp/'
+    return result
+    
+def get_tmp_filename(tmp_dir=None, prefix="tmp", suffix=".txt",
+    result_constructor=FilePath):
+    if tmp_dir == None:
+        tmp_dir = get_qiime_temp_dir()
+    """ Wrap cogent.app.util.get_tmp_filename to modify the default tmp_dir """
+    return cogent_get_tmp_filename(tmp_dir=tmp_dir,
+                                   prefix=prefix,
+                                   suffix=suffix,
+                                   result_constructor=result_constructor)
     
 def load_qiime_config():
     """Return default parameters read in from file"""
