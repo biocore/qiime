@@ -203,5 +203,11 @@ If specific use cases become popular we will likely add support for them in QIIM
 
 To analyze demultiplex paired-end read data, run the split_libraries_fastq.py script on each read file independently. You can use the ``--rev_comp`` option on the reverse (3 prime) reads to reverse complement the reads so they'll be in the same orientation as the forward (5 prime) reads, if this is desired.
 
+Barcode decoding
+----------------
+QIIME currently supports length 12 golay error-correcting barcodes as the default barcode type for ``split_libraries_fastq.py``. Non-golay codes of length 12, or barcodes of other lengths can be used by passing the length of the barcode with the ``--barcode_type`` option. No error recovery will be attempted in this case.
+
+Barcode decoding slows down demultiplexing by a factor of approximately two (determined on a single HiSeq lane), but will be affected by how many barcodes actually need to be decoded. On this same HiSeq lane, barcode decoding recovered approximately 700,000 sequences (of approximately 60,000,000 input sequences) which had erroneous, correctable barcodes.
+
 
 
