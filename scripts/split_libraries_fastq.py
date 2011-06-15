@@ -83,7 +83,7 @@ script_info['optional_options'] = [
              'e.g. for length 6 barcodes, or golay_12 for golay '+\
              'error-correcting barcodes. Error correction will '+\
              'only be applied for golay_12 barcodes. [default: %default]',
-        default='12'),
+        default='golay_12'),
      make_option('--max_barcode_errors',
         default=1.5, type=float,
         help='maximum number of errors in barcode [default: %default]'),
