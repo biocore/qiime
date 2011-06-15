@@ -27,7 +27,7 @@ To install most of following dependencies you need to have a build environment o
 The following are required by QIIME:
 
 * Python 2.6 (`src <http://www.python.org/ftp/python/2.6.4/Python-2.6.4.tgz>`_) (license: PSF)
-* PyCogent 1.5 (`src <http://sourceforge.net/projects/pycogent/files/PyCogent/1.5/PyCogent-1.5.tgz/download>`_) (license: GPL)
+* PyCogent 1.5.1 (`src <http://sourceforge.net/projects/pycogent/files/PyCogent/1.5.1/PyCogent-1.5.1.tgz/download>`_) (license: GPL)
 * Numpy 1.3.0 (`src <http://sourceforge.net/projects/numpy/files/NumPy/1.3.0/numpy-1.3.0.tar.gz/download>`_) (license: BSD)
 
 Dependencies required for a subset of QIIME's features
@@ -42,7 +42,7 @@ PyNAST alignment, tree-building, taxonomy assignment, OTU picking, and other dat
 * greengenes alignment lanemask file (`txt <http://greengenes.lbl.gov/Download/Sequence_Data/lanemask_in_1s_and_0s>`_)
 * fasttree 2.1.3 (`src <http://www.microbesonline.org/fasttree/FastTree-2.1.3.c>`_) (license: GPL)
 * jre1.6.0_05 (`link <http://java.sun.com/javase/downloads/index.jsp>`_) (license: GPL2)
-* rdp_classifier-2.0.1 (`src <http://downloads.sourceforge.net/project/rdp-classifier/rdp-classifier/rdp_classifier_2.0.1/rdp_classifier_2.0.1.tar.gz>`_) See :ref:`RDP install notes <rdp-install>`. (license: GPL)
+* rdp_classifier-2.2 (`zip <http://sourceforge.net/projects/rdp-classifier/files/rdp-classifier/rdp_classifier_2.2.zip/download>`_) See :ref:`RDP install notes <rdp-install>`. (license: GPL)
 
 Alignment, tree-building, taxonomy assignment, OTU picking, and other data generation steps (required for alternative pipelines):
 
