@@ -122,9 +122,10 @@ def correct_barcode(barcode,barcode_to_sample_id,correction_fn):
     except KeyError:
         sample_id = None
     
-    if sample_id != None or correction_fn == None:
+    if sample_id != None or correction_fn == None or 'N' in barcode:
         # barcode isn't corrected, either because is maps directly to
-        # a sample ID, or because we're not correcting barcodes
+        # a sample ID, because we're not correcting barcodes, or because
+        # it contains an 'N' character
         return 0, barcode, False, sample_id
     else:
         # correct the barcode

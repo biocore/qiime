@@ -74,6 +74,12 @@ class SplitLibrariesFastqTests(TestCase):
         expected = (0, barcode, False, None)
         self.assertEqual(actual,expected)
         
+        # barcode contains N
+        barcode = "CCAGTGTANGCA"
+        actual = correct_barcode(barcode,barcode_to_sample_id,correction_fn)
+        expected = (0, "CCAGTGTANGCA", False, None)
+        self.assertEqual(actual,expected)
+        
     def test_correct_barcode_golay_correction(self):
         """correct_barcode functions as expected w golay correction"""
         barcode = "GGAGACAAGGGT"
