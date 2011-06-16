@@ -1315,10 +1315,10 @@ def make_compatible_distance_matrices(dm1,dm2,lookup=None):
         try:
             dm1_ids = [lookup[e] for e in dm1_ids]
             dm2_ids = [lookup[e] for e in dm2_ids]
-        except KeyError:
+        except KeyError,e:
             raise KeyError,\
              ("All entries in both DMs must be in "
-              "lookup if a lookup is provided.")
+              "lookup if a lookup is provided. Missing: %s" % str(e))
     order = [e for e in dm1_ids if e in dm2_ids]
     
     # create Dict2D from dm1
