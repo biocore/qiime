@@ -28,7 +28,7 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
     get_interesting_mapping_fields,inflate_denoiser_output,
     flowgram_id_to_seq_id_map, count_seqs, count_seqs_from_file,
     count_seqs_in_filepaths,get_split_libraries_fastq_params_and_file_types,
-    iseq_to_qseq_fields,get_top_fastq_two_lines)
+    iseq_to_qseq_fields,get_top_fastq_two_lines,make_compatible_distance_matrices)
 
 import numpy
 from numpy import array, asarray
@@ -662,7 +662,61 @@ class TopLevelTests(TestCase):
         for i in fastq_files:
             obs=get_top_fastq_two_lines(open(i))
             self.assertTrue(obs in exp)
+            
+    def test_make_compatible_distance_matrices(self):
+        """make_compatible_distance_matrices: functions as expected"""
+        dm1 = (['A','B','C','D'],
+               array([[0.0,2.3,3.3,4.3],
+                      [2.9,0.0,5.3,6.3],
+                      [3.9,5.9,0.0,4.3],
+                      [4.9,8.9,9.9,0.0]]))
         
+        dm2 = (['C','A','T'],
+               array([[10.0,12.3,13.3],
+                      [12.9,10.0,15.3],
+                      [13.9,15.9,10.0]]))
+        
+        expected_dm1 = (['A','C'],
+               array([[0.0,3.3],
+                      [3.9,0.0]]))
+        
+        expected_dm2 = (['A','C'],
+               array([[10.0,12.9],
+                      [12.3,10.0]]))
+        
+        actual_dm1, actual_dm2 = make_compatible_distance_matrices(dm1,dm2)
+        self.assertEqual(actual_dm1,expected_dm1)
+        self.assertEqual(actual_dm2,expected_dm2)
+
+    # Lookup feature not currently supported, but might be at some point
+    # def test_make_compatible_distance_matrices_w_lookup(self):
+    #     """make_compatible_distance_matrices: functions as expected with lookup"""
+    #     dm1 = (['A','B','C','D'],
+    #            array([[0.0,2.3,3.3,4.3],
+    #                   [2.9,0.0,5.3,6.3],
+    #                   [3.9,5.9,0.0,4.3],
+    #                   [4.9,8.9,9.9,0.0]]))
+    #     
+    #     dm2 = (['C','A','T'],
+    #            array([[10.0,12.3,13.3],
+    #                   [12.9,10.0,15.3],
+    #                   [13.9,15.9,10.0]]))
+    #                   
+    #     lookup = {'C':'C','A':'A','B':'B','T':'B'}
+    #     
+    #     expected_dm1 = (['A','B','C'],
+    #            array([[0.0,2.3,3.3],
+    #                   [2.9,0.0,5.3],
+    #                   [3.9,5.9,0.0]]))
+    #     
+    #     expected_dm2 = (['A','B','C'],
+    #            array([[10.0,13.3,12.3],
+    #                   [15.3,10.0,12.9],
+    #                   [15.9,13.9,10.0]]))
+    #     
+    #     actual_dm1, actual_dm2 = make_compatible_distance_matrices(dm1,dm2,lookup)
+    #     self.assertEqual(actual_dm1,expected_dm1)
+    #     self.assertEqual(actual_dm2,expected_dm2)
 
 
 raw_seqs1 = """>S1_0 FXX111 some comments

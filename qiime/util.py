@@ -33,6 +33,8 @@ from numpy.ma import MaskedArray
 from numpy.ma.extras import apply_along_axis
 from numpy import array, zeros, argsort, shape, vstack,ndarray, asarray, \
         float, where, isnan, mean, std
+        
+from cogent.util.dict2d import Dict2D
 from cogent import LoadSeqs, Sequence,DNA
 from cogent.cluster.procrustes import procrustes
 from cogent.core.alignment import Alignment
@@ -1302,3 +1304,38 @@ def iseq_to_qseq_fields(line,barcode_in_header,barcode_length,barcode_qual_c='b'
             
 def gzip_open(fp):
     return gzip.open(fp,'rb')
+    
+def make_compatible_distance_matrices(dm1,dm2):
+    """ Intersect distance matrices and sort the values """
+    dm1_ids = dm1[0]
+    dm1_data = dm1[1]
+    dm2_ids = dm2[0]
+    dm2_data = dm2[1]
+    order = [e for e in dm1_ids if e in dm2_ids]
+    
+    # create Dict2D from dm1
+    d1 = {}
+    for i,r in enumerate(dm1_ids):
+        d1[r] = {}
+        for j,c in enumerate(dm1_ids):
+            d1[r][c] = dm1_data[i,j]
+    result1 = Dict2D(data=d1,RowOrder=order,ColOrder=order)
+    # remove entries not in order
+    result1.purge()
+    # return 2d list in order
+    result1 = array(result1.toLists())
+    
+    # create Dict2D from dm2
+    d2 = {}.fromkeys(dm2_ids,dict())
+    for i,r in enumerate(dm2_ids):
+        d2[r] = {}
+        for j,c in enumerate(dm2_ids):
+            d2[r][c] = dm2_data[i,j]
+    result2 = Dict2D(data=d2,RowOrder=order,ColOrder=order)
+    # remove entries not in order
+    result2.purge()
+    # return 2d list in order
+    result2 = array(result2.toLists())
+    
+    return (order,result1), (order,result2)
+    
