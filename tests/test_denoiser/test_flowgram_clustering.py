@@ -14,6 +14,7 @@ import signal
 import os
 from os import mkdir, rmdir
 from time import sleep
+from StringIO import StringIO
 
 from cogent.util.unit_test import TestCase, main
 from cogent.core.sequence import Sequence
@@ -87,27 +88,27 @@ class DenoiserTests(TestCase):
                                                               self.flowgrams,
                                                               FlowgramContainerArray(),
                                                               {"FZTHQMS01CIW5N":""},
-                                                              1, 1,
+                                                              1, 1, [1],
                                                               client_sockets)
         stop_workers([a for a,b in client_sockets])
     
         self.assertEqual(names, ["FZTHQMS01CIW5N"])
         self.assertFloatEqual(scores, [4.95274923, 0.7815385])
 
-    def test_calc_remaining_rounds(self):
+    def test_log_remaining_rounds(self):
         """We can calculate how far we have to go"""
-        
+
         #all empty
-        self.assertEqual(calc_remaining_rounds(dict(), dict(),0), 0)
+        self.assertEqual(log_remaining_rounds(dict(), dict(), 0), 0)
 
         #with something in it
         ids = dict({'1': 1, '2' :1, '3': 1, '4':1})
         mapping = dict({'1': [5,6], '2': [], '3':[7], '4':[8,9,10]})
     
-        self.assertEqual(calc_remaining_rounds(ids, mapping, 0), 4)
-        self.assertEqual(calc_remaining_rounds(ids, mapping, 1), 3)
-        self.assertEqual(calc_remaining_rounds(ids, mapping, 2), 2)
-        self.assertEqual(calc_remaining_rounds(ids, mapping, 5), 0)
+        self.assertEqual(log_remaining_rounds(ids, mapping, 0), 4)
+        self.assertEqual(log_remaining_rounds(ids, mapping, 1), 3)
+        self.assertEqual(log_remaining_rounds(ids, mapping, 2), 2)
+        self.assertEqual(log_remaining_rounds(ids, mapping, 5), 0)
 
 flowgram = Flowgram("0.99	0.00	0.99	0.00	0.00	1.02	0.00	1.00	1.00	1.12\t\t"+\
                         "0.01	0.01	1.89	0.01	0.95	0.95	0.97	0.00	0.02	0.98\t"+\

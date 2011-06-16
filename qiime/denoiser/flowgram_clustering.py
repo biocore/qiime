@@ -27,15 +27,18 @@ from cogent.parse.flowgram_collection import FlowgramCollection
 from cogent.parse.fasta import MinimalFastaParser
 
 from qiime.format import write_Fasta_from_name_seq_pairs
-from qiime.util import get_qiime_project_dir, load_qiime_config
+from qiime.util import get_qiime_project_dir, load_qiime_config, \
+    FileFormatError
 
 from qiime.denoiser.utils import init_flowgram_file, append_to_flowgram_file,\
     FlowgramContainerFile, FlowgramContainerArray, make_stats, store_mapping,\
     store_clusters, read_denoiser_mapping, check_flowgram_ali_exe,\
-    sort_seqs_by_clustersize, get_denoiser_data_dir, get_flowgram_ali_exe
-from qiime.denoiser.cluster_utils import setup_workers, adjust_workers, stop_workers,\
-                                   check_workers, setup_server, ClientHandler,\
-                                   save_send, send_flowgram_to_socket
+    sort_seqs_by_clustersize, get_denoiser_data_dir, get_flowgram_ali_exe,\
+    write_breakpoint, read_breakpoint
+
+from qiime.denoiser.cluster_utils import setup_workers, adjust_workers,\
+    stop_workers, check_workers, setup_server, ClientHandler,\
+    save_send, send_flowgram_to_socket
 from qiime.denoiser.flowgram_filter import write_sff_header, split_sff
 from qiime.denoiser.preprocess import preprocess, preprocess_on_cluster,\
      read_preprocessed_data
@@ -355,17 +358,24 @@ def secondary_clustering(sff_file, mapping, bestscores, log_fh,\
        if verbose:
            log_fh.write("Secondary clustering removed %d flowgrams\n" % counter)
 
-def calc_remaining_rounds(ids, cluster_mapping, bail_out):
+def log_remaining_rounds(ids, cluster_mapping, bail_out, log_fh=None):
     """estimate the worst case number of rounds remaining
 
     ids: dict of active ids
     
     cluster_mapping: cluster mapping as dict
 
-    bail_out: minimally required cluster size 
+    bail_out: minimally required cluster size
+    
+    log_fh: log file handle
     """
     #this doesn't look very clever and might run a lot faster if rewritten
-    remaining_rounds = len ([id for id in ids.keys() if len(cluster_mapping[id]) >= bail_out ])
+
+    remaining_rounds = len ([id for id in ids.keys()
+                             if len(cluster_mapping[id]) >= bail_out ])
+    # Remember, this is an unlikely worst case estimate
+    if log_fh:
+        log_fh.write("Rounds remaining in worst case: %d\n" % remaining_rounds)
     return remaining_rounds
 
 def greedy_clustering(sff_fp, seqs, cluster_mapping, outdir, num_flows,
@@ -392,7 +402,7 @@ def greedy_clustering(sff_fp, seqs, cluster_mapping, outdir, num_flows,
     queue: name of the queue (currently not in use)
     fast_method: use more memory intensive but faster method
     error_profile: path to error profile *.dat file
-    max_num_rounds: If set to non None, will stop clustering after this many rounds
+    max_num_rounds: If set, will stop clustering after this many rounds
     """
 
     bestscores   = {}
@@ -414,13 +424,16 @@ def greedy_clustering(sff_fp, seqs, cluster_mapping, outdir, num_flows,
         client_sockets = [sock for sock,addr in client_socks_and_adrs]
 
     # ids stores all the active sequences
-    # we misuse the seqs dict here, as it starts with all active flows.
-    ids = seqs
+    # we initialize it with the ids from  the seqs dict here,
+    # as it starts with all active flows.
+    ids = dict.fromkeys(seqs)
+    
     #sort cluster_mapping by cluster size  
     sorted_keys = sorted(cluster_mapping.keys(), cmp = lambda a,b: cmp(len(a), len(b)),
                          key=lambda k: cluster_mapping[k], reverse=True)
 
     round_ctr = 1
+    #this is the main clustering loop, where most of the compute time is spent
     for key in sorted_keys:
         if(not cluster_mapping.has_key(key)):
             #this guy already has been clustered
@@ -428,7 +441,8 @@ def greedy_clustering(sff_fp, seqs, cluster_mapping, outdir, num_flows,
 
         if (max_num_rounds and round_ctr > max_num_rounds):
             if log_fh:
-                log_fh.write("Max number of rounds reached. Aborting clustering phase II and continue with phase III.\n")
+                log_fh.write("Max number of rounds reached. "+
+                             "Aborting clustering phase II and continuing with phase III.\n")
             break
         
         prefix_clustersize=len(cluster_mapping[key])      
@@ -439,12 +453,10 @@ def greedy_clustering(sff_fp, seqs, cluster_mapping, outdir, num_flows,
         # Do not take bad sequences as cluster seeds, as this will break the code
         if('N' in seqs[key]):
             continue
-        
         if log_fh:
-            # Remember, this is a unlikely worst case estimate.
-            remaining_rounds = calc_remaining_rounds(ids, cluster_mapping, bail_out)
             log_fh.write("Round %d:\n" % round_ctr)
-            log_fh.write("Rounds remaining in worst case: %d\n" % remaining_rounds)
+            log_remaining_rounds(ids, cluster_mapping, bail_out, log_fh)
+            
             log_fh.write("Iteration %s %f round %d max %d workers %d flows %d\n" % (str(datetime.datetime.now()), time(), round_ctr, remaining_rounds, num_cpus, l))
 
         #check and delete workers if no longer needed

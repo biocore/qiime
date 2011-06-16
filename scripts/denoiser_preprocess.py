@@ -19,7 +19,7 @@ from cogent.app.util import get_tmp_filename
 
 from qiime.util import parse_command_line_parameters, get_options_lookup,\
     make_option
-from qiime.denoiser.utils import files_exist
+from qiime.denoiser.utils import files_exist, store_mapping
 from qiime.denoiser.preprocess import preprocess
 
 options_lookup = get_options_lookup()
@@ -112,12 +112,14 @@ def main(commandline_args=None):
         log_fh.write("Output dir: %s\n" % opts.output_dir)
         log_fh.write("Squeeze Seqs: %s\n" % opts.squeeze)
         log_fh.write("Primer sequence: %s\n" % opts.primer)
- 
+
     (deprefixed_sff_fp, l, mapping, seqs) = \
-        preprocess(opts.sff_fp, log_fh, fasta_fp=opts.fasta_fp, out_fp=tmp_dir,
+        preprocess(opts.sff_fp, log_fh, fasta_fp=opts.fasta_fp,
+                   out_fp=tmp_dir,
                    verbose=opts.verbose, squeeze=opts.squeeze,
                    primer=opts.primer)
-    # explicitely close log file, as this file can be shared with the master
+        
+    # explicitly close log file, as this file can be shared with the master
     # Closing it here assures that all preprocess writes happen before the
     # master writes    
     if log_fh:
