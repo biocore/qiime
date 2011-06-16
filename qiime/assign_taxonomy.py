@@ -19,6 +19,7 @@ from itertools import count
 from string import strip
 from shutil import copy as copy_file
 from tempfile import NamedTemporaryFile
+from cStringIO import StringIO
 from cogent import LoadSeqs, DNA
 from cogent.app.util import get_tmp_filename
 from cogent.app.formatdb import build_blast_db_from_fasta_path
@@ -341,6 +342,11 @@ class RdpTaxonAssigner(TaxonAssigner):
                 training_seqs_file, taxonomy_file, seq_file, 
                 min_confidence=min_conf,
                 classification_output_fp=result_path)
+
+            if result_path is None:
+                results = self._training_set.fix_results(results)
+            else:
+                self._training_set.fix_output_file(result_path)
         else:
             # Just assign taxonomy, using properties file if passed
             results = self._assign_fcn(
@@ -356,35 +362,69 @@ class RdpTaxonAssigner(TaxonAssigner):
         """Returns a tuple of file objects suitable for passing to the
         RdpTrainer application controller.
         """
-        id_to_taxonomy_file = open(self.Params['id_to_taxonomy_fp'], 'r')
+        training_set = RdpTrainingSet()
         reference_seqs_file = open(self.Params['reference_sequences_fp'], 'r')
+        id_to_taxonomy_file = open(self.Params['id_to_taxonomy_fp'], 'r')
 
-        # Generate taxonomic tree and write to file 
-        tree = self._build_tree(id_to_taxonomy_file)
-        id_to_taxonomy_file.seek(0)
+        for seq_id, seq in MinimalFastaParser(reference_seqs_file):
+            training_set.add_sequence(seq_id, seq)
+
+        for line in id_to_taxonomy_file:
+            seq_id, lineage_str = map(strip, line.split('\t'))
+            training_set.add_lineage(seq_id, lineage_str)
+
+        training_set.dereplicate_taxa()
 
         rdp_taxonomy_file = NamedTemporaryFile(
             prefix='RdpTaxonAssigner_taxonomy_', suffix='.txt')
-        rdp_taxonomy_file.write(tree.rdp_taxonomy())
+        rdp_taxonomy_file.write(training_set.get_rdp_taxonomy())
         rdp_taxonomy_file.seek(0)
-
-        # Generate a set of training seqs and write to file
-        training_seqs = self._generate_training_seqs(
-            reference_seqs_file, id_to_taxonomy_file)
 
         rdp_training_seqs_file = NamedTemporaryFile(
             prefix='RdpTaxonAssigner_training_seqs_', suffix='.fasta')
-        for rdp_id, seq in training_seqs:
+        for rdp_id, seq in training_set.get_training_seqs():
             rdp_training_seqs_file.write('>%s\n%s\n' % (rdp_id, seq))
         rdp_training_seqs_file.seek(0)
 
+        self._training_set = training_set
+
         return rdp_taxonomy_file, rdp_training_seqs_file
 
-    @classmethod
-    def _generate_training_seqs(cls, reference_seqs_file, id_to_taxonomy_file):
+
+class RdpTrainingSet(object):
+    def __init__(self):
+        self._tree = RdpTree()
+        self.sequences = {}
+        self.sequence_nodes = {}
+
+    def add_sequence(self, seq_id, seq):
+        self.sequences[seq_id] = seq
+
+    def add_lineage(self, seq_id, lineage_str):
+        lineage = self._parse_lineage(lineage_str)
+        seq_node = self._tree.insert_lineage(lineage)
+        self.sequence_nodes[seq_id] = seq_node
+
+    def dereplicate_taxa(self):
+        return self._tree.dereplicate_taxa()
+
+    def _parse_lineage(self, lineage_str):
+        """Returns a list of taxa from the semi-colon-separated
+        lineage string of an id_to_taxonomy file.
+        """
+        lineage = lineage_str.strip().split(';')
+        if len(lineage) != 6:
+            raise ValueError(
+                'Each reference assignment must contain 6 items, specifying '
+                'domain, phylum, class, order, family, and genus.  '
+                'Detected %s items in "%s": %s.' % \
+                (len(lineage), lineage_str, lineage))
+        return lineage
+
+    def get_training_seqs(self):
         """Returns an iterator of valid training sequences in
         RDP-compatible format
-
+        
         Each training sequence is represented by a tuple (rdp_id,
         seq).  The rdp_id consists of two items: the original sequence
         ID with whitespace replaced by underscores, and the lineage
@@ -394,133 +434,121 @@ class RdpTaxonAssigner(TaxonAssigner):
         # trust user IDs to not have whitespace, so we replace all
         # whitespace with an underscore.  Classification may fail if
         # the replacement method generates a name collision.
-
-        id_to_taxonomy_map = cls._parse_id_to_taxonomy_file(
-            id_to_taxonomy_file)
-
-        for seq_id, seq in MinimalFastaParser(reference_seqs_file):
-            if seq_id in id_to_taxonomy_map:
-                taxonomy = id_to_taxonomy_map[seq_id]
-                lineage = cls._parse_lineage(taxonomy)
-                rdp_id = '%s Root;%s' % (re.sub('\s', '_', seq_id), ';'.join(lineage))
+        for seq_id, node in self.sequence_nodes.iteritems():
+            seq = self.sequences.get(seq_id)
+            if seq is not None:
+                lineage = node.get_lineage()
+                rdp_id = '%s %s' % (re.sub('\s', '_', seq_id), ';'.join(lineage))
                 yield rdp_id, seq
 
-    @classmethod
-    def _build_tree(cls, id_to_taxonomy_file):
-        """Returns an RdpTree object representing the taxonomic tree
-        derived from the id_to_taxonomy file.
-        """
-        tree = cls.RdpTree()
-        for line in id_to_taxonomy_file:
-            id, taxonomy = map(strip, line.split('\t'))
-            lineage = cls._parse_lineage(taxonomy)
-            tree.insert_lineage(lineage)
-        return tree
+    def get_rdp_taxonomy(self):
+        return self._tree.get_rdp_taxonomy()
 
-    @staticmethod
-    def _parse_lineage(lineage_str):
-        """Returns a list of taxa from the semi-colon-separated
-        lineage string of an id_to_taxonomy file.
-        """
-        lineage = lineage_str.strip().split(';')
-        # The RDP Classifier can only deal with a lineage that is 6
-        # levels deep.  We detect this problem now to avoid an
-        # ApplicationError later on.
-        if len(lineage) != 6:
-            raise ValueError(
-                'Each reference assignment must contain 6 items, specifying '
-                'domain, phylum, class, order, family, and genus.  '
-                'Detected %s items in "%s": %s.' % \
-                (len(lineage), lineage_str, lineage))
-        return lineage
+    def fix_output_file(self, result_path):
+        # Ultimate hack to replace mangled taxa names
+        temp_results = StringIO()
+        for line in open(result_path):
+            untagged_line = re.sub(
+                _QIIME_RDP_TAXON_TAG + "[^;\n\t]*", '', line)
+            temp_results.write(untagged_line)
+        open(result_path, 'w').write(temp_results.getvalue())
 
-    # The RdpTree class is defined as a nested class to prevent the
-    # implementation details of creating RDP-compatible training files
-    # from being exposed at the module level.
-    class RdpTree(object):
-        """Simple, specialized tree class used to generate a taxonomy
-        file for the Rdp Classifier.
-        """
-        taxonomic_ranks = [
-            'norank', 'domain', 'phylum', 'class', 'order', 'family', 'genus']
+    def fix_results(self, results_dict):
+        for seq_id, assignment in results_dict.iteritems():
+            lineage, confidence = assignment
+            revised_lineage = re.sub(
+                _QIIME_RDP_TAXON_TAG + "[^;\n\t]*", '', lineage)
+            results_dict[seq_id] = (revised_lineage, confidence)
+        return results_dict
 
-        def __init__(self, name='Root', parent=None):
-            self.name = name
-            self.parent = parent
-            if parent is None:
-                self.depth = 0
+
+class RdpTree(object):
+    """Simple, specialized tree class used to generate a taxonomy
+    file for the Rdp Classifier.
+    """
+    taxonomic_ranks = [
+        'norank', 'domain', 'phylum', 'class', 'order', 'family', 'genus']
+
+    def __init__(self, name='Root', parent=None, counter=None):
+        if counter is None:
+            self.counter = count(0)
+        else:
+            self.counter = counter
+        self.id = self.counter.next()
+        self.name = name
+        self.parent = parent
+        self.seq_ids = []
+        if parent is None:
+            self.depth = 0
+        else:
+            self.depth = parent.depth + 1
+        self.children = dict()  # name => subtree
+
+    def insert_lineage(self, lineage):
+        """Inserts an assignment into the taxonomic tree.
+        
+        Lineage must support the iterator interface, or provide an
+        __iter__() method that returns an iterator.
+        """
+        lineage = iter(lineage)
+        try:
+            taxon = lineage.next()
+            if taxon not in self.children:
+                self.children[taxon] = self.__class__(
+                    name=taxon, parent=self, counter=self.counter)
+            retval = self.children[taxon].insert_lineage(lineage)            
+        except StopIteration:
+            retval = self
+        return retval
+
+    def get_lineage(self):
+        if self.parent is not None:
+            return self.parent.get_lineage() + [self.name]
+        else:
+            return [self.name]
+
+    def get_nodes(self):
+        yield self
+        for child in self.children.values():
+            child_nodes = child.get_nodes()
+            for node in child_nodes:
+                yield node
+
+    def dereplicate_taxa(self):
+        taxa_by_depth = {}
+        for node in self.get_nodes():
+            name = node.name
+            depth = node.depth
+            current_names = taxa_by_depth.get(depth, set())
+            if name in current_names:
+                node.name = name + _QIIME_RDP_TAXON_TAG + str(node.id)
             else:
-                self.depth = parent.depth + 1
-            self.children = dict()  # name => subtree
+                current_names.add(name)
+                taxa_by_depth[depth] = current_names
 
-        def insert_lineage(self, lineage):
-            """Inserts a lineage into the taxonomic tree.
-            
-            Lineage must support the iterator interface, or provide an
-            __iter__() method that returns an iterator.
-            """
-            lineage = iter(lineage)
-            try:
-                taxon = lineage.next()
-                if taxon not in self.children:
-                    self.children[taxon] = self.__class__(name=taxon, parent=self)
-                self.children[taxon].insert_lineage(lineage)
-            except StopIteration:
-                pass
-            return self
+    def get_rdp_taxonomy(self):
+        """Returns a string, in Rdp-compatible format.
+        """
+        # RDP uses 0 for the parent ID of the root node
+        if self.parent is None:
+            parent_id = 0
+        else:
+            parent_id = self.parent.id
 
-        def get_nodes(self):
-            yield self
-            for child in self.children.values():
-                child_nodes = child.get_nodes()
-                for node in child_nodes:
-                    yield node
+        rank_name = self.taxonomic_ranks[self.depth]
 
-        def check_duplicate_names(self):
-            taxa_by_rank = {}
-            all_taxa = set()
-            for node in self.get_nodes():
-                rank = node.depth
-                name = node.name
-                rank_names = taxa_by_rank.get(rank, set())
-                if name in rank_names:
-                    raise ValueError(
-                        "Duplicate name %s at rank %s (%s). At each rank of "
-                        "the taxonomy, all taxon names must be unique to "
-                        "train the RDP Classifier." % (
-                            name, rank, self.taxonomic_ranks[rank]))
-                rank_names.add(name)
-                taxa_by_rank[rank] = rank_names
-                all_taxa.add(name)
+        fields = [
+            self.id, self.name, parent_id, self.depth, rank_name]
+        taxonomy_str = '*'.join(map(str, fields)) + "\n"
 
-        def rdp_taxonomy(self, counter=None):
-            """Returns a string, in Rdp-compatible format.
-            """
-            if self.depth == 0:
-                self.check_duplicate_names()
-            if counter is None:
-                counter = count(0)
+        # Recursively append lines from sorted list of subtrees
+        child_names = self.children.keys()
+        child_names.sort()
+        subtrees = [self.children[name] for name in child_names]
+        for subtree in subtrees:
+            taxonomy_str += subtree.get_rdp_taxonomy()
+        return taxonomy_str
 
-            # Assign ID to current node; used by child nodes
-            self.id = counter.next()
-            self.rank = self.taxonomic_ranks[self.depth]
-            # RDP uses 0 for the parent ID of the root node
-            if self.parent is None:
-                parent_id = 0
-            else:
-                parent_id = self.parent.id
-
-            fields = [
-                self.id, self.name, parent_id, self.depth, self.rank]
-            taxonomy_str = '*'.join(map(str, fields)) + "\n"
-
-            # Recursively append lines from sorted list of subtrees
-            child_names = self.children.keys()
-            child_names.sort()
-            subtrees = [self.children[name] for name in child_names]
-            for subtree in subtrees:
-                taxonomy_str += subtree.rdp_taxonomy(counter)
-            return taxonomy_str
 
 class Rdp20TaxonAssigner(RdpTaxonAssigner):
     Name = "Rdp20TaxonAssigner"
@@ -533,3 +561,6 @@ class Rdp20TaxonAssigner(RdpTaxonAssigner):
     @property
     def _train_fcn(self):
         return cogent.app.rdp_classifier20.train_rdp_classifier_and_assign_taxonomy
+
+
+_QIIME_RDP_TAXON_TAG = "_qiime_unique_taxon_tag_"

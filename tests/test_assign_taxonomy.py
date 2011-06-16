@@ -27,6 +27,7 @@ from cogent.util.misc import remove_files
 from cogent.parse.fasta import MinimalFastaParser
 from qiime.assign_taxonomy import (
     TaxonAssigner, BlastTaxonAssigner, RdpTaxonAssigner, Rdp20TaxonAssigner,
+    RdpTrainingSet, RdpTree, _QIIME_RDP_TAXON_TAG,
     )
 
 
@@ -424,32 +425,6 @@ class RdpTaxonAssignerTests(TestCase):
         key = 'X67228 some description'
         self.assertEqual(obs_assignments[key], exp_assignments[key])
 
-    def test_parse_lineage(self):
-        """Lineage in csv format is correctly parsed to a list
-        """
-        str = 'Archaea;Euryarchaeota;Methanomicrobiales;Methanomicrobium et rel.;a;b'
-        actual = self.app_class._parse_lineage(str)
-        expected = ['Archaea', 'Euryarchaeota', 'Methanomicrobiales', 
-                    'Methanomicrobium et rel.', 'a', 'b']
-        self.assertEqual(actual, expected)
-
-    def test_build_tree(self):
-        """RdpTaxonAssigner._build_tree() should return a tree with correct Rdp-format taxonomy
-        """
-        tree = self.app_class._build_tree(self.id_to_taxonomy_file)
-        actual = tree.rdp_taxonomy()
-        # The order of the lines in this file depends on python's
-        # dict() implementation, so we should ideally build two sets
-        # of lines and check that their contents match.
-        expected = rdp_expected_taxonomy
-        self.assertEqual(actual, expected)
-
-    def test_generate_training_seqs(self):
-        seqs = self.app_class._generate_training_seqs(
-            self.reference_seqs_file, self.id_to_taxonomy_file)
-        actual = LoadSeqs(data=seqs, aligned=False).toFasta()
-        self.assertEqual(actual, rdp_expected_training_seqs)
-        
     def test_generate_training_files(self):
         app = self.app_class({
                 'id_to_taxonomy_fp': self.id_to_taxonomy_file.name,
@@ -568,7 +543,7 @@ class RdpTaxonAssignerTests(TestCase):
          assignment_comp_results,\
          expected_assignment_comp_results,\
          "Taxonomic assignments never correct in %d trials." % num_trials)
-    
+
     def test_call_result_to_file(self):
         """RdpTaxonAssigner should save results to file
         
@@ -628,6 +603,125 @@ class RdpTaxonAssignerTests(TestCase):
         obs.sort()
         exp.sort()
         self.assertEqual(obs, exp)
+
+class RdpTrainingSetTests(TestCase):
+    def setUp(self):
+        self.tagged_str = (
+            '>a1\tA;B;C' + _QIIME_RDP_TAXON_TAG +
+            '\tD_' + _QIIME_RDP_TAXON_TAG +
+            ';E;F' + _QIIME_RDP_TAXON_TAG + '\n' +
+            'GGGCCC\n'
+            )
+        self.untagged_str = '>a1\tA;B;C\tD_;E;F\nGGGCCC\n'
+    
+    def test_add_sequence(self):
+        s = RdpTrainingSet()
+        s.add_sequence('a1', 'GGCCTT')
+        self.assertEqual(s.sequences['a1'], 'GGCCTT')
+
+    def test_add_lineage(self):
+        s = RdpTrainingSet()
+        s.add_lineage('a1', 'A;B;C;D;E;F')
+        n = s.sequence_nodes['a1']
+        self.assertEqual(n.name, 'F')
+        
+        # Raise a ValueError if lineage does not have 6 ranks
+        self.assertRaises(ValueError, s.add_lineage, 'a2', 'A;B;C')
+
+    def test_get_training_seqs(self):
+        s = RdpTrainingSet()
+        s.add_sequence('a1', 'GGCCTT')
+        s.add_sequence('b1', 'CCCCGG')
+        s.add_lineage('a1', 'A;B;C;D;E;F')
+        s.add_lineage('c1', 'G;H;I;J;K;L')
+
+        # Neither b1 or c1 appear, since they do not have both
+        # sequence and lineage.
+        obs = s.get_training_seqs()
+        self.assertEqual(list(obs), [("a1 Root;A;B;C;D;E;F", "GGCCTT")])
+
+    def test_get_rdp_taxonomy(self):
+        s = RdpTrainingSet()
+        s.add_lineage('a1', 'A;B;C;D;E;F')
+        s.add_lineage('c1', 'A;B;I;J;K;L')
+
+        # All taxa appear, regardless of whether a sequence was
+        # registered.
+        expected = (
+            '0*Root*0*0*norank\n'
+            '1*A*0*1*domain\n'
+            '2*B*1*2*phylum\n'
+            '3*C*2*3*class\n'
+            '4*D*3*4*order\n'
+            '5*E*4*5*family\n'
+            '6*F*5*6*genus\n'
+            '7*I*2*3*class\n'
+            '8*J*7*4*order\n'
+            '9*K*8*5*family\n'
+            '10*L*9*6*genus\n'
+            )
+        self.assertEqual(s.get_rdp_taxonomy(), expected)
+
+    def test_fix_output_file(self):
+        fp = get_tmp_filename()
+        open(fp, 'w').write(self.tagged_str)
+
+        s = RdpTrainingSet()
+        s.fix_output_file(fp)
+        obs = open(fp).read()
+        remove(fp)
+
+        self.assertEqual(obs, self.untagged_str)
+
+    def test_fix_results(self):
+        s = RdpTrainingSet()
+        results = {'a1': (self.tagged_str, 1.00)}
+        obs = s.fix_results({'a1': (self.tagged_str, 1.00)})
+        self.assertEqual(obs, {'a1': (self.untagged_str, 1.00)})
+
+
+class RdpTreeTests(TestCase):
+    def test_insert_lineage(self):
+        t = RdpTree()
+        t.insert_lineage(['a', 'b', 'c'])
+
+        self.assertEqual(t.children.keys(), ['a'])
+        self.assertEqual(t.children['a'].children['b'].children['c'].name, 'c')
+
+    def test_get_lineage(self):
+        t = RdpTree()
+        cnode = t.insert_lineage(['a', 'b', 'c'])
+        self.assertEqual(cnode.get_lineage(), ['Root', 'a', 'b', 'c'])
+
+    def test_get_nodes(self):
+        t = RdpTree()
+        t.insert_lineage(['a', 'b', 'c'])
+        obs_names = [n.name for n in t.get_nodes()]
+        self.assertEqual(obs_names, ['Root', 'a', 'b', 'c'])
+
+    def test_dereplicate_taxa(self):
+        t = RdpTree()
+        t.insert_lineage(['a', 'x'])
+        t.insert_lineage(['b', 'x'])
+        t.dereplicate_taxa()
+
+        c1 = t.children['a'].children['x']
+        c2 = t.children['b'].children['x']
+        self.assertNotEqual(c1.name, c2.name)
+
+    def test_get_rdp_taxonomy(self):
+        t = RdpTree()
+        t.insert_lineage(['A', 'B', 'C', 'D', 'E', 'F'])
+        expected = (
+            '0*Root*0*0*norank\n'
+            '1*A*0*1*domain\n'
+            '2*B*1*2*phylum\n'
+            '3*C*2*3*class\n'
+            '4*D*3*4*order\n'
+            '5*E*4*5*family\n'
+            '6*F*5*6*genus\n'
+            )
+        self.assertEqual(t.get_rdp_taxonomy(), expected)
 
 
 rdp_test1_fasta = \
@@ -739,17 +833,17 @@ tggctcagattgaacgctggcggcaggcctaacacatgcaagtcgagcggaaacgantnntntgaaccttcggggnacga
 rdp_expected_taxonomy = """\
 0*Root*0*0*norank
 1*Bacteria*0*1*domain
-2*Firmicutes*1*2*phylum
-3*Clostridia*2*3*class
-4*Clostridiales*3*4*order
-5*Clostridiaceae*4*5*family
-6*Clostridium*5*6*genus
-7*Proteobacteria*1*2*phylum
-8*Alphaproteobacteria*7*3*class
-9*Rhizobiales*8*4*order
-10*Rhizobiaceae*9*5*family
-11*Rhizobium*10*6*genus
-12*Gammaproteobacteria*7*3*class
+7*Firmicutes*1*2*phylum
+8*Clostridia*7*3*class
+9*Clostridiales*8*4*order
+10*Clostridiaceae*9*5*family
+11*Clostridium*10*6*genus
+2*Proteobacteria*1*2*phylum
+3*Alphaproteobacteria*2*3*class
+4*Rhizobiales*3*4*order
+5*Rhizobiaceae*4*5*family
+6*Rhizobium*5*6*genus
+12*Gammaproteobacteria*2*3*class
 13*Enterobacteriales*12*4*order
 14*Enterobacteriaceae*13*5*family
 15*Enterobacter*14*6*genus
