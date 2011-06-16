@@ -21,12 +21,14 @@ from time import sleep
 from socket import error
 from itertools import chain
 from subprocess import Popen, PIPE, STDOUT
+import pickle
 
 from cogent import Sequence
+
 from cogent.app.util import get_tmp_filename, ApplicationNotFoundError,\
     ApplicationError
 
-from cogent.util.misc import app_path
+from cogent.util.misc import app_path, create_dir
 from cogent.parse.flowgram_parser import lazy_parse_sff_handle
 
 from qiime.util import get_qiime_project_dir, FileFormatError
@@ -408,3 +410,31 @@ def read_denoiser_mapping(mapping_fh):
         centroid, members = line.split(':')
         denoiser_mapping[centroid] = members.split()
     return denoiser_mapping
+
+
+def write_breakpoint(current_key, ctr, cluster_mapping, ids, bestscores, out_fp):
+    """write intermediate results
+
+    current_key: the identifier of the current denoiser round
+    ctr: a uniq counter to label the breakpoint
+    cluster_mapping: an intermediate cluster mapping as dict
+    ids: the dict of active ids
+    bestscores: a dict of 
+    """
+
+    breakpoint_dir = out_fp+"/breakpoints/"
+    if (not exists(breakpoint_dir)):
+        create_dir(breakpoint_dir)
+    out_fp = breakpoint_dir+"/breakpoint%d.pickle" % ctr
+    out_fh = open(out_fp, "w")
+    pickle.dump((current_key, cluster_mapping, ids, bestscores), out_fh)
+
+    return out_fp
+    
+def read_breakpoint(out_fp):
+    """Read in information stored in a breakpoint
+    
+    out_fp: The path to the breakpoint dir
+    """
+    pickle_fh = open(out_fp, "r") 
+    return  pickle.load(pickle_fh)

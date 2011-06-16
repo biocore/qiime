@@ -12,6 +12,7 @@ __email__ = "jens.reeder@gmail.com"
 __status__ = "Development"
 
 from os import remove, rmdir
+from shutil import rmtree
 from os.path import exists
 
 from cogent.util.unit_test import TestCase, main
@@ -29,7 +30,8 @@ from qiime.denoiser.utils import make_stats, get_representatives,\
     sort_seqs_by_clustersize, get_denoiser_data_dir,\
     init_flowgram_file, append_to_flowgram_file, store_mapping,\
     store_clusters, invert_mapping, read_denoiser_mapping,\
-    cat_sff_files, FlowgramContainerFile, FlowgramContainerArray
+    cat_sff_files, FlowgramContainerFile, FlowgramContainerArray,\
+    write_breakpoint, read_breakpoint
 
 class TestUtils(TestCase):
    def setUp(self):
@@ -56,7 +58,8 @@ class TestUtils(TestCase):
       """Clean up tmp files."""
       remove_files(self.files_to_remove, False)
       if self.tmpdir:
-         rmdir(self.tmpdir)
+         rmtree(self.tmpdir)
+         
       #clean up the file from init_flowgram_file
       if (hasattr(self,"tmp_filename") and exists(self.tmp_filename)):
          remove(self.tmp_filename)
@@ -101,7 +104,7 @@ class TestUtils(TestCase):
    def test_store_cluster(self):
         """store_clusters stores the centroid seqs for each cluster."""
 
-        self.tmpdir = get_tmp_filename(tmp_dir="/tmp/", suffix="/")
+        self.tmpdir = get_tmp_filename(tmp_dir="./", suffix="_store_clusters/")
         create_dir(self.tmpdir)
 
         self.files_to_remove.append(self.tmpdir+"singletons.fasta")
@@ -293,7 +296,8 @@ BABBA"""
                    "11":[1,2,3,4,5,6,7,8,9],
                    "8":["7"]}
 
-        self.assertEqual(sort_ids(["1","3","4","8","11"], mapping), ["11","1","8","4","3"])
+        self.assertEqual(sort_ids(["1","3","4","8","11"], mapping),
+                         ["11","1","8","4","3"])
 
    def test_sort_seqs_by_clustersize(self):
         """sort_seqs_by_clustersize works"""
@@ -313,8 +317,9 @@ BABBA"""
                    "4":["3"]}
 
         observed = list(sort_seqs_by_clustersize(seqs.iteritems(), mapping))
-        expected = [('1',"AAT"),('8',"GCG"),('4', 'TAA'), ('7', 'GGG'), ('6', 'CCC'),
-                    ('5', 'TTA'), ('3', 'TTT'), ('2', 'ATT'), ('0', 'AAA')]
+        expected = [('1',"AAT"),('8',"GCG"),('4', 'TAA'), ('7', 'GGG'),
+                    ('6', 'CCC'), ('5', 'TTA'), ('3', 'TTT'), ('2', 'ATT'),
+                    ('0', 'AAA')]
         self.assertEqual(observed, expected)
 
    def test_sort_ids(self):
@@ -326,7 +331,29 @@ BABBA"""
                    "11":[1,2,3,4,5,6,7,8,9],
                    "8":["7"]}
 
-        self.assertEqual(sort_ids(["1","3","4","8","11"], mapping), ["11","1","8","4","3"])
+        self.assertEqual(sort_ids(["1","3","4","8","11"], mapping),\
+                            ["11","1","8","4","3"])
+
+   def test_breakpoints(self):
+      """storing and loading of breakpoints works"""
+      
+      self.tmpdir = get_tmp_filename(tmp_dir="./", suffix="_test_breakpoints/")
+
+      bestscores = dict({ 1 : 0.9,
+                          2 : 1.1,
+                          3 : 2.3,
+                          4 : 99.93232344})
+      
+      out_fp = write_breakpoint("Key", 99, self.mapping, [1,2,3,4],bestscores,
+                                self.tmpdir)
+
+      observed = read_breakpoint(out_fp)
+      
+      self.assertEqual(observed[0], "Key")
+      self.assertEqual(observed[1], self.mapping)
+      self.assertEqual(observed[2], [1,2,3,4])
+      self.assertEqual(observed[3], bestscores)
+
 
 class TestFlowgramContainerFile(TestCase):
    def setUp(self):
