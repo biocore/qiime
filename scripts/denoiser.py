@@ -23,7 +23,8 @@ from qiime.util import parse_command_line_parameters, get_options_lookup,\
 
 from qiime.denoiser.preprocess import STANDARD_BACTERIAL_PRIMER
 from qiime.denoiser.flowgram_clustering import denoise_seqs, denoise_per_sample
-from qiime.denoiser.utils import files_exist, get_denoiser_data_dir
+from qiime.denoiser.utils import files_exist, get_denoiser_data_dir,\
+    cat_sff_files
 
 options_lookup = get_options_lookup()
 DENOISER_DATA_DIR= get_denoiser_data_dir()
@@ -186,6 +187,10 @@ def main(commandline_args=None):
         parser.error('Flowgram file path does not exist:\n %s \n Pass a valid one via -i.'
                      % opts.sff_fp)
         
+    #peek into sff.txt files to make sure they are parseable
+    #cat_sff_fles is lazy and only reads header
+    flowgrams, header = cat_sff_files(map(open, opts.sff_fp.split(',')))
+    
     if(opts.split and opts.preprocess_fp):
         parser.error('Options --split and --preprocess_fp are exclusive')
 
