@@ -16,7 +16,9 @@ from qiime.util import make_option
 from cogent.maths.stats.test import mantel
 from qiime.parse import parse_distmat
 from qiime.format import format_p_value_for_num_iters
-from qiime.util import parse_command_line_parameters, get_options_lookup
+from qiime.util import (parse_command_line_parameters, 
+                        get_options_lookup,
+                        make_compatible_distance_matrices)
 
 options_lookup = get_options_lookup()
 
@@ -41,26 +43,18 @@ def main():
     
     input_dm_fps = opts.input_dms.split(',')
     output_f = open(opts.output_fp,'w')
-    output_f.write('DM1\tDM2\tMantel p-value\n')
+    output_f.write('DM1\tDM2\tNumber of entries\tMantel p-value\n')
     num_iterations = opts.num_iterations
     for i,fp1 in enumerate(input_dm_fps):
-        dm1_labels, dm1 = parse_distmat(open(fp1))
         for fp2 in input_dm_fps[i+1:]:
-            dm2_labels, dm2 = parse_distmat(open(fp2))
-            # Confirm that labels are the same in dm1 and dm2
-            # (i.e., that we're looking at comparable distance matrices)
-            if dm1_labels != dm2_labels:
-                failure_str = \
-                 "Labels or label order differs in two distance matrices:\n"+\
-                 "  %s : %s\n  %s : %s\n" % (fp1,dm1_labels,fp2,dm2_labels)
-                output_f.write('\nFailed to complete due to error:\n %s' % failure_str)
-                output_f.close()
-                raise ValueError, failure_str
+            (dm1_labels, dm1), (dm2_labels, dm2) =\
+             make_compatible_distance_matrices(parse_distmat(open(fp1,'U')),
+                                               parse_distmat(open(fp2,'U')))
             p = mantel(dm1,
                        dm2,
                        n=num_iterations)
             p_str = format_p_value_for_num_iters(p,num_iterations)
-            output_f.write('%s\t%s\t%s\n' % (fp1,fp2,p_str))
+            output_f.write('%s\t%s\t%d\t%s\n' % (fp1,fp2,len(dm1_labels),p_str))
     output_f.close()
 
 if __name__ == "__main__":
