@@ -1305,12 +1305,20 @@ def iseq_to_qseq_fields(line,barcode_in_header,barcode_length,barcode_qual_c='b'
 def gzip_open(fp):
     return gzip.open(fp,'rb')
     
-def make_compatible_distance_matrices(dm1,dm2):
+def make_compatible_distance_matrices(dm1,dm2,lookup=None):
     """ Intersect distance matrices and sort the values """
     dm1_ids = dm1[0]
     dm1_data = dm1[1]
     dm2_ids = dm2[0]
     dm2_data = dm2[1]
+    if lookup:
+        try:
+            dm1_ids = [lookup[e] for e in dm1_ids]
+            dm2_ids = [lookup[e] for e in dm2_ids]
+        except KeyError:
+            raise KeyError,\
+             ("All entries in both DMs must be in "
+              "lookup if a lookup is provided.")
     order = [e for e in dm1_ids if e in dm2_ids]
     
     # create Dict2D from dm1
@@ -1326,7 +1334,7 @@ def make_compatible_distance_matrices(dm1,dm2):
     result1 = array(result1.toLists())
     
     # create Dict2D from dm2
-    d2 = {}.fromkeys(dm2_ids,dict())
+    d2 = {}
     for i,r in enumerate(dm2_ids):
         d2[r] = {}
         for j,c in enumerate(dm2_ids):

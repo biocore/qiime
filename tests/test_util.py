@@ -688,35 +688,38 @@ class TopLevelTests(TestCase):
         self.assertEqual(actual_dm1,expected_dm1)
         self.assertEqual(actual_dm2,expected_dm2)
 
-    # Lookup feature not currently supported, but might be at some point
-    # def test_make_compatible_distance_matrices_w_lookup(self):
-    #     """make_compatible_distance_matrices: functions as expected with lookup"""
-    #     dm1 = (['A','B','C','D'],
-    #            array([[0.0,2.3,3.3,4.3],
-    #                   [2.9,0.0,5.3,6.3],
-    #                   [3.9,5.9,0.0,4.3],
-    #                   [4.9,8.9,9.9,0.0]]))
-    #     
-    #     dm2 = (['C','A','T'],
-    #            array([[10.0,12.3,13.3],
-    #                   [12.9,10.0,15.3],
-    #                   [13.9,15.9,10.0]]))
-    #                   
-    #     lookup = {'C':'C','A':'A','B':'B','T':'B'}
-    #     
-    #     expected_dm1 = (['A','B','C'],
-    #            array([[0.0,2.3,3.3],
-    #                   [2.9,0.0,5.3],
-    #                   [3.9,5.9,0.0]]))
-    #     
-    #     expected_dm2 = (['A','B','C'],
-    #            array([[10.0,13.3,12.3],
-    #                   [15.3,10.0,12.9],
-    #                   [15.9,13.9,10.0]]))
-    #     
-    #     actual_dm1, actual_dm2 = make_compatible_distance_matrices(dm1,dm2,lookup)
-    #     self.assertEqual(actual_dm1,expected_dm1)
-    #     self.assertEqual(actual_dm2,expected_dm2)
+    def test_make_compatible_distance_matrices_w_lookup(self):
+        """make_compatible_distance_matrices: functions as expected with lookup"""
+        dm1 = (['A','B','C','D'],
+               array([[0.0,2.3,3.3,4.3],
+                      [2.9,0.0,5.3,6.3],
+                      [3.9,5.9,0.0,4.3],
+                      [4.9,8.9,9.9,0.0]]))
+        
+        dm2 = (['C','A','T'],
+               array([[10.0,12.3,13.3], 
+                      [12.9,10.0,15.3], 
+                      [13.9,15.9,10.0]]))
+                      
+        lookup = {'C':'C','A':'A','B':'B','T':'B','D':'D'}
+        
+        expected_dm1 = (['A','B','C'],
+               array([[0.0,2.3,3.3],
+                      [2.9,0.0,5.3],
+                      [3.9,5.9,0.0]]))
+        
+        expected_dm2 = (['A','B','C'],
+               array([[10.0,15.3,12.9],
+                      [15.9,10.0,13.9],
+                      [12.3,13.3,10.0]]))
+        
+        actual_dm1, actual_dm2 = make_compatible_distance_matrices(dm1,dm2,lookup)
+        self.assertEqual(actual_dm1,expected_dm1)
+        self.assertEqual(actual_dm2,expected_dm2)
+        
+        lookup = {'C':'C','B':'B','T':'B','D':'D'}
+        self.assertRaises(KeyError,
+         make_compatible_distance_matrices,dm1,dm2,lookup)
 
 
 raw_seqs1 = """>S1_0 FXX111 some comments
