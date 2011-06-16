@@ -37,12 +37,19 @@ script_info['optional_options'] = [
 ]
 script_info['version'] = __version__
 
+comment = """# Number of entries refers to the number of rows (or cols) 
+# retained in each distance matrix after filtering the distance matrices 
+# to include only those samples that were in both distance matrices. 
+# p-value contains the correct number of significant digits.
+"""
+
 def main():
     option_parser, opts, args =\
        parse_command_line_parameters(**script_info)
     
     input_dm_fps = opts.input_dms.split(',')
     output_f = open(opts.output_fp,'w')
+    output_f.write(comment)
     output_f.write('DM1\tDM2\tNumber of entries\tMantel p-value\n')
     num_iterations = opts.num_iterations
     for i,fp1 in enumerate(input_dm_fps):
