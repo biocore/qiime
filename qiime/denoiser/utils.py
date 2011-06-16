@@ -32,7 +32,7 @@ from cogent.util.misc import app_path, create_dir
 from cogent.parse.flowgram_parser import lazy_parse_sff_handle
 
 from qiime.util import get_qiime_project_dir, FileFormatError
-from qiime.denoiser .flowgram_filter import write_sff_header
+from qiime.denoiser.flowgram_filter import write_sff_header
 
 #    Wrap into explicit function so we can easily move the data dir around.
 def get_denoiser_data_dir():
