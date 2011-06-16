@@ -14,7 +14,7 @@ __status__ = "Development"
 
 from qiime.util import make_option
 from cogent.maths.stats.test import mantel
-from qiime.parse import parse_distmat
+from qiime.parse import parse_distmat, fields_to_dict
 from qiime.format import format_p_value_for_num_iters
 from qiime.util import (parse_command_line_parameters, 
                         get_options_lookup,
@@ -33,7 +33,10 @@ script_info['required_options'] = [\
  make_option('-o','--output_fp',help='the output filepath'),\
 ]
 script_info['optional_options'] = [
- make_option('-n','--num_iterations',help='the number of iterations to perform',default=100,type='int')
+ make_option('-n','--num_iterations',help='the number of iterations to perform',default=100,type='int'),
+ make_option('-s','--sample_id_map_fp',
+    help='Map of original sample ids to new sample ids [default: %default]',
+    default=None)
 ]
 script_info['version'] = __version__
 
@@ -46,6 +49,13 @@ comment = """# Number of entries refers to the number of rows (or cols)
 def main():
     option_parser, opts, args =\
        parse_command_line_parameters(**script_info)
+       
+    sample_id_map_fp = opts.sample_id_map_fp
+    if sample_id_map_fp:
+        sample_id_map = dict([(k,v[0]) \
+         for k,v in fields_to_dict(open(sample_id_map_fp, "U")).items()])
+    else:
+        sample_id_map = None
     
     input_dm_fps = opts.input_dms.split(',')
     output_f = open(opts.output_fp,'w')
@@ -56,7 +66,8 @@ def main():
         for fp2 in input_dm_fps[i+1:]:
             (dm1_labels, dm1), (dm2_labels, dm2) =\
              make_compatible_distance_matrices(parse_distmat(open(fp1,'U')),
-                                               parse_distmat(open(fp2,'U')))
+                                               parse_distmat(open(fp2,'U')),
+                                               lookup=sample_id_map)
             p = mantel(dm1,
                        dm2,
                        n=num_iterations)
