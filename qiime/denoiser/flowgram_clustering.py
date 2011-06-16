@@ -45,6 +45,59 @@ from qiime.denoiser.preprocess import preprocess, preprocess_on_cluster,\
 
 DENOISER_DATA_DIR = get_denoiser_data_dir()
 
+def compute_workload(num_cores, num_flows, spread):
+    """Compute workload for each individual worker
+    
+    num_flows:
+    
+    num_cores:
+
+    spread:
+    """
+    # sigma is the sum of the normalized processing velocity scores
+    # for each cluster processor. In a perfect world, sigma == num_cores
+    # and the normalized processing velocity (in spread) == 1.0
+
+    sigma = fsum(spread[0:num_cores])
+    workload = [ trunc((num_flows * x / sigma))for x in spread[0:num_cores] ]
+   
+    while sum(workload) < num_flows :
+        finish = workload[0]/spread[0]
+        i = 0
+        for x in range(1,num_cores):
+            t = workload[x]/spread[x]
+            if t < finish:
+                finish = t
+                i = x
+        workload[i] += 1
+    return workload
+
+def adjust_processing_time(num_cores, workload, timing, epoch):
+    """adjust processing time computes the spread
+    
+    num_cores:
+    
+    workload:
+
+    timing:
+    
+    epoch:
+    """
+
+    # sigma is the total through put in flowgrams/sec
+    sigma = 0.0
+    for i in range (num_cores):
+        timing[i] = workload[i]/(timing[i] - epoch)
+        sigma += timing[i]
+    #
+    # spread represents the normalized flowgram/s processing rate
+    # with 1.0 being the nominal processing speed
+    #
+    spread = [None for x in range(num_cores)]
+    for i in range (num_cores):
+        spread[i] = (timing[i] * num_cores)/sigma
+    return spread
+        
 def get_flowgram_distances_on_cluster(id, flowgram, flowgrams, fc, ids, num_cores,
                                       num_flows, spread, client_sockets=[]):
     """Computes distance scores of flowgram to all flowgrams in parser.
@@ -85,27 +138,11 @@ def get_flowgram_distances_on_cluster(id, flowgram, flowgrams, fc, ids, num_core
     #Need to call this here, since we iterate over the same iterator repeatedly.
     #Otherwise the call in ifilter will reset the iterator by implicitely  calling __iter__.
     #test if iter does the same
-    flowgrams_iter=flowgrams.__iter__()    
+    flowgrams_iter=flowgrams.__iter__()
     #prepare input files and commands
     #synchronous client-server communication
-    
-    # sigma is the sum of the normalized processing velocity scores
-    # for each cluster processor. In a perfect world, sigma == num_cores
-    # and the normalized processing velocity (in spread) == 1.0
-    sigma = fsum(spread[0:num_cores])
-    workload = [ trunc((num_flows * x / sigma))for x in spread[0:num_cores] ]
 
-    while sum(workload) < num_flows :
-        finish = workload[0]/spread[0]
-        i = 0
-        for x in range(1,num_cores):
-            t = workload[x]/spread[x]
-            if t < finish:
-                finish = t
-                i = x
-        workload[i] += 1
-
-    dispatched = 0
+    workload = compute_workload(num_cores, num_flows, spread)
 
     debug_count = 0
     for i in range(num_cores):
@@ -138,19 +175,7 @@ def get_flowgram_distances_on_cluster(id, flowgram, flowgrams, fc, ids, num_core
     loop()
     #end asynchronous loop
     
-    # adjust processing time
-    # sigma is the total through put in flowgrams/sec
-    sigma = 0.0
-    for i in range (num_cores):
-        timing[i] = workload[i]/(timing[i] - epoch)
-        sigma += timing[i]
-    #
-    # spread represents the normalized flowgram/s processing rate
-    # with 1.0 being the nominal processing speed
-    #
-    for i in range (num_cores):
-        spread[i] = (timing[i] * num_cores)/sigma
-   
+    spread = adjust_processing_time(num_cores, workload, timing, epoch)
 
     #flatten list
     scores = [item for list in results for item in list]
@@ -457,16 +482,14 @@ def greedy_clustering(sff_fp, seqs, cluster_mapping, outdir, num_flows,
             log_fh.write("Round %d:\n" % round_ctr)
             log_remaining_rounds(ids, cluster_mapping, bail_out, log_fh)
             
-            log_fh.write("Iteration %s %f round %d max %d workers %d flows %d\n" % (str(datetime.datetime.now()), time(), round_ctr, remaining_rounds, num_cpus, l))
-
         #check and delete workers if no longer needed
         if on_cluster:
             num_cpus = adjust_workers(l, num_cpus, client_sockets, log_fh)
             #check for dead workers
             check_workers(workers, client_sockets, log_fh)
             if num_cpus != len(spread):
+                #JR:Does this reset the spread everytime we release a worker?
                 spread = [1.0 for x in range(num_cpus)]
-
         
         ideal_flow = seq_to_flow(seqs[key])
         (new_flowgrams, newl) = filter_with_flowgram(key, ideal_flow, flowgrams, header, ids,
@@ -488,8 +511,7 @@ def greedy_clustering(sff_fp, seqs, cluster_mapping, outdir, num_flows,
             #all flowgrams clustered
             break
         if log_fh:
-            log_fh.write(("Throughput Spread %s\n"%str(spread)))
- 
+            log_fh.write("Throughput Spread %s\n" % str(spread))
 
     if on_cluster:
         stop_workers(client_sockets, log_fh)
