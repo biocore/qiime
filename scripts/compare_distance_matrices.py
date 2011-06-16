@@ -68,9 +68,10 @@ def main():
              make_compatible_distance_matrices(parse_distmat(open(fp1,'U')),
                                                parse_distmat(open(fp2,'U')),
                                                lookup=sample_id_map)
-            p = mantel(dm1,
-                       dm2,
-                       n=num_iterations)
+            if len(dm1_labels) < 2:
+                output_f.write('%s\t%s\t%d\tToo few samples\n' % (fp1,fp2,len(dm1_labels)))
+                continue
+            p = mantel(dm1,dm2,n=num_iterations)
             p_str = format_p_value_for_num_iters(p,num_iterations)
             output_f.write('%s\t%s\t%d\t%s\n' % (fp1,fp2,len(dm1_labels),p_str))
     output_f.close()
