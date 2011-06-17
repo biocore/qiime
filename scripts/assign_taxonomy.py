@@ -37,27 +37,13 @@ script_info['script_description']="""Contains code for assigning taxonomy, using
 Given a set of sequences, assign_taxonomy attempts to assign the taxonomy of each sequence. Currently there are two methods implemented: assignment with BLAST and assignment with the RDP classifier. The output of this step is a mapping of input sequence identifiers (1st column of output file) to taxonomy (2nd column) and quality score (3rd column). The sequence identifier of the best BLAST hit is also included if the blast method is used (4th column). """
 script_info['script_usage']=[]
 script_info['script_usage'].append(("""""","""
-Example of consensus lineage: 
+Example reference data sets and id_to_taxonomy maps can be found in the Greengenes OTUs. To get the latest build of those click the "Most recent Greengenes OTUs" link on the top right of http://blog.qiime.org. After downloading and unzipping you can use the following following files as -r and -t. As of this writing the latest build was gg_otus_4feb2011, but that portion of path to these files will change with future builds. Modify these paths accordining when calling %prog.
 
-The OTU containing 5 sequences annotated as shown below would be assigned to the "Desulfovibrionaceae" level because only 80% of sequences agree with the "LE30" annotation.
+-r gg_otus_4feb2011/rep_set/gg_97_otus_4feb2011.fasta
+-t gg_otus_4feb2011/taxonomies/greengenes_tax_rdp_train.txt (best for retraining the RDP classifier)
+-t gg_otus_4feb2011/taxonomies/greengenes_tax.txt (best for BLAST taxonomy assignment)
 
-* Bacteria; Proteobacteria; Desulfovibrionales; Desulfovibrionaceae; LE30
-* Bacteria; Proteobacteria; Desulfovibrionales; Desulfovibrionaceae; LE30
-* Bacteria; Proteobacteria; Desulfovibrionales; Desulfovibrionaceae; LE30
-* Bacteria; Proteobacteria; Desulfovibrionales; Desulfovibrionaceae; 
-* Bacteria; Proteobacteria; Desulfovibrionales; Desulfovibrionaceae; LE30
 
-Assignments are provided in a two column tab-delimited format, which maps input sequence identifiers to assignments. Each assignment is specified as a list of taxa separated by a ';' character.
-
-Example of an assignment output file:
-
-======== =================================================================
-AY800210 Archaea;Euryarchaeota;Halobacteriales;uncultured 
-EU883771 Archaea;Euryarchaeota;Methanomicrobiales;Methanomicrobium et rel.
-EF503699 Archaea;Crenarchaeota;uncultured;uncultured 
-DQ260310 Archaea;Euryarchaeota;Methanobacteriales;Methanobacterium 
-EF503697 Archaea;Crenarchaeota;uncultured;uncultured
-======== =================================================================
 """,""""""))
 script_info['script_usage'].append(("""Sample Assignment with BLAST:""","""
 Taxonomy assignments are made by searching input sequences against a blast database of pre-assigned reference sequences. If a satisfactory match is found, the reference assignment is given to the input sequence. This method does not take the hierarchical structure of the taxonomy into account, but it is very fast and flexible. If a file of reference sequences is provided, a temporary blast database is built on-the-fly. The quality scores assigned by the BLAST taxonomy assigner are e-values.
