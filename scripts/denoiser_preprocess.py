@@ -15,7 +15,7 @@ from os.path import exists
 from os import remove, rename, rmdir, makedirs
 from random import sample
 
-from cogent.app.util import get_tmp_filename
+from qiime.util import get_tmp_filename
 
 from qiime.util import parse_command_line_parameters, get_options_lookup,\
     make_option

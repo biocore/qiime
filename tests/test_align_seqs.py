@@ -16,7 +16,7 @@ from os.path import getsize
 from cogent import LoadSeqs, DNA
 from cogent.core.alignment import DenseAlignment, Alignment
 from cogent.util.unit_test import TestCase, main
-from cogent.app.util import get_tmp_filename
+from qiime.util import get_tmp_filename
 import cogent.app.muscle
 from qiime.align_seqs import Aligner, CogentAligner,\
     PyNastAligner, InfernalAligner

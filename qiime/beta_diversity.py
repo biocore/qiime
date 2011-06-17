@@ -32,7 +32,7 @@ import os.path
 
 import warnings
 warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
-from cogent.app.util import get_tmp_filename
+from qiime.util import get_tmp_filename
 import cogent.maths.distance_transform as distance_transform #avoid hard-coding metrics
 
 from qiime.util import FunctionWithParams, TreeMissingError, OtuMissingError

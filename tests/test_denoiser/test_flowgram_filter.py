@@ -17,7 +17,7 @@ from cogent.parse.fasta import MinimalFastaParser
 from cogent.parse.flowgram_collection import FlowgramCollection
 from cogent.parse.flowgram import Flowgram
 from cogent.parse.flowgram_parser import lazy_parse_sff_handle
-from cogent.app.util import get_tmp_filename
+from qiime.util import get_tmp_filename
 
 from qiime.denoiser.flowgram_filter import extract_barcodes_from_mapping,\
     build_inverse_barcode_map, write_sff_header, filter_sff_file, within_length,\

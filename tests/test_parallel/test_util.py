@@ -11,7 +11,7 @@ from os import remove
 from cogent import LoadSeqs
 from cogent.util.misc import remove_files
 from cogent.util.unit_test import TestCase, main
-from cogent.app.util import get_tmp_filename
+from qiime.util import get_tmp_filename
 from qiime.parallel.util import (split_fasta, get_random_job_prefix,
  write_jobs_file, compute_seqs_per_file, build_filepaths_from_filepaths,
  submit_jobs, merge_to_n_commands)

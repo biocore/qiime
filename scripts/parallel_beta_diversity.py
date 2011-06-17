@@ -18,7 +18,7 @@ from glob import glob
 from os import popen, makedirs
 from os.path import split, splitext, join, isfile
 from subprocess import check_call, CalledProcessError
-from cogent.app.util import get_tmp_filename
+from qiime.util import get_tmp_filename
 from qiime.parallel.util import get_random_job_prefix, write_jobs_file,\
     submit_jobs, get_rename_command,\
     write_filepaths_to_file, merge_to_n_commands

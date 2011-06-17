@@ -13,7 +13,7 @@ from qiime.make_bootstrapped_tree import write_pdf_bootstrap_tree
 from cogent.util.unit_test import TestCase, main
 from cogent.core.tree import PhyloNode
 from qiime.parse import parse_newick
-from cogent.app.util import get_tmp_filename
+from qiime.util import get_tmp_filename
 import os
 
 

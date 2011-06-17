@@ -25,13 +25,10 @@ import pickle
 
 from cogent import Sequence
 
-from cogent.app.util import get_tmp_filename, ApplicationNotFoundError,\
-    ApplicationError
-
+from cogent.app.util import ApplicationNotFoundError,ApplicationError
 from cogent.util.misc import app_path, create_dir
 from cogent.parse.flowgram_parser import lazy_parse_sff_handle
-
-from qiime.util import get_qiime_project_dir, FileFormatError
+from qiime.util import get_qiime_project_dir, FileFormatError, get_tmp_filename
 from qiime.denoiser.flowgram_filter import write_sff_header
 
 #    Wrap into explicit function so we can easily move the data dir around.

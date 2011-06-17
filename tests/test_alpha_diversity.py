@@ -17,7 +17,7 @@ from cogent.util.unit_test import TestCase, main
 from cogent.maths.unifrac.fast_unifrac import PD_whole_tree
 from cogent.maths.stats.alpha_diversity import (observed_species, osd)
 from cogent.util.misc import remove_files
-from cogent.app.util import get_tmp_filename
+from qiime.util import get_tmp_filename
 from qiime.alpha_diversity import AlphaDiversityCalc, AlphaDiversityCalcs
 import qiime.alpha_diversity as alph454
 from qiime.parse import parse_newick

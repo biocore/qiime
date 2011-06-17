@@ -16,7 +16,7 @@ from qiime.util import make_option
 from os import popen, system, mkdir, makedirs, getenv
 from os.path import split, splitext, join, isfile
 from subprocess import check_call, CalledProcessError
-from cogent.app.util import get_tmp_filename
+from qiime.util import get_tmp_filename
 from qiime.util import parse_command_line_parameters
 from qiime.parallel.assign_taxonomy_rdp import get_commands
 from qiime.parallel.util import split_fasta, get_random_job_prefix, write_jobs_file,\

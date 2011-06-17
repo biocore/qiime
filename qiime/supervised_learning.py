@@ -15,7 +15,7 @@ from os.path import join
 from sys import stdout
 from time import sleep
 from tempfile import mkdtemp
-from cogent.app.util import get_tmp_filename
+from qiime.util import get_tmp_filename
 from qiime.util import get_qiime_project_dir
 from qiime.format import format_otu_table
 from cogent.app.util import CommandLineApplication, CommandLineAppResult, \

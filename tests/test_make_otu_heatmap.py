@@ -17,7 +17,7 @@ from qiime.make_otu_heatmap import (extract_metadata_column,
     get_order_from_categories, get_order_from_tree, make_otu_labels, 
     names_to_indices, get_log_transform, get_clusters, 
     get_fontsize, plot_heatmap)
-from cogent.app.util import get_tmp_filename
+from qiime.util import get_tmp_filename
 from cogent.util.misc import remove_files
 from os.path import exists
 

@@ -18,7 +18,7 @@ from matplotlib.axes import Subplot
 
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files
-from cogent.app.util import get_tmp_filename
+from qiime.util import get_tmp_filename
 
 from qiime.plot_rank_abundance_graph import make_sorted_frequencies,\
     plot_rank_abundance_graph, plot_rank_abundance_graphs

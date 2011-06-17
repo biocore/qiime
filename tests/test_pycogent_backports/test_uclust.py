@@ -11,7 +11,8 @@ from os.path import isfile
 from cogent.util.misc import remove_files
 from cogent.core.moltype import DNA
 from cogent.util.unit_test import TestCase, main
-from cogent.app.util import get_tmp_filename, ApplicationError
+from cogent.app.util import ApplicationError, get_tmp_filename
+
 from qiime.pycogent_backports.uclust import (Uclust, 
  uclust_fasta_sort_from_filepath,
  uclust_cluster_from_sorted_fasta_filepath,

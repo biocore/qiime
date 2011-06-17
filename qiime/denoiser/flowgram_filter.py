@@ -15,7 +15,7 @@ from re import compile, search
 from itertools import imap
 from collections import defaultdict
 
-from cogent.app.util import get_tmp_filename
+from qiime.util import get_tmp_filename
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.parse.flowgram_parser import lazy_parse_sff_handle
 from cogent.parse.flowgram import Flowgram

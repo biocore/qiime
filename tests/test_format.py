@@ -15,7 +15,7 @@ from os import remove
 from cogent.util.misc import remove_files
 from cogent.util.unit_test import TestCase, main
 from cogent.parse.fasta import MinimalFastaParser
-from cogent.app.util import get_tmp_filename
+from qiime.util import get_tmp_filename
 from numpy import array, nan
 from qiime.parse import fields_to_dict, parse_mapping_file
 from qiime.format import (format_distance_matrix, format_otu_table,

@@ -16,7 +16,7 @@ from os.path import exists
 from time import sleep
 
 from cogent.util.unit_test import TestCase, main
-from cogent.app.util import get_tmp_filename
+from qiime.util import get_tmp_filename
 
 
 from qiime.denoiser.make_cluster_jobs import QSUB_TEXT, make_jobs, \

@@ -23,7 +23,8 @@ from cogent import LoadTree, LoadSeqs
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files
-from cogent.app.util import get_tmp_filename, ApplicationNotFoundError
+from cogent.app.util import ApplicationNotFoundError
+from qiime.util import get_tmp_filename
 from cogent.parse.binary_sff import parse_binary_sff
 from qiime.util import load_qiime_config
 from qiime.parse import (parse_qiime_parameters, parse_otu_table,

@@ -20,7 +20,8 @@ from cogent.util.unit_test import TestCase, main
 from cogent.core.sequence import Sequence
 from cogent.parse.flowgram import Flowgram
 from cogent.parse.flowgram_collection import parse_sff, FlowgramCollection
-from cogent.app.util import get_tmp_filename, ApplicationNotFoundError
+from cogent.app.util import ApplicationNotFoundError
+from qiime.util import get_tmp_filename
 
 from qiime.denoiser.flowgram_clustering import *
 from qiime.denoiser.utils import FlowgramContainerArray

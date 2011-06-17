@@ -17,7 +17,8 @@ from os import remove, rename, rmdir, makedirs
 from subprocess import Popen, PIPE, STDOUT
 
 from cogent.util.misc import app_path
-from cogent.app.util import get_tmp_filename, ApplicationNotFoundError
+from cogent.app.util import ApplicationNotFoundError
+from qiime.util import get_tmp_filename
 
 from qiime.denoiser.make_cluster_jobs import make_jobs, submit_jobs
 

@@ -16,7 +16,7 @@ import numpy
 import warnings
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files
-from cogent.app.util import get_tmp_filename
+from qiime.util import get_tmp_filename
 from cogent.core.tree import PhyloNode
 from cogent.maths.distance_transform import dist_chisq
 from qiime.parse import parse_newick, parse_distmat, parse_matrix

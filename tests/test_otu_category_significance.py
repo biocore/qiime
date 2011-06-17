@@ -24,7 +24,7 @@ from qiime.otu_category_significance import filter_OTUs, \
     test_wrapper_multiple, test_wrapper
 from numpy import array
 from cogent.util.dict2d import Dict2D
-from cogent.app.util import get_tmp_filename
+from qiime.util import get_tmp_filename
 from os import remove
 from qiime.parse import parse_otu_table, parse_mapping_file
 

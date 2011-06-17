@@ -13,7 +13,7 @@ from os.path import isdir, isfile, exists
 from shutil import rmtree
 
 from cogent.util.unit_test import TestCase, main
-from cogent.app.util import get_tmp_filename
+from qiime.util import get_tmp_filename
 from cogent.util.misc import remove_files, get_random_directory_name
 
 from qiime.quality_scores_plot import generate_histogram,\

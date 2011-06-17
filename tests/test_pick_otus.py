@@ -16,7 +16,7 @@ from os import remove
 
 from cogent.util.misc import create_dir
 from cogent.util.unit_test import TestCase, main
-from cogent.app.util import get_tmp_filename
+from qiime.util import get_tmp_filename, load_qiime_config
 from cogent.util.misc import remove_files
 from cogent import DNA
 from cogent.app.formatdb import build_blast_db_from_fasta_path
@@ -566,6 +566,7 @@ class UclustOtuPickerTests(TestCase):
 
     def setUp(self):
         # create the temporary input files
+        self.temp_dir = load_qiime_config()['temp_dir']
         self.tmp_seq_filepath1 = get_tmp_filename(\
          prefix='UclustOtuPickerTest_',\
          suffix='.fasta')
@@ -740,7 +741,6 @@ class UclustOtuPickerTests(TestCase):
         """ returns expected clusters default params, writes correct .uc file"""
 
         # adapted from test_app.test_cd_hit.test_cdhit_clusters_from_seqs
-        
         exp_otu_ids = range(10)
         exp_clusters = [['uclust_test_seqs_0'],
                         ['uclust_test_seqs_1'],
@@ -757,7 +757,7 @@ class UclustOtuPickerTests(TestCase):
 
         
         app = UclustOtuPicker(params={'save_uc_files':True,
-                                      'output_dir':'/tmp/'})
+                                      'output_dir':self.temp_dir})
         obs = app(self.tmp_seq_filepath1)
         
 
@@ -1040,6 +1040,7 @@ class UclustReferenceOtuPickerTests(TestCase):
     
     def setUp(self):
         """ """
+        self.temp_dir = load_qiime_config()['temp_dir']
         self.tmp_seq_filepath1 = get_tmp_filename(
          prefix='UclustReferenceOtuPickerTest_',
          suffix='.fasta')
@@ -1457,7 +1458,7 @@ class UclustReferenceOtuPickerTests(TestCase):
         """UclustReferenceOtuPicker: default parameters, saves uc file
         """
         uc = UclustReferenceOtuPicker({'save_uc_files':True,
-                                       'output_dir':'/tmp/'})
+                                       'output_dir':self.temp_dir})
                                        
         obs = uc(self.tmp_seq_filepath1,self.temp_ref_filepath1)
         exp = {'ref1':['uclust_test_seqs_0'],

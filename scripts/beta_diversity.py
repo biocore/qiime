@@ -18,7 +18,7 @@ from qiime.beta_diversity import (single_file_beta, multiple_file_beta,
 list_known_metrics)
 import os
 from sys import stderr
-from cogent.app.util import get_tmp_filename
+from qiime.util import get_tmp_filename
 from qiime.parse import parse_otu_table, parse_newick, PhyloNode
 
 script_info={}

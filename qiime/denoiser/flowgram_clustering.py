@@ -20,7 +20,8 @@ import datetime
 from time import time
 from math import fsum, trunc
 
-from cogent.app.util import get_tmp_filename, ApplicationNotFoundError
+from cogent.app.util import ApplicationNotFoundError
+from qiime.util import get_tmp_filename
 from cogent.parse.flowgram_parser import lazy_parse_sff_handle
 from cogent.parse.flowgram import Flowgram, seq_to_flow
 from cogent.parse.flowgram_collection import FlowgramCollection

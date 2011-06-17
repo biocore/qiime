@@ -7,7 +7,7 @@ from glob import glob
 from cogent import Sequence
 from cogent.util.unit_test import TestCase, main
 from cogent.parse.fasta import MinimalFastaParser
-from cogent.app.util import get_tmp_filename
+from qiime.util import get_tmp_filename
 from cogent.util.misc import remove_files
 from cogent.cluster.procrustes import procrustes
 from cogent.app.formatdb import build_blast_db_from_fasta_file

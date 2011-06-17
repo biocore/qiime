@@ -17,7 +17,7 @@ from os.path import exists, split
 from re import search
 from itertools import chain
 
-from cogent.app.util import get_tmp_filename
+from qiime.util import get_tmp_filename
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.util.misc import remove_files, app_path
 from cogent.parse.flowgram_parser import lazy_parse_sff_handle

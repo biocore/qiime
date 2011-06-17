@@ -15,7 +15,7 @@ from numpy import array, nan
 from StringIO import StringIO
 from cogent.util.unit_test import TestCase,main
 from cogent.util.misc import remove_files
-from cogent.app.util import get_tmp_filename
+from qiime.util import get_tmp_filename
 from qiime.parse import (group_by_field, group_by_fields, 
     parse_distmat, parse_rarefaction_record, parse_rarefaction, parse_coords, 
     parse_otu_table, make_envs_dict, fields_to_dict, parse_rarefaction_fname,

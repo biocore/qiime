@@ -19,7 +19,7 @@ from string import lowercase
 
 from cogent.util.trie import build_prefix_map
 from cogent.parse.fasta import MinimalFastaParser
-from cogent.app.util import get_tmp_filename
+from qiime.util import get_tmp_filename
 from cogent.parse.flowgram import Flowgram, build_averaged_flowgram
 from cogent.parse.flowgram_parser import lazy_parse_sff_handle
 

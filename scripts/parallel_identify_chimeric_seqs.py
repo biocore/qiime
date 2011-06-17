@@ -18,7 +18,7 @@ from os.path import split, splitext, join
 from subprocess import check_call, CalledProcessError
 from shutil import copy
 
-from cogent.app.util import get_tmp_filename
+from qiime.util import get_tmp_filename
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from cogent.parse.fasta import MinimalFastaParser
 

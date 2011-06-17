@@ -24,7 +24,7 @@ from qiime.parallel.util import split_fasta, get_random_job_prefix,\
 from os import popen, system, makedirs, mkdir
 from os.path import split, splitext, join
 from subprocess import check_call, CalledProcessError
-from cogent.app.util import get_tmp_filename
+from qiime.util import get_tmp_filename
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 
 qiime_config = load_qiime_config()

@@ -17,7 +17,7 @@ from shutil import rmtree
 
 from cogent.util.unit_test import TestCase, main
 from numpy import array
-from cogent.app.util import get_tmp_filename
+from qiime.util import get_tmp_filename
 from cogent.util.misc import remove_files 
 
 from qiime.filter_otu_table import (strip_quotes,split_tax,

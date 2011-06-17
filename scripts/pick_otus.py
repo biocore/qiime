@@ -14,7 +14,7 @@ __status__ = "Development"
 from os.path import splitext, split, exists
 from os import makedirs
 from qiime.util import make_option
-from cogent.app.util import get_tmp_filename
+from qiime.util import get_tmp_filename
 from cogent.util.misc import remove_files
 from qiime.util import (parse_command_line_parameters, create_dir)
 from qiime.sort import sort_fasta_by_abundance

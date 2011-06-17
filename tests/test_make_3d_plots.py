@@ -27,7 +27,7 @@ from qiime.make_3d_plots import (make_3d_plots,scale_pc_data_matrix,
                                     make_mage_ellipsoids,subdivide,
                                     get_multiple_coords,validate_coord_files,
                                     make_3d_plots_invue)
-from cogent.app.util import get_tmp_filename
+from qiime.util import get_tmp_filename
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""

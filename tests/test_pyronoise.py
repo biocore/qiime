@@ -16,9 +16,9 @@ from os import remove,mkdir
 from shutil import rmtree
 
 from cogent.util.unit_test import TestCase, main
-from cogent.app.util import get_tmp_filename
+from qiime.util import get_tmp_filename
 from cogent.util.misc import remove_files
-from cogent.app.util import get_tmp_filename
+from qiime.util import get_tmp_filename
 from cogent.parse.flowgram import Flowgram
 from cogent.parse.flowgram_collection import FlowgramCollection
 from cogent.parse.flowgram_parser import get_header_info

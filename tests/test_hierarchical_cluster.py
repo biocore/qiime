@@ -12,7 +12,7 @@ __status__ = "Development"
 from qiime.hierarchical_cluster import single_file_upgma, single_file_nj
 from qiime.format import format_distance_matrix
 from cogent.util.unit_test import TestCase, main
-from cogent.app.util import get_tmp_filename
+from qiime.util import get_tmp_filename
 import os
 import numpy
 

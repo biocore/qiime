@@ -16,7 +16,7 @@ from os import remove
 
 from cogent.util.misc import create_dir
 from cogent.util.unit_test import TestCase, main
-from cogent.app.util import get_tmp_filename
+from qiime.util import get_tmp_filename
 
 from qiime.cluster_quality import clust_qual_ratio
 

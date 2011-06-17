@@ -18,7 +18,9 @@ from shutil import rmtree
 from os.path import join, exists
 from tempfile import NamedTemporaryFile, mkdtemp
 from cogent.util.unit_test import TestCase, main
-from cogent.app.util import get_tmp_filename, ApplicationError
+from cogent.app.util import ApplicationError
+from qiime.util import get_tmp_filename
+
 from cogent.util.misc import remove_files
 from qiime.supervised_learning import RSupervisedLearner,\
     RSupervisedLearnerFilter, R_format_table

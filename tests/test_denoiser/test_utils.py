@@ -21,7 +21,8 @@ from cogent import Sequence
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.parse.flowgram import Flowgram
 from cogent.parse.flowgram_collection import FlowgramCollection
-from cogent.app.util import get_tmp_filename, ApplicationNotFoundError
+from cogent.app.util import ApplicationNotFoundError
+from qiime.util import get_tmp_filename
 from cogent.util.misc import remove_files, create_dir
 
 from qiime.util import get_qiime_project_dir

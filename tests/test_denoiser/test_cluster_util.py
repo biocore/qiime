@@ -24,7 +24,7 @@ from cogent.parse.flowgram import Flowgram
 from cogent import Sequence
 from cogent.app.util import ApplicationNotFoundError
 from cogent.util.misc import remove_files
-from cogent.app.util import get_tmp_filename
+from qiime.util import get_tmp_filename
 
 from qiime.util import load_qiime_config
 from qiime.denoiser.cluster_utils import submit_jobs, setup_server,\

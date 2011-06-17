@@ -14,7 +14,7 @@ __status__ = "Development"
 
 from os import remove, rmdir, mkdir
 from cogent.util.unit_test import TestCase, main
-from cogent.app.util import get_tmp_filename
+from qiime.util import get_tmp_filename
 
 #import as _main to not interfere with TestCase.main
 from qiime.denoiser.denoise_postprocess import extract_read_to_sample_mapping,\
