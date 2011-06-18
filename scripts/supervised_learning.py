@@ -2,7 +2,7 @@
 # File created on 09 Feb 2010
 from __future__ import division
 
-__author__ = "Dan Knight"
+__author__ = "Dan Knights"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Dan Knights"]
 __license__ = "GPL"
@@ -47,7 +47,7 @@ It is strongly recommended that you remove low-depth samples and rare OTUs \
 before running this script. This can drastically reduce the run-time, and in \
 many circumstances will not hurt performance. It is also recommended to perform \
 rarefaction to control for sampling effort before running this \
-script. For example, to rarefy at depth 200, then remove remove OTUs present in \
+script. For example, to rarefy at depth 200, then remove OTUs present in \
 < 10 samples run:
 
 single_rarefaction.py -i otu_table_filtered.txt -d 200 -o otu_table_rarefied200.txt
