@@ -143,4 +143,35 @@ def _filter_table_samples(otu_table_lines, min_seqs_per_sample):
     return format_otu_table(res_sample_ids, otu_ids, res_otu_table, lineages)
 
 
+def _filter_table_neg_control(otu_table_lines, samples):
+    """removes OTUs from OTU_table that are found in one of the samples in the sample list
+    """
+    sample_ids, otu_ids, otu_table, lineages = parse_otu_table(otu_table_lines)
+    new_otu_table = []
+    new_otu_ids = []
+    new_lineages = []
+    #get the sample indices to remove
+    sample_indices = []
+    for i in samples:
+        if i in sample_ids:
+            index = sample_ids.index(i)
+            sample_indices.append(index)
+
+    for i, row in enumerate(otu_table):
+        #figure out if the OTU is in any of the negative controls
+        count = 0
+        for j in sample_indices:
+            count += row[j]
+        #only write it to the new OTU table if it is not
+        if count == 0:
+            if lineages:
+                new_lineages.append(lineages[i])
+            new_otu_table.append(list(row))
+            new_otu_ids.append(otu_ids[i])
+    new_otu_table = array(new_otu_table)
+    result = format_otu_table(sample_ids, new_otu_ids, new_otu_table, new_lineages)
+    result = result.split('\n')
+    #remove the samples
+    return _filter_table_samples(result, 1)
+
 

@@ -21,7 +21,7 @@ from qiime.util import get_tmp_filename
 from cogent.util.misc import remove_files 
 
 from qiime.filter_otu_table import (strip_quotes,split_tax,
-                _filter_table_samples, filter_table)
+                _filter_table_samples, filter_table, _filter_table_neg_control)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -335,7 +335,36 @@ class TopLevelTests(TestCase):
         
         self._files_to_remove.append(filtered_otu_table_fp)
 
-
+    def test_filter_table_neg_control(self):
+        """_filter_table_neg_control removes otus found in neg control samples
+        """
+        otu_table = """# QIIME v%s OTU table\n#OTU ID\tsample1\tsample2\tsample3
+0\t0\t2\t0
+1\t1\t0\t0
+2\t1\t1\t1""" % __version__
+        otu_table = otu_table.split('\n')
+        samples = ['sample2', 'sample3']
+        result = _filter_table_neg_control(otu_table, samples)
+        self.assertEqual(result, """# QIIME v1.2.1-dev OTU table
+#OTU ID\tsample1
+1\t1""")
+        #works with lineages
+        otu_table = """# QIIME v%s OTU table\n#OTU ID\tsample1\tsample2\tsample3\tConsensus Lineage
+0\t0\t2\t0\ttaxon1
+1\t1\t0\t0\ttaxon2
+2\t1\t1\t1\ttaxon3""" % __version__
+        otu_table = otu_table.split('\n')
+        samples = ['sample2', 'sample3']
+        result = _filter_table_neg_control(otu_table, samples)
+        self.assertEqual(result, """# QIIME v1.2.1-dev OTU table
+#OTU ID\tsample1\tConsensus Lineage
+1\t1\ttaxon2""")
+        samples = ['sample3']
+        result = _filter_table_neg_control(otu_table, samples)
+        self.assertEqual(result, """# QIIME v1.2.1-dev OTU table
+#OTU ID\tsample1\tsample2\tConsensus Lineage
+0\t0\t2\ttaxon1
+1\t1\t0\ttaxon2""")
 
 # Large strings at the end for better readability
 sample_unfiltered_otu_table = """#Full OTU Counts

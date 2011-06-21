@@ -18,13 +18,14 @@ from os import listdir
 from numpy import argsort, mean
 from cogent.util.dict2d import Dict2D
 from cogent.maths.stats.test import calc_contingency_expected, G_fit_from_Dict2D,\
-    ANOVA_one_way, correlation
+    ANOVA_one_way, correlation, t_paired
 from cogent.maths.stats.util import Numbers
 from numpy import array
 import sys
 from qiime.util import convert_OTU_table_relative_abundance
 import numpy as np
 from qiime.parse import parse_otu_table, parse_mapping_file
+from qiime.longitudinal_otu_category_significance import get_sample_individual_info
 
 """Look for OTUs that are associated with a category. Currently can do:
     1) perform g-test of independence to determine whether OTU presence
@@ -37,7 +38,7 @@ from qiime.parse import parse_otu_table, parse_mapping_file
     associated with a continuous variable in the category mapping file (e.g. pH)
 """
 
-def filter_OTUs(OTU_sample_info, filter, num_samples=None, all_samples=True,\
+def filter_OTUs(OTU_sample_info, filter, all_samples=True,\
                 category_mapping_info=None):
     """Get the list of OTUs found in at least <filter> samples                                                                      
                                                                                                                                      
@@ -162,33 +163,153 @@ def run_single_ANOVA(OTU, category_info, otu_sample_info, category_values):
     for sample in category_info:
         if sample in sample_info:
             count = sample_info[sample]
+            category = category_info[sample]
+            index = category_values.index(category)
+            values[index].append(count)
+    #    else:
+    #        print "Warning " + sample + "is in the category mapping file " +\
+    #            "but not the OTU table"
+    try:
+        dfn, dfd, F, between_MS, within_MS, group_means, prob = ANOVA_one_way(values)
+        return group_means, prob
+    except ValueError:
+        #set the p-value to 'diff' if the variances are 0.0 (within rounding 
+        #error) and the means are not all the same. If the means are all
+        #the same and the variances are 0.0, set the p-value to 1
+        group_means = []
+        group_variances = []
+        for i in values:
+            group_means.append(i.Mean)
+            group_variances.append(i.Variance)
+        group_means = set(group_means)
+        if sum(group_variances) < 1e-21 and len(group_means) > 1:
+            prob = 0.0
         else:
-            count = 0
-        category = category_info[sample]
-        index = category_values.index(category)
-        values[index].append(count)
-    dfn, dfd, F, between_MS, within_MS, group_means, prob = ANOVA_one_way(values)
-    return group_means, prob
+            prob = 1.0
+        return group_means, prob
 
-def run_correlation_OTUs(OTU_list, category_info, otu_sample_info):
+def run_paired_T_test_OTUs(OTU_list, mapping_data, header, individual_column,\
+    timepoint_zero_column, otu_ids, sample_ids, otu_counts, ignore_val, filter):
+    """
+    Runs a paired T test on all of the OTUs in the OTU list
+    """
+    all_results = {}
+    for OTU in OTU_list:
+        result = run_single_paired_T_test(OTU, mapping_data, header, \
+            individual_column, timepoint_zero_column, otu_ids, sample_ids,\
+            otu_counts, ignore_val, filter)
+        if result:
+            t, prob, after_treatment_vals, num_pairs = result
+            average_diff = sum(after_treatment_vals)/float(len(after_treatment_vals))
+
+            all_results[OTU] = [t, prob, average_diff, num_pairs]
+    return all_results
+
+def run_single_paired_T_test(OTU, mapping_data, header, individual_column,\
+    timepoint_zero_column, otu_ids, sample_ids, otu_counts, ignore_val, filter):
+    """run the paired T test on a single OTU
+    """
+    timepoint_zero_vals, after_treatment_vals = get_single_paired_T_values(OTU,\
+        mapping_data, header, individual_column, timepoint_zero_column, otu_ids,\
+        sample_ids, otu_counts, ignore_val)
+    if len(timepoint_zero_vals) * 2 >= int(filter):
+        t, prob = t_paired(timepoint_zero_vals, after_treatment_vals, tails=None, \
+            exp_diff=0)
+        return t, prob, after_treatment_vals, len(after_treatment_vals)
+    else:
+        return None
+
+def get_single_paired_T_values(OTU, mapping_data, header, individual_column,\
+    timepoint_zero_column, otu_ids, sample_ids, otu_counts, ignore_val):
+    """gets the values for running a paired T test
+   
+    the timepoint_zero column should all be zero. The other column from that
+    individual should be either negative or positive depending. If the
+    value is the ignore value, it should be ignored. If the number of values
+    do not pass the filter, the OTU should be ignored
+    """
+    timepoint_zero_vals = []
+    after_treatment_vals = []
+    #sample_to_subtract is the sample_names mapped to the timepoint zero sample
+    #names
+    samples_from_subject, sample_to_subtract = get_sample_individual_info(\
+        mapping_data, header, individual_column, timepoint_zero_column)
+    for sample in samples_from_subject:
+        num_samples = len(samples_from_subject[sample])
+        if num_samples != 2:
+            raise ValueError("Each individual/site must contain exactly 2 samples")
+    timepoint_zeros = []
+    for sample in sample_to_subtract:
+        #if the sample is mapped to itself it is timepoint zero
+        if sample == sample_to_subtract[sample]:
+            timepoint_zeros.append(sample)
+    for sample in timepoint_zeros:
+        index1 = otu_ids.index(OTU)
+        if sample in sample_ids:
+            index2 = sample_ids.index(sample)
+            timepoint_zero_val = otu_counts[index1, index2]
+        else:
+            timepoint_zero_val = None
+        if timepoint_zero_val != ignore_val:
+            for sample2 in sample_to_subtract:
+                if sample2 != sample and sample_to_subtract[sample2] == sample:
+                    after_treatment_sample_id = sample2
+                    if after_treatment_sample_id in sample_ids:
+                        index3 = sample_ids.index(after_treatment_sample_id)
+                    else:
+                        index3 = None
+                    if index3 != None and timepoint_zero_val != None:
+                        after_treatment_vals.append(otu_counts[index1, index3])
+                        timepoint_zero_vals.append(timepoint_zero_val)
+    return timepoint_zero_vals, after_treatment_vals
+
+def run_correlation_OTUs(OTU_list, category_info, otu_sample_info, \
+        ignore_val=None, filter=1):
     """runs pearson correlation on all OTUs in the OTU list
     """
     result = {}
-    num_comparisons = len(OTU_list)
+#    num_comparisons = len(OTU_list)
     for OTU in OTU_list:
         if otu_sample_info.has_key(OTU):
-            r, prob = run_single_correlation(OTU, category_info, otu_sample_info)
+            OTU_abundance_vals, category_vals = \
+                get_single_correlation_values(OTU, category_info, \
+                otu_sample_info, ignore_val=ignore_val)
+            r, prob = run_single_correlation(OTU_abundance_vals, \
+                category_vals, filter)
         else:
             r = 0.0
             prob = 0.5
-        Bonf_p_val = prob * num_comparisons
-        result[OTU] = [r, prob, Bonf_p_val]
+            OTU_abundance_vals = 'NA'
+            category_vals = 'NA'
+#        Bonf_p_val = prob * num_comparisons
+#        result[OTU] = [r, prob, str(OTU_abundance_vals), str(category_vals), \
+#            Bonf_p_val]
+        if r:
+            result[OTU] = [r, prob, str(OTU_abundance_vals), str(category_vals)]
     return result
 
-def run_single_correlation(OTU, category_info, otu_sample_info):
+def run_single_correlation(OTU_abundance_values, category_values, \
+    filter=1):
     """runs pearson correlation  on the designated OTU
     """
-    result = {}
+    number_samples = len(category_values)
+    if len(category_values) >= int(filter):
+        r, prob = correlation(Numbers(category_values), \
+            Numbers(OTU_abundance_values))
+        return r, prob
+    else:
+        return None, None
+
+def get_single_correlation_values(OTU, category_info, otu_sample_info, \
+    ignore_val=None):
+    """gets the x and y values for running pearson correlation
+    
+    ignore_val: A value that should be ignored in the calculations. This
+        was made for a special application (Ley humans for obesity metaanalysis
+        where I wanted to ignore individuals in which the otu was never
+        observed across a time series. If the OTU value is the ignore_val, it
+        does not include that sample in the regression.
+    """
     #get a list of values for each category
     OTU_abundance_values = []
     category_values = []
@@ -196,17 +317,21 @@ def run_single_correlation(OTU, category_info, otu_sample_info):
     for sample in category_info:
         # even if this OTU is not observed, we can use count=0
         if sample in sample_info:
-            count = sample_info[sample]
-        else:
-            count = 0
-        try:
-            cat_val = float(category_info[sample])
-            category_values.append(cat_val)
-            OTU_abundance_values.append(float(count))
-        except ValueError:
-            raise ValueError("The category values must be numeric to use the correlation option")
-    r, prob = correlation(Numbers(OTU_abundance_values), Numbers(category_values))
-    return r, prob
+            count = float(sample_info[sample])
+        #else:
+        #    count = 0
+            add = True
+            if ignore_val:
+                if count == ignore_val:
+                    add=False
+            if add:
+                try:
+                    cat_val = float(category_info[sample])
+                    category_values.append(cat_val)
+                    OTU_abundance_values.append(count)
+                except ValueError:
+                    raise ValueError("The category values must be numeric to use the correlation option")
+    return OTU_abundance_values, category_values
 
 def output_results_G_test(G_test_results, taxonomy_info=None):
     """creates the results output using result of run_G_test_OTUs"""
@@ -258,21 +383,70 @@ def output_results_ANOVA(ANOVA_results, category_values, taxonomy_info=None):
 
 def output_results_correlation(correlation_results, taxonomy_info=None):
     """creates the results output using result of run_correlation_OTUs"""
-    header = ['OTU', 'prob', 'Bonferroni_corrected', 'FDR_corrected', 'r']
+    header = ['OTU', 'prob', 'otu_values_y', 'cat_values_x', 'Bonferroni_corrected', 'FDR_corrected', 'r']
     if taxonomy_info:
             header.append('Consensus Lineage')
     output = ['\t'.join(header)]
+    correlation_results = add_bonferroni_to_results(correlation_results)
     correlation_results = add_fdr_correction_to_results(correlation_results)
     for OTU in correlation_results:
         prob = str(correlation_results[OTU][1])
-        Bonf_p = str(correlation_results[OTU][2])
-        fdr_p = str(correlation_results[OTU][3])
+        otu_values = str(correlation_results[OTU][2]) 
+        cat_values = str(correlation_results[OTU][3]) 
+        Bonf_p = str(correlation_results[OTU][4])
+        fdr_p = str(correlation_results[OTU][5])
         r = str(correlation_results[OTU][0])
-        line = [OTU, prob, Bonf_p, fdr_p, r]
+        line = [OTU, prob, otu_values, cat_values, Bonf_p, fdr_p, r]
         if taxonomy_info:
             line.append(taxonomy_info[OTU])
         output.append('\t'.join(line))
     return output
+
+def output_results_paired_T_test(paired_T_results, taxonomy_info=None):
+    """creates the results output using result of run_paired_T_test_OTUs
+    """
+    header = ['OTU', 'prob', 'T stat', 'average_diff', 'num_pairs', \
+        'Bonferroni_corrected', 'FDR_corrected']
+    if taxonomy_info:
+            header.append('Consensus Lineage')
+    output = ['\t'.join(header)]
+    paired_t_results = add_bonferroni_to_results(paired_T_results)
+    paired_t_results = add_fdr_correction_to_results(paired_T_results)
+    for OTU in paired_T_results:
+        prob = str(paired_T_results[OTU][1])
+        T_stat = str(paired_T_results[OTU][0])
+        average_diff = str(paired_T_results[OTU][2])
+        num_pairs = str(paired_T_results[OTU][3])
+        Bonf_p = str(paired_T_results[OTU][4])
+        fdr_p = str(paired_T_results[OTU][5])
+        line = [OTU, prob, T_stat, average_diff, num_pairs, Bonf_p, fdr_p]
+        if taxonomy_info:
+            line.append(taxonomy_info[OTU])
+        output.append('\t'.join(line))
+    return output
+
+def add_bonferroni_to_results(results):
+    """corrects results using the false discovery rate method.
+
+    ranks the p-values from low to high. multiplies each p-value by the #
+    of comparisons divided by the rank. appends the result for each OTU to the
+    supplied results dictionary.
+    """
+    names = []
+    probs = []
+    for i in results:
+        names.append(i)
+        probs.append(results[i][1])
+    corrected_probs = []
+    number_comparisons = len(names)
+    for i in probs:
+        if i:
+            corrected_probs.append(i * number_comparisons)
+        else:
+            corrected_probs.append('NA')
+    for index, prob in enumerate(corrected_probs):
+        results[names[index]].append(prob)
+    return results
 
 def add_fdr_correction_to_results(results):
     """corrects results using the false discovery rate method.
@@ -300,7 +474,10 @@ def fdr_correction(probs):
     corrected_probs = [None] * len(probs)
     for rank, index in enumerate(argsort(probs)):
         correction = len(probs) / float(rank + 1)
-        fdr_p = probs[index] * correction
+        if probs[index]:
+            fdr_p = probs[index] * correction
+        else:
+            fdr_p = 'NA'
         corrected_probs[index] = fdr_p
     return corrected_probs
 
@@ -329,7 +506,6 @@ def get_otu_table_info(sample_ids, otu_ids, otu_data, lineages):
             lineage = lineages[OTU_index]
             taxonomy_info[OTU_id] = '; '.join(lineage)
     return OTU_sample_count_info, num_samples, taxonomy_info
-
 
 def get_category_info(mapping_data, header, category, threshold=None):
     """parse category mapping file
@@ -389,12 +565,17 @@ def aggregate_multiple_results_correlation(all_results):
     aggregate = {}
     for k in all_results.keys():
         # get r-squared, pvals, bonferroni
-        rs, pvals, bf_pvals = zip(*all_results[k])
+        x = zip(*all_results[k])
+        rs = x[0]
+        pvals = x[1]
+        otu_vals = x[2]
+        cat_vals = x[3]
         # get mean of each type of result
         r = np.mean(array(rs))
         pval = np.mean(array(pvals))
-        bf_pval = np.mean(array(bf_pvals))
-        aggregate[k] = [r, pval, bf_pval]
+        otu_vals = 'NA'
+        cat_vals = 'NA'
+        aggregate[k] = [r, pval, 'NA', 'NA']
     return aggregate
 
 def aggregate_multiple_results_G_test(all_results):
@@ -422,34 +603,38 @@ def aggregate_multiple_results_G_test(all_results):
     return aggregate
     
 
-    
 def test_wrapper(test, otu_table, category_mapping, category, threshold, \
-                 _filter, otu_include=None):
+        _filter, otu_include=None, ignore_val=None, \
+        otu_table_relative_abundance=False, individual_column='individual',\
+        timepoint_zero_column='timepoint_zero'):
     """runs statistical test to look for category/OTU associations"""
-
-    if test == 'ANOVA' or test == 'correlation': 
-        otu_table = convert_OTU_table_relative_abundance(otu_table)
-        sample_ids, otu_ids, otu_data, lineages = \
-            parse_otu_table(otu_table, float)
-        otu_sample_info, num_samples, taxonomy_info = \
-            get_otu_table_info(sample_ids, otu_ids, otu_data, lineages)
-        mapping_data, header, comments = parse_mapping_file(category_mapping)
-        category_info, category_values = \
-            get_category_info(mapping_data, header, category, threshold)
-        OTU_list = filter_OTUs(otu_sample_info, _filter, all_samples= False, \
-            category_mapping_info=category_info)
+    if ignore_val == 'None':
+        ignore_val = None
+    
+    if test == 'ANOVA' or test == 'correlation' or test == 'paired_T': 
+        if not otu_table_relative_abundance:
+            otu_table = convert_OTU_table_relative_abundance(otu_table)
+        all_samples = False
     elif test == 'g_test':
-        sample_ids, otu_ids, otu_data, lineages = \
-            parse_otu_table(otu_table, float)
-        otu_sample_info, num_samples, taxonomy_info = \
-            get_otu_table_info(sample_ids, otu_ids, otu_data, lineages)
-        mapping_data, header, comments = parse_mapping_file(category_mapping)
+        all_samples = True
+    else:
+        raise ValueError("An invalid test statistic was given. (-s option). Valid values are ANOVA, correlation, g_test, paired_T.")
+    
+    sample_ids, otu_ids, otu_data, lineages = \
+        parse_otu_table(otu_table, float)
+    otu_sample_info, num_samples, taxonomy_info = \
+        get_otu_table_info(sample_ids, otu_ids, otu_data, lineages)
+    mapping_data, header, comments = parse_mapping_file(category_mapping)
+    if not test == 'paired_T':
         category_info, category_values = \
             get_category_info(mapping_data, header, category, threshold)
-        OTU_list = filter_OTUs(otu_sample_info, _filter, all_samples= True, \
-            category_mapping_info=category_info)
-    else:
-        raise ValueError("An invalid test statistic was given. (-s option). Valid values are ANOVA, correlation, and g_test.")
+    #do not apply the filter_OTUs to the longitudinal studies as they are
+    #filtered later
+    if test == 'ANOVA' or test == 'correlation' or test == 'g_test':
+        OTU_list = filter_OTUs(otu_sample_info, _filter, \
+            all_samples= all_samples, category_mapping_info=category_info)
+    elif test == 'longitudinal_correlation' or test == 'paired_T':
+        OTU_list = otu_sample_info.keys()
 
     #filter OTU_list with the otu_include list
     if otu_include:
@@ -462,12 +647,20 @@ def test_wrapper(test, otu_table, category_mapping, category, threshold, \
                         category_values)
         output = output_results_ANOVA(results, category_values, taxonomy_info)
     elif test == 'correlation':
-        results = run_correlation_OTUs(OTU_list, category_info, otu_sample_info)
+        results = run_correlation_OTUs(OTU_list, category_info, \
+            otu_sample_info, ignore_val=ignore_val, filter=_filter)
         output = output_results_correlation(results, taxonomy_info)
     elif test == 'g_test':
         results = run_G_test_OTUs(OTU_list, category_info, otu_sample_info, \
                          category_values)
         output = output_results_G_test(results, taxonomy_info)
+    elif test == 'paired_T':
+        #category info in this case should be the timepoint_zero column.
+        #The timepoint_zero column should be used as the category in the wrapper
+        results = run_paired_T_test_OTUs(OTU_list, mapping_data, header, \
+            individual_column, timepoint_zero_column, otu_ids, sample_ids, \
+            otu_data,ignore_val=ignore_val, filter=_filter) 
+        output = output_results_paired_T_test(results, taxonomy_info)
     return output
 
 def get_common_OTUs(otu_table_paths, _filter, category_info, \

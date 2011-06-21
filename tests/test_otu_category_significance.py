@@ -21,7 +21,9 @@ from qiime.otu_category_significance import filter_OTUs, \
     get_otu_table_info, get_category_info,\
     aggregate_multiple_results_ANOVA, aggregate_multiple_results_G_test,\
     aggregate_multiple_results_correlation, get_common_OTUs,\
-    test_wrapper_multiple, test_wrapper
+    test_wrapper_multiple, test_wrapper, get_single_correlation_values,\
+    run_paired_T_test_OTUs, run_single_paired_T_test, \
+    get_single_paired_T_values, output_results_paired_T_test
 from numpy import array
 from cogent.util.dict2d import Dict2D
 from qiime.util import get_tmp_filename
@@ -42,14 +44,14 @@ class TopLevelTests(TestCase):
             parse_otu_table(otu_table, float)
         OTU_sample_info, num_samples, taxonomy_info = \
             get_otu_table_info(sample_ids, otu_ids, otu_data, lineages)
-        result = filter_OTUs(OTU_sample_info, 2, 3)
+        result = filter_OTUs(OTU_sample_info, 2)
         self.assertEqual(result, [])
-        result = filter_OTUs(OTU_sample_info, 1, 3)
+        result = filter_OTUs(OTU_sample_info, 1)
         self.assertEqual(result, ['1', '0'])
         
-        result = filter_OTUs(OTU_sample_info, 2, 3, False)
+        result = filter_OTUs(OTU_sample_info, 2, False)
         self.assertEqual(result, ['2'])
-        result = filter_OTUs(OTU_sample_info, 1, 3, False)
+        result = filter_OTUs(OTU_sample_info, 1, False)
         self.assertEqual(result, ['1', '0', '2'])
         #test that is works if a category mapping file is supplied
         cat_mapping = {'sample2': '0', 'sample3': '1'}
@@ -91,6 +93,19 @@ class TopLevelTests(TestCase):
         self.assertFloatEqual(g_val, 4.29304060218)
         self.assertFloatEqual(prob, 0.508041627088)
         self.assertEqual(contingency_matrix, {'OTU_pos': {'B_pos': [1, 0.5], 'C_pos': [1, 0.5], 'A_pos': [0, 1.0]}, 'OTU_neg': {'B_pos': [0, 0.5], 'C_pos': [0, 0.5], 'A_pos': [2, 1.0]}})
+        #check that it works if samples in mapping are not in OTU table
+        OTU_sample_info2 = {'0': {'sample2': '0', 'sample3': '1', 'sample4': '1'},
+        '1': {'sample2': '1', 'sample3': '0', 'sample4': '0'},
+        '2': {'sample2': '0', 'sample3': '1', 'sample4': '0'},
+        '3': {'sample2': '0', 'sample3': '0', 'sample4': '1'}}
+        g_val, prob, contingency_matrix = run_single_G_test('0', category_info, OTU_sample_info2, category_values)
+        self.assertFloatEqual(contingency_matrix, {'OTU_pos': {'B_pos': [1, 0.66666666666666663], 'C_pos': [1, 0.66666666666666663], 'A_pos': [0, 0.66666666666666663]}, 'OTU_neg': {'B_pos': [0, 0.33333333333333331], 'C_pos': [0, 0.33333333333333331], 'A_pos': [1, 0.33333333333333331]}})
+        #check that it works is samples in the OTU table are not in the mapping
+        category_info2 = {'sample2': 'A',
+                        'sample3': 'B',
+                        'sample4': 'C'}
+        g_val, prob, contingency_matrix = run_single_G_test('0', category_info2, OTU_sample_info, category_values)
+        self.assertFloatEqual(contingency_matrix, {'OTU_pos': {'B_pos': [1, 0.66666666666666663], 'C_pos': [1, 0.66666666666666663], 'A_pos': [0, 0.66666666666666663]}, 'OTU_neg': {'B_pos': [0, 0.33333333333333331], 'C_pos': [0, 0.33333333333333331], 'A_pos': [1, 0.33333333333333331]}})
 
 
     def test_run_single_ANOVA(self):
@@ -100,7 +115,7 @@ class TopLevelTests(TestCase):
                         'sample3': 'B',
                         'sample4': 'B'}
         OTU_sample_info = {'0': {'sample1': '5', 'sample2': '10', 'sample3': '2', 'sample4': '1'},
-        '1': {'sample1': '1', 'sample2': '1', 'sample3': '0', 'sample4': '0'},
+        '1': {'sample1': '0.0015', 'sample2': '0.0015', 'sample3': '0.0', 'sample4': '0.0'},
         '2': {'sample1': '2', 'sample2': '0', 'sample3': '1', 'sample4': '0'},
         '3': {'sample1': '0', 'sample2': '0', 'sample3': '0', 'sample4': '1'}}
         category_values = ['A', 'B']
@@ -108,7 +123,25 @@ class TopLevelTests(TestCase):
             OTU_sample_info, category_values)
         self.assertEqual(group_means, [7.5, 1.5])
         self.assertFloatEqual(prob, 0.142857142857)
+        #test that it works when there are samples in the cat mapping
+        #that are not in the OTU table
+        OTU_sample_info2 = {'0': {'sample2': '10', 'sample3': '2', 'sample4': '1'},
+        '1': {'sample2': '1', 'sample3': '0', 'sample4': '0'},
+        '2': {'sample2': '0', 'sample3': '1', 'sample4': '0'},
+        '3': {'sample2': '0', 'sample3': '0', 'sample4': '1'}}
+        group_means, prob = run_single_ANOVA('0', category_info,\
+            OTU_sample_info2, category_values)
+        self.assertEqual(group_means, [10.0, 1.5])
 
+        #test that it works when there are samples that are in the OTU
+        #table that are not in the category mapping
+        category_info2 = {'sample2': 'A',
+                        'sample3': 'B',
+                        'sample4': 'B'}
+        group_means, prob = run_single_ANOVA('0', category_info2,\
+            OTU_sample_info, category_values)
+        self.assertEqual(group_means, [10.0, 1.5])
+        
     def test_run_single_correlation(self):
         """run_single_correlation works"""
         category_info = {'sample1': '1',
@@ -120,10 +153,209 @@ class TopLevelTests(TestCase):
         '2': {'sample1': '4', 'sample2': '3', 'sample3': '2', 'sample4': '1'},
         '3': {'sample1': '1', 'sample2': '2', 'sample3': '3', 'sample4': '5'}}
         category_values = ['A', 'B']
-        r, prob = run_single_correlation('0', category_info,\
-            OTU_sample_info)
+        otu_ab_vals, cat_vals = get_single_correlation_values('0', category_info,\
+                OTU_sample_info)
+        r, prob = run_single_correlation(otu_ab_vals, cat_vals, filter=1)
         self.assertFloatEqual(r, 0.923380516877)
         self.assertFloatEqual(prob, 0.0766194831234)
+    
+    def test_get_single_correlation_values(self):
+        """get_single_correlation_values works
+        """
+        category_info = {'sample1': '1',
+                        'sample2': '2',
+                        'sample3': '3',
+                        'sample4': '4'}
+        OTU_sample_info = {'0': {'sample1': '1', 'sample2': '2', 'sample3': '2', 'sample4': '4'},
+        '1': {'sample1': '1', 'sample2': '2', 'sample3': '3', 'sample4': '4'},
+        '2': {'sample1': '4', 'sample2': '3', 'sample3': '2', 'sample4': '1'},
+        '3': {'sample1': '1', 'sample2': '2', 'sample3': '3', 'sample4': '5'}}
+        category_values = ['A', 'B']
+        OTU_abundance_values, category_values = get_single_correlation_values(\
+            '0', category_info, OTU_sample_info)
+        self.assertEqual(OTU_abundance_values, [4.0, 1.0, 2.0, 2.0])
+        self.assertEqual(category_values, [4.0, 1.0, 3.0, 2.0])
+        #works if the otu table is missing samples
+        OTU_sample_info2 = {'0': {'sample2': '2', 'sample3': '2', 'sample4': '4'},
+        '1': {'sample2': '2', 'sample3': '3', 'sample4': '4'},
+        '2': {'sample2': '3', 'sample3': '2', 'sample4': '1'},
+        '3': {'sample2': '2', 'sample3': '3', 'sample4': '5'}}
+        OTU_abundance_values, category_values = get_single_correlation_values(\
+            '0', category_info, OTU_sample_info2)
+        self.assertEqual(OTU_abundance_values, [4.0, 2.0, 2.0])
+        self.assertEqual(category_values, [4.0, 3.0, 2.0])
+        #works if the category mapping file is missing samples
+        category_info2 = {'sample2': '2',
+                        'sample3': '3',
+                        'sample4': '4'}
+        OTU_abundance_values, category_values = get_single_correlation_values(\
+            '0', category_info2, OTU_sample_info)
+        self.assertEqual(OTU_abundance_values, [4.0, 2.0, 2.0])
+        self.assertEqual(category_values, [4.0, 3.0, 2.0])
+
+    def test_get_single_correlation_values_ignore_val(self):
+        """get_single_correlation_values works with ignore val"""
+        category_info = {'sample1': '1',
+                        'sample2': '2',
+                        'sample3': '3',
+                        'sample4': '4'}
+        OTU_sample_info = {'0': {'sample1': '99999', 'sample2': '2', 'sample3': '2', 'sample4': '4'},
+        '1': {'sample1': '1', 'sample2': '2', 'sample3': '3', 'sample4': '4'},
+        '2': {'sample1': '4', 'sample2': '3', 'sample3': '2', 'sample4': '1'},
+        '3': {'sample1': '1', 'sample2': '2', 'sample3': '3', 'sample4': '5'}}
+        category_values = ['A', 'B']
+        OTU_abundance_values, category_values = \
+            get_single_correlation_values('0', category_info, OTU_sample_info, \
+            ignore_val=99999.0)
+        self.assertEqual(OTU_abundance_values, [4.0, 2.0, 2.0])
+        self.assertEqual(category_values, [4.0, 3.0, 2.0])
+
+    def test_get_single_paired_T_values(self):
+        """get_single_paired_T_values works"""
+        cat_mapping = """#SampleID\ttimepoint_zero\tindividual
+s1\t1\tA
+s2\t0\tA
+s3\t1\tB
+s4\t0\tB
+s5\t1\tC
+s6\t0\tC""".split('\n')
+        otu_table = """#Full OTU Counts
+#OTU ID\ts1\ts2\ts3\ts4\ts5\ts6
+0\t999999999.0\t999999999.0\t0.0\t0.3\t0.0\t0.2
+1\t0.0\t-0.2\t999999999.0\t999999999.0\t999999999.0\t999999999.0
+2\t0.0\t0.2\t0.0\t-0.7\t0.0\t0.1""".split('\n')
+        sample_ids, otu_ids, otu_data, lineages = parse_otu_table(otu_table, float)
+        mapping_data, header, comments = parse_mapping_file(cat_mapping)
+        otu_sample_info, num_samples, taxonomy_info = \
+            get_otu_table_info(sample_ids, otu_ids, otu_data, lineages)
+        OTU_list = ['0', '1', '2']
+        
+        before_vals, after_vals = get_single_paired_T_values('0', \
+            mapping_data, header, 'individual', 'timepoint_zero', otu_ids,\
+            sample_ids, otu_data, 999999999.0)
+        self.assertFloatEqual(before_vals, [0.0, 0.0])
+        self.assertFloatEqual(after_vals, [0.3, 0.2])
+        #test of OTU1
+        before_vals, after_vals = get_single_paired_T_values('1', \
+            mapping_data, header, 'individual', 'timepoint_zero', otu_ids,\
+            sample_ids, otu_data, 999999999.0)
+        self.assertFloatEqual(before_vals, [0.0])
+        self.assertFloatEqual(after_vals, [-0.2])
+        #works when a sample is missing from the OTU table
+        #e.g. if an after timepoint dropped out during rarefaction
+        #will also drop the before
+        otu_table2 = """#Full OTU Counts
+#OTU ID\ts1\ts2\ts3\ts4\ts5
+0\t999999999.0\t999999999.0\t0.0\t0.3\t0.0
+1\t0.0\t-0.2\t999999999.0\t999999999.0\t999999999.0
+2\t0.0\t0.2\t0.0\t-0.7\t0.0""".split('\n')
+        sample_ids, otu_ids, otu_data, lineages = parse_otu_table(otu_table2, float)
+        before_vals, after_vals = get_single_paired_T_values('0', \
+            mapping_data, header, 'individual', 'timepoint_zero', otu_ids,\
+            sample_ids, otu_data, 999999999.0)
+
+        self.assertEqual(before_vals, [0.0])
+        self.assertFloatEqual(after_vals, [0.3])
+        #works when the before is missing
+        otu_table3 = """#Full OTU Counts
+#OTU ID\ts1\ts2\ts3\ts4\ts6
+0\t999999999.0\t999999999.0\t0.0\t0.3\t0.2
+1\t0.0\t-0.2\t999999999.0\t999999999.0\t999999999.0
+2\t0.0\t0.2\t0.0\t-0.7\t0.1""".split('\n')
+        sample_ids, otu_ids, otu_data, lineages = parse_otu_table(otu_table3, float)
+        before_vals, after_vals = get_single_paired_T_values('0', \
+            mapping_data, header, 'individual', 'timepoint_zero', otu_ids,\
+            sample_ids, otu_data, 999999999.0)
+        self.assertEqual(before_vals, [0.0])
+        self.assertFloatEqual(after_vals, [0.3])
+    
+    def test_run_single_paired_T_test(self):
+        """run_single_paired_T_test works
+        """
+        cat_mapping = """#SampleID\ttimepoint_zero\tindividual
+s1\t1\tA
+s2\t0\tA
+s3\t1\tB
+s4\t0\tB
+s5\t1\tC
+s6\t0\tC""".split('\n')
+        otu_table = """#Full OTU Counts
+#OTU ID\ts1\ts2\ts3\ts4\ts5\ts6
+0\t999999999.0\t999999999.0\t0.0\t0.3\t0.0\t0.2
+1\t0.0\t-0.2\t999999999.0\t999999999.0\t999999999.0\t999999999.0
+2\t0.0\t0.2\t0.0\t-0.7\t0.0\t0.1""".split('\n')
+        sample_ids, otu_ids, otu_data, lineages = parse_otu_table(otu_table, float)
+        mapping_data, header, comments = parse_mapping_file(cat_mapping)
+        otu_sample_info, num_samples, taxonomy_info = \
+            get_otu_table_info(sample_ids, otu_ids, otu_data, lineages)
+        OTU_list = ['0', '1', '2']
+        #should return the results since there should be 4 values to evaluate
+        result = run_single_paired_T_test('0', mapping_data, header, \
+            'individual', 'timepoint_zero', otu_ids, sample_ids, otu_data, \
+            999999999.0, 4)
+        self.assertEqual(len(result), 4)
+        self.assertFloatEqual(result[1], 0.12566591637800242)
+        self.assertFloatEqual(result[2], [0.29999999999999999, 0.20000000000000001])
+        self.assertEqual(result[3], 2)
+        #check the the filter works
+        result = run_single_paired_T_test('0', mapping_data, header, \
+            'individual', 'timepoint_zero', otu_ids, sample_ids, otu_data, \
+            999999999.0, 5)
+        self.assertEqual(result, None)
+
+    def test_run_paired_T_test_OTUs(self):
+        """run_single_paired_T_test works
+        """
+        cat_mapping = """#SampleID\ttimepoint_zero\tindividual
+s1\t1\tA
+s2\t0\tA
+s3\t1\tB
+s4\t0\tB
+s5\t1\tC
+s6\t0\tC""".split('\n')
+        otu_table = """#Full OTU Counts
+#OTU ID\ts1\ts2\ts3\ts4\ts5\ts6
+0\t999999999.0\t999999999.0\t0.0\t0.3\t0.0\t0.2
+1\t0.0\t-0.2\t999999999.0\t999999999.0\t999999999.0\t999999999.0
+2\t0.0\t0.2\t0.0\t-0.7\t0.0\t0.1""".split('\n')
+        sample_ids, otu_ids, otu_data, lineages = parse_otu_table(otu_table, float)
+        mapping_data, header, comments = parse_mapping_file(cat_mapping)
+        otu_sample_info, num_samples, taxonomy_info = \
+            get_otu_table_info(sample_ids, otu_ids, otu_data, lineages)
+        OTU_list = ['0', '1', '2']
+        all_results = run_paired_T_test_OTUs(OTU_list, mapping_data, header, \
+            'individual', 'timepoint_zero', otu_ids, sample_ids, otu_data, \
+            999999999.0, 4)
+        self.assertFloatEqual(all_results, {'0': [-4.9999999999999982, 0.12566591637800242, 0.25, 2], '2': [0.46816458878452216, 0.68573031947264562, -0.1333333333333333, 3]})
+
+    def test_output_results_paired_T_test(self):
+        """output_results_paired_T_test works
+        """
+        cat_mapping = """#SampleID\ttimepoint_zero\tindividual
+s1\t1\tA
+s2\t0\tA
+s3\t1\tB
+s4\t0\tB
+s5\t1\tC
+s6\t0\tC""".split('\n')
+        otu_table = """#Full OTU Counts
+#OTU ID\ts1\ts2\ts3\ts4\ts5\ts6
+0\t999999999.0\t999999999.0\t0.0\t0.3\t0.0\t0.2
+1\t0.0\t-0.2\t999999999.0\t999999999.0\t999999999.0\t999999999.0
+2\t0.0\t0.2\t0.0\t-0.7\t0.0\t0.1""".split('\n')
+        sample_ids, otu_ids, otu_data, lineages = parse_otu_table(otu_table, float)
+        mapping_data, header, comments = parse_mapping_file(cat_mapping)
+        otu_sample_info, num_samples, taxonomy_info = \
+            get_otu_table_info(sample_ids, otu_ids, otu_data, lineages)
+        OTU_list = ['0', '1', '2']
+        all_results = run_paired_T_test_OTUs(OTU_list, mapping_data, header, \
+            'individual', 'timepoint_zero', otu_ids, sample_ids, otu_data, \
+            999999999.0, 4)
+        output = output_results_paired_T_test(all_results)
+        #of = open('/Users/lozupone/temp_output.xls', 'w')
+        #of.write('\n'.join(output))
+        #of.close()
+        self.assertEqual(output, ['OTU\tprob\tT stat\taverage_diff\tnum_pairs\tBonferroni_corrected\tFDR_corrected', '0\t0.125665916378\t-5.0\t0.25\t2\t0.251331832756\t0.251331832756', '2\t0.685730319473\t0.468164588785\t-0.133333333333\t3\t1.37146063895\t0.685730319473'])
 
     def test_run_ANOVA_OTUs(self):
         """run_ANOVA_OTUs works"""
@@ -223,7 +455,7 @@ class TopLevelTests(TestCase):
         self.assertEqual(output, ['OTU\tg_val\tg_prob\tBonferroni_corrected\tFDR_corrected\tOTU_pos##B_pos\tOTU_pos##C_pos\tOTU_pos##A_pos\tOTU_neg##B_pos\tOTU_neg##C_pos\tOTU_neg##A_pos\tConsensus Lineage', '1\t3.48284992796\t0.625984226851\t1.87795268055\t0.938976340277\t[1, 0.75]\t[0, 0.75]\t[2, 1.5]\t[0, 0.25]\t[1, 0.25]\t[0, 0.5]\ttaxon2', '0\t4.29304060218\t0.508041627088\t1.52412488126\t1.52412488126\t[1, 0.5]\t[1, 0.5]\t[0, 1.0]\t[0, 0.5]\t[0, 0.5]\t[2, 1.0]\ttaxon1', '3\t2.14652030109\t0.828522198394\t2.48556659518\t0.828522198394\t[0, 0.5]\t[1, 0.5]\t[1, 1.0]\t[1, 0.5]\t[0, 0.5]\t[1, 1.0]\ttaxon4'])
 
     def test_run_correlation_OTUs(self):
-        """run_single_correlation works"""
+        """run_correlation_OTUs works"""
         category_info = {'sample1':'0.1',
                         'sample2':'0.2',
                         'sample3':'0.3',
@@ -235,10 +467,11 @@ class TopLevelTests(TestCase):
         OTU_list = ['1', '0', '2', '3'] 
         result = run_correlation_OTUs(OTU_list, category_info, OTU_sample_info)
         #OTU 0 should be positively correlated, 1 negative, and 2&3 neutral
-        self.assertFloatEqual(result['0'], [1.0, 0.0, 0.0])
-        self.assertFloatEqual(result['1'], [-0.99999999999999956, 4.4408920985006281e-16, 1.7763568394002513e-15])
-        self.assertFloatEqual(result['2'], [-0.25819888974715061, 0.74180111025284945, 2.9672044410113978])
-        self.assertFloatEqual(result['3'], [0.44721359549995815, 0.55278640450004191, 2.2111456180001676])
+        self.assertFloatEqual(result['0'][0], 1.0)#r
+        self.assertFloatEqual(result['0'][1], 0.0)#prob
+        self.assertEqual(result['0'][2], "[3.0, 0.0, 2.0, 1.0]")
+        self.assertEqual(result['0'][3], "[0.40000000000000002, 0.10000000000000001, 0.29999999999999999, 0.20000000000000001]")
+        self.assertFloatEqual(result['1'], [-0.99999999999999956, 4.4408920985006281e-16, '[1.0, 7.0, 3.0, 5.0]', '[0.40000000000000002, 0.10000000000000001, 0.29999999999999999, 0.20000000000000001]'])
 
         #test that appropriate error is raised is categorical
         category_info = {'sample1':'A',
@@ -264,8 +497,8 @@ class TopLevelTests(TestCase):
         OTU_list = ['1', '0', '2', '3'] 
         result = run_correlation_OTUs(OTU_list, category_info, OTU_sample_info)
         output = output_results_correlation(result, taxonomy_info)
-        self.assertEqual(output[0], 'OTU\tprob\tBonferroni_corrected\tFDR_corrected\tr\tConsensus Lineage')
-        self.assertEqual(output[1], '1\t4.4408920985e-16\t1.7763568394e-15\t8.881784197e-16\t-1.0\ttaxon2')
+        self.assertEqual(output[0], 'OTU\tprob\totu_values_y\tcat_values_x\tBonferroni_corrected\tFDR_corrected\tr\tConsensus Lineage')
+        self.assertEqual(output[1], '1\t4.4408920985e-16\t[1.0, 7.0, 3.0, 5.0]\t[0.40000000000000002, 0.10000000000000001, 0.29999999999999999, 0.20000000000000001]\t1.7763568394e-15\t8.881784197e-16\t-1.0\ttaxon2')
         self.assertEqual(len(output), 5)
 
     def test_get_otu_table_info(self):
@@ -359,12 +592,12 @@ sample3\tC\t1.0""".split('\n')
     def test_aggregate_multiple_results_correlation(self):
         """aggregate_multiple_results_correlation works"""
         all_results = {
-            '0':[[-1,.05,.1], [-.5,.1,.2]],
-            '1':[[.4,.5,1], [.5,.6, 1.2]]
+            '0':[[-1,.05,'NA', 'NA',.1], [-.5,.1,'NA','NA',.2]],
+            '1':[[.4,.5,'NA','NA',1], [.5,.6,'NA','NA', 1.2]]
             }
         result = aggregate_multiple_results_correlation(all_results)
-        self.assertFloatEqual(result['0'], [-.75, .075, .15])
-        self.assertFloatEqual(result['1'], [.45,.55, 1.1])
+        self.assertFloatEqual(result['0'], [-.75, .075, 'NA', 'NA'])
+        self.assertFloatEqual(result['1'], [.45,.55, 'NA', 'NA'])
 
 
     def test_get_common_OTUs(self):
@@ -592,9 +825,10 @@ sample3\tC\t1.0""".split('\n')
     
         # for every OTU in the combined results, compare to average of separate
         for k in results_dict.keys():
-            # skip FDR corrected values because they are calculated _after_ the
+            # skip FDR corrected values and bonferroni values because they are 
+            #calculated _after_ the
             # method combines separate results
-            for i in [0,1,3,]:
+            for i in [0,]:
                 entry1 = float(results1_dict[k][i])
                 entry2 = float(results2_dict[k][i])
                 entry_combined = float(results_dict[k][i])
