@@ -473,6 +473,10 @@ def make_area_bar_chart(sample_ids,taxa_percents,taxa,dir_path,level,prefs,\
         x = numpy.arange(0, len(sample_ids))
     elif label_type=='numeric':
         x= map(lambda x: float(x),sample_ids)
+        
+        #numerical numbers must be sorted or else it gets screwed up in the
+        #plot
+        x.sort()
     else:
         raise ValueError, 'Label type is not valid!'
     
@@ -565,7 +569,7 @@ def make_area_bar_chart(sample_ids,taxa_percents,taxa,dir_path,level,prefs,\
             ax1.set_xticklabels(output_labels,rotation='vertical')
         else:
             ax1.xaxis.set_ticks(x)
-            ax1.set_xticklabels(x_axis_labels,rotation='vertical')
+            ax1.set_xticklabels(x,rotation='vertical')
         
     else:    
         x_axis_labels = numpy.arange(0,len(sample_ids))
@@ -1061,7 +1065,7 @@ def get_counts(label,colorby,num_categories,dir_path,level,color_data,\
         
         if include_html_counts:
             #add a note on the counts since they can be relative or absolute values
-            data_html_str+='<p><em>NOTE: the counts displayed pertain to either relative or absolute values depending on your selection from summarize_taxa.py. For relative values, the numbers are converted to integer, so counts below 0.5 appear as 0.</em></p>'
+            data_html_str+='<p><em>NOTE: the counts displayed pertain to either relative or absolute values depending on your selection from summarize_taxa.py. For relative values, the numbers are converted to integer, so counts below 0.5 appear as 0. Also, if you chose to display numeric data, the table headers may not be in the same order as the plot.</em></p>'
 
         #make sure that the taxa array is in the proper order
         for i in range(len(area_plot_taxa_arr)-1):
