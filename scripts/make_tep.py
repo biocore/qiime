@@ -33,7 +33,8 @@ script_info['required_options'] = [\
 script_info['optional_options'] = [\
  # Example optional option
  make_option('-o','--output_dir',type="new_dirpath",help='the output directory [default: %default]', dest='out_fp'),\
-  make_option('-w','--web',action='store_true',default=False, help='web codebase jnlp flag [default: %default]', dest='web_flag')
+  make_option('-w','--web',action='store_true',default=False, help='web codebase jnlp flag [default: %default]', dest='web_flag'),
+  make_option('-u','--url_path',type="string",help='url path', dest='url')
  # make_option('-l','--launch_TE',action='store_false', default="false",help='Option to launch TopiaryExplorer [default: %default]', dest='launch')
 ]
 script_info['version'] = __version__
@@ -131,7 +132,11 @@ def main():
     else:
         lines += 'file:'+load_qiime_config()['topiaryexplorer_project_dir']
     lines += jnlp_middle_block
-    lines += os.path.abspath(tep_fp)
+    if(opts.url):
+        lines += url
+    else:
+        lines += tep_fp
+    # lines += os.path.abspath(tep_fp)
     lines += jnlp_bottom_block
     jnlpfile.writelines(lines)
     
