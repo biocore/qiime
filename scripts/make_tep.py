@@ -135,7 +135,7 @@ def main():
     if(opts.url):
         lines += opts.url
     else:
-        lines += tep_fp
+        lines += os.path.abspath(tep_fp)
     # lines += os.path.abspath(tep_fp)
     lines += jnlp_bottom_block
     jnlpfile.writelines(lines)
