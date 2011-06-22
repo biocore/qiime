@@ -133,7 +133,7 @@ def main():
         lines += 'file:'+load_qiime_config()['topiaryexplorer_project_dir']
     lines += jnlp_middle_block
     if(opts.url):
-        lines += url
+        lines += opts.url
     else:
         lines += tep_fp
     # lines += os.path.abspath(tep_fp)
