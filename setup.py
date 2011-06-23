@@ -2,6 +2,7 @@
 # File created on 17 Feb 2010
 from __future__ import division
 from distutils.core import setup
+from distutils.sysconfig import get_python_lib
 from os import chdir, getcwd, listdir
 from os.path import join, abspath
 from subprocess import call
@@ -32,6 +33,13 @@ try:
 except ImportError:
     doc_imports_failed = True
 
+try:
+    import cogent
+except ImportError:
+    print "PyCogent not installed but required. (Is it installed? Is it in the current user's $PYTHONPATH or site-packages?) See http://pycogent.sourceforge.net."
+    exit(1)
+from cogent.util.misc import app_path
+
 def build_html():
     """ Build the sphinx documentation 
     
@@ -48,12 +56,16 @@ def build_html():
     print "Local documentation built with Sphinx. "+\
           "Open to following path with a web browser:\n%s" %\
             index_html_path
-
-try:
-    import cogent
-except ImportError:
-    print "PyCogent not installed but required. (Is it installed? Is it in the current user's $PYTHONPATH or site-packages?) See http://pycogent.sourceforge.net."
-    exit(1)
+            
+def build_denoiser():
+    """ Build the denoiser code binary """
+    cwd = getcwd()
+    denoiser_dir = join(cwd,'qiime/support_files/denoiser/FlowgramAlignment')
+    chdir(denoiser_dir)
+    call(["make"])
+    call(["make","install"])
+    chdir(cwd)
+    print "Denoiser built."
 
 pycogent_version = tuple([int(v) \
         for v in re.split("[^\d]", cogent.__version__) if v.isdigit()])
@@ -79,7 +91,10 @@ setup(name='QIIME',
                     'support_files/images/*png',\
                     'support_files/jar/*jar',\
                     'support_files/js/*js',\
-                    'support_files/R/*r']},
+                    'support_files/R/*r',
+                    'support_files/denoiser/bin/FlowgramAli_4frame',
+                    'support_files/denoiser/Data/*',
+                    'support_files/denoiser/TestData/*']},
       long_description=long_description,
 )
 
@@ -87,3 +102,15 @@ if doc_imports_failed:
     print "Sphinx not installed, so cannot build local html documentation."
 else:
     build_html()
+
+if app_path("ghc"):
+    print get_python_lib
+    build_denoiser()
+    # from qiime.util import get_qiime_project_dir
+    # from os import fchmod
+    # binary_path = '/qiime/support_files/denoiser/bin/FlowgramAli_4frame'
+    # print binary_path
+    # fchmod(binary_path,755)
+    # #call(["chmod","755",binary_path])
+else:
+    print "GHC not installed, so cannot build the Denoiser binary."

@@ -40,7 +40,7 @@ class Test_flowgram_filter(TestCase):
                       'Uneven1_10 FV9NWLF01D4LTB orig_bc=TCGAGCGAATCT new_bc=TCGAGCGAATCT bc_diffs=0']
 
        self.tiny_test =  get_qiime_project_dir() +\
-           "/tests/test_denoiser/TestData/tiny_test.sff.txt"
+           "/qiime/support_files/denoiser/TestData/tiny_test.sff.txt"
 
    def test_write_sff_header(self):
       """write_sff_header writes a correct sff header"""      

@@ -48,7 +48,7 @@ class TestUtils(TestCase):
 
         #realistic test file
         self.tiny_test = get_qiime_project_dir() +\
-            "/tests/test_denoiser/TestData/tiny_test.sff.txt"
+            "/qiime/support_files/denoiser/TestData/tiny_test.sff.txt"
 
         #set up test file
         open("/tmp/denoiser_utils_dummy.tmp","w")

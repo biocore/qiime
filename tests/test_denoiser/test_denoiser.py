@@ -106,7 +106,7 @@ FS8APND01CKOMZ:
 
         command =  " ".join( ["%s/denoiser.py" % get_qiime_scripts_dir(),
                               "--force", "-o", self.test_dir, "-i",
-                              "%s/tests/test_denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME] );
+                              "%s/qiime/support_files/denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME] );
 
         result = Popen(command,shell=True,universal_newlines=True,\
                            stdout=PIPE,stderr=STDOUT).stdout.read()
@@ -125,8 +125,8 @@ FS8APND01CKOMZ:
 
         command =  " ".join( ["%s/denoiser.py" % get_qiime_scripts_dir(),
                               "--force", "-o", self.test_dir,
-                              "-i", "%s/tests/test_denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME, 
-                              "-f", "%s/tests/test_denoiser/TestData/test_set_seqs.fna" % PROJECT_HOME] )
+                              "-i", "%s/qiime/support_files/denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME, 
+                              "-f", "%s/qiime/support_files/denoiser/TestData/test_set_seqs.fna" % PROJECT_HOME] )
 
         result = Popen(command,shell=True,universal_newlines=True,\
                            stdout=PIPE,stderr=STDOUT).stdout.read()
@@ -143,8 +143,8 @@ FS8APND01CKOMZ:
 
         command =  " ".join( ["%s/denoiser.py" % get_qiime_scripts_dir(),
                               "--force", "-o", self.test_dir,
-                              "-i", "%s/tests/test_denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME,
-                              "-f", "%s/tests/test_denoiser/TestData/test_set_seqs.fna" % PROJECT_HOME,
+                              "-i", "%s/qiime/support_files/denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME,
+                              "-f", "%s/qiime/support_files/denoiser/TestData/test_set_seqs.fna" % PROJECT_HOME,
                               "-e", "%s/qiime/support_files/denoiser/Data/Titanium_error_profile.dat" % PROJECT_HOME] )
 
         result = Popen(command,shell=True,universal_newlines=True,\
@@ -162,8 +162,8 @@ FS8APND01CKOMZ:
 
         command =  " ".join( ["%s/denoiser.py" % get_qiime_scripts_dir(),
                               "--force","-o", self.test_dir, "-c", "-n", "2",
-                              "-i", "%s/tests/test_denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME, 
-                              "-f", "%s/tests/test_denoiser/TestData/test_set_seqs.fna" % PROJECT_HOME] )
+                              "-i", "%s/qiime/support_files/denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME, 
+                              "-f", "%s/qiime/support_files/denoiser/TestData/test_set_seqs.fna" % PROJECT_HOME] )
 
         result = Popen(command,shell=True,universal_newlines=True,\
                            stdout=PIPE,stderr=STDOUT).stdout.read()
@@ -176,8 +176,8 @@ FS8APND01CKOMZ:
         """Denoiser works using low_memory"""
 
         command =  " ".join( ["%s/denoiser.py" % get_qiime_scripts_dir(),
-                              "-f", "%s/tests/test_denoiser/TestData/test_set_seqs.fna" % PROJECT_HOME,
-                              "-i", "%s/tests/test_denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME,
+                              "-f", "%s/qiime/support_files/denoiser/TestData/test_set_seqs.fna" % PROJECT_HOME,
+                              "-i", "%s/qiime/support_files/denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME,
                               "-o", self.test_dir, "--low_memory"] )
 
         result = Popen(command,shell=True,universal_newlines=True,\
@@ -192,8 +192,8 @@ FS8APND01CKOMZ:
 
         command =  " ".join( ["%s/denoiser.py" % get_qiime_scripts_dir(),
                               "-S", "--force",
-                              "-i", "%s/tests/test_denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME,
-                              "-f", "%s/tests/test_denoiser/TestData/test_set_seqs.fna" % PROJECT_HOME,
+                              "-i", "%s/qiime/support_files/denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME,
+                              "-f", "%s/qiime/support_files/denoiser/TestData/test_set_seqs.fna" % PROJECT_HOME,
                               "-o", self.test_dir] )
 
         result = Popen(command,shell=True,universal_newlines=True,\
@@ -212,8 +212,8 @@ FS8APND01CKOMZ:
         
         command =  " ".join( ["%s/denoiser.py" % get_qiime_scripts_dir(),
                               "-S", "--force", '-c', '-n 2',
-                              "-i", "%s/tests/test_denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME,
-                              "-f", "%s/tests/test_denoiser/TestData/test_set_seqs.fna" % PROJECT_HOME,
+                              "-i", "%s/qiime/support_files/denoiser/TestData/denoiser_test_set.sff.txt" % PROJECT_HOME,
+                              "-f", "%s/qiime/support_files/denoiser/TestData/test_set_seqs.fna" % PROJECT_HOME,
                               "-o", self.test_dir] )
 
         result = Popen(command,shell=True,universal_newlines=True,\
