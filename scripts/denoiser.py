@@ -38,19 +38,25 @@ script_info['script_usage'] = [ \
     ( "",
       """Run denoiser on flowgrams in 454Reads.sff.txt with read-to-barcode mapping in seqs.fna,
 put results into Outdir, log progress in Outdir/denoiser.log""",
-"""%prog -i 454Reads.sff.txt -f seqs.fna -v -o Outdir"""),
+      """%prog -i 454Reads.sff.txt -f seqs.fna -v -o Outdir"""),
 
-    ( "",
+    ( "Multiple sff.txt files",
       """Run denoiser on two flowgram files in 454Reads_1.sff.txt and 454Reads_2.sff.txt
 with read-to-barcode mapping in seqs.fna, put results into Outdir,
 log progress in Outdir/denoiser.log""",
       """%prog -i 454Reads_1.sff.txt,454Reads_2.sff.txt -f seqs.fna -v -o Outdir"""),
 
-    ( "",
+    ( "Denoise multiple library separately",
       """Run denoiser on flowgrams in 454Reads.sff.txt with read-to-barcode mapping in seqs.fna,
 split input files into libraries and process each library separately,
 put results into Outdir, log progress in Outdir/denoiser.log""",
-      "%prog -S -i 454Reads.sff.txt -f seqs.fna -v -o Outdir")
+      "%prog -S -i 454Reads.sff.txt -f seqs.fna -v -o Outdir"),
+
+    ( "Resuming a failed run",
+      """Resume a previous denoiser run from breakpoint stored in Outdir_from_failed_run/checkpoints/checkpoint100.pickle.
+The checkpoint option requires the -p or --preprocess option, which usually can be set to the output dir of the failed run. 
+All other arguments must be identical to the failed run.""",
+      "%prog -i 454Reads.sff.txt -f seqs.fna -v -o Outdir_resumed -p Outdir_from_failed_run --checkpoint Outdir_from_failed_run/checkpoints/checkpoint100.pickle"),
     ]
 
 script_info['output_description']="""
@@ -61,6 +67,8 @@ singletons.fasta: contains all unclustered reads
 
 denoiser_mapping.txt: This file contains the actual clusters. The cluster centroid is given first,
                     the cluster members follow after the ':'.   
+
+checkpoints/ : directory with checkpoints
 
 Note that the centroids and singleton files are disjoint. For most downstream analyses one wants to cat the two files.
 """
@@ -98,6 +106,14 @@ script_info['optional_options']=[ \
                     type='string',dest='preprocess_fp',\
                     help='Do not do preprocessing (phase I),'\
                     +'instead use already preprocessed data in PREPROCESS_FP',\
+                    default=None),
+
+    make_option('--checkpoint_fp',action='store',\
+                    type='string',dest='checkpoint_fp',\
+                    help='Resume denoising from checkpoint. '\
+                    +'Be careful when changing parameters for'\
+                    +' a resumed run. Requires -p option. '+\
+                    ' [default: %default]',\
                     default=None),
 
     make_option('-s','--squeeze',action='store_true',\
@@ -186,7 +202,12 @@ def main(commandline_args=None):
     elif not files_exist(opts.sff_fp):
         parser.error('Flowgram file path does not exist:\n %s \n Pass a valid one via -i.'
                      % opts.sff_fp)
-        
+
+    if(opts.checkpoint_fp):
+        bp_fp = opts.checkpoint_fp
+        if not exists(bp_fp):
+            parser.error('Specified checkpoint file does not exist: %s' % bp_fp)
+
     #peek into sff.txt files to make sure they are parseable
     #cat_sff_fles is lazy and only reads header
     flowgrams, header = cat_sff_files(map(open, opts.sff_fp.split(',')))
@@ -225,12 +246,14 @@ def main(commandline_args=None):
         denoise_per_sample(opts.sff_fp, opts.fasta_fp, tmpoutdir, opts.cluster,
                            opts.num_cpus, opts.squeeze, opts.percent_id, opts.bail,
                            opts.primer, opts.low_cutoff, opts.high_cutoff, log_fp,
-                           opts.low_memory, opts.verbose, opts.error_profile, opts.max_num_iter)
+                           opts.low_memory, opts.verbose, opts.error_profile, opts.max_num_iter,
+                           opts.titanium)
     else:
         denoise_seqs(opts.sff_fp, opts.fasta_fp, tmpoutdir, opts.preprocess_fp, opts.cluster,
                      opts.num_cpus, opts.squeeze, opts.percent_id, opts.bail, opts.primer,
                      opts.low_cutoff, opts.high_cutoff, log_fp, opts.low_memory,
-                     opts.verbose, opts.error_profile, opts.max_num_iter)
+                     opts.verbose, opts.error_profile, opts.max_num_iter, opts.titanium,
+                     opts.checkpoint_fp)
 
 if __name__ == "__main__":
     main()

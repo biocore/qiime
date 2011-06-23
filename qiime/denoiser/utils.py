@@ -409,29 +409,40 @@ def read_denoiser_mapping(mapping_fh):
     return denoiser_mapping
 
 
-def write_breakpoint(current_key, ctr, cluster_mapping, ids, bestscores, out_fp):
-    """write intermediate results
+def write_checkpoint(current_key, ctr, cluster_mapping, ids, bestscores, order, out_fp):
+    """write intermediate results to checkpoint file
 
     current_key: the identifier of the current denoiser round
-    ctr: a uniq counter to label the breakpoint
+    ctr: a uniq counter to label the checkpoint
     cluster_mapping: an intermediate cluster mapping as dict
     ids: the dict of active ids
+    order:  a list of ids, which defines the order of which flowgrams are clustered
     bestscores: a dict of 
     """
 
-    breakpoint_dir = out_fp+"/breakpoints/"
-    if (not exists(breakpoint_dir)):
-        create_dir(breakpoint_dir)
-    out_fp = breakpoint_dir+"/breakpoint%d.pickle" % ctr
+    checkpoint_dir = out_fp+"/checkpoints/"
+    if (not exists(checkpoint_dir)):
+        create_dir(checkpoint_dir)
+    out_fp = checkpoint_dir+"/checkpoint%d.pickle" % ctr
     out_fh = open(out_fp, "w")
-    pickle.dump((current_key, cluster_mapping, ids, bestscores), out_fh)
+    pickle.dump((current_key, ctr, cluster_mapping, ids, bestscores, order), out_fh)
 
     return out_fp
     
-def read_breakpoint(out_fp):
-    """Read in information stored in a breakpoint
+def read_checkpoint(out_fp):
+    """Read in information stored in a checkpoint
     
-    out_fp: The path to the breakpoint dir
+    out_fp: The path to the checkpoint dir
     """
     pickle_fh = open(out_fp, "r") 
     return  pickle.load(pickle_fh)
+
+def sort_mapping_by_size(cluster_mapping):
+    """Sort the keys of a dict reative to their values length
+
+    cluster_mapping: dict with mapping as list of ids
+    """
+    
+    return sorted(cluster_mapping.keys(),
+                  cmp = lambda a,b: cmp(len(a), len(b)),
+                  key=lambda k: cluster_mapping[k], reverse=True)

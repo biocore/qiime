@@ -32,7 +32,7 @@ from qiime.denoiser.utils import make_stats, get_representatives,\
     init_flowgram_file, append_to_flowgram_file, store_mapping,\
     store_clusters, invert_mapping, read_denoiser_mapping,\
     cat_sff_files, FlowgramContainerFile, FlowgramContainerArray,\
-    write_breakpoint, read_breakpoint
+    write_checkpoint, read_checkpoint
 
 class TestUtils(TestCase):
    def setUp(self):
@@ -335,26 +335,28 @@ BABBA"""
         self.assertEqual(sort_ids(["1","3","4","8","11"], mapping),\
                             ["11","1","8","4","3"])
 
-   def test_breakpoints(self):
-      """storing and loading of breakpoints works"""
+   def test_checkpoints(self):
+      """storing and loading of checkpoints works"""
       
-      self.tmpdir = get_tmp_filename(tmp_dir="./", suffix="_test_breakpoints/")
+      self.tmpdir = get_tmp_filename(tmp_dir="./", suffix="_test_checkpoints/")
 
       bestscores = dict({ 1 : 0.9,
                           2 : 1.1,
                           3 : 2.3,
                           4 : 99.93232344})
       
-      out_fp = write_breakpoint("Key", 99, self.mapping, [1,2,3,4],bestscores,
+      out_fp = write_checkpoint("Key", 99, self.mapping, [1,2,3,4], bestscores,
+                                [2,1,3,4],
                                 self.tmpdir)
 
-      observed = read_breakpoint(out_fp)
+      observed = read_checkpoint(out_fp)
       
       self.assertEqual(observed[0], "Key")
-      self.assertEqual(observed[1], self.mapping)
-      self.assertEqual(observed[2], [1,2,3,4])
-      self.assertEqual(observed[3], bestscores)
-
+      self.assertEqual(observed[1], 99)
+      self.assertEqual(observed[2], self.mapping)
+      self.assertEqual(observed[3], [1,2,3,4])
+      self.assertEqual(observed[4], bestscores)
+      self.assertEqual(observed[5], [2,1,3,4])
 
 class TestFlowgramContainerFile(TestCase):
    def setUp(self):

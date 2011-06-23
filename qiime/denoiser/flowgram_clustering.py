@@ -20,7 +20,7 @@ import datetime
 from time import time
 from math import fsum, trunc
 
-from cogent.app.util import ApplicationNotFoundError
+from cogent.app.util import ApplicationNotFoundError, ApplicationError
 from qiime.util import get_tmp_filename
 from cogent.parse.flowgram_parser import lazy_parse_sff_handle
 from cogent.parse.flowgram import Flowgram, seq_to_flow
@@ -28,17 +28,16 @@ from cogent.parse.flowgram_collection import FlowgramCollection
 from cogent.parse.fasta import MinimalFastaParser
 
 from qiime.format import write_Fasta_from_name_seq_pairs
-from qiime.util import get_qiime_project_dir, load_qiime_config, \
-    FileFormatError
+from qiime.util import get_qiime_project_dir, load_qiime_config
 
 from qiime.denoiser.utils import init_flowgram_file, append_to_flowgram_file,\
     FlowgramContainerFile, FlowgramContainerArray, make_stats, store_mapping,\
     store_clusters, read_denoiser_mapping, check_flowgram_ali_exe,\
     sort_seqs_by_clustersize, get_denoiser_data_dir, get_flowgram_ali_exe,\
-    write_breakpoint, read_breakpoint
+    write_checkpoint, read_checkpoint, sort_mapping_by_size
 
-from qiime.denoiser.cluster_utils import setup_workers, adjust_workers,\
-    stop_workers, check_workers, setup_server, ClientHandler,\
+from qiime.denoiser.cluster_utils import setup_cluster, adjust_workers,\
+    stop_workers, check_workers, ClientHandler,\
     save_send, send_flowgram_to_socket
 from qiime.denoiser.flowgram_filter import write_sff_header, split_sff
 from qiime.denoiser.preprocess import preprocess, preprocess_on_cluster,\
@@ -85,7 +84,7 @@ def adjust_processing_time(num_cores, workload, timing, epoch):
     epoch:
     """
 
-    # sigma is the total through put in flowgrams/sec
+    # sigma is the total throughput in flowgrams/sec
     sigma = 0.0
     for i in range (num_cores):
         timing[i] = workload[i]/(timing[i] - epoch)
@@ -147,7 +146,7 @@ def get_flowgram_distances_on_cluster(id, flowgram, flowgrams, fc, ids, num_core
 
     debug_count = 0
     for i in range(num_cores):
-        socket,addr = client_sockets[i]
+        socket = client_sockets[i]
         #send master flowgram to file first
         send_flowgram_to_socket(id, flowgram, socket)
 
@@ -171,7 +170,7 @@ def get_flowgram_distances_on_cluster(id, flowgram, flowgrams, fc, ids, num_core
     results = [None]*num_cores #
     timing = [0.0 for x in xrange(num_cores)]
     for i in range (num_cores):
-        socket,addr = client_sockets[i]
+        socket = client_sockets[i]
         ClientHandler(socket, i, results, timing)
     loop()
     #end asynchronous loop
@@ -225,7 +224,7 @@ def get_flowgram_distances(id, flowgram, flowgrams, fc, ids, outdir,
             names.append(f.Name)
     fh.close()
 
-    #TODO capture stderr and warn user
+    #TODO: capture stderr and warn user
     scores_fh = popen("%s -relscore_pairid %s %s " % \
                           (get_flowgram_ali_exe(),
                            error_profile, tmpfile), 'r')
@@ -341,9 +340,11 @@ def filter_with_flowgram(id, flowgram, flowgrams, header, ids, num_flows, bestsc
             if (not bestscores.has_key(name) or score < bestscores[name][1]):
                 bestscores[name] = (id, score)
 
-    #some people argue against asserts in production code. Are you one of them?
-    assert(len(ids) == non_clustered_ctr)
-    assert(len(bestscores) == non_clustered_ctr)
+    #Some extra safety that we are not missing anything
+    if ( len(ids) != non_clustered_ctr
+        or len(bestscores) != non_clustered_ctr):
+             raise ApplicationError, "filterWithFlowgram failed"
+
     return (flowgrams, non_clustered_ctr)
 
 def secondary_clustering(sff_file, mapping, bestscores, log_fh,\
@@ -395,8 +396,8 @@ def log_remaining_rounds(ids, cluster_mapping, bail_out, log_fh=None):
     
     log_fh: log file handle
     """
-    #this doesn't look very clever and might run a lot faster if rewritten
 
+    #this doesn't look very clever and might run a lot faster if rewritten
     remaining_rounds = len ([id for id in ids.keys()
                              if len(cluster_mapping[id]) >= bail_out ])
     # Remember, this is an unlikely worst case estimate
@@ -407,9 +408,9 @@ def log_remaining_rounds(ids, cluster_mapping, bail_out, log_fh=None):
 def greedy_clustering(sff_fp, seqs, cluster_mapping, outdir, num_flows,
                       log_fh, num_cpus=1, on_cluster=False,
                       bail_out=1, pair_id_thresh=0.97, verbose=False,
-                      threshold=3.75, queue="friendlyq",fast_method=True,
+                      threshold=3.75, fast_method=True,
                       error_profile=DENOISER_DATA_DIR+'FLX_error_profile.dat',
-                      max_num_rounds=None):
+                      max_num_rounds=None, checkpoint_fp=None):
     """second clustering phase of denoiser.
 
     sff_fp: flowgram file
@@ -425,42 +426,46 @@ def greedy_clustering(sff_fp, seqs, cluster_mapping, outdir, num_flows,
                      identity of pair_id_thresh or higher
     verbose: be verbose or not
     threshold: low clustering threshold for phase II
-    queue: name of the queue (currently not in use)
     fast_method: use more memory intensive but faster method
     error_profile: path to error profile *.dat file
     max_num_rounds: If set, will stop clustering after this many rounds
     """
-
-    bestscores   = {}
-    cluster_size = defaultdict(int)
   
     (flowgrams, header) = lazy_parse_sff_handle(open(sff_fp))
     l = num_flows
 
-    workers=None
-    client_sockets=None
-    client_socks_and_adrs=None
     spread = [1.0 for x in range(num_cpus)]
+    (client_sockets, workers) = (None, None)
     if on_cluster:
-        server_socket = setup_server()
-        workers, client_socks_and_adrs = setup_workers(num_cpus, outdir, server_socket,
-                                                       queue, verbose=verbose,
-                                                       error_profile=error_profile) 
-        # we don't need the client adresses anywhere, so get rid of them 
-        client_sockets = [sock for sock,addr in client_socks_and_adrs]
+        (client_sockets, workers, server_socket) = \
+            setup_cluster(num_cpus, outdir, verbose, error_profile)
 
-    # ids stores all the active sequences
-    # we initialize it with the ids from  the seqs dict here,
-    # as it starts with all active flows.
-    ids = dict.fromkeys(seqs)
-    
-    #sort cluster_mapping by cluster size  
-    sorted_keys = sorted(cluster_mapping.keys(), cmp = lambda a,b: cmp(len(a), len(b)),
-                         key=lambda k: cluster_mapping[k], reverse=True)
+    if checkpoint_fp:
+        (checkpoint_key, round_ctr, cluster_mapping, ids, bestscores, sorted_keys) = \
+            read_checkpoint(checkpoint_fp)
+        skipping = True
+    else:
+        # ids stores all the active sequences
+        # we initialize it with the ids from  the seqs dict here,
+        # as it starts with all active flows.
+        ids = dict.fromkeys(seqs)
 
-    round_ctr = 1
+        sorted_keys = sort_mapping_by_size(cluster_mapping)
+
+        bestscores = {}
+        round_ctr = 1
+
     #this is the main clustering loop, where most of the compute time is spent
     for key in sorted_keys:
+        #skip until we reach the checkpoint
+        if checkpoint_fp:
+            if (checkpoint_key == key):
+                if log_fh:
+                    log_fh.write("Resume denoising with %s\n" % key)
+                skipping = False
+            if (skipping):
+                continue
+
         if(not cluster_mapping.has_key(key)):
             #this guy already has been clustered
             continue
@@ -479,19 +484,26 @@ def greedy_clustering(sff_fp, seqs, cluster_mapping, outdir, num_flows,
         # Do not take bad sequences as cluster seeds, as this will break the code
         if('N' in seqs[key]):
             continue
-        if log_fh:
-            log_fh.write("Round %d:\n" % round_ctr)
-            log_remaining_rounds(ids, cluster_mapping, bail_out, log_fh)
-            
+
         #check and delete workers if no longer needed
         if on_cluster:
             num_cpus = adjust_workers(l, num_cpus, client_sockets, log_fh)
             #check for dead workers
             check_workers(workers, client_sockets, log_fh)
             if num_cpus != len(spread):
-                #JR:Does this reset the spread everytime we release a worker?
                 spread = [1.0 for x in range(num_cpus)]
-        
+
+        # write checkpoint right before expensive computation starts
+        # Currently, write checkpint every 50 rounds,
+        # could easily be changed here or exposed to command line
+        if (round_ctr % 50) == 0:
+            write_checkpoint(key, round_ctr, cluster_mapping, ids, bestscores,
+                             sorted_keys, outdir)
+
+        if log_fh:
+            log_fh.write("Round %d:\n" % round_ctr)
+            log_remaining_rounds(ids, cluster_mapping, bail_out, log_fh)
+
         ideal_flow = seq_to_flow(seqs[key])
         (new_flowgrams, newl) = filter_with_flowgram(key, ideal_flow, flowgrams, header, ids,
                                                    l, bestscores, log_fh, outdir,
@@ -502,17 +514,18 @@ def greedy_clustering(sff_fp, seqs, cluster_mapping, outdir, num_flows,
                                                    verbose=verbose,
                                                    threshold=threshold,
                                                    pair_id_thresh=pair_id_thresh,
-                                                   client_sockets=client_socks_and_adrs,
+                                                   client_sockets=client_sockets,
                                                    error_profile=error_profile, spread=spread)
-        cluster_size[id] +=  (l-newl)
         l = newl
         flowgrams = new_flowgrams
         round_ctr += 1
         if(newl==0):
             #all flowgrams clustered
             break
-        if log_fh:
-            log_fh.write("Throughput Spread %s\n" % str(spread))
+         #JR: I think this is too much info for the regular user, I leave it in, so
+        # we can simply turn it on for debugging
+#        if log_fh:
+#            log_fh.write("Throughput Spread %s\n" % str(spread))
 
     if on_cluster:
         stop_workers(client_sockets, log_fh)
@@ -528,15 +541,14 @@ def greedy_clustering(sff_fp, seqs, cluster_mapping, outdir, num_flows,
          if (ids.has_key(f.Name)):
               non_clustered_fh.write(f.createFlowHeader() +"\n")
               
-    return(non_clustered_filename, bestscores)
-
+    return(non_clustered_filename, bestscores, cluster_mapping)
 
 def denoise_seqs(sff_fp, fasta_fp, tmpoutdir, preprocess_fp=None, cluster=False,
                  num_cpus=1, squeeze=True, percent_id=0.97, bail=1, primer="",
                  low_cutoff=3.75, high_cutoff=4.5, log_fp="denoiser.log",
                  low_memory=False, verbose=False,
                  error_profile = DENOISER_DATA_DIR +'FLX_error_profile.dat',
-                 max_num_rounds=None, titanium=False):
+                 max_num_rounds=None, titanium=False, checkpoint_fp=None):
     """The main routine to denoise flowgrams"""
 
     #abort if binary is missing
@@ -560,6 +572,8 @@ def denoise_seqs(sff_fp, fasta_fp, tmpoutdir, preprocess_fp=None, cluster=False,
         log_fh.write("SFF file: %s\n" % sff_fp)
         log_fh.write("Fasta file: %s\n" % fasta_fp)
         log_fh.write("Preprocess dir: %s\n" % preprocess_fp)
+        if checkpoint_fp:
+            log_fh.write("Resuming denoiser from %s\n" % checkpoint_fp)
         log_fh.write("Primer sequence: %s\n" % primer)
         log_fh.write("Running on cluster: %s\n" % cluster)
         log_fh.write("Num CPUs: %d\n" % num_cpus)
@@ -571,40 +585,49 @@ def denoise_seqs(sff_fp, fasta_fp, tmpoutdir, preprocess_fp=None, cluster=False,
         log_fh.write("High cut-off: %.2f\n" % high_cutoff)
         log_fh.write("Error profile: %s\n" % error_profile)
         log_fh.write("Maximal number of iteration: %s\n\n" % max_num_rounds)
-        
+
     # here we go ...
     # Phase I - clean up and truncate input sff
+    if(checkpoint_fp):
+        if (preprocess_fp):
+            #skip preprocessing as we should have data 
+            # we already have preprocessed data, so use it
+            (deprefixed_sff_fp, l, mapping, seqs) = read_preprocessed_data(preprocess_fp)
+        else:
+            raise ApplicationError, "Resuming from checkpoint requires --preprocess option"
 
-    if(preprocess_fp):
-        # we already have preprocessed data, so use it
-        (deprefixed_sff_fp, l, mapping, seqs) = read_preprocessed_data(preprocess_fp)
-    elif(cluster):
-        preprocess_on_cluster(sff_fp, log_fp, fasta_fp=fasta_fp,
-                              out_fp=tmpoutdir, verbose=verbose,
-                              squeeze=squeeze, primer=primer)
-        (deprefixed_sff_fp, l, mapping, seqs) = read_preprocessed_data(tmpoutdir)
-    else:
-        (deprefixed_sff_fp, l, mapping, seqs) = \
-        preprocess(sff_fp, log_fh, fasta_fp=fasta_fp, out_fp=tmpoutdir,
-                   verbose=verbose, squeeze=squeeze, primer=primer)
+    else:    
+        if(preprocess_fp):
+            # we already have preprocessed data, so use it
+            (deprefixed_sff_fp, l, mapping, seqs) = read_preprocessed_data(preprocess_fp)
+        elif(cluster):
+            preprocess_on_cluster(sff_fp, log_fp, fasta_fp=fasta_fp,
+                                  out_fp=tmpoutdir, verbose=verbose,
+                                  squeeze=squeeze, primer=primer)
+            (deprefixed_sff_fp, l, mapping, seqs) = read_preprocessed_data(tmpoutdir)
+        else:
+            (deprefixed_sff_fp, l, mapping, seqs) = \
+                preprocess(sff_fp, log_fh, fasta_fp=fasta_fp, out_fp=tmpoutdir,
+                           verbose=verbose, squeeze=squeeze, primer=primer)
 
-    #preprocessor writes into same file, so better jump to end of file
-    if verbose:
-        log_fh.close()
-        log_fh = open(tmpoutdir+"/"+log_fp, "a", 0)
+        #preprocessor writes into same file, so better jump to end of file
+        if verbose:
+            log_fh.close()
+            log_fh = open(tmpoutdir+"/"+log_fp, "a", 0)
         
     # phase II:
     # use prefix map based clustering as initial centroids and greedily
     # add flowgrams to clusters with a low threshold
-    (new_sff_file, bestscores) = \
+
+    (new_sff_file, bestscores, mapping) = \
         greedy_clustering(deprefixed_sff_fp, seqs, mapping, tmpoutdir, l,
                           log_fh, num_cpus=num_cpus, on_cluster=cluster,
                           bail_out=bail, pair_id_thresh=percent_id,
-                          threshold=low_cutoff,
-                          verbose=verbose, #queue=queue,
+                          threshold=low_cutoff, verbose=verbose,
                           fast_method= not low_memory,
                           error_profile=error_profile,
-                          max_num_rounds=max_num_rounds)
+                          max_num_rounds=max_num_rounds,
+                          checkpoint_fp = checkpoint_fp)
 
     # phase III phase:
     # Assign seqs to nearest existing centroid with high threshold

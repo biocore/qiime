@@ -44,7 +44,7 @@ def submit_jobs(commands, prefix):
     system('%s -ms %s %s'%(CLUSTER_JOBS_SCRIPT, outfilename, prefix))
     remove(outfilename)
 
-def setup_workers(num_cpus, outdir, server_socket, queue=None, verbose=True,
+def setup_workers(num_cpus, outdir, server_socket, verbose=True,
                   error_profile=None):
     """Start workers waiting for data.
     
@@ -53,8 +53,6 @@ def setup_workers(num_cpus, outdir, server_socket, queue=None, verbose=True,
     outdir: directory were the workers will work in
 
     server_socket: an open socket to the server
-
-    queue: name of the queue. DEPRECATED. Don't use
 
     verbose: verbose flag passed to the workers
 
@@ -189,6 +187,18 @@ def setup_server(port=0, verbose=False):
         print "Server listening on %s" % str(sock.getsockname())
     return sock
 
+def setup_cluster(num_cpus, outdir, verbose, error_profile):
+    """Setup server and clients"""
+
+    server_socket = setup_server()
+    workers, client_socks_and_adrs = setup_workers(num_cpus, outdir, server_socket,
+                                                   verbose=verbose,
+                                                   error_profile=error_profile) 
+    # we don't need the client adresses anywhere, so get rid of them 
+    client_sockets = [sock for sock,addr in client_socks_and_adrs]
+
+    return client_sockets, workers, server_socket
+
 def save_send(socket, data):
     """send data to a socket.
 
@@ -245,15 +255,13 @@ class ClientHandler(async_chat):
     #Note: the incomgn socket is expected to be connected upon initialization
     #      and remains connected after this handler is destroyed
 
-    def __init__(self, sock, worker_number, result_array, timing, log_fh=None):
+    def __init__(self, sock, worker_number, result_array, timing):
         async_chat.__init__(self, sock)
         self.in_buffer = []
         self.set_terminator("--END--")
         self.number = worker_number
         self.results = result_array
         self.timing = timing;
-        if log_fh:
-            log_fh.write("Started client handler on %s: %s\n" % self.addr)
 
     def collect_incoming_data(self, data):
         """Buffer the data"""

@@ -25,7 +25,7 @@ from qiime.util import get_tmp_filename
 
 from qiime.denoiser.flowgram_clustering import *
 from qiime.denoiser.utils import FlowgramContainerArray
-from qiime.denoiser.cluster_utils import setup_workers, stop_workers
+from qiime.denoiser.cluster_utils import setup_workers, setup_server, stop_workers
 
 #timeout handling taken from test_workflow.py
 class TimeExceededError(Exception):
@@ -84,14 +84,14 @@ class DenoiserTests(TestCase):
         self.socket = setup_server()
         workers, client_sockets = setup_workers(1, self.tmp_dir, self.socket,
                                                 verbose=False)
-
+        client_sockets = [a for a,b in client_sockets]
         scores, names, fc = get_flowgram_distances_on_cluster("1", self.flowgram,
                                                               self.flowgrams,
                                                               FlowgramContainerArray(),
                                                               {"FZTHQMS01CIW5N":""},
                                                               1, 1, [1],
                                                               client_sockets)
-        stop_workers([a for a,b in client_sockets])
+        stop_workers(client_sockets)
     
         self.assertEqual(names, ["FZTHQMS01CIW5N"])
         self.assertFloatEqual(scores, [4.95274923, 0.7815385])
