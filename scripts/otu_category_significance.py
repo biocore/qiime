@@ -96,8 +96,13 @@ script_info['required_options']=[\
         help='path to the otu table, or to a directory containing OTU tables'),\
     make_option('-m','--category_mapping_fp',\
         dest='category_mapping_fp',\
-        help='path to category mapping file'),\
-    make_option('-s','--test', dest='test',\
+        help='path to category mapping file')
+]
+
+script_info['optional_options']=[\
+    make_option('-c', '--category', dest='category', default=None,\
+        help='name of the category over which to run the analysis'),\
+    make_option('-s','--test', dest='test', default='ANOVA',\
         help='the type of statistical test to run. options are: ' +\
         'g_test: determines whether OTU presence/absence is associated ' +\
         'with a category using the G test of Independence.      ' +\
@@ -112,11 +117,6 @@ script_info['required_options']=[\
         'relative abundance goes up or down in response to a treatment.',
         type="choice",choices=["g_test", "ANOVA", "correlation", \
         "longitudinal_correlation", "paired_T"])
-]
-
-script_info['optional_options']=[\
-    make_option('-c', '--category', dest='category', default=None,\
-        help='name of the category over which to run the analysis'),\
     make_option('-o','--output_fp', dest='output_fp', \
         default= 'otu_category_significance_results.txt',\
         help='path to output file. otu_category_significance_results.txt ' +\
