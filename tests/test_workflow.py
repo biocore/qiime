@@ -274,11 +274,6 @@ class WorkflowTests(TestCase):
         self.assertEqual(sample_ids,expected_sample_ids)
         # even sampling directory exists
         self.assertTrue(exists('%s/bdiv_even100' % self.wf_out))
-        
-        otu_category_significance_fp =\
-         '%s/category_significance_Treatment.txt' % self.wf_out
-        cat_sig_line2 = list(open(otu_category_significance_fp))[1]
-        self.assertAlmostEqual(float(cat_sig_line2.split()[1]),11.317,3)
 
     def test_run_core_qiime_analyses_serial_alt_params(self):
         """run_core_qiime_analyses: functions as expected (serially, alt params)
@@ -314,11 +309,6 @@ class WorkflowTests(TestCase):
         self.assertEqual(sample_ids,expected_sample_ids)
         # even sampling directory exists
         self.assertTrue(exists('%s/bdiv_even146' % self.wf_out))
-        
-        otu_category_significance_fp =\
-         '%s/category_significance_Treatment.txt' % self.wf_out
-        cat_sig_line2 = list(open(otu_category_significance_fp))[1]
-        self.assertAlmostEqual(float(cat_sig_line2.split()[1]),11.317,3)
 
     def test_run_core_qiime_analyses_parallel(self):
         """run_core_qiime_analyses: functions as expected in parallel
@@ -351,11 +341,6 @@ class WorkflowTests(TestCase):
         sample_ids.sort()
         expected_sample_ids.sort()
         self.assertEqual(sample_ids,expected_sample_ids)
-        
-        otu_category_significance_fp =\
-         '%s/category_significance_Treatment.txt' % self.wf_out
-        cat_sig_line2 = list(open(otu_category_significance_fp))[1]
-        self.assertAlmostEqual(float(cat_sig_line2.split()[1]),11.317,3)
         
     def test_run_pick_reference_otus_through_otu_table(self):
         """run_pick_reference_otus_through_otu_table generates expected results"""

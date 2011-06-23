@@ -116,7 +116,7 @@ script_info['optional_options']=[\
         'with timeseries data.     paired_T: determine whether OTU ' +\
         'relative abundance goes up or down in response to a treatment.',
         type="choice",choices=["g_test", "ANOVA", "correlation", \
-        "longitudinal_correlation", "paired_T"])
+        "longitudinal_correlation", "paired_T"]),
     make_option('-o','--output_fp', dest='output_fp', \
         default= 'otu_category_significance_results.txt',\
         help='path to output file. otu_category_significance_results.txt ' +\
