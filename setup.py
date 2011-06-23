@@ -3,7 +3,7 @@
 from __future__ import division
 from distutils.core import setup
 from distutils.sysconfig import get_python_lib
-from os import chdir, getcwd, listdir
+from os import chdir, getcwd, listdir, chmod
 from os.path import join, abspath
 from subprocess import call
 from glob import glob
@@ -73,7 +73,13 @@ pycogent_version = tuple([int(v) \
 if pycogent_version < (1,5):
     print "PyCogent >= 1.5.0 required, but %s is installed." % cogent.__version__
     exit(1)
-    
+
+if app_path("ghc"):
+    build_denoiser()
+else:
+    print "GHC not installed, so cannot build the Denoiser binary."
+
+
 setup(name='QIIME',
       version=__version__,
       description='Quantitative Insights Into Microbial Ecology',
@@ -92,9 +98,10 @@ setup(name='QIIME',
                     'support_files/jar/*jar',\
                     'support_files/js/*js',\
                     'support_files/R/*r',
-                    'support_files/denoiser/bin/FlowgramAli_4frame',
                     'support_files/denoiser/Data/*',
                     'support_files/denoiser/TestData/*']},
+      data_files=[('qiime/support_files/denoiser/bin/',
+       ['qiime/support_files/denoiser/bin/FlowgramAli_4frame'])],
       long_description=long_description,
 )
 
@@ -102,15 +109,3 @@ if doc_imports_failed:
     print "Sphinx not installed, so cannot build local html documentation."
 else:
     build_html()
-
-if app_path("ghc"):
-    print get_python_lib
-    build_denoiser()
-    # from qiime.util import get_qiime_project_dir
-    # from os import fchmod
-    # binary_path = '/qiime/support_files/denoiser/bin/FlowgramAli_4frame'
-    # print binary_path
-    # fchmod(binary_path,755)
-    # #call(["chmod","755",binary_path])
-else:
-    print "GHC not installed, so cannot build the Denoiser binary."
