@@ -35,11 +35,11 @@ ANOVA (ANOVA): determines whether OTU relative abundance is different between ca
 Pearson correlation (correlation): determines whether OTU abundance is correlated with a continuous variable in the category mapping file. (e.g. which OTUs are positively or negatively correlated with measured pH across soil samples)
 
 
-The tests also include options for longitudinal data (i.e. datasets in which multiple samples are collected from a single individual or site.) The composition of microbes may differ substantially across samples for reasons that do not relate to a study treatment. For instance, a given OTU may not be in an individual or study site for historical reasons, and so cannot change as a result of a treatment. The longitudinal tests thus ignore samples from individuals in which a particular OTU has never been observed across samples. The category mapping file must have an "individual" column indicating which sample is from which individual or site, and a "timepoint_zero" column, indicating which sample is the reference sample for an individual or site (e.g. time point zero in a timeseries experiment). The longitudinal options include:
+The tests also include options for longitudinal data (i.e. datasets in which multiple samples are collected from a single individual or site.) The composition of microbes may differ substantially across samples for reasons that do not relate to a study treatment. For instance, a given OTU may not be in an individual or study site for historical reasons, and so cannot change as a result of a treatment. The longitudinal tests thus ignore samples from individuals in which a particular OTU has never been observed across samples. The category mapping file must have an "individual" column indicating which sample is from which individual or site, and a "reference_sample" column, indicating which sample is the reference sample for an individual or site (e.g. time point zero in a timeseries experiment). The longitudinal options include:
 
 Pearson correlation (longitudinal_correlation): determines whether OTU relative abundance is correlated with a continuous variable in the category mapping file while accounting for an experimental design where multiple samples are collected from the same individual or site. Uses the change in relative abundance for each sample from the reference sample (e.g. timepoint zero in a timeseries analysis) rather than the absolute relative abundances in the correlation (e.g. if the relative abundance before the treatment was 0.2, and after the treatment was 0.4, the new values for the OTU relative abundance will be 0.0 for the before sample, and 0.2 for the after, thus indicating that the OTU went up in response to the treatment.)
 
-Paired T-test (paired_T): This option is when measurements were taken "before" and "after" a treatment. There must be exactly two measurements for each individual/site. The category mapping file must again have an individual column, indicating which sample is from which individual, and a timepoint_zero column, that has a 1 for the before time point and a 0 for the after.
+Paired T-test (paired_T): This option is when measurements were taken "before" and "after" a treatment. There must be exactly two measurements for each individual/site. The category mapping file must again have an individual column, indicating which sample is from which individual, and a reference_sample column, that has a 1 for the before time point and a 0 for the after.
 
 With the exception of longitudinal correlation and paired_T, this script can be performed on a directory of OTU tables (for example, the output of multiple_rarefactions_even_depth.py), in addition to on a single OTU table. If the script is called on a directory, the resulting p-values are the average of the p-values observed when running a single test on each otu_table separately. It is generally a good practice to rarefy the OTU table (e.g. with single_rarefaction.py) prior to running these significance tests in order to avoid artifacts/biases from unequal sample sizes.
 """
@@ -83,7 +83,7 @@ The paired_T results are output as tab delimited text that can be examined in Ex
 * OTU: The name of the OTU.
 * prob: The raw probability from the paired T test
 * T stat: The raw T value
-* average_diff: The average difference between the before and after timepoints in the individuals in which the OTU was observed.
+* average_diff: The average difference between the before and after samples in the individuals in which the OTU was observed.
 * num_pairs: The number of sample pairs (individuals) in which the OTU was observed.
 * Bonferroni_corrected: The probability after correction for multiple comparisons with the Bonferroni correction. In this correction, the p-value is multiplied by the number of comparisons performed (the number of OTUs remaining after applying the filter). 
 * FDR_corrected: The probability after correction with the "false discovery rate" method. In this method, the raw p-values are ranked from low to high. Each p-value is multiplied by the number of comparisons divided by the rank. This correction is less conservative than the Bonferroni correction. The list of significant OTUs is expected to have the percent of false positives predicted by the p value.
@@ -109,7 +109,9 @@ script_info['required_options']=[\
         'abundance is correlated with a continuous variable in the ' +\
         'category mapping file in longitudinal study designs such as ' +\
         'with timeseries data.     paired_T: determine whether OTU ' +\
-        'relative abundance goes up or down in response to a treatment.')
+        'relative abundance goes up or down in response to a treatment.',
+        type="choice",choices=["g_test", "ANOVA", "correlation", \
+        "longitudinal_correlation", "paired_T"])
 ]
 
 script_info['optional_options']=[\
@@ -140,12 +142,12 @@ script_info['optional_options']=[\
         'evaluates all OTUs that pass the minimum sample filter. If a ' +\
         'filepath is given here in which each OTU name one wishes to ' +\
         'evaluate is on a separate line, will apply this additional filter'),\
-    make_option('-z', '--timepoint_zero_column', dest='timepoint_zero_column',\
-        default='timepoint_zero',\
+    make_option('-z', '--reference_sample_column', dest='reference_sample_column',\
+        default='reference_sample',\
         help='This column specifies the sample to which all other samples ' +\
         'within an individual are compared. For instance, for timeseries ' +\
         'data, it would usually be the initial timepoint before a treatment ' +\
-        'began. The timepoint_zero sample should be marked with a 1, and ' +\
+        'began. The reference samples should be marked with a 1, and ' +\
         'other samples with a 0.'),\
     make_option('-n','--individual_column', dest='individual_column', \
         default='individual',\
@@ -157,7 +159,7 @@ script_info['optional_options']=[\
         'that are ignored because they are never observed in an individual ' +\
         'are replaced with the ignore number 999999999 and the OTU counts are ' +\
         'the change in relative abundance compared to the designated reference ' +\
-        'or timepoint_zero sample. If a filepath is given with the -b option ' +\
+        'sample. If a filepath is given with the -b option ' +\
         'this converted OTU table will be saved to this path.')]
 
 script_info['version'] = __version__
@@ -172,7 +174,7 @@ def main():
     category_mapping_fp = opts.category_mapping_fp
     category_mapping = open(category_mapping_fp,'U')
     individual_column = opts.individual_column
-    timepoint_zero_column = opts.timepoint_zero_column
+    reference_sample_column = opts.reference_sample_column
     conv_output_fp = opts.conv_output_fp
 
     filter = opts.filter
@@ -199,7 +201,7 @@ def main():
         if test == 'longitudinal_correlation' or test == 'paired_T':
             converted_otu_table = longitudinal_otu_table_conversion_wrapper(\
                 otu_table, category_mapping, individual_column, \
-                timepoint_zero_column) 
+                reference_sample_column) 
             if conv_output_fp:
                 of = open(conv_output_fp, 'w')
                 of.write(converted_otu_table)
@@ -214,7 +216,7 @@ def main():
                 output = test_wrapper('paired_T', converted_otu_table, \
                     category_mapping, category, threshold, \
                     filter, otu_include, 999999999.0, True, \
-                    individual_column, timepoint_zero_column)
+                    individual_column, reference_sample_column)
         else:
             output = test_wrapper(test, otu_table, category_mapping, \
                 category, threshold, filter, otu_include)
