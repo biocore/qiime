@@ -1,0 +1,137 @@
+#!/usr/bin/env python
+# File created on 20 Jun 2011
+from __future__ import division
+
+__author__ = "Justin Kuczynski"
+__copyright__ = "Copyright 2011, The QIIME Project"
+__credits__ = ["Justin Kuczynski"]
+__license__ = "GPL"
+__version__ = "1.2.1-dev"
+__maintainer__ = "Justin Kuczynski"
+__email__ = "justinak@gmail.com"
+__status__ = "Development"
+
+from qiime.util import parse_command_line_parameters, get_options_lookup
+from qiime.util import make_option
+from os import makedirs
+from qiime.util import load_qiime_config
+from qiime.parse import parse_qiime_parameters
+from qiime.workflow import (run_ampliconnoise, print_commands,
+    call_commands_serially, print_to_stdout, no_status_updates,
+    validate_and_set_jobs_to_start)
+import os
+
+
+qiime_config = load_qiime_config()
+
+#summarize_taxa_through_plots.py
+options_lookup = get_options_lookup()
+script_info={}
+script_info['brief_description'] = "Run AmpliconNoise"
+script_info['script_description']="""
+The steps performed by this script are:
+
+1. Split input sff.txt file into one file per sample
+
+2. Run scripts required for PyroNoise
+
+3. Run scripts required for SeqNoise
+
+4. Run scripts requred for Perseus (chimera removal)
+
+5. Merge output files into one file similar to the output of split_libraries.py
+
+"""
+script_info['script_usage'] = [("","Run ampliconnoise, write output to anoise_out.fna, compatible with output of split_libraries.py","%prog -i Fasting_Example.sff.txt -m Fasting_Map.txt -o anoise_out.fna")]
+script_info['output_description']= "a fasta file of sequences, with labels as:'>sample1_0' , '>sample1_1' ..."
+script_info['required_options'] = [
+ options_lookup['mapping_fp'],
+ make_option('-i','--sff_filepath',help='sff.txt filepath'),
+ make_option('-o','--output_filepath',help='the output file'),
+
+
+]
+script_info['optional_options'] = [
+ make_option('-n','--np',type=int,default=2,help='number of processes to use for mpi steps. Default: %default'),
+ make_option('--chimera_alpha',type=float,default=-3.8228,help='alpha value to Class.pl used for chimera removal  Default: %default'),
+ make_option('--chimera_beta',type=float,default=0.6200,help='beta value to Class.pl used for chimera removal  Default: %default'),
+ make_option('--seqnoise_resolution',type=str,default=None,help='-s parameter passed to seqnoise. Default is 25.0 for titanium, 30.0 for flx'),
+ make_option('-d','--output_dir',default=None,help='directory for ampliconnoise intermediate results. Default is output_filepath_dir'),
+    make_option('-p','--parameter_fp',
+        help='path to the parameter file, which specifies changes'+\
+        ' to the default behavior. '+\
+        'See http://www.qiime.org/documentation/file_formats.html#qiime-parameters.'+\
+        ' [if omitted, default values will be used]'),
+    make_option('-f','--force',action='store_true', default=False,
+        dest='force',help='Force overwrite of existing output directory'+\
+        ' (note: existing files in output_dir will not be removed)'+\
+        ' [default: %default]'),\
+    make_option('-w','--print_only',action='store_true',default=False,
+        dest='print_only',help='Print the commands but don\'t call them -- '+\
+        'useful for debugging [default: %default]'),
+ make_option('--suppress_perseus',action='store_true',default=False,help='omit perseus from ampliconnoise workflow'),
+ make_option('--platform',default='flx',help="sequencing technology, options are 'titanium','flx'. [default: %default]"),
+
+
+]
+script_info['version'] = __version__
+
+def main():
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
+    if opts.output_dir == None:
+        opts.output_dir = opts.output_filepath + '_dir'
+
+
+    if opts.parameter_fp:
+        try:
+            parameter_f = open(opts.parameter_fp)
+        except IOError:
+            raise IOError,\
+                "Can't open parameters file (%s). Does it exist? Do you have read access?" \
+                 % opts.parameter_fp
+        params = parse_qiime_parameters(parameter_f)
+    else:
+        params = parse_qiime_parameters([]) 
+        # empty list returns empty defaultdict for now
+                  
+    try:
+        makedirs(opts.output_dir)
+    except OSError:
+        if opts.force:
+            pass
+        else:
+            # Since the analysis can take quite a while, I put this check
+            # in to help users avoid overwriting previous output.
+            print "Output directory already exists. Please choose "+\
+             "a different directory, or force overwrite with -f."
+            exit(1)
+
+    if opts.print_only:
+        command_handler = print_commands
+    else:
+        command_handler = call_commands_serially
+    
+    if opts.verbose:
+        status_update_callback = print_to_stdout
+    else:
+        status_update_callback = no_status_updates
+
+    run_ampliconnoise(
+     mapping_fp=opts.mapping_fp,
+     output_dir=os.path.abspath(opts.output_dir),
+     command_handler=command_handler,
+     params=params,
+     qiime_config=qiime_config,
+     status_update_callback=status_update_callback,
+     chimera_alpha=opts.chimera_alpha,
+     chimera_beta=opts.chimera_beta,
+     sff_txt_fp=opts.sff_filepath,
+     numnodes=opts.np,
+     suppress_perseus=opts.suppress_perseus,
+     output_filepath=os.path.abspath(opts.output_filepath),
+     platform=opts.platform,
+     seqnoise_resolution=opts.seqnoise_resolution,
+     )
+
+if __name__ == "__main__":
+    main()
