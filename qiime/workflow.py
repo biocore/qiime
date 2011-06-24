@@ -1671,7 +1671,9 @@ def run_ampliconnoise(mapping_fp,
 
     output_filepath should be absolute
     seqnoise_resolution should be string
-          
+    environment variable PYRO_LOOKUP_FILE must be set correctly. Thus be
+    careful passing command handlers that don't spawn child processes, as they
+    may not inherit the correct environment variable setting
     """
     map_data,headers,comments = parse_mapping_file(open(mapping_fp,'U'))
     create_dir(output_dir)
@@ -1741,8 +1743,14 @@ def run_ampliconnoise(mapping_fp,
         fasta_result_names = [sample_name + '_Good.fa' \
           for sample_name in sample_names]
 
-    cmd = 'cd '+output_dir # not sure this works, but see also os.chdir above
+    cmd = 'cd '+output_dir # see also os.chdir above
     commands.append([('change to output dir', cmd)])
+    
+    cmd = 'echo $PYRO_LOOKUP_FILE > pyro_lookup_filepath.txt'
+    commands.append([('confirm pyro lookup filepath environment variable',
+        cmd)])
+
+
     cmd = 'SplitKeys.pl '+one_primer+' map.csv < '+\
         os.path.join(called_dir,sff_txt_fp)+\
         ' > splitkeys_log.txt 2> unassigned.fna'
@@ -1756,7 +1764,7 @@ def run_ampliconnoise(mapping_fp,
                 sample_name+'.raw'
             commands.append([('clean flows '+sample_name, cmd)])
 
-            #         
+            # these run through the whole sff file once per sample, I think
             # cmd = "FlowsFA.pl " + primer_seqs[i] + ' '+sample_name +' < '+\
             #     os.path.join(called_dir,sff_txt_fp)
             # commands.append([('extract flows '+sample_name, cmd)])
@@ -1779,6 +1787,7 @@ def run_ampliconnoise(mapping_fp,
           " > "+sample_name+".fcout"
         commands.append([('fcluster pyrodist '+sample_name, cmd)])
 
+# e.g.:
 # mpirun -np 2 PyroNoise -din PC.354.dat -out PC.354_pyronoise -lin
 # PC.354.list -s 60.0 -c 0.01 > PC.354_pyronoise.pnout
         cmd = "mpirun -np "+str(numnodes)+" PyroNoise -din "+\
@@ -1804,6 +1813,7 @@ def run_ampliconnoise(mapping_fp,
             sample_name+post_pyro_tail+".fcout"
         commands.append([('fcluster seqdist '+sample_name, cmd)])
 
+# e.g.:
 # mpirun -np 2 SeqNoise -in PC.354_pyronoise_cd.fa -din
 # PC.354_pyronoise_cd.seqdist -out PC.354_pyronoise_cd_seqnoise -lin
 # PC.354_pyronoise_cdfcl.list -min PC.354_pyronoise.mapping -s 30.0 -c 0.08 >

@@ -41,6 +41,20 @@ The steps performed by this script are:
 
 5. Merge output files into one file similar to the output of split_libraries.py
 
+This script produces a denoised fasta sequence file such as:
+>PC.355_41
+CATGCTGCCTC...
+...
+>PC.636_23
+CATGCTGCCTC...
+...
+
+Additionally, the intermediate results of the ampliconnoise pipeline are
+written to an output directory.
+
+Ampliconnoise must be installed and correctly configured, and parallelized
+steps will be called with mpirun, not qiime's make_cluster_jobs.py script.
+
 """
 script_info['script_usage'] = [("","Run ampliconnoise, write output to anoise_out.fna, compatible with output of split_libraries.py","%prog -i Fasting_Example.sff.txt -m Fasting_Map.txt -o anoise_out.fna")]
 script_info['output_description']= "a fasta file of sequences, with labels as:'>sample1_0' , '>sample1_1' ..."
@@ -115,6 +129,19 @@ def main():
         status_update_callback = print_to_stdout
     else:
         status_update_callback = no_status_updates
+
+    # set env variable
+    if opts.platform == 'flx':
+        existing_pyro_fp = os.environ['PYRO_LOOKUP_FILE']
+        new_pyro_fp = os.path.join(os.path.split(existing_pyro_fp)[0],'LookUp_E123.dat')
+        os.environ['PYRO_LOOKUP_FILE'] = new_pyro_fp
+    elif opts.platform == 'titanium':
+        existing_pyro_fp = os.environ['PYRO_LOOKUP_FILE']
+        new_pyro_fp = os.path.join(os.path.split(existing_pyro_fp)[0],'LookUp_Titanium.dat')
+        os.environ['PYRO_LOOKUP_FILE'] = new_pyro_fp
+    else:
+        raise RuntimeError('could not find PYRO_LOOKUP_FILE for platform '+platform)
+
 
     run_ampliconnoise(
      mapping_fp=opts.mapping_fp,
