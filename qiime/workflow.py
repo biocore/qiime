@@ -1744,7 +1744,8 @@ def run_ampliconnoise(mapping_fp,
     cmd = 'cd '+output_dir # not sure this works, but see also os.chdir above
     commands.append([('change to output dir', cmd)])
     cmd = 'SplitKeys.pl '+one_primer+' map.csv < '+\
-        os.path.join(called_dir,sff_txt_fp)+' 2> unassigned.fna'
+        os.path.join(called_dir,sff_txt_fp)+\
+        ' > splitkeys_log.txt 2> unassigned.fna'
     commands.append([('split sff.txt via barcodes (keys)', cmd)])
 
     for i, sample_name in enumerate(sample_names):
