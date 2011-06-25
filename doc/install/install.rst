@@ -55,7 +55,6 @@ Alignment, tree-building, taxonomy assignment, OTU picking, and other data gener
 * infernal 1.0.2 (`src <ftp://selab.janelia.org/pub/software/infernal/infernal.tar.gz>`_) (license: GPL)
 * cdbtools (`src <ftp://occams.dfci.harvard.edu/pub/bio/tgi/software/cdbfasta/cdbfasta.tar.gz>`_)
 * muscle 3.6 (`src <http://drive5.com/muscle/downloads3.6/muscle3.6_src.tar.gz>`_) (Public domain)
-* dotur 1.53 (`src <http://www.plantpath.wisc.edu/fac/joh/DOTUR/dotur-1.53.tgz>`_) (license: GPL)
 
 Processing sff files:
 
