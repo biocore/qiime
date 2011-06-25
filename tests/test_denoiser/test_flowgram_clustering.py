@@ -3,7 +3,7 @@
 
 __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2011, The QIIME Project" 
-__credits__ = ["Jens Reeder", "Rob Knight"]#remember to add yourself if you make changes
+__credits__ = ["Jens Reeder", "Rob Knight", "Nigel Cook"]#remember to add yourself if you make changes
 __license__ = "GPL"
 __version__ = "1.2.1-dev"
 __maintainer__ = "Jens Reeder"
@@ -65,6 +65,26 @@ class DenoiserTests(TestCase):
                 # give client some more time to shut down and clean up
                 sleep(3)
                 rmdir(self.tmp_dir)
+
+    def test_compute_workload(self):
+        """allocation of workload based on observed worker performance"""
+
+        spread = [ 1.23, 0.5, 1.27 ]
+        num_cores = 3
+        num_flows = 11
+        result = compute_workload(num_cores, num_flows, spread)
+        self.assertEqual(result, [4,2,5])
+
+    def test_adjust_processing_time(self):
+        """evalulate worker performance"""
+
+        workload = [ 6, 10, 16 ]
+        num_cores = 3
+        timing = [ 9.0, 11.0, 65.0 ]
+        epoch = 1.0
+        result = adjust_processing_time(num_cores, workload, timing, epoch)
+        self.assertEqual(result, [1.125, 1.5, 0.375])
+
 
     def test_get_flowgram_distances(self):
         """get_flowgram_distances compute the correct alignment score."""

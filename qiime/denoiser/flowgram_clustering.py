@@ -48,11 +48,11 @@ DENOISER_DATA_DIR = get_denoiser_data_dir()
 def compute_workload(num_cores, num_flows, spread):
     """Compute workload for each individual worker
     
-    num_flows:
+    num_flows: total number of flows to be processed
     
-    num_cores:
+    num_cores: total number of workers available for processing the flows
 
-    spread:
+    spread: relative performance of the each worker, with 1.0 being nominal processing rate
     """
     # sigma is the sum of the normalized processing velocity scores
     # for each cluster processor. In a perfect world, sigma == num_cores
@@ -73,15 +73,16 @@ def compute_workload(num_cores, num_flows, spread):
     return workload
 
 def adjust_processing_time(num_cores, workload, timing, epoch):
-    """adjust processing time computes the spread
+    """adjust processing time computes the nomalized relative worker throughput,
+       with 1.0 being the nominal processing rate
     
-    num_cores:
+    num_cores: number of processing workers
     
-    workload:
+    workload: the number of flowgrams assigned to each worker
 
-    timing:
+    timing: the time each worker finished processing
     
-    epoch:
+    epoch: the iteration start time
     """
 
     # sigma is the total throughput in flowgrams/sec
