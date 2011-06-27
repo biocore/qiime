@@ -14,8 +14,7 @@ __status__ = "Development"
 from cogent.util.unit_test import TestCase, main
 from cogent.parse.tree import DndParser
 
-from qiime.parallel.beta_diversity import assemble_distance_matrix
-from qiime.parse import parse_distmat_to_dict, parse_otu_table
+from qiime.parse import parse_otu_table
 from qiime.util import get_qiime_scripts_dir, load_qiime_config
 
 import tempfile

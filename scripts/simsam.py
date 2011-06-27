@@ -50,11 +50,11 @@ def main():
     tree_fh = open(opts.tree_file,'U')
     tree = DndParser(tree_fh)
 
-    out_sam_names, res_otus, res_otu_mtx, res_otu_metadata = \
+    res_sam_names, res_otus, res_otu_mtx, res_otu_metadata = \
      sim_otu_table(sample_ids, otu_ids, otu_mtx, otu_metadata, 
      tree, opts.num, opts.dissim)
 
-    out_fh.write(format_otu_table(out_sam_names, res_otus, 
+    out_fh.write(format_otu_table(res_sam_names, res_otus, 
      res_otu_mtx, res_otu_metadata))
 
 
