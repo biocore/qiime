@@ -27,7 +27,8 @@ from qiime.parse import parse_qiime_config_file
 from qiime.util import (load_qiime_config, 
                         get_qiime_project_dir, 
                         parse_command_line_parameters,
-                        get_qiime_library_version)
+                        get_qiime_library_version,
+                        get_rdp_jarpath)
 from qiime.denoiser.utils import check_flowgram_ali_exe
 
 from cogent import __version__ as pycogent_lib_version
@@ -575,11 +576,6 @@ def test_qiime_config_variable(variable, qiime_config, test,
     #test if file readable    
     test.assertTrue(access(fp, access_var),
                     "%s is not %s: %s" % (variable, modes[access_var], fp))
-
-def get_rdp_jarpath(qiime_config):
-    """ Return jar file name for RDP classifier """
-    rdp_jarpath = getenv('RDP_JAR_PATH')
-    return rdp_jarpath
 
 if __name__ == "__main__":
     option_parser, opts, args = parse_command_line_parameters(**script_info)

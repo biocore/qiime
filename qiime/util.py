@@ -1347,3 +1347,6 @@ def make_compatible_distance_matrices(dm1,dm2,lookup=None):
     
     return (order,result1), (order,result2)
     
+def get_rdp_jarpath(qiime_config):
+    """ Return jar file name for RDP classifier ($RDP_JAR_PATH)"""
+    return getenv('RDP_JAR_PATH')
