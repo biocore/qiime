@@ -582,7 +582,7 @@ if __name__ == "__main__":
 
     qiime_config = load_qiime_config()
     
-    rdp_jarpath = get_rdp_jarpath(qiime_config)
+    rdp_jarpath = get_rdp_jarpath()
     if rdp_jarpath == None:
         rdp_version = "Not installed."
     else:
