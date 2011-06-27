@@ -8,7 +8,6 @@ python_exe_fp	python
 working_dir
 blastmat_dir
 blastall_fp	blastall
-rdp_classifier_fp
 pynast_template_alignment_fp
 pynast_template_alignment_blastdb
 template_alignment_lanemask_fp

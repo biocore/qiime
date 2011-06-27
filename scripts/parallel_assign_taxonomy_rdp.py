@@ -42,7 +42,7 @@ script_info['required_options'] = [\
            type='string',help='path to store output files '+\
            '[REQUIRED]'),\
 ]
-rdp_classifier_fp = qiime_config['rdp_classifier_fp'] or getenv('RDP_JAR_PATH')
+rdp_classifier_fp = getenv('RDP_JAR_PATH')
 script_info['optional_options'] = [\
  make_option('--rdp_classifier_fp',action='store',\
            type='string',help='full path to rdp classifier jar file '+\

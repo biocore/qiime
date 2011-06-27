@@ -578,8 +578,7 @@ def test_qiime_config_variable(variable, qiime_config, test,
 
 def get_rdp_jarpath(qiime_config):
     """ Return jar file name for RDP classifier """
-    rdp_jarpath = qiime_config['rdp_classifier_fp'] or \
-                  getenv('RDP_JAR_PATH')
+    rdp_jarpath = getenv('RDP_JAR_PATH')
     return rdp_jarpath
 
 if __name__ == "__main__":
