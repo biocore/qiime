@@ -27,7 +27,7 @@ from cogent.app.blast import blast_seqs, Blastall, BlastResult
 import qiime.pycogent_backports.rdp_classifier
 import cogent.app.rdp_classifier20
 from cogent.parse.fasta import MinimalFastaParser
-from qiime.util import FunctionWithParams
+from qiime.util import FunctionWithParams, get_rdp_jarpath
 
 
 """Contains code for assigning taxonomy, using several techniques.
@@ -37,6 +37,28 @@ providing a taxon assignment for each sequence."""
 
 def check_rdp_version(rdp_jar_path,requested_version):
     return requested_version in rdp_jar_path
+
+def error_on_bad_rdp_version(option_parser,assignment_method):
+        rdp_jarpath = get_rdp_jarpath()
+        if rdp_jarpath == None:
+            option_parser.error("RDP classifier is not installed or "
+             "not accessible to QIIME. See install instructions here: "
+             "http://qiime.org/install/install.html#rdp-install")
+        elif assignment_method == 'rdp':
+            if not check_rdp_version(rdp_jarpath,"2.2"):
+                option_parser.error("Specified RDP version 2.2 (default), "
+                "but that version is not installed. Pass -m rdp20 for RDP "
+                "classifier versions 2.0 and 2.0.1.")
+        elif assignment_method == 'rdp20':
+            if not check_rdp_version(rdp_jarpath,"2.0"):
+                option_parser.error("Specified RDP version 2.0 (default), "
+                "but that version is not installed. Pass -m rdp for RDP "
+                "classifier versions 2.2.")
+        else:
+            # not possible to get here, but don't like if/elif without else
+            raise ValueError,\
+             "Unknown assignment method: %s" % assignment_method
+
 
 class TaxonAssigner(FunctionWithParams):
     """A TaxonAssigner assigns a taxon to each of a set of sequences.

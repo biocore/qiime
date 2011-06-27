@@ -13,12 +13,12 @@ __status__ = "Development"
  
 
 from qiime.util import parse_command_line_parameters, get_options_lookup
-from qiime.util import make_option
+from qiime.util import make_option, get_rdp_jarpath
 from os import system, remove, path, mkdir
 from os.path import split, splitext
 from qiime.assign_taxonomy import (
     BlastTaxonAssigner, RdpTaxonAssigner, Rdp20TaxonAssigner,
-    )
+    check_rdp_version, error_on_bad_rdp_version)
 
 assignment_method_constructors = {
     'blast': BlastTaxonAssigner,
@@ -107,8 +107,10 @@ def main():
             option_parser.error('Either a blast db (via -b) or a collection of '
                          'reference sequences (via -r) must be passed to '
                          'assign taxonomy using blast.')
-
+                         
     if opts.assignment_method.startswith('rdp'):
+        error_on_bad_rdp_version(option_parser,opts.assignment_method)
+        
         if opts.id_to_taxonomy_fp:
             if opts.reference_seqs_fp is None:
                 option_parser.error('A filepath for reference sequences must be '
