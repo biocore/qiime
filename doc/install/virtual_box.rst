@@ -27,6 +27,10 @@ Installing the QIIME Virtual Box
 5. Review any messages that are shown, and select whatever options are best for you.
 6. When your new virtual machine boots, you will see a folder on the Desktop called 'Before_you_start'. Double click on that folder to open it, and then double click on the 'Welcome' file in that folder. This will get you started with using your QIIME virtual box.
 
+VirtualBox help video
+=====================
+A video illustrating these steps can be found `here <http://www.youtube.com/watch?v=1jYupkquaME>`_.
+
 Upgrading from previous versions of the QIIME Virtual Box
 =========================================================
 A QIIME upgrade/deploy script is provided for existing 64-bit Virtual Box users to upgrade to the latest version of QIIME without having to reinstall the QIIME VB. To upgrade your VB follow these steps, launch your existing QIIME VB, open a terminal, and run the following commands::
