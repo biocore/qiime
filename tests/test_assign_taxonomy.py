@@ -29,9 +29,28 @@ from cogent.util.misc import remove_files
 from cogent.parse.fasta import MinimalFastaParser
 from qiime.assign_taxonomy import (
     TaxonAssigner, BlastTaxonAssigner, RdpTaxonAssigner, Rdp20TaxonAssigner,
-    RdpTrainingSet, RdpTree, _QIIME_RDP_TAXON_TAG,
+    RdpTrainingSet, RdpTree, _QIIME_RDP_TAXON_TAG, check_rdp_version
     )
 
+
+class TopLevelFunctionTests(TestCase):
+    """ """
+    
+    def test_check_rdp_version(self):
+        """check_rdp_version functions as expected"""
+        self.assertTrue(\
+         check_rdp_version("/Applications/rdp_classifier/rdp_classifier-2.0.jar","2.0"))
+        self.assertTrue(\
+         check_rdp_version("/Applications/rdp_classifier/rdp_classifier-2.0.1.jar","2.0"))
+        self.assertTrue(\
+         check_rdp_version("/Applications/rdp_classifier_2.2/rdp_classifier-2.2.jar","2.2"))
+         
+        self.assertFalse(\
+         check_rdp_version("/Applications/rdp_classifier/rdp_classifier-2.0.jar","2.2"))
+        self.assertFalse(\
+         check_rdp_version("/Applications/rdp_classifier/rdp_classifier-2.0.1.jar","2.2"))
+        self.assertFalse(\
+         check_rdp_version("/Applications/rdp_classifier_2.2/rdp_classifier-2.2.jar","2.0"))
 
 class TaxonAssignerTests(TestCase):
     """Tests of the abstract TaxonAssigner class"""

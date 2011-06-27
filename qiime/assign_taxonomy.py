@@ -35,6 +35,9 @@ from qiime.util import FunctionWithParams
 This module has the responsibility for taking a set of sequences and
 providing a taxon assignment for each sequence."""
 
+def check_rdp_version(rdp_jar_path,requested_version):
+    return requested_version in rdp_jar_path
+
 class TaxonAssigner(FunctionWithParams):
     """A TaxonAssigner assigns a taxon to each of a set of sequences.
 
