@@ -28,7 +28,7 @@ from qiime.format import format_unifrac_sample_mapping
 script_info = {}
 script_info['brief_description'] = "This script runs any of a set of common tests to determine if a sample is statistically significantly different from another sample"
 script_info['script_description'] = "The tests are conducted on each pair of samples present in the input otu table. See the unifrac tutorial online for more details (http://bmf2.colorado.edu/unifrac/tutorial.psp)"
-script_info['script_usage'] = [("Example:","Perform 100 randomizations of sample/sequence assignments, and record the probability that sample 1 is phylogenetically different from sample 2, using the unifrac monte carlo significance test. The test is run for all pairs of samples.","python beta_significance.py -i otu_table.txt -t rep_set.tre -s unweighted_unifrac -o unw_sig.txt")]
+script_info['script_usage'] = [("Example:","Perform 100 randomizations of sample/sequence assignments, and record the probability that sample 1 is phylogenetically different from sample 2, using the unifrac monte carlo significance test. The test is run for all pairs of samples.","%prog -i otu_table.txt -t rep_set.tre -s unweighted_unifrac -o unw_sig.txt")]
 script_info['output_description']= "The script outputs a tab delimited text file with each pair of samples and a p value representing the probability that a random sample/sequence assignment will result in more dissimilar samples than the actual pair of samples."
 script_info['required_options'] = [\
  make_option('-i', '--input_path',
@@ -37,12 +37,10 @@ script_info['required_options'] = [\
      help='output results path'),
  make_option('-s', '--significance_test',
      help="significance test to use, options are 'unweighted_unifrac', 'weighted_unifrac', or 'p-test'"), 
+ make_option('-t', '--tree_path',help='path to newick tree file'),
 
 ]
 script_info['optional_options'] = [
- make_option('-t', '--tree_path', default=None,
-     help='path to newick tree file, required for phylogenetic metrics'+\
-     ' [default: %default]'),
  make_option('-n', '--num_iters', default=100, type="int",
      help='number of monte carlo randomizations'+\
      ' [default: %default]'),
