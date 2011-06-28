@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "William Van Treuren"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["William Van Treuren, Greg Caporaso"]
+__credits__ = ["William Van Treuren","Greg Caporaso"]
 __license__ = "GPL"
 __version__ = "1.2.1-dev"
 __maintainer__ = "William Van Treuren"
@@ -43,7 +43,7 @@ def make_value_pairs_from_category(mapping_data, category):
             categories.append(mapping_data[key][category])
         except KeyError:
             raise ValueError(('the specified category ({0}) was '+\
-                    'not found in the mapping file').format(category))
+                    'not found in the mapping file.').format(category))
     #strip duplicate values from this list
     
     unique_vals = []
@@ -194,8 +194,8 @@ def extract_rarefaction_scores_at_depth(depth, rarefaction_list):
     
     # raise error if rarefaction depth not found in rarefaction file
     if score_matrix == []:
-        raise ValueError(('Specified depth ({0}) was not found in'+\
-                    'the rarefaction file').format(depth))
+        raise ValueError(('Specified depth ({0}) was not found in '+\
+                    'the rarefaction file.').format(depth))
                         
     
     score_matrix_elements = []
@@ -207,8 +207,8 @@ def extract_rarefaction_scores_at_depth(depth, rarefaction_list):
     
     # raise error if any rarefaction score at spec. depth is Nan
     if isnan(result).any():
-        raise ValueError(('Specified depth ({0}) has NaNs for some'+\
-                            'rarefaction scores').format(depth))
+        raise ValueError(('Specified depth ({0}) has NaNs for some '+\
+                            'rarefaction scores.').format(depth))
     
     return result
 
