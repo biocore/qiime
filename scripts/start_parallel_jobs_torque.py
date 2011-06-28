@@ -17,9 +17,11 @@ from os import remove, rename, rmdir, makedirs
 
 from cogent.util.misc import app_path
 from qiime.util import get_tmp_filename, make_option,\
-    parse_command_line_parameters
+    parse_command_line_parameters, load_qiime_config
 
 from qiime.denoiser.make_cluster_jobs import make_jobs, submit_jobs
+
+qiime_config = load_qiime_config()
 
 script_info = {}
 script_info['brief_description'] = "Starts multiple jobs in parallel on torque/qsub based multiprocessor systems."
@@ -41,7 +43,7 @@ script_info['optional_options'] = [\
                     type='string',dest='queue', \
                     help='name of queue to submit to '+\
                     ' [default: %default]', \
-                    default="friendlyq"),
+                    default=qiime_config['torque_queue']),
 
     make_option('-j','--job_dir', action='store',\
                     type='string',dest='job_dir',\
