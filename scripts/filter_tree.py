@@ -31,8 +31,8 @@ script_info['script_usage'].append(("""Prune a tree to remove the tips in tips_t
     """""",\
     """%prog -i rep_seqs.tre -t tips_to_remove.txt -o rep_seqs_subtree.tre -n"""))
 
-script_info['output_description'] = [\
-    """Output is a pruned tree in newick format."""]
+script_info['output_description'] = \
+    """Output is a pruned tree in newick format."""
 
 script_info['required_options']=[\
     make_option('-i','--input_tree_fp',help='input tree filepath'),
