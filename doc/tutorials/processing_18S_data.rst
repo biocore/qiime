@@ -20,7 +20,7 @@ Each of the following steps are described in this tutorial (the remaining analys
 .. _pickotus:
 
 Making OTU tables for 18S datasets
-----------------------------------
+==================================
 
 Here we will cover picking OTUs.  Using the default settings with `pick_otus.py <../scripts/pick_otus.html>`_ is no different than with 16S data.  Sequences will be clustered at 97% identity and new clusters will be allowed.  However, one can utilize a reference based approach with the Silva dataset listed above that discards sequences that do not cluster with the reference set.  The advantage to using this approach is that one can use the reference taxonomic assignments and tree rather than generating new ones, however, a large portion of sequences may be discarded.
 
@@ -75,7 +75,7 @@ Finally, an OTU table can be built which includes the taxonomic assignments (in 
 	make_otu_table.py -i uclust_picked_otus/18S_tutorial_sample_seqs_otus.txt -t rdp_assigned_taxonomy/rep_set_tax_assignments.txt -o otu_table.txt
 
 Separating OTU Tables According to Domain
------------------------------------------
+=========================================
 
 It may be desirable to split the OTU table according to domain for mixed 16S/18S datasets.  To do this, we will use the  `split_otu_table_by_taxonomy.py` module.
 
@@ -86,7 +86,7 @@ We will split the OTU table generated in the last step at the domain level, 2, b
 The output directory, separated_otu_tables, will contain an OTU table for archaea, bacteria, and eukaryotes, which can be utilized in downstream QIIME analyses just as any OTU table.
 
 Alignments and Tree Building
-----------------------------
+============================
 
 To build a tree utilizing the Silva 104 reference set, we will first create an alignment with the `align_seqs.py <../scripts/align_seqs.html>`_ module.  The core Silva aligned set will be used as the template.
 
@@ -104,4 +104,25 @@ Finally, a tree can be built using `make_phylogeny.py <../scripts/make_phylogeny
 
 	make_phylogeny.py -i pynast_aligned/rep_set_aligned_pfiltered.fasta -o rep_set.tre
 
-Trees an OTU tables created can then be utilized in the downstream QIIME analyses as seen in the `tutorial <tutorial.html#view-statistics-of-the-otu-table>`_. 
+Trees an OTU tables created can then be utilized in the downstream QIIME analyses as seen in the `tutorial <tutorial.html#view-statistics-of-the-otu-table>`_.
+
+Workflow Scripts
+================
+
+The Silva 104 reference set can be used in a workflow, such as `pick_otus_through_otu_table.py <../scripts/pick_otus_through_otu_table.html>`_.  It is necessary to modify the `qiime_parameters.txt` file to correctly point to the Silva reference filepaths, and to use the dynamic alignment filtering rather than the 16S Lanemask.  See the `documentation <../documentation/file_formats.html#qiime-parameters>`_ for details about the `qiime_parameters.txt` file.
+
+Parameters that should be modified:
+
+	* pick_otus:otu_picking_method	uclust (should be set to uclust_ref if a reference based approach is desired)
+	* pick_otus:refseqs_fp (specify the filepath to the representative Silva 104 set, if reference based approach is desired)
+
+	* align_seqs:template_fp (specify the core aligned Silva 104 fasta file path)
+
+	* filter_alignment:lane_mask_fp (do not specify a lanemask filepath)
+	* filter_alignment:allowed_gap_frac	0.999999 (set to 0.80 instead of default)
+	* filter_alignment:entropy_threshold	0.10 (set to 0.10 if not already set)
+
+	* assign_taxonomy:id_to_taxonomy_fp (specify the taxonomy mapping file path, RDP version if RDP is the method of choice)
+	* assign_taxonomy:reference_seqs_fp (specify the Silva representative set file path)
+
+
