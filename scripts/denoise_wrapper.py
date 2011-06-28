@@ -32,15 +32,15 @@ script_info['script_description']="""This script will denoise a flowgram file in
 
 script_info['script_usage']=[\
     ("""Example:""",
-     """Denoise flowgrams in file 454Reads.sff.txt:""",
-     """%prog.py -i 454Reads.sff.txt"""),
+     """Denoise flowgrams in file 454Reads.sff.txt, discard flowgrams not in seqs.fna, and extract primer from map.txt:""",
+     """%prog -i 454Reads.sff.txt -f seqs.fna -m map.txt"""),
 
     ("""Multi-core Example:""",
-     """Denoise flowgrams in file 454Reads.sff.txt using 2 cores on your machine in parallel (requires mpirun):""",
-     """%prog -n 2 -i 454Reads.sff.txt""")
+     """Denoise flowgrams in file 454Reads.sff.txt using 2 cores on your machine in parallel:""",
+     """%prog -n 2 -i 454Reads.sff.txt -f seqs.fna -m map.txt""")
     ]
 
-script_info['output_description']="""This script results in a OTU mapping file along with a sequence file of denoised (FASTA-format). Note that the sequences coming from denoising are no real OTUs, and have to be sent to pick_otus.py if the users wishes to have a defined similarity threshold."""
+script_info['output_description']="""This script results in a OTU like mapping file along with a sequence file of denoised (FASTA-format). Note that the sequences coming from denoising are no real OTUs, and have to be sent to pick_otus.py if the users wishes to have a defined similarity threshold."""
 
 script_info['required_options'] = [\
     make_option('-i','--input_file', action='store',
@@ -60,16 +60,12 @@ script_info['optional_options'] = [\
                 '[default: %default]',
                 default="denoised_seqs/"),
 
-    make_option('-k','--keep_intermediates', action='store_true',
-                 dest='keep', default=False,
-                 help='Do not delete intermediate files -- '+
-                 'useful for debugging '+\
-                    '[default: %default]'),
     make_option('-n','--num_cpus', action='store',
                 type='int', dest='num_cpus',
                 help='number of CPUs '+\
                     '[default: %default]',
                 default=1),
+
     make_option('--force_overwrite', action='store_true',
                  dest='force', default=False,
                  help='Overwrite files in output directory '+\
@@ -78,18 +74,19 @@ script_info['optional_options'] = [\
     make_option('-m','--map_fname', action='store',
                 type='string', dest='map_fname',
                 help='name of mapping file, Has to contain '+\
-                    'field LinkerPrimerSequence.'+\
-                    ' [REQUIRED] when method is fast'),
+                    'field LinkerPrimerSequence. '+\
+                    '[REQUIRED unless --primer specified]'),
     
     make_option('-p', '--primer',action='store',\
                     type='string',dest='primer',\
                     help='primer sequence '+\
-                    '[default: %default]',
+                    '[REQUIRED unless --map_fname specified]',
                 default=None),
 
     make_option('--titanium', action='store_true',
                 dest='titanium', default=False,
-                help='Select titanium defaults for denoiser '+\
+                help='Select Titanium defaults for denoiser, '\
+                    +'otherwise use FLX defaults '+\
                     '[default: %default]')
     ]
 
@@ -118,17 +115,10 @@ def main():
         handle_error_codes(outdir, error_code=ret_val)
 
     log_fh=None
-    if (opts.verbose):
-        try:
-            log_fh = open(outdir+"/pyronoise.log", "w")
-        except IOError:
-            raise IOError,"Could not open log file: %s" % (outdir+"/pyronoise.log")
 
-        #write params to log file
-        # should have a general framework for this in util...
-        log_fh.write("Input file: %s\n"% opts.sff_fp)
-        log_fh.write("output path: %s\n"% outdir)
 
+    if (not (opts.primer or opts.map_fname)):
+        raise ApplicationError, "Either mapping file or primer required"
     #Read primer from Meta data file if not set on command line
     if not opts.primer:
       mapping_data, header, comments = \
