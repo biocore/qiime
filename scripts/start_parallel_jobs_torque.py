@@ -14,61 +14,58 @@ __status__ = "Development"
 from optparse import OptionParser
 from os.path import exists
 from os import remove, rename, rmdir, makedirs
-from subprocess import Popen, PIPE, STDOUT
 
 from cogent.util.misc import app_path
-from cogent.app.util import ApplicationNotFoundError
-from qiime.util import get_tmp_filename
+from qiime.util import get_tmp_filename, make_option,\
+    parse_command_line_parameters
 
 from qiime.denoiser.make_cluster_jobs import make_jobs, submit_jobs
 
-# Does not use qiime option parsers as we might want to keep it
-# independent from qiime
-def parse_command_line_parameters(commandline_args=None):
-    """ Parses command line arguments """
-    usage   = 'usage: %prog [options] <commands file> <job prefix>'
-    version = 'Version: %prog 0.1'
-    parser  = OptionParser(usage=usage, version=version)
+script_info = {}
+script_info['brief_description'] = "Starts multiple jobs in parallel on torque/qsub based multiprocessor systems."
+script_info['script_description'] = "This script is designed to start multiple jobs in parallel on cluster systems with a torque/qsub based scheduling system."
+script_info['script_usage'] = [\
+ ("Example",\
+ "Start each command listed in test_jobs.txt in parallel. The run id for these jobs will be RUNID. ",\
+ "%prog -ms test_jobs.txt RUNID")]
+script_info['output_description']= "No output is created."
+script_info['required_options'] = []
+script_info['optional_options'] = [\
+    make_option('-m','--make_jobs',action='store_true',\
+                    help='make the job files [default: %default]'),
 
-    # A binary 'verbose' flag
-    parser.add_option('-v','--verbose',action='store_true', dest='verbose',\
-                          help='Print information during execution -- '+\
-                          'useful for debugging [default: %default]')
+    make_option('-s','--submit_jobs',action='store_true',\
+                    help='submit the job files [default: %default]'),
 
-    parser.add_option('-m','--make_jobs',action='store_true',\
-                          dest='make_jobs', help='Prepare qsub text file'+\
-                          ' [default: %default]')
+    make_option('-q','--queue',action='store',\
+                    type='string',dest='queue', \
+                    help='name of queue to submit to '+\
+                    ' [default: %default]', \
+                    default="friendlyq"),
 
-    parser.add_option('-s','--submit_jobs',action='store_true',\
-                          dest='submit_jobs', help='Prepare qsub text file'+\
-                          ' [default: %default]')
+    make_option('-j','--job_dir', action='store',\
+                    type='string',dest='job_dir',\
+                    help='directory to store the jobs '+\
+                    '[default: %default]', default="jobs/"),
+]
 
-    parser.add_option('-q','--queue',action='store',\
-                          type='string',dest='queue', \
-                          help='name of Queue to submit to '+\
-                          ' [default: %default]')
+script_info['version'] = __version__
+script_info['disallow_positional_arguments'] = False
 
-    parser.add_option('-j','--job_dir', action='store',\
-                          type='string',dest='job_dir',\
-                          help='directory to store the jobs '+\
-                          '[default: %default]')
+def main():
+    option_parser, opts, args =\
+       parse_command_line_parameters(**script_info)
+       
+    if opts.submit_jobs and not opts.make_jobs:
+        option_parser.error('Must pass -m if passing -s. (Sorry about this, '+\
+        'it\'s for backwards-compatibility.)') 
 
-    # Define defaults
-    parser.set_defaults(verbose=False, make_jobs=True, submit_jobs=True,
-                        job_dir="jobs/", queue='friendlyq')
-
-    opts,args = parser.parse_args(commandline_args)
-    
-    if len(args)!= 2:
-        parser.error('Program requires <commands file> and  <job prefix>')
+    min_args = 2
+    if len(args) != min_args:
+        option_parser.error('Program requires <commands file> and  <job prefix>')
 
     if (len(args[1])>10 or len(args[1])==0):
-        parser.error('job prefix must be 1-10 characters long')
-
-    return opts,args
-
-def main(commandline_args=None):
-    opts, args = parse_command_line_parameters(commandline_args)
+        option_parser.error('job prefix must be 1-10 characters long')
  
     commands = list(open(args[0]))
     job_prefix = args[1]
@@ -80,7 +77,7 @@ def main(commandline_args=None):
             exit(" Jobs directory can not be created. "
                  +"Check for permissions or file with the same name: %s\n"
                  % opts.job_dir)
-                 
+
     if (opts.make_jobs):
         filenames = make_jobs(commands, job_prefix, opts.queue, opts.job_dir)
     else:
