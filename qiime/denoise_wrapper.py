@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from __future__ import division
 
-"""Pyronoise app controller and pyronoise OTU picker."""
+"""Functions supporting the QIIME denoiser"""
 
 __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2011, The QIIME Project" 

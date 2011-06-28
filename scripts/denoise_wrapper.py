@@ -65,16 +65,6 @@ script_info['optional_options'] = [\
                  help='Do not delete intermediate files -- '+
                  'useful for debugging '+\
                     '[default: %default]'),
-    make_option('-c','--cut-off', action='store',
-                type='float', dest='cut_off',
-                help='cut-off value (passed to pyroNoise) '+\
-                    '[default: %default]',
-                default = 0.05),
-    make_option('-s','--precision', action='store',
-                 type='float', dest='precision',
-                 help='precision (passed to pyroNoise)'+\
-                     '[default: %default]',
-                 default=15.0),
     make_option('-n','--num_cpus', action='store',
                 type='int', dest='num_cpus',
                 help='number of CPUs '+\
@@ -106,7 +96,7 @@ script_info['optional_options'] = [\
 script_info['version'] = __version__
 
 def main():
-    """run PyroNoise on input flowgrams"""
+    """run denoiser on input flowgrams"""
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     sff_files = opts.sff_fp.split(',')

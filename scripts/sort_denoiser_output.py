@@ -17,7 +17,7 @@ from qiime.util import make_option
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from cogent.parse.fasta import MinimalFastaParser
 from qiime.format import write_Fasta_from_name_seq_pairs
-from qiime.pyronoise import extract_cluster_size
+from qiime.denoise_wrapper import extract_cluster_size
 
 options_lookup = get_options_lookup()
 

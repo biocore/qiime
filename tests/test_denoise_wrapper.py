@@ -24,8 +24,8 @@ from cogent.parse.flowgram_collection import FlowgramCollection
 from cogent.parse.flowgram_parser import get_header_info
 from qiime.denoise_wrapper import fast_denoiser
 
-class PyroNoiseTests(TestCase):
-    """Tests of the abstract PyroNoise OTU Picker class"""
+class DenoiseWrapperTests(TestCase):
+    """Tests of the abstract DenoiseWrapper OTU Picker class"""
     def setUp(self):
         self.file_content = file_content
         self.header = get_header_info(header.split('\n'))
@@ -33,7 +33,7 @@ class PyroNoiseTests(TestCase):
         self.large_flowgram_collection = FlowgramCollection(large_example, header_info=self.header)
         
         self.sff_path = get_tmp_filename(
-            prefix='pyroNoiseTest_', suffix='.sff.txt')
+            prefix='DenoiseWrapperTest_', suffix='.sff.txt')
         self.large_flowgram_collection.writeToFile(self.sff_path)
         
         self.sff_path2 = get_tmp_filename(

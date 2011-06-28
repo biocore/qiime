@@ -15,7 +15,6 @@ jobs_to_start	1
 seconds_to_sleep	60
 qiime_scripts_dir
 temp_dir
-pyronoise_data_fp
 denoiser_min_per_core	50
 cloud_environment	False
 topiaryexplorer_project_dir

@@ -538,13 +538,6 @@ class Qiime_config(TestCase):
          "Unsupported clearcut version. %s is required, but running %s." \
          % ('.'.join(map(str,acceptable_version)), version_string))
         
-    def test_pyronoise2_supported_version(self):
-        """pyrnoise2 is in path and version is supported """
-        self.assertTrue(app_path('PCluster'),
-         "Pyronoise not found. This may or may not be a problem depending on "+\
-         "which components of QIIME you plan to use.") 
-        # pyrnoise2 does not have a version print in their program
-        
     def test_cdhit_supported_version(self):
         """cd-hit is in path and version is supported """
         self.assertTrue(app_path('cd-hit'),
