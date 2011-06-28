@@ -33,7 +33,7 @@ This script aligns the sequences in a FASTA file to each other or to a template 
 	**[OPTIONAL]**
 		
 	-t, `-`-template_fp
-		Filepath for template against [default: /Users/jistombaugh/python_software/core_set_aligned.fasta.imputed]
+		Filepath for template against [REQUIRED if -m pynast or -m infernal]
 	-m, `-`-alignment_method
 		Method for aligning sequences. Valid choices are: pynast, infernal, clustalw, muscle, infernal, mafft [default: pynast]
 	-a, `-`-pairwise_alignment_method

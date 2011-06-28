@@ -37,9 +37,9 @@ This script performs like the `multiple_rarefactions.py <./multiple_rarefactions
 	`-`-lineages_included
 		Output rarefied otu tables will include taxonomic (lineage) information for each otu, if present in input otu table [default: False]
 	-N, `-`-single_rarefaction_fp
-		Full path to scripts/`single_rarefaction.py <./single_rarefaction.html>`_ [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`single_rarefaction.py <./single_rarefaction.html>`_]
+		Full path to scripts/`single_rarefaction.py <./single_rarefaction.html>`_ [default: /Qiime/scripts/`single_rarefaction.py <./single_rarefaction.html>`_]
 	-P, `-`-poller_fp
-		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`poller.py <./poller.html>`_]
+		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /Qiime/scripts/`poller.py <./poller.html>`_]
 	-R, `-`-retain_temp_files
 		Retain temporary files after runs complete (useful for debugging) [default: False]
 	-S, `-`-suppress_submit_jobs
@@ -47,17 +47,17 @@ This script performs like the `multiple_rarefactions.py <./multiple_rarefactions
 	-T, `-`-poll_directly
 		Poll directly for job completion rather than running poller as a separate job. If -T is specified this script will not return until all jobs have completed. [default: False]
 	-U, `-`-cluster_jobs_fp
-		Path to `cluster_jobs.py <./cluster_jobs.html>`_ script  [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`start_parallel_jobs.py <./start_parallel_jobs.html>`_]
+		Path to `cluster_jobs.py <./cluster_jobs.html>`_ script  [default: /Qiime/scripts/`start_parallel_jobs.py <./start_parallel_jobs.html>`_]
 	-W, `-`-suppress_polling
 		Suppress polling of jobs and merging of results upon completion [default: False]
 	-X, `-`-job_prefix
 		Job prefix [default: descriptive prefix + random chars]
 	-Y, `-`-python_exe_fp
-		Full path to python executable [default: /usr/bin/python2.6]
+		Full path to python executable [default: python]
 	-Z, `-`-seconds_to_sleep
 		Number of seconds to sleep between checks for run  completion when polling runs [default: 60]
 	-O, `-`-jobs_to_start
-		Number of jobs to start [default: 2]
+		Number of jobs to start [default: 1]
 
 
 **Output:**

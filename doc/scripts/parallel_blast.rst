@@ -39,13 +39,13 @@ This script for performing blast while making use of multicore/multiprocessor en
 	-D, `-`-suppress_format_blastdb
 		Supress format of blastdb [default: False]
 	-a, `-`-blastmat_dir
-		Full path to directory containing blastmat file [default: /Users/jistombaugh/bin/blast-2.2.22/data]
+		Full path to directory containing blastmat file [default: None]
 	-b, `-`-blastall_fp
 		Path to blastall [default: blastall]
 	-O, `-`-jobs_to_start
-		Number of jobs to start [default: 2]
+		Number of jobs to start [default: 1]
 	-P, `-`-poller_fp
-		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`poller.py <./poller.html>`_]
+		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /Qiime/scripts/`poller.py <./poller.html>`_]
 	-R, `-`-retain_temp_files
 		Retain temporary files after runs complete (useful for debugging) [default: False]
 	-S, `-`-suppress_submit_jobs
@@ -53,13 +53,13 @@ This script for performing blast while making use of multicore/multiprocessor en
 	-T, `-`-poll_directly
 		Poll directly for job completion rather than running poller as a separate job. If -T is specified this script will not return until all jobs have completed. [default: False]
 	-U, `-`-cluster_jobs_fp
-		Path to `cluster_jobs.py <./cluster_jobs.html>`_ script  [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`start_parallel_jobs.py <./start_parallel_jobs.html>`_]
+		Path to `cluster_jobs.py <./cluster_jobs.html>`_ script  [default: /Qiime/scripts/`start_parallel_jobs.py <./start_parallel_jobs.html>`_]
 	-W, `-`-suppress_polling
 		Suppress polling of jobs and merging of results upon completion [default: False]
 	-X, `-`-job_prefix
 		Job prefix [default: descriptive prefix + random chars]
 	-Y, `-`-python_exe_fp
-		Full path to python executable [default: /usr/bin/python2.6]
+		Full path to python executable [default: python]
 	-Z, `-`-seconds_to_sleep
 		Number of seconds to sleep between checks for run  completion when polling runs [default: 60]
 

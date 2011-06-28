@@ -51,7 +51,7 @@ The steps performed by this script are:
 	-t, `-`-tree_fp
 		Path to the tree file [default: None; REQUIRED for phylogenetic measures]
 	-O, `-`-jobs_to_start
-		Number of jobs to start. NOTE: you must also pass -a to run in parallel, this defines the number of jobs to be started if and only if -a is passed [default: 2]
+		Number of jobs to start. NOTE: you must also pass -a to run in parallel, this defines the number of jobs to be started if and only if -a is passed [default: 1]
 
 
 **Output:**
