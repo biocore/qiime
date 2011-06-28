@@ -2,16 +2,12 @@
 
 .. index:: start_parallel_jobs_torque.py
 
-*start_parallel_jobs_torque.py* -- This script compares alpha 
-    diversities based on a t_two_sample test
+*start_parallel_jobs_torque.py* -- Starts multiple jobs in parallel on torque/qsub based multiprocessor systems.
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 **Description:**
 
-This script compares the alpha 
- diversity of entries in a rarefaction file after they have been grouped 
- based on some category found in the mapping file based on a t_two_sample
- test.
+This script is designed to start multiple jobs in parallel on cluster systems with a torque/qsub based scheduling system.
 
 
 **Usage:** :file:`start_parallel_jobs_torque.py [options]`
@@ -21,40 +17,29 @@ This script compares the alpha
 .. note::
 
 	
-	**[REQUIRED]**
+	**[OPTIONAL]**
 		
-	-r, `-`-rarefaction_fp
-		Path to rarefaction file [REQUIRED]
-	-m, `-`-mapping_fp
-		Path to the mapping file [REQUIRED]
-	-c, `-`-category
-		Category for comparison [REQUIRED]
-	-d, `-`-depth
-		Depth of rarefaction file to use [REQUIRED]
-	-o, `-`-output_fp
-		Output file path [REQUIRED]
+	-m, `-`-make_jobs
+		Make the job files [default: None]
+	-s, `-`-submit_jobs
+		Submit the job files [default: None]
+	-q, `-`-queue
+		Name of queue to submit to  [default: friendlyq]
+	-j, `-`-job_dir
+		Directory to store the jobs [default: jobs/]
 
 
 **Output:**
 
-Script generates an output nested dictionary which has as a first 
-    key:value pair the category fed in, and a dictionary which gives the
-    t_two_sample score for every possible combination of the values 
-    under that category in the mapping file, saved as a text file into
-    the directory specified by the output path.
+No output is created.
 
 
-**Explanation:    Inputs: mapping file lines (lines of a mapping file which associates
-    to each OTU/sample a number of characteristics, given as file path),
-    rarefaction file lines (lines of a rarefaction file that has scores 
-    for each OTU/sample based on a certain rarefaction depth, given as a
-    file path), depth (the depth score of the rarefaction file to use), 
-    category (the category to compare OTU/samples on), output file path
-    (a path to the output directory).:**
+**Example:**
+
+Start each command listed in test_jobs.txt in parallel. The run id for these jobs will be RUNID. 
 
 ::
 
-	Example: compare_alpha_diversity.py -r rarefaction_fp 
-    -m mapping_fp -c 'Treatment' -d 10 -o /path/to/output.txt
+	start_parallel_jobs_torque.py -ms test_jobs.txt RUNID
 
 

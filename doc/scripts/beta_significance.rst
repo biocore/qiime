@@ -25,11 +25,11 @@ The tests are conducted on each pair of samples present in the input otu table. 
 		Output results path
 	-s, `-`-significance_test
 		Significance test to use, options are 'unweighted_unifrac', 'weighted_unifrac', or 'p-test'
+	-t, `-`-tree_path
+		Path to newick tree file
 	
 	**[OPTIONAL]**
 		
-	-t, `-`-tree_path
-		Path to newick tree file, required for phylogenetic metrics [default: None]
 	-n, `-`-num_iters
 		Number of monte carlo randomizations [default: 100]
 
@@ -45,6 +45,6 @@ Perform 100 randomizations of sample/sequence assignments, and record the probab
 
 ::
 
-	python beta_significance.py -i otu_table.txt -t rep_set.tre -s unweighted_unifrac -o unw_sig.txt
+	beta_significance.py -i otu_table.txt -t rep_set.tre -s unweighted_unifrac -o unw_sig.txt
 
 

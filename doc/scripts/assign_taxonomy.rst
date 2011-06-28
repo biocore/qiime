@@ -33,7 +33,7 @@ Given a set of sequences, assign_taxonomy attempts to assign the taxonomy of eac
 	-p, `-`-training_data_properties_fp
 		Path to ".properties" file in pre-compiled training data for the RDP Classifier.  This option is overridden by the -t and -r options. [default: None]
 	-m, `-`-assignment_method
-		Taxon assignment method, either blast, rdp, or rdp20 (RDP Classifier version 2.0) [default:rdp]
+		Taxon assignment method, either blast, rdp [default:rdp]
 	-b, `-`-blast_db
 		Database to blast against.  Must provide either --blast_db or --reference_seqs_db for assignment with blast [default: None]
 	-c, `-`-confidence
