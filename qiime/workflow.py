@@ -1365,24 +1365,24 @@ def run_core_qiime_analyses(
                                 'Beta diversity results'))
         # Create links for the bdiv results
         index_links.append(('3D plot (%s, continuous coloring)' % bdiv_metric,
-                            '%s/%s_3d_continuous/%s_3D_PCoA_plots.html' % \
+                            '%s/%s_3d_continuous/%s_pc_3D_PCoA_plots.html' % \
                              (bdiv_full_output_dir,bdiv_metric,bdiv_metric),
                             'Beta diversity results'))
         index_links.append(('3D plot (%s, discrete coloring)' % bdiv_metric,
-                            '%s/%s_3d_discrete/%s_3D_PCoA_plots.html' % \
+                            '%s/%s_3d_discrete/%s_pc_3D_PCoA_plots.html' % \
                              (bdiv_full_output_dir,bdiv_metric,bdiv_metric),
                             'Beta diversity results'))
         index_links.append(('2D plot (%s, continuous coloring)' % bdiv_metric,
-                            '%s/%s_2d_continuous/%s_2D_PCoA_plots.html' % \
+                            '%s/%s_2d_continuous/%s_pc_2D_PCoA_plots.html' % \
                              (bdiv_full_output_dir,bdiv_metric,bdiv_metric),
                             'Beta diversity results'))
         index_links.append(('2D plot (%s, discrete coloring)' % bdiv_metric,
-                            '%s/%s_2d_discrete/%s_2D_PCoA_plots.html' % \
+                            '%s/%s_2d_discrete/%s_pc_2D_PCoA_plots.html' % \
                              (bdiv_full_output_dir,bdiv_metric,bdiv_metric),
                             'Beta diversity results'))
         index_links.append(('Distance histograms (%s)' % bdiv_metric,
-                            '%s/%s_histograms/QIIME_Distance_Histograms.html' % \
-                             (bdiv_full_output_dir,bdiv_metric),
+                            '%s/%s_histograms/%s_dm_distance_histograms.html' % \
+                             (bdiv_full_output_dir,bdiv_metric,bdiv_metric),
                             'Beta diversity results'))
         index_links.append(('Distance matrix (%s)' % bdiv_metric,
                             '%s/%s_dm.txt' % \
@@ -1429,24 +1429,24 @@ def run_core_qiime_analyses(
                     'Beta diversity results (even sampling: %d)' % sampling_depth))
                     # Create links for the bdiv results
             index_links.append(('3D plot (%s, continuous coloring)' % bdiv_metric,
-                                '%s/%s_3d_continuous/%s_3D_PCoA_plots.html' % \
+                                '%s/%s_3d_continuous/%s_pc_3D_PCoA_plots.html' % \
                                  (bdiv_even_output_dir,bdiv_metric,bdiv_metric),
                                 'Beta diversity results (even sampling: %d)' % sampling_depth))
             index_links.append(('3D plot (%s, discrete coloring)' % bdiv_metric,
-                                '%s/%s_3d_discrete/%s_3D_PCoA_plots.html' % \
+                                '%s/%s_3d_discrete/%s_pc_3D_PCoA_plots.html' % \
                                  (bdiv_even_output_dir,bdiv_metric,bdiv_metric),
                                 'Beta diversity results (even sampling: %d)' % sampling_depth))
             index_links.append(('2D plot (%s, continuous coloring)' % bdiv_metric,
-                                '%s/%s_2d_continuous/%s_2D_PCoA_plots.html' % \
+                                '%s/%s_2d_continuous/%s_pc_2D_PCoA_plots.html' % \
                                  (bdiv_even_output_dir,bdiv_metric,bdiv_metric),
                                 'Beta diversity results (even sampling: %d)' % sampling_depth))
             index_links.append(('2D plot (%s, discrete coloring)' % bdiv_metric,
-                                '%s/%s_2d_discrete/%s_2D_PCoA_plots.html' % \
+                                '%s/%s_2d_discrete/%s_pc_2D_PCoA_plots.html' % \
                                  (bdiv_even_output_dir,bdiv_metric,bdiv_metric),
                                 'Beta diversity results (even sampling: %d)' % sampling_depth))
             index_links.append(('Distance histograms (%s)' % bdiv_metric,
-                                '%s/%s_histograms/QIIME_Distance_Histograms.html' % \
-                                 (bdiv_even_output_dir,bdiv_metric),
+                                '%s/%s_histograms/%s_dm_distance_histograms.html' % \
+                                 (bdiv_even_output_dir,bdiv_metric,bdiv_metric),
                                 'Beta diversity results (even sampling: %d)' % sampling_depth))
             index_links.append(('Distance matrix (%s)' % bdiv_metric,
                                 '%s/%s_dm.txt' % \
