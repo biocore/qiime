@@ -62,8 +62,10 @@ Processing sff files:
 
 Denoising 454 data:
 
-* Denoiser 0.851 (`src <http://www.microbio.me/denoiser/>`_ -- remember to add* the top-level ``Denoiser_0.851`` directory to your ``$PYTHONPATH``) (license: GPL)
-* pyronoise 2 (`src <http://people.civil.gla.ac.uk/~quince/Software/PyroNoise2.zip>`_) (license: free for research or education)
+* GNU Science Library (required by AmpliconNoise) (`src <ftp://ftp.gnu.org/gnu/gsl/gsl-1.9.tar.gz>`_)
+* AmpliconNoise 1.24 (`src <http://code.google.com/p/ampliconnoise/downloads/detail?name=AmpliconNoiseV1.24.tar.gz&can=2&q=>`_) See :ref:`AmpliconNoise install notes <ampliconnoise-install>`.
+* ghc 6.8 (required by the QIIME denoiser) (`src <http://haskell.org/ghc>`_)
+
 
 Visualization and plotting steps:
 
@@ -253,6 +255,19 @@ To install R visit http://www.r-project.org/ and follow the install instructions
 
 	install.packages('randomForest')
 	q()
+
+AmpliconNoise Install Notes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. _ampliconnoise-install:
+
+AmpliconNoise requires that several environment variables are set. After you've installed AmpliconNoise, you can set these with the following commands (assuming your AmpliconNoise install directory is ``/home/qiime/AmpliconNoiseV1.24/``)::
+
+	echo "export PATH=/home/qiime/AmpliconNoiseV1.24/Scripts:/home/qiime/AmpliconNoiseV1.24/bin:$PATH" >> /home/qiime/.bashrc
+	
+	echo "export PYRO_LOOKUP_FILE=/home/qiime/AmpliconNoiseV1.24/Data/LookUp_E123.dat" >> /home/qiime/.bashrc
+	echo "export SEQ_LOOKUP_FILE=/home/qiime/AmpliconNoiseV1.24/Data/Tran.dat" >> /home/qiime/.bashrc
+
 
 Building The QIIME Documentation
 ---------------------------------
