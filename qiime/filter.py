@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Will Van Treuren", "Daniel McDonald"]
 __license__ = "GPL"
 __version__ = "1.2.1-dev"
 __maintainer__ = "Greg Caporaso"
@@ -187,30 +187,16 @@ def split_otu_table_on_taxonomy(otu_table_lines,level):
                                                taxon_datum[2])
 
 def negate_tips_to_keep(tips_to_keep, tree):
-    """ Return the list of tips in the tree that are not in tips_to_keep
-    """
-    result = []
-    for tip in tree.iterTips():
-        tip_name = tip.Name
-        if tip_name not in tips_to_keep:
-            result.append(tip_name)
-    return result
+    """ Return the list of tips in the tree that are not in tips_to_keep"""
+    tips_to_keep = set(tips_to_keep)
+    tips = set([tip.Name for tip in tree.tips()])
+    return tips - tips_to_keep
 
-def get_seqs_to_keep_lookup_from_seq_id_file(seqs_to_keep_f):
+def get_seqs_to_keep_lookup_from_seq_id_file(id_to_keep_f):
     """generate a lookup dict of chimeras in chimera file."""
-    
-    seqs_to_keep = []
-    for line in seqs_to_keep_f:
-        line = line.strip()
-        if not line or line.startswith('#'):
-            continue
-        else:
-            seqs_to_keep.append(line.split()[0])
-    return {}.fromkeys(seqs_to_keep)
-    
+    return set([l.strip() for l in id_to_keep_f if not l.startswith('#') and l])
+
 def get_seqs_to_keep_lookup_from_fasta_file(fasta_f):
-    seqs_to_keep = []
-    for seq_id, seq in MinimalFastaParser(fasta_f):
-        seqs_to_keep.append(seq_id.split()[0])
-    return {}.fromkeys(seqs_to_keep)
+    """return the sequence ids within the fasta file"""
+    return set([seq_id for seq_id,seq in MinimalFastaParser(fasta_f)])
     
