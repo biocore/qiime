@@ -22,7 +22,7 @@ from qiime.util import get_tmp_filename
 from cogent.parse.flowgram import Flowgram
 from cogent.parse.flowgram_collection import FlowgramCollection
 from cogent.parse.flowgram_parser import get_header_info
-from qiime.denoise_wrapper import fast_denoiser
+from qiime.denoise_wrapper import fast_denoiser, extract_cluster_size
 
 class DenoiseWrapperTests(TestCase):
     """Tests of the abstract DenoiseWrapper OTU Picker class"""
@@ -72,6 +72,16 @@ class DenoiseWrapperTests(TestCase):
         #(all others have cluster size 1, so relative ordering is not guaranteed
         self.assertEqual(actual[0], expected_centroids[0])
         self.assertEqual(actual_otu_map, expected_otu_map)
+        
+    def test_extract_cluster_size(self):
+        """extract_cluster_size grabs the correct cluster size"""
+
+        
+        header1 = ">GCC6FHY01EQVIC | cluster size: 5"
+        header2 = ">blabla"
+
+        self.assertEqual(extract_cluster_size(header1), 5)
+        self.assertEqual(extract_cluster_size(header2), 0)
 
                                                          
 ### Test data ###
