@@ -116,7 +116,7 @@ Once all workers are succesfully started, you can monitor the progress by follow
 
 Q: How and why can I run the preprocessing step separately?
 
-A:If you call denoiser.py without the -p option (or via its wrapper denoise.py in QIIME) the preprocessing step (cluster phase I) is implicitly called. You can explicitly run the preprocessing step via the script preprocess.py and provide the output directory to denoiser.py using the -p option. Reasons for running the steps separately could be:
+A:If you call denoiser.py without the -p option (or via its wrapper denoiser_wrapper.py in QIIME) the preprocessing step (cluster phase I) is implicitly called. You can explicitly run the preprocessing step via the script preprocess.py and provide the output directory to denoiser.py using the -p option. Reasons for running the steps separately could be:
 
 	- run preprocess on a very fast single CPU machine, then transfer the data to a slower multi-cpu cluster
 
