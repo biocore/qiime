@@ -107,9 +107,29 @@ class Qiime_config(TestCase):
 
         test_qiime_config_variable("blastall_fp", self.config, self, X_OK)
 
-    def test_rdp_classifier_fp(self):
-        """rdp_classifier, if set, is set to a valid path"""
-        test_qiime_config_variable("rdp_classifier_fp", self.config, self)
+    def test_ampliconnoise_install(self):
+        """ AmpliconNoise install looks sane."""
+        url = "http://www.qiime.org/install/install.html#ampliconnoise-install"
+        
+        pyro_lookup_file = getenv('PYRO_LOOKUP_FILE')
+        self.assertTrue(pyro_lookup_file != None,
+         "$PYRO_LOOKUP_FILE variable is not set. See %s for help." % url)
+        self.assertTrue(exists(pyro_lookup_file),
+         "$PYRO_LOOKUP_FILE variable is not set to an existing filepath.")
+         
+        seq_lookup_file = getenv('SEQ_LOOKUP_FILE')
+        self.assertTrue(seq_lookup_file != None,
+         "$SEQ_LOOKUP_FILE variable is not set. See %s for help." % url)
+        self.assertTrue(exists(seq_lookup_file),
+         "$SEQ_LOOKUP_FILE variable is not set to an existing filepath.")
+         
+        self.assertTrue(app_path("SplitKeys.pl"),
+         "AmpliconNoise Scripts directory doesn't seem to be in $PATH."+\
+         " See %s for help." % url)
+         
+        self.assertTrue(app_path("Perseus"),
+         "AmpliconNoise bin directory doesn't seem to be in $PATH."+\
+         " See %s for help." % url)
         
     def test_pynast_template_alignment_fp(self):
         """pynast_template_alignment, if set, is set to a valid path"""
