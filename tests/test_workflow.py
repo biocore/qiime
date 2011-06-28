@@ -17,7 +17,7 @@ from shutil import rmtree
 from glob import glob
 from tarfile import open as open_tarfile
 from os.path import join, exists, getsize, split, splitext, dirname
-from os import makedirs, system
+from os import makedirs, system, chdir, getcwd
 from numpy import array, absolute
 from cogent import LoadTree, LoadSeqs
 from cogent.parse.fasta import MinimalFastaParser
@@ -80,6 +80,7 @@ class WorkflowTests(TestCase):
     
     def setUp(self):
         """ """
+        self.start_dir = getcwd()
         self.qiime_config = load_qiime_config()
         self.dirs_to_remove = []
         self.files_to_remove = []
@@ -216,6 +217,8 @@ class WorkflowTests(TestCase):
         """ """
         # turn off the alarm
         signal.alarm(0)
+        # change back to the start dir - some workflows change directory
+        chdir(self.start_dir)
         remove_files(self.files_to_remove)
         # remove directories last, so we don't get errors
         # trying to remove files which may be in the directories
