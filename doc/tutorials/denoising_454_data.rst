@@ -5,8 +5,6 @@ Denoising of 454 Data Sets
 
 The pyrosequencing technology employed by 454 sequencing machines produces characteristic sequencing errors, mostly imprecise signals for longer homopolymers runs. Most of the sequences contain none or only a few errors, but a few sequences contain enough errors to be classified as an additional rare OTU. The goal for the denoising procedure is to reduce the amount of erroneous OTUs and thus increasing the accuracy of the whole QIIME pipeline.
 
-Note: Data sets with at most one full 454 run (~500,000) can be denoised without manual intervention using the workflow script `pick_otus_through_otu_table.py <../scripts/pick_otus_through_otu_table.html>`_. 
-
 If there are multiple, large 454 runs, follow this tutorial to denoise the data set and analyze it with QIIME. In short, each 454 run needs to be preprocessed with `split_libraries.py <../scripts/split_libraries.html>`_ and denoised separately. Afterwards the output files are combined for OTU picking. We will show an example with two 454 runs (:file:`run1.sff` and :file:`run2.sff`).
 
 **Data preparation:**
@@ -75,9 +73,11 @@ To inflate the results from independent denoise_wrapper.py runs, pass all of the
     inflate_denoiser_output.py -c centroids1.fna,centroids2.fna -s singletons1.fna,singletons2.fna -f seqs1.fna,seqs2.fna -d denoiser_mapping1.txt,denoiser_mapping2.txt -o denoised_seqs.fna
 
 
-Your denoised sequences can now be fed directly into QIIME at the OTU picking stage. The next step will be to run one of the OTU pickers or OTU picking workflow scripts (e.g., `pick_otus.py <../scripts/pick_otus.html>`_, `pick_otus_through_otu_table.py <../scripts/pick_otus_through_otu_table.html>`_, `pick_reference_otus_through_otu_table.py <../scripts/pick_reference_otus_through_otu_table.html>`_, `core_qiime_analyses.py <../scripts/core_qiime_analyses.html>`_. At the OTU picking stage it is very important that you allow for the abundance presorting, which is currently in place for the uclust OTU picker only. We therefore don't recommend using other OTU pickers, and **do not pass the -D/--suppress_presort_by_abundance_uclust option to pick_otus.py**. We recommend using uclust with ``--optimal`` to assure the best possible choice of OTUs.::
+Your denoised sequences can now be fed directly into QIIME at the OTU picking stage. The next step will be to run one of the OTU pickers or OTU picking workflow scripts (e.g., `pick_otus.py <../scripts/pick_otus.html>`_, `pick_otus_through_otu_table.py <../scripts/pick_otus_through_otu_table.html>`_, `pick_reference_otus_through_otu_table.py <../scripts/pick_reference_otus_through_otu_table.html>`_, `core_qiime_analyses.py <../scripts/core_qiime_analyses.html>`_. At the OTU picking stage it is very important that you allow for the abundance presorting, which is currently in place for the uclust OTU picker only. We therefore don't recommend using other OTU pickers, and **do not pass the -D/--suppress_presort_by_abundance_uclust option to pick_otus.py**. If possible, it is worth using uclust with ``--optimal`` to assure the best possible choice of OTUs.::
 
     pick_otus.py -s 0.97 -i denoised_seqs.fna -m uclust --optimal
+
+Passing ``--optimal`` may be prohibitively compute-intensive for large analyses however (for example, greater than a single 454 FLX run). The default QIIME pick_otus.py parameters are likely to be sufficient.
 
 
 Notes:
