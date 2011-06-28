@@ -268,6 +268,13 @@ AmpliconNoise requires that several environment variables are set. After you've 
 	echo "export PYRO_LOOKUP_FILE=/home/qiime/AmpliconNoiseV1.24/Data/LookUp_E123.dat" >> /home/qiime/.bashrc
 	echo "export SEQ_LOOKUP_FILE=/home/qiime/AmpliconNoiseV1.24/Data/Tran.dat" >> /home/qiime/.bashrc
 
+QIIME Denoiser Install Notes
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you do not install QIIME using ``setup.py`` and you plan to use the QIIME Denoiser, you'll need to compile the FlowgramAlignment program. To do this you'll need to have ``ghc`` installed. Then from the ``Qiime/qiime/support_files/denoiser/FlowgramAlignment/`` directory, run the following command::
+
+	make ; make install
+
 
 Building The QIIME Documentation
 ---------------------------------
