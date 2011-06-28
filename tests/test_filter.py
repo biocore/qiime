@@ -13,13 +13,15 @@ __status__ = "Development"
  
 
 from cogent.util.unit_test import TestCase, main
+from cogent.parse.tree import DndParser
 from qiime.parse import parse_otu_table, parse_distmat
 from qiime.filter import (filter_fasta, 
                           filter_otus_from_otu_table,
                           filter_samples_from_otu_table,
                           filter_otu_table_to_n_samples,
                           filter_samples_from_distance_matrix,
-                          split_otu_table_on_taxonomy)
+                          split_otu_table_on_taxonomy,
+                          negate_tips_to_keep)
 
 class fake_output_f():
     
@@ -59,6 +61,27 @@ class FilterTests(TestCase):
         
     def tearDown(self):
         pass
+        
+    def test_negate_tips_to_keep(self):
+        """ negate_tips_to_keep functions as expected """
+        t = DndParser("((S5:0.00014,S7:0.00015)0.752:0.45762,(S3:0.00014,"
+         "seq6:0.00014)0.180:0.00015,(Seq1:0.00014,s2:0.00014)0.528:1.0466);")
+        
+        tips_to_keep = ["S5","Seq1","s2"]
+        expected = ["S7","S3","seq6"]
+        self.assertEqualItems(negate_tips_to_keep(tips_to_keep,t),expected)
+        
+        tips_to_keep = ["S5","Seq1"]
+        expected = ["S7","S3","seq6","s2"]
+        self.assertEqualItems(negate_tips_to_keep(tips_to_keep,t),expected)
+        
+        tips_to_keep = []
+        expected = ["S7","S3","seq6","s2","S5","Seq1"]
+        self.assertEqualItems(negate_tips_to_keep(tips_to_keep,t),expected)
+        
+        tips_to_keep = ["S7","S3","seq6","s2","S5","Seq1"]
+        expected = []
+        self.assertEqualItems(negate_tips_to_keep(tips_to_keep,t),expected)
         
     def test_split_otu_table_on_taxonomy(self):
         """ splitting OTU table on taxonomy functions as expected
