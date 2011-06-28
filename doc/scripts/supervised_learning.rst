@@ -22,7 +22,7 @@ This script trains a supervised classifier using OTUs (or other continuous input
         params.txt: a list of any non-default parameters used in training
             the model.
     
-It is strongly recommended that you remove low-depth samples and rare OTUs before running this script. This can drastically reduce the run-time, and in many circumstances will not hurt performance. It is also recommended to perform rarefaction to control for sampling effort before running this script. For example, to rarefy at depth 200, then remove remove OTUs present in < 10 samples run:
+It is strongly recommended that you remove low-depth samples and rare OTUs before running this script. This can drastically reduce the run-time, and in many circumstances will not hurt performance. It is also recommended to perform rarefaction to control for sampling effort before running this script. For example, to rarefy at depth 200, then remove OTUs present in < 10 samples run:
 
 `single_rarefaction.py <./single_rarefaction.html>`_ -i otu_table_filtered.txt -d 200 -o otu_table_rarefied200.txt
 `filter_otu_table.py <./filter_otu_table.html>`_ -i otu_table_rarefied200.txt -s 10

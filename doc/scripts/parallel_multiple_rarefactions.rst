@@ -53,7 +53,7 @@ This script performs like the `multiple_rarefactions.py <./multiple_rarefactions
 	-X, `-`-job_prefix
 		Job prefix [default: descriptive prefix + random chars]
 	-Y, `-`-python_exe_fp
-		Full path to python executable [default: /opt/local/bin/python]
+		Full path to python executable [default: /usr/bin/python2.6]
 	-Z, `-`-seconds_to_sleep
 		Number of seconds to sleep between checks for run  completion when polling runs [default: 60]
 	-O, `-`-jobs_to_start

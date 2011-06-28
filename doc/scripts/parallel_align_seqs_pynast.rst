@@ -53,11 +53,11 @@ A wrapper for the `align_seqs.py <./align_seqs.html>`_ PyNAST option, intended t
 	-X, `-`-job_prefix
 		Job prefix [default: descriptive prefix + random chars]
 	-Y, `-`-python_exe_fp
-		Full path to python executable [default: /opt/local/bin/python]
+		Full path to python executable [default: /usr/bin/python2.6]
 	-Z, `-`-seconds_to_sleep
 		Number of seconds to sleep between checks for run  completion when polling runs [default: 60]
 	-t, `-`-template_fp
-		Filepath for template against [default: /data/greengenes_core_sets/core_set_aligned.fasta.imputed]
+		Filepath for template against [default: /Users/jistombaugh/python_software/core_set_aligned.fasta.imputed]
 
 
 **Output:**

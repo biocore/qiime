@@ -32,6 +32,8 @@ The denoiser removes sequencing noise characteristic to pyrosequencing by flowgr
 		Use cluster/multiple CPUs for flowgram alignments [default: False]
 	-p, `-`-preprocess_fp
 		Do not do preprocessing (phase I),instead use already preprocessed data in PREPROCESS_FP
+	`-`-checkpoint_fp
+		Resume denoising from checkpoint. Be careful when changing parameters for a resumed run. Requires -p option.  [default: None]
 	-s, `-`-squeeze
 		Use run-length encoding for prefix filtering in phase I [default: False]
 	-S, `-`-split
@@ -55,9 +57,9 @@ The denoiser removes sequencing noise characteristic to pyrosequencing by flowgr
 	`-`-low_memory
 		Use slower, low memory method [default: False]
 	-e, `-`-error_profile
-		Path to error profile [default= /Users/reederj/Projects/Boulder/Qiime/qiime/support_files/denoiser/Data/FLX_error_profile.dat]
+		Path to error profile [default= /Users/jistombaugh/Dropbox/Qiime_work/qiime/support_files/denoiser/Data/FLX_error_profile.dat]
 	`-`-titanium
-		Shortcut for -e /Users/reederj/Projects/Boulder/Qiime/qiime/support_files/denoiser/Data//Titanium_error_profile.dat --low_cut-off=4 --high_cut_off=5 . Warning: overwrites all previous cut-off values [DEFAULT: False]
+		Shortcut for -e /Users/jistombaugh/Dropbox/Qiime_work/qiime/support_files/denoiser/Data//Titanium_error_profile.dat --low_cut-off=4 --high_cut_off=5 . Warning: overwrites all previous cut-off values [DEFAULT: False]
 
 
 **Output:**
@@ -71,6 +73,8 @@ singletons.fasta: contains all unclustered reads
 denoiser_mapping.txt: This file contains the actual clusters. The cluster centroid is given first,
                     the cluster members follow after the ':'.   
 
+checkpoints/ : directory with checkpoints
+
 Note that the centroids and singleton files are disjoint. For most downstream analyses one wants to cat the two files.
 
 
@@ -82,6 +86,8 @@ put results into Outdir, log progress in Outdir/denoiser.log
 
 	denoiser.py -i 454Reads.sff.txt -f seqs.fna -v -o Outdir
 
+**Multiple sff.txt files:**
+
 Run denoiser on two flowgram files in 454Reads_1.sff.txt and 454Reads_2.sff.txt
 with read-to-barcode mapping in seqs.fna, put results into Outdir,
 log progress in Outdir/denoiser.log
@@ -90,6 +96,8 @@ log progress in Outdir/denoiser.log
 
 	denoiser.py -i 454Reads_1.sff.txt,454Reads_2.sff.txt -f seqs.fna -v -o Outdir
 
+**Denoise multiple library separately:**
+
 Run denoiser on flowgrams in 454Reads.sff.txt with read-to-barcode mapping in seqs.fna,
 split input files into libraries and process each library separately,
 put results into Outdir, log progress in Outdir/denoiser.log
@@ -97,5 +105,15 @@ put results into Outdir, log progress in Outdir/denoiser.log
 ::
 
 	denoiser.py -S -i 454Reads.sff.txt -f seqs.fna -v -o Outdir
+
+**Resuming a failed run:**
+
+Resume a previous denoiser run from breakpoint stored in Outdir_from_failed_run/checkpoints/checkpoint100.pickle.
+The checkpoint option requires the -p or --preprocess option, which usually can be set to the output dir of the failed run. 
+All other arguments must be identical to the failed run.
+
+::
+
+	denoiser.py -i 454Reads.sff.txt -f seqs.fna -v -o Outdir_resumed -p Outdir_from_failed_run --checkpoint Outdir_from_failed_run/checkpoints/checkpoint100.pickle
 
 
