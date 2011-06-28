@@ -59,6 +59,23 @@ def error_on_bad_rdp_version(option_parser,assignment_method):
             raise ValueError,\
              "Unknown assignment method: %s" % assignment_method
 
+def guess_rdp_version():
+    rdp_jarpath = get_rdp_jarpath()
+    if rdp_jarpath == None:
+        raise ValueError, \
+         ("RDP classifier is not installed or "
+          "not accessible to QIIME. See install instructions here: "
+          "http://qiime.org/install/install.html#rdp-install")
+    elif "2.2" in rdp_jarpath:
+        return "rdp22"
+    elif "2.0" in rdp_jarpath:
+        return "rdp20"
+    else:
+        raise ValueError,\
+         ("Can't determine RDP version number. Only versions 2.0, 2.0.1,"
+          " and 2.2 are supported by QIIME. RDP jar path is:"
+          " %s" % rdp_jarpath)
+    
 
 class TaxonAssigner(FunctionWithParams):
     """A TaxonAssigner assigns a taxon to each of a set of sequences.

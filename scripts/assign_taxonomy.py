@@ -18,15 +18,15 @@ from os import system, remove, path, mkdir
 from os.path import split, splitext
 from qiime.assign_taxonomy import (
     BlastTaxonAssigner, RdpTaxonAssigner, Rdp20TaxonAssigner,
-    check_rdp_version, error_on_bad_rdp_version)
+    guess_rdp_version)
 
 assignment_method_constructors = {
     'blast': BlastTaxonAssigner,
-    'rdp': RdpTaxonAssigner,
+    'rdp22': RdpTaxonAssigner,
     'rdp20': Rdp20TaxonAssigner,
-    }
- 
-assignment_method_choices = assignment_method_constructors.keys()
+}
+
+assignment_method_choices = ['rdp','blast']
 
 options_lookup = get_options_lookup()
 
@@ -78,8 +78,8 @@ script_info['optional_options']=[\
         'RDP Classifier.  This option is overridden by the -t and -r options. '
         '[default: %default]'),\
  make_option('-m', '--assignment_method', type='choice',
-        help='Taxon assignment method, either blast, rdp, or rdp20 (RDP '
-        'Classifier version 2.0) [default:%default]',
+        help='Taxon assignment method, either blast, rdp '
+        '[default:%default]',
         choices=assignment_method_choices, default="rdp"),\
  make_option('-b', '--blast_db',
         help='Database to blast against.  Must provide either --blast_db or '
@@ -98,8 +98,9 @@ script_info['version'] = __version__
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
+    assignment_method = opts.assignment_method
     
-    if opts.assignment_method == 'blast':
+    if assignment_method == 'blast':
         if not opts.id_to_taxonomy_fp:
             option_parser.error('Option --id_to_taxonomy_fp is required when ' 
                          'assigning with blast.')
@@ -108,8 +109,11 @@ def main():
                          'reference sequences (via -r) must be passed to '
                          'assign taxonomy using blast.')
                          
-    if opts.assignment_method.startswith('rdp'):
-        error_on_bad_rdp_version(option_parser,opts.assignment_method)
+    if assignment_method == 'rdp':
+        try:
+            assignment_method = guess_rdp_version()
+        except ValueError, e:
+            option_parser.error(e)
         
         if opts.id_to_taxonomy_fp:
             if opts.reference_seqs_fp is None:
@@ -123,8 +127,6 @@ def main():
         else:
             pass
 
-
-    assignment_method = opts.assignment_method
     taxon_assigner_constructor =\
      assignment_method_constructors[assignment_method]
     input_sequences_filepath = opts.input_fasta_fp
@@ -148,7 +150,7 @@ def main():
     result_path = output_dir + '/' + fname + '_tax_assignments.txt'
     log_path = output_dir + '/' + fname + '_tax_assignments.log'
     
-    if opts.assignment_method == 'blast':
+    if assignment_method == 'blast':
         # one of these must have a value, otherwise we'd have 
         # an optparse error
         if opts.blast_db:
@@ -157,7 +159,7 @@ def main():
             params['reference_seqs_filepath'] = opts.reference_seqs_fp
         params['Max E value'] = opts.e_value
 
-    elif opts.assignment_method.startswith('rdp'):
+    elif assignment_method.startswith('rdp'):
         params['Confidence'] = opts.confidence
         params['id_to_taxonomy_fp'] = opts.id_to_taxonomy_fp
         params['reference_sequences_fp'] = opts.reference_seqs_fp
