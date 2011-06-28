@@ -40,7 +40,7 @@ This script takes a sequence file and performs all processing steps through buil
 
 **Output:**
 
-This script will produce a set of cluster centroids (as a FASTA file) and a cluster mapping file (from `denoise_wrapper.py <./denoise.html>`_ if sff.txt and mapping file were provided), an OTU mapping file (`pick_otus.py <./pick_otus.html>`_), a representative set of sequences (FASTA file from `pick_rep_set.py <./pick_rep_set.html>`_), a sequence alignment file (FASTA file from `align_seqs.py <./align_seqs.html>`_), taxonomy assignment file (from `assign_taxonomy.py <./assign_taxonomy.html>`_), a filtered sequence alignment (from `filter_alignment.py <./filter_alignment.html>`_), a phylogenetic tree (Newick file from `make_phylogeny.py <./make_phylogeny.html>`_) and an OTU table (from `make_otu_table.py <./make_otu_table.html>`_).
+This script will produce a set of cluster centroids (as a FASTA file) and a cluster mapping file (from `denoise_wrapper.py <./denoise_wrapper.html>`_ if sff.txt and mapping file were provided), an OTU mapping file (`pick_otus.py <./pick_otus.html>`_), a representative set of sequences (FASTA file from `pick_rep_set.py <./pick_rep_set.html>`_), a sequence alignment file (FASTA file from `align_seqs.py <./align_seqs.html>`_), taxonomy assignment file (from `assign_taxonomy.py <./assign_taxonomy.html>`_), a filtered sequence alignment (from `filter_alignment.py <./filter_alignment.html>`_), a phylogenetic tree (Newick file from `make_phylogeny.py <./make_phylogeny.html>`_) and an OTU table (from `make_otu_table.py <./make_otu_table.html>`_).
 
 
 **Simple example:**

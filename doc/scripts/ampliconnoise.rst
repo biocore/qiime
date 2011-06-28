@@ -32,7 +32,7 @@ Additionally, the intermediate results of the ampliconnoise pipeline are
 written to an output directory.
 
 Ampliconnoise must be installed and correctly configured, and parallelized
-steps will be called with mpirun, not qiime's `make_cluster_jobs.py <./make_cluster_jobs.html>`_ script.
+steps will be called with mpirun, not qiime's `start_parallel_jobs_torque.py <./start_parallel_jobs_torque.html>`_ script.
 
 
 
