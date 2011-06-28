@@ -6,7 +6,7 @@ from __future__ import division
 
 __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Jens Reeder"]
+__credits__ = ["Jens Reeder","Greg Caporaso"]
 __license__ = "GPL"
 __version__ = "1.2.1-dev"
 __maintainer__ = "Jens Reeder"
@@ -22,7 +22,7 @@ from cogent.app.util import ApplicationError
 
 from qiime.util import parse_command_line_parameters, create_dir,\
     handle_error_codes
-from qiime.pyronoise import  pyroNoise_otu_picker, fast_denoiser
+from qiime.denoise_wrapper import fast_denoiser
 from qiime.parse import parse_mapping_file
 from qiime.format import  write_Fasta_from_name_seq_pairs
 
@@ -59,13 +59,6 @@ script_info['optional_options'] = [\
                 help='path to output directory '+
                 '[default: %default]',
                 default="denoised_seqs/"),
-
-    make_option('--method', action='store',
-                type='string', dest='method',
-                help='Method to use for denoising. '+
-                'Choice of pyronoise or fast'+
-                ' [default: %default]',
-                default="fast"),
 
     make_option('-k','--keep_intermediates', action='store_true',
                  dest='keep', default=False,
@@ -146,38 +139,30 @@ def main():
         log_fh.write("Input file: %s\n"% opts.sff_fp)
         log_fh.write("output path: %s\n"% outdir)
 
-    if opts.method=="pyronoise":
-        if len(opts.sff_fp.split(",")) > 1:
-            raise option_parser.error("PyroNoise currently supports only one .sff.txt input file. "+\
-                                          "Use --method fast instead")
-        centroids, cluster_mapping = pyroNoise_otu_picker(open(opts.sff_fp, "U"),
-                                                          outdir, opts.num_cpus, log_fh, opts.keep,
-                                                          opts.precision, opts.cut_off)
+    #Read primer from Meta data file if not set on command line
+    if not opts.primer:
+      mapping_data, header, comments = \
+          parse_mapping_file(open(opts.map_fname,"U"))
+        
+      index = header.index("LinkerPrimerSequence")
+      all_primers = set(array(mapping_data)[:,index])
+      
+      if len(all_primers)!= 1:
+            raise ValueError,"Currently only data sets with one primer are allowed.\n"+\
+                "Make separate mapping files with only one primer, re-run split_libraries and\n"\
+                +"denoise with each split_library output separately."
+      primer = list(all_primers)[0]
+      last_char = primer[-1]
+      if(last_char not in "ACGT"):
+          raise ValueError,"We currently do not support primer with "+\
+              "degenerate bases at it's 3' end."
+
     else:
-        #Read primer from Meta data file if not set on command line
-        if not opts.primer:
-          mapping_data, header, comments = \
-              parse_mapping_file(open(opts.map_fname,"U"))
-            
-          index = header.index("LinkerPrimerSequence")
-          all_primers = set(array(mapping_data)[:,index])
-          
-          if len(all_primers)!= 1:
-                raise ValueError,"Currently only data sets with one primer are allowed.\n"+\
-                    "Make separate mapping files with only one primer, re-run split_libraries and\n"\
-                    +"denoise with each split_library output separately."
-          primer = list(all_primers)[0]
-          last_char = primer[-1]
-          if(last_char not in "ACGT"):
-              raise ValueError,"We currently do not support primer with "+\
-                  "degenerate bases at it's 3' end."
+        primer=opts.primer
 
-        else:
-            primer=opts.primer
-
-        centroids, cluster_mapping = fast_denoiser(opts.sff_fp,opts.fasta_fp,
-                                                   outdir, opts.num_cpus, primer,
-                                                   titanium=opts.titanium)
+    centroids, cluster_mapping = fast_denoiser(opts.sff_fp,opts.fasta_fp,
+                                               outdir, opts.num_cpus, primer,
+                                               titanium=opts.titanium)
 
     # store mapping file and centroids
     result_otu_path = '%s/denoised_clusters.txt' % outdir

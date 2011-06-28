@@ -38,13 +38,13 @@ This step has to be done separately for each 454 pool, following the usual guide
 
 Each run will be denoised using its quality filtered output of `split_libraries.py <../scripts/split_libraries.html>`_ and the initial :file:`.sff.txt` file. All flowgrams without a match in the provided `split_libraries.py <../scripts/split_libraries.html>`_ FASTA file are removed. The sequencing primer will be extracted from the metadata mapping file::
 
-	denoiser_wrapper.py -v -i run1.sff.txt -f run1/seqs.fna -o run1/denoised/ -m run1_mapping.txt 
-	denoiser_wrapper.py -v -i run2.sff.txt -f run2/seqs.fna -o run2/denoised/ -m run2_mapping.txt
+	denoise_wrapper.py -v -i run1.sff.txt -f run1/seqs.fna -o run1/denoised/ -m run1_mapping.txt 
+	denoise_wrapper.py -v -i run2.sff.txt -f run2/seqs.fna -o run2/denoised/ -m run2_mapping.txt
 
 
 Denoising large data sets is computationally demanding. While smaller data sets (< 50,000 sequences) can be run on one single machine within an hour, a typical 454 run with 400,000 sequences after quality filtering requires up to a day on a 24 core cluster. If the denoiser is set up properly on your cluster or multi-core machine, it can be started in parallel mode using the option -n::
 
-	denoiser_wrapper.py -v -i run1.sff.txt -f run1/seqs.fna -o run1/denoised/ -m run1_mapping.txt -n 24
+	denoise_wrapper.py -v -i run1.sff.txt -f run1/seqs.fna -o run1/denoised/ -m run1_mapping.txt -n 24
 
 
 
@@ -70,7 +70,7 @@ To inflate the results of a single denoiser run call::
 
     inflate_denoiser_output.py -c centroids.fna -s singletons.fna -f seqs.fna -d denoiser_mapping.txt -o denoised_seqs.fna
 
-To inflate the results from independent denoiser_wrapper.py runs, pass all of the centroid, singleton, input fasta files, and denoiser maps::
+To inflate the results from independent denoise_wrapper.py runs, pass all of the centroid, singleton, input fasta files, and denoiser maps::
 
     inflate_denoiser_output.py -c centroids1.fna,centroids2.fna -s singletons1.fna,singletons2.fna -f seqs1.fna,seqs2.fna -d denoiser_mapping1.txt,denoiser_mapping2.txt -o denoised_seqs.fna
 
