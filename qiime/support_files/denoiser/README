@@ -142,58 +142,8 @@ Step 4. Re-integrating the denoised data into QIIME
 Note: this step is only neccessary if the data should go into the QIIME pipeline. 
       Please, also read the tutorial on "denoising 454 data" in the QIIME documention.
 
-Note: Qiime-1.3+ contains a script inflate_denoiser_output.py, that makes the process of re-integrating
-      denoised data into the pipeline easier. Refer to the "denoising 454 data" tutorial in the QIIME doc.
-
-The final step in a denoising run usually is the re-integration of the
-data into the QIIME pipeline. Since the denoiser uses flowgram
-similarity for clustering there is no guaranteed sequence
-(dis)-similarity between cluster centroids. In order to create the
-usual species-level OTUS at 97% sequence similarity, run one of
-QIIME's OTU pickers on the denoiser output and combine both outputs.
-We recommend using the uclust OTU picker with option
---user_sort and --optimal_uclust (-A -B are the corresponding short options).
-This assures that the best possible OTUs are chosen. The centroids.fasta file is
-sorted by cluster size, such that uclust --user_sort considers huge clusters as OTUs first.
---optimal_uclust mught be prohibitive if there are too many clusters after denoising.
-In that case, Qiime's default (which are higher as uclust's default as of Qiime 1.2) might be a 
-good compromise.
-
-These are the required steps:
-
-Combine centroids and singletons (in this order!):
-$ cat centroids.fasta singletons.fasta > denoised.fasta
-
-Run the QIIME OTU picker:
-$ pick_otus.py -s 0.97 -i denoised.fasta -m uclust -A -B
-
-Combine denoiser and QIIME OTU picker output:
-$ denoise_postprocess.py -f seqs.fna -d denoised.fasta -m denoiser_mapping.txt -p uclust_picked_otus/denoised_otus.txt
-
-This command creates two new files in a directory (default: Denoiser_out_otu_picked/):
-
-denoised_otu_map.txt: In this mapping the read/flowgram IDs are
-		replaced by sample_id from the split_libraries.py
-		fasta file. Also, the lists for each OTU are sorted
-		such that the largest cluster from denosing appears
-		first. This will be important for the next step,
-		picking representative sequences.
-
-denoised_all.fasta: A fasta sequence where the header lines are
-		updated with the new sample_ids
-
-Since the sample_ids in the otu map are already sorted, we can simply
-pick the most abundant sequence for an OTU by using the "first" method with
-pick_representative.py :
-$ pick_rep_set.py -f denoised_all.fasta -i denoised_otu_map.txt  -m first
-
-
-The resulting set of representative sequences can then be fed into the
-QIIME pipeline as any other representative set.
-
-
-
-
+Qiime-1.3+ contains a script inflate_denoiser_output.py, that makes the process of re-integrating
+denoised data into the pipeline easier. Refer to the "denoising 454 data" tutorial in the QIIME doc.
 
 Some random notes:
 
