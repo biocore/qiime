@@ -13,6 +13,7 @@ __status__ = "Development"
 
 from random import shuffle
 from numpy import array
+from cogent.parse.fasta import MinimalFastaParser
 from qiime.parse import parse_otu_table, parse_distmat
 from qiime.format import format_otu_table, format_distance_matrix
 
@@ -184,5 +185,32 @@ def split_otu_table_on_taxonomy(otu_table_lines,level):
                                                taxon_datum[0],
                                                array(taxon_datum[1]),
                                                taxon_datum[2])
+
+def negate_tips_to_keep(tips_to_keep, tree):
+    """ Return the list of tips in the tree that are not in tips_to_keep
+    """
+    result = []
+    for tip in tree.iterTips():
+        tip_name = tip.Name
+        if tip_name not in tips_to_keep:
+            result.append(tip_name)
+    return result
+
+def get_seqs_to_keep_lookup_from_seq_id_file(seqs_to_keep_f):
+    """generate a lookup dict of chimeras in chimera file."""
     
+    seqs_to_keep = []
+    for line in seqs_to_keep_f:
+        line = line.strip()
+        if not line or line.startswith('#'):
+            continue
+        else:
+            seqs_to_keep.append(line.split()[0])
+    return {}.fromkeys(seqs_to_keep)
+    
+def get_seqs_to_keep_lookup_from_fasta_file(fasta_f):
+    seqs_to_keep = []
+    for seq_id, seq in MinimalFastaParser(fasta_f):
+        seqs_to_keep.append(seq_id.split()[0])
+    return {}.fromkeys(seqs_to_keep)
     

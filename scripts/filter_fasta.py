@@ -16,7 +16,9 @@ from qiime.util import make_option
 from cogent.parse.fasta import MinimalFastaParser
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.parse import fields_to_dict
-from qiime.filter import filter_fasta
+from qiime.filter import (filter_fasta, 
+                          get_seqs_to_keep_lookup_from_seq_id_file,
+                          get_seqs_to_keep_lookup_from_fasta_file)
 
 options_lookup = get_options_lookup()
 
@@ -64,20 +66,6 @@ def get_seqs_to_keep_lookup_from_otu_map(seqs_to_keep_f):
     seqs_to_keep = []
     for seq_ids in otu_map.values():
         seqs_to_keep += seq_ids
-    return {}.fromkeys(seqs_to_keep)
-
-def get_seqs_to_keep_lookup_from_seq_id_file(seqs_to_keep_f):
-    """generate a lookup dict of chimeras in chimera file."""
-    
-    seqs_to_keep = []
-    for line in seqs_to_keep_f:
-        seqs_to_keep.append(line.strip().split()[0])
-    return {}.fromkeys(seqs_to_keep)
-    
-def get_seqs_to_keep_lookup_from_fasta_file(fasta_f):
-    seqs_to_keep = []
-    for seq_id, seq in MinimalFastaParser(fasta_f):
-        seqs_to_keep.append(seq_id.split()[0])
     return {}.fromkeys(seqs_to_keep)
 
 def get_seqs_to_keep_lookup_from_prefix(fasta_f,prefix):
