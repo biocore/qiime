@@ -28,39 +28,37 @@ This script will denoise a flowgram file in .sff.txt format, which is the output
 		
 	-o, `-`-output_dir
 		Path to output directory [default: denoised_seqs/]
-	-k, `-`-keep_intermediates
-		Do not delete intermediate files -- useful for debugging [default: False]
 	-n, `-`-num_cpus
 		Number of CPUs [default: 1]
 	`-`-force_overwrite
 		Overwrite files in output directory [default: False]
 	-m, `-`-map_fname
-		Name of mapping file, Has to contain field LinkerPrimerSequence. [REQUIRED] when method is fast
+		Name of mapping file, Has to contain field LinkerPrimerSequence. [REQUIRED unless --primer specified]
 	-p, `-`-primer
-		Primer sequence [default: None]
+		Primer sequence [REQUIRED unless --map_fname specified]
 	`-`-titanium
-		Select titanium defaults for denoiser [default: False]
+		Select Titanium defaults for denoiser, otherwise use FLX defaults [default: False]
 
 
 **Output:**
 
-This script results in a OTU mapping file along with a sequence file of denoised (FASTA-format). Note that the sequences coming from denoising are no real OTUs, and have to be sent to `pick_otus.py <./pick_otus.html>`_ if the users wishes to have a defined similarity threshold.
+This script results in a OTU like mapping file along with a sequence file of denoised (FASTA-format). Note that the sequences coming from denoising are no real OTUs, and have to be sent to `pick_otus.py <./pick_otus.html>`_ if the users wishes to have a defined similarity threshold.
 
 
 **Example:**
 
-Denoise flowgrams in file 454Reads.sff.txt:
+Denoise flowgrams in file 454Reads.sff.txt, discard flowgrams not in seqs.fna, and extract primer from map.txt:
 
 ::
 
-	denoise_wrapper.py.py -i 454Reads.sff.txt
+	denoise_wrapper.py -i 454Reads.sff.txt -f seqs.fna -m map.txt
 
 **Multi-core Example:**
 
-Denoise flowgrams in file 454Reads.sff.txt using 2 cores on your machine in parallel (requires mpirun):
+Denoise flowgrams in file 454Reads.sff.txt using 2 cores on your machine in parallel:
 
 ::
 
-	denoise_wrapper.py -n 2 -i 454Reads.sff.txt
+	denoise_wrapper.py -n 2 -i 454Reads.sff.txt -f seqs.fna -m map.txt
 
 
