@@ -53,7 +53,7 @@ Additionally, the intermediate results of the ampliconnoise pipeline are
 written to an output directory.
 
 Ampliconnoise must be installed and correctly configured, and parallelized
-steps will be called with mpirun, not qiime's make_cluster_jobs.py script.
+steps will be called with mpirun, not qiime's start_parallel_jobs_torque.py script.
 
 """
 script_info['script_usage'] = [("","Run ampliconnoise, write output to anoise_out.fna, compatible with output of split_libraries.py","%prog -i Fasting_Example.sff.txt -m Fasting_Map.txt -o anoise_out.fna")]
