@@ -544,13 +544,6 @@ class Qiime_config(TestCase):
          "cd-hit not found. This may or may not be a problem depending on "+\
          "which components of QIIME you plan to use.")
         # cd-hit does not have a version print in their program
-        
-    def test_dotur_supported_version(self):
-        """dotur is in path and version is supported """
-        self.assertTrue(app_path('dotur'),
-         "dotur not found. This may or may not be a problem depending on "+\
-         "which components of QIIME you plan to use.")
-        # dotur does not have a version print in their program
     
     #def test_rdp_classifier_supported_version(self):
     #    """rdp_classifier is in path and version is supported """
