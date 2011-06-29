@@ -28,7 +28,7 @@ __license__ = "GPL"
 __version__ = "1.6.0.dev"
 __maintainer__ = "William Walters"
 __email__ = "William.A.Walters@colorado.edu"
-__status__ = "Development"
+__status__ = "Release"
 
 class UclustTests(TestCase):
 

@@ -4,10 +4,10 @@ __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Justin Kuczynski", "Rob Knight"]
 __license__ = "GPL"
-__version__ = "1.2.1-dev"
+__version__ = "1.3.0"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 """Contains code for performing alpha diversity analyses within each sample.
 

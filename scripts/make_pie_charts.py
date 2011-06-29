@@ -6,10 +6,10 @@ __author__ = "Jesse Stombauhg"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jesse Stombaugh"]
 __license__ = "GPL"
-__version__ = "1.2.1-dev"
+__version__ = "1.3.0"
 __maintainer__ = "Jesse Stombaugh"
 __email__ = "jesse.stombaugh@colorado.edu"
-__status__ = "Development"
+__status__ = "Release"
 
 
 deprecation_message = """Usage: make_pie_charts.py

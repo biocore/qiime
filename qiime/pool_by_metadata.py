@@ -9,10 +9,10 @@ __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project" 
 __credits__ = ["Justin Kuczynski"] #remember to add yourself if you make changes
 __license__ = "GPL"
-__version__ = "1.2.1-dev"
+__version__ = "1.3.0"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 def pool_map(map_infile, map_outfile,
     pooled_sample_name, sample_ids_to_pool):

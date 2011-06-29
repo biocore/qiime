@@ -7,10 +7,10 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 #remember to add yourself if you make changes
 __credits__ = ["Kyle Bittinger", "Greg Caporaso", "Rob Knight", "Jens Reeder","William Walters"] 
 __license__ = "GPL"
-__version__ = "1.2.1-dev"
+__version__ = "1.3.0"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 from os import remove
 

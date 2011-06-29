@@ -9,7 +9,7 @@ __license__ = "GPL"
 __version__ = "dev"
 __maintainer__ = "William Van Treuren"
 __email__ = "vantreur@colorado.edu"
-__status__ = "Development"
+__status__ = "Release"
  
 
 

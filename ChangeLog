@@ -1,8 +1,5 @@
-Add changes since QIIME 1.2.1 here
+QIIME 1.3.0 (29 June 2011)
 ==================================
-* Updated the make_distance_histograms.py output filepaths and HTML layout to be more consistent with other plotting scripts.
-* Added a new taxonomy summary workflow (summarize_taxa_through_plots.py).
-* Integrated denoiser into Qiime
 * uclust and uclust_ref OTU pickers now incorporate a pre-filtering step where identical sequences are collapsed before calling uclust and then expanded after calling uclust. This gives a big speed improvement (5-20x) on reasonably sized input sets (>200k sequences) with no effect on the resulting OTUs. This is now the default behavior for pick_otus.py, and can be disabled by passing --suppress_uclust_prefilter_exact_match to pick_otus.py.
 * Added ability to pass a file to sort_otu_table.py that contains a sorted list of sample ids, and use that information rather than the mapping file for sorting the OTU table. This allows users to, e.g., pass sorted mapping files as input. 
 * Added core_analyses.py script and workflow function. This plugs together many components of QIIME (split libraries, pick_otus_through_otu_table.py, beta_diversity_through_3d_plots.py, alpha_rarefaction.py) into a single command and parameters file.
@@ -13,13 +10,44 @@ Add changes since QIIME 1.2.1 here
 * Parameter -r reassignment in parallel_assign_taxonomy_rdp.py. Now -r is used for reference_seqs_fp as before was for rdp_classifier_fp.
 * Added script inflate_denoiser_output.py to expand clusters to fasta representing all sequences. This allows denoiser results to be passed directly to the OTU pickers (and OTU picking workflows) which should greatly reduce the complexity of denoiser runs. The "Denoising 454 Data" tutorial has been updated to reflect how the pipeline should now be run. The denoising functionality was removed from the pick_otus_through_otu_table.py workflow script as that could only be used in very special circumstances - this allows us to focus our attention on supporting the new pipeline described in the updated tutorial.
 * Reorganized output from pick_otus_through_otu_table.py to get rid of the confusing output directory structure. 
-* Modified the naming of distance matrices in beta_diversity_through_3d_plots.py so these are now named <metric>_dm.txt. The previous naming convention, where it was based on the name of the input file, lead to confusion as the string 'otu_table' frequently ended up in the distance matrices.
 * Added script plot_semivariogram.py to plot semivariograms using two distance matrices. This script also plots a fitting curve of the data values.
-* Changed beta diversity scripts to do unweighted_unifrac,weighted_unifrac by default
+* Changed beta diversity scripts to do unweighted_unifrac,weighted_unifrac by default.
 * Changed output of summarize_taxa.py to a directory instead of filepath. This allows for multiple levels to be processed simultaneously.
 * The beta_diversity_through_3d_plots.py now contains some additional functionality -- 2d plots and distance histograms. It has therefore been renamed beta_diversity_through_plots.py. Any of the plots can be disabled by passing the options  --suppress_distance_histograms, --suppress_2d_plots, and --suppress_3d_plots.
+* Updated required version of FastTree to 2.1.3 as this version contains some bug fixes over version 2.1.0.
+* Modified single_rarefaction.py so default is to include lineages (previously did not include these by default).
 * Added split_otu_table.py script which splits a single OTU table into several OTU tables based on the values in a specified column of the mapping file. This is useful, for example, when a single OTU table is generated that covers multiple studies.
+* Fixed bug in mouseovers in taxa area and bar charts. These were misaligned when a lot of samples were included.
+* Added support for RDP classifier 2.2. Versions 2.0 and 2.2 are both supported.
+* Added support for AmpliconNoise with the ampliconnoise.py script.
 * Added new page to the documentation to cover upgrades between versions of QIIME.
+* Updated the make_distance_histograms.py output filepaths and HTML layout to be more consistent with other plotting scripts.
+* Added a new taxonomy summary workflow (summarize_taxa_through_plots.py).
+* Modified workflow scripts so stdout and stderr are written to the log file. This is very useful for debugging.
+* Added new script (simsam.py) to simulate samples using a phylogentic tree.
+* Complete overhaul of Illumina data processing code. QIIME now treats fastq format as the default for Illumina data, and various other formats can be converted to fastq using process_qseq.py and process_iseq.py. The "Processing Illumina Data tutorial" has also been completely overhauled and describes these changes. The primary script for demultiplexing Illumina data is now split_libraries_fastq.py.
+* Dropped support for PyroNoise in favor of AmpliconNoise (the successor to PyroNoise) and the QIIME denoiser.
+* Added inflate_denoiser_output.py script to simply the integration of denoiser results into the QIIME pipeline. See the "Denoising 454 Data" tutorial, which has been overhauled in this release. To reduce the possible pathways through QIIME with denoising, support for denoising was removed from pick_otus_through_otu_table.py in favor of working with the pipeline presented in the tutorial.
+* Changed default behavior of split_libraries.py so unassigned reads are not stored by default. There is now a --retain_unassigned_reads option to achieve the previous behavior.
+* Many clean-ups to the script documentations through-out QIIME.
+* Adding scripts to plot semivariograms.
+* Modified all workflow scripts so parameter files are now optional. This will simplify working with 'default' analyses in these scripts.
+* Added more thorough support for floating point values in OTU tables. This was previously supported only in specific cases.
+* Added support for users to pass jobs_to_start on the command line for all of the workflow scripts. This overrides this value in the parameters file and qiime_config, and is a more convenient way of controlling this.
+* Added entropy filtering option to filter_alignment.py. This can be useful for position-filtering de novo alignments, or other alignments where no lanemask is available.
+* Added new script (count_seqs.py) which will count the number of sequences in one or more fasta file, as well as the mean/stddev sequence lengths, and print the results to stdout or file.
+* Added the plot_taxa_summary.py workflow script, which includes summarizing the OTU table by category.
+* Overhauled the QIIME overview tutorial. 
+* Added new script (start_parallel_jobs_torque.py) which can be used for running parallel QIIME on clusters using torque for the queueing system. A new qiime_config value, torque_queue, can be specified to define the default queue.
+* Integrated the QIIME Denoiser (Reeder and Knight, 2011) into Qiime.
+* Added script (compare_alpha_diversity.py) for comparing rarefied alpha diversities across different mapping file categories.
+* Fixed bug in pick_otus.py where reverse strand matching did not work for uclust/uclust_ref.
+* Modified location where temp files are written for more consistency through-out QIIME. Temp files are now written the temp_dir (from qiime_config) or /tmp/ if temp_dir is not defined. There may still be a few temp files being written to other locations, but the goal is that all will write to the same user-defined (or default) directory.
+* Added split_otu_table.py script which splits a single OTU table into several OTU tables based on the values in a specified column of the mapping file. This is useful, for example, when a single OTU table is generated that covers multiple studies.
+* Added script (make_tep.py) that makes TopiaryExplorer project file (.tep) from an otu table, sample metadata table and tree file.
+* Removed the rdp_classifier_fp from qiime_config. This was used inconsistently through-out QIIME, so was somewhat buggy, and with the switch to RDP 2.2 in QIIME 1.3.0 I think it will save a lot of support headaches to just get rid of it.
+* Added tutorial for processing 18S data, along with a small 3 domain sample sequence file in the qiime_tutorial/18S_tutorial_files/ folder.
+* Added filter_tree.py script, which functions similarly to filter_fasta.py. Moved some functions from filter_fasta.py to filter_tree.py that were generally useful.
 
 QIIME 1.2.1 (22 Feb 2011)
 ==================================

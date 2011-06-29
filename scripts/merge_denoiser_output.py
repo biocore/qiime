@@ -6,10 +6,10 @@ __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jens Reeder"]
 __license__ = "GPL"
-__version__ = "1.2.1-dev"
+__version__ = "1.3.0"
 __maintainer__ = "Jens Reeder"
 __email__ = "jreeder@colorado.edu"
-__status__ = "Development"
+__status__ = "Release"
  
 from qiime.util import make_option
 from cogent.app.util import ApplicationNotFoundError

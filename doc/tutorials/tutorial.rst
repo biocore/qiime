@@ -14,7 +14,7 @@ In this walkthrough, text like the following: ::
 
     print_qiime_config.py
 
-denotes the command-line invocation of scripts. You can find full usage information for each script by passing the -h option (help) and/or by reading the full description in the `Documentation <../documentation/index.html>`_. Execute all tutorial commands from within the :file:`qiime_tutorial` directory, which can be downloaded from `here <http://bmf.colorado.edu/QIIME/qiime_tutorial-v1.2.1.zip>`_.
+denotes the command-line invocation of scripts. You can find full usage information for each script by passing the -h option (help) and/or by reading the full description in the `Documentation <../documentation/index.html>`_. Execute all tutorial commands from within the :file:`qiime_tutorial` directory, which can be downloaded from `here <http://bmf.colorado.edu/QIIME/qiime_tutorial-v1.3.0.zip>`_.
 
 To process our data, we will perform the following analyses, each of which is described in more detail below:
 
@@ -28,7 +28,7 @@ To process our data, we will perform the following analyses, each of which is de
 
 Essential Files
 ----------------
-All the files you will need for this tutorial are here (http://bmf.colorado.edu/QIIME/qiime_tutorial-v1.2.1.zip). Descriptions of these files are below.
+All the files you will need for this tutorial are here (http://bmf.colorado.edu/QIIME/qiime_tutorial-v1.3.0.zip). Descriptions of these files are below.
 
 Sequences (.fna)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
