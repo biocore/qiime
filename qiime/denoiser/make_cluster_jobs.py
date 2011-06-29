@@ -15,7 +15,7 @@ from os.path import exists
 from os import remove, rename, rmdir, makedirs
 from subprocess import Popen, PIPE, STDOUT
 
-from cogent.util.misc import app_path
+from cogent.util.misc import app_path, create_dir
 from cogent.app.util import ApplicationNotFoundError
 from qiime.util import get_tmp_filename
 
@@ -80,6 +80,7 @@ def make_jobs(commands, job_prefix, queue, jobs_dir="jobs/",
     """
 
     filenames=[]
+    create_dir(jobs_dir)
     for command in commands:
         job_name = get_tmp_filename(tmp_dir=jobs_dir, prefix=job_prefix+"_",
                                     suffix = ".txt")
