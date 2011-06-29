@@ -35,6 +35,7 @@ Upgrading from previous versions of the QIIME Virtual Box
 =========================================================
 A QIIME upgrade/deploy script is provided for existing 64-bit Virtual Box users to upgrade to the latest version of QIIME without having to reinstall the QIIME VB. To upgrade your VB follow these steps, launch your existing QIIME VB, open a terminal, and run the following commands::
 	
+	sudo apt-get install ghc gsl-bin
 	wget http://bmf.colorado.edu/QIIME/app-deploy-qiime-1.3.0.tgz
 	tar zxvf app-deploy-qiime-1.3.0.tgz
 	cd app-deploy-qiime-1.3.0
