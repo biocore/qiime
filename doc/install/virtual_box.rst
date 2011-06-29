@@ -35,10 +35,10 @@ Upgrading from previous versions of the QIIME Virtual Box
 =========================================================
 A QIIME upgrade/deploy script is provided for existing 64-bit Virtual Box users to upgrade to the latest version of QIIME without having to reinstall the QIIME VB. To upgrade your VB follow these steps, launch your existing QIIME VB, open a terminal, and run the following commands::
 	
-	wget http://bmf.colorado.edu/QIIME/qiime_deploy.tgz
-	tar zxvf qiime_deploy.tgz
-	cd qiime_deploy
-	./update.sh
+	wget http://bmf.colorado.edu/QIIME/app-deploy-qiime-1.3.0.tgz
+	tar zxvf app-deploy-qiime-1.3.0.tgz
+	cd app-deploy-qiime-1.3.0
+	python app-deploy.py /software/ -f etc/qiime_1.3.0.conf
 	exit
 	
 Then open a new terminal, and to confirm that you are now running the latest version of Qiime run::
