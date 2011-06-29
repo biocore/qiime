@@ -596,7 +596,7 @@ def get_options_lookup():
         default=False)
     result['cluster_jobs_fp'] =\
      make_option('-U','--cluster_jobs_fp',
-        help='path to cluster_jobs.py script ' +\
+        help='path to cluster jobs script (defined in qiime_config) ' +\
         ' [default: %default]',\
         default=qiime_config['cluster_jobs_fp'] or\
          join(get_qiime_scripts_dir(),'start_parallel_jobs.py'))
