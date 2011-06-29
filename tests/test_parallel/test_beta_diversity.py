@@ -6,10 +6,10 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso","Justin Kuczynski"]
 __license__ = "GPL"
-__version__ = "1.3.0"
+__version__ = "1.3.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Release"
+__status__ = "Development"
  
 
 from cogent.util.unit_test import TestCase, main
@@ -685,7 +685,7 @@ PC.635	0.649585288	0.620218939	0.692259868	0.64047777	0.684436784	0.680466604	0.
 PC.636	0.681434152	0.587801465	0.667052119	0.588969244	0.633293071	0.620411354	0.500737813	0.601862605	0"""
 
 
-big_otu_table = """# QIIME v1.3.0 OTU table
+big_otu_table = """# QIIME v1.3.0-dev OTU table
 #OTU ID	PC.354	PC.355	PC.356	PC.481	PC.593	PC.607	PC.634	PC.635	PC.636
 104780	0	0	0	2	0	0	0	0	0
 115098	0	0	0	5	17	20	0	0	0

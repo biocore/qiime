@@ -6,6 +6,8 @@ This page documents how to install a new version of QIIME from an installation o
 
 For a detailed history of the most notable changes between versions see the `QIIME ChangeLog <http://qiime.svn.sourceforge.net/viewvc/qiime/trunk/ChangeLog?view=markup>`_. This points to the most recent version, so will usually also give a preview of the changes that are coming in the next version of QIIME.
 
+1.3.0 to 1.3.0-dev
+--------------------------
 
 1.2.1 to 1.3.0
 --------------------------

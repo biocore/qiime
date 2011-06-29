@@ -6,10 +6,10 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.3.0"
+__version__ = "1.3.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Release"
+__status__ = "Development"
  
 from os import rename
 from cogent.util.misc import safe_md5, create_dir

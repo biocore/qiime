@@ -4,10 +4,10 @@ __author__ = "Cathy Lozupone"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Catherine Lozupone"]
 __license__ = "GPL"
-__version__ = "1.3.0"
+__version__ = "1.3.0-dev"
 __maintainer__ = "Cathy Lozupone"
 __email__ = "lozupone@colorado.edu"
-__status__ = "Release"
+__status__ = "Development"
 
 from qiime.parse import parse_sample_mapping, sample_mapping_to_otu_table
 from qiime.util import make_option

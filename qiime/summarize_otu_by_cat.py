@@ -6,10 +6,10 @@ __author__ = "Julia Goodrich"
 __copyright__ = "Copyright 2011, The QIIME Project" 
 __credits__ = ["Julia Goodrich", "Jesse Stombaugh","Greg Caporaso","Justin Kuczynski"]
 __license__ = "GPL"
-__version__ = "1.3.0"
+__version__ = "1.3.0-dev"
 __maintainer__ = "Daniel McDonald"
 __email__ = "wasade@gmail.com"
-__status__ = "Release"
+__status__ = "Development"
 
 
 """

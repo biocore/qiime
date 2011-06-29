@@ -4,10 +4,10 @@
 # __copyright__ = "Copyright 2011, The QIIME Project"
 # __credits__ = ["Dan Knights"]
 # __license__ = "GPL"
-# __version__ = "1.3.0"
+# __version__ = "1.3.0-dev"
 # __maintainer__ = "Dan Knights"
 # __email__ = "daniel.knights@colorado.edu"
-# __status__ = "Release"
+# __status__ = "Development"
 
 # Global mapping user's model names to library names
 libraries <- list('random_forest'='randomForest','elastic_net'='glmnet')
