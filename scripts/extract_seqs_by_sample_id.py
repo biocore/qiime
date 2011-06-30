@@ -30,7 +30,7 @@ script_info['script_usage'].append(("""Examples:""","""Create the file outseqs.f
 S4 (-s). As always, sample IDs are case-sensitive:""","""extract_seqs_by_sample_id.py -i inseqs.fasta -o outseqs.fasta -s S2,S3,S4"""))
 script_info['script_usage'].append(("""""","""Create the file outseqs.fasta (-o), which will be a subset of inseqs.fasta (-i) containing only the sequences THAT ARE NOT (-n) associated with sample ids S2, S3, S4 (-s). As always, sample IDs are case-sensitive:""","""extract_seqs_by_sample_id.py -i inseqs.fasta -o outseqs.fasta -s S2,S3,S4 -n"""))
 
-script_info['script_usage'].append(("""""","""Create the file outseqs.fasta (-o), which will be a subset of inseqs.fasta (-i) containing only the sequences THAT ARE associated with sample ids whose "Treatment" value is "Fast" in the mapping file:""","""extract_seqs_by_sample_id.py -i inseqs.fasta -o outseqs.fasta -m map.txt --valid_states "Treatment:Fast" """))
+script_info['script_usage'].append(("""""","""Create the file outseqs.fasta (-o), which will be a subset of inseqs.fasta (-i) containing only the sequences THAT ARE associated with sample ids whose "Treatment" value is "Fast" in the mapping file:""","""extract_seqs_by_sample_id.py -i inseqs.fasta -o outseqs.fasta -m map.txt -s "Treatment:Fast" """))
 
 script_info['output_description']="""The script produces a fasta file containing containing only the specified SampleIDs."""
 
@@ -45,9 +45,8 @@ script_info['optional_options']=[
   'ids not passed via -s) [default: %default]'),
  make_option('-s','--sample_ids',\
   help="comma-separated sample_ids to include in output fasta file"+\
-  "(or exclude if --negate)"),\
- make_option('--valid_states',
-  help="string containing valid states, e.g. 'STUDY_NAME:DOG' [default: %default]"),
+  " (or exclude if --negate), or string describing mapping file states"+\
+  " defining sample ids (mapping_fp must be provided for the latter)"),
  options_lookup['mapping_fp']]
 script_info['version'] = __version__
 
@@ -58,24 +57,21 @@ def main():
     
     negate = opts.negate
     sample_ids = opts.sample_ids
-    valid_states = opts.valid_states
     mapping_fp = opts.mapping_fp
     input_fasta_fp = opts.input_fasta_fp
     output_fasta_fp = opts.output_fasta_fp
     
-    if sample_ids:
+    if not mapping_fp:
         sample_ids = sample_ids.split(',')
-    elif valid_states and mapping_fp:
+    else:
         map_data, map_header, map_comments = parse_mapping_file(mapping_fp)
         sample_ids = get_sample_ids(
                          map_data,
                          map_header,
-                         parse_metadata_state_descriptions(valid_states))
+                         parse_metadata_state_descriptions(sample_ids))
         if len(sample_ids) == 0:
             raise ValueError,\
              "No samples match the search criteria: %s" % valid_states
-    else:
-        option_parser.error("Must provide either -s or -m and --valid_states")
     
     
     if opts.verbose:
