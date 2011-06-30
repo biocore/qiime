@@ -77,6 +77,13 @@ def main():
     else:
         option_parser.error("Must provide either -s or -m and --valid_states")
     
+    
+    if opts.verbose:
+        # This is useful when using the --valid_states feature so you can 
+        # find out if a search query didn't work as you expected before a 
+        # lot of time is spent
+        print "Extracting samples: %s" % ', '.join(sample_ids)
+    
     try:
         seqs = MinimalFastaParser(open(input_fasta_fp))
     except IOError:
