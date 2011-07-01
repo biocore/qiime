@@ -1146,7 +1146,7 @@ def count_seqs(fasta_filepath,parser=MinimalFastaParser):
     """
     # Open the file and pass it to py_count_seqs_from_file -- wrapping
     # this makes for easier unit testing
-    return count_seqs_from_file(open(fasta_filepath),parser=parser)
+    return count_seqs_from_file(open(fasta_filepath,'U'),parser=parser)
 
 def count_seqs_from_file(fasta_file,parser=MinimalFastaParser):
     """Return number of sequences in fasta_file (no format checking performed)
