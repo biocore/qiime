@@ -65,14 +65,14 @@ def main():
         # sort so results will be consistent across different runs (important
         # so amplicon and barcodes read headers will match)
         read1_fps.sort()
-        for read1_fp in read1_fps:                
-            output_fp =  '%s/s_%s_%s_sequences.fastq' % (output_dir,lane,read)
-            output_f = open(output_fp,'w')
+        output_fp =  '%s/s_%s_%s_sequences.fastq' % (output_dir,lane,read)
+        output_f = open(output_fp,'w')
+        for read1_fp in read1_fps:        
             for record in iter_split_lines(open(read1_fp,'U')):
                 fastq_s = illumina_data_to_fastq(record,
                                                  number_of_bases=bases)
                 output_f.write('%s\n' % fastq_s)
-            output_f.close()
+        output_f.close()
 
 if __name__ == "__main__":
     main()
