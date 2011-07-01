@@ -1139,16 +1139,16 @@ def inflate_denoiser_output(centroid_seqs,singleton_seqs,denoiser_map,raw_seqs):
     
 ## Functions for counting sequences in fasta files
 
-def count_seqs(fasta_filepath):
+def count_seqs(fasta_filepath,parser=MinimalFastaParser):
     """ Count the sequences in fasta_filepath 
     
         fasta_filepath: string indicating the full path to the file
     """
     # Open the file and pass it to py_count_seqs_from_file -- wrapping
     # this makes for easier unit testing
-    return count_seqs_from_file(open(fasta_filepath))
+    return count_seqs_from_file(open(fasta_filepath),parser=parser)
 
-def count_seqs_from_file(fasta_file):
+def count_seqs_from_file(fasta_file,parser=MinimalFastaParser):
     """Return number of sequences in fasta_file (no format checking performed)
     
         fasta_file: an open file object
@@ -1156,9 +1156,9 @@ def count_seqs_from_file(fasta_file):
     """
     result = 0
     lens = []
-    for seq_id,seq in MinimalFastaParser(fasta_file):
+    for record in parser(fasta_file):
         result += 1
-        lens.append(len(seq))
+        lens.append(len(record[1]))
     if result == 0:
         return result, None, None
     else:
@@ -1179,9 +1179,15 @@ def count_seqs_in_filepaths(fasta_filepaths,seq_counter=count_seqs):
     inaccessible_filepaths = []
     # iterate over the input files
     for fasta_filepath in fasta_filepaths:
+        # if the file is actually fastq, use the fastq parser. 
+        # otherwise use the fasta parser
+        if fasta_filepath.endswith('.fastq'):
+            parser = MinimalFastqParser
+        else:
+            parser = MinimalFastaParser
         try:
             # get the count of sequences in the current file
-            current_count = seq_counter(fasta_filepath)
+            current_count = seq_counter(fasta_filepath,parser=parser)
             # store it
             counts.append((current_count,fasta_filepath))
             # and increment the total count

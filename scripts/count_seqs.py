@@ -25,8 +25,8 @@ script_info['script_usage'] = [\
   "Count the sequences in a fasta file and write results to stdout.",
   "%prog -i in.fasta"),
  ("",
-  "Count the sequences in two fasta files and write results to file.",
-  "%prog -i in1.fasta,in2.fasta -o seq_counts.txt"),
+  "Count the sequences in a fasta file and a fastq file and write results to file. Note that fastq files can only be processed if they end with .fastq -- all other files are assumed to be fasta.",
+  "%prog -i in1.fasta,in2.fastq -o seq_counts.txt"),
   ("",
    "Count the sequences all .fasta files in current directory and write results to stdout. Note that -i option must be quoted.",
    "%prog -i \"*.fasta\"")]
