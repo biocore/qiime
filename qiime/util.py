@@ -46,7 +46,6 @@ from cogent.app.blast import Blastall
 from cogent.app.util import get_tmp_filename as cogent_get_tmp_filename, FilePath
 from cogent.parse.blast import BlastResult
 from cogent.parse.fasta import MinimalFastaParser
-from cogent.parse.fastq import MinimalFastqParser
 from cogent.util.misc import remove_files
 from cogent.util.dict2d import Dict2D
 from cogent.app.formatdb import build_blast_db_from_fasta_path,\
@@ -63,7 +62,8 @@ from qiime.parse import (parse_otu_table,
                          parse_newick,
                          PhyloNode,
                          parse_mapping_file,
-                         parse_denoiser_mapping)
+                         parse_denoiser_mapping,
+                         MinimalFastqParser)
 from qiime.format import format_otu_table
 
 class TreeMissingError(IOError):

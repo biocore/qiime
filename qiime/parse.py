@@ -21,12 +21,15 @@ from numpy.random import permutation
 from cogent.parse.record_finder import LabeledRecordFinder
 from cogent.parse.fasta import FastaFinder
 from cogent.parse.tree import DndParser
+from cogent.parse.fastq import MinimalFastqParser as MinimalFastqParserCogent
 from cogent.core.tree import PhyloNode
 from copy import deepcopy
 import os
 import re
 from cogent import DNA
 
+def MinimalFastqParser(data,strict=False):
+    return MinimalFastqParserCogent(data,strict=strict)
 
 class QiimeParseError(Exception):
     pass
