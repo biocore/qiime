@@ -621,8 +621,9 @@ class UclustOtuPickerTests(TestCase):
         # generate result including prefilter
         app_w_collapse_identical =\
           UclustOtuPicker(params={'Similarity':0.90,
-                                  'save_uc_files':True,
-                                  'prefilter_identical_sequences':True})
+                                  'save_uc_files':False,
+                                  'prefilter_identical_sequences':True,
+                                  'output_dir':self.temp_dir})
         result_w_collapse_identical = \
          app_w_collapse_identical(self.tmp_seq_filepath4).values()
         result_w_collapse_identical.sort()
@@ -631,7 +632,8 @@ class UclustOtuPickerTests(TestCase):
         app_wo_collapse_identical =\
           UclustOtuPicker(params={'Similarity':0.90,
                                   'save_uc_files':False,
-                                  'prefilter_identical_sequences':False})
+                                  'prefilter_identical_sequences':False,
+                                  'output_dir':self.temp_dir})
         result_wo_collapse_identical = \
          app_wo_collapse_identical(self.tmp_seq_filepath4).values()
         result_wo_collapse_identical.sort()
@@ -1457,6 +1459,7 @@ class UclustReferenceOtuPickerTests(TestCase):
     def test_default_parameters_new_clusters_allowed_save_uc_files(self):
         """UclustReferenceOtuPicker: default parameters, saves uc file
         """
+        
         uc = UclustReferenceOtuPicker({'save_uc_files':True,
                                        'output_dir':self.temp_dir})
                                        
@@ -1520,7 +1523,8 @@ class UclustReferenceOtuPickerTests(TestCase):
         uc = UclustReferenceOtuPicker({'Similarity':0.90,
                                       'suppress_sort':False,
                                       'presort_by_abundance':False,
-                                      'save_uc_files':False})
+                                      'save_uc_files':False,
+                                      'output_dir':self.temp_dir})
         obs = uc(self.tmp_seq_filepath1,self.temp_ref_filepath1)
         exp = {'ref1':['uclust_test_seqs_0'],
                'ref2':['uclust_test_seqs_1'],
