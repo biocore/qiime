@@ -10,7 +10,9 @@ This document covers general steps in working with QIIME on Amazon Web Services 
 Starting an EC2 instance
 ========================
 
-A `tutorial on starting an EC2 instance can be found here <http://ged.msu.edu/angus/tutorials-2011/creating-an-ec2-instance.html>`_. You'll need to know the AMI ID that you want to start, and will need to have an Amazon Web Services account. The most recent QIIME AMI ID can be found on the `QIIME blog <http://blog.qiime.org>`_. Creating a Amazon Web Services account is covered in the linked tutorial.
+To launch the QIIME EC2 image on the Amazon Cloud you will first need an AWS account. Create one on the `AWS`_ site if you don't already have one. To get started with using AWS, check out their documentation on the `AWS console`_ page. You can load the QIIME EC2 image from the `AWS console`_ by searching for ``qiime1.3.0``, which is the name of the QIIME 1.3.0 EC2 image.
+
+An additional `tutorial on starting an EC2 instance can be found here <http://ged.msu.edu/angus/tutorials-2011/creating-an-ec2-instance.html>`_.
 
 
 Connecting to your EC2 instance using ssh
@@ -122,3 +124,7 @@ As long as your EC2 instances are running, you're paying for them by the hour. W
 	Figure 8. Stopping or pausing an EC2 instance.
 
 If you're permanently done with an EC2 instance, you can terminate it by selecting the instance and choosing ``Instance Actions`` > ``Terminate``. Once you've terminated an instance you can never get it back: all data in that instance, as well as any configuration changes you've made, etc, is lost forever, so be sure this is what you want to do.
+
+
+.. _AWS: http://aws.amazon.com/
+.. _AWS console: http://aws.amazon.com/console/
