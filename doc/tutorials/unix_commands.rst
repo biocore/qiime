@@ -75,8 +75,24 @@ Uncompress the QIIME tutorial data::
 
 	unzip http://bmf.colorado.edu/QIIME/qiime_tutorial-v1.3.0.zip
 
+Working with files
+==================
 
+Print the first 10 lines of my_file.txt to screen::
 
+	head -n 10 my_file.txt
+
+Print the last 10 lines of my_file.txt to screen::
+
+	tail -n 10 my_file.txt
+
+Print all of the my_file.txt to screen::
+
+	cat my_file.txt
+
+Open my_file.txt for editing with the pico text editor (`go here for help with pico <http://www.uic.edu/depts/accc/software/pine/pico.html>`_)::
+
+	pico my_file.txt
 
 
 
