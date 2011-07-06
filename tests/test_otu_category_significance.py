@@ -23,7 +23,7 @@ from qiime.otu_category_significance import filter_OTUs, \
     aggregate_multiple_results_correlation, get_common_OTUs,\
     test_wrapper_multiple, test_wrapper, get_single_correlation_values,\
     run_paired_T_test_OTUs, run_single_paired_T_test, \
-    get_single_paired_T_values, output_results_paired_T_test
+    get_single_paired_T_values, output_results_paired_T_test, sort_rows
 from numpy import array
 from cogent.util.dict2d import Dict2D
 from qiime.util import get_tmp_filename
@@ -352,9 +352,6 @@ s6\t0\tC""".split('\n')
             'individual', 'timepoint_zero', otu_ids, sample_ids, otu_data, \
             999999999.0, 4)
         output = output_results_paired_T_test(all_results)
-        #of = open('/Users/lozupone/temp_output.xls', 'w')
-        #of.write('\n'.join(output))
-        #of.close()
         self.assertEqual(output, ['OTU\tprob\tT stat\taverage_diff\tnum_pairs\tBonferroni_corrected\tFDR_corrected', '0\t0.125665916378\t-5.0\t0.25\t2\t0.251331832756\t0.251331832756', '2\t0.685730319473\t0.468164588785\t-0.133333333333\t3\t1.37146063895\t0.685730319473'])
 
     def test_run_ANOVA_OTUs(self):
@@ -393,7 +390,7 @@ s6\t0\tC""".split('\n')
             OTU_sample_info, category_values)
         output = output_results_ANOVA(ANOVA_results, category_values,\
                         taxonomy_info)
-        self.assertEqual(output, ['OTU\tprob\tBonferroni_corrected\tFDR_corrected\tA_mean\tB_mean\tConsensus Lineage', '1\t0.698488655422\t3.49244327711\t0.873110819278\t0.5\t1.0\ttaxon2', '0\t0.142857142857\t0.714285714286\t0.238095238095\t7.5\t1.5\ttaxon1', '3\t0.732738758088\t3.66369379044\t0.732738758088\t1.25\t1.35\ttaxon4', '2\t0.0497447318605\t0.248723659303\t0.124361829651\t1.5\t12.5\ttaxon3', '4\t0.0141325222337\t0.0706626111683\t0.0706626111683\t18.0\t1.35\ttaxon5'])
+        self.assertEqual(output, ['OTU\tprob\tBonferroni_corrected\tFDR_corrected\tA_mean\tB_mean\tConsensus Lineage', '4\t0.0141325222337\t0.0706626111683\t0.0706626111683\t18.0\t1.35\ttaxon5', '2\t0.0497447318605\t0.248723659303\t0.124361829651\t1.5\t12.5\ttaxon3', '0\t0.142857142857\t0.714285714286\t0.238095238095\t7.5\t1.5\ttaxon1', '1\t0.698488655422\t3.49244327711\t0.873110819278\t0.5\t1.0\ttaxon2', '3\t0.732738758088\t3.66369379044\t0.732738758088\t1.25\t1.35\ttaxon4'])
     
     def test_run_G_test_OTUs(self):
         """run_G_test_OTUs works"""
@@ -450,9 +447,9 @@ s6\t0\tC""".split('\n')
         G_test_results = run_G_test_OTUs(['0', '1', '3'], category_info, \
             OTU_sample_info, category_values)
         output = output_results_G_test(G_test_results, {})
-        self.assertEqual(output, ['OTU\tg_val\tg_prob\tBonferroni_corrected\tFDR_corrected\tOTU_pos##B_pos\tOTU_pos##C_pos\tOTU_pos##A_pos\tOTU_neg##B_pos\tOTU_neg##C_pos\tOTU_neg##A_pos', '1\t3.48284992796\t0.625984226851\t1.87795268055\t0.938976340277\t[1, 0.75]\t[0, 0.75]\t[2, 1.5]\t[0, 0.25]\t[1, 0.25]\t[0, 0.5]', '0\t4.29304060218\t0.508041627088\t1.52412488126\t1.52412488126\t[1, 0.5]\t[1, 0.5]\t[0, 1.0]\t[0, 0.5]\t[0, 0.5]\t[2, 1.0]', '3\t2.14652030109\t0.828522198394\t2.48556659518\t0.828522198394\t[0, 0.5]\t[1, 0.5]\t[1, 1.0]\t[1, 0.5]\t[0, 0.5]\t[1, 1.0]'])
+        self.assertEqual(output, ['OTU\tg_val\tg_prob\tBonferroni_corrected\tFDR_corrected\tOTU_pos##B_pos\tOTU_pos##C_pos\tOTU_pos##A_pos\tOTU_neg##B_pos\tOTU_neg##C_pos\tOTU_neg##A_pos', '0\t4.29304060218\t0.508041627088\t1.52412488126\t1.52412488126\t[1, 0.5]\t[1, 0.5]\t[0, 1.0]\t[0, 0.5]\t[0, 0.5]\t[2, 1.0]', '1\t3.48284992796\t0.625984226851\t1.87795268055\t0.938976340277\t[1, 0.75]\t[0, 0.75]\t[2, 1.5]\t[0, 0.25]\t[1, 0.25]\t[0, 0.5]', '3\t2.14652030109\t0.828522198394\t2.48556659518\t0.828522198394\t[0, 0.5]\t[1, 0.5]\t[1, 1.0]\t[1, 0.5]\t[0, 0.5]\t[1, 1.0]'])
         output = output_results_G_test(G_test_results, taxonomy_info)
-        self.assertEqual(output, ['OTU\tg_val\tg_prob\tBonferroni_corrected\tFDR_corrected\tOTU_pos##B_pos\tOTU_pos##C_pos\tOTU_pos##A_pos\tOTU_neg##B_pos\tOTU_neg##C_pos\tOTU_neg##A_pos\tConsensus Lineage', '1\t3.48284992796\t0.625984226851\t1.87795268055\t0.938976340277\t[1, 0.75]\t[0, 0.75]\t[2, 1.5]\t[0, 0.25]\t[1, 0.25]\t[0, 0.5]\ttaxon2', '0\t4.29304060218\t0.508041627088\t1.52412488126\t1.52412488126\t[1, 0.5]\t[1, 0.5]\t[0, 1.0]\t[0, 0.5]\t[0, 0.5]\t[2, 1.0]\ttaxon1', '3\t2.14652030109\t0.828522198394\t2.48556659518\t0.828522198394\t[0, 0.5]\t[1, 0.5]\t[1, 1.0]\t[1, 0.5]\t[0, 0.5]\t[1, 1.0]\ttaxon4'])
+        self.assertEqual(output, ['OTU\tg_val\tg_prob\tBonferroni_corrected\tFDR_corrected\tOTU_pos##B_pos\tOTU_pos##C_pos\tOTU_pos##A_pos\tOTU_neg##B_pos\tOTU_neg##C_pos\tOTU_neg##A_pos\tConsensus Lineage', '0\t4.29304060218\t0.508041627088\t1.52412488126\t1.52412488126\t[1, 0.5]\t[1, 0.5]\t[0, 1.0]\t[0, 0.5]\t[0, 0.5]\t[2, 1.0]\ttaxon1', '1\t3.48284992796\t0.625984226851\t1.87795268055\t0.938976340277\t[1, 0.75]\t[0, 0.75]\t[2, 1.5]\t[0, 0.25]\t[1, 0.25]\t[0, 0.5]\ttaxon2', '3\t2.14652030109\t0.828522198394\t2.48556659518\t0.828522198394\t[0, 0.5]\t[1, 0.5]\t[1, 1.0]\t[1, 0.5]\t[0, 0.5]\t[1, 1.0]\ttaxon4'])
 
     def test_run_correlation_OTUs(self):
         """run_correlation_OTUs works"""
@@ -498,7 +495,7 @@ s6\t0\tC""".split('\n')
         result = run_correlation_OTUs(OTU_list, category_info, OTU_sample_info)
         output = output_results_correlation(result, taxonomy_info)
         self.assertEqual(output[0], 'OTU\tprob\totu_values_y\tcat_values_x\tBonferroni_corrected\tFDR_corrected\tr\tConsensus Lineage')
-        self.assertEqual(output[1], '1\t4.4408920985e-16\t[1.0, 7.0, 3.0, 5.0]\t[0.40000000000000002, 0.10000000000000001, 0.29999999999999999, 0.20000000000000001]\t1.7763568394e-15\t8.881784197e-16\t-1.0\ttaxon2')
+        self.assertEqual(output[2], '1\t4.4408920985e-16\t[1.0, 7.0, 3.0, 5.0]\t[0.40000000000000002, 0.10000000000000001, 0.29999999999999999, 0.20000000000000001]\t1.7763568394e-15\t8.881784197e-16\t-1.0\ttaxon2')
         self.assertEqual(len(output), 5)
 
     def test_get_otu_table_info(self):
@@ -788,7 +785,6 @@ sample3\tC\t1.0""".split('\n')
                 mean = round((entry1+entry2)/2.0, 3)
                 self.assertEqual(round(entry_combined, 3), mean)
 
-
         # correlation
         otu_table_paths = [fp1,fp2]
         threshold = None
@@ -886,6 +882,11 @@ sample3\tC\t1.0""".split('\n')
         remove(fp2)
         remove(fp3)
 
+    def test_sort_rows(self):
+        """sort_rows works"""
+        output = ['OTU\tprob\tBonferroni_corrected\tFDR_corrected\tA_mean\tB_mean\tConsensus Lineage', '1\t0.698488655422\t3.49244327711\t0.873110819278\t0.5\t1.0\ttaxon2', '0\t0.142857142857\t0.714285714286\t0.238095238095\t7.5\t1.5\ttaxon1', '3\t0.732738758088\t3.66369379044\t0.732738758088\t1.25\t1.35\ttaxon4', '2\t0.0497447318605\t0.248723659303\t0.124361829651\t1.5\t12.5\ttaxon3', '4\t0.0141325222337\t0.0706626111683\t0.0706626111683\t18.0\t1.35\ttaxon5']
+        result = sort_rows(output, 1)
+        self.assertEqual(result, ['OTU\tprob\tBonferroni_corrected\tFDR_corrected\tA_mean\tB_mean\tConsensus Lineage', '4\t0.0141325222337\t0.0706626111683\t0.0706626111683\t18.0\t1.35\ttaxon5', '2\t0.0497447318605\t0.248723659303\t0.124361829651\t1.5\t12.5\ttaxon3', '0\t0.142857142857\t0.714285714286\t0.238095238095\t7.5\t1.5\ttaxon1', '1\t0.698488655422\t3.49244327711\t0.873110819278\t0.5\t1.0\ttaxon2', '3\t0.732738758088\t3.66369379044\t0.732738758088\t1.25\t1.35\ttaxon4'])
 
 #run unit tests if run from command-line
 if __name__ == '__main__':

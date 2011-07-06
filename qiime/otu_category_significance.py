@@ -15,12 +15,11 @@ __status__ = "Development"
 from optparse import OptionParser
 from os.path import split, splitext, join
 from os import listdir
-from numpy import argsort, mean
+from numpy import argsort, mean, array
 from cogent.util.dict2d import Dict2D
 from cogent.maths.stats.test import calc_contingency_expected, G_fit_from_Dict2D,\
     ANOVA_one_way, correlation, t_paired
 from cogent.maths.stats.util import Numbers
-from numpy import array
 import sys
 from qiime.util import convert_OTU_table_relative_abundance
 import numpy as np
@@ -357,7 +356,7 @@ def output_results_G_test(G_test_results, taxonomy_info=None):
         if taxonomy_info:
             line.append(taxonomy_info[OTU])
         output.append('\t'.join(line))
-    return output
+    return sort_rows(output, 2)
 
 def output_results_ANOVA(ANOVA_results, category_values, taxonomy_info=None):
     """creates the results output using result of run_ANOVA_OTUs"""
@@ -379,7 +378,7 @@ def output_results_ANOVA(ANOVA_results, category_values, taxonomy_info=None):
         if taxonomy_info:
             line.append(taxonomy_info[OTU])
         output.append('\t'.join(line))
-    return output
+    return sort_rows(output, 1)
 
 def output_results_correlation(correlation_results, taxonomy_info=None):
     """creates the results output using result of run_correlation_OTUs"""
@@ -400,7 +399,7 @@ def output_results_correlation(correlation_results, taxonomy_info=None):
         if taxonomy_info:
             line.append(taxonomy_info[OTU])
         output.append('\t'.join(line))
-    return output
+    return sort_rows(output, 1)
 
 def output_results_paired_T_test(paired_T_results, taxonomy_info=None):
     """creates the results output using result of run_paired_T_test_OTUs
@@ -423,7 +422,23 @@ def output_results_paired_T_test(paired_T_results, taxonomy_info=None):
         if taxonomy_info:
             line.append(taxonomy_info[OTU])
         output.append('\t'.join(line))
-    return output
+    return sort_rows(output, 1)
+
+def sort_rows(output, p_val_index):
+    """sorts the rows in the output by p-value
+    """
+    header = output[0]
+    lines = output[1:]
+    probs = []
+    for line in lines:
+        line = line.split('\t')
+        probs.append(float(line[p_val_index]))
+    probs = array(probs)
+    x = probs.argsort()
+    new_lines = [header]
+    for i in x:
+        new_lines.append(lines[i])
+    return new_lines
 
 def add_bonferroni_to_results(results):
     """corrects results using the false discovery rate method.
