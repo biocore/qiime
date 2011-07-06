@@ -38,6 +38,7 @@ class TopLevelTests(TestCase):
         self.data['err']={'Sample1': [.1]}
         self.xmax=140
         self.ymax=20
+        self.std_type='stddev'
         self.ops=['Sample1']
         self.mapping_category='SampleID'
         self.imagetype='png'
@@ -102,7 +103,7 @@ class TopLevelTests(TestCase):
         self.rarefaction_data_mat={'SampleID': {'Sample1': {'test': {'ave': ['     7.000'], 'err': ['       nan']}}}}
        
         self.rarefaction_legend_mat={'test': {'samples': {'Sample1': {'color': '#ff0000', 'link': 'html_plots/testcol_0_row_0.png'}}, 'groups': {'SampleID': {'Sample1': {'groupcolor': '#ff0000', 'groupsamples': ['Sample1']}}}}}
-        
+        self.exp_err_series_ave={'M': [1.571915, 6.49885, 8.1750183333333339]}
     
     def tearDown(self):
         '''This function removes the generated files'''
@@ -188,7 +189,8 @@ class TopLevelTests(TestCase):
         
         obs=make_averages(self.color_prefs,self.data,self.background_color, \
                           self.label_color,self.rares,self.output_dir, \
-                          self.resolution,self.imagetype,None,False)
+                          self.resolution,self.imagetype,None,False, \
+                          self.std_type)
                           
         self.assertEqual(obs,exp_html)
         self.assertTrue(exists(filename1))
@@ -205,7 +207,8 @@ class TopLevelTests(TestCase):
         
         obs=save_rarefaction_data(self.ave_seqs_per_sample1,self.data['xaxis'],\
                                   self.xmax,self.mapping_category,self.colors2,\
-                                  'test.txt',self.data_colors,self.groups)
+                                  'test.txt',self.data_colors,self.groups,\
+                                  self.std_type)
                     
         self.assertEqual(obs,exp)
         
@@ -242,12 +245,31 @@ class TopLevelTests(TestCase):
         '''make_error_series: this tests whether the errors were correctly
            calculated'''
            
-        groups={'M': ['234', '345'], 'F': ['123']}
+        groups={'M': ['123','234','345']}
         
-        test = make_error_series(self.ave_seqs_per_sample, groups)
+        test = make_error_series(self.ave_seqs_per_sample, groups, \
+                                 self.std_type)
         
-        self.assertEqual(test[0], self.collapsed_ser_sex)
-        self.assertEqual(test[1], self.err_ser_sex)
+        exp2={'M': [0.81346064945802188, 4.2928534982243063, \
+                    5.4903030649080646]}
+        
+        self.assertEqual(test[0], self.exp_err_series_ave)
+        self.assertEqual(test[1], exp2)
+
+    def test_make_error_series_stderr(self):
+        '''make_error_series_stderr: this tests whether the standard errors 
+           were correctly calculated'''
+        
+        groups={'M': ['123','234','345']}
+
+        test2 = make_error_series(self.ave_seqs_per_sample, groups, \
+                                 'stderr')
+                                 
+        exp2={'M': [0.57520354146018038, 3.0355058192348001, \
+                    3.8822305279657781]}
+                    
+        self.assertEqual(test2[0], self.exp_err_series_ave)
+        self.assertEqual(test2[1], exp2)
 
     def test_make_plots(self):
         """make_plots: tests whether the average plots are generated and if

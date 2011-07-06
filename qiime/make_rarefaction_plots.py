@@ -20,7 +20,7 @@ import os.path
 from os.path import splitext, split
 from qiime.colors import iter_color_groups
 from qiime.sort import natsort
-from qiime.util import create_dir
+from qiime.util import create_dir,stderr
 from numpy import isnan,nan,array,transpose,mean,std,arange
 
 
@@ -251,7 +251,8 @@ def ave_seqs_per_sample(matrix, seqs_per_samp, sampleIDs):
         ave_ser[sid] = []
         keys = temp_dict[sid].keys()
         keys.sort()
-        for k in keys:
+
+        for k in keys:            
             ave_ser[sid].append(mean(array(temp_dict[sid][k]),0))
             
     return ave_ser
@@ -275,7 +276,7 @@ def is_max_category_ops(mapping, mapping_category):
     return (len(seen) == num_samples), len(seen)
 '''
 
-def make_error_series(rare_mat, groups):
+def make_error_series(rare_mat, groups, std_type):
     """Create mean and error bar series for the supplied mapping category"""
     
     err_ser = dict()
@@ -314,8 +315,16 @@ def make_error_series(rare_mat, groups):
         opsarray = array(pre_err[o])
         mn = mean(opsarray, 0)
         collapsed_ser[o] = mn.tolist()
-        stddev = std(opsarray, 0)
-        err_ser[o] = stddev.tolist()
+
+        if std_type=='stderr':
+            # this calculates the standard error
+            # (using sample standard deviation)
+            stderr_result = stderr(opsarray, 0)
+            err_ser[o] = stderr_result.tolist()
+        else:
+            # this calculates the population standard deviation
+            stddev = std(opsarray, 0)
+            err_ser[o] = stddev.tolist()
         
     return collapsed_ser, err_ser, ops
 
@@ -334,12 +343,12 @@ def get_overall_averages(rare_mat, sampleIDs):
 '''
 
 def save_rarefaction_data(rare_mat,xaxis, xmax, \
-mapping_category, colors, rare_type, data_colors, groups):
+mapping_category, colors, rare_type, data_colors, groups,std_type):
     '''This function formats the average data and writes it to the output 
        directory'''
      
     #get the error data
-    yaxis, err, ops = make_error_series(rare_mat,groups)
+    yaxis, err, ops = make_error_series(rare_mat,groups,std_type)
    
     lines = []
     lines.append("# "+rare_type+'\n')
@@ -391,7 +400,8 @@ mapping_category, colors, rare_type, data_colors, groups):
     return lines   
 
 def make_averages(color_prefs, data, background_color, label_color, rares, \
-                    output_dir,resolution,imagetype,ymax,suppress_webpage):
+                    output_dir,resolution,imagetype,ymax,suppress_webpage,
+                    std_type):
     '''This is the main function, which takes the rarefaction files, calls the
         functions to make plots and formatting the output html.''' 
     rarelines = []
@@ -536,7 +546,8 @@ def make_averages(color_prefs, data, background_color, label_color, rares, \
                 #save the rarefaction averages
 
                 rare_lines=save_rarefaction_data(rare_mat_ave, xaxisvals, xmax,\
-                                    labelname, colors, r, data_colors, groups)
+                                    labelname, colors, r, data_colors, groups,
+                                    std_type)
             
                 #write out the rarefaction average data
                 open(ave_file_path+labelname+'.txt','w').writelines(rare_lines)
@@ -568,7 +579,8 @@ def make_averages(color_prefs, data, background_color, label_color, rares, \
             
             #save the rarefaction averages
             rare_lines=save_rarefaction_data(rare_mat_ave, xaxisvals, xmax, \
-                                    labelname, colors, r, data_colors, groups)
+                                    labelname, colors, r, data_colors, groups,
+                                    std_type)
             
             #take the formatted rarefaction averages and format the results
             rares_data = parse_rarefaction_data( \

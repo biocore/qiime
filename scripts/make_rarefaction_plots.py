@@ -80,6 +80,10 @@ script_info['optional_options']=[\
          default=True),
     make_option('-s','--suppress_html_output', action='store_true', 
          help='Suppress HTML output. [default: %default]', default=False),
+    make_option('-e','--std_type',default='stddev',type="choice",
+         help='Calculation to perform for generating error bars. Options '+\
+         'are standard deviation (stddev) or standard error (stderr). '+\
+         '[default: %default]', choices=['stddev','stderr']),
     options_lookup['output_dir']
 ]
 script_info['option_label']={'input_dir':'Collated alpha-diversity directory',
@@ -156,10 +160,11 @@ def main():
     
     #Generate the plots and html text
     ymax=options.ymax
+    std_type=options.std_type
     suppress_webpage=options.suppress_html_output
     html_output = make_averages(prefs, data, background_color, label_color, \
                                 rares, output_dir,resolution,imagetype,ymax,
-                                suppress_webpage)
+                                suppress_webpage,std_type)
                                 
     if html_output:
         #Write the html file.
