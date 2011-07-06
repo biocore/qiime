@@ -1361,7 +1361,7 @@ def get_rdp_jarpath():
 
 # This function (stderr) was pulled from the following website: 
 # http://www.java2s.com/Open-Source/Python/Math/SciPy/scipy/scipy/stats/stats.py.htm
-# then modified to fit the purpose needed
+# then modified to fit the purpose needed. Originally from Scipy.
 def stderr(a, axis=0, ddof=1):
     """ Returns the estimated population standard error of the values in the
         passed array (i.e., N-1).  Axis can equal None (ravel array
@@ -1372,7 +1372,7 @@ def stderr(a, axis=0, ddof=1):
 
 # This function (_chk_asarray) was pulled from the following website: 
 # http://www.java2s.com/Open-Source/Python/Math/SciPy/scipy/scipy/stats/stats.py.htm
-# then modified to fit the purpose needed
+# then modified to fit the purpose needed. Originally from Scipy.
 def _chk_asarray(a, axis):
     """ Converts a list into an numpy array """
     if axis is None:
