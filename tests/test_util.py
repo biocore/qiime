@@ -28,7 +28,8 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
     get_interesting_mapping_fields,inflate_denoiser_output,
     flowgram_id_to_seq_id_map, count_seqs, count_seqs_from_file,
     count_seqs_in_filepaths,get_split_libraries_fastq_params_and_file_types,
-    iseq_to_qseq_fields,get_top_fastq_two_lines,make_compatible_distance_matrices)
+    iseq_to_qseq_fields,get_top_fastq_two_lines,
+    make_compatible_distance_matrices,stderr,_chk_asarray)
 
 import numpy
 from numpy import array, asarray
@@ -515,7 +516,7 @@ class TopLevelTests(TestCase):
     def test_count_seqs(self):
         """ count_seqs functions as expected with fake seq_counter
         """
-        def seq_counter(filepath):
+        def seq_counter(filepath,parser=None):
             # Fake sequence counter to test count_seqs without
             # having to write files to disk (note don't need to
             # test actual sequence counters here as they're tested
@@ -1185,7 +1186,22 @@ AAAAAAA
         self.assertEqual(iseq_to_qseq_fields(i,barcode_in_header=True,barcode_length=3),
                          expected)
 
- 
+
+    def test_stderr(self):
+        """stderr computes standard error for an array"""
+        
+        exp=array([0.57735026918962584,0.57735026918962584,
+                   0.57735026918962584,0.57735026918962584])
+        obs=stderr([[1,1,1,1],[2,2,2,2],[3,3,3,3]])
+        self.assertEqual(obs,exp)
+        
+    def test__chk_asarray(self):
+        """_chk_asarray converts list into a numpy array"""
+        
+        exp=(array([[1,1,1,1],[2,2,2,2],[3,3,3,3]]),0)
+        obs=_chk_asarray([[1,1,1,1],[2,2,2,2],[3,3,3,3]],0)
+        self.assertEqual(obs,exp)
+
 otu_map1 = fields_to_dict("""1:\ta\tb\tc
 2:\td
 3:\te\tf

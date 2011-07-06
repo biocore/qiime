@@ -32,7 +32,7 @@ import numpy
 from numpy.ma import MaskedArray
 from numpy.ma.extras import apply_along_axis
 from numpy import array, zeros, argsort, shape, vstack,ndarray, asarray, \
-        float, where, isnan, mean, std
+        float, where, isnan, mean, std, sqrt, ravel
         
 from cogent.util.dict2d import Dict2D
 from cogent import LoadSeqs, Sequence,DNA
@@ -1185,6 +1185,7 @@ def count_seqs_in_filepaths(fasta_filepaths,seq_counter=count_seqs):
             parser = MinimalFastqParser
         else:
             parser = MinimalFastaParser
+        
         try:
             # get the count of sequences in the current file
             current_count = seq_counter(fasta_filepath,parser=parser)
@@ -1356,3 +1357,28 @@ def make_compatible_distance_matrices(dm1,dm2,lookup=None):
 def get_rdp_jarpath():
     """ Return jar file name for RDP classifier ($RDP_JAR_PATH)"""
     return getenv('RDP_JAR_PATH')
+    
+
+# This function (stderr) was pulled from the following website: 
+# http://www.java2s.com/Open-Source/Python/Math/SciPy/scipy/scipy/stats/stats.py.htm
+# then modified to fit the purpose needed
+def stderr(a, axis=0, ddof=1):
+    """ Returns the estimated population standard error of the values in the
+        passed array (i.e., N-1).  Axis can equal None (ravel array
+        first), or an integer (the axis over which to operate).
+    """
+    a, axis = _chk_asarray(a, axis)
+    return std(a,axis,ddof=1) / float(sqrt(a.shape[axis]))
+
+# This function (_chk_asarray) was pulled from the following website: 
+# http://www.java2s.com/Open-Source/Python/Math/SciPy/scipy/scipy/stats/stats.py.htm
+# then modified to fit the purpose needed
+def _chk_asarray(a, axis):
+    """ Converts a list into an numpy array """
+    if axis is None:
+        a = ravel(a)
+        outaxis = 0
+    else:
+        a = asarray(a)
+        outaxis = axis
+    return a, outaxis
