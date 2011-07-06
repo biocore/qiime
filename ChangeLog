@@ -1,6 +1,6 @@
 Add changes since QIIME 1.3.0 here
 ==================================
-
+* Added in the calculation of standard error, since only standard deviation was calculated. Also added an optional option choice for this.
 
 QIIME 1.3.0 (29 June 2011)
 ==================================
