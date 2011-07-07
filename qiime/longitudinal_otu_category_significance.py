@@ -32,7 +32,7 @@ def get_sample_individual_info(mapping_data, header, individual_column, \
     if timepoint_zero_column in header:
         zero_timepoint_index = header.index(timepoint_zero_column)
     else:
-        raise ValueError("The category mapping file must have a column called timepoint_zero. Please see the script documentation for more details.")
+        raise ValueError("The category mapping file must have a column called reference_sample. Please see the script documentation for more details.")
     if individual_column in header:
         individual_index = header.index(individual_column)
     else:
