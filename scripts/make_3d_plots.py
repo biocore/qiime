@@ -283,6 +283,14 @@ Valid methods are: " + ', '.join(ellipsoid_methods) + ".")
         print "\nError: OTU table and mapping file had no samples in common\n"
         exit(1)
 
+    # process custom axes, if present.
+    custom_axes = None
+    if opts.custom_axes:
+        custom_axes = process_custom_axes(opts.custom_axes)
+        get_custom_coords(custom_axes, data['map'], data['coord'])
+        remove_nans(data['coord'])
+        scale_custom_coords(custom_axes,data['coord'])
+
     if opts.taxa_fname != None:
         # get taxonomy counts
         # get list of sample_ids that haven't been removed
@@ -308,13 +316,6 @@ Valid methods are: " + ', '.join(ellipsoid_methods) + ".")
             fout.write('\n'.join(output))
             fout.close()
 
-    # process custom axes, if present.
-    custom_axes = None
-    if opts.custom_axes:
-        custom_axes = process_custom_axes(opts.custom_axes)
-        get_custom_coords(custom_axes, data['map'], data['coord'])
-        remove_nans(data['coord'])
-        scale_custom_coords(custom_axes,data['coord'])
 
     if opts.output_dir:
         create_dir(opts.output_dir,False)
