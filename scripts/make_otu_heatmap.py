@@ -39,7 +39,7 @@ script_info['script_description']="""Once an OTU table has been generated, it ca
 script_info['script_usage']=[]
 script_info['script_usage'].append(("""Examples:""","""Using default values:""","""%prog -i otu_table.txt"""))
 script_info['script_usage'].append(("","""Different output directory (i.e., "otu_heatmap"):""","""%prog -i otu_table.txt -o otu_heatmap"""))
-script_info['script_usage'].append(("","""Sort the heatmap columns by Sample ID's then you should supply the mapping file, as follows:""","""%prog -i otu_table.txt -o otu_heatmap -m mapping_file.txt"""))
+script_info['script_usage'].append(("","""Sort the heatmap columns by the order in a mapping file, as follows:""","""%prog -i otu_table.txt -o otu_heatmap -m mapping_file.txt"""))
 script_info['script_usage'].append(("","""Sort the heatmap columns by Sample ID's and the heatmap rows by the order of tips in the tree, you can supply a tree as follows:""","""%prog -i otu_table.txt -o otu_heatmap -m mapping_file.txt -t tree_file.txt"""))
 script_info['script_usage'].append(("","""Group the heatmap columns by metadata category (e.g., GENDER), then cluster within each group:""","""%prog -i otu_table.txt -o otu_heatmap -m mapping_file.txt -c 'GENDER'"""))
 script_info['output_description']="""The heatmap image is located in the specified output directory. It is formatted as a PDF file."""
@@ -53,10 +53,9 @@ options_lookup['output_dir'],
 in the heatmap',default=None),
  make_option('-m', '--map_fname', dest='map_fname', type="string",
      help='Metadata mapping file to be used for sorting Samples in the \
-heatmap',default=None),
+heatmap.',default=None),
  make_option('-c', '--category', dest='category', type="string",
-     help='Metadata category for annotating samples, used only in \
---make_image is specified.',default=None),
+     help='Metadata category for sorting samples. Samples will be clustered within each category level using euclidean UPGMA.',default=None),
  make_option('-s', '--sample_tree', dest='sample_tree', type="string",
      help='Tree file to be used for sorting samples (e.g, output from \
 upgma_cluster.py). If both this and the \
@@ -67,6 +66,12 @@ all zeros will be set to a small \
 value (default is 1/2 the smallest non-zero entry). Data will be translated \
 to be non-negative after log transform, and num_otu_hits will be set to 0.',
 default=False),
+ make_option('--suppress_row_clustering', action="store_true", 
+     help='No UPGMA clustering of OTUs (rows) is performed. If --otu_tree is provided, \
+this flag is ignored.', default=False),
+ make_option('--suppress_column_clustering', action="store_true", 
+     help='No UPGMA clustering of Samples (columns) is performed. If --map_fname is provided, \
+this flag is ignored.', default=False),
  make_option('--absolute_abundance', action="store_true", 
      help='Do not normalize samples to sum to 1.[default %default]',default=False),
 make_option('--log_eps', type="float", 
@@ -91,11 +96,13 @@ def main():
     otu_labels = make_otu_labels(otu_ids, lineages)
 
     # Convert to relative abundance if requested
+    otus = otus.T
     if not opts.absolute_abundance:
         for i,row in enumerate(otus):
             if row.sum() > 0:
                 otus[i] = row/row.sum()
-
+    otus = otus.T
+    
     # Get log transform if requested
     if not opts.no_log_transform:
         if not opts.log_eps is None and opts.log_eps <= 0:
@@ -143,7 +150,10 @@ def main():
                 if sample_id in sample_ids:
                     ordered_sample_ids.append(sample_id)
             sample_order = names_to_indices(sample_ids, ordered_sample_ids)
-    # if no tree or mapping file, use euclidean upgma
+    # if no tree or mapping file, perform upgma euclidean
+    elif not opts.suppress_column_clustering:
+        sample_order = get_clusters(otus,axis='column')
+    # else just use OTU table ordering
     else:
         sample_order = arange(len(sample_ids))
     
@@ -157,9 +167,12 @@ def main():
                 "Couldn't read tree file at path: %s" % opts.otu_tree
         otu_order = get_order_from_tree(otu_ids, f)
         f.close()
-    # if no tree, use euclidean upgma
-    else:
+    # if no tree or mapping file, perform upgma euclidean
+    elif not opts.suppress_row_clustering:
         otu_order = get_clusters(otus,axis='row')
+    # else just use OTU table ordering
+    else:
+        otu_order = arange(len(otu_ids))
 
     # Re-order otu table, sampleids, etc. as necessary
     otus = otus[otu_order,:]
