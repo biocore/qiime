@@ -94,7 +94,9 @@ Open my_file.txt for editing with the pico text editor (`go here for help with p
 
 	pico my_file.txt
 
+View the file interactively in read-only mode. The stop viewing the file hit ``q``::
 
+	less my_file.txt
 
 
 
