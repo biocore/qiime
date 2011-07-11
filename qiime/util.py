@@ -1358,12 +1358,20 @@ def get_rdp_jarpath():
     """ Return jar file name for RDP classifier ($RDP_JAR_PATH)"""
     return getenv('RDP_JAR_PATH')
     
-def expand_otu_ids(otu_map,otus_to_expand):
+def expand_otu_ids(otu_map,otus_to_expand,ignore_missing=False):
     """From OTU map and otu ids, return seq ids represented by the OTUs
     """
     result = []
     for o in otus_to_expand:
-        result += otu_map[o.split()[0]]
+        otu_id = o.split()[0]
+        try:
+            result += otu_map[otu_id]
+        except KeyError:
+            if ignore_missing:
+                continue
+            else:
+                raise KeyError,\
+                 "OTU id not in OTU map: %s" % o.split()[0]
     return result
 # This function (stderr) was pulled from the following website: 
 # http://www.java2s.com/Open-Source/Python/Math/SciPy/scipy/scipy/stats/stats.py.htm

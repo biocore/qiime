@@ -83,6 +83,14 @@ class TopLevelTests(TestCase):
         actual = expand_otu_ids(otu_map,otus_to_expand)
         expected = ['s4','s5','s1','s2']
         self.assertEqual(actual,expected)
+        
+        # ignore missing
+        otus_to_expand = ['3','o1 test','99']
+        actual = expand_otu_ids(otu_map,
+                                otus_to_expand,
+                                ignore_missing=True)
+        expected = ['s4','s5','s1','s2']
+        self.assertEqual(actual,expected)
 
     def test_median_absolute_deviation(self):
         """ median_absolute_deviation returns MAD and median """
