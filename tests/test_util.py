@@ -29,7 +29,7 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
     flowgram_id_to_seq_id_map, count_seqs, count_seqs_from_file,
     count_seqs_in_filepaths,get_split_libraries_fastq_params_and_file_types,
     iseq_to_qseq_fields,get_top_fastq_two_lines,
-    make_compatible_distance_matrices,stderr,_chk_asarray)
+    make_compatible_distance_matrices,stderr,_chk_asarray,expand_otu_ids)
 
 import numpy
 from numpy import array, asarray
@@ -73,7 +73,17 @@ class TopLevelTests(TestCase):
         for dir in  self.dirs_to_remove:
             if exists(dir):
                 rmdir(dir)
-                
+
+    def test_expand_otu_ids(self):
+        """expand otu ids functions as expected """
+        otu_map = {'o1':['s1','s2'],
+                   'o2':['s3'],
+                   '3':   ['s4','s5']}
+        otus_to_expand = ['3','o1 test']
+        actual = expand_otu_ids(otu_map,otus_to_expand)
+        expected = ['s4','s5','s1','s2']
+        self.assertEqual(actual,expected)
+
     def test_median_absolute_deviation(self):
         """ median_absolute_deviation returns MAD and median """
         data = [0,0,0,0,0,0]
