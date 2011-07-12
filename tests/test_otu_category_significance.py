@@ -467,8 +467,18 @@ s6\t0\tC""".split('\n')
         self.assertFloatEqual(result['0'][0], 1.0)#r
         self.assertFloatEqual(result['0'][1], 0.0)#prob
         self.assertEqual(result['0'][2], "[3.0, 0.0, 2.0, 1.0]")
-        self.assertEqual(result['0'][3], "[0.40000000000000002, 0.10000000000000001, 0.29999999999999999, 0.20000000000000001]")
-        self.assertFloatEqual(result['1'], [-0.99999999999999956, 4.4408920985006281e-16, '[1.0, 7.0, 3.0, 5.0]', '[0.40000000000000002, 0.10000000000000001, 0.29999999999999999, 0.20000000000000001]'])
+        x = result['0'][3]
+        x = x[1:-1]
+        x = x.split(',')
+        x = [float(i) for i in x]
+        self.assertFloatEqual(x, [0.40000000000000002, 0.10000000000000001, 0.29999999999999999, 0.20000000000000001])
+        self.assertFloatEqual(result['1'][0], -0.99999999999999956)
+        self.assertFloatEqual(result['1'][1], 4.4408920985006281e-16)
+        y = result['1'][2]
+        y = y[1:-1]
+        y = y.split(',')
+        y = [float(i) for i in y]
+        self.assertFloatEqual(y, [1.0, 7.0, 3.0, 5.0])
 
         #test that appropriate error is raised is categorical
         category_info = {'sample1':'A',
@@ -495,7 +505,14 @@ s6\t0\tC""".split('\n')
         result = run_correlation_OTUs(OTU_list, category_info, OTU_sample_info)
         output = output_results_correlation(result, taxonomy_info)
         self.assertEqual(output[0], 'OTU\tprob\totu_values_y\tcat_values_x\tBonferroni_corrected\tFDR_corrected\tr\tConsensus Lineage')
-        self.assertEqual(output[2], '1\t4.4408920985e-16\t[1.0, 7.0, 3.0, 5.0]\t[0.40000000000000002, 0.10000000000000001, 0.29999999999999999, 0.20000000000000001]\t1.7763568394e-15\t8.881784197e-16\t-1.0\ttaxon2')
+        line2 = output[2].split('\t')
+        self.assertEqual(line2[0], '1')
+        self.assertFloatEqual(float(line2[1]), 4.4408920985e-16)
+        self.assertFloatEqual(float(line2[4]), 1.7763568394e-15)
+        self.assertFloatEqual(float(line2[5]), 8.881784197e-16)
+        self.assertFloatEqual(float(line2[6]), -1.0)
+        self.assertFloatEqual(line2[7], 'taxon2')
+        
         self.assertEqual(len(output), 5)
 
     def test_get_otu_table_info(self):
