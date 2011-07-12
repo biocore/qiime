@@ -24,8 +24,8 @@ from cogent import LoadSeqs, DNA
 from qiime.util import get_tmp_filename
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from cogent.app.blast import blast_seqs, Blastall, BlastResult
-import qiime.pycogent_backports.rdp_classifier
-import cogent.app.rdp_classifier20
+from qiime.pycogent_backports import rdp_classifier
+from qiime.pycogent_backports import rdp_classifier20
 from cogent.parse.fasta import MinimalFastaParser
 from qiime.util import FunctionWithParams, get_rdp_jarpath
 
@@ -348,17 +348,18 @@ class RdpTaxonAssigner(TaxonAssigner):
             'id_to_taxonomy_fp': None,
             'reference_sequences_fp': None,
             'training_data_properties_fp': None,
+            'max_memory': None
             }
         _params.update(params)
         TaxonAssigner.__init__(self, _params)
 
     @property
     def _assign_fcn(self):
-        return cogent.app.rdp_classifier.assign_taxonomy
+        return rdp_classifier.assign_taxonomy
 
     @property
     def _train_fcn(self):
-        return cogent.app.rdp_classifier.train_rdp_classifier_and_assign_taxonomy
+        return rdp_classifier.train_rdp_classifier_and_assign_taxonomy
 
     def __call__(self, seq_path, result_path=None, log_path=None):
         """Returns dict mapping {seq_id:(taxonomy, confidence)} for
@@ -375,6 +376,7 @@ class RdpTaxonAssigner(TaxonAssigner):
         training_data_properties_fp = self.Params['training_data_properties_fp']
         reference_sequences_fp = self.Params['reference_sequences_fp']
         id_to_taxonomy_fp = self.Params['id_to_taxonomy_fp']
+        max_memory = self.Params['max_memory']
         
         seq_file = open(seq_path, 'r')
         if reference_sequences_fp and id_to_taxonomy_fp:
@@ -383,7 +385,8 @@ class RdpTaxonAssigner(TaxonAssigner):
             results = self._train_fcn(
                 training_seqs_file, taxonomy_file, seq_file, 
                 min_confidence=min_conf,
-                classification_output_fp=result_path)
+                classification_output_fp=result_path,
+                max_memory=max_memory)
 
             if result_path is None:
                 results = self._training_set.fix_results(results)
@@ -393,7 +396,8 @@ class RdpTaxonAssigner(TaxonAssigner):
             # Just assign taxonomy, using properties file if passed
             results = self._assign_fcn(
                 seq_file, min_confidence=min_conf, output_fp=result_path,
-                training_data_fp=training_data_properties_fp)
+                training_data_fp=training_data_properties_fp,
+                max_memory=max_memory)
 
         if log_path:
             self.writeLog(log_path)
@@ -598,11 +602,11 @@ class Rdp20TaxonAssigner(RdpTaxonAssigner):
     
     @property
     def _assign_fcn(self):
-        return cogent.app.rdp_classifier20.assign_taxonomy
+        return rdp_classifier20.assign_taxonomy
 
     @property
     def _train_fcn(self):
-        return cogent.app.rdp_classifier20.train_rdp_classifier_and_assign_taxonomy
+        return rdp_classifier20.train_rdp_classifier_and_assign_taxonomy
 
 
 _QIIME_RDP_TAXON_TAG = "_qiime_unique_taxon_tag_"

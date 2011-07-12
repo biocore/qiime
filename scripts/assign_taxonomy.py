@@ -87,6 +87,9 @@ script_info['optional_options']=[\
  make_option('-c', '--confidence', type='float',
         help='Minimum confidence to record an assignment, only used for rdp '
         'method [default: %default]', default=0.80),\
+ make_option('--rdp_max_memory', default=1000, type='int',
+        help='Maximum memory allocation, in MB, for Java virtual machine when '
+        'using the rdp method.  Increase for large training sets [default: %default]'),\
  make_option('-e', '--e_value', type='float',
         help='Maximum e-value to record an assignment, only used for blast '
         'method [default: %default]',default=0.001),\
@@ -164,6 +167,7 @@ def main():
         params['id_to_taxonomy_fp'] = opts.id_to_taxonomy_fp
         params['reference_sequences_fp'] = opts.reference_seqs_fp
         params['training_data_properties_fp'] = opts.training_data_properties_fp
+        params['max_memory'] = "%sM" % opts.rdp_max_memory
     else:
         # should not be able to get here as an unknown classifier would
         # have raised an optparse error

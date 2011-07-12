@@ -446,6 +446,29 @@ class RdpTaxonAssignerTests(TestCase):
         key = 'X67228 some description'
         self.assertEqual(obs_assignments[key], exp_assignments[key])
 
+    def test_train_on_the_fly_low_memory(self):
+        """Training on-the-fly with lower heap size classifies reference sequence correctly with 100% certainty
+        """
+        input_seqs_file = NamedTemporaryFile(
+            prefix='RdpTaxonAssignerTest_', suffix='.fasta')
+        input_seqs_file.write(test_seq_coll.toFasta())
+        input_seqs_file.seek(0)
+
+        if self.version == 2.0:
+            exp_assignments = rdp20_trained_test1_expected_dict
+        else:
+            exp_assignments = rdp_trained_test1_expected_dict
+        
+        app = self.app_class({
+                'id_to_taxonomy_fp': self.id_to_taxonomy_file.name,
+                'reference_sequences_fp': self.reference_seqs_file.name,
+                'max_memory': '75M'
+                })
+        obs_assignments = app(self.tmp_seq_filepath)
+        
+        key = 'X67228 some description'
+        self.assertEqual(obs_assignments[key], exp_assignments[key])
+
     def test_generate_training_files(self):
         app = self.app_class({
                 'id_to_taxonomy_fp': self.id_to_taxonomy_file.name,
@@ -760,7 +783,8 @@ Taxonomy:RDP
 Confidence:0.8
 id_to_taxonomy_fp:None
 reference_sequences_fp:None
-training_data_properties_fp:None"""
+training_data_properties_fp:None
+max_memory:None"""
 
 rdp_test1_expected_dict = {
     'X67228 some description': (
