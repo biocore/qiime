@@ -194,7 +194,7 @@ def negate_tips_to_keep(tips_to_keep, tree):
 
 def get_seqs_to_keep_lookup_from_seq_id_file(id_to_keep_f):
     """generate a lookup dict of chimeras in chimera file."""
-    return set([l.strip() for l in id_to_keep_f if not l.startswith('#') and l])
+    return set([l.split()[0].strip() for l in id_to_keep_f if not l.startswith('#') and l])
 
 def get_seqs_to_keep_lookup_from_fasta_file(fasta_f):
     """return the sequence ids within the fasta file"""
