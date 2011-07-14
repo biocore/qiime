@@ -489,10 +489,10 @@ def fdr_correction(probs):
     corrected_probs = [None] * len(probs)
     for rank, index in enumerate(argsort(probs)):
         correction = len(probs) / float(rank + 1)
-        if probs[index]:
-            fdr_p = probs[index] * correction
-        else:
-            fdr_p = 'NA'
+#        if probs[index]:
+        fdr_p = probs[index] * correction
+#        else:
+#            fdr_p = 'NA'
         corrected_probs[index] = fdr_p
     return corrected_probs
 
