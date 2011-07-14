@@ -45,7 +45,7 @@ def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     if opts.out_fp:
-        outfile = open(output_fname, 'w')
+        outfile = open(opts.output_fname, 'w')
     else:
         outfile = stdout
     taxon_lines = open(opts.taxon_fp, 'U')
