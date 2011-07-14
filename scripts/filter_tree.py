@@ -74,7 +74,7 @@ def main():
     if opts.negate:
         tips_to_keep = negate_tips_to_keep(tips_to_keep, tree)
     
-    tree_out = tree.getSubTree(tips_to_keep)
+    tree_out = tree.getSubTree(tips_to_keep,ignore_missing=True)
    
     tree_out.writeToFile(output_tree_fp)
 
