@@ -1,6 +1,7 @@
 Add changes since QIIME 1.3.0 here
 ==================================
-* Added in the calculation of standard error, since only standard deviation was calculated. Also added an optional option choice for this.
+* Added in the calculation of standard error in rarefaction plots, since only standard deviation was calculated. Also added an optional option choice for this.
+* Support for pick_otus_through_otu_table.py to allow for uclust_ref to be run in parallel with creation of new clusters. 
 
 QIIME 1.3.0 (29 June 2011)
 ==================================

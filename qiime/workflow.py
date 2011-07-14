@@ -173,7 +173,7 @@ def validate_and_set_jobs_to_start(params,
 ## End utilities used by the workflow functions
 
 ## Begin task-specific workflow functions
-def run_qiime_data_preparation(input_fp, 
+def run_pick_otus_through_otu_table(input_fp, 
                                output_dir, 
                                command_handler,
                                params, 
@@ -202,6 +202,7 @@ def run_qiime_data_preparation(input_fp,
     commands = []
     python_exe_fp = qiime_config['python_exe_fp']
     script_dir = get_qiime_scripts_dir()
+    cluster_failures = False
     if logger == None:
         logger = WorkflowLogger(generate_log_fp(output_dir),
                                 params=params,
@@ -232,9 +233,19 @@ def run_qiime_data_preparation(input_fp,
             # option. This works for now though.
             d = params['pick_otus'].copy()
             del d['otu_picking_method']
-            params_str += ' %s' % get_params_str(d)
         except KeyError:
             pass
+        
+        if otu_picking_method == 'uclust_ref':
+            try:
+                suppress_new_clusters = d['suppress_new_clusters']
+                del d['suppress_new_clusters']
+                cluster_failures = False
+            except KeyError:
+                cluster_failures = True
+                failure_otu_picking_method = 'uclust'
+        
+        params_str += ' %s' % get_params_str(d)
         otu_picking_script = 'parallel_pick_otus_%s.py' % otu_picking_method
         # Build the OTU picking command
         pick_otus_cmd = '%s %s/%s -i %s -o %s -T %s' % (python_exe_fp, 
@@ -254,6 +265,46 @@ def run_qiime_data_preparation(input_fp,
 
     commands.append([('Pick OTUs', pick_otus_cmd)])
     
+    if cluster_failures:
+        reference_otu_fp = otu_fp
+        clustered_failures_dir = '%s/failure_otus/' % pick_otu_dir
+        
+        try:
+            d = params['pick_otus'].copy()
+            del d['otu_picking_method']
+        except KeyError:
+            pass
+
+        if 'uclust_otu_id_prefix' not in d:
+            d['uclust_otu_id_prefix'] = 'DeNovoOTU'        
+        params_str = ' %s' % get_params_str(d)
+
+        failures_list_fp = '%s/%s_failures.txt' % \
+         (pick_otu_dir,input_basename)
+        failures_fasta_fp = '%s/%s_failures.fasta' % \
+         (pick_otu_dir,input_basename)
+        
+        filter_fasta_cmd = 'filter_fasta.py -f %s -s %s -o %s' %\
+         (input_fp,failures_list_fp,failures_fasta_fp)
+        
+        commands.append([('Generate failures fasta file',
+                          filter_fasta_cmd)])
+        
+        # Prep the OTU picking command for
+        failure_otu_fp = '%s/%s_failures_otus.txt' % (clustered_failures_dir,input_basename)
+        # Build the OTU picking command
+        pick_otus_cmd = '%s %s/pick_otus.py -i %s -o %s -m %s %s' %\
+         (python_exe_fp, script_dir, failures_fasta_fp, clustered_failures_dir, 
+          failure_otu_picking_method, params_str)
+
+        commands.append([('Pick de novo OTUs for new clusters', pick_otus_cmd)])
+        
+        merged_otu_map_fp = '%s/merged_otu_map.txt' % clustered_failures_dir
+        cat_otu_tables_cmd = 'cat %s %s >> %s' %\
+         (reference_otu_fp,failure_otu_fp,merged_otu_map_fp)
+        commands.append([('Merge OTU maps',cat_otu_tables_cmd)])
+        otu_fp = merged_otu_map_fp
+
     # Prep the representative set picking command
     rep_set_dir = '%s/rep_set/' % output_dir
     try:
@@ -329,6 +380,15 @@ def run_qiime_data_preparation(input_fp,
     
     commands.append([('Make OTU table', make_otu_table_cmd)])
     
+    if cluster_failures:
+        reference_otu_table_fp = '%s/reference_only_otu_table.txt' % output_dir
+        # Build the OTU table building command
+        make_otu_table_cmd = '%s %s/make_otu_table.py -i %s -t %s -o %s %s' %\
+         (python_exe_fp, script_dir, reference_otu_fp, taxonomy_fp, 
+          reference_otu_table_fp, params_str)
+    
+        commands.append([('Make reference-only OTU table', make_otu_table_cmd)])
+    
     # Prep the pynast alignment command
     try:
         alignment_method = params['align_seqs']['alignment_method']
@@ -402,7 +462,7 @@ def run_qiime_data_preparation(input_fp,
                     close_logger_on_success=close_logger_on_success)
     
     return abspath(tree_fp), abspath(otu_table_fp)
-    
+run_qiime_data_preparation = run_pick_otus_through_otu_table
     
     
 ## Start reference otu picking workflow
