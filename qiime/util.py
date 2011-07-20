@@ -661,7 +661,8 @@ def merge_otu_tables(otu_table_f1,otu_table_f2):
             parse_otu_table(otu_table_f2)
     
     assert set(sample_ids1) & set(sample_ids2) == set(),\
-     'Overlapping sample ids detected.'
+     'Overlapping sample ids detected:\n %s' %\
+     ' '.join(set(sample_ids1) & set(sample_ids2))
     sample_ids_result = sample_ids1 + sample_ids2
     sample_ids_result_lookup = dict(
      [(sid,i) for i, sid in enumerate(sample_ids_result)])
