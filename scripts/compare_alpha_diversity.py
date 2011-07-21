@@ -12,7 +12,6 @@ __email__ = "vantreur@colorado.edu"
 __status__ = "Development"
  
 
-
 from qiime.util import parse_command_line_parameters, make_option
 from qiime.compare_alpha_diversity import compare_alpha_diversities,\
  extract_rarefaction_scores_at_depth
