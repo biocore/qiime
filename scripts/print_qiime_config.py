@@ -583,7 +583,7 @@ def test_qiime_config_variable(variable, qiime_config, test,
     test.assertTrue(access(fp, access_var),
                     "%s is not %s: %s" % (variable, modes[access_var], fp))
 
-if __name__ == "__main__":
+def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     qiime_config = load_qiime_config()
@@ -629,3 +629,6 @@ if __name__ == "__main__":
     if (opts.test):
         print "\n\nrunning checks:\n"
         test_main(argv=["","-v"])
+
+if __name__ == "__main__":
+    main()
