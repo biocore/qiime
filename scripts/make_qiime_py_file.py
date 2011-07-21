@@ -59,8 +59,26 @@ help="The copyright information to be included in"+\
 
 script_info['version'] = __version__
 
+def main():
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
 
-script_block = """
+
+    header_block = """#!/usr/bin/env python
+# File created on %s
+from __future__ import division
+
+__author__ = "AUTHOR_NAME"
+__copyright__ = "COPYRIGHT"
+__credits__ = ["AUTHOR_NAME"]
+__license__ = "GPL"
+__version__ = "1.3.0-dev"
+__maintainer__ = "AUTHOR_NAME"
+__email__ = "AUTHOR_EMAIL"
+__status__ = "Development"
+ 
+""" % strftime('%d %b %Y')
+
+    script_block = """
 from qiime.util import parse_command_line_parameters, make_option
 
 script_info = {}
@@ -78,25 +96,6 @@ script_info['optional_options'] = [\\
 ]
 script_info['version'] = __version__"""
 
-header_block =\
-"""#!/usr/bin/env python
-# File created on %s
-from __future__ import division
-
-__author__ = "AUTHOR_NAME"
-__copyright__ = "COPYRIGHT"
-__credits__ = ["AUTHOR_NAME"]
-__license__ = "GPL"
-__version__ = "1.3.0-dev"
-__maintainer__ = "AUTHOR_NAME"
-__email__ = "AUTHOR_EMAIL"
-__status__ = "Development"
- 
-""" % strftime('%d %b %Y')
-
-if __name__ == "__main__":
-    
-    option_parser, opts, args = parse_command_line_parameters(**script_info)
     
     if opts.test and opts.script:
         option_parser.error('-s and -t cannot both be passed: file must be a'+\
@@ -147,3 +146,9 @@ if __name__ == "__main__":
         chmod_string = ' '.join(['chmod 755',output_fp])
         popen(chmod_string)
         
+
+
+
+
+if __name__ == "__main__":
+    main()
