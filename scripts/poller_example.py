@@ -93,7 +93,7 @@ def write_poller_files(polled_dir):
     
     return check_run_complete_fp, process_run_results_fp, clean_up_fp
 
-if __name__ == "__main__":
+def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
     poller_fp = opts.poller_fp
     python_exe_fp = opts.python_exe_fp
@@ -126,6 +126,10 @@ if __name__ == "__main__":
           clean_up_fp)
         print 'Polling command:\n %s' % command
         system(command)
+
+
+if __name__ == "__main__":
+    main()
           
           
           
