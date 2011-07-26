@@ -91,9 +91,13 @@ def distance_matrix(input_path, output_dir, metrics, column):
         if column not in data[i]:
             stderr.write("\n\nNo column: '%s' in the mapping file. Existing columns are: %s\n\n" % (column,data[i].keys()))
             exit(1)
-        #try:  
-        column_data.append(float(data[i][column]))
-        #except
+        try:  
+            column_data.append(float(data[i][column]))
+        except ValueError:
+            stderr.write("\n\nall the values in the column '%s' must be numeric but '%s' has '%s'\n\n"\
+                % (column,i,data[i][column]))
+            exit(1)
+            
             
         column_headers.append(i)
     column_data = diagflat(array(column_data))
