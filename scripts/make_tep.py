@@ -65,7 +65,7 @@ jnlp_middle_block = """\">
     <j2se version="1.6+" initial-heap-size="500M" max-heap-size="2000m" />
 	<extension name="jogl" href="http://download.java.net/media/jogl/builds/archive/jsr-231-webstart-current/jogl.jnlp" />
 	
-	<jar href="topiaryexplorer.jar" />
+	<jar href="topiaryexplorer0.9.1.jar" />
 	<jar href="lib/core.jar" />
 	<jar href="lib/itext.jar" />
 	<jar href="lib/pdf.jar" />
