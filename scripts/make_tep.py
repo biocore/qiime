@@ -33,6 +33,7 @@ script_info['required_options'] = [\
 script_info['optional_options'] = [\
  # Example optional option
  make_option('-o','--output_dir',type="new_dirpath",help='the output directory [default: %default]', dest='out_fp'),\
+ # make_option('-p','--prefs_file',type="string",help='Path to read prefs file',dest='prefs_file_fp'),\
  make_option('--create_jnlp',action='store_true',
   help='create a jnlp file [default: %default]'),\
   make_option('-w','--web',action='store_true',default=False, help='web codebase jnlp flag [default: %default]', dest='web_flag'),
@@ -86,6 +87,14 @@ jnlp_bottom_block = """</argument>
 </jnlp>
 """
 
+def make_te_prefs(prefs_dict):
+    sample_coloring = prefs_dict['sample_coloring']
+    lines = []
+    for k in sample_coloring:
+        lines.append('>'+k+'\n')
+        for c in sample_coloring[k]['colors']:
+            lines.append(c[1]+'\n')
+
 def main():
     option_parser, opts, args =\
        parse_command_line_parameters(**script_info)
@@ -128,17 +137,17 @@ def main():
     tepfile.writelines(lines)
 
     if opts.create_jnlp:
-        topiaryexplorer_project_dir =\
-         load_qiime_config()['topiaryexplorer_project_dir']
-        if topiaryexplorer_project_dir == None:
-            option_parser.error("Couldn't create jnlp file - topiaryexplorer_project_dir is not defined in your qiime_config. tep file was created sucessfully.")
         jnlpfile = open(jnlp_fp, 'w')
         lines = [jnlp_top_block]
         if(opts.web_flag):
             lines += 'http://topiaryexplorer.sourceforge.net/app/'
         else:
-            
+            topiaryexplorer_project_dir =\
+             load_qiime_config()['topiaryexplorer_project_dir']
+            if topiaryexplorer_project_dir == None:
+                option_parser.error("Couldn't create jnlp file - topiaryexplorer_project_dir is not defined in your qiime_config. tep file was created sucessfully.")
             lines += 'file:' + topiaryexplorer_project_dir
+        
         lines += jnlp_middle_block
         if(opts.url):
             lines += opts.url
@@ -147,6 +156,11 @@ def main():
         # lines += os.path.abspath(tep_fp)
         lines += jnlp_bottom_block
         jnlpfile.writelines(lines)
+    
+    # if opts.prefs_file_fp:
+    #     prefs_fp = opts.prefs_file_fp
+    #     prefs_dict = eval(open(prefs_fp,'U').read())
+    #     te_prefs = make_te_prefs(prefs_dict)
     
 if __name__ == "__main__":
     main()
