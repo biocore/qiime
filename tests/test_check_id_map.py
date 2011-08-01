@@ -117,6 +117,9 @@ class TopLevelTests(TestCase):
         self.assertEqual(bad_char_in_header(['x','y','z']), (['x','y','z'], ''))
         header, msg = bad_char_in_header(['x','\\','z'])
         self.assertNotEqual(msg, '')
+        
+        header, msg = bad_char_in_header(['x','#','z'])
+        self.assertNotEqual(msg, '')
 
     def test_pad_rows(self):
         """pad_rows should produce correct table"""

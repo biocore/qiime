@@ -156,7 +156,7 @@ class CharFilter(object):
         return self(input), self.errMsg(input)
         
 header_filter = CharFilter(ALLOWED_CHARS_HEADER, "Header Filter", 
-    default_char='#')
+    default_char='')
 descr_filter = CharFilter(ALLOWED_DESC_CHARS, "Description Filter", 
     default_char='_')
 subcat_filter = CharFilter(ALLOWED_SUBCAT_CHARS, "Subcat Filter", 
@@ -465,7 +465,7 @@ def bad_char_in_header(fields, raw_data=None, added_demultiplex_field=None):
     filtered_fields=[]
     for f in fields:
         filtered, bad = header_filter.resultAndError(f)
-        if bad:
+        if bad and f != "#SampleID":
             bad_chars.append([f, bad])
         filtered_fields.append(filtered)
     if bad_chars:
