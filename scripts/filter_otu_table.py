@@ -51,7 +51,7 @@ script_info['optional_options']=[\
         help='List of taxonomy terms to include. [default=%default]'),\
     make_option('-e', '--exclude_taxonomy', default='', 
         help='List of taxonomy terms to exclude. [default=%default]'),\
-    make_option('-p', '--seqs_per_sample',type=int,
+    make_option('-p', '--seqs_per_sample',type=int, default = 1,
         help='Minimum sequences per sample to retain the sample.' +\
         ' [default=%default]')
 ]
@@ -78,7 +78,7 @@ def main():
     params['min_otu_count'] = opts.min_count
     params['min_otu_samples'] = opts.min_samples
     params['seqs_per_sample']=opts.seqs_per_sample
-    seqs_per_sample=params['seqs_per_sample']
+    min_seqs_per_sample=params['seqs_per_sample']
     otu_file=open(params['otu_file'], 'U')
 
     filtered_table_path=open(opts.output_otu_table_fp, 'w')
@@ -97,19 +97,22 @@ def main():
     params['excluded_taxa']=excluded_taxa
 
     seq_sample_output=[]
-    if seqs_per_sample and params['min_otu_count']==1 and \
+    """if seqs_per_sample and params['min_otu_count']==1 and \
             params['min_otu_samples']==2 and opts.include_taxonomy=='' and \
             opts.exclude_taxonomy=='':
         otu_file2=otu_file.readlines()
         filtered_table = _filter_table_samples(otu_file2,seqs_per_sample)
         filtered_table_path.write(filtered_table)
         filtered_table_path.close()
-    elif seqs_per_sample and (params['min_otu_count']<>1 or \
+        '''elif seqs_per_sample and (params['min_otu_count']<>1 or \
             params['min_otu_samples']<>2 or opts.include_taxonomy<>'' or \
             opts.exclude_taxonomy<>''):
         raise ValueError, 'You cannot supply seqs per sample with other filtering options. These features are mutually exclusive.'
+        '''
     else:
-        filter_table(params,filtered_table_path,otu_file)
+        filter_table(params,filtered_table_path,otu_file)"""
+        
+    filter_table(params, filtered_table_path, otu_file, min_seqs_per_sample)
         
 
 if __name__ == "__main__":

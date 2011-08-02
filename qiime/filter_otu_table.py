@@ -37,7 +37,7 @@ def split_tax(tax):
         fields = fields[0].split(',')
     return map(strip_quotes, fields)
 
-def filter_table(params,filtered_table_path,otu_file):
+def filter_table(params,filtered_table_path,otu_file, min_seqs_per_sample=1):
     """ Filters table according to OTU counts, occurance, and taxonomy
     
     params: Dictionary containing minimum sequence count (min_otu_count) 
@@ -108,38 +108,55 @@ def filter_table(params,filtered_table_path,otu_file):
                 flagged_otus.append(otus[index_counter])
 
     sample_id_index = 0
+    
+    # Check if all OTUs have been flagged for removal, if so, raise error
+    if len(flagged_otus) == len(otus):
+        raise ValueError, ('All OTUs have been flagged for removal, please '+\
+         'check parameter settings.')
         
     raw_otu_table = (format_otu_table(otu_data[sample_id_index], 
      otus, otu_counts, taxonomy=taxa_lines, skip_empty=True)).split('\n')
      
     # Filter out lines of the OTU table that are flagged
     
-    filtered_otu_table = ""
+    #filtered_otu_table = ""
+    filtered_otu_table = []
+    
     
     for line in raw_otu_table:
         if line.startswith("#"):
-            filtered_otu_table += line + '\n'
+            filtered_otu_table.append(line + '\n')
             continue
         curr_otu_id = line.split('\t')[0].strip()
         
         if curr_otu_id in flagged_otus:
             continue
         else:
-            filtered_otu_table += line + '\n'
+            filtered_otu_table.append(line + '\n')
+            
+    
+    filtered_table = _filter_table_samples(filtered_otu_table,
+     min_seqs_per_sample)
+     
         
-    filtered_table_path.write(filtered_otu_table)
-  
+    filtered_table_path.write(filtered_table)
+
     
 
 def _filter_table_samples(otu_table_lines, min_seqs_per_sample):
     """removes samples from OTU_table that have less than min_seqs_per_sample
     """
+    
     sample_ids, otu_ids, otu_table, lineages = parse_otu_table(otu_table_lines)
     counts = sum(otu_table)
     big_enough_samples = (counts>=int(min_seqs_per_sample)).nonzero()
     res_otu_table = otu_table.copy()
     res_otu_table = res_otu_table[:,big_enough_samples[0]]
     res_sample_ids = map(sample_ids.__getitem__, big_enough_samples[0])
+    # If no sample IDs remaining after filtering, raise an error
+    if len(res_sample_ids) == 0:
+        raise ValueError, ('No SampleIDs remaining after filtering.  Please' +\
+         ' check parameter settings.')
     return format_otu_table(res_sample_ids, otu_ids, res_otu_table, lineages)
 
 

@@ -70,6 +70,7 @@ class TopLevelTests(TestCase):
          expected_otu_table_include_exclude_taxa
         self.expected_otu_table_output_default_no_taxa =\
          expected_otu_table_output_default_no_taxa
+        self.unfiltered_otu_table = unfiltered_otu_table
          
     def tearDown(self):
         remove_files(self._files_to_remove)
@@ -144,6 +145,37 @@ class TopLevelTests(TestCase):
         actual_results = "\n".join([line.strip() for line in actual_result_f])
         
         self.assertEqual(actual_results, self.expected_otu_table_output_leniant)
+        
+        self._files_to_remove.append(filtered_otu_table_fp)
+        
+    def test_filter_table_no_filtering(self):
+        """ filter_table does not remove any OTUs with lax settings """
+        
+        params = {'min_otu_count': 0, 'min_otu_samples': 0,
+         'included_taxa': '', 'excluded_taxa': ''}
+         
+        otu_file = open(self.sample_input_otu_table, "U")
+        
+        filtered_otu_table_fp = get_tmp_filename(prefix = "filtered_otu_table_",
+          suffix = ".txt")
+        
+        filtered_otu_table_f =\
+         open(filtered_otu_table_fp, "w")
+        
+        
+        filter_table(params, filtered_otu_table_f, otu_file,
+         min_seqs_per_sample=0)
+        
+        filtered_otu_table_f.close()
+        
+        # Output is the same as input otu file, except for header
+        
+        actual_result_f = open(filtered_otu_table_fp, "U")
+        
+        
+        actual_results = "\n".join([line.strip() for line in actual_result_f])
+        
+        self.assertEqual(actual_results, self.unfiltered_otu_table)
         
         self._files_to_remove.append(filtered_otu_table_fp)
         
@@ -377,7 +409,17 @@ sample_unfiltered_otu_table = """#Full OTU Counts
 13	0	0	0	1	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
 14	0	0	0	0	0	0	0	0	2	Root;Bacteria;Firmicutes;"Bacilli";Bacillales;"Staphylococcaceae";Staphylococcus"""
 
-sample_unfiltered_otu_table_no_taxa = """#Full OTU Counts
+unfiltered_otu_table = """# QIIME v1.3.0-dev OTU table
+#OTU ID	PC.354	PC.355	PC.356	PC.481	PC.593	PC.607	PC.634	PC.635	PC.636	Consensus Lineage
+0	0	0	0	0	0	0	0	0	1	Root;Bacteria;Actinobacteria;Actinobacteria;Coriobacteridae;Coriobacteriales;Coriobacterineae;Coriobacteriaceae
+1	0	0	0	3	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
+5	0	0	0	0	1	0	0	2	1	Root;Bacteria;Bacteroidetes
+6	0	0	2	0	0	0	0	1	0	Root;Bacteria
+12	0	1	0	0	0	3	1	1	0	Root;Bacteria;Bacteroidetes
+13	0	0	0	1	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
+14	0	0	0	0	0	0	0	0	2	Root;Bacteria;Firmicutes;"Bacilli";Bacillales;"Staphylococcaceae";Staphylococcus"""
+
+sample_unfiltered_otu_table_no_taxa = """# QIIME v1.3.0-dev OTU table
 #OTU ID	PC.354	PC.355	PC.356	PC.481	PC.593	PC.607	PC.634	PC.635	PC.636
 0	0	0	0	0	0	0	0	0	1
 1	0	0	0	3	0	0	0	0	0
@@ -390,59 +432,60 @@ sample_unfiltered_otu_table_no_taxa = """#Full OTU Counts
 
 # identical to input file, except for the header
 expected_otu_table_output_leniant = """# QIIME v1.3.0-dev OTU table
-#OTU ID	PC.354	PC.355	PC.356	PC.481	PC.593	PC.607	PC.634	PC.635	PC.636	Consensus Lineage
-0	0	0	0	0	0	0	0	0	1	Root;Bacteria;Actinobacteria;Actinobacteria;Coriobacteridae;Coriobacteriales;Coriobacterineae;Coriobacteriaceae
-1	0	0	0	3	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-5	0	0	0	0	1	0	0	2	1	Root;Bacteria;Bacteroidetes
-6	0	0	2	0	0	0	0	1	0	Root;Bacteria
-12	0	1	0	0	0	3	1	1	0	Root;Bacteria;Bacteroidetes
-13	0	0	0	1	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-14	0	0	0	0	0	0	0	0	2	Root;Bacteria;Firmicutes;"Bacilli";Bacillales;"Staphylococcaceae";Staphylococcus"""
+#OTU ID	PC.355	PC.356	PC.481	PC.593	PC.607	PC.634	PC.635	PC.636	Consensus Lineage
+0	0	0	0	0	0	0	0	1	Root;Bacteria;Actinobacteria;Actinobacteria;Coriobacteridae;Coriobacteriales;Coriobacterineae;Coriobacteriaceae
+1	0	0	3	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
+5	0	0	0	1	0	0	2	1	Root;Bacteria;Bacteroidetes
+6	0	2	0	0	0	0	1	0	Root;Bacteria
+12	1	0	0	0	3	1	1	0	Root;Bacteria;Bacteroidetes
+13	0	0	1	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
+14	0	0	0	0	0	0	0	2	Root;Bacteria;Firmicutes;"Bacilli";Bacillales;"Staphylococcaceae";Staphylococcus"""
 
 # OTUs that only appear in one sample should be removed
 expected_otu_table_output_default = """# QIIME v1.3.0-dev OTU table
-#OTU ID	PC.354	PC.355	PC.356	PC.481	PC.593	PC.607	PC.634	PC.635	PC.636	Consensus Lineage
-5	0	0	0	0	1	0	0	2	1	Root;Bacteria;Bacteroidetes
-6	0	0	2	0	0	0	0	1	0	Root;Bacteria
-12	0	1	0	0	0	3	1	1	0	Root;Bacteria;Bacteroidetes
-13	0	0	0	1	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales"""
+#OTU ID	PC.355	PC.356	PC.481	PC.593	PC.607	PC.634	PC.635	PC.636	Consensus Lineage
+5	0	0	0	1	0	0	2	1	Root;Bacteria;Bacteroidetes
+6	0	2	0	0	0	0	1	0	Root;Bacteria
+12	1	0	0	0	3	1	1	0	Root;Bacteria;Bacteroidetes
+13	0	0	1	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales"""
 
 # Remove all OTUs with sequences less than 3
 expected_otu_table_output_sequence_count_three = """# QIIME v1.3.0-dev OTU table
-#OTU ID	PC.354	PC.355	PC.356	PC.481	PC.593	PC.607	PC.634	PC.635	PC.636	Consensus Lineage
-1	0	0	0	3	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-5	0	0	0	0	1	0	0	2	1	Root;Bacteria;Bacteroidetes
-6	0	0	2	0	0	0	0	1	0	Root;Bacteria
-12	0	1	0	0	0	3	1	1	0	Root;Bacteria;Bacteroidetes"""
+#OTU ID	PC.355	PC.356	PC.481	PC.593	PC.607	PC.634	PC.635	PC.636	Consensus Lineage
+1	0	0	3	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
+5	0	0	0	1	0	0	2	1	Root;Bacteria;Bacteroidetes
+6	0	2	0	0	0	0	1	0	Root;Bacteria
+12	1	0	0	0	3	1	1	0	Root;Bacteria;Bacteroidetes"""
+
 
 # Removes all OTUs lacking the specified taxa Clostridiales
 expected_otu_table_include_taxa = """# QIIME v1.3.0-dev OTU table
-#OTU ID	PC.354	PC.355	PC.356	PC.481	PC.593	PC.607	PC.634	PC.635	PC.636	Consensus Lineage
-1	0	0	0	3	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-13	0	0	0	1	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales"""
+#OTU ID	PC.481	PC.635	Consensus Lineage
+1	3	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
+13	1	1	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales"""
 
 # Removes otus flagged for removal by excluded taxa, Bacteroidetes
 expected_otu_table_exclude_taxa = """# QIIME v1.3.0-dev OTU table
-#OTU ID	PC.354	PC.355	PC.356	PC.481	PC.593	PC.607	PC.634	PC.635	PC.636	Consensus Lineage
-0	0	0	0	0	0	0	0	0	1	Root;Bacteria;Actinobacteria;Actinobacteria;Coriobacteridae;Coriobacteriales;Coriobacterineae;Coriobacteriaceae
-1	0	0	0	3	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-6	0	0	2	0	0	0	0	1	0	Root;Bacteria
-13	0	0	0	1	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-14	0	0	0	0	0	0	0	0	2	Root;Bacteria;Firmicutes;"Bacilli";Bacillales;"Staphylococcaceae";Staphylococcus"""
+#OTU ID	PC.356	PC.481	PC.635	PC.636	Consensus Lineage
+0	0	0	0	1	Root;Bacteria;Actinobacteria;Actinobacteria;Coriobacteridae;Coriobacteriales;Coriobacterineae;Coriobacteriaceae
+1	0	3	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
+6	2	0	1	0	Root;Bacteria
+13	0	1	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
+14	0	0	0	2	Root;Bacteria;Firmicutes;"Bacilli";Bacillales;"Staphylococcaceae";Staphylococcus"""
 
 # Filter to include Firmicutes but exclude Bacillales
 expected_otu_table_include_exclude_taxa = """# QIIME v1.3.0-dev OTU table
-#OTU ID	PC.354	PC.355	PC.356	PC.481	PC.593	PC.607	PC.634	PC.635	PC.636	Consensus Lineage
-1	0	0	0	3	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-13	0	0	0	1	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales"""
+#OTU ID	PC.481	PC.635	Consensus Lineage
+1	3	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
+13	1	1	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales"""
 
 
 expected_otu_table_output_default_no_taxa = """# QIIME v1.3.0-dev OTU table
-#OTU ID	PC.354	PC.355	PC.356	PC.481	PC.593	PC.607	PC.634	PC.635	PC.636
-5	0	0	0	0	1	0	0	2	1
-6	0	0	2	0	0	0	0	1	0
-12	0	1	0	0	0	3	1	1	0
-13	0	0	0	1	0	0	0	1	0"""
+#OTU ID	PC.355	PC.356	PC.481	PC.593	PC.607	PC.634	PC.635	PC.636
+5	0	0	0	1	0	0	2	1
+6	0	2	0	0	0	0	1	0
+12	1	0	0	0	3	1	1	0
+13	0	0	1	0	0	0	1	0"""
 
 #run tests if called from command line
 if __name__ == "__main__":
