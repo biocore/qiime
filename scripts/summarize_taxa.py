@@ -70,6 +70,11 @@ script_info['optional_options'] = [\
         help='If present, OTUs having lower absolute abundance are' +\
         ' trimmed. To remove the OTUs that makes up less than 45% of the' +\
         ' total dataset you would pass 0.45. [default: %default]'),
+    make_option('-t', '--transposed_output', action='store_true',\
+        dest='transposed_output', default=False, \
+        help='If present, the output will be written transposed from' +\
+        ' the regular output. This is helpful in cases when you want to' +\
+        ' use Site Painter to visualize your data [default: %default]'),
     options_lookup['output_dir'],
 ]
 script_info['option_label']={'otu_table_fp':'OTU table filepath',
@@ -143,14 +148,16 @@ def main():
             summary, tax_order = add_summary_mapping(otu_table, mapping,
                                                      int(level))
             write_add_taxa_summary_mapping(summary,tax_order,mapping,
-                                            header,output_fname,delimiter)
+                                            header,output_fname,delimiter,
+                                            opts.transposed_output)
         else:
             #define output filename
             output_fname = join(output_dir_path,basename+'_L%s.txt' % (level))
             
             summary, header = make_summary(otu_table, int(level),
                                             upper_percentage, lower_percentage)
-            write_summarize_taxa(summary, header, output_fname, delimiter)
+            write_summarize_taxa(summary, header, output_fname, delimiter,
+                                            opts.transposed_output)
             
 
 if __name__ == "__main__":

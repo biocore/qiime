@@ -100,6 +100,18 @@ class TopLevelTests(TestCase):
                          'd;e;f\t3\t4\t5\n'])
         self.assertEqual(obs,exp)
         self.files_to_remove.append(self.tmp_fp1)
+        
+        
+    def test_write_summarize_taxa_transposed_output(self):
+        """write_summarize_taxa_transposed_output functions as expected"""
+        write_summarize_taxa(self.taxa_summary, self.taxa_header, self.tmp_fp1, transposed_output=True)
+        obs = open(self.tmp_fp1).read()
+        exp = '\n'.join(['SampleID\ta;b;c\td;e;f',
+                         'foo;\t0\t3\nbar;\t1\t4',
+                         'foobar;\t2\t5\n'])
+        self.assertEqual(obs,exp)
+        self.files_to_remove.append(self.tmp_fp1)
+        
 
     def test_format_add_taxa_summary_mapping(self):
         """format_add_taxa_summary_mapping functions as expected"""
