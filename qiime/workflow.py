@@ -551,13 +551,18 @@ def run_pick_reference_otus_through_otu_table(
             params_str = get_params_str(params['pick_otus'])
         except KeyError:
             params_str = ''
+        # Since this is reference-based OTU picking we always want to
+        # suppress new clusters -- force it here.
+        params_str+= ' --suppress_new_clusters'
+        logger.write("Forcing --suppress_new_clusters as this is reference-based OTU picking.\n\n")
         # Build the OTU picking command
-        pick_otus_cmd = '%s %s/pick_otus.py -i %s -o %s -r %s %s' %\
+        pick_otus_cmd = '%s %s/pick_otus.py -i %s -o %s -r %s -m %s %s' %\
          (python_exe_fp,
           script_dir,
           input_fp,
           pick_otu_dir,
           refseqs_fp,
+          otu_picking_method,
           params_str)
 
     commands.append([('Pick OTUs', pick_otus_cmd)])
