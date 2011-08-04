@@ -371,7 +371,7 @@ class WorkflowTests(TestCase):
         otu_map_lines = list(open(otu_map_fp))
         num_otus = len(otu_map_lines)
         otu_map_otu_ids = [o.split()[0] for o in otu_map_lines]
-        self.assertEqual(num_otus,8)
+        self.assertEqual(num_otus,4)
 
         # parse the otu table
         input_seqs = LoadSeqs(self.pick_ref_otus_seqs1,aligned=False)
@@ -382,13 +382,13 @@ class WorkflowTests(TestCase):
         self.assertEqualItems(sample_ids,expected_sample_ids)
         # otu ids are as expected
         self.assertEqualItems(otu_map_otu_ids,otu_ids)
-        # number of sequences in the full otu table equals the number of
-        # input sequences
+        
+        # expected number of sequences in OTU table
         number_seqs_in_otu_table = otu_table.sum()
-        self.assertEqual(number_seqs_in_otu_table,input_seqs.getNumSeqs())
+        self.assertEqual(number_seqs_in_otu_table,5)
         
         # One tax assignment per otu
-        self.assertEqual(len(lineages),8)
+        self.assertEqual(len(lineages),4)
 
         # Check that the log file is created and has size > 0
         log_fp = glob(join(self.wf_out,'log*.txt'))[0]
@@ -435,8 +435,8 @@ class WorkflowTests(TestCase):
         self.assertEqualItems(sample_ids,expected_sample_ids)
         # otu ids are as expected
         self.assertEqualItems(otu_map_otu_ids,otu_ids)
-        # number of sequences in the full otu table equals the number of
-        # input sequences
+        
+        # expected number of sequences in OTU table
         number_seqs_in_otu_table = otu_table.sum()
         self.assertEqual(number_seqs_in_otu_table,5)
 
