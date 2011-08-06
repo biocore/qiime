@@ -98,7 +98,7 @@ def write_summarize_taxa(summary, header, output_fp, delimiter=';', transposed_o
          summary = [[r[col] for r in summary] for col in range(len(summary[0]))]
          # adding the first column into the new summary matrix
          for i in range(1,len(summary)):
-             summary[i] = [(header[i], '')] + summary[i]
+             summary[i] = [([header[i]])] + summary[i]
          # replacing header and trimming summary
          header = ['SampleID'] + [delimiter.join(taxon) for taxon in summary[0]]
          summary = summary[1:]
