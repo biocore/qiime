@@ -15,6 +15,7 @@ import numpy
 from numpy import isnan, log10, median
 from StringIO import StringIO
 from cogent import Sequence
+from re import compile, sub
 
 """Contains formatters for the files we expect to encounter in 454 workflow.
 
@@ -93,6 +94,10 @@ def format_summarize_taxa(summary, header, delimiter=';'):
  
 def write_summarize_taxa(summary, header, output_fp, delimiter=';', transposed_output=False):
     """ """
+    # Fixing headers
+    pattern = compile('\W')
+    header = [sub(pattern, '_', label) for label in header]
+
     if transposed_output:
          # transposing the summary
          summary = [[r[col] for r in summary] for col in range(len(summary[0]))]
