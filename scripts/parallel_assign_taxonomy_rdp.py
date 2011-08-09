@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso", "Antonio Gonzalez Pena"]
+__credits__ = ["Greg Caporaso", "Antonio Gonzalez Pena", "William Walters"]
 __license__ = "GPL"
 __version__ = "1.3.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -60,6 +60,10 @@ script_info['optional_options'] = [\
            'id_to_taxonomy mapping file [REQUIRED]'),\
  make_option('-r','--reference_seqs_fp',action='store',\
         help='Ref seqs to rdp against. [default: %default]'),\
+ make_option('--rdp_max_memory', default=1000, type='int',
+    help='Maximum memory allocation, in MB, for Java virtual machine when '
+    'using the rdp method.  Increase for large training sets '
+    '[default: %default]'),\
  options_lookup['jobs_to_start'],\
  options_lookup['poller_fp'],\
  options_lookup['retain_temp_files'],\
@@ -92,6 +96,7 @@ def main():
     suppress_polling = opts.suppress_polling
     seconds_to_sleep = opts.seconds_to_sleep
     poll_directly = opts.poll_directly
+    rdp_max_memory = int(opts.rdp_max_memory)
 
     if not isfile(input_fasta_fp):
         raise ValueError('This file does not exists: %s' % input_fasta_fp)
@@ -149,7 +154,8 @@ def main():
     commands, job_result_filepaths = \
      get_commands(python_exe_fp,assign_taxonomy_fp,confidence,job_prefix,\
      tmp_fasta_fps,rdp_classifier_fp,output_dir,working_dir,\
-     id_to_taxonomy_fp=id_to_taxonomy_fp,reference_seqs_fp=reference_seqs_fp)
+     id_to_taxonomy_fp=id_to_taxonomy_fp,reference_seqs_fp=reference_seqs_fp,
+     rdp_max_memory=rdp_max_memory)
     created_temp_paths += job_result_filepaths
     
     # Set up poller apparatus if the user does not suppress polling

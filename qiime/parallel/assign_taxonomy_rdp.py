@@ -15,7 +15,7 @@ __status__ = "Development"
 def get_commands(python_exe_fp,assign_taxonomy_fp,confidence,job_prefix,\
     fasta_fps,rdp_jar_fp,output_dir,working_dir,\
     command_prefix=None,command_suffix=None,\
-    id_to_taxonomy_fp=None,reference_seqs_fp=None):
+    id_to_taxonomy_fp=None,reference_seqs_fp=None, rdp_max_memory=1000):
     """Generate RDP classifier commands which should be submitted to cluster
     """
     # Create basenames for each of the output files. These will be filled
@@ -42,7 +42,7 @@ def get_commands(python_exe_fp,assign_taxonomy_fp,confidence,job_prefix,\
          [fn % i for fn in out_filenames],working_dir,output_dir)#,\
          #id_to_taxonomy_fp,reference_seqs_fp)
         result_filepaths += current_result_filepaths
-        command = '%s %s %s %s -c %1.2f -m rdp -o %s -i %s %s %s' %\
+        command = '%s %s %s %s -c %1.2f -m rdp -o %s -i %s --rdp_max_memory %d %s %s' %\
          (command_prefix,\
           python_exe_fp,\
           assign_taxonomy_fp,\
@@ -50,6 +50,7 @@ def get_commands(python_exe_fp,assign_taxonomy_fp,confidence,job_prefix,\
           confidence,
           working_dir,
           fasta_fp,
+          rdp_max_memory,
           rename_command,
           command_suffix)
         commands.append(command)
