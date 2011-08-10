@@ -27,13 +27,12 @@ script_info['required_options']=[\
     make_option('-i','--otu_file',action='store',\
         type='string',dest='otu_fp',help='Path to read otu file'),
     make_option('-t','--taxonomy_file',action='store',\
-        type='string',dest='taxon_fp',help='Path to read taxonomy file')
+        type='string',dest='taxon_fp',help='Path to read taxonomy file'),
+    make_option('-o','--output_file',action='store',\
+        type='string',dest='out_fp',help='Path to write'),
 ]
 
 script_info['optional_options']=[\
-    make_option('-o','--output_file',action='store',\
-        type='string',dest='out_fp',help='Path to write '+\
-        'output file [default: stdout]'),
     make_option('-m','--id_map_file',action='store',\
         type='string',dest='id_map_fp',help='Path to read '+\
         'seq id to otu map file [default: %default]')
@@ -44,10 +43,9 @@ script_info['version'] = __version__
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
-    if opts.out_fp:
-        outfile = open(opts.out_fp, 'w')
-    else:
-        outfile = stdout
+    if not opts.out_fp:
+        option_parser.error('No output file specified')
+    outfile = open(opts.out_fp, 'w')
     taxon_lines = open(opts.taxon_fp, 'U')
     if opts.id_map_fp:
         id_map_lines = open(opts.id_map_fp, 'U')
