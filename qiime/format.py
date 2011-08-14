@@ -96,7 +96,7 @@ def write_summarize_taxa(summary, header, output_fp, delimiter=';', transposed_o
     """ """
     # Fixing headers
     pattern = compile('\W')
-    header = [sub(pattern, '_', label) for label in header]
+    header = [sub(pattern, '.', label) for label in header]
 
     if transposed_output:
          # transposing the summary
