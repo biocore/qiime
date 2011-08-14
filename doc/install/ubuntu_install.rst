@@ -5,8 +5,8 @@ QIIME Install in Ubuntu Linux
 
 This guide was tested using the Long Term Support (LTS) version of Ubuntu (10.04). Note that you might be able to install in other Linux distributions following these instructions.
 
-Installing the QIIME Virtual Box
-================================
+Installing QIIME in Ubuntu LTS (10.04)
+======================================
 
 1. Install Ubuntu 10.04 in your prefered way.
 2. Install the building dependencies in your machine. This step requieres admin (sudo) access, if you do not have them you must ask your system administrator. Note that in general all these software should be installed already in a production machine so you might be able to run the following steps in your home directory.
