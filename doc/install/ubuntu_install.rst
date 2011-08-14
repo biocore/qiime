@@ -9,13 +9,13 @@ Installing QIIME in Ubuntu LTS (10.04)
 ======================================
 
 1. Install Ubuntu 10.04 in your prefered way.
-2. Install the building dependencies in your machine. This step requieres admin (sudo) access, if you do not have them you must ask your system administrator. Note that in general all these software should be installed already in a production machine so you might be able to run the following steps in your home directory.
+2. Install the building dependencies in your machine. This step requires admin (sudo) access. If you do not have sudo access, you must ask your system administrator to grant you sudo access, or to run these steps for you. In general, all of this software should already be installed but it may not be. It's therefore best to run this command before the following step.
 
 ::
 	
 	sudo apt-get --force-yes -y install libgsl0-dev openjdk-6-jdk libxml2 libxslt1.1 libxslt1-dev ant subversion build-essential zlib1g-dev libpng12-dev libfreetype6-dev mpich2 libreadline-dev gfortran unzip libmysqlclient16 libmysqlclient16-dev ghc
 	
-3. Run the following commands. In this example the software will be installed in your home directory under the qiime_software folder, you can replace this to any path you want.
+3. Run the following commands. In this example the software will be installed in your home directory under the qiime_software folder, you can replace this with any path you want.
 
 ::
 	
@@ -25,4 +25,4 @@ Installing QIIME in Ubuntu LTS (10.04)
 	cd app-deploy-qiime-1.3.0
 	python app-deploy.py $HOME/qiime_software/ -f etc/qiime_1.3.0.conf
 
-4. Happy QIIME-img!
+4. Happy QIIME-ing!
