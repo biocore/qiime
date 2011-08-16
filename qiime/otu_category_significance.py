@@ -38,7 +38,7 @@ from qiime.longitudinal_otu_category_significance import get_sample_individual_i
 """
 
 def filter_OTUs(OTU_sample_info, filter, all_samples=True,\
-                category_mapping_info=None):
+                category_mapping_info=None, max_filter=None):
     """Get the list of OTUs found in at least <filter> samples                                                                      
                                                                                                                                      
     optionally filters out those that are found in all_samples if True:                                                              
@@ -49,7 +49,11 @@ def filter_OTUs(OTU_sample_info, filter, all_samples=True,\
     optionally takes a category mapping file as input and only considers                                                             
         inclusion in samples that are included therein. This is a method                                                             
         of making sure that the samples represented in the category                                                                  
-        mapping file and the OTU table are in sync                                                                                   
+        mapping file and the OTU table are in sync         
+
+    
+    If max_filter is set, it will exclude OTUs from the list that are 
+        found above that value.
     """
     result = []
     for OTU in OTU_sample_info:
@@ -70,8 +74,11 @@ def filter_OTUs(OTU_sample_info, filter, all_samples=True,\
                     samples.append(sample)
 
         if len(samples) >= int(filter):
-            if all_samples:
+            if all_samples and not max_filter:
                 if len(samples) < len(included_samples):
+                    result.append(OTU)
+            elif max_filter:
+                if len(samples) <= int(max_filter):
                     result.append(OTU)
             else:
                 result.append(OTU)

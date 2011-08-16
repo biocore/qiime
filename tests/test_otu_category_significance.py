@@ -58,6 +58,10 @@ class TopLevelTests(TestCase):
         result = filter_OTUs(OTU_sample_info, 1,\
                         category_mapping_info=cat_mapping)
         self.assertEqual(result, ['0'])
+        #test that works with a max filter
+        result = filter_OTUs(OTU_sample_info, 1, False, max_filter=2)
+        self.assertEqual(result, ['1', '0'])
+
 
     def test_make_contingency_matrix(self):
         """make_contingency_matrix works"""
