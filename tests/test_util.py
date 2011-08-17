@@ -596,7 +596,7 @@ class TopLevelTests(TestCase):
         fastq_files.append(barcode_fpath)
         self.files_to_remove.append(barcode_fpath)
 
-        exp='-i %s -b %s --rev_comp_barcode' % (seq_fpath,barcode_fpath)
+        exp='-i %s -b %s --rev_comp_mapping_barcodes' % (seq_fpath,barcode_fpath)
 
         obs=get_split_libraries_fastq_params_and_file_types(fastq_files,
                                                            map_fpath)

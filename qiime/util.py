@@ -1279,7 +1279,7 @@ def get_split_libraries_fastq_params_and_file_types(fastq_fps,mapping_fp):
     
     # determine which barcode direction is correct
     if rev_count > fwd_count:
-        barcode_orientation='--rev_comp_barcode'
+        barcode_orientation='--rev_comp_mapping_barcodes'
     else:
         barcode_orientation=''
     
