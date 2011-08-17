@@ -882,7 +882,7 @@ class UclustReferenceOtuPicker(UclustOtuPickerBase):
         """
         _params = {'Similarity':0.97,
                    'Application':'uclust',
-                   'enable_rev_strand_matching':True,
+                   'enable_rev_strand_matching':False,
                    'max_accepts':20,
                    'max_rejects':500,
                    'stepwords':20,

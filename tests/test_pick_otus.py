@@ -1385,7 +1385,7 @@ class UclustReferenceOtuPickerTests(TestCase):
          "Reference seqs:%s" % ref_seqs_fp,
          "Similarity:0.8",
          "Application:uclust",
-         "enable_rev_strand_matching:True",
+         "enable_rev_strand_matching:False",
          "suppress_sort:True",
          "suppress_new_clusters:True",
          "optimal:False",
