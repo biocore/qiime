@@ -64,6 +64,9 @@ script_info['optional_options']=[
             '[default: %default; only include fields with greater than one value '+\
             'and fewer values than the number of samples]',
             default=False,action='store_true'),
+ make_option('-c','--histogram_categories',
+             help='mapping fields to use when plotting distance '+\
+             'histograms [default: %default]'),
  make_option('-f','--force',action='store_true',
         dest='force',help='Force overwrite of existing output directory'+\
         ' (note: existing files in output_dir will not be removed)'+\
@@ -102,7 +105,10 @@ def main():
     verbose = opts.verbose
     print_only = opts.print_only
     seqs_per_sample = opts.seqs_per_sample
-   
+    histogram_categories = opts.histogram_categories
+    if histogram_categories != None:
+        histogram_categories = histogram_categories.split(',')
+    
     parallel = opts.parallel
     # No longer checking that jobs_to_start > 2, but
     # commenting as we may change our minds about this.
@@ -158,6 +164,7 @@ def main():
      qiime_config=qiime_config,
      color_by_interesting_fields_only=not opts.color_by_all_fields,
      sampling_depth=seqs_per_sample,
+     histogram_categories=histogram_categories,
      tree_fp=tree_fp,
      parallel=parallel,
      suppress_3d_plots=opts.suppress_3d_plots,

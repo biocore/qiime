@@ -595,6 +595,7 @@ def run_pick_reference_otus_through_otu_table(
 def run_beta_diversity_through_plots(otu_table_fp, mapping_fp,
     output_dir, command_handler, params, qiime_config,
     color_by_interesting_fields_only=True,sampling_depth=None,
+    histogram_categories=None,
     tree_fp=None, parallel=False, logger=None, suppress_3d_plots=False,
     suppress_2d_plots=False, suppress_distance_histograms=False,
     status_update_callback=print_to_stdout):
@@ -629,6 +630,12 @@ def run_beta_diversity_through_plots(otu_table_fp, mapping_fp,
     
     mapping_data, mapping_header, mapping_comments =\
      parse_mapping_file(open(mapping_fp,'U'))
+    if histogram_categories:
+        invalid_categories = set(histogram_categories) - set(mapping_header)
+        if invalid_categories:
+            raise ValueError,\
+             "Invalid histogram categories - these must exactly match "+\
+             "mapping file column headers: %s" % (' '.join(invalid_categories))
     # Get the interesting mapping fields to color by -- if none are
     # interesting, take all of them. Interesting is defined as those
     # which have greater than one value and fewer values than the number 
@@ -817,7 +824,7 @@ def run_beta_diversity_through_plots(otu_table_fp, mapping_fp,
               ('Make 2D plots (discrete coloring, %s)' %\
                 beta_diversity_metric,discrete_2d_command,)])
                 
-        if not suppress_distance_histograms:
+        if not suppress_distance_histograms and histogram_categories:
             # Prep the discrete-coloring 3d plots command
             histograms_dir = '%s/%s_histograms/' %\
              (output_dir, beta_diversity_metric)
@@ -831,9 +838,10 @@ def run_beta_diversity_through_plots(otu_table_fp, mapping_fp,
                 params_str = ''
             # Build the make_distance_histograms command
             distance_histograms_command = \
-             '%s %s/make_distance_histograms.py -d %s -o %s -m %s %s' %\
+             '%s %s/make_distance_histograms.py -d %s -o %s -m %s -f "%s" %s' %\
               (python_exe_fp, script_dir, beta_div_fp, 
-               histograms_dir, mapping_fp, params_str)
+               histograms_dir, mapping_fp, 
+               ','.join(histogram_categories), params_str)
        
             commands.append([\
               ('Make Distance Histograms (%s)' %\
