@@ -12,6 +12,7 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
  
 from os import rename
+from cogent import DNA
 from cogent.util.misc import safe_md5, create_dir
 from qiime.util import parse_command_line_parameters, make_option
 from qiime.parse import parse_mapping_file
@@ -66,8 +67,12 @@ script_info['optional_options'] = [
         help='start seq_ids as ascending integers beginning with start_seq_id'+\
         '[default: %default]',default=0),\
      make_option('--rev_comp_barcode',action='store_true',\
-        help='reverse compliment barcodes before lookup'+\
-        '[default: %default]',default=False),\
+        help='reverse compliment barcode reads before lookup'+\
+        ' [default: %default]',default=False),\
+     make_option('--rev_comp_mapping_barcodes',action='store_true',\
+        help='reverse compliment barcode in mapping before lookup (useful if barcodes'+\
+        ' in mapping file are reverse compliments of golay codes)'+\
+        ' [default: %default]',default=False),\
      make_option('--rev_comp',action='store_true',\
         help='reverse compliment sequence before writing to output file'+\
         ' (useful for reverse-orientation reads) [default: %default]',
@@ -112,6 +117,7 @@ def main():
     min_per_read_length = opts.min_per_read_length
     rev_comp = opts.rev_comp
     rev_comp_barcode = opts.rev_comp_barcode
+    rev_comp_mapping_barcodes = opts.rev_comp_mapping_barcodes
     seq_max_N = opts.sequence_max_n
     start_seq_id = opts.start_seq_id
     # NEED TO FIX THIS FUNCTIONALITY - CURRENTLY READING THE WRONG FIELD
@@ -144,8 +150,11 @@ def main():
         mapping_f = open(mapping_fp, 'U')
         h, i, barcode_to_sample_id, warnings, errors, p, a =\
            check_map(mapping_f, disable_primer_check=True)
-           
-            
+        
+        if rev_comp_mapping_barcodes:
+            barcode_to_sample_id = \
+             dict([(DNA.rc(k),v) for k,v in barcode_to_sample_id.items()])
+        
         if barcode_type == 'golay_12':
             invalid_golay_barcodes = \
              get_invalid_golay_barcodes(barcode_to_sample_id.keys())
