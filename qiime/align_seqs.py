@@ -49,8 +49,8 @@ except ImportError:
          "PyNAST cannot be found.\nIs PyNAST installed? Is it in your $PYTHONPATH?"+\
          "\nYou can obtain PyNAST from http://pynast.sourceforge.net/." 
     # set functions which cannot be imported to raise_pynast_not_found_error
-    pynast_seqs = NastLogger = pairwise_alignment_methods = \
-    raise_pynast_not_found_error
+    pynast_seqs = NastLogger = raise_pynast_not_found_error
+    pairwise_alignment_methods = {}
 
 
 class Aligner(FunctionWithParams):
