@@ -43,6 +43,10 @@ script_info['required_options'] = [\
            '[REQUIRED]'),\
 ]
 rdp_classifier_fp = getenv('RDP_JAR_PATH')
+
+default_reference_seqs_fp = qiime_config['assign_taxonomy_reference_seqs_fp']
+default_id_to_taxonomy_fp = qiime_config['assign_taxonomy_id_to_taxonomy_fp']
+
 script_info['optional_options'] = [\
  make_option('--rdp_classifier_fp',action='store',\
            type='string',help='full path to rdp classifier jar file '+\
@@ -57,9 +61,11 @@ script_info['optional_options'] = [\
            default=join(get_qiime_scripts_dir(),'assign_taxonomy.py')),\
  make_option('-t','--id_to_taxonomy_fp',action='store',\
            type='string',help='full path to '+\
-           'id_to_taxonomy mapping file [REQUIRED]'),\
+           'id_to_taxonomy mapping file [default: %s]' % default_id_to_taxonomy_fp,
+           default=default_id_to_taxonomy_fp),\
  make_option('-r','--reference_seqs_fp',action='store',\
-        help='Ref seqs to rdp against. [default: %default]'),\
+           help='Ref seqs to rdp against. [default: %s]' % default_reference_seqs_fp,
+           default=default_reference_seqs_fp),\
  make_option('--rdp_max_memory', default=1000, type='int',
     help='Maximum memory allocation, in MB, for Java virtual machine when '
     'using the rdp method.  Increase for large training sets '

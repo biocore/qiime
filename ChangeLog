@@ -3,6 +3,7 @@ Add changes since QIIME 1.3.0 here
 * Added in the calculation of standard error in rarefaction plots, since only standard deviation was calculated. Also added an optional option choice for this.
 * Support for pick_otus_through_otu_table.py to allow for uclust_ref to be run in parallel with creation of new clusters. 
 * Added script distance_matrix_from_mapping.py which allows to create a distance matrix from a metadata column. It uses all the non-phylogenetic metrics.
+* assign_taxonomy_reference_seqs_fp and assign_taxonomy_id_to_taxonomy_fp were added to qiime_config, which allows users to set defaults for the dataset they'd like to perform taxonomy assignment against. This works for the serial and parallel versions of assign_taxonomy for both BLAST and RDP.
 
 QIIME 1.3.0 (29 June 2011)
 ==================================

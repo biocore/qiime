@@ -29,6 +29,9 @@ from qiime.util import parse_command_line_parameters, get_options_lookup,\
 qiime_config = load_qiime_config()
 options_lookup = get_options_lookup()
 
+default_reference_seqs_fp = qiime_config['assign_taxonomy_reference_seqs_fp']
+default_id_to_taxonomy_fp = qiime_config['assign_taxonomy_id_to_taxonomy_fp']
+
 script_info={}
 
 script_info['brief_description']="""Parallel taxonomy assignment using BLAST"""
@@ -43,9 +46,6 @@ script_info['required_options'] = [\
  make_option('-i','--input_fasta_fp',action='store',\
            type='string',help='full path to '+\
            'input_fasta_fp [REQUIRED]'),\
- make_option('-t','--id_to_taxonomy_fp',action='store',\
-           type='string',help='full path to '+\
-           'id_to_taxonomy mapping file [REQUIRED]'),\
  make_option('-o','--output_dir',action='store',\
            type='string',help='full path to store output files '+\
            '[REQUIRED]')
@@ -54,7 +54,9 @@ script_info['required_options'] = [\
 script_info['optional_options'] = [\
  make_option('-r','--reference_seqs_fp',action='store',\
         help='Ref seqs to blast against.  Must provide either --blast_db or '
-        '--reference_seqs_db for assignment with blast [default: %default]'),\
+        '--reference_seqs_db for assignment with blast [default: %s]' \
+        % default_reference_seqs_fp,
+        default=default_reference_seqs_fp),\
  make_option('-b', '--blast_db',
         help='Database to blast against.  Must provide either --blast_db or '
         '--reference_seqs_db for assignment with blast [default: %default]'),\
@@ -80,6 +82,18 @@ script_info['optional_options'] = [\
  options_lookup['python_exe_fp'],\
  options_lookup['seconds_to_sleep']\
 ]
+
+if default_id_to_taxonomy_fp:
+    script_info['optional_options'].append(\
+     make_option('-t','--id_to_taxonomy_fp',action='store',\
+           type='string',help='full path to '+\
+           'id_to_taxonomy mapping file [default: %s]' % default_id_to_taxonomy_fp,
+           default=default_id_to_taxonomy_fp))
+else:
+    script_info['required_options'].append(\
+     make_option('-t','--id_to_taxonomy_fp',action='store',\
+           type='string',help='full path to '+\
+           'id_to_taxonomy mapping file [REQUIRED]'))
 
 script_info['version'] = __version__ 
 
