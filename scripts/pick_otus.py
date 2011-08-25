@@ -39,6 +39,8 @@ Currently, the following clustering methods have been implemented in QIIME:
 
 6. uclust (Robert Edgar, unpublished, 2009), creates \"seeds\" of sequences which generate clusters based on percent identity.
 
+7. usearch (Robert Edgar, unpublished, 2011), creates \"seeds\" of sequences which generate clusters based on percent identity, filters low abundance clusters, performs de novo and reference based chimera detection.
+
 The primary inputs for pick_otus.py are:
 
 1. A FASTA file containing sequences to be clustered
@@ -302,6 +304,28 @@ def main():
     
     ## uclust (de novo)
     elif otu_picking_method == 'uclust':
+        params = {'Similarity':opts.similarity,
+        'enable_rev_strand_matching':opts.enable_rev_strand_match,
+        'optimal':opts.optimal_uclust,
+        'exact':opts.exact_uclust,
+        # suppress_sort=True when seqs are or will be pre-sorted
+        'suppress_sort':user_sort,
+        'presort_by_abundance': not suppress_presort_by_abundance_uclust,
+        'max_accepts':max_accepts,
+        'max_rejects':max_rejects,
+        'stepwords':stepwords,
+        'word_length':word_length,
+        'new_cluster_identifier':opts.uclust_otu_id_prefix,
+        'stable_sort':uclust_stable_sort,
+        'save_uc_files':save_uc_files,
+        'output_dir':output_dir,
+        'prefilter_identical_sequences':prefilter_identical_sequences}
+        otu_picker = otu_picker_constructor(params)
+        otu_picker(input_seqs_filepath,
+                   result_path=result_path,log_path=log_path,HALT_EXEC=False)
+                   
+    ## usearch (de novo)
+    elif otu_picking_method == 'usearch':
         params = {'Similarity':opts.similarity,
         'enable_rev_strand_matching':opts.enable_rev_strand_match,
         'optimal':opts.optimal_uclust,

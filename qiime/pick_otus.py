@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project" 
 __credits__ = ["Rob Knight","Greg Caporaso", "Kyle Bittinger","Jens Reeder","William Walters"]
@@ -869,6 +868,122 @@ class UclustOtuPicker(UclustOtuPickerBase):
         # return the result (note this is None if the data was
         # written to file)
         return result
+        
+class UsearchOtuPicker(UclustOtuPickerBase):
+    """ Usearch based OTU picker
+
+    Important note - the default behaviour of uclust is to ignore
+    sequences of 32 nucleotides or less.  These will be omitted
+    in the clusters generated. """
+
+    Name = 'UsearchOtuPicker'
+    
+    def __init__(self, params):
+        """Return new OtuPicker object with specified params.
+        
+        params contains both generic and per-method (e.g. for
+        usearch application controller) params.
+        
+        Some generic entries in params are:
+    
+        Similarity: similarity threshold, default 0.97, corresponding to
+         genus-level OTUs ('Similarity' is a synonym for the '--id' parameter
+         to the uclust application controllers)
+        Application: 3rd-party application used
+        """
+        _params = {'Similarity':0.97,
+         'Application':'usearch',
+         'max_accepts':20,
+         'max_rejects':500,
+         'stepwords':20,
+         'word_length':12,
+         'enable_rev_strand_matching':False,
+         'optimal':False,
+         'exact':False,
+         'suppress_sort':True,
+         'presort_by_abundance':True,
+         'new_cluster_identifier':None,
+         'stable_sort':True,
+         'save_uc_files':True,
+         'output_dir':'.',
+         'prefilter_identical_sequences':True}
+        _params.update(params)
+        OtuPicker.__init__(self, _params)
+    
+    def __call__(self,
+                 seq_path,
+                 result_path=None,
+                 log_path=None,
+                 HALT_EXEC=False):
+        """Returns dict mapping {otu_id:[seq_ids]} for each otu.
+        
+        Parameters:
+        seq_path: path to file of sequences
+        result_path: path to file of results. If specified,
+        dumps the result to the desired path instead of returning it.
+        log_path: path to log, which includes dump of params.
+
+        """
+        prefilter_identical_sequences =\
+         self.Params['prefilter_identical_sequences']
+        original_fasta_path = seq_path
+        self.files_to_remove = []
+        
+        if self.Params['presort_by_abundance']:
+            # seq path will become the temporary sorted sequences
+            # filepath, to be cleaned up after the run
+            seq_path = self._presort_by_abundance(seq_path)
+            self.files_to_remove.append(seq_path)
+        
+        # Collapse idetical sequences to a new file
+        if prefilter_identical_sequences:
+            exact_match_id_map, seq_path =\
+             self._apply_identical_sequences_prefilter(seq_path)
+        
+        # perform the clustering
+        clusters, failures, seeds = get_clusters_from_fasta_filepath(
+         seq_path,
+         original_fasta_path,
+         percent_ID = self.Params['Similarity'],
+         optimal = self.Params['optimal'],
+         exact = self.Params['exact'],
+         suppress_sort = self.Params['suppress_sort'],
+         enable_rev_strand_matching =
+          self.Params['enable_rev_strand_matching'],
+         max_accepts=self.Params['max_accepts'],
+         max_rejects=self.Params['max_rejects'],
+         stepwords=self.Params['stepwords'],
+         word_length=self.Params['word_length'],
+         stable_sort=self.Params['stable_sort'],
+         save_uc_files=self.Params['save_uc_files'],
+         output_dir=self.Params['output_dir'],
+         HALT_EXEC=HALT_EXEC)
+        
+        # clean up any temp files that were created
+        remove_files(self.files_to_remove)
+        
+        log_lines = []
+        log_lines.append('Num OTUs:%d' % len(clusters))
+        
+        # expand identical sequences to create full OTU map
+        if prefilter_identical_sequences:
+            clusters = self._map_filtered_clusters_to_full_clusters(
+                        clusters,exact_match_id_map)
+        
+        otu_id_prefix = self.Params['new_cluster_identifier']
+        if otu_id_prefix == None:
+            clusters = enumerate(clusters)
+        else:
+            clusters = [('%s%d' % (otu_id_prefix,i),c) 
+                        for i,c in enumerate(clusters)]
+        result = self._prepare_results(result_path,clusters,log_lines)
+        
+        if log_path:
+            self._write_log(log_path,log_lines)
+    
+        # return the result (note this is None if the data was
+        # written to file)
+        return result
 
 
 class UclustReferenceOtuPicker(UclustOtuPickerBase):
@@ -1163,7 +1278,8 @@ otu_picking_method_constructors = {
     'trie':TrieOtuPicker,
     'blast':BlastOtuPicker,
     'uclust': UclustOtuPicker,
-    'uclust_ref':UclustReferenceOtuPicker
+    'uclust_ref':UclustReferenceOtuPicker,
+    'usearch': UsearchOtuPicker
     }
     
 otu_picking_method_choices = otu_picking_method_constructors.keys()
