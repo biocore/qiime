@@ -934,7 +934,7 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,
     except KeyError:
         params_str = ''
     if tree_fp:
-        params_str += '-t %s' % tree_fp
+        params_str += ' -t %s' % tree_fp
     if parallel:
         params_str += ' %s' % get_params_str(params['parallel'])   
         # Build the alpha diversity command

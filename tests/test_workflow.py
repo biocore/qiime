@@ -828,7 +828,7 @@ class WorkflowTests(TestCase):
         
     def test_run_qiime_alpha_rarefaction(self):
         """ run_qiime_alpha_rarefaction generates expected results """
-    
+
         run_qiime_alpha_rarefaction(
          self.fasting_otu_table_fp, 
          self.fasting_mapping_fp,
