@@ -933,19 +933,21 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,
         params_str = get_params_str(params['alpha_diversity'])
     except KeyError:
         params_str = ''
+    if tree_fp:
+        params_str += '-t %s' % tree_fp
     if parallel:
         params_str += ' %s' % get_params_str(params['parallel'])   
         # Build the alpha diversity command
         alpha_diversity_cmd = \
-         "%s %s/parallel_alpha_diversity.py -T -i %s -o %s -t %s %s" %\
+         "%s %s/parallel_alpha_diversity.py -T -i %s -o %s %s" %\
          (python_exe_fp, script_dir, rarefaction_dir, alpha_diversity_dir, \
-          tree_fp, params_str)
+          params_str)
     else:  
         # Build the alpha diversity command
         alpha_diversity_cmd = \
-         "%s %s/alpha_diversity.py -i %s -o %s -t %s %s" %\
+         "%s %s/alpha_diversity.py -i %s -o %s %s" %\
          (python_exe_fp, script_dir, rarefaction_dir, alpha_diversity_dir, \
-          tree_fp, params_str)
+          params_str)
 
     commands.append(\
      [('Alpha diversity on rarefied OTU tables',alpha_diversity_cmd)])
