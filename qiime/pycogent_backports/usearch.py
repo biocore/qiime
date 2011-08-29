@@ -73,10 +73,6 @@ class Usearch(CommandLineApplication):
         # clusters
         '--lib':ValuedParameter('--',Name='lib',Delimiter=' ',IsPath=True),
         
-        # only compare sequences to the library file, don't add new clusters
-        # for sequences which don't hit the library
-        # ***** THIS NOT PRESENT IN USEARCH
-        '--libonly':FlagParameter('--',Name='libonly'),
         
         # Maximum hits before quitting search (default 1, 0=infinity).
         '--maxaccepts':ValuedParameter('--',Name='maxaccepts',Delimiter=' '),
@@ -146,10 +142,45 @@ class Usearch(CommandLineApplication):
          
         # usearch search plus clustering
         '--consout':ValuedParameter('--', Name='consout', Delimiter=' ',
-         IsPath=True)
+         IsPath=True),
+         
+        # Abundance skew setting for uchime de novo chimera detection
+        '--abskew':ValuedParameter('--', Name='abskew', Delimiter=' ',
+         IsPath=False),
+         
+        # input fasta filepath for uchime chimera
+        '--uchime':ValuedParameter('--', Name='uchime', Delimiter=' ',
+         IsPath=True),
+        
+        # output chimera filepath
+        '--chimeras':ValuedParameter('--', Name='chimeras', Delimiter=' ',
+         IsPath=True),
+         
+        # output non-chimera filepath
+        '--nonchimeras':ValuedParameter('--', Name='nonchimeras',
+         Delimiter=' ', IsPath=True),
+         
+        # reference sequence database for ref based chimera detection
+        '--db':ValuedParameter('--', Name='db', Delimiter=' ', IsPath=True),
+        
+        # output clusters filepath for chimera detection
+        '--uchimeout':ValuedParameter('--', Name='uchimeout', Delimiter=' ',
+         IsPath=True),
+         
+        # minimum cluster size for quality filtering
+        '--minsize':ValuedParameter('--', Name='minsize', Delimiter=' ',
+         IsPath=False),
+         
+        # input fasta for blast alignments
+        '--query':ValuedParameter('--', Name='query', Delimiter=' ',
+         IsPath=True),
+         
+        # global alignment flag
+        '--global':FlagParameter('--', Name='global')
          
         
     }
+    
      
     _suppress_stdout = False
     _suppress_stderr = False
@@ -161,7 +192,9 @@ class Usearch(CommandLineApplication):
         allowed_values = ['--input','--uc','--fastapairs',\
                            '--uc2clstr','--output','--mergesort', '--log',\
                            '--cluster', '--seedsout', '--sortsize',\
-                           '--consout']
+                           '--consout', '--uchime', '--chimeras',\
+                           '--nonchimeras', '--db', '--uchimeout',\
+                           '--query']
                            
         unsupported_parameters = set(data.keys()) - set(allowed_values)
         if unsupported_parameters:
@@ -239,128 +272,48 @@ def get_next_two_fasta_records(lines):
             result = []
     return
 
-'''def process_usearch_pw_alignment_results(fasta_pairs_lines,uc_lines):
-    """ Process results of usearch search and align """
-    alignments = get_next_two_fasta_records(fasta_pairs_lines)
-    for hit in get_next_record_type(uc_lines,'H'):
-        matching_strand = hit[4]
-        if matching_strand == '-':
-            strand_id = '-'
-            target_rev_match = True
-        elif matching_strand == '+':
-            strand_id = '+'
-            target_rev_match = False
-        elif matching_strand == '.':
-            # protein sequence, so no strand information
-            strand_id = ''
-            target_rev_match = False
-        else:
-            raise UsearchParseError, "Unknown strand type: %s" % matching_strand
-        uc_query_id = hit[8]
-        uc_target_id = hit[9]
-        percent_id = float(hit[3])
-        
-        fasta_pair = alignments.next()
-        
-        fasta_query_id = fasta_pair[0][0]
-        aligned_query = fasta_pair[0][1]
-        
-        if fasta_query_id != uc_query_id:
-            raise UsearchParseError,\
-             "Order of fasta and uc files do not match."+\
-             " Got query %s but expected %s." %\
-              (fasta_query_id, uc_query_id)
-            
-        fasta_target_id = fasta_pair[1][0]
-        aligned_target = fasta_pair[1][1]
-            
-        if fasta_target_id != uc_target_id + strand_id:
-            raise UsearchParseError, \
-             "Order of fasta and uc files do not match."+\
-             " Got target %s but expected %s." %\
-              (fasta_target_id, uc_target_id + strand_id)
-            
-        if target_rev_match:
-            query_id = uc_query_id + ' RC'
-            aligned_query = DNA.rc(aligned_query)
-            target_id = uc_target_id
-            aligned_target = DNA.rc(aligned_target)
-        else:
-            query_id = uc_query_id
-            aligned_query = aligned_query
-            target_id = uc_target_id
-            aligned_target = aligned_target
-            
-        yield (query_id, target_id, aligned_query, aligned_target, percent_id)'''
 
-def clusters_from_uc_file(uc_lines):
-    """ Given an open .uc file, return lists (clusters, failures, new_seeds)
+def clusters_from_blast_uc_file(uc_lines):
+    """ Parses out hit/miss sequences from usearch blast uc file
     
-        uc_lines: open .uc file, or similar object -- this is the output
-         generated by uclust's -uc parameter
-         
-        This function processes all hit (H), seed (S), and no hit (N) lines
-         to return all clusters, failures, and new_seeds generated in
-         a uclust run. failures should only arise when users have passed
-         --lib and --libonly, and a sequence doesn't cluster to any existing
-         reference database sequences.
+    All lines should be 'H'it or 'N'o hit.  Returns a dict of OTU ids: sequence
+    labels of the hits, and a list of all sequence labels that miss.
     
+    uc_lines = open file object of uc file
     """
-    clusters = {}
-    failures = []
-    seeds = []
-    # the types of hit lines we're interested in here
-    # are hit (H), seed (S), library seed (L) and no hit (N) 
-    hit_types={}.fromkeys(list('HSNL'))
-    for record in get_next_record_type(uc_lines,hit_types):
-        hit_type = record[0]
-        # sequence identifiers from the fasta header lines only 
-        # (no comment data) are stored to identify a sequence in 
-        # a cluster -- strip off any comments here as this value
-        # is used in several places
-        query_id = record[8].split()[0]
-        target_cluster = record[9].split()[0]
-        if hit_type == 'H':
-            # add the hit to it's existing cluster (either library
-            # or new cluster)
-            clusters[target_cluster].append(query_id)
-        elif hit_type == 'S':
-            # a new seed was identified -- create a cluster with this 
-            # sequence as the first instance
-            if query_id in clusters:
-                raise UsearchParseError,\
-                 ("A seq id was provided as a seed, but that seq id already "
-                  "represents a cluster. Are there overlapping seq ids in your "
-                  "reference and input files or repeated seq ids in either? "
-                  "Offending seq id is %s" % query_id)
-            clusters[query_id] = [query_id]
-            seeds.append(query_id)
-        elif hit_type == 'L':
-            # a library seed was identified -- create a cluster with this 
-            # id as the index, but don't give it any instances yet bc the hit
-            # line will be specified separately. note we need to handle these
-            # lines separately from the H lines to detect overlapping seq ids 
-            # between the reference and the input fasta files
-            if query_id in clusters:
-                raise UsearchParseError,\
-                 ("A seq id was provided as a seed, but that seq id already "
-                  "represents a cluster. Are there overlapping seq ids in your "
-                  "reference and input files or repeated seq ids in either? "
-                  "Offending seq id is %s" % query_id)
-            clusters[query_id] = []
-        elif hit_type == 'N':
-            # a failure was identified -- add it to the failures list
-            failures.append(query_id)
-        else:
-            # shouldn't be possible to get here, but provided for 
-            # clarity
-            raise UsearchParseError,\
-             "Unexpected result parsing line:\n%s" % '\t'.join(record)
     
-    # will need to return the full clusters dict, I think, to support
-    # useful identifiers in reference database clustering
-    #return  clusters.values(), failures, seeds
-    return  clusters, failures, seeds
+    hit_miss_index = 0
+    cluster_id_index = 1
+    seq_label_index = 8
+    
+    otus = {}
+    unassigned_seqs = []
+    
+    for line in uc_lines:
+        # skip empty, comment lines
+        if line.startswith('#') or len(line.strip()) == 0:
+            continue
+        
+        curr_line = line.split('\t')
+        
+        if curr_line[hit_miss_index] == 'N':
+            # only retaining actual sequence label
+            unassigned_seqs.append(curr_line[seq_label_index].split()[0])
+        
+        if curr_line[hit_miss_index] == 'H':
+            
+            curr_seq_label = curr_line[seq_label_index].split()[0]
+            curr_otu_id = curr_line[cluster_id_index]
+            # Append sequence label to dictionary, or create key
+            try:
+                otus[curr_otu_id].append(curr_seq_label)
+            except KeyError:
+                otus[curr_otu_id] = [curr_seq_label]
+                
+    return otus, unassigned_seqs
+        
+                
+    
 
 ## End functions for processing uclust output files
 
@@ -369,16 +322,23 @@ def clusters_from_uc_file(uc_lines):
 def usearch_fasta_sort_from_filepath(
     fasta_filepath,
     output_filepath=None,
+    log_name = "sortlen.log",
     HALT_EXEC=False,
     save_intermediate_files=False):
-    """Generates sorted fasta file via usearch --mergesort."""
+    """Generates sorted fasta file via usearch --mergesort.
+    
+    fasta_filepath: filepath to input fasta file
+    output_filepath: filepath for output sorted fasta file.
+    log_name: string to specify log filename
+    HALT_EXEC: Used for debugging app controller
+    save_intermediate_files: Preserve all intermediate files created."""
     output_filepath = output_filepath or \
      get_tmp_filename(prefix='usearch_fasta_sort', suffix='.fasta')
     
     # using abspath to create log filepath, for cluster environments
     tmp_working_dir = split(abspath(output_filepath))[0]
     
-    log_filepath = tmp_working_dir + "/sortlen.log"
+    log_filepath = tmp_working_dir + "/" + log_name
     
     app = Usearch(params={},HALT_EXEC=HALT_EXEC)
     
@@ -396,6 +356,7 @@ def usearch_dereplicate_exact_subseqs(
     slots=16769023,
     sizeout=True,
     maxrejects=64,
+    log_name = "derep.log",
     usersort=False,
     HALT_EXEC=False,
     save_intermediate_files=False):
@@ -412,10 +373,11 @@ def usearch_dereplicate_exact_subseqs(
      Should also specify --w, typical is --w 16 or --w 32.
     sizeout = (not specified in usearch helpstring)
     maxrejects = Max rejected targets, 0=ignore, default 32.
-    save_intermediate_files = If turned on, will preserve tmp files created
-     during this process, otherwise they are deleted.
+    log_name: string to specify log filename
     usersort = Enable if input fasta not sorted by length purposefully, lest
-     usearch will raise an error."""
+     usearch will raise an error.
+    HALT_EXEC: Used for debugging app controller
+    save_intermediate_files: Preserve all intermediate files created."""
      
     output_filepath = output_filepath or \
      get_tmp_filename(prefix='usearch_fasta_dereplicated', suffix='.fasta')
@@ -423,7 +385,7 @@ def usearch_dereplicate_exact_subseqs(
     # using abspath to create log filepath, for cluster environments
     tmp_working_dir = split(abspath(output_filepath))[0]
     
-    log_filepath = tmp_working_dir + "/derep.log"
+    log_filepath = tmp_working_dir + "/" + log_name
     
     uc_filepath = tmp_working_dir + "/derep.uc"
     
@@ -452,19 +414,28 @@ def usearch_dereplicate_exact_subseqs(
     
     return app_result, output_filepath
     
+    
 def usearch_sort_by_abundance(
     fasta_filepath,
     output_filepath = None,
     sizein = True,
     sizeout = True,
+    minsize = 0,
+    log_name = "abundance_sort.log",
     usersort = False,
     HALT_EXEC=False,
     save_intermediate_files=False):
     """ Sorts fasta file by abundance
+    
     fasta_filepath = input fasta file, generally a dereplicated fasta
-    output_filepath = output sorted fasta filepath
+    output_filepath = output abundance sorted fasta filepath
     sizein = not defined in usearch helpstring
     sizeout = not defined in usearch helpstring
+    minsize = minimum size of cluster to retain. 
+    log_name = string to specify log filename
+    usersort = Use if not sorting by abundance or usearch will raise an error
+    HALT_EXEC: Used for debugging app controller
+    save_intermediate_files: Preserve all intermediate files created.
     """
     
     output_filepath = output_filepath or \
@@ -473,15 +444,23 @@ def usearch_sort_by_abundance(
     # using abspath to create log filepath, for cluster environments
     tmp_working_dir = split(abspath(output_filepath))[0]
     
-    log_filepath = tmp_working_dir + "/abundance_sort.log"
+    log_filepath = tmp_working_dir + "/" + log_name
     
-    params = {'--sizein':sizein,
-              '--sizeout':sizeout}
+    params = {}
     
     app = Usearch(params,HALT_EXEC=HALT_EXEC)
     
     if usersort:
         app.Parameters['--usersort'].on()
+        
+    if minsize:
+        app.Parameters['--minsize'].on(minsize)
+        
+    if sizein:
+        app.Parameters['--sizein'].on()
+        
+    if sizeout:
+        app.Parameters['--sizeout'].on()
     
     
     app_result = app({'--sortsize':fasta_filepath,
@@ -500,14 +479,26 @@ def usearch_cluster_error_correction(
     w=64,
     slots=16769023,
     maxrejects=64,
+    log_name = "usearch_cluster_err_corrected.log",
     usersort = False,
     HALT_EXEC=False,
     save_intermediate_files=False):
-    """ Cluster for err. corr. at percent_id_err, output consensus fasta
+    """ Cluster for err. correction at percent_id_err, output consensus fasta
+    
     fasta_filepath = input fasta file, generally a dereplicated fasta
-    output_filepath = output sorted fasta filepath
+    output_filepath = output error corrected fasta filepath
+    percent_id_err = minimum identity percent.
     sizein = not defined in usearch helpstring
     sizeout = not defined in usearch helpstring
+    w = Word length for U-sorting
+    slots = Size of compressed index table. Should be prime, e.g. 40000003.
+     Should also specify --w, typical is --w 16 or --w 32.
+    maxrejects = Max rejected targets, 0=ignore, default 32.
+    log_name = string specifying output log name
+    usersort = Enable if input fasta not sorted by length purposefully, lest
+     usearch will raise an error.
+    HALT_EXEC: Used for debugging app controller
+    save_intermediate_files: Preserve all intermediate files created.
     """
     
     output_filepath = output_filepath or \
@@ -516,7 +507,7 @@ def usearch_cluster_error_correction(
     # using abspath to create log filepath, for cluster environments
     tmp_working_dir = split(abspath(output_filepath))[0]
     
-    log_filepath = tmp_working_dir + "/usearch_cluster_err_corrected.log"
+    log_filepath = tmp_working_dir + "/" + log_name
     
     params = {'--sizein':sizein,
               '--sizeout':sizeout,
@@ -538,68 +529,269 @@ def usearch_cluster_error_correction(
     
     return app_result, output_filepath
 
-#$u --cluster $basedir/derep.fas --consout $basedir/cons.fa --id 0.$PCTID_ERR --log $basedir/cluster_err.log --w 20 --slots 16769023 --maxrejects 64 --sizein --sizeout --usersort
 
+def usearch_chimera_filter_de_novo(
+    fasta_filepath,
+    output_chimera_filepath = None,
+    output_non_chimera_filepath = None,
+    abundance_skew = 2,
+    log_name = "uchime_de_novo_chimera_filtering.log",
+    usersort = False,
+    HALT_EXEC=False,
+    save_intermediate_files=False):
+    """ Chimera filter de novo, output chimeras and non-chimeras to fastas
     
-
-
-'''def usearch_search_and_align_from_fasta_filepath(
-    query_fasta_filepath,
-    subject_fasta_filepath,
-    percent_ID=0.75,
-    enable_rev_strand_matching=True,
-    max_accepts=8,
-    max_rejects=32,
-    HALT_EXEC=False):
-    """ query seqs against subject fasta using uclust, 
-    
-       return global pw alignment of best match
+    fasta_filepath = input fasta file, generally a dereplicated fasta
+    output_chimera_filepath = output chimera filepath
+    output_non_chimera_filepath = output non chimera filepath
+    abundance_skew = abundance skew setting for de novo filtering.
+    usersort = Enable if input fasta not sorted by length purposefully, lest
+     usearch will raise an error.
+    HALT_EXEC: Used for debugging app controller
+    save_intermediate_files: Preserve all intermediate files created.
     """
+    
+    output_chimera_filepath = output_chimera_filepath or \
+     get_tmp_filename(prefix='uchime_chimeras_', suffix='.fasta')
      
-    # Explanation of parameter settings
-    #  id - min percent id to count a match
-    #  maxaccepts = 8 , searches for best match rather than first match 
-    #                   (0 => infinite accepts, or good matches before 
-    #                    quitting search)
-    #  maxaccepts = 32, 
-    #  libonly = True , does not add sequences to the library if they don't
-    #                   match something there already. this effectively makes
-    #                   uclust a search tool rather than a clustering tool
+    output_non_chimera_filepath = output_non_chimera_filepath or \
+     get_tmp_filename(prefix='uchime_non_chimeras_', suffix='.fasta')
     
-    params = {'--id':percent_ID,
-              '--maxaccepts':max_accepts,
-              '--maxrejects':max_rejects,
-              '--libonly':True,
-              '--lib':subject_fasta_filepath}
-              
-    if enable_rev_strand_matching:
-        params['--rev'] = True
+    # using abspath to create log filepath, for cluster environments
+    tmp_working_dir = split(abspath(output_chimera_filepath))[0]
     
-    # instantiate the application controller
+    log_filepath = tmp_working_dir + "/" + log_name
+    
+    params = {'--abskew':abundance_skew}
+    
     app = Usearch(params,HALT_EXEC=HALT_EXEC)
     
-    # apply uclust
-    alignment_filepath = \
-     get_tmp_filename(prefix='usearch_alignments',suffix='.fasta')
-    us_filepath = \
-     get_tmp_filename(prefix='usearch_results',suffix='.uc')
-    input_data = {'--input':query_fasta_filepath,
-                  '--fastapairs':alignment_filepath,
-                  '--uc':us_filepath}
-    app_result = app(input_data)
+    if usersort:
+        app.Parameters['--usersort'].on()
     
-    # yield the pairwise alignments
-    for result in process_uclust_pw_alignment_results(
-     app_result['PairwiseAlignments'],app_result['ClusterFile']):
-        try:
-            yield result
-        except GeneratorExit:
-            break
     
-    # clean up the temp files that were generated
-    app_result.cleanUp()
+    app_result = app({'--uchime':fasta_filepath,
+                      '--chimeras':output_chimera_filepath,
+                      '--nonchimeras':output_non_chimera_filepath,
+                      '--log':log_filepath
+                      })
     
-    return '''
+    return app_result, output_non_chimera_filepath
+
+
+def usearch_chimera_filter_ref_based(
+    fasta_filepath,
+    db_filepath,
+    output_chimera_filepath = None,
+    output_non_chimera_filepath = None,
+    rev = True,
+    log_name = "uchime_reference_chimera_filtering.log",
+    usersort = False,
+    HALT_EXEC=False,
+    save_intermediate_files=False):
+    """ Chimera filter against a reference database.
+    
+    fasta_filepath = input fasta file, generally a dereplicated fasta
+    db_filepath = filepath to reference sequence database
+    output_chimera_filepath = output chimera filepath
+    output_non_chimera_filepath = output non chimera filepath
+    rev = search plus and minus strands of sequences
+    abundance_skew = abundance skew setting for de novo filtering.
+    log_name = string specifying log filename.
+    usersort = Enable if input fasta not sorted by length purposefully, lest
+     usearch will raise an error.
+    HALT_EXEC: Used for debugging app controller
+    save_intermediate_files: Preserve all intermediate files created.
+    """
+    
+    output_chimera_filepath = output_chimera_filepath or \
+     get_tmp_filename(prefix='uchime_chimeras_', suffix='.fasta')
+     
+    output_non_chimera_filepath = output_non_chimera_filepath or \
+     get_tmp_filename(prefix='uchime_non_chimeras_', suffix='.fasta')
+    
+    # using abspath to create log filepath, for cluster environments
+    tmp_working_dir = split(abspath(output_chimera_filepath))[0]
+    
+    log_filepath = tmp_working_dir + "/" + log_name
+    
+    # clusters filepath created by usearch
+    cluster_filepath = tmp_working_dir + "/refdb.uc"
+    
+    params = {'--rev':rev}
+    
+    app = Usearch(params,HALT_EXEC=HALT_EXEC)
+    
+    if usersort:
+        app.Parameters['--usersort'].on()
+    
+    
+    app_result = app({'--uchime':fasta_filepath,
+                      '--db':db_filepath,
+                      '--chimeras':output_chimera_filepath,
+                      '--nonchimeras':output_non_chimera_filepath,
+                      '--log':log_filepath,
+                      '--uchimeout':cluster_filepath
+                      })
+                      
+    if not save_intermediate_files:
+        remove_files([cluster_filepath])
+    
+    return app_result, output_non_chimera_filepath
+    
+
+def usearch_cluster_seqs(
+    fasta_filepath,
+    output_filepath = None,
+    percent_id = 0.97,
+    sizein = True,
+    sizeout = True,
+    w=64,
+    slots=16769023,
+    maxrejects=64,
+    log_name = "usearch_cluster_seqs_post_chimera.log",
+    usersort = True,
+    HALT_EXEC=False,
+    save_intermediate_files=False):
+    """ Cluster for err. correction at percent_id_err, output consensus fasta
+    
+    fasta_filepath = input fasta file, generally a dereplicated fasta
+    output_filepath = output error corrected fasta filepath
+    percent_id = minimum identity percent.
+    sizein = not defined in usearch helpstring
+    sizeout = not defined in usearch helpstring
+    w = Word length for U-sorting
+    slots = Size of compressed index table. Should be prime, e.g. 40000003.
+     Should also specify --w, typical is --w 16 or --w 32.
+    maxrejects = Max rejected targets, 0=ignore, default 32.
+    log_name = string specifying output log name
+    usersort = Enable if input fasta not sorted by length purposefully, lest
+     usearch will raise an error.  In post chimera checked sequences, the seqs
+     are sorted by abundance, so this should be set to True.
+    HALT_EXEC: Used for debugging app controller
+    save_intermediate_files: Preserve all intermediate files created.
+    """
+    
+    output_filepath = output_filepath or \
+     get_tmp_filename(prefix='usearch_cluster', suffix='.fasta')
+    
+    # using abspath to create log filepath, for cluster environments
+    tmp_working_dir = split(abspath(output_filepath))[0]
+    
+    log_filepath = tmp_working_dir + "/" + log_name
+    
+    uc_filepath = tmp_working_dir + "/clustered_seqs_post_chimera.uc"
+    
+    params = {'--sizein':sizein,
+              '--sizeout':sizeout,
+              '--id':percent_id,
+              '--w':w,
+              '--slots':slots,
+              '--maxrejects':maxrejects}
+    
+    app = Usearch(params,HALT_EXEC=HALT_EXEC)
+    
+    if usersort:
+        app.Parameters['--usersort'].on()
+    
+    
+    app_result = app({'--cluster':fasta_filepath,
+                      '--seedsout':output_filepath,
+                      '--log':log_filepath,
+                      '--uc':uc_filepath
+                      })
+                      
+    if not save_intermediate_files:
+        remove_files([uc_filepath])
+    
+    return app_result, output_filepath
+    
+def enumerate_otus(fasta_filepath,
+                   output_filepath = None,
+                   label_prefix = "",
+                   label_suffix = "",
+                   retain_label_as_comment = False,
+                   count_start = 0):
+    """ Writes unique, sequential count to OTUs
+    
+    fasta_filepath = input fasta filepath
+    output_filepath = output fasta filepath
+    label_prefix = string to place before enumeration
+    label_suffix = string to place after enumeration
+    retain_label_as_comment = if True, will place existing label in sequence
+     comment, after a tab
+    count_start = number to start enumerating OTUs with
+    
+    """
+    
+    fasta_i = open(fasta_filepath, "U")
+    
+    output_filepath = output_filepath or \
+     get_tmp_filename(prefix='enumerated_seqs_', suffix='.fasta')
+     
+    fasta_o = open(output_filepath, "w")
+    
+    for label, seq in MinimalFastaParser(fasta_i):
+        curr_label = ">" + label_prefix + str(count_start) + label_suffix
+        if retain_label_as_comment:
+            curr_label += '\t' + label
+        fasta_o.write(curr_label.strip() + '\n')
+        fasta_o.write(seq.strip() + '\n')
+        count_start += 1
+        
+    
+    return output_filepath
+    
+
+    
+def assign_reads_to_otus(original_fasta,
+                         filtered_fasta,
+                         output_filepath,
+                         log_name = "assign_reads_to_otus.log",
+                         perc_id = 0.97,
+                         global_alignment = True,
+                         HALT_EXEC=False,
+                         save_intermediate_files=False):
+    """ Uses original fasta file, blasts to assign reads to filtered fasta
+    
+    original_fasta = filepath to original query fasta
+    filtered_fasta = filepath to enumerated, filtered fasta
+    output_filepath = output path to clusters (uc) file
+    log_name = string specifying output log name
+    usersort = Enable if input fasta not sorted by length purposefully, lest
+     usearch will raise an error.  In post chimera checked sequences, the seqs
+     are sorted by abundance, so this should be set to True.
+    HALT_EXEC: Used for debugging app controller
+    save_intermediate_files: Preserve all intermediate files created.
+    """
+    
+    # Not sure if I feel confortable using blast as a way to recapitulate 
+    # original read ids....
+    
+    output_filepath = output_filepath or \
+     get_tmp_filename(prefix='assign_reads_to_otus', suffix='.uc')
+    
+    # using abspath to create log filepath, for cluster environments
+    tmp_working_dir = split(abspath(output_filepath))[0]
+    
+    log_filepath = tmp_working_dir + "/" + log_name
+    
+    
+    params = {'--id':perc_id,
+              '--global':global_alignment}
+    
+    app = Usearch(params,HALT_EXEC=HALT_EXEC)
+    
+    
+    app_result = app({'--query':original_fasta,
+                      '--db':filtered_fasta,
+                      '--log':log_filepath,
+                      '--uc':output_filepath
+                      })
+                      
+    
+    return app_result, output_filepath
+
 
 '''def uclust_cluster_from_sorted_fasta_filepath(
     fasta_filepath,
