@@ -15,9 +15,11 @@ from qiime.util import parse_command_line_parameters, get_options_lookup
 from optparse import make_option
 from qiime.plot_semivariogram import fit_semivariogram, FitModel
 from qiime.parse import parse_distmat
+from qiime.filter import filter_samples_from_distance_matrix
 from pylab import plot, xlabel, ylabel, title, savefig
 from numpy import asarray
 import os
+from StringIO import StringIO
 
 options_lookup = get_options_lookup()
 
@@ -50,6 +52,8 @@ script_info['optional_options']=[\
      'size steps and from 10-inf using 50 size steps. Note that the binning is ' +\
      'used to clean the plots (reduce number of points) but ignored to fit the ' +\
      'model. [default: %default]'),\
+ make_option('--ignore_missing_samples', help='This will overpass the error raised ' +\
+     'when the matrices have different sizes/samples', action='store_true', default=False),
 ]
 
 script_info['version'] = __version__
@@ -92,7 +96,30 @@ def main():
     
     x_samples, x_distmtx = parse_distmat(open(opts.input_path_x,'U'))
     y_samples, y_distmtx = parse_distmat(open(opts.input_path_y,'U'))
-    (x_val,y_val,x_fit,y_fit) = fit_semivariogram(x_distmtx, y_distmtx, opts.model, ranges)
+    
+    if opts.ignore_missing_samples:
+        ignoring_from_x = list(set(x_samples)-set(y_samples))
+        ignoring_from_y = list(set(y_samples)-set(x_samples))
+        
+        if opts.verbose:
+            print '\nFrom %s we are ignoring: %s\n' % (opts.input_path_x, ignoring_from_x)
+            print '\nFrom %s we are ignoring: %s\n' % (opts.input_path_y, ignoring_from_y)
+            print '\nOnly using: %s\n' % (list(set(x_samples) & set(y_samples)))
+        
+        x_file = StringIO(\
+            filter_samples_from_distance_matrix((x_samples, x_distmtx), ignoring_from_x))
+        x_samples, x_distmtx = parse_distmat(x_file)
+        
+        y_file = StringIO(\
+            filter_samples_from_distance_matrix((y_samples, y_distmtx), ignoring_from_y))
+        y_samples, y_distmtx = parse_distmat(y_file)
+    else:
+        if x_distmtx.shape!=y_distmtx.shape:
+            raise ValueError, 'The distance matrices have different sizes. ' +\
+                'You can cancel this error by passing --ignore_missing_samples'
+        
+    (x_val,y_val,x_fit,y_fit) =\
+          fit_semivariogram((x_samples,x_distmtx), (y_samples,y_distmtx), opts.model, ranges)
     
     plot(x_val, y_val, 'o', color="white")   
     plot(x_fit, y_fit, linewidth=2.0, color="blue")

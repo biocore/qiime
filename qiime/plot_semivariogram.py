@@ -86,7 +86,7 @@ def hist_bins(bins, vals):
         
     return asarray(bins), hist
 
-def fit_semivariogram(x_distmtx, y_distmtx, model, ranges):
+def fit_semivariogram((x_samples,x_distmtx), (y_samples,y_distmtx), model, ranges):
     """ Creates semivariogram values from two distance matrices.    
     :Parameters:
        x_file : array matrix distance matrix for x
@@ -106,14 +106,23 @@ def fit_semivariogram(x_distmtx, y_distmtx, model, ranges):
        y_fit: array
            Values for y fitted from model
     """
-        
-    if x_distmtx.shape!=y_distmtx.shape:
-        raise ValueError, 'The distance matrices have different sizes'
     
+    # if the arrays are not the same rearrange y
+    if x_samples!=y_samples:        
+        lbl_x = list(argsort(x_samples))
+        if lbl_x != range(len(lbl_x)):
+            tmp = x_distmtx[:,lbl_x]
+            x_distmtx = tmp[lbl_x,:]
+            
+        lbl_y = list(argsort(y_samples))
+        if lbl_y != range(len(lbl_y)):
+            tmp = y_distmtx[:,lbl_y]
+            y_distmtx = tmp[lbl_y,:]
+            
     # get upper triangle from matrix in a 1d array
     x_tmp_vals = x_distmtx.compress(tri(len(x_distmtx)).ravel()==0)
     y_tmp_vals = y_distmtx.compress(tri(len(y_distmtx)).ravel()==0)
-    
+        
     # sorting lists and transforming to arrays
     x_vals, y_vals = [], []
     for i in argsort(x_tmp_vals):
