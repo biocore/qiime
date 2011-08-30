@@ -754,7 +754,8 @@ z\tGG\tGC\t5\tsample_z"""
          
         self.assertEqual(actual_results, expected)
         
-        # With mismatches allowed set to 1, should restore truncation.
+        # With reverse_primer_mismatches allowed set to 1, 
+        # should restore truncation.
         in_seqs = self.in_seqs_reverse_primers_mismatch
         bc_map = self.bc_map_fixed_len_bc1
         primer_seq_lens = self.primer_seq_lens_fixed_len_bc1
@@ -783,11 +784,12 @@ z\tGG\tGC\t5\tsample_z"""
          attempt_bc_correction=True,
          primer_seqs_lens=primer_seq_lens,
          all_primers=all_primers, 
-         max_primer_mm=1,
+         max_primer_mm=0,
          disable_primer_check=False,
          reverse_primers = 'truncate_only',
          rev_primers = rev_primers_test,
-         qual_out = False)
+         qual_out = False,
+         reverse_primer_mismatches=1)
          
         out_f = open(out_f.name.replace('.tmp',''), "U")
         actual_results = '\n'.join([line.strip() for line in out_f])
@@ -836,8 +838,8 @@ z\tGG\tGC\t5\tsample_z"""
          
         self.assertEqual(actual_results, expected)
         
-        # Testing truncate_remove, with mismatch set to 1 should allow
-        # all 4 sequences to be written, truncated
+        # Testing truncate_remove, with reverse_primer_mismatches set to 1 
+        # should allow all 4 sequences to be written, truncated
         in_seqs = self.in_seqs_reverse_primers_mismatch
         bc_map = self.bc_map_fixed_len_bc1
         primer_seq_lens = self.primer_seq_lens_fixed_len_bc1
@@ -872,7 +874,8 @@ z\tGG\tGC\t5\tsample_z"""
          disable_primer_check=False,
          reverse_primers = 'truncate_remove',
          rev_primers = rev_primers_test,
-         qual_out = False)
+         qual_out = False,
+         reverse_primer_mismatches=1)
          
         out_f = open(out_f.name.replace('.tmp',''), "U")
         actual_results = '\n'.join([line.strip() for line in out_f])
@@ -1263,6 +1266,7 @@ z\tGG\tGC\t5\tsample_z"""
         discard_bad_windows=True
         median_length_filtering=None
         added_demultiplex_field=None
+        reverse_primer_mismatches=0
         
         
         preprocess(fasta_files,
@@ -1286,6 +1290,7 @@ z\tGG\tGC\t5\tsample_z"""
                    qual_score_window,
                    disable_primer_check,
                    reverse_primers,
+                   reverse_primer_mismatches,
                    record_qual_scores,
                    discard_bad_windows,
                    median_length_filtering,

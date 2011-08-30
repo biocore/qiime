@@ -530,7 +530,8 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
     primer_seqs_lens, all_primers, max_primer_mm, disable_primer_check,
     reverse_primers, rev_primers, qual_out, qual_score_window=0,
     discard_bad_windows=False, min_qual_score=25, min_seq_len=200,
-    median_length_filtering=None, added_demultiplex_field=None):
+    median_length_filtering=None, added_demultiplex_field=None,
+    reverse_primer_mismatches=0):
     """Checks fasta-format sequences and qual files for validity."""
     
     
@@ -674,7 +675,7 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
                     rev_primer = rev_primers[curr_bc]
                     rev_primer_mm, rev_primer_index  = \
                      local_align_primer_seq(rev_primer,cres)
-                    if rev_primer_mm <= max_primer_mm:
+                    if rev_primer_mm <= reverse_primer_mismatches:
                         write_seq = write_seq[0:rev_primer_index]
                         if qual_out:
                             curr_qual = curr_qual[0:barcode_len +\
@@ -688,7 +689,7 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
                     rev_primer = rev_primers[curr_bc]
                     rev_primer_mm, rev_primer_index  = \
                      local_align_primer_seq(rev_primer,cres)
-                    if rev_primer_mm <= max_primer_mm:
+                    if rev_primer_mm <= reverse_primer_mismatches:
                         write_seq = write_seq[0:rev_primer_index]
                         if qual_out:
                             curr_qual = curr_qual[0:barcode_len +\
@@ -1036,7 +1037,8 @@ def preprocess(fasta_files, qual_files, mapping_file,
     dir_prefix='.', max_bc_errors=2, max_homopolymer=4,
     retain_unassigned_reads=False, keep_barcode=False, 
     attempt_bc_correction=True, qual_score_window=0,
-    disable_primer_check=False, reverse_primers='disable', 
+    disable_primer_check=False, reverse_primers='disable',
+    reverse_primer_mismatches=0,
     record_qual_scores=False, discard_bad_windows=False, 
     median_length_filtering=None, added_demultiplex_field=None):
         
@@ -1104,6 +1106,9 @@ def preprocess(fasta_files, qual_files, mapping_file,
     written and counted in the log file as failing for this reason.  The 
     mismatches allowed for a reverse primer match are the same as specified 
     for the forward primer mismatches with the -M parameter (default 0).
+    
+    reverse_primer_mismatches: Number of reverse primer mismatches allowed.
+    reverse_primers must be enabled for this to do anything.
     
     record_qual_scores:  (default False) Will record quality scores for all
     sequences that are written to the output seqs.fna file in a separate
@@ -1329,7 +1334,8 @@ def preprocess(fasta_files, qual_files, mapping_file,
         primer_seqs_lens, all_primers, max_primer_mm, disable_primer_check,
         reverse_primers, rev_primers, qual_out, qual_score_window,
         discard_bad_windows, min_qual_score, min_seq_len,
-        median_length_filtering, added_demultiplex_field)
+        median_length_filtering, added_demultiplex_field,
+        reverse_primer_mismatches)
 
     # Write log file
     log_file = open(dir_prefix + '/' + "split_library_log.txt", 'w+')
