@@ -859,7 +859,7 @@ def run_beta_diversity_through_plots(otu_table_fp, mapping_fp,
 def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,
     output_dir, command_handler, params, qiime_config, tree_fp=None,
     num_steps=10, parallel=False, logger=None, min_seqs_per_sample=10,
-    status_update_callback=print_to_stdout):
+    max_rare_depth=None,status_update_callback=print_to_stdout):
     """ Run the data preparation steps of Qiime 
     
         The steps performed by this function are:
@@ -893,11 +893,12 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,
                      'Original Error:\n%s\n' % str(e))
         logger.close()
         raise IOError,e
-    
-    min_count, max_count, median_count, mean_count, counts_per_sample =\
-     compute_seqs_per_library_stats(otu_table_f)
-    step = int((median_count - min_seqs_per_sample) / num_steps) or 1
-    median_count = int(median_count)
+    if max_rare_depth == None:
+        min_count, max_count, median_count, mean_count, counts_per_sample =\
+         compute_seqs_per_library_stats(otu_table_f)
+        max_rare_depth = median_count
+    step = int((max_rare_depth - min_seqs_per_sample) / num_steps) or 1
+    max_rare_depth = int(max_rare_depth)
     
     rarefaction_dir = '%s/rarefaction/' % output_dir
     try:
@@ -913,13 +914,13 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,
         # Build the rarefaction command
         rarefaction_cmd = \
          '%s %s/parallel_multiple_rarefactions.py -T -i %s -m %s -x %s -s %s -o %s %s' %\
-         (python_exe_fp, script_dir, otu_table_fp, min_seqs_per_sample, median_count, \
+         (python_exe_fp, script_dir, otu_table_fp, min_seqs_per_sample, max_rare_depth, \
           step, rarefaction_dir, params_str)
     else:
         # Build the rarefaction command
         rarefaction_cmd = \
          '%s %s/multiple_rarefactions.py -i %s -m %s -x %s -s %s -o %s %s' %\
-         (python_exe_fp, script_dir, otu_table_fp, min_seqs_per_sample, median_count, \
+         (python_exe_fp, script_dir, otu_table_fp, min_seqs_per_sample, max_rare_depth, \
           step, rarefaction_dir, params_str)
     commands.append([('Alpha rarefaction', rarefaction_cmd)])
     
