@@ -171,7 +171,7 @@ def main():
         sampling_depth=sampling_depth,
         suppress_split_libraries=suppress_split_libraries,
         even_sampling_keeps_all_samples=even_sampling_keeps_all_samples,
-        arare_min_seqs_per_sample=10,
+        arare_min_rare_depth=10,
         arare_num_steps=10,
         reference_tree_fp=reference_tree_fp,
         parallel=parallel,

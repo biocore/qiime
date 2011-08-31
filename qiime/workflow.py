@@ -858,7 +858,7 @@ def run_beta_diversity_through_plots(otu_table_fp, mapping_fp,
 
 def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,
     output_dir, command_handler, params, qiime_config, tree_fp=None,
-    num_steps=10, parallel=False, logger=None, min_seqs_per_sample=10,
+    num_steps=10, parallel=False, logger=None, min_rare_depth=10,
     max_rare_depth=None,status_update_callback=print_to_stdout):
     """ Run the data preparation steps of Qiime 
     
@@ -897,7 +897,7 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,
         min_count, max_count, median_count, mean_count, counts_per_sample =\
          compute_seqs_per_library_stats(otu_table_f)
         max_rare_depth = median_count
-    step = int((max_rare_depth - min_seqs_per_sample) / num_steps) or 1
+    step = int((max_rare_depth - min_rare_depth) / num_steps) or 1
     max_rare_depth = int(max_rare_depth)
     
     rarefaction_dir = '%s/rarefaction/' % output_dir
@@ -914,13 +914,13 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,
         # Build the rarefaction command
         rarefaction_cmd = \
          '%s %s/parallel_multiple_rarefactions.py -T -i %s -m %s -x %s -s %s -o %s %s' %\
-         (python_exe_fp, script_dir, otu_table_fp, min_seqs_per_sample, max_rare_depth, \
+         (python_exe_fp, script_dir, otu_table_fp, min_rare_depth, max_rare_depth, \
           step, rarefaction_dir, params_str)
     else:
         # Build the rarefaction command
         rarefaction_cmd = \
          '%s %s/multiple_rarefactions.py -i %s -m %s -x %s -s %s -o %s %s' %\
-         (python_exe_fp, script_dir, otu_table_fp, min_seqs_per_sample, max_rare_depth, \
+         (python_exe_fp, script_dir, otu_table_fp, min_rare_depth, max_rare_depth, \
           step, rarefaction_dir, params_str)
     commands.append([('Alpha rarefaction', rarefaction_cmd)])
     
@@ -1289,7 +1289,7 @@ def run_core_qiime_analyses(
     sampling_depth=None,
     even_sampling_keeps_all_samples=False,
     suppress_split_libraries=False,
-    arare_min_seqs_per_sample=10,
+    arare_min_rare_depth=10,
     arare_num_steps=10,
     reference_tree_fp=None,
     parallel=False,
@@ -1548,7 +1548,7 @@ def run_core_qiime_analyses(
      num_steps=arare_num_steps,
      parallel=parallel,
      logger=logger,
-     min_seqs_per_sample=arare_min_seqs_per_sample,
+     min_rare_depth=arare_min_rare_depth,
      status_update_callback=status_update_callback)
     
     index_links.append(('Alpha rarefaction plots',

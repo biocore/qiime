@@ -70,6 +70,9 @@ script_info['optional_options']=[\
  make_option('-t','--tree_fp',\
             help='path to the tree file [default: %default; '+\
             'REQUIRED for phylogenetic measures]'),
+ make_option('--min_rare_depth',type='int',\
+            help='the lower limit of rarefaction depths '+\
+            '[default: %default]',default=10),
  make_option('-e','--max_rare_depth',type='int',\
             help='the upper limit of rarefaction depths '+\
             '[default: median sequence/sample count]'),
@@ -88,6 +91,7 @@ def main():
     verbose = opts.verbose
     print_only = opts.print_only
     parallel = opts.parallel
+    min_rare_depth = opts.min_rare_depth
     max_rare_depth = opts.max_rare_depth
     
     if opts.parameter_fp:
@@ -141,6 +145,7 @@ def main():
      tree_fp=tree_fp,\
      num_steps=num_steps,\
      parallel=parallel,\
+     min_rare_depth=min_rare_depth,
      max_rare_depth=max_rare_depth,
      status_update_callback=status_update_callback)
 
