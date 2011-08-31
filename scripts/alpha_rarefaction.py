@@ -70,7 +70,7 @@ script_info['optional_options']=[\
  make_option('-t','--tree_fp',\
             help='path to the tree file [default: %default; '+\
             'REQUIRED for phylogenetic measures]'),
- make_option('--max_rare_depth',type='int',\
+ make_option('-e','--max_rare_depth',type='int',\
             help='the upper limit of rarefaction depths '+\
             '[default: median sequence/sample count]'),
  options_lookup['jobs_to_start_workflow']]
