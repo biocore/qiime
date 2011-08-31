@@ -259,7 +259,7 @@ class WorkflowTests(TestCase):
             qiime_config=self.qiime_config,
             categories='Treatment,DOB',
             sampling_depth=100,
-            arare_min_seqs_per_sample=10,
+            arare_min_rare_depth=10,
             arare_num_steps=10,
             reference_tree_fp=None,
             parallel=False,
@@ -294,7 +294,7 @@ class WorkflowTests(TestCase):
             qiime_config=self.qiime_config,
             categories='Treatment',
             sampling_depth=None,
-            arare_min_seqs_per_sample=10,
+            arare_min_rare_depth=10,
             arare_num_steps=10,
             reference_tree_fp=None,
             parallel=False,
@@ -328,7 +328,7 @@ class WorkflowTests(TestCase):
             qiime_config=self.qiime_config,
             categories='Treatment,DOB',
             sampling_depth=100,
-            arare_min_seqs_per_sample=10,
+            arare_min_rare_depth=10,
             arare_num_steps=10,
             reference_tree_fp=None,
             parallel=True,
@@ -839,7 +839,7 @@ class WorkflowTests(TestCase):
          tree_fp=self.fasting_tree_fp,
          num_steps=10, 
          parallel=False, 
-         min_seqs_per_sample=10,\
+         min_rare_depth=10,\
          status_update_callback=no_status_updates)
          
         pd_control_plot_fp = join(self.wf_out,'alpha_rarefaction_plots',
@@ -885,7 +885,7 @@ class WorkflowTests(TestCase):
          tree_fp=self.fasting_tree_fp,
          num_steps=10, 
          parallel=True, 
-         min_seqs_per_sample=10,\
+         min_rare_depth=10,\
          status_update_callback=no_status_updates)
          
         pd_control_plot_fp = join(self.wf_out,'alpha_rarefaction_plots',
