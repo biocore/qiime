@@ -26,7 +26,7 @@ from qiime.make_3d_plots import (make_3d_plots,scale_pc_data_matrix,
                                     make_edges_output,make_ellipsoid_faces,
                                     make_mage_ellipsoids,subdivide,
                                     get_multiple_coords,validate_coord_files,
-                                    make_3d_plots_invue)
+                                    make_3d_plots_invue, make_vectors_output)
 from qiime.util import get_tmp_filename
 
 class TopLevelTests(TestCase):
@@ -214,7 +214,30 @@ class TopLevelTests(TestCase):
                         self.label_color, arrow_colors=arrow_colors)
         
         self.assertEqual(obs_result, exp_result)
-    
+  
+    def test_make_vectors_output(self):
+        """make_vectors_output: Create kinemage string given the data"""
+        vectors = {'test': [('1', 'a_0'), ('2', 'a_1'), ('3', 'a_0')]}
+        coord_dict = {}
+        coord_dict['a_0'] = array([ 1.0, 2.0, 3.0, 4.0])
+        coord_dict['a_1'] = array([ 1.1, 2.1, 3.1, 4.1])
+        coord_dict['a_2'] = array([ 1.2, 2.2, 3.2, 4.2])
+        num_coords=4
+        color = 'hotpink'
+        ids = ['a_0']
+        
+        # test without custom axes
+        exp_result = ['@vectorlist {trace} dimension=4 on', \
+            '1.0 2.0 3.0 4.0 hotpink', \
+            '1.05 2.05 3.05 4.05 hotpink P', \
+            '1.05 2.05 3.05 4.05 hotpink', \
+            '1.1 2.1 3.1 4.1 hotpink P']
+            
+        obs_result=make_vectors_output(coord_dict, vectors, num_coords,\
+            color, ids)
+            
+        self.assertEqual(obs_result, exp_result)
+        
     def test_process_custom_axes(self):
         """process_custom_axes: Parses the custom_axes \
 option from the command line"""

@@ -77,7 +77,8 @@ def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, \
                     edges=None, coords_low=None, coords_high=None, \
                     ellipsoid_prefs=None, \
                     user_supplied_edges=False, ball_scale=1.0, \
-                    arrow_colors={'line_color': 'white', 'head_color': 'red'}):
+                    arrow_colors={'line_color': 'white', 'head_color': 'red'},
+                    add_vectors=None):
     """Makes 3d plots given coords, mapping file, and prefs.
     
     Added quick-and-dirty hack for gradient coloring of columns, should
@@ -101,7 +102,37 @@ def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, \
     #Sort by the column name first
     groups_and_colors=iter_color_groups(mapping,prefs)
     groups_and_colors=list(groups_and_colors)
-
+    
+    # processing the vectors
+    if add_vectors:
+        # validating the values in add_vectors
+        for label in add_vectors:
+            if label not in mapping[0]:
+                raise ValueError, "Couldn't find name %s in headers: %s" \
+                    % (label, mapping[0])
+                    
+        # getting the index of the columns in the mapping file
+        ind_group = mapping[0].index(add_vectors[0])
+        if len(add_vectors)>=2:
+            ind_sort = mapping[0].index(add_vectors[1])
+        else: 
+            ind_sort = 0
+        
+        # creating groups 
+        groups = {}
+        for l in mapping[1:]:
+            if l[0] not in coord_header:
+                continue
+            if l[ind_group] not in groups:
+                groups[l[ind_group]] = [(l[ind_sort],l[0])]
+            else:
+                groups[l[ind_group]].append((l[ind_sort],l[0]))
+        for g in groups:
+            groups[g] = natsort(groups[g])
+        
+        add_vectors = groups
+    
+    
     for i in range(len(groups_and_colors)):  
         #Write to kinemage file using the groups, colors and coords 
         labelname=groups_and_colors[i][0]
@@ -117,7 +148,8 @@ def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, \
             coords_low=coords_low, coords_high=coords_high, \
             ellipsoid_prefs=ellipsoid_prefs, \
             user_supplied_edges=user_supplied_edges, \
-            ball_scale=ball_scale, arrow_colors=arrow_colors))
+            ball_scale=ball_scale, arrow_colors=arrow_colors, \
+            add_vectors=add_vectors))
         result.extend(make_mage_output(groups, colors, coord_header, coords, \
             pct_var,background_color,label_color,data_colors, \
             taxa, custom_axes,name=labelname, \
@@ -125,8 +157,9 @@ def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, \
             coords_low=coords_low, coords_high=coords_high, \
             ellipsoid_prefs=ellipsoid_prefs, \
             user_supplied_edges=user_supplied_edges, \
-            ball_scale=ball_scale, arrow_colors=arrow_colors))
-
+            ball_scale=ball_scale, arrow_colors=arrow_colors, \
+            add_vectors=add_vectors))
+    
     return result
 
 def scale_pc_data_matrix(coords, pct_var):
@@ -147,7 +180,8 @@ def make_mage_output(groups, colors, coord_header, coords, pct_var, \
                      coord_scale=1.05, edges=None, coords_low=None, \
                      coords_high=None, ellipsoid_prefs=None,
                      user_supplied_edges=False, ball_scale=1.0, \
-                     arrow_colors={'line_color': 'white', 'head_color': 'red'}):
+                     arrow_colors={'line_color': 'white', 'head_color': 'red'},
+                     add_vectors=None):
     """Convert groups, colors, coords and percent var into mage format"""
     result = []
 
@@ -218,7 +252,7 @@ def make_mage_output(groups, colors, coord_header, coords, pct_var, \
     for group_name in natsort(groups):
         ids = groups[group_name]
         result.append('@group {%s (n=%s)} collapsible' % (group_name, len(ids)))
-
+        
         color = colors[group_name]
         coord_lines = []
         for id_ in sorted(ids):
@@ -240,6 +274,10 @@ master={points} nobutton' % (color, radius, alpha, num_coords))
         result.append('@labellist color=%s radius=%s alpha=%s dimension=%s \
 master={labels} nobutton' % (color, radius, alpha, num_coords))
         result.append('\n'.join(coord_lines))
+        
+        # Write vectors if requested
+        if add_vectors:
+            result += make_vectors_output(coord_dict, add_vectors, num_coords, color, ids)
 
     if not taxa is None:
         result += make_mage_taxa(taxa, num_coords, pct_var,
@@ -285,7 +323,67 @@ master={labels} nobutton' % (color, radius, alpha, num_coords))
         result += make_edges_output(coord_dict, edges, num_coords, label_color,
                                     arrow_colors=arrow_colors,
                                     user_supplied_edges=user_supplied_edges)
+    
     return result
+
+def make_vectors_output(coord_dict, add_vectors, num_coords, color, ids):
+    """Creates make output to display vectors (as a kinemage vectorlist).
+
+       Params:
+        coord_dict, a dict of (sampleID, coords), where coords is a numpy array
+        edges, a dictionary of pairs of samples where 
+        ['label': [('order': sampleID) ...] num_coords, the number of included 
+        dimensions in the PCoA plot color the color of this batch of vectors, 
+        ids the list of ids that are in this batch and where the first member 
+        of the groups id#a should be a member of.
+        
+       Returns:
+        result, a list of strings containing a kinemage vectorlist
+    """
+    # default parameters
+    which_set = 0
+    tip_fraction=0.5
+    arrow_colors = {'line_color': color, 'head_color': color}
+    
+    # header for section in kin file
+    result = []
+    result.append('@vectorlist {trace} dimension=%s on' % (num_coords))
+    
+    # selecting the edges to draw in this batch
+    edges = []
+    for k, v in add_vectors.iteritems():
+        edges = edges + [(v[i][1],v[i+1][1]) for i in range(len(v[:-1])) if v[i][1] in ids]
+    
+    # creating "vectors"
+    for edge in edges:
+        id_fr, id_to = edge
+        # extract the coords of each vertex
+        pt_fr = coord_dict[id_fr][:num_coords]
+        pt_to = coord_dict[id_to][:num_coords]
+
+        # different tip color for each destination coords file
+        #tip_color = kinemage_colors[which_set % len(kinemage_colors)]
+        # plot a color 'tip' on the line (certain % of line length)
+        # this gets the coords of the beginning of the 'tip'
+        diffs = (pt_to-pt_fr) * (1-tip_fraction)
+        middles = pt_fr + diffs
+        # add a default-color line segment
+        
+        # modified to use user defined
+        tip_color = arrow_colors['head_color']
+        label_color = arrow_colors['line_color']
+        
+        result.append('%s %s' % \
+                          (' '.join(map(str, pt_fr)),label_color))
+        result.append('%s %s P' % \
+                          (' '.join(map(str, middles)),label_color))
+        # add the tip-colored line segment
+        result.append('%s %s' % \
+                          (' '.join(map(str, middles)), tip_color))
+        result.append('%s %s P' % \
+                          (' '.join(map(str, pt_to)), tip_color))            
+    return result
+
 
 def make_edges_output(coord_dict, edges, num_coords, label_color, arrow_colors, 
                       tip_fraction=0.4,user_supplied_edges=False):
@@ -433,8 +531,6 @@ def translate_faces(center, faces):
         for j,point in enumerate(face):
             faces[i][j] = (point[0]+center[0], point[1]+center[1], point[2]+center[2])
     return faces
-
-
 
 def process_custom_axes(axis_names):
     """Parses the custom_axes option from the command line"""
@@ -759,7 +855,8 @@ def generate_3d_plots(prefs, data, custom_axes, background_color, label_color, \
                         dir_path='',data_file_path='',filename=None, \
                         default_filename='out', ellipsoid_prefs=None, \
                         user_supplied_edges=False, ball_scale=1.0, \
-                        arrow_colors={'line_color': 'white', 'head_color': 'red'}):
+                        arrow_colors={'line_color': 'white', 'head_color': 'red'}, \
+                        add_vectors=None):
     """Make 3d plots according to coloring options in prefs."""
     
     if filename is None:
@@ -780,15 +877,16 @@ def generate_3d_plots(prefs, data, custom_axes, background_color, label_color, \
     taxa = None
     if data.has_key('taxa'):
         taxa = data['taxa']
-
+    
     res = make_3d_plots(coord_header, coords, pct_var,mapping,prefs, \
                         background_color,label_color, \
                         taxa, custom_axes=custom_axes,edges=edges, \
                         coords_low=coords_low, coords_high=coords_high, \
                         ellipsoid_prefs=ellipsoid_prefs, \
                         user_supplied_edges=user_supplied_edges, \
-                        ball_scale=ball_scale, arrow_colors=arrow_colors)
-
+                        ball_scale=ball_scale, arrow_colors=arrow_colors,
+                        add_vectors=add_vectors)
+        
     #Write kinemage file
     f = open(kinpath, 'w')
     f.write('\n'.join(res))

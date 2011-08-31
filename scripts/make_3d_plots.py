@@ -155,6 +155,16 @@ script_info['optional_options']=[\
         ' to each point created when using the' +\
         ' --polyhedron_points option. This is only used when' +\
         ' using the invue output_format. [default: %default]', default=1.5),
+    # vector analysis options
+    make_option('--add_vectors', dest='add_vectors', default=None,
+        help='Create vectors based on a column of the mapping file. This.parameter' +\
+        ' accepts up to 2 columns, (1) create the vectors, (2) sort them.' +\
+        ' If you wanted to group by Species and' +\
+        ' order by SampleID you will pass --add_vectors=Species but if you' +\
+        ' wanted to group by Species but order by DOB you will pass' +\
+        ' --add_vectors=Species,DOB;' +\
+        ' this is useful when you use the --custom_axes param [default: %default]'),
+
     options_lookup['output_dir'],
 ]
 
@@ -175,7 +185,8 @@ script_info['option_label']={'coord_fname':'Principal coordinates filepath',
                              'interpolation_points': '# of interpolation points',
                              'polyhedron_points':'# of polyhedron points',
                              'polyhedron_offset':'Polyhedron offset',
-                             'custom_axes':'Custom Axis'}
+                             'custom_axes':'Custom Axis',
+                             'add_vectors':'Create vectors based on metadata'}
 script_info['version'] = __version__
 
 def main():
@@ -184,6 +195,13 @@ def main():
     prefs, data, background_color, label_color, ball_scale, arrow_colors= \
                             sample_color_prefs_and_map_data_from_options(opts)
     
+    if opts.add_vectors:
+        add_vectors = opts.add_vectors.split(',')
+        if len(add_vectors)>3:
+            raise ValueError, 'You must add maximum 3 columns but %s' % add_vectors
+    else:
+    	add_vectors = None
+            
     if opts.output_format == 'invue':
         # validating the number of points for interpolation
         if (opts.interpolation_points<0):
@@ -210,7 +228,6 @@ def main():
         if len(data['coord'][0]) == 0:
             print "\nError: OTU table and mapping file had no samples in common\n"
             exit(1)
-        
 
         if opts.output_dir:
             create_dir(opts.output_dir,False)
@@ -362,7 +379,8 @@ Valid methods are: " + ', '.join(ellipsoid_methods) + ".")
     #Place this outside try/except so we don't mask NameError in action
     if action:
         action(prefs,data,custom_axes,background_color,label_color,dir_path, \
-                data_file_path,filename,ellipsoid_prefs=ellipsoid_prefs)
+                data_file_path,filename,ellipsoid_prefs=ellipsoid_prefs, \
+                add_vectors=add_vectors)
 
 
 if __name__ == "__main__":
