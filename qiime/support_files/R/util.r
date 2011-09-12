@@ -21,12 +21,6 @@ libraries <- list('random_forest'='randomForest','elastic_net'='glmnet')
     output.dir <- arglist[['-o']]
     modelnames <- strsplit(arglist[['--models']],',')[[1]]
 
-    # if there are seven arguments, last one is params file: parse it
-    if(!is.null(arglist[['--params']])) source(arglist[['--params']])
-    # generate a random seed if one wasn't provided; set seed
-    if(!is.element('seed', names(params))) params$seed=floor(runif(1,0,1e9))
-    set.seed(params$seed)
-
     model.fcns <- list('random_forest'=train.rf.wrapper)
 
     # load data
@@ -73,7 +67,7 @@ libraries <- list('random_forest'='randomForest','elastic_net'='glmnet')
     }
 
     return(list(x=x, 
-                y=y,params=params, modelnames=modelnames,
+                y=y, modelnames=modelnames,
                 output.dir=output.dir,
                 model.fcns=model.fcns, lineages=lineages))
 }

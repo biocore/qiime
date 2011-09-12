@@ -279,7 +279,8 @@ class RSupervisedLearnerTests(TestCase):
         exp = ['# values of all non-default parameters\n',
                 '# method was "random_forest"\n',
                 'ntree:\t100\n',
-                'seed:\t0\n']
+                'seed:\t0\n',
+                 'cross.validation.k:\t10\n']
         self.assertEqual(parameters_output,exp)
         
         # verify summary file (except don't explicitly test error value)
@@ -350,7 +351,8 @@ class RSupervisedLearnerTests(TestCase):
                 '# method was "random_forest"\n',
                 '# filter was "BSSWSS"\n',
                 'ntree:\t100\n',
-                'seed:\t0\n']
+                'seed:\t0\n',
+                 'cross.validation.k:\t10\n']
         self.assertEqual(parameters_output,exp)
 
         # verify summary file (except don't explicitly test error value)

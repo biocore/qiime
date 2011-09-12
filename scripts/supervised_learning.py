@@ -122,6 +122,14 @@ params$ntree = 1000
 # seed integer for the random number generator (between 0 and 1e9)
 # can be used to replicate results for stochastic processes
 params$seed = 0
+
+# type of error estimate:
+# 'cv' for cross-validation
+# 'oob' for out-of-bag random forest estimate (default for random forests)
+params$error.est = 'cv'
+
+# number of cross-validation folds if using cross-validation (-1 for leave-one-out)
+params$cross.validation.k = -1
 """
 }
 

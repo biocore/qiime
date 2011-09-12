@@ -85,9 +85,16 @@ source(sprintf('%s/ml.wrappers.r',arglist[['--sourcedir']]))
 source(sprintf('%s/util.r',arglist[['--sourcedir']]))
 
 # load data
-params <- NULL
 opts <- load.data(arglist)
 verbose <- !is.null(arglist[['--verbose']])
+
+params <- list()
+# if there are seven arguments, last one is params file: parse it
+if(!is.null(arglist[['--params']])) source(arglist[['--params']])
+# generate a random seed if one wasn't provided; set seed
+if(!is.element('seed', names(params))) params$seed=floor(runif(1,0,1e9))
+set.seed(params$seed)
+if(!is.element('cross.validation.k', names(params))) params$cross.validation.k <- 10
 if(verbose && is.null(arglist[['--filter']])) params$do.trace=TRUE
 
 # do learning, save results
@@ -106,8 +113,33 @@ for(modelname in opts$modelnames){
         save.filter.results(filter.res, opts, subdir,
             modelname, arglist[['--filter']])
     } else {
+
         res <- tune.model(model.fcn,opts$x,opts$y,params)
-        res$params <- params        
+        res$params <- params
+        
+        # if cross-validation requested for error estimation, do it.
+        if(is.element("error.est", names(params)) && params$error.est == 'cv'){
+            folds <- balanced.folds(opts$y, params$cross.validation.k)
+            yhat <- opts$y
+            probs <- matrix(0,nrow=length(yhat), ncol=length(unique(opts$y)))
+            rownames(probs) <- rownames(opts$x)
+            colnames(probs) <- unique(opts$y)
+            for(k in 1:max(folds)){
+                foldix <- which(folds==k)
+                params$do.trace <- FALSE
+                res.k <- tune.model(model.fcn, opts$x[-foldix,], opts$y[-foldix], params)
+                yhat[foldix] <- predict(res.k$model, opts$x[foldix,])
+                probs[foldix,] <- predict(res.k$model, opts$x[foldix,], type='prob')
+            }
+            res$cv.probabilities <- probs
+            # set result error to cv error
+            err.method <- sprintf("Cross-validation error with %d folds", params$cross.validation.k)
+            if(params$cross.validation.k == -1) err.method <- "Leave-one-out cross validation error"
+            res$err <- list('err'=mean(yhat != opts$y),
+                            'err.method' = err.method)
+            res$predictions <- yhat
+        }
+        
         # save results
         save.classification.results(res,subdir,modelname,opts$params$seed)
     }
