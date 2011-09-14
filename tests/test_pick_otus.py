@@ -13,17 +13,18 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
 from os import remove
+from shutil import rmtree
 
 from cogent.util.misc import create_dir
 from cogent.util.unit_test import TestCase, main
-from qiime.util import get_tmp_filename, load_qiime_config
+from qiime.util import get_tmp_filename, load_qiime_config, create_dir
 from cogent.util.misc import remove_files
 from cogent import DNA
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from qiime.pick_otus import (CdHitOtuPicker, OtuPicker,
     MothurOtuPicker, PrefixSuffixOtuPicker, TrieOtuPicker, BlastOtuPicker,
     expand_otu_map_seq_ids, map_otu_map_files, UclustOtuPicker,
-    UclustReferenceOtuPicker, expand_failures)
+    UclustReferenceOtuPicker, expand_failures, UsearchOtuPicker)
 
 
 class OtuPickerTests(TestCase):
@@ -559,7 +560,410 @@ class TrieOtuPickerTests(TestCase):
         actual = self.otu_picker_rev(self.small_seq_path_rev)
         self.assertEqual(actual,expected)
         
+class UsearchOtuPickerTests(TestCase):
+    """ Tests of the usearch-based OTU picker """
+
+    def setUp(self):
+        # create the temporary input files
+        self.dna_seqs_3 = dna_seqs_3
+        self.dna_seqs_4 = dna_seqs_usearch
+        self.ref_database = usearch_ref_seqs1
         
+        
+        self.temp_dir = load_qiime_config()['temp_dir']
+        self.tmp_seq_filepath1 = get_tmp_filename(\
+         prefix='UsearchOtuPickerTest_',\
+         suffix='.fasta')
+        seq_file = open(self.tmp_seq_filepath1,'w')
+        seq_file.write(self.dna_seqs_3)
+        seq_file.close()        
+        
+        self.tmp_seq_filepath2 = get_tmp_filename(\
+         prefix='UsearchOtuPickerTest_',\
+         suffix='.fasta')
+        seq_file = open(self.tmp_seq_filepath2,'w')
+        seq_file.write(self.dna_seqs_4)
+        seq_file.close()
+        
+        self.tmp_ref_database = get_tmp_filename(\
+         prefix='UsearchRefDatabase_',\
+         suffix='.fasta')
+        seq_file = open(self.tmp_ref_database, 'w')
+        seq_file.write(self.ref_database)
+        seq_file.close()
+        
+        self._files_to_remove =\
+         [self.tmp_seq_filepath1, self.tmp_seq_filepath2,
+          self.tmp_ref_database]
+          
+        self._dirs_to_remove = []
+        
+    def tearDown(self):
+        remove_files(self._files_to_remove)
+        if self._dirs_to_remove:
+            for curr_dir in self._dirs_to_remove:
+                rmtree(curr_dir)
+        
+    def seqs_to_temp_fasta(self,seqs):
+        """ """
+        fp = get_tmp_filename(
+         prefix='UsearchOtuPickerTest_',
+         suffix='.fasta')
+        seq_file = open(fp,'w')
+        self._files_to_remove.append(fp)
+        for s in seqs:
+            seq_file.write('>%s\n%s\n' % s)
+        seq_file.close()
+        return fp
+        
+    def test_call_default_params(self):
+        """UsearchOtuPicker.__call__ returns expected clusters default params"""
+
+        # adapted from test_app.test_cd_hit.test_cdhit_clusters_from_seqs
+        # All seqs should create own cluster
+        
+        exp_otu_ids = [str(x) for x in range(10)]
+        
+        exp_clusters = [['uclust_test_seqs_0'],
+                        ['uclust_test_seqs_1'],
+                        ['uclust_test_seqs_2'],
+                        ['uclust_test_seqs_3'],
+                        ['uclust_test_seqs_4'],
+                        ['uclust_test_seqs_5'],
+                        ['uclust_test_seqs_6'],
+                        ['uclust_test_seqs_7'],
+                        ['uclust_test_seqs_8'],
+                        ['uclust_test_seqs_9']]
+        
+        app = UsearchOtuPicker(params={'save_intermediate_files':False,
+                                       'db_filepath':self.tmp_ref_database,
+                                       'output_dir':self.temp_dir,
+                                       'remove_usearch_logs':True,
+                                       'reference_chimera_detection':True,
+                                       'minlen':12,
+                                       'w':12,
+                                       'minsize':1
+                                       })
+        
+                                       
+        obs = app(self.tmp_seq_filepath1)
+        
+        obs_otu_ids = obs.keys()
+        obs_otu_ids.sort()
+        obs_clusters = obs.values()
+        obs_clusters.sort()
+        # The relation between otu ids and clusters is abitrary, and 
+        # is not stable due to use of dicts when parsing clusters -- therefore
+        # just checks that we have the expected group of each
+        self.assertEqual(obs_otu_ids, exp_otu_ids)
+        self.assertEqual(obs_clusters, exp_clusters)
+        
+    def test_call_default_no_reference(self):
+        """UsearchOtuPicker.__call__ returns expected clusters no referencedb"""
+
+        # adapted from test_app.test_cd_hit.test_cdhit_clusters_from_seqs
+        # All seqs should create own cluster
+        
+        exp_otu_ids = [str(x) for x in range(10)]
+        
+        exp_clusters = [['uclust_test_seqs_0'],
+                        ['uclust_test_seqs_1'],
+                        ['uclust_test_seqs_2'],
+                        ['uclust_test_seqs_3'],
+                        ['uclust_test_seqs_4'],
+                        ['uclust_test_seqs_5'],
+                        ['uclust_test_seqs_6'],
+                        ['uclust_test_seqs_7'],
+                        ['uclust_test_seqs_8'],
+                        ['uclust_test_seqs_9']]
+        
+        app = UsearchOtuPicker(params={'save_intermediate_files':False,
+                                       'db_filepath':self.tmp_ref_database,
+                                       'output_dir':self.temp_dir,
+                                       'remove_usearch_logs':True,
+                                       'reference_chimera_detection':False,
+                                       'minlen':12,
+                                       'w':12,
+                                       'minsize':1
+                                       })
+        
+                                       
+        obs = app(self.tmp_seq_filepath1)
+        
+        obs_otu_ids = obs.keys()
+        obs_otu_ids.sort()
+        obs_clusters = obs.values()
+        obs_clusters.sort()
+        # The relation between otu ids and clusters is abitrary, and 
+        # is not stable due to use of dicts when parsing clusters -- therefore
+        # just checks that we have the expected group of each
+        self.assertEqual(obs_otu_ids, exp_otu_ids)
+        self.assertEqual(obs_clusters, exp_clusters)
+        
+    def test_call_low_cluster_identity(self):
+        """UsearchOtuPicker.__call__ returns expected clusters"""
+
+        # adapted from test_app.test_cd_hit.test_cdhit_clusters_from_seqs
+        # Should only get 6 clusters
+        exp_otu_ids = [str(x) for x in range(6)]
+        
+        exp_clusters = [['uclust_test_seqs_0'],
+                        ['uclust_test_seqs_1'],
+                        ['uclust_test_seqs_2'],
+                        ['uclust_test_seqs_3'],
+                        ['uclust_test_seqs_4'],
+                        ['uclust_test_seqs_7']
+                       ]
+        
+        app = UsearchOtuPicker(params={'save_intermediate_files':False,
+                                       'db_filepath':self.tmp_ref_database,
+                                       'output_dir':self.temp_dir,
+                                       'remove_usearch_logs':True,
+                                       'reference_chimera_detection':False,
+                                       'de_novo_chimera_detection':False,
+                                       'cluster_size_filtering':False,
+                                       'minlen':12,
+                                       'w':12,
+                                       'minsize':1,
+                                       'percent_id':0.80,
+                                       'percent_id_err':0.97
+                                       })
+        
+                                       
+        obs = app(self.tmp_seq_filepath1)
+        
+        obs_otu_ids = obs.keys()
+        obs_otu_ids.sort()
+        obs_clusters = obs.values()
+        obs_clusters.sort()
+        # The relation between otu ids and clusters is abitrary, and 
+        # is not stable due to use of dicts when parsing clusters -- therefore
+        # just checks that we have the expected group of each
+        self.assertEqual(obs_otu_ids, exp_otu_ids)
+        self.assertEqual(obs_clusters, exp_clusters)
+        
+    def test_call_clusters_percent_id_err(self):
+        """UsearchOtuPicker.__call__ returns expected clusters"""
+
+        # adapted from test_app.test_cd_hit.test_cdhit_clusters_from_seqs
+        # Should return 4 clusters with percent_id_err at 80%.  Unsure as to
+        # why the percent_id_err does not exactly funtion like normal 
+        # clustering though.
+
+        exp_otu_ids = ['1', '2', '4', '5']
+        
+        exp_clusters = [['uclust_test_seqs_1'],
+                        ['uclust_test_seqs_2'],
+                        ['uclust_test_seqs_4'],
+                        ['uclust_test_seqs_7']
+                       ]
+        
+        app = UsearchOtuPicker(params={'save_intermediate_files':False,
+                                       'db_filepath':self.tmp_ref_database,
+                                       'output_dir':self.temp_dir,
+                                       'remove_usearch_logs':True,
+                                       'reference_chimera_detection':False,
+                                       'de_novo_chimera_detection':False,
+                                       'cluster_size_filtering':False,
+                                       'minlen':12,
+                                       'w':12,
+                                       'minsize':1,
+                                       'percent_id':0.97,
+                                       'percent_id_err':0.80,
+                                       'abundance_skew':1
+                                       })
+        
+                                       
+        obs = app(self.tmp_seq_filepath1)
+        
+        obs_otu_ids = obs.keys()
+        obs_otu_ids.sort()
+        obs_clusters = obs.values()
+        obs_clusters.sort()
+        # The relation between otu ids and clusters is abitrary, and 
+        # is not stable due to use of dicts when parsing clusters -- therefore
+        # just checks that we have the expected group of each
+        self.assertEqual(obs_otu_ids, exp_otu_ids)
+        self.assertEqual(obs_clusters, exp_clusters)
+        
+    def test_call_detects_de_novo_chimeras(self):
+        """UsearchOtuPicker.__call__ returns expected clusters"""
+
+        # adapted from test_app.test_cd_hit.test_cdhit_clusters_from_seqs
+        # Should
+
+        exp_otu_ids = ['2', '3', '4', '5']
+        
+        exp_clusters = [['uclust_test_seqs_1'],
+                        ['uclust_test_seqs_2'],
+                        ['uclust_test_seqs_4'],
+                        ['uclust_test_seqs_7']
+                       ]
+        
+        app = UsearchOtuPicker(params={'save_intermediate_files':False,
+                                       'db_filepath':self.tmp_ref_database,
+                                       'output_dir':self.temp_dir,
+                                       'remove_usearch_logs':True,
+                                       'reference_chimera_detection':False,
+                                       'de_novo_chimera_detection':True,
+                                       'cluster_size_filtering':False,
+                                       'minlen':12,
+                                       'w':12,
+                                       'minsize':1,
+                                       'percent_id':0.97,
+                                       'percent_id_err':0.80,
+                                       'abundance_skew':1
+                                       })
+        
+                                       
+        obs = app(self.tmp_seq_filepath1)
+        
+        obs_otu_ids = obs.keys()
+        obs_otu_ids.sort()
+        obs_clusters = obs.values()
+        obs_clusters.sort()
+        # The relation between otu ids and clusters is abitrary, and 
+        # is not stable due to use of dicts when parsing clusters -- therefore
+        # just checks that we have the expected group of each
+        self.assertEqual(obs_otu_ids, exp_otu_ids)
+        self.assertEqual(obs_clusters, exp_clusters)
+        
+    def test_call_detects_reference_chimeras(self):
+        """UsearchOtuPicker.__call__ returns expected clusters"""
+
+        # adapted from test_app.test_cd_hit.test_cdhit_clusters_from_seqs
+        # Should detect and remove chimeric sequence based 
+        # during ref based detection
+
+        exp_otu_ids = ['0', '1']
+        
+        exp_clusters = [['Solemya', 'Solemya_seq2'],
+                        ['usearch_ecoli_seq', 'usearch_ecoli_seq2']
+                       ]
+        
+        app = UsearchOtuPicker(params={'save_intermediate_files':False,
+                                       'db_filepath':self.tmp_ref_database,
+                                       'output_dir':self.temp_dir,
+                                       'remove_usearch_logs':True,
+                                       'reference_chimera_detection':True,
+                                       'de_novo_chimera_detection':False,
+                                       'cluster_size_filtering':False,
+                                       'minlen':12,
+                                       'w':12,
+                                       'minsize':1,
+                                       'percent_id':0.97,
+                                       'percent_id_err':0.97,
+                                       'abundance_skew':2
+                                       })
+        
+                                       
+        obs = app(self.tmp_seq_filepath2)
+        
+        
+        obs_otu_ids = obs.keys()
+        obs_otu_ids.sort()
+        obs_clusters = obs.values()
+        obs_clusters.sort()
+        # The relation between otu ids and clusters is abitrary, and 
+        # is not stable due to use of dicts when parsing clusters -- therefore
+        # just checks that we have the expected group of each
+        self.assertEqual(obs_otu_ids, exp_otu_ids)
+        self.assertEqual(obs_clusters, exp_clusters)
+        
+    def test_call_writes_output(self):
+        """UsearchOtuPicker.__call__ writes expected output clusters file"""
+
+        # adapted from test_app.test_cd_hit.test_cdhit_clusters_from_seqs
+        # Should detect and remove chimeric sequence based 
+        # during ref based detection, then write the OTU mapping file in 
+        # QIIME format.
+        
+        self.tmp_result_path = get_tmp_filename(\
+         prefix='UsearchOTUMapping_',\
+         suffix='.txt')
+        f = open(self.tmp_result_path, "w")
+
+        self.tmp_failures_path = get_tmp_filename(\
+         prefix='UsearchFailures_',\
+         suffix='.txt')
+        f = open(self.tmp_failures_path, "w")
+        
+        
+        self._files_to_remove.append(self.tmp_result_path)
+        self._files_to_remove.append(self.tmp_failures_path)
+        
+        
+        app = UsearchOtuPicker(params={'save_intermediate_files':False,
+                                       'db_filepath':self.tmp_ref_database,
+                                       'output_dir':self.temp_dir,
+                                       'remove_usearch_logs':True,
+                                       'reference_chimera_detection':True,
+                                       'de_novo_chimera_detection':False,
+                                       'cluster_size_filtering':False,
+                                       'minlen':12,
+                                       'w':12,
+                                       'minsize':1,
+                                       'percent_id':0.97,
+                                       'percent_id_err':0.97,
+                                       'abundance_skew':2
+                                       })
+        
+                                       
+        obs = app(self.tmp_seq_filepath2, result_path = self.tmp_result_path,
+         failure_path = self.tmp_failures_path)
+        
+        expected_otu_mapping =\
+         ["1\tSolemya\tSolemya_seq2\n",
+          "0\tusearch_ecoli_seq\tusearch_ecoli_seq2\n"""
+         ]
+        
+        f = open(self.tmp_result_path, "U")
+        
+        actual_otu_mapping = f.readlines()
+        
+        self.assertEqual(actual_otu_mapping, expected_otu_mapping)
+        
+        expected_failures = ["chimera"]
+        
+        f = open(self.tmp_failures_path, "U")
+        
+        actual_failures = f.readlines()
+        
+        self.assertEqual(actual_failures, expected_failures)
+        
+    def test_call_no_result(self):
+        """UsearchOtuPicker.__call__ raises errors if all seqs filtered out"""
+
+        # adapted from test_app.test_cd_hit.test_cdhit_clusters_from_seqs
+        # All seqs should be filtered out with minsize set to 2
+        
+        # Putting data in directory so it can be cleaned up upon failure.
+        self.tmp_subdir = get_tmp_filename(\
+         prefix='/UsearchEmptyOTUs_',\
+         suffix='')
+        
+        output_dir = self.temp_dir + self.tmp_subdir
+        create_dir(output_dir)
+        
+        self._dirs_to_remove.append(output_dir)
+        
+        app = UsearchOtuPicker(params={'save_intermediate_files':False,
+                                       'db_filepath':self.tmp_ref_database,
+                                       'output_dir':output_dir,
+                                       'remove_usearch_logs':True,
+                                       'reference_chimera_detection':True,
+                                       'minlen':12,
+                                       'w':12,
+                                       'minsize':2
+                                       })
+        
+                                       
+        #self.assertRaises(ValueError, app, self.tmp_seq_filepath1)
+        
+        
+        
+
+
 
 class UclustOtuPickerTests(TestCase):
     """ Tests of the uclust-based OTU picker """
@@ -2202,6 +2606,26 @@ expected_ref_uc_file =\
     'C\t7\t1\t*\t*\t*\t*\t*\tQiimeExactMatch.uclust_test_seqs_5\t*',
     'C\t8\t1\t*\t*\t*\t*\t*\tQiimeExactMatch.uclust_test_seqs_4\t*',
     'C\t9\t1\t*\t*\t*\t*\t*\tQiimeExactMatch.uclust_test_seqs_7\t*']
+    
+usearch_ref_seqs1 = """>ref1 ecoli sequence
+CGCGTGTATGAAGAAGGCCTTCGGGTTGTAAAGTACTTTCAGCGGGGAGGAGGGAGTAAAGTTAATACCTTTGCTCATTGACGTTACCCGCAGAAGAAGCACCGGCTAACTCCGTGCCAGCAGCCGCGGTAATACGGAGGGTGCAAGCGTTAATCGGAATTACTGGGCGTAAAGCGCACGCAGGCGGTTTGTTAAGTCA
+>EU199232 1 1236 Bacteria/Deltaproteobacteria/Desulfurella - Hippea/uncultured
+TACGCGCGGAAATCGAGCGAGATTGGGAACGCAAGTTCCTGAGTATTGCGGCGAACGGGTGAGTAAGACGTGGGTGATCTACCCCTAGGGTGGGAATAACCCGGGGAAACCCGGGCTAATACCGAATAAGACCACAGGAGGCGACTCCAGAGGGTCAAAGGGAGCCTTGGCCTCCCCC
+>L07864 1 1200 Bacteria/Beta Gammaproteobacteria/Solemya symbiont
+GGCTCAGATTGAACGCTGGCGGCATGCCTAACACATGCAAGTCGAACGGTAACAGGCGGAGCTTGCTCTGCGCTGACGAGTGGCGGACGGGTGAGTAATGCATGGGAATCTGCCATATAGTGGGGGACAACTGGGGAAACCCAGGCTAATACCGCATAATCTCTACGGAGGAAAGGCTTC
+"""
+
+dna_seqs_usearch = """>usearch_ecoli_seq
+CGCGTGTATGAAGAAGGCCTTCGGGTTGTAAAGTACTTTCAGCGGGGAGGAGGGAGTAAAGTTAATACCTTTGCTCATTGACGTTACCCGCAGAAGAAGCACCGGCTAACTCCGT
+>Solemya seq
+GGCTCAGATTGAACGCTGGCGGCATGCCTAACACATGCAAGTCGAACGGTAACAGGCGGAGCTTGCTCTGCGCTGACGAGTGGCGGACGGGTGAGTA
+>usearch_ecoli_seq2
+CGCGTGTATGAAGAAGGCCTTCGGGTTGTAAAGTACTTTCAGCGGGGAGGAGGGAGTAAAGTTAATACCTTTGCTCATTGACGTTACCCGCAGAAGAAGCACCGGCTAACTCCGTCCAT
+>Solemya_seq2
+GGCTCAGATTGAACGCTGGCGGCATGCCTAACACATGCAAGTCGAACGGTAACAGGCGGAGCTTGCTCTGCGCTGACGAGTGGCGGACGGGTGAGTATCAAG
+>chimera
+CGCGTGTATGAAGAAGGCCTTCGGGTTGTAAAGTACTTTCAGCGGGGAGGAGGGAGTAAAGTTAATACCTTTGCTCATTGACCCCTAGGGTGGGAATAACCCGGGGAAACCCGGGCTAATACCGAATAAGACCACAGGAGGCGACTCCAGAGGGTCAAAGGGAGCCTTGGCCTCCCCC
+"""
 
 #run unit tests if run from command-line
 if __name__ == '__main__':

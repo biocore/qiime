@@ -35,6 +35,7 @@ from qiime.util import FunctionWithParams, get_tmp_filename
 from qiime.sort import sort_fasta_by_abundance
 from qiime.parse import fields_to_dict
 from qiime.pycogent_backports.uclust import get_clusters_from_fasta_filepath
+from qiime.pycogent_backports.usearch import otu_pipe
 
 class OtuPicker(FunctionWithParams):
     """An OtuPicker dereplicates a set of sequences at a given similarity.
@@ -871,10 +872,8 @@ class UclustOtuPicker(UclustOtuPickerBase):
         
 class UsearchOtuPicker(UclustOtuPickerBase):
     """ Usearch based OTU picker
-
-    Important note - the default behaviour of uclust is to ignore
-    sequences of 32 nucleotides or less.  These will be omitted
-    in the clusters generated. """
+   
+    """
 
     Name = 'UsearchOtuPicker'
     
@@ -891,72 +890,88 @@ class UsearchOtuPicker(UclustOtuPickerBase):
          to the uclust application controllers)
         Application: 3rd-party application used
         """
-        _params = {'Similarity':0.97,
+
+        _params = {
+         'percent_id':0.97,
+         'percent_id_err':0.97,
          'Application':'usearch',
-         'max_accepts':20,
-         'max_rejects':500,
-         'stepwords':20,
-         'word_length':12,
-         'enable_rev_strand_matching':False,
-         'optimal':False,
-         'exact':False,
-         'suppress_sort':True,
-         'presort_by_abundance':True,
-         'new_cluster_identifier':None,
-         'stable_sort':True,
-         'save_uc_files':True,
+         'minsize':4,
+         'abundance_skew':2,
+         'db_filepath':None,
+         'rev':True,
+         'label_prefix':"",
+         'label_suffix':"",
+         'retain_label_as_comment':False,
+         'count_start':0,
+         'perc_id_blast':0.97,
+         'save_intermediate_files':False,
+         'global_alignment':True,
+         'sizein':True,
+         'sizeout':True,
+         'w':64,
+         'slots':16769023,
+         'maxrejects':64,
+         'minlen':64,
+         'de_novo_chimera_detection':True,
+         'reference_chimera_detection':True,
+         'cluster_size_filtering':True,
          'output_dir':'.',
-         'prefilter_identical_sequences':True}
+         'remove_usearch_logs':False}
+         
+         
         _params.update(params)
         OtuPicker.__init__(self, _params)
     
     def __call__(self,
                  seq_path,
-                 result_path=None,
+                 output_dir='.',
                  log_path=None,
-                 HALT_EXEC=False):
-        """Returns dict mapping {otu_id:[seq_ids]} for each otu.
+                 HALT_EXEC=False,
+                 failure_path=None,
+                 result_path=None):
+        """Returns dict mapping {otu_id:[seq_ids]} for each otu, and a list
+         of seq ids that failed the filters.
         
         Parameters:
         seq_path: path to file of sequences
-        result_path: path to file of results. If specified,
-        dumps the result to the desired path instead of returning it.
+        output_dir: directory to output results, including log files and
+         intermediate files if flagged for.
         log_path: path to log, which includes dump of params.
 
         """
-        prefilter_identical_sequences =\
-         self.Params['prefilter_identical_sequences']
+
         original_fasta_path = seq_path
         self.files_to_remove = []
         
-        if self.Params['presort_by_abundance']:
-            # seq path will become the temporary sorted sequences
-            # filepath, to be cleaned up after the run
-            seq_path = self._presort_by_abundance(seq_path)
-            self.files_to_remove.append(seq_path)
         
-        # Collapse idetical sequences to a new file
-        if prefilter_identical_sequences:
-            exact_match_id_map, seq_path =\
-             self._apply_identical_sequences_prefilter(seq_path)
         
-        # perform the clustering
-        clusters, failures, seeds = get_clusters_from_fasta_filepath(
+        # perform the filtering/clustering
+        clusters, failures = otu_pipe(
          seq_path,
-         original_fasta_path,
-         percent_ID = self.Params['Similarity'],
-         optimal = self.Params['optimal'],
-         exact = self.Params['exact'],
-         suppress_sort = self.Params['suppress_sort'],
-         enable_rev_strand_matching =
-          self.Params['enable_rev_strand_matching'],
-         max_accepts=self.Params['max_accepts'],
-         max_rejects=self.Params['max_rejects'],
-         stepwords=self.Params['stepwords'],
-         word_length=self.Params['word_length'],
-         stable_sort=self.Params['stable_sort'],
-         save_uc_files=self.Params['save_uc_files'],
-         output_dir=self.Params['output_dir'],
+         output_dir = self.Params['output_dir'],
+         percent_id = self.Params['percent_id'],
+         percent_id_err = self.Params['percent_id_err'],
+         minsize = self.Params['minsize'],
+         abundance_skew = self.Params['abundance_skew'],
+         db_filepath = self.Params['db_filepath'],
+         rev = self.Params['rev'],
+         label_prefix = self.Params['label_prefix'],
+         label_suffix = self.Params['label_suffix'],
+         retain_label_as_comment = self.Params['retain_label_as_comment'],
+         count_start = self.Params['count_start'],
+         perc_id_blast = self.Params['perc_id_blast'],
+         save_intermediate_files = self.Params['save_intermediate_files'],
+         global_alignment = self.Params['global_alignment'],
+         sizein = self.Params['sizein'],
+         sizeout = self.Params['sizeout'],
+         w = self.Params['w'],
+         slots = self.Params['slots'],
+         maxrejects = self.Params['maxrejects'],
+         minlen = self.Params['minlen'],
+         de_novo_chimera_detection = self.Params['de_novo_chimera_detection'],
+         reference_chimera_detection=self.Params['reference_chimera_detection'],
+         cluster_size_filtering = self.Params['cluster_size_filtering'],
+         remove_usearch_logs = self.Params['remove_usearch_logs'],
          HALT_EXEC=HALT_EXEC)
         
         # clean up any temp files that were created
@@ -965,25 +980,34 @@ class UsearchOtuPicker(UclustOtuPickerBase):
         log_lines = []
         log_lines.append('Num OTUs:%d' % len(clusters))
         
-        # expand identical sequences to create full OTU map
-        if prefilter_identical_sequences:
-            clusters = self._map_filtered_clusters_to_full_clusters(
-                        clusters,exact_match_id_map)
         
-        otu_id_prefix = self.Params['new_cluster_identifier']
-        if otu_id_prefix == None:
-            clusters = enumerate(clusters)
-        else:
-            clusters = [('%s%d' % (otu_id_prefix,i),c) 
-                        for i,c in enumerate(clusters)]
-        result = self._prepare_results(result_path,clusters,log_lines)
+        if failure_path:
+            failure_file = open(failure_path,'w')
+            failure_file.write('\n'.join(failures))
+            failure_file.close()
+            
         
         if log_path:
             self._write_log(log_path,log_lines)
-    
-        # return the result (note this is None if the data was
-        # written to file)
+            
+        if result_path:
+            
+            result_out = open(result_path, "w")
+            for cluster_id in clusters:
+                result_out.write(cluster_id + "\t" +\
+                 "\t".join(clusters[cluster_id]) + '\n')
+                 
+            result = None
+                
+        else:
+            
+            result = clusters
+        
         return result
+        
+        
+    
+        
 
 
 class UclustReferenceOtuPicker(UclustOtuPickerBase):
