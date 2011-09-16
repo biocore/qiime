@@ -249,7 +249,7 @@ script_info['optional_options'] = [
                 default=False,action='store_true', help=("Don't collapse "
                 "exact matches before calling uclust [default: %default]")),
         
-    make_option('-d', '--save_uc_files', default=False, action='store_true',
+    make_option('-d', '--save_uc_files', default=True, action='store_false',
               help=("Enable preservation of intermediate uclust (.uc) files "
               "that are used to generate clusters via uclust.  Also enables "
               "preservation of all intermediate files created by usearch "
