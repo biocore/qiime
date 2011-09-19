@@ -243,7 +243,7 @@ class UsearchTests(TestCase):
         # Stripping off first line, which refers to the command using tmp
         # file names, retaining other actual results.
         actual_assignments =\
-         [line.strip() for line in open(output_filepath, "U")][1:]
+         [line.strip() for line in open(output_filepath, "U")][2:]
         
         self.assertEqual(actual_assignments, self.expected_otu_assignments)
                               
@@ -603,8 +603,7 @@ N	*	219	*	*	*	*	*	PC.481_6 FLP3FBN01DEHK3 orig_bc=ACCAGCGACTAG new_bc=ACCAGCGACT
 H	6	211	99.5	+	0	0	211M	PC.269_5 FLP3FBN01EEWKD orig_bc=AGCACGAGCCTA new_bc=AGCACGAGCCTA,FLP3FBN01 bc_diffs=0	6
 """.split('\n')
 
-expected_otu_assignments = """# version=5.0.144
-# Tab-separated fields:
+expected_otu_assignments = """# Tab-separated fields:
 # 1=Type, 2=ClusterNr, 3=SeqLength or ClusterSize, 4=PctId, 5=Strand, 6=QueryStart, 7=SeedStart, 8=Alignment, 9=QueryLabel, 10=TargetLabel
 # Record types (field 1): L=LibSeed, S=NewSeed, H=Hit, R=Reject, D=LibCluster, C=NewCluster, N=NoHit
 # For C and D types, PctId is average id with seed.
