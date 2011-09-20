@@ -18,7 +18,8 @@ from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.parse import fields_to_dict
 from qiime.filter import (filter_fasta, 
                           get_seqs_to_keep_lookup_from_seq_id_file,
-                          get_seqs_to_keep_lookup_from_fasta_file)
+                          get_seqs_to_keep_lookup_from_fasta_file,
+                          sample_ids_from_metadata_description)
 
 options_lookup = get_options_lookup()
 
@@ -49,7 +50,11 @@ script_info['optional_options'] = [\
   help='keep seqs where seq_id starts with this prefix'),\
  make_option('-n','--negate', help='discard passed seq ids rather than'
   ' keep passed seq ids [default: %default]', default=False, 
-  action='store_true')
+  action='store_true'),
+ make_option('--mapping_fp',
+  help='mapping file path (for use with --valid_states) [default: %default]'),
+ make_option('--valid_states',
+  help='description of sample ids to retain (for use with --mapping_fp) [default: %default]')
 ]
 script_info['version'] = __version__
 
@@ -74,17 +79,29 @@ def get_seqs_to_keep_lookup_from_prefix(fasta_f,prefix):
                     if seq_id.startswith(prefix)]
     return {}.fromkeys(seqs_to_keep)
 
+def get_seqs_to_keep_lookup_from_mapping_file(fasta_f,mapping_f,valid_states):
+    sample_ids = {}.fromkeys(\
+     sample_ids_from_metadata_description(mapping_f,valid_states))
+    seqs_to_keep = []
+    for seq_id, seq in MinimalFastaParser(fasta_f):
+        if seq_id.split('_')[0] in sample_ids:
+            seqs_to_keep.append(seq_id)
+        else:
+            continue
+    return {}.fromkeys(seqs_to_keep)
+
 def main():
     option_parser, opts, args =\
        parse_command_line_parameters(**script_info)
 
     negate = opts.negate
-
+    error_msg = "Must pass exactly one of -a, -s, -p, -m, or --valid_states and --mapping_fp."
     if 1 != sum(map(bool,[opts.otu_map,
                           opts.seq_id_fp,
                           opts.subject_fasta_fp,
-                          opts.seq_id_prefix])): 
-        option_parser.error("Must pass exactly one of -a, -s, -p, or -m.")
+                          opts.seq_id_prefix,
+                          opts.mapping_fp and opts.valid_states])): 
+        option_parser.error(error_msg)
 
     if opts.otu_map:
         seqs_to_keep_lookup =\
@@ -102,8 +119,14 @@ def main():
         seqs_to_keep_lookup =\
          get_seqs_to_keep_lookup_from_prefix(
          open(opts.input_fasta_fp),opts.seq_id_prefix)
+    elif opts.mapping_fp and opts.valid_states:
+        seqs_to_keep_lookup =\
+         get_seqs_to_keep_lookup_from_mapping_file(
+          open(opts.input_fasta_fp,'U'),
+          open(opts.mapping_fp,'U'),
+          opts.valid_states)
     else:
-        option_parser.error("Must pass exactly one of -a, -s, or -m.")
+        option_parser.error(error_msg)
     
     filter_fasta_fp(opts.input_fasta_fp,
                     opts.output_fasta_fp,

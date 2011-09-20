@@ -14,8 +14,19 @@ __status__ = "Development"
 from random import shuffle
 from numpy import array
 from cogent.parse.fasta import MinimalFastaParser
-from qiime.parse import parse_otu_table, parse_distmat
+from qiime.parse import parse_otu_table, parse_distmat, parse_mapping_file
 from qiime.format import format_otu_table, format_distance_matrix
+from qiime.filter_by_metadata import (parse_metadata_state_descriptions,
+                                      get_sample_ids)
+
+def sample_ids_from_metadata_description(mapping_f,valid_states_str):
+    """ Given a description of metadata, return the corresponding sample ids
+    """
+    map_data, map_header, map_comments = parse_mapping_file(mapping_f)
+    valid_states = parse_metadata_state_descriptions(valid_states_str)
+    sample_ids = get_sample_ids(map_data, map_header, valid_states)
+    return sample_ids
+
 
 def filter_fasta(input_seqs,output_seqs_f,seqs_to_keep,negate=False):
     """ Write filtered input_seqs to output_seqs_f which contains only seqs_to_keep
