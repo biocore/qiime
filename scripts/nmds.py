@@ -37,7 +37,7 @@ make_option('-o', '--output_path',
 ]
 
 script_info['optional_options']=[
-make_option('-d', '--dimensions', default=2,type=int,
+make_option('-d', '--dimensions', default=3,type=int,
      help='number of dimensions of NMDS space'+\
        'default: %default'),
 ]
