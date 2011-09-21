@@ -1,5 +1,6 @@
 Add changes since QIIME 1.3.0 here
 ==================================
+* Added script nmds.py Non-Metric Multidimensional Scaling (NMDS).
 * Added in the calculation of standard error in rarefaction plots, since only standard deviation was calculated. Also added an optional option choice for this.
 * Support for pick_otus_through_otu_table.py to allow for uclust_ref to be run in parallel with creation of new clusters. 
 * Added script distance_matrix_from_mapping.py which allows to create a distance matrix from a metadata column. It uses all the non-phylogenetic metrics.

@@ -277,11 +277,12 @@ def format_nmds_coords(samples, points, stress):
     """
     result = []
     col_headers = ["NMDS"+str(aa) for aa in range(1,points.shape[1]+1)]
-    result.append('sample\t' + '\t'.join(col_headers) )
+    result.append('samples\t' + '\t'.join(col_headers) )
     for name, row in zip(samples, points):
         result.append('\t'.join([name] + map(str, row)))
     result.append('')
-    result.append('stress\t' + str(stress))
+    result.append('stress\t' + str(stress) + '\t' + '0\t'*(len(col_headers)-2) + '0')
+    result.append('% variation explained\t' + '0\t'*(len(col_headers)))
     return '\n'.join(result)    
     
 
