@@ -43,6 +43,12 @@ script_info['required_options']=[\
  make_option('-o', '--output_path',
      help='output path. directory for batch processing, '+\
        'filename for single file operation'),\
+ make_option('-X', '--x_label', default='Distance (m)',\
+     help='Label for the x axis'),\
+ make_option('-Y', '--y_label', default='Community Dissimilarity',\
+     help='Label for the y axis'),\
+ make_option('-t', '--fig_title', default='Semivariogram',\
+     help='Title of the plot'),\
 ]
 script_info['optional_options']=[\
  make_option('-b', '--binning', type='string',\
@@ -123,10 +129,10 @@ def main():
     
     plot(x_val, y_val, 'o', color="white")   
     plot(x_fit, y_fit, linewidth=2.0, color="blue")
-    
-    x_label = 'Distance (m)'
-    y_label = 'Community Dissimilarity'
-    fig_title = 'Semivariogram (%s)' % opts.model
+     
+    x_label = opts.x_label
+    y_label = opts.y_label
+    fig_title = '%s (%s)' % (opts.fig_title, opts.model)
     
     xlabel(x_label)
     ylabel(y_label)
