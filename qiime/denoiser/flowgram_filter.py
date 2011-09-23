@@ -152,16 +152,10 @@ def truncate_flowgrams_in_SFF(flowgrams, header, outhandle=None, outdir="/tmp/",
                 prim += primer
             trunc_flowgram = qual_trimmed_flowgram.getPrimerTrimmedFlowgram(\
                 primerseq = prim)
-
+            
         if(trunc_flowgram!=None):
-            #This might not be the best place to apply this filter, but is probably the
-            #most efficient place, because we handle the flowgram here anyways.
-
-            #TODO: synchronize with Qiime. Should we skip this test here at all and rely on 
-            # split_libs filtering?
-            if(not check_ambigous(trunc_flowgram, allow_num_ambigous)):
-                outhandle.write(trunc_flowgram.createFlowHeader() +"\n")
-                l += 1
+            outhandle.write(trunc_flowgram.createFlowHeader() +"\n")
+            l += 1
     return (out_filename, l)
 
 def cleanup_sff(flowgrams, header, outhandle=None, outdir = "/tmp",

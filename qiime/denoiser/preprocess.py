@@ -219,6 +219,10 @@ def preprocess(sff_fp, log_fh, fasta_fp=None, out_fp="/tmp/",
             log_fh.write("Truncated flowgrams written: %d\n" % l)
         remove(clean_sff_fp)
         
+    if (l==0):
+        raise ValueError, "No flowgrams left after preprocesing.\n" +\
+            "Check your primer sequence"
+
     # Phase I - cluster seqs which are exact prefixe
     if verbose:
         log_fh.write("Filter flowgrams by prefix matching\n")
