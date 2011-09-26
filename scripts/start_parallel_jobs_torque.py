@@ -4,11 +4,13 @@
 
 __author__ = "Jens Reeder"
 __copyright__ = "Copyright 2011, The QIIME Project" 
-__credits__ = ["Jens Reeder", "Rob Knight"]#remember to add yourself if you make changes
+__credits__ = ["Jens Reeder",
+               "Rob Knight",
+               "Greg Caporaso"]
 __license__ = "GPL"
 __version__ = "1.3.0-dev"
-__maintainer__ = "Jens Reeder"
-__email__ = "jens.reeder@gmail.com"
+__maintainer__ = "Greg Caporaso"
+__email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
 from optparse import OptionParser
