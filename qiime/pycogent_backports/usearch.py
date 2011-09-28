@@ -934,6 +934,17 @@ def otu_pipe(
         # Series of conditional tests, using generic 'output_fp' name so the
         # conditional filtering, if any/all are selected, do not matter.
         
+        if reference_chimera_detection:
+            app_result, output_fp =\
+             usearch_chimera_filter_ref_based(output_fp,
+             db_filepath=db_filepath, output_chimera_filepath= output_dir +\
+             'reference_chimeras.fasta', output_non_chimera_filepath =\
+             output_dir + 'reference_non_chimeras.fasta', usersort=True, 
+             save_intermediate_files=save_intermediate_files, rev=rev,
+             remove_usearch_logs=remove_usearch_logs)
+        
+            intermediate_files.append(output_fp)
+        
         if de_novo_chimera_detection:
             app_result, output_fp =\
              usearch_chimera_filter_de_novo(output_fp, 
@@ -946,16 +957,7 @@ def otu_pipe(
         
             intermediate_files.append(output_fp)
             
-        if reference_chimera_detection:
-            app_result, output_fp =\
-             usearch_chimera_filter_ref_based(output_fp,
-             db_filepath=db_filepath, output_chimera_filepath= output_dir +\
-             'reference_chimeras.fasta', output_non_chimera_filepath =\
-             output_dir + 'reference_non_chimeras.fasta', usersort=True, 
-             save_intermediate_files=save_intermediate_files, rev=rev,
-             remove_usearch_logs=remove_usearch_logs)
-        
-            intermediate_files.append(output_fp)
+
             
         if cluster_size_filtering:
             
