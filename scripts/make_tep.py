@@ -65,69 +65,69 @@ jnlp_middle_block = """\">
   
   <resources>
     <j2se version="1.6+" initial-heap-size="500M" max-heap-size="2000m" />
-	<extension name="jogl" href="http://download.java.net/media/jogl/builds/archive/jsr-231-webstart-current/jogl.jnlp" />
-	
-	<jar href="topiaryexplorer0.9.4.jar" />
-	<jar href="lib/core.jar" />
-	<jar href="lib/itext.jar" />
-	<jar href="lib/pdf.jar" />
-	<jar href="lib/ojdbc14.jar" />
-	<jar href="lib/opengl.jar" />
-	<jar href="lib/mysql-connector-java-5.1.10-bin.jar" />
-	<jar href="lib/javaws.jar" />
-	<jar href="lib/classes12.jar" />
-	<jar href="lib/jogl.jar" />
-	
+    <extension name="jogl" href="http://download.java.net/media/jogl/builds/archive/jsr-231-webstart-current/jogl.jnlp" />
+    
+    <jar href="topiaryexplorer0.9.4.jar" />
+    <jar href="lib/core.jar" />
+    <jar href="lib/itext.jar" />
+    <jar href="lib/pdf.jar" />
+    <jar href="lib/ojdbc14.jar" />
+    <jar href="lib/opengl.jar" />
+    <jar href="lib/mysql-connector-java-5.1.10-bin.jar" />
+    <jar href="lib/javaws.jar" />
+    <jar href="lib/classes12.jar" />
+    <jar href="lib/jogl.jar" />
+    
   </resources>
   
   <application-desc main-class="topiaryexplorer.TopiaryExplorer">
   <argument>"""
 
 jnlp_bottom_block = """</argument>
-	</application-desc>
+    </application-desc>
 </jnlp>
 """
 
 data_color_hsv = {
-#'black1':	(0,0,20),
-'red1':	(0,100,100),
-'blue1':	(240,100,100),
-'orange1':	(28,98,95),
-'green1':	(120,100,50.2),
-'purple1':	(302,73,57),
-'yellow1':	(60,100,100),
-'cyan1':	(184, 49, 96),
-'pink1':	(333,37,96),
-'teal1':	(178,42,63),
-'brown1':	(36,89,42),
-'gray1':	(0,0,50.2),
-'lime':	(123,99,96),
-'red2':	(14,51,97),
-'blue2':	(211,42,85),
-'orange2':	(32,46,99),
-'green2':	(142,36,79),
-'purple2':	(269,29,75),
-'yellow2':	(56,40,100),
-#'black2':	(303,100,24),
-'gray2':	(0, 0, 75.3),
-#'teal2':	(192,100,24),
-'red3':	(325,100,93),
-'blue3':	(197,100,100),
-#'purple3':	(271,43,36),
-'brown2':	(33,45,77),
-'green3':	(60,100,50.2),
-'purple4':	(264,75,100),
-#'yellow3':	(60,66,75),
-#'blue4':	(213,45,77),
-'red4':	(348,31,74),
-'teal3':	(180,100,50.2),
-#'brown3':	(60,100,28),
-'red5':	(0,100,50.2),
-'green4':	(81,100,26),
-#'purple5':	(240,100,41),
-'orange3':	(26,100,65)
-#'brown4':	(25,100,20),
-#'red6':	(17,100,63),
+#'black1':  (0,0,20),
+'red1': (0,100,100),
+'blue1':    (240,100,100),
+'orange1':  (28,98,95),
+'green1':   (120,100,50.2),
+'purple1':  (302,73,57),
+'yellow1':  (60,100,100),
+'cyan1':    (184, 49, 96),
+'pink1':    (333,37,96),
+'teal1':    (178,42,63),
+'brown1':   (36,89,42),
+'gray1':    (0,0,50.2),
+'lime': (123,99,96),
+'red2': (14,51,97),
+'blue2':    (211,42,85),
+'orange2':  (32,46,99),
+'green2':   (142,36,79),
+'purple2':  (269,29,75),
+'yellow2':  (56,40,100),
+#'black2':  (303,100,24),
+'gray2':    (0, 0, 75.3),
+#'teal2':   (192,100,24),
+'red3': (325,100,93),
+'blue3':    (197,100,100),
+#'purple3': (271,43,36),
+'brown2':   (33,45,77),
+'green3':   (60,100,50.2),
+'purple4':  (264,75,100),
+#'yellow3': (60,66,75),
+#'blue4':   (213,45,77),
+'red4': (348,31,74),
+'teal3':    (180,100,50.2),
+#'brown3':  (60,100,28),
+'red5': (0,100,50.2),
+'green4':   (81,100,26),
+#'purple5': (240,100,41),
+'orange3':  (26,100,65)
+#'brown4':  (25,100,20),
+#'red6':    (17,100,63),
 #'purple6':(272,100,44)
 }
 
@@ -202,7 +202,8 @@ def main():
          load_qiime_config()['topiaryexplorer_project_dir']
         if topiaryexplorer_project_dir == None:
             option_parser.error("Couldn't create jnlp file - topiaryexplorer_project_dir is not defined in your qiime_config. tep file was created sucessfully.")
-        lines += 'file:' + topiaryexplorer_project_dir
+        else:
+            lines += 'file:' + topiaryexplorer_project_dir
     
     lines += jnlp_middle_block
     if(opts.url):
