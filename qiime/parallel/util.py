@@ -154,7 +154,7 @@ def compute_seqs_per_file(input_fasta_fp,num_jobs_to_start):
     """
     # count the number of sequences in the fasta file
     num_input_seqs = \
-     int(popen("egrep -c '^>' %s" % input_fasta_fp).read().strip())
+     int(popen("sed -n -e '/^>/p' %s | wc -l" % input_fasta_fp).read().strip())
      
     # divide the number of sequences by the number of jobs to start
     result = num_input_seqs/num_jobs_to_start
