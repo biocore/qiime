@@ -153,8 +153,9 @@ def compute_seqs_per_file(input_fasta_fp,num_jobs_to_start):
     """ Compute the number of sequences to include in each split file
     """
     # count the number of sequences in the fasta file
-    num_input_seqs = \
-     int(popen("egrep -c '^>' %s" % input_fasta_fp).read().strip())
+    num_input_seqs = 0
+    for e in MinimalFastaParser(open(input_fasta_fp,'U')):
+        num_input_seqs += 1
      
     # divide the number of sequences by the number of jobs to start
     result = num_input_seqs/num_jobs_to_start
