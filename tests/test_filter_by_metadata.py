@@ -25,23 +25,24 @@ class TopLevelTests(TestCase):
     def setUp(self):
         """Define a few simple tables"""
         self.otu_str = """#Full OTU Counts
-#OTU ID\ta\tb\tc\td\te
-1\t1\t2\t3\t4\t5
-2\t5\t4\t3\t2\t1"""
+#OTU ID\ta\tb\tc\td\te\tf
+1\t1\t2\t3\t4\t5\t0
+2\t5\t4\t3\t2\t1\t1"""
         self.otu_table = parse_otu_table(StringIO(self.otu_str))
         self.otu_tax_str = """#Full OTU Counts
-#OTU ID\ta\tb\tc\td\te\tConsensus Lineage
-1\t1\t2\t3\t4\t5\tBacteria:Firmicutes
-2\t5\t4\t3\t2\t1\tBacteria:Proteobacteria"""
+#OTU ID\ta\tb\tc\td\te\tf\tConsensus Lineage
+1\t1\t2\t3\t4\t5\t0\tBacteria:Firmicutes
+2\t5\t4\t3\t2\t1\t1\tBacteria:Proteobacteria"""
         self.otu_tax_table = parse_otu_table(StringIO(self.otu_tax_str))
         self.map_str = """#SampleID\tStudy\tBodySite\tDescription
 a\tDog\tStool\tx
 b\tDog\tStool\ty
 c\tHand\tPalm\tz
 d\tWholeBody\tPalm\ta
-e\tWholeBody\tStool\tb"""
+e\tWholeBody\tStool\tb
+f\tHand\t\t"""
         self.map_data, self.map_headers, self.map_comments =\
-         parse_mapping_file(StringIO(self.map_str))
+         parse_mapping_file(StringIO(self.map_str))	
 
     def test_get_sample_ids(self):
         """get_sample_ids should return sample ids matching criteria."""
@@ -50,7 +51,7 @@ e\tWholeBody\tStool\tb"""
         self.assertEqual(get_sample_ids(self.map_data, self.map_headers,\
             parse_metadata_state_descriptions('Study:Dog')), ['a','b'])
         self.assertEqual(get_sample_ids(self.map_data, self.map_headers,\
-            parse_metadata_state_descriptions('Study:*,!Dog')), ['c','d','e'])
+            parse_metadata_state_descriptions('Study:*,!Dog')), ['c','d','e','f'])
         self.assertEqual(get_sample_ids(self.map_data, self.map_headers,\
             parse_metadata_state_descriptions('Study:*,!Dog;BodySite:Stool')), ['e'])
         self.assertEqual(get_sample_ids(self.map_data, self.map_headers,\
@@ -91,7 +92,7 @@ e\tWholeBody\tStool\tb"""
     def test_filter_map(self):
         """filter_map should filter map file according to sample ids"""
         self.assertEqual(filter_map(self.map_data, self.map_headers,\
-         ['a','b','c','d','e']), (self.map_headers, self.map_data))
+         ['a','b','c','d','e','f']), (self.map_headers, self.map_data))
         self.assertEqual(filter_map(self.map_data, self.map_headers, ['a']),
             (['SampleID','Description'],['a\tx'.split('\t')]))
 
@@ -111,13 +112,14 @@ e\tWholeBody\tStool\tb"""
             (self.otu_tax_str+'\n', self.map_str))
 
         no_dog_otu="""#Full OTU Counts
-#OTU ID\tc\td\te\tConsensus Lineage
-1\t3\t4\t5\tBacteria:Firmicutes
-2\t3\t2\t1\tBacteria:Proteobacteria"""
+#OTU ID\tc\td\te\tf\tConsensus Lineage
+1\t3\t4\t5\t0\tBacteria:Firmicutes
+2\t3\t2\t1\t1\tBacteria:Proteobacteria"""
         no_dog_map = """#SampleID\tStudy\tBodySite\tDescription
 c\tHand\tPalm\tz
 d\tWholeBody\tPalm\ta
-e\tWholeBody\tStool\tb"""
+e\tWholeBody\tStool\tb
+f\tHand\t\t"""
 
         self.assertEqual(get_result('Study:*,!Dog', None),
             (no_dog_otu+'\n', no_dog_map))

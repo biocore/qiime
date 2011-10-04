@@ -105,7 +105,11 @@ def parse_mapping_file(lines, strip_quotes=True, suppress_stripping=False):
             else:
                 comments.append(line)
         else:
-            mapping_data.append(map(strip_f, line.split('\t')))
+            # Will add empty string to empty fields
+            tmp_line = map(strip_f, line.split('\t'))
+            if len(tmp_line)<len(header):
+                tmp_line.extend(['']*(len(header)-len(tmp_line)))
+            mapping_data.append(tmp_line)
     if not header:
         raise QiimeParseError, "No header line was found in mapping file."
     if not mapping_data:

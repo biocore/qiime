@@ -90,31 +90,27 @@ def filter_map(map_data, map_header, good_sample_ids):
     - drop cols that are different in every sample (except id)
     - drop cols that are the same in every sample
     """
-    d = array(map_data) #note, will contain row headers
-    first_col = list(d[:,0])    #assume contains sample ids
-    good_row_indices = [first_col.index(i) for i in good_sample_ids 
-        if i in first_col]
-    d = d[good_row_indices]
-    cols = d.T
+    # keeping samples
+    to_keep = []	
+    to_keep.extend([i for i in map_data if i[0] in good_sample_ids])
     
-    # Determine the good column indices
-    # always include the sample id col
-    good_col_indices = [0]
-    # for all cols between the first and last, 
-    # include the col if there are more than
-    # 2 states, and less than 1 state per sample ID 
-    good_col_indices +=\
-     [i+1 for (i, col) in enumerate(cols[1:-1]) 
-      if 2 <= len(set(col)) < (len(col))]
-    # always include the description col
-    good_col_indices += [len(cols)-1]
-    h = [map_header[i] for i in good_col_indices]
-    d = d[:,good_col_indices]
+    # keeping columns
+    headers = []
+    to_keep = zip(*to_keep)
+    headers.append(map_header[0])
+    result = [to_keep[0]]
+    for i,l in enumerate(to_keep[1:-1]):
+        if len(set(l))>1:
+            headers.append(map_header[i+1])
+            result.append(l)
+    headers.append(map_header[-1])
+    result.append(to_keep[-1])
+    result = map(list,zip(*result))
     
-    return h, map(list, d)
+    return headers, result
 
 def filter_otus_and_map(map_infile, otu_infile, map_outfile, otu_outfile, 
-    valid_states_str, num_seqs_per_otu):
+    valid_states_str, num_seqs_per_otu, column_id=None):
     """Filters OTU and map files according to specified criteria."""
     map_data, map_header, map_comments = parse_mapping_file(map_infile)
     map_infile.close()
