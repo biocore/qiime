@@ -23,7 +23,7 @@ from qiime.transform_coordinate_matrices import procrustes_monte_carlo,\
 
 script_info={}
 script_info['brief_description']="""Transform 2 coordinate matrices"""
-script_info['script_description']="""This script transformms 2 coordinate matrices (e.g., the output of principal_coordinates.py) using procrustes analysis to minimize the distances between corresponding points. Monte Carlo simulations can additionally be performed (-r random trials are run) to estimate the probability of seeing an M^2 value as extreme as the actual M^2."""
+script_info['script_description']="""This script transforms 2 coordinate matrices (e.g., the output of principal_coordinates.py) using procrustes analysis to minimize the distances between corresponding points. Monte Carlo simulations can additionally be performed (-r random trials are run) to estimate the probability of seeing an M^2 value as extreme as the actual M^2."""
 script_info['script_usage']=[]
 script_info['script_usage'].append(("Generate monte carlo p-values","","""%prog -r 1000 -i weighted_unifrac_coords.txt,unweighted_unifrac_coords.txt""",))
   
