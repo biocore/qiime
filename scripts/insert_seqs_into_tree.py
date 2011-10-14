@@ -22,7 +22,7 @@ from os.path import abspath,join,split,splitext
 from qiime.insert_seqs_into_tree import convert_tree_tips, \
                                     write_updated_tree_file, \
                                     strip_and_rename_unwanted_labels_from_tree
-import cogent.app.raxml_v7_2_6
+import cogent.app.raxml_v730
 #import cogent.app.parsinsert
 import cogent.app.pplacer
 
@@ -79,7 +79,7 @@ def main():
     create_dir(output_dir)
     
     # list of tree insertion methods
-    tree_insertion_module_names = {'raxml':cogent.app.raxml_v7_2_6, 
+    tree_insertion_module_names = {'raxml':cogent.app.raxml_v730, 
         #'parsinsert':cogent.app.parsinsert,
         'pplacer':cogent.app.pplacer}
 
