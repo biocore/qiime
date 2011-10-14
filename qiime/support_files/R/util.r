@@ -78,17 +78,38 @@ libraries <- list('random_forest'='randomForest','elastic_net'='glmnet')
     # map user's model name to library name
     lib <- libraries[[model.name]]
     
-    # attempt to load the library
+    # if R_LIBRARY_PATH environment variable is set, add it to the library paths
+    lib.loc <- .libPaths()
+    envvars <- as.list(Sys.getenv())
+    if(is.element('R_LIBRARY_PATH', names(envvars))){
+        lib.loc <- c(envvars[['R_LIBRARY_PATH']], lib.loc)
+    }
+    
+    # attempt to load the library, suppress warnings
+    options(warn=-1)
     has.library <- library(lib,character.only=TRUE,logical.return=TRUE,
-                            verbose=F,warn.conflicts=FALSE)
+                         verbose=F,warn.conflicts=FALSE,lib.loc=lib.loc)
+    options(warn=0)
     
     # if does not exists, fail gracefully
     if(!has.library){
-        help_string <- sprintf(
-            'To install: open R and run the command "install.packages("%s")"',
+        help_string1 <- sprintf(
+            'To install: open R and run the command "install.packages("%s")".', 
             lib)
-        cat(sprintf('Library %s not found.\n\n',lib),file=stderr())
-        cat(help_string,'\n\n',file=stderr())
+        cat(sprintf('\n\nLibrary %s not found.\n\n',lib),file=stderr())
+        cat(help_string1,'\n\n',sep='',file=stderr())
+        
+        help_string2 <- sprintf(
+"If you already have the %s package installed in a local directory,
+please store the path to that directory in an environment variable
+called \"R_LIBRARY_PATH\". This may be necessary if you are running
+QIIME on a cluster, and the cluster instances of R don't know about
+your local R libraries. If you don't know your R library paths, you
+can list them by opening R and running with the command, \".libPaths()\".
+The current R instance knows about these paths:
+[%s]", lib, paste(.libPaths(),collapse=', '))
+
+        cat(help_string2,'\n\n',file=stderr())
         q(save='no',status=2,runLast=FALSE);
     }
 }
