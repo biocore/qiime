@@ -37,6 +37,7 @@ import re
 from gzip import GzipFile
 from os import mkdir, stat
 from collections import defaultdict
+from string import upper
 
 from numpy import array, mean, arange, histogram
 from numpy import __version__ as numpy_version
@@ -561,6 +562,7 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
     for fasta_in in fasta_files:
         for curr_id, curr_seq in MinimalFastaParser(fasta_in):
             curr_rid = curr_id.split()[0]
+            curr_seq = upper(curr_seq)
 
             curr_len = len(curr_seq)
             curr_qual = qual_mappings.get(curr_rid, None)
