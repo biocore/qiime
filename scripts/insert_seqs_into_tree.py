@@ -23,9 +23,9 @@ from qiime.insert_seqs_into_tree import convert_tree_tips, \
                                     write_updated_tree_file, \
                                     strip_and_rename_unwanted_labels_from_tree
 import cogent.app.raxml_v730
-#import cogent.app.parsinsert
+import cogent.app.parsinsert
 import cogent.app.pplacer
-
+from StringIO import StringIO
 
 options_lookup = get_options_lookup()
 
@@ -45,12 +45,12 @@ script_info['required_options'] = [\
     options_lookup['fasta_as_primary_input'],
     options_lookup['output_dir'],
     make_option('-t','--starting_tree_fp',\
-             type='string',help='Starting Tree which you would like to insert into. REQUIRED'),
-]
-script_info['optional_options'] = [\
+             type='string',help='Starting Tree which you would like to insert into.'),
     make_option('-r','--refseq_fp',\
           type='string',dest='refseq_fp',help='Filepath for '+\
-          'reference alignment [REQUIRED if -m pplacer, default:%default]'),
+          'reference alignment'),
+]
+script_info['optional_options'] = [\
     make_option('-m','--insertion_method',\
           type='choice',help='Method for aligning'+\
           ' sequences. Valid choices are: ' +\
@@ -80,7 +80,7 @@ def main():
     
     # list of tree insertion methods
     tree_insertion_module_names = {'raxml':cogent.app.raxml_v730, 
-        #'parsinsert':cogent.app.parsinsert,
+        'parsinsert':cogent.app.parsinsert,
         'pplacer':cogent.app.pplacer}
 
     # load input sequences and convert to phylip since the tools require 
@@ -93,6 +93,16 @@ def main():
         param_dict = parse_qiime_parameters(open(opts.method_params_fp).readlines())
     
     if module=='raxml':
+       # load the reference sequences
+        load_ref_aln = \
+            Alignment(MinimalFastaParser(open(opts.refseq_fp).readlines())) 
+        
+        # combine and load the reference plus query
+        combined_aln = MinimalFastaParser(StringIO(load_ref_aln.toFasta() + \
+                                                   '\n' + aln.toFasta()))
+        # overwrite the alignment map
+        aln = Alignment(combined_aln)
+        seqs, align_map = aln.toPhylip()
         
         try: 
             parameters=param_dict['raxml']
@@ -138,16 +148,31 @@ def main():
         parameters['-s']=opts.stats_fp
         
     elif module=='parsinsert':
-        pass
+        try: 
+            parameters=param_dict['parsinsert']
+        except:
+            parameters={}
+            
+        # define log fp
+        log_fp=join(output_dir,'parsinsert.log')
+
+        # define tax assignment values fp
+        tax_assign_fp=join(output_dir,'parsinsert_assignments.log')
+        parameters["-l"] = log_fp
+        parameters["-o"] = tax_assign_fp
+        parameters["-s"] = opts.refseq_fp
+        parameters["-t"] = opts.starting_tree_fp
+        
+        param_keys=parameters.keys()
     
     # call the module and return a tree object
-    result = tree_insertion_module_names[module].build_tree_from_alignment_using_params(seqs, moltype=DNA, params=parameters)
+    result = tree_insertion_module_names[module].insert_sequences_into_tree(seqs, moltype=DNA, params=parameters)
     
     result_tree=strip_and_rename_unwanted_labels_from_tree(align_map,result)
     
     # write out the resulting tree
     final_tree=join(output_dir,'%s_final_placement.tre' % (module))
-    write_updated_tree_file(final_tree,result_tree)
+    write_updated_tree_file(final_tree,result)
 
 
 if __name__ == "__main__":
