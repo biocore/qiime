@@ -122,8 +122,10 @@ def main():
         parameters["-t"] = updated_tree_fp
         
         param_keys=parameters.keys()
-
-        parameters["-f"] = 'v'
+        if "-f" not in param_keys:
+            parameters["-f"] = 'v'
+        #if "-G" not in param_keys:
+        #    parameters["-G"] = '0.25'
         if "-m" not in param_keys:
             parameters["-m"] = 'GTRGAMMA'
         
