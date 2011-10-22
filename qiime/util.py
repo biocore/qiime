@@ -660,16 +660,20 @@ def merge_otu_tables(otu_table_f1,otu_table_f2):
         sample_ids2, otu_ids2, otu_table2, lineages2 =\
             parse_otu_table(otu_table_f2)
     
-    assert set(sample_ids1) & set(sample_ids2) == set(),\
-     'Overlapping sample ids detected:\n %s' %\
-     ' '.join(set(sample_ids1) & set(sample_ids2))
-    sample_ids_result = sample_ids1 + sample_ids2
-    sample_ids_result_lookup = dict(
-     [(sid,i) for i, sid in enumerate(sample_ids_result)])
+    # assert set(sample_ids1) & set(sample_ids2) == set(),\
+    #  'Overlapping sample ids detected:\n %s' %\
+    #  ' '.join(set(sample_ids1) & set(sample_ids2))
+    sample_ids_result = []
+    sample_ids_result_lookup = {}
+    i = 0
+    for sid in sample_ids1 + sample_ids2:
+        if sid not in sample_ids_result_lookup:
+            sample_ids_result.append(sid)
+            sample_ids_result_lookup[sid] = i
+            i += 1
+        else:
+            pass
     
-    # Will need to add support for OTU tables wo tax info at some 
-    # point -- in a rush now so don't have time to add it without an
-    # immediate use case.
     if lineages1 and lineages2:    
         # map OTU ids to lineages -- in case of conflicts (i.e, OTU assigned)
         # different lineage in different otu tables, the lineage from 
@@ -695,20 +699,16 @@ def merge_otu_tables(otu_table_f1,otu_table_f2):
     
     otu_table = zeros(shape=(len(otu_ids_result),len(sample_ids_result)),dtype=int)
     for i,sample_id in enumerate(sample_ids1):
-        #col_index = sample_ids_result.index(sample_id)
         col_index = sample_ids_result_lookup[sample_id]
         for j,otu_id in enumerate(otu_ids1):
-            #row_index = otu_ids_result.index(otu_id)
             row_index = otu_ids_result_lookup[otu_id]
             otu_table[row_index,col_index] = otu_table1[j,i]
         
     for i,sample_id in enumerate(sample_ids2):
-        #col_index = sample_ids_result.index(sample_id)
         col_index = sample_ids_result_lookup[sample_id]
         for j,otu_id in enumerate(otu_ids2):
-            #row_index = otu_ids_result.index(otu_id)
             row_index = otu_ids_result_lookup[otu_id]
-            otu_table[row_index,col_index] = otu_table2[j,i]
+            otu_table[row_index,col_index] += otu_table2[j,i]
     
     if lineages:
         lineages_result = [otu_id_to_lineage[otu_id] 

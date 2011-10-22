@@ -53,6 +53,7 @@ class TopLevelTests(TestCase):
         self.otu_table_f1 = otu_table_fake1.split('\n')
         self.otu_table_f2 = otu_table_fake2.split('\n')
         self.otu_table_f3 = otu_table_fake3.split('\n')
+        self.otu_table_f4 = otu_table_fake4.split('\n')
         self.otu_table_f1_no_tax = otu_table_fake1_no_tax.split('\n')
         self.otu_table_f2_no_tax = otu_table_fake2_no_tax.split('\n')
         self.otu_table_f3_no_tax = otu_table_fake3_no_tax.split('\n')
@@ -333,21 +334,6 @@ class TopLevelTests(TestCase):
         # check that a file in qiime/support_files exists
         default_qiime_config_fp = join(support_files_dir,'qiime_config')
         self.assertTrue(exists(default_qiime_config_fp))
-        
-    def test_merge_otu_tables_error(self):
-        """merge_otu_tables throws error on overlapping sample IDs"""
-        # error on overlapping sample ids
-        self.assertRaises(AssertionError,\
-         merge_otu_tables,iter(self.otu_table_f1),iter(self.otu_table_f1))
-        
-    def test_merge_n_otu_tables_error(self):
-        """merge_n_otu_tables throws error on overlapping sample IDs"""
-        # error on overlapping sample ids
-        self.assertRaises(AssertionError,merge_n_otu_tables,
-                          [iter(self.otu_table_f1),
-                           iter(self.otu_table_f2),
-                           iter(self.otu_table_f3),
-                           iter(self.otu_table_f1)])
     
     def test_merge_otu_tables(self):
         """merge_otu_tables functions as expected"""
@@ -372,7 +358,52 @@ class TopLevelTests(TestCase):
         self.assertEqual(actual[1],exp_otu_ids)
         self.assertEqual(actual[2],exp_otu_table)
         self.assertEqual(actual[3],exp_lineages)
-    
+
+    def test_merge_otu_tables_w_overlapping_sample_ids(self):
+        """merge_otu_tables functions as expected w one overlapping sample id
+        """
+        otu_table_f1 = iter(self.otu_table_f1)
+        otu_table_f4 = iter(self.otu_table_f4)
+        exp_sample_ids = ['S1','S2','S3','S4']
+        exp_otu_ids = ['0','1','2','3','4','6']
+        exp_otu_table = array([[2,0,1,0],\
+                           [1,0,0,0],\
+                           [5,0,1,0],\
+                           [1,0,2,0],\
+                           [9,0,1,0],\
+                           [42,0,1,25]])
+        exp_lineages = [['Root','Bacteria'],\
+                    ['Root','Bacteria','Verrucomicrobia'],
+                    ['Root','Bacteria'],\
+                    ['Root','Bacteria','Acidobacteria'],\
+                    ['Root','Bacteria','Bacteroidetes'],\
+                    ['Root','Archaea']]
+        actual = merge_otu_tables(otu_table_f1,otu_table_f4)
+        self.assertEqual(actual[0],exp_sample_ids)
+        self.assertEqual(actual[1],exp_otu_ids)
+        self.assertEqual(actual[2],exp_otu_table)
+        self.assertEqual(actual[3],exp_lineages)
+
+    def test_merge_otu_tables_w_all_overlapping_sample_ids(self):
+        """merge_otu_tables functions as expected w all overlapping sample ids
+        """
+        otu_table_f1_1 = iter(self.otu_table_f1)
+        otu_table_f1_2 = iter(self.otu_table_f1)
+        exp_sample_ids = ['S1','S2']
+        exp_otu_ids = ['0','1','2']
+        exp_otu_table = array([[2,0],\
+                           [2,0],\
+                           [8,0]])
+        exp_lineages = [['Root','Bacteria'],\
+                    ['Root','Bacteria','Verrucomicrobia'],
+                    ['Root','Bacteria']]
+        actual = merge_otu_tables(otu_table_f1_1,otu_table_f1_2)
+        self.assertEqual(actual[0],exp_sample_ids)
+        self.assertEqual(actual[1],exp_otu_ids)
+        self.assertEqual(actual[2],exp_otu_table)
+        self.assertEqual(actual[3],exp_lineages)
+
+
     def test_merge_otu_tables_passed_in_tables(self):
         """merge_otu_tables functions with otu_table tuples"""
         otu_table1 = parse_otu_table(self.otu_table_f1)
@@ -789,6 +820,14 @@ otu_table_fake2 = """#Full OTU Counts
 otu_table_fake3 = """#Full OTU Counts
 #OTU ID	samp7	Consensus Lineage
 6	1	Root;Archaea""" 
+
+otu_table_fake4 = """#Full OTU Counts
+#OTU ID	S3	S4	S1	Consensus Lineage
+0	1	0	1	Root;Bacteria
+3	2	0	1	Root;Bacteria;Acidobacteria
+4	1	0	9	Root;Bacteria;Bacteroidetes
+2	1	0	1	Root;Bacteria;Acidobacteria;Acidobacteria;Gp5
+6	1	25	42	Root;Archaea"""
 
 otu_table_fake1_no_tax = """#Full OTU Counts
 #OTU ID	S1	S2
