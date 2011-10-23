@@ -1,5 +1,7 @@
 Add changes since QIIME 1.3.0 here
 ==================================
+* Added ability to merge otu tables with overlapping sample ids (in merge_otu_tables.py). Values are summed when an OTU shows up in the same sample in different OTU tables.
+* Added a new script (filter_distance_matrix.py) to filter samples directly from distance matrices.
 * Added script nmds.py Non-Metric Multidimensional Scaling (NMDS).
 * Added in the calculation of standard error in rarefaction plots, since only standard deviation was calculated. Also added an optional option choice for this.
 * Support for pick_otus_through_otu_table.py to allow for uclust_ref to be run in parallel with creation of new clusters. 
