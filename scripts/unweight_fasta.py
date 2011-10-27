@@ -19,13 +19,14 @@ from qiime.util import parse_command_line_parameters
 script_info = {}
 script_info['brief_description'] = "Transform fasta files with abundance weighting into unweighted"
 script_info['script_description'] = '''E.g. makes 3 fasta records from a weighted input fasta file containing the following record: 
->sample1_12_3 bc_val=20
+>goodsample1_12_3 bc_val=20
 AATGCTTGTCACATCGATGC
 '''
-script_info['script_usage'] = [("",'''make 3 fasta records from the following 
->sample1_12_3 bc_val=20
+script_info['script_usage'] = [("",'''make 3 fasta records from the following record:
+>goodsample1_12_3 bc_val=20
 AATGCTTGTCACATCGATGC
-resulting in
+
+resulting in:
 >goodsample_0
 AATGCTTGTCACATCGATGC
 >goodsample_1
