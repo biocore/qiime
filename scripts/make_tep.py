@@ -65,7 +65,6 @@ jnlp_middle_block = """\">
   
   <resources>
     <j2se version="1.6+" initial-heap-size="500M" max-heap-size="2000m" />
-    <extension name="jogl" href="http://download.java.net/media/jogl/builds/archive/jsr-231-webstart-current/jogl.jnlp" />
     
     <jar href="topiaryexplorer0.9.4.jar" />
     <jar href="lib/core.jar" />
@@ -77,7 +76,8 @@ jnlp_middle_block = """\">
     <jar href="lib/javaws.jar" />
     <jar href="lib/classes12.jar" />
     <jar href="lib/jogl.jar" />
-    
+    <jar href="lib/guava-r09.jar" />
+
   </resources>
   
   <application-desc main-class="topiaryexplorer.TopiaryExplorer">
