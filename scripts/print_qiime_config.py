@@ -274,8 +274,8 @@ class Qiime_config(TestCase):
 
     def test_python_supported_version(self):
         """python is in path and version is supported """
-        min_acceptable_version = (2,6,0)
-        min_unacceptable_version = (2,7,0)
+        min_acceptable_version = (2,7,1)
+        min_unacceptable_version = (2,7,1)
         command = 'python --version'
         proc = Popen(command,shell=True,universal_newlines=True,\
                          stdout=PIPE,stderr=STDOUT)
@@ -285,48 +285,48 @@ class Qiime_config(TestCase):
             version = tuple(map(int,version_string.split('.')))
             if len(version) == 2:
                 version = (version[0],version[1],0)
-            pass_test = (version >= min_acceptable_version and version < min_unacceptable_version)
+            pass_test = (version >= min_acceptable_version and version <= min_unacceptable_version)
         except ValueError:
             pass_test = False
             version_string = stdout
         self.assertTrue(pass_test,\
-         "Unsupported python version. Must be >= %s and < %s , but running %s." \
+         "Unsupported python version. Must be >= %s and <= %s , but running %s." \
          % ('.'.join(map(str,min_acceptable_version)),
             '.'.join(map(str,min_unacceptable_version)),
             version_string))
 
     def test_numpy_suported_version(self):
         """numpy version is supported """
-        min_acceptable_version = (1,3,0)
+        min_acceptable_version = (1,5,1)
         min_unacceptable_version = (1,5,1)
         try:
             from numpy import __version__ as numpy_lib_version
             version = tuple(map(int,numpy_lib_version.split('.')))
-            pass_test = (version >= min_acceptable_version and version < min_unacceptable_version)
+            pass_test = (version >= min_acceptable_version and version <= min_unacceptable_version)
             version_string = str(numpy_lib_version)
         except ImportError:
             pass_test = False
             version_string = "Not installed"
         self.assertTrue(pass_test,\
-         "Unsupported numpy version. Must be >= %s and < %s , but running %s." \
+         "Unsupported numpy version. Must be >= %s and <= %s , but running %s." \
          % ('.'.join(map(str,min_acceptable_version)),
             '.'.join(map(str,min_unacceptable_version)),
             version_string))
 
     def test_matplotlib_suported_version(self):
         """maptplotlib version is supported """
-        min_acceptable_version = (0,98,5,3)
-        min_unacceptable_version = (0,98,5,4)
+        min_acceptable_version = (1,0,1)
+        min_unacceptable_version = (1,0,1)
         try:
             from matplotlib import __version__ as matplotlib_lib_version
             version = tuple(map(int,matplotlib_lib_version.split('.')))
-            pass_test = (version >= min_acceptable_version and version < min_unacceptable_version)
+            pass_test = (version >= min_acceptable_version and version <= min_unacceptable_version)
             version_string = str(matplotlib_lib_version)
         except ImportError:
             pass_test = False
             version_string = "Not installed"
         self.assertTrue(pass_test,\
-         "Unsupported matplotlib version. Must be >= %s and < %s , but running %s." \
+         "Unsupported matplotlib version. Must be >= %s and <= %s , but running %s." \
          % ('.'.join(map(str,min_acceptable_version)),
             '.'.join(map(str,min_unacceptable_version)),
             version_string))
