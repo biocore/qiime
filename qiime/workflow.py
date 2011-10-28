@@ -518,7 +518,15 @@ def run_pick_reference_otus_through_otu_table(
         close_logger_on_success = True
     else:
         close_logger_on_success = False
-    
+
+
+    logger.write("Input file md5 sums:\n")
+    logger.write("%s: %s\n" % (input_fp, safe_md5(open(input_fp)).hexdigest()))
+    logger.write("%s: %s\n" % (refseqs_fp, safe_md5(open(refseqs_fp)).hexdigest()))
+    if taxonomy_fp:
+        logger.write("%s: %s\n" % (taxonomy_fp, safe_md5(open(taxonomy_fp)).hexdigest()))
+    logger.write("\n")
+
     # Prep the OTU picking command
     pick_otu_dir = '%s/%s_picked_otus' % (output_dir, otu_picking_method)
     otu_fp = '%s/%s_otus.txt' % (pick_otu_dir,input_basename)
