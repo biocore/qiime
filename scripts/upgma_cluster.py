@@ -27,7 +27,7 @@ script_info['script_usage'].append(('','',''))
 script_info['output_description']="""The output is a newick formatted tree compatible with most standard tree viewing programs. Batch processing is also available, allowing the analysis of an entire directory of distance matrices."""
 script_info['required_options']=[
 make_option('-i', '--input_path',
-     type='existing_filepath',help='input path.  directory for batch processing, '+\
+     type='existing_path',help='input path.  directory for batch processing, '+\
       'filename for single file operation'),\
       
 
