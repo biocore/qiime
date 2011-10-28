@@ -145,10 +145,12 @@ def main():
     matplotlib_version = re.split("[^\d]", matplotlib.__version__)
     matplotlib_version_info = tuple([int(i) for i in matplotlib_version if \
                             i.isdigit()])
+
     if matplotlib_version_info != (0,98,5,3) and \
-        matplotlib_version_info != (0,98,5,2):
-        print "This code was only tested with Matplotlib-0.98.5.2 and \
-              Matplotlib-0.98.5.3"
+        matplotlib_version_info != (0,98,5,2) and \
+        matplotlib_version_info != (1,0,1):
+        print "This code was only tested with Matplotlib-0.98.5.2, "+\
+              "Matplotlib-0.98.5.3 and Matplotlib-1.0.1"
 
     #get QIIME directory
     qiime_dir=get_qiime_project_dir()
