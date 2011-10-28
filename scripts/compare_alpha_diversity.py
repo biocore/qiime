@@ -44,7 +44,7 @@ script_info['required_options']=[\
   '--mapping_filepath',
   action='store',
   type='existing_filepath',
-  dest='mapping_fp'
+  dest='mapping_fp',
   help='path to the mapping file [REQUIRED]'),\
  make_option('-c',
   '--category',
