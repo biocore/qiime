@@ -89,7 +89,7 @@ setup(name='QIIME',
       maintainer_email=__email__,
       url='http://www.qiime.org',
       packages=['qiime','qiime/parallel','qiime/pycogent_backports','qiime/denoiser'],
-      scripts=glob('scripts/*py'),
+      scripts=glob('scripts/*py')+glob('scripts/ec2*'),
       package_data={'qiime':\
                    ['support_files/qiime_config',\
                     'support_files/css/*css',\
