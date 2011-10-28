@@ -770,7 +770,7 @@ class UsearchOtuPickerTests(TestCase):
                                        'minsize':1,
                                        'percent_id':0.97,
                                        'percent_id_err':0.80,
-                                       'abundance_skew':1
+                                       'abundance_skew':2
                                        })
         
                                        
@@ -1197,7 +1197,7 @@ class UsearchReferenceOtuPickerTests(TestCase):
                                        'minsize':1,
                                        'percent_id':0.97,
                                        'percent_id_err':0.80,
-                                       'abundance_skew':1
+                                       'abundance_skew':2
                                        })
         
                                        
