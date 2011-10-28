@@ -35,8 +35,8 @@ AATGCTTGTCACATCGATGC
 AATGCTTGTCACATCGATGC''',"%prog -i input.fna -o output.fna -l goodsample")]
 script_info['output_description']= "a .fasta file"
 script_info['required_options'] = [
- make_option('-i','--input_fasta',help='the input fasta file'),
- make_option('-o','--output_file',help='the output fasta filepath'),
+ make_option('-i','--input_fasta',type='existing_filepath',help='the input fasta file'),
+ make_option('-o','--output_file',type='new_filepath',help='the output fasta filepath'),
  make_option('-l','--label',help='sequence label used for all records. fasta label lines will look like: >label_423'),
 ]
 script_info['optional_options'] = []
