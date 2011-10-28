@@ -35,21 +35,42 @@ script_info['output_description'] = \
     """Output is a pruned tree in newick format."""
 
 script_info['required_options']=[\
-    make_option('-i','--input_tree_fp',help='input tree filepath'),
-    make_option('-o','--output_tree_fp',help='output tree filepath')
+ make_option('-i',
+  '--input_tree_filepath',
+  action='store',
+  type='existing_filepath',
+  dest='input_tree_fp',     
+  help='input tree filepath'),\
+ make_option('-o',
+  '--output_tree_filepath',
+  action='store',
+  type='new_filepath',
+  dest='output_tree_fp',
+  help='output tree filepath'),\
 ]
 
 script_info['optional_options']=[\
-    make_option('-n','--negate',default=False, action='store_true',
-            help='if negate is not false will prune tips fed in and save \
-            all others [default: %default]'),
-    make_option('-t','--tips_fp', 
-            help='A list of sequence identifiers (or tab-delimited lines with'
-                 ' a seq identifier in the first field) which should be retained'
-                 ' [default: %default]'),
-    make_option('-f','--fasta_fp',
-            help='A fasta file where the seq ids should be retained'
-                 ' [default: %default]'),
+ make_option('-n',
+  '--negate',
+  default=False,
+  action='store_true',
+  help='if negate is not false will prune tips fed in and save \
+   all others [default: %default]'),\
+ make_option('-t',
+  '--tips_fp',
+  action='store',
+  type='existing_filepath',
+  dest='tips_fp', 
+ help='A list of sequence identifiers (or tab-delimited lines with \
+  a seq identifier in the first field) which should be retained \
+  [default: %default]'),
+ make_option('-f',
+ '--fasta_fp',
+ action='store',
+ type='existing_filepath',
+ dest='fast_fp',
+ help='A fasta file where the seq ids should be retained'
+                 ' [default: %default]'),\
 ]
 
 script_info['version'] = __version__
