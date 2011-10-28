@@ -33,11 +33,13 @@ script_info['script_usage'].append(("""Example:""","""Truncate the input fasta a
 script_info['output_description']="""Filtered versions of the input fasta and qual file (based on input name with '_filtered' appended) will be generated in the output directory"""
 script_info['required_options']= [\
     make_option('-f', '--fasta_fp',
+        type='existing_filepath',
         help='Fasta file.  Needed to test for congruety between the '+\
         'number of nucleotides in the fasta file and quality scores in '+\
         'the qual file.'),
         
     make_option('-q', '--qual_fp',
+        type='existing_filepath',
         help='Quality score file used to generate histogram data.'),
         
     make_option('-b', '--base_pos',
@@ -47,6 +49,7 @@ script_info['required_options']= [\
 
 script_info['optional_options']= [\
     make_option('-o', '--output_dir',
+        type = 'new_path',
         help='Output directory.  Will be created if does not exist.  '+\
         '[default: %default]', default="."),
 ]
