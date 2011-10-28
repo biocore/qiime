@@ -14,7 +14,7 @@ __status__ = "Development"
 from os import rename
 from cogent import DNA
 from cogent.util.misc import safe_md5, create_dir
-from qiime.util import parse_command_line_parameters, make_option
+from qiime.util import parse_command_line_parameters, make_option, gzip_open
 from qiime.parse import parse_mapping_file
 from qiime.split_libraries_fastq import (process_fastq_single_end_read_file,
                                          BARCODE_DECODER_LOOKUP)
@@ -172,8 +172,12 @@ def main():
           (sequence_read_fp,str(safe_md5(open(sequence_read_fp)).hexdigest())))
         log_f.write('Barcode read filepath: %s (md5: %s)\n\n' %\
           (barcode_read_fp,safe_md5(open(barcode_read_fp)).hexdigest()))
-        
-        sequence_read_f = open(sequence_read_fp,'U')
+       
+        if sequence_read_fp.endswith('.gz'):
+            sequence_read_f = gzip_open(sequence_read_fp)
+        else:
+            sequence_read_f = open(sequence_read_fp,'U')
+
         barcode_read_f = open(barcode_read_fp,'U')
         seq_id = start_seq_id
         for fasta_header, sequence, quality, seq_id in \
