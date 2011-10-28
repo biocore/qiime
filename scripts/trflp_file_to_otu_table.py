@@ -30,8 +30,10 @@ script_info['script_usage'] = [
 script_info['output_description']= ""
 script_info['required_options']=[
   make_option('-i', '--input_path',
+     type='existing_filepath',
      help='input path: TRFLP text file'),
   make_option('-o', '--output_path',
+     type='new_filepath',
      help="output file: OTU table"),
 ]
 script_info['optional_options']=[]
