@@ -32,7 +32,7 @@ make_option('-i', '--input_path',
       
 
 make_option('-o', '--output_path',
-            type='new_filepath',help='output path. directory for batch processing, '+\
+            type='new_path',help='output path. directory for batch processing, '+\
              'filename for single file operation'),\
 ]
 script_info['optional_options']=[]
