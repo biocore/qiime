@@ -209,6 +209,12 @@ def main():
         '.qual files must be included.')
   
     mapping_file = opts.map_fname
+    
+    try:
+        m = open(mapping_file, "U")
+    except IOError:
+        raise IOError,('Unable to open mapping file %s ' % mapping_file +\
+         'Please check filepath and read permissions.')
     fasta_files = set(opts.fasta_fnames.split(','))
     if opts.qual_fnames:
         qual_files = set(opts.qual_fnames.split(','))
@@ -216,12 +222,24 @@ def main():
         qual_files = set()
 
     for q in qual_files:
+        try:
+            test_qual_file = open(q, "U")
+            test_qual_file.close()
+        except IOError:
+            raise IOError,('Unable to open file %s ' % q +' please check '+\
+             'filepath and read permissions.')
         if not q.endswith('qual'):
             stderr.write(
             "Qual file does not end with .qual: is it really a qual file?\n%s\n" 
             % q)
 
     for f in fasta_files:
+        try:
+            test_fasta_file = open(f, "U")
+            test_fasta_file.close()
+        except IOError:
+            raise IOError,('Unable to open file %s ' % f +' please check '+\
+             'filepath and read permissions.')
         if not (f.endswith('fasta') or f.endswith('fna')):
             stderr.write(
             "Fasta file does not end with .fna: is it really a seq file?\n%s\n" 
