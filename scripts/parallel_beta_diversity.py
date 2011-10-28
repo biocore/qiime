@@ -22,12 +22,13 @@ from qiime.util import get_tmp_filename
 from qiime.parallel.util import get_random_job_prefix, write_jobs_file,\
     submit_jobs, get_rename_command,\
     write_filepaths_to_file, merge_to_n_commands
-from qiime.beta_diversity import list_known_metrics
+from qiime.beta_diversity import get_phylogenetic_metric
 from qiime.util import load_qiime_config, get_qiime_scripts_dir, get_options_lookup
 from qiime.parallel.beta_diversity import (get_job_commands_single_otu_table,
     get_job_commands_multiple_otu_tables, create_merge_map_file_single_otu_table,
     get_poller_command)
 from qiime.parse import parse_otu_table, parse_newick, PhyloNode
+from sys import stderr
 
 qiime_config = load_qiime_config()
 options_lookup = get_options_lookup()
@@ -82,7 +83,19 @@ def main():
     output_dir = opts.output_path
     metrics = opts.metrics
     tree_fp = opts.tree_path
-    
+
+    # Check the tree exists if phylogenetically-aware measure is used
+    metrics_list = metrics.split(',')
+    for metric in metrics_list:
+        try:
+            metric_f = get_phylogenetic_metric(metric)
+            if tree_fp == None:
+                stderr.write("metric %s requires a tree, but none found\n"\
+                    % (metric,))
+                exit(1)
+        except AttributeError:
+            pass        
+
     beta_diversity_fp = opts.beta_diversity_fp
     python_exe_fp = opts.python_exe_fp
     path_to_cluster_jobs = opts.cluster_jobs_fp
