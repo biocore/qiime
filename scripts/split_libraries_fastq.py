@@ -162,7 +162,9 @@ def main():
                 option_parser.error("Some or all barcodes are not valid golay codes. "+\
                 "Do they need to be reverse complimented? If these are not "+\
                 "golay barcodes pass --barcode_type 12 to disable barcode "+\
-                "error correction. Invalid codes:\n\t%s" % \
+                "error correction, or pass --barcode_type # if the barcodes "+\
+                "are not 12 base pairs, where # is the size of the barcodes. "+
+                "  Invalid codes:\n\t%s" % \
                 ' '.join(invalid_golay_barcodes))
         
         log_f.write("Input file paths\n")

@@ -53,7 +53,9 @@ TO DOs:
 def get_invalid_golay_barcodes(seqs):
     result = []
     for e in seqs:
-        if decode(e)[1] > 0:
+        if len(e) != 12:
+            result.append(e)
+        elif decode(e)[1] > 0:
             result.append(e)
     return result
 
