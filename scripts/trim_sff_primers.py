@@ -26,15 +26,19 @@ script_info['output_description']="""This script replaces the original sff files
 
 script_info['required_options'] = [
     make_option("-l", "--libdir", dest='libdir',
+        type='existing_path',
         help="The directory containing per-library sff files"),
     make_option("-m", "--input_map", dest='input_map',
+        type='existing_filepath',
         help="Path to the input mapping file describing the libraries"),
     ]
 
 script_info['optional_options']=[
     make_option("-p", "--sfffile_path", default='sfffile', 
+        type='existing_filepath',
         help="Path to sfffile binary [default: %default]"),
     make_option("-q", "--sffinfo_path", default='sffinfo',
+        type='existing_filepath',
         help="Path to sffinfo binary [default: %default]"),
     make_option('--use_sfftools', action='store_true', default=False,
         help=('Use external sffinfo and sfffile programs instead of '
