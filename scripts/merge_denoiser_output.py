@@ -19,7 +19,8 @@ from qiime.util import parse_command_line_parameters, get_options_lookup, create
 # Load Denoiser if it's available. If it's not, skip it if not but set up
 # to raise errors if the user tries to use it.
 try:
-    from Denoiser.denoise_postprocess import post_process
+    #from Denoiser.denoise_postprocess import post_process
+    from qiime.denoiser.denoise_postprocess import post_process
 
 except ImportError:
     def raise_denoiser_not_found_error(*args, **kwargs):

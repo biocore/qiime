@@ -30,8 +30,8 @@ script_info['script_usage'].append(("""Example:""","""Given the sample upgma tre
 script_info['script_usage'].append(("""""","""Additionally, tree_compare.py can be used to compare any set of support trees to a master tree, making it easily expandable to additional algorithms.""",""""""))
 script_info['output_description']="""The result of tree_compare.py contains the master tree, now with internal nodes uniquely named, a separate bootstrap/jackknife support file, listing the support for each internal node, and a jackknife_named_nodes.tre tree, where internal nodes are named with their support values from 0 to 1.0, for use with tree visualization software (e.g. FigTree)."""
 script_info['required_options']=[\
-make_option('-m', '--master_tree', help='master tree filepath'),\
-make_option('-s', '--support_dir', help='path to dir containing support trees'),\
+make_option('-m', '--master_tree', type='existing_filepath', help='master tree filepath'),\
+make_option('-s', '--support_dir', type='existing_path', help='path to dir containing support trees'),\
 make_option('-o', '--output_dir', help='output directory, writes three files here '+\
 "makes dir if it doesn't exist")
 ]
