@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Application controller for usearch v5.0.144
+"""Application controller for usearch v5.1.221
 
 Includes application controllers for usearch and
 convenience wrappers for different functions of uclust including
@@ -27,6 +27,8 @@ from cogent.app.parameters import ValuedParameter, FlagParameter
 from cogent.app.util import CommandLineApplication, ResultPath,\
  get_tmp_filename, ApplicationError, ApplicationNotFoundError
 from cogent.util.misc import remove_files
+
+from qiime.pycogent_backports.uclust import clusters_from_uc_file
 
 class UsearchParseError(Exception):
     pass
@@ -244,6 +246,7 @@ def clusters_from_blast_uc_file(uc_lines):
             continue
         
         curr_line = line.split('\t')
+        
         
         if curr_line[hit_miss_index] == 'N':
             # only retaining actual sequence label
@@ -649,8 +652,9 @@ def usearch_cluster_seqs(
     usersort = True,
     HALT_EXEC=False,
     save_intermediate_files=False,
-    remove_usearch_logs=False):
-    """ Cluster for err. correction at percent_id_err, output consensus fasta
+    remove_usearch_logs=False
+    ):
+    """ Cluster seqs at percent_id, output consensus fasta
     
     fasta_filepath = input fasta file, generally a dereplicated fasta
     output_filepath = output error corrected fasta filepath
@@ -707,6 +711,160 @@ def usearch_cluster_seqs(
     
     return app_result, output_filepath
     
+    
+def usearch_cluster_seqs_ref(
+    fasta_filepath,
+    output_filepath = None,
+    percent_id = 0.97,
+    sizein = True,
+    sizeout = True,
+    w=64,
+    slots=16769023,
+    maxrejects=64,
+    log_name = "usearch_cluster_seqs.log",
+    usersort = True,
+    HALT_EXEC=False,
+    save_intermediate_files=False,
+    remove_usearch_logs=False,
+    suppress_new_clusters=False,
+    refseqs_fp = None,
+    output_dir = None):
+    """ Cluster seqs at percent_id, output consensus fasta
+    
+    Also appends de novo clustered seqs if suppress_new_clusters is False.
+    Forced to handle reference + de novo in hackish fashion as usearch does not 
+    work as listed in the helpstrings.  Any failures are clustered de novo,
+    and given unique cluster IDs.  
+    
+    fasta_filepath = input fasta file, generally a dereplicated fasta
+    output_filepath = output reference clustered uc filepath
+    percent_id = minimum identity percent.
+    sizein = not defined in usearch helpstring
+    sizeout = not defined in usearch helpstring
+    w = Word length for U-sorting
+    slots = Size of compressed index table. Should be prime, e.g. 40000003.
+     Should also specify --w, typical is --w 16 or --w 32.
+    maxrejects = Max rejected targets, 0=ignore, default 32.
+    log_name = string specifying output log name
+    usersort = Enable if input fasta not sorted by length purposefully, lest
+     usearch will raise an error.  In post chimera checked sequences, the seqs
+     are sorted by abundance, so this should be set to True.
+    HALT_EXEC: Used for debugging app controller
+    save_intermediate_files: Preserve all intermediate files created.
+    suppress_new_clusters: Disables de novo OTUs when ref based OTU picking
+     enabled.
+    refseqs_fp: Filepath for ref based OTU picking
+    output_dir: output directory
+    """
+    
+    output_filepath = output_filepath or \
+     get_tmp_filename(prefix='usearch_cluster_ref_based', suffix='.uc')
+    
+    # using abspath to create log filepath, for cluster environments
+    tmp_working_dir = split(abspath(output_filepath))[0]
+    
+    log_filepath = tmp_working_dir + "/" + log_name
+    
+    uc_filepath = tmp_working_dir + "/clustered_seqs_post_chimera.uc"
+    
+    params = {'--sizein':sizein,
+              '--sizeout':sizeout,
+              '--id':percent_id,
+              '--w':w,
+              '--slots':slots,
+              '--maxrejects':maxrejects}
+    
+    app = Usearch(params,HALT_EXEC=HALT_EXEC)
+    
+    if usersort:
+        app.Parameters['--usersort'].on()
+        
+    data = {'--query':fasta_filepath,
+            '--uc':uc_filepath,
+            '--db':refseqs_fp
+            }
+
+        
+    if not remove_usearch_logs:
+        data['--log'] = log_filepath
+    
+    
+    app_result = app(data)
+    
+
+    
+    files_to_remove = []
+    
+    # Need to create fasta file of all hits (with reference IDs), 
+    # recluster failures if new clusters allowed, and create complete fasta 
+    # file, with unique fasta label IDs.
+    
+    if suppress_new_clusters:
+        output_fna_filepath = output_dir + 'ref_clustered_seqs.fasta'
+        output_filepath, labels_hits = get_fasta_from_uc_file(fasta_filepath,
+         uc_filepath, hit_type="H", output_dir=output_dir,
+         output_fna_filepath=output_fna_filepath)
+
+        
+        files_to_remove.append(uc_filepath)
+    else:
+        # Get fasta of successful ref based clusters
+        output_fna_clustered = output_dir + 'ref_clustered_seqs.fasta'
+        output_filepath_ref_clusters,  labels_hits =\
+         get_fasta_from_uc_file(fasta_filepath, uc_filepath, hit_type="H",
+         output_dir=output_dir, output_fna_filepath=output_fna_clustered)
+                
+        # get failures and recluster
+        output_fna_failures = output_dir + 'ref_clustered_seqs_failures.fasta'
+        output_filepath_failures,labels_hits =\
+         get_fasta_from_uc_file(fasta_filepath,
+         uc_filepath, hit_type="N", output_dir=output_dir,
+         output_fna_filepath=output_fna_failures)
+         
+         
+        # de novo cluster the failures
+        app_result, output_filepath_clustered_failures =\
+         usearch_cluster_seqs(output_fna_failures, output_filepath=output_dir +\
+         'clustered_seqs_reference_failures.fasta', percent_id=percent_id,
+         sizein=sizein, sizeout=sizeout, w=w, slots=slots,
+         maxrejects=maxrejects, save_intermediate_files=save_intermediate_files,
+         remove_usearch_logs=remove_usearch_logs)
+         
+        output_filepath = concatenate_fastas(output_fna_clustered,
+         output_fna_failures, output_concat_filepath=output_dir +\
+         'concatenated_reference_denovo_clusters.fasta')
+         
+        files_to_remove.append(output_fna_clustered)
+        files_to_remove.append(output_fna_failures)
+        files_to_remove.append(output_filepath_clustered_failures)
+
+                      
+    if not save_intermediate_files:
+        remove_files(files_to_remove)
+    
+    return app_result, output_filepath
+    
+def concatenate_fastas(output_fna_clustered,
+                       output_fna_failures,
+                       output_concat_filepath):
+    """ Concatenates two input fastas, writes to output_concat_filepath
+    
+    output_fna_clustered: fasta of successful ref clusters
+    output_fna_failures: de novo fasta of cluster failures
+    output_concat_filepath: path to write combined fastas to
+    """
+    
+    output_fp = open(output_concat_filepath, "w")
+    
+    
+    for label, seq in MinimalFastaParser(open(output_fna_clustered, "U")):
+        output_fp.write(">%s\n%s\n" % (label, seq))
+    for label, seq in MinimalFastaParser(open(output_fna_failures, "U")):
+        output_fp.write(">%s\n%s\n" % (label, seq))
+        
+    return output_concat_filepath
+        
+    
 def enumerate_otus(fasta_filepath,
                    output_filepath = None,
                    label_prefix = "",
@@ -743,7 +901,119 @@ def enumerate_otus(fasta_filepath,
     
     return output_filepath
     
+def get_fasta_from_uc_file(fasta_filepath,
+                           uc_filepath,
+                           hit_type = "H",
+                           output_fna_filepath = None,
+                           label_prefix = "",
+                           output_dir=None):
+    """ writes fasta of sequences from uc file of type hit_type
+    
+    fasta_filepath:  Filepath of original query fasta file
+    uc_filepath:  Filepath of .uc file created by usearch post error filtering
+    hit_type: type to read from first field of .uc file, "H" for hits, "N" for
+     no hits.
+    output_fna_filepath = fasta output filepath
+    label_prefix = Added before each fasta label, important when doing ref
+     based OTU picking plus de novo clustering to preserve label matching.
+    output_dir: output directory
+    """
+    
+    hit_type_index = 0
+    seq_label_index = 8
+    target_label_index = 9
+    
+    labels_hits = {}
+    labels_to_keep = []
+    
+    for line in open(uc_filepath, "U"):
+        if line.startswith("#") or len(line.strip()) == 0:
+            continue
+        curr_line = line.split('\t')
+        if curr_line[0] == hit_type:
+            labels_hits[curr_line[seq_label_index]] =\
+             curr_line[target_label_index].strip()
+            labels_to_keep.append(curr_line[seq_label_index])
 
+    labels_to_keep = set(labels_to_keep)
+    
+
+    
+    out_fna = open(output_fna_filepath, "w")
+    
+    for label, seq in MinimalFastaParser(open(fasta_filepath, "U")):
+        if label in labels_to_keep:
+            if hit_type == "H":
+                out_fna.write(">" + labels_hits[label] + "\n%s\n" % seq)
+            if hit_type == "N":
+                out_fna.write(">" + label + "\n%s\n" % seq)
+                
+    return output_fna_filepath, labels_hits
+        
+def get_retained_chimeras(output_fp_de_novo_nonchimeras,
+                          output_fp_ref_nonchimeras,
+                          output_combined_fp,
+                          chimeras_retention = 'union'):
+    """ Gets union or intersection of two supplied fasta files
+    
+    output_fp_de_novo_nonchimeras: filepath of nonchimeras from de novo
+     usearch detection.
+    output_fp_ref_nonchimeras: filepath of nonchimeras from reference based
+     usearch detection.
+    output_combined_fp: filepath to write retained sequences to.
+    chimeras_retention: accepts either 'intersection' or 'union'.  Will test
+     for chimeras against the full input error clustered sequence set, and 
+     retain sequences flagged as non-chimeras by either (union) or
+     only those flagged as non-chimeras by both (intersection)."""
+     
+    de_novo_non_chimeras = []
+    reference_non_chimeras = []
+    
+    de_novo_nonchimeras_f = open(output_fp_de_novo_nonchimeras, "U")
+    reference_nonchimeras_f = open(output_fp_ref_nonchimeras, "U")
+    
+    output_combined_f = open(output_combined_fp, "w")
+    
+    for label, seq in MinimalFastaParser(de_novo_nonchimeras_f):
+        de_novo_non_chimeras.append(label)
+    de_novo_nonchimeras_f.close()
+    for label, seq in MinimalFastaParser(reference_nonchimeras_f):
+        reference_non_chimeras.append(label)
+    reference_nonchimeras_f.close()
+    
+    de_novo_non_chimeras = set(de_novo_non_chimeras)
+    reference_non_chimeras = set(reference_non_chimeras)
+    
+    if chimeras_retention == 'union':
+        all_non_chimeras = de_novo_non_chimeras.union(reference_non_chimeras)
+    elif chimeras_retention == 'intersection':
+        all_non_chimeras =\
+         de_novo_non_chimeras.intersection(reference_non_chimeras)
+         
+    de_novo_nonchimeras_f = open(output_fp_de_novo_nonchimeras, "U")
+    reference_nonchimeras_f = open(output_fp_ref_nonchimeras, "U")
+         
+    # Save a list of already-written labels
+    labels_written = []
+    
+    for label, seq in MinimalFastaParser(de_novo_nonchimeras_f):
+        if label in all_non_chimeras:
+            if label not in labels_written:
+                output_combined_f.write('>%s\n%s\n' % (label, seq))
+                labels_written.append(label)
+    de_novo_nonchimeras_f.close()
+    for label, seq in MinimalFastaParser(reference_nonchimeras_f):
+        if label in all_non_chimeras:
+            if label not in labels_written:
+                output_combined_f.write('>%s\n%s\n' % (label, seq))
+                labels_written.append(label)
+    reference_nonchimeras_f.close()
+    
+    output_combined_f.close()
+    
+    return output_combined_fp
+    
+    
     
 def assign_reads_to_otus(original_fasta,
                          filtered_fasta,
@@ -779,12 +1049,9 @@ def assign_reads_to_otus(original_fasta,
     
     log_filepath = tmp_working_dir + "/" + log_name
     
-    
     params = {'--id':perc_id_blast,
               '--global':global_alignment}
-    
-    
-    
+              
     app = Usearch(params,HALT_EXEC=HALT_EXEC)
     
     data = {'--query':original_fasta,
@@ -798,13 +1065,12 @@ def assign_reads_to_otus(original_fasta,
     
     app_result = app(data)
                       
-    
     return app_result, output_filepath
-
 
 
 def otu_pipe(
     fasta_filepath,
+    refseqs_fp = None,
     output_dir = None,
     percent_id = 0.97,
     percent_id_err = 0.97,
@@ -830,7 +1096,9 @@ def otu_pipe(
     reference_chimera_detection=True,
     cluster_size_filtering=True,
     remove_usearch_logs=False,
-    usersort=True
+    usersort=True,
+    suppress_new_clusters = False,
+    chimeras_retention = "union"
     ):
         
     """ Main convenience wrapper for using usearch to filter/cluster seqs
@@ -841,6 +1109,7 @@ def otu_pipe(
     
     fasta_filepath = fasta filepath to filtering/clustering (e.g., output 
      seqs.fna file from split_libraries.py)
+    refseqs_fp = fasta filepath for ref-based otu picking.
     output_dir = directory to store the otu mapping file, as well logs and
      the intermediate files created if save_intermediate_files is True.
     percent_ID = percent ID for clustering sequences.
@@ -879,8 +1148,15 @@ def otu_pipe(
      usearch call.
     usersort = Used for specifying custom sorting (i.e., non-length based
      sorting) with usearch/uclust.
+    suppress_new_clusters = with reference based OTU picking, if enabled,
+     will prevent new clusters that do not match the reference from being
+     clustered.
+    chimeras_retention = accepts either 'intersection' or 'union'.  Will test
+     for chimeras against the full input error clustered sequence set, and 
+     retain sequences flagged as non-chimeras by either (union) or
+     only those flagged as non-chimeras by both (intersection).
     """
-    
+
     
     # Save a list of intermediate filepaths in case they are to be removed.
     intermediate_files = []
@@ -922,21 +1198,21 @@ def otu_pipe(
         intermediate_files.append(output_fp)
         
         
-        app_result, output_fp =\
+        app_result, error_clustered_output_fp =\
              usearch_cluster_error_correction(output_fp,
              output_filepath = output_dir + 'clustered_error_corrected.fasta',
              usersort = True, percent_id_err=percent_id_err, sizein=sizein,
              sizeout=sizeout, w=w, slots=slots, maxrejects=maxrejects,
              remove_usearch_logs=remove_usearch_logs)
 
-        intermediate_files.append(output_fp)
+        intermediate_files.append(error_clustered_output_fp)
             
         # Series of conditional tests, using generic 'output_fp' name so the
         # conditional filtering, if any/all are selected, do not matter.
         
         if de_novo_chimera_detection:
-            app_result, output_fp =\
-             usearch_chimera_filter_de_novo(output_fp, 
+            app_result, output_fp_de_novo_nonchimeras =\
+             usearch_chimera_filter_de_novo(error_clustered_output_fp, 
              abundance_skew = abundance_skew, output_chimera_filepath =\
              output_dir + 'de_novo_chimeras.fasta',
              output_non_chimera_filepath = output_dir +\
@@ -944,25 +1220,33 @@ def otu_pipe(
              save_intermediate_files=save_intermediate_files,
              remove_usearch_logs=remove_usearch_logs)
         
-            intermediate_files.append(output_fp)
+            intermediate_files.append(output_fp_de_novo_nonchimeras)
+            
+            output_fp = output_fp_de_novo_nonchimeras
         
         if reference_chimera_detection:
-            app_result, output_fp =\
-             usearch_chimera_filter_ref_based(output_fp,
+            app_result, output_fp_ref_nonchimeras =\
+             usearch_chimera_filter_ref_based(error_clustered_output_fp,
              db_filepath=db_filepath, output_chimera_filepath= output_dir +\
              'reference_chimeras.fasta', output_non_chimera_filepath =\
              output_dir + 'reference_non_chimeras.fasta', usersort=True, 
              save_intermediate_files=save_intermediate_files, rev=rev,
              remove_usearch_logs=remove_usearch_logs)
         
+            intermediate_files.append(output_fp_ref_nonchimeras)
+            
+            output_fp = output_fp_ref_nonchimeras
+            
+        # get intersection or union if both ref and de novo chimera detection 
+        if de_novo_chimera_detection and reference_chimera_detection:
+            output_fp = get_retained_chimeras(
+             output_fp_de_novo_nonchimeras, output_fp_ref_nonchimeras,
+             output_combined_fp = output_dir + 'combined_non_chimeras.fasta',
+             chimeras_retention = chimeras_retention)
+            
             intermediate_files.append(output_fp)
-        
-        
-            
 
-            
         if cluster_size_filtering:
-            
             # Test for empty filepath following filters, raise error if all seqs
             # have been removed
             
@@ -972,46 +1256,57 @@ def otu_pipe(
              minsize=minsize, sizein=sizein, sizeout=sizeout,
              remove_usearch_logs=remove_usearch_logs)
              
-             
             intermediate_files.append(output_fp)
 
         # cluster seqs
         # Should we add in option to use alternative OTU picking here?
         # Seems like it will be a bit of a mess...maybe after we determine
         # if OTU pipe should become standard.
-        app_result, output_filepath_clustered_seqs =\
-         usearch_cluster_seqs(output_fp, output_filepath = output_dir +\
-         'clustered_seqs.fasta', percent_id=percent_id, sizein=sizein,
-         sizeout=sizeout, w=w, slots=slots, maxrejects=maxrejects,
-         save_intermediate_files=save_intermediate_files,
-         remove_usearch_logs=remove_usearch_logs)
+        if refseqs_fp:
+            app_result, output_filepath =\
+             usearch_cluster_seqs_ref(output_fp, output_filepath = output_dir +\
+             'ref_clustered_seqs.uc', percent_id=percent_id, sizein=sizein,
+             sizeout=sizeout, w=w, slots=slots, maxrejects=maxrejects,
+             save_intermediate_files=save_intermediate_files,
+             remove_usearch_logs=remove_usearch_logs,
+             suppress_new_clusters=suppress_new_clusters, refseqs_fp=refseqs_fp,
+             output_dir=output_dir
+             )
 
-        intermediate_files.append(output_filepath_clustered_seqs)
+        else:
+            app_result, output_filepath =\
+             usearch_cluster_seqs(output_fp, output_filepath = output_dir +\
+             'clustered_seqs.fasta', percent_id=percent_id, sizein=sizein,
+             sizeout=sizeout, w=w, slots=slots, maxrejects=maxrejects,
+             save_intermediate_files=save_intermediate_files,
+             remove_usearch_logs=remove_usearch_logs)
+        
+        intermediate_files.append(output_filepath)
         
         # Enumerate the OTUs in the clusters
-        output_filepath_enum_otus =\
-         enumerate_otus(output_filepath_clustered_seqs, output_filepath =\
+        output_filepath =\
+         enumerate_otus(output_filepath, output_filepath =\
          output_dir + 'enumerated_otus.fasta', label_prefix=label_prefix,
          label_suffix=label_suffix, count_start=count_start,
          retain_label_as_comment=retain_label_as_comment)
-        
-        intermediate_files.append(output_filepath_enum_otus)
+            
+        intermediate_files.append(output_filepath)
+
         
         # Get original sequence label identities
         app_result, clusters_file = assign_reads_to_otus(fasta_filepath,
-         output_filepath_enum_otus, output_filepath = output_dir +\
+         output_filepath, output_filepath = output_dir +\
          'assign_reads_to_otus.uc', perc_id_blast=perc_id_blast,
          global_alignment=global_alignment,
          remove_usearch_logs=remove_usearch_logs)
          
         intermediate_files.append(clusters_file)
-
-
         
     except ApplicationError:
         raise ApplicationError, ('Error running usearch. Possible causes are '
          'unsupported version (current supported version is usearch '+\
-         'v5.0.144) is installed or improperly formatted input file was provided')
+         'v5.1.221) is installed or improperly formatted input file was '+\
+         'provided')
     except ApplicationNotFoundError:
         remove_files(files_to_remove)
         raise ApplicationNotFoundError('usearch not found, is it properly '+\

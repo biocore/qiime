@@ -20,7 +20,8 @@ from qiime.pycogent_backports.usearch import (Usearch,
  usearch_dereplicate_exact_subseqs, usearch_sort_by_abundance,
  usearch_cluster_error_correction, usearch_chimera_filter_de_novo,
  usearch_chimera_filter_ref_based, usearch_cluster_seqs,
- enumerate_otus, assign_reads_to_otus, otu_pipe)
+ enumerate_otus, assign_reads_to_otus, otu_pipe, concatenate_fastas,
+ get_retained_chimeras)
 
 __author__ = "William Walters"
 __copyright__ = "Copyright 2007-2009, The Cogent Project"
@@ -41,6 +42,7 @@ class UsearchTests(TestCase):
         self.dna_seqs_with_abundance = dna_seqs_with_abundance
         self.de_novo_chimera_seqs = de_novo_chimera_seqs
         self.dna_seqs_with_dups = dna_seqs_with_dups
+        self.dna_seqs_reference_otu_picking = dna_seqs_reference_otu_picking
         
         
         # Expected output files
@@ -66,6 +68,14 @@ class UsearchTests(TestCase):
         self.expected_derep_seqs = expected_derep_seqs
         self.expected_abundance_sort_filtered = expected_abundance_sort_filtered
         self.expected_len_sorted_seqs = expected_len_sorted_seqs
+        self.expected_combined_dna_seqs_1_seqs_usearch =\
+         expected_combined_dna_seqs_1_seqs_usearch
+        self.retained_chimeras_seqs1 = retained_chimeras_seqs1
+        self.retained_chimeras_seqs2 = retained_chimeras_seqs2
+        self.expected_retained_chimeras_union =\
+         expected_retained_chimeras_union
+        self.expected_retained_chimeras_intersection =\
+         expected_retained_chimeras_intersection
         
         # Create temporary files for use with unit tests
         
@@ -113,11 +123,33 @@ class UsearchTests(TestCase):
         seq_file.write(self.dna_seqs_with_dups)
         seq_file.close()
         
+        self.tmp_retained_chimeras_seqs1 = get_tmp_filename(\
+         prefix="UsearchRetainedChimeras1_",\
+         suffix=".fasta")
+        seq_file = open(self.tmp_retained_chimeras_seqs1, 'w')
+        seq_file.write(self.retained_chimeras_seqs1)
+        seq_file.close()
+        
+        self.tmp_retained_chimeras_seqs2 = get_tmp_filename(\
+         prefix="UsearchRetainedChimeras1_",\
+         suffix=".fasta")
+        seq_file = open(self.tmp_retained_chimeras_seqs2, 'w')
+        seq_file.write(self.retained_chimeras_seqs2)
+        seq_file.close()
+        
+        self.tmp_dna_seqs_ref_otu_picking = get_tmp_filename(\
+         prefix="UsearchRefOtuPicking_",\
+         suffix=".fasta")
+        seq_file = open(self.tmp_dna_seqs_ref_otu_picking, "w")
+        seq_file.write(self.dna_seqs_reference_otu_picking)
+        seq_file.close()
        
         self._files_to_remove =\
          [self.tmp_seq_filepath1, self.tmp_seq_filepath2,
           self.tmp_ref_database, self.tmp_seqs_w_abundance,
-          self.tmp_de_novo_chimera_seqs, self.tmp_dna_seqs_with_dups]
+          self.tmp_de_novo_chimera_seqs, self.tmp_dna_seqs_with_dups,
+          self.tmp_retained_chimeras_seqs1, self.tmp_retained_chimeras_seqs2,
+          self.tmp_dna_seqs_ref_otu_picking]
           
         self._dirs_to_remove = []
         
@@ -135,11 +167,53 @@ class UsearchTests(TestCase):
                                       output_dir = self.tmp_dir,
                                       db_filepath = self.tmp_ref_database,
                                       minsize = 1,
-                                      remove_usearch_logs=True)
+                                      remove_usearch_logs=True,
+                                      chimeras_retention = 'intersection')
                                       
         expected_clusters = {'1': ['Solemya', 'Solemya_seq2'],
          '0': ['usearch_ecoli_seq', 'usearch_ecoli_seq2']}
         expected_failures = ['chimera']
+        
+        self.assertEqual(clusters, expected_clusters)
+        self.assertEqual(failures, expected_failures)
+        
+    def test_otu_pipe_reference_otu_picking(self):
+        """ Main program loop test, with reference + new clusters """
+        
+        # cluster size filtering set to 1 instead of default 4
+        clusters, failures = otu_pipe(self.tmp_dna_seqs_ref_otu_picking,
+                                      output_dir = self.tmp_dir,
+                                      refseqs_fp = self.tmp_ref_database,
+                                      reference_chimera_detection=False,
+                                      minsize = 1,
+                                      remove_usearch_logs=True,
+                                      suppress_new_clusters=False)
+                                      
+        # Will cluster everything including RandomCrap, as new clusters allowed.
+        expected_clusters =  {'1': ['Solemya', 'Solemya_seq2'], 
+        '0': ['usearch_ecoli_seq', 'usearch_ecoli_seq2'],
+        '2': ['RandomCrap']}
+        expected_failures = []
+        
+        self.assertEqual(clusters, expected_clusters)
+        self.assertEqual(failures, expected_failures)
+    
+    def test_otu_pipe_reference_otu_picking_no_new_clusters(self):
+        """ Main program loop test, with reference and no new clusters """
+        
+        # cluster size filtering set to 1 instead of default 4
+        clusters, failures = otu_pipe(self.tmp_dna_seqs_ref_otu_picking,
+                                      output_dir = self.tmp_dir,
+                                      refseqs_fp = self.tmp_ref_database,
+                                      reference_chimera_detection=False,
+                                      minsize = 1,
+                                      remove_usearch_logs=True,
+                                      suppress_new_clusters=True)
+                                      
+        # Will cluster everything but RandomCrap, as no new clusters allowed.
+        expected_clusters =  {'1': ['Solemya', 'Solemya_seq2'], 
+        '0': ['usearch_ecoli_seq', 'usearch_ecoli_seq2']}
+        expected_failures = ['RandomCrap']
         
         self.assertEqual(clusters, expected_clusters)
         self.assertEqual(failures, expected_failures)
@@ -156,6 +230,27 @@ class UsearchTests(TestCase):
                                       remove_usearch_logs=True)
                                       
         # Chimera sequence should not be detected without reference test.
+        expected_clusters = {'1': ['Solemya', 'Solemya_seq2'],
+         '0': ['usearch_ecoli_seq', 'usearch_ecoli_seq2'],
+         '2': ['chimera']}
+         
+        expected_failures = []
+        
+        self.assertEqual(clusters, expected_clusters)
+        self.assertEqual(failures, expected_failures)
+        
+    def test_otu_pipe_union(self):
+        """ Main program loop with union nonchimera retention """
+        
+        # cluster size filtering set to 1 instead of default 4
+        clusters, failures = otu_pipe(self.tmp_seq_filepath2,
+                                      output_dir = self.tmp_dir,
+                                      reference_chimera_detection=False,
+                                      minsize = 1,
+                                      remove_usearch_logs=True,
+                                      chimeras_retention = 'union')
+                                      
+        # Chimera sequence retained as passes de novo test
         expected_clusters = {'1': ['Solemya', 'Solemya_seq2'],
          '0': ['usearch_ecoli_seq', 'usearch_ecoli_seq2'],
          '2': ['chimera']}
@@ -202,7 +297,8 @@ class UsearchTests(TestCase):
                                       output_dir = curr_output_dir,
                                       db_filepath = self.tmp_ref_database,
                                       minsize = 1,
-                                      remove_usearch_logs=False)
+                                      remove_usearch_logs=False,
+                                      chimeras_retention = 'intersection')
                                       
         expected_clusters = {'1': ['Solemya', 'Solemya_seq2'],
          '0': ['usearch_ecoli_seq', 'usearch_ecoli_seq2']}
@@ -228,7 +324,25 @@ class UsearchTests(TestCase):
         
         for log in expected_log_names:
             self.assertContains(actual_logs, log)
-
+            
+    def test_concatenate_fastas(self):
+        """ Properly concatenates two fasta files """
+        
+        out_f =\
+         get_tmp_filename(prefix='UsearchConcatFileTest_',suffix='.fasta')
+        
+        actual_concatenated_seqs = concatenate_fastas(self.tmp_seq_filepath1,
+         self.tmp_seq_filepath2, out_f)
+        
+        self._files_to_remove.append(out_f)
+        
+        actual_lines =\
+         [line.strip() for line in open(actual_concatenated_seqs, "U")]
+         
+        self.assertEqual(actual_lines,
+         expected_combined_dna_seqs_1_seqs_usearch)
+         
+        
     def test_assign_reads_to_otus(self):
         """ Properly assigns reads back to original ID """
         
@@ -438,11 +552,58 @@ class UsearchTests(TestCase):
         expected_clusters = {'19': ['PC.634_4'], '42': ['PC.test2_1',
          'PC.test1_2', 'PC.634_3'], '6': ['PC.269_5']}
         expected_failures = ['PC.481_6']
+
         self.assertEqual(clusters_from_blast_uc_file(self.uc_lines1),
          (expected_clusters,expected_failures))
+         
+    def test_get_retained_chimeras_union(self):
+        """ Properly returns union of two fastas """
+        
+        out_f =\
+         get_tmp_filename(prefix='UsearchUnionTest_',suffix='.fasta')
+         
+        actual_out_fp = get_retained_chimeras(self.tmp_retained_chimeras_seqs1,
+         self.tmp_retained_chimeras_seqs2, out_f, chimeras_retention = 'union')
+         
+        self._files_to_remove.append(out_f)
+         
+        actual_out_f = [line.strip() for line in open(actual_out_fp, "U")]
+        
+        self.assertEqual(actual_out_f, self.expected_retained_chimeras_union)
+        
+    def test_get_retained_chimeras_intersection(self):
+        """ Properly returns intersection of two fastas """
+        
+        out_f =\
+         get_tmp_filename(prefix='UsearchIntersectionTest_',suffix='.fasta')
+         
+        actual_out_fp = get_retained_chimeras(self.tmp_retained_chimeras_seqs1,
+         self.tmp_retained_chimeras_seqs2, out_f,
+         chimeras_retention = 'intersection')
+         
+        self._files_to_remove.append(out_f)
+         
+        actual_out_f = [line.strip() for line in open(actual_out_fp, "U")]
+        
+        self.assertEqual(actual_out_f,
+         self.expected_retained_chimeras_intersection)
 
 # Long strings for test files, output, etc.
 # *************************************************
+
+retained_chimeras_seqs1 = """>seq1
+ACAGGCC
+>seq2
+ACAGGCCCCC
+>seq3
+TTATCCATT"""
+
+retained_chimeras_seqs2 = """>seq3
+ACAGGCC
+>seq4
+ACAGGCCCCC
+>seq5
+TTATCCATT"""
 
 dna_seqs_1 = """>uclust_test_seqs_0 some comment0
 AACCCCCACGGTGGATGCCACACGCCCCATACAAAGGGTAGGATGCTTAAGACACATCGCGTCAGGTTTGTGTCAGGCCT
@@ -483,6 +644,18 @@ CGCGTGTATGAAGAAGGCCTTCGGGTTGTAAAGTACTTTCAGCGGGGAGGAGGGAGTAAAGTTAATACCTTTGCTCATTG
 GGCTCAGATTGAACGCTGGCGGCATGCCTAACACATGCAAGTCGAACGGTAACAGGCGGAGCTTGCTCTGCGCTGACGAGTGGCGGACGGGTGAGTATCAAG
 >chimera
 CGCGTGTATGAAGAAGGCCTTCGGGTTGTAAAGTACTTTCAGCGGGGAGGAGGGAGTAAAGTTAATACCTTTGCTCATTGACCCCTAGGGTGGGAATAACCCGGGGAAACCCGGGCTAATACCGAATAAGACCACAGGAGGCGACTCCAGAGGGTCAAAGGGAGCCTTGGCCTCCCCC
+"""
+
+dna_seqs_reference_otu_picking = """>usearch_ecoli_seq
+CGCGTGTATGAAGAAGGCCTTCGGGTTGTAAAGTACTTTCAGCGGGGAGGAGGGAGTAAAGTTAATACCTTTGCTCATTGACGTTACCCGCAGAAGAAGCACCGGCTAACTCCGT
+>Solemya seq
+GGCTCAGATTGAACGCTGGCGGCATGCCTAACACATGCAAGTCGAACGGTAACAGGCGGAGCTTGCTCTGCGCTGACGAGTGGCGGACGGGTGAGTA
+>usearch_ecoli_seq2
+CGCGTGTATGAAGAAGGCCTTCGGGTTGTAAAGTACTTTCAGCGGGGAGGAGGGAGTAAAGTTAATACCTTTGCTCATTGACGTTACCCGCAGAAGAAGCACCGGCTAACTCCGTCCAT
+>Solemya_seq2
+GGCTCAGATTGAACGCTGGCGGCATGCCTAACACATGCAAGTCGAACGGTAACAGGCGGAGCTTGCTCTGCGCTGACGAGTGGCGGACGGGTGAGTATCAAG
+>RandomCrap
+ACACAAACAGTATATTATATCCCCAGACAGGGACCGAGATTTACCACACCCAAAAAAAAAAAAAACACACCCCCCCCCCCCCCACACACACACTTATTTT
 """
 
 dna_seqs_with_abundance = """>Cluster1;size=114
@@ -595,12 +768,12 @@ uc_lines1 = """# usearch --id 0.97 --uc usearch_picked_otus/assign_reads_to_otus
 # For C and D types, PctId is average id with seed.
 # QueryStart and SeedStart are zero-based relative to start of sequence.
 # If minus strand, SeedStart is relative to reverse-complemented seed.
-H	42	217	99.1	+	0	0	217MI	PC.test2_1 FLP3FBN02xELBSXx orig_bc=ACAGAGTCGGCG new_bc=ACAGAGTCGGCG,FLP3FBN02x bc_diffs=0	42
-H	42	217	99.1	+	0	0	217MI	PC.test1_2 FLP3FBN03ELBSXx orig_bc=ACAGAGTCGGCG new_bc=ACAGAGTCGGCG,FLP3FBN03 bc_diffs=0	42
-H	42	217	99.1	+	0	0	217MI	PC.634_3 FLP3FBN01ELBSX orig_bc=TCAGAGTCGGCT new_bc=ACAGAGTCGGCT,FLP3FBN01 bc_diffs=1	42
-H	19	243	100.0	+	0	0	25MI218M	PC.634_4 FLP3FBN01EG8AX orig_bc=ACAGAGTCGGCT new_bc=ACAGAGTCGGCT,FLP3FBN01 bc_diffs=0	19
-N	*	219	*	*	*	*	*	PC.481_6 FLP3FBN01DEHK3 orig_bc=ACCAGCGACTAG new_bc=ACCAGCGACTAG,FLP3FBN01 bc_diffs=0	*
-H	6	211	99.5	+	0	0	211M	PC.269_5 FLP3FBN01EEWKD orig_bc=AGCACGAGCCTA new_bc=AGCACGAGCCTA,FLP3FBN01 bc_diffs=0	6
+H\t42\t217\t99.1\t+\t0\t0\t217MI\tPC.test2_1 FLP3FBN02xELBSXx orig_bc=ACAGAGTCGGCG new_bc=ACAGAGTCGGCG,FLP3FBN02x bc_diffs=0\t42
+H\t42\t217\t99.1\t+\t0\t0\t217MI\tPC.test1_2 FLP3FBN03ELBSXx orig_bc=ACAGAGTCGGCG new_bc=ACAGAGTCGGCG,FLP3FBN03 bc_diffs=0\t42
+H\t42\t217\t99.1\t+\t0\t0\t217MI\tPC.634_3 FLP3FBN01ELBSX orig_bc=TCAGAGTCGGCT new_bc=ACAGAGTCGGCT,FLP3FBN01 bc_diffs=1\t42
+H\t19\t243\t100.0\t+\t0\t0\t25MI218M\tPC.634_4 FLP3FBN01EG8AX orig_bc=ACAGAGTCGGCT new_bc=ACAGAGTCGGCT,FLP3FBN01 bc_diffs=0\t19
+N\t*\t219\t*\t*\t*\t*\t*\tPC.481_6\tFLP3FBN01DEHK3 orig_bc=ACCAGCGACTAG new_bc=ACCAGCGACTAG,FLP3FBN01 bc_diffs=0\t*
+H\t6\t211\t99.5\t+\t0\t0\t211M\tPC.269_5 FLP3FBN01EEWKD orig_bc=AGCACGAGCCTA new_bc=AGCACGAGCCTA,FLP3FBN01 bc_diffs=0\t6
 """.split('\n')
 
 expected_otu_assignments = """# Tab-separated fields:
@@ -609,9 +782,9 @@ expected_otu_assignments = """# Tab-separated fields:
 # For C and D types, PctId is average id with seed.
 # QueryStart and SeedStart are zero-based relative to start of sequence.
 # If minus strand, SeedStart is relative to reverse-complemented seed.
-H	2	199	97.5	+	0	0	119M80D	ref1 ecoli sequence	usearch_ecoli_seq2
-N	*	178	*	*	*	*	*	EU199232 1 1236 Bacteria/Deltaproteobacteria/Desulfurella - Hippea/uncultured	*
-H	1	180	100.0	+	0	0	97M83D	L07864 1 1200 Bacteria/Beta Gammaproteobacteria/Solemya symbiont	Solemya seq""".split('\n')
+H\t2\t199\t97.5\t+\t0\t0\t119M80D\tref1 ecoli sequence\tusearch_ecoli_seq2
+N\t*\t178\t*\t*\t*\t*\t*\tEU199232 1 1236 Bacteria/Deltaproteobacteria/Desulfurella - Hippea/uncultured\t*
+H\t1\t180\t100.0\t+\t0\t0\t97M83D\tL07864 1 1200 Bacteria/Beta Gammaproteobacteria/Solemya symbiont\tSolemya seq""".split('\n')
 
 expected_enumerated_fasta = """>0
 AACCCCCACGGTGGATGCCACACGCCCCATACAAAGGGTAGGATGCTTAAGACACATCGCGTCAGGTTTGTGTCAGGCCT
@@ -634,25 +807,25 @@ CGGTGGCTGCAACACGTGGCATACAACGGGTTGGATGCTTAAGACACATCGCCTCAGTTTTGTGTCAGGGCT
 >9
 GGTGGCTGAAACACATCCCATACAACGGGTTGGATGCTTAAGACACATCGCATCAGTTTTATGTCAGGGGA""".split('\n')
 
-expected_enumerated_fasta_added_options = """>Big255Ern	uclust_test_seqs_0 some comment0
+expected_enumerated_fasta_added_options = """>Big255Ern\tuclust_test_seqs_0 some comment0
 AACCCCCACGGTGGATGCCACACGCCCCATACAAAGGGTAGGATGCTTAAGACACATCGCGTCAGGTTTGTGTCAGGCCT
->Big256Ern	uclust_test_seqs_1 some comment1
+>Big256Ern\tuclust_test_seqs_1 some comment1
 ACCCACACGGTGGATGCAACAGATCCCATACACCGAGTTGGATGCTTAAGACGCATCGCGTGAGTTTTGCGTCAAGGCT
->Big257Ern	uclust_test_seqs_2 some comment2
+>Big257Ern\tuclust_test_seqs_2 some comment2
 CCCCCACGGTGGCAGCAACACGTCACATACAACGGGTTGGATTCTAAAGACAAACCGCGTCAAAGTTGTGTCAGAACT
->Big258Ern	uclust_test_seqs_3 some comment3
+>Big258Ern\tuclust_test_seqs_3 some comment3
 CCCCACGGTAGCTGCAACACGTCCCATACCACGGGTAGGATGCTAAAGACACATCGGGTCTGTTTTGTGTCAGGGCT
->Big259Ern	uclust_test_seqs_4 some comment4
+>Big259Ern\tuclust_test_seqs_4 some comment4
 GCCACGGTGGGTACAACACGTCCACTACATCGGCTTGGAAGGTAAAGACACGTCGCGTCAGTATTGCGTCAGGGCT
->Big260Ern	uclust_test_seqs_5 some comment4_again
+>Big260Ern\tuclust_test_seqs_5 some comment4_again
 CCGCGGTAGGTGCAACACGTCCCATACAACGGGTTGGAAGGTTAAGACACAACGCGTTAATTTTGTGTCAGGGCA
->Big261Ern	uclust_test_seqs_6 some comment6
+>Big261Ern\tuclust_test_seqs_6 some comment6
 CGCGGTGGCTGCAAGACGTCCCATACAACGGGTTGGATGCTTAAGACACATCGCAACAGTTTTGAGTCAGGGCT
->Big262Ern	uclust_test_seqs_7 some comment7
+>Big262Ern\tuclust_test_seqs_7 some comment7
 ACGGTGGCTACAAGACGTCCCATCCAACGGGTTGGATACTTAAGGCACATCACGTCAGTTTTGTGTCAGAGCT
->Big263Ern	uclust_test_seqs_8 some comment8
+>Big263Ern\tuclust_test_seqs_8 some comment8
 CGGTGGCTGCAACACGTGGCATACAACGGGTTGGATGCTTAAGACACATCGCCTCAGTTTTGTGTCAGGGCT
->Big264Ern	uclust_test_seqs_9 some comment9
+>Big264Ern\tuclust_test_seqs_9 some comment9
 GGTGGCTGAAACACATCCCATACAACGGGTTGGATGCTTAAGACACATCGCATCAGTTTTATGTCAGGGGA""".split('\n')
 
 expected_clusters_w_abundance_default_settings = """>Cluster1;size=326
@@ -931,6 +1104,52 @@ CGCGTGTATGAAGAAGGCCTTCGGGTTGTAAAGTACTTTCAGCGGGGAGGAGGGAGTAAAGTTAATACCTTTGCTCATTG
 GGCTCAGATTGAACGCTGGCGGCATGCCTAACACATGCAAGTCGAACGGTAACAGGCGGAGCTTGCTCTGCGCTGACGAGTGGCGGACGGGTGAGTATCAAG
 >Solemya seq
 GGCTCAGATTGAACGCTGGCGGCATGCCTAACACATGCAAGTCGAACGGTAACAGGCGGAGCTTGCTCTGCGCTGACGAGTGGCGGACGGGTGAGTA""".split('\n')
+
+expected_combined_dna_seqs_1_seqs_usearch = """>uclust_test_seqs_0 some comment0
+AACCCCCACGGTGGATGCCACACGCCCCATACAAAGGGTAGGATGCTTAAGACACATCGCGTCAGGTTTGTGTCAGGCCT
+>uclust_test_seqs_1 some comment1
+ACCCACACGGTGGATGCAACAGATCCCATACACCGAGTTGGATGCTTAAGACGCATCGCGTGAGTTTTGCGTCAAGGCT
+>uclust_test_seqs_2 some comment2
+CCCCCACGGTGGCAGCAACACGTCACATACAACGGGTTGGATTCTAAAGACAAACCGCGTCAAAGTTGTGTCAGAACT
+>uclust_test_seqs_3 some comment3
+CCCCACGGTAGCTGCAACACGTCCCATACCACGGGTAGGATGCTAAAGACACATCGGGTCTGTTTTGTGTCAGGGCT
+>uclust_test_seqs_4 some comment4
+GCCACGGTGGGTACAACACGTCCACTACATCGGCTTGGAAGGTAAAGACACGTCGCGTCAGTATTGCGTCAGGGCT
+>uclust_test_seqs_5 some comment4_again
+CCGCGGTAGGTGCAACACGTCCCATACAACGGGTTGGAAGGTTAAGACACAACGCGTTAATTTTGTGTCAGGGCA
+>uclust_test_seqs_6 some comment6
+CGCGGTGGCTGCAAGACGTCCCATACAACGGGTTGGATGCTTAAGACACATCGCAACAGTTTTGAGTCAGGGCT
+>uclust_test_seqs_7 some comment7
+ACGGTGGCTACAAGACGTCCCATCCAACGGGTTGGATACTTAAGGCACATCACGTCAGTTTTGTGTCAGAGCT
+>uclust_test_seqs_8 some comment8
+CGGTGGCTGCAACACGTGGCATACAACGGGTTGGATGCTTAAGACACATCGCCTCAGTTTTGTGTCAGGGCT
+>uclust_test_seqs_9 some comment9
+GGTGGCTGAAACACATCCCATACAACGGGTTGGATGCTTAAGACACATCGCATCAGTTTTATGTCAGGGGA
+>usearch_ecoli_seq
+CGCGTGTATGAAGAAGGCCTTCGGGTTGTAAAGTACTTTCAGCGGGGAGGAGGGAGTAAAGTTAATACCTTTGCTCATTGACGTTACCCGCAGAAGAAGCACCGGCTAACTCCGT
+>Solemya seq
+GGCTCAGATTGAACGCTGGCGGCATGCCTAACACATGCAAGTCGAACGGTAACAGGCGGAGCTTGCTCTGCGCTGACGAGTGGCGGACGGGTGAGTA
+>usearch_ecoli_seq2
+CGCGTGTATGAAGAAGGCCTTCGGGTTGTAAAGTACTTTCAGCGGGGAGGAGGGAGTAAAGTTAATACCTTTGCTCATTGACGTTACCCGCAGAAGAAGCACCGGCTAACTCCGTCCAT
+>Solemya_seq2
+GGCTCAGATTGAACGCTGGCGGCATGCCTAACACATGCAAGTCGAACGGTAACAGGCGGAGCTTGCTCTGCGCTGACGAGTGGCGGACGGGTGAGTATCAAG
+>chimera
+CGCGTGTATGAAGAAGGCCTTCGGGTTGTAAAGTACTTTCAGCGGGGAGGAGGGAGTAAAGTTAATACCTTTGCTCATTGACCCCTAGGGTGGGAATAACCCGGGGAAACCCGGGCTAATACCGAATAAGACCACAGGAGGCGACTCCAGAGGGTCAAAGGGAGCCTTGGCCTCCCCC""".split('\n')
+
+expected_retained_chimeras_union = """>seq1
+ACAGGCC
+>seq2
+ACAGGCCCCC
+>seq3
+TTATCCATT
+>seq4
+ACAGGCCCCC
+>seq5
+TTATCCATT""".split('\n')
+
+expected_retained_chimeras_intersection = """>seq3
+TTATCCATT""".split('\n')
+
 
 if __name__ == '__main__':
     main()

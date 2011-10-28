@@ -141,7 +141,7 @@ script_info['optional_options'] = [
               
     make_option('-r', '--refseqs_fp',
         help=('Path to reference sequences to search against when using -m '
-              'blast or -m uclust_ref [default: %default]')),
+              'blast, -m uclust_ref, or -m usearch_ref [default: %default]')),
               
     make_option('-b', '--blast_db',
         help=('Pre-existing database to blast against when using -m blast '
@@ -214,7 +214,8 @@ script_info['optional_options'] = [
     make_option('-C','--suppress_new_clusters',action='store_true',
               default=False,
               help="Suppress creation of new clusters using seqs that don't" +
-              " match reference when using -m uclust_ref [default: %default]"),
+              " match reference when using -m uclust_ref or "+
+              "-m usearch_ref [default: %default]"),
               
     make_option('--max_accepts',type='int',default=20,
               help="max_accepts value to uclust and "
@@ -290,7 +291,16 @@ script_info['optional_options'] = [
     make_option('--remove_usearch_logs', default=False, help=("Disable "
               "creation of logs when usearch is called.  Up to nine logs are "
               "created, depending on filtering steps enabled.  "
-              "[default: %default]"), action='store_true') 
+              "[default: %default]"), action='store_true'),
+              
+    make_option('--chimeras_retention', default='union', help=("Selects "
+              "subsets of sequences detected as non-chimeras to retain after "
+              "de novo and refernece based chimera detection.  Options are "
+              "intersection or union.  union will retain sequences that are "
+              "flagged as non-chimeric from either filter, while intersection "
+              "will retain only those sequences that are flagged as non-"
+              "chimeras from both detection methods. [default: %default]"),
+              type='str')
     ]
 
 script_info['version'] = __version__
@@ -324,6 +334,7 @@ def main():
     save_uc_files = opts.save_uc_files
     prefilter_identical_sequences =\
      not opts.suppress_uclust_prefilter_exact_match
+    chimeras_retention = opts.chimeras_retention
     
     # OTUpipe specific parameters
     percent_id_err = opts.percent_id_err
@@ -344,6 +355,10 @@ def main():
          '--db_filepath option.  Disable reference based chimera detection '+\
          'with --reference_chimera_detection or specify a reference fasta '+\
          'file with --db_filepath.')
+         
+    if chimeras_retention not in ['intersection', 'union']:
+        raise ValueError,('--chimeras_retention must be either union or '+\
+         'intersection.')
          
     # Test that db_filepath can be opened to avoid wasted time
     if db_filepath:
@@ -367,9 +382,10 @@ def main():
         blast_db == None):
            option_parser.error('blast requires refseqs_fp or blast_db')
     
-    if (otu_picking_method == 'uclust_ref'):
+    if (otu_picking_method == 'uclust_ref' or
+     otu_picking_method == 'usearch_ref'):
         if (refseqs_fp == None):
-            option_parser.error('uclust_ref requires refseqs_fp')
+            option_parser.error('uclust_ref, usearch_ref requires refseqs_fp')
         elif not exists(refseqs_fp):
             option_parser.error('refseqs_fp %s does not exist' %refseqs_fp)
     # End input validation
@@ -445,12 +461,37 @@ def main():
         'de_novo_chimera_detection':de_novo_chimera_detection,
         'reference_chimera_detection':reference_chimera_detection,
         'cluster_size_filtering':cluster_size_filtering,
-        'remove_usearch_logs':remove_usearch_logs}
+        'remove_usearch_logs':remove_usearch_logs,
+        'chimeras_retention':chimeras_retention}
         
         
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath, result_path=result_path,
          log_path=log_path,HALT_EXEC=False)
+         
+    # usearch (OTUPipe) with reference OTU picking
+    elif otu_picking_method == 'usearch_ref':
+        params = {'percent_id':opts.similarity,
+        'maxrejects':max_rejects,
+        'w':word_length,
+        'save_intermediate_files':save_uc_files,
+        'output_dir':output_dir,
+        'percent_id_err':percent_id_err,
+        'minsize':minsize,
+        'abundance_skew':abundance_skew,
+        'db_filepath':db_filepath,
+        'perc_id_blast':perc_id_blast,
+        'de_novo_chimera_detection':de_novo_chimera_detection,
+        'reference_chimera_detection':reference_chimera_detection,
+        'cluster_size_filtering':cluster_size_filtering,
+        'remove_usearch_logs':remove_usearch_logs,
+        'suppress_new_clusters':opts.suppress_new_clusters,
+        'chimeras_retention':chimeras_retention}
+        
+        
+        otu_picker = otu_picker_constructor(params)
+        otu_picker(input_seqs_filepath, result_path=result_path,
+         refseqs_fp=refseqs_fp, log_path=log_path, HALT_EXEC=False)
              
     ## uclust (reference-based)
     elif otu_picking_method == 'uclust_ref':
@@ -470,7 +511,8 @@ def main():
         'stable_sort':uclust_stable_sort,
         'save_uc_files':save_uc_files,
         'output_dir':output_dir,
-        'prefilter_identical_sequences':prefilter_identical_sequences}
+        'prefilter_identical_sequences':prefilter_identical_sequences,
+        'chimeras_retention':chimeras_retention}
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath,refseqs_fp,
                    result_path=result_path,log_path=log_path,

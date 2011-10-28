@@ -916,7 +916,8 @@ class UsearchOtuPicker(UclustOtuPickerBase):
          'reference_chimera_detection':True,
          'cluster_size_filtering':True,
          'output_dir':'.',
-         'remove_usearch_logs':False}
+         'remove_usearch_logs':False,
+         'chimeras_retention':'union'}
          
          
         _params.update(params)
@@ -972,6 +973,7 @@ class UsearchOtuPicker(UclustOtuPickerBase):
          reference_chimera_detection=self.Params['reference_chimera_detection'],
          cluster_size_filtering = self.Params['cluster_size_filtering'],
          remove_usearch_logs = self.Params['remove_usearch_logs'],
+         chimeras_retention = self.Params['chimeras_retention'],
          HALT_EXEC=HALT_EXEC)
         
         # clean up any temp files that were created
@@ -979,6 +981,7 @@ class UsearchOtuPicker(UclustOtuPickerBase):
         
         log_lines = []
         log_lines.append('Num OTUs:%d' % len(clusters))
+        log_lines.append('Num failures:%d' % len(failures))
         
         
         if failure_path:
@@ -1006,7 +1009,150 @@ class UsearchOtuPicker(UclustOtuPickerBase):
         return result
         
         
+class UsearchReferenceOtuPicker(UclustOtuPickerBase):
+    """ Usearch reference based OTU picker
+   
+    """
+
+    Name = 'UsearchReferenceOtuPicker'
     
+    def __init__(self, params):
+        """Return new OtuPicker object with specified params.
+        
+        params contains both generic and per-method (e.g. for
+        usearch application controller) params.
+        
+        Some generic entries in params are:
+    
+        Similarity: similarity threshold, default 0.97, corresponding to
+         genus-level OTUs ('Similarity' is a synonym for the '--id' parameter
+         to the uclust application controllers)
+        Application: 3rd-party application used
+        """
+
+        _params = {
+         'percent_id':0.97,
+         'percent_id_err':0.97,
+         'Application':'usearch',
+         'minsize':4,
+         'abundance_skew':2,
+         'db_filepath':None,
+         'rev':True,
+         'label_prefix':"",
+         'label_suffix':"",
+         'retain_label_as_comment':False,
+         'count_start':0,
+         'perc_id_blast':0.97,
+         'save_intermediate_files':False,
+         'global_alignment':True,
+         'sizein':True,
+         'sizeout':True,
+         'w':64,
+         'slots':16769023,
+         'maxrejects':64,
+         'minlen':64,
+         'de_novo_chimera_detection':True,
+         'reference_chimera_detection':True,
+         'cluster_size_filtering':True,
+         'output_dir':'.',
+         'remove_usearch_logs':False,
+         'suppress_new_clusters':False,
+         'chimeras_retention':'union'}
+         
+         
+        _params.update(params)
+        OtuPicker.__init__(self, _params)
+    
+    def __call__(self,
+                 seq_path,
+                 refseqs_fp,
+                 output_dir='.',
+                 log_path=None,
+                 HALT_EXEC=False,
+                 failure_path=None,
+                 result_path=None):
+        """Returns dict mapping {otu_id:[seq_ids]} for each otu, and a list
+         of seq ids that failed the filters.
+        
+        Parameters:
+        seq_path: path to file of sequences
+        output_dir: directory to output results, including log files and
+         intermediate files if flagged for.
+        log_path: path to log, which includes dump of params.
+
+        """
+
+        original_fasta_path = seq_path
+        self.files_to_remove = []
+        
+        
+        
+        # perform the filtering/clustering
+        clusters, failures = otu_pipe(
+         seq_path,
+         refseqs_fp,
+         output_dir = self.Params['output_dir'],
+         percent_id = self.Params['percent_id'],
+         percent_id_err = self.Params['percent_id_err'],
+         minsize = self.Params['minsize'],
+         abundance_skew = self.Params['abundance_skew'],
+         db_filepath = self.Params['db_filepath'],
+         rev = self.Params['rev'],
+         label_prefix = self.Params['label_prefix'],
+         label_suffix = self.Params['label_suffix'],
+         retain_label_as_comment = self.Params['retain_label_as_comment'],
+         count_start = self.Params['count_start'],
+         perc_id_blast = self.Params['perc_id_blast'],
+         save_intermediate_files = self.Params['save_intermediate_files'],
+         global_alignment = self.Params['global_alignment'],
+         sizein = self.Params['sizein'],
+         sizeout = self.Params['sizeout'],
+         w = self.Params['w'],
+         slots = self.Params['slots'],
+         maxrejects = self.Params['maxrejects'],
+         minlen = self.Params['minlen'],
+         de_novo_chimera_detection = self.Params['de_novo_chimera_detection'],
+         reference_chimera_detection=self.Params['reference_chimera_detection'],
+         cluster_size_filtering = self.Params['cluster_size_filtering'],
+         remove_usearch_logs = self.Params['remove_usearch_logs'],
+         suppress_new_clusters = self.Params['suppress_new_clusters'],
+         chimeras_retention = self.Params['chimeras_retention'],
+         HALT_EXEC=HALT_EXEC)
+        
+        # clean up any temp files that were created
+        remove_files(self.files_to_remove)
+        
+        log_lines = []
+        log_lines.append('Num OTUs:%d' % len(clusters))
+        log_lines.append('Num failures:%d' % len(failures))
+        log_lines.append('Reference database for OTU picking: %s' % refseqs_fp)
+        
+        
+        
+        if failure_path:
+            failure_file = open(failure_path,'w')
+            failure_file.write('\n'.join(failures))
+            failure_file.close()
+            
+        
+        if log_path:
+            self._write_log(log_path,log_lines)
+            
+        if result_path:
+            
+            result_out = open(result_path, "w")
+            for cluster_id in clusters:
+                result_out.write(cluster_id + "\t" +\
+                 "\t".join(clusters[cluster_id]) + '\n')
+                 
+            result = None
+                
+        else:
+            
+            result = clusters
+        
+        return result
+
         
 
 
@@ -1303,7 +1449,8 @@ otu_picking_method_constructors = {
     'blast':BlastOtuPicker,
     'uclust': UclustOtuPicker,
     'uclust_ref':UclustReferenceOtuPicker,
-    'usearch': UsearchOtuPicker
+    'usearch': UsearchOtuPicker,
+    'usearch_ref': UsearchReferenceOtuPicker
     }
     
 otu_picking_method_choices = otu_picking_method_constructors.keys()
