@@ -9,6 +9,7 @@ from glob import glob
 from os.path import split, splitext, join, dirname, abspath
 from datetime import datetime
 from numpy import array
+from cogent.util.misc import safe_md5
 from cogent.parse.fasta import MinimalFastaParser
 from qiime.parse import parse_mapping_file, parse_qiime_parameters
 from qiime.format import format_otu_table
@@ -210,6 +211,9 @@ def run_pick_otus_through_otu_table(input_fp,
         close_logger_on_success = True
     else:
         close_logger_on_success = False
+    logger.write("Input file md5 sums:\n")
+    logger.write("%s: %s\n" % (input_fp, safe_md5(open(input_fp)).hexdigest()))
+    logger.write("\n")
     
     # Prep the OTU picking command
     try:
