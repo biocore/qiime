@@ -169,6 +169,13 @@ def validate_and_set_jobs_to_start(params,
        not parallel:
         option_parser.error("Passing -O requires that -a is also passed.")
     params['parallel']['jobs_to_start'] = str(jobs_to_start)
+
+def log_input_md5s(logger,fps):
+    logger.write("Input file md5 sums:\n")
+    for fp in fps:
+        if fp != None:
+            logger.write("%s: %s\n" % (fp, safe_md5(open(fp)).hexdigest()))
+    logger.write("\n")
     
 
 ## End utilities used by the workflow functions
@@ -211,9 +218,8 @@ def run_pick_otus_through_otu_table(input_fp,
         close_logger_on_success = True
     else:
         close_logger_on_success = False
-    logger.write("Input file md5 sums:\n")
-    logger.write("%s: %s\n" % (input_fp, safe_md5(open(input_fp)).hexdigest()))
-    logger.write("\n")
+    
+    log_input_md5s(logger,[input_fp])
     
     # Prep the OTU picking command
     try:
@@ -519,13 +525,7 @@ def run_pick_reference_otus_through_otu_table(
     else:
         close_logger_on_success = False
 
-
-    logger.write("Input file md5 sums:\n")
-    logger.write("%s: %s\n" % (input_fp, safe_md5(open(input_fp)).hexdigest()))
-    logger.write("%s: %s\n" % (refseqs_fp, safe_md5(open(refseqs_fp)).hexdigest()))
-    if taxonomy_fp:
-        logger.write("%s: %s\n" % (taxonomy_fp, safe_md5(open(taxonomy_fp)).hexdigest()))
-    logger.write("\n")
+    log_input_md5s(logger,[input_fp,refseqs_fp,taxonomy_fp])
 
     # Prep the OTU picking command
     pick_otu_dir = '%s/%s_picked_otus' % (output_dir, otu_picking_method)
@@ -639,6 +639,8 @@ def run_beta_diversity_through_plots(otu_table_fp, mapping_fp,
         close_logger_on_success = True
     else:
         close_logger_on_success = False
+    
+    log_input_md5s(logger,[otu_table_fp,mapping_fp,tree_fp])
     
     mapping_data, mapping_header, mapping_comments =\
      parse_mapping_file(open(mapping_fp,'U'))
@@ -896,6 +898,8 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,
     else:
         close_logger_on_success = False
     
+    log_input_md5s(logger,[otu_table_fp,mapping_fp,tree_fp])
+    
     # Prep the rarefaction command
     try:
         otu_table_f = open(otu_table_fp,'U')
@@ -1043,6 +1047,9 @@ def run_jackknifed_beta_diversity(otu_table_fp,tree_fp,seqs_per_sample,
         close_logger_on_success = True
     else:
         close_logger_on_success = False
+    
+    log_input_md5s(logger,[otu_table_fp,mapping_fp,tree_fp])
+    
     try:
         beta_diversity_metrics = params['beta_diversity']['metrics'].split(',')
     except KeyError:
@@ -1340,6 +1347,8 @@ def run_core_qiime_analyses(
     logger = WorkflowLogger(log_fp,
                             params=params,
                             qiime_config=qiime_config)
+    log_input_md5s(logger,\
+     fna_fps.split(',') + qual_fps.split(',') +[mapping_fp])
     
     ## Split libraries
     # Prep the split_libraries command
@@ -1636,6 +1645,7 @@ def run_summarize_taxa_through_plots(otu_table_fp, mapping_fp,
         close_logger_on_success = True
     else:
         close_logger_on_success = False
+    log_input_md5s(logger,[otu_table_fp,mapping_fp])
     
     # Prep the summarize otu by category command
     try:
@@ -1813,7 +1823,7 @@ def run_ampliconnoise(mapping_fp,
         close_logger_on_success = True
     else:
         close_logger_on_success = False
-
+    log_input_md5s(logger,[mapping_fp,sff_txt_fp])
 
     # execute commands in output_dir
     called_dir = os.getcwd()
