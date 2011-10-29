@@ -35,12 +35,13 @@ script_info['script_usage'].append(("""Example:""","""Take input fasta file inpu
 script_info['output_description']="""This script creates separate fastq files for each library."""
 script_info['required_options']=[options_lookup['input_fasta'],\
     make_option('-q', '--qual', dest='qual_fps',
+        type='existing_filepaths',
         help='names of qual files, comma-delimited'),
 ]
-script_info['optional_options']=[\
-    make_option('-o','--result_fp',action='store',default=None,\
-          type='string',dest='result_fp',help='Path to store '+\
-          'results [default: <input_sequences_filename>.fastq]'),
+script_info['optional_options']=[
+    make_option('-o','--result_fp', default=None,
+        type='new_filepath', help='Path to store results '
+        '[default: <input_sequences_filename>.fastq]'),
     make_option('-s', '--split', dest='split', action='store_true',
         help='make separate file for each library [default:%default]',
         default=False)
@@ -51,7 +52,7 @@ def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     in_fasta = open(opts.input_fasta_fp, 'U')
-    quals = parse_qual_scores([open(f, 'U') for f in opts.qual_fps.split(',')])
+    quals = parse_qual_scores([open(f, 'U') for f in opts.qual_fps])
     if not opts.result_fp:
         opts.result_fp = opts.input_fasta_fp + '.fastq'
 
