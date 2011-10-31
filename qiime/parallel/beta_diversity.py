@@ -63,7 +63,15 @@ def get_job_commands_multiple_otu_tables(
         commands.append(command)
         
     return commands, result_filepaths
-    
+
+def commands_to_shell_script(commands,fp,shebang='#!/bin/bash'):
+    f = open(fp,'w')
+    f.write(shebang)
+    f.write('\n')
+    f.write('\n'.join(commands))
+    f.write('\n')
+    f.close()
+
 def get_job_commands_single_otu_table(
     python_exe_fp,beta_diversity_fp,tree_fp,job_prefix,metrics,input_fp,
     output_dir,working_dir,jobs_to_start,command_prefix=None,
@@ -94,31 +102,30 @@ def get_job_commands_single_otu_table(
          output_fns,working_dir_i,output_dir_i)
 
         result_filepaths += current_result_filepaths
+        
+
         if full_tree:
-            command = '%s %s %s -i %s -o %s -t %s -m %s -f -r %s %s %s' %\
-             (command_prefix,\
-              python_exe_fp,\
-              beta_diversity_fp,\
+            bdiv_command = '%s -i %s -o %s -t %s -m %s -f -r %s' %\
+             (beta_diversity_fp,\
               input_fp,
               working_dir_i + '/',
               tree_fp,
               metrics,
-              sample_id_group,
-              rename_command,
-              command_suffix)
+              sample_id_group)
+              
         else:
-            command = '%s %s %s -i %s -o %s -t %s -m %s -r %s %s %s' %\
-             (command_prefix,\
-              python_exe_fp,\
-              beta_diversity_fp,\
+            bdiv_command = '%s -i %s -o %s -t %s -m %s -r %s' %\
+             (beta_diversity_fp,\
               input_fp,
               working_dir_i + '/',
               tree_fp,
               metrics,
-              sample_id_group,
-              rename_command,
-              command_suffix)
-        commands.append(command)
+              sample_id_group)
+        
+        shell_script_fp = '%s/%s%d.sh' % (working_dir_i,job_prefix,i)
+        shell_script_commands = [bdiv_command] + rename_command.split(';')
+        commands_to_shell_script(shell_script_commands,shell_script_fp)
+        commands.append('bash %s' % shell_script_fp)
         
     return commands, result_filepaths
     

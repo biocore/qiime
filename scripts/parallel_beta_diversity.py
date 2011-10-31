@@ -26,7 +26,7 @@ from qiime.beta_diversity import get_phylogenetic_metric
 from qiime.util import load_qiime_config, get_qiime_scripts_dir, get_options_lookup
 from qiime.parallel.beta_diversity import (get_job_commands_single_otu_table,
     get_job_commands_multiple_otu_tables, create_merge_map_file_single_otu_table,
-    get_poller_command)
+    get_poller_command,commands_to_shell_script)
 from qiime.parse import parse_otu_table, parse_newick, PhyloNode
 from sys import stderr
 
@@ -200,9 +200,12 @@ def main():
              get_poller_command(python_exe_fp,poller_fp,expected_files_filepath,
              merge_map_filepath,deletion_list_filepath,
              process_run_results_f=process_run_results_f,
-             seconds_to_sleep=seconds_to_sleep)
+             seconds_to_sleep=seconds_to_sleep,
+             command_prefix='',command_suffix='')
             # append the poller command to the list of job commands
-            commands.append(poller_command)
+            poller_shell_script_fp = '%s/poller.sh' % working_dir
+            commands_to_shell_script([poller_command],poller_shell_script_fp)
+            commands.append('bash %s' % poller_shell_script_fp)
         else:
             poller_command, poller_result_filepaths =\
              get_poller_command(python_exe_fp,poller_fp,expected_files_filepath,
