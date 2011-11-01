@@ -53,11 +53,14 @@ class GroupTests(TestCase):
                                "PC.636\tACGGTGAGTGTC\tFast\t20080116"]
 
         # Field to test on. Field values are either "Control" or "Fast".
-        self.field = "Treatment"
+        self.field = 'Treatment'
 
         # Parse mapping "file" (faked here).
         self.mapping, self.mapping_header, self.comments = parse_mapping_file(
                 self.mapping_string)
+        mapping_data = [self.mapping_header]
+        mapping_data.extend(self.mapping)
+        self.groups = group_by_field(mapping_data, self.field)
 
         # Parse distance matrix "file" (faked here).
         self.dist_matrix_header, self.dist_matrix = parse_distmat(
@@ -132,9 +135,8 @@ class GroupTests(TestCase):
                     0.73699999999999999]
         self.assertEqual(groupings, expected)
 
-    def test_validate_input(self):
-        """_validate_input() should raise ValueErrors on bad input, and \
-        return (and raise) nothing on valid input."""
+    def test_validate_input_bad_input(self):
+        """_validate_input() should raise ValueErrors on bad input."""
         self.assertRaises(ValueError, _validate_input,
                           None, None, None, None, None)
         self.assertRaises(ValueError, _validate_input,
@@ -149,11 +151,15 @@ class GroupTests(TestCase):
         self.assertRaises(ValueError, _validate_input,
                           self.dist_matrix_header, self.dist_matrix,
                           self.mapping_header, self.mapping, "aeiou")
+
+    def test_validate_input_good_input(self):
+        """_validate_input() should not raise any errors on good input."""
         _validate_input(self.dist_matrix_header, self.dist_matrix,
                           self.mapping_header, self.mapping, "Treatment")
 
-    def test_get_indices(self):
-        """_get_indices() should return a list of valid indices."""
+    def test_get_indices_several_existing_items(self):
+        """_get_indices() should return a list of valid indices for several
+        existing items."""
         control_ids = ['PC.354', 'PC.355', 'PC.356', 'PC.481', 'PC.593']
         exp_control_indices = [0,1,2,3,4]
         
@@ -166,6 +172,61 @@ class GroupTests(TestCase):
         obs_fast = _get_indices(self.dist_matrix_header, fast_ids)
         self.assertEqual(obs_fast, exp_fast_indices)
 
+    def test_get_indices_one_existing_item_list(self):
+        """_get_indices() should return a list of size 1 for a single item in a
+        list that exists in the search list."""
+        item_to_find = ['PC.355']
+        self.assertEqual(_get_indices(self.dist_matrix_header, item_to_find),
+                         [1])
+
+    def test_get_indices_one_existing_item_scalar(self):
+        """_get_indices() should return a list of size 1 for a single item that
+        exists in the search list."""
+        item_to_find = 'PC.355'
+        self.assertEqual(_get_indices(self.dist_matrix_header, item_to_find),
+                         [1])
+
+    def test_get_indices_no_existing_item(self):
+        """_get_indices() should return an empty list if no items exist in the
+        search list."""
+        item_to_find = 'PC.4242'
+        self.assertEqual(_get_indices(self.dist_matrix_header, item_to_find),
+                         [])
+        item_to_find = 42
+        self.assertEqual(_get_indices(self.dist_matrix_header, item_to_find),
+                         [])
+        item_to_find = ['PC.4242', 'CP.2424']
+        self.assertEqual(_get_indices(self.dist_matrix_header, item_to_find),
+                         [])
+
+        item_to_find = ['PC.4242', 'CP.2424', 56]
+        self.assertEqual(_get_indices(self.dist_matrix_header, item_to_find),
+                         [])
+
+    def test_get_indices_no_items_to_search(self):
+        """_get_indices() should return an empty list if no search items are
+        given."""
+        item_to_find = []
+        self.assertEqual(_get_indices(self.dist_matrix_header, item_to_find),
+                         [])
+        item_to_find = ''
+        self.assertEqual(_get_indices(self.dist_matrix_header, item_to_find),
+                         [])
+        item_to_find = None
+        self.assertEqual(_get_indices(self.dist_matrix_header, item_to_find),
+                         [])
+
+    def test_get_indices_null_or_empty_search_list(self):
+        """_get_indices() should throw an error if the search list is None, and
+        return an empty list if the search list is empty."""
+        search_list = None
+        self.assertRaises(ValueError, _get_indices, search_list, 'item')
+
+        search_list = []
+        self.assertEqual(_get_indices(search_list, 'item'), [])
+
+        search_list = '' 
+        self.assertEqual(_get_indices(search_list, 'item'), [])
 
 if __name__ == '__main__':
     main()

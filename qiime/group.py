@@ -98,9 +98,27 @@ def _validate_input(dist_matrix_header, dist_matrix, mapping_header, mapping,
                          % field)
 
 def _get_indices(input_items, wanted_items):
-    """Returns indices of the wanted items in the input items if present."""
-    # Note: This code is taken from Jeremy Widmann's get_valid_indices()
-    # function, part of make_distance_histograms.py.
+    """Returns indices of the wanted items in the input items if present.
+
+    input_items must be iterable, and wanted_items may be either a single value
+    or a list. The return value will always be a list of indices, and an empty
+    list if none were found. If wanted_items is a single string, it is treated
+    as a scalar, not an iterable.
+    """
+    # Note: Some of this code is taken from Jeremy Widmann's
+    # get_valid_indices() function, part of make_distance_histograms.py.
+    try:
+        iter(input_items)
+    except:
+        raise ValueError("The input_items to search must be iterable.")
+    try:
+        len(wanted_items)
+    except:
+        # We have a scalar value, so put it in a list.
+        wanted_items = [wanted_items]
+    if isinstance(wanted_items, basestring):
+        wanted_items = [wanted_items]
+
     return [input_items.index(item)
             for item in wanted_items if item in input_items]
 

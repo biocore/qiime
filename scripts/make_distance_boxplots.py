@@ -102,14 +102,14 @@ script_info['optional_options'] = [
         help='suppress plotting of individual "between" boxplot(s) '
              '[default: %default]',
         default=False),
-    make_option('--y_min', type='float',
-        help='the minimum y-axis value in the resulting plot. If None, '
+    make_option('--y_min', type='string',
+        help='the minimum y-axis value in the resulting plot. If "auto", '
              'it is automatically calculated [default: %default]',
-        default=None),
-    make_option('--y_max', type='float',
-        help='the maximum y-axis value in the resulting plot. If None, '
+        default=0),
+    make_option('--y_max', type='string',
+        help='the maximum y-axis value in the resulting plot. If "auto", '
              'it is automatically calculated [default: %default]',
-        default=None),
+        default=1),
     make_option('--width',
         help='width of the output image in inches [default: %default]',
         default='12', type='float'),
@@ -180,6 +180,27 @@ def main():
                 "option) corresponding to fields in the mapping file."
                 % field)
 
+    # Make sure the y_min and y_max options make sense, as they can be either
+    # 'auto' or a number.
+    y_min = opts.y_min
+    y_max = opts.y_max
+    try:
+        y_min = float(y_min)
+    except ValueError:
+        if y_min == 'auto':
+            y_min = None
+        else:
+            raise ValueError("The --y_min option must be either a number or "
+                             "'auto'.")
+    try:
+        y_max = float(y_max)
+    except ValueError:
+        if y_max == 'auto':
+            y_max = None
+        else:
+            raise ValueError("The --y_max option must be either a number or "
+                             "'auto'.")
+
     # Generate the various boxplots, depending on what the user wanted
     # suppressed. Add them all to one encompassing plot.
     for field in fields:
@@ -212,8 +233,8 @@ def main():
             plot_figure = generate_box_plots(plot_data,
                     x_tick_labels=plot_labels, title="%s Distances" % field,
                     x_label="Grouping", y_label="Distance",
-                    x_tick_labels_orientation='vertical', y_min=opts.y_min,
-                    y_max=opts.y_max)
+                    x_tick_labels_orientation='vertical', y_min=y_min,
+                    y_max=y_max)
             width = opts.width
             height = opts.height
             if width > 0 and height > 0:
