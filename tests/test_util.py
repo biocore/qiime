@@ -807,48 +807,48 @@ FXX116:"""
 
 
 otu_table_fake1 = """#Full OTU Counts
-#OTU ID\tS1\tS2\tConsensus Lineage
-0\t1\t0\tRoot;Bacteria
-1\t1\t0\tRoot;Bacteria;Verrucomicrobia
-2\t4\t0\tRoot;Bacteria"""
-
+#OTU ID	S1	S2	Consensus Lineage
+0	1	0	Root;Bacteria
+1	1	0	Root;Bacteria;Verrucomicrobia
+2	4	0	Root;Bacteria"""
+    
 otu_table_fake2 = """#Full OTU Counts
-#OTU ID\tS3\tS4\tS5\tConsensus Lineage
-0\t1\t0\t1\tRoot;Bacteria
-3\t2\t0\t1\tRoot;Bacteria;Acidobacteria
-4\t1\t0\t9\tRoot;Bacteria;Bacteroidetes
-2\t1\t0\t1\tRoot;Bacteria;Acidobacteria;Acidobacteria;Gp5
-6\t1\t25\t42\tRoot;Archaea"""
+#OTU ID	S3	S4	S5	Consensus Lineage
+0	1	0	1	Root;Bacteria
+3	2	0	1	Root;Bacteria;Acidobacteria
+4	1	0	9	Root;Bacteria;Bacteroidetes
+2	1	0	1	Root;Bacteria;Acidobacteria;Acidobacteria;Gp5
+6	1	25	42	Root;Archaea"""
 
 otu_table_fake3 = """#Full OTU Counts
-#OTU ID\tsamp7\tConsensus Lineage
-6\t1\tRoot;Archaea"""
+#OTU ID	samp7	Consensus Lineage
+6	1	Root;Archaea""" 
 
 otu_table_fake4 = """#Full OTU Counts
-#OTU ID\tS3\tS4\tS1\tConsensus Lineage
-0\t1\t0\t1\tRoot;Bacteria
-3\t2\t0\t1\tRoot;Bacteria;Acidobacteria
-4\t1\t0\t9\tRoot;Bacteria;Bacteroidetes
-2\t1\t0\t1\tRoot;Bacteria;Acidobacteria;Acidobacteria;Gp5
-6\t1\t25\t42\tRoot;Archaea"""
+#OTU ID	S3	S4	S1	Consensus Lineage
+0	1	0	1	Root;Bacteria
+3	2	0	1	Root;Bacteria;Acidobacteria
+4	1	0	9	Root;Bacteria;Bacteroidetes
+2	1	0	1	Root;Bacteria;Acidobacteria;Acidobacteria;Gp5
+6	1	25	42	Root;Archaea"""
 
 otu_table_fake1_no_tax = """#Full OTU Counts
-#OTU ID\tS1\tS2
-0\t1\t0
-1\t1\t0
-2\t4\t0"""
-
+#OTU ID	S1	S2
+0	1	0
+1	1	0
+2	4	0"""
+    
 otu_table_fake2_no_tax = """#Full OTU Counts
-#OTU ID\tS3\tS4\tS5
-0\t1\t0\t1
-3\t2\t0\t1
-4\t1\t0\t9
-2\t1\t0\t1
-6\t1\t25\t42"""
+#OTU ID	S3	S4	S5
+0	1	0	1
+3	2	0	1
+4	1	0	9
+2	1	0	1
+6	1	25	42"""
 
 otu_table_fake3_no_tax = """#Full OTU Counts
-#OTU ID\tsamp7
-6\t1"""
+#OTU ID	samp7
+6	1"""
 
                                     
 class FunctionWithParamsTests(TestCase):
