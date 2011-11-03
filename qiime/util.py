@@ -27,6 +27,8 @@ import os
 from copy import deepcopy
 from datetime import datetime
 from subprocess import Popen, PIPE, STDOUT
+from random import random
+
 from numpy import min, max, median, mean
 import numpy
 from numpy.ma import MaskedArray
@@ -84,6 +86,7 @@ class MissingFileError(IOError):
 class FileFormatError(IOError):
     """Exception for wrong file format"""
     pass
+    
 
 def make_safe_f(f, allowed_params):
     """Make version of f that ignores extra named params."""
@@ -1397,3 +1400,22 @@ def _chk_asarray(a, axis):
         a = asarray(a)
         outaxis = axis
     return a, outaxis
+
+
+def subsample_fasta(input_fasta_fp,
+                    output_fp,
+                    percent_subsample):
+    """ Writes random percent_sample of sequences from input fasta filepath
+    
+    input_fasta_fp: input fasta filepath
+    output_fp: output fasta filepath
+    percent_subsample: percent of sequences to write
+    """
+    
+    input_fasta = open(input_fasta_fp, "U")
+    
+    output_fasta = open(output_fp, "w")
+
+    for label, seq in MinimalFastaParser(input_fasta):
+        if random() < percent_subsample:
+            output_fasta.write('>%s\n%s\n' % (label, seq))

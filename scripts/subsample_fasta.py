@@ -12,9 +12,8 @@ __status__ = "Development"
 
 from os.path import split, splitext
 
-from qiime.util import parse_command_line_parameters, get_options_lookup
-from qiime.util import make_option
-from qiime.subsample_fasta import subsample_fasta
+from qiime.util import parse_command_line_parameters, get_options_lookup,\
+ make_option, subsample_fasta
 
 options_lookup = get_options_lookup()
 

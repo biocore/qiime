@@ -1,13 +1,15 @@
 #!/usr/bin/env python
+from __future__ import division
 #unit tests for util.py
 
 from os import rmdir
 from os.path import split, abspath, dirname, exists, join
 from glob import glob
+from random import seed
 from cogent import Sequence
 from cogent.util.unit_test import TestCase, main
 from cogent.parse.fasta import MinimalFastaParser
-from qiime.util import get_tmp_filename
+from qiime.util import get_tmp_filename, load_qiime_config
 from cogent.util.misc import remove_files
 from cogent.cluster.procrustes import procrustes
 from cogent.app.formatdb import build_blast_db_from_fasta_file
@@ -29,7 +31,8 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
     flowgram_id_to_seq_id_map, count_seqs, count_seqs_from_file,
     count_seqs_in_filepaths,get_split_libraries_fastq_params_and_file_types,
     iseq_to_qseq_fields,get_top_fastq_two_lines,
-    make_compatible_distance_matrices,stderr,_chk_asarray,expand_otu_ids)
+    make_compatible_distance_matrices,stderr,_chk_asarray,expand_otu_ids,
+    subsample_fasta)
 
 import numpy
 from numpy import array, asarray
@@ -804,48 +807,48 @@ FXX116:"""
 
 
 otu_table_fake1 = """#Full OTU Counts
-#OTU ID	S1	S2	Consensus Lineage
-0	1	0	Root;Bacteria
-1	1	0	Root;Bacteria;Verrucomicrobia
-2	4	0	Root;Bacteria"""
-    
+#OTU ID\tS1\tS2\tConsensus Lineage
+0\t1\t0\tRoot;Bacteria
+1\t1\t0\tRoot;Bacteria;Verrucomicrobia
+2\t4\t0\tRoot;Bacteria"""
+
 otu_table_fake2 = """#Full OTU Counts
-#OTU ID	S3	S4	S5	Consensus Lineage
-0	1	0	1	Root;Bacteria
-3	2	0	1	Root;Bacteria;Acidobacteria
-4	1	0	9	Root;Bacteria;Bacteroidetes
-2	1	0	1	Root;Bacteria;Acidobacteria;Acidobacteria;Gp5
-6	1	25	42	Root;Archaea"""
+#OTU ID\tS3\tS4\tS5\tConsensus Lineage
+0\t1\t0\t1\tRoot;Bacteria
+3\t2\t0\t1\tRoot;Bacteria;Acidobacteria
+4\t1\t0\t9\tRoot;Bacteria;Bacteroidetes
+2\t1\t0\t1\tRoot;Bacteria;Acidobacteria;Acidobacteria;Gp5
+6\t1\t25\t42\tRoot;Archaea"""
 
 otu_table_fake3 = """#Full OTU Counts
-#OTU ID	samp7	Consensus Lineage
-6	1	Root;Archaea""" 
+#OTU ID\tsamp7\tConsensus Lineage
+6\t1\tRoot;Archaea"""
 
 otu_table_fake4 = """#Full OTU Counts
-#OTU ID	S3	S4	S1	Consensus Lineage
-0	1	0	1	Root;Bacteria
-3	2	0	1	Root;Bacteria;Acidobacteria
-4	1	0	9	Root;Bacteria;Bacteroidetes
-2	1	0	1	Root;Bacteria;Acidobacteria;Acidobacteria;Gp5
-6	1	25	42	Root;Archaea"""
+#OTU ID\tS3\tS4\tS1\tConsensus Lineage
+0\t1\t0\t1\tRoot;Bacteria
+3\t2\t0\t1\tRoot;Bacteria;Acidobacteria
+4\t1\t0\t9\tRoot;Bacteria;Bacteroidetes
+2\t1\t0\t1\tRoot;Bacteria;Acidobacteria;Acidobacteria;Gp5
+6\t1\t25\t42\tRoot;Archaea"""
 
 otu_table_fake1_no_tax = """#Full OTU Counts
-#OTU ID	S1	S2
-0	1	0
-1	1	0
-2	4	0"""
-    
+#OTU ID\tS1\tS2
+0\t1\t0
+1\t1\t0
+2\t4\t0"""
+
 otu_table_fake2_no_tax = """#Full OTU Counts
-#OTU ID	S3	S4	S5
-0	1	0	1
-3	2	0	1
-4	1	0	9
-2	1	0	1
-6	1	25	42"""
+#OTU ID\tS3\tS4\tS5
+0\t1\t0\t1
+3\t2\t0\t1
+4\t1\t0\t9
+2\t1\t0\t1
+6\t1\t25\t42"""
 
 otu_table_fake3_no_tax = """#Full OTU Counts
-#OTU ID	samp7
-6	1""" 
+#OTU ID\tsamp7
+6\t1"""
 
                                     
 class FunctionWithParamsTests(TestCase):
@@ -1380,6 +1383,92 @@ fastq_mapping_rev=["#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tDescriptio
 fastq_mapping_fwd=["#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tDescription",
 "sample1\tGACGAGTCAGTC\tCCGGACTACHVGGGTWTCTAAT\tsample1",
 "sample2\tGTCTGACAGTTG\tCCGGACTACHVGGGTWTCTAAT\tsample2"]
+
+class SubSampleFastaTests(TestCase):
+    """ """
+    
+    def setUp(self):
+        """ """
+        self.expected_lines_50_perc = expected_lines_50_perc
+        self.expected_lines_20_perc = expected_lines_20_perc
+        
+        self.temp_dir = load_qiime_config()['temp_dir']
+        
+        self.fasta_lines = fasta_lines
+        self.fasta_filepath = get_tmp_filename(
+            prefix='subsample_test_', suffix='.fasta')
+        self.fasta_file = open(self.fasta_filepath, "w")
+        self.fasta_file.write(self.fasta_lines)
+        self.fasta_file.close()
+        
+        self.output_filepath = get_tmp_filename(prefix='subsample_output_',
+         suffix='.fasta')
+        
+        self._files_to_remove =\
+         [self.fasta_filepath]
+
+    def tearDown(self):
+        remove_files(self._files_to_remove)
+        
+    def test_subsample_fasta_50(self):
+        """ subsample_fasta correctly subsamples input fasta file """
+        
+        # fixed seed for consistent calls with random()
+        seed(128)
+        
+        subsample_fasta(self.fasta_filepath, self.output_filepath,
+         percent_subsample = 0.50)
+    
+        self._files_to_remove.append(self.output_filepath)
+         
+        actual_results =\
+         [line.strip() for line in open(self.output_filepath, "U")]
+        
+        self.assertEqual(actual_results, self.expected_lines_50_perc)
+
+    def test_subsample_fasta_20(self):
+        """ subsample_fasta correctly subsamples input fasta file """
+        
+        seed(12210)
+
+        subsample_fasta(self.fasta_filepath, self.output_filepath,
+         percent_subsample = 0.20)
+    
+        self._files_to_remove.append(self.output_filepath)
+         
+        actual_results =\
+         [line.strip() for line in open(self.output_filepath, "U")]
+        
+        self.assertEqual(actual_results, self.expected_lines_20_perc)
+        
+        
+        
+        
+    
+
+
+# Long strings of test data go here
+fasta_lines = """>seq1
+ACCAGCGGAGAC
+>seq2
+ACAGAGAGACCC
+>seq3
+ATTACCAGATTAC
+>seq4
+ACAGGAGACCGAGAAGA
+>seq5
+ACCAGAGACCGAGA
+"""
+
+expected_lines_50_perc = """>seq2
+ACAGAGAGACCC
+>seq4
+ACAGGAGACCGAGAAGA
+>seq5
+ACCAGAGACCGAGA""".split('\n')
+
+expected_lines_20_perc = """>seq4
+ACAGGAGACCGAGAAGA""".split('\n')
 
 
 #run unit tests if run from command-line
