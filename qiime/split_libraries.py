@@ -274,6 +274,9 @@ def check_map(infile, disable_primer_check, added_demultiplex_field=None,
         disable_primer_check=disable_primer_check,
         added_demultiplex_field=added_demultiplex_field)
         
+    if errors or warnings:
+        raise ValueError,('Problems were found with mapping file, '+\
+         'please run check_id_map.py to identify problems.')
     
     barcode_to_sample_id = {}
     
