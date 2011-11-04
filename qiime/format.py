@@ -543,6 +543,14 @@ def illumina_data_to_fastq(record_data,number_of_bases=None):
     """
     seq_index = 8
     qual_index = 9
+    pass_filter_index = 10
+    
+    try:
+        pass_filter = int(record_data[pass_filter_index])
+    except IndexError:
+        pass_filter = 2
+        
+    
     if number_of_bases == None:
         seq = record_data[seq_index].replace('.','N')
         qual = record_data[qual_index]
@@ -561,8 +569,6 @@ def illumina_data_to_fastq(record_data,number_of_bases=None):
       record_data[6],
       record_data[7])
     
-    return '@%s\n%s\n+\n%s' % (header,
-      seq,
-      qual)
+    return '@%s\n%s\n+\n%s' % (header,seq,qual), pass_filter
 
 

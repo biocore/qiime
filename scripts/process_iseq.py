@@ -70,29 +70,30 @@ def main():
             common_fields, sequence, sequence_qual, barcode, barcode_qual =\
              iseq_to_qseq_fields(line, barcode_in_header, barcode_length, barcode_qual_c)
             
-            sequence_s = illumina_data_to_fastq((common_fields[0],
-                                                 common_fields[1],
-                                                 common_fields[2],
-                                                 common_fields[3],
-                                                 common_fields[4],
-                                                 common_fields[5],
-                                                 common_fields[6],
-                                                 common_fields[7],
-                                                 sequence,
-                                                 sequence_qual))
-            sequence_output_f.write('%s\n' % sequence_s)
+            sequence_s, pass_filter_s = illumina_data_to_fastq((common_fields[0],
+                                                              common_fields[1],
+                                                              common_fields[2],
+                                                              common_fields[3],
+                                                              common_fields[4],
+                                                              common_fields[5],
+                                                              common_fields[6],
+                                                              common_fields[7],
+                                                              sequence,
+                                                              sequence_qual))
             
-            barcode_s = illumina_data_to_fastq((common_fields[0],
-                                                common_fields[1],
-                                                common_fields[2],
-                                                common_fields[3],
-                                                common_fields[4],
-                                                common_fields[5],
-                                                common_fields[6],
-                                                common_fields[7],
-                                                barcode,
-                                                barcode_qual),barcode_length)
-            barcode_output_f.write('%s\n' % barcode_s)
+            barcode_s, pass_filter_b = illumina_data_to_fastq((common_fields[0],
+                                                             common_fields[1],
+                                                             common_fields[2],
+                                                             common_fields[3],
+                                                             common_fields[4],
+                                                             common_fields[5],
+                                                             common_fields[6],
+                                                             common_fields[7],
+                                                             barcode,
+                                                             barcode_qual),barcode_length)
+            if pass_filter_s != 0:
+                sequence_output_f.write('%s\n' % sequence_s)
+                barcode_output_f.write('%s\n' % barcode_s)
         sequence_output_f.close()
         barcode_output_f.close()
         

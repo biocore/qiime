@@ -39,6 +39,9 @@ script_info['optional_options'] = [
  make_option('-b','--bases',type='int',
   help='the number of bases to include (useful for slicing a barcode) [defaut: all]',
   default=None),
+ make_option('--ignore_pass_filter',action='store_true',default=False,
+  help='ignore the illumina pass filter [default:%default; reads with 0 in pass '+\
+       ' filter field are discarded]')
 ]
 script_info['version'] = __version__
 
@@ -57,6 +60,7 @@ def main():
     lanes = opts.lanes.split(',')
     bases = opts.bases
     read = opts.read
+    ignore_pass_filter = opts.ignore_pass_filter
     
     for lane in lanes:
         read1_fps =  glob('%s/s_%s_%d_*qseq.txt' % (input_dir,
@@ -69,9 +73,10 @@ def main():
         output_f = open(output_fp,'w')
         for read1_fp in read1_fps:        
             for record in iter_split_lines(open(read1_fp,'U')):
-                fastq_s = illumina_data_to_fastq(record,
-                                                 number_of_bases=bases)
-                output_f.write('%s\n' % fastq_s)
+                fastq_s, pass_filter = illumina_data_to_fastq(record,
+                                                              number_of_bases=bases)
+                if ignore_pass_filter or pass_filter != 0:
+                    output_f.write('%s\n' % fastq_s)
         output_f.close()
 
 if __name__ == "__main__":
