@@ -101,14 +101,18 @@ script_info['optional_options'] = [
         'scaled accordingly. Otherwise the x-values will treated '
         'categorically and be evenly spaced [default: %default].',
         choices=['categorical','numeric'], default='categorical'),
-    make_option('--y_min', type='float',
-        help='the minimum y-axis value in the resulting plot. If None, '
+    make_option('--y_min', type='string',
+        help='the minimum y-axis value in the resulting plot. If "auto", '
              'it is automatically calculated [default: %default]',
-        default=None),
-    make_option('--y_max', type='float',
-        help='the maximum y-axis value in the resulting plot. If None, '
+        default=0),
+    make_option('--y_max', type='string',
+        help='the maximum y-axis value in the resulting plot. If "auto", '
              'it is automatically calculated [default: %default]',
-        default=None)]
+        default=1),
+    make_option('--transparent', action='store_true',
+        help='make output images transparent (useful for overlaying an image '
+             'on top of a colored background ) [default: %default]',
+        default=False)]
 
 script_info['option_label'] = {'mapping_fp':'QIIME-formatted mapping filepath',
                                'output_dir':'output directory',
@@ -125,7 +129,8 @@ script_info['option_label'] = {'mapping_fp':'QIIME-formatted mapping filepath',
                                    'orientation',
                                'label_type':'x-axis label type',
                                'y_min':'y-axis min',
-                               'y_max':'y-axis max'}
+                               'y_max':'y-axis max',
+                               'transparent':'make images transparent'}
 
 script_info['version'] = __version__
 
@@ -221,6 +226,27 @@ def main():
                                 "numbers. Please specify a different label "
                                 "type.")
 
+    # Make sure the y_min and y_max options make sense, as they can be either
+    # 'auto' or a number.
+    y_min = opts.y_min
+    y_max = opts.y_max
+    try:
+        y_min = float(y_min)
+    except ValueError:
+        if y_min == 'auto':
+            y_min = None
+        else:
+            option_parser.error("The --y_min option must be either a number "
+                                "or 'auto'.")
+    try:
+        y_max = float(y_max)
+    except ValueError:
+        if y_max == 'auto':
+            y_max = None
+        else:
+            option_parser.error("The --y_max option must be either a number "
+                                "or 'auto'.")
+
     # Get all between distance groupings.
     groupings = get_grouped_distances(dist_matrix_header, dist_matrix,
             mapping_header, mapping, time_field, within=False)
@@ -259,7 +285,7 @@ def main():
             distribution_labels=comp_groups, distribution_markers=plot_colors,
             x_label=plot_x_label, y_label=plot_y_label, title=plot_title,
             x_tick_labels_orientation=opts.x_tick_labels_orientation,
-            y_min=opts.y_min, y_max=opts.y_max)
+            y_min=y_min, y_max=y_max)
 
     # Save the plot in the specified format and size.
     width = opts.width
@@ -271,7 +297,8 @@ def main():
                             "be greater than zero.")
     output_plot_fp = path.join(opts.output_dir, "%s_Timepoint_Distances.%s"
                                % (time_field, opts.imagetype))
-    plot_figure.savefig(output_plot_fp, format=opts.imagetype)
+    plot_figure.savefig(output_plot_fp, format=opts.imagetype,
+            transparent=opts.transparent)
 
     if opts.save_raw_data:
         # Write the raw plot data into a tab-delimited file, where each line is

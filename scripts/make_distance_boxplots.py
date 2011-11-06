@@ -115,7 +115,11 @@ script_info['optional_options'] = [
         default='12', type='float'),
     make_option('--height',
         help='height of the output image in inches [default: %default]',
-        default='6', type='float')]
+        default='6', type='float'),
+    make_option('--transparent', action='store_true',
+        help='make output images transparent (useful for overlaying an image '
+             'on top of a colored background ) [default: %default]',
+        default=False)]
 
 script_info['option_label'] = {'mapping_fp':'QIIME-formatted mapping filepath',
                                'output_dir':'output directory',
@@ -133,7 +137,8 @@ script_info['option_label'] = {'mapping_fp':'QIIME-formatted mapping filepath',
                                'y_min':'y-axis min',
                                'y_max':'y-axis max',
                                'width':'image width',
-                               'height':'image height'}
+                               'height':'image height',
+                               'transparent':'make images transparent'}
 
 script_info['version'] = __version__
 
@@ -190,16 +195,16 @@ def main():
         if y_min == 'auto':
             y_min = None
         else:
-            raise ValueError("The --y_min option must be either a number or "
-                             "'auto'.")
+            option_parser.error("The --y_min option must be either a number "
+                                "or 'auto'.")
     try:
         y_max = float(y_max)
     except ValueError:
         if y_max == 'auto':
             y_max = None
         else:
-            raise ValueError("The --y_max option must be either a number or "
-                             "'auto'.")
+            option_parser.error("The --y_max option must be either a number "
+                                "or 'auto'.")
 
     # Generate the various boxplots, depending on what the user wanted
     # suppressed. Add them all to one encompassing plot.
@@ -244,7 +249,8 @@ def main():
                                     "image must be greater than zero.")
             output_plot_fp = path.join(opts.output_dir, "%s_Distances.%s"
                                        % (field, opts.imagetype))
-            plot_figure.savefig(output_plot_fp, format=opts.imagetype)
+            plot_figure.savefig(output_plot_fp, format=opts.imagetype,
+                    transparent=opts.transparent)
         else:
             option_parser.error("You have chosen to suppress all plots. At "
                                 "least one type of plot must be unsuppressed.")
