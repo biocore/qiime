@@ -32,7 +32,7 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
     count_seqs_in_filepaths,get_split_libraries_fastq_params_and_file_types,
     iseq_to_qseq_fields,get_top_fastq_two_lines,
     make_compatible_distance_matrices,stderr,_chk_asarray,expand_otu_ids,
-    subsample_fasta)
+    subsample_fasta,summarize_otu_sizes_from_otu_map)
 
 import numpy
 from numpy import array, asarray
@@ -135,7 +135,15 @@ class TopLevelTests(TestCase):
         exp2 = exp + exp
         write_seqs_to_fasta(output_fp,seqs,'a')
         self.assertEqual(open(output_fp).read(),exp2)
-        
+    
+    def test_summarize_otu_sizes_from_otu_map(self):
+        """ summarize_otu_sizes_from_otu_map functions as expected """
+        otu_map_f = """O1	seq1
+o2	seq2	seq3	seq4	seq5
+o3	seq5
+o4	seq6	seq7""".split('\n')
+        expected = [(1,2),(2,1),(4,1)]
+        self.assertEqual(summarize_otu_sizes_from_otu_map(otu_map_f),expected)
     
     def test_split_fasta_on_sample_ids(self):
         """ split_fasta_on_sample_ids functions as expected 

@@ -62,6 +62,7 @@ from qiime.parse import (parse_otu_table,
                          parse_qiime_config_files,
                          parse_coords,
                          parse_newick,
+                         fields_to_dict,
                          PhyloNode,
                          parse_mapping_file,
                          parse_denoiser_mapping,
@@ -1419,3 +1420,24 @@ def subsample_fasta(input_fasta_fp,
     for label, seq in MinimalFastaParser(input_fasta):
         if random() < percent_subsample:
             output_fasta.write('>%s\n%s\n' % (label, seq))
+
+def summarize_otu_sizes_from_otu_map(otu_map_f):
+    """ Given an otu map file handle, summarizes the sizes of the OTUs
+    
+        This is useful for determining number of singletons, doubletons, etc
+         from an OTU map.
+    """
+    result = {}
+    for otu_id, seq_ids in fields_to_dict(otu_map_f).items():
+        otu_size = len(seq_ids)
+        try:
+            result[otu_size] += 1
+        except KeyError:
+            result[otu_size] = 1
+    
+    result = result.items()
+    result.sort()
+    return result
+
+
+
