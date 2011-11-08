@@ -2,13 +2,16 @@
 
 """Tests public and private functions in the distribution_plots module."""
 
+from StringIO import StringIO
+import sys
 import matplotlib.colors as colors
-import numpy as np
+from matplotlib.pyplot import boxplot
+from numpy import array
 from qiime.pycogent_backports.distribution_plots import _validate_input,\
-    _get_enumerated_values, _validate_x_values, _create_plot,\
+    _get_distribution_markers, _validate_x_values, _create_plot,\
     _calc_data_point_locations, _set_axes_options, generate_box_plots,\
     generate_comparative_plots, _calc_data_point_ticks, _plot_bar_data,\
-    _plot_scatter_data, _plot_box_data
+    _plot_scatter_data, _plot_box_data, _color_box_plot
 from cogent.util.unit_test import TestCase, main
 
 __author__ = "Jai Rideout"
@@ -57,18 +60,6 @@ class DistributionPlotsTests(TestCase):
         self.ValidTypicalBoxData = [[3.4, 10, 11.67, 12.0, 2, 2, 99.99],
                                     [2.3, 4, 5, 88, 9, 10, 11, 1, 0, 3, -8],
                                     [2, 9, 7, 5, 6]]
-
-        # Test null color list.
-        self.ExcludedColorsNull = None
-
-        # Test empty color list.
-        self.ExcludedColorsEmpty = []
-
-        # Test single-value color list.
-        self.ExcludedColorsSingle = ["k"]
-
-        # Test multi-value color list, with mixed color types.
-        self.ExcludedColorsMulti = ["b", "g", (0.4, 0.6, 0.7), "r"]
 
     def test_validate_input_null(self):
         """_validate_input() should raise a ValueError if null data is passed
@@ -144,13 +135,14 @@ class DistributionPlotsTests(TestCase):
                                          ["Infants", "Children", "Teens"]),
                                          (4, 3))
 
-    def test_get_enumerated_values(self):
-        """_get_enumerated_values() should return valid matplotlib colors
+    def test_get_distribution_markers(self):
+        """_get_distribution_markers() should return valid matplotlib colors
         or symbols."""
-        self.assertTrue(_get_enumerated_values() ==
-                        _get_enumerated_values(True))
-        self.assertTrue(_get_enumerated_values() !=
-                        _get_enumerated_values(False))
+        self.assertEqual(_get_distribution_markers('colors'),
+                ['b', 'g', 'r', 'c', 'm', 'y', 'w'])
+        self.assertEqual(_get_distribution_markers('symbols'),
+                ['s', 'o', '^', '>', 'v', '<', 'd', 'p', 'h', '8', '+', 'x'])
+        self.assertRaises(ValueError, _get_distribution_markers, 'shapes')
 
     def test_create_plot(self):
         """_create_plot() should return a tuple containing a Figure and
@@ -162,7 +154,7 @@ class DistributionPlotsTests(TestCase):
     def test_plot_bar_data(self):
         """_plot_bar_data() should return a list of Rectangle objects."""
         fig, ax = _create_plot()
-        result = _plot_bar_data(ax, [1, 2, 3], 'red', 0.5, 3.75)
+        result = _plot_bar_data(ax, [1, 2, 3], 'red', 0.5, 3.75, 1.5)
         self.assertEqual(result.__class__.__name__, "list")
         self.assertEqual(result[0].__class__.__name__, "Rectangle")
         self.assertEqual(len(result), 1)
@@ -173,7 +165,7 @@ class DistributionPlotsTests(TestCase):
     def test_plot_scatter_data(self):
         """_plot_scatter_data() should return a Collection instance."""
         fig, ax = _create_plot()
-        result = _plot_scatter_data(ax, [1, 2, 3], '^', 0.77, 1)
+        result = _plot_scatter_data(ax, [1, 2, 3], '^', 0.77, 1, 1.5)
         self.assertEqual(result.__class__.__name__, "RegularPolyCollection")
         self.assertEqual(result.get_numsides(), 3)
         self.assertFloatEqual(result.get_rotation(), [0])
@@ -182,7 +174,8 @@ class DistributionPlotsTests(TestCase):
     def test_plot_box_data(self):
         """_plot_box_data() should return a dictionary for Line2D's."""
         fig, ax = _create_plot()
-        result = _plot_box_data(ax, [0, 0, 7, 8, -3, 44], 'blue', 0.33, 55)
+        result = _plot_box_data(ax, [0, 0, 7, 8, -3, 44], 'blue', 0.33, 55,
+                1.5)
         self.assertEqual(result.__class__.__name__, "dict")
         self.assertEqual(len(result['boxes']), 1)
         self.assertEqual(len(result['medians']), 1)
@@ -202,23 +195,23 @@ class DistributionPlotsTests(TestCase):
         """_calc_data_point_locations() should return an array containing
         the x-axis locations for each data point, evenly spaced from 1..n."""
         locs = _calc_data_point_locations(None, 4, 2, 0.25, 0.5)
-        self.assertEqual(locs, np.array([1.0, 2.0, 3.0, 4.0]))
+        self.assertEqual(locs, array([1.0, 2.0, 3.0, 4.0]))
 
     def test_calc_data_point_locations_custom_spacing(self):
         """_calc_data_point_locations() should return an array containing
         the x-axis locations for each data point, spaced according to a custom
         spacing scheme."""
         locs = _calc_data_point_locations([3, 4, 10, 12], 4, 2, 0.25, 0.75)
-        self.assertEqual(locs, np.array([3.75, 5.0, 12.5, 15.0]))
+        self.assertEqual(locs, array([3.75, 5.0, 12.5, 15.0]))
 
     def test_calc_data_point_ticks(self):
         """_calc_data_point_ticks() should return an array containing the
         x-axis locations for each data point tick."""
-        ticks = _calc_data_point_ticks(np.array([1, 5, 9, 11]), 1, 0.5, False)
-        self.assertFloatEqual(ticks, np.array([1.25, 5.25, 9.25, 11.25]))
+        ticks = _calc_data_point_ticks(array([1, 5, 9, 11]), 1, 0.5, False)
+        self.assertFloatEqual(ticks, array([1.25, 5.25, 9.25, 11.25]))
 
-        ticks = _calc_data_point_ticks(np.array([0]), 3, 0.5, False)
-        self.assertFloatEqual(ticks, np.array([0.75]))
+        ticks = _calc_data_point_ticks(array([0]), 3, 0.5, False)
+        self.assertFloatEqual(ticks, array([0.75]))
 
     def test_set_axes_options(self):
         """_set_axes_options() should set the labels on the axes and not raise
@@ -278,12 +271,29 @@ class DistributionPlotsTests(TestCase):
         self.assertFloatEqual(ax.get_xticks(), [2.3, 7.4, 17.6, 19.3])
 
     def test_generate_comparative_plots_insufficient_colors(self):
-        """generate_comparative_plots() should raise a ValueError when it
-        doesn't have enough colors."""
-        self.assertRaises(ValueError, generate_comparative_plots,
-                'bar', self.ValidTypicalData, [1, 4, 10, 11],
-                ["T0", "T1", "T2", "T3"], ["Infants", "Children", "Teens"],
-                ['b', 'r'], "x-axis label", "y-axis label", "Test")
+        """generate_comparative_plots() should work even when there aren't
+        enough colors. We should capture a print statement that warns the
+        users."""
+        # Save stdout and replace it with something that will capture the print
+        # statement. Note: this code was taken from here:
+        # http://stackoverflow.com/questions/4219717/how-to-assert-output-
+        #     with-nosetest-unittest-in-python/4220278#4220278
+        saved_stdout = sys.stdout
+        try:
+            out = StringIO()
+            sys.stdout = out
+            generate_comparative_plots('bar', self.ValidTypicalData,
+                    [1, 4, 10, 11], ["T0", "T1", "T2", "T3"],
+                    ["Infants", "Children", "Teens"], ['b', 'r'],
+                    "x-axis label", "y-axis label", "Test")
+            output = out.getvalue().strip()
+            self.assertEqual(output, "There are not enough markers to "
+                    "uniquely represent each distribution in your dataset. "
+                    "You may want to provide a list of markers that is at "
+                    "least as large as the number of distributions in your "
+                    "dataset.")
+        finally:
+            sys.stdout = saved_stdout
 
     def test_generate_comparative_plots_scatter(self):
         """generate_comparative_plots() should return a valid scatterplot
@@ -300,13 +310,29 @@ class DistributionPlotsTests(TestCase):
         self.assertFloatEqual(ax.get_xticks(), [2.1, 7.2, 17.4, 19.1])
 
     def test_generate_comparative_plots_insufficient_symbols(self):
-        """generate_comparative_plots() should raise a ValueError when it
-        doesn't have enough symbols."""
-        self.assertRaises(ValueError, generate_comparative_plots, 'scatter',
-                self.ValidTypicalData,
-                [1, 4, 10, 11], ["T0", "T1", "T2", "T3"],
-                ["Infants", "Children", "Teens"], [],
-                "x-axis label", "y-axis label", "Test")
+        """generate_comparative_plots() should work even when there aren't
+        enough symbols. We should capture a print statement that warns the
+        users."""
+        # Save stdout and replace it with something that will capture the print
+        # statement. Note: this code was taken from here:
+        # http://stackoverflow.com/questions/4219717/how-to-assert-output-
+        #     with-nosetest-unittest-in-python/4220278#4220278
+        saved_stdout = sys.stdout
+        try:
+            out = StringIO()
+            sys.stdout = out
+            generate_comparative_plots('scatter', self.ValidTypicalData,
+                    [1, 4, 10, 11], ["T0", "T1", "T2", "T3"],
+                    ["Infants", "Children", "Teens"], [],
+                    "x-axis label", "y-axis label", "Test")
+            output = out.getvalue().strip()
+            self.assertEqual(output, "There are not enough markers to "
+                    "uniquely represent each distribution in your dataset. "
+                    "You may want to provide a list of markers that is at "
+                    "least as large as the number of distributions in your "
+                    "dataset.")
+        finally:
+            sys.stdout = saved_stdout
 
     def test_generate_comparative_plots_box(self):
         """generate_comparative_plots() should return a valid boxplot Figure
@@ -330,6 +356,13 @@ class DistributionPlotsTests(TestCase):
                 [1, 4, 10, 11], ["T0", "T1", "T2", "T3"],
                 ["Infants", "Children", "Teens"], ['b', 'g', 'y'],
                 "x-axis label", "y-axis label", "Test")
+
+    def test_color_box_plot(self):
+        """_color_box_plot() should not throw an exception when passed the
+        proper input."""
+        fig, ax = _create_plot()
+        box_plot = boxplot(self.ValidTypicalBoxData)
+        _color_box_plot(ax, box_plot, 'blue')
 
 if __name__ == '__main__':
     main()

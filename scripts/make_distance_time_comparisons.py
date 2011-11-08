@@ -88,10 +88,10 @@ script_info['optional_options'] = [
         default='bar', type='choice', choices=['bar', 'scatter', 'box']),
     make_option('--width',
         help='width of the output image in inches [default: %default]',
-        default='12', type='float'),
+        default=12, type='float'),
     make_option('--height',
         help='height of the output image in inches [default: %default]',
-        default='6', type='float'),
+        default=6, type='float'),
     make_option('--x_tick_labels_orientation',
         help='type of orientation for x-axis tick labels [default: %default]',
         default='vertical', type='choice', choices=['vertical', 'horizontal']),
@@ -112,7 +112,24 @@ script_info['optional_options'] = [
     make_option('--transparent', action='store_true',
         help='make output images transparent (useful for overlaying an image '
              'on top of a colored background ) [default: %default]',
-        default=False)]
+        default=False),
+    make_option('--whisker_length',
+        help='if plot_type is "box", determines the length of the whiskers as '
+             'a function of the IQR. For example, if 1.5, the whiskers extend '
+             'to 1.5 * IQR. Anything outside of that range is seen as an '
+             'outlier. If plot_type is not "box", this option is ignored '
+             '[default: %default]',
+        default='1.5', type='float'),
+    make_option('--distribution_width',
+        help='width (in plot units) of each individual distribution (e.g. each '
+             'bar if the plot type is a bar chart, or the width of each box '
+             'if the plot type is a boxplot) [default: %default]',
+        default='0.4', type='float'),
+    make_option('--group_spacing',
+        help='width (in plot units) of the gap between each timepoint (i.e. '
+             'the width between each group of distributions) '
+             '[default: %default]',
+        default='0.5', type='float')]
 
 script_info['option_label'] = {'mapping_fp':'QIIME-formatted mapping filepath',
                                'output_dir':'output directory',
@@ -130,7 +147,13 @@ script_info['option_label'] = {'mapping_fp':'QIIME-formatted mapping filepath',
                                'label_type':'x-axis label type',
                                'y_min':'y-axis min',
                                'y_max':'y-axis max',
-                               'transparent':'make images transparent'}
+                               'transparent':'make images transparent',
+                               'whisker_length':'whisker length as function '
+                                   'of IQR',
+                               'distribution_width':'width of each '
+                                   'distribution',
+                               'group_spacing':'width of gap between '
+                                   'timepoints'}
 
 script_info['version'] = __version__
 
@@ -285,7 +308,9 @@ def main():
             distribution_labels=comp_groups, distribution_markers=plot_colors,
             x_label=plot_x_label, y_label=plot_y_label, title=plot_title,
             x_tick_labels_orientation=opts.x_tick_labels_orientation,
-            y_min=y_min, y_max=y_max)
+            y_min=y_min, y_max=y_max, whisker_length=opts.whisker_length,
+            distribution_width=opts.distribution_width,
+            group_spacing=opts.group_spacing)
 
     # Save the plot in the specified format and size.
     width = opts.width

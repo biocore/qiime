@@ -32,7 +32,8 @@ __status__ = "Development"
 def generate_box_plots(distributions, x_values=None, x_tick_labels=None,
                        title=None, x_label=None, y_label=None,
                        x_tick_labels_orientation='vertical', y_min=None,
-                       y_max=None):
+                       y_max=None, whisker_length=1.5, box_width=0.5,
+                       box_color=None):
     """Returns a matplotlib.figure.Figure object containing a boxplot for each
     distribution.
 
@@ -50,6 +51,12 @@ def generate_box_plots(distributions, x_values=None, x_tick_labels=None,
             autoscale.
         - y_max: The maximum value of the y-axis. If None, uses matplotlib's
             autoscale.
+        - whisker_length: The length of the whiskers as a function of the IQR.
+            For example, if 1.5, the whiskers extend to 1.5 * IQR. Anything
+            outside of that range is seen as an outlier.
+        - box_width: The width of each box in plot units.
+        - box_color: The color of the boxes. If None, boxes will be the same
+          color as the plot background.
     """
     # Make sure our input makes sense.
     for distribution in distributions:
@@ -65,7 +72,10 @@ def generate_box_plots(distributions, x_values=None, x_tick_labels=None,
 
     # Create a new figure to plot our data on, and then plot the distributions.
     result, plot_axes = _create_plot()
-    boxplot(distributions, positions=x_values)
+    box_plot = boxplot(distributions, positions=x_values, whis=whisker_length,
+                       widths=box_width)
+    if box_color is not None:
+        _color_box_plot(plot_axes, box_plot, box_color)
 
     # Set up the various plotting options, such as x- and y-axis labels, plot
     # title, and x-axis values if they have been supplied.
@@ -85,14 +95,15 @@ def generate_box_plots(distributions, x_values=None, x_tick_labels=None,
 def generate_comparative_plots(plot_type, data, x_values=None,
         data_point_labels=None, distribution_labels=None,
         distribution_markers=None, x_label=None, y_label=None, title=None,
-        x_tick_labels_orientation='vertical', y_min=None, y_max=None):
+        x_tick_labels_orientation='vertical', y_min=None, y_max=None,
+        whisker_length=1.5, distribution_width=0.4, group_spacing=0.5):
     """Returns a matplotlib.figure.Figure object containing plots of the
     specified type grouped at points along the x-axis.
 
     Arguments:
         - plot_type: A string indicating what type of plot should be created.
-            Can be one of "bar", "scatter", or "box", where "bar" is a bar
-            chart, "scatter" is a scatter plot, and "box" is a box plot.
+            Can be one of 'bar', 'scatter', or 'box', where 'bar' is a bar
+            chart, 'scatter' is a scatter plot, and 'box' is a box plot.
         - data: A list of lists that represent each data point along the
             x-axis. Each data point contains lists of data for each
             distribution in the group at that point. This nesting allows for
@@ -107,7 +118,8 @@ def generate_comparative_plots(plot_type, data, x_values=None,
         - distribution_markers: A list of matplotlib-compatible strings or
             tuples that indicate the color or symbol to be used to distinguish
             each distribution in a data point grouping. Colors will be used for
-            bar charts or box plots, while markers are used for scatter plots.
+            bar charts or box plots, while symbols will be used for scatter
+            plots.
         - x_label: A string containing the x-axis label.
         - y_label: A string containing the y-axis label.
         - title: A string containing the title of the plot.
@@ -117,23 +129,33 @@ def generate_comparative_plots(plot_type, data, x_values=None,
             autoscale.
         - y_max: The maximum value of the y-axis. If None, uses matplotlib's
             autoscale.
+        - whisker_length: If plot_type is 'box', determines the length of the
+            whiskers as a function of the IQR. For example, if 1.5, the
+            whiskers extend to 1.5 * IQR. Anything outside of that range is
+            seen as an outlier. If plot_type is not 'box', this parameter is
+            ignored.
+        - distribution_width: The width in plot units of each individual
+            distribution (e.g. each bar if the plot type is a bar chart, or the
+            width of each box if the plot type is a boxplot).
+        - group_spacing: The gap width in plot units between each data point
+            (i.e. the width between each group of distributions).
     """
     # Set up different behavior based on the plot type.
     if plot_type == 'bar':
         plotting_function = _plot_bar_data
         legend_function = _create_standard_legend
         distribution_centered = False
-        colors = True
+        marker_type = 'colors'
     elif plot_type == 'scatter':
         plotting_function = _plot_scatter_data
         legend_function = _create_standard_legend
         distribution_centered = True
-        colors = False
+        marker_type = 'symbols'
     elif plot_type == 'box':
         plotting_function = _plot_box_data
         legend_function = _create_box_plot_legend
         distribution_centered = True
-        colors = True
+        marker_type = 'colors'
     else:
         raise ValueError("Invalid plot type '%s'. Supported plot types are "
                 "'bar', 'scatter', or 'box'." % plot_type)
@@ -144,26 +166,32 @@ def generate_comparative_plots(plot_type, data, x_values=None,
     # Create a list of matplotlib markers (colors or symbols) that can be used
     # to distinguish each of the distributions.
     if distribution_markers is None:
-        distribution_markers = _get_enumerated_values(colors)
+        distribution_markers = _get_distribution_markers(marker_type)
 
     if len(distribution_markers) < num_distributions:
         # We don't have enough markers to represent each distribution uniquely,
-        # so let the user know that they need to provide enough markers for
-        # their large group size.
-        raise ValueError("There are not enough markers to uniquely represent "
-                         "each distribution in your dataset. Please provide a "
-                         "list of markers that is at least as large as the "
-                         "number of distributions in your dataset.")
-
-    # Keep track of how wide each distribution is and how much spacing is put
-    # between each grouping of distributions on the horizontal axis.
-    dist_width = 0.4
-    group_spacing = 0.5
+        # so let the user know. We'll add as many markers (starting from the
+        # beginning of the list again) until we have enough, but the user
+        # should still know because they may want to provide a new list of
+        # markers.
+        print ("There are not enough markers to uniquely represent each "
+               "distribution in your dataset. You may want to provide a list "
+               "of markers that is at least as large as the number of "
+               "distributions in your dataset.")
+        marker_pool = _get_distribution_markers(marker_type)
+        while len(distribution_markers) < num_distributions:
+            if len(marker_pool) > 0:
+                distribution_markers.append(marker_pool.pop(0))
+            else:
+                marker_pool = _get_distribution_markers(marker_type)
+    assert (len(distribution_markers) >= num_distributions), "The number " +\
+            "of distribution markers is less than the number of distributions."
 
     # Now calculate where each of the data points will start on the x-axis.
     x_locations = _calc_data_point_locations(x_values, num_points,
-            num_distributions, dist_width, group_spacing)
-    assert(len(x_locations) == num_points)
+            num_distributions, distribution_width, group_spacing)
+    assert (len(x_locations) == num_points), "The number of x_locations " +\
+            "does not match the number of data points."
 
     # Create the figure to put the plots on, as well as a list to store each of
     # the plots (needed for the legend).
@@ -178,14 +206,15 @@ def generate_comparative_plots(plot_type, data, x_values=None,
         for dist, dist_marker in zip(point, distribution_markers):
             dist_location = x_pos + dist_offset
             plots.append(plotting_function(plot_axes, dist, dist_marker,
-                                           dist_width, dist_location))
-            dist_offset += dist_width
+                                           distribution_width, dist_location,
+                                           whisker_length))
+            dist_offset += distribution_width
 
     # Set up various plot options that are best set after the plotting is done.
     # The x-axis tick marks (one per data point) are centered on each group of
     # distributions.
     plot_axes.set_xticks(_calc_data_point_ticks(x_locations,
-            num_distributions, dist_width, distribution_centered))
+            num_distributions, distribution_width, distribution_centered))
     _set_axes_options(plot_axes, title, x_label, y_label, x_values,
                       data_point_labels, x_tick_labels_orientation, y_min,
                       y_max)
@@ -264,13 +293,18 @@ def _validate_x_values(x_values, x_tick_labels, num_expected_values):
             raise ValueError("The number of x-axis tick labels must match the "
                              "number of data points.")
 
-def _get_enumerated_values(colors=True):
-    """Returns a list of valid matplotlib colors or symbols.
-
-    If colors is False, a list of symbols is returned.
-    """
-    return ['b', 'g', 'r', 'c', 'm', 'y', 'w'] if colors else\
-           ['s', 'o', '^', '>', 'v', '<', 'd', 'p', 'h', '8', '+', 'x']
+def _get_distribution_markers(marker_type):
+    """Returns a list of valid matplotlib colors if marker_type is 'colors' or
+    symbols if marker_type is 'symbols'."""
+    markers = None
+    if marker_type == 'colors':
+        markers = ['b', 'g', 'r', 'c', 'm', 'y', 'w']
+    elif marker_type == 'symbols':
+        markers = ['s', 'o', '^', '>', 'v', '<', 'd', 'p', 'h', '8', '+', 'x']
+    else:
+        raise ValueError("Invalid marker_type: '%s'. marker_type must be "
+                         "either 'colors' or 'symbols'." % marker_type)
+    return markers
 
 def _calc_data_point_locations(x_values, num_points, num_distributions,
                                dist_width, group_spacing):
@@ -293,7 +327,8 @@ def _calc_data_point_locations(x_values, num_points, num_distributions,
         # Evenly space the x locations.
         x_values = range(1, num_points + 1)
 
-    assert(len(x_values) == num_points)
+    assert (len(x_values) == num_points), "The number of x_values does not " +\
+            "match the number of data points."
 
     # Calculate the width of each grouping of distributions at a data point.
     # This is multiplied by the current x value to give us our final
@@ -331,7 +366,7 @@ def _create_plot():
     return fig, ax
 
 def _plot_bar_data(plot_axes, distribution, distribution_color,
-                   distribution_width, x_position):
+                   distribution_width, x_position, whisker_length):
     """Returns the result of plotting a single bar in matplotlib."""
     result = None
     avg = mean(distribution)
@@ -346,7 +381,7 @@ def _plot_bar_data(plot_axes, distribution, distribution_color,
     return result
 
 def _plot_scatter_data(plot_axes, distribution, distribution_symbol,
-                       distribution_width, x_position):
+                       distribution_width, x_position, whisker_length):
     """Returns the result of plotting a single scatterplot in matplotlib."""
     result = None
     x_vals = [x_position] * len(distribution)
@@ -357,14 +392,23 @@ def _plot_scatter_data(plot_axes, distribution, distribution_symbol,
     return result
 
 def _plot_box_data(plot_axes, distribution, distribution_color,
-                   distribution_width, x_position):
+                   distribution_width, x_position, whisker_length):
     """Returns the result of plotting a single boxplot in matplotlib."""
     box_plot = plot_axes.boxplot([distribution], positions=[x_position],
-                                 widths=distribution_width)
+                                 widths=distribution_width,
+                                 whis=whisker_length)
+    _color_box_plot(plot_axes, box_plot, distribution_color)
+    return box_plot
 
-    # Fill the distribution's box with the desired color.
-    # Note: the following boxplot-coloring code is largely taken from a
-    # matplotlib boxplot example:
+def _color_box_plot(plot_axes, box_plot, color):
+    """Fill each box in the box plot with the specified color.
+
+    The box_plot argument must be the dictionary returned by the call to
+    matplotlib's boxplot function, and the color argument must be a valid
+    matplotlib color.
+    """
+    # Note: the following code is largely taken from a matplotlib boxplot
+    # example:
     # http://matplotlib.sourceforge.net/examples/pylab_examples/
     #     boxplot_demo2.html
     num_boxes = len(box_plot['boxes'])
@@ -378,7 +422,7 @@ def _plot_box_data(plot_axes, distribution, distribution_color,
             boxX.append(box.get_xdata()[j])
             boxY.append(box.get_ydata()[j])
         boxCoords = zip(boxX,boxY)
-        boxPolygon = Polygon(boxCoords, facecolor=distribution_color)
+        boxPolygon = Polygon(boxCoords, facecolor=color)
         plot_axes.add_patch(boxPolygon)
 
         # Draw the median lines back over what we just filled in with
@@ -390,7 +434,6 @@ def _plot_box_data(plot_axes, distribution, distribution_color,
             medianX.append(median.get_xdata()[j])
             medianY.append(median.get_ydata()[j])
             plot_axes.plot(medianX, medianY, 'black')
-    return box_plot
 
 def _set_axes_options(plot_axes, title=None, x_label=None, y_label=None,
                       x_values=None, x_tick_labels=None,
@@ -453,7 +496,9 @@ def _create_box_plot_legend(plots, plot_axes, distribution_colors,
     # http://matplotlib.sourceforge.net/users/legend_guide.html
     legend_rects = [Rectangle((0, 0), 1, 1, fc=color) for color in
             distribution_colors[:num_distributions]]
-    assert(len(legend_rects) == len(distribution_labels))
+    assert (len(legend_rects) == len(distribution_labels)), "The number of " +\
+            "legend color rectangles does not match the number of " +\
+            "distribution labels."
     plot_axes.legend(legend_rects, distribution_labels, loc='best')
 
 def _on_draw(event):

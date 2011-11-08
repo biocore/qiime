@@ -10,9 +10,11 @@ __maintainer__ = "Jai Rideout"
 __email__ = "jr378@nau.edu"
 __status__ = "Development"
 
+from operator import itemgetter
 from os import path
 from string import strip
 from cogent.util.misc import create_dir
+from numpy import median
 from qiime.group import get_all_grouped_distances, get_grouped_distances
 from qiime.parse import parse_distmat, parse_mapping_file, QiimeParseError
 from qiime.pycogent_backports.distribution_plots import generate_box_plots
@@ -111,15 +113,29 @@ script_info['optional_options'] = [
              'it is automatically calculated [default: %default]',
         default=1),
     make_option('--width',
-        help='width of the output image in inches [default: %default]',
-        default='12', type='float'),
+        help='width of the output image in inches. If not provided, '
+             'a "best guess" width will be used [default: auto]',
+        default=None, type='float'),
     make_option('--height',
         help='height of the output image in inches [default: %default]',
-        default='6', type='float'),
+        default=6, type='float'),
     make_option('--transparent', action='store_true',
         help='make output images transparent (useful for overlaying an image '
-             'on top of a colored background ) [default: %default]',
-        default=False)]
+             'on top of a colored background) [default: %default]',
+        default=False),
+    make_option('--whisker_length',
+        help='length of the whiskers as a function of the IQR. For example, '
+             'if 1.5, the whiskers extend to 1.5 * IQR. Anything outside of '
+             'that range is seen as an outlier [default: %default]',
+        default='1.5', type='float'),
+    make_option('--box_width',
+        help='width of each box in plot units [default: %default]',
+        default='0.5', type='float'),
+    make_option('--sort', action='store_true',
+        help='sort boxplots by increasing median. If no sorting is applied, '
+             'boxplots will be grouped logically as follows: all within, all '
+             'between, individual within, and individual between '
+             '[default: %default]', default=False)]
 
 script_info['option_label'] = {'mapping_fp':'QIIME-formatted mapping filepath',
                                'output_dir':'output directory',
@@ -138,10 +154,13 @@ script_info['option_label'] = {'mapping_fp':'QIIME-formatted mapping filepath',
                                'y_max':'y-axis max',
                                'width':'image width',
                                'height':'image height',
-                               'transparent':'make images transparent'}
+                               'transparent':'make images transparent',
+                               'whisker_length':'whisker length as function '
+                                   'of IQR',
+                               'box_width':'width of boxes',
+                               'sort':'sort boxplots by ascending median'}
 
 script_info['version'] = __version__
-
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
@@ -234,14 +253,33 @@ def main():
                 plot_labels.append("%s vs. %s" % (grouping[0], grouping[1]))
 
         # We now have our data and labels ready, so plot them!
+        assert (len(plot_data) == len(plot_labels)), "The number " +\
+                "of boxplot labels does not match the number of " +\
+                "boxplots."
         if plot_data:
+            if opts.sort:
+                # Sort our plot data in order of increasing median.
+                sorted_data = []
+                for label, distribution in zip(plot_labels, plot_data):
+                    sorted_data.append((label, distribution,
+                        median(distribution)))
+                sorted_data.sort(key=itemgetter(2))
+                plot_labels = []
+                plot_data = []
+                for label, distribution, median_value in sorted_data:
+                    plot_labels.append(label)
+                    plot_data.append(distribution)
+
             plot_figure = generate_box_plots(plot_data,
                     x_tick_labels=plot_labels, title="%s Distances" % field,
                     x_label="Grouping", y_label="Distance",
                     x_tick_labels_orientation='vertical', y_min=y_min,
-                    y_max=y_max)
+                    y_max=y_max, whisker_length=opts.whisker_length,
+                    box_width=opts.box_width)
             width = opts.width
             height = opts.height
+            if width is None:
+                width = len(plot_data) * opts.box_width + 2
             if width > 0 and height > 0:
                 plot_figure.set_size_inches(width, height)
             else:
