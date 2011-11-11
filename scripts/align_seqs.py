@@ -136,7 +136,7 @@ def main():
     
     result_path = output_dir + '/' + fname + "_aligned" + ext
     log_path = output_dir + '/' + fname + "_log.txt"
-    failure_path = output_dir + '/' + fname + "_failures.fasta"
+    failure_path = output_dir + '/' + fname + "_failures" + ext
  
     if alignment_method in alignment_method_constructors:
         # try/except was causing problems here, so replacing with
