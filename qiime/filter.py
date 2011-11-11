@@ -210,6 +210,6 @@ get_seq_ids_from_seq_id_file = get_seqs_to_keep_lookup_from_seq_id_file
 
 def get_seqs_to_keep_lookup_from_fasta_file(fasta_f):
     """return the sequence ids within the fasta file"""
-    return set([seq_id for seq_id,seq in MinimalFastaParser(fasta_f)])
+    return set([seq_id.split()[0] for seq_id,seq in MinimalFastaParser(fasta_f)])
 get_seq_ids_from_fasta_file = get_seqs_to_keep_lookup_from_fasta_file
     
