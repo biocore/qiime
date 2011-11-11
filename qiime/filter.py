@@ -206,8 +206,10 @@ def negate_tips_to_keep(tips_to_keep, tree):
 def get_seqs_to_keep_lookup_from_seq_id_file(id_to_keep_f):
     """generate a lookup dict of chimeras in chimera file."""
     return set([l.split()[0].strip() for l in id_to_keep_f if not l.startswith('#') and l])
+get_seq_ids_from_seq_id_file = get_seqs_to_keep_lookup_from_seq_id_file
 
 def get_seqs_to_keep_lookup_from_fasta_file(fasta_f):
     """return the sequence ids within the fasta file"""
     return set([seq_id for seq_id,seq in MinimalFastaParser(fasta_f)])
+get_seq_ids_from_fasta_file = get_seqs_to_keep_lookup_from_fasta_file
     

@@ -13,8 +13,8 @@ __status__ = "Development"
  
 from sys import argv, exit, stderr, stdout
 from os.path import splitext
-from qiime.filter import (get_seqs_to_keep_lookup_from_fasta_file, 
-                          get_seqs_to_keep_lookup_from_seq_id_file)
+from qiime.filter import (get_seq_ids_from_seq_id_file, 
+                          get_seq_ids_from_fasta_file)
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.util import make_option
 from qiime.parse import fields_to_dict, parse_taxonomy
@@ -67,10 +67,10 @@ def main():
     if exclude_otus_fp:
         if splitext(exclude_otus_fp)[1] in ('.fasta','.fna'):
             ids_to_exclude = \
-             get_seqs_to_keep_lookup_from_fasta_file(open(exclude_otus_fp,'U'))
+             get_seq_ids_from_fasta_file(open(exclude_otus_fp,'U'))
         else:
             ids_to_exclude = \
-             get_seqs_to_keep_lookup_from_seq_id_file(open(exclude_otus_fp,'U'))
+             get_seq_ids_from_seq_id_file(open(exclude_otus_fp,'U'))
         otu_to_seqid = remove_otus(otu_to_seqid,ids_to_exclude)
 
     outfile.write(make_otu_table(otu_to_seqid, otu_to_taxonomy))
