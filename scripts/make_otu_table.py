@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Rob Knight", "Justin Kuczynski","Jesse Stombaugh"]
+__credits__ = ["Rob Knight", "Justin Kuczynski","Jesse Stombaugh", "Greg Caporaso"]
 __license__ = "GPL"
 __version__ = "1.3.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -12,6 +12,9 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
  
 from sys import argv, exit, stderr, stdout
+from os.path import splitext
+from qiime.filter import (get_seqs_to_keep_lookup_from_fasta_file, 
+                          get_seqs_to_keep_lookup_from_seq_id_file)
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.util import make_option
 from qiime.parse import fields_to_dict, parse_taxonomy
@@ -36,8 +39,9 @@ script_info['optional_options']=[ \
  [default: %default]', default=None),
   options_lookup['output_fp'],
   make_option('-e','--exclude_otus_fp',\
-   help=("a filepath listing OTU identifiers that should not be included in the "
-         "OTU table (e.g., the output of identify_chimeric_seqs.py)"))
+   help=("path to a file listing OTU identifiers that should not be included in the "
+         "OTU table (e.g., the output of identify_chimeric_seqs.py) or a fasta "
+         "file where seq ids should be excluded (e.g., failures fasta file from align_seqs.py)"))
 ]
 
 script_info['version'] = __version__
@@ -61,7 +65,13 @@ def main():
     otu_to_seqid = fields_to_dict(open(opts.otu_map_fp, 'U'))
     
     if exclude_otus_fp:
-        otu_to_seqid = remove_otus(otu_to_seqid,open(exclude_otus_fp,'U'))
+        if splitext(exclude_otus_fp)[1] in ('.fasta','.fna'):
+            ids_to_exclude = \
+             get_seqs_to_keep_lookup_from_fasta_file(open(exclude_otus_fp,'U'))
+        else:
+            ids_to_exclude = \
+             get_seqs_to_keep_lookup_from_seq_id_file(open(exclude_otus_fp,'U'))
+        otu_to_seqid = remove_otus(otu_to_seqid,ids_to_exclude)
 
     outfile.write(make_otu_table(otu_to_seqid, otu_to_taxonomy))
     
