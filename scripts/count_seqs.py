@@ -71,6 +71,10 @@ def main():
     for e in opts.input_fps.split(','):
         input_fps.extend(glob(e))
     input_fps = set(input_fps)
+    if len(input_fps) == 0:
+        option_parser.error(\
+         "No filepaths match pattern(s) passed via -i: %s" % opts.input_fps)
+        
     output_fp = opts.output_fp
 
     count_data, total, inaccessible_filepaths = count_seqs_in_filepaths(input_fps)
