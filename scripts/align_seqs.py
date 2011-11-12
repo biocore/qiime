@@ -134,9 +134,9 @@ def main():
     fpath, ext = splitext(input_seqs_filepath)
     input_dir, fname = split(fpath)
     
-    result_path = output_dir + '/' + fname + "_aligned" + ext
+    result_path = output_dir + '/' + fname + "_aligned.fasta"
     log_path = output_dir + '/' + fname + "_log.txt"
-    failure_path = output_dir + '/' + fname + "_failures" + ext
+    failure_path = output_dir + '/' + fname + "_failures.fasta"
  
     if alignment_method in alignment_method_constructors:
         # try/except was causing problems here, so replacing with
