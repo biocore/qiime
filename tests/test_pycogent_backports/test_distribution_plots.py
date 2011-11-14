@@ -135,14 +135,55 @@ class DistributionPlotsTests(TestCase):
                                          ["Infants", "Children", "Teens"]),
                                          (4, 3))
 
-    def test_get_distribution_markers(self):
-        """_get_distribution_markers() should return valid matplotlib colors
-        or symbols."""
-        self.assertEqual(_get_distribution_markers('colors'),
-                ['b', 'g', 'r', 'c', 'm', 'y', 'w'])
-        self.assertEqual(_get_distribution_markers('symbols'),
-                ['s', 'o', '^', '>', 'v', '<', 'd', 'p', 'h', '8', '+', 'x'])
-        self.assertRaises(ValueError, _get_distribution_markers, 'shapes')
+    def test_get_distribution_markers_null_marker_list(self):
+        """_get_distribution_markers() should return a list of predefined
+        matplotlib markers."""
+        self.assertEqual(_get_distribution_markers('colors', None, 5),
+                ['b', 'g', 'r', 'c', 'm'])
+
+    def test_get_distribution_markers_empty_marker_list(self):
+        """_get_distribution_markers() should return a list of predefined
+        matplotlib markers."""
+        self.assertEqual(_get_distribution_markers('colors', None, 4),
+                ['b', 'g', 'r', 'c'])
+
+    def test_get_distribution_markers_insufficient_markers(self):
+        """_get_distribution_markers() should return a wrapped list of
+        predefined markers."""
+        # Save stdout and replace it with something that will capture the print
+        # statement. Note: this code was taken from here:
+        # http://stackoverflow.com/questions/4219717/how-to-assert-output-
+        #     with-nosetest-unittest-in-python/4220278#4220278
+        saved_stdout = sys.stdout
+        try:
+            out = StringIO()
+            sys.stdout = out
+            self.assertEqual(_get_distribution_markers('colors', None, 10),
+                ['b', 'g', 'r', 'c', 'm', 'y', 'w', 'b', 'g', 'r'])
+            self.assertEqual(_get_distribution_markers('symbols',
+                ['^', '>', '<'], 5), ['^', '>', '<', '^', '>'])
+            output = out.getvalue().strip()
+            self.assertEqual(output, "There are not enough markers to "
+                    "uniquely represent each distribution in your dataset. "
+                    "You may want to provide a list of markers that is at "
+                    "least as large as the number of distributions in your "
+                    "dataset.\nThere are not enough markers to "
+                    "uniquely represent each distribution in your dataset. "
+                    "You may want to provide a list of markers that is at "
+                    "least as large as the number of distributions in your "
+                    "dataset.")
+        finally:
+            sys.stdout = saved_stdout
+
+    def test_get_distribution_markers_bad_marker_type(self):
+        """_get_distribution_markers() should raise a ValueError."""
+        self.assertRaises(ValueError, _get_distribution_markers, 'shapes', [],
+                3)
+
+    def test_get_distribution_markers_zero_markers(self):
+        """_get_distribution_markers() should return an empty list."""
+        self.assertEqual(_get_distribution_markers('symbols', None, 0), [])
+        self.assertEqual(_get_distribution_markers('symbols', ['^'], 0), [])
 
     def test_create_plot(self):
         """_create_plot() should return a tuple containing a Figure and
@@ -274,10 +315,6 @@ class DistributionPlotsTests(TestCase):
         """generate_comparative_plots() should work even when there aren't
         enough colors. We should capture a print statement that warns the
         users."""
-        # Save stdout and replace it with something that will capture the print
-        # statement. Note: this code was taken from here:
-        # http://stackoverflow.com/questions/4219717/how-to-assert-output-
-        #     with-nosetest-unittest-in-python/4220278#4220278
         saved_stdout = sys.stdout
         try:
             out = StringIO()
@@ -313,17 +350,13 @@ class DistributionPlotsTests(TestCase):
         """generate_comparative_plots() should work even when there aren't
         enough symbols. We should capture a print statement that warns the
         users."""
-        # Save stdout and replace it with something that will capture the print
-        # statement. Note: this code was taken from here:
-        # http://stackoverflow.com/questions/4219717/how-to-assert-output-
-        #     with-nosetest-unittest-in-python/4220278#4220278
         saved_stdout = sys.stdout
         try:
             out = StringIO()
             sys.stdout = out
             generate_comparative_plots('scatter', self.ValidTypicalData,
                     [1, 4, 10, 11], ["T0", "T1", "T2", "T3"],
-                    ["Infants", "Children", "Teens"], [],
+                    ["Infants", "Children", "Teens"], ['^'],
                     "x-axis label", "y-axis label", "Test")
             output = out.getvalue().strip()
             self.assertEqual(output, "There are not enough markers to "
@@ -333,6 +366,14 @@ class DistributionPlotsTests(TestCase):
                     "dataset.")
         finally:
             sys.stdout = saved_stdout
+
+    def test_generate_comparative_plots_empty_marker_list(self):
+        """generate_comparative_plots() should use the predefined list of
+        markers if an empty list is provided by the user."""
+        generate_comparative_plots('scatter', self.ValidTypicalData,
+                [1, 4, 10, 11], ["T0", "T1", "T2", "T3"],
+                ["Infants", "Children", "Teens"], [],
+                "x-axis label", "y-axis label", "Test")
 
     def test_generate_comparative_plots_box(self):
         """generate_comparative_plots() should return a valid boxplot Figure

@@ -11,6 +11,7 @@ generate_comparative_plots() plots groupings of distributions at data
 points along the x-axis.
 """
 
+from itertools import cycle
 from math import isnan
 from matplotlib import use
 use('Agg', warn=False)
@@ -164,28 +165,14 @@ def generate_comparative_plots(plot_type, data, x_values=None,
             data_point_labels, distribution_labels)
 
     # Create a list of matplotlib markers (colors or symbols) that can be used
-    # to distinguish each of the distributions.
-    if distribution_markers is None:
-        distribution_markers = _get_distribution_markers(marker_type)
-
-    if len(distribution_markers) < num_distributions:
-        # We don't have enough markers to represent each distribution uniquely,
-        # so let the user know. We'll add as many markers (starting from the
-        # beginning of the list again) until we have enough, but the user
-        # should still know because they may want to provide a new list of
-        # markers.
-        print ("There are not enough markers to uniquely represent each "
-               "distribution in your dataset. You may want to provide a list "
-               "of markers that is at least as large as the number of "
-               "distributions in your dataset.")
-        marker_pool = _get_distribution_markers(marker_type)
-        while len(distribution_markers) < num_distributions:
-            if len(marker_pool) > 0:
-                distribution_markers.append(marker_pool.pop(0))
-            else:
-                marker_pool = _get_distribution_markers(marker_type)
-    assert (len(distribution_markers) >= num_distributions), "The number " +\
-            "of distribution markers is less than the number of distributions."
+    # to distinguish each of the distributions. If the user provided a list of
+    # markers, use it and loop around to the beginning if there aren't enough
+    # markers. If they didn't provide a list, or it was empty, use our own
+    # predefined list of markers (again, loop around to the beginning if we
+    # need more markers).
+    distribution_markers = _get_distribution_markers(marker_type,
+                                                     distribution_markers,
+                                                     num_distributions)
 
     # Now calculate where each of the data points will start on the x-axis.
     x_locations = _calc_data_point_locations(x_values, num_points,
@@ -293,18 +280,41 @@ def _validate_x_values(x_values, x_tick_labels, num_expected_values):
             raise ValueError("The number of x-axis tick labels must match the "
                              "number of data points.")
 
-def _get_distribution_markers(marker_type):
-    """Returns a list of valid matplotlib colors if marker_type is 'colors' or
-    symbols if marker_type is 'symbols'."""
-    markers = None
-    if marker_type == 'colors':
-        markers = ['b', 'g', 'r', 'c', 'm', 'y', 'w']
-    elif marker_type == 'symbols':
-        markers = ['s', 'o', '^', '>', 'v', '<', 'd', 'p', 'h', '8', '+', 'x']
-    else:
-        raise ValueError("Invalid marker_type: '%s'. marker_type must be "
-                         "either 'colors' or 'symbols'." % marker_type)
-    return markers
+def _get_distribution_markers(marker_type, marker_choices, num_markers):
+    """Returns a list of length num_markers of valid matplotlib colors or
+    symbols.
+    
+    The markers will be comprised of those found in distribution_markers
+    (if not None and not empty) or a list of predefined markers (determined by
+    marker_type, which can be either 'colors' or 'symbols'). If there are not
+    enough markers, the list of markers will be reused from the beginning again
+    (as many times as are necessary).
+    """
+    if num_markers < 0:
+        raise ValueError("num_markers must be greater than or equal to zero.")
+    if marker_choices is None or len(marker_choices) == 0:
+        if marker_type == 'colors':
+            marker_choices = ['b', 'g', 'r', 'c', 'm', 'y', 'w']
+        elif marker_type == 'symbols':
+            marker_choices = \
+                ['s', 'o', '^', '>', 'v', '<', 'd', 'p', 'h', '8', '+', 'x']
+        else:
+            raise ValueError("Invalid marker_type: '%s'. marker_type must be "
+                             "either 'colors' or 'symbols'." % marker_type)
+    if len(marker_choices) < num_markers:
+        # We don't have enough markers to represent each distribution uniquely,
+        # so let the user know. We'll add as many markers (starting from the
+        # beginning of the list again) until we have enough, but the user
+        # should still know because they may want to provide a new list of
+        # markers.
+        print ("There are not enough markers to uniquely represent each "
+               "distribution in your dataset. You may want to provide a list "
+               "of markers that is at least as large as the number of "
+               "distributions in your dataset.")
+        marker_cycle = cycle(marker_choices[:])
+        while len(marker_choices) < num_markers:
+            marker_choices.append(marker_cycle.next())
+    return marker_choices[:num_markers]
 
 def _calc_data_point_locations(x_values, num_points, num_distributions,
                                dist_width, group_spacing):
