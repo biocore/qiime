@@ -158,7 +158,7 @@ script_info['optional_options']=[\
         "Primers a required to be in IUPAC format and written in the 5' to "+\
         " 3' direction.  Valid options are 'disable', 'truncate_only', "+\
         "and 'truncate_remove'.  'truncate_only' will remove the primer "+\
-        "and subsequence sequence data from the output read and will not "+\
+        "and subsequent sequence data from the output read and will not "+\
         "alter output of sequences where the primer cannot be found. "+\
         "'truncate_remove' will flag sequences where the primer cannot "+\
         "be found to not be written and will record the quantity of such "+\
