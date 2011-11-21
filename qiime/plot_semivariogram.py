@@ -113,7 +113,7 @@ def fit_semivariogram((x_samples,x_distmtx), (y_samples,y_distmtx), model, range
     """
     
     # if the arrays are not the same rearrange y
-    if x_samples!=y_samples:        
+    if x_samples!=y_samples:
         lbl_x = list(argsort(x_samples))
         if lbl_x != range(len(lbl_x)):
             tmp = x_distmtx[:,lbl_x]
@@ -123,7 +123,7 @@ def fit_semivariogram((x_samples,x_distmtx), (y_samples,y_distmtx), model, range
         if lbl_y != range(len(lbl_y)):
             tmp = y_distmtx[:,lbl_y]
             y_distmtx = tmp[lbl_y,:]
-            
+                
     # get upper triangle from matrix in a 1d array
     x_tmp_vals = x_distmtx.compress(tri(len(x_distmtx)).ravel()==0)
     y_tmp_vals = y_distmtx.compress(tri(len(y_distmtx)).ravel()==0)
