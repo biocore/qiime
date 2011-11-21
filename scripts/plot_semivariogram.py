@@ -16,7 +16,7 @@ from optparse import make_option
 from qiime.plot_semivariogram import fit_semivariogram, FitModel
 from qiime.parse import parse_distmat
 from qiime.filter import filter_samples_from_distance_matrix
-from pylab import plot, xlabel, ylabel, title, savefig
+from pylab import plot, xlabel, ylabel, title, savefig, ylim, xlim
 from numpy import asarray
 import os
 from StringIO import StringIO
@@ -42,13 +42,25 @@ script_info['required_options']=[\
      'choices are:' + ', '.join(FitModel.options) + '. [default: %default]'),\
  make_option('-o', '--output_path',
      help='output path. directory for batch processing, '+\
-       'filename for single file operation'),\
- make_option('-X', '--x_label', default='Distance (m)',\
-     help='Label for the x axis'),\
+       'filename for single file operation'),
+ make_option('-X', '--x_label', default='Distance Dissimilarity (m)',\
+     help='Label for the x axis [default: %default]'),
  make_option('-Y', '--y_label', default='Community Dissimilarity',\
-     help='Label for the y axis'),\
+     help='Label for the y axis [default: %default]'),
  make_option('-t', '--fig_title', default='Semivariogram',\
-     help='Title of the plot'),\
+     help='Title of the plot [default: %default]'),       
+ make_option('--dot_color', help='dot color for plot, more info:' +\
+    ' http://matplotlib.sourceforge.net/api/pyplot_api.html#matplotlib.pyplot.plot' +\
+    ' [default: %default]', default="wo"), 
+ make_option('--line_color', help='line color for plot, more info:' +\
+    ' http://matplotlib.sourceforge.net/api/pyplot_api.html#matplotlib.pyplot.plot' +\
+    ' [default: %default]', default="blue"), 
+ make_option('--dot_alpha', type='float', help='alpha for dots, more info:' +\
+    ' http://matplotlib.sourceforge.net/api/pyplot_api.html#matplotlib.pyplot.plot' +\
+    ' [default: %default]', default=1),
+ make_option('--line_alpha', type='float', help='alpha for dots, more info:' +\
+    ' http://matplotlib.sourceforge.net/api/pyplot_api.html#matplotlib.pyplot.plot' +\
+    ' [default: %default]', default=1),
 ]
 script_info['optional_options']=[\
  make_option('-b', '--binning', type='string',\
@@ -57,9 +69,13 @@ script_info['optional_options']=[\
      'format, i.e. [2.5,10][50,-1] will set two bins, one from 0-10 using 2.5 ' +\
      'size steps and from 10-inf using 50 size steps. Note that the binning is ' +\
      'used to clean the plots (reduce number of points) but ignored to fit the ' +\
-     'model. [default: %default]'),\
+     'model. [default: %default]'),
  make_option('--ignore_missing_samples', help='This will overpass the error raised ' +\
-     'when the matrices have different sizes/samples', action='store_true', default=False),
+     'when the matrices have different sizes/samples', action='store_true', default=False),         
+ make_option('--x_max', type='float', help='x axis max limit [default: auto]', default=None),         
+ make_option('--x_min', type='float', help='x axis min limit [default: auto]', default=None),         
+ make_option('--y_max', type='float', help='y axis max limit [default: auto]', default=None),         
+ make_option('--y_min', type='float', help='y axis min limit [default: auto]', default=None),
 ]
 
 script_info['version'] = __version__
@@ -73,7 +89,7 @@ def main():
         # simple ranges format validation
         if opts.binning.count('[')!=opts.binning.count(']') or\
           opts.binning.count('[')!=opts.binning.count(','):
-            raise ValueError, "The binning input has an error: '%s'; " % opts.binning +\
+            raise ValueError, "The binning input has an error: '%s'; " % +\
              "\nthe format should be [increment1,top_limit1][increment2,top_limit2]" 
         # spliting in ranges
         rgn_txt = opts.binning.split('][')
@@ -85,7 +101,10 @@ def main():
         max = 0
         
         for i,r in enumerate(rgn_txt):
-            values = map(float,r.split(','))
+            try:
+                values = map(float,r.split(','))
+            except ValueError:
+                raise ValueError, "Not a valid format for binning %s" % opts.binning 
             if len(values)!=2:
                 raise ValueError, "All ranges must have only 2 values: [%s]" % r
             elif i+1!=len(rgn_txt): 
@@ -127,9 +146,14 @@ def main():
     (x_val,y_val,x_fit,y_fit) =\
           fit_semivariogram((x_samples,x_distmtx), (y_samples,y_distmtx), opts.model, ranges)
     
-    plot(x_val, y_val, 'o', color="white")   
-    plot(x_fit, y_fit, linewidth=2.0, color="blue")
-     
+    plot(x_val, y_val, opts.dot_color, alpha=opts.dot_alpha)
+    plot(x_fit, y_fit, linewidth=2.0, color=opts.line_color, alpha=opts.line_alpha)
+    
+    if opts.x_min!=None and opts.x_max!=None:
+        xlim([opts.x_min,opts.x_max])
+    if opts.y_min!=None and opts.y_max!=None:
+        ylim([opts.y_min,opts.y_max])
+        
     x_label = opts.x_label
     y_label = opts.y_label
     fig_title = '%s (%s)' % (opts.fig_title, opts.model)

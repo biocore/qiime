@@ -27,7 +27,10 @@ class FitModel(object):
 
     # Funcion definition -- defining these in your function makes this 
     # very difficult to test
-    options = ['nugget','exponential','gaussian','periodic']
+    options = ['nugget','exponential','gaussian','periodic', 'linear']
+    
+    def _linear(self, x, a):
+        return a[0]+(a[1]*x)
     
     def _periodic(self, x, a):
         return a[0]+(a[2]*(1-cos(2*pi*x/a[1])))
@@ -42,7 +45,9 @@ class FitModel(object):
         return a[0] 
 
     def _get_model(self, model):
-        if model == 'periodic':
+        if model == 'linear':
+            return self._linear
+        elif model == 'periodic':
             return self._periodic
         elif model == 'gaussian':
         	return self._gaussian
