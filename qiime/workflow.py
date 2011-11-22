@@ -1347,8 +1347,10 @@ def run_core_qiime_analyses(
     logger = WorkflowLogger(log_fp,
                             params=params,
                             qiime_config=qiime_config)
-    log_input_md5s(logger,\
-     fna_fps.split(',') + qual_fps.split(',') +[mapping_fp])
+    input_fps = fna_fps.split(',') + [mapping_fp]
+    if qual_fps != None:
+        input_fps += qual_fps.split(',')
+    log_input_md5s(logger,input_fps)
     
     ## Split libraries
     # Prep the split_libraries command
