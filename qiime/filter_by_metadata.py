@@ -77,13 +77,14 @@ def filter_line(line, good_fields, min_count=None, outfile=stdout):
     else:
         num_slice = slice(1,None)
     fields = map(strip, line.split('\t'))
+    
     result = [fields[i] for i in good_fields]
     if min_count is not None:
         if array(map(float, result[num_slice]), dtype=float).sum() < min_count:
             return
     outfile.write('\t'.join([fields[i] for i in good_fields])+'\n')
 
-def filter_map(map_data, map_header, good_sample_ids):
+def filter_map(map_data, map_header, good_sample_ids, include_repeat_cols=False, column_rename_ids=None):
     """Filters map according to several criteria.
 
     - keep only sample ids in good_sample_ids
@@ -91,7 +92,7 @@ def filter_map(map_data, map_header, good_sample_ids):
     - drop cols that are the same in every sample
     """
     # keeping samples
-    to_keep = []	
+    to_keep = []
     to_keep.extend([i for i in map_data if i[0] in good_sample_ids])
     
     # keeping columns
@@ -99,18 +100,34 @@ def filter_map(map_data, map_header, good_sample_ids):
     to_keep = zip(*to_keep)
     headers.append(map_header[0])
     result = [to_keep[0]]
-    for i,l in enumerate(to_keep[1:-1]):
-        if len(set(l))>1:
-            headers.append(map_header[i+1])
-            result.append(l)
+    
+    if column_rename_ids:
+        # reduce in 1 as we are not using the first colum (SampleID)
+        column_rename_ids = column_rename_ids-1
+        for i,l in enumerate(to_keep[1:-1]):
+            if i==column_rename_ids:
+                if len(set(l))!=len(result[0]):
+                     raise ValueError, "The column to rename the samples is not unique."
+                result.append(result[0])
+                result[0] = l
+                headers.append('SampleID_was_' + map_header[i+1])
+            elif include_repeat_cols or len(set(l))>1:
+                headers.append(map_header[i+1])
+                result.append(l)
+    else:
+        for i,l in enumerate(to_keep[1:-1]):
+            if include_repeat_cols or len(set(l))>1:
+                headers.append(map_header[i+1])
+                result.append(l)
     headers.append(map_header[-1])
     result.append(to_keep[-1])
+    
     result = map(list,zip(*result))
     
     return headers, result
 
 def filter_otus_and_map(map_infile, otu_infile, map_outfile, otu_outfile, 
-    valid_states_str, num_seqs_per_otu, column_id=None):
+    valid_states_str, num_seqs_per_otu, include_repeat_cols=False, column_rename_ids=None):
     """Filters OTU and map files according to specified criteria."""
     map_data, map_header, map_comments = parse_mapping_file(map_infile)
     map_infile.close()
@@ -118,23 +135,39 @@ def filter_otus_and_map(map_infile, otu_infile, map_outfile, otu_outfile,
     sample_ids = get_sample_ids(map_data, map_header, valid_states)
 
     # write out the filtered mapping file
-    out_headers, out_data = filter_map(map_data, map_header, sample_ids)
+    out_headers, out_data = filter_map(map_data, map_header, sample_ids, \
+                                       include_repeat_cols=include_repeat_cols,\
+                                       column_rename_ids=column_rename_ids)
     header_line = '#' + '\t'.join(out_headers)
     map_outfile.write('\n'.join([header_line] + map('\t'.join, out_data)))
     if not isinstance(map_outfile, StringIO):
         map_outfile.close()
-
+    
     # write out the filtered OTU file
     for line in otu_infile:
         if line.startswith('#OTU ID'):
-            fields = map(strip, line.split('\t'))
             cols = find_good_cols(line, sample_ids)
+            if column_rename_ids:
+                map_ref = {}
+                for m in map_data:
+                    map_ref[m[0]] = m[column_rename_ids]
+                fields = line.strip().split('\t')
+                
+                new_line = []
+                for f in fields:
+                    if f in map_ref:
+                        new_line.append(map_ref[f])
+                    else:
+                        new_line.append(f)
+                
+                line = '\t'.join(new_line)
             filter_line(line, cols, min_count=None, outfile=otu_outfile)
         elif line.startswith('#'):
             otu_outfile.write(line)
-        else:
+        elif len(line)>1:
             filter_line(line, cols, min_count=num_seqs_per_otu, 
                 outfile=otu_outfile)
+                
     if not isinstance(otu_outfile, StringIO):
         otu_outfile.close()
 

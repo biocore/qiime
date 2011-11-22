@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Antonio Gonzalez Pena"]
 __license__ = "GPL"
 __version__ = "1.3.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -28,7 +28,15 @@ script_info['required_options'] = [
  make_option('-f','--mapping_field',help="mapping column to split otu table on"),
  make_option('-o','--output_dir',type="new_dirpath",help='the output directory'),
 ]
-script_info['optional_options'] = []
+script_info['optional_options'] = [
+ make_option('-c','--column_rename_ids',help='Mapping column used as sample id in the output files.' +\
+                ' Has to be unique in the splited samples. This option can be helpful to create otu tables' +
+                ' and mapping files for Procustes analysis.', default=None),
+ make_option('--include_repeat_cols',action='store_true', help='By default the new mapping files' +\
+                ' will not have the columns that have the same information, to include them use this' +\
+                ' option. This can be helpful to create mapping files for Procrustes analysis.', 
+                default=False),
+]
 script_info['version'] = __version__
 
 
@@ -40,6 +48,8 @@ def main():
     mapping_fp = opts.mapping_fp
     mapping_field = opts.mapping_field
     output_dir = opts.output_dir
+    column_rename_ids = opts.column_rename_ids
+    include_repeat_cols = opts.include_repeat_cols
     
     otu_table_base_name = splitext(split(otu_table_fp)[1])[0]
     
@@ -50,11 +60,18 @@ def main():
         option_parser.error("Field is not in mapping file (search is case "+\
         "and white-space sensitive). \n\tProvided field: "+\
         "%s. \n\tValid fields: %s" % (mapping_field,' '.join(headers)))
+    if column_rename_ids: 
+        try:
+            column_rename_ids = headers.index(column_rename_ids)
+        except ValueError:
+            option_parser.error("Field is not in mapping file (search is case "+\
+                 "and white-space sensitive). \n\tProvided field: "+\
+                 "%s. \n\tValid fields: %s" % (mapping_field,' '.join(headers)))
     
     mapping_values = set([e[field_index] for e in mapping_data])
     
     create_dir(output_dir)
-    
+        
     for v in mapping_values:
         v_fp_str = v.replace(' ','_')
         otu_table_output_fp = join(output_dir,'%s_%s.txt' % (otu_table_base_name, v_fp_str))
@@ -64,7 +81,7 @@ def main():
                             open(mapping_output_fp,'w'), 
                             open(otu_table_output_fp,'w'),
                             valid_states_str="%s:%s" % (mapping_field,v),
-                            num_seqs_per_otu=1)
+                            num_seqs_per_otu=1, include_repeat_cols=include_repeat_cols, column_rename_ids=column_rename_ids)
     
 
 
