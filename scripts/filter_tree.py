@@ -40,7 +40,8 @@ script_info['required_options']=[\
   action='store',
   type='existing_filepath',
   dest='input_tree_fp',     
-  help='input tree filepath'),\
+  help='input tree filepath'),
+
  make_option('-o',
   '--output_tree_filepath',
   action='store',
@@ -55,20 +56,20 @@ script_info['optional_options']=[\
   default=False,
   action='store_true',
   help='if negate is not false will prune tips fed in and save \
-   all others [default: %default]'),\
+   all others [default: %default]'),
+
  make_option('-t',
   '--tips_fp',
   action='store',
   type='existing_filepath',
-  dest='tips_fp', 
  help='A list of sequence identifiers (or tab-delimited lines with \
   a seq identifier in the first field) which should be retained \
   [default: %default]'),
+
  make_option('-f',
  '--fasta_fp',
  action='store',
  type='existing_filepath',
- dest='fast_fp',
  help='A fasta file where the seq ids should be retained'
                  ' [default: %default]'),\
 ]
@@ -100,4 +101,7 @@ def main():
     tree_out.writeToFile(output_tree_fp)
 
 if __name__ == "__main__":
+    # this comes in handy sometimes
+    # import sys
+    # sys.setrecursionlimit(10000)
     main()
