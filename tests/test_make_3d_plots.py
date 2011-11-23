@@ -26,7 +26,8 @@ from qiime.make_3d_plots import (make_3d_plots,scale_pc_data_matrix,
                                     make_edges_output,make_ellipsoid_faces,
                                     make_mage_ellipsoids,subdivide,
                                     get_multiple_coords,validate_coord_files,
-                                    make_3d_plots_invue, make_vectors_output)
+                                    make_3d_plots_invue, make_vectors_output, 
+                                    make_subgroup_rms, run_ANOVA_trajetories)
 from qiime.util import get_tmp_filename
 
 class TopLevelTests(TestCase):
@@ -217,7 +218,7 @@ class TopLevelTests(TestCase):
   
     def test_make_vectors_output(self):
         """make_vectors_output: Create kinemage string given the data"""
-        vectors = {'test': [('1', 'a_0'), ('2', 'a_1'), ('3', 'a_0')]}
+        vectors = {'vectors': {'test': [('1', 'a_0'), ('2', 'a_1'), ('3', 'a_0')]}}
         coord_dict = {}
         coord_dict['a_0'] = array([ 1.0, 2.0, 3.0, 4.0])
         coord_dict['a_1'] = array([ 1.1, 2.1, 3.1, 4.1])
@@ -237,7 +238,34 @@ class TopLevelTests(TestCase):
             color, ids)
             
         self.assertEqual(obs_result, exp_result)
+    
+    def test_make_subgroup_rms(self):
+        """make_subgroup_rms: Returns the correct vector based on groups
+        per algorithm"""
+        coord_dict = dict(zip(self.coord_header,self.coords))
+        # eigvals values should go from high to low and pct_var goes from low to high
+        eigvals = [i for i in reversed(self.pct_var)]
+        ids = ['Sample1', 'Sample2', 'Sample3']
         
+        # Testing rms
+        exp_result = {'rms': 5.32480386489972, \
+                      'vector': [6.995474752449276, 1.5180408981614073, 7.4608959440884766] }
+        self.assertFloatEqual(make_subgroup_rms(coord_dict, eigvals, ids), exp_result)
+        
+        # Testing trajectory
+        exp_result = {'rms': 15.92846773878855, \
+                      'vector': [14.383977976653455, 6.8423140875566384] }
+        self.assertFloatEqual(make_subgroup_rms(coord_dict, eigvals, ids, 'trajectory'), exp_result)
+                      
+    def test_run_ANOVA_trajetories(self):
+        """run_ANOVA_trajetories: should return the same value
+        """
+        groups = dict(zip(self.coord_header,self.coords))
+        exp_result = ([-0.015677892000000002, -0.073287871666666657, -0.0057388123333333334], \
+                       0.80674568762274179)
+        
+        self.assertFloatEqual(run_ANOVA_trajetories(groups), exp_result)
+    
     def test_process_custom_axes(self):
         """process_custom_axes: Parses the custom_axes \
 option from the command line"""

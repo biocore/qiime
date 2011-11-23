@@ -16,7 +16,8 @@ from cogent.util.misc import flatten
 from qiime.parse import parse_coords,group_by_field,parse_mapping_file
 from qiime.colors import get_group_colors, color_groups, make_color_dict, combine_map_label_cols, process_colorby, linear_gradient, iter_color_groups, get_map, kinemage_colors
 from qiime.sort import natsort
-from numpy import array, shape, apply_along_axis, dot, delete, vstack, sqrt
+from numpy import array, shape, apply_along_axis, dot, delete, vstack, sqrt, average, isnan, nan
+from numpy.linalg import norm
 import numpy as np
 import os
 from random import choice
@@ -25,7 +26,8 @@ from time import strftime
 from biplots import make_mage_taxa
 from qiime.util import load_pcoa_files, summarize_pcoas, MissingFileError
 from qiime.format import format_coords
-
+from cogent.maths.stats.test import ANOVA_one_way
+from cogent.maths.stats.util import Numbers
 
 '''
 xdata_colors = {
@@ -106,15 +108,15 @@ def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, \
     # processing the vectors
     if add_vectors:
         # validating the values in add_vectors
-        for label in add_vectors:
+        for label in add_vectors['vectors']:
             if label not in mapping[0]:
                 raise ValueError, "Couldn't find name %s in headers: %s" \
                     % (label, mapping[0])
                     
         # getting the index of the columns in the mapping file
-        ind_group = mapping[0].index(add_vectors[0])
-        if len(add_vectors)>=2:
-            ind_sort = mapping[0].index(add_vectors[1])
+        ind_group = mapping[0].index(add_vectors['vectors'][0])
+        if len(add_vectors['vectors'])>=2:
+            ind_sort = mapping[0].index(add_vectors['vectors'][1])
         else: 
             ind_sort = 0
         
@@ -129,8 +131,7 @@ def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, \
                 groups[l[ind_group]].append((l[ind_sort],l[0]))
         for g in groups:
             groups[g] = natsort(groups[g])
-        
-        add_vectors = groups
+        add_vectors['vectors'] = groups
     
     
     for i in range(len(groups_and_colors)):  
@@ -159,7 +160,7 @@ def make_3d_plots(coord_header, coords, pct_var, mapping, prefs, \
             user_supplied_edges=user_supplied_edges, \
             ball_scale=ball_scale, arrow_colors=arrow_colors, \
             add_vectors=add_vectors))
-    
+                
     return result
 
 def scale_pc_data_matrix(coords, pct_var):
@@ -184,7 +185,7 @@ def make_mage_output(groups, colors, coord_header, coords, pct_var, \
                      add_vectors=None):
     """Convert groups, colors, coords and percent var into mage format"""
     result = []
-
+    
     #Scale the coords and generate header labels
     if scaled:
         scalars = pct_var
@@ -205,7 +206,7 @@ def make_mage_output(groups, colors, coord_header, coords, pct_var, \
         radius = float(auto_radius(coords))*float(ball_scale)
     else:
         radius = float(radius)*float(ball_scale)
-        
+      
     maxes = coords.max(0)[:num_coords]
     mins = coords.min(0)[:num_coords]
     pct_var = pct_var[:num_coords]    #scale from fraction
@@ -223,7 +224,7 @@ def make_mage_output(groups, colors, coord_header, coords, pct_var, \
 
     #Write the header information
     result.append('@kinemage {%s}' % (name+header_suffix))
-    result.append('@dimension '+' '.join(['{%s}'%(name) for name in axis_names]))
+    result.append('@dimension '+' '.join(['{%s}'%(aname) for aname in axis_names]))
     result.append('@dimminmax '+ ' '.join(map(str, min_maxes)))
     result.append('@master {points}')
     result.append('@master {labels}')
@@ -234,7 +235,7 @@ def make_mage_output(groups, colors, coord_header, coords, pct_var, \
         result.append('@master {taxa_points}')
         result.append('@master {taxa_labels}')
 
-    for name, color in sorted(data_colors.items()):
+    for cname, color in sorted(data_colors.items()):
         result.append(color.toMage())
 
     if background_color=='white':
@@ -277,7 +278,19 @@ master={labels} nobutton' % (color, radius, alpha, num_coords))
         
         # Write vectors if requested
         if add_vectors:
-            result += make_vectors_output(coord_dict, add_vectors, num_coords, color, ids)
+            result += make_vectors_output(coord_dict, add_vectors, num_coords, color, \
+                                          ids)
+            if not scaled and add_vectors['rms_path'] and add_vectors['rms_algorithm']:
+               vector_result = make_subgroup_rms(coord_dict, add_vectors['eigvals'], \
+                                                 ids, add_vectors['rms_algorithm'], \
+                                                 custom_axes)
+               if not isnan(vector_result['rms']):
+                   if name not in add_vectors['rms_output']:
+                       add_vectors['rms_output'][name] = {}
+                   if group_name not in add_vectors['rms_output'][name]:
+                       add_vectors['rms_output'][name][group_name] = {}
+                   add_vectors['rms_output'][name][group_name]['rms_vector'] = vector_result['vector']
+                   add_vectors['rms_output'][name][group_name]['rms_result'] = vector_result['rms']
 
     if not taxa is None:
         result += make_mage_taxa(taxa, num_coords, pct_var,
@@ -326,16 +339,100 @@ master={labels} nobutton' % (color, radius, alpha, num_coords))
     
     return result
 
+
+def make_subgroup_rms(coord_dict, eigvals, ids, method='avg', custom_axes=None):
+    """Creates the rms value, vector, of a subgroup (ids) of coord_dict
+    
+       Params: 
+        coord_dict: a dict of (sampleID, coords), where coords is a numpy array (row)
+        eigvals: the eigvals of the coords
+        ids: the list of ids that should be use to caclulate the rms from coord_dict
+        custom_axes: the list of custom axis used in other methods
+        
+       Returns:
+        a dict with 2 members: 'vector', the vector representing from which 
+        the RMS value was calculated; and 'rms' the resulting RMS from the 
+        vector.
+    """
+    result = {}
+    
+    # We multiply the cood values with the value of the eigvals represented
+    if custom_axes:
+        vectors = [coord_dict[id][1:]*eigvals for id in ids if id in coord_dict]
+    else:
+        vectors = [coord_dict[id]*eigvals for id in ids if id in coord_dict]
+    
+    if method=='avg':
+       center = average(vectors,axis=0)
+       if len(ids)==1:
+           result['vector'] = norm(center)
+           result['rms'] = result['vector']
+       else:
+           result['vector'] = [norm(i) for i in vectors-center]
+           result['rms'] = average(result['vector'])
+    elif method=='trajectory':
+       if len(ids)==1:
+           result['vector'] = norm(vectors)
+           result['rms'] = result['vector']
+       else:
+           result['vector'] = [norm(vectors[i-1]-vectors[i])  for i in range(len(vectors)-1)] 
+           result['rms']=norm(result['vector'])
+    elif method==None:
+       result['rms']=nan
+    else:
+       raise ValueError, 'The method "%s" for RMS does not exist' % method
+       
+    return result
+
+
+def run_ANOVA_trajetories(groups):
+    """Run ANOVA on trajectories categories
+
+       Params: 
+        groups, a dict of {trajectory_id: values}, where trajectory_id is
+        each of the categories to test, values is a numpy array with the edges of 
+        that trajectory
+        
+       Returns:
+        look at otu_category_significance.py -> run_single_ANOVA
+        
+        This was taken from qiime/otu_category_significance.py:run_single_ANOVA
+    """
+    values = []
+    for trajectory in groups:
+        values.append(Numbers(groups[trajectory]))
+            
+    # This is copied from otu_category_significance.py
+    try:
+        dfn, dfd, F, between_MS, within_MS, group_means, prob = ANOVA_one_way(values)
+        return group_means, prob
+    except ValueError:
+        #set the p-value to 'diff' if the variances are 0.0 (within rounding 
+        #error) and the means are not all the same. If the means are all
+        #the same and the variances are 0.0, set the p-value to 1
+        group_means = []
+        group_variances = []
+        for i in values:
+            group_means.append(i.Mean)
+            group_variances.append(i.Variance)
+        group_means = set(group_means)
+        if sum(group_variances) < 1e-21 and len(group_means) > 1:
+            prob = 0.0
+        else:
+            prob = 1.0
+        return group_means, prob
+        
 def make_vectors_output(coord_dict, add_vectors, num_coords, color, ids):
     """Creates make output to display vectors (as a kinemage vectorlist).
 
        Params:
-        coord_dict, a dict of (sampleID, coords), where coords is a numpy array
-        edges, a dictionary of pairs of samples where 
-        ['label': [('order': sampleID) ...] num_coords, the number of included 
-        dimensions in the PCoA plot color the color of this batch of vectors, 
+        coord_dict, a dict of (sampleID, coords), where coords is a numpy 
+        array edges, a dictionary of pairs of samples where 
+        ['label': [('order': sampleID) ...]
+        num_coords, the number of included dimensions in the PCoA plot 
+        color, the color of this batch of vectors, 
         ids the list of ids that are in this batch and where the first member 
-        of the groups id#a should be a member of.
+        of the groups id a should be a member of.
         
        Returns:
         result, a list of strings containing a kinemage vectorlist
@@ -351,7 +448,7 @@ def make_vectors_output(coord_dict, add_vectors, num_coords, color, ids):
     
     # selecting the edges to draw in this batch
     edges = []
-    for k, v in add_vectors.iteritems():
+    for k, v in add_vectors['vectors'].iteritems():
         edges = edges + [(v[i][1],v[i+1][1]) for i in range(len(v[:-1])) if v[i][1] in ids]
     
     # creating "vectors"
@@ -573,7 +670,8 @@ def get_custom_coords(axis_names,mapping, coords):
     """
     for i, axis in enumerate(reversed(axis_names)):
         if not axis in mapping[0]:
-            print 'Warning: could not find custom axis',axis,'in map headers:',mapping[0]
+            raise ValueError, 'Warning: could not find custom axis %s in map headers: %s' \
+                % (axis, mapping[0])
         else:
             # get index of column in mapping file
             col_idx = mapping[0].index(axis)
@@ -886,7 +984,28 @@ def generate_3d_plots(prefs, data, custom_axes, background_color, label_color, \
                         user_supplied_edges=user_supplied_edges, \
                         ball_scale=ball_scale, arrow_colors=arrow_colors,
                         add_vectors=add_vectors)
+    
+    
+    # Validating if we should add RMS values
+    if add_vectors and add_vectors['rms_algorithm'] and add_vectors['vectors'] and add_vectors['rms_path']:
+        f_rms = open(os.path.join(htmlpath,add_vectors['rms_path']), 'w')
         
+        f_rms.write('Method to calculate the RMS: %s\n\n' % add_vectors['rms_algorithm'])
+        
+        for group in add_vectors['rms_output']:
+            to_test = {}
+            for cat in add_vectors['rms_output'][group]:
+                if len(add_vectors['rms_output'][group][cat]['rms_vector']) != 0:
+                    to_test[cat] = add_vectors['rms_output'][group][cat]['rms_vector']
+                else:
+                    add_vectors['rms_output'][group][cat]['rms_result'] = nan
+            
+            group_means, prob = run_ANOVA_trajetories(to_test)
+            f_rms.write('Grouped by %s, probability: %f\nGroup means (ANOVA): %s\n\n' \
+                % (group, prob, group_means))
+            
+        f_rms.close()
+    
     #Write kinemage file
     f = open(kinpath, 'w')
     f.write('\n'.join(res))

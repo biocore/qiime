@@ -158,13 +158,26 @@ script_info['optional_options']=[\
     # vector analysis options
     make_option('--add_vectors', dest='add_vectors', default=None,
         help='Create vectors based on a column of the mapping file. This.parameter' +\
-        ' accepts up to 2 columns, (1) create the vectors, (2) sort them.' +\
+        ' accepts up to 2 columns: (1) create the vectors, (2) sort them.' +\
         ' If you wanted to group by Species and' +\
         ' order by SampleID you will pass --add_vectors=Species but if you' +\
         ' wanted to group by Species but order by DOB you will pass' +\
         ' --add_vectors=Species,DOB;' +\
-        ' this is useful when you use the --custom_axes param [default: %default]'),
-
+        ' this is useful when you use --custom_axes param [default: %default]'),
+    make_option('--rms_algorithm', dest='rms_algorithm', default=None,
+        help='The algorithm to calculate the RMS, either avg or trajectory;' +\
+        ' both algorithms use all the dimensions and weights them using their' +\
+        ' percentange explained; return the norm of the created vectors; and their ' +\
+        ' confidence using ANOVA. The vectors are created as follows: for' +\
+        ' avg it calculates the average at each timepoint (averaging within' +\
+        ' a group), then calculates the norm of each point; for trajectory ' +\
+        ' calculates the norm from the 1st-2nd, 2nd-3rd, etc. [default: %default]'),
+    make_option('--rms_path', dest='rms_path', default='RMS_output.txt',
+        help='Name of the file to save the root mean square (RMS) of the vectors' +\
+        ' grouped by the column used with the --add_vectors function. Note that' +\
+        ' this option only works with --add_vectors. The file is going to be' +\
+        ' created inside the output_dir and its name will start with RMS_' +\
+        ' [default: %default]'),
     options_lookup['output_dir'],
 ]
 
@@ -186,7 +199,9 @@ script_info['option_label']={'coord_fname':'Principal coordinates filepath',
                              'polyhedron_points':'# of polyhedron points',
                              'polyhedron_offset':'Polyhedron offset',
                              'custom_axes':'Custom Axis',
-                             'add_vectors':'Create vectors based on metadata'}
+                             'add_vectors':'Create vectors based on metadata',
+                             'rms_path':'RMS output path calculations',
+                             'rms_algorithm':'RMS algorithm'}
 script_info['version'] = __version__
 
 def main():
@@ -194,14 +209,7 @@ def main():
 
     prefs, data, background_color, label_color, ball_scale, arrow_colors= \
                             sample_color_prefs_and_map_data_from_options(opts)
-    
-    if opts.add_vectors:
-        add_vectors = opts.add_vectors.split(',')
-        if len(add_vectors)>3:
-            raise ValueError, 'You must add maximum 3 columns but %s' % add_vectors
-    else:
-    	add_vectors = None
-            
+                
     if opts.output_format == 'invue':
         # validating the number of points for interpolation
         if (opts.interpolation_points<0):
@@ -213,11 +221,7 @@ def main():
         if not coord_files_valid:
             option_parser.error('Every line of every coord file must ' +\
                             'have the same number of columns.')
-       
-        coord_files_valid = validate_coord_files(opts.coord_fname)
-        if not coord_files_valid:
-            option_parser.error('Every line of every coord file must ' +\
-                            'have the same number of columns.')
+                            
         #Open and get coord data
         data['coord'] = get_coord(opts.coord_fname, opts.ellipsoid_method)
     
@@ -302,11 +306,33 @@ Valid methods are: " + ', '.join(ellipsoid_methods) + ".")
 
     # process custom axes, if present.
     custom_axes = None
-    if opts.custom_axes:
+    if opts.custom_axes:	
         custom_axes = process_custom_axes(opts.custom_axes)
         get_custom_coords(custom_axes, data['map'], data['coord'])
         remove_nans(data['coord'])
         scale_custom_coords(custom_axes,data['coord'])
+
+    # process vectors if requeted
+    if opts.add_vectors:
+        add_vectors={}
+        add_vectors['vectors'] = opts.add_vectors.split(',')
+        if len(add_vectors)>3:
+            raise ValueError, 'You must add maximum 3 columns but %s' % opts.add_vectors
+        
+        # Validating RMS values
+        if opts.rms_algorithm:
+            valid_chars = '_.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+            for c in opts.rms_path:
+                if c not in valid_chars:
+                    raise ValueError, 'rms_path (%s) has invalid chars' % opts.rms_path
+            add_vectors['rms_output'] = {}
+            add_vectors['rms_algorithm']=opts.rms_algorithm
+            add_vectors['eigvals'] = data['coord'][3]
+        else:
+            add_vectors['rms_algorithm'] = None
+        add_vectors['rms_path'] = opts.rms_path
+    else:
+    	add_vectors = None
 
     if opts.taxa_fname != None:
         # get taxonomy counts
