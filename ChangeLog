@@ -13,7 +13,7 @@ Add changes since QIIME 1.3.0 here
 * Added script distance_matrix_from_mapping.py which allows to create a distance matrix from a metadata column. It uses all the non-phylogenetic metrics.
 * assign_taxonomy_reference_seqs_fp and assign_taxonomy_id_to_taxonomy_fp were added to qiime_config, which allows users to set defaults for the dataset they'd like to perform taxonomy assignment against. This works for the serial and parallel versions of assign_taxonomy for both BLAST and RDP.
 * Added in make_3d_pltos.py the possibility of adding vectors or traces of individuals in space; this can be helpful in time series analysis.
-
+* Added additional allowed characters to data fields in mapping files.  These include space and /:,; characters.  All characters allowed now are: alphanumeric, underscore, space, and +-%./:,; characters.
 QIIME 1.3.0 (29 June 2011)
 ==================================
 * uclust and uclust_ref OTU pickers now incorporate a pre-filtering step where identical sequences are collapsed before calling uclust and then expanded after calling uclust. This gives a big speed improvement (5-20x) on reasonably sized input sets (>200k sequences) with no effect on the resulting OTUs. This is now the default behavior for pick_otus.py, and can be disabled by passing --suppress_uclust_prefilter_exact_match to pick_otus.py.

@@ -29,7 +29,7 @@ script_info['script_description']="""Specifically, we check that:
     - There are not duplicate header fields (error)
     - There are not duplicate near-unique but not exactly unique values within each column (warning)
     - The headers do not contain invalid characters (alphanumeric and underscore only)
-    - The data fields do not contain invalid characters (alphanumeric, underscore, and +-%. characters)
+    - The data fields do not contain invalid characters (alphanumeric, underscore, space, and +-%./:,; characters)
     - SampleID fields are MIENS compliant (only alphanumeric and . characters)
     - There are no duplicates when the primer and barcodes are appended
     - If there is a field ReversePrimer for reverse primers (for removal with split_libraries), the characters are DNA IUPAC compliant and no fields are empty

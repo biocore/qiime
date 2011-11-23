@@ -72,7 +72,7 @@ STANDARD_FIELD_TYPES = {SAMPLE_ID_KEY:'uid', BARCODE_KEY:'uid', \
 # Header category most restrictive
 ALLOWED_CHARS_HEADER = '_' + digits + letters
 # Metadata should be fairly restricted as well
-EXTRA_DESC_CHARS = "+-%."
+EXTRA_DESC_CHARS = "+-%./ :,;"
 #EXTRA_COMMENT_CHARS =  ''
 ALLOWED_DESC_CHARS = ALLOWED_CHARS_HEADER + EXTRA_DESC_CHARS
 # Comment line(s) following header should not be used for parsing data
@@ -920,7 +920,6 @@ STANDARD_FILENAME_CHECKS = [(filename_has_space, 'error')]
     (descr_filter.resultAndError, 'warning')] '''
 STANDARD_SAMPLE_DESCRIPTION_CHECKS = [
     (check_missing_descriptions, 'warning'),
-    (check_duplicate_descriptions, 'warning'),
     (check_duplicate_sample_ids, 'warning'),
     (check_description_chars, 'warning'),
     ]

@@ -255,22 +255,25 @@ class TopLevelTests(TestCase):
 
     def test_check_bad_chars(self):
         """check_bad_chars should return string of errors for invalid fields"""
+        
+        # Additional good chars
+        # These include alphanumeric, underscore, space, and +-%./:,;
         field_types = {'bc':'uid','ph':float,'sample':'uid','ctl':['Yes','No']}
         good_data = array([
             ['sample','bc','ph','ctl','x'],
-            ['x','x','3','Yes','x'],
-            ['y','y','4','No','x'],
+            ['x','x','3+ 3','Yes.Yes','x;y,t'],
+            ['y','y','4_-3','No%','x/z:'],
             ])
         self.assertEqual(check_bad_chars((good_data, field_types)), 
                 ((good_data, field_types),''))
         bad_vals = array([
             ['sample','bc','ph','ctl','x'],
             ['x','x!','3','Yes','x'],
-            ['y','y','3','No&','x'],
+            ['y','y++','3 4','No&','x'],
             ])
         
         self.assertEqual(check_bad_chars((bad_vals, field_types)),\
-         ((array([['sample', 'bc', 'ph', 'ctl', 'x'],['x', 'x_', '3', 'Yes', 'x'], ['y', 'y', '3', 'No_', 'x']], dtype='|S6'), {'sample': 'uid', 'ctl': ['Yes', 'No'], 'ph': float, 'bc': 'uid'}), 'Removed bad chars from cell x! (now x_) in sample id x, col bc. Location (row, column):\t0,1\nRemoved bad chars from cell No& (now No_) in sample id y, col ctl. Location (row, column):\t1,3'))
+         ((array([['sample', 'bc', 'ph', 'ctl', 'x'],['x', 'x_', '3', 'Yes', 'x'], ['y', 'y++', '3 4', 'No_', 'x']], dtype='|S6'), {'sample': 'uid', 'ctl': ['Yes', 'No'], 'ph': float, 'bc': 'uid'}), 'Removed bad chars from cell x! (now x_) in sample id x, col bc. Location (row, column):\t0,1\nRemoved bad chars from cell No& (now No_) in sample id y, col ctl. Location (row, column):\t1,3'))
          
     def test_check_bad_chars_handles_primer_pool(self):
         """ Should allow commas in primer field for primer pools """
@@ -315,6 +318,28 @@ class TopLevelTests(TestCase):
             ['sample','bc','ph','ctl','x'],
             ['x','x','3','Yes','x'],
             ['y','y','4','No','x'],
+            ])
+        self.assertEqual(check_mixed_caps((good_data, field_types)), 
+                ((good_data, field_types),''))
+        bad_vals = array([
+            ['sample','bc','ph','ctl','x'],
+            ['x','Y','3','Yes','x'],
+            ['y','y','>','  yes_ ','x'],
+            ])
+        self.assertEqual(check_mixed_caps((bad_vals, field_types)),
+            ((bad_vals, field_types),
+            "DupChecker 'Caps and Whitespace' found the following possible duplicates. If these metadata should have the same name, please correct. Found in field bc:\nGroup\tOriginal names\ny\tY, y\n\nDupChecker 'Caps and Whitespace' found the following possible duplicates. If these metadata should have the same name, please correct. Found in field ctl:\nGroup\tOriginal names\nyes\tYes,   yes_ \n"
+        ))
+        
+    def test_check_mixed_caps_extra_chars(self):
+        """check_mixed_caps should handle certain characters"""
+        
+        # These include alphanumeric, underscore, space, and +-%./:,;
+        field_types = {'bc':'uid','ph':float,'sample':'uid','ctl':['Yes','No']}
+        good_data = array([
+            ['sample','bc','ph','ctl','x'],
+            ['x','x','3+ ,;','Yes-','x:v'],
+            ['y','y','4%','No.No','x/z'],
             ])
         self.assertEqual(check_mixed_caps((good_data, field_types)), 
                 ((good_data, field_types),''))
