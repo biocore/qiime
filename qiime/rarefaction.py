@@ -99,9 +99,9 @@ class RarefactionMaker(FunctionWithParams):
         
         this prevents large memory usage"""
         if include_lineages:
-            sub_otu_lineages = self.lineages
+            all_otu_lineages = self.lineages
         else:
-            sub_otu_lineages = None
+            all_otu_lineages = None
         self.output_dir = output_dir
         for depth in self.rare_depths:
             for rep in range(self.num_reps):
@@ -112,7 +112,7 @@ class RarefactionMaker(FunctionWithParams):
                 if empty_otus_removed:
                     sub_otu_table, sub_otu_ids, sub_otu_lineages =\
                         remove_empty_otus(sub_otu_table,sub_otu_ids,
-                        sub_otu_lineages)
+                        all_otu_lineages)
                 self._write_rarefaction(depth, rep, sub_sample_ids, 
                     sub_otu_ids, sub_otu_table, sub_otu_lineages)
 
@@ -193,6 +193,7 @@ def remove_empty_otus(otu_mtx, otu_ids, otu_lineages=None):
             nonempty_otu_idxs.append(i)
             res_otu_ids.append(otu_ids[i])
     res_otu_mtx = otu_mtx[nonempty_otu_idxs,:]
+
     if otu_lineages == None or otu_lineages == []:
         res_otu_lineages = []
     else:
