@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso","Justin Kuczynski"]
+__credits__ = ["Greg Caporaso","Justin Kuczynski","Jose Carlos Clemente Litran"]
 __license__ = "GPL"
 __version__ = "1.3.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -31,8 +31,8 @@ script_info['script_usage'].append(("Write the transformed procrustes matrices t
 
 script_info['output_description']="""Two transformed coordinate matrices corresponding to the two input coordinate matrices, and (if -r was specified) a text file summarizing the results of the Monte Carlo simulations."""
 script_info['required_options']=[\
- make_option('-i','--input_fps',help='comma-separated input files'),\
- make_option('-o','--output_dir',help='the output directory'),\
+ make_option('-i','--input_fps',type='existing_filepaths',help='comma-separated input files'),\
+ make_option('-o','--output_dir',type='new_dirpath',help='the output directory'),\
 ]
 script_info['optional_options']=[\
  make_option('-r','--random_trials',type='int',\
@@ -42,6 +42,7 @@ script_info['optional_options']=[\
     help='Number of dimensions to include in output matrices'+\
     ' [default: Consider all dimensions]',default=None),\
  make_option('-s','--sample_id_map_fp',\
+    type='existing_filepath',
     help='Map of original sample ids to new sample ids [default: %default]',\
     default=None),\
  make_option('--store_trial_details',\
@@ -71,10 +72,9 @@ def main():
         trial_output_dir = '%s/trial_details/' % output_dir
     else:
         trial_output_dir = None
-    
-    input_fps = opts.input_fps.split(',')
-    input_fp1 = input_fps[0]
-    input_fp2 = input_fps[1]
+  
+    input_fp1 = opts.input_fps[0]
+    input_fp2 = opts.input_fps[1]
     input_fp1_dir, input_fn1 = split(input_fp1)
     input_fp1_basename, input_fp1_ext = splitext(input_fn1)
     input_fp2_dir, input_fn2 = split(input_fp2)
