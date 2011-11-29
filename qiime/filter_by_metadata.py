@@ -164,7 +164,7 @@ def filter_otus_and_map(map_infile, otu_infile, map_outfile, otu_outfile,
             try:
                 filter_line(line, cols, min_count=None, outfile=otu_outfile)
             except UnboundLocalError:
-                "Error: Your OTU table doesn't have a valid header."
+                raise ValueError, "Error: Your OTU table doesn't have a valid header."
         elif line.startswith('#'):
             otu_outfile.write(line)
         elif len(line)>1:
@@ -172,7 +172,7 @@ def filter_otus_and_map(map_infile, otu_infile, map_outfile, otu_outfile,
                 filter_line(line, cols, min_count=num_seqs_per_otu, 
                     outfile=otu_outfile)
             except UnboundLocalError:
-                "Error: Your OTU table doesn't have a valid header."
+                raise ValueError, "Error: Your OTU table doesn't have a valid header."
             
                 
     if not isinstance(otu_outfile, StringIO):
