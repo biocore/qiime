@@ -617,6 +617,17 @@ The resulting pdf shows the tree with internal nodes colored, red for 75-100% su
 .. image:: ../images/ boottree.png
    :align: center
 
+Generate 3D Bi-Plots
+^^^^^^^^^^^^^^^^^^^^
+One can add taxa from the taxon summary files in the folder :file:`wf_taxa_summary/` to a 3D Principal Coordinates plot using QIIME's `make_3d_plots.py <../scripts/make_3d_plots.html>`_. The following example creates a biplot displaying the 5 most abundant phylum-level taxa::
+
+    make_3d_plots.py -i wf_bdiv_even146/unweighted_unifrac_pc.txt -m Fasting_Map.txt -t wf_taxa_summary/otu_table_L2.txt --n_taxa_keep 5 -o 3d_biplot
+
+The resulting html file :file:`3d_biplot/unweighted_unifrac_pc_3D_PCoA_plots.html` shows a biplot like this:
+
+.. image:: ../images/ biplot.png
+   :align: center
+
 Running Workflow Scripts in Parallel
 -----------------------------------------------
 To run the workflow scripts in parallel, pass the "-a" option to each of the scripts, and optionally the "-O" option to specify the number of parallel jobs to start. If running on a quad-core computer, you can set the number of jobs to start as 4 for one of the workflow scripts as follows:
