@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "William Van Treuren"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["William Van Treuren","Greg Caporaso", "Daniel McDonald"]
+__credits__ = ["William Van Treuren","Greg Caporaso", "Daniel McDonald","Justin Kuczynski"]
 __license__ = "GPL"
 __version__ = "1.3.0-dev"
 __maintainer__ = "William Van Treuren"
@@ -95,8 +95,19 @@ def main():
     
     if opts.negate:
         tips_to_keep = negate_tips_to_keep(tips_to_keep, tree)
-    
-    tree_out = tree.getSubTree(tips_to_keep,ignore_missing=True)
+
+    t2 = tree.copy()
+    wanted = tips_to_keep
+    def delete_test(node):
+        if node.istip() and node.Name not in wanted:
+            return True
+        return False
+    t2.removeDeleted(delete_test)
+    t2.prune()
+    tree_out = t2
+
+    ## don't use this, it doesn't eliminate tips!
+    # tree_out = tree.getSubTree(tips_to_keep,ignore_missing=True)
    
     tree_out.writeToFile(output_tree_fp)
 
