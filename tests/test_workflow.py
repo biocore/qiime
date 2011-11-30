@@ -524,6 +524,9 @@ class WorkflowTests(TestCase):
         """run_qiime_data_preparation w muscle generates expected results
         """
         self.params['align_seqs']['alignment_method'] = 'muscle'
+        self.params['filter_alignment']['suppress_lane_mask_filter'] = None
+        self.params['filter_alignment']['entropy_threshold'] = '0.10'
+        
         run_qiime_data_preparation(
          self.fasting_seqs_fp, 
          self.wf_out, 

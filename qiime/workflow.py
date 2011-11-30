@@ -437,21 +437,17 @@ def run_pick_otus_through_otu_table(input_fp,
          (python_exe_fp, script_dir, rep_set_fp, pynast_dir, params_str)
     commands.append([('Align sequences', align_seqs_cmd)])
     
-    if alignment_method == 'pynast':
-        # Prep the alignment filtering command (only applicable when aligned
-        # with pynast)
-        filtered_aln_fp = '%s/%s_rep_set_aligned_pfiltered.fasta' %\
-         (pynast_dir,input_basename)
-        try:
-            params_str = get_params_str(params['filter_alignment'])
-        except KeyError:
-            params_str = ''
-        # Build the alignment filtering command
-        filter_alignment_cmd = '%s %s/filter_alignment.py -o %s -i %s %s' %\
-         (python_exe_fp, script_dir, pynast_dir, aln_fp, params_str)
-        commands.append([('Filter alignment', filter_alignment_cmd)])
-    else: 
-        filtered_aln_fp = aln_fp
+    # Prep the alignment filtering command
+    filtered_aln_fp = '%s/%s_rep_set_aligned_pfiltered.fasta' %\
+     (pynast_dir,input_basename)
+    try:
+        params_str = get_params_str(params['filter_alignment'])
+    except KeyError:
+        params_str = ''
+    # Build the alignment filtering command
+    filter_alignment_cmd = '%s %s/filter_alignment.py -o %s -i %s %s' %\
+     (python_exe_fp, script_dir, pynast_dir, aln_fp, params_str)
+    commands.append([('Filter alignment', filter_alignment_cmd)])
     
     # Prep the tree building command
     tree_fp = '%s/rep_set.tre' % output_dir
