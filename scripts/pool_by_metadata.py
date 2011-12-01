@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Justin Kuczynski"]
+__credits__ = ["Justin Kuczynski", "Catherine Lozupone"]
 __license__ = "GPL"
 __version__ = "1.3.0-dev"
 __maintainer__ = "Justin Kuczynski"
@@ -17,7 +17,7 @@ from qiime.util import make_option
 from string import strip
 from qiime.filter_by_metadata import parse_metadata_state_descriptions,\
 get_sample_ids
-from qiime.pool_by_metadata import pool_map, pool_otu_table
+from qiime.pool_by_metadata import pool_map, pool_otu_table, pool_iterative
 from qiime.parse import parse_mapping_file, parse_otu_table
 
 options_lookup = get_options_lookup()
@@ -39,7 +39,7 @@ script_info['required_options']=[\
  make_option('-m', '--map', dest='map_fname',\
         help='path to the map file [REQUIRED]'),\
  make_option('-s', '--states', dest='valid_states',\
-        help="string containing valid states, e.g. 'STUDY_NAME:DOG'")\
+        help="string containing valid states, e.g. 'STUDY_NAME:DOG'. Setting just 'STUDY_NAME' will bin samples by all unique category values. e.g. it will pool all samples marked DOG into a sample called STUDY_NAME.DOG all CAT into STUDY_NAME.CAT etc.")\
 ]
 script_info['optional_options']=[\
  make_option('-o', '--otu_outfile', dest='otu_out_fname', default=None,\
@@ -76,13 +76,18 @@ def main():
     map_data, map_header, map_comments = parse_mapping_file(map_infile)
     map_infile.close()
     map_infile = open(map_file_name, 'U') # reopen for later
-    valid_states = parse_metadata_state_descriptions(valid_states_str)
-    sample_ids_to_pool = get_sample_ids(map_data, map_header, valid_states)
+    valid_states_str_split = valid_states_str.split(':')
+    if len(valid_states_str_split) > 1:
+        valid_states = parse_metadata_state_descriptions(valid_states_str)
+        sample_ids_to_pool = get_sample_ids(map_data, map_header, valid_states)
     
-    pool_map(map_infile, map_outfile,
-        opts.pooled_sample_name, sample_ids_to_pool)
-    pool_otu_table(otu_infile, otu_outfile,
-        opts.pooled_sample_name, sample_ids_to_pool)
+        pool_map(map_infile, map_outfile,
+            opts.pooled_sample_name, sample_ids_to_pool)
+        pool_otu_table(otu_infile, otu_outfile,
+            opts.pooled_sample_name, sample_ids_to_pool)
+    else:
+        pool_iterative(map_infile, map_outfile, otu_infile, otu_outfile, \
+                        valid_states_str)
 
 if __name__ == "__main__":
     main()
