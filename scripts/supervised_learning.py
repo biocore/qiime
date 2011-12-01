@@ -48,24 +48,23 @@ script. For example, to rarefy at depth 200, then remove OTUs present in \
 single_rarefaction.py -i otu_table_filtered.txt -d 200 -o otu_table_rarefied200.txt
 filter_otu_table.py -i otu_table_rarefied200.txt -s 10
 
-Run this script with "--show_params" to see how to set any model-specific parameters. \
 For an overview of the application of supervised classification to microbiota, \
 see PubMed ID 21039646.
 
-This script requires that R is installed and in the search path. To install R \
+This script requires that R be installed and in the search path. To install R \
 visit: http://www.r-project.org/. Once R is installed, run R and excecute the \
 command "install.packages("randomForest")", then type q() to exit."""
 
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Simple example of random forests classifier""","""""","""supervised_learning.py -i otutable.txt -m map.txt -c 'Individual' -o ml"""))
+script_info['script_usage'].append(("""Simple example of random forests classifier""","""""","""supervised_learning.py -i otutable.txt -m map.txt -c Individual -o ml"""))
 script_info['script_usage'].append(("""Simple example, filter OTU table first""","""""",\
 """single_rarefaction.py -i otu_table_filtered.txt -d 200 -o otu_table_rarefied200.txt
  filter_otu_table.py -i otu_table_rarefied200.txt -s 10
  supervised_learning.py -i otutable_filtered_rarefied200.txt -m map.txt -c 'Individual' -o ml
 """))
 
-script_info['script_usage'].append(("""Getting a sample params file for the random forests classifier""","""""","""supervised_learning.py -i otutable.txt -m map.txt -c 'Individual' -o ml --show_params"""))
-script_info['script_usage'].append(("""Running with a user-specified params file for the random forests classifier""","""""","""supervised_learning.py -i otutable.txt -m map.txt -c 'Individual' -o ml -p params.txt"""))
+script_info['script_usage'].append(("""Running with 10-fold cross-validation for improved estimates of generalization error and feature importances""","""""","""supervised_learning.py -i otutable.txt -m map.txt -c Individual -o ml -e cv10"""))
+script_info['script_usage'].append(("""Running with 1,000 trees for improved generalization error""","""""","""supervised_learning.py -i otutable.txt -m map.txt -c Individual -o ml --ntree 1000"""))
 script_info['output_description']="""Outputs a ranking of features (e.g. OTUs) by importance, an estimation of the generalization error of the classifier, and the predicted class labels and posterior class probabilities \
 according to the classifier."""
 script_info['required_options'] = [\
@@ -83,10 +82,12 @@ script_info['optional_options']=[\
     make_option('--ntree',type='int',default=500,\
         help='Number of trees in forest (more is better but slower) [default: %default]'),
     make_option('-e', '--errortype',type='string',default='oob',\
-        help='type of error estimation: oob (out-of-bag, fastest), ' +\
-              'cv5 (5-fold cross validation, provides mean and standard deviation of error), ' +\
-              'cv10 (10-fold cross validation, provides mean and standard deviation of error), '+\
-              'loo (leave-one-out cross validation, useful for small data sets) [default %default]')
+        help='type of error estimation:\n' +\
+            '"oob" (out-of-bag, fastest, only builds one classifier, use for quick estimates); ' +\
+            '"cv5" (5-fold cross validation, provides mean and standard deviation of error, use for good estimates on very large data sets); ' +\
+            '"cv10" (10-fold cross validation, provides mean and standard deviation of error, use for best estimates); ' +\
+            '"loo" (leave-one-out cross validation, use for small data sets (less than ~30-50 samples)) ' +\
+            '[default %default]')
 ]
 script_info['version'] = __version__
 
