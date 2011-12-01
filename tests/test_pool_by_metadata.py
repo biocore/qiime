@@ -14,7 +14,8 @@ __status__ = "Development"
 from cogent.util.unit_test import TestCase, main
 
 from StringIO import StringIO
-from qiime.pool_by_metadata import (pool_otu_table, pool_map)
+from qiime.pool_by_metadata import (pool_otu_table, pool_map, pool_iterative, get_category_values)
+from qiime.parse import parse_mapping_file
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -482,7 +483,32 @@ PC.636	ACGGTGAGTGTC	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	Fasting_mouse_I.D._636
         assert('PC.355' not in map_res)
         assert('pooledguy' in map_res)
 
-
+    def test_get_category_values(self):
+        """get_category_values gets the unique values in a specified column of the cat mapping file"""
+        fasting_map = self.fasting_map_str.split('\n')
+        map_data, map_header, map_comments = parse_mapping_file(fasting_map)
+        values = get_category_values(map_data, map_header, 'Treatment')
+        self.assertEqual(values, ['Control', 'Fast'])
+    
+    def test_pool_iterative(self):
+        """pool_iterative should pool correctly"""
+        def get_result():
+            map_infile = StringIO(self.fasting_map_str)
+            map_outfile = StringIO('')
+            otu_infile = StringIO(self.fasting_otu_table_str)
+            otu_outfile = StringIO('')
+            pool_iterative(map_infile, map_outfile, otu_infile, otu_outfile,\
+                'Treatment')
+            map_outfile.seek(0)
+            otu_outfile.seek(0)
+            return map_outfile.read(), otu_outfile.read()
+        map_res, otu_res = get_result()
+        assert('PC.355' not in map_res)
+        assert('Treatment.Control' in map_res)
+        assert('Treatment.Fast' in map_res)
+        assert('PC.355' not in otu_res)
+        assert('Treatment.Control' in otu_res)
+        assert('Treatment.Fast' in otu_res)
 
 #run tests if called from command line
 if __name__ == "__main__":
