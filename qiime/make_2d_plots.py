@@ -253,13 +253,13 @@ def transform_xy_coords(xy_coords,sc_plot):
     
     return all_cids,all_xcoords,all_ycoords
     
-def draw_pca_graph(plot_label, dir_path, data_file_link, coord_1, coord_2, \
+def draw_pcoa_graph(plot_label, dir_path, data_file_link, coord_1, coord_2, \
                     coord_1r,coord_2r, mat_ave, sample_location, \
                     data, prefs,groups, colors, background_color, label_color,\
                     data_colors,data_color_order,\
                     generate_eps=True):
                     
-    """Draw PCA graphs"""
+    """Draw PCoA graphs"""
 
     coords,pct_var=convert_coord_data_to_dict(data)
     mapping = data['map']
@@ -280,7 +280,7 @@ def draw_pca_graph(plot_label, dir_path, data_file_link, coord_1, coord_2, \
 
     #Write figure labels
     props = {}
-    props["title"] = "PCA - P%s vs P%s" % (coord_1, coord_2)
+    props["title"] = "PCoA - P%s vs P%s" % (coord_1, coord_2)
     props["ylabel"] = "P%s - Percent variation explained %.2f%%" \
                         % (coord_2, float(pct_var[coord_2]))
     props["xlabel"] = "P%s - Percent variation explained %.2f%%" \
@@ -443,7 +443,7 @@ def generate_2d_plots(prefs,data,html_dir_path,data_dir_path,filename,
                 sample_location=None
             
             coord_1, coord_2 = coord_tup
-            img_data[coord_tup] = draw_pca_graph(plot_label,data_file_dir_path,
+            img_data[coord_tup] = draw_pcoa_graph(plot_label,data_file_dir_path,
                                                  data_file_link,coord_1,coord_2,
                                                  coord_1r, coord_2r, mat_ave,\
                                                  sample_location,

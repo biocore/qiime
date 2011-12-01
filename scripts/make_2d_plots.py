@@ -43,7 +43,7 @@ If the user wants to color by specific mapping labels, they can use the followin
 script_info['script_usage'].append(("""""","""If the user would like to color all categories in their metadata mapping file, they can pass 'ALL' to the '-b' option, as follows:""","""%prog -i beta_div_coords.txt -m Mapping_file.txt -b ALL"""))
 script_info['script_usage'].append(("""Prefs File:""","""The user can supply a prefs file to color by, as follows:""", """%prog -i beta_div_coords.txt -m Mapping_file.txt -p prefs.txt"""))
 script_info['script_usage'].append(("""Jackknifed Principal Coordinates (w/ confidence intervals):""","""If you have created jackknifed PCoA files, you can pass the folder containing those files, instead of a single file.  The user can also specify the opacity of the ellipses around each point "--ellipsoid_opacity", which is a value from 0-1. Currently there are two metrics "--ellipsoid_method" that can be used for generating the ellipsoids, which are 'IQR' and 'sdev'. The user can specify all of these options as follows:""", """%prog -i jackknifed_pcoas/ -m Mapping_file.txt -b \'mapping_column1,mapping_column1&&mapping_column2\' --ellipsoid_opacity=0.5 --ellipsoid_method=IQR"""))
-script_info['output_description']="""This script generates an output folder, which contains several files. To best view the 2D plots, it is recommended that the user views the _pca_2D.html file."""
+script_info['output_description']="""This script generates an output folder, which contains several files. To best view the 2D plots, it is recommended that the user views the _pcoa_2D.html file."""
 
 script_info['required_options']=[\
     make_option('-i', '--coord_fname', \

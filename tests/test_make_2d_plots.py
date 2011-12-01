@@ -19,7 +19,7 @@ from StringIO import StringIO
 from cogent.util.unit_test import TestCase, main
 from os import remove
 from qiime.make_2d_plots import (make_interactive_scatter,transform_xy_coords,
-                                  draw_scatterplot,draw_pca_graph,
+                                  draw_scatterplot,draw_pcoa_graph,
                                   extract_and_color_xy_coords,write_html_file,
                                   create_html_filename,
                                   convert_coord_data_to_dict,generate_xmap)
@@ -31,7 +31,7 @@ class TopLevelTests(TestCase):
     def setUp(self):
         """define some top-level data"""
         
-        self.props={"title": "PCA - P1 vs P2","ylabel":"P2","xlabel":"P1"}
+        self.props={"title": "PCoA - P1 vs P2","ylabel":"P2","xlabel":"P1"}
         self.data={}
         self.data['coord']=[['Sample1','Sample2'],array([[-0.2,0.07],\
                             [-0.04,0.2]]),array([0.7,0.6]),\
@@ -147,15 +147,15 @@ plot into html spatial coords which allows for mouseovers"""
         self.assertEqual(obs2,self.all_xcoords)
         self.assertEqual(obs3,self.all_ycoords)
         
-    def test_draw_pca_graph(self):
-        """draw_pca_graph: draws the matplotlib figure"""
+    def test_draw_pcoa_graph(self):
+        """draw_pcoa_graph: draws the matplotlib figure"""
 
         filename1='/tmp/P1_vs_P2_plot.png'
         filename2='/tmp/P1vsP2plot.eps.gz'
 
         self._paths_to_clean_up = [filename1,filename2]
         
-        obs1,obs2=draw_pca_graph(self.plot_label,self.dir_path,
+        obs1,obs2=draw_pcoa_graph(self.plot_label,self.dir_path,
                                  self.data_file_link,self.coord_1,self.coord_2,
                                  None,None,None,None,
                                  self.data,self.prefs,self.groups,self.colors,
@@ -181,7 +181,7 @@ associates colors to those coords based on its group"""
         self.assertFloatEqual(obs,self.xy_coords)
         
     def test_create_html_filename(self):
-        """create_html_filename: using the pca filename, generates an html \
+        """create_html_filename: using the pcoa filename, generates an html \
 filename for the plots"""
         
         exp='test_2D.html'
