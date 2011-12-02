@@ -6,7 +6,7 @@ Using OTUpipe with QIIME
 
 Introduction
 -------------
-**OTUpipe** is a pipeline script built using `USEARCH <http://www.drive5.com/usearch>`_ to perform error correction, chimera checking, and OTU picking on a set of de-multiplexed (i.e. post `split_libraries.py <../scripts/split_libraries.html>`_) sequences. This tutorial explains how to use OTUpipe through QIIME, with details about each of the steps performed and a brief description of basic parameters and their effect.
+**OTUpipe** is a pipeline script built using `USEARCH <http://www.drive5.com/usearch>`_ to perform filtering of noisy sequences, chimera checking, and OTU picking on a set of de-multiplexed (i.e. post `split_libraries.py <../scripts/split_libraries.html>`_) sequences. This tutorial explains how to use OTUpipe through QIIME, with details about each of the steps performed and a brief description of basic parameters and their effect.
 
 For detailed information about OTUpipe, please check its website `<http:://www.drive5.com/otupipe/>`_, where you can also find some benchmark results using an artificial bacterial community `<http://www.drive5.com/usearch/perf/mock_results.html>`_.
 
@@ -18,7 +18,7 @@ To use OTUpipe in QIIME, you will need a FASTA file resulting from split_librari
 
     pick_otus.py -i seqs.fna -m usearch --db_filepath=/path/to/gold.fa -o otupipe_results/
 
-where :file:`/path/to/gold.fa` specifies the full path to the location of the reference set that will be used when doing chimera checking. A copy of this file can be found `here <http://drive5.com/otupipe/gold.tz>`_. After executing this command, several files will be created in the :file:`otupipe_results/` directory. The only file that you will need at this point is :file:`otupipe_results/seqs_otus.txt` (the OTU map file), which can then be used to pick a set of representative sequences with `pick_rep_set.py <../scripts/pick_rep_set.html>`_ as you would do after running :file:`pick_otus.py` with default options (i.e. using uclust)
+where :file:`/path/to/gold.fa` specifies the full path to the location of the reference set that will be used when doing chimera checking. A copy of this file can be found `here <http://drive5.com/otupipe/gold.tz>`_ (remember to uncompress the file). After executing this command, several files will be created in the :file:`otupipe_results/` directory. The only file that you will need at this point is :file:`otupipe_results/seqs_otus.txt` (the OTU map file), which can then be used to pick a set of representative sequences with `pick_rep_set.py <../scripts/pick_rep_set.html>`_ as you would do after running :file:`pick_otus.py` with default options (i.e. using uclust)
 
 How does it work
 ----------------
@@ -49,9 +49,9 @@ Step 3. Sort by abundance
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 De-replicated sequences are then sorted by abundance using the information generated in the previous step, the result being stored in the file :file:`otupipe_results/abundance_sorted.fasta`.
 
-Step 4. Error correction
-^^^^^^^^^^^^^^^^^^^^^^^^
-Sequences are clustered at the specified identity (by default, 97%) for error correction, and the resulting consensus sequences are written to :file:`otupipe_results/clustered_error_corrected.fasta`. Each sequence header contains a new identifier (a unique cluster number) and the size of the cluster:
+Step 4. Filtering of noisy sequences
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Sequences are clustered at the specified identity (by default, 97%) to filter noisy reads, and the resulting consensus sequences are written to :file:`otupipe_results/clustered_error_corrected.fasta`. Each sequence header contains a new identifier (a unique cluster number) and the size of the cluster:
 
 .. note::
 
@@ -65,19 +65,19 @@ Sequences are clustered at the specified identity (by default, 97%) for error co
    * TATGCGGTATTAGACGGAATTTCTTCCGCTTATCCCCCTGTAGCGGGCAGGTTGCATACGTGTTACTCACCCGTGCGCCG
    * GTCGCCGG
 
-The identity percentage specified for error correction can be set with the option --percent_id_err=PERCENT_ID_ERR, by default 0.97. Higher values of this parameter will result in less reads being merged together at this point; "good" reads that are similar to each other other won't be clustered as a unique read (i.e. you are not artificially reducing diversity), but some "noisy" reads will escape detection, thus artificially inflating diversity estimates. In general we have not found cases where this parameter needs to be modified.
+The identity percentage specified for error correction can be set with the option --percent_id_err=PERCENT_ID_ERR, by default 0.97. Higher values of this parameter will result in less reads being merged together at this point; "good" reads that are similar to each other other won't be clustered as a unique read (i.e. you are not artificially reducing diversity), but some "noisy" reads will escape detection, thus artificially inflating diversity estimates. In general we have not found cases where this parameter needs to be modified. Additionally, running time can be affected by larger values of the parameter --max_rejects in this step.
 
 Step 5. Chimera filter, de novo
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Once the sequences have been corrected for errors, chimera checking is performed using **UCHIME** (Edgar et al., 2011). In this step "*de novo*" checking is performed, without using any external set of reference sequences. This is particularly useful when are using data for which a good reference set does not exist. However, "*de novo*" chimera checking can be computationally expensive for large datasets, and we suggest to disable it in such cases. Results from this step are stored in files :file:`de_novo_non_chimeras.fasta` and :file:`de_novo_chimeras.fasta`.
+Once the sequences have been corrected for errors, chimera checking is performed using **UCHIME** (Edgar et al., 2011). In this step "*de novo*" checking is performed, without using any external set of reference sequences. This is particularly useful when are using data for which a good reference set does not exist. However, "*de novo*" chimera checking can be computationally expensive for large datasets, and we suggest to disable it in such cases using the parameter --de_novo_chimera_detection. Results from this step are stored in files :file:`de_novo_non_chimeras.fasta` and :file:`de_novo_chimeras.fasta`.
 
-The parameter --abundance_skew=ABUNDANCE_SKEW can be used to control the abundance skew for chimera detection. 
+The parameter --abundance_skew=ABUNDANCE_SKEW can be used to control the abundance skew for chimera detection.
 
 Step 6. Chimera filter, ref-based
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Reference-based chimera checking is performed against :file:`gold.fa` (or another user-provide set of sequences), and results are stored in files :file:`reference_non_chimeras.fasta` and :file:`reference_novo_chimeras.fasta`.
 
-The parameter --db_filepath=DB_FILEPATH can be used to specify the path to the sequence set to be used for ref-based chimera checking.
+The parameter --db_filepath=DB_FILEPATH can be used to specify the path to the sequence set to be used for ref-based chimera checking. To skip this step alltogether, use the option --reference_chimera_detection. 
 
 Step 7. Merging chimera-checked sequences
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -87,13 +87,13 @@ The parameter --chimeras_retention=CHIMERAS_RETENTION is used to set the merging
 
 Step 8. Sort by abundance chimera-free sequences
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Once sequences tagged as chimeras have been removed, the sequences are again sorted by abundance and clusters with less than MINSIZE reads are discarded. Results are stored in :file:`abundance_sorted_minsize_4.fasta` (this assume MINSIZE is set to the default value of 4). To modify the minimum number of reads that a cluster can have, use the parameter --minsize=MINSIZE. A value of 0 would maintain all clusters no matter the number of reads.
+Once sequences tagged as chimeras have been removed, the sequences are again sorted by abundance and clusters with less than MINSIZE reads are discarded. Results are stored in :file:`abundance_sorted_minsize_4.fasta` (this assume MINSIZE is set to the default value of 4). To modify the minimum number of reads that a cluster can have, use the parameter --minsize=MINSIZE. A value of 2, for instance, would remove all singletons (clusters of size 1). To skip this step use the parameter --cluster_size_filtering.
 
 Step 9. Cluster chimera-free sequences
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 This step corresponds to what is usually known as "*OTU picking*", i.e. sequences are clustered at the desired identity level. Different to regular OTU picking, by using OTUpipe you have also performed error correction and chimera checking, producing a 'cleaner' set of OTUs that will contain less artifacts. Results are stored in :file:`clustered_seqs.fasta`.
 
-The identity percentage to cluster reads can be specified with the parameter --percent_id_err=PERCENT_ID_ERR. In general the default of 0.97 works well for most datasets.
+The identity percentage to cluster reads can be specified with the parameter --percent_id_err=PERCENT_ID_ERR. In general the default of 0.97 works well for most datasets. The parameter --max_rejects can be modified to reduce running time during this step.
 
 Step 10. Assign sequential IDs to OTUs
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
