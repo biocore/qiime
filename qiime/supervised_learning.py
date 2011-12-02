@@ -119,7 +119,7 @@ class RSupervisedLearner(CommandLineApplication):
         cd_command, base_command = base_command.split(';')
         cd_command += ';'
         R_source_dir = self._get_R_script_dir()
-        print(R_source_dir)
+
         # Build up the command, consisting of a BaseCommand followed by
         # input and output (file) specifications
         args = ['--sourcedir', R_source_dir, 
