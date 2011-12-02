@@ -72,6 +72,9 @@ script_info['required_options'] = [\
     make_option('-m', '--mapping_file', help='File containing meta data (response variables)'),
     make_option('-c', '--category', help='Name of meta data category to predict'),
 ]
+
+errortype_choices = ['oob','loo','cv5','cv10']
+
 script_info['optional_options']=[\
     make_option('-o','--output_dir',default='.',\
             help='the output directory [deafult: %default]'),
@@ -81,12 +84,14 @@ script_info['optional_options']=[\
         ' [default: %default]'),
     make_option('--ntree',type='int',default=500,\
         help='Number of trees in forest (more is better but slower) [default: %default]'),
-    make_option('-e', '--errortype',type='string',default='oob',\
-        help='type of error estimation:\n' +\
-            '"oob" (out-of-bag, fastest, only builds one classifier, use for quick estimates); ' +\
-            '"cv5" (5-fold cross validation, provides mean and standard deviation of error, use for good estimates on very large data sets); ' +\
-            '"cv10" (10-fold cross validation, provides mean and standard deviation of error, use for best estimates); ' +\
-            '"loo" (leave-one-out cross validation, use for small data sets (less than ~30-50 samples)) ' +\
+    make_option('-e', '--errortype',type='choice',default='oob',
+        choices = errortype_choices,
+        help='type of error estimation. Valid choices are: ' +\
+            ', '.join(errortype_choices) + '. '+\
+            'oob: out-of-bag, fastest, only builds one classifier, use for quick estimates; ' +\
+            'cv5: 5-fold cross validation, provides mean and standard deviation of error, use for good estimates on very large data sets; ' +\
+            'cv10: 10-fold cross validation, provides mean and standard deviation of error, use for best estimates; ' +\
+            'loo: leave-one-out cross validation, use for small data sets (less than ~30-50 samples) ' +\
             '[default %default]')
 ]
 script_info['version'] = __version__
