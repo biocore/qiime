@@ -7,19 +7,49 @@
 #
 # Requires environment variable QIIME_DIR pointing to  top-level QIIME directory.
 
-# load libraries and source files
-"load.libraries" <- function(sourcedir, quietly=TRUE){
-    sourcefiles <- c('loaddata.r', 'util.r', 'randomforests_util.r')
-    for(sourcefile in sourcefiles) source(sprintf('%s/%s',sourcedir, sourcefile))
+# Attempts to load a given library. If does not exists, fails gracefully
+# and prints instructions for installing the library
+"load.library" <- function(lib.name, quietly=TRUE){
 
-    if(quietly) hide.warnings()
-    library('randomForest',warn.conflicts=FALSE,quietly=quietly)
-    library('e1071',warn.conflicts=FALSE,quietly=quietly)
+    # if R_LIBRARY_PATH environment variable is set, add it to the library paths
+    lib.loc <- .libPaths()
+    envvars <- as.list(Sys.getenv())
+    if(is.element('R_LIBRARY_PATH', names(envvars))){
+        lib.loc <- c(envvars[['R_LIBRARY_PATH']], lib.loc)
+    }
+    
+    # attempt to load the library, suppress warnings
+    options(warn=-1)
+    has.library <- library(lib.name,character.only=TRUE,logical.return=TRUE,
+                         verbose=F,warn.conflicts=FALSE,lib.loc=lib.loc, quietly=quietly)
+    options(warn=0)
+    
+    # if does not exists, fail gracefully
+    if(!has.library){
+        help_string1 <- sprintf(
+            'To install: open R and run the command "install.packages("%s")".', 
+            lib.name)
+        cat(sprintf('\n\nLibrary %s not found.\n\n',lib.name),file=stderr())
+        cat(help_string1,'\n\n',sep='',file=stderr())
+        
+        help_string2 <- sprintf(
+"If you already have the %s package installed in a local directory,
+please store the path to that directory in an environment variable
+called \"R_LIBRARY_PATH\". This may be necessary if you are running
+QIIME on a cluster, and the cluster instances of R don't know about
+your local R libraries. If you don't know your R library paths, you
+can list them by opening R and running with the command, \".libPaths()\".
+The current R instance knows about these paths:
+[%s]", lib.name, paste(.libPaths(),collapse=', '))
+
+        cat(help_string2,'\n\n',file=stderr())
+        q(save='no',status=2,runLast=FALSE);
+    }
 }
 
 
 # make option list and parse command line
-library('optparse',warn.conflicts=FALSE,quietly=TRUE)
+load.library('optparse', quietly=TRUE)
 option_list <- list(
     make_option(c("--sourcedir"), type="character",
         help="Path to QIIME R source directory [required]."),
@@ -42,8 +72,10 @@ option_list <- list(
     help="Output directory [default %default]")
 )
 opts <- parse_args(OptionParser(option_list = option_list), args = commandArgs(trailingOnly=TRUE))
-load.libraries(opts$sourcedir, quietly=!opts$verbose)
+sourcefiles <- c('loaddata.r', 'util.r', 'randomforests_util.r')
+for(sourcefile in sourcefiles) source(sprintf('%s/%s',opts$sourcedir, sourcefile))
 hide.warnings(!opts$verbose)
+load.library('randomForest',quietly=TRUE)
 
 # File requirements
 if(is.null(opts$mapfile)) stop('Please supply a mapping file.')
