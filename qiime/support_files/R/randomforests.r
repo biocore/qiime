@@ -47,7 +47,6 @@ The current R instance knows about these paths:
     }
 }
 
-
 # make option list and parse command line
 load.library('optparse', quietly=TRUE)
 option_list <- list(
@@ -97,11 +96,17 @@ if(opts$errortype == 'oob'){
     result <- rf.out.of.bag(x, y, verbose=opts$verbose, ntree=opts$ntree)
     result$error.type <- 'out-of-bag'
 } else {
-    if(opts$errortype == 'loo') nfolds=-1
-    if(opts$errortype == 'cv5') nfolds=5
-    if(opts$errortype == 'cv10') nfolds=10
+
+    if(opts$errortype == 'loo') {
+        nfolds=-1
+        error.type <- sprintf('leave-one-out cross validation')
+    } else {
+        if(opts$errortype == 'cv5') nfolds=5
+        if(opts$errortype == 'cv10') nfolds=10
+        error.type <- sprintf('%d-fold cross validation', nfolds)
+    }
     nfolds <- min(nfolds, length(y))
     result <- rf.cross.validation(x,y,nfolds=nfolds,verbose=opts$verbose,ntree=opts$ntree)
-    result$error.type <- sprintf('%d-fold cross validation',nfolds)
+    result$error.type <- error.type
 }
 print.rf.results(result, opts, colnames(x))

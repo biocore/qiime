@@ -18,6 +18,8 @@
     result$y <- as.factor(y)
     result$predicted <- result$y
     result$probabilities <- matrix(0, nrow=length(result$y), ncol=length(levels(result$y)))
+    rownames(result$probabilities) <- rownames(x)
+    colnames(result$probabilities) <- levels(result$y)
     result$importances <- matrix(0,nrow=ncol(x),ncol=nfolds)
     result$errs <- numeric(length(unique(folds)))
 
@@ -25,16 +27,15 @@
     for(fold in sort(unique(folds))){
         if(verbose) cat(sprintf('Fold %d...\n',fold))
         foldix <- which(folds==fold)
-        model <- randomForest(x[-foldix,], result$y[-foldix], importance=TRUE, do.trace=verbose, ...)
+        model <- randomForest(x[-foldix,], factor(result$y[-foldix]), importance=TRUE, do.trace=verbose, ...)
         newx <- x[foldix,]
         if(length(foldix)==1) newx <- matrix(newx,nrow=1)
         result$predicted[foldix] <- predict(model, newx)
-        result$probabilities[foldix,] <- predict(model, newx, type='prob')
+        probs <- predict(model, newx, type='prob')
+        result$probabilities[foldix,colnames(probs)] <- probs
         result$errs[fold] <- mean(result$predicted[foldix] != result$y[foldix])
         result$importances[,fold] <- model$importance[,'MeanDecreaseAccuracy']
     }
-    rownames(result$probabilities) <- rownames(x)
-    colnames(result$probabilities) <- levels(result$y)
 
     result$nfolds <- nfolds
     result$params <- list(...)
