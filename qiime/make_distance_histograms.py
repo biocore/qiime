@@ -673,9 +673,9 @@ def monte_carlo_group_distances(mapping_file, dmatrix_file, prefs, \
                 real_dist_2 = average(distances_g2)
                 rand_dists_2 = [rand_distances[n][j][-1] \
                     for n in range(num_iters)]
-                ttests = [t_two_sample(rand_dists_1[n],rand_dists_2[n])[0] \
+                ttests = [t_two_sample(rand_dists_1[n].flatten(),rand_dists_2[n].flatten())[0] \
                     for n in range(num_iters)]
-                real_ttest = t_two_sample(distances_g1, distances_g2)
+                real_ttest = t_two_sample(distances_g1.flatten(), distances_g2.flatten())
                 curr_line = [first_g1, second_g1, real_dist_1, \
                     first_g2, second_g2, real_dist_2]
                 curr_line.extend([real_ttest[0], real_ttest[1],\

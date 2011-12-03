@@ -524,7 +524,7 @@ Fast_to_Fast\t0.718\t0.666\t0.727\t0.6\t0.578\t0.623
 """
 
 MONTE_CARLO_DISTANCES = \
-"""Category_1a\tCategory_1b\tAvg\tCategory_2a\tCategory_2b\tAvg\tt\tp\tp_greater\tp_less\tIterations\nControl\tFast\t0.7307\tControl\tControl\t0.6488\t3.27735729274\t0.0060036701418\t0.0\t1.0\t10\nControl\tFast\t0.7307\tFast\tFast\t0.652\t2.4827593877\t0.0348333795055\t0.0\t1.0\t10\nControl\tControl\t0.6488\tFast\tFast\t0.652\t-0.11479781274\t0.910235587908\t0.6\t0.4\t10\n"""
+"""Category_1a\tCategory_1b\tAvg\tCategory_2a\tCategory_2b\tAvg\tt\tp\tp_greater\tp_less\tIterations\nControl\tFast\t0.7307\tControl\tControl\t0.6488\t5.13115982149\t1.93767647373e-05\t0.0\t1.0\t10\nControl\tFast\t0.7307\tFast\tFast\t0.652\t3.89776804588\t0.000681957542175\t0.0\t1.0\t10\nControl\tControl\t0.6488\tFast\tFast\t0.652\t-0.11479781274\t0.910235587908\t0.6\t0.4\t10\n"""
 
 MONTE_CARLO_DISTANCES_WITHIN_BETWEEN = \
 """Comparison\tCategory_1\tAvg\tComparison\tCategory_2\tAvg\tt\tp\tp_greater\tp_less\tIterations\nWithin\tTreatment\t0.65\tBetween\tTreatment\t0.7307\t-5.42842519819\t4.76810168062e-06\t1.0\t0.0\t10\nWithin\tTreatment\t0.65\tWithin\tAll_Fields\t0.65\t0.0\t1.0\t0.2\t0.8\t10\nBetween\tTreatment\t0.7307\tWithin\tAll_Fields\t0.65\t5.42842519819\t4.76810168062e-06\t0.0\t1.0\t10\n'"""
