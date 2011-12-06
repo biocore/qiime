@@ -11,20 +11,18 @@ __maintainer__ = "William Walters"
 __email__ = "William.A.Walters@colorado.edu"
 __status__ = "Development"
  
+from matplotlib import use
+use('Agg',warn=False)
 from cogent.parse.fasta import MinimalFastaParser
 from numpy import arange, std, average
 from pylab import plot, savefig, xlabel, ylabel, text, \
     hist, figure, legend, title, show, xlim ,ylim, xticks, yticks,\
     scatter, subplot
 from matplotlib.font_manager import fontManager, FontProperties
-
 from qiime.parse import parse_qual_score
 
 
 
-    
-        
-        
 def bin_qual_scores(qual_scores):
     """ Bins qual score according to nucleotide position 
     

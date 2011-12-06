@@ -1,7 +1,17 @@
 #!/usr/bin/env python
+__author__ = "Jai Rideout"
+__copyright__ = "Copyright 2011, The QIIME Project"
+__credits__ = ["Jai Rideout"]
+__license__ = "GPL"
+__version__ = "1.3.0dev"
+__maintainer__ = "Jai Rideout"
+__email__ = "jr378@nau.edu"
+__status__ = "Development"
 
 """Tests public and private functions in the distribution_plots module."""
 
+from matplotlib import use
+use('Agg', warn=False)
 from StringIO import StringIO
 import sys
 import matplotlib.colors as colors
@@ -13,15 +23,6 @@ from qiime.pycogent_backports.distribution_plots import _validate_input,\
     generate_comparative_plots, _calc_data_point_ticks, _plot_bar_data,\
     _plot_scatter_data, _plot_box_data, _color_box_plot
 from cogent.util.unit_test import TestCase, main
-
-__author__ = "Jai Rideout"
-__copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Jai Rideout"]
-__license__ = "GPL"
-__version__ = "1.3.0dev"
-__maintainer__ = "Jai Rideout"
-__email__ = "jr378@nau.edu"
-__status__ = "Development"
 
 class DistributionPlotsTests(TestCase):
     """Tests of the distribution_plots module."""

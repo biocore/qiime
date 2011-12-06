@@ -1,4 +1,12 @@
 #!/usr/bin/env python 
+__author__ = "Jai Rideout"
+__copyright__ = "Copyright 2011, The QIIME Project"
+__credits__ = ["Jai Rideout"]
+__license__ = "GPL"
+__version__ = "1.3.0dev"
+__maintainer__ = "Jai Rideout"
+__email__ = "jr378@nau.edu"
+__status__ = "Development"
 
 """This module contains functions for plotting distributions in various ways.
 
@@ -10,25 +18,15 @@ comparison.
 generate_comparative_plots() plots groupings of distributions at data
 points along the x-axis.
 """
-
-from itertools import cycle
-from math import isnan
 from matplotlib import use
 use('Agg', warn=False)
+from itertools import cycle
+from math import isnan
 from matplotlib.colors import colorConverter
 from matplotlib.patches import Polygon, Rectangle
 from matplotlib.pyplot import boxplot, figure
 from matplotlib.transforms import Bbox
 from numpy import array, mean, random, std
-
-__author__ = "Jai Rideout"
-__copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Jai Rideout"]
-__license__ = "GPL"
-__version__ = "1.3.0dev"
-__maintainer__ = "Jai Rideout"
-__email__ = "jr378@nau.edu"
-__status__ = "Development"
 
 def generate_box_plots(distributions, x_values=None, x_tick_labels=None,
                        title=None, x_label=None, y_label=None,
