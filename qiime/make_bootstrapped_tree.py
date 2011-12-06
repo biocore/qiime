@@ -1,10 +1,5 @@
 #!/usr/bin/env python
 from __future__ import division
-
-from cogent.draw.dendrogram import SquareDendrogram
-import os.path
-import sys
-
 __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Justin Kuczynski"]
@@ -17,6 +12,12 @@ __status__ = "Development"
 """takes a tree and bootstrap support file and writes a pdf, colored by
 bootstrap support
 """
+from matplotlib import use
+use('Agg',warn=False)
+from cogent.draw.dendrogram import SquareDendrogram
+import os.path
+import sys
+
 
 def write_pdf_bootstrap_tree(tree, output_f, hits_dict):
 
