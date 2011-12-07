@@ -132,13 +132,13 @@ def make_interactive_scatter(plot_label,dir_path,data_file_link,
 
     if my_axis is not None:
         axis(my_axis)
-    img_name = x_label[0:2]+'_vs_'+y_label[0:2]+'_plot.png'
+    img_name = x_label[0:3]+'_vs_'+y_label[0:3]+'_plot.png'
     savefig(os.path.join(dir_path,img_name), dpi=80,facecolor=background_color)
     
     #Create zipped eps files
     eps_link = ""
     if generate_eps:
-        eps_img_name = str(x_label[0:2]+'vs'+y_label[0:2]+'plot.eps')
+        eps_img_name = str(x_label[0:3]+'vs'+y_label[0:3]+'plot.eps')
         savefig(os.path.join(dir_path,eps_img_name),format='eps')
         out = getoutput("gzip -f " + os.path.join(dir_path, eps_img_name))
         eps_link = DOWNLOAD_LINK % ((os.path.join(data_file_link,eps_img_name) \
@@ -149,7 +149,7 @@ def make_interactive_scatter(plot_label,dir_path,data_file_link,
     xmap,img_height,img_width=generate_xmap(x_len,y_len,all_cids,all_xcoords,\
                                             all_ycoords)
 
-    points_id = plot_label+x_label[1:2]+y_label[1:2]
+    points_id = plot_label+x_label[2:3]+y_label[2:3]
 
     return IMG_MAP_SRC % (os.path.join(data_file_link,img_name), points_id, 
                             img_width, img_height), MAP_SRC % \
@@ -173,8 +173,8 @@ def draw_scatterplot(props,xy_coords,x_len,y_len,size,background_color,
     """Create scatterplot figure"""
     
     fig = figure(figsize=(x_len,y_len))
-    xPC=int(props['xlabel'][1:2])
-    yPC=int(props['ylabel'][1:2])
+    xPC=int(props['xlabel'][2:3])
+    yPC=int(props['ylabel'][2:3])
     sorted_keys = xy_coords.keys()
     scatters = {} 
     size_ct =  shape_ct = 0 
@@ -280,10 +280,10 @@ def draw_pcoa_graph(plot_label, dir_path, data_file_link, coord_1, coord_2, \
 
     #Write figure labels
     props = {}
-    props["title"] = "PCoA - P%s vs P%s" % (coord_1, coord_2)
-    props["ylabel"] = "P%s - Percent variation explained %.2f%%" \
+    props["title"] = "PCoA - PC%s vs PC%s" % (coord_1, coord_2)
+    props["ylabel"] = "PC%s - Percent variation explained %.2f%%" \
                         % (coord_2, float(pct_var[coord_2]))
-    props["xlabel"] = "P%s - Percent variation explained %.2f%%" \
+    props["xlabel"] = "PC%s - Percent variation explained %.2f%%" \
                         % (coord_1, float(pct_var[coord_1])) 
 
     labels = coords['pc vector number']

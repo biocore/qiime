@@ -31,7 +31,7 @@ class TopLevelTests(TestCase):
     def setUp(self):
         """define some top-level data"""
         
-        self.props={"title": "PCoA - P1 vs P2","ylabel":"P2","xlabel":"P1"}
+        self.props={"title": "PCoA - PC1 vs PC2","ylabel":"PC2","xlabel":"PC1"}
         self.data={}
         self.data['coord']=[['Sample1','Sample2'],array([[-0.2,0.07],\
                             [-0.04,0.2]]),array([0.7,0.6]),\
@@ -91,8 +91,8 @@ class TopLevelTests(TestCase):
         """make_interactive_scatter: creates HTML source for interactive \
 images"""
 
-        filename1='/tmp/P1_vs_P2_plot.png'
-        filename2='/tmp/P1vsP2plot.eps.gz'
+        filename1='/tmp/PC1_vs_PC2_plot.png'
+        filename2='/tmp/PC1vsPC2plot.eps.gz'
 
         self._paths_to_clean_up = [filename1,filename2]
 
@@ -150,8 +150,8 @@ plot into html spatial coords which allows for mouseovers"""
     def test_draw_pcoa_graph(self):
         """draw_pcoa_graph: draws the matplotlib figure"""
 
-        filename1='/tmp/P1_vs_P2_plot.png'
-        filename2='/tmp/P1vsP2plot.eps.gz'
+        filename1='/tmp/PC1_vs_PC2_plot.png'
+        filename2='/tmp/PC1vsPC2plot.eps.gz'
 
         self._paths_to_clean_up = [filename1,filename2]
         
@@ -214,19 +214,19 @@ the appropriate location')
 #expected results for the unit testing       
 exparea=['<AREA shape="circle" coords="100,306,5" href="#Sample1: Day1"  onmouseover="return overlib(\'Sample1: Day1\');" onmouseout="return nd();">\n', '<AREA shape="circle" coords="279,72,5" href="#Sample2: Day1"  onmouseover="return overlib(\'Sample2: Day1\');" onmouseout="return nd();">\n']
 
-expsrcmap1 = '<img src="/tmp/P1_vs_P2_plot.png" border="0" ismap usemap="#pointsSampleID12" width="360" height="360" />\n'
+expsrcmap1 = '<img src="/tmp/PC1_vs_PC2_plot.png" border="0" ismap usemap="#pointsSampleID12" width="360" height="360" />\n'
 expimgmap1 = '\n<MAP name="pointsSampleID12">\n\
 <AREA shape="circle" coords="100,306,5" href="#Sample1: Day1"  onmouseover="return overlib(\'Sample1: Day1\');" onmouseout="return nd();">\n\
 <AREA shape="circle" coords="279,72,5" href="#Sample2: Day1"  onmouseover="return overlib(\'Sample2: Day1\');" onmouseout="return nd();">\n\n\
 </MAP>\n'
-expeps1='<a href="/tmp/P1vsP2plot.eps.gz" >Download Figure</a>'
+expeps1='<a href="/tmp/PC1vsPC2plot.eps.gz" >Download Figure</a>'
 
-expsrcmap2 = '<img src="/tmp/P1_vs_P2_plot.png" border="0" ismap usemap="#pointsSampleID12" width="360" height="360" />\n'
+expsrcmap2 = '<img src="/tmp/PC1_vs_PC2_plot.png" border="0" ismap usemap="#pointsSampleID12" width="360" height="360" />\n'
 expimgmap2 = '\n<MAP name="pointsSampleID12">\n\
 <AREA shape="circle" coords="100,243,5" href="#Sample1: Day1"  onmouseover="return overlib(\'Sample1: Day1\');" onmouseout="return nd();">\n\
 <AREA shape="circle" coords="279,93,5" href="#Sample2: Day1"  onmouseover="return overlib(\'Sample2: Day1\');" onmouseout="return nd();">\n\n\
 </MAP>\n'
-expeps2='<a href="/tmp/P1vsP2plot.eps.gz" >Download Figure</a>'
+expeps2='<a href="/tmp/PC1vsPC2plot.eps.gz" >Download Figure</a>'
 
 #run tests if called from command line
 if __name__ == "__main__":
