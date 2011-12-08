@@ -46,7 +46,7 @@ class Test_make_cluster_jobs(TestCase):
             remove(self.tmp_result_file)
             
     def test_make_jobs(self):
-     
+        """writing the job files works"""
         #no commands should make no jobs files
         self.assertEqual(make_jobs([], "test", self.queue), [])
      
@@ -61,7 +61,7 @@ class Test_make_cluster_jobs(TestCase):
                                       self.command))
 
     def test_submit_jobs(self):
-        """submit jobs via qsub works."""
+        """submit jobs via qsub works"""
         
         filenames = make_jobs([self.command], "test_qsub", self.queue) 
         submit_jobs(filenames)
