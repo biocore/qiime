@@ -124,11 +124,18 @@ class Qiime_config(TestCase):
          "$SEQ_LOOKUP_FILE variable is not set to an existing filepath.")
          
         self.assertTrue(app_path("SplitKeys.pl"),
-         "AmpliconNoise Scripts directory doesn't seem to be in $PATH."+\
+         "Couldn't find SplitKeys.pl. "+\
+         "Perhaps AmpliconNoise Scripts directory isn't in $PATH?"+\
          " See %s for help." % url)
          
+        self.assertTrue(app_path("FCluster"),
+         "Couldn't find FCluster. "+\
+         "Perhaps the AmpliconNoise bin directory isn't in $PATH?"+\
+         " See %s for help." % url)
+
         self.assertTrue(app_path("Perseus"),
-         "AmpliconNoise bin directory doesn't seem to be in $PATH."+\
+         "Couldn't find Perseus. "+\
+         "Perhaps the AmpliconNoise bin directory isn't in $PATH?"+\
          " See %s for help." % url)
         
     def test_pynast_template_alignment_fp(self):
