@@ -17,9 +17,10 @@ from cogent import LoadSeqs, DNA
 from cogent.core.alignment import DenseAlignment, Alignment
 from cogent.util.unit_test import TestCase, main
 from qiime.util import get_tmp_filename
-import cogent.app.muscle
-from qiime.align_seqs import Aligner, CogentAligner,\
-    PyNastAligner, InfernalAligner
+from qiime.align_seqs import (
+    Aligner, CogentAligner, PyNastAligner, InfernalAligner,
+    alignment_module_names,
+    )
 
 def remove_files(list_of_filepaths,error_on_missing=True):
     missing = []
@@ -60,12 +61,13 @@ class CogentAlignerTests(SharedSetupTestCase):
         open(self.input_fp,'w').write(seqs_for_muscle)
         
         self._paths_to_clean_up =\
-         [self.input_fp] 
+         [self.input_fp]
+        self.muscle_module = alignment_module_names['muscle']
 
     def test_call_correct_alignment(self):
         """CogentAligner: output expected alignment file
         """
-        p = CogentAligner({'Module': cogent.app.muscle})
+        p = CogentAligner({'Module': self.muscle_module})
         log_fp = get_tmp_filename(\
          prefix='CogentAlignerTests_',suffix='.log')
         self._paths_to_clean_up.append(log_fp)
@@ -75,6 +77,26 @@ class CogentAlignerTests(SharedSetupTestCase):
         expected = expected_muscle_alignment
         #note: lines in diff order w/ diff versions
         self.assertEqualItems(str(actual).splitlines(),expected.splitlines())
+
+    def test_muscle_max_memory(self):
+        """CogentAligner: muscle_max_memory should be passed to alignment fcn
+        """
+        p = CogentAligner({
+            'Module': self.muscle_module,
+            '-maxmb': '200',
+            })
+        self.assertEqual(p.Params["-maxmb"], "200")
+
+        log_fp = get_tmp_filename(\
+         prefix='CogentAlignerTests_',suffix='.log')
+        self._paths_to_clean_up.append(log_fp)
+         
+        actual = p(result_path=None, seq_path=self.input_fp,
+            log_path=log_fp)
+        expected = expected_muscle_alignment
+        #note: lines in diff order w/ diff versions
+        self.assertEqualItems(str(actual).splitlines(),expected.splitlines())
+        
  
 class InfernalAlignerTests(SharedSetupTestCase):
     """Tests of the InfernalAligner class"""

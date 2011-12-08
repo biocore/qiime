@@ -30,7 +30,7 @@ from qiime.util import get_tmp_filename
 from cogent.app.infernal import cmalign_from_alignment
 from cogent.parse.rfam import MinimalRfamParser, ChangedSequence
 #app controllers that implement align_unaligned_seqs
-import cogent.app.muscle
+import qiime.pycogent_backports.muscle
 import cogent.app.clustalw
 import cogent.app.mafft
 
@@ -98,15 +98,15 @@ class CogentAligner(Aligner):
     def getResult(self, seq_path):
         """Returns alignment from sequences.
         
-        Currently does not allow parameter tuning of program and uses
-        default parameters -- this is bad and should be fixed.
-
-        #TODO: allow command-line access to important aln params.
+        By convention, app parameters begin with a '-'.  Key-value
+        pairs in self.Params following this convention will be passed
+        as parameters to the module's alignment function.
         """
         module = self.Params['Module']
         seqs = self.getData(seq_path)
-        result = module.align_unaligned_seqs(seqs, moltype=DNA)    
-        #TODO: add params
+        params = dict(
+            [(k, v) for (k, v) in self.Params.items() if k.startswith('-')])
+        result = module.align_unaligned_seqs(seqs, moltype=DNA, params=params)
         return result
 
     def __call__(self, result_path=None, log_path=None, *args, **kwargs):
@@ -284,6 +284,9 @@ class PyNastAligner(Aligner):
 alignment_method_constructors ={'pynast':PyNastAligner,\
     'infernal':InfernalAligner}
 
-alignment_module_names = {'muscle':cogent.app.muscle, 
-    'clustalw':cogent.app.clustalw, 'mafft':cogent.app.mafft, \
-    'infernal':cogent.app.infernal}
+alignment_module_names = {
+    'muscle': qiime.pycogent_backports.muscle, 
+    'clustalw': cogent.app.clustalw,
+    'mafft': cogent.app.mafft,
+    'infernal': cogent.app.infernal,
+    }
