@@ -18,7 +18,7 @@ __status__ = "Development"
 def get_job_commands(python_exe_fp,rarefaction_fp,job_prefix,\
     input_fp,output_dir,working_dir,min_seqs,max_seqs,step,num_reps,\
     lineages_included, command_prefix=None,command_suffix=None):
-    """Generate alpha diversity commands to be submitted to cluster
+    """Generate rarefaction diversity commands to be submitted to cluster
     """
     # Create data for each run (depth, output_fn)
     run_parameters = []
