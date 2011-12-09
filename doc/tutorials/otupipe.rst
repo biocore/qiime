@@ -85,6 +85,9 @@ Sequences tagged as non-chimeric during steps 6 and 7 can be combined either by 
 
 The parameter --chimeras_retention=CHIMERAS_RETENTION is used to set the merging as the union or intersection of the sets of non-chimeric sequences obtained from "*de novo*" and reference-based chimera checking.
 
+**Example**
+Assume there are 4 sequences (A, B, C, D) before chimera checking and "*de novo*" tags sequence A and B as chimeric while ref-based tags sequences B and C. Using --chimeras_retention=union will result in sequence B tagged as chimeric and A, C, and D as non-chimeric, while --chimeras_retention=intersection will tag A, B, and C as chimeras and only D as a non chimera.
+
 Step 8. Sort by abundance chimera-free sequences
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Once sequences tagged as chimeras have been removed, the sequences are again sorted by abundance and clusters with less than MINSIZE reads are discarded. Results are stored in :file:`abundance_sorted_minsize_4.fasta` (this assume MINSIZE is set to the default value of 4). To modify the minimum number of reads that a cluster can have, use the parameter --minsize=MINSIZE. A value of 2, for instance, would remove all singletons (clusters of size 1). To skip this step use the parameter --cluster_size_filtering.
