@@ -176,7 +176,7 @@ script_info['optional_options']=[\
         help='Name of the file to save the root mean square (RMS) of the vectors' +\
         ' grouped by the column used with the --add_vectors function. Note that' +\
         ' this option only works with --add_vectors. The file is going to be' +\
-        ' created inside the output_dir and its name will start with RMS_' +\
+        ' created inside the output_dir and its name will start with "RMS".' +\
         ' [default: %default]'),
     options_lookup['output_dir'],
 ]
