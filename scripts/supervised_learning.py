@@ -27,16 +27,16 @@ script_info['script_description']="""This script trains a supervised classifier 
 (or other continuous input sample x observation data) as predictors, and a \
 mapping file column containing discrete values as the class labels.
 
-    Outputs:
-        cv_probabilities.txt: the label probabilities for each of the given 
-            samples. (if available)
-        mislabeling.txt: A convenient presentation of cv_probabilities for 
-            mislabeling detection.
-        confusion_matrix.txt: confusion matrix for hold-out predictions.
-        summary.txt: a summary of the results, including the expected
-            generalization error of the classifier
-        feature_importance_scores.txt: a list of discriminative OTUs with their associated
-            importance scores (if available)
+Outputs:
+    * cv_probabilities.txt: the label probabilities for each of the \
+        given samples. (if available)
+    * mislabeling.txt: A convenient presentation of cv_probabilities \
+        for mislabeling detection.
+    * confusion_matrix.txt: confusion matrix for hold-out predictions.
+    * summary.txt: a summary of the results, including the expected \
+        generalization error of the classifier
+    * feature_importance_scores.txt: a list of discriminative OTUs with their \
+        associated importance scores (if available)
     
 It is recommended that you remove low-depth samples and rare OTUs \
 before running this script. This can drastically reduce the run-time, and in \
@@ -57,11 +57,10 @@ command "install.packages("randomForest")", then type q() to exit."""
 
 script_info['script_usage']=[]
 script_info['script_usage'].append(("""Simple example of random forests classifier""","""""","""supervised_learning.py -i otutable.txt -m map.txt -c Individual -o ml"""))
-script_info['script_usage'].append(("""Simple example, filter OTU table first""","""""",\
-"""single_rarefaction.py -i otu_table_filtered.txt -d 200 -o otu_table_rarefied200.txt
+script_info['script_usage'].append(("""Simple example, filter OTU table first""","""""","""
+ single_rarefaction.py -i otu_table_filtered.txt -d 200 -o otu_table_rarefied200.txt
  filter_otu_table.py -i otu_table_rarefied200.txt -s 10
- supervised_learning.py -i otutable_filtered_rarefied200.txt -m map.txt -c 'Individual' -o ml
-"""))
+ supervised_learning.py -i otutable_filtered_rarefied200.txt -m map.txt -c 'Individual' -o ml"""))
 
 script_info['script_usage'].append(("""Running with 10-fold cross-validation for improved estimates of generalization error and feature importances""","""""","""supervised_learning.py -i otutable.txt -m map.txt -c Individual -o ml -e cv10"""))
 script_info['script_usage'].append(("""Running with 1,000 trees for improved generalization error""","""""","""supervised_learning.py -i otutable.txt -m map.txt -c Individual -o ml --ntree 1000"""))
