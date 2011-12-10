@@ -14,7 +14,6 @@ These pages provide references on different features of QIIME. If you're instead
 .. toctree::
    :maxdepth: 2
 
-   introduction
    file_formats
    script_index
 
