@@ -9,7 +9,6 @@
 # __email__ = "daniel.knights@colorado.edu"
 # __status__ = "Development"
 
-
 # Hide warnings
 "hide.warnings" <- function(hide=TRUE){
     if(hide) {
