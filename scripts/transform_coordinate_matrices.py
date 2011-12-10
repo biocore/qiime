@@ -35,19 +35,19 @@ script_info['required_options']=[\
  make_option('-o','--output_dir',type='new_dirpath',help='the output directory'),\
 ]
 script_info['optional_options']=[\
- make_option('-r','--random_trials',type='int',\
-    help='Number of random permutations of matrix2 to perform. '+\
-    ' [default: (no Monte Carlo analysis performed)]',default=None),\
- make_option('-d','--num_dimensions',type='int',\
-    help='Number of dimensions to include in output matrices'+\
-    ' [default: Consider all dimensions]',default=None),\
- make_option('-s','--sample_id_map_fp',\
+ make_option('-r','--random_trials',type='int',
+    help='Number of random permutations of matrix2 to perform. '+
+    ' [default: (no Monte Carlo analysis performed)]',default=None),
+ make_option('-d','--num_dimensions',type='int',default=3,
+    help='Number of dimensions to include in output matrices'+
+    ' [default: %default]'),
+ make_option('-s','--sample_id_map_fp',
     type='existing_filepath',
-    help='Map of original sample ids to new sample ids [default: %default]',\
-    default=None),\
- make_option('--store_trial_details',\
-    help='Store PC matrices for individual trials [default: %default]',\
-    default=False,action='store_true'),\
+    help='Map of original sample ids to new sample ids [default: %default]',
+    default=None),
+ make_option('--store_trial_details',
+    help='Store PC matrices for individual trials [default: %default]',
+    default=False,action='store_true'),
 ]
 
 script_info['version'] = __version__

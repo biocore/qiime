@@ -17,7 +17,7 @@ Add changes since QIIME 1.3.0 here
 * Added additional allowed characters to data fields in mapping files.  These include space and /:,; characters.  All characters allowed now are: alphanumeric, underscore, space, and +-%./:,; characters.
 * split_otu_table.py now can keep duplicated rows in the resulting mapping files and can rename sample names (SampleID), both in the resulting mapping files and the otu tables, with other column of the mapping file; this can be helpful for Procrustes analysis.
 * plot_semivariogram.py now lets you control colors and axis of the resulting plots, and ignore missing samples, this can be useful when samples are missing after rarefying.
-* 
+* default num_dimensions for transform_coordinate_matrices.py changed from all dimensions to 3 (trac ticket #119). This more closely corresponds with how we use this test (e.g., to determine if we would draw the same biological conclusions from two different methods of generating a PCoA plot). This was in response to our noticing that monte carlo p-values were lower than we would expect in controls. 
 
 QIIME 1.3.0 (29 June 2011)
 ==================================
