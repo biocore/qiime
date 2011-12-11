@@ -91,7 +91,7 @@ def main():
 
     # set 'blank' lineages if not supplied
     if lineages == []:
-        print '\n\nWarning: The lineages are missing from the OTU table. If you used single_rarefaction.py to create your otu_table, make sure you pass the "--lineages_included" option.\n'
+        print '\n\nWarning: The lineages are missing from the OTU table. If you used single_rarefaction.py to create your otu_table, make sure you included the OTU lineages.\n'
         lineages = [''] * len(otu_ids)
     otu_labels = make_otu_labels(otu_ids, lineages)
 

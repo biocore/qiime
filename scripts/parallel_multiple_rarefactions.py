@@ -48,9 +48,15 @@ script_info['required_options'] = [\
 script_info['optional_options'] = [\
  make_option('-n', '--num-reps', dest='num_reps', default=10, type=int,
         help='num iterations at each seqs/sample level [default: %default]'),\
- make_option('--lineages_included', dest='lineages_included', default=False,
-        action="store_true",
-        help="""output rarefied otu tables will include taxonomic (lineage) information for each otu, if present in input otu table [default: %default]"""),
+ make_option('--lineages_included', action='store_true', default=True,
+    help='Deprecated: lineages are now included by default. Pass' +\
+    ' --supress_lineages_included to prevent output OTU tables' +\
+    ' from including taxonomic (lineage) information for each OTU. Note:' +\
+    ' this will only work if lineage information is in the input OTU' +\
+    ' table.'),
+ make_option('--suppress_lineages_included', default=True, 
+    action="store_false",dest='lineages_included',
+    help='Exclude taxonomic (lineage) information for each OTU.'),
  make_option('-N','--single_rarefaction_fp',action='store',\
            type='string',help='full path to scripts/single_rarefaction.py [default: %default]',\
            default=join(get_qiime_scripts_dir(),'single_rarefaction.py')),\

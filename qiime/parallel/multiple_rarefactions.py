@@ -34,9 +34,9 @@ def get_job_commands(python_exe_fp,rarefaction_fp,job_prefix,\
     result_filepaths = []
     
     if lineages_included:
-        lineages_included_param = '--lineages_included'
-    else:
         lineages_included_param = ''
+    else:
+        lineages_included_param = '--suppress_lineages_included'
     
     for depth,output_fn in run_parameters:
         # Each run ends with moving the output file from the tmp dir to
