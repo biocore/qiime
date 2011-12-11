@@ -208,7 +208,7 @@ def get_otu_counts(fpath, data):
         raise MissingFileError, 'OTU Count file required for this analysis'
     
     if lineages==[]:
-        raise ValueError, '\n\nThe lineages are missing from the OTU table.  If you used single_rarefaction.py to create your otu_table, make sure you pass the "--lineages_included" option.\n'
+        raise ValueError, '\n\nThe lineages are missing from the OTU table. Make sure you included the lineages for the OTUs in your OTU table. \n'
         
     return sample_ids,otu_ids,otu_table,lineages
 
