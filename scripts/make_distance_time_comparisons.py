@@ -83,8 +83,8 @@ script_info['optional_options'] = [
              '[default: %default]',
         default=False),
     make_option('-t', '--plot_type',
-        help='type of plot to produce (bar chart, scatter plot, or box plot) '
-             '[default: %default]',
+        help='type of plot to produce ("bar" is bar chart, "scatter" is '
+             'scatter plot, and "box" is box plot) [default: %default]',
         default='bar', type='choice', choices=['bar', 'scatter', 'box']),
     make_option('--width',
         help='width of the output image in inches [default: %default]',
@@ -95,31 +95,38 @@ script_info['optional_options'] = [
     make_option('--x_tick_labels_orientation',
         help='type of orientation for x-axis tick labels [default: %default]',
         default='vertical', type='choice', choices=['vertical', 'horizontal']),
-    make_option('-a', '--label_type', type='choice',
+    make_option('-a', '--label_type',
         help='Label type ("numeric" or "categorical"). '
         'If the label type is defined as numeric, the x-axis will be '
         'scaled accordingly. Otherwise the x-values will treated '
         'categorically and be evenly spaced [default: %default].',
-        choices=['categorical','numeric'], default='categorical'),
-    make_option('--y_min', type='string',
+        default='categorical',
+        type='choice', choices=['categorical','numeric']),
+    make_option('--y_min',
         help='the minimum y-axis value in the resulting plot. If "auto", '
              'it is automatically calculated [default: %default]',
-        default=0),
-    make_option('--y_max', type='string',
+        default=0, type='string'),
+    make_option('--y_max',
         help='the maximum y-axis value in the resulting plot. If "auto", '
              'it is automatically calculated [default: %default]',
-        default=1),
+        default=1, type='string'),
     make_option('--transparent', action='store_true',
         help='make output images transparent (useful for overlaying an image '
              'on top of a colored background ) [default: %default]',
         default=False),
     make_option('--whisker_length',
-        help='if plot_type is "box", determines the length of the whiskers as '
-             'a function of the IQR. For example, if 1.5, the whiskers extend '
-             'to 1.5 * IQR. Anything outside of that range is seen as an '
-             'outlier. If plot_type is not "box", this option is ignored '
+        help='if --plot_type is "box", determines the length of the whiskers '
+             'as a function of the IQR. For example, if 1.5, the whiskers '
+             'extend to 1.5 * IQR. Anything outside of that range is seen as '
+             'an outlier. If --plot_type is not "box", this option is ignored '
              '[default: %default]',
         default='1.5', type='float'),
+    make_option('--error_bar_type',
+        help='if --plot_type is "bar", determines the type of error bars to '
+             'use. "stdv" is standard deviation and "sem" is the standard '
+             'error of the mean. If --plot_type is not "bar", this option is '
+             'ignored [default: %default]',
+        default='stdv', type='choice', choices=['stdv', 'sem']),
     make_option('--distribution_width',
         help='width (in plot units) of each individual distribution (e.g. each '
              'bar if the plot type is a bar chart, or the width of each box '
@@ -150,6 +157,7 @@ script_info['option_label'] = {'mapping_fp':'QIIME-formatted mapping filepath',
                                'transparent':'make images transparent',
                                'whisker_length':'whisker length as function '
                                    'of IQR',
+                               'error_bar_type':'type of error bars to use ',
                                'distribution_width':'width of each '
                                    'distribution',
                                'group_spacing':'width of gap between '
@@ -309,6 +317,7 @@ def main():
             x_label=plot_x_label, y_label=plot_y_label, title=plot_title,
             x_tick_labels_orientation=opts.x_tick_labels_orientation,
             y_min=y_min, y_max=y_max, whisker_length=opts.whisker_length,
+            error_bar_type=opts.error_bar_type,
             distribution_width=opts.distribution_width,
             group_spacing=opts.group_spacing)
 

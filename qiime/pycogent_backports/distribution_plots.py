@@ -26,7 +26,7 @@ from matplotlib.colors import colorConverter
 from matplotlib.patches import Polygon, Rectangle
 from matplotlib.pyplot import boxplot, figure
 from matplotlib.transforms import Bbox
-from numpy import array, mean, random, std
+from numpy import array, mean, random, sqrt, std
 
 def generate_box_plots(distributions, x_values=None, x_tick_labels=None,
                        title=None, x_label=None, y_label=None,
@@ -95,7 +95,8 @@ def generate_comparative_plots(plot_type, data, x_values=None,
         data_point_labels=None, distribution_labels=None,
         distribution_markers=None, x_label=None, y_label=None, title=None,
         x_tick_labels_orientation='vertical', y_min=None, y_max=None,
-        whisker_length=1.5, distribution_width=0.4, group_spacing=0.5):
+        whisker_length=1.5, error_bar_type='stdv', distribution_width=0.4,
+        group_spacing=0.5):
     """Returns a matplotlib.figure.Figure object containing plots of the
     specified type grouped at points along the x-axis.
 
@@ -133,6 +134,10 @@ def generate_comparative_plots(plot_type, data, x_values=None,
             whiskers extend to 1.5 * IQR. Anything outside of that range is
             seen as an outlier. If plot_type is not 'box', this parameter is
             ignored.
+        - error_bar_type: A string specifying the type of error bars to use if
+            plot_type is "bar". Can be either "stdv" (for standard deviation)
+            or "sem" for the standard error of the mean. If plot_type is not
+            "bar", this parameter is ignored.
         - distribution_width: The width in plot units of each individual
             distribution (e.g. each bar if the plot type is a bar chart, or the
             width of each box if the plot type is a boxplot).
@@ -178,21 +183,31 @@ def generate_comparative_plots(plot_type, data, x_values=None,
     assert (len(x_locations) == num_points), "The number of x_locations " +\
             "does not match the number of data points."
 
-    # Create the figure to put the plots on, as well as a list to store each of
-    # the plots (needed for the legend).
+    # Create the figure to put the plots on, as well as a list to store an
+    # example of each distribution's plot (needed for the legend).
     result, plot_axes = _create_plot()
-    plots = []
+    legend_distribution_plots = [None] * num_distributions
 
     # Iterate over each data point, and plot each of the distributions at that
     # data point. Increase the offset after each distribution is plotted,
     # so that the grouped distributions don't overlap.
     for point, x_pos in zip(data, x_locations):
         dist_offset = 0
-        for dist, dist_marker in zip(point, distribution_markers):
+        for dist_index, dist, dist_marker in zip(range(num_distributions),
+                                                 point, distribution_markers):
             dist_location = x_pos + dist_offset
-            plots.append(plotting_function(plot_axes, dist, dist_marker,
-                                           distribution_width, dist_location,
-                                           whisker_length))
+            distribution_plot_result = plotting_function(plot_axes, dist,
+                    dist_marker, distribution_width, dist_location,
+                    whisker_length, error_bar_type)
+            # Save off the result of the current distribution's plot, which is
+            # needed to build the legend later on. If there is no data for the
+            # current distribution, the result will be None (for bar and
+            # scatter plots) and thus we do not want to save this as an example
+            # for building the legend.
+            if (distribution_plot_result is not None and
+                legend_distribution_plots[dist_index] is None):
+                legend_distribution_plots[dist_index] = \
+                        distribution_plot_result
             dist_offset += distribution_width
 
     # Set up various plot options that are best set after the plotting is done.
@@ -206,8 +221,9 @@ def generate_comparative_plots(plot_type, data, x_values=None,
 
     # Add a legend for the different distribution markers.
     if distribution_labels is not None:
-        legend_function(plots, plot_axes, distribution_markers,
-                        num_distributions, distribution_labels)
+        legend_function(legend_distribution_plots, plot_axes,
+                        distribution_markers, num_distributions,
+                        distribution_labels)
     result.canvas.draw()
 
     # matplotlib seems to sometimes plot points on the rightmost edge of the
@@ -374,22 +390,32 @@ def _create_plot():
     return fig, ax
 
 def _plot_bar_data(plot_axes, distribution, distribution_color,
-                   distribution_width, x_position, whisker_length):
+                   distribution_width, x_position, whisker_length,
+                   error_bar_type):
     """Returns the result of plotting a single bar in matplotlib."""
     result = None
     avg = mean(distribution)
-    std_dev = std(distribution)
-    if not isnan(avg) and not isnan(std_dev):
+    if error_bar_type == 'stdv':
+        error_bar = std(distribution)
+    elif error_bar_type == 'sem':
+        error_bar = std(distribution)
+        if len(distribution) > 0:
+            error_bar /= sqrt(len(distribution))
+    else:
+        raise ValueError("Invalid error bar type '%s'. Supported error bar "
+                "types are 'stdv' and 'sem'." % error_bar_type)
+    if not isnan(avg) and not isnan(error_bar):
         # numpy's mean() and std() functions will return NaN for empty
         # lists of data, and we do not want to plot these because
         # matplotlib will not be able to render them as PDFs.
         result = plot_axes.bar(x_position, avg, distribution_width,
-                               yerr=std_dev, ecolor='black',
+                               yerr=error_bar, ecolor='black',
                                facecolor=distribution_color)
     return result
 
 def _plot_scatter_data(plot_axes, distribution, distribution_symbol,
-                       distribution_width, x_position, whisker_length):
+                       distribution_width, x_position, whisker_length,
+                       error_bar_type):
     """Returns the result of plotting a single scatterplot in matplotlib."""
     result = None
     x_vals = [x_position] * len(distribution)
@@ -400,7 +426,8 @@ def _plot_scatter_data(plot_axes, distribution, distribution_symbol,
     return result
 
 def _plot_box_data(plot_axes, distribution, distribution_color,
-                   distribution_width, x_position, whisker_length):
+                   distribution_width, x_position, whisker_length,
+                   error_bar_type):
     """Returns the result of plotting a single boxplot in matplotlib."""
     box_plot = plot_axes.boxplot([distribution], positions=[x_position],
                                  widths=distribution_width,
@@ -482,15 +509,25 @@ def _set_axes_options(plot_axes, title=None, x_label=None, y_label=None,
     if y_max is not None:
         plot_axes.set_ylim(top=float(y_max))
 
-def _create_standard_legend(plots, plot_axes, distribution_markers,
-                            num_distributions, distribution_labels):
+def _create_standard_legend(distribution_plots, plot_axes,
+                            distribution_markers, num_distributions,
+                            distribution_labels):
     """Creates a default matplotlib legend on the supplied axes."""
     # We need to let matplotlib know of the first group of distributions that
     # we plotted, as well as their labels.
-    plot_axes.legend(plots[:num_distributions], distribution_labels,
-                     loc='best')
+    if ((len(distribution_plots) != len(distribution_markers)) or
+            (len(distribution_markers) != num_distributions) or 
+            (num_distributions != len(distribution_labels))):
+        raise ValueError("The number of distribution markers, "
+                         "distribution labels, and distribution plots must "
+                         "equal the number of distributions.")
+    for plot in distribution_plots:
+        if plot is None:
+            raise ValueError("One of the distributions was 'None'. A legend "
+                             "cannot be created from an invalid distribution.")
+    plot_axes.legend(distribution_plots, distribution_labels, loc='best')
 
-def _create_box_plot_legend(plots, plot_axes, distribution_colors,
+def _create_box_plot_legend(distribution_plots, plot_axes, distribution_colors,
                             num_distributions, distribution_labels):
     """Creates a custom matplotlib legend on the supplied axes.
     
@@ -502,8 +539,14 @@ def _create_box_plot_legend(plots, plot_axes, distribution_colors,
     # useful legend in matplotlib. Note: This code was taken from a matplotlib
     # example:
     # http://matplotlib.sourceforge.net/users/legend_guide.html
+    if ((len(distribution_plots) != len(distribution_colors)) or
+            (len(distribution_colors) != num_distributions) or 
+            (num_distributions != len(distribution_labels))):
+        raise ValueError("The number of distribution colors, "
+                         "distribution labels, and distribution plots must "
+                         "equal the number of distributions.")
     legend_rects = [Rectangle((0, 0), 1, 1, fc=color) for color in
-            distribution_colors[:num_distributions]]
+            distribution_colors]
     assert (len(legend_rects) == len(distribution_labels)), "The number of " +\
             "legend color rectangles does not match the number of " +\
             "distribution labels."
@@ -542,7 +585,8 @@ def _on_draw(event):
 
         if fig.subplotpars.bottom < bbox.height:
             # We need to move it up to add some padding for the labels.
-            fig.subplots_adjust(bottom=1.2*bbox.height)
+            fig.subplots_adjust(bottom=min(1.2 * bbox.height,
+                    fig.subplotpars.top - 0.1))
 
             # Temporarily disconnect any callbacks to the draw event to avoid
             # recursion.

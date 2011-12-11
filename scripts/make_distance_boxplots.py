@@ -104,14 +104,14 @@ script_info['optional_options'] = [
         help='suppress plotting of individual "between" boxplot(s) '
              '[default: %default]',
         default=False),
-    make_option('--y_min', type='string',
+    make_option('--y_min',
         help='the minimum y-axis value in the resulting plot. If "auto", '
              'it is automatically calculated [default: %default]',
-        default=0),
-    make_option('--y_max', type='string',
+        default=0, type='string'),
+    make_option('--y_max',
         help='the maximum y-axis value in the resulting plot. If "auto", '
              'it is automatically calculated [default: %default]',
-        default=1),
+        default=1, type='string'),
     make_option('--width',
         help='width of the output image in inches. If not provided, '
              'a "best guess" width will be used [default: auto]',
@@ -131,6 +131,14 @@ script_info['optional_options'] = [
     make_option('--box_width',
         help='width of each box in plot units [default: %default]',
         default='0.5', type='float'),
+    make_option('--box_color',
+        help='the color of the boxes. Can be any valid matplotlib color '
+             'string, such as "black", "magenta", "blue", etc. See '
+             'http://matplotlib.sourceforge.net/api/colors_api.html for more '
+             'examples of valid color strings that may be used [default: '
+             'same as plot background, which is white unless --transparent is '
+             'enabled]',
+        default=None, type='string'),
     make_option('--sort', action='store_true',
         help='sort boxplots by increasing median. If no sorting is applied, '
              'boxplots will be grouped logically as follows: all within, all '
@@ -158,6 +166,7 @@ script_info['option_label'] = {'mapping_fp':'QIIME-formatted mapping filepath',
                                'whisker_length':'whisker length as function '
                                    'of IQR',
                                'box_width':'width of boxes',
+                               'box_color':'color of the boxes',
                                'sort':'sort boxplots by ascending median'}
 
 script_info['version'] = __version__
@@ -275,7 +284,7 @@ def main():
                     x_label="Grouping", y_label="Distance",
                     x_tick_labels_orientation='vertical', y_min=y_min,
                     y_max=y_max, whisker_length=opts.whisker_length,
-                    box_width=opts.box_width)
+                    box_width=opts.box_width, box_color=opts.box_color)
             width = opts.width
             height = opts.height
             if width is None:
