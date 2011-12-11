@@ -26,9 +26,9 @@ To install most of following dependencies you need to have a build environment o
 
 The following are required by QIIME:
 
-* Python 2.6 (`src <http://www.python.org/ftp/python/2.6.4/Python-2.6.4.tgz>`_) (license: PSF)
+* Python 2.7.1 (`src <http://www.python.org/ftp/python/2.7.1/Python-2.7.1.tgz>`_) (license: PSF)
 * PyCogent 1.5.1 (`src <http://sourceforge.net/projects/pycogent/files/PyCogent/1.5.1/PyCogent-1.5.1.tgz/download>`_) (license: GPL)
-* Numpy 1.3.0 (`src <http://sourceforge.net/projects/numpy/files/NumPy/1.3.0/numpy-1.3.0.tar.gz/download>`_) (license: BSD)
+* Numpy 1.5.1 (`src <http://sourceforge.net/projects/numpy/files/NumPy/1.5.1/numpy-1.5.1.tar.gz/download>`_) (license: BSD)
 
 Dependencies required for a subset of QIIME's features
 ------------------------------------------------------
@@ -63,13 +63,13 @@ Processing sff files:
 Denoising 454 data:
 
 * GNU Science Library (required by AmpliconNoise) (`src <ftp://ftp.gnu.org/gnu/gsl/gsl-1.9.tar.gz>`_)
-* AmpliconNoise 1.24 (`src <http://code.google.com/p/ampliconnoise/downloads/detail?name=AmpliconNoiseV1.24.tar.gz&can=2&q=>`_) See :ref:`AmpliconNoise install notes <ampliconnoise-install>`.
+* AmpliconNoise 1.25 (`src <http://ampliconnoise.googlecode.com/files/AmpliconNoiseV1.25.tar.gz>`_) See :ref:`AmpliconNoise install notes <ampliconnoise-install>`.
 * ghc 6.8 (required by the QIIME denoiser) (`src <http://haskell.org/ghc>`_)
 
 
 Visualization and plotting steps:
 
-* MatPlotLib 0.98.5.3 (`src <http://iweb.dl.sourceforge.net/project/matplotlib/OldFiles/matplotlib-0.98.5.3.tar.gz>`_) (license: PFS)
+* MatPlotLib 1.0.1 (`src <http://downloads.sourceforge.net/project/matplotlib/matplotlib/matplotlib-1.0.1/matplotlib-1.0.1.tar.gz>`_) (license: PFS)
 * cytoscape v2.7.0 (`web <http://www.cytoscape.org/>`_) (license: LGPL)
 
 Supervised learning (``supervised_learning.py``):
