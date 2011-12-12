@@ -14,7 +14,7 @@ from os import path
 from string import strip
 from cogent.util.misc import create_dir
 from qiime.colors import data_colors, data_color_order
-from qiime.group import get_grouped_distances
+from qiime.group import get_field_state_comparisons
 from qiime.make_distance_histograms import matplotlib_rgb_color
 from qiime.parse import group_by_field, parse_distmat, parse_mapping_file, \
                         QiimeParseError
@@ -200,43 +200,46 @@ def main():
         option_parser.error("This does not look like a valid metadata mapping "
             "file. Please supply a valid mapping file using the -m option.")
 
-    # Get the field to make comparisons on and make sure it exists in the
-    # mapping file.
-    field = opts.field
-    if field not in mapping_header:
-        option_parser.error("The field '%s' is not in the provided "
-            "mapping file. Please supply a field (using the -f option) "
-            "corresponding to the field to make comparisons on in the mapping "
-            "file." % time_field)
+    # Make sure the y_min and y_max options make sense, as they can be either
+    # 'auto' or a number.
+    y_min = opts.y_min
+    y_max = opts.y_max
+    try:
+        y_min = float(y_min)
+    except ValueError:
+        if y_min == 'auto':
+            y_min = None
+        else:
+            option_parser.error("The --y_min option must be either a number "
+                                "or 'auto'.")
+    try:
+        y_max = float(y_max)
+    except ValueError:
+        if y_max == 'auto':
+            y_max = None
+        else:
+            option_parser.error("The --y_max option must be either a number "
+                                "or 'auto'.")
 
     # Parse the field states that will be compared to every other field state.
-    comp_groups = opts.comparison_groups
-    comp_groups = map(strip, comp_groups.split(','))
-    comp_groups = [group.strip('"').strip("'") for group in comp_groups]
-
-    if comp_groups is None:
+    comparison_field_states = opts.comparison_groups
+    comparison_field_states = map(strip, comparison_field_states.split(','))
+    comparison_field_states = [field_state.strip('"').strip("'")
+                               for field_state in comparison_field_states]
+    if comparison_field_states is None:
         option_parser.error("You must provide at least one field state to "
                             "compare (using the -c option).")
 
-    # Make sure each comparison group (i.e. field state) is in the specified
-    # field.
-    mapping_data = [mapping_header]
-    mapping_data.extend(mapping)
-    groups = group_by_field(mapping_data, field)
-    for group in comp_groups:
-        if group not in groups:
-            option_parser.error("The comparison group '%s' is not in the "
-                                "provided mapping file's field '%s'. "
-                                "Please supply correct comparison groups "
-                                "(using the -c option) corresponding to valid "
-                                "states in the field."
-                                % (group, field))
+    # Get distance comparisons between each field state and each of the
+    # comparison field states.
+    field = opts.field
+    comparison_groupings = get_field_state_comparisons(dist_matrix_header,
+            dist_matrix, mapping_header, mapping, field,
+            comparison_field_states)
 
-    # Grab a list of the field states that will be plotted along the x-axis.
-    # This list of states will not include the comparison group states, as they
-    # will be compared against those.
-    field_states = [group for group in groups.keys()
-                    if group not in comp_groups]
+    # Grab a list of all field states that had the comparison field states
+    # compared against them. These will be plotted along the x-axis.
+    field_states = comparison_groupings.keys()
 
     def custom_comparator(x, y):
         try:
@@ -269,48 +272,19 @@ def main():
                                 "numbers. Please specify a different label "
                                 "type.")
 
-    # Make sure the y_min and y_max options make sense, as they can be either
-    # 'auto' or a number.
-    y_min = opts.y_min
-    y_max = opts.y_max
-    try:
-        y_min = float(y_min)
-    except ValueError:
-        if y_min == 'auto':
-            y_min = None
-        else:
-            option_parser.error("The --y_min option must be either a number "
-                                "or 'auto'.")
-    try:
-        y_max = float(y_max)
-    except ValueError:
-        if y_max == 'auto':
-            y_max = None
-        else:
-            option_parser.error("The --y_max option must be either a number "
-                                "or 'auto'.")
-
-    # Get all between distance groupings.
-    groupings = get_grouped_distances(dist_matrix_header, dist_matrix,
-            mapping_header, mapping, field, within=False)
-
     # Accumulate the data for each field state 'point' along the x-axis.
     plot_data = []
     plot_x_axis_labels = []
     for field_state in field_states:
         field_state_data = []
-        for comp_group in comp_groups:
-            matching_data = []
-            for group in groupings:
-                if ((group[0] == field_state or group[1] == field_state)
-                    and (group[0] == comp_group or group[1] == comp_group)):
-                    matching_data = group[2]
-            field_state_data.append(matching_data)
+        for comp_field_state in comparison_field_states:
+            field_state_data.append(
+                    comparison_groupings[field_state][comp_field_state])
         plot_data.append(field_state_data)
         plot_x_axis_labels.append(field_state)
 
     # Plot the data and labels.
-    plot_title = "Timepoint Distances"
+    plot_title = "Distance Comparisons"
     plot_x_label = field
     plot_y_label = "Distance"
 
@@ -325,8 +299,9 @@ def main():
     assert plot_data, "Error: there is no data to plot!"
     plot_figure = generate_comparative_plots(opts.plot_type, plot_data,
             x_values=x_spacing, data_point_labels=plot_x_axis_labels,
-            distribution_labels=comp_groups, distribution_markers=plot_colors,
-            x_label=plot_x_label, y_label=plot_y_label, title=plot_title,
+            distribution_labels=comparison_field_states,
+            distribution_markers=plot_colors, x_label=plot_x_label,
+            y_label=plot_y_label, title=plot_title,
             x_tick_labels_orientation=opts.x_tick_labels_orientation,
             y_min=y_min, y_max=y_max, whisker_length=opts.whisker_length,
             error_bar_type=opts.error_bar_type,
@@ -358,11 +333,12 @@ def main():
 
         raw_data_f.write("#ComparisonGroup\tFieldState\tDistances\n")
         for label, data in zip(plot_x_axis_labels, plot_data):
-            assert (len(comp_groups) == len(data)), "The number of " +\
-                    "specified comparison groups does not match the number " +\
-                    "of groups found at the current point along the x-axis."
-            for comp_grp, comp_grp_data in zip(comp_groups, data):
-                raw_data_f.write(comp_grp + "\t" + label + "\t" +
+            assert (len(comparison_field_states) == len(data)), "The " +\
+                    "number of specified comparison groups does not match " +\
+                    "the number of groups found at the current point along " +\
+                    "the x-axis."
+            for comp_field_state, comp_grp_data in zip(comparison_field_states, data):
+                raw_data_f.write(comp_field_state + "\t" + label + "\t" +
                         "\t".join(map(str, comp_grp_data)) + "\n")
         raw_data_f.close()
 

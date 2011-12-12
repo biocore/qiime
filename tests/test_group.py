@@ -14,7 +14,7 @@ __status__ = "Development"
 from cogent.util.unit_test import TestCase, main
 from qiime.parse import parse_mapping_file, parse_distmat, group_by_field
 from qiime.group import get_grouped_distances, get_all_grouped_distances,\
-    _get_indices, _get_groupings, _validate_input
+    get_field_state_comparisons, _get_indices, _get_groupings, _validate_input
 
 class GroupTests(TestCase):
     """Tests of the group module."""
@@ -64,6 +64,13 @@ class GroupTests(TestCase):
                                "Samp.1\tAGCACGAGCCTA\tSampleFieldState1"]
         self.tiny_field = 'SampleField'
 
+        self.small_dist_matrix_string = ["\tSamp.1\tSamp.2", "Samp.1\t0\t0.5",
+                                         "Samp.2\t0.5\t0"]
+        self.small_mapping_string = ["#SampleID\tBarcodeSequence\tSampleField",
+                               "Samp.1\tAGCACGAGCCTA\tSampleFieldState1",
+                               "Samp.2\tAGCACGAGCCTG\tSampleFieldState2"]
+        self.small_field = 'SampleField'
+
         # Parse mapping "files" (faked here).
         self.mapping, self.mapping_header, self.comments = parse_mapping_file(
                 self.mapping_string)
@@ -77,12 +84,22 @@ class GroupTests(TestCase):
         tiny_mapping_data.extend(self.tiny_mapping)
         self.tiny_groups = group_by_field(tiny_mapping_data, self.tiny_field)
 
+        self.small_mapping, self.small_mapping_header, self.small_comments = \
+                parse_mapping_file(self.small_mapping_string)
+        small_mapping_data = [self.small_mapping_header]
+        small_mapping_data.extend(self.small_mapping)
+        self.small_groups = group_by_field(small_mapping_data,
+                self.small_field)
+
         # Parse distance matrix "files" (faked here).
         self.dist_matrix_header, self.dist_matrix = parse_distmat(
                 self.dist_matrix_string)
 
         self.tiny_dist_matrix_header, self.tiny_dist_matrix = parse_distmat(
                 self.tiny_dist_matrix_string)
+
+        self.small_dist_matrix_header, self.small_dist_matrix = parse_distmat(
+                self.small_dist_matrix_string)
 
     def test_get_grouped_distances_within(self):
         """get_grouped_distances() should return a list of within distance
@@ -152,6 +169,73 @@ class GroupTests(TestCase):
                     0.75800000000000001, 0.73799999999999999,
                     0.73699999999999999]
         self.assertEqual(groupings, expected)
+
+    def test_get_field_state_comparisons(self):
+        """get_field_state_comparisons() should return a 2D dictionary of
+        distances between a field state and its comparison field states."""
+        comparison_groupings = get_field_state_comparisons(
+                self.dist_matrix_header, self.dist_matrix, self.mapping_header,
+                self.mapping, self.field, ['Control'])
+        expected = {'Fast': {'Control': [0.72899999999999998,
+            0.80000000000000004, 0.72099999999999997, 0.76500000000000001,
+            0.77600000000000002, 0.74399999999999999, 0.749,
+            0.67700000000000005, 0.73399999999999999, 0.77700000000000002,
+            0.73299999999999998, 0.72399999999999998, 0.69599999999999995,
+            0.67500000000000004, 0.65400000000000003, 0.69599999999999995,
+            0.73099999999999998, 0.75800000000000001, 0.73799999999999999,
+            0.73699999999999999]}}
+        self.assertFloatEqual(comparison_groupings, expected)
+
+        comparison_groupings = get_field_state_comparisons(
+                self.dist_matrix_header, self.dist_matrix, self.mapping_header,
+                self.mapping, self.field, ['Fast'])
+        expected = {'Control': {'Fast': [0.72899999999999998,
+            0.80000000000000004, 0.72099999999999997, 0.76500000000000001,
+            0.77600000000000002, 0.74399999999999999, 0.749,
+            0.67700000000000005, 0.73399999999999999, 0.77700000000000002,
+            0.73299999999999998, 0.72399999999999998, 0.69599999999999995,
+            0.67500000000000004, 0.65400000000000003, 0.69599999999999995,
+            0.73099999999999998, 0.75800000000000001, 0.73799999999999999,
+            0.73699999999999999]}}
+        self.assertFloatEqual(comparison_groupings, expected)
+
+    def test_get_field_state_comparisons_small(self):
+        """get_field_state_comparisons() should return a 2D dictionary of
+        distances between a field state and its comparison field states."""
+        comparison_groupings = get_field_state_comparisons(
+                self.small_dist_matrix_header, self.small_dist_matrix,
+                self.small_mapping_header, self.small_mapping,
+                self.small_field, ['SampleFieldState1'])
+        expected = {'SampleFieldState2': {'SampleFieldState1': [0.5]}}
+        self.assertFloatEqual(comparison_groupings, expected)
+
+    def test_get_field_state_comparisons_tiny(self):
+        """get_field_state_comparisons() should return an empty dictionary."""
+        comparison_groupings = get_field_state_comparisons(
+                self.tiny_dist_matrix_header, self.tiny_dist_matrix,
+                self.tiny_mapping_header, self.tiny_mapping, self.tiny_field,
+                ['SampleFieldState1'])
+        self.assertEqual(comparison_groupings, {})
+
+    def test_get_field_state_comparisons_no_comp_states(self):
+        """get_field_state_comparisons() should raise a ValueError if no
+        comparison field states are provided."""
+        self.assertRaises(ValueError, get_field_state_comparisons,
+                self.dist_matrix_header, self.dist_matrix,
+                self.mapping_header, self.mapping, self.field,
+                [])
+
+    def test_get_field_state_comparisons_bad_comp_state(self):
+        """get_field_state_comparisons() should raise a ValueError if a
+        non-existent comparison field state is provided."""
+        self.assertRaises(ValueError, get_field_state_comparisons,
+                self.dist_matrix_header, self.dist_matrix,
+                self.mapping_header, self.mapping, self.field,
+                ['T0', 'Fast'])
+        self.assertRaises(ValueError, get_field_state_comparisons,
+                self.dist_matrix_header, self.dist_matrix,
+                self.mapping_header, self.mapping, self.field,
+                ['Fast', 'T0'])
 
     def test_validate_input_bad_input(self):
         """_validate_input() should raise ValueErrors on bad input."""

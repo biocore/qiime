@@ -68,6 +68,75 @@ def get_all_grouped_distances(dist_matrix_header, dist_matrix, mapping_header,
             results.append(distance)
     return results
 
+def get_field_state_comparisons(dist_matrix_header, dist_matrix,
+                                mapping_header, mapping, field,
+                                comparison_field_states):
+    """Returns a 2D dictionary relating distances between field states.
+
+    The 2D dictionary is constructed such that each top-level key is a field
+    state other than the field states in comparison_field_states. The
+    second-level key is a field state from comparison_field_states, and the
+    value at the (key, key) index is a list of distances between those two
+    field states. Thus, given a field, this function will create comparisons
+    between the specified comparison_field_states and all other field states.
+
+    Arguments:
+        - dist_matrix_header: The distance matrix header, obtained from
+                              parse.parse_distmat()
+        - dist_matrix: The distance matrix, obtained from
+                       parse.parse_distmat().
+        - mapping_header: The mapping file header, obtained from
+                          parse.parse_mapping_file()
+        - mapping: The mapping file's contents, obtained from
+                   parse.parse_mapping_file()
+        - field: A field in the mapping file to do the comparisons on.
+        - comparison_field_states: A list of strings specifying the field
+          states to compare to all other field states. Cannot be an empty list.
+    """
+    _validate_input(dist_matrix_header, dist_matrix, mapping_header, mapping,
+                    field)
+
+    # Make sure each comparison group field state is in the specified field.
+    if not comparison_field_states:
+        raise ValueError("You must provide at least one field state to "
+                         "compare to all of the other field states.")
+    mapping_data = [mapping_header]
+    mapping_data.extend(mapping)
+    groups = group_by_field(mapping_data, field)
+    for field_state in comparison_field_states:
+        if field_state not in groups:
+            raise ValueError("The comparison group field state '%s' is not in "
+                             "the provided mapping file's field '%s'."
+                             % (field_state, field))
+
+    # Grab a list of all other field states (besides the ones in
+    # comparison_field_states). These will be the field states that the states
+    # in comparison_field_states will be compared against.
+    field_states = [group for group in groups.keys()
+                    if group not in comparison_field_states]
+
+    # Get between distance groupings for the field of interest.
+    between_groupings = get_grouped_distances(dist_matrix_header, dist_matrix,
+            mapping_header, mapping, field, within=False)
+
+    # Build up our 2D dictionary giving the distances between a field state and
+    # a comparison group field state by filtering out the between_groupings
+    # list to include only the comparisons that we want.
+    result = {}
+    for field_state in field_states:
+        result[field_state] = {}
+        for comp_field_state in comparison_field_states:
+            result[field_state][comp_field_state] = []
+            for group in between_groupings:
+                if ((group[0] == field_state or group[1] == field_state)
+                    and (group[0] == comp_field_state or
+                         group[1] == comp_field_state)):
+                    # We've found a group of distances between our comparison
+                    # field state and the current field state, so keep the
+                    # data.
+                    result[field_state][comp_field_state] = group[2]
+    return result
+
 def _validate_input(dist_matrix_header, dist_matrix, mapping_header, mapping,
                     field):
     """Validates the input data to make sure it can be used and makes sense.
