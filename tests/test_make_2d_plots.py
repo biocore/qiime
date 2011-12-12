@@ -223,8 +223,8 @@ expeps1='<a href="/tmp/PC1vsPC2plot.eps.gz" >Download Figure</a>'
 
 expsrcmap2 = '<img src="/tmp/PC1_vs_PC2_plot.png" border="0" ismap usemap="#pointsSampleID12" width="360" height="360" />\n'
 expimgmap2 = '\n<MAP name="pointsSampleID12">\n\
-<AREA shape="circle" coords="100,243,5" href="#Sample1: Day1"  onmouseover="return overlib(\'Sample1: Day1\');" onmouseout="return nd();">\n\
-<AREA shape="circle" coords="279,93,5" href="#Sample2: Day1"  onmouseover="return overlib(\'Sample2: Day1\');" onmouseout="return nd();">\n\n\
+<AREA shape="circle" coords="100,208,5" href="#Sample1: Day1"  onmouseover="return overlib(\'Sample1: Day1\');" onmouseout="return nd();">\n\
+<AREA shape="circle" coords="279,84,5" href="#Sample2: Day1"  onmouseover="return overlib(\'Sample2: Day1\');" onmouseout="return nd();">\n\n\
 </MAP>\n'
 expeps2='<a href="/tmp/PC1vsPC2plot.eps.gz" >Download Figure</a>'
 
