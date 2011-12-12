@@ -1,5 +1,6 @@
 Add changes since QIIME 1.3.0 here
 ==================================
+* Implemented usearch (ie OTUPIPE) as chimera detection/quality filtering/OTU picking in the pick_otus.py module.
 * All workflows now log the md5 sums of all input files (trac #92).
 * Testing of QIIME with new dependency versions, updating of warnings and test failures (in print_qiime_config.py). No code changes were required to support new versions.
 * split_libraries_fastq.py can now handle gzipped input files.

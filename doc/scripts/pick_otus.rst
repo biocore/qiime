@@ -67,7 +67,7 @@ The primary inputs for `pick_otus.py <./pick_otus.html>`_ are:
 	`-`-min_aligned_percent
 		Minimum percent of query sequence that can be aligned to consider a hit  (BLAST OTU picker only) [default: 0.5]
 	-s, `-`-similarity
-		Sequence similarity threshold (for cdhit, uclust, uclust_ref, orusearch) [default: 0.97]
+		Sequence similarity threshold (for cdhit, uclust, uclust_ref, or usearch) [default: 0.97]
 	-e, `-`-max_e_value
 		Max E-value when clustering with BLAST [default: 1e-10]
 	-q, `-`-trie_reverse_seqs
@@ -110,25 +110,25 @@ The primary inputs for `pick_otus.py <./pick_otus.html>`_ are:
 		Don't collapse exact matches before calling uclust [default: False]
 	-d, `-`-save_uc_files
 		Enable preservation of intermediate uclust (.uc) files that are used to generate clusters via uclust.  Also enables preservation of all intermediate files created by usearch (OTUpipe). [default: True]
-	`-`-percent_id_err
+	-j, `-`-percent_id_err
 		Percent identity threshold for cluster error detection with OTUpipe. [default: 0.97]
-	`-`-minsize
+	-g, `-`-minsize
 		Minimum cluster size for size filtering with OTUpipe. [default: 4]
-	`-`-abundance_skew
+	-a, `-`-abundance_skew
 		Abundance skew setting for de novo chimera detection with OTUpipe. [default: 2]
-	`-`-db_filepath
+	-f, `-`-db_filepath
 		Reference database of fasta sequences for reference based chimera detection with OTUpipe. [default: None]
 	`-`-perc_id_blast
 		Percent ID for mapping OTUs created by OTUpipe back to original sequence IDs. [default: 0.97]
-	`-`-de_novo_chimera_detection
+	-k, `-`-de_novo_chimera_detection
 		Perform de novo chimera detection in OTUpipe. [default: True]
-	`-`-reference_chimera_detection
+	-x, `-`-reference_chimera_detection
 		Perform reference based chimera detection in OTUpipe. [default: True]
-	`-`-cluster_size_filtering
+	-l, `-`-cluster_size_filtering
 		Perform cluster size filtering in OTUpipe.  [default: True]
 	`-`-remove_usearch_logs
 		Disable creation of logs when usearch is called.  Up to nine logs are created, depending on filtering steps enabled.  [default: False]
-	`-`-chimeras_retention
+	-F, `-`-non_chimeras_retention
 		Selects subsets of sequences detected as non-chimeras to retain after de novo and refernece based chimera detection.  Options are intersection or union.  union will retain sequences that are flagged as non-chimeric from either filter, while intersection will retain only those sequences that are flagged as non-chimeras from both detection methods. [default: union]
 
 
@@ -252,10 +252,14 @@ Usearch (http://www.drive5.com/usearch/) provides clustering, chimera checking, 
 
 **Standard usearch (OTUPipe) example:**
 
-`pick_otus.py <./pick_otus.html>`_ -i seqs.fna -m usearch --word_length 64 --db_filepath reference_sequence_filepath -o otu_pipe_results/
+::
+
+	pick_otus.py -i seqs.fna -m usearch --word_length 64 --db_filepath reference_sequence_filepath -o otu_pipe_results/
 
 **Usearch (OTUpipe) example where reference-based chimera detection is disabled, and minimum cluster size filter is reduced from default (4) to 2:**
 
-`pick_otus.py <./pick_otus.html>`_ -i seqs.fna -m usearch --word_length 64 --reference_chimera_detection --minsize 2 -o otu_pipe_results/
+::
+
+	pick_otus.py -i seqs.fna -m usearch --word_length 64 --reference_chimera_detection --minsize 2 -o otu_pipe_results/
 
 

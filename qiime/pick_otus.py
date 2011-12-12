@@ -917,7 +917,8 @@ class UsearchOtuPicker(UclustOtuPickerBase):
          'cluster_size_filtering':True,
          'output_dir':'.',
          'remove_usearch_logs':False,
-         'chimeras_retention':'union'}
+         'chimeras_retention':'union',
+         'verbose':False}
          
          
         _params.update(params)
@@ -974,6 +975,7 @@ class UsearchOtuPicker(UclustOtuPickerBase):
          cluster_size_filtering = self.Params['cluster_size_filtering'],
          remove_usearch_logs = self.Params['remove_usearch_logs'],
          chimeras_retention = self.Params['chimeras_retention'],
+         verbose = self.Params['verbose'],
          HALT_EXEC=HALT_EXEC)
         
         # clean up any temp files that were created
@@ -1057,7 +1059,8 @@ class UsearchReferenceOtuPicker(UclustOtuPickerBase):
          'output_dir':'.',
          'remove_usearch_logs':False,
          'suppress_new_clusters':False,
-         'chimeras_retention':'union'}
+         'chimeras_retention':'union',
+         'verbose':False}
          
          
         _params.update(params)
@@ -1117,6 +1120,7 @@ class UsearchReferenceOtuPicker(UclustOtuPickerBase):
          remove_usearch_logs = self.Params['remove_usearch_logs'],
          suppress_new_clusters = self.Params['suppress_new_clusters'],
          chimeras_retention = self.Params['chimeras_retention'],
+         verbose = self.Params['verbose'],
          HALT_EXEC=HALT_EXEC)
         
         # clean up any temp files that were created

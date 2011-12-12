@@ -90,9 +90,9 @@ script_info['script_usage'].append(("""""","""The sequence similarity parameter 
 
 script_info['script_usage'].append(("""Usearch (OTUPipe)""","""Usearch (http://www.drive5.com/usearch/) provides clustering, chimera checking, and quality filtering.""",""""""))
 
-script_info['script_usage'].append(("""Standard usearch (OTUPipe) example:""","""pick_otus.py -i seqs.fna -m usearch --word_length 64 --db_filepath reference_sequence_filepath -o otu_pipe_results/""",""""""))
+script_info['script_usage'].append(("""Standard usearch (OTUPipe) example:""","""""","""pick_otus.py -i seqs.fna -m usearch --word_length 64 --db_filepath reference_sequence_filepath -o otu_pipe_results/"""))
 
-script_info['script_usage'].append(("""Usearch (OTUpipe) example where reference-based chimera detection is disabled, and minimum cluster size filter is reduced from default (4) to 2:""","""pick_otus.py -i seqs.fna -m usearch --word_length 64 --reference_chimera_detection --minsize 2 -o otu_pipe_results/""","""""")) 
+script_info['script_usage'].append(("""Usearch (OTUpipe) example where reference-based chimera detection is disabled, and minimum cluster size filter is reduced from default (4) to 2:""","""""","""pick_otus.py -i seqs.fna -m usearch --word_length 64 --reference_chimera_detection --minsize 2 -o otu_pipe_results/""")) 
 
 script_info['output_description'] = """The output consists of two files (i.e. seqs_otus.txt and seqs_otus.log). The .txt file is composed of tab-delimited lines, where the first field on each line corresponds to an (arbitrary) cluster identifier, and the remaining fields correspond to sequence identifiers assigned to that cluster. Sequence identifiers correspond to those provided in the input FASTA file.  Usearch (i.e. OTUpipe) can additionally have log files for each intermediate call to usearch.
 
@@ -153,7 +153,7 @@ script_info['optional_options'] = [
               
     make_option('-s', '--similarity', type='float', default=0.97,
         help=('Sequence similarity threshold (for cdhit, uclust, uclust_ref, or'
-              'usearch) [default: %default]')),
+              ' usearch) [default: %default]')),
               
     make_option('-e', '--max_e_value', type='float', default=1e-10,
         help=('Max E-value when clustering with BLAST [default: %default]')),
@@ -256,35 +256,35 @@ script_info['optional_options'] = [
               "preservation of all intermediate files created by usearch "
               "(OTUpipe). [default: %default]")),
               
-    make_option('--percent_id_err', default=0.97, help=("Percent identity"
+    make_option('-j', '--percent_id_err', default=0.97, help=("Percent identity"
               " threshold for cluster error detection with OTUpipe. "
               "[default: %default]"), type='float'),
               
-    make_option('--minsize', default=4, help=("Minimum cluster size "
+    make_option('-g', '--minsize', default=4, help=("Minimum cluster size "
               "for size filtering with OTUpipe. [default: %default]"),
               type='int'),
               
-    make_option('--abundance_skew', default=2, help=("Abundance skew setting "
-              "for de novo chimera detection with OTUpipe. "
+    make_option('-a','--abundance_skew', default=2, help=("Abundance skew "
+              "setting for de novo chimera detection with OTUpipe. "
               "[default: %default]"), type='int'),
               
-    make_option('--db_filepath', default=None, help=("Reference database of "
-              "fasta sequences for reference based chimera detection with "
+    make_option('-f', '--db_filepath', default=None, help=("Reference database "
+              "of fasta sequences for reference based chimera detection with "
               "OTUpipe. [default: %default]")),
               
     make_option('--perc_id_blast', default=0.97, help=("Percent ID for "
               "mapping OTUs created by OTUpipe back to original sequence IDs. "
               "[default: %default]"), type='float'),
               
-    make_option('--de_novo_chimera_detection', default=True, help=("Perform "
-              "de novo chimera detection in OTUpipe. [default: %default]"),
-              action='store_false'),
-              
-    make_option('--reference_chimera_detection', default=True, help=("Perform "
-              "reference based chimera detection in OTUpipe. "
+    make_option('-k', '--de_novo_chimera_detection', default=True, help=(
+              "Perform de novo chimera detection in OTUpipe. "
               "[default: %default]"), action='store_false'),
               
-    make_option('--cluster_size_filtering', default=True, help=("Perform "
+    make_option('-x', '--reference_chimera_detection', default=True, 
+              help=("Perform reference based chimera detection in OTUpipe. "
+              "[default: %default]"), action='store_false'),
+              
+    make_option('-l', '--cluster_size_filtering', default=True, help=("Perform "
               "cluster size filtering in OTUpipe.  [default: %default]"),
               action='store_false'),
               
@@ -293,7 +293,8 @@ script_info['optional_options'] = [
               "created, depending on filtering steps enabled.  "
               "[default: %default]"), action='store_true'),
               
-    make_option('--chimeras_retention', default='union', help=("Selects "
+    make_option('-F', '--non_chimeras_retention', default='union',
+              help=("Selects "
               "subsets of sequences detected as non-chimeras to retain after "
               "de novo and refernece based chimera detection.  Options are "
               "intersection or union.  union will retain sequences that are "
@@ -334,7 +335,8 @@ def main():
     save_uc_files = opts.save_uc_files
     prefilter_identical_sequences =\
      not opts.suppress_uclust_prefilter_exact_match
-    chimeras_retention = opts.chimeras_retention
+    chimeras_retention = opts.non_chimeras_retention
+    verbose = opts.verbose
     
     # OTUpipe specific parameters
     percent_id_err = opts.percent_id_err
@@ -462,8 +464,8 @@ def main():
         'reference_chimera_detection':reference_chimera_detection,
         'cluster_size_filtering':cluster_size_filtering,
         'remove_usearch_logs':remove_usearch_logs,
-        'chimeras_retention':chimeras_retention}
-        
+        'chimeras_retention':chimeras_retention,
+        'verbose':verbose}
         
         otu_picker = otu_picker_constructor(params)
         otu_picker(input_seqs_filepath, result_path=result_path,
@@ -486,7 +488,8 @@ def main():
         'cluster_size_filtering':cluster_size_filtering,
         'remove_usearch_logs':remove_usearch_logs,
         'suppress_new_clusters':opts.suppress_new_clusters,
-        'chimeras_retention':chimeras_retention}
+        'chimeras_retention':chimeras_retention,
+        'verbose':verbose}
         
         
         otu_picker = otu_picker_constructor(params)

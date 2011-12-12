@@ -350,7 +350,8 @@ class UsearchTests(TestCase):
         app_result, output_filepath =\
          assign_reads_to_otus(original_fasta = self.tmp_ref_database,
                               filtered_fasta = self.tmp_seq_filepath2,
-                              remove_usearch_logs = True)
+                              remove_usearch_logs = True,
+                              working_dir=self.tmp_dir)
                               
         self._files_to_remove.append(output_filepath)
         
@@ -398,7 +399,8 @@ class UsearchTests(TestCase):
          usearch_cluster_seqs(self.tmp_seqs_w_abundance,
                               save_intermediate_files=False,
                               remove_usearch_logs=True,
-                              percent_id = 0.97)
+                              percent_id = 0.97,
+                              working_dir=self.tmp_dir)
         
         self._files_to_remove.append(output_filepath)
                               
@@ -416,7 +418,8 @@ class UsearchTests(TestCase):
          usearch_cluster_seqs(self.tmp_seqs_w_abundance,
                               save_intermediate_files=False,
                               remove_usearch_logs=True,
-                              percent_id = 0.999)
+                              percent_id = 0.999,
+                              working_dir=self.tmp_dir)
         
         self._files_to_remove.append(output_filepath)
                               
@@ -431,7 +434,8 @@ class UsearchTests(TestCase):
         app_result, output_filepath =\
          usearch_chimera_filter_ref_based(self.tmp_seq_filepath2,
                                           self.tmp_ref_database,
-                                          remove_usearch_logs=True)
+                                          remove_usearch_logs=True,
+                                          working_dir=self.tmp_dir)
                                           
         self._files_to_remove.append(output_filepath)
         
@@ -448,7 +452,8 @@ class UsearchTests(TestCase):
         app_result, output_filepath =\
          usearch_chimera_filter_de_novo(self.tmp_de_novo_chimera_seqs,
                                         remove_usearch_logs=True,
-                                        abundance_skew = 2)
+                                        abundance_skew = 2,
+                                        working_dir=self.tmp_dir)
                                         
         self._files_to_remove.append(output_filepath)
         
@@ -463,7 +468,8 @@ class UsearchTests(TestCase):
         app_result, output_filepath =\
          usearch_chimera_filter_de_novo(self.tmp_de_novo_chimera_seqs,
                                         remove_usearch_logs=True,
-                                        abundance_skew = 11)
+                                        abundance_skew = 11,
+                                        working_dir=self.tmp_dir)
                                         
         self._files_to_remove.append(output_filepath)
         
@@ -481,7 +487,8 @@ class UsearchTests(TestCase):
          usearch_cluster_error_correction(self.tmp_seqs_w_abundance,
                                           save_intermediate_files=False,
                                           remove_usearch_logs=True,
-                                          percent_id_err = 0.97)
+                                          percent_id_err = 0.97,
+                                          working_dir=self.tmp_dir)
         
         self._files_to_remove.append(output_filepath)
                               
@@ -495,7 +502,8 @@ class UsearchTests(TestCase):
         
         app_result, output_filepath =\
          usearch_sort_by_abundance(self.tmp_de_novo_chimera_seqs,
-                                   remove_usearch_logs=True)
+                                   remove_usearch_logs=True,
+                                   working_dir=self.tmp_dir)
                                    
         self._files_to_remove.append(output_filepath)
         
@@ -510,7 +518,8 @@ class UsearchTests(TestCase):
         app_result, output_filepath =\
          usearch_sort_by_abundance(self.tmp_de_novo_chimera_seqs,
                                    remove_usearch_logs=True,
-                                   minsize = 40)
+                                   minsize = 40,
+                                   working_dir=self.tmp_dir)
                                    
         self._files_to_remove.append(output_filepath)
         
@@ -524,7 +533,8 @@ class UsearchTests(TestCase):
         
         app_result, output_filepath =\
          usearch_dereplicate_exact_subseqs(self.tmp_dna_seqs_with_dups,
-                                           remove_usearch_logs=True)
+                                           remove_usearch_logs=True,
+                                           working_dir=self.tmp_dir)
                                            
         self._files_to_remove.append(output_filepath)
         
@@ -537,7 +547,8 @@ class UsearchTests(TestCase):
         
         app_result, output_filepath =\
          usearch_fasta_sort_from_filepath(self.tmp_seq_filepath2,
-                                          remove_usearch_logs=True)
+                                          remove_usearch_logs=True,
+                                          working_dir=self.tmp_dir)
                                           
         self._files_to_remove.append(output_filepath)
         

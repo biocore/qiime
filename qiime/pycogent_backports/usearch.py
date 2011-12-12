@@ -20,7 +20,7 @@ __maintainer__ = "William Walters"
 __email__ = "william.a.walters@colorado.edu"
 __status__ = "Development"
 
-from os.path import split, splitext, basename, isdir, abspath, isfile
+from os.path import split, splitext, basename, isdir, abspath, isfile, join
 
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.app.parameters import ValuedParameter, FlagParameter
@@ -29,6 +29,7 @@ from cogent.app.util import CommandLineApplication, ResultPath,\
 from cogent.util.misc import remove_files
 
 from qiime.pycogent_backports.uclust import clusters_from_uc_file
+from qiime.util import split_fasta_on_sample_ids_to_files
 
 class UsearchParseError(Exception):
     pass
@@ -278,7 +279,8 @@ def usearch_fasta_sort_from_filepath(
     log_name = "sortlen.log",
     HALT_EXEC=False,
     save_intermediate_files=False,
-    remove_usearch_logs=False):
+    remove_usearch_logs=False,
+    working_dir=None):
     """Generates sorted fasta file via usearch --mergesort.
     
     fasta_filepath: filepath to input fasta file
@@ -289,14 +291,13 @@ def usearch_fasta_sort_from_filepath(
     output_filepath = output_filepath or \
      get_tmp_filename(prefix='usearch_fasta_sort', suffix='.fasta')
     
-    # using abspath to create log filepath, for cluster environments
-    tmp_working_dir = split(abspath(output_filepath))[0]
     
-    log_filepath = tmp_working_dir + "/" + log_name
+    
+    log_filepath = join(working_dir, log_name)
     
     params = {}
             
-    app = Usearch(params,HALT_EXEC=HALT_EXEC)
+    app = Usearch(params, WorkingDir=working_dir, HALT_EXEC=HALT_EXEC)
     
     data={'--mergesort':fasta_filepath,\
           '--output':output_filepath,
@@ -306,7 +307,6 @@ def usearch_fasta_sort_from_filepath(
         data['--log'] = log_filepath
     
     app_result = app(data)
-                           
     
     
     return app_result, output_filepath
@@ -323,7 +323,8 @@ def usearch_dereplicate_exact_subseqs(
     usersort=False,
     HALT_EXEC=False,
     save_intermediate_files=False,
-    remove_usearch_logs=False):
+    remove_usearch_logs=False,
+    working_dir=None):
     """ Generates clusters and fasta file of dereplicated subsequences
     
     These parameters are those specified by Robert Edgar for optimal use of
@@ -346,12 +347,9 @@ def usearch_dereplicate_exact_subseqs(
     output_filepath = output_filepath or \
      get_tmp_filename(prefix='usearch_fasta_dereplicated', suffix='.fasta')
     
-    # using abspath to create log filepath, for cluster environments
-    tmp_working_dir = split(abspath(output_filepath))[0]
+    log_filepath = join(working_dir, log_name)
     
-    log_filepath = tmp_working_dir + "/" + log_name
-    
-    uc_filepath = tmp_working_dir + "/derep.uc"
+    uc_filepath = join(working_dir, "derep.uc")
     
     params = {'--derep_subseq':True,
               '--minlen':minlen,
@@ -360,7 +358,7 @@ def usearch_dereplicate_exact_subseqs(
               '--sizeout':sizeout,
               '--maxrejects':maxrejects}
     
-    app = Usearch(params,HALT_EXEC=HALT_EXEC)
+    app = Usearch(params, WorkingDir=working_dir, HALT_EXEC=HALT_EXEC)
     
     
     if usersort:
@@ -395,7 +393,8 @@ def usearch_sort_by_abundance(
     usersort = False,
     HALT_EXEC=False,
     save_intermediate_files=False,
-    remove_usearch_logs=False):
+    remove_usearch_logs=False,
+    working_dir=None):
     """ Sorts fasta file by abundance
     
     fasta_filepath = input fasta file, generally a dereplicated fasta
@@ -412,15 +411,13 @@ def usearch_sort_by_abundance(
     output_filepath = output_filepath or \
      get_tmp_filename(prefix='usearch_abundance_sorted', suffix='.fasta')
     
-    # using abspath to create log filepath, for cluster environments
-    tmp_working_dir = split(abspath(output_filepath))[0]
     
-    log_filepath = tmp_working_dir + "/" + "minsize_" + str(minsize) +\
-     "_" + log_name
+    log_filepath = join(working_dir, "minsize_" + str(minsize) + "_" + log_name)
     
     params = {}
     
-    app = Usearch(params,HALT_EXEC=HALT_EXEC)
+    app = Usearch(params, WorkingDir=working_dir, HALT_EXEC=HALT_EXEC)
+    
     
     if usersort:
         app.Parameters['--usersort'].on()
@@ -444,6 +441,7 @@ def usearch_sort_by_abundance(
     
     # Can have no data following this filter step, which will raise an 
     # application error, try to catch it here to raise meaningful message.
+    
     try:
         app_result = app(data)
     except ApplicationError:
@@ -455,6 +453,7 @@ def usearch_sort_by_abundance(
 def usearch_cluster_error_correction(
     fasta_filepath,
     output_filepath = None,
+    output_uc_filepath = None,
     percent_id_err = 0.97,
     sizein = True,
     sizeout = True,
@@ -465,7 +464,8 @@ def usearch_cluster_error_correction(
     usersort = False,
     HALT_EXEC=False,
     save_intermediate_files=False,
-    remove_usearch_logs=False):
+    remove_usearch_logs=False,
+    working_dir=None):
     """ Cluster for err. correction at percent_id_err, output consensus fasta
     
     fasta_filepath = input fasta file, generally a dereplicated fasta
@@ -487,10 +487,7 @@ def usearch_cluster_error_correction(
     output_filepath = output_filepath or \
      get_tmp_filename(prefix='usearch_cluster_err_corrected', suffix='.fasta')
     
-    # using abspath to create log filepath, for cluster environments
-    tmp_working_dir = split(abspath(output_filepath))[0]
-    
-    log_filepath = tmp_working_dir + "/" + log_name
+    log_filepath = join(working_dir, log_name)
     
     params = {'--sizein':sizein,
               '--sizeout':sizeout,
@@ -499,7 +496,7 @@ def usearch_cluster_error_correction(
               '--slots':slots,
               '--maxrejects':maxrejects}
     
-    app = Usearch(params,HALT_EXEC=HALT_EXEC)
+    app = Usearch(params, WorkingDir=working_dir, HALT_EXEC=HALT_EXEC)
     
     if usersort:
         app.Parameters['--usersort'].on()
@@ -510,9 +507,13 @@ def usearch_cluster_error_correction(
     
     if not remove_usearch_logs:
         data['--log'] = log_filepath
+        
+    if output_uc_filepath:
+        data['--uc'] = output_uc_filepath
     
     
     app_result = app(data)
+    
     
     return app_result, output_filepath
 
@@ -526,7 +527,8 @@ def usearch_chimera_filter_de_novo(
     usersort = False,
     HALT_EXEC=False,
     save_intermediate_files=False,
-    remove_usearch_logs=False):
+    remove_usearch_logs=False,
+    working_dir=None):
     """ Chimera filter de novo, output chimeras and non-chimeras to fastas
     
     fasta_filepath = input fasta file, generally a dereplicated fasta
@@ -545,14 +547,11 @@ def usearch_chimera_filter_de_novo(
     output_non_chimera_filepath = output_non_chimera_filepath or \
      get_tmp_filename(prefix='uchime_non_chimeras_', suffix='.fasta')
     
-    # using abspath to create log filepath, for cluster environments
-    tmp_working_dir = split(abspath(output_chimera_filepath))[0]
-    
-    log_filepath = tmp_working_dir + "/" + log_name
+    log_filepath = join(working_dir, log_name)
     
     params = {'--abskew':abundance_skew}
     
-    app = Usearch(params,HALT_EXEC=HALT_EXEC)
+    app = Usearch(params, WorkingDir=working_dir, HALT_EXEC=HALT_EXEC)
     
     if usersort:
         app.Parameters['--usersort'].on()
@@ -584,7 +583,8 @@ def usearch_chimera_filter_ref_based(
     usersort = False,
     HALT_EXEC=False,
     save_intermediate_files=False,
-    remove_usearch_logs=False):
+    remove_usearch_logs=False,
+    working_dir=None):
     """ Chimera filter against a reference database.
     
     fasta_filepath = input fasta file, generally a dereplicated fasta
@@ -606,17 +606,14 @@ def usearch_chimera_filter_ref_based(
     output_non_chimera_filepath = output_non_chimera_filepath or \
      get_tmp_filename(prefix='uchime_non_chimeras_', suffix='.fasta')
     
-    # using abspath to create log filepath, for cluster environments
-    tmp_working_dir = split(abspath(output_chimera_filepath))[0]
-    
-    log_filepath = tmp_working_dir + "/" + log_name
+    log_filepath = join(working_dir, log_name)
     
     # clusters filepath created by usearch
-    cluster_filepath = tmp_working_dir + "/refdb.uc"
+    cluster_filepath = join(working_dir, "refdb.uc")
     
     params = {'--rev':rev}
     
-    app = Usearch(params,HALT_EXEC=HALT_EXEC)
+    app = Usearch(params, WorkingDir=working_dir, HALT_EXEC=HALT_EXEC)
     
     if usersort:
         app.Parameters['--usersort'].on()
@@ -652,7 +649,8 @@ def usearch_cluster_seqs(
     usersort = True,
     HALT_EXEC=False,
     save_intermediate_files=False,
-    remove_usearch_logs=False
+    remove_usearch_logs=False,
+    working_dir=None
     ):
     """ Cluster seqs at percent_id, output consensus fasta
     
@@ -676,12 +674,9 @@ def usearch_cluster_seqs(
     output_filepath = output_filepath or \
      get_tmp_filename(prefix='usearch_cluster', suffix='.fasta')
     
-    # using abspath to create log filepath, for cluster environments
-    tmp_working_dir = split(abspath(output_filepath))[0]
+    log_filepath = join(working_dir, log_name)
     
-    log_filepath = tmp_working_dir + "/" + log_name
-    
-    uc_filepath = tmp_working_dir + "/clustered_seqs_post_chimera.uc"
+    uc_filepath = join(working_dir, "clustered_seqs_post_chimera.uc")
     
     params = {'--sizein':sizein,
               '--sizeout':sizeout,
@@ -690,7 +685,7 @@ def usearch_cluster_seqs(
               '--slots':slots,
               '--maxrejects':maxrejects}
     
-    app = Usearch(params,HALT_EXEC=HALT_EXEC)
+    app = Usearch(params, WorkingDir=working_dir, HALT_EXEC=HALT_EXEC)
     
     if usersort:
         app.Parameters['--usersort'].on()
@@ -728,7 +723,8 @@ def usearch_cluster_seqs_ref(
     remove_usearch_logs=False,
     suppress_new_clusters=False,
     refseqs_fp = None,
-    output_dir = None):
+    output_dir = None,
+    working_dir=None):
     """ Cluster seqs at percent_id, output consensus fasta
     
     Also appends de novo clustered seqs if suppress_new_clusters is False.
@@ -760,12 +756,9 @@ def usearch_cluster_seqs_ref(
     output_filepath = output_filepath or \
      get_tmp_filename(prefix='usearch_cluster_ref_based', suffix='.uc')
     
-    # using abspath to create log filepath, for cluster environments
-    tmp_working_dir = split(abspath(output_filepath))[0]
+    log_filepath = join(working_dir, log_name)
     
-    log_filepath = tmp_working_dir + "/" + log_name
-    
-    uc_filepath = tmp_working_dir + "/clustered_seqs_post_chimera.uc"
+    uc_filepath = join(working_dir, "clustered_seqs_post_chimera.uc")
     
     params = {'--sizein':sizein,
               '--sizeout':sizeout,
@@ -774,7 +767,7 @@ def usearch_cluster_seqs_ref(
               '--slots':slots,
               '--maxrejects':maxrejects}
     
-    app = Usearch(params,HALT_EXEC=HALT_EXEC)
+    app = Usearch(params, WorkingDir=working_dir, HALT_EXEC=HALT_EXEC)
     
     if usersort:
         app.Parameters['--usersort'].on()
@@ -800,7 +793,7 @@ def usearch_cluster_seqs_ref(
     # file, with unique fasta label IDs.
     
     if suppress_new_clusters:
-        output_fna_filepath = output_dir + 'ref_clustered_seqs.fasta'
+        output_fna_filepath = join(output_dir, 'ref_clustered_seqs.fasta')
         output_filepath, labels_hits = get_fasta_from_uc_file(fasta_filepath,
          uc_filepath, hit_type="H", output_dir=output_dir,
          output_fna_filepath=output_fna_filepath)
@@ -809,13 +802,14 @@ def usearch_cluster_seqs_ref(
         files_to_remove.append(uc_filepath)
     else:
         # Get fasta of successful ref based clusters
-        output_fna_clustered = output_dir + 'ref_clustered_seqs.fasta'
+        output_fna_clustered = join(output_dir, 'ref_clustered_seqs.fasta')
         output_filepath_ref_clusters,  labels_hits =\
          get_fasta_from_uc_file(fasta_filepath, uc_filepath, hit_type="H",
          output_dir=output_dir, output_fna_filepath=output_fna_clustered)
                 
         # get failures and recluster
-        output_fna_failures = output_dir + 'ref_clustered_seqs_failures.fasta'
+        output_fna_failures =\
+         join(output_dir, 'ref_clustered_seqs_failures.fasta')
         output_filepath_failures,labels_hits =\
          get_fasta_from_uc_file(fasta_filepath,
          uc_filepath, hit_type="N", output_dir=output_dir,
@@ -824,15 +818,16 @@ def usearch_cluster_seqs_ref(
          
         # de novo cluster the failures
         app_result, output_filepath_clustered_failures =\
-         usearch_cluster_seqs(output_fna_failures, output_filepath=output_dir +\
-         'clustered_seqs_reference_failures.fasta', percent_id=percent_id,
-         sizein=sizein, sizeout=sizeout, w=w, slots=slots,
-         maxrejects=maxrejects, save_intermediate_files=save_intermediate_files,
-         remove_usearch_logs=remove_usearch_logs)
+         usearch_cluster_seqs(output_fna_failures, output_filepath=\
+         join(output_dir, 'clustered_seqs_reference_failures.fasta'),
+         percent_id=percent_id, sizein=sizein, sizeout=sizeout, w=w,
+         slots=slots, maxrejects=maxrejects,
+         save_intermediate_files=save_intermediate_files,
+         remove_usearch_logs=remove_usearch_logs, working_dir=working_dir)
          
         output_filepath = concatenate_fastas(output_fna_clustered,
-         output_fna_failures, output_concat_filepath=output_dir +\
-         'concatenated_reference_denovo_clusters.fasta')
+         output_fna_failures, output_concat_filepath=join(output_dir,
+         'concatenated_reference_denovo_clusters.fasta'))
          
         files_to_remove.append(output_fna_clustered)
         files_to_remove.append(output_fna_failures)
@@ -1023,7 +1018,8 @@ def assign_reads_to_otus(original_fasta,
                          global_alignment = True,
                          HALT_EXEC=False,
                          save_intermediate_files=False,
-                         remove_usearch_logs=False):
+                         remove_usearch_logs=False,
+                         working_dir=None):
     """ Uses original fasta file, blasts to assign reads to filtered fasta
     
     original_fasta = filepath to original query fasta
@@ -1044,15 +1040,12 @@ def assign_reads_to_otus(original_fasta,
     output_filepath = output_filepath or \
      get_tmp_filename(prefix='assign_reads_to_otus', suffix='.uc')
     
-    # using abspath to create log filepath, for cluster environments
-    tmp_working_dir = split(abspath(output_filepath))[0]
-    
-    log_filepath = tmp_working_dir + "/" + log_name
+    log_filepath = join(working_dir, log_name)
     
     params = {'--id':perc_id_blast,
               '--global':global_alignment}
               
-    app = Usearch(params,HALT_EXEC=HALT_EXEC)
+    app = Usearch(params, WorkingDir=working_dir, HALT_EXEC=HALT_EXEC)
     
     data = {'--query':original_fasta,
             '--db':filtered_fasta,
@@ -1098,7 +1091,8 @@ def otu_pipe(
     remove_usearch_logs=False,
     usersort=True,
     suppress_new_clusters = False,
-    chimeras_retention = "union"
+    chimeras_retention = "union",
+    verbose=False
     ):
         
     """ Main convenience wrapper for using usearch to filter/cluster seqs
@@ -1161,77 +1155,105 @@ def otu_pipe(
     # Save a list of intermediate filepaths in case they are to be removed.
     intermediate_files = []
     
-    
-    if output_dir and not output_dir.endswith('/'):
-        output_dir += '/'
+    # Need absolute paths to avoid problems with app controller
+    if output_dir:
+        output_dir = abspath(output_dir) + '/'
         
-
+    fasta_filepath = abspath(fasta_filepath)
 
     try:
         
+        if verbose:
+            print "Sorting sequences by length..."
         # Sort seqs by length
         app_result, output_filepath_len_sorted =\
          usearch_fasta_sort_from_filepath(fasta_filepath, output_filepath =\
-         output_dir + 'len_sorted.fasta',
+         join(output_dir, 'len_sorted.fasta'),
          save_intermediate_files=save_intermediate_files,
-         remove_usearch_logs=remove_usearch_logs)
+         remove_usearch_logs=remove_usearch_logs,
+         working_dir=output_dir)
          
         intermediate_files.append(output_filepath_len_sorted)
         
+        if verbose:
+            print "Dereplicating sequences..."
         # Dereplicate sequences
         app_result, output_filepath_dereplicated =\
          usearch_dereplicate_exact_subseqs(output_filepath_len_sorted,
-         output_filepath = output_dir + 'dereplicated_seqs.fasta',
+         output_filepath = join(output_dir, 'dereplicated_seqs.fasta'),
          minlen=minlen, w=w, slots=slots, sizeout=sizeout, 
          maxrejects=maxrejects, save_intermediate_files=save_intermediate_files,
-         remove_usearch_logs=remove_usearch_logs)
+         remove_usearch_logs=remove_usearch_logs,
+         working_dir=output_dir)
         
         intermediate_files.append(output_filepath_dereplicated)
         
+        if verbose:
+            print "Sorting by abundance..."
         # Sort by abundance, initially no filter based on seqs/otu
         app_result, output_fp =\
          usearch_sort_by_abundance(output_filepath_dereplicated,
-         output_filepath = output_dir + 'abundance_sorted.fasta',
+         output_filepath = join(output_dir, 'abundance_sorted.fasta'),
          usersort = True, sizein=sizein, sizeout=sizeout, minsize=0,
-         remove_usearch_logs=remove_usearch_logs)
+         remove_usearch_logs=remove_usearch_logs, working_dir=output_dir)
          
         intermediate_files.append(output_fp)
         
+        if verbose:
+            print "Clustering sequences for error correction..."
+        
+        # Create .uc file of clusters file, to identify original sequences later
+        output_uc_filepath = output_dir + 'err_corrected_clusters.uc'
         
         app_result, error_clustered_output_fp =\
              usearch_cluster_error_correction(output_fp,
-             output_filepath = output_dir + 'clustered_error_corrected.fasta',
+             output_filepath = join(output_dir, 
+             'clustered_error_corrected.fasta'),
+             output_uc_filepath = output_uc_filepath,
              usersort = True, percent_id_err=percent_id_err, sizein=sizein,
              sizeout=sizeout, w=w, slots=slots, maxrejects=maxrejects,
-             remove_usearch_logs=remove_usearch_logs)
+             remove_usearch_logs=remove_usearch_logs,
+             save_intermediate_files=save_intermediate_files,
+             working_dir=output_dir)
 
         intermediate_files.append(error_clustered_output_fp)
+        intermediate_files.append(output_uc_filepath)
             
+        
+        
         # Series of conditional tests, using generic 'output_fp' name so the
         # conditional filtering, if any/all are selected, do not matter.
         
         if de_novo_chimera_detection:
+            
+
+            if verbose:
+                print "Performing de novo chimera detection..."
             app_result, output_fp_de_novo_nonchimeras =\
              usearch_chimera_filter_de_novo(error_clustered_output_fp, 
              abundance_skew = abundance_skew, output_chimera_filepath =\
-             output_dir + 'de_novo_chimeras.fasta',
-             output_non_chimera_filepath = output_dir +\
-             'de_novo_non_chimeras.fasta', usersort=True,
+             join(output_dir, 'de_novo_chimeras.fasta'),
+             output_non_chimera_filepath = join(output_dir,
+             'de_novo_non_chimeras.fasta'), usersort=True,
              save_intermediate_files=save_intermediate_files,
-             remove_usearch_logs=remove_usearch_logs)
+             remove_usearch_logs=remove_usearch_logs, working_dir=output_dir)
         
             intermediate_files.append(output_fp_de_novo_nonchimeras)
             
             output_fp = output_fp_de_novo_nonchimeras
         
         if reference_chimera_detection:
+            if verbose:
+                print "Performing reference based chimera detection..."
+            
             app_result, output_fp_ref_nonchimeras =\
              usearch_chimera_filter_ref_based(error_clustered_output_fp,
-             db_filepath=db_filepath, output_chimera_filepath= output_dir +\
-             'reference_chimeras.fasta', output_non_chimera_filepath =\
-             output_dir + 'reference_non_chimeras.fasta', usersort=True, 
+             db_filepath=db_filepath, output_chimera_filepath=\
+             join(output_dir, 'reference_chimeras.fasta'),
+             output_non_chimera_filepath =\
+             join(output_dir, 'reference_non_chimeras.fasta'), usersort=True, 
              save_intermediate_files=save_intermediate_files, rev=rev,
-             remove_usearch_logs=remove_usearch_logs)
+             remove_usearch_logs=remove_usearch_logs, working_dir=output_dir)
         
             intermediate_files.append(output_fp_ref_nonchimeras)
             
@@ -1239,9 +1261,12 @@ def otu_pipe(
             
         # get intersection or union if both ref and de novo chimera detection 
         if de_novo_chimera_detection and reference_chimera_detection:
+            if verbose:
+                print "Finding %s of non-chimeras..." % chimeras_retention
             output_fp = get_retained_chimeras(
              output_fp_de_novo_nonchimeras, output_fp_ref_nonchimeras,
-             output_combined_fp = output_dir + 'combined_non_chimeras.fasta',
+             output_combined_fp =\
+             join(output_dir,'combined_non_chimeras.fasta'),
              chimeras_retention = chimeras_retention)
             
             intermediate_files.append(output_fp)
@@ -1249,12 +1274,14 @@ def otu_pipe(
         if cluster_size_filtering:
             # Test for empty filepath following filters, raise error if all seqs
             # have been removed
-            
+            if verbose:
+                print "Filtering by cluster size..."
             app_result, output_fp =\
-             usearch_sort_by_abundance(output_fp, output_filepath = output_dir+\
-             'abundance_sorted_minsize_' + str(minsize) + '.fasta', 
+             usearch_sort_by_abundance(output_fp, output_filepath =\
+             join(output_dir, 'abundance_sorted_minsize_' + str(minsize) + 
+             '.fasta'), 
              minsize=minsize, sizein=sizein, sizeout=sizeout,
-             remove_usearch_logs=remove_usearch_logs)
+             remove_usearch_logs=remove_usearch_logs, working_dir=output_dir)
              
             intermediate_files.append(output_fp)
 
@@ -1263,30 +1290,38 @@ def otu_pipe(
         # Seems like it will be a bit of a mess...maybe after we determine
         # if OTU pipe should become standard.
         if refseqs_fp:
+            if verbose:
+                print "Clustering against reference sequences..."
             app_result, output_filepath =\
-             usearch_cluster_seqs_ref(output_fp, output_filepath = output_dir +\
-             'ref_clustered_seqs.uc', percent_id=percent_id, sizein=sizein,
+             usearch_cluster_seqs_ref(output_fp, output_filepath =\
+             join(output_dir, 'ref_clustered_seqs.uc'),
+             percent_id=percent_id, sizein=sizein,
              sizeout=sizeout, w=w, slots=slots, maxrejects=maxrejects,
              save_intermediate_files=save_intermediate_files,
              remove_usearch_logs=remove_usearch_logs,
              suppress_new_clusters=suppress_new_clusters, refseqs_fp=refseqs_fp,
-             output_dir=output_dir
+             output_dir=output_dir, working_dir=output_dir
              )
 
         else:
+            if verbose:
+                print "De novo clustering sequences..."
             app_result, output_filepath =\
-             usearch_cluster_seqs(output_fp, output_filepath = output_dir +\
-             'clustered_seqs.fasta', percent_id=percent_id, sizein=sizein,
+             usearch_cluster_seqs(output_fp, output_filepath =\
+             join(output_dir, 'clustered_seqs.fasta'),
+             percent_id=percent_id, sizein=sizein,
              sizeout=sizeout, w=w, slots=slots, maxrejects=maxrejects,
              save_intermediate_files=save_intermediate_files,
-             remove_usearch_logs=remove_usearch_logs)
+             remove_usearch_logs=remove_usearch_logs, working_dir=output_dir)
         
         intermediate_files.append(output_filepath)
         
         # Enumerate the OTUs in the clusters
+        if verbose:
+            print "Enumerating OTUs..."
         output_filepath =\
          enumerate_otus(output_filepath, output_filepath =\
-         output_dir + 'enumerated_otus.fasta', label_prefix=label_prefix,
+         join(output_dir, 'enumerated_otus.fasta'), label_prefix=label_prefix,
          label_suffix=label_suffix, count_start=count_start,
          retain_label_as_comment=retain_label_as_comment)
             
@@ -1294,11 +1329,13 @@ def otu_pipe(
 
         
         # Get original sequence label identities
+        if verbose:
+            print "Assigning sequences to clusters..."
         app_result, clusters_file = assign_reads_to_otus(fasta_filepath,
-         output_filepath, output_filepath = output_dir +\
-         'assign_reads_to_otus.uc', perc_id_blast=perc_id_blast,
+         filtered_fasta= output_filepath, output_filepath = join(output_dir,
+         'assign_reads_to_otus.uc'), perc_id_blast=perc_id_blast,
          global_alignment=global_alignment,
-         remove_usearch_logs=remove_usearch_logs)
+         remove_usearch_logs=remove_usearch_logs, working_dir=output_dir)
          
         intermediate_files.append(clusters_file)
         
