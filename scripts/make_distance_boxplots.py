@@ -31,6 +31,10 @@ categories found within the mapping file. The boxplots that are created show \
 the distances within all samples of a field value, as well as between \
 different field values. Individual within and individual between distances \
 are also plotted.
+
+For more information and examples pertaining to this script, please refer to \
+the accompanying tutorial, which can be found at \
+http://qiime.org/tutorials/creating_distance_comparison_plots.html.
 """
 
 script_info['script_usage'] = [("Compare distances between Fast and Control "

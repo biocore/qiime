@@ -24,30 +24,41 @@ from qiime.util import get_options_lookup, make_option, \
                        parse_command_line_parameters
 
 script_info = {}
-script_info['brief_description'] = "Creates plots to compare distances \
-                                    between timepoints"
+script_info['brief_description'] = "Creates plots comparing distances between \
+                                    sample groupings"
 
 script_info['script_description'] = """
-This script creates plots (bar charts or scatter plots) that allow for the \
-comparison between field values at various timepoints found within the \
-mapping file.
+This script creates plots (bar charts, scatter plots, or box plots) that \
+allow for the comparison between samples grouped at different field states \
+of a mapping file field.
 
-A special time field is required to be in the mapping file. This field should \
-contain timepoint values. For example, a time field might contain the values \
-1, 2, 3, 4, and 5, which label samples that are from day 1, day 2, day 3, and \
-so on. This time field can be specified when the script is run, as well as \
-the groups to compare at each timepoint. For example, two comparison groups \
-might be 1 and 2. The resulting plot would contain timepoints for days 3, 4, \
-and 5, and at each timepoint, the distances between day 1 and that timepoint \
-would be plotted, as well as the distances between day 2 and the timepoint.
+This script can work with any field in the mapping file, and it can compare \
+any number of field states to all other field states within that field. \
+This script may be especially useful for fields that represent a time series, \
+because a plot can be generated showing the distances between samples at \
+certain timepoints against all other timepoints.
+
+For example, a time field might contain the values 1, 2, 3, 4, and 5, which \
+label samples that are from day 1, day 2, day 3, and so on. This time field \
+can be specified when the script is run, as well as the timepoint(s) to \
+compare to every other timepoint. For example, two comparison groups \
+might be timepoints 1 and 2. The resulting plot would contain timepoints for \
+days 3, 4, and 5 along the x-axis, and at each of those timepoints, the \
+distances between day 1 and that timepoint would be plotted, as well as the \
+distances between day 2 and the timepoint.
+
+For more information and examples pertaining to this script, please refer to \
+the accompanying tutorial, which can be found at \
+http://qiime.org/tutorials/creating_distance_comparison_plots.html.
 """
 
 script_info['script_usage'] = [("Compare distances between Native and Input "
                                 "samples for each timepoint in the Time field",
-                                "This example will generate a bar chart "
-                                "with the distances between Native samples "
-                                "and each timepoint, as well as the distances "
-                                "between Input samples and each timepoint. "
+                                "This example will generate a PDF containing "
+                                "a bar chart with the distances between "
+                                "Native samples and every other timepoint, as "
+                                "well as the distances between Input samples "
+                                "and every other timepoint. "
                                 "The output image will be put in the "
                                 "'out_files' directory.",
                                 "%prog -d dist_matrix.txt -m map.txt -f "
@@ -66,12 +77,12 @@ script_info['required_options'] = [
         help='input distance matrix filepath (i.e. the result of '
              'beta_diversity.py)',
         type='existing_filepath'),
-    make_option('-f', '--time_field',
-        help='time field in the mapping file to compare distances on'),
+    make_option('-f', '--field',
+        help='field in the mapping file to make comparisons on'),
     make_option('-c', '--comparison_groups',
-        help='comma-separated list of time field values to compare at each '
-             'timepoint, where the list of field values should be in quotes '
-             '(e.g. "FieldVal1,FieldVal2,FieldVal3")')]
+        help='comma-separated list of field states to compare to every other '
+             'field state, where the list of field states should be in quotes '
+             '(e.g. "FieldState1,FieldState2,FieldState3")')]
 
 script_info['optional_options'] = [
     make_option('-g', '--imagetype',
@@ -99,7 +110,7 @@ script_info['optional_options'] = [
         help='Label type ("numeric" or "categorical"). '
         'If the label type is defined as numeric, the x-axis will be '
         'scaled accordingly. Otherwise the x-values will treated '
-        'categorically and be evenly spaced [default: %default].',
+        'categorically and will be evenly spaced [default: %default].',
         default='categorical',
         type='choice', choices=['categorical','numeric']),
     make_option('--y_min',
@@ -133,17 +144,16 @@ script_info['optional_options'] = [
              'if the plot type is a boxplot) [default: %default]',
         default='0.4', type='float'),
     make_option('--group_spacing',
-        help='width (in plot units) of the gap between each timepoint (i.e. '
-             'the width between each group of distributions) '
-             '[default: %default]',
+        help='width (in plot units) of the gap between each grouping point '
+             'along the x-axis (i.e. the width between each group of '
+             'distributions) [default: %default]',
         default='0.5', type='float')]
 
 script_info['option_label'] = {'mapping_fp':'QIIME-formatted mapping filepath',
                                'output_dir':'output directory',
                                'distance_matrix_fp':'distance matrix filepath',
-                               'time_field':'time field in mapping file',
-                               'comparison_groups':'time field values to '
-                                   'compare',
+                               'field':'field in mapping file',
+                               'comparison_groups':'field states to compare',
                                'imagetype':'output image format',
                                'save_raw_data':'save raw data used in plot',
                                'plot_type':'output plot type',
@@ -161,10 +171,9 @@ script_info['option_label'] = {'mapping_fp':'QIIME-formatted mapping filepath',
                                'distribution_width':'width of each '
                                    'distribution',
                                'group_spacing':'width of gap between '
-                                   'timepoints'}
+                                   'distribution groupings'}
 
 script_info['version'] = __version__
-
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
@@ -191,40 +200,43 @@ def main():
         option_parser.error("This does not look like a valid metadata mapping "
             "file. Please supply a valid mapping file using the -m option.")
 
-    # Get the time field and make sure it is in the mapping file.
-    time_field = opts.time_field
-    if time_field not in mapping_header:
+    # Get the field to make comparisons on and make sure it exists in the
+    # mapping file.
+    field = opts.field
+    if field not in mapping_header:
         option_parser.error("The field '%s' is not in the provided "
-            "mapping file. Please supply a time field (using the -f "
-            "option) corresponding to the time field in the mapping file."
-            % time_field)
+            "mapping file. Please supply a field (using the -f option) "
+            "corresponding to the field to make comparisons on in the mapping "
+            "file." % time_field)
 
-    # Parse the time field values that will be compared at each timepoint.
+    # Parse the field states that will be compared to every other field state.
     comp_groups = opts.comparison_groups
     comp_groups = map(strip, comp_groups.split(','))
     comp_groups = [group.strip('"').strip("'") for group in comp_groups]
 
     if comp_groups is None:
-        option_parser.error("You must provide at least one group to compare "
-                            "using the -c option.")
+        option_parser.error("You must provide at least one field state to "
+                            "compare (using the -c option).")
 
-    # Make sure each comparison group is in the mapping file's time field.
+    # Make sure each comparison group (i.e. field state) is in the specified
+    # field.
     mapping_data = [mapping_header]
     mapping_data.extend(mapping)
-    groups = group_by_field(mapping_data, time_field)
+    groups = group_by_field(mapping_data, field)
     for group in comp_groups:
         if group not in groups:
             option_parser.error("The comparison group '%s' is not in the "
-                                "provided mapping file's time field '%s'. "
+                                "provided mapping file's field '%s'. "
                                 "Please supply correct comparison groups "
                                 "(using the -c option) corresponding to valid "
-                                "values in the time field."
-                                % (group, time_field))
+                                "states in the field."
+                                % (group, field))
 
-    # Grab a list of the timepoints that will be plotted. This list of
-    # timepoints should not include the values of the time field that are being
-    # compared at each timepoint.
-    timepoints = [group for group in groups.keys() if group not in comp_groups]
+    # Grab a list of the field states that will be plotted along the x-axis.
+    # This list of states will not include the comparison group states, as they
+    # will be compared against those.
+    field_states = [group for group in groups.keys()
+                    if group not in comp_groups]
 
     def custom_comparator(x, y):
         try:
@@ -239,21 +251,21 @@ def main():
             else:
                 return 0
 
-    # Sort the timepoints as numbers if the elements are numbers, else sort
+    # Sort the field states as numbers if the elements are numbers, else sort
     # them lexically.
-    timepoints.sort(custom_comparator)
+    field_states.sort(custom_comparator)
 
-    # If the label type is numeric, get a list of all timepoints in sorted
+    # If the label type is numeric, get a list of all field states in sorted
     # numeric order. These will be used to determine the spacing of the
-    # timepoints along the x-axis.
+    # field state 'points' along the x-axis.
     x_spacing = None
     if opts.label_type == "numeric":
         try:
-            x_spacing = map(float, timepoints)
+            x_spacing = map(float, field_states)
             x_spacing.sort()
         except:
             option_parser.error("The 'numeric' label type is invalid because "
-                                "not all timepoints could be converted into "
+                                "not all field states could be converted into "
                                 "numbers. Please specify a different label "
                                 "type.")
 
@@ -280,26 +292,26 @@ def main():
 
     # Get all between distance groupings.
     groupings = get_grouped_distances(dist_matrix_header, dist_matrix,
-            mapping_header, mapping, time_field, within=False)
+            mapping_header, mapping, field, within=False)
 
-    # Accumulate the data for each timepoint.
+    # Accumulate the data for each field state 'point' along the x-axis.
     plot_data = []
-    plot_timepoint_labels = []
-    for timepoint in timepoints:
-        timepoint_data = []
+    plot_x_axis_labels = []
+    for field_state in field_states:
+        field_state_data = []
         for comp_group in comp_groups:
             matching_data = []
             for group in groupings:
-                if ((group[0] == timepoint or group[1] == timepoint)
+                if ((group[0] == field_state or group[1] == field_state)
                     and (group[0] == comp_group or group[1] == comp_group)):
                     matching_data = group[2]
-            timepoint_data.append(matching_data)
-        plot_data.append(timepoint_data)
-        plot_timepoint_labels.append(timepoint)
+            field_state_data.append(matching_data)
+        plot_data.append(field_state_data)
+        plot_x_axis_labels.append(field_state)
 
     # Plot the data and labels.
     plot_title = "Timepoint Distances"
-    plot_x_label = time_field
+    plot_x_label = field
     plot_y_label = "Distance"
 
     # If we are creating a bar chart or box plot, grab a list of good data
@@ -310,9 +322,9 @@ def main():
         plot_colors = [matplotlib_rgb_color(data_colors[color].toRGB()) \
                        for color in data_color_order]
 
-    assert(plot_data)
+    assert plot_data, "Error: there is no data to plot!"
     plot_figure = generate_comparative_plots(opts.plot_type, plot_data,
-            x_values=x_spacing, data_point_labels=plot_timepoint_labels,
+            x_values=x_spacing, data_point_labels=plot_x_axis_labels,
             distribution_labels=comp_groups, distribution_markers=plot_colors,
             x_label=plot_x_label, y_label=plot_y_label, title=plot_title,
             x_tick_labels_orientation=opts.x_tick_labels_orientation,
@@ -329,27 +341,30 @@ def main():
     else:
         option_parser.error("The specified width and height of the image must "
                             "be greater than zero.")
-    output_plot_fp = path.join(opts.output_dir, "%s_Timepoint_Distances.%s"
-                               % (time_field, opts.imagetype))
+    output_plot_fp = path.join(opts.output_dir, "%s_Distance_Comparisons.%s"
+                               % (field, opts.imagetype))
     plot_figure.savefig(output_plot_fp, format=opts.imagetype,
             transparent=opts.transparent)
 
     if opts.save_raw_data:
-        # Write the raw plot data into a tab-delimited file, where each line is
-        # a comparison group's data at a specific timepoint.
-        assert(len(plot_timepoint_labels) == len(plot_data))
-        raw_data_fp = path.join(opts.output_dir, "%s_Timepoint_Distances.xls"
-                                % time_field)
+        # Write the raw plot data into a tab-delimited file, where each line
+        # has the distances between a comparison group and another field state
+        # 'point' along the x-axis.
+        assert (len(plot_x_axis_labels) == len(plot_data)), "The number of " +\
+                "labels do not match the number of points along the x-axis."
+        raw_data_fp = path.join(opts.output_dir, "%s_Distance_Comparisons.xls"
+                                % field)
         raw_data_f = open(raw_data_fp, 'w')
 
-        raw_data_f.write("#ComparisonGroup\tTimePoint\tDistances\n")
-        for label, data in zip(plot_timepoint_labels, plot_data):
-            assert(len(comp_groups) == len(data))
+        raw_data_f.write("#ComparisonGroup\tFieldState\tDistances\n")
+        for label, data in zip(plot_x_axis_labels, plot_data):
+            assert (len(comp_groups) == len(data)), "The number of " +\
+                    "specified comparison groups does not match the number " +\
+                    "of groups found at the current point along the x-axis."
             for comp_grp, comp_grp_data in zip(comp_groups, data):
                 raw_data_f.write(comp_grp + "\t" + label + "\t" +
                         "\t".join(map(str, comp_grp_data)) + "\n")
         raw_data_f.close()
-
 
 if __name__ == "__main__":
     main()
