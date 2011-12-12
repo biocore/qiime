@@ -50,12 +50,14 @@ This script works like the `pick_otus.py <./pick_otus.html>`_ script, but is int
 		Don't pass --stable-sort to uclust [default: False]
 	-d, `-`-save_uc_files
 		Enable preservation of intermediate uclust (.uc) files that are used to generate clusters via uclust. [default: True]
+	`-`-uclust_otu_id_prefix
+		OTU identifier prefix (string) for the de novo uclust OTU picker [default: None, OTU ids are ascending integers]
 	-N, `-`-pick_otus_fp
-		Full path to scripts/`pick_otus.py <./pick_otus.html>`_ [default: /Users/caporaso/code/Qiime/scripts/`pick_otus.py <./pick_otus.html>`_]
+		Full path to scripts/`pick_otus.py <./pick_otus.html>`_ [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`pick_otus.py <./pick_otus.html>`_]
 	-O, `-`-jobs_to_start
-		Number of jobs to start [default: 2]
+		Number of jobs to start [default: 1]
 	-P, `-`-poller_fp
-		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /Users/caporaso/code/Qiime/scripts/`poller.py <./poller.html>`_]
+		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`poller.py <./poller.html>`_]
 	-R, `-`-retain_temp_files
 		Retain temporary files after runs complete (useful for debugging) [default: False]
 	-S, `-`-suppress_submit_jobs
@@ -63,15 +65,15 @@ This script works like the `pick_otus.py <./pick_otus.html>`_ script, but is int
 	-T, `-`-poll_directly
 		Poll directly for job completion rather than running poller as a separate job. If -T is specified this script will not return until all jobs have completed. [default: False]
 	-U, `-`-cluster_jobs_fp
-		Path to cluster jobs script (defined in qiime_config)  [default: /Users/caporaso/code/Qiime/scripts/`start_parallel_jobs.py <./start_parallel_jobs.html>`_]
+		Path to cluster jobs script (defined in qiime_config)  [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`start_parallel_jobs.py <./start_parallel_jobs.html>`_]
 	-W, `-`-suppress_polling
 		Suppress polling of jobs and merging of results upon completion [default: False]
 	-X, `-`-job_prefix
 		Job prefix [default: descriptive prefix + random chars]
 	-Y, `-`-python_exe_fp
-		Full path to python executable [default: python]
+		Full path to python executable [default: /usr/bin/python2.6]
 	-Z, `-`-seconds_to_sleep
-		Number of seconds to sleep between checks for run  completion when polling runs [default: 6]
+		Number of seconds to sleep between checks for run  completion when polling runs [default: 60]
 
 
 **Output:**

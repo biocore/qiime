@@ -19,17 +19,17 @@ This script takes a tree and a list of OTU IDs (in one of several supported form
 	
 	**[REQUIRED]**
 		
-	-i, `-`-input_tree_fp
+	-i, `-`-input_tree_filepath
 		Input tree filepath
-	-o, `-`-output_tree_fp
+	-o, `-`-output_tree_filepath
 		Output tree filepath
 	
 	**[OPTIONAL]**
 		
 	-n, `-`-negate
-		If negate is not false will prune tips fed in and save             all others [default: False]
+		If negate is not false will prune tips fed in and save    all others [default: False]
 	-t, `-`-tips_fp
-		A list of sequence identifiers (or tab-delimited lines with a seq identifier in the first field) which should be retained [default: None]
+		A list of sequence identifiers (or tab-delimited lines with   a seq identifier in the first field) which should be retained   [default: None]
 	-f, `-`-fasta_fp
 		A fasta file where the seq ids should be retained [default: None]
 

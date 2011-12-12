@@ -14,13 +14,13 @@ Loading the QIIME EC2 image in AWS
 
 To launch the QIIME EC2 image on the Amazon Cloud you will first need an AWS account. Create one on the `AWS`_ site if you don't already have one. To get started with using  AWS, check out their documentation on the `AWS console`_ page. You can load the QIIME EC2 image from the `AWS console`_ by searching for ``qiime1.3.0``, which is the name of the QIIME 1.3.0 EC2 image.
 
-Once you've loaded your instance you can find instructions on working with these instances `here <../tutorials/working_with_aws.html>`_.
+Once you've loaded your instance you can find instructions on working with these instances: `instructions <../tutorials/working_with_aws.html>`_.
 
 Additional information on getting started with the EC image
 ===========================================================
 A video providing detailed instructions on booting and working with the QIIME EC2 image can be found `here <http://www.youtube.com/watch?v=PEcSL_7D-jo>`_.
 
-A very nice tutorial on getting started with EC2 can be found `here <http://ged.msu.edu/angus/tutorials-2011/day1.html>`_. (Note that this is not maintained by the QIIME development group.)
+A very nice tutorial on getting started with EC2 can be found here: `EC2 Tutorial <http://ged.msu.edu/angus/tutorials-2011/day1.html>`_. (Note that this is not maintained by the QIIME development group.)
 
 Acknowledgements
 ================

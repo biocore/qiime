@@ -23,18 +23,18 @@ This script adds taxa to an OTU table.
 		Path to read otu file
 	-t, `-`-taxonomy_file
 		Path to read taxonomy file
+	-o, `-`-output_file
+		Path to write
 	
 	**[OPTIONAL]**
 		
-	-o, `-`-output_file
-		Path to write output file [default: stdout]
 	-m, `-`-id_map_file
 		Path to read seq id to otu map file [default: None]
 
 
 **Output:**
 
-The result of this script is written to stdout, or optionally to the specified file.
+The result of this script is written to the specified file.
 
 
 **Example:**

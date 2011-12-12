@@ -51,7 +51,7 @@ An example of this script, where the user sets the minimum ("-m") and maximum ("
 
 ::
 
-	multiple_rarefactions.py otu_table.txt -m 100 -x 1200 -s 100 -n 2 -o rarefaction_tables/
+	multiple_rarefactions.py -i otu_table.txt -m 100 -x 1200 -s 100 -n 2 -o rarefaction_tables/
 
 As a result, this command produces subsamples of the input otu_table.txt at 100 seqs per sample (twice), 200 seqs per sample (twice) ... 1200 seqs per sample (twice), which produces 24 rarefied otu talbes in the "rarefaction_tables" directory.
 

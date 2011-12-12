@@ -35,6 +35,8 @@ This script will perform beta diversity, principal coordinate anlalysis, and gen
 		Path to the parameter file, which specifies changes to the default behavior. See http://www.qiime.org/documentation/file_formats.html#qiime-parameters . [if omitted, default values will be used]
 	`-`-color_by_all_fields
 		Plots will have coloring for all mapping fields [default: False; only include fields with greater than one value and fewer values than the number of samples]
+	-c, `-`-histogram_categories
+		Mapping fields to use when plotting distance histograms [default: None]
 	-f, `-`-force
 		Force overwrite of existing output directory (note: existing files in output_dir will not be removed) [default: None]
 	-w, `-`-print_only

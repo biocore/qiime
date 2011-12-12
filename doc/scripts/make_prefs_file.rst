@@ -53,7 +53,7 @@ To make a prefs file, the user is required to pass in a user-generated mapping f
 
 ::
 
-	"make_prefs_file.py -m mapping.txt -o prefs_out.txt
+	make_prefs_file.py -m mapping.txt -o prefs_out.txt
 
 If the user would like to use specified categories ('SampleID,Individual') or combinations of categories ('SampleID&&Individual'), they will need to use the -b option, where each category is comma delimited, as follows:
 

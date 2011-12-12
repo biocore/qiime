@@ -35,7 +35,7 @@ After the OTU has been generated, the user may want to filter the table based on
 	-e, `-`-exclude_taxonomy
 		List of taxonomy terms to exclude. [default=]
 	-p, `-`-seqs_per_sample
-		Minimum sequences per sample to retain the sample. [default=None]
+		Minimum sequences per sample to retain the sample. [default=1]
 
 
 **Output:**

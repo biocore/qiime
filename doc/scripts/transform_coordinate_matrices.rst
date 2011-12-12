@@ -7,7 +7,7 @@
 
 **Description:**
 
-This script transformms 2 coordinate matrices (e.g., the output of `principal_coordinates.py <./principal_coordinates.html>`_) using procrustes analysis to minimize the distances between corresponding points. Monte Carlo simulations can additionally be performed (-r random trials are run) to estimate the probability of seeing an M^2 value as extreme as the actual M^2.
+This script transforms 2 coordinate matrices (e.g., the output of `principal_coordinates.py <./principal_coordinates.html>`_) using procrustes analysis to minimize the distances between corresponding points. Monte Carlo simulations can additionally be performed (-r random trials are run) to estimate the probability of seeing an M^2 value as extreme as the actual M^2.
 
 
 **Usage:** :file:`transform_coordinate_matrices.py [options]`
@@ -29,7 +29,7 @@ This script transformms 2 coordinate matrices (e.g., the output of `principal_co
 	-r, `-`-random_trials
 		Number of random permutations of matrix2 to perform.  [default: (no Monte Carlo analysis performed)]
 	-d, `-`-num_dimensions
-		Number of dimensions to include in output matrices [default: Consider all dimensions]
+		Number of dimensions to include in output matrices [default: 3]
 	-s, `-`-sample_id_map_fp
 		Map of original sample ids to new sample ids [default: None]
 	`-`-store_trial_details

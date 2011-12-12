@@ -23,6 +23,8 @@ Currently, the following clustering methods have been implemented in QIIME:
 
 6. uclust (Robert Edgar, unpublished, 2009), creates "seeds" of sequences which generate clusters based on percent identity.
 
+7. usearch (Robert Edgar, unpublished, 2011), creates "seeds" of sequences which generate clusters based on percent identity, filters low abundance clusters, performs de novo and reference based chimera detection.
+
 The primary inputs for `pick_otus.py <./pick_otus.html>`_ are:
 
 1. A FASTA file containing sequences to be clustered
@@ -51,7 +53,7 @@ The primary inputs for `pick_otus.py <./pick_otus.html>`_ are:
 	**[OPTIONAL]**
 		
 	-m, `-`-otu_picking_method
-		Method for picking OTUs.  Valid choices are: mothur, trie, uclust_ref, prefix_suffix, blast, cdhit, uclust. The mothur method requires an input file of aligned sequences [default: uclust]
+		Method for picking OTUs.  Valid choices are: usearch, usearch_ref, prefix_suffix, mothur, trie, blast, uclust_ref, cdhit, uclust. The mothur method requires an input file of aligned sequences.  usearch will enable OTUpipe filtering. [default: uclust]
 	-c, `-`-clustering_algorithm
 		Clustering algorithm for mothur otu picking method.  Valid choices are: furthest, nearest, average. [default: furthest]
 	-M, `-`-max_cdhit_memory
@@ -59,13 +61,13 @@ The primary inputs for `pick_otus.py <./pick_otus.html>`_ are:
 	-o, `-`-output_dir
 		Path to store result file [default: ./<OTU_METHOD>_picked_otus/]
 	-r, `-`-refseqs_fp
-		Path to reference sequences to search against when using -m blast or -m uclust_ref [default: None]
+		Path to reference sequences to search against when using -m blast, -m uclust_ref, or -m usearch_ref [default: None]
 	-b, `-`-blast_db
 		Pre-existing database to blast against when using -m blast [default: None]
 	`-`-min_aligned_percent
 		Minimum percent of query sequence that can be aligned to consider a hit  (BLAST OTU picker only) [default: 0.5]
 	-s, `-`-similarity
-		Sequence similarity threshold (for cdhit, uclust, or uclust_ref) [default: 0.97]
+		Sequence similarity threshold (for cdhit, uclust, uclust_ref, orusearch) [default: 0.97]
 	-e, `-`-max_e_value
 		Max E-value when clustering with BLAST [default: 1e-10]
 	-q, `-`-trie_reverse_seqs
@@ -89,7 +91,7 @@ The primary inputs for `pick_otus.py <./pick_otus.html>`_ are:
 	-B, `-`-user_sort
 		Pass the --user_sort flag to uclust for uclust otu picking. [default: False]
 	-C, `-`-suppress_new_clusters
-		Suppress creation of new clusters using seqs that don't match reference when using -m uclust_ref [default: False]
+		Suppress creation of new clusters using seqs that don't match reference when using -m uclust_ref or -m usearch_ref [default: False]
 	`-`-max_accepts
 		Max_accepts value to uclust and uclust_ref [default: 20]
 	`-`-max_rejects
@@ -97,7 +99,7 @@ The primary inputs for `pick_otus.py <./pick_otus.html>`_ are:
 	`-`-stepwords
 		Stepwords value to uclust and uclust_ref [default: 20]
 	`-`-word_length
-		W value to uclust and uclust_ref [default: 12]
+		W value to usearch, uclust, and uclust_ref.  Set to 64 for usearch. [default: 12]
 	`-`-uclust_otu_id_prefix
 		OTU identifier prefix (string) for the de novo uclust OTU picker [default: None, OTU ids are ascending integers]
 	`-`-uclust_stable_sort
@@ -107,12 +109,32 @@ The primary inputs for `pick_otus.py <./pick_otus.html>`_ are:
 	`-`-suppress_uclust_prefilter_exact_match
 		Don't collapse exact matches before calling uclust [default: False]
 	-d, `-`-save_uc_files
-		Enable preservation of intermediate uclust (.uc) files that are used to generate clusters via uclust. [default: True]
+		Enable preservation of intermediate uclust (.uc) files that are used to generate clusters via uclust.  Also enables preservation of all intermediate files created by usearch (OTUpipe). [default: True]
+	`-`-percent_id_err
+		Percent identity threshold for cluster error detection with OTUpipe. [default: 0.97]
+	`-`-minsize
+		Minimum cluster size for size filtering with OTUpipe. [default: 4]
+	`-`-abundance_skew
+		Abundance skew setting for de novo chimera detection with OTUpipe. [default: 2]
+	`-`-db_filepath
+		Reference database of fasta sequences for reference based chimera detection with OTUpipe. [default: None]
+	`-`-perc_id_blast
+		Percent ID for mapping OTUs created by OTUpipe back to original sequence IDs. [default: 0.97]
+	`-`-de_novo_chimera_detection
+		Perform de novo chimera detection in OTUpipe. [default: True]
+	`-`-reference_chimera_detection
+		Perform reference based chimera detection in OTUpipe. [default: True]
+	`-`-cluster_size_filtering
+		Perform cluster size filtering in OTUpipe.  [default: True]
+	`-`-remove_usearch_logs
+		Disable creation of logs when usearch is called.  Up to nine logs are created, depending on filtering steps enabled.  [default: False]
+	`-`-chimeras_retention
+		Selects subsets of sequences detected as non-chimeras to retain after de novo and refernece based chimera detection.  Options are intersection or union.  union will retain sequences that are flagged as non-chimeric from either filter, while intersection will retain only those sequences that are flagged as non-chimeras from both detection methods. [default: union]
 
 
 **Output:**
 
-The output consists of two files (i.e. seqs_otus.txt and seqs_otus.log). The .txt file is composed of tab-delimited lines, where the first field on each line corresponds to an (arbitrary) cluster identifier, and the remaining fields correspond to sequence identifiers assigned to that cluster. Sequence identifiers correspond to those provided in the input FASTA file.
+The output consists of two files (i.e. seqs_otus.txt and seqs_otus.log). The .txt file is composed of tab-delimited lines, where the first field on each line corresponds to an (arbitrary) cluster identifier, and the remaining fields correspond to sequence identifiers assigned to that cluster. Sequence identifiers correspond to those provided in the input FASTA file.  Usearch (i.e. OTUpipe) can additionally have log files for each intermediate call to usearch.
 
 Example lines from the resulting .txt file:
 
@@ -223,5 +245,17 @@ The sequence similarity parameter may also be specified. For example, the follow
 ::
 
 	pick_otus.py -i seqs.fna -o picked_otus/ -m mothur -s 0.90
+
+**Usearch (OTUPipe):**
+
+Usearch (http://www.drive5.com/usearch/) provides clustering, chimera checking, and quality filtering.
+
+**Standard usearch (OTUPipe) example:**
+
+`pick_otus.py <./pick_otus.html>`_ -i seqs.fna -m usearch --word_length 64 --db_filepath reference_sequence_filepath -o otu_pipe_results/
+
+**Usearch (OTUpipe) example where reference-based chimera detection is disabled, and minimum cluster size filter is reduced from default (4) to 2:**
+
+`pick_otus.py <./pick_otus.html>`_ -i seqs.fna -m usearch --word_length 64 --reference_chimera_detection --minsize 2 -o otu_pipe_results/
 
 

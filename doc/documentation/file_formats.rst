@@ -18,7 +18,7 @@ These are general guidelines that apply to formatting files for use with QIIME, 
 Metadata mapping files
 ^^^^^^^^^^^^^^^^^^^^^^
 
-Metadata mapping files are used through-out Qiime, and provide per-sample metadata. These are used in ``split_libraries.py``, ``beta_diversity_through_3d_plots.py``, ``alpha_rarefaction.py`` and other scripts.
+Metadata mapping files are used through-out QIIME, and provide per-sample metadata. These are used in ``split_libraries.py``, ``beta_diversity_through_3d_plots.py``, ``alpha_rarefaction.py`` and other scripts.
 
 Mapping File Overview
 +++++++++++++++++++++
@@ -35,7 +35,7 @@ Currently, the user has the ability to define their own column headers, however;
 2. The second column header must be "BarcodeSequence", where each value in that column corresponds to the barcode used for each sample.  Only IUPAC DNA characters are acceptable.
 3. The third column header must be “LinkerPrimerSequence”, where each value in that column corresponds to the primer used to amplify that sample.  Only IUPAC DNA characters are acceptable.
 4. All subsequent column headers (except the last one) are metadata headers. For example, a "Smoker" column would include either "Yes" or "No". Note that the data in each column is assumed to be categorical unless specified otherwise. Categorical data columns must include at least 2 unique values per column. All metadata must be composed of only alphanumeric, underscore ("_"), period ("."), minus sign ("-"), plus sign ("+"), percentage ("%"), space (" "), semicolon (";"), colon (":"), comma (","), and/or forward slash ("/") characters. For missing data, write "NA"; do not leave blanks.
-5. The last column of the mapping file must be named "Description". Information in this column includes information that is unique to each sample, such as the medications taken by the patient, or any other descriptive information. The same character restrictions that apply to the metadata columns in guildline four apply to sample descriptions.  Sample/Run Description should be kept brief, if possible. Information that applies to all samples in a mapping file should go in the run description section, which is defined as lines starting with a "#" character, immediately following the header line (See example format below.) Information that is specific to a particular sample should go in the "Description" column.
+5. The last column of the mapping file must be named "Description". Information in this column includes information that is unique to each sample, such as the medications taken by the patient, or any other descriptive information. The same character restrictions that apply to the metadata columns in guideline four apply to sample descriptions.  Sample/Run Description should be kept brief, if possible. Information that applies to all samples in a mapping file should go in the run description section, which is defined as lines starting with a "#" character, immediately following the header line (See example format below.) Information that is specific to a particular sample should go in the "Description" column.
 6. There should be no empty lines or comment lines (starting with #) throughout the metadata, with the exception of any additional run description lines that immediately follow the initial header line.
 
 The header for this mapping file starts with a pound (#) character, and generally requires a "SampleID", "BarcodeSequence", "LinkerPrimerSequence", and a "Description", all tab separated.  The following example header represents the minimum field requirement for the mapping file:
@@ -46,7 +46,7 @@ The header for this mapping file starts with a pound (#) character, and generall
 
 Additional optional headers can follow the "LinkerPrimerSequence" header.  Any lines following this header that start with the pound character are considered to be comment lines and are ignored by QIIME.
 
-Data fields do not start with a pound character.  These fields are tab separated, and have restrictions regarding character usage.  SampleID fields only accept alphanumeric and peroid (.) characters.  The other data fields will accept alphanumeric, period (.), underscore (_), percent (%), plus (+), minus (-), space ( ), semicolon (;), colon (:), comma (,), or forward slash (/) characters.
+Data fields do not start with a pound character.  These fields are tab separated, and have restrictions regarding character usage.  SampleID fields only accept alphanumeric and period (.) characters.  The other data fields will accept alphanumeric, period (.), underscore (_), percent (%), plus (+), minus (-), space ( ), semicolon (;), colon (:), comma (,), or forward slash (/) characters.
 
 You are highly encouraged to validate your mapping file using `check_id_map.py <../scripts/check_id_map.html>`_ before attempting to analyze your data. This tool will check for errors, and make suggestions for other aspects of the file to be edited (errors and warnings are output to a log file, and suggested changes to invalid characters are output to a "_corrected.txt" file).  The contents of a sample mapping file are shown here - as you can see, a nucleotide barcode sequence is provided for each of the 9 samples, as well as metadata related to treatment group and date of birth, and general run descriptions about the project:
 
@@ -67,7 +67,7 @@ You are highly encouraged to validate your mapping file using `check_id_map.py <
 
 This example mapping file is available here: `Example Mapping File <../_static/Examples/File_Formats/Example_Mapping_File.txt>`_ (Right click and use 'download' or 'save as' to save this file)
 
-During demultiplexing with `split_libraries.py <../scripts/split_libraries.html>`_, the `SampleID` that is associated with the barcode found in a given sequence is used to label the output sequence.  An example set of such assignments are seen in the `Tutorial <../tutorials/tutorial.html#assign-samples-to-multiplex-reads>`_.  Note that in this example, the barcode associated with "PC.634", "ACAGAGTCGGCT" was found in the first two sequences, and so the output "seqs.fna" file has these sequences labeled as "PC.634_1" and "PC.634_2" respectively.  The third sequence contained the barcode "AGCACGAGCCTA", and hence was associated with "PC.354".
+During demultiplexing with `split_libraries.py <../scripts/split_libraries.html>`_, the `SampleID` that is associated with the barcode found in a given sequence is used to label the output sequence.  An example set of such assignments are seen in the `Tutorial - Assign Samples to Multiplex Reads section <../tutorials/tutorial.html#assign-samples-to-multiplex-reads>`_.  Note that in this example, the barcode associated with "PC.634", "ACAGAGTCGGCT" was found in the first two sequences, and so the output "seqs.fna" file has these sequences labeled as "PC.634_1" and "PC.634_2" respectively.  The third sequence contained the barcode "AGCACGAGCCTA", and hence was associated with "PC.354".
 
 Generating a Mapping File by Hand
 +++++++++++++++++++++++++++++++++
@@ -149,7 +149,7 @@ Demultiplexed sequences
 Post- split_libraries FASTA File Overview
 +++++++++++++++++++++++++++++++++++++++++
 
-When performing a typical workflow, it is not necessary for users to put together the specially formatted post-splitlibraries FASTA file.  Thus, this section is primarily useful for users who would like to use the downstream capabilities of QIIME without running split_libraries.py.   For a description of the essential files for the typical workflow see their description in the QIIME `Tutorial <../tutorials/tutorial.html>`_.
+When performing a typical workflow, it is not necessary for users to put together the specially formatted post-split-libraries FASTA file.  Thus, this section is primarily useful for users who would like to use the downstream capabilities of QIIME without running split_libraries.py.  For a description of the essential files for the typical workflow see their description in the QIIME `Tutorial <../tutorials/tutorial.html>`_.
 
 The purpose of the post-split_libraries FASTA is to relate each sequence to the sample from which it came, while also recording information about the original and error-corrected barcodes from which this inference was made.
 
@@ -212,7 +212,7 @@ OTU Table overview
 
 The OTU table file format holds information about which OTUs are found in each
 sample.   For a typical QIIME run, it is not necessary to manually construct an
-OTU table, as this is done automatically from your sequences (see the QIIME `Tutorial <../tutorials/tutorial.html>`_).  However, for some applications it is useful to be able to use the
+OTU table, as this is done automatically from your sequences.  However, for some applications it is useful to be able to use the
 downstream capabilities of the QIIME workflow starting directly from an OTU table.
 
 Here is an example of the OTU table file format:
@@ -241,7 +241,7 @@ An example OTU file is available here: `Example OTU Table <../_static/Examples/F
 
 (Right click and use 'download' or 'save as' to save this file.  In general it is preferable to download these files directly rather than opening them in your browser and then cutting and pasting the text into a word-processor such as Microsoft Word or OpenOffice, as these programs often silently introduce small but important changes in the file format.)
 
-The first two lines are preceeded with the # sign and are comments. The first describes the file, and the second contains headers for each column.  Note that
+The first two lines are preceded with the # sign and are comments. The first describes the file, and the second contains headers for each column.  Note that
 these headers are separated by the tab character (this is how we can tell that ID goes with OTU rather than the first sample id, for example). 
 
 The first column header is for the OTU id of each OTU in the table, while the next several headers map the columns back to sample ids (e.g. PC.354).   The final column labels the consensus taxonomy.
@@ -282,7 +282,7 @@ Several Greegenes (http://greengenes.lbl.gov/) sequence ID to taxonomy mapping f
 
 To add taxonomy mapping to an existing sequence ID to taxonomy mapping file, open the existing taxonomy mapping file in a spreadsheet, such as Microsoft Excel.  Save new sequence IDs in the first column, and the semicolon-separated taxa in the second column (make sure there are not extra spaces, tabs, or other white space around these entries).  Save this modified mapping file with the field delimiter as a tab, and leave the text delimiter blank.  It is best to visually inspect the modified ID to taxonomy mapping file in a basic text editor to ensure that no extraneous characters or spacings were saved during this process.
 
-Qiime parameters
+QIIME parameters
 ^^^^^^^^^^^^^^^^
 
 The QIIME parameters files is used to pass per-script parameters to the QIIME 'workflow' scripts. An example is provided as ``Qiime/qiime_parameters.txt``.

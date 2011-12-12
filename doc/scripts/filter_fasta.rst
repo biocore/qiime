@@ -36,6 +36,10 @@
 		Keep seqs where seq_id starts with this prefix
 	-n, `-`-negate
 		Discard passed seq ids rather than keep passed seq ids [default: False]
+	`-`-mapping_fp
+		Mapping file path (for use with --valid_states) [default: None]
+	`-`-valid_states
+		Description of sample ids to retain (for use with --mapping_fp) [default: None]
 
 
 **Output:**

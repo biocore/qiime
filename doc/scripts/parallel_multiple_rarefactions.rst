@@ -27,19 +27,21 @@ This script performs like the `multiple_rarefactions.py <./multiple_rarefactions
 		Min seqs/sample [REQUIRED]
 	-x, `-`-max
 		Max seqs/sample (inclusive) [REQUIRED]
-	-s, `-`-step
-		Levels: min, min+step... for level <= max [REQUIRED]
 	
 	**[OPTIONAL]**
 		
 	-n, `-`-num-reps
 		Num iterations at each seqs/sample level [default: 10]
 	`-`-lineages_included
-		Output rarefied otu tables will include taxonomic (lineage) information for each otu, if present in input otu table [default: False]
+		Deprecated: lineages are now included by default. Pass --supress_lineages_included to prevent output OTU tables from including taxonomic (lineage) information for each OTU. Note: this will only work if lineage information is in the input OTU table.
+	`-`-suppress_lineages_included
+		Exclude taxonomic (lineage) information for each OTU.
 	-N, `-`-single_rarefaction_fp
-		Full path to scripts/`single_rarefaction.py <./single_rarefaction.html>`_ [default: /Users/caporaso/code/Qiime/scripts/`single_rarefaction.py <./single_rarefaction.html>`_]
+		Full path to scripts/`single_rarefaction.py <./single_rarefaction.html>`_ [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`single_rarefaction.py <./single_rarefaction.html>`_]
+	-s, `-`-step
+		Levels: min, min+step... for level <= max [default: 1]
 	-P, `-`-poller_fp
-		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /Users/caporaso/code/Qiime/scripts/`poller.py <./poller.html>`_]
+		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`poller.py <./poller.html>`_]
 	-R, `-`-retain_temp_files
 		Retain temporary files after runs complete (useful for debugging) [default: False]
 	-S, `-`-suppress_submit_jobs
@@ -47,17 +49,17 @@ This script performs like the `multiple_rarefactions.py <./multiple_rarefactions
 	-T, `-`-poll_directly
 		Poll directly for job completion rather than running poller as a separate job. If -T is specified this script will not return until all jobs have completed. [default: False]
 	-U, `-`-cluster_jobs_fp
-		Path to cluster jobs script (defined in qiime_config)  [default: /Users/caporaso/code/Qiime/scripts/`start_parallel_jobs.py <./start_parallel_jobs.html>`_]
+		Path to cluster jobs script (defined in qiime_config)  [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`start_parallel_jobs.py <./start_parallel_jobs.html>`_]
 	-W, `-`-suppress_polling
 		Suppress polling of jobs and merging of results upon completion [default: False]
 	-X, `-`-job_prefix
 		Job prefix [default: descriptive prefix + random chars]
 	-Y, `-`-python_exe_fp
-		Full path to python executable [default: python]
+		Full path to python executable [default: /usr/bin/python2.6]
 	-Z, `-`-seconds_to_sleep
-		Number of seconds to sleep between checks for run  completion when polling runs [default: 6]
+		Number of seconds to sleep between checks for run  completion when polling runs [default: 60]
 	-O, `-`-jobs_to_start
-		Number of jobs to start [default: 2]
+		Number of jobs to start [default: 1]
 
 
 **Output:**
@@ -72,5 +74,13 @@ Build rarefied otu tables containing 100 (-m) to 2000 (-x) sequences in steps of
 ::
 
 	parallel_multiple_rarefactions.py -o /home/qiime_user/rare -m 100 -x 2000 -s 100 -n 5 -i /home/qiime_user/otu_table.txt
+
+**Example 2:**
+
+Build 8 rarefied otu tables each containing exactly 100 sequences per sample (even depth rarefaction).
+
+::
+
+	parallel_multiple_rarefactions.py -o /home/qiime_user/rare -m 100 -x 100 -s 100 -n 8 -i /home/qiime_user/otu_table.txt
 
 

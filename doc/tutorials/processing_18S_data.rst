@@ -4,7 +4,7 @@
 Processing 18S data
 -------------------
 
-This tutorial explains how to use the **QIIME** pipeline to analyze 18S, or mixed 18S/16S, data.  While most of the steps are identical to the standard 16S pipeline described in the overview `tutorial <tutorial.html>`_, reference data that include eukaryotic sequences may be required for OTU picking, taxonomic assignments, and template-based alignment building.
+This tutorial explains how to use the **QIIME** pipeline to analyze 18S, or mixed 18S/16S, data.  While most of the steps are identical to the standard 16S pipeline described in the `overview tutorial <tutorial.html>`_, reference data that include eukaryotic sequences may be required for OTU picking, taxonomic assignments, and template-based alignment building.
 
 To this end, QIIME-compatible versions of the `Silva <http://www.arb-silva.de/>`_ 104 and 108 releases, which contains data for all three domains of life, are available here: http://www.arb-silva.de/download/archive/qiime/.  The `Qiime_files_r104.zip` archive contains several files that will be utilized in this tutorial, and can be used for analyzing 18S datasets.  The 108 release can be used in the same fashion as the 104 release tutorial given below.  Notes about how these datasets and tree were constructed, and the differences between the 104 and 108 release are listed at the bottom of this tutorial.
 
@@ -106,7 +106,7 @@ Finally, a tree can be built using `make_phylogeny.py <../scripts/make_phylogeny
 
 	make_phylogeny.py -i pynast_aligned/rep_set_aligned_pfiltered.fasta -o rep_set.tre
 
-Trees an OTU tables created can then be utilized in the downstream QIIME analyses as seen in the `tutorial <tutorial.html#view-statistics-of-the-otu-table>`_.
+Trees an OTU tables created can then be utilized in the downstream QIIME analyses as seen in the `Tutorial - View Statistics of the OTU Table <tutorial.html#view-statistics-of-the-otu-table>`_.
 
 Workflow Scripts
 ================

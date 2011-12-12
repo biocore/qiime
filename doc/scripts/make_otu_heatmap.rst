@@ -29,13 +29,17 @@ Once an OTU table has been generated, it can be visualized using a heatmap. In t
 	-t, `-`-otu_tree
 		Tree file to be used for sorting OTUs in the heatmap
 	-m, `-`-map_fname
-		Metadata mapping file to be used for sorting Samples in the heatmap
+		Metadata mapping file to be used for sorting Samples in the heatmap.
 	-c, `-`-category
-		Metadata category for annotating samples, used only in --make_image is specified.
+		Metadata category for sorting samples. Samples will be clustered within each category level using euclidean UPGMA.
 	-s, `-`-sample_tree
 		Tree file to be used for sorting samples (e.g, output from `upgma_cluster.py <./upgma_cluster.html>`_). If both this and the sample mapping file are provided, the mapping file is ignored.
 	`-`-no_log_transform
 		Data will not be log-transformed. Without this option, all zeros will be set to a small value (default is 1/2 the smallest non-zero entry). Data will be translated to be non-negative after log transform, and num_otu_hits will be set to 0.
+	`-`-suppress_row_clustering
+		No UPGMA clustering of OTUs (rows) is performed. If --otu_tree is provided, this flag is ignored.
+	`-`-suppress_column_clustering
+		No UPGMA clustering of Samples (columns) is performed. If --map_fname is provided, this flag is ignored.
 	`-`-absolute_abundance
 		Do not normalize samples to sum to 1.[default False]
 	`-`-log_eps
@@ -61,7 +65,7 @@ Different output directory (i.e., "otu_heatmap"):
 
 	make_otu_heatmap.py -i otu_table.txt -o otu_heatmap
 
-Sort the heatmap columns by Sample ID's then you should supply the mapping file, as follows:
+Sort the heatmap columns by the order in a mapping file, as follows:
 
 ::
 

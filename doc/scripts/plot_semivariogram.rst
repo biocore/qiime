@@ -24,14 +24,38 @@ Fits a spatial autocorrelation model between two matrices and plots the result. 
 	-y, `-`-input_path_y
 		Path to distance matrix to be displayed in the y axis
 	-m, `-`-model
-		Model to be fitted to the data. Valid choices are:nugget, exponential, gaussian, periodic. [default: exponential]
+		Model to be fitted to the data. Valid choices are:nugget, exponential, gaussian, periodic, linear. [default: exponential]
 	-o, `-`-output_path
 		Output path. directory for batch processing, filename for single file operation
+	-X, `-`-x_label
+		Label for the x axis [default: Distance Dissimilarity (m)]
+	-Y, `-`-y_label
+		Label for the y axis [default: Community Dissimilarity]
+	-t, `-`-fig_title
+		Title of the plot [default: Semivariogram]
+	`-`-dot_color
+		Dot color for plot, more info: http://matplotlib.sourceforge.net/api/pyplot_api.html#`matplotlib.py <./matplotlib.html>`_plot.plot [default: wo]
+	`-`-line_color
+		Line color for plot, more info: http://matplotlib.sourceforge.net/api/pyplot_api.html#`matplotlib.py <./matplotlib.html>`_plot.plot [default: blue]
+	`-`-dot_alpha
+		Alpha for dots, more info: http://matplotlib.sourceforge.net/api/pyplot_api.html#`matplotlib.py <./matplotlib.html>`_plot.plot [default: 1]
+	`-`-line_alpha
+		Alpha for dots, more info: http://matplotlib.sourceforge.net/api/pyplot_api.html#`matplotlib.py <./matplotlib.html>`_plot.plot [default: 1]
 	
 	**[OPTIONAL]**
 		
 	-b, `-`-binning
 		Binning ranges. Format: [increment,top_limit], when top_limit is -1=infinitum; you can specify several ranges using the same format, i.e. [2.5,10][50,-1] will set two bins, one from 0-10 using 2.5 size steps and from 10-inf using 50 size steps. Note that the binning is used to clean the plots (reduce number of points) but ignored to fit the model. [default: None]
+	`-`-ignore_missing_samples
+		This will overpass the error raised when the matrices have different sizes/samples
+	`-`-x_max
+		X axis max limit [default: auto]
+	`-`-x_min
+		X axis min limit [default: auto]
+	`-`-y_max
+		Y axis max limit [default: auto]
+	`-`-y_min
+		Y axis min limit [default: auto]
 
 
 **Output:**

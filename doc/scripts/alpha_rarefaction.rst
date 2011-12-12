@@ -50,6 +50,10 @@ The steps performed by this script are:
 		Run in parallel where available [default: False]
 	-t, `-`-tree_fp
 		Path to the tree file [default: None; REQUIRED for phylogenetic measures]
+	`-`-min_rare_depth
+		The lower limit of rarefaction depths [default: 10]
+	-e, `-`-max_rare_depth
+		The upper limit of rarefaction depths [default: median sequence/sample count]
 	-O, `-`-jobs_to_start
 		Number of jobs to start. NOTE: you must also pass -a to run in parallel, this defines the number of jobs to be started if and only if -a is passed [default: 1]
 

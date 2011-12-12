@@ -44,7 +44,7 @@ This script generates 2D PCoA plots using the principal coordinates file generat
 
 **Output:**
 
-This script generates an output folder, which contains several files. To best view the 2D plots, it is recommended that the user views the _pca_2D.html file.
+This script generates an output folder, which contains several files. To best view the 2D plots, it is recommended that the user views the _pcoa_2D.html file.
 
 
 **Default Example:**

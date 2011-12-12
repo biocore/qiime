@@ -24,7 +24,7 @@ this script outputs a new otu table and mapping file with some samples removed a
 	-m, `-`-map
 		Path to the map file [REQUIRED]
 	-s, `-`-states
-		String containing valid states, e.g. 'STUDY_NAME:DOG'
+		String containing valid states, e.g. 'STUDY_NAME:DOG'. Setting just 'STUDY_NAME' will bin samples by all unique category values. e.g. it will pool all samples marked DOG into a sample called STUDY_NAME.DOG all CAT into STUDY_NAME.CAT etc.
 	
 	**[OPTIONAL]**
 		

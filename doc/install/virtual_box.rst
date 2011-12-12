@@ -97,10 +97,10 @@ Enabling virtualization in the BIOS
 
 The computer automatically restarts. If you cannot enable Virtualization Technology on in your BIOS, check if your BIOS needs to be updated.
 
-These instructions were extracted directly from HPs website `here 
+These instructions were extracted directly from HPs website: `link 
 <http://h10025.www1.hp.com/ewfrf/wc/document?docname=c01959244&cc=us&lc=en&dlc=en&product=3744198>`_.
 
-If this doesn't work, you might need to instead hit F9 to enter the BIOS. See this forum discussion `here <http://forums11.itrc.hp.com/service/forums/questionanswer.do?admit=109447626+1279028363362+28353475&threadId=1120296>`_.
+If this doesn't work, you might need to instead hit F9 to enter the BIOS. See this `forum discussion <http://forums11.itrc.hp.com/service/forums/questionanswer.do?admit=109447626+1279028363362+28353475&threadId=1120296>`_.
 
 Briefly, on booting the system, hit F9. Enter Advanced Options -> Processor Options -> Intel(R) Virtualization Technology and then hit Enable.
 

@@ -29,7 +29,7 @@ The script `make_otu_table.py <./make_otu_table.html>`_ tabulates the number of 
 	-o, `-`-output_fp
 		The output filepath
 	-e, `-`-exclude_otus_fp
-		A filepath listing OTU identifiers that should not be included in the OTU table (e.g., the output of `identify_chimeric_seqs.py <./identify_chimeric_seqs.html>`_)
+		Path to a file listing OTU identifiers that should not be included in the OTU table (e.g., the output of `identify_chimeric_seqs.py <./identify_chimeric_seqs.html>`_) or a fasta file where seq ids should be excluded (e.g., failures fasta file from `align_seqs.py <./align_seqs.html>`_)
 
 
 **Output:**

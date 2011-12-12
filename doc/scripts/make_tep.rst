@@ -32,6 +32,8 @@ WARNING: The jnlp file relies on an absolute path, if you move the .tep file, th
 		
 	-o, `-`-output_dir
 		The output directory [default: None]
+	-p, `-`-prefs_file_dir
+		Path to prefs file
 	-w, `-`-web
 		Web codebase jnlp flag [default: False]
 	-u, `-`-url_path

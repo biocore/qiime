@@ -14,7 +14,7 @@ In this walkthrough, text like the following: ::
 
     print_qiime_config.py
 
-denotes the command-line invocation of scripts. You can find full usage information for each script by passing the -h option (help) and/or by reading the full description in the `Documentation <../documentation/index.html>`_. Execute all tutorial commands from within the :file:`qiime_tutorial` directory, which can be downloaded from `here <http://bmf.colorado.edu/QIIME/qiime_tutorial-v1.3.0.zip>`_.
+denotes the command-line invocation of scripts. You can find full usage information for each script by passing the -h option (help) and/or by reading the full description in the `Documentation <../documentation/index.html>`_. Execute all tutorial commands from within the :file:`qiime_tutorial` directory, which can be downloaded from here: `QIIME Tutorial files <http://bmf.colorado.edu/QIIME/qiime_tutorial-v1.3.0.zip>`_.
 
 To process our data, we will perform the following analyses, each of which is described in more detail below:
 
@@ -280,7 +280,7 @@ An alternative to viewing the OTU table as a heatmap is to create an OTU network
 
     make_otu_network.py -m Fasting_Map.txt -i otus/otu_table.txt -o otus/OTU_Network
 
-To visualize the network, we use the Cytoscape_ program (which you can run by calling cytoscape from the command line -- you may need to call this beginning either with a capital or lowercase 'C' depending on your version of Cytoscape), where each red circle represents a sample and each white square represents an OTU. The lines represent the OTUs present in a particular sample (blue for controls and green for fasting). For more information about opening the files in Cytoscape_ please refer `here <../scripts/cytoscape_usage.html>`_.
+To visualize the network, we use the Cytoscape_ program (which you can run by calling cytoscape from the command line -- you may need to call this beginning either with a capital or lowercase 'C' depending on your version of Cytoscape), where each red circle represents a sample and each white square represents an OTU. The lines represent the OTUs present in a particular sample (blue for controls and green for fasting). For more information about opening the files in Cytoscape_ please refer to the `Cytoscape Usage <../scripts/cytoscape_usage.html>`_.
 
 .. image:: ../images/ network.png
    :align: center
@@ -375,7 +375,7 @@ The directory :file:`wf_arare/rarefaction/` will contain many text files named :
 
 Step 2. Compute Alpha Diversity
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The rarefaction tables are the basis for calculating diversity metrics, which reflect the diversity within the sample based on the abundance of various taxa within a community. The QIIME pipeline allows users to conveniently calculate more than two dozen different diversity metrics. The full list of available metrics is available `here <../scripts/alpha_diversity_metrics.html>`_. Every metric has different strengths and limitations - technical discussion of each metric is readily available online and in ecology textbooks, but it is beyond the scope of this document. By default, QIIME calculates three metrics:
+The rarefaction tables are the basis for calculating diversity metrics, which reflect the diversity within the sample based on the abundance of various taxa within a community. The QIIME pipeline allows users to conveniently calculate more than two dozen different diversity metrics. The full list of available metrics is available here: `alpha-diversity metrics <../scripts/alpha_diversity_metrics.html>`_. Every metric has different strengths and limitations - technical discussion of each metric is readily available online and in ecology textbooks, but it is beyond the scope of this document. By default, QIIME calculates three metrics:
 
 #. Chao1 metric estimates the species richness.
 #. The Observed Species metric is simply the count of unique OTUs found in the sample.
@@ -425,7 +425,7 @@ To view the rarefaction plots, open the file :file:`wf_arare/alpha_rarefaction_p
 
 Compute Beta Diversity and Generate Beta Diversity Plots
 --------------------------------------------------------
-Beta diversity represents the explicit comparison of microbial (or other) communities based on their composition. Beta-diversity metrics thus assess the differences between microbial communities. The fundamental output of these comparisons is a square matrix where a "distance" or dissimilarity is calculated between every pair of community samples, reflecting the dissimilarity between those samples. The data in this distance matrix can be visualized with analyses such as Principal Coordinate Analysis (PCoA) and hierarchical clustering. Like alpha diversity, there are many possible metrics which can be calculated with the QIIME pipeline - the full list of options can be found `here <../scripts/beta_diversity_metrics.html>`_. Here, we will calculate beta diversity between our 9 microbial communities using the default beta diversity metrics of weighted and unweighted unifrac, which are phylogenetic measures used extensively in recent microbial community sequencing projects. To perform this analysis, we will use the `beta_diversity_through_plots.py <../scripts/beta_diversity_through_plots.html>`_ workflow script. This script performs the following steps:
+Beta diversity represents the explicit comparison of microbial (or other) communities based on their composition. Beta-diversity metrics thus assess the differences between microbial communities. The fundamental output of these comparisons is a square matrix where a "distance" or dissimilarity is calculated between every pair of community samples, reflecting the dissimilarity between those samples. The data in this distance matrix can be visualized with analyses such as Principal Coordinate Analysis (PCoA) and hierarchical clustering. Like alpha diversity, there are many possible metrics which can be calculated with the QIIME pipeline - the full list of options can be found here `beta diversity metrics <../scripts/beta_diversity_metrics.html>`_. Here, we will calculate beta diversity between our 9 microbial communities using the default beta diversity metrics of weighted and unweighted unifrac, which are phylogenetic measures used extensively in recent microbial community sequencing projects. To perform this analysis, we will use the `beta_diversity_through_plots.py <../scripts/beta_diversity_through_plots.html>`_ workflow script. This script performs the following steps:
 
 1. Rarify OTU table (for more information, refer to `single_rarefaction.py <../scripts/single_rarefaction.html>`_)
 2. Make preferences file (for more information, refer to `make_prefs_file.py <../scripts/make_prefs_file.html>`_)

@@ -41,6 +41,6 @@ Perform Mantel test on all pairs of four distance matrices, including 1000 Monte
 
 ::
 
-	mantel.py -i weighted_unifrac_dm.txt,unweighted_unifrac_dm.txt,weighted_unifrac_even100_dm.txt,unweighted_unifrac_even100_dm.txt -o mantel_out.txt -n 1000
+	compare_distance_matrices.py -i weighted_unifrac_dm.txt,unweighted_unifrac_dm.txt,weighted_unifrac_even100_dm.txt,unweighted_unifrac_even100_dm.txt -o mantel_out.txt -n 1000
 
 

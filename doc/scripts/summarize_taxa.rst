@@ -38,6 +38,8 @@ The `summarize_taxa.py <./summarize_taxa.html>`_ script provides summary informa
 		If present, OTUs having higher absolute abundance are trimmed. To remove OTUs that make up more than 5% of the total dataset you would pass 0.05. [default: None]
 	-u, `-`-upper_percentage
 		If present, OTUs having lower absolute abundance are trimmed. To remove the OTUs that makes up less than 45% of the total dataset you would pass 0.45. [default: None]
+	-t, `-`-transposed_output
+		If present, the output will be written transposed from the regular output. This is helpful in cases when you want to use Site Painter to visualize your data [default: False]
 	-o, `-`-output_dir
 		Path to the output directory
 

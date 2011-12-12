@@ -33,13 +33,15 @@ This script aligns the sequences in a FASTA file to each other or to a template 
 	**[OPTIONAL]**
 		
 	-t, `-`-template_fp
-		Filepath for template against [REQUIRED if -m pynast or -m infernal]
+		Filepath for template against [default: /data/greengenes_core_sets/core_set_aligned.fasta.imputed]
 	-m, `-`-alignment_method
 		Method for aligning sequences. Valid choices are: pynast, infernal, clustalw, muscle, infernal, mafft [default: pynast]
 	-a, `-`-pairwise_alignment_method
 		Method for performing pairwise alignment in PyNAST. Valid choices are muscle, pair_hmm, clustal, blast, uclust, mafft [default: uclust]
 	-d, `-`-blast_db
 		Database to blast against when -m pynast [default: created on-the-fly from template_alignment]
+	`-`-muscle_max_memory
+		Maximum memory allocation for the muscle alignment method (MB) [default: 80% of available memory, as detected by MUSCLE]
 	-o, `-`-output_dir
 		Path to store result file [default: <ALIGNMENT_METHOD>_aligned]
 	-e, `-`-min_length
@@ -54,7 +56,7 @@ All aligners will output a fasta file containing the alignment and log file in t
 
 1. "..._aligned.fasta" - This is a FASTA file containing all aligned sequences.
 
-2. "..._failures.fasta - This is a FASTA file containing all sequences which did not meet all the criteria specified. (PyNAST only)
+2. "..._failures.fasta" - This is a FASTA file containing all sequences which did not meet all the criteria specified. (PyNAST only)
 
 3. "..._log.txt" - This is a log file containing information pertaining to the results obtained from a particular method (e.g. BLAST percent identity, etc.).
 

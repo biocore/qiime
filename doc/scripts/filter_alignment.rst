@@ -27,7 +27,7 @@ This script should be applied to generate a useful tree when aligning against a 
 	-o, `-`-output_dir
 		The output directory [default: .]
 	-m, `-`-lane_mask_fp
-		Path to lanemask file [default: None]
+		Path to lanemask file [default: /data/greengenes_core_sets/lanemask_in_1s_and_0s.txt]
 	-s, `-`-suppress_lane_mask_filter
 		Suppress lane mask filtering (necessary to turn off lane-mask-based filtering when a qiime_config default is  provided for --lane_mask_fp) [default: False]
 	-g, `-`-allowed_gap_frac

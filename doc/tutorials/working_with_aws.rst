@@ -26,6 +26,7 @@ You obtain the Public DNS entry from EC2 on a per instantiation basis - every ti
 
 	.. image:: ../images/public_dns_entry.png
 	   :width: 700
+	   
 	Figure 1: Identifying the Public DNS entry.
 
 If you're working on OS X or Linux, you already have an ssh client installed. If you're working on Windows, one free option is `PuTTY <http://www.chiark.greenend.org.uk/~sgtatham/putty/>`_. 
@@ -80,27 +81,33 @@ Working with Cyberduck
 
 
 	.. image:: ../images/cyberduck_open_connection.png
+	
 	Figure 2: Initiating a new connection.
 
  4. After connecting, you'll see a file browser on the remote system (Figure 3). If you've just created this instance you won't see any files listed (because you haven't put anything there yet). You can drag-and-drop files from your local system to your EC2 instance now (Figure 4). Those files will now be visible on the EC2 instance (Figure 5).
 
 	.. image:: ../images/cyberduck_opened_connection.png
+	
 	Figure 3. Remote file browser.
 
 	.. image:: ../images/cyberduck_drag_and_drop_input_file.png
 	   :width: 700
+	   
 	Figure 4. Drag and drop a local file to the EC2 instance.
 
 	.. image:: ../images/cyberduck_view_file.png
+	
 	Figure 5. Transferred file is visible on the EC2 instance.
 
  5. When you run commands on the remote system, new output files and directories will be created (Figure 6). To drag those back to your local system, first switch to the Cyberduck window and hit the refresh icon. You should then see the newly created files, and you can drag and drop them back to your local system (Figure 7).
 
 	.. image:: ../images/cyberduck_create_output_file.png
+	
 	Figure 6. Create an output file on the EC2 instance.
 
 	.. image:: ../images/cyberduck_drag_and_drop_output_file.png
 	   :width: 700
+	   
 	Figure 7. Transfer file from the EC2 instance to the local system.
 
 
@@ -121,6 +128,7 @@ As long as your EC2 instances are running, you're paying for them by the hour. W
 
 	.. image:: ../images/stop_instance.png
 	   :width: 700
+	   
 	Figure 8. Stopping or pausing an EC2 instance.
 
 If you're permanently done with an EC2 instance, you can terminate it by selecting the instance and choosing ``Instance Actions`` > ``Terminate``. Once you've terminated an instance you can never get it back: all data in that instance, as well as any configuration changes you've made, etc, is lost forever, so be sure this is what you want to do.

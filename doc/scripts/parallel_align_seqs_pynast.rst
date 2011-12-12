@@ -35,11 +35,11 @@ A wrapper for the `align_seqs.py <./align_seqs.html>`_ PyNAST option, intended t
 	-p, `-`-min_percent_id
 		Minimum percent sequence identity to closest blast hit to include sequence in alignment [default: 75.0]
 	-N, `-`-align_seqs_fp
-		Full path to Qiime/scripts/`align_seqs.py <./align_seqs.html>`_ [default: /Users/caporaso/code/Qiime/scripts/`align_seqs.py <./align_seqs.html>`_]
+		Full path to Qiime/scripts/`align_seqs.py <./align_seqs.html>`_ [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`align_seqs.py <./align_seqs.html>`_]
 	-O, `-`-jobs_to_start
-		Number of jobs to start [default: 2]
+		Number of jobs to start [default: 1]
 	-P, `-`-poller_fp
-		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /Users/caporaso/code/Qiime/scripts/`poller.py <./poller.html>`_]
+		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`poller.py <./poller.html>`_]
 	-R, `-`-retain_temp_files
 		Retain temporary files after runs complete (useful for debugging) [default: False]
 	-S, `-`-suppress_submit_jobs
@@ -47,17 +47,17 @@ A wrapper for the `align_seqs.py <./align_seqs.html>`_ PyNAST option, intended t
 	-T, `-`-poll_directly
 		Poll directly for job completion rather than running poller as a separate job. If -T is specified this script will not return until all jobs have completed. [default: False]
 	-U, `-`-cluster_jobs_fp
-		Path to cluster jobs script (defined in qiime_config)  [default: /Users/caporaso/code/Qiime/scripts/`start_parallel_jobs.py <./start_parallel_jobs.html>`_]
+		Path to cluster jobs script (defined in qiime_config)  [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`start_parallel_jobs.py <./start_parallel_jobs.html>`_]
 	-W, `-`-suppress_polling
 		Suppress polling of jobs and merging of results upon completion [default: False]
 	-X, `-`-job_prefix
 		Job prefix [default: descriptive prefix + random chars]
 	-Y, `-`-python_exe_fp
-		Full path to python executable [default: python]
+		Full path to python executable [default: /usr/bin/python2.6]
 	-Z, `-`-seconds_to_sleep
-		Number of seconds to sleep between checks for run  completion when polling runs [default: 6]
+		Number of seconds to sleep between checks for run  completion when polling runs [default: 60]
 	-t, `-`-template_fp
-		Filepath for template against [default: /Users/caporaso/data/greengenes_core_sets/core_set_aligned_imputed.fasta_11_8_07.no_dots]
+		Filepath for template against [default: /data/greengenes_core_sets/core_set_aligned.fasta.imputed]
 
 
 **Output:**

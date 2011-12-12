@@ -27,7 +27,7 @@ Nonmetric Multidimensional Scaling (NMDS) is commonly used to compare groups of 
 	**[OPTIONAL]**
 		
 	-d, `-`-dimensions
-		Number of dimensions of NMDS spacedefault: 2
+		Number of dimensions of NMDS spacedefault: 3
 
 
 **Output:**

@@ -25,7 +25,7 @@ We recommend that all QIIME users keep an eye on the QIIME blog for important an
 Download QIIME
 ===============
 
- * Virtual Box: The QIIME Virtual Box is an Ubuntu Linux virtual machine, pre-loaded with QIIME and its dependencies. This is the quickest way to start using QIIME. To get the Virtual Box, please `go here <./install/virtual_box.html>`_.
+ * Virtual Box: The QIIME Virtual Box is an Ubuntu Linux virtual machine, pre-loaded with QIIME and its dependencies. This is the quickest way to start using QIIME. To get the Virtual Box, please `see Virtual Box documentation <./install/virtual_box.html>`_.
 
  * Stable Release: Currently the most stable version of QIIME is our 1.3.0 release, which you can `download here <http://sourceforge.net/projects/qiime/files/releases/Qiime-1.3.0.tar.gz/download>`_.
 
@@ -33,7 +33,7 @@ Download QIIME
 
 	svn co https://qiime.svn.sourceforge.net/svnroot/qiime/trunk Qiime
 	
- * Amazon EC2 image: A QIIME EC2 image can be loaded in the Amazon Web Services cloud. For details, `go here <./install/vm_ec2.html>`_.
+ * Amazon EC2 image: A QIIME EC2 image can be loaded in the Amazon Web Services cloud. For details, `see EC2 documentation <./install/vm_ec2.html>`_.
 
 Installing and using QIIME
 ==========================

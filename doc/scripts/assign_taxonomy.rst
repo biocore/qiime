@@ -27,9 +27,9 @@ Given a set of sequences, assign_taxonomy attempts to assign the taxonomy of eac
 	**[OPTIONAL]**
 		
 	-t, `-`-id_to_taxonomy_fp
-		Path to tab-delimited file mapping sequences to assigned taxonomy. Each assigned taxonomy is provided as a semicolon-separated list. For assignment with rdp, each assigned taxonomy must be exactly 6 levels deep. [default: None; REQUIRED when method is blast]
+		Path to tab-delimited file mapping sequences to assigned taxonomy. Each assigned taxonomy is provided as a semicolon-separated list. For assignment with rdp, each assigned taxonomy must be exactly 6 levels deep. [default: /software/greengenes_tax_rdp_train.txt; REQUIRED when method is blast]
 	-r, `-`-reference_seqs_fp
-		Path to reference sequences.  For assignment with blast, these are used to generate a blast database. For assignment with rdp, they are used as training sequences for the classifier.[default: None; REQUIRED if -b is not provided when method is blast]
+		Path to reference sequences.  For assignment with blast, these are used to generate a blast database. For assignment with rdp, they are used as training sequences for the classifier.[default: /software/gg_97_otus_4feb2011.fasta; REQUIRED if -b is not provided when method is blast]
 	-p, `-`-training_data_properties_fp
 		Path to ".properties" file in pre-compiled training data for the RDP Classifier.  This option is overridden by the -t and -r options. [default: None]
 	-m, `-`-assignment_method
@@ -38,6 +38,8 @@ Given a set of sequences, assign_taxonomy attempts to assign the taxonomy of eac
 		Database to blast against.  Must provide either --blast_db or --reference_seqs_db for assignment with blast [default: None]
 	-c, `-`-confidence
 		Minimum confidence to record an assignment, only used for rdp method [default: 0.8]
+	`-`-rdp_max_memory
+		Maximum memory allocation, in MB, for Java virtual machine when using the rdp method.  Increase for large training sets [default: 1000]
 	-e, `-`-e_value
 		Maximum e-value to record an assignment, only used for blast method [default: 0.001]
 	-o, `-`-output_dir

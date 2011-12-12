@@ -56,6 +56,12 @@ This script automates the construction of 3D plots (kinemage format) from the PC
 		Used only when generating inVUE plots. The number of points to be generated when creating a frame around the PCoA plots. [default: 4]
 	`-`-polyhedron_offset
 		Used only when generating inVUE plots. The offset to be added to each point created when using the --polyhedron_points option. This is only used when using the invue output_format. [default: 1.5]
+	`-`-add_vectors
+		Create vectors based on a column of the mapping file. This.parameter accepts up to 2 columns: (1) create the vectors, (2) sort them. If you wanted to group by Species and order by SampleID you will pass --add_vectors=Species but if you wanted to group by Species but order by DOB you will pass --add_vectors=Species,DOB; this is useful when you use --custom_axes param [default: None]
+	`-`-rms_algorithm
+		The algorithm to calculate the RMS, either avg or trajectory; both algorithms use all the dimensions and weights them using their percentange explained; return the norm of the created vectors; and their  confidence using ANOVA. The vectors are created as follows: for avg it calculates the average at each timepoint (averaging within a group), then calculates the norm of each point; for trajectory  calculates the norm from the 1st-2nd, 2nd-3rd, etc. [default: None]
+	`-`-rms_path
+		Name of the file to save the root mean square (RMS) of the vectors grouped by the column used with the --add_vectors function. Note that this option only works with --add_vectors. The file is going to be created inside the output_dir and its name will start with "RMS". [default: RMS_output.txt]
 	-o, `-`-output_dir
 		Path to the output directory
 

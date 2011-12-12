@@ -44,6 +44,8 @@ This script creates an html file of rarefaction plots based on the supplied coll
 		DEPRECATED: Suppress HTML output. [default: True]
 	-s, `-`-suppress_html_output
 		Suppress HTML output. [default: False]
+	-e, `-`-std_type
+		Calculation to perform for generating error bars. Options are standard deviation (stddev) or standard error (stderr). [default: stddev]
 	-o, `-`-output_dir
 		Path to the output directory
 

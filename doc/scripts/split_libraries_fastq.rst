@@ -41,7 +41,9 @@
 	-s, `-`-start_seq_id
 		Start seq_ids as ascending integers beginning with start_seq_id[default: 0]
 	`-`-rev_comp_barcode
-		Reverse compliment barcodes before lookup[default: False]
+		Reverse compliment barcode reads before lookup [default: False]
+	`-`-rev_comp_mapping_barcodes
+		Reverse compliment barcode in mapping before lookup (useful if barcodes in mapping file are reverse compliments of golay codes) [default: False]
 	`-`-rev_comp
 		Reverse compliment sequence before writing to output file (useful for reverse-orientation reads) [default: False]
 	`-`-last_bad_quality_char

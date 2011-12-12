@@ -1,8 +1,8 @@
 .. _running_supervised_learning:
 
-==========================
+============================
 Running Supervised Learning
-==========================
+============================
 
 This document describes how to run supervised classification with QIIME. The goal of supervised classification is to classify new, unlabeled communities based on a set of labeled training communities. See (Knights et al. 2010) for a general discussion of the application of supervised classification to microbiota. Supervised classification using the Random Forests (Breiman, 2001) classifier is implemented in the QIIME script `supervised_learning.py <../scripts/supervised_learning.html>`_. When you run this script you will get several output files:
 

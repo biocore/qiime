@@ -32,6 +32,8 @@
 		The lane numbers to consider, comma-separated [defaut: 1,2,3,4,5,6,7,8]
 	-b, `-`-bases
 		The number of bases to include (useful for slicing a barcode) [defaut: all]
+	`-`-ignore_pass_filter
+		Ignore the illumina pass filter [default:False; reads with 0 in pass  filter field are discarded]
 
 
 **Output:**
