@@ -20,6 +20,8 @@ class GroupTests(TestCase):
     """Tests of the group module."""
     def setUp(self):
         """Create some data to be used in the tests."""
+        # Create the mapping file/distance matrix combo from the overview
+        # tutorial.
         self.dist_matrix_string = ["\tPC.354\tPC.355\tPC.356\tPC.481\tPC.593\
                                     \tPC.607\tPC.634\tPC.635\tPC.636",
                                    "PC.354\t0.0\t0.625\t0.623\t0.61\t0.577\
@@ -55,16 +57,32 @@ class GroupTests(TestCase):
         # Field to test on. Field values are either "Control" or "Fast".
         self.field = 'Treatment'
 
-        # Parse mapping "file" (faked here).
+        # Create a tiny distancy matrix/mapping file with a single sample for
+        # additional testing.
+        self.tiny_dist_matrix_string = ["\tSamp.1", "Samp.1\t0"]
+        self.tiny_mapping_string = ["#SampleID\tBarcodeSequence\tSampleField",
+                               "Samp.1\tAGCACGAGCCTA\tSampleFieldState1"]
+        self.tiny_field = 'SampleField'
+
+        # Parse mapping "files" (faked here).
         self.mapping, self.mapping_header, self.comments = parse_mapping_file(
                 self.mapping_string)
         mapping_data = [self.mapping_header]
         mapping_data.extend(self.mapping)
         self.groups = group_by_field(mapping_data, self.field)
 
-        # Parse distance matrix "file" (faked here).
+        self.tiny_mapping, self.tiny_mapping_header, self.tiny_comments = \
+                parse_mapping_file(self.tiny_mapping_string)
+        tiny_mapping_data = [self.tiny_mapping_header]
+        tiny_mapping_data.extend(self.tiny_mapping)
+        self.tiny_groups = group_by_field(tiny_mapping_data, self.tiny_field)
+
+        # Parse distance matrix "files" (faked here).
         self.dist_matrix_header, self.dist_matrix = parse_distmat(
                 self.dist_matrix_string)
+
+        self.tiny_dist_matrix_header, self.tiny_dist_matrix = parse_distmat(
+                self.tiny_dist_matrix_string)
 
     def test_get_grouped_distances_within(self):
         """get_grouped_distances() should return a list of within distance
@@ -227,6 +245,28 @@ class GroupTests(TestCase):
 
         search_list = '' 
         self.assertEqual(_get_indices(search_list, 'item'), [])
+
+    def test_get_groupings_no_field_states(self):
+        """_get_groupings() should return an empty list if there are no field
+        states in the groupings dictionary."""
+        self.assertEqual(_get_groupings(self.dist_matrix_header,
+            self.dist_matrix, {}, within=True), [])
+
+        self.assertEqual(_get_groupings(self.dist_matrix_header,
+            self.dist_matrix, {}, within=False), [])
+
+    def test_get_groupings_within_tiny_dataset(self):
+        """_get_groupings() should return an empty list for a single-sample
+        dataset as the diagonal is omitted for within distances."""
+        self.assertEqual(_get_groupings(self.tiny_dist_matrix_header,
+            self.tiny_dist_matrix, self.tiny_groups, within=True), [])
+
+    def test_get_groupings_between_tiny_dataset(self):
+        """_get_groupings() should return an empty list for a single-sample
+        dataset as there is only one field state, so no between distances can
+        be computed."""
+        self.assertEqual(_get_groupings(self.tiny_dist_matrix_header,
+            self.tiny_dist_matrix, self.tiny_groups, within=False), [])
 
 if __name__ == '__main__':
     main()
