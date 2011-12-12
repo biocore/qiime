@@ -605,8 +605,7 @@ def run_beta_diversity_through_plots(otu_table_fp, mapping_fp,
     color_by_interesting_fields_only=True,sampling_depth=None,
     histogram_categories=None,
     tree_fp=None, parallel=False, logger=None, suppress_3d_plots=False,
-    suppress_2d_plots=False, suppress_distance_histograms=False,
-    status_update_callback=print_to_stdout):
+    suppress_2d_plots=False,status_update_callback=print_to_stdout):
     """ Run the data preparation steps of Qiime 
     
         The steps performed by this function are:
@@ -834,7 +833,7 @@ def run_beta_diversity_through_plots(otu_table_fp, mapping_fp,
               ('Make 2D plots (discrete coloring, %s)' %\
                 beta_diversity_metric,discrete_2d_command,)])
                 
-        if not suppress_distance_histograms and histogram_categories:
+        if histogram_categories:
             # Prep the discrete-coloring 3d plots command
             histograms_dir = '%s/%s_histograms/' %\
              (output_dir, beta_diversity_metric)

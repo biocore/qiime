@@ -79,9 +79,6 @@ script_info['optional_options']=[
         help='Run in parallel where available [default: %default]'),
  make_option('-e','--seqs_per_sample',type='int',
      help='depth of coverage for even sampling [default: %default]'),
- make_option('--suppress_distance_histograms',action='store_true',
-        help='Do not generate distance histograms [default: %default]',
-        default=False),
  make_option('--suppress_2d_plots',action='store_true',
         help='Do not generate 2D plots [default: %default]',
         default=False),
@@ -169,7 +166,6 @@ def main():
      parallel=parallel,
      suppress_3d_plots=opts.suppress_3d_plots,
      suppress_2d_plots=opts.suppress_2d_plots,
-     suppress_distance_histograms=opts.suppress_distance_histograms,
      status_update_callback=status_update_callback)
 
 if __name__ == "__main__":
