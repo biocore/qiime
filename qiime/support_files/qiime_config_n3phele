@@ -1,0 +1,23 @@
+# qiime_config
+# WARNING: DO NOT EDIT OR DELETE Qiime/qiime_config
+# To overwrite defaults, copy this file to $HOME/.qiime_config or a full path
+# specified by $QIIME_CONFIG_FP and edit that copy of the file.
+
+cluster_jobs_fp	/software/qiime-1.3.0-release/bin/start_parallel_jobs_ec2.py
+python_exe_fp	/software/python-2.6.4-release/bin/python
+working_dir	/mnt/share/
+blastmat_dir	/software/blast-2.2.22-release/data
+blastall_fp	/software/blast-2.2.22-release/bin/blastall	
+pynast_template_alignment_fp	/software/core_set_aligned.fasta.imputed
+pynast_template_alignment_blastdb	
+template_alignment_lanemask_fp	/software/lanemask_in_1s_and_0s
+jobs_to_start	4
+seconds_to_sleep	60
+qiime_scripts_dir	/software/qiime-1.3.0-release/bin
+temp_dir	/tmp/
+denoiser_min_per_core	50
+cloud_environment	True
+topiaryexplorer_project_dir
+torque_queue	friendlyq
+assign_taxonomy_reference_seqs_fp	/software/gg_otus_4feb2011/rep_set/gg_97_otus_4feb2011.fasta
+assign_taxonomy_id_to_taxonomy_fp	/software/gg_otus_4feb2011/taxonomies/greengenes_tax_rdp_train.txt
