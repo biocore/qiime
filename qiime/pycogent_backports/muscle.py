@@ -151,7 +151,7 @@ class Muscle(CommandLineApplication):
         '-clw':FlagParameter(Prefix='-',Name='clw'),
         
         # Cluster sequences
-        '-cluster':FlagParameter(Prefix='-',Name='cluster'),
+        '-clusteronly':FlagParameter(Prefix='-',Name='clusteronly'),
         # neighborjoining is "unrecognized"
         #'-neighborjoining':FlagParameter(Prefix='-',Name='neighborjoining'),
 
@@ -435,7 +435,7 @@ def cluster_seqs(seqs,
     #if neighbor_join:
     #    cluster_type = "neighborjoining"
     
-    params["-cluster"] = True
+    params["-clusteronly"] = True
     params["-tree1"] = get_tmp_filename(WorkingDir)
     
     muscle_res = muscle_seqs(seqs,
@@ -606,7 +606,7 @@ def build_tree_from_alignment(aln, moltype, best_tree=False, params=None):
     app = Muscle(InputHandler='_input_as_multiline_string', params=params, \
                    WorkingDir='/tmp')
 
-    app.Parameters['-cluster'].on()
+    app.Parameters['-clusteronly'].on()
     app.Parameters['-tree1'].on(get_tmp_filename(app.WorkingDir))
     app.Parameters['-seqtype'].on(moltype.label)
 
