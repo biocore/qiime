@@ -20,9 +20,9 @@ Installing QIIME in Ubuntu LTS (10.04)
 ::
 	
 	mkdir $HOME/qiime_software/
-	wget http://bmf.colorado.edu/QIIME/app-deploy-qiime-1.3.0.tgz
-	tar zxvf app-deploy-qiime-1.3.0.tgz
-	cd app-deploy-qiime-1.3.0
-	python app-deploy.py $HOME/qiime_software/ -f etc/qiime_1.3.0.conf
+	wget http://bmf.colorado.edu/QIIME/app-deploy-qiime-1.4.0.tgz
+	tar zxvf app-deploy-qiime-1.4.0.tgz
+	cd app-deploy-qiime-1.4.0
+	python app-deploy.py $HOME/qiime_software/ -f etc/qiime_1.4.0.conf
 
 4. Happy QIIME-ing!

@@ -36,10 +36,10 @@ Upgrading from previous versions of the QIIME Virtual Box
 A QIIME upgrade/deploy script is provided for existing 64-bit Virtual Box users to upgrade to the latest version of QIIME without having to reinstall the QIIME VB. To upgrade your VB follow these steps, launch your existing QIIME VB, open a terminal, and run the following commands::
 	
 	sudo apt-get install ghc gsl-bin
-	wget http://bmf.colorado.edu/QIIME/app-deploy-qiime-1.3.0.tgz
-	tar zxvf app-deploy-qiime-1.3.0.tgz
-	cd app-deploy-qiime-1.3.0
-	python app-deploy.py /software/ -f etc/qiime_1.3.0.conf
+	wget http://bmf.colorado.edu/QIIME/app-deploy-qiime-1.4.0.tgz
+	tar zxvf app-deploy-qiime-1.4.0.tgz
+	cd app-deploy-qiime-1.4.0
+	python app-deploy.py /software/ -f etc/qiime_1.4.0.conf
 	exit
 	
 Then open a new terminal, and to confirm that you are now running the latest version of Qiime run::
@@ -105,5 +105,5 @@ If this doesn't work, you might need to instead hit F9 to enter the BIOS. See th
 Briefly, on booting the system, hit F9. Enter Advanced Options -> Processor Options -> Intel(R) Virtualization Technology and then hit Enable.
 
 .. _CloVR: http://clovr.org
-.. _64-bit QIIME Virtual Box: http://bmf.colorado.edu/QIIME/QIIME-1.3.0-amd64.vdi.gz
+.. _64-bit QIIME Virtual Box: http://bmf.colorado.edu/QIIME/QIIME-1.4.0-amd64.vdi.gz
 .. _VirtualBox: http://www.virtualbox.org/wiki/Downloads
