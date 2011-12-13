@@ -10,7 +10,7 @@ Web resources
 -------------
 
  * Linux/Unix: http://www.linuxcommand.org/learning_the_shell.php
- * OS X: http://www.osxfaq.com/Tutorials/LearningCenter/
+ * OS X: http://acad.coloradocollege.edu/dept/pc/SciCompLab/UnixTutorial/
 
 Books
 -----
