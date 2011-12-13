@@ -5,10 +5,10 @@ __author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2011, The QIIME Project" #consider project name
 __credits__ = ["Jesse Stombaugh"] #remember to add yourself
 __license__ = "GPL"
-__version__ = "1.3.0-dev"
+__version__ = "1.4.0"
 __maintainer__ = "Tony Walters"
 __email__ = "William.A.Walters@colorado.edu"
-__status__ = "Development"
+__status__ = "Release"
 
 
 from sys import argv
@@ -377,7 +377,7 @@ class TopLevelTests(TestCase):
         otu_table = otu_table.split('\n')
         samples = ['sample2', 'sample3']
         result = _filter_table_neg_control(otu_table, samples)
-        self.assertEqual(result, """# QIIME v1.3.0-dev OTU table
+        self.assertEqual(result, """# QIIME v1.4.0 OTU table
 #OTU ID\tsample1
 1\t1""")
         #works with lineages
@@ -388,12 +388,12 @@ class TopLevelTests(TestCase):
         otu_table = otu_table.split('\n')
         samples = ['sample2', 'sample3']
         result = _filter_table_neg_control(otu_table, samples)
-        self.assertEqual(result, """# QIIME v1.3.0-dev OTU table
+        self.assertEqual(result, """# QIIME v1.4.0 OTU table
 #OTU ID\tsample1\tConsensus Lineage
 1\t1\ttaxon2""")
         samples = ['sample3']
         result = _filter_table_neg_control(otu_table, samples)
-        self.assertEqual(result, """# QIIME v1.3.0-dev OTU table
+        self.assertEqual(result, """# QIIME v1.4.0 OTU table
 #OTU ID\tsample1\tsample2\tConsensus Lineage
 0\t0\t2\ttaxon1
 1\t1\t0\ttaxon2""")
@@ -409,7 +409,7 @@ sample_unfiltered_otu_table = """#Full OTU Counts
 13	0	0	0	1	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
 14	0	0	0	0	0	0	0	0	2	Root;Bacteria;Firmicutes;"Bacilli";Bacillales;"Staphylococcaceae";Staphylococcus"""
 
-unfiltered_otu_table = """# QIIME v1.3.0-dev OTU table
+unfiltered_otu_table = """# QIIME v%s OTU table
 #OTU ID	PC.354	PC.355	PC.356	PC.481	PC.593	PC.607	PC.634	PC.635	PC.636	Consensus Lineage
 0	0	0	0	0	0	0	0	0	1	Root;Bacteria;Actinobacteria;Actinobacteria;Coriobacteridae;Coriobacteriales;Coriobacterineae;Coriobacteriaceae
 1	0	0	0	3	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
@@ -417,9 +417,9 @@ unfiltered_otu_table = """# QIIME v1.3.0-dev OTU table
 6	0	0	2	0	0	0	0	1	0	Root;Bacteria
 12	0	1	0	0	0	3	1	1	0	Root;Bacteria;Bacteroidetes
 13	0	0	0	1	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-14	0	0	0	0	0	0	0	0	2	Root;Bacteria;Firmicutes;"Bacilli";Bacillales;"Staphylococcaceae";Staphylococcus"""
+14	0	0	0	0	0	0	0	0	2	Root;Bacteria;Firmicutes;"Bacilli";Bacillales;"Staphylococcaceae";Staphylococcus""" % __version__
 
-sample_unfiltered_otu_table_no_taxa = """# QIIME v1.3.0-dev OTU table
+sample_unfiltered_otu_table_no_taxa = """# QIIME v%s OTU table
 #OTU ID	PC.354	PC.355	PC.356	PC.481	PC.593	PC.607	PC.634	PC.635	PC.636
 0	0	0	0	0	0	0	0	0	1
 1	0	0	0	3	0	0	0	0	0
@@ -427,11 +427,11 @@ sample_unfiltered_otu_table_no_taxa = """# QIIME v1.3.0-dev OTU table
 6	0	0	2	0	0	0	0	1	0
 12	0	1	0	0	0	3	1	1	0
 13	0	0	0	1	0	0	0	1	0
-14	0	0	0	0	0	0	0	0	2"""
+14	0	0	0	0	0	0	0	0	2""" % __version__
 
 
 # identical to input file, except for the header
-expected_otu_table_output_leniant = """# QIIME v1.3.0-dev OTU table
+expected_otu_table_output_leniant = """# QIIME v%s OTU table
 #OTU ID	PC.355	PC.356	PC.481	PC.593	PC.607	PC.634	PC.635	PC.636	Consensus Lineage
 0	0	0	0	0	0	0	0	1	Root;Bacteria;Actinobacteria;Actinobacteria;Coriobacteridae;Coriobacteriales;Coriobacterineae;Coriobacteriaceae
 1	0	0	3	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
@@ -439,53 +439,53 @@ expected_otu_table_output_leniant = """# QIIME v1.3.0-dev OTU table
 6	0	2	0	0	0	0	1	0	Root;Bacteria
 12	1	0	0	0	3	1	1	0	Root;Bacteria;Bacteroidetes
 13	0	0	1	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-14	0	0	0	0	0	0	0	2	Root;Bacteria;Firmicutes;"Bacilli";Bacillales;"Staphylococcaceae";Staphylococcus"""
+14	0	0	0	0	0	0	0	2	Root;Bacteria;Firmicutes;"Bacilli";Bacillales;"Staphylococcaceae";Staphylococcus""" % __version__
 
 # OTUs that only appear in one sample should be removed
-expected_otu_table_output_default = """# QIIME v1.3.0-dev OTU table
+expected_otu_table_output_default = """# QIIME v%s OTU table
 #OTU ID	PC.355	PC.356	PC.481	PC.593	PC.607	PC.634	PC.635	PC.636	Consensus Lineage
 5	0	0	0	1	0	0	2	1	Root;Bacteria;Bacteroidetes
 6	0	2	0	0	0	0	1	0	Root;Bacteria
 12	1	0	0	0	3	1	1	0	Root;Bacteria;Bacteroidetes
-13	0	0	1	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales"""
+13	0	0	1	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales""" % __version__
 
 # Remove all OTUs with sequences less than 3
-expected_otu_table_output_sequence_count_three = """# QIIME v1.3.0-dev OTU table
+expected_otu_table_output_sequence_count_three = """# QIIME v%s OTU table
 #OTU ID	PC.355	PC.356	PC.481	PC.593	PC.607	PC.634	PC.635	PC.636	Consensus Lineage
 1	0	0	3	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
 5	0	0	0	1	0	0	2	1	Root;Bacteria;Bacteroidetes
 6	0	2	0	0	0	0	1	0	Root;Bacteria
-12	1	0	0	0	3	1	1	0	Root;Bacteria;Bacteroidetes"""
+12	1	0	0	0	3	1	1	0	Root;Bacteria;Bacteroidetes""" % __version__
 
 
 # Removes all OTUs lacking the specified taxa Clostridiales
-expected_otu_table_include_taxa = """# QIIME v1.3.0-dev OTU table
+expected_otu_table_include_taxa = """# QIIME v%s OTU table
 #OTU ID	PC.481	PC.635	Consensus Lineage
 1	3	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-13	1	1	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales"""
+13	1	1	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales""" % __version__
 
 # Removes otus flagged for removal by excluded taxa, Bacteroidetes
-expected_otu_table_exclude_taxa = """# QIIME v1.3.0-dev OTU table
+expected_otu_table_exclude_taxa = """# QIIME v%s OTU table
 #OTU ID	PC.356	PC.481	PC.635	PC.636	Consensus Lineage
 0	0	0	0	1	Root;Bacteria;Actinobacteria;Actinobacteria;Coriobacteridae;Coriobacteriales;Coriobacterineae;Coriobacteriaceae
 1	0	3	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
 6	2	0	1	0	Root;Bacteria
 13	0	1	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-14	0	0	0	2	Root;Bacteria;Firmicutes;"Bacilli";Bacillales;"Staphylococcaceae";Staphylococcus"""
+14	0	0	0	2	Root;Bacteria;Firmicutes;"Bacilli";Bacillales;"Staphylococcaceae";Staphylococcus""" % __version__
 
 # Filter to include Firmicutes but exclude Bacillales
-expected_otu_table_include_exclude_taxa = """# QIIME v1.3.0-dev OTU table
+expected_otu_table_include_exclude_taxa = """# QIIME v%s OTU table
 #OTU ID	PC.481	PC.635	Consensus Lineage
 1	3	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-13	1	1	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales"""
+13	1	1	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales""" % __version__
 
 
-expected_otu_table_output_default_no_taxa = """# QIIME v1.3.0-dev OTU table
+expected_otu_table_output_default_no_taxa = """# QIIME v%s OTU table
 #OTU ID	PC.355	PC.356	PC.481	PC.593	PC.607	PC.634	PC.635	PC.636
 5	0	0	0	1	0	0	2	1
 6	0	2	0	0	0	0	1	0
 12	1	0	0	0	3	1	1	0
-13	0	0	1	0	0	0	1	0"""
+13	0	0	1	0	0	0	1	0""" % __version__
 
 #run tests if called from command line
 if __name__ == "__main__":

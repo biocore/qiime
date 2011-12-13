@@ -6,7 +6,7 @@ __license__ = "GPL"
 __version__ = "1.3.0dev"
 __maintainer__ = "Jai Rideout"
 __email__ = "jr378@nau.edu"
-__status__ = "Development"
+__status__ = "Release"
 
 """Tests public and private functions in the distribution_plots module."""
 

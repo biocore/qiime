@@ -8,10 +8,10 @@ __credits__ = ["Jens Reeder",
                "Rob Knight",
                "Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.3.0-dev"
+__version__ = "1.4.0"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 from optparse import OptionParser
 from os.path import exists

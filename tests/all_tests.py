@@ -12,10 +12,10 @@ __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project" #consider project name
 __credits__ = ["Rob Knight","Greg Caporaso"] #remember to add yourself if you make changes
 __license__ = "GPL"
-__version__ = "1.3.0-dev"
+__version__ = "1.4.0"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 from qiime.util import make_option
 from qiime.util import parse_command_line_parameters, get_options_lookup

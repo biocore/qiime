@@ -8,10 +8,10 @@ __author__ = "William Van Treuren"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["William Van Treuren, Greg Caporaso"]
 __license__ = "GPL"
-__version__ = "1.3.0-dev"
+__version__ = "1.4.0"
 __maintainer__ = "William Van Treuren"
 __email__ = "vantreur@colorado.edu"
-__status__ = "Development"
+__status__ = "Release"
  
 
 

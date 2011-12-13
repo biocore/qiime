@@ -6,7 +6,7 @@ __license__ = "GPL"
 __version__ = "1.3.0dev"
 __maintainer__ = "Jai Rideout"
 __email__ = "jr378@nau.edu"
-__status__ = "Development"
+__status__ = "Release"
 
 """This module contains functions for plotting distributions in various ways.
 

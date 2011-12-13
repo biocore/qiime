@@ -17,10 +17,10 @@ __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Greg Caporaso","Justin Kuczynski"] 
 __license__ = "GPL"
-__version__ = "1.3.0-dev"
+__version__ = "1.4.0"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Development"
+__status__ = "Release"
 
 def get_job_commands_multiple_otu_tables(
     python_exe_fp,beta_diversity_fp,tree_fp,job_prefix,metrics,input_fps,

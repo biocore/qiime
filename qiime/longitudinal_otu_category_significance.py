@@ -6,10 +6,10 @@ __author__ = "Catherine Lozupone"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Catherine Lozupone"]
 __license__ = "GPL"
-__version__ = "1.3.0-dev"
+__version__ = "1.4.0"
 __maintainer__ = "Catherine Lozupone"
 __email__ = "lozupone@colorado.edu"
-__status__ = "Development"
+__status__ = "Release"
 
 from qiime.util import convert_otu_table_relative
 from qiime.parse import parse_otu_table, parse_mapping_file
