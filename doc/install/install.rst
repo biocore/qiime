@@ -69,7 +69,7 @@ Denoising 454 data:
 
 Visualization and plotting steps:
 
-* MatPlotLib 1.0.1 (`src <http://downloads.sourceforge.net/project/matplotlib/matplotlib/matplotlib-1.0.1/matplotlib-1.0.1.tar.gz>`_) (license: PFS)
+* MatPlotLib 1.1.0 (`src <http://downloads.sourceforge.net/project/matplotlib/matplotlib/matplotlib-1.1.0/matplotlib-1.1.0.tar.gz>`_) (license: PFS)
 * cytoscape v2.7.0 (`web <http://www.cytoscape.org/>`_) (license: LGPL)
 
 Supervised learning (``supervised_learning.py``):
@@ -100,7 +100,7 @@ First, change to the directory where you would like to download QIIME::
 
 Stable Pre-Release
 ^^^^^^^^^^^^^^^^^^
-Currently the most stable version of QIIME is our 1.3.0 release, which you can download from `here <http://sourceforge.net/projects/qiime/files/releases/Qiime-1.3.0.tar.gz/download>`_.
+Currently the most stable version of QIIME is our |release| release, which you can download from `here <http://sourceforge.net/projects/qiime/files/releases/Qiime-1.3.0.tar.gz/download>`_.
 
 Latest Development Version
 ^^^^^^^^^^^^^^^^^^^^^^^^^^

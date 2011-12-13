@@ -45,14 +45,12 @@ This script will perform beta diversity, principal coordinate anlalysis, and gen
 		Run in parallel where available [default: False]
 	-e, `-`-seqs_per_sample
 		Depth of coverage for even sampling [default: None]
-	`-`-suppress_distance_histograms
-		Do not generate distance histograms [default: False]
 	`-`-suppress_2d_plots
 		Do not generate 2D plots [default: False]
 	`-`-suppress_3d_plots
 		Do not generate 3D plots [default: False]
 	-O, `-`-jobs_to_start
-		Number of jobs to start. NOTE: you must also pass -a to run in parallel, this defines the number of jobs to be started if and only if -a is passed [default: 1]
+		Number of jobs to start. NOTE: you must also pass -a to run in parallel, this defines the number of jobs to be started if and only if -a is passed [default: 2]
 
 
 **Output:**

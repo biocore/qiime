@@ -51,7 +51,7 @@ This script performs like the `alpha_diversity.py <./alpha_diversity.html>`_ scr
 	-Z, `-`-seconds_to_sleep
 		Number of seconds to sleep between checks for run  completion when polling runs [default: 60]
 	-O, `-`-jobs_to_start
-		Number of jobs to start [default: 1]
+		Number of jobs to start [default: 2]
 
 
 **Output:**

@@ -55,7 +55,7 @@ This script works like the `pick_otus.py <./pick_otus.html>`_ script, but is int
 	-N, `-`-pick_otus_fp
 		Full path to scripts/`pick_otus.py <./pick_otus.html>`_ [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`pick_otus.py <./pick_otus.html>`_]
 	-O, `-`-jobs_to_start
-		Number of jobs to start [default: 1]
+		Number of jobs to start [default: 2]
 	-P, `-`-poller_fp
 		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`poller.py <./poller.html>`_]
 	-R, `-`-retain_temp_files

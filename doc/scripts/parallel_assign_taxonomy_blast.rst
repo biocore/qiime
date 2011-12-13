@@ -23,21 +23,23 @@ This script performs like the `assign_taxonomy.py <./assign_taxonomy.html>`_ scr
 		Full path to input_fasta_fp [REQUIRED]
 	-o, `-`-output_dir
 		Full path to store output files [REQUIRED]
+	-t, `-`-id_to_taxonomy_fp
+		Full path to id_to_taxonomy mapping file [REQUIRED]
 	
 	**[OPTIONAL]**
 		
 	-r, `-`-reference_seqs_fp
-		Ref seqs to blast against.  Must provide either --blast_db or --reference_seqs_db for assignment with blast [default: /software/gg_97_otus_4feb2011.fasta]
+		Ref seqs to blast against.  Must provide either --blast_db or --reference_seqs_db for assignment with blast [default: None]
 	-b, `-`-blast_db
 		Database to blast against.  Must provide either --blast_db or --reference_seqs_db for assignment with blast [default: None]
 	-e, `-`-e_value
 		Maximum e-value to record an assignment, only used for blast method [default: 0.001]
 	-B, `-`-blastmat_dir
-		Full path to directory containing blastmat file [default: /software/blast-2.2.22/data]
+		Full path to directory containing blastmat file [default: /Users/jistombaugh/bin/blast-2.2.22/data]
 	-N, `-`-assign_taxonomy_fp
 		Full path to scripts/`assign_taxonomy.py <./assign_taxonomy.html>`_ [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`assign_taxonomy.py <./assign_taxonomy.html>`_]
 	-O, `-`-jobs_to_start
-		Number of jobs to start [default: 1]
+		Number of jobs to start [default: 2]
 	-P, `-`-poller_fp
 		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`poller.py <./poller.html>`_]
 	-R, `-`-retain_temp_files
@@ -56,8 +58,6 @@ This script performs like the `assign_taxonomy.py <./assign_taxonomy.html>`_ scr
 		Full path to python executable [default: /usr/bin/python2.6]
 	-Z, `-`-seconds_to_sleep
 		Number of seconds to sleep between checks for run  completion when polling runs [default: 60]
-	-t, `-`-id_to_taxonomy_fp
-		Full path to id_to_taxonomy mapping file [default: /software/greengenes_tax_rdp_train.txt]
 
 
 **Output:**
