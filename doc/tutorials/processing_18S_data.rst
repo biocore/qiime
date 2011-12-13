@@ -98,7 +98,7 @@ Use the following command with the `rep_set.fna` created in the OTU picking step
 
 Next, the alignment must be filtered.  For 16S datasets, a Lanemask is usually applied to remove high entropy positions.  QIIME has incorporated a dynamic entropy and gap calculation to the `filter_alignment.py <../scripts/filter_alignment.html>`_ module, which removes the need for a Lanemask.  To filter the alignment created above, use the following command: ::
 
-	filter_alignment.py -i pynast_aligned/rep_set_aligned.fna -o pynast_aligned/ -e 0.10 -g 0.80
+	filter_alignment.py -i pynast_aligned/rep_set_aligned.fasta -o pynast_aligned/ -e 0.10 -g 0.80
 
 In this case, the 10% most variable positions and positions that are greater than 80% gaps were removed (the -e and -g parameters respectively).
 
