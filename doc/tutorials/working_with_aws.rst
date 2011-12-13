@@ -4,16 +4,15 @@
 Working with QIIME on Amazon Web Services EC2
 =============================================
 
-This document covers general steps in working with QIIME on Amazon Web Services (AWS). You'll need your own AWS account to do this, and will need the AMI ID of the QIIME image that you want to run. You can find the latest QIIME AMI id on the `QIIME blog <http://blog.qiime.org>`_. These steps are also covered in the `QIIME EC2 video <http://www.youtube.com/watch?v=PEcSL_7D-jo>`_.
+This document covers general steps in working with QIIME on Amazon Web Services (AWS). You'll need your own AWS account to do this, and will need the AMI ID of the QIIME image that you want to run. You can find the latest QIIME AMI id on the `QIIME resources page <http://qiime.org/home_static/dataFiles.html>`_. These steps are also covered in the `QIIME EC2 video <http://www.youtube.com/watch?v=PEcSL_7D-jo>`_.
 
 
 Starting an EC2 instance
 ========================
 
-To launch the QIIME EC2 image on the Amazon Cloud you will first need an AWS account. Create one on the `AWS`_ site if you don't already have one. To get started with using AWS, check out their documentation on the `AWS console`_ page. You can load the QIIME EC2 image from the `AWS console`_ by searching for ``qiime1.3.0``, which is the name of the QIIME 1.3.0 EC2 image.
+To launch the QIIME EC2 image on the Amazon Cloud you will first need an AWS account. Create one on the `AWS`_ site if you don't already have one. To get started with using AWS, check out their documentation on the `AWS console`_ page. You can load the QIIME EC2 image from the `AWS console`_ by searching for the AMI ID listed on the `QIIME resources page <http://qiime.org/home_static/dataFiles.html>`_.
 
-An additional `tutorial on starting an EC2 instance can be found here <http://ged.msu.edu/angus/tutorials-2011/creating-an-ec2-instance.html>`_.
-
+**Important**: To use QIIME, you'll need to have ssh access to your instance. You'll set this up in the ``Configure Firewall`` step of launching the instance. You'll need to choose ``Create new security group``. Create a ``Group Name`` and ``Group Description`` (e.g., ``qiime-ssh`` for both), and then choose ``SSH`` from the ``Create a new rule`` drop down box. Click ``Add Rule`` and then ``Continue``.
 
 Connecting to your EC2 instance using ssh
 =========================================
@@ -48,7 +47,9 @@ Getting data into and out of your QIIME EC2 instance
 
 After you've launched your EC2 instance you'll likely want to get data into it. After completing your analysis, you'll then want to get your data out. It's a good idea to pull your important data back out of your EC2 instance as soon as possible to avoid any issues with losing data if any Amazon systems go down, or if you accidentally terminate your instance. 
 
-You can get data into and out of your running EC2 instance with a graphical tool or via the command line. Which ever you find more convenient. Command line tools such as scp and sftp work fine for this. A good, free graphical tool for Windows and OS X is `Cyberduck <http://cyberduck.ch/>`_ -- this supports interacting with S3 buckets as well as EC2 instances (via sftp).
+You can get data into and out of your running EC2 instance with a graphical tool or via the command line, which ever you find more convenient. Command line tools such as ``scp`` and ``sftp`` work fine for this. A good, free graphical tool for Windows and OS X is `Cyberduck <http://cyberduck.ch/>`_. This supports interacting with S3 buckets as well as EC2 instances (via sftp).
+
+You will likely want to compress your files for each transfer. You can do this with the tar/gzip commands, or with a tool like WinZip on Windows. See :ref:`unix_commands` for help with these commands.
 
 Working with command line tools
 -------------------------------
