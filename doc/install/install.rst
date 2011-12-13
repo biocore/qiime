@@ -54,7 +54,7 @@ Alignment, tree-building, taxonomy assignment, OTU picking, and other data gener
 * raxml v7.0.3 (`src <http://wwwkramer.in.tum.de/exelixis/r703-source.php>`_)
 * infernal 1.0.2 (`src <ftp://selab.janelia.org/pub/software/infernal/infernal.tar.gz>`_) (license: GPL)
 * cdbtools (`src <ftp://occams.dfci.harvard.edu/pub/bio/tgi/software/cdbfasta/cdbfasta.tar.gz>`_)
-* muscle 3.6 (`src <http://drive5.com/muscle/downloads3.6/muscle3.6_src.tar.gz>`_) (Public domain)
+* muscle 3.8.31 (`src <http://www.drive5.com/muscle/downloads.htm>`_) (Public domain)
 
 Processing sff files:
 
