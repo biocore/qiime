@@ -6,13 +6,30 @@ This page documents how to install a new version of QIIME from an installation o
 
 For a detailed history of the most notable changes between versions see the `QIIME ChangeLog <http://qiime.svn.sourceforge.net/viewvc/qiime/trunk/ChangeLog?view=markup>`_. This points to the most recent version, so will usually also give a preview of the changes that are coming in the next version of QIIME.
 
-1.4.0 to 1.4.0-dev
---------------------------
+1.4.0 to 1.4.0-dev (Linux)
+------------------
+If you want to use the repository version of QIIME in any Linux box, follow this steps:
 
-1.3.0 to 1.4.0
---------------------------
+::
+        
+        wget http://bmf.colorado.edu/QIIME/app-deploy-qiime-1.4.0.tgz
+        tar zxvf app-deploy-qiime-1.4.0.tgz
+        cd app-deploy-qiime-1.4.0
+        python app-deploy.py /software/ -f etc/qiime_1.4.0_repository.conf
+        
+1.3.0 to 1.4.0 (QIIME Virtual Machines)
+---------------------------------------
+If you are upgrading your virtual machine, follow this commands to upgrade. or a previous app-deploy.py installation
 
- * We have added support for version 2.2 of the RDP classifier in QIIME, and the QIIME wrappers for this are not backward compatible. You can grab version 2.2 of the RDP classifier from the following `link <http://sourceforge.net/projects/rdp-classifier/files/rdp-classifier/rdp_classifier_2.2.zip/download>`_, and then follow the `instructions <./install.html#rdp-install>`_ for making it accessible to QIIME. You'll be able to use assign_taxonomy.py with either RDP 2.0.1 or RDP 2.2.
- * QIIME |release| depends on PyCogent 1.5.1, which can be downloaded `here <http://sourceforge.net/projects/pycogent/files/PyCogent/1.5.1/PyCogent-1.5.1.tgz/download>`_. You should download this, unzip it, and install either using ``setup.py`` or by putting the ``PyCogent-1.5.1`` directory in your ``$PYTHONPATH``.
- * Denoiser has been integrated into QIIME, so no longer requires an external version. You can remove previous versions of Denoiser from your system and the reference to Denoiser from your ``$PYHTONPATH`` (if applicable). The ``denoise.py`` script has been replaced by ``denoise_wrapper.py``.
- * PyroNoise is no longer supported in QIIME, but has been replaced with AmpliconNoise, the updated program by Chris Quince.
+::
+        
+        wget http://bmf.colorado.edu/QIIME/app-deploy-qiime-1.4.0.tgz
+        tar zxvf app-deploy-qiime-1.4.0.tgz
+        cd app-deploy-qiime-1.4.0
+        python app-deploy.py /software/ -f etc/qiime_1.4.0.conf
+
+1.3.0 to 1.4.0 (general)
+------------------------
+ * QIIME |release| depends on `Python 2.7.1 <http://www.python.org/ftp/python/2.7.1/Python-2.7.1.tgz>`_ or greater; `numpy 1.5.1 <http://sourceforge.net/projects/numpy/files/NumPy/1.5.1/numpy-1.5.1.tar.gz>`_; and `matplotlib 1.1.0 <http://downloads.sourceforge.net/project/matplotlib/matplotlib/matplotlib-1.1.0/matplotlib-1.1.0.tar.gz>`_.
+ * AmpliconNoise support has been updated to use its latest version 1.25, which can be found `here <http://ampliconnoise.googlecode.com/files/AmpliconNoiseV1.25.tar.gz>`_.
+ 
