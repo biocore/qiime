@@ -27,19 +27,19 @@ This script performs like the `assign_taxonomy.py <./assign_taxonomy.html>`_ scr
 	**[OPTIONAL]**
 		
 	`-`-rdp_classifier_fp
-		Full path to rdp classifier jar file [default: /Users/jistombaugh/bin/rdp_classifier/rdp_classifier-2.2.jar]
+		Full path to rdp classifier jar file [default: /software/rdp_classifier/rdp_classifier-2.2.jar]
 	-c, `-`-confidence
 		Minimum confidence to record an assignment [default: 0.8]
 	-N, `-`-assign_taxonomy_fp
 		Full path to scripts/`assign_taxonomy.py <./assign_taxonomy.html>`_ [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`assign_taxonomy.py <./assign_taxonomy.html>`_]
 	-t, `-`-id_to_taxonomy_fp
-		Full path to id_to_taxonomy mapping file [default: None]
+		Full path to id_to_taxonomy mapping file [default: /software/greengenes_tax_rdp_train.txt]
 	-r, `-`-reference_seqs_fp
-		Ref seqs to rdp against. [default: None]
+		Ref seqs to rdp against. [default: /software/gg_97_otus_4feb2011.fasta]
 	`-`-rdp_max_memory
 		Maximum memory allocation, in MB, for Java virtual machine when using the rdp method.  Increase for large training sets [default: 1000]
 	-O, `-`-jobs_to_start
-		Number of jobs to start [default: 2]
+		Number of jobs to start [default: 1]
 	-P, `-`-poller_fp
 		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`poller.py <./poller.html>`_]
 	-R, `-`-retain_temp_files
@@ -55,7 +55,7 @@ This script performs like the `assign_taxonomy.py <./assign_taxonomy.html>`_ scr
 	-X, `-`-job_prefix
 		Job prefix [default: descriptive prefix + random chars]
 	-Y, `-`-python_exe_fp
-		Full path to python executable [default: /usr/bin/python2.6]
+		Full path to python executable [default: /Library/Frameworks/Python.framework/Versions/2.7/bin/python]
 	-Z, `-`-seconds_to_sleep
 		Number of seconds to sleep between checks for run  completion when polling runs [default: 60]
 

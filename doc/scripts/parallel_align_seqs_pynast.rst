@@ -37,7 +37,7 @@ A wrapper for the `align_seqs.py <./align_seqs.html>`_ PyNAST option, intended t
 	-N, `-`-align_seqs_fp
 		Full path to Qiime/scripts/`align_seqs.py <./align_seqs.html>`_ [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`align_seqs.py <./align_seqs.html>`_]
 	-O, `-`-jobs_to_start
-		Number of jobs to start [default: 2]
+		Number of jobs to start [default: 1]
 	-P, `-`-poller_fp
 		Full path to qiime/parallel/`poller.py <./poller.html>`_ [default: /Users/jistombaugh/Dropbox/Qiime_work/scripts/`poller.py <./poller.html>`_]
 	-R, `-`-retain_temp_files
@@ -53,11 +53,11 @@ A wrapper for the `align_seqs.py <./align_seqs.html>`_ PyNAST option, intended t
 	-X, `-`-job_prefix
 		Job prefix [default: descriptive prefix + random chars]
 	-Y, `-`-python_exe_fp
-		Full path to python executable [default: /usr/bin/python2.6]
+		Full path to python executable [default: /Library/Frameworks/Python.framework/Versions/2.7/bin/python]
 	-Z, `-`-seconds_to_sleep
 		Number of seconds to sleep between checks for run  completion when polling runs [default: 60]
 	-t, `-`-template_fp
-		Filepath for template against [default: /Users/jistombaugh/python_software/core_set_aligned.fasta.imputed]
+		Filepath for template against [default: /data/greengenes_core_sets/core_set_aligned.fasta.imputed]
 
 
 **Output:**
