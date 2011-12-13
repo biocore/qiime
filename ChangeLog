@@ -1,4 +1,4 @@
-Add changes since QIIME 1.3.0 here
+QIIME 1.4.0 (13 Dec 2011)
 ==================================
 * Implemented usearch (ie OTUPIPE) as chimera detection/quality filtering/OTU picking in the pick_otus.py module.
 * All workflows now log the md5 sums of all input files (trac #92).
@@ -21,6 +21,25 @@ Add changes since QIIME 1.3.0 here
 * plot_semivariogram.py now lets you control colors and axis of the resulting plots, and ignore missing samples, this can be useful when samples are missing after rarefying.
 * default num_dimensions for transform_coordinate_matrices.py changed from all dimensions to 3 (trac ticket #119). This more closely corresponds with how we use this test (e.g., to determine if we would draw the same biological conclusions from two different methods of generating a PCoA plot). This was in response to our noticing that monte carlo p-values were lower than we would expect in controls.
 * Removed the --suppress_distance_histograms option from beta_diversity_through_plots.py in favor using the -c/--histogram_categories option to determine whether these will be generated. If the user passes -c, distance histograms are generated. If they do not, these are not generated.
+* Added support for fastq files in count_seqs.py.
+* Several new tutorials including retraining of the RDP classifier, working with Amazon Web Services, basic unix/linux commands, and others.
+* Fixed bug in process_qseq.py that would result in only a single input file per lane have it's data stored in the fastq.
+* Fixed bug in filter_otu_table where sampleIDs would remain despite all OTU counts being zero.
+* Fixed bug in serial pick_reference_otus_through_otu_table.py that was causing uclust to be used rather than uclust_ref as the default method for otu picking.
+* Added option to support reverse complements of golay barcodes in the mapping file.
+* Modifed beta_diversity_through_plots.py so distance histograms are only generated if the user specifies --histogram_categories on the command line. These are very slow to generate for all mapping categories, so it makes more sense for the user to turn on histogram plotting for the specific categories they're interested in.
+* Added option, --reverse_primer_mismatches to split_libraries.py to allow setting of distinct mismatches from forward primer.
+* Added option (-e/--max_rare_depth) to the command line of alpha_rarefaction.py. This allows for a convenient way for users to specify the maximum rarefaction depth on the command line, and is useful for when it needs to be set to something other than the median rarefaction depth. Also added option to control minimum rarefaction depth from the alpha_rarefaction.py command line.
+* Added support for 5- and 10-fold and leave-one-out cross-validation to supervised learning.
+* Added filter_by_metadata.py state string handling to filter_fasta.py for metadata-based fasta filtering.
+* Added subsample_fasta module for randomly subsampling fasta files.
+* Added script to split a post-split-lib fasta file into per-sample fasta files. This is useful for sharing Illumina data with collaborators or creating per-sample files for DB submission.
+* Fixed bug where multiple_rarefactions_even_depth didn't work with --lineages_included.
+* Modified pick_otus_through_otu_table.py so filter_alignment.py can be applied when the method is other than PyNAST. This previously wasn't possible because we only filtered with the lanemask, but we now allow entropy filtering, so this is relevant.
+* Fixed two serious bugs in make_distance_histograms.py related to p-value calculations (both Monte Carlo and parametric p-values were affected).
+* Removed several obsolete scripts (make_pie_charts.py and several denoiser-related scripts).
+* Added muscle_max_memory option to align_seqs script.
+* Changed default num_dimensions to 3 in transform_coordinate_matrices.py. This more closely corresponds with how we use this test (e.g., to determine if we would draw the same biological conclusions from two different methods of generating a PCoA plot). This was in response to our noticing that monte carlo p-values were lower than we would expect in controls.
 
 QIIME 1.3.0 (29 June 2011)
 ==================================
