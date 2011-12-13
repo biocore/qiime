@@ -34,13 +34,13 @@ Fits a spatial autocorrelation model between two matrices and plots the result. 
 	-t, `-`-fig_title
 		Title of the plot [default: Semivariogram]
 	`-`-dot_color
-		Dot color for plot, more info: http://matplotlib.sourceforge.net/api/pyplot_api.html#`matplotlib.py <./matplotlib.html>`_plot.plot [default: wo]
+		Dot color for plot, more info: http://matplotlib.sourceforge.net/api/pyplot_api.html [default: wo]
 	`-`-line_color
-		Line color for plot, more info: http://matplotlib.sourceforge.net/api/pyplot_api.html#`matplotlib.py <./matplotlib.html>`_plot.plot [default: blue]
+		Line color for plot, more info: http://matplotlib.sourceforge.net/api/pyplot_api.html [default: blue]
 	`-`-dot_alpha
-		Alpha for dots, more info: http://matplotlib.sourceforge.net/api/pyplot_api.html#`matplotlib.py <./matplotlib.html>`_plot.plot [default: 1]
+		Alpha for dots, more info: http://matplotlib.sourceforge.net/api/pyplot_api.html [default: 1]
 	`-`-line_alpha
-		Alpha for dots, more info: http://matplotlib.sourceforge.net/api/pyplot_api.html#`matplotlib.py <./matplotlib.html>`_plot.plot [default: 1]
+		Alpha for dots, more info: http://matplotlib.sourceforge.net/api/pyplot_api.html [default: 1]
 	
 	**[OPTIONAL]**
 		

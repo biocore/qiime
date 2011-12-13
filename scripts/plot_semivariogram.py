@@ -50,16 +50,16 @@ script_info['required_options']=[\
  make_option('-t', '--fig_title', default='Semivariogram',\
      help='Title of the plot [default: %default]'),       
  make_option('--dot_color', help='dot color for plot, more info:' +\
-    ' http://matplotlib.sourceforge.net/api/pyplot_api.html#matplotlib.pyplot.plot' +\
+    ' http://matplotlib.sourceforge.net/api/pyplot_api.html' +\
     ' [default: %default]', default="wo"), 
  make_option('--line_color', help='line color for plot, more info:' +\
-    ' http://matplotlib.sourceforge.net/api/pyplot_api.html#matplotlib.pyplot.plot' +\
+    ' http://matplotlib.sourceforge.net/api/pyplot_api.html' +\
     ' [default: %default]', default="blue"), 
  make_option('--dot_alpha', type='float', help='alpha for dots, more info:' +\
-    ' http://matplotlib.sourceforge.net/api/pyplot_api.html#matplotlib.pyplot.plot' +\
+    ' http://matplotlib.sourceforge.net/api/pyplot_api.html' +\
     ' [default: %default]', default=1),
  make_option('--line_alpha', type='float', help='alpha for dots, more info:' +\
-    ' http://matplotlib.sourceforge.net/api/pyplot_api.html#matplotlib.pyplot.plot' +\
+    ' http://matplotlib.sourceforge.net/api/pyplot_api.html' +\
     ' [default: %default]', default=1),
 ]
 script_info['optional_options']=[\

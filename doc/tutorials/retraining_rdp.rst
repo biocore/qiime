@@ -56,7 +56,7 @@ If you want to integrate retraining of the RDP classifier into your QIIME workfl
 Defining alternate training files
 =================================
 
-Training files can be defined by users for other taxonomies. The format is the same as the ``id_to_taxonomy_map`` used by the BLAST taxonomy assigner, defined `here <file://localhost/Users/caporaso/code/Qiime/doc/_build/html/documentation/file_formats.html#sequence-id-to-taxonomy-mapping-files>`_. You must provide this file as well as a fasta file of reference sequences where the identifiers correspond to the ids in the ``id_to_taxonomy_map``.
+Training files can be defined by users for other taxonomies. The format is the same as the ``id_to_taxonomy_map`` used by the BLAST taxonomy assigner, defined `here <../documentation/file_formats.html#sequence-id-to-taxonomy-mapping-files>`_. You must provide this file as well as a fasta file of reference sequences where the identifiers correspond to the ids in the ``id_to_taxonomy_map``.
 
 The RDP Classifier has several requirements about its taxonomy strings for retraining. The first entry in each taxonomy string must be ``Root``, and there must be exactly six levels, including ``Root``. For example, the first four lines in the ``4feb2011`` greengenes OTUs are::
 
