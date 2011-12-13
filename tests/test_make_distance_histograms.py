@@ -22,12 +22,12 @@ from qiime.make_distance_histograms import between_sample_distances, \
     all_category_distances, draw_all_histograms, get_histogram_scale, \
     draw_histogram, make_nav_html, make_main_html, get_valid_indices, \
     distances_by_groups, write_distance_files, group_distances, \
-    monte_carlo_group_distances, permute_for_monte_carlo, \
+    monte_carlo_group_distances, \
     _make_histogram_filenames, _make_relative_paths, \
     _make_random_filename, matplotlib_rgb_color, \
     average_colors, average_all_colors, assign_unassigned_colors,\
     assign_mapped_colors, monte_carlo_group_distances_within_between,\
-    get_random_dists
+    get_random_dists, permute_between_groups
     
 from qiime.colors import data_colors
 from collections import defaultdict
@@ -409,14 +409,25 @@ class DistanceHistogramsTests(TestCase):
             for i in range(8):
                 self.assertEqual(obs_fields[i],exp_fields[i])
 
-    def test_permute_for_monte_carlo(self):
-        """permute_for_monte_carlo should return correct result.
-        """
-        obs = permute_for_monte_carlo(self.dmat)
-        self.assertNotEqual(obs,self.dmat)
-        self.assertEqual(len(obs),len(self.dmat))
-        self.assertEqual(sorted(obs.flat),sorted(self.dmat.flat))
-    
+    def test_permute_between_groups(self):
+        """permute_between_groups should correctly scrable between groups"""
+        a = arange(7) # 0 - 6
+        b = arange(3) + 7 # 7 - 9
+        
+        # construct a fake permutation function
+        permute_function = lambda size: array([4, 7, 8, 9, 2, 5, 1, 6, 3, 0])
+        ar, br = permute_between_groups(a, b, 10, permute_f=permute_function)
+        ar_exp = array([4, 7, 8, 9, 2, 5, 1])
+        br_exp = array([6, 3, 0])
+        
+        # ensure that all permutations are as expected
+        for i in xrange(len(ar)):
+            self.assertEqual(ar[i], ar_exp)
+            self.assertEqual(br[i], br_exp)
+        # ensure the correct number of permutations
+        self.assertEqual(len(ar), 10)
+        self.assertEqual(len(br), 10)
+        
     def test_monte_carlo_group_distances_within_between(self):
         """monte_carlo_group_distances_within_between should return correct.
         """

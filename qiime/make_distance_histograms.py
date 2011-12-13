@@ -15,7 +15,7 @@ use('Agg',warn=False)
 from qiime.parse import parse_mapping_file, parse_distmat, group_by_field,\
     group_by_fields
 from cogent.maths.stats.test import t_two_sample
-from numpy import array, mean, average, arange
+from numpy import array, mean, average, arange, concatenate
 from collections import defaultdict
 from string import strip
 from matplotlib.pylab import savefig, clf, gca, gcf,close
@@ -656,23 +656,25 @@ def monte_carlo_group_distances(mapping_file, dmatrix_file, prefs, \
             'p_greater','p_less','Iterations\n']))
         real_dists = distances_by_groups(distance_header, distance_matrix,\
             groups)
-        rand_distances = [distances_by_groups(distance_header, \
-            permute_for_monte_carlo(distance_matrix), groups) \
-            for i in range(num_iters)]
+ 
         #iterate over the groups
-
         for i, (first_g1, second_g1, distances_g1) in \
             enumerate(real_dists[:-1]):
 
             real_dist_1 = average(distances_g1)
-            rand_dists_1 = [rand_distances[n][i][-1] for n in range(num_iters)]
+
             #then for each other pair (not including same group)
             for j in range(i+1,len(real_dists)):
                 first_g2, second_g2, distances_g2 = real_dists[j]
 
                 real_dist_2 = average(distances_g2)
-                rand_dists_2 = [rand_distances[n][j][-1] \
-                    for n in range(num_iters)]
+
+                # permute distances just within these groups!
+                rand_dists_1, rand_dists_2 = \
+                        permute_between_groups(distances_g1, 
+                                               distances_g2,
+                                               num_iters)
+
                 ttests = [t_two_sample(rand_dists_1[n].flatten(),rand_dists_2[n].flatten())[0] \
                     for n in range(num_iters)]
                 real_ttest = t_two_sample(distances_g1.flatten(), distances_g2.flatten())
@@ -684,6 +686,7 @@ def monte_carlo_group_distances(mapping_file, dmatrix_file, prefs, \
                     num_iters])
                 outfile.write('\t'.join(map(str, curr_line)))
                 outfile.write('\n')
+
 
 def monte_carlo_group_distances_within_between(single_field, \
     paired_field, dmat, dir_prefix = '', \
@@ -753,6 +756,24 @@ def monte_carlo_group_distances_within_between(single_field, \
             outfile.write('\t'.join(map(str, curr_line)))
             outfile.write('\n')
     
+def permute_between_groups(g1, g2, num_iters, permute_f=permutation):
+    """Returns num_iters permuted versions of g1, g2.
+       Values are permuted between g1 and g2.
+    
+       g1, g2 are numpy arrays.
+    """
+    g1 = g1.flatten()
+    g2 = g2.flatten()
+    n1 = len(g1)
+    n2 = len(g2)
+    n = n1 + n2
+    combined = concatenate([g1, g2])
+    # generate a list of all permutations
+    perms = [permute_f(n) for i in xrange(num_iters)]
+    # use random permutations to split into groups
+    rand_g1 = [combined[perm[:n1]] for perm in perms]
+    rand_g2 = [combined[perm[n1:n]] for perm in perms]
+    return rand_g1, rand_g2
 
 def permute_for_monte_carlo(dist_matrix):
     """Returns permuted copy of distance matrix for Monte Carlo tests."""
