@@ -446,7 +446,7 @@ class Qiime_config(TestCase):
         
     def test_muscle_supported_version(self):
         """muscle is in path and version is supported """
-        acceptable_version = (3,6)
+        acceptable_version = (3,8,31)
         self.assertTrue(app_path('muscle'),
          "muscle not found. This may or may not be a problem depending on "+\
          "which components of QIIME you plan to use.")
