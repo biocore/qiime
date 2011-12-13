@@ -32,4 +32,5 @@ If you are upgrading your virtual machine, follow these commands to upgrade. or 
 ------------------------
  * QIIME |release| depends on `Python 2.7.1 <http://www.python.org/ftp/python/2.7.1/Python-2.7.1.tgz>`_ or greater; `numpy 1.5.1 <http://sourceforge.net/projects/numpy/files/NumPy/1.5.1/numpy-1.5.1.tar.gz>`_; and `matplotlib 1.1.0 <http://downloads.sourceforge.net/project/matplotlib/matplotlib/matplotlib-1.1.0/matplotlib-1.1.0.tar.gz>`_.
  * AmpliconNoise support has been updated to use its latest version 1.25, which can be found `here <http://ampliconnoise.googlecode.com/files/AmpliconNoiseV1.25.tar.gz>`_.
+ * muscle support has been updated to use its latest version 3.8.31, which can be found `link <http://www.drive5.com/muscle/downloads3.8.31/muscle3.8.31_i86linux64.tar.gz>`_.
  
