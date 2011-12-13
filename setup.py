@@ -92,6 +92,7 @@ setup(name='QIIME',
       scripts=glob('scripts/*py')+glob('scripts/ec2*'),
       package_data={'qiime':\
                    ['support_files/qiime_config',\
+                    'pycogent_backports/'
                     'support_files/css/*css',\
                     'support_files/html_templates/*html',\
                     'support_files/images/*png',\
