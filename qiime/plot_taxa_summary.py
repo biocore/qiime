@@ -14,8 +14,8 @@ __status__ = "Development"
 
 """
 Requirements:
-MatPlotLib 0.98.5.2
-Python 2.5
+MatPlotLib 1.1.0
+Python 2.7
 """
 
 import matplotlib,re
