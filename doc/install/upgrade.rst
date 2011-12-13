@@ -8,7 +8,7 @@ For a detailed history of the most notable changes between versions see the `QII
 
 1.4.0 to 1.4.0-dev (Linux)
 ------------------
-If you want to use the repository version of QIIME in any Linux box, follow this steps:
+If you want to use the repository version of QIIME in any Linux box, follow these steps:
 
 ::
         
@@ -19,7 +19,7 @@ If you want to use the repository version of QIIME in any Linux box, follow this
         
 1.3.0 to 1.4.0 (QIIME Virtual Machines)
 ---------------------------------------
-If you are upgrading your virtual machine, follow this commands to upgrade. or a previous app-deploy.py installation
+If you are upgrading your virtual machine, follow these commands to upgrade. or a previous app-deploy.py installation
 
 ::
         
