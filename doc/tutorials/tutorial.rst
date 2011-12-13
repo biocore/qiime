@@ -621,7 +621,7 @@ Generate 3D Bi-Plots
 ^^^^^^^^^^^^^^^^^^^^
 One can add taxa from the taxon summary files in the folder :file:`wf_taxa_summary/` to a 3D principal coordinates plot using QIIME's `make_3d_plots.py <../scripts/make_3d_plots.html>`_. The coordinates of a given taxon are plotted as a weighted average of the coordinates of all samples, where the weights are the relative abundances of the taxon in the samples. The size of the sphere representing a taxon is proportional to the mean relative abundance of the taxon across all samples. The following example creates a biplot displaying the 5 most abundant phylum-level taxa::
 
-    make_3d_plots.py -i wf_bdiv_even146/unweighted_unifrac_pc.txt -m Fasting_Map.txt -t wf_taxa_summary/otu_table_L2.txt --n_taxa_keep 5 -o 3d_biplot
+    make_3d_plots.py -i wf_bdiv_even146/unweighted_unifrac_pc.txt -m Fasting_Map.txt -t wf_taxa_summary/otu_table_L3.txt --n_taxa_keep 5 -o 3d_biplot
 
 The resulting html file :file:`3d_biplot/unweighted_unifrac_pc_3D_PCoA_plots.html` shows a biplot like this:
 
