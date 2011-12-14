@@ -6,10 +6,10 @@ __author__ = "Julia Goodrich"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Julia Goodrich"]
 __license__ = "GPL"
-__version__ = "1.4.0"
+__version__ = "1.4.0-dev"
 __maintainer__ = "Jose Clemente"
 __email__ = "jose.clemente@gmail.com"
-__status__ = "Release"
+__status__ = "Development"
 
 """
 This script generates the otu networks and statistics

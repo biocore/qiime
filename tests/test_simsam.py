@@ -6,10 +6,10 @@ __author__ = "Justin Kucyznski"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Justin Kucyznski"]
 __license__ = "GPL"
-__version__ = "1.4.0"
+__version__ = "1.4.0-dev"
 __maintainer__ = "Justin Kucyznski"
 __email__ = "justinak@gmail.com"
-__status__ = "Release"
+__status__ = "Development"
 
 from cogent.util.unit_test import TestCase, main
 from cogent.parse.tree import DndParser

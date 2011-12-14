@@ -1,3 +1,7 @@
+QIIME 1.4.0-dev
+==================================
+
+
 QIIME 1.4.0 (13 Dec 2011)
 ==================================
 * Implemented usearch (ie OTUPIPE) as chimera detection/quality filtering/OTU picking in the pick_otus.py module.

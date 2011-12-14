@@ -5,10 +5,10 @@ __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project" 
 __credits__ = ["Justin Kuczynski"] #remember to add yourself
 __license__ = "GPL"
-__version__ = "1.4.0"
+__version__ = "1.4.0-dev"
 __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
-__status__ = "Release"
+__status__ = "Development"
 
 """Contains code for generating rarefied OTU tables at varying depth
 

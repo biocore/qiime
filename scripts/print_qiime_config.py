@@ -7,10 +7,10 @@ __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jens Reeder","Dan Knights", "Antonio Gonzalez Pena",
     "Justin Kuczynski"]
 __license__ = "GPL"
-__version__ = "1.4.0"
+__version__ = "1.4.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
-__status__ = "Release"
+__status__ = "Development"
 
 from qiime.util import make_option
 from os import access, X_OK, R_OK, W_OK, getenv, environ

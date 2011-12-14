@@ -5,10 +5,10 @@ __author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2011, The QIIME Project" #consider project name
 __credits__ = ["Jesse Stombaugh"] #remember to add yourself
 __license__ = "GPL"
-__version__ = "1.4.0"
+__version__ = "1.4.0-dev"
 __maintainer__ = "Tony Walters"
 __email__ = "William.A.Walters@colorado.edu"
-__status__ = "Release"
+__status__ = "Development"
 
 
 from sys import argv
@@ -377,9 +377,9 @@ class TopLevelTests(TestCase):
         otu_table = otu_table.split('\n')
         samples = ['sample2', 'sample3']
         result = _filter_table_neg_control(otu_table, samples)
-        self.assertEqual(result, """# QIIME v1.4.0 OTU table
+        self.assertEqual(result, """# QIIME v%s OTU table
 #OTU ID\tsample1
-1\t1""")
+1\t1""" % __version__)
         #works with lineages
         otu_table = """# QIIME v%s OTU table\n#OTU ID\tsample1\tsample2\tsample3\tConsensus Lineage
 0\t0\t2\t0\ttaxon1
@@ -388,15 +388,15 @@ class TopLevelTests(TestCase):
         otu_table = otu_table.split('\n')
         samples = ['sample2', 'sample3']
         result = _filter_table_neg_control(otu_table, samples)
-        self.assertEqual(result, """# QIIME v1.4.0 OTU table
+        self.assertEqual(result, """# QIIME v%s OTU table
 #OTU ID\tsample1\tConsensus Lineage
-1\t1\ttaxon2""")
+1\t1\ttaxon2""" % __version__)
         samples = ['sample3']
         result = _filter_table_neg_control(otu_table, samples)
-        self.assertEqual(result, """# QIIME v1.4.0 OTU table
+        self.assertEqual(result, """# QIIME v%s OTU table
 #OTU ID\tsample1\tsample2\tConsensus Lineage
 0\t0\t2\ttaxon1
-1\t1\t0\ttaxon2""")
+1\t1\t0\ttaxon2""" % __version__)
 
 # Large strings at the end for better readability
 sample_unfiltered_otu_table = """#Full OTU Counts

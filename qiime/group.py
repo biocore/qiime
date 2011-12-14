@@ -6,10 +6,10 @@ __author__ = "Jai Rideout"
 __copyright__ = "Copyright 2011, The QIIME project"
 __credits__ = ["Jai Rideout", "Jeremy Widmann"]
 __license__ = "GPL"
-__version__ = "1.4.0"
+__version__ = "1.4.0-dev"
 __maintainer__ = "Jai Rideout"
 __email__ = "jr378@nau.edu"
-__status__ = "Release"
+__status__ = "Development"
 
 from numpy import array
 from qiime.parse import group_by_field

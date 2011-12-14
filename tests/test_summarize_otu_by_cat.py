@@ -5,10 +5,10 @@ __author__ = "Julia Goodrich"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Julia Goodrich","Justin Kuczynski"]
 __license__ = "GPL"
-__version__ = "1.4.0"
+__version__ = "1.4.0-dev"
 __maintainer__ = "Daniel McDonald"
 __email__ = "wasade@gmail.com"
-__status__ = "Release"
+__status__ = "Development"
 
 from cogent.util.unit_test import TestCase, main
 from qiime.summarize_otu_by_cat import get_sample_cat_info, get_counts_by_cat

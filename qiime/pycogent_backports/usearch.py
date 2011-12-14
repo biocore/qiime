@@ -18,7 +18,7 @@ __license__ = "GPL"
 __version__ = "1.2.0.dev"
 __maintainer__ = "William Walters"
 __email__ = "william.a.walters@colorado.edu"
-__status__ = "Release"
+__status__ = "Development"
 
 from os.path import split, splitext, basename, isdir, abspath, isfile, join
 
