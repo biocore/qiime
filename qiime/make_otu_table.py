@@ -22,6 +22,7 @@ from numpy import array
 from cogent.util.misc import flatten, InverseDict
 from numpy import zeros
 from qiime.format import format_otu_table
+from sys import stderr
 
 
 def libs_from_seqids(seq_ids, delim='_'):
