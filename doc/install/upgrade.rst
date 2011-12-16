@@ -17,12 +17,16 @@ If you want to use the repository version of QIIME in any Linux box, follow thes
         cd app-deploy-qiime-1.4.0
         python app-deploy.py /software/ -f etc/qiime_1.4.0_repository.conf
         
+Note that you can replace the installation folder (/software/) for any other path in your system.
+        
 1.3.0 to 1.4.0 (QIIME Virtual Machines)
 ---------------------------------------
-If you are upgrading your virtual machine, follow these commands to upgrade. or a previous app-deploy.py installation
+If you are upgrading your virtual machine, follow these commands to upgrade:
 
 ::
         
+        sudo rm -rf /software/*
+        rm .qiime_config
         wget http://bmf.colorado.edu/QIIME/app-deploy-qiime-1.4.0.tgz
         tar zxvf app-deploy-qiime-1.4.0.tgz
         cd app-deploy-qiime-1.4.0
