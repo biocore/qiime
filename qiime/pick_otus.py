@@ -314,7 +314,7 @@ class BlastOtuPicker(OtuPicker):
                 # if the alignment is the longest we've seen so far (or 
                 # the first), hold on to it as a possible best hit
                 len_current = blast_hit['ALIGNMENT LENGTH']
-                if len_current >= len_longest:
+                if len_current > len_longest:
                     choice = blast_hit
                     len_longest = len_current 
             query = query.split()[0]    #get rid of spaces
