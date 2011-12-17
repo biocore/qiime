@@ -118,11 +118,10 @@ class RSupervisedLearner(CommandLineApplication):
         base_command = self._get_base_command()
         cd_command, base_command = base_command.split(';')
         cd_command += ';'
-        R_source_dir = self._get_R_script_dir()
 
         # Build up the command, consisting of a BaseCommand followed by
         # input and output (file) specifications
-        args = ['--sourcedir', R_source_dir, 
+        args = ['--qiime_dir', get_qiime_project_dir(), 
                 '-i', predictor_fp, 
                 '-m', response_fp,
                 '-c', response_name,

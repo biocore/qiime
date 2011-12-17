@@ -90,16 +90,16 @@
 }
 
 # prints random forests results file
-"print.rf.results" <- function(result, opts, feature.ids){
-    print.rf.results.summary(result, opts, outdir=opts$outdir)
-    print.rf.results.probabilities(result, outdir=opts$outdir)
-    print.rf.results.mislabeling(result, outdir=opts$outdir)
-    print.rf.results.importances(result, feature.ids=feature.ids, outdir=opts$outdir)
-    print.rf.results.confusion.matrix(result, outdir=opts$outdir)
+"save.rf.results" <- function(result, opts, feature.ids){
+    save.rf.results.summary(result, opts, outdir=opts$outdir)
+    save.rf.results.probabilities(result, outdir=opts$outdir)
+    save.rf.results.mislabeling(result, outdir=opts$outdir)
+    save.rf.results.importances(result, feature.ids=feature.ids, outdir=opts$outdir)
+    save.rf.results.confusion.matrix(result, outdir=opts$outdir)
 }
 
 # Print "summary" file
-"print.rf.results.summary" <- function(result, opts, filename='summary.txt', outdir='.'){
+"save.rf.results.summary" <- function(result, opts, filename='summary.txt', outdir='.'){
     err <- mean(result$errs)
     err.sd <- sd(result$errs)
     baseline.err <- 1-max(table(y))/length(y)
@@ -119,7 +119,7 @@
 }
 
 # Print "probabilities" file
-"print.rf.results.probabilities" <- function(result, filename='cv_probabilities.txt', outdir='.'){
+"save.rf.results.probabilities" <- function(result, filename='cv_probabilities.txt', outdir='.'){
     filepath <- sprintf('%s/%s',outdir,filename)
     sink(filepath)
     cat('SampleID\t')
@@ -128,7 +128,7 @@
 }
 
 # Print "mislabeling" file
-"print.rf.results.mislabeling" <- function(result, filename='mislabeling.txt', outdir='.'){
+"save.rf.results.mislabeling" <- function(result, filename='mislabeling.txt', outdir='.'){
     filepath <- sprintf('%s/%s',outdir,filename)
     sink(filepath)
     cat('SampleID\t')
@@ -137,7 +137,7 @@
 }
 
 # Print "feature importance scores" file
-"print.rf.results.importances" <- function(result, feature.ids, filename='feature_importance_scores.txt', outdir='.'){
+"save.rf.results.importances" <- function(result, feature.ids, filename='feature_importance_scores.txt', outdir='.'){
     filepath <- sprintf('%s/%s',outdir,filename)
     if(is.null(dim(result$importances))){
         imp <- result$importances
@@ -158,7 +158,7 @@
 }
 
 # Print "confusion matrix" file
-"print.rf.results.confusion.matrix" <- function(result, filename='confusion_matrix.txt', outdir='.'){
+"save.rf.results.confusion.matrix" <- function(result, filename='confusion_matrix.txt', outdir='.'){
     filepath <- sprintf('%s/%s',outdir,filename)
     
     # add class error column to each row
