@@ -33,7 +33,7 @@
     # drop "Consensus Lineage" column if present
     if(otu.table.has.metadata(colnames(otus))){
         C <- ncol(otus)
-        lineages <- otus[,C]
+        lineages <- as.character(otus[,C])
         otus <- otus[,-C]
     } else {
         lineages <- NULL
