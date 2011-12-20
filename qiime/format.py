@@ -571,9 +571,11 @@ def illumina_data_to_fastq(record_data,number_of_bases=None):
     
     return '@%s\n%s\n+\n%s' % (header,seq,qual), pass_filter
 
-def get_biom_format_string():
-    return "BIOM Version 1.0"
+def get_biom_format_version_string():
+    """Returns the current Biom file format version."""
+    return "Biological Observation Matrix v0.9"
 
-def get_biom_format_description_string():
-    """TODO fix me to point to a real website!"""
-    return "http://some_website/BIOM_dataformat_v1.0.html"
+def get_biom_format_url_string():
+    """Returns the current Biom file format description URL."""
+    return\
+        "http://www.qiime.org/svn_documentation/documentation/biom_format.html"
