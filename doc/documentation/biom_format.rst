@@ -117,7 +117,7 @@ Minimal sparse OTU table
     {
         "id":null,
         "format": "Biological Observation Matrix v0.9",
-        "format_url": "http://some_website/QIIME_MGRAST_dataformat_v0.9.html",
+        "format_url": "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
         "type": "OTU table",
         "generated_by": "QIIME revision XYZ",
         "date": "2011-12-19T19:00:00",
