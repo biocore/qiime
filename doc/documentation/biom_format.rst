@@ -69,13 +69,6 @@ at the minimum::
     id                  : <string> an arbitrary UNIQUE identifier
     metadata            : <list of objects or null> A object containing key, value metadata pairs
 
-
-Controlled vocabularies
-=======================
-
-``type`` options: ``OTU table``, ...
-
-
 Example biom files
 ==================
 
@@ -231,14 +224,14 @@ Rich sparse OTU table
      "format_url": "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
      "type": "OTU table",
      "generated_by": "QIIME revision XYZ",
-     "date": "2011-12-19T19:00:00",  
+     "date": "2011-12-19T19:00:00",
      "rows":[
         {"id":"GG_OTU_1", "metadata":{"taxonomy":["k__Bacteria", "p__Proteobacteria", "c__Gammaproteobacteria", "o__Enterobacteriales", "f__Enterobacteriaceae", "g__Escherichia", "s__"]}},
         {"id":"GG_OTU_2", "metadata":{"taxonomy":["k__Bacteria", "p__Cyanobacteria", "c__Nostocophycideae", "o__Nostocales", "f__Nostocaceae", "g__Dolichospermum", "s__"]}},
         {"id":"GG_OTU_3", "metadata":{"taxonomy":["k__Archaea", "p__Euryarchaeota", "c__Methanomicrobia", "o__Methanosarcinales", "f__Methanosarcinaceae", "g__Methanosarcina", "s__"]}},
         {"id":"GG_OTU_4", "metadata":{"taxonomy":["k__Bacteria", "p__Firmicutes", "c__Clostridia", "o__Halanaerobiales", "f__Halanaerobiaceae", "g__Halanaerobium", "s__Halanaerobiumsaccharolyticum"]}},
         {"id":"GG_OTU_5", "metadata":{"taxonomy":["k__Bacteria", "p__Proteobacteria", "c__Gammaproteobacteria", "o__Enterobacteriales", "f__Enterobacteriaceae", "g__Escherichia", "s__"]}}
-        ],  
+        ],
      "columns":[
         {"id":"Sample1", "metadata":{
                                  "BarcodeSequence":"CGCTTATCGAGA",
@@ -283,7 +276,7 @@ Rich sparse OTU table
              [3,2,1],
              [3,5,1],
              [4,1,1],
-             [4,2,1],
+             [4,2,1]
             ]
     }
 
