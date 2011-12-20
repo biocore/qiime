@@ -34,13 +34,13 @@ Required top-level fields::
                           Acceptable values:
                            "sparse" : only non-zero values are specified
                            "dense" : every element must be specified
-    matrix_matrix_element_type : Value type in matrix (a controlled vocabulary)
+    matrix_element_type : Value type in matrix (a controlled vocabulary)
                           Acceptable values:
                            "int" : integer
                            "float" : floating point
                            "str" : string
-    header              : [<int>, <int>], the number of rows and number of columns
-    matrix              : <list of lists>, counts of observations by sample
+    shape               : <list of ints>, the number of rows and number of columns in data
+    data                : <list of lists>, counts of observations by sample
                            if matrix_type is "sparse", [[row, column, value],
                                                         [row, column, value],
                                                         ...]
