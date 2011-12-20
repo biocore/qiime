@@ -201,7 +201,7 @@ Rich dense OTU table
                                  "BarcodeSequence":"CTCTCTACCAAT",
                                  "LinkerPrimerSequence":"CATGCTGCCTCCCGTAGGAGT",
                                  "BODY_SITE":"skin",
-                                 "Description":"human skin"},
+                                 "Description":"human skin"}},
         {"id":"Sample6", "metadata":{
                                  "BarcodeSequence":"CTAACTACCAAT",
                                  "LinkerPrimerSequence":"CATGCTGCCTCCCGTAGGAGT",
@@ -262,7 +262,7 @@ Rich sparse OTU table
                                  "BarcodeSequence":"CTCTCTACCAAT",
                                  "LinkerPrimerSequence":"CATGCTGCCTCCCGTAGGAGT",
                                  "BODY_SITE":"skin",
-                                 "Description":"human skin"},
+                                 "Description":"human skin"}},
         {"id":"Sample6", "metadata":{
                                  "BarcodeSequence":"CTAACTACCAAT",
                                  "LinkerPrimerSequence":"CATGCTGCCTCCCGTAGGAGT",
