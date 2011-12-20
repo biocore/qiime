@@ -198,7 +198,6 @@ class DistributionPlotsTests(TestCase):
         """_plot_bar_data() should return a list of Rectangle objects."""
         fig, ax = _create_plot()
         result = _plot_bar_data(ax, [1, 2, 3], 'red', 0.5, 3.75, 1.5, 'stdv')
-        self.assertEqual(result.__class__.__name__, "BarContainer")
         self.assertEqual(result[0].__class__.__name__, "Rectangle")
         self.assertEqual(len(result), 1)
         self.assertFloatEqual(result[0].get_width(), 0.5)
@@ -207,7 +206,6 @@ class DistributionPlotsTests(TestCase):
 
         fig, ax = _create_plot()
         result = _plot_bar_data(ax, [1, 2, 3], 'red', 0.5, 3.75, 1.5, 'sem')
-        self.assertEqual(result.__class__.__name__, "BarContainer")
         self.assertEqual(result[0].__class__.__name__, "Rectangle")
         self.assertEqual(len(result), 1)
         self.assertFloatEqual(result[0].get_width(), 0.5)
@@ -235,8 +233,6 @@ class DistributionPlotsTests(TestCase):
         """_plot_scatter_data() should return a Collection instance."""
         fig, ax = _create_plot()
         result = _plot_scatter_data(ax, [1, 2, 3], '^', 0.77, 1, 1.5, 'stdv')
-        self.assertEqual(result.__class__.__name__, "PathCollection")
-        self.assertEqual(len(result.get_paths()), 1)
         self.assertFloatEqual(result.get_sizes(), 20)
 
     def test_plot_scatter_data_empty(self):
