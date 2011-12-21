@@ -17,7 +17,6 @@ from time import sleep
 from tempfile import mkdtemp
 from qiime.util import get_tmp_filename
 from qiime.util import get_qiime_project_dir
-from qiime.format import format_otu_table
 from cogent.app.util import CommandLineApplication, CommandLineAppResult, \
     FilePath, ResultPath, ApplicationError
 from cogent.app.parameters import Parameters

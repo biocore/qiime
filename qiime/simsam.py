@@ -18,7 +18,6 @@ from qiime.util import make_option
 
 from qiime.parse import parse_otu_table
 from qiime.util import parse_command_line_parameters
-from qiime.format import format_otu_table
 from qiime.sort import natsort
 
 def sim_otu_table(sample_ids, otu_ids, otu_mtx, otu_metadata, tree, 

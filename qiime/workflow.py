@@ -12,7 +12,6 @@ from numpy import array
 from cogent.util.misc import safe_md5
 from cogent.parse.fasta import MinimalFastaParser
 from qiime.parse import parse_mapping_file, parse_qiime_parameters
-from qiime.format import format_otu_table
 from qiime.util import (compute_seqs_per_library_stats,
                         get_qiime_scripts_dir,
                         create_dir, guess_even_sampling_depth,

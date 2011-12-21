@@ -31,7 +31,7 @@ import sys
 
 from qiime.parse import filter_otus_by_lineage, parse_matrix,\
     parse_rarefaction_fname
-from qiime.format import format_otu_table, format_matrix
+from qiime.format import format_matrix
 from qiime.util import FunctionWithParams
        
 def write_output_file(metric_file_data, output_dir, metric, all_samples):

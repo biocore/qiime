@@ -8,7 +8,6 @@ import sys
 from qiime.collate_alpha import write_output_file, make_output_row
 from qiime.parse import (filter_otus_by_lineage, parse_matrix,
     parse_rarefaction_fname)
-from qiime.format import format_otu_table, format_matrix
 from qiime.util import FunctionWithParams
 from qiime.util import parse_command_line_parameters, make_option
 
