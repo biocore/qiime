@@ -6,7 +6,7 @@ __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Rob Knight", "Catherine Lozupone", "Justin Kuczynski",\
         "Julia Goodrich", "Daniel McDonald", "Antonio Gonzalez Pena",
-        "Jesse Stombaugh"]
+        "Jesse Stombaugh", "Jose Carlos Clemente Litran"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Daniel McDonald"
@@ -14,15 +14,18 @@ __email__ = "wasade@gmail.com"
 __status__ = "Development"
  
 
-from qiime.util import parse_command_line_parameters, \
-        convert_otu_table_relative
+#from qiime.util import parse_command_line_parameters, \
+#        convert_otu_table_relative
+from qiime.util import parse_command_line_parameters
 from qiime.util import make_option,get_options_lookup,create_dir
 from qiime.summarize_taxa import make_summary, add_summary_mapping
 from sys import stdout, stderr
-from qiime.parse import parse_otu_table, parse_mapping_file
+#from qiime.parse import parse_otu_table, parse_mapping_file
+from qiime.parse import parse_mapping_file
 from qiime.format import write_summarize_taxa, write_add_taxa_summary_mapping,\
         format_summarize_taxa, format_add_taxa_summary_mapping
 from os.path import split,splitext,join
+from qiime.pycogent_backports.parse_biom import parse_biom_table
 
 options_lookup = get_options_lookup()
 
@@ -96,7 +99,8 @@ def main():
     lower_percentage = opts.lower_percentage
     upper_percentage = opts.upper_percentage
     otu_table_fp = opts.otu_table_fp
-    otu_table = parse_otu_table(open(otu_table_fp, 'U'))
+    #otu_table = parse_otu_table(open(otu_table_fp, 'U'))
+    otu_table = parse_biom_table(open(otu_table_fp, 'U'))
     delimiter = opts.delimiter
     mapping_fp = opts.mapping
     levels = opts.level.split(',')
@@ -125,7 +129,8 @@ def main():
         raise option_parser.error("Deprecated. Please use --absolute_abundances to disable relative abundance")
 
     if not opts.absolute_abundance:
-        otu_table = convert_otu_table_relative(otu_table)
+        otu_table = otu_table.normObservationBySample()
+        #otu_table = convert_otu_table_relative(otu_table)
 
     # introduced output directory to will allow for multiple outputs
     if opts.output_dir:
