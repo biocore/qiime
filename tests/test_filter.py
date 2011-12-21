@@ -14,7 +14,7 @@ __status__ = "Development"
 
 from cogent.util.unit_test import TestCase, main
 from cogent.parse.tree import DndParser
-from qiime.parse import parse_otu_table, parse_distmat
+from qiime.parse import parse_distmat
 from qiime.filter import (filter_fasta, 
                           filter_otus_from_otu_table,
                           filter_samples_from_otu_table,
@@ -39,25 +39,10 @@ class FilterTests(TestCase):
     def setUp(self):
         self.filter_fasta_expected1 = filter_fasta_expected1
         self.filter_fasta_expected2 = filter_fasta_expected2
-        self.input_otu_table1 = input_otu_table1.split('\n')
-        self.input_seqs_to_discard1 = input_seqs_to_discard1.split('\n')
-        self.expected_otu_table1a = expected_otu_table1a.split('\n')
-        self.expected_otu_table1b = expected_otu_table1b.split('\n')
-        self.expected_otu_table1c = expected_otu_table1c.split('\n')
-        self.expected_otu_table1d = expected_otu_table1d.split('\n')
         self.input_dm1 = input_dm1.split('\n')
         self.expected_dm1a = expected_dm1a.split('\n')
         self.expected_dm1b = expected_dm1b.split('\n')
         
-        # split otu table test data
-        self.input_otu_table2 = input_otu_table2.split('\n')
-        self.input_otu_table2_bacteria = str(bacteria_otu_table1)
-        self.input_otu_table2_none = str(none_otu_table1)
-        self.input_otu_table2_archaea = str(archaea_otu_table1)
-        self.input_otu_table2_firmicutes = str(firmicutes_otu_table1)
-        self.input_otu_table2_bacteroidetes = str(bacteroidetes_otu_table1)
-        self.input_otu_table2_none_no_l2 = str(none_no_l2_otu_table1)
-        self.input_otu_table2_none_firmicutes = str(none_firmicutes_otu_table1)
         
     def tearDown(self):
         pass
@@ -82,31 +67,6 @@ class FilterTests(TestCase):
         tips_to_keep = ["S7","S3","seq6","s2","S5","Seq1"]
         expected = []
         self.assertEqualItems(negate_tips_to_keep(tips_to_keep,t),expected)
-        
-    def test_split_otu_table_on_taxonomy(self):
-        """ splitting OTU table on taxonomy functions as expected
-        """
-        # Level 1
-        actual = list(split_otu_table_on_taxonomy(
-                       self.input_otu_table2,1))
-        actual.sort()
-        expected = [('Bacteria',self.input_otu_table2_bacteria),
-                    ('None',self.input_otu_table2_none),
-                    ('Archaea',self.input_otu_table2_archaea)]
-        expected.sort()
-        self.assertEqual(actual,expected)
-        
-        # Level 2
-        actual = list(split_otu_table_on_taxonomy(
-                       self.input_otu_table2,2))
-        actual.sort()
-        expected = [('Bacteria;Bacteroidetes',self.input_otu_table2_bacteroidetes),
-                    ('Bacteria;Firmicutes',self.input_otu_table2_firmicutes),
-                    ('None',self.input_otu_table2_none_no_l2),
-                    ('None;Firmicutes',self.input_otu_table2_none_firmicutes),
-                    ('Archaea',self.input_otu_table2_archaea)]
-        expected.sort()
-        self.assertEqual(actual,expected)
         
         
     def test_filter_fasta(self):
@@ -134,99 +94,7 @@ class FilterTests(TestCase):
                      seqs_to_keep,
                      negate=True)
         self.assertEqual(actual.s,self.filter_fasta_expected2)
-        
-    def test_filter_otus_from_otu_table(self):
-        """filter_otus_from_otu_table: functions as expected
-        """
-        actual = filter_otus_from_otu_table(self.input_otu_table1,
-                                            self.input_seqs_to_discard1)
-        self.assertEqual(actual,self.expected_otu_table1a)
-        
-    def test_filter_otus_from_otu_table_negate(self):
-        """filter_otus_from_otu_table: functions as expected with negate=True
-        """
-        actual = filter_otus_from_otu_table(self.input_otu_table1,
-                                            self.input_seqs_to_discard1,
-                                            negate=True)
-        self.assertEqual(actual,self.expected_otu_table1b)
-        
-    def test_filter_samples_from_otu_table(self):
-        """filter_samples_from_otu_table functions as expected """
-        
-        actual = filter_samples_from_otu_table(self.input_otu_table1,
-                                              ["DEF","GHI tfasd"])
-        self.assertEqual(actual,self.expected_otu_table1c)
-        
-        # order of otu table is retained regardless of samples_to_keep order
-        actual = filter_samples_from_otu_table(self.input_otu_table1,
-                                               ["XYZ"])
-        self.assertEqual(actual,self.expected_otu_table1d)
-        
-    def test_filter_samples_from_otu_table_negate(self):
-        """filter_samples_from_otu_table functions w negate """
-        actual = filter_samples_from_otu_table(self.input_otu_table1,
-                                               ["ABC blah","XYZ"],
-                                               negate=True)
-        self.assertEqual(actual,self.expected_otu_table1c)
     
-    def test_filter_otu_table_to_n_samples(self):
-        """filter_otu_table_to_n_samples functions as expected """
-        
-        def check_no_zero_count_otus(data,otu_ids):
-            for d,id_ in zip(data,otu_ids):
-                self.assertTrue(sum(d)>0,
-                 "OTU (%s) with total count=0 not " % id_ +\
-                 "filtered from OTU table.")
-        
-        actual = filter_otu_table_to_n_samples(self.input_otu_table1,1)
-        sample_ids,otu_ids,data,taxa = parse_otu_table(actual)
-        self.assertTrue(len(sample_ids),1)
-        check_no_zero_count_otus(data,otu_ids)
-        
-        actual = filter_otu_table_to_n_samples(self.input_otu_table1,2)
-        sample_ids,otu_ids,data,taxa = parse_otu_table(actual)
-        self.assertTrue(len(sample_ids),2)
-        check_no_zero_count_otus(data,otu_ids)
-        
-        actual = filter_otu_table_to_n_samples(self.input_otu_table1,3)
-        sample_ids,otu_ids,data,taxa = parse_otu_table(actual)
-        self.assertTrue(len(sample_ids),3)
-        check_no_zero_count_otus(data,otu_ids)
-        
-        actual = filter_otu_table_to_n_samples(self.input_otu_table1,4)
-        sample_ids,otu_ids,data,taxa = parse_otu_table(actual)
-        self.assertTrue(len(sample_ids),4)
-        self.assertEqualItems(sample_ids,["ABC","DEF","GHI","XYZ"])
-        self.assertEqual(data.shape,(4,4))
-        check_no_zero_count_otus(data,otu_ids)
-        
-        actual = filter_otu_table_to_n_samples(self.input_otu_table1,5)
-        sample_ids,otu_ids,data,taxa = parse_otu_table(actual)
-        self.assertTrue(len(sample_ids),4)
-        self.assertEqualItems(sample_ids,["ABC","DEF","GHI","XYZ"])
-        self.assertEqual(data.shape,(4,4))
-        check_no_zero_count_otus(data,otu_ids)
-        
-        # different samples selected on different runs
-        r = []
-        for i in range(25):
-            actual = filter_otu_table_to_n_samples(self.input_otu_table1,1)
-            sample_ids,otu_ids,data,taxa = parse_otu_table(actual)
-            r.append(tuple(sample_ids))
-        self.assertTrue(len({}.fromkeys(r)) > 1)
-
-    def test_filter_otu_table_to_n_samples_handles_bad_n(self):
-        """filter_otu_table_to_n_samples handles bad n """
-        # ValueError if n < 1
-        actual = self.assertRaises(ValueError,
-                                   filter_otu_table_to_n_samples,
-                                   self.input_otu_table1,
-                                   0)
-        actual = self.assertRaises(ValueError,
-                                   filter_otu_table_to_n_samples,
-                                   self.input_otu_table1,
-                                   -1)
-        
     def test_filter_samples_from_distance_matrix(self):
         """filter_samples_from_distance_matrix functions as expected """
         actual = filter_samples_from_distance_matrix(parse_distmat(self.input_dm1),
