@@ -92,8 +92,8 @@ def main():
     create_dir(os.path.join(dir_path,"otu_network/stats"))
 
     map_lines = open(opts.map_fname,'U').readlines()
-    otu_sample_lines = open(opts.counts_fname, 'U').readlines()
-    create_network_and_stats(dir_path,map_lines,otu_sample_lines,prefs,data,background_color,label_color)
+    #otu_sample_lines = open(opts.counts_fname, 'U').readlines()
+    create_network_and_stats(dir_path,map_lines,opts.counts_fname,prefs,data,background_color,label_color)
 
 if __name__ == "__main__":
     main()
