@@ -130,9 +130,9 @@ def get_connection_info(lines, num_meta, meta_dict):
     sample_dc = defaultdict(int)
     sample_num_seq = defaultdict(int)
     con_list = []
-    nodes = []
 
     sample_ids, otu_ids, otu_table, lineages = parse_otu_table(lines,count_map_f=float)
+
     if lineages == []:
         is_con = False
     else:
@@ -164,24 +164,24 @@ def get_connection_info(lines, num_meta, meta_dict):
 
         otu_dc[degree] += 1
         degree_counts[degree] += 1
-        samples = [sample_ids[int(i)] for i in non_zero_counts]
+        samples = [sample_ids[i] for i in non_zero_counts]
         for i, s in enumerate(samples):
             if s not in meta_dict.keys():
                 continue
             con_by_sample[s].update(samples[0:i])
             con_by_sample[s].update(samples[i+1:])
-            sample_num_seq[s] += float(data[int(non_zero_counts[i])])
+            sample_num_seq[s] += float(data[non_zero_counts[i]])
             
             edge_from.append(s)
             to.append(to_otu)
             meta = meta_dict[s]
             meta[1] += 1
-            data_num = str(data[int(non_zero_counts[i])])
+            data_num = str(data[non_zero_counts[i]])
             edge_file.append('\t'.join([s, to_otu, \
                             data_num, con, meta[0]]))
-            multi[to_otu].append((s,float(data[int(non_zero_counts[i])]), meta[0]))
+            multi[to_otu].append((s,float(data[non_zero_counts[i]]), meta[0]))
             if len(non_zero_counts) == 1:
-                red_nodes[(sample_ids[int(non_zero_counts[0])],meta[0])] += degree
+                red_nodes[(sample_ids[non_zero_counts[0]],meta[0])] += degree
             else:
                 red_edge_file.append('\t'.join([s, to_otu, \
                                     data_num, con, meta[0]]))
@@ -195,7 +195,6 @@ def get_connection_info(lines, num_meta, meta_dict):
         weighted_degree = sample_num_seq[s]
         node_file_line = '\t'.join([s,s,'user_node',str(meta[1]),\
                                     str(weighted_degree),'other',meta[0]])
-        nodes.append('\t'.join([s,'user_node']))
         node_file.append(node_file_line)
         red_node_file.append(node_file_line)
 
@@ -204,21 +203,6 @@ def get_connection_info(lines, num_meta, meta_dict):
         red_node_file_line.extend(['otu']*num_meta)
         red_node_file.append('\t'.join(red_node_file_line))
         red_edge_file.append('\t'.join([n[0],'@'+n[0],"1.0","missed",n[1]]))
-    multi_red = defaultdict(list)
-    
-    for i,(o,s) in enumerate(multi.items()):
-        samples = [samp for samp,w,m in s]
-        samples.sort()
-        samples = tuple(samples)
-        new = [list(bla) for bla in s]
-        new.sort()
-        if samples not in multi_red:
-            multi_red[samples] = new
-        else:
-            for j,li in enumerate(multi_red[samples]):
-                multi_red[samples][j][1]+=new[j][1]
-    for i,(k,v) in enumerate(multi_red.items()):
-        nodes.append('\t'.join([str(i),'otu_node']))
             
     return con_by_sample, node_file, edge_file, red_node_file,\
            red_edge_file,otu_dc, degree_counts,sample_dc
