@@ -62,9 +62,13 @@ def parse_otu_table_to_rich_otu_table(lines,count_map_f=int,dense=False):
     """
     if dense:
         sample_ids, otu_ids, otu_table, metadata = parse_otu_table(lines,count_map_f=count_map_f)
+        if len(metadata) > 0:
+            metadata = [{'taxonomy':elem} for elem in metadata]
+        else:
+            metadata = None
         table_obj = rt.DenseOTUTable(Data=otu_table,
         SampleIds=sample_ids, ObservationIds=otu_ids,
-        SampleMetadata=None, ObservationMetadata=[{'taxonomy':elem} for elem in metadata])
+        SampleMetadata=None, ObservationMetadata=metadata)
         return table_obj
 
     otu_ids = []
