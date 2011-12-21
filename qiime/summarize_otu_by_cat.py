@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Julia Goodrich"
 __copyright__ = "Copyright 2011, The QIIME Project" 
-__credits__ = ["Julia Goodrich", "Jesse Stombaugh","Greg Caporaso","Justin Kuczynski"]
+__credits__ = ["Julia Goodrich", "Jesse Stombaugh","Greg Caporaso","Justin Kuczynski", "Jose Carlos Clemente Litran"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Daniel McDonald"
@@ -31,7 +31,9 @@ from time import strftime
 from random import choice, randrange
 from qiime.format import format_otu_table
 from decimal import getcontext
-from qiime.parse import parse_mapping_file, parse_otu_table
+#from qiime.parse import parse_mapping_file, parse_otu_table
+from qiime.parse import parse_mapping_file
+from qiime.pycogent_backports.parse_biom import parse_biom_table
 
 def get_sample_cat_info(lines, category):
     cat_by_sample = {}
@@ -67,50 +69,65 @@ def get_sample_cat_info(lines, category):
     return cat_by_sample, sample_by_cat, len(category_labels), meta_dict,label_lists_dict,num_samples_by_cat
 
 
-def get_counts_by_cat(lines, num_meta, meta_dict, cat_list,category,num_samples_by_cat,
+def get_counts_by_cat(otu_table_fh, num_meta, meta_dict, cat_list,category,num_samples_by_cat,
                      normalize):
-    con_by_sample = defaultdict(set)
-    node_file_str = []
-    edge_file_str = []
-    red_nodes = defaultdict(int)
-    red_node_file_str = []
-    red_edge_file_str = []
-    edge_from = []
-    to = []
-    otu_dc = defaultdict(int)
-    degree_counts = defaultdict(int)
-    sample_dc = defaultdict(int)
-    sample_num_seq = defaultdict(int)
+
+    ## 15 beautifully unused variables, 15! ##
+
+    #con_by_sample = defaultdict(set)
+    #node_file_str = []
+    #edge_file_str = []
+    #red_nodes = defaultdict(int)
+    #red_node_file_str = []
+    #red_edge_file_str = []
+    #edge_from = []
+    #to = []
+    #otu_dc = defaultdict(int)
+    #degree_counts = defaultdict(int)
+    #sample_dc = defaultdict(int)
+    #sample_num_seq = defaultdict(int)
+    #con_list = []
+    #label_list = []
+
     samples_from_mapping = meta_dict.keys()
-    con_list = []
-    label_list = []
     norm_otu_table =[]
     sample_counts = defaultdict(int)
     cat_otu_table = []
     otus = []
     taxonomy = []
-    sample_ids, otu_ids, otu_table, lineages = parse_otu_table(lines)
 
-    label_list = sample_ids
-    if lineages == []:
-        is_con = False
-    else:
+    #sample_ids, otu_ids, otu_table, lineages = parse_otu_table(lines)
+    otu_table = parse_biom_table(open(otu_table_fh,'U'))
+
+    #label_list = sample_ids
+    label_list = otu_table.SampleIds
+    #if lineages == []:
+    #    is_con = False
+    #else:
+    #    is_con = True
+    is_con = False
+    if otu_table.ObservationMetadata[0] and 'taxonomy' in otu_table.ObservationMetadata[0]:
         is_con = True
-    for idx, line in enumerate(otu_table):
+
+    #for idx, line in enumerate(otu_table):
+    for (otu_val, otu_id, otu_metadata) in otu_table.iterObservations():
         new_line = []
         label_dict = defaultdict(int)
-        data = line
-        to_otu = otu_ids[idx]
-        otus.append(to_otu)
+        #data = line
+        #to_otu = otu_ids[idx]
+        #otus.append(to_otu)
+        otus.append(otu_id)
         con = ''
         if is_con:
-            con = '; '.join(lineages[idx])
-            counts = data
-        else:
-            counts = data
+            #con = '; '.join(lineages[idx])
+            con = '; '.join(otu_metadata['taxonomy'])
+            #counts = data
+        #else:
+            #counts = data
         taxonomy.append(con)
         if not normalize:
-            for i,c in zip(label_list,counts):
+            #for i,c in zip(label_list,counts):
+            for i,c in zip(otu_table.SampleIds, otu_val):
                 if i in samples_from_mapping:
                     label_dict[meta_dict[i][0][0]] += c        
             for i in cat_list:
@@ -118,9 +135,11 @@ def get_counts_by_cat(lines, num_meta, meta_dict, cat_list,category,num_samples_
             cat_otu_table.append(new_line)
 
         else:
-            new_line.extend(counts)
+            #new_line.extend(counts)
+            new_line.extend(otu_val)
             norm_otu_table.append(new_line)
-            for i, c in zip(label_list,counts):
+            #for i, c in zip(label_list,counts):
+            for i, c in zip(otu_table.SampleIds, otu_val):
                 sample_counts[i] += c
     total = 0
     if normalize:
@@ -129,7 +148,8 @@ def get_counts_by_cat(lines, num_meta, meta_dict, cat_list,category,num_samples_
             new_line = []
             label_dict = defaultdict(float)
             getcontext().prec = 28
-            for i,c in zip(label_list,counts):
+            #for i,c in zip(label_list,counts):
+            for i,c in zip(otu_table.SampleIds,counts):
                 if i in samples_from_mapping:
                     label_dict[meta_dict[i][0][0]] += float(c)/(sample_counts[i])
             for i in cat_list:
@@ -138,12 +158,12 @@ def get_counts_by_cat(lines, num_meta, meta_dict, cat_list,category,num_samples_
     return  cat_otu_table, otus, taxonomy
 
 
-def summarize_by_cat(map_lines,otu_sample_lines,category,norm):
+def summarize_by_cat(map_lines,otu_table_fh,category,norm):
     """creates the category otu table"""
     cat_by_sample, sample_by_cat, num_meta, meta_dict, label_lists_dict, \
                    num_samples_by_cat = get_sample_cat_info(map_lines,category)
 
-    lines, otus, taxonomy = get_counts_by_cat(otu_sample_lines, num_meta, \
+    lines, otus, taxonomy = get_counts_by_cat(otu_table_fh, num_meta, \
                   meta_dict,label_lists_dict[category],category,num_samples_by_cat,\
                   norm)
     
