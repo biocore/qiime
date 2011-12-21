@@ -15,12 +15,8 @@ __status__ = "Development"
 from cogent.util.unit_test import TestCase, main
 from cogent.parse.tree import DndParser
 from qiime.parse import parse_distmat
-from qiime.filter import (filter_fasta, 
-                          filter_otus_from_otu_table,
-                          filter_samples_from_otu_table,
-                          filter_otu_table_to_n_samples,
+from qiime.filter import (filter_fasta,
                           filter_samples_from_distance_matrix,
-                          split_otu_table_on_taxonomy,
                           negate_tips_to_keep)
 
 class fake_output_f():

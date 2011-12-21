@@ -45,94 +45,7 @@ def filter_fasta(input_seqs,output_seqs_f,seqs_to_keep,negate=False):
         if keep_seq(seq_id):
             output_seqs_f.write('>%s\n%s\n' % (seq_id, seq))
     output_seqs_f.close()
-    
-def filter_otus_from_otu_table(otu_table_lines,otus_to_discard,negate=False):
-    """ Remove specified OTUs from otu_table """
-    otu_table_data = parse_otu_table(otu_table_lines)
-    
-    otu_lookup = {}.fromkeys([e.split()[0] for e in otus_to_discard])
-    new_otu_table_data = []
-    new_otu_ids = []
-    new_taxa = []
-    
-    if negate:
-        def keep_otu(s):
-            return s in otu_lookup
-    else:
-        def keep_otu(s):
-            return s not in otu_lookup
-    
-    sample_ids, otu_ids, otu_table_data, taxa = otu_table_data
-    
-    for row,otu_id,taxonomy in zip(otu_table_data,otu_ids,taxa):
-        if keep_otu(otu_id):
-            new_otu_table_data.append(row)
-            new_otu_ids.append(otu_id)
-            new_taxa.append(taxonomy)
-    
-    new_otu_table_data = array(new_otu_table_data)
-            
-    result = format_otu_table(sample_ids,
-                              new_otu_ids,
-                              new_otu_table_data,
-                              new_taxa).split('\n')
-    return result
-    
-def filter_samples_from_otu_table(otu_table_lines,
-                                  samples_to_discard,
-                                  negate=False):
-    """ Remove specified samples from OTU table """
-    otu_table_data = parse_otu_table(otu_table_lines)
-    
-    sample_lookup = {}.fromkeys([e.split()[0] for e in samples_to_discard])
-    new_otu_table_data = []
-    new_sample_ids = []
-    
-    if negate:
-        def keep_sample(s):
-            return s in sample_lookup
-    else:
-        def keep_sample(s):
-            return s not in sample_lookup
-    
-    sample_ids, otu_ids, otu_table_data, taxa = otu_table_data
-    otu_table_data = otu_table_data.transpose()
-    
-    for row,sample_id in zip(otu_table_data,sample_ids):
-        if keep_sample(sample_id):
-            new_otu_table_data.append(row)
-            new_sample_ids.append(sample_id)
-    
-    new_otu_table_data = array(new_otu_table_data).transpose()
-    
-    result = format_otu_table(new_sample_ids,
-                              otu_ids,
-                              new_otu_table_data,
-                              taxa,
-                              skip_empty=True).split('\n')
-    return result
-    
-def filter_otu_table_to_n_samples(otu_table_lines,n):
-    """
-        randomly select n samples from the otu table
-    """
-    if n < 1:
-        raise ValueError,\
-         "number of randomly selected sample ids must be greater than 1"
-    sample_ids, otu_ids, otu_table_data, taxa = parse_otu_table(otu_table_lines)
-    
-    samples_to_keep = list(sample_ids)
-    shuffle(samples_to_keep)
-    samples_to_keep = samples_to_keep[:n]
-    
-    otu_table_lines = format_otu_table(\
-     sample_ids, otu_ids, otu_table_data, taxa).split('\n')
-    
-    result = filter_samples_from_otu_table(otu_table_lines,
-                                           samples_to_keep,
-                                           negate=True)
-    return result
-    
+
 def filter_samples_from_distance_matrix(dm,samples_to_discard,negate=False):
     """ Remove specified samples from distance matrix 
     
@@ -171,31 +84,6 @@ def filter_samples_from_distance_matrix(dm,samples_to_discard,negate=False):
     new_dm_data = array(new_dm_data).transpose()
     
     return format_distance_matrix(new_sample_ids, new_dm_data)
-    
-def split_otu_table_on_taxonomy(otu_table_lines,level):
-    """ Split OTU table by taxonomic level, yielding formatted OTU tables 
-    """
-    if level < 1:
-        raise ValueError, "Taxonomic level must be greater than zero"
-    sample_ids, otu_ids, otu_table_data, taxa = parse_otu_table(otu_table_lines)
-    taxon_data = {}
-    for otu_id, counts, taxon in zip(otu_ids, otu_table_data, taxa):
-        taxon_at_level = ';'.join(taxon[:level])
-        try:
-            current_taxon_table = taxon_data[taxon_at_level]
-        except KeyError:
-            taxon_data[taxon_at_level] = [[],[],[]]
-            current_taxon_table = taxon_data[taxon_at_level]
-        current_taxon_table[0].append(otu_id)
-        current_taxon_table[1].append(counts)
-        current_taxon_table[2].append(taxon)
-        
-    
-    for taxon_at_level, taxon_datum in taxon_data.items():
-        yield taxon_at_level, format_otu_table(sample_ids, 
-                                               taxon_datum[0],
-                                               array(taxon_datum[1]),
-                                               taxon_datum[2])
 
 def negate_tips_to_keep(tips_to_keep, tree):
     """ Return the list of tips in the tree that are not in tips_to_keep"""
