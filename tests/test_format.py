@@ -11,6 +11,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
+import json
 from os import remove
 from cogent.util.misc import remove_files
 from cogent.util.unit_test import TestCase, main
@@ -226,34 +227,25 @@ class TopLevelTests(TestCase):
         self.assertRaises(ValueError, format_matrix, a, row_labels[:2], col_labels)
         self.assertRaises(ValueError, format_matrix, None, row_labels, col_labels)
 
-    def test_format_otu_table_legacy(self):
-        """format_otu_table (legacy) should return tab-delimited table"""
-        a = array([[1,2,3],[4,5,2718281828459045]])
+    def assertEqualOtuTable(self,obs,exp):
+        """ """
+        obs = json.loads(obs)
+        exp = json.loads(exp)
+        for e in ['generated_by','date']:
+            del obs[e]
+            del exp[e]
+        self.assertEqual(obs,exp)
+
+    def test_format_otu_table(self):
+        """format_otu_table should return biom-formatted string"""
+        a = array([[1,2,3],
+                   [4,5,2718281828459045]])
         samples = ['a','b','c']
         otus = [1,2]
         taxa = ['Bacteria','Archaea']
         res = format_otu_table(samples, otus, a)
-        self.assertEqual(res,
-            '# QIIME v%s OTU table\n#OTU ID\ta\tb\tc\n1\t1\t2\t3\n2\t4\t5\t2718281828459045'  % __version__)
-        res = format_otu_table(samples, otus, a, taxa)
-        self.assertEqual(res,
-            '# QIIME v%s OTU table\n#OTU ID\ta\tb\tc\tConsensus Lineage\n1\t1\t2\t3\tBacteria\n2\t4\t5\t2718281828459045\tArchaea'  % __version__)
-        self.assertRaises(ValueError, format_otu_table, samples, [1,2,3], a)
-
-
-    def test_format_otu_table(self):
-        """format_otu_table should return tab-delimited table"""
-        a = array([[1,2,3],[4,5,2718281828459045]])
-        samples = ['a','b','c']
-        otus = [1,2]
-        taxa = ['Bacteria','Archaea']
-        res = format_otu_table(samples, otus, a,legacy=False)
-        self.assertEqual(res,
-            '# QIIME v%s OTU table\nOTU ID\ta\tb\tc\n1\t1\t2\t3\n2\t4\t5\t2718281828459045' % __version__)
-        res = format_otu_table(samples, otus, a, taxa, legacy=False)
-        self.assertEqual(res,
-            '# QIIME v%s OTU table\nOTU ID\ta\tb\tc\tConsensus Lineage\n1\t1\t2\t3\tBacteria\n2\t4\t5\t2718281828459045\tArchaea' % __version__)
-        self.assertRaises(ValueError, format_otu_table, samples, [1,2,3], a)
+        self.assertEqualOtuTable(res,
+                         """{"rows": [{"id": "1", "metadata": null}, {"id": "2", "metadata": null}], "format": "Biological Observation Matrix v0.9", "data": [[1, 2, 3], [4, 5, 2718281828459045]], "columns": [{"id": "a", "metadata": null}, {"id": "b", "metadata": null}, {"id": "c", "metadata": null}], "generated_by": "QIIME 1.4.0-dev, svn revision 2532", "matrix_type": "dense", "shape": [2, 3], "format_url": "http://www.qiime.org/svn_documentation/documentation/biom_format.html", "date": "2011-12-21T00:58:45.001395", "type": "OTU table", "id": null, "matrix_element_type": "int"}""")
 
     def test_format_coords(self):
         """format_coords should return tab-delimited table of coords"""
