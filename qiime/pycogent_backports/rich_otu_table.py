@@ -165,9 +165,18 @@ class Table(object):
         self.ObservationIds = ObservationIds
         self.SampleMetadata = SampleMetadata
         self.ObservationMetadata = ObservationMetadata
-
+        
+        # these will be set by _index_ids()
+        self._sample_index = None
+        self._obs_index = None
         self._verify_metadata()
         self._cast_metadata()
+        self._index_ids()
+
+    def _index_ids(self):
+        """Sets lookups {id:index in _data}"""
+        self._sample_index = dict([(s,i) for i,s in enumerate(self.SampleIds)])
+        self._obs_index=dict([(o,i) for i,o in enumerate(self.ObservationIds)])
 
     def _conv_to_self_type(self, vals, transpose=False):
         """For converting vectors to a compatible self type"""
@@ -485,7 +494,7 @@ class Table(object):
         for samp_v, samp_id, samp_md in self.iterSamples():
             new_samp_v.append(self._conv_to_self_type(f(samp_v)))
 
-        return self.__class__(self._conv_to_self_type(new_samp_v), 
+        return self.__class__(self._conv_to_self_type(new_samp_v, transpose=True), 
                 self.SampleIds, self.ObservationIds, self.SampleMetadata,
                 self.ObservationMetadata, self.TableId)
 
@@ -504,12 +513,14 @@ class Table(object):
 
     def normObservationBySample(self):
         """Return new table with relative abundance in each sample"""
-        f = lambda x: x / x.sum()
+        f = lambda x: x / float(x.sum())
+        return self.transformSamples(f)
 
     def normSampleByObservation(self):
         """Return new table with relative abundance in each observation"""
-        f = lambda x: x / x.sum()
-        
+        f = lambda x: x / float(x.sum())
+        return self.transformObservations(f)
+
     #mergeTables, in place
         ### currently can only merge tables that do not have overlapping sample ids
         ### bail if overlapping

@@ -82,6 +82,13 @@ class TableTests(TestCase):
         self.t2 = Table(array([]),[],[])
         self.simple_derived = Table(array([[5,6],[7,8]]), [1,2],[3,4])
 
+    def test_index_ids(self):
+        """Index the all the ids!!!"""
+        exp_samp = {1:0,2:1}
+        exp_obs = {3:0,4:1}
+        self.assertEqual(self.simple_derived._sample_index, exp_samp)
+        self.assertEqual(self.simple_derived._obs_index, exp_obs)
+
     def test_verify_metadata(self):
         """Make sure the metadata is sane (including obs/sample ids)"""
         obs_ids = [1,2,3]
@@ -430,6 +437,20 @@ class DenseTableTests(TestCase):
         transform_f = lambda x: where(x >= 6, 1, 0)
         exp = DenseTable(array([[0,1],[1,1]]), ['a','b'], ['1','2'])
         obs = self.dt1.transformSamples(transform_f)
+        self.assertEqual(obs, exp)
+
+    def test_normObservationBySample(self):
+        """normalize observations by sample"""
+        dt = DenseTable(array([[2,0],[6,1]]), ['a','b'],['1','2'])
+        exp = DenseTable(array([[0.25,0],[0.75,1.0]]), ['a','b'], ['1','2'])
+        obs = dt.normObservationBySample()
+        self.assertEqual(obs, exp)
+        
+    def test_normSampleByObservation(self):
+        """normalize sample by observation"""
+        dt = DenseTable(array([[0,2],[2,6]]), ['a','b'],['1','2'])
+        exp = DenseTable(array([[0.0,1.0],[0.25,.75]]), ['a','b'], ['1','2'])
+        obs = dt.normSampleByObservation()
         self.assertEqual(obs, exp)
 
     def test_getBiomFormatObject(self):
@@ -787,6 +808,24 @@ class SparseTableTests(TestCase):
         sp_ll_mat = to_ll_mat({(0,0):0,(0,1):1,(1,0):1,(1,1):1})
         exp = SparseTable(sp_ll_mat, ['a','b'], ['1','2'])
         obs = self.st1.transformSamples(transform_f)
+        self.assertEqual(obs, exp)
+
+    def test_normObservationBySample(self):
+        """normalize observations by sample"""
+        data = to_ll_mat({(0,0):2,(0,1):0,(1,0):6,(1,1):1})
+        data_exp = to_ll_mat({(0,0):0.25,(0,1):0.0,(1,0):0.75,(1,1):1.0})
+        st = SparseTable(data, ['a','b'],['1','2'])
+        exp = SparseTable(data_exp, ['a','b'], ['1','2'])
+        obs = st.normObservationBySample()
+        self.assertEqual(obs, exp)
+        
+    def test_normSampleByObservation(self):
+        """normalize sample by observation"""
+        data = to_ll_mat({(0,0):0,(0,1):2,(1,0):2,(1,1):6})
+        data_exp = to_ll_mat({(0,0):0.0,(0,1):1.0,(1,0):0.25,(1,1):0.75})
+        st = SparseTable(data, ['a','b'],['1','2'])
+        exp = SparseTable(data_exp, ['a','b'], ['1','2'])
+        obs = st.normSampleByObservation()
         self.assertEqual(obs, exp)
 
     def test_getBiomFormatObject(self):
