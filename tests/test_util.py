@@ -18,12 +18,12 @@ from StringIO import StringIO
 from qiime.parse import fields_to_dict, parse_otu_table, parse_mapping_file
 from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
     extract_seqs_by_sample_id, get_qiime_project_dir, matrix_stats,
-    raise_error_on_parallel_unavailable, merge_otu_tables,
+    raise_error_on_parallel_unavailable,
     convert_OTU_table_relative_abundance, create_dir, handle_error_codes,
     summarize_pcoas, _compute_jn_pcoa_avg_ranges, _flip_vectors, IQR,
     idealfourths, isarray, matrix_IQR, degap_fasta_aln,
     write_degapped_fasta_to_file, compare_otu_maps, get_diff_for_otu_maps,
-    merge_n_otu_tables, convert_otu_table_relative, write_seqs_to_fasta,
+    convert_otu_table_relative, write_seqs_to_fasta,
     split_fasta_on_sample_ids, split_fasta_on_sample_ids_to_dict,
     split_fasta_on_sample_ids_to_files, median_absolute_deviation,
     guess_even_sampling_depth, compute_days_since_epoch,
@@ -345,162 +345,6 @@ o4	seq6	seq7""".split('\n')
         # check that a file in qiime/support_files exists
         default_qiime_config_fp = join(support_files_dir,'qiime_config')
         self.assertTrue(exists(default_qiime_config_fp))
-    
-    def test_merge_otu_tables(self):
-        """merge_otu_tables functions as expected"""
-        otu_table_f1 = iter(self.otu_table_f1)
-        otu_table_f2 = iter(self.otu_table_f2)
-        exp_sample_ids = ['S1','S2','S3','S4','S5']
-        exp_otu_ids = ['0','1','2','3','4','6']
-        exp_otu_table = array([[1,0,1,0,1],\
-                           [1,0,0,0,0],\
-                           [4,0,1,0,1],\
-                           [0,0,2,0,1],\
-                           [0,0,1,0,9],\
-                           [0,0,1,25,42]])
-        exp_lineages = [['Root','Bacteria'],\
-                    ['Root','Bacteria','Verrucomicrobia'],
-                    ['Root','Bacteria'],\
-                    ['Root','Bacteria','Acidobacteria'],\
-                    ['Root','Bacteria','Bacteroidetes'],\
-                    ['Root','Archaea']]
-        actual = merge_otu_tables(otu_table_f1,otu_table_f2)
-        self.assertEqual(actual[0],exp_sample_ids)
-        self.assertEqual(actual[1],exp_otu_ids)
-        self.assertEqual(actual[2],exp_otu_table)
-        self.assertEqual(actual[3],exp_lineages)
-
-    def test_merge_otu_tables_w_overlapping_sample_ids(self):
-        """merge_otu_tables functions as expected w one overlapping sample id
-        """
-        otu_table_f1 = iter(self.otu_table_f1)
-        otu_table_f4 = iter(self.otu_table_f4)
-        exp_sample_ids = ['S1','S2','S3','S4']
-        exp_otu_ids = ['0','1','2','3','4','6']
-        exp_otu_table = array([[2,0,1,0],\
-                           [1,0,0,0],\
-                           [5,0,1,0],\
-                           [1,0,2,0],\
-                           [9,0,1,0],\
-                           [42,0,1,25]])
-        exp_lineages = [['Root','Bacteria'],\
-                    ['Root','Bacteria','Verrucomicrobia'],
-                    ['Root','Bacteria'],\
-                    ['Root','Bacteria','Acidobacteria'],\
-                    ['Root','Bacteria','Bacteroidetes'],\
-                    ['Root','Archaea']]
-        actual = merge_otu_tables(otu_table_f1,otu_table_f4)
-        self.assertEqual(actual[0],exp_sample_ids)
-        self.assertEqual(actual[1],exp_otu_ids)
-        self.assertEqual(actual[2],exp_otu_table)
-        self.assertEqual(actual[3],exp_lineages)
-
-    def test_merge_otu_tables_w_all_overlapping_sample_ids(self):
-        """merge_otu_tables functions as expected w all overlapping sample ids
-        """
-        otu_table_f1_1 = iter(self.otu_table_f1)
-        otu_table_f1_2 = iter(self.otu_table_f1)
-        exp_sample_ids = ['S1','S2']
-        exp_otu_ids = ['0','1','2']
-        exp_otu_table = array([[2,0],\
-                           [2,0],\
-                           [8,0]])
-        exp_lineages = [['Root','Bacteria'],\
-                    ['Root','Bacteria','Verrucomicrobia'],
-                    ['Root','Bacteria']]
-        actual = merge_otu_tables(otu_table_f1_1,otu_table_f1_2)
-        self.assertEqual(actual[0],exp_sample_ids)
-        self.assertEqual(actual[1],exp_otu_ids)
-        self.assertEqual(actual[2],exp_otu_table)
-        self.assertEqual(actual[3],exp_lineages)
-
-
-    def test_merge_otu_tables_passed_in_tables(self):
-        """merge_otu_tables functions with otu_table tuples"""
-        otu_table1 = parse_otu_table(self.otu_table_f1)
-        otu_table2 = parse_otu_table(self.otu_table_f2)
-        exp_sample_ids = ['S1','S2','S3','S4','S5']
-        exp_otu_ids = ['0','1','2','3','4','6']
-        exp_otu_table = array([[1,0,1,0,1],\
-                           [1,0,0,0,0],\
-                           [4,0,1,0,1],\
-                           [0,0,2,0,1],\
-                           [0,0,1,0,9],\
-                           [0,0,1,25,42]])
-        exp_lineages = [['Root','Bacteria'],\
-                    ['Root','Bacteria','Verrucomicrobia'],
-                    ['Root','Bacteria'],\
-                    ['Root','Bacteria','Acidobacteria'],\
-                    ['Root','Bacteria','Bacteroidetes'],\
-                    ['Root','Archaea']]
-        exp = (exp_sample_ids,exp_otu_ids,exp_otu_table,exp_lineages)
-        obs = merge_otu_tables(otu_table1,otu_table2)
-        self.assertEqual(obs,exp)
-
-    def test_merge_n_otu_tables(self):
-        """merge_n_otu_tables functions as expected"""
-        otu_table_f1 = iter(self.otu_table_f1)
-        otu_table_f2 = iter(self.otu_table_f2)
-        otu_table_f3 = iter(self.otu_table_f3)
-        exp_sample_ids = ['S1','S2','S3','S4','S5','samp7']
-        exp_otu_ids = ['0','1','2','3','4','6']
-        exp_otu_table = array([[1,0,1,0,1,0],\
-                           [1,0,0,0,0,0],\
-                           [4,0,1,0,1,0],\
-                           [0,0,2,0,1,0],\
-                           [0,0,1,0,9,0],\
-                           [0,0,1,25,42,1]])
-        exp_lineages = [['Root','Bacteria'],\
-                    ['Root','Bacteria','Verrucomicrobia'],
-                    ['Root','Bacteria'],\
-                    ['Root','Bacteria','Acidobacteria'],\
-                    ['Root','Bacteria','Bacteroidetes'],\
-                    ['Root','Archaea']]
-        actual = merge_n_otu_tables([otu_table_f1,otu_table_f2,otu_table_f3])
-        self.assertEqual(actual[0],exp_sample_ids)
-        self.assertEqual(actual[1],exp_otu_ids)
-        self.assertEqual(actual[2],exp_otu_table)
-        self.assertEqual(actual[3],exp_lineages)
-
-    def test_merge_n_otu_tables_no_tax(self):
-        """merge_n_otu_tables functions as expected with no taxonomy"""
-        otu_table_f1 = iter(self.otu_table_f1_no_tax)
-        otu_table_f2 = iter(self.otu_table_f2_no_tax)
-        otu_table_f3 = iter(self.otu_table_f3_no_tax)
-        exp_sample_ids = ['S1','S2','S3','S4','S5','samp7']
-        exp_otu_ids = ['0','1','2','3','4','6']
-        exp_otu_table = array([[1,0,1,0,1,0],\
-                           [1,0,0,0,0,0],\
-                           [4,0,1,0,1,0],\
-                           [0,0,2,0,1,0],\
-                           [0,0,1,0,9,0],\
-                           [0,0,1,25,42,1]])
-        exp_lineages = None
-        actual = merge_n_otu_tables([otu_table_f1,otu_table_f2,otu_table_f3])
-        self.assertEqual(actual[0],exp_sample_ids)
-        self.assertEqual(actual[1],exp_otu_ids)
-        self.assertEqual(actual[2],exp_otu_table)
-        self.assertEqual(actual[3],exp_lineages)
-        
-    def test_merge_n_otu_tables_error_on_mixed_tax(self):
-        """merge_n_otu_tables fails with some tax, some no tax"""
-        otu_table_f1 = iter(self.otu_table_f1)
-        otu_table_f2 = iter(self.otu_table_f2_no_tax)
-        otu_table_f3 = iter(self.otu_table_f3_no_tax)
-        self.assertRaises(ValueError,
-         merge_n_otu_tables,[otu_table_f1,otu_table_f2,otu_table_f3])
-         
-        otu_table_f1 = iter(self.otu_table_f1)
-        otu_table_f2 = iter(self.otu_table_f2)
-        otu_table_f3 = iter(self.otu_table_f3_no_tax)
-        self.assertRaises(ValueError,
-         merge_n_otu_tables,[otu_table_f1,otu_table_f2,otu_table_f3])
-         
-        otu_table_f1 = iter(self.otu_table_f1_no_tax)
-        otu_table_f2 = iter(self.otu_table_f2)
-        otu_table_f3 = iter(self.otu_table_f3)
-        self.assertRaises(ValueError,
-         merge_n_otu_tables,[otu_table_f1,otu_table_f2,otu_table_f3])
         
     def test_compute_days_since_epoch(self):
         """compute_days_since_epoch functions as expected """

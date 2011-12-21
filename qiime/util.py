@@ -67,7 +67,6 @@ from qiime.parse import (parse_otu_table,
                          parse_mapping_file,
                          parse_denoiser_mapping,
                          MinimalFastqParser)
-from qiime.format import format_otu_table
 
 class TreeMissingError(IOError):
     """Exception for missing tree file"""
@@ -642,100 +641,6 @@ def matrix_stats(headers_list, distmats):
     stdevs = numpy.std(all_mats, axis=0)
     
     return deepcopy(headers_list[0]), means, medians, stdevs
-
-
-def merge_otu_tables(otu_table_f1,otu_table_f2):
-    """ Merge two otu tables with non-overlapping sample IDs
-    
-        WARNING: The OTU ids must refer to the same OTUs, which
-         typically only happens when OTUs were picked against a 
-         reference database, as with the BLAST OTU picker.
-    
-    """
-    if isinstance(otu_table_f1, tuple):
-        sample_ids1, otu_ids1, otu_table1, lineages1 = otu_table_f1
-    else:
-        sample_ids1, otu_ids1, otu_table1, lineages1 =\
-            parse_otu_table(otu_table_f1)
-    
-    if isinstance(otu_table_f2, tuple):
-        sample_ids2, otu_ids2, otu_table2, lineages2 = otu_table_f2
-    else:
-        sample_ids2, otu_ids2, otu_table2, lineages2 =\
-            parse_otu_table(otu_table_f2)
-    
-    # assert set(sample_ids1) & set(sample_ids2) == set(),\
-    #  'Overlapping sample ids detected:\n %s' %\
-    #  ' '.join(set(sample_ids1) & set(sample_ids2))
-    sample_ids_result = []
-    sample_ids_result_lookup = {}
-    i = 0
-    for sid in sample_ids1 + sample_ids2:
-        if sid not in sample_ids_result_lookup:
-            sample_ids_result.append(sid)
-            sample_ids_result_lookup[sid] = i
-            i += 1
-        else:
-            pass
-    
-    if lineages1 and lineages2:    
-        # map OTU ids to lineages -- in case of conflicts (i.e, OTU assigned)
-        # different lineage in different otu tables, the lineage from 
-        # OTU table 1 will be taken
-        lineages = True
-        otu_id_to_lineage = dict(zip(otu_ids1,lineages1))
-        otu_id_to_lineage.update(dict([(otu_id,lineage)\
-         for otu_id,lineage in zip(otu_ids2,lineages2)\
-         if otu_id not in otu_id_to_lineage]))
-    elif not (lineages1 or lineages2):
-        lineages = False
-    else:
-      raise ValueError, ('Taxonomic information must be provided either'
-       ' for all or none of the OTU tables')
-    
-    # Get the union of the otu IDs
-    otu_ids_result = list(otu_ids1)
-    otu_ids_lookup = {}.fromkeys(otu_ids1)
-    otu_ids_result.extend([otu_id for otu_id in otu_ids2 \
-                                  if otu_id not in otu_ids_lookup])
-    otu_ids_result_lookup = dict(
-     [(oid,i) for i, oid in enumerate(otu_ids_result)])
-    
-    otu_table = zeros(shape=(len(otu_ids_result),len(sample_ids_result)),dtype=int)
-    for i,sample_id in enumerate(sample_ids1):
-        col_index = sample_ids_result_lookup[sample_id]
-        for j,otu_id in enumerate(otu_ids1):
-            row_index = otu_ids_result_lookup[otu_id]
-            otu_table[row_index,col_index] = otu_table1[j,i]
-        
-    for i,sample_id in enumerate(sample_ids2):
-        col_index = sample_ids_result_lookup[sample_id]
-        for j,otu_id in enumerate(otu_ids2):
-            row_index = otu_ids_result_lookup[otu_id]
-            otu_table[row_index,col_index] += otu_table2[j,i]
-    
-    if lineages:
-        lineages_result = [otu_id_to_lineage[otu_id] 
-         for otu_id in otu_ids_result]
-    else:
-        lineages_result = None
-    
-    return sample_ids_result, otu_ids_result, otu_table, lineages_result
-    
-def merge_n_otu_tables(otu_table_fs):
-    """ Merge n otu tables """
-    if len(otu_table_fs) < 2:
-        raise ValueError, "Two or more OTU tables must be provided."
-    otu_table_f0 = otu_table_fs[0]
-    for otu_table_f in otu_table_fs[1:]:
-        sample_names, otu_names, data, taxonomy = \
-         merge_otu_tables(otu_table_f0,otu_table_f)
-        otu_table_f0 = format_otu_table(sample_names=sample_names, 
-                                    otu_names=otu_names,
-                                    data=data,
-                                    taxonomy=taxonomy).split('\n')
-    
-    return sample_names, otu_names, data, taxonomy
 
 def convert_otu_table_relative(otu_table):
     """Convert the OTU table to relative abundances
