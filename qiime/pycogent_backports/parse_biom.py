@@ -9,6 +9,7 @@ from string import strip
 
 MATRIX_ELEMENT_TYPE = {'int':int,'float':float,'str':str,
                        u'int':int,u'float':float,u'str':str}
+
 def parse_biom_table(json_fh):
     """parses a biom format otu table into a rich otu table object
 
@@ -19,8 +20,11 @@ def parse_biom_table(json_fh):
     note that sparse here refers to the compressed format of [row,col,count]
     dense refers to the full / standard matrix representations
     """
+    return parse_biom_table_str(json_fh.read())
 
-    json_table = json.load(json_fh)
+def parse_biom_table_str(json_str):
+    """Parses a JSON string of the Biom table into a rich otu table object."""
+    json_table = json.loads(json_str)
     if json_table['type'].lower() != 'otu table':
         raise ValueError('type not OTU table')
 
