@@ -35,8 +35,8 @@ script_info['output_description']="""Each file in the input directory should be 
 script_info['required_options']=[]
 script_info['optional_options']=[
  make_option('-i', '--input_path',
-     help='Input OTU table filepath or input directory containing OTU ' +\
-     'tables for batch processing.',
+     help='Input OTU table in biom format or input directory containing OTU ' +\
+     'tables in biom format for batch processing.',
      type='existing_path'),
  make_option('-r', '--rows', default=None,
      help='Compute for only these rows of the distance matrix.' +\

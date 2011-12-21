@@ -26,10 +26,12 @@ The output is a sample x sample matrix of distances, incl. row/col headers.
     Note that parser expects first field to be blank, i.e. first char of file
     is expected to be a tab.
 """
+
+from numpy import asarray
 from StringIO import StringIO
 from sys import exit, stderr
 import os.path
-
+from cogent.util.misc import unzip
 import warnings
 warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
 from qiime.util import get_tmp_filename
@@ -39,7 +41,8 @@ from qiime.util import FunctionWithParams, TreeMissingError, OtuMissingError
 from qiime.format import format_distance_matrix
 import qiime.beta_metrics
 
-from qiime.parse import parse_otu_table, parse_newick, PhyloNode
+from qiime.parse import parse_newick, PhyloNode
+from qiime.pycogent_backports.parse_biom import parse_biom_table
 from qiime.format import format_matrix
 
 def get_nonphylogenetic_metric(name):
@@ -163,15 +166,20 @@ class BetaDiversityCalc(FunctionWithParams):
         else:
             tree = None
         
-        sample_names, taxon_names, data, lineages = \
-            self.getOtuTable(data_path)
+        # sample_names, taxon_names, data, lineages = \
+        #     self.getOtuTable(data_path)
+        otu_table = parse_biom_table(open(data_path,'U'))
+        data = [(value,sample_id) for value, sample_id, metadata in otu_table.iterSamples()]
+        otumtx, samids = unzip(data)
+        otumtx = asarray(otumtx)
+        otuids = [otu_id for value, otu_id, metadata in otu_table.iterObservations()]
+        
             
         # get the 2d dist matrix from beta diversity analysis
         if self.IsPhylogenetic:
-            return (self.Metric(data.T, taxon_names, tree, sample_names),
-             sample_names)
+            return (self.Metric(otumtx, otuids, tree, samids), samids)
         else:
-            return self.Metric(data.T), sample_names
+            return self.Metric(otumtx), samids
 
     def formatResult(self, result):
         """Generate formatted distance matrix. result is (data, sample_names)"""
@@ -192,16 +200,17 @@ def single_file_beta(input_path, metrics, tree_path, output_dir, rowids=None,
      output_dir (str)
      rowids (comma separated str)
     """
-    f = open(input_path,'U')
-            
-    samids, otuids, otumtx, lineages = parse_otu_table(f)
-    # otu mtx is otus by samples
-    f.close()
-    tree = None
+    otu_table = parse_biom_table(open(input_path,'U'))    
+    data = [(value,sample_id) for value, sample_id, metadata in otu_table.iterSamples()]
+    otumtx, samids = unzip(data)
+    otumtx = asarray(otumtx)
+    otuids = [otu_id for value, otu_id, metadata in otu_table.iterObservations()]
+    
     if tree_path:
-        f = open(tree_path, 'U')
-        tree = parse_newick(f, PhyloNode)
-        f.close()
+        tree = parse_newick(open(tree_path, 'U'), 
+                            PhyloNode)
+    else:
+        tree = None
 
     metrics_list = metrics.split(',')
     for metric in metrics_list:
@@ -225,10 +234,9 @@ def single_file_beta(input_path, metrics, tree_path, output_dir, rowids=None,
         if rowids == None:
             # standard, full way
             if is_phylogenetic:
-                dissims = metric_f(otumtx.T, otuids, tree, samids,
-                    make_subtree = (not full_tree))
+                dissims = metric_f(otumtx, otuids, tree, samids, make_subtree = (not full_tree))
             else:
-                dissims = metric_f(otumtx.T)
+                dissims = metric_f(otumtx)
 
             f = open(outfilepath,'w')
             f.write(format_distance_matrix(samids, dissims))
@@ -248,7 +256,7 @@ def single_file_beta(input_path, metrics, tree_path, output_dir, rowids=None,
                     metric_f.__name__ == 'binary_dist_chisq':
                     warnings.warn('dissimilarity '+metric_f.__name__+\
                       ' is not parallelized, calculating the whole matrix...')
-                    row_dissims.append(metric_f(otumtx.T)[rowidx])
+                    row_dissims.append(metric_f(otumtx)[rowidx])
                 else:
                     try:
                         row_metric = get_phylogenetic_row_metric(metric)
@@ -257,16 +265,16 @@ def single_file_beta(input_path, metrics, tree_path, output_dir, rowids=None,
                         dissims = []
                         for i in range(len(samids)):
                             if is_phylogenetic:
-                                dissim = metric_f(otumtx.T[[rowidx,i],:],
+                                dissim = metric_f(otumtx[[rowidx,i],:],
                                     otuids, tree, [samids[rowidx],samids[i]],
                                     make_subtree = (not full_tree))[0,1]
                             else:
-                                dissim = metric_f(otumtx.T[[rowidx,i],:])[0,1]
+                                dissim = metric_f(otumtx[[rowidx,i],:])[0,1]
                             dissims.append(dissim)
                         row_dissims.append(dissims)
                     else:
                         # do whole row at once
-                        dissims = row_metric(otumtx.T,
+                        dissims = row_metric(otumtx,
                                     otuids, tree, samids, rowid,
                                     make_subtree = (not full_tree))
                         row_dissims.append(dissims)
