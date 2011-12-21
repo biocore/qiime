@@ -326,6 +326,37 @@ class DenseTableTests(TestCase):
         obs = list(gen)
         self.assertEqual(obs, exp)
 
+    def test_iterSampleData(self):
+        """Iterates data by samples"""
+        gen = self.dt1.iterSampleData()
+        exp = [array([5,7]),array([6,8])]
+        obs = list(gen)
+        self.assertEqual(obs, exp)
+
+        gen = self.dt_rich.iterSampleData()
+        exp = [array([5,7]), array([6,8])]
+        obs = list(gen)
+        self.assertEqual(obs, exp)
+
+        # [[1,2,3],[1,0,2]] isn't yielding column 2 correctly
+        self.dt1[1,0] = 0
+        gen = self.dt1.iterSampleData()
+        exp = [array([5,0]), array([6,8])]
+        obs = list(gen)
+        self.assertEqual(obs, exp)
+
+    def test_iterObservationData(self):
+        """Iterates data by observations"""
+        gen = self.dt1.iterObservationData()
+        exp = [array([5,6]), array([7,8])]
+        obs = list(gen)
+        self.assertEqual(obs, exp)
+
+        gen = self.dt_rich.iterObservationData()
+        exp = [array([5,6]), array([7,8])]
+        obs = list(gen)
+        self.assertEqual(obs, exp)
+
     def test_filterSamples(self):
         """Filters samples by arbitrary function"""
         f_value = lambda v,id_,md: (v <= 5).any()
@@ -640,6 +671,37 @@ class SparseTableTests(TestCase):
         gen = self.st_rich.iterObservations()
         exp = [(array([5,6]), '1', {'taxonomy':['k__a','p__b']}),
                (array([7,8]), '2', {'taxonomy':['k__a','p__c']})]
+        obs = list(gen)
+        self.assertEqual(obs, exp)
+
+    def test_iterSampleData(self):
+        """Iterates data by samples"""
+        gen = self.st1.iterSampleData()
+        exp = [array([5,7]),array([6,8])]
+        obs = list(gen)
+        self.assertEqual(obs, exp)
+
+        gen = self.st_rich.iterSampleData()
+        exp = [array([5,7]), array([6,8])]
+        obs = list(gen)
+        self.assertEqual(obs, exp)
+
+        # [[1,2,3],[1,0,2]] isn't yielding column 2 correctly
+        self.st1[1,0] = 0
+        gen = self.st1.iterSampleData()
+        exp = [array([5,0]), array([6,8])]
+        obs = list(gen)
+        self.assertEqual(obs, exp)
+
+    def test_iterObservationData(self):
+        """Iterates data by observations"""
+        gen = self.st1.iterObservationData()
+        exp = [array([5,6]), array([7,8])]
+        obs = list(gen)
+        self.assertEqual(obs, exp)
+
+        gen = self.st_rich.iterObservationData()
+        exp = [array([5,6]), array([7,8])]
         obs = list(gen)
         self.assertEqual(obs, exp)
 

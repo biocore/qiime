@@ -320,6 +320,16 @@ class Table(object):
         return self.__class__(self._data, self.SampleIds, self.ObservationIds,
                 self.SampleMetadata, self.ObservationMetadata, self.TableId)
 
+    def iterSampleData(self):
+        """Yields sample_values"""
+        for samp_v in self._iter_samp():
+            yield self._conv_to_np(samp_v)
+
+    def iterObservationData(self):
+        """Yields sample_values"""
+        for obs_v in self._iter_obs():
+            yield self._conv_to_np(obs_v)
+
     def iterSamples(self, conv_to_np=True):
         """Yields (sample_values, sample_id, sample_metadata)
 
@@ -492,6 +502,14 @@ class Table(object):
                 self.SampleIds, self.ObservationIds, self.SampleMetadata,
                 self.ObservationMetadata, self.TableId)
 
+    def normObservationBySample(self):
+        """Return new table with relative abundance in each sample"""
+        f = lambda x: x / x.sum()
+
+    def normSampleByObservation(self):
+        """Return new table with relative abundance in each observation"""
+        f = lambda x: x / x.sum()
+        
     #mergeTables, in place
         ### currently can only merge tables that do not have overlapping sample ids
         ### bail if overlapping
