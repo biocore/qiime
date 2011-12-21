@@ -5,7 +5,7 @@ from __future__ import division
 
 __author__ = "Julia Goodrich"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Julia Goodrich","Greg Caporaso","Justin Kuczynski"]
+__credits__ = ["Julia Goodrich","Greg Caporaso","Justin Kuczynski", "Jose Carlos Clemente Litran"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Daniel McDonald"
@@ -56,14 +56,14 @@ def main():
     mapping_fp = opts.mapping_fp
     mapping_category = opts.mapping_category
     normalize = opts.normalize
-    otu_table_fp = opts.otu_table_fp
+    #otu_table_fp = opts.otu_table_fp
     output_fp = opts.output_fp
     
     mapping_f = open(mapping_fp,'U')
-    otu_table_f = open(otu_table_fp,'U')
+    #otu_table_f = open(otu_table_fp,'U')
 
     summarized_otu_table = \
-     summarize_by_cat(mapping_f,otu_table_f,mapping_category,normalize)
+     summarize_by_cat(mapping_f,opts.otu_table_fp,mapping_category,normalize)
      
     f = open(output_fp,'w')
     f.write(summarized_otu_table)
