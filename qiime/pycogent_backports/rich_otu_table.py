@@ -54,6 +54,9 @@ slice:
 class TableException(Exception):
     pass
 
+class UnknownID(TableException):
+    pass
+
 def to_ll_mat(values, transpose=False):
     """Tries to returns a populated ll_mat object
     
@@ -322,6 +325,19 @@ class Table(object):
     def _conv_to_np(self, v):
         """Convert values of v to numpy arrays"""
         raise NotImplementedError
+
+    # _index objs are in place, can now do sampleData(self, sample_id) and observationData(self, obs_id)
+    def sampleData(self, id_):
+        """Return observations associated to a sample id"""
+        if id_ not in self._sample_index:
+            raise UnknownID, "ID %s is not a known sample ID!" % id_
+        return self._conv_to_np(self._data[:,self._sample_index[id_]])
+
+    def observationData(self, id_):
+        """Return samples associated to a observation id"""
+        if id_ not in self._obs_index:
+            raise UnknownID, "ID %s is not a known observation ID!" % id_
+        return self._conv_to_np(self._data[self._obs_index[id_],:])
 
     def copy(self):
         """Returns a copy of the Table"""

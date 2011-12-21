@@ -5,7 +5,8 @@ from pysparse.spmatrix import ll_mat
 from cogent.util.misc import unzip
 from cogent.util.unit_test import TestCase, main
 from qiime.pycogent_backports.rich_otu_table import TableException, Table, \
-    DenseTable, SparseTable, DenseOTUTable, SparseOTUTable, to_ll_mat
+    DenseTable, SparseTable, DenseOTUTable, SparseOTUTable, to_ll_mat, \
+    UnknownID
 
 __author__ = "Daniel McDonald"
 __copyright__ = "Copyright 2007-2011, QIIME"
@@ -178,6 +179,14 @@ class TableTests(TestCase):
         """str is dependent on derived class"""
         self.assertRaises(TableException, str, self.t1)
 
+    def test_sampleData(self):
+        """tested in derived class"""
+        self.assertRaises(UnknownID, self.t1.sampleData, 'foo')
+
+    def test_observationData(self):
+        """tested in derived class"""
+        self.assertRaises(UnknownID, self.t1.observationData, 'foo')
+
     def test_iter(self):
         """iter is dependent on derived class"""
         self.assertRaises(NotImplementedError, iter, self.t1)
@@ -243,6 +252,20 @@ class DenseTableTests(TestCase):
                 [{'barcode':'aatt'},{'barcode':'ttgg'}],
                 [{'taxonomy':['k__a','p__b']},{'taxonomy':['k__a','p__c']}])
     
+    def test_sampleData(self):
+        """tested in derived class"""
+        exp = array([5,7])
+        obs = self.dt1.sampleData('a')
+        self.assertEqual(obs, exp)
+        self.assertRaises(UnknownID, self.dt1.sampleData, 'asdasd')
+
+    def test_observationData(self):
+        """tested in derived class"""
+        exp = array([5,6])
+        obs = self.dt1.observationData('1')
+        self.assertEqual(obs, exp)
+        self.assertRaises(UnknownID, self.dt1.observationData, 'asdsad')
+
     def test_delimitedSelf(self):
         """Print out self in a delimited form"""
         exp = '\n'.join(["#RowIDs\ta\tb","1\t5\t6","2\t7\t8"])
@@ -561,6 +584,20 @@ class SparseTableTests(TestCase):
                 ['a','b'],['1','2'],
                 [{'barcode':'aatt'},{'barcode':'ttgg'}],
                 [{'taxonomy':['k__a','p__b']},{'taxonomy':['k__a','p__c']}])
+
+    def test_sampleData(self):
+        """tested in derived class"""
+        exp = array([5,7])
+        obs = self.st1.sampleData('a')
+        self.assertEqual(obs, exp)
+        self.assertRaises(UnknownID, self.st1.sampleData, 'asdasd')
+
+    def test_observationData(self):
+        """tested in derived class"""
+        exp = array([5,6])
+        obs = self.st1.observationData('1')
+        self.assertEqual(obs, exp)
+        self.assertRaises(UnknownID, self.st1.observationData, 'asdsad')
 
     def test_delimitedSelf(self):
         """Print out self in a delimited form"""
