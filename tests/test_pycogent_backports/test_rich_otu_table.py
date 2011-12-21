@@ -200,6 +200,23 @@ class TableTests(TestCase):
         self.assertEqual(t.ObservationMetadata[1]['non existent key'], None)
         self.assertEqual(t.ObservationMetadata[2]['non existent key'], None)
 
+    def test_getValueByIds(self):
+        """Return the value located in the matrix by the ids"""
+        t1 = Table(array([[5,6],[7,8]]), [1,2],[3,4])
+        t2 = Table(array([[5,6],[7,8]]), ['a','b'],['c','d'])
+        
+        self.assertEqual(5, t1.getValueByIds(3,1))
+        self.assertEqual(6, t1.getValueByIds(3,2))
+        self.assertEqual(7, t1.getValueByIds(4,1))
+        self.assertEqual(8, t1.getValueByIds(4,2))
+        self.assertEqual(5, t2.getValueByIds('c','a'))
+        self.assertEqual(6, t2.getValueByIds('c','b'))
+        self.assertEqual(7, t2.getValueByIds('d','a'))
+        self.assertEqual(8, t2.getValueByIds('d','b'))
+
+        self.assertRaises(UnknownID, t1.getValueByIds, 'a', 1)
+        self.assertRaises(UnknownID, t2.getValueByIds, 0, 0)
+
     def test_getitem(self):
         """getitem should work as expeceted"""
         self.assertEqual(self.simple_derived[0,0], 5)
@@ -281,17 +298,10 @@ class TableTests(TestCase):
         """Test basic string functionality of self"""
         self.assertRaises(TableException, self.t1.delimitedSelf)
 
-    def test_nonzeroBySamples(self):
-        """Returns nonzero indices by samples"""
-        self.fail()
-
-    def test_nonzeroByObservation(self):
-        """Returns nonzero indices by observation"""
-        self.fail()
-
     def test_nonzero(self):
         """Returns nonzero indices within the matrix"""
-        self.fail()
+        gen = self.t1.nonzero()
+        self.assertRaises(NotImplementedError, gen.next)
 
     def test_merge(self):
         """General merge method"""
@@ -310,6 +320,15 @@ class DenseTableTests(TestCase):
         self.dt_rich = DenseTable(array([[5,6],[7,8]]), ['a','b'],['1','2'],
                 [{'barcode':'aatt'},{'barcode':'ttgg'}],
                 [{'taxonomy':['k__a','p__b']},{'taxonomy':['k__a','p__c']}])
+
+    def test_nonzero(self):
+        """Return a list of nonzero positions"""
+        dt = DenseTable(array([[5,6,0,2],[0,7,0,8],[1,-1,0,0]]), 
+                        ['a','b','c','d'],['1','2','3'])
+        exp = [('1','a'),('1','b'),('1','d'),('2','b'),('2','d'),('3','a'),
+               ('3','b')]
+        obs = list(dt.nonzero())
+        self.assertEqual(obs, exp)
 
     def test_merge(self):
         """Merge two tables"""
@@ -711,6 +730,17 @@ class SparseTableTests(TestCase):
                 ['a','b'],['1','2'],
                 [{'barcode':'aatt'},{'barcode':'ttgg'}],
                 [{'taxonomy':['k__a','p__b']},{'taxonomy':['k__a','p__c']}])
+
+    def test_nonzero(self):
+        """Return a list of nonzero positions"""
+        data = {(0,0):5,(0,1):6,(0,2):0,(0,3):3,
+                (1,0):0,(1,1):7,(1,2):0,(1,3):8,
+                (2,0):1,(2,1):-1,(2,2):0,(2,3):0}
+        st = SparseTable(to_ll_mat(data), ['a','b','c','d'],['1','2','3'])
+        exp = [('1','a'),('1','b'),('1','d'),('2','b'),('2','d'),('3','a'),
+               ('3','b')]
+        obs = list(st.nonzero())
+        self.assertEqual(obs, exp)
 
     def test_merge(self):
         """Merge two tables"""

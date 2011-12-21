@@ -284,7 +284,16 @@ class Table(object):
     def __setitem__(self, args, value):
         """Passes through to internal matrix"""
         self._data[args] = value
-   
+
+    def getValueByIds(self, obs_id, samp_id):
+        """Return the value in the matrix corresponding to (obs_id, samp_id)"""
+        if obs_id not in self._obs_index:
+            raise UnknownID, "ObservationId %s not found!" % obs_id
+        if samp_id not in self._sample_index:
+            raise UnknownID, "SampleId %s not found!" % samp_id
+
+        return self._data[self._obs_index[obs_id], self._sample_index[samp_id]]
+
     ### DEFAULT OUTPUT SHOULD BE GTF
     def __str__(self):
         """Stringify self
@@ -571,9 +580,16 @@ class Table(object):
         f = lambda x: x / float(x.sum())
         return self.transformObservations(f)
 
-    #mergeTables, in place
-        ### currently can only merge tables that do not have overlapping sample ids
-        ### bail if overlapping
+    def nonzero(self):
+        """Returns types of nonzero locations within the data matrix
+
+        The values returned are (observation_id, sample_id)
+        """
+        # this is naively implemented. If performance is a concern, private
+        # methods can be written to hit against the underlying types directly
+        for o_idx, samp_vals in enumerate(self.iterObservationData()):
+            for s_idx in samp_vals.nonzero()[0]:
+                yield (self.ObservationIds[o_idx], self.SampleIds[s_idx])
 
     def _union_id_order(self, a, b):
         """Determines merge order for id lists A and B"""
