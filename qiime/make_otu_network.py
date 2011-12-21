@@ -31,7 +31,9 @@ from time import strftime
 from random import choice, randrange
 from cogent.maths.stats.test import G_2_by_2
 from qiime.colors import iter_color_groups, Color, data_colors
-from qiime.parse import parse_mapping_file, parse_otu_table
+#from qiime.parse import parse_mapping_file, parse_otu_table
+from qiime.parse import parse_mapping_file
+from qiime.pycogent_backports.parse_biom import parse_biom_table
 
 def get_sample_info(lines):
     """Collects information from mapping file for easy use in following steps
@@ -88,10 +90,10 @@ def get_sample_info(lines):
                         labels,node_labels, label_list
 
 
-def get_connection_info(lines, num_meta, meta_dict):
+def get_connection_info(otu_table_fp, num_meta, meta_dict):
     """Collects information from OTU table for easy use in following steps
         
-        Input: lines - the OTU table as a list of lines
+        Input: otu_table_fh - the file path of a biom-formatted OTU table
                num_meta - the number of columns of metadata in the mapping file
                meta_dict - meta_dict returned by get_sample_info
     
@@ -131,29 +133,41 @@ def get_connection_info(lines, num_meta, meta_dict):
     sample_num_seq = defaultdict(int)
     con_list = []
 
-    sample_ids, otu_ids, otu_table, lineages = parse_otu_table(lines,count_map_f=float)
+    #sample_ids, otu_ids, otu_table, lineages = parse_otu_table(lines,count_map_f=float)
+    otu_table = parse_biom_table(open(otu_table_fp,'U'))
 
-    if lineages == []:
-        is_con = False
-    else:
+    #if lineages == []:
+    #    is_con = False
+    #else:
+    #    is_con = True
+
+    is_con = False
+    # This could be moved to OTU table sub-class
+    if otu_table.ObservationMetadata[0] and 'taxonomy' in otu_table.ObservationMetadata[0]:
         is_con = True
 
-    for idx,l in enumerate(otu_table):
-        data = l
+    for (otu_values, otu_id, otu_metadata) in otu_table.iterObservations():
+    #for idx,l in enumerate(otu_table):
+    #    data = l
         
-        to_otu = otu_ids[idx]
+        #to_otu = otu_ids[idx]
         con = ''
         if is_con:
-            con = ':'.join(lineages[idx][:6])
+            #con = ':'.join(lineages[idx][:6])
+            con = ':'.join(otu_metadata['taxonomy'][:6])
             con = con.replace(" ","_")
             con = con.replace("\t","_")
-        counts = map(float,data)
+        # Not required: otu_values (data) is always numpy vector
+        #counts = map(float,data)
         if con not in con_list:
             con_list.append(con)
-        non_zero_counts = nonzero(counts)[0]
+        #non_zero_counts = nonzero(counts)[0]
+        non_zero_counts = otu_values.nonzero()[0]
         degree = len(non_zero_counts)
-        weighted_degree = sum(counts)
-        node_file_line = [to_otu,'','otu_node',str(degree),\
+        weighted_degree = sum(otu_values)
+#        node_file_line = [to_otu,'','otu_node',str(degree),\
+#                          str(weighted_degree),con]
+        node_file_line = [otu_id,'','otu_node',str(degree),\
                           str(weighted_degree),con]
         node_file_line.extend(['otu']*num_meta)
         node_file.append('\t'.join(node_file_line))
@@ -164,26 +178,36 @@ def get_connection_info(lines, num_meta, meta_dict):
 
         otu_dc[degree] += 1
         degree_counts[degree] += 1
-        samples = [sample_ids[i] for i in non_zero_counts]
+        #samples = [sample_ids[i] for i in non_zero_counts]
+        samples = [otu_table.SampleIds[i] for i in non_zero_counts]
         for i, s in enumerate(samples):
             if s not in meta_dict.keys():
                 continue
             con_by_sample[s].update(samples[0:i])
             con_by_sample[s].update(samples[i+1:])
-            sample_num_seq[s] += float(data[non_zero_counts[i]])
+            #sample_num_seq[s] += float(data[non_zero_counts[i]])
+            sample_num_seq[s] += float(otu_values[non_zero_counts[i]])
             
             edge_from.append(s)
-            to.append(to_otu)
+            #to.append(to_otu)
+            to.append(otu_id)
             meta = meta_dict[s]
             meta[1] += 1
-            data_num = str(data[non_zero_counts[i]])
-            edge_file.append('\t'.join([s, to_otu, \
+            #data_num = str(data[non_zero_counts[i]])
+            data_num = str(otu_values[non_zero_counts[i]])
+            #edge_file.append('\t'.join([s, to_otu, \
+            #                data_num, con, meta[0]]))
+            edge_file.append('\t'.join([s, otu_id, \
                             data_num, con, meta[0]]))
-            multi[to_otu].append((s,float(data[non_zero_counts[i]]), meta[0]))
+            #multi[to_otu].append((s,float(data[non_zero_counts[i]]), meta[0]))
+            multi[otu_id].append((s,float(otu_values[non_zero_counts[i]]), meta[0]))
             if len(non_zero_counts) == 1:
-                red_nodes[(sample_ids[non_zero_counts[0]],meta[0])] += degree
+                #red_nodes[(sample_ids[non_zero_counts[0]],meta[0])] += degree
+                red_nodes[(otu_table.SampleIds[non_zero_counts[0]],meta[0])] += degree
             else:
-                red_edge_file.append('\t'.join([s, to_otu, \
+                #red_edge_file.append('\t'.join([s, to_otu, \
+                #                    data_num, con, meta[0]]))
+                red_edge_file.append('\t'.join([s, otu_id, \
                                     data_num, con, meta[0]]))
 
     num_otu_nodes = len(node_file)
@@ -350,12 +374,12 @@ def make_props_files(labels,label_list,dir_path,data,background_color,label_colo
         output.write(props_file_str % tuple(props_str_list))
         output.close()
 
-def create_network_and_stats(dir_path,map_lines,otu_sample_lines,prefs,data,background_color,label_color):
+def create_network_and_stats(dir_path,map_lines,otu_table_fp,prefs,data,background_color,label_color):
     """Creates and writes the edge, node, props, and stats files for the network
     
         Input: dir_path - directory path that the files should be written to
                map_lines - list of lines from mapping file
-               otu_sample_lines - list of lines from OTU table file
+               otu_table - file path of a biom-formatted OTU table file
                prefs - dictionary of user color choices
                data - returned by sample_color_prefs_and_map_data_from_options 
                       from qiime.colors
@@ -367,7 +391,7 @@ def create_network_and_stats(dir_path,map_lines,otu_sample_lines,prefs,data,back
             label_list = get_sample_info(map_lines)
     con_by_sample, node_file, edge_file,red_node_file,\
             red_edge_file, otu_dc, degree_counts,sample_dc, \
-            = get_connection_info(otu_sample_lines, num_meta, meta_dict)
+            = get_connection_info(otu_table_fp, num_meta, meta_dict)
     num_con_cat, num_con = get_num_con_cat(con_by_sample,cat_by_sample)
     num_cat = get_num_cat(sample_by_cat,con_by_sample.keys())
     dir_path = os.path.join(dir_path,"otu_network")
