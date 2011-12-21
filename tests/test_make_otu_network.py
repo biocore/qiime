@@ -14,9 +14,11 @@ from cogent.util.unit_test import TestCase, main
 from qiime.make_otu_network import get_sample_info, get_connection_info, \
      get_num_con_cat,get_num_cat,make_table_file,make_stats_files,\
      make_props_files
+from qiime.util import get_tmp_filename, load_qiime_config
 from cogent.util.misc import get_random_directory_name     
 from cogent.maths.stats.test import G_2_by_2
 from random import choice, randrange
+from qiime.pycogent_backports.rich_otu_table import SparseOTUTable, to_ll_mat
 from os import remove
 from os.path import exists
 import os
@@ -24,6 +26,9 @@ import shutil
 
 class OtuNetworkTests(TestCase):
     def setUp(self):
+        self.qiime_config = load_qiime_config()
+        self.tmp_dir = self.qiime_config['temp_dir'] or '/tmp/'
+
         self.map_file = """#SampleID	Day	time	Description
 #This is some comment about the study
 1	090809	1200	some description of sample1
@@ -54,7 +59,36 @@ class OtuNetworkTests(TestCase):
                    "weighted_degree","consensus_lin","Day","time"]
         self.label_list =[["090809","090909","091009"],["1200","1800"]]
 
-        
+        self.otu_table_vals = {(0, 1):1.0, (0, 4):6.0,
+                               (1, 0):2.0,
+                               (2, 2):3.0, (2, 3):1.0,
+                               (3, 4):5.0,
+                               (4, 1):4.0, (4, 2):2.0,
+                               (5, 0):3.0, (5, 1):6.0,
+                               (6, 2):4.0, (6, 3):2.0,
+                               (7, 4):3.0,
+                               (8, 0):2.0, (8, 3):5.0,
+                               (9, 1):2.0, (9, 3):4.0}
+
+        otu_table_str = SparseOTUTable(to_ll_mat(self.otu_table_vals),
+                                       ['1', '2', '3', '4', '5'],
+                                       ['otu_1', 'otu_2', 'otu_3', 'otu_4', 'otu_5', 'otu_6', 'otu_7', 'otu_8', 'otu_9', 'otu_10'],
+                                       [None, None, None, None, None],
+                                       [{"taxonomy": ["Bacteria", "Actinobacteria", "Coriobacteridae"]},
+                                        {"taxonomy": ["Bacteria", "Bacteroidetes", "Bacteroidales", "Bacteroidaceae"]},
+                                        {"taxonomy": ["Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]},
+                                        {"taxonomy": ["Bacteria", "Spirochaetes", "Spirochaetales", "Spirochaetaceae"]},
+                                        {"taxonomy": ["Bacteria", "Bacteroidetes", "Bacteroidales", "Rikenellaceae"]},
+                                        {"taxonomy": ["Bacteria", "Bacteroidetes", "Bacteroidales", "Dysgonomonaceae"]},
+                                        {"taxonomy": ["Bacteria", "Bacteroidetes", "Bacteroidales", "Odoribacteriaceae"]},
+                                        {"taxonomy": ["Bacteria", "Bacteroidetes", "Bacteroidales", "Dysgonomonaceae", "otu_425"]},
+                                        {"taxonomy": ["Bacteria", "Bacteroidetes", "Bacteroidales", "Dysgonomonaceae", "otu_425"]},
+                                        {"taxonomy": ["Bacteria", "Firmicutes", "Mollicutes", "Clostridium_aff_innocuum_CM970"]}]).getBiomFormatJsonString()
+
+        self.otu_table_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
+                                             prefix='test_make_otu_network_otu_table',suffix='.biom')
+        open(self.otu_table_fp,'w').write(otu_table_str)
+
         self.otu_sample_file = """#Full OTU Counts
 #OTU ID	1	2	3	4	5	Consensus Lineage
 otu_1	0	1	0	0	6	Bacteria; Actinobacteria; Coriobacteridae
@@ -172,8 +206,10 @@ otu_10	0	2	0	4	0	Bacteria; Firmicutes; Mollicutes; Clostridium_aff_innocuum_CM97
     def test_get_connection_info(self):
         con_by_sample, node_file_str, edge_file_str, red_node_file_str,\
            red_edge_file_str,otu_dc, degree_counts,sample_dc = \
-           get_connection_info(self.otu_sample_file.split('\n'), self.num_cats,\
+           get_connection_info(self.otu_table_fp, self.num_cats,\
                             self.meta_dict)
+#           get_connection_info(self.otu_sample_file.split('\n'), self.num_cats,\
+#                            self.meta_dict)
 
         self.assertEqual(con_by_sample,self.con_by_sample)
         self.assertEqual(set(node_file_str),set(self.node_file_str))
