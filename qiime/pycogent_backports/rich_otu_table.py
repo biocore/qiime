@@ -524,11 +524,11 @@ class Table(object):
 
         # Determine the type of elements the matrix is storing.
         if isinstance(test_element, int):
-            matrix_element_type = "int"
+            dtype, matrix_element_type = int, "int"
         elif isinstance(test_element, float):
-            matrix_element_type = "float"
+            dtype, matrix_element_type = float, "float"
         elif isinstance(test_element, str):
-            matrix_element_type = "str"
+            dtype, matrix_element_type = str, "str"
         else:
             raise TableException("Unsupported matrix data type.")
 
@@ -550,7 +550,8 @@ class Table(object):
             # data in sparse format, as it is given to us in a numpy array in
             # dense format (i.e. includes zeroes) by iterObservations().
             if self._biom_matrix_type == "dense":
-                biom_format_obj["data"].append(map(int,obs[0]))
+                # convert to python types, JSON doesn't like numpy types
+                biom_format_obj["data"].append(map(dtype,obs[0]))
             elif self._biom_matrix_type == "sparse":
                 dense_values = list(obs[0])
                 sparse_values = []

@@ -558,7 +558,6 @@ class SparseTableTests(TestCase):
         exp = [(array([5,7]), 'a', None), (array([6,8]), 'b', None)]
         obs = list(self.st1)
         self.assertEqual(obs, exp)
-        self.fail("should be safe to push this method to base class")
 
     def test_iter_obs(self):
         """Iterate over observations of sparse matrix"""
