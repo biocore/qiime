@@ -19,7 +19,8 @@ from itertools import izip
 from numpy import inf, isinf
 from qiime.pycogent_backports.parse_biom import parse_biom_table
 from qiime.util import parse_command_line_parameters, make_option
-from qiime.filter import sample_ids_from_metadata_description
+from qiime.filter import (sample_ids_from_metadata_description, 
+                          filter_samples_from_otu_table)
 
 script_info = {}
 script_info['brief_description'] = ""
