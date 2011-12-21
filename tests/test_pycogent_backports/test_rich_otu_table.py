@@ -50,20 +50,12 @@ class TableTests(TestCase):
         self.t2 = Table(array([]),[],[])
         self.simple_derived = Table(array([[5,6],[7,8]]), [1,2],[3,4])
 
-    def test_coerce_data_obj(self):
-        """Coerce input data object"""
-        # this method is not necessary if all instantiations come through the
-        # object factory. additionally, i was having issues with derived classes
-        # being able to call this directly as it is part of the base class but
-        # needs to rely on static variables of the derived class
-        self.fail()
-
     def test_verify_metadata(self):
         """Make sure the metadata is sane (including obs/sample ids)"""
         obs_ids = [1,2,3]
-        obs_md = ['a','b','c']
+        obs_md = [{'a':0},{'b':0},{'c':0}]
         samp_ids = [4,5,6,7]
-        samp_md = ['d','e','f','g']
+        samp_md = [{'d':0},{'e':0},{'f':0},{'g':0}]
         d = array([[1,2,3,4],[5,6,7,8],[9,10,11,12]])
         t = Table(d, samp_ids, obs_ids, samp_md, obs_md)
         # test is that no exception is raised
@@ -102,8 +94,23 @@ class TableTests(TestCase):
         samp_ids = [4,4,6]
         self.assertRaises(TableException, Table, d, samp_ids, obs_ids, samp_md,
                           obs_md)
-       
-        self.fail("if metadata exists, need default value for missing metadata on other rows/cols. ie, assume some rows/cols do not have complete metadata relative to other rows/cols")
+   
+    def test_cast_metadata(self):
+        """Cast metadata objects to defaultdict to support default values"""
+        obs_ids = [1,2,3]
+        obs_md = [{'a':1},{'b':2},{'c':3}]
+        samp_ids = [4,5,6,7]
+        samp_md = [{'d':1},None,{'f':3},{'g':4}]
+        d = array([[1,2,3,4],[5,6,7,8],[9,10,11,12]])
+        t = Table(d, samp_ids, obs_ids, samp_md, obs_md)
+
+        self.assertEqual(t.SampleMetadata[0]['non existent key'], None)
+        self.assertEqual(t.SampleMetadata[1]['non existent key'], None)
+        self.assertEqual(t.SampleMetadata[2]['non existent key'], None)
+        self.assertEqual(t.SampleMetadata[3]['non existent key'], None)
+        self.assertEqual(t.ObservationMetadata[0]['non existent key'], None)
+        self.assertEqual(t.ObservationMetadata[1]['non existent key'], None)
+        self.assertEqual(t.ObservationMetadata[2]['non existent key'], None)
 
     def test_getitem(self):
         """getitem should work as expeceted"""
@@ -127,57 +134,10 @@ class TableTests(TestCase):
         self.assertEqual(self.simple_derived[0,1], 12)
         self.assertEqual(self.simple_derived[1,1], 16)
 
-    def test_binObservationsByMetadata(self):
-        """Yield tables binned by observation metadata"""
-        def make_level_f(level):
-            def f(metadata):
-                return metadata[:level]
-            return f
-
-        func_king = make_level_f(1)
-        func_phy = make_level_f(2)
-
-        obs_ids = ['a','b','c']
-        samp_ids = [1,2,3]
-        data = array([[1,2,3],[4,5,6],[7,8,9]])
-        obs_md = [['k__a','p__b','c__c'],
-                  ['k__a','p__b','c__d'],
-                  ['k__a','p__c','c__e']]
-        t = DenseTable(data, samp_ids, obs_ids, ObservationMetadata=obs_md)
-
-        exp_king_obs_ids = ['a','b','c']
-        exp_king_samp_ids = [1,2,3]
-        exp_king_data = array([[1,2,3],[4,5,6],[7,8,9]])
-        exp_king_obs_md = [['k__a','p__b','c__c'],
-                           ['k__a','p__b','c__d'],
-                           ['k__a','p__c','c__e']]
-        exp_king = DenseTable(data, exp_king_samp_ids, exp_king_obs_ids, 
-                              ObservationMetadata=exp_king_obs_md)
-        obs_bins, obs_king = unzip(t.binObservationsByMetadata(func_king))
-        self.assertEqual(obs_king, [exp_king])
-        self.assertEqual(obs_bins, [tuple(['k__a'])])
-
-        exp_phy1_obs_ids = ['a','b']
-        exp_phy1_samp_ids = [1,2,3]
-        exp_phy1_data = array([[1,2,3],[4,5,6]])
-        exp_phy1_obs_md = [['k__a','p__b','c__c'],
-                           ['k__a','p__b','c__d']]
-        exp_phy1 = DenseTable(exp_phy1_data, exp_phy1_samp_ids, 
-                              exp_phy1_obs_ids, 
-                              ObservationMetadata=exp_phy1_obs_md)
-        exp_phy2_obs_ids = ['c']
-        exp_phy2_samp_ids = [1,2,3]
-        exp_phy2_data = array([[7,8,9]])
-        exp_phy2_obs_md = [['k__a','p__c','c__e']]
-        exp_phy2 = DenseTable(exp_phy2_data, exp_phy2_samp_ids,exp_phy2_obs_ids,
-                               ObservationMetadata=exp_phy2_obs_md)
-        obs_bins, obs_phy = unzip(t.binObservationsByMetadata(func_phy))
-        self.assertEqual(obs_phy, [exp_phy1, exp_phy2])
-        self.assertEqual(obs_bins, [('k__a','p__b'),('k__a','p__c')])
 
     def test_str(self):
         """str is dependent on derived class"""
-        self.assertRaises(NotImplementedError, str, self.t1)
+        self.assertRaises(TableException, str, self.t1)
 
     def test_iter(self):
         """iter is dependent on derived class"""
@@ -221,9 +181,9 @@ class TableTests(TestCase):
         """Transform samples, not all called methods are implemented in base"""
         self.assertRaises(NotImplementedError, self.t1.transformSamples, 1)
    
-    def test_delimtedSelf(self):
+    def test_delimitedSelf(self):
         """Test basic string functionality of self"""
-        self.fail("not sure if this is testable in the base class")
+        self.assertRaises(TableException, self.t1.delimitedSelf)
 
     def test_nonzeroBySamples(self):
         """Returns nonzero indices by samples"""
@@ -243,6 +203,12 @@ class DenseTableTests(TestCase):
         self.dt_rich = DenseTable(array([[5,6],[7,8]]), ['a','b'],['1','2'],
                 [{'barcode':'aatt'},{'barcode':'ttgg'}],
                 [{'taxonomy':['k__a','p__b']},{'taxonomy':['k__a','p__c']}])
+    
+    def test_delimitedSelf(self):
+        """Print out self in a delimited form"""
+        exp = '\n'.join(["#RowIDs\ta\tb","1\t5\t6","2\t7\t8"])
+        obs = self.dt1.delimitedSelf()
+        self.assertEqual(obs,exp)
 
     def test_conv_to_np(self):
         """Correctly convert to a numpy type"""
@@ -408,6 +374,73 @@ class DenseTableTests(TestCase):
         self.assertRaises(TableException, self.dt1.getBiomFormatObject)
         self.assertRaises(TableException, self.dt_rich.getBiomFormatObject)
 
+    def test_binSamplesByMetadata(self):
+        """Yield tables binned by sample metadata"""
+        f = lambda x: x['age']
+        obs_ids = ['a','b','c','d']
+        samp_ids = ['1','2','3','4']
+        data = array([[1,2,3,4],[5,6,7,8],[8,9,10,11],[12,13,14,15]])
+        obs_md = [{},{},{},{}]
+        samp_md = [{'age':2},{'age':4},{'age':2},{}]
+        t = DenseTable(data, samp_ids, obs_ids, samp_md, obs_md)
+        obs_bins, obs_tables = unzip(t.binSamplesByMetadata(f))
+
+        exp_bins = ((2), (4), (None))
+        exp1_data = array([[1,3],[5,7],[8,10],[12,14]])
+        exp1_obs_ids = ['a','c']
+        exp1_samp_ids = ['1','2','3','4']
+        exp1_obs_md = [{},{},{},{}]
+
+        exp1 = DenseTable(exp_data)
+        
+    def test_binObservationsByMetadata(self):
+        """Yield tables binned by observation metadata"""
+        def make_level_f(level):
+            def f(metadata):
+                return metadata['taxonomy'][:level]
+            return f
+
+        func_king = make_level_f(1)
+        func_phy = make_level_f(2)
+
+        obs_ids = ['a','b','c']
+        samp_ids = [1,2,3]
+        data = array([[1,2,3],[4,5,6],[7,8,9]])
+        obs_md = [{"taxonomy":['k__a','p__b','c__c']},
+                  {"taxonomy":['k__a','p__b','c__d']},
+                  {"taxonomy":['k__a','p__c','c__e']}]
+        t = DenseTable(data, samp_ids, obs_ids, ObservationMetadata=obs_md)
+
+        exp_king_obs_ids = ['a','b','c']
+        exp_king_samp_ids = [1,2,3]
+        exp_king_data = array([[1,2,3],[4,5,6],[7,8,9]])
+        exp_king_obs_md = [{"taxonomy":['k__a','p__b','c__c']},
+                           {"taxonomy":['k__a','p__b','c__d']},
+                           {"taxonomy":['k__a','p__c','c__e']}]
+        exp_king = DenseTable(data, exp_king_samp_ids, exp_king_obs_ids, 
+                              ObservationMetadata=exp_king_obs_md)
+        obs_bins, obs_king = unzip(t.binObservationsByMetadata(func_king))
+        self.assertEqual(obs_king, [exp_king])
+        self.assertEqual(obs_bins, [tuple(['k__a'])])
+
+        exp_phy1_obs_ids = ['a','b']
+        exp_phy1_samp_ids = [1,2,3]
+        exp_phy1_data = array([[1,2,3],[4,5,6]])
+        exp_phy1_obs_md = [{"taxonomy":['k__a','p__b','c__c']},
+                           {"taxonomy":['k__a','p__b','c__d']}]
+        exp_phy1 = DenseTable(exp_phy1_data, exp_phy1_samp_ids, 
+                              exp_phy1_obs_ids, 
+                              ObservationMetadata=exp_phy1_obs_md)
+        exp_phy2_obs_ids = ['c']
+        exp_phy2_samp_ids = [1,2,3]
+        exp_phy2_data = array([[7,8,9]])
+        exp_phy2_obs_md = [{"taxonomy":['k__a','p__c','c__e']}]
+        exp_phy2 = DenseTable(exp_phy2_data, exp_phy2_samp_ids,exp_phy2_obs_ids,
+                               ObservationMetadata=exp_phy2_obs_md)
+        obs_bins, obs_phy = unzip(t.binObservationsByMetadata(func_phy))
+        self.assertEqual(obs_phy, [exp_phy1, exp_phy2])
+        self.assertEqual(obs_bins, [('k__a','p__b'),('k__a','p__c')])
+
 class SparseTableTests(TestCase):
     def setUp(self):
         self.vals = {(0,0):5,(0,1):6,(1,0):7,(1,1):8}
@@ -418,6 +451,12 @@ class SparseTableTests(TestCase):
                 ['a','b'],['1','2'],
                 [{'barcode':'aatt'},{'barcode':'ttgg'}],
                 [{'taxonomy':['k__a','p__b']},{'taxonomy':['k__a','p__c']}])
+
+    def test_delimitedSelf(self):
+        """Print out self in a delimited form"""
+        exp = '\n'.join(["#RowIDs\ta\tb","1\t5.0\t6.0","2\t7.0\t8.0"])
+        obs = self.st1.delimitedSelf()
+        self.assertEqual(obs,exp)
 
     def test_conv_to_np(self):
         """Should convert a self styled vector to numpy type"""
@@ -560,8 +599,13 @@ class SparseTableTests(TestCase):
                (array([6,8]), 'b', {'barcode':'ttgg'})]
         obs = list(gen)
         self.assertEqual(obs, exp)
-        ### [[1,2,3],[1,0,2]] isn't yielding column 2 correctly
-        self.fail("Add test for columns with trailing 0s")
+
+        # [[1,2,3],[1,0,2]] isn't yielding column 2 correctly
+        self.st1[1,0] = 0
+        gen = self.st1.iterSamples()
+        exp = [(array([5,0]), 'a', None), (array([6,8]), 'b', None)]
+        obs = list(gen)
+        self.assertEqual(obs, exp)
 
     def test_iterObservations(self):
         """Iterates observations"""
@@ -664,6 +708,11 @@ class SparseTableTests(TestCase):
         """Should throw an exception because there is no table type."""
         self.assertRaises(TableException, self.st1.getBiomFormatObject)
         self.assertRaises(TableException, self.st_rich.getBiomFormatObject)
+    
+    def test_binSamplesByMetadata(self):
+        self.fail("tested in DenseTable, needed in Sparse tests?")
+    def test_binObservationsByMetadata(self):
+        self.fail("tested in DenseTable, needed in Sparse tests?")
 
 class DenseOTUTableTests(TestCase):
     def setUp(self):

@@ -5,6 +5,7 @@ from json import dumps
 from types import NoneType
 from operator import itemgetter, xor
 from itertools import izip
+from collections import defaultdict
 from pysparse.spmatrix import LLMatType, ll_mat
 from numpy import ndarray, asarray, array, newaxis, zeros
 from cogent.util.misc import unzip, flatten
@@ -151,6 +152,9 @@ def to_ll_mat(values, transpose=False):
     
 class Table(object):
     """ """
+    _biom_type = None
+    _biom_matrix_type = None
+
     def __init__(self, Data, SampleIds, ObservationIds, SampleMetadata=None, 
                  ObservationMetadata=None, TableId=None, **kwargs):
         self.TableId = TableId
@@ -163,6 +167,7 @@ class Table(object):
         self.ObservationMetadata = ObservationMetadata
 
         self._verify_metadata()
+        self._cast_metadata()
 
     def _conv_to_self_type(self, vals, transpose=False):
         """For converting vectors to a compatible self type"""
@@ -198,6 +203,41 @@ class Table(object):
             raise TableException, "ObservationMetadata not in a compatible \
                                    shape with data matrix!"
 
+    def _cast_metadata(self):
+        """Casts all metadata to defaultdict to support default values"""
+        default_samp_md = []
+        default_obs_md = []
+   
+        if self.SampleMetadata is not None:
+            for samp_md in self.SampleMetadata:
+                d = defaultdict(lambda: None)
+    
+                if isinstance(samp_md, dict):
+                    d.update(samp_md)
+                elif samp_md is None:
+                    pass
+                else:
+                    raise TableException, "Unable to cast metadata: %s" % \
+                            repr(samp_md)
+
+                default_samp_md.append(d)
+            self.SampleMetadata = default_samp_md
+
+        if self.ObservationMetadata is not None:
+            for obs_md in self.ObservationMetadata:
+                d = defaultdict(lambda: None)
+
+                if isinstance(obs_md, dict):
+                    d.update(obs_md)
+                elif obs_md is None:
+                    pass
+                else:
+                    raise TableException, "Unable to cast metadata: %s" % \
+                            repr(obs_md)
+
+                default_obs_md.append(d)
+            self.ObservationMetadata = default_obs_md
+
     ### IS THIS WHAT WE WANT GETITEM/SETITEM AS?
     def __getitem__(self, args):
         """Passes through to internal matrix"""
@@ -221,6 +261,9 @@ class Table(object):
         Default str output for the Table is just row/col ids and table data
         without any metadata
         """
+        if self._biom_matrix_type is None:
+            raise TableException, "Cannot delimit self if I don't have data..."
+
         samp_ids = delim.join(self.SampleIds)
         output = ['#RowIDs%s%s' % (delim, samp_ids)]
         
@@ -452,6 +495,9 @@ class Table(object):
         optimizations are necessary or not (i.e. subclassing JSONEncoder, using
         generators, etc...).
         """
+        if self._biom_type is None:
+            raise TableException, "Unknown biom type"
+
         # Fill in top-level metadata.
         biom_format_obj = {}
         biom_format_obj["id"] = self.TableId
@@ -469,23 +515,12 @@ class Table(object):
         except:
             num_rows = num_cols = 0
         hasData = True if num_rows > 0 and num_cols > 0 else False
-
+        
         # Default the matrix element type to test to be an integer in case we
         # don't have any data in the matrix to test.
         test_element = 0
-        if isinstance(self, DenseOTUTable):
-            biom_format_obj["type"] = "OTU table"
-            matrix_type = "dense"
-            if hasData:
-                test_element = self[0][0]
-        elif isinstance(self, SparseOTUTable):
-            biom_format_obj["type"] = "OTU table"
-            matrix_type = "sparse"
-            if hasData:
-                test_element = self[(0, 0)]
-        else:
-            raise TableException("Unknown table type. The table must derive "
-                    "from either a DenseOTUTable or a SparseOTUTable.")
+        if hasData:
+            test_element = self[0,0]
 
         # Determine the type of elements the matrix is storing.
         if isinstance(test_element, int):
@@ -498,7 +533,8 @@ class Table(object):
             raise TableException("Unsupported matrix data type.")
 
         # Fill in details about the matrix.
-        biom_format_obj["matrix_type"] = "%s" % matrix_type
+        biom_format_obj["type"] = self._biom_type
+        biom_format_obj["matrix_type"] = self._biom_matrix_type
         biom_format_obj["matrix_element_type"] = "%s" % matrix_element_type
         biom_format_obj["shape"] = [num_rows, num_cols]
 
@@ -513,9 +549,9 @@ class Table(object):
             # of data values. If the matrix is sparse, we need to store the
             # data in sparse format, as it is given to us in a numpy array in
             # dense format (i.e. includes zeroes) by iterObservations().
-            if matrix_type == "dense":
+            if self._biom_matrix_type == "dense":
                 biom_format_obj["data"].append(list(obs[0]))
-            elif matrix_type == "sparse":
+            elif self._biom_matrix_type == "sparse":
                 dense_values = list(obs[0])
                 sparse_values = []
                 for col_index, val in enumerate(dense_values):
@@ -535,6 +571,7 @@ class Table(object):
         return dumps(self.getBiomFormatObject())
 
 class SparseTable(Table):
+    _biom_matrix_type = "sparse"
     def __init__(self, *args, **kwargs):
         super(SparseTable, self).__init__(*args, **kwargs)
    
@@ -598,6 +635,7 @@ class SparseTable(Table):
             yield self._data[r,:]
 
 class DenseTable(Table):
+    _biom_matrix_type = "dense"
     def __init__(self, *args, **kwargs):
         super(DenseTable, self).__init__(*args, **kwargs)
 
@@ -632,13 +670,12 @@ class DenseTable(Table):
             yield c
 
 class OTUTable(object):
-    ### add a _biom_type or something, update formatter to remove
-    ### baseclass check against derived object types
+    _biom_type = "OTU table"
     pass
 
-class DenseOTUTable(DenseTable, OTUTable):
+class DenseOTUTable(OTUTable, DenseTable):
     pass
 
-class SparseOTUTable(SparseTable, OTUTable):
+class SparseOTUTable(OTUTable, SparseTable):
     pass
 
