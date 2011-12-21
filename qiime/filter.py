@@ -101,22 +101,28 @@ def get_seqs_to_keep_lookup_from_fasta_file(fasta_f):
     return set([seq_id.split()[0] for seq_id,seq in MinimalFastaParser(fasta_f)])
 get_seq_ids_from_fasta_file = get_seqs_to_keep_lookup_from_fasta_file
 
-# start functions used by filter_samples_from_otu_table.py
+# start functions used by filter_samples_from_otu_table.py and filter_otus_from_otu_table.py
 
-def get_sample_filter_function(sample_ids_to_keep,min_count,max_count):
+def get_filter_function(ids_to_keep,min_count,max_count):
     
-    def f(data_vector, sample_id, metadata):
-        return (sample_id in sample_ids_to_keep) and \
+    def f(data_vector, id_, metadata):
+        return (id_ in ids_to_keep) and \
                (min_count <= data_vector.sum() <= max_count)
     return f
 
-def filter_samples_from_otu_table(otu_table,sample_ids_to_keep,min_count,max_count):
-    filter_f = get_sample_filter_function({}.fromkeys(sample_ids_to_keep),
+def filter_samples_from_otu_table(otu_table,ids_to_keep,min_count,max_count):
+    filter_f = get_filter_function({}.fromkeys(ids_to_keep),
                                            min_count,
                                            max_count)
     return otu_table.filterSamples(filter_f)
 
-# end functions used by filter_samples_from_otu_table.py
+def filter_otus_from_otu_table(otu_table,ids_to_keep,min_count,max_count):
+    filter_f = get_filter_function({}.fromkeys(ids_to_keep),
+                                           min_count,
+                                           max_count)
+    return otu_table.filterObservations(filter_f)
+
+# end functions used by filter_samples_from_otu_table.py and filter_otus_from_otu_table.py
 
 
 
