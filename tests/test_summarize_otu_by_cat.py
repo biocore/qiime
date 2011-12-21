@@ -3,7 +3,7 @@
 
 __author__ = "Julia Goodrich"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Julia Goodrich","Justin Kuczynski"]
+__credits__ = ["Julia Goodrich","Justin Kuczynski", "Jose Carlos Clemente Litran"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Daniel McDonald"
@@ -13,11 +13,17 @@ __status__ = "Development"
 from cogent.util.unit_test import TestCase, main
 from qiime.summarize_otu_by_cat import get_sample_cat_info, get_counts_by_cat
 from qiime.parse import parse_otu_table
+from qiime.pycogent_backports.rich_otu_table import SparseOTUTable, to_ll_mat
+from qiime.util import get_tmp_filename, load_qiime_config
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
     def setUp(self):
         """Set up for the tests in TopLevelTests Class"""
+
+        self.qiime_config = load_qiime_config()
+        self.tmp_dir = self.qiime_config['temp_dir'] or '/tmp/'
+
         self.map_file = """#SampleID\tDay\ttime\tDescription
 #This is some comment about the study
 1\t090809\t1200\tsome description of sample1
@@ -69,6 +75,7 @@ class TopLevelTests(TestCase):
                                     ('Description', 'some description of sample3'):1,
                                     ('Description', 'some description of sample4'):1,
                                     ('Description', 'some description of sample5'):1}
+
         self.otu_sample_file = """#Full OTU Counts
 #OTU ID\t1\t2\t3\t4\t5\tConsensus Lineage
 otu_1\t0\t1\t0\t0\t6\tBacteria; Actinobacteria; Coriobacteridae
@@ -81,16 +88,47 @@ otu_7\t0\t0\t4\t2\t0\tBacteria; Bacteroidetes; Bacteroidales; Odoribacteriaceae
 otu_8\t0\t0\t0\t0\t3\tBacteria; Bacteroidetes; Bacteroidales; Dysgonomonaceae; otu_425
 otu_9\t2\t0\t0\t5\t0\tBacteria; Bacteroidetes; Bacteroidales; Dysgonomonaceae; otu_425
 otu_10\t0\t2\t0\t4\t0\tBacteria; Firmicutes; Mollicutes; Clostridium_aff_innocuum_CM970"""
-        self.cat_otu_table = """1\t0\t6
-2\t0\t0
-0\t4\t0
-0\t0\t5
-4\t2\t0
-9\t0\t0
-0\t6\t0
-0\t0\t3
-2\t5\t0
-2\t4\t0"""
+
+        self.otu_table_values = {
+            (0, 1):1.0, (0, 4):6.0,
+            (1, 0):2.0,
+            (2, 2):3.0, (2, 3):1.0,
+            (3, 4):5.0,
+            (4, 1):4.0, (4, 2):2.0,
+            (5, 0):3.0, (5, 1):6.0,
+            (6, 2):4.0, (6, 3):2.0,
+            (7, 4):3.0,
+            (8, 0):2.0, (8, 3):5.0,
+            (9, 1):2.0, (9, 3):4.0}
+
+        self.otu_table_str = SparseOTUTable(to_ll_mat(self.otu_table_values),
+                                            ['1', '2', '3', '4', '5'],
+                                            ['otu_1', 'otu_2', 'otu_3', 'otu_4', 'otu_5', 'otu_6', 'otu_7', 'otu_8', 'otu_9', 'otu_10'],
+                                            [None, None, None, None, None],
+                                            [{"taxonomy": ["Bacteria", "Actinobacteria", "Coriobacteridae"]},
+                                             {"taxonomy": ["Bacteria", "Bacteroidetes", "Bacteroidales", "Bacteroidaceae"]},
+                                             {"taxonomy": ["Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]},
+                                             {"taxonomy": ["Bacteria", "Spirochaetes", "Spirochaetales", "Spirochaetaceae"]},
+                                             {"taxonomy": ["Bacteria", "Bacteroidetes", "Bacteroidales", "Rikenellaceae"]},
+                                             {"taxonomy": ["Bacteria", "Bacteroidetes", "Bacteroidales", "Dysgonomonaceae"]},
+                                             {"taxonomy": ["Bacteria", "Bacteroidetes", "Bacteroidales", "Odoribacteriaceae"]},
+                                             {"taxonomy": ["Bacteria", "Bacteroidetes", "Bacteroidales", "Dysgonomonaceae", "otu_425"]},
+                                             {"taxonomy": ["Bacteria", "Bacteroidetes", "Bacteroidales", "Dysgonomonaceae", "otu_425"]},
+                                             {"taxonomy": ["Bacteria", "Firmicutes", "Mollicutes", "Clostridium_aff_innocuum_CM970"]}]).getBiomFormatJsonString()
+        self.otu_table_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
+                                             prefix='test_summarize_otu_by_cat',suffix='.biom')
+        open(self.otu_table_fp,'w').write(self.otu_table_str)
+
+        self.cat_otu_table = """1.0\t0.0\t6.0
+2.0\t0.0\t0.0
+0.0\t4.0\t0.0
+0.0\t0.0\t5.0
+4.0\t2.0\t0.0
+9.0\t0.0\t0.0
+0.0\t6.0\t0.0
+0.0\t0.0\t3.0
+2.0\t5.0\t0.0
+2.0\t4.0\t0.0"""
 
 
         self.cat_otu_table_norm = """0.0384615\t0.0\t0.4285714
@@ -132,23 +170,29 @@ otu_10\t0\t2\t0\t4\t0\tBacteria; Firmicutes; Mollicutes; Clostridium_aff_innocuu
 
     def test_get_counts_by_cat(self):
         """get_counts_by_cat should return hand calculated values"""
+        #cat_otu_table, otus, taxonomy = get_counts_by_cat(\
+        #       self.otu_sample_file.split('\n'), self.num_cats,\
+        #        self.meta_dict,self.labels_lists_dict["Day"],"Day",self.num_samples_by_cat,False)
         cat_otu_table, otus, taxonomy = get_counts_by_cat(\
-               self.otu_sample_file.split('\n'), self.num_cats,\
-                self.meta_dict,self.labels_lists_dict["Day"],"Day",self.num_samples_by_cat,False)
+            self.otu_table_fp, self.num_cats,\
+            self.meta_dict,self.labels_lists_dict["Day"],"Day",self.num_samples_by_cat,False)
         cat_otu_table_test = []
         for l in cat_otu_table:
             cat_otu_table_test.append('\t'.join(map(str,l)))
         self.assertEqual('\n'.join(cat_otu_table_test),self.cat_otu_table)
         self.assertEqual(otus,self.otus)
         self.assertEqual(taxonomy,self.taxonomy)
+        #cat_otu_table, otus, taxonomy = get_counts_by_cat(\
+        #        self.otu_sample_file.split('\n'), self.num_cats,\
+        #        self.meta_dict,self.labels_lists_dict["Day"],"Day",self.num_samples_by_cat,True)
         cat_otu_table, otus, taxonomy = get_counts_by_cat(\
-                self.otu_sample_file.split('\n'), self.num_cats,\
+                self.otu_table_fp, self.num_cats,\
                 self.meta_dict,self.labels_lists_dict["Day"],"Day",self.num_samples_by_cat,True)
         cat_otu_table_test = []
         for l in cat_otu_table:
             cat_otu_table_test.append('\t'.join(map(str,l)))
-        sams, otunames, obs, lineages = parse_otu_table(cat_otu_table_test,float)
-        sams, otunames, exp, lineages = parse_otu_table(self.cat_otu_table_norm.split('\n'),float)
+        #sams, otunames, obs, lineages = parse_otu_table(cat_otu_table_test,float)
+        #sams, otunames, exp, lineages = parse_otu_table(self.cat_otu_table_norm.split('\n'),float)
         self.assertEqual(otus,self.otus)
         self.assertEqual(taxonomy,self.taxonomy)
 
