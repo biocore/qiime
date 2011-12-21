@@ -9,6 +9,7 @@ File created on 7 Jan 2010.
 from __future__ import division
 from os.path import split, join
 import os
+from qiime.pycogent_backports.parse_biom import parse_biom_table
 from qiime.parallel.util import get_rename_command, merge_to_n_commands
 from qiime.parse import parse_otu_table
 from qiime.format import format_distance_matrix
@@ -88,9 +89,11 @@ def get_job_commands_single_otu_table(
     commands = []
     result_filepaths = []
     
-    sids = parse_otu_table(open(input_fp,'U'))[0]
+    sids = parse_biom_table(open(input_fp,'U')).SampleIds
     
-    sample_id_groups = merge_to_n_commands(sids,jobs_to_start,',','','')
+    sample_id_groups = merge_to_n_commands(sids,
+                                           jobs_to_start,
+                                           ',','','')
     for i, sample_id_group in enumerate(sample_id_groups):
         working_dir_i = os.path.join(working_dir, str(i))
         output_dir_i = os.path.join(output_dir, str(i))
