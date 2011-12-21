@@ -3,7 +3,7 @@
 
 __author__ = "Julia Goodrich"
 __copyright__ = "Copyright 2011, The QIIME Project" #consider project name
-__credits__ = ["Julia Goodrich"] #remember to add yourself
+__credits__ = ["Julia Goodrich", "Jose Carlos Clemente Litran"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Jose Clemente"
