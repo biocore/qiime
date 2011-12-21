@@ -550,7 +550,7 @@ class Table(object):
             # data in sparse format, as it is given to us in a numpy array in
             # dense format (i.e. includes zeroes) by iterObservations().
             if self._biom_matrix_type == "dense":
-                biom_format_obj["data"].append(list(obs[0]))
+                biom_format_obj["data"].append(map(int,obs[0]))
             elif self._biom_matrix_type == "sparse":
                 dense_values = list(obs[0])
                 sparse_values = []
