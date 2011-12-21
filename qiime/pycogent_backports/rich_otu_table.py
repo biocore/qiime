@@ -5,7 +5,7 @@ from json import dumps
 from types import NoneType
 from operator import itemgetter, xor
 from itertools import izip
-from collections import defaultdict
+from collections import defaultdict, Hashable
 from pysparse.spmatrix import LLMatType, ll_mat
 from numpy import ndarray, asarray, array, newaxis, zeros
 from cogent.util.misc import unzip, flatten
@@ -420,17 +420,23 @@ class Table(object):
         # conversion of vector types is not necessary, vectors are not
         # being passed to an arbitrary function
         for samp_v, samp_id, samp_md in self.iterSamples(conv_to_np=False):
-            bin = tuple(f(samp_md))
+            bin = f(samp_md)
+
+            # try to make it hashable...
+            if not isinstance(bin, Hashable):
+                bin = tuple(bin)
+
             if bin not in bins:
                 bins[bin] = [[], [], []]
+
             bins[bin][0].append(samp_id)
             bins[bin][1].append(samp_v)
             bins[bin][2].append(samp_md)
 
         for bin, (samp_ids, samp_values, samp_md) in bins.iteritems():
-            yield bin, self.__class__(self._conv_to_self_type(samp_values), 
-                            samp_ids, self.ObservationIds, samp_md, 
-                            self.ObservationMetadata, self.TableId)
+            data = self._conv_to_self_type(samp_values, transpose=True)
+            yield bin, self.__class__(data, samp_ids, self.ObservationIds, 
+                            samp_md, self.ObservationMetadata, self.TableId)
 
     def binObservationsByMetadata(self, f):
         """Yields tables by metadata
@@ -442,9 +448,15 @@ class Table(object):
         # conversion of vector types is not necessary, vectors are not
         # being passed to an arbitrary function
         for obs_v, obs_id, obs_md in self.iterObservations(conv_to_np=False):
-            bin = tuple(f(obs_md))
+            bin = f(obs_md)
+
+            # try to make it hashable...
+            if not isinstance(bin, Hashable):
+                bin = tuple(bin)
+
             if bin not in bins:
                 bins[bin] = [[], [], []]
+
             bins[bin][0].append(obs_id)
             bins[bin][1].append(obs_v)
             bins[bin][2].append(obs_md)

@@ -44,6 +44,38 @@ class SupportTests(TestCase):
         obs = to_ll_mat(input, transpose=True)
         self.assertEqual(obs.items(), exp.items())
 
+        # passing a list of dicts, transpose
+        exp = ll_mat(3,2)
+        exp[0,0] = 5
+        exp[1,0] = 6
+        exp[2,0] = 7
+        exp[0,1] = 8
+        exp[1,1] = 9
+        exp[2,1] = 10
+        obs = to_ll_mat([{(0,0):5,(0,1):6,(0,2):7},
+                                           {(1,0):8,(1,1):9,(1,2):10}],
+                                           transpose=True)
+        self.assertEqual(obs.items(), exp.items())
+
+        # passing a list of ll_mat vectors. UGH
+        exp = ll_mat(2,3)
+        exp[0,0] = 5
+        exp[0,1] = 6
+        exp[0,2] = 7
+        exp[1,0] = 8
+        exp[1,1] = 9
+        exp[1,2] = 10
+        row1 = ll_mat(1,3)
+        row1[0,0] = 5
+        row1[0,1] = 6
+        row1[0,2] = 7
+        row2 = ll_mat(1,3)
+        row2[0,0] = 8
+        row2[0,1] = 9
+        row2[0,2] = 10
+        obs = to_ll_mat([row1, row2])
+        self.assertEqual(obs.items(), exp.items()) 
+
 class TableTests(TestCase):
     def setUp(self):
         self.t1 = Table(array([]),[],[])
@@ -381,17 +413,43 @@ class DenseTableTests(TestCase):
         samp_ids = ['1','2','3','4']
         data = array([[1,2,3,4],[5,6,7,8],[8,9,10,11],[12,13,14,15]])
         obs_md = [{},{},{},{}]
-        samp_md = [{'age':2},{'age':4},{'age':2},{}]
+        samp_md = [{'age':2,'foo':10},{'age':4},{'age':2,'bar':5},{}]
         t = DenseTable(data, samp_ids, obs_ids, samp_md, obs_md)
         obs_bins, obs_tables = unzip(t.binSamplesByMetadata(f))
 
-        exp_bins = ((2), (4), (None))
+        exp_bins = (2, 4, None)
         exp1_data = array([[1,3],[5,7],[8,10],[12,14]])
-        exp1_obs_ids = ['a','c']
-        exp1_samp_ids = ['1','2','3','4']
+        exp1_obs_ids = ['a','b','c','d']
+        exp1_samp_ids = ['1','3']
         exp1_obs_md = [{},{},{},{}]
+        exp1_samp_md = [{'age':2,'foo':10},{'age':2,'bar':5}]
+        exp1 = DenseTable(exp1_data, exp1_samp_ids, exp1_obs_ids, exp1_samp_md, 
+                          exp1_obs_md)
+        exp2_data = array([[2],[6],[9],[13]])
+        exp2_obs_ids = ['a','b','c','d']
+        exp2_samp_ids = ['2']
+        exp2_obs_md = [{},{},{},{}]
+        exp2_samp_md = [{'age':4}]
+        exp2 = DenseTable(exp2_data, exp2_samp_ids, exp2_obs_ids, exp2_samp_md, 
+                          exp2_obs_md)
+        exp3_data = array([[4],[8],[11],[15]])
+        exp3_obs_ids = ['a','b','c','d']
+        exp3_samp_ids = ['4']
+        exp3_obs_md = [{},{},{},{}]
+        exp3_samp_md = [{'age':None}]
+        exp3 = DenseTable(exp3_data, exp3_samp_ids, exp3_obs_ids, exp3_samp_md, 
+                          exp3_obs_md)
+        exp_tables = (exp1, exp2, exp3)
+    
+        exp1_idx = obs_bins.index(exp_bins[0])
+        exp2_idx = obs_bins.index(exp_bins[1])
+        exp3_idx = obs_bins.index(exp_bins[2])
+        obs_sort = (obs_bins[exp1_idx], obs_bins[exp2_idx], obs_bins[exp3_idx])
+        self.assertEqual(obs_sort, exp_bins)
+        obs_sort = (obs_tables[exp1_idx], obs_tables[exp2_idx], 
+                    obs_tables[exp3_idx])
 
-        exp1 = DenseTable(exp_data)
+        self.assertEqual(obs_sort, exp_tables)
         
     def test_binObservationsByMetadata(self):
         """Yield tables binned by observation metadata"""
@@ -518,40 +576,6 @@ class SparseTableTests(TestCase):
         obs = self.st1._conv_to_self_type([{(0,0):5,(0,1):6,(0,2):7},
                                            {(1,0):8,(1,1):9,(1,2):10}])
         self.assertEqual(obs.items(), exp.items()) 
-
-        # passing a list of dicts, transpose
-        exp = ll_mat(3,2)
-        exp[0,0] = 5
-        exp[1,0] = 6
-        exp[2,0] = 7
-        exp[0,1] = 8
-        exp[1,1] = 9
-        exp[2,1] = 10
-        obs = self.st1._conv_to_self_type([{(0,0):5,(0,1):6,(0,2):7},
-                                           {(1,0):8,(1,1):9,(1,2):10}],
-                                           transpose=True)
-        self.assertEqual(obs.items(), exp.items())
-
-        # passing a list of ll_mat vectors. UGH
-        exp = ll_mat(2,3)
-        exp[0,0] = 5
-        exp[0,1] = 6
-        exp[0,2] = 7
-        exp[1,0] = 8
-        exp[1,1] = 9
-        exp[1,2] = 10
-        row1 = ll_mat(1,3)
-        row1[0,0] = 5
-        row1[0,1] = 6
-        row1[0,2] = 7
-        row2 = ll_mat(1,3)
-        row2[0,0] = 8
-        row2[0,1] = 9
-        row2[0,2] = 10
-        obs = self.st1._conv_to_self_type([row1, row2])
-        self.assertEqual(obs.items(), exp.items()) 
-        
-        self.fail("much of these tests should be pushed to test_to_ll_mat")
 
     def test_iter(self):
         """Should iterate over samples"""
