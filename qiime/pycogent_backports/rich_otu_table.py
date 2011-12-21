@@ -612,16 +612,15 @@ class Table(object):
 
         sample_metadata_f and observation_metadata_f define how to merge
         metadata between tables. The default is to just keep the metadata
-        associated to self. These functions are given both metadata dicts
-        and must return a single metadata dict
+        associated to self if self has metadata otherwise take metadata from
+        other. These functions are given both metadata dictsand must return 
+        a single metadata dict
 
-        NOTE: metadata is not merged. If there is metadata for self, that is 
-        retained. If there is not metadat for self, then the metadata from
-        other is retained.
-
-        NOTE: there is an implicit type conversion to float. Tables using
+        NOTE: There is an implicit type conversion to float. Tables using
         strings as the type are not supported. No check is currently in
         place.
+
+        NOTE: The return type is always that of self
         """
         # determine the sample order in the resulting table
         if Sample is 'union':
@@ -708,7 +707,7 @@ class Table(object):
         # walk over observations in our new order
         for obs_id, new_obs_idx in new_obs_order.iteritems():
             # create new vector for matrix values
-            new_vec = zeros(vec_length)
+            new_vec = zeros(vec_length, dtype='float')
 
             # see if the observation exists in other, if so, pull it out.
             # if not, set to the placeholder missing
