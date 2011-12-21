@@ -9,8 +9,6 @@ from collections import defaultdict, Hashable
 from pysparse.spmatrix import LLMatType, ll_mat
 from numpy import ndarray, asarray, array, newaxis, zeros
 from cogent.util.misc import unzip, flatten
-from qiime.format import get_biom_format_version_string,\
-        get_biom_format_url_string
 from qiime.util import get_qiime_library_version
 
 __author__ = "Daniel McDonald"
@@ -50,6 +48,15 @@ slice:
    ...i don't have internet right now so cannot report but this should be done
    soon
    """
+
+def get_biom_format_version_string():
+    """Returns the current Biom file format version."""
+    return "Biological Observation Matrix v0.9"
+ 
+def get_biom_format_url_string():
+    """Returns the current Biom file format description URL."""
+    return\
+     "http://www.qiime.org/svn_documentation/documentation/biom_format.html"
 
 class TableException(Exception):
     pass
