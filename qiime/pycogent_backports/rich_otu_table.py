@@ -264,7 +264,7 @@ class Table(object):
         if self._biom_matrix_type is None:
             raise TableException, "Cannot delimit self if I don't have data..."
 
-        samp_ids = delim.join(self.SampleIds)
+        samp_ids = delim.join(map(str, self.SampleIds))
         output = ['#RowIDs%s%s' % (delim, samp_ids)]
         
         for obs_id, obs_values in zip(self.ObservationIds, self._iter_obs()):

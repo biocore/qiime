@@ -733,9 +733,108 @@ class SparseTableTests(TestCase):
         self.assertRaises(TableException, self.st_rich.getBiomFormatObject)
     
     def test_binSamplesByMetadata(self):
-        self.fail("tested in DenseTable, needed in Sparse tests?")
+        """Yield tables binned by sample metadata"""
+        f = lambda x: x['age']
+        obs_ids = ['a','b','c','d']
+        samp_ids = ['1','2','3','4']
+        data = {(0,0):1,(0,1):2,(0,2):3,(0,3):4,
+                (1,0):5,(1,1):6,(1,2):7,(1,3):8,
+                (2,0):8,(2,1):9,(2,2):10,(2,3):11,
+                (3,0):12,(3,1):13,(3,2):14,(3,3):15}
+        obs_md = [{},{},{},{}]
+        samp_md = [{'age':2,'foo':10},{'age':4},{'age':2,'bar':5},{}]
+        t = SparseTable(to_ll_mat(data), samp_ids, obs_ids, samp_md, obs_md)
+        obs_bins, obs_tables = unzip(t.binSamplesByMetadata(f))
+
+        exp_bins = (2, 4, None)
+        exp1_data = to_ll_mat({(0,0):1,(0,1):3,(1,0):5,(1,1):7,(2,0):8,
+                               (2,1):10,(3,0):12,(3,1):14})
+        exp1_obs_ids = ['a','b','c','d']
+        exp1_samp_ids = ['1','3']
+        exp1_obs_md = [{},{},{},{}]
+        exp1_samp_md = [{'age':2,'foo':10},{'age':2,'bar':5}]
+        exp1 = SparseTable(exp1_data, exp1_samp_ids, exp1_obs_ids, exp1_samp_md, 
+                          exp1_obs_md)
+        exp2_data = to_ll_mat({(0,0):2,(1,0):6,(2,0):9,(3,0):13})
+        exp2_obs_ids = ['a','b','c','d']
+        exp2_samp_ids = ['2']
+        exp2_obs_md = [{},{},{},{}]
+        exp2_samp_md = [{'age':4}]
+        exp2 = SparseTable(exp2_data, exp2_samp_ids, exp2_obs_ids, exp2_samp_md, 
+                          exp2_obs_md)
+        exp3_data = to_ll_mat({(0,0):4,(1,0):8,(2,0):11,(3,0):15})
+        exp3_obs_ids = ['a','b','c','d']
+        exp3_samp_ids = ['4']
+        exp3_obs_md = [{},{},{},{}]
+        exp3_samp_md = [{'age':None}]
+        exp3 = SparseTable(exp3_data, exp3_samp_ids, exp3_obs_ids, exp3_samp_md, 
+                          exp3_obs_md)
+        exp_tables = (exp1, exp2, exp3)
+    
+        exp1_idx = obs_bins.index(exp_bins[0])
+        exp2_idx = obs_bins.index(exp_bins[1])
+        exp3_idx = obs_bins.index(exp_bins[2])
+        obs_sort = (obs_bins[exp1_idx], obs_bins[exp2_idx], obs_bins[exp3_idx])
+        self.assertEqual(obs_sort, exp_bins)
+        obs_sort = (obs_tables[exp1_idx], obs_tables[exp2_idx], 
+                    obs_tables[exp3_idx])
+
+        self.assertEqual(obs_sort, exp_tables)
+        
     def test_binObservationsByMetadata(self):
-        self.fail("tested in DenseTable, needed in Sparse tests?")
+        """Yield tables binned by observation metadata"""
+        def make_level_f(level):
+            def f(metadata):
+                return metadata['taxonomy'][:level]
+            return f
+
+        func_king = make_level_f(1)
+        func_phy = make_level_f(2)
+
+        obs_ids = ['a','b','c']
+        samp_ids = [1,2,3]
+        data = to_ll_mat({(0,0):1,(0,1):2,(0,2):3,
+                          (1,0):4,(1,1):5,(1,2):6,
+                          (2,0):7,(2,1):8,(2,2):9})
+        obs_md = [{"taxonomy":['k__a','p__b','c__c']},
+                  {"taxonomy":['k__a','p__b','c__d']},
+                  {"taxonomy":['k__a','p__c','c__e']}]
+        t = SparseTable(data, samp_ids, obs_ids, ObservationMetadata=obs_md)
+
+        exp_king_obs_ids = ['a','b','c']
+        exp_king_samp_ids = [1,2,3]
+        exp_king_data = to_ll_mat({(0,0):1,(0,1):2,(0,2):3,
+                                   (1,0):4,(1,1):5,(1,2):6,
+                                   (2,0):7,(2,1):8,(2,2):9})
+        exp_king_obs_md = [{"taxonomy":['k__a','p__b','c__c']},
+                           {"taxonomy":['k__a','p__b','c__d']},
+                           {"taxonomy":['k__a','p__c','c__e']}]
+        exp_king = SparseTable(data, exp_king_samp_ids, exp_king_obs_ids, 
+                              ObservationMetadata=exp_king_obs_md)
+        obs_bins, obs_king = unzip(t.binObservationsByMetadata(func_king))
+
+        self.assertEqual(obs_king, [exp_king])
+        self.assertEqual(obs_bins, [tuple(['k__a'])])
+
+        exp_phy1_obs_ids = ['a','b']
+        exp_phy1_samp_ids = [1,2,3]
+        exp_phy1_data = array([[1,2,3],[4,5,6]])
+        exp_phy1_data = to_ll_mat({(0,0):1,(0,1):2,(0,2):3,
+                                   (1,0):4,(1,1):5,(1,2):6})
+        exp_phy1_obs_md = [{"taxonomy":['k__a','p__b','c__c']},
+                           {"taxonomy":['k__a','p__b','c__d']}]
+        exp_phy1 = SparseTable(exp_phy1_data, exp_phy1_samp_ids, 
+                              exp_phy1_obs_ids, 
+                              ObservationMetadata=exp_phy1_obs_md)
+        exp_phy2_obs_ids = ['c']
+        exp_phy2_samp_ids = [1,2,3]
+        exp_phy2_data = to_ll_mat({(0,0):7,(0,1):8,(0,2):9})
+        exp_phy2_obs_md = [{"taxonomy":['k__a','p__c','c__e']}]
+        exp_phy2 = SparseTable(exp_phy2_data, exp_phy2_samp_ids,exp_phy2_obs_ids,
+                               ObservationMetadata=exp_phy2_obs_md)
+        obs_bins, obs_phy = unzip(t.binObservationsByMetadata(func_phy))
+        self.assertEqual(obs_phy, [exp_phy1, exp_phy2])
+        self.assertEqual(obs_bins, [('k__a','p__b'),('k__a','p__c')])
 
 class DenseOTUTableTests(TestCase):
     def setUp(self):
