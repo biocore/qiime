@@ -6,7 +6,7 @@ from cogent.util.misc import unzip
 from cogent.util.unit_test import TestCase, main
 from qiime.pycogent_backports.rich_otu_table import TableException, Table, \
     DenseTable, SparseTable, DenseOTUTable, SparseOTUTable, to_ll_mat, \
-    UnknownID
+    UnknownID, keep_self, index_list
 
 __author__ = "Daniel McDonald"
 __copyright__ = "Copyright 2007-2011, QIIME"
@@ -27,6 +27,26 @@ class SupportTests(TestCase):
         def f():
             raise TableException
         self.assertRaises(TableException, f)
+
+    def test_keep_self(self):
+        """prefer x"""
+        exp = 1
+        obs = keep_self(1,2)
+        self.assertEqual(obs, exp)
+
+        exp = 2
+        obs = keep_self(None, 2)
+        self.assertEqual(obs, exp)
+
+        exp = None
+        obs = keep_self(None,None)
+        self.assertEqual(obs,exp)
+
+    def test_index_list(self):
+        """returns a dict for list lookups"""
+        exp = {'a':2,'b':0,'c':1}
+        obs = index_list(['b','c','a'])
+        self.assertEqual(obs,exp)
 
     def test_to_ll_mat(self):
         """Convert to expected ll_mat types"""
@@ -89,6 +109,34 @@ class TableTests(TestCase):
         exp_obs = {3:0,4:1}
         self.assertEqual(self.simple_derived._sample_index, exp_samp)
         self.assertEqual(self.simple_derived._obs_index, exp_obs)
+    
+    def test_sampleExists(self):
+        """Verify samples exist!"""
+        self.assertTrue(self.simple_derived.sampleExists(1))
+        self.assertTrue(self.simple_derived.sampleExists(2))
+        self.assertFalse(self.simple_derived.sampleExists(3))
+
+    def test_observationExists(self):
+        """Verify observation exist!"""
+        self.assertTrue(self.simple_derived.observationExists(3))
+        self.assertTrue(self.simple_derived.observationExists(4))
+        self.assertFalse(self.simple_derived.observationExists(2))
+
+    def test_union_id_order(self):
+        """Combine unique ids, union"""
+        a = [1,2,3,4]
+        b = [3,4,5,6,0,'a']
+        exp = {1:0, 2:1, 3:2, 4:3, 5:4, 6:5, 0:6, 'a':7}
+        obs = self.t1._union_id_order(a,b)
+        self.assertEqual(obs,exp)
+
+    def test_intersect_id_order(self):
+        """Combine ids, intersection"""
+        a = [1,2,3,4]
+        b = [3,4,5,6,0,'a']
+        exp = {3:0, 4:1}
+        obs = self.t1._intersect_id_order(a,b)
+        self.assertEqual(obs,exp)
 
     def test_verify_metadata(self):
         """Make sure the metadata is sane (including obs/sample ids)"""
@@ -236,22 +284,97 @@ class TableTests(TestCase):
     def test_nonzeroBySamples(self):
         """Returns nonzero indices by samples"""
         self.fail()
+
     def test_nonzeroByObservation(self):
         """Returns nonzero indices by observation"""
         self.fail()
+
     def test_nonzero(self):
         """Returns nonzero indices within the matrix"""
         self.fail()
+
+    def test_merge(self):
+        """General merge method"""
+        # tests in derived classes
+        self.assertRaises(TableException, self.t1.merge, 'a','b','c')
+
+        # handle each axis indep: samples='intersection', observations='union'
     ### ADD TESTS FOR unionBySample, unionByObservation,
     ###               int
 class DenseTableTests(TestCase):
     def setUp(self):
         self.dt1 = DenseTable(array([[5,6],[7,8]]), ['a','b'],['1','2'])
         self.dt2 = DenseTable(array([[5,6],[7,8]]), ['a','b'],['1','2'])
+        self.dt3 = DenseTable(array([[1,2],[3,4]]), ['b','c'],['2','3'])
+        self.dt4 = DenseTable(array([[1,2],[3,4]]), ['c','d'],['3','4'])
         self.dt_rich = DenseTable(array([[5,6],[7,8]]), ['a','b'],['1','2'],
                 [{'barcode':'aatt'},{'barcode':'ttgg'}],
                 [{'taxonomy':['k__a','p__b']},{'taxonomy':['k__a','p__c']}])
-    
+
+    def test_merge(self):
+        """Merge two tables"""
+        i = 'intersection'
+        u = 'union'
+        # test 1
+        exp = DenseTable(array([[10.0,12.0],[14.0,16.0]]), ['a','b'],['1','2'])
+        obs = self.dt1.merge(self.dt1, Sample=u, Observation=u)
+        self.assertEqual(obs, exp)
+
+        # test 2
+        exp = DenseTable(array([[5,6,0],[7,9,2],[0,3,4]],dtype=float), 
+                            ['a','b','c'],['1','2','3'])
+        obs = self.dt1.merge(self.dt3, Sample=u, Observation=u)
+        self.assertEqual(obs, exp)
+        
+        # test 3
+        exp = DenseTable(array([[5,6,0,0],
+                                [7,8,0,0],
+                                [0,0,1,2],
+                                [0,0,3,4]], dtype=float),
+                               ['a','b','c','d'],['1','2','3','4'])
+        obs = self.dt1.merge(self.dt4, Sample=u, Observation=u)
+        self.assertEqual(obs, exp)
+
+        # test 4
+        exp = DenseTable(array([[10,12],[14,16]],dtype=float), ['a','b'], 
+                         ['1','2'])
+        obs = self.dt1.merge(self.dt1, Sample=i, Observation=i)
+        self.assertEqual(obs, exp)
+        
+        # test 5
+        exp = DenseTable(array([[9]],dtype=float), ['b'], ['2'])
+        obs = self.dt1.merge(self.dt3, Sample=i, Observation=i)
+        self.assertEqual(obs, exp)
+        
+        # test 6
+        obs = self.assertRaises(TableException, self.dt1.merge, self.dt4, i, i)
+
+        # test 7
+        exp = DenseTable(array([[10,12],[14,16]],dtype=float), ['a','b'],['1','2'])
+        obs = self.dt1.merge(self.dt2, Sample=i, Observation=u)
+        self.assertEqual(obs, exp)
+
+        # test 8
+        exp = DenseTable(array([[6],[9],[3]],dtype=float), ['b'],['1','2','3'])
+        obs = self.dt1.merge(self.dt3, Sample=i, Observation=u)
+        self.assertEqual(obs, exp)
+
+        # test 9
+        obs = self.assertRaises(TableException, self.dt1.merge, self.dt4, i, u)
+        
+        # test 10
+        exp = DenseTable(array([[10,12],[14,16]]), ['a','b'],['1','2'])
+        obs = self.dt1.merge(self.dt2, Sample=u, Observation=i)
+        self.assertEqual(obs, exp)
+
+        # test 11
+        exp = DenseTable(array([[7,9,2]]), ['a','b','c'],['2'])
+        obs = self.dt1.merge(self.dt3, Sample=u, Observation=i)
+        self.assertEqual(obs, exp)
+
+        # test 12
+        obs = self.assertRaises(TableException, self.dt1.merge, self.dt4, u, i)
+
     def test_sampleData(self):
         """tested in derived class"""
         exp = array([5,7])
@@ -579,12 +702,94 @@ class SparseTableTests(TestCase):
         self.vals = {(0,0):5,(0,1):6,(1,0):7,(1,1):8}
         self.st1 = SparseTable(to_ll_mat(self.vals),
                                ['a','b'],['1','2'])
+        self.vals3 = to_ll_mat({(0,0):1,(0,1):2,(1,0):3,(1,1):4})
+        self.vals4 = to_ll_mat({(0,0):1,(0,1):2,(1,0):3,(1,1):4})
+        self.st3 = SparseTable(self.vals3, ['b','c'],['2','3'])
+        self.st4 = SparseTable(self.vals4, ['c','d'],['3','4'])
         self._to_dict_f = lambda x: x.items()
         self.st_rich = SparseTable(to_ll_mat(self.vals), 
                 ['a','b'],['1','2'],
                 [{'barcode':'aatt'},{'barcode':'ttgg'}],
                 [{'taxonomy':['k__a','p__b']},{'taxonomy':['k__a','p__c']}])
 
+    def test_merge(self):
+        """Merge two tables"""
+        u = 'union'
+        i = 'intersection'
+        data = to_ll_mat({(0,0):10,(0,1):12,(1,0):14,(1,1):16})
+        exp = SparseTable(data, ['a','b'],['1','2'])
+        obs = self.st1.merge(self.st1, Sample=u, Observation=u)
+        self.assertEqual(obs, exp)
+
+        data = to_ll_mat({(0,0):5,(0,1):6,(0,2):0,(1,0):7,(1,1):9,(1,2):2,
+                          (2,0):0,(2,1):3,(2,2):4})
+        exp = SparseTable(data, ['a','b','c'], ['1','2','3'])
+        obs = self.st1.merge(self.st3, Sample=u, Observation=u)
+        self.assertEqual(obs, exp)
+        
+        data = to_ll_mat({(0,0):5,(0,1):6,(0,2):0,(0,3):0,
+                          (1,0):7,(1,1):8,(1,2):0,(1,3):0,
+                          (2,0):0,(2,1):0,(2,2):1,(2,3):2,
+                          (3,0):0,(3,1):0,(3,2):3,(3,3):4})
+        exp = SparseTable(data,['a','b','c','d'],['1','2','3','4'])
+        obs = self.st1.merge(self.st4, Sample=u, Observation=u)
+        self.assertEqual(obs, exp)
+
+        data = to_ll_mat({(0,0):10,(0,1):12,(1,0):14,(1,1):16})
+        exp = SparseTable(data, ['a','b'], ['1','2'])
+        obs = self.st1.merge(self.st1, Sample=i, Observation=i)
+        self.assertEqual(obs, exp)
+        
+        exp = SparseTable(to_ll_mat({(0,0):9}), ['b'], ['2'])
+        obs = self.st1.merge(self.st3, Sample=i, Observation=i)
+        self.assertEqual(obs, exp)
+        
+        self.assertRaises(TableException, self.st1.merge, self.st4, i, i)
+
+        data = to_ll_mat({(0,0):10,(0,1):12,(1,0):14,(1,1):16})
+        exp = SparseTable(data, ['a','b'],['1','2'])
+        obs = self.st1.merge(self.st1, Sample=i, Observation=u)
+        self.assertEqual(obs, exp)
+
+        data = to_ll_mat({(0,0):6,(1,0):9,(2,0):3})
+        exp = SparseTable(data, ['b'],['1','2','3'])
+        obs = self.st1.merge(self.st3, Sample=i, Observation=u)
+        self.assertEqual(obs, exp)
+
+        self.assertRaises(TableException, self.st1.merge, self.st4, i, u)
+
+        data = to_ll_mat({(0,0):10,(0,1):12,(1,0):14,(1,1):16})
+        exp = SparseTable(data, ['a','b'],['1','2'])
+        obs = self.st1.merge(self.st1, Sample=u, Observation=i)
+        self.assertEqual(obs, exp)
+
+        data = to_ll_mat({(0,0):7,(0,1):9,(0,2):2})
+        exp = SparseTable(data, ['a','b','c'],['2'])
+        obs = self.st1.merge(self.st3, Sample=u, Observation=i)
+        self.assertEqual(obs, exp)
+
+        self.assertRaises(TableException, self.st1.merge, self.st4, u, i)
+        self.fail("Test merging Dense and Sparse tables")
+
+    def test_sampleData(self):
+        """tested in derived class"""
+        exp = array([5,7])
+        obs = self.dt1.sampleData('a')
+        self.assertEqual(obs, exp)
+        self.assertRaises(UnknownID, self.dt1.sampleData, 'asdasd')
+
+    def test_observationData(self):
+        """tested in derived class"""
+        exp = array([5,6])
+        obs = self.dt1.observationData('1')
+        self.assertEqual(obs, exp)
+        self.assertRaises(UnknownID, self.dt1.observationData, 'asdsad')
+
+    def test_delimitedSelf(self):
+        """Print out self in a delimited form"""
+        exp = '\n'.join(["#RowIDs\ta\tb","1\t5\t6","2\t7\t8"])
+        obs = self.dt1.delimitedSelf()
+        self.assertEqual(obs,exp)
     def test_sampleData(self):
         """tested in derived class"""
         exp = array([5,7])

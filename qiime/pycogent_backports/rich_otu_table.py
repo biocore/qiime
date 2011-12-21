@@ -3,7 +3,7 @@
 from datetime import datetime
 from json import dumps
 from types import NoneType
-from operator import itemgetter, xor
+from operator import itemgetter, xor, add
 from itertools import izip
 from collections import defaultdict, Hashable
 from pysparse.spmatrix import LLMatType, ll_mat
@@ -159,7 +159,15 @@ def to_ll_mat(values, transpose=False):
                 mat[row,col] = val
 
         return mat
-    
+
+def keep_self(x,y):
+    """Merge metadata method, return X if X else Y"""
+    return x if x is not None else y
+
+def index_list(l):
+    """Takes a list and returns {l[idx]:idx}"""
+    return dict([(id_,idx) for idx,id_ in enumerate(l)])
+
 class Table(object):
     """ """
     _biom_type = None
@@ -185,8 +193,8 @@ class Table(object):
 
     def _index_ids(self):
         """Sets lookups {id:index in _data}"""
-        self._sample_index = dict([(s,i) for i,s in enumerate(self.SampleIds)])
-        self._obs_index=dict([(o,i) for i,o in enumerate(self.ObservationIds)])
+        self._sample_index = index_list(self.SampleIds)
+        self._obs_index = index_list(self.ObservationIds)
 
     def _conv_to_self_type(self, vals, transpose=False):
         """For converting vectors to a compatible self type"""
@@ -227,6 +235,11 @@ class Table(object):
         default_samp_md = []
         default_obs_md = []
    
+        # if we have a list of [None], set to None
+        if self.SampleMetadata is not None:
+            if self.SampleMetadata.count(None) == len(self.SampleMetadata):
+                self.SampleMetadata = None
+
         if self.SampleMetadata is not None:
             for samp_md in self.SampleMetadata:
                 d = defaultdict(lambda: None)
@@ -242,6 +255,12 @@ class Table(object):
                 default_samp_md.append(d)
             self.SampleMetadata = default_samp_md
 
+        # if we have a list of [None], set to None
+        if self.ObservationMetadata is not None:
+            none_count = self.ObservationMetadata.count(None)
+            if none_count == len(self.ObservationMetadata):
+                self.ObservationMetadata = None
+        
         if self.ObservationMetadata is not None:
             for obs_md in self.ObservationMetadata:
                 d = defaultdict(lambda: None)
@@ -273,6 +292,14 @@ class Table(object):
         Default str output for a Table is just row/col ids and data values
         """
         return self.delimitedSelf()
+
+    def sampleExists(self, id_):
+        """Returns True if sample exists, False otherwise"""
+        return id_ in self._sample_index
+
+    def observationExists(self, id_):
+        """Returns True if observation exists, False otherwise"""
+        return id_ in self._obs_index
 
     def delimitedSelf(self, delim='\t'):
         """Stringify self in a delimited form
@@ -547,6 +574,185 @@ class Table(object):
     #mergeTables, in place
         ### currently can only merge tables that do not have overlapping sample ids
         ### bail if overlapping
+
+    def _union_id_order(self, a, b):
+        """Determines merge order for id lists A and B"""
+        all_ids = a[:]
+        all_ids.extend(b[:])
+        new_order = {}
+        idx = 0
+        for id_ in all_ids:
+            if id_ not in new_order:
+                new_order[id_] = idx
+                idx += 1
+        return new_order
+    
+    def _intersect_id_order(self, a, b):
+        """Determines the merge order for id lists A and B"""
+        all_b = set(b[:])
+        new_order = {}
+        idx = 0
+        for id_ in a:
+            if id_ in all_b:
+                new_order[id_] = idx
+                idx += 1
+        return new_order
+
+    def merge(self, other, Sample='union', Observation='union', merge_f=add,
+            sample_metadata_f=keep_self, observation_metadata_f=keep_self):
+        """Merge two tables together
+
+        The axes, samples and observations, can be controlled independently. 
+        Both can either work on 'union' or 'intersection'. 
+
+        merge_f is a function that takes two arguments and returns a value. 
+        The method is parameterized so that values can be added or subtracted
+        where there is overlap in (sample_id, observation_id) values in the 
+        tables
+
+        sample_metadata_f and observation_metadata_f define how to merge
+        metadata between tables. The default is to just keep the metadata
+        associated to self. These functions are given both metadata dicts
+        and must return a single metadata dict
+
+        NOTE: metadata is not merged. If there is metadata for self, that is 
+        retained. If there is not metadat for self, then the metadata from
+        other is retained.
+
+        NOTE: there is an implicit type conversion to float. Tables using
+        strings as the type are not supported. No check is currently in
+        place.
+        """
+        # determine the sample order in the resulting table
+        if Sample is 'union':
+            new_samp_order = self._union_id_order(self.SampleIds, 
+                                                  other.SampleIds) 
+        elif Sample is 'intersection':
+            new_samp_order = self._intersect_id_order(self.SampleIds,
+                                                      other.SampleIds)
+        else:
+            raise TableException, "Unknown Sample merge type: %s" % Sample
+         
+        # determine the observation order in the resulting table
+        if Observation is 'union':
+            new_obs_order = self._union_id_order(self.ObservationIds, 
+                                                  other.ObservationIds) 
+        elif Observation is 'intersection':
+            new_obs_order = self._intersect_id_order(self.ObservationIds,
+                                                      other.ObservationIds)
+        else:
+            raise TableException, "Unknown observation merge type: %s" % Observation
+       
+        # if we don't have any samples, complain loudly. This is likely from 
+        # performing an intersection without overlapping ids
+        if not new_samp_order:
+            raise TableException, "No samples in resulting table!"
+        if not new_obs_order:
+            raise TableException, "No observations in resulting table!"
+
+        # helper index lookups
+        other_obs_idx = other._obs_index
+        self_obs_idx = self._obs_index
+        other_samp_idx = other._sample_index
+        self_samp_idx = self._sample_index
+
+        # pre-allocate the a list for placing the resulting vectors as the 
+        # placement id is not ordered
+        vals = [None for i in range(len(new_obs_order))] 
+       
+        ### POSSIBLE DECOMPOSITION
+        # resulting sample ids and sample metadata
+        sample_ids = []
+        sample_md = []
+        for id_,idx in sorted(new_samp_order.items(), key=itemgetter(1)):
+            sample_ids.append(id_)
+
+            # if we have sample metadata, grab it
+            if self.SampleMetadata is None:
+                self_md = None
+            else:
+                self_md = self.SampleMetadata[self_samp_idx[id_]]
+            
+            # if we have sample metadata, grab it
+            if other.SampleMetadata is None:
+                other_md = None
+            else:
+                other_md = other.SampleMetadata[other_samp_idx[id_]]
+
+            sample_md.append(sample_metadata_f(self_md, other_md))
+
+        ### POSSIBLE DECOMPOSITION
+        # resulting observation ids and sample metadata
+        obs_ids = []
+        obs_md = []
+        for id_,idx in sorted(new_obs_order.items(), key=itemgetter(1)):
+            obs_ids.append(id_)
+
+            # if we have observation metadata, grab it
+            if self.ObservationMetadata is None:
+                self_md = None
+            else:
+                self_md = self.ObservationMetadata[self_obs_idx[id_]]
+
+            # if we have observation metadata, grab it
+            if other.ObservationMetadata is None:
+                other_md = None
+            else:
+                other_md = other.ObservationMetadata[other_obs_idx[id_]]
+
+            obs_md.append(observation_metadata_f(self_md, other_md))
+
+        # length used for construction of new vectors
+        vec_length = len(new_samp_order)
+
+        # walk over observations in our new order
+        for obs_id, new_obs_idx in new_obs_order.iteritems():
+            # create new vector for matrix values
+            new_vec = zeros(vec_length)
+
+            # see if the observation exists in other, if so, pull it out.
+            # if not, set to the placeholder missing
+            if other.observationExists(obs_id):
+                other_vec = other.observationData(obs_id)
+            else:
+                other_vec = None
+
+            # see if the observation exists in self, if so, pull it out.
+            # if not, set to the placeholder missing
+            if self.observationExists(obs_id):
+                self_vec = self.observationData(obs_id)
+            else:
+                self_vec = None
+
+            ### do we want a sanity check to make sure that self_vec AND 
+            ### other_vec are not 'missing'??
+
+            # walk over samples in our new order
+            for samp_id, new_samp_idx in new_samp_order.iteritems():
+                # pull out each individual sample value. This is expensive, but
+                # the vectors are in a different alignment. It is possible that
+                # this could be improved with numpy take but needs to handle
+                # missing values appropriately
+                if self_vec is None or samp_id not in self_samp_idx:
+                    self_vec_value = 0
+                else:
+                    self_vec_value = self_vec[self_samp_idx[samp_id]]
+
+                if other_vec is None or samp_id not in other_samp_idx:
+                    other_vec_value = 0
+                else: 
+                    other_vec_value = other_vec[other_samp_idx[samp_id]]
+
+                # pass both values to our merge_f
+                new_vec[new_samp_idx] = merge_f(self_vec_value, 
+                                                other_vec_value)
+
+            # convert our new vector to self type as to make sure we don't
+            # accidently force a dense representation in memory
+            vals[new_obs_idx] = self._conv_to_self_type(new_vec)
+
+        return self.__class__(self._conv_to_self_type(vals), sample_ids, 
+                              obs_ids, sample_md, obs_md)
 
     def getBiomFormatObject(self):
         """Returns a dictionary representing the table in Biom format.
