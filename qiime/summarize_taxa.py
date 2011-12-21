@@ -3,7 +3,7 @@
 __author__ = "Rob Knight"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Rob Knight", "Catherine Lozupone", "Justin Kuczynski","Julia Goodrich", \
-               "Antonio Gonzalez Pena"]
+               "Antonio Gonzalez Pena", "Jose Carlos Clemente Litran"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Daniel McDonald"
@@ -17,7 +17,8 @@ from sys import stdout, stderr
 from optparse import OptionParser
 from string import strip
 from numpy import array
-from qiime.parse import parse_otu_table, parse_mapping_file
+# Unused
+#from qiime.parse import parse_otu_table, parse_mapping_file
 
 def make_summary(otu_table, level, upper_percentage, lower_percentage): 
     """Returns taxonomy summary data
@@ -29,7 +30,8 @@ def make_summary(otu_table, level, upper_percentage, lower_percentage):
     [[(taxon1),count,count,...],[(taxon2),count,count,...]...]
     """
     header = ['Taxon']
-    header.extend(otu_table[0]) # sample ids
+    #header.extend(otu_table[0]) # sample ids
+    header.extend(otu_table.SampleIds) # sample ids
 
     counts_by_consensus, sample_map = sum_counts_by_consensus(otu_table, level)
 
@@ -57,9 +59,12 @@ def sum_counts_by_consensus(otu_table, level, missing_name='Other'):
     until the taxonomy string is of length level
     """
     result = {}
-    sample_map = dict([(s,i) for i,s in enumerate(otu_table[0])])
+    #sample_map = dict([(s,i) for i,s in enumerate(otu_table[0])])
+    sample_map = dict([(s,i) for i,s in enumerate(otu_table.SampleIds)])
 
-    for counts, consensus in zip(otu_table[2], otu_table[3]):
+    #for counts, consensus in zip(otu_table[2], otu_table[3]):
+    for (otu_val, otu_ids, otu_metadata) in otu_table.iterObservations():
+        consensus = otu_metadata['taxonomy']
         n_ranks = len(consensus)
         if n_ranks > level:
             consensus = consensus[:level]
@@ -71,9 +76,11 @@ def sum_counts_by_consensus(otu_table, level, missing_name='Other'):
 
         consensus = tuple(consensus)
         if consensus in result:
-            result[consensus] += counts
+            #result[consensus] += counts
+            result[consensus] += otu_val
         else:
-            result[consensus] = counts.copy()
+            #result[consensus] = counts.copy()
+            result[consensus] = otu_val.copy()
 
     return result, sample_map
 
