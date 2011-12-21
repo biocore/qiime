@@ -16,6 +16,7 @@ from numpy import isnan, log10, median
 from StringIO import StringIO
 from cogent import Sequence
 from re import compile, sub
+from qiime.pycogent_backports.rich_otu_table import DenseOTUTable
 
 """Contains formatters for the files we expect to encounter in 454 workflow.
 
@@ -191,7 +192,7 @@ def format_matrix(data, row_names, col_names):
             raise ValueError, "Unsupported data type for format_matrix"
 
     lines = []
-    row_names = map(str, row_names)   
+    row_names = map(str, row_names) 
     col_names = map(str, col_names)   
     #just in case they weren't strings initially
     lines.append('\t'.join([''] + col_names))
@@ -200,6 +201,22 @@ def format_matrix(data, row_names, col_names):
     return '\n'.join(lines)
 
 def format_otu_table(sample_names, otu_names, data, taxonomy=None,
+    comment=None, skip_empty=False,legacy=True):
+    """Returns string representing OTU table as biom file
+    """
+    print "Deprecation Warning: you should not be using format_otu_table (what is this, 2011?)"
+    if taxonomy != None:
+        def strip_f(s):
+            return s.strip()
+        taxonomy = [{'taxonomy':map(strip_f,t.split(';'))} for t in taxonomy]
+    otu_table = DenseOTUTable(Data=data,
+                              SampleIds=sample_names, 
+                              ObservationIds=otu_names,
+                              ObservationMetadata=taxonomy)
+    return otu_table.getBiomFormatJsonString()
+
+
+def _format_otu_table(sample_names, otu_names, data, taxonomy=None,
     comment=None, skip_empty=False,legacy=True):
     """Writes OTU table as tab-delimited text.
     
@@ -571,11 +588,4 @@ def illumina_data_to_fastq(record_data,number_of_bases=None):
     
     return '@%s\n%s\n+\n%s' % (header,seq,qual), pass_filter
 
-def get_biom_format_version_string():
-    """Returns the current Biom file format version."""
-    return "Biological Observation Matrix v0.9"
 
-def get_biom_format_url_string():
-    """Returns the current Biom file format description URL."""
-    return\
-        "http://www.qiime.org/svn_documentation/documentation/biom_format.html"

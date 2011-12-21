@@ -10,12 +10,23 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
+import json
 from cogent.util.unit_test import TestCase, main
 from qiime.make_otu_table import (libs_from_seqids,
         seqids_from_otu_to_seqid, make_otu_table, remove_otus)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
+    
+    def assertEqualOtuTable(self,obs,exp):
+        """ """
+        obs = json.loads(obs)
+        exp = json.loads(exp)
+        for e in ['generated_by','date']:
+            del obs[e]
+            del exp[e]
+        self.assertEqual(obs,exp)
+    
     def test_libs_from_seqids(self):
         """libs_from_seqids should identify correct libs"""
         seqids = ['ABC_001', 'DEF_002', 'ABC_003', 'GHI_JKL_001']
@@ -29,39 +40,6 @@ class TopLevelTests(TestCase):
             set(['ABC_0', 'DEF_1', 'GHI_2']))
 
 
-    def test_make_otu_table_no_taxonomy_legacy(self):
-        """make_otu_table should work without tax (legacy OTU table)"""
-        otu_to_seqid ={ '0':['ABC_0','DEF_1'],
-                        '1':['ABC_1'],
-                        'x':['GHI_2', 'GHI_3','GHI_77'],
-                        'z':['DEF_3','XYZ_1']
-                        }
-        obs = make_otu_table(otu_to_seqid)
-        exp = """# QIIME v%s OTU table
-#OTU ID\tABC\tDEF\tGHI\tXYZ
-0\t1\t1\t0\t0
-1\t1\t0\t0\t0
-x\t0\t0\t3\t0
-z\t0\t1\t0\t1""" % __version__
-        self.assertEqual(obs, exp)
-
-    def test_make_otu_table_taxonomy_legacy(self):
-        """make_otu_table should work wit tax (legacy OTU table)"""
-        otu_to_seqid ={ '0':['ABC_0','DEF_1'],
-                        '1':['ABC_1'],
-                        'x':['GHI_2', 'GHI_3','GHI_77'],
-                        'z':['DEF_3','XYZ_1']
-                        }
-        taxonomy = {'0':'Bacteria;Firmicutes', 'x':'Bacteria;Bacteroidetes'}
-        obs = make_otu_table(otu_to_seqid, taxonomy)
-        exp = """# QIIME v%s OTU table
-#OTU ID\tABC\tDEF\tGHI\tXYZ\tConsensus Lineage
-0\t1\t1\t0\t0\tBacteria;Firmicutes
-1\t1\t0\t0\t0\tNone
-x\t0\t0\t3\t0\tBacteria;Bacteroidetes
-z\t0\t1\t0\t1\tNone""" % __version__
-        self.assertEqual(obs, exp)
-
     def test_make_otu_table_no_taxonomy(self):
         """make_otu_table should work without tax (new-style OTU table)"""
         otu_to_seqid ={ '0':['ABC_0','DEF_1'],
@@ -70,13 +48,8 @@ z\t0\t1\t0\t1\tNone""" % __version__
                         'z':['DEF_3','XYZ_1']
                         }
         obs = make_otu_table(otu_to_seqid, legacy=False)
-        exp = """# QIIME v%s OTU table
-OTU ID\tABC\tDEF\tGHI\tXYZ
-0\t1\t1\t0\t0
-1\t1\t0\t0\t0
-x\t0\t0\t3\t0
-z\t0\t1\t0\t1""" % __version__
-        self.assertEqual(obs, exp)
+        exp = """{"rows": [{"id": "0", "metadata": null}, {"id": "1", "metadata": null}, {"id": "x", "metadata": null}, {"id": "z", "metadata": null}], "format": "Biological Observation Matrix v0.9", "data": [[1, 1, 0, 0], [1, 0, 0, 0], [0, 0, 3, 0], [0, 1, 0, 1]], "columns": [{"id": "ABC", "metadata": null}, {"id": "DEF", "metadata": null}, {"id": "GHI", "metadata": null}, {"id": "XYZ", "metadata": null}], "generated_by": "QIIME 1.4.0-dev, svn revision 2532", "matrix_type": "dense", "shape": [4, 4], "format_url": "http://www.qiime.org/svn_documentation/documentation/biom_format.html", "date": "2011-12-21T00:49:15.978315", "type": "OTU table", "id": null, "matrix_element_type": "int"}"""
+        self.assertEqualOtuTable(obs, exp)
 
     def test_make_otu_table_taxonomy(self):
         """make_otu_table should work wit tax (new-style OTU table)"""
@@ -87,13 +60,8 @@ z\t0\t1\t0\t1""" % __version__
                         }
         taxonomy = {'0':'Bacteria;Firmicutes', 'x':'Bacteria;Bacteroidetes'}
         obs = make_otu_table(otu_to_seqid, taxonomy, legacy=False)
-        exp = """# QIIME v%s OTU table
-OTU ID\tABC\tDEF\tGHI\tXYZ\tConsensus Lineage
-0\t1\t1\t0\t0\tBacteria;Firmicutes
-1\t1\t0\t0\t0\tNone
-x\t0\t0\t3\t0\tBacteria;Bacteroidetes
-z\t0\t1\t0\t1\tNone""" % __version__
-        self.assertEqual(obs, exp)
+        exp = """{"rows": [{"id": "0", "metadata": {"taxonomy": ["Bacteria", "Firmicutes"]}}, {"id": "1", "metadata": {"taxonomy": ["None"]}}, {"id": "x", "metadata": {"taxonomy": ["Bacteria", "Bacteroidetes"]}}, {"id": "z", "metadata": {"taxonomy": ["None"]}}], "format": "Biological Observation Matrix v0.9", "data": [[1, 1, 0, 0], [1, 0, 0, 0], [0, 0, 3, 0], [0, 1, 0, 1]], "columns": [{"id": "ABC", "metadata": null}, {"id": "DEF", "metadata": null}, {"id": "GHI", "metadata": null}, {"id": "XYZ", "metadata": null}], "generated_by": "QIIME 1.4.0-dev, svn revision 2532", "matrix_type": "dense", "shape": [4, 4], "format_url": "http://www.qiime.org/svn_documentation/documentation/biom_format.html", "date": "2011-12-21T00:19:30.961477", "type": "OTU table", "id": null, "matrix_element_type": "int"}"""
+        self.assertEqualOtuTable(obs, exp)
         
     def test_remove_otus(self):
         """remove_otus functions as expected """
