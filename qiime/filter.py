@@ -12,10 +12,10 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
 from random import shuffle
-from numpy import array
+from numpy import array, inf
 from cogent.parse.fasta import MinimalFastaParser
 from qiime.parse import parse_otu_table, parse_distmat, parse_mapping_file
-from qiime.format import format_otu_table, format_distance_matrix
+from qiime.format import format_otu_table, format_distance_matrix, format_mapping_file
 from qiime.filter_by_metadata import (parse_metadata_state_descriptions,
                                       get_sample_ids)
 
@@ -45,6 +45,14 @@ def filter_fasta(input_seqs,output_seqs_f,seqs_to_keep,negate=False):
         if keep_seq(seq_id):
             output_seqs_f.write('>%s\n%s\n' % (seq_id, seq))
     output_seqs_f.close()
+
+def filter_mapping_file(mapping_f,sample_ids_to_keep):
+    mapping_data, header, comments = parse_mapping_file(mapping_f)
+    filtered_mapping_data = []
+    for entry in mapping_data:
+        if entry[0] in sample_ids_to_keep:
+            filtered_mapping_data.append(entry)
+    return format_mapping_file(header,filtered_mapping_data)
 
 def filter_samples_from_distance_matrix(dm,samples_to_discard,negate=False):
     """ Remove specified samples from distance matrix 
