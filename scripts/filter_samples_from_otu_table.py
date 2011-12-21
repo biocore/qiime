@@ -98,7 +98,7 @@ def main():
     
     if output_mapping_fp:
         filtered_mapping_str = \
-         filter_mapping_file(open(mapping_fp,'U'),sample_ids_to_keep)
+         filter_mapping_file(open(mapping_fp,'U'),filtered_otu_table.SampleIds)
         open(output_mapping_fp,'w').write(filtered_mapping_str)
         
 
