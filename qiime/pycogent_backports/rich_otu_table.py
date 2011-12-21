@@ -572,14 +572,14 @@ class Table(object):
                 get_qiime_library_version()
         biom_format_obj["date"] = "%s" % datetime.now().isoformat()
 
-        # Determine what type of table we are (i.e. OTU table) and what type of
-        # matrix we are storing (i.e. sparse or dense).
+        # Determine if we have any data in the matrix, and what the shape of
+        # the matrix is.
         try:
             num_rows, num_cols = self._data.shape
         except:
             num_rows = num_cols = 0
         hasData = True if num_rows > 0 and num_cols > 0 else False
-        
+
         # Default the matrix element type to test to be an integer in case we
         # don't have any data in the matrix to test.
         test_element = 0
@@ -626,7 +626,7 @@ class Table(object):
 
         # Fill in details about the columns in the table.
         biom_format_obj["columns"] = []
-        for samp_index, samp in enumerate(self.iterSamples()):
+        for samp in self.iterSamples():
             biom_format_obj["columns"].append(
                     {"id" : "%s" % samp[1], "metadata" : samp[2]})
         return biom_format_obj
