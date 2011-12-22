@@ -30,6 +30,11 @@ class ParseTests(TestCase):
         self.files_to_remove = []
         self.biom_minimal_dense = biom_minimal_dense
         self.biom_minimal_sparse = biom_minimal_sparse
+        
+        self.classic_otu_table1_w_tax = classic_otu_table1_w_tax.split('\n')
+        self.classic_otu_table1_no_tax = classic_otu_table1_no_tax.split('\n')
+        self.biom_otu_table1_w_tax = biom_otu_table1_w_tax.split('\n')
+        self.biom_otu_table1_no_tax = biom_otu_table1_no_tax.split('\n')
     
     def tearDown(self):
         remove_files(self.files_to_remove)
@@ -121,13 +126,44 @@ class ParseTests(TestCase):
         self.assertEqual((tab2.ObservationIds),['GG_OTU_1','GG_OTU_2',
             'GG_OTU_3','GG_OTU_4','GG_OTU_5'])
 
-    # def test_otu_table_biom_conversions(self):
-    #     """ converting between classic otu table and biom is roundtrip-able 
-    #     """
-    #     input_biom = self.input_biome
-    #     parsed_classic_otu_table1_w_tax = parse_otu_table(self.classic_otu_table1_w_tax.split('\n'))
-    #     actual = parse.convert_biom_to_otu_table(self.classic_otu_table1_w_tax)
-    #     parse.convert_otu_table_to_biom()
+    def test_otu_table_biom_conversions_with_taxonomy(self):
+        """ converting between classic otu table and biom is roundtrip-able (w taxonomy)
+        """
+        # parse the classic otu table (w tax)
+        parsed_classic_otu_table1_w_tax = parse_otu_table(self.classic_otu_table1_w_tax)
+        
+        # convert the classic otu table to a biom file, and then convert the biom file
+        # to a classic otu table (i.e., roundtrip the file)
+        roundtripped_classic_otu_table1_w_tax =\
+          parse.convert_biom_to_otu_table(
+            parse.convert_otu_table_to_biom(self.classic_otu_table1_w_tax))
+        
+        # parse the roundtripped file
+        parsed_roundtripped_classic_otu_table1_w_tax = \
+         parse_otu_table(roundtripped_classic_otu_table1_w_tax.split('\n'))
+        
+        # compare the parsed roundtripped file to the parsed input file
+        self.assertEqual(parsed_roundtripped_classic_otu_table1_w_tax,
+                         parsed_classic_otu_table1_w_tax)
+
+    def test_otu_table_biom_conversions_no_taxonomy(self):
+        """ converting between classic otu table and biom is roundtrip-able (no taxonomy)
+        """
+        # parse the classic otu table (no tax)
+        parsed_classic_otu_table1_no_tax = parse_otu_table(self.classic_otu_table1_no_tax)
+        
+        # convert the classic otu table to a biom file, and then convert the biom file
+        # to a classic otu table (i.e., roundtrip the file)
+        roundtripped_classic_otu_table1_no_tax =\
+          parse.convert_biom_to_otu_table(
+            parse.convert_otu_table_to_biom(self.classic_otu_table1_no_tax))
+        # parse the roundtripped file
+        parsed_roundtripped_classic_otu_table1_no_tax = \
+         parse_otu_table(roundtripped_classic_otu_table1_no_tax.split('\n'))
+        
+        # compare the parsed roundtripped file to the parsed input file
+        self.assertEqual(parsed_roundtripped_classic_otu_table1_no_tax,
+                         parsed_classic_otu_table1_no_tax)
 
 legacy_otu_table1 = """# some comment goes here
 #OTU ID	Fing	Key	NA	Consensus Lineage

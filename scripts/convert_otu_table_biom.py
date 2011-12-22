@@ -47,11 +47,17 @@ def main():
     count_map_f = int
     
     if biom_to_classic_otu_table:
-        output_f.write(convert_biom_to_otu_table(input_f))
+        try:
+            output_f.write(convert_biom_to_otu_table(input_f))
+        except ValueError:
+            raise ValueError, "Input does not look like a .biom file. Did you accidentally specify -b?"
     else:
-        output_f.write(convert_otu_table_to_biom(input_f,
-                                                 count_map_f,
-                                                 dense))
+        try:
+            output_f.write(convert_otu_table_to_biom(input_f,
+                                                     count_map_f,
+                                                     dense))
+        except ValueError:
+            raise ValueError, "Input does not look like a classic OTU table. Do you need to pass -b?"
     input_f.close()
     output_f.close()
     

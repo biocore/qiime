@@ -145,7 +145,7 @@ def parse_otu_table_to_rich_otu_table(lines,count_map_f=int,dense=False):
         SampleMetadata=None, ObservationMetadata=metadata)
     return(table_obj)
 
-def convert_otu_table_to_biom(otu_table_f,count_map_f,dense):
+def convert_otu_table_to_biom(otu_table_f,count_map_f=int,dense=False):
     """ """
     otu_table = parse_otu_table_to_rich_otu_table(otu_table_f,
                                                   count_map_f=count_map_f,
@@ -155,7 +155,11 @@ def convert_otu_table_to_biom(otu_table_f,count_map_f,dense):
 def convert_biom_to_otu_table(biom_f):
     """ """
     otu_table = parse_biom_table(biom_f)
-    return otu_table.delimitedSelf(header_key='taxonomy', 
-                                   header_value='Consensus Lineage',
-                                   metadata_formatter=lambda x: ';'.join(x))
+    if otu_table.ObservationMetadata != None and \
+       'taxonomy' in otu_table.ObservationMetadata[0]:
+        return otu_table.delimitedSelf(header_key='taxonomy', 
+                                       header_value='Consensus Lineage',
+                                       metadata_formatter=lambda x: ';'.join(x))
+    else:        
+        return otu_table.delimitedSelf()
 
