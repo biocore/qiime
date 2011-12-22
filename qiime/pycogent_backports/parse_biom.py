@@ -20,7 +20,7 @@ def parse_biom_table(json_fh):
     note that sparse here refers to the compressed format of [row,col,count]
     dense refers to the full / standard matrix representations
     """
-    return parse_biom_table_str(json_fh.read())
+    return parse_biom_table_str(''.join(json_fh))
 
 def parse_biom_table_str(json_str):
     """Parses a JSON string of the Biom table into a rich otu table object."""
@@ -144,4 +144,18 @@ def parse_otu_table_to_rich_otu_table(lines,count_map_f=int,dense=False):
         SampleIds=sample_ids, ObservationIds=otu_ids,
         SampleMetadata=None, ObservationMetadata=metadata)
     return(table_obj)
+
+def convert_otu_table_to_biom(otu_table_f,count_map_f,dense):
+    """ """
+    otu_table = parse_otu_table_to_rich_otu_table(otu_table_f,
+                                                  count_map_f=count_map_f,
+                                                  dense=dense)
+    return otu_table.getBiomFormatJsonString()
+
+def convert_biom_to_otu_table(biom_f):
+    """ """
+    otu_table = parse_biom_table(biom_f)
+    return otu_table.delimitedSelf(header_key='taxonomy', 
+                                   header_value='Consensus Lineage',
+                                   metadata_formatter=lambda x: ';'.join(x))
 
