@@ -738,8 +738,8 @@ class DenseTableTests(TestCase):
 
     def test_data_equality(self):
         """check equality between tables"""
-        # handle diff table types too
-        self.fail()
+        self.assertTrue(self.dt1 == self.dt1)
+        self.assertFalse(self.dt1 == self.dt3)
 
     def test_eq(self):
         """eq is defined by equality of data matrix, ids and metadata"""
@@ -1010,6 +1010,8 @@ class SparseTableTests(TestCase):
         self.vals = {(0,0):5,(0,1):6,(1,0):7,(1,1):8}
         self.st1 = SparseTable(to_ll_mat(self.vals),
                                ['a','b'],['1','2'])
+        self.st2 = SparseTable(to_ll_mat(self.vals),
+                               ['a','b'],['1','2'])
         self.vals3 = to_ll_mat({(0,0):1,(0,1):2,(1,0):3,(1,1):4})
         self.vals4 = to_ll_mat({(0,0):1,(0,1):2,(1,0):3,(1,1):4})
         self.st3 = SparseTable(self.vals3, ['b','c'],['2','3'])
@@ -1022,11 +1024,19 @@ class SparseTableTests(TestCase):
 
     def test_eq(self):
         """sparse equality"""
-        self.fail()
+        self.assertTrue(self.st1 == self.st2)
+        self.st1.ObservationIds = [1,2,3]
+        self.assertFalse(self.st1 == self.st2)
+
+        self.st1.ObservationIds = self.st2.ObservationIds
+        self.st1._data = nparray_to_ll_mat(array([[1,2],[10,20]]))
+        self.assertFalse(self.st1 == self.st2)
 
     def test_data_equality(self):
         """check equality between tables"""
-        self.fail()
+        self.assertTrue(self.st1._data_equality(self.st2))
+        self.assertTrue(self.st1._data_equality(self.st1))
+        self.assertFalse(self.st1._data_equality(self.st3))
 
     def test_nonzero(self):
         """Return a list of nonzero positions"""
@@ -1540,6 +1550,12 @@ class DenseSparseInteractionTests(TestCase):
                 ['a','b'],['1','2'],
                 [{'barcode':'aatt'},{'barcode':'ttgg'}],
                 [{'taxonomy':['k__a','p__b']},{'taxonomy':['k__a','p__c']}])
+
+    def test_data_equality(self):
+        """Test equality between table types"""
+        self.assertTrue(self.dt1 == self.st1)
+        self.assertFalse(self.st3 == self.dt4)
+        self.assertFalse(self.st_rich == self.dt1)
 
     def test_merge(self):
         """Should be able to merge regardless of table types"""

@@ -838,7 +838,14 @@ class SparseTable(Table):
    
     def _data_equality(self, other):
         """Two pysparse matrices are equal if the items are equal"""
-        return self._data.items() == other._data.items()
+        if isinstance(self, other.__class__):
+            return self._data.items() == other._data.items()
+        
+        for s_v, o_v in izip(self.iterSampleData(),other.iterSampleData()):
+            if not (s_v == o_v).all():
+                return False
+    
+        return True
 
     def _conv_to_np(self, v):
         """Converts a vector to a numpy array
@@ -869,13 +876,6 @@ class SparseTable(Table):
         """Defined by subclass"""
         return self.iterSamples()
 
-    def __eq__(self, other):
-        """Equality is based on table data"""
-        if self._data.items() == other._data.items():
-            return True
-        else:
-            return False
-
     ### this method is type conversion heavy... but only fix if a burden when
     ### in use
     def _iter_samp(self):
@@ -902,7 +902,14 @@ class DenseTable(Table):
 
     def _data_equality(self, other):
         """Checks if the data matrices are equal"""
-        return (self._data == other._data).all()
+        if isinstance(self, other.__class__):
+            return (self._data == other._data).all()
+        
+        for s_v, o_v in izip(self.iterSampleData(),other.iterSampleData()):
+            if not (s_v == o_v).all():
+                return False
+    
+        return True
 
     def _conv_to_np(self, v):
         """Converts a vector to a numpy array"""
