@@ -11,13 +11,15 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
  
+from StringIO import StringIO
 from numpy import inf
 from cogent.util.unit_test import TestCase, main
 from cogent.parse.tree import DndParser
 from qiime.pycogent_backports.parse_biom import parse_biom_table_str
-from qiime.parse import parse_distmat
+from qiime.parse import (parse_distmat, parse_mapping_file, 
+                         parse_metadata_state_descriptions)
 from qiime.filter import (filter_fasta,filter_samples_from_otu_table,
-                          filter_otus_from_otu_table,
+                          filter_otus_from_otu_table,get_sample_ids,
                           filter_samples_from_distance_matrix,
                           negate_tips_to_keep,filter_mapping_file)
 
@@ -40,6 +42,9 @@ class FilterTests(TestCase):
         self.input_dm1 = input_dm1.split('\n')
         self.expected_dm1a = expected_dm1a.split('\n')
         self.expected_dm1b = expected_dm1b.split('\n')
+        self.map_str = map_str
+        self.map_data, self.map_headers, self.map_comments =\
+         parse_mapping_file(StringIO(self.map_str))
         
         
     def tearDown(self):
@@ -65,7 +70,8 @@ class FilterTests(TestCase):
         tips_to_keep = ["S7","S3","seq6","s2","S5","Seq1"]
         expected = []
         self.assertEqualItems(negate_tips_to_keep(tips_to_keep,t),expected)
-        
+
+
         
     def test_filter_fasta(self):
         """filter_fasta functions as expected """
@@ -268,6 +274,27 @@ class FilterTests(TestCase):
                                                         ['PC.354','PC.636'])
         self.assertEqual(actual_filtered_mapping_f,expected_mapping_f1)
 
+    def test_get_sample_ids(self):
+        """get_sample_ids should return sample ids matching criteria."""
+        self.assertEqual(get_sample_ids(self.map_data, self.map_headers,\
+            parse_metadata_state_descriptions('Study:Twin')), [])
+        self.assertEqual(get_sample_ids(self.map_data, self.map_headers,\
+            parse_metadata_state_descriptions('Study:Dog')), ['a','b'])
+        self.assertEqual(get_sample_ids(self.map_data, self.map_headers,\
+            parse_metadata_state_descriptions('Study:*,!Dog')), ['c','d','e'])
+        self.assertEqual(get_sample_ids(self.map_data, self.map_headers,\
+            parse_metadata_state_descriptions('Study:*,!Dog;BodySite:Stool')), ['e'])
+        self.assertEqual(get_sample_ids(self.map_data, self.map_headers,\
+            parse_metadata_state_descriptions('BodySite:Stool')), ['a','b','e'])
+
+
+
+map_str = """#SampleID\tStudy\tBodySite\tDescription
+a\tDog\tStool\tx
+b\tDog\tStool\ty
+c\tHand\tPalm\tz
+d\tWholeBody\tPalm\ta
+e\tWholeBody\tStool\tb"""
 
 filter_fasta_expected1 = """>Seq1 some comment
 ACCTTGG

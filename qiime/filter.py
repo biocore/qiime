@@ -14,10 +14,8 @@ __status__ = "Development"
 from random import shuffle
 from numpy import array, inf
 from cogent.parse.fasta import MinimalFastaParser
-from qiime.parse import parse_otu_table, parse_distmat, parse_mapping_file
+from qiime.parse import parse_otu_table, parse_distmat, parse_mapping_file, parse_metadata_state_descriptions
 from qiime.format import format_otu_table, format_distance_matrix, format_mapping_file
-from qiime.filter_by_metadata import (parse_metadata_state_descriptions,
-                                      get_sample_ids)
 
 def sample_ids_from_metadata_description(mapping_f,valid_states_str):
     """ Given a description of metadata, return the corresponding sample ids
@@ -26,6 +24,32 @@ def sample_ids_from_metadata_description(mapping_f,valid_states_str):
     valid_states = parse_metadata_state_descriptions(valid_states_str)
     sample_ids = get_sample_ids(map_data, map_header, valid_states)
     return sample_ids
+
+def get_sample_ids(map_data, map_header, states):
+    """Takes col states in {col:[vals]} format.
+
+    If val starts with !, exclude rather than include.
+    
+    Combines cols with and, states with or.
+
+    For example, Study:Dog,Hand will return rows where Study is Dog or Hand;
+    Study:Dog,Hand;BodySite:Palm,Stool will return rows where Study is Dog
+    or Hand _and_ BodySite is Palm or Stool; Study:*,!Dog;BodySite:*,!Stool
+    will return all rows except the ones where the Study is Dog or the BodySite
+    is Stool.
+    """
+    
+    name_to_col = dict([(s,map_header.index(s)) for s in states])
+    good_ids = []
+    for row in map_data:    #remember to exclude header
+        include = True
+        for s, vals in states.items():
+            curr_state = row[name_to_col[s]]
+            include = include and (curr_state in vals or '*' in vals) \
+                and not '!'+curr_state in vals
+        if include:        
+            good_ids.append(row[0])
+    return good_ids
 
 
 def filter_fasta(input_seqs,output_seqs_f,seqs_to_keep,negate=False):
