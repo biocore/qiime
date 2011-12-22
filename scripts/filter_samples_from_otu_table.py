@@ -79,6 +79,9 @@ def main():
         option_parser.error("No filtering requested. Must provide either "
                      "mapping_fp and valid states, min counts, or "
                      "max counts (or some combination of those).")
+    if output_mapping_fp and not mapping_fp:
+        option_parser.error("Must provide input mapping file to generate"
+                            " output mapping file.")
 
     otu_table = parse_biom_table(open(opts.input_fp,'U'))
     output_f = open(opts.output_fp,'w')
@@ -96,6 +99,7 @@ def main():
     output_f.write(filtered_otu_table.getBiomFormatJsonString())
     output_f.close()
     
+    # filter mapping file if requested
     if output_mapping_fp:
         filtered_mapping_str = \
          filter_mapping_file(open(mapping_fp,'U'),filtered_otu_table.SampleIds)
