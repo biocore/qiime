@@ -743,15 +743,15 @@ class DenseTableTests(TestCase):
 
     def test_delimitedSelf(self):
         """Print out self in a delimited form"""
-        exp = '\n'.join(["# Constructed from biom file","#OTU IDs\ta\tb","1\t5\t6","2\t7\t8"])
+        exp = '\n'.join(["# Constructed from biom file","#OTU ID\ta\tb","1\t5\t6","2\t7\t8"])
         obs = self.dt1.delimitedSelf()
         self.assertEqual(obs,exp)
 
-        exp = '\n'.join(["# Constructed from biom file","#OTU IDs\ta\tb\tFOO","1\t5\t6\t['k__a', 'p__b']","2\t7\t8\t['k__a', 'p__c']"])
+        exp = '\n'.join(["# Constructed from biom file","#OTU ID\ta\tb\tFOO","1\t5\t6\t['k__a', 'p__b']","2\t7\t8\t['k__a', 'p__c']"])
         obs = self.dt_rich.delimitedSelf(header_key='taxonomy', header_value='FOO')
         self.assertEqual(obs,exp)
         
-        exp = '\n'.join(["# Constructed from biom file","#OTU IDs\ta\tb\tFOO","1\t5\t6\tk__a; p__b","2\t7\t8\tk__a; p__c"])
+        exp = '\n'.join(["# Constructed from biom file","#OTU ID\ta\tb\tFOO","1\t5\t6\tk__a; p__b","2\t7\t8\tk__a; p__c"])
         obs = self.dt_rich.delimitedSelf(header_key='taxonomy', header_value='FOO', 
          metadata_formatter=lambda s: '; '.join(s))
         self.assertEqual(obs,exp)
@@ -1255,7 +1255,7 @@ class SparseTableTests(TestCase):
 
     def test_delimitedSelf(self):
         """Print out self in a delimited form"""
-        exp = '\n'.join(["# Constructed from biom file","#OTU IDs\ta\tb","1\t5.0\t6.0","2\t7.0\t8.0"])
+        exp = '\n'.join(["# Constructed from biom file","#OTU ID\ta\tb","1\t5.0\t6.0","2\t7.0\t8.0"])
         obs = self.st1.delimitedSelf()
         self.assertEqual(obs,exp)
 
