@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso"]
+__credits__ = ["Greg Caporaso", "Daniel McDonald"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -13,7 +13,8 @@ __status__ = "Development"
 
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files
-from qiime.parse import parse_otu_table, parse_mapping_file
+from qiime.parse import parse_mapping_file
+from qiime.pycogent_backports.parse_biom import parse_biom_table_str
 from qiime.sort import (sort_sample_ids_by_mapping_value,
                         sort_fasta_by_abundance, natsort, sort_otu_table,
                         sort_otu_table_by_mapping_field)
@@ -22,12 +23,12 @@ class SortTests(TestCase):
     
     def setUp(self):
         self.mapping_f1 = mapping_f1.split('\n')
-        self.otu_table1 = otu_table1.split('\n')
+        self.otu_table1 = otu_table1
         self.mapping_f2 = mapping_f2.split('\n')
-        self.age_sorted_otu_table1 = age_sorted_otu_table1.split('\n')
-        self.name_sorted_otu_table1 = name_sorted_otu_table1.split('\n')
-        self.nothing_sorted_otu_table1 = nothing_sorted_otu_table1.split('\n')
-        self.otu_table1_bad_sampleID = otu_table1_bad_sampleID.split('\n')
+        self.age_sorted_otu_table1 = age_sorted_otu_table1
+        self.name_sorted_otu_table1 = name_sorted_otu_table1
+        self.nothing_sorted_otu_table1 = nothing_sorted_otu_table1
+        self.otu_table1_bad_sampleID = otu_table1_bad_sampleID
         self.dirs_to_remove = []
         self.files_to_remove = []
 
@@ -122,79 +123,51 @@ class SortTests(TestCase):
     def test_sort_otu_table_by_mapping_field_all_values_differ(self):
         """ sort_otu_table_by_mapping_field fns when all values differ"""
 
-        actual = sort_otu_table_by_mapping_field(parse_otu_table(self.otu_table1),
+        actual = sort_otu_table_by_mapping_field(parse_biom_table_str(self.otu_table1),
                                 parse_mapping_file(self.mapping_f2),
                                 sort_field = "Age")
-        expected = parse_otu_table(self.age_sorted_otu_table1)
-        # sample ids match expected
-        self.assertEqual(actual[0],expected[0])
-        # otu ids match expected
-        self.assertEqual(actual[1],expected[1])
-        # otu data match expected
-        self.assertEqual(actual[2],expected[2])
-        # taxa match expected
-        self.assertEqual(actual[3],expected[3])
+        expected = parse_biom_table_str(self.age_sorted_otu_table1)
+        self.assertEqual(actual, expected)
         
     def test_sort_otu_table(self):
         """ sort_otu_table fns as expected """
 
-        actual = sort_otu_table(parse_otu_table(self.otu_table1),
+        actual = sort_otu_table(parse_biom_table_str(self.otu_table1),
                                 ['NA','Key','Fing'])
-        expected = parse_otu_table(self.age_sorted_otu_table1)
-        # sample ids match expected
-        self.assertEqual(actual[0],expected[0])
-        # otu ids match expected
-        self.assertEqual(actual[1],expected[1])
-        # otu data match expected
-        self.assertEqual(actual[2],expected[2])
-        # taxa match expected
-        self.assertEqual(actual[3],expected[3])
+        expected = parse_biom_table_str(self.age_sorted_otu_table1)
+        self.assertEqual(actual, expected)
 
     def test_sort_otu_table_error(self):
         """ sort_otu_table handles errors """
 
         self.assertRaises(ValueError,sort_otu_table,
-            parse_otu_table(self.otu_table1),['NA','Key','Fing','Key'])
+            parse_biom_table_str(self.otu_table1),['NA','Key','Fing','Key'])
         self.assertRaises(KeyError,sort_otu_table,
-            parse_otu_table(self.otu_table1),['NA','Key'])
+            parse_biom_table_str(self.otu_table1),['NA','Key'])
 
     def test_sort_otu_table_by_mapping_field_some_values_differ(self):
         """ sort_otu_table fns when some values differ"""
 
-        actual = sort_otu_table_by_mapping_field(parse_otu_table(self.otu_table1),
+        actual = sort_otu_table_by_mapping_field(parse_biom_table_str(self.otu_table1),
                               parse_mapping_file(self.mapping_f2),
                               sort_field = "Nothing")
-        expected = parse_otu_table(self.nothing_sorted_otu_table1)
-        # sample ids match expected
-        self.assertEqual(actual[0],expected[0])
-        # otu ids match expected
-        self.assertEqual(actual[1],expected[1])
-        # otu data match expected
-        self.assertEqual(actual[2],expected[2])
-        # taxa match expected
-        self.assertEqual(actual[3],expected[3])
+        expected = parse_biom_table_str(self.nothing_sorted_otu_table1)
+        self.assertEqual(actual, expected)
 
     def test_sort_otu_table_by_mapping_field_some_values_same(self):
         """ sort_otu_table_by_mapping_field fns when all values are the same"""
 
-        actual = sort_otu_table_by_mapping_field(parse_otu_table(self.otu_table1),
+        actual = sort_otu_table_by_mapping_field(parse_biom_table_str(self.otu_table1),
                               parse_mapping_file(self.mapping_f2),
                               sort_field = "Name")
-        expected = parse_otu_table(self.name_sorted_otu_table1)
-        # sample ids match expected
-        self.assertEqual(actual[0],expected[0])
-        # otu ids match expected
-        self.assertEqual(actual[1],expected[1])
-        # otu data match expected
-        self.assertEqual(actual[2],expected[2])
-        # taxa match expected
-        self.assertEqual(actual[3],expected[3])
+        expected = parse_biom_table_str(self.name_sorted_otu_table1)
+        self.assertEqual(actual, expected)
 
     def test_sort_otu_table_by_mapping_field_error(self):
         """ sort_otu_table_by_mapping_field fails on samples in otu table but not mapping"""
 
         self.assertRaises(KeyError,sort_otu_table_by_mapping_field,
-                                   parse_otu_table(self.otu_table1_bad_sampleID),
+                                   parse_biom_table_str(self.otu_table1_bad_sampleID),
                                    parse_mapping_file(self.mapping_f2),
                                    sort_field = "Age")
 
@@ -207,53 +180,12 @@ A\t4\t400000
 1\tr\t5.7
 NotInOtuTable\tf\t0"""
 
-otu_table1 = """# Some comment
-OTU ID	Fing	Key	NA	Consensus Lineage
-0	19111	44536	42	Bacteria; Actinobacteria; Actinobacteridae; Propionibacterineae; Propionibacterium
-1	1216	3500	6	Bacteria; Firmicutes; Alicyclobacillaceae; Bacilli; Lactobacillales; Lactobacillales; Streptococcaceae; Streptococcus
-2	1803	1184	2	Bacteria; Actinobacteria; Actinobacteridae; Gordoniaceae; Corynebacteriaceae
-# comment
-3	1722	4903	17	Bacteria; Firmicutes; Alicyclobacillaceae; Bacilli; Staphylococcaceae
-4	589	2074	34	Bacteria; Cyanobacteria; Chloroplasts; vectors
-"""
+otu_table1 = '{"rows": [{"id": "0", "metadata": {"taxonomy": ["Bacteria", "Actinobacteria", "Actinobacteridae", "Propionibacterineae", "Propionibacterium"]}}, {"id": "1", "metadata": {"taxonomy": ["Bacteria", "Firmicutes", "Alicyclobacillaceae", "Bacilli", "Lactobacillales", "Lactobacillales", "Streptococcaceae", "Streptococcus"]}}, {"id": "2", "metadata": {"taxonomy": ["Bacteria", "Actinobacteria", "Actinobacteridae", "Gordoniaceae", "Corynebacteriaceae"]}}, {"id": "3", "metadata": {"taxonomy": ["Bacteria", "Firmicutes", "Alicyclobacillaceae", "Bacilli", "Staphylococcaceae"]}}, {"id": "4", "metadata": {"taxonomy": ["Bacteria", "Cyanobacteria", "Chloroplasts", "vectors"]}}], "format": "Biological Observation Matrix v0.9", "data": [[0, 0, 19111.0], [0, 1, 44536.0], [0, 2, 42.0], [1, 0, 1216.0], [1, 1, 3500.0], [1, 2, 6.0], [2, 0, 1803.0], [2, 1, 1184.0], [2, 2, 2.0], [3, 0, 1722.0], [3, 1, 4903.0], [3, 2, 17.0], [4, 0, 589.0], [4, 1, 2074.0], [4, 2, 34.0]], "columns": [{"id": "Fing", "metadata": null}, {"id": "Key", "metadata": null}, {"id": "NA", "metadata": null}], "generated_by": "QIIME 1.4.0-dev, svn revision 2572", "matrix_type": "sparse", "shape": [5, 3], "format_url": "http://www.qiime.org/svn_documentation/documentation/biom_format.html", "date": "2011-12-21T20:26:01.408138", "type": "OTU table", "id": null, "matrix_element_type": "float"}'
 
-otu_table1_bad_sampleID = """# Some comment
-OTU ID	Fing	Key	NotInMapping	Consensus Lineage
-0	19111	44536	42	Bacteria; Actinobacteria; Actinobacteridae; Propionibacterineae; Propionibacterium
-1	1216	3500	6	Bacteria; Firmicutes; Alicyclobacillaceae; Bacilli; Lactobacillales; Lactobacillales; Streptococcaceae; Streptococcus
-2	1803	1184	2	Bacteria; Actinobacteria; Actinobacteridae; Gordoniaceae; Corynebacteriaceae
-# comment
-3	1722	4903	17	Bacteria; Firmicutes; Alicyclobacillaceae; Bacilli; Staphylococcaceae
-4	589	2074	34	Bacteria; Cyanobacteria; Chloroplasts; vectors
-"""
-
-age_sorted_otu_table1 = """# Some comment
-OTU ID	NA	Key	Fing	Consensus Lineage
-0	42	44536	19111	Bacteria; Actinobacteria; Actinobacteridae; Propionibacterineae; Propionibacterium
-1	6	3500	1216	Bacteria; Firmicutes; Alicyclobacillaceae; Bacilli; Lactobacillales; Lactobacillales; Streptococcaceae; Streptococcus
-2	2	1184	1803	Bacteria; Actinobacteria; Actinobacteridae; Gordoniaceae; Corynebacteriaceae
-3	17	4903	1722	Bacteria; Firmicutes; Alicyclobacillaceae; Bacilli; Staphylococcaceae
-4	34	2074	589	Bacteria; Cyanobacteria; Chloroplasts; vectors
-"""
-
-nothing_sorted_otu_table1 = """# Some comment
-OTU ID	Fing	NA	Key	Consensus Lineage
-0	19111	42	44536	Bacteria; Actinobacteria; Actinobacteridae; Propionibacterineae; Propionibacterium
-1	1216	6	3500	Bacteria; Firmicutes; Alicyclobacillaceae; Bacilli; Lactobacillales; Lactobacillales; Streptococcaceae; Streptococcus
-2	1803	2	1184	Bacteria; Actinobacteria; Actinobacteridae; Gordoniaceae; Corynebacteriaceae
-3	1722	17	4903	Bacteria; Firmicutes; Alicyclobacillaceae; Bacilli; Staphylococcaceae
-4	589	34	2074	Bacteria; Cyanobacteria; Chloroplasts; vectors
-"""
-
-name_sorted_otu_table1 = """# Some comment
-OTU ID	Fing	Key	NA	Consensus Lineage
-0	19111	44536	42	Bacteria; Actinobacteria; Actinobacteridae; Propionibacterineae; Propionibacterium
-1	1216	3500	6	Bacteria; Firmicutes; Alicyclobacillaceae; Bacilli; Lactobacillales; Lactobacillales; Streptococcaceae; Streptococcus
-2	1803	1184	2	Bacteria; Actinobacteria; Actinobacteridae; Gordoniaceae; Corynebacteriaceae
-3	1722	4903	17	Bacteria; Firmicutes; Alicyclobacillaceae; Bacilli; Staphylococcaceae
-4	589	2074	34	Bacteria; Cyanobacteria; Chloroplasts; vectors
-"""
-
+otu_table1_bad_sampleID = '{"rows": [{"id": "0", "metadata": {"taxonomy": ["Bacteria", "Actinobacteria", "Actinobacteridae", "Propionibacterineae", "Propionibacterium"]}}, {"id": "1", "metadata": {"taxonomy": ["Bacteria", "Firmicutes", "Alicyclobacillaceae", "Bacilli", "Lactobacillales", "Lactobacillales", "Streptococcaceae", "Streptococcus"]}}, {"id": "2", "metadata": {"taxonomy": ["Bacteria", "Actinobacteria", "Actinobacteridae", "Gordoniaceae", "Corynebacteriaceae"]}}, {"id": "3", "metadata": {"taxonomy": ["Bacteria", "Firmicutes", "Alicyclobacillaceae", "Bacilli", "Staphylococcaceae"]}}, {"id": "4", "metadata": {"taxonomy": ["Bacteria", "Cyanobacteria", "Chloroplasts", "vectors"]}}], "format": "Biological Observation Matrix v0.9", "data": [[0, 0, 19111.0], [0, 1, 44536.0], [0, 2, 42.0], [1, 0, 1216.0], [1, 1, 3500.0], [1, 2, 6.0], [2, 0, 1803.0], [2, 1, 1184.0], [2, 2, 2.0], [3, 0, 1722.0], [3, 1, 4903.0], [3, 2, 17.0], [4, 0, 589.0], [4, 1, 2074.0], [4, 2, 34.0]], "columns": [{"id": "Fing", "metadata": null}, {"id": "Key", "metadata": null}, {"id": "NotInMapping", "metadata": null}], "generated_by": "QIIME 1.4.0-dev, svn revision 2572", "matrix_type": "sparse", "shape": [5, 3], "format_url": "http://www.qiime.org/svn_documentation/documentation/biom_format.html", "date": "2011-12-21T20:19:02.153603", "type": "OTU table", "id": null, "matrix_element_type": "float"}'
+age_sorted_otu_table1 = '{"rows": [{"id": "0", "metadata": {"taxonomy": ["Bacteria", "Actinobacteria", "Actinobacteridae", "Propionibacterineae", "Propionibacterium"]}}, {"id": "1", "metadata": {"taxonomy": ["Bacteria", "Firmicutes", "Alicyclobacillaceae", "Bacilli", "Lactobacillales", "Lactobacillales", "Streptococcaceae", "Streptococcus"]}}, {"id": "2", "metadata": {"taxonomy": ["Bacteria", "Actinobacteria", "Actinobacteridae", "Gordoniaceae", "Corynebacteriaceae"]}}, {"id": "3", "metadata": {"taxonomy": ["Bacteria", "Firmicutes", "Alicyclobacillaceae", "Bacilli", "Staphylococcaceae"]}}, {"id": "4", "metadata": {"taxonomy": ["Bacteria", "Cyanobacteria", "Chloroplasts", "vectors"]}}], "format": "Biological Observation Matrix v0.9", "data": [[0, 0, 42.0], [0, 1, 44536.0], [0, 2, 19111.0], [1, 0, 6.0], [1, 1, 3500.0], [1, 2, 1216.0], [2, 0, 2.0], [2, 1, 1184.0], [2, 2, 1803.0], [3, 0, 17.0], [3, 1, 4903.0], [3, 2, 1722.0], [4, 0, 34.0], [4, 1, 2074.0], [4, 2, 589.0]], "columns": [{"id": "NA", "metadata": null}, {"id": "Key", "metadata": null}, {"id": "Fing", "metadata": null}], "generated_by": "QIIME 1.4.0-dev, svn revision 2572", "matrix_type": "sparse", "shape": [5, 3], "format_url": "http://www.qiime.org/svn_documentation/documentation/biom_format.html", "date": "2011-12-21T20:19:06.444921", "type": "OTU table", "id": null, "matrix_element_type": "float"}'
+nothing_sorted_otu_table1 = '{"rows": [{"id": "0", "metadata": {"taxonomy": ["Bacteria", "Actinobacteria", "Actinobacteridae", "Propionibacterineae", "Propionibacterium"]}}, {"id": "1", "metadata": {"taxonomy": ["Bacteria", "Firmicutes", "Alicyclobacillaceae", "Bacilli", "Lactobacillales", "Lactobacillales", "Streptococcaceae", "Streptococcus"]}}, {"id": "2", "metadata": {"taxonomy": ["Bacteria", "Actinobacteria", "Actinobacteridae", "Gordoniaceae", "Corynebacteriaceae"]}}, {"id": "3", "metadata": {"taxonomy": ["Bacteria", "Firmicutes", "Alicyclobacillaceae", "Bacilli", "Staphylococcaceae"]}}, {"id": "4", "metadata": {"taxonomy": ["Bacteria", "Cyanobacteria", "Chloroplasts", "vectors"]}}], "format": "Biological Observation Matrix v0.9", "data": [[0, 0, 19111.0], [0, 1, 42.0], [0, 2, 44536.0], [1, 0, 1216.0], [1, 1, 6.0], [1, 2, 3500.0], [2, 0, 1803.0], [2, 1, 2.0], [2, 2, 1184.0], [3, 0, 1722.0], [3, 1, 17.0], [3, 2, 4903.0], [4, 0, 589.0], [4, 1, 34.0], [4, 2, 2074.0]], "columns": [{"id": "Fing", "metadata": null}, {"id": "NA", "metadata": null}, {"id": "Key", "metadata": null}], "generated_by": "QIIME 1.4.0-dev, svn revision 2572", "matrix_type": "sparse", "shape": [5, 3], "format_url": "http://www.qiime.org/svn_documentation/documentation/biom_format.html", "date": "2011-12-21T20:19:10.397288", "type": "OTU table", "id": null, "matrix_element_type": "float"}'
+name_sorted_otu_table1 = '{"rows": [{"id": "0", "metadata": {"taxonomy": ["Bacteria", "Actinobacteria", "Actinobacteridae", "Propionibacterineae", "Propionibacterium"]}}, {"id": "1", "metadata": {"taxonomy": ["Bacteria", "Firmicutes", "Alicyclobacillaceae", "Bacilli", "Lactobacillales", "Lactobacillales", "Streptococcaceae", "Streptococcus"]}}, {"id": "2", "metadata": {"taxonomy": ["Bacteria", "Actinobacteria", "Actinobacteridae", "Gordoniaceae", "Corynebacteriaceae"]}}, {"id": "3", "metadata": {"taxonomy": ["Bacteria", "Firmicutes", "Alicyclobacillaceae", "Bacilli", "Staphylococcaceae"]}}, {"id": "4", "metadata": {"taxonomy": ["Bacteria", "Cyanobacteria", "Chloroplasts", "vectors"]}}], "format": "Biological Observation Matrix v0.9", "data": [[0, 0, 19111.0], [0, 1, 44536.0], [0, 2, 42.0], [1, 0, 1216.0], [1, 1, 3500.0], [1, 2, 6.0], [2, 0, 1803.0], [2, 1, 1184.0], [2, 2, 2.0], [3, 0, 1722.0], [3, 1, 4903.0], [3, 2, 17.0], [4, 0, 589.0], [4, 1, 2074.0], [4, 2, 34.0]], "columns": [{"id": "Fing", "metadata": null}, {"id": "Key", "metadata": null}, {"id": "NA", "metadata": null}], "generated_by": "QIIME 1.4.0-dev, svn revision 2572", "matrix_type": "sparse", "shape": [5, 3], "format_url": "http://www.qiime.org/svn_documentation/documentation/biom_format.html", "date": "2011-12-21T20:19:15.978029", "type": "OTU table", "id": null, "matrix_element_type": "float"}'
 # values in 'Age' column sort differently incorrectly if sorted as strings
 mapping_f2 = """
 #SampleID	Name	Age	Nothing

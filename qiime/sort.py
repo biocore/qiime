@@ -10,8 +10,7 @@ from qiime.parse import parse_mapping_file
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso",
-               "Rob Knight"]
+__credits__ = ["Greg Caporaso","Rob Knight","Daniel McDonald"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -115,32 +114,23 @@ def sort_otu_table_by_mapping_field(otu_table_data,
     
     return sort_otu_table(otu_table_data,sorted_sample_ids)
     
-def sort_otu_table(otu_table_data,
-                   sorted_sample_ids):
-    sample_ids, otu_ids, otu_data, taxa = otu_table_data
-    unsorted_sample_id_index = dict([(e,i) for i,e in enumerate(sample_ids)])
-    
+def sort_otu_table(otu_table, sorted_sample_ids):
+    """Sort an OTU table by sorted sample ids"""
+    # sanity check
     sorted_sample_ids_set = set(sorted_sample_ids)
-    if set(sample_ids) - sorted_sample_ids_set:
+    if set(otu_table.SampleIds) - sorted_sample_ids_set:
         raise KeyError,\
          "Sample IDs present in OTU table but not sorted sample id list: " + \
-         ' '.join(list(set(sample_ids) - set(sorted_sample_ids)))
+         ' '.join(list(set(otu_table.SampleIds) - set(sorted_sample_ids)))
     if len(sorted_sample_ids_set) != len(sorted_sample_ids):
         raise ValueError,\
          "Duplicate sample IDs are present in sorted sample id list."
 
-    otu_data = otu_data.transpose()
-    sample_id_results = []
-    sorted_otu_data = []
-    for current_sid in sorted_sample_ids:
-        try:
-            current_otu_data = otu_data[unsorted_sample_id_index[current_sid]]
-        except KeyError:
-            # ignore samples in mapping that are not in otu table
-            continue
-        sample_id_results.append(current_sid)
-        sorted_otu_data.append(current_otu_data)
-    sorted_otu_data = array(sorted_otu_data)
-    sorted_otu_data = sorted_otu_data.transpose()
+    # only keep the sample ids that are in the table    
+    safe_sorted_sample_ids = []
+    for k in sorted_sample_ids:
+        if otu_table.sampleExists(k):
+            safe_sorted_sample_ids.append(k)
+    sorted_table = otu_table.sortSampleOrder(safe_sorted_sample_ids)
 
-    return sample_id_results, otu_ids, sorted_otu_data, taxa
+    return sorted_table
