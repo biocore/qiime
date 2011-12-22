@@ -9,7 +9,8 @@ from qiime.pycogent_backports.rich_otu_table import TableException, Table, \
     UnknownID, prefer_self, index_list, nparray_to_ll_mat, \
     list_nparray_to_ll_mat, dict_to_ll_mat, list_dict_to_ll_mat,\
     list_ll_mat_to_ll_mat, dict_to_nparray, list_dict_to_nparray, \
-    list_ll_mat_to_nparray, ll_mat_to_nparray, table_factory
+    list_ll_mat_to_nparray, ll_mat_to_nparray, table_factory,\
+    transpose_ll_mat
 
 __author__ = "Daniel McDonald"
 __copyright__ = "Copyright 2007-2011, QIIME"
@@ -30,6 +31,21 @@ class SupportTests(TestCase):
         def f():
             raise TableException
         self.assertRaises(TableException, f)
+
+    def test_transpose_ll_mat(self):
+        """Transpose an ll_mat"""
+        input = ll_mat(2,3)
+        input[0,0] = 1
+        input[0,1] = 10
+        input[1,0] = 20
+        input[0,2] = 30
+        exp = ll_mat(3,2)
+        exp[0,0] = 1
+        exp[1,0] = 10
+        exp[0,1] = 20
+        exp[2,0] = 30
+        obs = transpose_ll_mat(input)
+        self.assertEqual(obs.items(),exp.items())
 
     def test_nparray_to_ll_mat(self):
         """Convert nparray to ll_mat"""

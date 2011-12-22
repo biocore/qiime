@@ -45,69 +45,26 @@ def to_ll_mat(values, transpose=False):
     NOTE: assumes the max value observed in row and col defines the size of the
     matrix
     """
-    ### SCREAMING decomposition here... this is ugly
-
+    ### SCREAMING decomposition here... this is ugly... but better now
     # if it is a vector
     if isinstance(values, ndarray) and len(values.shape) == 1:
         if transpose:
-            mat = ll_mat(len(values), 1)
+            mat = nparray_to_ll_mat(values[:,newaxis])
         else:
-            mat = ll_mat(1, len(values))
-
-        for i,v in enumerate(values):
-            if transpose:
-                mat[i,0] = v
-            else:
-                # pysparse whines about numpy.int64
-                mat[0,i] = float(v)
-
+            mat = nparray_to_ll_mat(values)
         return mat
     # list of dicts, each representing a row in row order
     elif isinstance(values, list) and isinstance(values[0], dict):
-        n_rows = len(values)
-        all_keys = flatten(map(lambda x:x.keys(),values))
-        n_cols = max(all_keys, key=itemgetter(1))[1] # index 1 == column
-       
+        mat = list_dict_to_ll_mat(values)
         if transpose:
-            mat = ll_mat(n_cols+1, n_rows)
-        else:
-            mat = ll_mat(n_rows, n_cols+1) # adjust cols for 0-based index
-
-        # we ignore the given row as these _should_ be dicts of vectors
-        for row,d in enumerate(values):
-            for (ignore, column),v in d.items():
-                if transpose:
-                    mat[column, row] = v
-                else:
-                    mat[row, column] = v
+            mat = transpose_ll_mat(mat)
         return mat
-    # list of ll_mat objects (EXPECTING VECTORS!!)
-    # this is unfortunately necessary because ll_mat decided that the
-    # 'keys' method should behave like dict.keys. thanks. implement the
-    # other dict methods like items() and values() but LIE about keys.
+    # list of ll_mats
     elif isinstance(values, list) and isinstance(values[0], LLMatType):
-        n_rows = len(values)
-        all_keys = []
-
-        # god damn you pysparse
-        for d in values:
-            all_keys.extend([k for k,v in d.items()])
-        n_cols = max(all_keys, key=itemgetter(1))[1] # index 1 == column
-        
+        mat = list_ll_mat_to_ll_mat(values)
         if transpose:
-            mat = ll_mat(n_cols+1, n_rows)
-        else:
-            mat = ll_mat(n_rows, n_cols+1) # adjust cols for 0-based index
-
-        # we ignore the given row as these _should_ be dicts of vectors
-        for row,d in enumerate(values):
-            for (ignore, column),v in d.items():
-                if transpose:
-                    mat[column, row] = v
-                else:
-                    mat[row, column] = v
+            mat = transpose_ll_mat(mat)
         return mat
-
     else:
         # if values does not appear dict-like, try a cast
         if not hasattr(values, 'items'): 
@@ -118,21 +75,9 @@ def to_ll_mat(values, transpose=False):
             except TypeError:
                 raise TableException, "Unable to cast to known type"
         
-        rows, cols = unzip([(r,c) for (r,c),v in values.items()])
-        n_rows = sorted(rows)[-1]
-        n_cols = sorted(cols)[-1]
-
+        mat = dict_to_ll_mat(values)
         if transpose:
-            mat = ll_mat(n_cols+1, n_rows+1)
-        else:
-            mat = ll_mat(n_rows+1, n_cols+1)
-
-        for (row,col),val in values.items():
-            if transpose:
-                mat[col,row] = val
-            else:
-                mat[row,col] = val
-
+            mat = transpose_ll_mat(mat)
         return mat
 
 def prefer_self(x,y):
@@ -949,11 +894,19 @@ class SparseOTUTable(OTUTable, SparseTable):
 
 def nparray_to_ll_mat(data, dtype=float):
     """Convert a numpy array into an ll_mat object"""
-    mat = ll_mat(*data.shape)
-    for row_idx, row in enumerate(data):
-        for col_idx, val in enumerate(row):
-            mat[row_idx, col_idx] = dtype(val)
-    return mat
+    if len(data.shape) == 1:
+        mat = ll_mat(1,data.shape[0])
+
+        for col_idx, val in enumerate(data):
+            mat[0, col_idx] = dtype(val)
+
+        return mat
+    else:
+        mat = ll_mat(*data.shape)
+        for row_idx, row in enumerate(data):
+            for col_idx, val in enumerate(row):
+                mat[row_idx, col_idx] = dtype(val)
+        return mat
 
 def list_nparray_to_ll_mat(data, dtype=float):
     """Takes a list of numpy arrays and creates an ll_mat object
@@ -1061,6 +1014,14 @@ def ll_mat_to_nparray(data, dtype=float):
     for (row,col), val in data.items():
         mat[row,col] = dtype(val)
     return mat
+
+def transpose_ll_mat(mat):
+    """Transpose an ll_mat"""
+    n_rows, n_cols = mat.shape
+    new_mat = ll_mat(n_cols, n_rows)
+    for (row_idx, col_idx), val in mat.items():
+        new_mat[col_idx, row_idx] = val
+    return new_mat
 
 def table_factory(data, sample_ids, observation_ids, sample_metadata=None, 
                   observation_metadata=None, table_id=None, 
