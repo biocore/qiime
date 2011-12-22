@@ -455,7 +455,13 @@ class Table(object):
             samp_vals.append(self._conv_to_self_type(s_val))
             samp_metadata.append(s_md)
             samp_ids.append(s_id)
-        
+    
+        # if we don't have any values to keep, throw an exception as we can 
+        # create an inconsistancy in which there are observation ids but no
+        # matrix data in the resulting table
+        if not samp_vals:
+            raise TableException, "All samples filtered out!"
+
         # the additional call to _conv_to_self_type is to convert a list of 
         # vectors to a matrix
         # transpose is necessary as the underlying storage is sample == col
@@ -484,6 +490,12 @@ class Table(object):
             obs_vals.append(self._conv_to_self_type(o_val))
             obs_metadata.append(o_md)
             obs_ids.append(o_id)
+
+        # if we don't have any values to keep, throw an exception as we can 
+        # create an inconsistancy in which there are sample ids but no
+        # matrix data in the resulting table
+        if not obs_vals:
+            raise TableException, "All obs filtered out!"
 
         return self.__class__(self._conv_to_self_type(obs_vals),self.SampleIds,
                 obs_ids, self.SampleMetadata, obs_metadata, self.TableId)
