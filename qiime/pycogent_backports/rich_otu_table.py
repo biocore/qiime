@@ -281,10 +281,10 @@ class Table(object):
                 raise TableException, "You need to specify both header_key and header_value"
 
         if header_value:
-            output = ['# Constructed from biom file','#OTU IDs%s%s\t%s' % (delim, 
+            output = ['# Constructed from biom file','#OTU ID%s%s\t%s' % (delim, 
                 samp_ids,header_value)]
         else:
-            output = ['# Constructed from biom file','#OTU IDs%s%s' % (delim, 
+            output = ['# Constructed from biom file','#OTU ID%s%s' % (delim, 
                 samp_ids)]
 
         for obs_id, obs_values in zip(self.ObservationIds, self._iter_obs()):
