@@ -27,8 +27,9 @@ from cogent.app.util import ApplicationNotFoundError
 from qiime.util import get_tmp_filename
 from cogent.parse.binary_sff import parse_binary_sff
 from qiime.util import load_qiime_config, count_seqs
-from qiime.parse import (parse_qiime_parameters, parse_otu_table,
+from qiime.parse import (parse_qiime_parameters,
     parse_distmat_to_dict,parse_distmat,parse_taxa_summary_table)
+from qiime.pycogent_backports.parse_biom import parse_biom_table
 from qiime.workflow import (run_qiime_data_preparation,
     run_pick_reference_otus_through_otu_table,
     run_beta_diversity_through_plots,
@@ -131,7 +132,7 @@ class WorkflowTests(TestCase):
         self.files_to_remove.append(self.fasting_seqs_denoiser_fp)
         
         self.fasting_otu_table_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
-            prefix='qiime_wf_otu_table',suffix='.txt')
+            prefix='qiime_wf_otu_table',suffix='.biom')
         fasting_otu_table_f = open(self.fasting_otu_table_fp,'w')
         fasting_otu_table_f.write(fasting_subset_otu_table)
         fasting_otu_table_f.close()
@@ -268,8 +269,8 @@ class WorkflowTests(TestCase):
         # Basic sanity test of OTU table as details are tested 
         # in the pick_otus_through_otu_table tests
         otu_table_fp = join(self.wf_out,'otus','otu_table.txt')
-        sample_ids, otu_ids, otu_table, lineages =\
-          parse_otu_table(open(otu_table_fp))
+        otu_table = parse_biom_table(open(otu_table_fp,'U'))
+        sample_ids = otu_table.SampleIds
         expected_sample_ids = ['PC.354','PC.355','PC.356','PC.481',
                                'PC.593','PC.607','PC.634','PC.635','PC.636']
         sample_ids.sort()
@@ -303,8 +304,8 @@ class WorkflowTests(TestCase):
         # Basic sanity test of OTU table as details are tested 
         # in the pick_otus_through_otu_table tests
         otu_table_fp = join(self.wf_out,'otus','otu_table.txt')
-        sample_ids, otu_ids, otu_table, lineages =\
-          parse_otu_table(open(otu_table_fp))
+        otu_table = parse_biom_table(open(otu_table_fp,'U'))
+        sample_ids = otu_table.SampleIds
         expected_sample_ids = ['PC.354','PC.355','PC.356','PC.481',
                                'PC.593','PC.607','PC.634','PC.635','PC.636']
         sample_ids.sort()
@@ -337,8 +338,8 @@ class WorkflowTests(TestCase):
         # Basic sanity test of OTU table as details are tested 
         # in the pick_otus_through_otu_table tests
         otu_table_fp = join(self.wf_out,'otus','otu_table.txt')
-        sample_ids, otu_ids, otu_table, lineages =\
-          parse_otu_table(open(otu_table_fp))
+        otu_table = parse_biom_table(open(otu_table_fp,'U'))
+        sample_ids= otu_table.sample_ids
         expected_sample_ids = ['PC.354','PC.355','PC.356','PC.481',
                                'PC.593','PC.607','PC.634','PC.635','PC.636']
         sample_ids.sort()
@@ -363,9 +364,9 @@ class WorkflowTests(TestCase):
          '%s_otus.txt' % input_file_basename)
         otu_table_fp = join(self.wf_out,'uclust_ref_picked_otus',
          'otu_table.txt')
-        sample_ids, otu_ids, otu_table, lineages =\
-          parse_otu_table(open(otu_table_fp))
+        otu_table = parse_biom_table(open(otu_table_fp,'U'))
         expected_sample_ids = ['S1','S2','S3']
+        self.assertEqual(otu_table.SampleIds,expected_sample_ids)
 
         # Number of OTUs matches manually confirmed result
         otu_map_lines = list(open(otu_map_fp))
@@ -375,24 +376,24 @@ class WorkflowTests(TestCase):
 
         # parse the otu table
         input_seqs = LoadSeqs(self.pick_ref_otus_seqs1,aligned=False)
-        sample_ids, otu_ids, otu_table, lineages =\
-          parse_otu_table(open(otu_table_fp))
+        otu_table = parse_biom_table(open(otu_table_fp,'U'))
         expected_sample_ids = ['S1','S2','S3']
         # sample IDs are as expected
-        self.assertEqualItems(sample_ids,expected_sample_ids)
+        self.assertEqualItems(otu_table.SampleIds,expected_sample_ids)
         # otu ids are as expected
-        self.assertEqualItems(otu_map_otu_ids,otu_ids)
+        self.assertEqualItems(otu_table.ObservationIds,otu_map_otu_ids)
         
         # expected number of sequences in OTU table
-        number_seqs_in_otu_table = otu_table.sum()
+        number_seqs_in_otu_table = sum([v.sum() for v in otu_table.iterSampleData()])
         self.assertEqual(number_seqs_in_otu_table,5)
         
         # One tax assignment per otu
-        self.assertEqual(len(lineages),4)
+        self.assertEqual(len(otu_table.ObservationMetadata),4)
 
         # Check that the log file is created and has size > 0
         log_fp = glob(join(self.wf_out,'log*.txt'))[0]
         self.assertTrue(getsize(log_fp) > 0)
+        
         
     def test_run_pick_reference_otus_through_otu_table_parallel(self):
         """run_pick_reference_otus_through_otu_table generates expected results"""
@@ -428,20 +429,19 @@ class WorkflowTests(TestCase):
 
         # parse the otu table
         input_seqs = LoadSeqs(self.pick_ref_otus_seqs1,aligned=False)
-        sample_ids, otu_ids, otu_table, lineages =\
-          parse_otu_table(open(otu_table_fp))
+        otu_table = parse_biom_table(open(otu_table_fp,'U'))
         expected_sample_ids = ['S1','S2','S3']
         # sample IDs are as expected
-        self.assertEqualItems(sample_ids,expected_sample_ids)
+        self.assertEqualItems(otu_table.SampleIds,expected_sample_ids)
         # otu ids are as expected
-        self.assertEqualItems(otu_map_otu_ids,otu_ids)
+        self.assertEqualItems(otu_table.ObservationIds,otu_map_otu_ids)
         
         # expected number of sequences in OTU table
-        number_seqs_in_otu_table = otu_table.sum()
+        number_seqs_in_otu_table = sum([v.sum() for v in otu_table.iterSampleData()])
         self.assertEqual(number_seqs_in_otu_table,5)
-
-        # No taxa were provided, so should have an empty list
-        self.assertEqual(len(lineages),0)
+        
+        # No tax provided
+        self.assertEqual(otu_table.ObservationMetadata,None)
 
         # Check that the log file is created and has size > 0
         log_fp = glob(join(self.wf_out,'log*.txt'))[0]
@@ -502,18 +502,17 @@ class WorkflowTests(TestCase):
         
         # parse the otu table
         input_seqs = LoadSeqs(self.fasting_seqs_fp,aligned=False)
-        sample_ids, otu_ids, otu_table, lineages =\
-          parse_otu_table(open(otu_table_fp))
+        otu_table = parse_biom_table(open(otu_table_fp,'U'))
         expected_sample_ids = ['PC.354','PC.355','PC.356','PC.481',
                                'PC.593','PC.607','PC.634','PC.635',
                                'PC.636']
         # sample IDs are as expected
-        self.assertEqualItems(sample_ids,expected_sample_ids)
+        self.assertEqualItems(otu_table.SampleIds,expected_sample_ids)
         # otu ids are as expected
-        self.assertEqualItems(otu_map_otu_ids,otu_ids)
+        self.assertEqualItems(otu_table.ObservationIds,otu_map_otu_ids)
         # number of sequences in the full otu table equals the number of
         # input sequences
-        number_seqs_in_otu_table = otu_table.sum()
+        number_seqs_in_otu_table = sum([v.sum() for v in otu_table.iterSampleData()])
         self.assertEqual(number_seqs_in_otu_table,input_seqs.getNumSeqs())
         
         # Check that the log file is created and has size > 0
@@ -579,18 +578,17 @@ class WorkflowTests(TestCase):
         
         # parse the otu table
         input_seqs = LoadSeqs(self.fasting_seqs_fp,aligned=False)
-        sample_ids, otu_ids, otu_table, lineages =\
-          parse_otu_table(open(otu_table_fp))
+        otu_table = parse_biom_table(open(otu_table_fp,'U'))
         expected_sample_ids = ['PC.354','PC.355','PC.356','PC.481',
                                'PC.593','PC.607','PC.634','PC.635',
                                'PC.636']
         # sample IDs are as expected
-        self.assertEqualItems(sample_ids,expected_sample_ids)
+        self.assertEqualItems(otu_table.SampleIds,expected_sample_ids)
         # expected OTUs
-        self.assertEqualItems(otu_ids,otu_map_otu_ids)
+        self.assertEqualItems(otu_table.ObservationIds,otu_map_otu_ids)
         # number of sequences in the full otu table equals the number of
         # input sequences
-        number_seqs_in_otu_table = otu_table.sum()
+        number_seqs_in_otu_table = sum([v.sum() for v in otu_table.iterSampleData()])
         self.assertEqual(number_seqs_in_otu_table,input_seqs.getNumSeqs())
     
     def test_run_qiime_data_preparation_parallel(self):
@@ -647,18 +645,17 @@ class WorkflowTests(TestCase):
         
         # parse the otu table
         input_seqs = LoadSeqs(self.fasting_seqs_fp,aligned=False)
-        sample_ids, otu_ids, otu_table, lineages =\
-          parse_otu_table(open(otu_table_fp))
+        otu_table = parse_biom_table(open(otu_table_fp,'U'))
         expected_sample_ids = ['PC.354','PC.355','PC.356','PC.481',
                                'PC.593','PC.607','PC.634','PC.635',
                                'PC.636']
         # sample IDs are as expected
-        self.assertEqualItems(sample_ids,expected_sample_ids)
+        self.assertEqualItems(otu_table.SampleIds,expected_sample_ids)
         # otu ids are as expected
-        self.assertEqualItems(otu_map_otu_ids,otu_ids)
+        self.assertEqualItems(otu_table.ObservationIds,otu_map_otu_ids)
         # number of sequences in the full otu table equals the number of
         # input sequences
-        number_seqs_in_otu_table = otu_table.sum()
+        number_seqs_in_otu_table = sum([v.sum() for v in otu_table.iterSampleData()])
         self.assertEqual(number_seqs_in_otu_table,input_seqs.getNumSeqs())
         
         # Check that the log file is created and has size > 0
@@ -2113,445 +2110,7 @@ CTGGGCCGTGTCTCAGTCCCAATGTGGCCGTTCGACCTCTCAGTCCGGCTACCGATCGTCGGCTTGGTGAGCCGTTACCT
 >PC.636_392 FLP3FBN01DO7JM orig_bc=ACGGTGAGTGTC new_bc=ACGGTGAGTGTC bc_diffs=0
 CTGGGCCGTATCTCAGTCCCAATGTGGCCGGCCAACCTCTCAGTCCGGCTACTGATCGTCGCCTTGGTGAGCCGTTACCTCACCAACTAGCTAATCAGACGCGAGGCCATCTTTCAGCGATAAATCTTTGACATAAATGCCATGCGACACCTATGTGTTATGCGGTATTAGCAGTCGTTTCCAACTGTTGTCCCCCTCTGAAAGGCAGGTTCCTCACG"""
 
-fasting_subset_otu_table = """#Full OTU Counts
-#OTU ID	PC.354	PC.355	PC.356	PC.481	PC.593	PC.607	PC.634	PC.635	PC.636	Consensus Lineage
-0	0	0	0	0	0	0	0	0	1	Root;Bacteria;Actinobacteria;Actinobacteria;Coriobacteridae;Coriobacteriales;Coriobacterineae;Coriobacteriaceae
-1	0	0	0	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-2	0	0	0	0	2	2	1	5	1	Root;Bacteria
-3	0	0	0	0	0	0	0	0	1	Root;Bacteria
-4	0	0	0	0	0	0	0	0	1	Root;Bacteria;Bacteroidetes
-5	0	0	2	0	0	0	0	1	0	Root
-6	0	0	0	0	0	0	0	1	0	Root;Bacteria
-7	0	1	2	0	9	1	1	1	3	Root;Bacteria;Bacteroidetes
-8	0	0	0	0	0	0	0	0	1	Root;Bacteria;Bacteroidetes
-9	0	0	0	0	0	0	2	7	22	Root;Bacteria;Bacteroidetes
-10	1	2	0	2	1	6	0	2	4	Root;Bacteria;Bacteroidetes
-11	0	0	0	0	0	0	0	0	2	Root;Bacteria;Firmicutes;"Bacilli";Bacillales;"Staphylococcaceae";Staphylococcus
-12	0	1	0	0	0	3	1	1	1	Root;Bacteria;Bacteroidetes
-13	0	0	0	1	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-14	0	0	1	0	0	0	1	1	0	Root;Bacteria;Bacteroidetes
-15	0	0	0	0	0	0	1	3	0	Root;Bacteria
-16	0	0	0	0	0	0	5	0	0	Root;Bacteria;Bacteroidetes;Bacteroidetes;Bacteroidales;Rikenellaceae;Alistipes
-17	0	0	0	0	0	5	0	0	0	Root;Bacteria;Bacteroidetes
-18	0	0	0	0	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-19	0	2	2	4	0	5	1	5	0	Root;Bacteria;Bacteroidetes;Bacteroidetes;Bacteroidales;Rikenellaceae;Alistipes
-20	0	0	0	0	0	0	1	1	1	Root;Bacteria;Bacteroidetes
-21	0	0	0	0	0	0	0	1	0	Root;Bacteria
-22	0	0	0	0	0	0	1	2	6	Root;Bacteria;Bacteroidetes
-23	0	0	0	0	0	0	0	0	1	Root;Bacteria;Firmicutes;"Bacilli";Bacillales;"Staphylococcaceae";Staphylococcus
-24	0	0	0	0	0	0	0	1	0	Root;Bacteria;Bacteroidetes
-25	0	0	0	0	0	0	0	0	1	Root;Bacteria;Bacteroidetes
-26	0	0	0	0	0	0	0	1	1	Root;Bacteria;Bacteroidetes
-27	0	0	0	1	0	0	1	1	9	Root;Bacteria;Bacteroidetes
-28	0	0	0	0	0	1	0	0	0	Root;Bacteria
-29	0	1	0	0	0	0	0	0	0	Root;Bacteria
-30	0	1	1	1	1	0	3	0	4	Root;Bacteria;Bacteroidetes
-31	0	0	0	0	9	1	0	0	0	Root;Bacteria
-32	0	0	0	0	0	0	2	1	0	Root;Bacteria;Bacteroidetes;Bacteroidetes;Bacteroidales;Bacteroidaceae;Bacteroides
-33	0	0	0	0	0	2	0	0	0	Root;Bacteria;Bacteroidetes;Bacteroidetes;Bacteroidales
-34	0	0	0	0	0	0	1	0	0	Root;Bacteria;Bacteroidetes;Bacteroidetes;Bacteroidales;Bacteroidaceae;Bacteroides
-35	0	0	0	0	0	0	1	0	0	Root;Bacteria;Bacteroidetes;Bacteroidetes;Bacteroidales;Rikenellaceae;Alistipes
-36	0	0	0	0	0	1	0	0	0	Root;Bacteria;Bacteroidetes
-37	0	0	0	0	0	0	0	0	1	Root;Bacteria;Bacteroidetes;Bacteroidetes;Bacteroidales;Porphyromonadaceae;Parabacteroides
-38	0	0	0	0	0	0	0	0	1	Root;Bacteria;Bacteroidetes
-39	0	0	0	0	0	0	0	1	0	Root;Bacteria;Bacteroidetes;Bacteroidetes;Bacteroidales;Prevotellaceae
-40	0	0	2	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-41	6	0	5	0	1	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-42	0	0	1	0	0	0	0	0	0	Root;Bacteria
-43	1	1	1	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-44	0	0	0	0	1	0	0	0	0	Root;Bacteria;Bacteroidetes
-45	0	0	0	0	2	0	0	0	0	Root;Bacteria;Bacteroidetes
-46	0	0	0	0	0	5	9	5	3	Root;Bacteria;Bacteroidetes;Bacteroidetes;Bacteroidales;Rikenellaceae;Alistipes
-47	0	1	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-48	0	0	0	0	0	0	1	0	0	Root;Bacteria;Firmicutes;"Clostridia"
-49	0	0	0	0	0	0	1	0	0	Root;Bacteria;Bacteroidetes;Bacteroidetes;Bacteroidales;Bacteroidaceae;Bacteroides
-50	0	0	0	0	3	0	0	0	0	Root;Bacteria;Bacteroidetes;Bacteroidetes;Bacteroidales;Bacteroidaceae;Bacteroides
-51	0	0	0	0	0	0	0	0	1	Root;Bacteria;Bacteroidetes;Bacteroidetes;Bacteroidales;Rikenellaceae;Alistipes
-52	0	0	1	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-53	0	0	0	0	0	0	13	0	0	Root;Bacteria;Bacteroidetes;Bacteroidetes;Bacteroidales;Bacteroidaceae;Bacteroides
-54	0	0	0	0	0	2	0	0	0	Root;Bacteria;Actinobacteria;Actinobacteria;Coriobacteridae;Coriobacteriales;Coriobacterineae;Coriobacteriaceae;Olsenella
-55	0	1	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-56	0	0	1	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-57	0	0	0	0	0	0	0	1	0	Root;Bacteria;Bacteroidetes
-58	0	0	1	0	0	0	0	0	0	Root;Bacteria;Bacteroidetes;Bacteroidetes;Bacteroidales;Rikenellaceae
-59	0	0	0	0	1	0	0	0	0	Root;Bacteria
-60	0	0	0	0	0	0	0	0	1	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-61	0	0	0	0	2	0	0	4	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-62	0	2	0	1	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-63	0	0	0	0	0	0	2	0	0	Root;Bacteria;Bacteroidetes;Bacteroidetes;Bacteroidales;Porphyromonadaceae;Parabacteroides
-64	0	1	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-65	5	9	0	3	0	0	0	2	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-66	0	0	0	0	0	0	0	2	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-67	0	2	0	0	0	1	0	0	0	Root;Bacteria;Bacteroidetes;Bacteroidetes;Bacteroidales
-68	0	1	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-69	0	1	2	0	3	0	1	0	0	Root;Bacteria;Bacteroidetes
-70	0	0	0	0	0	1	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae";Butyrivibrio
-71	0	0	0	0	0	1	1	0	0	Root;Bacteria;Bacteroidetes
-72	0	0	0	0	0	1	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-73	0	0	0	1	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-74	0	0	0	0	0	0	0	1	0	Root;Bacteria;Bacteroidetes;Bacteroidetes;Bacteroidales;Rikenellaceae;Alistipes
-75	0	11	0	0	1	0	1	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-76	2	1	10	2	24	0	0	1	1	Root;Bacteria
-77	0	0	1	0	0	2	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-78	0	0	1	0	1	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-79	0	1	0	0	0	0	0	0	2	Root;Bacteria;Bacteroidetes;Bacteroidetes;Bacteroidales;Porphyromonadaceae;Parabacteroides
-80	0	4	3	0	1	2	0	2	1	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-81	0	0	0	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-82	0	0	0	0	0	1	0	0	0	Root;Bacteria
-83	0	0	0	1	0	0	1	2	19	Root;Bacteria;Bacteroidetes;Bacteroidetes;Bacteroidales;Bacteroidaceae;Bacteroides
-84	0	0	0	2	0	0	0	0	0	Root;Bacteria;Bacteroidetes;Bacteroidetes;Bacteroidales;Rikenellaceae;Alistipes
-85	0	1	1	1	0	0	1	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-86	0	1	0	0	0	0	0	0	0	Root;Bacteria;Bacteroidetes;Bacteroidetes;Bacteroidales;Bacteroidaceae;Bacteroides
-87	0	0	1	0	0	0	0	0	0	Root;Bacteria
-88	0	0	0	0	1	0	0	0	0	Root;Bacteria
-89	0	0	0	0	0	0	0	0	1	Root;Bacteria
-90	0	0	0	0	0	0	1	0	0	Root;Bacteria;Bacteroidetes;Bacteroidetes;Bacteroidales;Bacteroidaceae;Bacteroides
-91	0	0	0	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-92	0	7	1	0	0	0	1	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-93	0	0	0	0	1	0	0	0	0	Root;Bacteria;Bacteroidetes;Bacteroidetes;Bacteroidales;Bacteroidaceae;Bacteroides
-94	0	0	1	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-95	0	0	0	1	0	0	1	0	0	Root;Bacteria;Bacteroidetes
-96	0	0	0	0	0	0	0	1	1	Root;Bacteria;Bacteroidetes
-97	0	0	0	0	0	0	0	1	0	Root;Bacteria;Firmicutes
-98	0	0	2	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-99	0	0	0	0	0	0	0	2	2	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-100	0	0	0	0	0	0	1	0	0	Root;Bacteria
-101	0	0	0	0	0	1	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-102	0	0	0	0	0	1	0	0	0	Root;Bacteria
-103	0	0	0	0	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-104	0	1	1	0	0	0	0	0	1	Root;Bacteria;Bacteroidetes
-105	0	0	0	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-106	0	0	0	0	0	0	2	1	0	Root;Bacteria;Bacteroidetes
-107	0	1	1	4	0	0	0	0	1	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae";"Lachnospiraceae Incertae Sedis"
-108	0	1	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-109	0	0	0	0	0	0	5	0	0	Root;Bacteria;Bacteroidetes;Bacteroidetes;Bacteroidales;Porphyromonadaceae;Parabacteroides
-110	0	0	1	0	0	0	0	0	0	Root;Bacteria
-111	0	0	0	0	0	0	1	0	0	Root;Bacteria;Actinobacteria;Actinobacteria;Coriobacteridae;Coriobacteriales;Coriobacterineae;Coriobacteriaceae
-112	0	0	0	2	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-113	0	0	1	0	0	0	0	0	0	Root;Bacteria
-114	0	0	0	0	0	6	0	3	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-115	0	0	0	0	0	0	2	1	0	Root;Bacteria;Bacteroidetes
-116	0	0	0	0	0	1	0	1	0	Root;Bacteria;Bacteroidetes;Bacteroidetes;Bacteroidales
-117	1	0	0	5	17	20	0	0	0	Root;Bacteria
-118	0	0	0	0	0	3	5	2	5	Root;Bacteria;Deferribacteres;Deferribacteres;Deferribacterales;Deferribacteraceae;Mucispirillum
-119	0	1	0	1	0	2	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-120	1	0	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae";"Lachnospiraceae Incertae Sedis"
-121	0	0	0	0	0	0	1	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-122	1	3	1	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-123	0	1	0	0	1	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-124	2	1	0	5	0	1	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-125	0	1	0	3	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-126	0	0	0	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-127	0	1	0	0	0	0	0	0	1	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae";Bryantella
-128	0	1	0	1	1	0	0	0	3	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-129	1	0	3	0	0	4	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-130	0	0	0	0	0	0	1	0	1	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-131	1	0	0	0	0	0	0	0	0	Root;Bacteria
-132	0	2	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-133	0	1	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-134	0	0	0	0	1	0	0	0	0	Root;Bacteria;Firmicutes;"Bacilli";"Lactobacillales";Lactobacillaceae;Lactobacillus
-135	0	0	0	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-136	0	0	0	0	0	0	1	0	0	Root;Bacteria;Bacteroidetes;Bacteroidetes;Bacteroidales;Bacteroidaceae;Bacteroides
-137	0	0	0	0	0	0	1	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;Incertae Sedis XIII;Anaerovorax
-138	0	0	0	0	0	1	0	0	0	Root;Bacteria
-139	0	0	0	0	0	0	1	0	0	Root;Bacteria;Bacteroidetes
-140	0	0	0	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-141	0	0	1	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae";"Lachnospiraceae Incertae Sedis"
-142	0	0	0	0	0	1	0	0	0	Root;Bacteria;Firmicutes
-143	1	0	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae";"Lachnospiraceae Incertae Sedis"
-144	0	0	0	2	0	0	0	0	0	Root;Bacteria;Bacteroidetes
-145	0	1	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-146	2	3	8	0	1	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-147	0	0	0	0	0	1	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-148	1	0	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae";"Lachnospiraceae Incertae Sedis"
-149	1	0	1	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-150	1	0	0	2	4	0	0	0	0	Root;Bacteria;Firmicutes;"Bacilli";"Lactobacillales";Lactobacillaceae;Lactobacillus
-151	0	2	1	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-152	1	0	0	0	0	4	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-153	0	0	0	0	0	0	0	0	1	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-154	1	0	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae";"Lachnospiraceae Incertae Sedis"
-155	0	0	0	0	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-156	0	0	0	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-157	1	0	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-158	0	0	0	0	0	0	0	0	1	Root;Bacteria
-159	1	0	1	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia"
-160	0	1	1	0	1	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-161	0	0	0	0	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-162	0	0	0	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-163	0	0	0	0	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-164	0	0	0	0	0	0	1	0	0	Root;Bacteria
-165	0	0	0	0	0	0	1	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Ruminococcaceae"
-166	0	0	0	0	0	0	1	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-167	8	0	0	0	3	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-168	0	0	0	0	0	1	0	0	0	Root;Bacteria
-169	0	0	0	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-170	0	0	0	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-171	1	0	0	0	1	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-172	1	4	2	6	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-173	0	0	0	0	0	1	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Ruminococcaceae"
-174	0	0	0	0	0	0	1	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-175	0	0	0	0	0	0	1	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-176	0	0	0	0	0	2	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Ruminococcaceae"
-177	3	0	0	0	2	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-178	29	1	10	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-179	0	0	0	0	1	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-180	0	0	1	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-181	0	0	0	0	0	0	0	1	1	Root;Bacteria;Bacteroidetes
-182	0	0	0	1	0	0	0	0	0	Root;Bacteria;Actinobacteria;Actinobacteria;Coriobacteridae;Coriobacteriales;Coriobacterineae;Coriobacteriaceae
-183	1	0	1	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-184	0	1	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-185	2	0	2	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-186	1	0	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-187	0	0	0	4	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-188	1	0	0	0	10	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Peptostreptococcaceae";"Peptostreptococcaceae Incertae Sedis"
-189	0	0	0	0	1	0	0	0	0	Root;Bacteria
-190	0	0	1	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-191	0	0	0	1	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-192	0	0	2	0	0	0	0	0	0	Root;Bacteria;Firmicutes
-193	0	0	1	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-194	0	0	0	1	0	0	0	0	0	Root;Bacteria
-195	0	0	0	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-196	9	0	0	0	5	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-197	0	0	1	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-198	0	0	1	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-199	0	0	0	0	0	1	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-200	0	0	0	0	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-201	0	0	0	0	0	1	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-202	0	0	0	0	0	1	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-203	0	1	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-204	0	1	0	3	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-205	0	0	0	0	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-206	0	0	1	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-207	0	0	0	0	0	0	0	1	0	Root;Bacteria
-208	0	0	0	0	0	1	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-209	1	0	0	0	0	0	0	0	0	Root;Bacteria
-210	0	1	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-211	0	0	0	0	0	1	0	0	0	Root;Bacteria;Firmicutes
-212	0	0	0	0	0	0	0	0	1	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-213	0	0	0	0	0	1	0	0	0	Root;Bacteria
-214	0	0	0	0	0	2	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-215	0	0	0	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-216	1	0	2	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-217	0	0	0	1	0	0	0	0	0	Root;Bacteria
-218	0	0	0	0	0	1	0	0	0	Root;Bacteria;Proteobacteria;Deltaproteobacteria
-219	0	0	1	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-220	0	0	0	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-221	0	0	0	0	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-222	0	0	0	0	0	7	0	2	2	Root;Bacteria;Bacteroidetes
-223	0	0	0	0	0	0	0	2	0	Root;Bacteria
-224	0	0	0	0	0	0	0	0	1	Root;Bacteria
-225	0	0	0	0	0	1	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Ruminococcaceae"
-226	0	0	0	0	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Ruminococcaceae"
-227	2	18	0	1	0	0	21	4	4	Root;Bacteria;Bacteroidetes;Bacteroidetes;Bacteroidales;Bacteroidaceae;Bacteroides
-228	0	0	0	0	1	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-229	1	0	0	0	1	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-230	0	0	0	0	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-231	0	0	0	0	1	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-232	0	0	0	0	1	0	0	0	0	Root;Bacteria
-233	0	0	0	1	0	2	0	1	1	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Ruminococcaceae"
-234	0	0	2	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-235	1	0	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-236	0	0	0	0	0	0	0	0	1	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-237	0	0	0	0	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-238	0	0	1	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-239	0	0	0	0	0	2	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-240	0	0	0	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-241	0	0	0	0	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-242	0	0	0	0	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-243	1	0	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-244	0	0	0	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-245	0	0	0	4	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-246	0	0	0	0	0	0	1	0	0	Root;Bacteria
-247	1	0	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Ruminococcaceae"
-248	0	0	0	0	0	0	0	1	0	Root;Bacteria
-249	0	0	0	0	1	0	0	0	0	Root;Bacteria
-250	1	0	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-251	0	0	0	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae";"Lachnospiraceae Incertae Sedis"
-252	0	2	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae";"Lachnospiraceae Incertae Sedis"
-253	0	0	0	0	1	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-254	1	0	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-255	1	3	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-256	0	0	0	0	0	1	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-257	0	0	0	0	0	1	1	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;Incertae Sedis XIII
-258	0	0	0	0	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-259	0	0	1	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-260	0	0	0	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-261	0	0	1	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-262	0	1	0	0	0	0	1	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-263	1	0	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae";"Lachnospiraceae Incertae Sedis"
-264	0	0	0	0	0	0	0	0	1	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-265	1	1	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-266	0	0	0	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-267	0	1	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Bacilli";"Lactobacillales";Lactobacillaceae;Lactobacillus
-268	0	0	0	0	0	0	1	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-269	0	0	0	0	0	1	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-270	0	0	0	0	0	1	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-271	1	0	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-272	0	1	0	0	0	0	0	0	1	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae";Butyrivibrio
-273	1	0	0	1	0	1	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-274	0	0	0	1	0	0	1	5	2	Root;Bacteria;Bacteroidetes;Bacteroidetes;Bacteroidales;Rikenellaceae;Alistipes
-275	0	0	0	0	0	0	0	1	0	Root;Bacteria;Bacteroidetes;Bacteroidetes;Bacteroidales;Rikenellaceae;Alistipes
-276	1	4	3	2	0	0	0	0	0	Root;Bacteria;Bacteroidetes
-277	0	0	1	0	0	0	0	0	0	Root;Bacteria
-278	0	0	0	0	0	1	0	0	0	Root;Bacteria
-279	0	0	0	0	0	0	0	0	1	Root;Bacteria;Deferribacteres;Deferribacteres;Deferribacterales;Deferribacteraceae;Mucispirillum
-280	2	2	0	1	0	0	0	0	0	Root;Bacteria;Bacteroidetes
-281	0	0	0	0	1	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Ruminococcaceae"
-282	0	0	0	1	4	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-283	0	0	0	1	0	2	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-284	1	0	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Ruminococcaceae"
-285	1	0	1	0	0	0	0	0	0	Root;Bacteria;Bacteroidetes
-286	0	0	0	0	0	0	0	0	1	Root;Bacteria;Bacteroidetes
-287	0	0	0	0	5	2	0	0	0	Root;Bacteria;Proteobacteria;Epsilonproteobacteria;Campylobacterales;Helicobacteraceae;Helicobacter
-288	0	0	0	0	0	1	0	0	0	Root;Bacteria
-289	0	0	1	0	0	0	0	0	0	Root;Bacteria
-290	0	1	0	0	0	0	0	0	0	Root;Bacteria;Bacteroidetes
-291	0	0	0	2	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-292	9	12	5	13	2	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-293	0	1	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-294	0	0	0	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-295	4	2	1	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-296	0	0	0	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-297	0	1	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-298	0	0	1	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-299	0	0	0	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-300	0	0	0	0	0	0	0	2	0	Root;Bacteria
-301	0	0	0	0	0	0	8	8	3	Root;Bacteria
-302	0	0	0	0	0	0	1	0	0	Root;Bacteria;Actinobacteria;Actinobacteria;Coriobacteridae;Coriobacteriales;Coriobacterineae;Coriobacteriaceae
-303	0	0	0	3	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-304	0	0	0	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-305	1	0	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-306	0	0	0	0	0	0	1	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-307	0	0	0	0	0	0	2	0	0	Root;Bacteria;Firmicutes;"Erysipelotrichi";"Erysipelotrichales";Erysipelotrichaceae;Turicibacter
-308	0	0	0	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Erysipelotrichi";"Erysipelotrichales";Erysipelotrichaceae;Turicibacter
-309	0	0	0	0	0	0	1	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-310	0	0	0	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-311	0	0	1	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-312	0	0	0	8	0	0	1	0	0	Root;Bacteria;Firmicutes;"Erysipelotrichi";"Erysipelotrichales";Erysipelotrichaceae;Turicibacter
-313	0	0	0	0	1	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-314	0	0	0	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-315	0	0	0	0	0	1	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-316	0	0	0	0	0	0	1	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-317	1	0	1	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-318	0	0	0	0	1	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-319	0	0	0	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae";Butyrivibrio
-320	1	0	0	0	0	0	0	1	0	Root;Bacteria
-321	0	0	0	0	2	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-322	0	0	0	0	2	0	1	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-323	0	0	0	0	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia"
-324	0	2	1	0	0	0	0	0	0	Root;Bacteria;Bacteroidetes
-325	0	0	0	0	0	0	0	1	0	Root;Bacteria;Firmicutes
-326	0	0	1	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Ruminococcaceae"
-327	0	0	0	1	0	0	0	0	0	Root;Bacteria
-328	1	0	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-329	0	0	2	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Ruminococcaceae";Acetanaerobacterium
-330	0	0	0	0	0	1	0	0	0	Root;Bacteria
-331	0	0	0	0	4	0	0	0	2	Root;Bacteria;Firmicutes;"Erysipelotrichi";"Erysipelotrichales";Erysipelotrichaceae;Erysipelotrichaceae Incertae Sedis
-332	0	0	0	0	0	1	0	0	0	Root;Bacteria
-333	0	0	0	0	0	0	0	0	1	Root;Bacteria;Bacteroidetes;Bacteroidetes;Bacteroidales;Bacteroidaceae;Bacteroides
-334	0	0	0	0	0	0	1	0	0	Root;Bacteria;Verrucomicrobia;Verrucomicrobiae;Verrucomicrobiales;Verrucomicrobiaceae;Akkermansia
-335	0	0	0	0	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-336	0	0	0	0	1	0	0	0	0	Root;Bacteria
-337	0	0	0	0	0	0	0	0	1	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-338	0	0	0	1	0	0	0	0	0	Root;Bacteria;Firmicutes
-339	0	0	1	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-340	0	0	0	0	0	0	1	0	0	Root;Bacteria;Actinobacteria;Actinobacteria;Coriobacteridae;Coriobacteriales;Coriobacterineae;Coriobacteriaceae
-341	0	0	0	0	0	0	0	0	1	Root;Bacteria;Deferribacteres;Deferribacteres;Deferribacterales;Deferribacteraceae;Mucispirillum
-342	0	0	0	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-343	0	0	0	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-344	0	0	0	0	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-345	0	0	1	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-346	0	0	0	0	0	1	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-347	0	0	0	0	1	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-348	0	0	0	0	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-349	0	0	0	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-350	0	1	0	0	0	0	0	0	0	Root;Bacteria
-351	0	0	0	0	0	0	0	1	0	Root;Bacteria
-352	0	0	0	0	0	1	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Ruminococcaceae"
-353	0	0	0	0	0	2	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Ruminococcaceae"
-354	0	0	0	0	0	0	0	0	1	Root;Bacteria;Firmicutes;"Bacilli";"Lactobacillales";"Carnobacteriaceae";"Carnobacteriaceae 1";Atopostipes
-355	0	0	0	0	0	0	0	2	0	Root;Bacteria;Bacteroidetes
-356	1	0	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Erysipelotrichi";"Erysipelotrichales";Erysipelotrichaceae;Coprobacillus
-357	0	0	0	0	0	0	2	3	1	Root;Bacteria;Bacteroidetes
-358	0	0	0	0	0	0	1	0	0	Root;Bacteria
-359	0	0	0	0	0	0	2	0	0	Root;Bacteria;TM7;TM7_genera_incertae_sedis
-360	0	0	0	0	0	1	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-361	0	1	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-362	0	0	0	0	0	0	1	0	1	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-363	0	0	0	0	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Ruminococcaceae"
-364	1	0	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae";"Lachnospiraceae Incertae Sedis"
-365	1	0	0	0	2	0	1	0	2	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Ruminococcaceae"
-366	0	0	0	0	0	1	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-367	0	0	1	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-368	0	0	1	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-369	0	1	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae";Butyrivibrio
-370	0	0	1	0	0	0	0	0	0	Root;Bacteria
-371	0	0	1	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-372	0	0	0	0	0	0	1	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-373	0	1	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes
-374	0	0	0	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Ruminococcaceae"
-375	0	0	0	0	0	1	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-376	0	0	0	0	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-377	0	0	0	0	1	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-378	0	0	0	0	0	0	4	0	0	Root;Bacteria;Firmicutes;"Erysipelotrichi";"Erysipelotrichales";Erysipelotrichaceae;Erysipelotrichaceae Incertae Sedis
-379	0	0	1	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Ruminococcaceae"
-380	0	0	1	0	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-381	0	0	1	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-382	0	0	1	0	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Ruminococcaceae"
-383	0	0	0	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-384	0	0	0	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-385	0	0	0	1	0	1	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Ruminococcaceae"
-386	0	0	0	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Ruminococcaceae"
-387	0	0	0	0	0	1	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-388	0	0	0	0	0	1	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-389	0	0	0	0	0	0	1	0	1	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Ruminococcaceae"
-390	0	0	0	0	0	0	0	0	1	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-391	1	0	0	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Bacilli";"Lactobacillales";Lactobacillaceae;Lactobacillus
-392	0	1	0	0	0	0	3	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;Clostridiaceae;"Clostridiaceae 1";Clostridium
-393	0	0	0	0	0	0	1	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-394	0	0	1	0	0	0	0	0	0	Root;Bacteria
-395	0	0	0	0	0	0	0	1	0	Root;Bacteria
-396	0	0	0	0	0	0	0	0	1	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-397	0	0	1	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-398	0	0	0	0	0	0	1	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-399	0	0	0	0	0	0	0	1	0	Root;Bacteria;Actinobacteria;Actinobacteria
-400	0	0	0	0	0	1	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-401	0	0	0	0	0	1	0	0	0	Root;Bacteria;Firmicutes
-402	0	0	0	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Ruminococcaceae"
-403	0	0	0	0	0	0	2	0	1	Root;Bacteria;Proteobacteria;Deltaproteobacteria
-404	0	0	1	0	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Ruminococcaceae"
-405	0	0	0	0	0	1	0	0	0	Root;Bacteria;Firmicutes;"Bacilli";"Lactobacillales";Streptococcaceae;Streptococcus
-406	0	0	0	0	1	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-407	0	0	1	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Ruminococcaceae"
-408	0	0	0	0	0	1	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-409	0	0	0	0	0	0	1	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-410	1	0	0	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Ruminococcaceae"
-411	0	0	0	0	0	1	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-412	0	0	0	0	0	0	0	0	1	Root;Bacteria;Firmicutes
-413	0	0	0	0	0	1	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Ruminococcaceae"
-414	0	0	3	0	0	0	0	1	3	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-415	0	0	0	0	0	1	0	0	0	Root;Bacteria;Firmicutes
-416	0	0	0	0	0	1	0	0	0	Root;Bacteria
-417	14	1	14	1	0	0	0	0	0	Root;Bacteria;Firmicutes;"Bacilli";"Lactobacillales";Lactobacillaceae;Lactobacillus
-418	0	0	1	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-419	1	0	0	0	0	0	0	2	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Ruminococcaceae";Ruminococcus
-420	0	0	1	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-421	0	1	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-422	0	0	0	0	0	1	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-423	0	1	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Ruminococcaceae";"Ruminococcaceae Incertae Sedis"
-424	0	0	0	0	0	1	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-425	0	0	0	0	0	0	2	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Ruminococcaceae"
-426	0	0	0	0	0	0	0	1	0	Root;Bacteria
-427	0	0	0	0	0	1	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-428	0	1	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-429	0	0	1	0	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-430	1	1	1	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-431	0	0	0	0	0	0	0	1	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-432	0	0	0	0	1	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-433	1	0	0	0	0	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales
-434	0	0	0	0	0	0	0	1	0	Root;Bacteria;Firmicutes
-435	1	0	1	0	0	0	0	1	1	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales;"Lachnospiraceae"
-436	0	0	0	0	1	0	0	0	0	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales"""
+fasting_subset_otu_table = """{"rows": [{"id": "0", "metadata": {"taxonomy": ["Root", "Bacteria", "Actinobacteria", "Actinobacteria", "Coriobacteridae", "Coriobacteriales", "Coriobacterineae", "Coriobacteriaceae"]}}, {"id": "1", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "2", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "3", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "4", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "5", "metadata": {"taxonomy": ["Root"]}}, {"id": "6", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "7", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "8", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "9", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "10", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "11", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Bacilli", "Bacillales", "Staphylococcaceae", "Staphylococcus"]}}, {"id": "12", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "13", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "14", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "15", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "16", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes", "Bacteroidetes", "Bacteroidales", "Rikenellaceae", "Alistipes"]}}, {"id": "17", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "18", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "19", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes", "Bacteroidetes", "Bacteroidales", "Rikenellaceae", "Alistipes"]}}, {"id": "20", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "21", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "22", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "23", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Bacilli", "Bacillales", "Staphylococcaceae", "Staphylococcus"]}}, {"id": "24", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "25", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "26", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "27", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "28", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "29", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "30", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "31", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "32", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes", "Bacteroidetes", "Bacteroidales", "Bacteroidaceae", "Bacteroides"]}}, {"id": "33", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes", "Bacteroidetes", "Bacteroidales"]}}, {"id": "34", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes", "Bacteroidetes", "Bacteroidales", "Bacteroidaceae", "Bacteroides"]}}, {"id": "35", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes", "Bacteroidetes", "Bacteroidales", "Rikenellaceae", "Alistipes"]}}, {"id": "36", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "37", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes", "Bacteroidetes", "Bacteroidales", "Porphyromonadaceae", "Parabacteroides"]}}, {"id": "38", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "39", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes", "Bacteroidetes", "Bacteroidales", "Prevotellaceae"]}}, {"id": "40", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "41", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "42", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "43", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "44", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "45", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "46", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes", "Bacteroidetes", "Bacteroidales", "Rikenellaceae", "Alistipes"]}}, {"id": "47", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "48", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia"]}}, {"id": "49", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes", "Bacteroidetes", "Bacteroidales", "Bacteroidaceae", "Bacteroides"]}}, {"id": "50", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes", "Bacteroidetes", "Bacteroidales", "Bacteroidaceae", "Bacteroides"]}}, {"id": "51", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes", "Bacteroidetes", "Bacteroidales", "Rikenellaceae", "Alistipes"]}}, {"id": "52", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "53", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes", "Bacteroidetes", "Bacteroidales", "Bacteroidaceae", "Bacteroides"]}}, {"id": "54", "metadata": {"taxonomy": ["Root", "Bacteria", "Actinobacteria", "Actinobacteria", "Coriobacteridae", "Coriobacteriales", "Coriobacterineae", "Coriobacteriaceae", "Olsenella"]}}, {"id": "55", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "56", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "57", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "58", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes", "Bacteroidetes", "Bacteroidales", "Rikenellaceae"]}}, {"id": "59", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "60", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "61", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "62", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "63", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes", "Bacteroidetes", "Bacteroidales", "Porphyromonadaceae", "Parabacteroides"]}}, {"id": "64", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "65", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "66", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "67", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes", "Bacteroidetes", "Bacteroidales"]}}, {"id": "68", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "69", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "70", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae", "Butyrivibrio"]}}, {"id": "71", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "72", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "73", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "74", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes", "Bacteroidetes", "Bacteroidales", "Rikenellaceae", "Alistipes"]}}, {"id": "75", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "76", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "77", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "78", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "79", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes", "Bacteroidetes", "Bacteroidales", "Porphyromonadaceae", "Parabacteroides"]}}, {"id": "80", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "81", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "82", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "83", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes", "Bacteroidetes", "Bacteroidales", "Bacteroidaceae", "Bacteroides"]}}, {"id": "84", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes", "Bacteroidetes", "Bacteroidales", "Rikenellaceae", "Alistipes"]}}, {"id": "85", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "86", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes", "Bacteroidetes", "Bacteroidales", "Bacteroidaceae", "Bacteroides"]}}, {"id": "87", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "88", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "89", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "90", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes", "Bacteroidetes", "Bacteroidales", "Bacteroidaceae", "Bacteroides"]}}, {"id": "91", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "92", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "93", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes", "Bacteroidetes", "Bacteroidales", "Bacteroidaceae", "Bacteroides"]}}, {"id": "94", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "95", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "96", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "97", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes"]}}, {"id": "98", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "99", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "100", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "101", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "102", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "103", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "104", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "105", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "106", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "107", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae", "Lachnospiraceae Incertae Sedis"]}}, {"id": "108", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "109", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes", "Bacteroidetes", "Bacteroidales", "Porphyromonadaceae", "Parabacteroides"]}}, {"id": "110", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "111", "metadata": {"taxonomy": ["Root", "Bacteria", "Actinobacteria", "Actinobacteria", "Coriobacteridae", "Coriobacteriales", "Coriobacterineae", "Coriobacteriaceae"]}}, {"id": "112", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "113", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "114", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "115", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "116", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes", "Bacteroidetes", "Bacteroidales"]}}, {"id": "117", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "118", "metadata": {"taxonomy": ["Root", "Bacteria", "Deferribacteres", "Deferribacteres", "Deferribacterales", "Deferribacteraceae", "Mucispirillum"]}}, {"id": "119", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "120", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae", "Lachnospiraceae Incertae Sedis"]}}, {"id": "121", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "122", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "123", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "124", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "125", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "126", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "127", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae", "Bryantella"]}}, {"id": "128", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "129", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "130", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "131", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "132", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "133", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "134", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Bacilli", "Lactobacillales", "Lactobacillaceae", "Lactobacillus"]}}, {"id": "135", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "136", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes", "Bacteroidetes", "Bacteroidales", "Bacteroidaceae", "Bacteroides"]}}, {"id": "137", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Incertae Sedis XIII", "Anaerovorax"]}}, {"id": "138", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "139", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "140", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "141", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae", "Lachnospiraceae Incertae Sedis"]}}, {"id": "142", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes"]}}, {"id": "143", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae", "Lachnospiraceae Incertae Sedis"]}}, {"id": "144", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "145", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "146", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "147", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "148", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae", "Lachnospiraceae Incertae Sedis"]}}, {"id": "149", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "150", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Bacilli", "Lactobacillales", "Lactobacillaceae", "Lactobacillus"]}}, {"id": "151", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "152", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "153", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "154", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae", "Lachnospiraceae Incertae Sedis"]}}, {"id": "155", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "156", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "157", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "158", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "159", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia"]}}, {"id": "160", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "161", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "162", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "163", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "164", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "165", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Ruminococcaceae"]}}, {"id": "166", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "167", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "168", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "169", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "170", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "171", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "172", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "173", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Ruminococcaceae"]}}, {"id": "174", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "175", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "176", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Ruminococcaceae"]}}, {"id": "177", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "178", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "179", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "180", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "181", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "182", "metadata": {"taxonomy": ["Root", "Bacteria", "Actinobacteria", "Actinobacteria", "Coriobacteridae", "Coriobacteriales", "Coriobacterineae", "Coriobacteriaceae"]}}, {"id": "183", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "184", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "185", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "186", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "187", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "188", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Peptostreptococcaceae", "Peptostreptococcaceae Incertae Sedis"]}}, {"id": "189", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "190", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "191", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "192", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes"]}}, {"id": "193", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "194", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "195", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "196", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "197", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "198", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "199", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "200", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "201", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "202", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "203", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "204", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "205", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "206", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "207", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "208", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "209", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "210", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "211", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes"]}}, {"id": "212", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "213", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "214", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "215", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "216", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "217", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "218", "metadata": {"taxonomy": ["Root", "Bacteria", "Proteobacteria", "Deltaproteobacteria"]}}, {"id": "219", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "220", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "221", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "222", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "223", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "224", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "225", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Ruminococcaceae"]}}, {"id": "226", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Ruminococcaceae"]}}, {"id": "227", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes", "Bacteroidetes", "Bacteroidales", "Bacteroidaceae", "Bacteroides"]}}, {"id": "228", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "229", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "230", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "231", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "232", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "233", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Ruminococcaceae"]}}, {"id": "234", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "235", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "236", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "237", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "238", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "239", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "240", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "241", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "242", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "243", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "244", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "245", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "246", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "247", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Ruminococcaceae"]}}, {"id": "248", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "249", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "250", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "251", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae", "Lachnospiraceae Incertae Sedis"]}}, {"id": "252", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae", "Lachnospiraceae Incertae Sedis"]}}, {"id": "253", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "254", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "255", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "256", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "257", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Incertae Sedis XIII"]}}, {"id": "258", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "259", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "260", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "261", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "262", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "263", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae", "Lachnospiraceae Incertae Sedis"]}}, {"id": "264", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "265", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "266", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "267", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Bacilli", "Lactobacillales", "Lactobacillaceae", "Lactobacillus"]}}, {"id": "268", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "269", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "270", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "271", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "272", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae", "Butyrivibrio"]}}, {"id": "273", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "274", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes", "Bacteroidetes", "Bacteroidales", "Rikenellaceae", "Alistipes"]}}, {"id": "275", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes", "Bacteroidetes", "Bacteroidales", "Rikenellaceae", "Alistipes"]}}, {"id": "276", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "277", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "278", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "279", "metadata": {"taxonomy": ["Root", "Bacteria", "Deferribacteres", "Deferribacteres", "Deferribacterales", "Deferribacteraceae", "Mucispirillum"]}}, {"id": "280", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "281", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Ruminococcaceae"]}}, {"id": "282", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "283", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "284", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Ruminococcaceae"]}}, {"id": "285", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "286", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "287", "metadata": {"taxonomy": ["Root", "Bacteria", "Proteobacteria", "Epsilonproteobacteria", "Campylobacterales", "Helicobacteraceae", "Helicobacter"]}}, {"id": "288", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "289", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "290", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "291", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "292", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "293", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "294", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "295", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "296", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "297", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "298", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "299", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "300", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "301", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "302", "metadata": {"taxonomy": ["Root", "Bacteria", "Actinobacteria", "Actinobacteria", "Coriobacteridae", "Coriobacteriales", "Coriobacterineae", "Coriobacteriaceae"]}}, {"id": "303", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "304", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "305", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "306", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "307", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Erysipelotrichi", "Erysipelotrichales", "Erysipelotrichaceae", "Turicibacter"]}}, {"id": "308", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Erysipelotrichi", "Erysipelotrichales", "Erysipelotrichaceae", "Turicibacter"]}}, {"id": "309", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "310", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "311", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "312", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Erysipelotrichi", "Erysipelotrichales", "Erysipelotrichaceae", "Turicibacter"]}}, {"id": "313", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "314", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "315", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "316", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "317", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "318", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "319", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae", "Butyrivibrio"]}}, {"id": "320", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "321", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "322", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "323", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia"]}}, {"id": "324", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "325", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes"]}}, {"id": "326", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Ruminococcaceae"]}}, {"id": "327", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "328", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "329", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Ruminococcaceae", "Acetanaerobacterium"]}}, {"id": "330", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "331", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Erysipelotrichi", "Erysipelotrichales", "Erysipelotrichaceae", "Erysipelotrichaceae Incertae Sedis"]}}, {"id": "332", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "333", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes", "Bacteroidetes", "Bacteroidales", "Bacteroidaceae", "Bacteroides"]}}, {"id": "334", "metadata": {"taxonomy": ["Root", "Bacteria", "Verrucomicrobia", "Verrucomicrobiae", "Verrucomicrobiales", "Verrucomicrobiaceae", "Akkermansia"]}}, {"id": "335", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "336", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "337", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "338", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes"]}}, {"id": "339", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "340", "metadata": {"taxonomy": ["Root", "Bacteria", "Actinobacteria", "Actinobacteria", "Coriobacteridae", "Coriobacteriales", "Coriobacterineae", "Coriobacteriaceae"]}}, {"id": "341", "metadata": {"taxonomy": ["Root", "Bacteria", "Deferribacteres", "Deferribacteres", "Deferribacterales", "Deferribacteraceae", "Mucispirillum"]}}, {"id": "342", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "343", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "344", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "345", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "346", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "347", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "348", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "349", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "350", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "351", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "352", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Ruminococcaceae"]}}, {"id": "353", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Ruminococcaceae"]}}, {"id": "354", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Bacilli", "Lactobacillales", "Carnobacteriaceae", "Carnobacteriaceae 1", "Atopostipes"]}}, {"id": "355", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "356", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Erysipelotrichi", "Erysipelotrichales", "Erysipelotrichaceae", "Coprobacillus"]}}, {"id": "357", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "358", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "359", "metadata": {"taxonomy": ["Root", "Bacteria", "TM7", "TM7_genera_incertae_sedis"]}}, {"id": "360", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "361", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "362", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "363", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Ruminococcaceae"]}}, {"id": "364", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae", "Lachnospiraceae Incertae Sedis"]}}, {"id": "365", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Ruminococcaceae"]}}, {"id": "366", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "367", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "368", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "369", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae", "Butyrivibrio"]}}, {"id": "370", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "371", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "372", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "373", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes"]}}, {"id": "374", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Ruminococcaceae"]}}, {"id": "375", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "376", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "377", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "378", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Erysipelotrichi", "Erysipelotrichales", "Erysipelotrichaceae", "Erysipelotrichaceae Incertae Sedis"]}}, {"id": "379", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Ruminococcaceae"]}}, {"id": "380", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "381", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "382", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Ruminococcaceae"]}}, {"id": "383", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "384", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "385", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Ruminococcaceae"]}}, {"id": "386", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Ruminococcaceae"]}}, {"id": "387", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "388", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "389", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Ruminococcaceae"]}}, {"id": "390", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "391", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Bacilli", "Lactobacillales", "Lactobacillaceae", "Lactobacillus"]}}, {"id": "392", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Clostridiaceae", "Clostridiaceae 1", "Clostridium"]}}, {"id": "393", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "394", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "395", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "396", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "397", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "398", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "399", "metadata": {"taxonomy": ["Root", "Bacteria", "Actinobacteria", "Actinobacteria"]}}, {"id": "400", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "401", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes"]}}, {"id": "402", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Ruminococcaceae"]}}, {"id": "403", "metadata": {"taxonomy": ["Root", "Bacteria", "Proteobacteria", "Deltaproteobacteria"]}}, {"id": "404", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Ruminococcaceae"]}}, {"id": "405", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Bacilli", "Lactobacillales", "Streptococcaceae", "Streptococcus"]}}, {"id": "406", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "407", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Ruminococcaceae"]}}, {"id": "408", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "409", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "410", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Ruminococcaceae"]}}, {"id": "411", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "412", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes"]}}, {"id": "413", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Ruminococcaceae"]}}, {"id": "414", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "415", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes"]}}, {"id": "416", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "417", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Bacilli", "Lactobacillales", "Lactobacillaceae", "Lactobacillus"]}}, {"id": "418", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "419", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Ruminococcaceae", "Ruminococcus"]}}, {"id": "420", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "421", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "422", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "423", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Ruminococcaceae", "Ruminococcaceae Incertae Sedis"]}}, {"id": "424", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "425", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Ruminococcaceae"]}}, {"id": "426", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "427", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "428", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "429", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "430", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "431", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "432", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "433", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}, {"id": "434", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes"]}}, {"id": "435", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales", "Lachnospiraceae"]}}, {"id": "436", "metadata": {"taxonomy": ["Root", "Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]}}], "format": "Biological Observation Matrix v0.9", "data": [[0, 8, 1.0], [1, 3, 1.0], [2, 4, 2.0], [2, 5, 2.0], [2, 6, 1.0], [2, 7, 5.0], [2, 8, 1.0], [3, 8, 1.0], [4, 8, 1.0], [5, 2, 2.0], [5, 7, 1.0], [6, 7, 1.0], [7, 1, 1.0], [7, 2, 2.0], [7, 4, 9.0], [7, 5, 1.0], [7, 6, 1.0], [7, 7, 1.0], [7, 8, 3.0], [8, 8, 1.0], [9, 6, 2.0], [9, 7, 7.0], [9, 8, 22.0], [10, 0, 1.0], [10, 1, 2.0], [10, 3, 2.0], [10, 4, 1.0], [10, 5, 6.0], [10, 7, 2.0], [10, 8, 4.0], [11, 8, 2.0], [12, 1, 1.0], [12, 5, 3.0], [12, 6, 1.0], [12, 7, 1.0], [12, 8, 1.0], [13, 3, 1.0], [13, 7, 1.0], [14, 2, 1.0], [14, 6, 1.0], [14, 7, 1.0], [15, 6, 1.0], [15, 7, 3.0], [16, 6, 5.0], [17, 5, 5.0], [18, 7, 1.0], [19, 1, 2.0], [19, 2, 2.0], [19, 3, 4.0], [19, 5, 5.0], [19, 6, 1.0], [19, 7, 5.0], [20, 6, 1.0], [20, 7, 1.0], [20, 8, 1.0], [21, 7, 1.0], [22, 6, 1.0], [22, 7, 2.0], [22, 8, 6.0], [23, 8, 1.0], [24, 7, 1.0], [25, 8, 1.0], [26, 7, 1.0], [26, 8, 1.0], [27, 3, 1.0], [27, 6, 1.0], [27, 7, 1.0], [27, 8, 9.0], [28, 5, 1.0], [29, 1, 1.0], [30, 1, 1.0], [30, 2, 1.0], [30, 3, 1.0], [30, 4, 1.0], [30, 6, 3.0], [30, 8, 4.0], [31, 4, 9.0], [31, 5, 1.0], [32, 6, 2.0], [32, 7, 1.0], [33, 5, 2.0], [34, 6, 1.0], [35, 6, 1.0], [36, 5, 1.0], [37, 8, 1.0], [38, 8, 1.0], [39, 7, 1.0], [40, 2, 2.0], [41, 0, 6.0], [41, 2, 5.0], [41, 4, 1.0], [42, 2, 1.0], [43, 0, 1.0], [43, 1, 1.0], [43, 2, 1.0], [44, 4, 1.0], [45, 4, 2.0], [46, 5, 5.0], [46, 6, 9.0], [46, 7, 5.0], [46, 8, 3.0], [47, 1, 1.0], [48, 6, 1.0], [49, 6, 1.0], [50, 4, 3.0], [51, 8, 1.0], [52, 2, 1.0], [53, 6, 13.0], [54, 5, 2.0], [55, 1, 1.0], [56, 2, 1.0], [57, 7, 1.0], [58, 2, 1.0], [59, 4, 1.0], [60, 8, 1.0], [61, 4, 2.0], [61, 7, 4.0], [62, 1, 2.0], [62, 3, 1.0], [62, 7, 1.0], [63, 6, 2.0], [64, 1, 1.0], [65, 0, 5.0], [65, 1, 9.0], [65, 3, 3.0], [65, 7, 2.0], [66, 7, 2.0], [67, 1, 2.0], [67, 5, 1.0], [68, 1, 1.0], [69, 1, 1.0], [69, 2, 2.0], [69, 4, 3.0], [69, 6, 1.0], [70, 5, 1.0], [71, 5, 1.0], [71, 6, 1.0], [72, 5, 1.0], [73, 3, 1.0], [73, 7, 1.0], [74, 7, 1.0], [75, 1, 11.0], [75, 4, 1.0], [75, 6, 1.0], [76, 0, 2.0], [76, 1, 1.0], [76, 2, 10.0], [76, 3, 2.0], [76, 4, 24.0], [76, 7, 1.0], [76, 8, 1.0], [77, 2, 1.0], [77, 5, 2.0], [77, 7, 1.0], [78, 2, 1.0], [78, 4, 1.0], [79, 1, 1.0], [79, 8, 2.0], [80, 1, 4.0], [80, 2, 3.0], [80, 4, 1.0], [80, 5, 2.0], [80, 7, 2.0], [80, 8, 1.0], [81, 3, 1.0], [82, 5, 1.0], [83, 3, 1.0], [83, 6, 1.0], [83, 7, 2.0], [83, 8, 19.0], [84, 3, 2.0], [85, 1, 1.0], [85, 2, 1.0], [85, 3, 1.0], [85, 6, 1.0], [85, 7, 1.0], [86, 1, 1.0], [87, 2, 1.0], [88, 4, 1.0], [89, 8, 1.0], [90, 6, 1.0], [91, 3, 1.0], [92, 1, 7.0], [92, 2, 1.0], [92, 6, 1.0], [93, 4, 1.0], [94, 2, 1.0], [95, 3, 1.0], [95, 6, 1.0], [96, 7, 1.0], [96, 8, 1.0], [97, 7, 1.0], [98, 2, 2.0], [99, 7, 2.0], [99, 8, 2.0], [100, 6, 1.0], [101, 5, 1.0], [102, 5, 1.0], [103, 7, 1.0], [104, 1, 1.0], [104, 2, 1.0], [104, 8, 1.0], [105, 3, 1.0], [106, 6, 2.0], [106, 7, 1.0], [107, 1, 1.0], [107, 2, 1.0], [107, 3, 4.0], [107, 8, 1.0], [108, 1, 1.0], [109, 6, 5.0], [110, 2, 1.0], [111, 6, 1.0], [112, 3, 2.0], [113, 2, 1.0], [114, 5, 6.0], [114, 7, 3.0], [115, 6, 2.0], [115, 7, 1.0], [116, 5, 1.0], [116, 7, 1.0], [117, 0, 1.0], [117, 3, 5.0], [117, 4, 17.0], [117, 5, 20.0], [118, 5, 3.0], [118, 6, 5.0], [118, 7, 2.0], [118, 8, 5.0], [119, 1, 1.0], [119, 3, 1.0], [119, 5, 2.0], [120, 0, 1.0], [121, 6, 1.0], [122, 0, 1.0], [122, 1, 3.0], [122, 2, 1.0], [123, 1, 1.0], [123, 4, 1.0], [124, 0, 2.0], [124, 1, 1.0], [124, 3, 5.0], [124, 5, 1.0], [125, 1, 1.0], [125, 3, 3.0], [125, 7, 1.0], [126, 3, 1.0], [127, 1, 1.0], [127, 8, 1.0], [128, 1, 1.0], [128, 3, 1.0], [128, 4, 1.0], [128, 8, 3.0], [129, 0, 1.0], [129, 2, 3.0], [129, 5, 4.0], [130, 6, 1.0], [130, 8, 1.0], [131, 0, 1.0], [132, 1, 2.0], [133, 1, 1.0], [134, 4, 1.0], [135, 3, 1.0], [136, 6, 1.0], [137, 6, 1.0], [138, 5, 1.0], [139, 6, 1.0], [140, 3, 1.0], [141, 2, 1.0], [142, 5, 1.0], [143, 0, 1.0], [144, 3, 2.0], [145, 1, 1.0], [146, 0, 2.0], [146, 1, 3.0], [146, 2, 8.0], [146, 4, 1.0], [147, 5, 1.0], [148, 0, 1.0], [149, 0, 1.0], [149, 2, 1.0], [150, 0, 1.0], [150, 3, 2.0], [150, 4, 4.0], [151, 1, 2.0], [151, 2, 1.0], [152, 0, 1.0], [152, 5, 4.0], [153, 8, 1.0], [154, 0, 1.0], [155, 7, 1.0], [156, 3, 1.0], [157, 0, 1.0], [158, 8, 1.0], [159, 0, 1.0], [159, 2, 1.0], [159, 3, 1.0], [160, 1, 1.0], [160, 2, 1.0], [160, 4, 1.0], [161, 7, 1.0], [162, 3, 1.0], [163, 7, 1.0], [164, 6, 1.0], [165, 6, 1.0], [166, 6, 1.0], [167, 0, 8.0], [167, 4, 3.0], [168, 5, 1.0], [169, 3, 1.0], [170, 3, 1.0], [171, 0, 1.0], [171, 4, 1.0], [172, 0, 1.0], [172, 1, 4.0], [172, 2, 2.0], [172, 3, 6.0], [173, 5, 1.0], [174, 6, 1.0], [175, 6, 1.0], [176, 5, 2.0], [176, 7, 1.0], [177, 0, 3.0], [177, 4, 2.0], [178, 0, 29.0], [178, 1, 1.0], [178, 2, 10.0], [179, 4, 1.0], [180, 2, 1.0], [181, 7, 1.0], [181, 8, 1.0], [182, 3, 1.0], [183, 0, 1.0], [183, 2, 1.0], [184, 1, 1.0], [185, 0, 2.0], [185, 2, 2.0], [185, 3, 1.0], [186, 0, 1.0], [187, 3, 4.0], [188, 0, 1.0], [188, 4, 10.0], [189, 4, 1.0], [190, 2, 1.0], [191, 3, 1.0], [191, 7, 1.0], [192, 2, 2.0], [193, 2, 1.0], [194, 3, 1.0], [195, 3, 1.0], [196, 0, 9.0], [196, 4, 5.0], [197, 2, 1.0], [198, 2, 1.0], [199, 5, 1.0], [200, 7, 1.0], [201, 5, 1.0], [202, 5, 1.0], [203, 1, 1.0], [204, 1, 1.0], [204, 3, 3.0], [204, 7, 1.0], [205, 7, 1.0], [206, 2, 1.0], [207, 7, 1.0], [208, 5, 1.0], [209, 0, 1.0], [210, 1, 1.0], [211, 5, 1.0], [212, 8, 1.0], [213, 5, 1.0], [214, 5, 2.0], [215, 3, 1.0], [216, 0, 1.0], [216, 2, 2.0], [217, 3, 1.0], [218, 5, 1.0], [219, 2, 1.0], [220, 3, 1.0], [221, 7, 1.0], [222, 5, 7.0], [222, 7, 2.0], [222, 8, 2.0], [223, 7, 2.0], [224, 8, 1.0], [225, 5, 1.0], [226, 7, 1.0], [227, 0, 2.0], [227, 1, 18.0], [227, 3, 1.0], [227, 6, 21.0], [227, 7, 4.0], [227, 8, 4.0], [228, 4, 1.0], [229, 0, 1.0], [229, 4, 1.0], [230, 7, 1.0], [231, 4, 1.0], [232, 4, 1.0], [233, 3, 1.0], [233, 5, 2.0], [233, 7, 1.0], [233, 8, 1.0], [234, 2, 2.0], [235, 0, 1.0], [236, 8, 1.0], [237, 7, 1.0], [238, 2, 1.0], [239, 5, 2.0], [240, 3, 1.0], [241, 7, 1.0], [242, 7, 1.0], [243, 0, 1.0], [244, 3, 1.0], [245, 3, 4.0], [245, 7, 1.0], [246, 6, 1.0], [247, 0, 1.0], [248, 7, 1.0], [249, 4, 1.0], [250, 0, 1.0], [251, 3, 1.0], [252, 1, 2.0], [253, 4, 1.0], [254, 0, 1.0], [255, 0, 1.0], [255, 1, 3.0], [256, 5, 1.0], [257, 5, 1.0], [257, 6, 1.0], [258, 7, 1.0], [259, 2, 1.0], [260, 3, 1.0], [261, 2, 1.0], [262, 1, 1.0], [262, 6, 1.0], [263, 0, 1.0], [264, 8, 1.0], [265, 0, 1.0], [265, 1, 1.0], [266, 3, 1.0], [267, 1, 1.0], [268, 6, 1.0], [269, 5, 1.0], [270, 5, 1.0], [271, 0, 1.0], [272, 1, 1.0], [272, 8, 1.0], [273, 0, 1.0], [273, 3, 1.0], [273, 5, 1.0], [274, 3, 1.0], [274, 6, 1.0], [274, 7, 5.0], [274, 8, 2.0], [275, 7, 1.0], [276, 0, 1.0], [276, 1, 4.0], [276, 2, 3.0], [276, 3, 2.0], [277, 2, 1.0], [278, 5, 1.0], [279, 8, 1.0], [280, 0, 2.0], [280, 1, 2.0], [280, 3, 1.0], [281, 4, 1.0], [282, 3, 1.0], [282, 4, 4.0], [283, 3, 1.0], [283, 5, 2.0], [284, 0, 1.0], [285, 0, 1.0], [285, 2, 1.0], [286, 8, 1.0], [287, 4, 5.0], [287, 5, 2.0], [288, 5, 1.0], [289, 2, 1.0], [290, 1, 1.0], [291, 3, 2.0], [292, 0, 9.0], [292, 1, 12.0], [292, 2, 5.0], [292, 3, 13.0], [292, 4, 2.0], [293, 1, 1.0], [294, 3, 1.0], [295, 0, 4.0], [295, 1, 2.0], [295, 2, 1.0], [296, 3, 1.0], [297, 1, 1.0], [298, 2, 1.0], [299, 3, 1.0], [300, 7, 2.0], [301, 6, 8.0], [301, 7, 8.0], [301, 8, 3.0], [302, 6, 1.0], [303, 3, 3.0], [304, 3, 1.0], [305, 0, 1.0], [306, 6, 1.0], [307, 6, 2.0], [308, 3, 1.0], [309, 6, 1.0], [310, 3, 1.0], [311, 2, 1.0], [312, 3, 8.0], [312, 6, 1.0], [313, 4, 1.0], [314, 3, 1.0], [315, 5, 1.0], [316, 6, 1.0], [317, 0, 1.0], [317, 2, 1.0], [318, 4, 1.0], [319, 3, 1.0], [320, 0, 1.0], [320, 7, 1.0], [321, 4, 2.0], [322, 4, 2.0], [322, 6, 1.0], [323, 7, 1.0], [324, 1, 2.0], [324, 2, 1.0], [325, 7, 1.0], [326, 2, 1.0], [327, 3, 1.0], [328, 0, 1.0], [329, 2, 2.0], [330, 5, 1.0], [331, 4, 4.0], [331, 8, 2.0], [332, 5, 1.0], [333, 8, 1.0], [334, 6, 1.0], [335, 7, 1.0], [336, 4, 1.0], [337, 8, 1.0], [338, 3, 1.0], [339, 2, 1.0], [340, 6, 1.0], [341, 8, 1.0], [342, 3, 1.0], [343, 3, 1.0], [344, 7, 1.0], [345, 2, 1.0], [346, 5, 1.0], [347, 4, 1.0], [348, 7, 1.0], [349, 3, 1.0], [350, 1, 1.0], [351, 7, 1.0], [352, 5, 1.0], [353, 5, 2.0], [353, 7, 1.0], [354, 8, 1.0], [355, 7, 2.0], [356, 0, 1.0], [357, 6, 2.0], [357, 7, 3.0], [357, 8, 1.0], [358, 6, 1.0], [359, 6, 2.0], [360, 5, 1.0], [361, 1, 1.0], [362, 6, 1.0], [362, 8, 1.0], [363, 7, 1.0], [364, 0, 1.0], [365, 0, 1.0], [365, 4, 2.0], [365, 6, 1.0], [365, 8, 2.0], [366, 5, 1.0], [367, 2, 1.0], [368, 2, 1.0], [369, 1, 1.0], [370, 2, 1.0], [371, 2, 1.0], [372, 6, 1.0], [373, 1, 1.0], [374, 3, 1.0], [375, 5, 1.0], [376, 7, 1.0], [377, 4, 1.0], [378, 6, 4.0], [379, 2, 1.0], [380, 2, 1.0], [380, 7, 1.0], [381, 2, 1.0], [381, 3, 1.0], [382, 2, 1.0], [382, 7, 1.0], [383, 3, 1.0], [384, 3, 1.0], [385, 3, 1.0], [385, 5, 1.0], [386, 3, 1.0], [387, 5, 1.0], [388, 5, 1.0], [389, 6, 1.0], [389, 8, 1.0], [390, 8, 1.0], [391, 0, 1.0], [391, 3, 1.0], [392, 1, 1.0], [392, 6, 3.0], [393, 6, 1.0], [394, 2, 1.0], [395, 7, 1.0], [396, 8, 1.0], [397, 2, 1.0], [398, 6, 1.0], [399, 7, 1.0], [400, 5, 1.0], [401, 5, 1.0], [402, 3, 1.0], [403, 6, 2.0], [403, 8, 1.0], [404, 2, 1.0], [404, 7, 1.0], [405, 5, 1.0], [406, 4, 1.0], [407, 2, 1.0], [408, 5, 1.0], [409, 6, 1.0], [410, 0, 1.0], [410, 3, 1.0], [411, 5, 1.0], [412, 8, 1.0], [413, 5, 1.0], [414, 2, 3.0], [414, 7, 1.0], [414, 8, 3.0], [415, 5, 1.0], [416, 5, 1.0], [417, 0, 14.0], [417, 1, 1.0], [417, 2, 14.0], [417, 3, 1.0], [418, 2, 1.0], [419, 0, 1.0], [419, 7, 2.0], [420, 2, 1.0], [421, 1, 1.0], [422, 5, 1.0], [423, 1, 1.0], [424, 5, 1.0], [425, 6, 2.0], [426, 7, 1.0], [427, 5, 1.0], [428, 1, 1.0], [429, 2, 1.0], [429, 7, 1.0], [430, 0, 1.0], [430, 1, 1.0], [430, 2, 1.0], [431, 7, 1.0], [432, 4, 1.0], [433, 0, 1.0], [434, 7, 1.0], [435, 0, 1.0], [435, 2, 1.0], [435, 7, 1.0], [435, 8, 1.0], [436, 4, 1.0]], "columns": [{"id": "PC.354", "metadata": null}, {"id": "PC.355", "metadata": null}, {"id": "PC.356", "metadata": null}, {"id": "PC.481", "metadata": null}, {"id": "PC.593", "metadata": null}, {"id": "PC.607", "metadata": null}, {"id": "PC.634", "metadata": null}, {"id": "PC.635", "metadata": null}, {"id": "PC.636", "metadata": null}], "generated_by": "QIIME 1.4.0-dev, svn revision 2614", "matrix_type": "sparse", "shape": [437, 9], "format_url": "http://www.qiime.org/svn_documentation/documentation/biom_format.html", "date": "2011-12-22T13:02:39.349314", "type": "OTU table", "id": null, "matrix_element_type": "float"}"""
 
 fasting_subset_tree = """(91:0.03138,((56:0.01554,(171:0.00015,41:0.00014)0.868:0.01019)0.786:0.00551,(80:0.01059,(((260:0.00581,244:0.02632)0.871:0.00571,((319:0.01626,70:0.00524)0.764:0.00509,(298:0.03941,369:0.01625)0.858:0.01096)0.925:0.00016)0.907:0.0156,(272:0.00015,219:0.02761)0.371:0.00527)0.886:0.01577)0.904:0.01538)0.213:0.00506,(((((124:0.02331,193:0.01557)0.550:0.02651,390:0.02213)0.922:0.02481,((376:0.02606,(420:0.01061,(375:0.01758,(398:0.05303,(((429:0.00014,(427:0.00569,409:0.00793)0.175:0.00015)0.715:0.00016,(434:0.00016,426:0.02959)0.962:0.01738)0.942:0.02633,(414:0.01138,(413:0.01803,424:0.02362)0.839:0.01221)0.715:0.00567)0.706:0.00547)0.860:0.01803)0.748:0.00612)0.961:0.04689)0.973:0.0476,(((152:0.06102,400:0.06529)0.948:0.04668,((((188:0.14301,207:0.09317)0.630:0.00562,((((318:0.00503,320:0.00632)0.963:0.06151,((421:0.02097,(430:0.00014,(((432:0.03044,366:0.01302)0.756:0.01196,361:0.02203)0.807:0.01147,431:0.02457)0.835:0.0118)0.928:0.02756)0.899:0.03039,(401:0.00901,433:0.09069)0.881:0.02632)0.941:0.06451)0.909:0.04762,(170:0.04503,187:0.02247)0.806:0.01706)0.835:0.0181,347:0.03498)0.900:0.02275)0.843:0.01899,(((((21:0.06701,(137:0.00015,257:0.07002)0.343:0.01903)0.900:0.04272,((248:0.00016,(139:0.03037,(115:0.00014,95:0.03129)0.822:0.02203)0.998:0.07935)0.999:0.11876,(82:0.00014,(59:0.0964,(117:0.00015,332:0.02889)0.836:0.01403)0.926:0.01929)1.000:0.23864)0.050:0.00109)0.759:0.03556,((87:0.01453,(57:0.00252,(58:0.04076,(((((((116:0.04298,46:0.00016)0.942:0.02413,84:0.02412)0.751:0.00986,((274:0.01098,275:0.0279)0.767:0.00508,74:0.01398)0.758:0.00703)0.746:0.00561,51:0.07406)0.864:0.01536,16:0.00015)0.955:0.03768,35:0.00015)0.997:0.03175,19:0.00015)0.861:0.02236)0.996:0.07959)0.974:0.06082)0.901:0.04353,(278:0.06061,(((28:0.02168,(88:0.00612,(20:0.00544,((((10:0.0,12:0.0,14:0.0):0.00014,(6:0.04332,36:0.0156)0.911:0.00016)0.947:0.01021,26:0.00014)0.722:0.00016,24:0.00508)0.995:0.06124)0.842:0.0489)0.997:0.0834)0.999:0.0992,((131:0.02646,((30:0.00014,(100:0.01017,69:0.00014)0.928:0.00015)0.808:0.0051,(((((((((45:0.00506,((224:0.00014,144:0.01568)0.399:0.01048,76:0.00016)0.787:0.00519)0.815:0.00508,44:0.00016)0.860:0.01021,7:0.00526)0.754:0.00768,113:0.04271)0.692:0.01687,((2:0.01311,4:0.03731)0.748:0.01016,(104:0.00015,276:0.03287)0.973:0.03782)0.892:0.02397)0.854:0.01508,((((((285:0.03762,(15:0.10332,((358:0.04675,(((158:0.06378,354:0.1522)0.803:0.03759,(194:0.00973,((189:0.01519,249:0.02483)0.954:0.03416,68:0.01853)0.789:0.01036)0.934:0.05047)0.819:0.02898,(164:0.03164,277:0.02089)0.136:0.01345)0.829:0.0189)0.942:0.06408,((301:0.01074,(355:0.01673,300:0.02274)0.867:0.01124)0.785:0.00582,357:0.00539)1.000:0.17151)0.830:0.03922)0.939:0.05382)0.701:0.01345,67:0.02688)0.823:0.017,(((109:0.04428,63:0.03926)0.979:0.05805,(37:0.08014,79:0.0163)0.220:0.02124)0.923:0.05077,(39:0.10195,(93:0.01059,((((53:0.00352,(((227:0.00016,(83:0.00014,286:0.06319)0.991:0.03771)0.788:0.00014,333:0.06987)0.998:0.06107,86:0.00015)0.994:0.04517)0.349:0.00596,50:0.04512)0.503:0.0083,(34:0.0426,(32:0.02608,(49:0.06727,90:0.00496)0.974:0.02959)0.523:0.00358)0.863:0.02028)0.936:0.03486,136:0.07971)0.734:0.00702)0.961:0.08516)0.910:0.05397)0.866:0.0375)0.894:0.02444,((8:0.02694,(3:0.03192,5:0.00016)0.973:0.04398)0.978:0.04594,(33:0.02159,(106:0.03443,96:0.03596)0.864:0.0251)0.831:0.02373)0.304:0.00014)0.978:0.02591,(71:0.051,(222:0.02838,246:0.00436)0.937:0.0244)0.284:0.01734)0.429:0.00645,(((((27:0.0,9:0.0):0.00014,(25:0.01023,38:0.02084)0.885:0.01026)0.133:0.00014,22:0.01547)0.827:0.0208,(324:0.03204,17:0.0441)0.123:0.01)0.947:0.03497,280:0.02253)0.718:0.00493)0.842:0.00611)0.000:0.00016,181:0.02181)0.925:0.01592,31:0.02127)0.477:0.00997,(289:0.01603,290:0.01098)0.959:0.02745)0.924:0.00014)0.998:0.07977)0.749:0.0055,(((209:0.01801,325:0.03269)0.853:0.01642,(42:0.05299,29:0.01425)0.827:0.014)0.417:0.00015,232:0.02092)0.982:0.03398)0.649:0.00014)0.953:0.02633,(89:0.0342,(138:0.0459,327:0.04257)0.940:0.04586)0.883:0.02242)0.907:0.0455)0.948:0.06336)0.574:0.04246)0.813:0.02689,(((102:0.01072,54:0.05569)0.961:0.07824,((0:0.0468,111:0.02902)0.786:0.01542,((340:0.03302,(302:0.02503,399:0.03369)0.781:0.01109)0.945:0.03337,182:0.0403)0.832:0.01488)0.992:0.10706)0.904:0.05948,(((211:0.02581,213:0.02321)0.969:0.06007,(142:0.04144,223:0.05483)0.800:0.02186)0.955:0.05472,((((267:0.03308,(134:0.07285,150:0.00015)0.813:0.00015)0.366:0.00872,((391:0.08217,417:0.00818)0.524:0.03815,(330:0.07239,370:0.05715)0.980:0.09661)0.925:0.06443)0.974:0.0939,((11:0.0269,23:0.00015)1.000:0.15357,((378:0.00014,(168:0.05313,97:0.00066)0.999:0.08303)0.999:0.11217,((331:0.04314,356:0.08848)0.965:0.05433,(405:0.1024,(312:0.01087,(308:0.03192,307:0.0212)0.910:0.00015)0.995:0.08955)0.688:0.01126)0.228:0.00016)0.806:0.02968)0.833:0.03579)0.642:0.00917,(334:0.12276,392:0.05097)0.847:0.02572)0.877:0.02757)0.426:0.02497)0.933:0.04732)0.871:0.02613,(((287:0.26862,(217:0.08165,218:0.00929)0.884:0.05245)0.705:0.05092,((403:0.09144,359:0.22127)0.852:0.04039,351:0.07049)0.676:0.02494)0.959:0.07101,((350:0.10412,(402:0.00014,410:0.00551)0.945:0.06389)0.892:0.04421,(412:0.00448,415:0.03109)0.992:0.06861)0.462:0.0102)0.914:0.03206)0.981:0.00016)0.831:0.01613,(((((((((((395:0.0607,((((228:0.06268,419:0.02151)0.928:0.04763,((173:0.00015,176:0.01044)0.978:0.05847,(130:0.10381,(((165:0.00015,((225:0.03875,226:0.00536)0.937:0.01609,((281:0.01056,(386:0.02218,326:0.02751)0.987:0.00015)0.867:0.02806,329:0.0339)0.744:0.00533)0.338:0.01064)0.794:0.00618,284:0.021)0.594:0.01533,163:0.06412)0.670:0.00331)0.833:0.01554)0.827:0.01685)0.796:0.01647,425:0.06687)0.769:0.00951,374:0.00443)0.714:0.01154)0.714:0.00872,(363:0.01064,387:0.03462)0.889:0.01546)0.000:0.00502,396:0.06189)0.480:0.01186,(360:0.04307,(416:0.05007,237:0.02283)0.740:0.00734)0.835:0.01155)0.921:0.01801,((365:0.00014,389:0.00014)0.846:0.00538,(407:0.00015,(385:0.01085,(233:0.00728,404:0.00015)0.166:0.00014)0.963:0.02238)0.828:0.00729)0.942:0.00015)0.151:0.01071,((352:0.00013,380:0.01643)0.954:0.02126,(247:0.01614,243:0.04517)0.430:0.00014)0.987:0.03338)0.758:0.00496,(353:0.00014,382:0.00014)0.999:0.00014)0.871:0.0346,379:0.00364)0.970:0.03438,(337:0.04417,(422:0.00664,((341:0.0223,(118:0.03295,279:0.00014)0.888:0.02922)1.000:0.11353,(411:0.02454,423:0.0304)0.693:0.01914)0.931:0.05373)0.904:0.03125)0.719:0.00734)0.909:0.02779,(159:0.04393,221:0.00015)0.999:0.07613)0.313:0.02026,259:0.01429)0.933:0.02439)0.521:0.00282)0.846:0.00221,((((127:0.04567,(((191:0.00016,(236:0.01619,408:0.01671)0.757:0.00515)0.542:0.00016,(256:0.00014,342:0.01065)0.997:0.03284)0.721:0.02916,(394:0.05783,(151:0.04317,(103:0.01259,161:0.02538)0.818:0.01669)0.468:0.02681)0.415:0.01576)0.916:0.03996)0.922:0.04147,(323:0.01447,338:0.00321)0.853:0.02723)0.389:0.01609,((406:0.08533,(162:0.04584,(153:0.06999,322:0.02039)0.809:0.02113)0.098:0.01333)0.844:0.01478,((((123:0.02634,(169:0.01045,174:0.01039)0.949:0.00015)0.693:0.01633,269:0.03999)0.838:0.01016,(((201:0.02365,283:0.00356)0.852:0.01226,(114:0.01093,346:0.01663)0.691:0.00343)0.884:0.01235,(112:0.0158,(195:0.02712,212:0.02152)0.872:0.01073)0.750:0.0053)0.753:0.00522)0.753:0.00535,(180:0.04103,(155:0.03597,242:0.04333)0.767:0.00883)0.919:0.0276)0.323:0.00014)0.958:0.02654)0.123:0.00016,((192:0.03384,(((110:0.13051,(373:0.00534,(254:0.0107,264:0.0218)0.763:0.00528)0.953:0.00015)0.830:0.01036,156:0.05032)0.141:0.00015,206:0.01589)0.844:0.01058)0.738:0.00516,((335:0.01999,372:0.02628)0.912:0.02056,(266:0.00015,294:0.02745)0.853:0.01082)0.856:0.01148)0.902:0.01565)0.816:0.00518)0.736:0.00672)0.886:0.01398)0.396:0.00015,((13:0.00015,(1:0.0051,(48:0.03225,18:0.00014)0.610:0.00519)0.912:0.01029)0.908:0.01953,(179:0.0515,(52:0.01038,149:0.06621)0.812:0.0109)0.739:0.00921)0.783:0.00867)0.952:0.01558,((261:0.05074,262:0.02236)0.919:0.03024,(((238:0.03629,166:0.00767)0.097:0.00537,(303:0.01324,383:0.03403)0.887:0.02784)0.870:0.01529,(((72:0.00982,(47:0.00014,(146:0.0082,239:0.0327)0.763:0.00803)0.841:0.01299)0.138:0.00826,((62:0.00015,((((105:0.02651,186:0.00015)0.775:0.00513,(215:0.00874,(203:0.00016,305:0.03337)0.824:0.00879)0.766:0.00877)0.933:0.01583,(94:0.0389,(65:0.00014,(184:0.0267,185:0.02183)0.938:0.00015)0.883:0.01609)0.804:0.01015)0.799:0.00516,((((((((((((200:0.01046,(98:0.01556,(73:0.01564,(122:0.02128,175:0.00015)0.889:0.01398)0.762:0.00707)0.970:0.03203)0.938:0.00014,349:0.02174)0.532:0.00015,(((((((299:0.01635,306:0.01635)0.288:0.00542,135:0.03053)0.776:0.007,(345:0.01083,(119:0.00512,310:0.00014)0.789:0.00517)0.810:0.00514)0.458:0.00014,255:0.00015)0.916:0.00016,343:0.01618)0.804:0.0102,(388:0.06006,(190:0.03767,315:0.01441)0.751:0.00755)0.878:0.01614)0.867:0.00016,(((183:0.01056,258:0.0162)0.763:0.00521,(241:0.01533,(202:0.01143,362:0.0273)0.551:0.01038)0.782:0.00615)0.801:0.00519,(304:0.01611,364:0.03412)0.898:0.00015)0.763:0.00015)0.857:0.00514)0.782:0.00513,252:0.01635)0.754:0.00514,(((268:0.0139,(147:0.00998,265:0.03126)0.228:0.01262)0.793:0.00914,((296:0.00014,(245:0.00528,291:0.01087)0.884:0.01072)0.564:0.02251,((348:0.00837,384:0.00827)0.951:0.04585,(428:0.02172,435:0.02712)0.838:0.02582)0.743:0.03345)0.023:0.00016)0.926:0.016,(229:0.00015,((309:0.02156,(157:0.01646,(235:0.0739,288:0.02349)0.935:0.04288)0.888:0.02448)0.806:0.01075,((143:0.01222,99:0.02577)0.065:0.0049,(120:0.02212,148:0.03357)0.732:0.00443)0.943:0.02146)0.851:0.01089)0.855:0.01021)0.889:0.01046)1.000:0.00014,((101:0.01909,(141:0.00014,154:0.01582)0.763:0.00487)0.875:0.01291,((128:0.01036,253:0.00519)0.734:0.00539,(((240:0.02482,(126:0.01979,(140:0.0054,199:0.03843)0.738:0.01722)0.550:0.00726)0.066:0.00598,(40:0.01546,((107:0.00014,((263:0.02739,((230:0.00525,251:0.02704)0.668:0.00015,(((231:0.02647,297:0.01435)0.843:0.01391,(393:0.01089,(75:0.00014,160:0.00014)0.397:0.00015)0.843:0.00513)0.635:0.00014,92:0.00016)0.838:0.00511)0.957:0.01032)0.321:0.00014,85:0.0051)0.840:0.00508)0.877:0.01022,(61:0.00016,66:0.03726)0.983:0.03719)0.018:0.00015)0.797:0.00886)0.893:0.01188,132:0.00015)0.974:0.02665)0.931:0.01579)0.788:0.00514)0.871:0.01027,((133:0.00464,381:0.02942)0.932:0.01625,(121:0.01046,344:0.01099)0.921:0.01599)0.908:0.00015)0.964:0.00015,(313:0.03321,314:0.04605)0.895:0.01872)0.862:0.02644,(((177:0.00015,(((418:0.01756,((129:0.0,214:0.0):0.01191,(273:0.0172,316:0.02655)0.704:0.00543)0.747:0.00614)0.880:0.01298,282:0.01152)0.761:0.00625,(234:0.02239,436:0.03053)0.762:0.00988)0.898:0.00015)0.838:0.00517,((167:0.0,196:0.0):0.00016,321:0.01066)0.928:0.01041)0.975:0.00015,(295:0.00015,(292:0.00016,(((108:0.00824,(210:0.00509,336:0.06592)0.913:0.02095)0.752:0.00816,328:0.00552)0.249:0.01037,271:0.00015)0.959:0.02084)0.580:0.0103)0.920:0.01027)0.865:0.01052)0.751:0.00597,((293:0.01657,270:0.04174)0.741:0.00513,((311:0.05063,371:0.01364)0.418:0.01153,(205:0.00787,367:0.01549)0.887:0.01792)0.700:0.00769)0.935:0.0179)0.871:0.01345,(250:0.01588,339:0.01855)0.940:0.02734)0.837:0.0123,(((((178:0.01106,((125:0.0,204:0.0):0.00531,220:0.0385)0.740:0.00464)0.672:0.00524,(197:0.04008,81:0.00398)0.917:0.01677)0.527:0.00015,(((64:0.04233,(317:0.00014,(368:0.03503,377:0.01132)0.757:0.00501)0.725:0.00686)0.876:0.01641,172:0.00015)0.785:0.00554,145:0.00934)0.874:0.01052)0.674:0.00549,78:0.00469)0.829:0.00531,(198:0.03931,(216:0.05763,77:0.0047)0.807:0.0104)0.553:0.0107)0.802:0.00014)0.903:0.01049)0.741:0.00014)0.859:0.00015,(55:0.0211,(397:0.0598,60:0.03851)0.760:0.01044)0.752:0.00488)0.762:0.00647)0.821:0.01394,(208:0.04985,43:0.00598)0.937:0.02237)0.829:0.02204)0.606:0.00014)0.335:0.00016)0.788:0.00544);"""
 

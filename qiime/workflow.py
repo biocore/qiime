@@ -17,6 +17,7 @@ from qiime.util import (compute_seqs_per_library_stats,
                         create_dir, guess_even_sampling_depth,
                         get_interesting_mapping_fields,qiime_system_call,
                         get_qiime_library_version)
+from qiime.pycogent_backports.parse_biom import parse_biom_table
 from cogent.core.moltype import IUPAC_DNA_ambiguities
 import os
 
@@ -905,7 +906,7 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,
         raise IOError,e
     if max_rare_depth == None:
         min_count, max_count, median_count, mean_count, counts_per_sample =\
-         compute_seqs_per_library_stats(parse_biome_table(otu_table_fp))
+         compute_seqs_per_library_stats(parse_biom_table(open(otu_table_fp,'U')))
         max_rare_depth = median_count
     step = int((max_rare_depth - min_rare_depth) / num_steps) or 1
     max_rare_depth = int(max_rare_depth)
