@@ -5,7 +5,7 @@
 
 __author__ = "Catherine Lozupone"
 __copyright__ = "Copyright 2011, The QIIME Project" 
-__credits__ = ["Catherine Lozupone", "Dan Knights"] 
+__credits__ = ["Catherine Lozupone", "Dan Knights", "Jai Rideout"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Catherine Lozupone"
@@ -18,7 +18,7 @@ from qiime.otu_category_significance import filter_OTUs, \
     add_fdr_correction_to_results, output_results_G_test, \
     run_single_ANOVA, run_ANOVA_OTUs, output_results_ANOVA,\
     run_correlation_OTUs, run_single_correlation, output_results_correlation,\
-    get_otu_table_info, get_category_info,\
+    get_taxonomy_info, get_category_info,\
     aggregate_multiple_results_ANOVA, aggregate_multiple_results_G_test,\
     aggregate_multiple_results_correlation, get_common_OTUs,\
     test_wrapper_multiple, test_wrapper, get_single_correlation_values,\
@@ -28,39 +28,45 @@ from numpy import array
 from cogent.util.dict2d import Dict2D
 from qiime.util import get_tmp_filename
 from os import remove
-from qiime.parse import parse_otu_table, parse_mapping_file
+from qiime.parse import parse_mapping_file
+from qiime.pycogent_backports.parse_biom import parse_biom_table_str
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
 
     def test_filter_OTUs(self):
         """filter_OTUs works"""
-        otu_table = """#Full OTU Counts
-#OTU ID\tsample1\tsample2\tsample3
-0\t0\t2\t0
-1\t1\t0\t0
-2\t1\t1\t1""".split('\n')
-        sample_ids, otu_ids, otu_data, lineages = \
-            parse_otu_table(otu_table, float)
-        OTU_sample_info, num_samples, taxonomy_info = \
-            get_otu_table_info(sample_ids, otu_ids, otu_data, lineages)
-        result = filter_OTUs(OTU_sample_info, 2)
+        otu_table_str = """{"rows": [{"id": "0", "metadata": {}}, {"id": "1",
+        "metadata": {}}, {"id": "2", "metadata": {}}], "format":
+        "Biological Observation Matrix v0.9", "data": [[0, 1, 2.0],
+        [1, 0, 1.0], [2, 0, 1.0], [2, 1, 1.0], [2, 2, 1.0]], "columns":
+        [{"id": "sample1", "metadata": null},
+        {"id": "sample2", "metadata": null},
+        {"id": "sample3", "metadata": null}],
+        "generated_by": "QIIME 1.4.0-dev, svn revision 2541",
+        "matrix_type": "sparse", "shape": [3, 3], "format_url":
+        "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
+        "date": "2011-12-21T10:13:37.373053", "type": "OTU table", "id": null,
+        "matrix_element_type": "float"}"""
+        otu_table = parse_biom_table_str(otu_table_str)
+
+        taxonomy_info = get_taxonomy_info(otu_table)
+        result = filter_OTUs(otu_table, 2)
         self.assertEqual(result, [])
-        result = filter_OTUs(OTU_sample_info, 1)
-        self.assertEqual(result, ['1', '0'])
+        result = filter_OTUs(otu_table, 1)
+        self.assertEqual(result, ['0', '1'])
         
-        result = filter_OTUs(OTU_sample_info, 2, False)
+        result = filter_OTUs(otu_table, 2, False)
         self.assertEqual(result, ['2'])
-        result = filter_OTUs(OTU_sample_info, 1, False)
-        self.assertEqual(result, ['1', '0', '2'])
+        result = filter_OTUs(otu_table, 1, False)
+        self.assertEqual(result, ['0', '1', '2'])
         #test that is works if a category mapping file is supplied
         cat_mapping = {'sample2': '0', 'sample3': '1'}
-        result = filter_OTUs(OTU_sample_info, 1,\
-                        category_mapping_info=cat_mapping)
+        result = filter_OTUs(otu_table, 1, category_mapping_info=cat_mapping)
         self.assertEqual(result, ['0'])
         #test that works with a max filter
-        result = filter_OTUs(OTU_sample_info, 1, False, max_filter=2)
-        self.assertEqual(result, ['1', '0'])
+        result = filter_OTUs(otu_table, 1, False, max_filter=2)
+        self.assertEqual(result, ['0', '1'])
 
 
     def test_make_contingency_matrix(self):
@@ -69,12 +75,24 @@ class TopLevelTests(TestCase):
                         'sample2': 'A',
                         'sample3': 'B',
                         'sample4': 'C'}
-        OTU_sample_info = {'0': {'sample1': '0', 'sample2': '0', 'sample3': '1', 'sample4': '1'},
-        '1': {'sample1': '1', 'sample2': '1', 'sample3': '0', 'sample4': '0'},
-        '2': {'sample1': '0', 'sample2': '0', 'sample3': '1', 'sample4': '0'},
-        '3': {'sample1': '0', 'sample2': '0', 'sample3': '0', 'sample4': '1'}}
+
+        otu_table_str = """{"rows": [{"id": "0", "metadata": null}, {"id":
+        "1", "metadata": null}, {"id": "2", "metadata": null}, {"id": "3",
+        "metadata": null}], "format": "Biological Observation Matrix v0.9",
+        "data": [[0, 2, 1.0], [0, 3, 1.0], [1, 0, 1.0], [1, 1, 1.0],
+        [2, 2, 1.0], [3, 3, 1.0]], "columns": [{"id": "sample1", "metadata":
+        null}, {"id": "sample2", "metadata": null}, {"id": "sample3",
+        "metadata": null}, {"id": "sample4", "metadata": null}],
+        "generated_by": "QIIME 1.4.0-dev, svn revision 2570", "matrix_type":
+        "sparse", "shape": [4, 4], "format_url":
+        "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
+        "date": "2011-12-21T18:29:40.964867", "type": "OTU table", "id": null,
+        "matrix_element_type": "float"}"""
+        otu_table = parse_biom_table_str(otu_table_str)
+
         category_values = ['A', 'B', 'C']
-        result = make_contingency_matrix('0', category_info, OTU_sample_info, category_values)
+        result = make_contingency_matrix('0', category_info, otu_table,
+                category_values)
         self.assertEqual(result['OTU_pos']['B_pos'], 1)
         self.assertEqual(result['OTU_pos']['C_pos'], 1)
         self.assertEqual(result['OTU_pos']['A_pos'], 0)
@@ -88,29 +106,52 @@ class TopLevelTests(TestCase):
                         'sample2': 'A',
                         'sample3': 'B',
                         'sample4': 'C'}
-        OTU_sample_info = {'0': {'sample1': '0', 'sample2': '0', 'sample3': '1', 'sample4': '1'},
-        '1': {'sample1': '1', 'sample2': '1', 'sample3': '0', 'sample4': '0'},
-        '2': {'sample1': '0', 'sample2': '0', 'sample3': '1', 'sample4': '0'},
-        '3': {'sample1': '0', 'sample2': '0', 'sample3': '0', 'sample4': '1'}}
+
+        otu_table_str = """{"rows": [{"id": "0", "metadata": null}, {"id":
+        "1", "metadata": null}, {"id": "2", "metadata": null}, {"id": "3",
+        "metadata": null}], "format": "Biological Observation Matrix v0.9",
+        "data": [[0, 2, 1.0], [0, 3, 1.0], [1, 0, 1.0], [1, 1, 1.0],
+        [2, 2, 1.0], [3, 3, 1.0]], "columns": [{"id": "sample1", "metadata":
+        null}, {"id": "sample2", "metadata": null}, {"id": "sample3",
+        "metadata": null}, {"id": "sample4", "metadata": null}],
+        "generated_by": "QIIME 1.4.0-dev, svn revision 2570", "matrix_type":
+        "sparse", "shape": [4, 4], "format_url":
+        "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
+        "date": "2011-12-21T18:29:40.964867", "type": "OTU table", "id": null,
+        "matrix_element_type": "float"}"""
+        otu_table = parse_biom_table_str(otu_table_str)
+
         category_values = ['A', 'B', 'C']
-        g_val, prob, contingency_matrix = run_single_G_test('0', category_info, OTU_sample_info, category_values)
+        g_val, prob, contingency_matrix = run_single_G_test('0', category_info,
+                otu_table, category_values)
         self.assertFloatEqual(g_val, 4.29304060218)
         self.assertFloatEqual(prob, 0.508041627088)
         self.assertEqual(contingency_matrix, {'OTU_pos': {'B_pos': [1, 0.5], 'C_pos': [1, 0.5], 'A_pos': [0, 1.0]}, 'OTU_neg': {'B_pos': [0, 0.5], 'C_pos': [0, 0.5], 'A_pos': [2, 1.0]}})
+
         #check that it works if samples in mapping are not in OTU table
-        OTU_sample_info2 = {'0': {'sample2': '0', 'sample3': '1', 'sample4': '1'},
-        '1': {'sample2': '1', 'sample3': '0', 'sample4': '0'},
-        '2': {'sample2': '0', 'sample3': '1', 'sample4': '0'},
-        '3': {'sample2': '0', 'sample3': '0', 'sample4': '1'}}
-        g_val, prob, contingency_matrix = run_single_G_test('0', category_info, OTU_sample_info2, category_values)
+        otu_table2_str = """{"rows": [{"id": "0", "metadata": null}, {"id":
+        "1", "metadata": null}, {"id": "2", "metadata": null}, {"id": "3",
+        "metadata": null}], "format": "Biological Observation Matrix v0.9",
+        "data": [[0, 1, 1.0], [0, 2, 1.0], [1, 0, 1.0], [2, 1, 1.0],
+        [3, 2, 1.0]], "columns": [{"id": "sample2", "metadata": null},
+        {"id": "sample3", "metadata": null}, {"id": "sample4", "metadata":
+        null}], "generated_by": "QIIME 1.4.0-dev, svn revision 2570",
+        "matrix_type": "sparse", "shape": [4, 3], "format_url":
+        "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
+        "date": "2011-12-21T18:36:52.105159", "type": "OTU table", "id": null,
+        "matrix_element_type": "float"}"""
+        otu_table2 = parse_biom_table_str(otu_table2_str)
+
+        g_val, prob, contingency_matrix = run_single_G_test('0', category_info,
+                otu_table2, category_values)
         self.assertFloatEqual(contingency_matrix, {'OTU_pos': {'B_pos': [1, 0.66666666666666663], 'C_pos': [1, 0.66666666666666663], 'A_pos': [0, 0.66666666666666663]}, 'OTU_neg': {'B_pos': [0, 0.33333333333333331], 'C_pos': [0, 0.33333333333333331], 'A_pos': [1, 0.33333333333333331]}})
         #check that it works is samples in the OTU table are not in the mapping
         category_info2 = {'sample2': 'A',
                         'sample3': 'B',
                         'sample4': 'C'}
-        g_val, prob, contingency_matrix = run_single_G_test('0', category_info2, OTU_sample_info, category_values)
+        g_val, prob, contingency_matrix = run_single_G_test('0',
+                category_info2, otu_table, category_values)
         self.assertFloatEqual(contingency_matrix, {'OTU_pos': {'B_pos': [1, 0.66666666666666663], 'C_pos': [1, 0.66666666666666663], 'A_pos': [0, 0.66666666666666663]}, 'OTU_neg': {'B_pos': [0, 0.33333333333333331], 'C_pos': [0, 0.33333333333333331], 'A_pos': [1, 0.33333333333333331]}})
-
 
     def test_run_single_ANOVA(self):
         """run_single_ANOVA works"""
@@ -118,23 +159,46 @@ class TopLevelTests(TestCase):
                         'sample2': 'A',
                         'sample3': 'B',
                         'sample4': 'B'}
-        OTU_sample_info = {'0': {'sample1': '5', 'sample2': '10', 'sample3': '2', 'sample4': '1'},
-        '1': {'sample1': '0.0015', 'sample2': '0.0015', 'sample3': '0.0', 'sample4': '0.0'},
-        '2': {'sample1': '2', 'sample2': '0', 'sample3': '1', 'sample4': '0'},
-        '3': {'sample1': '0', 'sample2': '0', 'sample3': '0', 'sample4': '1'}}
+
+        otu_table_str = """{"rows": [{"id": "0", "metadata": null}, {"id": "1",
+        "metadata": null}, {"id": "2", "metadata": null}, {"id": "3",
+        "metadata": null}], "format": "Biological Observation Matrix v0.9",
+        "data": [[0, 0, 5.0], [0, 1, 10.0], [0, 2, 2.0], [0, 3, 1.0],
+        [1, 0, 0.0015], [1, 1, 0.0015], [2, 0, 2.0], [2, 2, 1.0], [3, 3, 1.0]],
+        "columns": [{"id": "sample1", "metadata": null}, {"id": "sample2",
+        "metadata": null}, {"id": "sample3", "metadata": null},
+        {"id": "sample4", "metadata": null}], "generated_by":
+        "QIIME 1.4.0-dev, svn revision 2570", "matrix_type": "sparse",
+        "shape": [4, 4], "format_url":
+        "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
+        "date": "2011-12-21T18:47:04.545731", "type": "OTU table", "id": null,
+        "matrix_element_type": "float"}"""
+        otu_table = parse_biom_table_str(otu_table_str)
+
         category_values = ['A', 'B']
-        group_means, prob = run_single_ANOVA('0', category_info,\
-            OTU_sample_info, category_values)
+        group_means, prob = run_single_ANOVA('0', category_info, otu_table,
+                category_values)
         self.assertEqual(group_means, [7.5, 1.5])
         self.assertFloatEqual(prob, 0.142857142857)
         #test that it works when there are samples in the cat mapping
         #that are not in the OTU table
-        OTU_sample_info2 = {'0': {'sample2': '10', 'sample3': '2', 'sample4': '1'},
-        '1': {'sample2': '1', 'sample3': '0', 'sample4': '0'},
-        '2': {'sample2': '0', 'sample3': '1', 'sample4': '0'},
-        '3': {'sample2': '0', 'sample3': '0', 'sample4': '1'}}
+
+        otu_table2_str = """{"rows": [{"id": "0", "metadata": null},
+        {"id": "1", "metadata": null}, {"id": "2", "metadata": null},
+        {"id": "3", "metadata": null}], "format":
+        "Biological Observation Matrix v0.9", "data": [[0, 0, 10.0],
+        [0, 1, 2.0], [0, 2, 1.0], [1, 0, 1.0], [2, 1, 1.0], [3, 2, 1.0]],
+        "columns": [{"id": "sample2", "metadata": null}, {"id": "sample3",
+        "metadata": null}, {"id": "sample4", "metadata": null}],
+        "generated_by": "QIIME 1.4.0-dev, svn revision 2570", "matrix_type":
+        "sparse", "shape": [4, 3], "format_url":
+        "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
+        "date": "2011-12-21T18:49:34.052074", "type": "OTU table", "id": null,
+        "matrix_element_type": "float"}"""
+        otu_table2 = parse_biom_table_str(otu_table2_str)
+
         group_means, prob = run_single_ANOVA('0', category_info,\
-            OTU_sample_info2, category_values)
+            otu_table2, category_values)
         self.assertEqual(group_means, [10.0, 1.5])
 
         #test that it works when there are samples that are in the OTU
@@ -143,7 +207,7 @@ class TopLevelTests(TestCase):
                         'sample3': 'B',
                         'sample4': 'B'}
         group_means, prob = run_single_ANOVA('0', category_info2,\
-            OTU_sample_info, category_values)
+            otu_table, category_values)
         self.assertEqual(group_means, [10.0, 1.5])
         
     def test_run_single_correlation(self):
@@ -152,13 +216,26 @@ class TopLevelTests(TestCase):
                         'sample2': '2',
                         'sample3': '3',
                         'sample4': '4'}
-        OTU_sample_info = {'0': {'sample1': '1', 'sample2': '2', 'sample3': '2', 'sample4': '4'},
-        '1': {'sample1': '1', 'sample2': '2', 'sample3': '3', 'sample4': '4'},
-        '2': {'sample1': '4', 'sample2': '3', 'sample3': '2', 'sample4': '1'},
-        '3': {'sample1': '1', 'sample2': '2', 'sample3': '3', 'sample4': '5'}}
+
+        otu_table_str = """{"rows": [{"id": "0", "metadata": null}, {"id": "1",
+        "metadata": null}, {"id": "2", "metadata": null}, {"id": "3",
+        "metadata": null}], "format": "Biological Observation Matrix v0.9",
+        "data": [[0, 0, 1.0], [0, 1, 2.0], [0, 2, 2.0], [0, 3, 4.0],
+        [1, 0, 1.0], [1, 1, 2.0], [1, 2, 3.0], [1, 3, 4.0], [2, 0, 4.0],
+        [2, 1, 3.0], [2, 2, 2.0], [2, 3, 1.0], [3, 0, 1.0], [3, 1, 2.0],
+        [3, 2, 3.0], [3, 3, 5.0]], "columns": [{"id": "sample1", "metadata":
+        null}, {"id": "sample2", "metadata": null}, {"id": "sample3",
+        "metadata": null}, {"id": "sample4", "metadata": null}],
+        "generated_by": "QIIME 1.4.0-dev, svn revision 2570", "matrix_type":
+        "sparse", "shape": [4, 4], "format_url":
+        "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
+        "date": "2011-12-21T18:52:44.318249", "type": "OTU table", "id": null,
+        "matrix_element_type": "float"}"""
+        otu_table = parse_biom_table_str(otu_table_str)
+
         category_values = ['A', 'B']
         otu_ab_vals, cat_vals = get_single_correlation_values('0', category_info,\
-                OTU_sample_info)
+                otu_table)
         r, prob = run_single_correlation(otu_ab_vals, cat_vals, filter=1)
         self.assertFloatEqual(r, 0.923380516877)
         self.assertFloatEqual(prob, 0.0766194831234)
@@ -170,22 +247,47 @@ class TopLevelTests(TestCase):
                         'sample2': '2',
                         'sample3': '3',
                         'sample4': '4'}
-        OTU_sample_info = {'0': {'sample1': '1', 'sample2': '2', 'sample3': '2', 'sample4': '4'},
-        '1': {'sample1': '1', 'sample2': '2', 'sample3': '3', 'sample4': '4'},
-        '2': {'sample1': '4', 'sample2': '3', 'sample3': '2', 'sample4': '1'},
-        '3': {'sample1': '1', 'sample2': '2', 'sample3': '3', 'sample4': '5'}}
+
+        otu_table_str = """{"rows": [{"id": "0", "metadata": null}, {"id": "1",
+        "metadata": null}, {"id": "2", "metadata": null}, {"id": "3",
+        "metadata": null}], "format": "Biological Observation Matrix v0.9",
+        "data": [[0, 0, 1.0], [0, 1, 2.0], [0, 2, 2.0], [0, 3, 4.0],
+        [1, 0, 1.0], [1, 1, 2.0], [1, 2, 3.0], [1, 3, 4.0], [2, 0, 4.0],
+        [2, 1, 3.0], [2, 2, 2.0], [2, 3, 1.0], [3, 0, 1.0], [3, 1, 2.0],
+        [3, 2, 3.0], [3, 3, 5.0]], "columns": [{"id": "sample1", "metadata":
+        null}, {"id": "sample2", "metadata": null}, {"id": "sample3",
+        "metadata": null}, {"id": "sample4", "metadata": null}],
+        "generated_by": "QIIME 1.4.0-dev, svn revision 2570", "matrix_type":
+        "sparse", "shape": [4, 4], "format_url":
+        "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
+        "date": "2011-12-21T18:52:44.318249", "type": "OTU table", "id": null,
+        "matrix_element_type": "float"}"""
+        otu_table = parse_biom_table_str(otu_table_str)
+
         category_values = ['A', 'B']
         OTU_abundance_values, category_values = get_single_correlation_values(\
-            '0', category_info, OTU_sample_info)
+            '0', category_info, otu_table)
         self.assertEqual(OTU_abundance_values, [4.0, 1.0, 2.0, 2.0])
         self.assertEqual(category_values, [4.0, 1.0, 3.0, 2.0])
         #works if the otu table is missing samples
-        OTU_sample_info2 = {'0': {'sample2': '2', 'sample3': '2', 'sample4': '4'},
-        '1': {'sample2': '2', 'sample3': '3', 'sample4': '4'},
-        '2': {'sample2': '3', 'sample3': '2', 'sample4': '1'},
-        '3': {'sample2': '2', 'sample3': '3', 'sample4': '5'}}
+
+        otu_table2_str = """{"rows": [{"id": "0", "metadata": null},
+        {"id": "1", "metadata": null}, {"id": "2", "metadata": null}, {"id":
+        "3", "metadata": null}], "format":
+        "Biological Observation Matrix v0.9", "data": [[0, 0, 2.0],
+        [0, 1, 2.0], [0, 2, 4.0], [1, 0, 2.0], [1, 1, 3.0], [1, 2, 4.0],
+        [2, 0, 3.0], [2, 1, 2.0], [2, 2, 1.0], [3, 0, 2.0], [3, 1, 3.0],
+        [3, 2, 5.0]], "columns": [{"id": "sample2", "metadata": null},
+        {"id": "sample3", "metadata": null}, {"id": "sample4", "metadata":
+        null}], "generated_by": "QIIME 1.4.0-dev, svn revision 2570",
+        "matrix_type": "sparse", "shape": [4, 3], "format_url":
+        "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
+        "date": "2011-12-21T18:56:21.469203", "type": "OTU table", "id": null,
+        "matrix_element_type": "float"}"""
+        otu_table2 = parse_biom_table_str(otu_table2_str)
+
         OTU_abundance_values, category_values = get_single_correlation_values(\
-            '0', category_info, OTU_sample_info2)
+            '0', category_info, otu_table2)
         self.assertEqual(OTU_abundance_values, [4.0, 2.0, 2.0])
         self.assertEqual(category_values, [4.0, 3.0, 2.0])
         #works if the category mapping file is missing samples
@@ -193,7 +295,7 @@ class TopLevelTests(TestCase):
                         'sample3': '3',
                         'sample4': '4'}
         OTU_abundance_values, category_values = get_single_correlation_values(\
-            '0', category_info2, OTU_sample_info)
+            '0', category_info2, otu_table)
         self.assertEqual(OTU_abundance_values, [4.0, 2.0, 2.0])
         self.assertEqual(category_values, [4.0, 3.0, 2.0])
 
@@ -203,13 +305,25 @@ class TopLevelTests(TestCase):
                         'sample2': '2',
                         'sample3': '3',
                         'sample4': '4'}
-        OTU_sample_info = {'0': {'sample1': '99999', 'sample2': '2', 'sample3': '2', 'sample4': '4'},
-        '1': {'sample1': '1', 'sample2': '2', 'sample3': '3', 'sample4': '4'},
-        '2': {'sample1': '4', 'sample2': '3', 'sample3': '2', 'sample4': '1'},
-        '3': {'sample1': '1', 'sample2': '2', 'sample3': '3', 'sample4': '5'}}
-        category_values = ['A', 'B']
+
+        otu_table_str = """{"rows": [{"id": "0", "metadata": null}, {"id": "1",
+        "metadata": null}, {"id": "2", "metadata": null}, {"id": "3",
+        "metadata": null}], "format": "Biological Observation Matrix v0.9",
+        "data": [[0, 0, 99999.0], [0, 1, 2.0], [0, 2, 2.0], [0, 3, 4.0],
+        [1, 0, 1.0], [1, 1, 2.0], [1, 2, 3.0], [1, 3, 4.0], [2, 0, 4.0],
+        [2, 1, 3.0], [2, 2, 2.0], [2, 3, 1.0], [3, 0, 1.0], [3, 1, 2.0],
+        [3, 2, 3.0], [3, 3, 5.0]], "columns": [{"id": "sample1", "metadata":
+        null}, {"id": "sample2", "metadata": null}, {"id": "sample3",
+        "metadata": null}, {"id": "sample4", "metadata": null}],
+        "generated_by": "QIIME 1.4.0-dev, svn revision 2570", "matrix_type":
+        "sparse", "shape": [4, 4], "format_url":
+        "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
+        "date": "2011-12-21T19:15:22.356507", "type": "OTU table", "id": null,
+        "matrix_element_type": "float"}"""
+        otu_table = parse_biom_table_str(otu_table_str)
+
         OTU_abundance_values, category_values = \
-            get_single_correlation_values('0', category_info, OTU_sample_info, \
+            get_single_correlation_values('0', category_info, otu_table, \
             ignore_val=99999.0)
         self.assertEqual(OTU_abundance_values, [4.0, 2.0, 2.0])
         self.assertEqual(category_values, [4.0, 3.0, 2.0])
@@ -223,53 +337,86 @@ s3\t1\tB
 s4\t0\tB
 s5\t1\tC
 s6\t0\tC""".split('\n')
-        otu_table = """#Full OTU Counts
-#OTU ID\ts1\ts2\ts3\ts4\ts5\ts6
-0\t999999999.0\t999999999.0\t0.0\t0.3\t0.0\t0.2
-1\t0.0\t-0.2\t999999999.0\t999999999.0\t999999999.0\t999999999.0
-2\t0.0\t0.2\t0.0\t-0.7\t0.0\t0.1""".split('\n')
-        sample_ids, otu_ids, otu_data, lineages = parse_otu_table(otu_table, float)
+
+        otu_table_str = """{"rows": [{"id": "0", "metadata": null}, {"id":
+        "1", "metadata": null}, {"id": "2", "metadata": null}], "format":
+        "Biological Observation Matrix v0.9", "data": [[0, 0, 999999999.0],
+        [0, 1, 999999999.0], [0, 3, 0.29999999999999999],
+        [0, 5, 0.20000000000000001], [1, 1, -0.20000000000000001],
+        [1, 2, 999999999.0], [1, 3, 999999999.0], [1, 4, 999999999.0],
+        [1, 5, 999999999.0], [2, 1, 0.20000000000000001],
+        [2, 3, -0.69999999999999996], [2, 5, 0.10000000000000001]],
+        "columns": [{"id": "s1", "metadata": null},
+        {"id": "s2", "metadata": null}, {"id": "s3", "metadata": null},
+        {"id": "s4", "metadata": null}, {"id": "s5", "metadata": null},
+        {"id": "s6", "metadata": null}], "generated_by":
+        "QIIME 1.4.0-dev, svn revision 2564", "matrix_type": "sparse",
+        "shape": [3, 6], "format_url":
+        "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
+        "date": "2011-12-21T17:00:27.397644", "type": "OTU table", "id": null,
+        "matrix_element_type": "float"}"""
+        otu_table = parse_biom_table_str(otu_table_str)
         mapping_data, header, comments = parse_mapping_file(cat_mapping)
-        otu_sample_info, num_samples, taxonomy_info = \
-            get_otu_table_info(sample_ids, otu_ids, otu_data, lineages)
+        taxonomy_info = get_taxonomy_info(otu_table)
         OTU_list = ['0', '1', '2']
         
         before_vals, after_vals = get_single_paired_T_values('0', \
-            mapping_data, header, 'individual', 'timepoint_zero', otu_ids,\
-            sample_ids, otu_data, 999999999.0)
+            mapping_data, header, 'individual', 'timepoint_zero', \
+            otu_table, 999999999.0)
         self.assertFloatEqual(before_vals, [0.0, 0.0])
         self.assertFloatEqual(after_vals, [0.3, 0.2])
         #test of OTU1
-        before_vals, after_vals = get_single_paired_T_values('1', \
-            mapping_data, header, 'individual', 'timepoint_zero', otu_ids,\
-            sample_ids, otu_data, 999999999.0)
+        before_vals, after_vals = get_single_paired_T_values('1',
+            mapping_data, header, 'individual', 'timepoint_zero',
+            otu_table, 999999999.0)
         self.assertFloatEqual(before_vals, [0.0])
         self.assertFloatEqual(after_vals, [-0.2])
         #works when a sample is missing from the OTU table
         #e.g. if an after timepoint dropped out during rarefaction
         #will also drop the before
-        otu_table2 = """#Full OTU Counts
-#OTU ID\ts1\ts2\ts3\ts4\ts5
-0\t999999999.0\t999999999.0\t0.0\t0.3\t0.0
-1\t0.0\t-0.2\t999999999.0\t999999999.0\t999999999.0
-2\t0.0\t0.2\t0.0\t-0.7\t0.0""".split('\n')
-        sample_ids, otu_ids, otu_data, lineages = parse_otu_table(otu_table2, float)
-        before_vals, after_vals = get_single_paired_T_values('0', \
-            mapping_data, header, 'individual', 'timepoint_zero', otu_ids,\
-            sample_ids, otu_data, 999999999.0)
+        otu_table2_str = """{"rows": [{"id": "0", "metadata": null}, {"id":
+        "1", "metadata": null}, {"id": "2", "metadata": null}], "format":
+        "Biological Observation Matrix v0.9", "data": [[0, 0, 999999999.0], [0,
+        1, 999999999.0], [0, 3, 0.29999999999999999], [1, 1,
+        -0.20000000000000001], [1, 2, 999999999.0], [1, 3, 999999999.0], [1, 4,
+        999999999.0], [2, 1, 0.20000000000000001], [2, 3,
+        -0.69999999999999996]], "columns": [{"id": "s1", "metadata": null},
+        {"id": "s2", "metadata": null}, {"id": "s3", "metadata": null}, {"id":
+        "s4", "metadata": null}, {"id": "s5", "metadata": null}],
+        "generated_by": "QIIME 1.4.0-dev, svn revision 2564", "matrix_type":
+        "sparse", "shape": [3, 5], "format_url":
+        "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
+        "date": "2011-12-21T17:13:14.199954", "type": "OTU table", "id": null,
+        "matrix_element_type": "float"}"""
+
+        otu_table2 = parse_biom_table_str(otu_table2_str)
+        before_vals, after_vals = get_single_paired_T_values('0',
+            mapping_data, header, 'individual', 'timepoint_zero', otu_table2,
+            999999999.0)
 
         self.assertEqual(before_vals, [0.0])
         self.assertFloatEqual(after_vals, [0.3])
         #works when the before is missing
-        otu_table3 = """#Full OTU Counts
-#OTU ID\ts1\ts2\ts3\ts4\ts6
-0\t999999999.0\t999999999.0\t0.0\t0.3\t0.2
-1\t0.0\t-0.2\t999999999.0\t999999999.0\t999999999.0
-2\t0.0\t0.2\t0.0\t-0.7\t0.1""".split('\n')
-        sample_ids, otu_ids, otu_data, lineages = parse_otu_table(otu_table3, float)
-        before_vals, after_vals = get_single_paired_T_values('0', \
-            mapping_data, header, 'individual', 'timepoint_zero', otu_ids,\
-            sample_ids, otu_data, 999999999.0)
+        otu_table3_str = """{"rows": [{"id": "0", "metadata": null},
+        {"id": "1", "metadata": null}, {"id": "2", "metadata": null}],
+        "format": "Biological Observation Matrix v0.9",
+        "data": [[0, 0, 999999999.0], [0, 1, 999999999.0],
+        [0, 3, 0.29999999999999999], [0, 4, 0.20000000000000001],
+        [1, 1, -0.20000000000000001], [1, 2, 999999999.0], [1, 3, 999999999.0],
+        [1, 4, 999999999.0], [2, 1, 0.20000000000000001],
+        [2, 3, -0.69999999999999996], [2, 4, 0.10000000000000001]], "columns":
+        [{"id": "s1", "metadata": null}, {"id": "s2", "metadata": null},
+        {"id": "s3", "metadata": null}, {"id": "s4", "metadata": null},
+        {"id": "s6", "metadata": null}], "generated_by":
+        "QIIME 1.4.0-dev, svn revision 2564", "matrix_type": "sparse",
+        "shape": [3, 5], "format_url":
+        "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
+        "date": "2011-12-21T17:14:52.851951", "type": "OTU table", "id": null,
+        "matrix_element_type": "float"}"""
+        otu_table3 = parse_biom_table_str(otu_table3_str)
+        before_vals, after_vals = get_single_paired_T_values('0',
+            mapping_data, header, 'individual', 'timepoint_zero', otu_table3,
+            999999999.0)
         self.assertEqual(before_vals, [0.0])
         self.assertFloatEqual(after_vals, [0.3])
     
@@ -283,28 +430,38 @@ s3\t1\tB
 s4\t0\tB
 s5\t1\tC
 s6\t0\tC""".split('\n')
-        otu_table = """#Full OTU Counts
-#OTU ID\ts1\ts2\ts3\ts4\ts5\ts6
-0\t999999999.0\t999999999.0\t0.0\t0.3\t0.0\t0.2
-1\t0.0\t-0.2\t999999999.0\t999999999.0\t999999999.0\t999999999.0
-2\t0.0\t0.2\t0.0\t-0.7\t0.0\t0.1""".split('\n')
-        sample_ids, otu_ids, otu_data, lineages = parse_otu_table(otu_table, float)
+
+        otu_table_str = """{"rows": [{"id": "0", "metadata": null}, {"id": "1",
+        "metadata": null}, {"id": "2", "metadata": null}], "format":
+        "Biological Observation Matrix v0.9", "data": [[0, 0, 999999999.0],
+        [0, 1, 999999999.0], [0, 3, 0.29999999999999999],
+        [0, 5, 0.20000000000000001], [1, 1, -0.20000000000000001],
+        [1, 2, 999999999.0], [1, 3, 999999999.0], [1, 4, 999999999.0],
+        [1, 5, 999999999.0], [2, 1, 0.20000000000000001],
+        [2, 3, -0.69999999999999996], [2, 5, 0.10000000000000001]], "columns":
+        [{"id": "s1", "metadata": null}, {"id": "s2", "metadata": null},
+        {"id": "s3", "metadata": null}, {"id": "s4", "metadata": null}, {"id":
+        "s5", "metadata": null}, {"id": "s6", "metadata": null}],
+        "generated_by": "QIIME 1.4.0-dev, svn revision 2570", "matrix_type":
+        "sparse", "shape": [3, 6], "format_url":
+        "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
+        "date": "2011-12-21T18:17:58.541124", "type": "OTU table", "id": null,
+        "matrix_element_type": "float"}"""
+        otu_table = parse_biom_table_str(otu_table_str)
+
         mapping_data, header, comments = parse_mapping_file(cat_mapping)
-        otu_sample_info, num_samples, taxonomy_info = \
-            get_otu_table_info(sample_ids, otu_ids, otu_data, lineages)
+        taxonomy_info = get_taxonomy_info(otu_table)
         OTU_list = ['0', '1', '2']
         #should return the results since there should be 4 values to evaluate
-        result = run_single_paired_T_test('0', mapping_data, header, \
-            'individual', 'timepoint_zero', otu_ids, sample_ids, otu_data, \
-            999999999.0, 4)
+        result = run_single_paired_T_test('0', mapping_data, header,
+            'individual', 'timepoint_zero', otu_table, 999999999.0, 4)
         self.assertEqual(len(result), 4)
         self.assertFloatEqual(result[1], 0.12566591637800242)
         self.assertFloatEqual(result[2], [0.29999999999999999, 0.20000000000000001])
         self.assertEqual(result[3], 2)
         #check the the filter works
-        result = run_single_paired_T_test('0', mapping_data, header, \
-            'individual', 'timepoint_zero', otu_ids, sample_ids, otu_data, \
-            999999999.0, 5)
+        result = run_single_paired_T_test('0', mapping_data, header,
+            'individual', 'timepoint_zero', otu_table, 999999999.0, 5)
         self.assertEqual(result, None)
 
     def test_run_paired_T_test_OTUs(self):
@@ -317,19 +474,29 @@ s3\t1\tB
 s4\t0\tB
 s5\t1\tC
 s6\t0\tC""".split('\n')
-        otu_table = """#Full OTU Counts
-#OTU ID\ts1\ts2\ts3\ts4\ts5\ts6
-0\t999999999.0\t999999999.0\t0.0\t0.3\t0.0\t0.2
-1\t0.0\t-0.2\t999999999.0\t999999999.0\t999999999.0\t999999999.0
-2\t0.0\t0.2\t0.0\t-0.7\t0.0\t0.1""".split('\n')
-        sample_ids, otu_ids, otu_data, lineages = parse_otu_table(otu_table, float)
+        otu_table_str = """{"rows": [{"id": "0", "metadata": null}, {"id": "1",
+        "metadata": null}, {"id": "2", "metadata": null}], "format":
+        "Biological Observation Matrix v0.9", "data": [[0, 0, 999999999.0],
+        [0, 1, 999999999.0], [0, 3, 0.29999999999999999],
+        [0, 5, 0.20000000000000001], [1, 1, -0.20000000000000001],
+        [1, 2, 999999999.0], [1, 3, 999999999.0], [1, 4, 999999999.0],
+        [1, 5, 999999999.0], [2, 1, 0.20000000000000001],
+        [2, 3, -0.69999999999999996], [2, 5, 0.10000000000000001]], "columns":
+        [{"id": "s1", "metadata": null}, {"id": "s2", "metadata": null},
+        {"id": "s3", "metadata": null}, {"id": "s4", "metadata": null},
+        {"id": "s5", "metadata": null}, {"id": "s6", "metadata": null}],
+        "generated_by": "QIIME 1.4.0-dev, svn revision 2564", "matrix_type":
+        "sparse", "shape": [3, 6], "format_url":
+        "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
+        "date": "2011-12-21T18:10:53.571949", "type": "OTU table", "id": null,
+        "matrix_element_type": "float"}"""
+        otu_table = parse_biom_table_str(otu_table_str)
+        
         mapping_data, header, comments = parse_mapping_file(cat_mapping)
-        otu_sample_info, num_samples, taxonomy_info = \
-            get_otu_table_info(sample_ids, otu_ids, otu_data, lineages)
+        taxonomy_info = get_taxonomy_info(otu_table)
         OTU_list = ['0', '1', '2']
         all_results = run_paired_T_test_OTUs(OTU_list, mapping_data, header, \
-            'individual', 'timepoint_zero', otu_ids, sample_ids, otu_data, \
-            999999999.0, 4)
+            'individual', 'timepoint_zero', otu_table, 999999999.0, 4)
         self.assertFloatEqual(all_results, {'0': [-4.9999999999999982, 0.12566591637800242, 0.25, 2], '2': [0.46816458878452216, 0.68573031947264562, -0.1333333333333333, 3]})
 
     def test_output_results_paired_T_test(self):
@@ -342,19 +509,29 @@ s3\t1\tB
 s4\t0\tB
 s5\t1\tC
 s6\t0\tC""".split('\n')
-        otu_table = """#Full OTU Counts
-#OTU ID\ts1\ts2\ts3\ts4\ts5\ts6
-0\t999999999.0\t999999999.0\t0.0\t0.3\t0.0\t0.2
-1\t0.0\t-0.2\t999999999.0\t999999999.0\t999999999.0\t999999999.0
-2\t0.0\t0.2\t0.0\t-0.7\t0.0\t0.1""".split('\n')
-        sample_ids, otu_ids, otu_data, lineages = parse_otu_table(otu_table, float)
+        otu_table_str = """{"rows": [{"id": "0", "metadata": null}, {"id": "1",
+        "metadata": null}, {"id": "2", "metadata": null}], "format":
+        "Biological Observation Matrix v0.9", "data": [[0, 0, 999999999.0],
+        [0, 1, 999999999.0], [0, 3, 0.29999999999999999],
+        [0, 5, 0.20000000000000001], [1, 1, -0.20000000000000001],
+        [1, 2, 999999999.0], [1, 3, 999999999.0], [1, 4, 999999999.0],
+        [1, 5, 999999999.0], [2, 1, 0.20000000000000001],
+        [2, 3, -0.69999999999999996], [2, 5, 0.10000000000000001]], "columns":
+        [{"id": "s1", "metadata": null}, {"id": "s2", "metadata": null},
+        {"id": "s3", "metadata": null}, {"id": "s4", "metadata": null},
+        {"id": "s5", "metadata": null}, {"id": "s6", "metadata": null}],
+        "generated_by": "QIIME 1.4.0-dev, svn revision 2564", "matrix_type":
+        "sparse", "shape": [3, 6], "format_url":
+        "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
+        "date": "2011-12-21T18:06:21.731328", "type": "OTU table", "id": null,
+        "matrix_element_type": "float"}"""
+        otu_table = parse_biom_table_str(otu_table_str)
+        
         mapping_data, header, comments = parse_mapping_file(cat_mapping)
-        otu_sample_info, num_samples, taxonomy_info = \
-            get_otu_table_info(sample_ids, otu_ids, otu_data, lineages)
+        taxonomy_info = get_taxonomy_info(otu_table)
         OTU_list = ['0', '1', '2']
         all_results = run_paired_T_test_OTUs(OTU_list, mapping_data, header, \
-            'individual', 'timepoint_zero', otu_ids, sample_ids, otu_data, \
-            999999999.0, 4)
+            'individual', 'timepoint_zero', otu_table, 999999999.0, 4)
         output = output_results_paired_T_test(all_results)
         self.assertEqual(output, ['OTU\tprob\tT stat\taverage_diff\tnum_pairs\tBonferroni_corrected\tFDR_corrected', '0\t0.125665916378\t-5.0\t0.25\t2\t0.251331832756\t0.251331832756', '2\t0.685730319473\t0.468164588785\t-0.133333333333\t3\t1.37146063895\t0.685730319473'])
 
@@ -364,13 +541,26 @@ s6\t0\tC""".split('\n')
                         'sample2': 'A',
                         'sample3': 'B',
                         'sample4': 'B'}
-        OTU_sample_info = {'0': {'sample1': '5', 'sample2': '10', 'sample3': '2', 'sample4': '1'},
-        '1': {'sample1': '1', 'sample2': '0', 'sample3': '0', 'sample4': '2'},
-        '2': {'sample1': '2', 'sample2': '1', 'sample3': '10', 'sample4': '15'},
-        '3': {'sample1': '1', 'sample2': '1.5', 'sample3': '1.4', 'sample4': '1.3'}}
+
+        otu_table_str = """{"rows": [{"id": "0", "metadata": null}, {"id": "1",
+        "metadata": null}, {"id": "2", "metadata": null}, {"id": "3",
+        "metadata": null}], "format": "Biological Observation Matrix v0.9",
+        "data": [[0, 0, 5.0], [0, 1, 10.0], [0, 2, 2.0], [0, 3, 1.0],
+        [1, 0, 1.0], [1, 3, 2.0], [2, 0, 2.0], [2, 1, 1.0], [2, 2, 10.0],
+        [2, 3, 15.0], [3, 0, 1.0], [3, 1, 1.5], [3, 2, 1.3999999999999999],
+        [3, 3, 1.3]], "columns": [{"id": "sample1", "metadata": null},
+        {"id": "sample2", "metadata": null}, {"id": "sample3", "metadata":
+        null}, {"id": "sample4", "metadata": null}], "generated_by":
+        "QIIME 1.4.0-dev, svn revision 2564", "matrix_type": "sparse",
+        "shape": [4, 4], "format_url":
+        "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
+        "date": "2011-12-21T18:03:44.355433", "type": "OTU table", "id": null,
+        "matrix_element_type": "float"}"""
+        otu_table = parse_biom_table_str(otu_table_str)
+
         category_values = ['A', 'B']
         result = run_ANOVA_OTUs(['0', '1', '3'], category_info,\
-            OTU_sample_info, category_values)
+            otu_table, category_values)
         self.assertEqual(result, {'1': [[0.5, 1.0], 0.69848865542223582, 2.0954659662667074], '0': [[7.5, 1.5], 0.14285714285714285, 0.42857142857142855], '3': [[1.25, 1.3500000000000001], 0.73273875808757438, 2.1982162742627231]})
 
     def test_output_results_ANOVA(self):
@@ -379,11 +569,25 @@ s6\t0\tC""".split('\n')
                         'sample2': 'A',
                         'sample3': 'B',
                         'sample4': 'B'}
-        OTU_sample_info = {'0': {'sample1': '5', 'sample2': '10', 'sample3': '2', 'sample4': '1'},
-        '1': {'sample1': '1', 'sample2': '0', 'sample3': '0', 'sample4': '2'},
-        '2': {'sample1': '2', 'sample2': '1', 'sample3': '10', 'sample4': '15'},
-        '3': {'sample1': '1', 'sample2': '1.5', 'sample3': '1.4', 'sample4': '1.3'},
-        '4': {'sample1': '20', 'sample2': '16', 'sample3': '1.4', 'sample4': '1.3'}}
+
+        otu_table_str = """{"rows": [{"id": "0", "metadata": null},
+        {"id": "1", "metadata": null}, {"id": "2", "metadata": null},
+        {"id": "3", "metadata": null}, {"id": "4", "metadata": null}],
+        "format": "Biological Observation Matrix v0.9", "data": [[0, 0, 5.0],
+        [0, 1, 10.0], [0, 2, 2.0], [0, 3, 1.0], [1, 0, 1.0], [1, 3, 2.0],
+        [2, 0, 2.0], [2, 1, 1.0], [2, 2, 10.0], [2, 3, 15.0], [3, 0, 1.0],
+        [3, 1, 1.5], [3, 2, 1.3999999999999999], [3, 3, 1.3], [4, 0, 20.0],
+        [4, 1, 16.0], [4, 2, 1.3999999999999999], [4, 3, 1.3]], "columns":
+        [{"id": "sample1", "metadata": null}, {"id": "sample2", "metadata":
+        null}, {"id": "sample3", "metadata": null}, {"id": "sample4",
+        "metadata": null}], "generated_by":
+        "QIIME 1.4.0-dev, svn revision 2564", "matrix_type": "sparse",
+        "shape": [5, 4], "format_url":
+        "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
+        "date": "2011-12-21T18:00:27.098306", "type": "OTU table", "id": null,
+        "matrix_element_type": "float"}"""
+        otu_table = parse_biom_table_str(otu_table_str)
+
         category_values = ['A', 'B']
         taxonomy_info = {'0': 'taxon1',
                         '1': 'taxon2',
@@ -391,7 +595,7 @@ s6\t0\tC""".split('\n')
                         '3': 'taxon4',
                         '4': 'taxon5'}
         ANOVA_results = run_ANOVA_OTUs(['0', '2', '1', '3', '4'], category_info,\
-            OTU_sample_info, category_values)
+            otu_table, category_values)
         output = output_results_ANOVA(ANOVA_results, category_values,\
                         taxonomy_info)
         self.assertEqual(output, ['OTU\tprob\tBonferroni_corrected\tFDR_corrected\tA_mean\tB_mean\tConsensus Lineage', '4\t0.0141325222337\t0.0706626111683\t0.0706626111683\t18.0\t1.35\ttaxon5', '2\t0.0497447318605\t0.248723659303\t0.124361829651\t1.5\t12.5\ttaxon3', '0\t0.142857142857\t0.714285714286\t0.238095238095\t7.5\t1.5\ttaxon1', '1\t0.698488655422\t3.49244327711\t0.873110819278\t0.5\t1.0\ttaxon2', '3\t0.732738758088\t3.66369379044\t0.732738758088\t1.25\t1.35\ttaxon4'])
@@ -402,13 +606,25 @@ s6\t0\tC""".split('\n')
                         'sample2': 'A',
                         'sample3': 'B',
                         'sample4': 'C'}
-        OTU_sample_info = {'0': {'sample1': '0', 'sample2': '0', 'sample3': '1', 'sample4': '1'},
-        '1': {'sample1': '1', 'sample2': '1', 'sample3': '0', 'sample4': '0'},
-        '2': {'sample1': '0', 'sample2': '0', 'sample3': '1', 'sample4': '0'},
-        '3': {'sample1': '0', 'sample2': '0', 'sample3': '0', 'sample4': '1'}}
+
+        otu_table_str = """{"rows": [{"id": "0", "metadata": null},
+        {"id": "1", "metadata": null}, {"id": "2", "metadata": null},
+        {"id": "3", "metadata": null}], "format":
+        "Biological Observation Matrix v0.9", "data": [[0, 2, 1.0],
+        [0, 3, 1.0], [1, 0, 1.0], [1, 1, 1.0], [2, 2, 1.0], [3, 3, 1.0]],
+        "columns": [{"id": "sample1", "metadata": null}, {"id": "sample2",
+        "metadata": null}, {"id": "sample3", "metadata": null}, {"id":
+        "sample4", "metadata": null}], "generated_by":
+        "QIIME 1.4.0-dev, svn revision 2564", "matrix_type": "sparse",
+        "shape": [4, 4], "format_url":
+        "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
+        "date": "2011-12-21T17:57:12.451685", "type": "OTU table", "id": null,
+        "matrix_element_type": "float"}"""
+        otu_table = parse_biom_table_str(otu_table_str)
+
         category_values = ['A', 'B', 'C']
         result = run_G_test_OTUs(['0', '1', '3'], category_info, \
-            OTU_sample_info, category_values)
+            otu_table, category_values)
         self.assertEqual(result.keys(), ['1', '0', '3'])
         self.assertFloatEqual(result['0'][3], 1.5241248812628101)
         self.assertFloatEqual(result['0'][0], 4.29304060218)
@@ -421,13 +637,25 @@ s6\t0\tC""".split('\n')
                         'sample2': 'A',
                         'sample3': 'B',
                         'sample4': 'C'}
-        OTU_sample_info = {'0': {'sample1': '0', 'sample2': '0', 'sample3': '1', 'sample4': '1'},
-        '1': {'sample1': '1', 'sample2': '1', 'sample3': '1', 'sample4': '0'},
-        '2': {'sample1': '0', 'sample2': '0', 'sample3': '1', 'sample4': '1'},
-        '3': {'sample1': '0', 'sample2': '1', 'sample3': '0', 'sample4': '1'}}
+
+        otu_table_str = """{"rows": [{"id": "0", "metadata": null},
+        {"id": "1", "metadata": null}, {"id": "2", "metadata": null},
+        {"id": "3", "metadata": null}], "format":
+        "Biological Observation Matrix v0.9", "data": [[0, 2, 1.0],
+        [0, 3, 1.0], [1, 0, 1.0], [1, 1, 1.0], [1, 2, 1.0], [2, 2, 1.0],
+        [2, 3, 1.0], [3, 1, 1.0], [3, 3, 1.0]], "columns": [{"id": "sample1",
+        "metadata": null}, {"id": "sample2", "metadata": null},
+        {"id": "sample3", "metadata": null}, {"id": "sample4", "metadata":
+        null}], "generated_by": "QIIME 1.4.0-dev, svn revision 2564",
+        "matrix_type": "sparse", "shape": [4, 4], "format_url":
+        "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
+        "date": "2011-12-21T17:52:54.285800", "type": "OTU table", "id": null,
+        "matrix_element_type": "float"}"""
+        otu_table = parse_biom_table_str(otu_table_str)
+
         category_values = ['A', 'B', 'C']
         G_test_results = run_G_test_OTUs(['0', '1', '3'], category_info, \
-            OTU_sample_info, category_values)
+            otu_table, category_values)
         G_test_results = add_fdr_correction_to_results(G_test_results)
         self.assertFloatEqual(G_test_results['0'][-1], 1.52412488126)
         self.assertFloatEqual(G_test_results['1'][-1], 0.938976340277)
@@ -439,17 +667,28 @@ s6\t0\tC""".split('\n')
                         'sample2': 'A',
                         'sample3': 'B',
                         'sample4': 'C'}
-        OTU_sample_info = {'0': {'sample1': '0', 'sample2': '0', 'sample3': '1', 'sample4': '1'},
-        '1': {'sample1': '1', 'sample2': '1', 'sample3': '1', 'sample4': '0'},
-        '2': {'sample1': '0', 'sample2': '0', 'sample3': '1', 'sample4': '1'},
-        '3': {'sample1': '0', 'sample2': '1', 'sample3': '0', 'sample4': '1'}}
+        otu_table_str = """{"rows": [{"id": "0", "metadata": null},
+        {"id": "1", "metadata": null}, {"id": "2", "metadata": null},
+        {"id": "3", "metadata": null}], "format":
+        "Biological Observation Matrix v0.9", "data": [[0, 2, 1.0],
+        [0, 3, 1.0], [1, 0, 1.0], [1, 1, 1.0], [1, 2, 1.0], [2, 2, 1.0],
+        [2, 3, 1.0], [3, 1, 1.0], [3, 3, 1.0]], "columns": [{"id": "sample1",
+        "metadata": null}, {"id": "sample2", "metadata": null},
+        {"id": "sample3", "metadata": null}, {"id": "sample4", "metadata":
+        null}], "generated_by": "QIIME 1.4.0-dev, svn revision 2564",
+        "matrix_type": "sparse", "shape": [4, 4], "format_url":
+        "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
+        "date": "2011-12-21T17:52:54.285800", "type": "OTU table", "id": null,
+        "matrix_element_type": "float"}"""
+        otu_table = parse_biom_table_str(otu_table_str)
+
         category_values = ['A', 'B', 'C']
         taxonomy_info = {'0': 'taxon1',
                         '1': 'taxon2',
                         '2': 'taxon3',
                         '3': 'taxon4'}
         G_test_results = run_G_test_OTUs(['0', '1', '3'], category_info, \
-            OTU_sample_info, category_values)
+            otu_table, category_values)
         output = output_results_G_test(G_test_results, {})
         self.assertEqual(output, ['OTU\tg_val\tg_prob\tBonferroni_corrected\tFDR_corrected\tOTU_pos##B_pos\tOTU_pos##C_pos\tOTU_pos##A_pos\tOTU_neg##B_pos\tOTU_neg##C_pos\tOTU_neg##A_pos', '0\t4.29304060218\t0.508041627088\t1.52412488126\t1.52412488126\t[1, 0.5]\t[1, 0.5]\t[0, 1.0]\t[0, 0.5]\t[0, 0.5]\t[2, 1.0]', '1\t3.48284992796\t0.625984226851\t1.87795268055\t0.938976340277\t[1, 0.75]\t[0, 0.75]\t[2, 1.5]\t[0, 0.25]\t[1, 0.25]\t[0, 0.5]', '3\t2.14652030109\t0.828522198394\t2.48556659518\t0.828522198394\t[0, 0.5]\t[1, 0.5]\t[1, 1.0]\t[1, 0.5]\t[0, 0.5]\t[1, 1.0]'])
         output = output_results_G_test(G_test_results, taxonomy_info)
@@ -461,12 +700,26 @@ s6\t0\tC""".split('\n')
                         'sample2':'0.2',
                         'sample3':'0.3',
                         'sample4':'0.4'}
-        OTU_sample_info = {'0': {'sample1': '0', 'sample2': '1', 'sample3': '2', 'sample4': '3'},
-        '1': {'sample1': '7', 'sample2': '5', 'sample3': '3', 'sample4': '1'},
-        '2': {'sample1': '4', 'sample2': '4.2', 'sample3': '4', 'sample4': '4'},
-        '3': {'sample1': '0', 'sample2': '1', 'sample3': '0', 'sample4': '1'}}
+
+        otu_table_str = """{"rows": [{"id": "0", "metadata": null},
+        {"id": "1", "metadata": null}, {"id": "2", "metadata": null},
+        {"id": "3", "metadata": null}], "format":
+        "Biological Observation Matrix v0.9", "data": [[0, 1, 1.0],
+        [0, 2, 2.0], [0, 3, 3.0], [1, 0, 7.0], [1, 1, 5.0], [1, 2, 3.0],
+        [1, 3, 1.0], [2, 0, 4.0], [2, 1, 4.2000000000000002], [2, 2, 4.0],
+        [2, 3, 4.0], [3, 1, 1.0], [3, 3, 1.0]], "columns": [{"id": "sample1",
+        "metadata": null}, {"id": "sample2", "metadata": null},
+        {"id": "sample3", "metadata": null}, {"id": "sample4",
+        "metadata": null}], "generated_by":
+        "QIIME 1.4.0-dev, svn revision 2564", "matrix_type": "sparse",
+        "shape": [4, 4], "format_url":
+        "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
+        "date": "2011-12-21T17:44:54.905035", "type": "OTU table", "id": null,
+        "matrix_element_type": "float"}"""
+        otu_table = parse_biom_table_str(otu_table_str)
+
         OTU_list = ['1', '0', '2', '3'] 
-        result = run_correlation_OTUs(OTU_list, category_info, OTU_sample_info)
+        result = run_correlation_OTUs(OTU_list, category_info, otu_table)
         #OTU 0 should be positively correlated, 1 negative, and 2&3 neutral
         self.assertFloatEqual(result['0'][0], 1.0)#r
         self.assertFloatEqual(result['0'][1], 0.0)#prob
@@ -489,7 +742,8 @@ s6\t0\tC""".split('\n')
                         'sample2':'B',
                         'sample3':'A',
                         'sample4':'B'}
-        self.assertRaises(ValueError, run_correlation_OTUs, OTU_list, category_info, OTU_sample_info)
+        self.assertRaises(ValueError, run_correlation_OTUs, OTU_list,
+                          category_info, otu_table)
         
     def test_output_results_correlation(self):
         """output_results_correlation works"""
@@ -497,16 +751,29 @@ s6\t0\tC""".split('\n')
                         'sample2':'0.2',
                         'sample3':'0.3',
                         'sample4':'0.4'}
-        OTU_sample_info = {'0': {'sample1': '0', 'sample2': '1', 'sample3': '2', 'sample4': '3'},
-        '1': {'sample1': '7', 'sample2': '5', 'sample3': '3', 'sample4': '1'},
-        '2': {'sample1': '4', 'sample2': '4.2', 'sample3': '4', 'sample4': '4'},
-        '3': {'sample1': '0', 'sample2': '1', 'sample3': '0', 'sample4': '1'}}
+        otu_table_str = """{"rows": [{"id": "0", "metadata": null},
+        {"id": "1", "metadata": null}, {"id": "2", "metadata": null},
+        {"id": "3", "metadata": null}], "format":
+        "Biological Observation Matrix v0.9", "data": [[0, 1, 1.0],
+        [0, 2, 2.0], [0, 3, 3.0], [1, 0, 7.0], [1, 1, 5.0], [1, 2, 3.0],
+        [1, 3, 1.0], [2, 0, 4.0], [2, 1, 4.2000000000000002], [2, 2, 4.0],
+        [2, 3, 4.0], [3, 1, 1.0], [3, 3, 1.0]], "columns": [{"id": "sample1",
+        "metadata": null}, {"id": "sample2", "metadata": null},
+        {"id": "sample3", "metadata": null}, {"id": "sample4",
+        "metadata": null}], "generated_by":
+        "QIIME 1.4.0-dev, svn revision 2564", "matrix_type": "sparse",
+        "shape": [4, 4], "format_url":
+        "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
+        "date": "2011-12-21T17:44:54.905035", "type": "OTU table", "id": null,
+        "matrix_element_type": "float"}"""
+        otu_table = parse_biom_table_str(otu_table_str)
+        
         taxonomy_info = {'0': 'taxon1',
                         '1': 'taxon2',
                         '2': 'taxon3',
                         '3': 'taxon4'}
         OTU_list = ['1', '0', '2', '3'] 
-        result = run_correlation_OTUs(OTU_list, category_info, OTU_sample_info)
+        result = run_correlation_OTUs(OTU_list, category_info, otu_table)
         output = output_results_correlation(result, taxonomy_info)
         self.assertEqual(output[0], 'OTU\tprob\totu_values_y\tcat_values_x\tBonferroni_corrected\tFDR_corrected\tr\tConsensus Lineage')
         line2 = output[2].split('\t')
@@ -519,38 +786,51 @@ s6\t0\tC""".split('\n')
         
         self.assertEqual(len(output), 5)
 
-    def test_get_otu_table_info(self):
-        """get_otu_table_info works"""
-        otu_table = """#Full OTU Counts
-#OTU ID\tsample1\tsample2\tsample3
-0\t0\t2\t0
-1\t1\t0\t0
-2\t1\t1\t1""".split('\n')
-        sample_ids, otu_ids, otu_data, lineages = \
-            parse_otu_table(otu_table)
-        result, num_samples, taxonomy_info = \
-            get_otu_table_info(sample_ids, otu_ids, otu_data, lineages)
-        self.assertEqual(result['1'], {'sample1': '1', 'sample3': '0', 'sample2': '0'})
-        self.assertEqual(result['0'], {'sample1': '0', 'sample3': '0', 'sample2': '2'})
-        self.assertEqual(result['2'], {'sample1': '1', 'sample3': '1', 'sample2': '1'})
-        self.assertEqual(num_samples, 3)
+    def test_get_taxonomy_info(self):
+        """get_taxonomy_info works"""
+        otu_table_str = """{"rows": [{"id": "0", "metadata": null}, {"id": "1",
+        "metadata": null}, {"id": "2", "metadata": null}], "format":
+        "Biological Observation Matrix v0.9", "data": [[0, 1, 2.0],
+        [1, 0, 1.0], [2, 0, 1.0], [2, 1, 1.0], [2, 2, 1.0]], "columns":
+        [{"id": "sample1", "metadata": null}, {"id": "sample2", "metadata":
+        null}, {"id": "sample3", "metadata": null}], "generated_by":
+        "QIIME 1.4.0-dev, svn revision 2564", "matrix_type": "sparse",
+        "shape": [3, 3], "format_url":
+        "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
+        "date": "2011-12-21T17:27:12.329308", "type": "OTU table", "id": null,
+        "matrix_element_type": "float"}"""
+        
+        otu_table = parse_biom_table_str(otu_table_str)
+        taxonomy_info = get_taxonomy_info(otu_table)
         self.assertEqual(taxonomy_info, {})
 
         #test that it parses otu tables with taxonomy fields appropriately
-        otu_table = """#Full OTU Counts
-#OTU ID\tsample1\tsample2\tsample3\tConsensus Lineage
-0\t0\t2\t0\tBacteria; Bacteroidetes; Bacteroidales; Parabacteroidaceae; Unclassified; otu_475
-1\t1\t0\t0\tBacteria; Bacteroidetes; Bacteroidales; adhufec77-25; Barnesiella; Barnesiella_viscericola; otu_369
-2\t1\t1\t1\tBacteria; Firmicutes; Clostridia; Clostridiales; Faecalibacterium; Unclassified; otu_1121""".split('\n')
-        sample_ids, otu_ids, otu_data, lineages = \
-            parse_otu_table(otu_table)
-        result, num_samples, taxonomy_info = \
-            get_otu_table_info(sample_ids, otu_ids, otu_data, lineages)
-        self.assertEqual(result['1'], {'sample1': '1', 'sample3': '0', 'sample2': '0'})
-        self.assertEqual(result['0'], {'sample1': '0', 'sample3': '0', 'sample2': '2'})
-        self.assertEqual(result['2'], {'sample1': '1', 'sample3': '1', 'sample2': '1'})
-        self.assertEqual(num_samples, 3)
-        self.assertEqual(taxonomy_info, {'1': 'Bacteria; Bacteroidetes; Bacteroidales; adhufec77-25; Barnesiella; Barnesiella_viscericola; otu_369', '0': 'Bacteria; Bacteroidetes; Bacteroidales; Parabacteroidaceae; Unclassified; otu_475', '2': 'Bacteria; Firmicutes; Clostridia; Clostridiales; Faecalibacterium; Unclassified; otu_1121'})
+        otu_table_str = """{"rows": [{"id": "0", "metadata": {"taxonomy":
+        ["Bacteria", "Bacteroidetes", "Bacteroidales", "Parabacteroidaceae",
+        "Unclassified", "otu_475"]}}, {"id": "1", "metadata": {"taxonomy":
+        ["Bacteria", "Bacteroidetes", "Bacteroidales", "adhufec77-25",
+        "Barnesiella", "Barnesiella_viscericola", "otu_369"]}}, {"id": "2",
+        "metadata": {"taxonomy": ["Bacteria", "Firmicutes", "Clostridia",
+        "Clostridiales", "Faecalibacterium", "Unclassified", "otu_1121"]}}],
+        "format": "Biological Observation Matrix v0.9", "data": [[0, 1, 2.0],
+        [1, 0, 1.0], [2, 0, 1.0], [2, 1, 1.0], [2, 2, 1.0]], "columns":
+        [{"id": "sample1", "metadata": null}, {"id": "sample2", "metadata":
+        null}, {"id": "sample3", "metadata": null}], "generated_by":
+        "QIIME 1.4.0-dev, svn revision 2564", "matrix_type": "sparse",
+        "shape": [3, 3], "format_url":
+        "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
+        "date": "2011-12-21T17:31:44.658057", "type": "OTU table", "id": null,
+        "matrix_element_type": "float"}"""
+        
+        otu_table = parse_biom_table_str(otu_table_str)
+        taxonomy_info = get_taxonomy_info(otu_table)
+        self.assertEqual(taxonomy_info, {'1':
+            'Bacteria; Bacteroidetes; Bacteroidales; adhufec77-25; ' + \
+            'Barnesiella; Barnesiella_viscericola; otu_369', '0':
+            'Bacteria; Bacteroidetes; Bacteroidales; Parabacteroidaceae; ' + \
+            'Unclassified; otu_475', '2':
+            'Bacteria; Firmicutes; Clostridia; Clostridiales; ' + \
+            'Faecalibacterium; Unclassified; otu_1121'})
 
     def test_get_category_info(self):
         """get_category_info works"""
@@ -622,20 +902,44 @@ sample3\tC\t1.0""".split('\n')
         """get_common_OTUs works"""
 
         # create the temporary OTU tables
-        otu_table1 = '\n'.join(['#Full OTU Counts',
-                     '#OTU ID\tsample1\tsample2\tsample3\tConsensus Lineage',
-                     '0\t0\t2\t0\tlineage0',
-                     '1\t1\t0\t0\tlineage1',
-                     '2\t1\t1\t1\tlineage2'])
-        otu_table2 = '\n'.join(['#Full OTU Counts',
-                     '#OTU ID\tsample1\tsample2\tsample3\tConsensus Lineage',
-                     '0\t0\t2\t0\tlineage0',
-                     '1\t1\t0\t0\tlineage1',
-                     '2\t0\t1\t1\tlineage2'])
-        otu_table3 = '\n'.join(['#Full OTU Counts',
-                     '#OTU ID\tsample1\tsample2\tsample3\tConsensus Lineage',
-                     '0\t0\t2\t0\tlineage0',
-                     '2\t1\t1\t1\tlineage2'])
+        otu_table1 = """{"rows": [{"id": "0", "metadata": {"taxonomy":
+        ["lineage0"]}}, {"id": "1", "metadata": {"taxonomy": ["lineage1"]}},
+        {"id": "2", "metadata": {"taxonomy": ["lineage2"]}}], "format":
+        "Biological Observation Matrix v0.9", "data": [[0, 1, 2.0],
+        [1, 0, 1.0], [2, 0, 1.0], [2, 1, 1.0], [2, 2, 1.0]], "columns":
+        [{"id": "sample1", "metadata": null}, {"id": "sample2", "metadata":
+        null}, {"id": "sample3", "metadata": null}], "generated_by":
+        "QIIME 1.4.0-dev, svn revision 2564", "matrix_type": "sparse",
+        "shape": [3, 3], "format_url":
+        "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
+        "date": "2011-12-21T17:19:22.290776", "type": "OTU table", "id": null,
+        "matrix_element_type": "float"}"""
+        
+        otu_table2 = """{"rows": [{"id": "0", "metadata": {"taxonomy":
+        ["lineage0"]}}, {"id": "1", "metadata": {"taxonomy": ["lineage1"]}},
+        {"id": "2", "metadata": {"taxonomy": ["lineage2"]}}], "format":
+        "Biological Observation Matrix v0.9", "data": [[0, 1, 2.0],
+        [1, 0, 1.0], [2, 1, 1.0], [2, 2, 1.0]], "columns": [{"id": "sample1",
+        "metadata": null}, {"id": "sample2", "metadata": null},
+        {"id": "sample3", "metadata": null}], "generated_by":
+        "QIIME 1.4.0-dev, svn revision 2564", "matrix_type": "sparse",
+        "shape": [3, 3], "format_url":
+        "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
+        "date": "2011-12-21T17:21:13.685763", "type": "OTU table", "id": null,
+        "matrix_element_type": "float"}"""
+        
+        otu_table3 = """{"rows": [{"id": "0", "metadata": {"taxonomy":
+        ["lineage0"]}}, {"id": "2", "metadata": {"taxonomy": ["lineage2"]}}],
+        "format": "Biological Observation Matrix v0.9", "data": [[0, 1, 2.0],
+        [1, 0, 1.0], [1, 1, 1.0], [1, 2, 1.0]], "columns": [{"id": "sample1",
+        "metadata": null}, {"id": "sample2", "metadata": null}, {"id":
+        "sample3", "metadata": null}], "generated_by":
+        "QIIME 1.4.0-dev, svn revision 2564", "matrix_type": "sparse",
+        "shape": [2, 3], "format_url":
+        "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
+        "date": "2011-12-21T17:22:55.602729", "type": "OTU table", "id": null,
+        "matrix_element_type": "float"}"""
+        
         category_info = {'sample1':'0.1',
                         'sample2':'0.2',
                         'sample3':'0.3'}
@@ -723,20 +1027,34 @@ sample3\tC\t1.0""".split('\n')
     def test_test_wrapper_multiple(self):
         """test_wrapper_multiple works"""
         # create the temporary OTU tables
-        otu_table1 = '\n'.join(['#Full OTU Counts',
-                     '#OTU ID\tsample1\tsample2\tsample3\tsample4\tConsensus Lineage',
-                     '0\t1\t2\t0\t1\tlineage0',
-                     '1\t1\t0\t0\t1\tlineage1',
-                     '2\t1\t1\t1\t1\tlineage2'])
-        otu_table2 = '\n'.join(['#Full OTU Counts',
-                     '#OTU ID\tsample1\tsample2\tsample3\tsample4\tConsensus Lineage',
-                     '0\t0\t2\t0\t1\tlineage0',
-                     '1\t1\t0\t0\t1\tlineage1',
-                     '2\t0\t1\t1\t1\tlineage2'])
-        otu_table3 = '\n'.join(['#Full OTU Counts',
-                     '#OTU ID\tsample1\tsample2\tsample3\tConsensus Lineage',
-                     '0\t0\t2\t0\t1\tlineage0',
-                     '2\t1\t1\t1\t1\tlineage2'])
+        otu_table1 = """{"rows": [{"id": "0", "metadata": {"taxonomy":
+        ["lineage0"]}}, {"id": "1", "metadata": {"taxonomy": ["lineage1"]}},
+        {"id": "2", "metadata": {"taxonomy": ["lineage2"]}}],
+        "format": "Biological Observation Matrix v0.9", "data": [[0, 0, 1.0],
+        [0, 1, 2.0], [0, 3, 1.0], [1, 0, 1.0], [1, 3, 1.0], [2, 0, 1.0],
+        [2, 1, 1.0], [2, 2, 1.0], [2, 3, 1.0]], "columns": [{"id": "sample1",
+        "metadata": null}, {"id": "sample2", "metadata": null}, {"id":
+        "sample3", "metadata": null}, {"id": "sample4", "metadata": null}],
+        "generated_by": "QIIME 1.4.0-dev, svn revision 2556", "matrix_type":
+        "sparse", "shape": [3, 4], "format_url":
+        "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
+        "date": "2011-12-21T15:42:03.286885", "type": "OTU table", "id": null,
+        "matrix_element_type": "float"}"""
+        
+        otu_table2 = """{"rows": [{"id": "0", "metadata": {"taxonomy":
+        ["lineage0"]}}, {"id": "1", "metadata": {"taxonomy": ["lineage1"]}},
+        {"id": "2", "metadata": {"taxonomy": ["lineage2"]}}], "format":
+        "Biological Observation Matrix v0.9", "data": [[0, 1, 2.0],
+        [0, 3, 1.0], [1, 0, 1.0], [1, 3, 1.0], [2, 1, 1.0], [2, 2, 1.0],
+        [2, 3, 1.0]], "columns": [{"id": "sample1", "metadata": null},
+        {"id": "sample2", "metadata": null}, {"id": "sample3",
+        "metadata": null}, {"id": "sample4", "metadata": null}],
+        "generated_by": "QIIME 1.4.0-dev, svn revision 2556", "matrix_type":
+        "sparse", "shape": [3, 4], "format_url":
+        "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
+        "date": "2011-12-21T15:45:47.278634", "type": "OTU table", "id": null,
+        "matrix_element_type": "float"}"""
+
         category_mapping = ['#SampleID\tcat1\tcat2',
                                       'sample1\tA\t0',
                                       'sample2\tA\t8.0',
@@ -746,11 +1064,9 @@ sample3\tC\t1.0""".split('\n')
 
         fp1 = get_tmp_filename()
         fp2 = get_tmp_filename()
-        fp3 = get_tmp_filename()
         try:
             f1 = open(fp1,'w')
             f2 = open(fp2,'w')
-            f3 = open(fp3,'w')
         except IOError, e:
             raise e,"Could not create temporary files: %s, %s" %(f1,f2, f3)
         
@@ -758,8 +1074,6 @@ sample3\tC\t1.0""".split('\n')
         f1.close()
         f2.write(otu_table2)
         f2.close()
-        f3.write(otu_table3)
-        f3.close()
 
         # ANOVA
         otu_table_paths = [fp1,fp2]
@@ -901,7 +1215,6 @@ sample3\tC\t1.0""".split('\n')
         # clean up temporary files
         remove(fp1)
         remove(fp2)
-        remove(fp3)
 
     def test_sort_rows(self):
         """sort_rows works"""

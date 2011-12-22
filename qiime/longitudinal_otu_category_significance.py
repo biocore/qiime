@@ -4,18 +4,20 @@ from __future__ import division
 
 __author__ = "Catherine Lozupone"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Catherine Lozupone"]
+__credits__ = ["Catherine Lozupone", "Jai Rideout"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Catherine Lozupone"
 __email__ = "lozupone@colorado.edu"
 __status__ = "Development"
 
-from qiime.util import convert_otu_table_relative
-from qiime.parse import parse_otu_table, parse_mapping_file
-from qiime.format import format_otu_table
 from collections import defaultdict
 from numpy import zeros
+from string import strip
+from qiime.format import format_otu_table
+from qiime.parse import parse_mapping_file
+from qiime.pycogent_backports.parse_biom import parse_biom_table
+from qiime.pycogent_backports.rich_otu_table import table_factory
 
 """Prepare otu table for performing otu significance studies that account
 for longitudinal study designs.
@@ -47,48 +49,49 @@ def get_sample_individual_info(mapping_data, header, individual_column, \
                 samples_from_subject[sample_name].append(j[0])
     return samples_from_subject, sample_to_subtract
 
-def make_new_otu_counts(otu_ids, sample_ids, otu_counts, consensus, \
-    sample_to_subtract, samples_from_subject):
+def make_new_otu_counts(otu_table, sample_to_subtract, samples_from_subject):
     """make the converted otu table
     """
     new_sample_ids = sample_to_subtract.keys()
     new_sample_ids.sort()
-    new_otu_counts = zeros([len(otu_ids), len(new_sample_ids)])
-    for index1, otu in enumerate(otu_ids):
+    new_otu_counts = zeros([len(otu_table.ObservationIds),
+                            len(new_sample_ids)])
+    for index1, otu in enumerate(otu_table.ObservationIds):
         for index2, sample in enumerate(new_sample_ids):
             tpz_sample = sample_to_subtract[sample]
-            if tpz_sample in sample_ids:
-                tpz_sample_index = sample_ids.index(tpz_sample)
+            if tpz_sample in otu_table.SampleIds:
+                tpz_sample_index = otu_table.SampleIds.index(tpz_sample)
             else:
                 raise ValueError("There are samples in the category mapping file that are not in the otu table, such as sample: " + tpz_sample + ". Removing these samples from the category mapping file will allow you to proceed.")
             #get the new count as the relative abundance of the otu at
             #the later timepoint minus the relative abundance at timepoint zero
-            old_sample_index = sample_ids.index(sample)
-            new_count = otu_counts[index1, old_sample_index] - \
-                otu_counts[index1, tpz_sample_index]
+            old_sample_index = otu_table.SampleIds.index(sample)
+            new_count = otu_table[index1, old_sample_index] - \
+                otu_table[index1, tpz_sample_index]
             #make sure that the count is not zero across all of the subject's
             #samples
             has_nonzeros = False
             subject_sample_ids = samples_from_subject[sample]
             for i in subject_sample_ids:
-                sample_index = sample_ids.index(i)
-                if otu_counts[index1, sample_index] > 0:
+                sample_index = otu_table.SampleIds.index(i)
+                if otu_table[index1, sample_index] > 0:
                     has_nonzeros = True
             if has_nonzeros:
                 new_otu_counts[index1, index2] = new_count
             else:
                 new_otu_counts[index1, index2] = 999999999
-    return format_otu_table(new_sample_ids, otu_ids, new_otu_counts, consensus)
+    return table_factory(new_otu_counts, new_sample_ids,
+                         otu_table.ObservationIds,
+                         observation_metadata=otu_table.ObservationMetadata)
 
 def longitudinal_otu_table_conversion_wrapper(otu_table, category_mapping,\
     individual_column, timepoint_zero_column):
     """returns the modified otu_table"""
-    otu_table = parse_otu_table(otu_table)
-    otu_table = convert_otu_table_relative(otu_table)
-    sample_ids, otu_ids, otu_counts, consensus = otu_table
+    otu_table = parse_biom_table(otu_table)
+    otu_table = otu_table.normObservationBySample()
     mapping_data, header, comments = parse_mapping_file(category_mapping)
     samples_from_subject, sample_to_subtract = \
         get_sample_individual_info(mapping_data, header, individual_column, \
         timepoint_zero_column)
-    return make_new_otu_counts(otu_ids, sample_ids, otu_counts, consensus, \
-        sample_to_subtract, samples_from_subject)
+    return make_new_otu_counts(otu_table, sample_to_subtract,
+                               samples_from_subject)

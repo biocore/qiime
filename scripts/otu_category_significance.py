@@ -93,7 +93,8 @@ The paired_T results are output as tab delimited text that can be examined in Ex
 
 script_info['required_options']=[\
     make_option('-i','--otu_table_fp', dest='otu_table_fp',\
-        help='path to the otu table, or to a directory containing OTU tables'),\
+        help='path to the otu table in Biom format, or to a directory ' + \
+             'containing OTU tables'),\
     make_option('-m','--category_mapping_fp',\
         dest='category_mapping_fp',\
         help='path to category mapping file')
@@ -199,21 +200,21 @@ def main():
         # if single file, process normally
         otu_table = open(otu_table_fp,'U')
         if test == 'longitudinal_correlation' or test == 'paired_T':
-            converted_otu_table = longitudinal_otu_table_conversion_wrapper(\
-                otu_table, category_mapping, individual_column, \
-                reference_sample_column) 
+            converted_otu_table_str = \
+                    longitudinal_otu_table_conversion_wrapper(otu_table,
+                            category_mapping, individual_column,
+                            reference_sample_column).getBiomFormatJsonString()
             if conv_output_fp:
                 of = open(conv_output_fp, 'w')
-                of.write(converted_otu_table)
+                of.write(converted_otu_table_str)
                 of.close()
-            converted_otu_table = converted_otu_table.split('\n')
             category_mapping = open(category_mapping_fp,'U')
             if test == 'longitudinal_correlation':
-                output = test_wrapper('correlation', converted_otu_table, \
+                output = test_wrapper('correlation', converted_otu_table_str, \
                     category_mapping, category, threshold, filter, otu_include, \
                     999999999.0, True)
             elif test == 'paired_T':
-                output = test_wrapper('paired_T', converted_otu_table, \
+                output = test_wrapper('paired_T', converted_otu_table_str, \
                     category_mapping, category, threshold, \
                     filter, otu_include, 999999999.0, True, \
                     individual_column, reference_sample_column)
