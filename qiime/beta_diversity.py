@@ -166,15 +166,9 @@ class BetaDiversityCalc(FunctionWithParams):
         else:
             tree = None
         
-        # sample_names, taxon_names, data, lineages = \
-        #     self.getOtuTable(data_path)
         otu_table = parse_biom_table(open(data_path,'U'))
-        #data = [(value,sample_id) for value, sample_id, metadata in otu_table.iterSamples()]
-        #otumtx, samids = unzip(data)
         otumtx = asarray([v for v in otu_table.iterSampleData()])
-        #otuids = [otu_id for value, otu_id, metadata in otu_table.iterObservations()]
         
-            
         # get the 2d dist matrix from beta diversity analysis
         if self.IsPhylogenetic:
             return (self.Metric(otumtx, otu_table.ObservationIds, tree, otu_table.SampleIds), otu_table.SampleIds)
