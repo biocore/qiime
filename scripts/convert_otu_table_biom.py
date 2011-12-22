@@ -40,7 +40,9 @@ def convert_otu_table_to_biom(otu_table_f,count_map_f,dense):
 def convert_biom_to_otu_table(biom_f):
     """ """
     otu_table = parse_biom_table(biom_f)
-    return str(otu_table)
+    return otu_table.delimitedSelf(header_key='taxonomy', 
+                                   header_value='Consensus Lineage',
+                                   metadata_formatter=lambda x: ';'.join(x))
 
 
 def main():
