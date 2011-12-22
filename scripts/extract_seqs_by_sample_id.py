@@ -17,7 +17,7 @@ from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.util import make_option
 from qiime.util import extract_seqs_by_sample_id
 from qiime.parse import parse_mapping_file
-from qiime.filter_by_metadata import (parse_metadata_state_descriptions, 
+from qiime.filter import (parse_metadata_state_descriptions, 
                                       get_sample_ids)
 
 options_lookup = get_options_lookup()
