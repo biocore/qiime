@@ -314,7 +314,7 @@ class Table(object):
             yield self._conv_to_np(samp_v)
 
     def iterObservationData(self):
-        """Yields sample_values"""
+        """Yields observation_values"""
         for obs_v in self._iter_obs():
             yield self._conv_to_np(obs_v)
 
