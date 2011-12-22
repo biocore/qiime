@@ -841,7 +841,7 @@ class Table(object):
                 dense_values = list(obs[0])
                 sparse_values = []
                 for col_index, val in enumerate(dense_values):
-                    if int(val) != 0:
+                    if float(val) != 0.0:
                         sparse_values.append([obs_index, col_index, val])
                 biom_format_obj["data"].extend(sparse_values)
 
