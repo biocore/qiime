@@ -19,7 +19,6 @@ list_known_metrics)
 import os
 from sys import stderr
 from qiime.util import get_tmp_filename
-from qiime.parse import parse_otu_table, parse_newick, PhyloNode
 
 script_info={}
 script_info['brief_description']="""Calculate beta diversity (pairwise sample dissimilarity) on one or many otu tables"""
