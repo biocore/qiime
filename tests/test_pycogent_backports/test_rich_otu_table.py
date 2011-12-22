@@ -1046,6 +1046,22 @@ class SparseTableTests(TestCase):
                 [{'barcode':'aatt'},{'barcode':'ttgg'}],
                 [{'taxonomy':['k__a','p__b']},{'taxonomy':['k__a','p__c']}])
 
+    def test_sortObservationOrder(self):
+        """sort by observations arbitrary order"""
+        vals = {(0,0):7,(0,1):8,(1,0):5,(1,1):6}
+        exp = SparseTable(to_ll_mat(vals),
+                               ['a','b'],['2','1'])
+        obs = self.st1.sortObservationOrder(['2','1'])
+        self.assertEqual(obs,exp)
+ 
+    def test_sortSampleOrder(self):
+        """sort by observations arbitrary order"""
+        vals = {(0,0):6,(0,1):5,(1,0):8,(1,1):7}
+        exp = SparseTable(to_ll_mat(vals),
+                               ['b','a'],['1','2'])
+        obs = self.st1.sortSampleOrder(['b','a'])
+        self.assertEqual(obs,exp)
+ 
     def test_sortBySampleId(self):
         """sort by samples by a function"""
         sort_f = sorted

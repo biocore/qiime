@@ -354,13 +354,12 @@ class Table(object):
             else:
                 yield (obs_v, obs_id, obs_md)
 
-    def sortBySampleId(self, sort_f=natsort):
-        """Return a table sorted by sort_f"""
-        sort_order = sort_f(self.SampleIds)
+    def sortSampleOrder(self, sample_order):
+        """Return a new table in sample order"""
         samp_md = []
         vals = []
 
-        for id_ in sort_order:
+        for id_ in sample_order:
             cur_idx = self._sample_index[id_]
             vals.append(self[:,cur_idx])
             
@@ -371,16 +370,15 @@ class Table(object):
             samp_md = None
 
         return self.__class__(self._conv_to_self_type(vals), 
-                sort_order, self.ObservationIds, samp_md, 
+                sample_order, self.ObservationIds, samp_md, 
                 self.ObservationMetadata,self.TableId)
 
-    def sortByObservationId(self, sort_f=natsort):
-        """Return a table sorted by sort_f"""
-        sort_order = sort_f(self.ObservationIds)
+    def sortObservationOrder(self, obs_order):
+        """Return a new table in observation order"""
         obs_md = []
         vals = []
 
-        for id_ in sort_order:
+        for id_ in obs_order:
             cur_idx = self._obs_index[id_]
             vals.append(self[cur_idx,:])
 
@@ -391,8 +389,16 @@ class Table(object):
             obs_md = None
 
         return self.__class__(self._conv_to_self_type(vals),
-                self.SampleIds, sort_order, self.SampleMetadata,
+                self.SampleIds, obs_order, self.SampleMetadata,
                 obs_md, self.TableId)
+
+    def sortBySampleId(self, sort_f=natsort):
+        """Return a table sorted by sort_f"""
+        return self.sortSampleOrder(sort_f(self.SampleIds))
+
+    def sortByObservationId(self, sort_f=natsort):
+        """Return a table sorted by sort_f"""
+        return self.sortObservationOrder(sort_f(self.ObservationIds))
 
     def filterSamples(self, f, invert=False):
         """Filter samples in self based on f
