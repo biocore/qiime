@@ -208,9 +208,10 @@ def single_file_beta(input_path, metrics, tree_path, output_dir, rowids=None,
         tree = None
 
     metrics_list = metrics.split(',')
+    input_dir, input_filename = os.path.split(input_path)
+    input_basename, input_ext = os.path.splitext(input_filename)
     for metric in metrics_list:
-        outfilepath = os.path.join(output_dir, metric + '_' +
-            os.path.split(input_path)[1])
+        outfilepath = os.path.join(output_dir, metric + '_' + input_basename + '.txt')
         try:
             metric_f = get_nonphylogenetic_metric(metric)
             is_phylogenetic = False
