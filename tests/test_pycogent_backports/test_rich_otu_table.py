@@ -897,6 +897,9 @@ class DenseTableTests(TestCase):
         obs_inv = self.dt_rich.filterSamples(f_value, invert=True)
         self.assertEqual(obs_inv, exp_inv)
 
+        self.assertRaises(TableException, self.dt_rich.filterSamples, \
+                lambda x,y,z: False)
+        
     def test_filterObservations(self):
         """Filters observations by arbitrary function"""
         f_value = lambda v,id_,md: (v <= 5).any()
@@ -926,6 +929,9 @@ class DenseTableTests(TestCase):
                 [{'taxonomy':['k__a','p__c']}])
         obs_inv = self.dt_rich.filterObservations(f_value, invert=True)
         self.assertEqual(obs_inv, exp_inv)
+
+        self.assertRaises(TableException, self.dt_rich.filterObservations, \
+                          lambda x,y,z: False)
 
     def test_transformObservations(self):
         """Transform observations by arbitrary function"""
@@ -1435,6 +1441,8 @@ class SparseTableTests(TestCase):
                                        {'taxonomy':['k__a','p__c']}])
         obs_inv = self.st_rich.filterSamples(f_value, invert=True)
         self.assertEqual(obs_inv, exp_inv)
+        self.assertRaises(TableException, self.st_rich.filterSamples, \
+                lambda x,y,z: False)
         
     def test_filterObservations(self):
         """Filters observations by arbitrary function"""
@@ -1469,6 +1477,8 @@ class SparseTableTests(TestCase):
                 [{'taxonomy':['k__a','p__c']}])
         obs_inv = self.st_rich.filterObservations(f_value, invert=True)
         self.assertEqual(obs_inv, exp_inv)
+        self.assertRaises(TableException, self.st_rich.filterObservations, \
+                lambda x,y,z: False)
 
     def test_transformObservations(self):
         """Transform observations by arbitrary function"""
