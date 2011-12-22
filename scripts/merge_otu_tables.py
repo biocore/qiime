@@ -14,9 +14,8 @@ __status__ = "Development"
 
 from qiime.util import make_option
 from qiime.util import (parse_command_line_parameters, 
-                        get_options_lookup,
-                        merge_n_otu_tables)
-from qiime.format import format_otu_table
+                        get_options_lookup)
+from qiime.pycogent_backports.parse_biom import parse_biom_table
 
 options_lookup = get_options_lookup()
 
@@ -24,7 +23,7 @@ script_info = {}
 script_info['brief_description'] = "Merge two or more OTU tables into a single OTU table."
 script_info['script_description'] = """This script merges two or more OTU tables into a single OTU table. This is useful, for example, when you've created several reference-based OTU tables for different analyses and need to combine them for a larger analysis. 
 
-Requirements: This process requires that the sample IDs are distinct across the different OTU tables. It is also very important that your OTUs are consistent across across the different OTU tables. For example, you cannot safely merge OTU tables from two independent de novo OTU picking runs. Finally, either all or none of the OTU tables can contain taxonomic information: you can't merge some OTU tables with taxonomic data and some without taxonomic data."""
+Requirements: It is also very important that your OTUs are consistent across across the different OTU tables. For example, you cannot safely merge OTU tables from two independent de novo OTU picking runs. Finally, either all or none of the OTU tables can contain taxonomic information: you can't merge some OTU tables with taxonomic data and some without taxonomic data."""
 script_info['script_usage'] = [\
  ("",
   "Merge two OTU tables into a single OTU table",
@@ -32,7 +31,7 @@ script_info['script_usage'] = [\
 script_info['output_description']= ""
 script_info['required_options'] = [\
  # Example required option
- make_option('-i','--input_fps',help='the otu tables (comma-separated)'),\
+ make_option('-i','--input_fps',help='the otu tables in biom format (comma-separated)'),\
  make_option('-o','--output_fp',help='the output otu table filepath'),\
 ]
 script_info['optional_options'] = []
@@ -46,19 +45,11 @@ def main():
     for input_fp in opts.input_fps.split(','):
         input_fs.append(open(input_fp,'U'))
     
-    sample_names, otu_names, data, taxonomy = merge_n_otu_tables(input_fs)
-    
+    t = reduce(lambda x,y: x.merge(y), [parse_biom_table(i) for i in input_fs])
+
     out_f = open(opts.output_fp,'w')
-    out_f.write(format_otu_table(sample_names=sample_names,
-                                 otu_names=otu_names,
-                                 data=data,
-                                 taxonomy=taxonomy))
+    out_f.write(t.getBiomFormatJsonString())
     out_f.close()
-
-
-
-
-
 
 if __name__ == "__main__":
     main()
