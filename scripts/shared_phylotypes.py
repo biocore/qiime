@@ -35,7 +35,7 @@ script_info['script_usage'] = [
 script_info['output_description']= ""
 script_info['required_options'] = [\
      make_option('-i','--otu_table_fp',\
-                     help='path to the input OTU table or a directory containing (only) OTU tables'),
+                     help='path to the input OTU table in biom format aor a directory containing (only) OTU tables'),
     options_lookup['output_fp']
 ]
 
