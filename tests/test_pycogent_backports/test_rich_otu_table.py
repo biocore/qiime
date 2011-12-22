@@ -616,9 +616,11 @@ class TableTests(TestCase):
         # tests in derived classes
         self.assertRaises(TableException, self.t1.merge, 'a','b','c')
 
-        # handle each axis indep: samples='intersection', observations='union'
-    ### ADD TESTS FOR unionBySample, unionByObservation,
-    ###               int
+    def test_isEmpty(self):
+        """returns true if empty"""
+        self.assertTrue(self.t1.isEmpty())
+        self.assertFalse(self.simple_derived.isEmpty())
+
 class DenseTableTests(TestCase):
     def setUp(self):
         self.dt1 = DenseTable(array([[5,6],[7,8]]), ['a','b'],['1','2'])
@@ -718,7 +720,7 @@ class DenseTableTests(TestCase):
 
     def test_delimitedSelf(self):
         """Print out self in a delimited form"""
-        exp = '\n'.join(["#RowIDs\ta\tb","1\t5\t6","2\t7\t8"])
+        exp = '\n'.join(["#OTU IDs\ta\tb","1\t5\t6","2\t7\t8"])
         obs = self.dt1.delimitedSelf()
         self.assertEqual(obs,exp)
 
@@ -1196,7 +1198,7 @@ class SparseTableTests(TestCase):
 
     def test_delimitedSelf(self):
         """Print out self in a delimited form"""
-        exp = '\n'.join(["#RowIDs\ta\tb","1\t5\t6","2\t7\t8"])
+        exp = '\n'.join(["#OTU IDs\ta\tb","1\t5\t6","2\t7\t8"])
         obs = self.dt1.delimitedSelf()
         self.assertEqual(obs,exp)
     def test_sampleData(self):
@@ -1215,7 +1217,7 @@ class SparseTableTests(TestCase):
 
     def test_delimitedSelf(self):
         """Print out self in a delimited form"""
-        exp = '\n'.join(["#RowIDs\ta\tb","1\t5.0\t6.0","2\t7.0\t8.0"])
+        exp = '\n'.join(["#OTU IDs\ta\tb","1\t5.0\t6.0","2\t7.0\t8.0"])
         obs = self.st1.delimitedSelf()
         self.assertEqual(obs,exp)
 

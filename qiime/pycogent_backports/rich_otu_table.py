@@ -196,7 +196,6 @@ class Table(object):
                 default_obs_md.append(d)
             self.ObservationMetadata = default_obs_md
 
-    ### IS THIS WHAT WE WANT GETITEM/SETITEM AS?
     def __getitem__(self, args):
         """Passes through to internal matrix"""
         return self._data[args]
@@ -214,7 +213,6 @@ class Table(object):
 
         return self._data[self._obs_index[obs_id], self._sample_index[samp_id]]
 
-    ### DEFAULT OUTPUT SHOULD BE GTF
     def __str__(self):
         """Stringify self
 
@@ -240,13 +238,20 @@ class Table(object):
             raise TableException, "Cannot delimit self if I don't have data..."
 
         samp_ids = delim.join(map(str, self.SampleIds))
-        output = ['#RowIDs%s%s' % (delim, samp_ids)]
+        output = ['#OTU IDs%s%s' % (delim, samp_ids)]
         
         for obs_id, obs_values in zip(self.ObservationIds, self._iter_obs()):
             str_obs_vals = delim.join(map(str, self._conv_to_np(obs_values)))
             output.append('%s%s%s' % (obs_id, delim, str_obs_vals))
 
         return '\n'.join(output)
+
+    def isEmpty(self):
+        """Returns true if the table is empty"""
+        if not self.SampleIds or not self.ObservationIds:
+            return True
+        else:
+            return False
 
     def __iter__(self):
         """Defined by subclass"""
