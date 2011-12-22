@@ -53,6 +53,10 @@ def to_ll_mat(values, transpose=False):
         else:
             mat = nparray_to_ll_mat(values)
         return mat
+    # the empty list
+    elif isinstance(values, list) and len(values) == 0:
+        mat = ll_mat(0,0)
+        return mat
     # list of dicts, each representing a row in row order
     elif isinstance(values, list) and isinstance(values[0], dict):
         mat = list_dict_to_ll_mat(values)
@@ -249,11 +253,15 @@ class Table(object):
         """Returns True if observation exists, False otherwise"""
         return id_ in self._obs_index
 
-    def delimitedSelf(self, delim='\t'):
+    def delimitedSelf(self, delim='\t', header_key=None, header_value=None):
         """Stringify self in a delimited form
         
         Default str output for the Table is just row/col ids and table data
         without any metadata
+
+        If header_key is not None, try to pull out that key from observation
+        metadata. If header_value is not None, use the header_value in the
+        output.
         """
         if self.isEmpty():
             raise TableException, "Cannot delimit self if I don't have data..."
