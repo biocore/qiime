@@ -7,7 +7,7 @@ from __future__ import division
 __author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2011, The QIIME Project"
 __credits__ = ["Jesse Stombaugh", "Rob Knight", "Micah Hamady", "Dan Knights",
-    "Justin Kuczynski", "Antonio Gonzalez Pena", "Daniel McDonald"]
+    "Justin Kuczynski", "Antonio Gonzalez Pena"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Jesse Stombaugh"
@@ -339,7 +339,7 @@ Valid methods are: " + ', '.join(ellipsoid_methods) + ".")
         # get list of sample_ids that haven't been removed
         sample_ids = data['coord'][0]
         # get taxa summaries for all sample_ids
-        lineages, taxa_counts = get_taxa(open(opts.taxa_fname), sample_ids)
+        lineages, taxa_counts = get_taxa(opts.taxa_fname, sample_ids)
         data['taxa'] = {}
         data['taxa']['lineages'] = lineages
         data['taxa']['counts'] = taxa_counts
