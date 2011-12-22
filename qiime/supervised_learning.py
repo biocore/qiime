@@ -105,7 +105,15 @@ class RSupervisedLearner(CommandLineApplication):
         else:
             errfilepath = FilePath(self.getTmpFilename(self.TmpDir))
             errfile = open(errfilepath, 'w')
-        predictor_fp = getattr(self,input_handler)(predictor_fp)
+
+        # convert the OTU table from BIOM to classic OTU table
+        ducttape = self.getTmpFilename(self.TmpDir)
+        biom = parse_biom_table(open(predictor_fp))
+        f = open(ducttape, 'w')
+        f.write(str(biom))
+        f.close()
+
+        predictor_fp = getattr(self,input_handler)(ducttape)
         response_fp = getattr(self,input_handler)(response_fp)
         # create random output dir if needed
         if output_dir is None:
