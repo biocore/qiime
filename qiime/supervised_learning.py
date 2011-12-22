@@ -21,6 +21,7 @@ from cogent.app.util import CommandLineApplication, CommandLineAppResult, \
     FilePath, ResultPath, ApplicationError
 from cogent.app.parameters import Parameters
 from numpy import array, set_printoptions, nan
+from qiime.pycogent_backports.parse_biom import parse_biom_table
 
 def parse_feature_importances(filepath):
     """Returns vector of feature IDs, vector of importance scores
