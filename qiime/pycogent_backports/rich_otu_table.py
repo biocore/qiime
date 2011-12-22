@@ -892,6 +892,14 @@ class Table(object):
         """Returns a JSON string representing the table in Biom format."""
         return dumps(self.getBiomFormatObject())
 
+    def getBiomFormatPrettyPrint(self):
+        """Returns a 'pretty print' format of a biom file
+
+        WARNING: This method displays data values in a columnar format and 
+        can be misleading.
+        """
+        return dumps(self.getBiomFormatObject(), sort_keys=True, indent=4)
+
 class SparseTable(Table):
     _biom_matrix_type = "sparse"
     def __init__(self, *args, **kwargs):
