@@ -14,10 +14,9 @@ __status__ = "Development"
 import qiime.biplots as bp
 import numpy as np
 
+from os import system
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import get_random_directory_name
-from StringIO import StringIO
-from qiime.pycogent_backports.rich_otu_table import nparray_to_ll_mat
 
 class BiplotTests(TestCase):
     
@@ -38,15 +37,16 @@ class BiplotTests(TestCase):
                 ]
         fout.write('\n'.join(lines))
         fout.close()
-        table = '{"rows": [{"id": "Root;Bacteria;Acidobacteria", "metadata": null}, {"id": "Root;Bacteria;TM7", "metadata": null}], "format": "Biological Observation Matrix v0.9", "data": [[0, 0, 0.10000000000000001], [0, 1, 0.20000000000000001], [0, 2, 0.29999999999999999], [1, 0, 0.050000000000000003], [1, 2, 0.29999999999999999]], "columns": [{"id": "A", "metadata": null}, {"id": "B", "metadata": null}, {"id": "C", "metadata": null}], "generated_by": "QIIME 1.4.0-dev, svn revision 2579", "matrix_type": "sparse", "shape": [2, 3], "format_url": "http://www.qiime.org/svn_documentation/documentation/biom_format.html", "date": "2011-12-21T23:50:24.795846", "type": "OTU table", "id": null, "matrix_element_type": "float"}'
 
         otu_ids = ['Root;Bacteria;Acidobacteria','Root;Bacteria;TM7']
-        otu_data = nparray_to_ll_mat(np.array([[0.1,0.3],[0.05,0.3]]))
-
-        res = bp.get_taxa(StringIO(table),sample_ids_kept=['A','C'])
-        
+        otu_table = np.array([[0.1,0.3],[0.05,0.3]])
+        res = bp.get_taxa(rand_fname,sample_ids_kept=['A','C'])
         self.assertEqual(res[0],otu_ids)
-        self.assertEqual(res[1]._data.items(), otu_data.items())
+        self.assertEqual(res[1],otu_table)
+
+        # remove temporary file
+        system('rm %s' %(rand_fname))
+        pass
         
     def test_get_taxa_coords(self):
         otu_table = np.array([  [2,0,0,1],
