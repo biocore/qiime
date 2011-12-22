@@ -259,7 +259,7 @@ class Table(object):
             raise TableException, "Cannot delimit self if I don't have data..."
 
         samp_ids = delim.join(map(str, self.SampleIds))
-        output = ['#OTU IDs%s%s' % (delim, samp_ids)]
+        output = ['# Constructed from biom file','#OTU IDs%s%s' % (delim, samp_ids)]
         
         for obs_id, obs_values in zip(self.ObservationIds, self._iter_obs()):
             str_obs_vals = delim.join(map(str, self._conv_to_np(obs_values)))
