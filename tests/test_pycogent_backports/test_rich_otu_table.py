@@ -389,6 +389,11 @@ class SupportTests(TestCase):
         obs = to_ll_mat([row1, row2])
         self.assertEqual(obs.items(), exp.items()) 
 
+        # test empty set
+        exp = ll_mat(0,0)
+        obs = to_ll_mat([])
+        self.assertEqual(obs.items(), exp.items())
+
 class TableTests(TestCase):
     def setUp(self):
         self.t1 = Table(array([]),[],[])
