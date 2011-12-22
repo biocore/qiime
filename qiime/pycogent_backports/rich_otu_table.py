@@ -253,7 +253,8 @@ class Table(object):
         """Returns True if observation exists, False otherwise"""
         return id_ in self._obs_index
 
-    def delimitedSelf(self, delim='\t', header_key=None, header_value=None):
+    def delimitedSelf(self, delim='\t', header_key=None, header_value=None, 
+        metadata_formatter=str):
         """Stringify self in a delimited form
         
         Default str output for the Table is just row/col ids and table data
@@ -262,6 +263,9 @@ class Table(object):
         If header_key is not None, try to pull out that key from observation
         metadata. If header_value is not None, use the header_value in the
         output.
+        
+        metadata_formatter: a function which takes a metadata entry and 
+         returns a formatted version that should be written to file
         """
         if self.isEmpty():
             raise TableException, "Cannot delimit self if I don't have data..."
@@ -288,7 +292,7 @@ class Table(object):
 
             if header_key and self.ObservationMetadata is not None:
                 md = self.ObservationMetadata[self._obs_index[obs_id]]
-                md_out = str(md.get(header_key,None))
+                md_out = metadata_formatter(md.get(header_key,None))
                 output.append('%s%s%s\t%s' % (obs_id, delim, str_obs_vals, md_out))
             else:
                 output.append('%s%s%s' % (obs_id, delim, str_obs_vals))
