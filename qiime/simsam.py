@@ -16,7 +16,6 @@ import random
 
 from qiime.util import make_option
 
-from qiime.parse import parse_otu_table
 from qiime.util import parse_command_line_parameters
 from qiime.sort import natsort
 
