@@ -12,7 +12,7 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
 from qiime.util import parse_command_line_parameters, make_option
-from qiime.pycogent_backports.parse_biom import parse_otu_table_to_rich_otu_table
+from qiime.pycogent_backports.parse_biom import parse_otu_table_to_rich_otu_table, parse_biom_table
 
 script_info = {}
 script_info['brief_description'] = ""
@@ -36,7 +36,12 @@ def convert_otu_table_to_biom(otu_table_f,count_map_f,dense):
                                                   count_map_f=count_map_f,
                                                   dense=dense)
     return otu_table.getBiomFormatJsonString()
-    
+
+def convert_biom_to_otu_table(biom_f):
+    """ """
+    otu_table = parse_biom_table(biom_f)
+    return str(otu_table)
+
 
 def main():
     option_parser, opts, args =\
@@ -44,7 +49,7 @@ def main():
     
     input_f = open(opts.input_fp,'U')
     output_f = open(opts.output_fp,'w')
-    otu_table_to_biom = True
+    otu_table_to_biom = not opts.input_fp.endswith('.biom')
     dense = opts.dense
     count_map_f = int
     
@@ -52,6 +57,8 @@ def main():
         output_f.write(convert_otu_table_to_biom(input_f,
                                                  count_map_f,
                                                  dense))
+    else:
+        output_f.write(convert_biom_to_otu_table(input_f))
     input_f.close()
     output_f.close()
     
