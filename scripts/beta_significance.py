@@ -34,7 +34,7 @@ script_info['script_usage'] = [("Example:","Perform 100 randomizations of sample
 script_info['output_description']= "The script outputs a tab delimited text file with each pair of samples and a p value representing the probability that a random sample/sequence assignment will result in more dissimilar samples than the actual pair of samples."
 script_info['required_options'] = [\
  make_option('-i', '--input_path',
-     help='input otu table'), 
+     help='input otu table in biom format'), 
  make_option('-o', '--output_path',
      help='output results path'),
  make_option('-s', '--significance_test',
