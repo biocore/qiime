@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+"""Core QIIME objects for dense and sparse tables"""
+
 from datetime import datetime
 from json import dumps
 from types import NoneType
@@ -13,42 +15,14 @@ from qiime.util import get_qiime_library_version
 
 __author__ = "Daniel McDonald"
 __copyright__ = "Copyright 2007-2011, QIIME"
-__credits__ = ["Daniel McDonald"]
+__credits__ = ["Daniel McDonald", "Jai Rideout"]
 __license__ = "GPL"
 __version__ = "1.3.0dev"
 __maintainer__ = "Daniel McDonald"
 __email__ = "daniel.mcdonald@colorado.edu"
 __status__ = "Prototype"
 
-"""add in support methods for filtering, etc"""
-
-"""rows and cols might be backwards to represent samples/otus"""
-
-"""got atleast one 1 bug... keys() method of ll_mat is unreliable following a
-slice:
-    >>> from pysparse.spmatrix import ll_mat
-    >>> foo = ll_mat(2,2)
-    >>> foo[0,0] = 5
-    >>> foo[0,1] = 6
-    >>> foo[1,0] = 7
-    >>> foo[1,1] = 8
-    >>> col = foo[:,0]
-    >>> print col
-    ll_mat(general, [2,1]):
-         5.000000 
-          7.000000 
-
-          >>> col.shape
-          (2, 1)
-          >>> col.items()
-          [((0, 0), 5.0), ((1, 0), 7.0)]
-          >>> col.keys()
-          [[0, 1], [0, 0]]
-
-   ...i don't have internet right now so cannot report but this should be done
-   soon
-   """
-
+# should these be centralized?
 def get_biom_format_version_string():
     """Returns the current Biom file format version."""
     return "Biological Observation Matrix v0.9"
@@ -63,6 +37,7 @@ class TableException(Exception):
 
 class UnknownID(TableException):
     pass
+
 
 def to_ll_mat(values, transpose=False):
     """Tries to returns a populated ll_mat object
@@ -160,7 +135,7 @@ def to_ll_mat(values, transpose=False):
 
         return mat
 
-def keep_self(x,y):
+def prefer_self(x,y):
     """Merge metadata method, return X if X else Y"""
     return x if x is not None else y
 
@@ -615,7 +590,7 @@ class Table(object):
         return new_order
 
     def merge(self, other, Sample='union', Observation='union', merge_f=add,
-            sample_metadata_f=keep_self, observation_metadata_f=keep_self):
+            sample_metadata_f=prefer_self, observation_metadata_f=prefer_self):
         """Merge two tables together
 
         The axes, samples and observations, can be controlled independently. 
@@ -965,3 +940,196 @@ class DenseOTUTable(OTUTable, DenseTable):
 class SparseOTUTable(OTUTable, SparseTable):
     pass
 
+def nparray_to_ll_mat(data, dtype=float):
+    """Convert a numpy array into an ll_mat object"""
+    mat = ll_mat(*data.shape)
+    for row_idx, row in enumerate(data):
+        for col_idx, val in enumerate(row):
+            mat[row_idx, col_idx] = dtype(val)
+    return mat
+
+def list_nparray_to_ll_mat(data, dtype=float):
+    """Takes a list of numpy arrays and creates an ll_mat object
+    
+    Expects each array to be a vector
+    """
+    mat = ll_mat(len(data), len(data[0]))
+    for row_idx, row in enumerate(data):
+        if len(row.shape) != 1:
+            raise TableException, "Cannot convert non-1d vectors!"
+        if len(row) != mat.shape[1]:
+            raise TableException, "Row vector isn't the correct length!"
+
+        for col_idx, val in enumerate(row):
+            mat[row_idx, col_idx] = dtype(val)
+    return mat
+
+def dict_to_ll_mat(data, dtype=float):
+    """Takes a dict {(row,col):val} and creates an ll_mat object"""
+    rows, cols = unzip(data.keys())
+    mat = ll_mat(max(rows) + 1, max(cols) + 1)
+
+    for (row,col),val in data.items():
+        mat[row,col] = dtype(val)
+
+    return mat
+
+def list_dict_to_ll_mat(data, dtype=float):
+    """Takes a list of dicts {(0,col):val} and creates an ll_mat
+
+    Expects each dict to represent a row vector
+    """
+    n_rows = len(data)
+    n_cols = max(flatten([d.keys() for d in data]), key=itemgetter(1))[1] + 1
+
+    mat = ll_mat(n_rows, n_cols)
+
+    for row_idx, row in enumerate(data):
+        for (foo,col_idx),val in row.items():
+            mat[row_idx,col_idx] = dtype(val)
+
+    return mat
+
+def list_ll_mat_to_ll_mat(data, dtype=float):
+    """Takes a list of ll_mats and creates a single ll_mat
+
+    Expectes each ll_mat to be a row vector
+    """
+    n_rows = len(data)
+    n_cols = data[0].shape[1]
+    
+    mat = ll_mat(n_rows, n_cols)
+
+    for row_idx,row in enumerate(data):
+        for (foo,col_idx),val in row.items():
+            mat[row_idx,col_idx] = dtype(val)
+
+    return mat
+
+def dict_to_nparray(data, dtype=float):
+    """Takes a dict {(row,col):val} and creates a numpy matrix"""
+    rows, cols = unzip(data.keys())
+    mat = zeros((max(rows) + 1, max(cols) + 1), dtype=dtype)
+
+    for (row,col),val in data.items():
+        mat[row,col] = val
+
+    return mat
+
+def list_dict_to_nparray(data, dtype=float):
+    """Takes a list of dicts {(0,col):val} and creates an numpy matrix
+
+    Expects each dict to represent a row vector
+    """
+    n_rows = len(data)
+    n_cols = max(flatten([d.keys() for d in data]), key=itemgetter(1))[1] + 1
+
+    mat = zeros((n_rows, n_cols), dtype=dtype)
+    
+    for row_idx, row in enumerate(data):
+        for (foo,col_idx),val in row.items():
+            mat[row_idx, col_idx] = val
+
+    return mat
+
+def list_ll_mat_to_nparray(data, dtype=float):
+    """Takes a list of ll_mats and creates a numpy matrix
+
+    Expectes each ll_mat to be a row vector
+    """
+    n_rows = len(data)
+    n_cols = data[0].shape[1]
+
+    mat = zeros((n_rows, n_cols), dtype=dtype)
+
+    for row_idx, row in enumerate(data):
+        for (foo,col_idx), val in row.items():
+            mat[row_idx, col_idx] = val
+
+    return mat
+
+def ll_mat_to_nparray(data, dtype=float):
+    """Takes an ll_mat and returns a numpy matrix"""
+    mat = zeros(data.shape, dtype=dtype)
+    for (row,col), val in data.items():
+        mat[row,col] = dtype(val)
+    return mat
+
+def table_factory(data, sample_ids, observation_ids, sample_metadata=None, 
+                  observation_metadata=None, table_id=None, 
+                  constructor=SparseOTUTable, **kwargs):
+    """Construct a table
+
+    Attempts to make 'data' sane with respect to the constructor type through
+    various means of juggling. Data can be: 
+    
+        numpy.array       
+        list of numpy.array vectors 
+        sparse dict representation 
+        list of sparse dict representation vectors
+        pysparse.spmatrix.ll_mat
+        list of pysparse.spmatrix.ll_mat
+    """
+    if constructor._biom_matrix_type is 'sparse':
+        # if we have a numpy array
+        if isinstance(data, ndarray):
+            data = nparray_to_ll_mat(data)
+
+        # if we have a list of numpy vectors
+        elif isinstance(data, list) and isinstance(data[0], ndarray):
+            data = list_nparray_to_ll_mat(data)
+
+        # if we have a dict representation
+        elif isinstance(data, dict):
+            data = dict_to_ll_mat(data)
+
+        # if we have a list of dicts
+        elif isinstance(data, list) and isinstance(data[0], dict):
+            data = list_dict_to_ll_mat(data)
+
+        # if we already have an ll_mat
+        elif isinstance(data, LLMatType):
+            pass
+
+        # if we have a list of ll_mats
+        elif isinstance(data, list) and isinstance(data[0], LLMatType):
+            data = list_ll_mat_to_ll_mat(data)
+
+        else:
+            raise TableException, "Cannot handle data!"
+    
+    elif constructor._biom_matrix_type is 'dense':
+        # if we have a numpy array
+        if isinstance(data, ndarray):
+            pass
+
+        # if we have a list of numpy vectors
+        elif isinstance(data, list) and isinstance(data[0], ndarray):
+            data = asarray(data)
+
+        # if we have a dict representation
+        elif isinstance(data, dict):
+            data = dict_to_nparray(data)
+
+        # if we have a list of dicts
+        elif isinstance(data, list) and isinstance(data[0], dict):
+            data = list_dict_to_nparray(data)
+
+        # if we already have an ll_mat
+        elif isinstance(data, LLMatType):
+            data = ll_mat_to_nparray(data)
+
+        # if we have a list of ll_mats
+        elif isinstance(data, list) and isinstance(data[0], LLMatType):
+            data = list_ll_mat_to_nparray(data)
+
+        else:
+            raise TableException, "Cannot handle data!"
+    else:
+        raise TableException, "Constructor type specifies an unknown matrix " +\
+                              "type: %s" % constructor._biom_matrix_type
+
+    return constructor(data, sample_ids, observation_ids, 
+            SampleMetadata=sample_metadata,
+            ObservationMetadata=observation_metadata,
+            TableId=table_id, **kwargs)

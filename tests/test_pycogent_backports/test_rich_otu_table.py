@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 
-from numpy import array, where
+from numpy import array, where, zeros
 from pysparse.spmatrix import ll_mat
 from cogent.util.misc import unzip
 from cogent.util.unit_test import TestCase, main
 from qiime.pycogent_backports.rich_otu_table import TableException, Table, \
     DenseTable, SparseTable, DenseOTUTable, SparseOTUTable, to_ll_mat, \
-    UnknownID, keep_self, index_list
+    UnknownID, prefer_self, index_list, nparray_to_ll_mat, \
+    list_nparray_to_ll_mat, dict_to_ll_mat, list_dict_to_ll_mat,\
+    list_ll_mat_to_ll_mat, dict_to_nparray, list_dict_to_nparray, \
+    list_ll_mat_to_nparray, ll_mat_to_nparray, table_factory
 
 __author__ = "Daniel McDonald"
 __copyright__ = "Copyright 2007-2011, QIIME"
@@ -28,18 +31,291 @@ class SupportTests(TestCase):
             raise TableException
         self.assertRaises(TableException, f)
 
-    def test_keep_self(self):
+    def test_nparray_to_ll_mat(self):
+        """Convert nparray to ll_mat"""
+        input = array([[1,2,3,4],[-1,6,7,8],[9,10,11,12]])
+        exp = ll_mat(3,4)
+        exp[0,0] = 1
+        exp[0,1] = 2
+        exp[0,2] = 3
+        exp[0,3] = 4
+        exp[1,0] = -1
+        exp[1,1] = 6
+        exp[1,2] = 7
+        exp[1,3] = 8
+        exp[2,0] = 9
+        exp[2,1] = 10
+        exp[2,2] = 11
+        exp[2,3] = 12
+
+        obs = nparray_to_ll_mat(input)
+        self.assertEqual(obs.items(), exp.items())
+
+    def test_list_nparray_to_ll_mat(self):
+        """Convert a list of nparray to ll_mat"""
+        input = [array([1,2,3,4]), array([5,6,7,8]), array([9,10,11,12])]
+        exp = ll_mat(3,4)
+        exp[0,0] = 1
+        exp[0,1] = 2
+        exp[0,2] = 3
+        exp[0,3] = 4
+        exp[1,0] = 5
+        exp[1,1] = 6
+        exp[1,2] = 7
+        exp[1,3] = 8
+        exp[2,0] = 9
+        exp[2,1] = 10
+        exp[2,2] = 11
+        exp[2,3] = 12
+
+        obs = list_nparray_to_ll_mat(input)
+        self.assertEqual(obs.items(), exp.items())
+
+        input = [array([[1,2,3,4],[5,6,7,8]]), array([9,10,11,12])]
+        self.assertRaises(TableException, list_nparray_to_ll_mat, input)
+
+        input = [array([1,2,3,4]), array([9,10,11])]
+        self.assertRaises(TableException, list_nparray_to_ll_mat, input)
+
+    def test_dict_to_ll_mat(self):
+        """Take a dict and make a llmat"""
+        input = {(0,0):1,(0,10):5,(100,23):-3}
+        exp = ll_mat(101, 24)
+        exp[0,0] = 1
+        exp[0,10] = 5
+        exp[100,23] = -3
+        obs = dict_to_ll_mat(input)
+        self.assertEqual(obs.items(), exp.items())
+
+    def test_list_dict_to_ll_mat(self):
+        """Take a list of dicts and make an ll_mat"""
+        input = [{(0,5):10,(10,10):2}, {(0,1):15}, {(0,3):7}]
+        exp = ll_mat(3, 11)
+        exp[0,5] = 10
+        exp[0,10] = 2
+        exp[1,1] = 15
+        exp[2,3] = 7
+        obs = list_dict_to_ll_mat(input)
+        self.assertEqual(obs.items(), exp.items())
+
+    def test_list_ll_mat_to_ll_mat(self):
+        """list of ll_mat to a single ll_mat"""
+        a1 = ll_mat(1,3)
+        a2 = ll_mat(1,3)
+        a1[0,1] = 1
+        a2[0,2] = 5
+        exp = ll_mat(2,3)
+        exp[0,1] = 1
+        exp[1,2] = 5
+        obs = list_ll_mat_to_ll_mat([a1, a2])
+        self.assertEqual(obs.items(),exp.items())
+
+    def test_dict_to_nparray(self):
+        """Take a dict -> array"""
+        input = {(0,0):1,(0,10):5,(100,23):-3}
+        exp = zeros((101,24),dtype=float)
+        exp[0,0] = 1
+        exp[0,10] = 5
+        exp[100,23] = -3
+        obs = dict_to_nparray(input)
+        self.assertEqual(obs,exp)
+
+    def test_list_dict_to_nparray(self):
+        """List of dict -> nparray"""
+        input = [{(0,5):10,(10,10):2}, {(0,1):15}, {(0,3):7}]
+        exp = zeros((3, 11),dtype=float)
+        exp[0,5] = 10
+        exp[0,10] = 2
+        exp[1,1] = 15
+        exp[2,3] = 7
+        obs = list_dict_to_nparray(input)
+        self.assertEqual(obs,exp)
+    
+    def test_list_ll_mat_to_nparray(self):
+        """list of ll_mat -> array"""
+        a1 = ll_mat(1,3)
+        a2 = ll_mat(1,3)
+        a1[0,1] = 1
+        a2[0,2] = 5
+        exp = zeros((2,3),dtype=float)
+        exp[0,1] = 1
+        exp[1,2] = 5
+        obs = list_ll_mat_to_nparray([a1, a2])
+        self.assertEqual(obs, exp)
+
+    def test_ll_mat_to_nparray(self):
+        """ll_mat -> array"""
+        input = ll_mat(2,3)
+        input[0,1] = 5
+        input[1,2] = 10
+        exp = array([[0,5,0],[0,0,10]], dtype=float)
+        obs = ll_mat_to_nparray(input)
+        self.assertEqual(obs, exp)
+
+    def test_table_factory_dense(self):
+        """beat the table_factory to death"""
+        # nparray test
+        samp_ids = ['1','2','3','4']
+        obs_ids = ['a','b','c']
+        nparray = array([[1,2,3,4],[-1,6,7,8],[9,10,11,12]])
+        exp = DenseTable(nparray, samp_ids, obs_ids)
+        obs = table_factory(nparray, samp_ids, obs_ids, constructor=DenseTable)
+        self.assertEqual(obs,exp)
+
+        # list of nparray test
+        samp_ids = ['1','2','3','4']
+        obs_ids = ['a','b','c']
+        list_np = [array([1,2,3,4]), array([5,6,7,8]), array([9,10,11,12])]
+        exp = DenseTable(array([[1,2,3,4],[5,6,7,8],[9,10,11,12]]), samp_ids, 
+                         obs_ids)
+        obs = table_factory(list_np, samp_ids, obs_ids, constructor=DenseTable)
+        self.assertEqual(obs,exp)
+
+        # dict test
+        samp_ids = range(24)
+        obs_ids = range(101)
+        dict_input = {(0,0):1,(0,10):5,(100,23):-3}
+        d_input = zeros((101,24),dtype=float)
+        d_input[0,0] = 1
+        d_input[0,10] = 5
+        d_input[100,23] = -3
+        exp = DenseTable(d_input, samp_ids, obs_ids)
+        obs = table_factory(dict_input,samp_ids,obs_ids,constructor=DenseTable)
+        self.assertEqual(obs, exp)
+
+        # list of dict test
+        samp_ids = range(11)
+        obs_ids = range(3)
+        ld_input = zeros((3,11),dtype=float)
+        ld_input[0,5] = 10
+        ld_input[0,10] = 2
+        ld_input[1,1] = 15
+        ld_input[2,3] = 7
+        exp = DenseTable(ld_input, samp_ids, obs_ids)
+        list_dict = [{(0,5):10,(10,10):2}, {(0,1):15}, {(0,3):7}]
+        obs = table_factory(list_dict, samp_ids,obs_ids,constructor=DenseTable)
+        self.assertEqual(obs, exp)
+
+        # list of ll_mat test
+        a1 = ll_mat(1,3)
+        a2 = ll_mat(1,3)
+        a1[0,1] = 1
+        a2[0,2] = 5
+        list_ll_mat = [a1,a2]
+        exp_table = zeros((2,3),dtype=float)
+        exp_table[0,1] = 1
+        exp_table[1,2] = 5
+        samp_ids = range(3)
+        obs_ids = range(2)
+        exp = DenseTable(exp_table, samp_ids, obs_ids)
+        obs = table_factory(list_ll_mat,samp_ids,obs_ids,
+                             constructor=DenseTable)
+        self.assertEqual(obs, exp)
+
+        # ll_mat test
+        samp_ids = range(3)
+        obs_ids = range(2)
+        exp_data = zeros((2,3),dtype=float)
+        exp_data[0,1] = 5
+        exp_data[1,2] = 10
+        exp = DenseTable(exp_data, samp_ids, obs_ids)
+        ll_mat_input = ll_mat(2,3)
+        ll_mat_input[0,1] = 5
+        ll_mat_input[1,2] = 10
+        obs = table_factory(ll_mat_input, samp_ids, obs_ids, 
+                constructor=DenseTable)
+        self.assertEqual(obs, exp)
+
+    def test_table_factory_sparse(self):
+        """beat the table_factory sparsely to death"""
+        # nparray test
+        samp_ids = ['1','2','3','4']
+        obs_ids = ['a','b','c']
+        nparray = array([[1,2,3,4],[-1,6,7,8],[9,10,11,12]])
+        data = nparray_to_ll_mat(array([[1,2,3,4],[-1,6,7,8],[9,10,11,12]]))
+        exp = SparseTable(data, samp_ids, obs_ids)
+        obs = table_factory(nparray, samp_ids, obs_ids, constructor=SparseTable)
+        self.assertEqual(obs,exp)
+
+        # list of nparray test
+        samp_ids = ['1','2','3','4']
+        obs_ids = ['a','b','c']
+        list_np = [array([1,2,3,4]), array([5,6,7,8]), array([9,10,11,12])]
+        data = list_nparray_to_ll_mat(list_np)
+        exp = SparseTable(data, samp_ids, obs_ids)
+        obs = table_factory(list_np, samp_ids, obs_ids, constructor=SparseTable)
+        self.assertEqual(obs,exp)
+
+        # dict test
+        samp_ids = range(24)
+        obs_ids = range(101)
+        dict_input = {(0,0):1,(0,10):5,(100,23):-3}
+        d_input = zeros((101,24),dtype=float)
+        d_input[0,0] = 1
+        d_input[0,10] = 5
+        d_input[100,23] = -3
+        data = nparray_to_ll_mat(d_input)
+        exp = SparseTable(data, samp_ids, obs_ids)
+        obs = table_factory(dict_input,samp_ids,obs_ids,constructor=SparseTable)
+        self.assertEqual(obs, exp)
+
+        # list of dict test
+        samp_ids = range(11)
+        obs_ids = range(3)
+        ld_input = zeros((3,11),dtype=float)
+        ld_input[0,5] = 10
+        ld_input[0,10] = 2
+        ld_input[1,1] = 15
+        ld_input[2,3] = 7
+        data = nparray_to_ll_mat(ld_input)
+        exp = SparseTable(data, samp_ids, obs_ids)
+        list_dict = [{(0,5):10,(10,10):2}, {(0,1):15}, {(0,3):7}]
+        obs = table_factory(list_dict, samp_ids,obs_ids,constructor=SparseTable)
+        self.assertEqual(obs, exp)
+
+        # list of ll_mat test
+        a1 = ll_mat(1,3)
+        a2 = ll_mat(1,3)
+        a1[0,1] = 1
+        a2[0,2] = 5
+        list_ll_mat = [a1,a2]
+        exp_table = zeros((2,3),dtype=float)
+        exp_table[0,1] = 1
+        exp_table[1,2] = 5
+        data = nparray_to_ll_mat(exp_table)
+        samp_ids = range(3)
+        obs_ids = range(2)
+        exp = SparseTable(data, samp_ids, obs_ids)
+        obs = table_factory(list_ll_mat,samp_ids,obs_ids,
+                             constructor=SparseTable)
+        self.assertEqual(obs, exp)
+
+        # ll_mat test
+        samp_ids = range(3)
+        obs_ids = range(2)
+        exp_data = zeros((2,3),dtype=float)
+        exp_data[0,1] = 5
+        exp_data[1,2] = 10
+        data = nparray_to_ll_mat(exp_data)
+        exp = SparseTable(data, samp_ids, obs_ids, constructor=SparseTable)
+        ll_mat_input = ll_mat(2,3)
+        ll_mat_input[0,1] = 5
+        ll_mat_input[1,2] = 10
+        obs = table_factory(ll_mat_input, samp_ids, obs_ids)
+        self.assertEqual(obs, exp)
+
+    def test_prefer_self(self):
         """prefer x"""
         exp = 1
-        obs = keep_self(1,2)
+        obs = prefer_self(1,2)
         self.assertEqual(obs, exp)
 
         exp = 2
-        obs = keep_self(None, 2)
+        obs = prefer_self(None, 2)
         self.assertEqual(obs, exp)
 
         exp = None
-        obs = keep_self(None,None)
+        obs = prefer_self(None,None)
         self.assertEqual(obs,exp)
 
     def test_index_list(self):
@@ -102,6 +378,14 @@ class TableTests(TestCase):
         self.t1 = Table(array([]),[],[])
         self.t2 = Table(array([]),[],[])
         self.simple_derived = Table(array([[5,6],[7,8]]), [1,2],[3,4])
+
+    def test_eq(self):
+        """eq Should raise in abstract baseclass"""
+        self.assertRaises(NotImplementedError, self.t1.__eq__, self.t2)
+
+    def test_data_equality(self):
+        """data equality isn't defined in baseclass"""
+        self.assertRaises(NotImplementedError, self.t1._data_equality, self.t2)
 
     def test_index_ids(self):
         """Index the all the ids!!!"""
@@ -452,6 +736,11 @@ class DenseTableTests(TestCase):
         obs = self.dt1._conv_to_self_type([input], transpose=True)
         self.assertEqual(obs, exp)
 
+    def test_data_equality(self):
+        """check equality between tables"""
+        # handle diff table types too
+        self.fail()
+
     def test_eq(self):
         """eq is defined by equality of data matrix, ids and metadata"""
         self.assertTrue(self.dt1 == self.dt2)
@@ -730,6 +1019,14 @@ class SparseTableTests(TestCase):
                 ['a','b'],['1','2'],
                 [{'barcode':'aatt'},{'barcode':'ttgg'}],
                 [{'taxonomy':['k__a','p__b']},{'taxonomy':['k__a','p__c']}])
+
+    def test_eq(self):
+        """sparse equality"""
+        self.fail()
+
+    def test_data_equality(self):
+        """check equality between tables"""
+        self.fail()
 
     def test_nonzero(self):
         """Return a list of nonzero positions"""
