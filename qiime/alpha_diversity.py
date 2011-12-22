@@ -48,6 +48,7 @@ from sys import exit, stderr
 import sys
 import os.path
 import qiime.alpha_diversity
+from qiime.pycogent_backports.parse_biom import parse_biom_table, parse_biom_table_str
 
 class AlphaDiversityCalc(FunctionWithParams):
     """An AlphaDiversityCalc takes taxon x sample counts, returns diversities.
@@ -116,10 +117,19 @@ class AlphaDiversityCalc(FunctionWithParams):
         2d: [(return val 1 from sample1),(return val 2)...]
             [(return val 1 on sample2),...]
         """
-        data = self.getData(data_path)
+        otu_table = parse_biom_table(open(data_path,'U'))
+        data = otu_table.iterSampleData()
         if self.IsPhylogenetic:
             tree = self.getTree(tree_path)
-            envs = make_envs_dict(data, sample_names, taxon_names)
+            # build envs dict: envs = {otu_id:{sample_id:count}}
+            envs = {}
+            for observation_id in otu_table.ObservationIds:
+                obs = {}
+                for sample_id in otu_table.SampleIds:
+                    obs[sample_id] = otu_table.getValueByIds(observation_id,
+                                                             sample_id)
+                envs[observation_id] = obs
+            
             new_sample_names, result = self.Metric(tree, envs, **self.Params)
             ordered_res = numpy.zeros(len(sample_names), 'float')
             for i, sample in enumerate(sample_names):
@@ -170,9 +180,7 @@ class AlphaDiversityCalcs(FunctionWithParams):
         result: a matrix of sample by alpha diversity method, sample_names, 
         calc_names
         """
-        
-        sample_names, taxon_names, data, lineages = \
-            self.getOtuTable(data_path)
+        otu_table = parse_biom_table(open(data_path,'U'))
 
         calc_names = []
         for calc in self.Calcs:
@@ -188,8 +196,10 @@ class AlphaDiversityCalcs(FunctionWithParams):
         res = []
         for c in self.Calcs:
             # add either calc's multiple return value names, or fn name
-            metric_res = c(data_path=data.T, taxon_names=taxon_names, 
-                tree_path=tree, sample_names=sample_names)
+            metric_res = c(data_path=data_path,
+                           taxon_names=otu_table.ObservationIds,
+                           tree_path=tree,
+                           sample_names=otu_table.SampleIds)
             if len(metric_res.shape) == 1:
                 res.append(metric_res)
             elif len(metric_res.shape) == 2:
@@ -199,7 +209,7 @@ class AlphaDiversityCalcs(FunctionWithParams):
                 raise RuntimeError, "alpha div shape not as expected"
         res_data = numpy.array(res).T
         
-        return res_data, sample_names, calc_names
+        return res_data, otu_table.SampleIds, calc_names
     
     def formatResult(self, result):
         """Generate formatted distance - result is (data, sample_names)"""
