@@ -320,7 +320,7 @@ A sparse representation of an OTU table::
     PC.356 OTU2 7
     PC.356 OTU3 3
 
-OTU table data tends to be sparse (i.e., a lot of counts are zeros) in which case the latter format is more convenient to work with as it has a smaller memory footprint. Both of these representations are now supported in QIIME via the dense and sparse formats, and in both cases a new file format has been defined.
+OTU table data tends to be sparse (i.e., a lot of counts are zeros) in which case the latter format is more convenient to work with as it has a smaller memory footprint. Both of these representations are now supported in QIIME via the dense and sparse formats through the use of BIOM (for either dense or sparse) or the classic dense OTU table type. .
 
 Encapsulation of core study data (OTU table data and sample/OTU metadata) in a single file
 ------------------------------------------------------------------------------------------
