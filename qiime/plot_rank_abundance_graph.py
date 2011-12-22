@@ -21,6 +21,7 @@ from matplotlib.pyplot import plot, gca,  ylim, xlim, show, legend, \
 from os.path import join
 from qiime.parse import parse_otu_table
 from qiime.colors import data_color_order,data_colors
+from qiime.pycogent_backports.rich_otu_table import UnknownID
 
 def make_sorted_frequencies(counts, absolute=False):
     """transform and sort a vector of count.
@@ -39,23 +40,23 @@ def make_sorted_frequencies(counts, absolute=False):
         f = c/float(c.sum())
         return f
 
-def plot_rank_abundance_graph(counts, color='red', absolute=False, label=None):
+def plot_rank_abundance_graph(otu_count_vector, color='red', absolute=False, label=None):
     """Plots rank-abundance curve.
 
-    counts: a column of an OTU table
+    otu_count_vector: a vector of otu counts for a single sample
     color: color of the series to plot
     absolute: if True plot absolute counts instead of  freqs
     label: text for the legend of this series
     """
 
-    f= make_sorted_frequencies(counts, absolute)
+    f= make_sorted_frequencies(otu_count_vector, absolute)
     x = arange(1,len(f)+1) 
     plot(x, f, color=color, alpha= 0.8, label=label)
     ax = gca()
     return ax
 
 
-def plot_rank_abundance_graphs(sample_names, otu_table_fh,
+def plot_rank_abundance_graphs(sample_names, otu_table,
                                output_dir, file_type='pdf',
                                absolute_counts=False,
                                x_linear_scale=False,
@@ -74,11 +75,9 @@ def plot_rank_abundance_graphs(sample_names, otu_table_fh,
     no_legend: if True don't draw legend
     log_fh: open file handle to log file, if not None used to log 
 """
-    sample_ids, otu_ids, otu_table, lineages = parse_otu_table(otu_table_fh)
-
     #figure out which samples to draw
     if sample_names=='*':
-        user_sample_names = sample_ids
+        user_sample_names = otu_table.SampleIds
     else:
         user_sample_names = sample_names.split(',')
         if len(user_sample_names)<1:
@@ -90,12 +89,14 @@ def plot_rank_abundance_graphs(sample_names, otu_table_fh,
     for sample_name,color in zip(user_sample_names, cycle(data_color_order)):
         color=data_colors[color].toHex()
         try:
-            index = sample_ids.index(sample_name)
-        except ValueError:
+            otu_count_vector = otu_table.sampleData(sample_name)
+        except UnknownID:
             if log_fh:
-                log_fh.write("Warning: Sample name %s not in OTU table - skipping." % sample_name)
-            continue     
-        ax = plot_rank_abundance_graph(otu_table[:,index], color=color,
+                log_fh.write("UnknownID: Sample name %s not in OTU table - skipping." % sample_name)
+            continue
+        
+        ax = plot_rank_abundance_graph(otu_count_vector, 
+                                       color=color,
                                        absolute=absolute_counts,
                                        label=sample_name)
         ax.set_label(sample_name)
@@ -122,7 +123,7 @@ def plot_rank_abundance_graphs(sample_names, otu_table_fh,
     MAX_SAMPLES_TO_SHOW_IN_FILENAME = 6
     
     rows_for_fname=[]
-    for i,nam in enumerate(sample_ids):
+    for i,nam in enumerate(otu_table.SampleIds):
         for j,sel_name in enumerate(user_sample_names):
             if sel_name==nam:
                 rows_for_fname.append(str(i))

@@ -19,6 +19,7 @@ from qiime.util import get_tmp_filename
 from qiime.plot_rank_abundance_graph import plot_rank_abundance_graphs
 from qiime.util import parse_command_line_parameters, get_options_lookup, \
     create_dir
+from qiime.pycogent_backports.parse_biom import parse_biom_table
 
 options_lookup = get_options_lookup()
 
@@ -41,15 +42,13 @@ script_info['output_description']= ""
 script_info['required_options'] = [
  options_lookup['otu_table_as_primary_input'],
  make_option('-s','--sample_name',help='name of the sample to plot. Use "*" to plot all.'),
+ make_option('-o','--output_dir',help='name of output directory'),
  ]
 
 #could basically allow all of matplotlib format here
 file_types = ['pdf','svg','png','eps']
 
 script_info['optional_options'] = [\
-
-    make_option('-o','--output_dir',help='name of output directory. '
-                +'[default: random]'),\
 
     make_option('-a','--absolute_counts', help='plot absolute abundance values instead of ' 
                 +'relative [default: %default]', action='store_true', default=False),\
@@ -77,23 +76,22 @@ def main():
     option_parser, opts, args =\
         parse_command_line_parameters(**script_info)
     
-    #set up and create the outpurt dir
-    if opts.output_dir:  
-        output_dir = opts.output_dir
-    else:
-        output_dir = get_tmp_filename(tmp_dir='./', prefix='rank_abundance_', suffix='')
-        
-    create_dir(output_dir, fail_on_exist=True)
+    output_dir = opts.output_dir
+    otu_table_fp = opts.otu_table_fp
+    sample_name = opts.sample_name
     
-
+    create_dir(output_dir)
+    
     if opts.verbose:
         log_fh = open(output_dir+"/plot_rank_abundance_log.txt",'w')
-        log_fh.write("OTU table file: %s\n"% opts.otu_table_fp)
-        log_fh.write("sample names: %s\n" % opts.sample_name)
+        log_fh.write("OTU table file: %s\n"% otu_table_fp)
+        log_fh.write("sample names: %s\n" % sample_name)
     else:
         log_fh=None
-        
-    plot_rank_abundance_graphs(opts.sample_name, open(opts.otu_table_fp,"U"),
+    
+    otu_table = parse_biom_table(open(opts.otu_table_fp,"U"))
+    
+    plot_rank_abundance_graphs(opts.sample_name, otu_table,
                                output_dir, opts.file_type,
                                opts.absolute_counts, opts.x_linear_scale,
                                opts.y_linear_scale, opts.no_legend, log_fh)

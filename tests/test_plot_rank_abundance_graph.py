@@ -19,10 +19,10 @@ from matplotlib.axes import Subplot
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files
 from qiime.util import get_tmp_filename
-
 from qiime.plot_rank_abundance_graph import make_sorted_frequencies,\
     plot_rank_abundance_graph, plot_rank_abundance_graphs
 from qiime.util import create_dir
+from qiime.pycogent_backports.parse_biom import parse_biom_table_str
 
 class PlotRankAbundance(TestCase):
     
@@ -98,7 +98,7 @@ class PlotRankAbundance(TestCase):
     def test_plot_rank_abundance_graphs_filetype(self):
         """plot_rank_abundance_graphs works with all filetypes"""
  
-        self.otu_table = otu_table_fake.split('\n')       
+        self.otu_table = parse_biom_table_str(otu_table_sparse)
         self.dir = get_tmp_filename(tmp_dir=self.tmp_dir,
                                    prefix="test_plot_rank_abundance",
                                    suffix="/")
@@ -108,16 +108,16 @@ class PlotRankAbundance(TestCase):
     
         #test all supported filetypes
         for file_type in ['pdf','svg','png','eps']:
-            plot_rank_abundance_graphs('S3', iter(self.otu_table), self.dir,
+            plot_rank_abundance_graphs('S3', self.otu_table, self.dir,
                                        file_type=file_type)
             tmp_file = abspath(self.dir+"rank_abundance_cols_0."+file_type)
             self.files_to_remove.append(tmp_file)
             self.assertTrue(exists(tmp_file))
             
-    def test_plot_rank_abundance_graphs(self):
-        """plot_rank_abundance_graphs works with any number of samples"""
+    def test_plot_rank_abundance_graphs_sparse(self):
+        """plot_rank_abundance_graphs works with any number of samples (SparseOTUTable)"""
  
-        self.otu_table = otu_table_fake.split('\n')       
+        self.otu_table = parse_biom_table_str(otu_table_sparse)
         self.dir = get_tmp_filename(tmp_dir=self.tmp_dir,
                                    prefix="test_plot_rank_abundance",
                                    suffix="/")
@@ -125,22 +125,55 @@ class PlotRankAbundance(TestCase):
         self._dirs_to_remove.append(self.dir)
         #test empty sample name
         self.assertRaises(ValueError, plot_rank_abundance_graphs, '',
-                          iter(self.otu_table), self.dir)
+                          self.otu_table, self.dir)
         #test invalid sample name
         self.assertRaises(ValueError, plot_rank_abundance_graphs,
                           'Invalid_sample_name',
-                          iter(self.otu_table), self.dir)
+                          self.otu_table, self.dir)
 
         #test with two samples
         file_type="pdf"
-        plot_rank_abundance_graphs('S3,S5', iter(self.otu_table), self.dir,
+        plot_rank_abundance_graphs('S3,S5', self.otu_table, self.dir,
                                        file_type=file_type)
         tmp_file = abspath(self.dir+"rank_abundance_cols_0_2."+file_type)
 
         self.assertTrue(exists(tmp_file)) 
         self.files_to_remove.append(tmp_file)
         # test with all samples
-        plot_rank_abundance_graphs('*', iter(self.otu_table), self.dir,
+        plot_rank_abundance_graphs('*', self.otu_table, self.dir,
+                                       file_type=file_type)
+        tmp_file = abspath(self.dir+"rank_abundance_cols_0_1_2."+file_type)
+        
+        self.files_to_remove.append(tmp_file)
+        self.assertTrue(exists(tmp_file)) 
+
+    def test_plot_rank_abundance_graphs_dense(self):
+        """plot_rank_abundance_graphs works with any number of samples (DenseOTUTable)"""
+ 
+        self.otu_table = parse_biom_table_str(otu_table_dense)
+        self.dir = get_tmp_filename(tmp_dir=self.tmp_dir,
+                                   prefix="test_plot_rank_abundance",
+                                   suffix="/")
+        create_dir(self.dir)
+        self._dirs_to_remove.append(self.dir)
+        #test empty sample name
+        self.assertRaises(ValueError, plot_rank_abundance_graphs, '',
+                          self.otu_table, self.dir)
+        #test invalid sample name
+        self.assertRaises(ValueError, plot_rank_abundance_graphs,
+                          'Invalid_sample_name',
+                          self.otu_table, self.dir)
+
+        #test with two samples
+        file_type="pdf"
+        plot_rank_abundance_graphs('S3,S5', self.otu_table, self.dir,
+                                       file_type=file_type)
+        tmp_file = abspath(self.dir+"rank_abundance_cols_0_2."+file_type)
+
+        self.assertTrue(exists(tmp_file)) 
+        self.files_to_remove.append(tmp_file)
+        # test with all samples
+        plot_rank_abundance_graphs('*', self.otu_table, self.dir,
                                        file_type=file_type)
         tmp_file = abspath(self.dir+"rank_abundance_cols_0_1_2."+file_type)
         
@@ -148,13 +181,9 @@ class PlotRankAbundance(TestCase):
         self.assertTrue(exists(tmp_file)) 
 
 
-otu_table_fake = """#Full OTU Counts
-#OTU ID	S3	S4	S5	Consensus Lineage
-0	1	0	1	Root;Bacteria
-3	2	0	1	Root;Bacteria;Acidobacteria
-4	1	0	9	Root;Bacteria;Bacteroidetes
-2	1	0	1	Root;Bacteria;Acidobacteria;Acidobacteria;Gp5
-6	1	25	42	Root;Archaea"""  
+otu_table_sparse = """{"rows": [{"id": "0", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "3", "metadata": {"taxonomy": ["Root", "Bacteria", "Acidobacteria"]}}, {"id": "4", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "2", "metadata": {"taxonomy": ["Root", "Bacteria", "Acidobacteria", "Acidobacteria", "Gp5"]}}, {"id": "6", "metadata": {"taxonomy": ["Root", "Archaea"]}}], "format": "Biological Observation Matrix v0.9", "data": [[0, 0, 1.0], [0, 2, 1.0], [1, 0, 2.0], [1, 2, 1.0], [2, 0, 1.0], [2, 2, 9.0], [3, 0, 1.0], [3, 2, 1.0], [4, 0, 1.0], [4, 1, 25.0], [4, 2, 42.0]], "columns": [{"id": "S3", "metadata": null}, {"id": "S4", "metadata": null}, {"id": "S5", "metadata": null}], "generated_by": "QIIME 1.4.0-dev, svn revision 2571", "matrix_type": "sparse", "shape": [5, 3], "format_url": "http://www.qiime.org/svn_documentation/documentation/biom_format.html", "date": "2011-12-21T19:33:37.780300", "type": "OTU table", "id": null, "matrix_element_type": "float"}"""
+
+otu_table_dense = """{"rows": [{"id": "0", "metadata": {"taxonomy": ["Root", "Bacteria"]}}, {"id": "3", "metadata": {"taxonomy": ["Root", "Bacteria", "Acidobacteria"]}}, {"id": "4", "metadata": {"taxonomy": ["Root", "Bacteria", "Bacteroidetes"]}}, {"id": "2", "metadata": {"taxonomy": ["Root", "Bacteria", "Acidobacteria", "Acidobacteria", "Gp5"]}}, {"id": "6", "metadata": {"taxonomy": ["Root", "Archaea"]}}], "format": "Biological Observation Matrix v0.9", "data": [[1, 0, 1], [2, 0, 1], [1, 0, 9], [1, 0, 1], [1, 25, 42]], "columns": [{"id": "S3", "metadata": null}, {"id": "S4", "metadata": null}, {"id": "S5", "metadata": null}], "generated_by": "QIIME 1.4.0-dev, svn revision 2571", "matrix_type": "dense", "shape": [5, 3], "format_url": "http://www.qiime.org/svn_documentation/documentation/biom_format.html", "date": "2011-12-21T19:33:28.922480", "type": "OTU table", "id": null, "matrix_element_type": "int"}"""
 
 if __name__ == "__main__":
     main()
