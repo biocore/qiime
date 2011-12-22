@@ -13,7 +13,7 @@ __status__ = "Development"
 
 
 from qiime.parse import parse_metadata_state_descriptions
-import qiime.filter_by_metadata
+from qiime.filter import get_sample_ids
 import numpy
 
 
@@ -49,7 +49,7 @@ def get_sam_ids(map_data, map_header, colorby, cat,
         sample_ids = [sam[0] for sam in map_data]
     else:
 
-        sample_ids = qiime.filter_by_metadata.get_sample_ids(\
+        sample_ids = get_sample_ids(\
             map_data, map_header, {colorby:[cat]})
     # primary key is the category label, e.g. AgeCategory
     # value is the val for that category, e.g. Adult
@@ -58,7 +58,7 @@ def get_sam_ids(map_data, map_header, colorby, cat,
     primary_states = parse_metadata_state_descriptions(primary_state)
     if colorby != None:
         primary_states[colorby] = [cat]
-    state1_samids = qiime.filter_by_metadata.get_sample_ids(\
+    state1_samids = get_sample_ids(\
         map_data, map_header, primary_states)
 
     if secondary_state == None:
@@ -68,7 +68,7 @@ def get_sam_ids(map_data, map_header, colorby, cat,
             parse_metadata_state_descriptions(secondary_state)
         if colorby != None:
             secondary_states[colorby] = [cat]
-        state2_samids = qiime.filter_by_metadata.get_sample_ids(\
+        state2_samids = get_sample_ids(\
             map_data, map_header, secondary_states)
     
     return list(set(state1_samids)), list(set(state2_samids))
