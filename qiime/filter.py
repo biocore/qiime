@@ -50,7 +50,7 @@ def filter_mapping_file(mapping_f,sample_ids_to_keep):
     mapping_data, header, comments = parse_mapping_file(mapping_f)
     filtered_mapping_data = []
     for entry in mapping_data:
-        if entry[0] in sample_ids_to_keep:
+        if entry[0] in {}.fromkeys(sample_ids_to_keep):
             filtered_mapping_data.append(entry)
     return format_mapping_file(header,filtered_mapping_data)
 
