@@ -24,6 +24,8 @@ from qiime.util import parse_command_line_parameters
 from qiime.parse import parse_otu_table
 from qiime.format import format_unifrac_sample_mapping
 
+from qiime.pycogent_backports.parse_biom import parse_biom_table
+
 
 script_info = {}
 script_info['brief_description'] = "This script runs any of a set of common tests to determine if a sample is statistically significantly different from another sample"
@@ -56,15 +58,17 @@ def main():
             raise RuntimeError('please supply a phylogenetic tree for %s' %\
                 opts.significance_test)
 
+
+    otu_table_fp = opts.input_path
+    otu_table = parse_biom_table(open(otu_table_fp, 'U'))
+    sample_ids = otu_table.SampleIds
+    otu_ids = otu_table.ObservationIds
+    otu_table_array = otu_table.iterObservationData()
     # note, uses ugly temp file
     if opts.significance_test == 'unweighted_unifrac':
         tree_in = open(opts.tree_path,'U')
-        otu_table_fp = opts.input_path
         output_fp = opts.output_path + '_envs.tmp'
-    
-        otu_table_lines = open(otu_table_fp, 'U')
-        sample_ids, otu_ids, otu_table_array, lineages = \
-        parse_otu_table(otu_table_lines)
+        
         result = format_unifrac_sample_mapping(
             sample_ids, otu_ids, otu_table_array)
         of = open(output_fp, 'w')
@@ -88,12 +92,8 @@ def main():
 
     elif opts.significance_test == 'p-test':
         tree_in = open(opts.tree_path,'U')
-        otu_table_fp = opts.input_path
         output_fp = opts.output_path + '_envs.tmp'
     
-        otu_table_lines = open(otu_table_fp, 'U')
-        sample_ids, otu_ids, otu_table_array, lineages = \
-        parse_otu_table(otu_table_lines)
         result = format_unifrac_sample_mapping(
             sample_ids, otu_ids, otu_table_array)
         of = open(output_fp, 'w')
@@ -116,12 +116,8 @@ def main():
 
     elif opts.significance_test == 'weighted_unifrac':
         tree_in = open(opts.tree_path,'U')
-        otu_table_fp = opts.input_path
         output_fp = opts.output_path + '_envs.tmp'
     
-        otu_table_lines = open(otu_table_fp, 'U')
-        sample_ids, otu_ids, otu_table_array, lineages = \
-        parse_otu_table(otu_table_lines)
         result = format_unifrac_sample_mapping(
             sample_ids, otu_ids, otu_table_array)
         of = open(output_fp, 'w')
