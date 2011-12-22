@@ -12,6 +12,7 @@ from pysparse.spmatrix import LLMatType, ll_mat
 from numpy import ndarray, asarray, array, newaxis, zeros
 from cogent.util.misc import unzip, flatten
 from qiime.util import get_qiime_library_version
+from qiime.sort import natsort
 
 __author__ = "Daniel McDonald"
 __copyright__ = "Copyright 2007-2011, QIIME"
@@ -37,7 +38,6 @@ class TableException(Exception):
 
 class UnknownID(TableException):
     pass
-
 
 def to_ll_mat(values, transpose=False):
     """Tries to returns a populated ll_mat object
@@ -290,7 +290,7 @@ class Table(object):
         raise NotImplementedError
 
     # _index objs are in place, can now do sampleData(self, sample_id) and observationData(self, obs_id)
-    def sampleData(self, id_):
+    def sampleData(self, id_, conv_to_np=False):
         """Return observations associated to a sample id"""
         if id_ not in self._sample_index:
             raise UnknownID, "ID %s is not a known sample ID!" % id_
@@ -353,6 +353,46 @@ class Table(object):
                 yield (self._conv_to_np(obs_v), obs_id, obs_md)
             else:
                 yield (obs_v, obs_id, obs_md)
+
+    def sortBySampleId(self, sort_f=natsort):
+        """Return a table sorted by sort_f"""
+        sort_order = sort_f(self.SampleIds)
+        samp_md = []
+        vals = []
+
+        for id_ in sort_order:
+            cur_idx = self._sample_index[id_]
+            vals.append(self[:,cur_idx])
+            
+            if self.SampleMetadata is not None:
+                samp_md.append(self.SampleMetadata[cur_idx])
+
+        if not samp_md:
+            samp_md = None
+
+        return self.__class__(self._conv_to_self_type(vals), 
+                sort_order, self.ObservationIds, samp_md, 
+                self.ObservationMetadata,self.TableId)
+
+    def sortByObservationId(self, sort_f=natsort):
+        """Return a table sorted by sort_f"""
+        sort_order = sort_f(self.ObservationIds)
+        obs_md = []
+        vals = []
+
+        for id_ in sort_order:
+            cur_idx = self._obs_index[id_]
+            vals.append(self[cur_idx,:])
+
+            if self.ObservationMetadata is not None:
+                obs_md.append(self.ObservationMetadata[cur_idx])
+
+        if not obs_md:
+            obs_md = None
+
+        return self.__class__(self._conv_to_self_type(vals),
+                self.SampleIds, sort_order, self.SampleMetadata,
+                obs_md, self.TableId)
 
     def filterSamples(self, f, invert=False):
         """Filter samples in self based on f
@@ -953,16 +993,25 @@ def list_dict_to_ll_mat(data, dtype=float):
 def list_ll_mat_to_ll_mat(data, dtype=float):
     """Takes a list of ll_mats and creates a single ll_mat
 
-    Expectes each ll_mat to be a row vector
+    Expectes each ll_mat to be a vector
     """
-    n_rows = len(data)
-    n_cols = data[0].shape[1]
+    if data[0].shape[0] > data[0].shape[1]:
+        is_col = True
+        n_cols = len(data)
+        n_rows = data[0].shape[0]
+    else:
+        is_col = False
+        n_rows = len(data)
+        n_cols = data[0].shape[1]
     
     mat = ll_mat(n_rows, n_cols)
 
     for row_idx,row in enumerate(data):
         for (foo,col_idx),val in row.items():
-            mat[row_idx,col_idx] = dtype(val)
+            if is_col:
+                mat[foo,row_idx] = dtype(val)
+            else:
+                mat[row_idx,col_idx] = dtype(val)
 
     return mat
 

@@ -395,6 +395,14 @@ class TableTests(TestCase):
         self.t2 = Table(array([]),[],[])
         self.simple_derived = Table(array([[5,6],[7,8]]), [1,2],[3,4])
 
+    def test_sortBySampleID(self):
+        """sort a table by samples ids"""
+        self.assertRaises(NotImplementedError, self.t1.sortBySampleId)
+
+    def test_sortByObservationID(self):
+        """sort a table by observation ids"""
+        self.assertRaises(NotImplementedError, self.t1.sortByObservationId)
+
     def test_eq(self):
         """eq Should raise in abstract baseclass"""
         self.assertRaises(NotImplementedError, self.t1.__eq__, self.t2)
@@ -1037,6 +1045,26 @@ class SparseTableTests(TestCase):
                 ['a','b'],['1','2'],
                 [{'barcode':'aatt'},{'barcode':'ttgg'}],
                 [{'taxonomy':['k__a','p__b']},{'taxonomy':['k__a','p__c']}])
+
+    def test_sortBySampleId(self):
+        """sort by samples by a function"""
+        sort_f = sorted
+        data_in = nparray_to_ll_mat(array([[1,2,3,8],[4,5,6,9],[7,8,9,11]]))
+        t = SparseTable(data_in, ['c','a','b','d'],[2,1,3])
+        exp_data = nparray_to_ll_mat(array([[2,3,1,8],[5,6,4,9],[8,9,7,11]]))
+        exp = SparseTable(exp_data,['a','b','c','d'], [2,1,3])
+        obs = t.sortBySampleId(sort_f=sort_f)
+        self.assertEqual(obs,exp)
+
+    def test_sortByObservationId(self):
+        """sort by observation ids by a function"""
+        sort_f = sorted
+        data_in = nparray_to_ll_mat(array([[1,2,3,8],[4,5,6,9],[7,8,9,11]]))
+        t = SparseTable(data_in, ['c','a','b','d'],[2,1,3])
+        exp_data = nparray_to_ll_mat(array([[4,5,6,9],[1,2,3,8],[7,8,9,11]]))
+        exp = SparseTable(exp_data,['c','a','b','d'],[1,2,3])
+        obs = t.sortByObservationId(sort_f=sort_f)
+        self.assertEqual(obs,exp)
 
     def test_eq(self):
         """sparse equality"""

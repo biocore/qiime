@@ -6,7 +6,7 @@ import re
 from operator import itemgetter
 from numpy import array
 from cogent.parse.fasta import MinimalFastaParser
-from qiime.parse import (parse_mapping_file, parse_otu_table)
+from qiime.parse import parse_mapping_file
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
@@ -25,6 +25,7 @@ def _natsort_key(item):
     From: 
     http://lists.canonical.org/pipermail/kragen-hacks/2005-October/000419.html
     """
+    item = str(item)
     try:
         chunks = re.split('(\d+(?:\.\d+)?)', item)
     except TypeError:

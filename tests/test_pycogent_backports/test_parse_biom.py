@@ -95,8 +95,8 @@ class ParseTests(TestCase):
             'Sample3','Sample4','Sample5','Sample6',])
         self.assertEqual((tab.ObservationIds),['GG_OTU_1','GG_OTU_2',
             'GG_OTU_3','GG_OTU_4','GG_OTU_5'])
-        self.assertEqual(tab.SampleMetadata,[None]*6)
-        self.assertEqual(tab.ObservationMetadata,[None]*5)
+        self.assertEqual(tab.SampleMetadata,None)
+        self.assertEqual(tab.ObservationMetadata,None)
 
     def test_parse_biom_table_compare_sparse_dense(self):
         tab1_fh = StringIO(self.biom_minimal_dense)
