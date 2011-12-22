@@ -22,7 +22,7 @@ import numpy
 from cogent.maths.stats.rarefaction import subsample
 from qiime.parse import parse_otu_table
 from numpy import inf
-from qiime.filter import filter_samples_from_otu_table
+from qiime.filter import filter_samples_from_otu_table, filter_otus_from_otu_table
 from qiime.pycogent_backports.parse_biom import parse_biom_table
 
 class SingleRarefactionMaker(FunctionWithParams):
