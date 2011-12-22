@@ -18,6 +18,7 @@ from qiime.util import (compute_seqs_per_library_stats,
     median_absolute_deviation, guess_even_sampling_depth)
 from qiime.format import format_mapping_file
 from qiime.parse import parse_mapping_file
+from qiime.pycogent_backports.parse_biom import parse_biom_table
 
 options_lookup = get_options_lookup()
 
@@ -42,7 +43,7 @@ def main():
     option_parser, opts,args = parse_command_line_parameters(**script_info)
 
     min_counts, max_counts, median_counts, mean_counts, counts_per_sample =\
-     compute_seqs_per_library_stats(open(opts.otu_table_fp,'U'))
+     compute_seqs_per_library_stats(parse_biom_table(open(opts.otu_table_fp,'U')))
 
     counts_per_sample_values = counts_per_sample.values()
     med_abs_dev = median_absolute_deviation(counts_per_sample_values)[0]

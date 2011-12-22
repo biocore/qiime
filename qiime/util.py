@@ -68,6 +68,7 @@ from qiime.parse import (parse_otu_table,
                          parse_denoiser_mapping,
                          MinimalFastqParser)
 
+
 class TreeMissingError(IOError):
     """Exception for missing tree file"""
     pass
@@ -483,14 +484,23 @@ def split_fasta_on_sample_ids_to_files(seqs,
         write_seqs_to_fasta(current_fp,current_seqs,write_mode='a')
     return None
 
-def compute_seqs_per_library_stats(otu_f):
-    counts = []
-    sample_ids, otu_ids, otu_table, lineages = parse_otu_table(otu_f)
-    for i in range(otu_table.shape[1]):
-        counts.append(sum(otu_table[:,i]))
-        
-    return min(counts), max(counts), median(counts), mean(counts),\
-     dict(zip(sample_ids,counts))
+def compute_seqs_per_library_stats(otu_table):
+    """Return summary statistics on per-sample observation counts
+    
+        otu_table: an OTUTable object
+    
+    """
+    sample_counts = {}
+    for count_vector, sample_id, metadata in otu_table.iterSamples():
+        sample_counts[sample_id] = count_vector.sum()
+    counts = sample_counts.values()
+    
+    return (min(counts),
+            max(counts),
+            median(counts),
+            mean(counts),
+            sample_counts)
+     
 
 def median_absolute_deviation(x):
     """ compute the median of the absolute deviations from the median """

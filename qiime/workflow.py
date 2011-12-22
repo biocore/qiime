@@ -896,7 +896,7 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,
     
     # Prep the rarefaction command
     try:
-        otu_table_f = open(otu_table_fp,'U')
+        open(otu_table_fp,'U')
     except IOError,e:
         logger.write('OTU table filepath cannot be opened. Does it exist?\n' +
                      ' %s\n' % otu_table_fp +
@@ -905,7 +905,7 @@ def run_qiime_alpha_rarefaction(otu_table_fp, mapping_fp,
         raise IOError,e
     if max_rare_depth == None:
         min_count, max_count, median_count, mean_count, counts_per_sample =\
-         compute_seqs_per_library_stats(otu_table_f)
+         compute_seqs_per_library_stats(parse_biome_table(otu_table_fp))
         max_rare_depth = median_count
     step = int((max_rare_depth - min_rare_depth) / num_steps) or 1
     max_rare_depth = int(max_rare_depth)
@@ -1413,7 +1413,7 @@ def run_core_qiime_analyses(
     
     if sampling_depth == None:
         min_count, max_count, median_count, mean_count, counts_per_sample =\
-         compute_seqs_per_library_stats(open(otu_table_fp))
+         compute_seqs_per_library_stats(parse_biom_table(open(otu_table_fp)))
         if even_sampling_keeps_all_samples:
             sampling_depth = min_count
         else:
