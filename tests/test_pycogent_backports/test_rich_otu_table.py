@@ -747,6 +747,10 @@ class DenseTableTests(TestCase):
         obs = self.dt1.delimitedSelf()
         self.assertEqual(obs,exp)
 
+        exp = '\n'.join(["# Constructed from biom file","#OTU IDs\ta\tb\tFOO","1\t5\t6\t['k__a', 'p__b']","2\t7\t8\t['k__a', 'p__c']"])
+        obs = self.dt_rich.delimitedSelf(header_key='taxonomy', header_value='FOO')
+        self.assertEqual(obs,exp)
+
     def test_conv_to_np(self):
         """Correctly convert to a numpy type"""
         input = array([1,2,3,4,5])

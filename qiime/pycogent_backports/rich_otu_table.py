@@ -267,11 +267,31 @@ class Table(object):
             raise TableException, "Cannot delimit self if I don't have data..."
 
         samp_ids = delim.join(map(str, self.SampleIds))
-        output = ['# Constructed from biom file','#OTU IDs%s%s' % (delim, samp_ids)]
-        
+
+        # 17hrs of programing straight later...
+        if header_key is not None:
+            if header_value is None:
+                raise TableException, "You need to specify both header_key and header_value"
+        if header_value is not None:
+            if header_key is None:
+                raise TableException, "You need to specify both header_key and header_value"
+
+        if header_value:
+            output = ['# Constructed from biom file','#OTU IDs%s%s\t%s' % (delim, 
+                samp_ids,header_value)]
+        else:
+            output = ['# Constructed from biom file','#OTU IDs%s%s' % (delim, 
+                samp_ids)]
+
         for obs_id, obs_values in zip(self.ObservationIds, self._iter_obs()):
             str_obs_vals = delim.join(map(str, self._conv_to_np(obs_values)))
-            output.append('%s%s%s' % (obs_id, delim, str_obs_vals))
+
+            if header_key and self.ObservationMetadata is not None:
+                md = self.ObservationMetadata[self._obs_index[obs_id]]
+                md_out = str(md.get(header_key,None))
+                output.append('%s%s%s\t%s' % (obs_id, delim, str_obs_vals, md_out))
+            else:
+                output.append('%s%s%s' % (obs_id, delim, str_obs_vals))
 
         return '\n'.join(output)
 
