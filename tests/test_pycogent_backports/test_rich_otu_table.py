@@ -395,6 +395,23 @@ class TableTests(TestCase):
         self.t2 = Table(array([]),[],[])
         self.simple_derived = Table(array([[5,6],[7,8]]), [1,2],[3,4])
 
+    def test_getSampleIndex(self):
+        """returns the sample index"""
+        self.assertEqual(0, self.simple_derived.getSampleIndex(1))
+        self.assertEqual(1, self.simple_derived.getSampleIndex(2))
+        self.assertRaises(UnknownID, self.simple_derived.getSampleIndex, 3)
+
+    def test_getObservationIndex(self):
+        """returns the observation index"""
+        self.assertEqual(0, self.simple_derived.getObservationIndex(3))
+        self.assertEqual(1, self.simple_derived.getObservationIndex(4))
+        self.assertRaises(UnknownID, self.simple_derived.getObservationIndex,5)
+
+    def test_setValueByIds(self):
+        """sets a value by ids"""
+        self.simple_derived.setValueByIds(3,1,10)
+        self.assertEqual(self.simple_derived._data, array([[10,6],[7,8]]))
+
     def test_sortBySampleID(self):
         """sort a table by samples ids"""
         self.assertRaises(NotImplementedError, self.t1.sortBySampleId)
@@ -703,6 +720,7 @@ class DenseTableTests(TestCase):
 
         # test 12
         obs = self.assertRaises(TableException, self.dt1.merge, self.dt4, u, i)
+
 
     def test_sampleData(self):
         """tested in derived class"""

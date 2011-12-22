@@ -20,7 +20,6 @@ from qiime.util import get_qiime_project_dir
 from cogent.app.util import CommandLineApplication, CommandLineAppResult, \
     FilePath, ResultPath, ApplicationError
 from cogent.app.parameters import Parameters
-from qiime.parse import parse_otu_table, parse_mapping_file
 from numpy import array, set_printoptions, nan
 
 def parse_feature_importances(filepath):

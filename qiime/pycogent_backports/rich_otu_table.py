@@ -204,6 +204,18 @@ class Table(object):
         """Passes through to internal matrix"""
         self._data[args] = value
 
+    def getSampleIndex(self, samp_id):
+        """Returns the sample index"""
+        if samp_id not in self._sample_index:
+            raise UnknownID, "SampleId %s not found!" % samp_id
+        return self._sample_index[samp_id]
+
+    def getObservationIndex(self, obs_id):
+        """Returns the obs index"""
+        if obs_id not in self._obs_index:
+            raise UnknownID, "ObservationId %s not found!" % obs_id
+        return self._obs_index[obs_id]
+
     def getValueByIds(self, obs_id, samp_id):
         """Return the value in the matrix corresponding to (obs_id, samp_id)"""
         if obs_id not in self._obs_index:
@@ -212,6 +224,15 @@ class Table(object):
             raise UnknownID, "SampleId %s not found!" % samp_id
 
         return self._data[self._obs_index[obs_id], self._sample_index[samp_id]]
+
+    def setValueByIds(self, obs_id, samp_id, val):
+        """Set the value in the matrix corresponding to (obs_id, samp_id)"""
+        if obs_id not in self._obs_index:
+            raise UnknownID, "ObservationId %s not found!" % obs_id
+        if samp_id not in self._sample_index:
+            raise UnknownID, "SampleId %s not found!" % samp_id
+
+        self._data[self._obs_index[obs_id], self._sample_index[samp_id]] = val
 
     def __str__(self):
         """Stringify self
@@ -234,7 +255,7 @@ class Table(object):
         Default str output for the Table is just row/col ids and table data
         without any metadata
         """
-        if self._biom_matrix_type is None:
+        if self.isEmpty():
             raise TableException, "Cannot delimit self if I don't have data..."
 
         samp_ids = delim.join(map(str, self.SampleIds))

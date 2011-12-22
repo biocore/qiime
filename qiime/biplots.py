@@ -3,34 +3,30 @@
 
 __author__ = "Dan Knights"
 __copyright__ = "Copyright 2011, The QIIME Project" 
-__credits__ = ["Dan Knights", "Justin Kuczynski"] #remember to add yourself
+__credits__ = ["Dan Knights", "Justin Kuczynski","Daniel McDonald"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Dan Knights"
 __email__ = "daniel.knights@colorado.edu"
 __status__ = "Development"
 
-from qiime.parse import parse_otu_table
+from qiime.pycogent_backports.parse_biom import parse_biom_table
 from numpy import array,apply_along_axis,dot,delete,argsort
 import numpy as np
 
-def get_taxa(taxa_fname,sample_ids_kept=None):
-    """Opens and returns taxon summaries
-       Parameters
+def get_taxa(taxa_f,sample_ids_kept=None):
+    """returns taxon summaries 
+    
+        Parameters
         sample_ids, optional list of ids; all other ids are removed
 
        Returns lineages, counts
     """
-    # future: pass in open file object instead
-    taxa_f = open(taxa_fname, 'U')
-
-    sample_ids, otu_ids, otu_table, lineages =\
-        parse_otu_table(taxa_f,count_map_f=float)
+    otu_table = parse_biom_table(taxa_f)
     if sample_ids_kept:
-        sam_idxs = [sample_ids.index(sam) for sam in sample_ids_kept]
-        otu_table = otu_table[:,sam_idxs]
-    return otu_ids, otu_table
-
+        sample_ids_kept = set(sample_ids_kept)
+        otu_table = otu_table.filterSamples(lambda x,y,z: y in sample_ids_kept)
+    return otu_table.ObservationIds, otu_table
 
 def get_taxa_coords(tax_counts,sample_coords):
     """Returns the PCoA coords of each taxon based on the coords of the samples."""    
