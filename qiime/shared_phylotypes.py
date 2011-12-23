@@ -59,7 +59,6 @@ def calc_shared_phylotypes(infile, reference_sample=None):
                       e.g. when the reference sample is the Donor in a transplant study
     """
 
-    #sample_ids, otu_ids, otu_table, lineages = parse_otu_table(infile)
     otu_table = parse_biom_table_str(infile)
 
     if reference_sample:

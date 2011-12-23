@@ -27,7 +27,7 @@ from qiime.util import load_qiime_config, get_qiime_scripts_dir, get_options_loo
 from qiime.parallel.beta_diversity import (get_job_commands_single_otu_table,
     get_job_commands_multiple_otu_tables, create_merge_map_file_single_otu_table,
     get_poller_command,commands_to_shell_script)
-from qiime.parse import parse_otu_table, parse_newick, PhyloNode
+from qiime.parse import parse_newick, PhyloNode
 from sys import stderr
 
 qiime_config = load_qiime_config()

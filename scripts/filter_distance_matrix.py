@@ -18,7 +18,7 @@ from qiime.util import (parse_command_line_parameters,
 from qiime.filter import (filter_samples_from_distance_matrix, 
                          sample_ids_from_metadata_description,
                          get_seqs_to_keep_lookup_from_seq_id_file)
-from qiime.parse import parse_otu_table, parse_distmat
+from qiime.parse import parse_distmat
 
 options_lookup = get_options_lookup()
 
@@ -54,9 +54,6 @@ script_info['optional_options'] = [
              help="discard specified samples (instead of keeping them) [default: %default]")]
 script_info['version'] = __version__
 
-#def sample_ids_from_otu_table(otu_table_f):
-#    """ """
-#    return parse_otu_table(otu_table_f)[0]
 
 def main():
     option_parser, opts, args =\

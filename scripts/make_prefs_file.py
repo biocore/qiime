@@ -14,7 +14,7 @@ from qiime.util import make_option
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.format import build_prefs_string
 from qiime.colors import get_map
-from qiime.parse import parse_otu_table
+from qiime.parse import parse_taxa_summary_table
 
 options_lookup = get_options_lookup()
 
@@ -81,15 +81,15 @@ def main():
     if taxonomy_count_file:
         try:
             counts_f = open(taxonomy_count_file, 'U').readlines()
-            sample_ids, otu_ids, otu_table, lineages = \
-                       parse_otu_table(counts_f,count_map_f=float)
+            _, taxa_ids, _ = \
+                       parse_taxa_summary_table(counts_f)
         except (TypeError, IOError):
             raise ValueError, 'Summarized taxa file could not be parsed.'
     else:
         otu_ids=None
         
     out = build_prefs_string(mapping_headers_to_use, background_color, \
-                                monte_carlo_dist, headers, otu_ids, \
+                                monte_carlo_dist, headers, taxa_ids, \
                                 ball_scale, arrow_line_color, arrow_head_color)
                                 
     f = open(opts.output_fp,'w')

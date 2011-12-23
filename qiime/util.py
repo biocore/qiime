@@ -58,8 +58,7 @@ from cogent.util.misc import (create_dir,
 from qiime import __version__ as qiime_library_version
 from cogent.util.option_parsing import (parse_command_line_parameters,
                                         make_option)
-from qiime.parse import (parse_otu_table,
-                         parse_qiime_config_files,
+from qiime.parse import (parse_qiime_config_files,
                          parse_coords,
                          parse_newick,
                          fields_to_dict,

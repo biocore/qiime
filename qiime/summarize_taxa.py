@@ -17,8 +17,6 @@ from sys import stdout, stderr
 from optparse import OptionParser
 from string import strip
 from numpy import array
-# Unused
-#from qiime.parse import parse_otu_table, parse_mapping_file
 
 def make_summary(otu_table, level, upper_percentage, lower_percentage): 
     """Returns taxonomy summary data

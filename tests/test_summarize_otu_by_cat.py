@@ -12,7 +12,6 @@ __status__ = "Development"
 
 from cogent.util.unit_test import TestCase, main
 from qiime.summarize_otu_by_cat import get_sample_cat_info, get_counts_by_cat
-from qiime.parse import parse_otu_table
 from qiime.pycogent_backports.rich_otu_table import SparseOTUTable, to_ll_mat
 from qiime.util import get_tmp_filename, load_qiime_config
 
@@ -191,8 +190,6 @@ otu_10\t0\t2\t0\t4\t0\tBacteria; Firmicutes; Mollicutes; Clostridium_aff_innocuu
         cat_otu_table_test = []
         for l in cat_otu_table:
             cat_otu_table_test.append('\t'.join(map(str,l)))
-        #sams, otunames, obs, lineages = parse_otu_table(cat_otu_table_test,float)
-        #sams, otunames, exp, lineages = parse_otu_table(self.cat_otu_table_norm.split('\n'),float)
         self.assertEqual(otus,self.otus)
         self.assertEqual(taxonomy,self.taxonomy)
 

@@ -15,7 +15,7 @@ __status__ = "Development"
 from cogent.util.unit_test import TestCase, main
 from qiime.summarize_taxa import make_summary, \
 	add_summary_mapping, sum_counts_by_consensus
-from qiime.parse import parse_otu_table, parse_mapping_file
+from qiime.parse import parse_mapping_file
 from qiime.util import convert_otu_table_relative
 from numpy import array
 from qiime.pycogent_backports.rich_otu_table import SparseOTUTable, to_ll_mat

@@ -20,7 +20,6 @@ from qiime.util import parse_command_line_parameters
 from qiime.util import make_option,get_options_lookup,create_dir
 from qiime.summarize_taxa import make_summary, add_summary_mapping
 from sys import stdout, stderr
-#from qiime.parse import parse_otu_table, parse_mapping_file
 from qiime.parse import parse_mapping_file
 from qiime.format import write_summarize_taxa, write_add_taxa_summary_mapping,\
         format_summarize_taxa, format_add_taxa_summary_mapping
@@ -99,7 +98,6 @@ def main():
     lower_percentage = opts.lower_percentage
     upper_percentage = opts.upper_percentage
     otu_table_fp = opts.otu_table_fp
-    #otu_table = parse_otu_table(open(otu_table_fp, 'U'))
     otu_table = parse_biom_table(open(otu_table_fp, 'U'))
     delimiter = opts.delimiter
     mapping_fp = opts.mapping

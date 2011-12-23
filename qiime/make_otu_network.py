@@ -31,7 +31,6 @@ from time import strftime
 from random import choice, randrange
 from cogent.maths.stats.test import G_2_by_2
 from qiime.colors import iter_color_groups, Color, data_colors
-#from qiime.parse import parse_mapping_file, parse_otu_table
 from qiime.parse import parse_mapping_file
 from qiime.pycogent_backports.parse_biom import parse_biom_table
 
@@ -133,7 +132,6 @@ def get_connection_info(otu_table_fp, num_meta, meta_dict):
     sample_num_seq = defaultdict(int)
     con_list = []
 
-    #sample_ids, otu_ids, otu_table, lineages = parse_otu_table(lines,count_map_f=float)
     otu_table = parse_biom_table(open(otu_table_fp,'U'))
 
     #if lineages == []:

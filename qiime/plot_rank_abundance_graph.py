@@ -19,7 +19,6 @@ from itertools import cycle
 from matplotlib.pyplot import plot, gca,  ylim, xlim, show, legend, \
     savefig
 from os.path import join
-from qiime.parse import parse_otu_table
 from qiime.colors import data_color_order,data_colors
 from qiime.pycogent_backports.rich_otu_table import UnknownID
 
