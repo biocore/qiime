@@ -17,7 +17,6 @@ from numpy import array,concatenate,asarray,transpose,log,invert,asarray,\
     float32,float64, unique
 from cogent.parse.table import SeparatorFormatParser
 from optparse import OptionParser
-from qiime.parse import parse_otu_table
 from qiime.util import MissingFileError
 import os
 from matplotlib import use
