@@ -6,7 +6,7 @@ from __future__ import division
 
 __author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Jesse Stombaugh"]
+__credits__ = ["Jesse Stombaugh", "Jose Carlos Clemente Litran"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Jesse Stombaugh"
@@ -16,7 +16,7 @@ __status__ = "Development"
 
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.util import make_option
-from qiime.make_otu_heatmap_html import generate_heatmap_plots,get_otu_counts,\
+from qiime.make_otu_heatmap_html import generate_heatmap_plots,get_otu_table,\
     get_log_transform
 import os
 import shutil
@@ -92,21 +92,38 @@ def main():
     data = {}
 
     #Open and get coord data
-    data['otu_counts'] = list(get_otu_counts(opts.otu_table_fp, data))
+    #data['otu_counts'] = list(get_otu_counts(opts.otu_table_fp, data))
+    otu_table = get_otu_table(opts.otu_table_fp, data)
     # determine whether fractional values are present in OTU table
 
     if opts.log_transform:
         if not opts.log_eps is None and opts.log_eps <= 0:
             print "Parameter 'log_eps' must be positive. Value was", opts.log_eps
             exit(1)
-        data['otu_counts'][2] = get_log_transform(data['otu_counts'][2], opts.log_eps)
+        #data['otu_counts'][2] = get_log_transform(data['otu_counts'][2], opts.log_eps)
+        otu_table = get_log_transform(otu_table, opts.log_eps)
         opts.num_otu_hits = 0
         
     # test: if using relative abundances, and opts.num_otu_hits > 0
     # print warning and set to 0
-    fractional_values = ((data['otu_counts'][2] > 0) & \
-                         (data['otu_counts'][2] < 1)).any()
-    if fractional_values and (data['otu_counts'][2]).max() <= 1:
+    #fractional_values = ((data['otu_counts'][2] > 0) & \
+    #                     (data['otu_counts'][2] < 1)).any()
+    #if fractional_values and (data['otu_counts'][2]).max() <= 1:
+    #    if opts.num_otu_hits > 0:
+    #        print "Warning: OTU table appears to be using relative abundances",\
+    #                "and num_otu_hits was set to %d. Setting num_otu_hits to 0."\
+    #                %(opts.num_otu_hits)
+    #        opts.num_otu_hits = 0
+
+    fractional_values = False
+    max_val = -1
+    for val in otu_table.iterObservationData():
+        max_val = maximum(max_val, val.max())
+
+    # the data cannot be of mixed types: if one is float, all are float
+    fractional_values = (max_val.dtype.name == 'float32' or max_val.dtype.name == 'float64')
+
+    if fractional_values and max_val <= 1:
         if opts.num_otu_hits > 0:
             print "Warning: OTU table appears to be using relative abundances",\
                     "and num_otu_hits was set to %d. Setting num_otu_hits to 0."\
@@ -173,8 +190,8 @@ def main():
         map = parse_mapping_file(lines)[0]
         ordered_sample_names = [row[0] for row in map]
 
-    data['otu_order'] = ordered_otu_names
-    data['sample_order'] = ordered_sample_names
+    #data['otu_order'] = ordered_otu_names
+    #data['sample_order'] = ordered_sample_names
     
     try:
         action = generate_heatmap_plots
@@ -182,7 +199,8 @@ def main():
         action = None
     #Place this outside try/except so we don't mask NameError in action
     if action:
-        action(opts,data, dir_path,js_dir_path,filename, fractional_values)
+        action(opts,data, ordered_otu_names, ordered_sample_names,
+               dir_path,js_dir_path,filename, fractional_values)
 
 if __name__ == "__main__":
     main()
