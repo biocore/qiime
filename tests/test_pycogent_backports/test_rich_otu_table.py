@@ -400,6 +400,15 @@ class TableTests(TestCase):
         self.t2 = Table(array([]),[],[])
         self.simple_derived = Table(array([[5,6],[7,8]]), [1,2],[3,4])
 
+    def test_sum(self):
+        """should sum a table"""
+        self.assertRaises(TableException, self.t1.sum)
+
+    def test_reduce(self):
+        """Should throw an exception on an empty table"""
+        self.assertRaises(TableException, self.t1.reduce, lambda x,y: x+y,
+                          'sample')
+
     def test_getSampleIndex(self):
         """returns the sample index"""
         self.assertEqual(0, self.simple_derived.getSampleIndex(1))
@@ -653,6 +662,18 @@ class DenseTableTests(TestCase):
                 [{'barcode':'aatt'},{'barcode':'ttgg'}],
                 [{'taxonomy':['k__a','p__b']},{'taxonomy':['k__a','p__c']}])
 
+    def test_sum(self):
+        """Test of sum!"""
+        self.assertEqual(self.dt1.sum('whole'), 26)
+        self.assertEqual(self.dt1.sum('sample'), array([12,14]))
+        self.assertEqual(self.dt1.sum('observation'), array([11,15]))
+
+    def test_reduce(self):
+        """Reduce method"""
+        f = lambda x,y: x*2 + y
+        self.assertEqual(self.dt1.reduce(f, 'sample'), array([17,20]))
+        self.assertEqual(self.dt1.reduce(f, 'observation'), array([16,22]))
+        
     def test_nonzero(self):
         """Return a list of nonzero positions"""
         dt = DenseTable(array([[5,6,0,2],[0,7,0,8],[1,-1,0,0]]), 
@@ -1085,6 +1106,18 @@ class SparseTableTests(TestCase):
                 ['a','b'],['1','2'],
                 [{'barcode':'aatt'},{'barcode':'ttgg'}],
                 [{'taxonomy':['k__a','p__b']},{'taxonomy':['k__a','p__c']}])
+
+    def test_sum(self):
+        """Test of sum!"""
+        self.assertEqual(self.st1.sum('whole'), 26)
+        self.assertEqual(self.st1.sum('sample'), array([12,14]))
+        self.assertEqual(self.st1.sum('observation'), array([11,15]))
+
+    def test_reduce(self):
+        """Reduce method"""
+        f = lambda x,y: x*2 + y
+        self.assertEqual(self.st1.reduce(f, 'sample'), array([17,20]))
+        self.assertEqual(self.st1.reduce(f, 'observation'), array([16,22]))
 
     def test_sortObservationOrder(self):
         """sort by observations arbitrary order"""

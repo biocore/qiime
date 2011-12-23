@@ -16,7 +16,7 @@ We decided early on to couple the support of the sparse data representation with
 Description of available ``Table`` objects
 ==========================================
 
-There are multiple objects available but some of them are unofficial abstract base classes (does not use the ``abc`` module for historical reasonas).
+There are multiple objects available but some of them are unofficial abstract base classes (does not use the ``abc`` module for historical reasons). In practice, the objects used should be the derived Tables such as ``SparseOTUTable`` or ``DenseAbundanceTable``. 
 
 Table
 -----

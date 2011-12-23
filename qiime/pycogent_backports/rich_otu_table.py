@@ -208,6 +208,41 @@ class Table(object):
         """Passes through to internal matrix"""
         self._data[args] = value
 
+    def reduce(self, f, axis):
+        """Reduce over axis with f
+
+        axis can be either 'sample' or 'observation'
+        """
+        if self.isEmpty():
+            raise TableException, "Cannot reduce an empty table"
+
+        # np.apply_along_axis might reduce type conversions here and improve
+        # speed. am opting for reduce right now as I think its more readable
+        if axis == 'sample':
+            return asarray([reduce(f,v) for v in self.iterSampleData()])
+        elif axis == 'observation':
+            return asarray([reduce(f,v) for v in self.iterObservationData()])
+        else:
+            raise TableException, "Unknown reduction axis"
+
+    def sum(self, axis='whole'):
+        """Returns the sum by axis
+        
+        axis can be:
+
+        'whole'       : whole matrix sum
+        'sample'      : return a vector with a sum for each sample
+        'observation' : return a vector with a sum for each observation
+        """
+        if axis == 'whole':
+            return sum(self.reduce(add, 'sample'))
+        elif axis == 'sample':
+            return self.reduce(add, 'sample')
+        elif axis == 'observation':
+            return self.reduce(add, 'observation')
+        else:
+            raise TableException, "Unknown axis %s" % axis
+
     def getSampleIndex(self, samp_id):
         """Returns the sample index"""
         if samp_id not in self._sample_index:
@@ -362,9 +397,10 @@ class Table(object):
 
     def copy(self):
         """Returns a copy of the Table"""
-        #### NEEDS TO BE A DEEP COPY
-        return self.__class__(self._data, self.SampleIds, self.ObservationIds,
-                self.SampleMetadata, self.ObservationMetadata, self.TableId)
+        #### NEEDS TO BE A DEEP COPY, MIGHT NOT GET METADATA! NEED TEST!
+        return self.__class__(self._data.copy(), self.SampleIds[:], 
+                self.ObservationIds[:], self.SampleMetadata, 
+                self.ObservationMetadata, self.TableId)
 
     def iterSampleData(self):
         """Yields sample_values"""
@@ -428,8 +464,8 @@ class Table(object):
             samp_md = None
 
         return self.__class__(self._conv_to_self_type(vals), 
-                sample_order, self.ObservationIds, samp_md, 
-                self.ObservationMetadata,self.TableId)
+                sample_order[:], self.ObservationIds[:], samp_md, 
+                self.ObservationMetadata, self.TableId)
 
     def sortObservationOrder(self, obs_order):
         """Return a new table in observation order"""
@@ -447,7 +483,7 @@ class Table(object):
             obs_md = None
 
         return self.__class__(self._conv_to_self_type(vals),
-                self.SampleIds, obs_order, self.SampleMetadata,
+                self.SampleIds[:], obs_order[:], self.SampleMetadata,
                 obs_md, self.TableId)
 
     def sortBySampleId(self, sort_f=natsort):
@@ -458,6 +494,10 @@ class Table(object):
         """Return a table sorted by sort_f"""
         return self.sortObservationOrder(sort_f(self.ObservationIds))
 
+    # a good refactor in the future is a general filter() method and then
+    # specify the axis, like Table.reduce
+
+    # take() is tempting here as well...
     def filterSamples(self, f, invert=False):
         """Filter samples in self based on f
         
@@ -490,7 +530,7 @@ class Table(object):
         # vectors to a matrix
         # transpose is necessary as the underlying storage is sample == col
         return self.__class__(self._conv_to_self_type(samp_vals,transpose=True),
-                samp_ids, self.ObservationIds, samp_metadata, 
+                samp_ids[:], self.ObservationIds[:], samp_metadata, 
                 self.ObservationMetadata, self.TableId)
 
     def filterObservations(self, f, invert=False):
@@ -521,8 +561,8 @@ class Table(object):
         if not obs_vals:
             raise TableException, "All obs filtered out!"
 
-        return self.__class__(self._conv_to_self_type(obs_vals),self.SampleIds,
-                obs_ids, self.SampleMetadata, obs_metadata, self.TableId)
+        return self.__class__(self._conv_to_self_type(obs_vals),self.SampleIds[:],
+                obs_ids[:], self.SampleMetadata, obs_metadata, self.TableId)
 
     def binSamplesByMetadata(self, f):
         """Yields tables by metadata
@@ -549,8 +589,8 @@ class Table(object):
 
         for bin, (samp_ids, samp_values, samp_md) in bins.iteritems():
             data = self._conv_to_self_type(samp_values, transpose=True)
-            yield bin, self.__class__(data, samp_ids, self.ObservationIds, 
-                            samp_md, self.ObservationMetadata, self.TableId)
+            yield bin, self.__class__(data, samp_ids[:], self.ObservationIds[:], 
+                    samp_md, self.ObservationMetadata, self.TableId)
 
     def binObservationsByMetadata(self, f):
         """Yields tables by metadata
@@ -577,9 +617,11 @@ class Table(object):
 
         for bin, (obs_ids, obs_values, obs_md) in bins.iteritems():
             yield bin, self.__class__(self._conv_to_self_type(obs_values), 
-                            self.SampleIds, obs_ids, self.SampleMetadata,
-                            obs_md, self.TableId)
+                    self.SampleIds[:], obs_ids[:], self.SampleMetadata,
+                    obs_md, self.TableId)
 
+    # it might be desirable in the future to rewrite the transform methods
+    # to a general purpose map() and then specify an axis within map
     def transformSamples(self, f):
         """Apply a function to each sample
         
@@ -590,7 +632,7 @@ class Table(object):
             new_samp_v.append(self._conv_to_self_type(f(samp_v)))
 
         return self.__class__(self._conv_to_self_type(new_samp_v, transpose=True), 
-                self.SampleIds, self.ObservationIds, self.SampleMetadata,
+                self.SampleIds[:], self.ObservationIds[:], self.SampleMetadata,
                 self.ObservationMetadata, self.TableId)
 
     def transformObservations(self, f):
@@ -603,7 +645,7 @@ class Table(object):
             new_obs_v.append(self._conv_to_self_type(f(obs_v)))
 
         return self.__class__(self._conv_to_self_type(new_obs_v),
-                self.SampleIds, self.ObservationIds, self.SampleMetadata,
+                self.SampleIds[:],self.ObservationIds[:],self.SampleMetadata,
                 self.ObservationMetadata, self.TableId)
 
     def normObservationBySample(self):
@@ -802,8 +844,8 @@ class Table(object):
             # accidently force a dense representation in memory
             vals[new_obs_idx] = self._conv_to_self_type(new_vec)
 
-        return self.__class__(self._conv_to_self_type(vals), sample_ids, 
-                              obs_ids, sample_md, obs_md)
+        return self.__class__(self._conv_to_self_type(vals), sample_ids[:], 
+                obs_ids[:], sample_md, obs_md)
 
     def getBiomFormatObject(self):
         """Returns a dictionary representing the table in Biom format.
@@ -1010,10 +1052,20 @@ class OTUTable(object):
     _biom_type = "OTU table"
     pass
 
+class AbundanceTable(object):
+    _biom_type = "Abundance table"
+    pass
+
 class DenseOTUTable(OTUTable, DenseTable):
     pass
 
 class SparseOTUTable(OTUTable, SparseTable):
+    pass
+
+class DenseAbundanceTable(AbundanceTable, DenseTable):
+    pass
+
+class SparseAbundanceTable(AbundanceTable, SparseTable):
     pass
 
 def nparray_to_ll_mat(data, dtype=float):

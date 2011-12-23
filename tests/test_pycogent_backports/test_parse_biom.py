@@ -3,7 +3,7 @@
 
 __author__ = "Justin Kuczynski"
 __copyright__ = ""
-__credits__ = ["Justin Kuczynski"] #remember to add yourself
+__credits__ = ["Justin Kuczynski","Daniel McDonald"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Justin Kuczynski"
