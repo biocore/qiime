@@ -233,7 +233,6 @@ def single_file_beta(input_path, metrics, tree_path, output_dir, rowids=None,
                 dissims = metric_f(otumtx, otu_table.ObservationIds, tree, otu_table.SampleIds, make_subtree = (not full_tree))
             else:
                 dissims = metric_f(otumtx)
-
             f = open(outfilepath,'w')
             f.write(format_distance_matrix(otu_table.SampleIds, dissims))
             f.close()

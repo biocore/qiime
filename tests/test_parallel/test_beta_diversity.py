@@ -39,7 +39,6 @@ class ParallelBetaDiversityTests(TestCase):
 
     def tearDown(self):
         """ """
-
         for d in self.dirs_to_remove:
             if os.path.exists(d):
                 shutil.rmtree(d)
@@ -56,8 +55,8 @@ class ParallelBetaDiversityTests(TestCase):
 
         os.makedirs(maindir)
         self.dirs_to_remove.append(maindir)
-        otuf = os.path.join(maindir,'otuf')
-        treef = os.path.join(maindir,'treef')
+        otuf = os.path.join(maindir,'otuf.biom')
+        treef = os.path.join(maindir,'treef.txt')
 
         otufh = open(otuf,'w')
         otufh.write(tutorial_otu_table)
@@ -72,11 +71,12 @@ class ParallelBetaDiversityTests(TestCase):
         cmd = scripts_dir+'/parallel_beta_diversity.py -T -O 3 '+\
          '--retain_temp_files -i %s -o %s -m unifrac -t %s' %\
          (otuf, maindir+'/para1', treef)
+
         # -T so doesn't return yet
         proc = subprocess.Popen(cmd,shell=True, 
             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         betaout, betaerr = proc.communicate()
-        # first parallel version
+        # # first parallel version
         if betaout or betaerr:
             raise RuntimeError("parallel_beta_diversity.py should should "+\
               "not generate stdout or stderr. results:" + betaout + betaerr)
@@ -95,10 +95,10 @@ class ParallelBetaDiversityTests(TestCase):
 
 
         serialdist =\
-            parse_distmat_to_dict(open(maindir+'/serial1/unifrac_otuf','U'))
+            parse_distmat_to_dict(open(maindir+'/serial1/unifrac_otuf.txt','U'))
 
         paradist =\
-            parse_distmat_to_dict(open(maindir+'/para1/unifrac_otuf','U'))
+            parse_distmat_to_dict(open(maindir+'/para1/unifrac_otuf.txt','U'))
 
         web_res = open(maindir+'/web_res','w')
 
@@ -121,9 +121,9 @@ class ParallelBetaDiversityTests(TestCase):
 
         os.makedirs(maindir)
         self.dirs_to_remove.append(maindir)
-        otuf = os.path.join(maindir,'otuf')
-        treef = os.path.join(maindir,'treef')
-        trim_treef = os.path.join(maindir,'trim_treef')
+        otuf = os.path.join(maindir,'otuf.biom')
+        treef = os.path.join(maindir,'treef.tre')
+        trim_treef = os.path.join(maindir,'trim_treef.tre')
 
         otufh = open(otuf,'w')
         otufh.write(big_otu_table)
@@ -177,20 +177,20 @@ class ParallelBetaDiversityTests(TestCase):
 
 
         serialdist =\
-            parse_distmat_to_dict(open(maindir+'/serial1/unifrac_otuf','U'))
+            parse_distmat_to_dict(open(maindir+'/serial1/unifrac_otuf.txt','U'))
 
         paradist =\
-            parse_distmat_to_dict(open(maindir+'/para1/unifrac_otuf','U'))
+            parse_distmat_to_dict(open(maindir+'/para1/unifrac_otuf.txt','U'))
 
         paradist_trim =\
-            parse_distmat_to_dict(open(maindir+'/para_trim/unifrac_otuf','U'))
+            parse_distmat_to_dict(open(maindir+'/para_trim/unifrac_otuf.txt','U'))
 
-        expected = open(maindir+'/expected','w')
+        expected = open(maindir+'/expected.txt','w')
 
         ## use unifrac_dmtx below, from fast unifrac website march 2011
         expected.write(big_dmtx)
         expected.close()
-        unifdist = parse_distmat_to_dict(open(maindir+'/expected','U'))
+        unifdist = parse_distmat_to_dict(open(maindir+'/expected.txt','U'))
         sam_keys = unifdist.keys()
         for i in range(len(sam_keys)):
             key_i = sam_keys[i]

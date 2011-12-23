@@ -7,7 +7,7 @@ File created on 7 Jan 2010.
 
 """
 from __future__ import division
-from os.path import split, join
+from os.path import split, join, splitext
 import os
 from qiime.pycogent_backports.parse_biom import parse_biom_table
 from qiime.parallel.util import get_rename_command, merge_to_n_commands
@@ -43,7 +43,8 @@ def get_job_commands_multiple_otu_tables(
     
     for input_fp in input_fps:
         input_path, input_fn = split(input_fp)
-        output_fns = ['%s_%s' % (metric, input_fn) \
+        input_basename, input_ext = splitext(input_fn)
+        output_fns = ['%s_%s.txt' % (metric, input_basename) \
          for metric in metrics.split(',')]
         rename_command, current_result_filepaths = get_rename_command(\
          output_fns,working_dir,output_dir)
@@ -98,8 +99,9 @@ def get_job_commands_single_otu_table(
         working_dir_i = os.path.join(working_dir, str(i))
         output_dir_i = os.path.join(output_dir, str(i))
         input_dir, input_fn = split(input_fp)
+        input_basename, input_ext = splitext(input_fn)
         sample_id_desc = sample_id_group.replace(',','_')
-        output_fns = ['%s_%s' % (metric, input_fn) \
+        output_fns = ['%s_%s.txt' % (metric, input_basename) \
          for metric in metrics.split(',')]
         rename_command, current_result_filepaths = get_rename_command(\
          output_fns,working_dir_i,output_dir_i)
@@ -124,7 +126,6 @@ def get_job_commands_single_otu_table(
               tree_fp,
               metrics,
               sample_id_group)
-        
         shell_script_fp = '%s/%s%d.sh' % (working_dir_i,job_prefix,i)
         shell_script_commands = [bdiv_command] + rename_command.split(';')
         commands_to_shell_script(shell_script_commands,shell_script_fp)
@@ -138,13 +139,14 @@ def create_merge_map_file_single_otu_table(input_fp,output_dir,
     merge_map_f = open(merge_map_filepath,'w')
     
     input_dir, input_fn = split(input_fp)
+    input_basename, input_ext = splitext(input_fn)
     
     expected_output_files = [fp.strip() for fp in 
      open(expected_files_filepath,'U')]
     
     for metric in metrics.split(','):
         fps_to_merge = [fp for fp in expected_output_files if '/%s_' % metric in fp]
-        output_fp = join(output_dir,'%s_%s' % (metric,input_fn))
+        output_fp = join(output_dir,'%s_%s.txt' % (metric,input_basename))
         merge_map_f.write('%s\t%s\n' % ('\t'.join(fps_to_merge),output_fp))
     
     merge_map_f.close()
