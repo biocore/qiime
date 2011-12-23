@@ -379,7 +379,7 @@ def run_pick_otus_through_otu_table(input_fp,
     commands.append([('Assign taxonomy',assign_taxonomy_cmd)])
     
     # Prep the OTU table building command
-    otu_table_fp = '%s/otu_table.txt' % output_dir
+    otu_table_fp = '%s/otu_table.biom' % output_dir
     try:
         params_str = get_params_str(params['make_otu_table'])
     except KeyError:
@@ -391,7 +391,7 @@ def run_pick_otus_through_otu_table(input_fp,
     commands.append([('Make OTU table', make_otu_table_cmd)])
     
     if cluster_failures:
-        reference_otu_table_fp = '%s/reference_only_otu_table.txt' % output_dir
+        reference_otu_table_fp = '%s/reference_only_otu_table.biom' % output_dir
         # Build the OTU table building command
         make_otu_table_cmd = '%s %s/make_otu_table.py -i %s -t %s -o %s %s' %\
          (python_exe_fp, script_dir, reference_otu_fp, taxonomy_fp, 
@@ -576,7 +576,7 @@ def run_pick_reference_otus_through_otu_table(
     commands.append([('Pick OTUs', pick_otus_cmd)])
 
     # Prep the OTU table building command
-    otu_table_fp = '%s/otu_table.txt' % pick_otu_dir
+    otu_table_fp = '%s/otu_table.biom' % pick_otu_dir
     try:
         params_str = get_params_str(params['make_otu_table'])
     except KeyError:
@@ -729,8 +729,8 @@ def run_beta_diversity_through_plots(otu_table_fp, mapping_fp,
              [('Beta Diversity (%s)' % beta_diversity_metric, beta_div_cmd)])
         
         
-        orig_beta_div_fp = '%s/%s_%s' % \
-         (output_dir, beta_diversity_metric, otu_table_filename)
+        orig_beta_div_fp = '%s/%s_%s.txt' % \
+         (output_dir, beta_diversity_metric, otu_table_basename)
         beta_div_fp = '%s/%s_dm.txt' % \
          (output_dir, beta_diversity_metric)
         commands.append([('Rename distance matrix (%s)' % beta_diversity_metric,
@@ -1676,7 +1676,7 @@ def run_summarize_taxa_through_plots(otu_table_fp, mapping_fp,
         params_str = ''
     
     if mapping_cat:
-        output_fp=join(output_dir,'%s_otu_table.txt' % (mapping_cat))
+        output_fp=join(output_dir,'%s_otu_table.biom' % (mapping_cat))
         # Build the summarize otu by category command
         summarize_otu_by_cat_cmd = \
          "%s %s/summarize_otu_by_cat.py -i %s -c %s -o %s -m %s %s" %\

@@ -268,7 +268,7 @@ class WorkflowTests(TestCase):
         
         # Basic sanity test of OTU table as details are tested 
         # in the pick_otus_through_otu_table tests
-        otu_table_fp = join(self.wf_out,'otus','otu_table.txt')
+        otu_table_fp = join(self.wf_out,'otus','otu_table.biom')
         otu_table = parse_biom_table(open(otu_table_fp,'U'))
         sample_ids = otu_table.SampleIds
         expected_sample_ids = ['PC.354','PC.355','PC.356','PC.481',
@@ -303,7 +303,7 @@ class WorkflowTests(TestCase):
         
         # Basic sanity test of OTU table as details are tested 
         # in the pick_otus_through_otu_table tests
-        otu_table_fp = join(self.wf_out,'otus','otu_table.txt')
+        otu_table_fp = join(self.wf_out,'otus','otu_table.biom')
         otu_table = parse_biom_table(open(otu_table_fp,'U'))
         sample_ids = otu_table.SampleIds
         expected_sample_ids = ['PC.354','PC.355','PC.356','PC.481',
@@ -337,7 +337,7 @@ class WorkflowTests(TestCase):
         
         # Basic sanity test of OTU table as details are tested 
         # in the pick_otus_through_otu_table tests
-        otu_table_fp = join(self.wf_out,'otus','otu_table.txt')
+        otu_table_fp = join(self.wf_out,'otus','otu_table.biom')
         otu_table = parse_biom_table(open(otu_table_fp,'U'))
         sample_ids= otu_table.sample_ids
         expected_sample_ids = ['PC.354','PC.355','PC.356','PC.481',
@@ -363,7 +363,7 @@ class WorkflowTests(TestCase):
         otu_map_fp = join(self.wf_out,'uclust_ref_picked_otus',
          '%s_otus.txt' % input_file_basename)
         otu_table_fp = join(self.wf_out,'uclust_ref_picked_otus',
-         'otu_table.txt')
+         'otu_table.biom')
         otu_table = parse_biom_table(open(otu_table_fp,'U'))
         expected_sample_ids = ['S1','S2','S3']
         self.assertEqual(otu_table.SampleIds,expected_sample_ids)
@@ -412,7 +412,7 @@ class WorkflowTests(TestCase):
         otu_map_fp = join(self.wf_out,'uclust_ref_picked_otus',
          '%s_otus.txt' % input_file_basename)
         otu_table_fp = join(self.wf_out,'uclust_ref_picked_otus',
-         'otu_table.txt')
+         'otu_table.biom')
 
         # Number of OTUs matches manually confirmed result -- 
         # in parallel there are no new clusters so num otus will be 4
@@ -470,7 +470,7 @@ class WorkflowTests(TestCase):
         taxonomy_assignments_fp = join(self.wf_out,
          'rdp_assigned_taxonomy','%s_rep_set_tax_assignments.txt' %
          input_file_basename)
-        otu_table_fp = join(self.wf_out,'otu_table.txt')
+        otu_table_fp = join(self.wf_out,'otu_table.biom')
         tree_fp = join(self.wf_out,'rep_set.tre')
         
         self.assertEqual(actual_tree_fp,tree_fp)
@@ -544,7 +544,7 @@ class WorkflowTests(TestCase):
         taxonomy_assignments_fp = join(self.wf_out,
          'rdp_assigned_taxonomy','%s_rep_set_tax_assignments.txt' %
          input_file_basename)
-        otu_table_fp = join(self.wf_out,'otu_table.txt')
+        otu_table_fp = join(self.wf_out,'otu_table.biom')
         tree_fp = join(self.wf_out,'rep_set.tre')        
          
         # Number of OTUs falls within a range that was manually 
@@ -616,7 +616,7 @@ class WorkflowTests(TestCase):
         taxonomy_assignments_fp = join(self.wf_out,
          'rdp_assigned_taxonomy','%s_rep_set_tax_assignments.txt' %
          input_file_basename)
-        otu_table_fp = join(self.wf_out,'otu_table.txt')
+        otu_table_fp = join(self.wf_out,'otu_table.biom')
         tree_fp = join(self.wf_out,'rep_set.tre')
         
         # Number of OTUs falls within a range that was manually 
@@ -1056,7 +1056,7 @@ class WorkflowTests(TestCase):
         
         if mapping_cat:
             new_otu_table_fp=join(self.wf_out,
-                                  '%s_otu_table.txt' % (mapping_cat))
+                                  '%s_otu_table.biom' % (mapping_cat))
         else:
             new_otu_table_fp=self.fasting_otu_table_fp
            
@@ -1126,7 +1126,7 @@ class WorkflowTests(TestCase):
         
         if mapping_cat:
             new_otu_table_fp=join(self.wf_out,
-                                  '%s_otu_table.txt' % (mapping_cat))
+                                  '%s_otu_table.biom' % (mapping_cat))
         else:
             new_otu_table_fp=self.fasting_otu_table_fp
            
