@@ -43,7 +43,7 @@ option_list <- list(
         help="Number of folds in cross-validation (ignored if --errortype is not 'cv') [default %default]")
 )
 opts <- parse_args(OptionParser(option_list=option_list), args=args)
-set.warning.visibility(opts$verbose) # hide extraneous library output
+# set.warning.visibility(opts$verbose) # hide extraneous library output
 
 # Error checking
 if(is.null(opts$mapfile)) stop('Please supply a mapping file.')

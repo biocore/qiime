@@ -17,11 +17,12 @@ from time import sleep
 from tempfile import mkdtemp
 from qiime.util import get_tmp_filename
 from qiime.util import get_qiime_project_dir
+from qiime.format import format_otu_table
 from cogent.app.util import CommandLineApplication, CommandLineAppResult, \
     FilePath, ResultPath, ApplicationError
 from cogent.app.parameters import Parameters
+from qiime.parse import parse_otu_table, parse_mapping_file
 from numpy import array, set_printoptions, nan
-from qiime.pycogent_backports.parse_biom import parse_biom_table
 
 def parse_feature_importances(filepath):
     """Returns vector of feature IDs, vector of importance scores
@@ -106,15 +107,7 @@ class RSupervisedLearner(CommandLineApplication):
         else:
             errfilepath = FilePath(self.getTmpFilename(self.TmpDir))
             errfile = open(errfilepath, 'w')
-
-        # convert the OTU table from BIOM to classic OTU table
-        ducttape = self.getTmpFilename(self.TmpDir)
-        biom = parse_biom_table(open(predictor_fp))
-        f = open(ducttape, 'w')
-        f.write(str(biom))
-        f.close()
-
-        predictor_fp = getattr(self,input_handler)(ducttape)
+        predictor_fp = getattr(self,input_handler)(predictor_fp)
         response_fp = getattr(self,input_handler)(response_fp)
         # create random output dir if needed
         if output_dir is None:
@@ -125,10 +118,11 @@ class RSupervisedLearner(CommandLineApplication):
         base_command = self._get_base_command()
         cd_command, base_command = base_command.split(';')
         cd_command += ';'
-
+        source_dir = self._get_R_script_dir()
+        
         # Build up the command, consisting of a BaseCommand followed by
         # input and output (file) specifications
-        args = ['--qiime_dir', get_qiime_project_dir(), 
+        args = ['--source_dir', source_dir,
                 '-i', predictor_fp, 
                 '-m', response_fp,
                 '-c', response_name,
