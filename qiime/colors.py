@@ -13,7 +13,7 @@ __status__ = "Development"
 """Code for coloring series based on prefs file.
 """
 from colorsys import rgb_to_hsv, hsv_to_rgb
-from parse import parse_mapping_file, group_by_field,parse_taxa_summary_table
+from parse import parse_mapping_file, group_by_field, parse_taxa_summary_table
 from numpy import array
 import os
 import re
