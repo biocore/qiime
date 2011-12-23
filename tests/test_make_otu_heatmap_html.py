@@ -3,7 +3,7 @@
 
 __author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2011, The QIIME Project" #consider project name
-__credits__ = ["Jesse Stombaugh"] #remember to add yourself
+__credits__ = ["Jesse Stombaugh", "Jose Carlos Clemente Litran"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Jesse Stombaugh"
@@ -15,20 +15,39 @@ from cogent.util.unit_test import TestCase, main
 from qiime.make_otu_heatmap_html import (make_html_doc,create_javascript_array,\
                                        filter_by_otu_hits,line_converter,\
                                        get_log_transform)
+from qiime.pycogent_backports.rich_otu_table import SparseOTUTable, to_ll_mat
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
 
     def setUp(self):
         """define some top-level data"""
-        self.col_header=['Sample1', 'Sample2']
-        self.row_header=['OTU1','OTU2']
-        self.otu_table=array([[0,0],[1,5]])
-        self.lineages=[['Bacteria'],['Archaea']]
 
-        self.data={}
-        self.data['otu_counts']=self.col_header,self.row_header,self.otu_table,\
-                                self.lineages
+        #self.col_header=['Sample1', 'Sample2']
+        #self.row_header=['OTU1','OTU2']
+        #self.otu_table=array([[0,0],[1,5]])
+        #self.lineages=[['Bacteria'],['Archaea']]
+
+        #self.data={}
+        #self.data['otu_counts']=self.col_header,self.row_header,self.otu_table,\
+        #                        self.lineages
+
+        otu_table_vals = {(0,0):0.0,
+                          (1,0):1.0, (1,1):5.0}
+
+        self.otu_table = SparseOTUTable(to_ll_mat(otu_table_vals),
+                                        ['Sample1', 'Sample2'],
+                                        ['OTU1', 'OTU2'],
+                                        [None, None],
+                                        [{"taxonomy": ["Bacteria"]},
+                                         {"taxonomy": ["Archaea"]}])
+
+        filt_otu_table_vals = {(0,0):1.0, (0,1):5.0}
+        self.filt_otu_table = SparseOTUTable(to_ll_mat(filt_otu_table_vals),
+                                             ['Sample1', 'Sample2'],
+                                             ['OTU2'],
+                                             [None, None],
+                                             [{"taxonomy": ["Archaea"]}])
 
         self.num_otu_hits=5
             
@@ -41,32 +60,63 @@ class TopLevelTests(TestCase):
     def test_create_javascript_array(self):
         """create_javascript_array: takes a numpy array and generates a
 javascript array"""
-        self.rows=[['#OTU ID', 'OTU2'],['Sample1',1],['Sample2',5],\
-                   ['Consensus Lineage','Archaea']]
-
-        obs=create_javascript_array(self.rows)
+        #self.rows=[['#OTU ID', 'OTU2'],['Sample1',1],['Sample2',5],\
+        #           ['Consensus Lineage','Archaea']]
+        
+        #obs=create_javascript_array(self.rows)
+        obs = create_javascript_array(self.filt_otu_table)
 
         self.assertEqual(obs,exp_js_array)        
             
     def test_filter_by_otu_hits(self):
         """filter_by_otu_hits: filters the table by otu hits per otu"""
-        exp=array([['#OTU ID', 'OTU2'],['Sample1',1],['Sample2',5],\
-             ['Consensus Lineage','Archaea;']])
+        exp = array([['#OTU ID', 'OTU2'],['Sample1',1],['Sample2',5],\
+                         ['Consensus Lineage','Archaea;']])
         
-        obs=filter_by_otu_hits(self.num_otu_hits,self.data)
- 
-        self.assertEqual(obs,exp)
+        #obs = filter_by_otu_hits(self.num_otu_hits,self.data)
+        obs = filter_by_otu_hits(self.num_otu_hits, self.otu_table)
+
+        #self.assertEqual(obs,exp)
+        #self.assertEqual( obs == self.filt_otu_table, True)
+
+        # see note in test_get_log_transform about this assert
+        self.assertEqual(obs._data.items(), self.filt_otu_table._data.items())
     
     def test_get_log_transform(self):
-        data = array([[0,1,2],[1000,0,0]])
-        logdata = get_log_transform(data,eps=None)
+        #data = array([[0,1,2],[1000,0,0]])
+        #logdata = get_log_transform(data,eps=None)
 
         # set zeros to 1/2s
-        exp = log(array([[.5,1,2],[1000,.5,.5]]))
+        #exp = log(array([[.5,1,2],[1000,.5,.5]]))
         # translate to 0
-        exp -= exp.min()
+        #exp -= exp.min()
 
-        self.assertFloatEqual(logdata, exp)
+        #self.assertFloatEqual(logdata, exp)
+
+        orig_data = {(0,1):1.0, (0,2):2,
+                     (1,0):1000.0}
+
+        orig_otu_table = SparseOTUTable(to_ll_mat(orig_data),
+                                        ['Sample1', 'Sample2', 'Sample3'],
+                                        ['OTU1', 'OTU2'],
+                                        [None, None, None],
+                                        [{"taxonomy": ["Bacteria"]},
+                                         {"taxonomy": ["Archaea"]}])
+
+        exp_data = {(0,1):0.69314718, (0,2):1.38629436,
+                     (1,0):7.60090246}
+        exp_otu_table = SparseOTUTable(to_ll_mat(exp_data),
+                                       ['Sample1', 'Sample2', 'Sample3'],
+                                       ['OTU1', 'OTU2'],
+                                       [None, None, None],
+                                       [{"taxonomy": ["Bacteria"]},
+                                        {"taxonomy": ["Archaea"]}])
+
+        log_otu_table = get_log_transform(orig_otu_table, eps = None)
+
+        # comparing directly log_otu_table against exp_otu_table doesn't work,
+        #  needs to be modified in the otu table object
+        self.assertFloatEqual ( log_otu_table._data.items(), exp_otu_table._data.items())
         
 exp_js_array='''\
     var OTU_table=new Array();\n\
