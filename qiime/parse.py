@@ -413,8 +413,8 @@ def process_otu_table_sample_ids(sample_id_fields):
     # column is included.
     return sample_ids, has_metadata
 
-def parse_otu_table(lines,count_map_f=int):
-    """parses otu table (sample ID x OTU ID map)
+def parse_classic_otu_table(lines,count_map_f=int):
+    """parses a classic otu table (sample ID x OTU ID map)
 
     Returns tuple: sample_ids, otu_ids, matrix of OTUs(rows) x samples(cols),
     and lineages from infile.
@@ -476,9 +476,11 @@ def parse_otu_table(lines,count_map_f=int):
                             otu_table.append(array(map(float, fields[1:])))
                         
     return sample_ids, otu_ids, array(otu_table), metadata
+parse_otu_table = parse_classic_otu_table
+
 
 def parse_taxa_summary_table(lines):
-    result = parse_otu_table(lines,count_map_f=float)
+    result = parse_classic_otu_table(lines,count_map_f=float)
     return result[0], result[1], result[2]
 
 def filter_otus_by_lineage(sample_ids, otu_ids, otu_table, lineages, \

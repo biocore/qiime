@@ -18,7 +18,7 @@ from cogent.util.misc import remove_files
 from qiime.util import get_tmp_filename
 from qiime.parse import (group_by_field, group_by_fields, 
     parse_distmat, parse_rarefaction_record, parse_rarefaction, parse_coords, 
-    parse_otu_table, make_envs_dict, fields_to_dict, parse_rarefaction_fname,
+    parse_classic_otu_table, make_envs_dict, fields_to_dict, parse_rarefaction_fname,
     parse_qiime_parameters, parse_qiime_config_files,
     parse_bootstrap_support, parse_sample_mapping, parse_distmat_to_dict,
     sample_mapping_to_otu_table, parse_taxonomy, parse_mapping_file, 
@@ -445,12 +445,12 @@ eigvals\t4.94\t1.79\t1.50
         self.assertEqual(obs, exp)
 
     
-    def test_parse_otu_table_legacy(self):
-        """parse_otu_table functions as expected with legacy OTU table
+    def test_parse_classic_otu_table_legacy(self):
+        """parse_classic_otu_table functions as expected with legacy OTU table
         """
         data = self.legacy_otu_table1
         data_f = (data.split('\n'))
-        obs = parse_otu_table(data_f)
+        obs = parse_classic_otu_table(data_f)
         exp = (['Fing','Key','NA'],
                ['0','1','2','3','4'],
                array([[19111,44536,42],[1216,3500,6],[1803,1184,2],
@@ -458,12 +458,12 @@ eigvals\t4.94\t1.79\t1.50
                self.expected_lineages1)
         self.assertEqual(obs, exp)
         
-    def test_parse_otu_table(self):
-        """parse_otu_table functions as expected with new-style OTU table
+    def test_parse_classic_otu_table(self):
+        """parse_classic_otu_table functions as expected with new-style OTU table
         """
         data = self.otu_table1
         data_f = (data.split('\n'))
-        obs = parse_otu_table(data_f)
+        obs = parse_classic_otu_table(data_f)
         exp = (['Fing','Key','NA'],
                ['0','1','2','3','4'],
                array([[19111,44536,42],[1216,3500,6],[1803,1184,2],
@@ -471,13 +471,13 @@ eigvals\t4.94\t1.79\t1.50
                self.expected_lineages1)
         self.assertEqual(obs, exp)
     
-    def test_parse_otu_table_floats_in_table(self):
-        """parse_otu_table functions using an OTU table containing floats
+    def test_parse_classic_otu_table_floats_in_table(self):
+        """parse_classic_otu_table functions using an OTU table containing floats
            but cast as int....this will automatically cast into floats"""
            
         data = self.otu_table1_floats
         data_f = (data.split('\n'))
-        obs = parse_otu_table(data_f)
+        obs = parse_classic_otu_table(data_f)
         exp = (['Fing','Key','NA'],
                ['0','1','2','3','4'],
                array([[19111.0,44536.0,42.0],[1216.0,3500.0,6.0],
@@ -486,8 +486,8 @@ eigvals\t4.94\t1.79\t1.50
                self.expected_lineages1)
         self.assertEqual(obs, exp)  
         
-    def test_parse_otu_table_float_counts(self):
-        """parse_otu_table should return correct result from small table"""
+    def test_parse_classic_otu_table_float_counts(self):
+        """parse_classic_otu_table should return correct result from small table"""
         data = """#Full OTU Counts
 #OTU ID	Fing	Key	NA	Consensus Lineage
 0	19111	44536	42	Bacteria; Actinobacteria; Actinobacteridae; Propionibacterineae; Propionibacterium
@@ -496,7 +496,7 @@ eigvals\t4.94\t1.79\t1.50
 3	1722	4903	17	Bacteria; Firmicutes; Alicyclobacillaceae; Bacilli; Staphylococcaceae
 4	589	2074	34	Bacteria; Cyanobacteria; Chloroplasts; vectors"""
         data_f = (data.split('\n'))
-        obs = parse_otu_table(data_f,count_map_f=float)
+        obs = parse_classic_otu_table(data_f,count_map_f=float)
         exp = (['Fing','Key','NA'],
                ['0','1','2','3','4'],
                array([[19111.,44536.,42.],[1216.,3500.,6.],[1803.,1184.,2.],\
@@ -508,8 +508,8 @@ eigvals\t4.94\t1.79\t1.50
                 ['Bacteria','Cyanobacteria','Chloroplasts','vectors']])
         self.assertEqual(obs, exp)
         
-    def test_parse_otu_table_file(self):
-        """parse_otu_table should return correct result on fileio format object"""
+    def test_parse_classic_otu_table_file(self):
+        """parse_classic_otu_table should return correct result on fileio format object"""
         data = """#Full OTU Counts
 #OTU ID	Fing	Key	NA	Consensus Lineage
 0	19111	44536	42	Bacteria; Actinobacteria; Actinobacteridae; Propionibacterineae; Propionibacterium
@@ -518,7 +518,7 @@ eigvals\t4.94\t1.79\t1.50
 3	1722	4903	17	Bacteria; Firmicutes; Alicyclobacillaceae; Bacilli; Staphylococcaceae
 4	589	2074	34	Bacteria; Cyanobacteria; Chloroplasts; vectors"""
         data_f = StringIO(data)
-        obs = parse_otu_table(data_f)
+        obs = parse_classic_otu_table(data_f)
         exp = (['Fing','Key','NA'],
                ['0','1','2','3','4'],
                array([[19111,44536,42],[1216,3500,6],[1803,1184,2],\
@@ -530,8 +530,8 @@ eigvals\t4.94\t1.79\t1.50
                 ['Bacteria','Cyanobacteria','Chloroplasts','vectors']])
         self.assertEqual(obs, exp)
         
-    def test_parse_otu_table_consensus_lineage(self):
-        """parse_otu_table should accept 'consensusLineage'"""
+    def test_parse_classic_otu_table_consensus_lineage(self):
+        """parse_classic_otu_table should accept 'consensusLineage'"""
         data = """#Full OTU Counts
 #OTU ID	Fing	Key	NA	consensusLineage
 0	19111	44536	42	Bacteria; Actinobacteria; Actinobacteridae; Propionibacterineae; Propionibacterium
@@ -540,7 +540,7 @@ eigvals\t4.94\t1.79\t1.50
 3	1722	4903	17	Bacteria; Firmicutes; Alicyclobacillaceae; Bacilli; Staphylococcaceae
 4	589	2074	34	Bacteria; Cyanobacteria; Chloroplasts; vectors"""
         data_f = StringIO(data)
-        obs = parse_otu_table(data_f)
+        obs = parse_classic_otu_table(data_f)
         exp = (['Fing','Key','NA'],
                ['0','1','2','3','4'],
                array([[19111,44536,42],[1216,3500,6],[1803,1184,2],\
