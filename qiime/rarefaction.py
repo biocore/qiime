@@ -114,15 +114,12 @@ class RarefactionMaker(FunctionWithParams):
     def __init__(self, otu_path, min, max, step, num_reps):
         """ init a rarefactionmaker
         
-        otu_path can be path or otu tuple, defined by util.py's getOtuTable
+        otu_path is path to .biom otu table
         we just ignore any rarefaction levels beyond any sample in the data
         """
         self.rare_depths = range(min,max+1, step)
         self.num_reps = num_reps
-        #self.sample_names, self.taxon_names, self.otu_table, self.lineages = \
-        #    self.getOtuTable(otu_path) # otus are rows in otu_table
         self.otu_table = parse_biom_table(open(otu_path,'U'))
-        #self.max_num_taxa = (self.otu_table.sum(1)).max()
         self.max_num_taxa = -1
         tmp = -1
         for val in self.otu_table.iterObservationData():

@@ -158,30 +158,6 @@ class FunctionWithParams(object):
         f.write(self.formatResult(result))
         f.close()
 
-    def getOtuTable(self, otu_source):
-        """Returns parsed OTU table from putative OTU source."""
-        
-        #if we have a string starting with #, assume it's an OTU file,
-        #otherwise assume it's a path
-        # if 4-tuple, just return it
-        if type(otu_source) == type((1,3,4,44)):
-            return otu_source
-        if hasattr(otu_source, 'startswith') and otu_source.startswith('#'):
-            try:
-                return parse_otu_table(StringIO(otu_source))
-            except (TypeError, ValueError), e:
-                raise OtuMissingError, \
-                    "Tried to read OTUs from string starting with # but got "+e
-        else:
-            try:
-                otu_file = open(otu_source, 'U')
-            except (TypeError, IOError):
-                raise OtuMissingError, \
-                    "Couldn't read OTU file at path: %s" % otu_source
-            result = parse_otu_table(otu_file)
-            otu_file.close()
-            return result
-
     def getTree(self, tree_source):
         """Returns parsed tree from putative tree source"""
         if isinstance(tree_source, PhyloNode):
