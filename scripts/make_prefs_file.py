@@ -86,7 +86,7 @@ def main():
         except (TypeError, IOError):
             raise ValueError, 'Summarized taxa file could not be parsed.'
     else:
-        otu_ids=None
+        taxa_ids=None
         
     out = build_prefs_string(mapping_headers_to_use, background_color, \
                                 monte_carlo_dist, headers, taxa_ids, \

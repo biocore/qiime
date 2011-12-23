@@ -26,7 +26,7 @@ from qiime.parse import (group_by_field, group_by_fields,
     parse_illumina_line, parse_qual_score, parse_qual_scores, QiimeParseError,
     parse_newick,parse_trflp,parse_taxa_summary_table, parse_prefs_file,
     parse_mapping_file_to_dict, mapping_file_to_dict, MinimalQualParser,
-    parse_denoiser_mapping)
+    parse_denoiser_mapping,parse_otu_map)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -839,7 +839,37 @@ Sample 5	25
                     'Read2':['Read2'],
                     'Read3':['Read3','Read6']}
         self.assertEqual(actual,expected)
-        
+    
+    def test_parse_otu_map(self):
+        """ parse_otu_map functions as expected 
+        """
+        otu_map_f = """otu1	s1_0	s2_1	s1_99
+2	s1_9	s5_2 comment	s3_99	1_3	s1_75
+otu3	s8_7	s2_5""".split('\n')
+        expected_map = {(0,0):2,(0,1):1,
+                        (1,0):2,(1,2):1,(1,3):1,(1,4):1,
+                        (2,5):1,(2,1):1}
+        expected_sids = ['s1' , 's2', 's5','s3','1','s8']
+        expected_oids = ['otu1','2','otu3']
+        actual = parse_otu_map(otu_map_f)
+        self.assertEqual(actual[0],expected_map)
+        self.assertEqual(actual[1],expected_sids)
+        self.assertEqual(actual[2],expected_oids)
+
+    def test_parse_otu_map_w_excludes(self):
+        """ parse_otu_map functions as expected when excluding otu ids
+        """
+        otu_map_f = """otu1	s1_0	s2_1	s1_99
+2	s1_9	s5_2 comment	s3_99	1_3	s1_75
+otu3	s8_7	s2_5""".split('\n')
+        excludes = {'otu1','2'}
+        expected_map = {(0,0):1,(0,1):1}
+        expected_sids = ['s8','s2']
+        expected_oids = ['otu3']
+        actual = parse_otu_map(otu_map_f,excludes)
+        self.assertEqual(actual[0],expected_map)
+        self.assertEqual(actual[1],expected_sids)
+        self.assertEqual(actual[2],expected_oids)
 
 illumina_read1 = """HWI-6X_9267:1:1:4:1699#ACCACCC/1:TACGGAGGGTGCGAGCGTTAATCGCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCGAAAAAAAAAAAAAAAAAAAAAAA:abbbbbbbbbb`_`bbbbbb`bb^aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaDaabbBBBBBBBBBBBBBBBBBBB
 HWI-6X_9267:1:1:4:390#ACCTCCC/1:GACAGGAGGAGCAAGTGTTATTCAAATTATGCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCGGGGGGGGGGGGGGGAAAAAAAAAAAAAAAAAAAAAAA:aaaaaaaaaa```aa\^_aa``aVaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaBaaaaa""".split('\n')

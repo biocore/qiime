@@ -70,13 +70,50 @@ def filter_fasta(input_seqs,output_seqs_f,seqs_to_keep,negate=False):
             output_seqs_f.write('>%s\n%s\n' % (seq_id, seq))
     output_seqs_f.close()
 
-def filter_mapping_file(mapping_f,sample_ids_to_keep):
-    mapping_data, header, comments = parse_mapping_file(mapping_f)
-    filtered_mapping_data = []
-    for entry in mapping_data:
-        if entry[0] in {}.fromkeys(sample_ids_to_keep):
-            filtered_mapping_data.append(entry)
-    return format_mapping_file(header,filtered_mapping_data)
+def filter_mapping_file(map_data, map_header, good_sample_ids, 
+               include_repeat_cols=False, column_rename_ids=None):
+    """Filters map according to several criteria.
+
+    - keep only sample ids in good_sample_ids
+    - drop cols that are different in every sample (except id)
+    - drop cols that are the same in every sample
+    """
+    # keeping samples
+    to_keep = []
+    to_keep.extend([i for i in map_data if i[0] in good_sample_ids])
+    
+    # keeping columns
+    headers = []
+    to_keep = zip(*to_keep)
+    headers.append(map_header[0])
+    result = [to_keep[0]]
+    
+    if column_rename_ids:
+        # reduce in 1 as we are not using the first colum (SampleID)
+        column_rename_ids = column_rename_ids-1
+        for i,l in enumerate(to_keep[1:-1]):
+            if i==column_rename_ids:
+                if len(set(l))!=len(result[0]):
+                     raise ValueError, "The column to rename the samples is not unique."
+                result.append(result[0])
+                result[0] = l
+                headers.append('SampleID_was_' + map_header[i+1])
+            elif include_repeat_cols or len(set(l))>1:
+                headers.append(map_header[i+1])
+                result.append(l)
+    else:
+        for i,l in enumerate(to_keep[1:-1]):
+            if include_repeat_cols or len(set(l))>1:
+                headers.append(map_header[i+1])
+                result.append(l)
+    headers.append(map_header[-1])
+    result.append(to_keep[-1])
+    
+    result = map(list,zip(*result))
+    
+    return headers, result
+
+
 
 def filter_samples_from_distance_matrix(dm,samples_to_discard,negate=False):
     """ Remove specified samples from distance matrix 
@@ -146,7 +183,7 @@ def filter_samples_from_otu_table(otu_table,ids_to_keep,min_count,max_count):
     filter_f = get_filter_function({}.fromkeys(ids_to_keep),
                                            min_count,
                                            max_count)
-    return otu_table.filterSamples(filter_f)
+    return otu_table.filterSamples(filter_f,negate)
 
 def filter_otus_from_otu_table(otu_table,ids_to_keep,min_count,max_count):
     filter_f = get_filter_function({}.fromkeys(ids_to_keep),

@@ -22,6 +22,8 @@ from numpy import array
 from cogent.util.misc import flatten, InverseDict
 from numpy import zeros
 from qiime.format import format_otu_table
+from qiime.parse import parse_otu_map
+from qiime.pycogent_backports.rich_otu_table import SparseOTUTable, DenseOTUTable, table_factory
 from sys import stderr
 
 
@@ -34,41 +36,33 @@ def seqids_from_otu_to_seqid(otu_to_seqid):
     """Returns set of all seq ids from libs"""
     return set(flatten(otu_to_seqid.values()))
 
-def make_otu_table(otu_to_seqid, otu_to_taxonomy=None, delim='_', legacy=True):
-    """Makes OTU table from otu_to_seqid and otu_to_taxonomy maps."""
-    all_seqs = seqids_from_otu_to_seqid(otu_to_seqid)
-    try:
-        all_otus = map(str, sorted(map(int, otu_to_seqid.keys())))
-    except ValueError:
-        all_otus = sorted(otu_to_seqid.keys())
-    all_libs = sorted(libs_from_seqids(all_seqs))
-    try:
-        table = zeros((len(all_otus), len(all_libs)), int)
-    except MemoryError, e:
-        stderr.write('memory error, check format of input otu file\n')
-        stderr.write('are there really %s otus and %s samples?\n' %
-            (len(all_otus), len(all_libs)))
-        stderr.write('traceback follows:\n')
-        raise(e)
-    for o in all_otus:
-        row_idx = all_otus.index(o)
-        row = table[row_idx]
-        seqids = otu_to_seqid[o]
-        for s in seqids:
-            lib = s.rsplit(delim, 1)[0]
-            row[all_libs.index(lib)] += 1
-
-    if otu_to_taxonomy:
-        taxonomy = [otu_to_taxonomy.get(o, 'None') for o in all_otus]
-    else:
-        taxonomy=None
-
-    return format_otu_table(all_libs, all_otus, table, taxonomy, legacy=legacy)
-
-def remove_otus(otu_to_seqid,otus_to_exclude):
-    """Remove otus_to_exclude from otu map """
-    otus_to_exclude_lookup = [e.split()[0] for e in otus_to_exclude]
-    for otu_id in otu_to_seqid.keys():
-        if otu_id in otus_to_exclude_lookup:
-            del otu_to_seqid[otu_id]
-    return otu_to_seqid
+def make_otu_table(otu_map_f,
+                   otu_to_taxonomy=None,
+                   delim='_',
+                   table_id=None,
+                   sample_metadata=None,
+                   constructor=DenseOTUTable):
+    
+    data, sample_ids, otu_ids = parse_otu_map(otu_map_f,delim)
+    
+    if otu_to_taxonomy != None:
+        otu_metadata = []
+        for o in otu_ids:
+            try:
+                otu_metadata.append({'taxonomy':otu_to_taxonomy[o].split(';')})
+            except KeyError:
+                otu_metadata.append({'taxonomy':["None"]})
+    else: 
+        otu_metadata = None
+    
+    if sample_metadata != None:
+        raise NotImplementedError,\
+         "Passing of sample metadata to make_otu_table is not currently supported."
+    
+    otu_table = table_factory(data, sample_ids, otu_ids, 
+                              sample_metadata=sample_metadata, 
+                              observation_metadata=otu_metadata, 
+                              table_id=table_id, 
+                              constructor=constructor,
+                              dtype=int)
+    return otu_table.getBiomFormatJsonString()

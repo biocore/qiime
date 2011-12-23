@@ -21,7 +21,8 @@ from qiime.parse import (parse_distmat, parse_mapping_file,
 from qiime.filter import (filter_fasta,filter_samples_from_otu_table,
                           filter_otus_from_otu_table,get_sample_ids,
                           filter_samples_from_distance_matrix,
-                          negate_tips_to_keep,filter_mapping_file)
+                          negate_tips_to_keep,
+                          filter_mapping_file)
 
 class fake_output_f():
     
@@ -71,7 +72,12 @@ class FilterTests(TestCase):
         expected = []
         self.assertEqualItems(negate_tips_to_keep(tips_to_keep,t),expected)
 
-
+    def test_filter_mapping_file(self):
+        """filter_mapping_file should filter map file according to sample ids"""
+        self.assertEqual(filter_mapping_file(self.map_data, self.map_headers,\
+         ['a','b','c','d','e','f']), (self.map_headers, self.map_data))
+        self.assertEqual(filter_mapping_file(self.map_data, self.map_headers, ['a']),
+            (['SampleID','Description'],['a\tx'.split('\t')]))
         
     def test_filter_fasta(self):
         """filter_fasta functions as expected """
@@ -236,7 +242,7 @@ class FilterTests(TestCase):
         expected_sample_ids = set(['PC.354','PC.635','PC.593'])
         filtered_otu_table= filter_samples_from_otu_table(otu_table,expected_sample_ids,0,inf)
         self.assertEqual(set(filtered_otu_table.SampleIds),expected_sample_ids)
-    
+
     def test_filter_samples_from_otu_table_counts_sparse(self):
         """filter_samples_from_otu_table functions with count-based filtering (sparse OTU table)"""
         otu_table = parse_biom_table_str(sparse_otu_table1)
@@ -267,12 +273,6 @@ class FilterTests(TestCase):
         expected_sample_ids = set(['PC.354','PC.635','PC.593'])
         filtered_otu_table= filter_samples_from_otu_table(otu_table,expected_sample_ids,0,inf)
         self.assertEqual(set(filtered_otu_table.SampleIds),expected_sample_ids)
-    
-    def test_filter_mapping_file(self):
-        """filter_mapping_file functions as expected"""
-        actual_filtered_mapping_f = filter_mapping_file(tutorial_mapping_f.split('\n'),
-                                                        ['PC.354','PC.636'])
-        self.assertEqual(actual_filtered_mapping_f,expected_mapping_f1)
 
     def test_get_sample_ids(self):
         """get_sample_ids should return sample ids matching criteria."""

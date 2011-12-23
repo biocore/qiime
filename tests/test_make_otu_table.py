@@ -13,7 +13,7 @@ __status__ = "Development"
 import json
 from cogent.util.unit_test import TestCase, main
 from qiime.make_otu_table import (libs_from_seqids,
-        seqids_from_otu_to_seqid, make_otu_table, remove_otus)
+        seqids_from_otu_to_seqid, make_otu_table)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -42,64 +42,24 @@ class TopLevelTests(TestCase):
 
     def test_make_otu_table_no_taxonomy(self):
         """make_otu_table should work without tax (new-style OTU table)"""
-        otu_to_seqid ={ '0':['ABC_0','DEF_1'],
-                        '1':['ABC_1'],
-                        'x':['GHI_2', 'GHI_3','GHI_77'],
-                        'z':['DEF_3','XYZ_1']
-                        }
-        obs = make_otu_table(otu_to_seqid, legacy=False)
-        exp = """{"rows": [{"id": "0", "metadata": null}, {"id": "1", "metadata": null}, {"id": "x", "metadata": null}, {"id": "z", "metadata": null}], "format": "Biological Observation Matrix v0.9", "data": [[1, 1, 0, 0], [1, 0, 0, 0], [0, 0, 3, 0], [0, 1, 0, 1]], "columns": [{"id": "ABC", "metadata": null}, {"id": "DEF", "metadata": null}, {"id": "GHI", "metadata": null}, {"id": "XYZ", "metadata": null}], "generated_by": "QIIME 1.4.0-dev, svn revision 2532", "matrix_type": "dense", "shape": [4, 4], "format_url": "http://www.qiime.org/svn_documentation/documentation/biom_format.html", "date": "2011-12-21T00:49:15.978315", "type": "OTU table", "id": null, "matrix_element_type": "int"}"""
+        otu_map_lines = """0	ABC_0	DEF_1
+1	ABC_1
+x	GHI_2	GHI_3	GHI_77
+z	DEF_3	XYZ_1""".split('\n')
+        obs = make_otu_table(otu_map_lines)
+        exp = """{"rows": [{"id": "0", "metadata": null}, {"id": "1", "metadata": null}, {"id": "x", "metadata": null}, {"id": "z", "metadata": null}], "format": "Biological Observation Matrix v0.9", "data": [[1, 1, 0, 0], [1, 0, 0, 0], [0, 0, 3, 0], [0, 1, 0, 1]], "columns": [{"id": "ABC", "metadata": null}, {"id": "DEF", "metadata": null}, {"id": "GHI", "metadata": null}, {"id": "XYZ", "metadata": null}], "generated_by": "QIIME 1.4.0-dev, svn revision 2532", "matrix_type": "dense", "shape": [4, 4], "format_url": "http://www.qiime.org/svn_documentation/documentation/biom_format.html", "date": "2011-12-21T00:49:15.978315", "type": "OTU table", "id": null, "matrix_element_type": "float"}"""
         self.assertEqualOtuTable(obs, exp)
 
     def test_make_otu_table_taxonomy(self):
-        """make_otu_table should work wit tax (new-style OTU table)"""
-        otu_to_seqid ={ '0':['ABC_0','DEF_1'],
-                        '1':['ABC_1'],
-                        'x':['GHI_2', 'GHI_3','GHI_77'],
-                        'z':['DEF_3','XYZ_1']
-                        }
+        """make_otu_table should work with taxonomy"""
+        otu_map_lines = """0	ABC_0	DEF_1
+1	ABC_1
+x	GHI_2	GHI_3	GHI_77
+z	DEF_3	XYZ_1""".split('\n')
         taxonomy = {'0':'Bacteria;Firmicutes', 'x':'Bacteria;Bacteroidetes'}
-        obs = make_otu_table(otu_to_seqid, taxonomy, legacy=False)
-        exp = """{"rows": [{"id": "0", "metadata": {"taxonomy": ["Bacteria", "Firmicutes"]}}, {"id": "1", "metadata": {"taxonomy": ["None"]}}, {"id": "x", "metadata": {"taxonomy": ["Bacteria", "Bacteroidetes"]}}, {"id": "z", "metadata": {"taxonomy": ["None"]}}], "format": "Biological Observation Matrix v0.9", "data": [[1, 1, 0, 0], [1, 0, 0, 0], [0, 0, 3, 0], [0, 1, 0, 1]], "columns": [{"id": "ABC", "metadata": null}, {"id": "DEF", "metadata": null}, {"id": "GHI", "metadata": null}, {"id": "XYZ", "metadata": null}], "generated_by": "QIIME 1.4.0-dev, svn revision 2532", "matrix_type": "dense", "shape": [4, 4], "format_url": "http://www.qiime.org/svn_documentation/documentation/biom_format.html", "date": "2011-12-21T00:19:30.961477", "type": "OTU table", "id": null, "matrix_element_type": "int"}"""
+        obs = make_otu_table(otu_map_lines, taxonomy)
+        exp = """{"rows": [{"id": "0", "metadata": {"taxonomy": ["Bacteria", "Firmicutes"]}}, {"id": "1", "metadata": {"taxonomy": ["None"]}}, {"id": "x", "metadata": {"taxonomy": ["Bacteria", "Bacteroidetes"]}}, {"id": "z", "metadata": {"taxonomy": ["None"]}}], "format": "Biological Observation Matrix v0.9", "data": [[1.0, 1.0, 0.0, 0.0], [1.0, 0.0, 0.0, 0.0], [0.0, 0.0, 3.0, 0.0], [0.0, 1.0, 0.0, 1.0]], "columns": [{"id": "ABC", "metadata": null}, {"id": "DEF", "metadata": null}, {"id": "GHI", "metadata": null}, {"id": "XYZ", "metadata": null}], "generated_by": "QIIME 1.4.0-dev, svn revision 2532", "matrix_type": "dense", "shape": [4, 4], "format_url": "http://www.qiime.org/svn_documentation/documentation/biom_format.html", "date": "2011-12-21T00:19:30.961477", "type": "OTU table", "id": null, "matrix_element_type": "float"}"""
         self.assertEqualOtuTable(obs, exp)
-        
-    def test_remove_otus(self):
-        """remove_otus functions as expected """
-        otu_to_seqid = {'0':['ABC_0','DEF_1'],
-                        '1':['ABC_1'],
-                        'x':['GHI_2', 'GHI_3','GHI_77'],
-                        'z':['DEF_3','XYZ_1']
-                        }
-        otus_to_exclude = ['0 some comment','42 not a real otu id','z']
-        expected = {'1':['ABC_1'],
-                    'x':['GHI_2', 'GHI_3','GHI_77']}
-        actual = remove_otus(otu_to_seqid,otus_to_exclude)
-        self.assertEqual(actual,expected)
-        
-        # functions with empty otus_to_exclude
-        otu_to_seqid = {'0':['ABC_0','DEF_1'],
-                        '1':['ABC_1'],
-                        'x':['GHI_2', 'GHI_3','GHI_77'],
-                        'z':['DEF_3','XYZ_1']
-                        }
-        expected = {'0':['ABC_0','DEF_1'],
-                        '1':['ABC_1'],
-                        'x':['GHI_2', 'GHI_3','GHI_77'],
-                        'z':['DEF_3','XYZ_1']
-                        }
-        actual = remove_otus(otu_to_seqid,[])
-        self.assertEqual(actual,expected)
-        
-        # functions with complete otus_to_exclude
-        otu_to_seqid = {'0':['ABC_0','DEF_1'],
-                        '1':['ABC_1'],
-                        'x':['GHI_2', 'GHI_3','GHI_77'],
-                        'z':['DEF_3','XYZ_1']
-                        }
-        actual = remove_otus(otu_to_seqid,list('01xz'))
-        self.assertEqual(actual,{})
-        
-        
 
 
 if __name__ =='__main__':

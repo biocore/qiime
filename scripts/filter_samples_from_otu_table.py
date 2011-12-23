@@ -19,9 +19,11 @@ from itertools import izip
 from numpy import inf, isinf
 from qiime.pycogent_backports.parse_biom import parse_biom_table
 from qiime.util import parse_command_line_parameters, make_option
+from qiime.parse import parse_mapping_file
 from qiime.filter import (sample_ids_from_metadata_description, 
                           filter_samples_from_otu_table,
                           filter_mapping_file)
+from qiime.format import format_mapping_file
 
 script_info = {}
 script_info['brief_description'] = ""
@@ -101,9 +103,10 @@ def main():
     
     # filter mapping file if requested
     if output_mapping_fp:
-        filtered_mapping_str = \
-         filter_mapping_file(open(mapping_fp,'U'),filtered_otu_table.SampleIds)
-        open(output_mapping_fp,'w').write(filtered_mapping_str)
+        mapping_data, mapping_headers, _ = parse_mapping_file(open(mapping_fp,'U'))
+        mapping_headers, mapping_data = \
+         filter_mapping_file(mapping_data, mapping_headers, filtered_otu_table.SampleIds)
+        open(output_mapping_fp,'w').write(format_mapping_file(mapping_headers,mapping_data))
         
 
 

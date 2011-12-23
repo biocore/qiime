@@ -13,9 +13,12 @@ __status__ = "Development"
  
 
 from os.path import split, splitext, join
+from numpy import inf
 from qiime.util import parse_command_line_parameters, make_option, create_dir
 from qiime.parse import parse_mapping_file
-from qiime.filter_by_metadata import filter_otus_and_map
+from qiime.filter import filter_mapping_file, sample_ids_from_metadata_description
+from qiime.format import format_mapping_file
+from qiime.pycogent_backports.parse_biom import parse_biom_table
 
 script_info = {}
 script_info['brief_description'] = "Split in a single OTU table into one OTU table per value in a specified field of the mapping file."
@@ -71,17 +74,30 @@ def main():
     mapping_values = set([e[field_index] for e in mapping_data])
     
     create_dir(output_dir)
-        
+    
+    mapping_data, mapping_headers, _ = parse_mapping_file(open(mapping_fp,'U'))
+    otu_table = parse_biom_table(open(otu_table_fp,'U'))
+    
     for v in mapping_values:
         v_fp_str = v.replace(' ','_')
-        otu_table_output_fp = join(output_dir,'%s_%s.txt' % (otu_table_base_name, v_fp_str))
+        otu_table_output_fp = join(output_dir,'%s_%s.biom' % (otu_table_base_name, v_fp_str))
         mapping_output_fp = join(output_dir,'mapping_%s.txt' % v_fp_str)
-        filter_otus_and_map(open(mapping_fp,'U'), 
-                            open(otu_table_fp,'U'), 
-                            open(mapping_output_fp,'w'), 
-                            open(otu_table_output_fp,'w'),
-                            valid_states_str="%s:%s" % (mapping_field,v),
-                            num_seqs_per_otu=1, include_repeat_cols=include_repeat_cols, column_rename_ids=column_rename_ids)
+        sample_ids_to_keep = sample_ids_from_metadata_description(
+            open(mapping_fp,'U'),valid_states_str="%s:%s" % (mapping_field,v))
+        
+        # parse mapping file each time though the loop as filtering operates on values
+        mapping_data, mapping_headers, _ = parse_mapping_file(open(mapping_fp,'U'))
+        mapping_headers, mapping_data = filter_mapping_file(
+                                         mapping_data, 
+                                         mapping_headers,
+                                         sample_ids_to_keep,
+                                         include_repeat_cols=include_repeat_cols, 
+                                         column_rename_ids=column_rename_ids)
+        open(mapping_output_fp,'w').write(format_mapping_file(mapping_headers, mapping_data))
+        filtered_otu_table = otu_table.filterSamples(
+                              lambda values,id_,metadata: id_ in sample_ids_to_keep,
+                              invert=True)
+        open(otu_table_output_fp,'w').write(filtered_otu_table.getBiomFormatJsonString())
     
 
 

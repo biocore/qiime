@@ -833,3 +833,35 @@ def parse_denoiser_mapping(denoiser_map):
         else:
             result[denoised_id] = original_ids
     return result
+    
+def parse_otu_map(otu_map_f,otu_ids_to_exclude=None,delim='_'):
+    
+    if otu_ids_to_exclude == None:
+        otu_ids_to_exclude = {}
+    
+    result = defaultdict(int)
+    sample_ids = []
+    sample_id_idx = {}
+    otu_ids = []
+    otu_count = 0
+    sample_count = 0
+    for line in otu_map_f:
+        fields = line.strip().split('\t')
+        otu_id = fields[0]
+        if otu_id in otu_ids_to_exclude:
+            continue
+        for seq_id in fields[1:]:
+            sample_id = seq_id.split(delim)[0]
+            try:
+                sample_index = sample_id_idx[sample_id]
+            except KeyError:
+                sample_index = sample_count
+                sample_id_idx[sample_id] = sample_index
+                sample_count += 1
+                sample_ids.append(sample_id)
+            # {(row,col):val}
+            result[(otu_count,sample_index)] += 1
+        otu_count += 1
+        otu_ids.append(otu_id)
+    return result, sample_ids, otu_ids
+    

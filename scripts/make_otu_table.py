@@ -17,8 +17,8 @@ from qiime.filter import (get_seq_ids_from_seq_id_file,
                           get_seq_ids_from_fasta_file)
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.util import make_option
-from qiime.parse import fields_to_dict, parse_taxonomy
-from qiime.make_otu_table import make_otu_table, remove_otus
+from qiime.parse import parse_taxonomy
+from qiime.make_otu_table import make_otu_table
 
 options_lookup = get_options_lookup()
 
@@ -31,13 +31,13 @@ script_info['script_usage'].append(("","""Make an OTU table from an OTU map (i.e
 script_info['script_usage'].append(("","""Make an OTU table, excluding the sequences listed in chimeric_seqs.txt""","%prog -i otu_map.txt -o otu_table.txt -e chimeric_seqs.txt"))
 script_info['output_description']="""The output of make_otu_table.py is a tab-delimited text file, where the columns correspond to Samples and rows correspond to OTUs and the number of times a sample appears in a particular OTU."""
 script_info['required_options']=[\
- options_lookup['otu_map_as_primary_input']
+ options_lookup['otu_map_as_primary_input'],
+  options_lookup['output_biom_fp'],
 ]
 script_info['optional_options']=[ \
   make_option('-t', '--taxonomy', dest='taxonomy_fname', \
               help='Path to taxonomy assignment, containing the assignments of \ taxons to sequences (i.e., resulting txt file from assign_taxonomy.py) \
  [default: %default]', default=None),
-  options_lookup['output_biom_fp'],
   make_option('-e','--exclude_otus_fp',\
    help=("path to a file listing OTU identifiers that should not be included in the "
          "OTU table (e.g., the output of identify_chimeric_seqs.py) or a fasta "
@@ -52,18 +52,15 @@ def main():
 
     exclude_otus_fp = opts.exclude_otus_fp
     
-    if opts.output_biom_fp:
-        outfile = open(opts.output_biom_fp, 'w')
-    else:
-        outfile = stdout
+    outfile = open(opts.output_biom_fp, 'w')
+    
     if not opts.taxonomy_fname:
         otu_to_taxonomy = None
     else:
        infile = open(opts.taxonomy_fname,'U')
        otu_to_taxonomy = parse_taxonomy(infile)
-
-    otu_to_seqid = fields_to_dict(open(opts.otu_map_fp, 'U'))
     
+    ids_to_exclude = []
     if exclude_otus_fp:
         if splitext(exclude_otus_fp)[1] in ('.fasta','.fna'):
             ids_to_exclude = \
@@ -71,9 +68,10 @@ def main():
         else:
             ids_to_exclude = \
              get_seq_ids_from_seq_id_file(open(exclude_otus_fp,'U'))
-        otu_to_seqid = remove_otus(otu_to_seqid,ids_to_exclude)
-
-    outfile.write(make_otu_table(otu_to_seqid, otu_to_taxonomy))
+    biom_otu_table = make_otu_table(open(opts.otu_map_fp, 'U'), 
+                               otu_to_taxonomy,
+                               ids_to_exclude)
+    outfile.write(biom_otu_table)
     
 
 if __name__ == "__main__":

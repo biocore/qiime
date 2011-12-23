@@ -27,7 +27,7 @@ Requirements: It is also very important that your OTUs are consistent across acr
 script_info['script_usage'] = [\
  ("",
   "Merge two OTU tables into a single OTU table",
-  "%prog -i otu_table1.txt,otu_table2.txt -o merged_otu_table.txt")]
+  "%prog -i otu_table1.biom,otu_table2.biom -o merged_otu_table.biom")]
 script_info['output_description']= ""
 script_info['required_options'] = [\
  # Example required option
