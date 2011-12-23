@@ -37,7 +37,7 @@ script_info['optional_options']=[ \
   make_option('-t', '--taxonomy', dest='taxonomy_fname', \
               help='Path to taxonomy assignment, containing the assignments of \ taxons to sequences (i.e., resulting txt file from assign_taxonomy.py) \
  [default: %default]', default=None),
-  options_lookup['output_fp'],
+  options_lookup['output_biom_fp'],
   make_option('-e','--exclude_otus_fp',\
    help=("path to a file listing OTU identifiers that should not be included in the "
          "OTU table (e.g., the output of identify_chimeric_seqs.py) or a fasta "
@@ -52,8 +52,8 @@ def main():
 
     exclude_otus_fp = opts.exclude_otus_fp
     
-    if opts.output_fp:
-        outfile = open(opts.output_fp, 'w')
+    if opts.output_biom_fp:
+        outfile = open(opts.output_biom_fp, 'w')
     else:
         outfile = stdout
     if not opts.taxonomy_fname:

@@ -569,6 +569,9 @@ def get_options_lookup():
     result['output_fp'] =\
      make_option('-o','--output_fp',type="new_filepath",
      help='the output filepath')
+    result['output_biom_fp'] =\
+     make_option('-o','--output_biom_fp',type="new_filepath",
+     help='the output otu table in biom format (recommended extension: .biom)')
     result['mapping_fp'] =\
      make_option('-m','--mapping_fp',type="existing_filepath",
      help='the mapping filepath')
