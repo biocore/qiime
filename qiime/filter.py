@@ -14,7 +14,7 @@ __status__ = "Development"
 from random import shuffle
 from numpy import array, inf
 from cogent.parse.fasta import MinimalFastaParser
-from qiime.parse import parse_otu_table, parse_distmat, parse_mapping_file, parse_metadata_state_descriptions
+from qiime.parse import parse_distmat, parse_mapping_file, parse_metadata_state_descriptions
 from qiime.format import format_otu_table, format_distance_matrix, format_mapping_file
 
 def sample_ids_from_metadata_description(mapping_f,valid_states_str):
