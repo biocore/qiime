@@ -183,7 +183,7 @@ def filter_samples_from_otu_table(otu_table,ids_to_keep,min_count,max_count):
     filter_f = get_filter_function({}.fromkeys(ids_to_keep),
                                            min_count,
                                            max_count)
-    return otu_table.filterSamples(filter_f,negate)
+    return otu_table.filterSamples(filter_f)
 
 def filter_otus_from_otu_table(otu_table,ids_to_keep,min_count,max_count):
     filter_f = get_filter_function({}.fromkeys(ids_to_keep),
