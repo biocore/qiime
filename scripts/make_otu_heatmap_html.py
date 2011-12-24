@@ -93,7 +93,7 @@ def main():
 
     #Open and get coord data
     #data['otu_counts'] = list(get_otu_counts(opts.otu_table_fp, data))
-    otu_table = get_otu_counts(opts.otu_table_fp, data)
+    otu_table = get_otu_counts(opts.otu_table_fp)
     # determine whether fractional values are present in OTU table
 
     if opts.log_transform:
