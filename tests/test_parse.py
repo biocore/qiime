@@ -862,7 +862,7 @@ otu3	s8_7	s2_5""".split('\n')
         otu_map_f = """otu1	s1_0	s2_1	s1_99
 2	s1_9	s5_2 comment	s3_99	1_3	s1_75
 otu3	s8_7	s2_5""".split('\n')
-        excludes = {'otu1','2'}
+        excludes = ['otu1','2']
         expected_map = {(0,0):1,(0,1):1}
         expected_sids = ['s8','s2']
         expected_oids = ['otu3']
