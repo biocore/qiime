@@ -33,14 +33,23 @@ from qiime.denoiser.utils import check_flowgram_ali_exe
 
 from cogent import __version__ as pycogent_lib_version
 from numpy import __version__ as numpy_lib_version
+
+try:
+    from pysparse import __version__ as pysparse_lib_version
+except ImportError:
+    pysparse_lib_version = "ERROR: Not installed - this is required!"
+
 try:
     from matplotlib import __version__ as matplotlib_lib_version
 except ImportError:
     matplotlib_lib_version = "Not installed."
+    
 try:
     from pynast import __version__ as pynast_lib_version
 except ImportError:
     pynast_lib_version = "Not installed."
+
+
 
 script_info = {}
 script_info['brief_description']= """Print out the qiime config settings."""
@@ -616,6 +625,7 @@ def main():
      ("PyCogent version", pycogent_lib_version),
      ("NumPy version", numpy_lib_version),
      ("matplotlib version", matplotlib_lib_version),
+     ("PySparse version", pysparse_lib_version),
      ("QIIME library version", get_qiime_library_version()),
      ("QIIME script version", __version__),
      ("PyNAST version (if installed)", pynast_lib_version),
