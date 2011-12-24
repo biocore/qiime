@@ -289,7 +289,7 @@ def get_log_transform(otu_table, eps=None):
 
 #def get_otu_counts(fpath, data):
 # data is being passed but not used
-def get_otu_table(fpath):
+def get_otu_counts(fpath):
     """Reads the OTU table file into memory"""
 
     try:
