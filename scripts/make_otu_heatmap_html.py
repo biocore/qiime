@@ -16,7 +16,7 @@ __status__ = "Development"
 
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.util import make_option
-from qiime.make_otu_heatmap_html import generate_heatmap_plots,get_otu_table,\
+from qiime.make_otu_heatmap_html import generate_heatmap_plots,get_otu_counts,\
     get_log_transform
 import os
 import shutil
@@ -93,7 +93,7 @@ def main():
 
     #Open and get coord data
     #data['otu_counts'] = list(get_otu_counts(opts.otu_table_fp, data))
-    otu_table = get_otu_table(opts.otu_table_fp, data)
+    otu_table = get_otu_counts(opts.otu_table_fp, data)
     # determine whether fractional values are present in OTU table
 
     if opts.log_transform:
