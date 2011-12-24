@@ -14,7 +14,7 @@ __status__ = "Development"
 
 
 from numpy import array,concatenate,asarray,transpose,log,invert,asarray,\
-    float32,float64, unique
+    float32,float64, unique, fliplr
 from cogent.parse.table import SeparatorFormatParser
 from optparse import OptionParser
 from qiime.util import MissingFileError
@@ -27,24 +27,38 @@ from qiime.beta_diversity import get_nonphylogenetic_metric
 from cogent.core.tree import PhyloNode
 from cogent.cluster.UPGMA import UPGMA_cluster
 from qiime.parse import parse_newick, PhyloNode
+from qiime.filter import filter_samples_from_otu_table
 
-
-def get_overlapping_samples(otu_sample_ids, map_rows, otu_table):
+#def get_overlapping_samples(otu_sample_ids, map_rows, otu_table):
+def get_overlapping_samples(map_rows, otu_table):
     """Extracts only samples contained in otu table and mapping file.
     
-       Returns: new_sample_ids, new_map_rows, new_otu_table
+       Returns: new_map_rows, new_otu_table
     """
     map_sample_ids = zip(*map_rows)[0]
-    new_otu_cols = []
+    shared_ids = set(map_sample_ids) & set(otu_table.SampleIds)
+
+    otu_table = filter_samples_from_otu_table(otu_table, shared_ids, 0, inf)
+
     new_map = []
-    new_sample_ids = []
-    for i, _id in enumerate(otu_sample_ids):
-        if _id in map_sample_ids:
-            ix = map_sample_ids.index(_id)
-            new_otu_cols.append(otu_table[:,i])
-            new_sample_ids.append(_id)
+    for sam_id in map_sample_ids:
+        if sam_id in shared_ids:
+            ix = map_sample_ids.index(id)
             new_map.append(map_rows[ix])
-    return array(new_sample_ids), new_map, array(new_otu_cols).T
+    
+    return new_map, otu_table
+
+    #map_sample_ids = zip(*map_rows)[0]
+    #new_otu_cols = []
+    #new_map = []
+    #new_sample_ids = []
+    #for i, _id in enumerate(otu_sample_ids):
+    #    if _id in map_sample_ids:
+    #        ix = map_sample_ids.index(_id)
+    #        new_otu_cols.append(otu_table[:,i])
+    #        new_sample_ids.append(_id)
+    #        new_map.append(map_rows[ix])
+    #return array(new_sample_ids), new_map, array(new_otu_cols).T
 
 def extract_metadata_column(sample_ids, metadata, category):
     """Extracts values from the given metadata column"""
@@ -59,14 +73,19 @@ def extract_metadata_column(sample_ids, metadata, category):
             category_labels.append(entry)
     return category_labels
 
-def get_order_from_categories(otus, category_labels):
+#def get_order_from_categories(otus, category_labels):
+def get_order_from_categories(otu_table, category_labels):
     """Groups samples by category values; clusters within each group"""
     category_labels = array(category_labels)
     sample_order = []
 
     for label in unique(category_labels):
         label_ix = category_labels==label
-        label_ix_ix = get_clusters(otus[:,label_ix], axis='column')
+        selected = [s for (i,s) in zip(label_ix, otu_table.SampleIds) if i]
+        sub_otu_table = filter_samples_from_otu_table(otu_table, selected, 0, inf)
+        data = asarray([val for val in sub_otu_table.iterObservationData()])
+        label_ix_ix = get_clusters(data, axis='column')
+
         sample_order += list(nonzero(label_ix)[0][array(label_ix_ix)])
     return array(sample_order)
 
@@ -85,14 +104,16 @@ def make_otu_labels(otu_ids, lineages, n_levels=1):
         
        Lineage substring includes the last n_levels lineage levels 
     """
-    if len(lineages[0]) > 0:
+
+    #if len(lineages[0]) > 0:
+    if 'taxonomy' in lineages[0] and len(lineages[0]['taxonomy']):
         otu_labels = []
         for i, lineage in enumerate(lineages):
-            if n_levels > len(lineage):
-                otu_label = '%s (%s)' %(';'.join(lineage),otu_ids[i])
+            if n_levels > len(lineage['taxonomy']):
+                otu_label = '%s (%s)' %(';'.join(lineage['taxonomy']),otu_ids[i])
             else:
                 otu_label = '%s (%s)' \
-                    %(';'.join(lineage[-n_levels:]), otu_ids[i])
+                    %(';'.join(lineage['taxonomy'][-n_levels:]), otu_ids[i])
             otu_labels.append(otu_label)
         otu_labels = [lab.replace('"','') for lab in otu_labels]
     else:
@@ -110,22 +131,51 @@ def names_to_indices(names, ordered_names):
     return array(indices)
     
 
-def get_log_transform(data, eps=None):
+def get_log_transform(otu_table, eps=None):
     """Returns log10 of the data, setting zero values to eps.
     
        If eps is None, eps is set to 1/2 the smallest nonzero value.
     """
+    ## NOTE: compared with qiime.make_otu_heatmap_html, this function does *not*
+    ##  do a data = data - (data).min() before returning value. Is this correct?
+    ##  Emailed Dan and Jesse on Dec 23, 2011 to confirm.
+
+    # explicit conversion to float: transform
+    f = lambda x : float64(x)
+    float_otu_table = otu_table.transformSamples(f)
+
+    if eps is None:
+        # get the minimum among nonzero entries and divide by two
+        eps = inf
+        for (obs, sam) in float_otu_table.nonzero():
+            eps = minimum(eps, float_otu_table.getValueByIds(obs,sam))
+        if eps == inf:
+            raise ValueError('All values in the OTU table are zero!')
+        else:
+            eps = eps / 2
+
+    # set zero entries to eps/2 using a transform
+    g = lambda x : x if (x != 0) else eps
+    g_m = lambda y : asarray(map(g,y))
+
+    eps_otu_table = float_otu_table.transformSamples(g_m)
+
+    # take log of all values
+    h = lambda x : log10(x)
+    log_otu_table = eps_otu_table.transformSamples(h)
+
+    return log_otu_table
+
     # ensure data are floats
-    data = asarray(data,dtype=float64)
+    #data = asarray(data,dtype=float64)
 
     # set all zero entries to a small value
-    if eps is None:
-        eps = (data[data>0]).min()/2
-    data[data==0] = eps
-    data = log10(data)
-    return data
+    #if eps is None:
+    #    eps = (data[data>0]).min()/2
+    #data[data==0] = eps
+    #data = log10(data)
+    #return data
     
-
 def get_clusters(x_original, axis=['row','column'][0]):
     """Performs UPGMA clustering using euclidean distances"""
     x = x_original.copy()
@@ -157,7 +207,8 @@ def get_fontsize(numrows):
     return sizes[i]
 
 
-def plot_heatmap(x, row_labels, col_labels, filename='heatmap.pdf',
+#def plot_heatmap(x, row_labels, col_labels, filename='heatmap.pdf',
+def plot_heatmap(otu_table, row_labels, col_labels, filename='heatmap.pdf',
         width=5, height=5, textborder=.25):
     """Create a heatmap plot, save as a pdf.
     
@@ -166,8 +217,11 @@ def plot_heatmap(x, row_labels, col_labels, filename='heatmap.pdf',
         'textborder' is the fraction of the figure allocated for the
         tick labels on the x and y axes
     """
-    nrow = x.shape[0]
-    ncol = x.shape[1]
+    nrow = len(otu_table.ObservationIds)
+    ncol = len(otu_table.SampleIds)
+
+    #nrow = x.shape[0]
+    #ncol = x.shape[1]
 
     # determine appropriate font sizes for tick labels
     row_fontsize = get_fontsize(nrow)
@@ -176,7 +230,11 @@ def plot_heatmap(x, row_labels, col_labels, filename='heatmap.pdf',
     # create figure and plot heatmap
     fig = figure(figsize=(width, height))
     my_cmap=get_cmap('gist_gray')
-    imshow(x[:,::-1],interpolation='nearest', aspect='auto', cmap=my_cmap)
+    # numpy magic: [:,::-1] actually means fliplr()
+    #imshow(x[:,::-1],interpolation='nearest', aspect='auto', cmap=my_cmap)
+
+    data = [val for val in otu_table.iterObservationData()]
+    imshow(fliplr(data),interpolation='nearest', aspect='auto', cmap=my_cmap)
     ax = fig.axes[0]
 
     # imshow is offset by .5 for some reason
