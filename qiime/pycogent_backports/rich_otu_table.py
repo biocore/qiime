@@ -761,13 +761,13 @@ class Table(object):
             sample_ids.append(id_)
 
             # if we have sample metadata, grab it
-            if self.SampleMetadata is None:
+            if self.SampleMetadata is None or not self.sampleExists(id_):
                 self_md = None
             else:
                 self_md = self.SampleMetadata[self_samp_idx[id_]]
             
             # if we have sample metadata, grab it
-            if other.SampleMetadata is None:
+            if other.SampleMetadata is None or not other.sampleExists(id_):
                 other_md = None
             else:
                 other_md = other.SampleMetadata[other_samp_idx[id_]]
@@ -782,13 +782,15 @@ class Table(object):
             obs_ids.append(id_)
 
             # if we have observation metadata, grab it
-            if self.ObservationMetadata is None:
+            if self.ObservationMetadata is None or \
+               not self.observationExists(id_):
                 self_md = None
             else:
                 self_md = self.ObservationMetadata[self_obs_idx[id_]]
 
             # if we have observation metadata, grab it
-            if other.ObservationMetadata is None:
+            if other.ObservationMetadata is None or \
+                not other.observationExists(id_):
                 other_md = None
             else:
                 other_md = other.ObservationMetadata[other_obs_idx[id_]]
