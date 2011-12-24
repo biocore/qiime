@@ -366,7 +366,7 @@ class WorkflowTests(TestCase):
          'otu_table.biom')
         otu_table = parse_biom_table(open(otu_table_fp,'U'))
         expected_sample_ids = ['S1','S2','S3']
-        self.assertEqual(otu_table.SampleIds,expected_sample_ids)
+        self.assertEqualItems(otu_table.SampleIds,expected_sample_ids)
 
         # Number of OTUs matches manually confirmed result
         otu_map_lines = list(open(otu_map_fp))
