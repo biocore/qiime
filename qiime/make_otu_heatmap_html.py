@@ -233,7 +233,10 @@ def line_converter():
 
 #def get_log_transform(data, eps=None):
 def get_log_transform(otu_table, eps=None):
-
+    """ This function and the one in make_otu_heatmap.py are essentially the same except
+    the non-negative transform at the end of this function. Dan Knights suggests this might
+    be due to this script not being able to handle negative values, hence the transform.
+    """
     # ensure data are floats
     #data = asarray(data,dtype=float64)
     #if not data.dtype == float32 and not data.dtype == float64:
