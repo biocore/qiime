@@ -25,6 +25,8 @@ from qiime.util import get_qiime_project_dir
 from qiime.parse import parse_mapping_file
 from qiime.parse import parse_newick, PhyloNode
 from sys import exit
+from qiime.pycogent_backports.parse_biom import parse_biom_table
+from numpy import maximum
 
 options_lookup = get_options_lookup()
 
@@ -199,7 +201,7 @@ def main():
         action = None
     #Place this outside try/except so we don't mask NameError in action
     if action:
-        action(opts,data, ordered_otu_names, ordered_sample_names,
+        action(opts,otu_table, ordered_otu_names, ordered_sample_names,
                dir_path,js_dir_path,filename, fractional_values)
 
 if __name__ == "__main__":
