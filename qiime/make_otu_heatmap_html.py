@@ -20,6 +20,7 @@ from optparse import OptionParser
 from qiime.util import MissingFileError
 import os
 from qiime.filter import filter_otus_from_otu_table
+from qiime.pycogent_backports.parse_biom import parse_biom_table
 
 def make_html_doc(js_filename):
     """Create the basic framework for the OTU table heatmap"""
@@ -329,7 +330,7 @@ def generate_heatmap_plots(options, otu_table, otu_sort, sample_sort, dir_path,
     #                new_otu_table.append(j)
     #    rows= asarray(new_otu_table).transpose()
     if otu_sort:
-        otu_sorted_otu_table = filtered_otu_table.sortObservationOrder(otu_sort)
+        filtered_otu_table = filtered_otu_table.sortObservationOrder(otu_sort)
 
     # This sorts the samples by the order supplied
     #if data['sample_order']:
@@ -343,10 +344,10 @@ def generate_heatmap_plots(options, otu_table, otu_sort, sample_sort, dir_path,
     #    new_otu_table.append(rows[-1])
     #    rows= asarray(new_otu_table)
     if sample_sort:
-        sample_sorted_otu_table = filtered_otu_table.sortSampleOrder(sample_sort)
+        filtered_otu_table = filtered_otu_table.sortSampleOrder(sample_sort)
         
     #Convert OTU counts into a javascript array
-    js_array=create_javascript_array(rows, fractional_values)
+    js_array=create_javascript_array(filtered_otu_table, fractional_values)
 
     #Write otu filter number
     js_otu_cutoff='var otu_num_cutoff=%d;' % options.num_otu_hits
