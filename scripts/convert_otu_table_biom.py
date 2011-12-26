@@ -26,9 +26,9 @@ script_info['required_options'] = [
 ]
 
 script_info['optional_options'] = [
-  make_option('--dense',action='store_true',default=False,
-   help="Write in dense biom format (when writing biom formatted "
-        "files) [default: %default]"),
+  make_option('-t','--biom_type',type='choice',choices=['sparse','dense'],
+   default='dense',
+   help="Type of biom file to write (dense or sparse) [default: %default]"),
   make_option('-b','--biom_to_classic_otu_table',action='store_true',
    help="Convert biom file to classic otu table file [default: convert "
         "classic otu table file to biom file]",default=False)
@@ -43,7 +43,7 @@ def main():
     input_f = open(opts.input_fp,'U')
     output_f = open(opts.output_fp,'w')
     biom_to_classic_otu_table = opts.biom_to_classic_otu_table
-    dense = opts.dense
+    dense = opts.biom_type == 'dense'
     count_map_f = int
     
     if biom_to_classic_otu_table:
