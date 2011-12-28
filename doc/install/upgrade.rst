@@ -23,10 +23,15 @@ Note that you can replace the installation folder (/software/) for any other pat
 ---------------------------------------
 If you are upgrading your virtual machine, follow these commands to upgrade:
 
+Open a new terminal and run:
 ::
         
         sudo rm -rf /software/*
         rm .qiime_config
+        
+Close it, open a new one and run:
+::
+        
         wget http://bmf.colorado.edu/QIIME/app-deploy-qiime-1.4.0.tgz
         tar zxvf app-deploy-qiime-1.4.0.tgz
         cd app-deploy-qiime-1.4.0
