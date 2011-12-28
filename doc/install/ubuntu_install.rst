@@ -1,9 +1,10 @@
 .. _ubuntu_install:
+.. role:: alert
 
 QIIME Install in Ubuntu Linux
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-This guide was tested using the Long Term Support (LTS) version of Ubuntu (10.04). Note that you might be able to install in other Linux distributions following these instructions.
+This guide was tested using the Long Term Support (LTS) version of Ubuntu (10.04); :alert:`due to library incompatibilities in Ubuntu 11.10 these instructions will not work and most non-deb-package installs will fail, thus we do not recommend trying native installs either`. Note that you might be able to install in other Linux distributions following these instructions.
 
 Installing QIIME in Ubuntu LTS (10.04)
 ======================================
