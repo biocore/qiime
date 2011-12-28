@@ -231,3 +231,8 @@ tt {
 .note tt {
     background: #d6d6d6;
 }
+
+.alert {
+    color:red;
+}
+
