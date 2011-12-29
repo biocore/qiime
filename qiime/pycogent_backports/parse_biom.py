@@ -4,7 +4,8 @@ from __future__ import division
 import qiime.pycogent_backports.rich_otu_table as rt
 import json
 import numpy
-from qiime.parse import process_otu_table_sample_ids, parse_otu_table
+from qiime.parse import (process_otu_table_sample_ids, parse_otu_table, 
+                         parse_mapping_file_to_dict)
 from string import strip
 
 MATRIX_ELEMENT_TYPE = {'int':int,'float':float,'str':str,
@@ -58,21 +59,30 @@ def parse_biom_table_str(json_str):
 
     return table_obj
 
-def parse_otu_table_to_rich_otu_table(lines,count_map_f=int,dense=False):
+def parse_otu_table_to_rich_otu_table(lines,count_map_f=int,dense=False,mapping_f=None):
     """parses an otu table (tab delimited) (sample ID x OTU ID map)
 
     Returns a rich otu table object (a subclass of Table), 
     sparse by default (or see parameter 'dense')
     """
+    if mapping_f != None:
+        sample_metadata_d = parse_mapping_file_to_dict(mapping_f)[0]
+    else:
+        sample_metadata_d = None
+    
     if dense:
         sample_ids, otu_ids, otu_table, metadata = parse_otu_table(lines,count_map_f=count_map_f)
         if len(metadata) > 0:
             metadata = [{'taxonomy':elem} for elem in metadata]
         else:
             metadata = None
+        if sample_metadata_d != None:
+            sample_metadata = [sample_metadata_d[sample_id] for sample_id in sample_ids]
+        else:
+            sample_metadata = None
         table_obj = rt.DenseOTUTable(Data=otu_table,
         SampleIds=sample_ids, ObservationIds=otu_ids,
-        SampleMetadata=None, ObservationMetadata=metadata)
+        SampleMetadata=sample_metadata, ObservationMetadata=metadata)
         return table_obj
 
     otu_ids = []
@@ -139,17 +149,24 @@ def parse_otu_table_to_rich_otu_table(lines,count_map_f=int,dense=False):
                     otu_idx += 1 # this is needed for indexing into two_d_dict
                     # this sets dimensions of matrix, so it must be accurate
 
+    if sample_metadata_d != None:
+        sample_metadata = [sample_metadata_d[sample_id] for sample_id in sample_ids]
+    else:
+        sample_metadata = None
+
     data = rt.to_ll_mat(two_d_dict)
     table_obj = rt.SparseOTUTable(Data=data, 
         SampleIds=sample_ids, ObservationIds=otu_ids,
-        SampleMetadata=None, ObservationMetadata=metadata)
+        SampleMetadata=sample_metadata, ObservationMetadata=metadata)
+        
     return(table_obj)
 
-def convert_otu_table_to_biom(otu_table_f,count_map_f=int,dense=False):
+def convert_otu_table_to_biom(otu_table_f,count_map_f=int,dense=False,mapping_f=None):
     """ """
     otu_table = parse_otu_table_to_rich_otu_table(otu_table_f,
                                                   count_map_f=count_map_f,
-                                                  dense=dense)
+                                                  dense=dense,
+                                                  mapping_f=mapping_f)
     return otu_table.getBiomFormatJsonString()
 
 def convert_biom_to_otu_table(biom_f):

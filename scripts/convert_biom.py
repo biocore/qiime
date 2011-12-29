@@ -31,7 +31,10 @@ script_info['optional_options'] = [
    help="Type of biom file to write (dense or sparse) [default: %default]"),
   make_option('-b','--biom_to_classic_otu_table',action='store_true',
    help="Convert biom file to classic otu table file [default: convert "
-        "classic otu table file to biom file]",default=False)
+        "classic otu table file to biom file]",default=False),
+  make_option('-m','--mapping_fp',type="existing_filepath",
+         help='the mapping filepath (will add sample metadata to '+\
+              'biom file, if provided) [default: %default]'),
  ]
 script_info['version'] = __version__
 
@@ -45,6 +48,12 @@ def main():
     biom_to_classic_otu_table = opts.biom_to_classic_otu_table
     dense = opts.biom_type == 'dense'
     count_map_f = int
+    mapping_fp = opts.mapping_fp
+    
+    if mapping_fp != None:
+        mapping_f = open(mapping_fp,'U')
+    else:
+        mapping_f = None
     
     if biom_to_classic_otu_table:
         try:
@@ -55,7 +64,8 @@ def main():
         try:
             output_f.write(convert_otu_table_to_biom(input_f,
                                                      count_map_f,
-                                                     dense))
+                                                     dense,
+                                                     mapping_f))
         except ValueError:
             raise ValueError, "Input does not look like a classic OTU table. Do you need to pass -b?"
     input_f.close()
