@@ -41,15 +41,17 @@ script_info['version'] = __version__
 
 def main():
     option_parser, opts,args = parse_command_line_parameters(**script_info)
-
+    otu_table = parse_biom_table(open(opts.otu_table_fp,'U'))
     min_counts, max_counts, median_counts, mean_counts, counts_per_sample =\
-     compute_seqs_per_library_stats(parse_biom_table(open(opts.otu_table_fp,'U')))
-
+     compute_seqs_per_library_stats(otu_table)
+    otu_count = len(otu_table.ObservationIds)
+    
     counts_per_sample_values = counts_per_sample.values()
     med_abs_dev = median_absolute_deviation(counts_per_sample_values)[0]
     even_sampling_depth = guess_even_sampling_depth(counts_per_sample_values)
 
-    print 'Num samples: %s\n' % str(len(counts_per_sample))
+    print 'Num samples: %s' % str(len(counts_per_sample))
+    print 'Num otus:%s\n' % str(otu_count)
 
     print 'Seqs/sample summary:' 
     print ' Min: %s' % str(min_counts)
