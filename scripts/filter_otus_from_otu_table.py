@@ -38,7 +38,12 @@ script_info['optional_options'] = [
              '--max_count',
              type='int',
              default=inf,
-             help="the maximum total observation count of an otu for that otu to be retained [default: infinity]")
+             help="the maximum total observation count of an otu for that otu to be retained [default: infinity]"),
+
+ make_option('-e','--otu_ids_to_exclude_fp',
+             type='existing_filepath',
+             default=None,
+             help="file containing list of OTU ids to exclude: can be one id per line, or id can be first value in a tab-separated line [default: %default]")
 
 ]
 script_info['version'] = __version__
@@ -55,14 +60,21 @@ def main():
     min_count = opts.min_count
     max_count = opts.max_count
     
-    if not (min_count != 0 or not isinf(max_count)):
+    otu_ids_to_exclude_fp = opts.otu_ids_to_exclude_fp
+    
+    if not (min_count != 0 or not isinf(max_count) or otu_ids_to_exclude_fp != None):
         option_parser.error("No filtering requested. Must provide either "
-                     "min counts or max counts (or some combination of those).")
+                     "min counts, max counts, or exclude_fp (or some combination of those).")
 
     otu_table = parse_biom_table(open(opts.input_fp,'U'))
     output_f = open(opts.output_fp,'w')
     
-    otu_ids_to_keep = otu_table.ObservationIds
+    otu_ids_to_keep = set(otu_table.ObservationIds)
+    
+    if otu_ids_to_exclude_fp:
+        otu_ids_to_exclude = set([l.strip().split('\t')[0] 
+                                  for l in open(otu_ids_to_exclude_fp,'U')])
+        otu_ids_to_keep -= otu_ids_to_exclude
     
     filtered_otu_table = filter_otus_from_otu_table(otu_table,
                                                        otu_ids_to_keep,
