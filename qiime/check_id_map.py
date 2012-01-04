@@ -914,11 +914,14 @@ def get_sample_description_column(data):
     
     return (len(data[0])-1)
 
-STANDARD_FILENAME_CHECKS = [(filename_has_space, 'error')]
+
+# Commenting out the global lists of functions, causes issues with unit 
+# testing.  Moved to local variables in functions
+'''STANDARD_FILENAME_CHECKS = [(filename_has_space, 'error')]'''
 # Removed run description checks, no longer using to fill in missing desc.
 ''' STANDARD_RUN_DESCRIPTION_CHECKS = [(run_description_missing, 'warning'), 
     (descr_filter.resultAndError, 'warning')] '''
-STANDARD_SAMPLE_DESCRIPTION_CHECKS = [
+'''STANDARD_SAMPLE_DESCRIPTION_CHECKS = [
     (check_missing_descriptions, 'warning'),
     (check_duplicate_sample_ids, 'warning'),
     (check_description_chars, 'warning'),
@@ -928,9 +931,9 @@ STANDARD_COL_HEADER_CHECKS = [(sampleid_missing, 'error'),
     (space_dup_checker_header, 'error'), 
     (blank_header, 'error'),
     (description_missing, 'error'),
-    ]
-BARCODE_COL_HEADER_CHECKS = [(barcode_missing, 'error')]
-STANDARD_COL_CHECKS = [
+    ]'''
+''' BARCODE_COL_HEADER_CHECKS = [(barcode_missing, 'error')]'''
+'''STANDARD_COL_CHECKS = [
         (check_field_types, 'error'),
         (check_bad_chars, 'warning'),
         (check_mixed_caps, 'warning'),
@@ -938,8 +941,8 @@ STANDARD_COL_CHECKS = [
 
         
 
-BARCODE_COL_CHECKS = [(check_same_length, 'warning')]
-PRIMER_COL_CHECKS = [(linker_primer_missing, 'error')]
+BARCODE_COL_CHECKS = [(check_same_length, 'warning')]'''
+''' PRIMER_COL_CHECKS = [(linker_primer_missing, 'error')] '''
 
 def get_primers_barcodes(data, is_barcoded, disable_primer_check,
                          added_demultiplex_field=None):
@@ -1048,16 +1051,7 @@ def check_dup_var_barcodes_primers(primers, barcodes, problems,
     
 
 def process_id_map(infile, disable_primer_check=False, is_barcoded=True, \
-    char_replace="_", var_len_barcodes = False, added_demultiplex_field=None,
-    filename_checks=STANDARD_FILENAME_CHECKS, 
-    #run_description_checks=STANDARD_RUN_DESCRIPTION_CHECKS,
-    sample_description_checks=STANDARD_SAMPLE_DESCRIPTION_CHECKS,
-    col_header_checks=STANDARD_COL_HEADER_CHECKS,
-    col_checks=STANDARD_COL_CHECKS,
-    field_types=STANDARD_FIELD_TYPES):
-        
-    
-    
+    char_replace="_", var_len_barcodes = False, added_demultiplex_field=None):
     """ Parse ID mapping file.
    
     Returns the following:
@@ -1069,7 +1063,38 @@ def process_id_map(infile, disable_primer_check=False, is_barcoded=True, \
     errors: list of error messages generated
     warnings: list of warning messages generated
     """
+    
+    STANDARD_FILENAME_CHECKS = [(filename_has_space, 'error')]
+    STANDARD_COL_CHECKS = [
+        (check_field_types, 'error'),
+        (check_bad_chars, 'warning'),
+        (check_mixed_caps, 'warning'),
+        ]
 
+    BARCODE_COL_CHECKS = [(check_same_length, 'warning')]
+    
+    STANDARD_SAMPLE_DESCRIPTION_CHECKS = [
+    (check_missing_descriptions, 'warning'),
+    (check_duplicate_sample_ids, 'warning'),
+    (check_description_chars, 'warning'),
+    ]
+    STANDARD_COL_HEADER_CHECKS = [(sampleid_missing, 'error'),
+    (bad_char_in_header, 'error'),
+    (space_dup_checker_header, 'error'), 
+    (blank_header, 'error'),
+    (description_missing, 'error'),
+    ]
+
+    BARCODE_COL_HEADER_CHECKS = [(barcode_missing, 'error')]
+
+    PRIMER_COL_CHECKS = [(linker_primer_missing, 'error')]
+    
+    col_checks=STANDARD_COL_CHECKS
+    filename_checks=STANDARD_FILENAME_CHECKS
+    sample_description_checks=STANDARD_SAMPLE_DESCRIPTION_CHECKS
+    col_header_checks=STANDARD_COL_HEADER_CHECKS
+    field_types=STANDARD_FIELD_TYPES
+    
     problems = defaultdict(list)
     errors, warnings = [], []
     col_headers, id_map, description_map, run_description = \
@@ -1124,6 +1149,7 @@ def process_id_map(infile, disable_primer_check=False, is_barcoded=True, \
         col_header_checks.extend(BARCODE_COL_HEADER_CHECKS)
         if not var_len_barcodes and not added_demultiplex_field:
             col_checks.extend(BARCODE_COL_CHECKS)
+            
             
     if not disable_primer_check:
         col_header_checks.extend(PRIMER_COL_CHECKS)
@@ -1190,6 +1216,7 @@ def process_id_map(infile, disable_primer_check=False, is_barcoded=True, \
     headers, description_map, id_map = wrap_arrays(sample_descriptions, data)
     errors = problems['error']
     warnings = problems['warning']
+    
     
     return headers, id_map, description_map, run_description, errors, warnings
 

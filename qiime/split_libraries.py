@@ -263,16 +263,22 @@ def expand_degeneracies(raw_primers):
     return expanded_primers
     
 
-def check_map(infile, disable_primer_check, added_demultiplex_field=None,
-              has_barcodes=True):
+def check_map(infile, disable_primer_check, barcode_type="golay_12",
+              added_demultiplex_field=None, has_barcodes=True):
     """Check mapping file and extract list of valid barcodes, primers """
     
-
+    
+    if barcode_type == "variable_length":
+        var_len_barcodes = True
+    else:
+        var_len_barcodes = False
+    
     
     hds, id_map, dsp, run_description, errors, warnings = \
         process_id_map(infile, is_barcoded=has_barcodes, \
         disable_primer_check=disable_primer_check,
-        added_demultiplex_field=added_demultiplex_field)
+        added_demultiplex_field=added_demultiplex_field,
+        var_len_barcodes=var_len_barcodes)
         
     if errors or warnings:
         raise ValueError,('Problems were found with mapping file, '+\
@@ -1047,7 +1053,7 @@ def preprocess(fasta_files, qual_files, mapping_file,
     record_qual_scores=False, discard_bad_windows=False, 
     median_length_filtering=None, added_demultiplex_field=None):
         
-        
+    
     """
     Preprocess barcoded libraries, e.g. from 454.
 
@@ -1181,7 +1187,7 @@ def preprocess(fasta_files, qual_files, mapping_file,
     map_file = open(mapping_file, 'U')
     headers, id_map, valid_map, warnings, errors, \
      primer_seqs_lens, all_primers = check_map(map_file, disable_primer_check,
-     added_demultiplex_field)
+     barcode_type, added_demultiplex_field)
      
 
      
