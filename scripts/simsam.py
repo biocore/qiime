@@ -15,9 +15,10 @@ from qiime.util import make_option
 
 from cogent.parse.tree import DndParser
 
-from qiime.parse import parse_otu_table
+from qiime.pycogent_backports.parse_biom import parse_biom_table
 from qiime.util import parse_command_line_parameters
 from qiime.format import format_otu_table
+import qiime.pycogent_backports.rich_otu_table as rich_otu_table
 
 from qiime.simsam import sim_otu_table
 
@@ -46,16 +47,18 @@ def main():
 
     out_fh = open(opts.output_file,'w')
     otu_table_fh = open(opts.otu_table,'U')
-    sample_ids, otu_ids, otu_mtx, otu_metadata = parse_otu_table(otu_table_fh)
+    otu_table = parse_biom_table(otu_table_fh)
     tree_fh = open(opts.tree_file,'U')
     tree = DndParser(tree_fh)
 
     res_sam_names, res_otus, res_otu_mtx, res_otu_metadata = \
-     sim_otu_table(sample_ids, otu_ids, otu_mtx, otu_metadata, 
-     tree, opts.num, opts.dissim)
+     sim_otu_table(otu_table.SampleIds, otu_table.ObservationIds, otu_table.iterSamples(), 
+                   otu_table.ObservationMetadata, tree, opts.num, opts.dissim)
 
-    out_fh.write(format_otu_table(res_sam_names, res_otus, 
-     res_otu_mtx, res_otu_metadata))
+
+    rich_table = rich_otu_table.table_factory(res_otu_mtx,res_sam_names,res_otus,
+    observation_metadata=res_otu_metadata)
+    out_fh.write(rich_table.getBiomFormatJsonString())
 
 
 if __name__ == "__main__":

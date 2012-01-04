@@ -19,7 +19,7 @@ from qiime.util import make_option
 from qiime.util import parse_command_line_parameters
 from qiime.sort import natsort
 
-def sim_otu_table(sample_ids, otu_ids, otu_mtx, otu_metadata, tree, 
+def sim_otu_table(sample_ids, otu_ids, samples, otu_metadata, tree, 
     num_replicates, dissimilarity):
     """ make n samples related to each sample in an input otu table
 
@@ -27,7 +27,8 @@ def sim_otu_table(sample_ids, otu_ids, otu_mtx, otu_metadata, tree,
     the constituents of an otu table
      * sample_ids: list
      * otu_ids: list
-     * otu_mtx: numpy2d otus as rows
+     * samples: iterable, each element must have sample_vector = elem[0]
+       where sample_vector looks like [1,0,7,9...]
      * otu_metadata: list, either empty or of length len(otu_ids)
     tree: a PhyloNode tree or compatible,
     num_replicates: how many replicates for each input sample
@@ -45,8 +46,9 @@ def sim_otu_table(sample_ids, otu_ids, otu_mtx, otu_metadata, tree,
     # format of sample_dict: otu_id: num_seqs
     sample_dicts = []
     res_sam_names = []
-    for i in range(len(sample_ids)):
-        sample_vector = otu_mtx[:,i]
+    for i, sample_info in enumerate(samples):
+        sample_vector = sample_info[0]
+        # sample_vector = otu_observations.next()
         for j in range(num_replicates):
             sample_dict = {}
             for k in range(len(otu_ids)):
@@ -61,6 +63,7 @@ def sim_otu_table(sample_ids, otu_ids, otu_mtx, otu_metadata, tree,
                     sample_dict[new_otu_id] = otu_abundance
             sample_dicts.append(sample_dict)
             res_sam_names.append(sample_ids[i] + '.' + str(j))
+
 
     res_otu_mtx, res_otus = combine_sample_dicts(sample_dicts)
 
