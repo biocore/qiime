@@ -364,7 +364,7 @@ class Qiime_config(TestCase):
             pass_test = False
             version_string = "Not installed"
         self.assertTrue(pass_test,\
-         "Unsupported matplotlib version. Must be >= %s and < %s , but running %s." \
+         "Unsupported pynast version. Must be >= %s and < %s , but running %s." \
          % ('.'.join(map(str,min_acceptable_version)),
             '.'.join(map(str,min_unacceptable_version)),
             version_string))
