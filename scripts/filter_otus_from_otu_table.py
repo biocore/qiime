@@ -18,9 +18,11 @@ from qiime.util import parse_command_line_parameters, make_option
 from qiime.filter import filter_otus_from_otu_table
 
 script_info = {}
-script_info['brief_description'] = ""
+script_info['brief_description'] = "Filter OTUs from an OTU table based on their observation counts or identifier."
 script_info['script_description'] = ""
-script_info['script_usage'] = [("","","")]
+script_info['script_usage'] = [("","Discard all OTUs that are observed fewer than 2 times (i.e., singletons)","%prog -i otu_table.biom -o otu_table_no_singletons.biom -n 2"),
+ ("","Discard all OTUs that are observed greater than 100 times (e.g., if you want to look at low abundance OTUs only)","%prog -i otu_table.biom -o otu_table_low_abundance.biom -x 100"),
+ ("","Discard all OTUs listed in chimeric_otus.txt (e.g., to remove chimeric OTUs from an OTU table)","%prog -i otu_table.biom -o otu_table_non_chimeric.biom -e chimeric_otus.txt"),]
 script_info['output_description']= ""
 script_info['required_options'] = [
  make_option('-i','--input_fp',type="existing_filepath",
