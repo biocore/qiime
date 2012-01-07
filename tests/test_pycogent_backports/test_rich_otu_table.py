@@ -539,6 +539,77 @@ class TableTests(TestCase):
         self.assertEqual(t.ObservationMetadata[1]['non existent key'], None)
         self.assertEqual(t.ObservationMetadata[2]['non existent key'], None)
 
+    def test_add_observation_metadata_one_entry(self):
+        """ addObservationMetadata functions with single md entry """
+        obs_ids = [1,2,3]
+        obs_md = {1:{'taxonomy':['A','B']},
+                  2:{'taxonomy':['B','C']},
+                  3:{'taxonomy':['E','D','F']}}
+        samp_ids = [4,5,6,7]
+        samp_md = [{'d':0},{'e':0},{'f':0},{'g':0}]
+        d = array([[1,2,3,4],[5,6,7,8],[9,10,11,12]])
+        t = Table(d, samp_ids, obs_ids, samp_md, obs_md=None)
+        t.addObservationMetadata(obs_md)
+        self.assertEqual(t.ObservationMetadata[0]['taxonomy'],['A','B'])
+        self.assertEqual(t.ObservationMetadata[1]['taxonomy'],['B','C'])
+        self.assertEqual(t.ObservationMetadata[2]['taxonomy'],['E','D','F'])
+
+    def test_add_observation_metadata_two_entries(self):
+        """ addObservationMetadata functions with more than one md entry """
+        obs_ids = [1,2,3]
+        obs_md = {1:{'taxonomy':['A','B'], 'other':'h1'},
+                  2:{'taxonomy':['B','C'], 'other':'h2'},
+                  3:{'taxonomy':['E','D','F'], 'other':'h3'}}
+        samp_ids = [4,5,6,7]
+        samp_md = [{'d':0},{'e':0},{'f':0},{'g':0}]
+        d = array([[1,2,3,4],[5,6,7,8],[9,10,11,12]])
+        t = Table(d, samp_ids, obs_ids, samp_md, obs_md=None)
+        t.addObservationMetadata(obs_md)
+        self.assertEqual(t.ObservationMetadata[0]['taxonomy'],['A','B'])
+        self.assertEqual(t.ObservationMetadata[1]['taxonomy'],['B','C'])
+        self.assertEqual(t.ObservationMetadata[2]['taxonomy'],['E','D','F'])
+        self.assertEqual(t.ObservationMetadata[0]['other'],'h1')
+        self.assertEqual(t.ObservationMetadata[1]['other'],'h2')
+        self.assertEqual(t.ObservationMetadata[2]['other'],'h3')
+
+    def test_add_sample_metadata_one_entry(self):
+        """ addSampleMetadata functions with single md entry """
+        obs_ids = [1,2,3]
+        obs_md = [{'a':0},{'b':0},{'c':0}]
+        samp_ids = [4,5,6,7]
+        samp_md = {4:{'Treatment':'Control'},
+                   5:{'Treatment':'Fasting'},
+                   6:{'Treatment':'Fasting'},
+                   7:{'Treatment':'Control'}}
+        d = array([[1,2,3,4],[5,6,7,8],[9,10,11,12]])
+        t = Table(d, samp_ids, obs_ids, samp_md=None, obs_md=obs_md)
+        t.addSampleMetadata(samp_md)
+        self.assertEqual(t.SampleMetadata[0]['Treatment'],'Control')
+        self.assertEqual(t.SampleMetadata[1]['Treatment'],'Fasting')
+        self.assertEqual(t.SampleMetadata[2]['Treatment'],'Fasting')
+        self.assertEqual(t.SampleMetadata[3]['Treatment'],'Control')
+
+    def test_add_sample_metadata_two_entries(self):
+        """ addSampleMetadata functions with more than one md entry """
+        obs_ids = [1,2,3]
+        obs_md = [{'a':0},{'b':0},{'c':0}]
+        samp_ids = [4,5,6,7]
+        samp_md = {4:{'Treatment':'Control','D':['A','A']},
+                   5:{'Treatment':'Fasting','D':['A','B']},
+                   6:{'Treatment':'Fasting','D':['A','C']},
+                   7:{'Treatment':'Control','D':['A','D']}}
+        d = array([[1,2,3,4],[5,6,7,8],[9,10,11,12]])
+        t = Table(d, samp_ids, obs_ids, samp_md=None, obs_md=obs_md)
+        t.addSampleMetadata(samp_md)
+        self.assertEqual(t.SampleMetadata[0]['Treatment'],'Control')
+        self.assertEqual(t.SampleMetadata[1]['Treatment'],'Fasting')
+        self.assertEqual(t.SampleMetadata[2]['Treatment'],'Fasting')
+        self.assertEqual(t.SampleMetadata[3]['Treatment'],'Control')
+        self.assertEqual(t.SampleMetadata[0]['D'],['A','A'])
+        self.assertEqual(t.SampleMetadata[1]['D'],['A','B'])
+        self.assertEqual(t.SampleMetadata[2]['D'],['A','C'])
+        self.assertEqual(t.SampleMetadata[3]['D'],['A','D'])
+
     def test_getValueByIds(self):
         """Return the value located in the matrix by the ids"""
         t1 = Table(array([[5,6],[7,8]]), [1,2],[3,4])

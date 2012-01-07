@@ -242,6 +242,20 @@ class Table(object):
             return self.reduce(add, 'observation')
         else:
             raise TableException, "Unknown axis %s" % axis
+    
+    def addObservationMetadata(self, md):
+        """Take a dict of metadata and add it
+
+        {observation_id:{dict_of_metadata}}
+        """
+        self.ObservationMetadata = [md[id_] for id_ in self.ObservationIds]
+    
+    def addSampleMetadata(self, md):
+        """Take a dict of metadata and add it
+    
+        {sample_id:{dict_of_metadata}}
+        """
+        self.SampleMetadata = [md[id_] for id_ in self.SampleIds]
 
     def getSampleIndex(self, samp_id):
         """Returns the sample index"""
