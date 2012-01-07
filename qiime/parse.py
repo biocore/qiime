@@ -391,6 +391,19 @@ def parse_taxonomy(infile):
 
     return res
 
+def parse_taxonomy_to_otu_metadata(lines,labels=['taxonomy','score']):
+    """ """
+    result = {}
+    for line in lines:
+        line = line.strip()
+        fields = line.split('\t')
+        id_ = fields[0].split()[0]
+        taxa_string = fields[1]
+        taxa = [t.strip() for t in taxa_string.split(';')]
+        score = float(fields[2])
+        result[id_] = {labels[0]:taxa, labels[1]:score}
+    return result
+
 def process_otu_table_sample_ids(sample_id_fields):
     """ process the sample IDs line of an OTU table """
     if len(sample_id_fields) == 0:

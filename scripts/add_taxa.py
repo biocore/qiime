@@ -15,6 +15,7 @@ __status__ = "Development"
 from qiime.util import parse_command_line_parameters
 from qiime.util import make_option
 from qiime.pycogent_backports.parse_biom import parse_biom_table
+from qiime.parse import parse_taxonomy_to_otu_metadata
 
 script_info={}
 script_info['brief_description']="""Add taxa to OTU table"""
@@ -33,19 +34,6 @@ script_info['required_options']=[\
 
 script_info['optional_options']=[]
 script_info['version'] = __version__
-
-def parse_taxonomy_to_otu_metadata(lines,labels=['taxonomy','score']):
-    """ """
-    result = {}
-    for line in lines:
-        line = line.strip()
-        fields = line.split('\t')
-        id_ = fields[0].split()[0]
-        taxa_string = fields[1]
-        taxa = [t.strip() for t in taxa_string.split(';')]
-        score = float(fields[2])
-        result[id_] = {labels[0]:taxa, labels[1]:score}
-    return result
 
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)

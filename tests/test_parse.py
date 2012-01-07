@@ -26,7 +26,7 @@ from qiime.parse import (group_by_field, group_by_fields,
     parse_illumina_line, parse_qual_score, parse_qual_scores, QiimeParseError,
     parse_newick,parse_trflp,parse_taxa_summary_table, parse_prefs_file,
     parse_mapping_file_to_dict, mapping_file_to_dict, MinimalQualParser,
-    parse_denoiser_mapping,parse_otu_map)
+    parse_denoiser_mapping,parse_otu_map,parse_taxonomy_to_otu_metadata)
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -631,6 +631,25 @@ eigvals\t4.94\t1.79\t1.50
          "Root;Bacteria;Firmicutes;\"Clostridia\";Clostridiales")
         self.assertEqual(res['338'],
          "Root;Bacteria")
+
+    def test_parse_taxonomy_to_otu_metadata(self):
+        """parsing of taxonomy file to otu metadata format functions as expected
+        """
+        example_tax = \
+"""412 PC.635_647	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales	0.930
+319 PC.355_281	Root;Bacteria;Bacteroidetes	0.970
+353 PC.634_154	Root;Bacteria;Bacteroidetes	0.830
+17 PC.607_302	Root;Bacteria;Bacteroidetes	0.960
+13	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales	0.870
+338 PC.593_1314	Root;Bacteria	0.990	42556	Additional fields ignored"""
+        actual = parse_taxonomy_to_otu_metadata(example_tax.split('\n'))
+        expected = {'412':{'taxonomy':['Root','Bacteria','Firmicutes','"Clostridia"','Clostridiales'],'score':0.930},
+ '319':{'taxonomy':['Root','Bacteria','Bacteroidetes'],'score':0.970},
+ '353':{'taxonomy':['Root','Bacteria','Bacteroidetes'],'score':0.830},
+ '17':{'taxonomy':['Root','Bacteria','Bacteroidetes'],'score':0.960},
+ '13':{'taxonomy':['Root','Bacteria','Firmicutes','"Clostridia"','Clostridiales'],'score':0.870},
+ '338':{'taxonomy':['Root','Bacteria'],'score':0.990}}
+        self.assertEqual(actual,expected)
  
     def test_parse_qiime_config_files(self):
         """ parse_qiime_config_files functions as expected """
