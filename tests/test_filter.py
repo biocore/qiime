@@ -136,7 +136,25 @@ class FilterTests(TestCase):
          ["ABC","XYZ"],
          negate=True)
         self.assertEqual(actual,expected_dm1b)
+    
+    def test_filter_otus_from_otu_table_ids(self):
+        """filter_otus_from_otu_table functions with list of OTU ids"""
+        otu_table = parse_biom_table_str(dense_otu_table1)
+        filtered_otu_table= filter_otus_from_otu_table(otu_table,
+          set(otu_table.ObservationIds) - set(['34','155','152']),0,inf)
+        expected_otu_ids = set(otu_table.ObservationIds) - set(['34','155','152'])
+        self.assertEqual(set(filtered_otu_table.ObservationIds),expected_otu_ids)
+    
+    def test_filter_otus_from_otu_table_ids_negate(self):
+        """filter_otus_from_otu_table functions with list of OTU ids and negate option"""
+        otu_table = parse_biom_table_str(dense_otu_table1)
+        filtered_otu_table= filter_otus_from_otu_table(otu_table,
+          set(otu_table.ObservationIds) - set(['34','155','152']),0,inf,negate_ids_to_keep=True)
+        expected_otu_ids = set(['34','155','152'])
+        self.assertEqual(set(filtered_otu_table.ObservationIds),expected_otu_ids)
         
+        
+    
     def test_filter_otus_from_otu_table_counts_dense(self):
         """filter_otus_from_otu_table functions with count-based filtering (dense OTU table)"""
         otu_table = parse_biom_table_str(dense_otu_table1)

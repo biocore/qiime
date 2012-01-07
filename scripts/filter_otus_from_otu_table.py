@@ -31,6 +31,9 @@ script_info['required_options'] = [
              help='the output filepath in biom format'),
 ]
 script_info['optional_options'] = [
+ make_option('--negate_ids_to_exclude',
+             action='store_true',default=False,
+             help='keep OTUs in otu_ids_to_exclude_fp rather than discard them [default:%default] '),
  make_option('-n', 
              '--min_count',
              type='int',
@@ -63,6 +66,7 @@ def main():
     max_count = opts.max_count
     
     otu_ids_to_exclude_fp = opts.otu_ids_to_exclude_fp
+    negate_ids_to_exclude = opts.negate_ids_to_exclude
     
     if not (min_count != 0 or not isinf(max_count) or otu_ids_to_exclude_fp != None):
         option_parser.error("No filtering requested. Must provide either "
@@ -81,7 +85,8 @@ def main():
     filtered_otu_table = filter_otus_from_otu_table(otu_table,
                                                        otu_ids_to_keep,
                                                        min_count,
-                                                       max_count)
+                                                       max_count,
+                                                       negate_ids_to_exclude)
     output_f.write(filtered_otu_table.getBiomFormatJsonString())
     output_f.close()
 
