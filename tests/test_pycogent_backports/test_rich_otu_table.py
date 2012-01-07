@@ -539,6 +539,28 @@ class TableTests(TestCase):
         self.assertEqual(t.ObservationMetadata[1]['non existent key'], None)
         self.assertEqual(t.ObservationMetadata[2]['non existent key'], None)
 
+    def test_add_observation_metadata_w_existing_metadata(self):
+        """ addObservationMetadata functions with existing metadata """
+        obs_ids = [1,2,3]
+        obs_md = [{'a':9},{'a':8},{'a':7}]
+        samp_ids = [4,5,6,7]
+        samp_md = [{'d':0},{'e':0},{'f':0},{'g':0}]
+        d = array([[1,2,3,4],[5,6,7,8],[9,10,11,12]])
+        t = Table(d, samp_ids, obs_ids, samp_md, obs_md)
+        self.assertEqual(t.ObservationMetadata[0]['a'],9)
+        self.assertEqual(t.ObservationMetadata[1]['a'],8)
+        self.assertEqual(t.ObservationMetadata[2]['a'],7)
+        obs_md = {1:{'taxonomy':['A','B']},
+                  2:{'taxonomy':['B','C']},
+                  3:{'taxonomy':['E','D','F']}}
+        t.addObservationMetadata(obs_md)
+        self.assertEqual(t.ObservationMetadata[0]['a'],9)
+        self.assertEqual(t.ObservationMetadata[1]['a'],8)
+        self.assertEqual(t.ObservationMetadata[2]['a'],7)
+        self.assertEqual(t.ObservationMetadata[0]['taxonomy'],['A','B'])
+        self.assertEqual(t.ObservationMetadata[1]['taxonomy'],['B','C'])
+        self.assertEqual(t.ObservationMetadata[2]['taxonomy'],['E','D','F'])
+
     def test_add_observation_metadata_one_entry(self):
         """ addObservationMetadata functions with single md entry """
         obs_ids = [1,2,3]
@@ -571,6 +593,38 @@ class TableTests(TestCase):
         self.assertEqual(t.ObservationMetadata[0]['other'],'h1')
         self.assertEqual(t.ObservationMetadata[1]['other'],'h2')
         self.assertEqual(t.ObservationMetadata[2]['other'],'h3')
+
+    def test_add_sample_metadata_one_w_existing_metadata(self):
+        """ addSampleMetadata functions with existing metadata """
+        obs_ids = [1,2,3]
+        obs_md = [{'a':0},{'b':0},{'c':0}]
+        samp_ids = [4,5,6,7]
+        samp_md = [{'Treatment':'Control'},
+                   {'Treatment':'Fasting'},
+                   {'Treatment':'Fasting'},
+                   {'Treatment':'Control'}]
+        d = array([[1,2,3,4],[5,6,7,8],[9,10,11,12]])
+        t = Table(d, samp_ids, obs_ids, samp_md, obs_md=obs_md)
+        self.assertEqual(t.SampleMetadata[0]['Treatment'],'Control')
+        self.assertEqual(t.SampleMetadata[1]['Treatment'],'Fasting')
+        self.assertEqual(t.SampleMetadata[2]['Treatment'],'Fasting')
+        self.assertEqual(t.SampleMetadata[3]['Treatment'],'Control')
+        
+        
+        samp_md = {4:{'barcode':'TTTT'},
+                   6:{'barcode':'AAAA'},
+                   5:{'barcode':'GGGG'},
+                   7:{'barcode':'CCCC'}}
+        t.addSampleMetadata(samp_md)
+        self.assertEqual(t.SampleMetadata[0]['Treatment'],'Control')
+        self.assertEqual(t.SampleMetadata[1]['Treatment'],'Fasting')
+        self.assertEqual(t.SampleMetadata[2]['Treatment'],'Fasting')
+        self.assertEqual(t.SampleMetadata[3]['Treatment'],'Control')
+        self.assertEqual(t.SampleMetadata[0]['barcode'],'TTTT')
+        self.assertEqual(t.SampleMetadata[1]['barcode'],'GGGG')
+        self.assertEqual(t.SampleMetadata[2]['barcode'],'AAAA')
+        self.assertEqual(t.SampleMetadata[3]['barcode'],'CCCC')
+        
 
     def test_add_sample_metadata_one_entry(self):
         """ addSampleMetadata functions with single md entry """

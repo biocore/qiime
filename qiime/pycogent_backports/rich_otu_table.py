@@ -248,14 +248,22 @@ class Table(object):
 
         {observation_id:{dict_of_metadata}}
         """
-        self.ObservationMetadata = [md[id_] for id_ in self.ObservationIds]
+        if self.ObservationMetadata != None:
+            for id_, md_entry in md.items():
+                self.ObservationMetadata[self.getObservationIndex(id_)].update(md_entry)
+        else:
+            self.ObservationMetadata = [md[id_] for id_ in self.ObservationIds]
     
     def addSampleMetadata(self, md):
         """Take a dict of metadata and add it
     
         {sample_id:{dict_of_metadata}}
         """
-        self.SampleMetadata = [md[id_] for id_ in self.SampleIds]
+        if self.SampleMetadata != None:
+            for id_, md_entry in md.items():
+                self.SampleMetadata[self.getSampleIndex(id_)].update(md_entry)
+        else:
+            self.SampleMetadata = [md[id_] for id_ in self.SampleIds]
 
     def getSampleIndex(self, samp_id):
         """Returns the sample index"""
