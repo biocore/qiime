@@ -11,18 +11,19 @@ __status__ = "Development"
 
 import subprocess
 from os import remove, path, devnull
-from os.path import join
+from os.path import join, split, splitext
 from sys import stdout
 from time import sleep
 from tempfile import mkdtemp
+from numpy import array, set_printoptions, nan
+from cogent.app.util import CommandLineApplication, CommandLineAppResult, \
+    FilePath, ResultPath, ApplicationError
 from qiime.util import get_tmp_filename
 from qiime.util import get_qiime_project_dir
 from qiime.format import format_otu_table
-from cogent.app.util import CommandLineApplication, CommandLineAppResult, \
-    FilePath, ResultPath, ApplicationError
 from cogent.app.parameters import Parameters
 from qiime.parse import parse_otu_table, parse_mapping_file
-from numpy import array, set_printoptions, nan
+from qiime.pycogent_backports.parse_biom import convert_biom_to_otu_table
 
 def parse_feature_importances(filepath):
     """Returns vector of feature IDs, vector of importance scores
@@ -112,6 +113,15 @@ class RSupervisedLearner(CommandLineApplication):
         # create random output dir if needed
         if output_dir is None:
             output_dir = mkdtemp(prefix='R_output_')
+        
+        ## temporary hack: this converts a biom file to classic otu table
+        ##  format for use within R
+        temp_predictor_fp = join(output_dir,
+                                 splitext(split(predictor_fp)[1])[0]+'.txt')
+        temp_predictor_f = open(temp_predictor_fp,'w')
+        temp_predictor_f.write(convert_biom_to_otu_table(open(predictor_fp,'U')))
+        temp_predictor_f.close()
+        predictor_fp = temp_predictor_fp
 
         rflags = self.RParameters['flags']
         rscript = self._get_R_script_path()
