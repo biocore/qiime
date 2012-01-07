@@ -610,7 +610,6 @@ class TableTests(TestCase):
         self.assertEqual(t.SampleMetadata[2]['Treatment'],'Fasting')
         self.assertEqual(t.SampleMetadata[3]['Treatment'],'Control')
         
-        
         samp_md = {4:{'barcode':'TTTT'},
                    6:{'barcode':'AAAA'},
                    5:{'barcode':'GGGG'},
