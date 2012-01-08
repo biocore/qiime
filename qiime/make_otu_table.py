@@ -58,11 +58,15 @@ def make_otu_table(otu_map_f,
     if sample_metadata != None:
         raise NotImplementedError,\
          "Passing of sample metadata to make_otu_table is not currently supported."
-    
-    otu_table = table_factory(data, sample_ids, otu_ids, 
-                              sample_metadata=sample_metadata, 
-                              observation_metadata=otu_metadata, 
-                              table_id=table_id, 
-                              constructor=constructor,
-                              dtype=int)
+    try:
+        otu_table = table_factory(data, sample_ids, otu_ids, 
+                                  sample_metadata=sample_metadata, 
+                                  observation_metadata=otu_metadata, 
+                                  table_id=table_id, 
+                                  constructor=constructor,
+                                  dtype=int)
+    except ValueError,e:
+        raise ValueError,\
+         ("Couldn't create OTU table. Is your OTU map empty?"
+          " Original error message: %s" % (str(e)))
     return otu_table.getBiomFormatJsonString()
