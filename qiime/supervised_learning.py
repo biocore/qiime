@@ -49,7 +49,7 @@ class RSupervisedLearner(CommandLineApplication):
     _options ={}
 
     _R_parameters = {
-        'flags': '--slave'
+        'flags': '--slave --vanilla'
         }
 
     # The name of the R script (located under qiime/support_files/R/)
@@ -161,7 +161,7 @@ class RSupervisedLearner(CommandLineApplication):
             tmpoutfile = open(outfilepath,'U')
             while proc.poll() is None:
                 stdout.write(tmpoutfile.readline())
-                sleep(0.01)
+                sleep(0.00001)
             tmpoutfile.close()
         proc.wait()
         exit_status = proc.returncode
