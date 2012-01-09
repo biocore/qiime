@@ -14,22 +14,23 @@
 # and prints instructions for installing the library
 "load.library" <- function(lib.name, quietly=TRUE){
 
-    # if R_LIBRARY_PATH environment variable is set, add it to the library paths
-    lib.loc <- .libPaths()
-    envvars <- as.list(Sys.getenv())
-    if(is.element('R_LIBRARY_PATH', names(envvars))){
-        lib.loc <- c(envvars[['R_LIBRARY_PATH']], lib.loc)
-    }
+    include.custom.library.path() # ensure that custom library is included
     
     # attempt to load the library, suppress warnings if needed
     warnings.visible <- get.warning.visibility()
     if(quietly && warnings.visible) set.warning.visibility(FALSE)
-    has.library <- library(lib.name,character.only=TRUE,logical.return=TRUE,
-                         verbose=F,warn.conflicts=FALSE,lib.loc=lib.loc)
+    library.result <- try (
+            library(lib.name,character.only=TRUE,logical.return=TRUE,
+                     verbose=F,warn.conflicts=FALSE),
+            silent=FALSE
+        )
     if(quietly && warnings.visible) set.warning.visibility(TRUE)
         
-    # if does not exists, fail gracefully
-    if(!has.library){
+    # if library does not exist or failed, fail gracefully
+    if(class(library.result)=='try-error'){
+        cat(sprintf('\n\nError encounted loading library %s:\n\n',lib.name),sep='',file=stderr())
+        cat(library.result[1],'\n\n',sep='',file=stderr())
+    } else if(!library.result){
         help_string1 <- sprintf(
             'To install: open R and run the command "install.packages("%s")".', 
             lib.name)
@@ -48,6 +49,20 @@ The current R instance knows about these paths:
 
         cat(help_string2,'\n\n',file=stderr())
         q(save='no',status=2,runLast=FALSE);
+    }
+}
+
+# Ensure that custom library path is included in search path
+# default environment variable name is 'R_LIBRARY_PATH'
+"include.custom.library.path" <- function(env.var.name = 'R_LIBRARY_PATH'){
+    # if R_LIBRARY_PATH environment variable is set, add it to the library paths
+    envvars <- as.list(Sys.getenv())
+    if(is.element(env.var.name, names(envvars))){
+        custom.path <- envvars[[env.var.name]]
+        if(!is.element(custom.path, .libPaths())){
+            # if custom path is not already in the path list, add it
+            .libPaths(c(custom.path, .libPaths()))
+        }
     }
 }
 
