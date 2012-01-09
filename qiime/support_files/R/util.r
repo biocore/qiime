@@ -25,7 +25,7 @@
     warnings.visible <- get.warning.visibility()
     if(quietly && warnings.visible) set.warning.visibility(FALSE)
     has.library <- library(lib.name,character.only=TRUE,logical.return=TRUE,
-                         verbose=F,warn.conflicts=FALSE,lib.loc=lib.loc, quietly=quietly)
+                         verbose=F,warn.conflicts=FALSE,lib.loc=lib.loc)
     if(quietly && warnings.visible) set.warning.visibility(TRUE)
         
     # if does not exists, fail gracefully
