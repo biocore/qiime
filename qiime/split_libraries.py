@@ -280,8 +280,8 @@ def check_map(infile, disable_primer_check, barcode_type="golay_12",
         added_demultiplex_field=added_demultiplex_field,
         var_len_barcodes=var_len_barcodes)
         
-    if errors or warnings:
-        raise ValueError,('Problems were found with mapping file, '+\
+    if errors:
+        raise ValueError,('Errors were found with mapping file, '+\
          'please run check_id_map.py to identify problems.')
     
     barcode_to_sample_id = {}

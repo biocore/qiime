@@ -27,7 +27,7 @@ from qiime.check_id_map import (find_diff_length, CharFilter, lwu,
     check_description_chars, process_id_map, get_primers_barcodes,
     check_primers_barcodes, check_missing_sampleIDs,
     check_dup_var_barcodes_primers, get_reverse_primers, check_reverse_primers,
-    linker_primer_missing
+    linker_primer_missing, check_bad_chars_sampleids
     )
 
 
@@ -298,8 +298,15 @@ class TopLevelTests(TestCase):
             ['TestSubject','ATCCT','CCGTA','No_placebo','x'],
             ])
             
+        # Should not find errors with check_bad_chars, or 
+        # check_bad_chars_sampleids
         self.assertEqual(check_bad_chars((meins_compliant_data, field_types)), 
                 ((meins_compliant_data, field_types),''))
+                
+        self.assertEqual(check_bad_chars_sampleids((meins_compliant_data, field_types)), 
+                ((meins_compliant_data, field_types),''))
+                
+        # Should find error with check_bad_chars_sampleids
                 
         non_meins_compliant_data = array([
             ['#SampleID','Barcode','LinkerPrimerSequence','Treatment','Description'],
@@ -307,9 +314,9 @@ class TopLevelTests(TestCase):
             ['TestSubject','ATCCT','CCGTA','No','x'],
             ])
         
-        self.assertEqual(check_bad_chars((non_meins_compliant_data, field_types)),\
+        self.assertEqual(check_bad_chars_sampleids((non_meins_compliant_data, field_types)),\
         ((array([['#SampleID', 'Barcode', 'LinkerPrimerSequence', 'Treatment','Description'], ['Sample.1', 'AATCT', 'CCGTA', 'Yes', 'x'], ['TestSubject', 'ATCCT', 'CCGTA', 'No', 'x']], dtype='|S20'), {'sample': 'uid', 'ctl': ['Yes', 'No'], 'ph': float, 'bc': 'uid'}), 'Removed bad chars from cell Sample_1 (now Sample.1) in sample id Sample.1, col #SampleID. Location (row, column):\t0,0'))
-    
+        
     
     def test_check_mixed_caps(self):
         """check_mixed_caps should return string of errors for invalid fields"""

@@ -101,6 +101,9 @@ class TopLevelTests(TestCase):
          in_seqs_fixed_len_bc1_qual_scores
         self.sample_mapping = sample_mapping
         self.sample_mapping_var_length = sample_mapping_var_length
+        self.sample_mapping_bad_char_sampleid = sample_mapping_bad_char_sampleid
+        self.sample_mapping_bad_char_datafield =\
+         sample_mapping_bad_char_datafield
         
         self.sample_fasta_file = get_tmp_filename(prefix = "sample_seqs_",
          suffix = ".fasta")
@@ -126,14 +129,33 @@ class TopLevelTests(TestCase):
         map_file.write(self.sample_mapping_var_length)
         map_file.close()
         
+        
+        self.sample_mapping_bad_char_sampleid_f =\
+         get_tmp_filename(prefix = "sample_mapping_bad_char_sampleid_",
+         suffix = ".txt")
+        map_file = open(self.sample_mapping_bad_char_sampleid_f, "w")
+        map_file.write(self.sample_mapping_bad_char_sampleid)
+        map_file.close()
+        
+        self.sample_mapping_bad_char_datafield_f =\
+         get_tmp_filename(prefix = "sample_mapping_bad_char_sampleid_",
+         suffix = ".txt")
+        map_file = open(self.sample_mapping_bad_char_datafield_f, "w")
+        map_file.write(self.sample_mapping_bad_char_datafield)
+        map_file.close()
+        
         self.output_dir = get_tmp_filename(prefix = "split_libraries_",
          suffix = "/")
         create_dir(self.output_dir)
         
         
+        
+        
         self._files_to_remove = \
          [self.sample_fasta_file, self.sample_qual_file,
-         self.sample_mapping_file]
+         self.sample_mapping_file, self.sample_mapping_file_var_length,
+         self.sample_mapping_bad_char_sampleid_f,
+         self.sample_mapping_bad_char_datafield_f]
         
         
     def tearDown(self):
@@ -1165,14 +1187,14 @@ z\tGG\tGC\t5\tsample_z"""
         actual_histograms = [line for line in output_histograms]
         
         expected_seqs = []
-        expected_log =  ['Number raw input seqs\t6\n', '\n', 'Length outside bounds of 200 and 1000\t6\n', 'Num ambiguous bases exceeds limit of 0\t0\n', 'Missing Qual Score\t0\n', 'Mean qual score below minimum of 25\t0\n', 'Max homopolymer run exceeds limit of 4\t0\n', 'Num mismatches in primer exceeds limit of 1: 0\n', '\n', 'Raw len min/max/avg\t25.0/35.0/31.2\n', '\n', 'Barcodes corrected/not\t0/0\n', 'Uncorrected barcodes will not be written to the output fasta file.\n', 'Corrected barcodes will be written with the appropriate barcode category.\n', 'Corrected but unassigned sequences will not be written unless --retain_unassigned_reads is enabled.\n', '\n', 'Total valid barcodes that are not in mapping file\t0\n', 'Sequences associated with valid barcodes that are not in the mapping file will not be written.\n', '\n', 'Barcodes in mapping file\n', 'Sample\tSequence Count\tBarcode\n', 's2\t0\tAGAGTCCTGAGC\n', 's1\t0\tACACATGTCTAC\n', 's3\t0\tAACTGTGCGTAC\n', '\n', 'Total number seqs written\t0']
+        expected_log =  ['Number raw input seqs\t6\n', '\n', 'Length outside bounds of 200 and 1000\t6\n', 'Num ambiguous bases exceeds limit of 0\t0\n', 'Missing Qual Score\t0\n', 'Mean qual score below minimum of 25\t0\n', 'Max homopolymer run exceeds limit of 4\t0\n', 'Num mismatches in primer exceeds limit of 1: 0\n', '\n', 'Raw len min/max/avg\t25.0/35.0/31.2\n', '\n', 'Barcodes corrected/not\t0/0\n', 'Uncorrected barcodes will not be written to the output fasta file.\n', 'Corrected barcodes will be written with the appropriate barcode category.\n', 'Corrected but unassigned sequences will not be written unless --retain_unassigned_reads is enabled.\n', '\n', 'Total valid barcodes that are not in mapping file\t0\n', 'Sequences associated with valid barcodes that are not in the mapping file will not be written.\n', '\n', 'Barcodes in mapping file\n', 'Sample\tSequence Count\tBarcode\n', 's2\t0\tAGAGTCCTGAGC\n', 's1\t0\tACACATGTCTA\n', 's3\t0\tAACTGTGCGTACG\n', '\n', 'Total number seqs written\t0']
         expected_histograms = ['Length\tBefore\tAfter\n', '20\t2\t0\n', '30\t4\t0']
         
         
         
-        #self.assertEqual(actual_seqs, expected_seqs)
-        #self.assertEqual(actual_log, expected_log)
-        #self.assertEqual(actual_histograms, expected_histograms)
+        self.assertEqual(actual_seqs, expected_seqs)
+        self.assertEqual(actual_log, expected_log)
+        self.assertEqual(actual_histograms, expected_histograms)
         
     def test_preprocess(self):
         """ Overall module functionality test """
@@ -1397,6 +1419,137 @@ z\tGG\tGC\t5\tsample_z"""
         self.assertEqual(actual_histograms, expected_histograms)
 
         
+    def test_preprocess_bad_chars_in_mapping(self):
+        """ Overall module functionality test with invalid characters """
+        
+        # Should discard all reads due to sequence length being too short
+        # But should not halt due to bad characters in a data field
+        
+        fasta_files = [self.sample_fasta_file]
+        qual_files = [self.sample_qual_file]
+        mapping_file = self.sample_mapping_bad_char_datafield_f
+        barcode_type="golay_12"
+        min_seq_len=200
+        max_seq_len=1000
+        min_qual_score=25
+        starting_ix=1
+        keep_primer=False
+        max_ambig=0
+        max_primer_mm=1
+        trim_seq_len=True
+        dir_prefix=self.output_dir
+        max_bc_errors=2
+        max_homopolymer=4
+        retain_unassigned_reads=False
+        keep_barcode=False 
+        attempt_bc_correction=True
+        qual_score_window=0
+        disable_primer_check=False
+        reverse_primers='disable'
+        record_qual_scores=False
+        discard_bad_windows=False
+        median_length_filtering=None
+        added_demultiplex_field=None
+        
+        
+        preprocess(fasta_files,
+                   qual_files,
+                   mapping_file,
+                   barcode_type,
+                   min_seq_len,
+                   max_seq_len,
+                   min_qual_score,
+                   starting_ix,
+                   keep_primer,
+                   max_ambig,
+                   max_primer_mm,
+                   trim_seq_len,
+                   dir_prefix,
+                   max_bc_errors,
+                   max_homopolymer,
+                   retain_unassigned_reads,
+                   keep_barcode,
+                   attempt_bc_correction,
+                   qual_score_window,
+                   disable_primer_check,
+                   reverse_primers,
+                   record_qual_scores,
+                   discard_bad_windows,
+                   median_length_filtering,
+                   added_demultiplex_field)
+                   
+        output_seqs = open(dir_prefix + "seqs.fna", "U")
+        output_log = open(dir_prefix + "split_library_log.txt", "U")
+        output_histograms = open(dir_prefix + "histograms.txt", "U")
+        
+        actual_seqs =  [line for line in output_seqs]
+        actual_log =  [line for line in output_log]
+        actual_histograms = [line for line in output_histograms]
+        
+        expected_seqs = []
+        expected_log =  ['Number raw input seqs\t6\n', '\n', 'Length outside bounds of 200 and 1000\t6\n', 'Num ambiguous bases exceeds limit of 0\t0\n', 'Missing Qual Score\t0\n', 'Mean qual score below minimum of 25\t0\n', 'Max homopolymer run exceeds limit of 4\t0\n', 'Num mismatches in primer exceeds limit of 1: 0\n', '\n', 'Raw len min/max/avg\t25.0/35.0/31.2\n', '\n', 'Barcodes corrected/not\t0/0\n', 'Uncorrected barcodes will not be written to the output fasta file.\n', 'Corrected barcodes will be written with the appropriate barcode category.\n', 'Corrected but unassigned sequences will not be written unless --retain_unassigned_reads is enabled.\n', '\n', 'Total valid barcodes that are not in mapping file\t0\n', 'Sequences associated with valid barcodes that are not in the mapping file will not be written.\n', '\n', 'Barcodes in mapping file\n', 'Sample\tSequence Count\tBarcode\n', 's2\t0\tAGAGTCCTGAGC\n', 's1\t0\tACACATGTCTAC\n', 's3\t0\tAACTGTGCGTAC\n', '\n', 'Total number seqs written\t0']
+        expected_histograms = ['Length\tBefore\tAfter\n', '20\t2\t0\n', '30\t4\t0']
+        
+        
+        
+        self.assertEqual(actual_seqs, expected_seqs)
+        self.assertEqual(actual_log, expected_log)
+        self.assertEqual(actual_histograms, expected_histograms)
+        
+        # With invalid character in a SampleID, should raise ValueError
+        
+        fasta_files = [self.sample_fasta_file]
+        qual_files = [self.sample_qual_file]
+        mapping_file = self.sample_mapping_bad_char_sampleid_f
+        barcode_type="golay_12"
+        min_seq_len=200
+        max_seq_len=1000
+        min_qual_score=25
+        starting_ix=1
+        keep_primer=False
+        max_ambig=0
+        max_primer_mm=1
+        trim_seq_len=True
+        dir_prefix=self.output_dir
+        max_bc_errors=2
+        max_homopolymer=4
+        retain_unassigned_reads=False
+        keep_barcode=False 
+        attempt_bc_correction=True
+        qual_score_window=0
+        disable_primer_check=False
+        reverse_primers='disable'
+        record_qual_scores=False
+        discard_bad_windows=False
+        median_length_filtering=None
+        added_demultiplex_field=None
+        
+        
+        self.assertRaises(ValueError, preprocess, fasta_files,
+                           qual_files,
+                           mapping_file,
+                           barcode_type,
+                           min_seq_len,
+                           max_seq_len,
+                           min_qual_score,
+                           starting_ix,
+                           keep_primer,
+                           max_ambig,
+                           max_primer_mm,
+                           trim_seq_len,
+                           dir_prefix,
+                           max_bc_errors,
+                           max_homopolymer,
+                           retain_unassigned_reads,
+                           keep_barcode,
+                           attempt_bc_correction,
+                           qual_score_window,
+                           disable_primer_check,
+                           reverse_primers,
+                           record_qual_scores,
+                           discard_bad_windows,
+                           median_length_filtering,
+                           added_demultiplex_field)
 
 
 
@@ -1459,6 +1612,22 @@ s2\tAGAGTCCTGAGC\tGGTCCGGA\tControl\ts2_mouse
 s3\tAACTGTGCGTAC\tGGTCYGGA\tFasted\ts3_mouse
 """
 
+# Sample mapping with invalid character in one sampleID
+sample_mapping_bad_char_sampleid = """#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tTreatment\tDescription
+# Test mapping for split_libraries.py unit tests
+s1\tACACATGTCTAC\tGGTCCGGA\tControl\ts1_mouse
+s_2\tAGAGTCCTGAGC\tGGTCCGGA\tControl\ts2_mouse
+s3\tAACTGTGCGTAC\tGGTCYGGA\tFasted\ts3_mouse
+"""
+
+# Sample mapping with invalid character in data field
+sample_mapping_bad_char_datafield = """#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tTreatment\tDescription
+# Test mapping for split_libraries.py unit tests
+s1\tACACATGTCTAC\tGGTCCGGA\tControl\ts1_mouse
+s2\tAGAGTCCTGAGC\tGGTCCGGA\tControl\ts2_mouse
+s3\tAACTGTGCGTAC\tGGTCYGGA\tFas^^ted\ts3_mouse
+"""
+
 sample_mapping_var_length = """#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tTreatment\tDescription
 # Test mapping for split_libraries.py unit tests
 s1\tACACATGTCTA\tCGGTCCGGA\tControl\ts1_mouse
@@ -1481,6 +1650,7 @@ TTTTGTCCGGACCCTTACTATATAT
 >d_primer_error
 AGAGTCCTGAGCGGTCCGGTACGTTTACTGGA
 """.split('\n')
+
 
 expected_fasta_extra_bc = """>s1_0 a orig_bc=ACACATGTCTAC new_bc=ACACATGTCTAC bc_diffs=0\nCCCTTATATATATAT\n>s2_1 b orig_bc=AGAGTCCTGAGC new_bc=AGAGTCCTGAGC bc_diffs=0\nCCCTTTCCA\n>Unassigned_2 c orig_bc=AACTGTGCGTAC new_bc=AACTGTGCGTAC bc_diffs=0\nAACCGGCCGGTT\n>s1_3 d orig_bc=ACTCATGTCTAC new_bc=ACACATGTCTAC bc_diffs=1\nCCCTTACTATATAT"""
 

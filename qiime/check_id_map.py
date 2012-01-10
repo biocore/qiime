@@ -627,7 +627,7 @@ def check_same_length((data, field_types),col_name=BARCODE_KEY, raw_data=None,
     return (data, field_types), '\n'.join(errors)
 
 
-def check_sample_id_chars((data, field_types), filter_f=sample_id_filter,
+'''def check_sample_id_chars((data, field_types), filter_f=sample_id_filter,
     raw_data=None):
     """ Checks Sample IDs for MEINS compliance, only alphanumeric and . chars
     """
@@ -643,7 +643,7 @@ def check_sample_id_chars((data, field_types), filter_f=sample_id_filter,
             "Removed bad chars from cell %s (now %s) in sample id %s, col %s." %
              (val, new_val, row[0], headers[j]) + " Location (row, column):"+\
              "\t%d,%d" % (i,j))
-    return (data, field_types), '\n'.join(problems)
+    return (data, field_types), '\n'.join(problems)'''
 
 def check_bad_chars((data, field_types), filter_f=descr_filter,
     filter_sample_id=sample_id_filter, raw_data=None,
@@ -658,11 +658,40 @@ def check_bad_chars((data, field_types), filter_f=descr_filter,
     for i, row in enumerate(body):
         for j, val in enumerate(row):
             if j==sample_id_index:
-                new_val, e = filter_sample_id.resultAndError(val)
+                continue
+                #new_val, e = filter_sample_id.resultAndError(val)
             elif j == linker_primer_index:
                 continue
             else:
                 new_val, e = filter_f.resultAndError(val)
+            if e:
+                row[j] = new_val
+                problems.append(
+            "Removed bad chars from cell %s (now %s) in sample id %s, col %s." %
+             (val, new_val, row[0], headers[j]) + " Location (row, column):"+\
+             "\t%d,%d" % (i,j))
+    return (data, field_types), '\n'.join(problems)
+    
+def check_bad_chars_sampleids((data, field_types), filter_f=descr_filter,
+    filter_sample_id=sample_id_filter, raw_data=None,
+    added_demultiplex_field=None):
+    """Checks all fields for bad chars, removing and warning."""
+    problems = []
+    headers, body = data[0], data[1:]
+    
+    sample_id_index = 0
+    linker_primer_index = 2
+
+    for i, row in enumerate(body):
+        for j, val in enumerate(row):
+            if j==sample_id_index:
+                new_val, e = filter_sample_id.resultAndError(val)
+            else:
+                continue
+            '''elif j == linker_primer_index:
+                continue
+            else:
+                new_val, e = filter_f.resultAndError(val)'''
             if e:
                 row[j] = new_val
                 problems.append(
@@ -1067,6 +1096,7 @@ def process_id_map(infile, disable_primer_check=False, is_barcoded=True, \
     STANDARD_FILENAME_CHECKS = [(filename_has_space, 'error')]
     STANDARD_COL_CHECKS = [
         (check_field_types, 'error'),
+        (check_bad_chars_sampleids, 'error'),
         (check_bad_chars, 'warning'),
         (check_mixed_caps, 'warning'),
         ]
@@ -1075,7 +1105,7 @@ def process_id_map(infile, disable_primer_check=False, is_barcoded=True, \
     
     STANDARD_SAMPLE_DESCRIPTION_CHECKS = [
     (check_missing_descriptions, 'warning'),
-    (check_duplicate_sample_ids, 'warning'),
+    (check_duplicate_sample_ids, 'error'),
     (check_description_chars, 'warning'),
     ]
     STANDARD_COL_HEADER_CHECKS = [(sampleid_missing, 'error'),
@@ -1178,7 +1208,6 @@ def process_id_map(infile, disable_primer_check=False, is_barcoded=True, \
     data, field_types = run_checks((data, field_types), col_checks, problems, \
      raw_data, added_demultiplex_field)
     sample_ids = data[:,0]
-    
 
 
 
@@ -1239,7 +1268,7 @@ output_filepath, chars_replaced=False):
         
     return
     
-def test_for_replacement_chars(warnings):
+def test_for_replacement_chars(warnings, errors):
     """ Checks for replacement character warnings, returns true if so """
     
     
@@ -1247,6 +1276,11 @@ def test_for_replacement_chars(warnings):
         if warning.startswith("Removed ") or \
          warning.startswith("These sample ids have bad characters") or \
          warning.startswith("These sample ids lack descriptions (replaced "):
+            return True
+    for error in errors:
+        if error.startswith("Removed ") or \
+         error.startswith("These sample ids have bad characters") or \
+         error.startswith("These sample ids lack descriptions (replaced "):
             return True
     
     return False
@@ -1293,7 +1327,7 @@ def check_mapping_file(infile_name, output_dir, has_barcodes, char_replace, \
      var_len_barcodes, added_demultiplex_field)
      
 
-    chars_replaced = test_for_replacement_chars(warnings)
+    chars_replaced = test_for_replacement_chars(warnings, errors)
 
     
     mapping_root_name = infile_name.split("/")[-1].replace(".txt","")
