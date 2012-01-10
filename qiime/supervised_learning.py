@@ -116,6 +116,8 @@ class RSupervisedLearner(CommandLineApplication):
         
         ## temporary hack: this converts a biom file to classic otu table
         ##  format for use within R
+        if verbose:
+            print 'Converting BIOM format to tab-delimited...'
         temp_predictor_fp = join(output_dir,
                                  splitext(split(predictor_fp)[1])[0]+'.txt')
         temp_predictor_f = open(temp_predictor_fp,'w')
