@@ -118,9 +118,6 @@ def main():
         exit(1)
 
     # run the supervised learning algorithm
-    if opts.verbose:
-        print 'Running R...'
-
     learner = RSupervisedLearner()
     results = learner(opts.input_data, opts.mapping_file, opts.category,
             ntree=opts.ntree, errortype=opts.errortype,
