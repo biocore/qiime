@@ -31,21 +31,6 @@ VirtualBox help video
 =====================
 A video illustrating these steps can be found `here <http://www.youtube.com/watch?v=1jYupkquaME>`_.
 
-Upgrading from previous versions of the QIIME Virtual Box
-=========================================================
-A QIIME upgrade/deploy script is provided for existing 64-bit Virtual Box users to upgrade to the latest version of QIIME without having to reinstall the QIIME VB. To upgrade your VB follow these steps, launch your existing QIIME VB, open a terminal, and run the following commands::
-	
-	sudo apt-get install ghc gsl-bin
-	wget http://bmf.colorado.edu/QIIME/app-deploy-qiime-1.4.0.tgz
-	tar zxvf app-deploy-qiime-1.4.0.tgz
-	cd app-deploy-qiime-1.4.0
-	python app-deploy.py /software/ -f etc/qiime_1.4.0.conf
-	exit
-	
-Then open a new terminal, and to confirm that you are now running the latest version of Qiime run::
-	
-	print_qiime_config.py -t
-	
 QIIME VB and CloVR
 ==================
 
