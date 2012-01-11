@@ -537,10 +537,11 @@ def run_pick_reference_otus_through_otu_table(
         # Grab the OTU picker parameters
         try:
             # Want to find a cleaner strategy for this: the parallel script
-            # is method-specific, so doesn't take a --otu_picking_method
+            # is method-specific, so doesn't take a --alignment_method
             # option. This works for now though.
             d = params['pick_otus'].copy()
-            del d['otu_picking_method']
+            if 'otu_picking_method' in d:
+                del d['otu_picking_method']
             params_str += ' %s' % get_params_str(d)
         except KeyError:
             pass
