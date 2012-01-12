@@ -4,29 +4,30 @@ from __future__ import division
 
 __author__ = "Antonio Gonzalez Pena"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Rob Knight", "Greg Caporaso", "Kyle Bittinger", "Antonio Gonzalez Pena"] 
+__credits__ = ["Rob Knight", "Greg Caporaso", "Kyle Bittinger", "Antonio Gonzalez Pena", "David Soergel"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Antonio Gonzalez Pena"
 __email__ = "antgonza@gmail.com"
 __status__ = "Development"
- 
+
 
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.util import make_option, get_rdp_jarpath, load_qiime_config
 from os import system, remove, path, mkdir
 from os.path import split, splitext
 from qiime.assign_taxonomy import (
-    BlastTaxonAssigner, RdpTaxonAssigner, Rdp20TaxonAssigner,
+    BlastTaxonAssigner, RdpTaxonAssigner, Rdp20TaxonAssigner, RtaxTaxonAssigner,
     guess_rdp_version)
 
 assignment_method_constructors = {
     'blast': BlastTaxonAssigner,
     'rdp22': RdpTaxonAssigner,
     'rdp20': Rdp20TaxonAssigner,
+    'rtax': RtaxTaxonAssigner,
 }
 
-assignment_method_choices = ['rdp','blast']
+assignment_method_choices = ['rdp','blast','rtax']
 
 options_lookup = get_options_lookup()
 
@@ -36,7 +37,7 @@ script_info={}
 script_info['brief_description']="""Assign taxonomy to each sequence"""
 script_info['script_description']="""Contains code for assigning taxonomy, using several techniques.
 
-Given a set of sequences, assign_taxonomy attempts to assign the taxonomy of each sequence. Currently there are two methods implemented: assignment with BLAST and assignment with the RDP classifier. The output of this step is a mapping of input sequence identifiers (1st column of output file) to taxonomy (2nd column) and quality score (3rd column). The sequence identifier of the best BLAST hit is also included if the blast method is used (4th column). """
+Given a set of sequences, assign_taxonomy attempts to assign the taxonomy of each sequence. Currently there are three methods implemented: assignment with BLAST, assignment with the RDP classifier, and assignment with the RTAX classifier. The output of this step is a mapping of input sequence identifiers (1st column of output file) to taxonomy (2nd column) and quality score (3rd column). The sequence identifier of the best BLAST hit is also included if the blast method is used (4th column). """
 script_info['script_usage']=[]
 script_info['script_usage'].append(("""""","""
 Example reference data sets and id_to_taxonomy maps can be found in the Greengenes OTUs. To get the latest build of those click the "Most recent Greengenes OTUs" link on the top right of http://blog.qiime.org. After downloading and unzipping you can use the following following files as -r and -t. As of this writing the latest build was gg_otus_4feb2011, but that portion of path to these files will change with future builds. Modify these paths accordining when calling %prog.
@@ -59,6 +60,11 @@ To assign the representative sequence set, where the output directory is "rdp_as
 script_info['script_usage'].append(("""""","""Alternatively, the user could change the minimum confidence score ("-c"), using the following command:""","""assign_taxonomy.py -i repr_set_seqs.fasta -m rdp -c 0.85"""))
 script_info['script_usage'].append(("""""","""Note: If a reference set of sequences and taxonomy to id assignment file are provided, the script will use them to generate a new training dataset for the RDP Classifier on-the-fly. Due to limitations in the generation of a training set, each provided assignment must contain exactly 6 taxa in the following order: domain (level=2), phylum (level=3), class (level=4), order (5), family (level=6), and genus (level=7). Additionally, each genus name must be unique, due to the internal algorithm used by the RDP Classifier.
 """,""""""))
+script_info['script_usage'].append(("""Sample Assignment with RTAX:""","""
+Taxonomy assignments are made by searching input sequences against a fasta database of pre-assigned reference sequences. All matches are collected which match the query within 0.5% identity of the best match.  A taxonomy assignment is made to the lowest rank at which more than half of these hits agree.  Note that both unclustered read fasta files are required as inputs in addition to the representative sequence file.
+
+To make taxonomic classifications of the representative sequences, using a reference set of sequences and a taxonomy to id assignment text file, where the results are output to default directory "rtax_assigned_taxonomy", you can run the following command:""","""assign_taxonomy.py repr_set_seqs.fasta -m rtax --read_1_seqs_fp read_1.seqs.fna --read_2_seqs_fp read_2.seqs.fna -r ref_seq_set.fna -t id_to_taxonomy.txt"""
+    ))
 script_info['output_description']="""The consensus taxonomy assignment implemented here is the most detailed lineage description shared by 90% or more of the sequences within the OTU (this level of agreement can be adjusted by the user). The full lineage information for each sequence is one of the output files of the analysis. In addition, a conflict file records cases in which a phylum-level taxonomy assignment disagreement exists within an OTU (such instances are rare and can reflect sequence misclassification within the greengenes database)."""
 script_info['required_options']=[\
    options_lookup['fasta_as_primary_input']\
@@ -86,8 +92,16 @@ script_info['optional_options']=[\
         help='Path to ".properties" file in pre-compiled training data for the '
         'RDP Classifier.  This option is overridden by the -t and -r options. '
         '[default: %default]'),\
+ make_option('--read_1_seqs_fp',type="existing_filepath",
+        help='Path to fasta file containing the first read from paired-end '
+        'sequencing, prior to OTU clustering (used for RTAX only).'
+        '[default: %default]'),\
+ make_option('--read_2_seqs_fp',type="existing_filepath",
+        help='Path to fasta file containing a second read from paired-end '
+        'sequencing, prior to OTU clustering (used for RTAX only).'
+        '[default: %default]'),\
  make_option('-m', '--assignment_method', type='choice',
-        help='Taxon assignment method, either blast, rdp '
+        help='Taxon assignment method, either blast, rdp, or rtax '
         '[default:%default]',
         choices=assignment_method_choices, default="rdp"),\
  make_option('-b', '--blast_db',
@@ -111,22 +125,22 @@ script_info['version'] = __version__
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
     assignment_method = opts.assignment_method
-    
+
     if assignment_method == 'blast':
         if not opts.id_to_taxonomy_fp:
-            option_parser.error('Option --id_to_taxonomy_fp is required when ' 
+            option_parser.error('Option --id_to_taxonomy_fp is required when '
                          'assigning with blast.')
         if not (opts.reference_seqs_fp or opts.blast_db):
             option_parser.error('Either a blast db (via -b) or a collection of '
                          'reference sequences (via -r) must be passed to '
                          'assign taxonomy using blast.')
-                         
+
     if assignment_method == 'rdp':
         try:
             assignment_method = guess_rdp_version()
         except ValueError, e:
             option_parser.error(e)
-        
+
         if opts.id_to_taxonomy_fp:
             if opts.reference_seqs_fp is None:
                 option_parser.error('A filepath for reference sequences must be '
@@ -139,16 +153,27 @@ def main():
         else:
             pass
 
+    if assignment_method == 'rtax':
+        if opts.id_to_taxonomy_fp is None or opts.reference_seqs_fp is None:
+            option_parser.error('RTAX classification requires both a filepath for '
+                         'reference sequences (via -r) and an id_to_taxonomy '
+                         'file (via -t).')
+        if opts.read_1_seqs_fp is None or read_2_seqs_fp is None:
+            option_parser.error('RTAX classification requires the FASTA files '
+                         'produced by split_illumina_fastq.py for both reads, '
+                         'in addition to the cluster representatives.  Pass '
+                         'these via --read_1_seqs_fp and --read_2_seqs_fp.')
+
     taxon_assigner_constructor =\
      assignment_method_constructors[assignment_method]
     input_sequences_filepath = opts.input_fasta_fp
-    
+
     try:
         id_to_taxonomy_fp = opts.id_to_taxonomy_fp
         params = {'id_to_taxonomy_filepath':id_to_taxonomy_fp}
     except IndexError:
         params = {}
-    
+
     # Build the output filenames
     output_dir = opts.output_dir or assignment_method + '_assigned_taxonomy'
     try:
@@ -156,14 +181,14 @@ def main():
     except OSError:
         # output_dir already exists
         pass
-        
+
     fpath, ext = splitext(input_sequences_filepath)
     input_dir, fname = split(fpath)
     result_path = output_dir + '/' + fname + '_tax_assignments.txt'
     log_path = output_dir + '/' + fname + '_tax_assignments.log'
-    
+
     if assignment_method == 'blast':
-        # one of these must have a value, otherwise we'd have 
+        # one of these must have a value, otherwise we'd have
         # an optparse error
         if opts.blast_db:
             params['blast_db'] = opts.blast_db
@@ -177,6 +202,13 @@ def main():
         params['reference_sequences_fp'] = opts.reference_seqs_fp
         params['training_data_properties_fp'] = opts.training_data_properties_fp
         params['max_memory'] = "%sM" % opts.rdp_max_memory
+
+    elif assignment_method == 'rtax':
+       params['id_to_taxonomy_fp'] = opts.id_to_taxonomy_fp
+       params['reference_sequences_fp'] = opts.reference_seqs_fp
+       params['read_1_seqs_fp'] = opts.read_1_seqs_fp
+       params['read_2_seqs_fp'] = opts.read_2_seqs_fp
+
     else:
         # should not be able to get here as an unknown classifier would
         # have raised an optparse error
