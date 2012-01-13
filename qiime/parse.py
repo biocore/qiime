@@ -848,7 +848,13 @@ def parse_denoiser_mapping(denoiser_map):
     return result
     
 def parse_otu_map(otu_map_f,otu_ids_to_exclude=None,delim='_'):
+    """ parse otu map file into a sparse dict {(otu_idx,sample_idx):count}
     
+        This function is much more memory efficent than fields_to_dict and
+         and the result dict is of the correct format to be passed to 
+         table_factory for creating OtuTable objects.
+    
+    """
     if otu_ids_to_exclude == None:
         otu_ids_to_exclude = {}
     
