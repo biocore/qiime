@@ -1,6 +1,6 @@
 QIIME 1.4.0-dev
 ==================================
-
+* Altered the way split_libraries.py handles errors/warnings from the mapping file, and fixed a bug where suppression of warnings about variable length barcodes was not being properly passed.  Now warnings will not cause split_libraries.py to halt execution, although more serious problems (errors) will.  These includes problems with headers, SampleIDs, and invalid characters in DNA sequence fields.
 
 QIIME 1.4.0 (13 Dec 2011)
 ==================================
