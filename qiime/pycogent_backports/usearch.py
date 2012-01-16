@@ -106,6 +106,9 @@ class Usearch(CommandLineApplication):
          
         # Dereplicate exact subsequences
         '--derep_subseq':FlagParameter('--',Name='derep_subseq'),
+
+        # Dereplicate exact sequences
+        '--derep_fullseq':FlagParameter('--',Name='derep_subseq'),
         
         # Sort by abundance
         '--sortsize':ValuedParameter('--', Name='sortsize', Delimiter=' ',
@@ -382,6 +385,76 @@ def usearch_dereplicate_exact_subseqs(
     
     return app_result, output_filepath
     
+def usearch_dereplicate_exact_seqs(
+        fasta_filepath,
+        output_filepath=None,
+        minlen=64,
+        w=64,
+        slots=16769023,
+        sizeout=True,
+        maxrejects=64,
+        log_name = "derep.log",
+        usersort=False,
+        HALT_EXEC=False,
+        save_intermediate_files=False,
+        remove_usearch_logs=False,
+        working_dir=None):
+    """ Generates clusters and fasta file of dereplicated subsequences
+    for exact sequences.
+
+    These parameters are those specified by Robert Edgar for optimal use of
+    usearch in clustering/filtering sequences.
+
+    fasta_filepath = input filepath of fasta file to be dereplicated
+    output_filepath = output filepath of dereplicated fasta file
+    minlen = (not specified in usearch helpstring)
+    w = Word length for U-sorting
+    slots = Size of compressed index table. Should be prime, e.g. 40000003.
+    Should also specify --w, typical is --w 16 or --w 32.
+    sizeout = (not specified in usearch helpstring)
+    maxrejects = Max rejected targets, 0=ignore, default 32.
+    log_name: string to specify log filename
+    usersort = Enable if input fasta not sorted by length purposefully, lest
+    usearch will raise an error.
+    HALT_EXEC: Used for debugging app controller
+    save_intermediate_files: Preserve all intermediate files created."""
+    
+    output_filepath = output_filepath or \
+     get_tmp_filename(prefix='usearch_fasta_dereplicated', suffix='.fasta')
+    
+    log_filepath = join(working_dir, log_name)
+
+    uc_filepath = join(working_dir, "derep.uc")
+
+    params = {'--derep_fullseq':True,
+              '--minlen':minlen,
+              '--w':w,
+              '--slots':slots,
+              '--sizeout':sizeout,
+              '--maxrejects':maxrejects}
+
+    app = Usearch(params, WorkingDir=working_dir, HALT_EXEC=HALT_EXEC)
+
+
+    if usersort:
+        app.Parameters['--usersort'].on()
+        
+    data = {'--cluster':fasta_filepath,
+            '--uc':uc_filepath,
+            '--seedsout':output_filepath
+            }
+
+    if not remove_usearch_logs:
+        data['--log'] = log_filepath
+            
+    app_result = app(data)
+            
+    if not save_intermediate_files:
+        remove_files([uc_filepath])
+                
+    # Returning output filepath to delete if specified.
+
+    return app_result, output_filepath
     
 def usearch_sort_by_abundance(
     fasta_filepath,
@@ -1086,6 +1159,7 @@ def otu_pipe(
     maxrejects=64,
     minlen=64,
     de_novo_chimera_detection=True,
+    derep_fullseq=False,
     reference_chimera_detection=True,
     cluster_size_filtering=True,
     remove_usearch_logs=False,
