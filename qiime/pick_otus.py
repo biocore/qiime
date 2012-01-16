@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project" 
-__credits__ = ["Rob Knight","Greg Caporaso", "Kyle Bittinger","Jens Reeder","William Walters"]
+__credits__ = ["Rob Knight","Greg Caporaso", "Kyle Bittinger","Jens Reeder", "William Walters", "Jose Carlos Clemente Litran"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -917,6 +917,7 @@ class UsearchOtuPicker(UclustOtuPickerBase):
          'cluster_size_filtering':True,
          'output_dir':'.',
          'remove_usearch_logs':False,
+         'derep_fullseq':False,
          'chimeras_retention':'union',
          'verbose':False}
          
@@ -974,6 +975,7 @@ class UsearchOtuPicker(UclustOtuPickerBase):
          reference_chimera_detection=self.Params['reference_chimera_detection'],
          cluster_size_filtering = self.Params['cluster_size_filtering'],
          remove_usearch_logs = self.Params['remove_usearch_logs'],
+         derep_fullseq = self.Params['derep_fullseq'],
          chimeras_retention = self.Params['chimeras_retention'],
          verbose = self.Params['verbose'],
          HALT_EXEC=HALT_EXEC)
@@ -1059,6 +1061,7 @@ class UsearchReferenceOtuPicker(UclustOtuPickerBase):
          'output_dir':'.',
          'remove_usearch_logs':False,
          'suppress_new_clusters':False,
+         'derep_fullseq':False,
          'chimeras_retention':'union',
          'verbose':False}
          
@@ -1119,6 +1122,7 @@ class UsearchReferenceOtuPicker(UclustOtuPickerBase):
          cluster_size_filtering = self.Params['cluster_size_filtering'],
          remove_usearch_logs = self.Params['remove_usearch_logs'],
          suppress_new_clusters = self.Params['suppress_new_clusters'],
+         derep_fullseq = self.Params['derep_fullseq'],
          chimeras_retention = self.Params['chimeras_retention'],
          verbose = self.Params['verbose'],
          HALT_EXEC=HALT_EXEC)
