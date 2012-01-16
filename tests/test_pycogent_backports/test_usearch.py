@@ -4,6 +4,14 @@
 provides unit tests for the usearch.py module
 """
 
+__author__ = "William Walters"
+__copyright__ = "Copyright 2007-2011, The Cogent Project"
+__credits__ = ["William Walters", "Jose Carlos Clemente Litran"]
+__license__ = "GPL"
+__version__ = "1.4.0dev"
+__maintainer__ = "William Walters"
+__email__ = "william.a.walters@colorado.edu"
+__status__ = "Development"
 
 from os.path import isfile, basename
 from shutil import rmtree
@@ -17,7 +25,8 @@ from qiime.util import create_dir
 
 from qiime.pycogent_backports.usearch import (Usearch,
  clusters_from_blast_uc_file, usearch_fasta_sort_from_filepath,
- usearch_dereplicate_exact_subseqs, usearch_sort_by_abundance,
+ usearch_dereplicate_exact_subseqs, usearch_dereplicate_exact_seqs,
+ usearch_sort_by_abundance,
  usearch_cluster_error_correction, usearch_chimera_filter_de_novo,
  usearch_chimera_filter_ref_based, usearch_cluster_seqs,
  enumerate_otus, assign_reads_to_otus, otu_pipe, concatenate_fastas,
@@ -540,6 +549,20 @@ class UsearchTests(TestCase):
         
         actual_seqs = [line.strip() for line in open(output_filepath, "U")]
         
+        self.assertEqual(actual_seqs, self.expected_derep_seqs)
+
+    def test_usearch_dereplicate_exact_seqs(self):
+        """ Properly dereplicates fasta file """
+
+        app_result, output_filepath =\
+                    usearch_dereplicate_exact_seqs(self.tmp_dna_seqs_with_dups,
+                                                      remove_usearch_logs=True,
+                                                      working_dir=self.tmp_dir)
+
+        self._files_to_remove.append(output_filepath)
+
+        actual_seqs = [line.strip() for line in open(output_filepath, "U")]
+
         self.assertEqual(actual_seqs, self.expected_derep_seqs)
         
     def test_usearch_fasta_sort_from_filepath(self):
