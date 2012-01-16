@@ -5,7 +5,7 @@
 __author__ = "Kyle Bittinger, Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project" 
 #remember to add yourself if you make changes
-__credits__ = ["Kyle Bittinger", "Greg Caporaso", "Rob Knight", "Jens Reeder","William Walters"] 
+__credits__ = ["Kyle Bittinger", "Greg Caporaso", "Rob Knight", "Jens Reeder", "William Walters", "Jose Carlos Clemente Litran"] 
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -567,6 +567,7 @@ class UsearchOtuPickerTests(TestCase):
     def setUp(self):
         # create the temporary input files
         self.dna_seqs_3 = dna_seqs_3
+        self.dna_seqs_3_derep = dna_seqs_3_derep
         self.dna_seqs_4 = dna_seqs_usearch
         self.ref_database = usearch_ref_seqs1
         
@@ -578,7 +579,14 @@ class UsearchOtuPickerTests(TestCase):
         seq_file = open(self.tmp_seq_filepath1,'w')
         seq_file.write(self.dna_seqs_3)
         seq_file.close()        
-        
+
+        self.tmp_seq_filepath1_derep = get_tmp_filename(\
+         prefix='UsearchOtuPickerTest_',\
+         suffix='.fasta')
+        seq_file = open(self.tmp_seq_filepath1_derep,'w')
+        seq_file.write(self.dna_seqs_3_derep)
+        seq_file.close()
+                        
         self.tmp_seq_filepath2 = get_tmp_filename(\
          prefix='UsearchOtuPickerTest_',\
          suffix='.fasta')
@@ -654,6 +662,52 @@ class UsearchOtuPickerTests(TestCase):
         obs_clusters = obs.values()
         obs_clusters.sort()
         # The relation between otu ids and clusters is abitrary, and 
+        # is not stable due to use of dicts when parsing clusters -- therefore
+        # just checks that we have the expected group of each
+        self.assertEqual(obs_otu_ids, exp_otu_ids)
+        self.assertEqual(obs_clusters, exp_clusters)
+
+    def test_call_derep(self):
+        """UsearchOtuPicker.__call__ returns expected clusters when using
+        --derep_fullseq"""
+
+        # adapted from test_call_default_params
+        # Sequences 1 and 9 have exact replicates
+
+        exp_otu_ids = [str(x) for x in range(10)]
+
+        exp_clusters = [['uclust_test_seqs_0'],
+                        ['uclust_test_seqs_1',
+                         'uclust_test_seqs_1rep',
+                         'uclust_test_seqs_1rep2'],
+                        ['uclust_test_seqs_2'],
+                        ['uclust_test_seqs_3'],
+                        ['uclust_test_seqs_4'],
+                        ['uclust_test_seqs_5'],
+                        ['uclust_test_seqs_6'],
+                        ['uclust_test_seqs_7'],
+                        ['uclust_test_seqs_8'],
+                        ['uclust_test_seqs_9',
+                         'uclust_test_seqs_9rep']]
+        
+        app = UsearchOtuPicker(params={'save_intermediate_files':False,
+                                       'db_filepath':self.tmp_ref_database,
+                                       'output_dir':self.temp_dir,
+                                       'remove_usearch_logs':True,
+                                       'minlen':12,
+                                       'w':12,
+                                       'minsize':1,
+                                       'derep_fullseq':True
+                                       })
+        
+        
+        obs = app(self.tmp_seq_filepath1_derep)
+
+        obs_otu_ids = obs.keys()
+        obs_otu_ids.sort()
+        obs_clusters = obs.values()
+        obs_clusters.sort()
+        # The relation between otu ids and clusters is abitrary, and
         # is not stable due to use of dicts when parsing clusters -- therefore
         # just checks that we have the expected group of each
         self.assertEqual(obs_otu_ids, exp_otu_ids)
@@ -983,6 +1037,7 @@ class UsearchReferenceOtuPickerTests(TestCase):
     def setUp(self):
         # create the temporary input files
         self.dna_seqs_3 = dna_seqs_3
+        self.dna_seqs_3_derep = dna_seqs_3_derep
         self.dna_seqs_4 = dna_seqs_usearch
         self.ref_database = usearch_ref_seqs1
         self.otu_ref_database = uclustref_query_seqs1
@@ -995,7 +1050,14 @@ class UsearchReferenceOtuPickerTests(TestCase):
         seq_file = open(self.tmp_seq_filepath1,'w')
         seq_file.write(self.dna_seqs_3)
         seq_file.close()        
-        
+
+        self.tmp_seq_filepath1_derep = get_tmp_filename(\
+                     prefix='UsearchOtuPickerTest_',\
+                     suffix='.fasta')
+        seq_file = open(self.tmp_seq_filepath1_derep,'w')
+        seq_file.write(self.dna_seqs_3_derep)
+        seq_file.close()
+                
         self.tmp_seq_filepath2 = get_tmp_filename(\
          prefix='UsearchOtuPickerTest_',\
          suffix='.fasta')
@@ -1078,6 +1140,52 @@ class UsearchReferenceOtuPickerTests(TestCase):
         obs_clusters = obs.values()
         obs_clusters.sort()
         # The relation between otu ids and clusters is abitrary, and 
+        # is not stable due to use of dicts when parsing clusters -- therefore
+        # just checks that we have the expected group of each
+        self.assertEqual(obs_otu_ids, exp_otu_ids)
+        self.assertEqual(obs_clusters, exp_clusters)
+
+    def test_call_derep(self):
+        """UsearchOtuPicker.__call__ returns expected clusters when using
+        --derep_fullseq"""
+
+        # adapted from test_call_default_params
+        # Sequences 1 and 9 have exact replicates
+        
+        exp_otu_ids = [str(x) for x in range(10)]
+        
+        exp_clusters = [['uclust_test_seqs_0'],
+                        ['uclust_test_seqs_1',
+                         'uclust_test_seqs_1rep',
+                         'uclust_test_seqs_1rep2'],
+                        ['uclust_test_seqs_2'],
+                        ['uclust_test_seqs_3'],
+                        ['uclust_test_seqs_4'],
+                        ['uclust_test_seqs_5'],
+                        ['uclust_test_seqs_6'],
+                        ['uclust_test_seqs_7'],
+                        ['uclust_test_seqs_8'],
+                        ['uclust_test_seqs_9',
+                         'uclust_test_seqs_9rep']]
+        
+        app = UsearchReferenceOtuPicker(params={'save_intermediate_files':False,
+                                                'db_filepath':self.tmp_ref_database,
+                                                'output_dir':self.temp_dir,
+                                                'remove_usearch_logs':True,
+                                                'reference_chimera_detection':True,
+                                                'minlen':12,
+                                                'w':12,
+                                                'minsize':1,
+                                                'derep_fullseq':True
+                                                })
+
+        obs = app(self.tmp_seq_filepath1_derep, self.tmp_otu_ref_database)
+
+        obs_otu_ids = obs.keys()
+        obs_otu_ids.sort()
+        obs_clusters = obs.values()
+        obs_clusters.sort()
+        # The relation between otu ids and clusters is abitrary, and
         # is not stable due to use of dicts when parsing clusters -- therefore
         # just checks that we have the expected group of each
         self.assertEqual(obs_otu_ids, exp_otu_ids)
@@ -2904,6 +3012,34 @@ ACGGTGGCTACAAGACGTCCCATCCAACGGGTTGGATACTTAAGGCACATCACGTCAGTTTTGTGTCAGAGCT
 CGGTGGCTGCAACACGTGGCATACAACGGGTTGGATGCTTAAGACACATCGCCTCAGTTTTGTGTCAGGGCT
 >uclust_test_seqs_9 some comment9
 GGTGGCTGAAACACATCCCATACAACGGGTTGGATGCTTAAGACACATCGCATCAGTTTTATGTCAGGGGA"""
+
+dna_seqs_3_derep = """>uclust_test_seqs_0 some comment0
+AACCCCCACGGTGGATGCCACACGCCCCATACAAAGGGTAGGATGCTTAAGACACATCGCGTCAGGTTTGTGTCAGGCCT
+>uclust_test_seqs_1 some comment1
+ACCCACACGGTGGATGCAACAGATCCCATACACCGAGTTGGATGCTTAAGACGCATCGCGTGAGTTTTGCGTCAAGGCT
+>uclust_test_seqs_1rep some comment1rep
+ACCCACACGGTGGATGCAACAGATCCCATACACCGAGTTGGATGCTTAAGACGCATCGCGTGAGTTTTGCGTCAAGGCT
+>uclust_test_seqs_1rep2 some comment1rep2
+ACCCACACGGTGGATGCAACAGATCCCATACACCGAGTTGGATGCTTAAGACGCATCGCGTGAGTTTTGCGTCAAGGCT
+>uclust_test_seqs_2 some comment2
+CCCCCACGGTGGCAGCAACACGTCACATACAACGGGTTGGATTCTAAAGACAAACCGCGTCAAAGTTGTGTCAGAACT
+>uclust_test_seqs_3 some comment3
+CCCCACGGTAGCTGCAACACGTCCCATACCACGGGTAGGATGCTAAAGACACATCGGGTCTGTTTTGTGTCAGGGCT
+>uclust_test_seqs_4 some comment4
+GCCACGGTGGGTACAACACGTCCACTACATCGGCTTGGAAGGTAAAGACACGTCGCGTCAGTATTGCGTCAGGGCT
+>uclust_test_seqs_5 some comment4_again
+CCGCGGTAGGTGCAACACGTCCCATACAACGGGTTGGAAGGTTAAGACACAACGCGTTAATTTTGTGTCAGGGCA
+>uclust_test_seqs_6 some comment6
+CGCGGTGGCTGCAAGACGTCCCATACAACGGGTTGGATGCTTAAGACACATCGCAACAGTTTTGAGTCAGGGCT
+>uclust_test_seqs_7 some comment7
+ACGGTGGCTACAAGACGTCCCATCCAACGGGTTGGATACTTAAGGCACATCACGTCAGTTTTGTGTCAGAGCT
+>uclust_test_seqs_8 some comment8
+CGGTGGCTGCAACACGTGGCATACAACGGGTTGGATGCTTAAGACACATCGCCTCAGTTTTGTGTCAGGGCT
+>uclust_test_seqs_9 some comment9
+GGTGGCTGAAACACATCCCATACAACGGGTTGGATGCTTAAGACACATCGCATCAGTTTTATGTCAGGGGA
+>uclust_test_seqs_9rep some comment9rep
+GGTGGCTGAAACACATCCCATACAACGGGTTGGATGCTTAAGACACATCGCATCAGTTTTATGTCAGGGGA
+"""
 
 uclustref_query_seqs1 = """>uclust_test_seqs_0 some comment aaa
 ACGGTGGCTACAAGACGTCCCATCCAACGGGTTGGATACTTAAGGCACATCACGTCAGTTTTGTGTCAGAGCT
