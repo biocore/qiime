@@ -4,7 +4,7 @@
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project" 
 __credits__ = ["Rob Knight","Greg Caporaso", "Kyle Bittinger",
-               "Jens Reeder","William Walters"] 
+               "Jens Reeder", "William Walters", "Jose Carlos Clemente Litran"] 
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -292,6 +292,11 @@ script_info['optional_options'] = [
               "creation of logs when usearch is called.  Up to nine logs are "
               "created, depending on filtering steps enabled.  "
               "[default: %default]"), action='store_true'),
+
+    make_option('--derep_fullseq', default=False, help=("Dereplication "
+                "of full sequences, instead of subsequences. Faster than "
+                 "the default --derep_subseqs in usearch. "
+                 "[default: %default]"), action='store_true'),
               
     make_option('-F', '--non_chimeras_retention', default='union',
               help=("Selects "
@@ -335,6 +340,7 @@ def main():
     save_uc_files = opts.save_uc_files
     prefilter_identical_sequences =\
      not opts.suppress_uclust_prefilter_exact_match
+    derep_fullseq = opts.derep_fullseq
     chimeras_retention = opts.non_chimeras_retention
     verbose = opts.verbose
     
@@ -464,6 +470,7 @@ def main():
         'reference_chimera_detection':reference_chimera_detection,
         'cluster_size_filtering':cluster_size_filtering,
         'remove_usearch_logs':remove_usearch_logs,
+        'derep_fullseq':derep_fullseq,
         'chimeras_retention':chimeras_retention,
         'verbose':verbose}
         
@@ -488,6 +495,7 @@ def main():
         'cluster_size_filtering':cluster_size_filtering,
         'remove_usearch_logs':remove_usearch_logs,
         'suppress_new_clusters':opts.suppress_new_clusters,
+        'derep_fullseq':derep_fullseq,
         'chimeras_retention':chimeras_retention,
         'verbose':verbose}
         
