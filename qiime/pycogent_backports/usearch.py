@@ -108,7 +108,7 @@ class Usearch(CommandLineApplication):
         '--derep_subseq':FlagParameter('--',Name='derep_subseq'),
 
         # Dereplicate exact sequences
-        '--derep_fullseq':FlagParameter('--',Name='derep_subseq'),
+        '--derep_fullseq':FlagParameter('--',Name='derep_fullseq'),
         
         # Sort by abundance
         '--sortsize':ValuedParameter('--', Name='sortsize', Delimiter=' ',
