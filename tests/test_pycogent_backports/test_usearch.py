@@ -85,6 +85,8 @@ class UsearchTests(TestCase):
          expected_retained_chimeras_union
         self.expected_retained_chimeras_intersection =\
          expected_retained_chimeras_intersection
+        self.expected_derep_seqs_full_len =\
+         expected_derep_seqs_full_len
         
         # Create temporary files for use with unit tests
         
@@ -152,6 +154,7 @@ class UsearchTests(TestCase):
         seq_file = open(self.tmp_dna_seqs_ref_otu_picking, "w")
         seq_file.write(self.dna_seqs_reference_otu_picking)
         seq_file.close()
+        
        
         self._files_to_remove =\
          [self.tmp_seq_filepath1, self.tmp_seq_filepath2,
@@ -564,7 +567,7 @@ class UsearchTests(TestCase):
 
         actual_seqs = [line.strip() for line in open(output_filepath, "U")]
 
-        #self.assertEqual(actual_seqs, self.expected_derep_seqs)
+        self.assertEqual(actual_seqs, self.expected_derep_seqs_full_len)
         
     def test_usearch_fasta_sort_from_filepath(self):
         """ Properly sorts fasta according to seq length """
@@ -792,6 +795,8 @@ GCCAACCAGCTAATCAGACGCGGGTCCATCTTGCACCACCGGAGTTTTTCACACTGCTTCATGCGAAGCTGTGCGCTTAA
 >seq2
 TTGGGCCGTGTCTCAGTCCCAATGTGGCCGTCACCCTCTCAGGCCGGCTACTGATCGTCGCCTTGGTGGGCCTTTACCCC
 >seq3
+TTGGGCCGTGTCTCAGTCCCAATGTGGCCGTCACCCTCTCAGGCCGGCTACTGATCGTCGCCTTGGTGGGCCTTTACCCC
+>seq4
 GCCAACCAGCTAATCAGACGCGGGTCCATCTTGCACCACCGGAGTTTTTCACACTGCTTCATGCGAAGCTGTGCGCTT"""
 
 # Expected output file data
@@ -1126,8 +1131,15 @@ CGCGGTATTAGACGGAATTTCTTCCGCTTATCCCCCTGCTGCGGGCAGGTTCCATACGTGTTACTCACCCGTGCGCCGG"
 
 expected_derep_seqs = """>seq1;size=2
 GCCAACCAGCTAATCAGACGCGGGTCCATCTTGCACCACCGGAGTTTTTCACACTGCTTCATGCGAAGCTGTGCGCTTAA
->seq2;size=1
+>seq2;size=2
 TTGGGCCGTGTCTCAGTCCCAATGTGGCCGTCACCCTCTCAGGCCGGCTACTGATCGTCGCCTTGGTGGGCCTTTACCCC""".split('\n')
+
+expected_derep_seqs_full_len = """>Cluster0;size=1
+GCCAACCAGCTAATCAGACGCGGGTCCATCTTGCACCACCGGAGTTTTTCACACTGCTTCATGCGAAGCTGTGCGCTTAA
+>Cluster1;size=2
+TTGGGCCGTGTCTCAGTCCCAATGTGGCCGTCACCCTCTCAGGCCGGCTACTGATCGTCGCCTTGGTGGGCCTTTACCCC
+>Cluster2;size=1
+GCCAACCAGCTAATCAGACGCGGGTCCATCTTGCACCACCGGAGTTTTTCACACTGCTTCATGCGAAGCTGTGCGCTT""".split('\n')
 
 expected_len_sorted_seqs = """>chimera
 CGCGTGTATGAAGAAGGCCTTCGGGTTGTAAAGTACTTTCAGCGGGGAGGAGGGAGTAAAGTTAATACCTTTGCTCATTGACCCCTAGGGTGGGAATAACCCGGGGAAACCCGGGCTAATACCGAATAAGACCACAGGAGGCGACTCCAGAGGGTCAAAGGGAGCCTTGGCCTCCCCC
