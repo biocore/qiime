@@ -4,8 +4,8 @@
 # specified by $QIIME_CONFIG_FP and edit that copy of the file.
 
 cluster_jobs_fp	/software/qiime-1.4.0-release/bin/start_parallel_jobs.py
-python_exe_fp	/software/python-2.6.4-release/bin/python
-working_dir	/mnt/share/
+python_exe_fp	python
+working_dir	/tmp/
 blastmat_dir	/software/blast-2.2.22-release/data
 blastall_fp	/software/blast-2.2.22-release/bin/blastall	
 pynast_template_alignment_fp	/software/core_set_aligned.fasta.imputed
