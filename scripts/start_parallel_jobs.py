@@ -49,9 +49,9 @@ def write_job_files(output_dir,commands,run_id):
         try:
             makedirs(jobs_dir)
         except OSError,e:
-            raise OSError, "Error creating jobs directory in working dir: %s"+\
+            raise OSError, "Error creating jobs directory in working dir: %s" % output_dir +\
             " (specified in qiime_config). Do you have write access?. "+\
-            "Original error message follows:\n%s" % (output_dir,str(e))
+            "Original error message follows:\n%s" % str(e)
         paths_to_remove = [jobs_dir]
     else:
         # point paths_to_remove at job_fps
