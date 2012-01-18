@@ -19,5 +19,5 @@ denoiser_min_per_core	50
 cloud_environment	True
 topiaryexplorer_project_dir
 torque_queue	friendlyq
-assign_taxonomy_reference_seqs_fp	/software/gg_otus_4feb2011/rep_set/gg_97_otus_4feb2011.fasta
-assign_taxonomy_id_to_taxonomy_fp	/software/gg_otus_4feb2011/taxonomies/greengenes_tax_rdp_train.txt
+assign_taxonomy_reference_seqs_fp	/software/gg_otus-4feb2011-release/rep_set/gg_97_otus_4feb2011.fasta
+assign_taxonomy_id_to_taxonomy_fp	/software/gg_otus-4feb2011-release/taxonomies/greengenes_tax_rdp_train.txt
