@@ -21,9 +21,12 @@ from cogent.core.tree import PhyloNode
 from cogent.maths.distance_transform import dist_chisq
 from qiime.parse import parse_newick, parse_distmat, parse_matrix
 from qiime.beta_diversity import BetaDiversityCalc, single_file_beta,\
-list_known_nonphylogenetic_metrics, list_known_phylogenetic_metrics
+list_known_nonphylogenetic_metrics, list_known_phylogenetic_metrics,\
+single_object_beta
 from qiime.beta_metrics import dist_unweighted_unifrac
 from qiime.pycogent_backports.rich_otu_table import DenseOTUTable
+
+#from modified_beta_diversity import single_object_beta
 
 import os
 import shutil
@@ -215,7 +218,107 @@ class BetaDiversityCalcTests(TestCase):
     def test_single_file_beta_missing(self):
         self.single_file_beta(missing_otu_table, missing_tree, missing_sams=['M'])
 
+    
+    def single_object_beta(self, otu_table, metric, tree_string, missing_sams=None):
+        """ running single_file_beta should give same result using --rows"""
+        if missing_sams==None:
+            missing_sams = []
+        # setup
+        #input_path = get_tmp_filename()
+        #in_fname = os.path.split(input_path)[1]
+        #f = open(input_path,'w')
+        #f.write(otu_table_string)
+        #f.close()
+        #tree_path = get_tmp_filename()
+        #f = open(tree_path,'w')
+        #f.write(tree_string)
+        #f.close()
+        metrics = list_known_nonphylogenetic_metrics()
+        metrics.extend(list_known_phylogenetic_metrics())
+        #output_dir = get_tmp_filename(suffix = '')
+        #os.mkdir(output_dir)
 
+        # new metrics that don't trivially parallelize must be dealt with
+        # carefully
+        warnings.filterwarnings('ignore','dissimilarity binary_dist_chisq is not parallelized, calculating the whole matrix...')
+        warnings.filterwarnings('ignore','dissimilarity dist_chisq is not parallelized, calculating the whole matrix...')  
+        warnings.filterwarnings('ignore','dissimilarity dist_gower is not parallelized, calculating the whole matrix...')     
+        warnings.filterwarnings('ignore','dissimilarity dist_hellinger is not parallelized, calculating the whole matrix...')  
+        warnings.filterwarnings('ignore','unifrac had no information for sample M*')
+
+        #self.files_to_remove.extend([input_path,tree_path])
+        #self.folders_to_remove.append(output_dir)
+        #os.mkdir(output_dir+'/ft/')
+
+        for metric in metrics:
+            # do it
+            beta_out = single_object_beta(otu_table, metric, 
+                                          tree_string,rowids=None,
+                                          full_tree=False)
+                                          
+            sams, dmtx = parse_distmat(beta_out)
+
+            # do it by rows
+            for i in range(len(sams)):
+                if sams[i] in missing_sams: continue
+                rows = sams[i]
+                #row_outname = output_dir + '/' + metric + '_' +\
+                    #in_fname
+                r_out = single_object_beta(otu_table, metric, 
+                                          tree_string,rowids=rows,
+                                          full_tree=False)
+                col_sams, row_sams, row_dmtx = parse_matrix(r_out)
+
+                self.assertEqual(row_dmtx.shape, (len(rows.split(',')),len(sams)))
+
+                # make sure rows same as full
+                for j in range(len(rows.split(','))):
+                    for k in range(len(sams)):
+                        row_v1 = row_dmtx[j,k]
+                        full_v1 =\
+                            dmtx[sams.index(row_sams[j]),sams.index(col_sams[k])]
+                        self.assertFloatEqual(row_v1, full_v1)
+
+
+            ### full tree run:
+            if 'full_tree' in str(metric).lower(): continue
+            # do it by rows with full tree
+            for i in range(len(sams)):
+                if sams[i] in missing_sams: continue
+                rows = sams[i]
+                
+                #~ row_outname = output_dir + '/ft/' + metric + '_' +\
+                    #~ in_fname
+                r_out = single_object_beta(otu_table, metric, 
+                                          tree_string,rowids=None,
+                                          full_tree=True)
+                col_sams, row_sams, row_dmtx = parse_matrix(r_out)
+
+                self.assertEqual(row_dmtx.shape, (len(rows.split(',')),len(sams)))
+
+                # make sure rows same as full
+                for j in range(len(rows.split(','))):
+                    for k in range(len(sams)):
+                        row_v1 = row_dmtx[j,k]
+                        full_v1 =\
+                            dmtx[sams.index(row_sams[j]),sams.index(col_sams[k])]
+                        self.assertFloatEqual(row_v1, full_v1)
+
+            # # do it with full tree
+            r_out = single_object_beta(otu_table, metric, 
+                                          tree_string,rowids=None,
+                                          full_tree=True)
+            sams_ft, dmtx_ft = parse_distmat(r_out)
+            self.assertEqual(sams_ft, sams)
+            self.assertFloatEqual(dmtx_ft, dmtx)
+    
+    
+    def test_single_object_beta(self):
+        self.single_file_beta(l19_otu_table, l19_tree)
+
+    def test_single_object_beta_missing(self):
+        self.single_file_beta(missing_otu_table, missing_tree, missing_sams=['M'])
+        
 l19_otu_table = """{"rows": [{"id": "tax1", "metadata": {}}, {"id": "tax2", "metadata": {}}, {"id": "tax3", "metadata": {}}, {"id": "tax4", "metadata": {}}, {"id": "endbigtaxon", "metadata": {}}, {"id": "tax6", "metadata": {}}, {"id": "tax7", "metadata": {}}, {"id": "tax8", "metadata": {}}, {"id": "tax9", "metadata": {}}], "format": "Biological Observation Matrix v0.9", "data": [[0, 0, 7.0], [0, 1, 4.0], [0, 2, 2.0], [0, 3, 1.0], [1, 0, 1.0], [1, 1, 2.0], [1, 2, 4.0], [1, 3, 7.0], [1, 4, 8.0], [1, 5, 7.0], [1, 6, 4.0], [1, 7, 2.0], [1, 8, 1.0], [2, 5, 1.0], [2, 6, 2.0], [2, 7, 4.0], [2, 8, 7.0], [2, 9, 8.0], [2, 10, 7.0], [2, 11, 4.0], [2, 12, 2.0], [2, 13, 1.0], [3, 10, 1.0], [3, 11, 2.0], [3, 12, 4.0], [3, 13, 7.0], [3, 14, 8.0], [3, 15, 7.0], [3, 16, 4.0], [3, 17, 2.0], [3, 18, 1.0], [4, 15, 1.0], [4, 16, 2.0], [4, 17, 4.0], [4, 18, 7.0], [5, 1, 1.0], [5, 2, 1.0], [6, 6, 2.0], [6, 7, 1.0], [7, 11, 3.0], [7, 12, 1.0], [8, 16, 4.0], [8, 17, 1.0]], "columns": [{"id": "sam1", "metadata": null}, {"id": "sam2", "metadata": null}, {"id": "sam3", "metadata": null}, {"id": "sam4", "metadata": null}, {"id": "sam5", "metadata": null}, {"id": "sam6", "metadata": null}, {"id": "sam7", "metadata": null}, {"id": "sam8", "metadata": null}, {"id": "sam9", "metadata": null}, {"id": "sam_middle", "metadata": null}, {"id": "sam11", "metadata": null}, {"id": "sam12", "metadata": null}, {"id": "sam13", "metadata": null}, {"id": "sam14", "metadata": null}, {"id": "sam15", "metadata": null}, {"id": "sam16", "metadata": null}, {"id": "sam17", "metadata": null}, {"id": "sam18", "metadata": null}, {"id": "sam19", "metadata": null}], "generated_by": "QIIME 1.4.0-dev, svn revision 2520", "matrix_type": "sparse", "shape": [9, 19], "format_url": "http://www.qiime.org/svn_documentation/documentation/biom_format.html", "date": "2011-12-20T19:03:28.130403", "type": "OTU table", "id": null, "matrix_element_type": "float"}"""
 
 l19_tree = """((((tax7:0.1,tax3:0.2):.98,tax8:.3, tax4:.3):.4, ((tax1:0.3, tax6:.09):0.43,tax2:0.4):0.5):.2, (tax9:0.3, endbigtaxon:.08));"""

@@ -280,6 +280,99 @@ def single_file_beta(input_path, metrics, tree_path, output_dir, rowids=None,
             f.write(format_matrix(row_dissims,rowids_list,otu_table.SampleIds))
             f.close()
             
+            
+def single_object_beta(otu_table, metrics, tree_str, rowids=None,
+    full_tree=False):
+    """mod of single_file_beta to recieve and return otu obj, tree str
+
+    uses name in metrics to name output beta diversity files
+    assumes input tree is already trimmed to contain only otus present 
+    in otu_table, doesn't call getSubTree()
+    inputs:
+		otu_table -- a otu_table in the biom format
+		metrics -- metrics (str, comma delimited if more than 1 metric)
+		tree_str -- a newick tree string if needed by the chosen beta
+					diversity metric
+		rowids -- comma seperated string
+    """  
+    otumtx = asarray([v for v in otu_table.iterSampleData()])
+    
+    #data = [(value,sample_id) for value, sample_id, metadata in otu_table.iterSamples()]
+    #otumtx, samids = unzip(data)
+    #otumtx = asarray(otumtx)
+    #otuids = [otu_id for value, otu_id, metadata in otu_table.iterObservations()]
+    
+    if tree_str:
+        tree = parse_newick(tree_str, PhyloNode)
+    else:
+        tree = None
+
+    metrics_list = metrics.split(',')
+    
+    for metric in metrics_list:
+        try:
+            metric_f = get_nonphylogenetic_metric(metric)
+            is_phylogenetic = False
+        except AttributeError:
+            try:
+                metric_f = get_phylogenetic_metric(metric)
+                is_phylogenetic = True
+                if tree == None:
+                    stderr.write("metric %s requires a tree, but none found\n"\
+                        % (metric,))
+                    exit(1)
+            except AttributeError:
+                stderr.write("Could not find metric %s.\n\nKnown metrics are: %s\n"\
+                    % (metric, ', '.join(list_known_metrics())))
+                exit(1)
+        if rowids == None:
+            # standard, full way
+            if is_phylogenetic:
+                dissims = metric_f(otumtx, otu_table.ObservationIds, tree, otu_table.SampleIds, make_subtree = (not full_tree))
+            else:
+                dissims = metric_f(otumtx)
+            
+            return format_distance_matrix(otu_table.SampleIds, dissims).split('\n') 
+        else:
+            # only calc d(rowid1, *) for each rowid
+            rowids_list = rowids.split(',')
+            row_dissims = [] # same order as rowids_list
+            for rowid in rowids_list:
+                rowidx = otu_table.SampleIds.index(rowid)
+                
+                # first test if we can the dissim is a fn of only the pair
+                # if not, just calc the whole matrix
+                if metric_f.__name__ == 'dist_chisq' or \
+                    metric_f.__name__ == 'dist_gower' or \
+                    metric_f.__name__ == 'dist_hellinger' or\
+                    metric_f.__name__ == 'binary_dist_chisq':
+                    warnings.warn('dissimilarity '+metric_f.__name__+\
+                      ' is not parallelized, calculating the whole matrix...')
+                    row_dissims.append(metric_f(otumtx)[rowidx])
+                else:
+                    try:
+                        row_metric = get_phylogenetic_row_metric(metric)
+                    except AttributeError:
+                        # do element by element
+                        dissims = []
+                        for i in range(len(otu_table.SampleIds)):
+                            if is_phylogenetic:
+                                dissim = metric_f(otumtx[[rowidx,i],:],
+                                    otu_table.ObservationIds, tree, [otu_table.SampleIds[rowidx],otu_table.SampleIds[i]],
+                                    make_subtree = (not full_tree))[0,1]
+                            else:
+                                dissim = metric_f(otumtx[[rowidx,i],:])[0,1]
+                            dissims.append(dissim)
+                        row_dissims.append(dissims)
+                    else:
+                        # do whole row at once
+                        dissims = row_metric(otumtx,
+                                    otu_table.ObservationIds, tree, otu_table.SampleIds, rowid,
+                                    make_subtree = (not full_tree))
+                        row_dissims.append(dissims)
+            
+            return format_matrix(row_dissims,rowids_list,otu_table.SampleIds)
+                        
 def multiple_file_beta(input_path, output_dir, metrics, tree_path, rowids=None,
     full_tree=False):
     """ runs beta diversity for each input file in the input directory 
