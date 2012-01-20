@@ -126,6 +126,42 @@ class ParseTests(TestCase):
         self.assertEqual((tab2.ObservationIds),['GG_OTU_1','GG_OTU_2',
             'GG_OTU_3','GG_OTU_4','GG_OTU_5'])
 
+    def test_parse_sparse_biom_table_to_dense_object(self):
+        """ parsing a sparse biom table to a dense object functions as expected """
+        dense_biom_fh = StringIO(self.biom_minimal_dense)
+        ## dd = dense object from dense biom
+        dd = parse.parse_biom_table(dense_biom_fh)
+        sparse_biom_fh = StringIO(self.biom_minimal_sparse)
+        ## sd = dense object from sparse biom
+        sd = parse.parse_biom_table(sparse_biom_fh,dense_object=True)
+        assert(isinstance(dd,rich_otu_table.DenseOTUTable))
+        assert(isinstance(sd,rich_otu_table.DenseOTUTable))
+
+        dd_data = [sam[0] for sam in dd.iterSamples()]
+        sd_data = [sam[0] for sam in sd.iterSamples()]
+        self.assertFloatEqual(dd_data,sd_data)
+
+        self.assertEqual((dd.SampleIds),(dd.SampleIds))
+        self.assertEqual((dd.ObservationIds),(dd.ObservationIds))
+
+    def test_parse_dense_biom_table_to_sparse_object(self):
+        """ parsing a dense biom table to a sparse object functions as expected """
+        dense_biom_fh = StringIO(self.biom_minimal_dense)
+        ## sd = sparse object from dense biom
+        sd = parse.parse_biom_table(dense_biom_fh,dense_object=False)
+        sparse_biom_fh = StringIO(self.biom_minimal_sparse)
+        ## ss = sparse object from sparse biom
+        ss = parse.parse_biom_table(sparse_biom_fh)
+        assert(isinstance(sd,rich_otu_table.SparseOTUTable))
+        assert(isinstance(ss,rich_otu_table.SparseOTUTable))
+
+        sd_data = [sam[0] for sam in sd.iterSamples()]
+        ss_data = [sam[0] for sam in ss.iterSamples()]
+        self.assertFloatEqual(sd_data,ss_data)
+
+        self.assertEqual((sd.SampleIds),(ss.SampleIds))
+        self.assertEqual((sd.ObservationIds),(ss.ObservationIds))
+
     def test_otu_table_biom_conversions_with_taxonomy(self):
         """ converting between classic otu table and biom is roundtrip-able (w taxonomy)
         """

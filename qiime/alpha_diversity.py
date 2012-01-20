@@ -2,7 +2,7 @@
 
 __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Justin Kuczynski", "Rob Knight"]
+__credits__ = ["Justin Kuczynski", "Rob Knight","Greg Caporaso"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Justin Kuczynski"
@@ -48,7 +48,7 @@ from sys import exit, stderr
 import sys
 import os.path
 import qiime.alpha_diversity
-from qiime.pycogent_backports.parse_biom import parse_biom_table, parse_biom_table_str
+from qiime.pycogent_backports.parse_biom import parse_biom_table
 
 class AlphaDiversityCalc(FunctionWithParams):
     """An AlphaDiversityCalc takes taxon x sample counts, returns diversities.
@@ -117,7 +117,7 @@ class AlphaDiversityCalc(FunctionWithParams):
         2d: [(return val 1 from sample1),(return val 2)...]
             [(return val 1 on sample2),...]
         """
-        otu_table = parse_biom_table(open(data_path,'U'))
+        otu_table = parse_biom_table(open(data_path,'U'),dense_object=True)
         data = otu_table.iterSampleData()
         if self.IsPhylogenetic:
             tree = self.getTree(tree_path)
@@ -180,7 +180,7 @@ class AlphaDiversityCalcs(FunctionWithParams):
         result: a matrix of sample by alpha diversity method, sample_names, 
         calc_names
         """
-        otu_table = parse_biom_table(open(data_path,'U'))
+        otu_table = parse_biom_table(open(data_path,'U'),dense_object=True)
 
         calc_names = []
         for calc in self.Calcs:

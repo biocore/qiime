@@ -11,7 +11,7 @@ from string import strip
 MATRIX_ELEMENT_TYPE = {'int':int,'float':float,'str':str,
                        u'int':int,u'float':float,u'str':str}
 
-def parse_biom_table(json_fh):
+def parse_biom_table(json_fh,dense_object=None):
     """parses a biom format otu table into a rich otu table object
 
     input is an open filehandle or compatable object (e.g. list of lines)
@@ -21,13 +21,20 @@ def parse_biom_table(json_fh):
     note that sparse here refers to the compressed format of [row,col,count]
     dense refers to the full / standard matrix representations
     """
-    return parse_biom_table_str(''.join(json_fh))
+    return parse_biom_table_str(''.join(json_fh),dense_object=dense_object)
 
-def parse_biom_table_str(json_str):
-    """Parses a JSON string of the Biom table into a rich otu table object."""
+def parse_biom_table_str(json_str,dense_object=None):
+    """Parses a JSON string of the Biom table into a rich otu table object.
+    
+        dense_object: can be True, False or None. If True, a DenseOTUTable
+         is created. If False, a SparseOTUTable is create. If None, type is 
+         the same as the representation in the biom file.
+    """
     json_table = json.loads(json_str)
     if json_table['type'].lower() != 'otu table':
         raise ValueError('type not OTU table')
+    if dense_object not in (True,False,None):
+        raise ValueError, "dense_object must be True, False, or None."
 
     sample_ids = [col['id'] for col in json_table['columns']]
     # null metadata -> None object in metadata list 
@@ -42,18 +49,34 @@ def parse_biom_table_str(json_str):
         data = pysparse.spmatrix.ll_mat(*dims)
         for entry in json_table['data']:
             data[entry[0],entry[1]] = entry[2]
-        table_obj = rt.SparseOTUTable(Data=data, 
-            SampleIds=sample_ids, ObservationIds=ObservationIds,
-            SampleMetadata=sample_metadata, 
-            ObservationMetadata=obs_metadata)
+        if dense_object == True:
+            data = rt.ll_mat_to_nparray(data)
+            table_obj = rt.DenseOTUTable(Data=data, 
+                SampleIds=sample_ids, ObservationIds=ObservationIds,
+                SampleMetadata=sample_metadata, 
+                ObservationMetadata=obs_metadata)
+        else:
+            # dense_object is False or None
+            table_obj = rt.SparseOTUTable(Data=data, 
+                SampleIds=sample_ids, ObservationIds=ObservationIds,
+                SampleMetadata=sample_metadata, 
+                ObservationMetadata=obs_metadata)
 
     elif json_table['matrix_type'].lower() == 'dense':
         data = numpy.asarray(json_table['data'],
             dtype=dtype)
-        table_obj = rt.DenseOTUTable(Data=data, 
-            SampleIds=sample_ids, ObservationIds=ObservationIds,
-            SampleMetadata=sample_metadata, 
-            ObservationMetadata=obs_metadata)
+        if dense_object == True or dense_object == None:
+            table_obj = rt.DenseOTUTable(Data=data, 
+                SampleIds=sample_ids, ObservationIds=ObservationIds,
+                SampleMetadata=sample_metadata, 
+                ObservationMetadata=obs_metadata)
+        else:
+            # dense_object is False
+            data = rt.nparray_to_ll_mat(data)
+            table_obj = rt.SparseOTUTable(Data=data, 
+                SampleIds=sample_ids, ObservationIds=ObservationIds,
+                SampleMetadata=sample_metadata, 
+                ObservationMetadata=obs_metadata)
     else:
         raise ValueError( 'invalid matrix_type in biom table')
 

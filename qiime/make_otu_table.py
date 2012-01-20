@@ -41,7 +41,7 @@ def make_otu_table(otu_map_f,
                    delim='_',
                    table_id=None,
                    sample_metadata=None,
-                   constructor=DenseOTUTable):
+                   constructor=SparseOTUTable):
     
     data, sample_ids, otu_ids = parse_otu_map(otu_map_f,delim)
     
