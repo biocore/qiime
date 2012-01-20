@@ -117,7 +117,7 @@ class AlphaDiversityCalc(FunctionWithParams):
         2d: [(return val 1 from sample1),(return val 2)...]
             [(return val 1 on sample2),...]
         """
-        otu_table = parse_biom_table(open(data_path,'U'),dense_object=True)
+        otu_table = parse_biom_table(open(data_path,'U'))
         data = otu_table.iterSampleData()
         if self.IsPhylogenetic:
             tree = self.getTree(tree_path)
@@ -180,7 +180,7 @@ class AlphaDiversityCalcs(FunctionWithParams):
         result: a matrix of sample by alpha diversity method, sample_names, 
         calc_names
         """
-        otu_table = parse_biom_table(open(data_path,'U'),dense_object=True)
+        otu_table = parse_biom_table(open(data_path,'U'))
 
         calc_names = []
         for calc in self.Calcs:

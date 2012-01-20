@@ -166,7 +166,7 @@ class BetaDiversityCalc(FunctionWithParams):
         else:
             tree = None
         
-        otu_table = parse_biom_table(open(data_path,'U'),dense_object=True)
+        otu_table = parse_biom_table(open(data_path,'U'))
         otumtx = asarray([v for v in otu_table.iterSampleData()])
         
         # get the 2d dist matrix from beta diversity analysis
@@ -194,7 +194,7 @@ def single_file_beta(input_path, metrics, tree_path, output_dir, rowids=None,
      output_dir (str)
      rowids (comma separated str)
     """
-    otu_table = parse_biom_table(open(input_path,'U'),dense_object=True)
+    otu_table = parse_biom_table(open(input_path,'U'))
     otumtx = asarray([v for v in otu_table.iterSampleData()])
     #data = [(value,sample_id) for value, sample_id, metadata in otu_table.iterSamples()]
     #otumtx, samids = unzip(data)
