@@ -13,6 +13,7 @@ __status__ = "Development"
 
 from itertools import izip
 from numpy import inf, isinf
+from cogent.parse.fasta import MinimalFastaParser
 from qiime.pycogent_backports.parse_biom import parse_biom_table
 from qiime.util import parse_command_line_parameters, make_option
 from qiime.filter import filter_otus_from_otu_table
@@ -48,7 +49,7 @@ script_info['optional_options'] = [
  make_option('-e','--otu_ids_to_exclude_fp',
              type='existing_filepath',
              default=None,
-             help="file containing list of OTU ids to exclude: can be one id per line, or id can be first value in a tab-separated line [default: %default]")
+             help="file containing list of OTU ids to exclude: can be a text file with one id per line, a text file where id is the first value in a tab-separated line, or can be a fasta file (extension must be .fna or .fasta) [default: %default]")
 
 ]
 script_info['version'] = __version__
@@ -78,8 +79,14 @@ def main():
     otu_ids_to_keep = set(otu_table.ObservationIds)
     
     if otu_ids_to_exclude_fp:
-        otu_ids_to_exclude = set([l.strip().split('\t')[0] 
-                                  for l in open(otu_ids_to_exclude_fp,'U')])
+        if otu_ids_to_exclude_fp.endswith('.fasta') or \
+           otu_ids_to_exclude_fp.endswith('.fna'):
+            otu_ids_to_exclude = set([id_.strip().split()[0]
+                for id_,seq in MinimalFastaParser(open(otu_ids_to_exclude_fp,'U'))])
+        else:
+            otu_ids_to_exclude = set([l.strip().split('\t')[0] 
+                for l in open(otu_ids_to_exclude_fp,'U')])
+                
         otu_ids_to_keep -= otu_ids_to_exclude
     
     filtered_otu_table = filter_otus_from_otu_table(otu_table,
