@@ -4,7 +4,7 @@
 Biological Observation Matrix (biom) format
 ===========================================
 
-The biom file format (canonically pronouced `biome`) is designed to be a general-use format for representing counts of observations in one or more biological samples. 
+The biom file format (canonically pronounced `biome`) is designed to be a general-use format for representing counts of observations in one or more biological samples. 
 
 With respect to QIIME, the primary use of this format is to represent OTU tables: the observations in this case are OTUs and the matrix contains counts corresponding to the number of times each OTU is observed in each sample. With respect to metagenome data, this format would be used to represent metagenome tables: the observations in this case might correspond to SEED subsystems, and the matrix would contain counts corresponding to the number of times each subsystem is observed in each metagenome. Similarly, with respect to genome data, this format may be used to represent a set of genomes: the observations in this case again might correspond to SEED subsystems, and the counts would correspond to the number of times each subsystem is observed in each genome.
 
@@ -23,7 +23,13 @@ Required top-level fields::
     format_url          : <url> A string with a static URL providing format details
     type                : <string> Table type (a controlled vocabulary)
                           Acceptable values:
-                           "OTU table" : a QIIME OTU table
+                           "OTU table"
+                           "Pathway table"
+                           "Function table"
+                           "Ortholog table"
+                           "Gene table"
+                           "Metabolite table"
+                           "Taxon table"
     generated_by        : <string> Package and revision that built the table
     date                : <datetime> Date the table was built (ISO 8601 format)
     rows                : <list of objects> An ORDERED list of obj describing the rows 
@@ -72,42 +78,7 @@ at the minimum::
 Example biom files
 ==================
 
-Minimal dense OTU table
------------------------
-
-::
-
-    {
-        "id":null,
-        "format": "Biological Observation Matrix v0.9",
-        "format_url": "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
-        "type": "OTU table",
-        "generated_by": "QIIME revision XYZ",
-        "date": "2011-12-19T19:00:00",
-        "rows":[
-                {"id":"GG_OTU_1", "metadata":null},
-                {"id":"GG_OTU_2", "metadata":null},
-                {"id":"GG_OTU_3", "metadata":null},
-                {"id":"GG_OTU_4", "metadata":null},
-                {"id":"GG_OTU_5", "metadata":null}
-            ],  
-        "columns": [
-                {"id":"Sample1", "metadata":null},
-                {"id":"Sample2", "metadata":null},
-                {"id":"Sample3", "metadata":null},
-                {"id":"Sample4", "metadata":null},
-                {"id":"Sample5", "metadata":null},
-                {"id":"Sample6", "metadata":null}
-            ],  
-        "matrix_type": "dense",
-        "matrix_element_type": "int",
-        "shape": [5,6],
-        "data":  [[0,0,1,0,0,0], 
-                  [5,1,0,2,3,1],
-                  [0,0,1,4,2,0],
-                  [2,1,1,0,0,1],
-                  [0,1,1,0,0,0]]
-    }
+Below are examples of minimal and rich biom files in both sparse and dense formats. To decide which of these you should generate for new data types, see the section on :ref:`sparse-or-dense`.
 
 Minimal sparse OTU table
 ------------------------
@@ -157,65 +128,41 @@ Minimal sparse OTU table
                ]
     }
 
-Rich dense OTU table
---------------------
+Minimal dense OTU table
+-----------------------
 
 ::
 
     {
-     "id":null,
-     "format": "Biological Observation Matrix v0.9",
-     "format_url": "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
-     "type": "OTU table",
-     "generated_by": "QIIME revision XYZ",
-     "date": "2011-12-19T19:00:00",  
-     "rows":[
-        {"id":"GG_OTU_1", "metadata":{"taxonomy":["k__Bacteria", "p__Proteobacteria", "c__Gammaproteobacteria", "o__Enterobacteriales", "f__Enterobacteriaceae", "g__Escherichia", "s__"]}},
-        {"id":"GG_OTU_2", "metadata":{"taxonomy":["k__Bacteria", "p__Cyanobacteria", "c__Nostocophycideae", "o__Nostocales", "f__Nostocaceae", "g__Dolichospermum", "s__"]}},
-        {"id":"GG_OTU_3", "metadata":{"taxonomy":["k__Archaea", "p__Euryarchaeota", "c__Methanomicrobia", "o__Methanosarcinales", "f__Methanosarcinaceae", "g__Methanosarcina", "s__"]}},
-        {"id":"GG_OTU_4", "metadata":{"taxonomy":["k__Bacteria", "p__Firmicutes", "c__Clostridia", "o__Halanaerobiales", "f__Halanaerobiaceae", "g__Halanaerobium", "s__Halanaerobiumsaccharolyticum"]}},
-        {"id":"GG_OTU_5", "metadata":{"taxonomy":["k__Bacteria", "p__Proteobacteria", "c__Gammaproteobacteria", "o__Enterobacteriales", "f__Enterobacteriaceae", "g__Escherichia", "s__"]}}
-        ],  
-     "columns":[
-        {"id":"Sample1", "metadata":{
-                                 "BarcodeSequence":"CGCTTATCGAGA",
-                                 "LinkerPrimerSequence":"CATGCTGCCTCCCGTAGGAGT",
-                                 "BODY_SITE":"gut",
-                                 "Description":"human gut"}},
-        {"id":"Sample2", "metadata":{
-                                 "BarcodeSequence":"CATACCAGTAGC",
-                                 "LinkerPrimerSequence":"CATGCTGCCTCCCGTAGGAGT",
-                                 "BODY_SITE":"gut",
-                                 "Description":"human gut"}},
-        {"id":"Sample3", "metadata":{
-                                 "BarcodeSequence":"CTCTCTACCTGT",
-                                 "LinkerPrimerSequence":"CATGCTGCCTCCCGTAGGAGT",
-                                 "BODY_SITE":"gut",
-                                 "Description":"human gut"}},
-        {"id":"Sample4", "metadata":{
-                                 "BarcodeSequence":"CTCTCGGCCTGT",
-                                 "LinkerPrimerSequence":"CATGCTGCCTCCCGTAGGAGT",
-                                 "BODY_SITE":"skin",
-                                 "Description":"human skin"}},
-        {"id":"Sample5", "metadata":{
-                                 "BarcodeSequence":"CTCTCTACCAAT",
-                                 "LinkerPrimerSequence":"CATGCTGCCTCCCGTAGGAGT",
-                                 "BODY_SITE":"skin",
-                                 "Description":"human skin"}},
-        {"id":"Sample6", "metadata":{
-                                 "BarcodeSequence":"CTAACTACCAAT",
-                                 "LinkerPrimerSequence":"CATGCTGCCTCCCGTAGGAGT",
-                                 "BODY_SITE":"skin",
-                                 "Description":"human skin"}}
-                ],
-     "matrix_type": "dense",
-     "matrix_element_type": "int",
-     "shape": [5,6],
-     "data":  [[0,0,1,0,0,0], 
-               [5,1,0,2,3,1],
-               [0,0,1,4,2,0],
-               [2,1,1,0,0,1],
-               [0,1,1,0,0,0]]
+        "id":null,
+        "format": "Biological Observation Matrix v0.9",
+        "format_url": "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
+        "type": "OTU table",
+        "generated_by": "QIIME revision XYZ",
+        "date": "2011-12-19T19:00:00",
+        "rows":[
+                {"id":"GG_OTU_1", "metadata":null},
+                {"id":"GG_OTU_2", "metadata":null},
+                {"id":"GG_OTU_3", "metadata":null},
+                {"id":"GG_OTU_4", "metadata":null},
+                {"id":"GG_OTU_5", "metadata":null}
+            ],  
+        "columns": [
+                {"id":"Sample1", "metadata":null},
+                {"id":"Sample2", "metadata":null},
+                {"id":"Sample3", "metadata":null},
+                {"id":"Sample4", "metadata":null},
+                {"id":"Sample5", "metadata":null},
+                {"id":"Sample6", "metadata":null}
+            ],  
+        "matrix_type": "dense",
+        "matrix_element_type": "int",
+        "shape": [5,6],
+        "data":  [[0,0,1,0,0,0], 
+                  [5,1,0,2,3,1],
+                  [0,0,1,4,2,0],
+                  [2,1,1,0,0,1],
+                  [0,1,1,0,0,0]]
     }
 
 Rich sparse OTU table
@@ -290,6 +237,108 @@ Rich sparse OTU table
             ]
     }
 
+
+Rich dense OTU table
+--------------------
+
+::
+
+    {
+     "id":null,
+     "format": "Biological Observation Matrix v0.9",
+     "format_url": "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
+     "type": "OTU table",
+     "generated_by": "QIIME revision XYZ",
+     "date": "2011-12-19T19:00:00",  
+     "rows":[
+        {"id":"GG_OTU_1", "metadata":{"taxonomy":["k__Bacteria", "p__Proteobacteria", "c__Gammaproteobacteria", "o__Enterobacteriales", "f__Enterobacteriaceae", "g__Escherichia", "s__"]}},
+        {"id":"GG_OTU_2", "metadata":{"taxonomy":["k__Bacteria", "p__Cyanobacteria", "c__Nostocophycideae", "o__Nostocales", "f__Nostocaceae", "g__Dolichospermum", "s__"]}},
+        {"id":"GG_OTU_3", "metadata":{"taxonomy":["k__Archaea", "p__Euryarchaeota", "c__Methanomicrobia", "o__Methanosarcinales", "f__Methanosarcinaceae", "g__Methanosarcina", "s__"]}},
+        {"id":"GG_OTU_4", "metadata":{"taxonomy":["k__Bacteria", "p__Firmicutes", "c__Clostridia", "o__Halanaerobiales", "f__Halanaerobiaceae", "g__Halanaerobium", "s__Halanaerobiumsaccharolyticum"]}},
+        {"id":"GG_OTU_5", "metadata":{"taxonomy":["k__Bacteria", "p__Proteobacteria", "c__Gammaproteobacteria", "o__Enterobacteriales", "f__Enterobacteriaceae", "g__Escherichia", "s__"]}}
+        ],  
+     "columns":[
+        {"id":"Sample1", "metadata":{
+                                 "BarcodeSequence":"CGCTTATCGAGA",
+                                 "LinkerPrimerSequence":"CATGCTGCCTCCCGTAGGAGT",
+                                 "BODY_SITE":"gut",
+                                 "Description":"human gut"}},
+        {"id":"Sample2", "metadata":{
+                                 "BarcodeSequence":"CATACCAGTAGC",
+                                 "LinkerPrimerSequence":"CATGCTGCCTCCCGTAGGAGT",
+                                 "BODY_SITE":"gut",
+                                 "Description":"human gut"}},
+        {"id":"Sample3", "metadata":{
+                                 "BarcodeSequence":"CTCTCTACCTGT",
+                                 "LinkerPrimerSequence":"CATGCTGCCTCCCGTAGGAGT",
+                                 "BODY_SITE":"gut",
+                                 "Description":"human gut"}},
+        {"id":"Sample4", "metadata":{
+                                 "BarcodeSequence":"CTCTCGGCCTGT",
+                                 "LinkerPrimerSequence":"CATGCTGCCTCCCGTAGGAGT",
+                                 "BODY_SITE":"skin",
+                                 "Description":"human skin"}},
+        {"id":"Sample5", "metadata":{
+                                 "BarcodeSequence":"CTCTCTACCAAT",
+                                 "LinkerPrimerSequence":"CATGCTGCCTCCCGTAGGAGT",
+                                 "BODY_SITE":"skin",
+                                 "Description":"human skin"}},
+        {"id":"Sample6", "metadata":{
+                                 "BarcodeSequence":"CTAACTACCAAT",
+                                 "LinkerPrimerSequence":"CATGCTGCCTCCCGTAGGAGT",
+                                 "BODY_SITE":"skin",
+                                 "Description":"human skin"}}
+                ],
+     "matrix_type": "dense",
+     "matrix_element_type": "int",
+     "shape": [5,6],
+     "data":  [[0,0,1,0,0,0], 
+               [5,1,0,2,3,1],
+               [0,0,1,4,2,0],
+               [2,1,1,0,0,1],
+               [0,1,1,0,0,0]]
+    }
+
+
+.. _converting:
+
+Converting between file formats
+===============================
+
+The ``convert_biom.py`` script in QIIME can be used to convert between biom and classic OTU table formats. This is useful for several reasons:
+ - converting classic OTU tables to biom format for use with newer versions of QIIME
+ - converting biom format to classic OTU tables for easy viewing in programs such as Excel
+ - converting between sparse and dense biom formats
+
+Usage examples
+--------------
+
+Convert a classic OTU table to sparse biom format::
+
+	convert_biom.py -i otu_table.txt -o otu_table.biom
+
+Convert a classic OTU table to dense biom format::
+
+	convert_biom.py -i otu_table.txt -o otu_table.biom -t dense
+
+Convert biom format to classic OTU table format::
+
+	convert_biom.py -i otu_table.biom -o otu_table.txt -b
+
+Convert dense biom format to sparse biom format::
+
+	convert_biom.py -i otu_table.dense.biom -o otu_table.sparse.biom --dense_biom_to_sparse_biom
+
+Convert sparse biom format to dense biom format::
+
+	convert_biom.py -i otu_table.sparse.biom -o otu_table.dense.biom --sparse_biom_to_dense_biom
+
+.. _sparse-or-dense:
+
+Should I generate sparse or dense biom files?
+=============================================
+
+In general, we recommend using the sparse format for your biom files. These will be a lot smaller than the dense format biom files when your data is sparse (i.e., most observations have zero counts in most samples). This is common for OTU tables and metagenomes, and you'll want to investigate whether it's true for your data. If you currently format your data in tab-separated tables where observations are rows and samples are columns, you can format that file to be convertible to biom format with the ``convert_biom.py`` script in QIIME. Here you can create dense and sparse formats, and see which file size is smaller. See the section on :ref:`converting`.
 
 Motivation for changing the OTU Table Format
 =============================================
