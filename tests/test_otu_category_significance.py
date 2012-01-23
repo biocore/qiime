@@ -850,7 +850,75 @@ sample3\tC\t1.0""".split('\n')
         
     def test_test_wrapper(self):
         """runs the specified statistical test"""
-        #correlation
+        otu_table1 = """{"rows": [{"id": "0", "metadata": {"taxonomy":
+        ["lineage0"]}}, {"id": "1", "metadata": {"taxonomy": ["lineage1"]}},
+        {"id": "2", "metadata": {"taxonomy": ["lineage2"]}}],
+        "format": "Biological Observation Matrix v0.9", "data": [[0, 0, 1.0],
+        [0, 1, 2.0], [0, 3, 1.0], [1, 0, 1.0], [1, 3, 1.0], [2, 0, 1.0],
+        [2, 1, 1.0], [2, 2, 1.0], [2, 3, 1.0]], "columns": [{"id": "sample1",
+        "metadata": null}, {"id": "sample2", "metadata": null}, {"id":
+        "sample3", "metadata": null}, {"id": "sample4", "metadata": null}],
+        "generated_by": "QIIME 1.4.0-dev, svn revision 2556", "matrix_type":
+        "sparse", "shape": [3, 4], "format_url":
+        "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
+        "date": "2011-12-21T15:42:03.286885", "type": "OTU table", "id": null,
+        "matrix_element_type": "float"}"""
+        
+        category_mapping = ['#SampleID\tcat1\tcat2',
+                                      'sample1\tA\t0',
+                                      'sample2\tA\t8.0',
+                                      'sample3\tB\t1.0',
+                                      'sample4\tB\t1.0']
+        OTU_list = ['1', '0'] 
+
+        fp1 = get_tmp_filename()
+        try:
+            f1 = open(fp1,'w')
+        except IOError, e:
+            raise e,"Could not create temporary files: %s, %s" %(f1)
+        
+        f1.write(otu_table1)
+        f1.close()
+
+        # ANOVA
+        otu_table_path = fp1
+        threshold = None
+        _filter = 0
+        otu_include = None
+        otu_table1 = open(fp1,'U')
+        category = 'cat1'
+
+        # get expected ANOVA output from file
+        results1 = test_wrapper('ANOVA', otu_table1, category_mapping, \
+            category, threshold, _filter, otu_include=None)
+        self.assertEqual(len(results1), 4)
+        self.assertEqual(results1[0], 'OTU\tprob\tBonferroni_corrected\tFDR_corrected\tA_mean\tB_mean\tConsensus Lineage')
+        otu0_results = results1[1].split('\t')
+        A_mean = float(otu0_results[4])
+        self.assertFloatEqual(A_mean, 0.5)
+        B_mean = float(otu0_results[5])
+        self.assertFloatEqual(B_mean, 0.166666666666666)
+
+
+        # get expected ANOVA means when it is specified not to convert the table to relative abundance
+        otu_table_path = fp1
+        otu_table1 = open(fp1,'U')
+        results1 = test_wrapper('ANOVA', otu_table1, category_mapping, \
+            category, threshold, _filter, otu_include=None, otu_table_relative_abundance=True)
+        self.assertEqual(len(results1), 4)
+        self.assertEqual(results1[0], 'OTU\tprob\tBonferroni_corrected\tFDR_corrected\tA_mean\tB_mean\tConsensus Lineage')
+        otu0_results = results1[1].split('\t')
+        A_mean = float(otu0_results[4])
+        self.assertFloatEqual(A_mean, 1.5)
+        B_mean = float(otu0_results[5])
+        self.assertFloatEqual(B_mean, 0.5)
+        
+        # correlation
+        otu_table_paths = fp1
+        threshold = None
+        _filter = 0
+        otu_include = None
+        otu_table1 = open(fp1,'U')
 
     def test_aggregate_multiple_results_ANOVA(self):
         """aggregate_multiple_results_ANOVA works"""
