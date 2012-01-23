@@ -919,6 +919,10 @@ sample3\tC\t1.0""".split('\n')
         _filter = 0
         otu_include = None
         otu_table1 = open(fp1,'U')
+        results1 = test_wrapper('correlation', otu_table1, category_mapping, \
+            'cat2', threshold, _filter, otu_include=None)
+        self.assertEqual(len(results1), 4)
+        self.assertEqual(results1[0], 'OTU\tprob\totu_values_y\tcat_values_x\tBonferroni_corrected\tFDR_corrected\tr\tConsensus Lineage')
 
     def test_aggregate_multiple_results_ANOVA(self):
         """aggregate_multiple_results_ANOVA works"""
