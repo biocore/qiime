@@ -51,7 +51,8 @@ def main():
     even_sampling_depth = guess_even_sampling_depth(counts_per_sample_values)
 
     print 'Num samples: %s' % str(len(counts_per_sample))
-    print 'Num otus:%s\n' % str(otu_count)
+    print 'Num otus: %s' % str(otu_count)
+    print 'Num observations (sequences): %s\n' % (sum(counts_per_sample_values))
 
     print 'Seqs/sample summary:' 
     print ' Min: %s' % str(min_counts)
@@ -70,7 +71,6 @@ def main():
     for v,k in sorted_counts_per_sample:
         total_count += v
         print ' %s: %s' % (k,str(v))
-    print '\nTotal observations (sequences): %d' % total_count
 
     if opts.mapfile:
         if not opts.outputfile:
