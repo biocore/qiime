@@ -712,8 +712,9 @@ def get_common_OTUs(otu_table_paths, _filter, category_info, \
             del(taxonomy_all_OTUs[k])
     return OTU_list, taxonomy_all_OTUs
 
-def test_wrapper_multiple(test, otu_table_paths, category_mapping, category, threshold, \
-                _filter, otu_include=None):
+def test_wrapper_multiple(test, otu_table_paths, category_mapping, category, \
+                threshold, _filter, otu_include=None, \
+                otu_table_relative_abundance=False):
     """runs statistical test to look for category/OTU associations on multiple files.
        Unlike the test_wrapper() method, this method includes all OTUs, even when 
        some have zero counts.
@@ -739,7 +740,8 @@ def test_wrapper_multiple(test, otu_table_paths, category_mapping, category, thr
 
         otu_table = parse_biom_table(otu_table_fh)
         if test == 'ANOVA' or test == 'correlation': 
-            otu_table = otu_table.normObservationBySample()
+            if not otu_table_relative_abundance:
+                otu_table = otu_table.normObservationBySample()
         elif not test=='g_test':
             raise ValueError("An invalid test statistic was given. (-s option). Valid values are ANOVA, correlation, and g_test.")
 
