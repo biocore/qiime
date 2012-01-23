@@ -24,7 +24,7 @@ script_info={}
 script_info['brief_description']="""OTU significance and co-occurence analysis"""
 script_info['script_description']="""The script otu_category_significance.py tests whether any of the OTUs in an OTU table are significantly associated with a category in the category mapping file. This code uses, ANOVA, the G test of independence, Pearson correlation, or a paired T test to find OTUs whose members are differentially represented across experimental treatments or measured variables.
 
-The script can also be used to measure co-occurrence. For instance it can also be used with presence/absence or abundance data for a phylogenetic group (such as that determined with quantitative PCR) to determine if any OTUs co-occur with a taxon of interest, using the ANOVA or G test of Independence.
+The script can also be used to measure co-occurrence. For instance it can also be used with presence/absence or abundance data for a phylogenetic group (such as that determined with quantitative PCR) to determine if any OTUs co-occur with a taxon of interest, using the ANOVA, G test of Independence, or correlation.
 
 The statistical test to be run is designated with the -s option, and includes the following options:
 
@@ -161,7 +161,14 @@ script_info['optional_options']=[\
         'are replaced with the ignore number 999999999 and the OTU counts are ' +\
         'the change in relative abundance compared to the designated reference ' +\
         'sample. If a filepath is given with the -b option ' +\
-        'this converted OTU table will be saved to this path.')]
+        'this converted OTU table will be saved to this path.'),\
+    make_option('--relative_abundance', default=False, help=('Some of the '
+        'statistical tests, such as Pearson correlation and ANOVA, convert '
+        'the OTU counts to relative abundances prior to performing the '
+        'calculations. This parameter can be set if a user wishes to disable '
+        'this step. (e.g. if an OTU table has already been converted '
+        'to relative abundances.)'),\
+        action='store_true')]
 
 script_info['version'] = __version__
 
@@ -177,6 +184,7 @@ def main():
     individual_column = opts.individual_column
     reference_sample_column = opts.reference_sample_column
     conv_output_fp = opts.conv_output_fp
+    relative_abundance = opts.relative_abundance
 
     filter = opts.filter
     test = opts.test
@@ -220,14 +228,16 @@ def main():
                     individual_column, reference_sample_column)
         else:
             output = test_wrapper(test, otu_table, category_mapping, \
-                category, threshold, filter, otu_include)
+                category, threshold, filter, otu_include, \
+                otu_table_relative_abundance=relative_abundance)
     else:
         if test != 'longitudinal_correlation' and test != 'paired_T':
             otu_table_paths = [join(otu_table_fp,fp) for fp in \
                 listdir(otu_table_fp)]
             # if directory, get aggregated results
             output = test_wrapper_multiple(test, otu_table_paths, \
-                category_mapping, category, threshold, filter, otu_include)
+                category_mapping, category, threshold, filter, otu_include,\
+                otu_table_relative_abundance=relative_abundance)
         else:
             raise ValueError("the longitudinal_correlation and paired_T options cannot be run on a directory")
         
