@@ -90,7 +90,7 @@ script_info['optional_options']=[\
     make_option('-B', '--keep-barcode', action='store_true',
         help='do not remove barcode from sequences', default=False),
 
-    make_option('-a', '--max-ambig', type=int, default=0,
+    make_option('-a', '--max-ambig', type=int, default=6,
         help='maximum number of ambiguous bases [default: %default]'),
 
     make_option('-H', '--max-homopolymer', type=int, default=6,
@@ -196,7 +196,13 @@ script_info['optional_options']=[\
         'label, such as ">FLP3FBN01ELBSX", where "FLP3FBN01" is generated '+\
         'from the run ID, use "-j run_prefix" and set the run prefix to '+\
         'be used as the data under the column headerr "run_prefix". '+\
-        ' [default: %default]')]
+        ' [default: %default]'),
+        
+    make_option('-x', '--truncate_ambi_bases',
+        action='store_true', default=False,
+        help='Enable to truncate at the first "N" character encountered in '+\
+        'the sequences.  This will disable testing for ambiguous bases '+\
+        '(-a option) [default: %default]')]
 
 script_info['version'] = __version__
 
@@ -269,7 +275,8 @@ def main():
                record_qual_scores = opts.record_qual_scores,
                discard_bad_windows = opts.discard_bad_windows,
                median_length_filtering = opts.median_length_filtering,
-               added_demultiplex_field = opts.added_demultiplex_field)
+               added_demultiplex_field = opts.added_demultiplex_field,
+               truncate_ambi_bases = opts.truncate_ambi_bases)
  
 if __name__ == "__main__":
     main()

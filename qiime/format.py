@@ -419,12 +419,23 @@ def format_map_file(headers, id_map, desc_key, sample_id_key, \
         result.append('\t'.join(map(str, curr_line)))
     return '\n'.join(result)
     
-def format_histograms(pre_hist, post_hist, bin_edges):
+'''def format_histograms(pre_hist, post_hist, bin_edges):
     """Returns text-formatted histogram."""
     lines = []
     lines.append('Length\tBefore\tAfter')
     for edge, pre, post in zip(bin_edges, pre_hist, post_hist):
         lines.append('\t'.join(map(str, [edge, pre, post])))
+    return '\n'.join(lines)'''
+    
+def format_histograms(raw_hist, pre_hist, post_hist, bin_edges):
+    """Returns text-formatted histogram.  Needs to take 3 bins of data"""
+    lines = []
+    lines.append('# bins raw sequence lengths, length of sequences that ' 
+     'pass quality filters before processing, and lengths of sequences that '
+     'pass quality filters post processing.')
+    lines.append('Length\tRaw\tBefore\tAfter')
+    for edge, raw, pre, post in zip(bin_edges, raw_hist, pre_hist, post_hist):
+        lines.append('\t'.join(map(str, [edge, raw, pre, post])))
     return '\n'.join(lines)
     
 def format_histogram_one_count(counts, bin_edges):

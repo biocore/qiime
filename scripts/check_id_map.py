@@ -98,7 +98,7 @@ script_info['optional_options']= [\
         'quotes) in the mapping file.  To use the run prefix from the fasta '+\
         'label, such as ">FLP3FBN01ELBSX", where "FLP3FBN01" is generated '+\
         'from the run ID, use "-j run_prefix" and set the run prefix to '+\
-        'be used as the data under the column headerr "run_prefix". '+\
+        'be used as the data under the column header "run_prefix". '+\
         ' [default: %default]')]
         
 script_info['version'] = __version__

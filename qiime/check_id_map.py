@@ -765,7 +765,8 @@ def check_duplicate_descriptions((sample_descriptions, sample_ids,
     #if there were any problems, insert a useful header
     if problems:
         problems.insert(0, 
-            "These sample ids have duplicate descriptions:")
+            "These sample ids have duplicate descriptions (unique " +\
+            "descriptions can help troubleshoot issues with metadata):")
     #Insert a list of (rows,columns) locations for later error correction
     #Get column index for Description column
     if raw_data:
@@ -1106,6 +1107,7 @@ def process_id_map(infile, disable_primer_check=False, is_barcoded=True, \
     STANDARD_SAMPLE_DESCRIPTION_CHECKS = [
     (check_missing_descriptions, 'warning'),
     (check_duplicate_sample_ids, 'error'),
+    (check_duplicate_descriptions, 'warning'),
     (check_description_chars, 'warning'),
     ]
     STANDARD_COL_HEADER_CHECKS = [(sampleid_missing, 'error'),

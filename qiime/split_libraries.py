@@ -451,24 +451,22 @@ def check_barcode(curr_barcode, barcode_type, valid_map,
             raise ValueError, "Unsupported barcode type: %s" % barcode_type
         return num_errors, barcode, corrected_bc
 
-def make_histograms(pre_lengths, post_lengths, binwidth=10):
+def make_histograms(raw_lengths, pre_lengths, post_lengths, binwidth=10):
     """Makes histogram data for pre and post lengths"""
-    min_len = min(pre_lengths)
-    max_len = max(pre_lengths)
+    if post_lengths:
+        min_len = min([min(post_lengths), min(raw_lengths)])
+    else:
+        min_len = min(raw_lengths)
+    max_len = max(raw_lengths)
     floor = (min_len/binwidth)*binwidth
     ceil = ((max_len/binwidth)+2)*binwidth
     bins = arange(floor, ceil, binwidth)
+    raw_hist = histogram(raw_lengths,bins)[0]
     pre_hist = histogram(pre_lengths,bins)[0]
     post_hist, bin_edges = histogram(post_lengths,bins)
-    return pre_hist, post_hist, bin_edges
+    return raw_hist, pre_hist, post_hist, bin_edges
 
-'''def format_histograms(pre_hist, post_hist, bin_edges):
-    """Returns text-formatted histogram."""
-    lines = []
-    lines.append('Length\tBefore\tAfter')
-    for edge, pre, post in zip(bin_edges, pre_hist, post_hist):
-        lines.append('\t'.join(map(str, [edge, pre, post])))
-    return '\n'.join(lines) '''
+
 
 class SeqQualBad(object):
     """Checks if a seq and qual score are bad, saving ids that are bad."""
@@ -541,11 +539,17 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
     reverse_primers, rev_primers, qual_out, qual_score_window=0,
     discard_bad_windows=False, min_qual_score=25, min_seq_len=200,
     median_length_filtering=None, added_demultiplex_field=None,
-    reverse_primer_mismatches=0):
+    reverse_primer_mismatches=0, truncate_ambi_bases=False):
     """Checks fasta-format sequences and qual files for validity."""
     
     
     seq_lengths = {}
+    
+    # Record complete barcode + primer + sequence lengths
+    raw_seq_lengths = {}
+    # Record sequence lengths after all optional removal of components
+    final_seq_lengths = {}
+    
     bc_counts = defaultdict(list)
     curr_ix = starting_ix
     corr_ct = 0 #count of corrected barcodes
@@ -564,8 +568,10 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
     reverse_primer_not_found = 0
     
     sliding_window_failed = 0
+    trunc_ambi_base_counts = 0
     
     below_seq_min_after_trunc = 0
+    below_seq_min_after_ambi_trunc = 0
 
     
     for fasta_in in fasta_files:
@@ -662,6 +668,8 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
             cbc, cpr, cres = split_seq(curr_seq, barcode_len,\
              primer_len)
              
+            total_bc_primer_len = len(cbc) + len(cpr)
+             
             # get current barcode
             try:
                 bc_diffs, curr_bc, corrected_bc = \
@@ -728,9 +736,27 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
                     sliding_window_failed += 1
                     write_seq = write_seq[0:window_index]
                     # Check for sequences that are too short after truncation
-                    if len(write_seq) < min_seq_len:
+                    if len(write_seq) + total_bc_primer_len < min_seq_len:
                         write_seq = False
                         below_seq_min_after_trunc += 1
+                        
+            if truncate_ambi_bases and write_seq:
+                write_seq_ambi_ix = True
+                # Skip if no "N" characters detected.
+                try:
+                    write_seq = write_seq[0:write_seq.index("N")]
+                except ValueError:
+                    write_seq_ambi_ix = False
+                    pass
+                if write_seq_ambi_ix:
+                    # Discard if too short after truncation
+                    if len(write_seq) + total_bc_primer_len < min_seq_len:
+                        write_seq = False
+                        below_seq_min_after_ambi_trunc += 1
+                    else:
+                        trunc_ambi_base_counts += 1
+                
+                    
                         
                     
             # Slice out regions of quality scores that correspond to the 
@@ -787,12 +813,18 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
                      qual_scores_out))
                  
                          
-            curr_len = len(curr_seq)
+            curr_len = len(write_seq)
 
-            seq_lengths[curr_rid] = curr_len
+            #seq_lengths[curr_rid] = curr_len
             
             curr_ix += 1
             
+            # Record the raw and written seq length of everything passing 
+            # filters
+            raw_seq_lengths[curr_rid] = len(curr_seq)
+            final_seq_lengths[curr_id] = curr_len
+            
+    
     if median_length_filtering:
         # Read original fasta file output to get sequence lengths
         fasta_out.close()
@@ -871,17 +903,22 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
     median_results = (median_length_filtering, min_corrected_len, 
      max_corrected_len, seqs_discarded_median, final_written_lens)
         
-
-
-            
+        
+    raw_seq_lengths = raw_seq_lengths.values()
+    final_seq_lengths = final_seq_lengths.values()
     
-    log_out = format_log(bc_counts, corr_ct, seq_lengths, valid_map, filters,\
+    log_out = format_log(bc_counts, corr_ct, valid_map, seq_lengths, filters,\
      retain_unassigned_reads, attempt_bc_correction, primer_mismatch_count, \
      max_primer_mm, reverse_primers, reverse_primer_not_found,
      sliding_window_failed, below_seq_min_after_trunc, qual_score_window, 
-     discard_bad_windows, min_seq_len, median_results)
-    all_seq_lengths, good_seq_lengths = get_seq_lengths(seq_lengths, bc_counts)
-    return log_out, all_seq_lengths, good_seq_lengths
+     discard_bad_windows, min_seq_len, raw_seq_lengths,
+     final_seq_lengths, median_results, truncate_ambi_bases,
+     below_seq_min_after_ambi_trunc, )
+     
+    #all_seq_lengths, good_seq_lengths = get_seq_lengths(seq_lengths, bc_counts)
+
+
+    return log_out, seq_lengths.values(), raw_seq_lengths, final_seq_lengths
 
 def format_qual_output(qual_array):
     """ Converts to string from numpy arrays, removes brackets """
@@ -904,14 +941,16 @@ def format_qual_output(qual_array):
     return qual_scores
     
 
-def format_log(bc_counts, corr_ct, seq_lengths, valid_map, filters,\
-retain_unassigned_reads, attempt_bc_correction, primer_mismatch_count, max_primer_mm,\
-reverse_primers, reverse_primer_not_found, sliding_window_failed,
-below_seq_min_after_trunc, qual_score_window, discard_bad_windows, min_seq_len,
-median_results=(None)):
+def format_log(bc_counts, corr_ct, valid_map, seq_lengths, filters,\
+               retain_unassigned_reads, attempt_bc_correction,
+               primer_mismatch_count, max_primer_mm,\
+               reverse_primers, reverse_primer_not_found, sliding_window_failed,
+               below_seq_min_after_trunc, qual_score_window,
+               discard_bad_windows, min_seq_len, 
+               raw_seq_lengths, final_seq_lengths, median_results=(None),
+               truncate_ambi_bases=False, below_seq_min_after_ambi_trunc=0,
+               ):
     """Makes log lines"""
-
-    
     log_out = []
     all_seq_lengths, good_seq_lengths = get_seq_lengths(seq_lengths, bc_counts)
     log_out.append("Number raw input seqs\t%d\n" % len(seq_lengths)) 
@@ -957,19 +996,29 @@ median_results=(None)):
             log_out.append('Sequences discarded after truncation due to '+\
              'sequence length below the minimum %d: %d\n' %\
              (min_seq_len, below_seq_min_after_trunc))
-        
-    log_out.append("Raw len min/max/avg\t%.1f/%.1f/%.1f" % 
-        (min(all_seq_lengths), max(all_seq_lengths), mean(all_seq_lengths)))
+    if truncate_ambi_bases:
+        log_out.append('Truncation at first ambiguous "N" character '+\
+         'enabled.\nSequences discarded after truncation due to sequence '+\
+         'length below the minimum %d: %d\n' %\
+         (min_seq_len, below_seq_min_after_ambi_trunc))
+    
+    log_out.append("Sequence length details for all sequences passing "+\
+     "quality filters:")
+    if raw_seq_lengths:
+        log_out.append("Raw len min/max/avg\t%.1f/%.1f/%.1f" % 
+         (min(raw_seq_lengths), max(raw_seq_lengths), mean(raw_seq_lengths)))
+    else:
+        log_out.append("No sequences passed quality filters for writing.")
     
     if median_results[0]:
         log_out.append("Wrote len min/max/avg\t%.1f/%.1f/%.1f" % 
             (min(median_results[4]), max(median_results[4]),
             mean(median_results[4])))
     else:
-        if good_seq_lengths:
+        if final_seq_lengths:
             log_out.append("Wrote len min/max/avg\t%.1f/%.1f/%.1f" % 
-            (min(good_seq_lengths), max(good_seq_lengths),
-            mean(good_seq_lengths)))
+            (min(final_seq_lengths), max(final_seq_lengths),
+            mean(final_seq_lengths)))
 
     
     #figure out which barcodes we got that didn't come from valid samples
@@ -1051,7 +1100,8 @@ def preprocess(fasta_files, qual_files, mapping_file,
     disable_primer_check=False, reverse_primers='disable',
     reverse_primer_mismatches=0,
     record_qual_scores=False, discard_bad_windows=False, 
-    median_length_filtering=None, added_demultiplex_field=None):
+    median_length_filtering=None, added_demultiplex_field=None,
+    truncate_ambi_bases=False):
         
     
     """
@@ -1145,6 +1195,9 @@ def preprocess(fasta_files, qual_files, mapping_file,
     must contain a column with a header matching the name specified by the -j
     option, and every combination of barcode + added demultiplex option must
     be unique.
+    
+    truncate_ambi_bases: (default False) If enabled, will truncate the 
+    sequence at the first "N" character.
 
     Result:
     in dir_prefix, writes the following files:
@@ -1304,9 +1357,10 @@ def preprocess(fasta_files, qual_files, mapping_file,
                 'Length outside bounds of %s and %s' % (min_seq_len,max_seq_len),
                 lambda id_, seq, qual: not (min_seq_len<=len(seq)<= max_seq_len)))
     
-    filters.append(SeqQualBad(
-        'Num ambiguous bases exceeds limit of %s' % max_ambig,
-        lambda id_, seq, qual: count_ambig(seq) > max_ambig))
+    if not truncate_ambi_bases:
+        filters.append(SeqQualBad(
+         'Num ambiguous bases exceeds limit of %s' % max_ambig,
+         lambda id_, seq, qual: count_ambig(seq) > max_ambig))
     
     if qual_mappings:
         filters.append(QualMissing)
@@ -1338,15 +1392,15 @@ def preprocess(fasta_files, qual_files, mapping_file,
         starting_ix, valid_map, qual_mappings, filters, barcode_len,
         primer_seq_len, keep_primer, keep_barcode, barcode_type, max_bc_errors,
         retain_unassigned_reads) '''
-    log_stats, pre_lens, post_lens = check_seqs(fasta_out, fasta_files, 
-        starting_ix, valid_map, qual_mappings, filters, barcode_len,
-        keep_primer, keep_barcode, barcode_type, max_bc_errors,
+    log_stats, raw_lens, pre_lens, post_lens = check_seqs(fasta_out,
+        fasta_files, starting_ix, valid_map, qual_mappings, filters,
+        barcode_len, keep_primer, keep_barcode, barcode_type, max_bc_errors,
         retain_unassigned_reads, attempt_bc_correction,
         primer_seqs_lens, all_primers, max_primer_mm, disable_primer_check,
         reverse_primers, rev_primers, qual_out, qual_score_window,
         discard_bad_windows, min_qual_score, min_seq_len,
         median_length_filtering, added_demultiplex_field,
-        reverse_primer_mismatches)
+        reverse_primer_mismatches, truncate_ambi_bases)
 
     # Write log file
     log_file = open(dir_prefix + '/' + "split_library_log.txt", 'w+')
@@ -1355,6 +1409,7 @@ def preprocess(fasta_files, qual_files, mapping_file,
 
     # Write sequence distros here
     histogram_file = open(dir_prefix + '/' + 'histograms.txt', 'w+')
+
     histogram_file.write(format_histograms
-        (*make_histograms(pre_lens, post_lens)))
+        (*make_histograms(raw_lens, pre_lens, post_lens)))
     histogram_file.close()

@@ -387,7 +387,7 @@ class TopLevelTests(TestCase):
         self.assertEqual(cdd((good_sd, sample_ids, rd),raw_data=raw_data_good), 
             ((good_sd, sample_ids, rd), ''))
         self.assertEqual(cdd((dup_sd, sample_ids, rd),raw_data=raw_data_dup), \
-         ((dup_sd, sample_ids, rd), 'These sample ids have duplicate descriptions:\n1,3: x\nRow, column for all duplicate descriptions:\nLocation (row, column):\t0,1\nLocation (row, column):\t2,1'))
+         ((dup_sd, sample_ids, rd), 'These sample ids have duplicate descriptions (unique descriptions can help troubleshoot issues with metadata):\n1,3: x\nRow, column for all duplicate descriptions:\nLocation (row, column):\t0,1\nLocation (row, column):\t2,1'))
         # ((bad_sd, sample_ids, rd) removed
 
     def test_check_description_chars(self):

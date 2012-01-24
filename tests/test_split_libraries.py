@@ -104,6 +104,7 @@ class TopLevelTests(TestCase):
         self.sample_mapping_bad_char_sampleid = sample_mapping_bad_char_sampleid
         self.sample_mapping_bad_char_datafield =\
          sample_mapping_bad_char_datafield
+        self.in_seqs_ambi_chars = in_seqs_ambi_chars
         
         self.sample_fasta_file = get_tmp_filename(prefix = "sample_seqs_",
          suffix = ".fasta")
@@ -144,6 +145,13 @@ class TopLevelTests(TestCase):
         map_file.write(self.sample_mapping_bad_char_datafield)
         map_file.close()
         
+        self.sample_fasta_ambi_chars_f =\
+         get_tmp_filename(prefix = "sample_fasta_ambi_chars_",
+         suffix = ".fna")
+        fna_file = open(self.sample_fasta_ambi_chars_f, "w")
+        fna_file.write("\n".join(self.in_seqs_ambi_chars))
+        fna_file.close()
+        
         self.output_dir = get_tmp_filename(prefix = "split_libraries_",
          suffix = "/")
         create_dir(self.output_dir)
@@ -155,7 +163,8 @@ class TopLevelTests(TestCase):
          [self.sample_fasta_file, self.sample_qual_file,
          self.sample_mapping_file, self.sample_mapping_file_var_length,
          self.sample_mapping_bad_char_sampleid_f,
-         self.sample_mapping_bad_char_datafield_f]
+         self.sample_mapping_bad_char_datafield_f,
+         self.sample_fasta_ambi_chars_f]
         
         
     def tearDown(self):
@@ -432,13 +441,14 @@ z\tGG\tGC\t5\tsample_z"""
 
     def test_make_histograms(self):
         """make_histograms should make correct histograms"""
+        raw_lengths = [90, 100, 110, 110, 130, 135]
         pre_lengths = [100, 110, 105, 130, 135]
         post_lengths = [130, 135]
-        pre_hist, post_hist, bin_edges = \
-            make_histograms(pre_lengths, post_lengths)
-        self.assertEqual(pre_hist, array([2,1,0,2]))
-        self.assertEqual(post_hist, array([0,0,0,2]))
-        self.assertEqual(bin_edges, array([100,110,120,130,140]))
+        raw_hist, pre_hist, post_hist, bin_edges = \
+            make_histograms(raw_lengths, pre_lengths, post_lengths)
+        self.assertEqual(pre_hist, array([0,2,1,0,2]))
+        self.assertEqual(post_hist, array([0,0,0,0,2]))
+        self.assertEqual(bin_edges, array([90,100,110,120,130,140]))
         
     def test_check_seqs_sliding_window(self):
         """check_seqs handles sliding window truncations/removal """
@@ -1187,8 +1197,8 @@ z\tGG\tGC\t5\tsample_z"""
         actual_histograms = [line for line in output_histograms]
         
         expected_seqs = []
-        expected_log =  ['Number raw input seqs\t6\n', '\n', 'Length outside bounds of 200 and 1000\t6\n', 'Num ambiguous bases exceeds limit of 0\t0\n', 'Missing Qual Score\t0\n', 'Mean qual score below minimum of 25\t0\n', 'Max homopolymer run exceeds limit of 4\t0\n', 'Num mismatches in primer exceeds limit of 1: 0\n', '\n', 'Raw len min/max/avg\t25.0/35.0/31.2\n', '\n', 'Barcodes corrected/not\t0/0\n', 'Uncorrected barcodes will not be written to the output fasta file.\n', 'Corrected barcodes will be written with the appropriate barcode category.\n', 'Corrected but unassigned sequences will not be written unless --retain_unassigned_reads is enabled.\n', '\n', 'Total valid barcodes that are not in mapping file\t0\n', 'Sequences associated with valid barcodes that are not in the mapping file will not be written.\n', '\n', 'Barcodes in mapping file\n', 'Sample\tSequence Count\tBarcode\n', 's2\t0\tAGAGTCCTGAGC\n', 's1\t0\tACACATGTCTA\n', 's3\t0\tAACTGTGCGTACG\n', '\n', 'Total number seqs written\t0']
-        expected_histograms = ['Length\tBefore\tAfter\n', '20\t2\t0\n', '30\t4\t0']
+        expected_log =  ['Number raw input seqs\t6\n', '\n', 'Length outside bounds of 200 and 1000\t6\n', 'Num ambiguous bases exceeds limit of 0\t0\n', 'Missing Qual Score\t0\n', 'Mean qual score below minimum of 25\t0\n', 'Max homopolymer run exceeds limit of 4\t0\n', 'Num mismatches in primer exceeds limit of 1: 0\n', '\n', 'Sequence length details for all sequences passing quality filters:\n', 'No sequences passed quality filters for writing.\n', '\n', 'Barcodes corrected/not\t0/0\n', 'Uncorrected barcodes will not be written to the output fasta file.\n', 'Corrected barcodes will be written with the appropriate barcode category.\n', 'Corrected but unassigned sequences will not be written unless --retain_unassigned_reads is enabled.\n', '\n', 'Total valid barcodes that are not in mapping file\t0\n', 'Sequences associated with valid barcodes that are not in the mapping file will not be written.\n', '\n', 'Barcodes in mapping file\n', 'Sample\tSequence Count\tBarcode\n', 's2\t0\tAGAGTCCTGAGC\n', 's1\t0\tACACATGTCTA\n', 's3\t0\tAACTGTGCGTACG\n', '\n', 'Total number seqs written\t0']
+        expected_histograms = ['# bins raw sequence lengths, length of sequences that pass quality filters before processing, and lengths of sequences that pass quality filters post processing.\n', 'Length\tRaw\tBefore\tAfter\n', '20\t2\t0\t0\n', '30\t4\t0\t0']
         
         
         
@@ -1263,8 +1273,8 @@ z\tGG\tGC\t5\tsample_z"""
         actual_histograms = [line for line in output_histograms]
         
         expected_seqs = []
-        expected_log =  ['Number raw input seqs\t6\n', '\n', 'Length outside bounds of 200 and 1000\t6\n', 'Num ambiguous bases exceeds limit of 0\t0\n', 'Missing Qual Score\t0\n', 'Mean qual score below minimum of 25\t0\n', 'Max homopolymer run exceeds limit of 4\t0\n', 'Num mismatches in primer exceeds limit of 1: 0\n', '\n', 'Raw len min/max/avg\t25.0/35.0/31.2\n', '\n', 'Barcodes corrected/not\t0/0\n', 'Uncorrected barcodes will not be written to the output fasta file.\n', 'Corrected barcodes will be written with the appropriate barcode category.\n', 'Corrected but unassigned sequences will not be written unless --retain_unassigned_reads is enabled.\n', '\n', 'Total valid barcodes that are not in mapping file\t0\n', 'Sequences associated with valid barcodes that are not in the mapping file will not be written.\n', '\n', 'Barcodes in mapping file\n', 'Sample\tSequence Count\tBarcode\n', 's2\t0\tAGAGTCCTGAGC\n', 's1\t0\tACACATGTCTAC\n', 's3\t0\tAACTGTGCGTAC\n', '\n', 'Total number seqs written\t0']
-        expected_histograms = ['Length\tBefore\tAfter\n', '20\t2\t0\n', '30\t4\t0']
+        expected_log =  ['Number raw input seqs\t6\n', '\n', 'Length outside bounds of 200 and 1000\t6\n', 'Num ambiguous bases exceeds limit of 0\t0\n', 'Missing Qual Score\t0\n', 'Mean qual score below minimum of 25\t0\n', 'Max homopolymer run exceeds limit of 4\t0\n', 'Num mismatches in primer exceeds limit of 1: 0\n', '\n', 'Sequence length details for all sequences passing quality filters:\n', 'No sequences passed quality filters for writing.\n', '\n', 'Barcodes corrected/not\t0/0\n', 'Uncorrected barcodes will not be written to the output fasta file.\n', 'Corrected barcodes will be written with the appropriate barcode category.\n', 'Corrected but unassigned sequences will not be written unless --retain_unassigned_reads is enabled.\n', '\n', 'Total valid barcodes that are not in mapping file\t0\n', 'Sequences associated with valid barcodes that are not in the mapping file will not be written.\n', '\n', 'Barcodes in mapping file\n', 'Sample\tSequence Count\tBarcode\n', 's2\t0\tAGAGTCCTGAGC\n', 's1\t0\tACACATGTCTAC\n', 's3\t0\tAACTGTGCGTAC\n', '\n', 'Total number seqs written\t0']
+        expected_histograms = ['# bins raw sequence lengths, length of sequences that pass quality filters before processing, and lengths of sequences that pass quality filters post processing.\n', 'Length\tRaw\tBefore\tAfter\n', '20\t2\t0\t0\n', '30\t4\t0\t0']
         
         
         
@@ -1337,8 +1347,8 @@ z\tGG\tGC\t5\tsample_z"""
 
         
         expected_seqs = ['>s1_1 a orig_bc=ACACATGTCTAC new_bc=ACACATGTCTAC bc_diffs=0\n', 'CCCTTATATATATAT\n', '>s2_2 b orig_bc=AGAGTCCTGAGC new_bc=AGAGTCCTGAGC bc_diffs=0\n', 'CCCTTTCCA\n', '>s3_3 c orig_bc=AACTGTGCGTAC new_bc=AACTGTGCGTAC bc_diffs=0\n', 'AACCGGCCGGTT\n', '>s1_4 d orig_bc=ACTCATGTCTAC new_bc=ACACATGTCTAC bc_diffs=1\n', 'CCCTTACTATATAT\n']
-        expected_log = ['Number raw input seqs\t6\n', '\n', 'Length outside bounds of 5 and 1000\t0\n', 'Num ambiguous bases exceeds limit of 0\t0\n', 'Missing Qual Score\t0\n', 'Mean qual score below minimum of 25\t0\n', 'Max homopolymer run exceeds limit of 4\t0\n', 'Num mismatches in primer exceeds limit of 0: 2\n', '\n', 'Raw len min/max/avg\t25.0/35.0/31.2\n', 'Wrote len min/max/avg\t29.0/35.0/32.5\n', '\n', 'Barcodes corrected/not\t1/0\n', 'Uncorrected barcodes will not be written to the output fasta file.\n', 'Corrected barcodes will be written with the appropriate barcode category.\n', 'Corrected but unassigned sequences will not be written unless --retain_unassigned_reads is enabled.\n', '\n', 'Total valid barcodes that are not in mapping file\t0\n', 'Sequences associated with valid barcodes that are not in the mapping file will not be written.\n', '\n', 'Barcodes in mapping file\n', 'Num Samples\t3\n', 'Sample ct min/max/mean: 1 / 2 / 1.33\n', 'Sample\tSequence Count\tBarcode\n', 's1\t2\tACACATGTCTAC\n', 's2\t1\tAGAGTCCTGAGC\n', 's3\t1\tAACTGTGCGTAC\n', '\n', 'Total number seqs written\t4']
-        expected_histograms = ['Length\tBefore\tAfter\n', '20\t2\t1\n', '30\t4\t3']
+        expected_log = ['Number raw input seqs\t6\n', '\n', 'Length outside bounds of 5 and 1000\t0\n', 'Num ambiguous bases exceeds limit of 0\t0\n', 'Missing Qual Score\t0\n', 'Mean qual score below minimum of 25\t0\n', 'Max homopolymer run exceeds limit of 4\t0\n', 'Num mismatches in primer exceeds limit of 0: 2\n', '\n', 'Sequence length details for all sequences passing quality filters:\n', 'Raw len min/max/avg\t29.0/35.0/32.5\n', 'Wrote len min/max/avg\t9.0/15.0/12.5\n', '\n', 'Barcodes corrected/not\t1/0\n', 'Uncorrected barcodes will not be written to the output fasta file.\n', 'Corrected barcodes will be written with the appropriate barcode category.\n', 'Corrected but unassigned sequences will not be written unless --retain_unassigned_reads is enabled.\n', '\n', 'Total valid barcodes that are not in mapping file\t0\n', 'Sequences associated with valid barcodes that are not in the mapping file will not be written.\n', '\n', 'Barcodes in mapping file\n', 'Num Samples\t3\n', 'Sample ct min/max/mean: 1 / 2 / 1.33\n', 'Sample\tSequence Count\tBarcode\n', 's1\t2\tACACATGTCTAC\n', 's2\t1\tAGAGTCCTGAGC\n', 's3\t1\tAACTGTGCGTAC\n', '\n', 'Total number seqs written\t4']
+        expected_histograms = ['# bins raw sequence lengths, length of sequences that pass quality filters before processing, and lengths of sequences that pass quality filters post processing.\n', 'Length\tRaw\tBefore\tAfter\n', '0\t0\t0\t1\n', '10\t0\t0\t3\n', '20\t2\t1\t0\n', '30\t4\t3\t0']
         
         self.assertEqual(actual_seqs, expected_seqs)
         self.assertEqual(actual_log, expected_log)
@@ -1411,13 +1421,93 @@ z\tGG\tGC\t5\tsample_z"""
 
         
         expected_seqs = ['>s1_1 a orig_bc=ACACATGTCTAC new_bc=ACACATGTCTAC bc_diffs=0\n', 'CCCTTATATATATAT\n', '>s3_2 c orig_bc=AACTGTGCGTAC new_bc=AACTGTGCGTAC bc_diffs=0\n', 'AACCGGCCGGTT\n', '>s1_3 d orig_bc=ACTCATGTCTAC new_bc=ACACATGTCTAC bc_diffs=1\n', 'CCCTTACTATATAT\n']
-        expected_log =  ['Number raw input seqs\t6\n', '\n', 'Length outside bounds of 5 and 1000\t0\n', 'Num ambiguous bases exceeds limit of 0\t0\n', 'Missing Qual Score\t0\n', 'Mean qual score below minimum of 22\t0\n', 'Max homopolymer run exceeds limit of 4\t0\n', 'Num mismatches in primer exceeds limit of 0: 2\n', '\n', 'Size of quality score window, in base pairs: 3\n', 'Number of sequences where a low quality score window was detected: 1\n', 'Sequences with a low quality score were not written, -g option enabled.\n', '\n', 'Raw len min/max/avg\t25.0/35.0/31.2\n', 'Wrote len min/max/avg\t32.0/35.0/33.7\n', '\n', 'Barcodes corrected/not\t1/0\n', 'Uncorrected barcodes will not be written to the output fasta file.\n', 'Corrected barcodes will be written with the appropriate barcode category.\n', 'Corrected but unassigned sequences will not be written unless --retain_unassigned_reads is enabled.\n', '\n', 'Total valid barcodes that are not in mapping file\t0\n', 'Sequences associated with valid barcodes that are not in the mapping file will not be written.\n', '\n', 'Barcodes in mapping file\n', 'Num Samples\t2\n', 'Sample ct min/max/mean: 1 / 2 / 1.50\n', 'Sample\tSequence Count\tBarcode\n', 's1\t2\tACACATGTCTAC\n', 's3\t1\tAACTGTGCGTAC\n', 's2\t0\tAGAGTCCTGAGC\n', '\n', 'Total number seqs written\t3']
-        expected_histograms = ['Length\tBefore\tAfter\n', '20\t2\t0\n', '30\t4\t3']
+        expected_log =  ['Number raw input seqs\t6\n', '\n', 'Length outside bounds of 5 and 1000\t0\n', 'Num ambiguous bases exceeds limit of 0\t0\n', 'Missing Qual Score\t0\n', 'Mean qual score below minimum of 22\t0\n', 'Max homopolymer run exceeds limit of 4\t0\n', 'Num mismatches in primer exceeds limit of 0: 2\n', '\n', 'Size of quality score window, in base pairs: 3\n', 'Number of sequences where a low quality score window was detected: 1\n', 'Sequences with a low quality score were not written, -g option enabled.\n', '\n', 'Sequence length details for all sequences passing quality filters:\n', 'Raw len min/max/avg\t32.0/35.0/33.7\n', 'Wrote len min/max/avg\t12.0/15.0/13.7\n', '\n', 'Barcodes corrected/not\t1/0\n', 'Uncorrected barcodes will not be written to the output fasta file.\n', 'Corrected barcodes will be written with the appropriate barcode category.\n', 'Corrected but unassigned sequences will not be written unless --retain_unassigned_reads is enabled.\n', '\n', 'Total valid barcodes that are not in mapping file\t0\n', 'Sequences associated with valid barcodes that are not in the mapping file will not be written.\n', '\n', 'Barcodes in mapping file\n', 'Num Samples\t2\n', 'Sample ct min/max/mean: 1 / 2 / 1.50\n', 'Sample\tSequence Count\tBarcode\n', 's1\t2\tACACATGTCTAC\n', 's3\t1\tAACTGTGCGTAC\n', 's2\t0\tAGAGTCCTGAGC\n', '\n', 'Total number seqs written\t3']
+        expected_histograms = ['# bins raw sequence lengths, length of sequences that pass quality filters before processing, and lengths of sequences that pass quality filters post processing.\n', 'Length\tRaw\tBefore\tAfter\n', '10\t0\t0\t3\n', '20\t2\t0\t0\n', '30\t4\t3\t0']
         
         self.assertEqual(actual_seqs, expected_seqs)
         self.assertEqual(actual_log, expected_log)
         self.assertEqual(actual_histograms, expected_histograms)
 
+    def test_preprocess_ambi_trunc(self):
+        """ Overall module test for 'N' character truncation """
+        
+        # Will truncate sequences at the first N character, remove one seq
+        # due to being less than 30 nucleotides following truncation
+        # counting the sequence length of the barcodes + primer
+        
+        fasta_files = [self.sample_fasta_ambi_chars_f]
+        qual_files = [self.sample_qual_file]
+        mapping_file = self.sample_mapping_file
+        barcode_type="golay_12"
+        min_seq_len=30
+        max_seq_len=1000
+        min_qual_score=22
+        starting_ix=1
+        keep_primer=False
+        max_ambig=0
+        max_primer_mm=0
+        trim_seq_len=False
+        dir_prefix=self.output_dir
+        max_bc_errors=2
+        max_homopolymer=4
+        retain_unassigned_reads=False
+        keep_barcode=False 
+        attempt_bc_correction=True
+        qual_score_window=False
+        disable_primer_check=False
+        reverse_primers='disable'
+        record_qual_scores=False
+        discard_bad_windows=False
+        median_length_filtering=None
+        added_demultiplex_field=None
+        reverse_primer_mismatches=0
+        truncate_ambi_bases=True
+        
+        
+        preprocess(fasta_files,
+                   qual_files,
+                   mapping_file,
+                   barcode_type,
+                   min_seq_len,
+                   max_seq_len,
+                   min_qual_score,
+                   starting_ix,
+                   keep_primer,
+                   max_ambig,
+                   max_primer_mm,
+                   trim_seq_len,
+                   dir_prefix,
+                   max_bc_errors,
+                   max_homopolymer,
+                   retain_unassigned_reads,
+                   keep_barcode,
+                   attempt_bc_correction,
+                   qual_score_window,
+                   disable_primer_check,
+                   reverse_primers,
+                   reverse_primer_mismatches,
+                   record_qual_scores,
+                   discard_bad_windows,
+                   median_length_filtering,
+                   added_demultiplex_field,
+                   truncate_ambi_bases)
+                   
+        output_seqs = open(dir_prefix + "seqs.fna", "U")
+        output_log = open(dir_prefix + "split_library_log.txt", "U")
+        output_histograms = open(dir_prefix + "histograms.txt", "U")
+        
+        actual_seqs =  [line for line in output_seqs]
+        actual_log =  [line for line in output_log]
+        actual_histograms = [line for line in output_histograms]
+
+        
+        expected_seqs = ['>s1_1 a orig_bc=ACACATGTCTAC new_bc=ACACATGTCTAC bc_diffs=0\n', 'CCCTTATATATAT\n', '>s3_2 c orig_bc=AACTGTGCGTAC new_bc=AACTGTGCGTAC bc_diffs=0\n', 'AACCGGCCGGTT\n', '>s1_3 d orig_bc=ACTCATGTCTAC new_bc=ACACATGTCTAC bc_diffs=1\n', 'CCCTTACTACCGA\n']
+        expected_log =  ['Number raw input seqs\t6\n', '\n', 'Length outside bounds of 30 and 1000\t2\n', 'Missing Qual Score\t0\n', 'Mean qual score below minimum of 22\t0\n', 'Max homopolymer run exceeds limit of 4\t0\n', 'Num mismatches in primer exceeds limit of 0: 1\n', '\n', 'Truncation at first ambiguous "N" character enabled.\n', 'Sequences discarded after truncation due to sequence length below the minimum 30: 0\n', '\n', 'Sequence length details for all sequences passing quality filters:\n', 'Raw len min/max/avg\t32.0/39.0/35.7\n', 'Wrote len min/max/avg\t12.0/13.0/12.7\n', '\n', 'Barcodes corrected/not\t1/0\n', 'Uncorrected barcodes will not be written to the output fasta file.\n', 'Corrected barcodes will be written with the appropriate barcode category.\n', 'Corrected but unassigned sequences will not be written unless --retain_unassigned_reads is enabled.\n', '\n', 'Total valid barcodes that are not in mapping file\t0\n', 'Sequences associated with valid barcodes that are not in the mapping file will not be written.\n', '\n', 'Barcodes in mapping file\n', 'Num Samples\t2\n', 'Sample ct min/max/mean: 1 / 2 / 1.50\n', 'Sample\tSequence Count\tBarcode\n', 's1\t2\tACACATGTCTAC\n', 's3\t1\tAACTGTGCGTAC\n', 's2\t0\tAGAGTCCTGAGC\n', '\n', 'Total number seqs written\t3']
+        expected_histograms = ['# bins raw sequence lengths, length of sequences that pass quality filters before processing, and lengths of sequences that pass quality filters post processing.\n', 'Length\tRaw\tBefore\tAfter\n', '10\t0\t0\t3\n', '20\t2\t0\t0\n', '30\t4\t3\t0']
+        
+        self.assertEqual(actual_seqs, expected_seqs)
+        self.assertEqual(actual_log, expected_log)
+        self.assertEqual(actual_histograms, expected_histograms)
         
     def test_preprocess_bad_chars_in_mapping(self):
         """ Overall module functionality test with invalid characters """
@@ -1487,8 +1577,8 @@ z\tGG\tGC\t5\tsample_z"""
         actual_histograms = [line for line in output_histograms]
         
         expected_seqs = []
-        expected_log =  ['Number raw input seqs\t6\n', '\n', 'Length outside bounds of 200 and 1000\t6\n', 'Num ambiguous bases exceeds limit of 0\t0\n', 'Missing Qual Score\t0\n', 'Mean qual score below minimum of 25\t0\n', 'Max homopolymer run exceeds limit of 4\t0\n', 'Num mismatches in primer exceeds limit of 1: 0\n', '\n', 'Raw len min/max/avg\t25.0/35.0/31.2\n', '\n', 'Barcodes corrected/not\t0/0\n', 'Uncorrected barcodes will not be written to the output fasta file.\n', 'Corrected barcodes will be written with the appropriate barcode category.\n', 'Corrected but unassigned sequences will not be written unless --retain_unassigned_reads is enabled.\n', '\n', 'Total valid barcodes that are not in mapping file\t0\n', 'Sequences associated with valid barcodes that are not in the mapping file will not be written.\n', '\n', 'Barcodes in mapping file\n', 'Sample\tSequence Count\tBarcode\n', 's2\t0\tAGAGTCCTGAGC\n', 's1\t0\tACACATGTCTAC\n', 's3\t0\tAACTGTGCGTAC\n', '\n', 'Total number seqs written\t0']
-        expected_histograms = ['Length\tBefore\tAfter\n', '20\t2\t0\n', '30\t4\t0']
+        expected_log =  ['Number raw input seqs\t6\n', '\n', 'Length outside bounds of 200 and 1000\t6\n', 'Num ambiguous bases exceeds limit of 0\t0\n', 'Missing Qual Score\t0\n', 'Mean qual score below minimum of 25\t0\n', 'Max homopolymer run exceeds limit of 4\t0\n', 'Num mismatches in primer exceeds limit of 1: 0\n', '\n', 'Sequence length details for all sequences passing quality filters:\n', 'No sequences passed quality filters for writing.\n', '\n', 'Barcodes corrected/not\t0/0\n', 'Uncorrected barcodes will not be written to the output fasta file.\n', 'Corrected barcodes will be written with the appropriate barcode category.\n', 'Corrected but unassigned sequences will not be written unless --retain_unassigned_reads is enabled.\n', '\n', 'Total valid barcodes that are not in mapping file\t0\n', 'Sequences associated with valid barcodes that are not in the mapping file will not be written.\n', '\n', 'Barcodes in mapping file\n', 'Sample\tSequence Count\tBarcode\n', 's2\t0\tAGAGTCCTGAGC\n', 's1\t0\tACACATGTCTAC\n', 's3\t0\tAACTGTGCGTAC\n', '\n', 'Total number seqs written\t0']
+        expected_histograms = ['# bins raw sequence lengths, length of sequences that pass quality filters before processing, and lengths of sequences that pass quality filters post processing.\n', 'Length\tRaw\tBefore\tAfter\n', '20\t2\t0\t0\n', '30\t4\t0\t0']
         
         
         
@@ -1599,6 +1689,21 @@ AGAGTCCTGAGCGGTCCGGACCCTTTCCA
 AATCGTGACTCGGGTCTGGAAACCGGCCGGTT
 >d
 ACTCATGTCTACGGTCCGGACCCTTACTATATAT
+>e_no_barcode_match
+TTTTGTCCGGACCCTTACTATATAT
+>d_primer_error
+AGAGTCCTGAGCGGTCCGGTACGTTTACTGGA
+""".split('\n')
+
+# Fixed barcode test data with "N" character included
+in_seqs_ambi_chars = """>a
+ACACATGTCTACGGTCCGGACCCTTATATATATNAT
+>b
+AGAGTCCTGAGCGGTCCGGACCCTTTCCA
+>c
+AACTGTGCGTACGGTCTGGAAACCGGCCGGTT
+>d
+ACTCATGTCTACGGTCCGGACCCTTACTACCGANTATAT
 >e_no_barcode_match
 TTTTGTCCGGACCCTTACTATATAT
 >d_primer_error

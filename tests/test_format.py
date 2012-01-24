@@ -295,15 +295,10 @@ y\t5\t6\tsample y""")
 
     def test_format_histograms(self):
         """format_histograms should print histograms correctly"""
-        self.assertEqual(format_histograms(array([2,1,0,2,0,0]),
-            array([0,0,0,2,0,1]), array([100,110,120,130,140,150,160])),
-            """Length\tBefore\tAfter
-100\t2\t0
-110\t1\t0
-120\t0\t0
-130\t2\t2
-140\t0\t0
-150\t0\t1""")
+        self.assertEqual(format_histograms(array([0,1,0,2,2,3]),
+         array([2,1,0,2,0,0]), array([0,0,0,2,0,1]),
+         array([100,110,120,130,140,150,160])),
+            """# bins raw sequence lengths, length of sequences that pass quality filters before processing, and lengths of sequences that pass quality filters post processing.\nLength\tRaw\tBefore\tAfter\n100\t0\t2\t0\n110\t1\t1\t0\n120\t0\t0\t0\n130\t2\t2\t2\n140\t2\t0\t0\n150\t3\t0\t1""")
 
     def test_write_Fasta_from_name_seqs_pairs(self):
         """write_Fasta_from_name_seqs_pairs write proper FASTA string."""
