@@ -45,6 +45,11 @@ ul {
 	font-size: 10pt;
 }
 
+ul.code {
+    font-size:-2;
+    font-family: courier
+}
+
 ul.feedlist {
 	padding-left: 1em;
 }
