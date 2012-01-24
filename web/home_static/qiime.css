@@ -45,7 +45,7 @@ ul {
 	font-size: 10pt;
 }
 
-ul.code {
+.code {
     font-size:-2;
     font-family: courier
 }
