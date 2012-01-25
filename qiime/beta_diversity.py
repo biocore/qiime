@@ -281,7 +281,7 @@ def single_file_beta(input_path, metrics, tree_path, output_dir, rowids=None,
             f.close()
             
             
-def single_object_beta(otu_table, metrics, tree_str, rowids=None,
+def single_object_beta(otu_table, metrics, tr, rowids=None,
     full_tree=False):
     """mod of single_file_beta to recieve and return otu obj, tree str
 
@@ -291,7 +291,7 @@ def single_object_beta(otu_table, metrics, tree_str, rowids=None,
     inputs:
 		otu_table -- a otu_table in the biom format
 		metrics -- metrics (str, comma delimited if more than 1 metric)
-		tree_str -- a newick tree string if needed by the chosen beta
+		tr -- a phylonode cogent tree object if needed by the chosen beta
 					diversity metric
 		rowids -- comma seperated string
     """  
@@ -302,8 +302,8 @@ def single_object_beta(otu_table, metrics, tree_str, rowids=None,
     #otumtx = asarray(otumtx)
     #otuids = [otu_id for value, otu_id, metadata in otu_table.iterObservations()]
     
-    if tree_str:
-        tree = tree_str
+    if tr:
+        tree = tr
     else:
         tree = None
 
