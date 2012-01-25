@@ -303,7 +303,7 @@ def single_object_beta(otu_table, metrics, tree_str, rowids=None,
     #otuids = [otu_id for value, otu_id, metadata in otu_table.iterObservations()]
     
     if tree_str:
-        tree = parse_newick(tree_str, PhyloNode)
+        tree = tree_str
     else:
         tree = None
 
