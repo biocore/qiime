@@ -98,5 +98,20 @@ View the file interactively in read-only mode. The stop viewing the file hit ``q
 
 	less my_file.txt
 
+Ensuring that long jobs keep running despite loss of network connection
+=======================================================================
 
+When you start a job via ``ssh`` on AWS, that job will stay running only as long as your network connection is active. So, if you lose your network connection (e.g., if you need to close your laptop) you job will stop running. This can also happen accidentally, so it's a good idea to follow these steps for all long jobs.
+
+To get around these issues you can use the ``screen`` command. These steps illustrate basic usage of ``screen``. To start a screen session to safely run commands::
+
+screen
+
+You'll need to hit ``enter``.  Then enter your commands, and you can safely close your computer. When you come back you'll need to log into the instance again. You can then type::
+
+screen -r
+
+and you'll see that the command is still running (or may have completed).
+
+You can find additional `details on screen here <http://www.ibm.com/developerworks/aix/library/au-gnu_screen/>`_.
 

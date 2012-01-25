@@ -17,7 +17,7 @@ from cogent.util.misc import create_dir
 from qiime.util import (parse_command_line_parameters, make_option,
                         iseq_to_qseq_fields, gzip_open)
 from qiime.format import illumina_data_to_fastq
-from qiime.split_libraries_illumina import get_illumina_qual_chars
+from qiime.split_libraries_fastq import get_illumina_qual_chars
 
 script_info = {}
 script_info['brief_description'] = "Given a directory of per-swath qseq files, this script generates a single fastq per lane."
