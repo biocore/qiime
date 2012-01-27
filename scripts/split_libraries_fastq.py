@@ -19,7 +19,7 @@ from qiime.parse import parse_mapping_file
 from qiime.split_libraries_fastq import (process_fastq_single_end_read_file,
                                          BARCODE_DECODER_LOOKUP)
 from qiime.split_libraries import check_map
-from qiime.split_libraries_illumina import get_illumina_qual_chars
+from qiime.split_libraries_fastq import get_illumina_qual_chars
 from qiime.golay import get_invalid_golay_barcodes
 
 script_info = {}
