@@ -107,7 +107,7 @@ To get around these issues you can use the ``screen`` command. These steps illus
 
 screen
 
-You'll need to hit ``enter``.  Then enter your commands, and you can safely close your computer. When you come back you'll need to log into the instance again. You can then type::
+You'll need to hit ``enter``.  Then enter your commands, and you can safely close the terminal window, disconnect from the network, close your computer, etc. When you come back you'll need to log into the instance again. You can then type::
 
 screen -r
 
