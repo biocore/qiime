@@ -105,11 +105,11 @@ When you start a job via ``ssh`` on AWS, that job will stay running only as long
 
 To get around these issues you can use the ``screen`` command. These steps illustrate basic usage of ``screen``. To start a screen session to safely run commands::
 
-screen
+	screen
 
 You'll need to hit ``enter``.  Then enter your commands, and you can safely close the terminal window, disconnect from the network, close your computer, etc. When you come back you'll need to log into the instance again. You can then type::
 
-screen -r
+	screen -r
 
 and you'll see that the command is still running (or may have completed).
 
