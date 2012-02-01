@@ -96,8 +96,8 @@ The current R instance knows about these paths:
     return(result)
 }
 
+# Get balanced folds where each fold has close to overall class ratio
 "balanced.folds" <- function(y, nfolds=10){
-    # Get balanced folds where each fold has close to overall class ratio
     folds = rep(0, length(y))
     classes = levels(y)
     # size of each class
