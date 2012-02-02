@@ -14,9 +14,10 @@ __status__ = "Development"
 
 from qiime.util import make_option
 from cogent.parse.fasta import MinimalFastaParser
+from cogent.parse.fastq import MinimalFastqParser
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.parse import fields_to_dict
-from qiime.filter import (filter_fasta, 
+from qiime.filter import (filter_fasta, filter_fastq,
                           get_seqs_to_keep_lookup_from_seq_id_file,
                           get_seqs_to_keep_lookup_from_fasta_file,
                           sample_ids_from_metadata_description)
@@ -24,15 +25,17 @@ from qiime.filter import (filter_fasta,
 options_lookup = get_options_lookup()
 
 script_info = {}
-script_info['brief_description'] = "This script can be applied to remove sequences from a fasta file based on input criteria."
+script_info['brief_description'] = "This script can be applied to remove sequences from a fasta or fastq file based on input criteria."
 script_info['script_description'] = ""
 script_info['script_usage'] = [
  ("Keep all sequences that show up in an OTU map","",
  "filter_fasta.py -f inseqs.fasta -o filtered_seqs.fasta -m uclust_ref_otus.txt"),
  ("Discard all sequences that show up in chimera checking output. NOTE: It is very important to pass -n here as this tells the script to negate the request, or discard all sequences that are listed via -s. This is necessary to remove the identified chimeras from inseqs.fasta","",
  "filter_fasta.py -f inseqs.fasta -o non_chimeric_seqs.fasta -s chimeric_seqs.txt -n"),
- ("Keep all sequences listed in a text file","",
- "filter_fasta.py -f inseqs.fasta -o filtered_seqs.fasta -s seqs_to_keep.txt")]
+ ("Keep all sequences from as fasta file that are listed in a text file","",
+ "filter_fasta.py -f inseqs.fasta -o filtered_seqs.fasta -s seqs_to_keep.txt"),
+ ("Keep all sequences from a fastq file that are listed in a text file (note: file name must end with .fastq to support fastq filtering)","",
+ "filter_fasta.py -f inseqs.fastq -o filtered_seqs.fasta -s seqs_to_keep.txt")]
 script_info['output_description']= ""
 script_info['required_options'] = [\
  options_lookup['input_fasta'],
@@ -60,10 +63,15 @@ script_info['version'] = __version__
 
 def filter_fasta_fp(input_seqs_fp,output_seqs_fp,seqs_to_keep,negate=False):
     """Filter a fasta file to include only sequences listed in seqs_to_keep """
-    
-    input_seqs = MinimalFastaParser(open(input_seqs_fp,'U'))
+    input_seqs = MinimalFastqParser(open(input_seqs_fp,'U'))
     output_f = open(output_seqs_fp,'w')
     return filter_fasta(input_seqs,output_f,seqs_to_keep,negate)
+
+def filter_fastq_fp(input_seqs_fp,output_seqs_fp,seqs_to_keep,negate=False):
+    """Filter a fastq file to include only sequences listed in seqs_to_keep """
+    input_seqs = MinimalFastqParser(open(input_seqs_fp,'U'),strict=False)
+    output_f = open(output_seqs_fp,'w')
+    return filter_fastq(input_seqs,output_f,seqs_to_keep,negate)
 
 def get_seqs_to_keep_lookup_from_otu_map(seqs_to_keep_f):
     """Generate a lookup dictionary from an OTU map"""
@@ -128,10 +136,15 @@ def main():
     else:
         option_parser.error(error_msg)
     
-    filter_fasta_fp(opts.input_fasta_fp,
-                    opts.output_fasta_fp,
-                    seqs_to_keep_lookup,
-                    negate)
+    if opts.input_fasta_fp.endswith('.fastq'):
+        filter_fp_f = filter_fastq_fp
+    else:
+        filter_fp_f = filter_fasta_fp
+    
+    filter_fp_f(opts.input_fasta_fp,
+                opts.output_fasta_fp,
+                seqs_to_keep_lookup,
+                negate)
 
 if __name__ == "__main__":
     main()
