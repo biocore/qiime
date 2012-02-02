@@ -65,7 +65,11 @@ def filter_fasta(input_seqs,output_seqs_f,seqs_to_keep,negate=False):
         def keep_seq(seq_id):
             return seq_id.split()[0] not in seqs_to_keep_lookup
     
-    for seq_id, seq in input_seqs:
+    for entry in input_seqs:
+        # split entry apart internally to support 
+        # fasta (len(entry) == 2) or fastq (len(entry) == 3)
+        seq_id = entry[0]
+        seq = entry[1]
         if keep_seq(seq_id):
             output_seqs_f.write('>%s\n%s\n' % (seq_id, seq))
     output_seqs_f.close()

@@ -80,12 +80,38 @@ class FilterTests(TestCase):
             (['SampleID','Description'],['a\tx'.split('\t')]))
         
     def test_filter_fasta(self):
-        """filter_fasta functions as expected """
+        """filter_fasta functions as expected with fasta data """
         input_seqs = [('Seq1 some comment','ACCTTGG'),
                       ('s2 some other comment','TTGG'),
                       ('S3','AAGGCCGG'),
                       ('S5 some comment','CGT'),
                       ('seq6 some other comment','AA'),
+                      ('S7','T')]
+        seqs_to_keep = {}.fromkeys(['Seq1',
+                                    's2 some other comment',
+                                    'S3 no comment'])
+
+        actual = fake_output_f()
+        filter_fasta(input_seqs,
+                     actual,
+                     seqs_to_keep,
+                     negate=False)
+        self.assertEqual(actual.s,self.filter_fasta_expected1)
+        
+        actual = fake_output_f()
+        filter_fasta(input_seqs,
+                     actual,
+                     seqs_to_keep,
+                     negate=True)
+        self.assertEqual(actual.s,self.filter_fasta_expected2)
+
+    def test_filter_fasta_w_fastq(self):
+        """filter_fasta functions as expected with fasta data """
+        input_seqs = [('Seq1 some comment','ACCTTGG','BBBBBBB'),
+                      ('s2 some other comment','TTGG','BBBB'),
+                      ('S3','AAGGCCGG','BBCtatcc'),
+                      ('S5 some comment','CGT','BBB'),
+                      ('seq6 some other comment','AA','BB'),
                       ('S7','T')]
         seqs_to_keep = {}.fromkeys(['Seq1',
                                     's2 some other comment',
