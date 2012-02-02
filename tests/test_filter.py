@@ -22,7 +22,8 @@ from qiime.filter import (filter_fasta,filter_samples_from_otu_table,
                           filter_otus_from_otu_table,get_sample_ids,
                           filter_samples_from_distance_matrix,
                           negate_tips_to_keep,
-                          filter_mapping_file)
+                          filter_mapping_file,
+                          filter_fastq)
 
 class fake_output_f():
     
@@ -40,6 +41,8 @@ class FilterTests(TestCase):
     def setUp(self):
         self.filter_fasta_expected1 = filter_fasta_expected1
         self.filter_fasta_expected2 = filter_fasta_expected2
+        self.filter_fastq_expected1 = filter_fastq_expected1
+        self.filter_fastq_expected2 = filter_fastq_expected2
         self.input_dm1 = input_dm1.split('\n')
         self.expected_dm1a = expected_dm1a.split('\n')
         self.expected_dm1b = expected_dm1b.split('\n')
@@ -80,7 +83,7 @@ class FilterTests(TestCase):
             (['SampleID','Description'],['a\tx'.split('\t')]))
         
     def test_filter_fasta(self):
-        """filter_fasta functions as expected with fasta data """
+        """filter_fasta functions as expected"""
         input_seqs = [('Seq1 some comment','ACCTTGG'),
                       ('s2 some other comment','TTGG'),
                       ('S3','AAGGCCGG'),
@@ -105,31 +108,31 @@ class FilterTests(TestCase):
                      negate=True)
         self.assertEqual(actual.s,self.filter_fasta_expected2)
 
-    def test_filter_fasta_w_fastq(self):
-        """filter_fasta functions as expected with fasta data """
+    def test_filter_fastq(self):
+        """filter_fastq functions as expected"""
         input_seqs = [('Seq1 some comment','ACCTTGG','BBBBBBB'),
                       ('s2 some other comment','TTGG','BBBB'),
                       ('S3','AAGGCCGG','BBCtatcc'),
                       ('S5 some comment','CGT','BBB'),
                       ('seq6 some other comment','AA','BB'),
-                      ('S7','T')]
+                      ('S7','T','s')]
         seqs_to_keep = {}.fromkeys(['Seq1',
                                     's2 some other comment',
                                     'S3 no comment'])
 
         actual = fake_output_f()
-        filter_fasta(input_seqs,
+        filter_fastq(input_seqs,
                      actual,
                      seqs_to_keep,
                      negate=False)
-        self.assertEqual(actual.s,self.filter_fasta_expected1)
+        self.assertEqual(actual.s,self.filter_fastq_expected1)
         
         actual = fake_output_f()
-        filter_fasta(input_seqs,
+        filter_fastq(input_seqs,
                      actual,
                      seqs_to_keep,
                      negate=True)
-        self.assertEqual(actual.s,self.filter_fasta_expected2)
+        self.assertEqual(actual.s,self.filter_fastq_expected2)
     
     def test_filter_samples_from_distance_matrix(self):
         """filter_samples_from_distance_matrix functions as expected """
@@ -340,6 +343,7 @@ c\tHand\tPalm\tz
 d\tWholeBody\tPalm\ta
 e\tWholeBody\tStool\tb"""
 
+
 filter_fasta_expected1 = """>Seq1 some comment
 ACCTTGG
 >s2 some other comment
@@ -353,6 +357,33 @@ CGT
 AA
 >S7
 T
+"""
+
+filter_fastq_expected1 = """@Seq1 some comment
+ACCTTGG
++
+BBBBBBB
+@s2 some other comment
+TTGG
++
+BBBB
+@S3
+AAGGCCGG
++
+BBCtatcc
+"""
+filter_fastq_expected2 = """@S5 some comment
+CGT
++
+BBB
+@seq6 some other comment
+AA
++
+BB
+@S7
+T
++
+s
 """
 
 input_seqs_to_discard1 = """x

@@ -54,6 +54,8 @@ def get_sample_ids(map_data, map_header, states):
 
 def filter_fasta(input_seqs,output_seqs_f,seqs_to_keep,negate=False):
     """ Write filtered input_seqs to output_seqs_f which contains only seqs_to_keep
+    
+        input_seqs can be the output of MinimalFastaParser or MinimalFastqParser
     """
     seqs_to_keep_lookup = {}.fromkeys([seq_id.split()[0]
                                for seq_id in seqs_to_keep])
@@ -65,13 +67,29 @@ def filter_fasta(input_seqs,output_seqs_f,seqs_to_keep,negate=False):
         def keep_seq(seq_id):
             return seq_id.split()[0] not in seqs_to_keep_lookup
     
-    for entry in input_seqs:
-        # split entry apart internally to support 
-        # fasta (len(entry) == 2) or fastq (len(entry) == 3)
-        seq_id = entry[0]
-        seq = entry[1]
+    for seq_id,seq in input_seqs:
         if keep_seq(seq_id):
             output_seqs_f.write('>%s\n%s\n' % (seq_id, seq))
+    output_seqs_f.close()
+
+def filter_fastq(input_seqs,output_seqs_f,seqs_to_keep,negate=False):
+    """ Write filtered input_seqs to output_seqs_f which contains only seqs_to_keep
+    
+        input_seqs can be the output of MinimalFastaParser or MinimalFastqParser
+    """
+    seqs_to_keep_lookup = {}.fromkeys([seq_id.split()[0]
+                               for seq_id in seqs_to_keep])
+    # Define a function based on the value of negate
+    if not negate:
+        def keep_seq(seq_id):
+            return seq_id.split()[0] in seqs_to_keep_lookup
+    else:
+        def keep_seq(seq_id):
+            return seq_id.split()[0] not in seqs_to_keep_lookup
+    
+    for seq_id,seq,qual in input_seqs:
+        if keep_seq(seq_id):
+            output_seqs_f.write('@%s\n%s\n+\n%s\n' % (seq_id, seq, qual))
     output_seqs_f.close()
 
 def filter_mapping_file(map_data, map_header, good_sample_ids, 
