@@ -63,7 +63,7 @@ script_info['version'] = __version__
 
 def filter_fasta_fp(input_seqs_fp,output_seqs_fp,seqs_to_keep,negate=False):
     """Filter a fasta file to include only sequences listed in seqs_to_keep """
-    input_seqs = MinimalFastqParser(open(input_seqs_fp,'U'))
+    input_seqs = MinimalFastaParser(open(input_seqs_fp,'U'))
     output_f = open(output_seqs_fp,'w')
     return filter_fasta(input_seqs,output_f,seqs_to_keep,negate)
 
