@@ -37,11 +37,11 @@ def phred_to_ascii(d,offset):
     return chr(d + offset)
 
 def phred_to_ascii33(d):
-    """ Convert Phred quality score to ASCII character with specified offset.
+    """ Convert Phred quality score to ASCII character with offset of 33.
     """
     return phred_to_ascii(d,33)
     
 def phred_to_ascii64(d):
-    """ Convert Phred quality score to ASCII character with specified offset.
+    """ Convert Phred quality score to ASCII character with offset of 64.
     """
     return phred_to_ascii(d,64)
