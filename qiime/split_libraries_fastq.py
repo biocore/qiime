@@ -26,7 +26,10 @@ class FastqParseError(Exception):
     pass
 
 def get_illumina_qual_chars():
-    return '@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_`abcdefghijklmnopqrstuvwxyz{|}~'
+    # pulled from stack overflow (url wrapped over two lines):
+    # http://stackoverflow.com/questions/5891453/
+    # is-there-a-python-library-that-contains-a-list-of-all-the-ascii-characters
+    return [chr(i) for i in range(127)]
 
 def bad_chars_from_threshold(first_bad_char):
     if first_bad_char == '':
