@@ -77,12 +77,12 @@ script_info['optional_options'] = [
         help='reverse compliment sequence before writing to output file'+\
         ' (useful for reverse-orientation reads) [default: %default]',
         default=False),\
-     make_option('--last_bad_quality_char',type='choice',
-        choices = list(get_illumina_qual_chars()),
-        help='the last character to be considered low quality '+\
-        '(i.e., these character and those before it will be considered '+\
-        'low quality base calls) [default: %default]',
-        default='B'),\
+     make_option('-q','--phred_quality_threshold',type='int',
+        help='the minimum acceptable Phred quality score (e.g., for Q20 and better,'+\
+        ' specify -q 20) [default: %default]',default=3),
+     make_option('--last_bad_quality_char',
+      help='DEPRECATED: use -q instead. This method of setting is not robust to '+\
+      'different versions of CASAVA.'),\
      make_option('--barcode_type',type='string',
         help='The type of barcode used. This can be an integer, '+\
              'e.g. for length 6 barcodes, or golay_12 for golay '+\
@@ -110,10 +110,9 @@ def main():
     sequence_read_fps = opts.sequence_read_fps
     barcode_read_fps = opts.barcode_read_fps
     mapping_fps = opts.mapping_fps
-    
+    phred_quality_threshold = opts.phred_quality_threshold
     retain_unassigned_reads = opts.retain_unassigned_reads
     max_bad_run_length = opts.max_bad_run_length
-    last_bad_quality_char = opts.last_bad_quality_char
     min_per_read_length = opts.min_per_read_length
     rev_comp = opts.rev_comp
     rev_comp_barcode = opts.rev_comp_barcode
@@ -122,6 +121,10 @@ def main():
     start_seq_id = opts.start_seq_id
     # NEED TO FIX THIS FUNCTIONALITY - CURRENTLY READING THE WRONG FIELD
     filter_bad_illumina_qual_digit = False #opts.filter_bad_illumina_qual_digit
+    
+    if opts.last_bad_quality_char != None:
+        option_parser.error('--last_bad_quality_char is no longer supported. '
+         'Use -q instead (see option help text by passing -h)')
     
     barcode_type = opts.barcode_type
     max_barcode_errors = opts.max_barcode_errors
@@ -179,8 +182,11 @@ def main():
             sequence_read_f = gzip_open(sequence_read_fp)
         else:
             sequence_read_f = open(sequence_read_fp,'U')
-
-        barcode_read_f = open(barcode_read_fp,'U')
+        
+        if barcode_read_fp.endswith('.gz'):
+            barcode_read_f = gzip_open(barcode_read_fp)
+        else:
+            barcode_read_f = open(barcode_read_fp,'U')
         seq_id = start_seq_id
         for fasta_header, sequence, quality, seq_id in \
             process_fastq_single_end_read_file(
@@ -189,7 +195,7 @@ def main():
                barcode_to_sample_id,
                store_unassigned=retain_unassigned_reads,
                max_bad_run_length=max_bad_run_length,
-               last_bad_quality_char=last_bad_quality_char,
+               phred_quality_threshold=phred_quality_threshold,
                min_per_read_length=min_per_read_length,
                rev_comp=rev_comp,
                rev_comp_barcode=rev_comp_barcode,

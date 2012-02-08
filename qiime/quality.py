@@ -45,3 +45,5 @@ def phred_to_ascii64(d):
     """ Convert Phred quality score to ASCII character with offset of 64.
     """
     return phred_to_ascii(d,64)
+
+

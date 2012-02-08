@@ -10,7 +10,6 @@ __version__ = "1.4.0-dev"
 __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
- 
 
 from cogent.util.unit_test import TestCase, main
 from qiime.split_libraries_fastq import (
@@ -20,31 +19,57 @@ from qiime.split_libraries_fastq import (
  get_illumina_qual_chars,
  quality_filter_sequence,
  FastqParseError,
- check_header_match,
- correct_barcode)
+ check_header_match_pre180,check_header_match_180_or_later,
+ correct_barcode,is_casava_v180_or_later,
+ )
 from qiime.golay import decode_golay_12
 
 class FakeFile(object):
     
-    def __init__(self):
-        self.s = ""
+    def __init__(self,d=""):
+        self.s = d
     def write(self,s):
         self.s += s
     def close(self):
         pass
 
+
+
 class SplitLibrariesFastqTests(TestCase):
     """ """
     
     def setUp(self):
+
         self.fastq1 = fastq1.split('\n')
-        self.barcode_fastq1 = barcode_fastq1.split('\n')
-        self.fastq1_expected_no_qual_unassigned = \
-         fastq1_expected_no_qual_unassigned
-        self.fastq1_expected_default = \
-         fastq1_expected_default
+        self.barcode_fastq1 = barcode_fastq1.split('\n')        
+        self.fastq2 = fastq2.split('\n')
+        self.barcode_fastq2 = barcode_fastq2.split('\n')
+        self.fastq1_expected_no_qual_unassigned = fastq1_expected_no_qual_unassigned
+        self.fastq1_expected_default = fastq1_expected_default
+        self.fastq2_expected_default = fastq2_expected_default
         self.barcode_map1 = barcode_map1
+    
+    def test_is_casava_v180_or_later(self):
+        """ is_casava_v180_or_later functions as expected """
+        # handles trailing \n
+        header_line = "@M00176:17:000000000-A0CNA:1:1:15487:1773 1:N:0:0\n"
+        self.assertTrue(is_casava_v180_or_later(header_line))
+        # same w no trailing \n
+        header_line = "@M00176:17:000000000-A0CNA:1:1:15487:1773 1:N:0:0"
+        self.assertTrue(is_casava_v180_or_later(header_line))
         
+        header_line = "@HWUSI-EAS552R_0357:8:1:10040:6364#0/1"
+        self.assertFalse(is_casava_v180_or_later(header_line))
+        header_line = "@ some misc junk..."
+        self.assertFalse(is_casava_v180_or_later(header_line))
+        
+        # non-header line raises error
+        header_line = "HWUSI-EAS552R_0357:8:1:10040:6364#0/1"
+        self.assertRaises(AssertionError,is_casava_v180_or_later,header_line)
+        header_line = "M00176:17:000000000-A0CNA:1:1:15487:1773 1:N:0:0"
+        self.assertRaises(AssertionError,is_casava_v180_or_later,header_line)
+        
+    
     def test_correct_barcode_exact_match(self):
         """correct_barcode functions as expected w exact match"""
         barcode = "GGAGACAAGGGA"
@@ -117,7 +142,7 @@ class SplitLibrariesFastqTests(TestCase):
                                        self.barcode_map1,
                                        store_unassigned=True,
                                        max_bad_run_length=1000,
-                                       last_bad_quality_char='',
+                                       phred_quality_threshold=None,
                                        min_per_read_length=0,
                                        rev_comp=False,
                                        rev_comp_barcode=False,
@@ -139,6 +164,19 @@ class SplitLibrariesFastqTests(TestCase):
                                        min_per_read_length=45)
         actual = list(actual)
         expected = self.fastq1_expected_default
+        self.assertEqual(len(actual),len(expected))
+        for i in range(len(expected)):
+            self.assertEqual(actual[i],expected[i])
+
+    def test_process_fastq_single_end_read_file_w_defaults_v180(self):
+        """process_fastq_single_end_read_file functions as expected w default filters on casava 180 data
+        """
+        actual = process_fastq_single_end_read_file(self.fastq2,
+                                       self.barcode_fastq2,
+                                       self.barcode_map1,
+                                       min_per_read_length=45)
+        actual = list(actual)
+        expected = self.fastq2_expected_default
         self.assertEqual(len(actual),len(expected))
         for i in range(len(expected)):
             self.assertEqual(actual[i],expected[i])
@@ -165,33 +203,52 @@ class SplitLibrariesFastqTests(TestCase):
                                histogram_f=histogram))
         self.assertTrue(histogram.s.startswith("Length"))
             
-    def test_check_header_match(self):
-        """check_header_match functions as expected with varied input """
+    def test_check_header_match_pre180(self):
+        """check_header_match_pre180 functions as expected with varied input """
         
         ## match w illumina qual string
-        self.assertTrue(check_header_match("@990:2:4:11272:5533#1/1",
+        self.assertTrue(check_header_match_pre180("@990:2:4:11272:5533#1/1",
                                            "@990:2:4:11272:5533#1/2"))
-        self.assertTrue(check_header_match("@990:2:4:11272:5533#1/1",
+        self.assertTrue(check_header_match_pre180("@990:2:4:11272:5533#1/1",
                                            "@990:2:4:11272:5533#1/3"))
         # qual string differs (this is acceptable)
-        self.assertTrue(check_header_match("@990:2:4:11272:5533#1/1",
+        self.assertTrue(check_header_match_pre180("@990:2:4:11272:5533#1/1",
                                            "@990:2:4:11272:5533#0/3"))
         # match wo illumina qual string
-        self.assertTrue(check_header_match("@990:2:4:11272:5533/1",
+        self.assertTrue(check_header_match_pre180("@990:2:4:11272:5533/1",
                                            "@990:2:4:11272:5533/2"))
-        self.assertTrue(check_header_match("@990:2:4:11272:5533/1",
+        self.assertTrue(check_header_match_pre180("@990:2:4:11272:5533/1",
                                            "@990:2:4:11272:5533/3"))
                                            
         # mismatch w illumina qual string
-        self.assertFalse(check_header_match("@990:2:4:11272:5533#1/1",
+        self.assertFalse(check_header_match_pre180("@990:2:4:11272:5533#1/1",
                                             "@990:2:4:11272:5532#1/2"))
-        self.assertFalse(check_header_match("@990:2:4:11272:5533#1/1",
+        self.assertFalse(check_header_match_pre180("@990:2:4:11272:5533#1/1",
                                             "@890:2:4:11272:5533#1/2"))
         # mismatch wo illumina qual string
-        self.assertFalse(check_header_match("@990:2:4:11272:5533/1",
+        self.assertFalse(check_header_match_pre180("@990:2:4:11272:5533/1",
                                             "@990:2:4:11272:5532/2"))
-        self.assertFalse(check_header_match("@990:2:4:11272:5533/1",
+        self.assertFalse(check_header_match_pre180("@990:2:4:11272:5533/1",
                                             "@890:2:4:11272:5533/2"))
+
+    def test_check_header_match_180_or_later(self):
+        """check_header_match_180_or_later functions as expected with varied input """
+        # identical
+        self.assertTrue(check_header_match_180_or_later(
+         "M00176:17:000000000-A0CNA:1:1:15487:1773 1:N:0:0",
+         "M00176:17:000000000-A0CNA:1:1:15487:1773 1:N:0:0"))
+        # identical except read number
+        self.assertTrue(check_header_match_180_or_later(
+         "M00176:17:000000000-A0CNA:1:1:15487:1773 1:N:0:0",
+         "M00176:17:000000000-A0CNA:1:1:15487:1773 2:N:0:0"))
+        # identical except read number
+        self.assertTrue(check_header_match_180_or_later(
+         "M00176:17:000000000-A0CNA:1:1:15487:1773 1:N:0:0",
+         "M00176:17:000000000-A0CNA:1:1:15487:1773 3:N:0:0"))
+        # different reads
+        self.assertFalse(check_header_match_180_or_later(
+         "M00176:17:000000000-A0CNA:1:1:15487:1773 1:N:0:0",
+         "M00176:17:000000000-A0CNA:1:1:16427:1774 1:N:0:0"))
             
     def test_process_fastq_single_end_read_file_toggle_store_unassigned(self):
         """process_fastq_single_end_read_file handles store_unassigned
@@ -213,7 +270,7 @@ class SplitLibrariesFastqTests(TestCase):
                                                     barcode_to_sample_id,
                                                     store_unassigned=False,
                                                     max_bad_run_length=0,
-                                                    last_bad_quality_char='B',
+                                                    phred_quality_threshold=2,
                                                     min_per_read_length=75,
                                                     rev_comp=False,
                                                     rev_comp_barcode=False,
@@ -229,7 +286,7 @@ class SplitLibrariesFastqTests(TestCase):
                                                     barcode_to_sample_id,
                                                     store_unassigned=True,
                                                     max_bad_run_length=0,
-                                                    last_bad_quality_char='B',
+                                                    phred_quality_threshold=2,
                                                     min_per_read_length=75,
                                                     rev_comp=False,
                                                     rev_comp_barcode=False,
@@ -262,7 +319,7 @@ class SplitLibrariesFastqTests(TestCase):
                                                     barcode_to_sample_id,
                                                     store_unassigned=False,
                                                     max_bad_run_length=0,
-                                                    last_bad_quality_char='B',
+                                                    phred_quality_threshold=2,
                                                     min_per_read_length=75,
                                                     rev_comp=False,
                                                     rev_comp_barcode=False,
@@ -280,7 +337,7 @@ class SplitLibrariesFastqTests(TestCase):
                                                     barcode_to_sample_id,
                                                     store_unassigned=False,
                                                     max_bad_run_length=0,
-                                                    last_bad_quality_char='B',
+                                                    phred_quality_threshold=2,
                                                     min_per_read_length=75,
                                                     rev_comp=True,
                                                     rev_comp_barcode=False,
@@ -313,7 +370,7 @@ class SplitLibrariesFastqTests(TestCase):
                           barcode_to_sample_id,
                           store_unassigned=False,
                           max_bad_run_length=0,
-                          last_bad_quality_char='B',
+                          phred_quality_threshold=2,
                           min_per_read_length=75,
                           rev_comp=False,
                           rev_comp_barcode=False,
@@ -340,7 +397,7 @@ class SplitLibrariesFastqTests(TestCase):
                                                     barcode_to_sample_id,
                                                     store_unassigned=False,
                                                     max_bad_run_length=0,
-                                                    last_bad_quality_char='B',
+                                                    phred_quality_threshold=2,
                                                     min_per_read_length=75,
                                                     rev_comp=False,
                                                     rev_comp_barcode=False,
@@ -355,7 +412,7 @@ class SplitLibrariesFastqTests(TestCase):
                                                     barcode_to_sample_id,
                                                     store_unassigned=False,
                                                     max_bad_run_length=0,
-                                                    last_bad_quality_char='B',
+                                                    phred_quality_threshold=2,
                                                     min_per_read_length=75,
                                                     rev_comp=False,
                                                     rev_comp_barcode=True,
@@ -374,7 +431,7 @@ class SplitLibrariesFastqTests(TestCase):
                                                     barcode_to_sample_id,
                                                     store_unassigned=False,
                                                     max_bad_run_length=0,
-                                                    last_bad_quality_char='B',
+                                                    phred_quality_threshold=2,
                                                     min_per_read_length=75,
                                                     rev_comp=False,
                                                     rev_comp_barcode=True,
@@ -404,7 +461,7 @@ class SplitLibrariesFastqTests(TestCase):
                                                     barcode_to_sample_id,
                                                     store_unassigned=False,
                                                     max_bad_run_length=0,
-                                                    last_bad_quality_char='B',
+                                                    phred_quality_threshold=2,
                                                     min_per_read_length=75,
                                                     rev_comp=False,
                                                     rev_comp_barcode=False,
@@ -424,7 +481,7 @@ class SplitLibrariesFastqTests(TestCase):
                                                     barcode_to_sample_id,
                                                     store_unassigned=False,
                                                     max_bad_run_length=0,
-                                                    last_bad_quality_char='B',
+                                                    phred_quality_threshold=2,
                                                     min_per_read_length=75,
                                                     rev_comp=False,
                                                     rev_comp_barcode=False,
@@ -439,12 +496,16 @@ class SplitLibrariesFastqTests(TestCase):
     def test_bad_chars_from_threshold(self):
         """bad_chars_from_threshold selects correct chars as bad 
         """
+        exp1 = ['\x00', '\x01', '\x02', '\x03', '\x04', '\x05', '\x06', '\x07', '\x08', '\t', '\n', '\x0b', '\x0c', '\r', '\x0e', '\x0f', '\x10', '\x11', '\x12', '\x13', '\x14', '\x15', '\x16', '\x17', '\x18', '\x19', '\x1a', '\x1b', '\x1c', '\x1d', '\x1e', '\x1f', ' ', '!', '"', '#', '$', '%', '&', "'", '(', ')', '*', '+', ',', '-', '.', '/', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '<', '=', '>', '?', '@', 'A', 'B']
+        exp2 = ['\x00', '\x01', '\x02', '\x03', '\x04', '\x05', '\x06', '\x07', '\x08', '\t', '\n', '\x0b', '\x0c', '\r', '\x0e', '\x0f', '\x10', '\x11', '\x12', '\x13', '\x14', '\x15', '\x16', '\x17', '\x18', '\x19', '\x1a', '\x1b', '\x1c', '\x1d', '\x1e', '\x1f', ' ', '!', '"', '#', '$', '%', '&', "'", '(', ')', '*', '+', ',', '-', '.', '/', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '<', '=', '>', '?', '@', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '[', '\\', ']', '^', '_', '`', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '{', '|', '}', '~']
+        exp3 = ['\x00', '\x01', '\x02', '\x03', '\x04', '\x05', '\x06', '\x07', '\x08', '\t', '\n', '\x0b', '\x0c', '\r', '\x0e', '\x0f', '\x10', '\x11', '\x12', '\x13', '\x14', '\x15', '\x16', '\x17', '\x18', '\x19', '\x1a', '\x1b', '\x1c', '\x1d', '\x1e', '\x1f', ' ', '!', '"', '#', '$', '%', '&', "'", '(', ')', '*', '+', ',', '-', '.', '/', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', ':', ';', '<', '=', '>', '?', '@']
         self.assertEqual(bad_chars_from_threshold('B'),
-                         {}.fromkeys(list('@AB')))
+                         {}.fromkeys(exp1))
         self.assertEqual(bad_chars_from_threshold(''),{})
         self.assertEqual(bad_chars_from_threshold('~'),
-                         {}.fromkeys(list(get_illumina_qual_chars())))
-        self.assertEqual(bad_chars_from_threshold('@'),{'@':None})
+                         {}.fromkeys(exp2))
+        self.assertEqual(bad_chars_from_threshold('@'),
+                         {}.fromkeys(exp3))
         
     def test_quality_filter_sequence_pass(self):
         """quality_filter_sequence functions as expected for good read
@@ -819,6 +880,108 @@ AAAAAAAAAAAT
 bbbbbbbbbbbb
 """
 
+fastq2 = """@M00176:17:000000000-A0CNA:1:1:15487:1773 1:N:0:0
+GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC
++
+bbbbbbbbbbBBBBBBBBBBBBBBBY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`
+@M00176:17:000000000-A0CNA:1:1:17088:1773 1:N:0:0
+GGTTACCTTGTTACGACTTCACCCCAATCATCGGCCCCACCTTAGACAGCTGACTCCTAAAAGGTTATCTCACCGG
++
+bbcbbbbbbbbbbbbbbbbbbbbbbbbbb_bbbbbbbbaba_b^bY_`aa^bPb`bbbbHYGYZTbb^_ab[^baT
+@M00176:17:000000000-A0CNA:1:1:16738:1773 1:N:0:0
+GCACACACCGCCCGTCACACCATCCGAGTTGGAGGTACCCGAAGCCGGTAGTCTAACCGCAAGGAGGACGCTGTCG
++
+b_bbbbbbbbbbbbbbbbbbbbbbbbbbabaa^a`[bbbb`bbbbTbbabb]b][_a`a]acaaacbaca_a^`aa
+@M00176:17:000000000-A0CNA:1:1:12561:1773 1:N:0:0
+GGCTACCTTGTTACGACTTCACCCTCCTCACTAAACGTACCTTCGACAGCGTCCTCCTTGCGGTTAGACTACCGGC
++
+bb^bbbBBBBbbbbbbbbbbbbbbbbabbbb``bbb`__bbbbbbIWRXX`R``\`\Y\^__ba^a[Saaa_]O]O
+@M00176:17:000000000-A0CNA:1:1:14596:1773 1:N:0:0
+GCACACACCGCCCGTCACACCATCCGAGTTGGGGGTACCCGAAGCCGGCAGTCTAACCGCAAGGAGGACGCTGTCG
++
+b`bbbbbbbbbbbbbbb`^bbbbbYbbbbb\___`_bbab^aaaU^\`############################
+@M00176:17:000000000-A0CNA:1:1:12515:1774 1:N:0:0
+GGATACCTTGTTACGACTTCACCCTCCTCACTCATCGTACCCTCGACAGCGTCCTCCTTGCTGTTAGACTTCCGGC
++
+b`bbbbbbbbbbbbbbb`^bbbbbYbbbbb\___`_bbab^aaaU^\`############################
+@M00176:17:000000000-A0CNA:1:1:17491:1774 1:N:0:0
+GCACTCACCGCCCGTCACGCCACGGAAGCCGGCTGCACCTGAAGCCGGTGGGGCAACCGGCTGTCCCTTTTAGCGG
++
+bbbbbbbbbbbbbbbbbbbbbXbbb_bbbabbb`aZ[U]\OTYXV`Tb############################
+@M00176:17:000000000-A0CNA:1:1:16427:1774 1:N:0:0
+GGCTACCTTGTTACGACTTCGCCCCAGTCACCGACCACACCCTCGACGGCTGCCTCCGGCTGGCCCTTTCCACCCA
++
+bbbbbbbbbbbbbbbbbbbba`bbbbbbbbbb`abb_aacbbbbb]___]\[\^^[aOc#################
+@M00176:17:000000000-A0CNA:1:1:13372:1775 1:N:0:0
+GTACTCACCGCCCGTCACGCCATGGGAGTTGGGCTTACCTGAAGCCCGCGAGCTAACCGGAAAGGGGGGGATGTGG
++
+bbbb_bbbbbbbbbb```Q```######################################################
+@M00176:17:000000000-A0CNA:1:1:14806:1775 1:N:0:0
+GGCTACCTTGTTACGACTTCACCCCCGTCGCTCGGCGTACCTTCGACCGCTGCCTCCTTTTGGTTATATCTCCGGG
++
+``Q``````_``BBBB````K]]a####################################################
+@M00176:17:000000000-A0CNA:1:1:13533:1775 1:N:0:0
+GCACACACCGCCCGTCACACCACGAGAGTCGGCAACACCCGAAGTCGGTGAGGTAACCCCGAAAGGGGAGCCAGCC
++
+``Q``````_``````````K]]a####################################################
+@M00176:17:000000000-A0CNA:1:1:18209:1775 1:N:0:0
+GGATACCTTGTTACGACTTCACCCCAATCATCGACCCCACCTTCGGCGGCTGGCTCCCCTTTCGGGGGTACCTCAC
++
+bbbbbbbbbbbbbbbbbbbbbXbbb_bbbabbb`aZ[U]\OTYXV`Tb############################
+"""
+
+barcode_fastq2 = """@M00176:17:000000000-A0CNA:1:1:15487:1773 2:N:0:0
+AAAAAAAAAAAA
++
+bbbbbbbbbbbb
+@M00176:17:000000000-A0CNA:1:1:17088:1773 2:N:0:0
+AAAAAAAAAAAC
++
+bbcbbbbbbbbb
+@M00176:17:000000000-A0CNA:1:1:16738:1773 2:N:0:0
+AAAAAAAAAAAA
++
+b_bbbbbbbbbb
+@M00176:17:000000000-A0CNA:1:1:12561:1773 2:N:0:0
+AAAAAAAAAAAT
++
+bb^bbbbbbbbb
+@M00176:17:000000000-A0CNA:1:1:14596:1773 2:N:0:0
+AAAAAAAAAAAA
++
+b`bbbbbbbbbb
+@M00176:17:000000000-A0CNA:1:1:12515:1774 2:N:0:0
+AAAAAAAAAAAA
++
+b`bbbbbbbbbb
+@M00176:17:000000000-A0CNA:1:1:17491:1774 2:N:0:0
+AAAAAAAAAAAC
++
+bbbbbbbbbbbb
+@M00176:17:000000000-A0CNA:1:1:16427:1774 2:N:0:0
+AAAAAAAAAAAC
++
+bbbbbbbbbbbb
+@M00176:17:000000000-A0CNA:1:1:13372:1775 2:N:0:0
+AAAAAAAAAAAT
++
+bbbb_bbbbbbb
+@M00176:17:000000000-A0CNA:1:1:14806:1775 2:N:0:0
+AAAAAAAAAAAT
++
+``Q``````_``
+@M00176:17:000000000-A0CNA:1:1:13533:1775 2:N:0:0
+GAAAAAAAAAAT
++
+``Q``````_``
+@M00176:17:000000000-A0CNA:1:1:18209:1775 2:N:0:0
+AAAAAAAAAAAT
++
+bbbbbbbbbbbb
+"""
+
+
+
 fastq1_expected_no_qual_unassigned = [
  ("s1_0 990:2:4:11271:5323#1/1 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
   "GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC",
@@ -901,7 +1064,47 @@ fastq1_expected_default = [
  ("s2_7 990:2:4:11272:19991#1/1 orig_bc=AAAAAAAAAAAC new_bc=AAAAAAAAAAAC bc_diffs=0",
   "GGCTACCTTGTTACGACTTCGCCCCAGTCACCGACCACACCCTCGACGGCTGCCTCCGG",
   "bbbbbbbbbbbbbbbbbbbba`bbbbbbbbbb`abb_aacbbbbb]___]\[\^^[aOc",
-  7)]
+  7),
+ ("s4_8 990:2:4:11272:5533#0/1 orig_bc=AAAAAAAAAAAT new_bc=AAAAAAAAAAAT bc_diffs=0",
+  "GGATACCTTGTTACGACTTCACCCCAATCATCGACCCCACCTTCGGCG",
+  "bbbbbbbbbbbbbbbbbbbbbXbbb_bbbabbb`aZ[U]\OTYXV`Tb",8)]
+
+fastq2_expected_default = [
+ ("s1_0 M00176:17:000000000-A0CNA:1:1:15487:1773 1:N:0:0 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
+  "GCACTCACCGCCCGTCACACCACGAAAGTTGGTAACACCCGAAGCCGGTGAGATAACCTTTTAGGAGTCAGCTGTC",
+  "bbbbbbbbbbBBBBBBBBBBBBBBBY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`",
+  0),
+ ("s2_1 M00176:17:000000000-A0CNA:1:1:17088:1773 1:N:0:0 orig_bc=AAAAAAAAAAAC new_bc=AAAAAAAAAAAC bc_diffs=0",
+  "GGTTACCTTGTTACGACTTCACCCCAATCATCGGCCCCACCTTAGACAGCTGACTCCTAAAAGGTTATCTCACCGG",
+  "bbcbbbbbbbbbbbbbbbbbbbbbbbbbb_bbbbbbbbaba_b^bY_`aa^bPb`bbbbHYGYZTbb^_ab[^baT",
+  1),
+ ("s1_2 M00176:17:000000000-A0CNA:1:1:16738:1773 1:N:0:0 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
+  "GCACACACCGCCCGTCACACCATCCGAGTTGGAGGTACCCGAAGCCGGTAGTCTAACCGCAAGGAGGACGCTGTCG",
+  "b_bbbbbbbbbbbbbbbbbbbbbbbbbbabaa^a`[bbbb`bbbbTbbabb]b][_a`a]acaaacbaca_a^`aa",
+  2),
+ ("s4_3 M00176:17:000000000-A0CNA:1:1:12561:1773 1:N:0:0 orig_bc=AAAAAAAAAAAT new_bc=AAAAAAAAAAAT bc_diffs=0",
+  "GGCTACCTTGTTACGACTTCACCCTCCTCACTAAACGTACCTTCGACAGCGTCCTCCTTGCGGTTAGACTACCGGC",
+  "bb^bbbBBBBbbbbbbbbbbbbbbbbabbbb``bbb`__bbbbbbIWRXX`R``\`\Y\^__ba^a[Saaa_]O]O",
+  3),
+ ("s1_4 M00176:17:000000000-A0CNA:1:1:14596:1773 1:N:0:0 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
+  "GCACACACCGCCCGTCACACCATCCGAGTTGGGGGTACCCGAAGCCGG",
+  "b`bbbbbbbbbbbbbbb`^bbbbbYbbbbb\___`_bbab^aaaU^\`",
+  4),
+ ("s1_5 M00176:17:000000000-A0CNA:1:1:12515:1774 1:N:0:0 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0",
+  "GGATACCTTGTTACGACTTCACCCTCCTCACTCATCGTACCCTCGACA",
+  "b`bbbbbbbbbbbbbbb`^bbbbbYbbbbb\___`_bbab^aaaU^\`",
+  5),
+ ("s2_6 M00176:17:000000000-A0CNA:1:1:17491:1774 1:N:0:0 orig_bc=AAAAAAAAAAAC new_bc=AAAAAAAAAAAC bc_diffs=0",
+  "GCACTCACCGCCCGTCACGCCACGGAAGCCGGCTGCACCTGAAGCCGG",
+  "bbbbbbbbbbbbbbbbbbbbbXbbb_bbbabbb`aZ[U]\OTYXV`Tb",
+  6),
+ ("s2_7 M00176:17:000000000-A0CNA:1:1:16427:1774 1:N:0:0 orig_bc=AAAAAAAAAAAC new_bc=AAAAAAAAAAAC bc_diffs=0",
+  "GGCTACCTTGTTACGACTTCGCCCCAGTCACCGACCACACCCTCGACGGCTGCCTCCGG",
+  "bbbbbbbbbbbbbbbbbbbba`bbbbbbbbbb`abb_aacbbbbb]___]\[\^^[aOc",
+  7),
+ ("s4_8 M00176:17:000000000-A0CNA:1:1:18209:1775 1:N:0:0 orig_bc=AAAAAAAAAAAT new_bc=AAAAAAAAAAAT bc_diffs=0",
+  "GGATACCTTGTTACGACTTCACCCCAATCATCGACCCCACCTTCGGCG",
+  "bbbbbbbbbbbbbbbbbbbbbXbbb_bbbabbb`aZ[U]\OTYXV`Tb",8)]
 
 
 if __name__ == "__main__":
