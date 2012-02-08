@@ -15,7 +15,7 @@ def ascii_to_phred(c,offset):
     """  Convert ascii character to Phred quality score with specified ASCII offset.
     """
     return ord(c) - offset
-
+    
 def ascii_to_phred33(c):
     """  Convert ascii character to Phred quality score with ASCII offset of 33.
       Standard "Sanger" ASCII offset of 33. This is used by Illumina in CASAVA versions 
@@ -30,3 +30,18 @@ def ascii_to_phred64(c):
        prior to 1.8.0, and in Illumina internal formats (e.g., export.txt files).
     """
     return ascii_to_phred(c,64)
+
+def phred_to_ascii(d,offset):
+    """ Convert Phred quality score to ASCII character with specified offset.
+    """
+    return chr(d + offset)
+
+def phred_to_ascii33(d):
+    """ Convert Phred quality score to ASCII character with specified offset.
+    """
+    return phred_to_ascii(d,33)
+    
+def phred_to_ascii64(d):
+    """ Convert Phred quality score to ASCII character with specified offset.
+    """
+    return phred_to_ascii(d,64)
