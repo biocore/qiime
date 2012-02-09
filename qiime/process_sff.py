@@ -191,11 +191,15 @@ def make_flow_txt(sff_fp, output_fp, use_sfftools=False):
             raise IOError("Could not parse SFF %s" % sff_fp)
 
 
-def make_fna(sff_fp, output_fp, use_sfftools=False):
+def make_fna(sff_fp, output_fp, use_sfftools=False,no_trim=False):
     """Makes fna file from sff file."""
     if use_sfftools:
         check_sffinfo()
-        _check_call(['sffinfo', '-s', sff_fp], stdout=open(output_fp, 'w'))
+        if no_trim:
+            _check_call(['sffinfo','-notrim','-s', sff_fp], 
+                        stdout=open(output_fp, 'w'))
+        else:
+            _check_call(['sffinfo', '-s', sff_fp], stdout=open(output_fp, 'w'))
     else:
         try:
             format_binary_sff_as_fna(open(sff_fp), open(output_fp, 'w'))
@@ -203,11 +207,15 @@ def make_fna(sff_fp, output_fp, use_sfftools=False):
             raise IOError("Could not parse SFF %s" % sff_fp)
 
 
-def make_qual(sff_fp, output_fp, use_sfftools=False):
+def make_qual(sff_fp, output_fp, use_sfftools=False,no_trim=False):
     """Makes qual file from sff file."""
     if use_sfftools:
         check_sffinfo()
-        _check_call(['sffinfo', '-q', sff_fp], stdout=open(output_fp, 'w'))
+        if no_trim:
+            _check_call(['sffinfo','-notrim','-q', sff_fp], 
+                        stdout=open(output_fp, 'w'))
+        else:
+            _check_call(['sffinfo', '-q', sff_fp], stdout=open(output_fp, 'w'))
     else:
         try:
             format_binary_sff_as_fna(open(sff_fp), open(output_fp, 'w'), qual=True)
@@ -217,7 +225,7 @@ def make_qual(sff_fp, output_fp, use_sfftools=False):
 
 def prep_sffs_in_dir(
     sff_dir, output_dir, make_flowgram=False, convert_to_flx=False,
-    use_sfftools=False):
+    use_sfftools=False,no_trim=False):
     """Converts all sffs in dir to fasta/qual.
 
     If convert_to_flx is True, each SFF file is first adjusted to
@@ -249,8 +257,10 @@ def prep_sffs_in_dir(
             convert_Ti_to_FLX(sff_fp, sff_flx_fp, use_sfftools)
             # Converted sff file becomes basis for further processing
             sff_fp = sff_flx_fp
-
-        make_fna(sff_fp, base_output_fp + '.fna', use_sfftools)
-        make_qual(sff_fp, base_output_fp + '.qual', use_sfftools)
+            
+        make_fna(sff_fp, base_output_fp + '.fna', use_sfftools, no_trim)
+        make_qual(sff_fp, base_output_fp + '.qual', use_sfftools, no_trim)
+        
+        
         if make_flowgram:
             make_flow_txt(sff_fp, base_output_fp + '.txt', use_sfftools)

@@ -34,6 +34,8 @@ script_info['required_options'] = [\
 ]
 
 script_info['optional_options'] = [
+    make_option('--no_trim', action='store_true', default=False,
+        help='do not trim sequence/qual (requires --use_sfftools option) [default: %default]'),
     make_option('-f', '--make_flowgram', action='store_true', default=False,
         help='generate a flowgram file. [default: %default]'),
     make_option('-t', '--convert_to_FLX', action='store_true', default=False,
@@ -58,14 +60,17 @@ def main():
             pass
     else:
         opts.output_dir = opts.input_dir
-            
+    
+    if opts.no_trim and not opts.use_sfftools:
+        raise ValueError, "When using the --no_trim option you must have the sfftools installed and must also pass the --use_sfftools option"
+        
     prep_sffs_in_dir(
         opts.input_dir,
         opts.output_dir,
         make_flowgram=opts.make_flowgram,
         convert_to_flx=opts.convert_to_FLX,
         use_sfftools=opts.use_sfftools,
-        )
+        no_trim=opts.no_trim)
 
 if __name__ == "__main__":
     main()
