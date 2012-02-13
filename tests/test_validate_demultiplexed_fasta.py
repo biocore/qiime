@@ -156,17 +156,18 @@ class ValidateDemultiplexedFastaTests(TestCase):
     def test_check_labels_sampleids_with_problems(self):
         """  Properly checks for QIIME labels, sampleID matching """
         
-        fasta_labels = ['seq1_1', 'seq1', 'seq2_3', 'seq1_4', 'seq4_5']
+        fasta_labels = ['seq1_1', 'seq1', 'seq2_3', 'seq1_4', 'seq4_5',
+         'seq4_6_1']
         
         sample_ids = ['seq0', 'seq2', 'seq3', 'seq4']
         
-        total_seq_count = 5
+        total_seq_count = 6
         
         perc_not_valid, perc_nosampleid_match =\
          check_labels_sampleids(fasta_labels, sample_ids, total_seq_count)
          
-        expected_perc_not_valid = "%1.3f" % 0.2
-        expected_perc_nosampleid_match = "%1.3f" % 0.6
+        expected_perc_not_valid = "%1.3f" % 0.333
+        expected_perc_nosampleid_match = "%1.3f" % 0.667
         
         self.assertEqual(perc_not_valid, expected_perc_not_valid)
         self.assertEqual(perc_nosampleid_match, expected_perc_nosampleid_match)

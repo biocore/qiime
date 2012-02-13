@@ -96,11 +96,12 @@ def get_dup_labels_perc(fasta_labels):
     
     fasta_labels: list of fasta labels
     """
-    fasta_labels_count = len(fasta_labels)
-    fasta_labels_derep = len(set(fasta_labels))
+    fasta_labels_count = float(len(fasta_labels))
+    fasta_labels_derep = float(len(set(fasta_labels)))
     
     perc_dup = "%1.3f" %\
      ((fasta_labels_count-fasta_labels_derep)/fasta_labels_count)
+    
     return perc_dup
     
 def check_labels_sampleids(fasta_labels,
@@ -126,6 +127,10 @@ def check_labels_sampleids(fasta_labels,
         
         if curr_label[0] in sample_ids:
             matches_sampleid_count += 1
+            
+    total_seq_count = float(total_seq_count)
+    valid_id_count = float(valid_id_count)
+    matches_sampleid_count = float(matches_sampleid_count)
             
     perc_not_valid = "%1.3f" %\
      ((total_seq_count - valid_id_count)/total_seq_count)
@@ -172,6 +177,11 @@ def check_fasta_seqs(input_fasta_fp,
             if curr_primer in seq:
                 linkerprimers_count += 1
                 break
+                
+    invalid_chars_count = float(invalid_chars_count)
+    barcodes_count = float(barcodes_count)
+    linkerprimers_count = float(linkerprimers_count)
+    total_seq_count = float(total_seq_count)
     
     perc_invalid_chars = "%1.3f" %\
      (invalid_chars_count/total_seq_count)
