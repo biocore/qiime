@@ -822,9 +822,9 @@ expected_otu_assignments = """# Tab-separated fields:
 # For C and D types, PctId is average id with seed.
 # QueryStart and SeedStart are zero-based relative to start of sequence.
 # If minus strand, SeedStart is relative to reverse-complemented seed.
-H\t2\t199\t97.5\t+\t0\t0\t119M80D\tref1 ecoli sequence\tusearch_ecoli_seq2
+H\t2\t199\t97.5\t.\t0\t0\t119M80D\tref1 ecoli sequence\tusearch_ecoli_seq2
 N\t*\t178\t*\t*\t*\t*\t*\tEU199232 1 1236 Bacteria/Deltaproteobacteria/Desulfurella - Hippea/uncultured\t*
-H\t1\t180\t100.0\t+\t0\t0\t97M83D\tL07864 1 1200 Bacteria/Beta Gammaproteobacteria/Solemya symbiont\tSolemya seq""".split('\n')
+H\t1\t180\t100.0\t.\t0\t0\t97M83D\tL07864 1 1200 Bacteria/Beta Gammaproteobacteria/Solemya symbiont\tSolemya seq""".split('\n')
 
 expected_enumerated_fasta = """>0
 AACCCCCACGGTGGATGCCACACGCCCCATACAAAGGGTAGGATGCTTAAGACACATCGCGTCAGGTTTGTGTCAGGCCT
@@ -1026,7 +1026,7 @@ CTGGGCCGTGTCTCAGTCCCAGTGTGGCCGTCCGCCCTCTCAGGTCAGCTACTGATCGTCGCCTTGGTAGGCCATTACCC
 TACCAACTAGCTAATCAGACGCGAGGCCATCTCTCAGCGATAAATCTTTGATATATCTGCCATGCGACAAACATATATTA
 TGCGGTATTAGCAGTCGTTTCCAACTGTTGTCCCCCTCTGAAAGGCAGGTT""".split('\n')
 
-expected_cluster_err_seqs = """>Cluster0;size=326
+expected_cluster_err_seqs = """>Cluster0;size=2
 AACCCCCACGGTGGATGCCACACGCCCCATACAAAGGGTAGGATGCTTAAGACACATCGCGTCAGGTTTGTGTCAGGCCT
 AACCCCCACGGTGGATGCCACACGCCCCATACAAAGGGTAGGATGCTTAAGACACATCGCGTCAGGTTTGTGTCAGGCCT""".split('\n')
 

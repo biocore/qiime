@@ -44,6 +44,7 @@ PyNAST alignment, tree-building, taxonomy assignment, OTU picking, and other dat
 * fasttree 2.1.3 (`src <http://www.microbesonline.org/fasttree/FastTree-2.1.3.c>`_) (license: GPL)
 * jre1.6.0_05 (`link <http://java.sun.com/javase/downloads/index.jsp>`_) (license: GPL2)
 * rdp_classifier-2.2 (`zip <http://sourceforge.net/projects/rdp-classifier/files/rdp-classifier/rdp_classifier_2.2.zip/download>`_) See :ref:`RDP install notes <rdp-install>`. (license: GPL)
+* usearch v5.2.32 (`src <http://www.drive5.com/usearch/>`_) (license: see http://www.drive5.com/usearch/nonprofit_form.html)
 
 Alignment, tree-building, taxonomy assignment, OTU picking, and other data generation steps (required for alternative pipelines):
 
@@ -228,6 +229,15 @@ uclust Install Notes
 The uclust binary must be called ``uclust``, which differs from the names of the posted binaries, but is the name of the binary if you build from source. If you've installed the binary ``uclust1.2.21q_i86linux64`` as ``/home/qiime/bin/uclust1.2.21q_i86linux64``, we recommend creating a symbolic link to this file::
 	
 	ln -s /home/qiime/bin/uclust1.2.21q_i86linux64 /home/qiime/bin/uclust
+
+usearch Install Notes
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. _usearch-install:
+
+The usearch binary must be called ``usearch``, which differs from the names of the posted binaries, but is the name of the binary if you build from source. If you've installed the binary ``usearch5.2.32_i86linux32`` as ``/home/qiime/bin/usearch5.2.32_i86linux32``, we recommend creating a symbolic link to this file::
+	
+	ln -s /home/qiime/bin/usearch5.2.32_i86linux32 /home/qiime/bin/usearch
 	
 ChimeraSlayer Install Notes
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^

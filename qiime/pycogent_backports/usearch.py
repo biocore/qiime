@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Application controller for usearch v5.1.221
+"""Application controller for usearch v5.2.32
 
 Includes application controllers for usearch and
 convenience wrappers for different functions of uclust including
@@ -1416,7 +1416,7 @@ def otu_pipe(
     except ApplicationError:
         raise ApplicationError, ('Error running usearch. Possible causes are '
          'unsupported version (current supported version is usearch '+\
-         'v5.1.221) is installed or improperly formatted input file was '+\
+         'v5.2.32) is installed or improperly formatted input file was '+\
          'provided')
     except ApplicationNotFoundError:
         remove_files(files_to_remove)
