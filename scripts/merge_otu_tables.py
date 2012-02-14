@@ -31,8 +31,10 @@ script_info['script_usage'] = [\
 script_info['output_description']= ""
 script_info['required_options'] = [\
  # Example required option
- make_option('-i','--input_fps',help='the otu tables in biom format (comma-separated)'),\
- make_option('-o','--output_fp',help='the output otu table filepath'),\
+ make_option('-i','--input_fps',type='existing_filepaths',
+             help='the otu tables in biom format (comma-separated)'),\
+ make_option('-o','--output_fp',type='new_filepath',
+             help='the output otu table filepath'),\
 ]
 script_info['optional_options'] = []
 script_info['version'] = __version__
@@ -40,15 +42,14 @@ script_info['version'] = __version__
 def main():
     option_parser, opts, args =\
        parse_command_line_parameters(**script_info)
-       
-    input_fs = []
-    for input_fp in opts.input_fps.split(','):
-        input_fs.append(open(input_fp,'U'))
+    input_fps = opts.input_fps
     
-    t = reduce(lambda x,y: x.merge(y), [parse_biom_table(i) for i in input_fs])
+    master = parse_biom_table(open(input_fps[0],'U'))
+    for input_fp in input_fps[1:]:
+        master = master.merge(parse_biom_table(open(input_fp,'U')))
 
     out_f = open(opts.output_fp,'w')
-    out_f.write(t.getBiomFormatJsonString())
+    out_f.write(master.getBiomFormatJsonString())
     out_f.close()
 
 if __name__ == "__main__":
