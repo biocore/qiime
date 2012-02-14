@@ -3,6 +3,7 @@ QIIME 1.4.0-dev
 * Altered the way split_libraries.py handles errors/warnings from the mapping file, and fixed a bug where suppression of warnings about variable length barcodes was not being properly passed.  Now warnings will not cause split_libraries.py to halt execution, although more serious problems (errors) will.  These includes problems with headers, SampleIDs, and invalid characters in DNA sequence fields.
 * Increased allowed ambiguous bases in split_libraries.py default values from 0 to 6.  This is to accommodate the FLX+ long read technology which will often make ambiguous base calls but still have quality sequences following the ambiguous bases.  Also added an option to truncate at the first "N" character option (-x) to allow users to retain these sequences but remove ambiguous bases if desired.
 * Updated merge_mapping_files.py to support merging of mapping files with overlapping sample ids.
+* Added support for CASAVA 1.8.0 quality scores in split_libraries_fastq.py. This involved deprecating the --last_bad_quality_char parameter in favor of --phred_quality_threshold. The latter is now computed from the former on the basis of detecting which version of CASAVA is being used from the fastq headers (unfortunately they don't include this information in the file, but it is possible to detect).
 
 QIIME 1.4.0 (13 Dec 2011)
 ==================================
