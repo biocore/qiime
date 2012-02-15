@@ -353,7 +353,15 @@ def generate_heatmap_plots(num_otu_hits, otu_table, otu_sort, sample_sort, dir_p
     #    new_otu_table.append(rows[-1])
     #    rows= asarray(new_otu_table)
     if sample_sort:
-        filtered_otu_table = filtered_otu_table.sortSampleOrder(sample_sort)
+        # Since the BIOM object may come back with fewer Sampleids, we need to 
+        # remove those from the original sample_sort
+        actual_samples=filtered_otu_table.SampleIds
+        new_sample_sort_order=[]
+        for i in sample_sort:
+            if i in actual_samples:
+                new_sample_sort_order.append(i)
+                
+        filtered_otu_table = filtered_otu_table.sortSampleOrder(new_sample_sort_order)
         
     #Convert OTU counts into a javascript array
     js_array=create_javascript_array(filtered_otu_table, fractional_values)

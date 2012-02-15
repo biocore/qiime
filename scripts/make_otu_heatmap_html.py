@@ -20,7 +20,6 @@ from qiime.make_otu_heatmap_html import generate_heatmap_plots,get_otu_counts,\
     get_log_transform
 import os
 import shutil
-import os
 from qiime.util import get_qiime_project_dir
 from qiime.parse import parse_mapping_file
 from qiime.parse import parse_newick, PhyloNode
