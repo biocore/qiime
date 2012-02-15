@@ -3,7 +3,7 @@
 
 __author__ = "Julia Goodrich"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Julia Goodrich","Justin Kuczynski", "Jose Carlos Clemente Litran"]
+__credits__ = ["Julia Goodrich","Justin Kuczynski", "Jose Carlos Clemente Litran","Jesse Stombaugh"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Daniel McDonald"
@@ -11,15 +11,16 @@ __email__ = "wasade@gmail.com"
 __status__ = "Development"
 
 from cogent.util.unit_test import TestCase, main
-from qiime.summarize_otu_by_cat import get_sample_cat_info, get_counts_by_cat
-from qiime.pycogent_backports.rich_otu_table import SparseOTUTable, to_ll_mat
+from qiime.summarize_otu_by_cat import get_sample_cat_info, get_counts_by_cat,\
+                                       summarize_by_cat
+from qiime.pycogent_backports.rich_otu_table import SparseOTUTable, to_ll_mat, table_factory
 from qiime.util import get_tmp_filename, load_qiime_config
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
     def setUp(self):
         """Set up for the tests in TopLevelTests Class"""
-
+         
         self.qiime_config = load_qiime_config()
         self.tmp_dir = self.qiime_config['temp_dir'] or '/tmp/'
 
@@ -30,6 +31,11 @@ class TopLevelTests(TestCase):
 3\t090909\t1200\tsome description of sample3
 4\t090909\t1800\tsome description of sample4
 5\t091009\t1200\tsome description of sample5"""
+
+        self.map_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
+                                             prefix='test_map',suffix='.txt')
+        open(self.map_fp,'w').write(self.map_file)
+        
         self.cat_by_sample = {'1': [('SampleID', '1'), ('Day', '090809'), ('time', '1200'), ('Description', 'some description of sample1')], 
                               '2': [('SampleID', '2'), ('Day', '090809'), ('time', '1800'), ('Description', 'some description of sample2')],
                               '3': [('SampleID', '3'), ('Day', '090909'), ('time', '1200'), ('Description', 'some description of sample3')], 
@@ -117,7 +123,8 @@ otu_10\t0\t2\t0\t4\t0\tBacteria; Firmicutes; Mollicutes; Clostridium_aff_innocuu
         self.otu_table_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
                                              prefix='test_summarize_otu_by_cat',suffix='.biom')
         open(self.otu_table_fp,'w').write(self.otu_table_str)
-
+        
+        
         self.cat_otu_table = """1.0\t0.0\t6.0
 2.0\t0.0\t0.0
 0.0\t4.0\t0.0
@@ -144,16 +151,16 @@ otu_10\t0\t2\t0\t4\t0\tBacteria; Firmicutes; Mollicutes; Clostridium_aff_innocuu
 
         self.otus = ["otu_1","otu_2","otu_3","otu_4","otu_5","otu_6","otu_7","otu_8","otu_9","otu_10"]
 
-        self.taxonomy = ["Bacteria; Actinobacteria; Coriobacteridae",
-                      "Bacteria; Bacteroidetes; Bacteroidales; Bacteroidaceae",
-                      "Bacteria; Firmicutes; Clostridia; Clostridiales",
-                      "Bacteria; Spirochaetes; Spirochaetales; Spirochaetaceae",
-                      "Bacteria; Bacteroidetes; Bacteroidales; Rikenellaceae",
-                      "Bacteria; Bacteroidetes; Bacteroidales; Dysgonomonaceae",
-                      "Bacteria; Bacteroidetes; Bacteroidales; Odoribacteriaceae",
-                      "Bacteria; Bacteroidetes; Bacteroidales; Dysgonomonaceae; otu_425",
-                      "Bacteria; Bacteroidetes; Bacteroidales; Dysgonomonaceae; otu_425",
-                      "Bacteria; Firmicutes; Mollicutes; Clostridium_aff_innocuum_CM970"]
+        self.taxonomy = [{"taxonomy":["Bacteria", "Actinobacteria","Coriobacteridae"]},
+                      {"taxonomy":["Bacteria", "Bacteroidetes", "Bacteroidales", "Bacteroidaceae"]},
+                      {"taxonomy":["Bacteria", "Firmicutes", "Clostridia", "Clostridiales"]},
+                      {"taxonomy":["Bacteria", "Spirochaetes", "Spirochaetales", "Spirochaetaceae"]},
+                      {"taxonomy":["Bacteria", "Bacteroidetes", "Bacteroidales", "Rikenellaceae"]},
+                      {"taxonomy":["Bacteria", "Bacteroidetes", "Bacteroidales", "Dysgonomonaceae"]},
+                      {"taxonomy":["Bacteria", "Bacteroidetes", "Bacteroidales", "Odoribacteriaceae"]},
+                      {"taxonomy":["Bacteria", "Bacteroidetes", "Bacteroidales", "Dysgonomonaceae", "otu_425"]},
+                      {"taxonomy":["Bacteria", "Bacteroidetes", "Bacteroidales", "Dysgonomonaceae", "otu_425"]},
+                      {"taxonomy":["Bacteria", "Firmicutes", "Mollicutes", "Clostridium_aff_innocuum_CM970"]}]
         self.num_cat = {"Day":2,
                         "time":4}
 
@@ -193,5 +200,28 @@ otu_10\t0\t2\t0\t4\t0\tBacteria; Firmicutes; Mollicutes; Clostridium_aff_innocuu
         self.assertEqual(otus,self.otus)
         self.assertEqual(taxonomy,self.taxonomy)
 
+    def test_summarize_by_cat(self):
+        """summarize_by_cat: creates the category otu table with normalized values"""
+        
+        obs_otu_table=summarize_by_cat(self.map_fp,self.otu_table_fp,'Day',True)
+        
+        self.assertEqual(obs_otu_table,exp_otu_table)
+
+exp_otu_table="""\
+# Constructed from biom file
+#OTU ID	090809	090909	091009	Consensus Lineage
+otu_1	0.03846	0.0	0.42857	Bacteria;Actinobacteria;Coriobacteridae
+otu_2	0.14286	0.0	0.0	Bacteria;Bacteroidetes;Bacteroidales;Bacteroidaceae
+otu_3	0.0	0.20833	0.0	Bacteria;Firmicutes;Clostridia;Clostridiales
+otu_4	0.0	0.0	0.35714	Bacteria;Spirochaetes;Spirochaetales;Spirochaetaceae
+otu_5	0.15385	0.11111	0.0	Bacteria;Bacteroidetes;Bacteroidales;Rikenellaceae
+otu_6	0.44505	0.0	0.0	Bacteria;Bacteroidetes;Bacteroidales;Dysgonomonaceae
+otu_7	0.0	0.30556	0.0	Bacteria;Bacteroidetes;Bacteroidales;Odoribacteriaceae
+otu_8	0.0	0.0	0.21429	Bacteria;Bacteroidetes;Bacteroidales;Dysgonomonaceae;otu_425
+otu_9	0.14286	0.20833	0.0	Bacteria;Bacteroidetes;Bacteroidales;Dysgonomonaceae;otu_425
+otu_10	0.07692	0.16667	0.0	Bacteria;Firmicutes;Mollicutes;Clostridium_aff_innocuum_CM970"""
+
 if __name__ =='__main__':
     main()
+
+

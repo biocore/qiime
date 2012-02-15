@@ -33,7 +33,8 @@ from qiime.format import format_otu_table
 from decimal import getcontext
 #from qiime.parse import parse_mapping_file, parse_otu_table
 from qiime.parse import parse_mapping_file
-from qiime.pycogent_backports.parse_biom import parse_biom_table
+from qiime.pycogent_backports.parse_biom import parse_biom_table,convert_biom_to_otu_table
+from qiime.pycogent_backports.rich_otu_table import SparseOTUTable, DenseOTUTable, table_factory
 
 def get_sample_cat_info(lines, category):
     cat_by_sample = {}
@@ -108,9 +109,11 @@ def get_counts_by_cat(otu_table_fh, num_meta, meta_dict, cat_list,category,num_s
     is_con = False
     if otu_table.ObservationMetadata[0] and 'taxonomy' in otu_table.ObservationMetadata[0]:
         is_con = True
+    
 
     #for idx, line in enumerate(otu_table):
     for (otu_val, otu_id, otu_metadata) in otu_table.iterObservations():
+        
         new_line = []
         label_dict = defaultdict(int)
         #data = line
@@ -120,16 +123,24 @@ def get_counts_by_cat(otu_table_fh, num_meta, meta_dict, cat_list,category,num_s
         con = ''
         if is_con:
             #con = '; '.join(lineages[idx])
-            con = '; '.join(otu_metadata['taxonomy'])
+            # old method
+            #con = '; '.join(otu_metadata['taxonomy'])
+            
+            con = otu_metadata['taxonomy']
             #counts = data
         #else:
             #counts = data
-        taxonomy.append(con)
+        
+        # old method
+        # taxonomy.append(con)
+        
+        taxonomy.append({'taxonomy':con})
+        
         if not normalize:
             #for i,c in zip(label_list,counts):
             for i,c in zip(otu_table.SampleIds, otu_val):
                 if i in samples_from_mapping:
-                    label_dict[meta_dict[i][0][0]] += c        
+                    label_dict[meta_dict[i][0][0]] += c
             for i in cat_list:
                 new_line.append(str(label_dict[i]))
             cat_otu_table.append(new_line)
@@ -179,7 +190,17 @@ def summarize_by_cat(map_lines,otu_table_fh,category,norm):
             new_labels.append(label_lists_dict[category][i])
     new_lines=zip(*new_lines)
     
-    lines = format_otu_table(new_labels, otus, array(new_lines), \
-                  taxonomy=taxonomy,
-                  comment='Category OTU Counts-%s'% category)
-    return lines
+    lines=table_factory(array(new_lines),new_labels,otus,
+                           sample_metadata=None,
+                           observation_metadata=taxonomy,
+                           table_id='Category OTU Counts-%s' % category,
+                           constructor=SparseOTUTable,
+                           dtype=int)
+    
+    # old method - deprecated
+    #lines = format_otu_table(new_labels, otus, array(new_lines), \
+    #              taxonomy=taxonomy,
+    #              comment='Category OTU Counts-%s'% category)
+    
+    
+    return convert_biom_to_otu_table(lines.getBiomFormatJsonString())
