@@ -33,7 +33,7 @@ from qiime.format import format_otu_table
 from decimal import getcontext
 #from qiime.parse import parse_mapping_file, parse_otu_table
 from qiime.parse import parse_mapping_file
-from qiime.pycogent_backports.parse_biom import parse_biom_table,convert_biom_to_otu_table
+from qiime.pycogent_backports.parse_biom import parse_biom_table
 from qiime.pycogent_backports.rich_otu_table import SparseOTUTable, DenseOTUTable, table_factory
 
 def get_sample_cat_info(lines, category):
@@ -203,4 +203,4 @@ def summarize_by_cat(map_lines,otu_table_fh,category,norm):
     #              comment='Category OTU Counts-%s'% category)
     
     
-    return convert_biom_to_otu_table(lines.getBiomFormatJsonString())
+    return lines.getBiomFormatJsonString()

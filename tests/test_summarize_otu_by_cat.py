@@ -14,6 +14,7 @@ from cogent.util.unit_test import TestCase, main
 from qiime.summarize_otu_by_cat import get_sample_cat_info, get_counts_by_cat,\
                                        summarize_by_cat
 from qiime.pycogent_backports.rich_otu_table import SparseOTUTable, to_ll_mat, table_factory
+from qiime.pycogent_backports.parse_biom import convert_biom_to_otu_table
 from qiime.util import get_tmp_filename, load_qiime_config
 
 class TopLevelTests(TestCase):
@@ -204,8 +205,8 @@ otu_10\t0\t2\t0\t4\t0\tBacteria; Firmicutes; Mollicutes; Clostridium_aff_innocuu
         """summarize_by_cat: creates the category otu table with normalized values"""
         
         obs_otu_table=summarize_by_cat(self.map_fp,self.otu_table_fp,'Day',True)
-        
-        self.assertEqual(obs_otu_table,exp_otu_table)
+        result=convert_biom_to_otu_table(obs_otu_table)
+        self.assertEqual(result,exp_otu_table)
 
 exp_otu_table="""\
 # Constructed from biom file
