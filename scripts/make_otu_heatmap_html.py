@@ -97,14 +97,14 @@ def main():
     #data['otu_counts'] = list(get_otu_counts(opts.otu_table_fp, data))
     otu_table = get_otu_counts(opts.otu_table_fp)
     # determine whether fractional values are present in OTU table
-
+    num_otu_hits=opts.num_otu_hits
     if opts.log_transform:
         if not opts.log_eps is None and opts.log_eps <= 0:
             print "Parameter 'log_eps' must be positive. Value was", opts.log_eps
             exit(1)
         #data['otu_counts'][2] = get_log_transform(data['otu_counts'][2], opts.log_eps)
         otu_table = get_log_transform(otu_table, opts.log_eps)
-        opts.num_otu_hits = 0
+        num_otu_hits = 0
         
     # test: if using relative abundances, and opts.num_otu_hits > 0
     # print warning and set to 0
@@ -126,11 +126,11 @@ def main():
     fractional_values = (max_val.dtype.name == 'float32' or max_val.dtype.name == 'float64')
 
     if fractional_values and max_val <= 1:
-        if opts.num_otu_hits > 0:
+        if num_otu_hits > 0:
             print "Warning: OTU table appears to be using relative abundances",\
                     "and num_otu_hits was set to %d. Setting num_otu_hits to 0."\
-                    %(opts.num_otu_hits)
-            opts.num_otu_hits = 0
+                    %(num_otu_hits)
+            num_otu_hits = 0
 
     filepath=opts.otu_table_fp
     filename=filepath.strip().split('/')[-1].split('.')[0]
@@ -199,9 +199,10 @@ def main():
         action = generate_heatmap_plots
     except NameError:
         action = None
+        
     #Place this outside try/except so we don't mask NameError in action
     if action:
-        action(opts,otu_table, ordered_otu_names, ordered_sample_names,
+        action(num_otu_hits,otu_table, ordered_otu_names, ordered_sample_names,
                dir_path,js_dir_path,filename, fractional_values)
 
 if __name__ == "__main__":

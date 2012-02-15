@@ -309,14 +309,14 @@ def get_otu_counts(fpath):
 
 #def generate_heatmap_plots(options, data, dir_path, js_dir_path,
 #                        filename,fractional_values=False):
-def generate_heatmap_plots(options, otu_table, otu_sort, sample_sort, dir_path,
+def generate_heatmap_plots(num_otu_hits, otu_table, otu_sort, sample_sort, dir_path,
                            js_dir_path, filename,fractional_values=False):
     """Generate HTML heatmap and javascript array for OTU counts"""
 
     #Filter by number of OTU hits
     # rows come transposed in the original code
     #rows=filter_by_otu_hits(options.num_otu_hits, data)
-    filtered_otu_table = filter_by_otu_hits(options.num_otu_hits, otu_table)
+    filtered_otu_table = filter_by_otu_hits(num_otu_hits, otu_table)
 
     # This sorts the otus by the tree supplied
     #if data['otu_order']:
@@ -329,8 +329,17 @@ def generate_heatmap_plots(options, otu_table, otu_sort, sample_sort, dir_path,
     #            if i==j[0]:
     #                new_otu_table.append(j)
     #    rows= asarray(new_otu_table).transpose()
+      
     if otu_sort:
-        filtered_otu_table = filtered_otu_table.sortObservationOrder(otu_sort)
+        # Since the BIOM object comes back with fewer Observation_ids, we need to 
+        # remove those from the original sort_order
+        actual_observations=filtered_otu_table.ObservationIds
+        new_otu_sort_order=[]
+        for i in otu_sort:
+            if i in actual_observations:
+                new_otu_sort_order.append(i)
+                
+        filtered_otu_table = filtered_otu_table.sortObservationOrder(new_otu_sort_order)
 
     # This sorts the samples by the order supplied
     #if data['sample_order']:
@@ -350,7 +359,7 @@ def generate_heatmap_plots(options, otu_table, otu_sort, sample_sort, dir_path,
     js_array=create_javascript_array(filtered_otu_table, fractional_values)
 
     #Write otu filter number
-    js_otu_cutoff='var otu_num_cutoff=%d;' % options.num_otu_hits
+    js_otu_cutoff='var otu_num_cutoff=%d;' % num_otu_hits
     
     #Write js array to file
     js_filename=os.path.join(js_dir_path,filename)+'.js'

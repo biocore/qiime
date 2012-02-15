@@ -14,8 +14,12 @@ from numpy import array, log
 from cogent.util.unit_test import TestCase, main
 from qiime.make_otu_heatmap_html import (make_html_doc,create_javascript_array,\
                                        filter_by_otu_hits,line_converter,\
-                                       get_log_transform)
+                                       get_log_transform,generate_heatmap_plots)
 from qiime.pycogent_backports.rich_otu_table import SparseOTUTable, to_ll_mat
+from os.path import join
+from shutil import rmtree
+from qiime.util import create_dir,get_qiime_project_dir
+import shutil
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -31,7 +35,8 @@ class TopLevelTests(TestCase):
         #self.data={}
         #self.data['otu_counts']=self.col_header,self.row_header,self.otu_table,\
         #                        self.lineages
-
+        self.output_dir='/tmp/'
+        
         otu_table_vals = {(0,0):0.0,
                           (1,0):1.0, (1,1):5.0}
 
@@ -50,7 +55,12 @@ class TopLevelTests(TestCase):
                                              [{"taxonomy": ["Archaea"]}])
 
         self.num_otu_hits=5
-            
+        self._folders_to_cleanup=[]
+        
+    def tearDown(self):
+        '''This function removes the generated files'''
+        map(rmtree,self._folders_to_cleanup)
+        
     def test_make_html_doc(self):
         """make_html_doc: create the web interface for otu heatmaps"""
         obs = make_html_doc('./test/test_otu_count_table.js')
@@ -118,6 +128,54 @@ javascript array"""
         #  needs to be modified in the otu table object
         self.assertFloatEqual ( log_otu_table._data.items(), exp_otu_table._data.items())
         
+        
+    def test_generate_heatmap_plots(self):
+        """generate_heatmap_plots: create default output files"""
+        
+        # create directories and move js files to verify everything works
+        # in the script file
+        dir_path=join(self.output_dir,'test')
+        create_dir(dir_path)
+        
+        js_dir_path=join(dir_path,'js')
+        create_dir(js_dir_path)
+        
+        self._folders_to_cleanup.append(dir_path)
+        
+        qiime_dir=get_qiime_project_dir()
+        
+        js_path=join(qiime_dir,'qiime/support_files/js')
+        shutil.copyfile(join(js_path,'overlib.js'), join(js_dir_path,'overlib.js'))
+        shutil.copyfile(join(js_path,'otu_count_display.js'), join(js_dir_path,'otu_count_display.js'))
+        shutil.copyfile(join(js_path,'jquery.js'), join(js_dir_path,'jquery.js'))
+        shutil.copyfile(join(js_path,'jquery.tablednd_0_5.js'), join(js_dir_path,'jquery.tablednd_0_5.js'))
+        
+    
+        # generate otu_table object
+        orig_data = {(0,1):1.0, (0,2):2,
+                     (1,0):1000.0}
+                     
+        orig_otu_table = SparseOTUTable(to_ll_mat(orig_data),
+                                        ['Sample1', 'Sample2', 'Sample3'],
+                                        ['OTU1', 'OTU2'],
+                                        [None, None, None],
+                                        [{"taxonomy": ["Bacteria"]},
+                                         {"taxonomy": ["Archaea"]}])
+        
+        # put in an OTU sort order and sample order
+        otu_sort=['OTU2','OTU1']
+        sample_sort=['Sample2','Sample1','Sample3']
+        num_otu_hits=3
+        
+        # generate test files
+        generate_heatmap_plots(num_otu_hits, orig_otu_table, otu_sort, 
+                               sample_sort, dir_path, js_dir_path, 
+                               'test',fractional_values=False)
+        
+        
+        self.assertEqual(open(join(js_dir_path,'test.js'),'U').read(), 
+                         exp_js_output_file)
+        
 exp_js_array='''\
     var OTU_table=new Array();\n\
     var i=0;\n\
@@ -132,6 +190,28 @@ OTU_table[2][1]=5;\n\
 OTU_table[3][0]='Consensus Lineage';\n\
 OTU_table[3][1]='Archaea';\n\
 '''
+
+exp_js_output_file="""\
+var otu_num_cutoff=3;    var OTU_table=new Array();
+    var i=0;
+    for (i==0;i<5;i++) {
+    OTU_table[i]=new Array();}
+OTU_table[0][0]='#OTU ID';
+OTU_table[0][1]='OTU2';
+OTU_table[0][2]='OTU1';
+OTU_table[1][0]='Sample2';
+OTU_table[1][1]=0;
+OTU_table[1][2]=1;
+OTU_table[2][0]='Sample1';
+OTU_table[2][1]=1000;
+OTU_table[2][2]=0;
+OTU_table[3][0]='Sample3';
+OTU_table[3][1]=0;
+OTU_table[3][2]=2;
+OTU_table[4][0]='Consensus Lineage';
+OTU_table[4][1]='Archaea';
+OTU_table[4][2]='Bacteria';
+"""
 
 exp_html_script = \
     r'''
