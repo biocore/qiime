@@ -134,6 +134,35 @@ As long as your EC2 instances are running, you're paying for them by the hour. W
 
 If you're permanently done with an EC2 instance, you can terminate it by selecting the instance and choosing ``Instance Actions`` > ``Terminate``. Once you've terminated an instance you can never get it back: all data in that instance, as well as any configuration changes you've made, etc, is lost forever, so be sure this is what you want to do.
 
+Creating a volume for persistent storage across different launches of an instance (or different instances)
+==========================================================================================================
+The disk space is fairly limited on the EC2 instances. To get around this you can create a volume (the equivalent of an external hard drive) and mount that on your instance. Data that you store in this volume can be accessed across different launches of an instance, or across different instances, but can only be attached to one instance at a time. 
+
+Use the management console to create a volume. This must be in the same availability zone as the instance that you want to attach it to. Start an instance if you haven't already, and attached the volume. **Screenshots to come...**
+
+Be sure to take note of where the volume is attached. This will look like: ``/dev/sdf/``. You'll need this in a minute (we'll call this the attachment point).
+
+ssh into your EC2 instance and run the following commands. In this example, I'm assuming that your attachment point is ``/dev/sdf/``. If it's not, replace all occurrences of ``/dev/sdf/`` with your actual attachment point. 
+
+The first time you use your volume you'll need to run this command. Do not run this command on an instance that you already have data in - that will erase your data!
+::
+
+	sudo mkfs.ext4 /dev/sdf
+
+One your first time attaching a volume to a new instance, you'll need to run this command:: 
+
+	mkdir /home/ubuntu/data
+
+Anytime you attach or re-attach your volume to an instance (so after starting a new or stopped instance) you'll need to run these commands::
+
+	sudo mount /dev/sdf /home/ubuntu/data
+	sudo chown ubuntu /home/ubuntu/data
+	sudo chgrp ubuntu /home/ubuntu/data
+
+
+
+
+
 
 .. _AWS: http://aws.amazon.com/
 .. _AWS console: http://aws.amazon.com/console/
