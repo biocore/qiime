@@ -43,7 +43,8 @@ def merge_mapping_files(mapping_files,no_data_value='no_data'):
                 for header,value in current_values.items():
                     if header in previous_data and value != previous_data[header]:
                         raise ValueError,\
-                         "Different values provided for %s for sample %s in different mapping files."
+                         "Different values provided for %s for sample %s in different mapping files."\
+                          % (header,sample_id)
                 mapping_data[sample_id].update(current_values)
             else:
                 mapping_data[sample_id] = current_values
