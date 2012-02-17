@@ -170,7 +170,7 @@ class FilterTests(TestCase):
         """filter_otus_from_otu_table functions with list of OTU ids"""
         otu_table = parse_biom_table_str(dense_otu_table1)
         filtered_otu_table= filter_otus_from_otu_table(otu_table,
-          set(otu_table.ObservationIds) - set(['34','155','152']),0,inf)
+          set(otu_table.ObservationIds) - set(['34','155','152']),0,inf,0,inf)
         expected_otu_ids = set(otu_table.ObservationIds) - set(['34','155','152'])
         self.assertEqual(set(filtered_otu_table.ObservationIds),expected_otu_ids)
     
@@ -178,7 +178,7 @@ class FilterTests(TestCase):
         """filter_otus_from_otu_table functions with list of OTU ids and negate option"""
         otu_table = parse_biom_table_str(dense_otu_table1)
         filtered_otu_table= filter_otus_from_otu_table(otu_table,
-          set(otu_table.ObservationIds) - set(['34','155','152']),0,inf,negate_ids_to_keep=True)
+          set(otu_table.ObservationIds) - set(['34','155','152']),0,inf,0,inf,negate_ids_to_keep=True)
         expected_otu_ids = set(['34','155','152'])
         self.assertEqual(set(filtered_otu_table.ObservationIds),expected_otu_ids)
         
@@ -189,15 +189,15 @@ class FilterTests(TestCase):
         otu_table = parse_biom_table_str(dense_otu_table1)
         
         # min and max
-        filtered_otu_table= filter_otus_from_otu_table(otu_table,otu_table.ObservationIds,20,25)
+        filtered_otu_table= filter_otus_from_otu_table(otu_table,otu_table.ObservationIds,20,25,0,inf)
         expected_otu_ids = set(['34','155','152'])
         self.assertEqual(set(filtered_otu_table.ObservationIds),expected_otu_ids)
         # no max
-        filtered_otu_table= filter_otus_from_otu_table(otu_table,otu_table.ObservationIds,43,inf)
+        filtered_otu_table= filter_otus_from_otu_table(otu_table,otu_table.ObservationIds,43,inf,0,inf)
         expected_otu_ids = set(['267','154','254','17'])
         self.assertEqual(set(filtered_otu_table.ObservationIds),expected_otu_ids)
         # no min
-        filtered_otu_table= filter_otus_from_otu_table(otu_table,otu_table.ObservationIds,0,1)
+        filtered_otu_table= filter_otus_from_otu_table(otu_table,otu_table.ObservationIds,0,1,0,inf)
         expected_otu_ids = set(['0', '1', '10', '100', '102', '104', '105', '106', '107', '108', 
         '11', '111', '112', '113', '114', '115', '116', '118', '119', '12', '121', '123', '124', 
         '125', '127', '128', '129', '132', '133', '134', '135', '136', '137', '138', '139', 
@@ -226,15 +226,15 @@ class FilterTests(TestCase):
         otu_table = parse_biom_table_str(sparse_otu_table1)
         
         # min and max
-        filtered_otu_table= filter_otus_from_otu_table(otu_table,otu_table.ObservationIds,20,25)
+        filtered_otu_table= filter_otus_from_otu_table(otu_table,otu_table.ObservationIds,20,25,0,inf)
         expected_otu_ids = set(['34','155','152'])
         self.assertEqual(set(filtered_otu_table.ObservationIds),expected_otu_ids)
         # no max
-        filtered_otu_table= filter_otus_from_otu_table(otu_table,otu_table.ObservationIds,43,inf)
+        filtered_otu_table= filter_otus_from_otu_table(otu_table,otu_table.ObservationIds,43,inf,0,inf)
         expected_otu_ids = set(['267','154','254','17'])
         self.assertEqual(set(filtered_otu_table.ObservationIds),expected_otu_ids)
         # no min
-        filtered_otu_table= filter_otus_from_otu_table(otu_table,otu_table.ObservationIds,0,1)
+        filtered_otu_table= filter_otus_from_otu_table(otu_table,otu_table.ObservationIds,0,1,0,inf)
         expected_otu_ids = set(['0', '1', '10', '100', '102', '104', '105', '106', '107', '108', 
         '11', '111', '112', '113', '114', '115', '116', '118', '119', '12', '121', '123', '124', 
         '125', '127', '128', '129', '132', '133', '134', '135', '136', '137', '138', '139', 
@@ -258,6 +258,94 @@ class FilterTests(TestCase):
         '77', '80', '81', '85', '86', '88', '89', '91', '92', '94', '97', '98', '99'])
         self.assertEqual(set(filtered_otu_table.ObservationIds),expected_otu_ids)
 
+
+    def test_filter_otus_from_otu_table_samples_sparse(self):
+        """filter_otus_from_otu_table functions with sample-based filtering (sparse OTU table)"""
+        otu_table = parse_biom_table_str(sparse_otu_table1)
+        
+        # min and max
+        filtered_otu_table= filter_otus_from_otu_table(otu_table,otu_table.ObservationIds,0,inf,6,7)
+        expected_otu_ids = set(['153','154','203','286','353','191','227'])
+        
+        self.assertEqual(set(filtered_otu_table.ObservationIds),expected_otu_ids)
+        # no max
+        filtered_otu_table= filter_otus_from_otu_table(otu_table,otu_table.ObservationIds,0,inf,6,inf)
+        expected_otu_ids = set(['153','154','203','286','353','191','227','120'])
+        self.assertEqual(set(filtered_otu_table.ObservationIds),expected_otu_ids)
+        # no min
+        filtered_otu_table= filter_otus_from_otu_table(otu_table,otu_table.ObservationIds,0,inf,0,1)
+        expected_otu_ids = set(['0', '1', '2', '4', '5', '6', '9', '10', '11', '12', '15', '18', '19', 
+                                '20', '24', '25', '27', '28', '30', '31', '32', '33', '37', '38', '39', 
+                                '40', '42', '43', '44', '45', '46', '47', '48', '49', '50', '51', '52', 
+                                '54', '55', '56', '57', '59', '60', '62', '64', '66', '67', '68', '69', 
+                                '70', '71', '72', '73', '74', '76', '77', '80', '81', '82', '85', '86', 
+                                '88', '89', '91', '92', '94', '95', '97', '98', '99', '100', '101', '102', 
+                                '104', '105', '106', '107', '108', '110', '111', '112', '113', '114', '115', 
+                                '116', '118', '119', '121', '123', '124', '125', '127', '128', '129', '132', 
+                                '133', '134', '135', '136', '137', '138', '139', '141', '142', '143', '144', 
+                                '145', '148', '149', '150', '157', '160', '161', '163', '164', '166', '167', 
+                                '168', '170', '171', '172', '173', '175', '176', '177', '178', '179', '180', 
+                                '182', '183', '185', '186', '188', '189', '190', '192', '193', '194', '195', 
+                                '197', '200', '202', '205', '206', '207', '209', '210', '212', '213', '214', 
+                                '215', '216', '219', '221', '222', '224', '226', '230', '232', '233', '234', 
+                                '236', '237', '238', '239', '240', '241', '242', '243', '244', '246', '247', 
+                                '249', '252', '255', '256', '257', '258', '259', '260', '261', '263', '264', 
+                                '265', '266', '268', '269', '270', '271', '272', '273', '274', '275', '276', 
+                                '277', '278', '279', '280', '281', '282', '284', '285', '288', '289', '290', 
+                                '291', '292', '293', '294', '296', '297', '298', '300', '301', '302', '303', 
+                                '304', '305', '306', '307', '308', '309', '310', '311', '312', '314', '316', 
+                                '317', '318', '320', '321', '322', '323', '324', '325', '327', '328', '330', 
+                                '331', '332', '334', '335', '336', '337', '338', '339', '340', '342', '343', 
+                                '344', '345', '346', '347', '348', '350', '352', '354', '355', '356', '357', 
+                                '358', '359', '364', '365', '366', '367', '368', '369', '372', '374', '375', 
+                                '376', '377', '378', '379', '380', '381', '382', '384', '385', '386', '387', 
+                                '388', '389', '390', '391', '392', '393', '394', '396', '397', '398', '399', 
+                                '400', '401', '402', '403', '404', '405', '406', '410', '411', '412', '413'])
+        self.assertEqual(set(filtered_otu_table.ObservationIds),expected_otu_ids)
+
+    def test_filter_otus_from_otu_table_samples_dense(self):
+        """filter_otus_from_otu_table functions with sample-based filtering (dense OTU table)"""
+        otu_table = parse_biom_table_str(dense_otu_table1)
+        
+        # min and max
+        filtered_otu_table= filter_otus_from_otu_table(otu_table,otu_table.ObservationIds,0,inf,6,7)
+        expected_otu_ids = set(['153','154','203','286','353','191','227'])
+        
+        self.assertEqual(set(filtered_otu_table.ObservationIds),expected_otu_ids)
+        # no max
+        filtered_otu_table= filter_otus_from_otu_table(otu_table,otu_table.ObservationIds,0,inf,6,inf)
+        expected_otu_ids = set(['153','154','203','286','353','191','227','120'])
+        self.assertEqual(set(filtered_otu_table.ObservationIds),expected_otu_ids)
+        # no min
+        filtered_otu_table= filter_otus_from_otu_table(otu_table,otu_table.ObservationIds,0,inf,0,1)
+        expected_otu_ids = set(['0', '1', '2', '4', '5', '6', '9', '10', '11', '12', '15', '18', '19', 
+                                '20', '24', '25', '27', '28', '30', '31', '32', '33', '37', '38', '39', 
+                                '40', '42', '43', '44', '45', '46', '47', '48', '49', '50', '51', '52', 
+                                '54', '55', '56', '57', '59', '60', '62', '64', '66', '67', '68', '69', 
+                                '70', '71', '72', '73', '74', '76', '77', '80', '81', '82', '85', '86', 
+                                '88', '89', '91', '92', '94', '95', '97', '98', '99', '100', '101', '102', 
+                                '104', '105', '106', '107', '108', '110', '111', '112', '113', '114', '115', 
+                                '116', '118', '119', '121', '123', '124', '125', '127', '128', '129', '132', 
+                                '133', '134', '135', '136', '137', '138', '139', '141', '142', '143', '144', 
+                                '145', '148', '149', '150', '157', '160', '161', '163', '164', '166', '167', 
+                                '168', '170', '171', '172', '173', '175', '176', '177', '178', '179', '180', 
+                                '182', '183', '185', '186', '188', '189', '190', '192', '193', '194', '195', 
+                                '197', '200', '202', '205', '206', '207', '209', '210', '212', '213', '214', 
+                                '215', '216', '219', '221', '222', '224', '226', '230', '232', '233', '234', 
+                                '236', '237', '238', '239', '240', '241', '242', '243', '244', '246', '247', 
+                                '249', '252', '255', '256', '257', '258', '259', '260', '261', '263', '264', 
+                                '265', '266', '268', '269', '270', '271', '272', '273', '274', '275', '276', 
+                                '277', '278', '279', '280', '281', '282', '284', '285', '288', '289', '290', 
+                                '291', '292', '293', '294', '296', '297', '298', '300', '301', '302', '303', 
+                                '304', '305', '306', '307', '308', '309', '310', '311', '312', '314', '316', 
+                                '317', '318', '320', '321', '322', '323', '324', '325', '327', '328', '330', 
+                                '331', '332', '334', '335', '336', '337', '338', '339', '340', '342', '343', 
+                                '344', '345', '346', '347', '348', '350', '352', '354', '355', '356', '357', 
+                                '358', '359', '364', '365', '366', '367', '368', '369', '372', '374', '375', 
+                                '376', '377', '378', '379', '380', '381', '382', '384', '385', '386', '387', 
+                                '388', '389', '390', '391', '392', '393', '394', '396', '397', '398', '399', 
+                                '400', '401', '402', '403', '404', '405', '406', '410', '411', '412', '413'])
+        self.assertEqual(set(filtered_otu_table.ObservationIds),expected_otu_ids)
         
     def test_filter_samples_from_otu_table_counts_dense(self):
         """filter_samples_from_otu_table functions with count-based filtering (dense OTU table)"""

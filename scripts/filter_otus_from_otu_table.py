@@ -45,6 +45,16 @@ script_info['optional_options'] = [
              type='int',
              default=inf,
              help="the maximum total observation count of an otu for that otu to be retained [default: infinity]"),
+ make_option('-s', 
+             '--min_samples',
+             type='int',
+             default=0,
+             help="the minimum number of samples an OTU must be observed in for that otu to be retained [default: %default]"),
+ make_option('-y', 
+             '--max_samples',
+             type='int',
+             default=inf,
+             help="the maximum number of samples an OTU must be observed in for that otu to be retained [default: infinity]"),
 
  make_option('-e','--otu_ids_to_exclude_fp',
              type='existing_filepath',
@@ -66,12 +76,15 @@ def main():
     min_count = opts.min_count
     max_count = opts.max_count
     
+    min_samples = opts.min_samples
+    max_samples = opts.max_samples
+    
     otu_ids_to_exclude_fp = opts.otu_ids_to_exclude_fp
     negate_ids_to_exclude = opts.negate_ids_to_exclude
     
-    if not (min_count != 0 or not isinf(max_count) or otu_ids_to_exclude_fp != None):
+    if not (min_count != 0 or not isinf(max_count) or otu_ids_to_exclude_fp != None or min_samples !=0 or not isinf(max_samples)):
         option_parser.error("No filtering requested. Must provide either "
-                     "min counts, max counts, or exclude_fp (or some combination of those).")
+                     "min counts, max counts, min samples, max samples, or exclude_fp (or some combination of those).")
 
     otu_table = parse_biom_table(open(opts.input_fp,'U'))
     output_f = open(opts.output_fp,'w')
@@ -93,6 +106,8 @@ def main():
                                                        otu_ids_to_keep,
                                                        min_count,
                                                        max_count,
+                                                       min_samples,
+                                                       max_samples,
                                                        negate_ids_to_exclude)
     output_f.write(filtered_otu_table.getBiomFormatJsonString())
     output_f.close()

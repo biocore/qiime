@@ -194,27 +194,32 @@ get_seq_ids_from_fasta_file = get_seqs_to_keep_lookup_from_fasta_file
 
 # start functions used by filter_samples_from_otu_table.py and filter_otus_from_otu_table.py
 
-def get_filter_function(ids_to_keep,min_count,max_count,negate_ids_to_keep=False):
+def get_filter_function(ids_to_keep,min_count,max_count,min_nonzero,max_nonzero,negate_ids_to_keep=False):
     if negate_ids_to_keep:
         def f(data_vector, id_, metadata):
             return (id_ not in ids_to_keep) and \
-                   (min_count <= data_vector.sum() <= max_count)    
+                   (min_count <= data_vector.sum() <= max_count) and \
+                   (min_nonzero <= (data_vector > 0).sum() <= max_nonzero)
     else:
         def f(data_vector, id_, metadata):
             return (id_ in ids_to_keep) and \
-                   (min_count <= data_vector.sum() <= max_count)
+                   (min_count <= data_vector.sum() <= max_count) and \
+                   (min_nonzero <= (data_vector > 0).sum() <= max_nonzero)
     return f
 
 def filter_samples_from_otu_table(otu_table,ids_to_keep,min_count,max_count):
     filter_f = get_filter_function({}.fromkeys(ids_to_keep),
                                            min_count,
-                                           max_count)
+                                           max_count,
+                                           0,inf)
     return otu_table.filterSamples(filter_f)
 
-def filter_otus_from_otu_table(otu_table,ids_to_keep,min_count,max_count,negate_ids_to_keep=False):
+def filter_otus_from_otu_table(otu_table,ids_to_keep,min_count,max_count,
+                               min_samples,max_samples,negate_ids_to_keep=False):
     filter_f = get_filter_function({}.fromkeys(ids_to_keep),
                                            min_count,
                                            max_count,
+                                           min_samples,max_samples,
                                            negate_ids_to_keep)
     return otu_table.filterObservations(filter_f)
 
