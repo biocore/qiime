@@ -137,6 +137,8 @@ def main():
     if not suppress_format_blastdb:
         blast_db, db_files_to_remove = \
          build_blast_db_from_fasta_path(refseqs_path)
+    else:
+        db_files_to_remove = []
     created_temp_paths += db_files_to_remove
     
     # split the fasta files and get the list of resulting files        
