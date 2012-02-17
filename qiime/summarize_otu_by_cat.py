@@ -107,7 +107,7 @@ def get_counts_by_cat(otu_table_fh, num_meta, meta_dict, cat_list,category,num_s
     #else:
     #    is_con = True
     is_con = False
-    if otu_table.ObservationMetadata[0] and 'taxonomy' in otu_table.ObservationMetadata[0]:
+    if otu_table.ObservationMetadata and 'taxonomy' in otu_table.ObservationMetadata[0]:
         is_con = True
     
 
