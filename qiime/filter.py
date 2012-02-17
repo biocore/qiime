@@ -16,6 +16,7 @@ from numpy import array, inf
 from cogent.parse.fasta import MinimalFastaParser
 from qiime.parse import parse_distmat, parse_mapping_file, parse_metadata_state_descriptions
 from qiime.format import format_otu_table, format_distance_matrix, format_mapping_file
+from qiime.pycogent_backports.parse_biom import parse_biom_table
 
 def sample_ids_from_metadata_description(mapping_f,valid_states_str):
     """ Given a description of metadata, return the corresponding sample ids
@@ -181,6 +182,10 @@ def negate_tips_to_keep(tips_to_keep, tree):
     tips_to_keep = set(tips_to_keep)
     tips = set([tip.Name for tip in tree.tips()])
     return tips - tips_to_keep
+
+def get_seqs_to_keep_lookup_from_biom(biom_f):
+    otu_table = parse_biom_table(biom_f)
+    return {}.fromkeys(otu_table.ObservationIds)
 
 def get_seqs_to_keep_lookup_from_seq_id_file(id_to_keep_f):
     """generate a lookup dict of chimeras in chimera file."""

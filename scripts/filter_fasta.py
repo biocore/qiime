@@ -20,7 +20,8 @@ from qiime.parse import fields_to_dict
 from qiime.filter import (filter_fasta, filter_fastq,
                           get_seqs_to_keep_lookup_from_seq_id_file,
                           get_seqs_to_keep_lookup_from_fasta_file,
-                          sample_ids_from_metadata_description)
+                          sample_ids_from_metadata_description,
+                          get_seqs_to_keep_lookup_from_biom)
 
 options_lookup = get_options_lookup()
 
@@ -47,6 +48,8 @@ script_info['optional_options'] = [\
  make_option('-s','--seq_id_fp', 
   help='A list of sequence identifiers (or tab-delimited lines with'
   ' a seq identifier in the first field) which should be retained'),\
+ make_option('-b','--biom_fp', 
+  help='A biom file where otu identifiers should be retained'),\
  make_option('-a','--subject_fasta_fp',
   help='A fasta file where the seq ids should be retained.'),\
  make_option('-p','--seq_id_prefix',
@@ -103,11 +106,12 @@ def main():
        parse_command_line_parameters(**script_info)
 
     negate = opts.negate
-    error_msg = "Must pass exactly one of -a, -s, -p, -m, or --valid_states and --mapping_fp."
+    error_msg = "Must pass exactly one of -a, -b, -s, -p, -m, or --valid_states and --mapping_fp."
     if 1 != sum(map(bool,[opts.otu_map,
                           opts.seq_id_fp,
                           opts.subject_fasta_fp,
                           opts.seq_id_prefix,
+                          opts.biom_fp,
                           opts.mapping_fp and opts.valid_states])): 
         option_parser.error(error_msg)
 
@@ -133,6 +137,9 @@ def main():
           open(opts.input_fasta_fp,'U'),
           open(opts.mapping_fp,'U'),
           opts.valid_states)
+    elif opts.biom_fp:
+        seqs_to_keep_lookup = \
+         get_seqs_to_keep_lookup_from_biom(open(opts.biom_fp,'U'))
     else:
         option_parser.error(error_msg)
     
