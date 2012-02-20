@@ -85,7 +85,7 @@ class SingleRarefactionMaker(FunctionWithParams):
         if empty_otus_removed:
             sub_otu_table = filter_otus_from_otu_table(sub_otu_table,
                                                        sub_otu_table.ObservationIds,
-                                                       0, inf)
+                                                       0, inf, 0, inf)
                 # sub_otu_lineages can be None or []
         #self._write_rarefaction(output_fname, sub_otu_table.SampleIds, sub_otu_ids,
         #    sub_otu_table, sub_otu_lineages)
@@ -154,7 +154,7 @@ class RarefactionMaker(FunctionWithParams):
                 if empty_otus_removed:
                     sub_otu_table = filter_otus_from_otu_table(\
                         sub_otu_table,
-                        sub_otu_table.ObservationIds, 0, inf)
+                        sub_otu_table.ObservationIds, 0, inf, 0, inf)
 
                 self._write_rarefaction(depth, rep, sub_otu_table)
                 #self._write_rarefaction(depth, rep, sub_otu_table.SampleIds, 
