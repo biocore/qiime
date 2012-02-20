@@ -11,13 +11,13 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
+from glob import glob
+from os import makedirs, system
+from os.path import exists, split, splitext, isfile
+from subprocess import check_call, CalledProcessError
+from cogent.app.formatdb import build_blast_db_from_fasta_path
 from qiime.util import parse_command_line_parameters
 from qiime.util import make_option
-from os import makedirs, system
-from os.path import exists, split, splitext
-from subprocess import check_call, CalledProcessError
-from optparse import OptionParser
-from cogent.app.formatdb import build_blast_db_from_fasta_path
 from qiime.parallel.util import split_fasta, get_random_job_prefix, write_jobs_file,\
     submit_jobs, compute_seqs_per_file, build_filepaths_from_filepaths,\
     get_poller_command, write_filepaths_to_file,\
@@ -33,6 +33,9 @@ script_info['brief_description']="""Parallel BLAST"""
 script_info['script_description']="""This script for performing blast while making use of multicore/multiprocessor environments to perform analyses in parallel."""
 script_info['script_usage']=[]
 script_info['script_usage'].append(("""Example""","""BLAST /home/qiime_user/10_seq.fasta (-i) via three (-O) independent jobs against a blast database created from /home/qiime_user/1000_seq.fasta (-r). Store the results in /home/qiime_user/bla_out/ (-o).""","""%prog -i /home/qiime_user/10_seq.fasta -r /home/qiime_user/1000_seq.fasta -O 3 -o /home/qiime_user/bla_out/"""))
+
+script_info['script_usage'].append(("""Example""","""BLAST /home/qiime_user/10_seq.fasta (-i) via three (-O) independent jobs against a pre-existing BLAST database (-r). Store the results in /home/qiime_user/bla_out/ (-o).""","""%prog -i /home/qiime_user/10_seq.fasta -r /home/qiime_user/blast_dbs/nt -O 3 -o /home/qiime_user/bla_out/ -D"""))
+
 script_info['output_description']=""" """
 script_info['required_options'] = [\
  make_option('-i','--infile_path',action='store',\
@@ -40,7 +43,7 @@ script_info['required_options'] = [\
           help='Path of sequences to use as queries [REQUIRED]'),\
  make_option('-r','--refseqs_path',action='store',\
           type='string',
-            help='Path to fasta sequences to search against' +\
+            help='Path to fasta sequences to search against or name of pre-formatted BLAST database' +\
             ' [REQUIRED]'),\
  make_option('-o', '--output_dir', \
         help='name of output directory for blast jobs [REQUIRED]')
@@ -104,6 +107,12 @@ def main():
     seconds_to_sleep = opts.seconds_to_sleep
     poll_directly = opts.poll_directly
     disable_low_complexity_filter = opts.disable_low_complexity_filter
+    
+    if not ((exists(refseqs_path) and isfile(refseqs_path)) or \
+       (suppress_format_blastdb and len(glob('%s*nin' % refseqs_path)) > 0)):
+       option_parser.error('%s (-r) doesn\'t exist as a fasta file or '
+                           'pre-formatted BLAST database. If passing a reference'
+                           ' database you must also pass -D.' % refseqs_path)
 
     created_temp_paths = []
     
