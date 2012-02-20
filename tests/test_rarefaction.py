@@ -135,20 +135,5 @@ class FunctionTests(TestCase):
         rare_values = [val[0] for (val, otu_id, meta) in rare_otu_table.iterObservations()]
         self.assertEqual(rare_values,[1.0, 5.0, 3.0, 2.0])
 
-    # Not needed anymore
-    #def test_remove_empty_otus(self):
-    #    """ remove otus should match expected"""
-    #    otu_mtx = numpy.array([ [0,3,0,0],
-    #                            [0,0,0,0],
-    #                            [.1,0,0,0]])
-    #    otu_names = list('abc')
-    #    otu_lineages = ['lin1','lin2','lin3']
-    #    res_mtx, res_otu_names, res_lineages = \
-    #        remove_empty_otus(otu_mtx, otu_names, otu_lineages)
-    #    self.assertFloatEqual(res_mtx, numpy.array([[0,3,0,0],
-    #                            [.1,0,0,0]]))
-    #    self.assertEqual(res_otu_names, list('ac'))
-    #    self.assertEqual(res_lineages, ['lin1','lin3'])
-#run tests if called from command line
 if __name__ == '__main__':
     main()
