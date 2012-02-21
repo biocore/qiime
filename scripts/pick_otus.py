@@ -264,9 +264,9 @@ script_info['optional_options'] = [
               "for size filtering with OTUpipe. [default: %default]"),
               type='int'),
               
-    make_option('-a','--abundance_skew', default=2, help=("Abundance skew "
+    make_option('-a','--abundance_skew', default=2.0, help=("Abundance skew "
               "setting for de novo chimera detection with OTUpipe. "
-              "[default: %default]"), type='int'),
+              "[default: %default]"), type='float'),
               
     make_option('-f', '--db_filepath', default=None, help=("Reference database "
               "of fasta sequences for reference based chimera detection with "
@@ -355,6 +355,8 @@ def main():
     cluster_size_filtering = opts.cluster_size_filtering
     remove_usearch_logs = opts.remove_usearch_logs
     
+    if abundance_skew <= 1:
+        raise ValueError,('abundance skew must be > 1')
     
     # Check for logical inputs
     if otu_picking_method == 'usearch' and \

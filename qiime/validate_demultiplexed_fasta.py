@@ -192,6 +192,130 @@ def check_fasta_seqs(input_fasta_fp,
      
     return perc_invalid_chars, perc_barcodes_detected, perc_primers_detected
     
+def check_fasta_seqs_lens(input_fasta_fp):
+    """ Creates bins of sequence lens
+    
+    Useful for checking for valid aligned sequences.
+    
+    input_fasta_fp:  input fasta filepath
+    """
+    
+    seq_lens = defaultdict(int)
+    
+    input_fasta_f = open(input_fasta_fp, "U")
+    
+    for label, seq in MinimalFastaParser(input_fasta_f):
+        seq_lens[len(seq)] += 1
+    
+    input_fasta_f.close()
+    
+    formatted_seq_lens = []
+    
+    for curr_key in seq_lens:
+        formatted_seq_lens.append((seq_lens[curr_key], curr_key))
+        
+    formatted_seq_lens.sort(reverse=True)
+    
+    return formatted_seq_lens
+    
+def check_all_ids(fasta_labels,
+                  sample_ids):
+    """ Tests that all sample IDs from mapping file are found in seq labels
+    
+    fasta_labels: list of fasta labels
+    sample_ids: set of sample ids from mapping file
+    """
+    
+    # Need to get modified fasta labels with underscore stripped
+    
+    raw_fasta_labels = set([label.split('_')[0] for label in fasta_labels])
+    
+    sample_ids_not_found = []
+    
+    for curr_id in sample_ids:
+        if curr_id not in raw_fasta_labels:
+            sample_ids_not_found.append(curr_id)
+    
+    # Return True if all were found, otherwise list of sampleIDs
+    if len(sample_ids_not_found) == 0:
+        sample_ids_not_found = True
+    
+    return sample_ids_not_found
+    
+def check_tree_subset(fasta_labels,
+                      tree_fp):
+    """ Returns a list of all fasta labels that are not a subset of the tree
+    
+    fasta_labels:  list of fasta labels
+    tree_fp: tree filepath
+    """
+    
+    # Need to get modified fasta labels with underscore stripped
+    
+    raw_fasta_labels = set([label.split('_')[0] for label in fasta_labels])
+    
+    tree_f = open(tree_fp, "U")
+    
+    tree = DndParser(tree_f)
+    
+    # Get a set of tree tip names
+    tree_tips = set(tree.getTipNames())
+    
+    labels_not_in_tips = []
+    
+    for curr_label in raw_fasta_labels:
+        if curr_label not in tree_tips:
+            labels_not_in_tips.append(curr_label)
+    
+    # Return True if all found in tree tips
+    if len(labels_not_in_tips) == 0:
+        labels_not_in_tips = True
+    
+    return labels_not_in_tips
+    
+def check_tree_exact_match(fasta_labels,
+                           tree_fp):
+    """Checks fasta labels to exact match to tree tips
+    
+    Returns a list of two lists, the fasta labels not in tips, and tips not
+     in fasta labels.
+    fasta_labels: list of fasta labels
+    tree_fp: tree filepath
+    """
+    
+    # Need to get modified fasta labels with underscore stripped
+    
+    raw_fasta_labels = set([label.split('_')[0] for label in fasta_labels])
+    
+    tree_f = open(tree_fp, "U")
+    
+    tree = DndParser(tree_f)
+    
+    # Get a set of tree tip names
+    tree_tips = set(tree.getTipNames())
+    
+    labels_not_in_tips = []
+    
+    for curr_label in raw_fasta_labels:
+        if curr_label not in tree_tips:
+            labels_not_in_tips.append(curr_label)
+            
+    
+    # Return True if all found in tree tips
+    if len(labels_not_in_tips) == 0:
+        labels_not_in_tips = True
+        
+    tips_not_in_labels = []
+    
+    for curr_tip in tree_tips:
+        if curr_tip not in raw_fasta_labels:
+            tips_not_in_labels.append(curr_tip)
+            
+    if len(tips_not_in_labels) == 0:
+        tips_not_in_labels = True
+    
+    return [labels_not_in_tips, tips_not_in_labels]
+    
 def run_fasta_checks(input_fasta_fp,
                      mapping_fp,
                      tree_fp=None,
@@ -230,6 +354,29 @@ def run_fasta_checks(input_fasta_fp,
      fasta_report['linkerprimers_detected'] = check_fasta_seqs(input_fasta_fp,
      barcodes, linkerprimerseqs, total_seq_count)
      
+    if same_seq_lens:
+        fasta_report['same_seq_lens'] = check_fasta_seqs_lens(input_fasta_fp)
+    else:
+        fasta_report['same_seq_lens'] = False
+        
+    if all_ids_found:
+        fasta_report['all_ids_found'] = check_all_ids(fasta_labels, sample_ids)
+    else:
+        fasta_report['all_ids_found'] = False
+        
+    if tree_subset:
+        fasta_report['tree_subset'] = check_tree_subset(fasta_labels, tree_fp)
+    else:
+        fasta_report['tree_subset'] = False
+        
+    if tree_exact_match:
+        fasta_report['tree_exact_match'] =\
+         check_tree_exact_match(fasta_labels, tree_fp)
+    else:
+        fasta_report['tree_exact_match'] = False
+        
+    
+     
     return fasta_report
      
 def write_log_file(output_dir,
@@ -262,9 +409,48 @@ def write_log_file(output_dir,
     output_f.write("Percent of sequences with primers detected: %s\n" %\
      fasta_report['linkerprimers_detected'])
      
+    # Optional tests
     
+    if fasta_report['same_seq_lens']:
+        output_f.write("Sequence lengths report\n")
+        output_f.write("Counts of sequences, followed by their sequence "+\
+         "lengths:\n")
+        for len_data in fasta_report['same_seq_lens']:
+            output_f.write("%s\t%s\n" % (len_data[0], len_data[1]))
+            
+    if fasta_report['all_ids_found']:
+        output_f.write("Sample ID in fasta sequences report\n")
+        if fasta_report['all_ids_found'] == True:
+            output_f.write("All SampleIDs found in sequence labels.\n")
+        else:
+            output_f.write("The following SampleIDs were not found:\n")
+            for curr_id in fasta_report['all_ids_found']:
+                output_f.write("%s\n" % curr_id)
+                
+    if fasta_report['tree_subset']:
+        output_f.write("Fasta label subset in tree tips report\n")
+        if fasta_report['tree_subset'] == True:
+            output_f.write("All fasta labels were a subset of tree tips.\n")
+        else:
+            output_f.write("The following labels were not in tree tips:\n")
+            for curr_id in fasta_report['tree_subset']:
+                output_f.write("%s\n" % curr_id)
+                
+    if fasta_report['tree_exact_match']:
+        output_f.write("Fasta label/tree tip exact match report\n")
+        if fasta_report['tree_exact_match'][0] == True:
+            output_f.write("All fasta labels found in tree tips.\n")
+        else:
+            output_f.write("The following labels were not in tree tips:\n")
+            for curr_label in fasta_report['tree_exact_match'][0]:
+                output_f.write("%s\n" % curr_label)
+        if fasta_report['tree_exact_match'][1] == True:
+            output_f.write("All tree tips found in fasta labels.\n")
+        else:
+            output_f.write("The following tips were not in fasta labels:\n")
+            for curr_tip in fasta_report['tree_exact_match'][1]:
+                output_f.write("%s\n" % curr_tip)
     
-        
     
 def validate_fasta(input_fasta_fp,
                    mapping_fp,

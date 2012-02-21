@@ -41,16 +41,16 @@ script_info['optional_options']=[\
          'tree tips, options -s and -e  [default: %default]'),
     make_option('-s', '--tree_subset', default=False, action='store_true',
         help='Determine if sequence IDs are a subset of the tree tips, '+\
-         'newick tree must be passed with the -t option. [default: %default] NOT IMPLEMENTED'),
+         'newick tree must be passed with the -t option. [default: %default]'),
     make_option('-e', '--tree_exact_match', default=False, action='store_true',
         help='Determine if sequence IDs are an exact match to tree tips, '+\
-         'newick tree must be passed with the -t option. [default: %default] NOT IMPLEMENTED'),
+         'newick tree must be passed with the -t option. [default: %default]'),
     make_option('-l', '--same_seq_lens', default=False, action='store_true',
         help='Determine if sequences are all the same length. '+\
-         '[default: %default] NOT IMPLEMENTED'),
+         '[default: %default]'),
     make_option('-a', '--all_ids_found', default=False, action='store_true',
         help='Determine if all SampleIDs provided in the mapping file '+\
-         'are represented in the fasta file labels. [default: %default] NOT IMPLEMENTED')
+         'are represented in the fasta file labels. [default: %default]')
     
 ] 
 script_info['version'] = __version__
@@ -81,6 +81,7 @@ def main():
         raise IOError,("Unable to open mapping file, please check "
          "filepath and read permissions.")
          
+         
     if tree_fp:
         try:
             test_tree_fp = open(tree_fp, "U")
@@ -89,9 +90,10 @@ def main():
             raise IOError,("Unable to open provided tree filepath, please "+\
              "filepath and permissions.")
              
-    if tree_subset or tree_exact_match and not tree_fp:
-        raise ValueError,('Must provide tree filepath if -s or -e options '+\
-         'are enabled.')
+    if tree_subset or tree_exact_match:
+        if not tree_fp:
+            raise ValueError,('Must provide tree filepath if -s or -e options '+\
+             'are enabled.')
          
     validate_fasta(input_fasta_fp, mapping_fp, output_dir, tree_fp, tree_subset,
      tree_exact_match, same_seq_lens, all_ids_found)

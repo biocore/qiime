@@ -21,7 +21,8 @@ from cogent.util.misc import remove_files
 from qiime.util import get_tmp_filename, create_dir
 from qiime.validate_demultiplexed_fasta import check_fasta_seqs,\
  get_dup_labels_perc, check_labels_sampleids,\
- run_fasta_checks, validate_fasta
+ run_fasta_checks, validate_fasta, check_fasta_seqs_lens, check_all_ids,\
+ check_tree_subset, check_tree_exact_match
 
 
 class ValidateDemultiplexedFastaTests(TestCase):
@@ -48,8 +49,21 @@ class ValidateDemultiplexedFastaTests(TestCase):
         map_file.write(sample_mapping_file)
         map_file.close()
         
+        self.sample_tree_3tips_fp = get_tmp_filename(prefix="sample_tree3tips_",
+         suffix=".tre")
+        tree_file = open(self.sample_tree_3tips_fp, "w")
+        tree_file.write(sample_tree_file_3tips)
+        tree_file.close()
+        
+        self.sample_tree_5tips_fp = get_tmp_filename(prefix="sample_tree3tips_",
+         suffix=".tre")
+        tree_file = open(self.sample_tree_5tips_fp, "w")
+        tree_file.write(sample_tree_file_5tips)
+        tree_file.close()
+        
         self._files_to_remove = [self.sample_fasta_fp,
-         self.sample_fasta_invalid_fp, self.sample_mapping_fp]
+         self.sample_fasta_invalid_fp, self.sample_mapping_fp,
+         self.sample_tree_3tips_fp, self.sample_tree_5tips_fp]
         
         self.output_dir =\
          get_tmp_filename(prefix = "validate_demultiplexed_fasta_",
@@ -61,6 +75,118 @@ class ValidateDemultiplexedFastaTests(TestCase):
             remove_files(self._files_to_remove)
         if exists(self.output_dir):
             rmtree(self.output_dir)
+            
+    def test_check_fasta_seqs_lens(self):
+        """ Properly returns, sorts sequence lengths """
+        
+        actual_seq_lens = check_fasta_seqs_lens(self.sample_fasta_fp)
+        
+        # All seq lengths different
+        
+        expected_seq_lens = [(1, 35), (1, 32), (1, 27)]
+        
+        self.assertEqual(actual_seq_lens, expected_seq_lens)
+        
+        actual_seq_lens = check_fasta_seqs_lens(self.sample_fasta_invalid_fp)
+        
+        # Should have two seq lens of 35
+        
+        expected_seq_lens = [(2, 35), (1, 33), (1, 25)]
+        
+        self.assertEqual(actual_seq_lens, expected_seq_lens)
+        
+    def test_check_all_ids(self):
+        """ Checks that all supplied sampleIDs are in fasta labels """
+        
+        fasta_labels = ['sample1_1', 'sample1_2', 'sample3_3', 'sample2_4']
+        
+        sample_ids = ['sample1', 'sample2', 'sample3']
+        
+        sample_ids_not_found = check_all_ids(fasta_labels, sample_ids)
+        
+        # should return True as all are found
+        
+        self.assertEqual(sample_ids_not_found, True)
+        
+        fasta_labels = ['sample1_1', 'sample1_2', 'sample3_3', 'sample2_4']
+        
+        sample_ids = ['sample1', 'sample2', 'sample3', 'sampleX']
+        
+        sample_ids_not_found = check_all_ids(fasta_labels, sample_ids)
+        
+        # sampleX should not be found
+        
+        self.assertEqual(sample_ids_not_found, ['sampleX'])
+        
+        
+    def test_check_tree_subset(self):
+        """ Checks that fasta labels are a subset of tree tips properly """
+        
+        fasta_labels = ['seq1_1', 'seq1_2', 'seq2_3', 'seq3_4']
+        
+        actual_subset_results = check_tree_subset(fasta_labels,
+         self.sample_tree_3tips_fp)
+         
+        # Should find all and give True result
+        
+        self.assertEqual(actual_subset_results, True)
+        
+        # Should also get same results with 5 tip tree
+        
+        fasta_labels = ['seq1_1', 'seq1_2', 'seq2_3', 'seq3_4']
+        
+        actual_subset_results = check_tree_subset(fasta_labels,
+         self.sample_tree_5tips_fp)
+         
+        # Should find all and give True result
+        
+        self.assertEqual(actual_subset_results, True)
+        
+        # Change two of the fasta labels to not match tree tips
+        
+        fasta_labels = ['seq1_1', 'seqX_2', 'seq2_3', 'seqY_4']
+        
+        actual_subset_results = check_tree_subset(fasta_labels,
+         self.sample_tree_5tips_fp)
+         
+        # Should find seqX and seqY as not being a subset
+        
+        self.assertEqual(actual_subset_results, ['seqX', 'seqY'])
+        
+    def test_check_tree_exact_match(self):
+        """ Checks for mismatches between tree tips and fasta labels """
+        
+        fasta_labels = ['seq1_1', 'seq1_2', 'seq2_3', 'seq3_4']
+        
+        actual_subset_results = check_tree_exact_match(fasta_labels,
+         self.sample_tree_3tips_fp)
+         
+        # Should find all and give True, True result
+        
+        self.assertEqual(actual_subset_results, [True, True])
+        
+        # Should get tips not found in fasta labels with 5 tip tree
+        
+        fasta_labels = ['seq1_1', 'seq1_2', 'seq2_3', 'seq3_4']
+        
+        actual_subset_results = check_tree_exact_match(fasta_labels,
+         self.sample_tree_5tips_fp)
+         
+        # Should find all and give True result
+        
+        self.assertEqual(actual_subset_results, [True, ['seq5', 'seq4']])
+        
+        # Change two of the fasta labels to not match tree tips
+        
+        fasta_labels = ['seq1_1', 'seqX_2', 'seq2_3', 'seqY_4']
+        
+        actual_subset_results = check_tree_exact_match(fasta_labels,
+         self.sample_tree_5tips_fp)
+         
+        # Should find seqX and seqY as not being a subset
+        
+        self.assertEqual(actual_subset_results, [['seqX', 'seqY'],
+         ['seq3', 'seq5', 'seq4']])
 
     def test_check_fasta_seqs_all_valid(self):
         """ Properly returns invalid chars, barcodes, primers detected """
@@ -180,11 +306,15 @@ class ValidateDemultiplexedFastaTests(TestCase):
          
         # All values should be zero
         expected_fasta_report = {'invalid_labels': '0.000',
-         'barcodes_detected': '0.000',
-         'duplicate_labels': '0.000',
-         'invalid_seq_chars': '0.000',
-         'nosample_ids_map': '0.000',
-         'linkerprimers_detected': '0.000'}
+         'tree_subset': False, 
+         'all_ids_found': False, 
+         'same_seq_lens': False, 
+         'barcodes_detected': '0.000', 
+         'duplicate_labels': '0.000', 
+         'invalid_seq_chars': '0.000', 
+         'nosample_ids_map': '0.000', 
+         'linkerprimers_detected': '0.000', 
+         'tree_exact_match': False}
          
         self.assertEqual(actual_fasta_report, expected_fasta_report)
         
@@ -196,11 +326,16 @@ class ValidateDemultiplexedFastaTests(TestCase):
          
         # All values should be nonzero
         expected_fasta_report = {'invalid_labels': '0.500',
-         'barcodes_detected': '0.250',
-         'duplicate_labels': '0.250',
-         'invalid_seq_chars': '0.500',
-         'nosample_ids_map': '0.750',
-         'linkerprimers_detected': '0.250'}
+         'tree_subset': False,
+         'all_ids_found': False,
+         'same_seq_lens': False, 
+         'barcodes_detected': '0.250', 
+         'duplicate_labels': '0.250', 
+         'invalid_seq_chars': '0.500', 
+         'nosample_ids_map': '0.750', 
+         'linkerprimers_detected': '0.250', 
+         'tree_exact_match': False}
+         
          
         self.assertEqual(actual_fasta_report, expected_fasta_report)
         
@@ -223,6 +358,43 @@ Percent of labels that fail to map to SampleIDs: 0.000
 Percent of sequences with invalid characters: 0.000
 Percent of sequences with barcodes detected: 0.000
 Percent of sequences with primers detected: 0.000""".split('\n')
+
+        self.assertEqual(actual_log_lines, expected_log_lines)
+        
+        # Check with all optional values included
+        
+        validate_fasta(self.sample_fasta_fp, self.sample_mapping_fp,
+         self.output_dir, tree_fp=self.sample_tree_5tips_fp, tree_subset=True,
+         tree_exact_match=True, same_seq_lens=True, all_ids_found=True)
+         
+        expected_log_fp = join(self.output_dir,
+         split(self.sample_fasta_fp)[1] + "_report.log")
+         
+        log_f = open(expected_log_fp, "U")
+        actual_log_lines = [line.strip() for line in log_f][1:]
+        
+        expected_log_lines = """Percent duplicate labels: 0.000
+Percent QIIME-incompatible fasta labels: 0.000
+Percent of labels that fail to map to SampleIDs: 0.000
+Percent of sequences with invalid characters: 0.000
+Percent of sequences with barcodes detected: 0.000
+Percent of sequences with primers detected: 0.000
+Sequence lengths report
+Counts of sequences, followed by their sequence lengths:
+1\t35
+1\t32
+1\t27
+Sample ID in fasta sequences report
+The following SampleIDs were not found:
+seq2
+Fasta label subset in tree tips report
+All fasta labels were a subset of tree tips.
+Fasta label/tree tip exact match report
+All fasta labels found in tree tips.
+The following tips were not in fasta labels:
+seq2
+seq5
+seq4""".split('\n')
 
         self.assertEqual(actual_log_lines, expected_log_lines)
         
@@ -271,6 +443,11 @@ sample_mapping_file = """#SampleID\tBarcodeSequence\tLinkerPrimerSequence\tDescr
 seq1\tAAAAAAAA\tTTTTTTTT\tseq1_desc
 seq2\tTTTTTTTT\tAGATTTACCA\tseq2_desc
 seq3\tAGATTATAT\tTTTTTTYT\tseq3_desc"""
+
+# sample tree file
+sample_tree_file_5tips = """(seq1:0.18882,seq2:0.14833,(seq3:0.11088,(seq4:0.1312,seq5:0.11842)0.890:0.01354)0.752:0.0132);"""
+
+sample_tree_file_3tips = """(seq1:0.18882,seq2:0.14833,(seq3:0.11088)0.752:0.0132);"""
 
 if __name__ == "__main__":
     main()
