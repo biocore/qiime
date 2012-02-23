@@ -115,7 +115,7 @@ script_info['optional_options']=[\
         'abundance is correlated with a continuous variable in the ' +\
         'category mapping file in longitudinal study designs such as ' +\
         'with timeseries data.     paired_T: determine whether OTU ' +\
-        'relative abundance goes up or down in response to a treatment.',
+        'relative abundance goes up or down in response to a treatment. [default: %default]',
         type="choice",choices=["g_test", "ANOVA", "correlation", \
         "longitudinal_correlation", "paired_T"]),
     make_option('-o','--output_fp', dest='output_fp', \
