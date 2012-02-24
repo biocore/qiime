@@ -735,6 +735,9 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
                 elif not discard_bad_windows and not passed_window_check:
                     sliding_window_failed += 1
                     write_seq = write_seq[0:window_index]
+                    if qual_out:
+                        curr_qual = curr_qual[0:barcode_len +\
+                         primer_len + window_index]
                     # Check for sequences that are too short after truncation
                     if len(write_seq) + total_bc_primer_len < min_seq_len:
                         write_seq = False
@@ -744,7 +747,8 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
                 write_seq_ambi_ix = True
                 # Skip if no "N" characters detected.
                 try:
-                    write_seq = write_seq[0:write_seq.index("N")]
+                    ambi_ix = write_seq.index("N")
+                    write_seq = write_seq[0:ambi_ix]
                 except ValueError:
                     write_seq_ambi_ix = False
                     pass
@@ -755,6 +759,9 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
                         below_seq_min_after_ambi_trunc += 1
                     else:
                         trunc_ambi_base_counts += 1
+                        if qual_out:
+                            curr_qual = curr_qual[0:barcode_len +\
+                             primer_len + ambi_ix]
                 
                     
                         
@@ -791,6 +798,8 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
             # Record number of seqs associated with particular barcode.
             bc_counts[curr_bc].append(curr_rid)
             
+            
+            
             if retain_unassigned_reads and curr_samp_id == "Unassigned":
                 fasta_out.write(
                  ">%s %s orig_bc=%s new_bc=%s bc_diffs=%s\n%s\n" % 
@@ -824,6 +833,7 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
             raw_seq_lengths[curr_rid] = len(curr_seq)
             final_seq_lengths[curr_id] = curr_len
             
+    
     
     if median_length_filtering:
         # Read original fasta file output to get sequence lengths
@@ -906,6 +916,7 @@ def check_seqs(fasta_out, fasta_files, starting_ix, valid_map, qual_mappings,
         
     raw_seq_lengths = raw_seq_lengths.values()
     final_seq_lengths = final_seq_lengths.values()
+    
     
     log_out = format_log(bc_counts, corr_ct, valid_map, seq_lengths, filters,\
      retain_unassigned_reads, attempt_bc_correction, primer_mismatch_count, \
