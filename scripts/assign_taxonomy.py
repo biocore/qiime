@@ -100,6 +100,10 @@ script_info['optional_options']=[\
         help='Path to fasta file containing a second read from paired-end '
         'sequencing, prior to OTU clustering (used for RTAX only).'
         '[default: %default]'),\
+ make_option('--single_ok',action="store_true",
+        help='When classifying paired ends, allow fallback to single-ended '
+        'classification when the mate pair is lacking (used for RTAX only).'
+        '[default: %default]',default=False),\
  make_option('-m', '--assignment_method', type='choice',
         help='Taxon assignment method, either blast, rdp, or rtax '
         '[default:%default]',
@@ -158,7 +162,7 @@ def main():
             option_parser.error('RTAX classification requires both a filepath for '
                          'reference sequences (via -r) and an id_to_taxonomy '
                          'file (via -t).')
-        if opts.read_1_seqs_fp is None or read_2_seqs_fp is None:
+        if opts.read_1_seqs_fp is None: # or opts.read_2_seqs_fp is None:
             option_parser.error('RTAX classification requires the FASTA files '
                          'produced by split_illumina_fastq.py for both reads, '
                          'in addition to the cluster representatives.  Pass '
@@ -208,6 +212,7 @@ def main():
        params['reference_sequences_fp'] = opts.reference_seqs_fp
        params['read_1_seqs_fp'] = opts.read_1_seqs_fp
        params['read_2_seqs_fp'] = opts.read_2_seqs_fp
+       params['single_ok'] = opts.single_ok
 
     else:
         # should not be able to get here as an unknown classifier would

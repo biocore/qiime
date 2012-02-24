@@ -69,6 +69,9 @@ class Rtax(CommandLineApplication):
 
         # -m temporary directory
         '-m': ValuedParameter('-', Name='m', Delimiter=' ', IsPath=True),
+
+        # -f allow fallback from paired-end to single-ended classification
+        '-f':FlagParameter(Prefix='-',Name='f')
     }
 
     _suppress_stdout = False
@@ -78,7 +81,7 @@ class Rtax(CommandLineApplication):
         """ Set the input path (a fasta filepath)
         """
         # The list of values which can be passed on a per-run basis
-        allowed_values = ['-r','-t','-a','-b','-l','-d','i','-o','-m','-v']
+        allowed_values = ['-r','-t','-a','-b','-l','-d','i','-o','-m','-v','-f']
 
         unsupported_parameters = set(data.keys()) - set(allowed_values)
         if unsupported_parameters:
@@ -130,7 +133,7 @@ class Rtax(CommandLineApplication):
         """
         return help_str
 
-def assign_taxonomy(dataPath, reference_sequences_fp, id_to_taxonomy_fp, read_1_seqs_fp, read_2_seqs_fp,
+def assign_taxonomy(dataPath, reference_sequences_fp, id_to_taxonomy_fp, read_1_seqs_fp, read_2_seqs_fp, single_ok=False,
                     header_id_regex=None, read_id_regex = "\S+\s+(\S+)", amplicon_id_regex = "(\S+)\s+(\S+?)\/",
                     output_fp=None, log_path=None):
     """Assign taxonomy to each sequence in data with the RTAX classifier
@@ -145,7 +148,7 @@ def assign_taxonomy(dataPath, reference_sequences_fp, id_to_taxonomy_fp, read_1_
 
     qiime_config = load_qiime_config()
     base_tmp_dir = qiime_config['temp_dir'] or '/tmp/'
-    my_tmp_dir = get_tmp_filename(tmp_dir=base_tmp_dir,prefix='rtax',suffix='',result_constructor=str)
+    my_tmp_dir = get_tmp_filename(tmp_dir=base_tmp_dir,prefix='rtax_',suffix='',result_constructor=str)
     os.makedirs(my_tmp_dir)
 
 
@@ -217,9 +220,11 @@ def assign_taxonomy(dataPath, reference_sequences_fp, id_to_taxonomy_fp, read_1_
         #app.Parameters['-b'].on(mate_pair_seqs_fp)
         app.Parameters['-l'].on(id_list_fp.name)  # these are amplicon IDs
         app.Parameters['-a'].on(read_1_seqs_fp)
-        app.Parameters['-b'].on(read_2_seqs_fp)
+        if read_2_seqs_fp is not None:
+            app.Parameters['-b'].on(read_2_seqs_fp)
         app.Parameters['-i'].on(header_id_regex)
         app.Parameters['-m'].on(my_tmp_dir)
+        if single_ok: app.Parameters['-f'].on();
         #app.Parameters['-v'].on()
 
         app_result = app()
@@ -237,7 +242,8 @@ def assign_taxonomy(dataPath, reference_sequences_fp, id_to_taxonomy_fp, read_1_
         for line in app_result['Assignments']:
             toks = line.strip().split('\t')
             rtax_id = toks.pop(0)
-            bestpcid = toks.pop(0)
+            if len(toks):
+                bestpcid = toks.pop(0)  # ignored
             lineage = toks
 
             # RTAX does not provide a measure of confidence.  We could pass one in,
