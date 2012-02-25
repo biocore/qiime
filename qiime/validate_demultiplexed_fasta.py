@@ -159,6 +159,10 @@ def check_fasta_seqs(input_fasta_fp,
     invalid_chars_count = 0
     barcodes_count = 0
     linkerprimers_count = 0
+    barcodes_at_start = 0
+    
+    # Get max barcode length to checking the beginning of seq for barcode
+    max_bc_len = max([len(bc_len) for bc_len in barcodes])
     
     for label,seq in MinimalFastaParser(input_fasta_f):
         
@@ -166,6 +170,13 @@ def check_fasta_seqs(input_fasta_fp,
         for curr_nt in seq:
             if curr_nt not in valid_chars:
                 invalid_chars_count += 1
+                break
+        
+        sliced_seq = seq[0:max_bc_len]
+        
+        for curr_bc in barcodes:
+            if curr_bc in sliced_seq:
+                barcodes_at_start += 1
                 break
         
         for curr_bc in barcodes:
@@ -182,6 +193,7 @@ def check_fasta_seqs(input_fasta_fp,
     barcodes_count = float(barcodes_count)
     linkerprimers_count = float(linkerprimers_count)
     total_seq_count = float(total_seq_count)
+    barcodes_at_start_count = float(barcodes_at_start)
     
     perc_invalid_chars = "%1.3f" %\
      (invalid_chars_count/total_seq_count)
@@ -189,8 +201,11 @@ def check_fasta_seqs(input_fasta_fp,
      (barcodes_count/total_seq_count)
     perc_primers_detected = "%1.3f" %\
      (linkerprimers_count/total_seq_count)
+    perc_barcodes_at_start_detected = "%1.3f" %\
+     (barcodes_at_start_count/total_seq_count)
      
-    return perc_invalid_chars, perc_barcodes_detected, perc_primers_detected
+    return perc_invalid_chars, perc_barcodes_detected, perc_primers_detected,\
+     perc_barcodes_at_start_detected
     
 def check_fasta_seqs_lens(input_fasta_fp):
     """ Creates bins of sequence lens
@@ -351,7 +366,8 @@ def run_fasta_checks(input_fasta_fp,
      check_labels_sampleids(fasta_labels, sample_ids, total_seq_count)
      
     fasta_report['invalid_seq_chars'], fasta_report['barcodes_detected'],\
-     fasta_report['linkerprimers_detected'] = check_fasta_seqs(input_fasta_fp,
+     fasta_report['linkerprimers_detected'],\
+     fasta_report['barcodes_at_start'] = check_fasta_seqs(input_fasta_fp,
      barcodes, linkerprimerseqs, total_seq_count)
      
     if same_seq_lens:
@@ -406,6 +422,8 @@ def write_log_file(output_dir,
      fasta_report['invalid_seq_chars'])
     output_f.write("Percent of sequences with barcodes detected: %s\n" %\
      fasta_report['barcodes_detected'])
+    output_f.write("Percent of sequences with barcodes detected at the "+\
+     "beginning of the sequence: %s\n" % fasta_report['barcodes_at_start'])
     output_f.write("Percent of sequences with primers detected: %s\n" %\
      fasta_report['linkerprimers_detected'])
      

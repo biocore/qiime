@@ -197,7 +197,8 @@ class ValidateDemultiplexedFastaTests(TestCase):
         sample_primers = set(['ACATTATTTT', 'TTATTACCGAT'])
         total_seq_count = 3
         
-        perc_invalid_chars, perc_barcodes_detected, perc_primers_detected =\
+        perc_invalid_chars, perc_barcodes_detected, perc_primers_detected,\
+         perc_bcs_seq_start =\
          check_fasta_seqs(self.sample_fasta_fp, sample_barcodes,
          sample_primers, total_seq_count)
          
@@ -220,7 +221,8 @@ class ValidateDemultiplexedFastaTests(TestCase):
         sample_primers = set(['AGATTTACCA', 'TTATTACCGAT'])
         total_seq_count = 4
         
-        perc_invalid_chars, perc_barcodes_detected, perc_primers_detected =\
+        perc_invalid_chars, perc_barcodes_detected, perc_primers_detected,\
+         perc_bcs_seq_start =\
          check_fasta_seqs(self.sample_fasta_invalid_fp, sample_barcodes,
          sample_primers, total_seq_count)
          
@@ -233,6 +235,32 @@ class ValidateDemultiplexedFastaTests(TestCase):
          expected_perc_barcodes_detected)
         self.assertEqual(perc_primers_detected,
          expected_perc_primers_detected)
+         
+    def test_check_fasta_seqs_with_barcodes_at_start(self):
+        """ Properly detects barcodes at the start of the sequences """
+        
+        # Test against all data that should give some percent failures
+        
+        sample_barcodes = set(['ACAAG', 'AGATTATAT'])
+        sample_primers = set(['AGATTTACCA', 'TTATTACCGAT'])
+        total_seq_count = 4
+        
+        perc_invalid_chars, perc_barcodes_detected, perc_primers_detected,\
+         perc_bcs_seq_start =\
+         check_fasta_seqs(self.sample_fasta_invalid_fp, sample_barcodes,
+         sample_primers, total_seq_count)
+         
+        expected_perc_invalid_chars = "%1.3f" % 0.50
+        expected_perc_barcodes_detected = "%1.3f" % 0.50
+        expected_perc_primers_detected = "%1.3f" % 0.25
+        expected_perc_bcs_seq_start = "%1.3f" % 0.25
+         
+        self.assertEqual(perc_invalid_chars, expected_perc_invalid_chars)
+        self.assertEqual(perc_barcodes_detected,
+         expected_perc_barcodes_detected)
+        self.assertEqual(perc_primers_detected,
+         expected_perc_primers_detected)
+        self.assertEqual(perc_bcs_seq_start, expected_perc_bcs_seq_start)
         
         
     def test_get_dup_labels_perc_all_valid(self):
@@ -314,7 +342,8 @@ class ValidateDemultiplexedFastaTests(TestCase):
          'invalid_seq_chars': '0.000', 
          'nosample_ids_map': '0.000', 
          'linkerprimers_detected': '0.000', 
-         'tree_exact_match': False}
+         'tree_exact_match': False,
+         'barcodes_at_start': '0.000'}
          
         self.assertEqual(actual_fasta_report, expected_fasta_report)
         
@@ -334,7 +363,8 @@ class ValidateDemultiplexedFastaTests(TestCase):
          'invalid_seq_chars': '0.500', 
          'nosample_ids_map': '0.750', 
          'linkerprimers_detected': '0.250', 
-         'tree_exact_match': False}
+         'tree_exact_match': False,
+         'barcodes_at_start': '0.000'}
          
          
         self.assertEqual(actual_fasta_report, expected_fasta_report)
@@ -357,6 +387,7 @@ Percent QIIME-incompatible fasta labels: 0.000
 Percent of labels that fail to map to SampleIDs: 0.000
 Percent of sequences with invalid characters: 0.000
 Percent of sequences with barcodes detected: 0.000
+Percent of sequences with barcodes detected at the beginning of the sequence: 0.000
 Percent of sequences with primers detected: 0.000""".split('\n')
 
         self.assertEqual(actual_log_lines, expected_log_lines)
@@ -378,6 +409,7 @@ Percent QIIME-incompatible fasta labels: 0.000
 Percent of labels that fail to map to SampleIDs: 0.000
 Percent of sequences with invalid characters: 0.000
 Percent of sequences with barcodes detected: 0.000
+Percent of sequences with barcodes detected at the beginning of the sequence: 0.000
 Percent of sequences with primers detected: 0.000
 Sequence lengths report
 Counts of sequences, followed by their sequence lengths:
@@ -415,6 +447,7 @@ Percent QIIME-incompatible fasta labels: 0.500
 Percent of labels that fail to map to SampleIDs: 0.750
 Percent of sequences with invalid characters: 0.500
 Percent of sequences with barcodes detected: 0.250
+Percent of sequences with barcodes detected at the beginning of the sequence: 0.000
 Percent of sequences with primers detected: 0.250""".split('\n')
 
         self.assertEqual(actual_log_lines, expected_log_lines)
