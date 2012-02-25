@@ -23,6 +23,7 @@ class SplitTests(TestCase):
     def setUp(self):
         """ """
         self.mapping_f1 = mapping_f1.split('\n')
+        self.mapping_f2 = mapping_f2.split('\n')
         self.mapping_exp = list(mapping_exp)
         self.otu_table_f1 = otu_table_f1.split('\n')
     
@@ -49,8 +50,23 @@ class SplitTests(TestCase):
         for a,e in zip(actual,exp):
             self.assertEqual(a,e,"OTU tables are not equal:\n%s\n%s" % \
              (a[1].getBiomFormatJsonString(),e[1].getBiomFormatJsonString()))
-        
 
+    def test_split_otu_table_on_sample_metadata_extra_mapping_entries(self):
+        """ split_otu_table_on_sample_metadata functions as expected with extra mapping data """
+        actual = list(split_otu_table_on_sample_metadata(self.otu_table_f1,
+                                                         self.mapping_f2,
+                                                         "Treatment"))
+                                                         
+        actual = [(id_,parse_biom_table(e)) for id_, e in actual]
+        exp = [(id_,parse_biom_table(e)) for id_, e in otu_table_exp1]
+        
+        actual.sort()
+        exp.sort()
+        
+        for a,e in zip(actual,exp):
+            self.assertEqual(a,e,"OTU tables are not equal:\n%s\n%s" % \
+             (a[1].getBiomFormatJsonString(),e[1].getBiomFormatJsonString()))
+        
 
 mapping_f1 = """#SampleID	BarcodeSequence	LinkerPrimerSequence	Treatment	DOB	Description
 #Example mapping file for the QIIME analysis package.  These 9 samples are from a study of the effects of exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).
@@ -63,6 +79,20 @@ PC.607	AACTGTGCGTAC	YATGCTGCCTCCCGTAGGAGT	Fast	20071112	Fasting_mouse_I.D._607
 PC.634	ACAGAGTCGGCT	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	Fasting_mouse_I.D._634
 PC.635	ACCGCAGAGTCA	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	Fasting_mouse_I.D._635
 PC.636	ACGGTGAGTGTC	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	Fasting_mouse_I.D._636
+"""
+
+mapping_f2 = """#SampleID	BarcodeSequence	LinkerPrimerSequence	Treatment	DOB	Description
+#Example mapping file for the QIIME analysis package.  These 9 samples are from a study of the effects of exercise and diet on mouse cardiac physiology (Crawford, et al, PNAS, 2009).
+PC.354	AGCACGAGCCTA	YATGCTGCCTCCCGTAGGAGT	Co_ntrol	20061218	Control_mouse_I.D._354
+PC.355	AACTCGTCGATG	YATGCTGCCTCCCGTAGGAGT	Control	20061218	Control_mouse_I.D._355
+PC.356	ACAGACCACTCA	YATGCTGCCTCCCGTAGGAGT	Co_ntrol	20061126	Control_mouse_I.D._356
+PC.481	ACCAGCGACTAG	YATGCTGCCTCCCGTAGGAGT	Control	20070314	Control_mouse_I.D._481
+PC.593	AGCAGCACTTGT	YATGCTGCCTCCCGTAGGAGT	Control	20071210	Control_mouse_I.D._593
+PC.607	AACTGTGCGTAC	YATGCTGCCTCCCGTAGGAGT	Fast	20071112	Fasting_mouse_I.D._607
+PC.634	ACAGAGTCGGCT	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	Fasting_mouse_I.D._634
+PC.635	ACCGCAGAGTCA	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	Fasting_mouse_I.D._635
+PC.636	ACGGTGAGTGTC	YATGCTGCCTCCCGTAGGAGT	Fast	20080116	Fasting_mouse_I.D._636
+Fake.sample	ACGGTGAGTGTC	YATGCTGCCTCCCGTAGGAGT	Other	20080116	Fasting_mouse_I.D._636
 """
 
 mapping_exp = [("Co_ntrol", """#SampleID	BarcodeSequence	LinkerPrimerSequence	Treatment	DOB	Description
