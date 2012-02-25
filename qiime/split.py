@@ -1,0 +1,82 @@
+#!/usr/bin/env python
+# File created on 24 Feb 2012
+from __future__ import division
+
+__author__ = "Greg Caporaso"
+__copyright__ = "Copyright 2011, The QIIME project"
+__credits__ = ["Greg Caporaso"]
+__license__ = "GPL"
+__version__ = "1.4.0-dev"
+__maintainer__ = "Greg Caporaso"
+__email__ = "gregcaporaso@gmail.com"
+__status__ = "Development"
+
+from qiime.parse import parse_mapping_file
+from qiime.filter import filter_mapping_file, sample_ids_from_metadata_description
+from qiime.format import format_mapping_file
+from qiime.pycogent_backports.parse_biom import parse_biom_table
+
+def get_mapping_values(mapping_f,mapping_field):
+    mapping_data, mapping_headers, comments = parse_mapping_file(mapping_f)
+    
+    try:
+        field_index = mapping_headers.index(mapping_field)
+    except ValueError:
+        option_parser.error("Field is not in mapping file (search is case "+\
+        "and white-space sensitive). \n\tProvided field: "+\
+        "%s. \n\tValid fields: %s" % (mapping_field,' '.join(mapping_headers)))
+    
+    return set([e[field_index] for e in mapping_data])
+
+def split_mapping_file_on_field(mapping_f,
+                                mapping_field,
+                                column_rename_ids=None,
+                                include_repeat_cols=True):
+    """ split mapping file based on value in field """
+    
+    mapping_f = list(mapping_f)
+    mapping_values = get_mapping_values(mapping_f,mapping_field)
+    
+    mapping_data, mapping_headers, _ = parse_mapping_file(mapping_f)
+    
+    if column_rename_ids:
+        try:
+            column_rename_ids = mapping_headers.index(column_rename_ids)
+        except ValueError:
+            option_parser.error("Field is not in mapping file (search is case "+\
+                 "and white-space sensitive). \n\tProvided field: "+\
+                 "%s. \n\tValid fields: %s" % (mapping_field,' '.join(mapping_headers)))
+    
+    for v in mapping_values:
+        v_fp_str = v.replace(' ','_')
+        sample_ids_to_keep = sample_ids_from_metadata_description(
+            mapping_f,valid_states_str="%s:%s" % (mapping_field,v))
+        
+        # parse mapping file each time though the loop as filtering operates on values
+        mapping_data, mapping_headers, _ = parse_mapping_file(mapping_f)
+        mapping_headers, mapping_data = filter_mapping_file(
+                                         mapping_data, 
+                                         mapping_headers,
+                                         sample_ids_to_keep,
+                                         include_repeat_cols=include_repeat_cols, 
+                                         column_rename_ids=column_rename_ids)
+        yield v_fp_str, format_mapping_file(mapping_headers, mapping_data)
+
+def split_otu_table_on_sample_metadata(otu_table_f,mapping_f,mapping_field):
+    """ split otu table into sub otu tables where each represent samples corresponding to only a certain value in mapping_field 
+    """
+    mapping_f = list(mapping_f)
+    mapping_values = get_mapping_values(mapping_f,mapping_field)
+    otu_table = parse_biom_table(otu_table_f)
+    
+    for v in mapping_values:
+        v_fp_str = v.replace(' ','_')
+        sample_ids_to_keep = sample_ids_from_metadata_description(
+            mapping_f,valid_states_str="%s:%s" % (mapping_field,v))
+        
+        filtered_otu_table = otu_table.filterSamples(
+                              lambda values,id_,metadata: id_ in sample_ids_to_keep)
+        yield v_fp_str, filtered_otu_table.getBiomFormatJsonString()
+
+
+    

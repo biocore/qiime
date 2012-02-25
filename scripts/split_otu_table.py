@@ -16,9 +16,7 @@ from os.path import split, splitext, join
 from numpy import inf
 from qiime.util import parse_command_line_parameters, make_option, create_dir
 from qiime.parse import parse_mapping_file
-from qiime.filter import filter_mapping_file, sample_ids_from_metadata_description
-from qiime.format import format_mapping_file
-from qiime.pycogent_backports.parse_biom import parse_biom_table
+from qiime.split import split_mapping_file_on_field, split_otu_table_on_sample_metadata
 
 script_info = {}
 script_info['brief_description'] = "Split in a single OTU table into one OTU table per value in a specified field of the mapping file."
@@ -44,8 +42,7 @@ script_info['version'] = __version__
 
 
 def main():
-    option_parser, opts, args =\
-       parse_command_line_parameters(**script_info)
+    option_parser, opts, args = parse_command_line_parameters(**script_info)
     
     otu_table_fp = opts.otu_table_fp
     mapping_fp = opts.mapping_fp
@@ -54,51 +51,23 @@ def main():
     column_rename_ids = opts.column_rename_ids
     include_repeat_cols = opts.include_repeat_cols
     
-    otu_table_base_name = splitext(split(otu_table_fp)[1])[0]
-    
-    mapping_data, headers, comments = parse_mapping_file(open(mapping_fp,'U'))
-    try:
-        field_index = headers.index(mapping_field)
-    except ValueError:
-        option_parser.error("Field is not in mapping file (search is case "+\
-        "and white-space sensitive). \n\tProvided field: "+\
-        "%s. \n\tValid fields: %s" % (mapping_field,' '.join(headers)))
-    if column_rename_ids: 
-        try:
-            column_rename_ids = headers.index(column_rename_ids)
-        except ValueError:
-            option_parser.error("Field is not in mapping file (search is case "+\
-                 "and white-space sensitive). \n\tProvided field: "+\
-                 "%s. \n\tValid fields: %s" % (mapping_field,' '.join(headers)))
-    
-    mapping_values = set([e[field_index] for e in mapping_data])
-    
     create_dir(output_dir)
     
-    mapping_data, mapping_headers, _ = parse_mapping_file(open(mapping_fp,'U'))
-    otu_table = parse_biom_table(open(otu_table_fp,'U'))
+    # split mapping file
+    mapping_f = open(mapping_fp,'U')
+    for fp_str, sub_mapping_s in split_mapping_file_on_field(mapping_f,mapping_field):
+        mapping_output_fp = join(output_dir,'mapping_%s.txt' % fp_str)
+        open(mapping_output_fp,'w').write(sub_mapping_s)
     
-    for v in mapping_values:
-        v_fp_str = v.replace(' ','_')
-        otu_table_output_fp = join(output_dir,'%s_%s.biom' % (otu_table_base_name, v_fp_str))
-        mapping_output_fp = join(output_dir,'mapping_%s.txt' % v_fp_str)
-        sample_ids_to_keep = sample_ids_from_metadata_description(
-            open(mapping_fp,'U'),valid_states_str="%s:%s" % (mapping_field,v))
-        
-        # parse mapping file each time though the loop as filtering operates on values
-        mapping_data, mapping_headers, _ = parse_mapping_file(open(mapping_fp,'U'))
-        mapping_headers, mapping_data = filter_mapping_file(
-                                         mapping_data, 
-                                         mapping_headers,
-                                         sample_ids_to_keep,
-                                         include_repeat_cols=include_repeat_cols, 
-                                         column_rename_ids=column_rename_ids)
-        open(mapping_output_fp,'w').write(format_mapping_file(mapping_headers, mapping_data))
-        filtered_otu_table = otu_table.filterSamples(
-                              lambda values,id_,metadata: id_ in sample_ids_to_keep,
-                              invert=True)
-        open(otu_table_output_fp,'w').write(filtered_otu_table.getBiomFormatJsonString())
-    
+    # split otu table
+    otu_table_base_name = splitext(split(otu_table_fp)[1])[0]
+    mapping_f = open(mapping_fp,'U')
+    otu_table_f = open(otu_table_fp,'U')
+    for fp_str, sub_otu_table_s in split_otu_table_on_sample_metadata(otu_table_f,
+                                                                      mapping_f,
+                                                                      mapping_field):
+        otu_table_output_fp = join(output_dir,'%s_%s.biom' % (otu_table_base_name, fp_str))
+        open(otu_table_output_fp,'w').write(sub_otu_table_s)
 
 
 if __name__ == "__main__":
