@@ -22,7 +22,7 @@ from os import listdir
 
 script_info={}
 script_info['brief_description']="""OTU significance and co-occurence analysis"""
-script_info['script_description']="""The script otu_category_significance.py tests whether any of the OTUs in an OTU table are significantly associated with a category in the category mapping file. This code uses, ANOVA, the G test of independence, Pearson correlation, or a paired T test to find OTUs whose members are differentially represented across experimental treatments or measured variables.
+script_info['script_description']="""The script otu_category_significance.py tests whether any of the OTUs in an OTU table are significantly associated with a category in the category mapping file. This code uses ANOVA, the G test of independence, Pearson correlation, or a paired t-test to find OTUs that are differentially represented across experimental treatments or measured variables.
 
 The script can also be used to measure co-occurrence. For instance it can also be used with presence/absence or abundance data for a phylogenetic group (such as that determined with quantitative PCR) to determine if any OTUs co-occur with a taxon of interest, using the ANOVA, G test of Independence, or correlation.
 
@@ -39,7 +39,7 @@ The tests also include options for longitudinal data (i.e. datasets in which mul
 
 Pearson correlation (longitudinal_correlation): determines whether OTU relative abundance is correlated with a continuous variable in the category mapping file while accounting for an experimental design where multiple samples are collected from the same individual or site. Uses the change in relative abundance for each sample from the reference sample (e.g. timepoint zero in a timeseries analysis) rather than the absolute relative abundances in the correlation (e.g. if the relative abundance before the treatment was 0.2, and after the treatment was 0.4, the new values for the OTU relative abundance will be 0.0 for the before sample, and 0.2 for the after, thus indicating that the OTU went up in response to the treatment.)
 
-Paired T-test (paired_T): This option is when measurements were taken "before" and "after" a treatment. There must be exactly two measurements for each individual/site. The category mapping file must again have an individual column, indicating which sample is from which individual, and a reference_sample column, that has a 1 for the before time point and a 0 for the after.
+Paired t-test (paired_T): This option is when measurements were taken "before" and "after" a treatment. There must be exactly two measurements for each individual/site. The category mapping file must again have an individual column, indicating which sample is from which individual, and a reference_sample column, that has a 1 for the before time point and a 0 for the after.
 
 With the exception of longitudinal correlation and paired_T, this script can be performed on a directory of OTU tables (for example, the output of multiple_rarefactions_even_depth.py), in addition to on a single OTU table. If the script is called on a directory, the resulting p-values are the average of the p-values observed when running a single test on each otu_table separately. It is generally a good practice to rarefy the OTU table (e.g. with single_rarefaction.py) prior to running these significance tests in order to avoid artifacts/biases from unequal sample sizes.
 """
