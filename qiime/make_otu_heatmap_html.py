@@ -203,7 +203,7 @@ def filter_by_otu_hits(num_otu_hits, otu_table):
 
     # Filter out rows with sum > num_otu_hits
     new_otu_table = filter_otus_from_otu_table(otu_table, otu_table.ObservationIds,
-                                               num_otu_hits, inf)
+                                               num_otu_hits, inf,0,inf)
 
     return new_otu_table
 
