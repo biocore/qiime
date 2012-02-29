@@ -23,7 +23,7 @@ from qiime.util import get_qiime_project_dir
 from qiime.format import format_otu_table
 from cogent.app.parameters import Parameters
 from qiime.parse import parse_otu_table, parse_mapping_file
-from biom.parse import convert_biom_to_otu_table
+from biom.parse import convert_biom_to_table
 
 def parse_feature_importances(filepath):
     """Returns vector of feature IDs, vector of importance scores
