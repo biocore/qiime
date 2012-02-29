@@ -13,9 +13,9 @@ __status__ = "Development"
 
 from qiime.parse import parse_mapping_file
 from qiime.filter import filter_mapping_file, sample_ids_from_metadata_description
-from qiime.format import format_mapping_file
-from qiime.pycogent_backports.parse_biom import parse_biom_table
-from qiime.pycogent_backports.rich_otu_table import TableException
+from qiime.format import format_mapping_file, format_biom_table
+from biom.parse import parse_biom_table
+from biom.table import TableException
 
 def get_mapping_values(mapping_f,mapping_field):
     mapping_data, mapping_headers, comments = parse_mapping_file(mapping_f)
@@ -74,13 +74,14 @@ def split_otu_table_on_sample_metadata(otu_table_f,mapping_f,mapping_field):
         v_fp_str = v.replace(' ','_')
         sample_ids_to_keep = sample_ids_from_metadata_description(
             mapping_f,valid_states_str="%s:%s" % (mapping_field,v))
+        
         try:
             filtered_otu_table = otu_table.filterSamples(
                               lambda values,id_,metadata: id_ in sample_ids_to_keep)
         except TableException:
             # all samples are filtered out, so no otu table to write
             continue
-        yield v_fp_str, filtered_otu_table.getBiomFormatJsonString()
+        yield v_fp_str, format_biom_table(filtered_otu_table)
 
 
     

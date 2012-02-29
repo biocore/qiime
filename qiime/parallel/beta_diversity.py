@@ -9,7 +9,7 @@ File created on 7 Jan 2010.
 from __future__ import division
 from os.path import split, join, splitext
 import os
-from qiime.pycogent_backports.parse_biom import parse_biom_table
+from biom.parse import parse_biom_table
 from qiime.parallel.util import get_rename_command, merge_to_n_commands
 from qiime.format import format_distance_matrix
 

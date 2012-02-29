@@ -18,7 +18,7 @@ from qiime.util import (compute_seqs_per_library_stats,
     median_absolute_deviation, guess_even_sampling_depth)
 from qiime.format import format_mapping_file
 from qiime.parse import parse_mapping_file
-from qiime.pycogent_backports.parse_biom import parse_biom_table
+from biom.parse import parse_biom_table
 
 options_lookup = get_options_lookup()
 

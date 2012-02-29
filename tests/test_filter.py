@@ -15,7 +15,7 @@ from StringIO import StringIO
 from numpy import inf
 from cogent.util.unit_test import TestCase, main
 from cogent.parse.tree import DndParser
-from qiime.pycogent_backports.parse_biom import parse_biom_table_str
+from biom.parse import parse_biom_table_str
 from qiime.parse import (parse_distmat, parse_mapping_file, 
                          parse_metadata_state_descriptions)
 from qiime.filter import (filter_fasta,filter_samples_from_otu_table,

@@ -14,7 +14,7 @@ __status__ = "Development"
 from cogent.util.unit_test import TestCase, main
 from cogent.parse.tree import DndParser
 
-from qiime.pycogent_backports.parse_biom import parse_biom_table
+from biom.parse import parse_biom_table
 from qiime.util import get_qiime_scripts_dir, load_qiime_config
 import qiime.pycogent_backports.rich_otu_table as rich_otu_table
 

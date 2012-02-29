@@ -16,7 +16,8 @@ from numpy import isnan, log10, median
 from StringIO import StringIO
 from cogent import Sequence
 from re import compile, sub
-from qiime.pycogent_backports.rich_otu_table import DenseOTUTable
+from biom.table import DenseOTUTable
+from qiime.util import get_qiime_library_version
 
 """Contains formatters for the files we expect to encounter in 454 workflow.
 
@@ -213,7 +214,7 @@ def format_otu_table(sample_names, otu_names, data, taxonomy=None,
                               SampleIds=sample_names, 
                               ObservationIds=otu_names,
                               ObservationMetadata=taxonomy)
-    return otu_table.getBiomFormatJsonString()
+    return format_biom_table(otu_table)
 
 def format_coords(coord_header, coords, eigvals, pct_var, headers = True):
     """formats coords given specified coords matrix etc."""
@@ -543,4 +544,7 @@ def illumina_data_to_fastq(record_data,number_of_bases=None):
     
     return '@%s\n%s\n+\n%s' % (header,seq,qual), pass_filter
 
-
+def format_biom_table(biom_table):
+    """ Given a biom-format Table object, returns that Table as a BIOM string"""
+    generated_by_str = "QIIME " + get_qiime_library_version()
+    return biom_table.getBiomFormatJsonString(generated_by_str)

@@ -16,8 +16,8 @@ from numpy import zeros
 from string import strip
 from qiime.format import format_otu_table
 from qiime.parse import parse_mapping_file
-from qiime.pycogent_backports.parse_biom import parse_biom_table
-from qiime.pycogent_backports.rich_otu_table import table_factory
+from biom.parse import parse_biom_table
+from biom.table import table_factory
 
 """Prepare otu table for performing otu significance studies that account
 for longitudinal study designs.

@@ -18,13 +18,13 @@ underscore only so should be relatively robust to underscore in sample id.
 
 from collections import defaultdict
 from string import strip
-from numpy import array
+from sys import stderr
+from numpy import array, zeros
 from cogent.util.misc import flatten, InverseDict
-from numpy import zeros
 from qiime.format import format_otu_table
 from qiime.parse import parse_otu_map
-from qiime.pycogent_backports.rich_otu_table import SparseOTUTable, DenseOTUTable, table_factory
-from sys import stderr
+from qiime.format import format_biom_table
+from biom.table import SparseOTUTable, DenseOTUTable, table_factory
 
 
 def libs_from_seqids(seq_ids, delim='_'):
@@ -69,4 +69,4 @@ def make_otu_table(otu_map_f,
         raise ValueError,\
          ("Couldn't create OTU table. Is your OTU map empty?"
           " Original error message: %s" % (str(e)))
-    return otu_table.getBiomFormatJsonString()
+    return format_biom_table(otu_table)

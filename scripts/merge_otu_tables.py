@@ -15,7 +15,8 @@ __status__ = "Development"
 from qiime.util import make_option
 from qiime.util import (parse_command_line_parameters, 
                         get_options_lookup)
-from qiime.pycogent_backports.parse_biom import parse_biom_table
+from biom.parse import parse_biom_table
+from qiime.format import format_biom_table
 
 options_lookup = get_options_lookup()
 
@@ -49,7 +50,7 @@ def main():
         master = master.merge(parse_biom_table(open(input_fp,'U')))
 
     out_f = open(opts.output_fp,'w')
-    out_f.write(master.getBiomFormatJsonString())
+    out_f.write(format_biom_table(master))
     out_f.close()
 
 if __name__ == "__main__":

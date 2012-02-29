@@ -22,7 +22,7 @@ from qiime.util import get_tmp_filename
 from qiime.plot_rank_abundance_graph import make_sorted_frequencies,\
     plot_rank_abundance_graph, plot_rank_abundance_graphs
 from qiime.util import create_dir
-from qiime.pycogent_backports.parse_biom import parse_biom_table_str
+from biom.parse import parse_biom_table_str
 
 class PlotRankAbundance(TestCase):
     

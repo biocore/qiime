@@ -14,7 +14,7 @@ __status__ = "Development"
 from cogent.util.unit_test import TestCase, main
 from cogent.util.misc import remove_files
 from qiime.parse import parse_mapping_file
-from qiime.pycogent_backports.parse_biom import parse_biom_table_str
+from biom.parse import parse_biom_table_str
 from qiime.sort import (sort_sample_ids_by_mapping_value,
                         sort_fasta_by_abundance, natsort, sort_otu_table,
                         sort_otu_table_by_mapping_field)

@@ -30,7 +30,7 @@ from qiime.make_otu_heatmap import plot_heatmap, \
     get_clusters, make_otu_labels, extract_metadata_column, \
     get_order_from_categories, get_order_from_tree, names_to_indices, \
     get_log_transform, get_overlapping_samples
-from qiime.pycogent_backports.parse_biom import parse_biom_table
+from biom.parse import parse_biom_table
 
 options_lookup = get_options_lookup()
 

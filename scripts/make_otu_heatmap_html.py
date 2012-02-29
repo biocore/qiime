@@ -24,7 +24,7 @@ from qiime.util import get_qiime_project_dir
 from qiime.parse import parse_mapping_file
 from qiime.parse import parse_newick, PhyloNode
 from sys import exit
-from qiime.pycogent_backports.parse_biom import parse_biom_table
+from biom.parse import parse_biom_table
 from numpy import maximum
 
 options_lookup = get_options_lookup()

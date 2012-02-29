@@ -24,7 +24,8 @@ from qiime.beta_diversity import BetaDiversityCalc, single_file_beta,\
 list_known_nonphylogenetic_metrics, list_known_phylogenetic_metrics,\
 single_object_beta
 from qiime.beta_metrics import dist_unweighted_unifrac
-from qiime.pycogent_backports.rich_otu_table import DenseOTUTable
+from qiime.format import format_biom_table
+from biom.table import DenseOTUTable
 
 #from modified_beta_diversity import single_object_beta
 
@@ -66,16 +67,16 @@ class BetaDiversityCalcTests(TestCase):
         self.l19_taxon_names_w_underscore =  ['ta_x1', 'tax2', 'tax3', 'tax4', 
          'endbigtaxon', 'tax6', 'tax7', 'tax8', 'tax9']
 
-        l19_str = DenseOTUTable(self.l19_data.T,
+        l19_str = format_biom_table(DenseOTUTable(self.l19_data.T,
             self.l19_sample_names, 
-            self.l19_taxon_names).getBiomFormatJsonString()
+            self.l19_taxon_names))
         self.l19_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
             prefix='test_bdiv_otu_table',suffix='.blom')
         open(self.l19_fp,'w').write(l19_str)
             
-        l19_str_w_underscore = DenseOTUTable(self.l19_data.T,
+        l19_str_w_underscore = format_biom_table(DenseOTUTable(self.l19_data.T,
             self.l19_sample_names, 
-            self.l19_taxon_names_w_underscore).getBiomFormatJsonString()
+            self.l19_taxon_names_w_underscore))
         self.l19_str_w_underscore_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
             prefix='test_bdiv_otu_table',suffix='.blom')
         open(self.l19_str_w_underscore_fp,'w').write(l19_str_w_underscore)

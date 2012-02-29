@@ -10,19 +10,21 @@ __maintainer__ = "Jose Clemente"
 __email__ = "jose.clemente@gmail.com"
 __status__ = "Development"
 
-from cogent.util.unit_test import TestCase, main
-from qiime.make_otu_network import get_sample_info, get_connection_info, \
-     get_num_con_cat,get_num_cat,make_table_file,make_stats_files,\
-     make_props_files
-from qiime.util import get_tmp_filename, load_qiime_config
-from cogent.util.misc import get_random_directory_name     
-from cogent.maths.stats.test import G_2_by_2
-from random import choice, randrange
-from qiime.pycogent_backports.rich_otu_table import SparseOTUTable, to_ll_mat
 from os import remove
 from os.path import exists
 import os
 import shutil
+from numpy import array
+from random import choice, randrange
+from cogent.util.unit_test import TestCase, main
+from cogent.util.misc import get_random_directory_name     
+from cogent.maths.stats.test import G_2_by_2
+from qiime.make_otu_network import get_sample_info, get_connection_info, \
+     get_num_con_cat,get_num_cat,make_table_file,make_stats_files,\
+     make_props_files
+from qiime.util import get_tmp_filename, load_qiime_config
+from qiime.format import format_biom_table
+from biom.table import table_factory
 
 class OtuNetworkTests(TestCase):
     def setUp(self):
@@ -59,18 +61,18 @@ class OtuNetworkTests(TestCase):
                    "weighted_degree","consensus_lin","Day","time"]
         self.label_list =[["090809","090909","091009"],["1200","1800"]]
 
-        self.otu_table_vals = {(0, 1):1.0, (0, 4):6.0,
-                               (1, 0):2.0,
-                               (2, 2):3.0, (2, 3):1.0,
-                               (3, 4):5.0,
-                               (4, 1):4.0, (4, 2):2.0,
-                               (5, 0):3.0, (5, 1):6.0,
-                               (6, 2):4.0, (6, 3):2.0,
-                               (7, 4):3.0,
-                               (8, 0):2.0, (8, 3):5.0,
-                               (9, 1):2.0, (9, 3):4.0}
+        self.otu_table_vals = array([[0,1,0,0,6],
+                               [2,0,0,0,0],
+                               [0,0,3,1,0],
+                               [0,0,0,0,5],
+                               [0,4,2,0,0],
+                               [3,6,0,0,0],
+                               [0,0,4,2,0],
+                               [0,0,0,0,3],
+                               [2,0,0,5,0],
+                               [0,2,0,4,0]])
 
-        otu_table_str = SparseOTUTable(to_ll_mat(self.otu_table_vals),
+        otu_table_str = format_biom_table(table_factory(self.otu_table_vals,
                                        ['1', '2', '3', '4', '5'],
                                        ['otu_1', 'otu_2', 'otu_3', 'otu_4', 'otu_5', 'otu_6', 'otu_7', 'otu_8', 'otu_9', 'otu_10'],
                                        [None, None, None, None, None],
@@ -83,7 +85,7 @@ class OtuNetworkTests(TestCase):
                                         {"taxonomy": ["Bacteria", "Bacteroidetes", "Bacteroidales", "Odoribacteriaceae"]},
                                         {"taxonomy": ["Bacteria", "Bacteroidetes", "Bacteroidales", "Dysgonomonaceae", "otu_425"]},
                                         {"taxonomy": ["Bacteria", "Bacteroidetes", "Bacteroidales", "Dysgonomonaceae", "otu_425"]},
-                                        {"taxonomy": ["Bacteria", "Firmicutes", "Mollicutes", "Clostridium_aff_innocuum_CM970"]}]).getBiomFormatJsonString()
+                                        {"taxonomy": ["Bacteria", "Firmicutes", "Mollicutes", "Clostridium_aff_innocuum_CM970"]}]))
 
         self.otu_table_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
                                              prefix='test_make_otu_network_otu_table',suffix='.biom')

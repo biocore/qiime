@@ -17,7 +17,7 @@ from qiime.util import (compute_seqs_per_library_stats,
                         create_dir, guess_even_sampling_depth,
                         get_interesting_mapping_fields,qiime_system_call,
                         get_qiime_library_version)
-from qiime.pycogent_backports.parse_biom import parse_biom_table
+from biom.parse import parse_biom_table
 from cogent.core.moltype import IUPAC_DNA_ambiguities
 import os
 

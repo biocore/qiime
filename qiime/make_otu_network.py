@@ -32,7 +32,7 @@ from random import choice, randrange
 from cogent.maths.stats.test import G_2_by_2
 from qiime.colors import iter_color_groups, Color, data_colors
 from qiime.parse import parse_mapping_file
-from qiime.pycogent_backports.parse_biom import parse_biom_table
+from biom.parse import parse_biom_table
 
 def get_sample_info(lines):
     """Collects information from mapping file for easy use in following steps

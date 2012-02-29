@@ -12,7 +12,7 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
 from qiime.util import parse_command_line_parameters, make_option
-from qiime.pycogent_backports.parse_biom import convert_otu_table_to_biom, convert_biom_to_otu_table, parse_biom_table
+from biom.parse import convert_otu_table_to_biom, convert_biom_to_otu_table, parse_biom_table
 
 script_info = {}
 script_info['brief_description'] = "Converts between classic otu table and biom formatted OTU tables."

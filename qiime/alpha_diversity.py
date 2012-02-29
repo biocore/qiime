@@ -48,7 +48,7 @@ from sys import exit, stderr
 import sys
 import os.path
 import qiime.alpha_diversity
-from qiime.pycogent_backports.parse_biom import parse_biom_table
+from biom.parse import parse_biom_table
 
 class AlphaDiversityCalc(FunctionWithParams):
     """An AlphaDiversityCalc takes taxon x sample counts, returns diversities.

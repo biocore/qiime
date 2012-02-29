@@ -20,7 +20,7 @@ from matplotlib.pyplot import plot, gca,  ylim, xlim, show, legend, \
     savefig
 from os.path import join
 from qiime.colors import data_color_order,data_colors
-from qiime.pycogent_backports.rich_otu_table import UnknownID
+from biom.table import UnknownID
 
 def make_sorted_frequencies(counts, absolute=False):
     """transform and sort a vector of count.

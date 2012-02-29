@@ -11,15 +11,15 @@ __email__ = "jesse.stombaugh@colorado.edu"
 __status__ = "Development"
 
 from numpy import array, log
+import shutil
+from shutil import rmtree
+from os.path import join
 from cogent.util.unit_test import TestCase, main
 from qiime.make_otu_heatmap_html import (make_html_doc,create_javascript_array,\
                                        filter_by_otu_hits,line_converter,\
                                        get_log_transform,generate_heatmap_plots)
-from qiime.pycogent_backports.rich_otu_table import SparseOTUTable, to_ll_mat
-from os.path import join
-from shutil import rmtree
 from qiime.util import create_dir,get_qiime_project_dir
-import shutil
+from biom.table import table_factory
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -37,18 +37,20 @@ class TopLevelTests(TestCase):
         #                        self.lineages
         self.output_dir='/tmp/'
         
-        otu_table_vals = {(0,0):0.0,
-                          (1,0):1.0, (1,1):5.0}
+        otu_table_vals = array([[0,0],[1,5]])
+        #{(0,0):0.0,(1,0):1.0, (1,1):5.0}
 
-        self.otu_table = SparseOTUTable(to_ll_mat(otu_table_vals),
+        self.otu_table = table_factory(otu_table_vals,
                                         ['Sample1', 'Sample2'],
                                         ['OTU1', 'OTU2'],
                                         [None, None],
                                         [{"taxonomy": ["Bacteria"]},
                                          {"taxonomy": ["Archaea"]}])
 
-        filt_otu_table_vals = {(0,0):1.0, (0,1):5.0}
-        self.filt_otu_table = SparseOTUTable(to_ll_mat(filt_otu_table_vals),
+        filt_otu_table_vals = array([[1,5]])
+        #{(0,0):1.0, (0,1):5.0}
+        
+        self.filt_otu_table = table_factory(filt_otu_table_vals,
                                              ['Sample1', 'Sample2'],
                                              ['OTU2'],
                                              [None, None],
@@ -103,19 +105,19 @@ javascript array"""
 
         #self.assertFloatEqual(logdata, exp)
 
-        orig_data = {(0,1):1.0, (0,2):2,
-                     (1,0):1000.0}
+        orig_data = array([[0,1,2],[1000,0,0]])
+        #{(0,1):1.0, (0,2):2,(1,0):1000.0}
 
-        orig_otu_table = SparseOTUTable(to_ll_mat(orig_data),
+        orig_otu_table = table_factory(orig_data,
                                         ['Sample1', 'Sample2', 'Sample3'],
                                         ['OTU1', 'OTU2'],
                                         [None, None, None],
                                         [{"taxonomy": ["Bacteria"]},
                                          {"taxonomy": ["Archaea"]}])
 
-        exp_data = {(0,1):0.69314718, (0,2):1.38629436,
-                     (1,0):7.60090246}
-        exp_otu_table = SparseOTUTable(to_ll_mat(exp_data),
+        exp_data = array([[0,0.69314718,1.38629436],[7.60090246,0,0]])
+        #{(0,1):0.69314718, (0,2):1.38629436,(1,0):7.60090246}
+        exp_otu_table = table_factory(exp_data,
                                        ['Sample1', 'Sample2', 'Sample3'],
                                        ['OTU1', 'OTU2'],
                                        [None, None, None],
@@ -152,10 +154,9 @@ javascript array"""
         
     
         # generate otu_table object
-        orig_data = {(0,1):1.0, (0,2):2,
-                     (1,0):1000.0}
+        orig_data = array([[0,1,2],[1000,0,0]])
                      
-        orig_otu_table = SparseOTUTable(to_ll_mat(orig_data),
+        orig_otu_table = table_factory(orig_data,
                                         ['Sample1', 'Sample2', 'Sample3'],
                                         ['OTU1', 'OTU2'],
                                         [None, None, None],

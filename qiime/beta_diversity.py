@@ -42,7 +42,7 @@ from qiime.format import format_distance_matrix
 import qiime.beta_metrics
 
 from qiime.parse import parse_newick, PhyloNode
-from qiime.pycogent_backports.parse_biom import parse_biom_table
+from biom.parse import parse_biom_table
 from qiime.format import format_matrix
 
 def get_nonphylogenetic_metric(name):

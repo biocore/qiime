@@ -25,7 +25,7 @@ from cogent.maths.stats.test import calc_contingency_expected, G_fit_from_Dict2D
 from cogent.maths.stats.util import Numbers
 from qiime.longitudinal_otu_category_significance import get_sample_individual_info
 from qiime.parse import parse_mapping_file
-from qiime.pycogent_backports.parse_biom import parse_biom_table, \
+from biom.parse import parse_biom_table, \
         parse_biom_table_str
 
 """Look for OTUs that are associated with a category. Currently can do:

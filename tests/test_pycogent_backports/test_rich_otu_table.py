@@ -4,7 +4,7 @@ from numpy import array, where, zeros
 from pysparse.spmatrix import ll_mat
 from cogent.util.misc import unzip
 from cogent.util.unit_test import TestCase, main
-from qiime.pycogent_backports.rich_otu_table import TableException, Table, \
+from biom.table import TableException, Table, \
     DenseTable, SparseTable, DenseOTUTable, SparseOTUTable, to_ll_mat, \
     UnknownID, prefer_self, index_list, nparray_to_ll_mat, \
     list_nparray_to_ll_mat, dict_to_ll_mat, list_dict_to_ll_mat,\

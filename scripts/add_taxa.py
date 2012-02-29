@@ -14,8 +14,9 @@ __status__ = "Development"
 
 from qiime.util import parse_command_line_parameters
 from qiime.util import make_option
-from qiime.pycogent_backports.parse_biom import parse_biom_table
+from biom.parse import parse_biom_table
 from qiime.parse import parse_taxonomy_to_otu_metadata
+from qiime.format import format_biom_table
 
 script_info={}
 script_info['brief_description']="""Add taxa to OTU table"""
@@ -45,7 +46,7 @@ def main():
     otu_table = parse_biom_table(open(opts.input_fp,'U'))
     otu_table.addObservationMetadata(observation_metadata)
     
-    output_f.write(otu_table.getBiomFormatJsonString())
+    output_f.write(format_biom_table(otu_table))
     output_f.close()
     
     

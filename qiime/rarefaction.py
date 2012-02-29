@@ -15,14 +15,14 @@ __status__ = "Development"
 this takes an otu table and generates a series of subsampled (without 
 replacement) otu tables.
 """
-from qiime.format import format_otu_table
-from qiime.util import FunctionWithParams
 import os.path
 import numpy
-from cogent.maths.stats.rarefaction import subsample
 from numpy import inf
+from cogent.maths.stats.rarefaction import subsample
+from qiime.util import FunctionWithParams
 from qiime.filter import filter_samples_from_otu_table, filter_otus_from_otu_table
-from qiime.pycogent_backports.parse_biom import parse_biom_table
+from qiime.format import format_biom_table
+from biom.parse import parse_biom_table
 
 class SingleRarefactionMaker(FunctionWithParams):
     def __init__(self, otu_path, depth):
@@ -105,7 +105,7 @@ class SingleRarefactionMaker(FunctionWithParams):
         if sub_otu_table.isEmpty():
             return
         f = open(fname, 'w')
-        f.write(sub_otu_table.getBiomFormatJsonString())
+        f.write(format_biom_table(sub_otu_table))
         f.close()
 
 
@@ -204,7 +204,7 @@ class RarefactionMaker(FunctionWithParams):
 
         fname = 'rarefaction_'+str(depth)+'_'+str(rep)+'.txt'
         f = open(os.path.join(self.output_dir,fname), 'w')
-        f.write(sub_otu_table.getBiomFormatJsonString())
+        f.write(format_biom_table(sub_otu_table))
         #f.write(format_otu_table(sub_sample_ids, sub_otu_ids,\
         #    sub_otu_table, otu_lineages, comment=fname))
         f.close()
@@ -223,7 +223,7 @@ def get_rare_data(otu_table, seqs_per_sample, include_small_samples=False):
     #res_sample_ids = otu_table.ObservationIds
 
     # subsample samples that have too many sequences
-    def func(x):
+    def func(x, s_id, s_md):
         if x.sum() < seqs_per_sample:
             return x
         else:

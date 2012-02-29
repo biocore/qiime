@@ -14,10 +14,10 @@ __status__ = "Development"
 
 from qiime.util import make_option
 from qiime.parse import parse_mapping_file
-from qiime.pycogent_backports.parse_biom import parse_biom_table
-from qiime.format import format_otu_table
+from qiime.format import format_biom_table
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.sort import sort_otu_table, sort_otu_table_by_mapping_field
+from biom.parse import parse_biom_table
 
 options_lookup = get_options_lookup()
 
@@ -86,8 +86,7 @@ def main():
         parser.error("must provide either --sort_field and --mapping_fp OR --sorted_sample_ids_fp")
 
     # format and write the otu table
-    #result_str = format_otu_table(result[0],result[1],result[2],result[3])
-    result_str = result.getBiomFormatJsonString()
+    result_str = format_biom_table(result)
     of = open(opts.output_fp,'w')
     of.write(result_str)
     of.close()

@@ -23,7 +23,7 @@ from cogent.maths.unifrac.fast_unifrac import fast_p_test_file
 from qiime.util import parse_command_line_parameters
 from qiime.format import format_unifrac_sample_mapping
 
-from qiime.pycogent_backports.parse_biom import parse_biom_table
+from biom.parse import parse_biom_table
 
 
 script_info = {}

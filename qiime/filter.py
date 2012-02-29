@@ -16,7 +16,7 @@ from numpy import array, inf
 from cogent.parse.fasta import MinimalFastaParser
 from qiime.parse import parse_distmat, parse_mapping_file, parse_metadata_state_descriptions
 from qiime.format import format_otu_table, format_distance_matrix, format_mapping_file
-from qiime.pycogent_backports.parse_biom import parse_biom_table
+from biom.parse import parse_biom_table
 
 def sample_ids_from_metadata_description(mapping_f,valid_states_str):
     """ Given a description of metadata, return the corresponding sample ids

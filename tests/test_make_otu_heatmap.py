@@ -10,17 +10,16 @@ __maintainer__ = "Dan Knights"
 __email__ = "daniel.knights@colorado.edu"
 __status__ = "Development"
 
-
+from os.path import exists
 from numpy import array, log10, asarray, float64
 from cogent.util.unit_test import TestCase, main
+from cogent.util.misc import remove_files
 from qiime.make_otu_heatmap import (extract_metadata_column, 
     get_order_from_categories, get_order_from_tree, make_otu_labels, 
     names_to_indices, get_log_transform, get_clusters, 
     get_fontsize, plot_heatmap)
 from qiime.util import get_tmp_filename
-from cogent.util.misc import remove_files
-from os.path import exists
-from qiime.pycogent_backports.rich_otu_table import SparseOTUTable, to_ll_mat
+from biom.table import table_factory
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -28,10 +27,13 @@ class TopLevelTests(TestCase):
     def setUp(self):
         """define some top-level data"""
 
-        self.otu_table_values = {(0,2):9.0, (0,3):5.0, (0,4):3.0, (0,5):1.0,
+        self.otu_table_values = array([[0,0,9,5,3,1],
+                                 [1,5,4,0,3,2],
+                                 [2,3,1,1,2,5]])
+        {(0,2):9.0, (0,3):5.0, (0,4):3.0, (0,5):1.0,
                                  (1,0):1.0, (1,1):5.0, (1,2):4.0, (1,4):3.0, (1,5):2.0,
                                  (2,0):2.0, (2,1):3.0, (2,2):1.0, (2,3):1.0, (2,4):2.0, (2,5):5.0}
-        self.otu_table = SparseOTUTable(to_ll_mat(self.otu_table_values),
+        self.otu_table = table_factory(self.otu_table_values,
                                         ['Sample1', 'Sample2', 'Sample3', 
                                          'Sample4', 'Sample5', 'Sample6'],
                                         ['OTU1','OTU2','OTU3'],
@@ -39,7 +41,7 @@ class TopLevelTests(TestCase):
                                         [{"taxonomy":['Bacteria']},
                                          {"taxonomy":['Archaea']},
                                          {"taxonomy":['Streptococcus']}])
-        self.otu_table_f = SparseOTUTable(to_ll_mat(self.otu_table_values),
+        self.otu_table_f = table_factory(self.otu_table_values,
                                           ['Sample1', 'Sample2', 'Sample3', 
                                            'Sample4', 'Sample5', 'Sample6'],
                                           ['OTU1','OTU2','OTU3'],

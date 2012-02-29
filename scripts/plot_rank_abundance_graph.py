@@ -19,7 +19,7 @@ from qiime.util import get_tmp_filename
 from qiime.plot_rank_abundance_graph import plot_rank_abundance_graphs
 from qiime.util import parse_command_line_parameters, get_options_lookup, \
     create_dir
-from qiime.pycogent_backports.parse_biom import parse_biom_table
+from biom.parse import parse_biom_table
 
 options_lookup = get_options_lookup()
 

@@ -24,7 +24,7 @@ from qiime.parse import parse_mapping_file
 from qiime.format import write_summarize_taxa, write_add_taxa_summary_mapping,\
         format_summarize_taxa, format_add_taxa_summary_mapping
 from os.path import split,splitext,join
-from qiime.pycogent_backports.parse_biom import parse_biom_table
+from biom.parse import parse_biom_table
 
 options_lookup = get_options_lookup()
 

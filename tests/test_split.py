@@ -14,8 +14,9 @@ __status__ = "Development"
 from cogent.util.unit_test import TestCase, main
 from qiime.split import (split_mapping_file_on_field, 
                          split_otu_table_on_sample_metadata)
-from qiime.pycogent_backports.parse_biom import parse_biom_table
-from qiime.pycogent_backports.rich_otu_table import DenseOTUTable
+from qiime.format import format_biom_table
+from biom.parse import parse_biom_table
+from biom.table import DenseOTUTable
 
 class SplitTests(TestCase):
     """ Tests of the split module """
@@ -40,7 +41,11 @@ class SplitTests(TestCase):
         actual = list(split_otu_table_on_sample_metadata(self.otu_table_f1,
                                                          self.mapping_f1,
                                                          "Treatment"))
-                                                         
+        for id_, e in actual:
+            try:
+                parse_biom_table(e)
+            except:
+                print e
         actual = [(id_,parse_biom_table(e)) for id_, e in actual]
         exp = [(id_,parse_biom_table(e)) for id_, e in otu_table_exp1]
         
@@ -49,7 +54,7 @@ class SplitTests(TestCase):
         
         for a,e in zip(actual,exp):
             self.assertEqual(a,e,"OTU tables are not equal:\n%s\n%s" % \
-             (a[1].getBiomFormatJsonString(),e[1].getBiomFormatJsonString()))
+             (format_biom_table(a[1]),format_biom_table(e[1])))
 
     def test_split_otu_table_on_sample_metadata_extra_mapping_entries(self):
         """ split_otu_table_on_sample_metadata functions as expected with extra mapping data """
@@ -65,7 +70,7 @@ class SplitTests(TestCase):
         
         for a,e in zip(actual,exp):
             self.assertEqual(a,e,"OTU tables are not equal:\n%s\n%s" % \
-             (a[1].getBiomFormatJsonString(),e[1].getBiomFormatJsonString()))
+             (format_biom_table(a[1]),format_biom_table(e[1])))
         
 
 mapping_f1 = """#SampleID	BarcodeSequence	LinkerPrimerSequence	Treatment	DOB	Description

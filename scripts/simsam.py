@@ -11,16 +11,12 @@ __maintainer__ = "Justin Kuczynski"
 __email__ = "justinak@gmail.com"
 __status__ = "Development"
 
-from qiime.util import make_option
-
 from cogent.parse.tree import DndParser
-
-from qiime.pycogent_backports.parse_biom import parse_biom_table
-from qiime.util import parse_command_line_parameters
-from qiime.format import format_otu_table
-import qiime.pycogent_backports.rich_otu_table as rich_otu_table
-
+from qiime.util import parse_command_line_parameters, make_option
 from qiime.simsam import sim_otu_table
+from qiime.format import format_biom_table
+from biom.table import table_factory
+from biom.parse import parse_biom_table
 
 script_info = {}
 script_info['brief_description'] = "Simulate samples for each sample in an OTU table, using a phylogenetic tree."
@@ -56,9 +52,9 @@ def main():
                    otu_table.ObservationMetadata, tree, opts.num, opts.dissim)
 
 
-    rich_table = rich_otu_table.table_factory(res_otu_mtx,res_sam_names,res_otus,
+    rich_table = table_factory(res_otu_mtx,res_sam_names,res_otus,
     observation_metadata=res_otu_metadata)
-    out_fh.write(rich_table.getBiomFormatJsonString())
+    out_fh.write(format_biom_table(rich_table))
 
 
 if __name__ == "__main__":

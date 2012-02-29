@@ -18,22 +18,27 @@ from qiime.summarize_taxa import make_summary, \
 from qiime.parse import parse_mapping_file
 from qiime.util import convert_otu_table_relative
 from numpy import array
-from qiime.pycogent_backports.rich_otu_table import SparseOTUTable, to_ll_mat
-from qiime.pycogent_backports.parse_biom import parse_biom_table
+from biom.table import table_factory
+from biom.parse import parse_biom_table
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
 
     def setUp(self):
-        self.otu_table_vals = {(0, 0):1.0, (0, 2):2.0, (0, 3):4.0,
+        self.otu_table_vals = array([[1,0,2,4],
+                               [1,2,0,1],
+                               [0,1,1,0],
+                               [1,2,1,0]])
+        
+        {(0, 0):1.0, (0, 2):2.0, (0, 3):4.0,
                                (1, 0):1.0, (1, 1):2.0, (1, 3):1.0,
                                (2, 1):1.0, (2, 2):1.0, (3, 0):1.0,
                                (3, 1): 2.0, (3, 2):1.0}
 
-        self.otu_table = SparseOTUTable(to_ll_mat(self.otu_table_vals),
+        self.otu_table = table_factory(self.otu_table_vals,
                                         ['s1', 's2', 's3', 's4'],
                                         ['0', '1', '2', '3'],
-                                        [None, None, None, None],
+                                        None,
                                         [{"taxonomy": ["Root", "Bacteria", "Actinobacteria", "Actinobacteria", "Coriobacteridae", "Coriobacteriales", "Coriobacterineae", "Coriobacteriaceae"]},
                                          {"taxonomy": ["Root", "Bacteria", "Firmicutes", "\"Clostridia\""]},
                                          {"taxonomy": ["Root", "Bacteria", "Firmicutes", "\"Clostridia\""]},

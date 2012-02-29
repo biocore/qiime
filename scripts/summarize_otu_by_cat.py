@@ -13,9 +13,11 @@ __email__ = "wasade@gmail.com"
 __status__ = "Development"
  
 from os import getcwd, makedirs
+from qiime.parse import parse_mapping_file_to_dict
 from qiime.util import parse_command_line_parameters
 from qiime.util import make_option
-from qiime.summarize_otu_by_cat import summarize_by_cat
+from qiime.format import format_biom_table
+from biom.parse import parse_biom_table
 
 
 script_info={}
@@ -55,18 +57,21 @@ def main():
     
     mapping_fp = opts.mapping_fp
     mapping_category = opts.mapping_category
-    normalize = opts.normalize
-    #otu_table_fp = opts.otu_table_fp
+    otu_table_fp = opts.otu_table_fp
     output_fp = opts.output_fp
     
-    mapping_f = open(mapping_fp,'U')
-    #otu_table_f = open(otu_table_fp,'U')
-
-    summarized_otu_table = \
-     summarize_by_cat(mapping_f,opts.otu_table_fp,mapping_category,normalize)
-     
+    
+    bin_f = lambda x: x[mapping_category]
+    sample_metadata = parse_mapping_file_to_dict(open(mapping_fp,'U'))[0]
+    table = parse_biom_table(open(otu_table_fp,'U'))
+    table.addSampleMetadata(sample_metadata)
+    result = table.collapseSamplesByMetadata(bin_f,norm=False,min_group_size=1)
+    
+    if opts.normalize:
+        result = result.normObservationBySample()
+    
     f = open(output_fp,'w')
-    f.write(summarized_otu_table)
+    f.write(format_biom_table(result))
     f.close()
 
 if __name__ == "__main__":

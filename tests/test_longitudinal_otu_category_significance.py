@@ -16,7 +16,7 @@ from cogent.util.unit_test import TestCase, main
 from qiime.longitudinal_otu_category_significance import get_sample_individual_info, make_new_otu_counts
 from numpy import array
 from qiime.parse import parse_mapping_file
-from qiime.pycogent_backports.parse_biom import parse_biom_table_str
+from biom.parse import parse_biom_table_str
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -75,11 +75,11 @@ BT2\tB\t0\t2
         otu_table = parse_biom_table_str(otu_table_str)
 
         converted_otu_table_object = make_new_otu_counts(otu_table,
-                sample_to_subtract, samples_from_subject).getBiomFormatObject()
+                sample_to_subtract, samples_from_subject)
         expected_otu_table_str = """{"rows": [{"id": "0", "metadata": null},
         {"id": "1", "metadata": null}, {"id": "2", "metadata": null}, {"id":
         "3", "metadata": null}], "format":
-        "Biological Observation Matrix v0.9", "data": [[0, 1,
+        "Biological Observation Matrix 0.9.0-dev", "data": [[0, 1,
         -0.20000000000000001], [0, 2, -0.29999999999999999],
         [0, 3, 999999999.0], [0, 4, 999999999.0], [0, 5, 999999999.0], [1, 0,
         999999999.0], [1, 1, 999999999.0], [1, 2, 999999999.0], [1, 4,
@@ -93,25 +93,21 @@ BT2\tB\t0\t2
         {"id": "BT2", "metadata": null}], "generated_by":
         "QIIME 1.4.0-dev, svn revision 2570", "matrix_type": "sparse",
         "shape": [4, 6], "format_url":
-        "http://www.qiime.org/svn_documentation/documentation/biom_format.html",
+        "http://biom-format.org",
         "date": "2011-12-21T21:43:06.809380", "type": "OTU table", "id": null,
         "matrix_element_type": "float"}"""
         expected_otu_table_object = parse_biom_table_str(
-                expected_otu_table_str).getBiomFormatObject()
-        del expected_otu_table_object["date"]
-        del expected_otu_table_object["generated_by"]
-        del converted_otu_table_object["date"]
-        del converted_otu_table_object["generated_by"]
-        self.assertFloatEqual(converted_otu_table_object['data'],
-                              expected_otu_table_object['data'])
-        self.assertEqual(converted_otu_table_object['id'],
-                              expected_otu_table_object['id'])
-        self.assertEqual(converted_otu_table_object['rows'],
-                              expected_otu_table_object['rows'])
-        self.assertEqual(converted_otu_table_object['columns'],
-                              expected_otu_table_object['columns'])
-        self.assertEqual(converted_otu_table_object['shape'],
-                              expected_otu_table_object['shape'])
+                expected_otu_table_str)
+        self.assertEqual(converted_otu_table_object.ObservationIds,
+                         expected_otu_table_object.ObservationIds)
+        self.assertEqual(converted_otu_table_object.SampleIds,
+                         expected_otu_table_object.SampleIds)
+        self.assertEqual(converted_otu_table_object.SampleMetadata,
+                         expected_otu_table_object.SampleMetadata)
+        self.assertEqual(converted_otu_table_object.ObservationMetadata,
+                         expected_otu_table_object.ObservationMetadata)
+        self.assertFloatEqual(converted_otu_table_object._data,
+                         expected_otu_table_object._data)
 
 #run unit tests if run from command-line
 if __name__ == '__main__':

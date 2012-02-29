@@ -13,7 +13,7 @@ __status__ = "Development"
  
 """Computes shared phylotypes between samples"""
 
-from qiime.pycogent_backports.parse_biom import parse_biom_table_str
+from biom.parse import parse_biom_table_str
 from numpy import logical_and, zeros, ones
 from qiime.format import format_distance_matrix
 

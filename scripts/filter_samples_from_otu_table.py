@@ -17,13 +17,13 @@ __status__ = "Development"
 
 from itertools import izip
 from numpy import inf, isinf
-from qiime.pycogent_backports.parse_biom import parse_biom_table
+from biom.parse import parse_biom_table
 from qiime.util import parse_command_line_parameters, make_option
 from qiime.parse import parse_mapping_file
 from qiime.filter import (sample_ids_from_metadata_description, 
                           filter_samples_from_otu_table,
                           filter_mapping_file)
-from qiime.format import format_mapping_file
+from qiime.format import format_mapping_file, format_biom_table
 
 script_info = {}
 script_info['brief_description'] = "Filters samples from an OTU table on the basis of the number of observations in that sample, or on the basis of sample metadata. Mapping file can also be filtered to the resulting set of sample ids."
@@ -100,7 +100,7 @@ def main():
                                                         sample_ids_to_keep,
                                                         min_count,
                                                         max_count)
-    output_f.write(filtered_otu_table.getBiomFormatJsonString())
+    output_f.write(format_biom_table(filtered_otu_table))
     output_f.close()
     
     # filter mapping file if requested

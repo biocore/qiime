@@ -29,7 +29,7 @@ The following are required by QIIME:
 * Python 2.7.1 (`src <http://www.python.org/ftp/python/2.7.1/Python-2.7.1.tgz>`_) (license: PSF)
 * PyCogent 1.5.1 (`src <http://sourceforge.net/projects/pycogent/files/PyCogent/1.5.1/PyCogent-1.5.1.tgz/download>`_) (license: GPL)
 * Numpy 1.5.1 (`src <http://sourceforge.net/projects/numpy/files/NumPy/1.5.1/numpy-1.5.1.tar.gz/download>`_) (license: BSD)
-* PySparse 1.1.1 (`src <http://downloads.sourceforge.net/project/pysparse/pysparse/1.1.1/pysparse-1.1.1.tar.gz>`_)
+* biom-format 0.9.0-dev
 
 Dependencies required for a subset of QIIME's features
 ------------------------------------------------------

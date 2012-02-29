@@ -24,7 +24,8 @@ from qiime.util import get_tmp_filename, load_qiime_config
 from qiime.alpha_diversity import AlphaDiversityCalc, AlphaDiversityCalcs
 import qiime.alpha_diversity
 from qiime.parse import parse_newick
-from qiime.pycogent_backports.rich_otu_table import table_factory, DenseOTUTable
+from qiime.format import format_biom_table
+from biom.table import table_factory, DenseOTUTable
 
 class AlphaDiversitySharedSetUpTests(TestCase):
 
@@ -50,7 +51,7 @@ class AlphaDiversitySharedSetUpTests(TestCase):
                                              suffix='.biom',
                                              result_constructor=str)
         open(self.otu_table1_fp,'w').write(\
-         self.otu_table1.getBiomFormatJsonString())
+         format_biom_table(self.otu_table1))
 
         self.otu_table2 = table_factory(data=array([[2,0,0,1],
                                                    [1,1,1,1],
@@ -63,7 +64,7 @@ class AlphaDiversitySharedSetUpTests(TestCase):
                                              suffix='.biom',
                                              result_constructor=str)
         open(self.otu_table2_fp,'w').write(\
-         self.otu_table2.getBiomFormatJsonString())
+         format_biom_table(self.otu_table2))
         
         self.single_sample_otu_table = table_factory(data=array([[2,0,0,1]]).T,
                                                      sample_ids=list('X'),
@@ -74,7 +75,7 @@ class AlphaDiversitySharedSetUpTests(TestCase):
                                              suffix='.biom',
                                              result_constructor=str)
         open(self.single_sample_otu_table_fp,'w').write(\
-         self.single_sample_otu_table.getBiomFormatJsonString())
+         format_biom_table(self.single_sample_otu_table))
         
         
         self.tree1 = parse_newick('((a:2,b:3):2,(c:1,d:2):7);')

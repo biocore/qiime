@@ -12,7 +12,7 @@ __email__ = "jose.clemente@gmail.com"
 __status__ = "Development"
 
 from cogent.util.unit_test import TestCase, main
-from qiime.pycogent_backports.parse_biom import parse_biom_table_str
+from biom.parse import parse_biom_table_str
 from qiime.shared_phylotypes import _calc_shared_phylotypes_pairwise,\
     _calc_shared_phylotypes_multiple, calc_shared_phylotypes
 

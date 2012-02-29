@@ -12,13 +12,14 @@ __email__ = "wendel@colorado.edu"
 __status__ = "Development"
  
 
+from os.path import isdir, join
+from os import listdir
 from qiime.otu_category_significance import test_wrapper, test_wrapper_multiple
 from qiime.longitudinal_otu_category_significance import \
     longitudinal_otu_table_conversion_wrapper
 from qiime.util import parse_command_line_parameters
 from qiime.util import make_option
-from os.path import isdir, join
-from os import listdir
+from qiime.format import format_biom_table
 
 script_info={}
 script_info['brief_description']="""OTU significance and co-occurence analysis"""
@@ -208,10 +209,10 @@ def main():
         # if single file, process normally
         otu_table = open(otu_table_fp,'U')
         if test == 'longitudinal_correlation' or test == 'paired_T':
-            converted_otu_table_str = \
+            converted_otu_table_str = format_biom_table(\
                     longitudinal_otu_table_conversion_wrapper(otu_table,
                             category_mapping, individual_column,
-                            reference_sample_column).getBiomFormatJsonString()
+                            reference_sample_column))
             if conv_output_fp:
                 of = open(conv_output_fp, 'w')
                 of.write(converted_otu_table_str)

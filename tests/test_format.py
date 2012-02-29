@@ -13,11 +13,11 @@ __status__ = "Development"
 
 import json
 from os import remove
+from numpy import array, nan
 from cogent.util.misc import remove_files
 from cogent.util.unit_test import TestCase, main
 from cogent.parse.fasta import MinimalFastaParser
-from qiime.util import get_tmp_filename
-from numpy import array, nan
+from qiime.util import get_tmp_filename, get_qiime_library_version
 from qiime.parse import fields_to_dict, parse_mapping_file
 from qiime.format import (format_distance_matrix, format_otu_table,
     format_coords, build_prefs_string, format_matrix, format_map_file,
@@ -26,7 +26,8 @@ from qiime.format import (format_distance_matrix, format_otu_table,
     format_summarize_taxa, write_summarize_taxa, 
     format_add_taxa_summary_mapping, write_add_taxa_summary_mapping,
     format_qiime_parameters, format_p_value_for_num_iters,
-    format_mapping_file,illumina_data_to_fastq)
+    format_mapping_file,illumina_data_to_fastq, format_biom_table)
+from biom.parse import parse_biom_table
 
 class TopLevelTests(TestCase):
     """Tests of top-level module functions."""
@@ -48,8 +49,17 @@ class TopLevelTests(TestCase):
         self.add_taxa_mapping = [['s1','something1','something2'],
                                  ['s2','something3','something4'],
                                  ['s3','something5','something6']]
+        self.biom1 = parse_biom_table(biom1.split('\n'))
+        
     def tearDown(self):
         remove_files(self.files_to_remove)
+        
+    
+    def test_format_biom_table(self):
+        """ Formatting of BIOM table correctly includes "generated-by" information 
+        """
+        generated_by = "QIIME " + get_qiime_library_version()
+        self.assertTrue(generated_by in format_biom_table(self.biom1))
 
     def test_format_mapping_file(self):
         """ format_mapping file should match expected result"""
@@ -244,8 +254,11 @@ class TopLevelTests(TestCase):
         otus = [1,2]
         taxa = ['Bacteria','Archaea']
         res = format_otu_table(samples, otus, a)
-        self.assertEqualOtuTable(res,
-                         """{"rows": [{"id": "1", "metadata": null}, {"id": "2", "metadata": null}], "format": "Biological Observation Matrix v0.9", "data": [[1, 2, 3], [4, 5, 2718281828459045]], "columns": [{"id": "a", "metadata": null}, {"id": "b", "metadata": null}, {"id": "c", "metadata": null}], "generated_by": "QIIME 1.4.0-dev, svn revision 2532", "matrix_type": "dense", "shape": [2, 3], "format_url": "http://www.qiime.org/svn_documentation/documentation/biom_format.html", "date": "2011-12-21T00:58:45.001395", "type": "OTU table", "id": null, "matrix_element_type": "int"}""")
+        # confirm that parsing the res gives us a valid biom file with 
+        # expected observation and sample ids
+        t = parse_biom_table(res.split('\n'))
+        self.assertEqual(t.ObservationIds,['1','2'])
+        self.assertEqual(t.SampleIds,['a','b','c'])
 
     def test_format_coords(self):
         """format_coords should return tab-delimited table of coords"""
@@ -354,6 +367,8 @@ example_mapping_file = """#SampleID\tcol1\tcol0\tDescription
 #this too
 bsample\tv1_3\tv0_3\td1
 asample\taval\tanother\td2"""
+
+biom1 = """{"rows": [{"id": "tax1", "metadata": {}}, {"id": "tax2", "metadata": {}}, {"id": "tax3", "metadata": {}}, {"id": "tax4", "metadata": {}}, {"id": "endbigtaxon", "metadata": {}}, {"id": "tax6", "metadata": {}}, {"id": "tax7", "metadata": {}}, {"id": "tax8", "metadata": {}}, {"id": "tax9", "metadata": {}}], "format": "Biological Observation Matrix 0.9.0-dev", "data": [[0, 0, 7.0], [0, 1, 4.0], [0, 2, 2.0], [0, 3, 1.0], [1, 0, 1.0], [1, 1, 2.0], [1, 2, 4.0], [1, 3, 7.0], [1, 4, 8.0], [1, 5, 7.0], [1, 6, 4.0], [1, 7, 2.0], [1, 8, 1.0], [2, 5, 1.0], [2, 6, 2.0], [2, 7, 4.0], [2, 8, 7.0], [2, 9, 8.0], [2, 10, 7.0], [2, 11, 4.0], [2, 12, 2.0], [2, 13, 1.0], [3, 10, 1.0], [3, 11, 2.0], [3, 12, 4.0], [3, 13, 7.0], [3, 14, 8.0], [3, 15, 7.0], [3, 16, 4.0], [3, 17, 2.0], [3, 18, 1.0], [4, 15, 1.0], [4, 16, 2.0], [4, 17, 4.0], [4, 18, 7.0], [5, 1, 1.0], [5, 2, 1.0], [6, 6, 2.0], [6, 7, 1.0], [7, 11, 3.0], [7, 12, 1.0], [8, 16, 4.0], [8, 17, 1.0]], "columns": [{"id": "sam1", "metadata": null}, {"id": "sam2", "metadata": null}, {"id": "sam3", "metadata": null}, {"id": "sam4", "metadata": null}, {"id": "sam5", "metadata": null}, {"id": "sam6", "metadata": null}, {"id": "sam7", "metadata": null}, {"id": "sam8", "metadata": null}, {"id": "sam9", "metadata": null}, {"id": "sam_middle", "metadata": null}, {"id": "sam11", "metadata": null}, {"id": "sam12", "metadata": null}, {"id": "sam13", "metadata": null}, {"id": "sam14", "metadata": null}, {"id": "sam15", "metadata": null}, {"id": "sam16", "metadata": null}, {"id": "sam17", "metadata": null}, {"id": "sam18", "metadata": null}, {"id": "sam19", "metadata": null}], "generated_by": "QIIME 1.4.0-dev, svn revision 2520", "matrix_type": "sparse", "shape": [9, 19], "format_url": "http://biom-format.org", "date": "2011-12-20T19:03:28.130403", "type": "OTU table", "id": null, "matrix_element_type": "float"}"""
 
 #run unit tests if run from command-line
 if __name__ == '__main__':

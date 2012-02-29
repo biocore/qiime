@@ -1332,5 +1332,3 @@ def summarize_otu_sizes_from_otu_map(otu_map_f):
     result.sort()
     return result
 
-
-

@@ -20,7 +20,7 @@ from optparse import OptionParser
 from qiime.util import MissingFileError
 import os
 from qiime.filter import filter_otus_from_otu_table
-from qiime.pycogent_backports.parse_biom import parse_biom_table
+from biom.parse import parse_biom_table
 
 def make_html_doc(js_filename):
     """Create the basic framework for the OTU table heatmap"""
@@ -255,7 +255,8 @@ def get_log_transform(otu_table, eps=None):
     #return data
 
     # explicit conversion to float: transform
-    f = lambda x : float64(x)
+    def f(s_v, s_id, s_md):
+        return float64(s_v)
     float_otu_table = otu_table.transformSamples(f)
 
     if eps is None:
@@ -273,19 +274,22 @@ def get_log_transform(otu_table, eps=None):
 
     # do we have map in OTU object?
     g = lambda x : x if (x != 0) else eps/2
-    g_m = lambda y : asarray(map(g,y))
+    def g_m(s_v, s_id, s_md):
+        return asarray(map(g,s_v))
 
     eps_otu_table = float_otu_table.transformSamples(g_m)
 
     # take log of all values with transform
-    h = lambda x : log(x)
+    def h(s_v, s_id, s_md):
+        return log(s_v)
     log_otu_table = eps_otu_table.transformSamples(h)
 
     # one more transform
     min_val = inf
     for val in log_otu_table.iterSampleData():
         min_val = minimum(min_val, val.min())
-    i = lambda x: x - min_val
+    def i(s_v, s_id, s_md):
+        return s_v - min_val
 
     res_otu_table = log_otu_table.transformSamples(i)
 

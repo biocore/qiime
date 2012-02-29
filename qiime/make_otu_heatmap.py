@@ -141,7 +141,8 @@ def get_log_transform(otu_table, eps=None):
     ##  Emailed Dan and Jesse on Dec 23, 2011 to confirm.
 
     # explicit conversion to float: transform
-    f = lambda x : float64(x)
+    def f(s_v, s_id, s_md):
+        return float64(s_v)
     float_otu_table = otu_table.transformSamples(f)
 
     if eps is None:
@@ -156,12 +157,14 @@ def get_log_transform(otu_table, eps=None):
 
     # set zero entries to eps/2 using a transform
     g = lambda x : x if (x != 0) else eps
-    g_m = lambda y : asarray(map(g,y))
+    def g_m(s_v, s_id, s_md):
+        return asarray(map(g,s_v))
 
     eps_otu_table = float_otu_table.transformSamples(g_m)
 
     # take log of all values
-    h = lambda x : log10(x)
+    def h(s_v, s_id, s_md):
+        return log10(s_v)
     log_otu_table = eps_otu_table.transformSamples(h)
 
     return log_otu_table
