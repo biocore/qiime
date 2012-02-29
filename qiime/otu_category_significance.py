@@ -438,7 +438,11 @@ def sort_rows(output, p_val_index):
     probs = []
     for line in lines:
         line = line.split('\t')
-        probs.append(float(line[p_val_index]))
+        p_value = line[p_val_index]
+        if p_value != 'None':
+            probs.append(float(line[p_val_index]))
+        else:
+            probs.append(1.1)
     probs = array(probs)
     x = probs.argsort()
     new_lines = [header]
@@ -495,10 +499,10 @@ def fdr_correction(probs):
     corrected_probs = [None] * len(probs)
     for rank, index in enumerate(argsort(probs)):
         correction = len(probs) / float(rank + 1)
-#        if probs[index]:
-        fdr_p = probs[index] * correction
-#        else:
-#            fdr_p = 'NA'
+        if probs[index]:
+            fdr_p = probs[index] * correction
+        else:
+            fdr_p = 'NA'
         corrected_probs[index] = fdr_p
     return corrected_probs
 
@@ -622,12 +626,14 @@ def test_wrapper(test, otu_table, category_mapping, category, threshold, \
     except AttributeError:
         otu_table = parse_biom_table_str(otu_table)
 
-    if test == 'ANOVA' or test == 'correlation' or test == 'paired_T': 
+    if test == 'ANOVA' or test == 'correlation': 
         if not otu_table_relative_abundance:
             otu_table = otu_table.normObservationBySample()
         all_samples = False
     elif test == 'g_test':
         all_samples = True
+    elif test == 'paired_T':
+        pass
     else:
         raise ValueError("An invalid test statistic was given. (-s option). Valid values are ANOVA, correlation, g_test, paired_T.")
 
