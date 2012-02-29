@@ -121,7 +121,7 @@ class RSupervisedLearner(CommandLineApplication):
         temp_predictor_fp = join(output_dir,
                                  splitext(split(predictor_fp)[1])[0]+'.txt')
         temp_predictor_f = open(temp_predictor_fp,'w')
-        temp_predictor_f.write(convert_biom_to_otu_table(open(predictor_fp,'U')))
+        temp_predictor_f.write(convert_biom_to_table(open(predictor_fp,'U')))
         temp_predictor_f.close()
         predictor_fp = temp_predictor_fp
 
