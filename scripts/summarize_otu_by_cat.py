@@ -59,17 +59,24 @@ def main():
     mapping_category = opts.mapping_category
     otu_table_fp = opts.otu_table_fp
     output_fp = opts.output_fp
+    normalize = opts.normalize
     
-    
-    bin_f = lambda x: x[mapping_category]
+    # define a function that returns the bin a sample shouldbe placed into
+    bin_function = lambda sample_metadata: sample_metadata[mapping_category]
+    # parse the sample metadata and add it to the OTU table (we assume that
+    # sample metadata is not already present in the table)
     sample_metadata = parse_mapping_file_to_dict(open(mapping_fp,'U'))[0]
     table = parse_biom_table(open(otu_table_fp,'U'))
     table.addSampleMetadata(sample_metadata)
-    result = table.collapseSamplesByMetadata(bin_f,norm=False,min_group_size=1)
+    # create a new OTU table where samples are binned based on their return
+    # value from bin_function  
+    result = table.collapseSamplesByMetadata(bin_function,norm=False,min_group_size=1)
     
-    if opts.normalize:
+    # normalize the result if requested by the user
+    if normalize:
         result = result.normObservationBySample()
     
+    # write a new BIOM file
     f = open(output_fp,'w')
     f.write(format_biom_table(result))
     f.close()
