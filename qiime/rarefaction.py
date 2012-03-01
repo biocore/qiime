@@ -139,7 +139,11 @@ class RarefactionMaker(FunctionWithParams):
         #    all_otu_lineages = None
         if not include_lineages:
             for (val, id, meta) in self.otu_table.iterObservations():
-                del meta['taxonomy']
+                try:
+                    del meta['taxonomy']
+                except TypeError:
+                    # no taxonomy present
+                    pass
 
         self.output_dir = output_dir
         for depth in self.rare_depths:
