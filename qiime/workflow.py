@@ -1895,7 +1895,7 @@ def run_ampliconnoise(mapping_fp,
             sample_name+"_pyronoise.pnout"
         commands.append([('pyronoise '+sample_name, cmd)])
 
-        cmd = 'Parse.pl '+bc_seqs[i]+' '+truncate_len+' < '+\
+        cmd = 'Parse.pl '+bc_seqs[i]+one_primer+' '+truncate_len+' < '+\
             sample_name+'_pyronoise_cd.fa'+' > '+ sample_name+'_'+\
             truncate_len+'.fa'
         commands.append([('truncate '+sample_name, cmd)])
