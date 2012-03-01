@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+
 __author__ = "David Soergel"
 __copyright__ = ""
 __credits__ = ["David Soergel"] #remember to add yourself
@@ -19,6 +20,8 @@ class RtaxClassifierTests(TestCase):
     """ Tests of the RTAX classifier module """
 
     def setUp(self):
+        self.maxDiff = None
+
         self.id_to_taxonomy_fp = get_tmp_filename(\
          prefix='RtaxTaxonAssignerTests_',suffix='.txt')
         self.input_seqs_fp = get_tmp_filename(\
@@ -30,8 +33,7 @@ class RtaxClassifierTests(TestCase):
         self.read_2_seqs_fp = get_tmp_filename(\
          prefix='RtaxTaxonAssignerTests_',suffix='.fasta')
 
-        self._paths_to_clean_up =\
-         [self.id_to_taxonomy_fp,self.input_seqs_fp,self.reference_seqs_fp,self.read_1_seqs_fp,self.read_2_seqs_fp ]
+        self._paths_to_clean_up = [self.id_to_taxonomy_fp,self.input_seqs_fp,self.reference_seqs_fp, self.read_1_seqs_fp,self.read_2_seqs_fp]
 
         a = open(self.id_to_taxonomy_fp,'w')
         a.write(rtax_reference_taxonomy)
@@ -49,20 +51,29 @@ class RtaxClassifierTests(TestCase):
         e.write(rtax_test_read2_fasta)
         e.close()
 
-
-
-
     def tearDown(self):
         remove_files(set(self._paths_to_clean_up))
 
     def test_paired_end_classification(self):
-        result = assign_taxonomy(self.input_seqs_fp, self.reference_seqs_fp, self.id_to_taxonomy_fp, self.read_1_seqs_fp, self.read_2_seqs_fp,header_id_regex="\\S+\\s+(\\S+?)\/")
-        self.assertEqual(result, expectedResult)
+        self._paths_to_clean_up += cleanAll(self.read_1_seqs_fp)
+        self._paths_to_clean_up += cleanAll(self.read_2_seqs_fp)
+        result = assign_taxonomy(self.input_seqs_fp, self.reference_seqs_fp, self.id_to_taxonomy_fp, self.read_1_seqs_fp, self.read_2_seqs_fp,single_ok=False,header_id_regex="\\S+\\s+(\\S+?)\/")
+        self.assertEqual(result, rtax_expected_result_paired)
+
+    def test_paired_end_classification_with_fallback(self):
+        self._paths_to_clean_up += cleanAll(self.read_1_seqs_fp)
+        self._paths_to_clean_up += cleanAll(self.read_2_seqs_fp)
+        result = assign_taxonomy(self.input_seqs_fp, self.reference_seqs_fp, self.id_to_taxonomy_fp, self.read_1_seqs_fp, self.read_2_seqs_fp,single_ok=True,header_id_regex="\\S+\\s+(\\S+?)\/")
+        self.assertEqual(result, rtax_expected_result_paired_with_fallback)
 
     def test_single_end_classification(self):
+        self._paths_to_clean_up += cleanAll(self.read_1_seqs_fp)
         result = assign_taxonomy(self.input_seqs_fp, self.reference_seqs_fp, self.id_to_taxonomy_fp, self.read_1_seqs_fp, None ,header_id_regex="\\S+\\s+(\\S+?)\/")
-        self.assertEqual(result, expectedResult)
+        self.assertEqual(result, rtax_expected_result_single)
 
+
+def cleanAll(path):
+    return [path, path + ".pos.dir", path + ".pos.pag", path + ".lines.dir", path + ".lines.pag"]
 
 
 # sample data copied from GreenGenes
@@ -136,6 +147,8 @@ ACCAAGGCTTTGACGGGTAGCCGGCCTGAGTGGGTGACCGGCCACATTGGGACTGAGATACGGCCCAGACTCCTACGGGA
 CCGACGATCTGTAGCTGGTCTGAGAGGATGTTCAGCCACACTGGGACTGAGACACGGCCCAGACTCCTACGGGAGGCAGC
 >clusterIdC splitRead1IdC
 AGGCAACGATCTGTAGTTGGTCTGAGAGGAGGACCAGCCACACTGGGACTGAGACACGGCCCAGACTCCTACGGGAGGCA
+>clusterIdD splitRead1IdD
+AGGCAACGATCTGTAGTTGGTCTGAGAGGAGGACCAGCCACACTGGGACGGGGGGGGGGCCCAGACTCCTACGGGAGGCA
 """
 
 # these reads are the 4th and 14th lines from the reference seqs
@@ -158,6 +171,8 @@ AGGCAACGATCTGTAGTTGGTCTGAGAGGAGGACCAGCCACACTGGGACTGAGACACGGCCCAGACTCCTACGGGAGGCA
 
 
 # these reads are the 4th and 14th lines from the reference seqs, with one nucleotide changed each
+# except D and E, which are unique to one read or the other
+# and F and G, which are just decoys
 
 rtax_test_read1_fasta = """>splitRead1IdA ampliconId_34563456/1
 ACCAAGGCTTTGACGGGTAGCCGGCCTGAGTGGGTGACCGGCCACATTGGGACTGAGATACGGCCCAGACTCCTACGGGA
@@ -165,6 +180,10 @@ ACCAAGGCTTTGACGGGTAGCCGGCCTGAGTGGGTGACCGGCCACATTGGGACTGAGATACGGCCCAGACTCCTACGGGA
 CCGACGATCTGTAGCTGGTCTGAGAGGATGTTCAGCCACACTGGGACTGAGACACGGCCCAGACTCCTACGGGAGGCAGC
 >splitRead1IdC ampliconId_23452345/1
 AGGCAACGATCTGTAGTTGGTCTGAGAGGAGGACCAGCCACACTGGGACTGAGACACGGCCCAGACTCCTACGGGAGGCA
+>splitRead1IdD ampliconId_45674567/1
+AGGCAACGATCTGTAGTTGGTCTGAGAGGAGGACCAAAAAAAAAAAGACTGAGACACGGCCCAGACTCCTACGGGAGGCA
+>splitRead1IdF ampliconId_56785678/1
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 """
 
 rtax_test_read2_fasta = """>splitRead2IdA ampliconId_34563456/3
@@ -173,13 +192,31 @@ GGGTTAAGTCCCGCAACGAGCGCAACCCTTATTCACTGTTGCCAGCACGTTATGGTGGGGACTCAGTGGAGACCGCCGGG
 TCGTGAGATGTTGGGTTAAGTCCCGCAACGTGCGCAACCCTTGCCATTAGTTGCTACGAAAGGGCACTCTAATGGGACTG
 >splitRead2IdC ampliconId_23452345/3
 TGTCGTGAGATGTTGGGTTAAGTCCCGCAAAGAGCGCAACCCTTGTCATTAGTTGCTACGCAAGAGCACTCTAATGAGAC
+>splitRead2IdE ampliconId_67896789/3
+TGTCGTGAGATGTTGGGTTAAAAAAAAAAAAAAACGCAACCCTTGTCATTAGTTGCTACGCAAGAGCACTCTAATGAGAC
+>splitRead2IdG ampliconId_78907890/3
+TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
 """
 
 
-expectedResult = {
+rtax_expected_result_paired = {
     'clusterIdA splitRead1IdA': ('k__Bacteria; p__Actinobacteria; c__Actinobacteria; o__Actinomycetales; f__Propionibacteriaceae; g__Propionibacterium; s__Propionibacterium acnes', 1.0),
     'clusterIdB splitRead1IdB': ('k__Bacteria; p__Proteobacteria; c__Betaproteobacteria; o__Burkholderiales; f__Comamonadaceae; g__Diaphorobacter; s__', 1.0),
     'clusterIdC splitRead1IdC': ('k__Bacteria; p__Proteobacteria; c__Betaproteobacteria; o__Burkholderiales; f__; g__Aquabacterium; s__', 1.0),
+    }
+
+rtax_expected_result_paired_with_fallback = {
+    'clusterIdA splitRead1IdA': ('k__Bacteria; p__Actinobacteria; c__Actinobacteria; o__Actinomycetales; f__Propionibacteriaceae; g__Propionibacterium; s__Propionibacterium acnes', 1.0),
+    'clusterIdB splitRead1IdB': ('k__Bacteria; p__Proteobacteria; c__Betaproteobacteria; o__Burkholderiales; f__Comamonadaceae; g__Diaphorobacter; s__', 1.0),
+    'clusterIdC splitRead1IdC': ('k__Bacteria; p__Proteobacteria; c__Betaproteobacteria; o__Burkholderiales; f__; g__Aquabacterium; s__', 1.0),
+    'clusterIdD splitRead1IdD': ('k__Bacteria; p__Actinobacteria; c__Actinobacteria; o__Actinomycetales; f__Propionibacteriaceae; g__Propionibacterium; s__Propionibacterium acnes', 1.0),
+    }
+
+rtax_expected_result_single = {
+    'clusterIdA splitRead1IdA': ('k__Bacteria; p__Actinobacteria; c__Actinobacteria; o__Actinomycetales; f__Propionibacteriaceae; g__Propionibacterium; s__Propionibacterium acnes', 1.0),
+    'clusterIdB splitRead1IdB': ('k__Bacteria; p__Proteobacteria; c__Betaproteobacteria; o__Burkholderiales; f__Comamonadaceae; g__Diaphorobacter; s__', 1.0),
+    'clusterIdC splitRead1IdC': ('k__Bacteria; p__Proteobacteria; c__Betaproteobacteria; o__Burkholderiales; f__; g__Aquabacterium; s__', 1.0),
+    'clusterIdD splitRead1IdD': ('k__Bacteria; p__Actinobacteria; c__Actinobacteria; o__Actinomycetales; f__Propionibacteriaceae; g__Propionibacterium; s__Propionibacterium acnes', 1.0),
     }
 
 if __name__ == "__main__":

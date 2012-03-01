@@ -617,7 +617,7 @@ class RtaxTaxonAssigner(TaxonAssigner):
     """Assign taxon using RTAX
     """
     Name = "RtaxTaxonAssigner"
-    Application = "RTAX classifier, version 0.96"
+    Application = "RTAX classifier, version 0.97"
     Citation = "Soergel D.A.W., Dey N., Knight R., and Brenner S.E.  2012.  Selection of primers for optimal taxonomic classification of environmental 16S rRNA gene sequences.  ISME J."
     _tracked_properties = ['Application','Citation']
 
@@ -628,7 +628,9 @@ class RtaxTaxonAssigner(TaxonAssigner):
             'id_to_taxonomy_fp': None,
             'reference_sequences_fp': None,
             # 'delimiter': ","
-            'header_id_regex' : "\\S+\\s+(\\S+?)\/", # use the second field for the ID, not including /1 or /3
+            'header_id_regex' : "\\S+\\s+(\\S+?)\/",  # use the amplicon ID, not including /1 or /3, as the primary key for the query sequences
+            'read_id_regex' : "\\S+\\s+(\\S+)",  # OTU clustering produces ">clusterID read_1_id"
+            'amplicon_id_regex' : "(\\S+)\\s+(\\S+?)\/",  # split_libraries produces >read_1_id ampliconID/1 .   This makes a map between read_1_id and ampliconID.
             'read_1_seqs_fp' : None,
             'read_2_seqs_fp' : None,
             'single_ok' : False
@@ -651,15 +653,36 @@ class RtaxTaxonAssigner(TaxonAssigner):
             self.writeLog(log_path)
 
         reference_sequences_fp = self.Params['reference_sequences_fp']
+        assert reference_sequences_fp, \
+            "Must provide reference_sequences_fp when calling an RtaxTaxonAssigner."
+
         id_to_taxonomy_fp = self.Params['id_to_taxonomy_fp']
+        assert id_to_taxonomy_fp, \
+            "Must provide id_to_taxonomy_fp when calling an RtaxTaxonAssigner."
+
         # delimiter = self.Params['delimiter']
         read_1_seqs_fp=self.Params['read_1_seqs_fp']
+        assert read_1_seqs_fp, \
+            "Must provide read_1_seqs_fp when calling an RtaxTaxonAssigner."
+
+        # following params may all be null
+
         read_2_seqs_fp=self.Params['read_2_seqs_fp']
         single_ok=self.Params['single_ok']
         header_id_regex=self.Params['header_id_regex']
+        assert header_id_regex, \
+            "Must not provide empty header_id_regex when calling an RtaxTaxonAssigner; leave unset"\
+            "to use default if in doubt."
+
+        read_id_regex=self.Params['read_id_regex']
+        amplicon_id_regex=self.Params['amplicon_id_regex']
+
         # seq_file = open(seq_path, 'r')
-        results = rtax.assign_taxonomy(seq_path, reference_sequences_fp, id_to_taxonomy_fp, read_1_seqs_fp, read_2_seqs_fp, single_ok, header_id_regex=header_id_regex,
-                output_fp=result_path,log_path=log_path)
+        results = rtax.assign_taxonomy(seq_path, reference_sequences_fp, id_to_taxonomy_fp,
+                                       read_1_seqs_fp, read_2_seqs_fp, single_ok=single_ok,
+                                       header_id_regex=header_id_regex, read_id_regex=read_id_regex,
+                                       amplicon_id_regex=amplicon_id_regex, output_fp=result_path,
+                                       log_path=log_path)
 
 
         return results

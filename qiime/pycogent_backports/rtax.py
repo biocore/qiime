@@ -5,8 +5,6 @@ Includes application controller for RTAX.
 
 Modified from uclust.py and rdp_classifier.py on 12-27-11
 """
-import re
-from sys import stderr
 
 __author__ = "David Soergel"
 __copyright__ = "Copyright 2007-2011, The PyCogent Project"
@@ -27,6 +25,8 @@ from cogent.util.misc import remove_files
 from cogent import DNA
 import tempfile
 import os.path
+import re
+from sys import stderr
 
 from qiime.util import (load_qiime_config, get_tmp_filename)
 from shutil import rmtree
@@ -168,7 +168,7 @@ def assign_taxonomy(dataPath, reference_sequences_fp, id_to_taxonomy_fp, read_1_
             # apply the regex
             extract = readIdExtractor.match(seq_id)
             if extract is None:
-                stderr.write("Matched no ID with regex " + read_id_regex + " in " + seq_id + "\n")
+                stderr.write("Matched no ID with read_id_regex " + read_id_regex +" in '" + seq_id + "' from file " + dataPath + "\n")
             else:
                 read_1_id_to_orig_id[extract.group(1)] = seq_id
                 #stderr.write(extract.group(1) + " => " +  seq_id + "\n")
@@ -180,28 +180,24 @@ def assign_taxonomy(dataPath, reference_sequences_fp, id_to_taxonomy_fp, read_1_
         # make list of amplicon IDs to pass to RTAX
 
         id_list_fp = open(my_tmp_dir+"/ampliconIdsToClassify", "w")
-        #tempfile.NamedTemporaryFile(
-        #    prefix='AmpliconIdsToClassify_', suffix='.txt')
 
         # Establish mapping of amplicon IDs to read_1 IDs
         # simultaneously write the amplicon ID file for those IDs found in the input mapping above
 
         amplicon_to_read_1_id = {}
-        # idExtractor = re.compile("^>" + header_id_regex)  # check format vs. perl, incl escaping etc.
         ampliconIdExtractor = re.compile(amplicon_id_regex)  # split_libraries produces >read_1_id ampliconID/1 ...  // see also assign_taxonomy 631
         read_1_data = open(read_1_seqs_fp,'r')
         for seq_id, seq in MinimalFastaParser(read_1_data):
             # apply the regex
             extract = ampliconIdExtractor.match(seq_id)
             if extract is None:
-                stderr.write("Matched no ID with regex " + amplicon_id_regex + " in " + seq_id + "\n")
+                stderr.write("Matched no ID with amplicon_id_regex " + amplicon_id_regex + " in '" + seq_id + "' from file " + read_1_seqs_fp + "\n")
             else:
                 read_1_id = extract.group(1)
                 amplicon_id = extract.group(2)
                 try:
                     amplicon_to_read_1_id[amplicon_id] = read_1_id
-                    #stderr.write(amplicon_id + " -> " + read_1_id + "\n")
-                    bogus = read_1_id_to_orig_id[read_1_id]
+                    bogus = read_1_id_to_orig_id[read_1_id]  # verify that the id is valid
                     id_list_fp.write('%s\n' % (amplicon_id))
                 except KeyError:
                     pass
@@ -216,8 +212,6 @@ def assign_taxonomy(dataPath, reference_sequences_fp, id_to_taxonomy_fp, read_1_
         app.Parameters['-r'].on(reference_sequences_fp)
         app.Parameters['-t'].on(id_to_taxonomy_fp)
         # app.Parameters['-d'].on(delimiter)
-        #app.Parameters['-a'].on(abspath(dataPath))
-        #app.Parameters['-b'].on(mate_pair_seqs_fp)
         app.Parameters['-l'].on(id_list_fp.name)  # these are amplicon IDs
         app.Parameters['-a'].on(read_1_seqs_fp)
         if read_2_seqs_fp is not None:

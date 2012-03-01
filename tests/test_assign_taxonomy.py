@@ -3,9 +3,9 @@
 """Tests of code for assigning taxonomy"""
 
 __author__ = "Greg Caporaso"
-__copyright__ = "Copyright 2011, The QIIME Project" 
+__copyright__ = "Copyright 2011, The QIIME Project"
 #remember to add yourself if you make changes
-__credits__ = ["Greg Caporaso", "Kyle Bittinger"] 
+__credits__ = ["Greg Caporaso", "Kyle Bittinger", "David Soergel"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -28,14 +28,15 @@ from cogent.app.rdp_classifier import train_rdp_classifier
 from cogent.util.misc import remove_files
 from cogent.parse.fasta import MinimalFastaParser
 from qiime.assign_taxonomy import (
-    TaxonAssigner, BlastTaxonAssigner, RdpTaxonAssigner, Rdp20TaxonAssigner,
+    TaxonAssigner, BlastTaxonAssigner, RdpTaxonAssigner, Rdp20TaxonAssigner, RtaxTaxonAssigner,
     RdpTrainingSet, RdpTree, _QIIME_RDP_TAXON_TAG, check_rdp_version
     )
+from sys import stderr
 
 
 class TopLevelFunctionTests(TestCase):
     """ """
-    
+
     def test_check_rdp_version(self):
         """check_rdp_version functions as expected"""
         self.assertTrue(\
@@ -44,7 +45,7 @@ class TopLevelFunctionTests(TestCase):
          check_rdp_version("/Applications/rdp_classifier/rdp_classifier-2.0.1.jar","2.0"))
         self.assertTrue(\
          check_rdp_version("/Applications/rdp_classifier_2.2/rdp_classifier-2.2.jar","2.2"))
-         
+
         self.assertFalse(\
          check_rdp_version("/Applications/rdp_classifier/rdp_classifier-2.0.jar","2.2"))
         self.assertFalse(\
@@ -65,27 +66,27 @@ class TaxonAssignerTests(TestCase):
         """Abstract TaxonAssigner __call__ should raise NotImplementedError"""
         p = TaxonAssigner({})
         self.assertRaises(NotImplementedError, p, '/path/to/seqs')
-        
+
 
 class BlastTaxonAssignerTests(TestCase):
     """Tests of the BlastTaxonAssigner class"""
-    
+
     def setUp(self):
         self.id_to_taxonomy_fp = get_tmp_filename(\
-         prefix='BlastTaxonAssignerTests_',suffix='.txt') 
+         prefix='BlastTaxonAssignerTests_',suffix='.txt')
         self.input_seqs_fp = get_tmp_filename(\
          prefix='BlastTaxonAssignerTests_',suffix='.fasta')
         self.reference_seqs_fp = get_tmp_filename(\
          prefix='BlastTaxonAssignerTests_',suffix='.fasta')
-        
+
         self._paths_to_clean_up =\
-         [self.id_to_taxonomy_fp,self.input_seqs_fp,self.reference_seqs_fp] 
-        
+         [self.id_to_taxonomy_fp,self.input_seqs_fp,self.reference_seqs_fp]
+
         open(self.id_to_taxonomy_fp,'w').write(id_to_taxonomy_string)
         open(self.input_seqs_fp,'w').write(test_seq_coll.toFasta())
         self.test_seqs = test_seq_coll.items()
         open(self.reference_seqs_fp,'w').write(test_refseq_coll.toFasta())
-        
+
         self.expected1 = {
             's1': ('Archaea;Euryarchaeota;Halobacteriales;uncultured', 0.0, "AY800210"),
             's2': ('Archaea;Euryarchaeota;Methanomicrobiales;Methanomicrobium et rel.', 0.0, "EU883771"),
@@ -94,7 +95,7 @@ class BlastTaxonAssignerTests(TestCase):
             's5': ('Archaea;Crenarchaeota;uncultured;uncultured', 0.0, "EF503697"),
             's6': ('No blast hit', None, None),
             }
-        
+
     def tearDown(self):
         remove_files(set(self._paths_to_clean_up))
 
@@ -107,7 +108,7 @@ class BlastTaxonAssignerTests(TestCase):
          'Max E value':1e-30,\
          'Application':'blastn/megablast'}
         self.assertEqual(p.Params, default_params)
-        
+
     def test_parse_id_to_taxonomy_file(self):
         """Parsing taxonomy files functions as expected
         """
@@ -120,7 +121,7 @@ class BlastTaxonAssignerTests(TestCase):
          "DQ260310":"Archaea;Euryarchaeota;Methanobacteriales;Methanobacterium",\
          "EF503697":"Archaea;Crenarchaeota;uncultured;uncultured"}
         self.assertEqual(p._parse_id_to_taxonomy_file(lines),expected)
-        
+
     def test_map_ids_to_taxonomy(self):
         """Mapping sequence ids to taxonomy functions as expected
         """
@@ -147,7 +148,7 @@ class BlastTaxonAssignerTests(TestCase):
             }
         actual = p._map_ids_to_taxonomy(hits,id_to_taxonomy_map)
         self.assertEqual(actual,expected)
-        
+
     def test_get_first_blast_hit_per_seq(self):
         """Extracting the first blast hit for each seq functions as expected
         """
@@ -160,16 +161,16 @@ class BlastTaxonAssignerTests(TestCase):
                       's2':None}
         actual = p._get_first_blast_hit_per_seq(blast_hits)
         self.assertEqual(actual,expected)
-        
+
     def test_get_blast_hits(self):
         """BlastTaxonAssigner._get_blast_hits functions w existing db
-        
+
         """
         # build the blast database and keep track of the files to clean up
         blast_db, files_to_remove = \
          build_blast_db_from_fasta_path(self.reference_seqs_fp)
         self._paths_to_clean_up += files_to_remove
-        
+
         p = BlastTaxonAssigner({})
         seq_coll_blast_results = p._get_blast_hits(blast_db,self.test_seqs)
         # mapping from identifier in test_seq_coll to the id of the sequence
@@ -180,24 +181,24 @@ class BlastTaxonAssignerTests(TestCase):
          's3':'EF503699',\
          's4':'DQ260310',\
          's5':'EF503697'}
-        
-        # no results for s6 (which is a randomly-generated sequence) 
+
+        # no results for s6 (which is a randomly-generated sequence)
         s6_blast_results = seq_coll_blast_results['s6']
         self.assertEqual(s6_blast_results,[])
-        
+
         # expected results for all other query sequences
         for seq_id in expected_matches:
             blast_results = seq_coll_blast_results[seq_id]
             blast_results_d = dict(blast_results)
-            # explicitly checks that the result is in the data before 
+            # explicitly checks that the result is in the data before
             # pulling it out (this is redundant, but allows for a useful
-            # error message if the data wasn't in there b/c e.g. there 
+            # error message if the data wasn't in there b/c e.g. there
             # were no blast results returned)
             self.assertTrue(expected_matches[seq_id] in blast_results_d)
             # now check that the perfect match got a 0.0 e-value as it should
             # on this data
             self.assertEqual(blast_results_d[expected_matches[seq_id]],0.0)
-            
+
     def test_call_existing_blast_db(self):
         """BlastTaxonAssigner.__call__ functions w existing db
         """
@@ -205,41 +206,41 @@ class BlastTaxonAssignerTests(TestCase):
         blast_db, files_to_remove = \
          build_blast_db_from_fasta_path(self.reference_seqs_fp)
         self._paths_to_clean_up += files_to_remove
-        
+
         p = BlastTaxonAssigner({'blast_db':blast_db,\
          'id_to_taxonomy_filepath':self.id_to_taxonomy_fp})
         actual = p(self.input_seqs_fp)
-        
+
         self.assertEqual(actual,self.expected1)
-        
+
     def test_call_alt_input_types(self):
         """BlastTaxonAssigner.__call__ functions w alt input types """
         p = BlastTaxonAssigner({\
          'reference_seqs_filepath':self.reference_seqs_fp,\
          'id_to_taxonomy_filepath':self.id_to_taxonomy_fp})
-         
+
         # neither seqs or seq_fp passed results in AssertionError
         self.assertRaises(AssertionError,p)
-        
+
         # Functions with a list of (seq_id, seq) pairs
         seqs = list(MinimalFastaParser(open(self.input_seqs_fp)))
         actual = p(seqs=seqs)
         self.assertEqual(actual,self.expected1)
-        
+
         # Functions with input path
         actual = p(self.input_seqs_fp)
         self.assertEqual(actual,self.expected1)
-        
+
         # same result when passing fp or seqs
         self.assertEqual(p(seqs=seqs),p(self.input_seqs_fp))
-        
+
     def test_seqs_to_taxonomy(self):
         """BlastTaxonAssigner._seqs_to_taxonomy: functions as expected
         """
         p = BlastTaxonAssigner({\
          'reference_seqs_filepath':self.reference_seqs_fp,\
          'id_to_taxonomy_filepath':self.id_to_taxonomy_fp})
-         
+
         # build the id_to_taxonomy_map as this test doesn't execute __call__
         id_to_taxonomy_map = {
             "AY800210": \
@@ -253,23 +254,23 @@ class BlastTaxonAssignerTests(TestCase):
             "EF503697": \
              "Archaea;Crenarchaeota;uncultured;uncultured",
             }
-        
+
         # build the blast database and keep track of the files to clean up
         blast_db, files_to_remove = \
          build_blast_db_from_fasta_path(self.reference_seqs_fp)
         self._paths_to_clean_up += files_to_remove
-        
+
         # read the input file into (seq_id, seq) pairs
         seqs = list(MinimalFastaParser(open(self.input_seqs_fp)))
-        
+
         actual = p._seqs_to_taxonomy(seqs,blast_db,id_to_taxonomy_map)
         self.assertEqual(actual,self.expected1)
-        
+
         # passing empty list of seqs functions as expected
         actual = p._seqs_to_taxonomy([],blast_db,id_to_taxonomy_map)
         self.assertEqual(actual,{})
-        
-        
+
+
     def test_call_on_the_fly_blast_db(self):
         """BlastTaxonAssigner.__call__ functions w creating blast db
         """
@@ -277,9 +278,9 @@ class BlastTaxonAssignerTests(TestCase):
          'reference_seqs_filepath':self.reference_seqs_fp,\
          'id_to_taxonomy_filepath':self.id_to_taxonomy_fp})
         actual = p(self.input_seqs_fp)
-        
+
         self.assertEqual(actual,self.expected1)
-            
+
     def test_call_output_to_file(self):
         """BlastTaxonAssigner.__call__ functions w output to file
         """
@@ -305,29 +306,29 @@ class BlastTaxonAssignerTests(TestCase):
         observed_lines = set(f.readlines())
         f.close()
         self.assertEqual(observed_lines, expected_lines)
-        
+
         # Return value is None when result_path is provided (Not sure
-        # if this is what we want yet, or if we would want both so 
+        # if this is what we want yet, or if we would want both so
         # results could be logged to file...)
         self.assertEqual(actual, None)
-        
+
     def test_call_logs_run(self):
         """BlastTaxonAssigner.__call__ logs the run when expected
         """
         log_path = get_tmp_filename(\
          prefix='BlastTaxonAssignerTests_',suffix='.fasta')
-        self._paths_to_clean_up.append(log_path) 
-        
+        self._paths_to_clean_up.append(log_path)
+
         # build the blast database and keep track of the files to clean up
         blast_db, files_to_remove = \
          build_blast_db_from_fasta_path(self.reference_seqs_fp)
         self._paths_to_clean_up += files_to_remove
-        
+
         p = BlastTaxonAssigner({\
          'id_to_taxonomy_filepath':self.id_to_taxonomy_fp,\
          'blast_db':blast_db})
         actual = p(self.input_seqs_fp,log_path=log_path)
-        
+
         log_file = open(log_path)
         log_file_str = log_file.read()
         log_file.close()
@@ -346,10 +347,177 @@ class BlastTaxonAssignerTests(TestCase):
          ]
         # compare data in log file to fake expected log file
         # NOTE: Since p.params is a dict, the order of lines is not
-        # guaranteed, so testing is performed to make sure that 
+        # guaranteed, so testing is performed to make sure that
         # the equal unordered lists of lines is present in actual and expected
         self.assertEqualItems(log_file_str.split('\n'), log_file_exp)
-        
+
+
+
+class RtaxTaxonAssignerTests(TestCase):
+    """Tests for the RTAX taxonomy assigner."""
+
+    def setUp(self):
+      self.id_to_taxonomy_fp = get_tmp_filename(\
+       prefix='RtaxTaxonAssignerTests_',suffix='.txt')
+      self.input_seqs_fp = get_tmp_filename(\
+       prefix='RtaxTaxonAssignerTests_',suffix='.fasta')
+      self.reference_seqs_fp = get_tmp_filename(\
+       prefix='RtaxTaxonAssignerTests_',suffix='.fasta')
+      self.read_1_seqs_fp = get_tmp_filename(\
+       prefix='RtaxTaxonAssignerTests_',suffix='.fasta')
+      self.read_2_seqs_fp = get_tmp_filename(\
+       prefix='RtaxTaxonAssignerTests_',suffix='.fasta')
+
+      self._paths_to_clean_up =\
+       [self.id_to_taxonomy_fp,self.input_seqs_fp,self.reference_seqs_fp,self.read_1_seqs_fp,self.read_2_seqs_fp]
+
+      open(self.id_to_taxonomy_fp,'w').write(rtax_reference_taxonomy)
+      open(self.input_seqs_fp,'w').write(rtax_test_repset_fasta)
+      open(self.reference_seqs_fp,'w').write(rtax_reference_fasta)
+      open(self.read_1_seqs_fp,'w').write(rtax_test_read1_fasta)
+      open(self.read_2_seqs_fp,'w').write(rtax_test_read2_fasta)
+
+
+    def tearDown(self):
+        remove_files(set(self._paths_to_clean_up))
+
+    def cleanAll(self, path):
+        return [path, path + ".pos.dir", path + ".pos.pag", path + ".lines.dir", path + ".lines.pag"]
+
+
+
+    def test_init(self):
+        """RtaxTaxonAssigner.__init__ should set default attributes and params
+        """
+        p = RtaxTaxonAssigner({})
+        self.assertEqual(p.Name, 'RtaxTaxonAssigner')
+        # default parameters correctly initialized
+        default_params = {
+            'id_to_taxonomy_fp': None,
+            'reference_sequences_fp': None,
+            'header_id_regex' : "\\S+\\s+(\\S+?)\/",
+            'read_id_regex' : "\\S+\\s+(\\S+)",
+            'amplicon_id_regex' : "(\\S+)\\s+(\\S+?)\/",
+            'read_1_seqs_fp' : None,
+            'read_2_seqs_fp' : None,
+            'single_ok' : False
+            }
+        self.assertEqual(p.Params, default_params)
+
+    def test_call_requires_read_1_file(self):
+        """RtaxTaxonAssigner.__call__ functions w alt input types """
+        p = RtaxTaxonAssigner({
+         'reference_sequences_fp':self.reference_seqs_fp,
+         'id_to_taxonomy_fp':self.id_to_taxonomy_fp})
+
+        # no read_1_seqs_fp passed results in AssertionError
+        self.assertRaises(AssertionError, p, self.input_seqs_fp)
+
+    def test_call_single_result(self):
+        p = RtaxTaxonAssigner({
+         'reference_sequences_fp':self.reference_seqs_fp,
+         'id_to_taxonomy_fp':self.id_to_taxonomy_fp,
+         'read_1_seqs_fp':self.read_1_seqs_fp})
+
+        self._paths_to_clean_up += self.cleanAll(self.read_1_seqs_fp)
+
+        actual = p(self.input_seqs_fp)
+        self.assertEqual(actual,rtax_expected_result_single)
+
+    def test_call_paired_with_fallback_result(self):
+        p = RtaxTaxonAssigner({
+         'reference_sequences_fp':self.reference_seqs_fp,
+         'id_to_taxonomy_fp':self.id_to_taxonomy_fp,
+         'read_1_seqs_fp':self.read_1_seqs_fp,
+         'read_2_seqs_fp':self.read_2_seqs_fp,
+         'single_ok':True})
+
+        self._paths_to_clean_up += self.cleanAll(self.read_1_seqs_fp)
+        self._paths_to_clean_up += self.cleanAll(self.read_2_seqs_fp)
+
+        actual = p(self.input_seqs_fp)
+        self.assertEqual(actual,rtax_expected_result_paired_with_fallback)
+
+    def test_call_paired_result(self):
+        p = RtaxTaxonAssigner({
+         'reference_sequences_fp':self.reference_seqs_fp,
+         'id_to_taxonomy_fp':self.id_to_taxonomy_fp,
+         'read_1_seqs_fp':self.read_1_seqs_fp,
+         'read_2_seqs_fp':self.read_2_seqs_fp})
+
+        self._paths_to_clean_up += self.cleanAll(self.read_1_seqs_fp)
+        self._paths_to_clean_up += self.cleanAll(self.read_2_seqs_fp)
+
+        actual = p(self.input_seqs_fp)
+        self.assertEqual(actual,rtax_expected_result_paired)
+
+    def test_call_output_to_file(self):
+        """RtaxTaxonAssigner.__call__ functions w output to file
+        """
+        result_path = get_tmp_filename(
+            prefix='RtaxTaxonAssignerTests_', suffix='.fasta')
+        self._paths_to_clean_up.append(result_path)
+
+        p =  RtaxTaxonAssigner({
+         'reference_sequences_fp':self.reference_seqs_fp,
+         'id_to_taxonomy_fp':self.id_to_taxonomy_fp,
+         'read_1_seqs_fp':self.read_1_seqs_fp})
+
+        self._paths_to_clean_up += self.cleanAll(self.read_1_seqs_fp)
+
+        actual = p(self.input_seqs_fp, result_path=result_path)
+
+        f = open(result_path)
+        observed_lines = set(f.readlines())
+        f.close()
+        self.assertEqual(observed_lines, rtax_expected_result_single_lines)
+
+        # Return value is None when result_path is provided (Not sure
+        # if this is what we want yet, or if we would want both so
+        # results could be logged to file...)
+        self.assertEqual(actual, None)
+
+    def test_call_logs_run(self):
+        """RtaxTaxonAssigner.__call__ logs the run when expected
+        """
+        log_path = get_tmp_filename(
+            prefix='RtaxTaxonAssignerTests_',suffix='.fasta')
+        self._paths_to_clean_up.append(log_path)
+
+        p =  RtaxTaxonAssigner({
+         'reference_sequences_fp':self.reference_seqs_fp,
+         'id_to_taxonomy_fp':self.id_to_taxonomy_fp,
+         'read_1_seqs_fp':self.read_1_seqs_fp})
+
+        self._paths_to_clean_up += self.cleanAll(self.read_1_seqs_fp)
+
+        actual = p(self.input_seqs_fp,log_path=log_path)
+
+        log_file = open(log_path)
+        log_file_str = log_file.read()
+        log_file.close()
+        # stderr.write(log_file_str)
+
+        log_file_exp = [
+            "RtaxTaxonAssigner parameters:",
+            "Application:RTAX classifier, version 0.96",
+            "Citation:Soergel D.A.W., Dey N., Knight R., and Brenner S.E.  2012.  Selection of primers for optimal taxonomic classification of environmental 16S rRNA gene sequences.  ISME J.",
+            "amplicon_id_regex:(\S+)\s+(\S+?)\/",
+            "header_id_regex:\S+\s+(\S+?)\/",
+            "id_to_taxonomy_fp:%s" % self.id_to_taxonomy_fp,
+            "read_1_seqs_fp:%s" % self.read_1_seqs_fp,
+            "read_2_seqs_fp:None",
+            "read_id_regex:\S+\s+(\S+)",
+            "reference_sequences_fp:%s" % self.reference_seqs_fp,
+            "single_ok:False"
+         ]
+        # compare data in log file to fake expected log file
+        # NOTE: Since p.params is a dict, the order of lines is not
+        # guaranteed, so testing is performed to make sure that
+        # the equal unordered lists of lines is present in actual and expected
+        self.assertEqualItems(log_file_str.split('\n')[0:11], log_file_exp)
+
+
 
 class RdpTaxonAssignerTests(TestCase):
     """Tests for the Rdp-based taxonomy assigner.
@@ -388,7 +556,7 @@ class RdpTaxonAssignerTests(TestCase):
 
         self._paths_to_clean_up = \
          [self.tmp_seq_filepath, self.tmp_res_filepath, self.tmp_log_filepath]
-         
+
         self.id_to_taxonomy_file = NamedTemporaryFile(
             prefix='RdpTaxonAssignerTest_', suffix='.txt')
         self.id_to_taxonomy_file.write(rdp_id_to_taxonomy)
@@ -401,7 +569,7 @@ class RdpTaxonAssignerTests(TestCase):
 
         jar_fp = getenv("RDP_JAR_PATH")
         jar_basename = path.basename(jar_fp)
-        if '2.2' in jar_basename: 
+        if '2.2' in jar_basename:
             self.app_class = RdpTaxonAssigner
             self.version = 2.2
         elif '2.0' in jar_basename:
@@ -415,7 +583,7 @@ class RdpTaxonAssignerTests(TestCase):
 
     def tearDown(self):
         remove_files(self._paths_to_clean_up)
- 
+
     def test_init(self):
         """RdpTaxonAssigner.__init__ should set default attributes and params
         """
@@ -423,7 +591,7 @@ class RdpTaxonAssignerTests(TestCase):
             self.assertEqual(self.default_app.Name, 'Rdp20TaxonAssigner')
         else:
             self.assertEqual(self.default_app.Name, 'RdpTaxonAssigner')
-        
+
     def test_train_on_the_fly(self):
         """Training on-the-fly classifies reference sequence correctly with 100% certainty
         """
@@ -436,13 +604,13 @@ class RdpTaxonAssignerTests(TestCase):
             exp_assignments = rdp20_trained_test1_expected_dict
         else:
             exp_assignments = rdp_trained_test1_expected_dict
-        
+
         app = self.app_class({
                 'id_to_taxonomy_fp': self.id_to_taxonomy_file.name,
                 'reference_sequences_fp': self.reference_seqs_file.name,
                 })
         obs_assignments = app(self.tmp_seq_filepath)
-        
+
         key = 'X67228 some description'
         self.assertEqual(obs_assignments[key], exp_assignments[key])
 
@@ -458,14 +626,14 @@ class RdpTaxonAssignerTests(TestCase):
             exp_assignments = rdp20_trained_test1_expected_dict
         else:
             exp_assignments = rdp_trained_test1_expected_dict
-        
+
         app = self.app_class({
                 'id_to_taxonomy_fp': self.id_to_taxonomy_file.name,
                 'reference_sequences_fp': self.reference_seqs_file.name,
                 'max_memory': '75M'
                 })
         obs_assignments = app(self.tmp_seq_filepath)
-        
+
         key = 'X67228 some description'
         self.assertEqual(obs_assignments[key], exp_assignments[key])
 
@@ -482,16 +650,16 @@ class RdpTaxonAssignerTests(TestCase):
 
     def test_call_result_as_dict(self):
         """RdpTaxonAssigner should return correct taxonomic assignment
-        
+
            This test may periodically fail, but should be rare.
-           
+
         """
         if self.version == 2.0:
             exp_assignments = rdp20_test1_expected_dict
         else:
             exp_assignments = rdp_test1_expected_dict
         min_confidence = self.default_app.Params['Confidence']
-        
+
         # Since there is some variation in the assignments, run
         # 10 trials and make sure we get the expected result at least once
         num_trials = 10
@@ -526,9 +694,9 @@ class RdpTaxonAssignerTests(TestCase):
 
     def test_call_with_properties_file(self):
         """RdpTaxonAssigner should return correct taxonomic assignment
-        
+
            This test may periodically fail, but should be rare.
-           
+
         """
         id_to_taxonomy_file = NamedTemporaryFile(
             prefix='RdpTaxonAssignerTest_', suffix='.txt')
@@ -564,7 +732,7 @@ class RdpTaxonAssignerTests(TestCase):
         seq_ids = expected.keys()
         assignment_comp_results = [False] * num_seqs
         expected_assignment_comp_results = [True] * num_seqs
-        
+
         for i in range(num_trials):
             actual = app2(self.tmp_seq_filepath)
             # seq ids are the same, and all input sequences get a result
@@ -590,15 +758,15 @@ class RdpTaxonAssignerTests(TestCase):
 
     def test_call_result_to_file(self):
         """RdpTaxonAssigner should save results to file
-        
+
            This test may periodically fail, but should be rare.
-           
+
         """
         if self.version == 2.0:
             expected_lines = rdp20_test1_expected_lines
         else:
             expected_lines = rdp_test1_expected_lines
-        
+
         # Since there is some variation in the assignments, run
         # 10 trials and make sure we get the expected result at least once
         # for each sequence
@@ -606,7 +774,7 @@ class RdpTaxonAssignerTests(TestCase):
         num_seqs = len(expected_lines)
         assignment_comp_results = [False] * num_seqs
         expected_assignment_comp_results = [True] * num_seqs
-        
+
         for i in range(num_trials):
             retval = self.default_app(
              seq_path=self.tmp_seq_filepath,
@@ -634,10 +802,10 @@ class RdpTaxonAssignerTests(TestCase):
         """RdpTaxonAssigner should write correct message to log file"""
         # expected result when no result_path is provided
         a = self.app_class({})
-        a(seq_path=self.tmp_seq_filepath, 
-          result_path=None, 
+        a(seq_path=self.tmp_seq_filepath,
+          result_path=None,
           log_path=self.tmp_log_filepath)
-            
+
         # open the actual log file and the expected file, and pass into lists
         obs = [l.strip() for l in list(open(self.tmp_log_filepath, 'r'))]
         exp_log_str = rdp_test1_log_file_contents % (self.app_class.Name, self.version)
@@ -657,7 +825,7 @@ class RdpTrainingSetTests(TestCase):
             'GGGCCC\n'
             )
         self.untagged_str = '>a1\tA;B;C\tD_;E;F\nGGGCCC\n'
-    
+
     def test_add_sequence(self):
         s = RdpTrainingSet()
         s.add_sequence('a1', 'GGCCTT')
@@ -668,7 +836,7 @@ class RdpTrainingSetTests(TestCase):
         s.add_lineage('a1', 'A;B;C;D;E;F')
         n = s.sequence_nodes['a1']
         self.assertEqual(n.name, 'F')
-        
+
         # Raise a ValueError if lineage does not have 6 ranks
         self.assertRaises(ValueError, s.add_lineage, 'a2', 'A;B;C')
 
@@ -932,7 +1100,7 @@ test_seq_coll = LoadSeqs(data=[\
  ('s4','GATACCCCCGGAAACTGGGGATTATACCGGATATGTGGGGCTGCCTGGAATGGTACCTCATTGAAATGCTCCCGCGCCTAAAGATGGATCTGCCGCAGAATAAGTAGTTTGCGGGGTAAATGGCCACCCAGCCAGTAATCCGTACCGGTTGTGAAAACCAGAACCCCGAGATGGAAACTGAAACAAAGGTTCAAGGCCTACCGGGCACAACAAGCGCCAAAACTCCGCCATGCGAGCCATCGCGACGGGGGAAAACCAAGTACCACTCCTAACGGGGTGGTTTTTCCGAAGTGGAAAAAGCCTCCAGGAATAAGAACCTGGGCCAGAACCGTGGCCAGCCGCCGCCGTTACACCCGCCAGCTCGAGTTGTTGGCCGGTTTTATTGGGGCCTAAAGCCGGTCCGTAGCCCGTTTTGATAAGGTCTCTCTGGTGAAATTCTACAGCTTAACCTGTGGGAATTGCTGGAGGATACTATTCAAGCTTGAAGCCGGGAGAAGCCTGGAAGTACTCCCGGGGGTAAGGGGTGAAATTCTATTATCCCCGGAAGACCAACTGGTGCCGAAGCGGTCCAGCCTGGAACCGAACTTGACCGTGAGTTACGAAAAGCCAAGGGGCGCGGACCGGAATAAAATAACCAGGGTAGTCCTGGCCGTAAACGATGTGAACTTGGTGGTGGGAATGGCTTCGAACTGCCCAATTGCCGAAAGGAAGCTGTAAATTCACCCGCCTTGGAAGTACGGTCGCAAGACTGGAACCTAAAAGGAATTGGCGGGGGGACACCACAACGCGTGGAGCCTGGCGGTTTTATTGGGATTCCACGCAGACATCTCACTCAGGGGCGACAGCAGAAATGATGGGCAGGTTGATGACCTTGCTTGACAAGCTGAAAAGGAGGTGCAT'),\
  ('s5','TAAAATGACTAGCCTGCGAGTCACGCCGTAAGGCGTGGCATACAGGCTCAGTAACACGTAGTCAACATGCCCAAAGGACGTGGATAACCTCGGGAAACTGAGGATAAACCGCGATAGGCCAAGGTTTCTGGAATGAGCTATGGCCGAAATCTATATGGCCTTTGGATTGGACTGCGGCCGATCAGGCTGTTGGTGAGGTAATGGCCCACCAAACCTGTAACCGGTACGGGCTTTGAGAGAAGTAGCCCGGAGATGGGCACTGAGACAAGGGCCCAGGCCCTATGGGGCGCAGCAGGCGCGAAACCTCTGCAATAGGCGAAAGCCTGACAGGGTTACTCTGAGTGATGCCCGCTAAGGGTATCTTTTGGCACCTCTAAAAATGGTGCAGAATAAGGGGTGGGCAAGTCTGGTGTCAGCCGCCGCGGTAATACCAGCACCCCGAGTTGTCGGGACGATTATTGGGCCTAAAGCATCCGTAGCCTGTTCTGCAAGTCCTCCGTTAAATCCACCTGCTCAACGGATGGGCTGCGGAGGATACCGCAGAGCTAGGAGGCGGGAGAGGCAAACGGTACTCAGTGGGTAGGGGTAAAATCCATTGATCTACTGAAGACCACCAGTGGCGAAGGCGGTTTGCCAGAACGCGCTCGACGGTGAGGGATGAAAGCTGGGGGAGCAAACCGGATTAGATACCCGGGGTAGTCCCAGCTGTAAACGGATGCAGACTCGGGTGATGGGGTTGGCTTCCGGCCCAACCCCAATTGCCCCCAGGCGAAGCCCGTTAAGATCTTGCCGCCCTGTCAGATGTCAGGGCCGCCAATACTCGAAACCTTAAAAGGAAATTGGGCGCGGGAAAAGTCACCAAAAGGGGGTTGAAACCCTGCGGGTTATATATTGTAAACC'),\
  ('s6','ATAGTAGGTGATTGCGAAGACCGCGGAACCGGGACCTAGCACCCAGCCTGTACCGAGGGATGGGGAGCTGTGGCGGTCCACCGACGACCCTTTGTGACAGCCGATTCCTACAATCCCAGCAACTGCAATGATCCACTCTAGTCGGCATAACCGGGAATCGTTAACCTGGTAGGGTTCTCTACGTCTGAGTCTACAGCCCAGAGCAGTCAGGCTACTATACGGTTTGCTGCATTGCATAGGCATCGGTCGCGGGCACTCCTCGCGGTTTCAGCTAGGGTTTAAATGGAGGGTCGCTGCATGAGTATGCAAATAGTGCCACTGCTCTGATACAGAGAAGTGTTGATATGACACCTAAGACCTGGTCACAGTTTTAACCTGCCTACGCACACCAGTGTGCTATTGATTAACGATATCGGTAGACACGACCTTGGTAACCTGACTAACCTCATGGAAAGTGACTAGATAAATGGACCGGAGCCAACTTTCACCCGGAAAACGGACCGACGAATCGTCGTAGACTACCGATCTGACAAAATAAGCACGAGGGAGCATGTTTTGCGCAGGCTAGCCTATTCCCACCTCAAGCCTCGAGAACCAAGACGCCTGATCCGGTGCTGCACGAAGGGTCGCCTCTAGGTAAGGAGAGCTGGCATCTCCAGATCCGATATTTTACCCAACCTTTGCGCGCTCAGATTGTTATAGTGAAACGATTTAAGCCTGAACGGAGTTCCGCTCCATATGTGGGTTATATATGTGAGATGTATTAACTTCCGCAGTTGTCTCTTTCGGTGCAGTACGCTTGGTATGTGTCTCAAATAATCGGTATTATAGTGATCTGAGAGGTTTTAAG')],aligned=False)
- 
+
 test_refseq_coll = LoadSeqs(data=[\
  ('AY800210','TTCCGGTTGATCCTGCCGGACCCGACTGCTATCCGGATGCGACTAAGCCATGCTAGTCTAACGGATCTTCGGATCCGTGGCATACCGCTCTGTAACACGTAGATAACCTACCCTGAGGTCGGGGAAACTCCCGGGAAACTGGGCCTAATCCCCGATAGATAATTTGTACTGGAATGTCTTTTTATTGAAACCTCCGAGGCCTCAGGATGGGTCTGCGCCAGATTATGGTCGTAGGTGGGGTAACGGCCCACCTAGCCTTTGATCTGTACCGGACATGAGAGTGTGTGCCGGGAGATGGCCACTGAGACAAGGGGCCAGGCCCTACGGGGCGCAGCAGGCGCGAAAACTTCACAATGCCCGCAAGGGTGATGAGGGTATCCGAGTGCTACCTTAGCCGGTAGCTTTTATTCAGTGTAAATAGCTAGATGAATAAGGGGAGGGCAAGGCTGGTGCCAGCCGCCGCGGTAAAACCAGCTCCCGAGTGGTCGGGATTTTTATTGGGCCTAAAGCGTCCGTAGCCGGGCGTGCAAGTCATTGGTTAAATATCGGGTCTTAAGCCCGAACCTGCTAGTGATACTACACGCCTTGGGACCGGAAGAGGCAAATGGTACGTTGAGGGTAGGGGTGAAATCCTGTAATCCCCAACGGACCACCGGTGGCGAAGCTTGTTCAGTCATGAACAACTCTACACAAGGCGATTTGCTGGGACGGATCCGACGGTGAGGGACGAAACCCAGGGGAGCGAGCGGGATTAGATACCCCGGTAGTCCTGGGCGTAAACGATGCGAACTAGGTGTTGGCGGAGCCACGAGCTCTGTCGGTGCCGAAGCGAAGGCGTTAAGTTCGCCGCCAGGGGAGTACGGCCGCAAGGCTGAAACTTAAAGGAATTGGCGGGGGAGCAC'),\
  ('EU883771','TGGCGTACGGCTCAGTAACACGTGGATAACTTACCCTTAGGACTGGGATAACTCTGGGAAACTGGGGATAATACTGGATATTAGGCTATGCCTGGAATGGTTTGCCTTTGAAATGTTTTTTTTCGCCTAAGGATAGGTCTGCGGCTGATTAGGTCGTTGGTGGGGTAATGGCCCACCAAGCCGATGATCGGTACGGGTTGTGAGAGCAAGGGCCCGGAGATGGAACCTGAGACAAGGTTCCAGACCCTACGGGGTGCAGCAGGCGCGAAACCTCCGCAATGTACGAAAGTGCGACGGGGGGATCCCAAGTGTTATGCTTTTTTGTATGACTTTTCATTAGTGTAAAAAGCTTTTAGAATAAGAGCTGGGCAAGACCGGTGCCAGCCGCCGCGGTAACACCGGCAGCTCGAGTGGTGACCACTTTTATTGGGCTTAAAGCGTTCGTAGCTTGATTTTTAAGTCTCTTGGGAAATCTCACGGCTTAACTGTGAGGCGTCTAAGAGATACTGGGAATCTAGGGACCGGGAGAGGTAAGAGGTACTTCAGGGGTAGAAGTGAAATTCTGTAATCCTTGAGGGACCACCGATGGCGAAGGCATCTTACCAGAACGGCTTCGACAGTGAGGAACGAAAGCTGGGGGAGCGAACGGGATTAGATACCCCGGTAGTCCCAGCCGTAAACTATGCGCGTTAGGTGTGCCTGTAACTACGAGTTACCGGGGTGCCGAAGTGAAAACGTGAAACGTGCCGCCTGGGAAGTACGGTCGCAAGGCTGAAACTTAAAGGAATTGGCGGGGGAGCACCACAACGGGTGGAGCCTGCGGTTTAATTGGACTCAACGCCGGGCAGCTCACCGGATAGGACAGCGGAATGATAGCCGGGCTGAAGACCTTGCTTGACCAGCTGAGA'),\
@@ -940,6 +1108,158 @@ test_refseq_coll = LoadSeqs(data=[\
  ('DQ260310','GATACCCCCGGAAACTGGGGATTATACCGGATATGTGGGGCTGCCTGGAATGGTACCTCATTGAAATGCTCCCGCGCCTAAAGATGGATCTGCCGCAGAATAAGTAGTTTGCGGGGTAAATGGCCACCCAGCCAGTAATCCGTACCGGTTGTGAAAACCAGAACCCCGAGATGGAAACTGAAACAAAGGTTCAAGGCCTACCGGGCACAACAAGCGCCAAAACTCCGCCATGCGAGCCATCGCGACGGGGGAAAACCAAGTACCACTCCTAACGGGGTGGTTTTTCCGAAGTGGAAAAAGCCTCCAGGAATAAGAACCTGGGCCAGAACCGTGGCCAGCCGCCGCCGTTACACCCGCCAGCTCGAGTTGTTGGCCGGTTTTATTGGGGCCTAAAGCCGGTCCGTAGCCCGTTTTGATAAGGTCTCTCTGGTGAAATTCTACAGCTTAACCTGTGGGAATTGCTGGAGGATACTATTCAAGCTTGAAGCCGGGAGAAGCCTGGAAGTACTCCCGGGGGTAAGGGGTGAAATTCTATTATCCCCGGAAGACCAACTGGTGCCGAAGCGGTCCAGCCTGGAACCGAACTTGACCGTGAGTTACGAAAAGCCAAGGGGCGCGGACCGGAATAAAATAACCAGGGTAGTCCTGGCCGTAAACGATGTGAACTTGGTGGTGGGAATGGCTTCGAACTGCCCAATTGCCGAAAGGAAGCTGTAAATTCACCCGCCTTGGAAGTACGGTCGCAAGACTGGAACCTAAAAGGAATTGGCGGGGGGACACCACAACGCGTGGAGCCTGGCGGTTTTATTGGGATTCCACGCAGACATCTCACTCAGGGGCGACAGCAGAAATGATGGGCAGGTTGATGACCTTGCTTGACAAGCTGAAAAGGAGGTGCAT'),\
  ('EF503697','TAAAATGACTAGCCTGCGAGTCACGCCGTAAGGCGTGGCATACAGGCTCAGTAACACGTAGTCAACATGCCCAAAGGACGTGGATAACCTCGGGAAACTGAGGATAAACCGCGATAGGCCAAGGTTTCTGGAATGAGCTATGGCCGAAATCTATATGGCCTTTGGATTGGACTGCGGCCGATCAGGCTGTTGGTGAGGTAATGGCCCACCAAACCTGTAACCGGTACGGGCTTTGAGAGAAGTAGCCCGGAGATGGGCACTGAGACAAGGGCCCAGGCCCTATGGGGCGCAGCAGGCGCGAAACCTCTGCAATAGGCGAAAGCCTGACAGGGTTACTCTGAGTGATGCCCGCTAAGGGTATCTTTTGGCACCTCTAAAAATGGTGCAGAATAAGGGGTGGGCAAGTCTGGTGTCAGCCGCCGCGGTAATACCAGCACCCCGAGTTGTCGGGACGATTATTGGGCCTAAAGCATCCGTAGCCTGTTCTGCAAGTCCTCCGTTAAATCCACCTGCTCAACGGATGGGCTGCGGAGGATACCGCAGAGCTAGGAGGCGGGAGAGGCAAACGGTACTCAGTGGGTAGGGGTAAAATCCATTGATCTACTGAAGACCACCAGTGGCGAAGGCGGTTTGCCAGAACGCGCTCGACGGTGAGGGATGAAAGCTGGGGGAGCAAACCGGATTAGATACCCGGGGTAGTCCCAGCTGTAAACGGATGCAGACTCGGGTGATGGGGTTGGCTTCCGGCCCAACCCCAATTGCCCCCAGGCGAAGCCCGTTAAGATCTTGCCGCCCTGTCAGATGTCAGGGCCGCCAATACTCGAAACCTTAAAAGGAAATTGGGCGCGGGAAAAGTCACCAAAAGGGGGTTGAAACCCTGCGGGTTATATATTGTAAACC')],aligned=False)
 
+
+
+
+# sample data copied from GreenGenes
+
+
+rtax_reference_taxonomy = """508720	99.0	k__Bacteria	 p__Actinobacteria	 c__Actinobacteria	 o__Actinomycetales	 f__Propionibacteriaceae	 g__Propionibacterium	 s__Propionibacterium acnes
+508050	99.0	k__Bacteria	 p__Proteobacteria	 c__Betaproteobacteria	 o__Burkholderiales	 f__Comamonadaceae	 g__Diaphorobacter	 s__
+502492	99.0	k__Bacteria	 p__Proteobacteria	 c__Betaproteobacteria	 o__Burkholderiales	 f__	 g__Aquabacterium	 s__
+"""
+
+rtax_reference_fasta = """>508720
+GACGAACGCTGGCGGCGTGCTTAACACATGCAAGTCGAACGGAAAGGCCCTGCTTTTGTGGGGTGCTCGAGTGGCGAACG
+GGTGAGTAACACGTGAGTAACCTGCCCTTGACTTTGGGATAACTTCAGGAAACTGGGGCTAATACCGGATAGGAGCTCCT
+GCTGCATGGTGGGGGTTGGAAAGTTTCGGCGGTTGGGGATGGACTCGCGGCTTATCAGCTTGTTGGTGGGGTAGTGGCTT
+ACCAAGGCTTTGACGGGTAGCCGGCCTGAGAGGGTGACCGGCCACATTGGGACTGAGATACGGCCCAGACTCCTACGGGA
+GGCAGCAGTGGGGAATATTGCACAATGGGCGGAAGCCTGATGCAGCAACGCCGCGTGCGGGATGACGGCCTTCGGGTTGT
+AAACCGCTTTCGCCTGTGACGAAGCGTGAGTGACGGTAATGGGTAAAGAAGCACCGGCTAACTACGTGCCAGCAGCCGCG
+GTGATACGTAGGGTGCGAGCGTTGTCCGGATTTATTGGGCGTAAAGGGCTCGTAGGTGGTTGATCGCGTCGGAAGTGTAA
+TCTTGGGGCTTAACCCTGAGCGTGCTTTCGATACGGGTTGACTTGAGGAAGGTAGGGGAGAATGGAATTCCTGGTGGAGC
+GGTGGAATGCGCAGATATCAGGAGGAACACCAGTGGCGAAGGCGGTTCTCTGGGCCTTTCCTGACGCTGAGGAGCGAAAG
+CGTGGGGAGCGAACAGGCTTAGATACCCTGGTAGTCCACGCTGTAAACGGTGGGTACTAGGTGTGGGGTCCATTCCACGG
+GTTCCGTGCCGTAGCTAACGCTTTAAGTACCCCGCCTGGGGAGTACGGCCGCAAGGCTAAAACTCAAAGGAATTGACGGG
+GCCCCGCACAAGCGGCGGAGCATGCGGATTAATTCGATGCAACGCGTAGAACCTTACCTGGGTTTGACATGGATCGGGAG
+TGCTCAGAGATGGGTGTGCCTCTTTTGGGGTCGGTTCACAGGTGGTGCATGGCTGTCGTCAGCTCGTGTCGTGAGATGTT
+GGGTTAAGTCCCGCAACGAGCGCAACCCTTGTTCACTGTTGCCAGCACGTTATGGTGGGGACTCAGTGGAGACCGCCGGG
+GTCAACTCGGAGGAAGGTGGGGATGACGTCAAGTCATCATGCCCCTTATGTCCAGGGCTTCACGCATGCTACAATGGCTG
+GTACAGAGAGTGGCGAGCCTGTGAGGGTGAGCGAATCTCGGAAAGCCGGTCTCAGTTCGGATTGGGGTCTGCAACTCGAC
+CTCATGAAGTCGGAGTCGCTAGTAATCGCAGATCAGCAACGCTGCGGTGAATACGTTCCCGGGGCT
+>508050
+ATTGAACGCTGGCGGCATGCCTTACACATGCAAGTCGAACGGTAACAGGTCTTCGGATGCTGACGAGTGGCGAACGGGTG
+AGTAATACATCGGAACGTGCCCGATCGTGGGGGATAACGAGGCGAAAGCTTTGCTAATACCGCATACGATCTACGGATGA
+AAGCGGGGGATCTTCGGACCTCGCGCGGACGGAGCGGCCGATGGCAGATTAGGTAGTTGGTGGGATAAAAGCTTACCAAG
+CCGACGATCTGTAGCTGGTCTGAGAGGATGATCAGCCACACTGGGACTGAGACACGGCCCAGACTCCTACGGGAGGCAGC
+AGTGGGGAATTTTGGACAATGGGCGAAAGCCTGATCCAGCCATGCCGCGTGCAGGATGAAGGCCTTCGGGTTGTAAACTG
+CTTTTGTACGGAACGAAAAGCCTCTTTCTAATAAAGAGGGGTCATGACGGTACCGTAAGAATAAGCACCGGCTAACTACG
+TGCCAGCAGCCGCGGTAATACGTAGGGTGCAAGCGTTAATCGGAATTACTGGGCGTAAAGCGTGCGCAGGCGGTTTTGTA
+AGACAGAGGTGAAATCCCCGGGCTCAACCTGGGAACTGCCTTTGTGACTGCAAGGCTGGAGTGCGGCAGAGGGGGATGGA
+ATTCCGCGTGTAGCAGTGAAATGCGTAGATATGCGGAGGAACACCGATGGCGAAGGCAATCCCCTGGGCCTGCACTGACG
+CTCATGCACGAAAGCGTGGGGAGCAAACAGGATTAGATACCCTGGTAGTCCACGCCCTAAACGATGTCAACTGGTTGTTG
+GGTCTTCACTGACTCAGTAACGAAGCTAACGCGTGAAGTTGACCGCCTGGGGAGTACGGCCGCAAGGTTGAAACTCAAAG
+GAATTGACGGGGACCCGCACAAGCGGTGGATGATGTGGTTTAATTCGATGCAACGCGAAAAACCTTACCCACCTTTGACA
+TGGCAGGAAGTTTCCAGAGATGGATTCGTGCCCGAAAGGGAACCTGCACACAGGTGCTGCATGGCTGTCGTCAGCTCGTG
+TCGTGAGATGTTGGGTTAAGTCCCGCAACGAGCGCAACCCTTGCCATTAGTTGCTACGAAAGGGCACTCTAATGGGACTG
+CCGGTGACAAACCGGAGGAAGGTGGGGATGACGTCAAGTCCTCATGGCCCTTATAGGTGGGGCTACACACGTCATACAAT
+GGCTGGTACAGAGGGTTGCCAACCCGCGAGGGGGAGCTAATCCCATAAAGCCAGTCGTAGTCCGGATCGCAGTCTGCAAC
+TCGACTGCGTGAAGTCGGAATCGCTAGTAATCGCGGATCAGAATGTCGCGGTGAATACGTTCCCGGGTCT
+>502492
+ATTGAACGCTGGCGGCATGCCTTACACATGCAAGTCGAACGGTAACGGGTCCTTCGGGATGCCGACGAGTGGCGAACGGG
+TGAGTAATATATCGGAACGTGCCCAGTAGTGGGGGATAACTGCTCGAAAGAGCAGCTAATACCGCATACGACCTGAGGGT
+GAAAGGGGGGGATCGCAAGACCTCTCGCTATTGGAGCGGCCGATATCAGATTAGCTAGTTGGTGGGGTAAAGGCCTACCA
+AGGCAACGATCTGTAGTTGGTCTGAGAGGACGACCAGCCACACTGGGACTGAGACACGGCCCAGACTCCTACGGGAGGCA
+GCAGTGGGGAATTTTGGACAATGGGCGCAAGCCTGATCCAGCAATGCCGCGTGCAGGAAGAAGGCCTTCGGGTTGTAAAC
+TGCTTTTGTCAGGGAAGAAATCTTCTGGGCTAATACCCCGGGAGGATGACGGTACCTGAAGAATAAGCACCGGCTAACTA
+CGTGCCAGCAGCCGCGGTAATACGTAGGGTGCGAGCGTTAATCGGAATTACTGGGCGTAAAGCGTGCGCAGGCGGCTTTG
+CAAGACAGATGTGAAATCCCCGGGCTCAACCTGGGAACTGCATTTGTGACTGCAAGGCTAGAGTACGGCAGAGGGGGATG
+GAATTCCGCGTGTAGCAGTGAAATGCGTAGATATGCGGAGGAACACCAATGGCGAAGGCAATCCCCTGGGCCTGTACTGA
+CGCTCATGCACGAAAGCGTGGGGAGCAAACAGGATTAGATACCCTGGTAGTCCACGCCCTAAACGATGTCAACTGGTTGT
+TGGACGGCTTGCTGTTCAGTAACGAAGCTAACGCGTGAAGTTGACCGCCTGGGGAGTACGGCCGCAAGGTTGAAACTCAA
+AGGAATTGACGGGGACCCGCACAAGCGGTGGATGATGTGGTTTAATTCGATGCAACGCGAAAAACCTTACCTACCCTTGA
+CATGTCAAGAATTCTGCAGAGATGTGGAAGTGCTCGAAAGAGAACTTGAACACAGGTGCTGCATGGCCGTCGTCAGCTCG
+TGTCGTGAGATGTTGGGTTAAGTCCCGCAACGAGCGCAACCCTTGTCATTAGTTGCTACGCAAGAGCACTCTAATGAGAC
+TGCCGGTGACAAACCGGAGGAAGGTGGGGATGACGTCAGGTCCTCATGGCCCTTATGGGTAGGGCTACACACGTCATACA
+ATGGCCGGTACAGAGGGCTGCCAACCCGCGAGGGGGAGCCAATCCCAGAAAACCGGTCGTAGTCCGGATCGTAGTCTGCA
+ACTCGACTGCGTGAAGTCGGAATCGCTAGTAATCGCGGATCAGCTTGCCGCGGTGAATACGTTCCCGGGTCT
+"""
+
+
+rtax_test_repset_fasta = """>clusterIdA splitRead1IdA
+ACCAAGGCTTTGACGGGTAGCCGGCCTGAGTGGGTGACCGGCCACATTGGGACTGAGATACGGCCCAGACTCCTACGGGA
+>clusterIdB splitRead1IdB
+CCGACGATCTGTAGCTGGTCTGAGAGGATGTTCAGCCACACTGGGACTGAGACACGGCCCAGACTCCTACGGGAGGCAGC
+>clusterIdC splitRead1IdC
+AGGCAACGATCTGTAGTTGGTCTGAGAGGAGGACCAGCCACACTGGGACTGAGACACGGCCCAGACTCCTACGGGAGGCA
+>clusterIdD splitRead1IdD
+AGGCAACGATCTGTAGTTGGTCTGAGAGGAGGACCAGCCACACTGGGACGGGGGGGGGGCCCAGACTCCTACGGGAGGCA
+"""
+
+# these reads are the 4th and 14th lines from the reference seqs
+
+#rtax_test_read1_fasta = """>splitRead1IdA ampliconId_34563456/1
+#ACCAAGGCTTTGACGGGTAGCCGGCCTGAGAGGGTGACCGGCCACATTGGGACTGAGATACGGCCCAGACTCCTACGGGA
+#>splitRead1IdB ampliconId_
+#CCGACGATCTGTAGCTGGTCTGAGAGGATGATCAGCCACACTGGGACTGAGACACGGCCCAGACTCCTACGGGAGGCAGC
+#>splitRead1IdC ampliconId_
+#AGGCAACGATCTGTAGTTGGTCTGAGAGGACGACCAGCCACACTGGGACTGAGACACGGCCCAGACTCCTACGGGAGGCA
+#"""
+#
+#rtax_test_read2_fasta = """>splitRead2IdA ampliconId_34563456/3
+#GGGTTAAGTCCCGCAACGAGCGCAACCCTTGTTCACTGTTGCCAGCACGTTATGGTGGGGACTCAGTGGAGACCGCCGGG
+#>splitRead2IdB ampliconId_
+#TCGTGAGATGTTGGGTTAAGTCCCGCAACGAGCGCAACCCTTGCCATTAGTTGCTACGAAAGGGCACTCTAATGGGACTG
+#>splitRead2IdC ampliconId_
+#TGTCGTGAGATGTTGGGTTAAGTCCCGCAACGAGCGCAACCCTTGTCATTAGTTGCTACGCAAGAGCACTCTAATGAGAC
+#"""
+
+
+# these reads are the 4th and 14th lines from the reference seqs, with one nucleotide changed each
+# except D and E, which are unique to one read or the other
+# and F and G, which are just decoys
+
+rtax_test_read1_fasta = """>splitRead1IdA ampliconId_34563456/1
+ACCAAGGCTTTGACGGGTAGCCGGCCTGAGTGGGTGACCGGCCACATTGGGACTGAGATACGGCCCAGACTCCTACGGGA
+>splitRead1IdB ampliconId_12341234/1
+CCGACGATCTGTAGCTGGTCTGAGAGGATGTTCAGCCACACTGGGACTGAGACACGGCCCAGACTCCTACGGGAGGCAGC
+>splitRead1IdC ampliconId_23452345/1
+AGGCAACGATCTGTAGTTGGTCTGAGAGGAGGACCAGCCACACTGGGACTGAGACACGGCCCAGACTCCTACGGGAGGCA
+>splitRead1IdD ampliconId_45674567/1
+AGGCAACGATCTGTAGTTGGTCTGAGAGGAGGACCAAAAAAAAAAAGACTGAGACACGGCCCAGACTCCTACGGGAGGCA
+>splitRead1IdF ampliconId_56785678/1
+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+"""
+
+rtax_test_read2_fasta = """>splitRead2IdA ampliconId_34563456/3
+GGGTTAAGTCCCGCAACGAGCGCAACCCTTATTCACTGTTGCCAGCACGTTATGGTGGGGACTCAGTGGAGACCGCCGGG
+>splitRead2IdB ampliconId_12341234/3
+TCGTGAGATGTTGGGTTAAGTCCCGCAACGTGCGCAACCCTTGCCATTAGTTGCTACGAAAGGGCACTCTAATGGGACTG
+>splitRead2IdC ampliconId_23452345/3
+TGTCGTGAGATGTTGGGTTAAGTCCCGCAAAGAGCGCAACCCTTGTCATTAGTTGCTACGCAAGAGCACTCTAATGAGAC
+>splitRead2IdE ampliconId_67896789/3
+TGTCGTGAGATGTTGGGTTAAAAAAAAAAAAAAACGCAACCCTTGTCATTAGTTGCTACGCAAGAGCACTCTAATGAGAC
+>splitRead2IdG ampliconId_78907890/3
+TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT
+"""
+
+
+rtax_expected_result_paired = {
+    'clusterIdA splitRead1IdA': ('k__Bacteria; p__Actinobacteria; c__Actinobacteria; o__Actinomycetales; f__Propionibacteriaceae; g__Propionibacterium; s__Propionibacterium acnes', 1.0),
+    'clusterIdB splitRead1IdB': ('k__Bacteria; p__Proteobacteria; c__Betaproteobacteria; o__Burkholderiales; f__Comamonadaceae; g__Diaphorobacter; s__', 1.0),
+    'clusterIdC splitRead1IdC': ('k__Bacteria; p__Proteobacteria; c__Betaproteobacteria; o__Burkholderiales; f__; g__Aquabacterium; s__', 1.0),
+    }
+
+rtax_expected_result_paired_with_fallback = {
+    'clusterIdA splitRead1IdA': ('k__Bacteria; p__Actinobacteria; c__Actinobacteria; o__Actinomycetales; f__Propionibacteriaceae; g__Propionibacterium; s__Propionibacterium acnes', 1.0),
+    'clusterIdB splitRead1IdB': ('k__Bacteria; p__Proteobacteria; c__Betaproteobacteria; o__Burkholderiales; f__Comamonadaceae; g__Diaphorobacter; s__', 1.0),
+    'clusterIdC splitRead1IdC': ('k__Bacteria; p__Proteobacteria; c__Betaproteobacteria; o__Burkholderiales; f__; g__Aquabacterium; s__', 1.0),
+    'clusterIdD splitRead1IdD': ('k__Bacteria; p__Actinobacteria; c__Actinobacteria; o__Actinomycetales; f__Propionibacteriaceae; g__Propionibacterium; s__Propionibacterium acnes', 1.0),
+    }
+
+rtax_expected_result_single = {
+    'clusterIdA splitRead1IdA': ('k__Bacteria; p__Actinobacteria; c__Actinobacteria; o__Actinomycetales; f__Propionibacteriaceae; g__Propionibacterium; s__Propionibacterium acnes', 1.0),
+    'clusterIdB splitRead1IdB': ('k__Bacteria; p__Proteobacteria; c__Betaproteobacteria; o__Burkholderiales; f__Comamonadaceae; g__Diaphorobacter; s__', 1.0),
+    'clusterIdC splitRead1IdC': ('k__Bacteria; p__Proteobacteria; c__Betaproteobacteria; o__Burkholderiales; f__; g__Aquabacterium; s__', 1.0),
+    'clusterIdD splitRead1IdD': ('k__Bacteria; p__Actinobacteria; c__Actinobacteria; o__Actinomycetales; f__Propionibacteriaceae; g__Propionibacterium; s__Propionibacterium acnes', 1.0),
+    }
+
+rtax_expected_result_single_lines = set([
+    'clusterIdA splitRead1IdA\tk__Bacteria; p__Actinobacteria; c__Actinobacteria; o__Actinomycetales; f__Propionibacteriaceae; g__Propionibacterium; s__Propionibacterium acnes\t1.000\n',
+    'clusterIdB splitRead1IdB\tk__Bacteria; p__Proteobacteria; c__Betaproteobacteria; o__Burkholderiales; f__Comamonadaceae; g__Diaphorobacter; s__\t1.000\n',
+    'clusterIdC splitRead1IdC\tk__Bacteria; p__Proteobacteria; c__Betaproteobacteria; o__Burkholderiales; f__; g__Aquabacterium; s__\t1.000\n',
+    'clusterIdD splitRead1IdD\tk__Bacteria; p__Actinobacteria; c__Actinobacteria; o__Actinomycetales; f__Propionibacteriaceae; g__Propionibacterium; s__Propionibacterium acnes\t1.000\n',
+    ])
 
 #run unit tests if run from command-line
 if __name__ == '__main__':
