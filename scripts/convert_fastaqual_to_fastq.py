@@ -50,7 +50,7 @@ ASCII character. [default: %default]', default = 33),
 (as opposed to merely the sequence label). [default: %default]', \
                 default = False),
 
-            make_option('-i', '--full_fastq',
+            make_option('-b', '--full_fastq',
                 action = 'store_true',
                 help = 'Include identifiers on quality lines in the FASTQ file \
 (those beginning with a "+" [default=%default]', default = False),
