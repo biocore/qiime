@@ -631,12 +631,12 @@ o4	seq6	seq7""".split('\n')
         """ trim_fastq functions as expected """
         expected = ["""@HWUSI-EAS552R_0357:8:1:10040:6364#0/1
 GACGAG
-+HWUSI-EAS552R_0357:8:1:10040:6364#0/1
++
 hhhhhh
 """,
 """@HWUSI-EAS552R_0357:8:1:10184:6365#0/1
 GTCTGA
-+HWUSI-EAS552R_0357:8:1:10184:6365#0/1
++
 hhhhhh
 """]
         
