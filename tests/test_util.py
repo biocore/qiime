@@ -32,7 +32,7 @@ from qiime.util import (make_safe_f, FunctionWithParams, qiime_blast_seqs,
     count_seqs_in_filepaths,get_split_libraries_fastq_params_and_file_types,
     iseq_to_qseq_fields,get_top_fastq_two_lines,
     make_compatible_distance_matrices,stderr,_chk_asarray,expand_otu_ids,
-    subsample_fasta,summarize_otu_sizes_from_otu_map)
+    subsample_fasta,summarize_otu_sizes_from_otu_map,trim_fastq)
 
 import numpy
 from numpy import array, asarray
@@ -71,6 +71,7 @@ class TopLevelTests(TestCase):
         self.singleton_seqs1 = singleton_seqs1.split('\n')
         self.denoiser_mapping1 = denoiser_mapping1.split('\n')
         self.raw_seqs1 = raw_seqs1.split('\n')
+        self.fastq_barcodes = fastq_barcodes
 
     def tearDown(self):    
         remove_files(self.files_to_remove)
@@ -626,6 +627,21 @@ o4	seq6	seq7""".split('\n')
         self.assertRaises(KeyError,
          make_compatible_distance_matrices,dm1,dm2,lookup)
 
+    def test_trim_fastq(self):
+        """ trim_fastq functions as expected """
+        expected = ["""@HWUSI-EAS552R_0357:8:1:10040:6364#0/1
+GACGAG
++HWUSI-EAS552R_0357:8:1:10040:6364#0/1
+hhhhhh
+""",
+"""@HWUSI-EAS552R_0357:8:1:10184:6365#0/1
+GTCTGA
++HWUSI-EAS552R_0357:8:1:10184:6365#0/1
+hhhhhh
+"""]
+        
+        self.assertEqual(list(trim_fastq(self.fastq_barcodes,6)),expected)
+
 
 raw_seqs1 = """>S1_0 FXX111 some comments
 TTTT
@@ -740,6 +756,8 @@ class FunctionWithParamsTests(TestCase):
         """FunctionWithParams formatResult should produce expected format"""
         x = self.FWP({'x':3})
         self.assertEqual(x.formatResult(3), '3')
+
+
 
 class BlastSeqsTests(TestCase):
     """ Tests of the qiime_blast_seqs function (will move to PyCogent eventually)
@@ -1113,6 +1131,9 @@ AAAAAAA
         exp=(array([[1,1,1,1],[2,2,2,2],[3,3,3,3]]),0)
         obs=_chk_asarray([[1,1,1,1],[2,2,2,2],[3,3,3,3]],0)
         self.assertEqual(obs,exp)
+    
+
+        
 
 otu_map1 = fields_to_dict("""1:\ta\tb\tc
 2:\td
