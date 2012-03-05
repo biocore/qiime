@@ -85,6 +85,7 @@ script_info['optional_options'] = [
         'useful for debugging [default: %default]'),
  make_option('--suppress_perseus',action='store_true',default=False,help='omit perseus from ampliconnoise workflow'),
  make_option('--platform',default='flx',help="sequencing technology, options are 'titanium','flx'. [default: %default]"),
+ make_option('--truncate_len', default=None, help="Specify a truncation length for ampliconnoise.  Note that is this is not specified, the truncate length is chosen by the --platform option (220 for FLX, 400 for Titanium) [default: %default]")
 
 
 ]
@@ -142,7 +143,15 @@ def main():
     else:
         raise RuntimeError('could not find PYRO_LOOKUP_FILE for platform '+platform)
 
-
+    if opts.truncate_len:
+        try:
+            truncate_len_int_check = int(opts.truncate_len)
+            truncate_len = str(truncate_len_int_check)
+        except ValueError:
+            raise ValueError,("If specified, truncate_len must be int type.")
+    else:
+        truncate_len = None
+    
     run_ampliconnoise(
      mapping_fp=opts.mapping_fp,
      output_dir=os.path.abspath(opts.output_dir),
@@ -158,6 +167,7 @@ def main():
      output_filepath=os.path.abspath(opts.output_filepath),
      platform=opts.platform,
      seqnoise_resolution=opts.seqnoise_resolution,
+     truncate_len=truncate_len
      )
 
 if __name__ == "__main__":
