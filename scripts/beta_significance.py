@@ -14,37 +14,36 @@ __status__ = "Development"
 
 from qiime.util import make_option
 import os
+from numpy import array
 
 import warnings
 warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
 from cogent.maths.unifrac.fast_unifrac import fast_unifrac_permutations_file
 from cogent.maths.unifrac.fast_unifrac import fast_p_test_file
-
 from qiime.util import parse_command_line_parameters
 from qiime.format import format_unifrac_sample_mapping
-
 from biom.parse import parse_biom_table
 
 
 script_info = {}
 script_info['brief_description'] = "This script runs any of a set of common tests to determine if a sample is statistically significantly different from another sample"
 script_info['script_description'] = "The tests are conducted on each pair of samples present in the input otu table. See the unifrac tutorial online for more details (http://bmf2.colorado.edu/unifrac/tutorial.psp)"
-script_info['script_usage'] = [("Example:","Perform 100 randomizations of sample/sequence assignments, and record the probability that sample 1 is phylogenetically different from sample 2, using the unifrac monte carlo significance test. The test is run for all pairs of samples.","%prog -i otu_table.txt -t rep_set.tre -s unweighted_unifrac -o unw_sig.txt")]
+script_info['script_usage'] = [("Example:","Perform 100 randomizations of sample/sequence assignments, and record the probability that sample 1 is phylogenetically different from sample 2, using the unifrac monte carlo significance test. The test is run for all pairs of samples.","%prog -i otu_table.biom -t rep_set.tre -s unweighted_unifrac -o unw_sig.txt")]
 script_info['output_description']= "The script outputs a tab delimited text file with each pair of samples and a p value representing the probability that a random sample/sequence assignment will result in more dissimilar samples than the actual pair of samples."
 script_info['required_options'] = [\
  make_option('-i', '--input_path',
      help='input otu table in biom format'), 
  make_option('-o', '--output_path',
      help='output results path'),
- make_option('-s', '--significance_test',
+ make_option('-s', '--significance_test',type='choice',
+     choices=['unweighted_unifrac', 'weighted_unifrac', 'p-test'],
      help="significance test to use, options are 'unweighted_unifrac', 'weighted_unifrac', or 'p-test'"), 
  make_option('-t', '--tree_path',help='path to newick tree file'),
 
 ]
 script_info['optional_options'] = [
  make_option('-n', '--num_iters', default=100, type="int",
-     help='number of monte carlo randomizations'+\
-     ' [default: %default]'),
+     help='number of monte carlo randomizations [default: %default]'),
 ]
 script_info['version'] = __version__
 
@@ -52,17 +51,12 @@ def main():
     option_parser, opts, args =\
         parse_command_line_parameters(**script_info)
 
-    if opts.tree_path==None:
-        if opts.significance_test in ['unweighted_unifrac','weighted_unifrac','p-test']:
-            raise RuntimeError('please supply a phylogenetic tree for %s' %\
-                opts.significance_test)
-
-
     otu_table_fp = opts.input_path
     otu_table = parse_biom_table(open(otu_table_fp, 'U'))
     sample_ids = otu_table.SampleIds
     otu_ids = otu_table.ObservationIds
-    otu_table_array = otu_table.iterObservationData()
+    ## This is not memory safe: need to be able to load the otu table as ints
+    otu_table_array = array(list(otu_table.iterObservationData()),dtype='int')
     # note, uses ugly temp file
     if opts.significance_test == 'unweighted_unifrac':
         tree_in = open(opts.tree_path,'U')
