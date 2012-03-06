@@ -20,7 +20,7 @@ from qiime.make_otu_heatmap_html import generate_heatmap_plots,get_otu_counts,\
     get_log_transform
 import os
 import shutil
-from qiime.util import get_qiime_project_dir
+from qiime.util import get_qiime_project_dir, create_dir
 from qiime.parse import parse_mapping_file
 from qiime.parse import parse_newick, PhyloNode
 from sys import exit
@@ -42,10 +42,11 @@ script_info['script_usage'].append(("","""If you would like to sort the heatmap 
 script_info['output_description']="""The interactive heatmap is located in a randomly generated folder where the name of the folder starts with "otu_table". The resulting folder contains the interactive heatmap (html file) along with a javascript library folder. This web application has been tested in Mozilla Firefox and Safari. Safari is recommended for viewing the OTU Heatmap, since the HTML table generation is much faster."""
 
 script_info['required_options']=[\
- options_lookup['otu_table_as_primary_input']
+ options_lookup['otu_table_as_primary_input'],
+ make_option('-o','--output_dir',type="new_dirpath",
+     help='path to the output directory'),
 ]
 script_info['optional_options']=[\
-    options_lookup['output_dir'],
     make_option('-n', '--num_otu_hits', 
         help='Only include OTUs with at least this many sequences.' +\
         ' [default: %default]',default=5, type='int'),
@@ -104,17 +105,6 @@ def main():
         #data['otu_counts'][2] = get_log_transform(data['otu_counts'][2], opts.log_eps)
         otu_table = get_log_transform(otu_table, opts.log_eps)
         num_otu_hits = 0
-        
-    # test: if using relative abundances, and opts.num_otu_hits > 0
-    # print warning and set to 0
-    #fractional_values = ((data['otu_counts'][2] > 0) & \
-    #                     (data['otu_counts'][2] < 1)).any()
-    #if fractional_values and (data['otu_counts'][2]).max() <= 1:
-    #    if opts.num_otu_hits > 0:
-    #        print "Warning: OTU table appears to be using relative abundances",\
-    #                "and num_otu_hits was set to %d. Setting num_otu_hits to 0."\
-    #                %(opts.num_otu_hits)
-    #        opts.num_otu_hits = 0
 
     fractional_values = False
     max_val = -1
@@ -133,25 +123,13 @@ def main():
 
     filepath=opts.otu_table_fp
     filename=filepath.strip().split('/')[-1].split('.')[0]
-
-    if opts.output_dir:
-        if os.path.exists(opts.output_dir):
-            dir_path=opts.output_dir
-        else:
-            try:
-                os.mkdir(opts.output_dir)
-                dir_path=opts.output_dir
-            except OSError:
-                pass
-    else:
-        dir_path='./'
+    
+    dir_path = opts.output_dir
+    create_dir(dir_path)
 
     js_dir_path = os.path.join(dir_path,'js')
+    create_dir(js_dir_path)
     
-    try:
-        os.mkdir(js_dir_path)
-    except OSError:
-        pass
 
     qiime_dir=get_qiime_project_dir()
 
