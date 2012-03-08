@@ -1039,16 +1039,20 @@ class WorkflowTests(TestCase):
         
         # define the params and mapping_category
         params=self.params
+    
         try:
             mapping_cat=params['summarize_otu_by_cat']['mapping_category']
         except:
             mapping_cat=None
-
+        
+        sort=True
+        
         run_summarize_taxa_through_plots(
          self.fasting_otu_table_fp,
          self.fasting_mapping_fp,
          self.wf_out,
          mapping_cat,
+         sort,
          call_commands_serially,
          params,
          self.qiime_config,
@@ -1077,7 +1081,7 @@ class WorkflowTests(TestCase):
 
         # Check that summarized taxonomy files have non-zero size
         for i in sum_levels:
-            sum_taxa_file=join(self.wf_out,input_file_basename+'_L%s.txt' \
+            sum_taxa_file=join(self.wf_out,input_file_basename+'_sorted_L%s.txt' \
                             % (str(i)))
             header,lineages,otu_table=parse_taxa_summary_table(\
                                                 open(sum_taxa_file).readlines())
@@ -1113,12 +1117,15 @@ class WorkflowTests(TestCase):
             mapping_cat=params['summarize_otu_by_cat']['mapping_category']
         except:
             mapping_cat=None
-            
+        
+        sort=False
+        
         run_summarize_taxa_through_plots(
          self.fasting_otu_table_fp,
          self.fasting_mapping_fp,
          self.wf_out,
          mapping_cat,
+         sort,
          call_commands_serially,
          params,
          self.qiime_config,

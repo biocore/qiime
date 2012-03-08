@@ -63,6 +63,9 @@ script_info['optional_options']=[\
         'useful for debugging [default: %default]',default=False),\
     make_option('-c','--mapping_category',default=None,
         help='Summarize OTU table using this category. [default: %default]'),
+    make_option('-s','--sort',action='store_true',\
+        dest='sort',help='Sort the OTU Table '+\
+        '[default: %default]',default=False),\
 ]
 script_info['version'] = __version__
 
@@ -76,6 +79,7 @@ def main():
     verbose = opts.verbose
     print_only = opts.print_only
     mapping_cat = opts.mapping_category
+    sort=opts.sort
     
     if opts.parameter_fp:
         try:
@@ -116,6 +120,7 @@ def main():
      mapping_fp=mapping_fp,
      output_dir=output_dir,
      mapping_cat=mapping_cat,
+     sort=sort,
      command_handler=command_handler,
      params=params,
      qiime_config=qiime_config,

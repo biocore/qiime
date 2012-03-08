@@ -1617,7 +1617,7 @@ def run_core_qiime_analyses(
     generate_index_page(index_links,index_fp)
 
 def run_summarize_taxa_through_plots(otu_table_fp, mapping_fp,
-    output_dir, mapping_cat, command_handler, params, qiime_config,
+    output_dir, mapping_cat, sort, command_handler, params, qiime_config,
     logger=None, status_update_callback=print_to_stdout):
     """ Run the data preparation for summarizing taxonomies and generating plots
     
@@ -1688,7 +1688,36 @@ def run_summarize_taxa_through_plots(otu_table_fp, mapping_fp,
          [('Summarize OTU table by Category',summarize_otu_by_cat_cmd)])
          
         otu_table_fp=output_fp
-     
+    
+    # Build the sort OTU table command
+    if sort:
+        # Prep the sort_otu_table command
+        try:
+            params_str = get_params_str(params['sort_otu_table'])
+        except:
+            params_str = ''
+            
+        # define output otu table
+        sorted_fp=join(output_dir,
+                       splitext(split(otu_table_fp)[-1])[0]+'_sorted.biom')
+        
+        if mapping_cat or params_str=='':
+            # for this case we don't have a collapsed mapping file so must
+            # handle separately
+            sort_otu_table_cmd = \
+             "%s %s/sort_otu_table.py -i %s -o %s" %\
+             (python_exe_fp, script_dir, otu_table_fp, sorted_fp)
+        else:
+            sort_otu_table_cmd = \
+             "%s %s/sort_otu_table.py -i %s -o %s -m %s %s" %\
+             (python_exe_fp, script_dir, otu_table_fp, sorted_fp, \
+              mapping_fp, params_str)
+        
+        commands.append([('Sort OTU Table',sort_otu_table_cmd)])
+
+        # redefine otu_table_fp to use
+        otu_table_fp=sorted_fp
+    
     # Prep the summarize taxonomy command
     try:
         params_str = get_params_str(params['summarize_taxa'])
