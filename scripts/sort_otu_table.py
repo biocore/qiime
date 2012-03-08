@@ -83,8 +83,9 @@ def main():
         result = sort_otu_table(otu_table_data,
                                 sorted_sample_ids)
     else:
-        parser.error("must provide either --sort_field and --mapping_fp OR --sorted_sample_ids_fp")
-
+        result = sort_otu_table(otu_table_data,
+                                sorted(otu_table_data.SampleIds))
+    
     # format and write the otu table
     result_str = format_biom_table(result)
     of = open(opts.output_fp,'w')
