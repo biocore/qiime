@@ -42,7 +42,7 @@ script_info['optional_options'] = [
  make_option('--md_identifier',default='taxonomy',
              help='the relevant observation metadat key [default: %default]'),
  make_option('--md_as_string',default=False,action='store_true',
-             help='the relevant observation metadat key [default: %default]'),
+             help='metadata is included as string [default: metadata is included as list]'),
 ]
 script_info['version'] = __version__
 
