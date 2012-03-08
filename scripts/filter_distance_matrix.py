@@ -18,6 +18,7 @@ from qiime.util import (parse_command_line_parameters,
 from qiime.filter import (filter_samples_from_distance_matrix, 
                          sample_ids_from_metadata_description,
                          get_seqs_to_keep_lookup_from_seq_id_file)
+from biom.parse import parse_biom_table
 from qiime.parse import parse_distmat
 
 options_lookup = get_options_lookup()
