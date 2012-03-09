@@ -18,13 +18,39 @@ __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
 
-def _natsort_key(item):
+def _natsort_key(item, case_sensitivity=False):
     """Provides normalized version of item for sorting with digits.
 
     From: 
     http://lists.canonical.org/pipermail/kragen-hacks/2005-October/000419.html
     """
     item = str(item)
+        
+    try:
+        chunks = re.split('(\d+(?:\.\d+)?)', item)
+    except TypeError:
+        # if item is a tuple or list (i.e., indexable, but not a string)
+        # work with the first element
+        chunks = re.split('(\d+(?:\.\d+)?)', item[0])
+    for ii in range(len(chunks)):
+        if chunks[ii] and chunks[ii][0] in '0123456789':
+            if '.' in chunks[ii]: numtype = float
+            else: numtype = int
+            # wrap in tuple with '0' to explicitly specify numbers come first
+            chunks[ii] = (0, numtype(chunks[ii]))
+        else:
+            chunks[ii] = (1, chunks[ii])
+    return (chunks, item)
+
+def _natsort_key_case_insensitive(item):
+    """Provides normalized version of item for sorting with digits.
+
+    From: 
+    http://lists.canonical.org/pipermail/kragen-hacks/2005-October/000419.html
+    """
+    # added the lower() call to allow for case-insensitive sorting
+    item = str(item).lower()
+
     try:
         chunks = re.split('(\d+(?:\.\d+)?)', item)
     except TypeError:
@@ -49,8 +75,19 @@ def natsort(seq):
     """
     alist = list(seq)
     alist.sort(key=_natsort_key)
+    
     return alist
 
+def natsort_case_insensitive(seq):
+    """Sort a sequence of text strings in a reasonable order.
+
+    From: 
+    http://lists.canonical.org/pipermail/kragen-hacks/2005-October/000419.html
+    """
+    alist = list(seq)
+    alist.sort(key=_natsort_key_case_insensitive)
+
+    return alist
 
 def sort_sample_ids_by_mapping_value(mapping_file,field,field_type_f=float):
     """ Return list of sample ids sorted by ascending value from mapping file

@@ -16,7 +16,8 @@ from cogent.util.misc import remove_files
 from qiime.parse import parse_mapping_file
 from biom.parse import parse_biom_table_str
 from qiime.sort import (sort_sample_ids_by_mapping_value,
-                        sort_fasta_by_abundance, natsort, sort_otu_table,
+                        sort_fasta_by_abundance, natsort,
+                        natsort_case_insensitive, sort_otu_table,
                         sort_otu_table_by_mapping_field)
 
 class SortTests(TestCase):
@@ -120,6 +121,50 @@ class SortTests(TestCase):
         self.assertEqual(natsort([('11','A'),('2','B'),('1','C'),('0','D')]),
                             [('0','D'),('1','C'),('2','B'),('11','A')])
 
+    #
+    def test_natsort_case_insensitive(self):
+        """natsort should perform numeric comparisons on strings and is 
+           _not_ case-sensitive"""
+           
+        # string with alpha and numerics sort correctly
+        s = ['sample1', 'sample2', 'sample11', 'sample12', 'SAmple1', 'Sample2']
+        
+        # expected values
+        exp_natsort=['SAmple1','Sample2', 'sample1', 'sample2', 'sample11', 
+                     'sample12']
+        exp_natsort_case_insensitive=['sample1','SAmple1','sample2', 
+                                      'Sample2','sample11', 'sample12']
+        
+        # test natsort
+        self.assertEqual(natsort(s),exp_natsort)
+        # test natsort_case_insensitive
+        self.assertEqual(natsort_case_insensitive(s), 
+                         exp_natsort_case_insensitive)
+          
+        s.reverse()
+        # test natsort
+        self.assertEqual(natsort(s), exp_natsort)
+        # test natsort_case_insensitive
+        self.assertEqual(natsort(list('cbaA321')),list('123Aabc'))
+
+        # strings with alpha only sort correctly
+        self.assertEqual(natsort_case_insensitive(list('cdBa')),list('aBcd'))
+
+        # string of ints sort correctly
+        self.assertEqual(natsort_case_insensitive(['11','2','1','0']),
+                               ['0','1','2','11'])
+
+        # strings of floats sort correctly
+        self.assertEqual(natsort_case_insensitive(['1.11','1.12','1.00',
+                                                  '0.009']),['0.009','1.00',
+                                                  '1.11','1.12'])
+
+        # string of ints sort correctly
+        self.assertEqual(natsort_case_insensitive([('11','A'),('2','B'),
+                                                  ('1','C'),('0','D')]),
+                                                  [('0','D'),('1','C'),
+                                                  ('2','B'),('11','A')])
+                            
     def test_sort_otu_table_by_mapping_field_all_values_differ(self):
         """ sort_otu_table_by_mapping_field fns when all values differ"""
 
