@@ -13,18 +13,19 @@ __email__ = "wasade@gmail.com"
 __status__ = "Development"
  
 from os import getcwd, makedirs
-from qiime.parse import parse_mapping_file_to_dict
-from qiime.util import parse_command_line_parameters
-from qiime.util import make_option
+from qiime.parse import parse_mapping_file_to_dict,parse_mapping_file,mapping_file_to_dict
+from qiime.util import parse_command_line_parameters,make_option
 from qiime.format import format_biom_table
 from biom.parse import parse_biom_table
-
+from qiime.colors import combine_map_label_cols,get_map
 
 script_info={}
 script_info['brief_description']="""Summarize an OTU table by a single column in the mapping file."""
 script_info['script_description']="""Collapse an OTU table based on values in a single column in the mapping file. For example, if you have 10 samples, five of which are from females and five of which are from males, you could use this script to collapse the ten samples into two corresponding based on their values in a 'Sex' column in your mapping file."""
 script_info['script_usage']=[]
 script_info['script_usage'].append(("""Example:""",""" Collapsed otu_table.txt on the 'Sex' column in map.txt and write the resulting OTU table to otu_table_by_sex.txt""","""summarize_otu_by_cat.py -c otu_table.txt -i map.txt -m Sex -o otu_table_by_sex.txt"""))
+script_info['script_usage'].append(("""""",""" Combine two categories and collapse otu_table.txt on the 'Sex' and 'Age' columns in map.txt and write the resulting OTU table to otu_table_by_sex_and_age.txt""","""summarize_otu_by_cat.py -c otu_table.txt -i map.txt -m "Sex&&Age" -o otu_table_by_sex_and_age.txt"""))
+
 script_info['output_description']= """"""
 script_info['required_options']=[\
     make_option('-i', '--mapping_fp',
@@ -34,7 +35,9 @@ script_info['required_options']=[\
         help='Input OTU table filepath. [REQUIRED]',
         type='existing_filepath'),
     make_option('-m', '--mapping_category',
-        help='Summarize OTU table using this category. [REQUIRED]'),
+        help='Summarize OTU table using this category. The user can ' +\
+        'also combine columns in the mapping file by separating the ' +\
+        'categories by "&&" without spaces. [REQUIRED]'),
     make_option('-o', '--output_fp', dest='output_fp',
         help='Output OTU table filepath. [REQUIRED]',
         type='new_filepath'),
@@ -65,7 +68,20 @@ def main():
     bin_function = lambda sample_metadata: sample_metadata[mapping_category]
     # parse the sample metadata and add it to the OTU table (we assume that
     # sample metadata is not already present in the table)
-    sample_metadata = parse_mapping_file_to_dict(open(mapping_fp,'U'))[0]
+    mapping,headers,comments = parse_mapping_file(open(mapping_fp,'U'))
+
+    # added in ability to combine metadata columns and summarize based on the
+    # new combined category    
+    if '&&' in mapping_category:
+        new_mapping=[]
+        new_mapping.append(headers)
+        for i in range(len(mapping)):
+            new_mapping.append(mapping[i])
+        #Create an array using multiple columns from mapping file
+        combinecolorby=mapping_category.split('&&')
+        mapping=combine_map_label_cols(combinecolorby,new_mapping)
+        
+    sample_metadata=mapping_file_to_dict(mapping,headers)
     table = parse_biom_table(open(otu_table_fp,'U'))
     table.addSampleMetadata(sample_metadata)
     # create a new OTU table where samples are binned based on their return
