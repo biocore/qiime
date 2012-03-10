@@ -16,7 +16,8 @@ from qiime.util import make_option
 from qiime.parse import parse_mapping_file
 from qiime.format import format_biom_table
 from qiime.util import parse_command_line_parameters, get_options_lookup
-from qiime.sort import sort_otu_table, sort_otu_table_by_mapping_field
+from qiime.sort import sort_otu_table, sort_otu_table_by_mapping_field,\
+                       natsort_case_insensitive
 from biom.parse import parse_biom_table
 
 options_lookup = get_options_lookup()
@@ -84,7 +85,7 @@ def main():
                                 sorted_sample_ids)
     else:
         result = sort_otu_table(otu_table_data,
-                                sorted(otu_table_data.SampleIds))
+                        natsort_case_insensitive(otu_table_data.SampleIds))
     
     # format and write the otu table
     result_str = format_biom_table(result)
