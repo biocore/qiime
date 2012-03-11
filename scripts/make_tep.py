@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Meg Pirrung"
 __copyright__ = "Copyright 2011, The QIIME project"
-__credits__ = ["Meg Pirrung"]
+__credits__ = ["Meg Pirrung", "Jesse Stombaugh"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Meg Pirrung"
@@ -14,7 +14,7 @@ __status__ = "Development"
 from os.path import split,splitext
 from qiime.util import parse_command_line_parameters, make_option
 from qiime.util import load_qiime_config, create_dir
-from qiime.parse import parse_otu_table
+from biom.parse import parse_biom_table
 import os
 
 script_info = {}
@@ -162,24 +162,24 @@ def main():
     tep_fp = '%s/%s.tep' % (output_dir,output_basename)      # opts.out_fp+'.tep'
     jnlp_fp = '%s/%s.jnlp' % (output_dir,output_basename)
     tepfile = open(tep_fp, 'w')
-    otu_lines = open(otu_table_fp, 'U').readlines()
-    sample_ids, otu_ids, otu_table, metadata = parse_otu_table(otu_lines)
+    otu_table_data = parse_biom_table(open(otu_table_fp, 'U'))
+    #sample_ids, otu_ids, otu_table, metadata = parse_otu_table(otu_lines)
     mapping_lines = open(mapping_fp, 'U')    
     tree_lines = open(tree_fp, 'U')
     
     lines = ['>>tre\n']
     lines += tree_lines.readlines() 
     lines += '\n'
-    if(metadata):
+    if(otu_table_data.ObservationMetadata):
         lines += '>>otm\n#OTU ID\tOTU Metadata\n'
-        for i in range(len(otu_ids)):
-            lines += otu_ids[i] + '\t'
-            for m in metadata[i]:
+        for i in range(len(otu_table_data.ObservationIds)):
+            lines += otu_table_data.ObservationIds[i] + '\t'
+            for m in otu_table_data.ObservationMetadata[i]['taxonomy']:
                 lines += m + ';'
             # lines = lines[:len(lines)-1]
             lines += '\n'
     lines += '>>osm\n'
-    lines += otu_lines
+    lines += otu_table_data.delimitedSelf()
     lines += '\n>>sam\n'
     lines += mapping_lines.readlines()
     
