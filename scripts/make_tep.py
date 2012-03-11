@@ -179,7 +179,12 @@ def main():
             # lines = lines[:len(lines)-1]
             lines += '\n'
     lines += '>>osm\n'
-    lines += otu_table_data.delimitedSelf()
+    if otu_table_data.ObservationMetadata is None:
+        lines += otu_table_data.delimitedSelf()
+    elif "taxonomy" in otu_table_data.ObservationMetadata[0]:
+        lines += otu_table_data.delimitedSelf(header_key="taxonomy", 
+                                       header_value="Consensus Lineage",
+                                       metadata_formatter=lambda x: ';'.join(x))
     lines += '\n>>sam\n'
     lines += mapping_lines.readlines()
     
