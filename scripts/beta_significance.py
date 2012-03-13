@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Justin Kuczynski"]
+__credits__ = ["Justin Kuczynski", "Jose Antonio Navas"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Justin Kuczynski"
@@ -36,8 +36,8 @@ script_info['required_options'] = [\
  make_option('-o', '--output_path',
      help='output results path'),
  make_option('-s', '--significance_test',type='choice',
-     choices=['unweighted_unifrac', 'weighted_unifrac', 'p-test'],
-     help="significance test to use, options are 'unweighted_unifrac', 'weighted_unifrac', or 'p-test'"), 
+     choices=['unweighted_unifrac', 'weighted_unifrac', 'weighted_normalized_unifrac', 'p-test'],
+     help="significance test to use, options are 'unweighted_unifrac', 'weighted_unifrac', 'weighted_normalized_unifrac', or 'p-test'"), 
  make_option('-t', '--tree_path',help='path to newick tree file'),
 
 ]
@@ -130,6 +130,30 @@ def main():
         for line in result:
             of.write('\t'.join(map(str,line)) + '\n')
         of.close()
+
+    elif opts.significance_test == 'weighted_normalized_unifrac':
+		tree_in = open(opts.tree_path, 'U')
+		output_fp = opts.output_path + '_envs.tmp'
+
+		result = format_unifrac_sample_mapping(
+			sample_ids, otu_ids, otu_table_array)
+		of = open(output_fp, 'w')
+		of.write('\n'.join(result))
+		of.close()
+		envs_in = open(output_fp, 'U')
+
+		result = fast_unifrac_permutations_file(tree_in, envs_in,
+			weighted='correct', num_iters = opts.num_iters, verbose=opts.verbose)
+		envs_in.close()
+		os.remove(output_fp)
+		of = open(opts.output_path, 'w')
+		of.write(\
+			"#weighted normalized unifrac significance test\n")
+		of.write(\
+			"sample 1\tsample 2\tp value\tp value (Bonferroni corrected)\n")
+		for line in result:
+			of.write('\t'.join(map(str,line)) + '\n')
+		of.close()
 
     else:
         raise RuntimeError('significance test "%s" not found' %\
