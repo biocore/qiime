@@ -67,14 +67,19 @@ def _natsort_key_case_insensitive(item):
             chunks[ii] = (1, chunks[ii])
     return (chunks, item)
 
-def natsort(seq):
+def natsort(seq,case_sensitive=True):
     """Sort a sequence of text strings in a reasonable order.
 
     From: 
     http://lists.canonical.org/pipermail/kragen-hacks/2005-October/000419.html
     """
+    if case_sensitive:
+        natsort_key = _natsort_key
+    else:
+        natsort_key = _natsort_key_case_insensitive
+    
     alist = list(seq)
-    alist.sort(key=_natsort_key)
+    alist.sort(key=natsort_key)
     
     return alist
 
@@ -84,10 +89,7 @@ def natsort_case_insensitive(seq):
     From: 
     http://lists.canonical.org/pipermail/kragen-hacks/2005-October/000419.html
     """
-    alist = list(seq)
-    alist.sort(key=_natsort_key_case_insensitive)
-
-    return alist
+    return natsort(seq,case_sensitive=False)
 
 def sort_sample_ids_by_mapping_value(mapping_file,field,field_type_f=float):
     """ Return list of sample ids sorted by ascending value from mapping file
