@@ -641,7 +641,7 @@ eigvals\t4.94\t1.79\t1.50
 353 PC.634_154	Root;Bacteria;Bacteroidetes	0.830
 17 PC.607_302	Root;Bacteria;Bacteroidetes	0.960
 13	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales	0.870
-338 PC.593_1314	Root;Bacteria	0.990	42556	Additional fields ignored"""
+338 PC.593_1314	Root;Bacteria	0.990"""
         actual = parse_taxonomy_to_otu_metadata(example_tax.split('\n'))
         expected = {'412':{'taxonomy':['Root','Bacteria','Firmicutes','"Clostridia"','Clostridiales'],'score':0.930},
  '319':{'taxonomy':['Root','Bacteria','Bacteroidetes'],'score':0.970},
@@ -650,6 +650,41 @@ eigvals\t4.94\t1.79\t1.50
  '13':{'taxonomy':['Root','Bacteria','Firmicutes','"Clostridia"','Clostridiales'],'score':0.870},
  '338':{'taxonomy':['Root','Bacteria'],'score':0.990}}
         self.assertEqual(actual,expected)
+
+    def test_parse_taxonomy_to_otu_metadata_alt_labels(self):
+        """parsing of taxonomy file to otu metadata format functions as expected
+        """
+        def f(v):
+            return 1. + float(v)
+        example_tax = \
+"""412 PC.635_647	0.0
+319 PC.355_281	0.970
+353 PC.634_154	0.830
+17 PC.607_302	0.960
+13	0.870
+338 PC.593_1314	0.990"""
+        actual = parse_taxonomy_to_otu_metadata(example_tax.split('\n'),labels=['something'],process_fs=[f])
+        expected = {'412':{'something':1.0},
+ '319':{'something':1.970},
+ '353':{'something':1.830},
+ '17':{'something':1.960},
+ '13':{'something':1.870},
+ '338':{'something':1.990}}
+        self.assertEqual(actual,expected)
+
+
+
+    def test_parse_taxonomy_to_otu_metadata_invalid_input(self):
+        """parsing of taxonomy file to otu metadata format functions as expected
+        """
+        example_tax = \
+"""412 PC.635_647	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales	0.930
+319 PC.355_281	Root;Bacteria;Bacteroidetes	0.970
+353 PC.634_154	Root;Bacteria;Bacteroidetes	0.830
+17 PC.607_302	Root;Bacteria;Bacteroidetes	0.960
+13	Root;Bacteria;Firmicutes;"Clostridia";Clostridiales	0.870
+338 PC.593_1314	Root;Bacteria	0.990	42556	Additional fields raise error"""
+        self.assertRaises(ValueError,parse_taxonomy_to_otu_metadata,example_tax.split('\n'))
  
     def test_parse_qiime_config_files(self):
         """ parse_qiime_config_files functions as expected """

@@ -391,17 +391,30 @@ def parse_taxonomy(infile):
 
     return res
 
-def parse_taxonomy_to_otu_metadata(lines,labels=['taxonomy','score']):
+def taxa_split(taxa_string):
+    return [t.strip() for t in taxa_string.split(';')]
+    
+def parse_taxonomy_to_otu_metadata(lines,labels=['taxonomy','score'],process_fs=[taxa_split,float]):
     """ """
     result = {}
     for line in lines:
         line = line.strip()
         fields = line.split('\t')
         id_ = fields[0].split()[0]
-        taxa_string = fields[1]
-        taxa = [t.strip() for t in taxa_string.split(';')]
-        score = float(fields[2])
-        result[id_] = {labels[0]:taxa, labels[1]:score}
+        result[id_] = {}
+        for i,field in enumerate(fields[1:]):
+            try:
+                value = process_fs[i](field)
+            except IndexError:
+                raise ValueError, "Too few process functions provided (n=%d), or too many metadata entries for OTU %s."\
+                  % (len(process_fs),id_)
+            try:
+                label = labels[i]
+            except IndexError:
+                raise ValueError, "Too few labels provided (n=%d), or too many metadata entries for OTU %s."\
+                  % (len(labels),id_)
+            
+            result[id_][label] = value
     return result
 
 def process_otu_table_sample_ids(sample_id_fields):
