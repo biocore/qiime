@@ -23,11 +23,16 @@ script_info={}
 script_info['brief_description']="""Calculate alpha diversity on each sample in an otu table, using a variety of alpha diversity metrics"""
 script_info['script_description']="""This script calculates alpha diversity, or within-sample diversity, using an otu table. The QIIME pipeline allows users to conveniently calculate more than two dozen different diversity metrics. The full list of available metrics is available by passing the option -s to the script alpha_diversity.py. Every metric has different strengths and limitations - technical discussion of each metric is readily available online and in ecology textbooks, but is beyond the scope of this document."""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Single File Alpha Diversity Example:""","""To perform alpha diversity (e.g. chao1) on a single OTU table, where the results are output to "alpha_div.txt", you can use the following command:""","""alpha_diversity.py -i otu_table.txt -m chao1 -o alpha_div.txt"""))
-script_info['script_usage'].append(("""""","""Note: Since this is a non-phylogenetic metric, the tree does not need to be supplied.""",""""""))
-script_info['script_usage'].append(("""""","""In the case that you would like to perform alpha diversity using a phylogenetic metric (e.g. PD_whole_tree), you can use the following command:""","""alpha_diversity.py -i otu_table.txt -m PD_whole_tree -o alpha_div.txt -t repr_set.tre"""))
-script_info['script_usage'].append(("""""","""You can use the following idiom to run multiple metrics at once (comma-separated):""","""alpha_diversity.py -i otu_table.txt -m chao1,PD_whole_tree -o alpha_div.txt -t repr_set.tre"""))
-script_info['script_usage'].append(("""Multiple File (batch) Alpha Diversity:""","""To perform alpha diversity on multiple OTU tables (e.g.: rarefied otu tables resulting from multiple_rarefactions.py), specify an input directory instead of a single otu talbe, and an output directory (e.g. "alpha_div_chao1_PD/") as shown by the following command:""","""alpha_diversity.py -i rarefaction_tables/ -m chao1,PD_whole_tree -o alpha_div_chao1_PD/ -t repr_set.tre"""))
+
+script_info['script_usage'].append(("""Single File Alpha Diversity Example (non-phylogenetic):""","""To perform alpha diversity (e.g. chao1) on a single OTU table, where the results are output to "alpha_div.txt", you can use the following command:""","""%prog -i otu_table.biom -m chao1 -o adiv_chao1.txt"""))
+
+
+script_info['script_usage'].append(("""Single File Alpha Diversity Example (phylogenetic):""","""In the case that you would like to perform alpha diversity using a phylogenetic metric (e.g. PD_whole_tree), you can use the following command:""","""%prog -i otu_table.biom -m PD_whole_tree -o adiv_pd.txt -t rep_set.tre"""))
+
+script_info['script_usage'].append(("""Single File Alpha Diversity Example with multiple metrics:""","""You can use the following idiom to run multiple metrics at once (comma-separated):""","""%prog -i otu_table.biom -m chao1,PD_whole_tree -o adiv_chao1_pd.txt -t rep_set.tre"""))
+
+script_info['script_usage'].append(("""Multiple File (batch) Alpha Diversity:""","""To perform alpha diversity on multiple OTU tables (e.g.: rarefied otu tables resulting from multiple_rarefactions.py), specify an input directory instead of a single otu talbe, and an output directory (e.g. "alpha_div_chao1_PD/") as shown by the following command:""","""%prog -i otu_tables/ -m chao1,PD_whole_tree -o adiv_chao1_pd/ -t rep_set.tre"""))
+
 script_info['output_description']="""The resulting file(s) is a tab-delimited text file, where the columns correspond to alpha diversity metrics and the rows correspond to samples and their calculated diversity measurements. When a folder is given as input (-i), the script processes every otu table file in the given folder, and creates a corresponding file in the output directory.
 
 Example Output:
