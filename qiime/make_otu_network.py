@@ -21,8 +21,6 @@ Requirements:
 Python 2.5
 """
 
-
-from optparse import OptionParser
 from collections import defaultdict
 from numpy import nonzero, arange
 from string import strip

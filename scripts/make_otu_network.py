@@ -37,17 +37,22 @@ This OTU-based approach to comparisons between samples provides a counterpoint t
 In more technical language: OTUs and samples are designated as two types of nodes in a bipartite network in which OTU-nodes are connected via edges to sample-nodes in which their sequences are found. Edge weights are defined as the number of sequences in an OTU. To cluster the OTUs and samples in the network, a stochastic spring-embedded algorithm is used, where nodes act like physical objects that repel each other, and connections act a springs with a spring constant and a resting length: the nodes are organized in a way that minimized forces in the network. These algorithms are implemented in Cytoscape (Shannon et al., 2003)."""
 
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Example:""","""Create network cytoscape and statistic files in a user-specified output directory. This example uses an OTU file "otus.txt" (-i) and the user-generated mapping file "input_map.txt" (-m), where the results are written to the "otu_network/" folder. By default this folder will be put into the current working, unless specified by the "-o" option.""","""make_otu_network.py -i otus.txt -m input_map.txt -o otu_network/"""))
+
+script_info['script_usage'].append(("""Example:""","""Create network cytoscape and statistic files in a user-specified output directory. This example uses an OTU table (-i) and the metadata mapping file (-m), and the results are written to the "otu_network/" folder.""","""%prog -i otu_table.biom -m Fasting_Map.txt -o otu_network"""))
+
 script_info['output_description']="""The result of make_otu_network.py consists of a folder which contains edge and node files to be loaded into cytoscape along with props files labeled by category, which can used for coloring."""
 
 
-script_info['required_options'] = [\
-make_option('-m', '--mapping_file',action='store',type='string',\
-                dest='map_fname',\
+script_info['required_options'] = [
+make_option('-i', '--input_fp',type='existing_filepath',
+            help='name of otu table file in biom format [REQUIRED]'),
+# note that the options list gets passed around, so it is required that
+# the option be called --map_fname for this value - an annoying name 
+# but not refactoring now...
+make_option('-m', '--map_fname',type='existing_filepath',
                 help='name of input map file [REQUIRED]'),
-make_option('-i', '--input_file',action='store',type='string',\
-            dest='counts_fname',\
-            help='name of otu table file [REQUIRED]')
+make_option('-o', '--output_dir',type='new_dirpath',
+               help='output directory for all analyses [REQUIRED]')
 ]
 
 script_info['optional_options'] = [\
@@ -60,31 +65,19 @@ mapping file by separating the categories by "&&" without spaces \
 [default=%default]'),
  make_option('-p', '--prefs_path',help='This is the user-generated preferences \
 file. NOTE: This is a file with a dictionary containing preferences for the \
-analysis [default: %default]'),
+analysis [default: %default]',type='existing_filepath'),
  make_option('-k', '--background_color',help='This is the background color to \
 use in the plots. [default: %default]'),
-make_option('-o', '--output_dir', action='store',type='string',\
-               dest='dir_path',\
-               help='output directory for all analyses [default: cwd]')
 ]
 
 script_info['version'] = __version__
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
-    if not opts.counts_fname:
-        parser.error("An otu table file must be specified")
-
-    if not opts.map_fname:
-        parser.error("A Map file must be specified")
 
     prefs,data,background_color,label_color, ball_scale, arrow_colors= \
              sample_color_prefs_and_map_data_from_options(opts)
-
-
-    dir_path = opts.dir_path
-
-    if dir_path==None or dir_path=='':
-        dir_path = get_random_directory_name()
+    
+    dir_path = opts.output_dir
 
     create_dir(dir_path)
     create_dir(os.path.join(dir_path,"otu_network"))
@@ -92,8 +85,7 @@ def main():
     create_dir(os.path.join(dir_path,"otu_network/stats"))
 
     map_lines = open(opts.map_fname,'U').readlines()
-    #otu_sample_lines = open(opts.counts_fname, 'U').readlines()
-    create_network_and_stats(dir_path,map_lines,opts.counts_fname,prefs,data,background_color,label_color)
+    create_network_and_stats(dir_path,map_lines,opts.input_fp,prefs,data,background_color,label_color)
 
 if __name__ == "__main__":
     main()
