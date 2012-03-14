@@ -24,18 +24,20 @@ options_lookup = get_options_lookup()
 
 #per_library_stats.py
 script_info={}
-script_info['brief_description']="""Calculate per library statistics"""
-script_info['script_description']="""Given an otu table, compute and print the (min, max, median, mean) number of seqs per library."""
+script_info['brief_description']="""Calculate statistics on data in a BIOM-formatted OTU table"""
+script_info['script_description']="""Given an otu table in BIOM format, compute and print the (min, max, median, mean) number of seqs per library."""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Example:""","""Calculate statistics on an OTU table (otu_table.txt)""","""per_library_stats.py -i otu_table.txt"""))
-script_info['script_usage'].append(("""Example appending results to mapping file:""","""Calculate statistics on an OTU table (otu_table.txt)""","""per_library_stats.py -i otu_table.txt -m old_map.txt -o new_map.txt"""))
+
+script_info['script_usage'].append(("""Write to standard out:""","""Calculate statistics on an OTU table""","""%prog -i otu_table.biom"""))
+
+script_info['script_usage'].append(("""Write to standard out and edit mapping file:""","""Calculate statistics on an OTU table and add sequence/sample count data to mapping file.""","""per_library_stats.py -i otu_table.biom -m Fasting_Map.txt -o map.txt"""))
 
 script_info['output_description']="""The resulting statistics are written to stdout. If -m is passed, a new mapping file is written to the path specified by -o, in addition to the statistics written to stdout"""
 script_info['required_options']=[options_lookup['otu_table_as_primary_input']]
 script_info['optional_options']=[
-make_option('-m','--mapfile',help='a mapping file. If included, this script will modify the mapping file to include sequences per sample (library) information, and write the modified mapping file to the path specified by -o. The sequences (individuals) per sample is presented in a new column entitled "NumIndividuals", and samples present in the mapping file but not the otu table have the value "na" in this column. Note also that the location of comments is not preserved in the new mapping file'),
+make_option('-m','--mapping_fp',help='a mapping file. If included, this script will modify the mapping file to include sequences per sample (library) information, and write the modified mapping file to the path specified by -o. The sequences (individuals) per sample is presented in a new column entitled "NumIndividuals", and samples present in the mapping file but not the otu table have the value "na" in this column. Note also that the location of comments is not preserved in the new mapping file'),
 
-make_option('-o','--outputfile',help='the output filepath where the modified mapping file will be written'),
+make_option('-o','--output_mapping_fp',help='the output filepath where the modified mapping file will be written'),
 make_option('--do_not_use_abundance_weights',action='store_true',help='Do not use abundance weights [default: %default]',default=False)
 ]
 script_info['version'] = __version__
@@ -73,11 +75,11 @@ def main():
         total_count += v
         print ' %s: %s' % (k,str(v))
 
-    if opts.mapfile:
-        if not opts.outputfile:
+    if opts.mapping_fp:
+        if not opts.output_mapping_fp:
             raise RuntimeError('input mapping file supplied, but no path to'+\
              ' output file')
-        f = open(opts.mapfile,'U')
+        f = open(opts.mapping_fp,'U')
         mapping_lines, headers, comments = parse_mapping_file(f)
         f.close()
         if len(headers)==1:
@@ -94,7 +96,7 @@ def main():
             map_line.insert(len(map_line)-endoffset,depth)
 
         new_map_str = format_mapping_file(headers, mapping_lines, comments)
-        f = open(opts.outputfile, 'w')
+        f = open(opts.output_mapping_fp, 'w')
         f.write(new_map_str)
         f.close()
 
