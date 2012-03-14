@@ -35,9 +35,9 @@ script_info['script_usage'].append(("""Write to standard out and edit mapping fi
 script_info['output_description']="""The resulting statistics are written to stdout. If -m is passed, a new mapping file is written to the path specified by -o, in addition to the statistics written to stdout"""
 script_info['required_options']=[options_lookup['otu_table_as_primary_input']]
 script_info['optional_options']=[
-make_option('-m','--mapping_fp',help='a mapping file. If included, this script will modify the mapping file to include sequences per sample (library) information, and write the modified mapping file to the path specified by -o. The sequences (individuals) per sample is presented in a new column entitled "NumIndividuals", and samples present in the mapping file but not the otu table have the value "na" in this column. Note also that the location of comments is not preserved in the new mapping file'),
+make_option('-m','--mapping_fp',type='existing_filepath',help='a mapping file. If included, this script will modify the mapping file to include sequences per sample (library) information, and write the modified mapping file to the path specified by -o. The sequences (individuals) per sample is presented in a new column entitled "NumIndividuals", and samples present in the mapping file but not the otu table have the value "na" in this column. Note also that the location of comments is not preserved in the new mapping file'),
 
-make_option('-o','--output_mapping_fp',help='the output filepath where the modified mapping file will be written'),
+make_option('-o','--output_mapping_fp',help='the output filepath where the modified mapping file will be written', type='new_filepath'),
 make_option('--do_not_use_abundance_weights',action='store_true',help='Do not use abundance weights [default: %default]',default=False)
 ]
 script_info['version'] = __version__
