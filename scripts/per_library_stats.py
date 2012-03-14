@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Greg Caporaso"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Greg Caporaso", "Daniel McDonald","Justin Kuczynski"]
+__credits__ = ["Greg Caporaso", "Daniel McDonald","Justin Kuczynski","Jose Carlos Clemente Litran"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Greg Caporaso"
@@ -57,7 +57,10 @@ def main():
     print 'Num otus: %s' % str(otu_count)
     print 'Num observations (sequences): %s\n' % (sum(counts_per_sample_values))
 
-    print 'Seqs/sample summary:' 
+    if opts.otu_counts:
+        print 'OTUs/sample summary:'
+    else:
+        print 'Seqs/sample summary:' 
     print ' Min: %s' % str(min_counts)
     print ' Max: %s' % str(max_counts)
     print ' Median: %s' % str(median_counts)
@@ -67,7 +70,10 @@ def main():
     print ' Default even sampling depth in\n  core_qiime_analyses.py (just a suggestion): %s' %\
      str(even_sampling_depth)
     print ''
-    print 'Seqs/sample detail:'
+    if opts.otu_counts:
+        print 'OTUs/sample detail:'
+    else:
+        print 'Seqs/sample detail:'
     sorted_counts_per_sample = [(v,k) for k,v in counts_per_sample.items()]
     sorted_counts_per_sample.sort()
     total_count = 0
