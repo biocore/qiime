@@ -28,36 +28,44 @@ options_lookup = get_options_lookup()
 script_info = {}
 script_info['brief_description'] = "This script can be applied to remove sequences from a fasta or fastq file based on input criteria."
 script_info['script_description'] = ""
-script_info['script_usage'] = [
- ("Keep all sequences that show up in an OTU map","",
- "filter_fasta.py -f inseqs.fasta -o filtered_seqs.fasta -m uclust_ref_otus.txt"),
- ("Discard all sequences that show up in chimera checking output. NOTE: It is very important to pass -n here as this tells the script to negate the request, or discard all sequences that are listed via -s. This is necessary to remove the identified chimeras from inseqs.fasta","",
- "filter_fasta.py -f inseqs.fasta -o non_chimeric_seqs.fasta -s chimeric_seqs.txt -n"),
- ("Keep all sequences from as fasta file that are listed in a text file","",
- "filter_fasta.py -f inseqs.fasta -o filtered_seqs.fasta -s seqs_to_keep.txt"),
- ("Keep all sequences from a fastq file that are listed in a text file (note: file name must end with .fastq to support fastq filtering)","",
- "filter_fasta.py -f inseqs.fastq -o filtered_seqs.fasta -s seqs_to_keep.txt")]
+script_info['script_usage'] = []
+
+script_info['script_usage'].append(("OTU map-based filtering","Keep all sequences that show up in an OTU map.",
+ "filter_fasta.py -f inseqs.fasta -o otu_map_filtered_seqs.fasta -m otu_map.txt"))
+
+script_info['script_usage'].append(("Chimeric sequence filtering","Discard all sequences that show up in chimera checking output. NOTE: It is very important to pass -n here as this tells the script to negate the request, or discard all sequences that are listed via -s. This is necessary to remove the identified chimeras from inseqs.fasta.",
+ "filter_fasta.py -f inseqs.fasta -o non_chimeric_seqs.fasta -s chimeric_seqs.txt -n"))
+
+script_info['script_usage'].append(("Sequence list filtering", "Keep all sequences from as fasta file that are listed in a text file.",
+ "filter_fasta.py -f inseqs.fasta -o list_filtered_seqs.fasta -s seqs_to_keep.txt"))
+ 
+script_info['script_usage'].append(("biom-based filtering", "Keep all sequences that are listed as observations in a biom file.",
+ "filter_fasta.py -f inseqs.fastq -o biom_filtered_seqs.fastq -b otu_table.biom"))
+
+script_info['script_usage'].append(("fastq filtering","Keep all sequences from a fastq file that are listed in a text file (note: file name must end with .fastq to support fastq filtering).",
+ "filter_fasta.py -f inseqs.fastq -o list_filtered_seqs.fastq -s seqs_to_keep.txt"))
+
 script_info['output_description']= ""
 script_info['required_options'] = [\
  options_lookup['input_fasta'],
- make_option('-o','--output_fasta_fp',help='the output fasta filepath')
+ make_option('-o','--output_fasta_fp',type='new_filepath',help='the output fasta filepath')
 ]
 script_info['optional_options'] = [\
- make_option('-m','--otu_map',
+ make_option('-m','--otu_map',type='existing_filepath',
   help='an OTU map where sequences ids are those which should be retained'),\
- make_option('-s','--seq_id_fp', 
+ make_option('-s','--seq_id_fp',type='existing_filepath', 
   help='A list of sequence identifiers (or tab-delimited lines with'
   ' a seq identifier in the first field) which should be retained'),\
- make_option('-b','--biom_fp', 
+ make_option('-b','--biom_fp',type='existing_filepath', 
   help='A biom file where otu identifiers should be retained'),\
- make_option('-a','--subject_fasta_fp',
+ make_option('-a','--subject_fasta_fp',type='existing_filepath',
   help='A fasta file where the seq ids should be retained.'),\
- make_option('-p','--seq_id_prefix',
+ make_option('-p','--seq_id_prefix',type='existing_filepath',
   help='keep seqs where seq_id starts with this prefix'),\
  make_option('-n','--negate', help='discard passed seq ids rather than'
   ' keep passed seq ids [default: %default]', default=False, 
   action='store_true'),
- make_option('--mapping_fp',
+ make_option('--mapping_fp',type='existing_filepath',
   help='mapping file path (for use with --valid_states) [default: %default]'),
  make_option('--valid_states',
   help='description of sample ids to retain (for use with --mapping_fp) [default: %default]')
