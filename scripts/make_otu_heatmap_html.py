@@ -32,14 +32,18 @@ options_lookup = get_options_lookup()
 #make_otu_heatmap_html.py
 script_info={}
 script_info['brief_description']="""Make heatmap of OTU table"""
-script_info['script_description']="""Once the OTU table has been generated, the user can create an interactive OTU heatmap. This script parses the OTU count table and filters the table by counts per otu (user-specified), then converts the table into a javascript array, which can be loaded into a web application. The OTU heatmap displays raw OTU counts per sample, where the counts are colored based on the contribution of each OTU to the total OTU count present in that sample (blue: contributes low percentage of OTUs to sample; red: contributes high percentage of OTUs). This web application allows the user to filter the otu table by number of counts per otu. The user also has the ability to view the table based on taxonomy assignment. Additional features include: the ability to drag rows (up and down) by clicking and dragging on the row headers; and the ability to zoom in on parts of the heatmap by clicking on the counts within the heatmap."""
+script_info['script_description']="""Create an interactive OTU heatmap from an OTU table. This script parses the OTU count table and filters the table by counts per otu (user-specified), then converts the table into a javascript array, which can be loaded into a web application. The OTU heatmap displays raw OTU counts per sample, where the counts are colored based on the contribution of each OTU to the total OTU count present in that sample (blue: contributes low percentage of OTUs to sample; red: contributes high percentage of OTUs). This web application allows the user to filter the otu table by number of counts per otu. The user also has the ability to view the table based on taxonomy assignment. Additional features include: the ability to drag rows (up and down) by clicking and dragging on the row headers; and the ability to zoom in on parts of the heatmap by clicking on the counts within the heatmap."""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Examples:""","""By using the default values ("-n 5), you can then use the code as follows:""","""%prog -i otu_table.txt"""))
-script_info['script_usage'].append(("","""If you would like to filter the OTU table by a different number of counts per OTU (i.e., 10), you can use the following code:""","""%prog -i otu_table.txt -n 10"""))
-script_info['script_usage'].append(("","""If you would like to specify a different output directory (i.e., "otu_heatmap"), you can use the following code:""","""%prog -i otu_table.txt -o otu_heatmap"""))
-script_info['script_usage'].append(("","""If you would like to sort the heatmap by Sample ID's then you should supply the mapping file, as follows:""","""%prog -i otu_table.txt -o otu_heatmap -m mapping_file.txt"""))
-script_info['script_usage'].append(("","""If you would like to sort the heatmap by Sample ID's and the tips in the tree, you can supply a tree as follows:""","""%prog -i otu_table.txt -o otu_heatmap -m mapping_file.txt -t tree_file.txt"""))
-script_info['output_description']="""The interactive heatmap is located in a randomly generated folder where the name of the folder starts with "otu_table". The resulting folder contains the interactive heatmap (html file) along with a javascript library folder. This web application has been tested in Mozilla Firefox and Safari. Safari is recommended for viewing the OTU Heatmap, since the HTML table generation is much faster."""
+
+script_info['script_usage'].append(("""Generate an OTU heatmap""","""By using the default values ("-n 5), you can then use the code as follows:""","""%prog -i otu_table.biom -o heatmap/"""))
+
+script_info['script_usage'].append(("Generate a filtered OTU heatmap","""If you would like to filter the OTU table by a different number of counts per OTU (i.e., 10):""","""%prog -i otu_table.biom -n 10 -o heatmap_mc10/"""))
+
+script_info['script_usage'].append(("Generate a sample-sorted OTU heatmap","""If you would like to sort the heatmap by Sample IDs then you should supply the mapping file, as follows:""","""%prog -i otu_table.biom -o heatmap_sample_sorted -m Fasting_Map.txt"""))
+
+script_info['script_usage'].append(("Generate a sample and OTU-sorted OTU heatmap","""If you would like to sort the heatmap by Sample IDs and the tips in the tree, you can supply a tree as follows:""","""%prog -i otu_table.biom -o heatmap_sample_otu_sorted -m Fasting_Map.txt -t rep_set.tre"""))
+
+script_info['output_description']="""The interactive heatmap is located in OUTPUT_DIR/otu_table.html where OUTPUT_DIR is specified as -o. Safari is recommended for viewing the OTU Heatmap, since the HTML table generation is much faster than Firefox (as of this writing)."""
 
 script_info['required_options']=[\
  options_lookup['otu_table_as_primary_input'],
