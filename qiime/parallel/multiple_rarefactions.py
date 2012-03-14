@@ -25,7 +25,7 @@ def get_job_commands(python_exe_fp,rarefaction_fp,job_prefix,\
     for num_seqs in range(min_seqs,max_seqs+1, step):
         for rep_num in range(num_reps):
             run_parameters.append((\
-             num_seqs,'rarefaction_%d_%d.txt' % (num_seqs,rep_num)))
+             num_seqs,'rarefaction_%d_%d.biom' % (num_seqs,rep_num)))
 
     command_prefix = command_prefix or '/bin/bash; '
     command_suffix = command_suffix or '; exit'
