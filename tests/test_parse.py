@@ -11,6 +11,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
+from biom.table import table_factory
 from numpy import array, nan
 from StringIO import StringIO
 from cogent.util.unit_test import TestCase,main
@@ -19,7 +20,7 @@ from qiime.util import get_tmp_filename
 from qiime.parse import (group_by_field, group_by_fields, 
     parse_distmat, parse_rarefaction_record, parse_rarefaction, parse_coords, 
     parse_classic_otu_table, make_envs_dict, fields_to_dict, parse_rarefaction_fname,
-    parse_qiime_parameters, parse_qiime_config_files,
+    parse_qiime_parameters, parse_qiime_config_files,sample_mapping_to_biom_table,
     parse_bootstrap_support, parse_sample_mapping, parse_distmat_to_dict,
     sample_mapping_to_otu_table, parse_taxonomy, parse_mapping_file, 
     parse_metadata_state_descriptions, parse_rarefaction_data,
@@ -616,6 +617,15 @@ eigvals\t4.94\t1.79\t1.50
         self.assertEqual(result, ['#Full OTU Counts',\
          '#OTU ID\tsample1\tsample2\tsample3', 'OTU2\t1\t2\t0', \
         'OTU1\t3\t0\t2'])
+
+    def test_sample_mapping_to_biom_table(self):
+        """sample_mapping_to_biom_table works"""
+        lines = self.SampleMapping
+        actual = sample_mapping_to_biom_table(lines)
+        exp = table_factory(array([[3.,0.,2.],[1.,2.,0.]]),
+                            ['sample1','sample2','sample3'],
+                            ['OTU1','OTU2'])
+        self.assertEqual(actual.sortBySampleId(), exp.sortBySampleId())
     
     def test_parse_taxonomy(self):
         """ should parse taxonomy example, keeping otu id only"""

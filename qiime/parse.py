@@ -11,6 +11,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
+from biom.table import table_factory
 from string import strip
 from collections import defaultdict
 from cogent.util.dict2d import Dict2D
@@ -620,6 +621,36 @@ def sample_mapping_to_otu_table(lines):
             new_line.append(OTU_sample_info[OTU][sample])
         out.append('\t'.join(new_line))
     return out
+
+def sample_mapping_to_biom_table(lines):
+    """Converts the UniFrac sample mapping file to biom table object
+    
+    The sample mapping file is a required input for the UniFrac web interface.
+    """
+    data = []
+    sample_ids = []
+    observation_ids = []
+    for line in lines:
+        fields = line.strip().split()
+        observation_id = fields[0]
+        sample_id = fields[1]
+        count = float(fields[2])
+        
+        try:
+            sample_idx = sample_ids.index(sample_id)
+        except ValueError:
+            sample_idx = len(sample_ids)
+            sample_ids.append(sample_id)
+        try:
+            observation_idx = observation_ids.index(observation_id)
+        except ValueError:
+            observation_idx = len(observation_ids)
+            observation_ids.append(observation_id)
+            
+        data.append([observation_idx, sample_idx, count])
+    
+    return table_factory(data,sample_ids,observation_ids)
+
 
 def parse_sample_mapping(lines):
     """Parses the UniFrac sample mapping file (environment file)
