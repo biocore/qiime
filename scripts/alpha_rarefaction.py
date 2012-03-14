@@ -22,34 +22,25 @@ from qiime.workflow import (run_qiime_alpha_rarefaction, print_commands,
 
 qiime_config = load_qiime_config()
 
-#alpha_rarefaction.py
 options_lookup = get_options_lookup()
 script_info={}
 script_info['brief_description']="""A workflow script for performing alpha rarefaction"""
 script_info['script_description']="""
-The steps performed by this script are:
-
-1. Generate rarefied OTU tables;
-
-2. Compute alpha diversity metrics for each rarefied OTU table;
-
-3. Collate alpha diversity results;
-
-4. Generate alpha rarefaction plots.
-"""
+The steps performed by this script are: Generate rarefied OTU tables; compute alpha diversity metrics for each rarefied OTU table; collate alpha diversity results; and generate alpha rarefaction plots."""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Example""","""""","""alpha_rarefaction.py -o rare1 -i otu_table.txt -t inseqs1_rep_set.tre -m inseqs1_mapping.txt -p custom_parameters.txt"""))
-script_info['output_description']="""The results of this script is a folder ("rare1/") containing rarefied otu tables, alpha-diversity for each otu table, a file containing the results from collating the alpha-diversity results and a folder containing the rarefaction plots."""
-script_info['required_options']=[\
- make_option('-i','--otu_table_fp',\
-            help='the input otu table [REQUIRED]'),\
- make_option('-m','--mapping_fp',\
-            help='path to the mapping file [REQUIRED]'),\
- make_option('-o','--output_dir',\
+script_info['script_usage'].append(("""Example""","""Given an OTU table, a phylogenetic tree, a mapping file, and a max sample depth, compute alpha rarefaction plots for the PD, observed species and chao1 metrics. To specify alternative metrics pass a parameter file via -p. We generally recommend that the max depth specified here (-e) is the same as the even sampling depth provided to beta_diversity_through_plots (also -e). ""","""%prog -i otu_table.biom -o arare_max100/ -t rep_set.tre -m Fasting_Map.txt -e 100"""))
+
+script_info['output_description']="""The primary interface for the results will be OUTPUT_DIR/alpha_rarefaction_plots/rarefaction_plots.html where OUTPUT_DIR is the value you specify with -o.  You can open this in a web browser for interactive alpha rarefaction plots."""
+script_info['required_options']=[
+ make_option('-i','--otu_table_fp',type='existing_filepath',
+            help='the input otu table [REQUIRED]'),
+ make_option('-m','--mapping_fp',type='existing_filepath',
+            help='path to the mapping file [REQUIRED]'),
+ make_option('-o','--output_dir',type='new_dirpath',
             help='the output directory [REQUIRED]'),
 ]
 script_info['optional_options']=[\
- make_option('-p','--parameter_fp',
+ make_option('-p','--parameter_fp',type='existing_filepath',
     help='path to the parameter file, which specifies changes'+\
         ' to the default behavior. '+\
         'See http://www.qiime.org/documentation/file_formats.html#qiime-parameters .'+\
@@ -67,7 +58,7 @@ script_info['optional_options']=[\
  make_option('-a','--parallel',action='store_true',\
         dest='parallel',default=False,\
         help='Run in parallel where available [default: %default]'),\
- make_option('-t','--tree_fp',\
+ make_option('-t','--tree_fp',type='existing_filepath',
             help='path to the tree file [default: %default; '+\
             'REQUIRED for phylogenetic measures]'),
  make_option('--min_rare_depth',type='int',\
