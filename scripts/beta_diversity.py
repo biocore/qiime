@@ -26,10 +26,13 @@ script_info['script_description']="""The input for this script is the OTU table 
 
 A number of metrics are currently supported, including unweighted and weighted UniFrac (pass the -s option to see available metrics). In general, because unifrac uses phylogenetic information, one of the unifrac metrics is recommended, as results can be vastly more useful (Hamady & Knight, 2009). Quantitative measures (e.g. weighted unifrac) are ideally suited to revealing community differences that are due to changes in relative taxon abundance (e.g., when a particular set of taxa flourish because a limiting nutrient source becomes abundant). Qualitative measures (e.g. unweighted unifrac) are most informative when communities differ primarily by what can live in them (e.g., at high temperatures), in part because abundance information can obscure significant patterns of variation in which taxa are present (Lozupone et al., 2007). Most qualitative measures are referred to here e.g. "binary_jaccard". Typically both weighted and unweighted unifrac are used."""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Single File Beta Diversity:""","""To perform beta diversity (using e.g. euclidean distance) on a single OTU table, where the results are output to beta_div.txt, use the following command:""","""beta_diversity.py -i otu_table.txt -m euclidean -o beta_div/"""))
-script_info['script_usage'].append(("""""","""Note: Since this is a non-phylogenetic metric, the tree does not need to be supplied.""",""""""))
-script_info['script_usage'].append(("""""","""In the case that you would like to perform beta diversity using a phylogenetic metric (e.g. weighted_unifrac), you can use the following command:""","""beta_diversity.py -i otu_table.txt -m weighted_unifrac -o beta_div/ -t repr_set.tre"""))
-script_info['script_usage'].append(("""Multiple File (batch) Beta Diversity:""","""To perform beta diversity on multiple OTU tables (resulting files from multiple_rarefactions.py), specify an input directory (e.g. rarefaction_tables/) as shown by the following command:""","""beta_diversity.py -i rarefaction_tables/ -m weighted_unifrac -o beta_div/ -t repr_set.tre"""))
+
+script_info['script_usage'].append(("""Single File Beta Diversity (non-phylogenetic):""","""To perform beta diversity (using e.g. euclidean distance) on a single OTU table, where the results are output to beta_div/, use the following command:""","""%prog -i otu_table.biom -m euclidean -o beta_div"""))
+
+script_info['script_usage'].append(("""Single File Beta Diversity (phylogenetic):""","""In the case that you would like to perform beta diversity using a phylogenetic metric (e.g. weighted_unifrac), you can use the following command:""","""%prog -i otu_table.biom -m weighted_unifrac -o beta_div/ -t rep_set.tre"""))
+
+script_info['script_usage'].append(("""Multiple File (batch) Beta Diversity (phylogenetic):""","""To perform beta diversity on multiple OTU tables (e.g., resulting files from multiple_rarefactions.py), specify an input directory (e.g. otu_tables/) as shown by the following command:""","""%prog -i otu_tables/ -m weighted_unifrac -o beta_div/ -t rep_set.tre"""))
+
 script_info['output_description']="""Each file in the input directory should be an otu table, and the output of beta_diversity.py is a folder containing text files, each a distance matrix between samples corresponding to an input otu table."""
 script_info['required_options']=[]
 script_info['optional_options']=[
