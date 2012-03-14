@@ -22,23 +22,28 @@ from qiime.make_otu_table import make_otu_table
 
 options_lookup = get_options_lookup()
 
-#make_otu_table.py
 script_info={}
 script_info['brief_description']="""Make OTU table"""
 script_info['script_description']="""The script make_otu_table.py tabulates the number of times an OTU is found in each sample, and adds the taxonomic predictions for each OTU in the last column if a taxonomy file is supplied."""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("","""Make an OTU table from an OTU map (i.e., result from pick_otus.py) and a taxonomy assignment file (i.e., result from assign_taxonomy.py). Write the output file to otu_table.txt.""","""%prog -i otu_map.txt -t tax_assignments.txt -o otu_table.txt"""))
-script_info['script_usage'].append(("","""Make an OTU table, excluding the sequences listed in chimeric_seqs.txt""","%prog -i otu_map.txt -o otu_table.txt -e chimeric_seqs.txt"))
-script_info['output_description']="""The output of make_otu_table.py is a tab-delimited text file, where the columns correspond to Samples and rows correspond to OTUs and the number of times a sample appears in a particular OTU."""
+
+script_info['script_usage'].append(("Make OTU table","""Make an OTU table from an OTU map (i.e., result from pick_otus.py) and a taxonomy assignment file (i.e., result from assign_taxonomy.py). Write the output file to otu_table.biom.""","""%prog -i otu_map.txt -t tax_assignments.txt -o otu_table.biom"""))
+
+script_info['script_usage'].append(("Make OTU table, excluding OTU ids listed in a fasta file","""Make an OTU table, excluding the sequences listed in pynast_failures.fna. Note that the file pass as -e must end with either '.fasta' or '.fna'.""","%prog -i otu_map.txt -o otu_table_no_pynast_failures.biom -e pynast_failures.fna"))
+
+script_info['script_usage'].append(("Make OTU table, excluding a list of OTU ids","""Make an OTU table, excluding the sequences listed in chimeric_seqs.txt""","%prog -i otu_map.txt -o otu_table_non_chimeric.biom -e chimeric_seqs.txt"))
+
+script_info['output_description']="""The output of make_otu_table.py is a biom file, where the columns correspond to Samples and rows correspond to OTUs and the number of times a sample appears in a particular OTU."""
+
 script_info['required_options']=[\
  options_lookup['otu_map_as_primary_input'],
   options_lookup['output_biom_fp'],
 ]
+
 script_info['optional_options']=[ \
-  make_option('-t', '--taxonomy', dest='taxonomy_fname', \
-              help='Path to taxonomy assignment, containing the assignments of \ taxons to sequences (i.e., resulting txt file from assign_taxonomy.py) \
- [default: %default]', default=None),
-  make_option('-e','--exclude_otus_fp',\
+  make_option('-t', '--taxonomy', type='existing_filepath', dest='taxonomy_fname',
+              help='Path to taxonomy assignment, containing the assignments of taxons to sequences (i.e., resulting txt file from assign_taxonomy.py) [default: %default]'),
+  make_option('-e','--exclude_otus_fp',type='existing_filepath',
    help=("path to a file listing OTU identifiers that should not be included in the "
          "OTU table (e.g., the output of identify_chimeric_seqs.py) or a fasta "
          "file where seq ids should be excluded (e.g., failures fasta file from align_seqs.py)"))
