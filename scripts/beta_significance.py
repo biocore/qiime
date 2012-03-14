@@ -18,7 +18,7 @@ from numpy import array
 
 import warnings
 warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
-from cogent.maths.unifrac.fast_unifrac import fast_unifrac_permutations_file
+from cogent.maths.unifrac.fast_unifrac import fast_unifrac_permutations_file, TEST_ON_PAIRWISE, TEST_ON_TREE, TEST_ON_ENVS
 from cogent.maths.unifrac.fast_unifrac import fast_p_test_file
 from qiime.util import parse_command_line_parameters
 from qiime.format import format_unifrac_sample_mapping
@@ -44,6 +44,9 @@ script_info['required_options'] = [\
 script_info['optional_options'] = [
  make_option('-n', '--num_iters', default=100, type="int",
      help='number of monte carlo randomizations [default: %default]'),
+ make_option('-k', '--type_of_test', type='choice',
+     choices=['all_together', 'each_pair', 'each_sample'], default='each_pair',
+     help="type of significance test to perform, options are 'all_together', 'each_pair' or 'each_sample'. [default: %default]"),
 ]
 script_info['version'] = __version__
 
@@ -57,6 +60,22 @@ def main():
     otu_ids = otu_table.ObservationIds
     ## This is not memory safe: need to be able to load the otu table as ints
     otu_table_array = array(list(otu_table.iterObservationData()),dtype='int')
+
+    if opts.type_of_test == 'all_together':
+        type_of_test = TEST_ON_TREE
+        header_text = "sample\tp value\tp value (Bonferroni corrected)\n"
+    elif opts.type_of_test == 'each_pair':
+        type_of_test = TEST_ON_PAIRWISE
+        header_text = "sample 1\tsample 2\tp value\tp value (Bonferroni corrected)\n"
+    elif opts.type_of_test == 'each_sample':
+        type_of_test = TEST_ON_ENVS
+        header_text = "sample\tp value\tp value (Bonferroni corrected)\n"
+        if opts.significance_test == 'p-test':
+            raise RuntimeError('significance test type "each_sample" not allowed for p-test')
+    else:
+        raise RuntimeError('significance test type "%s" not found' %\
+            opts.type_of_test)
+
     # note, uses ugly temp file
     if opts.significance_test == 'unweighted_unifrac':
         tree_in = open(opts.tree_path,'U')
@@ -70,15 +89,13 @@ def main():
         envs_in = open(output_fp,'U')
 
         result = fast_unifrac_permutations_file(tree_in, envs_in,
-            weighted=False, num_iters=opts.num_iters, verbose=opts.verbose)
+            weighted=False, num_iters=opts.num_iters, verbose=opts.verbose, test_on=type_of_test)
         envs_in.close()
         os.remove(output_fp)
         
         of = open(opts.output_path,'w')
-        of.write(\
-            "#unweighted unifrac significance test\n")
-        of.write(\
-            "sample 1\tsample 2\tp value\tp value (Bonferroni corrected)\n")
+        of.write("#unweighted unifrac significance test\n")
+        of.write(header_text)
         for line in result:
             of.write('\t'.join(map(str,line)) + '\n')
         of.close()
@@ -95,14 +112,13 @@ def main():
         envs_in = open(output_fp,'U')
 
         result = fast_p_test_file(tree_in, envs_in,
-            num_iters=opts.num_iters, verbose=opts.verbose)
+            num_iters=opts.num_iters, verbose=opts.verbose, test_on=type_of_test)
         envs_in.close()
         os.remove(output_fp)
         of = open(opts.output_path,'w')
         of.write(\
             "#andy martin's p-test significance test\n")
-        of.write(\
-            "sample 1\tsample 2\tp value\tp value (Bonferroni corrected)\n")
+        of.write(header_text)
         for line in result:
             of.write('\t'.join(map(str,line)) + '\n')
         of.close()
@@ -119,14 +135,13 @@ def main():
         envs_in = open(output_fp,'U')
 
         result = fast_unifrac_permutations_file(tree_in, envs_in,
-            weighted=True, num_iters=opts.num_iters, verbose=opts.verbose)
+            weighted=True, num_iters=opts.num_iters, verbose=opts.verbose, test_on=type_of_test)
         envs_in.close()
         os.remove(output_fp)
         of = open(opts.output_path,'w')
         of.write(\
             "#weighted unifrac significance test\n")
-        of.write(\
-            "sample 1\tsample 2\tp value\tp value (Bonferroni corrected)\n")
+        of.write(header_text)
         for line in result:
             of.write('\t'.join(map(str,line)) + '\n')
         of.close()
@@ -143,7 +158,7 @@ def main():
 		envs_in = open(output_fp, 'U')
 
 		result = fast_unifrac_permutations_file(tree_in, envs_in,
-			weighted='correct', num_iters = opts.num_iters, verbose=opts.verbose)
+			weighted='correct', num_iters = opts.num_iters, verbose=opts.verbose, test_on=type_of_test)
 		envs_in.close()
 		os.remove(output_fp)
 		of = open(opts.output_path, 'w')

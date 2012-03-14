@@ -465,16 +465,22 @@ def split_fasta_on_sample_ids_to_files(seqs,
         write_seqs_to_fasta(current_fp,current_seqs,write_mode='a')
     return None
 
-def compute_seqs_per_library_stats(otu_table):
+def compute_seqs_per_library_stats(otu_table, use_abundance_weights=True):
     """Return summary statistics on per-sample observation counts
     
         otu_table: an OTUTable object
     
     """
-    sample_counts = {}
-    for count_vector, sample_id, metadata in otu_table.iterSamples():
-        sample_counts[sample_id] = count_vector.sum()
-    counts = sample_counts.values()
+    if use_abundance_weights:
+        sample_counts = {}
+        for count_vector, sample_id, metadata in otu_table.iterSamples():
+            sample_counts[sample_id] = count_vector.sum()
+        counts = sample_counts.values()
+    else:
+        sample_counts = {}
+        for count_vector, sample_id, metadata in otu_table.iterSamples():
+            sample_counts[sample_id] = len([x for x in count_vector if x != 0])
+        counts = sample_counts.values()
     
     return (min(counts),
             max(counts),
