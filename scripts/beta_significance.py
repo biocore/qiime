@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Justin Kuczynski", "Jose Antonio Navas"]
+__credits__ = ["Justin Kuczynski", "Jose Antonio Navas", "Greg Caporaso"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Justin Kuczynski"
@@ -28,17 +28,22 @@ from biom.parse import parse_biom_table
 script_info = {}
 script_info['brief_description'] = "This script runs any of a set of common tests to determine if a sample is statistically significantly different from another sample"
 script_info['script_description'] = "The tests are conducted on each pair of samples present in the input otu table. See the unifrac tutorial online for more details (http://bmf2.colorado.edu/unifrac/tutorial.psp)"
-script_info['script_usage'] = [("Example:","Perform 100 randomizations of sample/sequence assignments, and record the probability that sample 1 is phylogenetically different from sample 2, using the unifrac monte carlo significance test. The test is run for all pairs of samples.","%prog -i otu_table.biom -t rep_set.tre -s unweighted_unifrac -o unw_sig.txt")]
+
+script_info['script_usage'] = []
+
+script_info['script_usage'].append(("Example:","Perform 100 randomizations of sample/sequence assignments, and record the probability that sample 1 is phylogenetically different from sample 2, using the unifrac monte carlo significance test. The test is run for all pairs of samples.","%prog -i otu_table.biom -t rep_set.tre -s unweighted_unifrac -o unw_sig.txt"))
+
 script_info['output_description']= "The script outputs a tab delimited text file with each pair of samples and a p value representing the probability that a random sample/sequence assignment will result in more dissimilar samples than the actual pair of samples."
+
 script_info['required_options'] = [\
- make_option('-i', '--input_path',
+ make_option('-i', '--input_path',type='existing_filepath',
      help='input otu table in biom format'), 
- make_option('-o', '--output_path',
+ make_option('-o', '--output_path',type='new_filepath',
      help='output results path'),
  make_option('-s', '--significance_test',type='choice',
      choices=['unweighted_unifrac', 'weighted_unifrac', 'weighted_normalized_unifrac', 'p-test'],
      help="significance test to use, options are 'unweighted_unifrac', 'weighted_unifrac', 'weighted_normalized_unifrac', or 'p-test'"), 
- make_option('-t', '--tree_path',help='path to newick tree file'),
+ make_option('-t', '--tree_path',type='existing_filepath',help='path to newick tree file'),
 
 ]
 script_info['optional_options'] = [
