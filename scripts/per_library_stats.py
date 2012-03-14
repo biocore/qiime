@@ -55,7 +55,9 @@ def main():
 
     print 'Num samples: %s' % str(len(counts_per_sample))
     print 'Num otus: %s' % str(otu_count)
-    print 'Num observations (sequences): %s\n' % (sum(counts_per_sample_values))
+    if not opts.otu_counts:
+        print 'Num observations (sequences): %s' % (sum(counts_per_sample_values))
+    print
 
     if opts.otu_counts:
         print 'OTUs/sample summary:'
