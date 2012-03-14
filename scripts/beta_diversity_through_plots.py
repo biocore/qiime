@@ -25,36 +25,28 @@ from qiime.workflow import (run_beta_diversity_through_plots, print_commands,
 qiime_config = load_qiime_config()
 options_lookup = get_options_lookup()
 script_info={}
-script_info['brief_description']="""A workflow script for computing beta diversity distance matrices and the corresponding 3D plots"""
+script_info['brief_description']="""A workflow script for computing beta diversity distance matrices and generating PCoA plots"""
 script_info['script_description']="""This script will perform beta diversity, principal coordinate anlalysis, and generate a preferences file along with 3D PCoA Plots.
 """
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Example:""","""The following steps are performed by the command below:
 
-1. Compute a beta diversity distance matrix;
+script_info['script_usage'].append(("""Example:""","""Given an OTU table, a phylogenetic tree, an even sampling depth, and a mapping file, perform the following steps: 1. Randomly subsample otu_table.biom to even number of sequences per sample (100 in this case); 2. Compute a weighted and unweighted unifrac distance matrcies (can add additional metrics by passing a parameters file via -p); 3. Peform a principle coordinates analysis on the result of Step 2; 4. Generate a 2D and 3D plots for all mapping fields.""","""%prog -i otu_table.biom -o bdiv_even100/ -t rep_set.tre -m Fasting_Map.txt -e 100"""))
 
-2. Peform a principle coordinates analysis on the result of Step 1;
+script_info['output_description']="""This script results in a distance matrix (from beta_diversity.py), a principal coordinates file (from principal_coordinates.py), a preferences file (from make_prefs_file.py) and folders containing the resulting PCoA plots (accessible through html files)."""
 
-3. Generate a 3D prefs file for optimized coloring of continuous variables;
-
-4. Generate a 3D plot for all mapping fields with colors optimized for continuous data;
-
-5. Generate a 3D plot for all mapping fields with colors optimized for discrete data.
-""","""beta_diversity_through_3d_plots.py -i otu_table.txt -o bdiv1 -t inseqs1_rep_set.tre -m inseqs1_mapping.txt -p custom_parameters.txt"""))
-script_info['output_description']="""This script results in a distance matrix (from beta_diversity.py), a principal coordinates file (from principal_coordinates.py), a preferences file (from make_prefs_file.py) and  folder containing the resulting 3d PCoA plots (as an html from make_3d_plots.py)."""
 script_info['required_options']=[\
- make_option('-i','--otu_table_fp',\
-            help='the input fasta file [REQUIRED]'),\
- make_option('-m','--mapping_fp',\
-            help='path to the mapping file [REQUIRED]'),\
- make_option('-o','--output_dir',\
+ make_option('-i','--otu_table_fp',type='existing_filepath',
+            help='the input fasta file [REQUIRED]'),
+ make_option('-m','--mapping_fp',type='existing_filepath',
+            help='path to the mapping file [REQUIRED]'),
+ make_option('-o','--output_dir',type='new_dirpath',
             help='the output directory [REQUIRED]'),
 ]
 script_info['optional_options']=[
- make_option('-t','--tree_fp',
+ make_option('-t','--tree_fp',type='existing_filepath',
             help='path to the tree file [default: %default; '+\
             'REQUIRED for phylogenetic measures]'),
- make_option('-p','--parameter_fp',
+ make_option('-p','--parameter_fp',type='existing_filepath',
     help='path to the parameter file, which specifies changes'+\
         ' to the default behavior. '+\
         'See http://www.qiime.org/documentation/file_formats.html#qiime-parameters .'+\
