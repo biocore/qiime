@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Justin Kuczynski"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Justin Kuczynski"]
+__credits__ = ["Justin Kuczynski","Greg Caporaso"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Justin Kuczynski"
@@ -19,9 +19,11 @@ from qiime.rarefaction import SingleRarefactionMaker
 script_info={}
 script_info['brief_description']="""Perform rarefaction on an otu table"""
 script_info['script_description']="""To perform bootstrap, jackknife, and rarefaction analyses, the otu table must be subsampled (rarefied).  This script rarefies, or subsamples, an OTU table.  This does not provide curves of diversity by number of sequences in a sample. Rather it creates a subsampled OTU table by random sampling (without replacement) of the input OTU table.  Samples that have fewer sequences then the requested rarefaction depth are omitted from the ouput otu tables.  The pseudo-random number generator used for rarefaction by subsampling is NumPy's default - an implementation of the Mersenne twister PRNG."""
+
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Example:""","""subsample otu_table.txt at 400 seqs/sample (-d), write results to a file (i.e. rarefaction_400_17.txt) ""","""single_rarefaction.py -i otu_table.txt -o rarefaction_400_17.txt -d 400"""))
-script_info['script_usage'].append(('',"""(naming convention rarefaction_400_17.txt implies that the depth is 400 seqs/sam, iteration 17 at that depth (18th file written, due to iter 0))""",''))
+
+script_info['script_usage'].append(("""Example:""","""subsample otu_table.biom (-i) at 100 seqs/sample (-d), write results to otu_table_even100.txt (-o).""","""%prog -i otu_table.biom -o otu_table_even100.biom -d 100"""))
+
 script_info['output_description']="""The results of single_rarefaction.py consist of a single subsampled OTU table. The file has the same otu table format as the input otu_table.txt. note: if the output file would be empty, no file is written"""
 
 
