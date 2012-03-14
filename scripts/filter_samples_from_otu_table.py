@@ -28,9 +28,10 @@ from qiime.format import format_mapping_file, format_biom_table
 script_info = {}
 script_info['brief_description'] = "Filters samples from an OTU table on the basis of the number of observations in that sample, or on the basis of sample metadata. Mapping file can also be filtered to the resulting set of sample ids."
 script_info['script_description'] = ""
-script_info['script_usage'] = [("","Filter samples with fewer than 150 observations from the otu table.","%prog -i otu_table.biom -o otu_table_no_low_coverage_samples.biom -n 150"),
-("","Filter samples with greater than 149 observations from the otu table.","%prog -i otu_table.biom -o otu_table_no_high_coverage_samples.biom -x 149"),
-("","Filter samples with where the value for 'Treatment' in the mapping file is not 'Control'","%prog -i otu_table.biom -o otu_table_control_only.biom -m map.txt -s 'Treatment:Control'")]
+script_info['script_usage'] = [("Abundance filtering (low coverage)","Filter samples with fewer than 150 observations from the otu table.","%prog -i otu_table.biom -o otu_table_no_low_coverage_samples.biom -n 150"),
+("Abundance filtering (high coverage)","Filter samples with greater than 149 observations from the otu table.","%prog -i otu_table.biom -o otu_table_no_high_coverage_samples.biom -x 149"),
+("Metadata-based filtering (positive)","Filter samples with where the value for 'Treatment' in the mapping file is not 'Control'","%prog -i otu_table.biom -o otu_table_control_only.biom -m map.txt -s 'Treatment:Control'"),
+("Metadata-based filtering (negative)","Filter samples with where the value for 'Treatment' in the mapping file is not 'Control'","%prog -i otu_table.biom -o otu_table_not_control.biom -m map.txt -s 'Treatment:*,!Control'")]
 script_info['output_description']= ""
 script_info['required_options'] = [
  make_option('-i','--input_fp',type="existing_filepath",
