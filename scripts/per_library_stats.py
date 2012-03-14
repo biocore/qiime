@@ -38,7 +38,7 @@ script_info['optional_options']=[
 make_option('-m','--mapping_fp',type='existing_filepath',help='a mapping file. If included, this script will modify the mapping file to include sequences per sample (library) information, and write the modified mapping file to the path specified by -o. The sequences (individuals) per sample is presented in a new column entitled "NumIndividuals", and samples present in the mapping file but not the otu table have the value "na" in this column. Note also that the location of comments is not preserved in the new mapping file'),
 
 make_option('-o','--output_mapping_fp',help='the output filepath where the modified mapping file will be written', type='new_filepath'),
-make_option('--do_not_use_abundance_weights',action='store_true',help='Do not use abundance weights [default: %default]',default=False)
+make_option('--otu_counts',action='store_true',help='Counts are presented as number of observed OTUs per sample, rather than counts of sequences per sample [default: %default]',default=False)
 ]
 script_info['version'] = __version__
 
@@ -46,7 +46,7 @@ def main():
     option_parser, opts,args = parse_command_line_parameters(**script_info)
     otu_table = parse_biom_table(open(opts.otu_table_fp,'U'))
     min_counts, max_counts, median_counts, mean_counts, counts_per_sample =\
-     compute_seqs_per_library_stats(otu_table, use_abundance_weights=not opts.do_not_use_abundance_weights)
+     compute_seqs_per_library_stats(otu_table, opts.otu_counts)
     otu_count = len(otu_table.ObservationIds)
     
     counts_per_sample_values = counts_per_sample.values()
