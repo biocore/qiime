@@ -18,7 +18,12 @@ from optparse import OptionParser
 from string import strip
 from numpy import array
 
-def make_summary(otu_table, level, upper_percentage, lower_percentage): 
+def make_summary(otu_table,
+                 level,
+                 upper_percentage,
+                 lower_percentage,
+                 md_as_string=False,
+                 md_identifier="taxonomy"): 
     """Returns taxonomy summary data
 
     header is a list of:
@@ -28,10 +33,13 @@ def make_summary(otu_table, level, upper_percentage, lower_percentage):
     [[(taxon1),count,count,...],[(taxon2),count,count,...]...]
     """
     header = ['Taxon']
-    #header.extend(otu_table[0]) # sample ids
-    header.extend(otu_table.SampleIds) # sample ids
+    header.extend(otu_table.SampleIds)
 
-    counts_by_consensus, sample_map = sum_counts_by_consensus(otu_table, level)
+    counts_by_consensus, sample_map = sum_counts_by_consensus(otu_table, 
+                                                              level, 
+                                                              "Other", 
+                                                              md_as_string,
+                                                              md_identifier)
 
     total_counts = float(sum([sum(i) for i in counts_by_consensus.values()]))
     taxonomy_summary = []
@@ -48,7 +56,11 @@ def make_summary(otu_table, level, upper_percentage, lower_percentage):
 
     return taxonomy_summary, header
 
-def sum_counts_by_consensus(otu_table, level, missing_name='Other'):
+def sum_counts_by_consensus(otu_table,
+                            level,
+                            missing_name='Other',
+                            md_as_string=False,
+                            md_identifier='taxonomy'):
     """Returns a dict keyed by consensus, valued by otu counts
 
     otu counts are summed together if they have the same consensus
@@ -57,12 +69,24 @@ def sum_counts_by_consensus(otu_table, level, missing_name='Other'):
     until the taxonomy string is of length level
     """
     result = {}
-    #sample_map = dict([(s,i) for i,s in enumerate(otu_table[0])])
     sample_map = dict([(s,i) for i,s in enumerate(otu_table.SampleIds)])
+    
+    # Define a function to process the metadata prior to summarizing - this
+    # is more convenient than having to check md_as_string on every iteration
+    # in the for loop below
+    if md_as_string:
+        def process_md(v):
+            return v.split(';')
+    else:
+        def process_md(v):
+            return v
 
-    #for counts, consensus in zip(otu_table[2], otu_table[3]):
-    for (otu_val, otu_ids, otu_metadata) in otu_table.iterObservations():
-        consensus = otu_metadata['taxonomy']
+    for (otu_val, otu_id, otu_metadata) in otu_table.iterObservations():
+        if md_identifier not in otu_metadata:
+            raise KeyError, \
+             "Metadata category '%s' not in OTU %s. Can't continue. Did you pass the correct metadata identifier?" % (md_identifier,otu_id)
+             
+        consensus = process_md(otu_metadata[md_identifier])
         n_ranks = len(consensus)
         if n_ranks > level:
             consensus = consensus[:level]
@@ -82,13 +106,21 @@ def sum_counts_by_consensus(otu_table, level, missing_name='Other'):
 
     return result, sample_map
 
-def add_summary_mapping(otu_table, mapping, level): 
+def add_summary_mapping(otu_table,
+                        mapping, 
+                        level,
+                        md_as_string=False,
+                        md_identifier='taxonomy'): 
     """Returns sample summary of sample counts by taxon
     
     Summary is keyed by sample_id, valued by otu counts for each taxon
     Taxon order is a list of taxons where idx n corresponds to otu count idx n
     """
-    counts_by_consensus, sample_map = sum_counts_by_consensus(otu_table, level)
+    counts_by_consensus, sample_map = sum_counts_by_consensus(otu_table, 
+                                                              level,
+                                                              "Other",
+                                                              md_as_string,
+                                                              md_identifier)
     
     summary = defaultdict(list)
     for row in mapping:

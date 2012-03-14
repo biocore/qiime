@@ -51,6 +51,10 @@ script_info['optional_options'] = [\
         ' useful for coloring PCoA plots by taxon abundance or to ' +\
         ' perform statistical tests of taxon/mapping associations.',
         type='existing_filepath'),
+    make_option('--md_identifier',default='taxonomy',
+             help='the relevant observation metadat key [default: %default]'),
+    make_option('--md_as_string',default=False,action='store_true',
+             help='metadata is included as string [default: metadata is included as list]'),
     make_option('-d','--delimiter',action='store',type='string',
         dest='delimiter',default=';', 
         help='Delimitor separating taxonomy levels. [default: %default]'),
@@ -100,6 +104,8 @@ def main():
     otu_table = parse_biom_table(open(otu_table_fp, 'U'))
     delimiter = opts.delimiter
     mapping_fp = opts.mapping
+    md_as_string = opts.md_as_string
+    md_identifier = opts.md_identifier
     levels = opts.level.split(',')
 
     if upper_percentage!=None and lower_percentage!=None:
@@ -127,7 +133,6 @@ def main():
 
     if not opts.absolute_abundance:
         otu_table = otu_table.normObservationBySample()
-        #otu_table = convert_otu_table_relative(otu_table)
 
     # introduced output directory to will allow for multiple outputs
     if opts.output_dir:
@@ -147,16 +152,25 @@ def main():
             output_fname = join(output_dir_path,
                                         map_basename+'_L%s.txt' % (level))
                                         
-            summary, tax_order = add_summary_mapping(otu_table, mapping,
-                                                     int(level))
+            summary, tax_order = add_summary_mapping(otu_table, 
+                                                     mapping,
+                                                     int(level),
+                                                     md_as_string,
+                                                     md_identifier)
+                                                     
             write_add_taxa_summary_mapping(summary,tax_order,mapping,
                                             header,output_fname,delimiter)
         else:
             #define output filename
             output_fname = join(output_dir_path,basename+'_L%s.txt' % (level))
             
-            summary, header = make_summary(otu_table, int(level),
-                                            upper_percentage, lower_percentage)
+            summary, header = make_summary(otu_table, 
+                                           int(level),
+                                           upper_percentage, 
+                                           lower_percentage,
+                                           md_as_string,
+                                           md_identifier)
+                                           
             write_summarize_taxa(summary, header, output_fname, delimiter,
                                             opts.transposed_output)
             
