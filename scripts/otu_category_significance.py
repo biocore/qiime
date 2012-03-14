@@ -4,7 +4,7 @@ from __future__ import division
 
 __author__ = "Doug Wendel"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Catherine Lozupone", "Jesse Stombaugh", "Doug Wendel", "Dan Knights"]
+__credits__ = ["Catherine Lozupone", "Jesse Stombaugh", "Doug Wendel", "Dan Knights", "Greg Caporaso"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Doug Wendel"
@@ -45,10 +45,16 @@ Paired t-test (paired_T): This option is when measurements were taken "before" a
 With the exception of longitudinal correlation and paired_T, this script can be performed on a directory of OTU tables (for example, the output of multiple_rarefactions_even_depth.py), in addition to on a single OTU table. If the script is called on a directory, the resulting p-values are the average of the p-values observed when running a single test on each otu_table separately. It is generally a good practice to rarefy the OTU table (e.g. with single_rarefaction.py) prior to running these significance tests in order to avoid artifacts/biases from unequal sample sizes.
 """
 script_info['script_usage']=[]
-script_info['script_usage'].append(("Example 1","""If the user would like to perform a G test on their OTU table using default parameters, while testing the category "Sex", they can run the following command:""","""otu_category_significance.py -i otu_table.txt -m Mapping_file.txt -s g_test -c Sex"""))
-script_info['script_usage'].append(("Example 2","""If the user would like to perform the same test using numerical qPCR data, where everything below a threshold value should be considered "absent" and everything above that value "present", the user will need to set the threshold by running the following command:""","""otu_category_significance.py -i otu_table.txt -m Mapping_file.txt -s g_test -c qPCR -t 0.16"""))
-script_info['script_usage'].append(("Example 3","""Alternatively, the user could run an ANOVA test on the same data by using the following command:""","""otu_category_significance.py -i otu_table.txt -m Mapping_file.txt -s ANOVA -c Sex"""))
-script_info['script_usage'].append(("Example 4","""If the user would like to perform an ANOVA on an entire directory of rarefied  OTU tables using default parameters, while testing the category "Sex", they can run the following command:""","""otu_category_significance.py -i otu_table_dir -m Mapping_file.txt -s g_test -c Sex"""))
+
+script_info['script_usage'].append(("G-test","""Perform a G test on otu_table.biom testing OTUs that occur in 4 or more samples (-f) for differences in the abundance across the category "Treatment":""","""%prog -i otu_table.biom -m Fasting_Map.txt -s g_test -c Treatment -f 4 -o single_g_test.txt"""))
+
+script_info['script_usage'].append(("ANOVA","""Perform an ANOVA on otu_table.biom testing OTUs that occur in 4 or more samples (-f) for differences in the abundance across the category "Treatment":""","""%prog -i otu_table.biom -m Fasting_Map.txt -s ANOVA -c Treatment -f 4 -o single_anova.txt"""))
+
+script_info['script_usage'].append(("ANOVA on mutliple OTU tables","""Perform an ANOVA on all OTU tables in rarefied_otu_tables testing OTUs that occur in 4 or more samples (-f) for differences in the abundance across the category "Treatment":""","""%prog -i rarefied_otu_tables -m Fasting_Map.txt -s ANOVA -c Treatment -f 4 -o multiple_anova.txt"""))
+
+# do we have good input data for this? 
+# script_info['script_usage'].append(("Example 2","""If the user would like to perform the same test using numerical qPCR data, where everything below a threshold value should be considered "absent" and everything above that value "present", the user will need to set the threshold by running the following command:""","""%prog -i otu_table.txt -m Mapping_file.txt -s g_test -c Treatment -t 0.16"""))
+
 script_info['output_description']="""The G test results are output as tab delimited text, which can be examined in Excel. The output has the following columns:
 
 * OTU: The name of the OTU.
@@ -93,11 +99,10 @@ The paired_T results are output as tab delimited text that can be examined in Ex
 """
 
 script_info['required_options']=[\
-    make_option('-i','--otu_table_fp', dest='otu_table_fp',\
-        help='path to the otu table in Biom format, or to a directory ' + \
-             'containing OTU tables'),\
-    make_option('-m','--category_mapping_fp',\
-        dest='category_mapping_fp',\
+    make_option('-i','--otu_table_fp',\
+        help='path to the otu table in biom format, or to a directory ' + \
+             'containing OTU tables',type='existing_path'),\
+    make_option('-m','--category_mapping_fp',type='existing_filepath',
         help='path to category mapping file')
 ]
 
@@ -121,8 +126,8 @@ script_info['optional_options']=[\
         "longitudinal_correlation", "paired_T"]),
     make_option('-o','--output_fp', dest='output_fp', \
         default= 'otu_category_significance_results.txt',\
-        help='path to output file. otu_category_significance_results.txt ' +\
-        'by default'),\
+        help='path to output file. [default: %default]',
+        type='new_filepath'),\
     make_option('-f','--filter', dest='filter',\
         default= 10, \
         help='minimum number of samples that must contain the OTU for the ' +\
@@ -139,7 +144,7 @@ script_info['optional_options']=[\
         'Only used if you have numerical data that should be converted to ' +\
         'present or absent based on a threshold. Should be None for ' +\
         'categorical data or with the correlation test. default value is None'),\
-    make_option('-l', '--otu_include_fp', dest='otu_include_fp', default=None,\
+    make_option('-l', '--otu_include_fp', type='existing_filepath', default=None,\
         help='path to a file with a list of OTUs to evaluate. By default ' +\
         'evaluates all OTUs that pass the minimum sample filter. If a ' +\
         'filepath is given here in which each OTU name one wishes to ' +\
@@ -155,7 +160,7 @@ script_info['optional_options']=[\
         default='individual',\
         help='name of the column in the category mapping file that ' +\
         'designates which sample is from which individual.'),\
-    make_option('-b', '--converted_otu_table_output_fp', dest='conv_output_fp',\
+    make_option('-b', '--converted_otu_table_output_fp', type='new_filepath',\
         default=None, help='the test options longitudinal_correlation and ' +\
         'paired_T convert the original OTU table into one in which samples ' +\
         'that are ignored because they are never observed in an individual ' +\
@@ -184,7 +189,7 @@ def main():
     category_mapping = open(category_mapping_fp,'U')
     individual_column = opts.individual_column
     reference_sample_column = opts.reference_sample_column
-    conv_output_fp = opts.conv_output_fp
+    conv_output_fp = opts.converted_otu_table_output_fp
     relative_abundance = opts.relative_abundance
 
     filter = opts.filter
