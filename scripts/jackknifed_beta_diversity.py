@@ -22,52 +22,39 @@ from qiime.workflow import (run_jackknifed_beta_diversity, print_commands,
     validate_and_set_jobs_to_start)
 
 script_info={}
+
 script_info['brief_description']="""A workflow script for performing jackknifed UPGMA clustering and build jackknifed 2d and 3D PCoA plots."""
+
 script_info['script_description']="""To directly measure the robustness of individual UPGMA clusters and clusters in PCoA plots, one can perform jackknifing (repeatedly resampling a subset of the available data from each sample)."""
+
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Example:""","""These steps are performed by the following command:
 
-1. Compute beta diversity distance matrix from otu table (and tree, if applicable)
+script_info['script_usage'].append(("""Example:""","""These steps are performed by the following command: Compute beta diversity distance matrix from otu table (and tree, if applicable); build rarefied OTU tables by evenly sampling to the specified depth (-e); build UPGMA tree from full distance matrix; compute distance matrics for rarefied OTU tables; build UPGMA trees from rarefied OTU table distance matrices; build a consensus tree from the rarefied UPGMA trees; compare rarefied OTU table distance matrix UPGMA trees to either (full or consensus) tree for jackknife support of tree nodes; perform principal coordinates analysis on distance matrices generated from rarefied OTU tables; generate 2D and 3D PCoA plots with jackknifed support.
 
-2. Build rarefied OTU tables;
+""","""%prog -i otu_table.biom -o bdiv_jk100 -e 100 -m Fasting_Map.txt -t rep_set.tre"""))
 
-3. Build UPGMA tree from full distance matrix;
-
-4. Compute distance matrics for rarefied OTU tables; 
-
-5. Build UPGMA trees from rarefied OTU table distance matrices;
-
-5.5 Build a consensus tree from the rarefied UPGMA trees
-
-6. Compare rarefied OTU table distance matrix UPGMA trees to either (full or consensus) tree for jackknife support of tree nodes.
-
-7. Perform principal coordinates analysis on distance matrices generated from rarefied OTU tables.
-
-8. Generate 2D and 3D PCoA plots with jackknifed support.
-
-""","""jackknifed_beta_diversity.py -i inseqs1_otu_table.txt -t inseqs1_rep_set.tre -p custom_parameters_jack.txt -o wf_jack -e 5 -v -m mapping_file.txt"""))
 script_info['output_description']="""This scripts results in several distance matrices (from beta_diversity.py), several rarified otu tables (from multiple_rarefactions.py) several UPGMA trees (from upgma_cluster.py), a supporting file and newick tree with support values (from tree_compare.py), and 2D and 3D PCoA plots."""
 
 qiime_config = load_qiime_config()
 options_lookup = get_options_lookup()
 
 script_info['required_options']=[\
- make_option('-i','--otu_table_fp',\
-            help='the input fasta file [REQUIRED]'),\
- make_option('-o','--output_dir',\
-            help='the output directory [REQUIRED]'),\
+ make_option('-i','--otu_table_fp',type='existing_filepath',
+            help='the input fasta file [REQUIRED]'),
+ make_option('-o','--output_dir',type='new_dirpath',
+            help='the output directory [REQUIRED]'),
  make_option('-e','--seqs_per_sample',type='int',\
      help='number of sequences to include in each jackknifed subset'+\
             ' [REQUIRED]'),
- make_option('-m','--mapping_fp',\
-            help='path to the mapping file [REQUIRED]'),\
+ make_option('-m','--mapping_fp',type='existing_filepath',
+            help='path to the mapping file [REQUIRED]'),
 ]
 
 script_info['optional_options']=[\
- make_option('-t','--tree_fp',\
+ make_option('-t','--tree_fp',type='existing_filepath',
             help='path to the tree file [default: %default; '+\
             'REQUIRED for phylogenetic measures]'),
- make_option('-p','--parameter_fp',
+ make_option('-p','--parameter_fp',type='existing_filepath',
     help='path to the parameter file, which specifies changes'+\
         ' to the default behavior. '+\
         'See http://www.qiime.org/documentation/file_formats.html#qiime-parameters .'+\
