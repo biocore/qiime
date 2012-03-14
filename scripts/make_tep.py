@@ -20,26 +20,24 @@ import os
 script_info = {}
 script_info['brief_description'] = "Makes TopiaryExplorer project file"
 script_info['script_description'] = "This script makes a TopiaryExplorer project file (.tep) and a jnlp file with the data location preloaded.\n\nWARNING: The jnlp file relies on an absolute path, if you move the .tep file, the generated jnlp will no longer work. However, you can still open the .tep file from your normal TopiaryExplorer install."
-script_info['script_usage'] = []
-script_info['script_usage'].append(("Example","Create .tep file and .jnlp file:","make_tep.py -i otu_table.txt -m mapping_file.txt -t otus.tre -o my_data"))
-# script_info['script_usage'].append(("""""","Create .tep file and .jnlp file, then launch TopiaryExplorer:","make_tep.py -i otu_table.txt -m mapping_file.txt -t otus.tre -o my_data -l"))
-script_info['output_description']= "The result of this script is written to a .tep file and a .jnlp file, both with the name supplied by -o"
-script_info['required_options'] = [\
- # Example required option
- make_option('-i','--otu_file',type="string",help='Path to read otu table',dest='otu_table_fp'),\
- make_option('-m','--mapping_file',type="string",help='Path to read mapping file',dest='mapping_fp'),\
- make_option('-t','--tree_file',type="string",help='Path to read tree',dest='tree_fp')
-]
-script_info['optional_options'] = [\
- # Example optional option
- make_option('-o','--output_dir',type="new_dirpath",help='the output directory [default: %default]', dest='out_fp'),\
- make_option('-p','--prefs_file_dir',type="string",help='Path to prefs file', dest='prefs_file_fp'),\
 
- # make_option('--create_jnlp',action='store_true',
- #  help='create a jnlp file [default: %default]'),\
-  make_option('-w','--web',action='store_true',default=False, help='web codebase jnlp flag [default: %default]', dest='web_flag'),
-  make_option('-u','--url_path',type="string",help='url path', dest='url')
- # make_option('-l','--launch_TE',action='store_false', default="false",help='Option to launch TopiaryExplorer [default: %default]', dest='launch')
+script_info['script_usage'] = []
+
+script_info['script_usage'].append(("Example","Create .tep file and .jnlp file:","%prog -i otu_table.biom -m Fasting_Map.txt -t rep_set.tre"))
+
+script_info['output_description']= "The result of this script is written to a .tep file and a .jnlp file, both with the name supplied by -o"
+
+script_info['required_options'] = [
+ make_option('-i','--otu_table_fp',type="existing_filepath",help='path to otu table in biom format'),\
+ make_option('-m','--mapping_fp',type="existing_filepath",help='path to mapping file'),\
+ make_option('-t','--tree_fp',type="existing_filepath",help='path to tree')
+]
+
+script_info['optional_options'] = [
+ make_option('-o','--out_fp',type="new_dirpath",help='the output directory [default: %default]'),\
+ make_option('-p','--prefs_file_fp',type="existing_filepath",help='path to prefs file'),\
+  make_option('-w','--web_flag',action='store_true',default=False, help='web codebase jnlp flag [default: %default]'),
+  make_option('-u','--url',type="string",help='url path')
 ]
 script_info['version'] = __version__
 
