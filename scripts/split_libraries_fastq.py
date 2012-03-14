@@ -25,7 +25,15 @@ from qiime.golay import get_invalid_golay_barcodes
 script_info = {}
 script_info['brief_description'] = "This script performs demultiplexing of Fastq sequence data where barcodes and sequences are contained in two separate fastq files (common on Illumina runs)."
 script_info['script_description'] = ""
-script_info['script_usage'] = [("Demultiplex and quality filter two lanes of Illumina run results and write results to ./sl_out/.","","%prog -i s_7_2_sequence.txt,s_8_2_sequence.txt -b s_7_1_sequence.txt,s_8_1_sequence.txt -o ./sl_out/ -m lane7_map.txt,lane8_map.txt")]
+
+script_info['script_usage'] = []
+
+script_info['script_usage'].append(("Demultiplex and quality filter (at Phred Q20) one lane of Illumina fastq data and write results to ./slout_q20.","","%prog -i lane1_read1.fastq.gz -b lane1_barcode.fastq.gz --rev_comp_mapping_barcodes -o slout_q20/ -m map.txt -q20"))
+
+script_info['script_usage'].append(("Demultiplex and quality filter (at Phred Q20) one lane of Illumina fastq data and write results to ./slout_q20. Store trimmed quality scores in addition to sequence data.","","%prog -i lane1_read1.fastq.gz -b lane1_barcode.fastq.gz --rev_comp_mapping_barcodes -o slout_q20/ -m map.txt --store_qual_scores -q20"))
+
+script_info['script_usage'].append(("Demultiplex and quality filter (at Phred Q20) two lanes of Illumina fastq data and write results to ./slout_q20.","","%prog -i lane1_read1.fastq.gz,lane2_read1.fastq.gz -b lane1_barcode.fastq.gz,lane2_barcode.fastq.gz --rev_comp_mapping_barcodes -o slout_q20/ -m map.txt,map.txt --store_qual_scores -q20"))
+
 script_info['output_description']= ""
 script_info['required_options'] = [\
  # Example required option
@@ -47,6 +55,10 @@ script_info['required_options'] = [\
              help='metadata mapping files (comma-separated if more than one)'),
 ]
 script_info['optional_options'] = [
+     make_option("--store_qual_scores",
+        default=False,
+        action='store_true',
+        help='store qual strings in .qual files [default: %default]'),
      make_option("--retain_unassigned_reads",
         default=False,
         action='store_true',
@@ -121,6 +133,7 @@ def main():
     start_seq_id = opts.start_seq_id
     # NEED TO FIX THIS FUNCTIONALITY - CURRENTLY READING THE WRONG FIELD
     filter_bad_illumina_qual_digit = False #opts.filter_bad_illumina_qual_digit
+    store_qual_scores = opts.store_qual_scores
     
     if opts.last_bad_quality_char != None:
         option_parser.error('--last_bad_quality_char is no longer supported. '
@@ -134,8 +147,8 @@ def main():
     except KeyError:
         barcode_correction_fn = None
     
-    if len(sequence_read_fps) != len(barcode_read_fps):
-        parser.error("Same number of sequence and barcode files must be provided.")
+    if len(set([len(sequence_read_fps), len(barcode_read_fps), len(mapping_fps)])) > 1:
+        option_parser.error("Same number of sequence, barcode and mapping files must be provided.")
     
     output_dir = opts.output_dir
     create_dir(output_dir)
@@ -143,6 +156,20 @@ def main():
     output_fp_temp = '%s/seqs.fna.incomplete' % output_dir
     output_fp = '%s/seqs.fna' % output_dir
     output_f = open(output_fp_temp,'w')
+    qual_fp_temp = '%s/qual.fna.incomplete' % output_dir
+    qual_fp = '%s/seqs.qual' % output_dir
+    
+    if store_qual_scores:
+        qual_f = open(qual_fp_temp,'w')
+        # define a qual writer whether we're storing
+        # qual strings or not so we don't have to check
+        # every time through the for loop below
+        def qual_writer(q):
+            qual_f.write('>%s\n%s\n' % (fasta_header,q))
+    else:
+        def qual_writer(q):
+            pass
+    
     log_fp = '%s/split_library_log.txt' % output_dir
     log_f = open(log_fp,'w')
     histogram_fp = '%s/histograms.txt' % output_dir
@@ -208,11 +235,16 @@ def main():
                barcode_correction_fn=barcode_correction_fn,
                max_barcode_errors=max_barcode_errors):
             output_f.write('>%s\n%s\n' % (fasta_header,sequence))
-        start_seq_id = seq_id + 1                                       
+            qual_writer(quality)
+            
+        start_seq_id = seq_id + 1                                
         log_f.write('\n---\n\n')
         
     output_f.close()
     rename(output_fp_temp,output_fp)
+    if store_qual_scores:
+        qual_f.close()
+        rename(qual_fp_temp,qual_fp)
 
 if __name__ == "__main__":
     main()
