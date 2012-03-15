@@ -21,7 +21,7 @@ from qiime.split import split_mapping_file_on_field, split_otu_table_on_sample_m
 script_info = {}
 script_info['brief_description'] = "Split in a single OTU table into one OTU table per value in a specified field of the mapping file."
 script_info['script_description'] = ""
-script_info['script_usage'] = [("","Split otu_table.txt into per-study OTU tables, and store the results in ./per_study_otu_tables/","%prog -i otu_table.txt -m mapping.txt -f Study -o per_study_otu_tables")]
+script_info['script_usage'] = [("","Split otu_table.biom into per-study OTU tables, and store the results in ./per_study_otu_tables/","%prog -i otu_table.biom -m Fasting_Map.txt -f Treatment -o per_study_otu_tables")]
 script_info['output_description']= ""
 script_info['required_options'] = [
  make_option('-i','--otu_table_fp',type="existing_filepath",help='the input otu table'),
