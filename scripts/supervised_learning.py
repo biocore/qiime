@@ -63,6 +63,8 @@ script_info['script_usage'].append(("""Running with 10-fold cross-validation for
 
 script_info['script_usage'].append(("""Running with 1,000 trees for improved generalization error""","""""","""%prog -i otu_table.biom -m Fasting_Map.txt -c BarcodeSequence -o ml_ntree1000 --ntree 1000"""))
 
+script_info['script_usage_output_to_remove'] = ['ml','ml_cv10','ml_ntree1000']
+
 # this example is better suited for the tutorial as it's going to be difficult to use in 
 # automated testing
 # script_info['script_usage'].append(("""Simple example, filter OTU table first""","""""","""

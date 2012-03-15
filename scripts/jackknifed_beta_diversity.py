@@ -33,6 +33,8 @@ script_info['script_usage'].append(("""Example:""","""These steps are performed 
 
 ""","""%prog -i otu_table.biom -o bdiv_jk100 -e 100 -m Fasting_Map.txt -t rep_set.tre"""))
 
+script_info['script_usage_output_to_remove'] = ['bdiv_jk100']
+
 script_info['output_description']="""This scripts results in several distance matrices (from beta_diversity.py), several rarified otu tables (from multiple_rarefactions.py) several UPGMA trees (from upgma_cluster.py), a supporting file and newick tree with support values (from tree_compare.py), and 2D and 3D PCoA plots."""
 
 qiime_config = load_qiime_config()

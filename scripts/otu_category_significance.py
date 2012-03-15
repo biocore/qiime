@@ -14,6 +14,7 @@ __status__ = "Development"
 
 from os.path import isdir, join
 from os import listdir
+from glob import glob
 from qiime.otu_category_significance import test_wrapper, test_wrapper_multiple
 from qiime.longitudinal_otu_category_significance import \
     longitudinal_otu_table_conversion_wrapper
@@ -238,8 +239,7 @@ def main():
                 otu_table_relative_abundance=relative_abundance)
     else:
         if test != 'longitudinal_correlation' and test != 'paired_T':
-            otu_table_paths = [join(otu_table_fp,fp) for fp in \
-                listdir(otu_table_fp)]
+            otu_table_paths = glob('%s/*biom' % otu_table_fp)
             # if directory, get aggregated results
             output = test_wrapper_multiple(test, otu_table_paths, \
                 category_mapping, category, threshold, filter, otu_include,\

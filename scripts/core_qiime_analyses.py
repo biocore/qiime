@@ -34,6 +34,7 @@ script_info['script_usage'].append(("","Run serial analysis using a custom param
 
 script_info['script_usage'].append(("","Run serial analysis using a custom parameters file (-p), and guess the even sampling depth (no -e provided). Skip split libraries by starting with already demultiplexed sequences. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).","%prog -i $PWD/seqs.fna -o $PWD/FastingStudy -m $PWD/Fasting_Map.txt -c BarcodeSequence --suppress_split_libraries -p $PWD/params.txt"))
 
+script_info['script_usage_output_to_remove'] = ['$PWD/FastingStudy','$PWD/FastingStudy_w_sl']
 
 script_info['output_description'] =""""""
 

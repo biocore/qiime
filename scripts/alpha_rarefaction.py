@@ -31,6 +31,9 @@ script_info['script_usage']=[]
 script_info['script_usage'].append(("""Example""","""Given an OTU table, a phylogenetic tree, a mapping file, and a max sample depth, compute alpha rarefaction plots for the PD, observed species and chao1 metrics. To specify alternative metrics pass a parameter file via -p. We generally recommend that the max depth specified here (-e) is the same as the even sampling depth provided to beta_diversity_through_plots (also -e). ""","""%prog -i otu_table.biom -o arare_max100/ -t rep_set.tre -m Fasting_Map.txt -e 100"""))
 
 script_info['output_description']="""The primary interface for the results will be OUTPUT_DIR/alpha_rarefaction_plots/rarefaction_plots.html where OUTPUT_DIR is the value you specify with -o.  You can open this in a web browser for interactive alpha rarefaction plots."""
+
+script_info['script_usage_output_to_remove'] = ['arare_max100']
+
 script_info['required_options']=[
  make_option('-i','--otu_table_fp',type='existing_filepath',
             help='the input otu table [REQUIRED]'),

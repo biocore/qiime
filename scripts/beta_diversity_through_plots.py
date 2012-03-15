@@ -32,6 +32,8 @@ script_info['script_usage']=[]
 
 script_info['script_usage'].append(("""Example:""","""Given an OTU table, a phylogenetic tree, an even sampling depth, and a mapping file, perform the following steps: 1. Randomly subsample otu_table.biom to even number of sequences per sample (100 in this case); 2. Compute a weighted and unweighted unifrac distance matrcies (can add additional metrics by passing a parameters file via -p); 3. Peform a principle coordinates analysis on the result of Step 2; 4. Generate a 2D and 3D plots for all mapping fields.""","""%prog -i otu_table.biom -o bdiv_even100/ -t rep_set.tre -m Fasting_Map.txt -e 100"""))
 
+script_info['script_usage_output_to_remove'] = ['bdiv_even100']
+
 script_info['output_description']="""This script results in a distance matrix (from beta_diversity.py), a principal coordinates file (from principal_coordinates.py), a preferences file (from make_prefs_file.py) and folders containing the resulting PCoA plots (accessible through html files)."""
 
 script_info['required_options']=[\
