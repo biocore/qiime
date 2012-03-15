@@ -4,18 +4,18 @@ from __future__ import division
 
 __author__ = "Antonio Gonzalez Pena"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Antonio Gonzalez Pena"]
+__credits__ = ["Antonio Gonzalez Pena", "Greg Caporaso"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Antonio Gonzalez Pena"
 __email__ = "antgonza@gmail.com"
 __status__ = "Development"
 
-
+from biom.table import table_factory
 from qiime.util import make_option
 from qiime.util import parse_command_line_parameters, get_options_lookup
 from qiime.parse import parse_trflp
-from qiime.format import format_otu_table
+from qiime.format import format_biom_table
 from os.path import isfile
 from sys import stderr
 
@@ -25,7 +25,7 @@ script_info={}
 script_info['brief_description']="""Convert TRFLP text file to an OTU table"""
 script_info['script_description']="""The input for this script is a TRLFP text file. The output of this script is an OTU table text file that can be use with QIIME for further analysis """
 script_info['script_usage'] = [
-  ("""Usage:""","""You need to pass a TRFLP text, the script will remove not wanted chars sample and otus names, and will add zeros as need it""","""%prog -i trflp_file.txt -o otu_table/""")
+  ("""Usage:""","""You need to pass a TRFLP text, the script will remove not wanted chars sample and otus names, and will add zeros as need it""","""%prog -i trflp_in.txt -o otu_table.biom""")
 ]
 script_info['output_description']= ""
 script_info['required_options']=[
@@ -56,7 +56,8 @@ def main():
     samples, otus, data = parse_trflp(open(opts.input_path,'U'))
     
     output_f = open(opts.output_path, 'w')
-    output_f.write(format_otu_table(samples,otus,data, comment='Created with %s' % __file__))
+    t = table_factory(data,samples,otus)
+    output_f.write(format_biom_table(t))
     output_f.close()
  
 
