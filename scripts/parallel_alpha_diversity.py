@@ -29,26 +29,30 @@ from qiime.parallel.alpha_diversity import get_job_commands
 script_info={}
 script_info['brief_description']="""Parallel alpha diversity"""
 script_info['script_description']="""This script performs like the alpha_diversity.py script, but is intended to make use of multicore/multiprocessor environments to perform analyses in parallel."""
+
 script_info['script_usage'] = []
-script_info['script_usage'].append(("""Example""","""Apply the observed_species, chao1, PD_whole_tree metrics (-m) to all otu tables in /home/qiime_user/rare/ (-i) and write the resulting output files to /home/qiime_user/out/ (-o, will be created if it doesn't exist). Use the tree file rep_set.tre (-t) when necessary.""","""%prog -i /home/qiime_user/rare/ -o /home/qiime_user/out -m observed_species,chao1,PD_whole_tree -t /home/qiime_user/rep_set.tre"""))
+
+script_info['script_usage'].append(("""Example""","""Apply the observed_species, chao1, PD_whole_tree metrics (-m) to all otu tables in rarefied_otu_tables/ (-i) and write the resulting output files to adiv/ (-o, will be created if it doesn't exist). Use the rep_set.tre (-t) to compute phylogenetic diversity metrics. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).""","""%prog -i $PWD/rarefied_otu_tables -o $PWD/adiv -m observed_species,chao1,PD_whole_tree -t $PWD/rep_set.tre"""))
+
 script_info['output_description'] ="""The resulting output will be the same number of files as supplied by the user. The resulting files are tab-delimited text files, where the columns correspond to alpha diversity metrics and the rows correspond to samples and their calculated diversity measurements. """
+
 script_info['version'] = __version__
 
 options_lookup = get_options_lookup()
 
 script_info['required_options'] = [\
- make_option('-i', '--input_path',
+ make_option('-i', '--input_path',type='existing_dirpath',
         help='input path, must be directory [REQUIRED]'),\
- make_option('-o', '--output_path',
+ make_option('-o', '--output_path',type='new_dirpath',
         help='output path, must be directory [REQUIRED]'),\
 ]
 
 script_info['optional_options'] = [\
- make_option('-t', '--tree_path',
+ make_option('-t', '--tree_path',type='existing_filepath',
         help='path to newick tree file, required for phylogenetic metrics'+\
         ' [default: %default]'),\
- make_option('-N','--alpha_diversity_fp',action='store',\
-           type='string',help='full path to '+\
+ make_option('-N','--alpha_diversity_fp',type='existing_filepath',\
+           help='full path to '+\
            'scripts/alpha_diversity.py [default: %default]',\
            default=join(get_qiime_scripts_dir(),'alpha_diversity.py')),\
  make_option('-m', '--metrics',
