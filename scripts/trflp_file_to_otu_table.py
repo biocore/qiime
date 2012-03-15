@@ -48,11 +48,6 @@ def main():
        raise IOError, \
         "Input path (%s) not valid.  Does it exist?" % opts.input_path
     
-    if isfile(opts.output_path):
-       raise IOError, \
-        "Output path (%s) already exists. Please " % opts.output_path +\
-         "remove or specify a different path" 
-    
     samples, otus, data = parse_trflp(open(opts.input_path,'U'))
     
     output_f = open(opts.output_path, 'w')
