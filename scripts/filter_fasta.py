@@ -31,19 +31,19 @@ script_info['script_description'] = ""
 script_info['script_usage'] = []
 
 script_info['script_usage'].append(("OTU map-based filtering","Keep all sequences that show up in an OTU map.",
- "filter_fasta.py -f inseqs.fasta -o otu_map_filtered_seqs.fasta -m otu_map.txt"))
+ "%prog -f inseqs.fasta -o otu_map_filtered_seqs.fasta -m otu_map.txt"))
 
 script_info['script_usage'].append(("Chimeric sequence filtering","Discard all sequences that show up in chimera checking output. NOTE: It is very important to pass -n here as this tells the script to negate the request, or discard all sequences that are listed via -s. This is necessary to remove the identified chimeras from inseqs.fasta.",
- "filter_fasta.py -f inseqs.fasta -o non_chimeric_seqs.fasta -s chimeric_seqs.txt -n"))
+ "%prog -f inseqs.fasta -o non_chimeric_seqs.fasta -s chimeric_seqs.txt -n"))
 
 script_info['script_usage'].append(("Sequence list filtering", "Keep all sequences from as fasta file that are listed in a text file.",
- "filter_fasta.py -f inseqs.fasta -o list_filtered_seqs.fasta -s seqs_to_keep.txt"))
+ "%prog -f inseqs.fasta -o list_filtered_seqs.fasta -s seqs_to_keep.txt"))
  
 script_info['script_usage'].append(("biom-based filtering", "Keep all sequences that are listed as observations in a biom file.",
- "filter_fasta.py -f inseqs.fastq -o biom_filtered_seqs.fastq -b otu_table.biom"))
+ "%prog -f inseqs.fastq -o biom_filtered_seqs.fastq -b otu_table.biom"))
 
 script_info['script_usage'].append(("fastq filtering","Keep all sequences from a fastq file that are listed in a text file (note: file name must end with .fastq to support fastq filtering).",
- "filter_fasta.py -f inseqs.fastq -o list_filtered_seqs.fastq -s seqs_to_keep.txt"))
+ "%prog -f inseqs.fastq -o list_filtered_seqs.fastq -s seqs_to_keep.txt"))
 
 script_info['output_description']= ""
 script_info['required_options'] = [\

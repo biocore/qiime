@@ -30,7 +30,7 @@ script_info['script_usage']=[]
 
 script_info['script_usage'].append(("""Write to standard out:""","""Calculate statistics on an OTU table""","""%prog -i otu_table.biom"""))
 
-script_info['script_usage'].append(("""Write to standard out and edit mapping file:""","""Calculate statistics on an OTU table and add sequence/sample count data to mapping file.""","""per_library_stats.py -i otu_table.biom -m Fasting_Map.txt -o map.txt"""))
+script_info['script_usage'].append(("""Write to standard out and edit mapping file:""","""Calculate statistics on an OTU table and add sequence/sample count data to mapping file.""","""%prog -i otu_table.biom -m Fasting_Map.txt -o map.txt"""))
 
 script_info['output_description']="""The resulting statistics are written to stdout. If -m is passed, a new mapping file is written to the path specified by -o, in addition to the statistics written to stdout"""
 script_info['required_options']=[options_lookup['otu_table_as_primary_input']]
