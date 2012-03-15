@@ -29,37 +29,20 @@ script_info['script_description'] = """This script takes a sequence file and per
 
 script_info['script_usage'] = []
 
-script_info['script_usage'].append(("""Simple example""","""The following command will start an analysis on inseq1.fasta (-i), which is a post-split_libraries fasta file. The sequence identifiers in this file should be of the form <sample_id>_<unique_seq_id>. The following steps, corresponding to the preliminary data preparation, are applied.
+script_info['script_usage'].append(("""Simple example""","""The following command will start an analysis on seqs.fna (-i), which is a post-split_libraries fasta file. The sequence identifiers in this file should be of the form <sample_id>_<unique_seq_id>. The following steps, corresponding to the preliminary data preparation, are applied: Pick de novo OTUs at 97%; pick a representative sequence for each OTU (the OTU centroid sequence); align the representative set with PyNAST; assign taxonomy with RDP classifier; filter the alignment prior to tree building - remove positions which are all gaps, and specified as 0 in the lanemask; build a phylogenetic tree with FastTree; build an OTU table. All output files will be written to the directory specified by -o, and subdirectories as appropriate.
+""","""pick_otus_through_otu_table.py -i seqs.fna -o otus/"""))
 
-1. Pick OTUs with uclust at similarity of 0.97;
-
-2. Pick a representative set with the most_abundant method;
-
-3. Align the representative set with PyNAST;
-
-4. Assign taxonomy with RDP classifier;
-
-5. Filter the alignment prior to tree building - remove positions which are all gaps, and specified as 0 in the lanemask;
-
-6. Build a phylogenetic tree with FastTree;
-
-7. Build an OTU table.
-
-All output files will be written to the directory specified by -o, and 
-subdirectories as appropriate.
-""","""pick_otus_through_otu_table.py -i inseqs1.fasta -o wf1/ -p custom_parameters.txt"""))
-
-script_info['output_description'] ="""This script will produce an OTU mapping file (pick_otus.py), a representative set of sequences (FASTA file from pick_rep_set.py), a sequence alignment file (FASTA file from align_seqs.py), taxonomy assignment file (from assign_taxonomy.py), a filtered sequence alignment (from filter_alignment.py), a phylogenetic tree (Newick file from make_phylogeny.py) and an OTU table (from make_otu_table.py)."""
+script_info['output_description'] ="""This script will produce an OTU mapping file (pick_otus.py), a representative set of sequences (FASTA file from pick_rep_set.py), a sequence alignment file (FASTA file from align_seqs.py), taxonomy assignment file (from assign_taxonomy.py), a filtered sequence alignment (from filter_alignment.py), a phylogenetic tree (Newick file from make_phylogeny.py) and a biom-formatted OTU table (from make_otu_table.py)."""
 
 script_info['required_options'] = [
-    make_option('-i','--input_fp',
+    make_option('-i','--input_fp',type='existing_filepath',
         help='the input fasta file [REQUIRED]'),
-    make_option('-o','--output_dir',
+    make_option('-o','--output_dir',type='new_dirpath',
         help='the output directory [REQUIRED]'),
     ]
 
 script_info['optional_options'] = [\
- make_option('-p','--parameter_fp',
+ make_option('-p','--parameter_fp',type='existing_filepath',
     help='path to the parameter file, which specifies changes'+\
         ' to the default behavior. '+\
         'See http://www.qiime.org/documentation/file_formats.html#qiime-parameters .'+\
