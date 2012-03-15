@@ -31,22 +31,27 @@ options_lookup = get_options_lookup()
 script_info = {}
 script_info['brief_description'] = "Reference OTU picking/Shotgun UniFrac workflow."
 script_info['script_description'] = "This script picks OTUs using a reference-based method and constructs an OTU table. Taxonomy is assigned using a pre-defined taxonomy map of reference sequence OTU to taxonomy. If full-length genomes are provided as the reference sequences, this script applies the Shotgun UniFrac method."
-script_info['script_usage'] = [
- ("","Pick OTUs, assign taxonomy, and create an OTU table against a reference set of OTUs.","%prog -i inseqs.fasta -r refseqs.fasta -o out -p qiime_parameters.txt -t taxa.txt"),
- ("","Pick OTUs and create an OTU table against a reference set of OTUs without adding taxonomy assignments.","%prog -i inseqs.fasta -r refseqs.fasta -o out -p qiime_parameters.txt")]
+
+script_info['script_usage'] = []
+
+script_info['script_usage'].append(("","Pick OTUs, assign taxonomy, and create an OTU table against a reference set of OTUs. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).","%prog -i $PWD/seqs.fna -r $PWD/refseqs.fna -o $PWD/otus_w_tax/ -t $PWD/taxa.txt"))
+ 
+script_info['script_usage'].append(("","Pick OTUs and create an OTU table against a reference set of OTUs without adding taxonomy assignments. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).","%prog -i $PWD/seqs.fna -r $PWD/refseqs.fna -o $PWD/otus/"))
+ 
 script_info['output_description']= ""
+
 script_info['required_options'] = [
- make_option('-i','--input_fp',    help='the input sequences'),
- make_option('-r','--reference_fp',help='the reference sequences'),
- make_option('-o','--output_dir',  help='the output directory'),
+ make_option('-i','--input_fp',type='existing_filepath',help='the input sequences'),
+ make_option('-r','--reference_fp',type='existing_filepath',help='the reference sequences'),
+ make_option('-o','--output_dir',type='new_dirpath',help='the output directory'),
 ]
 script_info['optional_options'] = [
- make_option('-p','--parameter_fp',
+ make_option('-p','--parameter_fp',type='existing_filepath',
     help='path to the parameter file, which specifies changes'+\
         ' to the default behavior. '+\
         'See http://www.qiime.org/documentation/file_formats.html#qiime-parameters .'+\
         ' [if omitted, default values will be used]'),
- make_option('-t','--taxonomy_fp',help='the taxonomy map [default: %default]'),
+ make_option('-t','--taxonomy_fp',type='existing_filepath',help='the taxonomy map [default: %default]'),
  make_option('-f','--force',action='store_true',\
         dest='force',help='Force overwrite of existing output directory'+\
         ' (note: existing files in output_dir will not be removed)'+\
