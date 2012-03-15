@@ -27,27 +27,36 @@ options_lookup = get_options_lookup()
 script_info={}
 script_info['brief_description'] = """A workflow for running a core set of QIIME analyses."""
 script_info['script_description'] = """This script plugs several QIIME steps together to form a basic full data analysis workflow. The steps include quality filtering and demultiplexing sequences (optional), running the pick_otus_through_otu_table.py workflow (pick otus and representative sequences, assign taxonomy, align representative sequences, build a tree, and build the OTU table), generating 2d and 3d beta diversity PCoA plots, generating alpha rarefaction plots, identifying OTUs that are differentially represented in different categories, and several additional analysis. Beta diversity calculations will be run both with and without an even sampling step, where the depth of sampling can either be passed to the script or QIIME will try to make a reasonable guess."""
-script_info['script_usage'] = [("","Run serial analysis using default parameters, and guess the even sampling depth (no -e provided)","%prog -i Fasting_Example.fna -q Fasting_Example.qual -o FastingStudy -m Fasting_Map.txt -c Treatment,DOB"),("","Run serial analysis, and guess the even sampling depth (no -e provided). Skip split libraries by starting with already demultiplexed sequences.","%prog -i seqs.fna -o FastingStudy -p custom_parameters.txt -m Fasting_Map.txt -c Treatment,DOB")]
+
+script_info['script_usage'] = []
+
+script_info['script_usage'].append(("","Run serial analysis using a custom parameters file (-p), and guess the even sampling depth (no -e provided). ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).","%prog -i $PWD/Fasting_Example.fna -q $PWD/Fasting_Example.qual -o $PWD/FastingStudy_w_sl -m $PWD/Fasting_Map.txt -c BarcodeSequence -p $PWD/params.txt"))
+
+script_info['script_usage'].append(("","Run serial analysis using a custom parameters file (-p), and guess the even sampling depth (no -e provided). Skip split libraries by starting with already demultiplexed sequences. ALWAYS SPECIFY ABSOLUTE FILE PATHS (absolute path represented here as $PWD, but will generally look something like /home/ubuntu/my_analysis/).","%prog -i $PWD/seqs.fna -o $PWD/FastingStudy -m $PWD/Fasting_Map.txt -c BarcodeSequence --suppress_split_libraries -p $PWD/params.txt"))
 
 
 script_info['output_description'] =""""""
 
 script_info['required_options'] = [
+    # type='existing_filepaths' not currently working for -i - need change to 
+    # function in workflow.py
     make_option('-i','--input_fnas',
         help='the input fasta file(s) -- comma-separated '+\
         'if more than one [REQUIRED]'),
-    make_option('-o','--output_dir',
+    make_option('-o','--output_dir',type='new_dirpath',
         help='the output directory [REQUIRED]'),
-    make_option('-m','--mapping_fp',
+    make_option('-m','--mapping_fp',type='existing_filepath',
         help='the mapping filepath [REQUIRED]'),
     ]
 
 script_info['optional_options'] = [\
- make_option('-p','--parameter_fp',
+ make_option('-p','--parameter_fp',type='existing_filepath',
     help='path to the parameter file, which specifies changes'+\
         ' to the default behavior. '+\
         'See http://www.qiime.org/documentation/file_formats.html#qiime-parameters.'+\
         ' [if omitted, default values will be used]'),
+ # type='existing_filepaths' not currently working for -q - need change to 
+ # function in workflow.py
  make_option('-q','--input_quals',
         help='The 454 qual files. Comma-separated'+\
         ' if more than one, and must correspond to the '+\
@@ -75,7 +84,7 @@ script_info['optional_options'] = [\
      ' choose a sampling depth which may favor keeping '+\
      ' more sequences by excluding some samples) [default: %default]', 
      default=False, action='store_true'),
- make_option('-t','--reference_tree_fp',
+ make_option('-t','--reference_tree_fp',type='existing_filepath',
      help='Path to the tree file if one should be used.'+\
      ' Relevant for closed-reference-based OTU picking'+\
      ' methods only (i.e., uclust_ref -C and BLAST)'+\
