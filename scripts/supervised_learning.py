@@ -56,26 +56,37 @@ visit: http://www.r-project.org/. Once R is installed, run R and excecute the \
 command "install.packages("randomForest")", then type q() to exit."""
 
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Simple example of random forests classifier""","""""","""supervised_learning.py -i otutable.txt -m map.txt -c Individual -o ml"""))
-script_info['script_usage'].append(("""Simple example, filter OTU table first""","""""","""
- single_rarefaction.py -i otu_table_filtered.txt -d 200 -o otu_table_rarefied200.txt
- filter_otu_table.py -i otu_table_rarefied200.txt -s 10
- supervised_learning.py -i otutable_filtered_rarefied200.txt -m map.txt -c 'Individual' -o ml"""))
 
-script_info['script_usage'].append(("""Running with 10-fold cross-validation for improved estimates of generalization error and feature importances""","""""","""supervised_learning.py -i otutable.txt -m map.txt -c Individual -o ml -e cv10"""))
-script_info['script_usage'].append(("""Running with 1,000 trees for improved generalization error""","""""","""supervised_learning.py -i otutable.txt -m map.txt -c Individual -o ml --ntree 1000"""))
+script_info['script_usage'].append(("""Simple example of random forests classifier""","""""","""%prog -i otu_table.biom -m Fasting_Map.txt -c BarcodeSequence -o ml"""))
+
+script_info['script_usage'].append(("""Running with 10-fold cross-validation for improved estimates of generalization error and feature importances""","""""","""%prog -i otu_table.biom -m Fasting_Map.txt -c BarcodeSequence -o ml_cv10 -e cv10"""))
+
+script_info['script_usage'].append(("""Running with 1,000 trees for improved generalization error""","""""","""%prog -i otu_table.biom -m Fasting_Map.txt -c BarcodeSequence -o ml_ntree1000 --ntree 1000"""))
+
+# this example is better suited for the tutorial as it's going to be difficult to use in 
+# automated testing
+# script_info['script_usage'].append(("""Simple example, filter OTU table first""","""""","""
+#  single_rarefaction.py -i otu_table_filtered.txt -d 200 -o otu_table_rarefied200.txt
+#  filter_otu_table.py -i otu_table_rarefied200.txt -s 10
+#  supervised_learning.py -i otutable_filtered_rarefied200.txt -m map.txt -c 'Individual' -o ml"""))
+
+
+
+
 script_info['output_description']="""Outputs a ranking of features (e.g. OTUs) by importance, an estimation of the generalization error of the classifier, and the predicted class labels and posterior class probabilities \
 according to the classifier."""
 script_info['required_options'] = [\
-    make_option('-i', '--input_data', help='Input data file containing predictors (e.g. otu table)'),
-    make_option('-m', '--mapping_file', help='File containing meta data (response variables)'),
+    make_option('-i', '--input_data', type='existing_filepath',
+                help='Input data file containing predictors (e.g. otu table)',),
+    make_option('-m', '--mapping_file', type='existing_filepath', 
+                help='File containing meta data (response variables)'),
     make_option('-c', '--category', help='Name of meta data category to predict'),
 ]
 
 errortype_choices = ['oob','loo','cv5','cv10']
 
 script_info['optional_options']=[\
-    make_option('-o','--output_dir',default='.',\
+    make_option('-o','--output_dir',default='.',type='new_dirpath',\
             help='the output directory [deafult: %default]'),
     make_option('-f','--force',action='store_true',\
         dest='force',help='Force overwrite of existing output directory'+\
