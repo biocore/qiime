@@ -13,7 +13,7 @@ __status__ = "Development"
  
 """Computes shared phylotypes between samples"""
 
-from biom.parse import parse_biom_table_str
+from biom.parse import parse_biom_table
 from numpy import logical_and, zeros, ones
 from qiime.format import format_distance_matrix
 
@@ -59,7 +59,7 @@ def calc_shared_phylotypes(infile, reference_sample=None):
                       e.g. when the reference sample is the Donor in a transplant study
     """
 
-    otu_table = parse_biom_table_str(infile)
+    otu_table = parse_biom_table(infile)
 
     if reference_sample:
         #ref_idx = sample_ids.index(reference_sample)
