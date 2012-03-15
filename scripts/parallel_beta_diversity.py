@@ -42,7 +42,7 @@ script_info['script_usage'].append(("""Apply beta_diversity.py in parallel""",""
 script_info['output_description']="""The output of %prog is a folder containing text files, each a distance matrix between samples."""
 
 script_info['required_options'] = [\
- make_option('-i', '--input_path',type='existing_dirpath',
+ make_option('-i', '--input_path',type='existing_path',
         help='input path, must be directory [REQUIRED]'),\
  make_option('-o', '--output_path',type='new_dirpath',
         help='output path, must be directory [REQUIRED]'),

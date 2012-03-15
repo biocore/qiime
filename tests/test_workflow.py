@@ -258,7 +258,7 @@ class WorkflowTests(TestCase):
             command_handler=call_commands_serially,
             params=self.run_core_qiime_analyses_params1,
             qiime_config=self.qiime_config,
-            categories='Treatment,DOB',
+            categories='BarcodeSequence',
             sampling_depth=100,
             arare_min_rare_depth=10,
             arare_num_steps=10,
@@ -293,7 +293,7 @@ class WorkflowTests(TestCase):
             command_handler=call_commands_serially,
             params=self.run_core_qiime_analyses_params1,
             qiime_config=self.qiime_config,
-            categories='Treatment',
+            categories='BarcodeSequence',
             sampling_depth=None,
             arare_min_rare_depth=10,
             arare_num_steps=10,
@@ -311,8 +311,9 @@ class WorkflowTests(TestCase):
         sample_ids.sort()
         expected_sample_ids.sort()
         self.assertEqual(sample_ids,expected_sample_ids)
-        # even sampling directory exists
-        self.assertTrue(exists('%s/bdiv_even146' % self.wf_out))
+        # even sampling directory exists (different depth may be chosen on 
+        # different systems due to rounding)
+        self.assertEqual(len(glob('%s/bdiv_even*' % self.wf_out)),1)
 
     def test_run_core_qiime_analyses_parallel(self):
         """run_core_qiime_analyses: functions as expected in parallel
@@ -327,7 +328,7 @@ class WorkflowTests(TestCase):
             command_handler=call_commands_serially,
             params=self.run_core_qiime_analyses_params1,
             qiime_config=self.qiime_config,
-            categories='Treatment,DOB',
+            categories='BarcodeSequence',
             sampling_depth=100,
             arare_min_rare_depth=10,
             arare_num_steps=10,
@@ -339,7 +340,7 @@ class WorkflowTests(TestCase):
         # in the pick_otus_through_otu_table tests
         otu_table_fp = join(self.wf_out,'otus','otu_table.biom')
         otu_table = parse_biom_table(open(otu_table_fp,'U'))
-        sample_ids= otu_table.sample_ids
+        sample_ids= otu_table.SampleIds
         expected_sample_ids = ['PC.354','PC.355','PC.356','PC.481',
                                'PC.593','PC.607','PC.634','PC.635','PC.636']
         sample_ids.sort()
