@@ -27,29 +27,24 @@ options_lookup = get_options_lookup()
 script_info={}
 script_info['brief_description']="""A workflow script for performing taxonomy summaries and plots"""
 script_info['script_description']="""
-The steps performed by this script are:
-
-1. Summarize OTU by Category
-
-2. Summarize Taxonomy
-
-3. Plot Taxonomy Summary
-
-"""
+The steps performed by this script are: Summarize OTU by Category (optional, pass -c); Summarize Taxonomy; and Plot Taxonomy Summary"""
 script_info['script_usage']=[]
-script_info['script_usage'].append(("""Examples""","""""","""summarize_taxa_through_plots.py -o wf_taxa_sum -i otu_table.txt -m inseqs1_mapping.txt -p custom_parameters.txt"""))
-script_info['script_usage'].append(("""""","""Alternatively, the user can supply a mapping_category, where the OTU is summarized based on a mapping category:""","""summarize_taxa_through_plots.py -o wf_taxa_sum -i otu_table.txt -m inseqs1_mapping.txt -p custom_parameters.txt -c Treatment"""))
-script_info['output_description']="""The results of this script is a folder ("wf_taxa_sum/") containing taxonomy summary files (at different levels) and a folder containing taxonomy summary plots. Additionally, if a mapping_catgory is supplied there will be a summarized OTU table."""
+
+script_info['script_usage'].append(("""Plot taxa summaries for all samples""","""""","""%prog -o taxa_summary -i otu_table.biom -m Fasting_Map.txt"""))
+
+script_info['script_usage'].append(("""Plot taxa summaries on a categorical basis""","""Alternatively, the user can supply a mapping_category, where the OTU is summarized based on a sample metadata category:""","""%prog -o taxa_summary_by_treatment -i otu_table.biom -m Fasting_Map.txt -c Treatment"""))
+
+script_info['output_description']="""The results of this script is a folder (specified by -o) containing taxonomy summary files (at different levels) and a folder containing taxonomy summary plots. Additionally, if a mapping_catgory is supplied there will be a summarized OTU table. The primary interface for this output are the OUTPUT_DIR/taxa_summary_plots/*html files which are interactive plots that can be opened in a web browser (see the mouse-overs for interactivity)."""
 script_info['required_options']=[\
-    make_option('-i','--otu_table_fp',\
+    make_option('-i','--otu_table_fp',type='existing_filepath',\
         help='the input otu table [REQUIRED]'),\
-    make_option('-m','--mapping_fp',\
+    make_option('-m','--mapping_fp',type='existing_filepath',\
         help='path to the mapping file [REQUIRED]'),\
-    make_option('-o','--output_dir',\
+    make_option('-o','--output_dir',type='new_dirpath',\
         help='the output directory [REQUIRED]'),
 ]
 script_info['optional_options']=[\
-    make_option('-p','--parameter_fp',
+    make_option('-p','--parameter_fp',type='existing_filepath',
         help='path to the parameter file, which specifies changes'+\
         ' to the default behavior. '+\
         'See http://www.qiime.org/documentation/file_formats.html#qiime-parameters.'+\
