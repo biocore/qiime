@@ -77,6 +77,15 @@ class Rtax(CommandLineApplication):
     _suppress_stdout = False
     _suppress_stderr = False
 
+    #def __init__(self):
+    #    super().__init__()...
+    #    usearch_command = "usearch"
+    #    if not (exists(usearch_command) or app_path(usearch_command)):
+    #        raise ApplicationNotFoundError,\
+ 	#        "Cannot find %s. Is it installed? Is it in your path?"\
+ 	#        % usearch_command
+
+
     def _input_as_parameters(self,data):
         """ Set the input path (a fasta filepath)
         """
@@ -145,6 +154,11 @@ def assign_taxonomy(dataPath, reference_sequences_fp, id_to_taxonomy_fp, read_1_
          returned in a dict of {seq_id:(taxonomy_assignment,confidence)}
     """
 
+    usearch_command = "usearch"
+    if not (exists(usearch_command) or app_path(usearch_command)):
+        raise ApplicationNotFoundError,\
+         "Cannot find %s. Is it installed? Is it in your path?"\
+         % usearch_command
 
     qiime_config = load_qiime_config()
     base_tmp_dir = qiime_config['temp_dir'] or '/tmp/'
