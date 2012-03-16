@@ -24,7 +24,7 @@ import os
 from os.path import join
 from qiime.util import get_qiime_project_dir
 from qiime.parse import parse_mapping_file
-from numpy import array, arange
+from numpy import array, arange, asarray
 #from qiime.parse import parse_otu_table
 from qiime.make_otu_heatmap import plot_heatmap, \
     get_clusters, make_otu_labels, extract_metadata_column, \
@@ -87,9 +87,14 @@ def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
 
     otu_table = parse_biom_table(open(opts.otu_table_fp, 'U'))
+    lineages = []
     if (otu_table.ObservationMetadata is None or 'taxonomy' not in otu_table.ObservationMetadata[0]):
         print '\n\nWarning: The lineages are missing from the OTU table. If you used single_rarefaction.py to create your otu_table, make sure you included the OTU lineages.\n'
-        lineages = [''] * len(otu_ids)
+        lineages = [''] * len(otu_table.ObservationIds)
+    else:
+        for val, id, meta in otu_table.iterObservations():
+            lineages.append([v for v in meta['taxonomy']])
+
     otu_labels = make_otu_labels(otu_table.ObservationIds, lineages)
 
     # Convert to relative abundance if requested
@@ -114,45 +119,6 @@ def main():
                 pass
     else:
         dir_path='./'
-
-    #Get OTU counts
-    #sample_ids, otu_ids, otus, lineages = \
-    #        list(parse_otu_table(open(opts.otu_table_fp,'U'), 
-    #                count_map_f=float))
-
-    # set 'blank' lineages if not supplied
-    #if lineages == []:
-    #    print '\n\nWarning: The lineages are missing from the OTU table. If you used single_rarefaction.py to create your otu_table, make sure you included the OTU lineages.\n'
-    #    lineages = [''] * len(otu_ids)
-    #otu_labels = make_otu_labels(otu_ids, lineages)
-
-    # Convert to relative abundance if requested
-    #otus = otus.T
-    #if not opts.absolute_abundance:
-    #    for i,row in enumerate(otus):
-    #        if row.sum() > 0:
-    #            otus[i] = row/row.sum()
-    #otus = otus.T
-    
-    # Get log transform if requested
-    #if not opts.no_log_transform:
-    #    if not opts.log_eps is None and opts.log_eps <= 0:
-    #        print "Parameter 'log_eps' must be positive. Value was", opts.log_eps
-    #        exit(1)
-    #    otus = get_log_transform(otus, opts.log_eps)
-        
-    #if opts.output_dir:
-    #    if os.path.exists(opts.output_dir):
-    #        dir_path=opts.output_dir
-    #    else:
-    #        try:
-    #            os.mkdir(opts.output_dir)
-    #            dir_path=opts.output_dir
-    #        except OSError:
-    #            pass
-    #else:
-    #    dir_path='./'
-
 
     # Re-order samples by tree if provided
     if not opts.sample_tree is None:
@@ -182,7 +148,8 @@ def main():
             sample_order = names_to_indices(otu_table.SampleIds, ordered_sample_ids)
     # if no tree or mapping file, perform upgma euclidean
     elif not opts.suppress_column_clustering:
-        sample_order = get_clusters(otu_table._data, axis='column')
+        data = asarray([i for i in otu_table.iterObservationData()])
+        sample_order = get_clusters(data, axis='column')
     # else just use OTU table ordering
     else:
         sample_order = arange(len(otu_table.SampleIds))
@@ -195,28 +162,28 @@ def main():
         except (TypeError, IOError):
             raise MissingFileError, \
                 "Couldn't read tree file at path: %s" % opts.otu_tree
-        otu_order = get_order_from_tree(otu_ids, f)
+        otu_order = get_order_from_tree(otu_table.ObservationIds, f)
         f.close()
     # if no tree or mapping file, perform upgma euclidean
     elif not opts.suppress_row_clustering:
-        otu_order = get_clusters(otu_table._data, axis='row')
+        data = asarray([i for i in otu_table.iterObservationData()])
+        otu_order = get_clusters(data, axis='row')
     # else just use OTU table ordering
     else:
-        otu_order = arange(len(otu_ids))
+        otu_order = arange(len(otu_table.ObservationIds))
+
+    # otu_order and sample_order should be ids, rather than indices
+    #  to use in sortObservationOrder/sortSampleOrder
+    otu_id_order = [otu_table.ObservationIds[i] for i in otu_order]
+    sample_id_order = [otu_table.SampleIds[i] for i in sample_order]
 
     # Re-order otu table, sampleids, etc. as necessary
-    #otus = otus[otu_order,:]
-    #otu_ids = array(otu_ids)[otu_order]
-    #otu_labels = array(otu_labels)[otu_order]
-    #otus = otus[:,sample_order]
-    #sample_ids = array(sample_ids)[sample_order]
-
-    # Re-order otu table, sampleids, etc. as necessary
-    otu_table = otu_table.sortObservationOrder(otu_order)
-    otu_ids = array(otu_ids)[otu_order]
+    otu_table = otu_table.sortObservationOrder(otu_id_order)
+    # otu_ids not used after: tagged for deletion
+    otu_ids = array(otu_table.ObservationIds)[otu_order]
     otu_labels = array(otu_labels)[otu_order]
-    otu_table = otu_table.sortSampleOrder(sample_order)
-    sample_ids = array(sample_ids)[sample_order]
+    otu_table = otu_table.sortSampleOrder(sample_id_order)
+    sample_ids = array(otu_table.SampleIds)[sample_order]
 
     plot_heatmap(otu_table, otu_labels, sample_ids, 
         filename=join(dir_path,'heatmap.pdf'))
