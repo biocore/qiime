@@ -29,7 +29,6 @@ from cogent.cluster.UPGMA import UPGMA_cluster
 from qiime.parse import parse_newick, PhyloNode
 from qiime.filter import filter_samples_from_otu_table
 
-#def get_overlapping_samples(otu_sample_ids, map_rows, otu_table):
 def get_overlapping_samples(map_rows, otu_table):
     """Extracts only samples contained in otu table and mapping file.
     
@@ -48,18 +47,6 @@ def get_overlapping_samples(map_rows, otu_table):
     
     return new_map, otu_table
 
-    #map_sample_ids = zip(*map_rows)[0]
-    #new_otu_cols = []
-    #new_map = []
-    #new_sample_ids = []
-    #for i, _id in enumerate(otu_sample_ids):
-    #    if _id in map_sample_ids:
-    #        ix = map_sample_ids.index(_id)
-    #        new_otu_cols.append(otu_table[:,i])
-    #        new_sample_ids.append(_id)
-    #        new_map.append(map_rows[ix])
-    #return array(new_sample_ids), new_map, array(new_otu_cols).T
-
 def extract_metadata_column(sample_ids, metadata, category):
     """Extracts values from the given metadata column"""
     col_ix = metadata[1].index(category)
@@ -73,7 +60,6 @@ def extract_metadata_column(sample_ids, metadata, category):
             category_labels.append(entry)
     return category_labels
 
-#def get_order_from_categories(otus, category_labels):
 def get_order_from_categories(otu_table, category_labels):
     """Groups samples by category values; clusters within each group"""
     category_labels = array(category_labels)
@@ -105,15 +91,14 @@ def make_otu_labels(otu_ids, lineages, n_levels=1):
        Lineage substring includes the last n_levels lineage levels 
     """
 
-    #if len(lineages[0]) > 0:
-    if 'taxonomy' in lineages[0] and len(lineages[0]['taxonomy']):
+    if len(lineages[0]) > 0:
         otu_labels = []
         for i, lineage in enumerate(lineages):
-            if n_levels > len(lineage['taxonomy']):
-                otu_label = '%s (%s)' %(';'.join(lineage['taxonomy']),otu_ids[i])
+            if n_levels > len(lineage):
+                otu_label = '%s (%s)' %(';'.join(lineage),otu_ids[i])
             else:
                 otu_label = '%s (%s)' \
-                    %(';'.join(lineage['taxonomy'][-n_levels:]), otu_ids[i])
+                    %(';'.join(lineage[-n_levels:]), otu_ids[i])
             otu_labels.append(otu_label)
         otu_labels = [lab.replace('"','') for lab in otu_labels]
     else:
@@ -136,9 +121,10 @@ def get_log_transform(otu_table, eps=None):
     
        If eps is None, eps is set to 1/2 the smallest nonzero value.
     """
-    ## NOTE: compared with qiime.make_otu_heatmap_html, this function does *not*
-    ##  do a data = data - (data).min() before returning value. Is this correct?
-    ##  Emailed Dan and Jesse on Dec 23, 2011 to confirm.
+    ## NOTE: compared with qiime.make_otu_heatmap_html, this function does
+    ##  *not* do a data = data - (data).min() before returning value.
+    ##  This behavior is correct according to Dan Knights, but consider if
+    ##  we ever merge these two scripts
 
     # explicit conversion to float: transform
     def f(s_v, s_id, s_md):
@@ -168,16 +154,6 @@ def get_log_transform(otu_table, eps=None):
     log_otu_table = eps_otu_table.transformSamples(h)
 
     return log_otu_table
-
-    # ensure data are floats
-    #data = asarray(data,dtype=float64)
-
-    # set all zero entries to a small value
-    #if eps is None:
-    #    eps = (data[data>0]).min()/2
-    #data[data==0] = eps
-    #data = log10(data)
-    #return data
     
 def get_clusters(x_original, axis=['row','column'][0]):
     """Performs UPGMA clustering using euclidean distances"""
@@ -210,7 +186,6 @@ def get_fontsize(numrows):
     return sizes[i]
 
 
-#def plot_heatmap(x, row_labels, col_labels, filename='heatmap.pdf',
 def plot_heatmap(otu_table, row_labels, col_labels, filename='heatmap.pdf',
         width=5, height=5, textborder=.25):
     """Create a heatmap plot, save as a pdf.
@@ -222,9 +197,6 @@ def plot_heatmap(otu_table, row_labels, col_labels, filename='heatmap.pdf',
     """
     nrow = len(otu_table.ObservationIds)
     ncol = len(otu_table.SampleIds)
-
-    #nrow = x.shape[0]
-    #ncol = x.shape[1]
 
     # determine appropriate font sizes for tick labels
     row_fontsize = get_fontsize(nrow)
