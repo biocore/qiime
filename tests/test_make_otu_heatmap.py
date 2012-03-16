@@ -50,13 +50,6 @@ class TopLevelTests(TestCase):
                                            {"taxonomy":['2A','2B','2C','Archaea']},
                                            {"taxonomy":['3A','3B','3C','Streptococcus']}])
 
-        #self.col_header=['Sample1', 'Sample2', 'Sample3', 
-        #                 'Sample4', 'Sample5', 'Sample6']
-        #self.row_header=['OTU1','OTU2','OTU3']
-        #self.otu_table=array([[0,0,9,5,3,1],
-        #                      [1,5,4,0,3,2],
-        #                      [2,3,1,1,2,5]])
-        #self.lineages=[['Bacteria'],['Archaea'],['Streptococcus']]
         self.full_lineages=[['1A','1B','1C','Bacteria'],
                             ['2A','2B','2C','Archaea'],
                             ['3A','3B','3C','Streptococcus']]
@@ -78,8 +71,6 @@ class TopLevelTests(TestCase):
         """Extracts correct column from mapping file"""
         obs = extract_metadata_column(self.otu_table.SampleIds, 
                 self.metadata, category='CAT2')
-        #obs = extract_metadata_column(self.col_header, 
-        #        self.metadata, category='CAT2')
         exp = ['A','B','A','B','A','B']
         self.assertEqual(obs,exp)
         
@@ -91,20 +82,24 @@ class TopLevelTests(TestCase):
         self.assertEqual(obs,exp)
 
     def test_get_order_from_tree(self):
-        #obs = get_order_from_tree(self.row_header, self.tree_text)
         obs = get_order_from_tree(self.otu_table.ObservationIds, self.tree_text)
         exp = [2,0,1]
         self.assertEqual(obs,exp)
         
     def test_make_otu_labels(self):
-        #obs = make_otu_labels(self.row_header, self.lineages, n_levels=1)
+        lineages = []
+        for val, id, meta in self.otu_table.iterObservations():
+            lineages.append([v for v in meta['taxonomy']])
         obs = make_otu_labels(self.otu_table.ObservationIds,
-                              self.otu_table.ObservationMetadata, n_levels=1)
+                              lineages, n_levels=1)
         exp = ['Bacteria (OTU1)', 'Archaea (OTU2)', 'Streptococcus (OTU3)']
         self.assertEqual(obs,exp)
 
-        obs = make_otu_labels(self.otu_table.ObservationIds,
-                              self.otu_table_f.ObservationMetadata, n_levels=3)
+        full_lineages = []
+        for val, id, meta in self.otu_table_f.iterObservations():
+            full_lineages.append([v for v in meta['taxonomy']])
+        obs = make_otu_labels(self.otu_table_f.ObservationIds,
+                              full_lineages, n_levels=3)
         exp = ['1B;1C;Bacteria (OTU1)', 
                '2B;2C;Archaea (OTU2)',
                '3B;3C;Streptococcus (OTU3)']
@@ -125,8 +120,6 @@ class TopLevelTests(TestCase):
         xform = asarray(data, dtype=float64)
         xform[xform==0] = eps
 
-        #for i, row in enumerate(obs.ObservationIds):
-        #    self.assertEqual(row, log10(xform[i]))    
         for (i, val) in enumerate(obs.iterObservationData()):
             self.assertEqual(val, log10(xform[i]))
 
