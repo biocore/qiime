@@ -138,9 +138,27 @@ Creating a volume for persistent storage across different launches of an instanc
 ==========================================================================================================
 The disk space is fairly limited on the EC2 instances. To get around this you can create a volume (the equivalent of an external hard drive) and mount that on your instance. Data that you store in this volume can be accessed across different launches of an instance, or across different instances, but can only be attached to one instance at a time. 
 
-Use the management console to create a volume. This must be in the same availability zone as the instance that you want to attach it to. Start an instance if you haven't already, and attached the volume. **Screenshots to come...**
+Use the management console to create a volume. To do this, first click the ``EC2`` tab. Next, select ``Volumes`` on the left sidebar. Then click ``Create Volume``. See Figure 9.
 
-Be sure to take note of where the volume is attached. This will look like: ``/dev/sdf/``. You'll need this in a minute (we'll call this the attachment point).
+	.. image:: ../images/create_an_ebs_volume.png
+	   :width: 800
+	
+	Figure 9: Create an EBS Volume.
+
+Next you must configure the volume you want to create. You have three options here. First, define the size of the volume. This will be based on the amount of data that you'll need to store. Creating a volume that is around 10x the size of the raw data you want to analyze should leave you plenty of disk space for your analysis. Next, you must define what ``Availability Zone`` you'd like to launch your instance in. This **must** be the same zone that your instance is running in. This information is available under the 'Description' tab associated with your running instance (see ``Zone`` toward the bottom right of Figure 8). Last, you can define an snapshot that you'd like to create your volume from. You typically won't use that here. See Figure 10.
+
+	.. image:: ../images/configure_ebs_volume_creation.png
+	   :width: 700
+	
+	Figure 10: Configure EBS volume creation.
+
+Finally, you'll attach your volume to your instance: the equivalent of plugging the USB hard drive into the computer. To do this, click the checkbox next to your volume, select ``More`` and then ``Attach Volume``. Select the instance that you'd like to attach your volume to. If you don't see your instance it may not be running, or you may have not selected the correct ``Availability Zone``. Take note of the value associated with ``Device``. You'll need this in the next step (we'll call this the attachment point). See Figure 11.
+
+
+	.. image:: ../images/configure_ebs_volume_attachment.png
+	   :width: 700
+	
+	Figure 11: Configure EBS volume attachment.
 
 ssh into your EC2 instance and run the following commands. In this example, I'm assuming that your attachment point is ``/dev/sdf/``. If it's not, replace all occurrences of ``/dev/sdf/`` with your actual attachment point. 
 
@@ -158,6 +176,9 @@ Anytime you attach or re-attach your volume to an instance (so after starting a 
 	sudo mount /dev/sdf /home/ubuntu/data
 	sudo chown ubuntu /home/ubuntu/data
 	sudo chgrp ubuntu /home/ubuntu/data
+
+Once you've created your device, you only need to go through the attachment step to attach to future instances. This is the step illustrated in Figure 11. Note that you'll need to create future instances in the same availability zone as this volume if you'd like to attach this volume.
+
 
 
 
