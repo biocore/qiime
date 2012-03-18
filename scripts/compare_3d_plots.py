@@ -48,11 +48,11 @@ script_info['script_usage'].append(("Example 5","""Pass in a list of desired edg
 script_info['script_usage'].append(("Example 6","""Pass in a list of desired edges and only one pca/pcoa file: ""","""compare_3d_plots.py -i 'raw_pca_data1.txt,raw_pca_data2.txt' -e edges.txt -m input_map.txt -b 'Type&&Day' -o ./test/"""))
 script_info['output_description']="""This script results in a folder containing an html file which displays the 3D Plots generated."""
 script_info['required_options']= [\
-    make_option('-i', '--coord_fnames', \
+    make_option('-i', '--coord_fnames',\
         help='This is comma-separated list of the paths to the principal \
 coordinates files (i.e., resulting file \
 from principal_coordinates.py), e.g \'pcoa1.txt,pcoa2.txt\''),
- make_option('-m', '--map_fname', dest='map_fname', \
+ make_option('-m', '--map_fname', dest='map_fname',type='existing_filepath', \
      help='This is the user-generated mapping file [default=%default]'),
 ]
 
@@ -72,13 +72,13 @@ this option.  It is also useful for plotting time-series data \
 [default: %default]'),
  make_option('-p', '--prefs_path',help='This is the user-generated preferences \
 file. NOTE: This is a file with a dictionary containing preferences for the \
-analysis. See make_prefs_file.py. [default: %default]'),
+analysis. See make_prefs_file.py. [default: %default]',type='existing_filepath'),
  make_option('-k', '--background_color',help='This is the background color to \
 use in the plots (Options are \'black\' or \'white\'. [default: %default]'),
  make_option('-e', '--edges_file',help='A file where each line contains two \
 sample IDs separated by a whitespace character; for each pair of sample IDs, \
 an edge will be drawn from the first sample to the second sample. \
-[default: %default]',default=None),
+[default: %default]',default=None,type='existing_filepath'),
  make_option('--serial',action="store_true", \
  help='Connect the 1st set of points to the 2nd, the 2nd to the 3rd, etc. \
 Default behavior is to connect each set of points back to the 1st set. This \
