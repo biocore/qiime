@@ -413,17 +413,20 @@ def run_pick_otus_through_otu_table(input_fp,
         except KeyError:
             params_str = ''
         
-        # Grab the OTU picker parameters
+        # Grab the alignment parameters        
+        # Want to find a cleaner strategy for this: the parallel script
+        # is method-specific, so doesn't take a --alignment_method
+        # option. This works for now though.
         try:
-            # Want to find a cleaner strategy for this: the parallel script
-            # is method-specific, so doesn't take a --alignment_method
-            # option. This works for now though.
             d = params['align_seqs'].copy()
+        except KeyError:
+            d = {}
+        try:
             del d['alignment_method']
-            params_str += ' %s' % get_params_str(d)
         except KeyError:
             pass
-            
+        params_str += ' %s' % get_params_str(d)
+        
         # Build the parallel pynast alignment command
         align_seqs_cmd = '%s %s/parallel_align_seqs_pynast.py -i %s -o %s -T %s' %\
          (python_exe_fp, script_dir, rep_set_fp, pynast_dir, params_str)
