@@ -84,12 +84,13 @@ To apply this analysis to ``seqs1.fna``, picking OTUs against the reference coll
 
 The ``-aO 8`` specifies that we want to start 8 parallel jobs - adjust this according to the resources you have available. Each job should have at least 4GB of RAM available to it.
 
-Subsampled OTU picking workflow analysis
-========================================
+------------------------------------------
+ Subsampled OTU picking workflow analysis
+------------------------------------------
 
-Analyses were run on two data sets: one host-associated (**FILL IN WHOLE BODY REFERENCE**) and one free-living (**FILL IN 88 SOIL REFERENCE**). These two were chosen as Greengenes (the reference set being used) is known to be biased toward human-associated microbes, so I wanted to confirm that the method works when few sequences fail to hit the reference set (whole body) and when many sequences fail to hit the reference set (88 soils).
+Several analyses were performed to confirm that results are comparable between the sub-sampled open-reference OTU picking workflow and the standard open-reference OTU picking workflow. These include analyses on two different data sets: one host-associated (the `Costello Whole Body <http://www.ncbi.nlm.nih.gov/pubmed/19892944>`_ study) and one free-living (the `Lauber 88 soils` <http://www.ncbi.nlm.nih.gov/pubmed/19502440>`_ study). These two were chosen as Greengenes (the reference set being used) is known to be biased toward human-associated microbes, so I wanted to confirm that the method works when few sequences fail to hit the reference set (whole body) and when many sequences fail to hit the reference set (88 soils).
 
-Several tests were performed: 
+Several tests were performed:
  - beta diversity (procrustes analysis to compare sub-sampled OTU results to de novo, open-reference, and closed-reference OTU picking)
  - alpha diversity (test for correlation in observed OTU count between sub-sampled OTU results and de novo, open-reference, and closed-reference OTU picking)
  - otu category significance (reviewed significant OTUs - need a good way to quantitate this)
@@ -104,79 +105,149 @@ For all analyses, sequences that fail to align with PyNAST and singleton OTUs we
 
 
 88 soils analysis
------------------
-This analysis is of the data presented in **FILL IN REFERENCE**.
+=================
+This analysis is based on the data presented in the `Lauber 88 soils` <http://www.ncbi.nlm.nih.gov/pubmed/19502440>`_ study.
+
+
+Alpha diversity
+---------------
+Here I checked whether the subsampled reference OTU alpha diversities for all samples were correlated with the de novo OTU picking, standard open-reference OTU picking, and closed-reference OTU picking alpha diversities. The *observed species/OTUs* metric was calculated on add data sets (``alpha_diversity.py -m observed_species``), and the Pearson correlations were computed for sub-sampled reference OTU picking with the three other sets of values.
+
+Results
+```````
+subsampled open-reference OTU picking versus de novo OTU picking: r=0.995 p=4.836e-88
+subsampled open-reference OTU picking versus standard open reference OTU picking: r=1.000 p=0.000
+subsampled open-reference OTU picking versus closed reference OTU picking: r=0.8634 p=1.405e-27
+
+Conclusions
+```````````
+Sub-sampled open reference OTU picking alpha diversity values are significantly correlated with de novo, standard open-reference, and closed reference OTU picking results. This suggests that we will derive the same biological conclusions between regarding alpha diversity when using the subsampled OTU picking workflow.
+
+Beta diversity
+--------------
+Here I checked whether Procrustes comparisons of unweighted UniFrac PCoA plots between subsampled open-reference OTU picking and de novo OTU picking, standard open-reference OTU picking, and closed-reference OTU picking yield significant results. This was calculated using ``transform_coordinate_matrices.py`` which is described in the `Procrustes tutorial <./procrustes_analysis.html>`_. p-values are based on 1000 Monte Carlo iterations.
+
+Results
+```````
+subsampled open-reference OTU picking versus de novo OTU picking: M2=0.009 p<0.001
+subsampled open-reference OTU picking versus standard open reference OTU picking: M2=0.007 p<0.001
+subsampled open-reference OTU picking versus closed reference OTU picking: M2=0.039 p<0.001
+
+Conclusions
+```````````
+Procrustes results are highly significant for the three comparisons, suggesting that we will derive the same biological conclusions regardless of which of these OTU picking workflows is used.
+
 
 OTU category significance
-`````````````````````````
-This is tougher here than for the whole body study as the pattern of interest correlation between pH and PC1. To define a category for this test I binned the pH values by truncating the values to integers (so 5.0, 5.3, and 5.9 are all binned to pH 5) and using this binned pH as the category. Since I'm just looking for consistent results across the different OTU picking methods we don't need to do anything too fancy here. 
+-------------------------
+Here I confirm that the same taxonomy groups are identified as significantly different across the pH gradient in these soils, regardless of which OTU picking workflow is applied. These results were computed with the ``otu_category_significance.py`` script. To define a category for this test I binned the pH values by truncating the values to integers (so 5.0, 5.3, and 5.9 are all binned to pH 5) and using this binned pH as the category. Since I'm just looking for consistent results across the different OTU picking methods I don't think it's important that this isn't the most biologically relevant binning strategy. **Note that OTU ids are not directly comparable across all analyses, so it is best to compare the taxonomies.**
+
+Results
+```````
+
+
+Top 5 OTUs that differ across bins for subsampled open-reference OTU picking:
+
+============================= ============================= ==============================================================================================
+OTU ID                        Bonferroni-adjusted p-value   Taxonomy
+============================= ============================= ==============================================================================================
+New.CleanUp.ReferenceOTU26927 1.99e-11                      k__Bacteria; p__Proteobacteria; c__Gammaproteobacteria; o__Chromatiales; f__Sinobacteraceae
+New.CleanUp.ReferenceOTU34053 7.06e-09                      k__Bacteria; p__Acidobacteria; c__Solibacteres; o__Solibacterales; f__Solibacteraceae
+212596                        9.26e-09                      k__Bacteria; p__Acidobacteria; c__Solibacteres; o__Solibacterales; f__Solibacteraceae
+112859                        1.22e-08                      k__Bacteria; p__Proteobacteria; c__Alphaproteobacteria; o__Rhizobiales; f__Hyphomicrobiaceae
+New.CleanUp.ReferenceOTU36189 4.35e-08                      k__Bacteria; p__Actinobacteria; c__Actinobacteria; o__Rubrobacterales; f__Rubrobacteraceae
+============================= ============================= ==============================================================================================
+
+Top 5 OTUs that differ across bins for de novo OTU picking:
+
+============================= ============================= ==============================================================================================
+OTU ID                        Bonferroni-adjusted p-value   Taxonomy
+============================= ============================= ==============================================================================================
+26819                         3.19e-11                      k__Bacteria; p__Proteobacteria; c__Gammaproteobacteria; o__Chromatiales; f__Sinobacteraceae
+28062                         5.92e-10                      k__Bacteria; p__Acidobacteria; c__; o__; f__Koribacteraceae
+35264                         2.43e-09                      k__Bacteria; p__Acidobacteria; c__Solibacteres; o__Solibacterales; f__Solibacteraceae
+45059                         5.48e-09                      k__Bacteria; p__Proteobacteria; c__Alphaproteobacteria; o__; f__
+7687                          2.056e-08	                    k__Bacteria; p__Acidobacteria; c__Solibacteres; o__Solibacterales; f__Solibacteraceae
+============================= ============================= ==============================================================================================
+
+
+Top 5 OTUs that differ across bins for standard open reference OTU picking:
+
+============================= ============================= ==============================================================================================
+OTU ID                        Bonferroni-adjusted p-value   Taxonomy
+============================= ============================= ==============================================================================================
+DeNovoOTU26928                1.99e-11                      k__Bacteria; p__Proteobacteria; c__Gammaproteobacteria; o__Chromatiales; f__Sinobacteraceae
+DeNovoOTU34054                7.06e-09                      k__Bacteria; p__Acidobacteria; c__Solibacteres; o__Solibacterales; f__Solibacteraceae
+212596                        9.26e-09                      k__Bacteria; p__Acidobacteria; c__Solibacteres; o__Solibacterales; f__Solibacteraceae
+112859                        1.22e-08                      k__Bacteria; p__Proteobacteria; c__Alphaproteobacteria; o__Rhizobiales; f__Hyphomicrobiaceae
+DeNovoOTU36190                4.35e-08                      k__Bacteria; p__Actinobacteria; c__Actinobacteria; o__Rubrobacterales; f__Rubrobacteraceae
+============================= ============================= ==============================================================================================
+
+Top 5 OTUs that differ across bins for closed reference OTU picking:
+
+============================= ============================= ===================================================================================================================
+OTU ID                        Bonferroni-adjusted p-value   Taxonomy
+============================= ============================= ===================================================================================================================
+212596                        4.03e-09                      k__Bacteria; p__Acidobacteria; c__Solibacteres; o__Solibacterales; f__Solibacteraceae; g__CandidatusSolibacter; s__
+112859                        4.62e-09                      k__Bacteria; p__Proteobacteria; c__Alphaproteobacteria; o__Rhizobiales; f__; g__; s__
+544749                        5.56e-08                      k__Bacteria; p__Proteobacteria; c__Gammaproteobacteria; o__Chromatiales; f__Sinobacteraceae; g__; s__
+541300                        1.28e-07                      k__Bacteria; p__Acidobacteria; c__Solibacteres; o__Solibacterales; f__Solibacteraceae; g__CandidatusSolibacter; s__
+563862                        1.95e-07                      k__Bacteria; p__Acidobacteria; c__Solibacteres; o__Solibacterales; f__Solibacteraceae; g__CandidatusSolibacter; s__
+============================= ============================= ===================================================================================================================
+
+Conclusions
+```````````
+In lieu of a solid statistical approach to compare these results, the results appear consistent across the different OTU picking workflows. The standard open reference and subsampled open reference are remarkably consistent. 
 
 Additional sanity check: is the new reference dataset sane?
-```````````````````````````````````````````````````````````
-To confirm that the new reference data set works as expected, I performed open-reference OTU picking against the new reference collection generated by the sub-sampled OTU analysis. A number of reads still fail, but on close investigation these turn out to all cluster into singleton OTUs. So, this is expected as singletons are not included in the reference collection (possible to adjust this with the --min_otu_size parameter [default = 2])
+-----------------------------------------------------------
+To confirm that the new reference data set works as expected, I applied standard open-reference OTU picking on the original input sequences against the new reference collection generated by the sub-sampled OTU analysis. The idea here is that most reads should now hit the reference collection. A number of reads still fail, but on close investigation these turn out to all cluster into singleton OTUs. So, this is expected as singletons are not included in the reference collection (possible to adjust this with the --min_otu_size parameter [default = 2]). The new reference collection that is generated does appear to be sane. The command used for this analysis was::
 
 ::
 	
 	pick_otus_through_otu_table.py -i /home/ubuntu/data/lauber_88soils/seqs.fna -o /home/ubuntu/data/lauber_88soils/subsample_ref_otus_eval/ucr97_v_new_ref/ -p /home/ubuntu/data/lauber_88soils/subsample_ref_otus_eval/ucr_v_newref_params.txt -aO 3
 
+The parameters file (``-p``) for this analysis contained the following lines::
+
+	pick_otus:otu_picking_method uclust_ref
+	pick_otus:refseqs_fp /home/ubuntu/data/lauber_88soils/subsample_ref_otus_eval/prefilter60/new_refseqs.fna
+	pick_otus:enable_rev_strand_match True
+
+
 
 Whole body analysis
-```````````````````
+===================
+This analysis is based on the data presented in the the `Costello Whole Body <http://www.ncbi.nlm.nih.gov/pubmed/19892944>`_ study.
 
-Prefilter at 60% id with uclust_ref followed by subsampling OTU picking workflow (prefilter60)
 
-Num samples: 600
-Num otus:4539
-Total observations (sequences): 748013
 
---
+Additional sanity check: what reads are being discarded by the prefilter?
+-------------------------------------------------------------------------
+To investigate what reads get discarded at the prefilter stage, I evaluated a subset of the reads discarded when the prefilter was set to 80% (--prefilter_percent_id 0.80) versus when the prefilter was set to 60% (default).
 
-Prefilter at 80% id with uclust_ref followed by subsampling OTU picking workflow (prefilter80)
+Sequences filtered at 80% but not at 60%
+````````````````````````````````````````
 
-Num samples: 600
-Num otus:4526
-Total observations (sequences): 747069
+These three have high percent id matches in NCBI::
 
---
+	>F12Pinl.140479_129272 FFLHOYS02GCJLO orig_bc=ATACAGAGCTCC new_bc=ATACAGAGCTCC bc_diffs=0
+	CTGGGCCGTGTCTCAGTCCCAGTGTGGCTGATCATCCGAAAAGACCAGCTAAGCATCATTGGCTTGGTCAGCCTTTACCTAACCAACTACCTGATACTACGTGGGCTCATCGAACAGCGCGAATTAGCTTGCTTTATGAATTATTCAGGATTTGGAGTGAACTATTCGGCAGATTCCCACGCGTTACGCACCCGTTCGCCACTTTGCTTG
+	>F32Indr.140459_1174716 FFO92CG02IYZBA orig_bc=GCTATCACGAGT new_bc=GCTATCACGAGT bc_diffs=0
+	CCGGGCCGTGTCTCAGTCCCAGTGTGGCTGATCATCCGAAAAGACCAGCTAAGCATCATTGGCTTGGTCAGCCTTTACCTGACCAACTACCTAATACTACGCAGGCTCATCAAACAGCGCTTTTTAGCTTTCTTCAGGATTTGGCCCGAACTGTTCGGCAGATTCCCACGCGTTACGCACCCGTTCGCCACTTTGTTCTCAACTGTTCCCACCTCCTGGGCGAGA
+	>F32Forr.140528_1210712 FFO92CG02IKGYS orig_bc=GCGTTACACACA new_bc=GCGTTACACACA bc_diffs=0
+	CCGGGCCGTGTCTCAGTCCCAGTGTGGCTGATCATCCGAAAAGACCAGCTAAGCATCATTGGCTTGGTCAGCCTTTACCTGACCAACTACCTAATACTACGCAGGCTCATCAAACAGCGCTTTTGAGCTTTCTTCAGGATTTGGCCCGAACTGTTCGGCAGATTCCCACGCGTTACGCACCCGTTCGCCACTTTGTTCTCAACTATTCCGATTCTTTTTTCGGTAGGCCGTTA
 
-de novo uclust at 97% (uc97)
+Sequences filtered 80% and at 60%
+`````````````````````````````````
+These three reads hit a small fragment, a human sequence, and nothing in NCBI, respectively.
 
-Num samples: 600
-Num otus:4472
-Total observations (sequences): 751011
+	>M22Pinr.140692_1148864 FFO92CG01EQIWQ orig_bc=CGCACATGTTAT new_bc=CGCACATGTTAT bc_diffs=0
+	GGAAAAGGGAAAAACAGATGAGACAAATAGAAAACAAATAGCAAATTAGTAGGTGTTAACATGACTTTATCAATAATTACATCAAATGTAGATGATGTTAACCATGGATTGACAAACTTTTTCTTTATAGGACCAGACAGTCAATATTTTAGGTCTTTGAGGCCATATGGTATCTGTCATAACCACTCAACTGAGCCAGGATCAAACTCTGA
+	>F31Nstl.140789_1153834 FFO92CG02FSK33 orig_bc=GCAGCCGAGTAT new_bc=GCAGCCGAGTAT bc_diffs=0
+	CANNOT INCLUDE THIS READ DUE TO IRB RESTRICTIONS
+	>F32Nstl.140804_1160735 FFO92CG01BRQNZ orig_bc=GCTGCTGCAATA new_bc=GCTGCTGCAATA bc_diffs=0
+	CTGAAACCCTGGGTCACCAAAAGGCAGGAGGAGGAGGGACAGGGCAAGGCAGGGGAAGAGAGGGGAGGCTGACTCACATACACACATATGCATGCACACATCACACCCACATTCATGTACACACACACAGATTCACATGCATGCACAGCACAATCGCACACTTGTATACACACACAGGCACA
 
---
-
-uclust_ref with new clusters at 97% (ucr97)
-
-Num samples: 600
-Num otus:4539
-Total observations (sequences): 748013
-
---
-
-uclust_ref with no new clusters at 97% (ucrC97)
-
-Num samples: 600
-Num otus:2101
-Total observations (sequences): 684378
-
--- 
-
-Sequences filtered at 80% but not at 60% (full list follows). These three have high percent id matches in NCBI.
-
->F12Pinl.140479_129272 FFLHOYS02GCJLO orig_bc=ATACAGAGCTCC new_bc=ATACAGAGCTCC bc_diffs=0
-CTGGGCCGTGTCTCAGTCCCAGTGTGGCTGATCATCCGAAAAGACCAGCTAAGCATCATTGGCTTGGTCAGCCTTTACCTAACCAACTACCTGATACTACGTGGGCTCATCGAACAGCGCGAATTAGCTTGCTTTATGAATTATTCAGGATTTGGAGTGAACTATTCGGCAGATTCCCACGCGTTACGCACCCGTTCGCCACTTTGCTTG
->F32Indr.140459_1174716 FFO92CG02IYZBA orig_bc=GCTATCACGAGT new_bc=GCTATCACGAGT bc_diffs=0
-CCGGGCCGTGTCTCAGTCCCAGTGTGGCTGATCATCCGAAAAGACCAGCTAAGCATCATTGGCTTGGTCAGCCTTTACCTGACCAACTACCTAATACTACGCAGGCTCATCAAACAGCGCTTTTTAGCTTTCTTCAGGATTTGGCCCGAACTGTTCGGCAGATTCCCACGCGTTACGCACCCGTTCGCCACTTTGTTCTCAACTGTTCCCACCTCCTGGGCGAGA
->F32Forr.140528_1210712 FFO92CG02IKGYS orig_bc=GCGTTACACACA new_bc=GCGTTACACACA bc_diffs=0
-CCGGGCCGTGTCTCAGTCCCAGTGTGGCTGATCATCCGAAAAGACCAGCTAAGCATCATTGGCTTGGTCAGCCTTTACCTGACCAACTACCTAATACTACGCAGGCTCATCAAACAGCGCTTTTGAGCTTTCTTCAGGATTTGGCCCGAACTGTTCGGCAGATTCCCACGCGTTACGCACCCGTTCGCCACTTTGTTCTCAACTATTCCGATTCTTTTTTCGGTAGGCCGTTA
-
-Sequences filtered at 60% - these three hit small fragment, human sequence, and nothing in NCBI, respectively.
-
->M22Pinr.140692_1148864 FFO92CG01EQIWQ orig_bc=CGCACATGTTAT new_bc=CGCACATGTTAT bc_diffs=0
-GGAAAAGGGAAAAACAGATGAGACAAATAGAAAACAAATAGCAAATTAGTAGGTGTTAACATGACTTTATCAATAATTACATCAAATGTAGATGATGTTAACCATGGATTGACAAACTTTTTCTTTATAGGACCAGACAGTCAATATTTTAGGTCTTTGAGGCCATATGGTATCTGTCATAACCACTCAACTGAGCCAGGATCAAACTCTGA
->F31Nstl.140789_1153834 FFO92CG02FSK33 orig_bc=GCAGCCGAGTAT new_bc=GCAGCCGAGTAT bc_diffs=0
-TACCCTGTGGAGACAAAGGAAGATGTGATCAGCTCTACTAGGCATGCATATCTTTCCAGAGAGGAAGAGGTAAGAGTTGTGGTTGGAAGATGAGTTGGCATTTTATAGACAGATCATGGTGTTTGAGATTGAGGGACTGGCAGGAGCAAGGCACAGAAGTAGAAGGGAGAGTGACGAGTATATATCATCAGTCAGGGTTTTTTAG
->F32Nstl.140804_1160735 FFO92CG01BRQNZ orig_bc=GCTGCTGCAATA new_bc=GCTGCTGCAATA bc_diffs=0
-CTGAAACCCTGGGTCACCAAAAGGCAGGAGGAGGAGGGACAGGGCAAGGCAGGGGAAGAGAGGGGAGGCTGACTCACATACACACATATGCATGCACACATCACACCCACATTCATGTACACACACACAGATTCACATGCATGCACAGCACAATCGCACACTTGTATACACACACAGGCACA
+Conclusions
+```````````
+Based on this analysis (and currently unpublished data -- will fill in when available), a threshold of 60% was chosen as the default value for discarding sequences that are likely not rRNA.
