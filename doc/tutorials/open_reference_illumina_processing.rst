@@ -1,5 +1,5 @@
 =========================================================
- Open reference OTU picking on Illumina data
+ Open-reference OTU picking on Illumina data
 =========================================================
 
 This document describes how to use QIIME to analyze very large data sets, generally on the HiSeq2000, using an open-reference OTU picking protocol. There are two primary options here: first is to use standard open-reference uclust (i.e., uclust_ref allowing for new clusters); and second is to use the subsampled open-reference OTU picking protocol. The results from both will be nearly identical. The difference is that the first option is slower, but available in QIIME 1.4.0 (and most earlier versions). The runtime will be limiting for multiple HiSeq2000 lanes, or for single HiSeq2000 lanes with high diversity. The second option is much faster, and will work for multiple HiSeq2000 lanes or runs, but is currently only available in the development version of QIIME (1.4.0-dev).
@@ -25,9 +25,9 @@ Where ``<PATH TO REFERENCE COLLECTION>`` is replaced with the path to the refere
 
 This command should be run in parallel. Each job will need approximately 4GB of RAM, so if running on EC2 and you want to start 8 parallel jobs (recommended setting for EC2), your instance type should be ``m2.4xlarge``.
 
-You can then use the following commands. You should *always use full paths* which are represented here by ``$PWD``, but will usually look something like ``/home/ubuntu/my_data/`` (in other words, the should start with a ``/``). In this example your input sequences (``seqs.fna``), your parameters file (``ucr_params.txt``), and your metadata mapping file (``map.txt``) are all in the same directory represented by ``$PWD``. If you work from the directory containing those files, you can leave ``$PWD`` in the commands instead of specifying the full paths.
+You can then use the following commands. You should *always use full paths* which are represented here by ``$PWD``, but will usually look something like ``/home/ubuntu/my_data/`` (in other words, they should start with a ``/``). In this example your input sequences (``seqs.fna``), your parameters file (``ucr_params.txt``), and your metadata mapping file (``map.txt``) are all in the same directory represented by ``$PWD``. If you work from the directory containing those files, you can leave ``$PWD`` in the commands instead of specifying the full paths.
 
-First, pick otus, choose representative sequences, assign taxonomy to OTUs, and build a phylogenetic tree. The ``-aO 8`` specifies that we want to start 8 parallel jobs - adjust this according to the resources you have available. This is open reference OTU picking, so reads will be clustered against the reference database (in parallel) and reads which fail to hit the reference data set will subsequently be clustered de novo (serially).::
+First, pick otus, choose representative sequences, assign taxonomy to OTUs, and build a phylogenetic tree. The ``-aO 8`` specifies that we want to start 8 parallel jobs - adjust this according to the resources you have available. This is open-reference OTU picking, so reads will be clustered against the reference database (in parallel) and reads which fail to hit the reference data set will subsequently be clustered de novo (serially)::
 	
 	pick_otus_through_otu_table.py -i $PWD/seqs.fna -o $PWD/ucr/ -p $PWD/ucr_params.txt -aO 8
 
@@ -55,53 +55,60 @@ Again the ``-aO8`` specifies that the job should be run in parallel on 8 process
 
 
 ---------------------------------------------------------------
- Option 2: Sub-sampled open-reference OTU picking
+ Option 2: Subsampled open-reference OTU picking
 ---------------------------------------------------------------
 
-Sub-sampled reference OTU picking is suitable for any analysis that standard open-reference OTU picking can be used for, but additionally scales to much larger data sets (such as multiple HiSeq runs, which may require several days on ~100 processors to analyze).
+Subsampled reference OTU picking is suitable for any analysis that standard open-reference OTU picking can be used for, but additionally scales to much larger data sets (such as multiple HiSeq runs, which may require several days on ~100 processors to analyze).
 
 This is an open-reference OTU picking protocol, meaning that sequences are clustered against a reference database, and reads while fail to hit the reference are subsequently clustered de novo. This differs from standard open-reference OTU picking as it was optimized at several steps to enable running on massive numbers of sequences (hundreds of millions, which is massive as of this writing). The steps in this workflow are as follows.
 
 #. Prefilter the input sequence collection by searching reads against the reference set with a low percent identity threshold (default is 60%, modify with ``--prefilter_percent_id``). The choice of 60% is described here (FILL IN LINK). All reads which fail to hit the reference set are discarded as likely sequencing error.
 
-#. Apply closed reference OTU picking against the reference collection. Generate a fasta file containing all reads that fail to hit the reference collection.
+#. Apply closed-reference OTU picking against the reference collection. Generate a fasta file containing all reads that fail to hit the reference collection.
 
 #. Randomly subsample the sequences that failed to hit the reference collection, and write these to a new fasta file (default subsampling percentage is 0.1%, modify with ``-s/--percent_subsample``). Cluster these reads de novo, and choose a representative set of sequences as the centroid of each OTU cluster. These are the *new reference* OTUs.
 
-#. Pick closed reference OTUs against the representative sequences from the previous step. Write all sequences that fail to hit the reference collection to a fasta file.
+#. Pick closed-reference OTUs against the representative sequences from the previous step. Write all sequences that fail to hit the reference collection to a fasta file.
 
 #. Pick de novo OTUs on all reads that failed to hit the reference collection in the previous step. These are the *clean-up* OTUs. This step can be suppress by passing ``--suppress_step4``.
 
 #. Assemble the reference OTUs, the new reference OTUs, and the clean-up OTUs into a new OTU map, and construct an OTU table. At this stage, all OTUs with a sequence count of smaller than 2 (i.e., the singleton OTUs) are discarded. This can be modified with the ``--min_otu_size`` option, and disabled by passing ``--min_otu_size=1``.
 
-#. Construct a new reference collection based on this OTU picking run. This new reference collection will be the combination of the full input reference collection, the new reference OTU representative sequences, and the clean-up OTU representative sequences. Note that this will not include representatives of the singleton OTUs by default. Also note that this differences from the representative set of sequences for this run in that it contains *all* of the input reference sequences, not only the ones that are represented in the current data set (which is what the representative sequences for this run contains).
+#. Construct a new reference collection based on this OTU picking run. This new reference collection will be the combination of the full input reference collection, the new reference OTU representative sequences, and the clean-up OTU representative sequences. Note that this will not include representatives of the singleton OTUs by default. Also note that this differs from the representative set of sequences for this run in that it contains *all* of the input reference sequences, not only the ones that are represented in the current data set (which is what the representative sequences for this run contains).
 
 #. Taxonomy will be assigned to all OTUs (using RDP classifier by default) and representative sequences will be aligned and a tree will be constructed. Finally, an additional OTU table will be constructed that excludes reads that failed to align with PyNAST. It is recommended that this OTU table be used in downstream analysis.
 
-To apply this analysis to ``seqs1.fna``, picking OTUs against the reference collection ``refseqs.fna`` you can run the following command. You should *always use full paths* which are represented here by ``$PWD``, but will usually look something like ``/home/ubuntu/my_data/`` (in other words, the should start with a ``/``). In this example your input sequences (``seqs.fna``), your parameters file (``ucr_params.txt``), and your metadata mapping file (``map.txt``) are all in the same directory represented by ``$PWD``. If you work from the directory containing those files, you can leave ``$PWD`` in the commands instead of specifying the full paths.::
+To apply this analysis to ``seqs1.fna``, picking OTUs against the reference collection ``refseqs.fna`` you can run the following command. You should *always use full paths* which are represented here by ``$PWD``, but will usually look something like ``/home/ubuntu/my_data/`` (in other words, they should start with a ``/``). In this example your input sequences (``seqs1.fna``), and your metadata mapping file (``map.txt``) are all in the same directory represented by ``$PWD``. If you work from the directory containing those files, you can leave ``$PWD`` in the commands instead of specifying the full paths::
 
 	pick_subsampled_reference_otus_through_otu_table.py -i $PWD/seqs1.fna -r $PWD/refseqs.fna -o $PWD/ucrss/ -aO 8
 
-The ``-aO 8`` specifies that we want to start 8 parallel jobs - adjust this according to the resources you have available. Each job should have at least 4GB of RAM available to it.
+This command should be run in parallel. Each job will need approximately 4GB of RAM, so if running on EC2 and you want to start 8 parallel jobs (recommended setting for EC2), your instance type should be ``m2.4xlarge``. The ``-aO 8`` specifies that we want to start 8 parallel jobs - adjust this according to the resources you have available.
+
+As PCoA of UniFrac distances between samples is a frequent result of interest in microbial ecology, we'll cover how to generate PCoA plots next. The first thing you'll want to do is evenly sample your OTU table. To choose an even sampling depth, review the number of reads per sample::
+	
+	per_library_stats.py -i $PWD/ucrss/otu_table_mc2_w_tax_no_pynast_failures.biom
+
+This will print information on the number of reads per sample to the terminal. Choose a depth of sampling that maximizes the number of sequences you'll include, and also the number of samples that have at least that many sequences: samples with fewer sequences will be excluded from your beta diversity/PCoA analysis. **Even sampling is absolutely critical to getting meaningful UniFrac distances between your samples.**
+
+After choosing an even sampling depth you can use the ``beta_diversity_through_plots.py`` script to rarify your OTU table, compute UniFrac distances between samples, and run Principal Coordinates Analysis with the following command (in this example we have chosen an even sampling depth of 25,000 sequences/sample)::
+	
+	beta_diversity_through_plots.py -i $PWD/ucrss/otu_table_mc2_w_tax_no_pynast_failures.biom  -e 25000 -o $PWD/ucrss/bdiv_even25000/ -t $PWD/ucrss/rep_set.tre -m $PWD/map.txt -aO8
+
+Again the ``-aO8`` specifies that the job should be run in parallel on 8 processors. Adjust this according to your resources. When this completes you can open 3D interactive PCoA plots by opening the file ``bdiv_even25000/unweighted_unifrac_3d_continuous/unweighted_unifrac_pc_3D_PCoA_plots.html`` in a web browser. This may take a minute to load for very large sets of samples.
+
 
 ------------------------------------------
  Subsampled OTU picking workflow analysis
 ------------------------------------------
 
-Several analyses were performed to confirm that results are comparable between the sub-sampled open-reference OTU picking workflow and the standard open-reference OTU picking workflow. These include analyses on two different data sets: one host-associated (the `Costello Whole Body <http://www.ncbi.nlm.nih.gov/pubmed/19892944>`_ study) and one free-living (the `Lauber 88 soils <http://www.ncbi.nlm.nih.gov/pubmed/19502440>`_ study). These two were chosen as Greengenes (the reference set being used) is known to be biased toward human-associated microbes, so I wanted to confirm that the method works when few sequences fail to hit the reference set (whole body) and when many sequences fail to hit the reference set (88 soils).
+Several analyses were performed to confirm that results are comparable between the subsampled open-reference OTU picking workflow and the standard open-reference OTU picking workflow. These include analyses on two different data sets: one host-associated (the `Costello Whole Body <http://www.ncbi.nlm.nih.gov/pubmed/19892944>`_ study) and one free-living (the `Lauber 88 soils <http://www.ncbi.nlm.nih.gov/pubmed/19502440>`_ study). These two were chosen as Greengenes (the reference set being used) is known to be biased toward human-associated microbes, so I wanted to confirm that the method works when few sequences fail to hit the reference set (whole body) and when many sequences fail to hit the reference set (88 soils).
 
 Several tests were performed:
- - beta diversity (procrustes analysis to compare sub-sampled OTU results to de novo, open-reference, and closed-reference OTU picking)
- - alpha diversity (test for correlation in observed OTU count between sub-sampled OTU results and de novo, open-reference, and closed-reference OTU picking)
- - otu category significance (reviewed significant OTUs - need a good way to quantitate this)
+ * beta diversity (procrustes analysis to compare subsampled OTU results to de novo, open-reference, and closed-reference OTU picking)
+ * alpha diversity (test for correlation in observed OTU count between subsampled OTU results and de novo, open-reference, and closed-reference OTU picking)
+ * otu category significance (reviewed significant OTUs - need a good way to quantitate this)
 
-For all analyses, sequences that fail to align with PyNAST and singleton OTUs were discarded (these are defaults in the sub-sampled OTU picking workflow).
-
-
-
-
-
-
+For all analyses, sequences that fail to align with PyNAST and singleton OTUs were discarded (these are defaults in the subsampled OTU picking workflow).
 
 
 88 soils analysis
@@ -111,17 +118,17 @@ This analysis is based on the data presented in the `Lauber 88 soils <http://www
 
 Alpha diversity
 ---------------
-Here I checked whether the subsampled reference OTU alpha diversities for all samples were correlated with the de novo OTU picking, standard open-reference OTU picking, and closed-reference OTU picking alpha diversities. The *observed species/OTUs* metric was calculated on add data sets (``alpha_diversity.py -m observed_species``), and the Pearson correlations were computed for sub-sampled reference OTU picking with the three other sets of values.
+Here I checked whether the subsampled reference OTU alpha diversities for all samples were correlated with the de novo OTU picking, standard open-reference OTU picking, and closed-reference OTU picking alpha diversities. The *observed species/OTUs* metric was calculated on add data sets (``alpha_diversity.py -m observed_species``), and the Pearson correlations were computed for subsampled reference OTU picking with the three other sets of values.
 
 Results
 ```````
-subsampled open-reference OTU picking versus de novo OTU picking: r=0.995 p=4.836e-88
-subsampled open-reference OTU picking versus standard open reference OTU picking: r=1.000 p=0.000
-subsampled open-reference OTU picking versus closed reference OTU picking: r=0.8634 p=1.405e-27
+ * subsampled open-reference OTU picking versus de novo OTU picking: r=0.995 p=4.836e-88
+ * subsampled open-reference OTU picking versus standard open-reference OTU picking: r=1.000 p=0.000
+ * subsampled open-reference OTU picking versus closed-reference OTU picking: r=0.8634 p=1.405e-27
 
 Conclusions
 ```````````
-Sub-sampled open reference OTU picking alpha diversity values are significantly correlated with de novo, standard open-reference, and closed reference OTU picking results. This suggests that we will derive the same biological conclusions between regarding alpha diversity when using the subsampled OTU picking workflow.
+Subsampled open-reference OTU picking alpha diversity values are significantly correlated with de novo, standard open-reference, and closed-reference OTU picking results. This suggests that we will derive the same biological conclusions between regarding alpha diversity when using the subsampled OTU picking workflow.
 
 Beta diversity
 --------------
@@ -129,9 +136,9 @@ Here I checked whether Procrustes comparisons of unweighted UniFrac PCoA plots b
 
 Results
 ```````
-subsampled open-reference OTU picking versus de novo OTU picking: M2=0.009 p<0.001
-subsampled open-reference OTU picking versus standard open reference OTU picking: M2=0.007 p<0.001
-subsampled open-reference OTU picking versus closed reference OTU picking: M2=0.039 p<0.001
+ * subsampled open-reference OTU picking versus de novo OTU picking: M2=0.009 p<0.001
+ * subsampled open-reference OTU picking versus standard open-reference OTU picking: M2=0.007 p<0.001
+ * subsampled open-reference OTU picking versus closed-reference OTU picking: M2=0.039 p<0.001
 
 Conclusions
 ```````````
@@ -171,7 +178,7 @@ OTU ID                        Bonferroni-adjusted p-value   Taxonomy
 ============================= ============================= ==============================================================================================
 
 
-Top 5 OTUs that differ across bins for standard open reference OTU picking:
+Top 5 OTUs that differ across bins for standard open-reference OTU picking:
 
 ============================= ============================= ==============================================================================================
 OTU ID                        Bonferroni-adjusted p-value   Taxonomy
@@ -183,7 +190,7 @@ DeNovoOTU34054                7.06e-09                      k__Bacteria; p__Acid
 DeNovoOTU36190                4.35e-08                      k__Bacteria; p__Actinobacteria; c__Actinobacteria; o__Rubrobacterales; f__Rubrobacteraceae
 ============================= ============================= ==============================================================================================
 
-Top 5 OTUs that differ across bins for closed reference OTU picking:
+Top 5 OTUs that differ across bins for closed-reference OTU picking:
 
 ============================= ============================= ===================================================================================================================
 OTU ID                        Bonferroni-adjusted p-value   Taxonomy
@@ -197,11 +204,11 @@ OTU ID                        Bonferroni-adjusted p-value   Taxonomy
 
 Conclusions
 ```````````
-In lieu of a solid statistical approach to compare these results, the results appear consistent across the different OTU picking workflows. The standard open reference and subsampled open reference are remarkably consistent. 
+In lieu of a solid statistical approach to compare these results, the results appear consistent across the different OTU picking workflows. The standard open-reference and subsampled open-reference are remarkably consistent. 
 
 Additional sanity check: is the new reference dataset sane?
 -----------------------------------------------------------
-To confirm that the new reference data set works as expected, I applied standard open-reference OTU picking on the original input sequences against the new reference collection generated by the sub-sampled OTU analysis. The idea here is that most reads should now hit the reference collection. A number of reads still fail, but on close investigation these turn out to all cluster into singleton OTUs. So, this is expected as singletons are not included in the reference collection (possible to adjust this with the ``--min_otu_size`` parameter [default = 2]). The new reference collection that is generated does appear to be sane. The command used for this analysis was::
+To confirm that the new reference data set works as expected, I applied standard open-reference OTU picking on the original input sequences against the new reference collection generated by the subsampled OTU analysis. The idea here is that most reads should now hit the reference collection. A number of reads still fail, but on close investigation these turn out to all cluster into singleton OTUs. So, this is expected as singletons are not included in the reference collection (possible to adjust this with the ``--min_otu_size`` parameter [default = 2]). The new reference collection that is generated does appear to be sane. The command used for this analysis was::
 	
 	pick_otus_through_otu_table.py -i /home/ubuntu/data/lauber_88soils/seqs.fna -o /home/ubuntu/data/lauber_88soils/subsample_ref_otus_eval/ucr97_v_new_ref/ -p /home/ubuntu/data/lauber_88soils/subsample_ref_otus_eval/ucr_v_newref_params.txt -aO 3
 
@@ -219,17 +226,17 @@ This analysis is based on the data presented in the the `Costello Whole Body <ht
 
 Alpha diversity
 ---------------
-Here I checked whether the subsampled reference OTU alpha diversities for all samples were correlated with the de novo OTU picking, standard open-reference OTU picking, and closed-reference OTU picking alpha diversities. The *observed species/OTUs* metric was calculated on add data sets (``alpha_diversity.py -m observed_species``), and the Pearson correlations were computed for sub-sampled reference OTU picking with the three other sets of values.
+Here I checked whether the subsampled reference OTU alpha diversities for all samples were correlated with the de novo OTU picking, standard open-reference OTU picking, and closed-reference OTU picking alpha diversities. The *observed species/OTUs* metric was calculated on add data sets (``alpha_diversity.py -m observed_species``), and the Pearson correlations were computed for subsampled reference OTU picking with the three other sets of values.
 
 Results
 ```````
-subsampled open-reference OTU picking versus de novo OTU picking: r=0.99  p=0.0
-subsampled open-reference OTU picking versus standard open reference OTU picking: r=1.0 p=0.0
-subsampled open-reference OTU picking versus closed reference OTU picking: r=0.95 p=0.0
+ * subsampled open-reference OTU picking versus de novo OTU picking: r=0.99  p=0.0
+ * subsampled open-reference OTU picking versus standard open-reference OTU picking: r=1.0 p=0.0
+ * subsampled open-reference OTU picking versus closed-reference OTU picking: r=0.95 p=0.0
 
 Conclusions
 ```````````
-Sub-sampled open reference OTU picking alpha diversity values are significantly correlated with de novo, standard open-reference, and closed reference OTU picking results. This suggests that we will derive the same biological conclusions between regarding alpha diversity when using the subsampled OTU picking workflow.
+Subsampled open-reference OTU picking alpha diversity values are significantly correlated with de novo, standard open-reference, and closed-reference OTU picking results. This suggests that we will derive the same biological conclusions between regarding alpha diversity when using the subsampled OTU picking workflow.
 
 Beta diversity
 --------------
@@ -237,9 +244,9 @@ Here I checked whether Procrustes comparisons of unweighted UniFrac PCoA plots b
 
 Results
 ```````
-subsampled open-reference OTU picking versus de novo OTU picking: M2=0.056 p<0.001
-subsampled open-reference OTU picking versus standard open reference OTU picking: M2=0.053 p<0.001
-subsampled open-reference OTU picking versus closed reference OTU picking: M2=0.072 p<0.001
+ * subsampled open-reference OTU picking versus de novo OTU picking: M2=0.056 p<0.001
+ * subsampled open-reference OTU picking versus standard open-reference OTU picking: M2=0.053 p<0.001
+ * subsampled open-reference OTU picking versus closed-reference OTU picking: M2=0.072 p<0.001
 
 Conclusions
 ```````````
@@ -278,7 +285,7 @@ OTU ID                        Bonferroni-adjusted p-value   Taxonomy
 18575                         2.74e-122                     k__Bacteria; p__Proteobacteria; c__Gammaproteobacteria; o__Pasteurellales; f__Pasteurellaceae
 ============================= ============================= ==============================================================================================
 
-Top 5 OTUs that differ across bins for standard open reference OTU picking:
+Top 5 OTUs that differ across bins for standard open-reference OTU picking:
 
 ============================= ============================= ==============================================================================================
 OTU ID                        Bonferroni-adjusted p-value   Taxonomy
@@ -290,7 +297,7 @@ OTU ID                        Bonferroni-adjusted p-value   Taxonomy
 442949                        1.33e-124                     k__Bacteria; p__Firmicutes; c__Clostridia; o__Clostridiales; f__Veillonellaceae
 ============================= ============================= ==============================================================================================
 
-Top 5 OTUs that differ across bins for closed reference OTU picking:
+Top 5 OTUs that differ across bins for closed-reference OTU picking:
 
 ============================= ============================= ===================================================================================================================
 OTU ID                        Bonferroni-adjusted p-value   Taxonomy
@@ -308,7 +315,7 @@ In lieu of a solid statistical approach to compare these results, the results ar
 
 Additional sanity check: what reads are being discarded by the prefilter?
 -------------------------------------------------------------------------
-To investigate what reads get discarded at the prefilter stage, I evaluated a subset of the reads discarded when the prefilter was set to 80% (--prefilter_percent_id 0.80) versus when the prefilter was set to 60% (default).
+To investigate what reads get discarded at the prefilter stage, I evaluated a subset of the reads discarded when the prefilter was set to 80% (``--prefilter_percent_id 0.80``) versus when the prefilter was set to 60% (default).
 
 Sequences filtered at 80% but not at 60%
 ````````````````````````````````````````
