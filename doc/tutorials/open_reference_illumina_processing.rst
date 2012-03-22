@@ -1,0 +1,182 @@
+=========================================================
+ Open reference OTU picking on Illumina data
+=========================================================
+
+This document describes how to use QIIME to analyze very large data sets, generally on the HiSeq2000, using an open-reference OTU picking protocol. There are two primary options here: first is to use standard open-reference uclust (i.e., uclust_ref allowing for new clusters); and second is to use the subsampled open-reference OTU picking protocol. The results from both will be nearly identical. The difference is that the first option is slower, but available in QIIME 1.4.0 (and most earlier versions). The runtime will be limiting for multiple HiSeq2000 lanes, or for single HiSeq2000 lanes with high diversity. The second option is much faster, and will work for multiple HiSeq2000 lanes or runs, but is currently only available in the development version of QIIME (1.4.0-dev).
+
+This document very briefly covers option 1. Most of the text covers option 2, including a description of how to use it, what exactly is happening, and test results from applying this to some well-understood 454 data. 
+
+ .. note_: You can always find a link to the latest version of the Greengenes reference OTUs and the AMI of the latest QIIME EC2 instances on `this page <http://qiime.org/home_static/dataFiles.html>`_.
+
+---------------------------------------------------------------
+ Option 1: Standard open-reference OTU picking
+---------------------------------------------------------------
+
+Standard open-reference OTU picking is suitable for a single HiSeq2000 lane (unless it's very high diversity, in which case runtime may be a limiting factor). You'll use the ``pick_otus_through_otu_table.py`` workflow script in QIIME with a custom parameters file.
+
+Your parameters file should look like the following::
+
+	pick_otus:otu_picking_method uclust_ref
+	pick_otus:refseqs_fp <PATH TO REFERENCE COLLECTION>
+	pick_otus:enable_rev_strand_match True
+	align_seqs:min_length 75
+
+Where ``<PATH TO REFERENCE COLLECTION>`` is replaced with the path to the reference data set you'd like to pick OTUs against. The QIIME development group frequently used the Greengenes reference OTUs. On the QIIME EC2 instance, this path would be ``/software/gg_otus-4feb2011-release/rep_set/gg_97_otus_4feb2011.fasta``. 
+
+This command should be run in parallel. Each job will need approximately 4GB of RAM, so if running on EC2 and you want to start 8 parallel jobs (recommended setting for EC2), your instance type should be ``m2.4xlarge``.
+
+You can then use the following commands. You should *always use full paths* which are represented here by ``$PWD``, but will usually look something like ``/home/ubuntu/my_data/`` (in other words, the should start with a ``/``). In this example your input sequences (``seqs.fna``), your parameters file (``ucr_params.txt``), and your metadata mapping file (``map.txt``) are all in the same directory represented by ``$PWD``. If you work from the directory containing those files, you can leave ``$PWD`` in the commands instead of specifying the full paths.
+
+First, pick otus, choose representative sequences, assign taxonomy to OTUs, and build a phylogenetic tree. The ``-aO 8`` specifies that we want to start 8 parallel jobs - adjust this according to the resources you have available. This is open reference OTU picking, so reads will be clustered against the reference database (in parallel) and reads which fail to hit the reference data set will subsequently be clustered de novo (serially).::
+	
+	pick_otus_through_otu_table.py -i $PWD/seqs.fna -o $PWD/ucr/ -p $PWD/ucr_params.txt -aO 8
+
+When working with Illumina data you typically want to filter singleton OTUs (i.e., OTUs with only one sequence) as these are likely to represent sequencing or PCR errors. In QIIME 1.4.0 (and most earlier versions) you can do that with this command::
+	
+	filter_otu_table.py -i $PWD/ucr/otu_table.txt -o $PWD/ucr/otu_table_mc2.txt -c 2 -s 1
+
+In QIIME 1.4.0-dev and later, you can filter singleton OTUs with this command::
+	
+	filter_otus_from_otu_table.py -i $PWD/ucr/otu_table.biom -o $PWD/ucr/otu_table_mc2.biom -c 2
+
+You'll notice that depending on your version of QIIME, the extension on your OTU table file will differ. In QIIME 1.4.0 and earlier, it will be ``.txt``. In QIIME 1.4.0-dev and later it will be ``.biom``. We'll continue this example assuming that your OTU table ends with ``.txt`` (if you're working with QIIME 1.4.0-dev or later, you likely decided to go with option 2 for OTU picking).
+
+As PCoA of UniFrac distances between samples is a frequent result of interest in microbial ecology, we'll cover how to generate PCoA plots next. The first thing you'll want to do is evenly sample your OTU table. To choose an even sampling depth, review the number of reads per sample::
+	
+	per_library_stats.py -i $PWD/ucr97/otu_table_mc2.biom
+
+This will print information on the number of reads per sample to the terminal. Choose a depth of sampling that maximizes the number of sequences you'll include, and also the number of samples that have at least that many sequences: samples with fewer sequences will be excluded from your beta diversity/PCoA analysis. **Even sampling is absolutely critical to getting meaningful UniFrac distances between your samples.**
+
+After choosing an even sampling depth you can use the ``beta_diversity_through_plots.py`` script to rarify your OTU table, compute UniFrac distances between samples, and run Principal Coordinates Analysis with the following command (in this example we have chosen an even sampling depth of 25,000 sequences/sample)::
+	
+	beta_diversity_through_plots.py -i $PWD/ucr/otu_table_mc2.biom -e 25000 -o $PWD/ucr/bdiv_even25000/ -t $PWD/ucr/rep_set.tre -m $PWD/map.txt -aO8
+
+Again the ``-aO8`` specifies that the job should be run in parallel on 8 processors. Adjust this according to your resources. When this completes you can open 3D interactive PCoA plots by opening the file ``bdiv_even25000/unweighted_unifrac_3d_continuous/unweighted_unifrac_pc_3D_PCoA_plots.html`` in a web browser. This may take a minute to load for very large sets of samples.
+
+
+---------------------------------------------------------------
+ Option 2: Sub-sampled open-reference OTU picking
+---------------------------------------------------------------
+
+Sub-sampled reference OTU picking is suitable for any analysis that standard open-reference OTU picking can be used for, but additionally scales to much larger data sets (such as multiple HiSeq runs, which may require several days on ~100 processors to analyze).
+
+This is an open-reference OTU picking protocol, meaning that sequences are clustered against a reference database, and reads while fail to hit the reference are subsequently clustered de novo. This differs from standard open-reference OTU picking as it was optimized at several steps to enable running on massive numbers of sequences (hundreds of millions, which is massive as of this writing). The steps in this workflow are as follows.
+
+#. Prefilter the input sequence collection by searching reads against the reference set with a low percent identity threshold (default is 60%, modify with ``--prefilter_percent_id``). The choice of 60% is described here (FILL IN LINK). All reads which fail to hit the reference set are discarded as likely sequencing error.
+
+#. Apply closed reference OTU picking against the reference collection. Generate a fasta file containing all reads that fail to hit the reference collection.
+
+#. Randomly subsample the sequences that failed to hit the reference collection, and write these to a new fasta file (default subsampling percentage is 0.1%, modify with ``-s/--percent_subsample``). Cluster these reads de novo, and choose a representative set of sequences as the centroid of each OTU cluster. These are the *new reference* OTUs.
+
+#. Pick closed reference OTUs against the representative sequences from the previous step. Write all sequences that fail to hit the reference collection to a fasta file.
+
+#. Pick de novo OTUs on all reads that failed to hit the reference collection in the previous step. These are the *clean-up* OTUs. This step can be suppress by passing ``--suppress_step4``.
+
+#. Assemble the reference OTUs, the new reference OTUs, and the clean-up OTUs into a new OTU map, and construct an OTU table. At this stage, all OTUs with a sequence count of smaller than 2 (i.e., the singleton OTUs) are discarded. This can be modified with the ``--min_otu_size`` option, and disabled by passing ``--min_otu_size=1``.
+
+#. Construct a new reference collection based on this OTU picking run. This new reference collection will be the combination of the full input reference collection, the new reference OTU representative sequences, and the clean-up OTU representative sequences. Note that this will not include representatives of the singleton OTUs by default. Also note that this differences from the representative set of sequences for this run in that it contains *all* of the input reference sequences, not only the ones that are represented in the current data set (which is what the representative sequences for this run contains).
+
+#. Taxonomy will be assigned to all OTUs (using RDP classifier by default) and representative sequences will be aligned and a tree will be constructed. Finally, an additional OTU table will be constructed that excludes reads that failed to align with PyNAST. It is recommended that this OTU table be used in downstream analysis.
+
+To apply this analysis to ``seqs1.fna``, picking OTUs against the reference collection ``refseqs.fna`` you can run the following command. You should *always use full paths* which are represented here by ``$PWD``, but will usually look something like ``/home/ubuntu/my_data/`` (in other words, the should start with a ``/``). In this example your input sequences (``seqs.fna``), your parameters file (``ucr_params.txt``), and your metadata mapping file (``map.txt``) are all in the same directory represented by ``$PWD``. If you work from the directory containing those files, you can leave ``$PWD`` in the commands instead of specifying the full paths.::
+
+	pick_subsampled_reference_otus_through_otu_table.py -i $PWD/seqs1.fna -r $PWD/refseqs.fna -o $PWD/ucrss/ -aO 8
+
+The ``-aO 8`` specifies that we want to start 8 parallel jobs - adjust this according to the resources you have available. Each job should have at least 4GB of RAM available to it.
+
+Subsampled OTU picking workflow analysis
+========================================
+
+Analyses were run on two data sets: one host-associated (**FILL IN WHOLE BODY REFERENCE**) and one free-living (**FILL IN 88 SOIL REFERENCE**). These two were chosen as Greengenes (the reference set being used) is known to be biased toward human-associated microbes, so I wanted to confirm that the method works when few sequences fail to hit the reference set (whole body) and when many sequences fail to hit the reference set (88 soils).
+
+Several tests were performed: 
+ - beta diversity (procrustes analysis to compare sub-sampled OTU results to de novo, open-reference, and closed-reference OTU picking)
+ - alpha diversity (test for correlation in observed OTU count between sub-sampled OTU results and de novo, open-reference, and closed-reference OTU picking)
+ - otu category significance (reviewed significant OTUs - need a good way to quantitate this)
+
+For all analyses, sequences that fail to align with PyNAST and singleton OTUs were discarded (these are defaults in the sub-sampled OTU picking workflow).
+
+
+
+
+
+
+
+
+88 soils analysis
+-----------------
+This analysis is of the data presented in **FILL IN REFERENCE**.
+
+OTU category significance
+`````````````````````````
+This is tougher here than for the whole body study as the pattern of interest correlation between pH and PC1. To define a category for this test I binned the pH values by truncating the values to integers (so 5.0, 5.3, and 5.9 are all binned to pH 5) and using this binned pH as the category. Since I'm just looking for consistent results across the different OTU picking methods we don't need to do anything too fancy here. 
+
+Additional sanity check: is the new reference dataset sane?
+```````````````````````````````````````````````````````````
+To confirm that the new reference data set works as expected, I performed open-reference OTU picking against the new reference collection generated by the sub-sampled OTU analysis. A number of reads still fail, but on close investigation these turn out to all cluster into singleton OTUs. So, this is expected as singletons are not included in the reference collection (possible to adjust this with the --min_otu_size parameter [default = 2])
+
+::
+	
+	pick_otus_through_otu_table.py -i /home/ubuntu/data/lauber_88soils/seqs.fna -o /home/ubuntu/data/lauber_88soils/subsample_ref_otus_eval/ucr97_v_new_ref/ -p /home/ubuntu/data/lauber_88soils/subsample_ref_otus_eval/ucr_v_newref_params.txt -aO 3
+
+
+Whole body analysis
+```````````````````
+
+Prefilter at 60% id with uclust_ref followed by subsampling OTU picking workflow (prefilter60)
+
+Num samples: 600
+Num otus:4539
+Total observations (sequences): 748013
+
+--
+
+Prefilter at 80% id with uclust_ref followed by subsampling OTU picking workflow (prefilter80)
+
+Num samples: 600
+Num otus:4526
+Total observations (sequences): 747069
+
+--
+
+de novo uclust at 97% (uc97)
+
+Num samples: 600
+Num otus:4472
+Total observations (sequences): 751011
+
+--
+
+uclust_ref with new clusters at 97% (ucr97)
+
+Num samples: 600
+Num otus:4539
+Total observations (sequences): 748013
+
+--
+
+uclust_ref with no new clusters at 97% (ucrC97)
+
+Num samples: 600
+Num otus:2101
+Total observations (sequences): 684378
+
+-- 
+
+Sequences filtered at 80% but not at 60% (full list follows). These three have high percent id matches in NCBI.
+
+>F12Pinl.140479_129272 FFLHOYS02GCJLO orig_bc=ATACAGAGCTCC new_bc=ATACAGAGCTCC bc_diffs=0
+CTGGGCCGTGTCTCAGTCCCAGTGTGGCTGATCATCCGAAAAGACCAGCTAAGCATCATTGGCTTGGTCAGCCTTTACCTAACCAACTACCTGATACTACGTGGGCTCATCGAACAGCGCGAATTAGCTTGCTTTATGAATTATTCAGGATTTGGAGTGAACTATTCGGCAGATTCCCACGCGTTACGCACCCGTTCGCCACTTTGCTTG
+>F32Indr.140459_1174716 FFO92CG02IYZBA orig_bc=GCTATCACGAGT new_bc=GCTATCACGAGT bc_diffs=0
+CCGGGCCGTGTCTCAGTCCCAGTGTGGCTGATCATCCGAAAAGACCAGCTAAGCATCATTGGCTTGGTCAGCCTTTACCTGACCAACTACCTAATACTACGCAGGCTCATCAAACAGCGCTTTTTAGCTTTCTTCAGGATTTGGCCCGAACTGTTCGGCAGATTCCCACGCGTTACGCACCCGTTCGCCACTTTGTTCTCAACTGTTCCCACCTCCTGGGCGAGA
+>F32Forr.140528_1210712 FFO92CG02IKGYS orig_bc=GCGTTACACACA new_bc=GCGTTACACACA bc_diffs=0
+CCGGGCCGTGTCTCAGTCCCAGTGTGGCTGATCATCCGAAAAGACCAGCTAAGCATCATTGGCTTGGTCAGCCTTTACCTGACCAACTACCTAATACTACGCAGGCTCATCAAACAGCGCTTTTGAGCTTTCTTCAGGATTTGGCCCGAACTGTTCGGCAGATTCCCACGCGTTACGCACCCGTTCGCCACTTTGTTCTCAACTATTCCGATTCTTTTTTCGGTAGGCCGTTA
+
+Sequences filtered at 60% - these three hit small fragment, human sequence, and nothing in NCBI, respectively.
+
+>M22Pinr.140692_1148864 FFO92CG01EQIWQ orig_bc=CGCACATGTTAT new_bc=CGCACATGTTAT bc_diffs=0
+GGAAAAGGGAAAAACAGATGAGACAAATAGAAAACAAATAGCAAATTAGTAGGTGTTAACATGACTTTATCAATAATTACATCAAATGTAGATGATGTTAACCATGGATTGACAAACTTTTTCTTTATAGGACCAGACAGTCAATATTTTAGGTCTTTGAGGCCATATGGTATCTGTCATAACCACTCAACTGAGCCAGGATCAAACTCTGA
+>F31Nstl.140789_1153834 FFO92CG02FSK33 orig_bc=GCAGCCGAGTAT new_bc=GCAGCCGAGTAT bc_diffs=0
+TACCCTGTGGAGACAAAGGAAGATGTGATCAGCTCTACTAGGCATGCATATCTTTCCAGAGAGGAAGAGGTAAGAGTTGTGGTTGGAAGATGAGTTGGCATTTTATAGACAGATCATGGTGTTTGAGATTGAGGGACTGGCAGGAGCAAGGCACAGAAGTAGAAGGGAGAGTGACGAGTATATATCATCAGTCAGGGTTTTTTAG
+>F32Nstl.140804_1160735 FFO92CG01BRQNZ orig_bc=GCTGCTGCAATA new_bc=GCTGCTGCAATA bc_diffs=0
+CTGAAACCCTGGGTCACCAAAAGGCAGGAGGAGGAGGGACAGGGCAAGGCAGGGGAAGAGAGGGGAGGCTGACTCACATACACACATATGCATGCACACATCACACCCACATTCATGTACACACACACAGATTCACATGCATGCACAGCACAATCGCACACTTGTATACACACACAGGCACA
