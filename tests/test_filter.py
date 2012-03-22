@@ -15,6 +15,8 @@ from StringIO import StringIO
 from numpy import inf
 from cogent.util.unit_test import TestCase, main
 from cogent.parse.tree import DndParser
+from cogent.util.misc import remove_files
+from cogent.app.util import get_tmp_filename
 from biom.parse import parse_biom_table_str
 from qiime.parse import (parse_distmat, parse_mapping_file, 
                          parse_metadata_state_descriptions)
@@ -23,7 +25,8 @@ from qiime.filter import (filter_fasta,filter_samples_from_otu_table,
                           filter_samples_from_distance_matrix,
                           negate_tips_to_keep,
                           filter_mapping_file,
-                          filter_fastq)
+                          filter_fastq,filter_otus_from_otu_map)
+from qiime.util import load_qiime_config
 
 class fake_output_f():
     
@@ -39,6 +42,10 @@ class fake_output_f():
 class FilterTests(TestCase):
     
     def setUp(self):
+        self.qiime_config = load_qiime_config()
+        self.tmp_dir = self.qiime_config['temp_dir']
+        self.files_to_remove = []
+        
         self.filter_fasta_expected1 = filter_fasta_expected1
         self.filter_fasta_expected2 = filter_fasta_expected2
         self.filter_fastq_expected1 = filter_fastq_expected1
@@ -52,7 +59,7 @@ class FilterTests(TestCase):
         
         
     def tearDown(self):
-        pass
+        remove_files(self.files_to_remove)
         
     def test_negate_tips_to_keep(self):
         """ negate_tips_to_keep functions as expected """
@@ -421,6 +428,39 @@ class FilterTests(TestCase):
             parse_metadata_state_descriptions('Study:*,!Dog;BodySite:Stool')), ['e'])
         self.assertEqual(get_sample_ids(self.map_data, self.map_headers,\
             parse_metadata_state_descriptions('BodySite:Stool')), ['a','b','e'])
+
+    def test_filter_otus_from_otu_map(self):
+        """ filter_otus_from_otu_map functions as expected """
+        otu_map_in = """o1 some comment	s1_1	s1_2
+o2	s1_3	s1_4	s2_5
+o3	s2_3
+"""
+        otu_map_no_single = """o1 some comment	s1_1	s1_2
+o2	s1_3	s1_4	s2_5
+"""
+        otu_map_no_single_double = """o2	s1_3	s1_4	s2_5
+"""
+        
+        # write the test files
+        in_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
+            prefix='qiime_filter_test',suffix='.txt')
+        fasting_seqs_f = open(in_fp,'w')
+        fasting_seqs_f.write(otu_map_in)
+        fasting_seqs_f.close()
+        self.files_to_remove.append(in_fp)
+        
+        actual_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
+            prefix='qiime_filter_test',suffix='.txt')
+        self.files_to_remove.append(actual_fp)
+        
+        retained_otus = filter_otus_from_otu_map(in_fp,actual_fp,2)
+        self.assertEqual(open(actual_fp).read(),otu_map_no_single)
+        self.assertEqualItems(retained_otus,set(['o1 some comment','o2']))
+        
+        retained_otus = filter_otus_from_otu_map(in_fp,actual_fp,3)
+        self.assertEqual(open(actual_fp).read(),otu_map_no_single_double)
+        self.assertEqualItems(retained_otus,set(['o2']))
+        
 
 
 

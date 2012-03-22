@@ -231,4 +231,27 @@ def filter_otus_from_otu_table(otu_table,ids_to_keep,min_count,max_count,
 # end functions used by filter_samples_from_otu_table.py and filter_otus_from_otu_table.py
 
 
-
+def filter_otus_from_otu_map(input_otu_map_fp,output_otu_map_fp,min_count):
+    """ Filter otus with fewer than min_count sequences from input_otu_map_fp
+    
+        With very large data sets the number of singletons can be very large, and it becomes
+        more efficent to filter them at the otu map stage than the otu table stage.
+        
+        There are two outputs from this function: the output file (which is the
+         filtered otu map) and the list of retained otu ids as a set. Since I need
+         to return the retained ids for pick_subsampled_reference_otus_through_otu_table, 
+         this takes filepaths instead of file handles (since it can't be a generator 
+         and return something).
+    
+    """
+    results = set()
+    output_otu_map_f = open(output_otu_map_fp,'w')
+    for line in open(input_otu_map_fp,'U'):
+        fields = line.strip().split('\t')
+        # only write this line if the otu has more than n sequences (so
+        # greater than n tab-separated fields including the otu identifier)
+        if len(fields) > min_count:
+            output_otu_map_f.write(line)
+            results.add(fields[0].split('\t')[0])
+    output_otu_map_f.close()
+    return results
