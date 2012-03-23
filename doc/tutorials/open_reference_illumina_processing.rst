@@ -8,6 +8,8 @@ This document very briefly covers option 1. Most of the text covers option 2, in
 
  .. note:: You can always find a link to the latest version of the Greengenes reference OTUs and the AMI of the latest QIIME EC2 instances `here <http://qiime.org/home_static/dataFiles.html>`_.
 
+ .. toctree::
+
 ---------------------------------------------------------------
  Option 1: Standard open-reference OTU picking
 ---------------------------------------------------------------
@@ -101,9 +103,9 @@ After choosing an even sampling depth you can use the ``beta_diversity_through_p
 Again the ``-aO8`` specifies that the job should be run in parallel on 8 processors. Adjust this according to your resources. When this completes you can open 3D interactive PCoA plots by opening the file ``bdiv_even25000/unweighted_unifrac_3d_continuous/unweighted_unifrac_pc_3D_PCoA_plots.html`` in a web browser. This may take a minute to load for very large sets of samples.
 
 
-------------------------------------------
- Subsampled OTU picking workflow analysis
-------------------------------------------
+--------------------------------------------
+ Subsampled OTU picking workflow evaluation
+--------------------------------------------
 
 Several analyses were performed to confirm that results are comparable between the subsampled open-reference OTU picking workflow and the standard open-reference OTU picking workflow. These include analyses on two different data sets: one host-associated (the `Costello Whole Body <http://www.ncbi.nlm.nih.gov/pubmed/19892944>`_ study) and one free-living (the `Lauber 88 soils <http://www.ncbi.nlm.nih.gov/pubmed/19502440>`_ study). These two were chosen as Greengenes (the reference set being used) is known to be biased toward human-associated microbes, so I wanted to confirm that the method works when few sequences fail to hit the reference set (whole body) and when many sequences fail to hit the reference set (88 soils).
 
