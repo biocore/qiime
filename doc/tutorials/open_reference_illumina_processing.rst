@@ -6,7 +6,7 @@ This document describes how to use QIIME to analyze very large data sets, genera
 
 This document very briefly covers option 1. Most of the text covers option 2, including a description of how to use it, what exactly is happening, and test results from applying this to some well-understood 454 data. 
 
- .. note_: You can always find a link to the latest version of the Greengenes reference OTUs and the AMI of the latest QIIME EC2 instances on `this page <http://qiime.org/home_static/dataFiles.html>`_.
+ .. note:: You can always find a link to the latest version of the Greengenes reference OTUs and the AMI of the latest QIIME EC2 instances `here <http://qiime.org/home_static/dataFiles.html>`_.
 
 ---------------------------------------------------------------
  Option 1: Standard open-reference OTU picking
@@ -60,9 +60,11 @@ Again the ``-aO8`` specifies that the job should be run in parallel on 8 process
 
 Subsampled reference OTU picking is suitable for any analysis that standard open-reference OTU picking can be used for, but additionally scales to much larger data sets (such as multiple HiSeq runs, which may require several days on ~100 processors to analyze).
 
-This is an open-reference OTU picking protocol, meaning that sequences are clustered against a reference database, and reads while fail to hit the reference are subsequently clustered de novo. This differs from standard open-reference OTU picking as it was optimized at several steps to enable running on massive numbers of sequences (hundreds of millions, which is massive as of this writing). The steps in this workflow are as follows.
+ .. warning:: If processing multiple HiSeq lanes, don't combine the sequence data into a single file. Instead, see :ref:`iterative-mode`.
 
-#. Prefilter the input sequence collection by searching reads against the reference set with a low percent identity threshold (default is 60%, modify with ``--prefilter_percent_id``). The choice of 60% is described here (FILL IN LINK). All reads which fail to hit the reference set are discarded as likely sequencing error.
+This is an open-reference OTU picking protocol, meaning that sequences are clustered against a reference database, and reads which fail to hit the reference are subsequently clustered de novo. This differs from standard open-reference OTU picking as it was optimized at several steps to enable running on massive numbers of sequences (hundreds of millions, which is massive as of this writing). The steps in this workflow are as follows.
+
+#. Prefilter the input sequence collection by searching reads against the reference set with a low percent identity threshold (default is 60%, modify with ``--prefilter_percent_id``). The choice of 60% is described :ref:`here <prefilter-threshold>` . All reads which fail to hit the reference set are discarded as likely sequencing error.
 
 #. Apply closed-reference OTU picking against the reference collection. Generate a fasta file containing all reads that fail to hit the reference collection.
 
@@ -83,6 +85,8 @@ To apply this analysis to ``seqs1.fna``, picking OTUs against the reference coll
 	pick_subsampled_reference_otus_through_otu_table.py -i $PWD/seqs1.fna -r $PWD/refseqs.fna -o $PWD/ucrss/ -aO 8
 
 This command should be run in parallel. Each job will need approximately 4GB of RAM, so if running on EC2 and you want to start 8 parallel jobs (recommended setting for EC2), your instance type should be ``m2.4xlarge``. The ``-aO 8`` specifies that we want to start 8 parallel jobs - adjust this according to the resources you have available.
+
+.. _ucrss-beta-diversity:
 
 As PCoA of UniFrac distances between samples is a frequent result of interest in microbial ecology, we'll cover how to generate PCoA plots next. The first thing you'll want to do is evenly sample your OTU table. To choose an even sampling depth, review the number of reads per sample::
 	
@@ -313,6 +317,8 @@ Conclusions
 ```````````
 In lieu of a solid statistical approach to compare these results, the results are remarkably consistent across the different OTU picking workflows.
 
+.. _prefilter-threshold:
+
 Additional sanity check: what reads are being discarded by the prefilter?
 -------------------------------------------------------------------------
 To investigate what reads get discarded at the prefilter stage, I evaluated a subset of the reads discarded when the prefilter was set to 80% (``--prefilter_percent_id 0.80``) versus when the prefilter was set to 60% (default).
@@ -343,3 +349,19 @@ These three reads hit a small fragment, a human sequence, and nothing in NCBI, r
 Conclusions
 ```````````
 Based on this analysis (and currently unpublished data -- will fill in when available), a threshold of 60% was chosen as the default value for discarding sequences that are likely not rRNA.
+
+.. _iterative-mode:
+
+----------------------------------------------------------------------------
+ Using the subsampled open-reference OTU picking workflow in iterative mode
+----------------------------------------------------------------------------
+
+The subsampled open-reference OTU picking workflow can be run in iterative mode to support multiple different sequence collections, such as several HiSeq runs. In iterative mode, the list of sequence files will be processed in order, and the new reference sequences generated at each step will be used as the reference collection for the subsequent step. After all input collections have been processed a single OTU table and tree, covering all of the input collections, will be generated. 
+
+To apply this analysis to ``seqs1.fna`` and ``seqs2.fna`` in iterative mode, picking OTUs against the reference collection ``refseqs.fna`` you can run the following command. You should *always use full paths* which are represented here by ``$PWD``, but will usually look something like ``/home/ubuntu/my_data/`` (in other words, they should start with a ``/``). In this example your input sequences (``seqs1.fna``), and your metadata mapping file (``map.txt``) are all in the same directory represented by ``$PWD``. If you work from the directory containing those files, you can leave ``$PWD`` in the commands instead of specifying the full paths::
+
+	pick_subsampled_reference_otus_through_otu_table.py -i $PWD/seqs1.fna,$PWD/seqs2.fna -r $PWD/refseqs.fna -o $PWD/ucrss_iter/ -aO 8
+
+This command should be run in parallel. Each job will need approximately 4GB of RAM, so if running on EC2 and you want to start 8 parallel jobs (recommended setting for EC2), your instance type should be ``m2.4xlarge``. The ``-aO 8`` specifies that we want to start 8 parallel jobs - adjust this according to the resources you have available. 
+
+After iterative OTU picking you can continue on with beta diversity (and other) analyses as described :ref:`here <ucrss-beta-diversity>`.
