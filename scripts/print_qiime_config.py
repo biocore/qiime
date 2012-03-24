@@ -515,7 +515,7 @@ class Qiime_config(TestCase):
         
     def test_raxmlHPC_supported_version(self):
         """raxmlHPC is in path and version is supported """
-        acceptable_version = (7,0,3)
+        acceptable_version = [(7,0,3),(7,3,0)]
         self.assertTrue(app_path('raxmlHPC'),
          "raxmlHPC not found. This may or may not be a problem depending on "+\
          "which components of QIIME you plan to use.")
@@ -526,7 +526,7 @@ class Qiime_config(TestCase):
         version_string = stdout.strip().split(' ')[4].strip()
         try:
             version = tuple(map(int,version_string.split('.')))
-            pass_test = version == acceptable_version
+            pass_test = version in acceptable_version
         except ValueError:
             pass_test = False
             version_string = stdout

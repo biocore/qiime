@@ -26,6 +26,7 @@ import cogent.app.muscle
 import cogent.app.clustalw
 import cogent.app.mafft
 import cogent.app.raxml
+import cogent.app.raxml_v730
 import cogent.app.fasttree
 import cogent.app.fasttree_v1
 import cogent.app.clearcut
@@ -119,7 +120,7 @@ tree_module_names = {'muscle':cogent.app.muscle,
     #'mafft':cogent.app.mafft,   
     # current version of Mafft does not support tree building
     'fasttree':cogent.app.fasttree,'fasttree_v1':cogent.app.fasttree_v1,
-    'raxml':cogent.app.raxml, 'clearcut':cogent.app.clearcut,
+    'raxml':cogent.app.raxml, 'raxml_v730':cogent.app.raxml_v730,'clearcut':cogent.app.clearcut
     }
     
 #def maxTipTipDistance(tree):
