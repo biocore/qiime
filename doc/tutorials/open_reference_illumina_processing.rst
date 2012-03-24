@@ -82,9 +82,15 @@ This is an open-reference OTU picking protocol, meaning that sequences are clust
 
 #. Taxonomy will be assigned to all OTUs (using RDP classifier by default) and representative sequences will be aligned and a tree will be constructed. Finally, an additional OTU table will be constructed that excludes reads that failed to align with PyNAST. It is recommended that this OTU table be used in downstream analysis.
 
-To apply this analysis to ``seqs1.fna``, picking OTUs against the reference collection ``refseqs.fna`` you can run the following command. You should *always use full paths* which are represented here by ``$PWD``, but will usually look something like ``/home/ubuntu/my_data/`` (in other words, they should start with a ``/``). In this example your input sequences (``seqs1.fna``), and your metadata mapping file (``map.txt``) are all in the same directory represented by ``$PWD``. If you work from the directory containing those files, you can leave ``$PWD`` in the commands instead of specifying the full paths::
+To apply this analysis to ``seqs1.fna``, picking OTUs against the reference collection ``refseqs.fna`` you can run the following command. Your parameters file should contain the following::
 
-	pick_subsampled_reference_otus_through_otu_table.py -i $PWD/seqs1.fna -r $PWD/refseqs.fna -o $PWD/ucrss/ -aO 8
+	pick_otus:otu_picking_method uclust_ref
+	pick_otus:enable_rev_strand_match True
+	align_seqs:min_length 75
+
+You should *always use full paths* which are represented here by ``$PWD``, but will usually look something like ``/home/ubuntu/my_data/`` (in other words, they should start with a ``/``). In this example your input sequences (``seqs1.fna``), and your metadata mapping file (``map.txt``) are all in the same directory represented by ``$PWD``. If you work from the directory containing those files, you can leave ``$PWD`` in the commands instead of specifying the full paths::
+
+	pick_subsampled_reference_otus_through_otu_table.py -i $PWD/seqs1.fna -r $PWD/refseqs.fna -o $PWD/ucrss/ -aO 8 -p $PWD/ucrss_params.txt
 
 This command should be run in parallel. Each job will need approximately 4GB of RAM, so if running on EC2 and you want to start 8 parallel jobs (recommended setting for EC2), your instance type should be ``m2.4xlarge``. The ``-aO 8`` specifies that we want to start 8 parallel jobs - adjust this according to the resources you have available.
 
@@ -360,9 +366,18 @@ Based on this analysis (and currently unpublished data -- will fill in when avai
 
 The subsampled open-reference OTU picking workflow can be run in iterative mode to support multiple different sequence collections, such as several HiSeq runs. In iterative mode, the list of sequence files will be processed in order, and the new reference sequences generated at each step will be used as the reference collection for the subsequent step. After all input collections have been processed a single OTU table and tree, covering all of the input collections, will be generated. 
 
-To apply this analysis to ``seqs1.fna`` and ``seqs2.fna`` in iterative mode, picking OTUs against the reference collection ``refseqs.fna`` you can run the following command. You should *always use full paths* which are represented here by ``$PWD``, but will usually look something like ``/home/ubuntu/my_data/`` (in other words, they should start with a ``/``). In this example your input sequences (``seqs1.fna``), and your metadata mapping file (``map.txt``) are all in the same directory represented by ``$PWD``. If you work from the directory containing those files, you can leave ``$PWD`` in the commands instead of specifying the full paths::
+To apply this analysis to ``seqs1.fna`` and ``seqs2.fna`` in iterative mode, picking OTUs against the reference collection ``refseqs.fna`` you can run the following command. 
 
-	pick_subsampled_reference_otus_through_otu_table.py -i $PWD/seqs1.fna,$PWD/seqs2.fna -r $PWD/refseqs.fna -o $PWD/ucrss_iter/ -aO 8
+
+To apply this analysis to ``seqs1.fna``, picking OTUs against the reference collection ``refseqs.fna`` you can run the following command. Your parameters file should contain the following::
+
+	pick_otus:otu_picking_method uclust_ref
+	pick_otus:enable_rev_strand_match True
+	align_seqs:min_length 75
+
+You should *always use full paths* which are represented here by ``$PWD``, but will usually look something like ``/home/ubuntu/my_data/`` (in other words, they should start with a ``/``). In this example your input sequences (``seqs1.fna``), and your metadata mapping file (``map.txt``) are all in the same directory represented by ``$PWD``. If you work from the directory containing those files, you can leave ``$PWD`` in the commands instead of specifying the full paths::
+
+	pick_subsampled_reference_otus_through_otu_table.py -i $PWD/seqs1.fna,$PWD/seqs2.fna -r $PWD/refseqs.fna -o $PWD/ucrss_iter/ -aO 8 -p $PWD/ucrss.txt
 
 This command should be run in parallel. Each job will need approximately 4GB of RAM, so if running on EC2 and you want to start 8 parallel jobs (recommended setting for EC2), your instance type should be ``m2.4xlarge``. The ``-aO 8`` specifies that we want to start 8 parallel jobs - adjust this according to the resources you have available. 
 
