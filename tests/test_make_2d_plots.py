@@ -3,7 +3,7 @@
 
 __author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2011, The QIIME Project" #consider project name
-__credits__ = ["Jesse Stombaugh"] #remember to add yourself
+__credits__ = ["Jesse Stombaugh", "Jose Antonio Navas Molina"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Jesse Stombaugh"
@@ -22,8 +22,10 @@ from qiime.make_2d_plots import (make_interactive_scatter,transform_xy_coords,
                                   draw_scatterplot,draw_pcoa_graph,
                                   extract_and_color_xy_coords,write_html_file,
                                   create_html_filename,
-                                  convert_coord_data_to_dict,generate_xmap)
+                                  convert_coord_data_to_dict,generate_xmap,
+                                  draw_scree_graph,make_line_plot)
 from qiime.colors import data_colors
+from qiime.util import load_qiime_config, get_tmp_filename
 
 class TopLevelTests(TestCase):
     """Tests of top-level functions"""
@@ -31,7 +33,11 @@ class TopLevelTests(TestCase):
     def setUp(self):
         """define some top-level data"""
         
+        self.qiime_config = load_qiime_config()
+        self.tmp_dir = self.qiime_config['temp_dir'] or '/tmp/'
+
         self.props={"title": "PCoA - PC1 vs PC2","ylabel":"PC2","xlabel":"PC1"}
+        self.props_scree={"title": "Scree plor", "ylabel": "Fraction of variance", "xlabel":"Principal component"}
         self.data={}
         self.data['coord']=[['Sample1','Sample2'],array([[-0.2,0.07],\
                             [-0.04,0.2]]),array([0.7,0.6]),\
@@ -61,6 +67,9 @@ class TopLevelTests(TestCase):
                                    ['#0000ff'],['s'],[None],[None],[None])
         self.xy_coords['Sample2']=([-0.04], [0.2], ['Sample2: Day1'],\
                                    ['#0000ff'],['s'],[None],[None],[None])
+        self.xy_coords_scree={}
+        self.xy_coords_scree['Variance']=([1,2],[0.28,0.12],'s','b')
+        self.xy_coords_scree['Cum Variance']=([1,2],[0.28,0.40],'o','r')
                         
         self.coord_1='1'
         self.coord_2='2'
@@ -86,6 +95,23 @@ class TopLevelTests(TestCase):
     
     def tearDown(self):
         map(remove,self._paths_to_clean_up)
+
+    def test_make_line_plot(self):
+        """ make_line_plot: creates HTML source for scree plot"""
+
+        filename1 = self.tmp_dir + 'scree_plot.png'
+        filename2 = self.tmp_dir + 'scree_plot.eps.gz'
+        self._paths_to_clean_up = [filename1,filename2]
+
+        obs1,obs2=make_line_plot(self.tmp_dir, self.tmp_dir,
+                                    self.background_color, self.label_color,
+                                    self.xy_coords_scree, self.props_scree,
+                                    x_len = 4.5, y_len = 4.5, generate_eps = True)
+
+        self.assertEqual(obs1,filename_scree % filename1)
+        self.assertEqual(obs2,expdownlink_scree % filename2)
+        self.assertTrue(exists(filename1), 'The png file was not created in the appropiate location')
+        self.assertTrue(exists(filename2), 'The eps file was not created in the appropiate location')
 
     def test_make_interactive_scatter(self):
         """make_interactive_scatter: creates HTML source for interactive \
@@ -146,6 +172,22 @@ plot into html spatial coords which allows for mouseovers"""
         self.assertEqual(obs1,self.all_cids)
         self.assertEqual(obs2,self.all_xcoords)
         self.assertEqual(obs3,self.all_ycoords)
+
+    def test_draw_scree_graph(self):
+        """draw_scree_graph: draws the matplotlib figure"""
+
+        filename1 = self.tmp_dir + 'scree_plot.png'
+        filename2 = self.tmp_dir + 'scree_plot.eps.gz'
+        self._paths_to_clean_up = [filename1,filename2]
+
+        obs1,obs2=draw_scree_graph(self.tmp_dir, self.tmp_dir,
+                                    self.background_color, self.label_color,
+                                    generate_eps = True, data = self.data)
+
+        self.assertEqual(obs1,expimgsrc_scree % filename1)
+        self.assertEqual(obs2,expdownlink_scree % filename2)
+        self.assertTrue(exists(filename1),'The png file was not created in the appropriate location')
+        self.assertTrue(exists(filename2),'The eps file was not created in the appropriate location')
         
     def test_draw_pcoa_graph(self):
         """draw_pcoa_graph: draws the matplotlib figure"""
@@ -228,6 +270,9 @@ expimgmap2 = '\n<MAP name="pointsSampleID12">\n\
 </MAP>\n'
 expeps2='<a href="/tmp/PC1vsPC2plot.eps.gz" >Download Figure</a>'
 
+filename_scree='%s'
+expdownlink_scree='<a href="%s" >Download Figure</a>'
+expimgsrc_scree='<img src="%s" border=0 />'
 #run tests if called from command line
 if __name__ == "__main__":
     main()

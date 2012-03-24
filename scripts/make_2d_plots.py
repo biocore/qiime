@@ -6,7 +6,7 @@ from __future__ import division
 
 __author__ = "Jesse Stombaugh"
 __copyright__ = "Copyright 2011, The QIIME Project"
-__credits__ = ["Jesse Stombaugh"]
+__credits__ = ["Jesse Stombaugh", "Jose Antonio Navas Molina"]
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Jesse Stombaugh"
@@ -40,6 +40,7 @@ script_info['script_usage'].append(("""Output Directory Usage:""","""If you want
 script_info['script_usage'].append(("""Mapping File Usage:""","""Additionally, the user can supply their mapping file ("-m") and a specific category to color by ("-b") or any combination of categories. When using the -b option, the user can specify the coloring for multiple mapping labels, where each mapping label is separated by a comma, for example: -b \'mapping_column1,mapping_column2\'. The user can also combine mapping labels and color by the combined label that is created by inserting an \'&&\' between the input columns, for example: -b \'mapping_column1&&mapping_column2\'.
 
 If the user wants to color by specific mapping labels, they can use the following code:""","""%prog -i beta_div_coords.txt -m Mapping_file.txt -b 'mapping_column'"""))
+script_info['script_usage'].append(("""Scree plot Usage:""","""A scree plot can tell you how many axes are likely to be important and help determine how many "real" underlying gradients there might be in your data as well as their relative "strength". If you want to generate a scree plot, use the following code.""","""%prog -i beta_div_coords.txt --scree"""))
 script_info['script_usage'].append(("""""","""If the user would like to color all categories in their metadata mapping file, they can pass 'ALL' to the '-b' option, as follows:""","""%prog -i beta_div_coords.txt -m Mapping_file.txt -b ALL"""))
 script_info['script_usage'].append(("""Prefs File:""","""The user can supply a prefs file to color by, as follows:""", """%prog -i beta_div_coords.txt -m Mapping_file.txt -p prefs.txt"""))
 script_info['script_usage'].append(("""Jackknifed Principal Coordinates (w/ confidence intervals):""","""If you have created jackknifed PCoA files, you can pass the folder containing those files, instead of a single file.  The user can also specify the opacity of the ellipses around each point "--ellipsoid_opacity", which is a value from 0-1. Currently there are two metrics "--ellipsoid_method" that can be used for generating the ellipsoids, which are 'IQR' and 'sdev'. The user can specify all of these options as follows:""", """%prog -i jackknifed_pcoas/ -m Mapping_file.txt -b \'mapping_column1,mapping_column1&&mapping_column2\' --ellipsoid_opacity=0.5 --ellipsoid_method=IQR"""))
@@ -94,6 +95,7 @@ script_info['optional_options']=[\
         ' center of each ellipisoid. [default: %default; arbitrarily chosen' +\
         ' PC matrix will define the center point]',default=None,
         type='existing_filepath'),
+    make_option('--scree', action='store_true',help='Generate the scree plot [default: %default]',default=False),
     options_lookup['output_dir']
 ]
 script_info['option_label']={'coord_fname':'Principal coordinates filepath',
@@ -183,7 +185,7 @@ def main():
     #Place this outside try/except so we don't mask NameError in action
     if action:
         action(prefs,data,html_dir_path,data_dir_path,filename,background_color,
-                label_color)
+                label_color,opts.scree)
 
 
 if __name__ == "__main__":

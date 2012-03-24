@@ -4,7 +4,7 @@
 
 __author__ = "Jesse Stombaugh and Micah Hamady"
 __copyright__ = "Copyright 2011, The QIIME Project" 
-__credits__ = ["Jesse Stombaugh"] #remember to add yourself
+__credits__ = ["Jesse Stombaugh", "Jose Antonio Navas Molina"] #remember to add yourself
 __license__ = "GPL"
 __version__ = "1.4.0-dev"
 __maintainer__ = "Jesse Stombaugh"
@@ -17,6 +17,7 @@ use('Agg',warn=False)
 from matplotlib.pylab import *
 from matplotlib.cbook import iterable, is_string_like
 from matplotlib.patches import Ellipse
+from matplotlib.font_manager import FontProperties
 from commands import getoutput
 from string import strip
 from numpy import array,asarray,ndarray
@@ -30,6 +31,14 @@ from qiime.sort import natsort
 from cogent.util.misc import get_random_directory_name
 import os
 import numpy
+
+SCREE_TABLE_HTML = """<table cellpadding=0 cellspacing=0 border=1>
+<tr><th align=center colspan=3 border=0>Scree plot</th></tr>
+<tr>
+<td class=normal align=center border=0>%s</td>
+</tr>
+</table>
+<br><br>"""
 
 TABLE_HTML = """<table cellpadding=0 cellspacing=0 border=1>
 <tr><th align=center colspan=3 border=0>%s</th></tr>
@@ -93,6 +102,88 @@ data_colors={'blue':'#0000FF','lime':'#00FF00','red':'#FF0000', \
 '''
 default_colors=['blue','lime','red','aqua','fuchsia','yellow','green', \
                'maroon','teal','purple','olive','silver','gray']
+
+def make_line_plot(dir_path, data_file_link, background_color, label_color, xy_coords,
+                    props, x_len = 8, y_len = 4, draw_axes = False, generate_eps = True):
+    """ Write a line plot
+
+    xy_coords: a dict of form {series_label:([x data], [y data], point_marker, color)}
+
+    (code adapted from Micah Hamady's code)
+    """
+    rc('font', size = '8')
+    rc('axes', linewidth = .5, edgecolor = label_color)
+    rc('axes', labelsize = 8)
+    rc('xtick', labelsize = 8)
+    rc('ytick', labelsize = 8)
+    fig = figure(figsize = (x_len, y_len))
+    mtitle = props.get("title", "Groups")
+    x_label = props.get("xlabel", "X")
+    y_label = props.get("ylabel", "Y")
+
+    title('%s' % mtitle, fontsize = '10', color = label_color)
+    xlabel(x_label, fontsize = '8', color = label_color)
+    ylabel(y_label, fontsize = '8', color = label_color)
+
+    sorted_keys = xy_coords.keys()
+    sorted_keys.sort()
+    labels = []
+    for s_label in sorted_keys:
+        s_data = xy_coords[s_label]
+        c = s_data[3]
+        m = s_data[2]
+        plot(s_data[0], s_data[1], c = c, marker = m, label = s_label,
+            linewidth = .1, ms = 5, alpha = 1.0)
+
+    fp = FontProperties()
+    fp.set_size('8')
+    legend(prop = fp, loc = 0)
+
+    show()
+
+    img_name = 'scree_plot.png'
+    savefig(os.path.join(dir_path, img_name), dpi = 80, facecolor = background_color)
+
+    #Create zipped eps files
+    eps_link = ""
+    if generate_eps:
+        eps_img_name = str('scree_plot.eps')
+        savefig(os.path.join(dir_path, eps_img_name), format = 'eps')
+        out = getoutput("gzip -f " + os.path.join(dir_path, eps_img_name))
+        eps_link = DOWNLOAD_LINK % ((os.path.join(data_file_link, eps_img_name) \
+                                        + ".gz"), "Download Figure")
+
+    return os.path.join(data_file_link, img_name), eps_link
+
+def draw_scree_graph(dir_path, data_file_link, background_color, label_color,
+                        generate_eps, data):
+    """Draw scree plot
+
+    (code adapted from Micah Hamady's code)
+    """
+
+    dimensions = len(data['coord'][3])
+
+    props = {}
+    props["title"] = "PCoA Scree Plot (First %s dimensions)" % dimensions
+    props["ylabel"] = "Fraction of Variance"
+    props["xlabel"] = "Principal component"
+
+    xy_coords = {}
+    x_points = [x for x in range(dimensions)]
+    c_data = [float(x)/100.0 for x in data['coord'][3]]
+    xy_coords['Variance'] = (x_points, c_data, 'o', 'r')
+
+    cum_var = [c_data[0]]
+    for ix in range(dimensions-1):
+        cum_var.append(cum_var[ix] + c_data[ix+1])
+    xy_coords['Cumulative variance'] = (x_points, cum_var, 's', 'b')
+
+    img_src, eps_link = make_line_plot(dir_path, data_file_link, background_color, label_color,
+                                    xy_coords = xy_coords, props = props, x_len = 4.5,
+                                    y_len = 4.5, generate_eps = generate_eps)
+
+    return IMG_SRC % img_src, eps_link
 
 def make_interactive_scatter(plot_label,dir_path,data_file_link, 
                                 background_color,label_color,sample_location,
@@ -385,7 +476,7 @@ def write_html_file(out_table,outpath):
     out.close()
 
 def generate_2d_plots(prefs,data,html_dir_path,data_dir_path,filename,
-                        background_color,label_color):
+                        background_color,label_color,generate_scree):
     """Generate interactive 2D scatterplots"""
     coord_tups = [("1", "2"), ("3", "2"), ("1", "3")]
     mapping=data['map']
@@ -456,9 +547,20 @@ def generate_2d_plots(prefs,data,html_dir_path,data_dir_path,filename,
                                     "<br>".join(img_data[("1", "2")]),
                                     "<br>".join(img_data[("3", "2")]),
                                     "<br>".join(img_data[("1", "3")]))
+
+
+    if generate_scree:
+        data_file_dir_path = get_random_directory_name(output_dir = data_dir_path)
+        new_link = os.path.split(data_file_dir_path)
+        data_file_link = os.path.join('.', os.path.split(new_link[-2])[-1], new_link[-1])
+
+        img_src, download_link = draw_scree_graph(data_file_dir_path, data_file_link, background_color,
+                            label_color, generate_eps = True, data = data)
+
+        out_table += SCREE_TABLE_HTML % ("<br>".join((img_src, download_link)))
                                    
     outfile = create_html_filename(filename,'.html')
-    outfile=os.path.join(html_dir_path,outfile)
+    outfile = os.path.join(html_dir_path,outfile)
         
     write_html_file(out_table,outfile)
         
