@@ -15,7 +15,7 @@ from cogent.app.util import CommandLineApplication, FilePath, system, \
        CommandLineAppResult, ResultPath, remove, ApplicationError, \
        get_tmp_filename
 from cogent.core.alignment import Alignment
-from cogent.app.guppy import build_tree_from_json_using_params
+from qiime.pycogent_backports.guppy import build_tree_from_json_using_params
 from os.path import splitext,abspath,join,split
 from StringIO import StringIO
 from cogent.parse.phylip import get_align_for_phylip
