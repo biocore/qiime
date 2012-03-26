@@ -15,7 +15,7 @@ from os import walk,listdir
 from os.path import isabs,join,split
 from cogent.parse.tree import DndParser
 import re
-from cogent.app.guppy import build_tree_from_json_using_params
+from qiime.pycogent_backports.guppy import build_tree_from_json_using_params
 
 __author__ = "Micah Hamady"
 __copyright__ = "Copyright 2007-2011, The Cogent Project"
