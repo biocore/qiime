@@ -14,7 +14,7 @@ __status__ = "Development"
 from qiime.util import parse_command_line_parameters, make_option, \
                        get_options_lookup,load_qiime_config,create_dir
 from cogent.parse.fasta import MinimalFastaParser
-from cogent.core.alignment import Alignment
+from cogent.core.alignment import DenseAlignment
 from qiime.parse import parse_qiime_parameters
 from cogent.core.moltype import DNA
 from cogent.app.util import get_tmp_filename
@@ -22,9 +22,9 @@ from os.path import abspath,join,split,splitext
 from qiime.insert_seqs_into_tree import convert_tree_tips, \
                                     write_updated_tree_file, \
                                     strip_and_rename_unwanted_labels_from_tree
-import cogent.app.raxml_v730
-import cogent.app.parsinsert
-import cogent.app.pplacer
+import qiime.pycogent_backports.raxml_v730
+import qiime.pycogent_backports.parsinsert
+import qiime.pycogent_backports.pplacer
 from StringIO import StringIO
 
 options_lookup = get_options_lookup()
@@ -80,54 +80,52 @@ def main():
     create_dir(output_dir)
     
     # list of tree insertion methods
-    tree_insertion_module_names = {'raxml_v730':cogent.app.raxml_v730, 
-        'parsinsert':cogent.app.parsinsert,
-        'pplacer':cogent.app.pplacer}
+    tree_insertion_module_names = \
+                {'raxml_v730':qiime.pycogent_backports.raxml_v730, 
+                 'parsinsert':qiime.pycogent_backports.parsinsert,
+                 'pplacer':qiime.pycogent_backports.pplacer}
 
     # load input sequences and convert to phylip since the tools require 
     # the query sequences to phylip-compliant names
-    load_aln=MinimalFastaParser(open(opts.input_fasta_fp).readlines())   
-    aln = Alignment(load_aln)
+    load_aln = MinimalFastaParser(open(opts.input_fasta_fp,'U'))   
+    aln = DenseAlignment(load_aln)
     seqs, align_map = aln.toPhylip()
     
     if opts.method_params_fp:
-        param_dict = parse_qiime_parameters(open(opts.method_params_fp).readlines())
-    
+        param_dict = parse_qiime_parameters(open(opts.method_params_fp,'U'))
+        
     if module=='raxml_v730':
         # load the reference sequences
         load_ref_aln = \
-            Alignment(MinimalFastaParser(open(opts.refseq_fp).readlines())) 
+            DenseAlignment(MinimalFastaParser(open(opts.refseq_fp,'U'))) 
         
         # combine and load the reference plus query
         combined_aln = MinimalFastaParser(StringIO(load_ref_aln.toFasta() + \
                                                    '\n' + aln.toFasta()))
         # overwrite the alignment map
-        aln = Alignment(combined_aln)
+        aln = DenseAlignment(combined_aln)
         seqs, align_map = aln.toPhylip()
         
         try: 
-            parameters=param_dict['raxml']
+            parameters = param_dict['raxml']
         except:
-            parameters={}
+            parameters = {}
             
-        tree=convert_tree_tips(align_map,opts.starting_tree_fp)
+        tree = convert_tree_tips(align_map,opts.starting_tree_fp)
         
         # write out the tree with phylip labels
-        updated_tree_fp=join(output_dir, \
+        updated_tree_fp = join(output_dir, \
                                 '%s_phylip_named_tree.tre' % (module))
         write_updated_tree_file(updated_tree_fp,tree)
         
         # set the primary parameters for raxml
-        parameters['-w']=abspath(output_dir)+'/'
+        parameters['-w'] = abspath(output_dir)+'/'
         parameters["-n"] = split(splitext(get_tmp_filename())[0])[-1]
         parameters["-t"] = updated_tree_fp
         
-        param_keys=parameters.keys()
-        if "-f" not in param_keys:
+        if "-f" not in parameters:
             parameters["-f"] = 'v'
-        #if "-G" not in param_keys:
-        #    parameters["-G"] = '0.25'
-        if "-m" not in param_keys:
+        if "-m" not in parameters:
             parameters["-m"] = 'GTRGAMMA'
         
     elif module=='pplacer':
@@ -136,19 +134,16 @@ def main():
         except:
             parameters={}
             
-        # verify all the appropriate files are present for pplacer
-        if not opts.refseq_fp:
-            raise IOError, \
-                'When using pplacer, a reference sequence file is required.'
-        elif not opts.stats_fp:
+        # make sure stats file is passed
+        if not opts.stats_fp:
             raise IOError, \
                 'When using pplacer, the RAxML produced info file is required.'
                 
-        # set the primary parameters for pplacer
-        parameters['--out-dir']=abspath(output_dir)+'/'
+        # set the primary parameters for pplacer - allow for user-defined
+        parameters['--out-dir'] = abspath(output_dir)+'/'
         parameters["-t"] = opts.starting_tree_fp
-        parameters['-r']=opts.refseq_fp
-        parameters['-s']=opts.stats_fp
+        parameters['-r'] = opts.refseq_fp
+        parameters['-s'] = opts.stats_fp
         
     elif module=='parsinsert':
         try: 
@@ -165,11 +160,11 @@ def main():
         parameters["-o"] = tax_assign_fp
         parameters["-s"] = opts.refseq_fp
         parameters["-t"] = opts.starting_tree_fp
-        
-        param_keys=parameters.keys()
     
     # call the module and return a tree object
-    result = tree_insertion_module_names[module].insert_sequences_into_tree(seqs, moltype=DNA, params=parameters)
+    result = \
+        tree_insertion_module_names[module].insert_sequences_into_tree(seqs, 
+                                                moltype=DNA, params=parameters)
     
     result_tree=strip_and_rename_unwanted_labels_from_tree(align_map,result)
     
