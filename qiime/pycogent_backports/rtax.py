@@ -16,12 +16,12 @@ __email__ = "soergel@cs.umass.edu"
 __status__ = "Development"
 
 from os import remove, makedirs
-from os.path import split, splitext, basename, isdir, abspath, isfile
+from os.path import exists, split, splitext, basename, isdir, abspath, isfile
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.app.parameters import ValuedParameter, FlagParameter
 from cogent.app.util import CommandLineApplication, ResultPath,\
  get_tmp_filename, ApplicationError, ApplicationNotFoundError
-from cogent.util.misc import remove_files
+from cogent.util.misc import remove_files, app_path
 from cogent import DNA
 import tempfile
 import os.path
