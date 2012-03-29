@@ -31,7 +31,8 @@ script_info['script_description'] = ""
 script_info['script_usage'] = [("Abundance filtering (low coverage)","Filter samples with fewer than 150 observations from the otu table.","%prog -i otu_table.biom -o otu_table_no_low_coverage_samples.biom -n 150"),
 ("Abundance filtering (high coverage)","Filter samples with greater than 149 observations from the otu table.","%prog -i otu_table.biom -o otu_table_no_high_coverage_samples.biom -x 149"),
 ("Metadata-based filtering (positive)","Filter samples with where the value for 'Treatment' in the mapping file is not 'Control'","%prog -i otu_table.biom -o otu_table_control_only.biom -m map.txt -s 'Treatment:Control'"),
-("Metadata-based filtering (negative)","Filter samples with where the value for 'Treatment' in the mapping file is not 'Control'","%prog -i otu_table.biom -o otu_table_not_control.biom -m map.txt -s 'Treatment:*,!Control'")]
+("Metadata-based filtering (negative)","Filter samples with where the value for 'Treatment' in the mapping file is not 'Control'","%prog -i otu_table.biom -o otu_table_not_control.biom -m map.txt -s 'Treatment:*,!Control'"),
+("List-based filtering","Filter samples where the id is listed in samples_to_keep.txt","%prog -i otu_table.biom -o otu_table_samples_to_keep.biom --sample_id_fp samples_to_keep.txt")]
 script_info['output_description']= ""
 script_info['required_options'] = [
  make_option('-i','--input_fp',type="existing_filepath",
@@ -47,6 +48,9 @@ script_info['optional_options'] = [
  make_option('--output_mapping_fp',
              type='new_filepath',
              help='path to write filtered mapping file [default: filtered mapping file is not written]'),
+ make_option('--sample_id_fp',
+             type='existing_filepath',
+             help='path to file listing sample ids to keep [default: %default]'),
  make_option('-s', 
              '--valid_states',
              help="string describing valid states (e.g. 'Treatment:Fasting') [default: %default]"),
@@ -77,13 +81,15 @@ def main():
     valid_states = opts.valid_states
     min_count = opts.min_count
     max_count = opts.max_count
+    sample_id_fp = opts.sample_id_fp
     
     if not ((mapping_fp and valid_states) or 
             min_count != 0 or 
-            not isinf(max_count)):
+            not isinf(max_count) or
+            sample_id_fp != None):
         option_parser.error("No filtering requested. Must provide either "
-                     "mapping_fp and valid states, min counts, or "
-                     "max counts (or some combination of those).")
+                     "mapping_fp and valid states, min counts, "
+                     "max counts, or sample_id_fp (or some combination of those).")
     if output_mapping_fp and not mapping_fp:
         option_parser.error("Must provide input mapping file to generate"
                             " output mapping file.")
@@ -96,6 +102,10 @@ def main():
                               open(mapping_fp,'U'),valid_states)
     else:
         sample_ids_to_keep = otu_table.SampleIds
+    
+    if (sample_id_fp != None):
+        sample_id_f_ids = set([l.strip().split()[0] for l in open(sample_id_fp,'U') if not l.startswith('#')])
+        sample_ids_to_keep = set(sample_ids_to_keep) & sample_id_f_ids
     
     filtered_otu_table = filter_samples_from_otu_table(otu_table,
                                                         sample_ids_to_keep,
