@@ -63,35 +63,35 @@ script_info['optional_options'] = [
         default=False,
         action='store_true',
         help='retain sequences which don\'t map to a barcode in the '+\
-        ' mapping file (sample ID will be "Unassigned") [default: %default]'),
+        'mapping file (sample ID will be "Unassigned") [default: %default]'),
      make_option('-r','--max_bad_run_length',type='int',\
         help='max number of consecutive low quality base calls allowed '+\
-        'before truncating a read [default: 1; the read is trucated at the'+\
+        'before truncating a read [default: 1; the read is trucated at the '+\
         'second low quality call]',default=1),\
      make_option('-p','--min_per_read_length',type='int',\
-        help='min number of consecutive high quality base calls to include'+\
+        help='min number of consecutive high quality base calls to include '+\
         'a read (per single end read) [default: %default]',default=75),\
      make_option('-n','--sequence_max_n',type='int',\
         help='maximum number of N characters allowed in a sequence to retain it -- '
         'this is applied after quality trimming, and is total over combined paired '
         'end reads if applicable [default: %default]',default=0),
      make_option('-s','--start_seq_id',type='int',\
-        help='start seq_ids as ascending integers beginning with start_seq_id'+\
+        help='start seq_ids as ascending integers beginning with start_seq_id '+\
         '[default: %default]',default=0),\
      make_option('--rev_comp_barcode',action='store_true',\
-        help='reverse compliment barcode reads before lookup'+\
-        ' [default: %default]',default=False),\
+        help='reverse compliment barcode reads before lookup '+\
+        '[default: %default]',default=False),\
      make_option('--rev_comp_mapping_barcodes',action='store_true',\
-        help='reverse compliment barcode in mapping before lookup (useful if barcodes'+\
-        ' in mapping file are reverse compliments of golay codes)'+\
-        ' [default: %default]',default=False),\
+        help='reverse compliment barcode in mapping before lookup (useful if barcodes '+\
+        'in mapping file are reverse compliments of golay codes)'+\
+        '[default: %default]',default=False),\
      make_option('--rev_comp',action='store_true',\
-        help='reverse compliment sequence before writing to output file'+\
-        ' (useful for reverse-orientation reads) [default: %default]',
+        help='reverse compliment sequence before writing to output file '+\
+        '(useful for reverse-orientation reads) [default: %default]',
         default=False),\
      make_option('-q','--phred_quality_threshold',type='int',
-        help='the minimum acceptable Phred quality score (e.g., for Q20 and better,'+\
-        ' specify -q 20) [default: %default]',default=3),
+        help='the minimum acceptable Phred quality score (e.g., for Q20 and better, '+\
+        'specify -q 20) [default: %default]',default=3),
      make_option('--last_bad_quality_char',
       help='DEPRECATED: use -q instead. This method of setting is not robust to '+\
       'different versions of CASAVA.'),\
