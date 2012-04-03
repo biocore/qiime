@@ -66,15 +66,28 @@ Subsampled reference OTU picking is suitable for any analysis that standard open
 
 This is an open-reference OTU picking protocol, meaning that sequences are clustered against a reference database, and reads which fail to hit the reference are subsequently clustered de novo. This differs from standard open-reference OTU picking as it was optimized at several steps to enable running on massive numbers of sequences (hundreds of millions, which is massive as of this writing). The steps in this workflow are as follows.
 
-#. Prefilter the input sequence collection by searching reads against the reference set with a low percent identity threshold (default is 60%, modify with ``--prefilter_percent_id``). The choice of 60% is described :ref:`here <prefilter-threshold>` . All reads which fail to hit the reference set are discarded as likely sequencing error.
+Step 0: Prefilter (parallel)
+----------------------------
+Prefilter the input sequence collection by searching reads against the reference set with a low percent identity threshold (default is 60%, modify with ``--prefilter_percent_id``). The choice of 60% is described :ref:`here <prefilter-threshold>`. All reads which fail to hit the reference set are discarded as likely sequencing error.
 
-#. Apply closed-reference OTU picking against the reference collection. Generate a fasta file containing all reads that fail to hit the reference collection.
+Step 1: Closed reference (parallel)
+-----------------------------------
+Apply closed-reference OTU picking against the reference collection. Generate a fasta file containing all reads that fail to hit the reference collection.
 
-#. Randomly subsample the sequences that failed to hit the reference collection, and write these to a new fasta file (default subsampling percentage is 0.1%, modify with ``-s/--percent_subsample``). Cluster these reads de novo, and choose a representative set of sequences as the centroid of each OTU cluster. These are the *new reference* OTUs.
+Step 2: De novo clustering of subsampled failures (serial)
+----------------------------------------------------------
+Randomly subsample the sequences that failed to hit the reference collection, and write these to a new fasta file (default subsampling percentage is 0.1%, modify with ``-s/--percent_subsample``). Cluster these reads de novo, and choose a representative set of sequences as the centroid of each OTU cluster. These are the *new reference* OTUs.
 
-#. Pick closed-reference OTUs against the representative sequences from the previous step. Write all sequences that fail to hit the reference collection to a fasta file.
+Step 3: Closed reference, round 2 (parallel)
+--------------------------------------------
+Pick closed-reference OTUs against the representative sequences from the previous step. Write all sequences that fail to hit the reference collection to a fasta file.
 
-#. Pick de novo OTUs on all reads that failed to hit the reference collection in the previous step. These are the *clean-up* OTUs. This step can be suppress by passing ``--suppress_step4``.
+Step 4: De novo (serial)
+------------------------
+Pick de novo OTUs on all reads that failed to hit the reference collection in the previous step. These are the *clean-up* OTUs. This step can be suppress by passing ``--suppress_step4``.
+
+Post-OTU processing (parallel and serial, depending on step)
+------------------------------------------------------------
 
 #. Assemble the reference OTUs, the new reference OTUs, and the clean-up OTUs into a new OTU map, and construct an OTU table. At this stage, all OTUs with a sequence count of smaller than 2 (i.e., the singleton OTUs) are discarded. This can be modified with the ``--min_otu_size`` option, and disabled by passing ``--min_otu_size=1``.
 
@@ -377,7 +390,7 @@ To apply this analysis to ``seqs1.fna``, picking OTUs against the reference coll
 
 You should *always use full paths* which are represented here by ``$PWD``, but will usually look something like ``/home/ubuntu/my_data/`` (in other words, they should start with a ``/``). In this example your input sequences (``seqs1.fna``), and your metadata mapping file (``map.txt``) are all in the same directory represented by ``$PWD``. If you work from the directory containing those files, you can leave ``$PWD`` in the commands instead of specifying the full paths::
 
-	pick_subsampled_reference_otus_through_otu_table.py -i $PWD/seqs1.fna,$PWD/seqs2.fna -r $PWD/refseqs.fna -o $PWD/ucrss_iter/ -aO 8 -p $PWD/ucrss.txt
+	pick_subsampled_reference_otus_through_otu_table.py -i $PWD/seqs1.fna,$PWD/seqs2.fna -r $PWD/refseqs.fna -o $PWD/ucrss_iter/ -aO 8 -p $PWD/ucrss_params.txt
 
 This command should be run in parallel. Each job will need approximately 4GB of RAM, so if running on EC2 and you want to start 8 parallel jobs (recommended setting for EC2), your instance type should be ``m2.4xlarge``. The ``-aO 8`` specifies that we want to start 8 parallel jobs - adjust this according to the resources you have available. 
 
