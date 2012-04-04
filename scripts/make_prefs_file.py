@@ -42,7 +42,7 @@ script_info['required_options']=[\
 
 script_info['optional_options']=[\
     make_option('-b','--mapping_headers_to_use',action='store',\
-          type='string',dest='mapping_headers_to_use',help='mapping fields to'+\
+          type='string',dest='mapping_headers_to_use',help='mapping fields to '+\
           'use in prefs file [default: %default]', default='ALL'),\
     make_option('-k', '--background_color',help='This is the background'+ \
           'color to  use in the plots. [default: %default]',default='black'),
