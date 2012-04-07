@@ -440,6 +440,8 @@ o2	s1_3	s1_4	s2_5
 """
         otu_map_no_single_double = """o2	s1_3	s1_4	s2_5
 """
+        otu_map_no_single_min_sample2 = """o2	s1_3	s1_4	s2_5
+"""
         
         # write the test files
         in_fp = get_tmp_filename(tmp_dir=self.tmp_dir,
@@ -459,6 +461,10 @@ o2	s1_3	s1_4	s2_5
         
         retained_otus = filter_otus_from_otu_map(in_fp,actual_fp,3)
         self.assertEqual(open(actual_fp).read(),otu_map_no_single_double)
+        self.assertEqualItems(retained_otus,set(['o2']))
+        
+        retained_otus = filter_otus_from_otu_map(in_fp,actual_fp,2,2)
+        self.assertEqual(open(actual_fp).read(),otu_map_no_single_min_sample2)
         self.assertEqualItems(retained_otus,set(['o2']))
         
 

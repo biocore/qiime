@@ -231,7 +231,10 @@ def filter_otus_from_otu_table(otu_table,ids_to_keep,min_count,max_count,
 # end functions used by filter_samples_from_otu_table.py and filter_otus_from_otu_table.py
 
 
-def filter_otus_from_otu_map(input_otu_map_fp,output_otu_map_fp,min_count):
+def filter_otus_from_otu_map(input_otu_map_fp,
+                             output_otu_map_fp,
+                             min_count,
+                             min_sample_count=1):
     """ Filter otus with fewer than min_count sequences from input_otu_map_fp
     
         With very large data sets the number of singletons can be very large, and it becomes
@@ -248,9 +251,10 @@ def filter_otus_from_otu_map(input_otu_map_fp,output_otu_map_fp,min_count):
     output_otu_map_f = open(output_otu_map_fp,'w')
     for line in open(input_otu_map_fp,'U'):
         fields = line.strip().split('\t')
+        sample_ids = set([e.split('_')[0] for e in fields[1:]])
         # only write this line if the otu has more than n sequences (so
         # greater than n tab-separated fields including the otu identifier)
-        if len(fields) > min_count:
+        if (len(fields) > min_count) and (len(sample_ids) >= min_sample_count):
             output_otu_map_f.write(line)
             results.add(fields[0].split('\t')[0])
     output_otu_map_f.close()
