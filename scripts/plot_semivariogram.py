@@ -36,13 +36,25 @@ script_info['required_options']=[\
      help='path to distance matrix to be displayed in the x axis'),\
  make_option('-y', '--input_path_y',\
      help='path to distance matrix to be displayed in the y axis'),\
- make_option('-m', '--model', type='choice',\
-     choices=FitModel.options, default='exponential', 
-     help='model to be fitted to the data. Valid ' +\
-     'choices are:' + ', '.join(FitModel.options) + '. [default: %default]'),\
  make_option('-o', '--output_path',
      help='output path. directory for batch processing, '+\
        'filename for single file operation'),
+
+]
+script_info['optional_options']=[\
+ make_option('-b', '--binning', type='string',\
+     default=None, help='binning ranges. Format: [increment,top_limit], when ' +\
+     'top_limit is -1=infinitum; you can specify several ranges using the same ' +\
+     'format, i.e. [2.5,10][50,-1] will set two bins, one from 0-10 using 2.5 ' +\
+     'size steps and from 10-inf using 50 size steps. Note that the binning is ' +\
+     'used to clean the plots (reduce number of points) but ignored to fit the ' +\
+     'model. [default: %default]'),
+ make_option('--ignore_missing_samples', help='This will overpass the error raised ' +\
+     'when the matrices have different sizes/samples', action='store_true', default=False),         
+ make_option('--x_max', type='float', help='x axis max limit [default: auto]', default=None),         
+ make_option('--x_min', type='float', help='x axis min limit [default: auto]', default=None),         
+ make_option('--y_max', type='float', help='y axis max limit [default: auto]', default=None),         
+ make_option('--y_min', type='float', help='y axis min limit [default: auto]', default=None),
  make_option('-X', '--x_label', default='Distance Dissimilarity (m)',\
      help='Label for the x axis [default: %default]'),
  make_option('-Y', '--y_label', default='Community Dissimilarity',\
@@ -61,21 +73,10 @@ script_info['required_options']=[\
  make_option('--line_alpha', type='float', help='alpha for dots, more info:' +\
     ' http://matplotlib.sourceforge.net/api/pyplot_api.html' +\
     ' [default: %default]', default=1),
-]
-script_info['optional_options']=[\
- make_option('-b', '--binning', type='string',\
-     default=None, help='binning ranges. Format: [increment,top_limit], when ' +\
-     'top_limit is -1=infinitum; you can specify several ranges using the same ' +\
-     'format, i.e. [2.5,10][50,-1] will set two bins, one from 0-10 using 2.5 ' +\
-     'size steps and from 10-inf using 50 size steps. Note that the binning is ' +\
-     'used to clean the plots (reduce number of points) but ignored to fit the ' +\
-     'model. [default: %default]'),
- make_option('--ignore_missing_samples', help='This will overpass the error raised ' +\
-     'when the matrices have different sizes/samples', action='store_true', default=False),         
- make_option('--x_max', type='float', help='x axis max limit [default: auto]', default=None),         
- make_option('--x_min', type='float', help='x axis min limit [default: auto]', default=None),         
- make_option('--y_max', type='float', help='y axis max limit [default: auto]', default=None),         
- make_option('--y_min', type='float', help='y axis min limit [default: auto]', default=None),
+ make_option('-m', '--model', type='choice',\
+     choices=FitModel.options, default='exponential', 
+     help='model to be fitted to the data. Valid ' +\
+     'choices are:' + ', '.join(FitModel.options) + '. [default: %default]'),\
 ]
 
 script_info['version'] = __version__
