@@ -138,6 +138,14 @@ def get_procrustes_results(coords_f1,coords_f2,sample_id_map=None,\
     # randomize()
     if randomize:
         coords2 = randomize(coords2)
+        randomized_coords2 = format_coords(coord_header=order,\
+                                            coords=coords2,\
+                                            eigvals=eigvals2,\
+                                            pct_var=pct_var2)
+        open('./randomized_coords2.txt','w').write(randomized_coords2)
+    else:
+        randomized_coords2 = None
+        
         
     coords1, coords2 = pad_coords_matrices(coords1,coords2)
     if max_dimensions:
@@ -174,7 +182,7 @@ def get_procrustes_results(coords_f1,coords_f2,sample_id_map=None,\
                                         pct_var=pct_var)
     
     # Return the results
-    return transformed_coords1, transformed_coords2, m_squared
+    return transformed_coords1, transformed_coords2, m_squared, randomized_coords2
 
 def procrustes_monte_carlo(coords_f1,\
                            coords_f2,\
@@ -211,6 +219,7 @@ def procrustes_monte_carlo(coords_f1,\
         trail_summary_fp = '%s/trial_summary_%s.txt' %\
          (trial_output_dir,max_dimensions_str)
         trial_summary_f = open(trail_summary_fp,'w')
+        trial_summary_f.write('trial id\ttrial M^2\n')
         
     # Get the M^2 for the random trials, and count how many
     # are lower than or equal to the actual M^2
@@ -218,7 +227,7 @@ def procrustes_monte_carlo(coords_f1,\
     count_better = 0
     for i in range(trials):
         # perform the procrustes analysis
-        transformed_coords1, transformed_coords2, trial_m_squared =\
+        transformed_coords1, transformed_coords2, trial_m_squared, randomized_coords2 =\
           get_procrustes_results(
              coords_f1,
              coords_f2,
@@ -231,19 +240,24 @@ def procrustes_monte_carlo(coords_f1,\
             count_better += 1
             
         # write the transformed coordinate matrices, if they're being
-        # stor
+        # stored
         if trial_output_dir:
             trial_id = '%s_trial%d' % (max_dimensions_str,i)
-            output_matrix1_fp = '%s/pc1_randomized_%s.txt' \
+            output_matrix1_fp = '%s/pc1_transformed_%s.txt' \
              % (trial_output_dir,trial_id)
-            output_matrix2_fp = '%s/pc2_randomized_%s.txt' \
+            output_matrix2_fp = '%s/pc2_transformed_%s.txt' \
              % (trial_output_dir,trial_id)
+            output_matrix3_fp = '%s/pc2_randomized_trial%s.txt' \
+             % (trial_output_dir,i)
             output_matrix1_f = open(output_matrix1_fp,'w')
             output_matrix1_f.write(transformed_coords1)
             output_matrix1_f.close()
             output_matrix2_f = open(output_matrix2_fp,'w')
             output_matrix2_f.write(transformed_coords2)
             output_matrix2_f.close()
+            output_matrix3_f = open(output_matrix3_fp,'w')
+            output_matrix3_f.write(randomized_coords2)
+            output_matrix3_f.close()
             trial_summary_f.write('%s\t%2.2f\n' % (trial_id,trial_m_squared))
     
     # Close the trial summary file, if one is being created

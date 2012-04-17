@@ -90,7 +90,7 @@ def main():
     else:
         sample_id_map = None
     
-    transformed_coords1, transformed_coords2, m_squared =\
+    transformed_coords1, transformed_coords2, m_squared, randomized_coords2 =\
       get_procrustes_results(open(input_fp1,'U'),\
                              open(input_fp2,'U'),\
                              sample_id_map=sample_id_map,\
