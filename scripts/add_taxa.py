@@ -61,7 +61,8 @@ def main():
     
 
     otu_table = parse_biom_table(open(opts.input_fp,'U'))
-    otu_table.addObservationMetadata(observation_metadata)
+    if ('taxonomy' not in otu_table.ObservationMetadata[0]):
+        otu_table.addObservationMetadata(observation_metadata)
     
     output_f.write(format_biom_table(otu_table))
     output_f.close()
