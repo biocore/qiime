@@ -298,7 +298,40 @@ class SplitLibrariesFastqTests(TestCase):
          "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`",
          0)]
         self.assertEqual(actual,expected)
+
+    def test_process_fastq_single_end_read_file_toggle_thirteen_base_barcodes(self):
+        """process_fastq_single_end_read_file handles thriteen base reads of tweleve base barcodes
+        """
+        fastq_f = [\
+         "@990:2:4:11272:5533#1/1",
+         "GCACACACCGCCCGTCACACCACGAGAGTCGGCAACACCCGAAGTCGGTGAGGTAACCCCGAAAGGGGAGCCAGCC",
+         "+",
+         "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`"]
+        barcode_fastq_f = [
+         "@990:2:4:11272:5533#1/2",
+         "AAAAAAAAAAAAT",
+         "+",
+         "bbbbbbbbbbbbb"]
+        barcode_to_sample_id = {'AAAAAAAAAAAA':'s1','TAAAAAAAAAAA':'s2'}
         
+        # rev_comp = False
+        actual = process_fastq_single_end_read_file(fastq_f,barcode_fastq_f,
+                                                    barcode_to_sample_id,
+                                                    store_unassigned=False,
+                                                    max_bad_run_length=0,
+                                                    phred_quality_threshold=2,
+                                                    min_per_read_length=75,
+                                                    rev_comp=False,
+                                                    rev_comp_barcode=False,
+                                                    seq_max_N=0,
+                                                    start_seq_id=0)                       
+        actual = list(actual)
+        expected = [('s1_0 990:2:4:11272:5533#1/1 orig_bc=AAAAAAAAAAAA new_bc=AAAAAAAAAAAA bc_diffs=0',
+         "GCACACACCGCCCGTCACACCACGAGAGTCGGCAACACCCGAAGTCGGTGAGGTAACCCCGAAAGGGGAGCCAGCC",
+         "bbbbbbbbbbbbbbbbbbbbbbbbbY``\`bbbbbbbbbbbbb`bbbbab`a`_[ba_aa]b^_bIWTTQ^YR^U`",
+         0)]
+        self.assertEqual(actual,expected)
+
     def test_process_fastq_single_end_read_file_toggle_rev_comp(self):
         """process_fastq_single_end_read_file handles rev_comp
         """

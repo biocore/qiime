@@ -208,7 +208,16 @@ def process_fastq_single_end_read_file(fastq_read_f,
     else:
         # disable quality filter
         last_bad_quality_char = ''
-        
+    
+    # compute the barcode length, if they are all the same. 
+    # this is useful for selecting a subset of the barcode read
+    # if it's too long (e.g., for technical reasons on the sequencer)
+    barcode_lengths = set([len(bc) for bc, sid in barcode_to_sample_id.items()])
+    if len(barcode_lengths) == 1:
+        barcode_length = barcode_lengths.pop()
+    else:
+        barcode_length = None
+    
     # prep data for logging
     input_sequence_count = 0
     count_barcode_not_in_map = 0
@@ -233,7 +242,16 @@ def process_fastq_single_end_read_file(fastq_read_f,
             header = read_data[header_index]
         
         # Grab the barcode sequence
-        barcode = bc_data[sequence_index]
+        if barcode_length:
+            # because thirteen cycles are sometimes used for 
+            # techical reasons, this step looks only at the 
+            # first tweleve bases. note that the barcode is
+            # rev-comp'ed after this step if requested since
+            # the thirteen base is a technical artefact, not
+            # barcode sequence.
+            barcode = bc_data[sequence_index][:barcode_length]
+        else:
+            barcode = bc_data[sequence_index]
         if rev_comp_barcode:
             barcode = DNA.rc(barcode)
         # Grab the read sequence
