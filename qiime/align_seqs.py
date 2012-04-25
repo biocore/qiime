@@ -26,7 +26,7 @@ from cogent.core.sequence import DnaSequence as Dna
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.parse.record import RecordError
 from cogent.app.util import ApplicationNotFoundError
-from qiime.util import get_tmp_filename
+from qiime.util import get_tmp_filename, count_seqs_from_file
 from cogent.app.infernal import cmalign_from_alignment
 from cogent.parse.rfam import MinimalRfamParser, ChangedSequence
 #app controllers that implement align_unaligned_seqs
@@ -280,6 +280,12 @@ class PyNastAligner(Aligner):
                 return LoadSeqs(data=pynast_aligned,aligned=DenseAlignment)
             except ValueError:
                 return {}
+
+def compute_min_alignment_length(seqs_fp,n=3):
+    """ compute the min alignment length as n standard deviations below the mean """
+    count, avg, stddev = count_seqs_from_file(seqs_fp)
+    return int(avg - (n * stddev))
+
 
 alignment_method_constructors ={'pynast':PyNastAligner,\
     'infernal':InfernalAligner}

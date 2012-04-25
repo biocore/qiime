@@ -17,7 +17,7 @@ from cogent import LoadSeqs, DNA
 from cogent.core.alignment import DenseAlignment, Alignment
 from cogent.util.unit_test import TestCase, main
 from qiime.util import get_tmp_filename
-from qiime.align_seqs import (
+from qiime.align_seqs import (compute_min_alignment_length,
     Aligner, CogentAligner, PyNastAligner, InfernalAligner,
     alignment_module_names,
     )
@@ -354,6 +354,22 @@ class PyNastAlignerTests(SharedSetupTestCase):
         remove_files(self._paths_to_clean_up)
 
 
+class TopLevelTests(TestCase):
+    """ tests of top-level functions """
+    
+    def setUp(self):
+        """ """
+        self.min_length_computation_seqs = min_length_computation_seqs.split('\n')
+    
+    def test_compute_min_alignment_length(self):
+        """compute_min_alignment_length: returns n std devs below mean seq len
+        """
+        self.assertEqual(compute_min_alignment_length(\
+                         self.min_length_computation_seqs),19)
+        self.assertEqual(compute_min_alignment_length(\
+                         self.min_length_computation_seqs,8),15)
+
+
 
 seqs_for_muscle= \
 """>abc
@@ -407,6 +423,14 @@ ACCTACGTTAATACCCTGGTAGT
 ACCTACGTTAATACCCTGGTAGT
 >3
 AA
+"""
+
+min_length_computation_seqs = """>1 description field
+ACCTACGTTAATACCCTGGTA
+>2
+ACCTACGTTAATACCCTGGTAGT
+>3
+ACCTACGTTAATACCCTGGTAA
 """
 
 pynast_test1_expected_alignment = """>1 description field 1..23
