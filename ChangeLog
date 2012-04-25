@@ -1,5 +1,6 @@
 QIIME 1.4.0-dev
 ==================================
+* Altered default value of min_length in align_seqs.py and parallel_align_seqs_pynast.py. This was previously set to 150 based on 454 FLX data, but it is now computed as 75% of the median input sequence length. This will scale better across platforms and read length, and allow for more consistent handling in of data from different sources. The user can still pass --min_length with a specific value to override the default.
 * Altered the way split_libraries.py handles errors/warnings from the mapping file, and fixed a bug where suppression of warnings about variable length barcodes was not being properly passed.  Now warnings will not cause split_libraries.py to halt execution, although more serious problems (errors) will.  These includes problems with headers, SampleIDs, and invalid characters in DNA sequence fields.
 * Increased allowed ambiguous bases in split_libraries.py default values from 0 to 6.  This is to accommodate the FLX+ long read technology which will often make ambiguous base calls but still have quality sequences following the ambiguous bases.  Also added an option to truncate at the first "N" character option (-x) to allow users to retain these sequences but remove ambiguous bases if desired.
 * Updated merge_mapping_files.py to support merging of mapping files with overlapping sample ids.

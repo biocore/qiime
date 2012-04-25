@@ -20,6 +20,7 @@ from subprocess import check_call, CalledProcessError
 from cogent.app.formatdb import build_blast_db_from_fasta_path
 from qiime.util import load_qiime_config, parse_command_line_parameters,\
     get_options_lookup, get_qiime_scripts_dir
+from qiime.align_seqs import compute_min_alignment_length
 from pynast.util import pairwise_alignment_methods
 from qiime.parallel.util import split_fasta, get_random_job_prefix,\
     write_jobs_file, submit_jobs, compute_seqs_per_file,\
@@ -56,10 +57,11 @@ script_info['optional_options'] = [\
           dest='blast_db',help='Database to blast against'+\
           ' [default: %s]' % blast_db_default_help,
           default=qiime_config['pynast_template_alignment_blastdb']),\
- make_option('-e','--min_length',action='store',\
+    make_option('-e','--min_length',\
           type='int',help='Minimum sequence '+\
-          'length to include in alignment [default: %default]',\
-          default=150),\
+          'length to include in alignment [default: 3 standard deviations'+\
+          ' below mean input seqs mean length]',\
+           default=-1),
  make_option('-p','--min_percent_id',action='store',\
           type='float',help='Minimum percent '+\
           'sequence identity to closest blast hit to include sequence in'+\
@@ -117,7 +119,13 @@ def main():
     poll_directly = opts.poll_directly
 
     created_temp_paths = []
-    
+
+    # compute the minimum alignment length if a negative value was
+    # provided (the default)
+    min_length = opts.min_length
+    if min_length < 0:
+        min_length = compute_min_alignment_length(open(input_fasta_fp,'U'))
+
     # split the input filepath into directory and filename, base filename and
     # extension
     input_dir, input_fasta_fn = split(input_fasta_fp)

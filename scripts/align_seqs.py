@@ -18,7 +18,7 @@ from os import makedirs
 from os.path import exists, splitext, split, isdir
 
 from qiime.align_seqs import alignment_module_names,alignment_method_constructors,\
-    pairwise_alignment_methods, CogentAligner
+    pairwise_alignment_methods, CogentAligner, compute_min_alignment_length
 from qiime.util import load_qiime_config, create_dir
 
 options_lookup = get_options_lookup()
@@ -106,8 +106,9 @@ script_info['optional_options']=[\
           
     make_option('-e','--min_length',\
           type='int',help='Minimum sequence '+\
-          'length to include in alignment [default: %default]',\
-           default=150),
+          'length to include in alignment [default: 3 standard deviations'+\
+          ' below mean input seqs mean length]',\
+           default=-1),
           
     make_option('-p','--min_percent_id',\
           type='float',help='Minimum percent '+\
@@ -135,6 +136,12 @@ def main():
     output_dir = opts.output_dir or alignment_method + '_aligned'
     create_dir(output_dir, fail_on_exist=False)
     
+    # compute the minimum alignment length if a negative value was
+    # provided (the default)
+    min_length = opts.min_length
+    if min_length < 0:
+        min_length = compute_min_alignment_length(open(input_seqs_filepath,'U'))
+    
     fpath, ext = splitext(input_seqs_filepath)
     input_dir, fname = split(fpath)
     
@@ -149,7 +156,7 @@ def main():
         aligner_constructor =\
          alignment_method_constructors[alignment_method]
         aligner_type = alignment_method
-        params = {'min_len':opts.min_length,\
+        params = {'min_len':min_length,\
                   'min_pct':opts.min_percent_id,\
                   'template_filepath':opts.template_fp,\
                   'blast_db':opts.blast_db,
