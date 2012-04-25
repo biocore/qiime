@@ -365,9 +365,9 @@ class TopLevelTests(TestCase):
         """compute_min_alignment_length: returns n std devs below mean seq len
         """
         self.assertEqual(compute_min_alignment_length(\
-                         self.min_length_computation_seqs),19)
+                         self.min_length_computation_seqs),16)
         self.assertEqual(compute_min_alignment_length(\
-                         self.min_length_computation_seqs,8),15)
+                         self.min_length_computation_seqs,0.60),13)
 
 
 

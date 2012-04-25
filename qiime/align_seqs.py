@@ -20,21 +20,20 @@ added..
 import warnings
 warnings.filterwarnings('ignore', 'Not using MPI as mpi4py not found')
 from os import remove
+from numpy import median
 from cogent import LoadSeqs, DNA
 from cogent.core.alignment import DenseAlignment, SequenceCollection, Alignment
 from cogent.core.sequence import DnaSequence as Dna
 from cogent.parse.fasta import MinimalFastaParser
 from cogent.parse.record import RecordError
 from cogent.app.util import ApplicationNotFoundError
-from qiime.util import get_tmp_filename, count_seqs_from_file
 from cogent.app.infernal import cmalign_from_alignment
 from cogent.parse.rfam import MinimalRfamParser, ChangedSequence
-#app controllers that implement align_unaligned_seqs
-import qiime.pycogent_backports.muscle
 import cogent.app.clustalw
 import cogent.app.mafft
 
-from qiime.util import FunctionWithParams
+from qiime.util import get_tmp_filename, FunctionWithParams
+import qiime.pycogent_backports.muscle
 
 
 # Load PyNAST if it's available. If it's not, skip it if not but set up
@@ -281,10 +280,10 @@ class PyNastAligner(Aligner):
             except ValueError:
                 return {}
 
-def compute_min_alignment_length(seqs_fp,n=3):
+def compute_min_alignment_length(seqs_f,fraction=0.75):
     """ compute the min alignment length as n standard deviations below the mean """
-    count, avg, stddev = count_seqs_from_file(seqs_fp)
-    return int(avg - (n * stddev))
+    med_length = median([len(s) for _,s in MinimalFastaParser(seqs_f)])
+    return int(med_length * fraction)
 
 
 alignment_method_constructors ={'pynast':PyNastAligner,\
