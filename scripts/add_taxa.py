@@ -49,7 +49,6 @@ script_info['version'] = __version__
 def main():
     option_parser, opts, args = parse_command_line_parameters(**script_info)
     
-    output_f = open(opts.output_fp,'w')
     labels = opts.labels.split(',')
     if opts.all_strings:
         process_fs = [str] * len(labels)
@@ -61,9 +60,21 @@ def main():
     
 
     otu_table = parse_biom_table(open(opts.input_fp,'U'))
-    if ('taxonomy' not in otu_table.ObservationMetadata[0]):
-        otu_table.addObservationMetadata(observation_metadata)
     
+    if otu_table.ObservationMetadata != None:
+        # if there is already metadata associated with the 
+        # observations, confirm that none of the metadata names
+        # are already present
+        existing_keys = otu_table.ObservationMetadata[0].keys()
+        for label in labels:
+            if label in existing_keys:
+                option_parser.error(\
+                 "%s is already an observation metadata field." 
+                 " Can't add it, so nothing is being added." % label)
+    
+    otu_table.addObservationMetadata(observation_metadata)
+    
+    output_f = open(opts.output_fp,'w')
     output_f.write(format_biom_table(otu_table))
     output_f.close()
     
