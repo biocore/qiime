@@ -106,8 +106,8 @@ script_info['optional_options']=[\
           
     make_option('-e','--min_length',\
           type='int',help='Minimum sequence '+\
-          'length to include in alignment [default: 3 standard deviations'+\
-          ' below mean input seqs mean length]',\
+          'length to include in alignment [default: 75% of the'+\
+          ' median input sequence length]',\
            default=-1),
           
     make_option('-p','--min_percent_id',\
