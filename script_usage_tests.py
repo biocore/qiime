@@ -50,17 +50,12 @@ script_info['optional_options'] = [\
 ]
 script_info['version'] = __version__
 
-def main():
-    option_parser, opts, args =\
-       parse_command_line_parameters(**script_info)
-    
-    tests = opts.tests
-    qiime_test_data_dir = abspath(opts.qiime_test_data_dir)
-    qiime_scripts_dir = opts.qiime_scripts_dir
-    working_dir = join(opts.working_dir,'script_usage_tests')
-    verbose = opts.verbose
-    failure_log_fp = abspath(opts.failure_log_fp)
-    
+def run_script_usage_tests(qiime_test_data_dir,
+                           qiime_scripts_dir,
+                           working_dir,
+                           verbose=False,
+                           tests=None,
+                           failure_log_fp=None):
     if tests == None:
         tests = [split(d)[1] for d in glob('%s/*' % qiime_test_data_dir) if isdir(d)]
     else:
@@ -116,15 +111,16 @@ def main():
         
         if verbose:
             print ''
-    
-    failure_log_f = open(failure_log_fp,'w')
-    if len(failed_tests) == 0:
-        failure_log_f.write('All tests passed.')
-    else:
-        i = 0
-        for cmd, stdout, stderr, return_value in failed_tests:
-            failure_log_f.write('**Failed test %d:\n%s\n\nReturn value: %d\n\nStdout:\n%s\n\nStderr:\n%s\n\n' % (i,cmd,return_value, stdout, stderr))
-    failure_log_f.close()
+            
+    if failure_log_fp:
+        failure_log_f = open(failure_log_fp,'w')
+        if len(failed_tests) == 0:
+            failure_log_f.write('All tests passed.')
+        else:
+            i = 0
+            for cmd, stdout, stderr, return_value in failed_tests:
+                failure_log_f.write('**Failed test %d:\n%s\n\nReturn value: %d\n\nStdout:\n%s\n\nStderr:\n%s\n\n' % (i,cmd,return_value, stdout, stderr))
+        failure_log_f.close()
     
     
     if warnings:
@@ -132,9 +128,28 @@ def main():
         for warning in warnings:
             print ' ' + warning
         print ''
+        
     print 'Ran %d commands to test %d scripts. %d of these commands failed. Failures are summarized in %s.' % (total_tests,len(tests),len(failed_tests),failure_log_fp)
     
     rmtree(working_dir)
+
+def main():
+    option_parser, opts, args =\
+       parse_command_line_parameters(**script_info)
+    
+    qiime_test_data_dir = abspath(opts.qiime_test_data_dir)
+    qiime_scripts_dir = opts.qiime_scripts_dir
+    working_dir = join(opts.working_dir,'script_usage_tests')
+    verbose = opts.verbose
+    tests = opts.tests
+    failure_log_fp = abspath(opts.failure_log_fp)
+
+    run_script_usage_tests(qiime_test_data_dir,
+                           qiime_scripts_dir,
+                           working_dir,
+                           verbose=verbose,
+                           tests=tests,
+                           failure_log_fp=failure_log_fp)
 
 
 
