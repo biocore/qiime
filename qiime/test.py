@@ -26,7 +26,11 @@ def run_script_usage_tests(qiime_test_data_dir,
                            verbose=False,
                            tests=None,
                            failure_log_fp=None):
+    """ Test script_usage examples when test data is present in qiime_test_data_dir
     
+        These tests are currently used with the qiime_test_data repository, which can
+         be found at https://github.com/qiime-dev/qiime_test_data
+    """
     # process input filepaths and directories
     qiime_test_data_dir = abspath(qiime_test_data_dir)
     working_dir = join(working_dir,'script_usage_tests')
