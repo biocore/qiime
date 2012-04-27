@@ -53,15 +53,17 @@ def main():
     qiime_scripts_dir = opts.qiime_scripts_dir
     working_dir = opts.working_dir
     verbose = opts.verbose
-    tests = opts.tests
+    tests = opts.tests.split(',')
     failure_log_fp = opts.failure_log_fp
 
-    run_script_usage_tests(qiime_test_data_dir,
+    result_summary = run_script_usage_tests(
+                           qiime_test_data_dir,
                            qiime_scripts_dir,
                            working_dir,
                            verbose=verbose,
                            tests=tests,
                            failure_log_fp=failure_log_fp)
+    print result_summary
 
 
 
