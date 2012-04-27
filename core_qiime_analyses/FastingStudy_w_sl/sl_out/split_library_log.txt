@@ -1,0 +1,36 @@
+Number raw input seqs	1339
+
+Length outside bounds of 200 and 1000	0
+Num ambiguous bases exceeds limit of 6	0
+Missing Qual Score	0
+Mean qual score below minimum of 25	1
+Max homopolymer run exceeds limit of 6	0
+Num mismatches in primer exceeds limit of 0: 1
+
+Sequence length details for all sequences passing quality filters:
+Raw len min/max/avg	233.0/293.0/265.8
+Wrote len min/max/avg	200.0/260.0/232.8
+
+Barcodes corrected/not	0/0
+Uncorrected barcodes will not be written to the output fasta file.
+Corrected barcodes will be written with the appropriate barcode category.
+Corrected but unassigned sequences will not be written unless --retain_unassigned_reads is enabled.
+
+Total valid barcodes that are not in mapping file	0
+Sequences associated with valid barcodes that are not in the mapping file will not be written.
+
+Barcodes in mapping file
+Num Samples	9
+Sample ct min/max/mean: 146 / 150 / 148.56
+Sample	Sequence Count	Barcode
+PC.634	150	ACAGAGTCGGCT
+PC.356	150	ACAGACCACTCA
+PC.593	149	AGCAGCACTTGT
+PC.354	149	AGCACGAGCCTA
+PC.635	149	ACCGCAGAGTCA
+PC.607	149	AACTGTGCGTAC
+PC.636	148	ACGGTGAGTGTC
+PC.355	147	AACTCGTCGATG
+PC.481	146	ACCAGCGACTAG
+
+Total number seqs written	1337

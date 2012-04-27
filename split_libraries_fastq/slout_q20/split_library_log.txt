@@ -1,0 +1,168 @@
+Input file paths
+Mapping filepath: map.txt (md5: d0c02d1e4fea0da66f1de2f5ede81bba)
+Sequence read filepath: lane1_read1.fastq.gz (md5: 25ec1b318ade748b27948864ec550986)
+Barcode read filepath: lane1_barcode.fastq.gz (md5: 467222a529efe019bbdb8efd480e01e9)
+
+Quality filter results
+Total number of input sequences: 250
+Barcode not in mapping file: 2
+Read too short after quality truncation: 41
+Count of N characters exceeds limit: 0
+Illumina quality digit = 0: 0
+Barcode errors exceed max: 126
+
+Result summary (after quality filtering)
+Median sequence length: 120.00
+s41	3
+s173	3
+s141	3
+s120	3
+s53	2
+s189	2
+s183	2
+s167	2
+s132	2
+s101	2
+s99	1
+s97	1
+s88	1
+s83	1
+s81	1
+s77	1
+s76	1
+s75	1
+s72	1
+s70	1
+s66	1
+s64	1
+s62	1
+s59	1
+s58	1
+s55	1
+s51	1
+s47	1
+s44	1
+s35	1
+s30	1
+s27	1
+s26	1
+s22	1
+s188	1
+s186	1
+s181	1
+s178	1
+s174	1
+s172	1
+s17	1
+s169	1
+s166	1
+s165	1
+s159	1
+s157	1
+s154	1
+s151	1
+s146	1
+s145	1
+s142	1
+s140	1
+s139	1
+s136	1
+s135	1
+s133	1
+s127	1
+s126	1
+s124	1
+s122	1
+s121	1
+s111	1
+s110	1
+s109	1
+s107	1
+s105	1
+s102	1
+---
+
+Input file paths
+Mapping filepath: map.txt (md5: d0c02d1e4fea0da66f1de2f5ede81bba)
+Sequence read filepath: lane2_read1.fastq.gz (md5: 25ec1b318ade748b27948864ec550986)
+Barcode read filepath: lane2_barcode.fastq.gz (md5: 467222a529efe019bbdb8efd480e01e9)
+
+Quality filter results
+Total number of input sequences: 250
+Barcode not in mapping file: 2
+Read too short after quality truncation: 41
+Count of N characters exceeds limit: 0
+Illumina quality digit = 0: 0
+Barcode errors exceed max: 126
+
+Result summary (after quality filtering)
+Median sequence length: 120.00
+s41	3
+s173	3
+s141	3
+s120	3
+s53	2
+s189	2
+s183	2
+s167	2
+s132	2
+s101	2
+s99	1
+s97	1
+s88	1
+s83	1
+s81	1
+s77	1
+s76	1
+s75	1
+s72	1
+s70	1
+s66	1
+s64	1
+s62	1
+s59	1
+s58	1
+s55	1
+s51	1
+s47	1
+s44	1
+s35	1
+s30	1
+s27	1
+s26	1
+s22	1
+s188	1
+s186	1
+s181	1
+s178	1
+s174	1
+s172	1
+s17	1
+s169	1
+s166	1
+s165	1
+s159	1
+s157	1
+s154	1
+s151	1
+s146	1
+s145	1
+s142	1
+s140	1
+s139	1
+s136	1
+s135	1
+s133	1
+s127	1
+s126	1
+s124	1
+s122	1
+s121	1
+s111	1
+s110	1
+s109	1
+s107	1
+s105	1
+s102	1
+---
+
