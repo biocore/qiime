@@ -63,7 +63,10 @@ script_info['optional_options']=[\
      help='Title of the plot [default: %default]'),       
  make_option('--dot_color', help='dot color for plot, more info:' +\
     ' http://matplotlib.sourceforge.net/api/pyplot_api.html' +\
-    ' [default: %default]', default="wo"), 
+    ' [default: %default]', default="white"), 
+ make_option('--dot_marker', help='dot color for plot, more info:' +\
+    ' http://matplotlib.sourceforge.net/api/pyplot_api.html' +\
+    ' [default: %default]', default="o"), 
  make_option('--line_color', help='line color for plot, more info:' +\
     ' http://matplotlib.sourceforge.net/api/pyplot_api.html' +\
     ' [default: %default]', default="blue"), 
@@ -77,6 +80,9 @@ script_info['optional_options']=[\
      choices=FitModel.options, default='exponential', 
      help='model to be fitted to the data. Valid ' +\
      'choices are:' + ', '.join(FitModel.options) + '. [default: %default]'),\
+ make_option('-p', '--print_model', action='store_true',
+     help='Print in the title of the plot the function of the fit. ' +\
+     '[default: %default]',default=False)
 ]
 
 script_info['version'] = __version__
@@ -144,10 +150,10 @@ def main():
             raise ValueError, 'The distance matrices have different sizes. ' +\
                 'You can cancel this error by passing --ignore_missing_samples'
         
-    (x_val,y_val,x_fit,y_fit) =\
+    (x_val,y_val,x_fit,y_fit,func_text) =\
           fit_semivariogram((x_samples,x_distmtx), (y_samples,y_distmtx), opts.model, ranges)
     
-    plot(x_val, y_val, opts.dot_color, alpha=opts.dot_alpha)
+    plot(x_val, y_val, color=opts.dot_color, marker=opts.dot_marker, linestyle="None", alpha=opts.dot_alpha)
     plot(x_fit, y_fit, linewidth=2.0, color=opts.line_color, alpha=opts.line_alpha)
     
     if opts.x_min!=None and opts.x_max!=None:
@@ -161,7 +167,10 @@ def main():
     
     xlabel(x_label)
     ylabel(y_label)
-    title(fig_title)
+    if opts.print_model:
+        title(fig_title + ' ' + func_text)
+    else:
+        title(fig_title)
     
     savefig(opts.output_path)
 

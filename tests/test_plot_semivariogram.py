@@ -39,7 +39,7 @@ class FunctionTests(TestCase):
         y = asarray([[0.0, 1.0, 2.0, 3.0, 4.0, 5.0],[0.0, 0.0, 6.0, 7.0, 8.0, 9.0],[0.0, 0.0, 0.0, 10.0, 11.0, 12.0],[0.0, 0.0, 0.0, 0.0, 13.0, 14.0],[0.0, 0.0, 0.0, 0.0, 0.0, 15.0]])
         vals_exp = [0.0, 0.0, 0.0, 0.0, 1.0, 2.0, 3.0, 4.0, 6.0, 7.0]
         
-        x_vals, y_vals, x_fit, y_fit = fit_semivariogram((x_lbl,x), (x_lbl,x), model, [])
+        x_vals, y_vals, x_fit, y_fit, func_text = fit_semivariogram((x_lbl,x), (x_lbl,x), model, [])
         self.assertFloatEqual(x_vals, vals_exp)
         self.assertFloatEqual(y_vals, vals_exp)
         self.assertFloatEqual(x_fit, vals_exp)
@@ -54,7 +54,7 @@ class FunctionTests(TestCase):
         y=asarray([[0.0,1.0,2.0,3.0,4.0,5.0],[0.0,0.0,6.0,7.0,8.0,9.0],[0.0,0.0,0.0,10.0,11.0,12.0],[0.0,0.0,0.0,0.0,13.0,14.0],[0.0,0.0,0.0,0.0,0.0,15.0],[0.0,0.0,0.0,0.0,0.0,0.0]])
         vals_exp = [1.,2.,3.,4.,5.,6.,7.,8.,9.,10.,11.,12.,13.,14.,15.]
         
-        x_vals, y_vals, x_fit, y_fit = fit_semivariogram((x_lbl,x), (y_lbl,y), model, [])
+        x_vals, y_vals, x_fit, y_fit, func_text = fit_semivariogram((x_lbl,x), (y_lbl,y), model, [])
         self.assertFloatEqual(x_vals, vals_exp)
         self.assertFloatEqual(y_vals, vals_exp)
         self.assertFloatEqual(x_fit, vals_exp)
@@ -71,8 +71,8 @@ class FunctionTests(TestCase):
         model = "nugget"
         y_lbl = ['s1', 's2', 's3', 's4', 's5', 's6']
         y = asarray([[0.0, 5.0, 5.0, 5.0, 5.0, 5.0],[0.0, 0.0, 5.0, 5.0, 5.0, 5.0],[0.0, 0.0, 0.0, 5.0, 5.0, 5.0],[0.0, 0.0, 0.0, 0.0, 5.0, 5.0],[0.0, 0.0, 0.0, 0.0, 0.0, 5.0]])
-        y_vals_exp = 2.3000000143667378
-        x_vals, y_vals, x_fit, y_fit = fit_semivariogram((x_lbl,x), (x_lbl,x), model, [])
+        y_vals_exp = [2.3000000143667378]*(len(x)*2)
+        x_vals, y_vals, x_fit, y_fit, func_text = fit_semivariogram((x_lbl,x), (x_lbl,x), model, [])
         self.assertFloatEqual(x_vals, vals_exp)
         self.assertFloatEqual(y_vals, vals_exp)
         self.assertFloatEqual(x_fit, vals_exp)
@@ -82,7 +82,7 @@ class FunctionTests(TestCase):
         y_lbl = ['s1', 's2', 's3', 's4', 's5', 's6']
         y = asarray([[0.0, 1.0, 22.0, 33.0, 44.0, 55.0],[0.0, 0.0, 66.0, 77.0, 88.0, 99.0],[0.0, 0.0, 0.0, 1010.0, 1111.0, 1212.0],[0.0, 0.0, 0.0, 0.0, 1313.0, 1414.0],[0.0, 0.0, 0.0, 0.0, 0.0, 1515.0]])
         y_vals_exp = [-9.44475054741e-09, -9.44475054741e-09, -9.44475054741e-09, -9.44475054741e-09, 0.999999998426, 2.0000000063, 3.00000001417, 4.00000002204, 5.99999999885, 6.99999998726]
-        x_vals, y_vals, x_fit, y_fit = fit_semivariogram((x_lbl,x), (x_lbl,x), model, [])
+        x_vals, y_vals, x_fit, y_fit, func_text = fit_semivariogram((x_lbl,x), (x_lbl,x), model, [])
         self.assertFloatEqual(x_vals, vals_exp)
         self.assertFloatEqual(y_vals, vals_exp)
         self.assertFloatEqual(x_fit, vals_exp)
@@ -92,7 +92,7 @@ class FunctionTests(TestCase):
         y_lbl = ['s1', 's2', 's3', 's4', 's5', 's6']
         y = asarray([[0.0, 1.0, 22.0, 33.0, 44.0, 55.0],[0.0, 0.0, 66.0, 77.0, 88.0, 99.0],[0.0, 0.0, 0.0, 1010.0, 1111.0, 1212.0],[0.0, 0.0, 0.0, 0.0, 1313.0, 1414.0],[0.0, 0.0, 0.0, 0.0, 0.0, 1515.0]])
         y_vals_exp = [0.17373665, 0.17373665, 0.17373665, 0.17373665, 0.54915494, 1.55978856, 2.91608962, 4.28808694, 6.24510109, 6.74689019]
-        x_vals, y_vals, x_fit, y_fit = fit_semivariogram((x_lbl,x), (x_lbl,x), model, [])
+        x_vals, y_vals, x_fit, y_fit, func_text = fit_semivariogram((x_lbl,x), (x_lbl,x), model, [])
         self.assertFloatEqual(x_vals, vals_exp)
         self.assertFloatEqual(y_vals, vals_exp)
         self.assertFloatEqual(x_fit, vals_exp)
@@ -102,7 +102,7 @@ class FunctionTests(TestCase):
         y_lbl = ['s1', 's2', 's3', 's4', 's5', 's6']
         y = asarray([[0.0, 1.0, 22.0, 33.0, 44.0, 55.0],[0.0, 0.0, 66.0, 77.0, 88.0, 99.0],[0.0, 0.0, 0.0, 1010.0, 1111.0, 1212.0],[0.0, 0.0, 0.0, 0.0, 1313.0, 1414.0],[0.0, 0.0, 0.0, 0.0, 0.0, 1515.0]])
         y_vals_exp = [0.23248033, 0.23248033, 0.23248033, 0.23248033, 0.5528678, 1.45081215, 2.74913327, 4.19164973, 6.39844476, 6.72728412]
-        x_vals, y_vals, x_fit, y_fit = fit_semivariogram((x_lbl,x), (x_lbl,x), model, [])
+        x_vals, y_vals, x_fit, y_fit, func_text = fit_semivariogram((x_lbl,x), (x_lbl,x), model, [])
         self.assertFloatEqual(x_vals, vals_exp)
         self.assertFloatEqual(y_vals, vals_exp)
         self.assertFloatEqual(x_fit, vals_exp)
@@ -111,7 +111,7 @@ class FunctionTests(TestCase):
         model = "linear"
         y_lbl = x_lbl
         y = x
-        x_vals, y_vals, x_fit, y_fit = fit_semivariogram((x_lbl,x), (x_lbl,x), model, [])
+        x_vals, y_vals, x_fit, y_fit, func_text = fit_semivariogram((x_lbl,x), (x_lbl,x), model, [])
         self.assertFloatEqual(x_vals, vals_exp)
         self.assertFloatEqual(y_vals, vals_exp)
         self.assertFloatEqual(x_fit, vals_exp)
