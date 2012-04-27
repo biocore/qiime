@@ -11,7 +11,7 @@ __maintainer__ = "Greg Caporaso"
 __email__ = "gregcaporaso@gmail.com"
 __status__ = "Development"
 
-from os.path import isdir, split, join, abspath
+from os.path import isdir, split, join, abspath, exists
 from os import chdir, getcwd
 from shutil import copytree, rmtree
 from glob import glob
@@ -25,7 +25,8 @@ def run_script_usage_tests(qiime_test_data_dir,
                            working_dir,
                            verbose=False,
                            tests=None,
-                           failure_log_fp=None):
+                           failure_log_fp=None,
+                           force_overwrite=False):
     """ Test script_usage examples when test data is present in qiime_test_data_dir
     
         These tests are currently used with the qiime_test_data repository, which can
@@ -34,12 +35,13 @@ def run_script_usage_tests(qiime_test_data_dir,
     # process input filepaths and directories
     qiime_test_data_dir = abspath(qiime_test_data_dir)
     working_dir = join(working_dir,'script_usage_tests')
-    failure_log_fp = abspath(failure_log_fp)
+    if force_overwrite and exists(working_dir):
+        rmtree(working_dir)
+    if failure_log_fp != None:
+        failure_log_fp = abspath(failure_log_fp)
 
     if tests == None:
         tests = [split(d)[1] for d in glob('%s/*' % qiime_test_data_dir) if isdir(d)]
-    else:
-        tests = tests.split(',')
     
     if verbose:
         print 'Tests to run:\n %s' % ' '.join(tests)
@@ -58,7 +60,7 @@ def run_script_usage_tests(qiime_test_data_dir,
         usage_examples = script.script_info['script_usage']
         
         if verbose:
-            print 'Testing %d usage examples from: %s.py' % (len(usage_examples),script_fn)
+            print 'Testing %d usage examples from: %s' % (len(usage_examples),script_fn)
         
         # init the test environment
         test_input_dir = '%s/%s' % (qiime_test_data_dir,test)
@@ -95,7 +97,7 @@ def run_script_usage_tests(qiime_test_data_dir,
     if failure_log_fp:
         failure_log_f = open(failure_log_fp,'w')
         if len(failed_tests) == 0:
-            failure_log_f.write('All tests passed.\n')
+            failure_log_f.write('All script interface tests passed.\n')
         else:
             i = 0
             for cmd, stdout, stderr, return_value in failed_tests:
@@ -108,7 +110,11 @@ def run_script_usage_tests(qiime_test_data_dir,
         for warning in warnings:
             print ' ' + warning
         print ''
-        
-    print 'Ran %d commands to test %d scripts. %d of these commands failed. Failures are summarized in %s.' % (total_tests,len(tests),len(failed_tests),failure_log_fp)
+    
+    result_summary = 'Ran %d commands to test %d scripts. %d of these commands failed.' % (total_tests,len(tests),len(failed_tests))
+    if failure_log_fp:
+        result_summary += " Failures are summarized in %s." % failure_log_fp
     
     rmtree(working_dir)
+    
+    return result_summary
