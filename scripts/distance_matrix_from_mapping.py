@@ -36,11 +36,11 @@ script_info['required_options']=[
      help='Mapping filepath.', type='existing_path'),
  make_option('-c', '--column', type='string',\
         help="string containing the name of the column in the mapping file, e.g. 'DOB'"),
- make_option('-o', '--output_dir',
-     help="Output directory. One will be created if it doesn't exist.",
-     type='new_dirpath')
 ]
 script_info['optional_options']=[
+ make_option('-o', '--output_dir',
+     help="Output directory. One will be created if it doesn't exist. [default=%default]",
+     type='new_dirpath', default="map_distance_matrix")
 ]
 script_info['option_label']={'input_path':'Mapping filepath',
                              'column':'List of samples for compute',
