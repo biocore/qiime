@@ -172,6 +172,11 @@ script_info['optional_options']=[\
         ' avg it calculates the average at each timepoint (averaging within' +\
         ' a group), then calculates the norm of each point; for trajectory ' +\
         ' calculates the norm from the 1st-2nd, 2nd-3rd, etc. [default: %default]'),
+    make_option('--rms_axes', dest='rms_axes', type=int, default=3,
+        help='The number of axes to account while doing the RMS calculations.' +\
+        ' We suggest using 3 because those are the ones being displayed in the plots' +\
+        ' but you could use any number between 1 and number of samples - 1. To' +\
+        ' use all of them pass 0. [default: %default]'),
     make_option('--rms_path', dest='rms_path', default='RMS_output.txt',
         help='Name of the file to save the root mean square (RMS) of the vectors' +\
         ' grouped by the column used with the --add_vectors function. Note that' +\
@@ -201,6 +206,7 @@ script_info['option_label']={'coord_fname':'Principal coordinates filepath',
                              'custom_axes':'Custom Axis',
                              'add_vectors':'Create vectors based on metadata',
                              'rms_path':'RMS output path calculations',
+                             'rms_axes':'Number of axes to use in RMS algorithm',
                              'rms_algorithm':'RMS algorithm'}
 script_info['version'] = __version__
 
@@ -321,6 +327,13 @@ Valid methods are: " + ', '.join(ellipsoid_methods) + ".")
         
         # Validating RMS values
         if opts.rms_algorithm:
+            axes_number = len(data['coord'][1][1])
+            if opts.rms_axes<0 or opts.rms_axes>axes_number:
+                raise ValueError, 'rms_algorithm should be between 0 and the max number' +\
+                      'of samples/pcoa-axes: %d' % len(data['coord'][1][1])
+            if opts.rms_axes == 0: 
+                opts.rms_axes = axes_number
+            add_vectors['rms_axes'] = opts.rms_axes
             valid_chars = '_.abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
             for c in opts.rms_path:
                 if c not in valid_chars:

@@ -283,7 +283,7 @@ master={labels} nobutton' % (color, radius, alpha, num_coords))
             if not scaled and add_vectors['rms_path'] and add_vectors['rms_algorithm']:
                vector_result = make_subgroup_rms(coord_dict, add_vectors['eigvals'], \
                                                  ids, add_vectors['rms_algorithm'], \
-                                                 custom_axes)
+                                                 add_vectors['rms_axes'], custom_axes)
                if not isnan(vector_result['rms']):
                    if name not in add_vectors['rms_output']:
                        add_vectors['rms_output'][name] = {}
@@ -340,7 +340,7 @@ master={labels} nobutton' % (color, radius, alpha, num_coords))
     return result
 
 
-def make_subgroup_rms(coord_dict, eigvals, ids, method='avg', custom_axes=None):
+def make_subgroup_rms(coord_dict, eigvals, ids, method='avg', rms_axes=3, custom_axes=None):
     """Creates the rms value, vector, of a subgroup (ids) of coord_dict
     
        Params: 
@@ -358,21 +358,21 @@ def make_subgroup_rms(coord_dict, eigvals, ids, method='avg', custom_axes=None):
     
     # We multiply the cood values with the value of the eigvals represented
     if custom_axes:
-        vectors = [coord_dict[id][1:]*eigvals for id in ids if id in coord_dict]
+        vectors = [coord_dict[id][1:][:rms_axes]*eigvals[:rms_axes] for id in ids if id in coord_dict]
     else:
-        vectors = [coord_dict[id]*eigvals for id in ids if id in coord_dict]
+        vectors = [coord_dict[id][:rms_axes]*eigvals[:rms_axes] for id in ids if id in coord_dict]
     
     if method=='avg':
        center = average(vectors,axis=0)
        if len(ids)==1:
-           result['vector'] = norm(center)
+           result['vector'] = [norm(center)]
            result['rms'] = result['vector']
        else:
            result['vector'] = [norm(i) for i in vectors-center]
            result['rms'] = average(result['vector'])
     elif method=='trajectory':
        if len(ids)==1:
-           result['vector'] = norm(vectors)
+           result['vector'] = [norm(vectors)]
            result['rms'] = result['vector']
        else:
            result['vector'] = [norm(vectors[i-1]-vectors[i])  for i in range(len(vectors)-1)] 
@@ -415,7 +415,8 @@ def run_ANOVA_trajetories(groups):
         for i in values:
             group_means.append(i.Mean)
             group_variances.append(i.Variance)
-        group_means = set(group_means)
+        ##### Added list to always return the same type of output
+        group_means = list(set(group_means))
         if sum(group_variances) < 1e-21 and len(group_means) > 1:
             prob = 0.0
         else:
@@ -993,16 +994,21 @@ def generate_3d_plots(prefs, data, custom_axes, background_color, label_color, \
         f_rms.write('Method to calculate the RMS: %s\n\n' % add_vectors['rms_algorithm'])
         
         for group in add_vectors['rms_output']:
-            to_test = {}
-            for cat in add_vectors['rms_output'][group]:
-                if len(add_vectors['rms_output'][group][cat]['rms_vector']) != 0:
-                    to_test[cat] = add_vectors['rms_output'][group][cat]['rms_vector']
-                else:
-                    add_vectors['rms_output'][group][cat]['rms_result'] = nan
+            if len(add_vectors['rms_output'][group].keys())==1:
+                f_rms.write('Grouped by %s: Only one value in the group.\n\n' \
+                    % (group))
+            else:
+                to_test = {}
+                categories_values = []
+                for cat in add_vectors['rms_output'][group]:
+                    if len(add_vectors['rms_output'][group][cat]['rms_vector']) != 0:
+                        to_test[cat] = add_vectors['rms_output'][group][cat]['rms_vector']
+                    else:
+                        add_vectors['rms_output'][group][cat]['rms_result'] = nan
             
-            group_means, prob = run_ANOVA_trajetories(to_test)
-            f_rms.write('Grouped by %s, probability: %f\nGroup means (ANOVA): %s\n\n' \
-                % (group, prob, group_means))
+                group_means, prob = run_ANOVA_trajetories(to_test)
+                f_rms.write('Grouped by %s, probability: %f\nGroup means (ANOVA): %s\n\n' \
+                    % (group, prob, group_means))
             
         f_rms.close()
     
